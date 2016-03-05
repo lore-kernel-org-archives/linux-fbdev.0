@@ -1,45 +1,27 @@
-From: "Luis R. Rodriguez" <mcgrof@kernel.org>
-Date: Sat, 05 Mar 2016 01:03:46 +0000
-Subject: Re: [PATCH v2] x86: PAT: Documentation: rewrite "MTRR effects on PAT / non-PAT systems"
-Message-Id: <20160305010346.GW25240@wotan.suse.de>
+From: "Elliott, Robert (Persistent Memory)" <elliott@hpe.com>
+Date: Sat, 05 Mar 2016 04:39:58 +0000
+Subject: RE: [PATCH v2] x86: PAT: Documentation: rewrite "MTRR effects on PAT / non-PAT systems"
+Message-Id: <94D0CD8314A33A4D9D801C0FE68B40295C350C7C@G9W0745.americas.hpqcorp.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160304210900.GT3577@linux.vnet.ibm.com>
  <1457131501-14855-1-git-send-email-mcgrof@kernel.org>
- <20160305000304.GA3577@linux.vnet.ibm.com>
-In-Reply-To: <20160305000304.GA3577@linux.vnet.ibm.com>
+In-Reply-To: <1457131501-14855-1-git-send-email-mcgrof@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, bp@alien8.de
-Cc: "Luis R. Rodriguez" <mcgrof@kernel.org>, mingo@kernel.org, tglx@linutronix.de, hpa@zytor.com, toshi.kani@hp.com, airlied@redhat.com, benh@kernel.crashing.org, mst@redhat.com, vinod.koul@intel.com, jgross@suse.com, daniel.vetter@ffwll.ch, luto@amacapital.net, davem@davemloft.net, ben@decadent.org.uk, benjamin.poirier@gmail.com, linux-fbdev@vger.kernel.org, linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org, linux-doc@vger.kernel.org, corbet@lwn.net
+To: "Luis R. Rodriguez" <mcgrof@kernel.org>, "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>, "bp@alien8.de" <bp@alien8.de>, "mingo@kernel.org" <mingo@kernel.org>, "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>, "toshi.kani@hp.com" <toshi.kani@hp.com>
+Cc: "airlied@redhat.com" <airlied@redhat.com>, "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "mst@redhat.com" <mst@redhat.com>, "vinod.koul@intel.com" <vinod.koul@intel.com>, "jgross@suse.com" <jgross@suse.com>, "daniel.vetter@ffwll.ch" <daniel.vetter@ffwll.ch>, "luto@amacapital.net" <luto@amacapital.net>, "davem@davemloft.net" <davem@davemloft.net>, "ben@decadent.org.uk" <ben@decadent.org.uk>, "benjamin.poirier@gmail.com" <benjamin.poirier@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "x86@kernel.org" <x86@kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "corbet@lwn.net" <corbet@lwn.net>
 
-On Fri, Mar 04, 2016 at 04:03:04PM -0800, Paul E. McKenney wrote:
-> On Fri, Mar 04, 2016 at 02:45:01PM -0800, Luis R. Rodriguez wrote:
-> > The current documentation refers to using set_memory_wc() as a
-> > possible hole strategy when you have overlapping ioremap() regions,
-> > that's incorrect as set_memory_*() helpers can only be used on RAM,
-> > not IO memory. Using set_memory_wc() will not fail, that's a problem
-> > which must be corrected in the future. This fixes that, and updates
-> > the documention to *strongly* discourage overlapping ioremap() memory
-> > uses, but also documents a possible solution should there really be
-> > no other option to remain compatible on both PAT and MTRR memory
-> > constarained systems. While at it, this provides some same guidlines
-> > to system designers to remain sane and compatible on both PAT and
-> > non-PAT systems.
-> > 
-> > As per Toshi this also fixes the table for the effective memory type
-> > when using MTRR WC on PAT UC- to WC.
-> > 
-> > Signed-off-by: Luis R. Rodriguez <mcgrof@kernel.org>
-> 
-> And I was really confused during my earlier reply.  For some reason
-> I read the filename as memory-barriers.txt.
-> 
-> This one is not mine.  Too much time in standards committee meetings,
-> I guess.  ;-)
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+> owner@vger.kernel.org] On Behalf Of Luis R. Rodriguez
+> Sent: Friday, March 04, 2016 4:45 PM
+> Subject: [PATCH v2] x86: PAT: Documentation: rewrite "MTRR effects on
+> PAT / non-PAT systems"
+...
+> +MMIO and another PCI BAR for write-combing, if needed.
 
-Heh, OK yeah I was confused why you wanted to pick it up but played along.
-Boris, can this go through you as its a follow up that previously went
-through you ?
+typo: combining
 
-  Luis
+
+

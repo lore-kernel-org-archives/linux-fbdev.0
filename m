@@ -1,128 +1,101 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 31 Mar 2016 18:57:18 +0000
-Subject: Re: [PATCH v5 36/46] input: misc: max77693: switch to the atomic API
-Message-Id: <20160331205718.057a6f38@bbrezillon>
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Mon, 07 Mar 2016 19:53:45 +0000
+Subject: [PATCH 3/3] video: fbdev: imxfb: add some error handling
+Message-Id: <1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-	<1459368249-13241-37-git-send-email-boris.brezillon@free-electrons.com>
-	<20160331174801.GC39098@dtor-ws>
-In-Reply-To: <20160331174801.GC39098@dtor-ws>
+References: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones@lin>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On Thu, 31 Mar 2016 10:48:01 -0700
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+ drivers/video/fbdev/imxfb.c | 33 ++++++++++++++++++++++++++-------
+ 1 file changed, 26 insertions(+), 7 deletions(-)
 
-> Hi Boris,
-> 
-> On Wed, Mar 30, 2016 at 10:03:59PM +0200, Boris Brezillon wrote:
-> > pwm_config/enable/disable() have been deprecated and should be replaced
-> > by pwm_apply_state().
-> > 
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> >  drivers/input/misc/max77693-haptic.c | 23 +++++++++++++++++------
-> >  1 file changed, 17 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
-> > index cf6aac0..aef7dc4 100644
-> > --- a/drivers/input/misc/max77693-haptic.c
-> > +++ b/drivers/input/misc/max77693-haptic.c
-> > @@ -70,13 +70,16 @@ struct max77693_haptic {
-> >  
-> >  static int max77693_haptic_set_duty_cycle(struct max77693_haptic *haptic)
-> >  {
-> > +	struct pwm_state pstate;
-> >  	struct pwm_args pargs = { };
-> > -	int delta;
-> >  	int error;
-> >  
-> >  	pwm_get_args(haptic->pwm_dev, &pargs);
-> > -	delta = (pargs.period + haptic->pwm_duty) / 2;
-> > -	error = pwm_config(haptic->pwm_dev, delta, pargs.period);
-> > +	pwm_get_state(haptic->pwm_dev, &pstate);
-> > +
-> > +	pstate.period = pargs.period;
-> > +	pstate.duty_cycle = (pargs.period + haptic->pwm_duty) / 2;
-> > +	error = pwm_apply_state(haptic->pwm_dev, &pstate);
-> 
-> This does not make sense with regard to the atomic API. If you look in
-> max77693_haptic_play_work(), right after calling
-> max77693_haptic_set_duty_cycle() we either try to enable or disable the
-> pwm. When switching to this new API we should combine both actions.
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 3dd2824e6773..671b3719db56 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -473,8 +473,9 @@ static int imxfb_set_par(struct fb_info *info)
+ 	return 0;
+ }
+=20
+-static void imxfb_enable_controller(struct imxfb_info *fbi)
++static int imxfb_enable_controller(struct imxfb_info *fbi)
+ {
++	int ret;
+=20
+ 	if (fbi->enabled)
+ 		return;
+@@ -496,10 +497,27 @@ static void imxfb_enable_controller(struct imxfb_info=
+ *fbi)
+ 	 */
+ 	writel(RMCR_LCDC_EN_MX1, fbi->regs + LCDC_RMCR);
+=20
+-	clk_prepare_enable(fbi->clk_ipg);
+-	clk_prepare_enable(fbi->clk_ahb);
+-	clk_prepare_enable(fbi->clk_per);
++	ret =3D clk_prepare_enable(fbi->clk_ipg);
++	if (ret)
++		goto err_enable_ipg;
++
++	ret =3D clk_prepare_enable(fbi->clk_ahb);
++	if (ret)
++		goto err_enable_ahb;
++
++	ret =3D clk_prepare_enable(fbi->clk_per);
++	if (ret) {
++		clk_disable_unprepare(fbi->clk_ahb);
++err_enable_ahb:
++		clk_disable_unprepare(fbi->clk_ipg);
++err_enable_ipg:
++		writel(0, fbi->regs + LCDC_RMCR);
++
++		return ret;
++	}
++
+ 	fbi->enabled =3D true;
++	return 0;
+ }
+=20
+ static void imxfb_disable_controller(struct imxfb_info *fbi)
+@@ -510,8 +528,8 @@ static void imxfb_disable_controller(struct imxfb_info =
+*fbi)
+ 	pr_debug("Disabling LCD controller\n");
+=20
+ 	clk_disable_unprepare(fbi->clk_per);
+-	clk_disable_unprepare(fbi->clk_ipg);
+ 	clk_disable_unprepare(fbi->clk_ahb);
++	clk_disable_unprepare(fbi->clk_ipg);
+ 	fbi->enabled =3D false;
+=20
+ 	writel(0, fbi->regs + LCDC_RMCR);
+@@ -520,6 +538,7 @@ static void imxfb_disable_controller(struct imxfb_info =
+*fbi)
+ static int imxfb_blank(int blank, struct fb_info *info)
+ {
+ 	struct imxfb_info *fbi =3D info->par;
++	int ret =3D 0;;
+=20
+ 	pr_debug("imxfb_blank: blank=3D%d\n", blank);
+=20
+@@ -532,10 +551,10 @@ static int imxfb_blank(int blank, struct fb_info *inf=
+o)
+ 		break;
+=20
+ 	case FB_BLANK_UNBLANK:
+-		imxfb_enable_controller(fbi);
++		ret =3D imxfb_enable_controller(fbi);
+ 		break;
+ 	}
+-	return 0;
++	return ret;
+ }
+=20
+ static struct fb_ops imxfb_ops =3D {
+--=20
+2.7.0
 
-True. I'll address that, unless Thierry is fine keeping the non-atomic
-API, in which case I'll just drop patches 32 to 46.
-
-> 
-> >  	if (error) {
-> >  		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
-> >  		return error;
-> > @@ -161,12 +164,16 @@ static int max77693_haptic_lowsys(struct max77693_haptic *haptic, bool enable)
-> >  
-> >  static void max77693_haptic_enable(struct max77693_haptic *haptic)
-> >  {
-> > +	struct pwm_state pstate;
-> >  	int error;
-> >  
-> >  	if (haptic->enabled)
-> >  		return;
-> >  
-> > -	error = pwm_enable(haptic->pwm_dev);
-> > +	pwm_get_state(haptic->pwm_dev, &pstate);
-> > +	pstate.enabled = true;
-> > +
-> > +	error = pwm_apply_state(haptic->pwm_dev, &pstate);
-> 
-> As I mentioned I'd rather we did not deprecate pwm_enable() and
-> pwm_disable() (and maybe others), as it forces us to add unnecessary
-> boilerplate code to the drivers.
->  
-> >  	if (error) {
-> >  		dev_err(haptic->dev,
-> >  			"failed to enable haptic pwm device: %d\n", error);
-> > @@ -188,11 +195,13 @@ static void max77693_haptic_enable(struct max77693_haptic *haptic)
-> >  err_enable_config:
-> >  	max77693_haptic_lowsys(haptic, false);
-> >  err_enable_lowsys:
-> > -	pwm_disable(haptic->pwm_dev);
-> > +	pstate.enabled = false;
-> > +	pwm_apply_state(haptic->pwm_dev, &pstate);
-> >  }
-> >  
-> >  static void max77693_haptic_disable(struct max77693_haptic *haptic)
-> >  {
-> > +	struct pwm_state pstate;
-> >  	int error;
-> >  
-> >  	if (!haptic->enabled)
-> > @@ -206,7 +215,9 @@ static void max77693_haptic_disable(struct max77693_haptic *haptic)
-> >  	if (error)
-> >  		goto err_disable_lowsys;
-> >  
-> > -	pwm_disable(haptic->pwm_dev);
-> > +	pwm_get_state(haptic->pwm_dev, &pstate);
-> > +	pstate.enabled = false;
-> > +	pwm_apply_state(haptic->pwm_dev, &pstate);
-> 
-> Same here.
-> 
-> >  	haptic->enabled = false;
-> >  
-> >  	return;
-> > -- 
-> > 2.5.0
-> > 
-> 
-> Thanks.
-> 
-
-
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com

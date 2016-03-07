@@ -1,81 +1,129 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:45 +0000
-Subject: [PATCH v5 22/46] pwm: rockchip: avoid glitches on already running PWMs
-Message-Id: <1459368249-13241-23-git-send-email-boris.brezillon@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Mon, 07 Mar 2016 18:29:21 +0000
+Subject: Re: [PATCH 1/5] Subject: video: goldfishfb: add devicetree bindings
+Message-Id: <56DDC881.6060603@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <20160226183940.2731.42083.stgit@localhost.localdomain>
+ <20160226184146.2731.41848.stgit@localhost.localdomain>
+In-Reply-To: <20160226184146.2731.41848.stgit-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
+To: Alan <alan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-The current logic will disable the PWM clk even if the PWM was left
-enabled by the bootloader (because it's controlling a critical device
-like a regulator for example).
-Keep the PWM clk enabled if the PWM is enabled to avoid any glitches.
+--ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M
+Content-Type: multipart/mixed; boundary="0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Alan <alan@linux.intel.com>, linux-fbdev@vger.kernel.org,
+ plagnioj@jcrosoft.com,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+Message-ID: <56DDC881.6060603@ti.com>
+Subject: Re: [PATCH 1/5] Subject: video: goldfishfb: add devicetree bindings
+References: <20160226183940.2731.42083.stgit@localhost.localdomain>
+ <20160226184146.2731.41848.stgit@localhost.localdomain>
+In-Reply-To: <20160226184146.2731.41848.stgit@localhost.localdomain>
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- drivers/pwm/pwm-rockchip.c | 24 +++++++++++++++++++++++-
- 1 file changed, 23 insertions(+), 1 deletion(-)
+--0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/pwm/pwm-rockchip.c b/drivers/pwm/pwm-rockchip.c
-index 6a1087c..5c7e79c 100644
---- a/drivers/pwm/pwm-rockchip.c
-+++ b/drivers/pwm/pwm-rockchip.c
-@@ -302,6 +302,7 @@ static int rockchip_pwm_probe(struct platform_device *pdev)
- {
- 	const struct of_device_id *id;
- 	struct rockchip_pwm_chip *pc;
-+	struct pwm_state pstate;
- 	struct resource *r;
- 	int ret;
- 
-@@ -322,7 +323,7 @@ static int rockchip_pwm_probe(struct platform_device *pdev)
- 	if (IS_ERR(pc->clk))
- 		return PTR_ERR(pc->clk);
- 
--	ret = clk_prepare(pc->clk);
-+	ret = clk_prepare_enable(pc->clk);
- 	if (ret)
- 		return ret;
- 
-@@ -345,12 +346,33 @@ static int rockchip_pwm_probe(struct platform_device *pdev)
- 		dev_err(&pdev->dev, "pwmchip_add() failed: %d\n", ret);
- 	}
- 
-+	/* Keep the PWM clk enabled if the PWM appears to be up and running. */
-+	pwm_get_state(pc->chip.pwms, &pstate);
-+	if (!pstate.enabled)
-+		clk_disable(pc->clk);
-+
- 	return ret;
- }
- 
- static int rockchip_pwm_remove(struct platform_device *pdev)
- {
- 	struct rockchip_pwm_chip *pc = platform_get_drvdata(pdev);
-+	struct pwm_state pstate;
-+
-+	/*
-+	 * Disable the PWM clk before unpreparing it if the PWM device is still
-+	 * running. This should only happen when the last PWM user left it
-+	 * enabled, or when nobody requested a PWM that was previously enabled
-+	 * by the bootloader.
-+	 *
-+	 * FIXME: Maybe the core should disable all PWM devices in
-+	 * pwmchip_remove(). In this case we'd only have to call
-+	 * clk_unprepare() after pwmchip_remove().
-+	 *
-+	 */
-+	pwm_get_state(pc->chip.pwms, &pstate);
-+	if (pstate.enabled)
-+		clk_disable(pc->clk);
- 
- 	clk_unprepare(pc->clk);
- 
--- 
-2.5.0
 
+On 26/02/16 20:41, Alan wrote:
+> From: Greg Hackmann <ghackmann@google.com>
+>=20
+> Add device tree bindings to the Goldfish frame buffer interface.
+>=20
+> Signed-off-by: Greg Hackmann <ghackmann@google.com>
+> Signed-off-by: Jin Qian <jinqian@android.com>
+> Signed-off-by: Alan Cox <alan@linux.intel.com>
+> ---
+>  Documentation/devicetree/bindings/goldfish/fb.txt |   17 +++++++++++++=
+++++
+>  drivers/video/fbdev/goldfishfb.c                  |    9 ++++++++-
+>  2 files changed, 25 insertions(+), 1 deletion(-)
+>  create mode 100644 Documentation/devicetree/bindings/goldfish/fb.txt
+
+Device tree bindings should also be sent to the devicetree mailing list.
+
+> diff --git a/Documentation/devicetree/bindings/goldfish/fb.txt b/Docume=
+ntation/devicetree/bindings/goldfish/fb.txt
+> new file mode 100644
+> index 0000000..c7d2d46
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/goldfish/fb.txt
+> @@ -0,0 +1,17 @@
+> +Android Goldfish Framebuffer
+> +
+> +Andorid goldfish framebuffer device generated by android emulator.
+
+Typo there in Android.
+
+> +
+> +Required properties:
+> +
+> +- compatible : should contain "google,goldfish-fb" to match emulator
+> +- reg        : <registers mapping>
+> +- interrupts : <interrupt mapping>
+> +
+> +Example:
+> +
+> +	goldfish_fb@9010000 {
+> +		compatible =3D "google,goldfish-fb";
+> +		reg =3D <0x9010000 0x100>;
+> +		interrupts =3D <0x2>;
+> +	};
+> diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/gol=
+dfishfb.c
+> index 7f6c9e6..f0e651b 100644
+> --- a/drivers/video/fbdev/goldfishfb.c
+> +++ b/drivers/video/fbdev/goldfishfb.c
+> @@ -304,12 +304,19 @@ static int goldfish_fb_remove(struct platform_dev=
+ice *pdev)
+>  	return 0;
+>  }
+> =20
+> +static const struct of_device_id goldfish_fb_of_match[] =3D {
+> +	{ .compatible =3D "google,goldfish-fb", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+> =20
+>  static struct platform_driver goldfish_fb_driver =3D {
+>  	.probe		=3D goldfish_fb_probe,
+>  	.remove		=3D goldfish_fb_remove,
+>  	.driver =3D {
+> -		.name =3D "goldfish_fb"
+> +		.name =3D "goldfish_fb",
+> +		.owner =3D THIS_MODULE,
+> +		.of_match_table =3D goldfish_fb_of_match,
+>  	}
+>  };
+> =20
+>=20
+
+
+--0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u--
+
+--ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJW3ciBAAoJEPo9qoy8lh71GGoP/R5REm8om+oKfck1zfy+DuNl
+Bu9ywMQYJo290jVDnxoeo9mQmmYibJy1k7Rihq/s/tP9jOMei75kDdOSuJJ+UHAx
+YaLTVFBatA+r7lZmSFMv7Mtt05qJvK8XjPyCtKyFYmeoG67nMwk/Z+k7NTGqXH+Q
+MNH8Xc2rLz2GGUd7cX+nIKTCslFiZPRA5LWb8q83IXmFygJz6Iqz7f3PM8Iz03Zw
+WYDhMzaW37s1xcac6d+WQ58Oj9Dv91aOJFRN+m7GoI9WjlFriqwgsqfo2SGw4MXu
+K8r2W06qEXSlMoqeAr+QcwV0lrCqwaNCnjYRDbw33jz1Fjuw66FSt18iCN2F/lQr
+/0FQ+SZtx1vmHT7cAnRy0Hjwd9oUWEq9o/ElWFdIY+XMTpO22Oi38txcloTn3m8n
+y8IdeJGjHLscEnzvvX2hCdYa7wFxnAhgmU14EJZnJv7t83uFHFWFxZcCqp/6m3jq
+FNHw0/2ggSdULHat0D2FXhUo3mqhntZuuH268KBXNlbdXcpI+OfM/tO4JGceUy4v
+7pF4eSR9Exm7RdwyIEyVy1XdLwyfNzuNtDXp168IkedpBjAZCLiXyan1/yvgCXRN
+TErlT/OzHmmAS9goTvclSWqOKvtIsQTTh5OSOGqnHv80P9e27lm0QX2QMAgdgnoF
+7pw/NwWdtphzcFxPFsBq
+=rfKG
+-----END PGP SIGNATURE-----
+
+--ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M--

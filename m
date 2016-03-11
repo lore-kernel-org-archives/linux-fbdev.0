@@ -1,173 +1,111 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:38 +0000
-Subject: [PATCH v5 15/46] pwm: introduce the pwm_state concept
-Message-Id: <1459368249-13241-16-git-send-email-boris.brezillon@free-electrons.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Fri, 11 Mar 2016 11:37:52 +0000
+Subject: Re: [PATCH v2] xen kconfig: don't "select INPUT_XEN_KBDDEV_FRONTEND"
+Message-Id: <56E2AE10.7030701@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="2VdQRjxshUJ2e2qHdLsNrsH1OcLKdhcn4"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+References: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
+ <56C20552.8030305@citrix.com>
+ <alpine.DEB.2.02.1602151708110.27008@kaball.uk.xensource.com>
+ <2479546.WgivMO2bp2@wuerfel>
+In-Reply-To: <2479546.WgivMO2bp2@wuerfel>
+To: linux-arm-kernel@lists.infradead.org
 
-The PWM state, represented by its period, duty_cycle and polarity,
-is currently directly stored in the PWM device.
-Declare a pwm_state structure embedding those field so that we can later
-use this struct to atomically update all the PWM parameters at once.
+--2VdQRjxshUJ2e2qHdLsNrsH1OcLKdhcn4
+Content-Type: multipart/mixed; boundary="OdLj6FDpCecXisHW5w2BxM9aKQq4l25MU"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Arnd Bergmann <arnd@arndb.de>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>
+Cc: David Vrabel <david.vrabel@citrix.com>, Andrew Jones
+ <drjones@redhat.com>, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ linux-arm-kernel@lists.infradead.org,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ xen-devel@lists.xensource.com, boris.ostrovsky@oracle.com
+Message-ID: <56E2AE10.7030701@ti.com>
+Subject: Re: [PATCH v2] xen kconfig: don't "select INPUT_XEN_KBDDEV_FRONTEND"
+References: <1455278707-2008263-1-git-send-email-arnd@arndb.de>
+ <56C20552.8030305@citrix.com>
+ <alpine.DEB.2.02.1602151708110.27008@kaball.uk.xensource.com>
+ <2479546.WgivMO2bp2@wuerfel>
+In-Reply-To: <2479546.WgivMO2bp2@wuerfel>
 
-All pwm_get_xxx() helpers are now implemented as wrappers around
-pwm_get_state().
+--OdLj6FDpCecXisHW5w2BxM9aKQq4l25MU
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- drivers/pwm/core.c  |  8 ++++----
- include/linux/pwm.h | 54 +++++++++++++++++++++++++++++++++++++++++------------
- 2 files changed, 46 insertions(+), 16 deletions(-)
+On 16/02/16 17:03, Arnd Bergmann wrote:
+> The Xen framebuffer driver selects the xen keyboard driver, so the latt=
+er
+> will be built-in if XEN_FBDEV_FRONTEND=3Dy. However, when CONFIG_INPUT
+> is a loadable module, this configuration cannot work. On mainline kerne=
+ls,
+> the symbol will be enabled but not used, while in combination with
+> a patch I have to detect such useless configurations, we get the
+> expected link failure:
+>=20
+> drivers/input/built-in.o: In function `xenkbd_remove':
+> xen-kbdfront.c:(.text+0x2f0): undefined reference to `input_unregister_=
+device'
+> xen-kbdfront.c:(.text+0x30e): undefined reference to `input_unregister_=
+device'
+>=20
+> This removes the extra "select", as it just causes more trouble than
+> it helps. In theory, some defconfig file might break if it has
+> XEN_FBDEV_FRONTEND in it but not INPUT_XEN_KBDDEV_FRONTEND. The Kconfig=
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 6433059..f3f91e7 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -268,7 +268,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
- 		pwm->chip = chip;
- 		pwm->pwm = chip->base + i;
- 		pwm->hwpwm = i;
--		pwm->polarity = polarity;
-+		pwm->state.polarity = polarity;
- 
- 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
- 	}
-@@ -446,8 +446,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
- 	if (err)
- 		return err;
- 
--	pwm->duty_cycle = duty_ns;
--	pwm->period = period_ns;
-+	pwm->state.duty_cycle = duty_ns;
-+	pwm->state.period = period_ns;
- 
- 	return 0;
- }
-@@ -480,7 +480,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
- 	if (err)
- 		return err;
- 
--	pwm->polarity = polarity;
-+	pwm->state.polarity = polarity;
- 
- 	return 0;
- }
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index ed65354..f0f0f37 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -97,6 +97,18 @@ enum {
- 	PWMF_EXPORTED = 1 << 2,
- };
- 
-+/*
-+ * struct pwm_state - state of a PWM channel
-+ * @period: PWM period (in nanoseconds)
-+ * @duty_cycle: PWM duty cycle (in nanoseconds)
-+ * @polarity: PWM polarity
-+ */
-+struct pwm_state {
-+	unsigned int period;
-+	unsigned int duty_cycle;
-+	enum pwm_polarity polarity;
-+};
-+
- /**
-  * struct pwm_device - PWM channel object
-  * @label: name of the PWM device
-@@ -105,10 +117,8 @@ enum {
-  * @pwm: global index of the PWM device
-  * @chip: PWM chip providing this PWM device
-  * @chip_data: chip-private data associated with the PWM device
-- * @period: period of the PWM signal (in nanoseconds)
-- * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
-- * @polarity: polarity of the PWM signal
-  * @args: PWM arguments
-+ * @state: curent PWM channel state
-  */
- struct pwm_device {
- 	const char *label;
-@@ -118,13 +128,21 @@ struct pwm_device {
- 	struct pwm_chip *chip;
- 	void *chip_data;
- 
--	unsigned int period;
--	unsigned int duty_cycle;
--	enum pwm_polarity polarity;
--
- 	struct pwm_args args;
-+	struct pwm_state state;
- };
- 
-+/**
-+ * pwm_get_state() - retrieve the current PWM state
-+ * @pwm: PWM device
-+ * @state: state to fill with the current PWM state
-+ */
-+static inline void pwm_get_state(const struct pwm_device *pwm,
-+				 struct pwm_state *state)
-+{
-+	*state = pwm->state;
-+}
-+
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- {
- 	return test_bit(PWMF_ENABLED, &pwm->flags);
-@@ -133,23 +151,31 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- {
- 	if (pwm)
--		pwm->period = period;
-+		pwm->state.period = period;
- }
- 
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->period : 0;
-+	struct pwm_state pstate;
-+
-+	pwm_get_state(pwm, &pstate);
-+
-+	return pstate.period;
- }
- 
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
- {
- 	if (pwm)
--		pwm->duty_cycle = duty;
-+		pwm->state.duty_cycle = duty;
- }
- 
- static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->duty_cycle : 0;
-+	struct pwm_state pstate;
-+
-+	pwm_get_state(pwm, &pstate);
-+
-+	return pstate.duty_cycle;
- }
- 
- /*
-@@ -159,7 +185,11 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
- 
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
-+	struct pwm_state pstate;
-+
-+	pwm_get_state(pwm, &pstate);
-+
-+	return pstate.polarity;
- }
- 
- static inline void pwm_get_args(const struct pwm_device *pwm,
--- 
-2.5.0
+> fragment we ship in the kernel (kernel/configs/xen.config) however
+> already enables both, and anyone using an old .config file would
+> keep having both enabled.
+>=20
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Suggested-by: David Vrabel <david.vrabel@citrix.com>
+> Fixes: 36c1132e34bd ("xen kconfig: fix select INPUT_XEN_KBDDEV_FRONTEND=
+")
+>=20
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 8ea45a5cd806..d889ef2048df 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -2246,7 +2246,6 @@ config XEN_FBDEV_FRONTEND
+>  	select FB_SYS_IMAGEBLIT
+>  	select FB_SYS_FOPS
+>  	select FB_DEFERRED_IO
+> -	select INPUT_XEN_KBDDEV_FRONTEND if INPUT_MISC
+>  	select XEN_XENBUS_FRONTEND
+>  	default y
+>  	help
+>=20
 
+Thanks, queued for 4.6.
+
+ Tomi
+
+
+--OdLj6FDpCecXisHW5w2BxM9aKQq4l25MU--
+
+--2VdQRjxshUJ2e2qHdLsNrsH1OcLKdhcn4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJW4q4QAAoJEPo9qoy8lh71wVoP/3jBl6ja7v/j+dIknjeNxTN+
+5Pn0JorH3cvP2qpy/nbJTOZX5u6Geih6AEkM/p/TgTPuO97pgd5ubb6ERHoan0+M
+zv9dE1emLKcaCosQ934fa2ShTlSe108CpiK/xUY5dRM+PrrKEBck5j7KlXVU0PIg
+PqN+eNj43xCpDap6NvQ6hVztt6BzlLqgXbNYe1mdvyena/oiVfIi/dsIIw0ruSoq
+k1iPNzpztF0vzzmLxElB/754ntBoDT0kcJn6Qa2Nx1zjz8tDAHPXZ9ZSNih3s5eL
+aJYc0vt2HJxsY8yvD2mTWCpdAkyz3cdibSVjm6GVqi3ehVwnHhUjoHfAm1HDMO+7
+SfuBDTjl64tXXeFw5OY+lX3MESM0Q/stRB/FxVpqs0tAah+i+f+xxEkHb6ELzYya
+/q4KpSUooPTEZA6pZ0cIPv3JvVWpP5j76PBwuCtabrxcmxuAQFdMBx4x3TB+QjZo
+TC48o+ROVxqs7CJJ0o4C45wg6VxhBWRVjOex8OdwTpQQ1o4mN92l3eQHPVv9Gumx
+cFEbLNNdLmjdtABbkUndp2pm/5JOwBtovv5CfhFLa25SueDmoHEbnheqU+w58715
+JZ89C2cKPo9NWIuXSuR15lbCviotj1QGq7m9l6zs/sDUhb2koBOZ93PgUUJJfIcY
+12G4n0zYMXm1hGq+c1nt
+=UrN1
+-----END PGP SIGNATURE-----
+
+--2VdQRjxshUJ2e2qHdLsNrsH1OcLKdhcn4--

@@ -1,37 +1,53 @@
-From: Colin King <colin.king@canonical.com>
-Date: Tue, 29 Mar 2016 16:53:23 +0000
-Subject: [PATCH] staging: sm750fb: initialize max_d to maximum D value of 6
-Message-Id: <1459270403-15811-1-git-send-email-colin.king@canonical.com>
+From: Vladimir Zapolskiy <vz@mleia.com>
+Date: Tue, 22 Mar 2016 22:51:54 +0000
+Subject: [PATCH] omapfb: panel-sharp-ls037v7dw01: fix check of gpio_to_desc() return value
+Message-Id: <1458687114-9390-1-git-send-email-vz@mleia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
-Cc: linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+The change fixes a check of gpio_to_desc() return value, the function
+returns either a valid pointer to struct gpio_desc or NULL, this makes
+IS_ERR() check invalid and may lead to a NULL pointer dereference in
+runtime.
 
-max_d is not initialized and should be set to the largest D
-value of 6.
-
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c    | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 95f7cae..f80ee77 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -306,7 +306,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 	unsigned int input, request;
- 	unsigned int tmpClock, ret;
- 	const int max_OD = 3;
--	int max_d;
-+	int max_d = 6;
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+index abfd1f6..1954ec9 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+@@ -200,20 +200,16 @@ static struct omap_dss_driver sharp_ls_ops = {
+ static int sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
+ 		  char *desc, struct gpio_desc **gpiod)
+ {
+-	struct gpio_desc *gd;
+ 	int r;
  
- 	if (getChipType() = SM750LE) {
- 		/* SM750LE don't have prgrammable PLL and M/N values to work on.
+-	*gpiod = NULL;
+-
+ 	r = devm_gpio_request_one(dev, gpio, flags, desc);
+-	if (r)
++	if (r) {
++		*gpiod = NULL;
+ 		return r = -ENOENT ? 0 : r;
++	}
+ 
+-	gd = gpio_to_desc(gpio);
+-	if (IS_ERR(gd))
+-		return PTR_ERR(gd) = -ENOENT ? 0 : PTR_ERR(gd);
++	*gpiod = gpio_to_desc(gpio);
+ 
+-	*gpiod = gd;
+ 	return 0;
+ }
+ 
 -- 
-2.7.4
+2.1.4
 

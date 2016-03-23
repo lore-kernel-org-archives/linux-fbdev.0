@@ -1,82 +1,101 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:47 +0000
-Subject: [PATCH v5 24/46] pwm: sti: add support for initial state retrieval
-Message-Id: <1459368249-13241-25-git-send-email-boris.brezillon@free-electrons.com>
+From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+Date: Wed, 23 Mar 2016 15:25:42 +0000
+Subject: Problems using fb_deferred_io with drm_fb_cma_helper
+Message-Id: <56F2B576.5080508@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Implement ->get_state() to provide support for initial state retrieval.
+I'm trying to add deferred io support to=20
+drivers/gpu/drm/drm_gem_cma_helper.c.
+This is a fbdev helper for DRM.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- drivers/pwm/pwm-sti.c | 41 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
+The first problem is that fb_deferred_io_page() requires either a vmalloc
+address or a physical address:
 
-diff --git a/drivers/pwm/pwm-sti.c b/drivers/pwm/pwm-sti.c
-index 92abbd5..0fbca94 100644
---- a/drivers/pwm/pwm-sti.c
-+++ b/drivers/pwm/pwm-sti.c
-@@ -238,6 +238,46 @@ static void sti_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
- 	mutex_unlock(&pc->sti_pwm_lock);
- }
- 
-+static void sti_pwm_get_state(struct pwm_chip *chip,
-+			      struct pwm_device *pwm,
-+			      struct pwm_state *pstate)
-+{
-+	struct sti_pwm_chip *pc = to_sti_pwmchip(chip);
-+	unsigned int regval, prescaler;
-+	u64 timens;
-+	int ret;
-+
-+	/* The clock has to be enabled to access PWM registers */
-+	ret = clk_enable(pc->clk);
-+	if (ret) {
-+		dev_err(chip->dev, "Failed to enable PWM clk");
-+		return;
-+	}
-+
-+	regmap_field_read(pc->prescale_high, &regval);
-+	prescaler = regval << 4;
-+	regmap_field_read(pc->prescale_low, &regval);
-+	prescaler |= regval;
-+
-+	timens = (u64)(prescaler + 1) * NSEC_PER_SEC *
-+		 (pc->cdata->max_pwm_cnt + 1);
-+	do_div(timens, pc->clk_rate);
-+
-+	pstate->period = timens;
-+
-+	regmap_read(pc->regmap, STI_DS_REG(pwm->hwpwm), &regval);
-+	timens = (u64)(regval + 1) * pstate->period;
-+	do_div(timens, pc->cdata->max_pwm_cnt + 1);
-+	pstate->duty_cycle = timens;
-+
-+	regmap_field_read(pc->pwm_en, &regval);
-+	pstate->enabled = regval;
-+
-+	pstate->polarity = PWM_POLARITY_NORMAL;
-+
-+	clk_disable(pc->clk);
-+}
-+
- static void sti_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
- {
- 	struct sti_pwm_chip *pc = to_sti_pwmchip(chip);
-@@ -249,6 +289,7 @@ static const struct pwm_ops sti_pwm_ops = {
- 	.config = sti_pwm_config,
- 	.enable = sti_pwm_enable,
- 	.disable = sti_pwm_disable,
-+	.get_state = sti_pwm_get_state,
- 	.free = sti_pwm_free,
- 	.owner = THIS_MODULE,
- };
--- 
-2.5.0
+         if (is_vmalloc_addr(screen_base + offs))
+                 page =3D vmalloc_to_page(screen_base + offs);
+         else
+                 page =3D pfn_to_page((info->fix.smem_start + offs) >>=20
+PAGE_SHIFT);
+
+However drm_fb_cma_helper allocates memory this way:
+
+         cma_obj->vaddr =3D dma_alloc_writecombine(drm->dev, size,
+                         &cma_obj->paddr, GFP_KERNEL | __GFP_NOWARN);
+
+The name paddr is somewhat misleading here since this is the device address
+which isn't always the same as the physical address (Raspberry Pi). Is
+there a way to turn the virtual address into a physical one which will work
+on all architectures?
+
+I use __va() now, but that is marked as not for use by drivers in
+arch/arm/include/asm/memory.h (the same goes for virt_to_phys).
+
+Maybe this is valid for all? page_to_phys(virt_to_page(x))
+
+I have looked at all the users of fb_deferred_io_init() and found only
+3 drivers that doesn't use a vmalloc screen buffer:
+
+drivers/gpu/drm/udl/udl_fb.c:
+     obj->vmapping =3D vmap(obj->pages, page_count, 0, PAGE_KERNEL);
+         info->screen_base =3D ufbdev->ufb.obj->vmapping;
+         info->fix.smem_start =3D (unsigned long)ufbdev->ufb.obj->vmapping;
+Since it uses vmap() I guess it is_vmalloc_addr().
+
+drivers/video/fbdev/sh_mobile_lcdcfb.c:
+         ch->fb_mem =3D dma_alloc_coherent(dev, ch->fb_size, &ch->dma_handl=
+e,
+                                         GFP_KERNEL);
+         info->screen_base =3D ch->fb_mem;
+         info->fix.smem_start =3D ch->dma_handle;
+It uses dma_mmap_coherent() in it's fb_mmap function, but nothing special
+with it's deferred_io use.
+
+drivers/video/fbdev/ssd1307fb.c:
+         vmem =3D (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
+                                         get_order(vmem_size));
+         info->screen_base =3D (u8 __force __iomem *)vmem;
+         info->fix.smem_start =3D __pa(vmem);
+
+So maybe this could be possible:
+
+  static struct page *fb_deferred_io_page(struct fb_info *info, unsigned=20
+long offs)
+  {
+      void *screen_base =3D (void __force *) info->screen_base;
+      struct page *page;
+
+      if (is_vmalloc_addr(screen_base + offs))
+          page =3D vmalloc_to_page(screen_base + offs);
+      else
+-        page =3D pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
++        page =3D virt_to_page(screen_base + offs);
+
+      return page;
+  }
+
+
+The second problem I'm facing is that I get short horizontal lines that have
+old pixels. My problem goes away if I add this to fb_deferred_io_mmap():
+
+         vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
+
+Is there a way to add this to fb_deferred_io_mmap() with some kind of if
+statement, or perhaps export the function so I can use it like this:
+
+static int drm_fbdev_cma_defio_mmap(struct fb_info *info,
+                                     struct vm_area_struct *vma)
+{
+         fb_deferred_io_mmap(info, vma);
+         vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
+
+         return 0;
+}
+
+
+Thanks,
+Noralf Tr=C3=B8nnes
 

@@ -1,122 +1,38 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:08 +0000
-Subject: [PATCH v5 45/46] drm: i915: switch to the atomic PWM API
-Message-Id: <1459368249-13241-46-git-send-email-boris.brezillon@free-electrons.com>
+From: Julian Scheel <julian@jusst.de>
+Date: Thu, 24 Mar 2016 21:14:23 +0000
+Subject: [PATCHv2] fbdev: ssd1307fb: Fix charge pump setting
+Message-Id: <1458854063-9118-1-git-send-email-julian@jusst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-pwm_config/enable/disable() have been deprecated and should be replaced
-by pwm_apply_state().
+Make sure bit 4 is set for the charge pump setting. It is required according
+to SSD1306 App Note.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Julian Scheel <julian@jusst.de>
 ---
- drivers/gpu/drm/i915/intel_panel.c | 39 +++++++++++++++++++++++++-------------
- 1 file changed, 26 insertions(+), 13 deletions(-)
+Changes in v2:
+- Simplify commit message
+- Use BIT macros to increase readability
+---
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/i915/intel_panel.c b/drivers/gpu/drm/i915/intel_panel.c
-index 21ee647..b86bd20 100644
---- a/drivers/gpu/drm/i915/intel_panel.c
-+++ b/drivers/gpu/drm/i915/intel_panel.c
-@@ -538,10 +538,10 @@ static u32 bxt_get_backlight(struct intel_connector *connector)
- static u32 pwm_get_backlight(struct intel_connector *connector)
- {
- 	struct intel_panel *panel = &connector->panel;
--	int duty_ns;
-+	struct pwm_state pstate;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 1611215..3b9ee0c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -389,7 +389,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 		return ret;
  
--	duty_ns = pwm_get_duty_cycle(panel->backlight.pwm);
--	return DIV_ROUND_UP(duty_ns * 100, CRC_PMIC_PWM_PERIOD_NS);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	return DIV_ROUND_UP(pstate.duty_cycle * 100, CRC_PMIC_PWM_PERIOD_NS);
- }
+ 	ret = ssd1307fb_write_cmd(par->client,
+-		(par->device_info->need_chargepump & 0x1 << 2) & 0x14);
++		BIT(4) | (par->device_info->need_chargepump ? BIT(2) : 0));
+ 	if (ret < 0)
+ 		return ret;
  
- static u32 intel_panel_get_backlight(struct intel_connector *connector)
-@@ -630,9 +630,12 @@ static void bxt_set_backlight(struct intel_connector *connector, u32 level)
- static void pwm_set_backlight(struct intel_connector *connector, u32 level)
- {
- 	struct intel_panel *panel = &connector->panel;
--	int duty_ns = DIV_ROUND_UP(level * CRC_PMIC_PWM_PERIOD_NS, 100);
-+	struct pwm_state pstate;
- 
--	pwm_config(panel->backlight.pwm, duty_ns, CRC_PMIC_PWM_PERIOD_NS);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	pstate.duty_cycle = DIV_ROUND_UP(level * CRC_PMIC_PWM_PERIOD_NS, 100);
-+	pstate.period = CRC_PMIC_PWM_PERIOD_NS;
-+	pwm_apply_state(panel->backlight.pwm, &pstate);
- }
- 
- static void
-@@ -801,11 +804,15 @@ static void bxt_disable_backlight(struct intel_connector *connector)
- static void pwm_disable_backlight(struct intel_connector *connector)
- {
- 	struct intel_panel *panel = &connector->panel;
-+	struct pwm_state pstate;
- 
- 	/* Disable the backlight */
--	pwm_config(panel->backlight.pwm, 0, CRC_PMIC_PWM_PERIOD_NS);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	pstate.duty_cycle = 0;
-+	pwm_apply_state(panel->backlight.pwm, &pstate);
- 	usleep_range(2000, 3000);
--	pwm_disable(panel->backlight.pwm);
-+	pstate.enabled = false;
-+	pwm_apply_state(panel->backlight.pwm, &pstate);
- }
- 
- void intel_panel_disable_backlight(struct intel_connector *connector)
-@@ -1068,8 +1075,11 @@ static void bxt_enable_backlight(struct intel_connector *connector)
- static void pwm_enable_backlight(struct intel_connector *connector)
- {
- 	struct intel_panel *panel = &connector->panel;
-+	struct pwm_state pstate;
- 
--	pwm_enable(panel->backlight.pwm);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	pstate.enabled = true;
-+	pwm_apply_state(panel->backlight.pwm, &pstate);
- 	intel_panel_actually_set_backlight(connector, panel->backlight.level);
- }
- 
-@@ -1630,6 +1640,7 @@ static int pwm_setup_backlight(struct intel_connector *connector,
- {
- 	struct drm_device *dev = connector->base.dev;
- 	struct intel_panel *panel = &connector->panel;
-+	struct pwm_state pstate;
- 	int retval;
- 
- 	/* Get the PWM chip for backlight control */
-@@ -1640,8 +1651,10 @@ static int pwm_setup_backlight(struct intel_connector *connector,
- 		return -ENODEV;
- 	}
- 
--	retval = pwm_config(panel->backlight.pwm, CRC_PMIC_PWM_PERIOD_NS,
--			    CRC_PMIC_PWM_PERIOD_NS);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	pstate.period = CRC_PMIC_PWM_PERIOD_NS;
-+	pstate.duty_cycle = CRC_PMIC_PWM_PERIOD_NS;
-+	retval = pwm_apply_state(panel->backlight.pwm, &pstate);
- 	if (retval < 0) {
- 		DRM_ERROR("Failed to configure the pwm chip\n");
- 		pwm_put(panel->backlight.pwm);
-@@ -1651,9 +1664,9 @@ static int pwm_setup_backlight(struct intel_connector *connector,
- 
- 	panel->backlight.min = 0; /* 0% */
- 	panel->backlight.max = 100; /* 100% */
--	panel->backlight.level = DIV_ROUND_UP(
--				 pwm_get_duty_cycle(panel->backlight.pwm) * 100,
--				 CRC_PMIC_PWM_PERIOD_NS);
-+	pwm_get_state(panel->backlight.pwm, &pstate);
-+	panel->backlight.level = DIV_ROUND_UP(pstate.duty_cycle * 100,
-+					      pstate.period);
- 	panel->backlight.enabled = panel->backlight.level != 0;
- 
- 	return 0;
 -- 
-2.5.0
+2.7.0
 

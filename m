@@ -1,46 +1,98 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:43 +0000
-Subject: [PATCH v5 20/46] pwm: add information about polarity, duty cycle and period to debugfs
-Message-Id: <1459368249-13241-21-git-send-email-boris.brezillon@free-electrons.com>
+From: Shashank Sharma <shashank.sharma@intel.com>
+Date: Fri, 25 Mar 2016 08:29:32 +0000
+Subject: [PATCH 2/5] drm: Add aspect ratio parsing in DRM layer
+Message-Id: <1458893855-3930-3-git-send-email-shashank.sharma@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+References: <1458893855-3930-1-git-send-email-shashank.sharma@intel.com>
+In-Reply-To: <1458893855-3930-1-git-send-email-shashank.sharma@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, airlied@linux.ie, linux-fbdev@vger.kernel.org
+Cc: daniel.vetter@intel.com, intel-gfx@lists.freedesktop.org, plagnioj@jcrosoft.com
 
-From: Heiko St=C3=BCbner <heiko@sntech.de>
+Current DRM layer functions dont parse aspect ratio information
+while converting a user mode->kernel mode or viceversa. This
+causes modeset to pick mode with wrong aspect ratio, eventually
+cauing failures in HDMI compliance test cases, due to wrong VIC.
 
-The pwm-states make it possible to also output the polarity, duty cycle
-and period information in the debugfs pwm summary-outout.
-This makes it easier to gather overview information about pwms without
-needing to walk through the sysfs attributes of every pwm.
+This patch adds aspect ratio information in DRM's mode conversion
+and mode comparision functions, to make sure kernel picks mode
+with right aspect ratio (as per the VIC).
 
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Shashank Sharma <shashank.sharma@intel.com>
+Signed-off-by: Lin, Jia <lin.a.jia@intel.com>
+Signed-off-by: Akashdeep Sharma <akashdeep.sharma@intel.com>
 ---
- drivers/pwm/core.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/gpu/drm/drm_modes.c | 34 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 34 insertions(+)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index c2b1569..9a83840 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -894,6 +894,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct=
- seq_file *s)
- 		if (pstate.enabled)
- 			seq_puts(s, " enabled");
-=20
-+		seq_printf(s, " period:%uns", pstate.period);
-+		seq_printf(s, " duty:%uns", pstate.duty_cycle);
-+		seq_printf(s, " polarity:%s",
-+			   pstate.polarity ? "inverse" : "normal");
+diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
+index f7448a5..6e66136 100644
+--- a/drivers/gpu/drm/drm_modes.c
++++ b/drivers/gpu/drm/drm_modes.c
+@@ -939,6 +939,9 @@ bool drm_mode_equal_no_clocks(const struct drm_display_mode *mode1, const struct
+ 	    (mode2->flags & DRM_MODE_FLAG_3D_MASK))
+ 		return false;
+ 
++	if (mode1->picture_aspect_ratio != mode2->picture_aspect_ratio)
++		return false;
 +
- 		seq_puts(s, "\n");
- 	}
+ 	return drm_mode_equal_no_clocks_no_stereo(mode1, mode2);
  }
---=20
-2.5.0
+ EXPORT_SYMBOL(drm_mode_equal_no_clocks);
+@@ -967,6 +970,7 @@ bool drm_mode_equal_no_clocks_no_stereo(const struct drm_display_mode *mode1,
+ 	    mode1->vsync_end = mode2->vsync_end &&
+ 	    mode1->vtotal = mode2->vtotal &&
+ 	    mode1->vscan = mode2->vscan &&
++	    mode1->picture_aspect_ratio = mode2->picture_aspect_ratio &&
+ 	    (mode1->flags & ~DRM_MODE_FLAG_3D_MASK) =
+ 	     (mode2->flags & ~DRM_MODE_FLAG_3D_MASK))
+ 		return true;
+@@ -1469,6 +1473,22 @@ void drm_mode_convert_to_umode(struct drm_mode_modeinfo *out,
+ 	out->vrefresh = in->vrefresh;
+ 	out->flags = in->flags;
+ 	out->type = in->type;
++	out->flags &= ~DRM_MODE_FLAG_PARMASK;
++
++	switch (in->picture_aspect_ratio) {
++	case HDMI_PICTURE_ASPECT_4_3:
++		out->flags |= DRM_MODE_FLAG_PAR4_3;
++		break;
++	case HDMI_PICTURE_ASPECT_16_9:
++		out->flags |= DRM_MODE_FLAG_PAR16_9;
++		break;
++	case HDMI_PICTURE_ASPECT_NONE:
++	case HDMI_PICTURE_ASPECT_RESERVED:
++	default:
++		out->flags |= DRM_MODE_FLAG_PARNONE;
++		break;
++	}
++
+ 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
+ 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
+ }
+@@ -1514,6 +1534,20 @@ int drm_mode_convert_umode(struct drm_display_mode *out,
+ 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
+ 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
+ 
++	/* Clearing picture aspect ratio bits from out flags */
++	out->flags &= ~DRM_MODE_FLAG_PARMASK;
++
++	switch (in->flags & DRM_MODE_FLAG_PARMASK) {
++	case DRM_MODE_FLAG_PAR4_3:
++		out->picture_aspect_ratio |= HDMI_PICTURE_ASPECT_4_3;
++		break;
++	case DRM_MODE_FLAG_PAR16_9:
++		out->picture_aspect_ratio |= HDMI_PICTURE_ASPECT_16_9;
++		break;
++	default:
++		out->picture_aspect_ratio = HDMI_PICTURE_ASPECT_NONE;
++	}
++
+ 	out->status = drm_mode_validate_basic(out);
+ 	if (out->status != MODE_OK)
+ 		goto out;
+-- 
+1.9.1
 

@@ -1,101 +1,49 @@
-From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Date: Wed, 23 Mar 2016 15:25:42 +0000
-Subject: Problems using fb_deferred_io with drm_fb_cma_helper
-Message-Id: <56F2B576.5080508@tronnes.org>
+From: Deepak M <m.deepak@intel.com>
+Date: Mon, 28 Mar 2016 09:40:47 +0000
+Subject: [PATCH 1/5] drm: Add new DCS commands in the enum list
+Message-Id: <1459157327-2443-1-git-send-email-m.deepak@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
+Cc: Deepak M <m.deepak@intel.com>, Andrzej Hajda <a.hajda@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <ville.syrjala@linux.intel.com>, Daniel Vetter <daniel.vetter@intel.com>
 
-I'm trying to add deferred io support to=20
-drivers/gpu/drm/drm_gem_cma_helper.c.
-This is a fbdev helper for DRM.
+Adding new DCS commands which are specified in the
+DCS 1.3 spec related to CABC.
 
-The first problem is that fb_deferred_io_page() requires either a vmalloc
-address or a physical address:
+v2: Sorted the Macro`s by value (Andrzej)
 
-         if (is_vmalloc_addr(screen_base + offs))
-                 page =3D vmalloc_to_page(screen_base + offs);
-         else
-                 page =3D pfn_to_page((info->fix.smem_start + offs) >>=20
-PAGE_SHIFT);
+Cc: Andrzej Hajda <a.hajda@samsung.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@intel.com>
+Suggested-by: Jani Nikula <jani.nikula@intel.com>
+Signed-off-by: Deepak M <m.deepak@intel.com>
+---
+ include/video/mipi_display.h | 8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-However drm_fb_cma_helper allocates memory this way:
-
-         cma_obj->vaddr =3D dma_alloc_writecombine(drm->dev, size,
-                         &cma_obj->paddr, GFP_KERNEL | __GFP_NOWARN);
-
-The name paddr is somewhat misleading here since this is the device address
-which isn't always the same as the physical address (Raspberry Pi). Is
-there a way to turn the virtual address into a physical one which will work
-on all architectures?
-
-I use __va() now, but that is marked as not for use by drivers in
-arch/arm/include/asm/memory.h (the same goes for virt_to_phys).
-
-Maybe this is valid for all? page_to_phys(virt_to_page(x))
-
-I have looked at all the users of fb_deferred_io_init() and found only
-3 drivers that doesn't use a vmalloc screen buffer:
-
-drivers/gpu/drm/udl/udl_fb.c:
-     obj->vmapping =3D vmap(obj->pages, page_count, 0, PAGE_KERNEL);
-         info->screen_base =3D ufbdev->ufb.obj->vmapping;
-         info->fix.smem_start =3D (unsigned long)ufbdev->ufb.obj->vmapping;
-Since it uses vmap() I guess it is_vmalloc_addr().
-
-drivers/video/fbdev/sh_mobile_lcdcfb.c:
-         ch->fb_mem =3D dma_alloc_coherent(dev, ch->fb_size, &ch->dma_handl=
-e,
-                                         GFP_KERNEL);
-         info->screen_base =3D ch->fb_mem;
-         info->fix.smem_start =3D ch->dma_handle;
-It uses dma_mmap_coherent() in it's fb_mmap function, but nothing special
-with it's deferred_io use.
-
-drivers/video/fbdev/ssd1307fb.c:
-         vmem =3D (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO,
-                                         get_order(vmem_size));
-         info->screen_base =3D (u8 __force __iomem *)vmem;
-         info->fix.smem_start =3D __pa(vmem);
-
-So maybe this could be possible:
-
-  static struct page *fb_deferred_io_page(struct fb_info *info, unsigned=20
-long offs)
-  {
-      void *screen_base =3D (void __force *) info->screen_base;
-      struct page *page;
-
-      if (is_vmalloc_addr(screen_base + offs))
-          page =3D vmalloc_to_page(screen_base + offs);
-      else
--        page =3D pfn_to_page((info->fix.smem_start + offs) >> PAGE_SHIFT);
-+        page =3D virt_to_page(screen_base + offs);
-
-      return page;
-  }
-
-
-The second problem I'm facing is that I get short horizontal lines that have
-old pixels. My problem goes away if I add this to fb_deferred_io_mmap():
-
-         vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
-
-Is there a way to add this to fb_deferred_io_mmap() with some kind of if
-statement, or perhaps export the function so I can use it like this:
-
-static int drm_fbdev_cma_defio_mmap(struct fb_info *info,
-                                     struct vm_area_struct *vma)
-{
-         fb_deferred_io_mmap(info, vma);
-         vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
-
-         return 0;
-}
-
-
-Thanks,
-Noralf Tr=C3=B8nnes
+diff --git a/include/video/mipi_display.h b/include/video/mipi_display.h
+index ddcc8ca..6831c84 100644
+--- a/include/video/mipi_display.h
++++ b/include/video/mipi_display.h
+@@ -117,6 +117,14 @@ enum {
+ 	MIPI_DCS_GET_SCANLINE		= 0x45,
+ 	MIPI_DCS_READ_DDB_START		= 0xA1,
+ 	MIPI_DCS_READ_DDB_CONTINUE	= 0xA8,
++	MIPI_DCS_SET_DISPLAY_BRIGHTNESS = 0x51, /*Spec 1.3*/
++	MIPI_DCS_GET_DISPLAY_BRIGHTNESS = 0x52, /*Spec 1.3*/
++	MIPI_DCS_WRITE_CONTROL_DISPLAY  = 0x53, /*Spec 1.3*/
++	MIPI_DCS_GET_CONTROL_DISPLAY	= 0x54, /*Spec 1.3*/
++	MIPI_DCS_WRITE_POWER_SAVE	= 0x55, /*Spec 1.3*/
++	MIPI_DCS_GET_POWER_SAVE		= 0x56, /*Spec 1.3*/
++	MIPI_DCS_SET_CABC_MIN_BRIGHTNESS = 0x5E, /*Spec 1.3*/
++	MIPI_DCS_GET_CABC_MIN_BRIGHTNESS = 0x5F, /*Spec 1.3*/
+ };
+ 
+ /* MIPI DCS pixel formats */
+-- 
+1.9.1
 

@@ -1,66 +1,37 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:05 +0000
-Subject: [PATCH v5 42/46] backlight: lp8788: switch to the atomic PWM API
-Message-Id: <1459368249-13241-43-git-send-email-boris.brezillon@free-electrons.com>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 29 Mar 2016 16:53:23 +0000
+Subject: [PATCH] staging: sm750fb: initialize max_d to maximum D value of 6
+Message-Id: <1459270403-15811-1-git-send-email-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
+Cc: linux-kernel@vger.kernel.org
 
-pwm_config/enable/disable() have been deprecated and should be replaced
-by pwm_apply_state().
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+max_d is not initialized and should be set to the largest D
+value of 6.
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/backlight/lp8788_bl.c | 17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
-index 5d583d7..521c730 100644
---- a/drivers/video/backlight/lp8788_bl.c
-+++ b/drivers/video/backlight/lp8788_bl.c
-@@ -124,16 +124,13 @@ static int lp8788_backlight_configure(struct lp8788_bl *bl)
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 95f7cae..f80ee77 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -306,7 +306,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 	unsigned int input, request;
+ 	unsigned int tmpClock, ret;
+ 	const int max_OD = 3;
+-	int max_d;
++	int max_d = 6;
  
- static void lp8788_pwm_ctrl(struct lp8788_bl *bl, int br, int max_br)
- {
--	unsigned int period;
--	unsigned int duty;
- 	struct device *dev;
-+	struct pwm_state pstate;
- 	struct pwm_device *pwm;
- 
- 	if (!bl->pdata)
- 		return;
- 
--	period = bl->pdata->period_ns;
--	duty = br * period / max_br;
- 	dev = bl->lp->dev;
- 
- 	/* request PWM device with the consumer name */
-@@ -147,11 +144,15 @@ static void lp8788_pwm_ctrl(struct lp8788_bl *bl, int br, int max_br)
- 		bl->pwm = pwm;
- 	}
- 
--	pwm_config(bl->pwm, duty, period);
--	if (duty)
--		pwm_enable(bl->pwm);
-+	pwm_get_state(bl->pwm, &pstate);
-+	pstate.period = bl->pdata->period_ns;
-+	pstate.duty_cycle = br * pstate.period / max_br;
-+	if (pstate.duty_cycle)
-+		pstate.enabled = true;
- 	else
--		pwm_disable(bl->pwm);
-+		pstate.enabled = false;
-+
-+	pwm_apply_state(bl->pwm, &pstate);
- }
- 
- static int lp8788_bl_update_status(struct backlight_device *bl_dev)
+ 	if (getChipType() = SM750LE) {
+ 		/* SM750LE don't have prgrammable PLL and M/N values to work on.
 -- 
-2.5.0
+2.7.4
 

@@ -1,98 +1,59 @@
-From: Shashank Sharma <shashank.sharma@intel.com>
-Date: Fri, 25 Mar 2016 08:29:32 +0000
-Subject: [PATCH 2/5] drm: Add aspect ratio parsing in DRM layer
-Message-Id: <1458893855-3930-3-git-send-email-shashank.sharma@intel.com>
+From: Jani Nikula <jani.nikula@linux.intel.com>
+Date: Tue, 29 Mar 2016 12:43:18 +0000
+Subject: Re: [Intel-gfx] [PATCH 1/5] drm: Add new DCS commands in the enum list
+Message-Id: <87poud315l.fsf@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1458893855-3930-1-git-send-email-shashank.sharma@intel.com>
-In-Reply-To: <1458893855-3930-1-git-send-email-shashank.sharma@intel.com>
+References: <1459157327-2443-1-git-send-email-m.deepak@intel.com>
+In-Reply-To: <1459157327-2443-1-git-send-email-m.deepak@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, airlied@linux.ie, linux-fbdev@vger.kernel.org
-Cc: daniel.vetter@intel.com, intel-gfx@lists.freedesktop.org, plagnioj@jcrosoft.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org
+Cc: Deepak M <m.deepak@intel.com>, Daniel Vetter <daniel.vetter@intel.com>, Andrzej Hajda <a.hajda@samsung.com>
 
-Current DRM layer functions dont parse aspect ratio information
-while converting a user mode->kernel mode or viceversa. This
-causes modeset to pick mode with wrong aspect ratio, eventually
-cauing failures in HDMI compliance test cases, due to wrong VIC.
+On Mon, 28 Mar 2016, Deepak M <m.deepak@intel.com> wrote:
+> Adding new DCS commands which are specified in the
+> DCS 1.3 spec related to CABC.
+>
+> v2: Sorted the Macro`s by value (Andrzej)
 
-This patch adds aspect ratio information in DRM's mode conversion
-and mode comparision functions, to make sure kernel picks mode
-with right aspect ratio (as per the VIC).
+Yeah, well, the *new* ones are now sorted, but I'm pretty sure Andrzej
+did mean to keep the whole enum sorted.
 
-Signed-off-by: Shashank Sharma <shashank.sharma@intel.com>
-Signed-off-by: Lin, Jia <lin.a.jia@intel.com>
-Signed-off-by: Akashdeep Sharma <akashdeep.sharma@intel.com>
----
- drivers/gpu/drm/drm_modes.c | 34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
+While at it, the comment could be /* MIPI DCS 1.3 */ to be specific and
+useful.
 
-diff --git a/drivers/gpu/drm/drm_modes.c b/drivers/gpu/drm/drm_modes.c
-index f7448a5..6e66136 100644
---- a/drivers/gpu/drm/drm_modes.c
-+++ b/drivers/gpu/drm/drm_modes.c
-@@ -939,6 +939,9 @@ bool drm_mode_equal_no_clocks(const struct drm_display_mode *mode1, const struct
- 	    (mode2->flags & DRM_MODE_FLAG_3D_MASK))
- 		return false;
- 
-+	if (mode1->picture_aspect_ratio != mode2->picture_aspect_ratio)
-+		return false;
-+
- 	return drm_mode_equal_no_clocks_no_stereo(mode1, mode2);
- }
- EXPORT_SYMBOL(drm_mode_equal_no_clocks);
-@@ -967,6 +970,7 @@ bool drm_mode_equal_no_clocks_no_stereo(const struct drm_display_mode *mode1,
- 	    mode1->vsync_end = mode2->vsync_end &&
- 	    mode1->vtotal = mode2->vtotal &&
- 	    mode1->vscan = mode2->vscan &&
-+	    mode1->picture_aspect_ratio = mode2->picture_aspect_ratio &&
- 	    (mode1->flags & ~DRM_MODE_FLAG_3D_MASK) =
- 	     (mode2->flags & ~DRM_MODE_FLAG_3D_MASK))
- 		return true;
-@@ -1469,6 +1473,22 @@ void drm_mode_convert_to_umode(struct drm_mode_modeinfo *out,
- 	out->vrefresh = in->vrefresh;
- 	out->flags = in->flags;
- 	out->type = in->type;
-+	out->flags &= ~DRM_MODE_FLAG_PARMASK;
-+
-+	switch (in->picture_aspect_ratio) {
-+	case HDMI_PICTURE_ASPECT_4_3:
-+		out->flags |= DRM_MODE_FLAG_PAR4_3;
-+		break;
-+	case HDMI_PICTURE_ASPECT_16_9:
-+		out->flags |= DRM_MODE_FLAG_PAR16_9;
-+		break;
-+	case HDMI_PICTURE_ASPECT_NONE:
-+	case HDMI_PICTURE_ASPECT_RESERVED:
-+	default:
-+		out->flags |= DRM_MODE_FLAG_PARNONE;
-+		break;
-+	}
-+
- 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
- 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
- }
-@@ -1514,6 +1534,20 @@ int drm_mode_convert_umode(struct drm_display_mode *out,
- 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
- 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
- 
-+	/* Clearing picture aspect ratio bits from out flags */
-+	out->flags &= ~DRM_MODE_FLAG_PARMASK;
-+
-+	switch (in->flags & DRM_MODE_FLAG_PARMASK) {
-+	case DRM_MODE_FLAG_PAR4_3:
-+		out->picture_aspect_ratio |= HDMI_PICTURE_ASPECT_4_3;
-+		break;
-+	case DRM_MODE_FLAG_PAR16_9:
-+		out->picture_aspect_ratio |= HDMI_PICTURE_ASPECT_16_9;
-+		break;
-+	default:
-+		out->picture_aspect_ratio = HDMI_PICTURE_ASPECT_NONE;
-+	}
-+
- 	out->status = drm_mode_validate_basic(out);
- 	if (out->status != MODE_OK)
- 		goto out;
+>
+> Cc: Andrzej Hajda <a.hajda@samsung.com>
+> Cc: Thierry Reding <thierry.reding@gmail.com>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+> Cc: Daniel Vetter <daniel.vetter@intel.com>
+> Suggested-by: Jani Nikula <jani.nikula@intel.com>
+> Signed-off-by: Deepak M <m.deepak@intel.com>
+> ---
+>  include/video/mipi_display.h | 8 ++++++++
+>  1 file changed, 8 insertions(+)
+>
+> diff --git a/include/video/mipi_display.h b/include/video/mipi_display.h
+> index ddcc8ca..6831c84 100644
+> --- a/include/video/mipi_display.h
+> +++ b/include/video/mipi_display.h
+> @@ -117,6 +117,14 @@ enum {
+>  	MIPI_DCS_GET_SCANLINE		= 0x45,
+>  	MIPI_DCS_READ_DDB_START		= 0xA1,
+>  	MIPI_DCS_READ_DDB_CONTINUE	= 0xA8,
+> +	MIPI_DCS_SET_DISPLAY_BRIGHTNESS = 0x51, /*Spec 1.3*/
+> +	MIPI_DCS_GET_DISPLAY_BRIGHTNESS = 0x52, /*Spec 1.3*/
+> +	MIPI_DCS_WRITE_CONTROL_DISPLAY  = 0x53, /*Spec 1.3*/
+> +	MIPI_DCS_GET_CONTROL_DISPLAY	= 0x54, /*Spec 1.3*/
+> +	MIPI_DCS_WRITE_POWER_SAVE	= 0x55, /*Spec 1.3*/
+> +	MIPI_DCS_GET_POWER_SAVE		= 0x56, /*Spec 1.3*/
+> +	MIPI_DCS_SET_CABC_MIN_BRIGHTNESS = 0x5E, /*Spec 1.3*/
+> +	MIPI_DCS_GET_CABC_MIN_BRIGHTNESS = 0x5F, /*Spec 1.3*/
+>  };
+>  
+>  /* MIPI DCS pixel formats */
+
 -- 
-1.9.1
-
+Jani Nikula, Intel Open Source Technology Center

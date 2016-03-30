@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:00 +0000
-Subject: [PATCH v5 37/46] input: misc: max8997: switch to the atomic PWM API
-Message-Id: <1459368249-13241-38-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:52 +0000
+Subject: [PATCH v5 29/46] regulator: pwm: properly initialize the ->state field
+Message-Id: <1459368249-13241-30-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -11,62 +11,67 @@ Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-pwm_config/enable/disable() have been deprecated and should be replaced
-by pwm_apply_state().
+The ->state field is currently initialized to 0, thus referencing the
+voltage selector at index 0, which might not reflect the current voltage
+value.
+If possible, retrieve the current voltage selector from the PWM state, else
+return -EINVAL.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Tested-by: Heiko Stuebner <heiko@sntech.de>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/input/misc/max8997_haptic.c | 23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
+ drivers/regulator/pwm-regulator.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-diff --git a/drivers/input/misc/max8997_haptic.c b/drivers/input/misc/max8997_haptic.c
-index a806ba3..fcc0eb7 100644
---- a/drivers/input/misc/max8997_haptic.c
-+++ b/drivers/input/misc/max8997_haptic.c
-@@ -72,8 +72,12 @@ static int max8997_haptic_set_duty_cycle(struct max8997_haptic *chip)
- 	int ret = 0;
- 
- 	if (chip->mode = MAX8997_EXTERNAL_MODE) {
--		unsigned int duty = chip->pwm_period * chip->level / 100;
--		ret = pwm_config(chip->pwm, duty, chip->pwm_period);
-+		struct pwm_state pstate;
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index 42cc312..9374796 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -48,10 +48,35 @@ struct pwm_voltages {
+ /**
+  * Voltage table call-backs
+  */
++static void pwm_regulator_init_state(struct regulator_dev *rdev)
++{
++	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
++	struct pwm_state pwm_state;
++	unsigned int dutycycle;
++	int i;
 +
-+		pwm_get_state(chip->pwm, &pstate);
-+		pstate.period = chip->pwm_period;
-+		pstate.duty_cycle = chip->pwm_period * chip->level / 100;
-+		ret = pwm_apply_state(chip->pwm, &pstate);
- 	} else {
- 		int i;
- 		u8 duty_index = 0;
-@@ -188,7 +192,11 @@ static void max8997_haptic_enable(struct max8997_haptic *chip)
- 		}
- 		max8997_haptic_configure(chip);
- 		if (chip->mode = MAX8997_EXTERNAL_MODE) {
--			error = pwm_enable(chip->pwm);
-+			struct pwm_state pstate;
++	pwm_get_state(drvdata->pwm, &pwm_state);
 +
-+			pwm_get_state(chip->pwm, &pstate);
-+			pstate.enabled = true;
-+			error = pwm_apply_state(chip->pwm, &pstate);
- 			if (error) {
- 				dev_err(chip->dev, "Failed to enable PWM\n");
- 				regulator_disable(chip->regulator);
-@@ -209,8 +217,13 @@ static void max8997_haptic_disable(struct max8997_haptic *chip)
- 	if (chip->enabled) {
- 		chip->enabled = false;
- 		max8997_haptic_configure(chip);
--		if (chip->mode = MAX8997_EXTERNAL_MODE)
--			pwm_disable(chip->pwm);
-+		if (chip->mode = MAX8997_EXTERNAL_MODE) {
-+			struct pwm_state pstate;
++	if (!pwm_state.period)
++		return;
 +
-+			pwm_get_state(chip->pwm, &pstate);
-+			pstate.enabled = false;
-+			pwm_apply_state(chip->pwm, &pstate);
++	dutycycle = (pwm_state.duty_cycle * 100) / pwm_state.period;
++
++	for (i = 0; i < rdev->desc->n_voltages; i++) {
++		if (dutycycle = drvdata->duty_cycle_table[i].dutycycle) {
++			drvdata->state = i;
++			return;
 +		}
- 		regulator_disable(chip->regulator);
++	}
++}
++
+ static int pwm_regulator_get_voltage_sel(struct regulator_dev *rdev)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+ 
++	if (drvdata->state < 0)
++		pwm_regulator_init_state(rdev);
++
+ 	return drvdata->state;
+ }
+ 
+@@ -234,6 +259,7 @@ static int pwm_regulator_init_table(struct platform_device *pdev,
+ 		return ret;
  	}
  
++	drvdata->state			= -EINVAL;
+ 	drvdata->duty_cycle_table	= duty_cycle_table;
+ 	memcpy(&drvdata->ops, &pwm_regulator_voltage_table_ops,
+ 	       sizeof(drvdata->ops));
 -- 
 2.5.0
 

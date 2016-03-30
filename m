@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:09 +0000
-Subject: [PATCH v5 46/46] ARM: s3c24xx: rx1950: switch to the atomic PWM API
-Message-Id: <1459368249-13241-47-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:04:01 +0000
+Subject: [PATCH v5 38/46] input: misc: pwm-beeper: switch to the atomic PWM API
+Message-Id: <1459368249-13241-39-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -11,58 +11,106 @@ Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Replace pwm_disable/enable/config() by pwm_apply_state().
+pwm_config/enable/disable() have been deprecated and should be replaced
+by pwm_apply_state().
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- arch/arm/mach-s3c24xx/mach-rx1950.c | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ drivers/input/misc/pwm-beeper.c | 46 +++++++++++++++++++++++++++--------------
+ 1 file changed, 31 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mach-s3c24xx/mach-rx1950.c b/arch/arm/mach-s3c24xx/mach-rx1950.c
-index 774c982..2dc9487 100644
---- a/arch/arm/mach-s3c24xx/mach-rx1950.c
-+++ b/arch/arm/mach-s3c24xx/mach-rx1950.c
-@@ -384,10 +384,15 @@ static struct pwm_device *lcd_pwm;
- 
- static void rx1950_lcd_power(int enable)
+diff --git a/drivers/input/misc/pwm-beeper.c b/drivers/input/misc/pwm-beeper.c
+index f2261ab..36c9897 100644
+--- a/drivers/input/misc/pwm-beeper.c
++++ b/drivers/input/misc/pwm-beeper.c
+@@ -34,7 +34,7 @@ static int pwm_beeper_event(struct input_dev *input,
  {
+ 	int ret = 0;
+ 	struct pwm_beeper *beeper = input_get_drvdata(input);
+-	unsigned long period;
 +	struct pwm_state pstate;
- 	int i;
- 	static int enabled;
-+
- 	if (enabled = enable)
- 		return;
-+
-+	pwm_get_state(lcd_pwm, &pstate);
-+
- 	if (!enable) {
  
- 		/* GPC11-GPC15->OUTPUT */
-@@ -433,15 +438,21 @@ static void rx1950_lcd_power(int enable)
+ 	if (type != EV_SND || value < 0)
+ 		return -EINVAL;
+@@ -49,19 +49,22 @@ static int pwm_beeper_event(struct input_dev *input,
+ 		return -EINVAL;
+ 	}
  
- 		/* GPB1->OUTPUT, GPB1->0 */
- 		gpio_direction_output(S3C2410_GPB(1), 0);
--		pwm_config(lcd_pwm, 0, LCD_PWM_PERIOD);
++	pwm_get_state(beeper->pwm, &pstate);
 +
+ 	if (value = 0) {
+-		pwm_disable(beeper->pwm);
 +		pstate.enabled = false;
-+		pstate.period = LCD_PWM_PERIOD;
-+		pstate.duty_cycle = 0;
-+		pwm_apply_state(lcd_pwm, &pstate);
- 		pwm_disable(lcd_pwm);
- 
- 		/* GPC0->0, GPC10->0 */
- 		gpio_direction_output(S3C2410_GPC(0), 0);
- 		gpio_direction_output(S3C2410_GPC(10), 0);
  	} else {
--		pwm_config(lcd_pwm, LCD_PWM_DUTY, LCD_PWM_PERIOD);
--		pwm_enable(lcd_pwm);
-+		pstate.enabled = true;
-+		pstate.period = LCD_PWM_PERIOD;
-+		pstate.duty_cycle = LCD_PWM_DUTY;
-+		pwm_apply_state(lcd_pwm, &pstate);
+-		period = HZ_TO_NANOSECONDS(value);
+-		ret = pwm_config(beeper->pwm, period / 2, period);
+-		if (ret)
+-			return ret;
+-		ret = pwm_enable(beeper->pwm);
+-		if (ret)
+-			return ret;
+-		beeper->period = period;
++		pstate.enabled = false;
++		pstate.period = HZ_TO_NANOSECONDS(value);
++		pstate.duty_cycle = pstate.period / 2;
+ 	}
  
- 		gpio_direction_output(S3C2410_GPC(0), 1);
- 		gpio_direction_output(S3C2410_GPC(5), 1);
++	ret = pwm_apply_state(beeper->pwm, &pstate);
++	if (ret)
++		return ret;
++
++	beeper->period = value ? pstate.period : 0;
++
+ 	return 0;
+ }
+ 
+@@ -132,10 +135,13 @@ err_free:
+ static int pwm_beeper_remove(struct platform_device *pdev)
+ {
+ 	struct pwm_beeper *beeper = platform_get_drvdata(pdev);
++	struct pwm_state pstate;
+ 
+ 	input_unregister_device(beeper->input);
+ 
+-	pwm_disable(beeper->pwm);
++	pwm_get_state(beeper->pwm, &pstate);
++	pstate.enabled = false;
++	pwm_apply_state(beeper->pwm, &pstate);
+ 	pwm_free(beeper->pwm);
+ 
+ 	kfree(beeper);
+@@ -147,8 +153,13 @@ static int __maybe_unused pwm_beeper_suspend(struct device *dev)
+ {
+ 	struct pwm_beeper *beeper = dev_get_drvdata(dev);
+ 
+-	if (beeper->period)
+-		pwm_disable(beeper->pwm);
++	if (beeper->period) {
++		struct pwm_state pstate;
++
++		pwm_get_state(beeper->pwm, &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(beeper->pwm, &pstate);
++	}
+ 
+ 	return 0;
+ }
+@@ -158,8 +169,13 @@ static int __maybe_unused pwm_beeper_resume(struct device *dev)
+ 	struct pwm_beeper *beeper = dev_get_drvdata(dev);
+ 
+ 	if (beeper->period) {
+-		pwm_config(beeper->pwm, beeper->period / 2, beeper->period);
+-		pwm_enable(beeper->pwm);
++		struct pwm_state pstate;
++
++		pwm_get_state(beeper->pwm, &pstate);
++		pstate.period = beeper->period;
++		pstate.duty_cycle = beeper->period / 2;
++		pstate.enabled = true;
++		pwm_apply_state(beeper->pwm, &pstate);
+ 	}
+ 
+ 	return 0;
 -- 
 2.5.0
 

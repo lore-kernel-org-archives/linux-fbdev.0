@@ -1,35 +1,75 @@
-From: Wang Hongcheng <annie.wang@amd.com>
-Date: Mon, 14 Mar 2016 02:29:09 +0000
-Subject: [PATCH v2] video: AMBA CLCD: Remove unncessary include in amba-clcd.c
-Message-Id: <1457922549-2610-1-git-send-email-annie.wang@amd.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:34 +0000
+Subject: [PATCH v5 11/46] regulator: pwm: use pwm_get_args() where appropriate
+Message-Id: <1459368249-13241-12-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@alien8.de>, SPG_Linux_Kernel <SPG_Linux_Kernel@amd.com>
-Cc: Wang Hongcheng <annie.wang@amd.com>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-The header file asm/sizes.h is unnecessary.
-And it can also be compiled under X86 arch after the removal.
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
 
-Signed-off-by: Wang Hongcheng <annie.wang@amd.com>
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
+
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/amba-clcd.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/regulator/pwm-regulator.c | 14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 9362424..1a1ed80 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -34,8 +34,6 @@
- #include <video/of_display_timing.h>
- #include <video/videomode.h>
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index 4689d62..9154c47 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -59,16 +59,16 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
+ 					 unsigned selector)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+-	unsigned int pwm_reg_period;
++	struct pwm_args pargs = { };
+ 	int dutycycle;
+ 	int ret;
  
--#include <asm/sizes.h>
--
- #define to_clcd(info)	container_of(info, struct clcd_fb, fb)
+-	pwm_reg_period = pwm_get_period(drvdata->pwm);
++	pwm_get_args(drvdata->pwm, &pargs);
  
- /* This is limited to 16 characters when displayed by X startup */
+-	dutycycle = (pwm_reg_period *
++	dutycycle = (pargs.period *
+ 		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
+ 
+-	ret = pwm_config(drvdata->pwm, dutycycle, pwm_reg_period);
++	ret = pwm_config(drvdata->pwm, dutycycle, pargs.period);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+@@ -138,13 +138,15 @@ static int pwm_regulator_set_voltage(struct regulator_dev *rdev,
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+ 	unsigned int ramp_delay = rdev->constraints->ramp_delay;
+-	unsigned int period = pwm_get_period(drvdata->pwm);
++	struct pwm_args pargs = { };
+ 	int duty_cycle;
+ 	int ret;
+ 
++	pwm_get_args(drvdata->pwm, &pargs);
+ 	duty_cycle = pwm_voltage_to_duty_cycle_percentage(rdev, min_uV);
+ 
+-	ret = pwm_config(drvdata->pwm, (period / 100) * duty_cycle, period);
++	ret = pwm_config(drvdata->pwm, (pargs.period / 100) * duty_cycle,
++			 pargs.period);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
 -- 
-1.9.1
+2.5.0
 

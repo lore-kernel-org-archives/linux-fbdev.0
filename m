@@ -1,129 +1,50 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 07 Mar 2016 18:29:21 +0000
-Subject: Re: [PATCH 1/5] Subject: video: goldfishfb: add devicetree bindings
-Message-Id: <56DDC881.6060603@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:04:02 +0000
+Subject: [PATCH v5 39/46] leds: pwm: switch to the atomic PWM API
+Message-Id: <1459368249-13241-40-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160226183940.2731.42083.stgit@localhost.localdomain>
- <20160226184146.2731.41848.stgit@localhost.localdomain>
-In-Reply-To: <20160226184146.2731.41848.stgit-bi+AKbBUZKY6gyzm1THtWbp2dZbC/Bob@public.gmane.org>
-To: Alan <alan-VuQAYsv1563Yd54FQh9/CA@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
---ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M
-Content-Type: multipart/mixed; boundary="0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Alan <alan@linux.intel.com>, linux-fbdev@vger.kernel.org,
- plagnioj@jcrosoft.com,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
-Message-ID: <56DDC881.6060603@ti.com>
-Subject: Re: [PATCH 1/5] Subject: video: goldfishfb: add devicetree bindings
-References: <20160226183940.2731.42083.stgit@localhost.localdomain>
- <20160226184146.2731.41848.stgit@localhost.localdomain>
-In-Reply-To: <20160226184146.2731.41848.stgit@localhost.localdomain>
+pwm_config/enable/disable() have been deprecated and should be replaced
+by pwm_apply_state().
 
---0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/leds/leds-pwm.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+index b48231c..f69b222 100644
+--- a/drivers/leds/leds-pwm.c
++++ b/drivers/leds/leds-pwm.c
+@@ -40,13 +40,18 @@ struct led_pwm_priv {
+ static void __led_pwm_set(struct led_pwm_data *led_dat)
+ {
+ 	int new_duty = led_dat->duty;
++	struct pwm_state pstate;
+ 
+-	pwm_config(led_dat->pwm, new_duty, led_dat->period);
++	pwm_get_state(led_dat->pwm, &pstate);
++	pstate.duty_cycle = new_duty;
++	pstate.period = led_dat->period;
+ 
+ 	if (new_duty = 0)
+-		pwm_disable(led_dat->pwm);
++		pstate.enabled = false;
+ 	else
+-		pwm_enable(led_dat->pwm);
++		pstate.enabled = true;
++
++	pwm_apply_state(led_dat->pwm, &pstate);
+ }
+ 
+ static void led_pwm_set(struct led_classdev *led_cdev,
+-- 
+2.5.0
 
-On 26/02/16 20:41, Alan wrote:
-> From: Greg Hackmann <ghackmann@google.com>
->=20
-> Add device tree bindings to the Goldfish frame buffer interface.
->=20
-> Signed-off-by: Greg Hackmann <ghackmann@google.com>
-> Signed-off-by: Jin Qian <jinqian@android.com>
-> Signed-off-by: Alan Cox <alan@linux.intel.com>
-> ---
->  Documentation/devicetree/bindings/goldfish/fb.txt |   17 +++++++++++++=
-++++
->  drivers/video/fbdev/goldfishfb.c                  |    9 ++++++++-
->  2 files changed, 25 insertions(+), 1 deletion(-)
->  create mode 100644 Documentation/devicetree/bindings/goldfish/fb.txt
-
-Device tree bindings should also be sent to the devicetree mailing list.
-
-> diff --git a/Documentation/devicetree/bindings/goldfish/fb.txt b/Docume=
-ntation/devicetree/bindings/goldfish/fb.txt
-> new file mode 100644
-> index 0000000..c7d2d46
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/goldfish/fb.txt
-> @@ -0,0 +1,17 @@
-> +Android Goldfish Framebuffer
-> +
-> +Andorid goldfish framebuffer device generated by android emulator.
-
-Typo there in Android.
-
-> +
-> +Required properties:
-> +
-> +- compatible : should contain "google,goldfish-fb" to match emulator
-> +- reg        : <registers mapping>
-> +- interrupts : <interrupt mapping>
-> +
-> +Example:
-> +
-> +	goldfish_fb@9010000 {
-> +		compatible =3D "google,goldfish-fb";
-> +		reg =3D <0x9010000 0x100>;
-> +		interrupts =3D <0x2>;
-> +	};
-> diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/gol=
-dfishfb.c
-> index 7f6c9e6..f0e651b 100644
-> --- a/drivers/video/fbdev/goldfishfb.c
-> +++ b/drivers/video/fbdev/goldfishfb.c
-> @@ -304,12 +304,19 @@ static int goldfish_fb_remove(struct platform_dev=
-ice *pdev)
->  	return 0;
->  }
-> =20
-> +static const struct of_device_id goldfish_fb_of_match[] =3D {
-> +	{ .compatible =3D "google,goldfish-fb", },
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
-> =20
->  static struct platform_driver goldfish_fb_driver =3D {
->  	.probe		=3D goldfish_fb_probe,
->  	.remove		=3D goldfish_fb_remove,
->  	.driver =3D {
-> -		.name =3D "goldfish_fb"
-> +		.name =3D "goldfish_fb",
-> +		.owner =3D THIS_MODULE,
-> +		.of_match_table =3D goldfish_fb_of_match,
->  	}
->  };
-> =20
->=20
-
-
---0XkHs8j1o2DMM6L5262LlJIwn5VfrEH2u--
-
---ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW3ciBAAoJEPo9qoy8lh71GGoP/R5REm8om+oKfck1zfy+DuNl
-Bu9ywMQYJo290jVDnxoeo9mQmmYibJy1k7Rihq/s/tP9jOMei75kDdOSuJJ+UHAx
-YaLTVFBatA+r7lZmSFMv7Mtt05qJvK8XjPyCtKyFYmeoG67nMwk/Z+k7NTGqXH+Q
-MNH8Xc2rLz2GGUd7cX+nIKTCslFiZPRA5LWb8q83IXmFygJz6Iqz7f3PM8Iz03Zw
-WYDhMzaW37s1xcac6d+WQ58Oj9Dv91aOJFRN+m7GoI9WjlFriqwgsqfo2SGw4MXu
-K8r2W06qEXSlMoqeAr+QcwV0lrCqwaNCnjYRDbw33jz1Fjuw66FSt18iCN2F/lQr
-/0FQ+SZtx1vmHT7cAnRy0Hjwd9oUWEq9o/ElWFdIY+XMTpO22Oi38txcloTn3m8n
-y8IdeJGjHLscEnzvvX2hCdYa7wFxnAhgmU14EJZnJv7t83uFHFWFxZcCqp/6m3jq
-FNHw0/2ggSdULHat0D2FXhUo3mqhntZuuH268KBXNlbdXcpI+OfM/tO4JGceUy4v
-7pF4eSR9Exm7RdwyIEyVy1XdLwyfNzuNtDXp168IkedpBjAZCLiXyan1/yvgCXRN
-TErlT/OzHmmAS9goTvclSWqOKvtIsQTTh5OSOGqnHv80P9e27lm0QX2QMAgdgnoF
-7pw/NwWdtphzcFxPFsBq
-=rfKG
------END PGP SIGNATURE-----
-
---ClVIm2AiWOlI1EUhGqGk0etOfPia2te6M--

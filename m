@@ -1,162 +1,99 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 11 Mar 2016 11:26:23 +0000
-Subject: Re: [PATCH 3/3] video: fbdev: imxfb: add some error handling
-Message-Id: <56E2AB5F.1020806@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="s3BfEwAH47gUKK7Gt7BqDGMDLwvANgjKV"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:55 +0000
+Subject: [PATCH v5 32/46] pwm: deprecate pwm_config(), pwm_enable() and pwm_disable()
+Message-Id: <1459368249-13241-33-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de>
-To: linux-arm-kernel@lists.infradead.org
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
---s3BfEwAH47gUKK7Gt7BqDGMDLwvANgjKV
-Content-Type: multipart/mixed; boundary="3tMuhPt6eGpIv9lPrFQGfP98mh49HU6pk"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>,
- kernel@pengutronix.de,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Message-ID: <56E2AB5F.1020806@ti.com>
-Subject: Re: [PATCH 3/3] video: fbdev: imxfb: add some error handling
-References: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de>
+Prefix those function as deprecated to encourage all existing users to
+switch to pwm_apply_state().
 
---3tMuhPt6eGpIv9lPrFQGfP98mh49HU6pk
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ include/linux/pwm.h | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 4aad4eb..9bac10f 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -225,8 +225,8 @@ int pwm_apply_state(struct pwm_device *pwm, struct pwm_state *state);
+  *
+  * Returns: 0 on success or a negative error code on failure.
+  */
+-static inline int pwm_config(struct pwm_device *pwm, int duty_ns,
+-			     int period_ns)
++static inline int __deprecated pwm_config(struct pwm_device *pwm, int duty_ns,
++					  int period_ns)
+ {
+ 	struct pwm_state pstate;
+ 
+@@ -252,8 +252,8 @@ static inline int pwm_config(struct pwm_device *pwm, int duty_ns,
+  *
+  * Returns: 0 on success or a negative error code on failure.
+  */
+-static inline int pwm_set_polarity(struct pwm_device *pwm,
+-				   enum pwm_polarity polarity)
++static inline int __deprecated pwm_set_polarity(struct pwm_device *pwm,
++						enum pwm_polarity polarity)
+ {
+ 	struct pwm_state pstate;
+ 
+@@ -284,7 +284,7 @@ static inline int pwm_set_polarity(struct pwm_device *pwm,
+  *
+  * Returns: 0 on success or a negative error code on failure.
+  */
+-static inline int pwm_enable(struct pwm_device *pwm)
++static inline int __deprecated pwm_enable(struct pwm_device *pwm)
+ {
+ 	struct pwm_state pstate;
+ 
+@@ -303,7 +303,7 @@ static inline int pwm_enable(struct pwm_device *pwm)
+  * pwm_disable() - stop a PWM output toggling
+  * @pwm: PWM device
+  */
+-static inline void pwm_disable(struct pwm_device *pwm)
++static inline void __deprecated pwm_disable(struct pwm_device *pwm)
+ {
+ 	struct pwm_state pstate;
+ 
+@@ -360,24 +360,24 @@ static inline int pwm_apply_state(struct pwm_device *pwm,
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int pwm_config(struct pwm_device *pwm, int duty_ns,
+-			     int period_ns)
++static inline int __deprecated pwm_config(struct pwm_device *pwm, int duty_ns,
++					  int period_ns)
+ {
+ 	return -EINVAL;
+ }
+ 
+-static inline int pwm_set_polarity(struct pwm_device *pwm,
+-				   enum pwm_polarity polarity)
++static inline int __deprecated pwm_set_polarity(struct pwm_device *pwm,
++						enum pwm_polarity polarity)
+ {
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline int pwm_enable(struct pwm_device *pwm)
++static inline int __deprecated pwm_enable(struct pwm_device *pwm)
+ {
+ 	return -EINVAL;
+ }
+ 
+-static inline void pwm_disable(struct pwm_device *pwm)
++static inline void __deprecated pwm_disable(struct pwm_device *pwm)
+ {
+ }
+ 
+-- 
+2.5.0
 
-On 07/03/16 21:53, Uwe Kleine-K=C3=B6nig wrote:
-> Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
-
-Always have a description in a patch. In trivial cases it can be more or
-less the same as the subject.
-
-> ---
->  drivers/video/fbdev/imxfb.c | 33 ++++++++++++++++++++++++++-------
->  1 file changed, 26 insertions(+), 7 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> index 3dd2824e6773..671b3719db56 100644
-> --- a/drivers/video/fbdev/imxfb.c
-> +++ b/drivers/video/fbdev/imxfb.c
-> @@ -473,8 +473,9 @@ static int imxfb_set_par(struct fb_info *info)
->  	return 0;
->  }
-> =20
-> -static void imxfb_enable_controller(struct imxfb_info *fbi)
-> +static int imxfb_enable_controller(struct imxfb_info *fbi)
->  {
-> +	int ret;
-> =20
->  	if (fbi->enabled)
->  		return;
-> @@ -496,10 +497,27 @@ static void imxfb_enable_controller(struct imxfb_=
-info *fbi)
->  	 */
->  	writel(RMCR_LCDC_EN_MX1, fbi->regs + LCDC_RMCR);
-> =20
-> -	clk_prepare_enable(fbi->clk_ipg);
-> -	clk_prepare_enable(fbi->clk_ahb);
-> -	clk_prepare_enable(fbi->clk_per);
-> +	ret =3D clk_prepare_enable(fbi->clk_ipg);
-> +	if (ret)
-> +		goto err_enable_ipg;
-> +
-> +	ret =3D clk_prepare_enable(fbi->clk_ahb);
-> +	if (ret)
-> +		goto err_enable_ahb;
-> +
-> +	ret =3D clk_prepare_enable(fbi->clk_per);
-> +	if (ret) {
-> +		clk_disable_unprepare(fbi->clk_ahb);
-> +err_enable_ahb:
-> +		clk_disable_unprepare(fbi->clk_ipg);
-> +err_enable_ipg:
-> +		writel(0, fbi->regs + LCDC_RMCR);
-
-Please don't do that =3D). If you use goto, have the labels at the end of=
-
-the function, not in the middle inside a if() block...
-
-> +
-> +		return ret;
-> +	}
-> +
->  	fbi->enabled =3D true;
-> +	return 0;
->  }
-> =20
->  static void imxfb_disable_controller(struct imxfb_info *fbi)
-> @@ -510,8 +528,8 @@ static void imxfb_disable_controller(struct imxfb_i=
-nfo *fbi)
->  	pr_debug("Disabling LCD controller\n");
-> =20
->  	clk_disable_unprepare(fbi->clk_per);
-> -	clk_disable_unprepare(fbi->clk_ipg);
->  	clk_disable_unprepare(fbi->clk_ahb);
-> +	clk_disable_unprepare(fbi->clk_ipg);
-
-This is not error handling. I don't mind it being in the same patch, but
-this change is something to mention in the description.
-
->  	fbi->enabled =3D false;
-> =20
->  	writel(0, fbi->regs + LCDC_RMCR);
-> @@ -520,6 +538,7 @@ static void imxfb_disable_controller(struct imxfb_i=
-nfo *fbi)
->  static int imxfb_blank(int blank, struct fb_info *info)
->  {
->  	struct imxfb_info *fbi =3D info->par;
-> +	int ret =3D 0;;
-
-Extra ;.
-
-> =20
->  	pr_debug("imxfb_blank: blank=3D%d\n", blank);
-> =20
-> @@ -532,10 +551,10 @@ static int imxfb_blank(int blank, struct fb_info =
-*info)
->  		break;
-> =20
->  	case FB_BLANK_UNBLANK:
-> -		imxfb_enable_controller(fbi);
-> +		ret =3D imxfb_enable_controller(fbi);
->  		break;
->  	}
-> -	return 0;
-> +	return ret;
->  }
-> =20
->  static struct fb_ops imxfb_ops =3D {
->=20
-
-
---3tMuhPt6eGpIv9lPrFQGfP98mh49HU6pk--
-
---s3BfEwAH47gUKK7Gt7BqDGMDLwvANgjKV
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW4qtfAAoJEPo9qoy8lh71c50P/Rw9/FmIQ75eMGOsX7QOMu04
-UoqyoXs1tchxJrk4DHYMGUv+E8DNo1RPCBB7Jry9+Fak/Wwk1738HCpaEdY9EucS
-gfJWa9yoMUm9uQt19l56f3ttEBaBDGkgPSIXLNOBhInSTur97mILJLoIhlkDPxo7
-06MAForrp+sJumKh8h32gQtzrxBmtdsbTnIf4xVac8tYSYqGWV/FAPT8h8m1WudC
-YIP/VfVZx+4x4lNHgxAUIIJ+8XVjw56kMc+X84m3O8rBiUioFrpUeOVAdw15+yof
-BK46h1bhq1dwZ86P8c4uFcrpLh87R2gM2s7YPVq1ZeGMPDUIbFUkUh4MLYSDMoWB
-ZiipHYwwn1Xtj6IEi0CD3xm34qmbTn6QFD/rkB3ywio2SIMZ9HG8/vN82D01VNiq
-/GqJXG9k0FHCXQYw04m75d6wRy5rMI9S4rscKKA7kPCaQ/g19npWiUYpvgVSoJUi
-bXeN3fpKKItCHW8DsTFejQk3libhoxeVLjcy3hFm8TpfwWRfaeEJbvvBYk9GaEoZ
-UwPKBaS0lHnwqOatWV03XQ76ai/48K184hKQk9fsGhQReDsvNcT2QgB21gq0eCtk
-/YW+RlcgIDVcRatHtzxz7ASIYuZyqrlOFVYaSxYM4t6QX7ytZi8LCqNx6AWJ+8tn
-dvZlJkXtfWAlHdsiBRTS
-=CxQv
------END PGP SIGNATURE-----
-
---s3BfEwAH47gUKK7Gt7BqDGMDLwvANgjKV--

@@ -1,44 +1,41 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 30 Mar 2016 21:24:10 +0000
-Subject: Re: [PATCH v5 30/46] regulator: pwm: retrieve correct voltage
-Message-Id: <20160330212410.GX2350@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="+1tcKVLXPU0QafK6"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:25 +0000
+Subject: [PATCH v5 02/46] backlight: pwm_bl: remove useless call to pwm_set_period()
+Message-Id: <1459368249-13241-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1459368249-13241-31-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-31-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
+Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@>
 
+The PWM period will be set when calling pwm_config. Remove this useless
+call to pwm_set_period(), which might mess up with the internal PWM state.
 
---+1tcKVLXPU0QafK6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
+ drivers/video/backlight/pwm_bl.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-On Wed, Mar 30, 2016 at 10:03:53PM +0200, Boris Brezillon wrote:
-> The continuous PWM voltage regulator is caching the voltage value in
-> the ->volt_uV field. While most of the time this value should reflect the
-> real voltage, sometime it can be sightly different if the PWM device
-> rounded the set_duty_cycle request.
-> Moreover, this value is not valid until someone has modified the regulator
-> output.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 64f9e1b..a33a290 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -313,10 +313,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	 * via the PWM lookup table.
+ 	 */
+ 	pb->period = pwm_get_period(pb->pwm);
+-	if (!pb->period && (data->pwm_period_ns > 0)) {
++	if (!pb->period && (data->pwm_period_ns > 0))
+ 		pb->period = data->pwm_period_ns;
+-		pwm_set_period(pb->pwm, data->pwm_period_ns);
+-	}
+ 
+ 	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
+ 
+-- 
+2.5.0
 
-Acked-by: Mark Brown <broonie@kernel.org>
-
---+1tcKVLXPU0QafK6
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJW/EP5AAoJECTWi3JdVIfQtmsH/ipnuxlqfguiud0BHLIawruP
-udVbyxUF2cZ988A7zoAajtGLrRz0zNSluNU0PRxG+UJxeSR3AhH3sjFuNzFcLtcj
-TMmiCOeDugMKtX0Zg1PZ7pcjqUhunn6+dsKEgyVxep94s4TujTvzOXpuYNbHsBuD
-eGxym5NCDFRqepzQmD28j02zXOmgOYRK1mOT9tM0Ro7iGFRnkR53yaMpIR2c5aEj
-7axjIkIEtaQNO9GsUPo1xGoG1pd8tVPnugL8mgA3PSJSJXCXm+lVscQd8anK8IZ9
-Nl8qcTaJYIqe9RCo1Fyoi6zlmAGFaQwvf3jQS5+UzGi0T+gpZr0+ja99wawDCAg=
-=m9XJ
------END PGP SIGNATURE-----
-
---+1tcKVLXPU0QafK6--

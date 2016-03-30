@@ -1,58 +1,82 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:04 +0000
-Subject: [PATCH v5 41/46] backlight: lp855x: switch to the atomic PWM API
-Message-Id: <1459368249-13241-42-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:47 +0000
+Subject: [PATCH v5 24/46] pwm: sti: add support for initial state retrieval
+Message-Id: <1459368249-13241-25-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
-Cc: Mike Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@codeaurora.org>, linux-clk@vger.kernel.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Kamil Debski <k.debski@samsung.com>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-sunxi@googlegroups.com, Joachim Eastwood <manabian@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-fbd
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-pwm_config/enable/disable() have been deprecated and should be replaced
-by pwm_apply_state().
+Implement ->get_state() to provide support for initial state retrieval.
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/backlight/lp855x_bl.c | 15 +++++++++------
- 1 file changed, 9 insertions(+), 6 deletions(-)
+ drivers/pwm/pwm-sti.c | 41 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
 
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index daca9e6..5468e7a 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -235,8 +235,7 @@ err:
- 
- static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- {
--	unsigned int period = lp->pdata->period_ns;
--	unsigned int duty = br * period / max_br;
-+	struct pwm_state pstate;
- 	struct pwm_device *pwm;
- 
- 	/* request pwm device with the consumer name */
-@@ -248,11 +247,15 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
- 		lp->pwm = pwm;
- 	}
- 
--	pwm_config(lp->pwm, duty, period);
--	if (duty)
--		pwm_enable(lp->pwm);
-+	pwm_get_state(lp->pwm, &pstate);
-+	pstate.period = lp->pdata->period_ns;
-+	pstate.duty_cycle = br * pstate.period / max_br;
-+	if (pstate.duty_cycle)
-+		pstate.enabled = true;
- 	else
--		pwm_disable(lp->pwm);
-+		pstate.enabled = false;
-+
-+	pwm_apply_state(lp->pwm, &pstate);
+diff --git a/drivers/pwm/pwm-sti.c b/drivers/pwm/pwm-sti.c
+index 92abbd5..0fbca94 100644
+--- a/drivers/pwm/pwm-sti.c
++++ b/drivers/pwm/pwm-sti.c
+@@ -238,6 +238,46 @@ static void sti_pwm_disable(struct pwm_chip *chip, struct pwm_device *pwm)
+ 	mutex_unlock(&pc->sti_pwm_lock);
  }
  
- static int lp855x_bl_update_status(struct backlight_device *bl)
++static void sti_pwm_get_state(struct pwm_chip *chip,
++			      struct pwm_device *pwm,
++			      struct pwm_state *pstate)
++{
++	struct sti_pwm_chip *pc = to_sti_pwmchip(chip);
++	unsigned int regval, prescaler;
++	u64 timens;
++	int ret;
++
++	/* The clock has to be enabled to access PWM registers */
++	ret = clk_enable(pc->clk);
++	if (ret) {
++		dev_err(chip->dev, "Failed to enable PWM clk");
++		return;
++	}
++
++	regmap_field_read(pc->prescale_high, &regval);
++	prescaler = regval << 4;
++	regmap_field_read(pc->prescale_low, &regval);
++	prescaler |= regval;
++
++	timens = (u64)(prescaler + 1) * NSEC_PER_SEC *
++		 (pc->cdata->max_pwm_cnt + 1);
++	do_div(timens, pc->clk_rate);
++
++	pstate->period = timens;
++
++	regmap_read(pc->regmap, STI_DS_REG(pwm->hwpwm), &regval);
++	timens = (u64)(regval + 1) * pstate->period;
++	do_div(timens, pc->cdata->max_pwm_cnt + 1);
++	pstate->duty_cycle = timens;
++
++	regmap_field_read(pc->pwm_en, &regval);
++	pstate->enabled = regval;
++
++	pstate->polarity = PWM_POLARITY_NORMAL;
++
++	clk_disable(pc->clk);
++}
++
+ static void sti_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+ 	struct sti_pwm_chip *pc = to_sti_pwmchip(chip);
+@@ -249,6 +289,7 @@ static const struct pwm_ops sti_pwm_ops = {
+ 	.config = sti_pwm_config,
+ 	.enable = sti_pwm_enable,
+ 	.disable = sti_pwm_disable,
++	.get_state = sti_pwm_get_state,
+ 	.free = sti_pwm_free,
+ 	.owner = THIS_MODULE,
+ };
 -- 
 2.5.0
 

@@ -1,63 +1,107 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Thu, 24 Mar 2016 10:34:29 +0000
-Subject: Re: [Intel-gfx] [PATCH 1/3] drm: Add new DCS commands in the enum list
-Message-Id: <87egb0dv0q.fsf@intel.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:56 +0000
+Subject: [PATCH v5 33/46] pwm: replace pwm_disable() by pwm_apply_state()
+Message-Id: <1459368249-13241-34-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1458813835-7626-1-git-send-email-m.deepak@intel.com>
-In-Reply-To: <1458813835-7626-1-git-send-email-m.deepak@intel.com>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Deepak M <m.deepak@intel.com>, dri-devel@lists.freedesktop.org, David Airlie <airlied@linux.ie>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-On Thu, 24 Mar 2016, Deepak M <m.deepak@intel.com> wrote:
-> Adding new DCS commands which are specified in the
-> DCS 1.3 spec related to CABC.
->
-> Cc: Thierry Reding <thierry.reding@gmail.com>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
-> Cc: Daniel Vetter <daniel.vetter@intel.com>
-> Suggested-by: Jani Nikula <jani.nikula@intel.com>
-> Signed-off-by: Deepak M <m.deepak@intel.com>
+Some PWM drivers are calling the deprecated pwm_disable() function in
+their pwm->free() or pdev->remove() function. Replace those calls by
+the pwm_apply_state().
 
-Deepak, for future reference, please use scripts/get_maintainer.pl to
-see whom you should include for patches touching code outside of i915.
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/pwm/pwm-lpc18xx-sct.c | 7 +++++--
+ drivers/pwm/pwm-lpc32xx.c     | 9 +++++++--
+ drivers/pwm/pwm-spear.c       | 9 +++++++--
+ drivers/pwm/pwm-sti.c         | 9 +++++++--
+ 4 files changed, 26 insertions(+), 8 deletions(-)
 
-The commands added match the MIPI DCS 1.3 spec,
-
-Reviewed-by: Jani Nikula <jani.nikula@intel.com>
-
-Jean-Christophe, Tomi, may I have your acks for merging this via
-drm/i915 tree?
-
-BR,
-Jani.
-
-> ---
->  include/video/mipi_display.h | 8 ++++++++
->  1 file changed, 8 insertions(+)
->
-> diff --git a/include/video/mipi_display.h b/include/video/mipi_display.h
-> index ddcc8ca..bb8195b 100644
-> --- a/include/video/mipi_display.h
-> +++ b/include/video/mipi_display.h
-> @@ -117,6 +117,14 @@ enum {
->  	MIPI_DCS_GET_SCANLINE		= 0x45,
->  	MIPI_DCS_READ_DDB_START		= 0xA1,
->  	MIPI_DCS_READ_DDB_CONTINUE	= 0xA8,
-> +	MIPI_DCS_GET_DISPLAY_BRIGHTNESS = 0x52,
-> +	MIPI_DCS_GET_CABC_MIN_BRIGHTNESS = 0x5F,
-> +	MIPI_DCS_GET_POWER_SAVE		= 0x56,
-> +	MIPI_DCS_GET_CONTROL_DISPLAY	= 0x54,
-> +	MIPI_DCS_SET_DISPLAY_BRIGHTNESS = 0x51,
-> +	MIPI_DCS_SET_CABC_MIN_BRIGHTNESS = 0x5E,
-> +	MIPI_DCS_WRITE_POWER_SAVE	= 0x55,
-> +	MIPI_DCS_WRITE_CONTROL_DISPLAY  = 0x53,
->  };
->  
->  /* MIPI DCS pixel formats */
-
+diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
+index 19dc64c..c4d7cb1 100644
+--- a/drivers/pwm/pwm-lpc18xx-sct.c
++++ b/drivers/pwm/pwm-lpc18xx-sct.c
+@@ -305,9 +305,12 @@ static void lpc18xx_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+ 	struct lpc18xx_pwm_chip *lpc18xx_pwm = to_lpc18xx_pwm_chip(chip);
+ 	struct lpc18xx_pwm_data *lpc18xx_data = pwm_get_chip_data(pwm);
++	struct pwm_state pstate;
+ 
+-	pwm_disable(pwm);
+-	pwm_set_duty_cycle(pwm, 0);
++	pwm_get_state(pwm, &pstate);
++	pstate.duty_cycle = 0;
++	pstate.enabled = false;
++	pwm_apply_state(pwm, &pstate);
+ 	clear_bit(lpc18xx_data->duty_event, &lpc18xx_pwm->event_map);
+ }
+ 
+diff --git a/drivers/pwm/pwm-lpc32xx.c b/drivers/pwm/pwm-lpc32xx.c
+index 4d470c1..95870e0 100644
+--- a/drivers/pwm/pwm-lpc32xx.c
++++ b/drivers/pwm/pwm-lpc32xx.c
+@@ -138,8 +138,13 @@ static int lpc32xx_pwm_remove(struct platform_device *pdev)
+ 	struct lpc32xx_pwm_chip *lpc32xx = platform_get_drvdata(pdev);
+ 	unsigned int i;
+ 
+-	for (i = 0; i < lpc32xx->chip.npwm; i++)
+-		pwm_disable(&lpc32xx->chip.pwms[i]);
++	for (i = 0; i < lpc32xx->chip.npwm; i++) {
++		struct pwm_state pstate;
++
++		pwm_get_state(&lpc32xx->chip.pwms[i], &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(&lpc32xx->chip.pwms[i], &pstate);
++	}
+ 
+ 	return pwmchip_remove(&lpc32xx->chip);
+ }
+diff --git a/drivers/pwm/pwm-spear.c b/drivers/pwm/pwm-spear.c
+index 6c6b44f..2ee4cd5 100644
+--- a/drivers/pwm/pwm-spear.c
++++ b/drivers/pwm/pwm-spear.c
+@@ -233,8 +233,13 @@ static int spear_pwm_remove(struct platform_device *pdev)
+ 	struct spear_pwm_chip *pc = platform_get_drvdata(pdev);
+ 	int i;
+ 
+-	for (i = 0; i < NUM_PWM; i++)
+-		pwm_disable(&pc->chip.pwms[i]);
++	for (i = 0; i < NUM_PWM; i++) {
++		struct pwm_state pstate;
++
++		pwm_get_state(&pc->chip.pwms[i], &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(&pc->chip.pwms[i], &pstate);
++	}
+ 
+ 	/* clk was prepared in probe, hence unprepare it here */
+ 	clk_unprepare(pc->clk);
+diff --git a/drivers/pwm/pwm-sti.c b/drivers/pwm/pwm-sti.c
+index bea1d17..0ec44a8 100644
+--- a/drivers/pwm/pwm-sti.c
++++ b/drivers/pwm/pwm-sti.c
+@@ -435,8 +435,13 @@ static int sti_pwm_remove(struct platform_device *pdev)
+ 	struct sti_pwm_chip *pc = platform_get_drvdata(pdev);
+ 	unsigned int i;
+ 
+-	for (i = 0; i < pc->cdata->num_chan; i++)
+-		pwm_disable(&pc->chip.pwms[i]);
++	for (i = 0; i < pc->cdata->num_chan; i++) {
++		struct pwm_state pstate;
++
++		pwm_get_state(&pc->chip.pwms[i], &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(&pc->chip.pwms[i], &pstate);
++	}
+ 
+ 	clk_unprepare(pc->clk);
+ 
 -- 
-Jani Nikula, Intel Open Source Technology Center
+2.5.0
+

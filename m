@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:52 +0000
-Subject: [PATCH v5 29/46] regulator: pwm: properly initialize the ->state field
-Message-Id: <1459368249-13241-30-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:04:05 +0000
+Subject: [PATCH v5 42/46] backlight: lp8788: switch to the atomic PWM API
+Message-Id: <1459368249-13241-43-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -11,67 +11,56 @@ Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-The ->state field is currently initialized to 0, thus referencing the
-voltage selector at index 0, which might not reflect the current voltage
-value.
-If possible, retrieve the current voltage selector from the PWM state, else
-return -EINVAL.
+pwm_config/enable/disable() have been deprecated and should be replaced
+by pwm_apply_state().
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-Tested-by: Heiko Stuebner <heiko@sntech.de>
-Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/regulator/pwm-regulator.c | 26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+ drivers/video/backlight/lp8788_bl.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
-index 42cc312..9374796 100644
---- a/drivers/regulator/pwm-regulator.c
-+++ b/drivers/regulator/pwm-regulator.c
-@@ -48,10 +48,35 @@ struct pwm_voltages {
- /**
-  * Voltage table call-backs
-  */
-+static void pwm_regulator_init_state(struct regulator_dev *rdev)
-+{
-+	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
-+	struct pwm_state pwm_state;
-+	unsigned int dutycycle;
-+	int i;
-+
-+	pwm_get_state(drvdata->pwm, &pwm_state);
-+
-+	if (!pwm_state.period)
-+		return;
-+
-+	dutycycle = (pwm_state.duty_cycle * 100) / pwm_state.period;
-+
-+	for (i = 0; i < rdev->desc->n_voltages; i++) {
-+		if (dutycycle = drvdata->duty_cycle_table[i].dutycycle) {
-+			drvdata->state = i;
-+			return;
-+		}
-+	}
-+}
-+
- static int pwm_regulator_get_voltage_sel(struct regulator_dev *rdev)
+diff --git a/drivers/video/backlight/lp8788_bl.c b/drivers/video/backlight/lp8788_bl.c
+index 5d583d7..521c730 100644
+--- a/drivers/video/backlight/lp8788_bl.c
++++ b/drivers/video/backlight/lp8788_bl.c
+@@ -124,16 +124,13 @@ static int lp8788_backlight_configure(struct lp8788_bl *bl)
+ 
+ static void lp8788_pwm_ctrl(struct lp8788_bl *bl, int br, int max_br)
  {
- 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+-	unsigned int period;
+-	unsigned int duty;
+ 	struct device *dev;
++	struct pwm_state pstate;
+ 	struct pwm_device *pwm;
  
-+	if (drvdata->state < 0)
-+		pwm_regulator_init_state(rdev);
-+
- 	return drvdata->state;
- }
+ 	if (!bl->pdata)
+ 		return;
  
-@@ -234,6 +259,7 @@ static int pwm_regulator_init_table(struct platform_device *pdev,
- 		return ret;
+-	period = bl->pdata->period_ns;
+-	duty = br * period / max_br;
+ 	dev = bl->lp->dev;
+ 
+ 	/* request PWM device with the consumer name */
+@@ -147,11 +144,15 @@ static void lp8788_pwm_ctrl(struct lp8788_bl *bl, int br, int max_br)
+ 		bl->pwm = pwm;
  	}
  
-+	drvdata->state			= -EINVAL;
- 	drvdata->duty_cycle_table	= duty_cycle_table;
- 	memcpy(&drvdata->ops, &pwm_regulator_voltage_table_ops,
- 	       sizeof(drvdata->ops));
+-	pwm_config(bl->pwm, duty, period);
+-	if (duty)
+-		pwm_enable(bl->pwm);
++	pwm_get_state(bl->pwm, &pstate);
++	pstate.period = bl->pdata->period_ns;
++	pstate.duty_cycle = br * pstate.period / max_br;
++	if (pstate.duty_cycle)
++		pstate.enabled = true;
+ 	else
+-		pwm_disable(bl->pwm);
++		pstate.enabled = false;
++
++	pwm_apply_state(bl->pwm, &pstate);
+ }
+ 
+ static int lp8788_bl_update_status(struct backlight_device *bl_dev)
 -- 
 2.5.0
 

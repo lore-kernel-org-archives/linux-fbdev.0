@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:04:06 +0000
-Subject: [PATCH v5 43/46] backlight: pwm_bl: switch to the atomic PWM API
-Message-Id: <1459368249-13241-44-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:58 +0000
+Subject: [PATCH v5 35/46] hwmon: pwm-fan: switch to the atomic API
+Message-Id: <1459368249-13241-36-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -16,98 +16,172 @@ by pwm_apply_state().
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/backlight/pwm_bl.c | 43 ++++++++++++++++++++++------------------
- 1 file changed, 24 insertions(+), 19 deletions(-)
+ drivers/hwmon/pwm-fan.c | 81 ++++++++++++++++++++++++++++---------------------
+ 1 file changed, 46 insertions(+), 35 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 2479c11..b069fb2 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -43,8 +43,22 @@ struct pwm_bl_data {
- 	void			(*exit)(struct device *);
- };
+diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+index 82c5656..da4e4ab 100644
+--- a/drivers/hwmon/pwm-fan.c
++++ b/drivers/hwmon/pwm-fan.c
+@@ -40,8 +40,8 @@ struct pwm_fan_ctx {
  
-+static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
-+{
-+	unsigned int lth = pb->lth_brightness;
-+	int duty_cycle;
-+
-+	if (pb->levels)
-+		duty_cycle = pb->levels[brightness];
+ static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ {
++	struct pwm_state pstate;
+ 	struct pwm_args pargs = { };
+-	unsigned long duty;
+ 	int ret = 0;
+ 
+ 	pwm_get_args(ctx->pwm, &pargs);
+@@ -50,19 +50,17 @@ static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+ 	if (ctx->pwm_value = pwm)
+ 		goto exit_set_pwm_err;
+ 
+-	duty = DIV_ROUND_UP(pwm * (pargs.period - 1), MAX_PWM);
+-	ret = pwm_config(ctx->pwm, duty, pargs.period);
+-	if (ret)
+-		goto exit_set_pwm_err;
+-
++	pwm_get_state(ctx->pwm, &pstate);
++	pstate.period = pargs.period;
++	pstate.duty_cycle = DIV_ROUND_UP(pwm * (pargs.period - 1), MAX_PWM);
+ 	if (pwm = 0)
+-		pwm_disable(ctx->pwm);
++		pstate.enabled = false;
 +	else
-+		duty_cycle = brightness;
-+
-+	return (duty_cycle * (pb->period - lth) / pb->scale) + lth;
-+}
-+
- static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
++		pstate.enabled = true;
+ 
+-	if (ctx->pwm_value = 0) {
+-		ret = pwm_enable(ctx->pwm);
+-		if (ret)
+-			goto exit_set_pwm_err;
+-	}
++	ret = pwm_apply_state(ctx->pwm, &pstate);
++	if (ret)
++		goto exit_set_pwm_err;
+ 
+ 	ctx->pwm_value = pwm;
+ exit_set_pwm_err:
+@@ -217,10 +215,10 @@ static int pwm_fan_of_get_cooling_data(struct device *dev,
+ static int pwm_fan_probe(struct platform_device *pdev)
  {
+ 	struct thermal_cooling_device *cdev;
 +	struct pwm_state pstate;
- 	int err;
+ 	struct pwm_args pargs = { };
+ 	struct pwm_fan_ctx *ctx;
+ 	struct device *hwmon;
+-	int duty_cycle;
+ 	int ret;
  
- 	if (pb->enabled)
-@@ -57,17 +71,24 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 	if (pb->enable_gpio)
- 		gpiod_set_value(pb->enable_gpio, 1);
+ 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
+@@ -239,27 +237,25 @@ static int pwm_fan_probe(struct platform_device *pdev)
  
--	pwm_enable(pb->pwm);
-+	pwm_get_state(pb->pwm, &pstate);
-+	pstate.duty_cycle = compute_duty_cycle(pb, brightness);
+ 	/* Set duty cycle to maximum allowed */
+ 	pwm_get_args(ctx->pwm, &pargs);
+-	duty_cycle = pargs.period - 1;
++	pwm_get_state(ctx->pwm, &pstate);
++
++	pstate.period = pargs.period;
++	pstate.duty_cycle = pargs.period - 1;
 +	pstate.enabled = true;
-+	pwm_apply_state(pb->pwm, &pstate);
- 	pb->enabled = true;
- }
+ 	ctx->pwm_value = MAX_PWM;
  
- static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- {
-+	struct pwm_state pstate;
+-	ret = pwm_config(ctx->pwm, duty_cycle, pargs.period);
++	ret = pwm_apply_state(ctx->pwm, &pstate);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+ 	}
+ 
+-	/* Enbale PWM output */
+-	ret = pwm_enable(ctx->pwm);
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to enable PWM\n");
+-		return ret;
+-	}
+-
+ 	hwmon = devm_hwmon_device_register_with_groups(&pdev->dev, "pwmfan",
+ 						       ctx, pwm_fan_groups);
+ 	if (IS_ERR(hwmon)) {
+ 		dev_err(&pdev->dev, "Failed to register hwmon device\n");
+-		pwm_disable(ctx->pwm);
++		pstate.enabled = false;
++		pwm_apply_state(ctx->pwm, &pstate);
+ 		return PTR_ERR(hwmon);
+ 	}
+ 
+@@ -275,7 +271,8 @@ static int pwm_fan_probe(struct platform_device *pdev)
+ 		if (IS_ERR(cdev)) {
+ 			dev_err(&pdev->dev,
+ 				"Failed to register pwm-fan as cooling device");
+-			pwm_disable(ctx->pwm);
++			pstate.enabled = false;
++			pwm_apply_state(ctx->pwm, &pstate);
+ 			return PTR_ERR(cdev);
+ 		}
+ 		ctx->cdev = cdev;
+@@ -290,8 +287,14 @@ static int pwm_fan_remove(struct platform_device *pdev)
+ 	struct pwm_fan_ctx *ctx = platform_get_drvdata(pdev);
+ 
+ 	thermal_cooling_device_unregister(ctx->cdev);
+-	if (ctx->pwm_value)
+-		pwm_disable(ctx->pwm);
++	if (ctx->pwm_value) {
++		struct pwm_state pstate;
 +
- 	if (!pb->enabled)
- 		return;
- 
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
-+	pwm_get_state(pb->pwm, &pstate);
-+	pstate.duty_cycle = 0;
-+	pstate.enabled = false;
-+	pwm_apply_state(pb->pwm, &pstate);
- 
- 	if (pb->enable_gpio)
- 		gpiod_set_value(pb->enable_gpio, 0);
-@@ -76,24 +97,10 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	pb->enabled = false;
++		pwm_get_state(ctx->pwm, &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(ctx->pwm, &pstate);
++	}
++
+ 	return 0;
  }
  
--static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
--{
--	unsigned int lth = pb->lth_brightness;
--	int duty_cycle;
--
--	if (pb->levels)
--		duty_cycle = pb->levels[brightness];
--	else
--		duty_cycle = brightness;
--
--	return (duty_cycle * (pb->period - lth) / pb->scale) + lth;
--}
--
- static int pwm_backlight_update_status(struct backlight_device *bl)
+@@ -300,27 +303,35 @@ static int pwm_fan_suspend(struct device *dev)
  {
- 	struct pwm_bl_data *pb = bl_get_data(bl);
- 	int brightness = bl->props.brightness;
--	int duty_cycle;
+ 	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
  
- 	if (bl->props.power != FB_BLANK_UNBLANK ||
- 	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
-@@ -104,8 +111,6 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
- 		brightness = pb->notify(pb->dev, brightness);
+-	if (ctx->pwm_value)
+-		pwm_disable(ctx->pwm);
++	if (ctx->pwm_value) {
++		struct pwm_state pstate;
++
++		pwm_get_state(ctx->pwm, &pstate);
++		pstate.enabled = false;
++		pwm_apply_state(ctx->pwm, &pstate);
++	}
++
+ 	return 0;
+ }
  
- 	if (brightness > 0) {
--		duty_cycle = compute_duty_cycle(pb, brightness);
--		pwm_config(pb->pwm, duty_cycle, pb->period);
- 		pwm_backlight_power_on(pb, brightness);
- 	} else
- 		pwm_backlight_power_off(pb);
+ static int pwm_fan_resume(struct device *dev)
+ {
+ 	struct pwm_fan_ctx *ctx = dev_get_drvdata(dev);
++	struct pwm_state pstate;
+ 	struct pwm_args pargs = { };
+-	unsigned long duty;
+-	int ret;
+ 
+ 	if (ctx->pwm_value = 0)
+ 		return 0;
+ 
+ 	pwm_get_args(ctx->pwm, &pargs);
+-	duty = DIV_ROUND_UP(ctx->pwm_value * (pargs.period - 1), MAX_PWM);
+-	ret = pwm_config(ctx->pwm, duty, pargs.period);
+-	if (ret)
+-		return ret;
+-	return pwm_enable(ctx->pwm);
++	pwm_get_state(ctx->pwm, &pstate);
++
++	pstate.period = pargs.period;
++	pstate.duty_cycle = DIV_ROUND_UP(ctx->pwm_value * (pargs.period - 1),
++					 MAX_PWM);
++	pstate.enabled = true;
++
++	return pwm_apply_state(ctx->pwm, &pstate);
+ }
+ #endif
+ 
 -- 
 2.5.0
 

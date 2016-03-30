@@ -1,7 +1,7 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Wed, 30 Mar 2016 20:03:56 +0000
-Subject: [PATCH v5 33/46] pwm: replace pwm_disable() by pwm_apply_state()
-Message-Id: <1459368249-13241-34-git-send-email-boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:32 +0000
+Subject: [PATCH v5 09/46] misc: max77693-haptic: use pwm_get_args() where appropriate
+Message-Id: <1459368249-13241-10-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
@@ -11,96 +11,59 @@ Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Some PWM drivers are calling the deprecated pwm_disable() function in
-their pwm->free() or pdev->remove() function. Replace those calls by
-the pwm_apply_state().
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
+
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
+
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
 
 Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/pwm/pwm-lpc18xx-sct.c | 7 +++++--
- drivers/pwm/pwm-lpc32xx.c     | 9 +++++++--
- drivers/pwm/pwm-spear.c       | 9 +++++++--
- drivers/pwm/pwm-sti.c         | 9 +++++++--
- 4 files changed, 26 insertions(+), 8 deletions(-)
+ drivers/input/misc/max77693-haptic.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
-index 19dc64c..c4d7cb1 100644
---- a/drivers/pwm/pwm-lpc18xx-sct.c
-+++ b/drivers/pwm/pwm-lpc18xx-sct.c
-@@ -305,9 +305,12 @@ static void lpc18xx_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
+diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
+index 6d96bff..cf6aac0 100644
+--- a/drivers/input/misc/max77693-haptic.c
++++ b/drivers/input/misc/max77693-haptic.c
+@@ -70,10 +70,13 @@ struct max77693_haptic {
+ 
+ static int max77693_haptic_set_duty_cycle(struct max77693_haptic *haptic)
  {
- 	struct lpc18xx_pwm_chip *lpc18xx_pwm = to_lpc18xx_pwm_chip(chip);
- 	struct lpc18xx_pwm_data *lpc18xx_data = pwm_get_chip_data(pwm);
-+	struct pwm_state pstate;
+-	int delta = (haptic->pwm_dev->period + haptic->pwm_duty) / 2;
++	struct pwm_args pargs = { };
++	int delta;
+ 	int error;
  
--	pwm_disable(pwm);
--	pwm_set_duty_cycle(pwm, 0);
-+	pwm_get_state(pwm, &pstate);
-+	pstate.duty_cycle = 0;
-+	pstate.enabled = false;
-+	pwm_apply_state(pwm, &pstate);
- 	clear_bit(lpc18xx_data->duty_event, &lpc18xx_pwm->event_map);
- }
+-	error = pwm_config(haptic->pwm_dev, delta, haptic->pwm_dev->period);
++	pwm_get_args(haptic->pwm_dev, &pargs);
++	delta = (pargs.period + haptic->pwm_duty) / 2;
++	error = pwm_config(haptic->pwm_dev, delta, pargs.period);
+ 	if (error) {
+ 		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
+ 		return error;
+@@ -234,6 +237,7 @@ static int max77693_haptic_play_effect(struct input_dev *dev, void *data,
+ 				       struct ff_effect *effect)
+ {
+ 	struct max77693_haptic *haptic = input_get_drvdata(dev);
++	struct pwm_args pargs = { };
+ 	u64 period_mag_multi;
  
-diff --git a/drivers/pwm/pwm-lpc32xx.c b/drivers/pwm/pwm-lpc32xx.c
-index 4d470c1..95870e0 100644
---- a/drivers/pwm/pwm-lpc32xx.c
-+++ b/drivers/pwm/pwm-lpc32xx.c
-@@ -138,8 +138,13 @@ static int lpc32xx_pwm_remove(struct platform_device *pdev)
- 	struct lpc32xx_pwm_chip *lpc32xx = platform_get_drvdata(pdev);
- 	unsigned int i;
- 
--	for (i = 0; i < lpc32xx->chip.npwm; i++)
--		pwm_disable(&lpc32xx->chip.pwms[i]);
-+	for (i = 0; i < lpc32xx->chip.npwm; i++) {
-+		struct pwm_state pstate;
-+
-+		pwm_get_state(&lpc32xx->chip.pwms[i], &pstate);
-+		pstate.enabled = false;
-+		pwm_apply_state(&lpc32xx->chip.pwms[i], &pstate);
-+	}
- 
- 	return pwmchip_remove(&lpc32xx->chip);
- }
-diff --git a/drivers/pwm/pwm-spear.c b/drivers/pwm/pwm-spear.c
-index 6c6b44f..2ee4cd5 100644
---- a/drivers/pwm/pwm-spear.c
-+++ b/drivers/pwm/pwm-spear.c
-@@ -233,8 +233,13 @@ static int spear_pwm_remove(struct platform_device *pdev)
- 	struct spear_pwm_chip *pc = platform_get_drvdata(pdev);
- 	int i;
- 
--	for (i = 0; i < NUM_PWM; i++)
--		pwm_disable(&pc->chip.pwms[i]);
-+	for (i = 0; i < NUM_PWM; i++) {
-+		struct pwm_state pstate;
-+
-+		pwm_get_state(&pc->chip.pwms[i], &pstate);
-+		pstate.enabled = false;
-+		pwm_apply_state(&pc->chip.pwms[i], &pstate);
-+	}
- 
- 	/* clk was prepared in probe, hence unprepare it here */
- 	clk_unprepare(pc->clk);
-diff --git a/drivers/pwm/pwm-sti.c b/drivers/pwm/pwm-sti.c
-index bea1d17..0ec44a8 100644
---- a/drivers/pwm/pwm-sti.c
-+++ b/drivers/pwm/pwm-sti.c
-@@ -435,8 +435,13 @@ static int sti_pwm_remove(struct platform_device *pdev)
- 	struct sti_pwm_chip *pc = platform_get_drvdata(pdev);
- 	unsigned int i;
- 
--	for (i = 0; i < pc->cdata->num_chan; i++)
--		pwm_disable(&pc->chip.pwms[i]);
-+	for (i = 0; i < pc->cdata->num_chan; i++) {
-+		struct pwm_state pstate;
-+
-+		pwm_get_state(&pc->chip.pwms[i], &pstate);
-+		pstate.enabled = false;
-+		pwm_apply_state(&pc->chip.pwms[i], &pstate);
-+	}
- 
- 	clk_unprepare(pc->clk);
+ 	haptic->magnitude = effect->u.rumble.strong_magnitude;
+@@ -245,7 +249,8 @@ static int max77693_haptic_play_effect(struct input_dev *dev, void *data,
+ 	 * The formula to convert magnitude to pwm_duty as follows:
+ 	 * - pwm_duty = (magnitude * pwm_period) / MAX_MAGNITUDE(0xFFFF)
+ 	 */
+-	period_mag_multi = (u64)haptic->pwm_dev->period * haptic->magnitude;
++	pwm_get_args(haptic->pwm_dev, &pargs);
++	period_mag_multi = (u64)pargs.period * haptic->magnitude;
+ 	haptic->pwm_duty = (unsigned int)(period_mag_multi >>
+ 						MAX_MAGNITUDE_SHIFT);
  
 -- 
 2.5.0

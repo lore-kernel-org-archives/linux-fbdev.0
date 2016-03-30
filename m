@@ -1,69 +1,54 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Fri, 11 Mar 2016 09:51:46 +0000
-Subject: Re: [PATCH v3 00/12] pwm: add support for atomic update
-Message-Id: <20160311105146.510468ef@bbrezillon>
+Date: Wed, 30 Mar 2016 20:03:33 +0000
+Subject: [PATCH v5 10/46] leds: pwm: use pwm_get_args() where appropriate
+Message-Id: <1459368249-13241-11-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160203145337.GD9650@ulmo>
- <CAD=FV=U_x1cxx6RrHuVgVV8GbOwm9DXXJcyiArbbQySUOaxrvQ@mail.gmail.com>
- <20160222175929.GA23899@ulmo>
- <CAD=FV=UCErW3EjYRtwt49_ztNR7cyY4U0o4R_dxdomer-Ac2Dg@mail.gmail.com>
- <20160223143859.GA27656@ulmo>
- <CAD=FV=UvxG3MYD4MKQJqN7W68uMjd-s+FH-e8tkrLCpS0RLmZQ@mail.gmail.com>
- <20160223181448.GA14754@ulmo.nvidia.com>
- <CAD=FV=VM3cOQ0HqwLANBw9MVBCyFTrSyPe_dGzgPucuMUEWRKA@mail.gmail.com>
- <CAD=FV=VckTVD8b1g+f0G2kMeoTjvY0pAGhoDnWQN_dAmqSxBxg@mail.gmail.com>
- <CAD=FV=W3KPf8tyMviVNB9=HjefMdP+FBbN01Zhh7RKH+gkj2WQ@mail.gmail.com>
- <20160310175438.GA5648@ulmo.nvidia.com>
-In-Reply-To: <20160310175438.GA5648@ulmo.nvidia.com>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Hi Thierry,
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
 
-On Thu, 10 Mar 2016 18:54:38 +0100
-Thierry Reding <thierry.reding@gmail.com> wrote:
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
 
-> On Mon, Mar 07, 2016 at 08:34:19AM -0800, Doug Anderson wrote:
-> > Thierry,
-> > 
-> > On Thu, Feb 25, 2016 at 3:14 PM, Doug Anderson <dianders@google.com> wrote:
-> > > So just to summarize:
-> > >
-> > > * Add pwm_get_state(), pwm_apply_state(), pwm_get_args().
-> > > pwm_get_state() initially returns 0 for duty cycle if driver doesn't
-> > > support readout.
-> > >
-> > > * Re-implement pwm_get_period() (and maybe other similar functions)
-> > > atop pwm_get_state() as you describe earlier in the thread.
-> > >
-> > > * Document pwm_get_period() (and maybe other similar functions) as deprecated.
-> > >
-> > > * Fix drivers for all current 2 users of PWM regulator to support
-> > > hardware readout.
-> > >
-> > > * Update PWM regulator as you described earlier in the thread (Feb 23).
-> > >
-> > > * If PWM regulator is ever used on a new board whose PWM doesn't
-> > > support hardware readout, the voltage will change at probe time.
-> > >
-> > >
-> > > Did I get all that right?  Thanks!
-> > 
-> > Can you provide a "yes, you got that right" or a "no, you didn't
-> > understand"?  That will unblock Boris, I think.
-> 
-> Sounds about right. Hopefully this will eliminate any objections that
-> others had about the series.
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
 
-Okay, I'll rework the series accordingly and send a new version soon.
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/leds/leds-pwm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Thanks,
-
-Boris
-
+diff --git a/drivers/leds/leds-pwm.c b/drivers/leds/leds-pwm.c
+index 4783bac..b48231c 100644
+--- a/drivers/leds/leds-pwm.c
++++ b/drivers/leds/leds-pwm.c
+@@ -91,6 +91,7 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
+ 		       struct led_pwm *led, struct device_node *child)
+ {
+ 	struct led_pwm_data *led_data = &priv->leds[priv->num_leds];
++	struct pwm_args pargs = { };
+ 	int ret;
+ 
+ 	led_data->active_low = led->active_low;
+@@ -117,7 +118,8 @@ static int led_pwm_add(struct device *dev, struct led_pwm_priv *priv,
+ 	else
+ 		led_data->cdev.brightness_set_blocking = led_pwm_set_blocking;
+ 
+-	led_data->period = pwm_get_period(led_data->pwm);
++	pwm_get_args(led_data->pwm, &pargs);
++	led_data->period = pargs.period;
+ 	if (!led_data->period && (led->pwm_period_ns > 0))
+ 		led_data->period = led->pwm_period_ns;
+ 
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.5.0
+

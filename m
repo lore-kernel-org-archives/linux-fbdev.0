@@ -1,65 +1,131 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 11 Mar 2016 11:33:02 +0000
-Subject: Re: [PATCH] video: AMBA CLCD: Remove duplicated include in amba-clcd.c
-Message-Id: <56E2ACEE.3060205@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="KjMbKwj8gui71Sx1cnbrmMpRnUdnk5dUk"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Wed, 30 Mar 2016 20:03:51 +0000
+Subject: [PATCH v5 28/46] regulator: pwm: swith to the atomic PWM API
+Message-Id: <1459368249-13241-29-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1457057406-4069-1-git-send-email-annie.wang@amd.com>
-In-Reply-To: <1457057406-4069-1-git-send-email-annie.wang@amd.com>
-To: Wang Hongcheng <annie.wang@amd.com>, Russell King <linux@arm.linux.org.uk>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Borislav Petkov <bp@suse.de>, SPG_Linux_Kernel <SPG_Linux_Kernel@amd.com>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
---KjMbKwj8gui71Sx1cnbrmMpRnUdnk5dUk
-Content-Type: multipart/mixed; boundary="t8lOAP0d1DR89Am0Est3dq04MwUesgVHa"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Wang Hongcheng <annie.wang@amd.com>, Russell King
- <linux@arm.linux.org.uk>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Borislav Petkov <bp@suse.de>, SPG_Linux_Kernel <SPG_Linux_Kernel@amd.com>
-Message-ID: <56E2ACEE.3060205@ti.com>
-Subject: Re: [PATCH] video: AMBA CLCD: Remove duplicated include in
- amba-clcd.c
-References: <1457057406-4069-1-git-send-email-annie.wang@amd.com>
-In-Reply-To: <1457057406-4069-1-git-send-email-annie.wang@amd.com>
+pwm_config/enable/disable() have been deprecated in favor of
+pwm_apply_state().
+Replace all those calls with the equivalent pwm_get/apply_state().
 
---t8lOAP0d1DR89Am0Est3dq04MwUesgVHa
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/regulator/pwm-regulator.c | 54 ++++++++++++++++++++++++---------------
+ 1 file changed, 34 insertions(+), 20 deletions(-)
 
-On 04/03/16 04:10, Wang Hongcheng wrote:
-> The header file asm/sizes.h is unnecessary.
-> And it can also be compiled under X86 arch after the removal.
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index 9590fb0..42cc312 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -59,16 +59,18 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
+ 					 unsigned selector)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+-	struct pwm_args pargs = { };
+-	int dutycycle;
++	struct pwm_state pstate = { };
++	u64 dutycycle;
+ 	int ret;
+ 
+-	pwm_get_args(drvdata->pwm, &pargs);
++	pwm_get_state(drvdata->pwm, &pstate);
+ 
+-	dutycycle = (pargs.period *
+-		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
++	dutycycle = drvdata->duty_cycle_table[selector].dutycycle;
++	dutycycle *= pstate.period;
++	do_div(dutycycle, 100);
++	pstate.duty_cycle = dutycycle;
+ 
+-	ret = pwm_config(drvdata->pwm, dutycycle, pargs.period);
++	ret = pwm_apply_state(drvdata->pwm, &pstate);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+@@ -93,24 +95,39 @@ static int pwm_regulator_list_voltage(struct regulator_dev *rdev,
+ static int pwm_regulator_enable(struct regulator_dev *dev)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++	struct pwm_state pstate = { };
++
++	pwm_get_state(drvdata->pwm, &pstate);
++	if (pstate.enabled)
++		return 0;
++
++	pstate.enabled = true;
+ 
+-	return pwm_enable(drvdata->pwm);
++	return pwm_apply_state(drvdata->pwm, &pstate);
+ }
+ 
+ static int pwm_regulator_disable(struct regulator_dev *dev)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++	struct pwm_state pstate = { };
+ 
+-	pwm_disable(drvdata->pwm);
++	pwm_get_state(drvdata->pwm, &pstate);
++	if (!pstate.enabled)
++		return 0;
+ 
+-	return 0;
++	pstate.enabled = false;
++
++	return pwm_apply_state(drvdata->pwm, &pstate);
+ }
+ 
+ static int pwm_regulator_is_enabled(struct regulator_dev *dev)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(dev);
++	struct pwm_state pstate = { };
+ 
+-	return pwm_is_enabled(drvdata->pwm);
++	pwm_get_state(drvdata->pwm, &pstate);
++
++	return pstate.enabled;
+ }
+ 
+ /**
+@@ -138,25 +155,22 @@ static int pwm_regulator_set_voltage(struct regulator_dev *rdev,
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+ 	unsigned int ramp_delay = rdev->constraints->ramp_delay;
+-	struct pwm_args pargs = { };
+-	int duty_cycle;
++	struct pwm_state pstate = { };
++	u64 duty_cycle;
+ 	int ret;
+ 
+-	pwm_get_args(drvdata->pwm, &pargs);
++	pwm_get_state(drvdata->pwm, &pstate);
+ 	duty_cycle = pwm_voltage_to_duty_cycle_percentage(rdev, min_uV);
++	duty_cycle *= pstate.period;
++	do_div(duty_cycle, 100);
++	pstate.duty_cycle = duty_cycle;
+ 
+-	ret = pwm_config(drvdata->pwm, (pargs.period / 100) * duty_cycle,
+-			 pargs.period);
++	ret = pwm_apply_state(drvdata->pwm, &pstate);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+ 	}
+ 
+-	ret = pwm_enable(drvdata->pwm);
+-	if (ret) {
+-		dev_err(&rdev->dev, "Failed to enable PWM\n");
+-		return ret;
+-	}
+ 	drvdata->volt_uV = min_uV;
+ 
+ 	/* Delay required by PWM regulator to settle to the new voltage */
+-- 
+2.5.0
 
-The subject says the include is duplicate, but the description says it's
-not needed.
-
- Tomi
-
-
---t8lOAP0d1DR89Am0Est3dq04MwUesgVHa--
-
---KjMbKwj8gui71Sx1cnbrmMpRnUdnk5dUk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJW4qzuAAoJEPo9qoy8lh71uckP/3l1LP9LzqiM5xjb+ZA2ZawY
-Q3ofokdm45gfjhggSslWwcKcjGZGyp3oakzgz5+Dy28ph6qYQMYOiI7R9QzxduHH
-jcUps1V018Oh0iXVu7eJ2lGytRzVDRLE7bowff4Yy6hNwTCDfrJ/6B+7VHwREmnM
-ph5+QHmhzoF4P/PRtdNgo/H9H6vkiahLRGff/xZ5f1WaPPqaIjEMIupUCnSYDwTB
-ck4sk1PcbeRAiaAyUWnrU9ovOZ1+p9FRhxyDKMyVYoyDFKdmAGWDdTqbpy87jzRk
-Ud6ZzRwGDVl9mU2pixfDW043SsHw8c9fo8cZvawnxyh60RRNMElfyESnF024lS5T
-2kZjN8FsgJvMkkyuEKWz0XzYfygvRO5K+AeJ0LdKCCBddJGO0h2XljqAV5THaM/s
-auK7Po1wMv/9xAYciAFpV75touG1UY8j5g34Jenxf17jm+8BOwZP3cBBYWIfzOkQ
-uPOkFClFSJyoVKS7/sTunRsvVIs6WayRwb7+vGuh9VePmtSpxy5c6V7zioSQsVjb
-D2IenPbvwTg5g6EUgK4qdhVCgGFVR2u5yLaxRFdGySAldn7uxf3YR1pQmVgVVgJd
-lhdhMHhsGp1OvWd/bLToJJbOFW7COzgPzIc/EXBm/p5CoxkFEjqtRHQvuzEvMKjy
-wwBzCpa3jA6mbxWEB7FY
-=TL8L
------END PGP SIGNATURE-----
-
---KjMbKwj8gui71Sx1cnbrmMpRnUdnk5dUk--

@@ -1,60 +1,92 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 31 Mar 2016 07:57:49 +0000
-Subject: Re: [PATCH v5 05/46] pwm: introduce the pwm_args concept
-Message-Id: <20160331095749.4be1e76b@bbrezillon>
+Date: Wed, 30 Mar 2016 20:03:59 +0000
+Subject: [PATCH v5 36/46] input: misc: max77693: switch to the atomic API
+Message-Id: <1459368249-13241-37-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-	<1459368249-13241-6-git-send-email-boris.brezillon@free-electrons.com>
-	<20160330215510.GS18567@codeaurora.org>
-In-Reply-To: <20160330215510.GS18567@codeaurora.org>
+In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Kamil Debski <k.debski@samsung.com>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-sunxi@googlegroups.com, Joachim Eastwood <manabian@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, Jingoo Han <jingoohan1@gmail.com>, Lee
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-On Wed, 30 Mar 2016 14:55:10 -0700
-Stephen Boyd <sboyd@codeaurora.org> wrote:
+pwm_config/enable/disable() have been deprecated and should be replaced
+by pwm_apply_state().
 
-> On 03/30, Boris Brezillon wrote:
-> > @@ -74,6 +74,23 @@ enum pwm_polarity {
-> >  	PWM_POLARITY_INVERSED,
-> >  };
-> >  
-> > +/**
-> > + * struct pwm_args - PWM arguments
-> > + * @period: reference period
-> > + * @polarity: reference polarity
-> > + *
-> > + * This structure describe board-dependent arguments attached to a PWM
-> 
-> s/describe/describes/
-> 
-> > + * device. Those arguments are usually retrieved from the PWM lookup table or
-> > + * DT definition.
-> > + * This should not be confused with the PWM state: PWM args not representing
-> 
-> s/not representing/don't represent/ ?
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/input/misc/max77693-haptic.c | 23 +++++++++++++++++------
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
-Yes, I meant "are not representing", but "don't represent" is fine.
-
-> 
-> > + * the current PWM state, but the configuration the PWM user plan to use
-> 
-> s/plan/plans/
-> 
-> > + * on this PWM device.
-> > + */
-> > +struct pwm_args {
-> > +	unsigned int period;
-> > +	enum pwm_polarity polarity;
-> > +};
-> > +
-> 
-
-
-
+diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
+index cf6aac0..aef7dc4 100644
+--- a/drivers/input/misc/max77693-haptic.c
++++ b/drivers/input/misc/max77693-haptic.c
+@@ -70,13 +70,16 @@ struct max77693_haptic {
+ 
+ static int max77693_haptic_set_duty_cycle(struct max77693_haptic *haptic)
+ {
++	struct pwm_state pstate;
+ 	struct pwm_args pargs = { };
+-	int delta;
+ 	int error;
+ 
+ 	pwm_get_args(haptic->pwm_dev, &pargs);
+-	delta = (pargs.period + haptic->pwm_duty) / 2;
+-	error = pwm_config(haptic->pwm_dev, delta, pargs.period);
++	pwm_get_state(haptic->pwm_dev, &pstate);
++
++	pstate.period = pargs.period;
++	pstate.duty_cycle = (pargs.period + haptic->pwm_duty) / 2;
++	error = pwm_apply_state(haptic->pwm_dev, &pstate);
+ 	if (error) {
+ 		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
+ 		return error;
+@@ -161,12 +164,16 @@ static int max77693_haptic_lowsys(struct max77693_haptic *haptic, bool enable)
+ 
+ static void max77693_haptic_enable(struct max77693_haptic *haptic)
+ {
++	struct pwm_state pstate;
+ 	int error;
+ 
+ 	if (haptic->enabled)
+ 		return;
+ 
+-	error = pwm_enable(haptic->pwm_dev);
++	pwm_get_state(haptic->pwm_dev, &pstate);
++	pstate.enabled = true;
++
++	error = pwm_apply_state(haptic->pwm_dev, &pstate);
+ 	if (error) {
+ 		dev_err(haptic->dev,
+ 			"failed to enable haptic pwm device: %d\n", error);
+@@ -188,11 +195,13 @@ static void max77693_haptic_enable(struct max77693_haptic *haptic)
+ err_enable_config:
+ 	max77693_haptic_lowsys(haptic, false);
+ err_enable_lowsys:
+-	pwm_disable(haptic->pwm_dev);
++	pstate.enabled = false;
++	pwm_apply_state(haptic->pwm_dev, &pstate);
+ }
+ 
+ static void max77693_haptic_disable(struct max77693_haptic *haptic)
+ {
++	struct pwm_state pstate;
+ 	int error;
+ 
+ 	if (!haptic->enabled)
+@@ -206,7 +215,9 @@ static void max77693_haptic_disable(struct max77693_haptic *haptic)
+ 	if (error)
+ 		goto err_disable_lowsys;
+ 
+-	pwm_disable(haptic->pwm_dev);
++	pwm_get_state(haptic->pwm_dev, &pstate);
++	pstate.enabled = false;
++	pwm_apply_state(haptic->pwm_dev, &pstate);
+ 	haptic->enabled = false;
+ 
+ 	return;
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.5.0
+

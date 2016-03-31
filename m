@@ -1,17 +1,17 @@
 From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 31 Mar 2016 07:09:05 +0000
+Date: Thu, 31 Mar 2016 07:57:49 +0000
 Subject: Re: [PATCH v5 05/46] pwm: introduce the pwm_args concept
-Message-Id: <20160331090905.05df7b05@bbrezillon>
+Message-Id: <20160331095749.4be1e76b@bbrezillon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
 	<1459368249-13241-6-git-send-email-boris.brezillon@free-electrons.com>
 	<20160330215510.GS18567@codeaurora.org>
-In-Reply-To: <20160330215510.GS18567-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+In-Reply-To: <20160330215510.GS18567@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jo>
+To: Stephen Boyd <sboyd@codeaurora.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org, Mike Turquette <mturquette@baylibre.com>, linux-clk@vger.kernel.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Kamil Debski <k.debski@samsung.com>, lm-sensors@lm-sensors.org, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Maxime Ripard <maxime.ripard@free-electrons.com>, Chen-Yu Tsai <wens@csie.org>, linux-sunxi@googlegroups.com, Joachim Eastwood <manabian@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Heiko Stuebner <heiko@sntech.de>, linux-rockchip@lists.infradead.org, Jingoo Han <jingoohan1@gmail.com>, Lee
 
 On Wed, 30 Mar 2016 14:55:10 -0700
 Stephen Boyd <sboyd@codeaurora.org> wrote:
@@ -35,6 +35,9 @@ Stephen Boyd <sboyd@codeaurora.org> wrote:
 > > + * This should not be confused with the PWM state: PWM args not representing
 > 
 > s/not representing/don't represent/ ?
+
+Yes, I meant "are not representing", but "don't represent" is fine.
+
 > 
 > > + * the current PWM state, but the configuration the PWM user plan to use
 > 
@@ -49,11 +52,7 @@ Stephen Boyd <sboyd@codeaurora.org> wrote:
 > > +
 > 
 
-Will fix these errors.
 
-Thanks,
-
-Boris
 
 -- 
 Boris Brezillon, Free Electrons

@@ -1,72 +1,32 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 14 Apr 2016 19:17:42 +0000
-Subject: [PATCH v5 22/24] pwm: update documentation
-Message-Id: <1460661464-11216-23-git-send-email-boris.brezillon@free-electrons.com>
+From: Kamil Debski <k.debski@samsung.com>
+Date: Fri, 01 Apr 2016 08:29:55 +0000
+Subject: RE: [PATCH v5 35/46] hwmon: pwm-fan: switch to the atomic API
+Message-Id: <00e601d18bf0$acd69150$0683b3f0$@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1459368249-13241-36-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-36-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: 'Boris Brezillon' <boris.brezillon@free-electrons.com>, 'Thierry Reding' <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
+Cc: 'Mike Turquette' <mturquette@baylibre.com>, 'Stephen Boyd' <sboyd@codeaurora.org>, linux-clk@vger.kernel.org, 'Mark Brown' <broonie@kernel.org>, 'Liam Girdwood' <lgirdwood@gmail.com>, lm-sensors@lm-sensors.org, 'Jean Delvare' <jdelvare@suse.com>, 'Guenter Roeck' <linux@roeck-us.net>, 'Dmitry Torokhov' <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, 'Bryan Wu' <cooloney@gmail.com>, 'Richard Purdie' <rpurdie@rpsys.net>, 'Jacek Anaszewski' <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, 'Maxime Ripard' <maxime.ripard@free-electrons.com>, 'Chen-Yu Tsai' <wens@csie.org>, linux-sunxi@googlegroups.com, 'Joachim Eastwood' <manabian@gmail.com>, 'Thomas Petazzoni' <thomas.petazzoni@free-electrons.com>, 'Heiko Stuebner' <heiko@sntech.de>, linux-rockchip@lists.infradead.org, 'Jingoo Han' <jingoohan1@gmail.com>, 'Lee Jones' <lee.jones@linaro.org>, linux-fbdev@
 
-Update the PWM subsystem documentation to reflect the atomic PWM changes.
+Hi Boris,
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
----
- Documentation/pwm.txt | 30 ++++++++++++++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
+From: Boris Brezillon [mailto:boris.brezillon@free-electrons.com]
+Sent: Wednesday, March 30, 2016 10:04 PM
+Subject: [PATCH v5 35/46] hwmon: pwm-fan: switch to the atomic API
+> 
+> pwm_config/enable/disable() have been deprecated and should be replaced
+> by pwm_apply_state().
+> 
+> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 
-diff --git a/Documentation/pwm.txt b/Documentation/pwm.txt
-index ca895fd..789b27c 100644
---- a/Documentation/pwm.txt
-+++ b/Documentation/pwm.txt
-@@ -42,9 +42,26 @@ variants of these functions, devm_pwm_get() and devm_pwm_put(), also exist.
- 
- After being requested, a PWM has to be configured using:
- 
--int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns);
-+int pwm_apply_state(struct pwm_device *pwm, struct pwm_state *state);
- 
--To start/stop toggling the PWM output use pwm_enable()/pwm_disable().
-+This API controls both the PWM period/duty_cycle config and the
-+enable/disable state.
-+
-+The pwm_config(), pwm_enable() and pwm_disable() functions are just wrappers
-+around pwm_apply_state() and should not be used if the user wants to change
-+several parameter at once. For example, if you see pwm_config() and
-+pwm_{enable,disable}() calls in the same function, this probably means you
-+should switch to pwm_apply_state().
-+
-+The PWM user API also allows one to query the PWM state with pwm_get_state().
-+
-+In addition to the PWM state, the PWM API also exposes PWM arguments, which
-+are the reference PWM config one should use on this PWM.
-+PWM arguments are usually platform-specific and allows the PWM user to only
-+care about dutycycle relatively to the full period (like, duty = 50% of the
-+period). struct pwm_args contains 2 fields (period and polarity) and should
-+be used to set the initial PWM config (usually done in the probe function
-+of the PWM user). PWM arguments are retrieved with pwm_get_args().
- 
- Using PWMs with the sysfs interface
- -----------------------------------
-@@ -105,6 +122,15 @@ goes low for the remainder of the period. Conversely, a signal with inversed
- polarity starts low for the duration of the duty cycle and goes high for the
- remainder of the period.
- 
-+Drivers are encouraged to implement ->apply() instead of the legacy
-+->enable(), ->disable() and ->config() methods. Doing that should provide
-+atomicity in the PWM config workflow, which is required when the PWM controls
-+a critical device (like a regulator).
-+
-+The implementation of ->get_state() (a method used to retrieve initial PWM
-+state) is also encouraged for the same reason: letting the PWM user know
-+about the current PWM state would allow him to avoid glitches.
-+
- Locking
- -------
- 
+Acked-by: Kamil Debski <k.debski@samsung.com>
+
+Best wishes,
 -- 
-2.5.0
+Kamil Debski
+Samsung R&D Institute Poland
 

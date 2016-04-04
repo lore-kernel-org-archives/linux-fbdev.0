@@ -1,42 +1,119 @@
-From: Kamil Debski <k.debski@samsung.com>
-Date: Fri, 01 Apr 2016 08:29:57 +0000
-Subject: RE: [PATCH v5 08/46] hwmon: pwm-fan: use pwm_get_args() where appropriate
-Message-Id: <00e701d18bf0$ade6efe0$09b4cfa0$@samsung.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 04 Apr 2016 15:20:48 +0000
+Subject: Re: [PATCH v5 08/46] hwmon: pwm-fan: use pwm_get_args() where appropriate
+Message-Id: <20160404152048.GA17856@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="PNTmBPCT7hxwcZjr"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
  <1459368249-13241-9-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-9-git-send-email-boris.brezillon@free-electrons.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Boris Brezillon' <boris.brezillon@free-electrons.com>, 'Thierry Reding' <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
-Cc: 'Milo Kim' <milo.kim@ti.com>, linux-fbdev@vger.kernel.org, 'Heiko Stuebner' <heiko@sntech.de>, linux-doc@vger.kernel.org, 'David Airlie' <airlied@linux.ie>, 'Mike Turquette' <mturquette@baylibre.com>, 'Krzysztof Kozlowski' <k.kozlowski@samsung.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, 'Alexandre Belloni' <alexandre.belloni@free-electrons.com>, 'Daniel Vetter' <daniel.vetter@intel.com>, 'Lee Jones' <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, linux-samsung-soc@vger.kernel.org, 'Alexander Shiyan' <shc_work@mail.ru>, 'Jonathan Corbet' <corbet@lwn.net>, 'Robert Jarzmik' <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, 'Chen-Yu Tsai' <wens@csie.org>, 'Tomi Valkeinen' <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org, 'Jean-Christophe
-
-Hi Boris,
-
-From: Boris Brezillon [mailto:boris.brezillon@free-electrons.com]
-Sent: Wednesday, March 30, 2016 10:04 PM
-Subject: [PATCH v5 08/46] hwmon: pwm-fan: use pwm_get_args() where
-appropriate
-> 
-> The PWM framework has clarified the concept of reference PWM config (the
-> platform dependent config retrieved from the DT or the PWM lookup table)
-> and real PWM state.
-> 
-> Use pwm_get_args() when the PWM user wants to retrieve this reference
-> config and not the current state.
-> 
-> This is part of the rework allowing the PWM framework to support hardware
-> readout and expose real PWM state even when the PWM has just been
-> requested (before the user calls pwm_config/enable/disable()).
-> 
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-
-Acked-by: Kamil Debski <k.debski@samsung.com>
-
-Best wishes,
--- 
-Kamil Debski
-Samsung R&D Institute Poland
+ <20160330225244.GA24044@roeck-us.net>
+ <20160331090709.5c3bdf70@bbrezillon>
+In-Reply-To: <20160331090709.5c3bdf70@bbrezillon>
+To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jo>
 
 
+--PNTmBPCT7hxwcZjr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Mar 31, 2016 at 09:07:09AM +0200, Boris Brezillon wrote:
+> Hi Guenter,
+>=20
+> On Wed, 30 Mar 2016 15:52:44 -0700
+> Guenter Roeck <linux@roeck-us.net> wrote:
+>=20
+> > On Wed, Mar 30, 2016 at 10:03:31PM +0200, Boris Brezillon wrote:
+> > > The PWM framework has clarified the concept of reference PWM config
+> > > (the platform dependent config retrieved from the DT or the PWM
+> > > lookup table) and real PWM state.
+> > >=20
+> > > Use pwm_get_args() when the PWM user wants to retrieve this reference
+> > > config and not the current state.
+> > >=20
+> > > This is part of the rework allowing the PWM framework to support
+> > > hardware readout and expose real PWM state even when the PWM has
+> > > just been requested (before the user calls pwm_config/enable/disable(=
+)).
+> > >=20
+> > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > > ---
+> > >  drivers/hwmon/pwm-fan.c | 19 +++++++++++++------
+> > >  1 file changed, 13 insertions(+), 6 deletions(-)
+> > >=20
+> > > diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
+> > > index 3e23003..82c5656 100644
+> > > --- a/drivers/hwmon/pwm-fan.c
+> > > +++ b/drivers/hwmon/pwm-fan.c
+> > > @@ -40,15 +40,18 @@ struct pwm_fan_ctx {
+> > > =20
+> > >  static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
+> > >  {
+> > > +	struct pwm_args pargs =3D { };
+> >=20
+> > Hi Boris,
+> >=20
+> > I guess I am missing some context; sorry for that. Unfortunately,
+> > I did not easily find an explanation, so please bear with me.
+> >=20
+> > Two questions: Why do we need a local copy of struct pwm_args instead
+> > of a pointer to it ? If it can change while being used, isn't it
+> > inconsistent anyway ?
+>=20
+> It cannot change after pwm_get() is called. For the reason behind
+> prototype: I just followed the Thierry's proposal, but I'm perfectly
+> fine returning a const struct pwm_args pointer intead of passing
+> pwm_args as a parameter.
+>=20
+> Thierry, what's your opinion?
+
+I do prefer the current variant because it is more consistent with the
+new atomic API, even if not strictly necessary because of the immutable
+data.
+
+> > Also, assuming the local copy is necessary, why initialize pargs ?=20
+> > After all, pwm_get_args() just overwrites it.
+>=20
+> It's a leftover from a previous version where pwm_get_args was
+> implemented this way:
+>=20
+> static inline void pwm_get_args(pwm, args)
+> {
+> 	if (pwm)
+> 		*args =3D pwm->args
+> }
+>=20
+> and this implementation was generating a lot of 'uninitialized
+> variable' warnings.
+>=20
+> I just decided to drop the 'if (pwm)' test, because, IMO, this
+> should be checked way before calling pwm_get_args() is called.
+
+Sounds fine to me.
+
+Thierry
+
+--PNTmBPCT7hxwcZjr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJXAoZLAAoJEN0jrNd/PrOhsEQQAKKy319NRaO6e/ciYlg6vDDN
+rdmFDoQgotIfLetr3KUFRP95Q3Cldg3cRW9oEg+OH8Uhf84Wg6Ug+glGDCmZ5jtl
+MNH8yavaO/eE0Ai1uV9rv7Nv6uJKoh+P11aQ7ht6HHr7+Iim8D6HGxdCEnqcxYz/
+Np9mk3jc2pj4FYxY8t8B4xuQS9/sbxKpCRRcQUDXVLnun+88Q+hWPlYA6ypTtQZ3
+deJzpGD3vWZIPtF1ZCm1U6gLetexRC84wyKmVGvV1yaeXaiXnr13MbUn2YbtBRFC
+oYRkNh59URh9bflVUnBORWi0Z9W7JBOt9f9pDUcOnY600rxhn0fXjt5aStdp6bDQ
+WHG/8pXEk5SdwU9PNDUPxhmfM3kO8a3v4KczSthjsUaMBd/76x1TroWTeSk4kuLD
+yEP3ZUP4fPb4hrE7Jvd5ruDnYgv0Vtk2MOa8IssefGYSO36pKTRyBCw7LKwmp+ww
+oFfZMR/KESTFCK59URYElJJHCUOWu3/u4TilXnimjRv2Co6HGdhZj5RTFhe1R3NE
+jO+k3ods1O9oVrVLmteHoePGnt6PCkPR/1szu5xW8XoFgL/58EWusji+XbMOlAlJ
+VJLrWoH2rOUW2/AEKvlasgeUOYFEszRM+vRyId/4awPJhhX5GVV3f+nY5UZLfW5I
+aPz78WqEqGpe2nzBw+67
+=pF1x
+-----END PGP SIGNATURE-----
+
+--PNTmBPCT7hxwcZjr--

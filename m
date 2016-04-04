@@ -1,104 +1,97 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 12 Apr 2016 13:15:03 +0000
-Subject: Re: [PATCH v5 05/46] pwm: introduce the pwm_args concept
-Message-Id: <20160412131503.GR18882@ulmo.ba.sec>
+Date: Mon, 04 Apr 2016 15:34:33 +0000
+Subject: Re: [PATCH v5 36/46] input: misc: max77693: switch to the atomic API
+Message-Id: <20160404153433.GD17856@ulmo>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TDVcAd+kFgbLxwBe"
+Content-Type: multipart/mixed; boundary="8w3uRX/HFJGApMzv"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1459368249-13241-6-git-send-email-boris.brezillon@free-electrons.com>
- <20160412113912.GK18882@ulmo.ba.sec>
- <20160412150627.7084665d@bbrezillon>
-In-Reply-To: <20160412150627.7084665d@bbrezillon>
-To: Boris Brezillon <boris.brezillon@free-electrons.com>
-Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org, Jean-Christophe
+ <1459368249-13241-37-git-send-email-boris.brezillon@free-electrons.com>
+ <20160331174801.GC39098@dtor-ws>
+ <20160331205718.057a6f38@bbrezillon>
+In-Reply-To: <20160331205718.057a6f38@bbrezillon>
+To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jon>
 
 
---TDVcAd+kFgbLxwBe
+--8w3uRX/HFJGApMzv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 12, 2016 at 03:06:27PM +0200, Boris Brezillon wrote:
-> On Tue, 12 Apr 2016 13:39:12 +0200
-> Thierry Reding <thierry.reding@gmail.com> wrote:
+On Thu, Mar 31, 2016 at 08:57:18PM +0200, Boris Brezillon wrote:
+> On Thu, 31 Mar 2016 10:48:01 -0700
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 >=20
-> > On Wed, Mar 30, 2016 at 10:03:28PM +0200, Boris Brezillon wrote:
-> > > Currently the PWM core mixes the current PWM state with the per-platf=
-orm
-> > > reference config (specified through the PWM lookup table, DT definiti=
-on or
-> > > directly hardcoded in PWM drivers).
+> > Hi Boris,
+> >=20
+> > On Wed, Mar 30, 2016 at 10:03:59PM +0200, Boris Brezillon wrote:
+> > > pwm_config/enable/disable() have been deprecated and should be replac=
+ed
+> > > by pwm_apply_state().
 > > >=20
-> > > Create a pwm_args struct to store this reference config, so that PWM =
-users
-> > > can differentiate the current config from the reference one.
+> > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > > ---
+> > >  drivers/input/misc/max77693-haptic.c | 23 +++++++++++++++++------
+> > >  1 file changed, 17 insertions(+), 6 deletions(-)
 > > >=20
-> > > Patch all places where pwm->args should be initialized. We keep the
-> > > pwm_set_polarity/period() calls until all PWM users are patched to
-> > > use pwm_args instead of pwm_get_period/polarity().
+> > > diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/mis=
+c/max77693-haptic.c
+> > > index cf6aac0..aef7dc4 100644
+> > > --- a/drivers/input/misc/max77693-haptic.c
+> > > +++ b/drivers/input/misc/max77693-haptic.c
+> > > @@ -70,13 +70,16 @@ struct max77693_haptic {
+> > > =20
+> > >  static int max77693_haptic_set_duty_cycle(struct max77693_haptic *ha=
+ptic)
+> > >  {
+> > > +	struct pwm_state pstate;
+> > >  	struct pwm_args pargs =3D { };
+> > > -	int delta;
+> > >  	int error;
+> > > =20
+> > >  	pwm_get_args(haptic->pwm_dev, &pargs);
+> > > -	delta =3D (pargs.period + haptic->pwm_duty) / 2;
+> > > -	error =3D pwm_config(haptic->pwm_dev, delta, pargs.period);
+> > > +	pwm_get_state(haptic->pwm_dev, &pstate);
+> > > +
+> > > +	pstate.period =3D pargs.period;
+> > > +	pstate.duty_cycle =3D (pargs.period + haptic->pwm_duty) / 2;
+> > > +	error =3D pwm_apply_state(haptic->pwm_dev, &pstate);
 > >=20
-> > Perhaps a helper would be useful? Something like:
-> >=20
-> > 	static inline void
-> > 	pwm_apply_args(struct pwm_device *pwm, const struct pwm_args *args)
-> > 	{
-> > 		pwm_set_duty_cycle(pwm, args->duty_cycle);
-> > 		pwm_set_period(pwm, args->period);
-> > 	}
-> >=20
-> > ? That would make it slightly easier to get rid of it again after all
-> > clients have been converted.
-> >=20
-> > With the exception of pwm-clps711x all of these args are set at of_xlate
-> > time (for DT) or from the lookup table in pwm_get() (for non-DT), so it
-> > might even be possible to move this call to the core, so that removal of
-> > it will be a one-liner.
+> > This does not make sense with regard to the atomic API. If you look in
+> > max77693_haptic_play_work(), right after calling
+> > max77693_haptic_set_duty_cycle() we either try to enable or disable the
+> > pwm. When switching to this new API we should combine both actions.
 >=20
-> Okay, I think I misunderstood your suggestion. I thought you wanted
-> this helper to set the reference config, but you actually want to apply
-> a new state based on the PWM reference values.
->=20
-> Except that pwm_args does not contain all the required information to
-> apply a full config (args->duty_cycle and args->enable do not exist).
->=20
-> This being said, in my v6 I moved the content of
-> pwm_regulator_adjust_pwm_config() (patch 27) into a generic helper
-> (pwm_adjust_config()). This helper is doing pretty much what you're
-> suggesting here (but again, I'm not sure I correctly understood your
-> suggestion :-/).
+> True. I'll address that, unless Thierry is fine keeping the non-atomic
+> API, in which case I'll just drop patches 32 to 46.
 
-I'm not suggesting that pwm_apply_args() apply any state. I think we
-both agreed earlier that the initial state (represented by pwm_args) was
-never to be automatically applied.
-
-What I was suggesting is that we move all the calls to pwm_set_period()
-and pwm_set_duty_cycle() into a central location to make it easier to
-remove them later in the series. This is really only temporary, so I
-don't mind if we leave the calls sprinkled all over the place. At least
-that way I hope we'll avoid confusion about what we're talking about =3D)
+I'm fine with keeping the pwm_enable(), pwm_disable() and pwm_config()
+APIs, but they should only be used as shortcuts. Where possible the new
+atomic API should be used to combine multiple operations into one.
 
 Thierry
 
---TDVcAd+kFgbLxwBe
+--8w3uRX/HFJGApMzv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAABCAAGBQJXDPTXAAoJEN0jrNd/PrOh43wP/RW8nWeST0v0826zi4V45N1E
-+TYv38nqsVYDmlhydRpEmUUzDp+i8P+jXS+FD48OsEByyvLzF6NOdtbD7H2no8zb
-7o4G2twqZSwmNTKGcVVnDnvxqsTLRbB/zsSGqPO9NJ3Zu0wBS+0Xg5Vjqk6PmIRR
-LSmzUQc5Cd6Mvb9aQqois5iJ0ivNQlB2YlJ8DYUXfPakj0cc5DpQg1D71c+jCsVL
-REicaT6lu64/oaO2Jkth+9sGtJ3Z4mCoKCRtiAUKSLFojHnhX+ZbPS1U+vgip5UD
-5h3NPaZytj2T/8TdmNceNF2uzpSq5+pc8N37CFpIxcmvhgb3DU24dVsOJyEW5PAk
-QzYA5LDTmAQMsWDSDcoU1pUbxdfIRrIJ6q9kUgIX+aPIcKY8FIJ08XnX5k05Eyve
-4qr29sV/0csHazKsdL94LhfxpmP87DNaLZP3CBXQt8R5PkYFpFY4tAVsYyiRdV0M
-mo9yGfddFafGvqJbLSi19GhXW7tGoFsItMJB843opLZ77mE3VgpLHMCCr6MRGgjK
-ZWWETRUpY2iF72dZc5eJH2cTacw4eAhkkwmi8xHy2aS2tvvzwUnMSagOF1S0NdSP
-lAKl9Y1DcwSrlYNuDkeKIcMULMqC74RB+qM8kdpLiiH08xsBGEKftUt7NGeRg/nx
-DCr+t7SdbH+cClDjpBxu
-=AuFt
+iQIcBAABCAAGBQJXAomJAAoJEN0jrNd/PrOhH+EP/3jGqBaPwMU4xFzqvHz67ECo
+BWRC6Xmjcjj3cLylcB4IeIBaTRxiGF8rf61/1tooFEr49b285hU5/V5ndhjk6HDm
+v7YjqNjFjWkHJvEGhUyf4iCNCw9rtGdDvYwz0tI6bBnMS8Ll6ZaMSTA8UkfiKUiv
+nCHUFyzrvYm7QmMn+Wr7IgyhhiK0LO4eqQk5LY4aP1qMFSnknAv+VXPKFH1pWJ3d
+BMo6SW2l31oC7kEKTM7BscdEbOdTBlSC5sCdff0QjKYWevyjmPcYZJtYqZw9dD14
+rdKL0aXHjeh3PWKMeXYk0rkiCpR4o7bvFn0BSUpQwNCLQYaHLfFFKqqWFiUWa+cF
+JFJJhMpUMeqfmfqGu6KQ3BY7ThzpGFkEGPgrXVIve2sPTUwccwWls0ZPTWtF2F7L
+ED7EvnCnYMEFfzyrav/vLIDz6vKhR5MLjXiTKanuwDEpx3zEG0W44IbA+8JxvNAO
+zfOnAByBx47TLUdHIZqSBtnLRrxQrAh91VrMJaDHqfTn+eJFDxOuVoQ1E2reKqCk
+OF0Ljt6VvQSKpzslj/2lf/dY4Iap40xf7avutbDW6Y9LF0LFgayiAQ5uRD7Bam6N
+vEfMdfObS6YYpx9Dr1uvVEoAYVDH9CETQISWNWYwyUNW0LhSfanIAhkaIpUpsYbQ
+00YdDc4WqABZU72XaLSG
+=oCBS
 -----END PGP SIGNATURE-----
 
---TDVcAd+kFgbLxwBe--
+--8w3uRX/HFJGApMzv--

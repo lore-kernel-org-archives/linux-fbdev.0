@@ -1,59 +1,82 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 11 Apr 2016 22:42:45 +0000
-Subject: Re: [PATCH v5 00/46] pwm: add support for atomic update
-Message-Id: <20160412004245.715db791@bbrezillon>
+From: Saravana Kannan <skannan@codeaurora.org>
+Date: Wed, 06 Apr 2016 21:29:21 +0000
+Subject: Re: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE notifier event
+Message-Id: <57057FB1.2050904@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1459368249-13241-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+References: <cover.1438571116.git.viresh.kumar@linaro.org> <406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org> <4897937.47p7WB7CoU@vostro.rjw.lan> <20150910003918.GL5266@linux> <CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com> <57057201.9030109@codeaurora.org> <CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-fbdev@vge
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, "list@codeaurora.org:ACPI" <linux-acpi@vger.kernel.org>open@codeaurora.org, "list@codeaurora.org:DOCUMENTATION" <linux-doc@vger.kernel.org>open@codeaurora.org, "list@codeaurora.org:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 
-Hi Thierry,
+On 04/06/2016 02:21 PM, Rafael J. Wysocki wrote:
+> On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
+>>>
+>>> Hi,
+>>>
+>>> On Thu, Sep 10, 2015 at 2:39 AM, Viresh Kumar <viresh.kumar@linaro.org>
+>>> wrote:
+>>>>
+>>>> On 10-09-15, 01:26, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> On Monday, August 03, 2015 08:36:14 AM Viresh Kumar wrote:
+>>>>>>
+>>>>>> What's being done from CPUFREQ_INCOMPATIBLE, can also be done with
+>>>>>> CPUFREQ_ADJUST. There is nothing special with CPUFREQ_INCOMPATIBLE
+>>>>>> notifier.
+>>>>>
+>>>>>
+>>>>> The above part of the changelog is a disaster to me. :-(
+>>>>>
+>>>>> It not only doesn't explain what really goes on, but it's actively
+>>>>> confusing.
+>>>>>
+>>>>> What really happens is that the core sends CPUFREQ_INCOMPATIBLE
+>>>>> notifications
+>>>>> unconditionally right after sending the CPUFREQ_ADJUST ones, so the
+>>>>> former is
+>>>>> just redundant and it's more efficient to merge the two into one.
+>>>>
+>>>>
+>>>> Undoubtedly this looks far better :)
+>>>>
+>>>> But, isn't this series already applied some time back ?
+>>>
+>>>
+>>> Right, never mind.  For some reason that patch was left in the "New"
+>>> state.
+>>>
+>>> The code is OK.
+>>
+>>
+>>
+>> I guess I didn't notice this change when it was sent out.
+>>
+>> The comment that was deleted in this patch clearly states why the
+>> INCOMPATIBLE notifier is needed. Some client might want to boost the CPU min
+>> freq for performance or other reasons, but thermal might want to limit it.
+>> So, by having thermal register for INCOMPATIBLE notifiers to enforce the
+>> limits, we provide a way to guarantee it gets the final say.
+>>
+>> The real fix should have been to change drivers/thermal/cpu_cooling.c to use
+>> CPUFREQ_INCOMPATIBLE instead of CPUFREQ_ADJUST.
+>>
+>> Is there something I'm missing? If not, can we please revert this patch?
+>
+> Well, nobody was using that event.
+>
 
-On Wed, 30 Mar 2016 22:03:23 +0200
-Boris Brezillon <boris.brezillon@free-electrons.com> wrote:
+True, but that's more of a bug in drivers/thermal/cpu-cooling.c and 
+drivers/acpi/processor_thermal.c. We should revert this patch and fix 
+those drivers. Does that seem acceptable to you?
 
-> Hello,
-> 
-> This series adds support for atomic PWM update, or IOW, the capability
-> to update all the parameters of a PWM device (enabled/disabled, period,
-> duty and polarity) in one go.
-> 
-> It also adds support for initial PWM state retrieval (or hardware readout),
-> which should allow smooth handover between the bootloader and Linux. For
-> example, critical PWM users (like critical regulators controlled by a PWM)
-> can query the current PWM state, and adapt the PWM config without having
-> to disable/enable the PWM, or abruptly change the period/dutycyle/polarity
-> config.
-> 
-> Thierry, I hope this version meets your expectations, if that's not the
-> case, could you let me know quickly so I can adjust the implementation
-> accordingly (I'd really like to get most of those changes in 4.7).
+-Saravana
 
-Still haven't had a clear feedback from your side on this series (you
-commented on a few details, but nothing on the general approach). Could
-you please have at a quick look at it, and let me know if I should
-adjust the implementation?
-
-Note that I plan to send a new version  addressing comments made by
-other maintainers/developers by the end of the week. In the meantime,
-could you have a look at the first set of patches (patch 1 to 4 are
-completely independent), and apply them if you're happy with it.
-
-As you can see, I now have a lot of patches. This helps in showing the
-big picture, but also annoys people when I send this 50+ patchset. So,
-if you don't mind, I'd like to drop the changes touching PWM user
-drivers (to make them use the atomic API) until we get the other parts
-applied.
-
-Thanks,
-
-Boris
 
 -- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project

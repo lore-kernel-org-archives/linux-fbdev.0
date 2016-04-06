@@ -1,41 +1,46 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 06 Apr 2016 21:45:07 +0000
+From: Saravana Kannan <skannan@codeaurora.org>
+Date: Wed, 06 Apr 2016 21:49:34 +0000
 Subject: Re: [PATCH 1/7] cpufreq: remove redundant CPUFREQ_INCOMPATIBLE notifier event
-Message-Id: <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
+Message-Id: <5705846E.9050006@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1438571116.git.viresh.kumar@linaro.org>
-	<406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org>
-	<4897937.47p7WB7CoU@vostro.rjw.lan>
-	<20150910003918.GL5266@linux>
-	<CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com>
-	<57057201.9030109@codeaurora.org>
-	<CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com>
-	<57057FB1.2050904@codeaurora.org>
-In-Reply-To: <57057FB1.2050904@codeaurora.org>
+References: <cover.1438571116.git.viresh.kumar@linaro.org> <406f55ac8030043f0349b084878c9b8d04f7ad86.1438571116.git.viresh.kumar@linaro.org> <4897937.47p7WB7CoU@vostro.rjw.lan> <20150910003918.GL5266@linux> <CAJZ5v0jRDFJF6_mNvE7JknuUG-Tz1mDFMXw5rOEJP4GqXZtprA@mail.gmail.com> <57057201.9030109@codeaurora.org> <CAJZ5v0iUdkYrEzKrGDEiDnexsxfY7o9xOHPoWELk88gau=gAhA@mail.gmail.com> <57057FB1.2050904@codeaurora.org> <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
+In-Reply-To: <CAJZ5v0igB+iQSZO_GngNwRymVKTCKx2YK4BysO2KFXzpMqWwyw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Saravana Kannan <skannan@codeaurora.org>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, "list@codeaurora.org:ACPI" <linux-acpi@vger.kernel.org>, "list@codeaurora.org:DOCUMENTATION" <linux-doc@vger.kernel.org>, "list@codeaurora.org:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Lists linaro-kernel <linaro-kernel@lists.linaro.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Fabian Frederick <fabf@skynet.be>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, open@codeaurora.org, "list@codeaurora.org:ACPI" <linux-acpi@vger.kernel.org>, "list@codeaurora.org:DOCUMENTATION" <linux-doc@vger.kernel.org>, "list@codeaurora.org:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>, Nicholas Mc Guire <hofrat@osadl.org>, Russell King <rmk+kernel@arm.linux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wolfram Sang <wsa@the-dreams.de>
 
-On Wed, Apr 6, 2016 at 11:29 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
-> On 04/06/2016 02:21 PM, Rafael J. Wysocki wrote:
->>
->> On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org>
->> wrote:
+On 04/06/2016 02:45 PM, Rafael J. Wysocki wrote:
+> On Wed, Apr 6, 2016 at 11:29 PM, Saravana Kannan <skannan@codeaurora.org> wrote:
+>> On 04/06/2016 02:21 PM, Rafael J. Wysocki wrote:
 >>>
->>> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
+>>> On Wed, Apr 6, 2016 at 10:30 PM, Saravana Kannan <skannan@codeaurora.org>
+>>> wrote:
 >>>>
-
-[cut]
-
->>
->> Well, nobody was using that event.
->>
+>>>> On 09/09/2015 05:53 PM, Rafael J. Wysocki wrote:
+>>>>>
 >
-> True, but that's more of a bug in drivers/thermal/cpu-cooling.c and
-> drivers/acpi/processor_thermal.c. We should revert this patch and fix those
-> drivers. Does that seem acceptable to you?
+> [cut]
+>
+>>>
+>>> Well, nobody was using that event.
+>>>
+>>
+>> True, but that's more of a bug in drivers/thermal/cpu-cooling.c and
+>> drivers/acpi/processor_thermal.c. We should revert this patch and fix those
+>> drivers. Does that seem acceptable to you?
+>
+> I'd rather see a patch series adding the event back along with some
+> users.  One user at least.
+>
 
-I'd rather see a patch series adding the event back along with some
-users.  One user at least.
+Ok, I'll make those two drivers use them and send it out. It's very 
+clearly a bug in those drivers.
+
+-Saravana`
+
+-- 
+Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project

@@ -1,116 +1,80 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Wed, 20 Apr 2016 19:17:27 +0000
-Subject: Re: [PATCH 2/3] video: fbdev: imxfb: enable lcd regulator in .probe
-Message-Id: <20160420191727.GS29108@pengutronix.de>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 07 Apr 2016 21:54:31 +0000
+Subject: Re: [PATCH v5 30/46] regulator: pwm: retrieve correct voltage
+Message-Id: <20160407235431.788dc24a@bbrezillon>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <1457380425-20244-3-git-send-email-u.kleine-koenig@pengutronix.de>
- <56E2AA80.4050908@ti.com>
-In-Reply-To: <56E2AA80.4050908@ti.com>
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+	<1459368249-13241-31-git-send-email-boris.brezillon@free-electrons.com>
+	<20160330212410.GX2350@sirena.org.uk>
+In-Reply-To: <20160330212410.GX2350-GFdadSzt00ze9xe1eoZjHA@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 
-Hello Tomi,
+Hi Mark,
 
-On Fri, Mar 11, 2016 at 01:22:40PM +0200, Tomi Valkeinen wrote:
->=20
-> On 07/03/16 21:53, Uwe Kleine-K=F6nig wrote:
-> > This asserts that the display is on after the driver is initialized.
-> > Otherwise, depending on how the boot loader handled the display, it is
-> > either disabled as the regulator doesn't seem in use, or it stays off.
-> >=20
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-> > ---
-> >  drivers/video/fbdev/imxfb.c | 9 +++++++++
-> >  1 file changed, 9 insertions(+)
-> >=20
-> > diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> > index c5fcedde2a60..3dd2824e6773 100644
-> > --- a/drivers/video/fbdev/imxfb.c
-> > +++ b/drivers/video/fbdev/imxfb.c
-> > @@ -979,8 +979,17 @@ static int imxfb_probe(struct platform_device *pde=
-v)
-> >  	imxfb_enable_controller(fbi);
-> >  	fbi->pdev =3D pdev;
-> > =20
-> > +	if (!IS_ERR(fbi->lcd_pwr)) {
-> > +		ret =3D regulator_enable(fbi->lcd_pwr);
-> > +		if (ret)
-> > +			goto failed_regulator;
-> > +	}
-> > +
-> >  	return 0;
-> > =20
-> > +failed_regulator:
-> > +	imxfb_disable_controller(fbi);
-> > +
-> >  failed_lcd:
-> >  	unregister_framebuffer(info);
->=20
-> So I didn't go through the code in detail, but this doesn't look correct
-> to me.
->=20
-> Where is the regulator disabled which now gets enabled in probe?
+On Wed, 30 Mar 2016 14:24:10 -0700
+Mark Brown <broonie@kernel.org> wrote:
 
-It isn't, the display should be on after all :-)
+> On Wed, Mar 30, 2016 at 10:03:53PM +0200, Boris Brezillon wrote:
+> > The continuous PWM voltage regulator is caching the voltage value in
+> > the ->volt_uV field. While most of the time this value should reflect the
+> > real voltage, sometime it can be sightly different if the PWM device
+> > rounded the set_duty_cycle request.
+> > Moreover, this value is not valid until someone has modified the regulator
+> > output.
+> 
+> Acked-by: Mark Brown <broonie@kernel.org>
 
-> imxfb_lcd_set_power() handles the regulator enable/disable, so doesn't
-> this mean the regulator would always be enabled? You first enable it in
-> probe, then imxfb_lcd_set_power() enables it at some point (?), so the
-> enable-count is two then.
+Actually this patch introduces a bug (reported by Stephen):
 
-imxfb_lcd_set_power isn't called during boot.
+"
+I applied your patch series [PATCH v5 00/46] pwm: add support for
+atomic update and found a null pointer dereference when probing a
+pwm-regulator at boot. See the below stack trace:
 
-> To be honest, I've never used 'struct lcd_ops', but I think the enabling
-> of the regulator should happen somehow via that. If the regulator needs
-> to be enabled at probe time, then the probe should somehow cause
-> lcd_ops->set_power to get called.
->=20
-> Why does the regulator need to be enabled at probe? Or are you saying
-> imxfb_lcd_set_power() is never called in your case?
+[ 4.282374] [<ffffffc000399088>] pwm_regulator_get_voltage+0x78/0xa0
+[ 4.289344] [<ffffffc000390740>] regulator_attr_is_visible+0x7c/0x264
+[ 4.296408] [<ffffffc0001f75a0>] internal_create_group+0x14c/0x280
+[ 4.303184] [<ffffffc0001f76e8>] sysfs_create_group+0x14/0x1c
+[ 4.309483] [<ffffffc0001f77c8>] sysfs_create_groups+0x30/0x78
+[ 4.315881] [<ffffffc00043631c>] device_add+0x224/0x4d8
+[ 4.321609] [<ffffffc0004365ec>] device_register+0x1c/0x28
+[ 4.327623] [<ffffffc0003952a4>] regulator_register+0x2e4/0xc14
+[ 4.334112] [<ffffffc000396844>] devm_regulator_register+0x54/0x94
+[ 4.340887] [<ffffffc000399328>] pwm_regulator_probe+0x278/0x2b8
+[ 4.347473] [<ffffffc000439fe4>] platform_drv_probe+0x58/0xa4
+[ 4.353772] [<ffffffc0004387a8>] driver_probe_device+0x114/0x2ac
+[ 4.360358] [<ffffffc0004389a4>] __driver_attach+0x64/0x90
+[ 4.366371] [<ffffffc000436f50>] bus_for_each_dev+0x74/0x90
+[ 4.372478] [<ffffffc000438bd4>] driver_attach+0x20/0x28
+[ 4.378299] [<ffffffc00043778c>] bus_add_driver+0xe8/0x1e0
+[ 4.384312] [<ffffffc00043959c>] driver_register+0x98/0xe4
+[ 4.390326] [<ffffffc00043aa04>] __platform_driver_register+0x48/0x50
+[ 4.397388] [<ffffffc000cb2710>] pwm_regulator_driver_init+0x18/0x20
+[ 4.404356] [<ffffffc000c8ca7c>] do_one_initcall+0xf8/0x180
+[ 4.410466] [<ffffffc000c8cc58>] kernel_init_freeable+0x154/0x1f4
+[ 4.417148] [<ffffffc000929cf4>] kernel_init+0x10/0xf8
+[ 4.422782] [<ffffffc000084450>] ret_from_fork+0x10/0x40
 
-Right. I just confirmed that with next-20160419 with this patch on top:
+It looks like the root cause is that regulator_attr_is_visible will
+try to get the voltage, but at this point in regulator_register,
+rdev->constraints is still null. So
+pwm_duty_cycle_percentage_to_voltage will dereference a null
+rdev->constraints pointer.
+"
 
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 76b6a7784b06..93b803ebd61d 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -1,3 +1,4 @@
-+#define DEBUG
- /*
-  *  Freescale i.MX Frame Buffer device driver
-  *
-@@ -768,6 +769,7 @@ static int imxfb_lcd_set_power(struct lcd_device *lcdde=
-v, int power)
- {
- 	struct imxfb_info *fbi =3D dev_get_drvdata(&lcddev->dev);
-=20
-+	dev_dbg(&lcddev->dev, "%s(power=3D%d)\n", __func__, power);
- 	if (!IS_ERR(fbi->lcd_pwr)) {
- 		if (power)
- 			return regulator_enable(fbi->lcd_pwr);
+The problem is that we need to know the min and max voltage constraints
+to calculate the current voltage. ->get_voltage() is called when the
+sysfs attributes are created (part of device registration), and
+set_machine_constraints() is called after device_register(), thus
+leading to the NULL pointer dereference.
 
-With that:
+Is there any reason for calling set_machine_constraints() after
+device_register() in regulator_register()?
 
-# dmesg | grep -iE '(lcd|fb|power)'
-[    0.562633] backlight supply power not found, using dummy regulator
-[    0.568246] imx-fb 53fbc000.lcdc: i.MX Framebuffer driver
-[    0.568326] imxfb_init_fbinfo
-[    0.576275] Enabling LCD controller
-[    1.652166] sdhci-esdhc-imx 53fb4000.esdhc: Got CD GPIO
-[    1.658109] sdhci-esdhc-imx 53fb4000.esdhc: Got WP GPIO
-[    1.703638] mmc0: SDHCI controller on 53fb4000.esdhc [53fb4000.esdhc] us=
-ing DMA
-[    4.094923] lcd supply: disabling
+Best Regards,
 
-The bootloader enables the lcd before booting into Linux, with the last
-message the display gets disabled.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Boris

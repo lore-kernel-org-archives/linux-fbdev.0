@@ -1,47 +1,55 @@
-From: Eric Engestrom <eric@engestrom.ch>
-Date: Mon, 25 Apr 2016 00:24:21 +0000
-Subject: [PATCH 24/41] Documentation: fb: fix spelling mistakes
-Message-Id: <1461543878-3639-25-git-send-email-eric@engestrom.ch>
+From: Alan <alan@linux.intel.com>
+Date: Mon, 11 Apr 2016 13:30:24 +0000
+Subject: [PATCH 2/4] goldfish: Enable ACPI-based enumeration for goldfish framebuffer
+Message-Id: <20160411133023.23962.51777.stgit@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
-In-Reply-To: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Eric Engestrom <eric@engestrom.ch>, Bernie Thompson <bernie@plugable.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Signed-off-by: Eric Engestrom <eric@engestrom.ch>
+From: Yu Ning <yu.ning@intel.com>
+
+Enable ACPI bindings for the Goldfish framebuffer device.
+
+Signed-off-by: Yu Ning <yu.ning@intel.com>
+Signed-off-by: Jin Qian <jinqian@android.com>
+Signed-off-by: Alan <alan@linux.intel.com>
 ---
- Documentation/fb/udlfb.txt | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/goldfishfb.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
-index 57d2f29..c985cb6 100644
---- a/Documentation/fb/udlfb.txt
-+++ b/Documentation/fb/udlfb.txt
-@@ -9,7 +9,7 @@ pairing that with a hardware framebuffer (16MB) on the other end of the
- USB wire.  That hardware framebuffer is able to drive the VGA, DVI, or HDMI
- monitor with no CPU involvement until a pixel has to change.
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index f0e651b..58b33e4 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -26,6 +26,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/ioport.h>
+ #include <linux/platform_device.h>
++#include <linux/acpi.h>
  
--The CPU or other local resource does all the rendering; optinally compares the
-+The CPU or other local resource does all the rendering; optionally compares the
- result with a local shadow of the remote hardware framebuffer to identify
- the minimal set of pixels that have changed; and compresses and sends those
- pixels line-by-line via USB bulk transfers.
-@@ -66,10 +66,10 @@ means that from a hardware and fbdev software perspective, everything is good.
- At that point, a /dev/fb? interface will be present for user-mode applications
- to open and begin writing to the framebuffer of the DisplayLink device using
- standard fbdev calls.  Note that if mmap() is used, by default the user mode
--application must send down damage notifcations to trigger repaints of the
-+application must send down damage notifications to trigger repaints of the
- changed regions.  Alternatively, udlfb can be recompiled with experimental
- defio support enabled, to support a page-fault based detection mechanism
--that can work without explicit notifcation.
-+that can work without explicit notification.
+ enum {
+ 	FB_GET_WIDTH        = 0x00,
+@@ -310,6 +311,12 @@ static const struct of_device_id goldfish_fb_of_match[] = {
+ };
+ MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
  
- The most common client of udlfb is xf86-video-displaylink or a modified
- xf86-video-fbdev X server. These servers have no real DisplayLink specific
--- 
-2.8.0
++static const struct acpi_device_id goldfish_fb_acpi_match[] = {
++	{ "GFSH0004", 0 },
++	{ },
++};
++MODULE_DEVICE_TABLE(acpi, goldfish_fb_acpi_match);
++
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+@@ -317,6 +324,7 @@ static struct platform_driver goldfish_fb_driver = {
+ 		.name = "goldfish_fb",
+ 		.owner = THIS_MODULE,
+ 		.of_match_table = goldfish_fb_of_match,
++		.acpi_match_table = ACPI_PTR(goldfish_fb_acpi_match),
+ 	}
+ };
+ 
 

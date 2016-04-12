@@ -1,108 +1,59 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 29 Apr 2016 14:57:05 +0000
-Subject: Re: [PATCH v4 0/7] drm: Add fbdev deferred io support to helpers
-Message-Id: <20160429145705.GD14148@phenom.ffwll.local>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 12 Apr 2016 11:01:52 +0000
+Subject: Re: [PATCH v5 01/46] pwm: rcar: make use of pwm_is_enabled()
+Message-Id: <20160412110152.GG18882@ulmo.ba.sec>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="JbKQpFqZXJ2T76Sg"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
-In-Reply-To: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1459368249-13241-2-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-2-git-send-email-boris.brezillon@free-electrons.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org, Jean-Christophe
+
+
+--JbKQpFqZXJ2T76Sg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com
 
-On Thu, Apr 28, 2016 at 05:18:30PM +0200, Noralf Tr=F8nnes wrote:
-> This patchset adds fbdev deferred io support to drm_fb_helper and
-> drm_fb_cma_helper.
+On Wed, Mar 30, 2016 at 10:03:24PM +0200, Boris Brezillon wrote:
+> Commit 5c31252c4a86 ("pwm: Add the pwm_is_enabled() helper") introduced a
+> new function to test whether a PWM device is enabled or not without
+> manipulating PWM internal fields.
+> Hiding this is necessary if we want to smoothly move to the atomic PWM
+> config approach without impacting PWM drivers.
+> Fix this driver to use pwm_is_enabled() instead of directly accessing the
+> ->flags field.
 >=20
-> It channels fbdev mmap and fb_{write,fillrect,copyarea,imageblit} damage
-> through the (struct drm_framebuffer_funcs)->dirty callback on the
-> fb_helper framebuffer which will always run in process context.
->=20
-> I have also added patches that converts qxl and udl to use this
-> deferred io support. I have only compile tested it, no functional testing.
-> I know that qxl is purely a software thing so I could actually test it, b=
-ut
-> I have never used qemu so I'm not keen on spending a lot of time on that.
->=20
-> This was originally part of the tinydrm patchset.
->=20
-> Changes since v3:
-> - drm/fb-helper: Add fb_deferred_io support
->   - Don't use forward decl, move drm_fb_helper_dirty_work()
->   - Use DIV_ROUND_UP in drm_fb_helper_deferred_io()
->=20
-> Changes since v2:
-> - drm/rect: Add some drm_clip_rect utility functions
->   - This patch is dropped
-> - drm/fb-helper: Add fb_deferred_io support
->   - FB_DEFERRED_IO is now always selected by DRM_KMS_FB_HELPER, ifdef rem=
-oved
->   - The drm_clip_rect utility functions are dropped, so open code it
->   - docs: use & to denote structs
-> - drm/qxl: Use drm_fb_helper deferred_io support
->   - The drm_clip_rect_{width/height} functions are dropped, so open code =
-it
->=20
-> Changes since v1:
-> - drm/fb-helper: Add fb_deferred_io support
->   - Use a dedicated worker to run the framebuffer flushing like qxl does
->   - Add parameter descriptions to drm_fb_helper_deferred_io
-> - fbdev: fb_defio: Export fb_deferred_io_mmap
->   - Expand commit message
-> - drm/qxl: Use drm_fb_helper deferred_io support
->   - Add FIXME about special dirty() callback for fbdev
->   - Remove note in commit message about deferred worker, drm_fb_helper
->     is similar to qxl now.
-> - drm/udl: Use drm_fb_helper deferred_io support
->   - No need to enable deferred_io by default since drm_fb_helper uses
->     a dedicated worker for flushing
->=20
-> Changes since RFC:
-> - Fix drm_clip_rect use to be exclusive on x2/y2
-> - Put drm_clip_rect functions in drm_rect.{h,c}
-> - Take into account that (struct fb_ops *)->fb_{write,...}() can be called
->   from atomic context (spin_lock_irqsave)
-> - Export fb_deferred_io_mmap()
-> - Add some more documentation
-> - Add qxl and udl patches
->=20
-> Noralf Tr=F8nnes (7):
->   drm/udl: Change drm_fb_helper_sys_*() calls to sys_*()
->   drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
->   drm/fb-helper: Add fb_deferred_io support
->   fbdev: fb_defio: Export fb_deferred_io_mmap
->   drm/fb-cma-helper: Add fb_deferred_io support
->   drm/qxl: Use drm_fb_helper deferred_io support
->   drm/udl: Use drm_fb_helper deferred_io support
+> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> ---
+>  drivers/pwm/pwm-rcar.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Scrolled through them all once more, and didn't spot anything else. Great
-work! I plan to pull it all into drm-misc next week for 4.7 still. Please
-ping me in case I forget.
--Daniel
+Applied, thanks.
 
->=20
->  drivers/gpu/drm/Kconfig             |   1 +
->  drivers/gpu/drm/drm_fb_cma_helper.c | 178 ++++++++++++++++++++++++++--
->  drivers/gpu/drm/drm_fb_helper.c     | 103 ++++++++++++++++-
->  drivers/gpu/drm/qxl/qxl_display.c   |   9 +-
->  drivers/gpu/drm/qxl/qxl_drv.h       |   7 +-
->  drivers/gpu/drm/qxl/qxl_fb.c        | 223 +++++++++---------------------=
-------
->  drivers/gpu/drm/qxl/qxl_kms.c       |   4 -
->  drivers/gpu/drm/udl/udl_drv.h       |   2 -
->  drivers/gpu/drm/udl/udl_fb.c        | 140 +---------------------
->  drivers/video/fbdev/core/fb_defio.c |   3 +-
->  include/drm/drm_fb_cma_helper.h     |  14 +++
->  include/drm/drm_fb_helper.h         |  15 +++
->  include/linux/fb.h                  |   1 +
->  13 files changed, 372 insertions(+), 328 deletions(-)
->=20
-> --
-> 2.2.2
->=20
+Thierry
 
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+--JbKQpFqZXJ2T76Sg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABCAAGBQJXDNWfAAoJEN0jrNd/PrOhoj8QAK4UAz8ugmWPS9xJCHiJvCsZ
+cz4yyDzOQVaVTNHNEruFT+v1XMvaogalyvNxUR0z8fXpRzAj9vZyGm3VXD2CJcam
+/FvxqFKAodcSy5PjYSLoD/0bpeYpAiILFhxPTkKGFaR8vRnvY8HL7BWWM8ReXly+
+m+bPRy/JtAMpsFfYTgNGtXV101lkn8ZIvhJSCNwDwCWHAPN1q/c+XxikTuonrKiX
+p0f9SB74YUtq7gh5HE1vfrSFs2ozDXFDBfEbgTk9vfEL2O0E2gUkVF8yyLWHGUSu
+lfQB/A65nYFzn8tAqd97/RzMXeHMB9u+/FI7bwfvxK+hnRys3sxaS/5knlSe+Nzc
+EAnnoG0VEibaNctVC5ACumPP5eqS9ejMVYmenKiq7TyAM/3DhI4ZISsm/NUrmkke
+HhWUJs8U38hUK9pVHp94i63vQzLX9MWsAHXxXuTeCgkPgkklou+87nnPpcW3PWbq
+m6Bgpqijcx1OAW4ooJMpt4vls578/yFbguAGJzdm3QbB9jKMa/w4iGbuRfYiCowL
+cHLWFPSIGZrX3SXVfVNqSAHIhA1Jkaj1Ipku8+mz+SI/ai5Iitcnwe9QMBX1ttIh
+lQ5RaQmxpp6U0cxZno9Tb1lI7GEmxa0MaZnU2wmgcbDYleyg1Hp0W0eVVeIKcFi+
+5NcgYEiaLV56dufi0Vhm
+=gjRe
+-----END PGP SIGNATURE-----
+
+--JbKQpFqZXJ2T76Sg--

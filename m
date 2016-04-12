@@ -1,136 +1,54 @@
-From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Date: Tue, 26 Apr 2016 16:26:47 +0000
-Subject: Re: [PATCH v2 1/8] drm/rect: Add some drm_clip_rect utility functions
-Message-Id: <571F96C7.1060800@tronnes.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Tue, 12 Apr 2016 11:08:09 +0000
+Subject: Re: [PATCH v5 03/46] backlight: lm3630a_bl: stop messing with the pwm->period field
+Message-Id: <20160412110809.GI18882@ulmo.ba.sec>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="2xeD/fx0+7k8I/QN"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
- <20160425163816.GF4329@intel.com> <571E6366.20504@tronnes.org>
- <1615589.QRyc9Clv2Y@avalon>
-In-Reply-To: <1615589.QRyc9Clv2Y@avalon>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
+ <1459368249-13241-4-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1459368249-13241-4-git-send-email-boris.brezillon@free-electrons.com>
+To: Boris Brezillon <boris.brezillon@free-electrons.com>
+Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org, Jean-Christophe
+
+
+--2xeD/fx0+7k8I/QN
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
+On Wed, Mar 30, 2016 at 10:03:26PM +0200, Boris Brezillon wrote:
+> pwm->period field is not supposed to be changed by PWM users. The only
+> ones authorized to change it are the PWM core and PWM drivers.
+>=20
+> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> ---
+>  drivers/video/backlight/lm3630a_bl.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Den 25.04.2016 23:13, skrev Laurent Pinchart:
-> Hi Noralf,
->
-> On Monday 25 Apr 2016 20:35:18 Noralf Tr=F8nnes wrote:
->> Den 25.04.2016 18:38, skrev Ville Syrj=E4l=E4:
->>> On Mon, Apr 25, 2016 at 06:05:20PM +0200, Daniel Vetter wrote:
->>>> On Mon, Apr 25, 2016 at 06:09:44PM +0300, Ville Syrj=E4l=E4 wrote:
->>>>> On Mon, Apr 25, 2016 at 04:03:13PM +0200, Noralf Tr=F8nnes wrote:
->>>>>> Den 25.04.2016 15:02, skrev Ville Syrj=E4l=E4:
->>>>>>> On Mon, Apr 25, 2016 at 02:55:52PM +0200, Noralf Tr=F8nnes wrote:
->>>>>>>> Den 25.04.2016 14:39, skrev Ville Syrj=E4l=E4:
->>>>>>>>> On Sun, Apr 24, 2016 at 10:48:55PM +0200, Noralf Tr=F8nnes wrote:
->>>>>>>>>> Add some utility functions for struct drm_clip_rect.
+Applied, thanks.
 
-[...]
+Thierry
 
->> How about we just drop this patch?
->> I couldn't find anyone else that merge these clips, they just loop and
->> handle them individually.
->>
->> The relevant part in drm_fb_helper would become:
->>
->> static void drm_fb_helper_dirty_work(struct work_struct *work)
->> {
->>       struct drm_fb_helper *helper =3D container_of(work, struct drm_fb_=
-helper,
->> dirty_work);
->>       struct drm_clip_rect *clip =3D &helper->dirty_clip;
->>       struct drm_clip_rect clip_copy;
->>       unsigned long flags;
->>
->>       spin_lock_irqsave(&helper->dirty_lock, flags);
->>       clip_copy =3D *clip;
->>       clip->x1 =3D clip->y1 =3D ~0;
->>       clip->x2 =3D clip->y2 =3D 0;
->>       spin_unlock_irqrestore(&helper->dirty_lock, flags);
->>
->>       helper->fb->funcs->dirty(helper->fb, NULL, 0, 0, &clip_copy, 1);
->> }
->>
->> static void drm_fb_helper_dirty_init(struct drm_fb_helper *helper)
->> {
->>       spin_lock_init(&helper->dirty_lock);
->>       INIT_WORK(&helper->dirty_work, drm_fb_helper_dirty_work);
->>       helper->dirty_clip.x1 =3D helper->dirty_clip.y1 =3D ~0;
->> }
->>
->> static void drm_fb_helper_dirty(struct fb_info *info, u32 x, u32 y,
->>                   u32 width, u32 height)
->> {
->>       struct drm_fb_helper *helper =3D info->par;
->>       struct drm_clip_rect *clip =3D &helper->dirty_clip;
->>       unsigned long flags;
->>
->>       if (!helper->fb->funcs->dirty)
->>           return;
->>
->>       spin_lock_irqsave(&helper->dirty_lock, flags);
->>       clip->x1 =3D min(clip->x1, x);
->>       clip->y1 =3D min(clip->y1, y);
->>       clip->x2 =3D max(clip->x2, x + width);
->>       clip->y2 =3D max(clip->y2, y + height);
->>       spin_unlock_irqrestore(&helper->dirty_lock, flags);
->>
->>       schedule_work(&helper->dirty_work);
->> }
->>
->>
->> And the driver would use this tinydrm function:
->>
->> void tinydrm_merge_clips(struct drm_clip_rect *dst,
->>                struct drm_clip_rect *src, unsigned num_clips,
->>                unsigned flags, u32 width, u32 height)
->> {
->>       int i;
-> Nitpicking here, as i never takes negative values, could you make it an
-> unsigned int ?
+--2xeD/fx0+7k8I/QN
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Sure.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
->>       if (!src || !num_clips) {
->>           dst->x1 =3D 0;
->>           dst->x2 =3D width;
->>           dst->y1 =3D 0;
->>           dst->y2 =3D height;
->>           return;
->>       }
->>
->>       dst->x1 =3D dst->y1 =3D ~0;
->>       dst->x2 =3D dst->y2 =3D 0;
->>
->>       for (i =3D 0; i < num_clips; i++) {
->>           if (flags & DRM_MODE_FB_DIRTY_ANNOTATE_COPY)
->>               i++;
->>           dst->x1 =3D min(dst->x1, src[i].x1);
->>           dst->x2 =3D max(dst->x2, src[i].x2);
->>           dst->y1 =3D min(dst->y1, src[i].y1);
->>           dst->y2 =3D max(dst->y2, src[i].y2);
->>       }
->>
->>       if (dst->x2 > width || dst->y2 > height ||
->>           dst->x1 >=3D dst->x2 || dst->y1 >=3D dst->y2) {
->>           DRM_DEBUG_KMS("Illegal clip: x1=3D%u, x2=3D%u, y1=3D%u, y2=3D%=
-u\n",
->>                     dst->x1, dst->x2, dst->y1, dst->y2);
->>           dst->x1 =3D dst->y1 =3D 0;
->>           dst->x2 =3D width;
->>           dst->y2 =3D height;
->>       }
->> }
->>
->> static int mipi_dbi_dirtyfb(struct drm_framebuffer *fb, void *vmem,
->>                   unsigned flags, unsigned color,
->>                   struct drm_clip_rect *clips, unsigned num_clips)
->> {
->>       struct drm_clip_rect clip;
->>
->>       tinydrm_merge_clips(&clip, clips, num_clips, flags,
->>                   fb->width, fb->height);
+iQIcBAABCAAGBQJXDNcZAAoJEN0jrNd/PrOhTYQQAJIra7IMWwqrg+lUp7EqOQZY
+eV/VGRUmo6g3HLR3dTRbwKUjKeOyq9hqA+tvfaM+XsB1/2Ts2hVQZLs/XfC7/WgE
+3D0UifQLJgh0NwAg0LBYe0DIbTHKtNBsiga91l6LQV50hZWJeDXlgyY9y+kAnZEP
+FTIZbgfnCfI6yuHMf8RFIOFEOnr+6pNXK3C47kFky1V9VoPTqS7rjtJ6uyu7HSYw
+gtJWDXlu9UceaCWP8VUI6xaAxoh5II+oFzUUePTrssff1feTueIMNRGr4e4jY8e8
+Sp97XG/YMUY06CYQNsPC7EEnL4moGDbavsegDYOl0IgdKGP14soC++Vf5jwYMZ/p
+hIxv771iBUD0nhXzxMyL+mXenEnNqFhAn5GaJuFv3NpIRbDwhxageXibLRlGfUDJ
+G9nJywOwN4JIhBslQFFuelx+lLhWRVOdIArviNFYy+RcgyMcQ5MHVfPaJA56Z36V
+D/axa/U7ONgs4atxdcNXHhDxiGd3ts4/2YPlSFieP7AE6fyToKwvBTzLLKaXxiNG
+F1PrDU+ybLuiTJOXYu7dH7/vA+X2sbMxeIqm14wI9Kp5usguogRbayx/pBFmRHVy
+qs+Jz3p01xbvfTEpevyF/aWMSa6nmv+njc1kFfUXrv858Y3ztkmF8pYhyVkvQV1+
+MKYEQnJf9T0KJwmjgGKM
+=BxVW
+-----END PGP SIGNATURE-----
 
+--2xeD/fx0+7k8I/QN--

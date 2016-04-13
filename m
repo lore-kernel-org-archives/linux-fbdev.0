@@ -1,65 +1,50 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Tue, 12 Apr 2016 14:26:08 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 13 Apr 2016 08:25:11 +0000
 Subject: Re: [PATCH v5 03/46] backlight: lm3630a_bl: stop messing with the pwm->period field
-Message-Id: <20160412142608.GB25006@ulmo.ba.sec>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TakKZr9L6Hm6aLOc"
+Message-Id: <20160413082511.GL8094@x1>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
  <1459368249-13241-4-git-send-email-boris.brezillon@free-electrons.com>
  <20160412110809.GI18882@ulmo.ba.sec> <20160412141613.GI8094@x1>
-In-Reply-To: <20160412141613.GI8094@x1>
-To: Lee Jones <lee.jones@linaro.org>
+ <20160412142608.GB25006@ulmo.ba.sec>
+In-Reply-To: <20160412142608.GB25006@ulmo.ba.sec>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Thierry Reding <thierry.reding@gmail.com>
 Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, David Airlie <airlied@linux.ie>, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.
 
+On Tue, 12 Apr 2016, Thierry Reding wrote:
 
---TakKZr9L6Hm6aLOc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Apr 12, 2016 at 03:16:13PM +0100, Lee Jones wrote:
-> On Tue, 12 Apr 2016, Thierry Reding wrote:
->=20
-> > On Wed, Mar 30, 2016 at 10:03:26PM +0200, Boris Brezillon wrote:
-> > > pwm->period field is not supposed to be changed by PWM users. The only
-> > > ones authorized to change it are the PWM core and PWM drivers.
-> > >=20
-> > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > > ---
-> > >  drivers/video/backlight/lm3630a_bl.c | 3 +--
-> > >  1 file changed, 1 insertion(+), 2 deletions(-)
+> On Tue, Apr 12, 2016 at 03:16:13PM +0100, Lee Jones wrote:
+> > On Tue, 12 Apr 2016, Thierry Reding wrote:
 > >=20
-> > Applied, thanks.
+> > > On Wed, Mar 30, 2016 at 10:03:26PM +0200, Boris Brezillon wrote:
+> > > > pwm->period field is not supposed to be changed by PWM users. The o=
+nly
+> > > > ones authorized to change it are the PWM core and PWM drivers.
+> > > >=20
+> > > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+> > > > ---
+> > > >  drivers/video/backlight/lm3630a_bl.c | 3 +--
+> > > >  1 file changed, 1 insertion(+), 2 deletions(-)
+> > >=20
+> > > Applied, thanks.
+> >=20
+> > Applied?
 >=20
-> Applied?
+> You didn't specifically Ack this one, but I presumed that since the
+> change is essentially the same as for pwm-backlight, and this is another
+> prerequisite for the remainder of the series it should go in through the
+> PWM tree as well.
 
-You didn't specifically Ack this one, but I presumed that since the
-change is essentially the same as for pwm-backlight, and this is another
-prerequisite for the remainder of the series it should go in through the
-PWM tree as well.
+If you're taking Backlight patches through a !Backlight tree, you're
+going to have to send out a pull-request.  There are no conflicts
+currently, so I won't use it right away, but I need it in my arsenal
+if they do occur.
 
-Thierry
-
---TakKZr9L6Hm6aLOc
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJXDQWAAAoJEN0jrNd/PrOh74sP/is8Fx+HimV+xQUGl5bNRqB8
-C9t16YiTbMALk6NDTOQsdDrPcXHqhVuuV/7GW+tC4JmQ/BejNof5OZP7z7BJ6QFi
-eNSBlMQn4pcMnHOOEE8NgcMuowI9Q+WDaXsYGHUd59nnYbZpScuVqJ1qZVB3DBN/
-2rS+2kjdZIS322znn71gYAck/DyEX2uoOE9QdGU7gu18ipYoEdUXGo/XFjY8I+FB
-js8LEfye1ymplhIAtfkB/sncisB59Uy3/DPN04eVf+ra1QikIYcoaFDMIIzMTfFl
-oTLDqK2ANU+cJaOlsdK8C1TACgoTqhB6PtgvYLnyL/9sUbyFKo9l51/TigvUZSCk
-Xylz4LAF0rHK/MnyR4gF5imkicv4MeyIAc9P9pSMq3Gekv02N+JsqYyXqzVhk12B
-9ea3fBivD0nmUbLwvLPcZhBEbV7x3ItW+rY2gwLVgBYEo2lFmfVuXg6U/T8KX8JM
-jHvd0lfwe2qQ1wIp1iuU9YkKsg9c9Dz1Hn7yMsTRhXoKSJQrxNrSM2Esemcuo0qv
-4aLzqaajqWWslcCDjEFYCL0zcs/n25Po6eLvHcRiIZrx+CjvQfjJf9IvQ84OFrTN
-QL+AeJwJHlrvxsVYZ5iyc/lRsl7goLJD8xMyX1pDlLWLO0a77CLXuB3YWnQIyvuG
-RP3jBvYmYnieu5++2opT
-=Dd/s
------END PGP SIGNATURE-----
-
---TakKZr9L6Hm6aLOc--
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

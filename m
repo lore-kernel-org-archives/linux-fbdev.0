@@ -1,135 +1,123 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 14 Apr 2016 19:17:20 +0000
-Subject: [PATCH v5 00/24] pwm: add support for atomic update
-Message-Id: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+From: Aaron Lu <aaron.lu@intel.com>
+Date: Wed, 13 Apr 2016 07:32:49 +0000
+Subject: [PATCH 1/3] video / backlight: add two APIs for drivers to use
+Message-Id: <1460532771-22779-2-git-send-email-aaron.lu@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
 
-Hello,
+It is useful to get the backlight device's pointer and use it to set
+backlight in some cases(the following patch will make use of it) so add
+the two APIs and export them.
 
-This series adds support for atomic PWM update, or IOW, the capability
-to update all the parameters of a PWM device (enabled/disabled, period,
-duty and polarity) in one go.
+Signed-off-by: Aaron Lu <aaron.lu@intel.com>
+Acked-by: Jingoo Han <jg1.han@samsung.com>
+---
+ drivers/video/backlight/backlight.c | 43 +++++++++++++++++++++++++------------
+ include/linux/backlight.h           |  2 ++
+ 2 files changed, 31 insertions(+), 14 deletions(-)
 
-It also adds support for initial PWM state retrieval (or hardware
-readout), which should allow smooth handover between the bootloader and
-Linux. For example, critical PWM users (like critical regulators
-controlled by a PWM) can query the current PWM state, and adapt the PWM
-config without having to disable/enable the PWM, or abruptly change the
-period/dutycyle/polarity config.
-
-In this version, I dropped all patches converting PWM users and PWM
-drivers to the atomic API in order to limit the number of patches and
-ease review. I plan to send the remaining patches once these ones have
-been accepted.
-
-If you want to test the series, or see the big picture, you can have a
-look at this branch [1].
-
-Best Regards,
-
-Boris
-
-[1]https://github.com/bbrezillon/linux-rk/tree/atomic-pwm
-
-Changes since v5:
-- fix bugs in pwm_apply_state() implementation
-- drop already applied patches
-- s/pstate/state/
-- add pwm_apply_args() helper
-- limit the series to core changes and required changes in PWM users code
-
-Changes since v4:
-- introduce pwm_args to expose per-board/platform config
-- deprecate non-atomic APIs
-- implement non-atomic functions as wrappers around atomic ones
-- patch all PWM users to use the atomic API
-- rename the ->reset_state() hook into ->get_state()
-- drop most acks
-- rework PWM config in the pwm-regulator driver
-- patch sun4i and sti PWM drivers to support HW readout
-
-Changes since v3:
-- rebased on pwm/for-next after pulling 4.4-rc1
-- replace direct access to pwm fields by pwm_get/set_xxx() helpers, thus
-  fixing some build errors
-- split changes to allow each maintainer to review/ack or take the
-  modification through its subsystem
-
-Changes since v2:
-- rebased on top of 4.3-rc2
-- reintroduced pwm-regulator patches
-
-Changes since v1:
-- dropped applied patches
-- squashed Heiko's fixes into the rockchip driver changes
-- made a few cosmetic changes
-- added kerneldoc comments
-- added Heiko's patch to display more information in debugfs
-- dropped pwm-regulator patches (should be submitted separately)
-
-Boris Brezillon (23):
-  pwm: introduce the pwm_args concept
-  pwm: use pwm_get/set_xxx() helpers where appropriate
-  clk: pwm: use pwm_get_args() where appropriate
-  hwmon: pwm-fan: use pwm_get_args() where appropriate
-  input: misc: max77693: use pwm_get_args() where appropriate
-  leds: pwm: use pwm_get_args() where appropriate
-  regulator: pwm: use pwm_get_args() where appropriate
-  fbdev: ssd1307fb: use pwm_get_args() where appropriate
-  backlight: pwm_bl: use pwm_get_args() where appropriate
-  backlight: lp8788: explicitly apply PWM config extracted from pwm_args
-  backlight: lp855x: explicitly apply PWM config extracted from pwm_args
-  backlight: lm3630a: explicitly apply PWM config extracted from
-    pwm_args
-  input: misc: max8997: explicitly apply PWM config extracted from
-    pwm_args
-  input: misc: pwm-beeper: explicitly apply PWM config extracted from
-    pwm_args
-  drm: i915: explicitly apply PWM config extracted from pwm_args
-  ARM: explicitly apply PWM config extracted from pwm_args
-  pwm: keep PWM state in sync with hardware state
-  pwm: introduce the pwm_state concept
-  pwm: move the enabled/disabled info into pwm_state
-  pwm: add the PWM initial state retrieval infra
-  pwm: add the core infrastructure to allow atomic update
-  pwm: update documentation
-  pwm: switch to the atomic API
-
-Heiko St=C3=BCbner (1):
-  pwm: add information about polarity, duty cycle and period to debugfs
-
- Documentation/pwm.txt                |  30 +++-
- arch/arm/mach-s3c24xx/mach-rx1950.c  |   6 +
- drivers/clk/clk-pwm.c                |  17 +-
- drivers/gpu/drm/i915/intel_panel.c   |   6 +
- drivers/hwmon/pwm-fan.c              |  26 ++-
- drivers/input/misc/max77693-haptic.c |  17 +-
- drivers/input/misc/max8997_haptic.c  |   6 +
- drivers/input/misc/pwm-beeper.c      |   6 +
- drivers/leds/leds-pwm.c              |  11 +-
- drivers/pwm/core.c                   | 214 ++++++++++++++--------
- drivers/pwm/pwm-clps711x.c           |   2 +-
- drivers/pwm/pwm-crc.c                |   2 +-
- drivers/pwm/pwm-lpc18xx-sct.c        |   2 +-
- drivers/pwm/pwm-omap-dmtimer.c       |   2 +-
- drivers/pwm/pwm-pxa.c                |   2 +-
- drivers/pwm/pwm-sun4i.c              |   3 +-
- drivers/pwm/sysfs.c                  |  61 ++++---
- drivers/regulator/pwm-regulator.c    |  20 ++-
- drivers/video/backlight/lm3630a_bl.c |   6 +
- drivers/video/backlight/lp855x_bl.c  |   6 +
- drivers/video/backlight/lp8788_bl.c  |   6 +
- drivers/video/backlight/pwm_bl.c     |  10 +-
- drivers/video/fbdev/ssd1307fb.c      |  11 +-
- include/linux/pwm.h                  | 335 +++++++++++++++++++++++++++----=
-----
- 24 files changed, 606 insertions(+), 201 deletions(-)
-
---=20
-2.5.0
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index bddc8b17a4d8..18901b9b1eb4 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -164,18 +164,10 @@ static ssize_t brightness_show(struct device *dev,
+ 	return sprintf(buf, "%d\n", bd->props.brightness);
+ }
+ 
+-static ssize_t brightness_store(struct device *dev,
+-		struct device_attribute *attr, const char *buf, size_t count)
++int backlight_device_set_brightness(struct backlight_device *bd,
++				    unsigned long brightness)
+ {
+-	int rc;
+-	struct backlight_device *bd = to_backlight_device(dev);
+-	unsigned long brightness;
+-
+-	rc = kstrtoul(buf, 0, &brightness);
+-	if (rc)
+-		return rc;
+-
+-	rc = -ENXIO;
++	int rc = -ENXIO;
+ 
+ 	mutex_lock(&bd->ops_lock);
+ 	if (bd->ops) {
+@@ -185,7 +177,7 @@ static ssize_t brightness_store(struct device *dev,
+ 			pr_debug("set brightness to %lu\n", brightness);
+ 			bd->props.brightness = brightness;
+ 			backlight_update_status(bd);
+-			rc = count;
++			rc = 0;
+ 		}
+ 	}
+ 	mutex_unlock(&bd->ops_lock);
+@@ -194,6 +186,23 @@ static ssize_t brightness_store(struct device *dev,
+ 
+ 	return rc;
+ }
++EXPORT_SYMBOL(backlight_device_set_brightness);
++
++static ssize_t brightness_store(struct device *dev,
++		struct device_attribute *attr, const char *buf, size_t count)
++{
++	int rc;
++	struct backlight_device *bd = to_backlight_device(dev);
++	unsigned long brightness;
++
++	rc = kstrtoul(buf, 0, &brightness);
++	if (rc)
++		return rc;
++
++	rc = backlight_device_set_brightness(bd, brightness);
++
++	return rc ? rc : count;
++}
+ static DEVICE_ATTR_RW(brightness);
+ 
+ static ssize_t type_show(struct device *dev, struct device_attribute *attr,
+@@ -380,7 +389,7 @@ struct backlight_device *backlight_device_register(const char *name,
+ }
+ EXPORT_SYMBOL(backlight_device_register);
+ 
+-bool backlight_device_registered(enum backlight_type type)
++struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+ {
+ 	bool found = false;
+ 	struct backlight_device *bd;
+@@ -394,7 +403,13 @@ bool backlight_device_registered(enum backlight_type type)
+ 	}
+ 	mutex_unlock(&backlight_dev_list_mutex);
+ 
+-	return found;
++	return found ? bd : NULL;
++}
++EXPORT_SYMBOL(backlight_device_get_by_type);
++
++bool backlight_device_registered(enum backlight_type type)
++{
++	return backlight_device_get_by_type(type) ? true : false;
+ }
+ EXPORT_SYMBOL(backlight_device_registered);
+ 
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 1e7a69adbe6f..f46b88fa4a09 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -144,6 +144,8 @@ extern void backlight_force_update(struct backlight_device *bd,
+ extern bool backlight_device_registered(enum backlight_type type);
+ extern int backlight_register_notifier(struct notifier_block *nb);
+ extern int backlight_unregister_notifier(struct notifier_block *nb);
++extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
++extern int backlight_device_set_brightness(struct backlight_device *bd, unsigned long brightness);
+ 
+ #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
+ 
+-- 
+2.5.5
 

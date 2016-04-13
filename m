@@ -1,106 +1,50 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Mon, 25 Apr 2016 09:11:28 +0000
-Subject: Re: [PATCH v2 5/8] fbdev: fb_defio: Export fb_deferred_io_mmap
-Message-Id: <20160425091128.GR2510@phenom.ffwll.local>
+From: Aaron Lu <aaron.lu@intel.com>
+Date: Wed, 13 Apr 2016 07:32:48 +0000
+Subject: [PATCH v2 0/3] Support INT3406 Display thermal device
+Message-Id: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
- <1461530942-22485-6-git-send-email-noralf@tronnes.org>
-In-Reply-To: <1461530942-22485-6-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
 
-On Sun, Apr 24, 2016 at 10:48:59PM +0200, Noralf Tr=F8nnes wrote:
-> Export fb_deferred_io_mmap so drivers can change vma->vm_page_prot.
-> When the framebuffer memory is allocated using dma_alloc_writecombine()
-> instead of vmalloc(), I get cache syncing problems on ARM.
-> This solves it:
->=20
-> static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
-> 					  struct vm_area_struct *vma)
-> {
-> 	fb_deferred_io_mmap(info, vma);
-> 	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
->=20
-> 	return 0;
-> }
->=20
-> Could this have been done in the core?
-> Drivers that don't set (struct fb_ops *)->fb_mmap, gets a call to
-> fb_pgprotect() at the end of the default fb_mmap implementation
-> (drivers/video/fbdev/core/fbmem.c). This is an architecture specific
-> function that on many platforms uses pgprot_writecombine(), but not on
-> all. And looking at some of the fb_mmap implementations, some of them
-> sets vm_page_prot to nocache for instance, so I think the safest bet is
-> to do this in the driver and not in the fbdev core. And we can't call
-> fb_pgprotect() from fb_deferred_io_mmap() either because we don't have
-> access to the file pointer that powerpc needs.
->=20
-> Signed-off-by: Noralf Tr=F8nnes <noralf@tronnes.org>
+The display thermal device represents the LED/LCD display panel
+that may or may not include touch support. The main function of
+the display thermal device is to allow control of the display
+brightness in order to address a thermal condition or to reduce
+power consumed by display device.
 
-lgtm, but needs an ack from Tomi for merging through drm trees. Tomi?
+Due to the way this thermal device changes brightness level is said
+to be deprecated so we are using the raw interface to do the actual
+backlight change. This requires the backlight core support so two
+new APIs are added and exported in patch 1/3. With this, the previous
+API backlight_device_registered can be removed and this is done in
+patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
 
-Aside: When resending patches please include all the r-b/acks and Cc:
-people who participated in the discussion explicitly. That includes
-conditional r-b tags if you do the changes (like some of the r-b I'm doing
-right now). Makes life _much_ easier for maintainers ;-)
--Daniel
+The 1st version is here:
+http://thread.gmane.org/gmane.linux.acpi.devel/72619
 
-> ---
->=20
-> Changes since v1:
-> - Expand commit message
->=20
->  drivers/video/fbdev/core/fb_defio.c | 3 ++-
->  include/linux/fb.h                  | 1 +
->  2 files changed, 3 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/co=
-re/fb_defio.c
-> index 57721c7..74b5bca 100644
-> --- a/drivers/video/fbdev/core/fb_defio.c
-> +++ b/drivers/video/fbdev/core/fb_defio.c
-> @@ -164,7 +164,7 @@ static const struct address_space_operations fb_defer=
-red_io_aops =3D {
->  	.set_page_dirty =3D fb_deferred_io_set_page_dirty,
->  };
->=20
-> -static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_stru=
-ct *vma)
-> +int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
->  {
->  	vma->vm_ops =3D &fb_deferred_io_vm_ops;
->  	vma->vm_flags |=3D VM_DONTEXPAND | VM_DONTDUMP;
-> @@ -173,6 +173,7 @@ static int fb_deferred_io_mmap(struct fb_info *info, =
-struct vm_area_struct *vma)
->  	vma->vm_private_data =3D info;
->  	return 0;
->  }
-> +EXPORT_SYMBOL(fb_deferred_io_mmap);
->=20
->  /* workqueue callback */
->  static void fb_deferred_io_work(struct work_struct *work)
-> diff --git a/include/linux/fb.h b/include/linux/fb.h
-> index dfe8835..a964d07 100644
-> --- a/include/linux/fb.h
-> +++ b/include/linux/fb.h
-> @@ -673,6 +673,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u=
-32 d_pitch,
->  }
->=20
->  /* drivers/video/fb_defio.c */
-> +int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma=
-);
->  extern void fb_deferred_io_init(struct fb_info *info);
->  extern void fb_deferred_io_open(struct fb_info *info,
->  				struct inode *inode,
-> --
-> 2.2.2
->=20
+This whole series should go through the thermal tree if applied.
 
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Aaron Lu (3):
+  video / backlight: add two APIs for drivers to use
+  video / backlight: remove the backlight_device_registered API
+  Thermal: add INT3406 thermal driver
+
+ drivers/acpi/acpi_video.c                         |  83 ++++----
+ drivers/acpi/video_detect.c                       |   2 +-
+ drivers/thermal/Kconfig                           |  28 +--
+ drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
+ drivers/thermal/int340x_thermal/Makefile          |   1 +
+ drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
+ drivers/video/backlight/backlight.c               |  39 ++--
+ include/acpi/video.h                              |  20 ++
+ include/linux/backlight.h                         |   3 +-
+ 9 files changed, 374 insertions(+), 80 deletions(-)
+ create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+ create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+
+-- 
+2.5.5
+

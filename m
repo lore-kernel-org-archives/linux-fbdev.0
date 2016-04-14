@@ -1,59 +1,186 @@
-From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Thu, 28 Apr 2016 15:18:32 +0000
-Subject: [PATCH v4 2/7] drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
-Message-Id: <1461856717-6476-3-git-send-email-noralf@tronnes.org>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:21 +0000
+Subject: [PATCH v5 01/24] pwm: introduce the pwm_args concept
+Message-Id: <1460661464-11216-2-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
-In-Reply-To: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Now that drm_fb_helper gets deferred io support, the
-drm_fb_helper_sys_{fillrect,copyarea,imageblit} functions will schedule
-a worker that will call the (struct drm_framebuffer *)->funcs->dirty()
-function. This will break this driver so use the
-sys_{fillrect,copyarea,imageblit} functions directly.
+Currently the PWM core mixes the current PWM state with the per-platform
+reference config (specified through the PWM lookup table, DT definition or
+directly hardcoded in PWM drivers).
 
-Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Create a pwm_args struct to store this reference config, so that PWM users
+can differentiate the current config from the reference one.
+
+Patch all places where pwm->args should be initialized. We keep the
+pwm_set_polarity/period() calls until all PWM users are patched to
+use pwm_args instead of pwm_get_period/polarity().
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/gpu/drm/qxl/qxl_fb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/pwm/core.c         | 22 +++++++++++++++-------
+ drivers/pwm/pwm-clps711x.c |  2 +-
+ drivers/pwm/pwm-pxa.c      |  2 +-
+ include/linux/pwm.h        | 32 ++++++++++++++++++++++++++++++++
+ 4 files changed, 49 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
-index bb7ce07..3f7c543 100644
---- a/drivers/gpu/drm/qxl/qxl_fb.c
-+++ b/drivers/gpu/drm/qxl/qxl_fb.c
-@@ -199,7 +199,7 @@ static void qxl_fb_fillrect(struct fb_info *info,
- {
- 	struct qxl_fbdev *qfbdev =3D info->par;
-=20
--	drm_fb_helper_sys_fillrect(info, rect);
-+	sys_fillrect(info, rect);
- 	qxl_dirty_update(qfbdev, rect->dx, rect->dy, rect->width,
- 			 rect->height);
+diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
+index 7c330ff..ac89529 100644
+--- a/drivers/pwm/core.c
++++ b/drivers/pwm/core.c
+@@ -128,6 +128,14 @@ static int pwm_device_request(struct pwm_device *pwm, const char *label)
+ 	set_bit(PWMF_REQUESTED, &pwm->flags);
+ 	pwm->label = label;
+ 
++	/*
++	 * FIXME: this should be removed as soon as all PWM users are
++	 * properly making use of pwm_args to initialize the PWM device.
++	 * If we don't get rid of it, then PWM state and hardware can be
++	 * desynchronized.
++	 */
++	pwm_apply_args(pwm);
++
+ 	return 0;
  }
-@@ -209,7 +209,7 @@ static void qxl_fb_copyarea(struct fb_info *info,
- {
- 	struct qxl_fbdev *qfbdev =3D info->par;
-=20
--	drm_fb_helper_sys_copyarea(info, area);
-+	sys_copyarea(info, area);
- 	qxl_dirty_update(qfbdev, area->dx, area->dy, area->width,
- 			 area->height);
+ 
+@@ -146,12 +154,12 @@ of_pwm_xlate_with_flags(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm->args.period = args->args[1];
+ 
+ 	if (args->args[2] & PWM_POLARITY_INVERTED)
+-		pwm_set_polarity(pwm, PWM_POLARITY_INVERSED);
++		pwm->args.polarity = PWM_POLARITY_INVERSED;
+ 	else
+-		pwm_set_polarity(pwm, PWM_POLARITY_NORMAL);
++		pwm->args.polarity = PWM_POLARITY_NORMAL;
+ 
+ 	return pwm;
  }
-@@ -219,7 +219,7 @@ static void qxl_fb_imageblit(struct fb_info *info,
- {
- 	struct qxl_fbdev *qfbdev =3D info->par;
-=20
--	drm_fb_helper_sys_imageblit(info, image);
-+	sys_imageblit(info, image);
- 	qxl_dirty_update(qfbdev, image->dx, image->dy, image->width,
- 			 image->height);
+@@ -172,7 +180,7 @@ of_pwm_simple_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[1]);
++	pwm->args.period = args->args[1];
+ 
+ 	return pwm;
  }
---=20
-2.2.2
+@@ -736,13 +744,13 @@ struct pwm_device *pwm_get(struct device *dev, const char *con_id)
+ 	if (!chip)
+ 		goto out;
+ 
++	pwm->args.period = chosen->period;
++	pwm->args.polarity = chosen->polarity;
++
+ 	pwm = pwm_request_from_chip(chip, chosen->index, con_id ?: dev_id);
+ 	if (IS_ERR(pwm))
+ 		goto out;
+ 
+-	pwm_set_period(pwm, chosen->period);
+-	pwm_set_polarity(pwm, chosen->polarity);
+-
+ out:
+ 	mutex_unlock(&pwm_lookup_lock);
+ 	return pwm;
+diff --git a/drivers/pwm/pwm-clps711x.c b/drivers/pwm/pwm-clps711x.c
+index a80c108..7d33542 100644
+--- a/drivers/pwm/pwm-clps711x.c
++++ b/drivers/pwm/pwm-clps711x.c
+@@ -60,7 +60,7 @@ static int clps711x_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
+ 		return -EINVAL;
+ 
+ 	/* Store constant period value */
+-	pwm_set_period(pwm, DIV_ROUND_CLOSEST(NSEC_PER_SEC, freq));
++	pwm->args.period = DIV_ROUND_CLOSEST(NSEC_PER_SEC, freq);
+ 
+ 	return 0;
+ }
+diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
+index cb2f702..58b709f 100644
+--- a/drivers/pwm/pwm-pxa.c
++++ b/drivers/pwm/pwm-pxa.c
+@@ -160,7 +160,7 @@ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
+-	pwm_set_period(pwm, args->args[0]);
++	pwm->args.period = args->args[0];
+ 
+ 	return pwm;
+ }
+diff --git a/include/linux/pwm.h b/include/linux/pwm.h
+index 6555f01..c8859b7 100644
+--- a/include/linux/pwm.h
++++ b/include/linux/pwm.h
+@@ -74,6 +74,23 @@ enum pwm_polarity {
+ 	PWM_POLARITY_INVERSED,
+ };
+ 
++/**
++ * struct pwm_args - PWM arguments
++ * @period: reference period
++ * @polarity: reference polarity
++ *
++ * This structure describes board-dependent arguments attached to a PWM
++ * device. Those arguments are usually retrieved from the PWM lookup table or
++ * DT definition.
++ * This should not be confused with the PWM state: PWM args don't represent
++ * the current PWM state, but the configuration the PWM user plans to use
++ * on this PWM device.
++ */
++struct pwm_args {
++	unsigned int period;
++	enum pwm_polarity polarity;
++};
++
+ enum {
+ 	PWMF_REQUESTED = 1 << 0,
+ 	PWMF_ENABLED = 1 << 1,
+@@ -91,6 +108,7 @@ enum {
+  * @period: period of the PWM signal (in nanoseconds)
+  * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
+  * @polarity: polarity of the PWM signal
++ * @args: PWM arguments
+  */
+ struct pwm_device {
+ 	const char *label;
+@@ -103,6 +121,8 @@ struct pwm_device {
+ 	unsigned int period;
+ 	unsigned int duty_cycle;
+ 	enum pwm_polarity polarity;
++
++	struct pwm_args args;
+ };
+ 
+ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
+@@ -142,6 +162,18 @@ static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
+ 	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
+ }
+ 
++static inline void pwm_get_args(const struct pwm_device *pwm,
++				struct pwm_args *args)
++{
++	*args = pwm->args;
++}
++
++static inline void pwm_apply_args(struct pwm_device *pwm)
++{
++	pwm_set_period(pwm, pwm->args.period);
++	pwm_set_polarity(pwm, pwm->args.polarity);
++}
++
+ /**
+  * struct pwm_ops - PWM controller operations
+  * @request: optional hook for requesting a PWM
+-- 
+2.5.0
 

@@ -1,181 +1,46 @@
-From: Alan <alan@linux.intel.com>
-Date: Mon, 11 Apr 2016 13:30:50 +0000
-Subject: [PATCH 4/4] goldfish: 32 bit framebuffer support
-Message-Id: <20160411133048.23962.71702.stgit@localhost.localdomain>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:31 +0000
+Subject: [PATCH v5 11/24] backlight: lp855x: explicitly apply PWM config extracted from pwm_args
+Message-Id: <1460661464-11216-12-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-From: bohu <bohu@google.com>
+Call pwm_apply_args() just after requesting the PWM device so that the
+polarity and period are initialized according to the information provided
+in pwm_args.
 
-Add support for display formats and allow the use of both 16-bit and
-32-bit framebuffers in the emulator. Merged with the clean up patch from
-Nicolas Capens as requested.
+This is an intermediate state, and pwm_apply_args() should be dropped as
+soon as the atomic PWM infrastructure is in place and the driver makes
+use of it.
 
-Signed-off-by: Bo Hu <bohu@google.com>
-Signed-off-by: Nicolas Capens <capn@google.com>
-Signed-off-by: Jin Qian <jinqian@android.com>
-
-Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/fbdev/goldfishfb.c |   84 ++++++++++++++++++++++++++++++++------
- 1 file changed, 70 insertions(+), 14 deletions(-)
+ drivers/video/backlight/lp855x_bl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 131fee0..2a5fe71 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -38,11 +38,52 @@ enum {
- 	FB_SET_BLANK        = 0x18,
- 	FB_GET_PHYS_WIDTH   = 0x1c,
- 	FB_GET_PHYS_HEIGHT  = 0x20,
-+	FB_GET_FORMAT       = 0x24,
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index daca9e6..e5b14f5 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -246,6 +246,12 @@ static void lp855x_pwm_ctrl(struct lp855x *lp, int br, int max_br)
+ 			return;
  
- 	FB_INT_VSYNC             = 1U << 0,
- 	FB_INT_BASE_UPDATE_DONE  = 1U << 1
- };
- 
-+/* These values *must* match the platform definitions found under
-+ * <system/graphics.h> in the Goldfish emulator.
-+ */
-+enum {
-+	HAL_PIXEL_FORMAT_RGBA_8888          = 1,
-+	HAL_PIXEL_FORMAT_RGBX_8888          = 2,
-+	HAL_PIXEL_FORMAT_RGB_888            = 3,
-+	HAL_PIXEL_FORMAT_RGB_565            = 4,
-+	HAL_PIXEL_FORMAT_BGRA_8888          = 5,
-+};
+ 		lp->pwm = pwm;
 +
-+struct framebuffer_config {
-+	u8 bytes_per_pixel;
-+	u8 red_offset;
-+	u8 red_length;
-+	u8 green_offset;
-+	u8 green_length;
-+	u8 blue_offset;
-+	u8 blue_length;
-+	u8 transp_offset;
-+	u8 transp_length;
-+};
-+
-+static const struct framebuffer_config fb_configs[] = {
-+	{ 0, 0,  0, 0, 0, 0,  0, 0,  0 }, /* Invalid, assume RGB_565 */
-+	{ 4, 0,  8, 8, 8, 16, 8, 24, 8 }, /* HAL_PIXEL_FORMAT_RGBA_8888 */
-+	{ 4, 0,  8, 8, 8, 16, 8, 0,  0 }, /* HAL_PIXEL_FORMAT_RGBX_8888 */
-+	{ 3, 0,  8, 8, 8, 16, 8, 0,  0 }, /* HAL_PIXEL_FORMAT_RGB_888 */
-+	{ 2, 11, 5, 5, 6, 0,  5, 0,  0 }, /* HAL_PIXEL_FORMAT_RGB_565 */
-+	{ 4, 16, 8, 8, 8, 0,  8, 24, 8 }, /* HAL_PIXEL_FORMAT_BGRA_8888 */
-+};
-+
-+static const struct framebuffer_config *get_fb_config_from_format(int format)
-+{
-+	if (format > 0 && format < ARRAY_SIZE(fb_configs))
-+		return &fb_configs[format];
-+
-+	return &fb_configs[HAL_PIXEL_FORMAT_RGB_565]; /* legacy default */
-+}
-+
- struct goldfish_fb {
- 	void __iomem *reg_base;
- 	int irq;
-@@ -126,7 +167,8 @@ static int goldfish_fb_set_par(struct fb_info *info)
- {
- 	struct goldfish_fb *fb = container_of(info, struct goldfish_fb, fb);
- 	if (fb->rotation != fb->fb.var.rotate) {
--		info->fix.line_length = info->var.xres * 2;
-+		info->fix.line_length = info->var.xres *
-+			(fb->fb.var.bits_per_pixel / 8);
- 		fb->rotation = fb->fb.var.rotate;
- 		writel(fb->rotation, fb->reg_base + FB_SET_ROTATION);
++		/*
++		 * FIXME: pwm_apply_args() should be removed when switching to
++		 * the atomic PWM API.
++		 */
++		pwm_apply_args(pwm);
  	}
-@@ -143,8 +185,10 @@ static int goldfish_fb_pan_display(struct fb_var_screeninfo *var,
  
- 	spin_lock_irqsave(&fb->lock, irq_flags);
- 	base_update_count = fb->base_update_count;
--	writel(fb->fb.fix.smem_start + fb->fb.var.xres * 2 * var->yoffset,
--						fb->reg_base + FB_SET_BASE);
-+	writel(fb->fb.fix.smem_start +
-+		fb->fb.var.xres * (
-+			fb->fb.var.bits_per_pixel / 8) * var->yoffset,
-+		fb->reg_base + FB_SET_BASE);
- 	spin_unlock_irqrestore(&fb->lock, irq_flags);
- 	wait_event_timeout(fb->wait,
- 			fb->base_update_count != base_update_count, HZ / 15);
-@@ -186,8 +230,10 @@ static int goldfish_fb_probe(struct platform_device *pdev)
- 	struct resource *r;
- 	struct goldfish_fb *fb;
- 	size_t framesize;
--	u32 width, height;
-+	u32 width, height, format;
-+	int bytes_per_pixel;
- 	dma_addr_t fbpaddr;
-+	const struct framebuffer_config *fb_config;
- 
- 	fb = kzalloc(sizeof(*fb), GFP_KERNEL);
- 	if (fb = NULL) {
-@@ -217,13 +263,20 @@ static int goldfish_fb_probe(struct platform_device *pdev)
- 
- 	width = readl(fb->reg_base + FB_GET_WIDTH);
- 	height = readl(fb->reg_base + FB_GET_HEIGHT);
-+	format = readl(fb->reg_base + FB_GET_FORMAT);
-+	fb_config = get_fb_config_from_format(format);
-+	if (!fb_config) {
-+		ret = -EINVAL;
-+		goto err_no_irq;
-+	}
-+	bytes_per_pixel = fb_config->bytes_per_pixel;
- 
- 	fb->fb.fbops		= &goldfish_fb_ops;
- 	fb->fb.flags		= FBINFO_FLAG_DEFAULT;
- 	fb->fb.pseudo_palette	= fb->cmap;
- 	fb->fb.fix.type		= FB_TYPE_PACKED_PIXELS;
- 	fb->fb.fix.visual = FB_VISUAL_TRUECOLOR;
--	fb->fb.fix.line_length = width * 2;
-+	fb->fb.fix.line_length = width * bytes_per_pixel;
- 	fb->fb.fix.accel	= FB_ACCEL_NONE;
- 	fb->fb.fix.ypanstep = 1;
- 
-@@ -231,20 +284,22 @@ static int goldfish_fb_probe(struct platform_device *pdev)
- 	fb->fb.var.yres		= height;
- 	fb->fb.var.xres_virtual	= width;
- 	fb->fb.var.yres_virtual	= height * 2;
--	fb->fb.var.bits_per_pixel = 16;
-+	fb->fb.var.bits_per_pixel = bytes_per_pixel * 8;
- 	fb->fb.var.activate	= FB_ACTIVATE_NOW;
- 	fb->fb.var.height	= readl(fb->reg_base + FB_GET_PHYS_HEIGHT);
- 	fb->fb.var.width	= readl(fb->reg_base + FB_GET_PHYS_WIDTH);
- 	fb->fb.var.pixclock	= 0;
- 
--	fb->fb.var.red.offset = 11;
--	fb->fb.var.red.length = 5;
--	fb->fb.var.green.offset = 5;
--	fb->fb.var.green.length = 6;
--	fb->fb.var.blue.offset = 0;
--	fb->fb.var.blue.length = 5;
-+	fb->fb.var.red.offset = fb_config->red_offset;
-+	fb->fb.var.red.length = fb_config->red_length;
-+	fb->fb.var.green.offset = fb_config->green_offset;
-+	fb->fb.var.green.length = fb_config->green_length;
-+	fb->fb.var.blue.offset = fb_config->blue_offset;
-+	fb->fb.var.blue.length = fb_config->blue_length;
-+	fb->fb.var.transp.offset = fb_config->transp_offset;
-+	fb->fb.var.transp.length = fb_config->transp_length;
- 
--	framesize = width * height * 2 * 2;
-+	framesize = width * height * 2 * bytes_per_pixel;
- 	fb->fb.screen_base = (char __force __iomem *)dma_alloc_coherent(
- 						&pdev->dev, framesize,
- 						&fbpaddr, GFP_KERNEL);
-@@ -295,7 +350,8 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	size_t framesize;
- 	struct goldfish_fb *fb = platform_get_drvdata(pdev);
- 
--	framesize = fb->fb.var.xres_virtual * fb->fb.var.yres_virtual * 2;
-+	framesize = fb->fb.var.xres_virtual * fb->fb.var.yres_virtual *
-+		(fb->fb.var.bits_per_pixel / 8);
- 	unregister_framebuffer(&fb->fb);
- 	free_irq(fb->irq, fb);
- 
+ 	pwm_config(lp->pwm, duty, period);
+-- 
+2.5.0
 

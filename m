@@ -1,187 +1,135 @@
-From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Wed, 20 Apr 2016 15:25:22 +0000
-Subject: [PATCH 1/8] drm/rect: Add some drm_clip_rect utility functions
-Message-Id: <1461165929-11344-2-git-send-email-noralf@tronnes.org>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:20 +0000
+Subject: [PATCH v5 00/24] pwm: add support for atomic update
+Message-Id: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
-In-Reply-To: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Add some utility functions for struct drm_clip_rect.
+Hello,
 
-Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
----
- drivers/gpu/drm/drm_rect.c | 67 ++++++++++++++++++++++++++++++++++++++++++=
-++
- include/drm/drm_rect.h     | 69 ++++++++++++++++++++++++++++++++++++++++++=
-++++
- 2 files changed, 136 insertions(+)
+This series adds support for atomic PWM update, or IOW, the capability
+to update all the parameters of a PWM device (enabled/disabled, period,
+duty and polarity) in one go.
 
-diff --git a/drivers/gpu/drm/drm_rect.c b/drivers/gpu/drm/drm_rect.c
-index a8e2c86..a9fb1a8 100644
---- a/drivers/gpu/drm/drm_rect.c
-+++ b/drivers/gpu/drm/drm_rect.c
-@@ -434,3 +434,70 @@ void drm_rect_rotate_inv(struct drm_rect *r,
- 	}
- }
- EXPORT_SYMBOL(drm_rect_rotate_inv);
-+
-+/**
-+ * drm_clip_rect_intersect - intersect two clip rectangles
-+ * @r1: first clip rectangle
-+ * @r2: second clip rectangle
-+ *
-+ * Calculate the intersection of clip rectangles @r1 and @r2.
-+ * @r1 will be overwritten with the intersection.
-+ *
-+ * RETURNS:
-+ * %true if rectangle @r1 is still visible after the operation,
-+ * %false otherwise.
-+ */
-+bool drm_clip_rect_intersect(struct drm_clip_rect *r1,
-+			     const struct drm_clip_rect *r2)
-+{
-+	r1->x1 =3D max(r1->x1, r2->x1);
-+	r1->y1 =3D max(r1->y1, r2->y1);
-+	r1->x2 =3D min(r1->x2, r2->x2);
-+	r1->y2 =3D min(r1->y2, r2->y2);
-+
-+	return drm_clip_rect_visible(r1);
-+}
-+EXPORT_SYMBOL(drm_clip_rect_intersect);
-+
-+/**
-+ * drm_clip_rect_merge - Merge clip rectangles
-+ * @dst: destination clip rectangle
-+ * @src: source clip rectangle(s), can be NULL
-+ * @num_clips: number of source clip rectangles
-+ * @flags: drm_mode_fb_dirty_cmd flags (DRM_MODE_FB_DIRTY_ANNOTATE_COPY)
-+ * @width: width of clip rectangle if @src is NULL
-+ * @height: height of clip rectangle if @src is NULL
-+ *
-+ * The dirtyfb ioctl allows for a NULL clip rectangle to be passed in,
-+ * so if @src is NULL, width and height is used to set a full clip rectang=
-le.
-+ * @dst takes part in the merge unless it is empty {0,0,0,0}.
-+ */
-+void drm_clip_rect_merge(struct drm_clip_rect *dst,
-+			 struct drm_clip_rect *src, unsigned num_clips,
-+			 unsigned flags, u32 width, u32 height)
-+{
-+	int i;
-+
-+	if (!src || !num_clips) {
-+		dst->x1 =3D 0;
-+		dst->x2 =3D width;
-+		dst->y1 =3D 0;
-+		dst->y2 =3D height;
-+		return;
-+	}
-+
-+	if (drm_clip_rect_is_empty(dst)) {
-+		dst->x1 =3D ~0;
-+		dst->y1 =3D ~0;
-+	}
-+
-+	for (i =3D 0; i < num_clips; i++) {
-+		if (flags & DRM_MODE_FB_DIRTY_ANNOTATE_COPY)
-+			i++;
-+		dst->x1 =3D min(dst->x1, src[i].x1);
-+		dst->x2 =3D max(dst->x2, src[i].x2);
-+		dst->y1 =3D min(dst->y1, src[i].y1);
-+		dst->y2 =3D max(dst->y2, src[i].y2);
-+	}
-+}
-+EXPORT_SYMBOL(drm_clip_rect_merge);
-diff --git a/include/drm/drm_rect.h b/include/drm/drm_rect.h
-index 83bb156..936ad8d 100644
---- a/include/drm/drm_rect.h
-+++ b/include/drm/drm_rect.h
-@@ -24,6 +24,8 @@
- #ifndef DRM_RECT_H
- #define DRM_RECT_H
-=20
-+#include <uapi/drm/drm.h>
-+
- /**
-  * DOC: rect utils
-  *
-@@ -171,4 +173,71 @@ void drm_rect_rotate_inv(struct drm_rect *r,
- 			 int width, int height,
- 			 unsigned int rotation);
-=20
-+/**
-+ * drm_clip_rect_width - determine the clip rectangle width
-+ * @r: clip rectangle whose width is returned
-+ *
-+ * RETURNS:
-+ * The width of the clip rectangle.
-+ */
-+static inline int drm_clip_rect_width(const struct drm_clip_rect *r)
-+{
-+	return r->x2 - r->x1;
-+}
-+
-+/**
-+ * drm_clip_rect_height - determine the clip rectangle height
-+ * @r: clip rectangle whose height is returned
-+ *
-+ * RETURNS:
-+ * The height of the clip rectangle.
-+ */
-+static inline int drm_clip_rect_height(const struct drm_clip_rect *r)
-+{
-+	return r->y2 - r->y1;
-+}
-+
-+/**
-+ * drm_clip_rect_visible - determine if the the clip rectangle is visible
-+ * @r: clip rectangle whose visibility is returned
-+ *
-+ * RETURNS:
-+ * %true if the clip rectangle is visible, %false otherwise.
-+ */
-+static inline bool drm_clip_rect_visible(const struct drm_clip_rect *r)
-+{
-+	return drm_clip_rect_width(r) > 0 && drm_clip_rect_height(r) > 0;
-+}
-+
-+/**
-+ * drm_clip_rect_reset - Reset clip rectangle
-+ * @clip: clip rectangle
-+ *
-+ * Sets clip rectangle to {0,0,0,0}.
-+ */
-+static inline void drm_clip_rect_reset(struct drm_clip_rect *clip)
-+{
-+	clip->x1 =3D 0;
-+	clip->x2 =3D 0;
-+	clip->y1 =3D 0;
-+	clip->y2 =3D 0;
-+}
-+
-+/**
-+ * drm_clip_rect_is_empty - Is clip rectangle empty?
-+ * @clip: clip rectangle
-+ *
-+ * Returns true if clip rectangle is {0,0,0,0}.
-+ */
-+static inline bool drm_clip_rect_is_empty(struct drm_clip_rect *clip)
-+{
-+	return (!clip->x1 && !clip->x2 && !clip->y1 && !clip->y2);
-+}
-+
-+bool drm_clip_rect_intersect(struct drm_clip_rect *r1,
-+			     const struct drm_clip_rect *r2);
-+void drm_clip_rect_merge(struct drm_clip_rect *dst,
-+			 struct drm_clip_rect *src, unsigned num_clips,
-+			 unsigned flags, u32 width, u32 height);
-+
- #endif
+It also adds support for initial PWM state retrieval (or hardware
+readout), which should allow smooth handover between the bootloader and
+Linux. For example, critical PWM users (like critical regulators
+controlled by a PWM) can query the current PWM state, and adapt the PWM
+config without having to disable/enable the PWM, or abruptly change the
+period/dutycyle/polarity config.
+
+In this version, I dropped all patches converting PWM users and PWM
+drivers to the atomic API in order to limit the number of patches and
+ease review. I plan to send the remaining patches once these ones have
+been accepted.
+
+If you want to test the series, or see the big picture, you can have a
+look at this branch [1].
+
+Best Regards,
+
+Boris
+
+[1]https://github.com/bbrezillon/linux-rk/tree/atomic-pwm
+
+Changes since v5:
+- fix bugs in pwm_apply_state() implementation
+- drop already applied patches
+- s/pstate/state/
+- add pwm_apply_args() helper
+- limit the series to core changes and required changes in PWM users code
+
+Changes since v4:
+- introduce pwm_args to expose per-board/platform config
+- deprecate non-atomic APIs
+- implement non-atomic functions as wrappers around atomic ones
+- patch all PWM users to use the atomic API
+- rename the ->reset_state() hook into ->get_state()
+- drop most acks
+- rework PWM config in the pwm-regulator driver
+- patch sun4i and sti PWM drivers to support HW readout
+
+Changes since v3:
+- rebased on pwm/for-next after pulling 4.4-rc1
+- replace direct access to pwm fields by pwm_get/set_xxx() helpers, thus
+  fixing some build errors
+- split changes to allow each maintainer to review/ack or take the
+  modification through its subsystem
+
+Changes since v2:
+- rebased on top of 4.3-rc2
+- reintroduced pwm-regulator patches
+
+Changes since v1:
+- dropped applied patches
+- squashed Heiko's fixes into the rockchip driver changes
+- made a few cosmetic changes
+- added kerneldoc comments
+- added Heiko's patch to display more information in debugfs
+- dropped pwm-regulator patches (should be submitted separately)
+
+Boris Brezillon (23):
+  pwm: introduce the pwm_args concept
+  pwm: use pwm_get/set_xxx() helpers where appropriate
+  clk: pwm: use pwm_get_args() where appropriate
+  hwmon: pwm-fan: use pwm_get_args() where appropriate
+  input: misc: max77693: use pwm_get_args() where appropriate
+  leds: pwm: use pwm_get_args() where appropriate
+  regulator: pwm: use pwm_get_args() where appropriate
+  fbdev: ssd1307fb: use pwm_get_args() where appropriate
+  backlight: pwm_bl: use pwm_get_args() where appropriate
+  backlight: lp8788: explicitly apply PWM config extracted from pwm_args
+  backlight: lp855x: explicitly apply PWM config extracted from pwm_args
+  backlight: lm3630a: explicitly apply PWM config extracted from
+    pwm_args
+  input: misc: max8997: explicitly apply PWM config extracted from
+    pwm_args
+  input: misc: pwm-beeper: explicitly apply PWM config extracted from
+    pwm_args
+  drm: i915: explicitly apply PWM config extracted from pwm_args
+  ARM: explicitly apply PWM config extracted from pwm_args
+  pwm: keep PWM state in sync with hardware state
+  pwm: introduce the pwm_state concept
+  pwm: move the enabled/disabled info into pwm_state
+  pwm: add the PWM initial state retrieval infra
+  pwm: add the core infrastructure to allow atomic update
+  pwm: update documentation
+  pwm: switch to the atomic API
+
+Heiko St=C3=BCbner (1):
+  pwm: add information about polarity, duty cycle and period to debugfs
+
+ Documentation/pwm.txt                |  30 +++-
+ arch/arm/mach-s3c24xx/mach-rx1950.c  |   6 +
+ drivers/clk/clk-pwm.c                |  17 +-
+ drivers/gpu/drm/i915/intel_panel.c   |   6 +
+ drivers/hwmon/pwm-fan.c              |  26 ++-
+ drivers/input/misc/max77693-haptic.c |  17 +-
+ drivers/input/misc/max8997_haptic.c  |   6 +
+ drivers/input/misc/pwm-beeper.c      |   6 +
+ drivers/leds/leds-pwm.c              |  11 +-
+ drivers/pwm/core.c                   | 214 ++++++++++++++--------
+ drivers/pwm/pwm-clps711x.c           |   2 +-
+ drivers/pwm/pwm-crc.c                |   2 +-
+ drivers/pwm/pwm-lpc18xx-sct.c        |   2 +-
+ drivers/pwm/pwm-omap-dmtimer.c       |   2 +-
+ drivers/pwm/pwm-pxa.c                |   2 +-
+ drivers/pwm/pwm-sun4i.c              |   3 +-
+ drivers/pwm/sysfs.c                  |  61 ++++---
+ drivers/regulator/pwm-regulator.c    |  20 ++-
+ drivers/video/backlight/lm3630a_bl.c |   6 +
+ drivers/video/backlight/lp855x_bl.c  |   6 +
+ drivers/video/backlight/lp8788_bl.c  |   6 +
+ drivers/video/backlight/pwm_bl.c     |  10 +-
+ drivers/video/fbdev/ssd1307fb.c      |  11 +-
+ include/linux/pwm.h                  | 335 +++++++++++++++++++++++++++----=
+----
+ 24 files changed, 606 insertions(+), 201 deletions(-)
+
 --=20
-2.2.2
+2.5.0
 

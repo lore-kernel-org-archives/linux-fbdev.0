@@ -1,70 +1,65 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Wed, 13 Apr 2016 07:32:50 +0000
-Subject: [PATCH 2/3] video / backlight: remove the backlight_device_registered API
-Message-Id: <1460532771-22779-3-git-send-email-aaron.lu@intel.com>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:29 +0000
+Subject: [PATCH v5 09/24] backlight: pwm_bl: use pwm_get_args() where appropriate
+Message-Id: <1460661464-11216-10-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
-In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Since we will need the backlight_device_get_by_type API, we can use it
-instead of the backlight_device_registered API whenever necessary so
-remove the backlight_device_registered API.
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
+
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/acpi/video_detect.c         | 2 +-
- drivers/video/backlight/backlight.c | 6 ------
- include/linux/backlight.h           | 1 -
- 3 files changed, 1 insertion(+), 8 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/acpi/video_detect.c b/drivers/acpi/video_detect.c
-index 1316ddd92fac..3d1327615f72 100644
---- a/drivers/acpi/video_detect.c
-+++ b/drivers/acpi/video_detect.c
-@@ -358,7 +358,7 @@ enum acpi_backlight_type acpi_video_get_backlight_type(void)
- 	if (!(video_caps & ACPI_VIDEO_BACKLIGHT))
- 		return acpi_backlight_vendor;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index a33a290..b2b366b 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -201,6 +201,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+ 	int initial_blank = FB_BLANK_UNBLANK;
++	struct pwm_args pargs;
+ 	int ret;
  
--	if (acpi_osi_is_win8() && backlight_device_registered(BACKLIGHT_RAW))
-+	if (acpi_osi_is_win8() && backlight_device_get_by_type(BACKLIGHT_RAW))
- 		return acpi_backlight_native;
+ 	if (!data) {
+@@ -307,12 +308,19 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
  
- 	return acpi_backlight_video;
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 18901b9b1eb4..288318ad21dd 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -407,12 +407,6 @@ struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
- }
- EXPORT_SYMBOL(backlight_device_get_by_type);
+ 	/*
++	 * FIXME: pwm_apply_args() should be removed when switching to
++	 * the atomic PWM API.
++	 */
++	pwm_apply_args(pb->pwm);
++
++	/*
+ 	 * The DT case will set the pwm_period_ns field to 0 and store the
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+ 	 * set the period from platform data if it has not already been set
+ 	 * via the PWM lookup table.
+ 	 */
+-	pb->period = pwm_get_period(pb->pwm);
++	pwm_get_args(pb->pwm, &pargs);
++	pb->period = pargs.period;
+ 	if (!pb->period && (data->pwm_period_ns > 0))
+ 		pb->period = data->pwm_period_ns;
  
--bool backlight_device_registered(enum backlight_type type)
--{
--	return backlight_device_get_by_type(type) ? true : false;
--}
--EXPORT_SYMBOL(backlight_device_registered);
--
- /**
-  * backlight_device_unregister - unregisters a backlight device object.
-  * @bd: the backlight device object to be unregistered and freed.
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index f46b88fa4a09..5f2fd61ef4fb 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -141,7 +141,6 @@ extern void devm_backlight_device_unregister(struct device *dev,
- 					struct backlight_device *bd);
- extern void backlight_force_update(struct backlight_device *bd,
- 				   enum backlight_update_reason reason);
--extern bool backlight_device_registered(enum backlight_type type);
- extern int backlight_register_notifier(struct notifier_block *nb);
- extern int backlight_unregister_notifier(struct notifier_block *nb);
- extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
 -- 
-2.5.5
+2.5.0
 

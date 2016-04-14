@@ -1,89 +1,46 @@
-From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Wed, 27 Apr 2016 18:16:33 +0000
-Subject: [PATCH v3 4/7] fbdev: fb_defio: Export fb_deferred_io_mmap
-Message-Id: <1461780996-8612-5-git-send-email-noralf@tronnes.org>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:32 +0000
+Subject: [PATCH v5 12/24] backlight: lm3630a: explicitly apply PWM config extracted from pwm_args
+Message-Id: <1460661464-11216-13-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
-In-Reply-To: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Export fb_deferred_io_mmap so drivers can change vma->vm_page_prot.
-When the framebuffer memory is allocated using dma_alloc_writecombine()
-instead of vmalloc(), I get cache syncing problems on ARM.
-This solves it:
+Call pwm_apply_args() just after requesting the PWM device so that the
+polarity and period are initialized according to the information provided
+in pwm_args.
 
-static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
-					  struct vm_area_struct *vma)
-{
-	fb_deferred_io_mmap(info, vma);
-	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
+This is an intermediate state, and pwm_apply_args() should be dropped as
+soon as the atomic PWM infrastructure is in place and the driver makes
+use of it.
 
-	return 0;
-}
-
-Could this have been done in the core?
-Drivers that don't set (struct fb_ops *)->fb_mmap, gets a call to
-fb_pgprotect() at the end of the default fb_mmap implementation
-(drivers/video/fbdev/core/fbmem.c). This is an architecture specific
-function that on many platforms uses pgprot_writecombine(), but not on
-all. And looking at some of the fb_mmap implementations, some of them
-sets vm_page_prot to nocache for instance, so I think the safest bet is
-to do this in the driver and not in the fbdev core. And we can't call
-fb_pgprotect() from fb_deferred_io_mmap() either because we don't have
-access to the file pointer that powerpc needs.
-
-Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
+ drivers/video/backlight/lm3630a_bl.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Changes since v1:
-- Expand commit message
-
- drivers/video/fbdev/core/fb_defio.c | 3 ++-
- include/linux/fb.h                  | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core=
-/fb_defio.c
-index 57721c7..74b5bca 100644
---- a/drivers/video/fbdev/core/fb_defio.c
-+++ b/drivers/video/fbdev/core/fb_defio.c
-@@ -164,7 +164,7 @@ static const struct address_space_operations fb_deferre=
-d_io_aops =3D {
- 	.set_page_dirty =3D fb_deferred_io_set_page_dirty,
- };
-
--static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct=
- *vma)
-+int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
- {
- 	vma->vm_ops =3D &fb_deferred_io_vm_ops;
- 	vma->vm_flags |=3D VM_DONTEXPAND | VM_DONTDUMP;
-@@ -173,6 +173,7 @@ static int fb_deferred_io_mmap(struct fb_info *info, st=
-ruct vm_area_struct *vma)
- 	vma->vm_private_data =3D info;
- 	return 0;
- }
-+EXPORT_SYMBOL(fb_deferred_io_mmap);
-
- /* workqueue callback */
- static void fb_deferred_io_work(struct work_struct *work)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index dfe8835..a964d07 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -673,6 +673,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32=
- d_pitch,
- }
-
- /* drivers/video/fb_defio.c */
-+int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
- extern void fb_deferred_io_init(struct fb_info *info);
- extern void fb_deferred_io_open(struct fb_info *info,
- 				struct inode *inode,
---
-2.2.2
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 3d16bd6..60d6c2a 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -424,6 +424,12 @@ static int lm3630a_probe(struct i2c_client *client,
+ 			dev_err(&client->dev, "fail : get pwm device\n");
+ 			return PTR_ERR(pchip->pwmd);
+ 		}
++
++		/*
++		 * FIXME: pwm_apply_args() should be removed when switching to
++		 * the atomic PWM API.
++		 */
++		pwm_apply_args(pchip->pwmd);
+ 	}
+ 
+ 	/* interrupt enable  : irq 0 is not allowed */
+-- 
+2.5.0
 

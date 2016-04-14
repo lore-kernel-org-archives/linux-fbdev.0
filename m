@@ -1,79 +1,88 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 29 Apr 2016 10:53:30 +0000
-Subject: Re: [PATCH] video: fbdev: omap2: Remove deprecated regulator_can_change_voltage() usage
-Message-Id: <57233D2A.5000100@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="JORHPl58Du2D0fuJVcp8lJxpXJ89vDgsL"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:27 +0000
+Subject: [PATCH v5 07/24] regulator: pwm: use pwm_get_args() where appropriate
+Message-Id: <1460661464-11216-8-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461848183-3634-1-git-send-email-peter.ujfalusi@ti.com>
-In-Reply-To: <1461848183-3634-1-git-send-email-peter.ujfalusi@ti.com>
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>, plagnioj@jcrosoft.com, laurent.pinchart@ideasonboard.com
-Cc: robdclark@gmail.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
---JORHPl58Du2D0fuJVcp8lJxpXJ89vDgsL
-Content-Type: multipart/mixed; boundary="0Ampo0rSf4TX5xRG2Pt5fjTEJnstwVClu"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>, plagnioj@jcrosoft.com,
- laurent.pinchart@ideasonboard.com
-Cc: robdclark@gmail.com, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-ID: <57233D2A.5000100@ti.com>
-Subject: Re: [PATCH] video: fbdev: omap2: Remove deprecated
- regulator_can_change_voltage() usage
-References: <1461848183-3634-1-git-send-email-peter.ujfalusi@ti.com>
-In-Reply-To: <1461848183-3634-1-git-send-email-peter.ujfalusi@ti.com>
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
 
---0Ampo0rSf4TX5xRG2Pt5fjTEJnstwVClu
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
 
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
 
-On 28/04/16 15:56, Peter Ujfalusi wrote:
-> regulator_can_change_voltage() is deprecated and it's use is not necess=
-ary
-> as commit:
-> 6a0028b3dd67b regulator: Deprecate regulator_can_change_voltage()
-> describers it clearly.
-> As there is no practical use of it it can be removed.
-> At this point the regulator_set_voltage() calls can not be removed as t=
-he
-> DT data need to be fixed first.
->=20
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-> ---
->  drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 12 +++++-------
->  drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 12 +++++-------
->  drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 12 +++++-------
->  3 files changed, 15 insertions(+), 21 deletions(-)
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/regulator/pwm-regulator.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
-Thanks, queued for 4.7.
+diff --git a/drivers/regulator/pwm-regulator.c b/drivers/regulator/pwm-regulator.c
+index 4689d62..ffdb895 100644
+--- a/drivers/regulator/pwm-regulator.c
++++ b/drivers/regulator/pwm-regulator.c
+@@ -59,16 +59,16 @@ static int pwm_regulator_set_voltage_sel(struct regulator_dev *rdev,
+ 					 unsigned selector)
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+-	unsigned int pwm_reg_period;
++	struct pwm_args pargs;
+ 	int dutycycle;
+ 	int ret;
+ 
+-	pwm_reg_period = pwm_get_period(drvdata->pwm);
++	pwm_get_args(drvdata->pwm, &pargs);
+ 
+-	dutycycle = (pwm_reg_period *
++	dutycycle = (pargs.period *
+ 		    drvdata->duty_cycle_table[selector].dutycycle) / 100;
+ 
+-	ret = pwm_config(drvdata->pwm, dutycycle, pwm_reg_period);
++	ret = pwm_config(drvdata->pwm, dutycycle, pargs.period);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+@@ -138,13 +138,15 @@ static int pwm_regulator_set_voltage(struct regulator_dev *rdev,
+ {
+ 	struct pwm_regulator_data *drvdata = rdev_get_drvdata(rdev);
+ 	unsigned int ramp_delay = rdev->constraints->ramp_delay;
+-	unsigned int period = pwm_get_period(drvdata->pwm);
++	struct pwm_args pargs;
+ 	int duty_cycle;
+ 	int ret;
+ 
++	pwm_get_args(drvdata->pwm, &pargs);
+ 	duty_cycle = pwm_voltage_to_duty_cycle_percentage(rdev, min_uV);
+ 
+-	ret = pwm_config(drvdata->pwm, (period / 100) * duty_cycle, period);
++	ret = pwm_config(drvdata->pwm, (pargs.period / 100) * duty_cycle,
++			 pargs.period);
+ 	if (ret) {
+ 		dev_err(&rdev->dev, "Failed to configure PWM\n");
+ 		return ret;
+@@ -281,6 +283,12 @@ static int pwm_regulator_probe(struct platform_device *pdev)
+ 		return PTR_ERR(drvdata->pwm);
+ 	}
+ 
++	/*
++	 * FIXME: pwm_apply_args() should be removed when switching to the
++	 * atomic PWM API.
++	 */
++	pwm_apply_args(drvdata->pwm);
++
+ 	regulator = devm_regulator_register(&pdev->dev,
+ 					    &drvdata->desc, &config);
+ 	if (IS_ERR(regulator)) {
+-- 
+2.5.0
 
- Tomi
-
-
---0Ampo0rSf4TX5xRG2Pt5fjTEJnstwVClu--
-
---JORHPl58Du2D0fuJVcp8lJxpXJ89vDgsL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXIz0qAAoJEPo9qoy8lh71QAMP/Alon7H7ktVxktihPhDxTJ3Y
-CyR5xzxpCk/rs8yYrkR5s3iuoZWLOPhSlEV7ai610JwGQav7+AJI56ka9BIsWX3N
-VUEYhxphbycQV43N3rdllH2uXKNQTZgn2LzFOls5DJZtxweFlvRxZPwqqBixH4LL
-0cfTB3wWXQab/yrsBbqtzbiBGQ782W9ntWPqXxrUNZkop/O1wSST9NbwEm+/eT4s
-dfewNjh1f+G4hJzgfM2NNnZUjGds1s58Inx3bJRMpyZmWm+EHIA5/5+Au6ZTjGVV
-TqFwfEznmD6weyrmR/gf24FJsgsGnkeLhV4fUDOD8Zu+reORFxb2nbRXSME97Jvd
-5zm7q+3/qllpgfXuYHluOnQ9yQu8a++l6oEBoerk/CpLRPFgF2GAXL0lMSo2vlGV
-5+5zYKtNYLeaK9uEMkuHEcrgp/5yNk4a0pwlJ5SkUVCKd+Kr1uwvzmcU4IQGMKo1
-MfM/ZCA8Zy0VhipvoezBDgk5+hY8BzPvF1rbJ7ZR63suhKMQbdYPVUlDbsjmrZ9h
-uc6Xpca6QMadEd6EUsUPYq+O8GwCne7chiQW0DGCk3DhRPMCZegbUb5L2iSbtcej
-m8AmcbEz/pUvUsQrPdrtDr26Mt0Go9X9YVBFJGrXOExtQSUfArsjcwM66+kiikaj
-fTg3xiEVvhCCOMoMCHHm
-=S8bj
------END PGP SIGNATURE-----
-
---JORHPl58Du2D0fuJVcp8lJxpXJ89vDgsL--

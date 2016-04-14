@@ -1,97 +1,111 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 04 Apr 2016 15:34:33 +0000
-Subject: Re: [PATCH v5 36/46] input: misc: max77693: switch to the atomic API
-Message-Id: <20160404153433.GD17856@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="8w3uRX/HFJGApMzv"
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:22 +0000
+Subject: [PATCH v5 02/24] pwm: use pwm_get/set_xxx() helpers where appropriate
+Message-Id: <1460661464-11216-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1459368249-13241-37-git-send-email-boris.brezillon@free-electrons.com>
- <20160331174801.GC39098@dtor-ws>
- <20160331205718.057a6f38@bbrezillon>
-In-Reply-To: <20160331205718.057a6f38@bbrezillon>
-To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jon>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
+Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Stephen Barber <smbarber@chromium.org>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger
 
+Use pwm_get/set_xxx() helpers instead of directly accessing the pwm->xxx
+field. Doing that will ease adaptation of the PWM framework to support
+atomic update.
 
---8w3uRX/HFJGApMzv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+Patch generated with the following coccinelle script:
 
-On Thu, Mar 31, 2016 at 08:57:18PM +0200, Boris Brezillon wrote:
-> On Thu, 31 Mar 2016 10:48:01 -0700
-> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
->=20
-> > Hi Boris,
-> >=20
-> > On Wed, Mar 30, 2016 at 10:03:59PM +0200, Boris Brezillon wrote:
-> > > pwm_config/enable/disable() have been deprecated and should be replac=
-ed
-> > > by pwm_apply_state().
-> > >=20
-> > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > > ---
-> > >  drivers/input/misc/max77693-haptic.c | 23 +++++++++++++++++------
-> > >  1 file changed, 17 insertions(+), 6 deletions(-)
-> > >=20
-> > > diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/mis=
-c/max77693-haptic.c
-> > > index cf6aac0..aef7dc4 100644
-> > > --- a/drivers/input/misc/max77693-haptic.c
-> > > +++ b/drivers/input/misc/max77693-haptic.c
-> > > @@ -70,13 +70,16 @@ struct max77693_haptic {
-> > > =20
-> > >  static int max77693_haptic_set_duty_cycle(struct max77693_haptic *ha=
-ptic)
-> > >  {
-> > > +	struct pwm_state pstate;
-> > >  	struct pwm_args pargs =3D { };
-> > > -	int delta;
-> > >  	int error;
-> > > =20
-> > >  	pwm_get_args(haptic->pwm_dev, &pargs);
-> > > -	delta =3D (pargs.period + haptic->pwm_duty) / 2;
-> > > -	error =3D pwm_config(haptic->pwm_dev, delta, pargs.period);
-> > > +	pwm_get_state(haptic->pwm_dev, &pstate);
-> > > +
-> > > +	pstate.period =3D pargs.period;
-> > > +	pstate.duty_cycle =3D (pargs.period + haptic->pwm_duty) / 2;
-> > > +	error =3D pwm_apply_state(haptic->pwm_dev, &pstate);
-> >=20
-> > This does not make sense with regard to the atomic API. If you look in
-> > max77693_haptic_play_work(), right after calling
-> > max77693_haptic_set_duty_cycle() we either try to enable or disable the
-> > pwm. When switching to this new API we should combine both actions.
->=20
-> True. I'll address that, unless Thierry is fine keeping the non-atomic
-> API, in which case I'll just drop patches 32 to 46.
+--->8---
+virtual patch
 
-I'm fine with keeping the pwm_enable(), pwm_disable() and pwm_config()
-APIs, but they should only be used as shortcuts. Where possible the new
-atomic API should be used to combine multiple operations into one.
+@@
+struct pwm_device *p;
+expression e;
+@@
+(
+-(p)->polarity = e;
++pwm_set_polarity(p, e);
+|
+-(p)->polarity
++pwm_get_polarity(p)
+|
+-(p)->period = e;
++pwm_set_period(p, e);
+|
+-(p)->period
++pwm_get_period(p)
+|
+-(p)->duty_cycle = e;
++pwm_set_duty_cycle(p, e);
+|
+-(p)->duty_cycle
++pwm_get_duty_cycle(p)
+)
+--->8---
+---
+ drivers/pwm/pwm-crc.c          | 2 +-
+ drivers/pwm/pwm-lpc18xx-sct.c  | 2 +-
+ drivers/pwm/pwm-omap-dmtimer.c | 2 +-
+ drivers/pwm/pwm-sun4i.c        | 3 ++-
+ 4 files changed, 5 insertions(+), 4 deletions(-)
 
-Thierry
+diff --git a/drivers/pwm/pwm-crc.c b/drivers/pwm/pwm-crc.c
+index 7101c70..bd0ebd0 100644
+--- a/drivers/pwm/pwm-crc.c
++++ b/drivers/pwm/pwm-crc.c
+@@ -75,7 +75,7 @@ static int crc_pwm_config(struct pwm_chip *c, struct pwm_device *pwm,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (pwm->period != period_ns) {
++	if (pwm_get_period(pwm) != period_ns) {
+ 		int clk_div;
+ 
+ 		/* changing the clk divisor, need to disable fisrt */
+diff --git a/drivers/pwm/pwm-lpc18xx-sct.c b/drivers/pwm/pwm-lpc18xx-sct.c
+index 9861fed..19dc64c 100644
+--- a/drivers/pwm/pwm-lpc18xx-sct.c
++++ b/drivers/pwm/pwm-lpc18xx-sct.c
+@@ -249,7 +249,7 @@ static int lpc18xx_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
+ 			   LPC18XX_PWM_EVSTATEMSK(lpc18xx_data->duty_event),
+ 			   LPC18XX_PWM_EVSTATEMSK_ALL);
+ 
+-	if (pwm->polarity = PWM_POLARITY_NORMAL) {
++	if (pwm_get_polarity(pwm) = PWM_POLARITY_NORMAL) {
+ 		set_event = lpc18xx_pwm->period_event;
+ 		clear_event = lpc18xx_data->duty_event;
+ 		res_action = LPC18XX_PWM_RES_SET;
+diff --git a/drivers/pwm/pwm-omap-dmtimer.c b/drivers/pwm/pwm-omap-dmtimer.c
+index b7e6ecb..3e95090 100644
+--- a/drivers/pwm/pwm-omap-dmtimer.c
++++ b/drivers/pwm/pwm-omap-dmtimer.c
+@@ -192,7 +192,7 @@ static int pwm_omap_dmtimer_config(struct pwm_chip *chip,
+ 		load_value, load_value,	match_value, match_value);
+ 
+ 	omap->pdata->set_pwm(omap->dm_timer,
+-			      pwm->polarity = PWM_POLARITY_INVERSED,
++			      pwm_get_polarity(pwm) = PWM_POLARITY_INVERSED,
+ 			      true,
+ 			      PWM_OMAP_DMTIMER_TRIGGER_OVERFLOW_AND_COMPARE);
+ 
+diff --git a/drivers/pwm/pwm-sun4i.c b/drivers/pwm/pwm-sun4i.c
+index 67af9f6..03a99a5 100644
+--- a/drivers/pwm/pwm-sun4i.c
++++ b/drivers/pwm/pwm-sun4i.c
+@@ -354,7 +354,8 @@ static int sun4i_pwm_probe(struct platform_device *pdev)
+ 	val = sun4i_pwm_readl(pwm, PWM_CTRL_REG);
+ 	for (i = 0; i < pwm->chip.npwm; i++)
+ 		if (!(val & BIT_CH(PWM_ACT_STATE, i)))
+-			pwm->chip.pwms[i].polarity = PWM_POLARITY_INVERSED;
++			pwm_set_polarity(&pwm->chip.pwms[i],
++					 PWM_POLARITY_INVERSED);
+ 	clk_disable_unprepare(pwm->clk);
+ 
+ 	return 0;
+-- 
+2.5.0
 
---8w3uRX/HFJGApMzv
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJXAomJAAoJEN0jrNd/PrOhH+EP/3jGqBaPwMU4xFzqvHz67ECo
-BWRC6Xmjcjj3cLylcB4IeIBaTRxiGF8rf61/1tooFEr49b285hU5/V5ndhjk6HDm
-v7YjqNjFjWkHJvEGhUyf4iCNCw9rtGdDvYwz0tI6bBnMS8Ll6ZaMSTA8UkfiKUiv
-nCHUFyzrvYm7QmMn+Wr7IgyhhiK0LO4eqQk5LY4aP1qMFSnknAv+VXPKFH1pWJ3d
-BMo6SW2l31oC7kEKTM7BscdEbOdTBlSC5sCdff0QjKYWevyjmPcYZJtYqZw9dD14
-rdKL0aXHjeh3PWKMeXYk0rkiCpR4o7bvFn0BSUpQwNCLQYaHLfFFKqqWFiUWa+cF
-JFJJhMpUMeqfmfqGu6KQ3BY7ThzpGFkEGPgrXVIve2sPTUwccwWls0ZPTWtF2F7L
-ED7EvnCnYMEFfzyrav/vLIDz6vKhR5MLjXiTKanuwDEpx3zEG0W44IbA+8JxvNAO
-zfOnAByBx47TLUdHIZqSBtnLRrxQrAh91VrMJaDHqfTn+eJFDxOuVoQ1E2reKqCk
-OF0Ljt6VvQSKpzslj/2lf/dY4Iap40xf7avutbDW6Y9LF0LFgayiAQ5uRD7Bam6N
-vEfMdfObS6YYpx9Dr1uvVEoAYVDH9CETQISWNWYwyUNW0LhSfanIAhkaIpUpsYbQ
-00YdDc4WqABZU72XaLSG
-=oCBS
------END PGP SIGNATURE-----
-
---8w3uRX/HFJGApMzv--

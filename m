@@ -1,351 +1,83 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 18 Apr 2016 19:56:57 +0000
-Subject: [PATCH 1/2] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1461009418-1795-2-git-send-email-manuel.schoelling@gmx.de>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 14 Apr 2016 19:17:25 +0000
+Subject: [PATCH v5 05/24] input: misc: max77693: use pwm_get_args() where appropriate
+Message-Id: <1460661464-11216-6-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461009418-1795-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1461009418-1795-1-git-send-email-manuel.schoelling@gmx.de>
+References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: gregkh@linuxfoundation.org
-Cc: jslaby@suse.com, thomas@winischhofer.net, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jejb@parisc-linux.org, deller@gmx.de, manuel.schoelling@gmx.de, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Add a scrollback buffers for each VGA console. The benefit is that
-the scrollback history is not flushed when switching between consoles
-but is persistent.
-The buffers are allocated on demand when a new console is opened.
+The PWM framework has clarified the concept of reference PWM config
+(the platform dependent config retrieved from the DT or the PWM
+lookup table) and real PWM state.
 
-This breaks tools like clear_console that rely on flushing the
-scrollback history by switching back and forth between consoles
-which is why this feature is disabled by default.
+Use pwm_get_args() when the PWM user wants to retrieve this reference
+config and not the current state.
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+This is part of the rework allowing the PWM framework to support
+hardware readout and expose real PWM state even when the PWM has
+just been requested (before the user calls pwm_config/enable/disable()).
+
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
- drivers/video/console/Kconfig  |  22 +++++-
- drivers/video/console/vgacon.c | 172 +++++++++++++++++++++++++++----------=
-----
- 2 files changed, 133 insertions(+), 61 deletions(-)
+ drivers/input/misc/max77693-haptic.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 38da6e2..f101a63 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -43,9 +43,25 @@ config VGACON_SOFT_SCROLLBACK_SIZE
-        range 1 1024
-        default "64"
-        help
--         Enter the amount of System RAM to allocate for the scrollback
--	 buffer.  Each 64KB will give you approximately 16 80x25
--	 screenfuls of scrollback buffer
-+	  Enter the amount of System RAM to allocate for scrollback
-+	  buffers of VGA consoles. Each 64KB will give you approximately
-+	  16 80x25 screenfuls of scrollback buffer.
-+
-+config VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-+	bool "Persistent Scrollback History for each console"
-+	depends on VGACON_SOFT_SCROLLBACK
-+	default n
-+	help
-+	  Say Y here if for each VGA console a scrollback buffer should
-+	  be allocated. The scrollback history will persist when switching
-+	  between consoles. If you say N here, scrollback is only supported
-+	  for the active VGA console and scrollback history will be flushed
-+	  when switching between consoles.
-+
-+	  This breaks legacy versions of tools like clear_console which
-+	  might raise security issues.
-+
-+	  If you use a RAM-constrained system, say N here.
-=20
- config MDA_CONSOLE
- 	depends on !M68K && !PARISC && ISA
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 517f565..6c0b9ba 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -1,5 +1,5 @@
- /*
-- *  linux/drivers/video/vgacon.c -- Low level VGA based console driver
-+ *  linux/drivers/video/console/vgacon.c -- Low level VGA based console dr=
-iver
-  *
-  *	Created 28 Sep 1997 by Geert Uytterhoeven
-  *
-@@ -106,12 +106,12 @@ static unsigned char	vga_hardscroll_enabled	__read_mo=
-stly;
- static unsigned char	vga_hardscroll_user_enable __read_mostly =3D 1;
- static unsigned char	vga_font_is_default =3D 1;
- static int		vga_vesa_blanked;
--static int 		vga_palette_blanked;
--static int 		vga_is_gfx;
--static int 		vga_512_chars;
--static int 		vga_video_font_height;
--static int 		vga_scan_lines		__read_mostly;
--static unsigned int 	vga_rolled_over;
-+static int		vga_palette_blanked;
-+static int		vga_is_gfx;
-+static int		vga_512_chars;
-+static int		vga_video_font_height;
-+static int		vga_scan_lines		__read_mostly;
-+static unsigned int	vga_rolled_over;
-=20
- static int vgacon_text_mode_force;
-=20
-@@ -182,70 +182,125 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static void *vgacon_scrollback;
--static int vgacon_scrollback_tail;
--static int vgacon_scrollback_size;
--static int vgacon_scrollback_rows;
--static int vgacon_scrollback_cnt;
--static int vgacon_scrollback_cur;
--static int vgacon_scrollback_save;
--static int vgacon_scrollback_restore;
--
--static void vgacon_scrollback_init(int pitch)
-+struct vgacon_scrollback_info {
-+	void *data;
-+	int tail;
-+	int size;
-+	int rows;
-+	int cnt;
-+	int cur;
-+	int save;
-+	int restore;
-+};
-+static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-+static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
-+#else
-+static struct vgacon_scrollback_info vgacon_scrollbacks[1];
-+#endif
-+
-+static void vgacon_scrollback_reset(size_t reset_size)
+diff --git a/drivers/input/misc/max77693-haptic.c b/drivers/input/misc/max77693-haptic.c
+index 6d96bff..29ddeb7 100644
+--- a/drivers/input/misc/max77693-haptic.c
++++ b/drivers/input/misc/max77693-haptic.c
+@@ -70,10 +70,13 @@ struct max77693_haptic {
+ 
+ static int max77693_haptic_set_duty_cycle(struct max77693_haptic *haptic)
  {
--	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
--
--	if (vgacon_scrollback) {
--		vgacon_scrollback_cnt  =3D 0;
--		vgacon_scrollback_tail =3D 0;
--		vgacon_scrollback_cur  =3D 0;
--		vgacon_scrollback_rows =3D rows - 1;
--		vgacon_scrollback_size =3D rows * pitch;
-+	if (vgacon_scrollback_cur->data && reset_size > 0)
-+		memset(vgacon_scrollback_cur->data, 0, reset_size);
-+
-+	vgacon_scrollback_cur->cnt  =3D 0;
-+	vgacon_scrollback_cur->tail =3D 0;
-+	vgacon_scrollback_cur->cur  =3D 0;
-+}
-+
-+static void vgacon_scrollback_init(int vc_num)
-+{
-+	int pitch =3D vga_video_num_columns * 2;
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+	int rows =3D size/pitch;
-+	void *data;
-+
-+	data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, GFP_NOWAIT);
-+	if (data) {
-+		vgacon_scrollbacks[vc_num].data =3D data;
-+		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+
-+		vgacon_scrollback_cur->rows =3D rows - 1;
-+		vgacon_scrollback_cur->size =3D rows * pitch;
-+
-+		vgacon_scrollback_reset(0);
-+	} else {
-+		pr_warn("VGAcon: failed to allocate memory for scrollback. Trying to reu=
-se previous buffer.\n");
-+		/* Leave vgacon_scrollback_cur untouched but reset its content */
-+		vgacon_scrollback_reset(size);
- 	}
- }
-=20
-+static void vgacon_switch_scrollback(int vc_num)
-+{
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
-+	if (!vgacon_scrollbacks[vc_num].data)
-+		vgacon_scrollback_init(vc_num);
-+	else
-+		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+#else
-+	vc_num =3D 0;
-+
-+	if (!vgacon_scrollbacks[vc_num].data)
-+		vgacon_scrollback_init(vc_num);
-+	else {
-+		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+		vgacon_scrollback_reset(size);
-+	}
-+#endif
-+}
-+
- static void vgacon_scrollback_startup(void)
+-	int delta = (haptic->pwm_dev->period + haptic->pwm_duty) / 2;
++	struct pwm_args pargs;
++	int delta;
+ 	int error;
+ 
+-	error = pwm_config(haptic->pwm_dev, delta, haptic->pwm_dev->period);
++	pwm_get_args(haptic->pwm_dev, &pargs);
++	delta = (pargs.period + haptic->pwm_duty) / 2;
++	error = pwm_config(haptic->pwm_dev, delta, pargs.period);
+ 	if (error) {
+ 		dev_err(haptic->dev, "failed to configure pwm: %d\n", error);
+ 		return error;
+@@ -234,6 +237,7 @@ static int max77693_haptic_play_effect(struct input_dev *dev, void *data,
+ 				       struct ff_effect *effect)
  {
--	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
-FP_NOWAIT);
--	vgacon_scrollback_init(vga_video_num_columns * 2);
-+	int i;
+ 	struct max77693_haptic *haptic = input_get_drvdata(dev);
++	struct pwm_args pargs;
+ 	u64 period_mag_multi;
+ 
+ 	haptic->magnitude = effect->u.rumble.strong_magnitude;
+@@ -245,7 +249,8 @@ static int max77693_haptic_play_effect(struct input_dev *dev, void *data,
+ 	 * The formula to convert magnitude to pwm_duty as follows:
+ 	 * - pwm_duty = (magnitude * pwm_period) / MAX_MAGNITUDE(0xFFFF)
+ 	 */
+-	period_mag_multi = (u64)haptic->pwm_dev->period * haptic->magnitude;
++	pwm_get_args(haptic->pwm_dev, &pargs);
++	period_mag_multi = (u64)pargs.period * haptic->magnitude;
+ 	haptic->pwm_duty = (unsigned int)(period_mag_multi >>
+ 						MAX_MAGNITUDE_SHIFT);
+ 
+@@ -329,6 +334,12 @@ static int max77693_haptic_probe(struct platform_device *pdev)
+ 		return PTR_ERR(haptic->pwm_dev);
+ 	}
+ 
++	/*
++	 * FIXME: pwm_apply_args() should be removed when switching to the
++	 * atomic PWM API.
++	 */
++	pwm_apply_args(haptic->pwm_dev);
 +
-+	for (i =3D 0; i < ARRAY_SIZE(vgacon_scrollbacks); ++i)
-+		vgacon_scrollbacks[i].data =3D NULL;
-+
-+	vgacon_scrollback_cur =3D &vgacon_scrollbacks[0];
-+	vgacon_scrollback_init(0);
- }
-=20
- static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-+		scr_memcpyw(vgacon_scrollback_cur->data +
-+			    vgacon_scrollback_cur->tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback_cnt++;
-+
-+		vgacon_scrollback_cur->cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback_tail +=3D c->vc_size_row;
-+		vgacon_scrollback_cur->tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
--			vgacon_scrollback_tail =3D 0;
-+		if (vgacon_scrollback_cur->tail >=3D vgacon_scrollback_cur->size)
-+			vgacon_scrollback_cur->tail =3D 0;
-=20
--		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
--			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
-+		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
-+			vgacon_scrollback_cur->cnt =3D vgacon_scrollback_cur->rows;
-=20
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
- 	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback_save =3D 0;
-+	vgacon_scrollback_cur->save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback_restore =3D 1;
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback_cur->restore =3D 1;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
- 	}
- }
-=20
-@@ -259,41 +314,41 @@ static int vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 		return 1;
- 	}
-=20
--	if (!vgacon_scrollback)
-+	if (!vgacon_scrollback_cur->data)
- 		return 1;
-=20
--	if (!vgacon_scrollback_save) {
-+	if (!vgacon_scrollback_cur->save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback_save =3D 1;
-+		vgacon_scrollback_cur->save =3D 1;
- 	}
-=20
--	vgacon_scrollback_restore =3D 0;
--	start =3D vgacon_scrollback_cur + lines;
-+	vgacon_scrollback_cur->restore =3D 0;
-+	start =3D vgacon_scrollback_cur->cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback_cnt)
--		start =3D vgacon_scrollback_cnt;
-+	if (start > vgacon_scrollback_cur->cnt)
-+		start =3D vgacon_scrollback_cur->cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback_cnt)
--		end =3D vgacon_scrollback_cnt;
-+	if (end > vgacon_scrollback_cur->cnt)
-+		end =3D vgacon_scrollback_cur->cnt;
-=20
--	vgacon_scrollback_cur =3D start;
-+	vgacon_scrollback_cur->cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
--					 c->vc_size_row);
-+	soff =3D vgacon_scrollback_cur->tail;
-+	soff -=3D ((vgacon_scrollback_cur->cnt - end) * c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback_size;
-+		soff +=3D vgacon_scrollback_cur->size;
-=20
--	count =3D vgacon_scrollback_cnt - start;
-+	count =3D vgacon_scrollback_cur->cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -307,13 +362,13 @@ static int vgacon_scrolldelta(struct vc_data *c, int =
-lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback_size - soff);
--		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback_cur->size - soff);
-+		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback, count);
-+			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
- 			d +=3D count;
- 		}
-=20
-@@ -328,6 +383,7 @@ static int vgacon_scrolldelta(struct vc_data *c, int li=
-nes)
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
- #define vgacon_scrollback_update(...)  do { } while (0)
-+#define vgacon_switch_scrollback(...)  do { } while (0)
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
-@@ -843,7 +899,7 @@ static int vgacon_switch(struct vc_data *c)
- 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
- 	}
-=20
--	vgacon_scrollback_init(c->vc_size_row);
-+	vgacon_switch_scrollback(c->vc_num);
- 	return 0;		/* Redrawing not needed */
- }
-=20
---=20
-2.1.4
+ 	haptic->motor_reg = devm_regulator_get(&pdev->dev, "haptic");
+ 	if (IS_ERR(haptic->motor_reg)) {
+ 		dev_err(&pdev->dev, "failed to get regulator\n");
+-- 
+2.5.0
 

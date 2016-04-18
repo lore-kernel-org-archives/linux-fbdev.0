@@ -1,8 +1,10 @@
 From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 18 Apr 2016 19:56:43 +0000
+Date: Mon, 18 Apr 2016 19:56:56 +0000
 Subject: [PATCH 0/2] Persistent scrollback buffers for all VGA consoles
-Message-Id: <1461009405-1738-1-git-send-email-manuel.schoelling@gmx.de>
+Message-Id: <1461009418-1795-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1461009405-1738-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1461009405-1738-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable

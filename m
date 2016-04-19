@@ -1,47 +1,67 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Tue, 26 Apr 2016 07:33:24 +0000
-Subject: Re: [PATCH v2 0/3] Support INT3406 Display thermal device
-Message-Id: <cdf06c09-c30b-05ee-8195-a60aac5a88ea@intel.com>
+From: Eric Anholt <eric@anholt.net>
+Date: Tue, 19 Apr 2016 20:37:09 +0000
+Subject: [PATCH] drm/vc4: Kick out the simplefb framebuffer before we set up KMS.
+Message-Id: <1461098229-8664-1-git-send-email-eric@anholt.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
- <2383528.7J2tIpIfEZ@vostro.rjw.lan>
-In-Reply-To: <2383528.7J2tIpIfEZ@vostro.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Florian Fainelli <f.fainelli@gmail.com>, Stephen Warren <swarren@wwwdotorg.org>, linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-rpi-kernel@lists.infradead.org
 
-On 04/26/2016 08:58 AM, Rafael J. Wysocki wrote:
-> On Wednesday, April 13, 2016 03:32:48 PM Aaron Lu wrote:
->> The display thermal device represents the LED/LCD display panel
->> that may or may not include touch support. The main function of
->> the display thermal device is to allow control of the display
->> brightness in order to address a thermal condition or to reduce
->> power consumed by display device.
->>
->> Due to the way this thermal device changes brightness level is said
->> to be deprecated so we are using the raw interface to do the actual
->> backlight change. This requires the backlight core support so two
->> new APIs are added and exported in patch 1/3. With this, the previous
->> API backlight_device_registered can be removed and this is done in
->> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
->>
->> The 1st version is here:
->> http://thread.gmane.org/gmane.linux.acpi.devel/72619
->>
->> This whole series should go through the thermal tree if applied.
->>
->> Aaron Lu (3):
->>   video / backlight: add two APIs for drivers to use
->>   video / backlight: remove the backlight_device_registered API
->>   Thermal: add INT3406 thermal driver
-> 
-> So I have nothing against [1-2/3], but the [3/3] tries to do too many things
-> in one go.  It should be at least two separate patches to my eyes, one making
-> changes to the ACPI video driver and the other adding the INT3406 one.
+If we don't, then simplefb stays loaded on /dev/fb0 even though
+scanout isn't happening from simplefb's memory area any more, and you
+end up with no console.
 
-Thanks for the review, will split the last patch and re-send.
+Signed-off-by: Eric Anholt <eric@anholt.net>
+---
 
-Regards,
-Aaron
+Dave: It would be nice if I could merge this patch through
+bcm2835-dt-next, where I'm trying to get the VC4 DT merged even though
+the defconfig includes both VC4 and simplefb.  There aren't any
+conflicts with anything I'm merging through drm-next.
+
+ drivers/gpu/drm/vc4/vc4_drv.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/drivers/gpu/drm/vc4/vc4_drv.c b/drivers/gpu/drm/vc4/vc4_drv.c
+index b7d2ff0e6e1f..109b10651959 100644
+--- a/drivers/gpu/drm/vc4/vc4_drv.c
++++ b/drivers/gpu/drm/vc4/vc4_drv.c
+@@ -153,6 +153,24 @@ static void vc4_match_add_drivers(struct device *dev,
+ 	}
+ }
+ 
++static void vc4_kick_out_firmware_fb(void)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return;
++
++	/* Since VC4 is a UMA device, the simplefb node may have been
++	 * located anywhere in memory.
++	 */
++	ap->ranges[0].base = 0;
++	ap->ranges[0].size = ~0;
++
++	remove_conflicting_framebuffers(ap, "vc4drmfb", false);
++	kfree(ap);
++}
++
+ static int vc4_drm_bind(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -186,6 +204,8 @@ static int vc4_drm_bind(struct device *dev)
+ 	if (ret)
+ 		goto gem_destroy;
+ 
++	vc4_kick_out_firmware_fb();
++
+ 	ret = drm_dev_register(drm, 0);
+ 	if (ret < 0)
+ 		goto unbind_all;
+-- 
+2.8.0.rc3
+

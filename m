@@ -1,34 +1,77 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Fri, 15 Apr 2016 08:17:17 +0000
-Subject: Re: [PATCH v5 16/24] ARM: explicitly apply PWM config extracted from pwm_args
-Message-Id: <5710A38D.3050202@samsung.com>
+From: Eric Anholt <eric@anholt.net>
+Date: Tue, 19 Apr 2016 19:19:25 +0000
+Subject: [PATCH] simplefb: Disable at runtime when a native driver (vc4) is present.
+Message-Id: <1461093565-18631-1-git-send-email-eric@anholt.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
- <1460661464-11216-17-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1460661464-11216-17-git-send-email-boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, linux-fbdev@vg
+To: linux-fbdev@vger.kernel.org
 
-On 04/14/2016 09:17 PM, Boris Brezillon wrote:
-> Call pwm_apply_args() just after requesting the PWM device so that the
-> polarity and period are initialized according to the information provided
-> in pwm_args.
-> 
-> This is an intermediate state, and pwm_apply_args() should be dropped as
-> soon as the atomic PWM infrastructure is in place and the driver makes
-> use of it.
-> 
-> Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> ---
->  arch/arm/mach-s3c24xx/mach-rx1950.c | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
+With simplefb and vc4 both enabled, simplefb would probe first and be
+fb0, displaying for a moment before vc4 probed fb1 and reconfigured
+the graphics hardware so that only its fbdev worked.
 
-Acked-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Cc: javier@osg.samsung.com
 
-Best regards,
-Krzysztof
+Signed-off-by: Eric Anholt <eric@anholt.net>
+---
+
+Ccing Javier, since it looks like Exynos has also had this trouble,
+and may want to get some compatible string in the list.
+
+ drivers/video/fbdev/simplefb.c | 33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
+
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index e9cf19977285..a2971aa686f5 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -512,11 +512,44 @@ static struct platform_driver simplefb_driver = {
+ 	.remove = simplefb_remove,
+ };
+ 
++/* Returns true if a simplefb node that's present should be ignored.
++ *
++ * The U-Boot bootloader, and possibly others, may add a simplefb
++ * device node to the existing device tree based on the video
++ * configuration initialized by the firmware.  If we have a native
++ * driver for graphics, then simplefb would just be writing into
++ * memory that's no longer being scanned out.
++ */
++static bool
++simplefb_superseded(void)
++{
++	static const char *compats[] __initconst = {
++#ifdef CONFIG_DRM_VC4
++		"brcm,bcm2835-vc4",
++#endif
++	};
++	struct device_node *node;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(compats); i++) {
++		node = of_find_compatible_node(NULL, NULL, compats[i]);
++		if (node) {
++			of_node_put(node);
++			return true;
++		}
++	}
++
++	return false;
++}
++
+ static int __init simplefb_init(void)
+ {
+ 	int ret;
+ 	struct device_node *np;
+ 
++	if (simplefb_superseded())
++		return 0;
++
+ 	ret = platform_driver_register(&simplefb_driver);
+ 	if (ret)
+ 		return ret;
+-- 
+2.8.0.rc3
 

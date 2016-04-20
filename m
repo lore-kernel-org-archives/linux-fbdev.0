@@ -1,49 +1,277 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 14 Apr 2016 11:05:39 +0000
-Subject: Re: [PATCH v5 01/46] pwm: rcar: make use of pwm_is_enabled()
-Message-Id: <20160414130539.272166b0@bbrezillon>
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Wed, 20 Apr 2016 15:25:29 +0000
+Subject: [PATCH 8/8] drm/udl: Use drm_fb_helper deferred_io support
+Message-Id: <1461165929-11344-9-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
-	<1459368249-13241-2-git-send-email-boris.brezillon@free-electrons.com>
-	<20160412110152.GG18882@ulmo.ba.sec>
-In-Reply-To: <20160412110152.GG18882-EkSeR96xj6Pcmrwk2tT4+A@public.gmane.org>
+References: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones@li>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-Hi Thierry
+Use the fbdev deferred io support in drm_fb_helper.
+The (struct fb_ops *)->fb_{fillrect,copyarea,imageblit} functions will
+now be deferred in the same way that mmap damage is, instead of being
+flushed directly.
+The deferred mmap functionality is kept disabled by default, because of the
+list corruption problems mentioned in commit 677d23b70bf9
+("drm/udl: disable fb_defio by default").
+This patch has only been compile tested.
 
-On Tue, 12 Apr 2016 13:01:52 +0200
-Thierry Reding <thierry.reding@gmail.com> wrote:
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+---
+ drivers/gpu/drm/udl/udl_drv.h |   2 -
+ drivers/gpu/drm/udl/udl_fb.c  | 152 ++++----------------------------------=
+----
+ 2 files changed, 12 insertions(+), 142 deletions(-)
 
-> On Wed, Mar 30, 2016 at 10:03:24PM +0200, Boris Brezillon wrote:
-> > Commit 5c31252c4a86 ("pwm: Add the pwm_is_enabled() helper") introduced a
-> > new function to test whether a PWM device is enabled or not without
-> > manipulating PWM internal fields.
-> > Hiding this is necessary if we want to smoothly move to the atomic PWM
-> > config approach without impacting PWM drivers.
-> > Fix this driver to use pwm_is_enabled() instead of directly accessing the
-> > ->flags field.
-> > 
-> > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > ---
-> >  drivers/pwm/pwm-rcar.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Applied, thanks.
+diff --git a/drivers/gpu/drm/udl/udl_drv.h b/drivers/gpu/drm/udl/udl_drv.h
+index 4a064ef..0b03d34 100644
+--- a/drivers/gpu/drm/udl/udl_drv.h
++++ b/drivers/gpu/drm/udl/udl_drv.h
+@@ -81,8 +81,6 @@ struct udl_framebuffer {
+ 	struct drm_framebuffer base;
+ 	struct udl_gem_object *obj;
+ 	bool active_16; /* active on the 16-bit channel */
+-	int x1, y1, x2, y2; /* dirty rect */
+-	spinlock_t dirty_lock;
+ };
+=20
+ #define to_udl_fb(x) container_of(x, struct udl_framebuffer, base)
+diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/udl_fb.c
+index a52de2f..b44d4a7 100644
+--- a/drivers/gpu/drm/udl/udl_fb.c
++++ b/drivers/gpu/drm/udl/udl_fb.c
+@@ -77,68 +77,6 @@ static uint16_t rgb16(uint32_t col)
+ }
+ #endif
+=20
+-/*
+- * NOTE: fb_defio.c is holding info->fbdefio.mutex
+- *   Touching ANY framebuffer memory that triggers a page fault
+- *   in fb_defio will cause a deadlock, when it also tries to
+- *   grab the same mutex.
+- */
+-static void udlfb_dpy_deferred_io(struct fb_info *info,
+-				  struct list_head *pagelist)
+-{
+-	struct page *cur;
+-	struct fb_deferred_io *fbdefio =3D info->fbdefio;
+-	struct udl_fbdev *ufbdev =3D info->par;
+-	struct drm_device *dev =3D ufbdev->ufb.base.dev;
+-	struct udl_device *udl =3D dev->dev_private;
+-	struct urb *urb;
+-	char *cmd;
+-	cycles_t start_cycles, end_cycles;
+-	int bytes_sent =3D 0;
+-	int bytes_identical =3D 0;
+-	int bytes_rendered =3D 0;
+-
+-	if (!fb_defio)
+-		return;
+-
+-	start_cycles =3D get_cycles();
+-
+-	urb =3D udl_get_urb(dev);
+-	if (!urb)
+-		return;
+-
+-	cmd =3D urb->transfer_buffer;
+-
+-	/* walk the written page list and render each to device */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-
+-		if (udl_render_hline(dev, (ufbdev->ufb.base.bits_per_pixel / 8),
+-				     &urb, (char *) info->fix.smem_start,
+-				     &cmd, cur->index << PAGE_SHIFT,
+-				     cur->index << PAGE_SHIFT,
+-				     PAGE_SIZE, &bytes_identical, &bytes_sent))
+-			goto error;
+-		bytes_rendered +=3D PAGE_SIZE;
+-	}
+-
+-	if (cmd > (char *) urb->transfer_buffer) {
+-		/* Send partial buffer remaining before exiting */
+-		int len =3D cmd - (char *) urb->transfer_buffer;
+-		udl_submit_urb(dev, urb, len);
+-		bytes_sent +=3D len;
+-	} else
+-		udl_urb_completion(urb);
+-
+-error:
+-	atomic_add(bytes_sent, &udl->bytes_sent);
+-	atomic_add(bytes_identical, &udl->bytes_identical);
+-	atomic_add(bytes_rendered, &udl->bytes_rendered);
+-	end_cycles =3D get_cycles();
+-	atomic_add(((unsigned int) ((end_cycles - start_cycles)
+-		    >> 10)), /* Kcycles */
+-		   &udl->cpu_kcycles_used);
+-}
+-
+ int udl_handle_damage(struct udl_framebuffer *fb, int x, int y,
+ 		      int width, int height)
+ {
+@@ -152,9 +90,6 @@ int udl_handle_damage(struct udl_framebuffer *fb, int x,=
+ int y,
+ 	struct urb *urb;
+ 	int aligned_x;
+ 	int bpp =3D (fb->base.bits_per_pixel / 8);
+-	int x2, y2;
+-	bool store_for_later =3D false;
+-	unsigned long flags;
+=20
+ 	if (!fb->active_16)
+ 		return 0;
+@@ -180,38 +115,6 @@ int udl_handle_damage(struct udl_framebuffer *fb, int =
+x, int y,
+ 	    (y + height > fb->base.height))
+ 		return -EINVAL;
+=20
+-	/* if we are in atomic just store the info
+-	   can't test inside spin lock */
+-	if (in_atomic())
+-		store_for_later =3D true;
+-
+-	x2 =3D x + width - 1;
+-	y2 =3D y + height - 1;
+-
+-	spin_lock_irqsave(&fb->dirty_lock, flags);
+-
+-	if (fb->y1 < y)
+-		y =3D fb->y1;
+-	if (fb->y2 > y2)
+-		y2 =3D fb->y2;
+-	if (fb->x1 < x)
+-		x =3D fb->x1;
+-	if (fb->x2 > x2)
+-		x2 =3D fb->x2;
+-
+-	if (store_for_later) {
+-		fb->x1 =3D x;
+-		fb->x2 =3D x2;
+-		fb->y1 =3D y;
+-		fb->y2 =3D y2;
+-		spin_unlock_irqrestore(&fb->dirty_lock, flags);
+-		return 0;
+-	}
+-
+-	fb->x1 =3D fb->y1 =3D INT_MAX;
+-	fb->x2 =3D fb->y2 =3D 0;
+-
+-	spin_unlock_irqrestore(&fb->dirty_lock, flags);
+ 	start_cycles =3D get_cycles();
+=20
+ 	urb =3D udl_get_urb(dev);
+@@ -219,14 +122,14 @@ int udl_handle_damage(struct udl_framebuffer *fb, int=
+ x, int y,
+ 		return 0;
+ 	cmd =3D urb->transfer_buffer;
+=20
+-	for (i =3D y; i <=3D y2 ; i++) {
++	for (i =3D y; i < height ; i++) {
+ 		const int line_offset =3D fb->base.pitches[0] * i;
+ 		const int byte_offset =3D line_offset + (x * bpp);
+ 		const int dev_byte_offset =3D (fb->base.width * bpp * i) + (x * bpp);
+ 		if (udl_render_hline(dev, bpp, &urb,
+ 				     (char *) fb->obj->vmapping,
+ 				     &cmd, byte_offset, dev_byte_offset,
+-				     (x2 - x + 1) * bpp,
++				     width * bpp,
+ 				     &bytes_identical, &bytes_sent))
+ 			goto error;
+ 	}
+@@ -283,36 +186,6 @@ static int udl_fb_mmap(struct fb_info *info, struct vm=
+_area_struct *vma)
+ 	return 0;
+ }
+=20
+-static void udl_fb_fillrect(struct fb_info *info, const struct fb_fillrect=
+ *rect)
+-{
+-	struct udl_fbdev *ufbdev =3D info->par;
+-
+-	sys_fillrect(info, rect);
+-
+-	udl_handle_damage(&ufbdev->ufb, rect->dx, rect->dy, rect->width,
+-			  rect->height);
+-}
+-
+-static void udl_fb_copyarea(struct fb_info *info, const struct fb_copyarea=
+ *region)
+-{
+-	struct udl_fbdev *ufbdev =3D info->par;
+-
+-	sys_copyarea(info, region);
+-
+-	udl_handle_damage(&ufbdev->ufb, region->dx, region->dy, region->width,
+-			  region->height);
+-}
+-
+-static void udl_fb_imageblit(struct fb_info *info, const struct fb_image *=
+image)
+-{
+-	struct udl_fbdev *ufbdev =3D info->par;
+-
+-	sys_imageblit(info, image);
+-
+-	udl_handle_damage(&ufbdev->ufb, image->dx, image->dy, image->width,
+-			  image->height);
+-}
+-
+ /*
+  * It's common for several clients to have framebuffer open simultaneously.
+  * e.g. both fbcon and X. Makes things interesting.
+@@ -330,20 +203,20 @@ static int udl_fb_open(struct fb_info *info, int user)
+=20
+ 	ufbdev->fb_count++;
+=20
+-	if (fb_defio && (info->fbdefio =3D NULL)) {
+-		/* enable defio at last moment if not disabled by client */
++	if (!info->fbdefio) {
++		/* enable defio at last moment */
+=20
+ 		struct fb_deferred_io *fbdefio;
+=20
+ 		fbdefio =3D kmalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
+-
+ 		if (fbdefio) {
+ 			fbdefio->delay =3D DL_DEFIO_WRITE_DELAY;
+-			fbdefio->deferred_io =3D udlfb_dpy_deferred_io;
++			fbdefio->deferred_io =3D drm_fb_helper_deferred_io;
++			info->fbdefio =3D fbdefio;
++			fb_deferred_io_init(info);
++			if (!fb_defio) /* see commit 677d23b */
++				info->fbops->fb_mmap =3D udl_fb_mmap;
+ 		}
+-
+-		info->fbdefio =3D fbdefio;
+-		fb_deferred_io_init(info);
+ 	}
+=20
+ 	pr_notice("open /dev/fb%d user=3D%d fb_info=3D%p count=3D%d\n",
+@@ -379,9 +252,9 @@ static struct fb_ops udlfb_ops =3D {
+ 	.owner =3D THIS_MODULE,
+ 	.fb_check_var =3D drm_fb_helper_check_var,
+ 	.fb_set_par =3D drm_fb_helper_set_par,
+-	.fb_fillrect =3D udl_fb_fillrect,
+-	.fb_copyarea =3D udl_fb_copyarea,
+-	.fb_imageblit =3D udl_fb_imageblit,
++	.fb_fillrect =3D drm_fb_helper_sys_fillrect,
++	.fb_copyarea =3D drm_fb_helper_sys_copyarea,
++	.fb_imageblit =3D drm_fb_helper_sys_imageblit,
+ 	.fb_pan_display =3D drm_fb_helper_pan_display,
+ 	.fb_blank =3D drm_fb_helper_blank,
+ 	.fb_setcmap =3D drm_fb_helper_setcmap,
+@@ -458,7 +331,6 @@ udl_framebuffer_init(struct drm_device *dev,
+ {
+ 	int ret;
+=20
+-	spin_lock_init(&ufb->dirty_lock);
+ 	ufb->obj =3D obj;
+ 	drm_helper_mode_fill_fb_struct(&ufb->base, mode_cmd);
+ 	ret =3D drm_framebuffer_init(dev, &ufb->base, &udlfb_funcs);
+--=20
+2.2.2
 
-I'd like to rebase my atomic series on top of pwm/for-next but I don't
-see the 4 patches you said you applied. Did you forget to push
-your local branch, or did you decide to revert them based on Lee's
-comments?
-
-Regards,
-
-Boris
-
--- 
-Boris Brezillon, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com

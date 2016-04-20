@@ -1,78 +1,409 @@
 From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Sun, 24 Apr 2016 20:48:54 +0000
-Subject: [PATCH v2 0/8] drm: Add fbdev deferred io support to helpers
-Message-Id: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
+Date: Wed, 20 Apr 2016 15:25:27 +0000
+Subject: [PATCH 6/8] drm/fb-cma-helper: Add fb_deferred_io support
+Message-Id: <1461165929-11344-7-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-This patchset adds fbdev deferred io support to drm_fb_helper and
-drm_fb_cma_helper.
+This adds fbdev deferred io support if CONFIG_FB_DEFERRED_IO is enabled.
+The driver has to provide a (struct drm_framebuffer_funcs *)->dirty()
+callback to get notification of fbdev framebuffer changes.
+If the dirty() hook is set, then fb_deferred_io is set up automatically
+by the helper.
 
-It channels fbdev mmap and fb_{write,fillrect,copyarea,imageblit} damage
-through the (struct drm_framebuffer_funcs)->dirty callback on the
-fb_helper framebuffer which will always run in process context.
+Two functions have been added so that the driver can provide a dirty()
+function:
+- drm_fbdev_cma_init_with_funcs()
+  This makes it possible for the driver to provided a custom
+  (struct drm_fb_helper_funcs *)->fb_probe() function.
+- drm_fbdev_cma_create_with_funcs()
+  This is used by the .fb_probe hook to set a driver provided
+  (struct drm_framebuffer_funcs *)->dirty() function.
 
-I have also added patches that converts qxl and udl to use this
-deferred io support. I have only compile tested it, no functional testing.
-I know that qxl is purely a software thing so I could actually test it, but
-I have never used qemu so I'm not keen on spending a lot of time on that.
-
-This was originally part of the tinydrm patchset.
-
-Changes since v1:
-- drm/fb-helper: Add fb_deferred_io support
-  - Use a dedicated worker to run the framebuffer flushing like qxl does
-  - Add parameter descriptions to drm_fb_helper_deferred_io
-- fbdev: fb_defio: Export fb_deferred_io_mmap
-  - Expand commit message
-- drm/qxl: Use drm_fb_helper deferred_io support
-  - Add FIXME about special dirty() callback for fbdev
-  - Remove note in commit message about deferred worker, drm_fb_helper
-    is similar to qxl now.
-- drm/udl: Use drm_fb_helper deferred_io support
-  - No need to enable deferred_io by default since drm_fb_helper uses
-    a dedicated worker for flushing
-
-Changes since RFC:
-- Fix drm_clip_rect use to be exclusive on x2/y2
-- Put drm_clip_rect functions in drm_rect.{h,c}
-- Take into account that (struct fb_ops *)->fb_{write,...}() can be called
-  from atomic context (spin_lock_irqsave)
-- Export fb_deferred_io_mmap()
-- Add some more documentation
-- Add qxl and udl patches
-
-Noralf Tr=C3=B8nnes (8):
-  drm/rect: Add some drm_clip_rect utility functions
-  drm/udl: Change drm_fb_helper_sys_*() calls to sys_*()
-  drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
-  drm/fb-helper: Add fb_deferred_io support
-  fbdev: fb_defio: Export fb_deferred_io_mmap
-  drm/fb-cma-helper: Add fb_deferred_io support
-  drm/qxl: Use drm_fb_helper deferred_io support
-  drm/udl: Use drm_fb_helper deferred_io support
-
- drivers/gpu/drm/drm_fb_cma_helper.c | 190 ++++++++++++++++++++++++++++--
- drivers/gpu/drm/drm_fb_helper.c     | 127 +++++++++++++++++++-
- drivers/gpu/drm/drm_rect.c          |  67 +++++++++++
- drivers/gpu/drm/qxl/qxl_display.c   |   9 +-
- drivers/gpu/drm/qxl/qxl_drv.h       |   7 +-
- drivers/gpu/drm/qxl/qxl_fb.c        | 224 ++++++++++----------------------=
-----
- drivers/gpu/drm/qxl/qxl_kms.c       |   4 -
- drivers/gpu/drm/udl/udl_drv.h       |   2 -
- drivers/gpu/drm/udl/udl_fb.c        | 140 +---------------------
- drivers/video/fbdev/core/fb_defio.c |   3 +-
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+---
+ drivers/gpu/drm/drm_fb_cma_helper.c | 190 ++++++++++++++++++++++++++++++++=
++---
  include/drm/drm_fb_cma_helper.h     |  14 +++
- include/drm/drm_fb_helper.h         |  17 +++
- include/drm/drm_rect.h              |  69 +++++++++++
- include/linux/fb.h                  |   1 +
- 14 files changed, 546 insertions(+), 328 deletions(-)
+ 2 files changed, 192 insertions(+), 12 deletions(-)
 
---
+diff --git a/drivers/gpu/drm/drm_fb_cma_helper.c b/drivers/gpu/drm/drm_fb_c=
+ma_helper.c
+index bb88e3d..d1e9db0 100644
+--- a/drivers/gpu/drm/drm_fb_cma_helper.c
++++ b/drivers/gpu/drm/drm_fb_cma_helper.c
+@@ -25,6 +25,8 @@
+ #include <drm/drm_fb_cma_helper.h>
+ #include <linux/module.h>
+=20
++#define DEFAULT_FBDEFIO_DELAY_MS 50
++
+ struct drm_fb_cma {
+ 	struct drm_framebuffer		fb;
+ 	struct drm_gem_cma_object	*obj[4];
+@@ -35,6 +37,61 @@ struct drm_fbdev_cma {
+ 	struct drm_fb_cma	*fb;
+ };
+=20
++/**
++ * DOC: framebuffer cma helper functions
++ *
++ * Provides helper functions for creating a cma (contiguous memory allocat=
+or)
++ * backed framebuffer.
++ *
++ * drm_fb_cma_create() is used in the
++ * (struct drm_mode_config_funcs *)->fb_create callback function to create=
+ the
++ * cma backed framebuffer.
++ *
++ * An fbdev framebuffer backed by cma is also available by calling
++ * drm_fbdev_cma_init(). drm_fbdev_cma_fini() tears it down.
++ * If CONFIG_FB_DEFERRED_IO is enabled and the callback
++ * (struct drm_framebuffer_funcs)->dirty is set, fb_deferred_io
++ * will be set up automatically. dirty() is called by
++ * drm_fb_helper_deferred_io() in process context (struct delayed_work).
++ *
++ * Example fbdev deferred io code:
++ *
++ *     static int driver_fbdev_fb_dirty(struct drm_framebuffer *fb,
++ *                                      struct drm_file *file_priv,
++ *                                      unsigned flags, unsigned color,
++ *                                      struct drm_clip_rect *clips,
++ *                                      unsigned num_clips)
++ *     {
++ *         struct drm_gem_cma_object *cma =3D drm_fb_cma_get_gem_obj(fb, 0=
+);
++ *         ... push changes ...
++ *         return 0;
++ *     }
++ *
++ *     static struct drm_framebuffer_funcs driver_fbdev_fb_funcs =3D {
++ *         .destroy       =3D drm_fb_cma_destroy,
++ *         .create_handle =3D drm_fb_cma_create_handle,
++ *         .dirty         =3D driver_fbdev_fb_dirty,
++ *     };
++ *
++ *     static int driver_fbdev_create(struct drm_fb_helper *helper,
++ *             struct drm_fb_helper_surface_size *sizes)
++ *     {
++ *         return drm_fbdev_cma_create_with_funcs(helper, sizes,
++ *                                                &driver_fbdev_fb_funcs);
++ *     }
++ *
++ *     static const struct drm_fb_helper_funcs driver_fb_helper_funcs =3D {
++ *         .fb_probe =3D driver_fbdev_create,
++ *     };
++ *
++ *     Initialize:
++ *     fbdev =3D drm_fbdev_cma_init_with_funcs(dev, 16,
++ *                                           dev->mode_config.num_crtc,
++ *                                           dev->mode_config.num_connecto=
+r,
++ *                                           &driver_fb_helper_funcs);
++ *
++ */
++
+ static inline struct drm_fbdev_cma *to_fbdev_cma(struct drm_fb_helper *hel=
+per)
+ {
+ 	return container_of(helper, struct drm_fbdev_cma, fb_helper);
+@@ -45,7 +102,7 @@ static inline struct drm_fb_cma *to_fb_cma(struct drm_fr=
+amebuffer *fb)
+ 	return container_of(fb, struct drm_fb_cma, fb);
+ }
+=20
+-static void drm_fb_cma_destroy(struct drm_framebuffer *fb)
++void drm_fb_cma_destroy(struct drm_framebuffer *fb)
+ {
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+ 	int i;
+@@ -58,8 +115,9 @@ static void drm_fb_cma_destroy(struct drm_framebuffer *f=
+b)
+ 	drm_framebuffer_cleanup(fb);
+ 	kfree(fb_cma);
+ }
++EXPORT_SYMBOL(drm_fb_cma_destroy);
+=20
+-static int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
+ 	struct drm_file *file_priv, unsigned int *handle)
+ {
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+@@ -67,6 +125,7 @@ static int drm_fb_cma_create_handle(struct drm_framebuff=
+er *fb,
+ 	return drm_gem_handle_create(file_priv,
+ 			&fb_cma->obj[0]->base, handle);
+ }
++EXPORT_SYMBOL(drm_fb_cma_create_handle);
+=20
+ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D {
+ 	.destroy	=3D drm_fb_cma_destroy,
+@@ -76,7 +135,7 @@ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D=
+ {
+ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_device *dev,
+ 	const struct drm_mode_fb_cmd2 *mode_cmd,
+ 	struct drm_gem_cma_object **obj,
+-	unsigned int num_planes)
++	unsigned int num_planes, struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fb_cma *fb_cma;
+ 	int ret;
+@@ -91,7 +150,7 @@ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_de=
+vice *dev,
+ 	for (i =3D 0; i < num_planes; i++)
+ 		fb_cma->obj[i] =3D obj[i];
+=20
+-	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, &drm_fb_cma_funcs);
++	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, funcs);
+ 	if (ret) {
+ 		dev_err(dev->dev, "Failed to initialize framebuffer: %d\n", ret);
+ 		kfree(fb_cma);
+@@ -145,7 +204,7 @@ struct drm_framebuffer *drm_fb_cma_create(struct drm_de=
+vice *dev,
+ 		objs[i] =3D to_drm_gem_cma_obj(obj);
+ 	}
+=20
+-	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i);
++	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i, &drm_fb_cma_funcs);
+ 	if (IS_ERR(fb_cma)) {
+ 		ret =3D PTR_ERR(fb_cma);
+ 		goto err_gem_object_unreference;
+@@ -233,8 +292,79 @@ static struct fb_ops drm_fbdev_cma_ops =3D {
+ 	.fb_setcmap	=3D drm_fb_helper_setcmap,
+ };
+=20
+-static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
+-	struct drm_fb_helper_surface_size *sizes)
++#ifdef CONFIG_FB_DEFERRED_IO
++static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
++					  struct vm_area_struct *vma)
++{
++	fb_deferred_io_mmap(info, vma);
++	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
++
++	return 0;
++}
++
++static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
++				    struct drm_gem_cma_object *cma_obj)
++{
++	struct fb_deferred_io *fbdefio;
++	struct fb_ops *fbops;
++
++	/*
++	 * Per device structures are needed because:
++	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
++	 * fbdefio: individual delays
++	 */
++	fbdefio =3D kzalloc(sizeof(*fbdefio), GFP_KERNEL);
++	fbops =3D kzalloc(sizeof(*fbops), GFP_KERNEL);
++	if (!fbdefio || !fbops) {
++		kfree(fbdefio);
++		return -ENOMEM;
++	}
++
++	/* can't be offset from vaddr since dirty() uses cma_obj */
++	fbi->screen_buffer =3D cma_obj->vaddr;
++	/* fb_deferred_io_fault() needs a physical address */
++	fbi->fix.smem_start =3D page_to_phys(virt_to_page(fbi->screen_buffer));
++
++	*fbops =3D *fbi->fbops;
++	fbi->fbops =3D fbops;
++
++	fbdefio->delay =3D msecs_to_jiffies(DEFAULT_FBDEFIO_DELAY_MS);
++	fbdefio->deferred_io =3D drm_fb_helper_deferred_io;
++	fbi->fbdefio =3D fbdefio;
++	fb_deferred_io_init(fbi);
++	fbi->fbops->fb_mmap =3D drm_fbdev_cma_deferred_io_mmap;
++
++	return 0;
++}
++
++static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
++{
++	if (!fbi->fbdefio)
++		return;
++
++	fb_deferred_io_cleanup(fbi);
++	kfree(fbi->fbdefio);
++	kfree(fbi->fbops);
++}
++#else
++static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
++				    struct drm_gem_cma_object *cma_obj)
++{
++	return 0;
++}
++
++static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
++{
++}
++#endif /* CONFIG_FB_DEFERRED_IO */
++
++/*
++ * For use in a (struct drm_fb_helper_funcs *)->fb_probe callback function=
+ that
++ * needs custom struct drm_framebuffer_funcs, like dirty() for deferred_io=
+ use.
++ */
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma =3D to_fbdev_cma(helper);
+ 	struct drm_mode_fb_cmd2 mode_cmd =3D { 0 };
+@@ -270,7 +400,7 @@ static int drm_fbdev_cma_create(struct drm_fb_helper *h=
+elper,
+ 		goto err_gem_free_object;
+ 	}
+=20
+-	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1);
++	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1, funcs);
+ 	if (IS_ERR(fbdev_cma->fb)) {
+ 		dev_err(dev->dev, "Failed to allocate DRM framebuffer.\n");
+ 		ret =3D PTR_ERR(fbdev_cma->fb);
+@@ -296,31 +426,48 @@ static int drm_fbdev_cma_create(struct drm_fb_helper =
+*helper,
+ 	fbi->screen_size =3D size;
+ 	fbi->fix.smem_len =3D size;
+=20
++	if (funcs->dirty) {
++		ret =3D drm_fbdev_cma_defio_init(fbi, obj);
++		if (ret)
++			goto err_cma_destroy;
++	}
++
+ 	return 0;
+=20
++err_cma_destroy:
++	drm_framebuffer_unregister_private(&fbdev_cma->fb->fb);
++	drm_fb_cma_destroy(&fbdev_cma->fb->fb);
+ err_fb_info_destroy:
+ 	drm_fb_helper_release_fbi(helper);
+ err_gem_free_object:
+ 	dev->driver->gem_free_object(&obj->base);
+ 	return ret;
+ }
++EXPORT_SYMBOL(drm_fbdev_cma_create_with_funcs);
++
++static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes)
++{
++	return drm_fbdev_cma_create_with_funcs(helper, sizes, &drm_fb_cma_funcs);
++}
+=20
+ static const struct drm_fb_helper_funcs drm_fb_cma_helper_funcs =3D {
+ 	.fb_probe =3D drm_fbdev_cma_create,
+ };
+=20
+ /**
+- * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * drm_fbdev_cma_init_with_funcs() - Allocate and initializes a drm_fbdev_=
+cma struct
+  * @dev: DRM device
+  * @preferred_bpp: Preferred bits per pixel for the device
+  * @num_crtc: Number of CRTCs
+  * @max_conn_count: Maximum number of connectors
++ * @funcs: fb helper functions, in particular fb_probe()
+  *
+  * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
+  */
+-struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+-	unsigned int max_conn_count)
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma;
+ 	struct drm_fb_helper *helper;
+@@ -334,7 +481,7 @@ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_dev=
+ice *dev,
+=20
+ 	helper =3D &fbdev_cma->fb_helper;
+=20
+-	drm_fb_helper_prepare(dev, helper, &drm_fb_cma_helper_funcs);
++	drm_fb_helper_prepare(dev, helper, funcs);
+=20
+ 	ret =3D drm_fb_helper_init(dev, helper, num_crtc, max_conn_count);
+ 	if (ret < 0) {
+@@ -364,6 +511,24 @@ err_free:
+=20
+ 	return ERR_PTR(ret);
+ }
++EXPORT_SYMBOL_GPL(drm_fbdev_cma_init_with_funcs);
++
++/**
++ * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * @dev: DRM device
++ * @preferred_bpp: Preferred bits per pixel for the device
++ * @num_crtc: Number of CRTCs
++ * @max_conn_count: Maximum number of connectors
++ *
++ * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
++ */
++struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count)
++{
++	return drm_fbdev_cma_init_with_funcs(dev, preferred_bpp, num_crtc,
++				max_conn_count, &drm_fb_cma_helper_funcs);
++}
+ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+=20
+ /**
+@@ -373,6 +538,7 @@ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma)
+ {
+ 	drm_fb_helper_unregister_fbi(&fbdev_cma->fb_helper);
++	drm_fbdev_cma_defio_fini(fbdev_cma->fb_helper.fbdev);
+ 	drm_fb_helper_release_fbi(&fbdev_cma->fb_helper);
+=20
+ 	if (fbdev_cma->fb) {
+diff --git a/include/drm/drm_fb_cma_helper.h b/include/drm/drm_fb_cma_helpe=
+r.h
+index be62bd3..6554b6f 100644
+--- a/include/drm/drm_fb_cma_helper.h
++++ b/include/drm/drm_fb_cma_helper.h
+@@ -4,11 +4,18 @@
+ struct drm_fbdev_cma;
+ struct drm_gem_cma_object;
+=20
++struct drm_fb_helper_surface_size;
++struct drm_framebuffer_funcs;
++struct drm_fb_helper_funcs;
+ struct drm_framebuffer;
++struct drm_fb_helper;
+ struct drm_device;
+ struct drm_file;
+ struct drm_mode_fb_cmd2;
+=20
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs);
+ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+ 	unsigned int max_conn_count);
+@@ -16,6 +23,13 @@ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma);
+=20
+ void drm_fbdev_cma_restore_mode(struct drm_fbdev_cma *fbdev_cma);
+ void drm_fbdev_cma_hotplug_event(struct drm_fbdev_cma *fbdev_cma);
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs);
++
++void drm_fb_cma_destroy(struct drm_framebuffer *fb);
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++	struct drm_file *file_priv, unsigned int *handle);
+=20
+ struct drm_framebuffer *drm_fb_cma_create(struct drm_device *dev,
+ 	struct drm_file *file_priv, const struct drm_mode_fb_cmd2 *mode_cmd);
+--=20
 2.2.2
 

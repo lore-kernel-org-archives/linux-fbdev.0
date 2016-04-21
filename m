@@ -1,24 +1,60 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 29 Apr 2016 10:02:38 +0000
-Subject: Re: [PATCH] staging: sm750fb: unsigned int instead of unsigned
-Message-Id: <20160429100238.GO4298@mwanda>
+From: "J.D. Schroeder" <Linux.HWI@garmin.com>
+Date: Thu, 21 Apr 2016 00:02:53 +0000
+Subject: [PATCH] OMAPDSS: HDMI5: Change DDC timings
+Message-Id: <1461196973-20370-1-git-send-email-Linux.HWI@garmin.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160429092143.GA6303@iiitd.ac.in>
-In-Reply-To: <20160429092143.GA6303@iiitd.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Manav Batra <batmanav10@gmail.com>
-Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, misael.lopez@ti.com
+Cc: "Lodes, Jim" <jim.lodes@garmin.com>, "J.D. Schroeder" <jay.schroeder@garmin.com>
 
-On Fri, Apr 29, 2016 at 02:21:43AM -0700, Manav Batra wrote:
-> Signed-off-by: Manav Batra <batmanav10@gmail.com>
-> 
-> Replaced occurences of unsigned with unsigned int.
+From: "Lodes, Jim" <jim.lodes@garmin.com>
 
-The Signed-off-by goes at the end.  Look at some other patches and copy
-the format.  Please resend everything.
+The DDC scl high and low times were set to the minimum values
+from the i2c specification, but the i2c specification takes into
+account the rise time and fall time to calculate the frequency.
+To pass HDMI certification DDC can not exceed 100kHz therefore in
+a system where the rise times and fall times are negligible the high
+and low times for scl need to be 10us.
 
-regards,
-dan carpenter
+Signed-off-by: Lodes, Jim <jim.lodes@garmin.com>
+Signed-off-by: J.D. Schroeder <jay.schroeder@garmin.com>
+---
+ drivers/gpu/drm/omapdrm/dss/hdmi5_core.c          | 4 ++--
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi5_core.c b/drivers/gpu/drm/omapdrm/dss/hdmi5_core.c
+index 6a39752..d993f78 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi5_core.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi5_core.c
+@@ -51,8 +51,8 @@ static void hdmi_core_ddc_init(struct hdmi_core_data *core)
+ {
+ 	void __iomem *base = core->base;
+ 	const unsigned long long iclk = 266000000;	/* DSS L3 ICLK */
+-	const unsigned ss_scl_high = 4000;		/* ns */
+-	const unsigned ss_scl_low = 4700;		/* ns */
++	const unsigned ss_scl_high = 4600;		/* ns */
++	const unsigned ss_scl_low = 5400;		/* ns */
+ 	const unsigned fs_scl_high = 600;		/* ns */
+ 	const unsigned fs_scl_low = 1300;		/* ns */
+ 	const unsigned sda_hold = 1000;			/* ns */
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+index 8ea531d..f3e4b81 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c
+@@ -51,8 +51,8 @@ static void hdmi_core_ddc_init(struct hdmi_core_data *core)
+ {
+ 	void __iomem *base = core->base;
+ 	const unsigned long long iclk = 266000000;	/* DSS L3 ICLK */
+-	const unsigned ss_scl_high = 4000;		/* ns */
+-	const unsigned ss_scl_low = 4700;		/* ns */
++	const unsigned ss_scl_high = 4600;		/* ns */
++	const unsigned ss_scl_low = 5400;		/* ns */
+ 	const unsigned fs_scl_high = 600;		/* ns */
+ 	const unsigned fs_scl_low = 1300;		/* ns */
+ 	const unsigned sda_hold = 1000;			/* ns */
+-- 
+1.9.1
 

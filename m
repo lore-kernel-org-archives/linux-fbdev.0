@@ -1,344 +1,183 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Wed, 20 Apr 2016 16:42:57 +0000
+From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
+Date: Thu, 21 Apr 2016 18:54:45 +0000
 Subject: Re: [PATCH 4/8] drm/fb-helper: Add fb_deferred_io support
-Message-Id: <201604210021.6jR6Ki46%fengguang.wu@intel.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WIyZ46R2i8wDzkSu"
+Message-Id: <571921F5.2080007@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461165929-11344-5-git-send-email-noralf@tronnes.org>
+References: <1461165929-11344-1-git-send-email-noralf@tronnes.org>
+ <1461165929-11344-5-git-send-email-noralf@tronnes.org>
 In-Reply-To: <1461165929-11344-5-git-send-email-noralf@tronnes.org>
-To: linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
 
---WIyZ46R2i8wDzkSu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Den 20.04.2016 17:25, skrev Noralf Trønnes:
+> This adds deferred io support if CONFIG_FB_DEFERRED_IO is enabled.
+> Accumulated fbdev framebuffer changes are signaled using the callback
+> (struct drm_framebuffer_funcs *)->dirty()
+>
+> The drm_fb_helper_sys_*() functions will accumulate changes and
+> schedule fb_info.deferred_work _if_ fb_info.fbdefio is set.
+> This worker is used by the deferred io mmap code to signal that it
+> has been collecting page faults. The page faults and/or other changes
+> are then merged into a drm_clip_rect and passed to the framebuffer
+> dirty() function.
+>
+> The driver is responsible for setting up the fb_info.fbdefio structure
+> and calling fb_deferred_io_init() using the provided callback:
+> (struct fb_deferred_io).deferred_io = drm_fb_helper_deferred_io;
+>
+> Signed-off-by: Noralf Trønnes <noralf@tronnes.org>
+> ---
+>   drivers/gpu/drm/drm_fb_helper.c | 119 +++++++++++++++++++++++++++++++++++++++-
+>   include/drm/drm_fb_helper.h     |  15 +++++
+>   2 files changed, 133 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
 
-Hi,
+[...]
 
-[auto build test WARNING on drm/drm-next]
-[also build test WARNING on v4.6-rc4 next-20160420]
-[if your patch is applied to the wrong git tree, please drop us a note to help improving the system]
+> +#ifdef CONFIG_FB_DEFERRED_IO
+> +/**
+> + * drm_fb_helper_deferred_io() - (struct fb_deferred_io *)->deferred_io callback
+> + *                               function
+> + *
+> + * This function always runs in process context (struct delayed_work) and calls
+> + * the (struct drm_framebuffer_funcs)->dirty function with the collected
+> + * damage. There's no need to worry about the possibility that the fb_sys_*()
+> + * functions could be running in atomic context. They only schedule the
+> + * delayed worker which then calls this deferred_io callback.
+> + */
+> +void drm_fb_helper_deferred_io(struct fb_info *info,
+> +			       struct list_head *pagelist)
+> +{
+> +	struct drm_fb_helper *helper = info->par;
+> +	unsigned long start, end, min, max;
+> +	struct drm_clip_rect clip;
+> +	unsigned long flags;
+> +	struct page *page;
+> +
+> +	if (!helper->fb->funcs->dirty)
+> +		return;
+> +
+> +	spin_lock_irqsave(&helper->dirty_lock, flags);
+> +	clip = helper->dirty_clip;
+> +	drm_clip_rect_reset(&helper->dirty_clip);
+> +	spin_unlock_irqrestore(&helper->dirty_lock, flags);
+> +
+> +	min = ULONG_MAX;
+> +	max = 0;
+> +	list_for_each_entry(page, pagelist, lru) {
+> +		start = page->index << PAGE_SHIFT;
+> +		end = start + PAGE_SIZE - 1;
+> +		min = min(min, start);
+> +		max = max(max, end);
+> +	}
+> +
+> +	if (min < max) {
+> +		struct drm_clip_rect mmap_clip;
+> +
+> +		mmap_clip.x1 = 0;
+> +		mmap_clip.x2 = info->var.xres;
+> +		mmap_clip.y1 = min / info->fix.line_length;
+> +		mmap_clip.y2 = min_t(u32, max / info->fix.line_length,
+> +				     info->var.yres);
+> +		drm_clip_rect_merge(&clip, &mmap_clip, 1, 0, 0, 0);
+> +	}
+> +
+> +	if (!drm_clip_rect_is_empty(&clip))
+> +		helper->fb->funcs->dirty(helper->fb, NULL, 0, 0, &clip, 1);
+> +}
+> +EXPORT_SYMBOL(drm_fb_helper_deferred_io);
 
-url:    https://github.com/0day-ci/linux/commits/Noralf-Tr-nnes/drm-Add-fbdev-deferred-io-support-to-helpers/20160420-234359
-base:   git://people.freedesktop.org/~airlied/linux.git drm-next
-reproduce: make htmldocs
+There is one thing I have wondered about when it comes to deferred io and
+long run times for the defio worker with my displays:
 
-All warnings (new ones prefixed by >>):
+Userspace writes to some pages then the deferred io worker kicks off and
+runs for 100ms holding the page list mutex. While this is happening,
+userspace writes to a new page triggering a page_mkwrite. Now this
+function has to wait for the mutex to be released.
 
-   drivers/gpu/drm/i915/i915_irq.c:2663: warning: No description found for parameter 'fmt'
-   include/drm/drm_crtc.h:364: warning: No description found for parameter 'mode_blob'
-   include/drm/drm_crtc.h:779: warning: No description found for parameter 'name'
-   include/drm/drm_crtc.h:1238: warning: No description found for parameter 'connector_id'
-   include/drm/drm_crtc.h:1238: warning: No description found for parameter 'tile_blob_ptr'
-   include/drm/drm_crtc.h:1277: warning: No description found for parameter 'rotation'
-   include/drm/drm_crtc.h:1539: warning: No description found for parameter 'name'
-   include/drm/drm_crtc.h:1539: warning: No description found for parameter 'mutex'
-   include/drm/drm_crtc.h:1539: warning: No description found for parameter 'helper_private'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tile_idr'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'connector_ida'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'delayed_event'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'edid_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'dpms_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'path_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tile_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'plane_type_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'rotation_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_src_x'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_src_y'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_src_w'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_src_h'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_crtc_x'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_crtc_y'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_crtc_w'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_crtc_h'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_fb_id'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_crtc_id'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_active'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'prop_mode_id'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'dvi_i_subconnector_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'dvi_i_select_subconnector_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_subconnector_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_select_subconnector_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_mode_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_left_margin_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_right_margin_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_top_margin_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_bottom_margin_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_brightness_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_contrast_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_flicker_reduction_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_overscan_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_saturation_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'tv_hue_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'scaling_mode_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'aspect_ratio_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'dirty_info_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'suggested_x_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'suggested_y_property'
-   include/drm/drm_crtc.h:2175: warning: No description found for parameter 'allow_fb_modifiers'
-   drivers/gpu/drm/drm_atomic_helper.c:2924: warning: No description found for parameter 'start'
-   drivers/gpu/drm/drm_atomic_helper.c:2924: warning: No description found for parameter 'start'
-   drivers/gpu/drm/drm_atomic_helper.c:2924: warning: No description found for parameter 'start'
-   drivers/gpu/drm/drm_atomic_helper.c:2924: warning: No description found for parameter 'start'
->> drivers/gpu/drm/drm_fb_helper.c:867: warning: No description found for parameter 'info'
->> drivers/gpu/drm/drm_fb_helper.c:867: warning: No description found for parameter 'pagelist'
->> drivers/gpu/drm/drm_fb_helper.c:867: warning: No description found for parameter 'info'
->> drivers/gpu/drm/drm_fb_helper.c:867: warning: No description found for parameter 'pagelist'
-   include/drm/drm_dp_helper.h:749: warning: No description found for parameter 'i2c_nack_count'
-   include/drm/drm_dp_helper.h:749: warning: No description found for parameter 'i2c_defer_count'
-   drivers/gpu/drm/drm_dp_mst_topology.c:2356: warning: No description found for parameter 'connector'
-   include/drm/drm_dp_mst_helper.h:92: warning: No description found for parameter 'cached_edid'
-   include/drm/drm_dp_mst_helper.h:92: warning: No description found for parameter 'has_audio'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'max_dpcd_transaction_bytes'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'sink_count'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'total_slots'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'avail_slots'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'total_pbn'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'qlock'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'tx_msg_downq'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'tx_down_in_progress'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'payload_lock'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'proposed_vcpis'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'payloads'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'payload_mask'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'vcpi_mask'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'tx_waitq'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'work'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'tx_work'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'destroy_connector_list'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'destroy_connector_lock'
-   include/drm/drm_dp_mst_helper.h:466: warning: No description found for parameter 'destroy_connector_work'
-   drivers/gpu/drm/drm_dp_mst_topology.c:2356: warning: No description found for parameter 'connector'
-   drivers/gpu/drm/drm_irq.c:176: warning: No description found for parameter 'flags'
-   include/drm/drmP.h:168: warning: No description found for parameter 'fmt'
-   include/drm/drmP.h:184: warning: No description found for parameter 'fmt'
-   include/drm/drmP.h:202: warning: No description found for parameter 'fmt'
-   include/drm/drmP.h:247: warning: No description found for parameter 'dev'
-   include/drm/drmP.h:247: warning: No description found for parameter 'data'
-   include/drm/drmP.h:247: warning: No description found for parameter 'file_priv'
-   include/drm/drmP.h:280: warning: No description found for parameter 'ioctl'
-   include/drm/drmP.h:280: warning: No description found for parameter '_func'
-   include/drm/drmP.h:280: warning: No description found for parameter '_flags'
-   include/drm/drmP.h:362: warning: cannot understand function prototype: 'struct drm_lock_data '
-   include/drm/drmP.h:415: warning: cannot understand function prototype: 'struct drm_driver '
-   include/drm/drmP.h:672: warning: cannot understand function prototype: 'struct drm_info_list '
-   include/drm/drmP.h:682: warning: cannot understand function prototype: 'struct drm_info_node '
-   include/drm/drmP.h:692: warning: cannot understand function prototype: 'struct drm_minor '
-   include/drm/drmP.h:740: warning: cannot understand function prototype: 'struct drm_device '
-   drivers/gpu/drm/i915/intel_runtime_pm.c:2275: warning: No description found for parameter 'resume'
-   drivers/gpu/drm/i915/intel_runtime_pm.c:2275: warning: No description found for parameter 'resume'
-   drivers/gpu/drm/i915/i915_irq.c:2663: warning: No description found for parameter 'fmt'
-   drivers/gpu/drm/i915/i915_irq.c:2663: warning: No description found for parameter 'fmt'
-   drivers/gpu/drm/i915/i915_irq.c:2663: warning: No description found for parameter 'fmt'
-   drivers/gpu/drm/i915/i915_irq.c:2663: warning: No description found for parameter 'fmt'
-   drivers/gpu/drm/i915/i915_gem.c:421: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:421: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:421: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:686: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:686: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:686: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:767: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:767: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:767: warning: No description found for parameter 'args'
-   drivers/gpu/drm/i915/i915_gem.c:767: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:1029: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:1029: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:1029: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:1245: warning: No description found for parameter 'rps'
-   drivers/gpu/drm/i915/i915_gem.c:1459: warning: No description found for parameter 'req'
-   drivers/gpu/drm/i915/i915_gem.c:1494: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:1494: warning: No description found for parameter 'readonly'
-   drivers/gpu/drm/i915/i915_gem.c:1617: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:1617: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:1617: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:1680: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:1680: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:1680: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:1725: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:1725: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:1725: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:2013: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:2013: warning: No description found for parameter 'size'
-   drivers/gpu/drm/i915/i915_gem.c:2013: warning: No description found for parameter 'tiling_mode'
-   drivers/gpu/drm/i915/i915_gem.c:2013: warning: No description found for parameter 'fenced'
-   drivers/gpu/drm/i915/i915_gem.c:2013: warning: Excess function parameter 'obj' description in 'i915_gem_get_gtt_alignment'
-   drivers/gpu/drm/i915/i915_gem.c:2911: warning: No description found for parameter 'engine'
-   drivers/gpu/drm/i915/i915_gem.c:3037: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:3087: warning: No description found for parameter 'dev'
-   drivers/gpu/drm/i915/i915_gem.c:3087: warning: No description found for parameter 'data'
-   drivers/gpu/drm/i915/i915_gem.c:3087: warning: No description found for parameter 'file'
-   drivers/gpu/drm/i915/i915_gem.c:3087: warning: Excess function parameter 'DRM_IOCTL_ARGS' description in 'i915_gem_wait_ioctl'
-   drivers/gpu/drm/i915/i915_gem.c:3459: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:3459: warning: No description found for parameter 'vm'
-   drivers/gpu/drm/i915/i915_gem.c:3459: warning: No description found for parameter 'ggtt_view'
-   drivers/gpu/drm/i915/i915_gem.c:3459: warning: No description found for parameter 'alignment'
-   drivers/gpu/drm/i915/i915_gem.c:3459: warning: No description found for parameter 'flags'
-   drivers/gpu/drm/i915/i915_gem.c:3714: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:3714: warning: No description found for parameter 'write'
-   drivers/gpu/drm/i915/i915_gem.c:3789: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:3789: warning: No description found for parameter 'cache_level'
-   drivers/gpu/drm/i915/i915_gem.c:4063: warning: No description found for parameter 'obj'
-   drivers/gpu/drm/i915/i915_gem.c:4063: warning: No description found for parameter 'write'
-   drivers/gpu/drm/i915/i915_cmd_parser.c:748: warning: No description found for parameter 'engine'
-   drivers/gpu/drm/i915/i915_cmd_parser.c:748: warning: Excess function parameter 'ring' description in 'i915_cmd_parser_init_ring'
-   drivers/gpu/drm/i915/i915_cmd_parser.c:838: warning: No description found for parameter 'engine'
-   drivers/gpu/drm/i915/i915_cmd_parser.c:838: warning: Excess function parameter 'ring' description in 'i915_cmd_parser_fini_ring'
-   drivers/gpu/drm/i915/i915_cmd_parser.c:1034: warning: No description found for parameter 'engine'
+Who is actually waiting here and is there a problem that this can last
+for 100ms?
 
-vim +/info +867 drivers/gpu/drm/drm_fb_helper.c
+Excerpt from drivers/video/fbdev/core/fb_defio.c:
 
-   851	}
-   852	EXPORT_SYMBOL(drm_fb_helper_unlink_fbi);
-   853	
-   854	#ifdef CONFIG_FB_DEFERRED_IO
-   855	/**
-   856	 * drm_fb_helper_deferred_io() - (struct fb_deferred_io *)->deferred_io callback
-   857	 *                               function
-   858	 *
-   859	 * This function always runs in process context (struct delayed_work) and calls
-   860	 * the (struct drm_framebuffer_funcs)->dirty function with the collected
-   861	 * damage. There's no need to worry about the possibility that the fb_sys_*()
-   862	 * functions could be running in atomic context. They only schedule the
-   863	 * delayed worker which then calls this deferred_io callback.
-   864	 */
-   865	void drm_fb_helper_deferred_io(struct fb_info *info,
-   866				       struct list_head *pagelist)
- > 867	{
-   868		struct drm_fb_helper *helper = info->par;
-   869		unsigned long start, end, min, max;
-   870		struct drm_clip_rect clip;
-   871		unsigned long flags;
-   872		struct page *page;
-   873	
-   874		if (!helper->fb->funcs->dirty)
-   875			return;
+/* vm_ops->page_mkwrite handler */
+static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+                   struct vm_fault *vmf)
+{
+...
+     /* this is a callback we get when userspace first tries to
+     write to the page. we schedule a workqueue. that workqueue
+     will eventually mkclean the touched pages and execute the
+     deferred framebuffer IO. then if userspace touches a page
+     again, we repeat the same scheme */
+...
+     /* protect against the workqueue changing the page list */
+     mutex_lock(&fbdefio->lock);
+...
+     /*
+      * We want the page to remain locked from ->page_mkwrite until
+      * the PTE is marked dirty to avoid page_mkclean() being called
+      * before the PTE is updated, which would leave the page ignored
+      * by defio.
+      * Do this by locking the page here and informing the caller
+      * about it with VM_FAULT_LOCKED.
+      */
+     lock_page(page);
 
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+     /* we loop through the pagelist before adding in order
+     to keep the pagelist sorted */
+     list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+         /* this check is to catch the case where a new
+         process could start writing to the same page
+         through a new pte. this new access can cause the
+         mkwrite even when the original ps's pte is marked
+         writable */
+         if (unlikely(cur = page))
+             goto page_already_added;
+         else if (cur->index > page->index)
+             break;
+     }
 
---WIyZ46R2i8wDzkSu
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=".config.gz"
-Content-Transfer-Encoding: base64
+     list_add_tail(&page->lru, &cur->lru);
 
-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
+page_already_added:
+     mutex_unlock(&fbdefio->lock);
 
---WIyZ46R2i8wDzkSu--
+     /* come back after delay to process the deferred IO */
+     schedule_delayed_work(&info->deferred_work, fbdefio->delay);
+     return VM_FAULT_LOCKED;
+}
+
+static int fb_deferred_io_set_page_dirty(struct page *page)
+{
+     if (!PageDirty(page))
+         SetPageDirty(page);
+     return 0;
+}
+
+/* workqueue callback */
+static void fb_deferred_io_work(struct work_struct *work)
+{
+...
+     /* here we mkclean the pages, then do all deferred IO */
+     mutex_lock(&fbdefio->lock);
+     list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+         lock_page(cur);
+         page_mkclean(cur);
+         unlock_page(cur);
+     }
+
+     /* driver's callback with pagelist */
+     fbdefio->deferred_io(info, &fbdefio->pagelist);
+...
+     mutex_unlock(&fbdefio->lock);
+}
+
+
+Noralf.
+

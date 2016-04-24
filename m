@@ -1,55 +1,61 @@
-From: Alan <alan@linux.intel.com>
-Date: Mon, 11 Apr 2016 13:30:24 +0000
-Subject: [PATCH 2/4] goldfish: Enable ACPI-based enumeration for goldfish framebuffer
-Message-Id: <20160411133023.23962.51777.stgit@localhost.localdomain>
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Sun, 24 Apr 2016 20:48:56 +0000
+Subject: [PATCH v2 2/8] drm/udl: Change drm_fb_helper_sys_*() calls to sys_*()
+Message-Id: <1461530942-22485-3-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: daniel@ffwll.ch, laurent.pinchart@ideasonboard.com, tomi.valkeinen@ti.com, linux-kernel@vger.kernel.org, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
 
-From: Yu Ning <yu.ning@intel.com>
+Now that drm_fb_helper gets deferred io support, the
+drm_fb_helper_sys_{fillrect,copyarea,imageblit} functions will schedule
+a worker that will call the (struct drm_framebuffer *)->funcs->dirty()
+function. This will break this driver so use the
+sys_{fillrect,copyarea,imageblit} functions directly.
 
-Enable ACPI bindings for the Goldfish framebuffer device.
-
-Signed-off-by: Yu Ning <yu.ning@intel.com>
-Signed-off-by: Jin Qian <jinqian@android.com>
-Signed-off-by: Alan <alan@linux.intel.com>
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
 ---
- drivers/video/fbdev/goldfishfb.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ drivers/gpu/drm/udl/udl_fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index f0e651b..58b33e4 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -26,6 +26,7 @@
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
-+#include <linux/acpi.h>
- 
- enum {
- 	FB_GET_WIDTH        = 0x00,
-@@ -310,6 +311,12 @@ static const struct of_device_id goldfish_fb_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
- 
-+static const struct acpi_device_id goldfish_fb_acpi_match[] = {
-+	{ "GFSH0004", 0 },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(acpi, goldfish_fb_acpi_match);
-+
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
-@@ -317,6 +324,7 @@ static struct platform_driver goldfish_fb_driver = {
- 		.name = "goldfish_fb",
- 		.owner = THIS_MODULE,
- 		.of_match_table = goldfish_fb_of_match,
-+		.acpi_match_table = ACPI_PTR(goldfish_fb_acpi_match),
- 	}
- };
- 
+diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/udl_fb.c
+index fd1eb9d..a52de2f 100644
+--- a/drivers/gpu/drm/udl/udl_fb.c
++++ b/drivers/gpu/drm/udl/udl_fb.c
+@@ -287,7 +287,7 @@ static void udl_fb_fillrect(struct fb_info *info, const=
+ struct fb_fillrect *rect
+ {
+ 	struct udl_fbdev *ufbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_fillrect(info, rect);
++	sys_fillrect(info, rect);
+=20
+ 	udl_handle_damage(&ufbdev->ufb, rect->dx, rect->dy, rect->width,
+ 			  rect->height);
+@@ -297,7 +297,7 @@ static void udl_fb_copyarea(struct fb_info *info, const=
+ struct fb_copyarea *regi
+ {
+ 	struct udl_fbdev *ufbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_copyarea(info, region);
++	sys_copyarea(info, region);
+=20
+ 	udl_handle_damage(&ufbdev->ufb, region->dx, region->dy, region->width,
+ 			  region->height);
+@@ -307,7 +307,7 @@ static void udl_fb_imageblit(struct fb_info *info, cons=
+t struct fb_image *image)
+ {
+ 	struct udl_fbdev *ufbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_imageblit(info, image);
++	sys_imageblit(info, image);
+=20
+ 	udl_handle_damage(&ufbdev->ufb, image->dx, image->dy, image->width,
+ 			  image->height);
+--=20
+2.2.2
 

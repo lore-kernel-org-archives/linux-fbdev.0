@@ -1,76 +1,409 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 27 Apr 2016 05:55:38 +0000
-Subject: Re: [PATCH v2] OMAPDSS: HDMI5: Fix AVI infoframe
-Message-Id: <5720545A.2000508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DEfLqawOT5JrvKiX6gVni68Wke5GkPAlf"
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Sun, 24 Apr 2016 20:49:00 +0000
+Subject: [PATCH v2 6/8] drm/fb-cma-helper: Add fb_deferred_io support
+Message-Id: <1461530942-22485-7-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461246520-26734-1-git-send-email-Linux.HWI@garmin.com>
- <1461260940-6660-1-git-send-email-Linux.HWI@garmin.com>
-In-Reply-To: <1461260940-6660-1-git-send-email-Linux.HWI@garmin.com>
-To: "J.D. Schroeder" <Linux.HWI@garmin.com>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, misael.lopez@ti.com, Jim Lodes <jim.lodes@garmin.com>, "J.D. Schroeder" <jay.schroeder@garmin.com>
-
---DEfLqawOT5JrvKiX6gVni68Wke5GkPAlf
-Content-Type: multipart/mixed; boundary="bqBNnh5El6xwMMG5MjpAuDvwQ4JIk3F4W"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: "J.D. Schroeder" <Linux.HWI@garmin.com>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
- linux-fbdev@vger.kernel.org, misael.lopez@ti.com,
- Jim Lodes <jim.lodes@garmin.com>, "J.D. Schroeder" <jay.schroeder@garmin.com>
-Message-ID: <5720545A.2000508@ti.com>
-Subject: Re: [PATCH v2] OMAPDSS: HDMI5: Fix AVI infoframe
-References: <1461246520-26734-1-git-send-email-Linux.HWI@garmin.com>
- <1461260940-6660-1-git-send-email-Linux.HWI@garmin.com>
-In-Reply-To: <1461260940-6660-1-git-send-email-Linux.HWI@garmin.com>
-
---bqBNnh5El6xwMMG5MjpAuDvwQ4JIk3F4W
-Content-Type: text/plain; charset=utf-8
+References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-On 21/04/16 20:49, J.D. Schroeder wrote:
-> From: Jim Lodes <jim.lodes@garmin.com>
->=20
-> The AVI infoframe R0-R3 in the 2nd data byte represents the
-> Active Format Aspect Ratio. It is four bits long not two bits.
-> This fixes that mask used to extract the bits before writing the
-> bits to the hardware registers.
->=20
-> Signed-off-by: Jim Lodes <jim.lodes@garmin.com>
-> Signed-off-by: J.D. Schroeder <jay.schroeder@garmin.com>
-> ---
->  drivers/gpu/drm/omapdrm/dss/hdmi5_core.c          | 2 +-
->  drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c | 2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+This adds fbdev deferred io support if CONFIG_FB_DEFERRED_IO is enabled.
+The driver has to provide a (struct drm_framebuffer_funcs *)->dirty()
+callback to get notification of fbdev framebuffer changes.
+If the dirty() hook is set, then fb_deferred_io is set up automatically
+by the helper.
 
-Thanks! Queuing this for 4.7.
+Two functions have been added so that the driver can provide a dirty()
+function:
+- drm_fbdev_cma_init_with_funcs()
+  This makes it possible for the driver to provided a custom
+  (struct drm_fb_helper_funcs *)->fb_probe() function.
+- drm_fbdev_cma_create_with_funcs()
+  This is used by the .fb_probe hook to set a driver provided
+  (struct drm_framebuffer_funcs *)->dirty() function.
 
- Tomi
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+---
+ drivers/gpu/drm/drm_fb_cma_helper.c | 190 ++++++++++++++++++++++++++++++++=
++---
+ include/drm/drm_fb_cma_helper.h     |  14 +++
+ 2 files changed, 192 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/gpu/drm/drm_fb_cma_helper.c b/drivers/gpu/drm/drm_fb_c=
+ma_helper.c
+index bb88e3d..d1e9db0 100644
+--- a/drivers/gpu/drm/drm_fb_cma_helper.c
++++ b/drivers/gpu/drm/drm_fb_cma_helper.c
+@@ -25,6 +25,8 @@
+ #include <drm/drm_fb_cma_helper.h>
+ #include <linux/module.h>
+=20
++#define DEFAULT_FBDEFIO_DELAY_MS 50
++
+ struct drm_fb_cma {
+ 	struct drm_framebuffer		fb;
+ 	struct drm_gem_cma_object	*obj[4];
+@@ -35,6 +37,61 @@ struct drm_fbdev_cma {
+ 	struct drm_fb_cma	*fb;
+ };
+=20
++/**
++ * DOC: framebuffer cma helper functions
++ *
++ * Provides helper functions for creating a cma (contiguous memory allocat=
+or)
++ * backed framebuffer.
++ *
++ * drm_fb_cma_create() is used in the
++ * (struct drm_mode_config_funcs *)->fb_create callback function to create=
+ the
++ * cma backed framebuffer.
++ *
++ * An fbdev framebuffer backed by cma is also available by calling
++ * drm_fbdev_cma_init(). drm_fbdev_cma_fini() tears it down.
++ * If CONFIG_FB_DEFERRED_IO is enabled and the callback
++ * (struct drm_framebuffer_funcs)->dirty is set, fb_deferred_io
++ * will be set up automatically. dirty() is called by
++ * drm_fb_helper_deferred_io() in process context (struct delayed_work).
++ *
++ * Example fbdev deferred io code:
++ *
++ *     static int driver_fbdev_fb_dirty(struct drm_framebuffer *fb,
++ *                                      struct drm_file *file_priv,
++ *                                      unsigned flags, unsigned color,
++ *                                      struct drm_clip_rect *clips,
++ *                                      unsigned num_clips)
++ *     {
++ *         struct drm_gem_cma_object *cma =3D drm_fb_cma_get_gem_obj(fb, 0=
+);
++ *         ... push changes ...
++ *         return 0;
++ *     }
++ *
++ *     static struct drm_framebuffer_funcs driver_fbdev_fb_funcs =3D {
++ *         .destroy       =3D drm_fb_cma_destroy,
++ *         .create_handle =3D drm_fb_cma_create_handle,
++ *         .dirty         =3D driver_fbdev_fb_dirty,
++ *     };
++ *
++ *     static int driver_fbdev_create(struct drm_fb_helper *helper,
++ *             struct drm_fb_helper_surface_size *sizes)
++ *     {
++ *         return drm_fbdev_cma_create_with_funcs(helper, sizes,
++ *                                                &driver_fbdev_fb_funcs);
++ *     }
++ *
++ *     static const struct drm_fb_helper_funcs driver_fb_helper_funcs =3D {
++ *         .fb_probe =3D driver_fbdev_create,
++ *     };
++ *
++ *     Initialize:
++ *     fbdev =3D drm_fbdev_cma_init_with_funcs(dev, 16,
++ *                                           dev->mode_config.num_crtc,
++ *                                           dev->mode_config.num_connecto=
+r,
++ *                                           &driver_fb_helper_funcs);
++ *
++ */
++
+ static inline struct drm_fbdev_cma *to_fbdev_cma(struct drm_fb_helper *hel=
+per)
+ {
+ 	return container_of(helper, struct drm_fbdev_cma, fb_helper);
+@@ -45,7 +102,7 @@ static inline struct drm_fb_cma *to_fb_cma(struct drm_fr=
+amebuffer *fb)
+ 	return container_of(fb, struct drm_fb_cma, fb);
+ }
+=20
+-static void drm_fb_cma_destroy(struct drm_framebuffer *fb)
++void drm_fb_cma_destroy(struct drm_framebuffer *fb)
+ {
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+ 	int i;
+@@ -58,8 +115,9 @@ static void drm_fb_cma_destroy(struct drm_framebuffer *f=
+b)
+ 	drm_framebuffer_cleanup(fb);
+ 	kfree(fb_cma);
+ }
++EXPORT_SYMBOL(drm_fb_cma_destroy);
+=20
+-static int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
+ 	struct drm_file *file_priv, unsigned int *handle)
+ {
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+@@ -67,6 +125,7 @@ static int drm_fb_cma_create_handle(struct drm_framebuff=
+er *fb,
+ 	return drm_gem_handle_create(file_priv,
+ 			&fb_cma->obj[0]->base, handle);
+ }
++EXPORT_SYMBOL(drm_fb_cma_create_handle);
+=20
+ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D {
+ 	.destroy	=3D drm_fb_cma_destroy,
+@@ -76,7 +135,7 @@ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D=
+ {
+ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_device *dev,
+ 	const struct drm_mode_fb_cmd2 *mode_cmd,
+ 	struct drm_gem_cma_object **obj,
+-	unsigned int num_planes)
++	unsigned int num_planes, struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fb_cma *fb_cma;
+ 	int ret;
+@@ -91,7 +150,7 @@ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_de=
+vice *dev,
+ 	for (i =3D 0; i < num_planes; i++)
+ 		fb_cma->obj[i] =3D obj[i];
+=20
+-	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, &drm_fb_cma_funcs);
++	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, funcs);
+ 	if (ret) {
+ 		dev_err(dev->dev, "Failed to initialize framebuffer: %d\n", ret);
+ 		kfree(fb_cma);
+@@ -145,7 +204,7 @@ struct drm_framebuffer *drm_fb_cma_create(struct drm_de=
+vice *dev,
+ 		objs[i] =3D to_drm_gem_cma_obj(obj);
+ 	}
+=20
+-	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i);
++	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i, &drm_fb_cma_funcs);
+ 	if (IS_ERR(fb_cma)) {
+ 		ret =3D PTR_ERR(fb_cma);
+ 		goto err_gem_object_unreference;
+@@ -233,8 +292,79 @@ static struct fb_ops drm_fbdev_cma_ops =3D {
+ 	.fb_setcmap	=3D drm_fb_helper_setcmap,
+ };
+=20
+-static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
+-	struct drm_fb_helper_surface_size *sizes)
++#ifdef CONFIG_FB_DEFERRED_IO
++static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
++					  struct vm_area_struct *vma)
++{
++	fb_deferred_io_mmap(info, vma);
++	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
++
++	return 0;
++}
++
++static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
++				    struct drm_gem_cma_object *cma_obj)
++{
++	struct fb_deferred_io *fbdefio;
++	struct fb_ops *fbops;
++
++	/*
++	 * Per device structures are needed because:
++	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
++	 * fbdefio: individual delays
++	 */
++	fbdefio =3D kzalloc(sizeof(*fbdefio), GFP_KERNEL);
++	fbops =3D kzalloc(sizeof(*fbops), GFP_KERNEL);
++	if (!fbdefio || !fbops) {
++		kfree(fbdefio);
++		return -ENOMEM;
++	}
++
++	/* can't be offset from vaddr since dirty() uses cma_obj */
++	fbi->screen_buffer =3D cma_obj->vaddr;
++	/* fb_deferred_io_fault() needs a physical address */
++	fbi->fix.smem_start =3D page_to_phys(virt_to_page(fbi->screen_buffer));
++
++	*fbops =3D *fbi->fbops;
++	fbi->fbops =3D fbops;
++
++	fbdefio->delay =3D msecs_to_jiffies(DEFAULT_FBDEFIO_DELAY_MS);
++	fbdefio->deferred_io =3D drm_fb_helper_deferred_io;
++	fbi->fbdefio =3D fbdefio;
++	fb_deferred_io_init(fbi);
++	fbi->fbops->fb_mmap =3D drm_fbdev_cma_deferred_io_mmap;
++
++	return 0;
++}
++
++static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
++{
++	if (!fbi->fbdefio)
++		return;
++
++	fb_deferred_io_cleanup(fbi);
++	kfree(fbi->fbdefio);
++	kfree(fbi->fbops);
++}
++#else
++static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
++				    struct drm_gem_cma_object *cma_obj)
++{
++	return 0;
++}
++
++static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
++{
++}
++#endif /* CONFIG_FB_DEFERRED_IO */
++
++/*
++ * For use in a (struct drm_fb_helper_funcs *)->fb_probe callback function=
+ that
++ * needs custom struct drm_framebuffer_funcs, like dirty() for deferred_io=
+ use.
++ */
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma =3D to_fbdev_cma(helper);
+ 	struct drm_mode_fb_cmd2 mode_cmd =3D { 0 };
+@@ -270,7 +400,7 @@ static int drm_fbdev_cma_create(struct drm_fb_helper *h=
+elper,
+ 		goto err_gem_free_object;
+ 	}
+=20
+-	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1);
++	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1, funcs);
+ 	if (IS_ERR(fbdev_cma->fb)) {
+ 		dev_err(dev->dev, "Failed to allocate DRM framebuffer.\n");
+ 		ret =3D PTR_ERR(fbdev_cma->fb);
+@@ -296,31 +426,48 @@ static int drm_fbdev_cma_create(struct drm_fb_helper =
+*helper,
+ 	fbi->screen_size =3D size;
+ 	fbi->fix.smem_len =3D size;
+=20
++	if (funcs->dirty) {
++		ret =3D drm_fbdev_cma_defio_init(fbi, obj);
++		if (ret)
++			goto err_cma_destroy;
++	}
++
+ 	return 0;
+=20
++err_cma_destroy:
++	drm_framebuffer_unregister_private(&fbdev_cma->fb->fb);
++	drm_fb_cma_destroy(&fbdev_cma->fb->fb);
+ err_fb_info_destroy:
+ 	drm_fb_helper_release_fbi(helper);
+ err_gem_free_object:
+ 	dev->driver->gem_free_object(&obj->base);
+ 	return ret;
+ }
++EXPORT_SYMBOL(drm_fbdev_cma_create_with_funcs);
++
++static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes)
++{
++	return drm_fbdev_cma_create_with_funcs(helper, sizes, &drm_fb_cma_funcs);
++}
+=20
+ static const struct drm_fb_helper_funcs drm_fb_cma_helper_funcs =3D {
+ 	.fb_probe =3D drm_fbdev_cma_create,
+ };
+=20
+ /**
+- * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * drm_fbdev_cma_init_with_funcs() - Allocate and initializes a drm_fbdev_=
+cma struct
+  * @dev: DRM device
+  * @preferred_bpp: Preferred bits per pixel for the device
+  * @num_crtc: Number of CRTCs
+  * @max_conn_count: Maximum number of connectors
++ * @funcs: fb helper functions, in particular fb_probe()
+  *
+  * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
+  */
+-struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+-	unsigned int max_conn_count)
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma;
+ 	struct drm_fb_helper *helper;
+@@ -334,7 +481,7 @@ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_dev=
+ice *dev,
+=20
+ 	helper =3D &fbdev_cma->fb_helper;
+=20
+-	drm_fb_helper_prepare(dev, helper, &drm_fb_cma_helper_funcs);
++	drm_fb_helper_prepare(dev, helper, funcs);
+=20
+ 	ret =3D drm_fb_helper_init(dev, helper, num_crtc, max_conn_count);
+ 	if (ret < 0) {
+@@ -364,6 +511,24 @@ err_free:
+=20
+ 	return ERR_PTR(ret);
+ }
++EXPORT_SYMBOL_GPL(drm_fbdev_cma_init_with_funcs);
++
++/**
++ * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * @dev: DRM device
++ * @preferred_bpp: Preferred bits per pixel for the device
++ * @num_crtc: Number of CRTCs
++ * @max_conn_count: Maximum number of connectors
++ *
++ * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
++ */
++struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count)
++{
++	return drm_fbdev_cma_init_with_funcs(dev, preferred_bpp, num_crtc,
++				max_conn_count, &drm_fb_cma_helper_funcs);
++}
+ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+=20
+ /**
+@@ -373,6 +538,7 @@ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma)
+ {
+ 	drm_fb_helper_unregister_fbi(&fbdev_cma->fb_helper);
++	drm_fbdev_cma_defio_fini(fbdev_cma->fb_helper.fbdev);
+ 	drm_fb_helper_release_fbi(&fbdev_cma->fb_helper);
+=20
+ 	if (fbdev_cma->fb) {
+diff --git a/include/drm/drm_fb_cma_helper.h b/include/drm/drm_fb_cma_helpe=
+r.h
+index be62bd3..6554b6f 100644
+--- a/include/drm/drm_fb_cma_helper.h
++++ b/include/drm/drm_fb_cma_helper.h
+@@ -4,11 +4,18 @@
+ struct drm_fbdev_cma;
+ struct drm_gem_cma_object;
+=20
++struct drm_fb_helper_surface_size;
++struct drm_framebuffer_funcs;
++struct drm_fb_helper_funcs;
+ struct drm_framebuffer;
++struct drm_fb_helper;
+ struct drm_device;
+ struct drm_file;
+ struct drm_mode_fb_cmd2;
+=20
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs);
+ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+ 	unsigned int max_conn_count);
+@@ -16,6 +23,13 @@ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma);
+=20
+ void drm_fbdev_cma_restore_mode(struct drm_fbdev_cma *fbdev_cma);
+ void drm_fbdev_cma_hotplug_event(struct drm_fbdev_cma *fbdev_cma);
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs);
++
++void drm_fb_cma_destroy(struct drm_framebuffer *fb);
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++	struct drm_file *file_priv, unsigned int *handle);
+=20
+ struct drm_framebuffer *drm_fb_cma_create(struct drm_device *dev,
+ 	struct drm_file *file_priv, const struct drm_mode_fb_cmd2 *mode_cmd);
+--=20
+2.2.2
 
---bqBNnh5El6xwMMG5MjpAuDvwQ4JIk3F4W--
-
---DEfLqawOT5JrvKiX6gVni68Wke5GkPAlf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXIFRaAAoJEPo9qoy8lh71GO4P/0oaeEQ4DYzCIb/hWc0azcvs
-OXynC2RDPAVMW6Hj49cCUZeJojrNGQ2Qq6jEOXfTK4spCHjy6boZlCoPlBtVNHrr
-yztNYRsU3DOqJjyDiKRtw58avneFmW6EatRBMULOF+I09fc/BEJi8C7H+7ddKiMT
-BaU62D6+zQ8Od0FhjY5LNZpsdD06LYuxhaxNunArIsygDo+hvbh5ZmRDCMN8R6Hv
-fNmicZOIDzbeYXPN4mMFwjb2cVTFjbf6rdhbRDv0BSWm6iwhmItcthCGMEbZfvUw
-UF+mgnEyHMVQYQDEhFkhFXP4yRec64vs/0JgqoNdmyJYmw3zjFcVRBgGOKhi/LVU
-xjAN979Entdq94i9isNYb/guk1wJceOlL+WXDaNLQqg/LSp5XdmI2OaWTH6haESu
-jGFg7cjzJVR+8NcYJvctxKZ3qMlQWbRyU5KRSd6BWGbcJiiTp89nS3eN8ktkexik
-LnFlLQ8R9NDzv7fE5Jsx75nI3Qi9gm/ymX9F7ZiBoJutPVZbtJFD0C3YEs4M6WIq
-HPYHG+eHJIAyzOd8405QZ+dz/6wHwJh13xbRfQMeY8SNkwKrGfv/sYUMYX92K2CH
-Mw1RYM9g15zk4DXYB8K51E3PodGtxgBNo+z/hIs7ZEn3sK2dSd7nTQr5CJlmjL6T
-vl1aMpCpWsfu0AcuEhck
-=2pC+
------END PGP SIGNATURE-----
-
---DEfLqawOT5JrvKiX6gVni68Wke5GkPAlf--

@@ -1,173 +1,47 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 14 Apr 2016 19:17:38 +0000
-Subject: [PATCH v5 18/24] pwm: introduce the pwm_state concept
-Message-Id: <1460661464-11216-19-git-send-email-boris.brezillon@free-electrons.com>
+From: Eric Engestrom <eric@engestrom.ch>
+Date: Mon, 25 Apr 2016 00:24:21 +0000
+Subject: [PATCH 24/41] Documentation: fb: fix spelling mistakes
+Message-Id: <1461543878-3639-25-git-send-email-eric@engestrom.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
+In-Reply-To: <1461543878-3639-1-git-send-email-eric@engestrom.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
-Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Stephen Barber <smbarber@chromium.org>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger
+To: linux-kernel@vger.kernel.org
+Cc: Eric Engestrom <eric@engestrom.ch>, Bernie Thompson <bernie@plugable.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jonathan Corbet <corbet@lwn.net>, linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org
 
-The PWM state, represented by its period, duty_cycle and polarity,
-is currently directly stored in the PWM device.
-Declare a pwm_state structure embedding those field so that we can later
-use this struct to atomically update all the PWM parameters at once.
-
-All pwm_get_xxx() helpers are now implemented as wrappers around
-pwm_get_state().
-
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Eric Engestrom <eric@engestrom.ch>
 ---
- drivers/pwm/core.c  |  8 ++++----
- include/linux/pwm.h | 54 +++++++++++++++++++++++++++++++++++++++++------------
- 2 files changed, 46 insertions(+), 16 deletions(-)
+ Documentation/fb/udlfb.txt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index 26c3cf5..59bcece 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -268,7 +268,7 @@ int pwmchip_add_with_polarity(struct pwm_chip *chip,
- 		pwm->chip = chip;
- 		pwm->pwm = chip->base + i;
- 		pwm->hwpwm = i;
--		pwm->polarity = polarity;
-+		pwm->state.polarity = polarity;
+diff --git a/Documentation/fb/udlfb.txt b/Documentation/fb/udlfb.txt
+index 57d2f29..c985cb6 100644
+--- a/Documentation/fb/udlfb.txt
++++ b/Documentation/fb/udlfb.txt
+@@ -9,7 +9,7 @@ pairing that with a hardware framebuffer (16MB) on the other end of the
+ USB wire.  That hardware framebuffer is able to drive the VGA, DVI, or HDMI
+ monitor with no CPU involvement until a pixel has to change.
  
- 		radix_tree_insert(&pwm_tree, pwm->pwm, pwm);
- 	}
-@@ -446,8 +446,8 @@ int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns)
- 	if (err)
- 		return err;
+-The CPU or other local resource does all the rendering; optinally compares the
++The CPU or other local resource does all the rendering; optionally compares the
+ result with a local shadow of the remote hardware framebuffer to identify
+ the minimal set of pixels that have changed; and compresses and sends those
+ pixels line-by-line via USB bulk transfers.
+@@ -66,10 +66,10 @@ means that from a hardware and fbdev software perspective, everything is good.
+ At that point, a /dev/fb? interface will be present for user-mode applications
+ to open and begin writing to the framebuffer of the DisplayLink device using
+ standard fbdev calls.  Note that if mmap() is used, by default the user mode
+-application must send down damage notifcations to trigger repaints of the
++application must send down damage notifications to trigger repaints of the
+ changed regions.  Alternatively, udlfb can be recompiled with experimental
+ defio support enabled, to support a page-fault based detection mechanism
+-that can work without explicit notifcation.
++that can work without explicit notification.
  
--	pwm->duty_cycle = duty_ns;
--	pwm->period = period_ns;
-+	pwm->state.duty_cycle = duty_ns;
-+	pwm->state.period = period_ns;
- 
- 	return 0;
- }
-@@ -480,7 +480,7 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity)
- 	if (err)
- 		return err;
- 
--	pwm->polarity = polarity;
-+	pwm->state.polarity = polarity;
- 
- 	return 0;
- }
-diff --git a/include/linux/pwm.h b/include/linux/pwm.h
-index 2f500a5..3022c05 100644
---- a/include/linux/pwm.h
-+++ b/include/linux/pwm.h
-@@ -97,6 +97,18 @@ enum {
- 	PWMF_EXPORTED = 1 << 2,
- };
- 
-+/*
-+ * struct pwm_state - state of a PWM channel
-+ * @period: PWM period (in nanoseconds)
-+ * @duty_cycle: PWM duty cycle (in nanoseconds)
-+ * @polarity: PWM polarity
-+ */
-+struct pwm_state {
-+	unsigned int period;
-+	unsigned int duty_cycle;
-+	enum pwm_polarity polarity;
-+};
-+
- /**
-  * struct pwm_device - PWM channel object
-  * @label: name of the PWM device
-@@ -105,10 +117,8 @@ enum {
-  * @pwm: global index of the PWM device
-  * @chip: PWM chip providing this PWM device
-  * @chip_data: chip-private data associated with the PWM device
-- * @period: period of the PWM signal (in nanoseconds)
-- * @duty_cycle: duty cycle of the PWM signal (in nanoseconds)
-- * @polarity: polarity of the PWM signal
-  * @args: PWM arguments
-+ * @state: curent PWM channel state
-  */
- struct pwm_device {
- 	const char *label;
-@@ -118,13 +128,21 @@ struct pwm_device {
- 	struct pwm_chip *chip;
- 	void *chip_data;
- 
--	unsigned int period;
--	unsigned int duty_cycle;
--	enum pwm_polarity polarity;
--
- 	struct pwm_args args;
-+	struct pwm_state state;
- };
- 
-+/**
-+ * pwm_get_state() - retrieve the current PWM state
-+ * @pwm: PWM device
-+ * @state: state to fill with the current PWM state
-+ */
-+static inline void pwm_get_state(const struct pwm_device *pwm,
-+				 struct pwm_state *state)
-+{
-+	*state = pwm->state;
-+}
-+
- static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- {
- 	return test_bit(PWMF_ENABLED, &pwm->flags);
-@@ -133,23 +151,31 @@ static inline bool pwm_is_enabled(const struct pwm_device *pwm)
- static inline void pwm_set_period(struct pwm_device *pwm, unsigned int period)
- {
- 	if (pwm)
--		pwm->period = period;
-+		pwm->state.period = period;
- }
- 
- static inline unsigned int pwm_get_period(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->period : 0;
-+	struct pwm_state state;
-+
-+	pwm_get_state(pwm, &state);
-+
-+	return state.period;
- }
- 
- static inline void pwm_set_duty_cycle(struct pwm_device *pwm, unsigned int duty)
- {
- 	if (pwm)
--		pwm->duty_cycle = duty;
-+		pwm->state.duty_cycle = duty;
- }
- 
- static inline unsigned int pwm_get_duty_cycle(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->duty_cycle : 0;
-+	struct pwm_state state;
-+
-+	pwm_get_state(pwm, &state);
-+
-+	return state.duty_cycle;
- }
- 
- /*
-@@ -159,7 +185,11 @@ int pwm_set_polarity(struct pwm_device *pwm, enum pwm_polarity polarity);
- 
- static inline enum pwm_polarity pwm_get_polarity(const struct pwm_device *pwm)
- {
--	return pwm ? pwm->polarity : PWM_POLARITY_NORMAL;
-+	struct pwm_state state;
-+
-+	pwm_get_state(pwm, &state);
-+
-+	return state.polarity;
- }
- 
- static inline void pwm_get_args(const struct pwm_device *pwm,
+ The most common client of udlfb is xf86-video-displaylink or a modified
+ xf86-video-fbdev X server. These servers have no real DisplayLink specific
 -- 
-2.5.0
+2.8.0
 

@@ -1,7 +1,7 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Mon, 25 Apr 2016 09:02:55 +0000
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
+Date: Mon, 25 Apr 2016 12:39:07 +0000
 Subject: Re: [PATCH v2 1/8] drm/rect: Add some drm_clip_rect utility functions
-Message-Id: <20160425090255.GO2510@phenom.ffwll.local>
+Message-Id: <20160425123907.GY4329@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
  <1461530942-22485-2-git-send-email-noralf@tronnes.org>
@@ -10,10 +10,14 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com
+Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
 On Sun, Apr 24, 2016 at 10:48:55PM +0200, Noralf Tr=F8nnes wrote:
 > Add some utility functions for struct drm_clip_rect.
+
+Looks like mostly you're just duplicating the drm_rect stuff. Why can't
+you use what's there already?
+
 >=20
 > Signed-off-by: Noralf Tr=F8nnes <noralf@tronnes.org>
 > ---
@@ -173,14 +177,6 @@ ngle.
 > + * Returns true if clip rectangle is {0,0,0,0}.
 > + */
 > +static inline bool drm_clip_rect_is_empty(struct drm_clip_rect *clip)
-
-Not sure this is a great name. At least for me empty means x1 =3D x2 && y1
-=3D y2, which would be more generic than your test here. So either switch
-the testcase (imo preferred), or rename it to something like _is_zero?
-
-I checked the math, and besides this naming bikeshed it all looks good. So
-with that addressed Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
 > +{
 > +	return (!clip->x1 && !clip->x2 && !clip->y1 && !clip->y2);
 > +}
@@ -195,8 +191,11 @@ with that addressed Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 > --=20
 > 2.2.2
 >=20
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
 --=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Ville Syrj=E4l=E4
+Intel OTC

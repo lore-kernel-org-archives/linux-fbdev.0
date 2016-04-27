@@ -1,46 +1,59 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 14 Apr 2016 19:17:44 +0000
-Subject: [PATCH v5 24/24] pwm: add information about polarity, duty cycle and period to debugfs
-Message-Id: <1460661464-11216-25-git-send-email-boris.brezillon@free-electrons.com>
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Wed, 27 Apr 2016 18:16:31 +0000
+Subject: [PATCH v3 2/7] drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
+Message-Id: <1461780996-8612-3-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1460661464-11216-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Thierry Reding <thierry.reding@gmail.com>, linux-pwm@vger.kernel.org
-Cc: Milo Kim <milo.kim@ti.com>, Kamil Debski <k.debski@samsung.com>, Heiko Stuebner <heiko@sntech.de>, linux-doc@vger.kernel.org, Mike Turquette <mturquette@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sunxi@googlegroups.com, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Daniel Vetter <daniel.vetter@intel.com>, Stephen Barber <smbarber@chromium.org>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Robert Jarzmik <robert.jarzmik@free.fr>, lm-sensors@lm-sensors.org, linux-rockchip@lists.infradead.org, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-From: Heiko St=C3=BCbner <heiko@sntech.de>
+Now that drm_fb_helper gets deferred io support, the
+drm_fb_helper_sys_{fillrect,copyarea,imageblit} functions will schedule
+a worker that will call the (struct drm_framebuffer *)->funcs->dirty()
+function. This will break this driver so use the
+sys_{fillrect,copyarea,imageblit} functions directly.
 
-The pwm-states make it possible to also output the polarity, duty cycle
-and period information in the debugfs pwm summary-outout.
-This makes it easier to gather overview information about pwms without
-needing to walk through the sysfs attributes of every pwm.
-
-Signed-off-by: Heiko Stuebner <heiko@sntech.de>
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/pwm/core.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/gpu/drm/qxl/qxl_fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pwm/core.c b/drivers/pwm/core.c
-index aefffcf..9f4e97e 100644
---- a/drivers/pwm/core.c
-+++ b/drivers/pwm/core.c
-@@ -959,6 +959,11 @@ static void pwm_dbg_show(struct pwm_chip *chip, struct=
- seq_file *s)
- 		if (state.enabled)
- 			seq_puts(s, " enabled");
+diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
+index bb7ce07..3f7c543 100644
+--- a/drivers/gpu/drm/qxl/qxl_fb.c
++++ b/drivers/gpu/drm/qxl/qxl_fb.c
+@@ -199,7 +199,7 @@ static void qxl_fb_fillrect(struct fb_info *info,
+ {
+ 	struct qxl_fbdev *qfbdev =3D info->par;
 =20
-+		seq_printf(s, " period:%uns", state.period);
-+		seq_printf(s, " duty:%uns", state.duty_cycle);
-+		seq_printf(s, " polarity:%s",
-+			   state.polarity ? "inverse" : "normal");
-+
- 		seq_puts(s, "\n");
- 	}
+-	drm_fb_helper_sys_fillrect(info, rect);
++	sys_fillrect(info, rect);
+ 	qxl_dirty_update(qfbdev, rect->dx, rect->dy, rect->width,
+ 			 rect->height);
+ }
+@@ -209,7 +209,7 @@ static void qxl_fb_copyarea(struct fb_info *info,
+ {
+ 	struct qxl_fbdev *qfbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_copyarea(info, area);
++	sys_copyarea(info, area);
+ 	qxl_dirty_update(qfbdev, area->dx, area->dy, area->width,
+ 			 area->height);
+ }
+@@ -219,7 +219,7 @@ static void qxl_fb_imageblit(struct fb_info *info,
+ {
+ 	struct qxl_fbdev *qfbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_imageblit(info, image);
++	sys_imageblit(info, image);
+ 	qxl_dirty_update(qfbdev, image->dx, image->dy, image->width,
+ 			 image->height);
  }
 --=20
-2.5.0
+2.2.2
 

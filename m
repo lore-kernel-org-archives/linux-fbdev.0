@@ -1,123 +1,89 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Wed, 27 Apr 2016 12:45:02 +0000
-Subject: [PATCH v3 1/4] video / backlight: add two APIs for drivers to use
-Message-Id: <1461761105-5961-2-git-send-email-aaron.lu@intel.com>
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Wed, 27 Apr 2016 18:16:33 +0000
+Subject: [PATCH v3 4/7] fbdev: fb_defio: Export fb_deferred_io_mmap
+Message-Id: <1461780996-8612-5-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
-In-Reply-To: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
+References: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, Zhang Rui <rui.zhang@intel.com>, Jingoo Han <jingoohan1@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-It is useful to get the backlight device's pointer and use it to set
-backlight in some cases(the following patch will make use of it) so add
-the two APIs and export them.
+Export fb_deferred_io_mmap so drivers can change vma->vm_page_prot.
+When the framebuffer memory is allocated using dma_alloc_writecombine()
+instead of vmalloc(), I get cache syncing problems on ARM.
+This solves it:
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
+					  struct vm_area_struct *vma)
+{
+	fb_deferred_io_mmap(info, vma);
+	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
+
+	return 0;
+}
+
+Could this have been done in the core?
+Drivers that don't set (struct fb_ops *)->fb_mmap, gets a call to
+fb_pgprotect() at the end of the default fb_mmap implementation
+(drivers/video/fbdev/core/fbmem.c). This is an architecture specific
+function that on many platforms uses pgprot_writecombine(), but not on
+all. And looking at some of the fb_mmap implementations, some of them
+sets vm_page_prot to nocache for instance, so I think the safest bet is
+to do this in the driver and not in the fbdev core. And we can't call
+fb_pgprotect() from fb_deferred_io_mmap() either because we don't have
+access to the file pointer that powerpc needs.
+
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
 ---
- drivers/video/backlight/backlight.c | 43 +++++++++++++++++++++++++------------
- include/linux/backlight.h           |  2 ++
- 2 files changed, 31 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bddc8b17a4d8..18901b9b1eb4 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -164,18 +164,10 @@ static ssize_t brightness_show(struct device *dev,
- 	return sprintf(buf, "%d\n", bd->props.brightness);
- }
- 
--static ssize_t brightness_store(struct device *dev,
--		struct device_attribute *attr, const char *buf, size_t count)
-+int backlight_device_set_brightness(struct backlight_device *bd,
-+				    unsigned long brightness)
+Changes since v1:
+- Expand commit message
+
+ drivers/video/fbdev/core/fb_defio.c | 3 ++-
+ include/linux/fb.h                  | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fb_defio.c b/drivers/video/fbdev/core=
+/fb_defio.c
+index 57721c7..74b5bca 100644
+--- a/drivers/video/fbdev/core/fb_defio.c
++++ b/drivers/video/fbdev/core/fb_defio.c
+@@ -164,7 +164,7 @@ static const struct address_space_operations fb_deferre=
+d_io_aops =3D {
+ 	.set_page_dirty =3D fb_deferred_io_set_page_dirty,
+ };
+
+-static int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct=
+ *vma)
++int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
--	int rc;
--	struct backlight_device *bd = to_backlight_device(dev);
--	unsigned long brightness;
--
--	rc = kstrtoul(buf, 0, &brightness);
--	if (rc)
--		return rc;
--
--	rc = -ENXIO;
-+	int rc = -ENXIO;
- 
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops) {
-@@ -185,7 +177,7 @@ static ssize_t brightness_store(struct device *dev,
- 			pr_debug("set brightness to %lu\n", brightness);
- 			bd->props.brightness = brightness;
- 			backlight_update_status(bd);
--			rc = count;
-+			rc = 0;
- 		}
- 	}
- 	mutex_unlock(&bd->ops_lock);
-@@ -194,6 +186,23 @@ static ssize_t brightness_store(struct device *dev,
- 
- 	return rc;
+ 	vma->vm_ops =3D &fb_deferred_io_vm_ops;
+ 	vma->vm_flags |=3D VM_DONTEXPAND | VM_DONTDUMP;
+@@ -173,6 +173,7 @@ static int fb_deferred_io_mmap(struct fb_info *info, st=
+ruct vm_area_struct *vma)
+ 	vma->vm_private_data =3D info;
+ 	return 0;
  }
-+EXPORT_SYMBOL(backlight_device_set_brightness);
-+
-+static ssize_t brightness_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	int rc;
-+	struct backlight_device *bd = to_backlight_device(dev);
-+	unsigned long brightness;
-+
-+	rc = kstrtoul(buf, 0, &brightness);
-+	if (rc)
-+		return rc;
-+
-+	rc = backlight_device_set_brightness(bd, brightness);
-+
-+	return rc ? rc : count;
-+}
- static DEVICE_ATTR_RW(brightness);
- 
- static ssize_t type_show(struct device *dev, struct device_attribute *attr,
-@@ -380,7 +389,7 @@ struct backlight_device *backlight_device_register(const char *name,
++EXPORT_SYMBOL(fb_deferred_io_mmap);
+
+ /* workqueue callback */
+ static void fb_deferred_io_work(struct work_struct *work)
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index dfe8835..a964d07 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -673,6 +673,7 @@ static inline void __fb_pad_aligned_buffer(u8 *dst, u32=
+ d_pitch,
  }
- EXPORT_SYMBOL(backlight_device_register);
- 
--bool backlight_device_registered(enum backlight_type type)
-+struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
- {
- 	bool found = false;
- 	struct backlight_device *bd;
-@@ -394,7 +403,13 @@ bool backlight_device_registered(enum backlight_type type)
- 	}
- 	mutex_unlock(&backlight_dev_list_mutex);
- 
--	return found;
-+	return found ? bd : NULL;
-+}
-+EXPORT_SYMBOL(backlight_device_get_by_type);
-+
-+bool backlight_device_registered(enum backlight_type type)
-+{
-+	return backlight_device_get_by_type(type) ? true : false;
- }
- EXPORT_SYMBOL(backlight_device_registered);
- 
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 1e7a69adbe6f..f46b88fa4a09 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -144,6 +144,8 @@ extern void backlight_force_update(struct backlight_device *bd,
- extern bool backlight_device_registered(enum backlight_type type);
- extern int backlight_register_notifier(struct notifier_block *nb);
- extern int backlight_unregister_notifier(struct notifier_block *nb);
-+extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
-+extern int backlight_device_set_brightness(struct backlight_device *bd, unsigned long brightness);
- 
- #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
- 
--- 
-2.5.5
+
+ /* drivers/video/fb_defio.c */
++int fb_deferred_io_mmap(struct fb_info *info, struct vm_area_struct *vma);
+ extern void fb_deferred_io_init(struct fb_info *info);
+ extern void fb_deferred_io_open(struct fb_info *info,
+ 				struct inode *inode,
+--
+2.2.2
 

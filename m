@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Wed, 27 Apr 2016 18:16:31 +0000
-Subject: [PATCH v3 2/7] drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
-Message-Id: <1461780996-8612-3-git-send-email-noralf@tronnes.org>
+Date: Wed, 27 Apr 2016 18:16:30 +0000
+Subject: [PATCH v3 1/7] drm/udl: Change drm_fb_helper_sys_*() calls to sys_*()
+Message-Id: <1461780996-8612-2-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
 In-Reply-To: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
@@ -20,40 +20,43 @@ sys_{fillrect,copyarea,imageblit} functions directly.
 Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
 Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/qxl/qxl_fb.c | 6 +++---
+ drivers/gpu/drm/udl/udl_fb.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
-index bb7ce07..3f7c543 100644
---- a/drivers/gpu/drm/qxl/qxl_fb.c
-+++ b/drivers/gpu/drm/qxl/qxl_fb.c
-@@ -199,7 +199,7 @@ static void qxl_fb_fillrect(struct fb_info *info,
+diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/udl_fb.c
+index fd1eb9d..a52de2f 100644
+--- a/drivers/gpu/drm/udl/udl_fb.c
++++ b/drivers/gpu/drm/udl/udl_fb.c
+@@ -287,7 +287,7 @@ static void udl_fb_fillrect(struct fb_info *info, const=
+ struct fb_fillrect *rect
  {
- 	struct qxl_fbdev *qfbdev =3D info->par;
+ 	struct udl_fbdev *ufbdev =3D info->par;
 =20
 -	drm_fb_helper_sys_fillrect(info, rect);
 +	sys_fillrect(info, rect);
- 	qxl_dirty_update(qfbdev, rect->dx, rect->dy, rect->width,
- 			 rect->height);
- }
-@@ -209,7 +209,7 @@ static void qxl_fb_copyarea(struct fb_info *info,
- {
- 	struct qxl_fbdev *qfbdev =3D info->par;
 =20
--	drm_fb_helper_sys_copyarea(info, area);
-+	sys_copyarea(info, area);
- 	qxl_dirty_update(qfbdev, area->dx, area->dy, area->width,
- 			 area->height);
- }
-@@ -219,7 +219,7 @@ static void qxl_fb_imageblit(struct fb_info *info,
+ 	udl_handle_damage(&ufbdev->ufb, rect->dx, rect->dy, rect->width,
+ 			  rect->height);
+@@ -297,7 +297,7 @@ static void udl_fb_copyarea(struct fb_info *info, const=
+ struct fb_copyarea *regi
  {
- 	struct qxl_fbdev *qfbdev =3D info->par;
+ 	struct udl_fbdev *ufbdev =3D info->par;
+=20
+-	drm_fb_helper_sys_copyarea(info, region);
++	sys_copyarea(info, region);
+=20
+ 	udl_handle_damage(&ufbdev->ufb, region->dx, region->dy, region->width,
+ 			  region->height);
+@@ -307,7 +307,7 @@ static void udl_fb_imageblit(struct fb_info *info, cons=
+t struct fb_image *image)
+ {
+ 	struct udl_fbdev *ufbdev =3D info->par;
 =20
 -	drm_fb_helper_sys_imageblit(info, image);
 +	sys_imageblit(info, image);
- 	qxl_dirty_update(qfbdev, image->dx, image->dy, image->width,
- 			 image->height);
- }
+=20
+ 	udl_handle_damage(&ufbdev->ufb, image->dx, image->dy, image->width,
+ 			  image->height);
 --=20
 2.2.2
 

@@ -1,119 +1,401 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Mon, 04 Apr 2016 15:20:48 +0000
-Subject: Re: [PATCH v5 08/46] hwmon: pwm-fan: use pwm_get_args() where appropriate
-Message-Id: <20160404152048.GA17856@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="PNTmBPCT7hxwcZjr"
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Wed, 27 Apr 2016 18:16:35 +0000
+Subject: [PATCH v3 6/7] drm/qxl: Use drm_fb_helper deferred_io support
+Message-Id: <1461780996-8612-7-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1459368249-13241-1-git-send-email-boris.brezillon@free-electrons.com>
- <1459368249-13241-9-git-send-email-boris.brezillon@free-electrons.com>
- <20160330225244.GA24044@roeck-us.net>
- <20160331090709.5c3bdf70@bbrezillon>
-In-Reply-To: <20160331090709.5c3bdf70@bbrezillon>
-To: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>
-Cc: Guenter Roeck <linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org>, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mike Turquette <mturquette-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Stephen Boyd <sboyd-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kamil Debski <k.debski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, lm-sensors-GZX6beZjE8VD60Wz+7aTrA@public.gmane.org, Jean Delvare <jdelvare-IBi9RG/b67k@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bryan Wu <cooloney-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <j.anaszewski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Maxime Ripard <maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Chen-Yu Tsai <wens-jdAy2FN1RRM@public.gmane.org>, linux-sunxi-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org, Joachim Eastwood <manabian-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Thomas Petazzoni <thomas.petazzoni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jo>
-
-
---PNTmBPCT7hxwcZjr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+References: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461780996-8612-1-git-send-email-noralf@tronnes.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-On Thu, Mar 31, 2016 at 09:07:09AM +0200, Boris Brezillon wrote:
-> Hi Guenter,
->=20
-> On Wed, 30 Mar 2016 15:52:44 -0700
-> Guenter Roeck <linux@roeck-us.net> wrote:
->=20
-> > On Wed, Mar 30, 2016 at 10:03:31PM +0200, Boris Brezillon wrote:
-> > > The PWM framework has clarified the concept of reference PWM config
-> > > (the platform dependent config retrieved from the DT or the PWM
-> > > lookup table) and real PWM state.
-> > >=20
-> > > Use pwm_get_args() when the PWM user wants to retrieve this reference
-> > > config and not the current state.
-> > >=20
-> > > This is part of the rework allowing the PWM framework to support
-> > > hardware readout and expose real PWM state even when the PWM has
-> > > just been requested (before the user calls pwm_config/enable/disable(=
-)).
-> > >=20
-> > > Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
-> > > ---
-> > >  drivers/hwmon/pwm-fan.c | 19 +++++++++++++------
-> > >  1 file changed, 13 insertions(+), 6 deletions(-)
-> > >=20
-> > > diff --git a/drivers/hwmon/pwm-fan.c b/drivers/hwmon/pwm-fan.c
-> > > index 3e23003..82c5656 100644
-> > > --- a/drivers/hwmon/pwm-fan.c
-> > > +++ b/drivers/hwmon/pwm-fan.c
-> > > @@ -40,15 +40,18 @@ struct pwm_fan_ctx {
-> > > =20
-> > >  static int  __set_pwm(struct pwm_fan_ctx *ctx, unsigned long pwm)
-> > >  {
-> > > +	struct pwm_args pargs =3D { };
-> >=20
-> > Hi Boris,
-> >=20
-> > I guess I am missing some context; sorry for that. Unfortunately,
-> > I did not easily find an explanation, so please bear with me.
-> >=20
-> > Two questions: Why do we need a local copy of struct pwm_args instead
-> > of a pointer to it ? If it can change while being used, isn't it
-> > inconsistent anyway ?
->=20
-> It cannot change after pwm_get() is called. For the reason behind
-> prototype: I just followed the Thierry's proposal, but I'm perfectly
-> fine returning a const struct pwm_args pointer intead of passing
-> pwm_args as a parameter.
->=20
-> Thierry, what's your opinion?
+Use the fbdev deferred io support in drm_fb_helper which mirrors the
+one qxl has had.
+This patch has only been compile tested.
 
-I do prefer the current variant because it is more consistent with the
-new atomic API, even if not strictly necessary because of the immutable
-data.
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
+---
 
-> > Also, assuming the local copy is necessary, why initialize pargs ?=20
-> > After all, pwm_get_args() just overwrites it.
->=20
-> It's a leftover from a previous version where pwm_get_args was
-> implemented this way:
->=20
-> static inline void pwm_get_args(pwm, args)
-> {
-> 	if (pwm)
-> 		*args =3D pwm->args
-> }
->=20
-> and this implementation was generating a lot of 'uninitialized
-> variable' warnings.
->=20
-> I just decided to drop the 'if (pwm)' test, because, IMO, this
-> should be checked way before calling pwm_get_args() is called.
+Changes since v2:
+- The drm_clip_rect_{width/height} functions are dropped, so open code it
 
-Sounds fine to me.
+Changes since v1:
+- Add FIXME about special dirty() callback for fbdev
+- Remove note in commit message about deferred worker, drm_fb_helper
+  is similar to qxl now.
 
-Thierry
+ drivers/gpu/drm/qxl/qxl_display.c |   9 +-
+ drivers/gpu/drm/qxl/qxl_drv.h     |   7 +-
+ drivers/gpu/drm/qxl/qxl_fb.c      | 223 ++++++++++------------------------=
+----
+ drivers/gpu/drm/qxl/qxl_kms.c     |   4 -
+ 4 files changed, 65 insertions(+), 178 deletions(-)
 
---PNTmBPCT7hxwcZjr
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/drivers/gpu/drm/qxl/qxl_display.c b/drivers/gpu/drm/qxl/qxl_di=
+splay.c
+index 030409a..9a03524 100644
+--- a/drivers/gpu/drm/qxl/qxl_display.c
++++ b/drivers/gpu/drm/qxl/qxl_display.c
+@@ -465,7 +465,7 @@ static const struct drm_crtc_funcs qxl_crtc_funcs =3D {
+ 	.page_flip =3D qxl_crtc_page_flip,
+ };
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+-static void qxl_user_framebuffer_destroy(struct drm_framebuffer *fb)
++void qxl_user_framebuffer_destroy(struct drm_framebuffer *fb)
+ {
+ 	struct qxl_framebuffer *qxl_fb =3D to_qxl_framebuffer(fb);
 
-iQIcBAABCAAGBQJXAoZLAAoJEN0jrNd/PrOhsEQQAKKy319NRaO6e/ciYlg6vDDN
-rdmFDoQgotIfLetr3KUFRP95Q3Cldg3cRW9oEg+OH8Uhf84Wg6Ug+glGDCmZ5jtl
-MNH8yavaO/eE0Ai1uV9rv7Nv6uJKoh+P11aQ7ht6HHr7+Iim8D6HGxdCEnqcxYz/
-Np9mk3jc2pj4FYxY8t8B4xuQS9/sbxKpCRRcQUDXVLnun+88Q+hWPlYA6ypTtQZ3
-deJzpGD3vWZIPtF1ZCm1U6gLetexRC84wyKmVGvV1yaeXaiXnr13MbUn2YbtBRFC
-oYRkNh59URh9bflVUnBORWi0Z9W7JBOt9f9pDUcOnY600rxhn0fXjt5aStdp6bDQ
-WHG/8pXEk5SdwU9PNDUPxhmfM3kO8a3v4KczSthjsUaMBd/76x1TroWTeSk4kuLD
-yEP3ZUP4fPb4hrE7Jvd5ruDnYgv0Vtk2MOa8IssefGYSO36pKTRyBCw7LKwmp+ww
-oFfZMR/KESTFCK59URYElJJHCUOWu3/u4TilXnimjRv2Co6HGdhZj5RTFhe1R3NE
-jO+k3ods1O9oVrVLmteHoePGnt6PCkPR/1szu5xW8XoFgL/58EWusji+XbMOlAlJ
-VJLrWoH2rOUW2/AEKvlasgeUOYFEszRM+vRyId/4awPJhhX5GVV3f+nY5UZLfW5I
-aPz78WqEqGpe2nzBw+67
-=pF1x
------END PGP SIGNATURE-----
+@@ -527,12 +527,13 @@ int
+ qxl_framebuffer_init(struct drm_device *dev,
+ 		     struct qxl_framebuffer *qfb,
+ 		     const struct drm_mode_fb_cmd2 *mode_cmd,
+-		     struct drm_gem_object *obj)
++		     struct drm_gem_object *obj,
++		     const struct drm_framebuffer_funcs *funcs)
+ {
+ 	int ret;
 
---PNTmBPCT7hxwcZjr--
+ 	qfb->obj =3D obj;
+-	ret =3D drm_framebuffer_init(dev, &qfb->base, &qxl_fb_funcs);
++	ret =3D drm_framebuffer_init(dev, &qfb->base, funcs);
+ 	if (ret) {
+ 		qfb->obj =3D NULL;
+ 		return ret;
+@@ -999,7 +1000,7 @@ qxl_user_framebuffer_create(struct drm_device *dev,
+ 	if (qxl_fb =3D NULL)
+ 		return NULL;
+
+-	ret =3D qxl_framebuffer_init(dev, qxl_fb, mode_cmd, obj);
++	ret =3D qxl_framebuffer_init(dev, qxl_fb, mode_cmd, obj, &qxl_fb_funcs);
+ 	if (ret) {
+ 		kfree(qxl_fb);
+ 		drm_gem_object_unreference_unlocked(obj);
+diff --git a/drivers/gpu/drm/qxl/qxl_drv.h b/drivers/gpu/drm/qxl/qxl_drv.h
+index 3f3897e..3ad6604 100644
+--- a/drivers/gpu/drm/qxl/qxl_drv.h
++++ b/drivers/gpu/drm/qxl/qxl_drv.h
+@@ -324,8 +324,6 @@ struct qxl_device {
+ 	struct workqueue_struct *gc_queue;
+ 	struct work_struct gc_work;
+
+-	struct work_struct fb_work;
+-
+ 	struct drm_property *hotplug_mode_update_property;
+ 	int monitors_config_width;
+ 	int monitors_config_height;
+@@ -389,11 +387,13 @@ int qxl_get_handle_for_primary_fb(struct qxl_device *=
+qdev,
+ void qxl_fbdev_set_suspend(struct qxl_device *qdev, int state);
+
+ /* qxl_display.c */
++void qxl_user_framebuffer_destroy(struct drm_framebuffer *fb);
+ int
+ qxl_framebuffer_init(struct drm_device *dev,
+ 		     struct qxl_framebuffer *rfb,
+ 		     const struct drm_mode_fb_cmd2 *mode_cmd,
+-		     struct drm_gem_object *obj);
++		     struct drm_gem_object *obj,
++		     const struct drm_framebuffer_funcs *funcs);
+ void qxl_display_read_client_monitors_config(struct qxl_device *qdev);
+ void qxl_send_monitors_config(struct qxl_device *qdev);
+ int qxl_create_monitors_object(struct qxl_device *qdev);
+@@ -553,7 +553,6 @@ int qxl_irq_init(struct qxl_device *qdev);
+ irqreturn_t qxl_irq_handler(int irq, void *arg);
+
+ /* qxl_fb.c */
+-int qxl_fb_init(struct qxl_device *qdev);
+ bool qxl_fbdev_qobj_is_fb(struct qxl_device *qdev, struct qxl_bo *qobj);
+
+ int qxl_debugfs_add_files(struct qxl_device *qdev,
+diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
+index 3f7c543..739a08c 100644
+--- a/drivers/gpu/drm/qxl/qxl_fb.c
++++ b/drivers/gpu/drm/qxl/qxl_fb.c
+@@ -46,15 +46,6 @@ struct qxl_fbdev {
+ 	struct list_head delayed_ops;
+ 	void *shadow;
+ 	int size;
+-
+-	/* dirty memory logging */
+-	struct {
+-		spinlock_t lock;
+-		unsigned x1;
+-		unsigned y1;
+-		unsigned x2;
+-		unsigned y2;
+-	} dirty;
+ };
+
+ static void qxl_fb_image_init(struct qxl_fb_image *qxl_fb_image,
+@@ -82,169 +73,18 @@ static void qxl_fb_image_init(struct qxl_fb_image *qxl=
+_fb_image,
+ 	}
+ }
+
+-static void qxl_fb_dirty_flush(struct fb_info *info)
+-{
+-	struct qxl_fbdev *qfbdev =3D info->par;
+-	struct qxl_device *qdev =3D qfbdev->qdev;
+-	struct qxl_fb_image qxl_fb_image;
+-	struct fb_image *image =3D &qxl_fb_image.fb_image;
+-	unsigned long flags;
+-	u32 x1, x2, y1, y2;
+-
+-	/* TODO: hard coding 32 bpp */
+-	int stride =3D qfbdev->qfb.base.pitches[0];
+-
+-	spin_lock_irqsave(&qfbdev->dirty.lock, flags);
+-
+-	x1 =3D qfbdev->dirty.x1;
+-	x2 =3D qfbdev->dirty.x2;
+-	y1 =3D qfbdev->dirty.y1;
+-	y2 =3D qfbdev->dirty.y2;
+-	qfbdev->dirty.x1 =3D 0;
+-	qfbdev->dirty.x2 =3D 0;
+-	qfbdev->dirty.y1 =3D 0;
+-	qfbdev->dirty.y2 =3D 0;
+-
+-	spin_unlock_irqrestore(&qfbdev->dirty.lock, flags);
+-
+-	/*
+-	 * we are using a shadow draw buffer, at qdev->surface0_shadow
+-	 */
+-	qxl_io_log(qdev, "dirty x[%d, %d], y[%d, %d]", x1, x2, y1, y2);
+-	image->dx =3D x1;
+-	image->dy =3D y1;
+-	image->width =3D x2 - x1 + 1;
+-	image->height =3D y2 - y1 + 1;
+-	image->fg_color =3D 0xffffffff; /* unused, just to avoid uninitialized
+-					 warnings */
+-	image->bg_color =3D 0;
+-	image->depth =3D 32;	     /* TODO: take from somewhere? */
+-	image->cmap.start =3D 0;
+-	image->cmap.len =3D 0;
+-	image->cmap.red =3D NULL;
+-	image->cmap.green =3D NULL;
+-	image->cmap.blue =3D NULL;
+-	image->cmap.transp =3D NULL;
+-	image->data =3D qfbdev->shadow + (x1 * 4) + (stride * y1);
+-
+-	qxl_fb_image_init(&qxl_fb_image, qdev, info, NULL);
+-	qxl_draw_opaque_fb(&qxl_fb_image, stride);
+-}
+-
+-static void qxl_dirty_update(struct qxl_fbdev *qfbdev,
+-			     int x, int y, int width, int height)
+-{
+-	struct qxl_device *qdev =3D qfbdev->qdev;
+-	unsigned long flags;
+-	int x2, y2;
+-
+-	x2 =3D x + width - 1;
+-	y2 =3D y + height - 1;
+-
+-	spin_lock_irqsave(&qfbdev->dirty.lock, flags);
+-
+-	if ((qfbdev->dirty.y2 - qfbdev->dirty.y1) &&
+-	    (qfbdev->dirty.x2 - qfbdev->dirty.x1)) {
+-		if (qfbdev->dirty.y1 < y)
+-			y =3D qfbdev->dirty.y1;
+-		if (qfbdev->dirty.y2 > y2)
+-			y2 =3D qfbdev->dirty.y2;
+-		if (qfbdev->dirty.x1 < x)
+-			x =3D qfbdev->dirty.x1;
+-		if (qfbdev->dirty.x2 > x2)
+-			x2 =3D qfbdev->dirty.x2;
+-	}
+-
+-	qfbdev->dirty.x1 =3D x;
+-	qfbdev->dirty.x2 =3D x2;
+-	qfbdev->dirty.y1 =3D y;
+-	qfbdev->dirty.y2 =3D y2;
+-
+-	spin_unlock_irqrestore(&qfbdev->dirty.lock, flags);
+-
+-	schedule_work(&qdev->fb_work);
+-}
+-
+-static void qxl_deferred_io(struct fb_info *info,
+-			    struct list_head *pagelist)
+-{
+-	struct qxl_fbdev *qfbdev =3D info->par;
+-	unsigned long start, end, min, max;
+-	struct page *page;
+-	int y1, y2;
+-
+-	min =3D ULONG_MAX;
+-	max =3D 0;
+-	list_for_each_entry(page, pagelist, lru) {
+-		start =3D page->index << PAGE_SHIFT;
+-		end =3D start + PAGE_SIZE - 1;
+-		min =3D min(min, start);
+-		max =3D max(max, end);
+-	}
+-
+-	if (min < max) {
+-		y1 =3D min / info->fix.line_length;
+-		y2 =3D (max / info->fix.line_length) + 1;
+-		qxl_dirty_update(qfbdev, 0, y1, info->var.xres, y2 - y1);
+-	}
+-};
+-
+ static struct fb_deferred_io qxl_defio =3D {
+ 	.delay		=3D QXL_DIRTY_DELAY,
+-	.deferred_io	=3D qxl_deferred_io,
++	.deferred_io	=3D drm_fb_helper_deferred_io,
+ };
+
+-static void qxl_fb_fillrect(struct fb_info *info,
+-			    const struct fb_fillrect *rect)
+-{
+-	struct qxl_fbdev *qfbdev =3D info->par;
+-
+-	sys_fillrect(info, rect);
+-	qxl_dirty_update(qfbdev, rect->dx, rect->dy, rect->width,
+-			 rect->height);
+-}
+-
+-static void qxl_fb_copyarea(struct fb_info *info,
+-			    const struct fb_copyarea *area)
+-{
+-	struct qxl_fbdev *qfbdev =3D info->par;
+-
+-	sys_copyarea(info, area);
+-	qxl_dirty_update(qfbdev, area->dx, area->dy, area->width,
+-			 area->height);
+-}
+-
+-static void qxl_fb_imageblit(struct fb_info *info,
+-			     const struct fb_image *image)
+-{
+-	struct qxl_fbdev *qfbdev =3D info->par;
+-
+-	sys_imageblit(info, image);
+-	qxl_dirty_update(qfbdev, image->dx, image->dy, image->width,
+-			 image->height);
+-}
+-
+-static void qxl_fb_work(struct work_struct *work)
+-{
+-	struct qxl_device *qdev =3D container_of(work, struct qxl_device, fb_work=
+);
+-	struct qxl_fbdev *qfbdev =3D qdev->mode_info.qfbdev;
+-
+-	qxl_fb_dirty_flush(qfbdev->helper.fbdev);
+-}
+-
+-int qxl_fb_init(struct qxl_device *qdev)
+-{
+-	INIT_WORK(&qdev->fb_work, qxl_fb_work);
+-	return 0;
+-}
+-
+ static struct fb_ops qxlfb_ops =3D {
+ 	.owner =3D THIS_MODULE,
+ 	.fb_check_var =3D drm_fb_helper_check_var,
+ 	.fb_set_par =3D drm_fb_helper_set_par, /* TODO: copy vmwgfx */
+-	.fb_fillrect =3D qxl_fb_fillrect,
+-	.fb_copyarea =3D qxl_fb_copyarea,
+-	.fb_imageblit =3D qxl_fb_imageblit,
++	.fb_fillrect =3D drm_fb_helper_sys_fillrect,
++	.fb_copyarea =3D drm_fb_helper_sys_copyarea,
++	.fb_imageblit =3D drm_fb_helper_sys_imageblit,
+ 	.fb_pan_display =3D drm_fb_helper_pan_display,
+ 	.fb_blank =3D drm_fb_helper_blank,
+ 	.fb_setcmap =3D drm_fb_helper_setcmap,
+@@ -338,6 +178,57 @@ out_unref:
+ 	return ret;
+ }
+
++/*
++ * FIXME
++ * It should not be necessary to have a special dirty() callback for fbdev.
++ */
++static int qxlfb_framebuffer_dirty(struct drm_framebuffer *fb,
++				   struct drm_file *file_priv,
++				   unsigned flags, unsigned color,
++				   struct drm_clip_rect *clips,
++				   unsigned num_clips)
++{
++	struct qxl_device *qdev =3D fb->dev->dev_private;
++	struct fb_info *info =3D qdev->fbdev_info;
++	struct qxl_fbdev *qfbdev =3D info->par;
++	struct qxl_fb_image qxl_fb_image;
++	struct fb_image *image =3D &qxl_fb_image.fb_image;
++
++	/* TODO: hard coding 32 bpp */
++	int stride =3D qfbdev->qfb.base.pitches[0];
++
++	/*
++	 * we are using a shadow draw buffer, at qdev->surface0_shadow
++	 */
++	qxl_io_log(qdev, "dirty x[%d, %d], y[%d, %d]", clips->x1, clips->x2,
++		   clips->y1, clips->y2);
++	image->dx =3D clips->x1;
++	image->dy =3D clips->y1;
++	image->width =3D clips->x2 - clips->x1;
++	image->height =3D clips->y2 - clips->y1;
++	image->fg_color =3D 0xffffffff; /* unused, just to avoid uninitialized
++					 warnings */
++	image->bg_color =3D 0;
++	image->depth =3D 32;	     /* TODO: take from somewhere? */
++	image->cmap.start =3D 0;
++	image->cmap.len =3D 0;
++	image->cmap.red =3D NULL;
++	image->cmap.green =3D NULL;
++	image->cmap.blue =3D NULL;
++	image->cmap.transp =3D NULL;
++	image->data =3D qfbdev->shadow + (clips->x1 * 4) + (stride * clips->y1);
++
++	qxl_fb_image_init(&qxl_fb_image, qdev, info, NULL);
++	qxl_draw_opaque_fb(&qxl_fb_image, stride);
++
++	return 0;
++}
++
++static const struct drm_framebuffer_funcs qxlfb_fb_funcs =3D {
++	.destroy =3D qxl_user_framebuffer_destroy,
++	.dirty =3D qxlfb_framebuffer_dirty,
++};
++
+ static int qxlfb_create(struct qxl_fbdev *qfbdev,
+ 			struct drm_fb_helper_surface_size *sizes)
+ {
+@@ -383,7 +274,8 @@ static int qxlfb_create(struct qxl_fbdev *qfbdev,
+
+ 	info->par =3D qfbdev;
+
+-	qxl_framebuffer_init(qdev->ddev, &qfbdev->qfb, &mode_cmd, gobj);
++	qxl_framebuffer_init(qdev->ddev, &qfbdev->qfb, &mode_cmd, gobj,
++			     &qxlfb_fb_funcs);
+
+ 	fb =3D &qfbdev->qfb.base;
+
+@@ -504,7 +396,6 @@ int qxl_fbdev_init(struct qxl_device *qdev)
+ 	qfbdev->qdev =3D qdev;
+ 	qdev->mode_info.qfbdev =3D qfbdev;
+ 	spin_lock_init(&qfbdev->delayed_ops_lock);
+-	spin_lock_init(&qfbdev->dirty.lock);
+ 	INIT_LIST_HEAD(&qfbdev->delayed_ops);
+
+ 	drm_fb_helper_prepare(qdev->ddev, &qfbdev->helper,
+diff --git a/drivers/gpu/drm/qxl/qxl_kms.c b/drivers/gpu/drm/qxl/qxl_kms.c
+index b2977a1..2319800 100644
+--- a/drivers/gpu/drm/qxl/qxl_kms.c
++++ b/drivers/gpu/drm/qxl/qxl_kms.c
+@@ -261,10 +261,6 @@ static int qxl_device_init(struct qxl_device *qdev,
+ 	qdev->gc_queue =3D create_singlethread_workqueue("qxl_gc");
+ 	INIT_WORK(&qdev->gc_work, qxl_gc_work);
+
+-	r =3D qxl_fb_init(qdev);
+-	if (r)
+-		return r;
+-
+ 	return 0;
+ }
+
+--
+2.2.2
+

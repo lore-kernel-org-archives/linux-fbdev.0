@@ -1,176 +1,98 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 27 Apr 2016 11:14:20 +0000
-Subject: Re: [PATCH v2 4/8] drm/fb-helper: Add fb_deferred_io support
-Message-Id: <20160427111420.GA2558@phenom.ffwll.local>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Thu, 28 Apr 2016 12:56:23 +0000
+Subject: [PATCH] video: fbdev: omap2: Remove deprecated regulator_can_change_voltage() usage
+Message-Id: <1461848183-3634-1-git-send-email-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461530942-22485-1-git-send-email-noralf@tronnes.org>
- <1461530942-22485-5-git-send-email-noralf@tronnes.org>
- <20160425090957.GQ2510@phenom.ffwll.local>
- <571F9656.1090506@tronnes.org>
- <20160426171902.GA2558@phenom.ffwll.local>
- <57208A3B.4020909@tronnes.org>
-In-Reply-To: <57208A3B.4020909@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com
+Cc: robdclark@gmail.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Apr 27, 2016 at 11:45:31AM +0200, Noralf Tr=F8nnes wrote:
->=20
-> Den 26.04.2016 19:19, skrev Daniel Vetter:
-> >On Tue, Apr 26, 2016 at 06:24:54PM +0200, Noralf Tr=F8nnes wrote:
-> >>Den 25.04.2016 11:09, skrev Daniel Vetter:
-> >>>On Sun, Apr 24, 2016 at 10:48:58PM +0200, Noralf Tr=F8nnes wrote:
-> >>>>This adds deferred io support if CONFIG_FB_DEFERRED_IO is enabled.
-> >>>>The fbdev framebuffer changes are flushed using the callback
-> >>>>(struct drm_framebuffer *)->funcs->dirty() by a dedicated worker
-> >>>>ensuring that it always runs in process context.
-> >>>>
-> >>>>Signed-off-by: Noralf Tr=F8nnes <noralf@tronnes.org>
-> >>>>---
-> >>>>
-> >>>>Changes since v1:
-> >>>>- Use a dedicated worker to run the framebuffer flushing like qxl does
-> >>>>- Add parameter descriptions to drm_fb_helper_deferred_io
-> >>>>
-> >>>>  drivers/gpu/drm/drm_fb_helper.c | 127 +++++++++++++++++++++++++++++=
-++++++++++-
-> >>>>  include/drm/drm_fb_helper.h     |  17 ++++++
-> >>>>  2 files changed, 143 insertions(+), 1 deletion(-)
-> >>>>
-> >>>>diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb=
-_helper.c
-> >>>>index 855108e..46ee6f8 100644
-> >>>>--- a/drivers/gpu/drm/drm_fb_helper.c
-> >>>>+++ b/drivers/gpu/drm/drm_fb_helper.c
-> >>>>@@ -40,6 +40,7 @@
-> >>>>  #include <drm/drm_crtc_helper.h>
-> >>>>  #include <drm/drm_atomic.h>
-> >>>>  #include <drm/drm_atomic_helper.h>
-> >>>>+#include <drm/drm_rect.h>
-> >>>>
-> >>>>  static bool drm_fbdev_emulation =3D true;
-> >>>>  module_param_named(fbdev_emulation, drm_fbdev_emulation, bool, 0600=
-);
-> >>>>@@ -48,6 +49,10 @@ MODULE_PARM_DESC(fbdev_emulation,
-> >>>>
-> >>>>  static LIST_HEAD(kernel_fb_helper_list);
-> >>>>
-> >>>>+static void drm_fb_helper_dirty_init(struct drm_fb_helper *helper);
-> >>>>+static void drm_fb_helper_dirty(struct fb_info *info, u32 x, u32 y,
-> >>>>+				u32 width, u32 height);
-> >>>>+
-> >>>>  /**
-> >>>>   * DOC: fbdev helpers
-> >>>>   *
-> >>>>@@ -84,6 +89,16 @@ static LIST_HEAD(kernel_fb_helper_list);
-> >>>>   * and set up an initial configuration using the detected hardware,=
- drivers
-> >>>>   * should call drm_fb_helper_single_add_all_connectors() followed by
-> >>>>   * drm_fb_helper_initial_config().
-> >>>>+ *
-> >>>>+ * If CONFIG_FB_DEFERRED_IO is enabled and
-> >>>>+ * (struct drm_framebuffer *)->funcs->dirty is set, the
-> >>>>+ * drm_fb_helper_{cfb,sys}_{write,fillrect,copyarea,imageblit} funct=
-ions
-> >>>>+ * will accumulate changes and schedule (struct fb_helper).dirty_wor=
-k to run
-> >>>>+ * right away. This worker then calls the dirty() function ensuring =
-that it
-> >>>>+ * will always run in process context since the fb_*() function coul=
-d be
-> >>>>+ * running in atomic context. If drm_fb_helper_deferred_io() is used=
- as the
-> >>>>+ * deferred_io callback it will also schedule dirty_work with the da=
-mage
-> >>>>+ * collected from the mmap page writes.
-> >>>One thing to consider (and personally I don't care either way) is whet=
-her
-> >>>we shouldn't just select CONFIG_FB_DEFERRED_IO if the fbdev helpers are
-> >>>enabled. Pushing that out to drivers is imo a bit fragile.
-> >>>
-> >>>But like I said I'm ok with either way.
-> >>My concern was adding code and data that only a few drivers would
-> >>actually use. But of course there's the tradeoff with complexity.
-> >>I use this to enable it:
-> >>         select FB_DEFERRED_IO if DRM_KMS_FB_HELPER
-> >>
-> >>I guess the maintainer has to make this choice between size and complex=
-ity
-> >>:-)
-> >>I can enable it by default if you want, drm is both huge and complex so=
- I
-> >>don't know what's best.
-> >>
-> >>As a sidenote, I have also put all the fbdev code in a file of it's own=
- to
-> >>make it simple with regards to the DRM_FBDEV_EMULATION user option:
-> >>tinydrm-$(CONFIG_DRM_KMS_FB_HELPER)     +=3D tinydrm-fbdev.o
-> >Ok, if you ask maintainers then please nuke the #ifdef from .c files. If
-> >you select CONFIG_DRM_KMS_FB_HELPER, then you get hdmi, edid, dp aux, dp
-> >mst and whatever else helpers, even if you don't need them. Adding 3
-> >functions for defio when you select fbdev helpers and maybe don't need
-> >them is totally harmless. And removing the #ifdef will look so much bett=
-er
-> >;-)
->=20
-> Will do :-)
-> Kernel development is just my hobby so I'm not well versed in all of this.
+regulator_can_change_voltage() is deprecated and it's use is not necessary
+as commit:
+6a0028b3dd67b regulator: Deprecate regulator_can_change_voltage()
+describers it clearly.
+As there is no practical use of it it can be removed.
+At this point the regulator_set_voltage() calls can not be removed as the
+DT data need to be fixed first.
 
-You're doing great tbh!
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c   | 12 +++++-------
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c | 12 +++++-------
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c | 12 +++++-------
+ 3 files changed, 15 insertions(+), 21 deletions(-)
 
-> >>>>   */
-> >>>>
-> >>>>  /**
-> >>>>@@ -401,11 +416,14 @@ backoff:
-> >>>>  static int restore_fbdev_mode(struct drm_fb_helper *fb_helper)
-> >>>>  {
-> >>>>  	struct drm_device *dev =3D fb_helper->dev;
-> >>>>+	struct fb_info *info =3D fb_helper->fbdev;
-> >>>>  	struct drm_plane *plane;
-> >>>>  	int i;
-> >>>>
-> >>>>  	drm_warn_on_modeset_not_all_locked(dev);
-> >>>>
-> >>>>+	drm_fb_helper_dirty(info, 0, 0, info->var.xres, info->var.yres);
-> >>>Why is this needed? If you do a modeset (or pageflip or whatever) driv=
-ers
-> >>>are supposed to re-upload the entire screen. We've talked about adding=
- a
-> >>>dirty rectangle to atomic to allow userspace to optimize this, but the=
-re
-> >>>should _never_ be a need to do a dirtyfb call around a modeset. Probab=
-ly
-> >>>just a driver bug in your panel drm drivers?
-> >>Ok, in tinydrm I now set a flag in &drm_simple_display_pipe_funcs
-> >>->plane_update to indicate that the next dirty() should do the whole
-> >>framebuffer which seems to work fine.
-> >>Should I actually perform the update as well?
-> >>If so I would need to add a worker in tinydrm to do that.
-> >Yes, plane update should always do a full update. Not sure how you get
-> >away with delaying that to ->dirty, maybe modesetting isn't
-> >double-buffering when you don't have a GL that could do glamour.
-> >
-> >->dirty is _only_ for frontbuffer rendering, not for page-flipping to an
-> >entirely new buffer. In short if someone calls ->dirty on a buffer which
-> >is currently not being displayed than a) they're silly b) drivers should
-> >treat it as a no-op. Maybe we need a helper to do that ...
-> >-Daniel
->=20
-> drm_fb_helper will call dirty() as long as there's fbdev activity, so the
-> driver needs to take that into account. For instance fbcon with a blinking
-> cursor will trigger calls even if a buffer has been set up on the drm sid=
-e.
-> tinydrm checks the fb against the fb set on the plane and if it differs
-> it's a no-op.
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index 0eec073b3919..d63e59807707 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1180,13 +1180,11 @@ static int dsi_regulator_init(struct platform_device *dsidev)
+ 		return PTR_ERR(vdds_dsi);
+ 	}
+ 
+-	if (regulator_can_change_voltage(vdds_dsi)) {
+-		r = regulator_set_voltage(vdds_dsi, 1800000, 1800000);
+-		if (r) {
+-			devm_regulator_put(vdds_dsi);
+-			DSSERR("can't set the DSI regulator voltage\n");
+-			return r;
+-		}
++	r = regulator_set_voltage(vdds_dsi, 1800000, 1800000);
++	if (r) {
++		devm_regulator_put(vdds_dsi);
++		DSSERR("can't set the DSI regulator voltage\n");
++		return r;
+ 	}
+ 
+ 	dsi->vdds_dsi_reg = vdds_dsi;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+index 7103c659a534..2e71aec838b1 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c
+@@ -114,13 +114,11 @@ static int hdmi_init_regulator(void)
+ 		return PTR_ERR(reg);
+ 	}
+ 
+-	if (regulator_can_change_voltage(reg)) {
+-		r = regulator_set_voltage(reg, 1800000, 1800000);
+-		if (r) {
+-			devm_regulator_put(reg);
+-			DSSWARN("can't set the regulator voltage\n");
+-			return r;
+-		}
++	r = regulator_set_voltage(reg, 1800000, 1800000);
++	if (r) {
++		devm_regulator_put(reg);
++		DSSWARN("can't set the regulator voltage\n");
++		return r;
+ 	}
+ 
+ 	hdmi.vdda_reg = reg;
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+index a955a2c4c061..aade6d99662a 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c
+@@ -131,13 +131,11 @@ static int hdmi_init_regulator(void)
+ 		return PTR_ERR(reg);
+ 	}
+ 
+-	if (regulator_can_change_voltage(reg)) {
+-		r = regulator_set_voltage(reg, 1800000, 1800000);
+-		if (r) {
+-			devm_regulator_put(reg);
+-			DSSWARN("can't set the regulator voltage\n");
+-			return r;
+-		}
++	r = regulator_set_voltage(reg, 1800000, 1800000);
++	if (r) {
++		devm_regulator_put(reg);
++		DSSWARN("can't set the regulator voltage\n");
++		return r;
+ 	}
+ 
+ 	hdmi.vdda_reg = reg;
+-- 
+2.8.1
 
-Was really just an idea to make drivers a bit simpler, since pretty much
-all of them we need to do this check. But with a grand total of just 3 (4
-with tinydrm) implementing a non-trivial dirty callback that's not really
-worth it I think.
--Daniel
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch

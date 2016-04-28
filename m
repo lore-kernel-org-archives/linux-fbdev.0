@@ -1,123 +1,402 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Wed, 13 Apr 2016 07:32:49 +0000
-Subject: [PATCH 1/3] video / backlight: add two APIs for drivers to use
-Message-Id: <1460532771-22779-2-git-send-email-aaron.lu@intel.com>
+From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
+Date: Thu, 28 Apr 2016 15:18:35 +0000
+Subject: [PATCH v4 5/7] drm/fb-cma-helper: Add fb_deferred_io support
+Message-Id: <1461856717-6476-6-git-send-email-noralf@tronnes.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
-In-Reply-To: <1460532771-22779-1-git-send-email-aaron.lu@intel.com>
+References: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
+In-Reply-To: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jingoohan1@gmail.com>, Zhang Rui <rui.zhang@intel.com>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: linux-fbdev@vger.kernel.org, linux-acpi@vger.kernel.org, linux-pm@vger.kernel.org, srinivas.pandruvada@intel.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, laurent.pinchart@ideasonboard.com, linux-kernel@vger.kernel.org
 
-It is useful to get the backlight device's pointer and use it to set
-backlight in some cases(the following patch will make use of it) so add
-the two APIs and export them.
+This adds fbdev deferred io support if CONFIG_FB_DEFERRED_IO is enabled.
+The driver has to provide a (struct drm_framebuffer_funcs *)->dirty()
+callback to get notification of fbdev framebuffer changes.
+If the dirty() hook is set, then fb_deferred_io is set up automatically
+by the helper.
 
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
-Acked-by: Jingoo Han <jg1.han@samsung.com>
+Two functions have been added so that the driver can provide a dirty()
+function:
+- drm_fbdev_cma_init_with_funcs()
+  This makes it possible for the driver to provided a custom
+  (struct drm_fb_helper_funcs *)->fb_probe() function.
+- drm_fbdev_cma_create_with_funcs()
+  This is used by the .fb_probe hook to set a driver provided
+  (struct drm_framebuffer_funcs *)->dirty() function.
+
+Cc: laurent.pinchart@ideasonboard.com
+Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
 ---
- drivers/video/backlight/backlight.c | 43 +++++++++++++++++++++++++------------
- include/linux/backlight.h           |  2 ++
- 2 files changed, 31 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index bddc8b17a4d8..18901b9b1eb4 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -164,18 +164,10 @@ static ssize_t brightness_show(struct device *dev,
- 	return sprintf(buf, "%d\n", bd->props.brightness);
- }
- 
--static ssize_t brightness_store(struct device *dev,
--		struct device_attribute *attr, const char *buf, size_t count)
-+int backlight_device_set_brightness(struct backlight_device *bd,
-+				    unsigned long brightness)
+Changes since v2:
+- FB_DEFERRED_IO is now always selected by DRM_KMS_FB_HELPER, ifdef removed
+
+ drivers/gpu/drm/drm_fb_cma_helper.c | 178 ++++++++++++++++++++++++++++++++=
++---
+ include/drm/drm_fb_cma_helper.h     |  14 +++
+ 2 files changed, 180 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_cma_helper.c b/drivers/gpu/drm/drm_fb_c=
+ma_helper.c
+index bb88e3d..086f600 100644
+--- a/drivers/gpu/drm/drm_fb_cma_helper.c
++++ b/drivers/gpu/drm/drm_fb_cma_helper.c
+@@ -25,6 +25,8 @@
+ #include <drm/drm_fb_cma_helper.h>
+ #include <linux/module.h>
+
++#define DEFAULT_FBDEFIO_DELAY_MS 50
++
+ struct drm_fb_cma {
+ 	struct drm_framebuffer		fb;
+ 	struct drm_gem_cma_object	*obj[4];
+@@ -35,6 +37,61 @@ struct drm_fbdev_cma {
+ 	struct drm_fb_cma	*fb;
+ };
+
++/**
++ * DOC: framebuffer cma helper functions
++ *
++ * Provides helper functions for creating a cma (contiguous memory allocat=
+or)
++ * backed framebuffer.
++ *
++ * drm_fb_cma_create() is used in the
++ * (struct drm_mode_config_funcs *)->fb_create callback function to create=
+ the
++ * cma backed framebuffer.
++ *
++ * An fbdev framebuffer backed by cma is also available by calling
++ * drm_fbdev_cma_init(). drm_fbdev_cma_fini() tears it down.
++ * If CONFIG_FB_DEFERRED_IO is enabled and the callback
++ * (struct drm_framebuffer_funcs)->dirty is set, fb_deferred_io
++ * will be set up automatically. dirty() is called by
++ * drm_fb_helper_deferred_io() in process context (struct delayed_work).
++ *
++ * Example fbdev deferred io code:
++ *
++ *     static int driver_fbdev_fb_dirty(struct drm_framebuffer *fb,
++ *                                      struct drm_file *file_priv,
++ *                                      unsigned flags, unsigned color,
++ *                                      struct drm_clip_rect *clips,
++ *                                      unsigned num_clips)
++ *     {
++ *         struct drm_gem_cma_object *cma =3D drm_fb_cma_get_gem_obj(fb, 0=
+);
++ *         ... push changes ...
++ *         return 0;
++ *     }
++ *
++ *     static struct drm_framebuffer_funcs driver_fbdev_fb_funcs =3D {
++ *         .destroy       =3D drm_fb_cma_destroy,
++ *         .create_handle =3D drm_fb_cma_create_handle,
++ *         .dirty         =3D driver_fbdev_fb_dirty,
++ *     };
++ *
++ *     static int driver_fbdev_create(struct drm_fb_helper *helper,
++ *             struct drm_fb_helper_surface_size *sizes)
++ *     {
++ *         return drm_fbdev_cma_create_with_funcs(helper, sizes,
++ *                                                &driver_fbdev_fb_funcs);
++ *     }
++ *
++ *     static const struct drm_fb_helper_funcs driver_fb_helper_funcs =3D {
++ *         .fb_probe =3D driver_fbdev_create,
++ *     };
++ *
++ *     Initialize:
++ *     fbdev =3D drm_fbdev_cma_init_with_funcs(dev, 16,
++ *                                           dev->mode_config.num_crtc,
++ *                                           dev->mode_config.num_connecto=
+r,
++ *                                           &driver_fb_helper_funcs);
++ *
++ */
++
+ static inline struct drm_fbdev_cma *to_fbdev_cma(struct drm_fb_helper *hel=
+per)
  {
--	int rc;
--	struct backlight_device *bd = to_backlight_device(dev);
--	unsigned long brightness;
--
--	rc = kstrtoul(buf, 0, &brightness);
--	if (rc)
--		return rc;
--
--	rc = -ENXIO;
-+	int rc = -ENXIO;
- 
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops) {
-@@ -185,7 +177,7 @@ static ssize_t brightness_store(struct device *dev,
- 			pr_debug("set brightness to %lu\n", brightness);
- 			bd->props.brightness = brightness;
- 			backlight_update_status(bd);
--			rc = count;
-+			rc = 0;
- 		}
- 	}
- 	mutex_unlock(&bd->ops_lock);
-@@ -194,6 +186,23 @@ static ssize_t brightness_store(struct device *dev,
- 
- 	return rc;
+ 	return container_of(helper, struct drm_fbdev_cma, fb_helper);
+@@ -45,7 +102,7 @@ static inline struct drm_fb_cma *to_fb_cma(struct drm_fr=
+amebuffer *fb)
+ 	return container_of(fb, struct drm_fb_cma, fb);
  }
-+EXPORT_SYMBOL(backlight_device_set_brightness);
-+
-+static ssize_t brightness_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t count)
-+{
-+	int rc;
-+	struct backlight_device *bd = to_backlight_device(dev);
-+	unsigned long brightness;
-+
-+	rc = kstrtoul(buf, 0, &brightness);
-+	if (rc)
-+		return rc;
-+
-+	rc = backlight_device_set_brightness(bd, brightness);
-+
-+	return rc ? rc : count;
-+}
- static DEVICE_ATTR_RW(brightness);
- 
- static ssize_t type_show(struct device *dev, struct device_attribute *attr,
-@@ -380,7 +389,7 @@ struct backlight_device *backlight_device_register(const char *name,
- }
- EXPORT_SYMBOL(backlight_device_register);
- 
--bool backlight_device_registered(enum backlight_type type)
-+struct backlight_device *backlight_device_get_by_type(enum backlight_type type)
+
+-static void drm_fb_cma_destroy(struct drm_framebuffer *fb)
++void drm_fb_cma_destroy(struct drm_framebuffer *fb)
  {
- 	bool found = false;
- 	struct backlight_device *bd;
-@@ -394,7 +403,13 @@ bool backlight_device_registered(enum backlight_type type)
- 	}
- 	mutex_unlock(&backlight_dev_list_mutex);
- 
--	return found;
-+	return found ? bd : NULL;
-+}
-+EXPORT_SYMBOL(backlight_device_get_by_type);
-+
-+bool backlight_device_registered(enum backlight_type type)
-+{
-+	return backlight_device_get_by_type(type) ? true : false;
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+ 	int i;
+@@ -58,8 +115,9 @@ static void drm_fb_cma_destroy(struct drm_framebuffer *f=
+b)
+ 	drm_framebuffer_cleanup(fb);
+ 	kfree(fb_cma);
  }
- EXPORT_SYMBOL(backlight_device_registered);
- 
-diff --git a/include/linux/backlight.h b/include/linux/backlight.h
-index 1e7a69adbe6f..f46b88fa4a09 100644
---- a/include/linux/backlight.h
-+++ b/include/linux/backlight.h
-@@ -144,6 +144,8 @@ extern void backlight_force_update(struct backlight_device *bd,
- extern bool backlight_device_registered(enum backlight_type type);
- extern int backlight_register_notifier(struct notifier_block *nb);
- extern int backlight_unregister_notifier(struct notifier_block *nb);
-+extern struct backlight_device *backlight_device_get_by_type(enum backlight_type type);
-+extern int backlight_device_set_brightness(struct backlight_device *bd, unsigned long brightness);
- 
- #define to_backlight_device(obj) container_of(obj, struct backlight_device, dev)
- 
--- 
-2.5.5
++EXPORT_SYMBOL(drm_fb_cma_destroy);
+
+-static int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
+ 	struct drm_file *file_priv, unsigned int *handle)
+ {
+ 	struct drm_fb_cma *fb_cma =3D to_fb_cma(fb);
+@@ -67,6 +125,7 @@ static int drm_fb_cma_create_handle(struct drm_framebuff=
+er *fb,
+ 	return drm_gem_handle_create(file_priv,
+ 			&fb_cma->obj[0]->base, handle);
+ }
++EXPORT_SYMBOL(drm_fb_cma_create_handle);
+
+ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D {
+ 	.destroy	=3D drm_fb_cma_destroy,
+@@ -76,7 +135,7 @@ static struct drm_framebuffer_funcs drm_fb_cma_funcs =3D=
+ {
+ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_device *dev,
+ 	const struct drm_mode_fb_cmd2 *mode_cmd,
+ 	struct drm_gem_cma_object **obj,
+-	unsigned int num_planes)
++	unsigned int num_planes, struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fb_cma *fb_cma;
+ 	int ret;
+@@ -91,7 +150,7 @@ static struct drm_fb_cma *drm_fb_cma_alloc(struct drm_de=
+vice *dev,
+ 	for (i =3D 0; i < num_planes; i++)
+ 		fb_cma->obj[i] =3D obj[i];
+
+-	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, &drm_fb_cma_funcs);
++	ret =3D drm_framebuffer_init(dev, &fb_cma->fb, funcs);
+ 	if (ret) {
+ 		dev_err(dev->dev, "Failed to initialize framebuffer: %d\n", ret);
+ 		kfree(fb_cma);
+@@ -145,7 +204,7 @@ struct drm_framebuffer *drm_fb_cma_create(struct drm_de=
+vice *dev,
+ 		objs[i] =3D to_drm_gem_cma_obj(obj);
+ 	}
+
+-	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i);
++	fb_cma =3D drm_fb_cma_alloc(dev, mode_cmd, objs, i, &drm_fb_cma_funcs);
+ 	if (IS_ERR(fb_cma)) {
+ 		ret =3D PTR_ERR(fb_cma);
+ 		goto err_gem_object_unreference;
+@@ -233,8 +292,67 @@ static struct fb_ops drm_fbdev_cma_ops =3D {
+ 	.fb_setcmap	=3D drm_fb_helper_setcmap,
+ };
+
+-static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
+-	struct drm_fb_helper_surface_size *sizes)
++static int drm_fbdev_cma_deferred_io_mmap(struct fb_info *info,
++					  struct vm_area_struct *vma)
++{
++	fb_deferred_io_mmap(info, vma);
++	vma->vm_page_prot =3D pgprot_writecombine(vma->vm_page_prot);
++
++	return 0;
++}
++
++static int drm_fbdev_cma_defio_init(struct fb_info *fbi,
++				    struct drm_gem_cma_object *cma_obj)
++{
++	struct fb_deferred_io *fbdefio;
++	struct fb_ops *fbops;
++
++	/*
++	 * Per device structures are needed because:
++	 * fbops: fb_deferred_io_cleanup() clears fbops.fb_mmap
++	 * fbdefio: individual delays
++	 */
++	fbdefio =3D kzalloc(sizeof(*fbdefio), GFP_KERNEL);
++	fbops =3D kzalloc(sizeof(*fbops), GFP_KERNEL);
++	if (!fbdefio || !fbops) {
++		kfree(fbdefio);
++		return -ENOMEM;
++	}
++
++	/* can't be offset from vaddr since dirty() uses cma_obj */
++	fbi->screen_buffer =3D cma_obj->vaddr;
++	/* fb_deferred_io_fault() needs a physical address */
++	fbi->fix.smem_start =3D page_to_phys(virt_to_page(fbi->screen_buffer));
++
++	*fbops =3D *fbi->fbops;
++	fbi->fbops =3D fbops;
++
++	fbdefio->delay =3D msecs_to_jiffies(DEFAULT_FBDEFIO_DELAY_MS);
++	fbdefio->deferred_io =3D drm_fb_helper_deferred_io;
++	fbi->fbdefio =3D fbdefio;
++	fb_deferred_io_init(fbi);
++	fbi->fbops->fb_mmap =3D drm_fbdev_cma_deferred_io_mmap;
++
++	return 0;
++}
++
++static void drm_fbdev_cma_defio_fini(struct fb_info *fbi)
++{
++	if (!fbi->fbdefio)
++		return;
++
++	fb_deferred_io_cleanup(fbi);
++	kfree(fbi->fbdefio);
++	kfree(fbi->fbops);
++}
++
++/*
++ * For use in a (struct drm_fb_helper_funcs *)->fb_probe callback function=
+ that
++ * needs custom struct drm_framebuffer_funcs, like dirty() for deferred_io=
+ use.
++ */
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma =3D to_fbdev_cma(helper);
+ 	struct drm_mode_fb_cmd2 mode_cmd =3D { 0 };
+@@ -270,7 +388,7 @@ static int drm_fbdev_cma_create(struct drm_fb_helper *h=
+elper,
+ 		goto err_gem_free_object;
+ 	}
+
+-	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1);
++	fbdev_cma->fb =3D drm_fb_cma_alloc(dev, &mode_cmd, &obj, 1, funcs);
+ 	if (IS_ERR(fbdev_cma->fb)) {
+ 		dev_err(dev->dev, "Failed to allocate DRM framebuffer.\n");
+ 		ret =3D PTR_ERR(fbdev_cma->fb);
+@@ -296,31 +414,48 @@ static int drm_fbdev_cma_create(struct drm_fb_helper =
+*helper,
+ 	fbi->screen_size =3D size;
+ 	fbi->fix.smem_len =3D size;
+
++	if (funcs->dirty) {
++		ret =3D drm_fbdev_cma_defio_init(fbi, obj);
++		if (ret)
++			goto err_cma_destroy;
++	}
++
+ 	return 0;
+
++err_cma_destroy:
++	drm_framebuffer_unregister_private(&fbdev_cma->fb->fb);
++	drm_fb_cma_destroy(&fbdev_cma->fb->fb);
+ err_fb_info_destroy:
+ 	drm_fb_helper_release_fbi(helper);
+ err_gem_free_object:
+ 	dev->driver->gem_free_object(&obj->base);
+ 	return ret;
+ }
++EXPORT_SYMBOL(drm_fbdev_cma_create_with_funcs);
++
++static int drm_fbdev_cma_create(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes)
++{
++	return drm_fbdev_cma_create_with_funcs(helper, sizes, &drm_fb_cma_funcs);
++}
+
+ static const struct drm_fb_helper_funcs drm_fb_cma_helper_funcs =3D {
+ 	.fb_probe =3D drm_fbdev_cma_create,
+ };
+
+ /**
+- * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * drm_fbdev_cma_init_with_funcs() - Allocate and initializes a drm_fbdev_=
+cma struct
+  * @dev: DRM device
+  * @preferred_bpp: Preferred bits per pixel for the device
+  * @num_crtc: Number of CRTCs
+  * @max_conn_count: Maximum number of connectors
++ * @funcs: fb helper functions, in particular fb_probe()
+  *
+  * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
+  */
+-struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+-	unsigned int max_conn_count)
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs)
+ {
+ 	struct drm_fbdev_cma *fbdev_cma;
+ 	struct drm_fb_helper *helper;
+@@ -334,7 +469,7 @@ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_dev=
+ice *dev,
+
+ 	helper =3D &fbdev_cma->fb_helper;
+
+-	drm_fb_helper_prepare(dev, helper, &drm_fb_cma_helper_funcs);
++	drm_fb_helper_prepare(dev, helper, funcs);
+
+ 	ret =3D drm_fb_helper_init(dev, helper, num_crtc, max_conn_count);
+ 	if (ret < 0) {
+@@ -364,6 +499,24 @@ err_free:
+
+ 	return ERR_PTR(ret);
+ }
++EXPORT_SYMBOL_GPL(drm_fbdev_cma_init_with_funcs);
++
++/**
++ * drm_fbdev_cma_init() - Allocate and initializes a drm_fbdev_cma struct
++ * @dev: DRM device
++ * @preferred_bpp: Preferred bits per pixel for the device
++ * @num_crtc: Number of CRTCs
++ * @max_conn_count: Maximum number of connectors
++ *
++ * Returns a newly allocated drm_fbdev_cma struct or a ERR_PTR.
++ */
++struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count)
++{
++	return drm_fbdev_cma_init_with_funcs(dev, preferred_bpp, num_crtc,
++				max_conn_count, &drm_fb_cma_helper_funcs);
++}
+ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+
+ /**
+@@ -373,6 +526,7 @@ EXPORT_SYMBOL_GPL(drm_fbdev_cma_init);
+ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma)
+ {
+ 	drm_fb_helper_unregister_fbi(&fbdev_cma->fb_helper);
++	drm_fbdev_cma_defio_fini(fbdev_cma->fb_helper.fbdev);
+ 	drm_fb_helper_release_fbi(&fbdev_cma->fb_helper);
+
+ 	if (fbdev_cma->fb) {
+diff --git a/include/drm/drm_fb_cma_helper.h b/include/drm/drm_fb_cma_helpe=
+r.h
+index be62bd3..6554b6f 100644
+--- a/include/drm/drm_fb_cma_helper.h
++++ b/include/drm/drm_fb_cma_helper.h
+@@ -4,11 +4,18 @@
+ struct drm_fbdev_cma;
+ struct drm_gem_cma_object;
+
++struct drm_fb_helper_surface_size;
++struct drm_framebuffer_funcs;
++struct drm_fb_helper_funcs;
+ struct drm_framebuffer;
++struct drm_fb_helper;
+ struct drm_device;
+ struct drm_file;
+ struct drm_mode_fb_cmd2;
+
++struct drm_fbdev_cma *drm_fbdev_cma_init_with_funcs(struct drm_device *dev,
++	unsigned int preferred_bpp, unsigned int num_crtc,
++	unsigned int max_conn_count, const struct drm_fb_helper_funcs *funcs);
+ struct drm_fbdev_cma *drm_fbdev_cma_init(struct drm_device *dev,
+ 	unsigned int preferred_bpp, unsigned int num_crtc,
+ 	unsigned int max_conn_count);
+@@ -16,6 +23,13 @@ void drm_fbdev_cma_fini(struct drm_fbdev_cma *fbdev_cma);
+
+ void drm_fbdev_cma_restore_mode(struct drm_fbdev_cma *fbdev_cma);
+ void drm_fbdev_cma_hotplug_event(struct drm_fbdev_cma *fbdev_cma);
++int drm_fbdev_cma_create_with_funcs(struct drm_fb_helper *helper,
++	struct drm_fb_helper_surface_size *sizes,
++	struct drm_framebuffer_funcs *funcs);
++
++void drm_fb_cma_destroy(struct drm_framebuffer *fb);
++int drm_fb_cma_create_handle(struct drm_framebuffer *fb,
++	struct drm_file *file_priv, unsigned int *handle);
+
+ struct drm_framebuffer *drm_fb_cma_create(struct drm_device *dev,
+ 	struct drm_file *file_priv, const struct drm_mode_fb_cmd2 *mode_cmd);
+--
+2.2.2
 

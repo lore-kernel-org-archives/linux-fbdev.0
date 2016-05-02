@@ -1,107 +1,93 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 10 May 2016 10:06:56 +0000
-Subject: Re: [PATCH v2 0/3] video: fbdev: imxfb: make it work again
-Message-Id: <5731B2C0.3040404@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="f6hUIDUuXJ0tdhWEiFrjm71cCsQiOXSps"
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 02 May 2016 14:26:23 +0000
+Subject: Re: [PATCH v4 0/7] drm: Add fbdev deferred io support to helpers
+Message-Id: <20160502142623.GP14148@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1462354998-5792-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <5731A02A.2070309@ti.com> <20160510090547.GQ30822@pengutronix.de>
-In-Reply-To: <20160510090547.GQ30822@pengutronix.de>
-To: linux-arm-kernel@lists.infradead.org
-
---f6hUIDUuXJ0tdhWEiFrjm71cCsQiOXSps
-Content-Type: multipart/mixed; boundary="nKiMirsaDRha09ERB4J1RoP2omItb45jQ"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- kernel@pengutronix.de, linux-fbdev@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
-Message-ID: <5731B2C0.3040404@ti.com>
-Subject: Re: [PATCH v2 0/3] video: fbdev: imxfb: make it work again
-References: <1462354998-5792-1-git-send-email-u.kleine-koenig@pengutronix.de>
- <5731A02A.2070309@ti.com> <20160510090547.GQ30822@pengutronix.de>
-In-Reply-To: <20160510090547.GQ30822@pengutronix.de>
-
---nKiMirsaDRha09ERB4J1RoP2omItb45jQ
-Content-Type: text/plain; charset=utf-8
+References: <1461856717-6476-1-git-send-email-noralf@tronnes.org>
+ <20160429145705.GD14148@phenom.ffwll.local>
+In-Reply-To: <20160429145705.GD14148@phenom.ffwll.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, laurent.pinchart@ideasonboard.com, tomi.valkeinen@ti.com, linux-kernel@vger.kernel.org
 
-
-
-On 10/05/16 12:05, Uwe Kleine-K=C3=B6nig wrote:
-> Hello Tomi,
+On Fri, Apr 29, 2016 at 04:57:05PM +0200, Daniel Vetter wrote:
+> On Thu, Apr 28, 2016 at 05:18:30PM +0200, Noralf Tr=F8nnes wrote:
+> > This patchset adds fbdev deferred io support to drm_fb_helper and
+> > drm_fb_cma_helper.
+> >=20
+> > It channels fbdev mmap and fb_{write,fillrect,copyarea,imageblit} damage
+> > through the (struct drm_framebuffer_funcs)->dirty callback on the
+> > fb_helper framebuffer which will always run in process context.
+> >=20
+> > I have also added patches that converts qxl and udl to use this
+> > deferred io support. I have only compile tested it, no functional testi=
+ng.
+> > I know that qxl is purely a software thing so I could actually test it,=
+ but
+> > I have never used qemu so I'm not keen on spending a lot of time on tha=
+t.
+> >=20
+> > This was originally part of the tinydrm patchset.
+> >=20
+> > Changes since v3:
+> > - drm/fb-helper: Add fb_deferred_io support
+> >   - Don't use forward decl, move drm_fb_helper_dirty_work()
+> >   - Use DIV_ROUND_UP in drm_fb_helper_deferred_io()
+> >=20
+> > Changes since v2:
+> > - drm/rect: Add some drm_clip_rect utility functions
+> >   - This patch is dropped
+> > - drm/fb-helper: Add fb_deferred_io support
+> >   - FB_DEFERRED_IO is now always selected by DRM_KMS_FB_HELPER, ifdef r=
+emoved
+> >   - The drm_clip_rect utility functions are dropped, so open code it
+> >   - docs: use & to denote structs
+> > - drm/qxl: Use drm_fb_helper deferred_io support
+> >   - The drm_clip_rect_{width/height} functions are dropped, so open cod=
+e it
+> >=20
+> > Changes since v1:
+> > - drm/fb-helper: Add fb_deferred_io support
+> >   - Use a dedicated worker to run the framebuffer flushing like qxl does
+> >   - Add parameter descriptions to drm_fb_helper_deferred_io
+> > - fbdev: fb_defio: Export fb_deferred_io_mmap
+> >   - Expand commit message
+> > - drm/qxl: Use drm_fb_helper deferred_io support
+> >   - Add FIXME about special dirty() callback for fbdev
+> >   - Remove note in commit message about deferred worker, drm_fb_helper
+> >     is similar to qxl now.
+> > - drm/udl: Use drm_fb_helper deferred_io support
+> >   - No need to enable deferred_io by default since drm_fb_helper uses
+> >     a dedicated worker for flushing
+> >=20
+> > Changes since RFC:
+> > - Fix drm_clip_rect use to be exclusive on x2/y2
+> > - Put drm_clip_rect functions in drm_rect.{h,c}
+> > - Take into account that (struct fb_ops *)->fb_{write,...}() can be cal=
+led
+> >   from atomic context (spin_lock_irqsave)
+> > - Export fb_deferred_io_mmap()
+> > - Add some more documentation
+> > - Add qxl and udl patches
+> >=20
+> > Noralf Tr=F8nnes (7):
+> >   drm/udl: Change drm_fb_helper_sys_*() calls to sys_*()
+> >   drm/qxl: Change drm_fb_helper_sys_*() calls to sys_*()
+> >   drm/fb-helper: Add fb_deferred_io support
+> >   fbdev: fb_defio: Export fb_deferred_io_mmap
+> >   drm/fb-cma-helper: Add fb_deferred_io support
+> >   drm/qxl: Use drm_fb_helper deferred_io support
+> >   drm/udl: Use drm_fb_helper deferred_io support
 >=20
-> On Tue, May 10, 2016 at 11:47:38AM +0300, Tomi Valkeinen wrote:
->> On 04/05/16 12:43, Uwe Kleine-K=C3=B6nig wrote:
->>> this is v2 of the series which addresses the review comments I got vo=
-r
->>> (implicit) v1.
->>>
->>> For patch 2 the question is still open if this is the right fix, but
->>> without this the display doesn't stay on. Patches 1 and 3 should be
->>> applicable independant of patch 2.
->>
->> I picked patches 1 and 3, they look fine.
->=20
-> Thanks.
->=20
->> I still think patch 2 is just broken, it doesn't make sense to me.
->=20
-> What do you think should happen during startup? Something should call
-> the set_power callback to enable the device? Or should that only happen=
+> Scrolled through them all once more, and didn't spot anything else. Great
+> work! I plan to pull it all into drm-misc next week for 4.7 still. Please
+> ping me in case I forget.
 
-> when something writes to /dev/fb0?
+And done, thanks a lot for your work!
 
-I think the panel should be enabled at startup, as with fbdev there's no
-specific enable call. So I don't have a problem with enabling the panel
-at startup, but just that the regulator enables/disables don't seem to
-match.
-
->> If the regulator is enabled in probe, then it's always on, and
->> imxfb_lcd_set_power() should be removed as it never has any effect. Bu=
-t
->> that doesn't sound correct, as presumably the imxfb_lcd_set_power() ha=
-s
->> worked at some point.
->=20
-> I think it worked back when unused regulators were not disabled during
-> boot.
-
-Is imxfb_lcd_set_power() ever called, or just not at startup? If it is
-called properly later, then perhaps you just need to kick it at startup
-time to enable it. Maybe imxfb_lcd_set_power(lcd, FB_BLANK_UNBLANK);
-
-Did you try unloading the module (both when the LCD is enabled and when
-it's disabled), and seeing that the regulator gets disabled when you
-unload it?
-
- Tomi
-
-
---nKiMirsaDRha09ERB4J1RoP2omItb45jQ--
-
---f6hUIDUuXJ0tdhWEiFrjm71cCsQiOXSps
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXMbLAAAoJEPo9qoy8lh71SpcP/0aDH8p0tcAhSCivvqmWDB4/
-ROyF+dQunM1gSgwd4YZLRPkwNk4yrH9dNkOg6l7x3IN8lO+Gj8Az46TtWWnQGeQs
-Fe0gFOlFXECKc61SSWI6pn/5RGCvk9hJdcTz/3uMheXlfyuYN1ohaBgG4XSQ74Hf
-PclUzcnvuyOmYOG35dl4ac86hvzY8Gg0TrrKS00Em1/dhiGDBhj+SPboYWJcvwIA
-oee3TBqmsrhaQeZSQBIvBa35186qnVZfy0wgB/H92P+qr1KmvqUgMh/iHX58s7H/
-ubteLu+R8Yg/BIc9L/zAqZDo5CUwFcsBCIjnJdN/L8zrVORM8RGP2BRJg24n6o6L
-4qcNn8AuiMJo6poeRyJrArJyRG/XwAL6Gn/vhkq5GPnTQH5Z/dfTdPSg8A7JiYkC
-cltGPjHTbwcfa6tnFWV3h5iwPQvx1KTD0JegoFEZI9RO0gUQCHv7YCZV/jaw3nvE
-TRRiuKTIok86+jVwBX1nb6+mse1K3f7NCbjWoe7UXW7/S9+/yhK/d9CXdb8DAy5M
-pxt7leHDZ1Rs/lpuU2xWZ8KIQGrgPSMKzkA5jrdw0rgcxrda43bmJucLsctEUyxj
-I+c0xuRtxLIbC/5ooJex971fjh/oVHUpgcjL/OaRPrD0sbGNiD0Qgluaw+xkW8AQ
-BG+Hlw34Qp1cg2ZIAiAe
-=eXHD
------END PGP SIGNATURE-----
-
---f6hUIDUuXJ0tdhWEiFrjm71cCsQiOXSps--
+Cheers, Daniel
+--=20
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

@@ -1,117 +1,79 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 May 2016 12:15:14 +0000
-Subject: Re: [PATCH] fbdev: Use IS_ENABLED() instead of checking for built-in or module
-Message-Id: <5735C552.1000508@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="FBP8d8TtbnGdIeKX8n7k4DqaqKFrsdwMO"
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Date: Wed, 04 May 2016 21:47:20 +0000
+Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
+Message-Id: <7370640.WWc4AQ4034@vostro.rjw.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1462982363-25389-1-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1462982363-25389-1-git-send-email-javier@osg.samsung.com>
-To: Javier Martinez Canillas <javier@osg.samsung.com>, linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com> <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com> <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
+In-Reply-To: <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Aaron Lu <aaron.lu@intel.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Zhang Rui <rui.zhang@intel.com>, Jingoo Han <jingoohan1@gmail.com>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, ACPI Devel Maling List <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, Srinivas Pandruvada <srinivas.pandruvada@intel.com>
 
---FBP8d8TtbnGdIeKX8n7k4DqaqKFrsdwMO
-Content-Type: multipart/mixed; boundary="b34skKotuOrwcrfqRqem3kcf7RkTeXdiD"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Javier Martinez Canillas <javier@osg.samsung.com>,
- linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Message-ID: <5735C552.1000508@ti.com>
-Subject: Re: [PATCH] fbdev: Use IS_ENABLED() instead of checking for built-in
- or module
-References: <1462982363-25389-1-git-send-email-javier@osg.samsung.com>
-In-Reply-To: <1462982363-25389-1-git-send-email-javier@osg.samsung.com>
+On Thursday, April 28, 2016 09:48:30 AM Aaron Lu wrote:
+> On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
+> > On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
+> >> v3:
+> >> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
+> >> and one adds the int3406 driver as suggested by Rafael. There should
+> >> be no functionality change compared to v2.
+> >>
+> >> v2:
+> >> The display thermal device represents the LED/LCD display panel
+> >> that may or may not include touch support. The main function of
+> >> the display thermal device is to allow control of the display
+> >> brightness in order to address a thermal condition or to reduce
+> >> power consumed by display device.
+> >>
+> >> Due to the way this thermal device changes brightness level is said
+> >> to be deprecated so we are using the raw interface to do the actual
+> >> backlight change. This requires the backlight core support so two
+> >> new APIs are added and exported in patch 1/3. With this, the previous
+> >> API backlight_device_registered can be removed and this is done in
+> >> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
+> >>
+> >> The 1st version is here:
+> >> http://thread.gmane.org/gmane.linux.acpi.devel/72619
+> >>
+> >> This whole series should go through the thermal tree if applied.
+> >>
+> >> Aaron Lu (3):
+> >>   video / backlight: add two APIs for drivers to use
+> >>   video / backlight: remove the backlight_device_registered API
+> >>   Thermal: add INT3406 thermal driver
+> >>
+> >>  drivers/acpi/acpi_video.c                         |  83 ++++----
+> >>  drivers/acpi/video_detect.c                       |   2 +-
+> >>  drivers/thermal/Kconfig                           |  28 +--
+> >>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
+> >>  drivers/thermal/int340x_thermal/Makefile          |   1 +
+> >>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
+> >>  drivers/video/backlight/backlight.c               |  39 ++--
+> >>  include/acpi/video.h                              |  20 ++
+> >>  include/linux/backlight.h                         |   3 +-
+> >>  9 files changed, 374 insertions(+), 80 deletions(-)
+> >>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+> >>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+> > 
+> > The first three patches in this series look OK to me, so
+> > 
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > 
+> > for the [1-3/4].
+> > 
+> > That said it may be better if those three go in via ACPI.  I can put
+> > them into a separate branch for Rui to pull from.
+> > 
+> > Please let me know what you think.
+> 
+> I have no problem with that.
 
---b34skKotuOrwcrfqRqem3kcf7RkTeXdiD
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+OK
 
-On 11/05/16 18:59, Javier Martinez Canillas wrote:
-> The IS_ENABLED() macro checks if a Kconfig symbol has been enabled eith=
-er
-> built-in or as a module, use that macro instead of open coding the same=
-=2E
->=20
-> Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
-> ---
->=20
->  drivers/video/fbdev/via/accel.c    | 2 +-
->  drivers/video/fbdev/via/via-core.c | 4 ++--
->  2 files changed, 3 insertions(+), 3 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/via/accel.c b/drivers/video/fbdev/via/=
-accel.c
-> index 4b67b8e6030a..eb3615c69987 100644
-> --- a/drivers/video/fbdev/via/accel.c
-> +++ b/drivers/video/fbdev/via/accel.c
-> @@ -358,7 +358,7 @@ int viafb_setup_engine(struct fb_info *info)
->  	viapar->shared->vq_vram_addr =3D viapar->fbmem_free;
->  	viapar->fbmem_used +=3D VQ_SIZE;
-> =20
-> -#if defined(CONFIG_VIDEO_VIA_CAMERA) || defined(CONFIG_VIDEO_VIA_CAMER=
-A_MODULE)
-> +#if IS_ENABLED(CONFIG_VIDEO_VIA_CAMERA)
->  	/*
->  	 * Set aside a chunk of framebuffer memory for the camera
->  	 * driver.  Someday this driver probably needs a proper allocator
-> diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/v=
-ia/via-core.c
-> index 6e274825fb31..1d28e16888e9 100644
-> --- a/drivers/video/fbdev/via/via-core.c
-> +++ b/drivers/video/fbdev/via/via-core.c
-> @@ -116,7 +116,7 @@ EXPORT_SYMBOL_GPL(viafb_irq_disable);
->   * most viafb systems will not need to have this extra code for a whil=
-e.
->   * As soon as another user comes long, the ifdef can be removed.
->   */
-> -#if defined(CONFIG_VIDEO_VIA_CAMERA) || defined(CONFIG_VIDEO_VIA_CAMER=
-A_MODULE)
-> +#if IS_ENABLED(CONFIG_VIDEO_VIA_CAMERA)
->  /*
->   * Access to the DMA engine.  This currently provides what the camera
->   * driver needs (i.e. outgoing only) but is easily expandable if need
-> @@ -542,7 +542,7 @@ static struct viafb_subdev_info {
->  	{
->  		.name =3D "viafb-i2c",
->  	},
-> -#if defined(CONFIG_VIDEO_VIA_CAMERA) || defined(CONFIG_VIDEO_VIA_CAMER=
-A_MODULE)
-> +#if IS_ENABLED(CONFIG_VIDEO_VIA_CAMERA)
->  	{
->  		.name =3D "viafb-camera",
->  	},
->=20
+[1-3/4] have been queued up for 4.7 in my tree.  Please let me know if you
+want me to expose the branch containing them.
 
-Thanks, queued for 4.7.
+Thanks,
+Rafael
 
- Tomi
-
-
---b34skKotuOrwcrfqRqem3kcf7RkTeXdiD--
-
---FBP8d8TtbnGdIeKX8n7k4DqaqKFrsdwMO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXNcVSAAoJEPo9qoy8lh71jSgQAItfCfyy0U12R+jPXeGXHhPl
-Rrw3olbJWalaQ4HB245GK80z2aOMOH9sgiKo0mh0wjWtf0Dcr2zWEy1CjVngXZCN
-G/SHG5EFH4DuMuEwi977vDI6sEU4seMPVo8FzG5ePVNHS79+vIGEHQ1vF+PVN5f7
-Rb1Kh1HWyW8s4pfh1iZo3rCIhAETWd47mNOyAlXTG5xBFkl7WU8bqqA41lo855Lf
-Ds5j7s7QneHLYHGxd5PezNK1wsaY2gxQbLw2vifKOrqKlLSUS29gqDzNUa4lZcvW
-q4F5YqMhSXukWDML0UoHQz4p75upjzmXQHrmfjJQzkokwkOCz1KfU9LLT/WOXoJ7
-KzizimCX617KL1zw1kjuIgwb6WBWGuPlj2txJTdZEkSceQBE/lwWHDmTCCX4UET0
-Z0IqoU5HxH3wS322eZnn0Xp8AA8F7GaxymR5GowbgmWvgYGmWCC14/2q81C+cN/b
-wD7e+IvjsK7Rn3T6tGd9HOB0UYzvZo9A6oThnBvNhVuvW2wyf7pPlFNuKXGOKkQO
-uvQGid1rHUClU3xilfcOzY0ZDNYn4uM0iIVV+Mv+SL1wTbuemWd3atyprA8TMaN+
-kzhQlOQRR34JnKq4lRzRzYoWJUlJT4f0XdJ3PbwDHlNbKF65KVEUhC/9lI3kgeQZ
-OvbWQzygutXfnEMuI+/J
-=419Y
------END PGP SIGNATURE-----
-
---FBP8d8TtbnGdIeKX8n7k4DqaqKFrsdwMO--

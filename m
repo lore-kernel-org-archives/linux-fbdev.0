@@ -1,94 +1,89 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 13 May 2016 11:43:52 +0000
-Subject: Re: [PATCH] efifb: Don't show the mapping VA
-Message-Id: <5735BDF8.20003@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7SeKBS52laurMC11sAUkdINBHeNsrVMJf"
+From: Stefan Agner <stefan@agner.ch>
+Date: Fri, 06 May 2016 20:29:59 +0000
+Subject: Re: [PATCH] video: fbdev: mxsfb: fix pixelclock polarity
+Message-Id: <8578d0df94870b3b18c34d256b67c5b6@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <c980a1a405f54b39fc6382c20182786c894c7ffd.1463011030.git.luto@kernel.org>
-In-Reply-To: <c980a1a405f54b39fc6382c20182786c894c7ffd.1463011030.git.luto@kernel.org>
-To: Andy Lutomirski <luto@kernel.org>, Peter Jones <pjones@redhat.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1453771756-5418-1-git-send-email-stefan@agner.ch>
+In-Reply-To: <1453771756-5418-1-git-send-email-stefan@agner.ch>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: plagnioj@jcrosoft.com, shawnguo@kernel.org
+Cc: s.hauer@pengutronix.de, Ying.Liu@freescale.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, LW@karo-electronics.de, fabio.estevam@freescale.com, max.krummenacher@toradex.com
 
---7SeKBS52laurMC11sAUkdINBHeNsrVMJf
-Content-Type: multipart/mixed; boundary="lUi5vSlulOerKtOf6T0QRu0pggIO12km3"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Andy Lutomirski <luto@kernel.org>, Peter Jones <pjones@redhat.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <5735BDF8.20003@ti.com>
-Subject: Re: [PATCH] efifb: Don't show the mapping VA
-References: <c980a1a405f54b39fc6382c20182786c894c7ffd.1463011030.git.luto@kernel.org>
-In-Reply-To: <c980a1a405f54b39fc6382c20182786c894c7ffd.1463011030.git.luto@kernel.org>
+Hi Shawn,
 
---lUi5vSlulOerKtOf6T0QRu0pggIO12km3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+On 2016-01-25 17:29, Stefan Agner wrote:
+> The PIXDATA flags of the display_flags enum are controller centric,
+> e.g. NEGEDGE means the controller shall drive the data signals on
+> pixelclocks negative edge. However, the drivers flag is display
+> centric: Sample the data on negative (falling) edge.
+> 
+> Therefore, change the if statement to check for the POSEDGE flag
+> (which is typically not set):
+> Drive on positive edge => sample on negative edge
 
-On 12/05/16 02:57, Andy Lutomirski wrote:
-> The framebuffer mapping virtual address leaks information about the
-> kernel memory layout.  Stop logging it.
->=20
-> Cc: Peter Jones <pjones@redhat.com>
-> Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Andy Lutomirski <luto@kernel.org>
+Any comment on that patch?
+
+--
+Stefan
+
+
+> 
+> Signed-off-by: Stefan Agner <stefan@agner.ch>
 > ---
->  drivers/video/fbdev/efifb.c | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index 95d293b7445a..3dcaf4e82885 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -247,10 +247,8 @@ static int efifb_probe(struct platform_device *dev=
-)
->  		goto err_release_fb;
->  	}
-> =20
-> -	printk(KERN_INFO "efifb: framebuffer at 0x%lx, mapped to 0x%p, "
-> -	       "using %dk, total %dk\n",
-> -	       efifb_fix.smem_start, info->screen_base,
-> -	       size_remap/1024, size_total/1024);
-> +	printk(KERN_INFO "efifb: framebuffer at 0x%lx, using %dk, total %dk\n=
-",
-> +	       efifb_fix.smem_start, size_remap/1024, size_total/1024);
->  	printk(KERN_INFO "efifb: mode is %dx%dx%d, linelength=3D%d, pages=3D%=
-d\n",
->  	       efifb_defined.xres, efifb_defined.yres,
->  	       efifb_defined.bits_per_pixel, efifb_fix.line_length,
->=20
-
-Thanks, queued for 4.7.
-
- Tomi
-
-
---lUi5vSlulOerKtOf6T0QRu0pggIO12km3--
-
---7SeKBS52laurMC11sAUkdINBHeNsrVMJf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXNb34AAoJEPo9qoy8lh71IB4P/ilIhXHCscc0qFg6MdI2/Qhd
-vC7UVeIt66VQa7QB/80a/DL2h+ntdipUfsVvuSGrgX6HxP89O7qlrlEDl97QbRiQ
-u4LMUFeXINfjZc90/g7spvnVwIcBEnmurYQI50jhhEU0glp6uqM/C5+ZyXRZoBy6
-C7miNeLopYsLtvI4CqJPoYRVwnYwvnWuh/WZaHoK5K60tXPA5+oc1YPl1AnfSymj
-OyarfcZq10mZjHGPbg2E3a5lLydBG+GbeJ3RbmfgJ0ohI5o2NfRAruUezLg1W+S1
-ntQ1eeJHBf5vMGrsJLBPoknt0cYBDp7LBT6gryU3ahQUydpuH+MlaRPdGjCbJ2hJ
-I+c2M9SUlRIW5wSux+Wv12hnXf42ScuB1FZW/ZMYtffkrvtRed+bdM3RBOoDfOUD
-9UogYGo+2GOtgPXQ4DidWulo5wVBJP1qjYS5Cift7Lh9XvmO0nNrhW1aHP0ZM2a3
-+NM6GbW9qKuguWZhE7At/A6PJ9tlbzunk7WXcvQeksxwI0ks3LMREoXKxTtGXVN3
-03J0/5pfIMJA0BdM4OY65NMRXd7y8Tuids6htVHIBV7Wx5IQTVpgKHrAlQj+n0VY
-AZKrmU7j6CGFVRhmEZ8GU7PvTNwbKb601oP5C/u2SnH3dy30mXSOq6vdWHAzMt4l
-S7lsdTGiSHw2CSH5OW6Q
-=lLTd
------END PGP SIGNATURE-----
-
---7SeKBS52laurMC11sAUkdINBHeNsrVMJf--
+> Hi all
+> 
+> Shawn, I would like to have at least your Ack on this before merge.
+> 
+> It seems that this has been wrong since the driver is able to use
+> the timings from the device tree, introduced with 669406534b4a
+> ("video: mxsfb: get display timings from device tree").
+> 
+> Not sure how many device trees actually specify the wrong pixel clock
+> polarity due to that. At least the initial flag convertion from the
+> old platform data structures done with 0d9f8217db15 ("ARM: mxs: move
+> display timing configurations into device tree") seems to be affected
+> and would need to be changed accordingly...
+> 
+> Not sure how we should handle this, maybe just invert all
+> pixelclk-active properties where the mxsfb driver is in use...?
+> 
+> --
+> Stefan
+> 
+>  drivers/video/fbdev/mxsfb.c | 13 +++++++++++--
+>  1 file changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+> index 4e6608c..38898a9 100644
+> --- a/drivers/video/fbdev/mxsfb.c
+> +++ b/drivers/video/fbdev/mxsfb.c
+> @@ -150,7 +150,7 @@
+>  #define STMLCDIF_24BIT 3 /** pixel data bus to the display is of 24
+> bit width */
+>  
+>  #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
+> -#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling */
+> +#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negative edge sampling */
+>  
+>  enum mxsfb_devtype {
+>  	MXSFB_V3,
+> @@ -788,7 +788,16 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
+>  
+>  	if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
+>  		host->sync |= MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
+> -	if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
+> +
+> +	/*
+> +	 * The PIXDATA flags of the display_flags enum are controller
+> +	 * centric, e.g. NEGEDGE means drive data on negative edge.
+> +	 * However, the drivers flag is display centric: Sample the
+> +	 * data on negative (falling) edge. Therefore, check for the
+> +	 * POSEDGE flag:
+> +	 * drive on positive edge => sample on negative edge
+> +	 */
+> +	if (vm.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
+>  		host->sync |= MXSFB_SYNC_DOTCLK_FALLING_ACT;
+>  
+>  put_display_node:

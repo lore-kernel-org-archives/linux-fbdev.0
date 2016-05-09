@@ -1,76 +1,94 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Date: Mon, 09 May 2016 07:49:32 +0000
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 09 May 2016 12:23:30 +0000
 Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
-Message-Id: <1462780173.10198.5.camel@rzhang1-mobl4>
+Message-Id: <CAJZ5v0gR27r=Hvm8=y5puQYUj_Qw+uxKy-59aJ=F044Saab+Tg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
-	 <CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
-	 <56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
-	 <7370640.WWc4AQ4034@vostro.rjw.lan>
-	 <d160a515-3e11-8faa-71a4-233ff1b7d70d@intel.com>
-In-Reply-To: <d160a515-3e11-8faa-71a4-233ff1b7d70d@intel.com>
+	<CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
+	<56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
+	<7370640.WWc4AQ4034@vostro.rjw.lan>
+	<d160a515-3e11-8faa-71a4-233ff1b7d70d@intel.com>
+	<1462780173.10198.5.camel@rzhang1-mobl4>
+In-Reply-To: <1462780173.10198.5.camel@rzhang1-mobl4>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Lu, Aaron" <aaron.lu@intel.com>
-Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael@kernel.org" <rafael@kernel.org>
+To: "Zhang, Rui" <rui.zhang@intel.com>
+Cc: "Lu, Aaron" <aaron.lu@intel.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael@kernel.org" <rafael@kernel.org>
 
-T24gRnJpLCAyMDE2LTA1LTA2IGF0IDE0OjQ1ICswODAwLCBBYXJvbiBMdSB3cm90ZToNCj4gT24g
-MDUvMDUvMjAxNiAwNTo0NyBBTSwgUmFmYWVsIEouIFd5c29ja2kgd3JvdGU6DQo+ID4gT24gVGh1
-cnNkYXksIEFwcmlsIDI4LCAyMDE2IDA5OjQ4OjMwIEFNIEFhcm9uIEx1IHdyb3RlOg0KPiA+PiBP
-biAwNC8yOC8yMDE2IDAzOjM4IEFNLCBSYWZhZWwgSi4gV3lzb2NraSB3cm90ZToNCj4gPj4+IE9u
-IFdlZCwgQXByIDI3LCAyMDE2IGF0IDI6NDUgUE0sIEFhcm9uIEx1IDxhYXJvbi5sdUBpbnRlbC5j
-b20+IHdyb3RlOg0KPiA+Pj4+IHYzOg0KPiA+Pj4+IFNwbGl0IHBhdGNoIDMvMyBpbiB2MiBpbnRv
-IDIgcGF0Y2hlczogb25lIG1ha2VzIGNoYW5nZXMgdG8gYWNwaV92aWRlbw0KPiA+Pj4+IGFuZCBv
-bmUgYWRkcyB0aGUgaW50MzQwNiBkcml2ZXIgYXMgc3VnZ2VzdGVkIGJ5IFJhZmFlbC4gVGhlcmUg
-c2hvdWxkDQo+ID4+Pj4gYmUgbm8gZnVuY3Rpb25hbGl0eSBjaGFuZ2UgY29tcGFyZWQgdG8gdjIu
-DQo+ID4+Pj4NCj4gPj4+PiB2MjoNCj4gPj4+PiBUaGUgZGlzcGxheSB0aGVybWFsIGRldmljZSBy
-ZXByZXNlbnRzIHRoZSBMRUQvTENEIGRpc3BsYXkgcGFuZWwNCj4gPj4+PiB0aGF0IG1heSBvciBt
-YXkgbm90IGluY2x1ZGUgdG91Y2ggc3VwcG9ydC4gVGhlIG1haW4gZnVuY3Rpb24gb2YNCj4gPj4+
-PiB0aGUgZGlzcGxheSB0aGVybWFsIGRldmljZSBpcyB0byBhbGxvdyBjb250cm9sIG9mIHRoZSBk
-aXNwbGF5DQo+ID4+Pj4gYnJpZ2h0bmVzcyBpbiBvcmRlciB0byBhZGRyZXNzIGEgdGhlcm1hbCBj
-b25kaXRpb24gb3IgdG8gcmVkdWNlDQo+ID4+Pj4gcG93ZXIgY29uc3VtZWQgYnkgZGlzcGxheSBk
-ZXZpY2UuDQo+ID4+Pj4NCj4gPj4+PiBEdWUgdG8gdGhlIHdheSB0aGlzIHRoZXJtYWwgZGV2aWNl
-IGNoYW5nZXMgYnJpZ2h0bmVzcyBsZXZlbCBpcyBzYWlkDQo+ID4+Pj4gdG8gYmUgZGVwcmVjYXRl
-ZCBzbyB3ZSBhcmUgdXNpbmcgdGhlIHJhdyBpbnRlcmZhY2UgdG8gZG8gdGhlIGFjdHVhbA0KPiA+
-Pj4+IGJhY2tsaWdodCBjaGFuZ2UuIFRoaXMgcmVxdWlyZXMgdGhlIGJhY2tsaWdodCBjb3JlIHN1
-cHBvcnQgc28gdHdvDQo+ID4+Pj4gbmV3IEFQSXMgYXJlIGFkZGVkIGFuZCBleHBvcnRlZCBpbiBw
-YXRjaCAxLzMuIFdpdGggdGhpcywgdGhlIHByZXZpb3VzDQo+ID4+Pj4gQVBJIGJhY2tsaWdodF9k
-ZXZpY2VfcmVnaXN0ZXJlZCBjYW4gYmUgcmVtb3ZlZCBhbmQgdGhpcyBpcyBkb25lIGluDQo+ID4+
-Pj4gcGF0Y2ggMi8zLiBQYXRjaCAzLzMgYWRkcyB0aGUgbmV3IGludDM0MDYgdGhlcm1hbCBkcml2
-ZXIuDQo+ID4+Pj4NCj4gPj4+PiBUaGUgMXN0IHZlcnNpb24gaXMgaGVyZToNCj4gPj4+PiBodHRw
-Oi8vdGhyZWFkLmdtYW5lLm9yZy9nbWFuZS5saW51eC5hY3BpLmRldmVsLzcyNjE5DQo+ID4+Pj4N
-Cj4gPj4+PiBUaGlzIHdob2xlIHNlcmllcyBzaG91bGQgZ28gdGhyb3VnaCB0aGUgdGhlcm1hbCB0
-cmVlIGlmIGFwcGxpZWQuDQo+ID4+Pj4NCj4gPj4+PiBBYXJvbiBMdSAoMyk6DQo+ID4+Pj4gICB2
-aWRlbyAvIGJhY2tsaWdodDogYWRkIHR3byBBUElzIGZvciBkcml2ZXJzIHRvIHVzZQ0KPiA+Pj4+
-ICAgdmlkZW8gLyBiYWNrbGlnaHQ6IHJlbW92ZSB0aGUgYmFja2xpZ2h0X2RldmljZV9yZWdpc3Rl
-cmVkIEFQSQ0KPiA+Pj4+ICAgVGhlcm1hbDogYWRkIElOVDM0MDYgdGhlcm1hbCBkcml2ZXINCj4g
-Pj4+Pg0KPiA+Pj4+ICBkcml2ZXJzL2FjcGkvYWNwaV92aWRlby5jICAgICAgICAgICAgICAgICAg
-ICAgICAgIHwgIDgzICsrKystLS0tDQo+ID4+Pj4gIGRyaXZlcnMvYWNwaS92aWRlb19kZXRlY3Qu
-YyAgICAgICAgICAgICAgICAgICAgICAgfCAgIDIgKy0NCj4gPj4+PiAgZHJpdmVycy90aGVybWFs
-L0tjb25maWcgICAgICAgICAgICAgICAgICAgICAgICAgICB8ICAyOCArLS0NCj4gPj4+PiAgZHJp
-dmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9LY29uZmlnICAgICAgICAgICB8ICA0MiArKysr
-DQo+ID4+Pj4gIGRyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvTWFrZWZpbGUgICAgICAg
-ICAgfCAgIDEgKw0KPiA+Pj4+ICBkcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL2ludDM0
-MDZfdGhlcm1hbC5jIHwgMjM2ICsrKysrKysrKysrKysrKysrKysrKysNCj4gPj4+PiAgZHJpdmVy
-cy92aWRlby9iYWNrbGlnaHQvYmFja2xpZ2h0LmMgICAgICAgICAgICAgICB8ICAzOSArKy0tDQo+
-ID4+Pj4gIGluY2x1ZGUvYWNwaS92aWRlby5oICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-fCAgMjAgKysNCj4gPj4+PiAgaW5jbHVkZS9saW51eC9iYWNrbGlnaHQuaCAgICAgICAgICAgICAg
-ICAgICAgICAgICB8ICAgMyArLQ0KPiA+Pj4+ICA5IGZpbGVzIGNoYW5nZWQsIDM3NCBpbnNlcnRp
-b25zKCspLCA4MCBkZWxldGlvbnMoLSkNCj4gPj4+PiAgY3JlYXRlIG1vZGUgMTAwNjQ0IGRyaXZl
-cnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvS2NvbmZpZw0KPiA+Pj4+ICBjcmVhdGUgbW9kZSAx
-MDA2NDQgZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9pbnQzNDA2X3RoZXJtYWwuYw0K
-PiA+Pj4NCj4gPj4+IFRoZSBmaXJzdCB0aHJlZSBwYXRjaGVzIGluIHRoaXMgc2VyaWVzIGxvb2sg
-T0sgdG8gbWUsIHNvDQo+ID4+Pg0KPiA+Pj4gQWNrZWQtYnk6IFJhZmFlbCBKLiBXeXNvY2tpIDxy
-YWZhZWwuai53eXNvY2tpQGludGVsLmNvbT4NCj4gPj4+DQo+ID4+PiBmb3IgdGhlIFsxLTMvNF0u
-DQo+ID4+Pg0KPiA+Pj4gVGhhdCBzYWlkIGl0IG1heSBiZSBiZXR0ZXIgaWYgdGhvc2UgdGhyZWUg
-Z28gaW4gdmlhIEFDUEkuICBJIGNhbiBwdXQNCj4gPj4+IHRoZW0gaW50byBhIHNlcGFyYXRlIGJy
-YW5jaCBmb3IgUnVpIHRvIHB1bGwgZnJvbS4NCj4gPj4+DQo+ID4+PiBQbGVhc2UgbGV0IG1lIGtu
-b3cgd2hhdCB5b3UgdGhpbmsuDQo+ID4+DQo+ID4+IEkgaGF2ZSBubyBwcm9ibGVtIHdpdGggdGhh
-dC4NCj4gPiANCj4gPiBPSw0KPiA+IA0KPiA+IFsxLTMvNF0gaGF2ZSBiZWVuIHF1ZXVlZCB1cCBm
-b3IgNC43IGluIG15IHRyZWUuICBQbGVhc2UgbGV0IG1lIGtub3cgaWYgeW91DQo+ID4gd2FudCBt
-ZSB0byBleHBvc2UgdGhlIGJyYW5jaCBjb250YWluaW5nIHRoZW0uDQo+IA0KPiBUaGFua3MgYSBs
-b3QhDQo+IA0KPiBSdWksDQo+IA0KPiBEbyB5b3UgbmVlZCBhIGJyYW5jaCBzbyB0aGF0IHlvdSBj
-YW4gcHVsbCBhbmQgbWVyZ2UgNC80IG9uIHRvcCBvZiB0aGF0Pw0KPiANClJhZmFlbCwgY2FuIHlv
-dSBwbGVhc2UgdGFrZSBwYXRjaCA0LzQgYXMgd2VsbD8NCkl0IHNob3VsZCBub3QgY29uZmxpY3Qg
-d2l0aCBteSBvdGhlciB0aGVybWFsIG1hdGVyaWFsLg0KDQp0aGFua3MsDQpydWkNCg=
+On Mon, May 9, 2016 at 9:49 AM, Zhang, Rui <rui.zhang@intel.com> wrote:
+> On Fri, 2016-05-06 at 14:45 +0800, Aaron Lu wrote:
+>> On 05/05/2016 05:47 AM, Rafael J. Wysocki wrote:
+>> > On Thursday, April 28, 2016 09:48:30 AM Aaron Lu wrote:
+>> >> On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
+>> >>> On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
+>> >>>> v3:
+>> >>>> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
+>> >>>> and one adds the int3406 driver as suggested by Rafael. There should
+>> >>>> be no functionality change compared to v2.
+>> >>>>
+>> >>>> v2:
+>> >>>> The display thermal device represents the LED/LCD display panel
+>> >>>> that may or may not include touch support. The main function of
+>> >>>> the display thermal device is to allow control of the display
+>> >>>> brightness in order to address a thermal condition or to reduce
+>> >>>> power consumed by display device.
+>> >>>>
+>> >>>> Due to the way this thermal device changes brightness level is said
+>> >>>> to be deprecated so we are using the raw interface to do the actual
+>> >>>> backlight change. This requires the backlight core support so two
+>> >>>> new APIs are added and exported in patch 1/3. With this, the previous
+>> >>>> API backlight_device_registered can be removed and this is done in
+>> >>>> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
+>> >>>>
+>> >>>> The 1st version is here:
+>> >>>> http://thread.gmane.org/gmane.linux.acpi.devel/72619
+>> >>>>
+>> >>>> This whole series should go through the thermal tree if applied.
+>> >>>>
+>> >>>> Aaron Lu (3):
+>> >>>>   video / backlight: add two APIs for drivers to use
+>> >>>>   video / backlight: remove the backlight_device_registered API
+>> >>>>   Thermal: add INT3406 thermal driver
+>> >>>>
+>> >>>>  drivers/acpi/acpi_video.c                         |  83 ++++----
+>> >>>>  drivers/acpi/video_detect.c                       |   2 +-
+>> >>>>  drivers/thermal/Kconfig                           |  28 +--
+>> >>>>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
+>> >>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
+>> >>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
+>> >>>>  drivers/video/backlight/backlight.c               |  39 ++--
+>> >>>>  include/acpi/video.h                              |  20 ++
+>> >>>>  include/linux/backlight.h                         |   3 +-
+>> >>>>  9 files changed, 374 insertions(+), 80 deletions(-)
+>> >>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
+>> >>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
+>> >>>
+>> >>> The first three patches in this series look OK to me, so
+>> >>>
+>> >>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+>> >>>
+>> >>> for the [1-3/4].
+>> >>>
+>> >>> That said it may be better if those three go in via ACPI.  I can put
+>> >>> them into a separate branch for Rui to pull from.
+>> >>>
+>> >>> Please let me know what you think.
+>> >>
+>> >> I have no problem with that.
+>> >
+>> > OK
+>> >
+>> > [1-3/4] have been queued up for 4.7 in my tree.  Please let me know if you
+>> > want me to expose the branch containing them.
+>>
+>> Thanks a lot!
+>>
+>> Rui,
+>>
+>> Do you need a branch so that you can pull and merge 4/4 on top of that?
+>>
+> Rafael, can you please take patch 4/4 as well?
+> It should not conflict with my other thermal material.
+
+I can do that, but can you please ACK it for me?

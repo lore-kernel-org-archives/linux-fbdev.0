@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 02 May 2016 17:59:51 +0000
+Date: Mon, 09 May 2016 10:39:01 +0000
 Subject: [PATCH] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1462211991-18074-1-git-send-email-manuel.schoelling@gmx.de>
+Message-Id: <1462790341-3578-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1401456425-15931-1-git-send-email-manuel.schoelling@gmx.de>
 In-Reply-To: <1401456425-15931-1-git-send-email-manuel.schoelling@gmx.de>

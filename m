@@ -1,373 +1,229 @@
-From: Aaron Lu <aaron.lu@intel.com>
-Date: Mon, 09 May 2016 07:54:58 +0000
-Subject: [PATCH v3 update 4/4] Thermal: add INT3406 thermal driver
-Message-Id: <20160509075458.GA8945@aaronlu.sh.intel.com>
+From: "Zhang, Rui" <rui.zhang@intel.com>
+Date: Tue, 10 May 2016 08:08:52 +0000
+Subject: Re: [PATCH v3 update 4/4] Thermal: add INT3406 thermal driver
+Message-Id: <1462867730.25391.2.camel@rzhang1-mobl4>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
- <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
- <1462780064.10198.3.camel@rzhang1-mobl4>
-In-Reply-To: <1462780064.10198.3.camel@rzhang1-mobl4>
+	 <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
+	 <1462780064.10198.3.camel@rzhang1-mobl4>
+	 <20160509075458.GA8945@aaronlu.sh.intel.com>
+In-Reply-To: <20160509075458.GA8945@aaronlu.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Zhang, Rui" <rui.zhang@intel.com>
+To: "Lu, Aaron" <aaron.lu@intel.com>
 Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
 
-INT3406 ACPI device object resembles an ACPI video output device, but its
-_BCM is said to be deprecated and should not be used. So we will make
-use of the raw interface to do the actual cooling.
-
-Signed-off-by: Aaron Lu <aaron.lu@intel.com>
----
-update: change copyright to 2016 and license to GPL v2 as suggested by Rui.
-
- drivers/thermal/Kconfig                           |  28 +--
- drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
- drivers/thermal/int340x_thermal/Makefile          |   1 +
- drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
- 4 files changed, 282 insertions(+), 25 deletions(-)
- create mode 100644 drivers/thermal/int340x_thermal/Kconfig
- create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
-
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index c37eedc35a24..cb1ba70ceaa7 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -338,31 +338,9 @@ config INTEL_QUARK_DTS_THERMAL
- 	  hot & critical. The critical trip point default value is set by
- 	  underlying BIOS/Firmware.
- 
--config INT340X_THERMAL
--	tristate "ACPI INT340X thermal drivers"
--	depends on X86 && ACPI
--	select THERMAL_GOV_USER_SPACE
--	select ACPI_THERMAL_REL
--	select ACPI_FAN
--	select INTEL_SOC_DTS_IOSF_CORE
--	select THERMAL_WRITABLE_TRIPS
--	help
--	  Newer laptops and tablets that use ACPI may have thermal sensors and
--	  other devices with thermal control capabilities outside the core
--	  CPU/SOC, for thermal safety reasons.
--	  They are exposed for the OS to use via the INT3400 ACPI device object
--	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
--	  Enable this to expose the temperature information and cooling ability
--	  from these objects to userspace via the normal thermal framework.
--	  This means that a wide range of applications and GUI widgets can show
--	  the information to the user or use this information for making
--	  decisions. For example, the Intel Thermal Daemon can use this
--	  information to allow the user to select his laptop to run without
--	  turning on the fans.
--
--config ACPI_THERMAL_REL
--	tristate
--	depends on ACPI
-+menu "ACPI INT340X thermal drivers"
-+source drivers/thermal/int340x_thermal/Kconfig
-+endmenu
- 
- config INTEL_PCH_THERMAL
- 	tristate "Intel PCH Thermal Reporting Driver"
-diff --git a/drivers/thermal/int340x_thermal/Kconfig b/drivers/thermal/int340x_thermal/Kconfig
-new file mode 100644
-index 000000000000..0582bd12a239
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/Kconfig
-@@ -0,0 +1,42 @@
-+#
-+# ACPI INT340x thermal drivers configuration
-+#
-+
-+config INT340X_THERMAL
-+	tristate "ACPI INT340X thermal drivers"
-+	depends on X86 && ACPI
-+	select THERMAL_GOV_USER_SPACE
-+	select ACPI_THERMAL_REL
-+	select ACPI_FAN
-+	select INTEL_SOC_DTS_IOSF_CORE
-+	help
-+	  Newer laptops and tablets that use ACPI may have thermal sensors and
-+	  other devices with thermal control capabilities outside the core
-+	  CPU/SOC, for thermal safety reasons.
-+	  They are exposed for the OS to use via the INT3400 ACPI device object
-+	  as the master, and INT3401~INT340B ACPI device objects as the slaves.
-+	  Enable this to expose the temperature information and cooling ability
-+	  from these objects to userspace via the normal thermal framework.
-+	  This means that a wide range of applications and GUI widgets can show
-+	  the information to the user or use this information for making
-+	  decisions. For example, the Intel Thermal Daemon can use this
-+	  information to allow the user to select his laptop to run without
-+	  turning on the fans.
-+
-+config ACPI_THERMAL_REL
-+	tristate
-+	depends on ACPI
-+
-+if INT340X_THERMAL
-+
-+config INT3406_THERMAL
-+	tristate "ACPI INT3406 display thermal driver"
-+	depends on ACPI_VIDEO
-+	help
-+	  The display thermal device represents the LED/LCD display panel
-+	  that may or may not include touch support. The main function of
-+	  the display thermal device is to allow control of the display
-+	  brightness in order to address a thermal condition or to reduce
-+	  power consumed by display device.
-+
-+endif
-diff --git a/drivers/thermal/int340x_thermal/Makefile b/drivers/thermal/int340x_thermal/Makefile
-index ba77a34f659f..df0df055e7ff 100644
---- a/drivers/thermal/int340x_thermal/Makefile
-+++ b/drivers/thermal/int340x_thermal/Makefile
-@@ -3,4 +3,5 @@ obj-$(CONFIG_INT340X_THERMAL)	+= int340x_thermal_zone.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3402_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= int3403_thermal.o
- obj-$(CONFIG_INT340X_THERMAL)	+= processor_thermal_device.o
-+obj-$(CONFIG_INT3406_THERMAL)	+= int3406_thermal.o
- obj-$(CONFIG_ACPI_THERMAL_REL)	+= acpi_thermal_rel.o
-diff --git a/drivers/thermal/int340x_thermal/int3406_thermal.c b/drivers/thermal/int340x_thermal/int3406_thermal.c
-new file mode 100644
-index 000000000000..13d431cbd29e
---- /dev/null
-+++ b/drivers/thermal/int340x_thermal/int3406_thermal.c
-@@ -0,0 +1,236 @@
-+/*
-+ * INT3406 thermal driver for display participant device
-+ *
-+ * Copyright (C) 2016, Intel Corporation
-+ * Authors: Aaron Lu <aaron.lu@intel.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/acpi.h>
-+#include <linux/backlight.h>
-+#include <linux/thermal.h>
-+#include <acpi/video.h>
-+
-+#define INT3406_BRIGHTNESS_LIMITS_CHANGED	0x80
-+
-+struct int3406_thermal_data {
-+	int upper_limit;
-+	int upper_limit_index;
-+	int lower_limit;
-+	int lower_limit_index;
-+	acpi_handle handle;
-+	struct acpi_video_device_brightness *br;
-+	struct backlight_device *raw_bd;
-+	struct thermal_cooling_device *cooling_dev;
-+};
-+
-+static int int3406_thermal_to_raw(int level, struct int3406_thermal_data *d)
-+{
-+	int max_level = d->br->levels[d->br->count - 1];
-+	int raw_max = d->raw_bd->props.max_brightness;
-+
-+	return level * raw_max / max_level;
-+}
-+
-+static int int3406_thermal_to_acpi(int level, struct int3406_thermal_data *d)
-+{
-+	int raw_max = d->raw_bd->props.max_brightness;
-+	int max_level = d->br->levels[d->br->count - 1];
-+
-+	return level * max_level / raw_max;
-+}
-+
-+static int
-+int3406_thermal_get_max_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long *state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int index = d->lower_limit_index ? d->lower_limit_index : 2;
-+
-+	*state = d->br->count - 1 - index;
-+	return 0;
-+}
-+
-+static int
-+int3406_thermal_set_cur_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int level, raw_level;
-+
-+	if (state > d->br->count - 3)
-+		return -EINVAL;
-+
-+	state = d->br->count - 1 - state;
-+	level = d->br->levels[state];
-+
-+	if ((d->upper_limit && level > d->upper_limit) ||
-+	    (d->lower_limit && level < d->lower_limit))
-+		return -EINVAL;
-+
-+	raw_level = int3406_thermal_to_raw(level, d);
-+	return backlight_device_set_brightness(d->raw_bd, raw_level);
-+}
-+
-+static int
-+int3406_thermal_get_cur_state(struct thermal_cooling_device *cooling_dev,
-+			      unsigned long *state)
-+{
-+	struct int3406_thermal_data *d = cooling_dev->devdata;
-+	int raw_level, level, i;
-+	int *levels = d->br->levels;
-+
-+	raw_level = d->raw_bd->props.brightness;
-+	level = int3406_thermal_to_acpi(raw_level, d);
-+
-+	/*
-+	 * There is no 1:1 mapping between the firmware interface level with the
-+	 * raw interface level, we will have to find one that is close enough.
-+	 */
-+	for (i = 2; i < d->br->count; i++) {
-+		if (level < levels[i]) {
-+			if (i = 2)
-+				break;
-+			if ((level - levels[i - 1]) < (levels[i] - level))
-+				i--;
-+			break;
-+		}
-+	}
-+
-+	*state = d->br->count - 1 - i;
-+	return 0;
-+}
-+
-+static const struct thermal_cooling_device_ops video_cooling_ops = {
-+	.get_max_state = int3406_thermal_get_max_state,
-+	.get_cur_state = int3406_thermal_get_cur_state,
-+	.set_cur_state = int3406_thermal_set_cur_state,
-+};
-+
-+static int int3406_thermal_get_index(int *array, int nr, int value)
-+{
-+	int i;
-+
-+	for (i = 0; i < nr; i++) {
-+		if (array[i] = value)
-+			break;
-+	}
-+	return i = nr ? -ENOENT : i;
-+}
-+
-+static void int3406_thermal_get_limit(struct int3406_thermal_data *d)
-+{
-+	acpi_status status;
-+	unsigned long long lower_limit, upper_limit;
-+	int index;
-+
-+	status = acpi_evaluate_integer(d->handle, "DDDL", NULL, &lower_limit);
-+	if (ACPI_SUCCESS(status)) {
-+		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-+						  lower_limit);
-+		if (index > 0) {
-+			d->lower_limit = (int)lower_limit;
-+			d->lower_limit_index = index;
-+		}
-+	}
-+
-+	status = acpi_evaluate_integer(d->handle, "DDPC", NULL, &upper_limit);
-+	if (ACPI_SUCCESS(status)) {
-+		index = int3406_thermal_get_index(d->br->levels, d->br->count,
-+						  upper_limit);
-+		if (index > 0) {
-+			d->upper_limit = (int)upper_limit;
-+			d->upper_limit_index = index;
-+		}
-+	}
-+}
-+
-+static void int3406_notify(acpi_handle handle, u32 event, void *data)
-+{
-+	if (event = INT3406_BRIGHTNESS_LIMITS_CHANGED)
-+		int3406_thermal_get_limit(data);
-+}
-+
-+static int int3406_thermal_probe(struct platform_device *pdev)
-+{
-+	struct acpi_device *adev = ACPI_COMPANION(&pdev->dev);
-+	struct int3406_thermal_data *d;
-+	struct backlight_device *bd;
-+	int ret;
-+
-+	if (!ACPI_HANDLE(&pdev->dev))
-+		return -ENODEV;
-+
-+	d = devm_kzalloc(&pdev->dev, sizeof(*d), GFP_KERNEL);
-+	if (!d)
-+		return -ENOMEM;
-+	d->handle = ACPI_HANDLE(&pdev->dev);
-+
-+	bd = backlight_device_get_by_type(BACKLIGHT_RAW);
-+	if (!bd)
-+		return -ENODEV;
-+	d->raw_bd = bd;
-+
-+	ret = acpi_video_get_levels(ACPI_COMPANION(&pdev->dev), &d->br);
-+	if (ret)
-+		return ret;
-+
-+	int3406_thermal_get_limit(d);
-+
-+	d->cooling_dev = thermal_cooling_device_register(acpi_device_bid(adev),
-+							 d, &video_cooling_ops);
-+	if (IS_ERR(d->cooling_dev))
-+		goto err;
-+
-+	ret = acpi_install_notify_handler(adev->handle, ACPI_DEVICE_NOTIFY,
-+					  int3406_notify, d);
-+	if (ret)
-+		goto err_cdev;
-+
-+	platform_set_drvdata(pdev, d);
-+
-+	return 0;
-+
-+err_cdev:
-+	thermal_cooling_device_unregister(d->cooling_dev);
-+err:
-+	kfree(d->br);
-+	return -ENODEV;
-+}
-+
-+static int int3406_thermal_remove(struct platform_device *pdev)
-+{
-+	struct int3406_thermal_data *d = platform_get_drvdata(pdev);
-+
-+	thermal_cooling_device_unregister(d->cooling_dev);
-+	kfree(d->br);
-+	return 0;
-+}
-+
-+static const struct acpi_device_id int3406_thermal_match[] = {
-+	{"INT3406", 0},
-+	{}
-+};
-+
-+MODULE_DEVICE_TABLE(acpi, int3406_thermal_match);
-+
-+static struct platform_driver int3406_thermal_driver = {
-+	.probe = int3406_thermal_probe,
-+	.remove = int3406_thermal_remove,
-+	.driver = {
-+		   .name = "int3406 thermal",
-+		   .owner = THIS_MODULE,
-+		   .acpi_match_table = int3406_thermal_match,
-+		   },
-+};
-+
-+module_platform_driver(int3406_thermal_driver);
-+
-+MODULE_DESCRIPTION("INT3406 Thermal driver");
-+MODULE_LICENSE("GPL v2");
--- 
-2.5.5
-
+T24gTW9uLCAyMDE2LTA1LTA5IGF0IDE1OjU0ICswODAwLCBBYXJvbiBMdSB3cm90ZToNCj4gSU5U
+MzQwNiBBQ1BJIGRldmljZSBvYmplY3QgcmVzZW1ibGVzIGFuIEFDUEkgdmlkZW8gb3V0cHV0IGRl
+dmljZSwgYnV0IGl0cw0KPiBfQkNNIGlzIHNhaWQgdG8gYmUgZGVwcmVjYXRlZCBhbmQgc2hvdWxk
+IG5vdCBiZSB1c2VkLiBTbyB3ZSB3aWxsIG1ha2UNCj4gdXNlIG9mIHRoZSByYXcgaW50ZXJmYWNl
+IHRvIGRvIHRoZSBhY3R1YWwgY29vbGluZy4NCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEFhcm9uIEx1
+IDxhYXJvbi5sdUBpbnRlbC5jb20+DQoNCkFja2VkLWJ5OiBaaGFuZyBSdWkgPHJ1aS56aGFuZ0Bp
+bnRlbC5jb20+DQo+IC0tLQ0KPiB1cGRhdGU6IGNoYW5nZSBjb3B5cmlnaHQgdG8gMjAxNiBhbmQg
+bGljZW5zZSB0byBHUEwgdjIgYXMgc3VnZ2VzdGVkIGJ5IFJ1aS4NCj4gDQo+ICBkcml2ZXJzL3Ro
+ZXJtYWwvS2NvbmZpZyAgICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDI4ICstLQ0KPiAgZHJp
+dmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9LY29uZmlnICAgICAgICAgICB8ICA0MiArKysr
+DQo+ICBkcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL01ha2VmaWxlICAgICAgICAgIHwg
+ICAxICsNCj4gIGRyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvaW50MzQwNl90aGVybWFs
+LmMgfCAyMzYgKysrKysrKysrKysrKysrKysrKysrKw0KPiAgNCBmaWxlcyBjaGFuZ2VkLCAyODIg
+aW5zZXJ0aW9ucygrKSwgMjUgZGVsZXRpb25zKC0pDQo+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJp
+dmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9LY29uZmlnDQo+ICBjcmVhdGUgbW9kZSAxMDA2
+NDQgZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9pbnQzNDA2X3RoZXJtYWwuYw0KPiAN
+Cj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnIGIvZHJpdmVycy90aGVybWFs
+L0tjb25maWcNCj4gaW5kZXggYzM3ZWVkYzM1YTI0Li5jYjFiYTcwY2VhYTcgMTAwNjQ0DQo+IC0t
+LSBhL2RyaXZlcnMvdGhlcm1hbC9LY29uZmlnDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9LY29u
+ZmlnDQo+IEBAIC0zMzgsMzEgKzMzOCw5IEBAIGNvbmZpZyBJTlRFTF9RVUFSS19EVFNfVEhFUk1B
+TA0KPiAgCSAgaG90ICYgY3JpdGljYWwuIFRoZSBjcml0aWNhbCB0cmlwIHBvaW50IGRlZmF1bHQg
+dmFsdWUgaXMgc2V0IGJ5DQo+ICAJICB1bmRlcmx5aW5nIEJJT1MvRmlybXdhcmUuDQo+ICANCj4g
+LWNvbmZpZyBJTlQzNDBYX1RIRVJNQUwNCj4gLQl0cmlzdGF0ZSAiQUNQSSBJTlQzNDBYIHRoZXJt
+YWwgZHJpdmVycyINCj4gLQlkZXBlbmRzIG9uIFg4NiAmJiBBQ1BJDQo+IC0Jc2VsZWN0IFRIRVJN
+QUxfR09WX1VTRVJfU1BBQ0UNCj4gLQlzZWxlY3QgQUNQSV9USEVSTUFMX1JFTA0KPiAtCXNlbGVj
+dCBBQ1BJX0ZBTg0KPiAtCXNlbGVjdCBJTlRFTF9TT0NfRFRTX0lPU0ZfQ09SRQ0KPiAtCXNlbGVj
+dCBUSEVSTUFMX1dSSVRBQkxFX1RSSVBTDQo+IC0JaGVscA0KPiAtCSAgTmV3ZXIgbGFwdG9wcyBh
+bmQgdGFibGV0cyB0aGF0IHVzZSBBQ1BJIG1heSBoYXZlIHRoZXJtYWwgc2Vuc29ycyBhbmQNCj4g
+LQkgIG90aGVyIGRldmljZXMgd2l0aCB0aGVybWFsIGNvbnRyb2wgY2FwYWJpbGl0aWVzIG91dHNp
+ZGUgdGhlIGNvcmUNCj4gLQkgIENQVS9TT0MsIGZvciB0aGVybWFsIHNhZmV0eSByZWFzb25zLg0K
+PiAtCSAgVGhleSBhcmUgZXhwb3NlZCBmb3IgdGhlIE9TIHRvIHVzZSB2aWEgdGhlIElOVDM0MDAg
+QUNQSSBkZXZpY2Ugb2JqZWN0DQo+IC0JICBhcyB0aGUgbWFzdGVyLCBhbmQgSU5UMzQwMX5JTlQz
+NDBCIEFDUEkgZGV2aWNlIG9iamVjdHMgYXMgdGhlIHNsYXZlcy4NCj4gLQkgIEVuYWJsZSB0aGlz
+IHRvIGV4cG9zZSB0aGUgdGVtcGVyYXR1cmUgaW5mb3JtYXRpb24gYW5kIGNvb2xpbmcgYWJpbGl0
+eQ0KPiAtCSAgZnJvbSB0aGVzZSBvYmplY3RzIHRvIHVzZXJzcGFjZSB2aWEgdGhlIG5vcm1hbCB0
+aGVybWFsIGZyYW1ld29yay4NCj4gLQkgIFRoaXMgbWVhbnMgdGhhdCBhIHdpZGUgcmFuZ2Ugb2Yg
+YXBwbGljYXRpb25zIGFuZCBHVUkgd2lkZ2V0cyBjYW4gc2hvdw0KPiAtCSAgdGhlIGluZm9ybWF0
+aW9uIHRvIHRoZSB1c2VyIG9yIHVzZSB0aGlzIGluZm9ybWF0aW9uIGZvciBtYWtpbmcNCj4gLQkg
+IGRlY2lzaW9ucy4gRm9yIGV4YW1wbGUsIHRoZSBJbnRlbCBUaGVybWFsIERhZW1vbiBjYW4gdXNl
+IHRoaXMNCj4gLQkgIGluZm9ybWF0aW9uIHRvIGFsbG93IHRoZSB1c2VyIHRvIHNlbGVjdCBoaXMg
+bGFwdG9wIHRvIHJ1biB3aXRob3V0DQo+IC0JICB0dXJuaW5nIG9uIHRoZSBmYW5zLg0KPiAtDQo+
+IC1jb25maWcgQUNQSV9USEVSTUFMX1JFTA0KPiAtCXRyaXN0YXRlDQo+IC0JZGVwZW5kcyBvbiBB
+Q1BJDQo+ICttZW51ICJBQ1BJIElOVDM0MFggdGhlcm1hbCBkcml2ZXJzIg0KPiArc291cmNlIGRy
+aXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvS2NvbmZpZw0KPiArZW5kbWVudQ0KPiAgDQo+
+ICBjb25maWcgSU5URUxfUENIX1RIRVJNQUwNCj4gIAl0cmlzdGF0ZSAiSW50ZWwgUENIIFRoZXJt
+YWwgUmVwb3J0aW5nIERyaXZlciINCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbnQz
+NDB4X3RoZXJtYWwvS2NvbmZpZyBiL2RyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvS2Nv
+bmZpZw0KPiBuZXcgZmlsZSBtb2RlIDEwMDY0NA0KPiBpbmRleCAwMDAwMDAwMDAwMDAuLjA1ODJi
+ZDEyYTIzOQ0KPiAtLS0gL2Rldi9udWxsDQo+ICsrKyBiL2RyaXZlcnMvdGhlcm1hbC9pbnQzNDB4
+X3RoZXJtYWwvS2NvbmZpZw0KPiBAQCAtMCwwICsxLDQyIEBADQo+ICsjDQo+ICsjIEFDUEkgSU5U
+MzQweCB0aGVybWFsIGRyaXZlcnMgY29uZmlndXJhdGlvbg0KPiArIw0KPiArDQo+ICtjb25maWcg
+SU5UMzQwWF9USEVSTUFMDQo+ICsJdHJpc3RhdGUgIkFDUEkgSU5UMzQwWCB0aGVybWFsIGRyaXZl
+cnMiDQo+ICsJZGVwZW5kcyBvbiBYODYgJiYgQUNQSQ0KPiArCXNlbGVjdCBUSEVSTUFMX0dPVl9V
+U0VSX1NQQUNFDQo+ICsJc2VsZWN0IEFDUElfVEhFUk1BTF9SRUwNCj4gKwlzZWxlY3QgQUNQSV9G
+QU4NCj4gKwlzZWxlY3QgSU5URUxfU09DX0RUU19JT1NGX0NPUkUNCj4gKwloZWxwDQo+ICsJICBO
+ZXdlciBsYXB0b3BzIGFuZCB0YWJsZXRzIHRoYXQgdXNlIEFDUEkgbWF5IGhhdmUgdGhlcm1hbCBz
+ZW5zb3JzIGFuZA0KPiArCSAgb3RoZXIgZGV2aWNlcyB3aXRoIHRoZXJtYWwgY29udHJvbCBjYXBh
+YmlsaXRpZXMgb3V0c2lkZSB0aGUgY29yZQ0KPiArCSAgQ1BVL1NPQywgZm9yIHRoZXJtYWwgc2Fm
+ZXR5IHJlYXNvbnMuDQo+ICsJICBUaGV5IGFyZSBleHBvc2VkIGZvciB0aGUgT1MgdG8gdXNlIHZp
+YSB0aGUgSU5UMzQwMCBBQ1BJIGRldmljZSBvYmplY3QNCj4gKwkgIGFzIHRoZSBtYXN0ZXIsIGFu
+ZCBJTlQzNDAxfklOVDM0MEIgQUNQSSBkZXZpY2Ugb2JqZWN0cyBhcyB0aGUgc2xhdmVzLg0KPiAr
+CSAgRW5hYmxlIHRoaXMgdG8gZXhwb3NlIHRoZSB0ZW1wZXJhdHVyZSBpbmZvcm1hdGlvbiBhbmQg
+Y29vbGluZyBhYmlsaXR5DQo+ICsJICBmcm9tIHRoZXNlIG9iamVjdHMgdG8gdXNlcnNwYWNlIHZp
+YSB0aGUgbm9ybWFsIHRoZXJtYWwgZnJhbWV3b3JrLg0KPiArCSAgVGhpcyBtZWFucyB0aGF0IGEg
+d2lkZSByYW5nZSBvZiBhcHBsaWNhdGlvbnMgYW5kIEdVSSB3aWRnZXRzIGNhbiBzaG93DQo+ICsJ
+ICB0aGUgaW5mb3JtYXRpb24gdG8gdGhlIHVzZXIgb3IgdXNlIHRoaXMgaW5mb3JtYXRpb24gZm9y
+IG1ha2luZw0KPiArCSAgZGVjaXNpb25zLiBGb3IgZXhhbXBsZSwgdGhlIEludGVsIFRoZXJtYWwg
+RGFlbW9uIGNhbiB1c2UgdGhpcw0KPiArCSAgaW5mb3JtYXRpb24gdG8gYWxsb3cgdGhlIHVzZXIg
+dG8gc2VsZWN0IGhpcyBsYXB0b3AgdG8gcnVuIHdpdGhvdXQNCj4gKwkgIHR1cm5pbmcgb24gdGhl
+IGZhbnMuDQo+ICsNCj4gK2NvbmZpZyBBQ1BJX1RIRVJNQUxfUkVMDQo+ICsJdHJpc3RhdGUNCj4g
+KwlkZXBlbmRzIG9uIEFDUEkNCj4gKw0KPiAraWYgSU5UMzQwWF9USEVSTUFMDQo+ICsNCj4gK2Nv
+bmZpZyBJTlQzNDA2X1RIRVJNQUwNCj4gKwl0cmlzdGF0ZSAiQUNQSSBJTlQzNDA2IGRpc3BsYXkg
+dGhlcm1hbCBkcml2ZXIiDQo+ICsJZGVwZW5kcyBvbiBBQ1BJX1ZJREVPDQo+ICsJaGVscA0KPiAr
+CSAgVGhlIGRpc3BsYXkgdGhlcm1hbCBkZXZpY2UgcmVwcmVzZW50cyB0aGUgTEVEL0xDRCBkaXNw
+bGF5IHBhbmVsDQo+ICsJICB0aGF0IG1heSBvciBtYXkgbm90IGluY2x1ZGUgdG91Y2ggc3VwcG9y
+dC4gVGhlIG1haW4gZnVuY3Rpb24gb2YNCj4gKwkgIHRoZSBkaXNwbGF5IHRoZXJtYWwgZGV2aWNl
+IGlzIHRvIGFsbG93IGNvbnRyb2wgb2YgdGhlIGRpc3BsYXkNCj4gKwkgIGJyaWdodG5lc3MgaW4g
+b3JkZXIgdG8gYWRkcmVzcyBhIHRoZXJtYWwgY29uZGl0aW9uIG9yIHRvIHJlZHVjZQ0KPiArCSAg
+cG93ZXIgY29uc3VtZWQgYnkgZGlzcGxheSBkZXZpY2UuDQo+ICsNCj4gK2VuZGlmDQo+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL01ha2VmaWxlIGIvZHJpdmVy
+cy90aGVybWFsL2ludDM0MHhfdGhlcm1hbC9NYWtlZmlsZQ0KPiBpbmRleCBiYTc3YTM0ZjY1OWYu
+LmRmMGRmMDU1ZTdmZiAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhl
+cm1hbC9NYWtlZmlsZQ0KPiArKysgYi9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL01h
+a2VmaWxlDQo+IEBAIC0zLDQgKzMsNSBAQCBvYmotJChDT05GSUdfSU5UMzQwWF9USEVSTUFMKQkr
+PSBpbnQzNDB4X3RoZXJtYWxfem9uZS5vDQo+ICBvYmotJChDT05GSUdfSU5UMzQwWF9USEVSTUFM
+KQkrPSBpbnQzNDAyX3RoZXJtYWwubw0KPiAgb2JqLSQoQ09ORklHX0lOVDM0MFhfVEhFUk1BTCkJ
+Kz0gaW50MzQwM190aGVybWFsLm8NCj4gIG9iai0kKENPTkZJR19JTlQzNDBYX1RIRVJNQUwpCSs9
+IHByb2Nlc3Nvcl90aGVybWFsX2RldmljZS5vDQo+ICtvYmotJChDT05GSUdfSU5UMzQwNl9USEVS
+TUFMKQkrPSBpbnQzNDA2X3RoZXJtYWwubw0KPiAgb2JqLSQoQ09ORklHX0FDUElfVEhFUk1BTF9S
+RUwpCSs9IGFjcGlfdGhlcm1hbF9yZWwubw0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy90aGVybWFs
+L2ludDM0MHhfdGhlcm1hbC9pbnQzNDA2X3RoZXJtYWwuYyBiL2RyaXZlcnMvdGhlcm1hbC9pbnQz
+NDB4X3RoZXJtYWwvaW50MzQwNl90aGVybWFsLmMNCj4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4g
+aW5kZXggMDAwMDAwMDAwMDAwLi4xM2Q0MzFjYmQyOWUNCj4gLS0tIC9kZXYvbnVsbA0KPiArKysg
+Yi9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL2ludDM0MDZfdGhlcm1hbC5jDQo+IEBA
+IC0wLDAgKzEsMjM2IEBADQo+ICsvKg0KPiArICogSU5UMzQwNiB0aGVybWFsIGRyaXZlciBmb3Ig
+ZGlzcGxheSBwYXJ0aWNpcGFudCBkZXZpY2UNCj4gKyAqDQo+ICsgKiBDb3B5cmlnaHQgKEMpIDIw
+MTYsIEludGVsIENvcnBvcmF0aW9uDQo+ICsgKiBBdXRob3JzOiBBYXJvbiBMdSA8YWFyb24ubHVA
+aW50ZWwuY29tPg0KPiArICoNCj4gKyAqIFRoaXMgcHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5
+b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IgbW9kaWZ5DQo+ICsgKiBpdCB1bmRlciB0aGUg
+dGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIHZlcnNpb24gMiBhcw0KPiAr
+ICogcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb24uDQo+ICsgKg0KPiAr
+ICovDQo+ICsNCj4gKyNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCj4gKyNpbmNsdWRlIDxsaW51
+eC9wbGF0Zm9ybV9kZXZpY2UuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC9hY3BpLmg+DQo+ICsjaW5j
+bHVkZSA8bGludXgvYmFja2xpZ2h0Lmg+DQo+ICsjaW5jbHVkZSA8bGludXgvdGhlcm1hbC5oPg0K
+PiArI2luY2x1ZGUgPGFjcGkvdmlkZW8uaD4NCj4gKw0KPiArI2RlZmluZSBJTlQzNDA2X0JSSUdI
+VE5FU1NfTElNSVRTX0NIQU5HRUQJMHg4MA0KPiArDQo+ICtzdHJ1Y3QgaW50MzQwNl90aGVybWFs
+X2RhdGEgew0KPiArCWludCB1cHBlcl9saW1pdDsNCj4gKwlpbnQgdXBwZXJfbGltaXRfaW5kZXg7
+DQo+ICsJaW50IGxvd2VyX2xpbWl0Ow0KPiArCWludCBsb3dlcl9saW1pdF9pbmRleDsNCj4gKwlh
+Y3BpX2hhbmRsZSBoYW5kbGU7DQo+ICsJc3RydWN0IGFjcGlfdmlkZW9fZGV2aWNlX2JyaWdodG5l
+c3MgKmJyOw0KPiArCXN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlICpyYXdfYmQ7DQo+ICsJc3RydWN0
+IHRoZXJtYWxfY29vbGluZ19kZXZpY2UgKmNvb2xpbmdfZGV2Ow0KPiArfTsNCj4gKw0KPiArc3Rh
+dGljIGludCBpbnQzNDA2X3RoZXJtYWxfdG9fcmF3KGludCBsZXZlbCwgc3RydWN0IGludDM0MDZf
+dGhlcm1hbF9kYXRhICpkKQ0KPiArew0KPiArCWludCBtYXhfbGV2ZWwgPSBkLT5ici0+bGV2ZWxz
+W2QtPmJyLT5jb3VudCAtIDFdOw0KPiArCWludCByYXdfbWF4ID0gZC0+cmF3X2JkLT5wcm9wcy5t
+YXhfYnJpZ2h0bmVzczsNCj4gKw0KPiArCXJldHVybiBsZXZlbCAqIHJhd19tYXggLyBtYXhfbGV2
+ZWw7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQgaW50MzQwNl90aGVybWFsX3RvX2FjcGkoaW50
+IGxldmVsLCBzdHJ1Y3QgaW50MzQwNl90aGVybWFsX2RhdGEgKmQpDQo+ICt7DQo+ICsJaW50IHJh
+d19tYXggPSBkLT5yYXdfYmQtPnByb3BzLm1heF9icmlnaHRuZXNzOw0KPiArCWludCBtYXhfbGV2
+ZWwgPSBkLT5ici0+bGV2ZWxzW2QtPmJyLT5jb3VudCAtIDFdOw0KPiArDQo+ICsJcmV0dXJuIGxl
+dmVsICogbWF4X2xldmVsIC8gcmF3X21heDsNCj4gK30NCj4gKw0KPiArc3RhdGljIGludA0KPiAr
+aW50MzQwNl90aGVybWFsX2dldF9tYXhfc3RhdGUoc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZp
+Y2UgKmNvb2xpbmdfZGV2LA0KPiArCQkJICAgICAgdW5zaWduZWQgbG9uZyAqc3RhdGUpDQo+ICt7
+DQo+ICsJc3RydWN0IGludDM0MDZfdGhlcm1hbF9kYXRhICpkID0gY29vbGluZ19kZXYtPmRldmRh
+dGE7DQo+ICsJaW50IGluZGV4ID0gZC0+bG93ZXJfbGltaXRfaW5kZXggPyBkLT5sb3dlcl9saW1p
+dF9pbmRleCA6IDI7DQo+ICsNCj4gKwkqc3RhdGUgPSBkLT5ici0+Y291bnQgLSAxIC0gaW5kZXg7
+DQo+ICsJcmV0dXJuIDA7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQNCj4gK2ludDM0MDZfdGhl
+cm1hbF9zZXRfY3VyX3N0YXRlKHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICpjb29saW5n
+X2RldiwNCj4gKwkJCSAgICAgIHVuc2lnbmVkIGxvbmcgc3RhdGUpDQo+ICt7DQo+ICsJc3RydWN0
+IGludDM0MDZfdGhlcm1hbF9kYXRhICpkID0gY29vbGluZ19kZXYtPmRldmRhdGE7DQo+ICsJaW50
+IGxldmVsLCByYXdfbGV2ZWw7DQo+ICsNCj4gKwlpZiAoc3RhdGUgPiBkLT5ici0+Y291bnQgLSAz
+KQ0KPiArCQlyZXR1cm4gLUVJTlZBTDsNCj4gKw0KPiArCXN0YXRlID0gZC0+YnItPmNvdW50IC0g
+MSAtIHN0YXRlOw0KPiArCWxldmVsID0gZC0+YnItPmxldmVsc1tzdGF0ZV07DQo+ICsNCj4gKwlp
+ZiAoKGQtPnVwcGVyX2xpbWl0ICYmIGxldmVsID4gZC0+dXBwZXJfbGltaXQpIHx8DQo+ICsJICAg
+IChkLT5sb3dlcl9saW1pdCAmJiBsZXZlbCA8IGQtPmxvd2VyX2xpbWl0KSkNCj4gKwkJcmV0dXJu
+IC1FSU5WQUw7DQo+ICsNCj4gKwlyYXdfbGV2ZWwgPSBpbnQzNDA2X3RoZXJtYWxfdG9fcmF3KGxl
+dmVsLCBkKTsNCj4gKwlyZXR1cm4gYmFja2xpZ2h0X2RldmljZV9zZXRfYnJpZ2h0bmVzcyhkLT5y
+YXdfYmQsIHJhd19sZXZlbCk7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBpbnQNCj4gK2ludDM0MDZf
+dGhlcm1hbF9nZXRfY3VyX3N0YXRlKHN0cnVjdCB0aGVybWFsX2Nvb2xpbmdfZGV2aWNlICpjb29s
+aW5nX2RldiwNCj4gKwkJCSAgICAgIHVuc2lnbmVkIGxvbmcgKnN0YXRlKQ0KPiArew0KPiArCXN0
+cnVjdCBpbnQzNDA2X3RoZXJtYWxfZGF0YSAqZCA9IGNvb2xpbmdfZGV2LT5kZXZkYXRhOw0KPiAr
+CWludCByYXdfbGV2ZWwsIGxldmVsLCBpOw0KPiArCWludCAqbGV2ZWxzID0gZC0+YnItPmxldmVs
+czsNCj4gKw0KPiArCXJhd19sZXZlbCA9IGQtPnJhd19iZC0+cHJvcHMuYnJpZ2h0bmVzczsNCj4g
+KwlsZXZlbCA9IGludDM0MDZfdGhlcm1hbF90b19hY3BpKHJhd19sZXZlbCwgZCk7DQo+ICsNCj4g
+KwkvKg0KPiArCSAqIFRoZXJlIGlzIG5vIDE6MSBtYXBwaW5nIGJldHdlZW4gdGhlIGZpcm13YXJl
+IGludGVyZmFjZSBsZXZlbCB3aXRoIHRoZQ0KPiArCSAqIHJhdyBpbnRlcmZhY2UgbGV2ZWwsIHdl
+IHdpbGwgaGF2ZSB0byBmaW5kIG9uZSB0aGF0IGlzIGNsb3NlIGVub3VnaC4NCj4gKwkgKi8NCj4g
+Kwlmb3IgKGkgPSAyOyBpIDwgZC0+YnItPmNvdW50OyBpKyspIHsNCj4gKwkJaWYgKGxldmVsIDwg
+bGV2ZWxzW2ldKSB7DQo+ICsJCQlpZiAoaSA9PSAyKQ0KPiArCQkJCWJyZWFrOw0KPiArCQkJaWYg
+KChsZXZlbCAtIGxldmVsc1tpIC0gMV0pIDwgKGxldmVsc1tpXSAtIGxldmVsKSkNCj4gKwkJCQlp
+LS07DQo+ICsJCQlicmVhazsNCj4gKwkJfQ0KPiArCX0NCj4gKw0KPiArCSpzdGF0ZSA9IGQtPmJy
+LT5jb3VudCAtIDEgLSBpOw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgY29u
+c3Qgc3RydWN0IHRoZXJtYWxfY29vbGluZ19kZXZpY2Vfb3BzIHZpZGVvX2Nvb2xpbmdfb3BzID0g
+ew0KPiArCS5nZXRfbWF4X3N0YXRlID0gaW50MzQwNl90aGVybWFsX2dldF9tYXhfc3RhdGUsDQo+
+ICsJLmdldF9jdXJfc3RhdGUgPSBpbnQzNDA2X3RoZXJtYWxfZ2V0X2N1cl9zdGF0ZSwNCj4gKwku
+c2V0X2N1cl9zdGF0ZSA9IGludDM0MDZfdGhlcm1hbF9zZXRfY3VyX3N0YXRlLA0KPiArfTsNCj4g
+Kw0KPiArc3RhdGljIGludCBpbnQzNDA2X3RoZXJtYWxfZ2V0X2luZGV4KGludCAqYXJyYXksIGlu
+dCBuciwgaW50IHZhbHVlKQ0KPiArew0KPiArCWludCBpOw0KPiArDQo+ICsJZm9yIChpID0gMDsg
+aSA8IG5yOyBpKyspIHsNCj4gKwkJaWYgKGFycmF5W2ldID09IHZhbHVlKQ0KPiArCQkJYnJlYWs7
+DQo+ICsJfQ0KPiArCXJldHVybiBpID09IG5yID8gLUVOT0VOVCA6IGk7DQo+ICt9DQo+ICsNCj4g
+K3N0YXRpYyB2b2lkIGludDM0MDZfdGhlcm1hbF9nZXRfbGltaXQoc3RydWN0IGludDM0MDZfdGhl
+cm1hbF9kYXRhICpkKQ0KPiArew0KPiArCWFjcGlfc3RhdHVzIHN0YXR1czsNCj4gKwl1bnNpZ25l
+ZCBsb25nIGxvbmcgbG93ZXJfbGltaXQsIHVwcGVyX2xpbWl0Ow0KPiArCWludCBpbmRleDsNCj4g
+Kw0KPiArCXN0YXR1cyA9IGFjcGlfZXZhbHVhdGVfaW50ZWdlcihkLT5oYW5kbGUsICJERERMIiwg
+TlVMTCwgJmxvd2VyX2xpbWl0KTsNCj4gKwlpZiAoQUNQSV9TVUNDRVNTKHN0YXR1cykpIHsNCj4g
+KwkJaW5kZXggPSBpbnQzNDA2X3RoZXJtYWxfZ2V0X2luZGV4KGQtPmJyLT5sZXZlbHMsIGQtPmJy
+LT5jb3VudCwNCj4gKwkJCQkJCSAgbG93ZXJfbGltaXQpOw0KPiArCQlpZiAoaW5kZXggPiAwKSB7
+DQo+ICsJCQlkLT5sb3dlcl9saW1pdCA9IChpbnQpbG93ZXJfbGltaXQ7DQo+ICsJCQlkLT5sb3dl
+cl9saW1pdF9pbmRleCA9IGluZGV4Ow0KPiArCQl9DQo+ICsJfQ0KPiArDQo+ICsJc3RhdHVzID0g
+YWNwaV9ldmFsdWF0ZV9pbnRlZ2VyKGQtPmhhbmRsZSwgIkREUEMiLCBOVUxMLCAmdXBwZXJfbGlt
+aXQpOw0KPiArCWlmIChBQ1BJX1NVQ0NFU1Moc3RhdHVzKSkgew0KPiArCQlpbmRleCA9IGludDM0
+MDZfdGhlcm1hbF9nZXRfaW5kZXgoZC0+YnItPmxldmVscywgZC0+YnItPmNvdW50LA0KPiArCQkJ
+CQkJICB1cHBlcl9saW1pdCk7DQo+ICsJCWlmIChpbmRleCA+IDApIHsNCj4gKwkJCWQtPnVwcGVy
+X2xpbWl0ID0gKGludCl1cHBlcl9saW1pdDsNCj4gKwkJCWQtPnVwcGVyX2xpbWl0X2luZGV4ID0g
+aW5kZXg7DQo+ICsJCX0NCj4gKwl9DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyB2b2lkIGludDM0MDZf
+bm90aWZ5KGFjcGlfaGFuZGxlIGhhbmRsZSwgdTMyIGV2ZW50LCB2b2lkICpkYXRhKQ0KPiArew0K
+PiArCWlmIChldmVudCA9PSBJTlQzNDA2X0JSSUdIVE5FU1NfTElNSVRTX0NIQU5HRUQpDQo+ICsJ
+CWludDM0MDZfdGhlcm1hbF9nZXRfbGltaXQoZGF0YSk7DQo+ICt9DQo+ICsNCj4gK3N0YXRpYyBp
+bnQgaW50MzQwNl90aGVybWFsX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+
+ICt7DQo+ICsJc3RydWN0IGFjcGlfZGV2aWNlICphZGV2ID0gQUNQSV9DT01QQU5JT04oJnBkZXYt
+PmRldik7DQo+ICsJc3RydWN0IGludDM0MDZfdGhlcm1hbF9kYXRhICpkOw0KPiArCXN0cnVjdCBi
+YWNrbGlnaHRfZGV2aWNlICpiZDsNCj4gKwlpbnQgcmV0Ow0KPiArDQo+ICsJaWYgKCFBQ1BJX0hB
+TkRMRSgmcGRldi0+ZGV2KSkNCj4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ICsNCj4gKwlkID0gZGV2
+bV9remFsbG9jKCZwZGV2LT5kZXYsIHNpemVvZigqZCksIEdGUF9LRVJORUwpOw0KPiArCWlmICgh
+ZCkNCj4gKwkJcmV0dXJuIC1FTk9NRU07DQo+ICsJZC0+aGFuZGxlID0gQUNQSV9IQU5ETEUoJnBk
+ZXYtPmRldik7DQo+ICsNCj4gKwliZCA9IGJhY2tsaWdodF9kZXZpY2VfZ2V0X2J5X3R5cGUoQkFD
+S0xJR0hUX1JBVyk7DQo+ICsJaWYgKCFiZCkNCj4gKwkJcmV0dXJuIC1FTk9ERVY7DQo+ICsJZC0+
+cmF3X2JkID0gYmQ7DQo+ICsNCj4gKwlyZXQgPSBhY3BpX3ZpZGVvX2dldF9sZXZlbHMoQUNQSV9D
+T01QQU5JT04oJnBkZXYtPmRldiksICZkLT5icik7DQo+ICsJaWYgKHJldCkNCj4gKwkJcmV0dXJu
+IHJldDsNCj4gKw0KPiArCWludDM0MDZfdGhlcm1hbF9nZXRfbGltaXQoZCk7DQo+ICsNCj4gKwlk
+LT5jb29saW5nX2RldiA9IHRoZXJtYWxfY29vbGluZ19kZXZpY2VfcmVnaXN0ZXIoYWNwaV9kZXZp
+Y2VfYmlkKGFkZXYpLA0KPiArCQkJCQkJCSBkLCAmdmlkZW9fY29vbGluZ19vcHMpOw0KPiArCWlm
+IChJU19FUlIoZC0+Y29vbGluZ19kZXYpKQ0KPiArCQlnb3RvIGVycjsNCj4gKw0KPiArCXJldCA9
+IGFjcGlfaW5zdGFsbF9ub3RpZnlfaGFuZGxlcihhZGV2LT5oYW5kbGUsIEFDUElfREVWSUNFX05P
+VElGWSwNCj4gKwkJCQkJICBpbnQzNDA2X25vdGlmeSwgZCk7DQo+ICsJaWYgKHJldCkNCj4gKwkJ
+Z290byBlcnJfY2RldjsNCj4gKw0KPiArCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYsIGQpOw0K
+PiArDQo+ICsJcmV0dXJuIDA7DQo+ICsNCj4gK2Vycl9jZGV2Og0KPiArCXRoZXJtYWxfY29vbGlu
+Z19kZXZpY2VfdW5yZWdpc3RlcihkLT5jb29saW5nX2Rldik7DQo+ICtlcnI6DQo+ICsJa2ZyZWUo
+ZC0+YnIpOw0KPiArCXJldHVybiAtRU5PREVWOw0KPiArfQ0KPiArDQo+ICtzdGF0aWMgaW50IGlu
+dDM0MDZfdGhlcm1hbF9yZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gK3sN
+Cj4gKwlzdHJ1Y3QgaW50MzQwNl90aGVybWFsX2RhdGEgKmQgPSBwbGF0Zm9ybV9nZXRfZHJ2ZGF0
+YShwZGV2KTsNCj4gKw0KPiArCXRoZXJtYWxfY29vbGluZ19kZXZpY2VfdW5yZWdpc3RlcihkLT5j
+b29saW5nX2Rldik7DQo+ICsJa2ZyZWUoZC0+YnIpOw0KPiArCXJldHVybiAwOw0KPiArfQ0KPiAr
+DQo+ICtzdGF0aWMgY29uc3Qgc3RydWN0IGFjcGlfZGV2aWNlX2lkIGludDM0MDZfdGhlcm1hbF9t
+YXRjaFtdID0gew0KPiArCXsiSU5UMzQwNiIsIDB9LA0KPiArCXt9DQo+ICt9Ow0KPiArDQo+ICtN
+T0RVTEVfREVWSUNFX1RBQkxFKGFjcGksIGludDM0MDZfdGhlcm1hbF9tYXRjaCk7DQo+ICsNCj4g
+K3N0YXRpYyBzdHJ1Y3QgcGxhdGZvcm1fZHJpdmVyIGludDM0MDZfdGhlcm1hbF9kcml2ZXIgPSB7
+DQo+ICsJLnByb2JlID0gaW50MzQwNl90aGVybWFsX3Byb2JlLA0KPiArCS5yZW1vdmUgPSBpbnQz
+NDA2X3RoZXJtYWxfcmVtb3ZlLA0KPiArCS5kcml2ZXIgPSB7DQo+ICsJCSAgIC5uYW1lID0gImlu
+dDM0MDYgdGhlcm1hbCIsDQo+ICsJCSAgIC5vd25lciA9IFRISVNfTU9EVUxFLA0KPiArCQkgICAu
+YWNwaV9tYXRjaF90YWJsZSA9IGludDM0MDZfdGhlcm1hbF9tYXRjaCwNCj4gKwkJICAgfSwNCj4g
+K307DQo+ICsNCj4gK21vZHVsZV9wbGF0Zm9ybV9kcml2ZXIoaW50MzQwNl90aGVybWFsX2RyaXZl
+cik7DQo+ICsNCj4gK01PRFVMRV9ERVNDUklQVElPTigiSU5UMzQwNiBUaGVybWFsIGRyaXZlciIp
+Ow0KPiArTU9EVUxFX0xJQ0VOU0UoIkdQTCB2MiIpOw0KDQo

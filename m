@@ -1,19 +1,29 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Fri, 13 May 2016 15:28:39 +0000
+From: "Yang, Eric" <Eric.Yang2@amd.com>
+Date: Fri, 13 May 2016 20:02:29 +0000
 Subject: Re: [PATCH] drm: expand cea861 mode timing table
-Message-Id: <20160513152839.GA24232@ulmo.ba.sec>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="r5Pyd7+fXNt84Ff3"
+Message-Id: <BY2PR1201MB092002212FD673E35A6789E8CD740@BY2PR1201MB0920.namprd12.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1463081853-14942-1-git-send-email-eric.yang2@amd.com>
-In-Reply-To: <1463081853-14942-1-git-send-email-eric.yang2@amd.com>
-To: Eric Yang <eric.yang2@amd.com>
-Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, dri-devel@lists.freedesktop.org
+References: <1463081853-14942-1-git-send-email-eric.yang2@amd.com>,
+ <20160513152839.GA24232@ulmo.ba.sec>
+In-Reply-To: <20160513152839.GA24232@ulmo.ba.sec>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Jani Nikula <jani.nikula@linux.intel.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "tomi.valkeinen@ti.com" <tomi.valkeinen@ti.com>, "plagnioj@jcrosoft.com" <plagnioj@jcrosoft.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
+Hi Thierry Reding,
 
---r5Pyd7+fXNt84Ff3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+I will have to answer this question next week, the member of my team with a HDMI spec is not here today.
+
+Hi Jani Nikula,
+Thank you for noticing the formatting mistake, the checkpatch script did not catch this, I will prepare a new patch with the formatting fixed.
+________________________________________
+From: Thierry Reding <thierry.reding@gmail.com>
+Sent: Friday, May 13, 2016 11:28:39 AM
+To: Yang, Eric
+Cc: dri-devel@lists.freedesktop.org; linux-fbdev@vger.kernel.org; tomi.valkeinen@ti.com; plagnioj@jcrosoft.com
+Subject: Re: [PATCH] drm: expand cea861 mode timing table
 
 On Thu, May 12, 2016 at 03:37:33PM -0400, Eric Yang wrote:
 [...]
@@ -22,12 +32,12 @@ On Thu, May 12, 2016 at 03:37:33PM -0400, Eric Yang wrote:
 > --- a/include/linux/hdmi.h
 > +++ b/include/linux/hdmi.h
 > @@ -78,6 +78,8 @@ enum hdmi_picture_aspect {
->  	HDMI_PICTURE_ASPECT_NONE,
->  	HDMI_PICTURE_ASPECT_4_3,
->  	HDMI_PICTURE_ASPECT_16_9,
-> +	HDMI_PICTURE_ASPECT_64_27,
-> +	HDMI_PICTURE_ASPECT_256_135,
->  	HDMI_PICTURE_ASPECT_RESERVED,
+>       HDMI_PICTURE_ASPECT_NONE,
+>       HDMI_PICTURE_ASPECT_4_3,
+>       HDMI_PICTURE_ASPECT_16_9,
+> +     HDMI_PICTURE_ASPECT_64_27,
+> +     HDMI_PICTURE_ASPECT_256_135,
+>       HDMI_PICTURE_ASPECT_RESERVED,
 >  };
 
 Where did you get these from? I'm asking because I sent this patch last
@@ -43,26 +53,3 @@ Would you mind pointing me at the specification for these values?
 
 Thanks,
 Thierry
-
---r5Pyd7+fXNt84Ff3
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABCAAGBQJXNfKkAAoJEN0jrNd/PrOh8ggP/2AcQrdQXe4bLWeGUktFsBaA
-nkORT6Cmgrvv9ZlUYAVv3VZPZ3Od97lxD9FEe4tkCgZ6hiIjmaJidFAw/PPddnQf
-KNzCEIVgV3yj8l7vyCm6KZGVSlVCKfXcaegfrINeQAyQYNUOq5LGFzDYVo4pEpyz
-yG718gpN0rhaO/k69Z6Ena6YFAkthBpYFLuFqp6q43ypcBbBT57xfV1W0fAhFd6S
-1SpFKnsvWtZT/vdyMTXlr16eUvHv3seNEQ5E6f2whUZ5RaJNJNfYVsk30KrwOXP9
-yRtWLv5ZNc/VdPHtf1SM6VXEjj+bZ5R3m/6fCm7YUmNi4+MJ/lrcv1LC4r4cqE9a
-+K6voS/fXsfI8bKJw5WRpxN2OzSFhQMlb0wn5+M27NCotjHmS2KcpFjIlVh89F09
-xEjHjWc9w3felMnUjDpOshaQWRC/7MYycB/JAf6PUO5iEFgEK4gibAJNvewB8DRJ
-cestMI475/HI1XcDNi261s0XxlUGxyZQnrzdg0TKxr0M46GbFpo0iU+TAjAoX0JJ
-4LMABMw1dfJhg1j6IiqwSqZdJoH3UQVnqRejCx3XN+Q54RKb2aHr0WEwJAENit1V
-r19HdmiReM0Zq2LOlDumjAq8vkWDFQrXU7+L37sONBwu0aB0n1CENnq3qnLQv+SB
-U9UOx8PA7qyXqIAFfA8T
-=v2Qi
------END PGP SIGNATURE-----
-
---r5Pyd7+fXNt84Ff3--

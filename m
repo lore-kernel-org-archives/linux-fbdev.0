@@ -1,37 +1,38 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:48 +0000
-Subject: [PATCH 16/26] drm/omap: Remove reference to pdata->default_device
-Message-Id: <20160530114258.30879-17-peter.ujfalusi@ti.com>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 16 May 2016 23:00:00 +0000
+Subject: [PATCH 1/2] video: fbdev: pmag-ba-fb: Remove bad `__init' annotation
+Message-Id: <alpine.LFD.2.20.1605162321580.19898@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The default_device is no longer used, it is a leftower from legacy. The
-else if (pdata->default_device) is always going to be false.
+Fix:
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+WARNING: drivers/video/fbdev/pmag-ba-fb.o(.text+0x308): Section mismatch in reference from the function pmagbafb_probe() to the function .init.text:pmagbafb_erase_cursor()
+The function pmagbafb_probe() 
+references the function __init pmagbafb_erase_cursor().
+This is often because pmagbafb_probe lacks a __init
+annotation or the annotation of pmagbafb_erase_cursor is wrong.
+
+-- a fallout from a missed update from commit 9625b51350cc ("VIDEO: 
+PMAG-BA: Fix section mismatch") and then commit 48c68c4f1b54 ("Drivers: 
+video: remove __dev* attributes.")
+
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
 ---
- drivers/gpu/drm/omapdrm/dss/core.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/omapdrm/dss/core.c b/drivers/gpu/drm/omapdrm/dss/core.c
-index 7e4e5bebabbe..9cf22b30023f 100644
---- a/drivers/gpu/drm/omapdrm/dss/core.c
-+++ b/drivers/gpu/drm/omapdrm/dss/core.c
-@@ -196,8 +196,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
- 		core.default_display_name = def_disp_name;
- 	else if (pdata->default_display_name)
- 		core.default_display_name = pdata->default_display_name;
--	else if (pdata->default_device)
--		core.default_display_name = pdata->default_device->name;
+linux-pmag-ba-init.diff
+Index: linux-20160515-declance-module/drivers/video/fbdev/pmag-ba-fb.c
+=================================--- linux-20160515-declance-module.orig/drivers/video/fbdev/pmag-ba-fb.c
++++ linux-20160515-declance-module/drivers/video/fbdev/pmag-ba-fb.c
+@@ -129,7 +129,7 @@ static struct fb_ops pmagbafb_ops = {
+ /*
+  * Turn the hardware cursor off.
+  */
+-static void __init pmagbafb_erase_cursor(struct fb_info *info)
++static void pmagbafb_erase_cursor(struct fb_info *info)
+ {
+ 	struct pmagbafb_par *par = info->par;
  
- 	return 0;
- 
--- 
-2.8.3
-

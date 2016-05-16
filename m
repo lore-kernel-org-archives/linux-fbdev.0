@@ -1,50 +1,38 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 10 May 2016 18:40:57 +0000
-Subject: Re: [PATCH 0/2] fbdev: sh_mobile_meram: use ARCH_RENESAS
-Message-Id: <CAMuHMdWV+yNvhiN2dR=Fc7Lzh4DKLtsN4=bdC7dWHw06KSPtww@mail.gmail.com>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 16 May 2016 23:00:12 +0000
+Subject: [PATCH 2/2] video: fbdev: pmagb-b-fb: Remove bad `__init' annotation
+Message-Id: <alpine.LFD.2.20.1605162329120.19898@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1457663298-31973-1-git-send-email-horms+renesas@verge.net.au>
-	<5731A229.7010307@ti.com>
-In-Reply-To: <5731A229.7010307@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Simon Horman <horms+renesas@verge.net.au>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>, Magnus Damm <magnus.damm@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi Tomi,
+Fix:
 
-On Tue, May 10, 2016 at 10:56 AM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> On 11/03/16 04:28, Simon Horman wrote:
->> Use ARCH_RENESAS in place of ARCH_SHMOBILE.
->>
->> This is part of an ongoing process to migrate from ARCH_SHMOBILE to
->> ARCH_RENESAS the motivation for which being that RENESAS seems to be a more
->> appropriate name than SHMOBILE for the majority of Renesas ARM based SoCs.
->>
->> As a follow-up also depend on COMPILE_TEST to provided for increased
->> compile testing.
->>
->> Based on v4.5-rc1
->>
->> Simon Horman (2):
->>   fbdev: sh_mobile_meram: use ARCH_RENESAS
->>   fbdev: sh_mobile_meram: depend on COMPILE_TEST
->>
->>  drivers/video/fbdev/Kconfig | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> What was the conclusion in this thread? Should I apply these?
+WARNING: drivers/video/fbdev/pmagb-b-fb.o(.text+0x6dc): Section mismatch in reference from the function pmagbbfb_probe() to the function .init.text:pmagbbfb_erase_cursor()
+The function pmagbbfb_probe() 
+references the function __init pmagbbfb_erase_cursor().
+This is often because pmagbbfb_probe lacks a __init
+annotation or the annotation of pmagbbfb_erase_cursor is wrong.
 
-I think the conclusion was "changes requested".
+-- a fallout from a missed update from commit 5b1638d94080 ("VIDEO: 
+PMAGB-B: Fix section mismatch") and then commit 48c68c4f1b54 ("Drivers: 
+video: remove __dev* attributes.")
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+---
+linux-pmagb-b-init.diff
+Index: linux-20160515-declance-module/drivers/video/fbdev/pmagb-b-fb.c
+=================================--- linux-20160515-declance-module.orig/drivers/video/fbdev/pmagb-b-fb.c
++++ linux-20160515-declance-module/drivers/video/fbdev/pmagb-b-fb.c
+@@ -133,7 +133,7 @@ static struct fb_ops pmagbbfb_ops = {
+ /*
+  * Turn the hardware cursor off.
+  */
+-static void __init pmagbbfb_erase_cursor(struct fb_info *info)
++static void pmagbbfb_erase_cursor(struct fb_info *info)
+ {
+ 	struct pmagbbfb_par *par = info->par;
+ 

@@ -1,40 +1,21 @@
-From: "Zhang, Rui" <rui.zhang@intel.com>
-Date: Mon, 09 May 2016 07:47:43 +0000
-Subject: Re: [PATCH v3 4/4] Thermal: add INT3406 thermal driver
-Message-Id: <1462780064.10198.3.camel@rzhang1-mobl4>
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Date: Mon, 16 May 2016 22:59:54 +0000
+Subject: [PATCH 0/2] DEC frame buffer modular driver cleanups
+Message-Id: <alpine.LFD.2.20.1605162316060.19898@eddie.linux-mips.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
-	 <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
-In-Reply-To: <1461761105-5961-5-git-send-email-aaron.lu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Lu, Aaron" <aaron.lu@intel.com>
-Cc: "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gV2VkLCAyMDE2LTA0LTI3IGF0IDIwOjQ1ICswODAwLCBBYXJvbiBMdSB3cm90ZToNCj4gZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvdGhlcm1hbC9pbnQzNDB4X3RoZXJtYWwvaW50MzQwNl90aGVybWFs
-LmMgYi9kcml2ZXJzL3RoZXJtYWwvaW50MzQweF90aGVybWFsL2ludDM0MDZfdGhlcm1hbC5jDQo+
-IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+IGluZGV4IDAwMDAwMDAwMDAwMC4uMWM5Yjc1OTBmMDk4
-DQo+IC0tLSAvZGV2L251bGwNCj4gKysrIGIvZHJpdmVycy90aGVybWFsL2ludDM0MHhfdGhlcm1h
-bC9pbnQzNDA2X3RoZXJtYWwuYw0KPiBAQCAtMCwwICsxLDIzNiBAQA0KPiArLyoNCj4gKyAqIElO
-VDM0MDYgdGhlcm1hbCBkcml2ZXIgZm9yIGRpc3BsYXkgcGFydGljaXBhbnQgZGV2aWNlDQo+ICsg
-Kg0KPiArICogQ29weXJpZ2h0IChDKSAyMDE0LCBJbnRlbCBDb3Jwb3JhdGlvbg0KDQpTaG91bGQg
-YmUgMjAxNiwgcmlnaHQ/DQoNCj4gKyAqIEF1dGhvcnM6IEFhcm9uIEx1IDxhYXJvbi5sdUBpbnRl
-bC5jb20+DQo+ICsgKg0KPiArICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
-YW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkNCj4gKyAqIGl0IHVuZGVyIHRoZSB0ZXJt
-cyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UgdmVyc2lvbiAyIGFzDQo+ICsgKiBw
-dWJsaXNoZWQgYnkgdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbi4NCj4gKyAqDQo+ICsgKi8N
-Cj4gKw0KPiArI2luY2x1ZGUgPGxpbnV4L21vZHVsZS5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L3Bs
-YXRmb3JtX2RldmljZS5oPg0KPiArI2luY2x1ZGUgPGxpbnV4L2FjcGkuaD4NCj4gKyNpbmNsdWRl
-IDxsaW51eC9iYWNrbGlnaHQuaD4NCj4gKyNpbmNsdWRlIDxsaW51eC90aGVybWFsLmg+DQo+ICsj
-aW5jbHVkZSA8YWNwaS92aWRlby5oPg0KPiArDQoNCj4gK01PRFVMRV9ERVZJQ0VfVEFCTEUoYWNw
-aSwgaW50MzQwNl90aGVybWFsX21hdGNoKTsNCj4gKw0KPiArc3RhdGljIHN0cnVjdCBwbGF0Zm9y
-bV9kcml2ZXIgaW50MzQwNl90aGVybWFsX2RyaXZlciA9IHsNCj4gKwkucHJvYmUgPSBpbnQzNDA2
-X3RoZXJtYWxfcHJvYmUsDQo+ICsJLnJlbW92ZSA9IGludDM0MDZfdGhlcm1hbF9yZW1vdmUsDQo+
-ICsJLmRyaXZlciA9IHsNCj4gKwkJICAgLm5hbWUgPSAiaW50MzQwNiB0aGVybWFsIiwNCj4gKwkJ
-ICAgLm93bmVyID0gVEhJU19NT0RVTEUsDQo+ICsJCSAgIC5hY3BpX21hdGNoX3RhYmxlID0gaW50
-MzQwNl90aGVybWFsX21hdGNoLA0KPiArCQkgICB9LA0KPiArfTsNCj4gKw0KPiArbW9kdWxlX3Bs
-YXRmb3JtX2RyaXZlcihpbnQzNDA2X3RoZXJtYWxfZHJpdmVyKTsNCj4gKw0KPiArTU9EVUxFX0RF
-U0NSSVBUSU9OKCJJTlQzNDA2IFRoZXJtYWwgZHJpdmVyIik7DQo+ICtNT0RVTEVfTElDRU5TRSgi
-R1BMIik7DQoNCk1PRFVMRV9MSUNFTlNFKCJHUEwgdjIiKQ0KDQp0aGFua3MsDQpydWkNCg0K
+Hi,
+
+ This is a pair of small cleanups for `__init' annotation issues in PMAG-B 
+and PMAGB-B frame buffer drivers discovered in a modular build, which is a 
+seldom used, but supported configuration.
+
+ Please apply; I think these are obvious enough to be fast-tracked to 4.7 
+right away.
+
+  Maciej

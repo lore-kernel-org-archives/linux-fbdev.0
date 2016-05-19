@@ -1,89 +1,91 @@
-From: Stefan Agner <stefan@agner.ch>
-Date: Fri, 06 May 2016 20:29:59 +0000
-Subject: Re: [PATCH] video: fbdev: mxsfb: fix pixelclock polarity
-Message-Id: <8578d0df94870b3b18c34d256b67c5b6@agner.ch>
+From: Scot Doyle <lkml14@scotdoyle.com>
+Date: Thu, 19 May 2016 04:21:53 +0000
+Subject: [PATCH] fbcon: use default if cursor blink interval is not valid
+Message-Id: <alpine.DEB.2.10.1605182252230.12118@laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453771756-5418-1-git-send-email-stefan@agner.ch>
-In-Reply-To: <1453771756-5418-1-git-send-email-stefan@agner.ch>
+References: <1463510464-28124-1-git-send-email-ddaney.cavm@gmail.com> <20160517204912.GA29719@amd> <CACVXFVPdjfFkRFucTQsOHsVFtgm1W0JtOTqjyDzyNbzygghUyg@mail.gmail.com> <alpine.DEB.2.10.1605181519540.8967@laptop>
+ <ed8fa4ca-49e0-3ff4-5499-fc5250dd8ae2@caviumnetworks.com>
+In-Reply-To: <ed8fa4ca-49e0-3ff4-5499-fc5250dd8ae2@caviumnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, shawnguo@kernel.org
-Cc: s.hauer@pengutronix.de, Ying.Liu@freescale.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, LW@karo-electronics.de, fabio.estevam@freescale.com, max.krummenacher@toradex.com
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: David Daney <david.daney@cavium.com>, Ming Lei <ming.lei@canonical.com>, Dann Frazier <dann.frazier@canonical.com>, Peter Hurley <peter@hurleysoftware.com>, Pavel Machek <pavel@ucw.cz>, Jonathan Liu <net147@gmail.com>, Alistair Popple <alistair@popple.id.au>, Jean-Philippe Brucker <jean-philippe.brucker@arm.com>, "Chintakuntla, Radha" <Radha.Chintakuntla@caviumnetworks.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, David Airlie <airlied@linux.ie>, ddaney.cavm@gmail.com, lkml14@scotdoyle.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-Hi Shawn,
+Two current [1] and three previous [2] systems locked during boot
+because the cursor flash timer was set using an ops->cur_blink_jiffies
+value of 0. Previous patches attempted to solve the problem by moving
+variable initialization earlier in the setup sequence [2].
 
-On 2016-01-25 17:29, Stefan Agner wrote:
-> The PIXDATA flags of the display_flags enum are controller centric,
-> e.g. NEGEDGE means the controller shall drive the data signals on
-> pixelclocks negative edge. However, the drivers flag is display
-> centric: Sample the data on negative (falling) edge.
-> 
-> Therefore, change the if statement to check for the POSEDGE flag
-> (which is typically not set):
-> Drive on positive edge => sample on negative edge
+Use the normal cursor blink default interval of 200 ms if
+ops->cur_blink_jiffies is not in the range specified in commit
+bd63364caa8d. Since invalid values are not used, specific system
+initialization timings should not cause lockups.
 
-Any comment on that patch?
+[1] https://bugs.launchpad.net/bugs/1574814
+[2] see commits: 2a17d7e80f1d, f235f664a8af, a1e533ec07d5
 
---
-Stefan
+Signed-off-by: Scot Doyle <lkml14@scotdoyle.com>
+Cc: <stable@vger.kernel.org> [v4.2]
+---
+ drivers/video/console/fbcon.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 6e92917..da61d87 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -396,13 +396,23 @@ static void fb_flashcursor(struct work_struct *work)
+ 	console_unlock();
+ }
+ 
++static int cursor_blink_jiffies(int candidate)
++{
++	if (candidate >= msecs_to_jiffies(50) &&
++	    candidate <= msecs_to_jiffies(USHRT_MAX))
++		return candidate;
++	else
++		return HZ / 5;
++}
++
+ static void cursor_timer_handler(unsigned long dev_addr)
+ {
+ 	struct fb_info *info = (struct fb_info *) dev_addr;
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + ops->cur_blink_jiffies);
++	mod_timer(&ops->cursor_timer, jiffies +
++	    cursor_blink_jiffies(ops->cur_blink_jiffies));
+ }
+ 
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -417,7 +427,8 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
+ 
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + ops->cur_blink_jiffies;
++		ops->cursor_timer.expires = jiffies +
++		    cursor_blink_jiffies(ops->cur_blink_jiffies);
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -709,7 +720,6 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+ 	}
+ 
+ 	if (!err) {
+-		ops->cur_blink_jiffies = HZ / 5;
+ 		info->fbcon_par = ops;
+ 
+ 		if (vc)
+@@ -957,7 +967,6 @@ static const char *fbcon_startup(void)
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
+-	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+-- 
+2.1.4
 
-> 
-> Signed-off-by: Stefan Agner <stefan@agner.ch>
-> ---
-> Hi all
-> 
-> Shawn, I would like to have at least your Ack on this before merge.
-> 
-> It seems that this has been wrong since the driver is able to use
-> the timings from the device tree, introduced with 669406534b4a
-> ("video: mxsfb: get display timings from device tree").
-> 
-> Not sure how many device trees actually specify the wrong pixel clock
-> polarity due to that. At least the initial flag convertion from the
-> old platform data structures done with 0d9f8217db15 ("ARM: mxs: move
-> display timing configurations into device tree") seems to be affected
-> and would need to be changed accordingly...
-> 
-> Not sure how we should handle this, maybe just invert all
-> pixelclk-active properties where the mxsfb driver is in use...?
-> 
-> --
-> Stefan
-> 
->  drivers/video/fbdev/mxsfb.c | 13 +++++++++++--
->  1 file changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-> index 4e6608c..38898a9 100644
-> --- a/drivers/video/fbdev/mxsfb.c
-> +++ b/drivers/video/fbdev/mxsfb.c
-> @@ -150,7 +150,7 @@
->  #define STMLCDIF_24BIT 3 /** pixel data bus to the display is of 24
-> bit width */
->  
->  #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
-> -#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling */
-> +#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negative edge sampling */
->  
->  enum mxsfb_devtype {
->  	MXSFB_V3,
-> @@ -788,7 +788,16 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
->  
->  	if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
->  		host->sync |= MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
-> -	if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
-> +
-> +	/*
-> +	 * The PIXDATA flags of the display_flags enum are controller
-> +	 * centric, e.g. NEGEDGE means drive data on negative edge.
-> +	 * However, the drivers flag is display centric: Sample the
-> +	 * data on negative (falling) edge. Therefore, check for the
-> +	 * POSEDGE flag:
-> +	 * drive on positive edge => sample on negative edge
-> +	 */
-> +	if (vm.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
->  		host->sync |= MXSFB_SYNC_DOTCLK_FALLING_ACT;
->  
->  put_display_node:

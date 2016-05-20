@@ -1,147 +1,56 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:38 +0000
-Subject: [PATCH 06/26] omapfb: panel-dsi-cm: Remove legacy boot support
-Message-Id: <20160530114258.30879-7-peter.ujfalusi@ti.com>
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Fri, 20 May 2016 13:34:54 +0000
+Subject: [PATCH 3/3] drm/imx: remove dead code
+Message-Id: <1463751294-24769-4-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+References: <1463751294-24769-1-git-send-email-LW@KARO-electronics.de>
+In-Reply-To: <1463751294-24769-1-git-send-email-LW@KARO-electronics.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Philipp Zabel <p.zabel@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>, Sascha Hauer <kernel@pengutronix.de>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+The 'mode_valid' flag is never set in this driver. Remove it and the
+code that depends on it.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
 ---
- .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     | 52 +++-------------------
- include/video/omap-panel-data.h                    | 27 -----------
- 2 files changed, 6 insertions(+), 73 deletions(-)
+ drivers/gpu/drm/imx/parallel-display.c | 12 ------------
+ 1 file changed, 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index 3414c2609320..a4eac6962b76 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -26,7 +26,6 @@
- #include <linux/of_gpio.h>
- 
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
- #include <video/mipi_display.h>
- 
- /* DSI Virtual channel. Hardcoded for now. */
-@@ -1127,40 +1126,6 @@ static struct omap_dss_driver dsicm_ops = {
- 	.memory_read	= dsicm_memory_read,
+diff --git a/drivers/gpu/drm/imx/parallel-display.c b/drivers/gpu/drm/imx/p=
+arallel-display.c
+index 440f34d..e37d0e6 100644
+--- a/drivers/gpu/drm/imx/parallel-display.c
++++ b/drivers/gpu/drm/imx/parallel-display.c
+@@ -39,7 +39,6 @@ struct imx_parallel_display {
+ 	int edid_len;
+ 	u32 bus_format;
+ 	u32 bus_flags;
+-	int mode_valid;
+ 	struct drm_display_mode mode;
+ 	struct drm_panel *panel;
  };
- 
--static int dsicm_probe_pdata(struct platform_device *pdev)
--{
--	const struct panel_dsicm_platform_data *pdata;
--	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct omap_dss_device *dssdev, *in;
+@@ -74,17 +73,6 @@ static int imx_pd_connector_get_modes(struct drm_connect=
+or *connector)
+ 		num_modes =3D drm_add_edid_modes(connector, imxpd->edid);
+ 	}
+=20
+-	if (imxpd->mode_valid) {
+-		struct drm_display_mode *mode =3D drm_mode_create(connector->dev);
 -
--	pdata = dev_get_platdata(&pdev->dev);
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&pdev->dev, "failed to find video source\n");
--		return -EPROBE_DEFER;
+-		if (!mode)
+-			return -EINVAL;
+-		drm_mode_copy(mode, &imxpd->mode);
+-		mode->type |=3D DRM_MODE_TYPE_DRIVER | DRM_MODE_TYPE_PREFERRED,
+-		drm_mode_probed_add(connector, mode);
+-		num_modes++;
 -	}
--	ddata->in = in;
 -
--	ddata->reset_gpio = pdata->reset_gpio;
--
--	if (pdata->use_ext_te)
--		ddata->ext_te_gpio = pdata->ext_te_gpio;
--	else
--		ddata->ext_te_gpio = -1;
--
--	ddata->ulps_timeout = pdata->ulps_timeout;
--
--	ddata->use_dsi_backlight = pdata->use_dsi_backlight;
--
--	ddata->pin_config = pdata->pin_config;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	return 0;
--}
--
- static int dsicm_probe_of(struct platform_device *pdev)
- {
- 	struct device_node *node = pdev->dev.of_node;
-@@ -1207,6 +1172,9 @@ static int dsicm_probe(struct platform_device *pdev)
- 
- 	dev_dbg(dev, "probe\n");
- 
-+	if (!pdev->dev.of_node)
-+		return -ENODEV;
-+
- 	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
-@@ -1214,17 +1182,9 @@ static int dsicm_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, ddata);
- 	ddata->pdev = pdev;
- 
--	if (dev_get_platdata(dev)) {
--		r = dsicm_probe_pdata(pdev);
--		if (r)
--			return r;
--	} else if (pdev->dev.of_node) {
--		r = dsicm_probe_of(pdev);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = dsicm_probe_of(pdev);
-+	if (r)
-+		return r;
- 
- 	ddata->timings.x_res = 864;
- 	ddata->timings.y_res = 480;
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 74486bcc754e..e7b0e889d6d0 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -105,33 +105,6 @@ struct panel_dpi_platform_data {
- };
- 
- /**
-- * panel_dsicm platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @reset_gpio: gpio to reset the panel (or -1)
-- * @use_ext_te: use external TE GPIO
-- * @ext_te_gpio: external TE GPIO
-- * @ulps_timeout: time to wait before entering ULPS, 0 = disabled (ms)
-- * @use_dsi_backlight: true if panel uses DSI command to control backlight
-- * @pin_config: DSI pin configuration
-- */
--struct panel_dsicm_platform_data {
--	const char *name;
--	const char *source;
--
--	int reset_gpio;
--
--	bool use_ext_te;
--	int ext_te_gpio;
--
--	unsigned ulps_timeout;
--
--	bool use_dsi_backlight;
--
--	struct omap_dsi_pin_config pin_config;
--};
--
--/**
-  * panel_acx565akm platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
--- 
-2.8.3
+ 	if (np) {
+ 		struct drm_display_mode *mode =3D drm_mode_create(connector->dev);
+ 		struct videomode vm;
+--=20
+2.1.4
 

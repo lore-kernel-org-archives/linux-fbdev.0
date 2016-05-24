@@ -1,905 +1,687 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:57 +0000
-Subject: [PATCH 25/26] omapfb: Copy video/omapdss.h content to video/omapfb_dss.h
-Message-Id: <20160530114258.30879-26-peter.ujfalusi@ti.com>
+From: Jerome Marchand <jmarchan@redhat.com>
+Date: Tue, 24 May 2016 14:35:18 +0000
+Subject: BUG: drm, nouveau: slab-out-of-bounds read access in nv50_fbcon_imageblit()
+Message-Id: <183fa2bf-9273-bf5f-9a75-c3818742e33f@redhat.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+To: Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 'linux-kernel' <linux-kernel@vger.kernel.org>
 
-Copy the content of video/ompadss.h to the omapfb header file. All omapfb
-drivers and the vout driver have been using the new video/omapfb_dss.h file
-instead of the omapdss.h.
-This change will separate the DRM and FB implementations of omapdss.
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm
+Content-Type: multipart/mixed; boundary="GcPw26AED9HdkRLHEe55TIbj0wXmdlhse"
+From: Jerome Marchand <jmarchan@redhat.com>
+To: Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
+ 'linux-kernel' <linux-kernel@vger.kernel.org>
+Message-ID: <183fa2bf-9273-bf5f-9a75-c3818742e33f@redhat.com>
+Subject: BUG: drm, nouveau: slab-out-of-bounds read access in
+ nv50_fbcon_imageblit()
+
+--GcPw26AED9HdkRLHEe55TIbj0wXmdlhse
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-CC: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
----
- include/video/omapfb_dss.h | 867 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 866 insertions(+), 1 deletion(-)
+While testing a kernel with KASan enabled I've encountered several
+out-of-bounds read warning in the nouveau driver. It seems to be
+caused by inconsistent alignment requirements.
 
-diff --git a/include/video/omapfb_dss.h b/include/video/omapfb_dss.h
-index 4f9ad9d4c2fb..65738c47256e 100644
---- a/include/video/omapfb_dss.h
-+++ b/include/video/omapfb_dss.h
-@@ -10,6 +10,871 @@
- #ifndef __OMAPFB_DSS_H
- #define __OMAPFB_DSS_H
- 
--#include <video/omapdss.h>
-+#include <linux/list.h>
-+#include <linux/kobject.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/platform_data/omapdss.h>
-+
-+#include <video/videomode.h>
-+
-+#define DISPC_IRQ_FRAMEDONE		(1 << 0)
-+#define DISPC_IRQ_VSYNC			(1 << 1)
-+#define DISPC_IRQ_EVSYNC_EVEN		(1 << 2)
-+#define DISPC_IRQ_EVSYNC_ODD		(1 << 3)
-+#define DISPC_IRQ_ACBIAS_COUNT_STAT	(1 << 4)
-+#define DISPC_IRQ_PROG_LINE_NUM		(1 << 5)
-+#define DISPC_IRQ_GFX_FIFO_UNDERFLOW	(1 << 6)
-+#define DISPC_IRQ_GFX_END_WIN		(1 << 7)
-+#define DISPC_IRQ_PAL_GAMMA_MASK	(1 << 8)
-+#define DISPC_IRQ_OCP_ERR		(1 << 9)
-+#define DISPC_IRQ_VID1_FIFO_UNDERFLOW	(1 << 10)
-+#define DISPC_IRQ_VID1_END_WIN		(1 << 11)
-+#define DISPC_IRQ_VID2_FIFO_UNDERFLOW	(1 << 12)
-+#define DISPC_IRQ_VID2_END_WIN		(1 << 13)
-+#define DISPC_IRQ_SYNC_LOST		(1 << 14)
-+#define DISPC_IRQ_SYNC_LOST_DIGIT	(1 << 15)
-+#define DISPC_IRQ_WAKEUP		(1 << 16)
-+#define DISPC_IRQ_SYNC_LOST2		(1 << 17)
-+#define DISPC_IRQ_VSYNC2		(1 << 18)
-+#define DISPC_IRQ_VID3_END_WIN		(1 << 19)
-+#define DISPC_IRQ_VID3_FIFO_UNDERFLOW	(1 << 20)
-+#define DISPC_IRQ_ACBIAS_COUNT_STAT2	(1 << 21)
-+#define DISPC_IRQ_FRAMEDONE2		(1 << 22)
-+#define DISPC_IRQ_FRAMEDONEWB		(1 << 23)
-+#define DISPC_IRQ_FRAMEDONETV		(1 << 24)
-+#define DISPC_IRQ_WBBUFFEROVERFLOW	(1 << 25)
-+#define DISPC_IRQ_WBUNCOMPLETEERROR	(1 << 26)
-+#define DISPC_IRQ_SYNC_LOST3		(1 << 27)
-+#define DISPC_IRQ_VSYNC3		(1 << 28)
-+#define DISPC_IRQ_ACBIAS_COUNT_STAT3	(1 << 29)
-+#define DISPC_IRQ_FRAMEDONE3		(1 << 30)
-+
-+struct omap_dss_device;
-+struct omap_overlay_manager;
-+struct dss_lcd_mgr_config;
-+struct snd_aes_iec958;
-+struct snd_cea_861_aud_if;
-+struct hdmi_avi_infoframe;
-+
-+enum omap_display_type {
-+	OMAP_DISPLAY_TYPE_NONE		= 0,
-+	OMAP_DISPLAY_TYPE_DPI		= 1 << 0,
-+	OMAP_DISPLAY_TYPE_DBI		= 1 << 1,
-+	OMAP_DISPLAY_TYPE_SDI		= 1 << 2,
-+	OMAP_DISPLAY_TYPE_DSI		= 1 << 3,
-+	OMAP_DISPLAY_TYPE_VENC		= 1 << 4,
-+	OMAP_DISPLAY_TYPE_HDMI		= 1 << 5,
-+	OMAP_DISPLAY_TYPE_DVI		= 1 << 6,
-+};
-+
-+enum omap_plane {
-+	OMAP_DSS_GFX	= 0,
-+	OMAP_DSS_VIDEO1	= 1,
-+	OMAP_DSS_VIDEO2	= 2,
-+	OMAP_DSS_VIDEO3	= 3,
-+	OMAP_DSS_WB	= 4,
-+};
-+
-+enum omap_channel {
-+	OMAP_DSS_CHANNEL_LCD	= 0,
-+	OMAP_DSS_CHANNEL_DIGIT	= 1,
-+	OMAP_DSS_CHANNEL_LCD2	= 2,
-+	OMAP_DSS_CHANNEL_LCD3	= 3,
-+	OMAP_DSS_CHANNEL_WB	= 4,
-+};
-+
-+enum omap_color_mode {
-+	OMAP_DSS_COLOR_CLUT1	= 1 << 0,  /* BITMAP 1 */
-+	OMAP_DSS_COLOR_CLUT2	= 1 << 1,  /* BITMAP 2 */
-+	OMAP_DSS_COLOR_CLUT4	= 1 << 2,  /* BITMAP 4 */
-+	OMAP_DSS_COLOR_CLUT8	= 1 << 3,  /* BITMAP 8 */
-+	OMAP_DSS_COLOR_RGB12U	= 1 << 4,  /* RGB12, 16-bit container */
-+	OMAP_DSS_COLOR_ARGB16	= 1 << 5,  /* ARGB16 */
-+	OMAP_DSS_COLOR_RGB16	= 1 << 6,  /* RGB16 */
-+	OMAP_DSS_COLOR_RGB24U	= 1 << 7,  /* RGB24, 32-bit container */
-+	OMAP_DSS_COLOR_RGB24P	= 1 << 8,  /* RGB24, 24-bit container */
-+	OMAP_DSS_COLOR_YUV2	= 1 << 9,  /* YUV2 4:2:2 co-sited */
-+	OMAP_DSS_COLOR_UYVY	= 1 << 10, /* UYVY 4:2:2 co-sited */
-+	OMAP_DSS_COLOR_ARGB32	= 1 << 11, /* ARGB32 */
-+	OMAP_DSS_COLOR_RGBA32	= 1 << 12, /* RGBA32 */
-+	OMAP_DSS_COLOR_RGBX32	= 1 << 13, /* RGBx32 */
-+	OMAP_DSS_COLOR_NV12		= 1 << 14, /* NV12 format: YUV 4:2:0 */
-+	OMAP_DSS_COLOR_RGBA16		= 1 << 15, /* RGBA16 - 4444 */
-+	OMAP_DSS_COLOR_RGBX16		= 1 << 16, /* RGBx16 - 4444 */
-+	OMAP_DSS_COLOR_ARGB16_1555	= 1 << 17, /* ARGB16 - 1555 */
-+	OMAP_DSS_COLOR_XRGB16_1555	= 1 << 18, /* xRGB16 - 1555 */
-+};
-+
-+enum omap_dss_load_mode {
-+	OMAP_DSS_LOAD_CLUT_AND_FRAME	= 0,
-+	OMAP_DSS_LOAD_CLUT_ONLY		= 1,
-+	OMAP_DSS_LOAD_FRAME_ONLY	= 2,
-+	OMAP_DSS_LOAD_CLUT_ONCE_FRAME	= 3,
-+};
-+
-+enum omap_dss_trans_key_type {
-+	OMAP_DSS_COLOR_KEY_GFX_DST = 0,
-+	OMAP_DSS_COLOR_KEY_VID_SRC = 1,
-+};
-+
-+enum omap_rfbi_te_mode {
-+	OMAP_DSS_RFBI_TE_MODE_1 = 1,
-+	OMAP_DSS_RFBI_TE_MODE_2 = 2,
-+};
-+
-+enum omap_dss_signal_level {
-+	OMAPDSS_SIG_ACTIVE_LOW,
-+	OMAPDSS_SIG_ACTIVE_HIGH,
-+};
-+
-+enum omap_dss_signal_edge {
-+	OMAPDSS_DRIVE_SIG_FALLING_EDGE,
-+	OMAPDSS_DRIVE_SIG_RISING_EDGE,
-+};
-+
-+enum omap_dss_venc_type {
-+	OMAP_DSS_VENC_TYPE_COMPOSITE,
-+	OMAP_DSS_VENC_TYPE_SVIDEO,
-+};
-+
-+enum omap_dss_dsi_pixel_format {
-+	OMAP_DSS_DSI_FMT_RGB888,
-+	OMAP_DSS_DSI_FMT_RGB666,
-+	OMAP_DSS_DSI_FMT_RGB666_PACKED,
-+	OMAP_DSS_DSI_FMT_RGB565,
-+};
-+
-+enum omap_dss_dsi_mode {
-+	OMAP_DSS_DSI_CMD_MODE = 0,
-+	OMAP_DSS_DSI_VIDEO_MODE,
-+};
-+
-+enum omap_display_caps {
-+	OMAP_DSS_DISPLAY_CAP_MANUAL_UPDATE	= 1 << 0,
-+	OMAP_DSS_DISPLAY_CAP_TEAR_ELIM		= 1 << 1,
-+};
-+
-+enum omap_dss_display_state {
-+	OMAP_DSS_DISPLAY_DISABLED = 0,
-+	OMAP_DSS_DISPLAY_ACTIVE,
-+};
-+
-+enum omap_dss_rotation_type {
-+	OMAP_DSS_ROT_DMA	= 1 << 0,
-+	OMAP_DSS_ROT_VRFB	= 1 << 1,
-+	OMAP_DSS_ROT_TILER	= 1 << 2,
-+};
-+
-+/* clockwise rotation angle */
-+enum omap_dss_rotation_angle {
-+	OMAP_DSS_ROT_0   = 0,
-+	OMAP_DSS_ROT_90  = 1,
-+	OMAP_DSS_ROT_180 = 2,
-+	OMAP_DSS_ROT_270 = 3,
-+};
-+
-+enum omap_overlay_caps {
-+	OMAP_DSS_OVL_CAP_SCALE = 1 << 0,
-+	OMAP_DSS_OVL_CAP_GLOBAL_ALPHA = 1 << 1,
-+	OMAP_DSS_OVL_CAP_PRE_MULT_ALPHA = 1 << 2,
-+	OMAP_DSS_OVL_CAP_ZORDER = 1 << 3,
-+	OMAP_DSS_OVL_CAP_POS = 1 << 4,
-+	OMAP_DSS_OVL_CAP_REPLICATION = 1 << 5,
-+};
-+
-+enum omap_overlay_manager_caps {
-+	OMAP_DSS_DUMMY_VALUE, /* add a dummy value to prevent compiler error */
-+};
-+
-+enum omap_dss_clk_source {
-+	OMAP_DSS_CLK_SRC_FCK = 0,		/* OMAP2/3: DSS1_ALWON_FCLK
-+						 * OMAP4: DSS_FCLK */
-+	OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DISPC,	/* OMAP3: DSI1_PLL_FCLK
-+						 * OMAP4: PLL1_CLK1 */
-+	OMAP_DSS_CLK_SRC_DSI_PLL_HSDIV_DSI,	/* OMAP3: DSI2_PLL_FCLK
-+						 * OMAP4: PLL1_CLK2 */
-+	OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DISPC,	/* OMAP4: PLL2_CLK1 */
-+	OMAP_DSS_CLK_SRC_DSI2_PLL_HSDIV_DSI,	/* OMAP4: PLL2_CLK2 */
-+};
-+
-+enum omap_hdmi_flags {
-+	OMAP_HDMI_SDA_SCL_EXTERNAL_PULLUP = 1 << 0,
-+};
-+
-+enum omap_dss_output_id {
-+	OMAP_DSS_OUTPUT_DPI	= 1 << 0,
-+	OMAP_DSS_OUTPUT_DBI	= 1 << 1,
-+	OMAP_DSS_OUTPUT_SDI	= 1 << 2,
-+	OMAP_DSS_OUTPUT_DSI1	= 1 << 3,
-+	OMAP_DSS_OUTPUT_DSI2	= 1 << 4,
-+	OMAP_DSS_OUTPUT_VENC	= 1 << 5,
-+	OMAP_DSS_OUTPUT_HDMI	= 1 << 6,
-+};
-+
-+/* RFBI */
-+
-+struct rfbi_timings {
-+	int cs_on_time;
-+	int cs_off_time;
-+	int we_on_time;
-+	int we_off_time;
-+	int re_on_time;
-+	int re_off_time;
-+	int we_cycle_time;
-+	int re_cycle_time;
-+	int cs_pulse_width;
-+	int access_time;
-+
-+	int clk_div;
-+
-+	u32 tim[5];             /* set by rfbi_convert_timings() */
-+
-+	int converted;
-+};
-+
-+/* DSI */
-+
-+enum omap_dss_dsi_trans_mode {
-+	/* Sync Pulses: both sync start and end packets sent */
-+	OMAP_DSS_DSI_PULSE_MODE,
-+	/* Sync Events: only sync start packets sent */
-+	OMAP_DSS_DSI_EVENT_MODE,
-+	/* Burst: only sync start packets sent, pixels are time compressed */
-+	OMAP_DSS_DSI_BURST_MODE,
-+};
-+
-+struct omap_dss_dsi_videomode_timings {
-+	unsigned long hsclk;
-+
-+	unsigned ndl;
-+	unsigned bitspp;
-+
-+	/* pixels */
-+	u16 hact;
-+	/* lines */
-+	u16 vact;
-+
-+	/* DSI video mode blanking data */
-+	/* Unit: byte clock cycles */
-+	u16 hss;
-+	u16 hsa;
-+	u16 hse;
-+	u16 hfp;
-+	u16 hbp;
-+	/* Unit: line clocks */
-+	u16 vsa;
-+	u16 vfp;
-+	u16 vbp;
-+
-+	/* DSI blanking modes */
-+	int blanking_mode;
-+	int hsa_blanking_mode;
-+	int hbp_blanking_mode;
-+	int hfp_blanking_mode;
-+
-+	enum omap_dss_dsi_trans_mode trans_mode;
-+
-+	bool ddr_clk_always_on;
-+	int window_sync;
-+};
-+
-+struct omap_dss_dsi_config {
-+	enum omap_dss_dsi_mode mode;
-+	enum omap_dss_dsi_pixel_format pixel_format;
-+	const struct omap_video_timings *timings;
-+
-+	unsigned long hs_clk_min, hs_clk_max;
-+	unsigned long lp_clk_min, lp_clk_max;
-+
-+	bool ddr_clk_always_on;
-+	enum omap_dss_dsi_trans_mode trans_mode;
-+};
-+
-+struct omap_video_timings {
-+	/* Unit: pixels */
-+	u16 x_res;
-+	/* Unit: pixels */
-+	u16 y_res;
-+	/* Unit: Hz */
-+	u32 pixelclock;
-+	/* Unit: pixel clocks */
-+	u16 hsw;	/* Horizontal synchronization pulse width */
-+	/* Unit: pixel clocks */
-+	u16 hfp;	/* Horizontal front porch */
-+	/* Unit: pixel clocks */
-+	u16 hbp;	/* Horizontal back porch */
-+	/* Unit: line clocks */
-+	u16 vsw;	/* Vertical synchronization pulse width */
-+	/* Unit: line clocks */
-+	u16 vfp;	/* Vertical front porch */
-+	/* Unit: line clocks */
-+	u16 vbp;	/* Vertical back porch */
-+
-+	/* Vsync logic level */
-+	enum omap_dss_signal_level vsync_level;
-+	/* Hsync logic level */
-+	enum omap_dss_signal_level hsync_level;
-+	/* Interlaced or Progressive timings */
-+	bool interlace;
-+	/* Pixel clock edge to drive LCD data */
-+	enum omap_dss_signal_edge data_pclk_edge;
-+	/* Data enable logic level */
-+	enum omap_dss_signal_level de_level;
-+	/* Pixel clock edges to drive HSYNC and VSYNC signals */
-+	enum omap_dss_signal_edge sync_pclk_edge;
-+
-+	bool double_pixel;
-+};
-+
-+/* Hardcoded timings for tv modes. Venc only uses these to
-+ * identify the mode, and does not actually use the configs
-+ * itself. However, the configs should be something that
-+ * a normal monitor can also show */
-+extern const struct omap_video_timings omap_dss_pal_timings;
-+extern const struct omap_video_timings omap_dss_ntsc_timings;
-+
-+struct omap_dss_cpr_coefs {
-+	s16 rr, rg, rb;
-+	s16 gr, gg, gb;
-+	s16 br, bg, bb;
-+};
-+
-+struct omap_overlay_info {
-+	dma_addr_t paddr;
-+	dma_addr_t p_uv_addr;  /* for NV12 format */
-+	u16 screen_width;
-+	u16 width;
-+	u16 height;
-+	enum omap_color_mode color_mode;
-+	u8 rotation;
-+	enum omap_dss_rotation_type rotation_type;
-+	bool mirror;
-+
-+	u16 pos_x;
-+	u16 pos_y;
-+	u16 out_width;	/* if 0, out_width = width */
-+	u16 out_height;	/* if 0, out_height = height */
-+	u8 global_alpha;
-+	u8 pre_mult_alpha;
-+	u8 zorder;
-+};
-+
-+struct omap_overlay {
-+	struct kobject kobj;
-+	struct list_head list;
-+
-+	/* static fields */
-+	const char *name;
-+	enum omap_plane id;
-+	enum omap_color_mode supported_modes;
-+	enum omap_overlay_caps caps;
-+
-+	/* dynamic fields */
-+	struct omap_overlay_manager *manager;
-+
-+	/*
-+	 * The following functions do not block:
-+	 *
-+	 * is_enabled
-+	 * set_overlay_info
-+	 * get_overlay_info
-+	 *
-+	 * The rest of the functions may block and cannot be called from
-+	 * interrupt context
-+	 */
-+
-+	int (*enable)(struct omap_overlay *ovl);
-+	int (*disable)(struct omap_overlay *ovl);
-+	bool (*is_enabled)(struct omap_overlay *ovl);
-+
-+	int (*set_manager)(struct omap_overlay *ovl,
-+		struct omap_overlay_manager *mgr);
-+	int (*unset_manager)(struct omap_overlay *ovl);
-+
-+	int (*set_overlay_info)(struct omap_overlay *ovl,
-+			struct omap_overlay_info *info);
-+	void (*get_overlay_info)(struct omap_overlay *ovl,
-+			struct omap_overlay_info *info);
-+
-+	int (*wait_for_go)(struct omap_overlay *ovl);
-+
-+	struct omap_dss_device *(*get_device)(struct omap_overlay *ovl);
-+};
-+
-+struct omap_overlay_manager_info {
-+	u32 default_color;
-+
-+	enum omap_dss_trans_key_type trans_key_type;
-+	u32 trans_key;
-+	bool trans_enabled;
-+
-+	bool partial_alpha_enabled;
-+
-+	bool cpr_enable;
-+	struct omap_dss_cpr_coefs cpr_coefs;
-+};
-+
-+struct omap_overlay_manager {
-+	struct kobject kobj;
-+
-+	/* static fields */
-+	const char *name;
-+	enum omap_channel id;
-+	enum omap_overlay_manager_caps caps;
-+	struct list_head overlays;
-+	enum omap_display_type supported_displays;
-+	enum omap_dss_output_id supported_outputs;
-+
-+	/* dynamic fields */
-+	struct omap_dss_device *output;
-+
-+	/*
-+	 * The following functions do not block:
-+	 *
-+	 * set_manager_info
-+	 * get_manager_info
-+	 * apply
-+	 *
-+	 * The rest of the functions may block and cannot be called from
-+	 * interrupt context
-+	 */
-+
-+	int (*set_output)(struct omap_overlay_manager *mgr,
-+		struct omap_dss_device *output);
-+	int (*unset_output)(struct omap_overlay_manager *mgr);
-+
-+	int (*set_manager_info)(struct omap_overlay_manager *mgr,
-+			struct omap_overlay_manager_info *info);
-+	void (*get_manager_info)(struct omap_overlay_manager *mgr,
-+			struct omap_overlay_manager_info *info);
-+
-+	int (*apply)(struct omap_overlay_manager *mgr);
-+	int (*wait_for_go)(struct omap_overlay_manager *mgr);
-+	int (*wait_for_vsync)(struct omap_overlay_manager *mgr);
-+
-+	struct omap_dss_device *(*get_device)(struct omap_overlay_manager *mgr);
-+};
-+
-+/* 22 pins means 1 clk lane and 10 data lanes */
-+#define OMAP_DSS_MAX_DSI_PINS 22
-+
-+struct omap_dsi_pin_config {
-+	int num_pins;
-+	/*
-+	 * pin numbers in the following order:
-+	 * clk+, clk-
-+	 * data1+, data1-
-+	 * data2+, data2-
-+	 * ...
-+	 */
-+	int pins[OMAP_DSS_MAX_DSI_PINS];
-+};
-+
-+struct omap_dss_writeback_info {
-+	u32 paddr;
-+	u32 p_uv_addr;
-+	u16 buf_width;
-+	u16 width;
-+	u16 height;
-+	enum omap_color_mode color_mode;
-+	u8 rotation;
-+	enum omap_dss_rotation_type rotation_type;
-+	bool mirror;
-+	u8 pre_mult_alpha;
-+};
-+
-+struct omapdss_dpi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	void (*set_data_lines)(struct omap_dss_device *dssdev, int data_lines);
-+};
-+
-+struct omapdss_sdi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	void (*set_datapairs)(struct omap_dss_device *dssdev, int datapairs);
-+};
-+
-+struct omapdss_dvi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+};
-+
-+struct omapdss_atv_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	void (*set_type)(struct omap_dss_device *dssdev,
-+		enum omap_dss_venc_type type);
-+	void (*invert_vid_out_polarity)(struct omap_dss_device *dssdev,
-+		bool invert_polarity);
-+
-+	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
-+	u32 (*get_wss)(struct omap_dss_device *dssdev);
-+};
-+
-+struct omapdss_hdmi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
-+	bool (*detect)(struct omap_dss_device *dssdev);
-+
-+	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
-+	int (*set_infoframe)(struct omap_dss_device *dssdev,
-+		const struct hdmi_avi_infoframe *avi);
-+};
-+
-+struct omapdss_dsi_ops {
-+	int (*connect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+	void (*disconnect)(struct omap_dss_device *dssdev,
-+			struct omap_dss_device *dst);
-+
-+	int (*enable)(struct omap_dss_device *dssdev);
-+	void (*disable)(struct omap_dss_device *dssdev, bool disconnect_lanes,
-+			bool enter_ulps);
-+
-+	/* bus configuration */
-+	int (*set_config)(struct omap_dss_device *dssdev,
-+			const struct omap_dss_dsi_config *cfg);
-+	int (*configure_pins)(struct omap_dss_device *dssdev,
-+			const struct omap_dsi_pin_config *pin_cfg);
-+
-+	void (*enable_hs)(struct omap_dss_device *dssdev, int channel,
-+			bool enable);
-+	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
-+
-+	int (*update)(struct omap_dss_device *dssdev, int channel,
-+			void (*callback)(int, void *), void *data);
-+
-+	void (*bus_lock)(struct omap_dss_device *dssdev);
-+	void (*bus_unlock)(struct omap_dss_device *dssdev);
-+
-+	int (*enable_video_output)(struct omap_dss_device *dssdev, int channel);
-+	void (*disable_video_output)(struct omap_dss_device *dssdev,
-+			int channel);
-+
-+	int (*request_vc)(struct omap_dss_device *dssdev, int *channel);
-+	int (*set_vc_id)(struct omap_dss_device *dssdev, int channel,
-+			int vc_id);
-+	void (*release_vc)(struct omap_dss_device *dssdev, int channel);
-+
-+	/* data transfer */
-+	int (*dcs_write)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*dcs_write_nosync)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*dcs_read)(struct omap_dss_device *dssdev, int channel, u8 dcs_cmd,
-+			u8 *data, int len);
-+
-+	int (*gen_write)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*gen_write_nosync)(struct omap_dss_device *dssdev, int channel,
-+			u8 *data, int len);
-+	int (*gen_read)(struct omap_dss_device *dssdev, int channel,
-+			u8 *reqdata, int reqlen,
-+			u8 *data, int len);
-+
-+	int (*bta_sync)(struct omap_dss_device *dssdev, int channel);
-+
-+	int (*set_max_rx_packet_size)(struct omap_dss_device *dssdev,
-+			int channel, u16 plen);
-+};
-+
-+struct omap_dss_device {
-+	struct kobject kobj;
-+	struct device *dev;
-+
-+	struct module *owner;
-+
-+	struct list_head panel_list;
-+
-+	/* alias in the form of "display%d" */
-+	char alias[16];
-+
-+	enum omap_display_type type;
-+	enum omap_display_type output_type;
-+
-+	union {
-+		struct {
-+			u8 data_lines;
-+		} dpi;
-+
-+		struct {
-+			u8 channel;
-+			u8 data_lines;
-+		} rfbi;
-+
-+		struct {
-+			u8 datapairs;
-+		} sdi;
-+
-+		struct {
-+			int module;
-+		} dsi;
-+
-+		struct {
-+			enum omap_dss_venc_type type;
-+			bool invert_polarity;
-+		} venc;
-+	} phy;
-+
-+	struct {
-+		struct omap_video_timings timings;
-+
-+		enum omap_dss_dsi_pixel_format dsi_pix_fmt;
-+		enum omap_dss_dsi_mode dsi_mode;
-+	} panel;
-+
-+	struct {
-+		u8 pixel_size;
-+		struct rfbi_timings rfbi_timings;
-+	} ctrl;
-+
-+	const char *name;
-+
-+	/* used to match device to driver */
-+	const char *driver_name;
-+
-+	void *data;
-+
-+	struct omap_dss_driver *driver;
-+
-+	union {
-+		const struct omapdss_dpi_ops *dpi;
-+		const struct omapdss_sdi_ops *sdi;
-+		const struct omapdss_dvi_ops *dvi;
-+		const struct omapdss_hdmi_ops *hdmi;
-+		const struct omapdss_atv_ops *atv;
-+		const struct omapdss_dsi_ops *dsi;
-+	} ops;
-+
-+	/* helper variable for driver suspend/resume */
-+	bool activate_after_resume;
-+
-+	enum omap_display_caps caps;
-+
-+	struct omap_dss_device *src;
-+
-+	enum omap_dss_display_state state;
-+
-+	/* OMAP DSS output specific fields */
-+
-+	struct list_head list;
-+
-+	/* DISPC channel for this output */
-+	enum omap_channel dispc_channel;
-+	bool dispc_channel_connected;
-+
-+	/* output instance */
-+	enum omap_dss_output_id id;
-+
-+	/* the port number in the DT node */
-+	int port_num;
-+
-+	/* dynamic fields */
-+	struct omap_overlay_manager *manager;
-+
-+	struct omap_dss_device *dst;
-+};
-+
-+struct omap_dss_driver {
-+	int (*probe)(struct omap_dss_device *);
-+	void (*remove)(struct omap_dss_device *);
-+
-+	int (*connect)(struct omap_dss_device *dssdev);
-+	void (*disconnect)(struct omap_dss_device *dssdev);
-+
-+	int (*enable)(struct omap_dss_device *display);
-+	void (*disable)(struct omap_dss_device *display);
-+	int (*run_test)(struct omap_dss_device *display, int test);
-+
-+	int (*update)(struct omap_dss_device *dssdev,
-+			       u16 x, u16 y, u16 w, u16 h);
-+	int (*sync)(struct omap_dss_device *dssdev);
-+
-+	int (*enable_te)(struct omap_dss_device *dssdev, bool enable);
-+	int (*get_te)(struct omap_dss_device *dssdev);
-+
-+	u8 (*get_rotate)(struct omap_dss_device *dssdev);
-+	int (*set_rotate)(struct omap_dss_device *dssdev, u8 rotate);
-+
-+	bool (*get_mirror)(struct omap_dss_device *dssdev);
-+	int (*set_mirror)(struct omap_dss_device *dssdev, bool enable);
-+
-+	int (*memory_read)(struct omap_dss_device *dssdev,
-+			void *buf, size_t size,
-+			u16 x, u16 y, u16 w, u16 h);
-+
-+	void (*get_resolution)(struct omap_dss_device *dssdev,
-+			u16 *xres, u16 *yres);
-+	void (*get_dimensions)(struct omap_dss_device *dssdev,
-+			u32 *width, u32 *height);
-+	int (*get_recommended_bpp)(struct omap_dss_device *dssdev);
-+
-+	int (*check_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*set_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+	void (*get_timings)(struct omap_dss_device *dssdev,
-+			struct omap_video_timings *timings);
-+
-+	int (*set_wss)(struct omap_dss_device *dssdev, u32 wss);
-+	u32 (*get_wss)(struct omap_dss_device *dssdev);
-+
-+	int (*read_edid)(struct omap_dss_device *dssdev, u8 *buf, int len);
-+	bool (*detect)(struct omap_dss_device *dssdev);
-+
-+	int (*set_hdmi_mode)(struct omap_dss_device *dssdev, bool hdmi_mode);
-+	int (*set_hdmi_infoframe)(struct omap_dss_device *dssdev,
-+		const struct hdmi_avi_infoframe *avi);
-+};
-+
-+enum omapdss_version omapdss_get_version(void);
-+bool omapdss_is_initialized(void);
-+
-+int omap_dss_register_driver(struct omap_dss_driver *);
-+void omap_dss_unregister_driver(struct omap_dss_driver *);
-+
-+int omapdss_register_display(struct omap_dss_device *dssdev);
-+void omapdss_unregister_display(struct omap_dss_device *dssdev);
-+
-+struct omap_dss_device *omap_dss_get_device(struct omap_dss_device *dssdev);
-+void omap_dss_put_device(struct omap_dss_device *dssdev);
-+#define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) != NULL)
-+struct omap_dss_device *omap_dss_get_next_device(struct omap_dss_device *from);
-+struct omap_dss_device *omap_dss_find_device(void *data,
-+		int (*match)(struct omap_dss_device *dssdev, void *data));
-+const char *omapdss_get_default_display_name(void);
-+
-+void videomode_to_omap_video_timings(const struct videomode *vm,
-+		struct omap_video_timings *ovt);
-+void omap_video_timings_to_videomode(const struct omap_video_timings *ovt,
-+		struct videomode *vm);
-+
-+int dss_feat_get_num_mgrs(void);
-+int dss_feat_get_num_ovls(void);
-+enum omap_color_mode dss_feat_get_supported_color_modes(enum omap_plane plane);
-+
-+
-+
-+int omap_dss_get_num_overlay_managers(void);
-+struct omap_overlay_manager *omap_dss_get_overlay_manager(int num);
-+
-+int omap_dss_get_num_overlays(void);
-+struct omap_overlay *omap_dss_get_overlay(int num);
-+
-+int omapdss_register_output(struct omap_dss_device *output);
-+void omapdss_unregister_output(struct omap_dss_device *output);
-+struct omap_dss_device *omap_dss_get_output(enum omap_dss_output_id id);
-+struct omap_dss_device *omap_dss_find_output(const char *name);
-+struct omap_dss_device *omap_dss_find_output_by_port_node(struct device_node *port);
-+int omapdss_output_set_device(struct omap_dss_device *out,
-+		struct omap_dss_device *dssdev);
-+int omapdss_output_unset_device(struct omap_dss_device *out);
-+
-+struct omap_dss_device *omapdss_find_output_from_display(struct omap_dss_device *dssdev);
-+struct omap_overlay_manager *omapdss_find_mgr_from_display(struct omap_dss_device *dssdev);
-+
-+void omapdss_default_get_resolution(struct omap_dss_device *dssdev,
-+		u16 *xres, u16 *yres);
-+int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev);
-+void omapdss_default_get_timings(struct omap_dss_device *dssdev,
-+		struct omap_video_timings *timings);
-+
-+typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
-+int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-+int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-+
-+int omapdss_compat_init(void);
-+void omapdss_compat_uninit(void);
-+
-+static inline bool omapdss_device_is_connected(struct omap_dss_device *dssdev)
-+{
-+	return dssdev->src;
-+}
-+
-+static inline bool omapdss_device_is_enabled(struct omap_dss_device *dssdev)
-+{
-+	return dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
-+}
-+
-+struct device_node *
-+omapdss_of_get_next_port(const struct device_node *parent,
-+			 struct device_node *prev);
-+
-+struct device_node *
-+omapdss_of_get_next_endpoint(const struct device_node *parent,
-+			     struct device_node *prev);
-+
-+struct device_node *
-+omapdss_of_get_first_endpoint(const struct device_node *parent);
-+
-+struct omap_dss_device *
-+omapdss_of_find_source_for_first_ep(struct device_node *node);
- 
- #endif /* __OMAPFB_DSS_H */
--- 
-2.8.3
+The function soft_cursor() (which I assume draw the cursor on the
+console) calls fb_get_buffer_offset() which make sure there is still
+room in the pixmap buffer (allocated in do_register_framebuffer()) to
+copy the data (I assume a pixmap of the cursor). After the copy,
+soft_cursor() sets image.data to point to the copied data in the
+buffer (buf + offset) and calls nouveau_fbcon_imageblit(), which in
+turn call nv50_fbcon_imageblit(). However in soft_cursor(), the data
+is only aligned on 8 bits, while in nv50_fbcon_imageblit() the
+alignment requirement is 32 bits. For a 8x16 cursor, the data copied
+to the buffer in soft_cursor() is only 16 bytes, while
+nv50_fbcon_imageblit() tries to read 64 bytes.
 
+Someone has already reported the same issue on nvc0_fbcon_imageblit():
+https://lists.freedesktop.org/archives/dri-devel/2015-November/095100.htm=
+l
+nv04_fbcon_imageblit() is probably affected too.
+
+Here is the KASan report. It's from a modified RHEL7 kernel, but the
+relevant code is the same as upstream.
+
+[   38.367524] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
+[   38.367538] BUG: KASAN: slab-out-of-bounds in memcpy+0x1d/0x40 at addr=
+ ffff8800957f6230=20
+[   38.367542] Read of size 64 by task kworker/0:2/68=20
+[   38.367545] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=20
+[   38.367549] BUG kmalloc-8192 (Tainted: G          I    ------------  )=
+: kasan: bad access detected=20
+[   38.367551] ----------------------------------------------------------=
+-------------------=20
+[   38.367551] =20
+[   38.367552] Disabling lock debugging due to kernel taint=20
+[   38.367562] INFO: Allocated in register_framebuffer+0x4b9/0x5a0 age=3D=
+25205 cpu=3D0 pid=3D267=20
+[   38.367566] 	__slab_alloc+0x248/0x5f0=20
+[   38.367571] 	kmem_cache_alloc_trace+0x278/0x390=20
+[   38.367575] 	register_framebuffer+0x4b9/0x5a0=20
+[   38.367597] 	drm_fb_helper_initial_config+0x54c/0x810 [drm_kms_helper]=
+=20
+[   38.367725] 	nouveau_fbcon_init+0x154/0x190 [nouveau]=20
+[   38.367841] 	nouveau_drm_load+0x6bf/0x9f0 [nouveau]=20
+[   38.367883] 	drm_dev_register+0xc9/0x160 [drm]=20
+[   38.367923] 	drm_get_pci_dev+0xcc/0x3a0 [drm]=20
+[   38.368039] 	nouveau_drm_probe+0x3bb/0x4f0 [nouveau]=20
+[   38.368043] 	local_pci_probe+0x7a/0xd0=20
+[   38.368047] 	pci_device_probe+0x1b9/0x210=20
+[   38.368054] 	driver_probe_device+0xc6/0x530=20
+[   38.368059] 	__driver_attach+0xcb/0xd0=20
+[   38.368063] 	bus_for_each_dev+0xfc/0x180=20
+[   38.368068] 	driver_attach+0x2b/0x30=20
+[   38.368072] 	bus_add_driver+0x348/0x440=20
+[   38.368077] INFO: Slab 0xffffea000255fc00 objects=3D3 used=3D3 fp=3D0x=
+          (null) flags=3D0x1fffff00004080=20
+[   38.368080] INFO: Object 0xffff8800957f4260 @offset=3D16992 fp=3D0x   =
+       (null)=20
+[   38.368080] =20
+[   38.368086] Bytes b4 ffff8800957f4250: 02 00 00 00 a6 01 00 00 cd a8 f=
+b ff 00 00 00 00  ................=20
+[   38.368091] Object ffff8800957f4260: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368095] Object ffff8800957f4270: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368100] Object ffff8800957f4280: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368104] Object ffff8800957f4290: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368109] Object ffff8800957f42a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368113] Object ffff8800957f42b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368117] Object ffff8800957f42c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368122] Object ffff8800957f42d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368126] Object ffff8800957f42e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368131] Object ffff8800957f42f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368135] Object ffff8800957f4300: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368139] Object ffff8800957f4310: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368144] Object ffff8800957f4320: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368148] Object ffff8800957f4330: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368153] Object ffff8800957f4340: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368157] Object ffff8800957f4350: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368162] Object ffff8800957f4360: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368166] Object ffff8800957f4370: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368170] Object ffff8800957f4380: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368175] Object ffff8800957f4390: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368179] Object ffff8800957f43a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368184] Object ffff8800957f43b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368188] Object ffff8800957f43c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368193] Object ffff8800957f43d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368197] Object ffff8800957f43e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368201] Object ffff8800957f43f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368206] Object ffff8800957f4400: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368210] Object ffff8800957f4410: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368215] Object ffff8800957f4420: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368219] Object ffff8800957f4430: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368224] Object ffff8800957f4440: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368228] Object ffff8800957f4450: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368232] Object ffff8800957f4460: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368237] Object ffff8800957f4470: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368241] Object ffff8800957f4480: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368246] Object ffff8800957f4490: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368250] Object ffff8800957f44a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368255] Object ffff8800957f44b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368259] Object ffff8800957f44c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368263] Object ffff8800957f44d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368268] Object ffff8800957f44e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368272] Object ffff8800957f44f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368277] Object ffff8800957f4500: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368281] Object ffff8800957f4510: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368285] Object ffff8800957f4520: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368290] Object ffff8800957f4530: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368294] Object ffff8800957f4540: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368299] Object ffff8800957f4550: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368303] Object ffff8800957f4560: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368308] Object ffff8800957f4570: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368312] Object ffff8800957f4580: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368316] Object ffff8800957f4590: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368321] Object ffff8800957f45a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368325] Object ffff8800957f45b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368330] Object ffff8800957f45c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368334] Object ffff8800957f45d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368339] Object ffff8800957f45e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368343] Object ffff8800957f45f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368347] Object ffff8800957f4600: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368352] Object ffff8800957f4610: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368356] Object ffff8800957f4620: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368361] Object ffff8800957f4630: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368365] Object ffff8800957f4640: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368370] Object ffff8800957f4650: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368374] Object ffff8800957f4660: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368378] Object ffff8800957f4670: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368383] Object ffff8800957f4680: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368387] Object ffff8800957f4690: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368392] Object ffff8800957f46a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368396] Object ffff8800957f46b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368401] Object ffff8800957f46c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368405] Object ffff8800957f46d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368409] Object ffff8800957f46e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368414] Object ffff8800957f46f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368418] Object ffff8800957f4700: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368423] Object ffff8800957f4710: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368427] Object ffff8800957f4720: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368432] Object ffff8800957f4730: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368436] Object ffff8800957f4740: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368440] Object ffff8800957f4750: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368445] Object ffff8800957f4760: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368449] Object ffff8800957f4770: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368454] Object ffff8800957f4780: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368458] Object ffff8800957f4790: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368463] Object ffff8800957f47a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368467] Object ffff8800957f47b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368471] Object ffff8800957f47c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368476] Object ffff8800957f47d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368480] Object ffff8800957f47e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368485] Object ffff8800957f47f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368489] Object ffff8800957f4800: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368493] Object ffff8800957f4810: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368498] Object ffff8800957f4820: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368502] Object ffff8800957f4830: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368507] Object ffff8800957f4840: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368511] Object ffff8800957f4850: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368516] Object ffff8800957f4860: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368520] Object ffff8800957f4870: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368524] Object ffff8800957f4880: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368529] Object ffff8800957f4890: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368533] Object ffff8800957f48a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368538] Object ffff8800957f48b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368542] Object ffff8800957f48c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368547] Object ffff8800957f48d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368551] Object ffff8800957f48e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368555] Object ffff8800957f48f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368560] Object ffff8800957f4900: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368564] Object ffff8800957f4910: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368569] Object ffff8800957f4920: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368573] Object ffff8800957f4930: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368578] Object ffff8800957f4940: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368582] Object ffff8800957f4950: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368586] Object ffff8800957f4960: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368591] Object ffff8800957f4970: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368595] Object ffff8800957f4980: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368600] Object ffff8800957f4990: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368604] Object ffff8800957f49a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368609] Object ffff8800957f49b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368613] Object ffff8800957f49c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368617] Object ffff8800957f49d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368622] Object ffff8800957f49e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368626] Object ffff8800957f49f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368631] Object ffff8800957f4a00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368635] Object ffff8800957f4a10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368639] Object ffff8800957f4a20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368644] Object ffff8800957f4a30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368648] Object ffff8800957f4a40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368653] Object ffff8800957f4a50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368657] Object ffff8800957f4a60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368662] Object ffff8800957f4a70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368666] Object ffff8800957f4a80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368671] Object ffff8800957f4a90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368675] Object ffff8800957f4aa0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368679] Object ffff8800957f4ab0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368684] Object ffff8800957f4ac0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368688] Object ffff8800957f4ad0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368693] Object ffff8800957f4ae0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368697] Object ffff8800957f4af0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368701] Object ffff8800957f4b00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368706] Object ffff8800957f4b10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368710] Object ffff8800957f4b20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368715] Object ffff8800957f4b30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368719] Object ffff8800957f4b40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368724] Object ffff8800957f4b50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368728] Object ffff8800957f4b60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368732] Object ffff8800957f4b70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368737] Object ffff8800957f4b80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368741] Object ffff8800957f4b90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368746] Object ffff8800957f4ba0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368750] Object ffff8800957f4bb0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368755] Object ffff8800957f4bc0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368759] Object ffff8800957f4bd0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368763] Object ffff8800957f4be0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368768] Object ffff8800957f4bf0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368772] Object ffff8800957f4c00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368777] Object ffff8800957f4c10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368781] Object ffff8800957f4c20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368786] Object ffff8800957f4c30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368790] Object ffff8800957f4c40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368794] Object ffff8800957f4c50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368799] Object ffff8800957f4c60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368803] Object ffff8800957f4c70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368808] Object ffff8800957f4c80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368812] Object ffff8800957f4c90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368817] Object ffff8800957f4ca0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368821] Object ffff8800957f4cb0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368825] Object ffff8800957f4cc0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368830] Object ffff8800957f4cd0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368834] Object ffff8800957f4ce0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368839] Object ffff8800957f4cf0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368843] Object ffff8800957f4d00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368847] Object ffff8800957f4d10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368852] Object ffff8800957f4d20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368856] Object ffff8800957f4d30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368861] Object ffff8800957f4d40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368865] Object ffff8800957f4d50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368870] Object ffff8800957f4d60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368874] Object ffff8800957f4d70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368878] Object ffff8800957f4d80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368883] Object ffff8800957f4d90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368887] Object ffff8800957f4da0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368892] Object ffff8800957f4db0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368896] Object ffff8800957f4dc0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368901] Object ffff8800957f4dd0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368905] Object ffff8800957f4de0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368909] Object ffff8800957f4df0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368914] Object ffff8800957f4e00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368918] Object ffff8800957f4e10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368923] Object ffff8800957f4e20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368927] Object ffff8800957f4e30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368932] Object ffff8800957f4e40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368936] Object ffff8800957f4e50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368940] Object ffff8800957f4e60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368945] Object ffff8800957f4e70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368949] Object ffff8800957f4e80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368954] Object ffff8800957f4e90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368958] Object ffff8800957f4ea0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368963] Object ffff8800957f4eb0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368967] Object ffff8800957f4ec0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368971] Object ffff8800957f4ed0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368976] Object ffff8800957f4ee0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368980] Object ffff8800957f4ef0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368985] Object ffff8800957f4f00: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368989] Object ffff8800957f4f10: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368994] Object ffff8800957f4f20: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.368998] Object ffff8800957f4f30: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369002] Object ffff8800957f4f40: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369007] Object ffff8800957f4f50: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369011] Object ffff8800957f4f60: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369016] Object ffff8800957f4f70: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369020] Object ffff8800957f4f80: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369024] Object ffff8800957f4f90: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369029] Object ffff8800957f4fa0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369033] Object ffff8800957f4fb0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369038] Object ffff8800957f4fc0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369042] Object ffff8800957f4fd0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369047] Object ffff8800957f4fe0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369051] Object ffff8800957f4ff0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369056] Object ffff8800957f5000: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369060] Object ffff8800957f5010: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369064] Object ffff8800957f5020: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369069] Object ffff8800957f5030: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369073] Object ffff8800957f5040: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369078] Object ffff8800957f5050: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369082] Object ffff8800957f5060: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369087] Object ffff8800957f5070: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369091] Object ffff8800957f5080: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369095] Object ffff8800957f5090: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369100] Object ffff8800957f50a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369104] Object ffff8800957f50b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369109] Object ffff8800957f50c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369113] Object ffff8800957f50d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369117] Object ffff8800957f50e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369122] Object ffff8800957f50f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369126] Object ffff8800957f5100: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369131] Object ffff8800957f5110: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369135] Object ffff8800957f5120: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369140] Object ffff8800957f5130: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369144] Object ffff8800957f5140: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369148] Object ffff8800957f5150: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369153] Object ffff8800957f5160: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369157] Object ffff8800957f5170: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369162] Object ffff8800957f5180: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369166] Object ffff8800957f5190: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369171] Object ffff8800957f51a0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369175] Object ffff8800957f51b0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369179] Object ffff8800957f51c0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369184] Object ffff8800957f51d0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369188] Object ffff8800957f51e0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369193] Object ffff8800957f51f0: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369197] Object ffff8800957f5200: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369202] Object ffff8800957f5210: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369206] Object ffff8800957f5220: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369210] Object ffff8800957f5230: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369215] Object ffff8800957f5240: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369219] Object ffff8800957f5250: 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00 00 00  ................=20
+[   38.369226] CPU: 0 PID: 68 Comm: kworker/0:2 Tainted: G    B     I    =
+------------   3.10.0-402.el7.test.kasanfixcifs3.x86_64 #1=20
+[   38.369230] Hardware name: Hewlett-Packard HP Z600 Workstation/0AE8h, =
+BIOS 786G4 v03.13 10/13/2010=20
+[   38.369236] Workqueue: events fb_flashcursor=20
+[   38.369243]  ffff8800957f0000 00000000a59ee273 ffff880096fb7810 ffffff=
+ff81ae4495=20
+[   38.369249]  ffff880096fb7840 ffffffff8130eb7d ffff88009f804e00 ffffea=
+000255fc00=20
+[   38.369255]  ffff8800957f4260 ffff8800957f6230 ffff880096fb7868 ffffff=
+ff81316206=20
+[   38.369256] Call Trace:=20
+[   38.369264]  [<ffffffff81ae4495>] dump_stack+0x19/0x1b=20
+[   38.369270]  [<ffffffff8130eb7d>] print_trailer+0xfd/0x170=20
+[   38.369276]  [<ffffffff81316206>] object_err+0x36/0x40=20
+[   38.369282]  [<ffffffff813186aa>] kasan_report_error+0x22a/0x580=20
+[   38.369287]  [<ffffffff8118f8bf>] ? mark_lock+0x6f/0xa20=20
+[   38.369294]  [<ffffffff81318f98>] kasan_report+0x58/0x60=20
+[   38.369300]  [<ffffffff81317fcd>] ? memcpy+0x1d/0x40=20
+[   38.369306]  [<ffffffff81317a51>] __asan_loadN+0x141/0x1a0=20
+[   38.369311]  [<ffffffff81317fcd>] memcpy+0x1d/0x40=20
+[   38.369436]  [<ffffffffa0404e25>] OUT_RINGp+0x75/0x90 [nouveau]=20
+[   38.369560]  [<ffffffffa03fe02d>] nv50_fbcon_imageblit+0x45d/0x6d0 [no=
+uveau]=20
+[   38.369684]  [<ffffffffa03fa71c>] nouveau_fbcon_imageblit+0xec/0x150 [=
+nouveau]=20
+[   38.369691]  [<ffffffff815d46be>] soft_cursor+0x2fe/0x420=20
+[   38.369696]  [<ffffffff8118f8bf>] ? mark_lock+0x6f/0xa20=20
+[   38.369701]  [<ffffffff815d336f>] bit_cursor+0xb9f/0xbf0=20
+[   38.369707]  [<ffffffff815d27d0>] ? update_attr.isra.3+0xd0/0xd0=20
+[   38.369713]  [<ffffffff815b9aab>] ? fb_get_color_depth+0x8b/0xc0=20
+[   38.369718]  [<ffffffff815c8075>] ? get_color+0xe5/0x1e0=20
+[   38.369723]  [<ffffffff815d27d0>] ? update_attr.isra.3+0xd0/0xd0=20
+[   38.369728]  [<ffffffff815c8317>] fb_flashcursor+0x1a7/0x1c0=20
+[   38.369735]  [<ffffffff81108bf3>] process_one_work+0x423/0xb90=20
+[   38.369740]  [<ffffffff81108b4c>] ? process_one_work+0x37c/0xb90=20
+[   38.369746]  [<ffffffff811087d0>] ? flush_delayed_work+0x80/0x80=20
+[   38.369752]  [<ffffffff81109566>] worker_thread+0x206/0x560=20
+[   38.369757]  [<ffffffff81109360>] ? process_one_work+0xb90/0xb90=20
+[   38.369764]  [<ffffffff81116d85>] kthread+0x175/0x180=20
+[   38.369771]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
+[   38.369778]  [<ffffffff8104d3f9>] ? sched_clock+0x9/0x10=20
+[   38.369786]  [<ffffffff8112c3c9>] ? finish_task_switch+0x59/0x1d0=20
+[   38.369793]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
+[   38.369800]  [<ffffffff81b00dd8>] ret_from_fork+0x58/0x90=20
+[   38.369807]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
+[   38.369809] Memory state around the buggy address:=20
+[   38.369813]  ffff8800957f6100: 00 00 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00=20
+[   38.369817]  ffff8800957f6180: 00 00 00 00 00 00 00 00 00 00 00 00 00 =
+00 00 00=20
+[   38.369822] >ffff8800957f6200: 00 00 00 00 00 00 00 00 00 00 00 00 fc =
+fc fc fc=20
+[   38.369823]                                                        ^=20
+[   38.369827]  ffff8800957f6280: fc fc fc fc fc fc fc fc fc fc fc fc fc =
+fc fc fc=20
+[   38.369831]  ffff8800957f6300: fc fc fc fc fc fc fc fc fc fc fc fc fc =
+fc fc fc=20
+[   38.369833] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
+
+
+--GcPw26AED9HdkRLHEe55TIbj0wXmdlhse--
+
+--dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXRGanAAoJEHTzHJCtsuoCTsQH/jsxiH+v9BMhGifLW7ocYHWe
+EsdPSJEnurMDtPXuChm5gIUxJ0L13SDBlcHXBW40y9jT74xNq7ttisxNe9sAM4NC
+/ZnwWRezJj1RKTJLTpfIaxVBjdkhqEG39SD28P7pkSzHGrY0ro4zbRZBNa6u3Qti
+RWyHqedNtK2pq+hx+HPfO6ftncUqZ+iS+9nPYSH1ApZAuo2psOdXTgu4esHsSRyS
+bDbjBvIdhhKeP1xhc8bbya0shBWvvXx91LAySxw2yFNhwc/kMP6n3ynGs3+1d9Kq
+VWZlUtXcBJ3cDBzOPAHXDQMLfEHhrCMSdXSATlVDOjL7LavyigrGcTdFDHTzzhk=
+=05E9
+-----END PGP SIGNATURE-----
+
+--dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm--

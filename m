@@ -1,37 +1,12 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:49 +0000
-Subject: [PATCH 17/26] omapfb: Remove reference to pdata->default_device
-Message-Id: <20160530114258.30879-18-peter.ujfalusi@ti.com>
+From: program12@uscombat.info
+Date: Sun, 29 May 2016 00:44:02 +0000
+Subject: Hello
+Message-Id: <272847.7733.bm@smtp113.mail.ne1.yahoo.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: Recipients <program12@uscombat.info>
 
-The default_device is no longer used, it is a leftower from legacy. The
-else if (pdata->default_device) is always going to be false.
-
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
- drivers/video/fbdev/omap2/omapfb/dss/core.c | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
-index 5a87179b7312..b9de21d3ff09 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
-@@ -208,8 +208,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
- 		core.default_display_name = def_disp_name;
- 	else if (pdata->default_display_name)
- 		core.default_display_name = pdata->default_display_name;
--	else if (pdata->default_device)
--		core.default_display_name = pdata->default_device->name;
- 
- 	register_pm_notifier(&omap_dss_pm_notif_block);
- 
--- 
-2.8.3
-
+Hi,
+I am Kristi and i saw your contact through google page of your country which impress me and i feel we can be friends to share ideals and reason together for good,if not bad then let us know more about each other and i hope there will be no problem for us to be friend with no bad intention.You can also reply me through email(cplkristibakar@outlook.com) so that i can share details about myself, i will be waiting to hear from you soon. 

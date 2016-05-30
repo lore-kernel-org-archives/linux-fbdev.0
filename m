@@ -1,38 +1,38 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Date: Mon, 16 May 2016 23:00:00 +0000
-Subject: [PATCH 1/2] video: fbdev: pmag-ba-fb: Remove bad `__init' annotation
-Message-Id: <alpine.LFD.2.20.1605162321580.19898@eddie.linux-mips.org>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:50 +0000
+Subject: [PATCH 18/26] video: omapdss: Remove unused members from struct omap_dss_board_info
+Message-Id: <20160530114258.30879-19-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-Fix:
+The num_devices, **devices and *default_device is leftover from the past.
+They can be removed as they are no used.
 
-WARNING: drivers/video/fbdev/pmag-ba-fb.o(.text+0x308): Section mismatch in reference from the function pmagbafb_probe() to the function .init.text:pmagbafb_erase_cursor()
-The function pmagbafb_probe() 
-references the function __init pmagbafb_erase_cursor().
-This is often because pmagbafb_probe lacks a __init
-annotation or the annotation of pmagbafb_erase_cursor is wrong.
-
--- a fallout from a missed update from commit 9625b51350cc ("VIDEO: 
-PMAG-BA: Fix section mismatch") and then commit 48c68c4f1b54 ("Drivers: 
-video: remove __dev* attributes.")
-
-Signed-off-by: Maciej W. Rozycki <macro@linux-mips.org>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
-linux-pmag-ba-init.diff
-Index: linux-20160515-declance-module/drivers/video/fbdev/pmag-ba-fb.c
-=================================--- linux-20160515-declance-module.orig/drivers/video/fbdev/pmag-ba-fb.c
-+++ linux-20160515-declance-module/drivers/video/fbdev/pmag-ba-fb.c
-@@ -129,7 +129,7 @@ static struct fb_ops pmagbafb_ops = {
- /*
-  * Turn the hardware cursor off.
-  */
--static void __init pmagbafb_erase_cursor(struct fb_info *info)
-+static void pmagbafb_erase_cursor(struct fb_info *info)
- {
- 	struct pmagbafb_par *par = info->par;
+ include/video/omapdss.h | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 0c7ae93ebd76..a43859a0a398 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -320,9 +320,6 @@ enum omapdss_version {
  
+ /* Board specific data */
+ struct omap_dss_board_info {
+-	int num_devices;
+-	struct omap_dss_device **devices;
+-	struct omap_dss_device *default_device;
+ 	const char *default_display_name;
+ 	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
+ 	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
+-- 
+2.8.3
+

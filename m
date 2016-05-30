@@ -1,120 +1,122 @@
-From: Rongrong Zou <zourongrong@huawei.com>
-Date: Mon, 30 May 2016 03:11:38 +0000
-Subject: Re: [path v2 0/7] Add DRM driver for Hisilicon Hibmc
-Message-Id: <574BAF6A.9040208@huawei.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:33 +0000
+Subject: [PATCH 01/26] omapfb: panel-tpo-td028ttec1: Remove legacy boot support
+Message-Id: <20160530114258.30879-2-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1464514855-108050-1-git-send-email-zourongrong@gmail.com>
- <CAGd==0662wa-mAdX+tUf9_Tw6qQhc0-D5ivSYdRBS=OrqAVYnA@mail.gmail.com>
-In-Reply-To: <CAGd==0662wa-mAdX+tUf9_Tw6qQhc0-D5ivSYdRBS=OrqAVYnA@mail.gmail.com>
+References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Xinliang Liu <xinliang.liu@linaro.org>, Rongrong Zou <zourongrong@gmail.com>
-Cc: David Airlie <airlied@linux.ie>, Emil Velikov <emil.l.velikov@gmail.com>, lijianhua@huawei.com, dri-devel <dri-devel@lists.freedesktop.org>, Hanjun Guo <guohanjun@huawei.com>, majun258@huawei.com, Linuxarm <linuxarm@huawei.com>, LAKML <linux-arm-kernel@lists.infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-Hi Xinliang
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-在 2016/5/30 11:01, Xinliang Liu 写道:
-> Hi Rongrong,
->
-> It seems that you haven't run the checkpatch script.
-> Please run this script to check your patches before you send them. Like bellow:
-> $ cd yourkerneldir
-> $ ./scripts/checkpatch.pl --strict yourpatches
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ .../omap2/omapfb/displays/panel-tpo-td028ttec1.c   | 43 +++-------------------
+ include/video/omap-panel-data.h                    | 13 -------
+ 2 files changed, 6 insertions(+), 50 deletions(-)
 
-I run checkpatch.pl without "--strict", and i'll check again with
-this parameter, thanks!
-
->
-> Thanks,
-> -xinliang
->
-> On 29 May 2016 at 17:40, Rongrong Zou <zourongrong@gmail.com> wrote:
->> This patch set adds a new drm driver for Hisilicon Hibmc. Hibmc is a
->> base board management controller, usually it is used on server for
->> Out-of-band management purpose. In this patch set, we just support basic
->> function for Hibmc display subsystem. Hibmc display subsystem is connected
->> to host CPU by PCIe as blow:
->>
->> +----------+       +----------+
->> |          | PCIe  |  Hibmc   |
->> |host CPU( |<----->| display  |
->> |arm64,x86)|       |subsystem |
->> +----------+       +----------+
->>
->> Hardware Detail for Hibmc display subsystem
->> -----------
->>
->>    The display subsystem of Hibmc is show as bellow:
->>    +----+      +----+      +----+     +--------+
->>    |    |      |    |      |    |     |        |
->>    | FB |----->| DE |----->|VDAC|---->|external|
->>    |    |      |    |      |    |     | VGA    |
->>    +----+      +----+      +----+     +--------+
->>
->>    -DE(Display Engine) is the display controller.
->>    -VDAC(Video Digital-to-Analog converter) converts the RGB diaital data
->>    stream from DE to VGA analog signals.
->>
->> Change History
->> ------------
->>
->> Changes in v2:
->>    -Remove self-defined macros for bit operations.
->>    -Remove unused register.
->>    -Replace those deprecated functions with new version of them.
->>    -use drm_connector_register_all() to register connector after
->>     drm_dev_register().
->>
->> The patch v1 is at
->> https://lists.freedesktop.org/archives/dri-devel/2016-February/101921.html
->> Sorry for too late sending.
->>
->>
->> Rongrong Zou (7):
->>    idrm/hisilicon/hibmc: Add hisilicon hibmc drm master driver
->>    drm/hisilicon/hibmc: Add plane for DE
->>    drm/hisilicon/hibmc: Add crtc for DE
->>    drm/hisilicon/hibmc: Add encoder for VDAC
->>    drm/hisilicon/hibmc: Add connector for VDAC
->>    drm/hisilicon/hibmc: Add support for frame buffer
->>    drm/hisilicon/hibmc: Add maintainer for Hibmc DRM
->>
->>   MAINTAINERS                                       |   7 +
->>   drivers/gpu/drm/hisilicon/Kconfig                 |   1 +
->>   drivers/gpu/drm/hisilicon/Makefile                |   3 +-
->>   drivers/gpu/drm/hisilicon/hibmc/Kconfig           |  13 +
->>   drivers/gpu/drm/hisilicon/hibmc/Makefile          |   4 +
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_de.c    | 477 ++++++++++++++++++++++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_de.h    |  29 ++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c   | 399 ++++++++++++++++++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h   |  64 +++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c | 286 +++++++++++++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_power.c |  91 +++++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_power.h |  28 ++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_regs.h  | 214 ++++++++++
->>   drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c  | 174 ++++++++
->>   14 files changed, 1789 insertions(+), 1 deletion(-)
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/Kconfig
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/Makefile
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_de.c
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_de.h
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_power.c
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_power.h
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_regs.h
->>   create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c
->>
->> --
->> 1.9.1
->>
->
-> .
->
-
-
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+index 4d657f3ab679..f4dc023868ae 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+@@ -29,7 +29,6 @@
+ #include <linux/spi/spi.h>
+ #include <linux/gpio.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -365,31 +364,6 @@ static struct omap_dss_driver td028ttec1_ops = {
+ 	.check_timings	= td028ttec1_panel_check_timings,
+ };
+ 
+-static int td028ttec1_panel_probe_pdata(struct spi_device *spi)
+-{
+-	const struct panel_tpo_td028ttec1_platform_data *pdata;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&spi->dev);
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&spi->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
+-	}
+-
+-	ddata->in = in;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int td028ttec1_probe_of(struct spi_device *spi)
+ {
+ 	struct device_node *node = spi->dev.of_node;
+@@ -415,6 +389,9 @@ static int td028ttec1_panel_probe(struct spi_device *spi)
+ 
+ 	dev_dbg(&spi->dev, "%s\n", __func__);
+ 
++	if (!spi->dev.of_node)
++		return -ENODEV;
++
+ 	spi->bits_per_word = 9;
+ 	spi->mode = SPI_MODE_3;
+ 
+@@ -432,17 +409,9 @@ static int td028ttec1_panel_probe(struct spi_device *spi)
+ 
+ 	ddata->spi_dev = spi;
+ 
+-	if (dev_get_platdata(&spi->dev)) {
+-		r = td028ttec1_panel_probe_pdata(spi);
+-		if (r)
+-			return r;
+-	} else if (spi->dev.of_node) {
+-		r = td028ttec1_probe_of(spi);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = td028ttec1_probe_of(spi);
++	if (r)
++		return r;
+ 
+ 	ddata->videomode = td028ttec1_panel_timings;
+ 
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 56830d1dc762..fbdaa4c3ae96 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -223,17 +223,4 @@ struct panel_nec_nl8048hl11_platform_data {
+ 	int qvga_gpio;
+ };
+ 
+-/**
+- * panel-tpo-td028ttec1 platform data
+- * @name: name for display entity
+- * @source: name of the display entity used as a video source
+- * @data_lines: number of DPI datalines
+- */
+-struct panel_tpo_td028ttec1_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int data_lines;
+-};
+-
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
-Regards,
-Rongrong
+2.8.3
+

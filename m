@@ -1,687 +1,596 @@
-From: Jerome Marchand <jmarchan@redhat.com>
-Date: Tue, 24 May 2016 14:35:18 +0000
-Subject: BUG: drm, nouveau: slab-out-of-bounds read access in nv50_fbcon_imageblit()
-Message-Id: <183fa2bf-9273-bf5f-9a75-c3818742e33f@redhat.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm"
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:54 +0000
+Subject: [PATCH 22/26] drm/omap: Do not include video/omapdss.h directly in drivers
+Message-Id: <20160530114258.30879-23-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, 'linux-kernel' <linux-kernel@vger.kernel.org>
+References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm
-Content-Type: multipart/mixed; boundary="GcPw26AED9HdkRLHEe55TIbj0wXmdlhse"
-From: Jerome Marchand <jmarchan@redhat.com>
-To: Ben Skeggs <bskeggs@redhat.com>, David Airlie <airlied@linux.ie>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
- 'linux-kernel' <linux-kernel@vger.kernel.org>
-Message-ID: <183fa2bf-9273-bf5f-9a75-c3818742e33f@redhat.com>
-Subject: BUG: drm, nouveau: slab-out-of-bounds read access in
- nv50_fbcon_imageblit()
+All drivers to include the omapdrm/dss/omapdss.h header file. This header
+includes the <video/omapdss.h>
 
---GcPw26AED9HdkRLHEe55TIbj0wXmdlhse
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c      | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/connector-dvi.c            | 4 ++--
+ drivers/gpu/drm/omapdrm/displays/connector-hdmi.c           | 4 ++--
+ drivers/gpu/drm/omapdrm/displays/encoder-opa362.c           | 2 +-
+ drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c           | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/encoder-tpd12s015.c        | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-dpi.c                | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c             | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-lgphilips-lb035q02.c | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-nec-nl8048hl11.c     | 2 +-
+ drivers/gpu/drm/omapdrm/displays/panel-sharp-ls037v7dw01.c  | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-sony-acx565akm.c     | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c     | 3 ++-
+ drivers/gpu/drm/omapdrm/displays/panel-tpo-td043mtea1.c     | 2 +-
+ drivers/gpu/drm/omapdrm/dss/core.c                          | 3 +--
+ drivers/gpu/drm/omapdrm/dss/dispc.c                         | 3 +--
+ drivers/gpu/drm/omapdrm/dss/dispc_coefs.c                   | 2 +-
+ drivers/gpu/drm/omapdrm/dss/display.c                       | 2 +-
+ drivers/gpu/drm/omapdrm/dss/dpi.c                           | 3 +--
+ drivers/gpu/drm/omapdrm/dss/dsi.c                           | 2 +-
+ drivers/gpu/drm/omapdrm/dss/dss-of.c                        | 3 +--
+ drivers/gpu/drm/omapdrm/dss/dss.c                           | 3 +--
+ drivers/gpu/drm/omapdrm/dss/dss_features.c                  | 3 +--
+ drivers/gpu/drm/omapdrm/dss/hdmi.h                          | 2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi4.c                         | 2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi5.c                         | 2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_common.c                   | 2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_phy.c                      | 2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_pll.c                      | 3 +--
+ drivers/gpu/drm/omapdrm/dss/hdmi_wp.c                       | 2 +-
+ drivers/gpu/drm/omapdrm/dss/output.c                        | 3 +--
+ drivers/gpu/drm/omapdrm/dss/pll.c                           | 3 +--
+ drivers/gpu/drm/omapdrm/dss/rfbi.c                          | 2 +-
+ drivers/gpu/drm/omapdrm/dss/sdi.c                           | 2 +-
+ drivers/gpu/drm/omapdrm/dss/venc.c                          | 3 +--
+ drivers/gpu/drm/omapdrm/dss/video-pll.c                     | 3 +--
+ drivers/gpu/drm/omapdrm/omap_drv.h                          | 1 -
+ 37 files changed, 47 insertions(+), 50 deletions(-)
 
+diff --git a/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c b/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
+index d963b4a9cfc0..3485d1ecd655 100644
+--- a/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
++++ b/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
+@@ -14,9 +14,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/of.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
+diff --git a/drivers/gpu/drm/omapdrm/displays/connector-dvi.c b/drivers/gpu/drm/omapdrm/displays/connector-dvi.c
+index 747f26a55e43..75f7827525cf 100644
+--- a/drivers/gpu/drm/omapdrm/displays/connector-dvi.c
++++ b/drivers/gpu/drm/omapdrm/displays/connector-dvi.c
+@@ -15,10 +15,10 @@
+ #include <linux/slab.h>
+ 
+ #include <drm/drm_edid.h>
+-
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ static const struct omap_video_timings dvic_default_timings = {
+ 	.x_res		= 640,
+ 	.y_res		= 480,
+diff --git a/drivers/gpu/drm/omapdrm/displays/connector-hdmi.c b/drivers/gpu/drm/omapdrm/displays/connector-hdmi.c
+index 225fd8d6ab31..6bac35494819 100644
+--- a/drivers/gpu/drm/omapdrm/displays/connector-hdmi.c
++++ b/drivers/gpu/drm/omapdrm/displays/connector-hdmi.c
+@@ -16,10 +16,10 @@
+ #include <linux/of_gpio.h>
+ 
+ #include <drm/drm_edid.h>
+-
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ static const struct omap_video_timings hdmic_default_timings = {
+ 	.x_res		= 640,
+ 	.y_res		= 480,
+diff --git a/drivers/gpu/drm/omapdrm/displays/encoder-opa362.c b/drivers/gpu/drm/omapdrm/displays/encoder-opa362.c
+index 8c246c213e06..a36c36d3328e 100644
+--- a/drivers/gpu/drm/omapdrm/displays/encoder-opa362.c
++++ b/drivers/gpu/drm/omapdrm/displays/encoder-opa362.c
+@@ -20,7 +20,7 @@
+ #include <linux/slab.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
++#include "../dss/omapdss.h"
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+diff --git a/drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c b/drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c
+index 2fd5602880a7..1a773cd59f59 100644
+--- a/drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c
++++ b/drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c
+@@ -15,9 +15,10 @@
+ #include <linux/slab.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
+diff --git a/drivers/gpu/drm/omapdrm/displays/encoder-tpd12s015.c b/drivers/gpu/drm/omapdrm/displays/encoder-tpd12s015.c
+index 916a89978387..3b15a3388509 100644
+--- a/drivers/gpu/drm/omapdrm/displays/encoder-tpd12s015.c
++++ b/drivers/gpu/drm/omapdrm/displays/encoder-tpd12s015.c
+@@ -16,9 +16,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/gpio/consumer.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-dpi.c b/drivers/gpu/drm/omapdrm/displays/panel-dpi.c
+index e780fd4f8b46..3baccf732d96 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-dpi.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-dpi.c
+@@ -16,10 +16,11 @@
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ #include <video/of_display_timing.h>
+ 
++#include "../dss/omapdss.h"
++
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+ 	struct omap_dss_device *in;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c b/drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c
+index 36485c2137ce..433aa96aedc6 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c
+@@ -25,10 +25,11 @@
+ #include <linux/of_device.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ #include <video/mipi_display.h>
+ 
++#include "../dss/omapdss.h"
++
+ /* DSI Virtual channel. Hardcoded for now. */
+ #define TCH 0
+ 
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-lgphilips-lb035q02.c b/drivers/gpu/drm/omapdrm/displays/panel-lgphilips-lb035q02.c
+index 458f77bc473d..b7fa00188733 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-lgphilips-lb035q02.c
+@@ -16,9 +16,10 @@
+ #include <linux/mutex.h>
+ #include <linux/gpio.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ static struct omap_video_timings lb035q02_timings = {
+ 	.x_res = 320,
+ 	.y_res = 240,
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-nec-nl8048hl11.c b/drivers/gpu/drm/omapdrm/displays/panel-nec-nl8048hl11.c
+index 780cb263a318..6872b6adf095 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-nec-nl8048hl11.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-nec-nl8048hl11.c
+@@ -18,7 +18,7 @@
+ #include <linux/gpio.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
++#include "../dss/omapdss.h"
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device	dssdev;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-sharp-ls037v7dw01.c b/drivers/gpu/drm/omapdrm/displays/panel-sharp-ls037v7dw01.c
+index 529a017602e4..22b1d140c30e 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-sharp-ls037v7dw01.c
+@@ -17,7 +17,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/regulator/consumer.h>
+-#include <video/omapdss.h>
++
++#include "../dss/omapdss.h"
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-sony-acx565akm.c b/drivers/gpu/drm/omapdrm/displays/panel-sony-acx565akm.c
+index 31efcca801bd..f85cbb3a1add 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-sony-acx565akm.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-sony-acx565akm.c
+@@ -33,9 +33,10 @@
+ #include <linux/of.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/omap-panel-data.h>
+ 
++#include "../dss/omapdss.h"
++
+ #define MIPID_CMD_READ_DISP_ID		0x04
+ #define MIPID_CMD_READ_RED		0x06
+ #define MIPID_CMD_READ_GREEN		0x07
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
+index bd8d85041926..e859b3f893f7 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
+@@ -28,7 +28,8 @@
+ #include <linux/delay.h>
+ #include <linux/spi/spi.h>
+ #include <linux/gpio.h>
+-#include <video/omapdss.h>
++
++#include "../dss/omapdss.h"
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td043mtea1.c b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td043mtea1.c
+index 03e2beb7b4f0..bcbab4972bbc 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td043mtea1.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td043mtea1.c
+@@ -19,7 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/of_gpio.h>
+ 
+-#include <video/omapdss.h>
++#include "../dss/omapdss.h"
+ 
+ #define TPO_R02_MODE(x)		((x) & 7)
+ #define TPO_R02_MODE_800x480	7
+diff --git a/drivers/gpu/drm/omapdrm/dss/core.c b/drivers/gpu/drm/omapdrm/dss/core.c
+index 9cf22b30023f..6a3ebfcd7223 100644
+--- a/drivers/gpu/drm/omapdrm/dss/core.c
++++ b/drivers/gpu/drm/omapdrm/dss/core.c
+@@ -35,8 +35,7 @@
+ #include <linux/suspend.h>
+ #include <linux/slab.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dispc.c b/drivers/gpu/drm/omapdrm/dss/dispc.c
+index f83608b69e68..1fc15b8c769c 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dispc.c
++++ b/drivers/gpu/drm/omapdrm/dss/dispc.c
+@@ -41,8 +41,7 @@
+ #include <linux/of.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ #include "dispc.h"
+diff --git a/drivers/gpu/drm/omapdrm/dss/dispc_coefs.c b/drivers/gpu/drm/omapdrm/dss/dispc_coefs.c
+index 038c15b04215..34fad2376f8d 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dispc_coefs.c
++++ b/drivers/gpu/drm/omapdrm/dss/dispc_coefs.c
+@@ -18,8 +18,8 @@
+  */
+ 
+ #include <linux/kernel.h>
+-#include <video/omapdss.h>
+ 
++#include "omapdss.h"
+ #include "dispc.h"
+ 
+ static const struct dispc_coef coef3_M8[8] = {
+diff --git a/drivers/gpu/drm/omapdrm/dss/display.c b/drivers/gpu/drm/omapdrm/dss/display.c
+index 9f3dd09b0a6c..8dcdd7cf9937 100644
+--- a/drivers/gpu/drm/omapdrm/dss/display.c
++++ b/drivers/gpu/drm/omapdrm/dss/display.c
+@@ -28,7 +28,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/of.h>
+ 
+-#include <video/omapdss.h>
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
+index 97ea60257884..56068d4fb121 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dpi.c
++++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
+@@ -34,8 +34,7 @@
+ #include <linux/clk.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dsi.c b/drivers/gpu/drm/omapdrm/dss/dsi.c
+index 316cde6a794f..6d01c1898d1f 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dsi.c
++++ b/drivers/gpu/drm/omapdrm/dss/dsi.c
+@@ -42,9 +42,9 @@
+ #include <linux/of_platform.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
+ #include <video/mipi_display.h>
+ 
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dss-of.c b/drivers/gpu/drm/omapdrm/dss/dss-of.c
+index bf407b6ba15c..dfd4e9621e3b 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dss-of.c
++++ b/drivers/gpu/drm/omapdrm/dss/dss-of.c
+@@ -18,8 +18,7 @@
+ #include <linux/of.h>
+ #include <linux/seq_file.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ struct device_node *
+diff --git a/drivers/gpu/drm/omapdrm/dss/dss.c b/drivers/gpu/drm/omapdrm/dss/dss.c
+index f95ff319e68e..68942ba3ec44 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dss.c
++++ b/drivers/gpu/drm/omapdrm/dss/dss.c
+@@ -41,8 +41,7 @@
+ #include <linux/suspend.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/dss_features.c b/drivers/gpu/drm/omapdrm/dss/dss_features.c
+index c886a2927f73..602ce1af5288 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dss_features.c
++++ b/drivers/gpu/drm/omapdrm/dss/dss_features.c
+@@ -23,8 +23,7 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi.h b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+index c32a21a26054..2f926f39d197 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi.h
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+@@ -23,9 +23,9 @@
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+ #include <linux/hdmi.h>
+-#include <video/omapdss.h>
+ #include <sound/omap-hdmi-audio.h>
+ 
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ /* HDMI Wrapper */
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi4.c b/drivers/gpu/drm/omapdrm/dss/hdmi4.c
+index 289f87ae9f62..1f1619a35765 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi4.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi4.c
+@@ -33,9 +33,9 @@
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/component.h>
+-#include <video/omapdss.h>
+ #include <sound/omap-hdmi-audio.h>
+ 
++#include "omapdss.h"
+ #include "hdmi4_core.h"
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi5.c b/drivers/gpu/drm/omapdrm/dss/hdmi5.c
+index b6d101076eb4..423f9a831e37 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi5.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi5.c
+@@ -38,9 +38,9 @@
+ #include <linux/gpio.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/component.h>
+-#include <video/omapdss.h>
+ #include <sound/omap-hdmi-audio.h>
+ 
++#include "omapdss.h"
+ #include "hdmi5_core.h"
+ #include "dss.h"
+ #include "dss_features.h"
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi_common.c b/drivers/gpu/drm/omapdrm/dss/hdmi_common.c
+index 1b8fcc6c4ba1..4dfb67fe5f6d 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi_common.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi_common.c
+@@ -4,8 +4,8 @@
+ #include <linux/kernel.h>
+ #include <linux/err.h>
+ #include <linux/of.h>
+-#include <video/omapdss.h>
+ 
++#include "omapdss.h"
+ #include "hdmi.h"
+ 
+ int hdmi_parse_lanes_of(struct platform_device *pdev, struct device_node *ep,
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi_phy.c b/drivers/gpu/drm/omapdrm/dss/hdmi_phy.c
+index 1f5d19c119ce..3991b8fb9140 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi_phy.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi_phy.c
+@@ -13,8 +13,8 @@
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+-#include <video/omapdss.h>
+ 
++#include "omapdss.h"
+ #include "dss.h"
+ #include "hdmi.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi_pll.c b/drivers/gpu/drm/omapdrm/dss/hdmi_pll.c
+index 06e23a7c432c..ad624b3d09f3 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi_pll.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi_pll.c
+@@ -17,8 +17,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "hdmi.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi_wp.c b/drivers/gpu/drm/omapdrm/dss/hdmi_wp.c
+index 13442b9052d1..48779155e4d0 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi_wp.c
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi_wp.c
+@@ -14,8 +14,8 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+-#include <video/omapdss.h>
+ 
++#include "omapdss.h"
+ #include "dss.h"
+ #include "hdmi.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/output.c b/drivers/gpu/drm/omapdrm/dss/output.c
+index 829232ad8c81..24f859488201 100644
+--- a/drivers/gpu/drm/omapdrm/dss/output.c
++++ b/drivers/gpu/drm/omapdrm/dss/output.c
+@@ -21,8 +21,7 @@
+ #include <linux/slab.h>
+ #include <linux/of.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ static LIST_HEAD(output_list);
+diff --git a/drivers/gpu/drm/omapdrm/dss/pll.c b/drivers/gpu/drm/omapdrm/dss/pll.c
+index f974ddcd3b6e..0ffee5c49d14 100644
+--- a/drivers/gpu/drm/omapdrm/dss/pll.c
++++ b/drivers/gpu/drm/omapdrm/dss/pll.c
+@@ -22,8 +22,7 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/sched.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ #define PLL_CONTROL			0x0000
+diff --git a/drivers/gpu/drm/omapdrm/dss/rfbi.c b/drivers/gpu/drm/omapdrm/dss/rfbi.c
+index 3796576dfadf..cd53566d75eb 100644
+--- a/drivers/gpu/drm/omapdrm/dss/rfbi.c
++++ b/drivers/gpu/drm/omapdrm/dss/rfbi.c
+@@ -38,7 +38,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ struct rfbi_reg { u16 idx; };
+diff --git a/drivers/gpu/drm/omapdrm/dss/sdi.c b/drivers/gpu/drm/omapdrm/dss/sdi.c
+index cd6d3bfb041d..0a96c321ce62 100644
+--- a/drivers/gpu/drm/omapdrm/dss/sdi.c
++++ b/drivers/gpu/drm/omapdrm/dss/sdi.c
+@@ -29,7 +29,7 @@
+ #include <linux/of.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
++#include "omapdss.h"
+ #include "dss.h"
+ 
+ static struct {
+diff --git a/drivers/gpu/drm/omapdrm/dss/venc.c b/drivers/gpu/drm/omapdrm/dss/venc.c
+index 08a2cc778ba9..6eedf2118708 100644
+--- a/drivers/gpu/drm/omapdrm/dss/venc.c
++++ b/drivers/gpu/drm/omapdrm/dss/venc.c
+@@ -37,8 +37,7 @@
+ #include <linux/of.h>
+ #include <linux/component.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/dss/video-pll.c b/drivers/gpu/drm/omapdrm/dss/video-pll.c
+index b1ec59e42940..180b55bbab8a 100644
+--- a/drivers/gpu/drm/omapdrm/dss/video-pll.c
++++ b/drivers/gpu/drm/omapdrm/dss/video-pll.c
+@@ -17,8 +17,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/sched.h>
+ 
+-#include <video/omapdss.h>
+-
++#include "omapdss.h"
+ #include "dss.h"
+ #include "dss_features.h"
+ 
+diff --git a/drivers/gpu/drm/omapdrm/omap_drv.h b/drivers/gpu/drm/omapdrm/omap_drv.h
+index 3f823c368912..38786886d30e 100644
+--- a/drivers/gpu/drm/omapdrm/omap_drv.h
++++ b/drivers/gpu/drm/omapdrm/omap_drv.h
+@@ -24,7 +24,6 @@
+ #include <linux/platform_data/omap_drm.h>
+ #include <linux/types.h>
+ #include <linux/wait.h>
+-#include <video/omapdss.h>
+ 
+ #include <drm/drmP.h>
+ #include <drm/drm_crtc_helper.h>
+-- 
+2.8.3
 
-While testing a kernel with KASan enabled I've encountered several
-out-of-bounds read warning in the nouveau driver. It seems to be
-caused by inconsistent alignment requirements.
-
-The function soft_cursor() (which I assume draw the cursor on the
-console) calls fb_get_buffer_offset() which make sure there is still
-room in the pixmap buffer (allocated in do_register_framebuffer()) to
-copy the data (I assume a pixmap of the cursor). After the copy,
-soft_cursor() sets image.data to point to the copied data in the
-buffer (buf + offset) and calls nouveau_fbcon_imageblit(), which in
-turn call nv50_fbcon_imageblit(). However in soft_cursor(), the data
-is only aligned on 8 bits, while in nv50_fbcon_imageblit() the
-alignment requirement is 32 bits. For a 8x16 cursor, the data copied
-to the buffer in soft_cursor() is only 16 bytes, while
-nv50_fbcon_imageblit() tries to read 64 bytes.
-
-Someone has already reported the same issue on nvc0_fbcon_imageblit():
-https://lists.freedesktop.org/archives/dri-devel/2015-November/095100.htm=
-l
-nv04_fbcon_imageblit() is probably affected too.
-
-Here is the KASan report. It's from a modified RHEL7 kernel, but the
-relevant code is the same as upstream.
-
-[   38.367524] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
-[   38.367538] BUG: KASAN: slab-out-of-bounds in memcpy+0x1d/0x40 at addr=
- ffff8800957f6230=20
-[   38.367542] Read of size 64 by task kworker/0:2/68=20
-[   38.367545] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=20
-[   38.367549] BUG kmalloc-8192 (Tainted: G          I    ------------  )=
-: kasan: bad access detected=20
-[   38.367551] ----------------------------------------------------------=
--------------------=20
-[   38.367551] =20
-[   38.367552] Disabling lock debugging due to kernel taint=20
-[   38.367562] INFO: Allocated in register_framebuffer+0x4b9/0x5a0 age=3D=
-25205 cpu=3D0 pid=3D267=20
-[   38.367566] 	__slab_alloc+0x248/0x5f0=20
-[   38.367571] 	kmem_cache_alloc_trace+0x278/0x390=20
-[   38.367575] 	register_framebuffer+0x4b9/0x5a0=20
-[   38.367597] 	drm_fb_helper_initial_config+0x54c/0x810 [drm_kms_helper]=
-=20
-[   38.367725] 	nouveau_fbcon_init+0x154/0x190 [nouveau]=20
-[   38.367841] 	nouveau_drm_load+0x6bf/0x9f0 [nouveau]=20
-[   38.367883] 	drm_dev_register+0xc9/0x160 [drm]=20
-[   38.367923] 	drm_get_pci_dev+0xcc/0x3a0 [drm]=20
-[   38.368039] 	nouveau_drm_probe+0x3bb/0x4f0 [nouveau]=20
-[   38.368043] 	local_pci_probe+0x7a/0xd0=20
-[   38.368047] 	pci_device_probe+0x1b9/0x210=20
-[   38.368054] 	driver_probe_device+0xc6/0x530=20
-[   38.368059] 	__driver_attach+0xcb/0xd0=20
-[   38.368063] 	bus_for_each_dev+0xfc/0x180=20
-[   38.368068] 	driver_attach+0x2b/0x30=20
-[   38.368072] 	bus_add_driver+0x348/0x440=20
-[   38.368077] INFO: Slab 0xffffea000255fc00 objects=3D3 used=3D3 fp=3D0x=
-          (null) flags=3D0x1fffff00004080=20
-[   38.368080] INFO: Object 0xffff8800957f4260 @offset=3D16992 fp=3D0x   =
-       (null)=20
-[   38.368080] =20
-[   38.368086] Bytes b4 ffff8800957f4250: 02 00 00 00 a6 01 00 00 cd a8 f=
-b ff 00 00 00 00  ................=20
-[   38.368091] Object ffff8800957f4260: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368095] Object ffff8800957f4270: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368100] Object ffff8800957f4280: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368104] Object ffff8800957f4290: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368109] Object ffff8800957f42a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368113] Object ffff8800957f42b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368117] Object ffff8800957f42c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368122] Object ffff8800957f42d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368126] Object ffff8800957f42e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368131] Object ffff8800957f42f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368135] Object ffff8800957f4300: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368139] Object ffff8800957f4310: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368144] Object ffff8800957f4320: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368148] Object ffff8800957f4330: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368153] Object ffff8800957f4340: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368157] Object ffff8800957f4350: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368162] Object ffff8800957f4360: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368166] Object ffff8800957f4370: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368170] Object ffff8800957f4380: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368175] Object ffff8800957f4390: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368179] Object ffff8800957f43a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368184] Object ffff8800957f43b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368188] Object ffff8800957f43c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368193] Object ffff8800957f43d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368197] Object ffff8800957f43e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368201] Object ffff8800957f43f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368206] Object ffff8800957f4400: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368210] Object ffff8800957f4410: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368215] Object ffff8800957f4420: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368219] Object ffff8800957f4430: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368224] Object ffff8800957f4440: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368228] Object ffff8800957f4450: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368232] Object ffff8800957f4460: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368237] Object ffff8800957f4470: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368241] Object ffff8800957f4480: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368246] Object ffff8800957f4490: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368250] Object ffff8800957f44a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368255] Object ffff8800957f44b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368259] Object ffff8800957f44c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368263] Object ffff8800957f44d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368268] Object ffff8800957f44e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368272] Object ffff8800957f44f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368277] Object ffff8800957f4500: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368281] Object ffff8800957f4510: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368285] Object ffff8800957f4520: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368290] Object ffff8800957f4530: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368294] Object ffff8800957f4540: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368299] Object ffff8800957f4550: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368303] Object ffff8800957f4560: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368308] Object ffff8800957f4570: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368312] Object ffff8800957f4580: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368316] Object ffff8800957f4590: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368321] Object ffff8800957f45a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368325] Object ffff8800957f45b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368330] Object ffff8800957f45c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368334] Object ffff8800957f45d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368339] Object ffff8800957f45e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368343] Object ffff8800957f45f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368347] Object ffff8800957f4600: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368352] Object ffff8800957f4610: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368356] Object ffff8800957f4620: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368361] Object ffff8800957f4630: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368365] Object ffff8800957f4640: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368370] Object ffff8800957f4650: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368374] Object ffff8800957f4660: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368378] Object ffff8800957f4670: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368383] Object ffff8800957f4680: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368387] Object ffff8800957f4690: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368392] Object ffff8800957f46a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368396] Object ffff8800957f46b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368401] Object ffff8800957f46c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368405] Object ffff8800957f46d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368409] Object ffff8800957f46e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368414] Object ffff8800957f46f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368418] Object ffff8800957f4700: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368423] Object ffff8800957f4710: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368427] Object ffff8800957f4720: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368432] Object ffff8800957f4730: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368436] Object ffff8800957f4740: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368440] Object ffff8800957f4750: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368445] Object ffff8800957f4760: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368449] Object ffff8800957f4770: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368454] Object ffff8800957f4780: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368458] Object ffff8800957f4790: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368463] Object ffff8800957f47a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368467] Object ffff8800957f47b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368471] Object ffff8800957f47c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368476] Object ffff8800957f47d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368480] Object ffff8800957f47e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368485] Object ffff8800957f47f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368489] Object ffff8800957f4800: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368493] Object ffff8800957f4810: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368498] Object ffff8800957f4820: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368502] Object ffff8800957f4830: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368507] Object ffff8800957f4840: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368511] Object ffff8800957f4850: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368516] Object ffff8800957f4860: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368520] Object ffff8800957f4870: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368524] Object ffff8800957f4880: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368529] Object ffff8800957f4890: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368533] Object ffff8800957f48a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368538] Object ffff8800957f48b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368542] Object ffff8800957f48c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368547] Object ffff8800957f48d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368551] Object ffff8800957f48e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368555] Object ffff8800957f48f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368560] Object ffff8800957f4900: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368564] Object ffff8800957f4910: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368569] Object ffff8800957f4920: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368573] Object ffff8800957f4930: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368578] Object ffff8800957f4940: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368582] Object ffff8800957f4950: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368586] Object ffff8800957f4960: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368591] Object ffff8800957f4970: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368595] Object ffff8800957f4980: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368600] Object ffff8800957f4990: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368604] Object ffff8800957f49a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368609] Object ffff8800957f49b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368613] Object ffff8800957f49c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368617] Object ffff8800957f49d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368622] Object ffff8800957f49e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368626] Object ffff8800957f49f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368631] Object ffff8800957f4a00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368635] Object ffff8800957f4a10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368639] Object ffff8800957f4a20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368644] Object ffff8800957f4a30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368648] Object ffff8800957f4a40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368653] Object ffff8800957f4a50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368657] Object ffff8800957f4a60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368662] Object ffff8800957f4a70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368666] Object ffff8800957f4a80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368671] Object ffff8800957f4a90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368675] Object ffff8800957f4aa0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368679] Object ffff8800957f4ab0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368684] Object ffff8800957f4ac0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368688] Object ffff8800957f4ad0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368693] Object ffff8800957f4ae0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368697] Object ffff8800957f4af0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368701] Object ffff8800957f4b00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368706] Object ffff8800957f4b10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368710] Object ffff8800957f4b20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368715] Object ffff8800957f4b30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368719] Object ffff8800957f4b40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368724] Object ffff8800957f4b50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368728] Object ffff8800957f4b60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368732] Object ffff8800957f4b70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368737] Object ffff8800957f4b80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368741] Object ffff8800957f4b90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368746] Object ffff8800957f4ba0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368750] Object ffff8800957f4bb0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368755] Object ffff8800957f4bc0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368759] Object ffff8800957f4bd0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368763] Object ffff8800957f4be0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368768] Object ffff8800957f4bf0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368772] Object ffff8800957f4c00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368777] Object ffff8800957f4c10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368781] Object ffff8800957f4c20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368786] Object ffff8800957f4c30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368790] Object ffff8800957f4c40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368794] Object ffff8800957f4c50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368799] Object ffff8800957f4c60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368803] Object ffff8800957f4c70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368808] Object ffff8800957f4c80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368812] Object ffff8800957f4c90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368817] Object ffff8800957f4ca0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368821] Object ffff8800957f4cb0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368825] Object ffff8800957f4cc0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368830] Object ffff8800957f4cd0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368834] Object ffff8800957f4ce0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368839] Object ffff8800957f4cf0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368843] Object ffff8800957f4d00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368847] Object ffff8800957f4d10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368852] Object ffff8800957f4d20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368856] Object ffff8800957f4d30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368861] Object ffff8800957f4d40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368865] Object ffff8800957f4d50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368870] Object ffff8800957f4d60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368874] Object ffff8800957f4d70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368878] Object ffff8800957f4d80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368883] Object ffff8800957f4d90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368887] Object ffff8800957f4da0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368892] Object ffff8800957f4db0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368896] Object ffff8800957f4dc0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368901] Object ffff8800957f4dd0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368905] Object ffff8800957f4de0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368909] Object ffff8800957f4df0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368914] Object ffff8800957f4e00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368918] Object ffff8800957f4e10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368923] Object ffff8800957f4e20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368927] Object ffff8800957f4e30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368932] Object ffff8800957f4e40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368936] Object ffff8800957f4e50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368940] Object ffff8800957f4e60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368945] Object ffff8800957f4e70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368949] Object ffff8800957f4e80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368954] Object ffff8800957f4e90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368958] Object ffff8800957f4ea0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368963] Object ffff8800957f4eb0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368967] Object ffff8800957f4ec0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368971] Object ffff8800957f4ed0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368976] Object ffff8800957f4ee0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368980] Object ffff8800957f4ef0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368985] Object ffff8800957f4f00: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368989] Object ffff8800957f4f10: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368994] Object ffff8800957f4f20: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.368998] Object ffff8800957f4f30: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369002] Object ffff8800957f4f40: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369007] Object ffff8800957f4f50: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369011] Object ffff8800957f4f60: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369016] Object ffff8800957f4f70: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369020] Object ffff8800957f4f80: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369024] Object ffff8800957f4f90: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369029] Object ffff8800957f4fa0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369033] Object ffff8800957f4fb0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369038] Object ffff8800957f4fc0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369042] Object ffff8800957f4fd0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369047] Object ffff8800957f4fe0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369051] Object ffff8800957f4ff0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369056] Object ffff8800957f5000: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369060] Object ffff8800957f5010: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369064] Object ffff8800957f5020: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369069] Object ffff8800957f5030: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369073] Object ffff8800957f5040: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369078] Object ffff8800957f5050: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369082] Object ffff8800957f5060: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369087] Object ffff8800957f5070: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369091] Object ffff8800957f5080: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369095] Object ffff8800957f5090: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369100] Object ffff8800957f50a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369104] Object ffff8800957f50b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369109] Object ffff8800957f50c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369113] Object ffff8800957f50d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369117] Object ffff8800957f50e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369122] Object ffff8800957f50f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369126] Object ffff8800957f5100: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369131] Object ffff8800957f5110: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369135] Object ffff8800957f5120: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369140] Object ffff8800957f5130: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369144] Object ffff8800957f5140: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369148] Object ffff8800957f5150: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369153] Object ffff8800957f5160: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369157] Object ffff8800957f5170: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369162] Object ffff8800957f5180: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369166] Object ffff8800957f5190: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369171] Object ffff8800957f51a0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369175] Object ffff8800957f51b0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369179] Object ffff8800957f51c0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369184] Object ffff8800957f51d0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369188] Object ffff8800957f51e0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369193] Object ffff8800957f51f0: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369197] Object ffff8800957f5200: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369202] Object ffff8800957f5210: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369206] Object ffff8800957f5220: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369210] Object ffff8800957f5230: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369215] Object ffff8800957f5240: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369219] Object ffff8800957f5250: 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00 00 00  ................=20
-[   38.369226] CPU: 0 PID: 68 Comm: kworker/0:2 Tainted: G    B     I    =
-------------   3.10.0-402.el7.test.kasanfixcifs3.x86_64 #1=20
-[   38.369230] Hardware name: Hewlett-Packard HP Z600 Workstation/0AE8h, =
-BIOS 786G4 v03.13 10/13/2010=20
-[   38.369236] Workqueue: events fb_flashcursor=20
-[   38.369243]  ffff8800957f0000 00000000a59ee273 ffff880096fb7810 ffffff=
-ff81ae4495=20
-[   38.369249]  ffff880096fb7840 ffffffff8130eb7d ffff88009f804e00 ffffea=
-000255fc00=20
-[   38.369255]  ffff8800957f4260 ffff8800957f6230 ffff880096fb7868 ffffff=
-ff81316206=20
-[   38.369256] Call Trace:=20
-[   38.369264]  [<ffffffff81ae4495>] dump_stack+0x19/0x1b=20
-[   38.369270]  [<ffffffff8130eb7d>] print_trailer+0xfd/0x170=20
-[   38.369276]  [<ffffffff81316206>] object_err+0x36/0x40=20
-[   38.369282]  [<ffffffff813186aa>] kasan_report_error+0x22a/0x580=20
-[   38.369287]  [<ffffffff8118f8bf>] ? mark_lock+0x6f/0xa20=20
-[   38.369294]  [<ffffffff81318f98>] kasan_report+0x58/0x60=20
-[   38.369300]  [<ffffffff81317fcd>] ? memcpy+0x1d/0x40=20
-[   38.369306]  [<ffffffff81317a51>] __asan_loadN+0x141/0x1a0=20
-[   38.369311]  [<ffffffff81317fcd>] memcpy+0x1d/0x40=20
-[   38.369436]  [<ffffffffa0404e25>] OUT_RINGp+0x75/0x90 [nouveau]=20
-[   38.369560]  [<ffffffffa03fe02d>] nv50_fbcon_imageblit+0x45d/0x6d0 [no=
-uveau]=20
-[   38.369684]  [<ffffffffa03fa71c>] nouveau_fbcon_imageblit+0xec/0x150 [=
-nouveau]=20
-[   38.369691]  [<ffffffff815d46be>] soft_cursor+0x2fe/0x420=20
-[   38.369696]  [<ffffffff8118f8bf>] ? mark_lock+0x6f/0xa20=20
-[   38.369701]  [<ffffffff815d336f>] bit_cursor+0xb9f/0xbf0=20
-[   38.369707]  [<ffffffff815d27d0>] ? update_attr.isra.3+0xd0/0xd0=20
-[   38.369713]  [<ffffffff815b9aab>] ? fb_get_color_depth+0x8b/0xc0=20
-[   38.369718]  [<ffffffff815c8075>] ? get_color+0xe5/0x1e0=20
-[   38.369723]  [<ffffffff815d27d0>] ? update_attr.isra.3+0xd0/0xd0=20
-[   38.369728]  [<ffffffff815c8317>] fb_flashcursor+0x1a7/0x1c0=20
-[   38.369735]  [<ffffffff81108bf3>] process_one_work+0x423/0xb90=20
-[   38.369740]  [<ffffffff81108b4c>] ? process_one_work+0x37c/0xb90=20
-[   38.369746]  [<ffffffff811087d0>] ? flush_delayed_work+0x80/0x80=20
-[   38.369752]  [<ffffffff81109566>] worker_thread+0x206/0x560=20
-[   38.369757]  [<ffffffff81109360>] ? process_one_work+0xb90/0xb90=20
-[   38.369764]  [<ffffffff81116d85>] kthread+0x175/0x180=20
-[   38.369771]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
-[   38.369778]  [<ffffffff8104d3f9>] ? sched_clock+0x9/0x10=20
-[   38.369786]  [<ffffffff8112c3c9>] ? finish_task_switch+0x59/0x1d0=20
-[   38.369793]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
-[   38.369800]  [<ffffffff81b00dd8>] ret_from_fork+0x58/0x90=20
-[   38.369807]  [<ffffffff81116c10>] ? flush_kthread_work+0x280/0x280=20
-[   38.369809] Memory state around the buggy address:=20
-[   38.369813]  ffff8800957f6100: 00 00 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00=20
-[   38.369817]  ffff8800957f6180: 00 00 00 00 00 00 00 00 00 00 00 00 00 =
-00 00 00=20
-[   38.369822] >ffff8800957f6200: 00 00 00 00 00 00 00 00 00 00 00 00 fc =
-fc fc fc=20
-[   38.369823]                                                        ^=20
-[   38.369827]  ffff8800957f6280: fc fc fc fc fc fc fc fc fc fc fc fc fc =
-fc fc fc=20
-[   38.369831]  ffff8800957f6300: fc fc fc fc fc fc fc fc fc fc fc fc fc =
-fc fc fc=20
-[   38.369833] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=20
-
-
---GcPw26AED9HdkRLHEe55TIbj0wXmdlhse--
-
---dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJXRGanAAoJEHTzHJCtsuoCTsQH/jsxiH+v9BMhGifLW7ocYHWe
-EsdPSJEnurMDtPXuChm5gIUxJ0L13SDBlcHXBW40y9jT74xNq7ttisxNe9sAM4NC
-/ZnwWRezJj1RKTJLTpfIaxVBjdkhqEG39SD28P7pkSzHGrY0ro4zbRZBNa6u3Qti
-RWyHqedNtK2pq+hx+HPfO6ftncUqZ+iS+9nPYSH1ApZAuo2psOdXTgu4esHsSRyS
-bDbjBvIdhhKeP1xhc8bbya0shBWvvXx91LAySxw2yFNhwc/kMP6n3ynGs3+1d9Kq
-VWZlUtXcBJ3cDBzOPAHXDQMLfEHhrCMSdXSATlVDOjL7LavyigrGcTdFDHTzzhk=
-=05E9
------END PGP SIGNATURE-----
-
---dB2kiFbBMl8cSEhQ7J2hgiUKD2VGNRoIm--

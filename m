@@ -1,94 +1,169 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Mon, 09 May 2016 12:23:30 +0000
-Subject: Re: [PATCH v3 0/4] Support INT3406 Display thermal device
-Message-Id: <CAJZ5v0gR27r=Hvm8=y5puQYUj_Qw+uxKy-59aJ=F044Saab+Tg@mail.gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:32 +0000
+Subject: [PATCH 00/26] fb/drm: omapdss: Clean up the headers and separate the two stack
+Message-Id: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1461761105-5961-1-git-send-email-aaron.lu@intel.com>
-	<CAJZ5v0hjvMc98WgAUJG3MPNNZm8YiCBxP6OdmW-oP7MnH+69wA@mail.gmail.com>
-	<56b0b394-4984-62b8-9d4c-efefe8fdae8d@intel.com>
-	<7370640.WWc4AQ4034@vostro.rjw.lan>
-	<d160a515-3e11-8faa-71a4-233ff1b7d70d@intel.com>
-	<1462780173.10198.5.camel@rzhang1-mobl4>
-In-Reply-To: <1462780173.10198.5.camel@rzhang1-mobl4>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Zhang, Rui" <rui.zhang@intel.com>
-Cc: "Lu, Aaron" <aaron.lu@intel.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>, "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "rjw@rjwysocki.net" <rjw@rjwysocki.net>, "rafael@kernel.org" <rafael@kernel.org>
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-On Mon, May 9, 2016 at 9:49 AM, Zhang, Rui <rui.zhang@intel.com> wrote:
-> On Fri, 2016-05-06 at 14:45 +0800, Aaron Lu wrote:
->> On 05/05/2016 05:47 AM, Rafael J. Wysocki wrote:
->> > On Thursday, April 28, 2016 09:48:30 AM Aaron Lu wrote:
->> >> On 04/28/2016 03:38 AM, Rafael J. Wysocki wrote:
->> >>> On Wed, Apr 27, 2016 at 2:45 PM, Aaron Lu <aaron.lu@intel.com> wrote:
->> >>>> v3:
->> >>>> Split patch 3/3 in v2 into 2 patches: one makes changes to acpi_video
->> >>>> and one adds the int3406 driver as suggested by Rafael. There should
->> >>>> be no functionality change compared to v2.
->> >>>>
->> >>>> v2:
->> >>>> The display thermal device represents the LED/LCD display panel
->> >>>> that may or may not include touch support. The main function of
->> >>>> the display thermal device is to allow control of the display
->> >>>> brightness in order to address a thermal condition or to reduce
->> >>>> power consumed by display device.
->> >>>>
->> >>>> Due to the way this thermal device changes brightness level is said
->> >>>> to be deprecated so we are using the raw interface to do the actual
->> >>>> backlight change. This requires the backlight core support so two
->> >>>> new APIs are added and exported in patch 1/3. With this, the previous
->> >>>> API backlight_device_registered can be removed and this is done in
->> >>>> patch 2/3. Patch 3/3 adds the new int3406 thermal driver.
->> >>>>
->> >>>> The 1st version is here:
->> >>>> http://thread.gmane.org/gmane.linux.acpi.devel/72619
->> >>>>
->> >>>> This whole series should go through the thermal tree if applied.
->> >>>>
->> >>>> Aaron Lu (3):
->> >>>>   video / backlight: add two APIs for drivers to use
->> >>>>   video / backlight: remove the backlight_device_registered API
->> >>>>   Thermal: add INT3406 thermal driver
->> >>>>
->> >>>>  drivers/acpi/acpi_video.c                         |  83 ++++----
->> >>>>  drivers/acpi/video_detect.c                       |   2 +-
->> >>>>  drivers/thermal/Kconfig                           |  28 +--
->> >>>>  drivers/thermal/int340x_thermal/Kconfig           |  42 ++++
->> >>>>  drivers/thermal/int340x_thermal/Makefile          |   1 +
->> >>>>  drivers/thermal/int340x_thermal/int3406_thermal.c | 236 ++++++++++++++++++++++
->> >>>>  drivers/video/backlight/backlight.c               |  39 ++--
->> >>>>  include/acpi/video.h                              |  20 ++
->> >>>>  include/linux/backlight.h                         |   3 +-
->> >>>>  9 files changed, 374 insertions(+), 80 deletions(-)
->> >>>>  create mode 100644 drivers/thermal/int340x_thermal/Kconfig
->> >>>>  create mode 100644 drivers/thermal/int340x_thermal/int3406_thermal.c
->> >>>
->> >>> The first three patches in this series look OK to me, so
->> >>>
->> >>> Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->> >>>
->> >>> for the [1-3/4].
->> >>>
->> >>> That said it may be better if those three go in via ACPI.  I can put
->> >>> them into a separate branch for Rui to pull from.
->> >>>
->> >>> Please let me know what you think.
->> >>
->> >> I have no problem with that.
->> >
->> > OK
->> >
->> > [1-3/4] have been queued up for 4.7 in my tree.  Please let me know if you
->> > want me to expose the branch containing them.
->>
->> Thanks a lot!
->>
->> Rui,
->>
->> Do you need a branch so that you can pull and merge 4/4 on top of that?
->>
-> Rafael, can you please take patch 4/4 as well?
-> It should not conflict with my other thermal material.
+Hi,
 
-I can do that, but can you please ACK it for me?
+omapfb is deprecated. It will not receive new features, only bug fixes. On the.
+other hand omapdrm is in active development and the fact that both
+implementation (omapfb and omapdrm) is using the same header file
+(video/omapdss.h) makes implementing new features or doing bigger clean ups in
+omapdrm harder and hared as the change should not break omapfb.
+
+To overcome this issue we need to separate the two implementation. This is the
+aim of this series:
+Create platform_data header for omapdss,
+clean up the header usage and dependencies,
+new header file for omapfb stack (video/omapfb_dss.h)
+local omapdss.h header file for omapdrm.
+
+To generate the set I have used:
+git format-patch -C20 --find-copies-harder
+
+Regards,
+Peter
+---
+Peter Ujfalusi (26):
+  omapfb: panel-tpo-td028ttec1: Remove legacy boot support
+  omapfb: panel-nec-nl8048hl11: Remove legacy boot support
+  omapfb: panel-tpo-td043mtea1: Remove legacy boot support
+  omapfb: panel-sharp-ls037v7dw01: Remove legacy boot support
+  omapfb: panel-lgphilips-lb035q02: Remove legacy boot support
+  omapfb: panel-dsi-cm: Remove legacy boot support
+  omapfb: connector-hdmi: Remove legacy boot support
+  omapfb: connector-dvi: Remove legacy boot support
+  omapfb: encoder-tfp410: Remove legacy boot support
+  omapdss: omap-panel-data.h: Remove struct omap_dss_device declaration
+  drm/omap: connector-analog-tv: Support only Composite type in legacy
+    boot
+  omapfb: connector-analog-tv: Support only Composite type in legacy
+    boot
+  ARM: OMAP: rx51-video: Do not set TV connector_type
+  omapdss: omap-panel-data.h: Remove connector_type from atv pdata
+  ARM/video: omap2: Move omap_display_init declaration to
+    mach-omap2/display.h
+  drm/omap: Remove reference to pdata->default_device
+  omapfb: Remove reference to pdata->default_device
+  video: omapdss: Remove unused members from struct omap_dss_board_info
+  video/platform_data: omapdss: Create new header file for platform data
+  ARM: OMAP2: Use the platform_data header for omapdss
+  omapdss: hdmi audio: Make header file independent of video/omapdss.h
+  drm/omap: Do not include video/omapdss.h directly in drivers
+  omapfb: Create new header file for omapfb DSS implementation
+  [media] omap_vout: Switch to use the video/omapfb_dss.h header file
+  omapfb: Copy video/omapdss.h content to video/omapfb_dss.h
+  drm/omap: Remove the video/omapdss.h and move it's content to local
+    header file
+
+ arch/arm/mach-omap2/board-ldp.c                    |   3 +-
+ arch/arm/mach-omap2/board-rx51-video.c             |   4 +-
+ arch/arm/mach-omap2/display.c                      |   2 +-
+ arch/arm/mach-omap2/display.h                      |   5 +
+ arch/arm/mach-omap2/dss-common.c                   |   2 +-
+ .../gpu/drm/omapdrm/displays/connector-analog-tv.c |  11 +-
+ drivers/gpu/drm/omapdrm/displays/connector-dvi.c   |   4 +-
+ drivers/gpu/drm/omapdrm/displays/connector-hdmi.c  |   4 +-
+ drivers/gpu/drm/omapdrm/displays/encoder-opa362.c  |   2 +-
+ drivers/gpu/drm/omapdrm/displays/encoder-tfp410.c  |   3 +-
+ .../gpu/drm/omapdrm/displays/encoder-tpd12s015.c   |   3 +-
+ drivers/gpu/drm/omapdrm/displays/panel-dpi.c       |   3 +-
+ drivers/gpu/drm/omapdrm/displays/panel-dsi-cm.c    |   3 +-
+ .../omapdrm/displays/panel-lgphilips-lb035q02.c    |   3 +-
+ .../drm/omapdrm/displays/panel-nec-nl8048hl11.c    |   2 +-
+ .../drm/omapdrm/displays/panel-sharp-ls037v7dw01.c |   3 +-
+ .../drm/omapdrm/displays/panel-sony-acx565akm.c    |   3 +-
+ .../drm/omapdrm/displays/panel-tpo-td028ttec1.c    |   3 +-
+ .../drm/omapdrm/displays/panel-tpo-td043mtea1.c    |   2 +-
+ drivers/gpu/drm/omapdrm/dss/core.c                 |   5 +-
+ drivers/gpu/drm/omapdrm/dss/dispc.c                |   3 +-
+ drivers/gpu/drm/omapdrm/dss/dispc_coefs.c          |   2 +-
+ drivers/gpu/drm/omapdrm/dss/display.c              |   2 +-
+ drivers/gpu/drm/omapdrm/dss/dpi.c                  |   3 +-
+ drivers/gpu/drm/omapdrm/dss/dsi.c                  |   2 +-
+ drivers/gpu/drm/omapdrm/dss/dss-of.c               |   3 +-
+ drivers/gpu/drm/omapdrm/dss/dss.c                  |   3 +-
+ drivers/gpu/drm/omapdrm/dss/dss_features.c         |   3 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi.h                 |   3 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi4.c                |   2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi5.c                |   2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_common.c          |   2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_phy.c             |   2 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_pll.c             |   3 +-
+ drivers/gpu/drm/omapdrm/dss/hdmi_wp.c              |   2 +-
+ drivers/gpu/drm/omapdrm/dss/omapdss.h              | 866 ++++++++++++++++++++-
+ drivers/gpu/drm/omapdrm/dss/output.c               |   3 +-
+ drivers/gpu/drm/omapdrm/dss/pll.c                  |   3 +-
+ drivers/gpu/drm/omapdrm/dss/rfbi.c                 |   2 +-
+ drivers/gpu/drm/omapdrm/dss/sdi.c                  |   2 +-
+ drivers/gpu/drm/omapdrm/dss/venc.c                 |   3 +-
+ drivers/gpu/drm/omapdrm/dss/video-pll.c            |   3 +-
+ drivers/gpu/drm/omapdrm/omap_drv.h                 |   1 -
+ drivers/media/platform/omap/omap_vout.c            |   2 +-
+ drivers/media/platform/omap/omap_voutdef.h         |   2 +-
+ drivers/media/platform/omap/omap_voutlib.c         |   2 +-
+ .../omap2/omapfb/displays/connector-analog-tv.c    |  10 +-
+ .../fbdev/omap2/omapfb/displays/connector-dvi.c    |  60 +-
+ .../fbdev/omap2/omapfb/displays/connector-hdmi.c   |  44 +-
+ .../fbdev/omap2/omapfb/displays/encoder-opa362.c   |   2 +-
+ .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   |  46 +-
+ .../omap2/omapfb/displays/encoder-tpd12s015.c      |   2 +-
+ .../video/fbdev/omap2/omapfb/displays/panel-dpi.c  |   2 +-
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |  54 +-
+ .../omapfb/displays/panel-lgphilips-lb035q02.c     |  58 +-
+ .../omap2/omapfb/displays/panel-nec-nl8048hl11.c   |  47 +-
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      |  83 +-
+ .../omap2/omapfb/displays/panel-sony-acx565akm.c   |   2 +-
+ .../omap2/omapfb/displays/panel-tpo-td028ttec1.c   |  45 +-
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   |  46 +-
+ drivers/video/fbdev/omap2/omapfb/dss/apply.c       |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/core.c        |   4 +-
+ .../video/fbdev/omap2/omapfb/dss/dispc-compat.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c       |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dispc_coefs.c |   2 +-
+ .../video/fbdev/omap2/omapfb/dss/display-sysfs.c   |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/display.c     |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dpi.c         |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c         |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c      |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c         |   2 +-
+ .../video/fbdev/omap2/omapfb/dss/dss_features.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi.h        |   3 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c       |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c       |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_common.c |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c     |   2 +-
+ .../video/fbdev/omap2/omapfb/dss/manager-sysfs.c   |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/manager.c     |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/output.c      |   2 +-
+ .../video/fbdev/omap2/omapfb/dss/overlay-sysfs.c   |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/overlay.c     |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/pll.c         |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/rfbi.c        |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/sdi.c         |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/venc.c        |   2 +-
+ drivers/video/fbdev/omap2/omapfb/dss/video-pll.c   |   2 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |   2 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c    |   2 +-
+ drivers/video/fbdev/omap2/omapfb/omapfb.h          |   2 +-
+ .../linux/platform_data/omapdss.h                  |  64 +-
+ include/sound/omap-hdmi-audio.h                    |   9 +-
+ include/video/omap-panel-data.h                    | 157 ----
+ include/video/{omapdss.h => omapfb_dss.h}          |  60 +-
+ sound/soc/omap/omap-hdmi-audio.c                   |   1 -
+ 98 files changed, 1072 insertions(+), 785 deletions(-)
+ copy arch/arm/boot/dts/axm5516-amarillo.dts => include/linux/platform_data/omapdss.h (23%)
+ rename include/video/{omapdss.h => omapfb_dss.h} (93%)
+
+-- 
+2.8.3
+

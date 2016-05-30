@@ -1,7 +1,7 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:39 +0000
-Subject: [PATCH 07/26] omapfb: connector-hdmi: Remove legacy boot support
-Message-Id: <20160530114258.30879-8-peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:51 +0000
+Subject: [PATCH 19/26] video/platform_data: omapdss: Create new header file for platform data
+Message-Id: <20160530114258.30879-20-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
@@ -11,110 +11,142 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+Create a new header file for platform data used by omapdss.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- .../fbdev/omap2/omapfb/displays/connector-hdmi.c   | 42 ++++------------------
- include/video/omap-panel-data.h                    | 10 ------
- 2 files changed, 6 insertions(+), 46 deletions(-)
+ .../linux/platform_data/omapdss.h                  | 64 +++++++++-------------
+ include/video/omapdss.h                            | 25 +--------
+ 2 files changed, 26 insertions(+), 63 deletions(-)
+ copy arch/arm/boot/dts/axm5516-amarillo.dts => include/linux/platform_data/omapdss.h (23%)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-index 6ee4129bc0c0..231b8588a59f 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
-@@ -18,7 +18,6 @@
- #include <drm/drm_edid.h>
+diff --git a/arch/arm/boot/dts/axm5516-amarillo.dts b/include/linux/platform_data/omapdss.h
+similarity index 23%
+copy from arch/arm/boot/dts/axm5516-amarillo.dts
+copy to include/linux/platform_data/omapdss.h
+index a9d60471d9ff..679177929045 100644
+--- a/arch/arm/boot/dts/axm5516-amarillo.dts
++++ b/include/linux/platform_data/omapdss.h
+@@ -1,7 +1,5 @@
+ /*
+- * arch/arm/boot/dts/axm5516-amarillo.dts
+- *
+- * Copyright (C) 2013 LSI
++ * Copyright (C) 2016 Texas Instruments, Inc.
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+@@ -9,43 +7,31 @@
+  * (at your option) any later version.
+  */
  
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
- 
- static const struct omap_video_timings hdmic_default_timings = {
- 	.x_res		= 640,
-@@ -206,30 +205,6 @@ static struct omap_dss_driver hdmic_driver = {
- 	.set_hdmi_infoframe	= hdmic_set_infoframe,
- };
- 
--static int hdmic_probe_pdata(struct platform_device *pdev)
--{
--	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct connector_hdmi_platform_data *pdata;
--	struct omap_dss_device *in, *dssdev;
+-/dts-v1/;
 -
--	pdata = dev_get_platdata(&pdev->dev);
+-/memreserve/ 0x00000000 0x00400000;
 -
--	ddata->hpd_gpio = -ENODEV;
+-#include "axm55xx.dtsi"
+-#include "axm5516-cpus.dtsi"
 -
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&pdev->dev, "Failed to find video source\n");
--		return -EPROBE_DEFER;
--	}
+-/ {
+-	model = "Amarillo AXM5516";
+-	compatible = "lsi,axm5516-amarillo", "lsi,axm5516";
 -
--	ddata->in = in;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	return 0;
--}
--
- static int hdmic_probe_of(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-@@ -261,6 +236,9 @@ static int hdmic_probe(struct platform_device *pdev)
- 	struct omap_dss_device *dssdev;
- 	int r;
- 
-+	if (!pdev->dev.of_node)
-+		return -ENODEV;
-+
- 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
-@@ -268,17 +246,9 @@ static int hdmic_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, ddata);
- 	ddata->dev = &pdev->dev;
- 
--	if (dev_get_platdata(&pdev->dev)) {
--		r = hdmic_probe_pdata(pdev);
--		if (r)
--			return r;
--	} else if (pdev->dev.of_node) {
--		r = hdmic_probe_of(pdev);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = hdmic_probe_of(pdev);
-+	if (r)
-+		return r;
- 
- 	if (gpio_is_valid(ddata->hpd_gpio)) {
- 		r = devm_gpio_request_one(&pdev->dev, ddata->hpd_gpio,
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index e7b0e889d6d0..c0836b118f67 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -59,16 +59,6 @@ struct connector_dvi_platform_data {
- };
- 
- /**
-- * connector_hdmi platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- */
--struct connector_hdmi_platform_data {
--	const char *name;
--	const char *source;
+-	memory {
+-		device_type = "memory";
+-		reg = <0 0x00000000 0x02 0x00000000>;
+-	};
 -};
 -
--/**
-  * connector_atv platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
+-&serial0 {
+-	status = "okay";
++#ifndef __OMAPDSS_PDATA_H
++#define __OMAPDSS_PDATA_H
++
++enum omapdss_version {
++	OMAPDSS_VER_UNKNOWN = 0,
++	OMAPDSS_VER_OMAP24xx,
++	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
++	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
++	OMAPDSS_VER_OMAP3630,
++	OMAPDSS_VER_AM35xx,
++	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
++	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
++	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
++	OMAPDSS_VER_OMAP5,
++	OMAPDSS_VER_AM43xx,
++	OMAPDSS_VER_DRA7xx,
+ };
+ 
+-&serial1 {
+-	status = "okay";
++/* Board specific data */
++struct omap_dss_board_info {
++	const char *default_display_name;
++	int (*dsi_enable_pads)(int dsi_id, unsigned int lane_mask);
++	void (*dsi_disable_pads)(int dsi_id, unsigned int lane_mask);
++	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
++	enum omapdss_version version;
+ };
+ 
+-&serial2 {
+-	status = "okay";
+-};
+-
+-&serial3 {
+-	status = "okay";
+-};
+-
+-&gpio0 {
+-	status = "okay";
+-};
+-
+-&gpio1 {
+-	status = "okay";
+-};
++#endif /* __OMAPDSS_PDATA_H */
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index a43859a0a398..53ada70cf23c 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -22,6 +22,7 @@
+ #include <linux/kobject.h>
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
++#include <linux/platform_data/omapdss.h>
+ 
+ #include <video/videomode.h>
+ 
+@@ -303,30 +304,6 @@ struct omap_dss_dsi_config {
+ 	enum omap_dss_dsi_trans_mode trans_mode;
+ };
+ 
+-enum omapdss_version {
+-	OMAPDSS_VER_UNKNOWN = 0,
+-	OMAPDSS_VER_OMAP24xx,
+-	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
+-	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
+-	OMAPDSS_VER_OMAP3630,
+-	OMAPDSS_VER_AM35xx,
+-	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
+-	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
+-	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
+-	OMAPDSS_VER_OMAP5,
+-	OMAPDSS_VER_AM43xx,
+-	OMAPDSS_VER_DRA7xx,
+-};
+-
+-/* Board specific data */
+-struct omap_dss_board_info {
+-	const char *default_display_name;
+-	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
+-	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
+-	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
+-	enum omapdss_version version;
+-};
+-
+ struct omap_video_timings {
+ 	/* Unit: pixels */
+ 	u16 x_res;
 -- 
 2.8.3
 

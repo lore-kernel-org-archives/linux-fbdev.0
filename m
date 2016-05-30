@@ -1,110 +1,129 @@
-From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Wed, 04 May 2016 09:43:18 +0000
-Subject: [PATCH v2 3/3] video: fbdev: imxfb: add some error handling
-Message-Id: <1462354998-5792-4-git-send-email-u.kleine-koenig@pengutronix.de>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:34 +0000
+Subject: [PATCH 02/26] omapfb: panel-nec-nl8048hl11: Remove legacy boot support
+Message-Id: <20160530114258.30879-3-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1462354998-5792-1-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1462354998-5792-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-clk_prepare_enable can fail and if it does the controller must not be
-considered enabled. So check for errors, properly unwind and give the
-error code back to the caller.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-While touching the clock code also enable the clocks in the same
-direction and disable in reverse order.
-
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
+ .../omap2/omapfb/displays/panel-nec-nl8048hl11.c   | 45 +++-------------------
+ include/video/omap-panel-data.h                    | 18 ---------
+ 2 files changed, 6 insertions(+), 57 deletions(-)
 
-Changes since (implicit) v1, sent with
-Message-Id: 1457380425-20244-4-git-send-email-u.kleine-koenig@pengutronix.de
-
- - Some simplifications suggested and Reviewed-by Philipp Zabel
- - Rework goto labels to have them at the end of the function
-   (Tomi Valkeinen).
-
- drivers/video/fbdev/imxfb.c | 35 +++++++++++++++++++++++++++--------
- 1 file changed, 27 insertions(+), 8 deletions(-)
-
-diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-index 18388ca178a2..23a623688f1e 100644
---- a/drivers/video/fbdev/imxfb.c
-+++ b/drivers/video/fbdev/imxfb.c
-@@ -473,11 +473,12 @@ static int imxfb_set_par(struct fb_info *info)
- 	return 0;
- }
-=20
--static void imxfb_enable_controller(struct imxfb_info *fbi)
-+static int imxfb_enable_controller(struct imxfb_info *fbi)
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
+index 8a928c9a2fc9..3852cea3c947 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
+@@ -19,7 +19,6 @@
+ #include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
+ 
+ struct panel_drv_data {
+ 	struct omap_dss_device	dssdev;
+@@ -233,33 +232,6 @@ static struct omap_dss_driver nec_8048_ops = {
+ };
+ 
+ 
+-static int nec_8048_probe_pdata(struct spi_device *spi)
+-{
+-	const struct panel_nec_nl8048hl11_platform_data *pdata;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&spi->dev);
+-
+-	ddata->qvga_gpio = pdata->qvga_gpio;
+-	ddata->res_gpio = pdata->res_gpio;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&spi->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
+-	}
+-	ddata->in = in;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int nec_8048_probe_of(struct spi_device *spi)
  {
-+	int ret;
-=20
- 	if (fbi->enabled)
--		return;
-+		return 0;
-=20
- 	pr_debug("Enabling LCD controller\n");
-=20
-@@ -496,10 +497,29 @@ static void imxfb_enable_controller(struct imxfb_info=
- *fbi)
- 	 */
- 	writel(RMCR_LCDC_EN_MX1, fbi->regs + LCDC_RMCR);
-=20
--	clk_prepare_enable(fbi->clk_ipg);
--	clk_prepare_enable(fbi->clk_ahb);
--	clk_prepare_enable(fbi->clk_per);
-+	ret =3D clk_prepare_enable(fbi->clk_ipg);
-+	if (ret)
-+		goto err_enable_ipg;
+ 	struct device_node *node = spi->dev.of_node;
+@@ -296,6 +268,9 @@ static int nec_8048_probe(struct spi_device *spi)
+ 
+ 	dev_dbg(&spi->dev, "%s\n", __func__);
+ 
++	if (!spi->dev.of_node)
++		return -ENODEV;
 +
-+	ret =3D clk_prepare_enable(fbi->clk_ahb);
-+	if (ret)
-+		goto err_enable_ahb;
-+
-+	ret =3D clk_prepare_enable(fbi->clk_per);
-+	if (ret)
-+		goto err_enable_per;
-+
- 	fbi->enabled =3D true;
-+	return 0;
-+
-+err_enable_per:
-+	clk_disable_unprepare(fbi->clk_ahb);
-+err_enable_ahb:
-+	clk_disable_unprepare(fbi->clk_ipg);
-+err_enable_ipg:
-+	writel(0, fbi->regs + LCDC_RMCR);
-+
-+	return ret;
- }
-=20
- static void imxfb_disable_controller(struct imxfb_info *fbi)
-@@ -510,8 +530,8 @@ static void imxfb_disable_controller(struct imxfb_info =
-*fbi)
- 	pr_debug("Disabling LCD controller\n");
-=20
- 	clk_disable_unprepare(fbi->clk_per);
--	clk_disable_unprepare(fbi->clk_ipg);
- 	clk_disable_unprepare(fbi->clk_ahb);
-+	clk_disable_unprepare(fbi->clk_ipg);
- 	fbi->enabled =3D false;
-=20
- 	writel(0, fbi->regs + LCDC_RMCR);
-@@ -532,8 +552,7 @@ static int imxfb_blank(int blank, struct fb_info *info)
- 		break;
-=20
- 	case FB_BLANK_UNBLANK:
--		imxfb_enable_controller(fbi);
--		break;
-+		return imxfb_enable_controller(fbi);
- 	}
- 	return 0;
- }
---=20
-2.8.0.rc3
+ 	spi->mode = SPI_MODE_0;
+ 	spi->bits_per_word = 32;
+ 
+@@ -315,17 +290,9 @@ static int nec_8048_probe(struct spi_device *spi)
+ 
+ 	ddata->spi = spi;
+ 
+-	if (dev_get_platdata(&spi->dev)) {
+-		r = nec_8048_probe_pdata(spi);
+-		if (r)
+-			return r;
+-	} else if (spi->dev.of_node) {
+-		r = nec_8048_probe_of(spi);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = nec_8048_probe_of(spi);
++	if (r)
++		return r;
+ 
+ 	if (gpio_is_valid(ddata->qvga_gpio)) {
+ 		r = devm_gpio_request_one(&spi->dev, ddata->qvga_gpio,
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index fbdaa4c3ae96..a0c95cd1ed11 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -205,22 +205,4 @@ struct panel_tpo_td043mtea1_platform_data {
+ 	int nreset_gpio;
+ };
+ 
+-/**
+- * panel-nec-nl8048hl11 platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- * @data_lines: number of DPI datalines
+- * @res_gpio: reset signal
+- * @qvga_gpio: selection for resolution(QVGA/WVGA)
+- */
+-struct panel_nec_nl8048hl11_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int data_lines;
+-
+-	int res_gpio;
+-	int qvga_gpio;
+-};
+-
+ #endif /* __OMAP_PANEL_DATA_H */
+-- 
+2.8.3
 

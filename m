@@ -1,164 +1,147 @@
-From: Rongrong Zou <zourongrong@gmail.com>
-Date: Sun, 29 May 2016 09:40:52 +0000
-Subject: [path v2 4/7] drm/hisilicon/hibmc: Add encoder for VDAC
-Message-Id: <1464514855-108050-5-git-send-email-zourongrong@gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 30 May 2016 11:42:38 +0000
+Subject: [PATCH 06/26] omapfb: panel-dsi-cm: Remove legacy boot support
+Message-Id: <20160530114258.30879-7-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1464514855-108050-1-git-send-email-zourongrong@gmail.com>
-In-Reply-To: <1464514855-108050-1-git-send-email-zourongrong@gmail.com>
+References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: zourongrong@huawei.com, airlied@linux.ie, emil.l.velikov@gmail.com, lijianhua@huawei.com, xinliang.liu@linaro.org
-Cc: dri-devel@lists.freedesktop.org, guohanjun@huawei.com, majun258@huawei.com, linuxarm@huawei.com, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-Add encoder funcs and helpers for VDAC.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-Signed-off-by: Rongrong Zou <zourongrong@gmail.com>
-Signed-off-by: Jianhua Li <lijianhua@huawei.com>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/gpu/drm/hisilicon/hibmc/Makefile         |  2 +-
- drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c  |  6 ++
- drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h  |  2 +
- drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c | 85 ++++++++++++++++++++++++
- 4 files changed, 94 insertions(+), 1 deletion(-)
- create mode 100644 drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c
+ .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     | 52 +++-------------------
+ include/video/omap-panel-data.h                    | 27 -----------
+ 2 files changed, 6 insertions(+), 73 deletions(-)
 
-diff --git a/drivers/gpu/drm/hisilicon/hibmc/Makefile b/drivers/gpu/drm/hisilicon/hibmc/Makefile
-index faa7e64..4e7797a 100644
---- a/drivers/gpu/drm/hisilicon/hibmc/Makefile
-+++ b/drivers/gpu/drm/hisilicon/hibmc/Makefile
-@@ -1,4 +1,4 @@
--hibmc-drm-y := hibmc_drm_drv.o hibmc_drm_de.o hibmc_drm_power.o
-+hibmc-drm-y := hibmc_drm_drv.o hibmc_drm_de.o hibmc_drm_vdac.o hibmc_drm_power.o
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+index 3414c2609320..a4eac6962b76 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+@@ -26,7 +26,6 @@
+ #include <linux/of_gpio.h>
  
- obj-$(CONFIG_DRM_HISI_HIBMC)	+=hibmc-drm.o
- #obj-y	+= hibmc-drm.o
-diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-index f7837cc..962072f 100644
---- a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-+++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c
-@@ -129,6 +129,12 @@ static int hibmc_kms_init(struct hibmc_drm_device *hidev)
- 		return ret;
- 	}
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
+ #include <video/mipi_display.h>
  
-+	ret = hibmc_encoder_init(hidev);
-+	if (ret) {
-+		DRM_ERROR("failed to init encoder\n");
-+		return ret;
-+	}
-+
- 	return 0;
- }
- 
-diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h
-index e64ec8d..d0c5982 100644
---- a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h
-+++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.h
-@@ -34,11 +34,13 @@ struct hibmc_drm_device {
- 	struct drm_device  *dev;
- 	struct drm_plane plane;
- 	struct drm_crtc crtc;
-+	struct drm_encoder encoder;
- 	bool mode_config_initialized;
+ /* DSI Virtual channel. Hardcoded for now. */
+@@ -1127,40 +1126,6 @@ static struct omap_dss_driver dsicm_ops = {
+ 	.memory_read	= dsicm_memory_read,
  };
  
- int hibmc_plane_init(struct hibmc_drm_device *hidev);
- int hibmc_crtc_init(struct hibmc_drm_device *hidev);
-+int hibmc_encoder_init(struct hibmc_drm_device *hidev);
+-static int dsicm_probe_pdata(struct platform_device *pdev)
+-{
+-	const struct panel_dsicm_platform_data *pdata;
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&pdev->dev, "failed to find video source\n");
+-		return -EPROBE_DEFER;
+-	}
+-	ddata->in = in;
+-
+-	ddata->reset_gpio = pdata->reset_gpio;
+-
+-	if (pdata->use_ext_te)
+-		ddata->ext_te_gpio = pdata->ext_te_gpio;
+-	else
+-		ddata->ext_te_gpio = -1;
+-
+-	ddata->ulps_timeout = pdata->ulps_timeout;
+-
+-	ddata->use_dsi_backlight = pdata->use_dsi_backlight;
+-
+-	ddata->pin_config = pdata->pin_config;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int dsicm_probe_of(struct platform_device *pdev)
+ {
+ 	struct device_node *node = pdev->dev.of_node;
+@@ -1207,6 +1172,9 @@ static int dsicm_probe(struct platform_device *pdev)
  
+ 	dev_dbg(dev, "probe\n");
  
- #endif
-diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c
-new file mode 100644
-index 0000000..cb9a130
---- /dev/null
-+++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_vdac.c
-@@ -0,0 +1,85 @@
-+/* Hisilicon Hibmc SoC drm driver
-+ *
-+ * Based on the bochs drm driver.
-+ *
-+ * Copyright (c) 2016 Huawei Limited.
-+ *
-+ * Author:
-+ *	Rongrong Zou <zourongrong@huawei>
-+ *	Rongrong Zou <zourongrong@gmail.com>
-+ *	Jianhua Li <lijianhua@huawei.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ */
++	if (!pdev->dev.of_node)
++		return -ENODEV;
 +
-+#include <drm/drm_atomic_helper.h>
-+#include <drm/drm_fb_helper.h>
-+#include <drm/drm_crtc_helper.h>
-+#include <drm/drmP.h>
-+
-+#include "hibmc_drm_drv.h"
-+#include "hibmc_drm_regs.h"
-+
-+
-+static void hibmc_encoder_disable(struct drm_encoder *encoder)
-+{
-+}
-+
-+static void hibmc_encoder_enable(struct drm_encoder *encoder)
-+{
-+}
-+
-+static void hibmc_encoder_mode_set(struct drm_encoder *encoder,
-+				   struct drm_display_mode *mode,
-+				   struct drm_display_mode *adj_mode)
-+{
-+	u32 reg;
-+	struct drm_device *dev = encoder->dev;
-+	struct hibmc_drm_device *hidev = dev->dev_private;
-+
-+	/* just open DISPLAY_CONTROL_HISILE register bit 3:0*/
-+	reg = readl(hidev->mmio + DISPLAY_CONTROL_HISILE);
-+	reg |= 0xf;
-+	writel(reg, hidev->mmio + DISPLAY_CONTROL_HISILE);
-+}
-+
-+static int hibmc_encoder_atomic_check(struct drm_encoder *encoder,
-+				      struct drm_crtc_state *crtc_state,
-+				      struct drm_connector_state *conn_state)
-+{
-+	return 0;
-+}
-+
-+static const struct drm_encoder_helper_funcs hibmc_encoder_helper_funcs = {
-+	.mode_set = hibmc_encoder_mode_set,
-+	.disable = hibmc_encoder_disable,
-+	.enable = hibmc_encoder_enable,
-+	.atomic_check = hibmc_encoder_atomic_check,
-+};
-+
-+static const struct drm_encoder_funcs hibmc_encoder_encoder_funcs = {
-+	.destroy = drm_encoder_cleanup,
-+};
-+
-+int hibmc_encoder_init(struct hibmc_drm_device *hidev)
-+{
-+	struct drm_device *dev = hidev->dev;
-+	struct drm_encoder *encoder = &hidev->encoder;
-+	int ret;
-+
-+	encoder->possible_crtcs = 0x1;
-+	ret = drm_encoder_init(dev, encoder, &hibmc_encoder_encoder_funcs,
-+			       DRM_MODE_ENCODER_DAC, NULL);
-+	if (ret) {
-+		DRM_ERROR("failed to init encoder\n");
-+		return ret;
-+	}
-+
-+	drm_encoder_helper_add(encoder, &hibmc_encoder_helper_funcs);
-+	return 0;
-+}
-+
+ 	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
+@@ -1214,17 +1182,9 @@ static int dsicm_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, ddata);
+ 	ddata->pdev = pdev;
+ 
+-	if (dev_get_platdata(dev)) {
+-		r = dsicm_probe_pdata(pdev);
+-		if (r)
+-			return r;
+-	} else if (pdev->dev.of_node) {
+-		r = dsicm_probe_of(pdev);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = dsicm_probe_of(pdev);
++	if (r)
++		return r;
+ 
+ 	ddata->timings.x_res = 864;
+ 	ddata->timings.y_res = 480;
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 74486bcc754e..e7b0e889d6d0 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -105,33 +105,6 @@ struct panel_dpi_platform_data {
+ };
+ 
+ /**
+- * panel_dsicm platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- * @reset_gpio: gpio to reset the panel (or -1)
+- * @use_ext_te: use external TE GPIO
+- * @ext_te_gpio: external TE GPIO
+- * @ulps_timeout: time to wait before entering ULPS, 0 = disabled (ms)
+- * @use_dsi_backlight: true if panel uses DSI command to control backlight
+- * @pin_config: DSI pin configuration
+- */
+-struct panel_dsicm_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int reset_gpio;
+-
+-	bool use_ext_te;
+-	int ext_te_gpio;
+-
+-	unsigned ulps_timeout;
+-
+-	bool use_dsi_backlight;
+-
+-	struct omap_dsi_pin_config pin_config;
+-};
+-
+-/**
+  * panel_acx565akm platform data
+  * @name: name for this display entity
+  * @source: name of the display entity used as a video source
 -- 
-1.9.1
+2.8.3
 

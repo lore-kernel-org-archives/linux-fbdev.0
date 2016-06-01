@@ -1,159 +1,129 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 16 Jun 2016 09:36:13 +0000
-Subject: [PATCH 1/6] video: ARM CLCD: backlight support for OF
-Message-Id: <1466069778-16087-2-git-send-email-linus.walleij@linaro.org>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:24 +0000
+Subject: [PATCH v2 02/27] omapfb: panel-nec-nl8048hl11: Remove legacy boot support
+Message-Id: <20160601083549.10549-3-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
+References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-If the device is probed from device tree, we can support
-backlight. This is used with some systems such as the
-ST Microelectronics Nomadik.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-We have to add HAS_IOMEM to the dependencies of CLCD since
-the backlight class device will now be selected, and if it
-gets selected on an arch that does not have IOMEM,
-compilation will fail.
-
-Cc: Pawel Moll <pawel.moll@arm.com>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Russell King <linux@arm.linux.org.uk>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
-ChangeLog v2->v3:
-- Rebased, no other changes.
-ChangeLog v1->v2:
-- No changes.
----
- drivers/video/fbdev/Kconfig     |  4 +++-
- drivers/video/fbdev/amba-clcd.c | 40 ++++++++++++++++++++++++++++++++++++++++
- include/linux/amba/clcd.h       |  3 +++
- 3 files changed, 46 insertions(+), 1 deletion(-)
+ .../omap2/omapfb/displays/panel-nec-nl8048hl11.c   | 45 +++-------------------
+ include/video/omap-panel-data.h                    | 18 ---------
+ 2 files changed, 6 insertions(+), 57 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 88b008fb8a4e..9b9a76b82c04 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -284,12 +284,14 @@ config FB_PM2_FIFO_DISCONNECT
- config FB_ARMCLCD
- 	tristate "ARM PrimeCell PL110 support"
- 	depends on ARM || ARM64 || COMPILE_TEST
--	depends on FB && ARM_AMBA
-+	depends on FB && ARM_AMBA && HAS_IOMEM
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	select FB_MODE_HELPERS if OF
- 	select VIDEOMODE_HELPERS if OF
-+	select BACKLIGHT_LCD_SUPPORT if OF
-+	select BACKLIGHT_CLASS_DEVICE if OF
- 	help
- 	  This framebuffer device driver is for the ARM PrimeCell PL110
- 	  Colour LCD controller.  ARM PrimeCells provide the building
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index 9b158869cb89..52a33d3926ac 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -30,6 +30,7 @@
- #include <linux/of.h>
- #include <linux/of_address.h>
- #include <linux/of_graph.h>
-+#include <linux/backlight.h>
- #include <video/display_timing.h>
- #include <video/of_display_timing.h>
- #include <video/videomode.h>
-@@ -71,6 +72,11 @@ static void clcdfb_disable(struct clcd_fb *fb)
- 	if (fb->board->disable)
- 		fb->board->disable(fb);
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
+index 8a928c9a2fc9..3852cea3c947 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-nec-nl8048hl11.c
+@@ -19,7 +19,6 @@
+ #include <linux/of_gpio.h>
  
-+	if (fb->panel->backlight) {
-+		fb->panel->backlight->props.power = FB_BLANK_POWERDOWN;
-+		backlight_update_status(fb->panel->backlight);
-+	}
-+
- 	val = readl(fb->regs + fb->off_cntl);
- 	if (val & CNTL_LCDPWR) {
- 		val &= ~CNTL_LCDPWR;
-@@ -117,6 +123,14 @@ static void clcdfb_enable(struct clcd_fb *fb, u32 cntl)
- 	writel(cntl, fb->regs + fb->off_cntl);
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
  
- 	/*
-+	 * Turn on backlight
-+	 */
-+	if (fb->panel->backlight) {
-+		fb->panel->backlight->props.power = FB_BLANK_UNBLANK;
-+		backlight_update_status(fb->panel->backlight);
-+	}
-+
-+	/*
- 	 * finally, enable the interface.
- 	 */
- 	if (fb->board->enable)
-@@ -576,6 +590,28 @@ static int clcdfb_snprintf_mode(char *buf, int size, struct fb_videomode *mode)
- 			mode->refresh);
- }
+ struct panel_drv_data {
+ 	struct omap_dss_device	dssdev;
+@@ -233,33 +232,6 @@ static struct omap_dss_driver nec_8048_ops = {
+ };
  
-+static int clcdfb_of_get_backlight(struct device_node *endpoint,
-+				   struct clcd_panel *clcd_panel)
-+{
-+	struct device_node *panel;
-+	struct device_node *backlight;
-+
-+	panel = of_graph_get_remote_port_parent(endpoint);
-+	if (!panel)
+ 
+-static int nec_8048_probe_pdata(struct spi_device *spi)
+-{
+-	const struct panel_nec_nl8048hl11_platform_data *pdata;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&spi->dev);
+-
+-	ddata->qvga_gpio = pdata->qvga_gpio;
+-	ddata->res_gpio = pdata->res_gpio;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&spi->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
+-	}
+-	ddata->in = in;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int nec_8048_probe_of(struct spi_device *spi)
+ {
+ 	struct device_node *node = spi->dev.of_node;
+@@ -296,6 +268,9 @@ static int nec_8048_probe(struct spi_device *spi)
+ 
+ 	dev_dbg(&spi->dev, "%s\n", __func__);
+ 
++	if (!spi->dev.of_node)
 +		return -ENODEV;
 +
-+	/* Look up the optional backlight phandle */
-+	backlight = of_parse_phandle(panel, "backlight", 0);
-+	if (backlight) {
-+		clcd_panel->backlight = of_find_backlight_by_node(backlight);
-+		of_node_put(backlight);
-+
-+		if (!clcd_panel->backlight)
-+			return -EPROBE_DEFER;
-+	}
-+	return 0;
-+}
-+
- static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
- 		struct fb_videomode *mode)
- {
-@@ -662,6 +698,10 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
- 	if (!endpoint)
- 		return -ENODEV;
+ 	spi->mode = SPI_MODE_0;
+ 	spi->bits_per_word = 32;
  
-+	err = clcdfb_of_get_backlight(endpoint, fb->panel);
-+	if (err)
-+		return err;
-+
- 	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, &fb->panel->mode);
- 	if (err)
- 		return err;
-diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
-index e82e3ee2c54a..e64c1ccebb76 100644
---- a/include/linux/amba/clcd.h
-+++ b/include/linux/amba/clcd.h
-@@ -93,6 +93,8 @@ enum {
- 	CLCD_CAP_ALL		= CLCD_CAP_BGR | CLCD_CAP_RGB,
+@@ -315,17 +290,9 @@ static int nec_8048_probe(struct spi_device *spi)
+ 
+ 	ddata->spi = spi;
+ 
+-	if (dev_get_platdata(&spi->dev)) {
+-		r = nec_8048_probe_pdata(spi);
+-		if (r)
+-			return r;
+-	} else if (spi->dev.of_node) {
+-		r = nec_8048_probe_of(spi);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = nec_8048_probe_of(spi);
++	if (r)
++		return r;
+ 
+ 	if (gpio_is_valid(ddata->qvga_gpio)) {
+ 		r = devm_gpio_request_one(&spi->dev, ddata->qvga_gpio,
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index fbdaa4c3ae96..a0c95cd1ed11 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -205,22 +205,4 @@ struct panel_tpo_td043mtea1_platform_data {
+ 	int nreset_gpio;
  };
  
-+struct backlight_device;
-+
- struct clcd_panel {
- 	struct fb_videomode	mode;
- 	signed short		width;	/* width in mm */
-@@ -105,6 +107,7 @@ struct clcd_panel {
- 				fixedtimings:1,
- 				grayscale:1;
- 	unsigned int		connector;
-+	struct backlight_device	*backlight;
- };
- 
- struct clcd_regs {
+-/**
+- * panel-nec-nl8048hl11 platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- * @data_lines: number of DPI datalines
+- * @res_gpio: reset signal
+- * @qvga_gpio: selection for resolution(QVGA/WVGA)
+- */
+-struct panel_nec_nl8048hl11_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int data_lines;
+-
+-	int res_gpio;
+-	int qvga_gpio;
+-};
+-
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
-2.4.11
+2.8.3
 

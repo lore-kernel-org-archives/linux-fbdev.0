@@ -1,7 +1,7 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:39 +0000
-Subject: [PATCH v2 17/27] ARM/video: omap2: Move omap_display_init declaration to mach-omap2/display.h
-Message-Id: <20160601083549.10549-18-peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:45 +0000
+Subject: [PATCH v2 23/27] omapdss: hdmi audio: Make header file independent of video/omapdss.h
+Message-Id: <20160601083549.10549-24-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
@@ -9,73 +9,98 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Liam Girdwood <liam.r.girdwood@linux.intel.com>, Mark Brown <broonie@kernel.org>, jsarha@ti.com, linux-omap@vger.kernel.org, laurent.pinchart@ideasonboard.com
 
-The omap_display_init() is implemented in the mach-omap2/display.c so the
-declaration should have been there as well.
-Change the board files to include display.h to avoid build breakage at the
-same time.
+Clean up the header files regarding to hdmi audio so the omap-hdmi-audio.h
+file will only need to include the platform_data/omapdss.h file.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+CC: Mark Brown <broonie@kernel.org>
+CC: Jyri Sarha <jsarha@ti.com>
+CC: Liam Girdwood <liam.r.girdwood@linux.intel.com>
 ---
- arch/arm/mach-omap2/board-ldp.c        | 1 +
- arch/arm/mach-omap2/board-rx51-video.c | 1 +
- arch/arm/mach-omap2/display.h          | 5 +++++
- include/video/omapdss.h                | 3 ---
- 4 files changed, 7 insertions(+), 3 deletions(-)
+ drivers/gpu/drm/omapdrm/dss/hdmi.h          | 1 +
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi.h | 1 +
+ include/sound/omap-hdmi-audio.h             | 9 +++++++--
+ include/video/omapdss.h                     | 5 -----
+ sound/soc/omap/omap-hdmi-audio.c            | 1 -
+ 5 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
-index d9c3ffc39329..f364a1b779f0 100644
---- a/arch/arm/mach-omap2/board-ldp.c
-+++ b/arch/arm/mach-omap2/board-ldp.c
-@@ -47,6 +47,7 @@
- #include "hsmmc.h"
- #include "control.h"
- #include "common-board-devices.h"
-+#include "display.h"
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi.h b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+index 53616b02b613..c32a21a26054 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi.h
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/hdmi.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-audio.h>
  
- #define LDP_SMSC911X_CS		1
- #define LDP_SMSC911X_GPIO	152
-diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
-index b76f84245ad9..9866ec06a395 100644
---- a/arch/arm/mach-omap2/board-rx51-video.c
-+++ b/arch/arm/mach-omap2/board-rx51-video.c
-@@ -22,6 +22,7 @@
+ #include "dss.h"
  
- #include "soc.h"
- #include "board-rx51.h"
-+#include "display.h"
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+index 53616b02b613..c32a21a26054 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/hdmi.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-audio.h>
  
- #include "mux.h"
+ #include "dss.h"
  
-diff --git a/arch/arm/mach-omap2/display.h b/arch/arm/mach-omap2/display.h
-index 7375854b16c7..78f253005279 100644
---- a/arch/arm/mach-omap2/display.h
-+++ b/arch/arm/mach-omap2/display.h
-@@ -33,4 +33,9 @@ int omap_init_vout(void);
+diff --git a/include/sound/omap-hdmi-audio.h b/include/sound/omap-hdmi-audio.h
+index afdb416898e0..1df2ff61a4dd 100644
+--- a/include/sound/omap-hdmi-audio.h
++++ b/include/sound/omap-hdmi-audio.h
+@@ -16,11 +16,16 @@
+  *
+  */
  
- struct device_node * __init omapdss_find_dss_of_node(void);
+-#include <video/omapdss.h>
+-
+ #ifndef __OMAP_HDMI_AUDIO_H__
+ #define __OMAP_HDMI_AUDIO_H__
  
-+struct omap_dss_board_info;
++#include <linux/platform_data/omapdss.h>
 +
-+/* Init with the board info */
-+int omap_display_init(struct omap_dss_board_info *board_data);
++struct omap_dss_audio {
++	struct snd_aes_iec958 *iec;
++	struct snd_cea_861_aud_if *cea;
++};
 +
- #endif
+ struct omap_hdmi_audio_ops {
+ 	int (*audio_startup)(struct device *dev,
+ 			     void (*abort_cb)(struct device *dev));
 diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 8e14ad7327c9..0c7ae93ebd76 100644
+index 53ada70cf23c..b25e2eab4b48 100644
 --- a/include/video/omapdss.h
 +++ b/include/video/omapdss.h
-@@ -330,9 +330,6 @@ struct omap_dss_board_info {
- 	enum omapdss_version version;
+@@ -168,11 +168,6 @@ enum omap_dss_display_state {
+ 	OMAP_DSS_DISPLAY_ACTIVE,
  };
  
--/* Init with the board info */
--extern int omap_display_init(struct omap_dss_board_info *board_data);
+-struct omap_dss_audio {
+-	struct snd_aes_iec958 *iec;
+-	struct snd_cea_861_aud_if *cea;
+-};
 -
- struct omap_video_timings {
- 	/* Unit: pixels */
- 	u16 x_res;
+ enum omap_dss_rotation_type {
+ 	OMAP_DSS_ROT_DMA	= 1 << 0,
+ 	OMAP_DSS_ROT_VRFB	= 1 << 1,
+diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
+index 64425d352962..888133f9e65d 100644
+--- a/sound/soc/omap/omap-hdmi-audio.c
++++ b/sound/soc/omap/omap-hdmi-audio.c
+@@ -28,7 +28,6 @@
+ #include <sound/asoundef.h>
+ #include <sound/omap-pcm.h>
+ #include <sound/omap-hdmi-audio.h>
+-#include <video/omapdss.h>
+ 
+ #define DRV_NAME "omap-hdmi-audio"
+ 
 -- 
 2.8.3
 

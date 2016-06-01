@@ -1,52 +1,170 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 09 Jun 2016 09:44:27 +0000
-Subject: [RFC v4 10/14] usb: hub: Handle deferred probe
-Message-Id: <1465465471-28740-11-git-send-email-k.kozlowski@samsung.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:26 +0000
+Subject: [PATCH v2 04/27] omapfb: panel-sharp-ls037v7dw01: Remove legacy boot support
+Message-Id: <20160601083549.10549-5-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
+References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, jsarha@ti.com, linux-omap@vger.kernel.org, laurent.pinchart@ideasonboard.com
 
-Add support for deferred probing to the usb hub.  Currently EPROBE_DEFER
-does not exist in usb hub path but future patches will add it on the
-port level.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/usb/core/hub.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      | 81 ++--------------------
+ include/video/omap-panel-data.h                    | 24 -------
+ 2 files changed, 6 insertions(+), 99 deletions(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index bee13517676f..c421745b84aa 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -1733,6 +1733,7 @@ static int hub_probe(struct usb_interface *intf, const struct usb_device_id *id)
- 	struct usb_endpoint_descriptor *endpoint;
- 	struct usb_device *hdev;
- 	struct usb_hub *hub;
-+	int ret;
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+index 1954ec913ce5..a1e590155a26 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+@@ -18,7 +18,6 @@
+ #include <linux/slab.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
  
- 	desc = intf->cur_altsetting;
- 	hdev = interface_to_usbdev(intf);
-@@ -1852,11 +1853,12 @@ descriptor_error:
- 	if (id->driver_info & HUB_QUIRK_CHECK_PORT_AUTOSUSPEND)
- 		hub->quirk_check_port_auto_suspend = 1;
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -197,69 +196,6 @@ static struct omap_dss_driver sharp_ls_ops = {
+ 	.get_resolution	= omapdss_default_get_resolution,
+ };
  
--	if (hub_configure(hub, endpoint) >= 0)
-+	ret = hub_configure(hub, endpoint);
-+	if (ret >= 0)
- 		return 0;
+-static int sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
+-		  char *desc, struct gpio_desc **gpiod)
+-{
+-	int r;
+-
+-	r = devm_gpio_request_one(dev, gpio, flags, desc);
+-	if (r) {
+-		*gpiod = NULL;
+-		return r = -ENOENT ? 0 : r;
+-	}
+-
+-	*gpiod = gpio_to_desc(gpio);
+-
+-	return 0;
+-}
+-
+-static int sharp_ls_probe_pdata(struct platform_device *pdev)
+-{
+-	const struct panel_sharp_ls037v7dw01_platform_data *pdata;
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+-	struct omap_dss_device *dssdev, *in;
+-	int r;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&pdev->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
+-	}
+-
+-	ddata->in = in;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->mo_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd MO", &ddata->mo_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->lr_gpio, GPIOF_OUT_INIT_HIGH,
+-		"lcd LR", &ddata->lr_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->ud_gpio, GPIOF_OUT_INIT_HIGH,
+-		"lcd UD", &ddata->ud_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->resb_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd RESB", &ddata->resb_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->ini_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd INI", &ddata->ini_gpio);
+-	if (r)
+-		return r;
+-
+-	return 0;
+-}
+-
+ static  int sharp_ls_get_gpio_of(struct device *dev, int index, int val,
+ 	const char *desc, struct gpio_desc **gpiod)
+ {
+@@ -330,23 +266,18 @@ static int sharp_ls_probe(struct platform_device *pdev)
+ 	struct omap_dss_device *dssdev;
+ 	int r;
  
- 	hub_disconnect(intf);
--	return -ENODEV;
-+	return ret;
- }
++	if (!pdev->dev.of_node)
++		return -ENODEV;
++
+ 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (ddata = NULL)
+ 		return -ENOMEM;
  
- static int
+ 	platform_set_drvdata(pdev, ddata);
+ 
+-	if (dev_get_platdata(&pdev->dev)) {
+-		r = sharp_ls_probe_pdata(pdev);
+-		if (r)
+-			return r;
+-	} else if (pdev->dev.of_node) {
+-		r = sharp_ls_probe_of(pdev);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = sharp_ls_probe_of(pdev);
++	if (r)
++		return r;
+ 
+ 	ddata->videomode = sharp_ls_timings;
+ 
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 34ee7509752f..085b4171eb25 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -165,28 +165,4 @@ struct panel_lb035q02_platform_data {
+ 	int enable_gpio;
+ };
+ 
+-/**
+- * panel_sharp_ls037v7dw01 platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- * @data_lines: number of DPI datalines
+- * @resb_gpio: reset signal GPIO
+- * @ini_gpio: power on control GPIO
+- * @mo_gpio: selection for resolution(VGA/QVGA) GPIO
+- * @lr_gpio: selection for horizontal scanning direction GPIO
+- * @ud_gpio: selection for vertical scanning direction GPIO
+- */
+-struct panel_sharp_ls037v7dw01_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int data_lines;
+-
+-	int resb_gpio;
+-	int ini_gpio;
+-	int mo_gpio;
+-	int lr_gpio;
+-	int ud_gpio;
+-};
+-
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
-1.9.1
+2.8.3
 

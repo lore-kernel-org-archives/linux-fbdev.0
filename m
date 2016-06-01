@@ -1,7 +1,7 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:31 +0000
-Subject: [PATCH v2 09/27] omapfb: encoder-tfp410: Remove legacy boot support
-Message-Id: <20160601083549.10549-10-peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:27 +0000
+Subject: [PATCH v2 05/27] omapfb: panel-lgphilips-lb035q02: Remove legacy boot support
+Message-Id: <20160601083549.10549-6-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
@@ -16,110 +16,125 @@ support can be dropped.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   | 44 +++-------------------
- include/video/omap-panel-data.h                    | 14 -------
- 2 files changed, 6 insertions(+), 52 deletions(-)
+ .../omapfb/displays/panel-lgphilips-lb035q02.c     | 56 +++-------------------
+ include/video/omap-panel-data.h                    | 18 -------
+ 2 files changed, 6 insertions(+), 68 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
-index d9048b3df495..778e3b384c2f 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
-@@ -16,7 +16,6 @@
- #include <linux/of_gpio.h>
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+index 18eb60e9c9ec..6d5207c7b22c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
+@@ -17,7 +17,6 @@
+ #include <linux/gpio.h>
  
  #include <video/omapdss.h>
 -#include <video/omap-panel-data.h>
  
- struct panel_drv_data {
- 	struct omap_dss_device dssdev;
-@@ -166,32 +165,6 @@ static const struct omapdss_dvi_ops tfp410_dvi_ops = {
- 	.get_timings	= tfp410_get_timings,
+ static struct omap_video_timings lb035q02_timings = {
+ 	.x_res = 320,
+@@ -240,44 +239,6 @@ static struct omap_dss_driver lb035q02_ops = {
+ 	.get_resolution	= omapdss_default_get_resolution,
  };
  
--static int tfp410_probe_pdata(struct platform_device *pdev)
+-static int lb035q02_probe_pdata(struct spi_device *spi)
 -{
--	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct encoder_tfp410_platform_data *pdata;
+-	const struct panel_lb035q02_platform_data *pdata;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
 -	struct omap_dss_device *dssdev, *in;
+-	int r;
 -
--	pdata = dev_get_platdata(&pdev->dev);
--
--	ddata->pd_gpio = pdata->power_down_gpio;
--
--	ddata->data_lines = pdata->data_lines;
+-	pdata = dev_get_platdata(&spi->dev);
 -
 -	in = omap_dss_find_output(pdata->source);
 -	if (in = NULL) {
--		dev_err(&pdev->dev, "Failed to find video source\n");
--		return -ENODEV;
+-		dev_err(&spi->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
 -	}
 -
 -	ddata->in = in;
 -
+-	ddata->data_lines = pdata->data_lines;
+-
 -	dssdev = &ddata->dssdev;
 -	dssdev->name = pdata->name;
 -
+-	r = devm_gpio_request_one(&spi->dev, pdata->enable_gpio,
+-					GPIOF_OUT_INIT_LOW, "panel enable");
+-	if (r)
+-		goto err_gpio;
+-
+-	ddata->enable_gpio = gpio_to_desc(pdata->enable_gpio);
+-
+-	ddata->backlight_gpio = pdata->backlight_gpio;
+-
 -	return 0;
+-err_gpio:
+-	omap_dss_put_device(ddata->in);
+-	return r;
 -}
 -
- static int tfp410_probe_of(struct platform_device *pdev)
+ static int lb035q02_probe_of(struct spi_device *spi)
  {
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-@@ -225,23 +198,18 @@ static int tfp410_probe(struct platform_device *pdev)
+ 	struct device_node *node = spi->dev.of_node;
+@@ -312,6 +273,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
  	struct omap_dss_device *dssdev;
  	int r;
  
-+	if (!pdev->dev.of_node)
++	if (!spi->dev.of_node)
 +		return -ENODEV;
 +
- 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
+ 	ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (ddata = NULL)
  		return -ENOMEM;
+@@ -320,17 +284,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
  
- 	platform_set_drvdata(pdev, ddata);
+ 	ddata->spi = spi;
  
--	if (dev_get_platdata(&pdev->dev)) {
--		r = tfp410_probe_pdata(pdev);
+-	if (dev_get_platdata(&spi->dev)) {
+-		r = lb035q02_probe_pdata(spi);
 -		if (r)
 -			return r;
--	} else if (pdev->dev.of_node) {
--		r = tfp410_probe_of(pdev);
+-	} else if (spi->dev.of_node) {
+-		r = lb035q02_probe_of(spi);
 -		if (r)
 -			return r;
 -	} else {
 -		return -ENODEV;
 -	}
-+	r = tfp410_probe_of(pdev);
++	r = lb035q02_probe_of(spi);
 +	if (r)
 +		return r;
  
- 	if (gpio_is_valid(ddata->pd_gpio)) {
- 		r = devm_gpio_request_one(&pdev->dev, ddata->pd_gpio,
+ 	if (gpio_is_valid(ddata->backlight_gpio)) {
+ 		r = devm_gpio_request_one(&spi->dev, ddata->backlight_gpio,
 diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 4d0b8832ae11..a64e9ba12b0d 100644
+index 085b4171eb25..74486bcc754e 100644
 --- a/include/video/omap-panel-data.h
 +++ b/include/video/omap-panel-data.h
-@@ -33,20 +33,6 @@
- struct omap_dss_device;
+@@ -147,22 +147,4 @@ struct panel_acx565akm_platform_data {
+ 	int datapairs;
+ };
  
- /**
-- * encoder_tfp410 platform data
+-/**
+- * panel_lb035q02 platform data
 - * @name: name for this display entity
-- * @power_down_gpio: gpio number for PD pin (or -1 if not available)
+- * @source: name of the display entity used as a video source
 - * @data_lines: number of DPI datalines
+- * @backlight_gpio: gpio to enable/disable the backlight (or -1)
+- * @enable_gpio: gpio to enable/disable the panel (or -1)
 - */
--struct encoder_tfp410_platform_data {
+-struct panel_lb035q02_platform_data {
 -	const char *name;
 -	const char *source;
--	int power_down_gpio;
+-
 -	int data_lines;
+-
+-	int backlight_gpio;
+-	int enable_gpio;
 -};
 -
--
--/**
-  * connector_atv platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
 2.8.3
 

@@ -1,147 +1,45 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:28 +0000
-Subject: [PATCH v2 06/27] omapfb: panel-dsi-cm: Remove legacy boot support
-Message-Id: <20160601083549.10549-7-peter.ujfalusi@ti.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Wed, 01 Jun 2016 08:49:50 +0000
+Subject: [PATCH] fbdev: pxafb: clampval() doesn't update the variable
+Message-Id: <eddfe3528f38f8c67b15fea81758fe1aa44904a2.1464770175.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: tomi.valkeinen@ti.com
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+clampval() returns the clamped value instead of updating the variable
+itself. And the driver is using it in a wrong way. Fix it.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     | 52 +++-------------------
- include/video/omap-panel-data.h                    | 27 -----------
- 2 files changed, 6 insertions(+), 73 deletions(-)
+ drivers/video/fbdev/pxafb.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index 3414c2609320..a4eac6962b76 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -26,7 +26,6 @@
- #include <linux/of_gpio.h>
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 2c0487f4f805..b1197980b9b1 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -417,12 +417,12 @@ static int pxafb_adjust_timing(struct pxafb_info *fbi,
+ 	var->yres = max_t(int, var->yres, MIN_YRES);
  
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
- #include <video/mipi_display.h>
+ 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
+-		clamp_val(var->hsync_len, 1, 64);
+-		clamp_val(var->vsync_len, 1, 64);
+-		clamp_val(var->left_margin,  1, 255);
+-		clamp_val(var->right_margin, 1, 255);
+-		clamp_val(var->upper_margin, 1, 255);
+-		clamp_val(var->lower_margin, 1, 255);
++		var->hsync_len = clamp_val(var->hsync_len, 1, 64);
++		var->vsync_len = clamp_val(var->vsync_len, 1, 64);
++		var->left_margin = clamp_val(var->left_margin,  1, 255);
++		var->right_margin = clamp_val(var->right_margin, 1, 255);
++		var->upper_margin = clamp_val(var->upper_margin, 1, 255);
++		var->lower_margin = clamp_val(var->lower_margin, 1, 255);
+ 	}
  
- /* DSI Virtual channel. Hardcoded for now. */
-@@ -1127,40 +1126,6 @@ static struct omap_dss_driver dsicm_ops = {
- 	.memory_read	= dsicm_memory_read,
- };
- 
--static int dsicm_probe_pdata(struct platform_device *pdev)
--{
--	const struct panel_dsicm_platform_data *pdata;
--	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct omap_dss_device *dssdev, *in;
--
--	pdata = dev_get_platdata(&pdev->dev);
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&pdev->dev, "failed to find video source\n");
--		return -EPROBE_DEFER;
--	}
--	ddata->in = in;
--
--	ddata->reset_gpio = pdata->reset_gpio;
--
--	if (pdata->use_ext_te)
--		ddata->ext_te_gpio = pdata->ext_te_gpio;
--	else
--		ddata->ext_te_gpio = -1;
--
--	ddata->ulps_timeout = pdata->ulps_timeout;
--
--	ddata->use_dsi_backlight = pdata->use_dsi_backlight;
--
--	ddata->pin_config = pdata->pin_config;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	return 0;
--}
--
- static int dsicm_probe_of(struct platform_device *pdev)
- {
- 	struct device_node *node = pdev->dev.of_node;
-@@ -1207,6 +1172,9 @@ static int dsicm_probe(struct platform_device *pdev)
- 
- 	dev_dbg(dev, "probe\n");
- 
-+	if (!pdev->dev.of_node)
-+		return -ENODEV;
-+
- 	ddata = devm_kzalloc(dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
-@@ -1214,17 +1182,9 @@ static int dsicm_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, ddata);
- 	ddata->pdev = pdev;
- 
--	if (dev_get_platdata(dev)) {
--		r = dsicm_probe_pdata(pdev);
--		if (r)
--			return r;
--	} else if (pdev->dev.of_node) {
--		r = dsicm_probe_of(pdev);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = dsicm_probe_of(pdev);
-+	if (r)
-+		return r;
- 
- 	ddata->timings.x_res = 864;
- 	ddata->timings.y_res = 480;
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 74486bcc754e..e7b0e889d6d0 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -105,33 +105,6 @@ struct panel_dpi_platform_data {
- };
- 
- /**
-- * panel_dsicm platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @reset_gpio: gpio to reset the panel (or -1)
-- * @use_ext_te: use external TE GPIO
-- * @ext_te_gpio: external TE GPIO
-- * @ulps_timeout: time to wait before entering ULPS, 0 = disabled (ms)
-- * @use_dsi_backlight: true if panel uses DSI command to control backlight
-- * @pin_config: DSI pin configuration
-- */
--struct panel_dsicm_platform_data {
--	const char *name;
--	const char *source;
--
--	int reset_gpio;
--
--	bool use_ext_te;
--	int ext_te_gpio;
--
--	unsigned ulps_timeout;
--
--	bool use_dsi_backlight;
--
--	struct omap_dsi_pin_config pin_config;
--};
--
--/**
-  * panel_acx565akm platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
+ 	/* make sure each line is aligned on word boundary */
 -- 
-2.8.3
+2.7.1.410.g6faf27b
 

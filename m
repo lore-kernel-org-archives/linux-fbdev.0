@@ -1,37 +1,36 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 09 Jun 2016 09:44:30 +0000
-Subject: [RFC v4 13/14] ARM: dts: exynos: Switch the buck8 to GPIO mode on Odroid U3
-Message-Id: <1465465471-28740-14-git-send-email-k.kozlowski@samsung.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:34 +0000
+Subject: [PATCH v2 12/27] omapdss: omap-panel-data.h: Remove struct omap_dss_device declaration
+Message-Id: <20160601083549.10549-13-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
+References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, jsarha@ti.com, linux-omap@vger.kernel.org, laurent.pinchart@ideasonboard.com
 
-Switch the control of buck8 to GPIO mode. It is faster than I2C/register
-mode and it is the easiest way to disable it (regulator state is a
-logical OR state of GPIO and register value).
+The omap_dss_device is not needed by anything in the header file.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- arch/arm/boot/dts/exynos4412-odroidu3.dts | 1 +
- 1 file changed, 1 insertion(+)
+ include/video/omap-panel-data.h | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-index d73aa6c58fe3..31cdc036fda4 100644
---- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
-+++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
-@@ -74,6 +74,7 @@
- 	regulator-name = "BUCK8_P3V3";
- 	regulator-min-microvolt = <3300000>;
- 	regulator-max-microvolt = <3300000>;
-+	maxim,ena-gpios = <&gpa1 1 GPIO_ACTIVE_HIGH>;
- };
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index a64e9ba12b0d..7b4fadf82cd5 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -30,8 +30,6 @@
+ #include <video/omapdss.h>
+ #include <video/display_timing.h>
  
- /* VDDQ for MSHC (eMMC card) */
+-struct omap_dss_device;
+-
+ /**
+  * connector_atv platform data
+  * @name: name for this display entity
 -- 
-1.9.1
+2.8.3
 

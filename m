@@ -1,45 +1,125 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Wed, 01 Jun 2016 08:49:50 +0000
-Subject: [PATCH] fbdev: pxafb: clampval() doesn't update the variable
-Message-Id: <eddfe3528f38f8c67b15fea81758fe1aa44904a2.1464770175.git.viresh.kumar@linaro.org>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:31 +0000
+Subject: [PATCH v2 09/27] omapfb: encoder-tfp410: Remove legacy boot support
+Message-Id: <20160601083549.10549-10-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-clampval() returns the clamped value instead of updating the variable
-itself. And the driver is using it in a wrong way. Fix it.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/video/fbdev/pxafb.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   | 44 +++-------------------
+ include/video/omap-panel-data.h                    | 14 -------
+ 2 files changed, 6 insertions(+), 52 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index 2c0487f4f805..b1197980b9b1 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -417,12 +417,12 @@ static int pxafb_adjust_timing(struct pxafb_info *fbi,
- 	var->yres = max_t(int, var->yres, MIN_YRES);
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
+index d9048b3df495..778e3b384c2f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
+@@ -16,7 +16,6 @@
+ #include <linux/of_gpio.h>
  
- 	if (!(fbi->lccr0 & LCCR0_LCDT)) {
--		clamp_val(var->hsync_len, 1, 64);
--		clamp_val(var->vsync_len, 1, 64);
--		clamp_val(var->left_margin,  1, 255);
--		clamp_val(var->right_margin, 1, 255);
--		clamp_val(var->upper_margin, 1, 255);
--		clamp_val(var->lower_margin, 1, 255);
-+		var->hsync_len = clamp_val(var->hsync_len, 1, 64);
-+		var->vsync_len = clamp_val(var->vsync_len, 1, 64);
-+		var->left_margin = clamp_val(var->left_margin,  1, 255);
-+		var->right_margin = clamp_val(var->right_margin, 1, 255);
-+		var->upper_margin = clamp_val(var->upper_margin, 1, 255);
-+		var->lower_margin = clamp_val(var->lower_margin, 1, 255);
- 	}
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
  
- 	/* make sure each line is aligned on word boundary */
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -166,32 +165,6 @@ static const struct omapdss_dvi_ops tfp410_dvi_ops = {
+ 	.get_timings	= tfp410_get_timings,
+ };
+ 
+-static int tfp410_probe_pdata(struct platform_device *pdev)
+-{
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+-	struct encoder_tfp410_platform_data *pdata;
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-
+-	ddata->pd_gpio = pdata->power_down_gpio;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&pdev->dev, "Failed to find video source\n");
+-		return -ENODEV;
+-	}
+-
+-	ddata->in = in;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int tfp410_probe_of(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+@@ -225,23 +198,18 @@ static int tfp410_probe(struct platform_device *pdev)
+ 	struct omap_dss_device *dssdev;
+ 	int r;
+ 
++	if (!pdev->dev.of_node)
++		return -ENODEV;
++
+ 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
+ 
+ 	platform_set_drvdata(pdev, ddata);
+ 
+-	if (dev_get_platdata(&pdev->dev)) {
+-		r = tfp410_probe_pdata(pdev);
+-		if (r)
+-			return r;
+-	} else if (pdev->dev.of_node) {
+-		r = tfp410_probe_of(pdev);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = tfp410_probe_of(pdev);
++	if (r)
++		return r;
+ 
+ 	if (gpio_is_valid(ddata->pd_gpio)) {
+ 		r = devm_gpio_request_one(&pdev->dev, ddata->pd_gpio,
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 4d0b8832ae11..a64e9ba12b0d 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -33,20 +33,6 @@
+ struct omap_dss_device;
+ 
+ /**
+- * encoder_tfp410 platform data
+- * @name: name for this display entity
+- * @power_down_gpio: gpio number for PD pin (or -1 if not available)
+- * @data_lines: number of DPI datalines
+- */
+-struct encoder_tfp410_platform_data {
+-	const char *name;
+-	const char *source;
+-	int power_down_gpio;
+-	int data_lines;
+-};
+-
+-
+-/**
+  * connector_atv platform data
+  * @name: name for this display entity
+  * @source: name of the display entity used as a video source
 -- 
-2.7.1.410.g6faf27b
+2.8.3
 

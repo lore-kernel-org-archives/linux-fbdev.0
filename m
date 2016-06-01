@@ -1,7 +1,7 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:43 +0000
-Subject: [PATCH v2 21/27] video/platform_data: omapdss: Create new header file for platform data
-Message-Id: <20160601083549.10549-22-peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:48 +0000
+Subject: [PATCH v2 26/27] [media] omap_vout: Switch to use the video/omapfb_dss.h header file
+Message-Id: <20160601083549.10549-27-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
@@ -11,101 +11,55 @@ Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-Create a new header file for platform data used by omapdss.
+The omap_vout is only supported with omapfb. Switch the driver to use the
+correct header file.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- include/linux/platform_data/omapdss.h | 37 +++++++++++++++++++++++++++++++++++
- include/video/omapdss.h               | 25 +----------------------
- 2 files changed, 38 insertions(+), 24 deletions(-)
- create mode 100644 include/linux/platform_data/omapdss.h
+ drivers/media/platform/omap/omap_vout.c    | 2 +-
+ drivers/media/platform/omap/omap_voutdef.h | 2 +-
+ drivers/media/platform/omap/omap_voutlib.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/platform_data/omapdss.h b/include/linux/platform_data/omapdss.h
-new file mode 100644
-index 000000000000..679177929045
---- /dev/null
-+++ b/include/linux/platform_data/omapdss.h
-@@ -0,0 +1,37 @@
-+/*
-+ * Copyright (C) 2016 Texas Instruments, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __OMAPDSS_PDATA_H
-+#define __OMAPDSS_PDATA_H
-+
-+enum omapdss_version {
-+	OMAPDSS_VER_UNKNOWN = 0,
-+	OMAPDSS_VER_OMAP24xx,
-+	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
-+	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
-+	OMAPDSS_VER_OMAP3630,
-+	OMAPDSS_VER_AM35xx,
-+	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
-+	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
-+	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
-+	OMAPDSS_VER_OMAP5,
-+	OMAPDSS_VER_AM43xx,
-+	OMAPDSS_VER_DRA7xx,
-+};
-+
-+/* Board specific data */
-+struct omap_dss_board_info {
-+	const char *default_display_name;
-+	int (*dsi_enable_pads)(int dsi_id, unsigned int lane_mask);
-+	void (*dsi_disable_pads)(int dsi_id, unsigned int lane_mask);
-+	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
-+	enum omapdss_version version;
-+};
-+
-+#endif /* __OMAPDSS_PDATA_H */
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index a43859a0a398..53ada70cf23c 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -22,6 +22,7 @@
- #include <linux/kobject.h>
- #include <linux/device.h>
- #include <linux/interrupt.h>
-+#include <linux/platform_data/omapdss.h>
+diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
+index 70c28d19ea04..22cf60991df6 100644
+--- a/drivers/media/platform/omap/omap_vout.c
++++ b/drivers/media/platform/omap/omap_vout.c
+@@ -45,7 +45,7 @@
+ #include <media/v4l2-ioctl.h>
  
- #include <video/videomode.h>
+ #include <video/omapvrfb.h>
+-#include <video/omapdss.h>
++#include <video/omapfb_dss.h>
  
-@@ -303,30 +304,6 @@ struct omap_dss_dsi_config {
- 	enum omap_dss_dsi_trans_mode trans_mode;
- };
+ #include "omap_voutlib.h"
+ #include "omap_voutdef.h"
+diff --git a/drivers/media/platform/omap/omap_voutdef.h b/drivers/media/platform/omap/omap_voutdef.h
+index 9ccfe1f475a4..94b5d65afb19 100644
+--- a/drivers/media/platform/omap/omap_voutdef.h
++++ b/drivers/media/platform/omap/omap_voutdef.h
+@@ -11,7 +11,7 @@
+ #ifndef OMAP_VOUTDEF_H
+ #define OMAP_VOUTDEF_H
  
--enum omapdss_version {
--	OMAPDSS_VER_UNKNOWN = 0,
--	OMAPDSS_VER_OMAP24xx,
--	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
--	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
--	OMAPDSS_VER_OMAP3630,
--	OMAPDSS_VER_AM35xx,
--	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
--	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
--	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
--	OMAPDSS_VER_OMAP5,
--	OMAPDSS_VER_AM43xx,
--	OMAPDSS_VER_DRA7xx,
--};
--
--/* Board specific data */
--struct omap_dss_board_info {
--	const char *default_display_name;
--	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
--	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
--	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
--	enum omapdss_version version;
--};
--
- struct omap_video_timings {
- 	/* Unit: pixels */
- 	u16 x_res;
+-#include <video/omapdss.h>
++#include <video/omapfb_dss.h>
+ #include <video/omapvrfb.h>
+ 
+ #define YUYV_BPP        2
+diff --git a/drivers/media/platform/omap/omap_voutlib.c b/drivers/media/platform/omap/omap_voutlib.c
+index 80b0d88f125c..58a25fdf0cce 100644
+--- a/drivers/media/platform/omap/omap_voutlib.c
++++ b/drivers/media/platform/omap/omap_voutlib.c
+@@ -26,7 +26,7 @@
+ 
+ #include <linux/dma-mapping.h>
+ 
+-#include <video/omapdss.h>
++#include <video/omapfb_dss.h>
+ 
+ #include "omap_voutlib.h"
+ 
 -- 
 2.8.3
 

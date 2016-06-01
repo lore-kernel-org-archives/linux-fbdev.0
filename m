@@ -1,65 +1,81 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:28 +0000
-Subject: [PATCH v3 26/27] [media] omap_vout: Switch to use the video/omapfb_dss.h header file
-Message-Id: <20160603110329.9953-27-peter.ujfalusi@ti.com>
+Date: Wed, 01 Jun 2016 08:35:39 +0000
+Subject: [PATCH v2 17/27] ARM/video: omap2: Move omap_display_init declaration to mach-omap2/display.h
+Message-Id: <20160601083549.10549-18-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-The omap_vout is only supported with omapfb. Switch the driver to use the
-correct header file.
+The omap_display_init() is implemented in the mach-omap2/display.c so the
+declaration should have been there as well.
+Change the board files to include display.h to avoid build breakage at the
+same time.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/media/platform/omap/omap_vout.c    | 2 +-
- drivers/media/platform/omap/omap_voutdef.h | 2 +-
- drivers/media/platform/omap/omap_voutlib.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/arm/mach-omap2/board-ldp.c        | 1 +
+ arch/arm/mach-omap2/board-rx51-video.c | 1 +
+ arch/arm/mach-omap2/display.h          | 5 +++++
+ include/video/omapdss.h                | 3 ---
+ 4 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
-index 70c28d19ea04..22cf60991df6 100644
---- a/drivers/media/platform/omap/omap_vout.c
-+++ b/drivers/media/platform/omap/omap_vout.c
-@@ -45,7 +45,7 @@
- #include <media/v4l2-ioctl.h>
+diff --git a/arch/arm/mach-omap2/board-ldp.c b/arch/arm/mach-omap2/board-ldp.c
+index d9c3ffc39329..f364a1b779f0 100644
+--- a/arch/arm/mach-omap2/board-ldp.c
++++ b/arch/arm/mach-omap2/board-ldp.c
+@@ -47,6 +47,7 @@
+ #include "hsmmc.h"
+ #include "control.h"
+ #include "common-board-devices.h"
++#include "display.h"
  
- #include <video/omapvrfb.h>
--#include <video/omapdss.h>
-+#include <video/omapfb_dss.h>
+ #define LDP_SMSC911X_CS		1
+ #define LDP_SMSC911X_GPIO	152
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+index b76f84245ad9..9866ec06a395 100644
+--- a/arch/arm/mach-omap2/board-rx51-video.c
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -22,6 +22,7 @@
  
- #include "omap_voutlib.h"
- #include "omap_voutdef.h"
-diff --git a/drivers/media/platform/omap/omap_voutdef.h b/drivers/media/platform/omap/omap_voutdef.h
-index 9ccfe1f475a4..94b5d65afb19 100644
---- a/drivers/media/platform/omap/omap_voutdef.h
-+++ b/drivers/media/platform/omap/omap_voutdef.h
-@@ -11,7 +11,7 @@
- #ifndef OMAP_VOUTDEF_H
- #define OMAP_VOUTDEF_H
+ #include "soc.h"
+ #include "board-rx51.h"
++#include "display.h"
  
--#include <video/omapdss.h>
-+#include <video/omapfb_dss.h>
- #include <video/omapvrfb.h>
+ #include "mux.h"
  
- #define YUYV_BPP        2
-diff --git a/drivers/media/platform/omap/omap_voutlib.c b/drivers/media/platform/omap/omap_voutlib.c
-index 80b0d88f125c..58a25fdf0cce 100644
---- a/drivers/media/platform/omap/omap_voutlib.c
-+++ b/drivers/media/platform/omap/omap_voutlib.c
-@@ -26,7 +26,7 @@
+diff --git a/arch/arm/mach-omap2/display.h b/arch/arm/mach-omap2/display.h
+index 7375854b16c7..78f253005279 100644
+--- a/arch/arm/mach-omap2/display.h
++++ b/arch/arm/mach-omap2/display.h
+@@ -33,4 +33,9 @@ int omap_init_vout(void);
  
- #include <linux/dma-mapping.h>
+ struct device_node * __init omapdss_find_dss_of_node(void);
  
--#include <video/omapdss.h>
-+#include <video/omapfb_dss.h>
++struct omap_dss_board_info;
++
++/* Init with the board info */
++int omap_display_init(struct omap_dss_board_info *board_data);
++
+ #endif
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 8e14ad7327c9..0c7ae93ebd76 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -330,9 +330,6 @@ struct omap_dss_board_info {
+ 	enum omapdss_version version;
+ };
  
- #include "omap_voutlib.h"
- 
+-/* Init with the board info */
+-extern int omap_display_init(struct omap_dss_board_info *board_data);
+-
+ struct omap_video_timings {
+ 	/* Unit: pixels */
+ 	u16 x_res;
 -- 
 2.8.3
 

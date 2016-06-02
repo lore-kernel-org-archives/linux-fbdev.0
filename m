@@ -1,93 +1,36 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 02 Jun 2016 12:26:03 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Thu, 02 Jun 2016 15:23:06 +0000
 Subject: Re: [PATCH v2 00/27] fb/drm: omapdss: Clean up the headers and separate the two stack
-Message-Id: <575025DB.9020800@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HrVL7sObGAUl0w2B9PkUAaV7o01gaPWGc"
+Message-Id: <20160602152305.GE5995@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-To: tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, jsarha@ti.com, Peter Ujfalusi <peter.ujfalusi@ti.com>, laurent.pinchart@ideasonboard.com, linux-omap@vger.kernel.org, plagnioj@jcrosoft.com
+ <575025DB.9020800@ti.com>
+In-Reply-To: <575025DB.9020800@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
---HrVL7sObGAUl0w2B9PkUAaV7o01gaPWGc
-Content-Type: multipart/mixed; boundary="d4hbppl4GQDFmfJTs1PjWVCv9DpKTl9Ui"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: tony@atomide.com
-Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>, plagnioj@jcrosoft.com,
- robdclark@gmail.com, airlied@linux.ie, linux-fbdev@vger.kernel.org,
- linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
- laurent.pinchart@ideasonboard.com, jsarha@ti.com,
- dri-devel@lists.freedesktop.org
-Message-ID: <575025DB.9020800@ti.com>
-Subject: Re: [PATCH v2 00/27] fb/drm: omapdss: Clean up the headers and
- separate the two stack
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+* Tomi Valkeinen <tomi.valkeinen@ti.com> [160602 05:28]:
+> 
+> Tony, can you have a look at the arch/arm parts here and give your ack
+> if they're fine? They should be quite small and display specific, so I
+> don't see much chance for conflict there.
 
---d4hbppl4GQDFmfJTs1PjWVCv9DpKTl9Ui
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Looks good to me, but these are going to conflict with the board-*.c
+removal patches. And those we want to have easily revertable in case
+of issues.
 
-Hi Tony,
+Peter, can you do an immutable minimal branch of just the pdata
+changes affecting the board-*.c files? That way both Tomi and I
+can merge that in.
 
-On 01/06/16 11:35, Peter Ujfalusi wrote:
-> Hi,
->=20
-> Changes since v1:
-> - patches (2) added to remove the inclusion of video/omap-panel-data.h =
-when it
->   is not needed
-> - Transitional patch to create the video/omapfb_dss.h has been changed =
-to copy
->   the content of the omapdss.h in one step.
->=20
-> omapfb is deprecated. It will not receive new features, only bug fixes.=
- On the.
-> other hand omapdrm is in active development and the fact that both
-> implementation (omapfb and omapdrm) is using the same header file
-> (video/omapdss.h) makes implementing new features or doing bigger clean=
- ups in
-> omapdrm harder and hared as the change should not break omapfb.
->=20
-> To overcome this issue we need to separate the two implementation. This=
- is the
-> aim of this series:
-> Create platform_data header for omapdss,
-> clean up the header usage and dependencies,
-> new header file for omapfb stack (video/omapfb_dss.h)
-> local omapdss.h header file for omapdrm.
+Regards,
 
-Tony, can you have a look at the arch/arm parts here and give your ack
-if they're fine? They should be quite small and display specific, so I
-don't see much chance for conflict there.
-
- Tomi
+Tony
 
 
---d4hbppl4GQDFmfJTs1PjWVCv9DpKTl9Ui--
 
---HrVL7sObGAUl0w2B9PkUAaV7o01gaPWGc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXUCXcAAoJEPo9qoy8lh71N1oP/1Ng9eRePPz3yRiFn5iozYOi
-omNN+HjzJA0zj5Kx59sfDlvYJVTQoZuYGzAcMjFICWvK6nFoog36Yvgz2fPz6tUl
-xPFyRKn9QzrpTBmeDNa4LH88TtQBqVM8BacwcgbHyzuLP2nKfdi3kLr7Fhvjj8e0
-LTlyJpdN3KCI90Da6wDi5dGkwLOx8Sn4i3TRAA4ZaGYeko3K/nSlQGmAxExNtDR4
-3F5SCQaRyILpUxzi9IE8lNf/W846mIpBnWrRgTYf3/J2rwMOnl0Y+d7jggjOr2Gr
-qeLsXP2nffcIrScDwE28xWUTI+N/QjUyCBhfMH7nBrAXWqQvozjfNp18xevUDT4o
-J6kWErpzfWHo+uGQoq5nMDljbeFHzqDi8/yKCCGqnysBZbSUUJtgFKTTmu7uCGF1
-Pm5/AjwHTNlhjjE3yURqu22tWexCbU7BPH4xDZ50aTDGHA6xr4f1d00XemGA9GVT
-mCrMyB7oFlub3pf5YRN2MVeamkcK3Hd0oBNuvv5ksrKnIuqohhOnaFn9ZAOIemLR
-2TNgBBqqXUAhiW9xcFgpVQcJHRueDMSKki4MYtnnyod9k7vChriq/GGoaKhkKfUq
-QIouj7gSzVJ3kjwRu/0XBt+yZG9tf11IOaOQo28fcjjIiUfe3klH2qFL+hOp2SwR
-YaKVhCE9wKCS/Ol8XYJo
-=ShwU
------END PGP SIGNATURE-----
-
---HrVL7sObGAUl0w2B9PkUAaV7o01gaPWGc--

@@ -1,100 +1,120 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 07 Jun 2016 08:02:18 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: disable PWM when 'duty_cycle' is zero
-Message-Id: <57567F8A.10603@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aBGTKVr9S59UcVpum8XMionpkD6iXbgl7"
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:05 +0000
+Subject: [PATCH v3 11/27] omapfb: connector-hdmi: Remove legacy boot support
+Message-Id: <20160603105321.7980-12-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465209896-10319-1-git-send-email-LW@KARO-electronics.de>
- <5755664D.5070109@ti.com> <20160607084907.14ffdc03@ipc1.ka-ro>
-In-Reply-To: <20160607084907.14ffdc03@ipc1.ka-ro>
-To: =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
---aBGTKVr9S59UcVpum8XMionpkD6iXbgl7
-Content-Type: multipart/mixed; boundary="JFpkeGILC0tawt8FFhTx910gbDfLiTahT"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW@KARO-electronics.de>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>,
- Thierry Reding <thierry.reding@gmail.com>, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org
-Message-ID: <57567F8A.10603@ti.com>
-Subject: Re: [PATCH] backlight: pwm_bl: disable PWM when 'duty_cycle' is zero
-References: <1465209896-10319-1-git-send-email-LW@KARO-electronics.de>
- <5755664D.5070109@ti.com> <20160607084907.14ffdc03@ipc1.ka-ro>
-In-Reply-To: <20160607084907.14ffdc03@ipc1.ka-ro>
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
---JFpkeGILC0tawt8FFhTx910gbDfLiTahT
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ .../fbdev/omap2/omapfb/displays/connector-hdmi.c   | 42 ++++------------------
+ include/video/omap-panel-data.h                    | 10 ------
+ 2 files changed, 6 insertions(+), 46 deletions(-)
 
-On 07/06/16 09:49, Lothar Wa=C3=9Fmann wrote:
-> Hi,
->=20
-> On Mon, 6 Jun 2016 15:02:21 +0300 Tomi Valkeinen wrote:
->> Hi,
->>
->> On 06/06/16 13:44, Lothar Wa=C3=9Fmann wrote:
->>> 'brightness' is usually an index into a table of duty_cycle values,
->>> where the value at index 0 may well be non-zero
->>> (tegra30-apalis-eval.dts and tegra30-colibri-eval-v3.dts are real-lif=
-e
->>> examples).
->>> Thus brightness =3D=3D 0 does not necessarily mean that the PWM outpu=
-t
->>> will be inactive.
->>> Check for 'duty_cycle =3D=3D 0' rather than 'brightness =3D=3D 0' to =
-decide
->>> whether to disable the PWM.
->>
->> The binding doc does say:
->>
->>   - brightness-levels: Array of distinct brightness levels. Typically =
-these
->>       are in the range from 0 to 255, but any range starting at 0 will=
- do.
->>       The actual brightness level (PWM duty cycle) will be interpolate=
-d
->>       from these values. 0 means a 0% duty cycle (darkest/off), while =
-the
->>       last value in the array represents a 100% duty cycle (brightest)=
-=2E
->>
-> So, what should I do, when I need a range of levels that doesn't start
-> at 0? E.g. if the brightness is inverse proportional to the PWM duty
-> cycle.
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
+index 6ee4129bc0c0..231b8588a59f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c
+@@ -18,7 +18,6 @@
+ #include <drm/drm_edid.h>
+ 
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
+ 
+ static const struct omap_video_timings hdmic_default_timings = {
+ 	.x_res		= 640,
+@@ -206,30 +205,6 @@ static struct omap_dss_driver hdmic_driver = {
+ 	.set_hdmi_infoframe	= hdmic_set_infoframe,
+ };
+ 
+-static int hdmic_probe_pdata(struct platform_device *pdev)
+-{
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+-	struct connector_hdmi_platform_data *pdata;
+-	struct omap_dss_device *in, *dssdev;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-
+-	ddata->hpd_gpio = -ENODEV;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&pdev->dev, "Failed to find video source\n");
+-		return -EPROBE_DEFER;
+-	}
+-
+-	ddata->in = in;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int hdmic_probe_of(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+@@ -261,6 +236,9 @@ static int hdmic_probe(struct platform_device *pdev)
+ 	struct omap_dss_device *dssdev;
+ 	int r;
+ 
++	if (!pdev->dev.of_node)
++		return -ENODEV;
++
+ 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
+@@ -268,17 +246,9 @@ static int hdmic_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, ddata);
+ 	ddata->dev = &pdev->dev;
+ 
+-	if (dev_get_platdata(&pdev->dev)) {
+-		r = hdmic_probe_pdata(pdev);
+-		if (r)
+-			return r;
+-	} else if (pdev->dev.of_node) {
+-		r = hdmic_probe_of(pdev);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = hdmic_probe_of(pdev);
++	if (r)
++		return r;
+ 
+ 	if (gpio_is_valid(ddata->hpd_gpio)) {
+ 		r = devm_gpio_request_one(&pdev->dev, ddata->hpd_gpio,
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index e7b0e889d6d0..c0836b118f67 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -59,16 +59,6 @@ struct connector_dvi_platform_data {
+ };
+ 
+ /**
+- * connector_hdmi platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- */
+-struct connector_hdmi_platform_data {
+-	const char *name;
+-	const char *source;
+-};
+-
+-/**
+  * connector_atv platform data
+  * @name: name for this display entity
+  * @source: name of the display entity used as a video source
+-- 
+2.8.3
 
-That's a question to the PWM/backlight maintainers, but I think in the
-addition of your patch, the binding doc needs to be changed, as it
-doesn't hold true after your patch.
-
- Tomi
-
-
---JFpkeGILC0tawt8FFhTx910gbDfLiTahT--
-
---aBGTKVr9S59UcVpum8XMionpkD6iXbgl7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXVn+LAAoJEPo9qoy8lh71XfcP/iD0AxZD8UubwRZ5a37SXaUh
-82QyLGYlKRv38iqOSr/r3/AeXDpDTOmhwZbyBUKHa0gZLTBP1x3G85VNeHsQQMam
-0dXUbcvospBDX6xMChjQGsG0l+fWVS6rX1XkXFvVF3CmYL4UdoHnptIG9toocZSR
-VDTFt17MHxHubQdUZxJjWHsGaEH+PrSIGXgHPJWWlVg4zGUR4ms3nQk9udair6YW
-pGZ2PvK8qWVX0l81xCqatwQ0XwQxY7AYVUvlsnI3kprvnRMrxR03XOT63G1Gb+/Z
-Hh9Re1pFE9/4jc0V9Umn31nm6oJmZAJ0lPzqX2y9PKqEHGTCSfruv6we5npGF44Y
-0JZDRyDnuB5BO75eoVMCRjSIR69HltoC+utl2yZQcw1HiOXULPZLlNHUgt37Njpm
-g4uFYTD4cGgfqBMznZ3849qbYMj2s4+HkcQKVpXmOHwKGNWqfGmey4+cJIp3H5Gk
-7xhmcV1ALWACIf7bMa0G3hrH2RKwk247FzG4hMpXwQ0FMfd1Anp6z8YELmGj6CvN
-F0xj2G7wjU/BBnYt6oMe9QlFh2oXoy/K0wmhxhlxnDR3ldtBQWWDqPDYIHFFj/iV
-7PfYVgSVvS1A2HiJqTsIiGY4RzsDDJlurNnUaMPr7QDHI5QEfNqOiKmpB7L0MOgm
-N2oICrC3wsd689HC0LGB
-=huGB
------END PGP SIGNATURE-----
-
---aBGTKVr9S59UcVpum8XMionpkD6iXbgl7--

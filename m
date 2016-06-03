@@ -1,75 +1,126 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 10 Jun 2016 11:33:15 +0000
-Subject: Re: [PATCH] [efifb] Fix 16 color palette entry calculation
-Message-Id: <575AA57B.6080906@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="np38n9EXKP8a7wkh52pfKL1MRm6fsv6jb"
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:01 +0000
+Subject: [PATCH v3 07/27] omapfb: panel-tpo-td043mtea1: Remove legacy boot support
+Message-Id: <20160603105321.7980-8-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465307143-21398-1-git-send-email-mstaudt@suse.de>
- <20160607172304.GD24886@redhat.com>
- <20160608124348.GY2658@codeblueprint.co.uk>
-In-Reply-To: <20160608124348.GY2658@codeblueprint.co.uk>
-To: Matt Fleming <matt@codeblueprint.co.uk>, Peter Jones <pjones@redhat.com>
-Cc: Max Staudt <mstaudt@suse.de>, plagnioj@jcrosoft.com, eich@suse.de, tiwai@suse.de, agraf@suse.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
---np38n9EXKP8a7wkh52pfKL1MRm6fsv6jb
-Content-Type: multipart/mixed; boundary="2NcwNrdubUKRoI1j6S6WiOSini99FvKbX"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Matt Fleming <matt@codeblueprint.co.uk>, Peter Jones <pjones@redhat.com>
-Cc: Max Staudt <mstaudt@suse.de>, plagnioj@jcrosoft.com, eich@suse.de,
- tiwai@suse.de, agraf@suse.de, linux-fbdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Message-ID: <575AA57B.6080906@ti.com>
-Subject: Re: [PATCH] [efifb] Fix 16 color palette entry calculation
-References: <1465307143-21398-1-git-send-email-mstaudt@suse.de>
- <20160607172304.GD24886@redhat.com>
- <20160608124348.GY2658@codeblueprint.co.uk>
-In-Reply-To: <20160608124348.GY2658@codeblueprint.co.uk>
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
---2NcwNrdubUKRoI1j6S6WiOSini99FvKbX
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   | 44 +++-------------------
+ include/video/omap-panel-data.h                    | 16 --------
+ 2 files changed, 6 insertions(+), 54 deletions(-)
 
-On 08/06/16 15:43, Matt Fleming wrote:
-> On Tue, 07 Jun, at 01:23:05PM, Peter Jones wrote:
->>
->> Looks right to me.
->>
->> Acked-By: Peter Jones <pjones@redhat.com>
->=20
-> Tomi, are you OK to take this one or would you like me to take it
-> through the EFI tree?
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+index 68e3b68a2920..f49e60da5bd3 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+@@ -20,7 +20,6 @@
+ #include <linux/of_gpio.h>
+ 
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
+ 
+ #define TPO_R02_MODE(x)		((x) & 7)
+ #define TPO_R02_MODE_800x480	7
+@@ -465,32 +464,6 @@ static struct omap_dss_driver tpo_td043_ops = {
+ };
+ 
+ 
+-static int tpo_td043_probe_pdata(struct spi_device *spi)
+-{
+-	const struct panel_tpo_td043mtea1_platform_data *pdata;
+-	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&spi->dev);
+-
+-	ddata->nreset_gpio = pdata->nreset_gpio;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&spi->dev, "failed to find video source '%s'\n",
+-				pdata->source);
+-		return -EPROBE_DEFER;
+-	}
+-	ddata->in = in;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int tpo_td043_probe_of(struct spi_device *spi)
+ {
+ 	struct device_node *node = spi->dev.of_node;
+@@ -524,6 +497,9 @@ static int tpo_td043_probe(struct spi_device *spi)
+ 
+ 	dev_dbg(&spi->dev, "%s\n", __func__);
+ 
++	if (!spi->dev.of_node)
++		return -ENODEV;
++
+ 	spi->bits_per_word = 16;
+ 	spi->mode = SPI_MODE_0;
+ 
+@@ -541,17 +517,9 @@ static int tpo_td043_probe(struct spi_device *spi)
+ 
+ 	ddata->spi = spi;
+ 
+-	if (dev_get_platdata(&spi->dev)) {
+-		r = tpo_td043_probe_pdata(spi);
+-		if (r)
+-			return r;
+-	} else if (spi->dev.of_node) {
+-		r = tpo_td043_probe_of(spi);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = tpo_td043_probe_of(spi);
++	if (r)
++		return r;
+ 
+ 	ddata->mode = TPO_R02_MODE_800x480;
+ 	memcpy(ddata->gamma, tpo_td043_def_gamma, sizeof(ddata->gamma));
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index a0c95cd1ed11..34ee7509752f 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -189,20 +189,4 @@ struct panel_sharp_ls037v7dw01_platform_data {
+ 	int ud_gpio;
+ };
+ 
+-/**
+- * panel-tpo-td043mtea1 platform data
+- * @name: name for this display entity
+- * @source: name of the display entity used as a video source
+- * @data_lines: number of DPI datalines
+- * @nreset_gpio: reset signal
+- */
+-struct panel_tpo_td043mtea1_platform_data {
+-	const char *name;
+-	const char *source;
+-
+-	int data_lines;
+-
+-	int nreset_gpio;
+-};
+-
+ #endif /* __OMAP_PANEL_DATA_H */
+-- 
+2.8.3
 
-I can pick this up, but as Greg said, this is not valid for stable.
-
-Max, please resend with correct stable reference.
-
- Tomi
-
-
---2NcwNrdubUKRoI1j6S6WiOSini99FvKbX--
-
---np38n9EXKP8a7wkh52pfKL1MRm6fsv6jb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXWqV7AAoJEPo9qoy8lh71i2cP/i5Gvg8nVNIzz/1Y1+9kYZTr
-6nMprRTYriEGx/jm2ZZxwNceVYgEUbZLJEsoYIz4HyLGLi3CvtWU6HcDkHxWmIUQ
-U6PqHT+91PdkvbVjezraTgkYINUBtVfpVHgqOuWr91mor9SMGuGYSI8cjxXa21H9
-azbUbeE00qtpi0gGJk4+3VHZ+GYLlpUFV/JytO8eO1CUrL2aW6LILzbbLfzEvLyb
-sZJ8uBGqY/+Gs6xEpss3iR95a6fgu2/ICDW3W2cwaRK1KcC1RvPLL1IFvuYmQ834
-3WWOS9Rf8saWjdEPzpBwlF7v4NZEULhQQ+W96AActZea3wXa3+fT6WotDEj4z8UE
-kzJvC1bGmb6mgLqjxORsibh6Mfa/7BirxEUBaNj7GMWmhNRMM0119bSrYzTsjfOB
-6DUTXz/ggnnorNnXJUxweCXOtYYwmuXgNBfw6BvieWjQsK2ZhQGx1mGVBFd56a4A
-KCzi4JtIxgySLKjzVPY052hx6JDHUW9vsjNKH7uwE7jJkHFUlPwRPZWabF7XfPQE
-x5gv7lbS0vuT0BBJcn/1K3lyQdtvCgiIWEIL1cbqeHsTRBLXdFQLEFlwjZ8nWs1P
-lBKBDfDfmYADYD+vA6qMiNGV0MohBr98dHFviSPHeT+IYTGnu2bzF+5rX4z9TPXN
-S4+6HTjWTRT4tzRgIfRK
-=jzLj
------END PGP SIGNATURE-----
-
---np38n9EXKP8a7wkh52pfKL1MRm6fsv6jb--

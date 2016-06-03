@@ -1,10 +1,10 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:14 +0000
-Subject: [PATCH v3 12/27] omapfb: connector-dvi: Remove legacy boot support
-Message-Id: <20160603110329.9953-13-peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:02 +0000
+Subject: [PATCH v3 08/27] omapfb: panel-sharp-ls037v7dw01: Remove legacy boot support
+Message-Id: <20160603105321.7980-9-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,70 +16,93 @@ support can be dropped.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- .../fbdev/omap2/omapfb/displays/connector-dvi.c    | 58 +++-------------------
- include/video/omap-panel-data.h                    | 12 -----
- 2 files changed, 6 insertions(+), 64 deletions(-)
+ .../omapfb/displays/panel-sharp-ls037v7dw01.c      | 81 ++--------------------
+ include/video/omap-panel-data.h                    | 24 -------
+ 2 files changed, 6 insertions(+), 99 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-index d811e6dcaef7..f2abbec7602a 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-@@ -17,7 +17,6 @@
- #include <drm/drm_edid.h>
- 
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+index 1954ec913ce5..a1e590155a26 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c
+@@ -18,7 +18,6 @@
+ #include <linux/slab.h>
+ #include <linux/regulator/consumer.h>
  #include <video/omapdss.h>
 -#include <video/omap-panel-data.h>
  
- static const struct omap_video_timings dvic_default_timings = {
- 	.x_res		= 640,
-@@ -236,46 +235,6 @@ static struct omap_dss_driver dvic_driver = {
- 	.detect		= dvic_detect,
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -197,69 +196,6 @@ static struct omap_dss_driver sharp_ls_ops = {
+ 	.get_resolution	= omapdss_default_get_resolution,
  };
  
--static int dvic_probe_pdata(struct platform_device *pdev)
+-static int sharp_ls_get_gpio(struct device *dev, int gpio, unsigned long flags,
+-		  char *desc, struct gpio_desc **gpiod)
 -{
+-	int r;
+-
+-	r = devm_gpio_request_one(dev, gpio, flags, desc);
+-	if (r) {
+-		*gpiod = NULL;
+-		return r = -ENOENT ? 0 : r;
+-	}
+-
+-	*gpiod = gpio_to_desc(gpio);
+-
+-	return 0;
+-}
+-
+-static int sharp_ls_probe_pdata(struct platform_device *pdev)
+-{
+-	const struct panel_sharp_ls037v7dw01_platform_data *pdata;
 -	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct connector_dvi_platform_data *pdata;
--	struct omap_dss_device *in, *dssdev;
--	int i2c_bus_num;
+-	struct omap_dss_device *dssdev, *in;
+-	int r;
 -
 -	pdata = dev_get_platdata(&pdev->dev);
--	i2c_bus_num = pdata->i2c_bus_num;
--
--	if (i2c_bus_num != -1) {
--		struct i2c_adapter *adapter;
--
--		adapter = i2c_get_adapter(i2c_bus_num);
--		if (!adapter) {
--			dev_err(&pdev->dev,
--					"Failed to get I2C adapter, bus %d\n",
--					i2c_bus_num);
--			return -EPROBE_DEFER;
--		}
--
--		ddata->i2c_adapter = adapter;
--	}
 -
 -	in = omap_dss_find_output(pdata->source);
 -	if (in = NULL) {
--		i2c_put_adapter(ddata->i2c_adapter);
--
--		dev_err(&pdev->dev, "Failed to find video source\n");
+-		dev_err(&pdev->dev, "failed to find video source '%s'\n",
+-				pdata->source);
 -		return -EPROBE_DEFER;
 -	}
 -
 -	ddata->in = in;
 -
+-	ddata->data_lines = pdata->data_lines;
+-
 -	dssdev = &ddata->dssdev;
 -	dssdev->name = pdata->name;
+-
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->mo_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd MO", &ddata->mo_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->lr_gpio, GPIOF_OUT_INIT_HIGH,
+-		"lcd LR", &ddata->lr_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->ud_gpio, GPIOF_OUT_INIT_HIGH,
+-		"lcd UD", &ddata->ud_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->resb_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd RESB", &ddata->resb_gpio);
+-	if (r)
+-		return r;
+-	r = sharp_ls_get_gpio(&pdev->dev, pdata->ini_gpio, GPIOF_OUT_INIT_LOW,
+-		"lcd INI", &ddata->ini_gpio);
+-	if (r)
+-		return r;
 -
 -	return 0;
 -}
 -
- static int dvic_probe_of(struct platform_device *pdev)
+ static  int sharp_ls_get_gpio_of(struct device *dev, int index, int val,
+ 	const char *desc, struct gpio_desc **gpiod)
  {
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-@@ -313,23 +272,18 @@ static int dvic_probe(struct platform_device *pdev)
+@@ -330,23 +266,18 @@ static int sharp_ls_probe(struct platform_device *pdev)
  	struct omap_dss_device *dssdev;
  	int r;
  
@@ -87,51 +110,61 @@ index d811e6dcaef7..f2abbec7602a 100644
 +		return -ENODEV;
 +
  	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
+ 	if (ddata = NULL)
  		return -ENOMEM;
  
  	platform_set_drvdata(pdev, ddata);
  
 -	if (dev_get_platdata(&pdev->dev)) {
--		r = dvic_probe_pdata(pdev);
+-		r = sharp_ls_probe_pdata(pdev);
 -		if (r)
 -			return r;
 -	} else if (pdev->dev.of_node) {
--		r = dvic_probe_of(pdev);
+-		r = sharp_ls_probe_of(pdev);
 -		if (r)
 -			return r;
 -	} else {
 -		return -ENODEV;
 -	}
-+	r = dvic_probe_of(pdev);
++	r = sharp_ls_probe_of(pdev);
 +	if (r)
 +		return r;
  
- 	ddata->timings = dvic_default_timings;
+ 	ddata->videomode = sharp_ls_timings;
  
 diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index c0836b118f67..4d0b8832ae11 100644
+index 34ee7509752f..085b4171eb25 100644
 --- a/include/video/omap-panel-data.h
 +++ b/include/video/omap-panel-data.h
-@@ -47,18 +47,6 @@ struct encoder_tfp410_platform_data {
+@@ -165,28 +165,4 @@ struct panel_lb035q02_platform_data {
+ 	int enable_gpio;
+ };
  
- 
- /**
-- * connector_dvi platform data
+-/**
+- * panel_sharp_ls037v7dw01 platform data
 - * @name: name for this display entity
 - * @source: name of the display entity used as a video source
-- * @i2c_bus_num: i2c bus number to be used for reading EDID
+- * @data_lines: number of DPI datalines
+- * @resb_gpio: reset signal GPIO
+- * @ini_gpio: power on control GPIO
+- * @mo_gpio: selection for resolution(VGA/QVGA) GPIO
+- * @lr_gpio: selection for horizontal scanning direction GPIO
+- * @ud_gpio: selection for vertical scanning direction GPIO
 - */
--struct connector_dvi_platform_data {
+-struct panel_sharp_ls037v7dw01_platform_data {
 -	const char *name;
 -	const char *source;
--	int i2c_bus_num;
+-
+-	int data_lines;
+-
+-	int resb_gpio;
+-	int ini_gpio;
+-	int mo_gpio;
+-	int lr_gpio;
+-	int ud_gpio;
 -};
 -
--/**
-  * connector_atv platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
+ #endif /* __OMAP_PANEL_DATA_H */
 -- 
 2.8.3
 

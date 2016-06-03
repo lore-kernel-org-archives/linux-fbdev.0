@@ -1,57 +1,66 @@
-From: yeongjun Kim <iam.yeongjunkim@gmail.com>
-Date: Tue, 14 Jun 2016 15:38:33 +0000
-Subject: [PATCH] staging: sm750fb: fix block comments errors in ddk750_display.c
-Message-Id: <20160614153833.GA23451@gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:11 +0000
+Subject: [PATCH v3 17/27] drm/omap: connector-analog-tv: Support only Composite type in legacy boot
+Message-Id: <20160603105321.7980-18-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
-In-Reply-To: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-WARNING: Block comments use * on subsequent lines
-WARNING: Block comments use a trailing */ on a separate line
-WARNING: Block comments use * on subsequent lines
-WARNING: Block comments use a trailing */ on a separate line
+In legacy mode (non DT mode) support only composite connector type. The
+only user for this is rx51, using composite type.
+Dropping the connector_type selection via pdata will allow cleanups in
+omapdss (drm vs fbdev).
 
-Signed-off-by: yeongjun Kim <iam.yeongjunkim@gmail.com>
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/staging/sm750fb/ddk750_display.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index ca4973e..a040042 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -68,8 +68,10 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 	if (!ctrl) {
- 		/* primary controller */
+diff --git a/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c b/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
+index 8511c648a15c..d963b4a9cfc0 100644
+--- a/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
++++ b/drivers/gpu/drm/omapdrm/displays/connector-analog-tv.c
+@@ -25,7 +25,6 @@ struct panel_drv_data {
  
--		/* Do not wait when the Primary PLL is off or display control is already off.
--		   This will prevent the software to wait forever. */
-+		/*
-+		 * Do not wait when the Primary PLL is off or display control is
-+		 * already off. This will prevent the software to wait forever.
-+		 */
- 		if (!(PEEK32(PANEL_PLL_CTRL) & PLL_CTRL_POWER) ||
- 		    !(PEEK32(PANEL_DISPLAY_CTRL) & DISPLAY_CTRL_TIMING)) {
- 			return;
-@@ -88,9 +90,10 @@ static void waitNextVerticalSync(int ctrl, int delay)
- 		}
+ 	struct omap_video_timings timings;
  
- 	} else {
+-	enum omap_dss_venc_type connector_type;
+ 	bool invert_polarity;
+ };
+ 
+@@ -45,10 +44,6 @@ static const struct omap_video_timings tvc_pal_timings = {
+ 
+ static const struct of_device_id tvc_of_match[];
+ 
+-struct tvc_of_data {
+-	enum omap_dss_venc_type connector_type;
+-};
 -
--		/* Do not wait when the Primary PLL is off or display control is already off.
--			   This will prevent the software to wait forever. */
-+		/*
-+		 * Do not wait when the Primary PLL is off or display control is
-+		 * already off. This will prevent the software to wait forever.
-+		 */
- 		if (!(PEEK32(CRT_PLL_CTRL) & PLL_CTRL_POWER) ||
- 		    !(PEEK32(CRT_DISPLAY_CTRL) & DISPLAY_CTRL_TIMING)) {
- 			return;
+ #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
+ 
+ static int tvc_connect(struct omap_dss_device *dssdev)
+@@ -99,7 +94,7 @@ static int tvc_enable(struct omap_dss_device *dssdev)
+ 	in->ops.atv->set_timings(in, &ddata->timings);
+ 
+ 	if (!ddata->dev->of_node) {
+-		in->ops.atv->set_type(in, ddata->connector_type);
++		in->ops.atv->set_type(in, OMAP_DSS_VENC_TYPE_COMPOSITE);
+ 
+ 		in->ops.atv->invert_vid_out_polarity(in,
+ 			ddata->invert_polarity);
+@@ -207,7 +202,6 @@ static int tvc_probe_pdata(struct platform_device *pdev)
+ 
+ 	ddata->in = in;
+ 
+-	ddata->connector_type = pdata->connector_type;
+ 	ddata->invert_polarity = pdata->invert_polarity;
+ 
+ 	dssdev = &ddata->dssdev;
 -- 
-1.9.1
+2.8.3
 

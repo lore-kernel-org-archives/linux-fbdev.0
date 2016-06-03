@@ -1,137 +1,106 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 30 May 2016 11:42:40 +0000
-Subject: [PATCH 08/26] omapfb: connector-dvi: Remove legacy boot support
-Message-Id: <20160530114258.30879-9-peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:17 +0000
+Subject: [PATCH v3 23/27] omapdss: hdmi audio: Make header file independent of video/omapdss.h
+Message-Id: <20160603105321.7980-24-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160530114258.30879-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160530114258.30879-1-peter.ujfalusi@ti.com>
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+Clean up the header files regarding to hdmi audio so the omap-hdmi-audio.h
+file will only need to include the platform_data/omapdss.h file.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+CC: Mark Brown <broonie@kernel.org>
+CC: Jyri Sarha <jsarha@ti.com>
+CC: Liam Girdwood <liam.r.girdwood@linux.intel.com>
 ---
- .../fbdev/omap2/omapfb/displays/connector-dvi.c    | 58 +++-------------------
- include/video/omap-panel-data.h                    | 12 -----
- 2 files changed, 6 insertions(+), 64 deletions(-)
+ drivers/gpu/drm/omapdrm/dss/hdmi.h          | 1 +
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi.h | 1 +
+ include/sound/omap-hdmi-audio.h             | 9 +++++++--
+ include/video/omapdss.h                     | 5 -----
+ sound/soc/omap/omap-hdmi-audio.c            | 1 -
+ 5 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-index d811e6dcaef7..f2abbec7602a 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c
-@@ -17,7 +17,6 @@
- #include <drm/drm_edid.h>
- 
+diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi.h b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+index 53616b02b613..c32a21a26054 100644
+--- a/drivers/gpu/drm/omapdrm/dss/hdmi.h
++++ b/drivers/gpu/drm/omapdrm/dss/hdmi.h
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/hdmi.h>
  #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
++#include <sound/omap-hdmi-audio.h>
  
- static const struct omap_video_timings dvic_default_timings = {
- 	.x_res		= 640,
-@@ -236,46 +235,6 @@ static struct omap_dss_driver dvic_driver = {
- 	.detect		= dvic_detect,
+ #include "dss.h"
+ 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+index 53616b02b613..c32a21a26054 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
+@@ -24,6 +24,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/hdmi.h>
+ #include <video/omapdss.h>
++#include <sound/omap-hdmi-audio.h>
+ 
+ #include "dss.h"
+ 
+diff --git a/include/sound/omap-hdmi-audio.h b/include/sound/omap-hdmi-audio.h
+index afdb416898e0..1df2ff61a4dd 100644
+--- a/include/sound/omap-hdmi-audio.h
++++ b/include/sound/omap-hdmi-audio.h
+@@ -16,11 +16,16 @@
+  *
+  */
+ 
+-#include <video/omapdss.h>
+-
+ #ifndef __OMAP_HDMI_AUDIO_H__
+ #define __OMAP_HDMI_AUDIO_H__
+ 
++#include <linux/platform_data/omapdss.h>
++
++struct omap_dss_audio {
++	struct snd_aes_iec958 *iec;
++	struct snd_cea_861_aud_if *cea;
++};
++
+ struct omap_hdmi_audio_ops {
+ 	int (*audio_startup)(struct device *dev,
+ 			     void (*abort_cb)(struct device *dev));
+diff --git a/include/video/omapdss.h b/include/video/omapdss.h
+index 53ada70cf23c..b25e2eab4b48 100644
+--- a/include/video/omapdss.h
++++ b/include/video/omapdss.h
+@@ -168,11 +168,6 @@ enum omap_dss_display_state {
+ 	OMAP_DSS_DISPLAY_ACTIVE,
  };
  
--static int dvic_probe_pdata(struct platform_device *pdev)
--{
--	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
--	struct connector_dvi_platform_data *pdata;
--	struct omap_dss_device *in, *dssdev;
--	int i2c_bus_num;
--
--	pdata = dev_get_platdata(&pdev->dev);
--	i2c_bus_num = pdata->i2c_bus_num;
--
--	if (i2c_bus_num != -1) {
--		struct i2c_adapter *adapter;
--
--		adapter = i2c_get_adapter(i2c_bus_num);
--		if (!adapter) {
--			dev_err(&pdev->dev,
--					"Failed to get I2C adapter, bus %d\n",
--					i2c_bus_num);
--			return -EPROBE_DEFER;
--		}
--
--		ddata->i2c_adapter = adapter;
--	}
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		i2c_put_adapter(ddata->i2c_adapter);
--
--		dev_err(&pdev->dev, "Failed to find video source\n");
--		return -EPROBE_DEFER;
--	}
--
--	ddata->in = in;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	return 0;
--}
--
- static int dvic_probe_of(struct platform_device *pdev)
- {
- 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
-@@ -313,23 +272,18 @@ static int dvic_probe(struct platform_device *pdev)
- 	struct omap_dss_device *dssdev;
- 	int r;
- 
-+	if (!pdev->dev.of_node)
-+		return -ENODEV;
-+
- 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (!ddata)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(pdev, ddata);
- 
--	if (dev_get_platdata(&pdev->dev)) {
--		r = dvic_probe_pdata(pdev);
--		if (r)
--			return r;
--	} else if (pdev->dev.of_node) {
--		r = dvic_probe_of(pdev);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = dvic_probe_of(pdev);
-+	if (r)
-+		return r;
- 
- 	ddata->timings = dvic_default_timings;
- 
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index c0836b118f67..4d0b8832ae11 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -47,18 +47,6 @@ struct encoder_tfp410_platform_data {
- 
- 
- /**
-- * connector_dvi platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @i2c_bus_num: i2c bus number to be used for reading EDID
-- */
--struct connector_dvi_platform_data {
--	const char *name;
--	const char *source;
--	int i2c_bus_num;
+-struct omap_dss_audio {
+-	struct snd_aes_iec958 *iec;
+-	struct snd_cea_861_aud_if *cea;
 -};
 -
--/**
-  * connector_atv platform data
-  * @name: name for this display entity
-  * @source: name of the display entity used as a video source
+ enum omap_dss_rotation_type {
+ 	OMAP_DSS_ROT_DMA	= 1 << 0,
+ 	OMAP_DSS_ROT_VRFB	= 1 << 1,
+diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
+index 64425d352962..888133f9e65d 100644
+--- a/sound/soc/omap/omap-hdmi-audio.c
++++ b/sound/soc/omap/omap-hdmi-audio.c
+@@ -28,7 +28,6 @@
+ #include <sound/asoundef.h>
+ #include <sound/omap-pcm.h>
+ #include <sound/omap-hdmi-audio.h>
+-#include <video/omapdss.h>
+ 
+ #define DRV_NAME "omap-hdmi-audio"
+ 
 -- 
 2.8.3
 

@@ -1,10 +1,10 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 10:52:56 +0000
+Date: Fri, 03 Jun 2016 11:03:04 +0000
 Subject: [PATCH v3 02/27] ARM/video: omap2: Move omap_display_init declaration to mach-omap2/display.h
-Message-Id: <20160603105321.7980-3-peter.ujfalusi@ti.com>
+Message-Id: <20160603110329.9953-3-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

@@ -1,10 +1,10 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 10:53:10 +0000
+Date: Fri, 03 Jun 2016 11:03:18 +0000
 Subject: [PATCH v3 16/27] omapdss: omap-panel-data.h: Remove struct omap_dss_device declaration
-Message-Id: <20160603105321.7980-17-peter.ujfalusi@ti.com>
+Message-Id: <20160603110329.9953-17-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

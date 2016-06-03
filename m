@@ -1,15 +1,15 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 10:53:17 +0000
+Date: Fri, 03 Jun 2016 11:03:25 +0000
 Subject: [PATCH v3 23/27] omapdss: hdmi audio: Make header file independent of video/omapdss.h
-Message-Id: <20160603105321.7980-24-peter.ujfalusi@ti.com>
+Message-Id: <20160603110329.9953-24-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org, Mark Brown <broonie@kernel.org>, Liam Girdwood <liam.r.girdwood@linux.intel.com>
 
 Clean up the header files regarding to hdmi audio so the omap-hdmi-audio.h
 file will only need to include the platform_data/omapdss.h file.

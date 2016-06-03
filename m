@@ -1,10 +1,10 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 10:53:06 +0000
+Date: Fri, 03 Jun 2016 11:03:14 +0000
 Subject: [PATCH v3 12/27] omapfb: connector-dvi: Remove legacy boot support
-Message-Id: <20160603105321.7980-13-peter.ujfalusi@ti.com>
+Message-Id: <20160603110329.9953-13-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

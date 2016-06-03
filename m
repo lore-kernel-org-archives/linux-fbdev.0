@@ -1,119 +1,125 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:05 +0000
-Subject: [PATCH v3 03/27] video/platform_data: omapdss: Create new header file for platform data
-Message-Id: <20160603110329.9953-4-peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:53:07 +0000
+Subject: [PATCH v3 13/27] omapfb: encoder-tfp410: Remove legacy boot support
+Message-Id: <20160603105321.7980-14-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-Create a new header file for platform data used by omapdss.
+The panel is not used by any legacy board files so the legacy (pdata) boot
+support can be dropped.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- include/linux/platform_data/omapdss.h | 42 +++++++++++++++++++++++++++++++++++
- include/video/omapdss.h               | 28 +----------------------
- 2 files changed, 43 insertions(+), 27 deletions(-)
- create mode 100644 include/linux/platform_data/omapdss.h
+ .../fbdev/omap2/omapfb/displays/encoder-tfp410.c   | 44 +++-------------------
+ include/video/omap-panel-data.h                    | 14 -------
+ 2 files changed, 6 insertions(+), 52 deletions(-)
 
-diff --git a/include/linux/platform_data/omapdss.h b/include/linux/platform_data/omapdss.h
-new file mode 100644
-index 000000000000..dbb875abc44a
---- /dev/null
-+++ b/include/linux/platform_data/omapdss.h
-@@ -0,0 +1,42 @@
-+/*
-+ * Copyright (C) 2016 Texas Instruments, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef __OMAPDSS_PDATA_H
-+#define __OMAPDSS_PDATA_H
-+
-+enum omapdss_version {
-+	OMAPDSS_VER_UNKNOWN = 0,
-+	OMAPDSS_VER_OMAP24xx,
-+	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
-+	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
-+	OMAPDSS_VER_OMAP3630,
-+	OMAPDSS_VER_AM35xx,
-+	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
-+	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
-+	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
-+	OMAPDSS_VER_OMAP5,
-+	OMAPDSS_VER_AM43xx,
-+	OMAPDSS_VER_DRA7xx,
-+};
-+
-+struct omap_dss_device;
-+
-+/* Board specific data */
-+struct omap_dss_board_info {
-+	int num_devices;
-+	struct omap_dss_device **devices;
-+	struct omap_dss_device *default_device;
-+	const char *default_display_name;
-+	int (*dsi_enable_pads)(int dsi_id, unsigned int lane_mask);
-+	void (*dsi_disable_pads)(int dsi_id, unsigned int lane_mask);
-+	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
-+	enum omapdss_version version;
-+};
-+
-+#endif /* __OMAPDSS_PDATA_H */
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 0c7ae93ebd76..53ada70cf23c 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -22,6 +22,7 @@
- #include <linux/kobject.h>
- #include <linux/device.h>
- #include <linux/interrupt.h>
-+#include <linux/platform_data/omapdss.h>
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
+index d9048b3df495..778e3b384c2f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c
+@@ -16,7 +16,6 @@
+ #include <linux/of_gpio.h>
  
- #include <video/videomode.h>
+ #include <video/omapdss.h>
+-#include <video/omap-panel-data.h>
  
-@@ -303,33 +304,6 @@ struct omap_dss_dsi_config {
- 	enum omap_dss_dsi_trans_mode trans_mode;
+ struct panel_drv_data {
+ 	struct omap_dss_device dssdev;
+@@ -166,32 +165,6 @@ static const struct omapdss_dvi_ops tfp410_dvi_ops = {
+ 	.get_timings	= tfp410_get_timings,
  };
  
--enum omapdss_version {
--	OMAPDSS_VER_UNKNOWN = 0,
--	OMAPDSS_VER_OMAP24xx,
--	OMAPDSS_VER_OMAP34xx_ES1,	/* OMAP3430 ES1.0, 2.0 */
--	OMAPDSS_VER_OMAP34xx_ES3,	/* OMAP3430 ES3.0+ */
--	OMAPDSS_VER_OMAP3630,
--	OMAPDSS_VER_AM35xx,
--	OMAPDSS_VER_OMAP4430_ES1,	/* OMAP4430 ES1.0 */
--	OMAPDSS_VER_OMAP4430_ES2,	/* OMAP4430 ES2.0, 2.1, 2.2 */
--	OMAPDSS_VER_OMAP4,		/* All other OMAP4s */
--	OMAPDSS_VER_OMAP5,
--	OMAPDSS_VER_AM43xx,
--	OMAPDSS_VER_DRA7xx,
+-static int tfp410_probe_pdata(struct platform_device *pdev)
+-{
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+-	struct encoder_tfp410_platform_data *pdata;
+-	struct omap_dss_device *dssdev, *in;
+-
+-	pdata = dev_get_platdata(&pdev->dev);
+-
+-	ddata->pd_gpio = pdata->power_down_gpio;
+-
+-	ddata->data_lines = pdata->data_lines;
+-
+-	in = omap_dss_find_output(pdata->source);
+-	if (in = NULL) {
+-		dev_err(&pdev->dev, "Failed to find video source\n");
+-		return -ENODEV;
+-	}
+-
+-	ddata->in = in;
+-
+-	dssdev = &ddata->dssdev;
+-	dssdev->name = pdata->name;
+-
+-	return 0;
+-}
+-
+ static int tfp410_probe_of(struct platform_device *pdev)
+ {
+ 	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
+@@ -225,23 +198,18 @@ static int tfp410_probe(struct platform_device *pdev)
+ 	struct omap_dss_device *dssdev;
+ 	int r;
+ 
++	if (!pdev->dev.of_node)
++		return -ENODEV;
++
+ 	ddata = devm_kzalloc(&pdev->dev, sizeof(*ddata), GFP_KERNEL);
+ 	if (!ddata)
+ 		return -ENOMEM;
+ 
+ 	platform_set_drvdata(pdev, ddata);
+ 
+-	if (dev_get_platdata(&pdev->dev)) {
+-		r = tfp410_probe_pdata(pdev);
+-		if (r)
+-			return r;
+-	} else if (pdev->dev.of_node) {
+-		r = tfp410_probe_of(pdev);
+-		if (r)
+-			return r;
+-	} else {
+-		return -ENODEV;
+-	}
++	r = tfp410_probe_of(pdev);
++	if (r)
++		return r;
+ 
+ 	if (gpio_is_valid(ddata->pd_gpio)) {
+ 		r = devm_gpio_request_one(&pdev->dev, ddata->pd_gpio,
+diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
+index 4d0b8832ae11..a64e9ba12b0d 100644
+--- a/include/video/omap-panel-data.h
++++ b/include/video/omap-panel-data.h
+@@ -33,20 +33,6 @@
+ struct omap_dss_device;
+ 
+ /**
+- * encoder_tfp410 platform data
+- * @name: name for this display entity
+- * @power_down_gpio: gpio number for PD pin (or -1 if not available)
+- * @data_lines: number of DPI datalines
+- */
+-struct encoder_tfp410_platform_data {
+-	const char *name;
+-	const char *source;
+-	int power_down_gpio;
+-	int data_lines;
 -};
 -
--/* Board specific data */
--struct omap_dss_board_info {
--	int num_devices;
--	struct omap_dss_device **devices;
--	struct omap_dss_device *default_device;
--	const char *default_display_name;
--	int (*dsi_enable_pads)(int dsi_id, unsigned lane_mask);
--	void (*dsi_disable_pads)(int dsi_id, unsigned lane_mask);
--	int (*set_min_bus_tput)(struct device *dev, unsigned long r);
--	enum omapdss_version version;
--};
 -
- struct omap_video_timings {
- 	/* Unit: pixels */
- 	u16 x_res;
+-/**
+  * connector_atv platform data
+  * @name: name for this display entity
+  * @source: name of the display entity used as a video source
 -- 
 2.8.3
 

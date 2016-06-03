@@ -1,66 +1,37 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:20 +0000
-Subject: [PATCH v3 18/27] omapfb: connector-analog-tv: Support only Composite type in legacy boot
-Message-Id: <20160603110329.9953-19-peter.ujfalusi@ti.com>
+Date: Fri, 03 Jun 2016 10:52:55 +0000
+Subject: [PATCH v3 01/27] ARM: OMAP: rx51-video: Do not set TV connector_type
+Message-Id: <20160603105321.7980-2-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
 Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
 
-In legacy mode (non DT mode) support only composite connector type. The
-only user for this is rx51, using composite type.
-Dropping the connector_type selection via pdata will allow cleanups in
-omapdss (drm vs fbdev).
+OMAP_DSS_VENC_TYPE_COMPOSITE is 0. There is no need to explicitly set the
+connector_type.
+This change is needed for the omapdss header cleanup.
 
 Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c | 8 +-------
- 1 file changed, 1 insertion(+), 7 deletions(-)
+ arch/arm/mach-omap2/board-rx51-video.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
-index 8511c648a15c..d963b4a9cfc0 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c
-@@ -25,7 +25,6 @@ struct panel_drv_data {
- 
- 	struct omap_video_timings timings;
- 
--	enum omap_dss_venc_type connector_type;
- 	bool invert_polarity;
+diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
+index 9cfebc5c7455..b76f84245ad9 100644
+--- a/arch/arm/mach-omap2/board-rx51-video.c
++++ b/arch/arm/mach-omap2/board-rx51-video.c
+@@ -32,7 +32,6 @@
+ static struct connector_atv_platform_data rx51_tv_pdata = {
+ 	.name = "tv",
+ 	.source = "venc.0",
+-	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
+ 	.invert_polarity = false,
  };
  
-@@ -45,10 +44,6 @@ static const struct omap_video_timings tvc_pal_timings = {
- 
- static const struct of_device_id tvc_of_match[];
- 
--struct tvc_of_data {
--	enum omap_dss_venc_type connector_type;
--};
--
- #define to_panel_data(x) container_of(x, struct panel_drv_data, dssdev)
- 
- static int tvc_connect(struct omap_dss_device *dssdev)
-@@ -99,7 +94,7 @@ static int tvc_enable(struct omap_dss_device *dssdev)
- 	in->ops.atv->set_timings(in, &ddata->timings);
- 
- 	if (!ddata->dev->of_node) {
--		in->ops.atv->set_type(in, ddata->connector_type);
-+		in->ops.atv->set_type(in, OMAP_DSS_VENC_TYPE_COMPOSITE);
- 
- 		in->ops.atv->invert_vid_out_polarity(in,
- 			ddata->invert_polarity);
-@@ -207,7 +202,6 @@ static int tvc_probe_pdata(struct platform_device *pdev)
- 
- 	ddata->in = in;
- 
--	ddata->connector_type = pdata->connector_type;
- 	ddata->invert_polarity = pdata->invert_polarity;
- 
- 	dssdev = &ddata->dssdev;
 -- 
 2.8.3
 

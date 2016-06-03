@@ -1,10 +1,10 @@
 From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 10:53:14 +0000
+Date: Fri, 03 Jun 2016 11:03:22 +0000
 Subject: [PATCH v3 20/27] drm/omap: Remove reference to pdata->default_device
-Message-Id: <20160603105321.7980-21-peter.ujfalusi@ti.com>
+Message-Id: <20160603110329.9953-21-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603105321.7980-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603105321.7980-1-peter.ujfalusi@ti.com>
+References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

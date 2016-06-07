@@ -1,126 +1,77 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:25 +0000
-Subject: [PATCH v2 03/27] omapfb: panel-tpo-td043mtea1: Remove legacy boot support
-Message-Id: <20160601083549.10549-4-peter.ujfalusi@ti.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Tue, 07 Jun 2016 13:51:12 +0000
+Subject: [PATCH 1/3] fbdev: ssd1307fb: Start to use gpiod API for reset gpio
+Message-Id: <160209d5bdcfc9d0821922e96eb1d0850f6a03a8.1465303439.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+References: <cover.1465303439.git.jsarha@ti.com>
+In-Reply-To: <cover.1465303439.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+Start to use gpiod API for reset gpio.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- .../omap2/omapfb/displays/panel-tpo-td043mtea1.c   | 44 +++-------------------
- include/video/omap-panel-data.h                    | 16 --------
- 2 files changed, 6 insertions(+), 54 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-index 68e3b68a2920..f49e60da5bd3 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-@@ -20,7 +20,6 @@
- #include <linux/of_gpio.h>
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index a9c45c8..b27912c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -73,7 +73,7 @@ struct ssd1307fb_par {
+ 	u32 prechargep2;
+ 	struct pwm_device *pwm;
+ 	u32 pwm_period;
+-	int reset;
++	struct gpio_desc *reset;
+ 	u32 seg_remap;
+ 	u32 vcomh;
+ 	u32 width;
+@@ -562,10 +562,11 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 	par->device_info = (struct ssd1307fb_deviceinfo *)of_match_device(
+ 			ssd1307fb_of_match, &client->dev)->data;
  
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
+-	par->reset = of_get_named_gpio(client->dev.of_node,
+-					 "reset-gpios", 0);
+-	if (!gpio_is_valid(par->reset)) {
+-		ret = -EINVAL;
++	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
++	if (IS_ERR(par->reset)) {
++		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
++			PTR_ERR(par->reset));
++		ret = PTR_ERR(par->reset);
+ 		goto fb_alloc_error;
+ 	}
  
- #define TPO_R02_MODE(x)		((x) & 7)
- #define TPO_R02_MODE_800x480	7
-@@ -465,32 +464,6 @@ static struct omap_dss_driver tpo_td043_ops = {
- };
+@@ -643,22 +644,12 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
+ 	fb_deferred_io_init(info);
  
--static int tpo_td043_probe_pdata(struct spi_device *spi)
--{
--	const struct panel_tpo_td043mtea1_platform_data *pdata;
--	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
--	struct omap_dss_device *dssdev, *in;
--
--	pdata = dev_get_platdata(&spi->dev);
--
--	ddata->nreset_gpio = pdata->nreset_gpio;
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&spi->dev, "failed to find video source '%s'\n",
--				pdata->source);
--		return -EPROBE_DEFER;
+-	ret = devm_gpio_request_one(&client->dev, par->reset,
+-				    GPIOF_OUT_INIT_HIGH,
+-				    "oled-reset");
+-	if (ret) {
+-		dev_err(&client->dev,
+-			"failed to request gpio %d: %d\n",
+-			par->reset, ret);
+-		goto reset_oled_error;
 -	}
--	ddata->in = in;
 -
--	ddata->data_lines = pdata->data_lines;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	return 0;
--}
--
- static int tpo_td043_probe_of(struct spi_device *spi)
- {
- 	struct device_node *node = spi->dev.of_node;
-@@ -524,6 +497,9 @@ static int tpo_td043_probe(struct spi_device *spi)
+ 	i2c_set_clientdata(client, info);
  
- 	dev_dbg(&spi->dev, "%s\n", __func__);
+ 	/* Reset the screen */
+-	gpio_set_value(par->reset, 0);
++	gpiod_set_value(par->reset, 0);
+ 	udelay(4);
+-	gpio_set_value(par->reset, 1);
++	gpiod_set_value(par->reset, 1);
+ 	udelay(4);
  
-+	if (!spi->dev.of_node)
-+		return -ENODEV;
-+
- 	spi->bits_per_word = 16;
- 	spi->mode = SPI_MODE_0;
- 
-@@ -541,17 +517,9 @@ static int tpo_td043_probe(struct spi_device *spi)
- 
- 	ddata->spi = spi;
- 
--	if (dev_get_platdata(&spi->dev)) {
--		r = tpo_td043_probe_pdata(spi);
--		if (r)
--			return r;
--	} else if (spi->dev.of_node) {
--		r = tpo_td043_probe_of(spi);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = tpo_td043_probe_of(spi);
-+	if (r)
-+		return r;
- 
- 	ddata->mode = TPO_R02_MODE_800x480;
- 	memcpy(ddata->gamma, tpo_td043_def_gamma, sizeof(ddata->gamma));
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index a0c95cd1ed11..34ee7509752f 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -189,20 +189,4 @@ struct panel_sharp_ls037v7dw01_platform_data {
- 	int ud_gpio;
- };
- 
--/**
-- * panel-tpo-td043mtea1 platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @data_lines: number of DPI datalines
-- * @nreset_gpio: reset signal
-- */
--struct panel_tpo_td043mtea1_platform_data {
--	const char *name;
--	const char *source;
--
--	int data_lines;
--
--	int nreset_gpio;
--};
--
- #endif /* __OMAP_PANEL_DATA_H */
+ 	ret = ssd1307fb_init(par);
 -- 
-2.8.3
+1.9.1
 

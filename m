@@ -1,7 +1,7 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 07 Jun 2016 16:41:50 +0000
+From: Peter Jones <pjones@redhat.com>
+Date: Tue, 07 Jun 2016 17:23:05 +0000
 Subject: Re: [PATCH] [efifb] Fix 16 color palette entry calculation
-Message-Id: <20160607164150.GC24455@kroah.com>
+Message-Id: <20160607172304.GD24886@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1465307143-21398-1-git-send-email-mstaudt@suse.de>
 In-Reply-To: <1465307143-21398-1-git-send-email-mstaudt@suse.de>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
 To: Max Staudt <mstaudt@suse.de>
-Cc: pjones@redhat.com, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, eich@suse.de, tiwai@suse.de, agraf@suse.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, eich@suse.de, tiwai@suse.de, agraf@suse.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Matt Fleming <matt@codeblueprint.co.uk>
 
 On Tue, Jun 07, 2016 at 03:45:43PM +0200, Max Staudt wrote:
 > When using efifb with a 16-bit (5:6:5) visual, fbcon's text is rendered
@@ -31,11 +31,30 @@ On Tue, Jun 07, 2016 at 03:45:43PM +0200, Max Staudt wrote:
 >  drivers/video/fbdev/efifb.c | 6 +++---
 >  1 file changed, 3 insertions(+), 3 deletions(-)
 >=20
+> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+> index 924bad4..37a37c4 100644
+> --- a/drivers/video/fbdev/efifb.c
+> +++ b/drivers/video/fbdev/efifb.c
+> @@ -50,9 +50,9 @@ static int efifb_setcolreg(unsigned regno, unsigned red=
+, unsigned green,
+>  		return 1;
+> =20
+>  	if (regno < 16) {
+> -		red   >>=3D 8;
+> -		green >>=3D 8;
+> -		blue  >>=3D 8;
+> +		red   >>=3D 16 - info->var.red.length;
+> +		green >>=3D 16 - info->var.green.length;
+> +		blue  >>=3D 16 - info->var.blue.length;
+>  		((u32 *)(info->pseudo_palette))[regno] >  			(red   << info->var.red.o=
+ffset)   |
+>  			(green << info->var.green.offset) |
+> --=20
+> 2.6.6
 
-<formletter>
+Looks right to me.
 
-This is not the correct way to submit patches for inclusion in the
-stable kernel tree.  Please read Documentation/stable_kernel_rules.txt
-for how to do this properly.
+Acked-By: Peter Jones <pjones@redhat.com>
 
-</formletter>
+--=20
+  Peter

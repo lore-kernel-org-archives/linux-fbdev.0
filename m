@@ -1,54 +1,52 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Thu, 09 Jun 2016 12:50:26 +0000
+From: Mark Brown <broonie@kernel.org>
+Date: Thu, 09 Jun 2016 15:57:46 +0000
 Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
-Message-Id: <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg@mail.gmail.com>
+Message-Id: <20160609155746.GZ7510@sirena.org.uk>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="OCeUrMLoh2ht7f6S"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
  <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
  <20160609102925.GS7510@sirena.org.uk>
-In-Reply-To: <20160609102925.GS7510@sirena.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg@mail.gmail.com>
 To: linux-arm-kernel@lists.infradead.org
 
-On Thu, Jun 9, 2016 at 12:29 PM, Mark Brown <broonie@kernel.org> wrote:
-> On Thu, Jun 09, 2016 at 11:44:18AM +0200, Krzysztof Kozlowski wrote:
->> Few drivers have a need of getting regulator supplies without knowing
->> their names:
->> 1. The Simple Framebuffer driver works on setup provided by bootloader
->>    (outside of scope of kernel);
->> 2. Generic power sequence driver may be attached to any device node.
->>
->> Add a Device Tree helper for parsing "-supply" properties and returning
->> allocated bulk regulator consumers.
->
-> I'm still very concerned that this is just an invitation to people to
-> write half baked regulator consumers and half baked DTs to go along with
-> it, making it a standard API that doesn't have big red flags on it that
-> will flag up when "normal" drivers use it is not good.  Right now this
-> just looks like a standard API and people are going to just start using
-> it.  If we are going to do this perhaps we need a separate header or
-> something to help flag this up.
->
-> In the case of power sequences I'd expect the sequences to perform
-> operations on named supplies - the core shouldn't know what the supplies
-> are but the thing specifying the sequence should.
->
->>  drivers/regulator/of_regulator.c       | 86 ++++++++++++++++++++++++++++++++++
->>  include/linux/regulator/of_regulator.h | 13 +++++
->>  2 files changed, 99 insertions(+)
->
-> The external interface shouldn't be DT specific, the Intel people are
-> busy importing all of DT into ACPI
 
-Well, not really.
+--OCeUrMLoh2ht7f6S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-If you are referring to the pinctrl proposal discussed recently, that
-was a proposal from one group at Intel and AFAICS it has been
-abandoned.
+On Thu, Jun 09, 2016 at 02:50:26PM +0200, Rafael J. Wysocki wrote:
+> On Thu, Jun 9, 2016 at 12:29 PM, Mark Brown <broonie@kernel.org> wrote:
 
-> so they'll doubtless want an ACPI version.
+> > The external interface shouldn't be DT specific, the Intel people are
+> > busy importing all of DT into ACPI
 
-That is possible, though, so I agree that the external interface
-should not be DT-specific.
+> Well, not really.
+
+> If you are referring to the pinctrl proposal discussed recently, that
+> was a proposal from one group at Intel and AFAICS it has been
+> abandoned.
+
+Well, it was that, it was the device properties stuff in general and the
+overlays stuff - plus just the fact that with the Minnowboard style use
+case people have and the desire to use ACPI it seems like that's going
+to be something you need.
+
+--OCeUrMLoh2ht7f6S
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJXWZH5AAoJECTWi3JdVIfQvS4H/i9Q+NK3qFJ20x5n4tnU3Kqb
+R5CadVol9AxuB5DmzVxduAAdc4YGDBs+cxJXQVJ0kjNNETE0V/5g6AhHf1frJe5c
+yctigVuTXIeHXHQOS1NfpmjVKQwIFMJ5xvHy+XRAcAeNlmkKEGR+Ayma3sFk3XY7
+MfUWd7652D2mejDNXLp6V3UhgfDX8u5qMuYazGor98EVDaiidh4k1AqK7LyfMQQm
+5f8El3h6+LOCHyxPBF+hopBJwoKg1FLoYiXzBWAzbXajTmpBkQdXLa0QaoKYu/2j
+vzrTjqjb2zvvbvQbEnDz4ZjXcrfK2Aa2qjfrohDSp+hO4uqtnU1URD/19EfObuA=
+=tIVl
+-----END PGP SIGNATURE-----
+
+--OCeUrMLoh2ht7f6S--

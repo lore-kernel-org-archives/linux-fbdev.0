@@ -1,7 +1,7 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 09 Jun 2016 11:42:02 +0000
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Thu, 09 Jun 2016 12:50:26 +0000
 Subject: Re: [RFC v4 01/14] regulator: of: Add helper for getting all supplies
-Message-Id: <5759560A.70107@samsung.com>
+Message-Id: <CAJZ5v0hiyyOhU7AjOEjFHjTKhT+pqWZheUG77c6u2HV9dNQ0Gg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
  <1465465471-28740-2-git-send-email-k.kozlowski@samsung.com>
@@ -12,7 +12,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 06/09/2016 12:29 PM, Mark Brown wrote:
+On Thu, Jun 9, 2016 at 12:29 PM, Mark Brown <broonie@kernel.org> wrote:
 > On Thu, Jun 09, 2016 at 11:44:18AM +0200, Krzysztof Kozlowski wrote:
 >> Few drivers have a need of getting regulator supplies without knowing
 >> their names:
@@ -22,7 +22,7 @@ On 06/09/2016 12:29 PM, Mark Brown wrote:
 >>
 >> Add a Device Tree helper for parsing "-supply" properties and returning
 >> allocated bulk regulator consumers.
-> 
+>
 > I'm still very concerned that this is just an invitation to people to
 > write half baked regulator consumers and half baked DTs to go along with
 > it, making it a standard API that doesn't have big red flags on it that
@@ -30,44 +30,25 @@ On 06/09/2016 12:29 PM, Mark Brown wrote:
 > just looks like a standard API and people are going to just start using
 > it.  If we are going to do this perhaps we need a separate header or
 > something to help flag this up.
-
-No problem, I can move it to a special header.  Actually, if you dislike
-this as an API, it does not have to be in header at all.  I can just
-duplicate the simplefb code.
-
+>
 > In the case of power sequences I'd expect the sequences to perform
 > operations on named supplies - the core shouldn't know what the supplies
 > are but the thing specifying the sequence should.
-
-Hm, so maybe passing names like:
-
-usb3503@08 {
-	reset-gpios = <&gpx3 5 GPIO_ACTIVE_HIGH>;
-	initial-mode = <1>;
-	vdd-supply = <&buck8_reg>;
-	foo-supply = <&buck9_reg>;
-
-        power-sequence;
-	power-sequence-supplies = "vdd", "foo";
-};
-
-but this is getting against initial idea of not adding any
-power-sequence properties.
-
-> 
+>
 >>  drivers/regulator/of_regulator.c       | 86 ++++++++++++++++++++++++++++++++++
 >>  include/linux/regulator/of_regulator.h | 13 +++++
 >>  2 files changed, 99 insertions(+)
-> 
+>
 > The external interface shouldn't be DT specific, the Intel people are
-> busy importing all of DT into ACPI so they'll doubtless want an ACPI
-> version.
+> busy importing all of DT into ACPI
 
-Sure, I'll add it if this approach is acceptable.  At this moment this
-is not necessary to show my idea so I prefer to avoid doing work which
-might be discarded very fast by review.
+Well, not really.
 
-Thanks for feedback!
+If you are referring to the pinctrl proposal discussed recently, that
+was a proposal from one group at Intel and AFAICS it has been
+abandoned.
 
-Best regards,
-Krzysztof
+> so they'll doubtless want an ACPI version.
+
+That is possible, though, so I agree that the external interface
+should not be DT-specific.

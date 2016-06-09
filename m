@@ -1,106 +1,52 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:45 +0000
-Subject: [PATCH v2 23/27] omapdss: hdmi audio: Make header file independent of video/omapdss.h
-Message-Id: <20160601083549.10549-24-peter.ujfalusi@ti.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Thu, 09 Jun 2016 09:44:29 +0000
+Subject: [RFC v4 12/14] EXAMPLE CODE: usb: hub: Power sequence the ports on activation
+Message-Id: <1465465471-28740-13-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Liam Girdwood <liam.r.girdwood@linux.intel.com>, Mark Brown <broonie@kernel.org>, jsarha@ti.com, linux-omap@vger.kernel.org, laurent.pinchart@ideasonboard.com
+To: linux-arm-kernel@lists.infradead.org
 
-Clean up the header files regarding to hdmi audio so the omap-hdmi-audio.h
-file will only need to include the platform_data/omapdss.h file.
+The autodetection of attached USB device might not work on certain
+boards where the power is delivered externally.  These devices also might
+require a hard reset.  Use pwrseq for that in USB hub.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-CC: Mark Brown <broonie@kernel.org>
-CC: Jyri Sarha <jsarha@ti.com>
-CC: Liam Girdwood <liam.r.girdwood@linux.intel.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/gpu/drm/omapdrm/dss/hdmi.h          | 1 +
- drivers/video/fbdev/omap2/omapfb/dss/hdmi.h | 1 +
- include/sound/omap-hdmi-audio.h             | 9 +++++++--
- include/video/omapdss.h                     | 5 -----
- sound/soc/omap/omap-hdmi-audio.c            | 1 -
- 5 files changed, 9 insertions(+), 8 deletions(-)
+ drivers/usb/core/hub.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/gpu/drm/omapdrm/dss/hdmi.h b/drivers/gpu/drm/omapdrm/dss/hdmi.h
-index 53616b02b613..c32a21a26054 100644
---- a/drivers/gpu/drm/omapdrm/dss/hdmi.h
-+++ b/drivers/gpu/drm/omapdrm/dss/hdmi.h
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/hdmi.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-audio.h>
+diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
+index c421745b84aa..46d9f9aedacc 100644
+--- a/drivers/usb/core/hub.c
++++ b/drivers/usb/core/hub.c
+@@ -26,6 +26,7 @@
+ #include <linux/mutex.h>
+ #include <linux/random.h>
+ #include <linux/pm_qos.h>
++#include <linux/pwrseq.h>
  
- #include "dss.h"
+ #include <asm/uaccess.h>
+ #include <asm/byteorder.h>
+@@ -1663,6 +1664,15 @@ static int hub_configure(struct usb_hub *hub,
  
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
-index 53616b02b613..c32a21a26054 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi.h
-@@ -24,6 +24,7 @@
- #include <linux/platform_device.h>
- #include <linux/hdmi.h>
- #include <video/omapdss.h>
-+#include <sound/omap-hdmi-audio.h>
+ 	usb_hub_adjust_deviceremovable(hdev, hub->descriptor);
  
- #include "dss.h"
- 
-diff --git a/include/sound/omap-hdmi-audio.h b/include/sound/omap-hdmi-audio.h
-index afdb416898e0..1df2ff61a4dd 100644
---- a/include/sound/omap-hdmi-audio.h
-+++ b/include/sound/omap-hdmi-audio.h
-@@ -16,11 +16,16 @@
-  *
-  */
- 
--#include <video/omapdss.h>
--
- #ifndef __OMAP_HDMI_AUDIO_H__
- #define __OMAP_HDMI_AUDIO_H__
- 
-+#include <linux/platform_data/omapdss.h>
++	/* FIXME: When do the pre-power-on? */
++	/*
++	for (i = 0; i < maxchild; i++)
++		pwrseq_pre_power_on(hub->ports[i]->pwrseq);
++	*/
 +
-+struct omap_dss_audio {
-+	struct snd_aes_iec958 *iec;
-+	struct snd_cea_861_aud_if *cea;
-+};
++	for (i = 0; i < maxchild; i++)
++		pwrseq_post_power_on(hub->ports[i]->pwrseq);
 +
- struct omap_hdmi_audio_ops {
- 	int (*audio_startup)(struct device *dev,
- 			     void (*abort_cb)(struct device *dev));
-diff --git a/include/video/omapdss.h b/include/video/omapdss.h
-index 53ada70cf23c..b25e2eab4b48 100644
---- a/include/video/omapdss.h
-+++ b/include/video/omapdss.h
-@@ -168,11 +168,6 @@ enum omap_dss_display_state {
- 	OMAP_DSS_DISPLAY_ACTIVE,
- };
- 
--struct omap_dss_audio {
--	struct snd_aes_iec958 *iec;
--	struct snd_cea_861_aud_if *cea;
--};
--
- enum omap_dss_rotation_type {
- 	OMAP_DSS_ROT_DMA	= 1 << 0,
- 	OMAP_DSS_ROT_VRFB	= 1 << 1,
-diff --git a/sound/soc/omap/omap-hdmi-audio.c b/sound/soc/omap/omap-hdmi-audio.c
-index 64425d352962..888133f9e65d 100644
---- a/sound/soc/omap/omap-hdmi-audio.c
-+++ b/sound/soc/omap/omap-hdmi-audio.c
-@@ -28,7 +28,6 @@
- #include <sound/asoundef.h>
- #include <sound/omap-pcm.h>
- #include <sound/omap-hdmi-audio.h>
--#include <video/omapdss.h>
- 
- #define DRV_NAME "omap-hdmi-audio"
+ 	hub_activate(hub, HUB_INIT);
+ 	return 0;
  
 -- 
-2.8.3
+1.9.1
 

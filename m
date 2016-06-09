@@ -1,140 +1,50 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:27 +0000
-Subject: [PATCH v2 05/27] omapfb: panel-lgphilips-lb035q02: Remove legacy boot support
-Message-Id: <20160601083549.10549-6-peter.ujfalusi@ti.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Thu, 09 Jun 2016 09:44:31 +0000
+Subject: [RFC v4 14/14] ARM: dts: exynos: Fix LAN and HUB after bootloader initialization on Odroid U3
+Message-Id: <1465465471-28740-15-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: linux-arm-kernel@lists.infradead.org
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
+On Odroid U3 (Exynos4412-based) board if USB was initialized by
+bootloader (in U-Boot "usb start" before tftpboot), the HUB (usb3503)
+and LAN (smsc95xx) after after successful probing were not visible in the
+system ("lsusb").
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+In such case the devices had to be fully reset before configuring.
+Reset by GPIO (called RESET_N pin) and by RESET field in STCD register
+in usb3503 HUB are not sufficient. Instead full reset has to be done by
+disabling and enabling regulator.
+
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- .../omapfb/displays/panel-lgphilips-lb035q02.c     | 56 +++-------------------
- include/video/omap-panel-data.h                    | 18 -------
- 2 files changed, 6 insertions(+), 68 deletions(-)
+ arch/arm/boot/dts/exynos4412-odroidu3.dts | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-index 18eb60e9c9ec..6d5207c7b22c 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-@@ -17,7 +17,6 @@
- #include <linux/gpio.h>
- 
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
- 
- static struct omap_video_timings lb035q02_timings = {
- 	.x_res = 320,
-@@ -240,44 +239,6 @@ static struct omap_dss_driver lb035q02_ops = {
- 	.get_resolution	= omapdss_default_get_resolution,
- };
- 
--static int lb035q02_probe_pdata(struct spi_device *spi)
--{
--	const struct panel_lb035q02_platform_data *pdata;
--	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
--	struct omap_dss_device *dssdev, *in;
--	int r;
--
--	pdata = dev_get_platdata(&spi->dev);
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&spi->dev, "failed to find video source '%s'\n",
--				pdata->source);
--		return -EPROBE_DEFER;
--	}
--
--	ddata->in = in;
--
--	ddata->data_lines = pdata->data_lines;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	r = devm_gpio_request_one(&spi->dev, pdata->enable_gpio,
--					GPIOF_OUT_INIT_LOW, "panel enable");
--	if (r)
--		goto err_gpio;
--
--	ddata->enable_gpio = gpio_to_desc(pdata->enable_gpio);
--
--	ddata->backlight_gpio = pdata->backlight_gpio;
--
--	return 0;
--err_gpio:
--	omap_dss_put_device(ddata->in);
--	return r;
--}
--
- static int lb035q02_probe_of(struct spi_device *spi)
- {
- 	struct device_node *node = spi->dev.of_node;
-@@ -312,6 +273,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 	struct omap_dss_device *dssdev;
- 	int r;
- 
-+	if (!spi->dev.of_node)
-+		return -ENODEV;
+diff --git a/arch/arm/boot/dts/exynos4412-odroidu3.dts b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+index 31cdc036fda4..8fd50061d91b 100644
+--- a/arch/arm/boot/dts/exynos4412-odroidu3.dts
++++ b/arch/arm/boot/dts/exynos4412-odroidu3.dts
+@@ -99,11 +99,15 @@
+ 	clock-names = "refclk";
+ 	clocks = <&pmu_system_controller 0>;
+ 	refclk-frequency = <24000000>;
 +
- 	ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (ddata = NULL)
- 		return -ENOMEM;
-@@ -320,17 +284,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 
- 	ddata->spi = spi;
- 
--	if (dev_get_platdata(&spi->dev)) {
--		r = lb035q02_probe_pdata(spi);
--		if (r)
--			return r;
--	} else if (spi->dev.of_node) {
--		r = lb035q02_probe_of(spi);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = lb035q02_probe_of(spi);
-+	if (r)
-+		return r;
- 
- 	if (gpio_is_valid(ddata->backlight_gpio)) {
- 		r = devm_gpio_request_one(&spi->dev, ddata->backlight_gpio,
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 085b4171eb25..74486bcc754e 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -147,22 +147,4 @@ struct panel_acx565akm_platform_data {
- 	int datapairs;
++	power-sequence;
++	vdd-supply = <&buck8_reg>;
  };
  
--/**
-- * panel_lb035q02 platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @data_lines: number of DPI datalines
-- * @backlight_gpio: gpio to enable/disable the backlight (or -1)
-- * @enable_gpio: gpio to enable/disable the panel (or -1)
-- */
--struct panel_lb035q02_platform_data {
--	const char *name;
--	const char *source;
--
--	int data_lines;
--
--	int backlight_gpio;
--	int enable_gpio;
--};
--
- #endif /* __OMAP_PANEL_DATA_H */
+ &ehci {
+ 	port@1 {
+ 		status = "okay";
++		usb-pwrseq = <&usb3503>;
+ 	};
+ 	port@2 {
+ 		status = "okay";
 -- 
-2.8.3
+1.9.1
 

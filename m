@@ -1,42 +1,113 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:24 +0000
-Subject: [PATCH v3 22/27] platform_data: omapdss: Remove unused members from omap_dss_board_info
-Message-Id: <20160603110329.9953-23-peter.ujfalusi@ti.com>
+From: Brian Norris <briannorris@chromium.org>
+Date: Fri, 10 Jun 2016 19:39:57 +0000
+Subject: [PATCH v2] backlight: lp855x: Add enable regulator
+Message-Id: <1465587597-131467-1-git-send-email-briannorris@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: Milo Kim <milo.kim-l0cyMroinI0@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Stephen Barber <smbarber-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Doug Anderson <dianders-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, Jean-Christophe Plagniol-Villard <plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Brian Norris <briannorris-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-The num_devices, **devices and *default_device is leftover from the past.
-They can be removed as they are no used.
+The LP8556 datasheet describes an EN/VDDIO input, which serves "both as
+a chip enable and as a power supply reference for PWM, SDA, and SCL
+inputs." The LP8556 that I'm testing doesn't respond properly if I try
+to talk I2C to it too quickly after enabling VDDIO, and the LP8555
+datasheet mentions a t_RESPONSE delay of up to 1 millisecond.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Support this EN/VDDIO by adding a regulator property to the binding;
+enabling this regulator at probe time; and sleeping for 1 to 2ms, if the
+EN/VDDIO regulator was provided.
+
+Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
- include/linux/platform_data/omapdss.h | 5 -----
- 1 file changed, 5 deletions(-)
+v2: s/TS8555/LP8555/ in comment (typo)
 
-diff --git a/include/linux/platform_data/omapdss.h b/include/linux/platform_data/omapdss.h
-index dbb875abc44a..679177929045 100644
---- a/include/linux/platform_data/omapdss.h
-+++ b/include/linux/platform_data/omapdss.h
-@@ -25,13 +25,8 @@ enum omapdss_version {
- 	OMAPDSS_VER_DRA7xx,
+ .../devicetree/bindings/leds/backlight/lp855x.txt  |  2 ++
+ drivers/video/backlight/lp855x_bl.c                | 29 ++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
+index 0a3ecbc3a1b9..88f56641fc28 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
+@@ -13,6 +13,7 @@ Optional properties:
+   - rom-addr: Register address of ROM area to be updated (u8)
+   - rom-val: Register value to be updated (u8)
+   - power-supply: Regulator which controls the 3V rail
++  - enable-supply: Regulator which controls the EN/VDDIO input
+ 
+ Example:
+ 
+@@ -57,6 +58,7 @@ Example:
+ 	backlight@2c {
+ 		compatible = "ti,lp8557";
+ 		reg = <0x2c>;
++		enable-supply = <&backlight_vddio>;
+ 		power-supply = <&backlight_vdd>;
+ 
+ 		dev-ctrl = /bits/ 8 <0x41>;
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index e5b14f52628f..939f057836e1 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -13,6 +13,7 @@
+ #include <linux/slab.h>
+ #include <linux/i2c.h>
+ #include <linux/backlight.h>
++#include <linux/delay.h>
+ #include <linux/err.h>
+ #include <linux/of.h>
+ #include <linux/platform_data/lp855x.h>
+@@ -74,6 +75,7 @@ struct lp855x {
+ 	struct lp855x_platform_data *pdata;
+ 	struct pwm_device *pwm;
+ 	struct regulator *supply;	/* regulator for VDD input */
++	struct regulator *enable;	/* regulator for EN/VDDIO input */
  };
  
--struct omap_dss_device;
--
- /* Board specific data */
- struct omap_dss_board_info {
--	int num_devices;
--	struct omap_dss_device **devices;
--	struct omap_dss_device *default_device;
- 	const char *default_display_name;
- 	int (*dsi_enable_pads)(int dsi_id, unsigned int lane_mask);
- 	void (*dsi_disable_pads)(int dsi_id, unsigned int lane_mask);
+ static int lp855x_write_byte(struct lp855x *lp, u8 reg, u8 data)
+@@ -433,6 +435,19 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		lp->supply = NULL;
+ 	}
+ 
++	lp->enable = devm_regulator_get_optional(lp->dev, "enable");
++	if (IS_ERR(lp->enable)) {
++		ret = PTR_ERR(lp->enable);
++		if (ret = -ENODEV) {
++			lp->enable = NULL;
++		} else {
++			if (ret != -EPROBE_DEFER)
++				dev_err(lp->dev, "error getting enable regulator: %d\n",
++					ret);
++			return ret;
++		}
++	}
++
+ 	if (lp->supply) {
+ 		ret = regulator_enable(lp->supply);
+ 		if (ret < 0) {
+@@ -441,6 +456,20 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		}
+ 	}
+ 
++	if (lp->enable) {
++		ret = regulator_enable(lp->enable);
++		if (ret < 0) {
++			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
++			return ret;
++		}
++
++		/*
++		 * LP8555 datasheet says t_RESPONSE (time between VDDIO and
++		 * I2C) is 1ms.
++		 */
++		usleep_range(1000, 2000);
++	}
++
+ 	i2c_set_clientdata(cl, lp);
+ 
+ 	ret = lp855x_configure(lp);
 -- 
-2.8.3
+2.8.0.rc3.226.g39d4020
 

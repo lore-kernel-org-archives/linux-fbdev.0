@@ -1,270 +1,111 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 09 Jun 2016 09:44:25 +0000
-Subject: [RFC v4 08/14] power: pwrseq: simple: Add support for regulators and generic property
-Message-Id: <1465465471-28740-9-git-send-email-k.kozlowski@samsung.com>
+From: Brian Norris <briannorris@chromium.org>
+Date: Fri, 10 Jun 2016 16:28:45 +0000
+Subject: [PATCH] backlight: lp855x: Add enable regulator
+Message-Id: <1465576125-118369-1-git-send-email-briannorris@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Milo Kim <milo.kim@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Stephen Barber <smbarber@chromium.org>, Doug Anderson <dianders@chromium.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Brian Norris <briannorris@chromium.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Some devices need real hard-reset by cutting the power.  During power
-sequence turn off and on all of provided regulators.
+The LP8556 datasheet describes an EN/VDDIO input, which serves "both as
+a chip enable and as a power supply reference for PWM, SDA, and SCL
+inputs." The LP8556 that I'm testing doesn't respond properly if I try
+to talk I2C to it too quickly after enabling VDDIO, and the LP8555
+datasheet mentions a t_RESPONSE delay of up to 1 millisecond.
 
-Additionally add support for instantiating the pwrseq-simple device on a
-generic property 'power-sequence'.  The device will attach itself to the
-node containing the property and parse the node's properties like
-reset-gpios, supplies etc.
+Support this EN/VDDIO by adding a regulator property to the binding;
+enabling this regulator at probe time; and sleeping for 1 to 2ms, if the
+EN/VDDIO regulator was provided.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Signed-off-by: Brian Norris <briannorris@chromium.org>
 ---
- .../bindings/power/pwrseq/pwrseq-simple.txt        |  30 +++++-
- drivers/power/pwrseq/pwrseq_simple.c               | 113 ++++++++++++++++++++-
- 2 files changed, 136 insertions(+), 7 deletions(-)
+ .../devicetree/bindings/leds/backlight/lp855x.txt  |  2 ++
+ drivers/video/backlight/lp855x_bl.c                | 29 ++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt
-index ce0e76749671..7e5a414a67fc 100644
---- a/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt
-+++ b/Documentation/devicetree/bindings/power/pwrseq/pwrseq-simple.txt
-@@ -1,11 +1,18 @@
--* The simple MMC power sequence provider
-+* The simple power sequence provider
- 
--The purpose of the simple MMC power sequence provider is to supports a set of
-+The purpose of the simple power sequence provider is to supports a set of
- common properties between various SOC designs. It thus enables us to use the
- same provider for several SOC designs.
- 
--Required properties:
--- compatible : contains "mmc-pwrseq-simple".
-+The driver supports two types of bindings:
-+1. Property for any node
-+   Required properties:
-+   - power-sequence
-+
-+2. Separate node (not recommended for new users)
-+   Required properties:
-+   - compatible : contains "mmc-pwrseq-simple".
-+
- 
- Optional properties:
- - reset-gpios : contains a list of GPIO specifiers. The reset GPIOs are asserted
-@@ -16,6 +23,8 @@ Optional properties:
-   See ../clocks/clock-bindings.txt for details.
- - clock-names : Must include the following entry:
-   "ext_clock" (External clock provided to the card).
-+- *-supply : If supplies are provided, the driver will enable and disable
-+             them during power sequence.
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
+index 0a3ecbc3a1b9..88f56641fc28 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
+@@ -13,6 +13,7 @@ Optional properties:
+   - rom-addr: Register address of ROM area to be updated (u8)
+   - rom-val: Register value to be updated (u8)
+   - power-supply: Regulator which controls the 3V rail
++  - enable-supply: Regulator which controls the EN/VDDIO input
  
  Example:
  
-@@ -25,3 +34,16 @@ Example:
- 		clocks = <&clk_32768_ck>;
- 		clock-names = "ext_clock";
- 	}
-+
-+	usb3503@08 {
-+		compatible = "smsc,usb3503";
-+		reg = <0x08>;
-+
-+		intn-gpios = <&gpx3 0 GPIO_ACTIVE_HIGH>;
-+		connect-gpios = <&gpx3 4 GPIO_ACTIVE_HIGH>;
-+		reset-gpios = <&gpx3 5 GPIO_ACTIVE_HIGH>;
-+		initial-mode = <1>;
-+
-+		power-sequence;
-+		vdd-supply = <&buck8_reg>;
-+	};
-diff --git a/drivers/power/pwrseq/pwrseq_simple.c b/drivers/power/pwrseq/pwrseq_simple.c
-index 93807a6ef162..f70e207f994b 100644
---- a/drivers/power/pwrseq/pwrseq_simple.c
-+++ b/drivers/power/pwrseq/pwrseq_simple.c
-@@ -1,12 +1,15 @@
- /*
-- *  Copyright (C) 2014 Linaro Ltd
-+ * Copyright (C) 2014 Linaro Ltd
-+ * Copyright (C) 2016 Samsung Electronics
-  *
-  * Author: Ulf Hansson <ulf.hansson@linaro.org>
-+ *         Krzysztof Kozlowski <k.kozlowski@samsung.com>
-  *
-  * License terms: GNU General Public License (GPL) version 2
-  *
-  *  Simple MMC power sequence management
-  */
-+#include <linux/of.h>
- #include <linux/clk.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
-@@ -16,13 +19,25 @@
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/regulator/consumer.h>
-+#include <linux/regulator/of_regulator.h>
- #include <linux/pwrseq.h>
+@@ -57,6 +58,7 @@ Example:
+ 	backlight@2c {
+ 		compatible = "ti,lp8557";
+ 		reg = <0x2c>;
++		enable-supply = <&backlight_vddio>;
+ 		power-supply = <&backlight_vdd>;
+ 
+ 		dev-ctrl = /bits/ 8 <0x41>;
+diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
+index e5b14f52628f..7e1f9a78674e 100644
+--- a/drivers/video/backlight/lp855x_bl.c
++++ b/drivers/video/backlight/lp855x_bl.c
+@@ -13,6 +13,7 @@
+ #include <linux/slab.h>
+ #include <linux/i2c.h>
+ #include <linux/backlight.h>
 +#include <linux/delay.h>
-+
-+static LIST_HEAD(mmc_pwrseq_devs);
-+
-+struct mmc_pwrseq_dev {
-+	struct platform_device *pdev;
-+	struct list_head entry;
-+};
- 
- struct mmc_pwrseq_simple {
- 	struct pwrseq pwrseq;
- 	bool clk_enabled;
- 	struct clk *ext_clk;
- 	struct gpio_descs *reset_gpios;
-+	unsigned int regulator_count;
-+	struct regulator_bulk_data *regulators;
+ #include <linux/err.h>
+ #include <linux/of.h>
+ #include <linux/platform_data/lp855x.h>
+@@ -74,6 +75,7 @@ struct lp855x {
+ 	struct lp855x_platform_data *pdata;
+ 	struct pwm_device *pwm;
+ 	struct regulator *supply;	/* regulator for VDD input */
++	struct regulator *enable;	/* regulator for EN/VDDIO input */
  };
  
- #define to_pwrseq_simple(p) container_of(p, struct mmc_pwrseq_simple, pwrseq)
-@@ -60,6 +75,14 @@ static void mmc_pwrseq_simple_post_power_on(struct pwrseq *_pwrseq)
- {
- 	struct mmc_pwrseq_simple *pwrseq = to_pwrseq_simple(_pwrseq);
- 
-+	if (pwrseq->regulators) {
-+		int err;
-+
-+		err = regulator_bulk_enable(pwrseq->regulator_count,
-+					    pwrseq->regulators);
-+		WARN_ON_ONCE(err);
-+	}
-+
- 	mmc_pwrseq_simple_set_gpios_value(pwrseq, 0);
- }
- 
-@@ -73,6 +96,14 @@ static void mmc_pwrseq_simple_power_off(struct pwrseq *_pwrseq)
- 		clk_disable_unprepare(pwrseq->ext_clk);
- 		pwrseq->clk_enabled = false;
- 	}
-+
-+	if (pwrseq->regulators) {
-+		int err;
-+
-+		err = regulator_bulk_disable(pwrseq->regulator_count,
-+					     pwrseq->regulators);
-+		WARN_ON_ONCE(err);
-+	}
- }
- 
- static const struct pwrseq_ops mmc_pwrseq_simple_ops = {
-@@ -91,6 +122,7 @@ static int mmc_pwrseq_simple_probe(struct platform_device *pdev)
- {
- 	struct mmc_pwrseq_simple *pwrseq;
- 	struct device *dev = &pdev->dev;
-+	int err;
- 
- 	pwrseq = devm_kzalloc(dev, sizeof(*pwrseq), GFP_KERNEL);
- 	if (!pwrseq)
-@@ -100,12 +132,39 @@ static int mmc_pwrseq_simple_probe(struct platform_device *pdev)
- 	if (IS_ERR(pwrseq->ext_clk) && PTR_ERR(pwrseq->ext_clk) != -ENOENT)
- 		return PTR_ERR(pwrseq->ext_clk);
- 
-+	err = devm_of_regulator_all_get(dev, &pwrseq->regulator_count,
-+					&pwrseq->regulators);
-+	if (err)
-+		return err;
-+
-+	if (pwrseq->regulators) {
-+		/*
-+		 * Be sure that regulator is off, before the driver will start
-+		 * power sequence. It is likely that regulator is on by default
-+		 * and it without toggling it here, it would be disabled much
-+		 * later by the core.
-+		 */
-+		err = regulator_bulk_enable(pwrseq->regulator_count,
-+					    pwrseq->regulators);
-+		WARN_ON_ONCE(err);
-+
-+		err = regulator_bulk_disable(pwrseq->regulator_count,
-+					     pwrseq->regulators);
-+		WARN_ON_ONCE(err);
-+	}
-+
- 	pwrseq->reset_gpios = devm_gpiod_get_array(dev, "reset",
- 							GPIOD_OUT_HIGH);
- 	if (IS_ERR(pwrseq->reset_gpios) &&
- 	    PTR_ERR(pwrseq->reset_gpios) != -ENOENT &&
- 	    PTR_ERR(pwrseq->reset_gpios) != -ENOSYS) {
--		return PTR_ERR(pwrseq->reset_gpios);
-+		/*
-+		 * Don't care about errors. If this pwrseq device was added
-+		 * to node with existing reset-gpios, then the GPIO reset will
-+		 * be handled by other device.
-+		 */
-+		dev_warn(dev, "Cannot get reset gpio: %ld\n",
-+			 PTR_ERR(pwrseq->reset_gpios));
+ static int lp855x_write_byte(struct lp855x *lp, u8 reg, u8 data)
+@@ -433,6 +435,19 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		lp->supply = NULL;
  	}
  
- 	pwrseq->pwrseq.dev = dev;
-@@ -122,6 +181,14 @@ static int mmc_pwrseq_simple_remove(struct platform_device *pdev)
- 
- 	pwrseq_unregister(&pwrseq->pwrseq);
- 
-+	if (pwrseq->regulators) {
-+		int err;
-+
-+		err = regulator_bulk_disable(pwrseq->regulator_count,
-+					     pwrseq->regulators);
-+		WARN_ON_ONCE(err);
++	lp->enable = devm_regulator_get_optional(lp->dev, "enable");
++	if (IS_ERR(lp->enable)) {
++		ret = PTR_ERR(lp->enable);
++		if (ret = -ENODEV) {
++			lp->enable = NULL;
++		} else {
++			if (ret != -EPROBE_DEFER)
++				dev_err(lp->dev, "error getting enable regulator: %d\n",
++					ret);
++			return ret;
++		}
 +	}
 +
- 	return 0;
- }
+ 	if (lp->supply) {
+ 		ret = regulator_enable(lp->supply);
+ 		if (ret < 0) {
+@@ -441,6 +456,20 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		}
+ 	}
  
-@@ -134,5 +201,45 @@ static struct platform_driver mmc_pwrseq_simple_driver = {
- 	},
- };
- 
--module_platform_driver(mmc_pwrseq_simple_driver);
-+static int __init mmc_pwrseq_simple_driver_init(void)
-+{
-+	struct mmc_pwrseq_dev *pwrseq_dev;
-+	struct platform_device *pdev;
-+	struct device_node *np;
++	if (lp->enable) {
++		ret = regulator_enable(lp->enable);
++		if (ret < 0) {
++			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
++			return ret;
++		}
 +
-+	for_each_node_with_property(np, "power-sequence") {
-+		pdev = platform_device_register_simple("pwrseq_simple",
-+						       PLATFORM_DEVID_AUTO,
-+						       NULL, 0);
-+		if (IS_ERR(pdev))
-+			continue;
-+
-+		pwrseq_dev = kzalloc(sizeof(*pwrseq_dev), GFP_KERNEL);
-+		if (!pwrseq_dev)
-+			continue;
-+
-+		of_node_get(np);
-+		pdev->dev.of_node = np;
-+		pwrseq_dev->pdev = pdev;
-+		list_add(&pwrseq_dev->entry, &mmc_pwrseq_devs);
++		/*
++		 * TS8555 datasheet says t_RESPONSE (time between VDDIO and
++		 * I2C) is 1ms.
++		 */
++		usleep_range(1000, 2000);
 +	}
 +
-+	return platform_driver_register(&mmc_pwrseq_simple_driver);
-+}
-+module_init(mmc_pwrseq_simple_driver_init);
-+
-+static void __exit mmc_pwrseq_simple_driver_exit(void)
-+{
-+	struct mmc_pwrseq_dev *pwrseq_dev, *tmp;
-+
-+	list_for_each_entry_safe(pwrseq_dev, tmp, &mmc_pwrseq_devs, entry) {
-+		list_del(&pwrseq_dev->entry);
-+		of_node_put(pwrseq_dev->pdev->dev.of_node);
-+		platform_device_unregister(pwrseq_dev->pdev);
-+		kfree(pwrseq_dev);
-+	}
-+
-+	platform_driver_unregister(&mmc_pwrseq_simple_driver);
-+}
-+module_exit(mmc_pwrseq_simple_driver_exit);
- MODULE_LICENSE("GPL v2");
+ 	i2c_set_clientdata(cl, lp);
+ 
+ 	ret = lp855x_configure(lp);
 -- 
-1.9.1
+2.8.0.rc3.226.g39d4020
 

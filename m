@@ -1,36 +1,96 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 01 Jun 2016 08:35:37 +0000
-Subject: [PATCH v2 15/27] ARM: OMAP: rx51-video: Do not set TV connector_type
-Message-Id: <20160601083549.10549-16-peter.ujfalusi@ti.com>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Fri, 10 Jun 2016 10:11:39 +0000
+Subject: [PATCH v4 22/44] video: dma-mapping: Use unsigned long for dma_attrs
+Message-Id: <1465553521-27303-23-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160601083549.10549-1-peter.ujfalusi@ti.com>
+References: <1465553521-27303-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1465553521-27303-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, jsarha@ti.com, linux-omap@vger.kernel.org, laurent.pinchart@ideasonboard.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Oleg Nesterov <oleg@redhat.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In legacy mode only composite type is supported by omapdss so there is no
-need to specify the connector_type.
+Split out subsystem specific changes for easier reviews. This will be
+squashed with main commit.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- arch/arm/mach-omap2/board-rx51-video.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 12 ++++++------
+ drivers/video/fbdev/omap2/omapfb/omapfb.h      |  3 +--
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/board-rx51-video.c b/arch/arm/mach-omap2/board-rx51-video.c
-index 9cfebc5c7455..b76f84245ad9 100644
---- a/arch/arm/mach-omap2/board-rx51-video.c
-+++ b/arch/arm/mach-omap2/board-rx51-video.c
-@@ -32,7 +32,6 @@
- static struct connector_atv_platform_data rx51_tv_pdata = {
- 	.name = "tv",
- 	.source = "venc.0",
--	.connector_type = OMAP_DSS_VENC_TYPE_COMPOSITE,
- 	.invert_polarity = false,
- };
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index d3af01c94a58..59172a2185c0 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1332,7 +1332,7 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
+ 	}
  
+ 	dma_free_attrs(fbdev->dev, rg->size, rg->token, rg->dma_handle,
+-			&rg->attrs);
++			rg->attrs);
+ 
+ 	rg->token = NULL;
+ 	rg->vaddr = NULL;
+@@ -1370,7 +1370,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 	struct omapfb2_device *fbdev = ofbi->fbdev;
+ 	struct omapfb2_mem_region *rg;
+ 	void *token;
+-	DEFINE_DMA_ATTRS(attrs);
++	unsigned long attrs;
+ 	dma_addr_t dma_handle;
+ 	int r;
+ 
+@@ -1386,15 +1386,15 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 
+ 	size = PAGE_ALIGN(size);
+ 
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
++	attrs = DMA_ATTR_WRITE_COMBINE;
+ 
+ 	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
+-		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &attrs);
++		attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
+ 
+ 	DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
+ 
+ 	token = dma_alloc_attrs(fbdev->dev, size, &dma_handle,
+-			GFP_KERNEL, &attrs);
++			GFP_KERNEL, attrs);
+ 
+ 	if (token = NULL) {
+ 		dev_err(fbdev->dev, "failed to allocate framebuffer\n");
+@@ -1408,7 +1408,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 		r = omap_vrfb_request_ctx(&rg->vrfb);
+ 		if (r) {
+ 			dma_free_attrs(fbdev->dev, size, token, dma_handle,
+-					&attrs);
++					attrs);
+ 			dev_err(fbdev->dev, "vrfb create ctx failed\n");
+ 			return r;
+ 		}
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb.h b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+index 623cd872a367..8aaa2f643820 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb.h
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+@@ -28,7 +28,6 @@
+ #endif
+ 
+ #include <linux/rwsem.h>
+-#include <linux/dma-attrs.h>
+ #include <linux/dma-mapping.h>
+ 
+ #include <video/omapdss.h>
+@@ -51,7 +50,7 @@ extern bool omapfb_debug;
+ 
+ struct omapfb2_mem_region {
+ 	int             id;
+-	struct dma_attrs attrs;
++	unsigned long	attrs;
+ 	void		*token;
+ 	dma_addr_t	dma_handle;
+ 	u32		paddr;
 -- 
-2.8.3
+1.9.1
 

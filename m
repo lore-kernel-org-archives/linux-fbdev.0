@@ -1,39 +1,57 @@
-From: Moshe Green <mgmoshes@gmail.com>
-Date: Mon, 06 Jun 2016 19:04:32 +0000
-Subject: [PATCH] Staging: sm750fb: fix block comment coding style issue in ddk750_chip.c
-Message-Id: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
+From: yeongjun Kim <iam.yeongjunkim@gmail.com>
+Date: Tue, 14 Jun 2016 15:38:33 +0000
+Subject: [PATCH] staging: sm750fb: fix block comments errors in ddk750_display.c
+Message-Id: <20160614153833.GA23451@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
+In-Reply-To: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-This is a patch to the ddk750_chip.c file that fixes up two block
-comment coding style warnings found by the checkpatch.pl tool
+WARNING: Block comments use * on subsequent lines
+WARNING: Block comments use a trailing */ on a separate line
+WARNING: Block comments use * on subsequent lines
+WARNING: Block comments use a trailing */ on a separate line
 
-Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+Signed-off-by: yeongjun Kim <iam.yeongjunkim@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index f80ee77..3d408d6 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -91,8 +91,10 @@ static void setMemoryClock(unsigned int frequency)
- 		return;
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index ca4973e..a040042 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -68,8 +68,10 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 	if (!ctrl) {
+ 		/* primary controller */
  
- 	if (frequency) {
--		/* Set the frequency to the maximum frequency that the DDR Memory can take
--		which is 336MHz. */
+-		/* Do not wait when the Primary PLL is off or display control is already off.
+-		   This will prevent the software to wait forever. */
 +		/*
-+		 * Set the frequency to the maximum frequency that the DDR Memory can take
-+		 * which is 336MHz.
++		 * Do not wait when the Primary PLL is off or display control is
++		 * already off. This will prevent the software to wait forever.
 +		 */
- 		if (frequency > MHz(336))
- 			frequency = MHz(336);
+ 		if (!(PEEK32(PANEL_PLL_CTRL) & PLL_CTRL_POWER) ||
+ 		    !(PEEK32(PANEL_DISPLAY_CTRL) & DISPLAY_CTRL_TIMING)) {
+ 			return;
+@@ -88,9 +90,10 @@ static void waitNextVerticalSync(int ctrl, int delay)
+ 		}
  
+ 	} else {
+-
+-		/* Do not wait when the Primary PLL is off or display control is already off.
+-			   This will prevent the software to wait forever. */
++		/*
++		 * Do not wait when the Primary PLL is off or display control is
++		 * already off. This will prevent the software to wait forever.
++		 */
+ 		if (!(PEEK32(CRT_PLL_CTRL) & PLL_CTRL_POWER) ||
+ 		    !(PEEK32(CRT_DISPLAY_CTRL) & DISPLAY_CTRL_TIMING)) {
+ 			return;
 -- 
-2.7.4
+1.9.1
 

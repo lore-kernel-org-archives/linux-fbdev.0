@@ -1,77 +1,106 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Tue, 07 Jun 2016 13:51:12 +0000
-Subject: [PATCH 1/3] fbdev: ssd1307fb: Start to use gpiod API for reset gpio
-Message-Id: <160209d5bdcfc9d0821922e96eb1d0850f6a03a8.1465303439.git.jsarha@ti.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 16 Jun 2016 09:36:15 +0000
+Subject: [PATCH 3/6] video: ARM CLCD: support pads connected in reverse order
+Message-Id: <1466069778-16087-4-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1465303439.git.jsarha@ti.com>
-In-Reply-To: <cover.1465303439.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: linux-arm-kernel@lists.infradead.org
 
-Start to use gpiod API for reset gpio.
+There are CLCDs connected with the pads in BGR rather than RGB
+order. It really doesn't matter since the CLCD has a flag and
+a bit to switch the position of the RGB and BGR components.
+This is needed to put something logical into the
+arm,pl11x,tft-r0g0b0-pads property of the device tree on the
+Nomadik which will then be <16 8 0>.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/video/fbdev/ssd1307fb.c | 25 ++++++++-----------------
- 1 file changed, 8 insertions(+), 17 deletions(-)
+ChangeLog v2->v3:
+- Russell noted that we could collapse two &=/|= operations into
+  a single ^= and save some arithmetics.
+ChangeLog v1->v2:
+- No changes
+---
+ drivers/video/fbdev/amba-clcd.c |  8 ++++++++
+ include/linux/amba/clcd.h       | 18 +++++++++++++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index a9c45c8..b27912c 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -73,7 +73,7 @@ struct ssd1307fb_par {
- 	u32 prechargep2;
- 	struct pwm_device *pwm;
- 	u32 pwm_period;
--	int reset;
-+	struct gpio_desc *reset;
- 	u32 seg_remap;
- 	u32 vcomh;
- 	u32 width;
-@@ -562,10 +562,11 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	par->device_info = (struct ssd1307fb_deviceinfo *)of_match_device(
- 			ssd1307fb_of_match, &client->dev)->data;
- 
--	par->reset = of_get_named_gpio(client->dev.of_node,
--					 "reset-gpios", 0);
--	if (!gpio_is_valid(par->reset)) {
--		ret = -EINVAL;
-+	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
-+	if (IS_ERR(par->reset)) {
-+		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
-+			PTR_ERR(par->reset));
-+		ret = PTR_ERR(par->reset);
- 		goto fb_alloc_error;
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 5bd20e8800bc..080e8a246faf 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -675,6 +675,7 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 	} panels[] = {
+ 		{ 0x110, 1,  7, 13, CLCD_CAP_5551 },
+ 		{ 0x110, 0,  8, 16, CLCD_CAP_888 },
++		{ 0x110, 16, 8, 0,  CLCD_CAP_888 },
+ 		{ 0x111, 4, 14, 20, CLCD_CAP_444 },
+ 		{ 0x111, 3, 11, 19, CLCD_CAP_444 | CLCD_CAP_5551 },
+ 		{ 0x111, 3, 10, 19, CLCD_CAP_444 | CLCD_CAP_5551 |
+@@ -702,6 +703,13 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 			fb->panel->caps = panels[i].caps;
  	}
  
-@@ -643,22 +644,12 @@ static int ssd1307fb_probe(struct i2c_client *client,
++	/*
++	 * If we actually physically connected the R lines to B and
++	 * vice versa
++	 */
++	if (r0 != 0 && b0 = 0)
++		fb->panel->bgr_connection = true;
++
+ 	return fb->panel->caps ? 0 : -EINVAL;
+ }
  
- 	fb_deferred_io_init(info);
+diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
+index e64c1ccebb76..8b64ec0d574b 100644
+--- a/include/linux/amba/clcd.h
++++ b/include/linux/amba/clcd.h
+@@ -108,6 +108,12 @@ struct clcd_panel {
+ 				grayscale:1;
+ 	unsigned int		connector;
+ 	struct backlight_device	*backlight;
++	/*
++	 * If the B/R lines are switched between the CLCD
++	 * and the panel we need to know this and not try to
++	 * compensate with the BGR bit in the control register.
++	 */
++	bool			bgr_connection;
+ };
  
--	ret = devm_gpio_request_one(&client->dev, par->reset,
--				    GPIOF_OUT_INIT_HIGH,
--				    "oled-reset");
--	if (ret) {
--		dev_err(&client->dev,
--			"failed to request gpio %d: %d\n",
--			par->reset, ret);
--		goto reset_oled_error;
--	}
--
- 	i2c_set_clientdata(client, info);
+ struct clcd_regs {
+@@ -234,16 +240,22 @@ static inline void clcdfb_decode(struct clcd_fb *fb, struct clcd_regs *regs)
+ 	if (var->grayscale)
+ 		val |= CNTL_LCDBW;
  
- 	/* Reset the screen */
--	gpio_set_value(par->reset, 0);
-+	gpiod_set_value(par->reset, 0);
- 	udelay(4);
--	gpio_set_value(par->reset, 1);
-+	gpiod_set_value(par->reset, 1);
- 	udelay(4);
+-	if (fb->panel->caps && fb->board->caps &&
+-	    var->bits_per_pixel >= 16) {
++	if (fb->panel->caps && fb->board->caps && var->bits_per_pixel >= 16) {
+ 		/*
+ 		 * if board and panel supply capabilities, we can support
+-		 * changing BGR/RGB depending on supplied parameters
++		 * changing BGR/RGB depending on supplied parameters. Here
++		 * we switch to what the framebuffer is providing if need
++		 * be, so if the framebuffer is BGR but the display connection
++		 * is RGB (first case) we switch it around. Vice versa mutatis
++		 * mutandis if the framebuffer is RGB but the display connection
++		 * is BGR, we flip it around.
+ 		 */
+ 		if (var->red.offset = 0)
+ 			val &= ~CNTL_BGR;
+ 		else
+ 			val |= CNTL_BGR;
++		if (fb->panel->bgr_connection)
++			val ^= CNTL_BGR;
+ 	}
  
- 	ret = ssd1307fb_init(par);
+ 	switch (var->bits_per_pixel) {
 -- 
-1.9.1
+2.4.11
 

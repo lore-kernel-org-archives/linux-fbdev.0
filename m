@@ -1,111 +1,139 @@
-From: Brian Norris <briannorris@chromium.org>
-Date: Fri, 10 Jun 2016 16:28:45 +0000
-Subject: [PATCH] backlight: lp855x: Add enable regulator
-Message-Id: <1465576125-118369-1-git-send-email-briannorris@chromium.org>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 16 Jun 2016 09:36:14 +0000
+Subject: [PATCH 2/6] video: ARM CLCD: support DT signal inversion flags
+Message-Id: <1466069778-16087-3-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Milo Kim <milo.kim@ti.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
-Cc: Stephen Barber <smbarber@chromium.org>, Doug Anderson <dianders@chromium.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Brian Norris <briannorris@chromium.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-The LP8556 datasheet describes an EN/VDDIO input, which serves "both as
-a chip enable and as a power supply reference for PWM, SDA, and SCL
-inputs." The LP8556 that I'm testing doesn't respond properly if I try
-to talk I2C to it too quickly after enabling VDDIO, and the LP8555
-datasheet mentions a t_RESPONSE delay of up to 1 millisecond.
+The device tree bindings from display-timing.txt allows us to
+specify if data enable, hsync, vsync or the pixed clock should be
+inverted on the way to the display. The driver does not currently
+handle this so add support for those flags as it is needed for
+the Versatile Sanyo LCD display.
 
-Support this EN/VDDIO by adding a regulator property to the binding;
-enabling this regulator at probe time; and sleeping for 1 to 2ms, if the
-EN/VDDIO regulator was provided.
+Note that the previous behaviour was to invert the pixel clock
+for all displays, so unless the pixel clock polarity is
+explicitly defined in the device tree (i.e. the timings node
+has the "pixelclk-active" property) we fall back to inverting
+the pixel clock. This needs some extra compatibility code.
 
-Signed-off-by: Brian Norris <briannorris@chromium.org>
+Since the timing flags have to be set up inside the struct
+clcd_panel, we need to refactor the code a bit to pass around
+the panel rather than just the mode.
+
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- .../devicetree/bindings/leds/backlight/lp855x.txt  |  2 ++
- drivers/video/backlight/lp855x_bl.c                | 29 ++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ChangeLog v2->v3:
+- Check if neither DISPLAY_FLAGS_PIXDATA_NEGEDGE or
+  DISPLAY_FLAGS_PIXDATA_POSEDGE to default to NEGEDGE and
+  avoid poking around in the device tree.
+ChangeLog v1->v2:
+- No changes. Just reposting.
+---
+ drivers/video/fbdev/amba-clcd.c | 37 ++++++++++++++++++++++++++++++-------
+ 1 file changed, 30 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
-index 0a3ecbc3a1b9..88f56641fc28 100644
---- a/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
-+++ b/Documentation/devicetree/bindings/leds/backlight/lp855x.txt
-@@ -13,6 +13,7 @@ Optional properties:
-   - rom-addr: Register address of ROM area to be updated (u8)
-   - rom-val: Register value to be updated (u8)
-   - power-supply: Regulator which controls the 3V rail
-+  - enable-supply: Regulator which controls the EN/VDDIO input
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 52a33d3926ac..5bd20e8800bc 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -565,7 +565,7 @@ static int clcdfb_register(struct clcd_fb *fb)
  
- Example:
+ #ifdef CONFIG_OF
+ static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
+-		struct fb_videomode *mode)
++		struct clcd_panel *clcd_panel)
+ {
+ 	int err;
+ 	struct display_timing timing;
+@@ -577,10 +577,31 @@ static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
  
-@@ -57,6 +58,7 @@ Example:
- 	backlight@2c {
- 		compatible = "ti,lp8557";
- 		reg = <0x2c>;
-+		enable-supply = <&backlight_vddio>;
- 		power-supply = <&backlight_vdd>;
+ 	videomode_from_timing(&timing, &video);
  
- 		dev-ctrl = /bits/ 8 <0x41>;
-diff --git a/drivers/video/backlight/lp855x_bl.c b/drivers/video/backlight/lp855x_bl.c
-index e5b14f52628f..7e1f9a78674e 100644
---- a/drivers/video/backlight/lp855x_bl.c
-+++ b/drivers/video/backlight/lp855x_bl.c
-@@ -13,6 +13,7 @@
- #include <linux/slab.h>
- #include <linux/i2c.h>
- #include <linux/backlight.h>
-+#include <linux/delay.h>
- #include <linux/err.h>
- #include <linux/of.h>
- #include <linux/platform_data/lp855x.h>
-@@ -74,6 +75,7 @@ struct lp855x {
- 	struct lp855x_platform_data *pdata;
- 	struct pwm_device *pwm;
- 	struct regulator *supply;	/* regulator for VDD input */
-+	struct regulator *enable;	/* regulator for EN/VDDIO input */
- };
+-	err = fb_videomode_from_videomode(&video, mode);
++	err = fb_videomode_from_videomode(&video, &clcd_panel->mode);
+ 	if (err)
+ 		return err;
  
- static int lp855x_write_byte(struct lp855x *lp, u8 reg, u8 data)
-@@ -433,6 +435,19 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		lp->supply = NULL;
- 	}
- 
-+	lp->enable = devm_regulator_get_optional(lp->dev, "enable");
-+	if (IS_ERR(lp->enable)) {
-+		ret = PTR_ERR(lp->enable);
-+		if (ret = -ENODEV) {
-+			lp->enable = NULL;
-+		} else {
-+			if (ret != -EPROBE_DEFER)
-+				dev_err(lp->dev, "error getting enable regulator: %d\n",
-+					ret);
-+			return ret;
-+		}
-+	}
-+
- 	if (lp->supply) {
- 		ret = regulator_enable(lp->supply);
- 		if (ret < 0) {
-@@ -441,6 +456,20 @@ static int lp855x_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		}
- 	}
- 
-+	if (lp->enable) {
-+		ret = regulator_enable(lp->enable);
-+		if (ret < 0) {
-+			dev_err(lp->dev, "failed to enable vddio: %d\n", ret);
-+			return ret;
-+		}
-+
++	/* Set up some inversion flags */
++	if (timing.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
++		clcd_panel->tim2 |= TIM2_IPC;
++	else if (!(timing.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE))
 +		/*
-+		 * TS8555 datasheet says t_RESPONSE (time between VDDIO and
-+		 * I2C) is 1ms.
++		 * To preserve backwards compatibility, the IPC (inverted
++		 * pixel clock) flag needs to be set on any display that
++		 * doesn't explicitly specify that the pixel clock is
++		 * active on the negative or positive edge.
 +		 */
-+		usleep_range(1000, 2000);
-+	}
++		clcd_panel->tim2 |= TIM2_IPC;
 +
- 	i2c_set_clientdata(cl, lp);
++	if (timing.flags & DISPLAY_FLAGS_HSYNC_LOW)
++		clcd_panel->tim2 |= TIM2_IHS;
++
++	if (timing.flags & DISPLAY_FLAGS_VSYNC_LOW)
++		clcd_panel->tim2 |= TIM2_IVS;
++
++	if (timing.flags & DISPLAY_FLAGS_DE_LOW)
++		clcd_panel->tim2 |= TIM2_IOE;
++
+ 	return 0;
+ }
  
- 	ret = lp855x_configure(lp);
+@@ -613,10 +634,11 @@ static int clcdfb_of_get_backlight(struct device_node *endpoint,
+ }
+ 
+ static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
+-		struct fb_videomode *mode)
++		struct clcd_panel *clcd_panel)
+ {
+ 	int err;
+ 	struct device_node *panel;
++	struct fb_videomode *mode;
+ 	char *name;
+ 	int len;
+ 
+@@ -626,11 +648,12 @@ static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
+ 
+ 	/* Only directly connected DPI panels supported for now */
+ 	if (of_device_is_compatible(panel, "panel-dpi"))
+-		err = clcdfb_of_get_dpi_panel_mode(panel, mode);
++		err = clcdfb_of_get_dpi_panel_mode(panel, clcd_panel);
+ 	else
+ 		err = -ENOENT;
+ 	if (err)
+ 		return err;
++	mode = &clcd_panel->mode;
+ 
+ 	len = clcdfb_snprintf_mode(NULL, 0, mode);
+ 	name = devm_kzalloc(dev, len + 1, GFP_KERNEL);
+@@ -661,8 +684,8 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
+ 	};
+ 	int i;
+ 
+-	/* Bypass pixel clock divider, data output on the falling edge */
+-	fb->panel->tim2 = TIM2_BCD | TIM2_IPC;
++	/* Bypass pixel clock divider */
++	fb->panel->tim2 |= TIM2_BCD;
+ 
+ 	/* TFT display, vert. comp. interrupt at the start of the back porch */
+ 	fb->panel->cntl |= CNTL_LCDTFT | CNTL_LCDVCOMP(1);
+@@ -702,7 +725,7 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 	if (err)
+ 		return err;
+ 
+-	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, &fb->panel->mode);
++	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, fb->panel);
+ 	if (err)
+ 		return err;
+ 
 -- 
-2.8.0.rc3.226.g39d4020
+2.4.11
 

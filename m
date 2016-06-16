@@ -1,474 +1,386 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Thu, 23 Jun 2016 11:34:35 +0000
-Subject: [PATCH 14/16] tty: vt, convert more macros to functions
-Message-Id: <20160623113437.28416-14-jslaby@suse.cz>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 16 Jun 2016 09:36:17 +0000
+Subject: [PATCH 5/6] video: ARM CLCD: add special board and panel hooks for Nomadik
+Message-Id: <1466069778-16087-6-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160623113437.28416-1-jslaby@suse.cz>
-In-Reply-To: <20160623113437.28416-1-jslaby@suse.cz>
+References: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Thomas Winischhofer <thomas@winischhofer.net>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Namely convert:
-* IS_FG -> con_is_fg
-* DO_UPDATE -> con_should_update
-* CON_IS_VISIBLE -> con_is_visible
+In the .board_init() callback will set up a mux register in
+the Nomadik system controller. It so happens that the platform
+has two display output engines, and we have to poke a bit in
+a special register to make sure the right engine is muxed in
+as they are mutually exclusive.
 
-DO_UPDATE was a weird name for a yes/no answer, so the new name is
-con_should_update.
+The Nomadik CLCD variant is instantiated on a platform where
+it is combined with a 800x480 TPO WVGA display. In the
+.panel_init() hook we will detect this display from the
+compatible string and set it up. We also add .enable() and
+.disable() callbacks for it as the sleep state is software
+controlled.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-usb@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org
+The display is connected with a special 3-wire serial bus
+(this is sadly neither I2C or SPI) using three GPIO lines that
+we bitbang to detect the display and enable/disable sleep
+state.
+
+Cc: Pawel Moll <pawel.moll@arm.com>
+Cc: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/tty/vt/vt.c                     | 62 ++++++++++++++++++---------------
- drivers/usb/misc/sisusbvga/sisusb_con.c |  4 +--
- drivers/video/console/fbcon.c           | 26 +++++++-------
- drivers/video/console/vgacon.c          |  8 ++---
- include/linux/console_struct.h          |  5 ++-
- 5 files changed, 57 insertions(+), 48 deletions(-)
+ChangeLog v2->v3:
+- Just rebased. No comments so no changes.
+ChangeLog v1->v2:
+- No changes. Just reposting.
+---
+ drivers/video/fbdev/Makefile            |   1 +
+ drivers/video/fbdev/amba-clcd-nomadik.c | 257 ++++++++++++++++++++++++++++++++
+ drivers/video/fbdev/amba-clcd-nomadik.h |  24 +++
+ drivers/video/fbdev/amba-clcd.c         |   6 +-
+ 4 files changed, 287 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.c
+ create mode 100644 drivers/video/fbdev/amba-clcd-nomadik.h
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 8ceabfd20561..26de5c0fc056 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -277,8 +277,15 @@ static void notify_update(struct vc_data *vc)
-  *	Low-Level Functions
-  */
- 
--#define IS_FG(vc)	((vc)->vc_num = fg_console)
--#define DO_UPDATE(vc)	(CON_IS_VISIBLE(vc) && !console_blanked)
-+static inline bool con_is_fg(const struct vc_data *vc)
+diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+index f6731867dd26..5550944f0ad7 100644
+--- a/drivers/video/fbdev/Makefile
++++ b/drivers/video/fbdev/Makefile
+@@ -79,6 +79,7 @@ obj-$(CONFIG_FB_ATMEL)		  += atmel_lcdfb.o
+ obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
+ obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
+ obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
++obj-$(CONFIG_ARCH_NOMADIK)	  += amba-clcd-nomadik.o
+ obj-$(CONFIG_PLAT_VERSATILE_CLCD) += amba-clcd-versatile.o
+ obj-$(CONFIG_FB_GOLDFISH)         += goldfishfb.o
+ obj-$(CONFIG_FB_68328)            += 68328fb.o
+diff --git a/drivers/video/fbdev/amba-clcd-nomadik.c b/drivers/video/fbdev/amba-clcd-nomadik.c
+new file mode 100644
+index 000000000000..243167c8ee15
+--- /dev/null
++++ b/drivers/video/fbdev/amba-clcd-nomadik.c
+@@ -0,0 +1,257 @@
++#include <linux/amba/bus.h>
++#include <linux/amba/clcd.h>
++#include <linux/gpio/consumer.h>
++#include <linux/of.h>
++#include <linux/of_graph.h>
++#include <linux/delay.h>
++#include <linux/bitops.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
++
++#include "amba-clcd-nomadik.h"
++
++static struct gpio_desc *grestb;
++static struct gpio_desc *scen;
++static struct gpio_desc *scl;
++static struct gpio_desc *sda;
++
++static u8 tpg110_readwrite_reg(bool write, u8 address, u8 outval)
 +{
-+	return vc->vc_num = fg_console;
++	int i;
++	u8 inval = 0;
++
++	/* Assert SCEN */
++	gpiod_set_value_cansleep(scen, 1);
++	ndelay(150);
++	/* Hammer out the address */
++	for (i = 5; i >= 0; i--) {
++		if (address & BIT(i))
++			gpiod_set_value_cansleep(sda, 1);
++		else
++			gpiod_set_value_cansleep(sda, 0);
++		ndelay(150);
++		/* Send an SCL pulse */
++		gpiod_set_value_cansleep(scl, 1);
++		ndelay(160);
++		gpiod_set_value_cansleep(scl, 0);
++		ndelay(160);
++	}
++
++	if (write) {
++		/* WRITE */
++		gpiod_set_value_cansleep(sda, 0);
++	} else {
++		/* READ */
++		gpiod_set_value_cansleep(sda, 1);
++	}
++	ndelay(150);
++	/* Send an SCL pulse */
++	gpiod_set_value_cansleep(scl, 1);
++	ndelay(160);
++	gpiod_set_value_cansleep(scl, 0);
++	ndelay(160);
++
++	if (!write)
++		/* HiZ turn-around cycle */
++		gpiod_direction_input(sda);
++	ndelay(150);
++	/* Send an SCL pulse */
++	gpiod_set_value_cansleep(scl, 1);
++	ndelay(160);
++	gpiod_set_value_cansleep(scl, 0);
++	ndelay(160);
++
++	/* Hammer in/out the data */
++	for (i = 7; i >= 0; i--) {
++		int value;
++
++		if (write) {
++			value = !!(outval & BIT(i));
++			gpiod_set_value_cansleep(sda, value);
++		} else {
++			value = gpiod_get_value(sda);
++			if (value)
++				inval |= BIT(i);
++		}
++		ndelay(150);
++		/* Send an SCL pulse */
++		gpiod_set_value_cansleep(scl, 1);
++		ndelay(160);
++		gpiod_set_value_cansleep(scl, 0);
++		ndelay(160);
++	}
++
++	gpiod_direction_output(sda, 0);
++	/* Deassert SCEN */
++	gpiod_set_value_cansleep(scen, 0);
++	/* Satisfies SCEN pulse width */
++	udelay(1);
++
++	return inval;
 +}
 +
-+static inline bool con_should_update(const struct vc_data *vc)
++static u8 tpg110_read_reg(u8 address)
 +{
-+	return con_is_visible(vc) && !console_blanked;
++	return tpg110_readwrite_reg(false, address, 0);
 +}
- 
- static inline unsigned short *screenpos(struct vc_data *vc, int offset, int viewed)
- {
-@@ -316,7 +323,7 @@ static void scrup(struct vc_data *vc, unsigned int t, unsigned int b, int nr)
- 		nr = b - t - 1;
- 	if (b > vc->vc_rows || t >= b || nr < 1)
- 		return;
--	if (CON_IS_VISIBLE(vc) && vc->vc_sw->con_scroll(vc, t, b, SM_UP, nr))
-+	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, SM_UP, nr))
- 		return;
- 	d = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * (t + nr));
-@@ -334,7 +341,7 @@ static void scrdown(struct vc_data *vc, unsigned int t, unsigned int b, int nr)
- 		nr = b - t - 1;
- 	if (b > vc->vc_rows || t >= b || nr < 1)
- 		return;
--	if (CON_IS_VISIBLE(vc) && vc->vc_sw->con_scroll(vc, t, b, SM_DOWN, nr))
-+	if (con_is_visible(vc) && vc->vc_sw->con_scroll(vc, t, b, SM_DOWN, nr))
- 		return;
- 	s = (unsigned short *)(vc->vc_origin + vc->vc_size_row * t);
- 	step = vc->vc_cols * nr;
-@@ -390,7 +397,7 @@ void update_region(struct vc_data *vc, unsigned long start, int count)
- {
- 	WARN_CONSOLE_UNLOCKED();
- 
--	if (DO_UPDATE(vc)) {
-+	if (con_should_update(vc)) {
- 		hide_cursor(vc);
- 		do_update_region(vc, start, count);
- 		set_cursor(vc);
-@@ -490,7 +497,7 @@ void invert_screen(struct vc_data *vc, int offset, int count, int viewed)
- 		}
- 	}
- 
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		do_update_region(vc, (unsigned long) p, count);
- 	notify_update(vc);
- }
-@@ -507,7 +514,7 @@ void complement_pos(struct vc_data *vc, int offset)
- 	if (old_offset != -1 && old_offset >= 0 &&
- 	    old_offset < vc->vc_screenbuf_size) {
- 		scr_writew(old, screenpos(vc, old_offset, 1));
--		if (DO_UPDATE(vc))
-+		if (con_should_update(vc))
- 			vc->vc_sw->con_putc(vc, old, oldy, oldx);
- 		notify_update(vc);
- 	}
-@@ -522,7 +529,7 @@ void complement_pos(struct vc_data *vc, int offset)
- 		old = scr_readw(p);
- 		new = old ^ vc->vc_complement_mask;
- 		scr_writew(new, p);
--		if (DO_UPDATE(vc)) {
-+		if (con_should_update(vc)) {
- 			oldx = (offset >> 1) % vc->vc_cols;
- 			oldy = (offset >> 1) / vc->vc_cols;
- 			vc->vc_sw->con_putc(vc, new, oldy, oldx);
-@@ -538,7 +545,7 @@ static void insert_char(struct vc_data *vc, unsigned int nr)
- 	scr_memmovew(p + nr, p, (vc->vc_cols - vc->vc_x - nr) * 2);
- 	scr_memsetw(p, vc->vc_video_erase_char, nr * 2);
- 	vc->vc_need_wrap = 0;
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		do_update_region(vc, (unsigned long) p,
- 			vc->vc_cols - vc->vc_x);
- }
-@@ -551,7 +558,7 @@ static void delete_char(struct vc_data *vc, unsigned int nr)
- 	scr_memsetw(p + vc->vc_cols - vc->vc_x - nr, vc->vc_video_erase_char,
- 			nr * 2);
- 	vc->vc_need_wrap = 0;
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		do_update_region(vc, (unsigned long) p,
- 			vc->vc_cols - vc->vc_x);
- }
-@@ -571,7 +578,7 @@ static void add_softcursor(struct vc_data *vc)
- 	if ((type & 0x20) && ((softcursor_original & 0x7000) = (i & 0x7000))) i ^= 0x7000;
- 	if ((type & 0x40) && ((i & 0x700) = ((i & 0x7000) >> 4))) i ^= 0x0700;
- 	scr_writew(i, (u16 *) vc->vc_pos);
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		vc->vc_sw->con_putc(vc, i, vc->vc_y, vc->vc_x);
- }
- 
-@@ -579,7 +586,7 @@ static void hide_softcursor(struct vc_data *vc)
- {
- 	if (softcursor_original != -1) {
- 		scr_writew(softcursor_original, (u16 *)vc->vc_pos);
--		if (DO_UPDATE(vc))
-+		if (con_should_update(vc))
- 			vc->vc_sw->con_putc(vc, softcursor_original,
- 					vc->vc_y, vc->vc_x);
- 		softcursor_original = -1;
-@@ -596,8 +603,7 @@ static void hide_cursor(struct vc_data *vc)
- 
- static void set_cursor(struct vc_data *vc)
- {
--	if (!IS_FG(vc) || console_blanked ||
--	    vc->vc_mode = KD_GRAPHICS)
-+	if (!con_is_fg(vc) || console_blanked || vc->vc_mode = KD_GRAPHICS)
- 		return;
- 	if (vc->vc_deccm) {
- 		if (vc = sel_cons)
-@@ -613,7 +619,7 @@ static void set_origin(struct vc_data *vc)
- {
- 	WARN_CONSOLE_UNLOCKED();
- 
--	if (!CON_IS_VISIBLE(vc) ||
-+	if (!con_is_visible(vc) ||
- 	    !vc->vc_sw->con_set_origin ||
- 	    !vc->vc_sw->con_set_origin(vc))
- 		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
-@@ -661,12 +667,12 @@ void redraw_screen(struct vc_data *vc, int is_switch)
- 		struct vc_data *old_vc = vc_cons[fg_console].d;
- 		if (old_vc = vc)
- 			return;
--		if (!CON_IS_VISIBLE(vc))
-+		if (!con_is_visible(vc))
- 			redraw = 1;
- 		*vc->vc_display_fg = vc;
- 		fg_console = vc->vc_num;
- 		hide_cursor(old_vc);
--		if (!CON_IS_VISIBLE(old_vc)) {
-+		if (!con_is_visible(old_vc)) {
- 			save_screen(old_vc);
- 			set_origin(old_vc);
- 		}
-@@ -941,7 +947,7 @@ static int vc_do_resize(struct tty_struct *tty, struct vc_data *vc,
- 		tty_do_resize(tty, &ws);
- 	}
- 
--	if (CON_IS_VISIBLE(vc))
-+	if (con_is_visible(vc))
- 		update_screen(vc);
- 	vt_event_post(VT_EVENT_RESIZE, vc->vc_num, vc->vc_num);
- 	return err;
-@@ -1171,7 +1177,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
- 				    vc->vc_screenbuf_size >> 1);
- 			set_origin(vc);
--			if (CON_IS_VISIBLE(vc))
-+			if (con_is_visible(vc))
- 				update_screen(vc);
- 			/* fall through */
- 		case 2: /* erase whole display */
-@@ -1182,7 +1188,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 			return;
- 	}
- 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		do_update_region(vc, (unsigned long) start, count);
- 	vc->vc_need_wrap = 0;
- }
-@@ -1210,7 +1216,7 @@ static void csi_K(struct vc_data *vc, int vpar)
- 	}
- 	scr_memsetw(start, vc->vc_video_erase_char, 2 * count);
- 	vc->vc_need_wrap = 0;
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		do_update_region(vc, (unsigned long) start, count);
- }
- 
-@@ -1223,7 +1229,7 @@ static void csi_X(struct vc_data *vc, int vpar) /* erase the following vpar posi
- 	count = (vpar > vc->vc_cols - vc->vc_x) ? (vc->vc_cols - vc->vc_x) : vpar;
- 
- 	scr_memsetw((unsigned short *)vc->vc_pos, vc->vc_video_erase_char, 2 * count);
--	if (DO_UPDATE(vc))
-+	if (con_should_update(vc))
- 		vc->vc_sw->con_clear(vc, vc->vc_y, vc->vc_x, 1, count);
- 	vc->vc_need_wrap = 0;
- }
-@@ -2208,7 +2214,7 @@ static int do_con_write(struct tty_struct *tty, const unsigned char *buf, int co
- 	charmask = himask ? 0x1ff : 0xff;
- 
- 	/* undraw cursor first */
--	if (IS_FG(vc))
-+	if (con_is_fg(vc))
- 		hide_cursor(vc);
- 
- 	param.vc = vc;
-@@ -2380,7 +2386,7 @@ rescan_last_byte:
- 					     ((vc_attr << 8) & ~himask) + ((tc & 0x100) ? himask : 0) + (tc & 0xff) :
- 					     (vc_attr << 8) + tc,
- 					   (u16 *) vc->vc_pos);
--				if (DO_UPDATE(vc) && draw_x < 0) {
-+				if (con_should_update(vc) && draw_x < 0) {
- 					draw_x = vc->vc_x;
- 					draw_from = vc->vc_pos;
- 				}
-@@ -2564,7 +2570,7 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
- 		goto quit;
- 
- 	/* undraw cursor first */
--	if (IS_FG(vc))
-+	if (con_is_fg(vc))
- 		hide_cursor(vc);
- 
- 	start = (ushort *)vc->vc_pos;
-@@ -2575,7 +2581,7 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
- 		c = *b++;
- 		if (c = 10 || c = 13 || c = 8 || vc->vc_need_wrap) {
- 			if (cnt > 0) {
--				if (CON_IS_VISIBLE(vc))
-+				if (con_is_visible(vc))
- 					vc->vc_sw->con_putcs(vc, start, cnt, vc->vc_y, vc->vc_x);
- 				vc->vc_x += cnt;
- 				if (vc->vc_need_wrap)
-@@ -2607,7 +2613,7 @@ static void vt_console_print(struct console *co, const char *b, unsigned count)
- 		myx++;
- 	}
- 	if (cnt > 0) {
--		if (CON_IS_VISIBLE(vc))
-+		if (con_is_visible(vc))
- 			vc->vc_sw->con_putcs(vc, start, cnt, vc->vc_y, vc->vc_x);
- 		vc->vc_x += cnt;
- 		if (vc->vc_x = vc->vc_cols) {
-@@ -3154,7 +3160,7 @@ static int do_bind_con_driver(const struct consw *csw, int first, int last,
- 
- 		j = i;
- 
--		if (CON_IS_VISIBLE(vc)) {
-+		if (con_is_visible(vc)) {
- 			k = i;
- 			save_screen(vc);
- 		}
-diff --git a/drivers/usb/misc/sisusbvga/sisusb_con.c b/drivers/usb/misc/sisusbvga/sisusb_con.c
-index 52a6da991165..460cebf322e3 100644
---- a/drivers/usb/misc/sisusbvga/sisusb_con.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb_con.c
-@@ -570,7 +570,7 @@ sisusbcon_set_palette(struct vc_data *c, const unsigned char *table)
- 
- 	/* Return value not used by vt */
- 
--	if (!CON_IS_VISIBLE(c))
-+	if (!con_is_visible(c))
- 		return;
- 
- 	sisusb = sisusb_get_sisusb_lock_and_check(c->vc_num);
-@@ -1226,7 +1226,7 @@ sisusbcon_do_font_op(struct sisusb_usb_data *sisusb, int set, int slot,
- 			struct vc_data *vc = vc_cons[i].d;
- 
- 			if (vc && vc->vc_sw = &sisusb_con) {
--				if (CON_IS_VISIBLE(vc)) {
-+				if (con_is_visible(vc)) {
- 					vc->vc_sw->con_cursor(vc, CM_DRAW);
- 				}
- 				vc->vc_font.height = fh;
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index eef8a8b7274f..b87f5cfdaea5 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -380,7 +380,7 @@ static void fb_flashcursor(struct work_struct *work)
- 	if (ops && ops->currcon != -1)
- 		vc = vc_cons[ops->currcon].d;
- 
--	if (!vc || !CON_IS_VISIBLE(vc) ||
-+	if (!vc || !con_is_visible(vc) ||
-  	    registered_fb[con2fb_map[vc->vc_num]] != info ||
- 	    vc->vc_deccm != 1) {
- 		console_unlock();
-@@ -618,7 +618,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 		    erase,
- 		    vc->vc_size_row * logo_lines);
- 
--	if (CON_IS_VISIBLE(vc) && vc->vc_mode = KD_TEXT) {
-+	if (con_is_visible(vc) && vc->vc_mode = KD_TEXT) {
- 		fbcon_clear_margins(vc, 0);
- 		update_screen(vc);
- 	}
-@@ -1112,7 +1112,7 @@ static void fbcon_init(struct vc_data *vc, int init)
- 	 *
- 	 * We need to do it in fbcon_init() to prevent screen corruption.
- 	 */
--	if (CON_IS_VISIBLE(vc) && vc->vc_mode = KD_TEXT) {
-+	if (con_is_visible(vc) && vc->vc_mode = KD_TEXT) {
- 		if (info->fbops->fb_set_par &&
- 		    !(ops->flags & FBCON_FLAGS_INIT)) {
- 			ret = info->fbops->fb_set_par(info);
-@@ -1192,7 +1192,7 @@ static void fbcon_deinit(struct vc_data *vc)
- 	if (!ops)
- 		goto finished;
- 
--	if (CON_IS_VISIBLE(vc))
-+	if (con_is_visible(vc))
- 		fbcon_del_cursor_timer(info);
- 
- 	ops->flags &= ~FBCON_FLAGS_INIT;
-@@ -1397,7 +1397,7 @@ static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
- 	rows /= vc->vc_font.height;
- 	vc_resize(vc, cols, rows);
- 
--	if (CON_IS_VISIBLE(vc)) {
-+	if (con_is_visible(vc)) {
- 		update_screen(vc);
- 		if (softback_buf)
- 			fbcon_update_softback(vc);
-@@ -2145,7 +2145,7 @@ static int fbcon_resize(struct vc_data *vc, unsigned int width,
- 			return -EINVAL;
- 
- 		DPRINTK("resize now %ix%i\n", var.xres, var.yres);
--		if (CON_IS_VISIBLE(vc)) {
-+		if (con_is_visible(vc)) {
- 			var.activate = FB_ACTIVATE_NOW |
- 				FB_ACTIVATE_FORCE;
- 			fb_set_var(info, &var);
-@@ -2448,7 +2448,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
- 	int cnt;
- 	char *old_data = NULL;
- 
--	if (CON_IS_VISIBLE(vc) && softback_lines)
-+	if (con_is_visible(vc) && softback_lines)
- 		fbcon_set_origin(vc);
- 
- 	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
-@@ -2529,9 +2529,9 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
- 		cols /= w;
- 		rows /= h;
- 		vc_resize(vc, cols, rows);
--		if (CON_IS_VISIBLE(vc) && softback_buf)
-+		if (con_is_visible(vc) && softback_buf)
- 			fbcon_update_softback(vc);
--	} else if (CON_IS_VISIBLE(vc)
-+	} else if (con_is_visible(vc)
- 		   && vc->vc_mode = KD_TEXT) {
- 		fbcon_clear_margins(vc, 0);
- 		update_screen(vc);
-@@ -2660,7 +2660,7 @@ static void fbcon_set_palette(struct vc_data *vc, const unsigned char *table)
- 	if (fbcon_is_inactive(vc, info))
- 		return;
- 
--	if (!CON_IS_VISIBLE(vc))
-+	if (!con_is_visible(vc))
- 		return;
- 
- 	depth = fb_get_color_depth(&info->var, &info->fix);
-@@ -2902,7 +2902,7 @@ static void fbcon_modechanged(struct fb_info *info)
- 	p = &fb_display[vc->vc_num];
- 	set_blitting_type(vc, info);
- 
--	if (CON_IS_VISIBLE(vc)) {
-+	if (con_is_visible(vc)) {
- 		var_to_display(p, &info->var, info);
- 		cols = FBCON_SWAP(ops->rotate, info->var.xres, info->var.yres);
- 		rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
-@@ -2941,7 +2941,7 @@ static void fbcon_set_all_vcs(struct fb_info *info)
- 		    registered_fb[con2fb_map[i]] != info)
- 			continue;
- 
--		if (CON_IS_VISIBLE(vc)) {
-+		if (con_is_visible(vc)) {
- 			fg = i;
- 			continue;
- 		}
-@@ -3180,7 +3180,7 @@ static void fbcon_fb_blanked(struct fb_info *info, int blank)
- 			registered_fb[con2fb_map[ops->currcon]] != info)
- 		return;
- 
--	if (CON_IS_VISIBLE(vc)) {
-+	if (con_is_visible(vc)) {
- 		if (blank)
- 			do_blank_screen(0);
- 		else
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index e280b3ceebd9..11576611a974 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -589,7 +589,7 @@ static void vgacon_init(struct vc_data *c, int init)
- static void vgacon_deinit(struct vc_data *c)
- {
- 	/* When closing the active console, reset video origin */
--	if (CON_IS_VISIBLE(c)) {
-+	if (con_is_visible(c)) {
- 		c->vc_visible_origin = vga_vram_base;
- 		vga_set_mem_top(c);
- 	}
-@@ -860,7 +860,7 @@ static void vgacon_set_palette(struct vc_data *vc, const unsigned char *table)
- {
- #ifdef CAN_LOAD_PALETTE
- 	if (vga_video_type != VIDEO_TYPE_VGAC || vga_palette_blanked
--	    || !CON_IS_VISIBLE(vc))
-+	    || !con_is_visible(vc))
- 		return;
- 	vga_set_palette(vc, table);
- #endif
-@@ -1248,7 +1248,7 @@ static int vgacon_adjust_height(struct vc_data *vc, unsigned fontheight)
- 		struct vc_data *c = vc_cons[i].d;
- 
- 		if (c && c->vc_sw = &vga_con) {
--			if (CON_IS_VISIBLE(c)) {
-+			if (con_is_visible(c)) {
- 			        /* void size to cause regs to be rewritten */
- 				cursor_size_lastfrom = 0;
- 				cursor_size_lastto = 0;
-@@ -1312,7 +1312,7 @@ static int vgacon_resize(struct vc_data *c, unsigned int width,
- 		   return success */
- 		return (user) ? 0 : -EINVAL;
- 
--	if (CON_IS_VISIBLE(c) && !vga_is_gfx) /* who knows */
-+	if (con_is_visible(c) && !vga_is_gfx) /* who knows */
- 		vgacon_doresize(c, width, height);
- 	return 0;
- }
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index 5fa605c93428..a12d3f2899a8 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -168,6 +168,9 @@ extern void vc_SAK(struct work_struct *work);
- 
- #define CUR_DEFAULT CUR_UNDERLINE
- 
--#define CON_IS_VISIBLE(conp) (*conp->vc_display_fg = conp)
-+static inline bool con_is_visible(const struct vc_data *vc)
++
++static void tpg110_write_reg(u8 address, u8 outval)
 +{
-+	return *vc->vc_display_fg = vc;
++	tpg110_readwrite_reg(true, address, outval);
 +}
++
++static void tpg110_startup(struct device *dev)
++{
++	u8 val;
++
++	dev_info(dev, "TPG110 display enable\n");
++	/* De-assert the reset signal */
++	gpiod_set_value_cansleep(grestb, 0);
++	mdelay(1);
++	dev_info(dev, "de-asserted GRESTB\n");
++
++	/* Test display communication */
++	tpg110_write_reg(0x00, 0x55);
++	val = tpg110_read_reg(0x00);
++	if (val = 0x55)
++		dev_info(dev, "passed communication test\n");
++	val = tpg110_read_reg(0x01);
++	dev_info(dev, "TPG110 chip ID: %d version: %d\n",
++		val>>4, val&0x0f);
++
++	/* Show display resolution */
++	val = tpg110_read_reg(0x02);
++	val &= 7;
++	switch (val) {
++	case 0x0:
++		dev_info(dev, "IN 400x240 RGB -> OUT 800x480 RGB (dual scan)");
++		break;
++	case 0x1:
++		dev_info(dev, "IN 480x272 RGB -> OUT 800x480 RGB (dual scan)");
++		break;
++	case 0x4:
++		dev_info(dev, "480x640 RGB");
++		break;
++	case 0x5:
++		dev_info(dev, "480x272 RGB");
++		break;
++	case 0x6:
++		dev_info(dev, "640x480 RGB");
++		break;
++	case 0x7:
++		dev_info(dev, "800x480 RGB");
++		break;
++	default:
++		dev_info(dev, "ILLEGAL RESOLUTION");
++		break;
++	}
++
++	val = tpg110_read_reg(0x03);
++	dev_info(dev, "resolution is controlled by %s\n",
++		(val & BIT(7)) ? "software" : "hardware");
++}
++
++static void tpg110_enable(struct clcd_fb *fb)
++{
++	struct device *dev = &fb->dev->dev;
++	static bool startup;
++	u8 val;
++
++	if (!startup) {
++		tpg110_startup(dev);
++		startup = true;
++	}
++
++	/* Take chip out of standby */
++	val = tpg110_read_reg(0x03);
++	val |= BIT(0);
++	tpg110_write_reg(0x03, val);
++}
++
++static void tpg110_disable(struct clcd_fb *fb)
++{
++	u8 val;
++
++	dev_info(&fb->dev->dev, "TPG110 display disable\n");
++	val = tpg110_read_reg(0x03);
++	/* Put into standby */
++	val &= ~BIT(0);
++	tpg110_write_reg(0x03, val);
++}
++
++static void tpg110_init(struct device *dev, struct device_node *np,
++			struct clcd_board *board)
++{
++	dev_info(dev, "TPG110 display init\n");
++
++	grestb = devm_get_gpiod_from_child(dev, "grestb", &np->fwnode);
++	if (IS_ERR(grestb)) {
++		dev_err(dev, "no GRESTB GPIO\n");
++		return;
++	}
++	/* This asserts the GRESTB signal, putting the display into reset */
++	gpiod_direction_output(grestb, 1);
++
++	scen = devm_get_gpiod_from_child(dev, "scen", &np->fwnode);
++	if (IS_ERR(scen)) {
++		dev_err(dev, "no SCEN GPIO\n");
++		return;
++	}
++	gpiod_direction_output(scen, 0);
++	scl = devm_get_gpiod_from_child(dev, "scl", &np->fwnode);
++	if (IS_ERR(scl)) {
++		dev_err(dev, "no SCL GPIO\n");
++		return;
++	}
++	gpiod_direction_output(scl, 0);
++	sda = devm_get_gpiod_from_child(dev, "sda", &np->fwnode);
++	if (IS_ERR(sda)) {
++		dev_err(dev, "no SDA GPIO\n");
++		return;
++	}
++	gpiod_direction_output(sda, 0);
++	board->enable = tpg110_enable;
++	board->disable = tpg110_disable;
++}
++
++int nomadik_clcd_init_panel(struct clcd_fb *fb,
++			    struct device_node *endpoint)
++{
++	struct device_node *panel;
++
++	panel = of_graph_get_remote_port_parent(endpoint);
++	if (!panel)
++		return -ENODEV;
++
++	if (of_device_is_compatible(panel, "tpo,tpg110"))
++		tpg110_init(&fb->dev->dev, panel, fb->board);
++	else
++		dev_info(&fb->dev->dev, "unknown panel\n");
++
++	/* Unknown panel, fall through */
++	return 0;
++}
++
++#define PMU_CTRL_OFFSET 0x0000
++#define PMU_CTRL_LCDNDIF BIT(26)
++
++int nomadik_clcd_init_board(struct amba_device *adev,
++			    struct clcd_board *board)
++{
++	struct regmap *pmu_regmap;
++
++	dev_info(&adev->dev, "Nomadik CLCD board init\n");
++	pmu_regmap +		syscon_regmap_lookup_by_compatible("stericsson,nomadik-pmu");
++	if (IS_ERR(pmu_regmap)) {
++		dev_err(&adev->dev, "could not find PMU syscon regmap\n");
++		return PTR_ERR(pmu_regmap);
++	}
++	regmap_update_bits(pmu_regmap,
++			   PMU_CTRL_OFFSET,
++			   PMU_CTRL_LCDNDIF,
++			   0);
++	dev_info(&adev->dev, "set PMU mux to CLCD mode\n");
++
++	return 0;
++}
+diff --git a/drivers/video/fbdev/amba-clcd-nomadik.h b/drivers/video/fbdev/amba-clcd-nomadik.h
+new file mode 100644
+index 000000000000..50aa9bda69fd
+--- /dev/null
++++ b/drivers/video/fbdev/amba-clcd-nomadik.h
+@@ -0,0 +1,24 @@
++#ifndef _AMBA_CLCD_NOMADIK_H
++#define _AMBA_CLCD_NOMADIK_H
++
++#include <linux/amba/bus.h>
++
++#ifdef CONFIG_ARCH_NOMADIK
++int nomadik_clcd_init_board(struct amba_device *adev,
++			     struct clcd_board *board);
++int nomadik_clcd_init_panel(struct clcd_fb *fb,
++			    struct device_node *endpoint);
++#else
++static inline int nomadik_clcd_init_board(struct amba_device *adev,
++					  struct clcd_board *board)
++{
++	return 0;
++}
++static inline int nomadik_clcd_init_panel(struct clcd_fb *fb,
++					  struct device_node *endpoint)
++{
++	return 0;
++}
++#endif
++
++#endif /* inclusion guard */
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 371f4e2aea6c..2b45c7be4815 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -35,6 +35,8 @@
+ #include <video/of_display_timing.h>
+ #include <video/videomode.h>
  
- #endif /* _LINUX_CONSOLE_STRUCT_H */
++#include "amba-clcd-nomadik.h"
++
+ #define to_clcd(info)	container_of(info, struct clcd_fb, fb)
+ 
+ /* This is limited to 16 characters when displayed by X startup */
+@@ -997,7 +999,7 @@ static int clcdfb_probe(struct amba_device *dev, const struct amba_id *id)
+ 	if (ret)
+ 		goto free_fb;
+ 
+-	ret = clcdfb_register(fb); 
++	ret = clcdfb_register(fb);
+ 	if (ret = 0) {
+ 		amba_set_drvdata(dev, fb);
+ 		goto out;
+@@ -1041,6 +1043,8 @@ static struct clcd_vendor_data vendor_nomadik = {
+ 	.clock_timregs = true,
+ 	.packed_24_bit_pixels = true,
+ 	.st_bitmux_control = true,
++	.init_board = nomadik_clcd_init_board,
++	.init_panel = nomadik_clcd_init_panel,
+ };
+ 
+ static struct amba_id clcdfb_id_table[] = {
 -- 
-2.9.0
+2.4.11
 

@@ -1,97 +1,56 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 30 Jun 2016 08:25:49 +0000
-Subject: [PATCH v5 22/44] video: dma-mapping: Use unsigned long for dma_attrs
-Message-Id: <1467275171-6298-22-git-send-email-k.kozlowski@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 16 Jun 2016 11:38:21 +0000
+Subject: [PATCH 0/5] treewide: fix unused-but-set warnings
+Message-Id: <20160616113831.4108439-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1467275019-30789-1-git-send-email-k.kozlowski@samsung.com>
- <1467275171-6298-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1467275171-6298-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Split out subsystem specific changes for easier reviews. This will be
-squashed with main commit.
+I did some test-builds with W=1 and the -Wunused-but-set-variable
+warnings appeared to be all fairly easy to address. In tons of
+randconfig builds, I only found five instances.
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
----
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 12 ++++++------
- drivers/video/fbdev/omap2/omapfb/omapfb.h      |  3 +--
- 2 files changed, 7 insertions(+), 8 deletions(-)
+The warning was originally disabled by Dave Jones when we hit
+more instances with gcc-4.6, but apparently most of those have
+gotten addressed anyway.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-index d3af01c94a58..59172a2185c0 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-@@ -1332,7 +1332,7 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
- 	}
- 
- 	dma_free_attrs(fbdev->dev, rg->size, rg->token, rg->dma_handle,
--			&rg->attrs);
-+			rg->attrs);
- 
- 	rg->token = NULL;
- 	rg->vaddr = NULL;
-@@ -1370,7 +1370,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 	struct omapfb2_device *fbdev = ofbi->fbdev;
- 	struct omapfb2_mem_region *rg;
- 	void *token;
--	DEFINE_DMA_ATTRS(attrs);
-+	unsigned long attrs;
- 	dma_addr_t dma_handle;
- 	int r;
- 
-@@ -1386,15 +1386,15 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 
- 	size = PAGE_ALIGN(size);
- 
--	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
-+	attrs = DMA_ATTR_WRITE_COMBINE;
- 
- 	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
--		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &attrs);
-+		attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
- 
- 	DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
- 
- 	token = dma_alloc_attrs(fbdev->dev, size, &dma_handle,
--			GFP_KERNEL, &attrs);
-+			GFP_KERNEL, attrs);
- 
- 	if (token = NULL) {
- 		dev_err(fbdev->dev, "failed to allocate framebuffer\n");
-@@ -1408,7 +1408,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
- 		r = omap_vrfb_request_ctx(&rg->vrfb);
- 		if (r) {
- 			dma_free_attrs(fbdev->dev, size, token, dma_handle,
--					&attrs);
-+					attrs);
- 			dev_err(fbdev->dev, "vrfb create ctx failed\n");
- 			return r;
- 		}
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb.h b/drivers/video/fbdev/omap2/omapfb/omapfb.h
-index 623cd872a367..8aaa2f643820 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb.h
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb.h
-@@ -28,7 +28,6 @@
- #endif
- 
- #include <linux/rwsem.h>
--#include <linux/dma-attrs.h>
- #include <linux/dma-mapping.h>
- 
- #include <video/omapdss.h>
-@@ -51,7 +50,7 @@ extern bool omapfb_debug;
- 
- struct omapfb2_mem_region {
- 	int             id;
--	struct dma_attrs attrs;
-+	unsigned long	attrs;
- 	void		*token;
- 	dma_addr_t	dma_handle;
- 	u32		paddr;
+All five patches can be applied independently, and in each case,
+the original code is not wrong, but the assignments are also useless,
+so I'd consider this warning marginally useful.
+
+I have a few other patch series for W=1 issues, and we can
+consider turning those on by default once all the patches are
+merged.
+
+	Arnd
+
+Arnd Bergmann (5):
+  net: qlcnic: don't set unused function argument
+  net: tlan: don't set unused function argument
+  mic: remove unused function arg
+  usb: pxa27x_udc: remove unused function argument
+  fbmon: remove unused function argument
+
+ drivers/misc/mic/scif/scif_dma.c                    | 6 ++----
+ drivers/net/ethernet/qlogic/qlcnic/qlcnic_83xx_hw.c | 1 -
+ drivers/net/ethernet/ti/tlan.c                      | 1 -
+ drivers/usb/gadget/udc/pxa27x_udc.c                 | 9 +++------
+ drivers/video/fbdev/core/fbmon.c                    | 1 -
+ 5 files changed, 5 insertions(+), 13 deletions(-)
+
 -- 
-1.9.1
+2.9.0
+Cc: Sudeep Dutt <sudeep.dutt@intel.com>
+Cc: Ashutosh Dixit <ashutosh.dixit@intel.com>
+Cc: Dept-GELinuxNICDev@qlogic.com
+Cc: Samuel Chessman <chessman@tux.org>
+Cc: Felipe Balbi <balbi@kernel.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: netdev@vger.kernel.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linux-usb@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: Dave Jones <davej@codemonkey.org.uk>
 

@@ -1,44 +1,51 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Thu, 09 Jun 2016 09:44:21 +0000
-Subject: [RFC v4 04/14] MAINTAINERS: Retain Ulf Hansson as the same maintainer of pwrseq
-Message-Id: <1465465471-28740-5-git-send-email-k.kozlowski@samsung.com>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Fri, 17 Jun 2016 17:11:53 +0000
+Subject: [PATCH] drm/panel: simple: Update backlight state property
+Message-Id: <20160617171153.30504-1-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
-In-Reply-To: <1465465471-28740-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org
 
-Before moving pwrseq drivers from drivers/mmc/core/ to drivers/power/,
-they were maintained by Ulf Hansson.
+From: Thierry Reding <treding@nvidia.com>
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Reviewed-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Some backlight drivers ignore the power property and instead only use
+the state property. Fixup the panel driver to set the state property in
+addition to the power property.
+
+Signed-off-by: Thierry Reding <treding@nvidia.com>
 ---
- MAINTAINERS | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Jingoo, Lee,
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4f2a75ce5442..71114607502a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -9083,6 +9083,15 @@ F:	include/linux/power_supply.h
- F:	drivers/power/
- X:	drivers/power/avs/
+What's the correct way to do this? Should we update both power and state
+properties, or just state? I didn't find code anywhere to keep both in
+sync, so it seemed like both needed to be set explicitly.
+
+ drivers/gpu/drm/panel/panel-simple.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index 359cd37d09cb..f503d12b3930 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -168,6 +168,7 @@ static int panel_simple_disable(struct drm_panel *panel)
  
-+POWER SEQ CORE and DRIVERS
-+M:	Ulf Hansson <ulf.hansson@linaro.org>
-+L:	linux-mmc@vger.kernel.org
-+T:	git git://git.linaro.org/people/ulf.hansson/mmc.git
-+S:	Maintained
-+F:	drivers/power/pwrseq/
-+F:	include/linux/pwrseq.h
-+F:	Documentation/devicetree/bindings/power/pwrseq/
-+
- POWER STATE COORDINATION INTERFACE (PSCI)
- M:	Mark Rutland <mark.rutland@arm.com>
- M:	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+ 	if (p->backlight) {
+ 		p->backlight->props.power = FB_BLANK_POWERDOWN;
++		p->backlight->props.state |= BL_CORE_FBBLANK;
+ 		backlight_update_status(p->backlight);
+ 	}
+ 
+@@ -235,6 +236,7 @@ static int panel_simple_enable(struct drm_panel *panel)
+ 		msleep(p->desc->delay.enable);
+ 
+ 	if (p->backlight) {
++		p->backlight->props.state &= ~BL_CORE_FBBLANK;
+ 		p->backlight->props.power = FB_BLANK_UNBLANK;
+ 		backlight_update_status(p->backlight);
+ 	}
 -- 
-1.9.1
+2.8.3
 

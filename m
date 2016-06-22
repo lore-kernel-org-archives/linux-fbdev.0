@@ -1,50 +1,60 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 07 Jun 2016 05:51:16 +0000
-Subject: Re: [PATCH v2 00/27] fb/drm: omapdss: Clean up the headers and separate the two stack
-Message-Id: <20160607055116.GB22406@atomide.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 22 Jun 2016 12:37:11 +0000
+Subject: [PATCH] fbdev: atyfb: fix array overflow
+Message-Id: <20160622123822.1262383-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160601083549.10549-1-peter.ujfalusi@ti.com>
- <575025DB.9020800@ti.com>
- <20160602152305.GE5995@atomide.com>
- <57516121.1010201@ti.com>
-In-Reply-To: <57516121.1010201@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Peter Ujfalusi <peter.ujfalusi@ti.com>, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Ingo Molnar <mingo@kernel.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, Borislav Petkov <bp@suse.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [160603 03:53]:
-> 
-> 
-> On 02/06/16 18:23, Tony Lindgren wrote:
-> > * Tomi Valkeinen <tomi.valkeinen@ti.com> [160602 05:28]:
-> >>
-> >> Tony, can you have a look at the arch/arm parts here and give your ack
-> >> if they're fine? They should be quite small and display specific, so I
-> >> don't see much chance for conflict there.
-> > 
-> > Looks good to me, but these are going to conflict with the board-*.c
-> > removal patches. And those we want to have easily revertable in case
-> > of issues.
-> > 
-> > Peter, can you do an immutable minimal branch of just the pdata
-> > changes affecting the board-*.c files? That way both Tomi and I
-> > can merge that in.
-> 
-> I wonder how minimal it can be, as I think most of the patches are
-> needed for pdata changes. Well, Peter can tell better.
+When building with CONFIG_UBSAN_SANITIZE_ALL on ARM, I get this
+gcc warning for atyfb:
 
-Looks like Peter's new series deals with it just fine.
+drivers/video/fbdev/aty/atyfb_base.c: In function 'aty_bl_update_status':
+drivers/video/fbdev/aty/atyfb_base.c:167:33: warning: array subscript is above array bounds [-Warray-bounds]
+drivers/video/fbdev/aty/atyfb_base.c:152:26: warning: array subscript is above array bounds [-Warray-bounds]
 
-> What board changes do you expect for the next merge window? If it's just
-> "git rm boardfile.c", that should be an easy conflict to resolve, right?
+Apparently the warning is correct and there is indeed an overflow,
+which was never caught. I could only reproduce this on ARM and
+have opened a bug against the compiler for the lack of warning.
 
-Trivial but no need to create these merge conflicts here.
+This patch makes the array larger, so we cover all possible
+registers in the LCD controller without an overflow.
 
-Regards,
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Link: https://bugs.linaro.org/show_bug.cgi?id#49
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 2 +-
+ include/video/mach64.h               | 1 +
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-Tony
-
-
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 001d3d871800..36ffba152eab 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -134,7 +134,7 @@
+ 
+ #if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+ defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
+-static const u32 lt_lcd_regs[] = {
++static const u32 lt_lcd_regs[LCD_REG_NUM] = {
+ 	CNFG_PANEL_LG,
+ 	LCD_GEN_CNTL_LG,
+ 	DSTN_CONTROL_LG,
+diff --git a/include/video/mach64.h b/include/video/mach64.h
+index 89e91c0cb737..9f74e9e0aeb8 100644
+--- a/include/video/mach64.h
++++ b/include/video/mach64.h
+@@ -1299,6 +1299,7 @@
+ #define APC_LUT_KL		0x38
+ #define APC_LUT_MN		0x39
+ #define APC_LUT_OP		0x3A
++#define LCD_REG_NUM		0x3B /* total number */
+ 
+ /* Values in LCD_GEN_CTRL */
+ #define CRT_ON                          0x00000001ul
+-- 
+2.9.0
 

@@ -1,140 +1,106 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 03 Jun 2016 11:03:11 +0000
-Subject: [PATCH v3 09/27] omapfb: panel-lgphilips-lb035q02: Remove legacy boot support
-Message-Id: <20160603110329.9953-10-peter.ujfalusi@ti.com>
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 29 Jun 2016 08:19:12 +0000
+Subject: [RFC PATCH kernel] Revert "fbcon: use the cursor blink interval provided by vt"
+Message-Id: <1467188352-5580-1-git-send-email-aik@ozlabs.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160603110329.9953-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160603110329.9953-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, robdclark@gmail.com, airlied@linux.ie, tony@atomide.com
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, laurent.pinchart@ideasonboard.com, jsarha@ti.com, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-The panel is not used by any legacy board files so the legacy (pdata) boot
-support can be dropped.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+This is rather a bugreport than actual revert but nevertheless.
+
+Since 27a4c827c34a I started noticing weird traces and quite often
+I could not boot my test machine which is POWER8 box with AST video
+or ATI video (video adapter type does not matter much although
+is happens lot more often with the OpenPOWER machine which got AST).
+The system console is IPMI, not the actual video adapter.
+
+I bisected it to this:
+
+https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/?id'a4c827c34ac4256a190cc9d24607f953c1c459
+
+For some reason which I do not understand, in cursor_timer_handler(),
+ops->cur_blink_jiffies is zero. Why can this happen? What is a proper
+fix? Thanks.
+
+
 ---
- .../omapfb/displays/panel-lgphilips-lb035q02.c     | 56 +++-------------------
- include/video/omap-panel-data.h                    | 18 -------
- 2 files changed, 6 insertions(+), 68 deletions(-)
+ drivers/video/console/fbcon.c | 12 ++++++------
+ drivers/video/console/fbcon.h |  1 -
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-index 18eb60e9c9ec..6d5207c7b22c 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c
-@@ -17,7 +17,6 @@
- #include <linux/gpio.h>
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index afd3301..7e5b425 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -402,7 +402,7 @@ static void cursor_timer_handler(unsigned long dev_addr)
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
- #include <video/omapdss.h>
--#include <video/omap-panel-data.h>
+ 	queue_work(system_power_efficient_wq, &info->queue);
+-	mod_timer(&ops->cursor_timer, jiffies + ops->cur_blink_jiffies);
++	mod_timer(&ops->cursor_timer, jiffies + HZ/5);
+ }
  
- static struct omap_video_timings lb035q02_timings = {
- 	.x_res = 320,
-@@ -240,44 +239,6 @@ static struct omap_dss_driver lb035q02_ops = {
- 	.get_resolution	= omapdss_default_get_resolution,
- };
+ static void fbcon_add_cursor_timer(struct fb_info *info)
+@@ -417,7 +417,7 @@ static void fbcon_add_cursor_timer(struct fb_info *info)
  
--static int lb035q02_probe_pdata(struct spi_device *spi)
--{
--	const struct panel_lb035q02_platform_data *pdata;
--	struct panel_drv_data *ddata = dev_get_drvdata(&spi->dev);
--	struct omap_dss_device *dssdev, *in;
--	int r;
--
--	pdata = dev_get_platdata(&spi->dev);
--
--	in = omap_dss_find_output(pdata->source);
--	if (in = NULL) {
--		dev_err(&spi->dev, "failed to find video source '%s'\n",
--				pdata->source);
--		return -EPROBE_DEFER;
--	}
--
--	ddata->in = in;
--
--	ddata->data_lines = pdata->data_lines;
--
--	dssdev = &ddata->dssdev;
--	dssdev->name = pdata->name;
--
--	r = devm_gpio_request_one(&spi->dev, pdata->enable_gpio,
--					GPIOF_OUT_INIT_LOW, "panel enable");
--	if (r)
--		goto err_gpio;
--
--	ddata->enable_gpio = gpio_to_desc(pdata->enable_gpio);
--
--	ddata->backlight_gpio = pdata->backlight_gpio;
--
--	return 0;
--err_gpio:
--	omap_dss_put_device(ddata->in);
--	return r;
--}
--
- static int lb035q02_probe_of(struct spi_device *spi)
- {
- 	struct device_node *node = spi->dev.of_node;
-@@ -312,6 +273,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
- 	struct omap_dss_device *dssdev;
- 	int r;
+ 		init_timer(&ops->cursor_timer);
+ 		ops->cursor_timer.function = cursor_timer_handler;
+-		ops->cursor_timer.expires = jiffies + ops->cur_blink_jiffies;
++		ops->cursor_timer.expires = jiffies + HZ / 5;
+ 		ops->cursor_timer.data = (unsigned long ) info;
+ 		add_timer(&ops->cursor_timer);
+ 		ops->flags |= FBCON_FLAGS_CURSOR_TIMER;
+@@ -709,7 +709,7 @@ static int con2fb_acquire_newinfo(struct vc_data *vc, struct fb_info *info,
+ 	}
  
-+	if (!spi->dev.of_node)
-+		return -ENODEV;
-+
- 	ddata = devm_kzalloc(&spi->dev, sizeof(*ddata), GFP_KERNEL);
- 	if (ddata = NULL)
- 		return -ENOMEM;
-@@ -320,17 +284,9 @@ static int lb035q02_panel_spi_probe(struct spi_device *spi)
+ 	if (!err) {
+-		ops->cur_blink_jiffies = HZ / 5;
++//		ops->cur_blink_jiffies = HZ / 5;
+ 		info->fbcon_par = ops;
  
- 	ddata->spi = spi;
+ 		if (vc)
+@@ -957,7 +957,7 @@ static const char *fbcon_startup(void)
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
+-	ops->cur_blink_jiffies = HZ / 5;
++//	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
+@@ -1095,7 +1095,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 		con_copy_unimap(vc, svc);
  
--	if (dev_get_platdata(&spi->dev)) {
--		r = lb035q02_probe_pdata(spi);
--		if (r)
--			return r;
--	} else if (spi->dev.of_node) {
--		r = lb035q02_probe_of(spi);
--		if (r)
--			return r;
--	} else {
--		return -ENODEV;
--	}
-+	r = lb035q02_probe_of(spi);
-+	if (r)
-+		return r;
+ 	ops = info->fbcon_par;
+-	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
++//	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+ 	p->con_rotate = initial_rotation;
+ 	set_blitting_type(vc, info);
  
- 	if (gpio_is_valid(ddata->backlight_gpio)) {
- 		r = devm_gpio_request_one(&spi->dev, ddata->backlight_gpio,
-diff --git a/include/video/omap-panel-data.h b/include/video/omap-panel-data.h
-index 085b4171eb25..74486bcc754e 100644
---- a/include/video/omap-panel-data.h
-+++ b/include/video/omap-panel-data.h
-@@ -147,22 +147,4 @@ struct panel_acx565akm_platform_data {
- 	int datapairs;
- };
+@@ -1309,7 +1309,7 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
  
--/**
-- * panel_lb035q02 platform data
-- * @name: name for this display entity
-- * @source: name of the display entity used as a video source
-- * @data_lines: number of DPI datalines
-- * @backlight_gpio: gpio to enable/disable the backlight (or -1)
-- * @enable_gpio: gpio to enable/disable the panel (or -1)
-- */
--struct panel_lb035q02_platform_data {
--	const char *name;
--	const char *source;
--
--	int data_lines;
--
--	int backlight_gpio;
--	int enable_gpio;
--};
--
- #endif /* __OMAP_PANEL_DATA_H */
+-	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
++//	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+ 
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+ 		return;
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 7aaa4ea..6bd2e0c 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -70,7 +70,6 @@ struct fbcon_ops {
+ 	struct fb_cursor cursor_state;
+ 	struct display *p;
+         int    currcon;	                /* Current VC. */
+-	int    cur_blink_jiffies;
+ 	int    cursor_flash;
+ 	int    cursor_reset;
+ 	int    blank_state;
 -- 
-2.8.3
+2.5.0.rc3
 

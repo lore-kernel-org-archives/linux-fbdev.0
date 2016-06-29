@@ -1,7 +1,7 @@
 From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Date: Wed, 29 Jun 2016 08:31:46 +0000
+Date: Wed, 29 Jun 2016 08:31:58 +0000
 Subject: Re: [RFC PATCH kernel] Revert "fbcon: use the cursor blink interval provided by vt"
-Message-Id: <1467189106.20278.223.camel@au1.ibm.com>
+Message-Id: <1467189118.20278.224.camel@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1467188352-5580-1-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1467188352-5580-1-git-send-email-aik@ozlabs.ru>
@@ -37,6 +37,9 @@ On Wed, 2016-06-29 at 18:29 +1000, Benjamin Herrenschmidt wrote:
 > calling fb_set_par (f235f664a8afabccf863a5dee4777d2d7b676fda) ?
 
 Also check if you have:
+
+"fbcon: set a default value to blink interval"
+(upstream ID a1e533ec07d583d01349ef13c0c965b8633e1b91).
 
 > Cheers,
 > Ben.

@@ -1,59 +1,91 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:16 +0000
-Subject: [PATCH v3 01/12] gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
-Message-Id: <1469994147-17549-2-git-send-email-steve_longerbeam@mentor.com>
+From: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+Date: Sat, 02 Jul 2016 08:42:56 +0000
+Subject: [PATCH] omapfb: omapfb-main: Remove deprecated create_singlethread_workqueue
+Message-Id: <20160702083056.GA26936@Karyakshetra>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Tejun Heo <tj@kernel.org>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Adds ipu_cpmem_set_uv_offset(), to set planar U/V offsets.
+The workqueue auto_update_work is involved in auto updating mode for
+manual-update displays. omapfb driver uses a delayed work item to update
+the display at a constant rate.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+Since these long-running work items aren't involved in memory reclaim in
+any way, system_long_wq has been used.
 
+Work item has been sync cancelled in omapfb_stop_auto_update() which gets
+called in omapfb_free_resources() to ensure that nothing is pending when
+the driver is disconnected.
+
+Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
 ---
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 23 +----------------------
+ drivers/video/fbdev/omap2/omapfb/omapfb.h      |  1 -
+ 2 files changed, 1 insertion(+), 23 deletions(-)
 
-v3: no changes
-v2: no changes
----
- drivers/gpu/ipu-v3/ipu-cpmem.c | 7 +++++++
- include/video/imx-ipu-v3.h     | 1 +
- 2 files changed, 8 insertions(+)
-
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index 6494a4d..a36c35e 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -253,6 +253,13 @@ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf)
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index d3af01c..5c6eec7 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1693,8 +1693,7 @@ static void omapfb_auto_update_work(struct work_struct *work)
+ 	freq = auto_update_freq;
+ 	if (freq = 0)
+ 		freq = 20;
+-	queue_delayed_work(fbdev->auto_update_wq,
+-			&d->auto_update_work, HZ / freq);
++	queue_delayed_work(system_long_wq, &d->auto_update_work, HZ / freq);
  }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_buffer);
- 
-+void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
-+{
-+	ipu_ch_param_write_field(ch, IPU_FIELD_UBO, u_off / 8);
-+	ipu_ch_param_write_field(ch, IPU_FIELD_VBO, v_off / 8);
-+}
-+EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
-+
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
+
+ void omapfb_start_auto_update(struct omapfb2_device *fbdev,
+@@ -1702,20 +1701,6 @@ void omapfb_start_auto_update(struct omapfb2_device *fbdev,
  {
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 7adeaae..69c8658 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -184,6 +184,7 @@ void ipu_cpmem_set_resolution(struct ipuv3_channel *ch, int xres, int yres);
- void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
- void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
-+void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
--- 
-1.9.1
+ 	struct omapfb_display_data *d;
+
+-	if (fbdev->auto_update_wq = NULL) {
+-		struct workqueue_struct *wq;
+-
+-		wq = create_singlethread_workqueue("omapfb_auto_update");
+-
+-		if (wq = NULL) {
+-			dev_err(fbdev->dev, "Failed to create workqueue for "
+-					"auto-update\n");
+-			return;
+-		}
+-
+-		fbdev->auto_update_wq = wq;
+-	}
+-
+ 	d = get_display_data(fbdev, display);
+
+ 	INIT_DELAYED_WORK(&d->auto_update_work, omapfb_auto_update_work);
+@@ -1867,12 +1852,6 @@ static void omapfb_free_resources(struct omapfb2_device *fbdev)
+ 		omap_dss_put_device(dssdev);
+ 	}
+
+-	if (fbdev->auto_update_wq != NULL) {
+-		flush_workqueue(fbdev->auto_update_wq);
+-		destroy_workqueue(fbdev->auto_update_wq);
+-		fbdev->auto_update_wq = NULL;
+-	}
+-
+ 	dev_set_drvdata(fbdev->dev, NULL);
+ }
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb.h b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+index 623cd87..ff0cf79 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb.h
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+@@ -106,7 +106,6 @@ struct omapfb2_device {
+ 	unsigned num_managers;
+ 	struct omap_overlay_manager *managers[10];
+
+-	struct workqueue_struct *auto_update_wq;
+ };
+
+ struct omapfb_colormode {
+--
+2.1.4
 

@@ -1,41 +1,36 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Fri, 22 Jul 2016 13:54:54 +0000
-Subject: [PATCH 1/3] fbdev: vfb: add description to module parameters
-Message-Id: <1469195696-14753-2-git-send-email-vladimir.murzin@arm.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 04 Jul 2016 12:41:15 +0000
+Subject: Re: [PATCH 0/6] CLCD support for Nomadik and Versatile series
+Message-Id: <CACRpkdY6FDisofanQX9oiXMr2otoBsYKsx+fTs-EkV2F-004Eg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1466069778-16087-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-Add description to "videomemorysize" and "vfb_enable" module parameters to
-make them a bit friendly to the end user.
+Hi Tomi,
 
-Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
----
- drivers/video/fbdev/vfb.c |    2 ++
- 1 file changed, 2 insertions(+)
+On Thu, Jun 16, 2016 at 11:36 AM, Linus Walleij
+<linus.walleij@linaro.org> wrote:
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index b9c2f81..e9ecae2 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -35,6 +35,7 @@
- static void *videomemory;
- static u_long videomemorysize = VIDEOMEMSIZE;
- module_param(videomemorysize, ulong, 0);
-+MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
- 
- /**********************************************************************
-  *
-@@ -119,6 +120,7 @@ static struct fb_fix_screeninfo vfb_fix = {
- 
- static bool vfb_enable __initdata = 0;	/* disabled by default */
- module_param(vfb_enable, bool, 0);
-+MODULE_PARM_DESC(vfb_enable, "Enable Virtual FB driver");
- 
- static int vfb_check_var(struct fb_var_screeninfo *var,
- 			 struct fb_info *info);
--- 
-1.7.9.5
+> This is a rebase and repost of my earlier "uncontroversial"
+> series of patches to CLCD, which excludes the part where
+> we deal with the Versatile autodetected displays. This makes
+> it possible to handle Nomadik graphics and RealView with just
+> device tree while keeping the Versatile specialties on hold.
+>
+> We got an earlier nod from Tomi on this series:
+> http://marc.info/?l=linux-fbdev&m5733624305361&w=2
 
+Is there any chance that we can progress with this series
+for the v4.8 kernel?
+
+I think Arnd is waiting eagerly to apply my patches removing
+the RealView board files that requires something like this
+series to go in first (the crucial part is the system controller
+set-up).
+
+Yours,
+Linus Walleij

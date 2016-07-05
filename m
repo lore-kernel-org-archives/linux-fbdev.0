@@ -1,54 +1,103 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:55:47 +0000
-Subject: Re: [PATCH v3 00/12] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v3
-Message-Id: <575da5b9-1566-10eb-dc51-e5dd324cbfe5@gmail.com>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Tue, 05 Jul 2016 10:09:02 +0000
+Subject: Re: [PATCH 2/3] video: fbdev: imxfb: enable lcd regulator in .probe
+Message-Id: <20160705100902.GM16643@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+References: <1457380425-20244-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1457380425-20244-3-git-send-email-u.kleine-koenig@pengutronix.de>
+ <56E2AA80.4050908@ti.com> <20160420191727.GS29108@pengutronix.de>
+In-Reply-To: <20160420191727.GS29108@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-arm-kernel@lists.infradead.org
 
-On 07/31/2016 12:42 PM, Steve Longerbeam wrote:
-> In this version:
->
-> - API changes to ipu-vdi.c in "gpu: ipu-v3: Add Video Deinterlacer unit".
-> - "gpu: ipu-v3: Add FSU channel linking support" is new but based on
->   previous patch "gpu: ipu-v3: Add IDMA channel linking support".
->
-> No other changes from previous version.
+Hello Tomi, hello Jean-Christophe,
 
-Actually one other change from previous version:
+On Wed, Apr 20, 2016 at 09:17:27PM +0200, Uwe Kleine-K=F6nig wrote:
+> On Fri, Mar 11, 2016 at 01:22:40PM +0200, Tomi Valkeinen wrote:
+> >=20
+> > On 07/03/16 21:53, Uwe Kleine-K=F6nig wrote:
+> > > This asserts that the display is on after the driver is initialized.
+> > > Otherwise, depending on how the boot loader handled the display, it is
+> > > either disabled as the regulator doesn't seem in use, or it stays off.
+> > >=20
+> > > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
+> > > ---
+> > >  drivers/video/fbdev/imxfb.c | 9 +++++++++
+> > >  1 file changed, 9 insertions(+)
+> > >=20
+> > > diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> > > index c5fcedde2a60..3dd2824e6773 100644
+> > > --- a/drivers/video/fbdev/imxfb.c
+> > > +++ b/drivers/video/fbdev/imxfb.c
+> > > @@ -979,8 +979,17 @@ static int imxfb_probe(struct platform_device *p=
+dev)
+> > >  	imxfb_enable_controller(fbi);
+> > >  	fbi->pdev =3D pdev;
+> > > =20
+> > > +	if (!IS_ERR(fbi->lcd_pwr)) {
+> > > +		ret =3D regulator_enable(fbi->lcd_pwr);
+> > > +		if (ret)
+> > > +			goto failed_regulator;
+> > > +	}
+> > > +
+> > >  	return 0;
+> > > =20
+> > > +failed_regulator:
+> > > +	imxfb_disable_controller(fbi);
+> > > +
+> > >  failed_lcd:
+> > >  	unregister_framebuffer(info);
+> >=20
+> > So I didn't go through the code in detail, but this doesn't look correct
+> > to me.
+> >=20
+> > Where is the regulator disabled which now gets enabled in probe?
+>=20
+> It isn't, the display should be on after all :-)
+>=20
+> > imxfb_lcd_set_power() handles the regulator enable/disable, so doesn't
+> > this mean the regulator would always be enabled? You first enable it in
+> > probe, then imxfb_lcd_set_power() enables it at some point (?), so the
+> > enable-count is two then.
+>=20
+> imxfb_lcd_set_power isn't called during boot.
+>=20
+> > To be honest, I've never used 'struct lcd_ops', but I think the enabling
+> > of the regulator should happen somehow via that. If the regulator needs
+> > to be enabled at probe time, then the probe should somehow cause
+> > lcd_ops->set_power to get called.
+> >=20
+> > Why does the regulator need to be enabled at probe? Or are you saying
+> > imxfb_lcd_set_power() is never called in your case?
+>=20
+> Right. I just confirmed that with next-20160419 with this patch on top:
 
-- removed the patch "gpu: ipu-v3: Add ipu_set_vdi_src_mux()".
+And now I also checked the code. The driver's lcd_ops is only used in
 
-Steve
+	lcd =3D devm_lcd_device_register(&pdev->dev, "imxfb-lcd", &pdev->dev, fbi,=
+ &imxfb_lcd_ops);
 
-> Steve Longerbeam (12):
->   gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
->   gpu: ipu-cpmem: Add ipu_cpmem_get_burstsize()
->   gpu: ipu-v3: Add ipu_get_num()
->   gpu: ipu-v3: Add VDI input IDMAC channels
->   gpu: ipu-v3: set correct full sensor frame for PAL/NTSC
->   gpu: ipu-v3: Fix CSI data format for 16-bit media bus formats
->   gpu: ipu-v3: Fix IRT usage
->   gpu: ipu-v3: rename CSI client device
->   gpu: ipu-v3: Add Video Deinterlacer unit
->   gpu: ipu-v3: Add FSU channel linking support
->   gpu: ipu-ic: Add complete image conversion support with tiling
->   gpu: ipu-ic: allow multiple handles to ic
->
->  drivers/gpu/ipu-v3/Makefile     |    2 +-
->  drivers/gpu/ipu-v3/ipu-common.c |  154 +++-
->  drivers/gpu/ipu-v3/ipu-cpmem.c  |   13 +
->  drivers/gpu/ipu-v3/ipu-csi.c    |   26 +-
->  drivers/gpu/ipu-v3/ipu-ic.c     | 1756 ++++++++++++++++++++++++++++++++++++++-
->  drivers/gpu/ipu-v3/ipu-prv.h    |   34 +
->  drivers/gpu/ipu-v3/ipu-vdi.c    |  254 ++++++
->  include/video/imx-ipu-v3.h      |   99 ++-
->  8 files changed, 2278 insertions(+), 60 deletions(-)
->  create mode 100644 drivers/gpu/ipu-v3/ipu-vdi.c
->
+(i.e. the last argument). The only thing that happes with the lcd_ops is
+that it is assigned to a newly allocated struct lcd_device's .ops. There
+imxfb_lcd_set_power is only used for some sysfs attributes (for the lcd)
+and the function fb_blank which is in turn not called automatically,
+only by some sysfs attributes and ioctls.
 
+So as of now regulator_init_complete disables the (unused) power
+regulator before userspace is up.
+
+To reach my goal to keep the display on (showing whatever the bootloader
+initialized the display with) until the application starts caring for
+the display some driver must enable the regulator. The only candidates
+are the lcd driver (i.e. the patch under discussion) or some mechanism
+in the fb core. As there doesn't seem to be code in the core (and the
+core is dead?) what do you suggest me to do?
+
+Best regards
+Uwe
+
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

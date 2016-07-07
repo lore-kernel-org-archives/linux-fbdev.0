@@ -1,60 +1,47 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 23 Jul 2016 17:37:14 +0000
-Subject: [PATCH] omapfb: panel-dsi-cm: Delete an unnecessary check before backlight_device_unregister()
-Message-Id: <1c53beae-e516-f208-935e-2a49416ce075@users.sourceforge.net>
+From: David Vrabel <david.vrabel@citrix.com>
+Date: Thu, 07 Jul 2016 09:46:07 +0000
+Subject: Re: [Xen-devel] [PATCH] xen-fbfront: correct return value checks on xenbus_scanf()
+Message-Id: <577E24DF.5000203@citrix.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5307CAA2.8060406@users.sourceforge.net>
- <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
- <530A086E.8010901@users.sourceforge.net>
- <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
- <530A72AA.3000601@users.sourceforge.net>
- <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
- <530B5FB6.6010207@users.sourceforge.net>
- <alpine.DEB.2.10.1402241710370.2074@hadrien>
- <530C5E18.1020800@users.sourceforge.net>
- <alpine.DEB.2.10.1402251014170.2080@hadrien>
- <530CD2C4.4050903@users.sourceforge.net>
- <alpine.DEB.2.10.1402251840450.7035@hadrien>
- <530CF8FF.8080600@users.sourceforge.net>
- <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
- <530DD06F.4090703@users.sourceforge.net>
- <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
- <5317A59D.4@users.sourceforge.net>
-In-Reply-To: <5317A59D.4@users.sourceforge.net>
+References: <577E258502000078000FBE6F@prv-mh.provo.novell.com>
+In-Reply-To: <577E258502000078000FBE6F@prv-mh.provo.novell.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Dave Airlie <airlied@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Rob Clark <robdclark@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>
+To: Jan Beulich <JBeulich@suse.com>, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: Juergen Gross <JGross@suse.com>, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel <david.vrabel@citrix.com>, linux-fbdev <linux-fbdev@vger.kernel.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 23 Jul 2016 19:29:28 +0200
+On 07/07/16 08:48, Jan Beulich wrote:
+> 
+> Signed-off-by: Jan Beulich <jbeulich@suse.com>
+> ---
+>  drivers/video/fbdev/xen-fbfront.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- 4.7-rc6-xenbus_scanf.orig/drivers/video/fbdev/xen-fbfront.c
+> +++ 4.7-rc6-xenbus_scanf/drivers/video/fbdev/xen-fbfront.c
+> @@ -658,13 +658,13 @@ InitWait:
+>  			goto InitWait; /* no InitWait seen yet, fudge it */
+>  
+>  		if (xenbus_scanf(XBT_NIL, info->xbdev->otherend,
+> -				 "request-update", "%d", &val) < 0)
+> +				 "request-update", "%d", &val) <= 0)
+>  			val = 0;
+>  		if (val)
+>  			info->update_wanted = 1;
+>  
+>  		if (xenbus_scanf(XBT_NIL, dev->otherend,
+> -				 "feature-resize", "%d", &val) < 0)
+> +				 "feature-resize", "%d", &val) <= 0)
 
-The backlight_device_unregister() function tests whether its argument
-is NULL and then returns immediately.
-Thus the test around the call is not needed.
+xenbus_scanf() has:
 
-This issue was detected by using the Coccinelle software.
+/* Single read and scanf: returns -errno or num scanned. */
+...
+        if (ret = 0)
+                return -ERANGE;
+...
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+So none of these patches are necessary.
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index b58012b..9d308db 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -1283,8 +1283,7 @@ static int dsicm_probe(struct platform_device *pdev)
- 	return 0;
- 
- err_sysfs_create:
--	if (bldev != NULL)
--		backlight_device_unregister(bldev);
-+	backlight_device_unregister(bldev);
- err_bl:
- 	destroy_workqueue(ddata->workqueue);
- err_reg:
--- 
-2.9.2
-
+David

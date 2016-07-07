@@ -1,39 +1,34 @@
-From: Tejun Heo <tj@kernel.org>
-Date: Sat, 02 Jul 2016 11:36:35 +0000
-Subject: Re: [PATCH] fbdev: Remove deprecated create_singlethread_workqueue
-Message-Id: <20160702113635.GF17431@htj.duckdns.org>
+From: Jiri Kosina <jikos@kernel.org>
+Date: Thu, 07 Jul 2016 08:33:08 +0000
+Subject: Re: [PATCH] backlight: Avoid double fbcon backlight handling
+Message-Id: <alpine.LNX.2.00.1607071032280.24757@cbobk.fhfr.pm>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160702083923.GA27352@Karyakshetra>
-In-Reply-To: <20160702083923.GA27352@Karyakshetra>
+References: <1467286256-8870-1-git-send-email-chris@chris-wilson.co.uk>
+In-Reply-To: <1467286256-8870-1-git-send-email-chris@chris-wilson.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Chris Wilson <chris@chris-wilson.co.uk>
+Cc: Milo Kim <milo.kim@ti.com>, Krzysztof Kozlowski <k.kozlowski@samsung.com>, David Airlie <airlied@linux.ie>, nouveau@lists.freedesktop.org, Jon Nettleton <jon.nettleton@gmail.com>, Nicolas Ferre <nicolas.ferre@atmel.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, Paul Mackerras <paulus@samba.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel.vetter@intel.com>, Lee Jones <lee.jones@linaro.org>, Daniel Drake <dsd@laptop.org>, Jens Frederich <jfrederich@gmail.com>, linux-acpi@vger.kernel.org, =?ISO-8859-15?Q?Bruno_Pr=E9mont?= <bonbons@linux-vserver.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Ben Skeggs <bskeggs@redhat.com>, Zhang Rui <rui.zhang@intel.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Michael Hennerich <michael.hennerich@analog.com>, intel-gfx@lists.
 
-On Sat, Jul 02, 2016 at 02:09:23PM +0530, Bhaktipriya Shridhar wrote:
-> The workqueue "esd_wq" has only a single workitem(&md->esd_work)
-> and hence doesn't require ordering. Also, it is not being used on a
-> memory reclaim path. Hence, the singlethreaded workqueue has been
-> replaced with the use of system_wq.
-> 
-> System workqueues have been able to handle high level of concurrency
-> for a long time now and hence it's not required to have a singlethreaded
-> workqueue just to gain concurrency. Unlike a dedicated per-cpu workqueue
-> created with create_singlethread_workqueue(), system_wq allows multiple
-> work items to overlap executions even on the same CPU; however, a
-> per-cpu workqueue doesn't have any CPU locality or global ordering
-> guarantee unless the target CPU is explicitly specified and thus the
-> increase of local concurrency shouldn't make any difference.
-> 
-> mipid_esd_stop_check () calls cancel_delayed_work() in mipid_cleanup()
-> to ensure that there are no pending tasks while disconnecting the driver.
-> 
-> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+On Thu, 30 Jun 2016, Chris Wilson wrote:
 
-Acked-by: Tejun Heo <tj@kernel.org>
+> Backlights controlled by i915.ko and only associated with its connectors
+> and also only associated with the intel_drmfb fbcon, controlled by
+> i915.ko. In this situation, we already handle adjusting the backlight
+> when the fbcon is blanked/unblanked and do not require backlight trying
+> to do the same.
+> 
+> Attempting to register with the fbdev as a client causes lockdep to warn
+> about a dependency cycle:
+[ ... snip ... ]
+>  drivers/hid/hid-picolcd_backlight.c                  |  3 ++-
 
-Thanks.
+For this one:
+
+	Acked-by: Jiri Kosina <jkosina@suse.cz>
 
 -- 
-tejun
+Jiri Kosina
+SUSE Labs
+

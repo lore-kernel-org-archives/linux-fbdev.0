@@ -1,45 +1,39 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 29 Jul 2016 10:53:44 +0000
-Subject: Re: [PATCH 3/3] mdacon: replace MDA_ADDR macro by inline function
-Message-Id: <e3dcc9f7-711a-5073-38a1-3cdc5596bfb0@suse.cz>
+From: "Jan Beulich" <JBeulich@suse.com>
+Date: Thu, 07 Jul 2016 07:48:53 +0000
+Subject: [PATCH] xen-fbfront: correct return value checks on xenbus_scanf()
+Message-Id: <577E258502000078000FBE6F@prv-mh.provo.novell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160725152440.6734-1-jslaby@suse.cz>
- <20160725152440.6734-3-jslaby@suse.cz>
- <1469462669.1900.181.camel@perches.com>
-In-Reply-To: <1469462669.1900.181.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>, tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: Juergen Gross <JGross@suse.com>, xen-devel@lists.xenproject.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, David Vrabel <david.vrabel@citrix.com>, linux-fbdev <linux-fbdev@vger.kernel.org>
 
-On 07/25/2016, 06:04 PM, Joe Perches wrote:
-> On Mon, 2016-07-25 at 17:24 +0200, Jiri Slaby wrote:
->> MDA_ADDR is one of those macros which could be an inline function. So
->> convert MDA_ADDR to mda_addr.
->>
->> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
->> ---
->>  drivers/video/console/mdacon.c | 19 +++++++++++--------
->>  1 file changed, 11 insertions(+), 8 deletions(-)
->>
->> diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
->> index 814606bd26d1..24fe55134eb5 100644
->> --- a/drivers/video/console/mdacon.c
->> +++ b/drivers/video/console/mdacon.c
->> @@ -420,17 +420,20 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
->>  	}
->>  }
->>  
->> -#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
->> +static inline u16 *mda_addr(unsigned int x, unsigned int y)
-> 
-> Are you sure about the unsigned?
-> All of the changed use are taking int
+Only a positive return value indicates success.
 
-Yeah, they are really absolute x and y coordinates.
+Signed-off-by: Jan Beulich <jbeulich@suse.com>
+---
+ drivers/video/fbdev/xen-fbfront.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-thanks,
--- 
-js
-suse labs
+--- 4.7-rc6-xenbus_scanf.orig/drivers/video/fbdev/xen-fbfront.c
++++ 4.7-rc6-xenbus_scanf/drivers/video/fbdev/xen-fbfront.c
+@@ -658,13 +658,13 @@ InitWait:
+ 			goto InitWait; /* no InitWait seen yet, fudge it */
+ 
+ 		if (xenbus_scanf(XBT_NIL, info->xbdev->otherend,
+-				 "request-update", "%d", &val) < 0)
++				 "request-update", "%d", &val) <= 0)
+ 			val = 0;
+ 		if (val)
+ 			info->update_wanted = 1;
+ 
+ 		if (xenbus_scanf(XBT_NIL, dev->otherend,
+-				 "feature-resize", "%d", &val) < 0)
++				 "feature-resize", "%d", &val) <= 0)
+ 			val = 0;
+ 		info->feature_resize = val;
+ 		break;
+
+
+

@@ -1,27 +1,50 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Sun, 17 Jul 2016 15:20:12 +0000
-Subject: Re: [patch] video: fbdev: pxafb: potential NULL dereference on error
-Message-Id: <87bn1w1ec3.fsf@belgarion.home>
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Date: Fri, 08 Jul 2016 22:19:51 +0000
+Subject: [PATCH] backlight: adp5520: fix error handling in adp5520_bl_probe()
+Message-Id: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160715110732.GC9258@mwanda>
-In-Reply-To: <20160715110732.GC9258@mwanda> (Dan Carpenter's message of "Fri,
-	15 Jul 2016 14:07:32 +0300")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Dan Carpenter <dan.carpenter@oracle.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Michael Hennerich <michael.hennerich@analog.com>
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
-Dan Carpenter <dan.carpenter@oracle.com> writes:
+If adp5520_bl_setup() fails, sysfs group left unremoved.
 
-> If we "goto out;" then it calls display_timings_release(timings);
-> Since "timings" is NULL, that's going to oops.  Just return directly.
->
-> Fixes: 420a488278e8 ('video: fbdev: pxafb: initial devicetree conversion')
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+By the way, fix overcomplicated assignement of error code.
 
-Cheers.
+Found by Linux Driver Verification project (linuxtesting.org).
 
---
-Robert
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+---
+ drivers/video/backlight/adp5520_bl.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlight/adp5520_bl.c
+index dd88ba1d71ce..35373e2065b2 100644
+--- a/drivers/video/backlight/adp5520_bl.c
++++ b/drivers/video/backlight/adp5520_bl.c
+@@ -332,10 +332,18 @@ static int adp5520_bl_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	platform_set_drvdata(pdev, bl);
+-	ret |= adp5520_bl_setup(bl);
++	ret = adp5520_bl_setup(bl);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to setup\n");
++		if (data->pdata->en_ambl_sens)
++			sysfs_remove_group(&bl->dev.kobj,
++					&adp5520_bl_attr_group);
++		return ret;
++	}
++
+ 	backlight_update_status(bl);
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int adp5520_bl_remove(struct platform_device *pdev)
+-- 
+1.9.1
+

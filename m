@@ -1,49 +1,36 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:21 +0000
-Subject: [PATCH v3 06/12] gpu: ipu-v3: Fix CSI data format for 16-bit media bus formats
-Message-Id: <1469994147-17549-7-git-send-email-steve_longerbeam@mentor.com>
+From: Javier Martinez Canillas <javier@osg.samsung.com>
+Date: Mon, 11 Jul 2016 20:44:37 +0000
+Subject: [PATCH] fb: adv7393: Use IS_ENABLED() instead of checking for built-in or module
+Message-Id: <1468269877-9900-1-git-send-email-javier@osg.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: linux-kernel@vger.kernel.org
+Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-The CSI data format was being programmed incorrectly for the
-1x16 media bus formats. The CSI data format for 16-bit must
-be bayer/generic (CSI_SENS_CONF_DATA_FMT_BAYER).
+The IS_ENABLED() macro checks if a Kconfig symbol has been enabled either
+built-in or as a module, use that macro instead of open coding the same.
 
-Suggested-by: Carsten Resch <Carsten.Resch@de.bosch.com>
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
-
+Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
 ---
 
-v3: no changes
-v2: no changes
----
- drivers/gpu/ipu-v3/ipu-csi.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/video/fbdev/bfin_adv7393fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
-index 641ed76..d6e5ded 100644
---- a/drivers/gpu/ipu-v3/ipu-csi.c
-+++ b/drivers/gpu/ipu-v3/ipu-csi.c
-@@ -258,12 +258,8 @@ static int mbus_code_to_bus_cfg(struct ipu_csi_bus_config *cfg, u32 mbus_code)
- 		cfg->data_width = IPU_CSI_DATA_WIDTH_8;
- 		break;
- 	case MEDIA_BUS_FMT_UYVY8_1X16:
--		cfg->data_fmt = CSI_SENS_CONF_DATA_FMT_YUV422_UYVY;
--		cfg->mipi_dt = MIPI_DT_YUV422;
--		cfg->data_width = IPU_CSI_DATA_WIDTH_16;
--		break;
- 	case MEDIA_BUS_FMT_YUYV8_1X16:
--		cfg->data_fmt = CSI_SENS_CONF_DATA_FMT_YUV422_YUYV;
-+		cfg->data_fmt = CSI_SENS_CONF_DATA_FMT_BAYER;
- 		cfg->mipi_dt = MIPI_DT_YUV422;
- 		cfg->data_width = IPU_CSI_DATA_WIDTH_16;
- 		break;
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
+index 8fe41caac38e..9a01cd7ca73c 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.c
++++ b/drivers/video/fbdev/bfin_adv7393fb.c
+@@ -795,7 +795,7 @@ static struct i2c_driver bfin_adv7393_fb_driver = {
+ 
+ static int __init bfin_adv7393_fb_driver_init(void)
+ {
+-#if  defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
++#if IS_ENABLED(CONFIG_I2C_BLACKFIN_TWI)
+ 	request_module("i2c-bfin-twi");
+ #else
+ 	request_module("i2c-gpio");
 -- 
-1.9.1
+2.5.5
 

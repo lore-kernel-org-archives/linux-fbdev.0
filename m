@@ -1,264 +1,250 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:25 +0000
-Subject: [PATCH v3 10/12] gpu: ipu-v3: Add FSU channel linking support
-Message-Id: <1469994147-17549-11-git-send-email-steve_longerbeam@mentor.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Tue, 12 Jul 2016 12:16:25 +0000
+Subject: Re: [PATCH v5 00/44] dma-mapping: Use unsigned long for dma_attrs
+Message-Id: <20160712121625.GP23520@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+References: <1467275019-30789-1-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1467275019-30789-1-git-send-email-k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: Krzysztof Kozlowski <k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
+Cc: linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ia64-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-s390-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-c6x-dev-jPsnJVOj+W6hPH1hqNUYSQ@public.gmane.org, linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hexagon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-sh-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, hch-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, nouveau-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, xen-devel-GuqFBffKawtpuQazS67q72D2FQJk+8+b@public.gmane.org, linux-snps-arc-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-xtensa-PjhNF2WwrV/0Sa2dR60CXw@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-m68k-cunTk1MwBs8S/qaLPR03pWD2FQJk+8+b@public.gmane.org, linux-mediatek-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-metag-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-cris-kernel-VrBV9hrLPhE@public.gmane.org, linux-parisc@vg
 
-Adds functions to link and unlink source channels to sink
-channels in the FSU:
+On Thu, Jun 30, 2016 at 10:23:39AM +0200, Krzysztof Kozlowski wrote:
+> Hi,
+> 
+> 
+> This is fifth approach for replacing struct dma_attrs with unsigned
+> long.
+> 
+> The main patch (1/44) doing the change is split into many subpatches
+> for easier review (2-42).  They should be squashed together when
+> applying.
 
-int ipu_fsu_link(struct ipu_soc *ipu, int src_ch, int sink_ch);
-int ipu_fsu_unlink(struct ipu_soc *ipu, int src_ch, int sink_ch);
+For all the drm driver patches:
 
-The channels numbers are usually IDMAC channels, but they can also be
-channels that do not transfer data to or from memory. The following
-convenience functions can be used in place of ipu_fsu_link/unlink()
-when both source and sink channels are IDMAC channels:
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink);
-int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink);
+Should I pull these in through drm-misc, or do you prefer to merge them
+through a special topic branch (with everything else) instead on your own?
+-Daniel
 
-So far the following links are supported:
+> 
+> 
+> Rebased on v4.7-rc5.
+> 
+> For easier testing the patchset is available here:
+> repo:   https://github.com/krzk/linux
+> branch: for-next/dma-attrs-const-v5
+> 
+> 
+> Changes since v4
+> ========
+> 1. Collect some acks. Still need more.
+> 2. Minor fixes pointed by Robin Murphy.
+> 3. Applied changes from Bart Van Assche's comment.
+> 4. More tests and builds (using https://www.kernel.org/pub/tools/crosstool/).
+> 
+> 
+> Changes since v3
+> ========
+> 1. Collect some acks.
+> 2. Drop wrong patch 1/45 ("powerpc: dma-mapping: Don't hard-code
+>    the value of DMA_ATTR_WEAK_ORDERING").
+> 3. Minor fix pointed out by Michael Ellerman.
+> 
+> 
+> Changes since v2
+> ========
+> 1. Follow Christoph Hellwig's comments (don't use BIT add
+>    documentation, remove dma_get_attr).
+> 
+> 
+> Rationale
+> ====> The dma-mapping core and the implementations do not change the
+> DMA attributes passed by pointer.  Thus the pointer can point to const
+> data.  However the attributes do not have to be a bitfield. Instead
+> unsigned long will do fine:
+> 
+> 1. This is just simpler.  Both in terms of reading the code and setting
+>    attributes.  Instead of initializing local attributes on the stack
+>    and passing pointer to it to dma_set_attr(), just set the bits.
+> 
+> 2. It brings safeness and checking for const correctness because the
+>    attributes are passed by value.
+> 
+> 
+> Best regards,
+> Krzysztof
+> 
+> 
+> Krzysztof Kozlowski (44):
+>   dma-mapping: Use unsigned long for dma_attrs
+>   alpha: dma-mapping: Use unsigned long for dma_attrs
+>   arc: dma-mapping: Use unsigned long for dma_attrs
+>   ARM: dma-mapping: Use unsigned long for dma_attrs
+>   arm64: dma-mapping: Use unsigned long for dma_attrs
+>   avr32: dma-mapping: Use unsigned long for dma_attrs
+>   blackfin: dma-mapping: Use unsigned long for dma_attrs
+>   c6x: dma-mapping: Use unsigned long for dma_attrs
+>   cris: dma-mapping: Use unsigned long for dma_attrs
+>   frv: dma-mapping: Use unsigned long for dma_attrs
+>   drm/exynos: dma-mapping: Use unsigned long for dma_attrs
+>   drm/mediatek: dma-mapping: Use unsigned long for dma_attrs
+>   drm/msm: dma-mapping: Use unsigned long for dma_attrs
+>   drm/nouveau: dma-mapping: Use unsigned long for dma_attrs
+>   drm/rockship: dma-mapping: Use unsigned long for dma_attrs
+>   infiniband: dma-mapping: Use unsigned long for dma_attrs
+>   iommu: dma-mapping: Use unsigned long for dma_attrs
+>   [media] dma-mapping: Use unsigned long for dma_attrs
+>   xen: dma-mapping: Use unsigned long for dma_attrs
+>   swiotlb: dma-mapping: Use unsigned long for dma_attrs
+>   powerpc: dma-mapping: Use unsigned long for dma_attrs
+>   video: dma-mapping: Use unsigned long for dma_attrs
+>   x86: dma-mapping: Use unsigned long for dma_attrs
+>   iommu: intel: dma-mapping: Use unsigned long for dma_attrs
+>   h8300: dma-mapping: Use unsigned long for dma_attrs
+>   hexagon: dma-mapping: Use unsigned long for dma_attrs
+>   ia64: dma-mapping: Use unsigned long for dma_attrs
+>   m68k: dma-mapping: Use unsigned long for dma_attrs
+>   metag: dma-mapping: Use unsigned long for dma_attrs
+>   microblaze: dma-mapping: Use unsigned long for dma_attrs
+>   mips: dma-mapping: Use unsigned long for dma_attrs
+>   mn10300: dma-mapping: Use unsigned long for dma_attrs
+>   nios2: dma-mapping: Use unsigned long for dma_attrs
+>   openrisc: dma-mapping: Use unsigned long for dma_attrs
+>   parisc: dma-mapping: Use unsigned long for dma_attrs
+>   misc: mic: dma-mapping: Use unsigned long for dma_attrs
+>   s390: dma-mapping: Use unsigned long for dma_attrs
+>   sh: dma-mapping: Use unsigned long for dma_attrs
+>   sparc: dma-mapping: Use unsigned long for dma_attrs
+>   tile: dma-mapping: Use unsigned long for dma_attrs
+>   unicore32: dma-mapping: Use unsigned long for dma_attrs
+>   xtensa: dma-mapping: Use unsigned long for dma_attrs
+>   dma-mapping: Remove dma_get_attr
+>   dma-mapping: Document the DMA attributes next to the declaration
+> 
+>  Documentation/DMA-API.txt                          |  33 +++---
+>  Documentation/DMA-attributes.txt                   |   2 +-
+>  arch/alpha/include/asm/dma-mapping.h               |   2 -
+>  arch/alpha/kernel/pci-noop.c                       |   2 +-
+>  arch/alpha/kernel/pci_iommu.c                      |  12 +-
+>  arch/arc/mm/dma.c                                  |  12 +-
+>  arch/arm/common/dmabounce.c                        |   4 +-
+>  arch/arm/include/asm/dma-mapping.h                 |  13 +--
+>  arch/arm/include/asm/xen/page-coherent.h           |  16 +--
+>  arch/arm/mm/dma-mapping.c                          | 117 +++++++++----------
+>  arch/arm/xen/mm.c                                  |   8 +-
+>  arch/arm64/mm/dma-mapping.c                        |  66 +++++------
+>  arch/avr32/mm/dma-coherent.c                       |  12 +-
+>  arch/blackfin/kernel/dma-mapping.c                 |   8 +-
+>  arch/c6x/include/asm/dma-mapping.h                 |   4 +-
+>  arch/c6x/kernel/dma.c                              |   9 +-
+>  arch/c6x/mm/dma-coherent.c                         |   4 +-
+>  arch/cris/arch-v32/drivers/pci/dma.c               |   9 +-
+>  arch/frv/mb93090-mb00/pci-dma-nommu.c              |   8 +-
+>  arch/frv/mb93090-mb00/pci-dma.c                    |   9 +-
+>  arch/h8300/kernel/dma.c                            |   8 +-
+>  arch/hexagon/include/asm/dma-mapping.h             |   1 -
+>  arch/hexagon/kernel/dma.c                          |   8 +-
+>  arch/ia64/hp/common/sba_iommu.c                    |  22 ++--
+>  arch/ia64/include/asm/machvec.h                    |   1 -
+>  arch/ia64/kernel/pci-swiotlb.c                     |   4 +-
+>  arch/ia64/sn/pci/pci_dma.c                         |  22 ++--
+>  arch/m68k/kernel/dma.c                             |  12 +-
+>  arch/metag/kernel/dma.c                            |  16 +--
+>  arch/microblaze/include/asm/dma-mapping.h          |   1 -
+>  arch/microblaze/kernel/dma.c                       |  12 +-
+>  arch/mips/cavium-octeon/dma-octeon.c               |   8 +-
+>  arch/mips/loongson64/common/dma-swiotlb.c          |  10 +-
+>  arch/mips/mm/dma-default.c                         |  20 ++--
+>  arch/mips/netlogic/common/nlm-dma.c                |   4 +-
+>  arch/mn10300/mm/dma-alloc.c                        |   8 +-
+>  arch/nios2/mm/dma-mapping.c                        |  12 +-
+>  arch/openrisc/kernel/dma.c                         |  21 ++--
+>  arch/parisc/kernel/pci-dma.c                       |  18 +--
+>  arch/powerpc/include/asm/dma-mapping.h             |   7 +-
+>  arch/powerpc/include/asm/iommu.h                   |  10 +-
+>  arch/powerpc/kernel/dma-iommu.c                    |  12 +-
+>  arch/powerpc/kernel/dma.c                          |  18 +--
+>  arch/powerpc/kernel/ibmebus.c                      |  12 +-
+>  arch/powerpc/kernel/iommu.c                        |  12 +-
+>  arch/powerpc/kernel/vio.c                          |  12 +-
+>  arch/powerpc/platforms/cell/iommu.c                |  28 ++---
+>  arch/powerpc/platforms/pasemi/iommu.c              |   2 +-
+>  arch/powerpc/platforms/powernv/npu-dma.c           |   8 +-
+>  arch/powerpc/platforms/powernv/pci-ioda.c          |   4 +-
+>  arch/powerpc/platforms/powernv/pci.c               |   2 +-
+>  arch/powerpc/platforms/powernv/pci.h               |   2 +-
+>  arch/powerpc/platforms/ps3/system-bus.c            |  18 +--
+>  arch/powerpc/platforms/pseries/iommu.c             |   6 +-
+>  arch/powerpc/sysdev/dart_iommu.c                   |   2 +-
+>  arch/s390/include/asm/dma-mapping.h                |   1 -
+>  arch/s390/pci/pci_dma.c                            |  23 ++--
+>  arch/sh/include/asm/dma-mapping.h                  |   4 +-
+>  arch/sh/kernel/dma-nommu.c                         |   4 +-
+>  arch/sh/mm/consistent.c                            |   4 +-
+>  arch/sparc/kernel/iommu.c                          |  12 +-
+>  arch/sparc/kernel/ioport.c                         |  24 ++--
+>  arch/sparc/kernel/pci_sun4v.c                      |  12 +-
+>  arch/tile/kernel/pci-dma.c                         |  28 ++---
+>  arch/unicore32/mm/dma-swiotlb.c                    |   4 +-
+>  arch/x86/include/asm/dma-mapping.h                 |   5 +-
+>  arch/x86/include/asm/swiotlb.h                     |   4 +-
+>  arch/x86/include/asm/xen/page-coherent.h           |   9 +-
+>  arch/x86/kernel/amd_gart_64.c                      |  20 ++--
+>  arch/x86/kernel/pci-calgary_64.c                   |  14 +--
+>  arch/x86/kernel/pci-dma.c                          |   4 +-
+>  arch/x86/kernel/pci-nommu.c                        |   4 +-
+>  arch/x86/kernel/pci-swiotlb.c                      |   4 +-
+>  arch/x86/pci/sta2x11-fixup.c                       |   2 +-
+>  arch/x86/pci/vmd.c                                 |  16 +--
+>  arch/xtensa/kernel/pci-dma.c                       |  12 +-
+>  drivers/gpu/drm/exynos/exynos_drm_fbdev.c          |   2 +-
+>  drivers/gpu/drm/exynos/exynos_drm_g2d.c            |  12 +-
+>  drivers/gpu/drm/exynos/exynos_drm_gem.c            |  20 ++--
+>  drivers/gpu/drm/exynos/exynos_drm_gem.h            |   2 +-
+>  drivers/gpu/drm/mediatek/mtk_drm_gem.c             |  13 +--
+>  drivers/gpu/drm/mediatek/mtk_drm_gem.h             |   2 +-
+>  drivers/gpu/drm/msm/msm_drv.c                      |  13 +--
+>  .../gpu/drm/nouveau/nvkm/subdev/instmem/gk20a.c    |  13 +--
+>  drivers/gpu/drm/rockchip/rockchip_drm_gem.c        |  17 ++-
+>  drivers/gpu/drm/rockchip/rockchip_drm_gem.h        |   2 +-
+>  drivers/infiniband/core/umem.c                     |   7 +-
+>  drivers/iommu/amd_iommu.c                          |  12 +-
+>  drivers/iommu/dma-iommu.c                          |   8 +-
+>  drivers/iommu/intel-iommu.c                        |  12 +-
+>  drivers/media/platform/sti/bdisp/bdisp-hw.c        |  26 ++---
+>  drivers/media/v4l2-core/videobuf2-dma-contig.c     |  30 ++---
+>  drivers/media/v4l2-core/videobuf2-dma-sg.c         |  19 +--
+>  drivers/misc/mic/host/mic_boot.c                   |  20 ++--
+>  drivers/parisc/ccio-dma.c                          |  16 +--
+>  drivers/parisc/sba_iommu.c                         |  16 +--
+>  drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |  12 +-
+>  drivers/video/fbdev/omap2/omapfb/omapfb.h          |   3 +-
+>  drivers/xen/swiotlb-xen.c                          |  14 +--
+>  include/linux/dma-attrs.h                          |  71 ------------
+>  include/linux/dma-iommu.h                          |   6 +-
+>  include/linux/dma-mapping.h                        | 128 ++++++++++++++-------
+>  include/linux/swiotlb.h                            |  10 +-
+>  include/media/videobuf2-dma-contig.h               |   7 +-
+>  include/rdma/ib_verbs.h                            |   8 +-
+>  include/xen/swiotlb-xen.h                          |  12 +-
+>  lib/dma-noop.c                                     |   9 +-
+>  lib/swiotlb.c                                      |  13 ++-
+>  108 files changed, 689 insertions(+), 789 deletions(-)
+>  delete mode 100644 include/linux/dma-attrs.h
+> 
+> -- 
+> 1.9.1
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-IPUV3_CHANNEL_IC_PRP_ENC_MEM -> IPUV3_CHANNEL_MEM_ROT_ENC
-PUV3_CHANNEL_IC_PRP_VF_MEM   -> IPUV3_CHANNEL_MEM_ROT_VF
-IPUV3_CHANNEL_IC_PP_MEM      -> IPUV3_CHANNEL_MEM_ROT_PP
-IPUV3_CHANNEL_CSI_DIRECT     -> IPUV3_CHANNEL_CSI_VDI_PREV
-
-More links can be added to the fsu_link_info[] array.
-
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
----
- drivers/gpu/ipu-v3/ipu-common.c | 131 ++++++++++++++++++++++++++++++++++++++++
- drivers/gpu/ipu-v3/ipu-prv.h    |  27 +++++++++
- include/video/imx-ipu-v3.h      |  13 ++++
- 3 files changed, 171 insertions(+)
-
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index 9d3584b..891cbef 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -730,6 +730,137 @@ void ipu_set_ic_src_mux(struct ipu_soc *ipu, int csi_id, bool vdi)
- }
- EXPORT_SYMBOL_GPL(ipu_set_ic_src_mux);
- 
-+
-+/* Frame Synchronization Unit Channel Linking */
-+
-+struct fsu_link_reg_info {
-+	int chno;
-+	u32 reg;
-+	u32 mask;
-+	u32 val;
-+};
-+
-+struct fsu_link_info {
-+	struct fsu_link_reg_info src;
-+	struct fsu_link_reg_info sink;
-+};
-+
-+static const struct fsu_link_info fsu_link_info[] = {
-+	{
-+		.src  = { IPUV3_CHANNEL_IC_PRP_ENC_MEM, IPU_FS_PROC_FLOW2,
-+			  FS_PRP_ENC_DEST_SEL_MASK, FS_PRP_ENC_DEST_SEL_IRT_ENC },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_ENC, IPU_FS_PROC_FLOW1,
-+			  FS_PRPENC_ROT_SRC_SEL_MASK, FS_PRPENC_ROT_SRC_SEL_ENC },
-+	}, {
-+		.src =  { IPUV3_CHANNEL_IC_PRP_VF_MEM, IPU_FS_PROC_FLOW2,
-+			  FS_PRPVF_DEST_SEL_MASK, FS_PRPVF_DEST_SEL_IRT_VF },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_VF, IPU_FS_PROC_FLOW1,
-+			  FS_PRPVF_ROT_SRC_SEL_MASK, FS_PRPVF_ROT_SRC_SEL_VF },
-+	}, {
-+		.src =  { IPUV3_CHANNEL_IC_PP_MEM, IPU_FS_PROC_FLOW2,
-+			  FS_PP_DEST_SEL_MASK, FS_PP_DEST_SEL_IRT_PP },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_PP, IPU_FS_PROC_FLOW1,
-+			  FS_PP_ROT_SRC_SEL_MASK, FS_PP_ROT_SRC_SEL_PP },
-+	}, {
-+		.src =  { IPUV3_CHANNEL_CSI_DIRECT, 0 },
-+		.sink = { IPUV3_CHANNEL_CSI_VDI_PREV, IPU_FS_PROC_FLOW1,
-+			  FS_VDI_SRC_SEL_MASK, FS_VDI_SRC_SEL_CSI_DIRECT },
-+	},
-+};
-+
-+static const struct fsu_link_info *find_fsu_link_info(int src, int sink)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(fsu_link_info); i++) {
-+		if (src = fsu_link_info[i].src.chno &&
-+		    sink = fsu_link_info[i].sink.chno)
-+			return &fsu_link_info[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+/*
-+ * Links a source channel to a sink channel in the FSU.
-+ */
-+int ipu_fsu_link(struct ipu_soc *ipu, int src_ch, int sink_ch)
-+{
-+	const struct fsu_link_info *link;
-+	u32 src_reg, sink_reg;
-+	unsigned long flags;
-+
-+	link = find_fsu_link_info(src_ch, sink_ch);
-+	if (!link)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&ipu->lock, flags);
-+
-+	if (link->src.mask) {
-+		src_reg = ipu_cm_read(ipu, link->src.reg);
-+		src_reg &= ~link->src.mask;
-+		src_reg |= link->src.val;
-+		ipu_cm_write(ipu, src_reg, link->src.reg);
-+	}
-+
-+	if (link->sink.mask) {
-+		sink_reg = ipu_cm_read(ipu, link->sink.reg);
-+		sink_reg &= ~link->sink.mask;
-+		sink_reg |= link->sink.val;
-+		ipu_cm_write(ipu, sink_reg, link->sink.reg);
-+	}
-+
-+	spin_unlock_irqrestore(&ipu->lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ipu_fsu_link);
-+
-+/*
-+ * Unlinks source and sink channels in the FSU.
-+ */
-+int ipu_fsu_unlink(struct ipu_soc *ipu, int src_ch, int sink_ch)
-+{
-+	const struct fsu_link_info *link;
-+	u32 src_reg, sink_reg;
-+	unsigned long flags;
-+
-+	link = find_fsu_link_info(src_ch, sink_ch);
-+	if (!link)
-+		return -EINVAL;
-+
-+	spin_lock_irqsave(&ipu->lock, flags);
-+
-+	if (link->src.mask) {
-+		src_reg = ipu_cm_read(ipu, link->src.reg);
-+		src_reg &= ~link->src.mask;
-+		ipu_cm_write(ipu, src_reg, link->src.reg);
-+	}
-+
-+	if (link->sink.mask) {
-+		sink_reg = ipu_cm_read(ipu, link->sink.reg);
-+		sink_reg &= ~link->sink.mask;
-+		ipu_cm_write(ipu, sink_reg, link->sink.reg);
-+	}
-+
-+	spin_unlock_irqrestore(&ipu->lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ipu_fsu_unlink);
-+
-+/* Link IDMAC channels in the FSU */
-+int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink)
-+{
-+	return ipu_fsu_link(src->ipu, src->num, sink->num);
-+}
-+EXPORT_SYMBOL_GPL(ipu_idmac_link);
-+
-+/* Unlink IDMAC channels in the FSU */
-+int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink)
-+{
-+	return ipu_fsu_unlink(src->ipu, src->num, sink->num);
-+}
-+EXPORT_SYMBOL_GPL(ipu_idmac_unlink);
-+
- struct ipu_devtype {
- 	const char *name;
- 	unsigned long cm_ofs;
-diff --git a/drivers/gpu/ipu-v3/ipu-prv.h b/drivers/gpu/ipu-v3/ipu-prv.h
-index 02057d8..dca2c3a 100644
---- a/drivers/gpu/ipu-v3/ipu-prv.h
-+++ b/drivers/gpu/ipu-v3/ipu-prv.h
-@@ -75,6 +75,33 @@ struct ipu_soc;
- #define IPU_INT_CTRL(n)		IPU_CM_REG(0x003C + 4 * (n))
- #define IPU_INT_STAT(n)		IPU_CM_REG(0x0200 + 4 * (n))
- 
-+/* FS_PROC_FLOW1 */
-+#define FS_PRPENC_ROT_SRC_SEL_MASK	(0xf << 0)
-+#define FS_PRPENC_ROT_SRC_SEL_ENC		(0x7 << 0)
-+#define FS_PRPVF_ROT_SRC_SEL_MASK	(0xf << 8)
-+#define FS_PRPVF_ROT_SRC_SEL_VF			(0x8 << 8)
-+#define FS_PP_SRC_SEL_MASK		(0xf << 12)
-+#define FS_PP_ROT_SRC_SEL_MASK		(0xf << 16)
-+#define FS_PP_ROT_SRC_SEL_PP			(0x5 << 16)
-+#define FS_VDI1_SRC_SEL_MASK		(0x3 << 20)
-+#define FS_VDI3_SRC_SEL_MASK		(0x3 << 20)
-+#define FS_PRP_SRC_SEL_MASK		(0xf << 24)
-+#define FS_VDI_SRC_SEL_MASK		(0x3 << 28)
-+#define FS_VDI_SRC_SEL_CSI_DIRECT		(0x1 << 28)
-+#define FS_VDI_SRC_SEL_VDOA			(0x2 << 28)
-+
-+/* FS_PROC_FLOW2 */
-+#define FS_PRP_ENC_DEST_SEL_MASK	(0xf << 0)
-+#define FS_PRP_ENC_DEST_SEL_IRT_ENC		(0x1 << 0)
-+#define FS_PRPVF_DEST_SEL_MASK		(0xf << 4)
-+#define FS_PRPVF_DEST_SEL_IRT_VF		(0x1 << 4)
-+#define FS_PRPVF_ROT_DEST_SEL_MASK	(0xf << 8)
-+#define FS_PP_DEST_SEL_MASK		(0xf << 12)
-+#define FS_PP_DEST_SEL_IRT_PP			(0x3 << 12)
-+#define FS_PP_ROT_DEST_SEL_MASK		(0xf << 16)
-+#define FS_PRPENC_ROT_DEST_SEL_MASK	(0xf << 20)
-+#define FS_PRP_DEST_SEL_MASK		(0xf << 24)
-+
- #define IPU_DI0_COUNTER_RELEASE			(1 << 24)
- #define IPU_DI1_COUNTER_RELEASE			(1 << 25)
- 
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index d0152b2..a3174bb 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -107,6 +107,14 @@ enum ipu_channel_irq {
- #define IPUV3_CHANNEL_CSI2			 2
- #define IPUV3_CHANNEL_CSI3			 3
- #define IPUV3_CHANNEL_VDI_MEM_IC_VF		 5
-+/*
-+ * NOTE: channels 6,7 are unused in the IPU and are not IDMAC channels,
-+ * but the direct CSI->VDI linking is handled the same way as IDMAC
-+ * channel linking in the FSU via the IPU_FS_PROC_FLOW registers, so
-+ * these channel names are used to support the direct CSI->VDI link.
-+ */
-+#define IPUV3_CHANNEL_CSI_DIRECT		 6
-+#define IPUV3_CHANNEL_CSI_VDI_PREV		 7
- #define IPUV3_CHANNEL_MEM_VDI_PREV		 8
- #define IPUV3_CHANNEL_MEM_VDI_CUR		 9
- #define IPUV3_CHANNEL_MEM_VDI_NEXT		10
-@@ -131,6 +139,7 @@ enum ipu_channel_irq {
- #define IPUV3_CHANNEL_ROT_VF_MEM		49
- #define IPUV3_CHANNEL_ROT_PP_MEM		50
- #define IPUV3_CHANNEL_MEM_BG_SYNC_ALPHA		51
-+#define IPUV3_NUM_CHANNELS			64
- 
- int ipu_map_irq(struct ipu_soc *ipu, int irq);
- int ipu_idmac_channel_irq(struct ipu_soc *ipu, struct ipuv3_channel *channel,
-@@ -174,6 +183,10 @@ int ipu_idmac_get_current_buffer(struct ipuv3_channel *channel);
- bool ipu_idmac_buffer_is_ready(struct ipuv3_channel *channel, u32 buf_num);
- void ipu_idmac_select_buffer(struct ipuv3_channel *channel, u32 buf_num);
- void ipu_idmac_clear_buffer(struct ipuv3_channel *channel, u32 buf_num);
-+int ipu_fsu_link(struct ipu_soc *ipu, int src_ch, int sink_ch);
-+int ipu_fsu_unlink(struct ipu_soc *ipu, int src_ch, int sink_ch);
-+int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink);
-+int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink);
- 
- /*
-  * IPU Channel Parameter Memory (cpmem) functions
 -- 
-1.9.1
-
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

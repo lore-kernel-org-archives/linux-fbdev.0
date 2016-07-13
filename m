@@ -1,82 +1,118 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Mon, 25 Jul 2016 15:24:39 +0000
-Subject: [PATCH 2/3] mdacon: make mda_vram_base u16 *
-Message-Id: <20160725152440.6734-2-jslaby@suse.cz>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Wed, 13 Jul 2016 08:41:14 +0000
+Subject: [PATCH v6 23/46] video: dma-mapping: Use unsigned long for dma_attrs
+Message-Id: <1468399300-5399-23-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160725152440.6734-1-jslaby@suse.cz>
-In-Reply-To: <20160725152440.6734-1-jslaby@suse.cz>
+References: <1468399167-28083-1-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-1-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-2-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-3-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-4-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-5-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-6-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-7-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-8-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-9-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-10-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-11-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-12-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-13-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-14-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-15-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-16-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-17-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-18-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-19-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-20-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-21-git-send-email-k.kozlowski@samsung.com>
+ <1468399300-5399-22-git-send-email-k.kozlowski@samsung.com>
+In-Reply-To: <1468399300-5399-22-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Given every user of mda_vram_base expects a pointer, let
-mda_vram_base be a pointer to u16.
+Split out subsystem specific changes for easier reviews. This will be
+squashed with main commit.
 
-The offset calculation in mda_detect had to be adjusted by / 2 (due to
-different pointer arithmetic now).
-
-We introduce a cast to a value returned from VGA_MAP_MEM. But I will
-change VGA_MAP_MEM to return a pointer later too. But vgacon needs a
-similar change first.
-
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 ---
- drivers/video/console/mdacon.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 12 ++++++------
+ drivers/video/fbdev/omap2/omapfb/omapfb.h      |  3 +--
+ 2 files changed, 7 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
-index 64c2c5e8d00b..814606bd26d1 100644
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(mda_lock);
- 
- /* description of the hardware layout */
- 
--static unsigned long	mda_vram_base;		/* Base of video memory */
-+static u16		*mda_vram_base;		/* Base of video memory */
- static unsigned long	mda_vram_len;		/* Size of video memory */
- static unsigned int	mda_num_columns;	/* Number of text columns */
- static unsigned int	mda_num_lines;		/* Number of text lines */
-@@ -205,8 +205,8 @@ static int mda_detect(void)
- 
- 	/* do a memory check */
- 
--	p = (u16 *) mda_vram_base;
--	q = (u16 *) (mda_vram_base + 0x01000);
-+	p = mda_vram_base;
-+	q = mda_vram_base + 0x01000 / 2;
- 
- 	p_save = scr_readw(p);
- 	q_save = scr_readw(q);
-@@ -323,7 +323,7 @@ static const char *mdacon_startup(void)
- 	mda_num_lines   = 25;
- 
- 	mda_vram_len  = 0x01000;
--	mda_vram_base = VGA_MAP_MEM(0xb0000, mda_vram_len);
-+	mda_vram_base = (u16 *)VGA_MAP_MEM(0xb0000, mda_vram_len);
- 
- 	mda_index_port  = 0x3b4;
- 	mda_value_port  = 0x3b5;
-@@ -420,7 +420,7 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index 2fb90cb6803f..1d7c012f09db 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1332,7 +1332,7 @@ static void omapfb_free_fbmem(struct fb_info *fbi)
  	}
- }
  
--#define MDA_ADDR(x,y)  ((u16 *) mda_vram_base + (y)*mda_num_columns + (x))
-+#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
+ 	dma_free_attrs(fbdev->dev, rg->size, rg->token, rg->dma_handle,
+-			&rg->attrs);
++			rg->attrs);
  
- static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
- {
-@@ -463,7 +463,7 @@ static int mdacon_blank(struct vc_data *c, int blank, int mode_switch)
- {
- 	if (mda_type = TYPE_MDA) {
- 		if (blank) 
--			scr_memsetw((void *)mda_vram_base, 
-+			scr_memsetw(mda_vram_base,
- 				mda_convert_attr(c->vc_video_erase_char),
- 				c->vc_screenbuf_size);
- 		/* Tell console.c that it has to restore the screen itself */
+ 	rg->token = NULL;
+ 	rg->vaddr = NULL;
+@@ -1370,7 +1370,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 	struct omapfb2_device *fbdev = ofbi->fbdev;
+ 	struct omapfb2_mem_region *rg;
+ 	void *token;
+-	DEFINE_DMA_ATTRS(attrs);
++	unsigned long attrs;
+ 	dma_addr_t dma_handle;
+ 	int r;
+ 
+@@ -1386,15 +1386,15 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 
+ 	size = PAGE_ALIGN(size);
+ 
+-	dma_set_attr(DMA_ATTR_WRITE_COMBINE, &attrs);
++	attrs = DMA_ATTR_WRITE_COMBINE;
+ 
+ 	if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB)
+-		dma_set_attr(DMA_ATTR_NO_KERNEL_MAPPING, &attrs);
++		attrs |= DMA_ATTR_NO_KERNEL_MAPPING;
+ 
+ 	DBG("allocating %lu bytes for fb %d\n", size, ofbi->id);
+ 
+ 	token = dma_alloc_attrs(fbdev->dev, size, &dma_handle,
+-			GFP_KERNEL, &attrs);
++			GFP_KERNEL, attrs);
+ 
+ 	if (token = NULL) {
+ 		dev_err(fbdev->dev, "failed to allocate framebuffer\n");
+@@ -1408,7 +1408,7 @@ static int omapfb_alloc_fbmem(struct fb_info *fbi, unsigned long size,
+ 		r = omap_vrfb_request_ctx(&rg->vrfb);
+ 		if (r) {
+ 			dma_free_attrs(fbdev->dev, size, token, dma_handle,
+-					&attrs);
++					attrs);
+ 			dev_err(fbdev->dev, "vrfb create ctx failed\n");
+ 			return r;
+ 		}
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb.h b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+index bcb9ff4a607d..555487d6dbea 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb.h
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb.h
+@@ -28,7 +28,6 @@
+ #endif
+ 
+ #include <linux/rwsem.h>
+-#include <linux/dma-attrs.h>
+ #include <linux/dma-mapping.h>
+ 
+ #include <video/omapfb_dss.h>
+@@ -51,7 +50,7 @@ extern bool omapfb_debug;
+ 
+ struct omapfb2_mem_region {
+ 	int             id;
+-	struct dma_attrs attrs;
++	unsigned long	attrs;
+ 	void		*token;
+ 	dma_addr_t	dma_handle;
+ 	u32		paddr;
 -- 
-2.9.2
+1.9.1
 

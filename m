@@ -1,125 +1,47 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:22 +0000
-Subject: [PATCH v3 07/12] gpu: ipu-v3: Fix IRT usage
-Message-Id: <1469994147-17549-8-git-send-email-steve_longerbeam@mentor.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 15 Jul 2016 20:32:15 +0000
+Subject: [PATCH] fbmon: remove unused function argument
+Message-Id: <20160715203229.1771162-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-There can be multiple IC tasks using the IRT, so the IRT needs
-a separate use counter. Create a private ipu_irt_enable() to
-enable the IRT module when any IC task requires rotation, and
-ipu_irt_disable() when a task no longer needs the IRT.
+When building with "make W=1", we get a warning about an
+empty stub function that does nothing but reassign its one
+of its arguments:
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+drivers/video/fbdev/core/fbmon.c: In function 'fb_edid_to_monspecs':
+drivers/video/fbdev/core/fbmon.c:1497:67: error: parameter 'specs' set but not used [-Werror=unused-but-set-parameter]
 
+We can simply make that function completely empty to avoid
+the warning.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+--
+I sent this patch on June 16 when this warning was only for "make W=1", but
+never got a reply from the fbdev maintainers.
+
+Now Andrew merged a patch to have the warning at the default level,
+maybe he can apply this as well.
 ---
+ drivers/video/fbdev/core/fbmon.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-v3: no changes
-v2:
-- cleaned up irt_use_count decrement in ipu_irt_disable()
----
- drivers/gpu/ipu-v3/ipu-ic.c | 40 +++++++++++++++++++++++++++++++---------
- 1 file changed, 31 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
-index 1dcb96c..1a37afc 100644
---- a/drivers/gpu/ipu-v3/ipu-ic.c
-+++ b/drivers/gpu/ipu-v3/ipu-ic.c
-@@ -160,6 +160,7 @@ struct ipu_ic_priv {
- 	spinlock_t lock;
- 	struct ipu_soc *ipu;
- 	int use_count;
-+	int irt_use_count;
- 	struct ipu_ic task[IC_NUM_TASKS];
- };
- 
-@@ -379,8 +380,6 @@ void ipu_ic_task_disable(struct ipu_ic *ic)
- 
- 	ipu_ic_write(ic, ic_conf, IC_CONF);
- 
--	ic->rotation = ic->graphics = false;
--
- 	spin_unlock_irqrestore(&priv->lock, flags);
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 55e39e822b79..eaa6bab21839 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1496,7 +1496,6 @@ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
  }
- EXPORT_SYMBOL_GPL(ipu_ic_task_disable);
-@@ -629,22 +628,41 @@ unlock:
+ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ {
+-	specs = NULL;
  }
- EXPORT_SYMBOL_GPL(ipu_ic_task_idma_init);
- 
-+static void ipu_irt_enable(struct ipu_ic *ic)
-+{
-+	struct ipu_ic_priv *priv = ic->priv;
-+
-+	if (!priv->irt_use_count)
-+		ipu_module_enable(priv->ipu, IPU_CONF_ROT_EN);
-+
-+	priv->irt_use_count++;
-+}
-+
-+static void ipu_irt_disable(struct ipu_ic *ic)
-+{
-+	struct ipu_ic_priv *priv = ic->priv;
-+
-+	if (priv->irt_use_count) {
-+		if (!--priv->irt_use_count)
-+			ipu_module_disable(priv->ipu, IPU_CONF_ROT_EN);
-+	}
-+}
-+
- int ipu_ic_enable(struct ipu_ic *ic)
+ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
  {
- 	struct ipu_ic_priv *priv = ic->priv;
- 	unsigned long flags;
--	u32 module = IPU_CONF_IC_EN;
- 
- 	spin_lock_irqsave(&priv->lock, flags);
- 
--	if (ic->rotation)
--		module |= IPU_CONF_ROT_EN;
--
- 	if (!priv->use_count)
--		ipu_module_enable(priv->ipu, module);
-+		ipu_module_enable(priv->ipu, IPU_CONF_IC_EN);
- 
- 	priv->use_count++;
- 
-+	if (ic->rotation)
-+		ipu_irt_enable(ic);
-+
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	return 0;
-@@ -655,18 +673,22 @@ int ipu_ic_disable(struct ipu_ic *ic)
- {
- 	struct ipu_ic_priv *priv = ic->priv;
- 	unsigned long flags;
--	u32 module = IPU_CONF_IC_EN | IPU_CONF_ROT_EN;
- 
- 	spin_lock_irqsave(&priv->lock, flags);
- 
- 	priv->use_count--;
- 
- 	if (!priv->use_count)
--		ipu_module_disable(priv->ipu, module);
-+		ipu_module_disable(priv->ipu, IPU_CONF_IC_EN);
- 
- 	if (priv->use_count < 0)
- 		priv->use_count = 0;
- 
-+	if (ic->rotation)
-+		ipu_irt_disable(ic);
-+
-+	ic->rotation = ic->graphics = false;
-+
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	return 0;
 -- 
-1.9.1
+2.9.0
 

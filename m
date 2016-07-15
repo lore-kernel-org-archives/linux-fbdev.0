@@ -1,58 +1,37 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:17 +0000
-Subject: [PATCH v3 02/12] gpu: ipu-cpmem: Add ipu_cpmem_get_burstsize()
-Message-Id: <1469994147-17549-3-git-send-email-steve_longerbeam@mentor.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 15 Jul 2016 11:08:17 +0000
+Subject: [patch] fb: adv7393: off by one in probe function
+Message-Id: <20160715110817.GD9258@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-Adds ipu_cpmem_get_burstsize().
+This should be >= instead of >.  It's a little bit clearer if we just
+get rid of the temporary variable and just use ARRAY_SIZE() directly.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
----
-
-v3: no changes
-v2: no changes
----
- drivers/gpu/ipu-v3/ipu-cpmem.c | 6 ++++++
- include/video/imx-ipu-v3.h     | 1 +
- 2 files changed, 7 insertions(+)
-
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index a36c35e..fcb7dc8 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -275,6 +275,12 @@ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id)
- }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_axi_id);
- 
-+int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch)
-+{
-+	return ipu_ch_param_read_field(ch, IPU_FIELD_NPB) + 1;
-+}
-+EXPORT_SYMBOL_GPL(ipu_cpmem_get_burstsize);
-+
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize)
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
+index 8fe41ca..c846021 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.c
++++ b/drivers/video/fbdev/bfin_adv7393fb.c
+@@ -373,7 +373,6 @@ static int bfin_adv7393_fb_probe(struct i2c_client *client,
  {
- 	ipu_ch_param_write_field(ch, IPU_FIELD_NPB, burstsize - 1);
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 69c8658..8c4312d 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -187,6 +187,7 @@ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
- void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
-+int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
- void ipu_cpmem_set_block_mode(struct ipuv3_channel *ch);
- void ipu_cpmem_set_rotation(struct ipuv3_channel *ch,
--- 
-1.9.1
-
+ 	int ret = 0;
+ 	struct proc_dir_entry *entry;
+-	int num_modes = ARRAY_SIZE(known_modes);
+ 
+ 	struct adv7393fb_device *fbdev = NULL;
+ 
+@@ -382,7 +381,7 @@ static int bfin_adv7393_fb_probe(struct i2c_client *client,
+ 		return -EINVAL;
+ 	}
+ 
+-	if (mode > num_modes) {
++	if (mode >= ARRAY_SIZE(known_modes)) {
+ 		dev_err(&client->dev, "mode %d: not supported", mode);
+ 		return -EFAULT;
+ 	}

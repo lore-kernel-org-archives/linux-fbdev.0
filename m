@@ -1,74 +1,125 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Thu, 28 Jul 2016 22:56:13 +0000
-Subject: [PATCH] drm/nouveau/fbcon: fix font width not divisible by 8
-Message-Id: <alpine.LRH.2.02.1607281849240.21548@file01.intranet.prod.int.rdu2.redhat.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Wed, 20 Jul 2016 01:11:08 +0000
+Subject: [PATCH v2 10/13] gpu: ipu-v3: Fix IRT usage
+Message-Id: <1468977071-29240-11-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
+ <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ben Skeggs <bskeggs@redhat.com>
-Cc: dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-The patch f045f459d925 ("drm/nouveau/fbcon: fix out-of-bounds memory accesses")
-tries to fix some out of memory accesses. Unfortunatelly, the patch breaks the
-display when using fonts with width that is not divisiable by 8.
+There can be multiple IC tasks using the IRT, so the IRT needs
+a separate use counter. Create a private ipu_irt_enable() to
+enable the IRT module when any IC task requires rotation, and
+ipu_irt_disable() when a task no longer needs the IRT.
 
-The monochrome bitmap for each character is stored in memory by lines from top
-to bottom. Each line is padded to a full byte.
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 
-For example, for 22x11 font, each line is padded to 16 bits, so each 
-character is consuming 44 bytes total, that is 11 32-bit words. The patch 
-f045f459d925 changed the logic to "dsize = ALIGN(image->width * 
-image->height, 32) >> 5", that is just 8 words - this is incorrect and it 
-causes display corruption.
+---
 
-This patch adds the necesary padding of lines to 8 bytes.
+v2:
+- cleaned up irt_use_count decrement in ipu_irt_disable()
+---
+ drivers/gpu/ipu-v3/ipu-ic.c | 40 +++++++++++++++++++++++++++++++---------
+ 1 file changed, 31 insertions(+), 9 deletions(-)
 
-This patch should be backported to stable kernels where f045f459d925 was 
-backported.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Fixes: f045f459d925 ("drm/nouveau/fbcon: fix out-of-bounds memory accesses")
-Cc: stable@vger.kernel.org
-
-Index: linux-2.6/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-=================================--- linux-2.6.orig/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-+++ linux-2.6/drivers/gpu/drm/nouveau/nvc0_fbcon.c
-@@ -125,7 +125,7 @@ nvc0_fbcon_imageblit(struct fb_info *inf
- 	OUT_RING  (chan, 0);
- 	OUT_RING  (chan, image->dy);
+diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
+index 1dcb96c..1a37afc 100644
+--- a/drivers/gpu/ipu-v3/ipu-ic.c
++++ b/drivers/gpu/ipu-v3/ipu-ic.c
+@@ -160,6 +160,7 @@ struct ipu_ic_priv {
+ 	spinlock_t lock;
+ 	struct ipu_soc *ipu;
+ 	int use_count;
++	int irt_use_count;
+ 	struct ipu_ic task[IC_NUM_TASKS];
+ };
  
--	dwords = ALIGN(image->width * image->height, 32) >> 5;
-+	dwords = ALIGN(ALIGN(image->width, 8) * image->height, 32) >> 5;
- 	while (dwords) {
- 		int push = dwords > 2047 ? 2047 : dwords;
+@@ -379,8 +380,6 @@ void ipu_ic_task_disable(struct ipu_ic *ic)
  
-Index: linux-2.6/drivers/gpu/drm/nouveau/nv04_fbcon.c
-=================================--- linux-2.6.orig/drivers/gpu/drm/nouveau/nv04_fbcon.c
-+++ linux-2.6/drivers/gpu/drm/nouveau/nv04_fbcon.c
-@@ -107,11 +107,11 @@ nv04_fbcon_imageblit(struct fb_info *inf
- 			 ((image->dx + image->width) & 0xffff));
- 	OUT_RING(chan, bg);
- 	OUT_RING(chan, fg);
--	OUT_RING(chan, (image->height << 16) | image->width);
-+	OUT_RING(chan, (image->height << 16) | ALIGN(image->width, 8));
- 	OUT_RING(chan, (image->height << 16) | image->width);
- 	OUT_RING(chan, (image->dy << 16) | (image->dx & 0xffff));
+ 	ipu_ic_write(ic, ic_conf, IC_CONF);
  
--	dsize = ALIGN(image->width * image->height, 32) >> 5;
-+	dsize = ALIGN(ALIGN(image->width, 8) * image->height, 32) >> 5;
- 	while (dsize) {
- 		int iter_len = dsize > 128 ? 128 : dsize;
+-	ic->rotation = ic->graphics = false;
+-
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(ipu_ic_task_disable);
+@@ -629,22 +628,41 @@ unlock:
+ }
+ EXPORT_SYMBOL_GPL(ipu_ic_task_idma_init);
  
-Index: linux-2.6/drivers/gpu/drm/nouveau/nv50_fbcon.c
-=================================--- linux-2.6.orig/drivers/gpu/drm/nouveau/nv50_fbcon.c
-+++ linux-2.6/drivers/gpu/drm/nouveau/nv50_fbcon.c
-@@ -125,7 +125,7 @@ nv50_fbcon_imageblit(struct fb_info *inf
- 	OUT_RING(chan, 0);
- 	OUT_RING(chan, image->dy);
++static void ipu_irt_enable(struct ipu_ic *ic)
++{
++	struct ipu_ic_priv *priv = ic->priv;
++
++	if (!priv->irt_use_count)
++		ipu_module_enable(priv->ipu, IPU_CONF_ROT_EN);
++
++	priv->irt_use_count++;
++}
++
++static void ipu_irt_disable(struct ipu_ic *ic)
++{
++	struct ipu_ic_priv *priv = ic->priv;
++
++	if (priv->irt_use_count) {
++		if (!--priv->irt_use_count)
++			ipu_module_disable(priv->ipu, IPU_CONF_ROT_EN);
++	}
++}
++
+ int ipu_ic_enable(struct ipu_ic *ic)
+ {
+ 	struct ipu_ic_priv *priv = ic->priv;
+ 	unsigned long flags;
+-	u32 module = IPU_CONF_IC_EN;
  
--	dwords = ALIGN(image->width * image->height, 32) >> 5;
-+	dwords = ALIGN(ALIGN(image->width, 8) * image->height, 32) >> 5;
- 	while (dwords) {
- 		int push = dwords > 2047 ? 2047 : dwords;
+ 	spin_lock_irqsave(&priv->lock, flags);
  
+-	if (ic->rotation)
+-		module |= IPU_CONF_ROT_EN;
+-
+ 	if (!priv->use_count)
+-		ipu_module_enable(priv->ipu, module);
++		ipu_module_enable(priv->ipu, IPU_CONF_IC_EN);
+ 
+ 	priv->use_count++;
+ 
++	if (ic->rotation)
++		ipu_irt_enable(ic);
++
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+ 	return 0;
+@@ -655,18 +673,22 @@ int ipu_ic_disable(struct ipu_ic *ic)
+ {
+ 	struct ipu_ic_priv *priv = ic->priv;
+ 	unsigned long flags;
+-	u32 module = IPU_CONF_IC_EN | IPU_CONF_ROT_EN;
+ 
+ 	spin_lock_irqsave(&priv->lock, flags);
+ 
+ 	priv->use_count--;
+ 
+ 	if (!priv->use_count)
+-		ipu_module_disable(priv->ipu, module);
++		ipu_module_disable(priv->ipu, IPU_CONF_IC_EN);
+ 
+ 	if (priv->use_count < 0)
+ 		priv->use_count = 0;
+ 
++	if (ic->rotation)
++		ipu_irt_disable(ic);
++
++	ic->rotation = ic->graphics = false;
++
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+ 	return 0;
+-- 
+1.9.1
+

@@ -1,36 +1,45 @@
-From: Javier Martinez Canillas <javier@osg.samsung.com>
-Date: Mon, 11 Jul 2016 20:44:37 +0000
-Subject: [PATCH] fb: adv7393: Use IS_ENABLED() instead of checking for built-in or module
-Message-Id: <1468269877-9900-1-git-send-email-javier@osg.samsung.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Wed, 20 Jul 2016 01:11:05 +0000
+Subject: [PATCH v2 07/13] gpu: ipu-v3: Add VDI input IDMAC channels
+Message-Id: <1468977071-29240-8-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
+ <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Javier Martinez Canillas <javier@osg.samsung.com>, linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-The IS_ENABLED() macro checks if a Kconfig symbol has been enabled either
-built-in or as a module, use that macro instead of open coding the same.
+Adds the VDIC field input IDMAC channels. These channels
+transfer fields F(n-1), F(n), and F(N+1) from memory to
+the VDIC (channels 8, 9, 10 respectively).
 
-Signed-off-by: Javier Martinez Canillas <javier@osg.samsung.com>
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+
 ---
 
- drivers/video/fbdev/bfin_adv7393fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+v2:
+- made the channel names more descriptive: "_PREV" instead of "_P", etc.
+---
+ include/video/imx-ipu-v3.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
-index 8fe41caac38e..9a01cd7ca73c 100644
---- a/drivers/video/fbdev/bfin_adv7393fb.c
-+++ b/drivers/video/fbdev/bfin_adv7393fb.c
-@@ -795,7 +795,7 @@ static struct i2c_driver bfin_adv7393_fb_driver = {
- 
- static int __init bfin_adv7393_fb_driver_init(void)
- {
--#if  defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
-+#if IS_ENABLED(CONFIG_I2C_BLACKFIN_TWI)
- 	request_module("i2c-bfin-twi");
- #else
- 	request_module("i2c-gpio");
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 74d3059..afbc89d 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -107,6 +107,9 @@ enum ipu_channel_irq {
+ #define IPUV3_CHANNEL_CSI2			 2
+ #define IPUV3_CHANNEL_CSI3			 3
+ #define IPUV3_CHANNEL_VDI_MEM_IC_VF		 5
++#define IPUV3_CHANNEL_MEM_VDI_PREV		 8
++#define IPUV3_CHANNEL_MEM_VDI_CUR		 9
++#define IPUV3_CHANNEL_MEM_VDI_NEXT		10
+ #define IPUV3_CHANNEL_MEM_IC_PP			11
+ #define IPUV3_CHANNEL_MEM_IC_PRP_VF		12
+ #define IPUV3_CHANNEL_G_MEM_IC_PRP_VF		14
 -- 
-2.5.5
+1.9.1
 

@@ -1,7 +1,7 @@
 From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 20 Jul 2016 01:11:08 +0000
-Subject: [PATCH v2 10/13] gpu: ipu-v3: Fix IRT usage
-Message-Id: <1468977071-29240-11-git-send-email-steve_longerbeam@mentor.com>
+Date: Wed, 20 Jul 2016 01:11:10 +0000
+Subject: [PATCH v2 12/13] gpu: ipu-ic: allow multiple handles to ic
+Message-Id: <1468977071-29240-13-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
  <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
@@ -12,114 +12,75 @@ Content-Transfer-Encoding: 7bit
 To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
 Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-There can be multiple IC tasks using the IRT, so the IRT needs
-a separate use counter. Create a private ipu_irt_enable() to
-enable the IRT module when any IC task requires rotation, and
-ipu_irt_disable() when a task no longer needs the IRT.
+The image converter kernel API supports conversion contexts and
+job queues, so we should allow more than one handle to the IC, so
+that multiple users can add jobs to the queue.
+
+Note however that users that control the IC manually (that do not
+use the image converter APIs but setup the IC task by hand via calls
+to ipu_ic_task_enable(), ipu_ic_enable(), etc.) must still be careful not
+to share the IC handle with other threads. At this point, the only user
+that still controls the IC manually is the i.mx capture driver. In that
+case the capture driver only allows one open context to get a handle
+to the IC at a time, so we should be ok there.
 
 Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
-
 ---
-
-v2:
-- cleaned up irt_use_count decrement in ipu_irt_disable()
----
- drivers/gpu/ipu-v3/ipu-ic.c | 40 +++++++++++++++++++++++++++++++---------
- 1 file changed, 31 insertions(+), 9 deletions(-)
+ drivers/gpu/ipu-v3/ipu-ic.c | 25 +------------------------
+ 1 file changed, 1 insertion(+), 24 deletions(-)
 
 diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
-index 1dcb96c..1a37afc 100644
+index 5471b72..cc0780b 100644
 --- a/drivers/gpu/ipu-v3/ipu-ic.c
 +++ b/drivers/gpu/ipu-v3/ipu-ic.c
-@@ -160,6 +160,7 @@ struct ipu_ic_priv {
- 	spinlock_t lock;
- 	struct ipu_soc *ipu;
- 	int use_count;
-+	int irt_use_count;
- 	struct ipu_ic task[IC_NUM_TASKS];
- };
+@@ -342,7 +342,6 @@ struct ipu_ic {
+ 	enum ipu_color_space out_cs;
+ 	bool graphics;
+ 	bool rotation;
+-	bool in_use;
  
-@@ -379,8 +380,6 @@ void ipu_ic_task_disable(struct ipu_ic *ic)
+ 	struct image_converter cvt;
  
- 	ipu_ic_write(ic, ic_conf, IC_CONF);
- 
--	ic->rotation = ic->graphics = false;
--
- 	spin_unlock_irqrestore(&priv->lock, flags);
- }
- EXPORT_SYMBOL_GPL(ipu_ic_task_disable);
-@@ -629,22 +628,41 @@ unlock:
- }
- EXPORT_SYMBOL_GPL(ipu_ic_task_idma_init);
- 
-+static void ipu_irt_enable(struct ipu_ic *ic)
-+{
-+	struct ipu_ic_priv *priv = ic->priv;
-+
-+	if (!priv->irt_use_count)
-+		ipu_module_enable(priv->ipu, IPU_CONF_ROT_EN);
-+
-+	priv->irt_use_count++;
-+}
-+
-+static void ipu_irt_disable(struct ipu_ic *ic)
-+{
-+	struct ipu_ic_priv *priv = ic->priv;
-+
-+	if (priv->irt_use_count) {
-+		if (!--priv->irt_use_count)
-+			ipu_module_disable(priv->ipu, IPU_CONF_ROT_EN);
-+	}
-+}
-+
- int ipu_ic_enable(struct ipu_ic *ic)
+@@ -2367,38 +2366,16 @@ EXPORT_SYMBOL_GPL(ipu_ic_disable);
+ struct ipu_ic *ipu_ic_get(struct ipu_soc *ipu, enum ipu_ic_task task)
  {
- 	struct ipu_ic_priv *priv = ic->priv;
- 	unsigned long flags;
--	u32 module = IPU_CONF_IC_EN;
+ 	struct ipu_ic_priv *priv = ipu->ic_priv;
+-	unsigned long flags;
+-	struct ipu_ic *ic, *ret;
  
- 	spin_lock_irqsave(&priv->lock, flags);
+ 	if (task >= IC_NUM_TASKS)
+ 		return ERR_PTR(-EINVAL);
  
--	if (ic->rotation)
--		module |= IPU_CONF_ROT_EN;
+-	ic = &priv->task[task];
 -
- 	if (!priv->use_count)
--		ipu_module_enable(priv->ipu, module);
-+		ipu_module_enable(priv->ipu, IPU_CONF_IC_EN);
+-	spin_lock_irqsave(&priv->lock, flags);
+-
+-	if (ic->in_use) {
+-		ret = ERR_PTR(-EBUSY);
+-		goto unlock;
+-	}
+-
+-	ic->in_use = true;
+-	ret = ic;
+-
+-unlock:
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	return ret;
++	return &priv->task[task];
+ }
+ EXPORT_SYMBOL_GPL(ipu_ic_get);
  
- 	priv->use_count++;
- 
-+	if (ic->rotation)
-+		ipu_irt_enable(ic);
-+
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	return 0;
-@@ -655,18 +673,22 @@ int ipu_ic_disable(struct ipu_ic *ic)
+ void ipu_ic_put(struct ipu_ic *ic)
  {
- 	struct ipu_ic_priv *priv = ic->priv;
- 	unsigned long flags;
--	u32 module = IPU_CONF_IC_EN | IPU_CONF_ROT_EN;
+-	struct ipu_ic_priv *priv = ic->priv;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&priv->lock, flags);
+-	ic->in_use = false;
+-	spin_unlock_irqrestore(&priv->lock, flags);
+ }
+ EXPORT_SYMBOL_GPL(ipu_ic_put);
  
- 	spin_lock_irqsave(&priv->lock, flags);
- 
- 	priv->use_count--;
- 
- 	if (!priv->use_count)
--		ipu_module_disable(priv->ipu, module);
-+		ipu_module_disable(priv->ipu, IPU_CONF_IC_EN);
- 
- 	if (priv->use_count < 0)
- 		priv->use_count = 0;
- 
-+	if (ic->rotation)
-+		ipu_irt_disable(ic);
-+
-+	ic->rotation = ic->graphics = false;
-+
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
- 	return 0;
 -- 
 1.9.1
 

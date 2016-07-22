@@ -1,47 +1,62 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 15 Jul 2016 20:32:15 +0000
-Subject: [PATCH] fbmon: remove unused function argument
-Message-Id: <20160715203229.1771162-1-arnd@arndb.de>
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Date: Fri, 22 Jul 2016 14:22:13 +0000
+Subject: [PATCH] ARM: no need to select SMP_ON_UP explicitly
+Message-Id: <1469197333-24871-1-git-send-email-vladimir.murzin@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-When building with "make W=1", we get a warning about an
-empty stub function that does nothing but reassign its one
-of its arguments:
+SMP_ON_UP is already defaulted to "y" and has all dependencies expressed
+- no need to select it per platform level
 
-drivers/video/fbdev/core/fbmon.c: In function 'fb_edid_to_monspecs':
-drivers/video/fbdev/core/fbmon.c:1497:67: error: parameter 'specs' set but not used [-Werror=unused-but-set-parameter]
-
-We can simply make that function completely empty to avoid
-the warning.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
---
-I sent this patch on June 16 when this warning was only for "make W=1", but
-never got a reply from the fbdev maintainers.
-
-Now Andrew merged a patch to have the warning at the default level,
-maybe he can apply this as well.
+Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
 ---
- drivers/video/fbdev/core/fbmon.c | 1 -
- 1 file changed, 1 deletion(-)
+ arch/arm/mach-imx/Kconfig      |    3 ---
+ arch/arm/mach-realview/Kconfig |    1 -
+ 2 files changed, 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index 55e39e822b79..eaa6bab21839 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1496,7 +1496,6 @@ int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
- }
- void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
--	specs = NULL;
- }
- void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
+diff --git a/arch/arm/mach-imx/Kconfig b/arch/arm/mach-imx/Kconfig
+index dd905b9..cfb1120 100644
+--- a/arch/arm/mach-imx/Kconfig
++++ b/arch/arm/mach-imx/Kconfig
+@@ -92,7 +92,6 @@ config SOC_IMX31
+ 	select CPU_V6
+ 	select IMX_HAVE_PLATFORM_MXC_RNGA
+ 	select MXC_AVIC
+-	select SMP_ON_UP if SMP
+ 
+ config SOC_IMX35
+ 	bool
+@@ -100,7 +99,6 @@ config SOC_IMX35
+ 	select HAVE_EPIT
+ 	select MXC_AVIC
+ 	select PINCTRL_IMX35
+-	select SMP_ON_UP if SMP
+ 
+ if ARCH_MULTI_V4T
+ 
+@@ -589,7 +587,6 @@ config SOC_VF610
+ 	select ARM_GIC if ARCH_MULTI_V7
+ 	select PINCTRL_VF610
+ 	select PL310_ERRATA_769419 if CACHE_L2X0
+-	select SMP_ON_UP if SMP
+ 
+ 	help
+ 	  This enables support for Freescale Vybrid VF610 processor.
+diff --git a/arch/arm/mach-realview/Kconfig b/arch/arm/mach-realview/Kconfig
+index 70ab4a2..739800e 100644
+--- a/arch/arm/mach-realview/Kconfig
++++ b/arch/arm/mach-realview/Kconfig
+@@ -24,7 +24,6 @@ config REALVIEW_DT
+ 	select POWER_RESET
+ 	select POWER_RESET_VERSATILE
+ 	select POWER_SUPPLY
+-	select SMP_ON_UP if SMP
+ 	select SOC_REALVIEW
+ 	select USE_OF
+ 	help
 -- 
-2.9.0
+1.7.9.5
 

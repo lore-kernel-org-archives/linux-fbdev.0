@@ -1,55 +1,28 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 20 Jul 2016 01:11:00 +0000
-Subject: [PATCH v2 02/13] gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
-Message-Id: <1468977071-29240-3-git-send-email-steve_longerbeam@mentor.com>
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Date: Fri, 22 Jul 2016 13:54:53 +0000
+Subject: [PATCH 0/3] fbdev: vfb: make VirtualFB more flexible
+Message-Id: <1469195696-14753-1-git-send-email-vladimir.murzin@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
- <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: linux-fbdev@vger.kernel.org
 
-Adds ipu_cpmem_set_uv_offset(), to set planar U/V offsets.
+Hi,
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
----
- drivers/gpu/ipu-v3/ipu-cpmem.c | 7 +++++++
- include/video/imx-ipu-v3.h     | 1 +
- 2 files changed, 8 insertions(+)
+This short patch series is supposed to add some flexibility to the VFB
+which should help with testing in display-less environment.
 
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index 6494a4d..a36c35e 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -253,6 +253,13 @@ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf)
- }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_buffer);
- 
-+void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
-+{
-+	ipu_ch_param_write_field(ch, IPU_FIELD_UBO, u_off / 8);
-+	ipu_ch_param_write_field(ch, IPU_FIELD_VBO, v_off / 8);
-+}
-+EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
-+
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
- {
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index a7a28db..48c8dc5 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -194,6 +194,7 @@ void ipu_cpmem_set_resolution(struct ipuv3_channel *ch, int xres, int yres);
- void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
- void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
-+void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
- void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
+Thanks!
+
+Vladimir Murzin (3):
+  fbdev: vfb: add description to module parameters
+  fbdev: vfb: add option for video mode
+  fbdev: vfb: simplify memory management
+
+ drivers/video/fbdev/vfb.c |  129 ++++++++++-----------------------------------
+ 1 file changed, 27 insertions(+), 102 deletions(-)
+
 -- 
-1.9.1
+1.7.9.5
 

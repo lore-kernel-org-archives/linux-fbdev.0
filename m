@@ -1,91 +1,82 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 20 Jul 2016 01:11:06 +0000
-Subject: [PATCH v2 08/13] gpu: ipu-v3: set correct full sensor frame for PAL/NTSC
-Message-Id: <1468977071-29240-9-git-send-email-steve_longerbeam@mentor.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Mon, 25 Jul 2016 15:24:39 +0000
+Subject: [PATCH 2/3] mdacon: make mda_vram_base u16 *
+Message-Id: <20160725152440.6734-2-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
- <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
+References: <20160725152440.6734-1-jslaby@suse.cz>
+In-Reply-To: <20160725152440.6734-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
 
-Set the sensor full frame based on whether the passed in mbus_fmt
-is 720x480 (NTSC) or 720x576 (PAL).
+Given every user of mda_vram_base expects a pointer, let
+mda_vram_base be a pointer to u16.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+The offset calculation in mda_detect had to be adjusted by / 2 (due to
+different pointer arithmetic now).
+
+We introduce a cast to a value returned from VGA_MAP_MEM. But I will
+change VGA_MAP_MEM to return a pointer later too. But vgacon needs a
+similar change first.
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 ---
- drivers/gpu/ipu-v3/ipu-csi.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ drivers/video/console/mdacon.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
-index 06631ac..641ed76 100644
---- a/drivers/gpu/ipu-v3/ipu-csi.c
-+++ b/drivers/gpu/ipu-v3/ipu-csi.c
-@@ -365,10 +365,14 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
- {
- 	struct ipu_csi_bus_config cfg;
- 	unsigned long flags;
--	u32 data = 0;
-+	u32 width, height, data = 0;
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index 64c2c5e8d00b..814606bd26d1 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(mda_lock);
  
- 	fill_csi_bus_cfg(&cfg, mbus_cfg, mbus_fmt);
+ /* description of the hardware layout */
  
-+	/* set default sensor frame width and height */
-+	width = mbus_fmt->width;
-+	height = mbus_fmt->height;
-+
- 	/* Set the CSI_SENS_CONF register remaining fields */
- 	data |= cfg.data_width << CSI_SENS_CONF_DATA_WIDTH_SHIFT |
- 		cfg.data_fmt << CSI_SENS_CONF_DATA_FMT_SHIFT |
-@@ -386,11 +390,6 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+-static unsigned long	mda_vram_base;		/* Base of video memory */
++static u16		*mda_vram_base;		/* Base of video memory */
+ static unsigned long	mda_vram_len;		/* Size of video memory */
+ static unsigned int	mda_num_columns;	/* Number of text columns */
+ static unsigned int	mda_num_lines;		/* Number of text lines */
+@@ -205,8 +205,8 @@ static int mda_detect(void)
  
- 	ipu_csi_write(csi, data, CSI_SENS_CONF);
+ 	/* do a memory check */
  
--	/* Setup sensor frame size */
--	ipu_csi_write(csi,
--		      (mbus_fmt->width - 1) | ((mbus_fmt->height - 1) << 16),
--		      CSI_SENS_FRM_SIZE);
--
- 	/* Set CCIR registers */
+-	p = (u16 *) mda_vram_base;
+-	q = (u16 *) (mda_vram_base + 0x01000);
++	p = mda_vram_base;
++	q = mda_vram_base + 0x01000 / 2;
  
- 	switch (cfg.clk_mode) {
-@@ -408,11 +407,12 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
- 			 * Field1BlankEnd = 0x7, Field1BlankStart = 0x3,
- 			 * Field1ActiveEnd = 0x5, Field1ActiveStart = 0x1
- 			 */
-+			height = 625; /* framelines for PAL */
-+
- 			ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
- 					  CSI_CCIR_CODE_1);
- 			ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
- 			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
--
- 		} else if (mbus_fmt->width = 720 && mbus_fmt->height = 480) {
- 			/*
- 			 * NTSC case
-@@ -422,6 +422,8 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
- 			 * Field1BlankEnd = 0x6, Field1BlankStart = 0x2,
- 			 * Field1ActiveEnd = 0x4, Field1ActiveStart = 0
- 			 */
-+			height = 525; /* framelines for NTSC */
-+
- 			ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
- 					  CSI_CCIR_CODE_1);
- 			ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
-@@ -447,6 +449,10 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
- 		break;
+ 	p_save = scr_readw(p);
+ 	q_save = scr_readw(q);
+@@ -323,7 +323,7 @@ static const char *mdacon_startup(void)
+ 	mda_num_lines   = 25;
+ 
+ 	mda_vram_len  = 0x01000;
+-	mda_vram_base = VGA_MAP_MEM(0xb0000, mda_vram_len);
++	mda_vram_base = (u16 *)VGA_MAP_MEM(0xb0000, mda_vram_len);
+ 
+ 	mda_index_port  = 0x3b4;
+ 	mda_value_port  = 0x3b5;
+@@ -420,7 +420,7 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
  	}
+ }
  
-+	/* Setup sensor frame size */
-+	ipu_csi_write(csi, (width - 1) | ((height - 1) << 16),
-+		      CSI_SENS_FRM_SIZE);
-+
- 	dev_dbg(csi->ipu->dev, "CSI_SENS_CONF = 0x%08X\n",
- 		ipu_csi_read(csi, CSI_SENS_CONF));
- 	dev_dbg(csi->ipu->dev, "CSI_ACT_FRM_SIZE = 0x%08X\n",
+-#define MDA_ADDR(x,y)  ((u16 *) mda_vram_base + (y)*mda_num_columns + (x))
++#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
+ 
+ static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
+ {
+@@ -463,7 +463,7 @@ static int mdacon_blank(struct vc_data *c, int blank, int mode_switch)
+ {
+ 	if (mda_type = TYPE_MDA) {
+ 		if (blank) 
+-			scr_memsetw((void *)mda_vram_base, 
++			scr_memsetw(mda_vram_base,
+ 				mda_convert_attr(c->vc_video_erase_char),
+ 				c->vc_screenbuf_size);
+ 		/* Tell console.c that it has to restore the screen itself */
 -- 
-1.9.1
+2.9.2
 

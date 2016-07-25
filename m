@@ -1,66 +1,67 @@
-From: Michael Hennerich <michael.hennerich@analog.com>
-Date: Mon, 11 Jul 2016 07:25:44 +0000
-Subject: Re: [PATCH] backlight: adp5520: fix error handling in adp5520_bl_probe()
-Message-Id: <578349F8.2070207@analog.com>
+From: Nicholas Mc Guire <hofrat@osadl.org>
+Date: Mon, 25 Jul 2016 17:12:47 +0000
+Subject: [PATCH] omapfb/dss: wait_for_completion_interruptible_timeout expects long
+Message-Id: <1469466767-23352-1-git-send-email-hofrat@osadl.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
-In-Reply-To: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Rob Clark <robdclark@gmail.com>, Dave Airlie <airlied@gmail.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Luis de Bethencourt <luisbg@osg.samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nicholas Mc Guire <hofrat@osadl.org>
 
-On 09.07.2016 00:19, Alexey Khoroshilov wrote:
-> If adp5520_bl_setup() fails, sysfs group left unremoved.
->
-> By the way, fix overcomplicated assignement of error code.
->
-> Found by Linux Driver Verification project (linuxtesting.org).
->
-> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+wait_for_completion_timeout_interruptible returns long not unsigned long.
+an appropriately typed variable is introduced and assignments fixed up.
 
-Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+Fixes: f76ee892a99e ("omapfb: copy omapdss & displays for omapfb")
 
-> ---
->   drivers/video/backlight/adp5520_bl.c | 12 ++++++++++--
->   1 file changed, 10 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlig=
-ht/adp5520_bl.c
-> index dd88ba1d71ce..35373e2065b2 100644
-> --- a/drivers/video/backlight/adp5520_bl.c
-> +++ b/drivers/video/backlight/adp5520_bl.c
-> @@ -332,10 +332,18 @@ static int adp5520_bl_probe(struct platform_device =
-*pdev)
->   	}
->
->   	platform_set_drvdata(pdev, bl);
-> -	ret |=3D adp5520_bl_setup(bl);
-> +	ret =3D adp5520_bl_setup(bl);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to setup\n");
-> +		if (data->pdata->en_ambl_sens)
-> +			sysfs_remove_group(&bl->dev.kobj,
-> +					&adp5520_bl_attr_group);
-> +		return ret;
-> +	}
-> +
->   	backlight_update_status(bl);
->
-> -	return ret;
-> +	return 0;
->   }
->
->   static int adp5520_bl_remove(struct platform_device *pdev)
->
+Signed-off-by: Nicholas Mc Guire <hofrat@osadl.org>
+---
 
+API non-compliance was located by coccinelle
 
---=20
-Greetings,
-Michael
+This is mostly cosmetic since the returned value is only compared 
+at present, however if remaining time (completion occurred) where ever 
+used, then a signal received would be interpreted as a large remaining 
+jiffies left, which would be wrong.
 
---
-Analog Devices GmbH      Otl-Aicher Strasse 60-64      80807 M=FCnchen
-Sitz der Gesellschaft M=FCnchen, Registergericht M=FCnchen HRB 40368,
-Gesch=E4ftsf=FChrer: Peter Kolberg, Ali Raza Husain, Eileen Wynne
+Compile tested with: omap2plus_defconfig (implies CONFIG_FB_OMAP2_DSS)
+
+Patch is against 4.7.0-rc7 (localversion-next -next-20160724)
+
+ drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
+index 3691bde..a864608 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc-compat.c
+@@ -644,6 +644,7 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ {
+ 
+ 	int r;
++	long time_left;
+ 	DECLARE_COMPLETION_ONSTACK(completion);
+ 
+ 	r = omap_dispc_register_isr(dispc_irq_wait_handler, &completion,
+@@ -652,15 +653,15 @@ int omap_dispc_wait_for_irq_interruptible_timeout(u32 irqmask,
+ 	if (r)
+ 		return r;
+ 
+-	timeout = wait_for_completion_interruptible_timeout(&completion,
++	time_left = wait_for_completion_interruptible_timeout(&completion,
+ 			timeout);
+ 
+ 	omap_dispc_unregister_isr(dispc_irq_wait_handler, &completion, irqmask);
+ 
+-	if (timeout = 0)
++	if (time_left = 0)
+ 		return -ETIMEDOUT;
+ 
+-	if (timeout = -ERESTARTSYS)
++	if (time_left = -ERESTARTSYS)
+ 		return -ERESTARTSYS;
+ 
+ 	return 0;
+-- 
+2.1.4
+

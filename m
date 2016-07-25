@@ -1,44 +1,82 @@
-From: Edward Lipinsky <ellipinsky@gmail.com>
-Date: Sat, 23 Jul 2016 18:57:25 +0000
-Subject: [PATCH] staging: sm750fb: Fix block comment style
-Message-Id: <20160723185725.GA18355@gmail.com>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Mon, 25 Jul 2016 15:24:40 +0000
+Subject: [PATCH 3/3] mdacon: replace MDA_ADDR macro by inline function
+Message-Id: <20160725152440.6734-3-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
-In-Reply-To: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
+References: <20160725152440.6734-1-jslaby@suse.cz>
+In-Reply-To: <20160725152440.6734-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: plagnioj@jcrosoft.com, linux-fbdev@vger.kernel.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>
 
-This patch fixes the checkpatch.pl warning:
+MDA_ADDR is one of those macros which could be an inline function. So
+convert MDA_ADDR to mda_addr.
 
-WARNING: Block comments use * on subsequent lines
-
-Signed-off-by: Edward Lipinsky <ellipinsky@gmail.com>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 ---
- drivers/staging/sm750fb/ddk750_dvi.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/console/mdacon.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index a4a2550..8252f77 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -6,9 +6,11 @@
- #include "ddk750_sii164.h"
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index 814606bd26d1..24fe55134eb5 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -420,17 +420,20 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
+ 	}
+ }
  
+-#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
++static inline u16 *mda_addr(unsigned int x, unsigned int y)
++{
++	return mda_vram_base + y * mda_num_columns + x;
++}
  
--/* This global variable contains all the supported driver and its corresponding
--   function API. Please set the function pointer to NULL whenever the function
--   is not supported. */
-+/*
-+ * This global variable contains all the supported driver and its corresponding
-+ * function API. Please set the function pointer to NULL whenever the function
-+ * is not supported.
-+ */
- static dvi_ctrl_device_t g_dcftSupportedDviController[] = {
- #ifdef DVI_CTRL_SII164
- 	{
+ static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
+ {
+-	scr_writew(mda_convert_attr(ch), MDA_ADDR(x, y));
++	scr_writew(mda_convert_attr(ch), mda_addr(x, y));
+ }
+ 
+ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ 		         int count, int y, int x)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 
+ 	for (; count > 0; count--) {
+ 		scr_writew(mda_convert_attr(scr_readw(s++)), dest++);
+@@ -440,7 +443,7 @@ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ static void mdacon_clear(struct vc_data *c, int y, int x, 
+ 			  int height, int width)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
+ 
+ 	if (width <= 0 || height <= 0)
+@@ -511,16 +514,16 @@ static int mdacon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
+ 	switch (dir) {
+ 
+ 	case SM_UP:
+-		scr_memmovew(MDA_ADDR(0,t), MDA_ADDR(0,t+lines),
++		scr_memmovew(mda_addr(0, t), mda_addr(0, t + lines),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,b-lines), eattr,
++		scr_memsetw(mda_addr(0, b - lines), eattr,
+ 				lines*mda_num_columns*2);
+ 		break;
+ 
+ 	case SM_DOWN:
+-		scr_memmovew(MDA_ADDR(0,t+lines), MDA_ADDR(0,t),
++		scr_memmovew(mda_addr(0, t + lines), mda_addr(0, t),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,t), eattr, lines*mda_num_columns*2);
++		scr_memsetw(mda_addr(0, t), eattr, lines*mda_num_columns*2);
+ 		break;
+ 	}
+ 
 -- 
-2.7.4
+2.9.2
 

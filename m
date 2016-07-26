@@ -1,190 +1,133 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 20 Jul 2016 01:11:03 +0000
-Subject: [PATCH v2 05/13] gpu: ipu-v3: Add IDMA channel linking support
-Message-Id: <1468977071-29240-6-git-send-email-steve_longerbeam@mentor.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Tue, 26 Jul 2016 10:06:35 +0000
+Subject: Re: [PATCH v2 05/13] gpu: ipu-v3: Add IDMA channel linking support
+Message-Id: <1469527595.3041.82.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
  <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
+ <1468977071-29240-6-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1468977071-29240-6-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 
-Adds functions to link and unlink IDMAC source channels to sink
-channels.
+Am Dienstag, den 19.07.2016, 18:11 -0700 schrieb Steve Longerbeam:
+> Adds functions to link and unlink IDMAC source channels to sink
+> channels.
+> 
+> So far the following links are supported:
+> 
+> IPUV3_CHANNEL_IC_PRP_ENC_MEM -> IPUV3_CHANNEL_MEM_ROT_ENC
+> PUV3_CHANNEL_IC_PRP_VF_MEM   -> IPUV3_CHANNEL_MEM_ROT_VF
+> IPUV3_CHANNEL_IC_PP_MEM      -> IPUV3_CHANNEL_MEM_ROT_PP
+> 
+> More links can be added to the idmac_link_info[] array.
+> 
+> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 
-So far the following links are supported:
+This patch looks good to me, but the Frame Synchronisation Unit supports
+also linking the internal channels, not only the IDMAC channels.
 
-IPUV3_CHANNEL_IC_PRP_ENC_MEM -> IPUV3_CHANNEL_MEM_ROT_ENC
-PUV3_CHANNEL_IC_PRP_VF_MEM   -> IPUV3_CHANNEL_MEM_ROT_VF
-IPUV3_CHANNEL_IC_PP_MEM      -> IPUV3_CHANNEL_MEM_ROT_PP
+[...]
+> +++ b/drivers/gpu/ipu-v3/ipu-common.c
+[...]
+> +static const struct idmac_link_info idmac_link_info[] = {
+> +	{
+> +		.src  = { IPUV3_CHANNEL_IC_PRP_ENC_MEM, IPU_FS_PROC_FLOW1,
+> +			  0, 4, 7 },
+> +		.sink = { IPUV3_CHANNEL_MEM_ROT_ENC, IPU_FS_PROC_FLOW2,
+> +			  0, 4, 1 },
+> +	}, {
+> +		.src =  { IPUV3_CHANNEL_IC_PRP_VF_MEM, IPU_FS_PROC_FLOW1,
+> +			  8, 4, 8 },
+> +		.sink = { IPUV3_CHANNEL_MEM_ROT_VF, IPU_FS_PROC_FLOW2,
+> +			  4, 4, 1 },
+> +	}, {
+> +		.src =  { IPUV3_CHANNEL_IC_PP_MEM, IPU_FS_PROC_FLOW1,
+> +			  16, 4, 5 },
+> +		.sink = { IPUV3_CHANNEL_MEM_ROT_PP, IPU_FS_PROC_FLOW2,
+> +			  12, 4, 3 },
+> +	},
+> +};
 
-More links can be added to the idmac_link_info[] array.
+How about adding new (internal) channel numbers for the CSI->VDI link
+and having something like:
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+	{
+		.src =  { IPUV3_CHANNEL_CSI_DIRECT, IPU_FS_PROC_FLOW1,
+			  FS_VDI_SRC_SEL_OFFSET, 2, 1 },
+		.sink = { IPUV3_CHANNEL_VDI_CUR, 0, 0, 0 },
+	},
 
----
+instead of ipu_set_vdi_src_mux? Then in addition to
 
-v2:
-- replaced hardcoded channel numbers in idmac_link_info[] with
-  above channel names.
----
- drivers/gpu/ipu-v3/ipu-common.c | 118 ++++++++++++++++++++++++++++++++++++++++
- include/video/imx-ipu-v3.h      |   3 +
- 2 files changed, 121 insertions(+)
+[...]
+> +int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index 49af121..1c5aff4 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -730,6 +730,124 @@ void ipu_set_ic_src_mux(struct ipu_soc *ipu, int csi_id, bool vdi)
- }
- EXPORT_SYMBOL_GPL(ipu_set_ic_src_mux);
- 
-+
-+/* IDMAC Channel Linking */
-+
-+struct idmac_link_reg_info {
-+	int chno;
-+	u32 reg;
-+	int shift;
-+	int bits;
-+	u32 sel;
-+};
-+
-+struct idmac_link_info {
-+	struct idmac_link_reg_info src;
-+	struct idmac_link_reg_info sink;
-+};
-+
-+static const struct idmac_link_info idmac_link_info[] = {
-+	{
-+		.src  = { IPUV3_CHANNEL_IC_PRP_ENC_MEM, IPU_FS_PROC_FLOW1,
-+			  0, 4, 7 },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_ENC, IPU_FS_PROC_FLOW2,
-+			  0, 4, 1 },
-+	}, {
-+		.src =  { IPUV3_CHANNEL_IC_PRP_VF_MEM, IPU_FS_PROC_FLOW1,
-+			  8, 4, 8 },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_VF, IPU_FS_PROC_FLOW2,
-+			  4, 4, 1 },
-+	}, {
-+		.src =  { IPUV3_CHANNEL_IC_PP_MEM, IPU_FS_PROC_FLOW1,
-+			  16, 4, 5 },
-+		.sink = { IPUV3_CHANNEL_MEM_ROT_PP, IPU_FS_PROC_FLOW2,
-+			  12, 4, 3 },
-+	},
-+};
-+
-+static const struct idmac_link_info *find_idmac_link_info(
-+	struct ipuv3_channel *src, struct ipuv3_channel *sink)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(idmac_link_info); i++) {
-+		if (src->num = idmac_link_info[i].src.chno &&
-+		    sink->num = idmac_link_info[i].sink.chno)
-+			return &idmac_link_info[i];
-+	}
-+
-+	return NULL;
-+}
-+
-+/*
-+ * Links an IDMAC source channel to a sink channel.
-+ */
-+int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink)
-+{
-+	struct ipu_soc *ipu = src->ipu;
-+	const struct idmac_link_info *link;
-+	u32 src_reg, sink_reg, src_mask, sink_mask;
-+	unsigned long flags;
-+
-+	link = find_idmac_link_info(src, sink);
-+	if (!link)
-+		return -EINVAL;
-+
-+	src_mask = ((1 << link->src.bits) - 1) << link->src.shift;
-+	sink_mask = ((1 << link->sink.bits) - 1) << link->sink.shift;
-+
-+	spin_lock_irqsave(&ipu->lock, flags);
-+
-+	src_reg = ipu_cm_read(ipu, link->src.reg);
-+	sink_reg = ipu_cm_read(ipu, link->sink.reg);
-+
-+	src_reg &= ~src_mask;
-+	src_reg |= (link->src.sel << link->src.shift);
-+
-+	sink_reg &= ~sink_mask;
-+	sink_reg |= (link->sink.sel << link->sink.shift);
-+
-+	ipu_cm_write(ipu, src_reg, link->src.reg);
-+	ipu_cm_write(ipu, sink_reg, link->sink.reg);
-+
-+	spin_unlock_irqrestore(&ipu->lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ipu_idmac_link);
-+
-+/*
-+ * Unlinks IDMAC source and sink channels.
-+ */
-+int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink)
-+{
-+	struct ipu_soc *ipu = src->ipu;
-+	const struct idmac_link_info *link;
-+	u32 src_reg, sink_reg, src_mask, sink_mask;
-+	unsigned long flags;
-+
-+	link = find_idmac_link_info(src, sink);
-+	if (!link)
-+		return -EINVAL;
-+
-+	src_mask = ((1 << link->src.bits) - 1) << link->src.shift;
-+	sink_mask = ((1 << link->sink.bits) - 1) << link->sink.shift;
-+
-+	spin_lock_irqsave(&ipu->lock, flags);
-+
-+	src_reg = ipu_cm_read(ipu, link->src.reg);
-+	sink_reg = ipu_cm_read(ipu, link->sink.reg);
-+
-+	src_reg &= ~src_mask;
-+	sink_reg &= ~sink_mask;
-+
-+	ipu_cm_write(ipu, src_reg, link->src.reg);
-+	ipu_cm_write(ipu, sink_reg, link->sink.reg);
-+
-+	spin_unlock_irqrestore(&ipu->lock, flags);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(ipu_idmac_unlink);
-+
- struct ipu_devtype {
- 	const char *name;
- 	unsigned long cm_ofs;
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 8a6ccaa..b252cb4 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -128,6 +128,7 @@ enum ipu_channel_irq {
- #define IPUV3_CHANNEL_ROT_VF_MEM		49
- #define IPUV3_CHANNEL_ROT_PP_MEM		50
- #define IPUV3_CHANNEL_MEM_BG_SYNC_ALPHA		51
-+#define IPUV3_NUM_CHANNELS			64
- 
- int ipu_map_irq(struct ipu_soc *ipu, int irq);
- int ipu_idmac_channel_irq(struct ipu_soc *ipu, struct ipuv3_channel *channel,
-@@ -171,6 +172,8 @@ int ipu_idmac_get_current_buffer(struct ipuv3_channel *channel);
- bool ipu_idmac_buffer_is_ready(struct ipuv3_channel *channel, u32 buf_num);
- void ipu_idmac_select_buffer(struct ipuv3_channel *channel, u32 buf_num);
- void ipu_idmac_clear_buffer(struct ipuv3_channel *channel, u32 buf_num);
-+int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink);
-+int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink);
- 
- /*
-  * IPU Channel Parameter Memory (cpmem) functions
--- 
-1.9.1
+We could have a lower level
+
+ipu_fsu_link(int channel1, int channel2)
+
+which could be called like
+
+ipu_fsu_link(IPUV3_CHANNEL_CSI_DIRECT, IPUV3_CHANNEL_VDI_CUR);
+
+Come to think of it, could we replace shift,bits,sel with mask,value and
+add #defines for the FSU bit fields and values? I'm thinking:
+
+/* FS_PROC_FLOW1 */
+#define FS_PRPENC_ROT_SRC_SEL_MASK	(0xf << 0)
+#define FS_PRPENC_ROT_SRC_SEL_ENC		(0x7 << 0)
+#define FS_PRPVF_ROT_SRC_SEL_MASK	(0xf << 8)
+#define FS_PRPVF_ROT_SRC_SEL_VF			(0x8 << 8)
+#define FS_PP_SRC_SEL_MASK		(0xf << 12)
+#define FS_PP_ROT_SRC_SEL_MASK		(0xf << 16)
+#define FS_PP_ROT_SRC_SEL_PP			(0x5 << 16)
+#define FS_VDI1_SRC_SEL_MASK		(0x3 << 20)
+#define FS_VDI3_SRC_SEL_MASK		(0x3 << 20)
+#define FS_PRP_SRC_SEL_MASK		(0xf << 24)
+#define FS_VDI_SRC_SEL_MASK		(0x3 << 28)
+
+/* FS_PROC_FLOW2 */
+#define FS_PRP_ENC_DEST_SEL_MASK	(0xf << 0)
+#define FS_PRP_ENC_DEST_SEL_IRT_ENC		(0x1 << 0)
+#define FS_PRPVF_DEST_SEL_MASK		(0xf << 4)
+#define FS_PRPVF_DEST_SEL_IRT_VF		(0x1 << 4)
+#define FS_PRPVF_ROT_DEST_SEL_MASK	(0xf << 8)
+#define FS_PP_DEST_SEL_MASK		(0xf << 12)
+#define FS_PP_DEST_SEL_IRT_PP			(0x3 << 12)
+#define FS_PP_ROT_DEST_SEL_MASK		(0xf << 16)
+#define FS_PRPENC_ROT_DEST_SEL_MASK	(0xf << 20)
+#define FS_PRP_DEST_SEL_MASK		(0xf << 24)
+
+struct idmac_link_reg_info {
+	int chno;
+	u32 reg;
+	u32 mask;
+	u32 val;
+};
+
+static const struct idmac_link_info idmac_link_info[] = {
+	{
+		.src  = { IPUV3_CHANNEL_IC_PRP_ENC_MEM, IPU_FS_PROC_FLOW1,
+			  FS_PRPENC_ROT_SRC_SEL_MASK, FS_PRPENC_ROT_SRC_SEL_ENC },
+		.sink = { IPUV3_CHANNEL_MEM_ROT_ENC, IPU_FS_PROC_FLOW2,
+			  FS_PRP_ENC_DEST_SEL_MASK, FS_PRP_ENC_DEST_SEL_IRT_ENC },
+	}, {
+               .src =  { IPUV3_CHANNEL_IC_PRP_VF_MEM, IPU_FS_PROC_FLOW1,
+                         FS_PRPVF_ROT_SRC_SEL_MASK, FS_PRPVF_ROT_SRC_SEL_VF },
+               .sink = { IPUV3_CHANNEL_MEM_ROT_VF, IPU_FS_PROC_FLOW2,
+                         FS_PRPVF_DEST_SEL_MASK, FS_PRPVF_DEST_SEL_IRT_VF },
+	}, {
+               .src =  { IPUV3_CHANNEL_IC_PP_MEM, IPU_FS_PROC_FLOW1,
+                         FS_PP_ROT_SRC_SEL_MASK, FS_PP_ROT_SRC_SEL_PP },
+               .sink = { IPUV3_CHANNEL_MEM_ROT_PP, IPU_FS_PROC_FLOW2,
+                         FS_PP_DEST_SEL_MASK, FS_PP_DEST_SEL_IRT_PP },
+	},
+};
+
+regards
+Philipp
 

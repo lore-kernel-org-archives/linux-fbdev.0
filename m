@@ -1,101 +1,90 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Fri, 22 Jul 2016 13:54:55 +0000
-Subject: [PATCH 2/3] fbdev: vfb: add option for video mode
-Message-Id: <1469195696-14753-3-git-send-email-vladimir.murzin@arm.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Sun, 31 Jul 2016 19:42:27 +0000
+Subject: [PATCH v3 12/12] gpu: ipu-ic: allow multiple handles to ic
+Message-Id: <1469994147-17549-13-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Make vfb a bit more flexible in sense what it can represent and allow
-the end user to specify video mode parameters via newly introduced module
-option "mode". Since it is test module it is still up to the end user
-to make sure there is enough memory to satisfy video mode settings.
+The image converter kernel API supports conversion contexts and
+job queues, so we should allow more than one handle to the IC, so
+that multiple users can add jobs to the queue.
 
-Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
+Note however that users that control the IC manually (that do not
+use the image converter APIs but setup the IC task by hand via calls
+to ipu_ic_task_enable(), ipu_ic_enable(), etc.) must still be careful not
+to share the IC handle with other threads. At this point, the only user
+that still controls the IC manually is the i.mx capture driver. In that
+case the capture driver only allows one open context to get a handle
+to the IC at a time, so we should be ok there.
+
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+
 ---
- drivers/video/fbdev/vfb.c |   43 +++++++++++++++++++++----------------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index e9ecae2..2645875 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -37,6 +37,10 @@ static u_long videomemorysize = VIDEOMEMSIZE;
- module_param(videomemorysize, ulong, 0);
- MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
+v3: no changes
+v2: no changes
+---
+ drivers/gpu/ipu-v3/ipu-ic.c | 25 +------------------------
+ 1 file changed, 1 insertion(+), 24 deletions(-)
+
+diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
+index 5471b72..cc0780b 100644
+--- a/drivers/gpu/ipu-v3/ipu-ic.c
++++ b/drivers/gpu/ipu-v3/ipu-ic.c
+@@ -342,7 +342,6 @@ struct ipu_ic {
+ 	enum ipu_color_space out_cs;
+ 	bool graphics;
+ 	bool rotation;
+-	bool in_use;
  
-+static char *mode_option;
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "Preferred video mode (e.g. 640x480-8@60)");
-+
- /**********************************************************************
-  *
-  * Memory management
-@@ -86,26 +90,17 @@ static void rvfree(void *mem, unsigned long size)
- 	vfree(mem);
+ 	struct image_converter cvt;
+ 
+@@ -2367,38 +2366,16 @@ EXPORT_SYMBOL_GPL(ipu_ic_disable);
+ struct ipu_ic *ipu_ic_get(struct ipu_soc *ipu, enum ipu_ic_task task)
+ {
+ 	struct ipu_ic_priv *priv = ipu->ic_priv;
+-	unsigned long flags;
+-	struct ipu_ic *ic, *ret;
+ 
+ 	if (task >= IC_NUM_TASKS)
+ 		return ERR_PTR(-EINVAL);
+ 
+-	ic = &priv->task[task];
+-
+-	spin_lock_irqsave(&priv->lock, flags);
+-
+-	if (ic->in_use) {
+-		ret = ERR_PTR(-EBUSY);
+-		goto unlock;
+-	}
+-
+-	ic->in_use = true;
+-	ret = ic;
+-
+-unlock:
+-	spin_unlock_irqrestore(&priv->lock, flags);
+-	return ret;
++	return &priv->task[task];
  }
+ EXPORT_SYMBOL_GPL(ipu_ic_get);
  
--static struct fb_var_screeninfo vfb_default = {
-+static struct fb_videomode vfb_default = {
- 	.xres =		640,
- 	.yres =		480,
--	.xres_virtual =	640,
--	.yres_virtual =	480,
--	.bits_per_pixel = 8,
--	.red =		{ 0, 8, 0 },
--      	.green =	{ 0, 8, 0 },
--      	.blue =		{ 0, 8, 0 },
--      	.activate =	FB_ACTIVATE_TEST,
--      	.height =	-1,
--      	.width =	-1,
--      	.pixclock =	20000,
--      	.left_margin =	64,
--      	.right_margin =	64,
--      	.upper_margin =	32,
--      	.lower_margin =	32,
--      	.hsync_len =	64,
--      	.vsync_len =	2,
--      	.vmode =	FB_VMODE_NONINTERLACED,
-+	.pixclock =	20000,
-+	.left_margin =	64,
-+	.right_margin =	64,
-+	.upper_margin =	32,
-+	.lower_margin =	32,
-+	.hsync_len =	64,
-+	.vsync_len =	2,
-+	.vmode =	FB_VMODE_NONINTERLACED,
- };
- 
- static struct fb_fix_screeninfo vfb_fix = {
-@@ -479,6 +474,8 @@ static int __init vfb_setup(char *options)
- 		/* Test disable for backwards compatibility */
- 		if (!strcmp(this_opt, "disable"))
- 			vfb_enable = 0;
-+		else
-+			mode_option = this_opt;
- 	}
- 	return 1;
+ void ipu_ic_put(struct ipu_ic *ic)
+ {
+-	struct ipu_ic_priv *priv = ic->priv;
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&priv->lock, flags);
+-	ic->in_use = false;
+-	spin_unlock_irqrestore(&priv->lock, flags);
  }
-@@ -506,11 +503,13 @@ static int vfb_probe(struct platform_device *dev)
- 	info->screen_base = (char __iomem *)videomemory;
- 	info->fbops = &vfb_ops;
+ EXPORT_SYMBOL_GPL(ipu_ic_put);
  
--	retval = fb_find_mode(&info->var, info, NULL,
--			      NULL, 0, NULL, 8);
-+	if (!fb_find_mode(&info->var, info, mode_option,
-+			  NULL, 0, &vfb_default, 8)){
-+		fb_err(info, "Unable to find usable video mode.\n");
-+		retval = -EINVAL;
-+		goto err1;
-+	}
- 
--	if (!retval || (retval = 4))
--		info->var = vfb_default;
- 	vfb_fix.smem_start = (unsigned long) videomemory;
- 	vfb_fix.smem_len = videomemorysize;
- 	info->fix = vfb_fix;
 -- 
-1.7.9.5
+1.9.1
 

@@ -1,7 +1,7 @@
 From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sun, 31 Jul 2016 19:42:23 +0000
-Subject: [PATCH v3 08/12] gpu: ipu-v3: rename CSI client device
-Message-Id: <1469994147-17549-9-git-send-email-steve_longerbeam@mentor.com>
+Date: Sun, 31 Jul 2016 19:42:17 +0000
+Subject: [PATCH v3 02/12] gpu: ipu-cpmem: Add ipu_cpmem_get_burstsize()
+Message-Id: <1469994147-17549-3-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
@@ -11,8 +11,7 @@ Content-Transfer-Encoding: 7bit
 To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
 Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Rename the CSI client device in the client_reg[] table to
-"imx-ipuv3-csi".
+Adds ipu_cpmem_get_burstsize().
 
 Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 
@@ -21,30 +20,39 @@ Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 v3: no changes
 v2: no changes
 ---
- drivers/gpu/ipu-v3/ipu-common.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/ipu-v3/ipu-cpmem.c | 6 ++++++
+ include/video/imx-ipu-v3.h     | 1 +
+ 2 files changed, 7 insertions(+)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index d697cd5..d230988 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -1010,14 +1010,14 @@ static struct ipu_platform_reg client_reg[] = {
- 			.dma[0] = IPUV3_CHANNEL_CSI0,
- 			.dma[1] = -EINVAL,
- 		},
--		.name = "imx-ipuv3-camera",
-+		.name = "imx-ipuv3-csi",
- 	}, {
- 		.pdata = {
- 			.csi = 1,
- 			.dma[0] = IPUV3_CHANNEL_CSI1,
- 			.dma[1] = -EINVAL,
- 		},
--		.name = "imx-ipuv3-camera",
-+		.name = "imx-ipuv3-csi",
- 	}, {
- 		.pdata = {
- 			.di = 0,
+diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
+index a36c35e..fcb7dc8 100644
+--- a/drivers/gpu/ipu-v3/ipu-cpmem.c
++++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
+@@ -275,6 +275,12 @@ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id)
+ }
+ EXPORT_SYMBOL_GPL(ipu_cpmem_set_axi_id);
+ 
++int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch)
++{
++	return ipu_ch_param_read_field(ch, IPU_FIELD_NPB) + 1;
++}
++EXPORT_SYMBOL_GPL(ipu_cpmem_get_burstsize);
++
+ void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize)
+ {
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_NPB, burstsize - 1);
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 69c8658..8c4312d 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -187,6 +187,7 @@ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
+ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
+ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
+ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
++int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
+ void ipu_cpmem_set_block_mode(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_rotation(struct ipuv3_channel *ch,
 -- 
 1.9.1
 

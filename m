@@ -1,156 +1,95 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Fri, 22 Jul 2016 13:54:56 +0000
-Subject: [PATCH 3/3] fbdev: vfb: simplify memory management
-Message-Id: <1469195696-14753-4-git-send-email-vladimir.murzin@arm.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Sun, 31 Jul 2016 19:42:20 +0000
+Subject: [PATCH v3 05/12] gpu: ipu-v3: set correct full sensor frame for PAL/NTSC
+Message-Id: <1469994147-17549-6-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Substitute home-brewed memory management for framebuffer memory with what
-core mm provide us: vmalloc_32_user() and remap_vmalloc_range()
+Set the sensor full frame based on whether the passed in mbus_fmt
+is 720x480 (NTSC) or 720x576 (PAL).
 
-The former is designed to allocate virtually contiguous area which is
-32bit addressable and zeroed so it can be mapped to userspace without
-leaking data. The latter does the similar job to remap_pfn_range() but
-additionally validate vmalloc'ed area and it's size.
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
 ---
- drivers/video/fbdev/vfb.c |   86 +++------------------------------------------
- 1 file changed, 5 insertions(+), 81 deletions(-)
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index 2645875..1a9b8af 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -41,55 +41,6 @@ static char *mode_option = NULL;
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Preferred video mode (e.g. 640x480-8@60)");
- 
--/**********************************************************************
-- *
-- * Memory management
-- *
-- **********************************************************************/
--static void *rvmalloc(unsigned long size)
--{
--	void *mem;
--	unsigned long adr;
--
--	size = PAGE_ALIGN(size);
--	mem = vmalloc_32(size);
--	if (!mem)
--		return NULL;
--
--	/*
--	 * VFB must clear memory to prevent kernel info
--	 * leakage into userspace
--	 * VGA-based drivers MUST NOT clear memory if
--	 * they want to be able to take over vgacon
--	 */
--
--	memset(mem, 0, size);
--	adr = (unsigned long) mem;
--	while (size > 0) {
--		SetPageReserved(vmalloc_to_page((void *)adr));
--		adr += PAGE_SIZE;
--		size -= PAGE_SIZE;
--	}
--
--	return mem;
--}
--
--static void rvfree(void *mem, unsigned long size)
--{
--	unsigned long adr;
--
--	if (!mem)
--		return;
--
--	adr = (unsigned long) mem;
--	while ((long) size > 0) {
--		ClearPageReserved(vmalloc_to_page((void *)adr));
--		adr += PAGE_SIZE;
--		size -= PAGE_SIZE;
--	}
--	vfree(mem);
--}
--
- static struct fb_videomode vfb_default = {
- 	.xres =		640,
- 	.yres =		480,
-@@ -418,35 +369,7 @@ static int vfb_pan_display(struct fb_var_screeninfo *var,
- static int vfb_mmap(struct fb_info *info,
- 		    struct vm_area_struct *vma)
+v3: no changes
+v2: no changes
+---
+ drivers/gpu/ipu-v3/ipu-csi.c | 20 +++++++++++++-------
+ 1 file changed, 13 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
+index 06631ac..641ed76 100644
+--- a/drivers/gpu/ipu-v3/ipu-csi.c
++++ b/drivers/gpu/ipu-v3/ipu-csi.c
+@@ -365,10 +365,14 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
  {
--	unsigned long start = vma->vm_start;
--	unsigned long size = vma->vm_end - vma->vm_start;
--	unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
--	unsigned long page, pos;
--
--	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
--		return -EINVAL;
--	if (size > info->fix.smem_len)
--		return -EINVAL;
--	if (offset > info->fix.smem_len - size)
--		return -EINVAL;
--
--	pos = (unsigned long)info->fix.smem_start + offset;
--
--	while (size > 0) {
--		page = vmalloc_to_pfn((void *)pos);
--		if (remap_pfn_range(vma, start, page, PAGE_SIZE, PAGE_SHARED)) {
--			return -EAGAIN;
--		}
--		start += PAGE_SIZE;
--		pos += PAGE_SIZE;
--		if (size > PAGE_SIZE)
--			size -= PAGE_SIZE;
--		else
--			size = 0;
--	}
--
--	return 0;
--
-+	return remap_vmalloc_range(vma, (void *)info->fix.smem_start, vma->vm_pgoff);
- }
+ 	struct ipu_csi_bus_config cfg;
+ 	unsigned long flags;
+-	u32 data = 0;
++	u32 width, height, data = 0;
  
- #ifndef MODULE
-@@ -488,12 +411,13 @@ static int __init vfb_setup(char *options)
- static int vfb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
-+	unsigned int size = PAGE_ALIGN(videomemorysize);
- 	int retval = -ENOMEM;
+ 	fill_csi_bus_cfg(&cfg, mbus_cfg, mbus_fmt);
  
- 	/*
- 	 * For real video cards we use ioremap.
- 	 */
--	if (!(videomemory = rvmalloc(videomemorysize)))
-+	if (!(videomemory = vmalloc_32_user(size)))
- 		return retval;
++	/* set default sensor frame width and height */
++	width = mbus_fmt->width;
++	height = mbus_fmt->height;
++
+ 	/* Set the CSI_SENS_CONF register remaining fields */
+ 	data |= cfg.data_width << CSI_SENS_CONF_DATA_WIDTH_SHIFT |
+ 		cfg.data_fmt << CSI_SENS_CONF_DATA_FMT_SHIFT |
+@@ -386,11 +390,6 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
  
- 	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
-@@ -534,7 +458,7 @@ err2:
- err1:
- 	framebuffer_release(info);
- err:
--	rvfree(videomemory, videomemorysize);
-+	vfree(videomemory);
- 	return retval;
- }
+ 	ipu_csi_write(csi, data, CSI_SENS_CONF);
  
-@@ -544,7 +468,7 @@ static int vfb_remove(struct platform_device *dev)
+-	/* Setup sensor frame size */
+-	ipu_csi_write(csi,
+-		      (mbus_fmt->width - 1) | ((mbus_fmt->height - 1) << 16),
+-		      CSI_SENS_FRM_SIZE);
+-
+ 	/* Set CCIR registers */
  
- 	if (info) {
- 		unregister_framebuffer(info);
--		rvfree(videomemory, videomemorysize);
-+		vfree(videomemory);
- 		fb_dealloc_cmap(&info->cmap);
- 		framebuffer_release(info);
+ 	switch (cfg.clk_mode) {
+@@ -408,11 +407,12 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 			 * Field1BlankEnd = 0x7, Field1BlankStart = 0x3,
+ 			 * Field1ActiveEnd = 0x5, Field1ActiveStart = 0x1
+ 			 */
++			height = 625; /* framelines for PAL */
++
+ 			ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
+ 					  CSI_CCIR_CODE_1);
+ 			ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
+ 			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
+-
+ 		} else if (mbus_fmt->width = 720 && mbus_fmt->height = 480) {
+ 			/*
+ 			 * NTSC case
+@@ -422,6 +422,8 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 			 * Field1BlankEnd = 0x6, Field1BlankStart = 0x2,
+ 			 * Field1ActiveEnd = 0x4, Field1ActiveStart = 0
+ 			 */
++			height = 525; /* framelines for NTSC */
++
+ 			ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
+ 					  CSI_CCIR_CODE_1);
+ 			ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
+@@ -447,6 +449,10 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 		break;
  	}
+ 
++	/* Setup sensor frame size */
++	ipu_csi_write(csi, (width - 1) | ((height - 1) << 16),
++		      CSI_SENS_FRM_SIZE);
++
+ 	dev_dbg(csi->ipu->dev, "CSI_SENS_CONF = 0x%08X\n",
+ 		ipu_csi_read(csi, CSI_SENS_CONF));
+ 	dev_dbg(csi->ipu->dev, "CSI_ACT_FRM_SIZE = 0x%08X\n",
 -- 
-1.7.9.5
+1.9.1
 

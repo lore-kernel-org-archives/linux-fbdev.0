@@ -1,27 +1,47 @@
-From: Tejun Heo <tj@kernel.org>
-Date: Sat, 02 Jul 2016 11:34:01 +0000
-Subject: Re: [PATCH] omapfb: omapfb-main: Remove deprecated create_singlethread_workqueue
-Message-Id: <20160702113401.GD17431@htj.duckdns.org>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Sun, 31 Jul 2016 19:42:15 +0000
+Subject: [PATCH v3 00/12] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v3
+Message-Id: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160702083056.GA26936@Karyakshetra>
-In-Reply-To: <20160702083056.GA26936@Karyakshetra>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: p.zabel@pengutronix.de, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-On Sat, Jul 02, 2016 at 02:00:56PM +0530, Bhaktipriya Shridhar wrote:
-> The workqueue auto_update_work is involved in auto updating mode for
-> manual-update displays. omapfb driver uses a delayed work item to update
-> the display at a constant rate.
-> 
-> Since these long-running work items aren't involved in memory reclaim in
-> any way, system_long_wq has been used.
+In this version:
 
-Can you please explain why this is long-running?
+- API changes to ipu-vdi.c in "gpu: ipu-v3: Add Video Deinterlacer unit".
+- "gpu: ipu-v3: Add FSU channel linking support" is new but based on
+  previous patch "gpu: ipu-v3: Add IDMA channel linking support".
 
-Thanks.
+No other changes from previous version.
+
+Steve Longerbeam (12):
+  gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
+  gpu: ipu-cpmem: Add ipu_cpmem_get_burstsize()
+  gpu: ipu-v3: Add ipu_get_num()
+  gpu: ipu-v3: Add VDI input IDMAC channels
+  gpu: ipu-v3: set correct full sensor frame for PAL/NTSC
+  gpu: ipu-v3: Fix CSI data format for 16-bit media bus formats
+  gpu: ipu-v3: Fix IRT usage
+  gpu: ipu-v3: rename CSI client device
+  gpu: ipu-v3: Add Video Deinterlacer unit
+  gpu: ipu-v3: Add FSU channel linking support
+  gpu: ipu-ic: Add complete image conversion support with tiling
+  gpu: ipu-ic: allow multiple handles to ic
+
+ drivers/gpu/ipu-v3/Makefile     |    2 +-
+ drivers/gpu/ipu-v3/ipu-common.c |  154 +++-
+ drivers/gpu/ipu-v3/ipu-cpmem.c  |   13 +
+ drivers/gpu/ipu-v3/ipu-csi.c    |   26 +-
+ drivers/gpu/ipu-v3/ipu-ic.c     | 1756 ++++++++++++++++++++++++++++++++++++++-
+ drivers/gpu/ipu-v3/ipu-prv.h    |   34 +
+ drivers/gpu/ipu-v3/ipu-vdi.c    |  254 ++++++
+ include/video/imx-ipu-v3.h      |   99 ++-
+ 8 files changed, 2278 insertions(+), 60 deletions(-)
+ create mode 100644 drivers/gpu/ipu-v3/ipu-vdi.c
 
 -- 
-tejun
+1.9.1
+

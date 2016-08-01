@@ -1,99 +1,89 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Date: Wed, 31 Aug 2016 12:28:35 +0000
-Subject: Re: [PATCH RFC 4/5] drm/bridge: add dw-hdmi cec driver using Hans Verkil's CEC code
-Message-Id: <20160831122835.GT1041@n2100.armlinux.org.uk>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 01 Aug 2016 09:29:40 +0000
+Subject: Re: [PATCH v2 11/13] gpu: ipu-ic: Add complete image conversion support with tiling
+Message-Id: <1470043780.3025.31.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160812141421.GB1041@n2100.armlinux.org.uk>
- <E1bYDEs-0004rs-FP@rmk-PC.armlinux.org.uk>
- <dcd9587f-be60-0cb6-92bb-3226c51bddfb@xs4all.nl>
- <20160823075950.GC1041@n2100.armlinux.org.uk>
- <57BC03D9.10707@cisco.com>
-In-Reply-To: <57BC03D9.10707@cisco.com>
+References: <1467932621-358-1-git-send-email-steve_longerbeam@mentor.com>
+ <1468977071-29240-1-git-send-email-steve_longerbeam@mentor.com>
+ <1468977071-29240-12-git-send-email-steve_longerbeam@mentor.com>
+ <1469527718.3041.85.camel@pengutronix.de>
+ <8fad20e2-66c4-e2f4-b5d2-25190fdbaa2c@mentor.com>
+In-Reply-To: <8fad20e2-66c4-e2f4-b5d2-25190fdbaa2c@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hansverk@cisco.com>
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Hans Verkuil <hverkuil@xs4all.nl>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org
+To: Steve Longerbeam <steve_longerbeam@mentor.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, Steve Longerbeam <slongerbeam@gmail.com>, plagnioj@jcrosoft.com
 
-On Tue, Aug 23, 2016 at 10:05:45AM +0200, Hans Verkuil wrote:
+Am Donnerstag, den 28.07.2016, 16:09 -0700 schrieb Steve Longerbeam:
+> > Now split the frame in half and suddenly pixel x' = 640 is the start of
+> > a new tile, so it is sampled at x = 160, and pixel x' = 1279 will be
+> > sampled at x = 160 + (1279 - 640) * 8192/32846. = 319.37, reading over
+> > the edge of the source image.
+> 
+> Here's where we part.
+> 
+> The 320x200 --> 1280x800 conversion is split into two 160x200 -->
+> 640x800 conversions. The DMA controller and ipu_ic_task_init() are given
+> those width/height dimensions, not the dimensions of the original images.
+> So this is simply two separate 160x200 --> 640x800 conversions. The only
+> difference from a true 160x200 --> 640x800 image conversion is that the DMA
+> controller must be given the stride lengths of the original 320x200 and 
+> 1280x800
+> images.
+> 
+> The rsc for the 160x200 --> 640x800 conversions is
+> 
+> x = x' * (160-1)/(640-1) = x' * 8192/rsc, so rsc = 32923
 > 
 > 
-> On 08/23/16 09:59, Russell King - ARM Linux wrote:
-> > On Tue, Aug 23, 2016 at 09:21:17AM +0200, Hans Verkuil wrote:
-> >> Hi Russell,
-> >>
-> >> On 08/12/2016 04:15 PM, Russell King wrote:
-> >>> Add a CEC driver for the dw-hdmi hardware using Hans Verkil's CEC
-> >>> implementation.
-> >>>
-> >>> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-> >>> ---
-> >>>  drivers/gpu/drm/bridge/Kconfig            |   7 +
-> >>>  drivers/gpu/drm/bridge/Makefile           |   1 +
-> >>>  drivers/gpu/drm/bridge/dw-hdmi-cec.c      | 344 ++++++++++++++++++++++++++++++
-> >>>  drivers/gpu/drm/bridge/dw-hdmi.c          |  64 +++++-
-> >>>  include/linux/platform_data/dw_hdmi-cec.h |  16 ++
-> >>>  5 files changed, 421 insertions(+), 11 deletions(-)
-> >>>  create mode 100644 drivers/gpu/drm/bridge/dw-hdmi-cec.c
-> >>>  create mode 100644 include/linux/platform_data/dw_hdmi-cec.h
-> >>>
-> >>
-> >> <snip>
-> >>
-> >>> +static unsigned int parse_hdmi_addr(const struct edid *edid)
-> >>> +{
-> >>> +	if (!edid || edid->extensions = 0)
-> >>> +		return (u16)~0;
-> >>> +
-> >>> +	return cec_get_edid_phys_addr((u8 *)edid,
-> >>> +				EDID_LENGTH * (edid->extensions + 1), NULL);
-> >>> +}
-> >>> +
-> >>> +static int dw_hdmi_cec_notify(struct notifier_block *nb, unsigned long event,
-> >>> +			      void *data)
-> >>> +{
-> >>> +	struct dw_hdmi_cec *cec = container_of(nb, struct dw_hdmi_cec, nb);
-> >>> +	union hdmi_event *event_block = data;
-> >>> +	unsigned int phys;
-> >>> +
-> >>> +	dev_info(event_block->base.source, "event %lu\n", event);
-> >>> +
-> >>> +	if (event_block->base.source != cec->adap->devnode.parent)
-> >>> +		return NOTIFY_OK;
-> >>> +
-> >>> +	switch (event) {
-> >>> +	case HDMI_CONNECTED:
-> >>> +		break;
-> >>> +
-> >>> +	case HDMI_DISCONNECTED:
-> >>> +		cec_s_phys_addr(cec->adap, CEC_PHYS_ADDR_INVALID, false);
-> >>> +		break;
-> >>> +
-> >>> +	case HDMI_NEW_EDID:
-> >>> +		phys = parse_hdmi_addr(event_block->edid.edid);
-> >>> +		cec_s_phys_addr(cec->adap, phys, false);
-> >>> +		break;
-> >>> +	}
-> >>> +
-> >>> +	return NOTIFY_OK;
-> >>> +}
-> >>
-> >> Wouldn't it make a lot of sense to integrate this into the cec framework?
-> >>
-> >> All you need is to pass an hdmi_notifier_dev as argument to cec_allocate_adapter()
-> >> and you can integrate this.
-> >>
-> >> If you are OK with that, then I can make patches for that.
-> > 
-> > It's not just about CEC.  It's also used for passing information between
-> > the video and audio parts, so tying this into CEC is wrong.
+> So original horizontal position 640 is really x' = 0 of the second 
+> conversion,
+> which is sampled at x = 0 of the second conversion. And the pixel at x' 
+> = 1279
+> is really x' = 639 of the second conversion, which is sampled at x = 639 
+> * 8192/32923
+> = 158.98, which does not read over the edge of the source tile.
+
+My bad, I somehow thought that the scaling factor is calculated per
+image (as it IMHO should be), not just per tile.
+
+Of course in that case you won't ever read over the edge, but on the
+other hand the visual problems are worse because you underestimate the
+scaling factor and introduce a sharp edge at the center: even if the
+source pixel step per target pixel step is a fraction, between pixels
+width/2-1 and width/2 there's always a whole source pixel step.
+
+Take the extreme example of scaling 32x32 to 1080x1080 pixels. The ideal
+source pixels for x' = 519 and 520 should be x = 14.911 and 14.939,
+respectively. Due to tiling they will be x = 15 and 16, introducing a
+sharp seam in the otherwise blurry mess.
+
+> > This problem gets worse if you start using arbitrary frame sizes and YUV
+> > planar images and consider that tile start addresses are (currently)
+> > limited to 8 byte boundaries, to the point that there are very visible
+> > seams in the center of the image, depending on scaling factor and image
+> > sizes.
 > 
-> I'm not saying that the hdmi notifier should be integrated, just that the
-> CEC core can register itself as a notifier and handle cec_s_phys_addr.
+> Indeed there could be other parameters that would cause the resizer to
+> read past the edge of the source tiles, I will need to try and find such 
+> cases. 
+> But not in the above case.
 
-Yes, that would decrease the amount of code duplication.
+Ok.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+> That said, I _have_ noticed seams, but I have always attributed them to the
+> fact that we have a discontinuity in color-space conversion and/or resize
+> interpolation at the boundary between tiles.
+>
+> I've also found that the seams are quite noticeable when rendered to a
+> display overlay, but become significantly less pronounced if the images are
+> converted to a back buffer, and then page-flipped to front buffer when the
+> conversion (all tiles) completes.
+
+I don't know what to make of this. Maybe it is a timing issue and what
+you are actually seeing is tearing between tiles of different frames?
+
+regards
+Philipp
+

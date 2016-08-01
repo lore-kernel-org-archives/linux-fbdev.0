@@ -1,24 +1,29 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 01 Aug 2016 09:13:13 +0000
+From: Steve Longerbeam <steve_longerbeam@mentor.com>
+Date: Mon, 01 Aug 2016 20:15:54 +0000
 Subject: Re: [PATCH v3 01/12] gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
-Message-Id: <1470042793.3025.15.camel@pengutronix.de>
+Message-Id: <20a0d3ae-6752-4367-06d2-92d815be9fb9@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
  <1469994147-17549-2-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1469994147-17549-2-git-send-email-steve_longerbeam@mentor.com>
+ <1470042793.3025.15.camel@pengutronix.de>
+In-Reply-To: <1470042793.3025.15.camel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steve Longerbeam <slongerbeam@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
+To: Philipp Zabel <p.zabel@pengutronix.de>, Steve Longerbeam <slongerbeam@gmail.com>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Am Sonntag, den 31.07.2016, 12:42 -0700 schrieb Steve Longerbeam:
-> Adds ipu_cpmem_set_uv_offset(), to set planar U/V offsets.
-> 
-> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+On 08/01/2016 02:13 AM, Philipp Zabel wrote:
+> Am Sonntag, den 31.07.2016, 12:42 -0700 schrieb Steve Longerbeam:
+>> Adds ipu_cpmem_set_uv_offset(), to set planar U/V offsets.
+>>
+>> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+> There is no need to resend already applied patches.
+>
 
-There is no need to resend already applied patches.
+Ok, I wasn't sure whether to include or not, you said you
+applied these, should have read that as an implicit Ack.
 
-regards
-Philipp
+Steve
+
 

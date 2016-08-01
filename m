@@ -1,72 +1,67 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Wed, 31 Aug 2016 08:25:27 +0000
-Subject: Re: [PATCH 4/6] ARM: sunxi: Support the Nextthing GR8
-Message-Id: <CAGb2v66CDdSJMN4STHug1bGU2fnRK=Y24kwKS_8EtD6PZg3T-A@mail.gmail.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 01 Aug 2016 09:13:18 +0000
+Subject: Re: [PATCH v3 09/12] gpu: ipu-v3: Add Video Deinterlacer unit
+Message-Id: <1470042798.3025.16.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160831081817.5191-1-maxime.ripard@free-electrons.com> <20160831081817.5191-5-maxime.ripard@free-electrons.com>
-In-Reply-To: <20160831081817.5191-5-maxime.ripard@free-electrons.com>
+References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+ <1469994147-17549-10-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1469994147-17549-10-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@intel.com>, David Airlie <airlied@linux.ie>, Thierry Reding <thierry.reding@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mylene Josserand <mylene.josserand@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Alexander Kaplan <alex@nextthing.co>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 
-On Wed, Aug 31, 2016 at 4:18 PM, Maxime Ripard
-<maxime.ripard@free-electrons.com> wrote:
-> The GR8 is an SoC made by Nextthing Co, loosely based on the sun5i family.
->
-> It has a number of new controllers compared to the A10s and A13 (SPDIF, I=
-2S),
-> but some controllers missing too (Ethernet, less I2C, less UARTs).
->
-> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+Am Sonntag, den 31.07.2016, 12:42 -0700 schrieb Steve Longerbeam:
+> Adds the Video Deinterlacer (VDIC) unit.
+> 
+> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+> 
 > ---
->  Documentation/devicetree/bindings/arm/sunxi.txt | 1 +
->  MAINTAINERS                                     | 1 +
->  arch/arm/mach-sunxi/sunxi.c                     | 1 +
+> 
+> v3:
+> - renamed and exported ipu_vdi_set_top_field_man() to
+>   ipu_vdi_set_field_order(). Args include std and field to determine
+>   correct field order.
+> - exported ipu_vdi_set_motion().
+> - ipu_vdi_setup() does not need to call ipu_vdi_set_top_field_man() or
+>   ipu_vdi_set_motion(), since latter are exported. This simplifies args.
+> - removed ipu_vdi_toggle_top_field_man().
+> - removed ipu_vdi_set_src().
+[...]
+> --- /dev/null
+> +++ b/drivers/gpu/ipu-v3/ipu-vdi.c
+> @@ -0,0 +1,254 @@
+> +/*
+> + * Copyright (C) 2012-2016 Mentor Graphics Inc.
+> + * Copyright (C) 2005-2009 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by the
+> + * Free Software Foundation; either version 2 of the License, or (at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+> + * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+> + * for more details.
+> + */
+> +#include <linux/export.h>
+> +#include <linux/types.h>
+> +#include <linux/errno.h>
+> +#include <linux/delay.h>
+> +#include <linux/io.h>
+> +#include <linux/err.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/clk.h>
+> +#include <linux/clk-provider.h>
+> +#include <linux/clkdev.h>
+> +#include <uapi/linux/v4l2-mediabus.h>
 
-Please update Documentation/arm/sunxi/README as well. I don't suppose
-there's a datasheet available?
+Please remove the unused headers. I think you can remove all but
+export.h, types.h, errno.h, and io.h.
+Other than that, the patch now looks fine to me.
 
-ChenYu
+regards
+Philipp
 
->  3 files changed, 3 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/arm/sunxi.txt b/Documentat=
-ion/devicetree/bindings/arm/sunxi.txt
-> index 7e79fcc36b0d..3975d0a0e4c2 100644
-> --- a/Documentation/devicetree/bindings/arm/sunxi.txt
-> +++ b/Documentation/devicetree/bindings/arm/sunxi.txt
-> @@ -14,3 +14,4 @@ using one of the following compatible strings:
->    allwinner,sun8i-a83t
->    allwinner,sun8i-h3
->    allwinner,sun9i-a80
-> +  nextthing,gr8
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 20bb1d00098c..c6a9e6fda1d0 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -982,6 +982,7 @@ M:  Chen-Yu Tsai <wens@csie.org>
->  L:     linux-arm-kernel@lists.infradead.org (moderated for non-subscribe=
-rs)
->  S:     Maintained
->  N:     sun[x456789]i
-> +F:     arch/arm/boot/dts/gr8*
->
->  ARM/Allwinner SoC Clock Support
->  M:     Emilio L=C3=B3pez <emilio@elopez.com.ar>
-> diff --git a/arch/arm/mach-sunxi/sunxi.c b/arch/arm/mach-sunxi/sunxi.c
-> index 95dca8c2c9ed..2e2bde271205 100644
-> --- a/arch/arm/mach-sunxi/sunxi.c
-> +++ b/arch/arm/mach-sunxi/sunxi.c
-> @@ -22,6 +22,7 @@ static const char * const sunxi_board_dt_compat[] =3D {
->         "allwinner,sun5i-a10s",
->         "allwinner,sun5i-a13",
->         "allwinner,sun5i-r8",
-> +       "nextthing,gr8",
->         NULL,
->  };
->
-> --
-> 2.9.2
->

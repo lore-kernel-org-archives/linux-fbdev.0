@@ -1,26 +1,24 @@
-From: Steve Longerbeam <steve_longerbeam@mentor.com>
-Date: Mon, 01 Aug 2016 21:02:49 +0000
-Subject: Re: [PATCH v3 09/12] gpu: ipu-v3: Add Video Deinterlacer unit
-Message-Id: <5f57ebae-48f4-84f0-a1f7-6a8eb8d32369@mentor.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 01 Aug 2016 09:13:13 +0000
+Subject: Re: [PATCH v3 01/12] gpu: ipu-cpmem: Add ipu_cpmem_set_uv_offset()
+Message-Id: <1470042793.3025.15.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
- <1469994147-17549-10-git-send-email-steve_longerbeam@mentor.com>
- <1470042798.3025.16.camel@pengutronix.de>
-In-Reply-To: <1470042798.3025.16.camel@pengutronix.de>
+ <1469994147-17549-2-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1469994147-17549-2-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>, Steve Longerbeam <slongerbeam@gmail.com>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 
-On 08/01/2016 02:13 AM, Philipp Zabel wrote:
->
-> Please remove the unused headers. I think you can remove all but
-> export.h, types.h, errno.h, and io.h.
-> Other than that, the patch now looks fine to me.
->
+Am Sonntag, den 31.07.2016, 12:42 -0700 schrieb Steve Longerbeam:
+> Adds ipu_cpmem_set_uv_offset(), to set planar U/V offsets.
+> 
+> Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 
-I was able to prune all but io.h, the rest is provided by ipu-prv.h.
+There is no need to resend already applied patches.
 
-Steve
+regards
+Philipp
 

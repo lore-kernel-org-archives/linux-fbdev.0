@@ -1,53 +1,43 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 15 Aug 2016 13:46:12 +0000
-Subject: Re: [PATCH] backlight-tosa: Delete owner assignment
-Message-Id: <20160815134612.GH25844@dell>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Mon, 01 Aug 2016 09:13:21 +0000
+Subject: Re: [PATCH v3 10/12] gpu: ipu-v3: Add FSU channel linking support
+Message-Id: <1470042801.3025.17.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <efe9964f-c907-305c-b75e-32a4139d1edd@users.sourceforge.net>
- <CAOMGZ=EWsO_pRg+s+hnPmwRePcrijFK3v+SRKTizfbqyY83iqQ@mail.gmail.com>
-In-Reply-To: <CAOMGZ=EWsO_pRg+s+hnPmwRePcrijFK3v+SRKTizfbqyY83iqQ@mail.gmail.com>
+References: <1469994147-17549-1-git-send-email-steve_longerbeam@mentor.com>
+	 <1469994147-17549-11-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1469994147-17549-11-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, LKML <linux-kernel@vger.kernel.org>, Kernel Janitors List <kernel-janitors@vger.kernel.org>, Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-On Mon, 15 Aug 2016, Vegard Nossum wrote:
+Am Sonntag, den 31.07.2016, 12:42 -0700 schrieb Steve Longerbeam:
+> Adds functions to link and unlink source channels to sink
+> channels in the FSU:
+> 
+> int ipu_fsu_link(struct ipu_soc *ipu, int src_ch, int sink_ch);
+> int ipu_fsu_unlink(struct ipu_soc *ipu, int src_ch, int sink_ch);
+>
+> The channels numbers are usually IDMAC channels, but they can also be
+> channels that do not transfer data to or from memory. The following
+> convenience functions can be used in place of ipu_fsu_link/unlink()
+> when both source and sink channels are IDMAC channels:
+> 
+> int ipu_idmac_link(struct ipuv3_channel *src, struct ipuv3_channel *sink);
+> int ipu_idmac_unlink(struct ipuv3_channel *src, struct ipuv3_channel *sink);
+> 
+> So far the following links are supported:
+> 
+> IPUV3_CHANNEL_IC_PRP_ENC_MEM -> IPUV3_CHANNEL_MEM_ROT_ENC
+> PUV3_CHANNEL_IC_PRP_VF_MEM   -> IPUV3_CHANNEL_MEM_ROT_VF
+> IPUV3_CHANNEL_IC_PP_MEM      -> IPUV3_CHANNEL_MEM_ROT_PP
+> IPUV3_CHANNEL_CSI_DIRECT     -> IPUV3_CHANNEL_CSI_VDI_PREV
 
-> On 15 August 2016 at 13:12, SF Markus Elfring
-> <elfring@users.sourceforge.net> wrote:
-> > From: Markus Elfring <elfring@users.sourceforge.net>
-> > Date: Mon, 15 Aug 2016 13:03:29 +0200
-> >
-> > The field "owner" is set by core. Thus delete an extra initialisation.
->=20
-> Hi,
->=20
-> Just a small nit on the patch title: "delete owner assignment" is
-> virtually useless as a title because it has no meaning without the
-> broader context and only describes the literal change. It's like
-> naming a patch "add a line" or "change the code"; it serves no
-> purpose.
->=20
-> How about "backlight-tosa: delete _unnecessary_ assignment"? This
-> immediately communicates the reason for/intent of the patch (there is
-> unnecessary code, thus we can simplify it).
+Looks good to me, thanks. Are you sure though that the target of the CSI
+direct channel is VDI_PREV? I would have assumed the CSI input is fed
+into VDI_NEXT, while CUR and PREV are read from memory.
 
-  backlight-tosa: Do not manually assign THIS_MODULE to .owner
+regards
+Philipp
 
-  This is unnecessary because ...
-
-> (Sorry about singling out this patch and the apparent bikeshedding,
-> this comment obviously applies to a lot of patches by a lot of
-> authors!)
->=20
-> Thanks,
->=20
->=20
-> Vegard
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

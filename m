@@ -1,101 +1,166 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Mon, 15 Aug 2016 10:10:31 +0000
-Subject: [RESEND PATCH 2/3] fbdev: vfb: add option for video mode
-Message-Id: <1471255832-44793-3-git-send-email-vladimir.murzin@arm.com>
+From: Borislav Petkov <bp@suse.de>
+Date: Mon, 01 Aug 2016 16:39:37 +0000
+Subject: Re: [linux-next:master 12268/12761] include/linux/ratelimit.h:61:3: error: 'DRIVER_NAME' undeclared
+Message-Id: <20160801163937.GA28119@nazgul.tnic>
 List-Id: <linux-fbdev.vger.kernel.org>
+In-Reply-To: <201608012050.XZyUj6hM%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: kbuild test robot <fengguang.wu@intel.com>
+Cc: kbuild-all@01.org, Andrew Morton <akpm@linux-foundation.org>, Linux Memory Management List <linux-mm@kvack.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-Make vfb a bit more flexible in sense what it can represent and allow
-the end user to specify video mode parameters via newly introduced module
-option "mode". Since it is test module it is still up to the end user
-to make sure there is enough memory to satisfy video mode settings.
+On Mon, Aug 01, 2016 at 08:53:52PM +0800, kbuild test robot wrote:
+> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
+> head:   c24c1308a5b274bbd90db927cb18efddc95340c7
+> commit: f207be0388d86d4ed049fbbec2650a2688b5b0f7 [12268/12761] ratelimit: extend to print suppressed messages on release
+> config: blackfin-allyesconfig (attached as .config)
+> compiler: bfin-uclinux-gcc (GCC) 4.6.3
+> reproduce:
+>         wget https://git.kernel.org/cgit/linux/kernel/git/wfg/lkp-tests.git/plain/sbin/make.cross -O ~/bin/make.cross
+>         chmod +x ~/bin/make.cross
+>         git checkout f207be0388d86d4ed049fbbec2650a2688b5b0f7
+>         # save the attached .config to linux build tree
+>         make.cross ARCH=blackfin 
+> 
+> All errors (new ones prefixed by >>):
+> 
+>    In file included from include/linux/device.h:27:0,
+>                     from include/linux/i2c.h:30,
+>                     from include/uapi/linux/fb.h:5,
+>                     from include/linux/fb.h:5,
+>                     from drivers/video/fbdev/bfin_adv7393fb.c:23:
+>    include/linux/ratelimit.h: In function 'ratelimit_state_exit':
+> >> include/linux/ratelimit.h:61:3: error: 'DRIVER_NAME' undeclared (first use in this function)
+>    include/linux/ratelimit.h:61:3: note: each undeclared identifier is reported only once for each function it appears in
+> >> include/linux/ratelimit.h:61:3: error: expected ')' before string constant
 
-Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
+Hmm, so I get a different build error with this:
+
+arch/blackfin/mach-common/arch_checks.c:24:3: error: #error "Sclk value selected is less than minimum. Please select a proper value for SCLK multiplier"
+arch/blackfin/mach-common/arch_checks.c:28:3: error: #error "ANOMALY 05000273, please make sure CCLK is at least 2x SCLK"
+arch/blackfin/mach-common/arch_checks.c:51:3: error: #error the MPU will not function safely while Anomaly 05000263 applies
+make[1]: *** [arch/blackfin/mach-common/arch_checks.o] Error 1
+make: *** [arch/blackfin/mach-common] Error 2
+make: *** Waiting for unfinished jobs....
+
+If I checkout the next commit:
+
+  e8a10ce9a9fd ("printk: add kernel parameter to control writes to /dev/kmsg")
+
+and build printk.c which is the only user of ratelimit_state_exit(), it
+builds fine-ish (blackfin compiler can't follow the if (write) thing but
+that's a different issue):
+
+$ ~/bin/make.cross ARCH=blackfin kernel/printk/printk.o
+make CROSS_COMPILE=/home/boris/opt/gcc-4.6.3-nolibc/bfin-uclinux/bin/bfin-uclinux- --jobs=8 ARCH=blackfin kernel/printk/printk.o
+  CHK     include/config/kernel.release
+  CHK     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  CHK     include/generated/timeconst.h
+  CHK     include/generated/bounds.h
+  CHK     include/generated/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+<stdin>:1268:2: warning: #warning syscall accept4 not implemented [-Wcpp]
+<stdin>:1298:2: warning: #warning syscall userfaultfd not implemented [-Wcpp]
+<stdin>:1301:2: warning: #warning syscall membarrier not implemented [-Wcpp]
+<stdin>:1304:2: warning: #warning syscall mlock2 not implemented [-Wcpp]
+<stdin>:1307:2: warning: #warning syscall copy_file_range not implemented [-Wcpp]
+<stdin>:1310:2: warning: #warning syscall preadv2 not implemented [-Wcpp]
+<stdin>:1313:2: warning: #warning syscall pwritev2 not implemented [-Wcpp]
+  CC      kernel/printk/printk.o
+kernel/printk/printk.c: In function 'devkmsg_sysctl_set_loglvl':
+kernel/printk/printk.c:184:16: warning: 'old' may be used uninitialized in this function [-Wuninitialized]
+
+Hmm, I can trigger it this way:
+
+$ ~/bin/make.cross ARCH=blackfin drivers/video/fbdev/bfin_adv7393fb.o
+make CROSS_COMPILE=/home/boris/opt/gcc-4.6.3-nolibc/bfin-uclinux/bin/bfin-uclinux- --jobs=8 ARCH=blackfin drivers/video/fbdev/bfin_adv7393fb.o
+  CHK     include/config/kernel.release
+  CHK     include/generated/uapi/linux/version.h
+  CHK     include/generated/utsrelease.h
+  CHK     include/generated/timeconst.h
+  CHK     include/generated/bounds.h
+  CHK     include/generated/asm-offsets.h
+  CALL    scripts/checksyscalls.sh
+<stdin>:1268:2: warning: #warning syscall accept4 not implemented [-Wcpp]
+<stdin>:1298:2: warning: #warning syscall userfaultfd not implemented [-Wcpp]
+<stdin>:1301:2: warning: #warning syscall membarrier not implemented [-Wcpp]
+<stdin>:1304:2: warning: #warning syscall mlock2 not implemented [-Wcpp]
+<stdin>:1307:2: warning: #warning syscall copy_file_range not implemented [-Wcpp]
+<stdin>:1310:2: warning: #warning syscall preadv2 not implemented [-Wcpp]
+<stdin>:1313:2: warning: #warning syscall pwritev2 not implemented [-Wcpp]
+  CC      drivers/video/fbdev/bfin_adv7393fb.o
+In file included from include/linux/device.h:27:0,
+                 from include/linux/i2c.h:30,
+                 from include/uapi/linux/fb.h:5,
+                 from include/linux/fb.h:5,
+                 from drivers/video/fbdev/bfin_adv7393fb.c:23:
+include/linux/ratelimit.h: In function 'ratelimit_state_exit':
+include/linux/ratelimit.h:61:3: error: 'DRIVER_NAME' undeclared (first use in this function)
+include/linux/ratelimit.h:61:3: note: each undeclared identifier is reported only once for each function it appears in
+include/linux/ratelimit.h:61:3: error: expected ')' before string constant
+drivers/video/fbdev/bfin_adv7393fb.c: At top level:
+drivers/video/fbdev/bfin_adv7393fb.c:323:12: warning: 'proc_output' defined but not used [-Wunused-function]
+scripts/Makefile.build:289: recipe for target 'drivers/video/fbdev/bfin_adv7393fb.o' failed
+make[1]: *** [drivers/video/fbdev/bfin_adv7393fb.o] Error 1
+Makefile:1628: recipe for target 'drivers/video/fbdev/bfin_adv7393fb.o' failed
+make: *** [drivers/video/fbdev/bfin_adv7393fb.o] Error 2
+
+And of course it won't build. Here's a fix.
+
 ---
- drivers/video/fbdev/vfb.c |   43 +++++++++++++++++++++----------------------
- 1 file changed, 21 insertions(+), 22 deletions(-)
+From: Borislav Petkov <bp@suse.de>
+Date: Mon, 1 Aug 2016 18:34:42 +0200
+Subject: [PATCH] fbdev/bfin_adv7393fb: Move DRIVER_NAME before its first use
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index e9ecae2..2645875 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -37,6 +37,10 @@ static u_long videomemorysize = VIDEOMEMSIZE;
- module_param(videomemorysize, ulong, 0);
- MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
+Move the DRIVER_NAME macro definition before the first usage site and
+fix build error.
+
+Reported-by: kbuild test robot <fengguang.wu@intel.com>
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/fbdev/bfin_adv7393fb.c | 2 ++
+ drivers/video/fbdev/bfin_adv7393fb.h | 2 --
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
+index 8fe41caac38e..e2d7d039ce3b 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.c
++++ b/drivers/video/fbdev/bfin_adv7393fb.c
+@@ -10,6 +10,8 @@
+  * TODO: Code Cleanup
+  */
  
-+static char *mode_option = NULL;
-+module_param(mode_option, charp, 0);
-+MODULE_PARM_DESC(mode_option, "Preferred video mode (e.g. 640x480-8@60)");
++#define DRIVER_NAME "bfin-adv7393"
 +
- /**********************************************************************
-  *
-  * Memory management
-@@ -86,26 +90,17 @@ static void rvfree(void *mem, unsigned long size)
- 	vfree(mem);
- }
+ #define pr_fmt(fmt) DRIVER_NAME ": " fmt
  
--static struct fb_var_screeninfo vfb_default = {
-+static struct fb_videomode vfb_default = {
- 	.xres =		640,
- 	.yres =		480,
--	.xres_virtual =	640,
--	.yres_virtual =	480,
--	.bits_per_pixel = 8,
--	.red =		{ 0, 8, 0 },
--      	.green =	{ 0, 8, 0 },
--      	.blue =		{ 0, 8, 0 },
--      	.activate =	FB_ACTIVATE_TEST,
--      	.height =	-1,
--      	.width =	-1,
--      	.pixclock =	20000,
--      	.left_margin =	64,
--      	.right_margin =	64,
--      	.upper_margin =	32,
--      	.lower_margin =	32,
--      	.hsync_len =	64,
--      	.vsync_len =	2,
--      	.vmode =	FB_VMODE_NONINTERLACED,
-+	.pixclock =	20000,
-+	.left_margin =	64,
-+	.right_margin =	64,
-+	.upper_margin =	32,
-+	.lower_margin =	32,
-+	.hsync_len =	64,
-+	.vsync_len =	2,
-+	.vmode =	FB_VMODE_NONINTERLACED,
+ #include <linux/module.h>
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.h b/drivers/video/fbdev/bfin_adv7393fb.h
+index cd591b5152a5..afd0380e19e1 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.h
++++ b/drivers/video/fbdev/bfin_adv7393fb.h
+@@ -59,8 +59,6 @@ enum {
+ 	BLANK_OFF,
  };
  
- static struct fb_fix_screeninfo vfb_fix = {
-@@ -479,6 +474,8 @@ static int __init vfb_setup(char *options)
- 		/* Test disable for backwards compatibility */
- 		if (!strcmp(this_opt, "disable"))
- 			vfb_enable = 0;
-+		else
-+			mode_option = this_opt;
- 	}
- 	return 1;
- }
-@@ -506,11 +503,13 @@ static int vfb_probe(struct platform_device *dev)
- 	info->screen_base = (char __iomem *)videomemory;
- 	info->fbops = &vfb_ops;
- 
--	retval = fb_find_mode(&info->var, info, NULL,
--			      NULL, 0, NULL, 8);
-+	if (!fb_find_mode(&info->var, info, mode_option,
-+			  NULL, 0, &vfb_default, 8)){
-+		fb_err(info, "Unable to find usable video mode.\n");
-+		retval = -EINVAL;
-+		goto err1;
-+	}
- 
--	if (!retval || (retval = 4))
--		info->var = vfb_default;
- 	vfb_fix.smem_start = (unsigned long) videomemory;
- 	vfb_fix.smem_len = videomemorysize;
- 	info->fix = vfb_fix;
+-#define DRIVER_NAME "bfin-adv7393"
+-
+ struct adv7393fb_modes {
+ 	const s8 name[25];	/* Full name */
+ 	u16 xres;		/* Active Horizonzal Pixels  */
 -- 
-1.7.9.5
+2.8.4
 
+-- 
+Regards/Gruss,
+    Boris.
+
+ECO tip #101: Trim your mails when you reply.
+
+SUSE Linux GmbH, GF: Felix Imendörffer, Jane Smithard, Graham Norton, HRB 21284 (AG Nürnberg)
+--

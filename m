@@ -1,47 +1,38 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Sun, 21 Aug 2016 16:06:34 +0000
-Subject: Re: [PATCH] Staging:sm750fb:ddk750_chip.c:Fixed coding style in comments
-Message-Id: <20160821160634.GA10137@kroah.com>
+From: Baole Ni <baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:08:36 +0000
+Subject: [PATCH 1016/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120836.17828-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160612133041.GA3709@rithvik-IdeaPad>
-In-Reply-To: <20160612133041.GA3709@rithvik-IdeaPad>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rithvik Patibandla <rithvikp98@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Sun, Jun 12, 2016 at 07:00:41PM +0530, Rithvik Patibandla wrote:
-> The following patch fixes format of some comments.
-> 
-> Signed-off-by: Rithvik Patibandla <rithvikp98@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_chip.c | 71 +++++++++++++++++++----------------
->  1 file changed, 38 insertions(+), 33 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> index f80ee77..8cb5cb9 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.c
-> +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> @@ -70,11 +70,11 @@ static void setChipClock(unsigned int frequency)
->  		pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
->  		pll.clockType = MXCLK_PLL;
->  
-> -		/*
-> -		* Call calcPllValue() to fill up the other fields for PLL structure.
-> -		* Sometime, the chip cannot set up the exact clock required by User.
-> -		* Return value from calcPllValue() gives the actual possible clock.
-> -		*/
-> +	/*
-> +	 * Call calcPllValue() to fill up the other fields for PLL structure.
-> +	 * Sometime, the chip cannot set up the exact clock required by User.
-> +	 * Return value from calcPllValue() gives the actual possible clock.
-> +	 */
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-Really?  Does that look correct to you?
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/video/fbdev/s3c2410fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-hint your indentation is totally wrong :(
+diff --git a/drivers/video/fbdev/s3c2410fb.c b/drivers/video/fbdev/s3c2410fb.c
+index 0dd86be..9f955a2 100644
+--- a/drivers/video/fbdev/s3c2410fb.c
++++ b/drivers/video/fbdev/s3c2410fb.c
+@@ -616,7 +616,7 @@ static int s3c2410fb_debug_store(struct device *dev,
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(debug, 0664, s3c2410fb_debug_show, s3c2410fb_debug_store);
++static DEVICE_ATTR(debug, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, s3c2410fb_debug_show, s3c2410fb_debug_store);
+ 
+ static struct fb_ops s3c2410fb_ops = {
+ 	.owner		= THIS_MODULE,
+-- 
+2.9.2
 
-Please be more careful...
-
-greg k-h

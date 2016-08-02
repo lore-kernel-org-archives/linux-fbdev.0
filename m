@@ -1,13 +1,13 @@
 From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:08:11 +0000
-Subject: [PATCH 1012/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120811.17558-1-baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:07:40 +0000
+Subject: [PATCH 1007/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120740.17219-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, robdclark@gmail.com, airlied@gmail.com, peter.ujfalusi@ti.com, dan.carpenter@oracle.com, chuansheng.liu@intel.com, baolex.ni@intel.com, oneukum@suse.com
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, hsweeten@visionengravers.com, mcgrof@suse.com, olof@lixom.net, linus.walleij@linaro.org, chuansheng.liu@intel.com, baolex.ni@intel.com, oneukum@suse.com
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -18,22 +18,22 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 2 +-
+ drivers/video/fbdev/ep93xx-fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-index d63e598..f3711a7 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
-@@ -405,7 +405,7 @@ static const struct of_device_id dsi_of_match[];
+diff --git a/drivers/video/fbdev/ep93xx-fb.c b/drivers/video/fbdev/ep93xx-fb.c
+index 75f0db2..ad824d3 100644
+--- a/drivers/video/fbdev/ep93xx-fb.c
++++ b/drivers/video/fbdev/ep93xx-fb.c
+@@ -119,7 +119,7 @@ struct ep93xx_fbi {
+ };
  
- #ifdef DSI_PERF_MEASURE
- static bool dsi_perf;
--module_param(dsi_perf, bool, 0644);
-+module_param(dsi_perf, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- #endif
+ static int check_screenpage_bug = 1;
+-module_param(check_screenpage_bug, int, 0644);
++module_param(check_screenpage_bug, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(check_screenpage_bug,
+ 		 "Check for bit 27 screen page bug. Default = 1");
  
- static inline struct dsi_data *dsi_get_dsidrv_data(struct platform_device *dsidev)
 -- 
 2.9.2
 

@@ -1,13 +1,13 @@
 From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:08:18 +0000
-Subject: [PATCH 1013/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120818.17626-1-baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:08:00 +0000
+Subject: [PATCH 1010/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120800.17423-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, kirill.shutemov@linux.intel.com, oleg@redhat.com, chuansheng.liu@intel.com, baolex.ni@intel.com, oneukum@suse.com
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, luis@debethencourt.com, chuansheng.liu@intel.com, baolex.ni@intel.com, oneukum@suse.com
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -18,30 +18,22 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-index d3af01c..f9ebef0 100644
---- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-+++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
-@@ -48,13 +48,13 @@ static bool def_mirror;
- static bool auto_update;
- static unsigned int auto_update_freq;
- module_param(auto_update, bool, 0);
--module_param(auto_update_freq, uint, 0644);
-+module_param(auto_update_freq, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+index f9ec5c0..cc19dc8 100644
+--- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
++++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
+@@ -579,7 +579,7 @@ static ssize_t mb862xxfb_show_dispregs(struct device *dev,
+ 	return ptr - buf;
+ }
  
- #ifdef DEBUG
- bool omapfb_debug;
--module_param_named(debug, omapfb_debug, bool, 0644);
-+module_param_named(debug, omapfb_debug, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- static bool omapfb_test_pattern;
--module_param_named(test, omapfb_test_pattern, bool, 0644);
-+module_param_named(test, omapfb_test_pattern, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- #endif
+-static DEVICE_ATTR(dispregs, 0444, mb862xxfb_show_dispregs, NULL);
++static DEVICE_ATTR(dispregs, S_IRUSR | S_IRGRP | S_IROTH, mb862xxfb_show_dispregs, NULL);
  
- static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi);
+ static irqreturn_t mb862xx_intr(int irq, void *dev_id)
+ {
 -- 
 2.9.2
 

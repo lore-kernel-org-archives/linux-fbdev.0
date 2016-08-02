@@ -1,54 +1,39 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 05 Aug 2016 09:09:45 +0000
-Subject: Re: [PATCH] video: backlight: lcd: fix race condition during register
-Message-Id: <20160805090945.GV5243@dell>
+From: Baole Ni <baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:06:59 +0000
+Subject: [PATCH 1001/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120659.16811-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, mathias.nyman@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.com
 
-On Wed, 06 Jul 2016, Uwe Kleine-König wrote:
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-> From: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> 
-> Once device_register is called for a device its attributes might be
-> accessed. As the callbacks of a lcd device's attributes make use of the
-> lcd_ops, the respective member must be setup before calling
-> device_register.
-> 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> ---
->  drivers/video/backlight/lcd.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
+---
+ drivers/video/fbdev/bf54x-lq043fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Applied, thanks.
-
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index 7de847df224f..4b40c6a4d441 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -226,6 +226,8 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
->  	dev_set_name(&new_ld->dev, "%s", name);
->  	dev_set_drvdata(&new_ld->dev, devdata);
->  
-> +	new_ld->ops = ops;
-> +
->  	rc = device_register(&new_ld->dev);
->  	if (rc) {
->  		put_device(&new_ld->dev);
-> @@ -238,8 +240,6 @@ struct lcd_device *lcd_device_register(const char *name, struct device *parent,
->  		return ERR_PTR(rc);
->  	}
->  
-> -	new_ld->ops = ops;
-> -
->  	return new_ld;
->  }
->  EXPORT_SYMBOL(lcd_device_register);
-
+diff --git a/drivers/video/fbdev/bf54x-lq043fb.c b/drivers/video/fbdev/bf54x-lq043fb.c
+index 8f1f97c..ddb19ee 100644
+--- a/drivers/video/fbdev/bf54x-lq043fb.c
++++ b/drivers/video/fbdev/bf54x-lq043fb.c
+@@ -88,7 +88,7 @@ struct bfin_bf54xfb_info {
+ };
+ 
+ static int nocursor;
+-module_param(nocursor, int, 0644);
++module_param(nocursor, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(nocursor, "cursor enable/disable");
+ 
+ static int outp_rgb666;
 -- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.9.2
+

@@ -1,41 +1,39 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Mon, 15 Aug 2016 10:10:30 +0000
-Subject: [RESEND PATCH 1/3] fbdev: vfb: add description to module parameters
-Message-Id: <1471255832-44793-2-git-send-email-vladimir.murzin@arm.com>
+From: Baole Ni <baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:07:05 +0000
+Subject: [PATCH 1002/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120705.16879-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, mathias.nyman@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.com
 
-Add description to "videomemorysize" and "vfb_enable" module parameters to
-make them a bit friendly to the end user.
+I find that the developers often just specified the numeric value
+when calling a macro which is defined with a parameter for access permission.
+As we know, these numeric value for access permission have had the corresponding macro,
+and that using macro can improve the robustness and readability of the code,
+thus, I suggest replacing the numeric parameter with the macro.
 
-Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
+Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
+Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/video/fbdev/vfb.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/bfin-lq035q1-fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index b9c2f81..e9ecae2 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -35,6 +35,7 @@
- static void *videomemory;
- static u_long videomemorysize = VIDEOMEMSIZE;
- module_param(videomemorysize, ulong, 0);
-+MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
+diff --git a/drivers/video/fbdev/bfin-lq035q1-fb.c b/drivers/video/fbdev/bfin-lq035q1-fb.c
+index b594a58..cc6e723 100644
+--- a/drivers/video/fbdev/bfin-lq035q1-fb.c
++++ b/drivers/video/fbdev/bfin-lq035q1-fb.c
+@@ -112,7 +112,7 @@ struct bfin_lq035q1fb_info {
+ };
  
- /**********************************************************************
-  *
-@@ -119,6 +120,7 @@ static struct fb_fix_screeninfo vfb_fix = {
+ static int nocursor;
+-module_param(nocursor, int, 0644);
++module_param(nocursor, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ MODULE_PARM_DESC(nocursor, "cursor enable/disable");
  
- static bool vfb_enable __initdata = 0;	/* disabled by default */
- module_param(vfb_enable, bool, 0);
-+MODULE_PARM_DESC(vfb_enable, "Enable Virtual FB driver");
- 
- static int vfb_check_var(struct fb_var_screeninfo *var,
- 			 struct fb_info *info);
+ struct spi_control {
 -- 
-1.7.9.5
+2.9.2
 

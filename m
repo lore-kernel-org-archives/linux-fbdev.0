@@ -1,13 +1,13 @@
 From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:08:25 +0000
-Subject: [PATCH 1014/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120825.17694-1-baolex.ni@intel.com>
+Date: Tue, 02 Aug 2016 12:08:18 +0000
+Subject: [PATCH 1013/1285] Replace numeric parameter like 0444 with macro
+Message-Id: <20160802120818.17626-1-baolex.ni@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, kirill.shutemov@linux.intel.com, oleg@redhat.com, oneukum@suse.com
+To: tomi.valkeinen@ti.com, plagnioj@jcrosoft.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, kirill.shutemov@linux.intel.com, oleg@redhat.com, chuansheng.liu@intel.com, baolex.ni@intel.com, oneukum@suse.com
 
 I find that the developers often just specified the numeric value
 when calling a macro which is defined with a parameter for access permission.
@@ -18,22 +18,30 @@ thus, I suggest replacing the numeric parameter with the macro.
 Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
 Signed-off-by: Baole Ni <baolex.ni@intel.com>
 ---
- drivers/video/fbdev/pm2fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/omap2/omapfb/omapfb-main.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
-index aa8d288..2c44bd1 100644
---- a/drivers/video/fbdev/pm2fb.c
-+++ b/drivers/video/fbdev/pm2fb.c
-@@ -1825,7 +1825,7 @@ module_param(lowvsync, bool, 0);
- MODULE_PARM_DESC(lowvsync, "Force vertical sync low regardless of mode");
- module_param(noaccel, bool, 0);
- MODULE_PARM_DESC(noaccel, "Disable acceleration");
--module_param(hwcursor, int, 0644);
-+module_param(hwcursor, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
- 			"(1=enable, 0=disable, default=1)");
- module_param(nomtrr, bool, 0);
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index d3af01c..f9ebef0 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -48,13 +48,13 @@ static bool def_mirror;
+ static bool auto_update;
+ static unsigned int auto_update_freq;
+ module_param(auto_update, bool, 0);
+-module_param(auto_update_freq, uint, 0644);
++module_param(auto_update_freq, uint, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ 
+ #ifdef DEBUG
+ bool omapfb_debug;
+-module_param_named(debug, omapfb_debug, bool, 0644);
++module_param_named(debug, omapfb_debug, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ static bool omapfb_test_pattern;
+-module_param_named(test, omapfb_test_pattern, bool, 0644);
++module_param_named(test, omapfb_test_pattern, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+ #endif
+ 
+ static int omapfb_fb_init(struct omapfb2_device *fbdev, struct fb_info *fbi);
 -- 
 2.9.2
 

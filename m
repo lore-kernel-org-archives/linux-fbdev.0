@@ -1,42 +1,61 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Wed, 03 Aug 2016 08:42:25 +0000
-Subject: Re: [Intel-gfx] [drm-intel-nightly] 2016y-07m-14d-21h-13m-02s UTC: locking dependency: drm_modeset_l
-Message-Id: <87twf2qm4u.fsf@intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Fri, 05 Aug 2016 13:29:42 +0000
+Subject: Re: [PATCH] backlight: adp5520: fix error handling in adp5520_bl_probe()
+Message-Id: <20160805132942.GF5243@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+icZUUUUCybFnneuhVVT4Z_vymMcLp4HdCe3CDY5SerFnP+tg@mail.gmail.com>
- <87oa5ctxzm.fsf@intel.com>
- <CA+icZUU2Q7e5rthM9+ydPM5EtROufY1wVmg-MvKwGbPq=o3a0A@mail.gmail.com>
-In-Reply-To: <CA+icZUU2Q7e5rthM9+ydPM5EtROufY1wVmg-MvKwGbPq=o3a0A@mail.gmail.com>
+References: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
+In-Reply-To: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: sedat.dilek@gmail.com
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, intel-gfx <intel-gfx@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Michael Hennerich <michael.hennerich@analog.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
-On Tue, 02 Aug 2016, Sedat Dilek <sedat.dilek@gmail.com> wrote:
-> On Mon, Aug 1, 2016 at 3:33 PM, Jani Nikula <jani.nikula@linux.intel.com> wrote:
->> On Fri, 15 Jul 2016, Sedat Dilek <sedat.dilek@gmail.com> wrote:
->>> Hi,
->>>
->>> I see the below call-trace with latest d-i-n, guess latest linux-next
->>
->> FWIW, "d-i-n" is ambiguous (drm-intel-next vs. drm-intel-nightly) and we
->> don't use that ourselves.
->>
->
-> Oh, sorry with d-i-n I meant drm-intel-nightly.
-> Normally, I also point to the "integration manifest"
-> like...drm-intel-nightly: 2016y-08m-02d-14h-10m-12s UTC integration
-> manifest.
-> You do not test d-i-n yourself?
-> Strange.
+On Sat, 09 Jul 2016, Alexey Khoroshilov wrote:
 
-We do not use the *acronym* "d-i-n" ourselves because it is
-ambiguous. drm-intel-nightly is our main test target.
+> If adp5520_bl_setup() fails, sysfs group left unremoved.
+>=20
+> By the way, fix overcomplicated assignement of error code.
+>=20
+> Found by Linux Driver Verification project (linuxtesting.org).
+>=20
+> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+> ---
+>  drivers/video/backlight/adp5520_bl.c | 12 ++++++++++--
+>  1 file changed, 10 insertions(+), 2 deletions(-)
 
-BR,
-Jani.
+Applied, thanks.
 
+> diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlig=
+ht/adp5520_bl.c
+> index dd88ba1d71ce..35373e2065b2 100644
+> --- a/drivers/video/backlight/adp5520_bl.c
+> +++ b/drivers/video/backlight/adp5520_bl.c
+> @@ -332,10 +332,18 @@ static int adp5520_bl_probe(struct platform_device =
+*pdev)
+>  	}
+> =20
+>  	platform_set_drvdata(pdev, bl);
+> -	ret |=3D adp5520_bl_setup(bl);
+> +	ret =3D adp5520_bl_setup(bl);
+> +	if (ret) {
+> +		dev_err(&pdev->dev, "failed to setup\n");
+> +		if (data->pdata->en_ambl_sens)
+> +			sysfs_remove_group(&bl->dev.kobj,
+> +					&adp5520_bl_attr_group);
+> +		return ret;
+> +	}
+> +
+>  	backlight_update_status(bl);
+> =20
+> -	return ret;
+> +	return 0;
+>  }
+> =20
+>  static int adp5520_bl_remove(struct platform_device *pdev)
 
--- 
-Jani Nikula, Intel Open Source Technology Center
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

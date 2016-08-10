@@ -1,66 +1,88 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Date: Fri, 12 Aug 2016 15:59:03 +0000
-Subject: Re: [PATCH RFC 5/5] drm/i2c: add tda998x/tda9950 CEC driver
-Message-Id: <20160812155902.GH1041@n2100.armlinux.org.uk>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 10 Aug 2016 10:44:18 +0000
+Subject: Re: [PATCH] fbdev: Remove deprecated create_singlethread_workqueue
+Message-Id: <52673b62-66b6-694c-134a-48a64d8022ad@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="80JSbD7N7EvjlFDOjbNrB3rL3xNUa0qtm"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160812141421.GB1041@n2100.armlinux.org.uk>
- <E1bYDEx-0004ry-Jg@rmk-PC.armlinux.org.uk>
- <a9bc07ee-ae77-1791-ccf8-cb654cd4c302@cisco.com>
- <f656e9b9-edb1-f6d7-bf64-7d608f2f3890@cisco.com>
- <20160812152939.GG1041@n2100.armlinux.org.uk>
- <7722d4a0-03f6-3858-0771-e6598d838b65@cisco.com>
-In-Reply-To: <7722d4a0-03f6-3858-0771-e6598d838b65@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hansverk@cisco.com>
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org
+References: <20160702083923.GA27352@Karyakshetra>
+In-Reply-To: <20160702083923.GA27352@Karyakshetra>
+To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Aug 12, 2016 at 05:53:17PM +0200, Hans Verkuil wrote:
-> There are three possible 'states' of a CEC adapter w.r.t. logical addresses:
-> 
-> 1) There is no physical address or no logical addresses have been set
-> by the application (CEC_ADAP_S_LOG_ADDRS): in that case the device
-> will not participate on the bus, it doesn't care about receiving messages
-> let alone replying to them. The only exception is if the device can
-> snoop messages, that is allowed even if CEC_ADAP_S_LOG_ADDRS is never
-> called. That is ideal to have a 'neutral' observer of the bus that just
-> listens but never participates. Not all hardware supports snooping, though.
-> 
-> 2) CEC_ADAP_S_LOG_ADDRS is called and the device becomes an 'Unregistered'
-> device (i.e. it gets logical address 15). In that case it should receive
-> broadcast messages and be able to transmit messages.
-> 
-> 3) CEC_ADAP_S_LOG_ADDRS is called and the device claims one or more logical
-> addresses in the range 0-14. Then it can receive broadcast and directed
-> messages, and of course transmit messages.
-> 
-> From the point of view of the hardware state 1 is selected if adap_log_addr
-> is called with LOG_ADDR_INVALID. Some hardware might still receive broadcast
-> messages (because they can't turn that off) and those should be filtered out
-> by the CEC framework. But I think that doesn't happen, which would be a bug.
-> I'll verify that tomorrow.
-> 
-> State 2 is a problem for hardware that has to enable support to receive
-> broadcast messages since adap_log_addr is never called with
-> LOG_ADDR_UNREGISTERED as argument. I missed that, since the hardware I tested
-> with always accepts broadcast messages. I'll look into this tomorrow as well.
-> It should be easy to fix.
-> 
-> State 3 works OK.
-> 
-> So for the dw-hdmi cec driver that means that for state 1 you set 'addresses'
-> to 0, for state 2 you set it to BIT(15) and for state 3 you always
-> OR with BIT(15). At least, as I understand your hardware.
+--80JSbD7N7EvjlFDOjbNrB3rL3xNUa0qtm
+Content-Type: multipart/mixed; boundary="LW44xtQgXIjfKGWLjhTJidH3Sbegkb1Pq"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-fbdev@vger.kernel.org,
+ linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-ID: <52673b62-66b6-694c-134a-48a64d8022ad@ti.com>
+Subject: Re: [PATCH] fbdev: Remove deprecated create_singlethread_workqueue
+References: <20160702083923.GA27352@Karyakshetra>
+In-Reply-To: <20160702083923.GA27352@Karyakshetra>
 
-Thanks, I think that needs documenting in Documentation/cec.txt.
+--LW44xtQgXIjfKGWLjhTJidH3Sbegkb1Pq
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-> BTW, if either the tda or dw-hdmi supports snooping mode, then I strongly
-> recommend supporting that. It's great for debugging.
 
-Neither do.
 
--- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
-according to speedtest.net.
+On 02/07/16 11:39, Bhaktipriya Shridhar wrote:
+> The workqueue "esd_wq" has only a single workitem(&md->esd_work)
+> and hence doesn't require ordering. Also, it is not being used on a
+> memory reclaim path. Hence, the singlethreaded workqueue has been
+> replaced with the use of system_wq.
+>=20
+> System workqueues have been able to handle high level of concurrency
+> for a long time now and hence it's not required to have a singlethreade=
+d
+> workqueue just to gain concurrency. Unlike a dedicated per-cpu workqueu=
+e
+> created with create_singlethread_workqueue(), system_wq allows multiple=
+
+> work items to overlap executions even on the same CPU; however, a
+> per-cpu workqueue doesn't have any CPU locality or global ordering
+> guarantee unless the target CPU is explicitly specified and thus the
+> increase of local concurrency shouldn't make any difference.
+>=20
+> mipid_esd_stop_check () calls cancel_delayed_work() in mipid_cleanup()
+> to ensure that there are no pending tasks while disconnecting the drive=
+r.
+>=20
+> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
+> ---
+>  drivers/video/fbdev/omap/lcd_mipid.c | 9 +--------
+>  1 file changed, 1 insertion(+), 8 deletions(-)
+
+Thanks, queued for v4.9.
+
+ Tomi
+
+
+--LW44xtQgXIjfKGWLjhTJidH3Sbegkb1Pq--
+
+--80JSbD7N7EvjlFDOjbNrB3rL3xNUa0qtm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXqwWCAAoJEPo9qoy8lh71bt4P/1t+6MsXCfFzotkDxhX5deHb
+w72reQCsxsQ7N9X7TOsoYettEqEPo11HKb3NY28gv9R5ezJMvobPO/ShKnOJJbfX
+FKZdbovWywDhCECy5oh43ltLe61jHEOk1g1j6NTTk5iu47YKY8Z9QEzP6z88cZBw
+oS43+ZVTwmU/IyOeLFe2F2TLZ6lOltpXA0dvMmTtHpSTJnhFU2EEJ0S0g6GlVEKW
+zhvxeKhPf2+Jkd/9FzdF5IPZ0V+TECRkYJKZyZ6J5X9M++xIQPRJOOrMz4mu13bf
+Kt+JRyCwxNH9Vyz9TpxdL4LiOME6Qr2jPU78fE5zxE8/bhfO0S+tZbVmSQ6aSvzn
+/ewtB46FfRiVoiXaNAKvtZV2bFenC4PTE/6Fy3h99/o65Pt0VrfF0i9BIO7f5/Z0
+7uXyU9tSmIj2EiMzS/kjBHccAZTzsR3Kp1NOJyI+LUNcm3sxXIk6NQi+x7WP53t6
+2X6UxT/PAXXjfyxSeuIMtkwgx20etZXS3+CmCF86RbRaoVPM/DOSGGHQKHvkRrvF
+T8NFmGIHrz9DBnafA/98o6kxnD7RGodCpL5za6qmGuuTO1Mou59+tFENCt8/tPID
+KiOvhpT6U7wjjvcez4ojHSRSw6a/Xk8tBTTPPdBbMNkBWITmz+Hnf1LlpfCFGBsA
+VHyaWQY3lAn+2sJuQb8V
+=IkN8
+-----END PGP SIGNATURE-----
+
+--80JSbD7N7EvjlFDOjbNrB3rL3xNUa0qtm--

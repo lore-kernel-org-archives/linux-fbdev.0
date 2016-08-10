@@ -1,58 +1,67 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Aug 2016 08:59:53 +0000
-Subject: Re: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
-Message-Id: <dda1fb74-4e30-f54e-4504-63db899f0bb3@ti.com>
+Date: Wed, 10 Aug 2016 10:56:53 +0000
+Subject: Re: [patch] video: fbdev: pxafb: potential NULL dereference on error
+Message-Id: <ad029a9a-f61b-60e2-1e6d-ddf435e2a37c@ti.com>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB"
+Content-Type: multipart/mixed; boundary="qKgCj2JjfoRP7k3LEEVVAH5QqubPDbPOf"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160826155335.8747-1-marex@denx.de>
-In-Reply-To: <20160826155335.8747-1-marex@denx.de>
-To: linux-fbdev@vger.kernel.org
+References: <20160715110732.GC9258@mwanda>
+In-Reply-To: <20160715110732.GC9258@mwanda>
+To: Dan Carpenter <dan.carpenter@oracle.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, "Luis R. Rodriguez" <mcgrof@suse.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
---Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB
-Content-Type: multipart/mixed; boundary="S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0";
- protected-headers="v1"
+--qKgCj2JjfoRP7k3LEEVVAH5QqubPDbPOf
+Content-Type: multipart/mixed; boundary="SHejsf7cibkJL1RRGjnr6sFeWTsjUNMh7"
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Marek Vasut <marex@denx.de>, linux-fbdev@vger.kernel.org
-Cc: Fabio Estevam <fabio.estevam@nxp.com>,
- Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
-Message-ID: <dda1fb74-4e30-f54e-4504-63db899f0bb3@ti.com>
-Subject: Re: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
-References: <20160826155335.8747-1-marex@denx.de>
-In-Reply-To: <20160826155335.8747-1-marex@denx.de>
+To: Dan Carpenter <dan.carpenter@oracle.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Viresh Kumar <viresh.kumar@linaro.org>, "Luis R. Rodriguez"
+ <mcgrof@suse.com>, linux-fbdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Message-ID: <ad029a9a-f61b-60e2-1e6d-ddf435e2a37c@ti.com>
+Subject: Re: [patch] video: fbdev: pxafb: potential NULL dereference on error
+References: <20160715110732.GC9258@mwanda>
+In-Reply-To: <20160715110732.GC9258@mwanda>
 
---S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0
+--SHejsf7cibkJL1RRGjnr6sFeWTsjUNMh7
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: quoted-printable
 
-On 26/08/16 18:53, Marek Vasut wrote:
-> Allocate the framebuffer memory as coherent, otherwise the framebuffer
-> will suffer from artifacts when displaying scrolling text or video.
-> This can be replicated on i.MX6SX (armv7), which has more complex memor=
-y
-> architecture compared to the i.MX23/28 (armv5).
+
+On 15/07/16 14:07, Dan Carpenter wrote:
+> If we "goto out;" then it calls display_timings_release(timings);
+> Since "timings" is NULL, that's going to oops.  Just return directly.
 >=20
-> Signed-off-by: Marek Vasut <marex@denx.de>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: Fabio Estevam <fabio.estevam@nxp.com>
-> Cc: Lucas Stach <l.stach@pengutronix.de>
-> Cc: Shawn Guo <shawnguo@kernel.org>
-> ---
-> V2: Switch to from dma_{alloc,free}_coherent() to dma_{alloc,free}_wc()=
+> Fixes: 420a488278e8 ('video: fbdev: pxafb: initial devicetree conversio=
+n')
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>=20
+> diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+> index 2c0487f..ed41fdb 100644
+> --- a/drivers/video/fbdev/pxafb.c
+> +++ b/drivers/video/fbdev/pxafb.c
+> @@ -2125,7 +2125,7 @@ static int of_get_pxafb_display(struct device *de=
+v, struct device_node *disp,
+> =20
+>  	timings =3D of_get_display_timings(disp);
+>  	if (!timings)
+> -		goto out;
+> +		return -EINVAL;
+> =20
+>  	ret =3D -ENOMEM;
+>  	info->modes =3D kmalloc_array(timings->num_timings,
+>=20
 
->     for performance reasons, as suggested by Lucas Stach
-> ---
->  drivers/video/fbdev/mxsfb.c | 9 +++++----
->  1 file changed, 5 insertions(+), 4 deletions(-)
-
-Thanks, queued for 4.9.
+Thanks, queued for v4.9.
 
  Tomi
 
 
---S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0--
+--SHejsf7cibkJL1RRGjnr6sFeWTsjUNMh7--
 
---Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB
+--qKgCj2JjfoRP7k3LEEVVAH5QqubPDbPOf
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -60,19 +69,19 @@ Content-Disposition: attachment; filename="signature.asc"
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v2
 
-iQIcBAEBCAAGBQJXxUsJAAoJEPo9qoy8lh71NKMP/3qt4arYCnKYT9YGYT+w6eVr
-s8NXrztH3n+/oPYo79riwg4hJL6/sWYhwUcyWfbATUvEdrErp8YcSeyM7boavYAv
-88feJUTY3Nw9FE/+mWArg4qMIIHCJ/zf300VF+E976YYADDOAxf1EjANVk4C6UWy
-AEgeRaM3BBCLXuulWog7ac52Nviky9bNNQmHX8RuRjdlJPABTUKpbfItNilHh9Xu
-MJYjpJx9/RMKqbzY7VVdamx1Q7oXjpFGndGsSx2q3CfXlxEACQJ2jMRJBbZe5NxG
-C7HKvzhGCZUQPyzlsYNCYA2tmUepHp/nNUl9DN18H6lg8q+0PwyU4KUl9p26//ha
-STlTjOK+jkzXXeV4lr2LvOFAelBIZEOjfKGSDIEN0fGLs6Kf6M6dN/PNBzUS4B07
-lfHpxoVwRbvXLWrn2tfTK3HKJJzzyFooJvaoZYNKR936R4H9ctC2PtnnON7sRMb7
-pqEA+0zqT+YRawONKUzX1EjT22B1HTCmND65jXFyKEOD18R1w1F2jUFjpW13XA40
-EzfkYA2Wu/dpOwqb8QubRU22i1gYRX4m95jWxX0X2qEeUvaZPFAKyV0gpdu6I19R
-6fVJbNSYJG9aQXo5MpfYawAsezcLZBIHukONnISRRgw1qX2SrKoojl9VW/MFw6Hu
-6l0UIX/pLo/dRH0LB/QY
-=U07Z
+iQIcBAEBCAAGBQJXqwh2AAoJEPo9qoy8lh71/Y8P/jSgYkKWvruJjit2tiQMyn5t
+9hvtOCDXVFNkDUc0e0EaBqlJdNKWE4evChbOuJ1ekxVetK03D8xkJ6OaODUt54CG
+xO0G/1xgiqGWuDvcNeceNLdOftpxD0hbL4enoRpeqMKbrA9uofilGjVN9E/jRVYM
+4J9I0R/GJB4ZYz7hHMLI6uPdAdyqfMW/dOvhqMdgio7A492gF64JglCznFTNTzqY
+f7/ELx+8YdEBTOYr2Pp00QcJFMOLCaBUCyonTwgP6jeZLSbbViGMOSwrc3YVBP8/
+t/RwE0v33NBkmjP6ssqcD+o5+OGPaTMgYaNkEv+DXYjeWO+qZnKgSBKiyiNd3VHL
+niKrQz8Dhz1rKHefwgd2TN11P26ABsP+o24Z51Md2Rtuh3BlEWf77alydQg/p7K5
+ity4Nwpg9P+fhH5seQCLgnJy/xLPRrf0wIdWaE2VM7YLe0irBGMdTulu2iG+6id8
+RQLpQeThE/TR5EBGD+kUc80L0/DrpPV98MgxrsTRogfx842F6RE/NyHj+ZlIhOPH
+3wVXOa1Ibfe2QbWRDTFk4rMFJnYFFQLITucMeIHNhQAsDlPUriHyjW6Wg72nPyjQ
+hz7c3Jmt3cc6j/AMrUqyKh/h36aUWjWZJqG9V0eKyUZsBPZ5/MZCwhwk7slsRvHT
+dNYyS9NqtN6JurLczVtE
+=O58j
 -----END PGP SIGNATURE-----
 
---Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB--
+--qKgCj2JjfoRP7k3LEEVVAH5QqubPDbPOf--

@@ -1,24 +1,32 @@
-From: Hans Verkuil <hansverk@cisco.com>
-Date: Fri, 12 Aug 2016 14:25:02 +0000
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Date: Fri, 12 Aug 2016 14:26:46 +0000
 Subject: Re: [PATCH RFC 4/5] drm/bridge: add dw-hdmi cec driver using Hans Verkil's CEC code
-Message-Id: <d417880e-8628-5d90-9487-e88d283f309c@cisco.com>
+Message-Id: <20160812142646.GD1041@n2100.armlinux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160812141421.GB1041@n2100.armlinux.org.uk>
  <E1bYDEs-0004rs-FP@rmk-PC.armlinux.org.uk>
-In-Reply-To: <E1bYDEs-0004rs-FP@rmk-PC.armlinux.org.uk>
+ <d417880e-8628-5d90-9487-e88d283f309c@cisco.com>
+In-Reply-To: <d417880e-8628-5d90-9487-e88d283f309c@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk+kernel@arm.linux.org.uk>, David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
+To: Hans Verkuil <hansverk@cisco.com>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-arm-kernel@lists.infradead.org
 
-On 08/12/2016 04:15 PM, Russell King wrote:
-> Add a CEC driver for the dw-hdmi hardware using Hans Verkil's CEC
+On Fri, Aug 12, 2016 at 04:25:02PM +0200, Hans Verkuil wrote:
+> On 08/12/2016 04:15 PM, Russell King wrote:
+> >Add a CEC driver for the dw-hdmi hardware using Hans Verkil's CEC
+> 
+> That's Verkuil :-)
 
-That's Verkuil :-)
+Oops, sorry about that.
 
-BTW, since cec is part of the media subsystem please include linux-media for the next round.
+> BTW, since cec is part of the media subsystem please include linux-media
+> for the next round.
 
-Regards,
+I can't guarantee that, I'm quite forgetful.
 
-	Hans
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line: currently at 9.6Mbps down 400kbps up
+according to speedtest.net.

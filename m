@@ -1,67 +1,172 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Sat, 13 Aug 2016 18:45:25 +0000
-Subject: Re: [PATCH] video: fbdev: mb862xx: mb862xx-i2c: delete now unused "int ret" variable
-Message-Id: <20160813184525.GA1690@katana>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7AUc2qLy4jB3hD7Z"
+From: Russell King <rmk+kernel@arm.linux.org.uk>
+Date: Fri, 12 Aug 2016 14:14:55 +0000
+Subject: [PATCH RFC 1/5] video: add HDMI state notifier support
+Message-Id: <E1bYDEd-0004rZ-3i@rmk-PC.armlinux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160813183913.30635-1-paul.gortmaker@windriver.com>
-In-Reply-To: <20160813183913.30635-1-paul.gortmaker@windriver.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Wolfram Sang <wsa-dev@sang-engineering.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <20160812141421.GB1041@n2100.armlinux.org.uk>
+In-Reply-To: <20160812141421.GB1041@n2100.armlinux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David Airlie <airlied@linux.ie>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Hans Verkuil <hansverk@cisco.com>
+Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
 
+Add support for HDMI hotplug and EDID notifiers, which is used to convey
+information from HDMI drivers to their CEC and audio counterparts.
 
---7AUc2qLy4jB3hD7Z
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/video/Kconfig         |  3 +++
+ drivers/video/Makefile        |  1 +
+ drivers/video/hdmi-notifier.c | 61 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/hdmi-notifier.h | 44 +++++++++++++++++++++++++++++++
+ 4 files changed, 109 insertions(+)
+ create mode 100644 drivers/video/hdmi-notifier.c
+ create mode 100644 include/linux/hdmi-notifier.h
 
-On Sat, Aug 13, 2016 at 02:39:13PM -0400, Paul Gortmaker wrote:
-> In commit 6b610e004baf ("video: fbdev: mb862xx: mb862xx-i2c: don't
-> print error when adding adapter fails") the users of the variable
-> were removed, resulting in:
->=20
-> drivers/video/fbdev/mb862xx/mb862xx-i2c.c: In function =E2=80=98mb862xx_i=
-2c_init=E2=80=99:
-> drivers/video/fbdev/mb862xx/mb862xx-i2c.c:160:6: warning: unused variable=
- =E2=80=98ret=E2=80=99 [-Wunused-variable]
->   int ret;
->       ^
->=20
-> ...so here we remove the variable as well.
->=20
-> Fixes: 6b610e004baf ("video: fbdev: mb862xx: mb862xx-i2c: don't print err=
-or when adding adapter fails)"
-> Cc: Wolfram Sang <wsa-dev@sang-engineering.com>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3c20af999893..1ee7b9f9bb25 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -36,6 +36,9 @@ config VIDEOMODE_HELPERS
+ config HDMI
+ 	bool
+ 
++config HDMI_NOTIFIERS
++	bool
++
+ if VT
+ 	source "drivers/video/console/Kconfig"
+ endif
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 9ad3c17d6456..65f564906fb4 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_VGASTATE)            += vgastate.o
+ obj-$(CONFIG_HDMI)                += hdmi.o
++obj-$(CONFIG_HDMI_NOTIFIERS)      += hdmi-notifier.o
+ 
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+diff --git a/drivers/video/hdmi-notifier.c b/drivers/video/hdmi-notifier.c
+new file mode 100644
+index 000000000000..f3b16552b0fe
+--- /dev/null
++++ b/drivers/video/hdmi-notifier.c
+@@ -0,0 +1,61 @@
++#include <linux/export.h>
++#include <linux/hdmi-notifier.h>
++#include <linux/notifier.h>
++#include <linux/string.h>
++
++static BLOCKING_NOTIFIER_HEAD(hdmi_notifier);
++
++int hdmi_register_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_register(&hdmi_notifier, nb);
++}
++EXPORT_SYMBOL_GPL(hdmi_register_notifier);
++
++int hdmi_unregister_notifier(struct notifier_block *nb)
++{
++	return blocking_notifier_chain_unregister(&hdmi_notifier, nb);
++}
++EXPORT_SYMBOL_GPL(hdmi_unregister_notifier);
++
++void hdmi_event_connect(struct device *dev)
++{
++	struct hdmi_event_base base;
++
++	base.source = dev;
++
++	blocking_notifier_call_chain(&hdmi_notifier, HDMI_CONNECTED, &base);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_connect);
++
++void hdmi_event_disconnect(struct device *dev)
++{
++	struct hdmi_event_base base;
++
++	base.source = dev;
++
++	blocking_notifier_call_chain(&hdmi_notifier, HDMI_DISCONNECTED, &base);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_disconnect);
++
++void hdmi_event_new_edid(struct device *dev, const void *edid, size_t size)
++{
++	struct hdmi_event_new_edid new_edid;
++
++	new_edid.base.source = dev;
++	new_edid.edid = edid;
++	new_edid.size = size;
++
++	blocking_notifier_call_chain(&hdmi_notifier, HDMI_NEW_EDID, &new_edid);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_new_edid);
++
++void hdmi_event_new_eld(struct device *dev, const u8 eld[128])
++{
++	struct hdmi_event_new_eld new_eld;
++
++	new_eld.base.source = dev;
++	memcpy(new_eld.eld, eld, sizeof(new_eld.eld));
++
++	blocking_notifier_call_chain(&hdmi_notifier, HDMI_NEW_ELD, &new_eld);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_new_eld);
+diff --git a/include/linux/hdmi-notifier.h b/include/linux/hdmi-notifier.h
+new file mode 100644
+index 000000000000..5fb710e5d68a
+--- /dev/null
++++ b/include/linux/hdmi-notifier.h
+@@ -0,0 +1,44 @@
++#ifndef LINUX_HDMI_NOTIFIER_H
++#define LINUX_HDMI_NOTIFIER_H
++
++#include <linux/types.h>
++
++enum {
++	HDMI_CONNECTED,
++	HDMI_DISCONNECTED,
++	HDMI_NEW_EDID,
++	HDMI_NEW_ELD,
++};
++
++struct hdmi_event_base {
++	struct device *source;
++};
++
++struct hdmi_event_new_edid {
++	struct hdmi_event_base base;
++	const void *edid;
++	size_t size;
++};
++
++struct hdmi_event_new_eld {
++	struct hdmi_event_base base;
++	unsigned char eld[128];
++};
++
++union hdmi_event {
++	struct hdmi_event_base base;
++	struct hdmi_event_new_edid edid;
++	struct hdmi_event_new_eld eld;
++};
++
++struct notifier_block;
++
++int hdmi_register_notifier(struct notifier_block *nb);
++int hdmi_unregister_notifier(struct notifier_block *nb);
++
++void hdmi_event_connect(struct device *dev);
++void hdmi_event_disconnect(struct device *dev);
++void hdmi_event_new_edid(struct device *dev, const void *edid, size_t size);
++void hdmi_event_new_eld(struct device *dev, const u8 eld[128]);
++
++#endif
+-- 
+2.1.0
 
-Acked-by: Wolfram Sang <wsa-dev@sang-engineering.com>
-
-Thanks! I wonder how this slipped through my and the buildbot checks.
-Will investigate...
-
-
---7AUc2qLy4jB3hD7Z
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXr2rFAAoJEBQN5MwUoCm2KpMP/3FZos24iDQ1UZbkyU7eXMmZ
-kGhG+5Looty9u4dacm/j8sBRbkJSVxHZOZZ+f5wazxi0x6jDe0W2OZSKRrWJi6fM
-TE9dZU3oQfFjh6zTJDKONB0ABrQiLeiEBa/NsMidRwDEnemcMmPkrnbX+01PsS8a
-s5BkDbytz0VMav7GgTxoBji7bLyFaOZgUzwo/H2A/6yyaMis76SYGuRH6YGcZCDq
-2Z6b4JroNH/lsKAwdyzdD3Wiq5LkjNAQrSh3b1Ivt7zw3rah0nq5A30t2sbkD9sW
-7FqfIYsNWJaiqd+dKG5Z2NJGLE4/tbQmEchd4HDu2MyhZjO+BdPXM3Ty0N6c3n+C
-Ysk6QD/B++0qoZTBrtF6Ys/r79d/XYQ9JbhM9NAbJ6Ueen0PpUrADbM41sa543Jx
-rsiHJXbUbb/SOHTh5WRUf2y/TPZ6IgOcjC+P9f42ocmYiERIPyVirBLYQI4kR1Wu
-GQnyxRc8OUHcqCFmLMAQeZWon2OKqXv9aLJ5xZrWOLyND84NRCZmWRyNyecx6evv
-ppIOg5BFmYzN8RGcWtSO+lWTbuk6PZogAUKUOFwAJ9Ru0t5l0xJXzzaOs3CTCqWY
-lVKXiiCptQhO9ECOROzeZWVwsHBh8AXnI04y/G3HhpTbayALh112lq83RbXubgt0
-FSEgT+5UHTOCuq6ienb8
-=U8jl
------END PGP SIGNATURE-----
-
---7AUc2qLy4jB3hD7Z--

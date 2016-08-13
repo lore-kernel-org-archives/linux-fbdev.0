@@ -1,48 +1,51 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Wed, 10 Aug 2016 10:43:29 +0000
-Subject: Re: [PATCH] video: fbdev: mb862xx: mb862xx-i2c: don't print error when adding adapter fails
-Message-Id: <20160810104329.GA1827@katana>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ikeVEW9yuYc//A+q"
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Sat, 13 Aug 2016 18:39:13 +0000
+Subject: [PATCH] video: fbdev: mb862xx: mb862xx-i2c: delete now unused "int ret" variable
+Message-Id: <20160813183913.30635-1-paul.gortmaker@windriver.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1470742059-12341-1-git-send-email-wsa-dev@sang-engineering.com>
- <1470742059-12341-2-git-send-email-wsa-dev@sang-engineering.com>
- <176ef085-b9b5-ad0c-da46-9dcbad5e0c10@ti.com>
-In-Reply-To: <176ef085-b9b5-ad0c-da46-9dcbad5e0c10@ti.com>
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Wolfram Sang <wsa-dev@sang-engineering.com>, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, linux-fbdev@vger.kernel.org
+References: <1404563280-20023-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+In-Reply-To: <1404563280-20023-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Paul Gortmaker <paul.gortmaker@windriver.com>, Wolfram Sang <wsa-dev@sang-engineering.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
+In commit 6b610e004baf ("video: fbdev: mb862xx: mb862xx-i2c: don't
+print error when adding adapter fails") the users of the variable
+were removed, resulting in:
 
---ikeVEW9yuYc//A+q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+drivers/video/fbdev/mb862xx/mb862xx-i2c.c: In function ‘mb862xx_i2c_init’:
+drivers/video/fbdev/mb862xx/mb862xx-i2c.c:160:6: warning: unused variable ‘ret’ [-Wunused-variable]
+  int ret;
+      ^
 
+...so here we remove the variable as well.
 
-> One comment: the patch description should be "stand-alone" text, not a
-> continuation of the subject. I fixed this.
+Fixes: 6b610e004baf ("video: fbdev: mb862xx: mb862xx-i2c: don't print error when adding adapter fails)"
+Cc: Wolfram Sang <wsa-dev@sang-engineering.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
 
-I see. Will keep that in mind for the future. Thanks!
+[Feel free to squash this into the original if you happen to be rebasing]
 
+ drivers/video/fbdev/mb862xx/mb862xx-i2c.c | 2 --
+ 1 file changed, 2 deletions(-)
 
---ikeVEW9yuYc//A+q
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
+index 76d206857e3e..ba96c44f2761 100644
+--- a/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
++++ b/drivers/video/fbdev/mb862xx/mb862xx-i2c.c
+@@ -157,8 +157,6 @@ static struct i2c_adapter mb862xx_i2c_adapter = {
+ 
+ int mb862xx_i2c_init(struct mb862xxfb_par *par)
+ {
+-	int ret;
+-
+ 	mb862xx_i2c_adapter.algo_data = par;
+ 	par->adap = &mb862xx_i2c_adapter;
+ 
+-- 
+2.8.4
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJXqwVRAAoJEBQN5MwUoCm2IqYQAIEzLHAXUUhluGAsHeoVcM1D
-FwjkXqgsgmh0Sz+bGlOdechyULRdDohdq8qteiPuKCu/vom8YF1fR21rZYxr/VTX
-GFOslWkixrmA1qRvI0tSjCNmtYOfXuvmmuiUHgeqXYo/d+sI2SURr3yCHgOX9ssd
-psYXlo3EWdFremhDQYhPHusf6spK0uZqsqua+pESBmb5jkQBwjw6BzAHAjHrkskY
-GvM2XVytkjy1pyQeWvBGGuOWBGjv2F7y1ncRBQ550ZSxc0xviikro2FF4/7uD6uw
-8b+069IVaEURVz+my4JrNQDI68wa/Kjrx/8cBjPTsiVdoceWrkTfrm3K234FeqVd
-V5eJRoXGQgkDj7Or938T0+wbWqfeelV8ASitLiZiyK+CJh1aKwJZWX/s56ze0QkG
-3wMiuVHYpvThRwzQfej3TMh/1ujeNSwFQB9u7hq17OdfaoJl9vxrrzUPJ4UoBYv6
-TBfwFiswMvtbgINkc9CvywnDQtLpKxY8TlQeNiFMQugrkHYxwTL23Kttc6Di/8+K
-QnfqwjTVl4eJI+bVszCcU5wTZZ40bjj6Q2wv7os5ytVoS2/HijCtLLYgybOyTcqs
-J4vuc4Pcoy70o2PcXG6GyRct91ZHw23nMqk8PulQKckkmISZY/XYri3uwYZzMKlS
-1GQxmJSMqb+BwIqwwCUc
-=kLMc
------END PGP SIGNATURE-----
-
---ikeVEW9yuYc//A+q--

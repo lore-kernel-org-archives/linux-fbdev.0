@@ -1,39 +1,101 @@
-From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:06:59 +0000
-Subject: [PATCH 1001/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120659.16811-1-baolex.ni@intel.com>
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Date: Mon, 15 Aug 2016 10:10:31 +0000
+Subject: [RESEND PATCH 2/3] fbdev: vfb: add option for video mode
+Message-Id: <1471255832-44793-3-git-send-email-vladimir.murzin@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, mathias.nyman@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.com
+To: linux-fbdev@vger.kernel.org
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+Make vfb a bit more flexible in sense what it can represent and allow
+the end user to specify video mode parameters via newly introduced module
+option "mode". Since it is test module it is still up to the end user
+to make sure there is enough memory to satisfy video mode settings.
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
+Signed-off-by: Vladimir Murzin <vladimir.murzin@arm.com>
 ---
- drivers/video/fbdev/bf54x-lq043fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/vfb.c |   43 +++++++++++++++++++++----------------------
+ 1 file changed, 21 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/bf54x-lq043fb.c b/drivers/video/fbdev/bf54x-lq043fb.c
-index 8f1f97c..ddb19ee 100644
---- a/drivers/video/fbdev/bf54x-lq043fb.c
-+++ b/drivers/video/fbdev/bf54x-lq043fb.c
-@@ -88,7 +88,7 @@ struct bfin_bf54xfb_info {
+diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+index e9ecae2..2645875 100644
+--- a/drivers/video/fbdev/vfb.c
++++ b/drivers/video/fbdev/vfb.c
+@@ -37,6 +37,10 @@ static u_long videomemorysize = VIDEOMEMSIZE;
+ module_param(videomemorysize, ulong, 0);
+ MODULE_PARM_DESC(videomemorysize, "RAM available to frame buffer (in bytes)");
+ 
++static char *mode_option = NULL;
++module_param(mode_option, charp, 0);
++MODULE_PARM_DESC(mode_option, "Preferred video mode (e.g. 640x480-8@60)");
++
+ /**********************************************************************
+  *
+  * Memory management
+@@ -86,26 +90,17 @@ static void rvfree(void *mem, unsigned long size)
+ 	vfree(mem);
+ }
+ 
+-static struct fb_var_screeninfo vfb_default = {
++static struct fb_videomode vfb_default = {
+ 	.xres =		640,
+ 	.yres =		480,
+-	.xres_virtual =	640,
+-	.yres_virtual =	480,
+-	.bits_per_pixel = 8,
+-	.red =		{ 0, 8, 0 },
+-      	.green =	{ 0, 8, 0 },
+-      	.blue =		{ 0, 8, 0 },
+-      	.activate =	FB_ACTIVATE_TEST,
+-      	.height =	-1,
+-      	.width =	-1,
+-      	.pixclock =	20000,
+-      	.left_margin =	64,
+-      	.right_margin =	64,
+-      	.upper_margin =	32,
+-      	.lower_margin =	32,
+-      	.hsync_len =	64,
+-      	.vsync_len =	2,
+-      	.vmode =	FB_VMODE_NONINTERLACED,
++	.pixclock =	20000,
++	.left_margin =	64,
++	.right_margin =	64,
++	.upper_margin =	32,
++	.lower_margin =	32,
++	.hsync_len =	64,
++	.vsync_len =	2,
++	.vmode =	FB_VMODE_NONINTERLACED,
  };
  
- static int nocursor;
--module_param(nocursor, int, 0644);
-+module_param(nocursor, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(nocursor, "cursor enable/disable");
+ static struct fb_fix_screeninfo vfb_fix = {
+@@ -479,6 +474,8 @@ static int __init vfb_setup(char *options)
+ 		/* Test disable for backwards compatibility */
+ 		if (!strcmp(this_opt, "disable"))
+ 			vfb_enable = 0;
++		else
++			mode_option = this_opt;
+ 	}
+ 	return 1;
+ }
+@@ -506,11 +503,13 @@ static int vfb_probe(struct platform_device *dev)
+ 	info->screen_base = (char __iomem *)videomemory;
+ 	info->fbops = &vfb_ops;
  
- static int outp_rgb666;
+-	retval = fb_find_mode(&info->var, info, NULL,
+-			      NULL, 0, NULL, 8);
++	if (!fb_find_mode(&info->var, info, mode_option,
++			  NULL, 0, &vfb_default, 8)){
++		fb_err(info, "Unable to find usable video mode.\n");
++		retval = -EINVAL;
++		goto err1;
++	}
+ 
+-	if (!retval || (retval = 4))
+-		info->var = vfb_default;
+ 	vfb_fix.smem_start = (unsigned long) videomemory;
+ 	vfb_fix.smem_len = videomemorysize;
+ 	info->fix = vfb_fix;
 -- 
-2.9.2
+1.7.9.5
 

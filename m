@@ -1,84 +1,48 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 23 Aug 2016 18:20:57 +0000
-Subject: Re: [PATCH] backlight: arcxcnn: devicetree bindings for ArticSand devices
-Message-Id: <20160823182057.GA8472@rob-hp-laptop>
+From: Sedat Dilek <sedat.dilek@gmail.com>
+Date: Wed, 17 Aug 2016 19:27:00 +0000
+Subject: Re: [drm-intel-nightly] 2016y-07m-14d-21h-13m-02s UTC: locking dependency: drm_modeset_lock_all() ||
+Message-Id: <CA+icZUWn+zFjCHT+O6ihb7+kQDmn9N3Y588F45_=U=KYHZsoAw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471893084-4551-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1471893084-4551-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+References: <CA+icZUUUUCybFnneuhVVT4Z_vymMcLp4HdCe3CDY5SerFnP+tg@mail.gmail.com>
+ <20160715084045.GD1841@nuc-i3427.alporthouse.com>
+In-Reply-To: <20160715084045.GD1841@nuc-i3427.alporthouse.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
-Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Chris Wilson <chris@chris-wilson.co.uk>, Sedat Dilek <sedat.dilek@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Johannes Berg <johannes.berg@intel.com>, Thorsten Leemhuis <thl@ct.de>
 
-On Mon, Aug 22, 2016 at 03:11:24PM -0400, Olimpiu Dejeu wrote:
-> This is the device tree bindings documentation file
-> 
-> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
-> 
-> ---
->  .../bindings/video/backlight/arcxcnn.txt           | 29 ++++++++++++++++++++++
+On Fri, Jul 15, 2016 at 10:40 AM, Chris Wilson <chris@chris-wilson.co.uk> w=
+rote:
+> On Fri, Jul 15, 2016 at 08:00:25AM +0200, Sedat Dilek wrote:
+>> Hi,
+>>
+>> I see the below call-trace with latest d-i-n, guess latest linux-next
+>> will cause same issues.
+>> ( Beyond this, there exist also a build failure which me and Stephen
+>> have reported. )
+>> The call-trace is reproducible with my setup and seen on every boot.
+>>
+>> Not sure if this is a problem in intel-gfx or fbdev.
+>
+> Personally, I blamed backlight,
+> https://patchwork.freedesktop.org/patch/95769/
 
-Check your directory location. Things have moved.
+[ CC Peter, Johannes and Thorsten "The regression reporter" ]
 
->  1 file changed, 29 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/video/backlight/arcxcnn.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/video/backlight/arcxcnn.txt b/Documentation/devicetree/bindings/video/backlight/arcxcnn.txt
-> new file mode 100644
-> index 0000000..9cd7315
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/video/backlight/arcxcnn.txt
-> @@ -0,0 +1,29 @@
-> +arcxcnn bindings
-> +
-> +Required properties:
-> +  - compatible: "arc,arcxcnn", "arc,arc2c0608"
+Peter has 2 fixes from Johannes in peterz/queue.git#locking/urgent
+which fix the issue for me.
 
-One per line please.
+[1/2] Revert "drm/fb-helper: Reduce READ_ONCE(master) to lockless_dereferen=
+ce"
+[2/2] locking/barriers: suppress sparse warnings in lockless_dereference()
 
-Is arcxcnn a specific chip? If not drop it. No wildcards in compatible 
-strings.
+I tried today's Linus tree with those two fixes.
 
-> +  - reg: I2C slave address (u8)
-> +
-> +Optional properties:
-> +  - bl-name: Backlight device name (string)
+Chris backlight fix is no more needed here.
 
-Use the common bindings. label?
+- Sedat -
 
-> +  - init-brt: Initial value of backlight brightness (u32) low 16 bits used
-
-Use common bindings.
-
-> +  - pwm-period: PWM period value. Set only PWM input mode used (u32)
-> +  - prg-addr: Register address of ROM area to be updated (u32) low 8 bits used
-> +  - prg-val: Register value to be updated (u32) low 8 bits used
-
-What is this for? This should be a specific property or properties to do 
-explicit things, not a generic fill registers/rom with magic values.
-
-> +
-> +Example:
-> +
-> +	/* ARC2C0608 */
-> +	backlight@30 {
-> +		compatible = "arc,arc2c0608";
-> +		reg = <0x30>;
-> +
-> +		init-brt = <123>;
-> +
-> +		/* LED0+1 string enabled */
-> +		prg_06h {
-> +			prg-addr = <0x06>;
-> +			prg-val = <0x83>;
-> +		};
-> +
-> +	};
-> -- 
-> 1.9.1
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe devicetree" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[1] http://git.kernel.org/cgit/linux/kernel/git/peterz/queue.git/commit/?h=
+=3Dlocking/urgent&id=F9d089b7830bbaa6ccaad29dff5fbb01d2a69945
+[2] http://git.kernel.org/cgit/linux/kernel/git/peterz/queue.git/commit/?h=
+=3Dlocking/urgent&id=1804f7121995e8ca341427d848c0c8d267147720

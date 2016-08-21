@@ -1,48 +1,47 @@
-From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:06:38 +0000
-Subject: [PATCH 0998/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120638.16607-1-baolex.ni@intel.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Sun, 21 Aug 2016 16:06:34 +0000
+Subject: Re: [PATCH] Staging:sm750fb:ddk750_chip.c:Fixed coding style in comments
+Message-Id: <20160821160634.GA10137@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20160612133041.GA3709@rithvik-IdeaPad>
+In-Reply-To: <20160612133041.GA3709@rithvik-IdeaPad>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, bp@suse.de, mcgrof@suse.com, chuansheng.liu@intel.com, baolex.ni@intel.com, mathias.nyman@linux.intel.com, stern@rowland.harvard.edu, oneukum@suse.com
+To: Rithvik Patibandla <rithvikp98@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+On Sun, Jun 12, 2016 at 07:00:41PM +0530, Rithvik Patibandla wrote:
+> The following patch fixes format of some comments.
+> 
+> Signed-off-by: Rithvik Patibandla <rithvikp98@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_chip.c | 71 +++++++++++++++++++----------------
+>  1 file changed, 38 insertions(+), 33 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+> index f80ee77..8cb5cb9 100644
+> --- a/drivers/staging/sm750fb/ddk750_chip.c
+> +++ b/drivers/staging/sm750fb/ddk750_chip.c
+> @@ -70,11 +70,11 @@ static void setChipClock(unsigned int frequency)
+>  		pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
+>  		pll.clockType = MXCLK_PLL;
+>  
+> -		/*
+> -		* Call calcPllValue() to fill up the other fields for PLL structure.
+> -		* Sometime, the chip cannot set up the exact clock required by User.
+> -		* Return value from calcPllValue() gives the actual possible clock.
+> -		*/
+> +	/*
+> +	 * Call calcPllValue() to fill up the other fields for PLL structure.
+> +	 * Sometime, the chip cannot set up the exact clock required by User.
+> +	 * Return value from calcPllValue() gives the actual possible clock.
+> +	 */
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
----
- drivers/video/fbdev/arkfb.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Really?  Does that look correct to you?
 
-diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
-index 6a317de..5fe2922 100644
---- a/drivers/video/fbdev/arkfb.c
-+++ b/drivers/video/fbdev/arkfb.c
-@@ -102,14 +102,14 @@ MODULE_AUTHOR("(c) 2007 Ondrej Zajicek <santiago@crfreenet.org>");
- MODULE_LICENSE("GPL");
- MODULE_DESCRIPTION("fbdev driver for ARK 2000PV");
- 
--module_param(mode_option, charp, 0444);
-+module_param(mode_option, charp, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(mode_option, "Default video mode ('640x480-8@60', etc)");
--module_param_named(mode, mode_option, charp, 0444);
-+module_param_named(mode, mode_option, charp, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(mode, "Default video mode ('640x480-8@60', etc) (deprecated)");
- 
- static int threshold = 4;
- 
--module_param(threshold, int, 0644);
-+module_param(threshold, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(threshold, "FIFO threshold");
- 
- 
--- 
-2.9.2
+hint your indentation is totally wrong :(
 
+Please be more careful...
+
+greg k-h

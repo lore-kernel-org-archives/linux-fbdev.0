@@ -1,39 +1,36 @@
-From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:08:32 +0000
-Subject: [PATCH 1015/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120832.17762-1-baolex.ni@intel.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Thu, 25 Aug 2016 17:56:12 +0000
+Subject: [PATCH] matroxfb: fix size of memcpy
+Message-Id: <1472147052-26921-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, kirill.shutemov@linux.intel.com, oleg@redhat.com, oneukum@suse.com
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+hw->DACreg has a size of 80 bytes and MGADACbpp32 has 21. So when
+memcpy copies MGADACbpp32 to hw->DACreg it copies 80 bytes but
+only 21 bytes are valid.
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
+Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
 ---
- drivers/video/fbdev/pm3fb.c | 2 +-
+ drivers/video/fbdev/matrox/matroxfb_Ti3026.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index 6ff5077..a51744da 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -1558,7 +1558,7 @@ module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Initial video mode e.g. '648x480-8@60'");
- module_param(noaccel, bool, 0);
- MODULE_PARM_DESC(noaccel, "Disable acceleration");
--module_param(hwcursor, int, 0644);
-+module_param(hwcursor, int, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(hwcursor, "Enable hardware cursor "
- 			"(1=enable, 0=disable, default=1)");
- module_param(nomtrr, bool, 0);
+diff --git a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
+index 195ad7c..68fa037 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
++++ b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
+@@ -372,7 +372,7 @@ static int Ti3026_init(struct matrox_fb_info *minfo, struct my_timming *m)
+ 
+ 	DBG(__func__)
+ 
+-	memcpy(hw->DACreg, MGADACbpp32, sizeof(hw->DACreg));
++	memcpy(hw->DACreg, MGADACbpp32, sizeof(MGADACbpp32));
+ 	switch (minfo->fbcon.var.bits_per_pixel) {
+ 		case 4:	hw->DACreg[POS3026_XLATCHCTRL] = TVP3026_XLATCHCTRL_16_1;	/* or _8_1, they are same */
+ 			hw->DACreg[POS3026_XTRUECOLORCTRL] = TVP3026_XTRUECOLORCTRL_PSEUDOCOLOR;
 -- 
-2.9.2
+1.9.1
 

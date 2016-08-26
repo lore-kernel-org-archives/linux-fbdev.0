@@ -1,61 +1,59 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 05 Aug 2016 13:29:42 +0000
-Subject: Re: [PATCH] backlight: adp5520: fix error handling in adp5520_bl_probe()
-Message-Id: <20160805132942.GF5243@dell>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 26 Aug 2016 15:25:43 +0000
+Subject: [PATCH 2/5] video: ARM CLCD: fix endpoint lookup logic
+Message-Id: <20160826152546.604384-3-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
-In-Reply-To: <1468016392-6061-1-git-send-email-khoroshilov@ispras.ru>
+References: <20160826152546.604384-1-arnd@arndb.de>
+In-Reply-To: <20160826152546.604384-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Cc: Michael Hennerich <michael.hennerich@analog.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Arnd Bergmann <arnd@arndb.de>, Linus Walleij <linus.walleij@linaro.org>, linux-fbdev@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Sat, 09 Jul 2016, Alexey Khoroshilov wrote:
+The addition of the Nomadik support in this driver introduced
+a bug in clcdfb_of_init_display(), which now calls init_panel
+with an uninitialized 'endpoint' pointer, as "gcc -Wmaybe-uninitialized"
+warns:
 
-> If adp5520_bl_setup() fails, sysfs group left unremoved.
->=20
-> By the way, fix overcomplicated assignement of error code.
->=20
-> Found by Linux Driver Verification project (linuxtesting.org).
->=20
-> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
-> ---
->  drivers/video/backlight/adp5520_bl.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
+drivers/video/fbdev/amba-clcd.c: In function 'clcdfb_of_init_display':
+drivers/video/fbdev/amba-clcd.c:785:5: error: 'endpoint' may be used uninitialized in this function [-Werror=maybe-uninitialized]
 
-Applied, thanks.
+This reverts the broken part of the function to what it was before
+the patch, which is the best guess I have to what it should be.
+I assume this was left over from an attempted rework of the
+code that was partially backed out.
 
-> diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlig=
-ht/adp5520_bl.c
-> index dd88ba1d71ce..35373e2065b2 100644
-> --- a/drivers/video/backlight/adp5520_bl.c
-> +++ b/drivers/video/backlight/adp5520_bl.c
-> @@ -332,10 +332,18 @@ static int adp5520_bl_probe(struct platform_device =
-*pdev)
->  	}
-> =20
->  	platform_set_drvdata(pdev, bl);
-> -	ret |=3D adp5520_bl_setup(bl);
-> +	ret =3D adp5520_bl_setup(bl);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to setup\n");
-> +		if (data->pdata->en_ambl_sens)
-> +			sysfs_remove_group(&bl->dev.kobj,
-> +					&adp5520_bl_attr_group);
-> +		return ret;
-> +	}
-> +
->  	backlight_update_status(bl);
-> =20
-> -	return ret;
-> +	return 0;
->  }
-> =20
->  static int adp5520_bl_remove(struct platform_device *pdev)
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Fixes: 046ad6cdeb3f ("video: ARM CLCD: support Nomadik variant")
+Cc: Linus Walleij <linus.walleij@linaro.org>
+---
+Cc: linux-fbdev@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+ drivers/video/fbdev/amba-clcd.c | 9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index c342ff370108..ec2671d98abc 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -782,12 +782,9 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 	/*
+ 	 * Fetch the panel endpoint.
+ 	 */
+-	if (!endpoint) {
+-		endpoint = of_graph_get_next_endpoint(fb->dev->dev.of_node,
+-						      NULL);
+-		if (!endpoint)
+-			return -ENODEV;
+-	}
++	endpoint = of_graph_get_next_endpoint(fb->dev->dev.of_node, NULL);
++	if (!endpoint)
++		return -ENODEV;
+ 
+ 	if (fb->vendor->init_panel) {
+ 		err = fb->vendor->init_panel(fb, endpoint);
+-- 
+2.9.0
+

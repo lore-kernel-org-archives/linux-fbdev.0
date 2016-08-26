@@ -1,80 +1,69 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 10 Aug 2016 10:17:25 +0000
-Subject: Re: [PATCH 16/20] fbdev: cobalt_lcdfb: Drop SEAD3 support
-Message-Id: <355f078b-b81c-61ef-6c1f-8f5a345cb441@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="X4nskscgpLWoSE2VraiT27ojT48PMUJjT"
+From: Marek Vasut <marex@denx.de>
+Date: Fri, 26 Aug 2016 15:53:35 +0000
+Subject: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
+Message-Id: <20160826155335.8747-1-marex@denx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160809123546.10190-1-paul.burton@imgtec.com>
- <20160809123546.10190-17-paul.burton@imgtec.com>
-In-Reply-To: <20160809123546.10190-17-paul.burton@imgtec.com>
-To: Paul Burton <paul.burton@imgtec.com>, linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Robert Jarzmik <robert.jarzmik@free.fr>, "Maciej W. Rozycki" <macro@linux-mips.org>, Linus Walleij <linus.walleij@linaro.org>, Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>, linux-kernel@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Simon Horman <horms+renesas@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
---X4nskscgpLWoSE2VraiT27ojT48PMUJjT
-Content-Type: multipart/mixed; boundary="TBJLpd01qRBGFesQsvgsowEibFS5LOsGa"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Paul Burton <paul.burton@imgtec.com>, linux-mips@linux-mips.org,
- Ralf Baechle <ralf@linux-mips.org>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-fbdev@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Robert Jarzmik <robert.jarzmik@free.fr>,
- "Maciej W. Rozycki" <macro@linux-mips.org>,
- Linus Walleij <linus.walleij@linaro.org>,
- Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>,
- linux-kernel@vger.kernel.org,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Simon Horman <horms+renesas@verge.net.au>
-Message-ID: <355f078b-b81c-61ef-6c1f-8f5a345cb441@ti.com>
-Subject: Re: [PATCH 16/20] fbdev: cobalt_lcdfb: Drop SEAD3 support
-References: <20160809123546.10190-1-paul.burton@imgtec.com>
- <20160809123546.10190-17-paul.burton@imgtec.com>
-In-Reply-To: <20160809123546.10190-17-paul.burton@imgtec.com>
+Allocate the framebuffer memory as coherent, otherwise the framebuffer
+will suffer from artifacts when displaying scrolling text or video.
+This can be replicated on i.MX6SX (armv7), which has more complex memory
+architecture compared to the i.MX23/28 (armv5).
 
---TBJLpd01qRBGFesQsvgsowEibFS5LOsGa
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Marek Vasut <marex@denx.de>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>
+Cc: Lucas Stach <l.stach@pengutronix.de>
+Cc: Shawn Guo <shawnguo@kernel.org>
+---
+V2: Switch to from dma_{alloc,free}_coherent() to dma_{alloc,free}_wc()
+    for performance reasons, as suggested by Lucas Stach
+---
+ drivers/video/fbdev/mxsfb.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-On 09/08/16 15:35, Paul Burton wrote:
-> The SEAD3 board no longer uses the cobalt_lcdfb driver, so remove the
-> SEAD3-specific code from it.
->=20
-> Signed-off-by: Paul Burton <paul.burton@imgtec.com>
-> ---
->=20
->  drivers/video/fbdev/Kconfig        |  2 +-
->  drivers/video/fbdev/cobalt_lcdfb.c | 42 ------------------------------=
---------
->  2 files changed, 1 insertion(+), 43 deletions(-)
+diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+index 4e6608c..7846f0e 100644
+--- a/drivers/video/fbdev/mxsfb.c
++++ b/drivers/video/fbdev/mxsfb.c
+@@ -800,6 +800,7 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
+ 			struct fb_videomode *vmode)
+ {
+ 	int ret;
++	struct device *dev = &host->pdev->dev;
+ 	struct fb_info *fb_info = &host->fb_info;
+ 	struct fb_var_screeninfo *var = &fb_info->var;
+ 	dma_addr_t fb_phys;
+@@ -825,12 +826,10 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
+ 
+ 	/* Memory allocation for framebuffer */
+ 	fb_size = SZ_2M;
+-	fb_virt = alloc_pages_exact(fb_size, GFP_DMA);
++	fb_virt = dma_alloc_wc(dev, PAGE_ALIGN(fb_size), &fb_phys, GFP_KERNEL);
+ 	if (!fb_virt)
+ 		return -ENOMEM;
+ 
+-	fb_phys = virt_to_phys(fb_virt);
+-
+ 	fb_info->fix.smem_start = fb_phys;
+ 	fb_info->screen_base = fb_virt;
+ 	fb_info->screen_size = fb_info->fix.smem_len = fb_size;
+@@ -843,9 +842,11 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
+ 
+ static void mxsfb_free_videomem(struct mxsfb_info *host)
+ {
++	struct device *dev = &host->pdev->dev;
+ 	struct fb_info *fb_info = &host->fb_info;
+ 
+-	free_pages_exact(fb_info->screen_base, fb_info->fix.smem_len);
++	dma_free_wc(dev, fb_info->screen_size, fb_info->screen_base,
++		    fb_info->fix.smem_start);
+ }
+ 
+ static const struct platform_device_id mxsfb_devtype[] = {
+-- 
+2.9.3
 
-Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-
- Tomi
-
-
---TBJLpd01qRBGFesQsvgsowEibFS5LOsGa--
-
---X4nskscgpLWoSE2VraiT27ojT48PMUJjT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXqv81AAoJEPo9qoy8lh71HTIP/1FldFHomssLajEP6Z5Barl7
-AL9lRRDMvR2/40LMvJowAqPH+SFO/7jGHwdGtXqPBI4Ts3bOGpetqsy3zA0XicHX
-b7RrZ5Khc+tmK9JCFNWuJFYSctHDQnxCHqcwI/FA1vuqhC/yJpRkqFDkZZ7HtsvN
-KQ6ElEYC6VZK4q9BwhtfZfn727SC9E468RpAO9KhYw50aooDd9OaBiXHuNRIaHi5
-AdOTyMDvPTBp68DkjNRt0YerjtSQGGjHHmrl4F+PbXIgk+F66/dGYtjDX4lBqK0B
-eLEf+eiDHsBBjSLBArOkRZWioDVv2X5lsG6MSp79XaNWpJI7uXfj0dhqeiLmwo4w
-qqbEnI8MAuJRrcjQkVpszCAum9gBmZ0D0XQZ07gexLLvRbNalpBHcpEpj6F65agV
-Kcxfj4rQWVsXUzYOyS3oYpr2RSOwUt3hE//CVpOGztAJqBxKfdnMk9jHNMGuvpjm
-wdLPFk8mMIvdLSA6Sl0GLkHzThsWcz+AOVe7eeNgWHkSGz3C1rF9wFAe/XvPcQ/i
-nOjJHtaGU4BQnPCE1Wj2x03bKsJdri8w4O0Fttuld/FkQJqBECMmPuMkW/JmDtAA
-H2SLuXJ/y2I6mJO6Nn2mbZ90SDZJmte3NBG078usaXE31poeYH+o6bmrlmjNMy6t
-CK3y3ew5LNYXNcFvuIQe
-=GX+e
------END PGP SIGNATURE-----
-
---X4nskscgpLWoSE2VraiT27ojT48PMUJjT--

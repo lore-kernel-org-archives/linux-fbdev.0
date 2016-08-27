@@ -1,35 +1,43 @@
-From: moshe green <mgmoshes@gmail.com>
-Date: Tue, 30 Aug 2016 19:42:31 +0000
-Subject: Re: [PATCH 7/9] staging: sm750fb: fix block comment style issues in ddk750_chip.c
-Message-Id: <CAJEcRgosrA+q9u6NMNJGR5XCA+Gy-SEMc51GcOry6URcoB4NJQ@mail.gmail.com>
+From: Oleg Drokin <green@linuxhacker.ru>
+Date: Sat, 27 Aug 2016 03:05:37 +0000
+Subject: [PATCH] mx3fb: Fix print format string
+Message-Id: <1472267137-810445-1-git-send-email-green@linuxhacker.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
- <ad80e695e9730861466d5960359b06af27ca7c30.1472583825.git.mgmoshes@gmail.com> <1472584763.5512.119.camel@perches.com>
-In-Reply-To: <1472584763.5512.119.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "Luis R. Rodriguez" <mcgrof@suse.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Oleg Drokin <green@linuxhacker.ru>
 
-Will do.
-Thanks
+%ul was probably meant as %lu since the former would print
+an unsigned value and a letter l.
 
-On 30 August 2016 at 22:19, Joe Perches <joe@perches.com> wrote:
-> On Tue, 2016-08-30 at 22:05 +0300, Moshe Green wrote:
->> Fix block comment * prefix and trailing */ warnings found
->> by the checkpatch.pl tool in ddk750_chip.c.
-> []
->> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> []
->> @@ -320,8 +320,10 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
->>       int max_d = 6;
->>
->>       if (getChipType() = SM750LE) {
->> -             /* SM750LE don't have prgrammable PLL and M/N values to work on.
->> -             Just return the requested clock. */
->> +             /* SM750LE don't have
->> +              * prgrammable PLL and M/N values to work on
->
-> Might as well fix the programmable typo too.
->
+But in fact the whole value we are printing in u32 anyway, so
+we don't need the format to be long. Therefore just drop the l
+altogether.
+
+Signed-off-by: Oleg Drokin <green@linuxhacker.ru>
+---
+Also do we really need 1000UL specification if we
+cast to u32 anyway? Or should we drop away the cast instead?
+Are pixelclocks over 4GHz possible here?
+
+ drivers/video/fbdev/mx3fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/mx3fb.c b/drivers/video/fbdev/mx3fb.c
+index f91b1db..8778e01 100644
+--- a/drivers/video/fbdev/mx3fb.c
++++ b/drivers/video/fbdev/mx3fb.c
+@@ -845,7 +845,7 @@ static int __set_par(struct fb_info *fbi, bool lock)
+ 		if (fbi->var.sync & FB_SYNC_SHARP_MODE)
+ 			mode = IPU_PANEL_SHARP_TFT;
+ 
+-		dev_dbg(fbi->device, "pixclock = %ul Hz\n",
++		dev_dbg(fbi->device, "pixclock = %u Hz\n",
+ 			(u32) (PICOS2KHZ(fbi->var.pixclock) * 1000UL));
+ 
+ 		if (sdc_init_panel(mx3fb, mode,
+-- 
+2.7.4
+

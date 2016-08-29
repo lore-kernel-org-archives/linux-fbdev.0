@@ -1,50 +1,60 @@
-From: Tim Harvey <tharvey@gateworks.com>
-Date: Thu, 25 Aug 2016 14:17:35 +0000
-Subject: Re: [PATCH v4 0/4] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v4
-Message-Id: <CAJ+vNU1LfgbvihqgN0LWr1JxpKtW7jW3Xu0DycD0ePqC1K=8EA@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 29 Aug 2016 09:29:31 +0000
+Subject: [PATCH] video: ARM CLCD: fix up Integrator support
+Message-Id: <1472462971-8935-1-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Steve Longerbeam <slongerbeam@gmail.com>, Lars-Peter Clausen <lars@metafoo.de>, Fabio Estevam <fabio.estevam@nxp.com>
+To: linux-arm-kernel@lists.infradead.org
 
-On Wed, Aug 17, 2016 at 5:50 PM, Steve Longerbeam <slongerbeam@gmail.com> wrote:
-> In this version:
->
-> - rebased against latest drm-next.
-> - cleaned up header includes in ipu-vdi.c.
-> - do away with struct ipu_ic_tile_off in ipu-ic.c, and move tile offsets
->   into struct ipu_ic_tile. This paves the way for possibly allowing for
->   each tile to have different dimensions in the future.
->
->
-> Steve Longerbeam (4):
->   gpu: ipu-v3: Add Video Deinterlacer unit
->   gpu: ipu-v3: Add FSU channel linking support
->   gpu: ipu-ic: Add complete image conversion support with tiling
->   gpu: ipu-ic: allow multiple handles to ic
->
->  drivers/gpu/ipu-v3/Makefile     |    2 +-
->  drivers/gpu/ipu-v3/ipu-common.c |  142 ++++
->  drivers/gpu/ipu-v3/ipu-ic.c     | 1719 ++++++++++++++++++++++++++++++++++++++-
->  drivers/gpu/ipu-v3/ipu-prv.h    |   33 +
->  drivers/gpu/ipu-v3/ipu-vdi.c    |  243 ++++++
->  include/video/imx-ipu-v3.h      |   93 ++-
->  6 files changed, 2195 insertions(+), 37 deletions(-)
->  create mode 100644 drivers/gpu/ipu-v3/ipu-vdi.c
->
+We need to mask all registers of the Integrator/CP core module
+control register, and actually write the calculated value to the
+control register, not the mask.
 
-Philipp,
+Tested on the Integrator/CP with RGB5551 VGA and works like a
+charm after this patch.
 
-Have you had a chance to review this last series of Steve's submitted
-last week? We are down to 4 patches in gpu/ipu-v3 needed in order to
-get his IMX5/6 capture driver into staging and the sooner we do that
-the sooner we can get more testing and additional support/features for
-it.
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ drivers/video/fbdev/amba-clcd-versatile.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
-Regards,
+diff --git a/drivers/video/fbdev/amba-clcd-versatile.c b/drivers/video/fbdev/amba-clcd-versatile.c
+index 9a90817b1550..5c1e03928d7f 100644
+--- a/drivers/video/fbdev/amba-clcd-versatile.c
++++ b/drivers/video/fbdev/amba-clcd-versatile.c
+@@ -262,7 +262,10 @@ static const struct of_device_id versatile_clcd_of_match[] = {
+ /* 0 = 24bit VGA, 1 = 18bit VGA */
+ #define INTEGRATOR_CLCD_LCD_N24BITEN	BIT(19)
+ 
+-#define INTEGRATOR_CLCD_MASK		(INTEGRATOR_CLCD_LCDMUX_MASK | \
++#define INTEGRATOR_CLCD_MASK		(INTEGRATOR_CLCD_LCDBIASEN | \
++					 INTEGRATOR_CLCD_LCDBIASUP | \
++					 INTEGRATOR_CLCD_LCDBIASDN | \
++					 INTEGRATOR_CLCD_LCDMUX_MASK | \
+ 					 INTEGRATOR_CLCD_LCD0_EN | \
+ 					 INTEGRATOR_CLCD_LCD1_EN | \
+ 					 INTEGRATOR_CLCD_LCD_STATIC1 | \
+@@ -277,6 +280,7 @@ static void integrator_clcd_enable(struct clcd_fb *fb)
+ 
+ 	dev_info(&fb->dev->dev, "enable Integrator CLCD connectors\n");
+ 
++	/* FIXME: really needed? */
+ 	val = INTEGRATOR_CLCD_LCD_STATIC1 | INTEGRATOR_CLCD_LCD_STATIC2 |
+ 		INTEGRATOR_CLCD_LCD0_EN | INTEGRATOR_CLCD_LCD1_EN;
+ 	if (var->bits_per_pixel <= 8 ||
+@@ -291,8 +295,8 @@ static void integrator_clcd_enable(struct clcd_fb *fb)
+ 
+ 	regmap_update_bits(versatile_syscon_map,
+ 			   INTEGRATOR_HDR_CTRL_OFFSET,
+-			   0,
+-			   INTEGRATOR_CLCD_MASK);
++			   INTEGRATOR_CLCD_MASK,
++			   val);
+ }
+ 
+ /*
+-- 
+2.7.4
 
-Tim

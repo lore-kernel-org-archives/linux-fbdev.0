@@ -1,47 +1,39 @@
-From: Baole Ni <baolex.ni@intel.com>
-Date: Tue, 02 Aug 2016 12:07:46 +0000
-Subject: [PATCH 1008/1285] Replace numeric parameter like 0444 with macro
-Message-Id: <20160802120746.17287-1-baolex.ni@intel.com>
+From: Moshe Green <mgmoshes@gmail.com>
+Date: Tue, 30 Aug 2016 19:06:13 +0000
+Subject: [PATCH 9/9] staging: sm750fb: fix line length coding style issue in ddk750_chip.c
+Message-Id: <f200291405f5a504f6d3f5e4a7618dce94cdc3e1.1472583825.git.mgmoshes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
+In-Reply-To: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, m.chehab@samsung.com, gregkh@linuxfoundation.org, m.szyprowski@samsung.com, kyungmin.park@samsung.com, k.kozlowski@samsung.com
-Cc: linux-geode@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, chuansheng.liu@intel.com, baolex.ni@intel.com, linus.walleij@linaro.org, oneukum@suse.com
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-I find that the developers often just specified the numeric value
-when calling a macro which is defined with a parameter for access permission.
-As we know, these numeric value for access permission have had the corresponding macro,
-and that using macro can improve the robustness and readability of the code,
-thus, I suggest replacing the numeric parameter with the macro.
+Fix a line length warning found by the checkpatch.pl tool in
+ddk750_chip.c.
 
-Signed-off-by: Chuansheng Liu <chuansheng.liu@intel.com>
-Signed-off-by: Baole Ni <baolex.ni@intel.com>
+Signed-off-by: Moshe Green <mgmoshes@gmail.com>
 ---
- drivers/video/fbdev/geode/gx1fb_core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/geode/gx1fb_core.c b/drivers/video/fbdev/geode/gx1fb_core.c
-index 9bee874..51f70e3 100644
---- a/drivers/video/fbdev/geode/gx1fb_core.c
-+++ b/drivers/video/fbdev/geode/gx1fb_core.c
-@@ -461,13 +461,13 @@ static void gx1fb_cleanup(void)
- module_init(gx1fb_init);
- module_exit(gx1fb_cleanup);
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 07c2537..0049e5d 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -339,7 +339,9 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 		max_d = 3;
  
--module_param_string(mode, mode_option, sizeof(mode_option), 0444);
-+module_param_string(mode, mode_option, sizeof(mode_option), S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(mode, "video mode (<x>x<y>[-<bpp>][@<refr>])");
- 
--module_param_named(crt, crt_option, int, 0444);
-+module_param_named(crt, crt_option, int, S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(crt, "enable CRT output. 0 = off, 1 = on (default)");
- 
--module_param_string(panel, panel_option, sizeof(panel_option), 0444);
-+module_param_string(panel, panel_option, sizeof(panel_option), S_IRUSR | S_IRGRP | S_IROTH);
- MODULE_PARM_DESC(panel, "size of attached flat panel (<x>x<y>)");
- 
- MODULE_DESCRIPTION("framebuffer driver for the AMD Geode GX1");
+ 	for (N = 15; N > 1; N--) {
+-		/* RN will not exceed maximum long if @request <= 285 MHZ (for 32bit cpu) */
++		/* RN will not exceed maximum long
++		 * if @request <= 285 MHZ (for 32bit cpu)
++		 */
+ 		RN = N * request;
+ 		quo = RN / input;
+ 		rem = RN % input;/* rem always small than 14318181 */
 -- 
-2.9.2
+2.7.4
 

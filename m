@@ -1,69 +1,78 @@
-From: Marek Vasut <marex@denx.de>
-Date: Fri, 26 Aug 2016 15:53:35 +0000
-Subject: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
-Message-Id: <20160826155335.8747-1-marex@denx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 30 Aug 2016 08:59:53 +0000
+Subject: Re: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
+Message-Id: <dda1fb74-4e30-f54e-4504-63db899f0bb3@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+References: <20160826155335.8747-1-marex@denx.de>
+In-Reply-To: <20160826155335.8747-1-marex@denx.de>
 To: linux-fbdev@vger.kernel.org
 
-Allocate the framebuffer memory as coherent, otherwise the framebuffer
-will suffer from artifacts when displaying scrolling text or video.
-This can be replicated on i.MX6SX (armv7), which has more complex memory
-architecture compared to the i.MX23/28 (armv5).
+--Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB
+Content-Type: multipart/mixed; boundary="S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0";
+ protected-headers="v1"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Marek Vasut <marex@denx.de>, linux-fbdev@vger.kernel.org
+Cc: Fabio Estevam <fabio.estevam@nxp.com>,
+ Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Message-ID: <dda1fb74-4e30-f54e-4504-63db899f0bb3@ti.com>
+Subject: Re: [PATCH V2] video: mxsfb: Fix framebuffer corruption on mx6sx
+References: <20160826155335.8747-1-marex@denx.de>
+In-Reply-To: <20160826155335.8747-1-marex@denx.de>
 
-Signed-off-by: Marek Vasut <marex@denx.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
-Cc: Shawn Guo <shawnguo@kernel.org>
----
-V2: Switch to from dma_{alloc,free}_coherent() to dma_{alloc,free}_wc()
-    for performance reasons, as suggested by Lucas Stach
----
- drivers/video/fbdev/mxsfb.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+--S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-index 4e6608c..7846f0e 100644
---- a/drivers/video/fbdev/mxsfb.c
-+++ b/drivers/video/fbdev/mxsfb.c
-@@ -800,6 +800,7 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
- 			struct fb_videomode *vmode)
- {
- 	int ret;
-+	struct device *dev = &host->pdev->dev;
- 	struct fb_info *fb_info = &host->fb_info;
- 	struct fb_var_screeninfo *var = &fb_info->var;
- 	dma_addr_t fb_phys;
-@@ -825,12 +826,10 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
- 
- 	/* Memory allocation for framebuffer */
- 	fb_size = SZ_2M;
--	fb_virt = alloc_pages_exact(fb_size, GFP_DMA);
-+	fb_virt = dma_alloc_wc(dev, PAGE_ALIGN(fb_size), &fb_phys, GFP_KERNEL);
- 	if (!fb_virt)
- 		return -ENOMEM;
- 
--	fb_phys = virt_to_phys(fb_virt);
--
- 	fb_info->fix.smem_start = fb_phys;
- 	fb_info->screen_base = fb_virt;
- 	fb_info->screen_size = fb_info->fix.smem_len = fb_size;
-@@ -843,9 +842,11 @@ static int mxsfb_init_fbinfo(struct mxsfb_info *host,
- 
- static void mxsfb_free_videomem(struct mxsfb_info *host)
- {
-+	struct device *dev = &host->pdev->dev;
- 	struct fb_info *fb_info = &host->fb_info;
- 
--	free_pages_exact(fb_info->screen_base, fb_info->fix.smem_len);
-+	dma_free_wc(dev, fb_info->screen_size, fb_info->screen_base,
-+		    fb_info->fix.smem_start);
- }
- 
- static const struct platform_device_id mxsfb_devtype[] = {
--- 
-2.9.3
+On 26/08/16 18:53, Marek Vasut wrote:
+> Allocate the framebuffer memory as coherent, otherwise the framebuffer
+> will suffer from artifacts when displaying scrolling text or video.
+> This can be replicated on i.MX6SX (armv7), which has more complex memor=
+y
+> architecture compared to the i.MX23/28 (armv5).
+>=20
+> Signed-off-by: Marek Vasut <marex@denx.de>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: Fabio Estevam <fabio.estevam@nxp.com>
+> Cc: Lucas Stach <l.stach@pengutronix.de>
+> Cc: Shawn Guo <shawnguo@kernel.org>
+> ---
+> V2: Switch to from dma_{alloc,free}_coherent() to dma_{alloc,free}_wc()=
 
+>     for performance reasons, as suggested by Lucas Stach
+> ---
+>  drivers/video/fbdev/mxsfb.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+
+Thanks, queued for 4.9.
+
+ Tomi
+
+
+--S4bAiMQSQE8u9FLjRG6HxKwQaNQokKdV0--
+
+--Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXxUsJAAoJEPo9qoy8lh71NKMP/3qt4arYCnKYT9YGYT+w6eVr
+s8NXrztH3n+/oPYo79riwg4hJL6/sWYhwUcyWfbATUvEdrErp8YcSeyM7boavYAv
+88feJUTY3Nw9FE/+mWArg4qMIIHCJ/zf300VF+E976YYADDOAxf1EjANVk4C6UWy
+AEgeRaM3BBCLXuulWog7ac52Nviky9bNNQmHX8RuRjdlJPABTUKpbfItNilHh9Xu
+MJYjpJx9/RMKqbzY7VVdamx1Q7oXjpFGndGsSx2q3CfXlxEACQJ2jMRJBbZe5NxG
+C7HKvzhGCZUQPyzlsYNCYA2tmUepHp/nNUl9DN18H6lg8q+0PwyU4KUl9p26//ha
+STlTjOK+jkzXXeV4lr2LvOFAelBIZEOjfKGSDIEN0fGLs6Kf6M6dN/PNBzUS4B07
+lfHpxoVwRbvXLWrn2tfTK3HKJJzzyFooJvaoZYNKR936R4H9ctC2PtnnON7sRMb7
+pqEA+0zqT+YRawONKUzX1EjT22B1HTCmND65jXFyKEOD18R1w1F2jUFjpW13XA40
+EzfkYA2Wu/dpOwqb8QubRU22i1gYRX4m95jWxX0X2qEeUvaZPFAKyV0gpdu6I19R
+6fVJbNSYJG9aQXo5MpfYawAsezcLZBIHukONnISRRgw1qX2SrKoojl9VW/MFw6Hu
+6l0UIX/pLo/dRH0LB/QY
+=U07Z
+-----END PGP SIGNATURE-----
+
+--Cq5o2EbOh3liGxA9Nc8S5EVkktHcVWQxB--

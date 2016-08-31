@@ -1,90 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 10 Aug 2016 10:44:42 +0000
-Subject: Re: [PATCH] omapfb: panel-dsi-cm: Remove deprecated create_singlethread_workqueue
-Message-Id: <9378ac72-7bc2-fcc8-66f0-9f34f9a302eb@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aPtrrsCKs5IGTkrQdOMmVX13wwrTVFLpd"
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 31 Aug 2016 08:18:14 +0000
+Subject: [PATCH 3/6] drm/panel: simple: Add A10 EVB 5 inch panel support
+Message-Id: <20160831081817.5191-4-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160702082540.GA26570@Karyakshetra>
-In-Reply-To: <20160702082540.GA26570@Karyakshetra>
-To: linux-fbdev@vger.kernel.org
+References: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
+In-Reply-To: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@intel.com>, David Airlie <airlied@linux.ie>, Thierry Reding <thierry.reding@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-gpio@vger.kernel.org, Alexander Kaplan <alex@nextthing.co>, Mylene Josserand <mylene.josserand@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
---aPtrrsCKs5IGTkrQdOMmVX13wwrTVFLpd
-Content-Type: multipart/mixed; boundary="9TcBbw6F0LX2C04kt4c5ctw1E7UXev2fO"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Dave Airlie <airlied@gmail.com>, Rob Clark <robdclark@gmail.com>
-Cc: tj@kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org
-Message-ID: <9378ac72-7bc2-fcc8-66f0-9f34f9a302eb@ti.com>
-Subject: Re: [PATCH] omapfb: panel-dsi-cm: Remove deprecated
- create_singlethread_workqueue
-References: <20160702082540.GA26570@Karyakshetra>
-In-Reply-To: <20160702082540.GA26570@Karyakshetra>
+The A10-EVB from Allwinner comes with an unidentified panel, with the only
+mark on the PCB being A10-SUB-EVB-5LCD.
 
---9TcBbw6F0LX2C04kt4c5ctw1E7UXev2fO
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Add timings to simple panel to handle it.
 
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ drivers/gpu/drm/panel/panel-simple.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
+diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+index 85143d1b9b31..be371b053aab 100644
+--- a/drivers/gpu/drm/panel/panel-simple.c
++++ b/drivers/gpu/drm/panel/panel-simple.c
+@@ -386,6 +386,29 @@ static void panel_simple_shutdown(struct device *dev)
+ 	panel_simple_disable(&panel->base);
+ }
+ 
++static const struct drm_display_mode allwinner_a10_sub_evb_5lcd_mode = {
++	.clock = 33000,
++	.hdisplay = 800,
++	.hsync_start = 800 + 209,
++	.hsync_end = 800 + 209 + 1,
++	.htotal = 800 + 209 + 1 + 45,
++	.vdisplay = 480,
++	.vsync_start = 480 + 22,
++	.vsync_end = 480 + 22 + 1,
++	.vtotal = 480 + 22 + 1 + 22,
++	.vrefresh = 60,
++};
++
++static const struct panel_desc allwinner_a10_sub_evb_5lcd = {
++	.modes = &allwinner_a10_sub_evb_5lcd_mode,
++	.num_modes = 1,
++	.size = {
++		.width = 110,
++		.height = 67,
++	},
++	.bus_format = MEDIA_BUS_FMT_RGB666_1X18,
++};
++
+ static const struct drm_display_mode ampire_am800480r3tmqwa1h_mode = {
+ 	.clock = 33333,
+ 	.hdisplay = 800,
+@@ -1515,6 +1538,9 @@ static const struct panel_desc urt_umsh_8596md_parallel = {
+ 
+ static const struct of_device_id platform_of_match[] = {
+ 	{
++		.compatible = "allwinner,sun4i-a10-sub-evb-5-lcd",
++		.data = &allwinner_a10_sub_evb_5lcd,
++	}, {
+ 		.compatible = "ampire,am800480r3tmqwa1h",
+ 		.data = &ampire_am800480r3tmqwa1h,
+ 	}, {
+-- 
+2.9.2
 
-On 02/07/16 11:25, Bhaktipriya Shridhar wrote:
-> The workqueue "workqueue" has only a single workitem(&ddata->ulps_work)=
-
-> and hence doesn't require ordering. Also, it is not being used on a
-> memory reclaim path. Hence, the singlethreaded workqueue has been
-> replaced with the use of system_wq.
->=20
-> System workqueues have been able to handle high level of concurrency
-> for a long time now and hence it's not required to have a singlethreade=
-d
-> workqueue just to gain concurrency. Unlike a dedicated per-cpu workqueu=
-e
-> created with create_singlethread_workqueue(), system_wq allows multiple=
-
-> work items to overlap executions even on the same CPU; however, a
-> per-cpu workqueue doesn't have any CPU locality or global ordering
-> guarantee unless the target CPU is explicitly specified and thus the
-> increase of local concurrency shouldn't make any difference.
->=20
-> dsicm_remove() calls dsicm_cancel_ulps_work which uses
-> cancel_delayed_work() to ensure that there are no pending tasks while
-> disconnecting the driver.
->=20
-> Signed-off-by: Bhaktipriya Shridhar <bhaktipriya96@gmail.com>
-> ---
->  drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 14 ++------=
-------
->  1 file changed, 2 insertions(+), 12 deletions(-)
-
-Thanks, queued for v4.9.
-
- Tomi
-
-
---9TcBbw6F0LX2C04kt4c5ctw1E7UXev2fO--
-
---aPtrrsCKs5IGTkrQdOMmVX13wwrTVFLpd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXqwWaAAoJEPo9qoy8lh71K7AQAI3bukCejBo/mLCHMji7IbZH
-5xnOxQUjg0sCMSW9UOSLnkkkFGY5DNIpqAY5mLrHYeS9SxKEDT7Q+c/XI4XZWQHT
-02EhP2P5AMuWK4Jr58Wcr4ldqmaBSyOCCGRnd/kP9Einl/EeNmixu4JfjUvM4r01
-ZrrzFoxKBaAKhptelYlBTnSyuuVQzUpw8huuAPZhsrasY4+RZzWCyyKdXB75OS/E
-ODl/+ZKHw55IvVZuUt6IR4hj3pC912/Bi6D6JoTTudgiHAyln0G7gjq9pR38aMn/
-054rS2BLsexh22nZ0PRhnAtAEvwLwyKrS03A1rk3Rp9ePm2r6e4H+p0K/XoWWdpP
-VyEfVmcJ6FTqQy1krs6qSJu646rWJ4FYN+7SXyEsR+V/SOCsFFcuIExOMP+YnKDX
-dxPe5Zx7NHrokMoJozXwkx7VvmR2uMk/Zm8NfL+Rn/qxCgtQfkhKoGKiv/17DYB1
-8jPS9oE0eZv/Ol6eNcpv70aRwNcrbV3Yp/ED6vdeNUCd9395Vnb5a8phOqi/fnON
-xQeH4Z/X7BjXZBDkAOtU7KQRQ3oLBuEZ3+s09bZNe3RC7KoZ6c8i1qRZ5rSjIqhM
-PdV/t6Msa2iAR9hVTDSXgLSEnqUL0eVHYahT2vXBwyagnPxr0+6GiVE6xVGd6Ziy
-1ZfV4CbEV/9l4ivJQ5bf
-=Oodn
------END PGP SIGNATURE-----
-
---aPtrrsCKs5IGTkrQdOMmVX13wwrTVFLpd--

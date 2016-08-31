@@ -1,95 +1,63 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 30 Aug 2016 08:37:43 +0000
-Subject: Re: [PATCH -next] video: ARM CLCD: fix return value check in versatile_clcd_init_panel()
-Message-Id: <f8e2377e-f078-3c9a-29fb-b5b45cf8f415@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="CV8TktSOtWQCuQWSLHnw09lAGH1urRJG2"
+From: Maxime Ripard <maxime.ripard@free-electrons.com>
+Date: Wed, 31 Aug 2016 08:18:15 +0000
+Subject: [PATCH 4/6] ARM: sunxi: Support the Nextthing GR8
+Message-Id: <20160831081817.5191-5-maxime.ripard@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471051586-26189-1-git-send-email-weiyj.lk@gmail.com>
-In-Reply-To: <1471051586-26189-1-git-send-email-weiyj.lk@gmail.com>
-To: linux-fbdev@vger.kernel.org
-
---CV8TktSOtWQCuQWSLHnw09lAGH1urRJG2
-Content-Type: multipart/mixed; boundary="SqJKiUCqhuiegIkkRHeTN10N5a2jdt8Om";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Wei Yongjun <weiyj.lk@gmail.com>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- Linus Walleij <linus.walleij@linaro.org>, "Luis R. Rodriguez"
- <mcgrof@suse.com>, Ingo Molnar <mingo@kernel.org>
-Cc: linux-fbdev@vger.kernel.org
-Message-ID: <f8e2377e-f078-3c9a-29fb-b5b45cf8f415@ti.com>
-Subject: Re: [PATCH -next] video: ARM CLCD: fix return value check in
- versatile_clcd_init_panel()
-References: <1471051586-26189-1-git-send-email-weiyj.lk@gmail.com>
-In-Reply-To: <1471051586-26189-1-git-send-email-weiyj.lk@gmail.com>
-
---SqJKiUCqhuiegIkkRHeTN10N5a2jdt8Om
-Content-Type: text/plain; charset=utf-8
+References: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
+In-Reply-To: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Maxime Ripard <maxime.ripard@free-electrons.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@intel.com>, David Airlie <airlied@linux.ie>, Thierry Reding <thierry.reding@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-gpio@vger.kernel.org, Alexander Kaplan <alex@nextthing.co>, Mylene Josserand <mylene.josserand@free-electrons.com>, linux-arm-kernel@lists.infradead.org
 
+The GR8 is an SoC made by Nextthing Co, loosely based on the sun5i family.
 
+It has a number of new controllers compared to the A10s and A13 (SPDIF, I2S=
+),
+but some controllers missing too (Ethernet, less I2C, less UARTs).
 
-On 13/08/16 04:26, Wei Yongjun wrote:
-> In case of error, the function syscon_node_to_regmap() returns ERR_PTR(=
-)
-> and never returns NULL. The NULL test in the return value check should
-> be replaced with IS_ERR().
->=20
-> Fixes: 25348160e9a4 ("video: ARM CLCD: add special panel hook for Versa=
-tiles")
-> Signed-off-by: Wei Yongjun <weiyj.lk@gmail.com>
-> ---
->  drivers/video/fbdev/amba-clcd-versatile.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/amba-clcd-versatile.c b/drivers/video/=
-fbdev/amba-clcd-versatile.c
-> index 9a90817..56161f9 100644
-> --- a/drivers/video/fbdev/amba-clcd-versatile.c
-> +++ b/drivers/video/fbdev/amba-clcd-versatile.c
-> @@ -528,9 +528,9 @@ int versatile_clcd_init_panel(struct clcd_fb *fb,
->  	versatile_clcd_type =3D (enum versatile_clcd)clcd_id->data;
-> =20
->  	map =3D syscon_node_to_regmap(np);
-> -	if (!map) {
-> +	if (IS_ERR(map)) {
->  		dev_err(dev, "no Versatile syscon regmap\n");
-> -		return -ENODEV;
-> +		return PTR_ERR(map);
->  	}
-> =20
->  	switch (versatile_clcd_type) {
->=20
+Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+---
+ Documentation/devicetree/bindings/arm/sunxi.txt | 1 +
+ MAINTAINERS                                     | 1 +
+ arch/arm/mach-sunxi/sunxi.c                     | 1 +
+ 3 files changed, 3 insertions(+)
 
-Thanks, queued for v4.9.
+diff --git a/Documentation/devicetree/bindings/arm/sunxi.txt b/Documentatio=
+n/devicetree/bindings/arm/sunxi.txt
+index 7e79fcc36b0d..3975d0a0e4c2 100644
+--- a/Documentation/devicetree/bindings/arm/sunxi.txt
++++ b/Documentation/devicetree/bindings/arm/sunxi.txt
+@@ -14,3 +14,4 @@ using one of the following compatible strings:
+   allwinner,sun8i-a83t
+   allwinner,sun8i-h3
+   allwinner,sun9i-a80
++  nextthing,gr8
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 20bb1d00098c..c6a9e6fda1d0 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -982,6 +982,7 @@ M:	Chen-Yu Tsai <wens@csie.org>
+ L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
+ S:	Maintained
+ N:	sun[x456789]i
++F:	arch/arm/boot/dts/gr8*
+=20
+ ARM/Allwinner SoC Clock Support
+ M:	Emilio L=C3=B3pez <emilio@elopez.com.ar>
+diff --git a/arch/arm/mach-sunxi/sunxi.c b/arch/arm/mach-sunxi/sunxi.c
+index 95dca8c2c9ed..2e2bde271205 100644
+--- a/arch/arm/mach-sunxi/sunxi.c
++++ b/arch/arm/mach-sunxi/sunxi.c
+@@ -22,6 +22,7 @@ static const char * const sunxi_board_dt_compat[] =3D {
+ 	"allwinner,sun5i-a10s",
+ 	"allwinner,sun5i-a13",
+ 	"allwinner,sun5i-r8",
++	"nextthing,gr8",
+ 	NULL,
+ };
+=20
+--=20
+2.9.2
 
- Tomi
-
-
---SqJKiUCqhuiegIkkRHeTN10N5a2jdt8Om--
-
---CV8TktSOtWQCuQWSLHnw09lAGH1urRJG2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXxUXXAAoJEPo9qoy8lh71pMwP/329m4oaz9xOFwxfcQ3RSAKE
-QOsV6tIFa+K7FyjcpdozuoMKtzUOfQc8tn5goGG13t0oHGVxH+JtDMIt893o8I/T
-AmqIvns6WZ74pirN452rh849sAHzmwGnioi2tcuW4z10ef+XVQYxGjFPVxdgW1mt
-Bh0Wv6fyTb88fRl8gF/LsqTesu7cU/zRh9bevSeNp8AHEUflqPY+aJmY3MgHaapl
-u5lSHEOgPMP5MITLPYJeQtEp16+XRnj2Q/9Q2HQ9dEPVl8WpqxQVZw6EGyxOhyUd
-kLZDZFNmHa/Tcg7sBnxkS+IA4uXsbIlQb7bbdti3iW/VtLDr9IKJhecepHTPaDeI
-wGIlZY4UqGyP/Ezgksae2NSsX/MEi0tBxBpLJtGRQWyJ/eSazCUhPQOFVNLCbmEP
-rcu1sqwnpKg/s99IEc5dN0RtHuMxUWR1RldowuRO7WbCqEM05GblPm4/sGHHqy2y
-nXZ72fWma+aiHjl5bSEzryN3yLF6oHlD+zNw4T6/dPriRKD1+H3aGbKrcSTUgMR+
-VZW80s4EMb1He9W7IkNog+jK2ATnzWZc6WsPkvqy14v9k7KzHL6Jq2mdbKniZoH+
-kI3kfWGM5FIS6orsig2AUHfvWudO/c8t0/3vZJWCQWReKVsrwDOLZedkkelpPz5G
-qTI/KUR6hiTT2y8rwoZt
-=MrLe
------END PGP SIGNATURE-----
-
---CV8TktSOtWQCuQWSLHnw09lAGH1urRJG2--

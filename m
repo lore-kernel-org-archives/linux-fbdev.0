@@ -1,120 +1,30 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 30 Sep 2016 07:02:58 +0000
-Subject: [PATCH 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <20160930070259.5710-2-peter.ujfalusi@ti.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Thu, 01 Sep 2016 16:04:46 +0000
+Subject: Re: [PATCH 1/9] staging: sm750fb: fix line length coding style issue in ddk750_chip.c
+Message-Id: <20160901160446.GA18620@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160930070259.5710-1-peter.ujfalusi@ti.com>
+References: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
+In-Reply-To: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, jingoohan1@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: Moshe Green <mgmoshes@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Move the check for gpio and regulator initial state to a new function and
-document better what we are checking and why.
+On Tue, Aug 30, 2016 at 10:04:02PM +0300, Moshe Green wrote:
+> Fix a line length warning found by the checkpatch.pl tool in
+> ddk750_chip.c.
+> 
+> Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-It is going to be easier to fix or improve the initial power state
-configuration later and it is easier to read the code.
+Lots of the patches in this series have the same exact subject: line,
+yet they do different things.  Please fix them up and make them more
+obvious, or even better yet, merge them into less patches (one type of
+thing per file per patch, not one single change per patch).
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
- drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++---------------
- 1 file changed, 35 insertions(+), 20 deletions(-)
+thanks,
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index b2b366bb0f97..9bc4715bf116 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *dev,
- }
- #endif
- 
-+static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
-+{
-+	struct device_node *node = pb->dev->of_node;
-+
-+	/* Not booted with device tree or no phandle link to the node */
-+	if (!node || !node->phandle)
-+		return FB_BLANK_UNBLANK;
-+
-+	/*
-+	 * If the driver is probed from the device tree and there is a
-+	 * phandle link pointing to the backlight node, it is safe to
-+	 * assume that another driver will enable the backlight at the
-+	 * appropriate time. Therefore, if it is disabled, keep it so.
-+	 */
-+
-+	/*
-+	 * if the enable GPIO is set as output and it is disabled, do not enable
-+	 * the backlight
-+	 */
-+	if (pb->enable_gpio) {
-+		if (gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
-+		    gpiod_get_value(pb->enable_gpio) = 0)
-+			return FB_BLANK_POWERDOWN;
-+
-+		gpiod_direction_output(pb->enable_gpio, 1);
-+	}
-+
-+	/* The regulator is disabled, do not enable the backlight */
-+	if (!regulator_is_enabled(pb->power_supply))
-+		return FB_BLANK_POWERDOWN;
-+
-+	return FB_BLANK_UNBLANK;
-+}
-+
- static int pwm_backlight_probe(struct platform_device *pdev)
- {
- 	struct platform_pwm_backlight_data *data = dev_get_platdata(&pdev->dev);
-@@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	struct backlight_device *bl;
- 	struct device_node *node = pdev->dev.of_node;
- 	struct pwm_bl_data *pb;
--	int initial_blank = FB_BLANK_UNBLANK;
- 	struct pwm_args pargs;
- 	int ret;
- 
-@@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
- 	}
- 
--	if (pb->enable_gpio) {
--		/*
--		 * If the driver is probed from the device tree and there is a
--		 * phandle link pointing to the backlight node, it is safe to
--		 * assume that another driver will enable the backlight at the
--		 * appropriate time. Therefore, if it is disabled, keep it so.
--		 */
--		if (node && node->phandle &&
--		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
--		    gpiod_get_value(pb->enable_gpio) = 0)
--			initial_blank = FB_BLANK_POWERDOWN;
--		else
--			gpiod_direction_output(pb->enable_gpio, 1);
--	}
--
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
- 		ret = PTR_ERR(pb->power_supply);
- 		goto err_alloc;
- 	}
- 
--	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
--		initial_blank = FB_BLANK_POWERDOWN;
--
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
- 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER && !node) {
- 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-@@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	bl->props.brightness = data->dft_brightness;
--	bl->props.power = initial_blank;
-+	bl->props.power = pwm_backlight_initial_power_state(pb);
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
--- 
-2.10.0
-
+greg k-h

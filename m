@@ -1,50 +1,36 @@
-From: Moshe Green <mgmoshes@gmail.com>
-Date: Sat, 03 Sep 2016 19:57:50 +0000
-Subject: Re: [PATCH 1/9] staging: sm750fb: fix line length coding style issue in ddk750_chip.c
-Message-Id: <20160903195750.GA6323@gmail.com>
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Date: Thu, 01 Sep 2016 15:19:29 +0000
+Subject: Re: [RESEND PATCH 0/3] fbdev: vfb: make VirtualFB more flexible
+Message-Id: <57C84701.5040408@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <7011104f5ba6d400b550d2f25d16b1183efa0f35.1472583825.git.mgmoshes@gmail.com>
- <20160901160446.GA18620@kroah.com>
- <CAJEcRgqM=gLmFVkCY78gkqHDV8jU2i8ST37s8NkjJ77CoxeZrw@mail.gmail.com>
- <20160902113508.GA18456@kroah.com>
-In-Reply-To: <20160902113508.GA18456@kroah.com>
+References: <1471255832-44793-1-git-send-email-vladimir.murzin@arm.com>
+In-Reply-To: <1471255832-44793-1-git-send-email-vladimir.murzin@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, teddy.wang@siliconmotion.com
+To: linux-fbdev@vger.kernel.org
 
-On Fri, Sep 02, 2016 at 01:35:08PM +0200, Greg KH wrote:
-> 
-> A: Because it messes up the order in which people normally read text.
-> Q: Why is top-posting such a bad thing?
-> A: Top-posting.
-> Q: What is the most annoying thing in e-mail?
-> 
-> A: No.
-> Q: Should I include quotations after my reply?
-> 
-> 
-> http://daringfireball.net/2007/07/on_top
-> 
-> On Fri, Sep 02, 2016 at 11:28:51AM +0300, moshe green wrote:
-> > There were (mostly) two kinds of warnings that I've handled, "80
-> > character line length" and block comments structure.
-> > Some of the changes involve handling two separate warnings in a single comment.
-> > Where this occurs, should I break down the change into two steps -
-> > fixing a warning at a time?
-> > Or should I fix both warnings in the same commit - and place the
-> > commit in the most appropriate patch?
-> 
-> Hm, use your best judgement here, what would you want to be on the
-> receiving end of if you had to review such a patch series?
-> 
-> thanks,
-> 
-> greg k-h
+Hi,
 
-Will do.
+I'd be glad to know if there are issues with these patches?
 
-thanks,
+Cheers
+Vladimir
 
-Moshe Green
+On 15/08/16 11:10, Vladimir Murzin wrote:
+> Hi,
+> 
+> This short patch series is supposed to add some flexibility to the VFB
+> which should help with testing in display-less environment.
+> 
+> Thanks!
+> 
+> Vladimir Murzin (3):
+>   fbdev: vfb: add description to module parameters
+>   fbdev: vfb: add option for video mode
+>   fbdev: vfb: simplify memory management
+> 
+>  drivers/video/fbdev/vfb.c |  129 ++++++++++-----------------------------------
+>  1 file changed, 27 insertions(+), 102 deletions(-)
+> 
+

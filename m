@@ -1,42 +1,54 @@
-From: Vladimir Murzin <vladimir.murzin@arm.com>
-Date: Wed, 07 Sep 2016 08:46:33 +0000
-Subject: Re: [RESEND PATCH 0/3] fbdev: vfb: make VirtualFB more flexible
-Message-Id: <57CFD3E9.70602@arm.com>
+From: Stefan Agner <stefan@agner.ch>
+Date: Sun, 04 Sep 2016 04:26:27 +0000
+Subject: [PATCH] video: mxsfb: get supply regulator optionally
+Message-Id: <20160904042627.30182-1-stefan@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471255832-44793-1-git-send-email-vladimir.murzin@arm.com>
-In-Reply-To: <1471255832-44793-1-git-send-email-vladimir.murzin@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Stefan Agner <stefan-XLVq0VzYD2Y@public.gmane.org>
 
-On 07/09/16 08:36, Tomi Valkeinen wrote:
-> On 15/08/16 13:10, Vladimir Murzin wrote:
->> Hi,
->>
->> This short patch series is supposed to add some flexibility to the VFB
->> which should help with testing in display-less environment.
->>
->> Thanks!
->>
->> Vladimir Murzin (3):
->>   fbdev: vfb: add description to module parameters
->>   fbdev: vfb: add option for video mode
->>   fbdev: vfb: simplify memory management
->>
->>  drivers/video/fbdev/vfb.c |  129 ++++++++++-----------------------------------
->>  1 file changed, 27 insertions(+), 102 deletions(-)
-> 
-> Looks fine to me. Can you check if the vfb_default can be constified? I
-> can make the change, so no need to resend.
+The lcd-supply is meant to be optional, there are several device-
+trees not specifying it and the code handles error values silently.
+Therefor, avoid creating a dummy regulator (and the associated
+warning) by using devm_regulator_get_optional.
 
-I don't see issues with vfb_default constified.
+While at it, document that fact also in the device-tree bindings.
 
-Thanks for feedback!
+Signed-off-by: Stefan Agner <stefan@agner.ch>
+---
+ Documentation/devicetree/bindings/display/mxsfb.txt | 3 +++
+ drivers/video/fbdev/mxsfb.c                         | 2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-Vladimir
-
-> 
->  Tomi
-> 
+diff --git a/Documentation/devicetree/bindings/display/mxsfb.txt b/Documentation/devicetree/bindings/display/mxsfb.txt
+index 96ec517..0bc530f 100644
+--- a/Documentation/devicetree/bindings/display/mxsfb.txt
++++ b/Documentation/devicetree/bindings/display/mxsfb.txt
+@@ -7,6 +7,9 @@ Required properties:
+ - interrupts: Should contain lcdif interrupts
+ - display : phandle to display node (see below for details)
+ 
++Optional properties:
++- lcd-supply: Regulator for LCD supply voltage.
++
+ * display node
+ 
+ Required properties:
+diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
+index 4e6608c..4f7570f 100644
+--- a/drivers/video/fbdev/mxsfb.c
++++ b/drivers/video/fbdev/mxsfb.c
+@@ -920,7 +920,7 @@ static int mxsfb_probe(struct platform_device *pdev)
+ 	if (IS_ERR(host->clk_disp_axi))
+ 		host->clk_disp_axi = NULL;
+ 
+-	host->reg_lcd = devm_regulator_get(&pdev->dev, "lcd");
++	host->reg_lcd = devm_regulator_get_optional(&pdev->dev, "lcd");
+ 	if (IS_ERR(host->reg_lcd))
+ 		host->reg_lcd = NULL;
+ 
+-- 
+2.9.0
 

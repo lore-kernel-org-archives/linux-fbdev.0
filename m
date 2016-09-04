@@ -1,109 +1,110 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 12 Sep 2016 13:58:55 +0000
-Subject: Re: [PATCH] backlight: arcxcnn: devicetree bindings for ArticSand devices
-Message-Id: <20160912140015.GF9789@dell>
+From: Moshe Green <mgmoshes@gmail.com>
+Date: Sun, 04 Sep 2016 18:04:10 +0000
+Subject: [PATCH 2/2] staging: sm750fb: fix block comment style and spelling issues in ddk750_chip.c
+Message-Id: <c90da1d298fa859130d1c6cab39d0034b09fe4d8.1472932508.git.mgmoshes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471893084-4551-1-git-send-email-olimpiu@arcticsand.com>
- <20160823182057.GA8472@rob-hp-laptop>
- <CAF-XLW+v9c-+W2Jr2gjN+6ziijDHRtZ6_a9Rpb6TZ5+4CfALJw@mail.gmail.com>
-In-Reply-To: <CAF-XLW+v9c-+W2Jr2gjN+6ziijDHRtZ6_a9Rpb6TZ5+4CfALJw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+References: <523e16874da50855062fcc51b6754e2b9c42b9e5.1472932508.git.mgmoshes@gmail.com>
+In-Reply-To: <523e16874da50855062fcc51b6754e2b9c42b9e5.1472932508.git.mgmoshes@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jg1.han-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Fri, 09 Sep 2016, Olimpiu Dejeu wrote:
+Fix the following warning types:
+ - line length
+ - block comment line * prefix
+ - trailing */ on a separate line
+found by the checkpatch.pl tool in multiple block comments.
 
-> On Tue, Aug 23, 2016 at 2:20 PM, Rob Herring <robh@kernel.org> wrote:
->=20
-> > On Mon, Aug 22, 2016 at 03:11:24PM -0400, Olimpiu Dejeu wrote:
-> > > This is the device tree bindings documentation file
-> > >
-> > > Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
-> > >
-> > > ---
-> > >  .../bindings/video/backlight/arcxcnn.txt           | 29
-> > ++++++++++++++++++++++
-> >
-> >
-> Check your directory location. Things have moved.
-> >
-> > Not sure what you mean. This seems to be the right place. Please advise.
+Fix a single spelling error in a comment.
 
-What kernel version are you on?
+Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 49 +++++++++++++++++++----------------
+ 1 file changed, 27 insertions(+), 22 deletions(-)
 
-Documentation/devicetree/bindings/leds/backlight
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 76aaeaa..09fda26 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -144,8 +144,9 @@ static void setMasterClock(unsigned int frequency)
+ 		return;
+ 
+ 	if (frequency) {
+-		/* Set the frequency to the maximum frequency that the SM750 engine can
+-		run, which is about 190 MHz. */
++		/* Set the frequency to the maximum frequency
++		 * that the SM750 engine can run, which is about 190 MHz.
++		 */
+ 		if (frequency > MHz(190))
+ 			frequency = MHz(190);
+ 
+@@ -242,9 +243,10 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ 	setMasterClock(MHz(pInitParam->masterClock));
+ 
+ 
+-	/* Reset the memory controller. If the memory controller is not reset in SM750,
+-	   the system might hang when sw accesses the memory.
+-	   The memory should be resetted after changing the MXCLK.
++	/* Reset the memory controller.
++	 * If the memory controller is not reset in SM750,
++	 * the system might hang when sw accesses the memory.
++	 * The memory should be resetted after changing the MXCLK.
+ 	 */
+ 	if (pInitParam->resetMemory = 1) {
+ 		reg = PEEK32(MISC_CTRL);
+@@ -288,21 +290,22 @@ int ddk750_initHw(initchip_param_t *pInitParam)
+ }
+ 
+ /*
+-	monk liu @ 4/6/2011:
+-		   re-write the calculatePLL function of ddk750.
+-		   the original version function does not use some mathematics tricks and shortcut
+-		   when it doing the calculation of the best N,M,D combination
+-		   I think this version gives a little upgrade in speed
+-
+-	750 pll clock formular:
+-	Request Clock = (Input Clock * M )/(N * X)
+-
+-	Input Clock = 14318181 hz
+-	X = 2 power D
+-	D ={0,1,2,3,4,5,6}
+-	M = {1,...,255}
+-	N = {2,...,15}
+-*/
++ * monk liu @ 4/6/2011:
++ *	re-write the calculatePLL function of ddk750.
++ *	the original version function does not use
++ *	some mathematics tricks and shortcut
++ *	when it doing the calculation of the best N,M,D combination
++ *	I think this version gives a little upgrade in speed
++ *
++ * 750 pll clock formular:
++ * Request Clock = (Input Clock * M )/(N * X)
++ *
++ * Input Clock = 14318181 hz
++ * X = 2 power D
++ * D ={0,1,2,3,4,5,6}
++ * M = {1,...,255}
++ * N = {2,...,15}
++ */
+ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ {
+ 	/* as sm750 register definition,
+@@ -317,8 +320,10 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
+ 	int max_d = 6;
+ 
+ 	if (getChipType() = SM750LE) {
+-		/* SM750LE don't have prgrammable PLL and M/N values to work on.
+-		Just return the requested clock. */
++		/* SM750LE don't have
++		 * programmable PLL and M/N values to work on.
++		 * Just return the requested clock.
++		 */
+ 		return request_orig;
+ 	}
+ 
+-- 
+2.7.4
 
-> > >  1 file changed, 29 insertions(+)
-> > >  create mode 100644 Documentation/devicetree/bindings/video/backlight/
-> > arcxcnn.txt
-> > >
-> > > diff --git a/Documentation/devicetree/bindings/video/backlight/arcxcn=
-n.txt
-> > b/Documentation/devicetree/bindings/video/backlight/arcxcnn.txt
-> > > new file mode 100644
-> > > index 0000000..9cd7315
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/video/backlight/arcxcnn.txt
-> > > @@ -0,0 +1,29 @@
-> > > +arcxcnn bindings
-> > > +
-> > > +Required properties:
-> > > +  - compatible: "arc,arcxcnn", "arc,arc2c0608"
-> >
-> > One per line please.
-> >
-> > Is arcxcnn a specific chip? If not drop it. No wildcards in compatible
-> > strings.
-> >
-> > Wild-cards can be dropped but there could be a large family of similar
-> chips that would be supported with this one driver. How would one add
-> support for a range of chips, some of which don't exist yet?
-
-If they do not exist, then do not mention them in this document.
-
-Every other chip needs to be named individually.
-
-[...]
-
-> > > +  - pwm-period: PWM period value. Set only PWM input mode used (u32)
-> > > +  - prg-addr: Register address of ROM area to be updated (u32) low 8
-> > bits used
-> > > +  - prg-val: Register value to be updated (u32) low 8 bits used
-> >
-> > What is this for? This should be a specific property or properties to do
-> > explicit things, not a generic fill registers/rom with magic values.
-> >
-> > We need to expose some registers for test without exposing underlying
-> functionality. Do you suggest not documenting this in the bindings yet
-> keeping the code in the driver? We followed the pattern from the lp855x_bl
-> driver.
-
-If you are supplying addresses, use the reg property.
-
-> > > +
-> > > +Example:
-> > > +
-> > > +     /* ARC2C0608 */
-> > > +     backlight@30 {
-> > > +             compatible =3D "arc,arc2c0608";
-> > > +             reg =3D <0x30>;
-> > > +
-> > > +             init-brt =3D <123>;
-> > > +
-> > > +             /* LED0+1 string enabled */
-> > > +             prg_06h {
-> > > +                     prg-addr =3D <0x06>;
-> > > +                     prg-val =3D <0x83>;
-> > > +             };
-> > > +
-> > > +     };
-> > >
-> >
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

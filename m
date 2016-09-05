@@ -1,47 +1,30 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 12 Sep 2016 23:47:58 +0000
-Subject: Re: [PATCH] video: mxsfb: get supply regulator optionally
-Message-Id: <20160912234758.GM27946@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ByWDhVrfOLxO82cA"
+From: Fabio Estevam <festevam@gmail.com>
+Date: Mon, 05 Sep 2016 14:41:01 +0000
+Subject: Re: [PATCH v4 0/4] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v4
+Message-Id: <CAOMZO5AUyAN9wOEiQQLGL5Nb3EGS4E6Mut040ea7PNAqF5XFVg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160904042627.30182-1-stefan@agner.ch>
- <f8368040-bb5a-91e0-7511-df462719b949@ti.com>
- <4b3a7bda2202a536efaf4a693234c273@agner.ch>
- <1812b2bf-bd66-3553-4c2d-3d2b08603ca0@ti.com>
-In-Reply-To: <1812b2bf-bd66-3553-4c2d-3d2b08603ca0-l0cyMroinI0@public.gmane.org>
-To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
-Cc: Stefan Agner <stefan-XLVq0VzYD2Y@public.gmane.org>, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
+ <CAJ+vNU1LfgbvihqgN0LWr1JxpKtW7jW3Xu0DycD0ePqC1K=8EA@mail.gmail.com>
+In-Reply-To: <CAJ+vNU1LfgbvihqgN0LWr1JxpKtW7jW3Xu0DycD0ePqC1K=8EA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tim Harvey <tharvey@gateworks.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Steve Longerbeam <steve_longerbeam@mentor.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Longerbeam <slongerbeam@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
 
+Hi Philipp,
 
---ByWDhVrfOLxO82cA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Thu, Aug 25, 2016 at 11:17 AM, Tim Harvey <tharvey@gateworks.com> wrote:
 
-On Wed, Sep 07, 2016 at 10:20:25AM +0300, Tomi Valkeinen wrote:
+> Philipp,
+>
+> Have you had a chance to review this last series of Steve's submitted
+> last week? We are down to 4 patches in gpu/ipu-v3 needed in order to
+> get his IMX5/6 capture driver into staging and the sooner we do that
+> the sooner we can get more testing and additional support/features for
+> it.
 
-> I'm fine with the _optional version, that's the easiest cleanup here.
-> And, I guess, it could be even argued that it's correct in some cases,
-> as the fb output could go outside the board, to some externally powered
-> display.
+Do these patches look good to you? It would be nice to get them into
+4.9 if possible.
 
-I'd *prefer* to see the supplies being specified, if only for the
-encouragement of the others.  But if you want to do the optional thing
-anyway...
-
---ByWDhVrfOLxO82cA
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJX1z6sAAoJECTWi3JdVIfQPx0H/Rob1teZTAdgg2Rq1R0+QqN8
-6jstfiwLPXQd2SOvX1JREjAmt7oDxF0whT+vNgTKBtHETom9ROXqXh7qYPqjWQD9
-r6Mi+3da4GQoR5DTacRffbeO0zT9WMHmWmUTJau1jhs6BLxQQq8BspBmN9cz6YoT
-JvEd0QoYXlBp8F55VOmT73aIzrFtMm6QviubhChzSh1tdJ02qXEKRC7+0mefHdvd
-gYwTXImWNg7QnxcWwGj4Pe5GmMY8R+TdINVF9nUGwPDY0KpjcLxnP6cQZGeOyoFs
-4MSq3DsnOqyIMX9JeCbArbhjY32uXWFzRwwzuotH4a/zkVo11Y3IVWeAGku3dZM=
-=ZoSB
------END PGP SIGNATURE-----
-
---ByWDhVrfOLxO82cA--
+Thanks

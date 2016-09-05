@@ -1,89 +1,443 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 07 Sep 2016 08:16:57 +0000
-Subject: Re: [PATCH] video: fbdev: intelfb: remove impossible condition
-Message-Id: <d1e7fd38-2ece-6477-8ea4-c7776d3d0467@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx"
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Mon, 05 Sep 2016 12:42:23 +0000
+Subject: Re: [PATCH 6/6] ARM: dts: gr8: Add support for the GR8 evaluation board
+Message-Id: <CAGb2v676VgeAx0mAhhts5=mRJaTNQB-_Z+gVXHFbLn4j0LjYOw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+References: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
+ <20160831081817.5191-7-maxime.ripard@free-electrons.com>
+In-Reply-To: <20160831081817.5191-7-maxime.ripard@free-electrons.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Jingoo Han <jingoohan1@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Alexander Kaplan <alex@nextthing.co>, Mylene Josserand <mylene.josserand@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 
---7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx
-Content-Type: multipart/mixed; boundary="RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
- Maik Broemme <mbroemme@plusserver.de>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Message-ID: <d1e7fd38-2ece-6477-8ea4-c7776d3d0467@ti.com>
-Subject: Re: [PATCH] video: fbdev: intelfb: remove impossible condition
-References: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
+Hi,
 
---RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-On 31/08/16 18:44, Sudip Mukherjee wrote:
-> xoffset and yoffset of struct fb_var_screeninfo are unsigned and so
-> they can never be less than 0.
->=20
-> Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
+On Wed, Aug 31, 2016 at 4:18 PM, Maxime Ripard
+<maxime.ripard@free-electrons.com> wrote:
+> From: Mylène Josserand <mylene.josserand@free-electrons.com>
+>
+> The GR8-EVB is a small board with an NextThing GR8, an Hynix MLC NAND,
+> an AXP209 PMIC, USB host and OTG, an SPDIF output and a connectors for CSI,
+> I2S and LCD.
+>
+> Signed-off-by: Mylène Josserand <mylene.josserand@free-electrons.com>
+> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 > ---
->  drivers/video/fbdev/intelfb/intelfbdrv.c | 5 -----
->  1 file changed, 5 deletions(-)
->=20
-> diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/f=
-bdev/intelfb/intelfbdrv.c
-> index bf20744..ff2a5d2 100644
-> --- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-> +++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-> @@ -1301,11 +1301,6 @@ static int intelfb_check_var(struct fb_var_scree=
-ninfo *var,
->  		break;
->  	}
-> =20
-> -	if (v.xoffset < 0)
-> -		v.xoffset =3D 0;
-> -	if (v.yoffset < 0)
-> -		v.yoffset =3D 0;
-> -
->  	if (v.xoffset > v.xres_virtual - v.xres)
->  		v.xoffset =3D v.xres_virtual - v.xres;
->  	if (v.yoffset > v.yres_virtual - v.yres)
->=20
+>  arch/arm/boot/dts/Makefile    |   3 +-
+>  arch/arm/boot/dts/gr8-evb.dts | 378 ++++++++++++++++++++++++++++++++++++++++++
+>  2 files changed, 380 insertions(+), 1 deletion(-)
+>  create mode 100644 arch/arm/boot/dts/gr8-evb.dts
+>
+> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+> index 7dd4a07c4784..8226b0a2e178 100644
+> --- a/arch/arm/boot/dts/Makefile
+> +++ b/arch/arm/boot/dts/Makefile
+> @@ -734,7 +734,8 @@ dtb-$(CONFIG_MACH_SUN5I) += \
+>         sun5i-a13-olinuxino-micro.dtb \
+>         sun5i-a13-q8-tablet.dtb \
+>         sun5i-a13-utoo-p66.dtb \
+> -       sun5i-r8-chip.dtb
+> +       sun5i-r8-chip.dtb \
+> +       gr8-evb.dtb
+>  dtb-$(CONFIG_MACH_SUN6I) += \
+>         sun6i-a31-app4-evb1.dtb \
+>         sun6i-a31-colombus.dtb \
+> diff --git a/arch/arm/boot/dts/gr8-evb.dts b/arch/arm/boot/dts/gr8-evb.dts
+> new file mode 100644
+> index 000000000000..e334d18d7bf0
+> --- /dev/null
+> +++ b/arch/arm/boot/dts/gr8-evb.dts
+> @@ -0,0 +1,378 @@
+> +/*
+> + * Copyright 2016 Free Electrons
+> + * Copyright 2016 NextThing Co
+> + *
+> + * Mylène Josserand <mylene.josserand@free-electrons.com>
+> + *
+> + * This file is dual-licensed: you can use it either under the terms
+> + * of the GPL or the X11 license, at your option. Note that this dual
+> + * licensing only applies to this file, and not this project as a
+> + * whole.
+> + *
+> + *  a) This file is free software; you can redistribute it and/or
+> + *     modify it under the terms of the GNU General Public License as
+> + *     published by the Free Software Foundation; either version 2 of the
+> + *     License, or (at your option) any later version.
+> + *
+> + *     This file is distributed in the hope that it will be useful,
+> + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *     GNU General Public License for more details.
+> + *
+> + * Or, alternatively,
+> + *
+> + *  b) Permission is hereby granted, free of charge, to any person
+> + *     obtaining a copy of this software and associated documentation
+> + *     files (the "Software"), to deal in the Software without
+> + *     restriction, including without limitation the rights to use,
+> + *     copy, modify, merge, publish, distribute, sublicense, and/or
+> + *     sell copies of the Software, and to permit persons to whom the
+> + *     Software is furnished to do so, subject to the following
+> + *     conditions:
+> + *
+> + *     The above copyright notice and this permission notice shall be
+> + *     included in all copies or substantial portions of the Software.
+> + *
+> + *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+> + *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+> + *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+> + *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+> + *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+> + *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+> + *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+> + *     OTHER DEALINGS IN THE SOFTWARE.
+> + */
+> +
+> +/dts-v1/;
+> +#include "gr8.dtsi"
+> +#include "sunxi-common-regulators.dtsi"
+> +
+> +#include <dt-bindings/gpio/gpio.h>
+> +#include <dt-bindings/input/input.h>
+> +#include <dt-bindings/interrupt-controller/irq.h>
+> +
+> +/ {
+> +       model = "NextThing GR8-EVB";
+> +       compatible = "nextthing,gr8-evb", "nextthing,gr8";
+> +
+> +       aliases {
+> +               i2c0 = &i2c0;
+> +               i2c1 = &i2c1;
+> +               i2c2 = &i2c2;
+> +               serial0 = &uart1;
+> +               serial1 = &uart2;
+> +       };
+> +
+> +       chosen {
+> +               stdout-path = "serial0:115200n8";
+> +       };
+> +
+> +       backlight: backlight {
+> +               compatible = "pwm-backlight";
+> +               pwms = <&pwm 0 10000 0>;
+> +               enable-gpios = <&axp_gpio 1 GPIO_ACTIVE_HIGH>;
+> +
+> +               brightness-levels = <0 10 20 30 40 50 60 70 80 90 100>;
+> +               default-brightness-level = <8>;
+> +       };
+> +
+> +       panel {
+> +               compatible = "allwinner,sun4i-a10-sub-evb-5-lcd";
+> +               enable-gpios = <&axp_gpio 0 GPIO_ACTIVE_HIGH>;
+> +               backlight = <&backlight>;
+> +               power-supply = <&reg_vcc3v0>;
+> +               #address-cells = <1>;
+> +               #size-cells = <0>;
+> +
+> +               port@0 {
+> +                       reg = <0>;
+> +                       #address-cells = <1>;
+> +                       #size-cells = <0>;
+> +
+> +                       panel_input: endpoint@0 {
+> +                               reg = <0>;
+> +                               remote-endpoint = <&tcon0_out_panel>;
+> +                       };
+> +               };
+> +       };
+> +};
+> +
+> +&be0 {
+> +       status = "okay";
+> +};
+> +
+> +&codec {
+> +       status = "okay";
+> +};
+> +
+> +&ehci0 {
+> +       status = "okay";
+> +};
+> +
+> +&i2c0 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&i2c0_pins_a>;
+> +       status = "okay";
+> +
+> +       axp209: pmic@34 {
+> +               reg = <0x34>;
+> +
+> +               /*
+> +               * The interrupt is routed through the "External Fast
+> +               * Interrupt Request" pin (ball G13 of the module)
+> +               * directly to the main interrupt controller, without
+> +               * any other controller interfering.
+> +               */
+> +               interrupts = <0>;
+> +       };
+> +};
+> +
+> +#include "axp209.dtsi"
+> +
+> +&i2c1 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&i2c1_pins_a>;
+> +       status = "okay";
+> +
+> +       pcf8563: rtc@51 {
+> +               compatible = "phg,pcf8563";
+> +               reg = <0x51>;
+> +       };
+> +
+> +       wm8978: codec@1a {
+> +               #sound-dai-cells = <0>;
+> +               compatible = "wlf,wm8978";
+> +               reg = <0x1a>;
+> +       };
+> +};
+> +
+> +&i2c2 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&i2c2_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&i2s0 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&i2s0_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&ir0 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&ir0_rx_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&lradc {
+> +       vref-supply = <&reg_ldo2>;
+> +       status = "okay";
+> +
+> +       button@190 {
+> +               label = "Volume Up";
+> +               linux,code = <KEY_VOLUMEUP>;
+> +               channel = <0>;
+> +               voltage = <190000>;
+> +       };
+> +
+> +       button@390 {
+> +               label = "Volume Down";
+> +               linux,code = <KEY_VOLUMEDOWN>;
+> +               channel = <0>;
+> +               voltage = <390000>;
+> +       };
+> +
+> +       button@600 {
+> +               label = "Menu";
+> +               linux,code = <KEY_MENU>;
+> +               channel = <0>;
+> +               voltage = <600000>;
+> +       };
+> +
+> +       button@800 {
+> +               label = "Search";
+> +               linux,code = <KEY_SEARCH>;
+> +               channel = <0>;
+> +               voltage = <800000>;
+> +       };
+> +
+> +       button@980 {
+> +               label = "Home";
+> +               linux,code = <KEY_HOMEPAGE>;
+> +               channel = <0>;
+> +               voltage = <980000>;
+> +       };
+> +
+> +       button@1180 {
+> +               label = "Esc";
+> +               linux,code = <KEY_ESC>;
+> +               channel = <0>;
+> +               voltage = <1180000>;
+> +       };
+> +
+> +       button@1400 {
+> +               label = "Enter";
+> +               linux,code = <KEY_ENTER>;
+> +               channel = <0>;
+> +               voltage = <1400000>;
+> +       };
+> +};
+> +
+> +&mmc0 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin_gr8_evb>;
+> +       vmmc-supply = <&reg_vcc3v3>;
+> +       bus-width = <4>;
+> +       cd-gpios = <&pio 6 0 GPIO_ACTIVE_HIGH>; /* PG0 */
+> +       cd-inverted;
+> +       status = "okay";
+> +};
+> +
+> +&nfc {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&nand_pins_a &nand_cs0_pins_a &nand_rb0_pins_a>;
+> +
+> +       /* MLC Support sucks for now */
+> +       status = "disabled";
+> +};
+> +
+> +&ohci0 {
+> +       status = "okay";
+> +};
+> +
+> +&otg_sram {
+> +       status = "okay";
+> +};
+> +
+> +&pio {
+> +       mmc0_cd_pin_gr8_evb: mmc0-cd-pin@0 {
+> +               allwinner,pins = "PG0";
+> +               allwinner,function = "gpio_in";
+> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+> +       };
+> +
+> +       usb0_id_pin_gr8_evb: usb0-id-pin@0 {
+> +               allwinner,pins = "PG2";
+> +               allwinner,function = "gpio_in";
+> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+> +       };
+> +
+> +       usb0_vbus_det_pin_gr8_evb: usb0-vbus-det-pin@0 {
+> +               allwinner,pins = "PG1";
+> +               allwinner,function = "gpio_in";
+> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+> +       };
+> +
+> +       usb1_vbus_pin_gr8_evb: usb1-vbus-pin@0 {
+> +               allwinner,pins = "PG13";
+> +               allwinner,function = "gpio_out";
+> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
+> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
+> +       };
+> +};
+> +
+> +&pwm {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&pwm0_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&reg_dcdc2 {
+> +       regulator-min-microvolt = <1000000>;
+> +       regulator-max-microvolt = <1400000>;
+> +       regulator-name = "vdd-cpu";
+> +       regulator-always-on;
+> +};
+> +
+> +&reg_dcdc3 {
+> +       regulator-min-microvolt = <1000000>;
+> +       regulator-max-microvolt = <1300000>;
+> +       regulator-name = "vdd-sys";
+> +       regulator-always-on;
+> +};
+> +
+> +&reg_ldo1 {
+> +       regulator-name = "vdd-rtc";
+> +};
+> +
+> +&reg_ldo2 {
+> +       regulator-min-microvolt = <2700000>;
+> +       regulator-max-microvolt = <3300000>;
+> +       regulator-name = "avcc";
+> +       regulator-always-on;
+> +};
+> +
+> +&reg_usb1_vbus {
+> +       pinctrl-0 = <&usb1_vbus_pin_gr8_evb>;
+> +       gpio = <&pio 6 13 GPIO_ACTIVE_HIGH>;
+> +       status = "okay";
+> +};
+> +
+> +&rtp {
+> +       allwinner,ts-attached;
+> +};
+> +
+> +&spdif {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&spdif_tx_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&tcon0 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&lcd_rgb666_pins>;
+> +       status = "okay";
+> +};
+> +
+> +&tcon0_out {
+> +       #address-cells = <1>;
+> +       #size-cells = <0>;
+> +
+> +       tcon0_out_panel: endpoint@0 {
+> +               reg = <0>;
+> +               remote-endpoint = <&panel_input>;
+> +       };
+> +};
+> +
+> +&tve0 {
+> +       status = "okay";
+> +};
+> +
+> +&uart1 {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&uart1_pins_a>, <&uart1_cts_rts_pins_a>;
+> +       status = "okay";
+> +};
+> +
+> +&usb_otg {
+> +       /*
+> +        * The GR8-EVB has a somewhat interesting design. There's a
+> +        * pin supposed to control VBUS, an ID pin, a VBUS detect pin,
+> +        * so everything should work just fine.
+> +        *
+> +        * Except that the pin supposed to control VBUS is not
+> +        * connected to any controllable output, neither to the SoC
+> +        * through a GPIO or to the PMIC, and it is pulled down,
+> +        * meaning that we will never be able to enable VBUS on this
+> +        * board.
+> +        */
 
-Thanks, queued for 4.9.
+IIRC, Hans made OTG work with boards that don't have VBUS control.
+All you need is a powered hub. And since there's no chance of VBUS
+going back through the connection to hurt the host on the other end
+when in peripheral mode, I think it's ok to put it in OTG mode here.
 
- Tomi
+The rest looks fine.
 
+ChenYu
 
---RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk--
-
---7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXz8z5AAoJEPo9qoy8lh71W2AQAJItadHodUliIT+euVG9TKvn
-Odjs4qyEfJXa6rBQkJRhh3CF5L6dos2WwRvfAGCb36LEn1P3rB9R89yL26XfmAW2
-DC/rEhpGXIK5llJjnBqibd08qbRnHyVVU+xn6ASYmfzSuQNVlX6roCt7xxPmK/8O
-DgIgey/JDYgvT/42gq8x8pdog/VByKvL6NQuATzhvmUHOoerhhRgJfRu+KehSBKs
-HLHGQeRTvgqecnYw8JGnODP1ITxM5mM5nnErx8Zd1XH5u9s1j68bWEBuulXCytrs
-rtqi0wA2ghUMu4BsHNKhR3/JIEeVhf6IoklC3CadydGpku558Xy68Sotzld2jKes
-s+jujULFcHRwgMNhWVDWDpCBcH/xt4ORX1NiwlHmnZ1RIqG/7WXA6KXl7f0HClVS
-HCjfVK8flHBckgem/uAJ1czodFlHeAW2CnL5C/CeAGdAEMzGuEeWZYOIeJU8ROU6
-vEuL1ARP4F2NK09TfaCjGisAjuujcvP9A3X/KzSfoIe6rUr77dJjbf0ujMDmw0by
-dfgIfIzZ1fFsSVDFsb00+sJK2CON6NE56S+0ynPfXA0VZuZOXY+PD8EQxOL7Fwns
-ZREoPcfa0hvTL0kU6pId1B1zaRtyg6+oz8u9Go64v8jHHRVlaWJbQLzGrqbgOgz1
-vjowuaT7nLwb6oBJKZ2G
-=yB2r
------END PGP SIGNATURE-----
-
---7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx--
+> +       dr_mode = "peripheral";
+> +       status = "okay";
+> +};
+> +
+> +&usb_power_supply {
+> +       status = "okay";
+> +};
+> +
+> +&usbphy {
+> +       pinctrl-names = "default";
+> +       pinctrl-0 = <&usb0_id_pin_gr8_evb>, <&usb0_vbus_det_pin_gr8_evb>;
+> +       usb0_id_det-gpio = <&pio 6 2 GPIO_ACTIVE_HIGH>; /* PG2 */
+> +       usb0_vbus_det-gpio = <&pio 6 1 GPIO_ACTIVE_HIGH>; /* PG1 */
+> +       usb0_vbus_power-supply = <&usb_power_supply>;
+> +       usb1_vbus-supply = <&reg_usb1_vbus>;
+> +       status = "okay";
+> +};
+> --
+> 2.9.2
+>

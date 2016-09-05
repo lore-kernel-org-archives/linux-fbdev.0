@@ -1,51 +1,80 @@
-From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
-Date: Fri, 16 Sep 2016 08:25:37 +0000
-Subject: Re: [PATCH v2 2/2] ARM: exynos_defconfig: Remove old non-working MIPI driver
-Message-Id: <7a214673-b40c-d901-a0cf-133b28521b86@samsung.com>
+From: Chen-Yu Tsai <wens@csie.org>
+Date: Mon, 05 Sep 2016 14:00:01 +0000
+Subject: Re: [PATCH 3/6] drm/panel: simple: Add A10 EVB 5 inch panel support
+Message-Id: <CAGb2v66GsA8uNaaZfnnHFgBLA-LChCnO3vLhdtfzHNU0nHXH4Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1472730589-18683-1-git-send-email-k.kozlowski@samsung.com>
- <1472730589-18683-2-git-send-email-k.kozlowski@samsung.com>
- <2b3688bb-8dcb-24d4-8112-a0cc56573e48@ti.com>
- <CGME20160916082538eucas1p159a895a88dcfd33ef45a62ef66508fae@eucas1p1.samsung.com>
-In-Reply-To: <2b3688bb-8dcb-24d4-8112-a0cc56573e48@ti.com>
+References: <20160831081817.5191-1-maxime.ripard@free-electrons.com> <20160831081817.5191-4-maxime.ripard@free-electrons.com>
+In-Reply-To: <20160831081817.5191-4-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Maxime Ripard <maxime.ripard@free-electrons.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Chen-Yu Tsai <wens@csie.org>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@intel.com>, David Airlie <airlied@linux.ie>, Thierry Reding <thierry.reding@gmail.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Mylene Josserand <mylene.josserand@free-electrons.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Alexander Kaplan <alex@nextthing.co>
 
-On 09/07/2016 10:14 AM, Tomi Valkeinen wrote:
-> On 01/09/16 14:49, Krzysztof Kozlowski wrote:
->> The Exynos MIPI driver does not work anymore (it is board file only) so
->> it is removed.  Remove also config option.
->>
->> Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
->>
->> ---
->>
->> Changes since v1:
->> 1. New patch.
->> ---
->>  arch/arm/configs/exynos_defconfig | 1 -
->>  1 file changed, 1 deletion(-)
->>
->> diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
->> index 4e484f406419..fea8edef1534 100644
->> --- a/arch/arm/configs/exynos_defconfig
->> +++ b/arch/arm/configs/exynos_defconfig
->> @@ -168,7 +168,6 @@ CONFIG_DRM_PANEL_SAMSUNG_LD9040=y
->>  CONFIG_DRM_PANEL_SAMSUNG_S6E8AA0=y
->>  CONFIG_DRM_NXP_PTN3460=y
->>  CONFIG_DRM_PARADE_PS8622=y
->> -CONFIG_EXYNOS_VIDEO=y
->>  CONFIG_EXYNOS_MIPI_DSI=y
-> 
-> EXYNOS_MIPI_DSI too?
+On Wed, Aug 31, 2016 at 4:18 PM, Maxime Ripard
+<maxime.ripard@free-electrons.com> wrote:
+> The A10-EVB from Allwinner comes with an unidentified panel, with the only
+> mark on the PCB being A10-SUB-EVB-5LCD.
+>
+> Add timings to simple panel to handle it.
+>
+> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
+> ---
+>  drivers/gpu/drm/panel/panel-simple.c | 26 ++++++++++++++++++++++++++
+>  1 file changed, 26 insertions(+)
+>
+> diff --git a/drivers/gpu/drm/panel/panel-simple.c b/drivers/gpu/drm/panel/panel-simple.c
+> index 85143d1b9b31..be371b053aab 100644
+> --- a/drivers/gpu/drm/panel/panel-simple.c
+> +++ b/drivers/gpu/drm/panel/panel-simple.c
+> @@ -386,6 +386,29 @@ static void panel_simple_shutdown(struct device *dev)
+>         panel_simple_disable(&panel->base);
+>  }
+>
+> +static const struct drm_display_mode allwinner_a10_sub_evb_5lcd_mode = {
+> +       .clock = 33000,
+> +       .hdisplay = 800,
+> +       .hsync_start = 800 + 209,
+> +       .hsync_end = 800 + 209 + 1,
+> +       .htotal = 800 + 209 + 1 + 45,
+> +       .vdisplay = 480,
+> +       .vsync_start = 480 + 22,
+> +       .vsync_end = 480 + 22 + 1,
+> +       .vtotal = 480 + 22 + 1 + 22,
+> +       .vrefresh = 60,
 
-Yes, this one too. I'll send a v2. I think these patches can safely go
-through different trees (removal of driver through your tree and
-defconfig through arm-soc).
+I assume the numbers came from the fex file? Allwinner LCD timing numbers
+aren't very precise. This seems to yield a refresh rate of 58.x Hz.
+The dot clock can go below MHz resolution, so it should be possible
+to set it to a more proper clock rate here.
 
-Best regards,
-Krzysztof
+ChenYu
 
-
+> +};
+> +
+> +static const struct panel_desc allwinner_a10_sub_evb_5lcd = {
+> +       .modes = &allwinner_a10_sub_evb_5lcd_mode,
+> +       .num_modes = 1,
+> +       .size = {
+> +               .width = 110,
+> +               .height = 67,
+> +       },
+> +       .bus_format = MEDIA_BUS_FMT_RGB666_1X18,
+> +};
+> +
+>  static const struct drm_display_mode ampire_am800480r3tmqwa1h_mode = {
+>         .clock = 33333,
+>         .hdisplay = 800,
+> @@ -1515,6 +1538,9 @@ static const struct panel_desc urt_umsh_8596md_parallel = {
+>
+>  static const struct of_device_id platform_of_match[] = {
+>         {
+> +               .compatible = "allwinner,sun4i-a10-sub-evb-5-lcd",
+> +               .data = &allwinner_a10_sub_evb_5lcd,
+> +       }, {
+>                 .compatible = "ampire,am800480r3tmqwa1h",
+>                 .data = &ampire_am800480r3tmqwa1h,
+>         }, {
+> --
+> 2.9.2
+>

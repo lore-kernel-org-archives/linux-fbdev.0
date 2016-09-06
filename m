@@ -1,77 +1,54 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 06 Sep 2016 08:21:33 +0000
+From: Stefan Agner <stefan@agner.ch>
+Date: Tue, 06 Sep 2016 18:23:31 +0000
 Subject: Re: [PATCH] video: mxsfb: get supply regulator optionally
-Message-Id: <f8368040-bb5a-91e0-7511-df462719b949@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="d9rMwqaPJU5gkXo4pw1HjsC1Fq1KWqSli"
+Message-Id: <4b3a7bda2202a536efaf4a693234c273@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160904042627.30182-1-stefan@agner.ch>
-In-Reply-To: <20160904042627.30182-1-stefan@agner.ch>
-To: Stefan Agner <stefan@agner.ch>, plagnioj@jcrosoft.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>
+ <f8368040-bb5a-91e0-7511-df462719b949@ti.com>
+In-Reply-To: <f8368040-bb5a-91e0-7511-df462719b949-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
---d9rMwqaPJU5gkXo4pw1HjsC1Fq1KWqSli
-Content-Type: multipart/mixed; boundary="hTBspXKHnLHCQBupCUn93NEEvpGSsB9fQ";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Stefan Agner <stefan@agner.ch>, plagnioj@jcrosoft.com
-Cc: robh+dt@kernel.org, mark.rutland@arm.com, devicetree@vger.kernel.org,
- linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- Mark Brown <broonie@kernel.org>
-Message-ID: <f8368040-bb5a-91e0-7511-df462719b949@ti.com>
-Subject: Re: [PATCH] video: mxsfb: get supply regulator optionally
-References: <20160904042627.30182-1-stefan@agner.ch>
-In-Reply-To: <20160904042627.30182-1-stefan@agner.ch>
+On 2016-09-06 01:21, Tomi Valkeinen wrote:
+> Hi,
+> 
+> On 04/09/16 07:26, Stefan Agner wrote:
+>> The lcd-supply is meant to be optional, there are several device-
+>> trees not specifying it and the code handles error values silently.
+>> Therefor, avoid creating a dummy regulator (and the associated
+>> warning) by using devm_regulator_get_optional.
+>>
+>> While at it, document that fact also in the device-tree bindings.
+> 
+> The binding change looks correct, but using
+> devm_regulator_get_optional() does not sound correct.
+> 
+> devm_regulator_get_optional() is to be used when the device in question
+> truly can function without the power supply. But if the supply is there,
+> it's just not controlled by the SW, devm_regulator_get() is to be used.
 
---hTBspXKHnLHCQBupCUn93NEEvpGSsB9fQ
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+The framebuffer device can even function without a display, no problem
+there.. Probably not really useful...
 
-Hi,
+devm_regulator_get creates a dummy regulator and a warning. Afaik, the
+dummy regulator was meant to be as an aid during development, but not as
+a permanent solution. This is what the initial commit of the dummy
+regulator says:
 
-On 04/09/16 07:26, Stefan Agner wrote:
-> The lcd-supply is meant to be optional, there are several device-
-> trees not specifying it and the code handles error values silently.
-> Therefor, avoid creating a dummy regulator (and the associated
-> warning) by using devm_regulator_get_optional.
->=20
-> While at it, document that fact also in the device-tree bindings.
+> In order to ease transitions with drivers are boards start using regulators
+> provide an option to cause all regulator_get() calls to succeed, with a
+> dummy always on regulator being supplied where one has not been configured.
+> A warning is printed whenever the dummy regulator is used to aid system
+> development.
 
-The binding change looks correct, but using
-devm_regulator_get_optional() does not sound correct.
+I think we should either make the property mandatory and fix the device
+trees or we should fix the driver to support an optional regulator. The
+code already supports the reg_lcd being NULL, which is probably mostly
+pointless right now as devm_regulator_get always returns a dummy
+regulator.
 
-devm_regulator_get_optional() is to be used when the device in question
-truly can function without the power supply. But if the supply is there,
-it's just not controlled by the SW, devm_regulator_get() is to be used.
-
-At least this is my understanding.
-
- Tomi
-
-
---hTBspXKHnLHCQBupCUn93NEEvpGSsB9fQ--
-
---d9rMwqaPJU5gkXo4pw1HjsC1Fq1KWqSli
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJXznyOAAoJEPo9qoy8lh71DNQP+wQAwufULRTBiNTpC3xkdL5t
-8SY9YP5mG0KEWp6O312QET6nwu5V/b9edVH9l3nQPmKHL9QO7k58f4KTfbeCbawr
-tbc+o5FNKBtA1jJPEddzw4/0gGFbL1VRxCOTsK2Zb0FA5ensWLV3cU/toZ5cFtWw
-FGcWTczcIXXQX9bwdd5R/eoF57dHSpngwL3FN3DBtAl5cWlIIQJBjUMQr2/nXu5a
-m0brO8eGgD+03BQLr3o+YHw93//1x8e/Xa+SsKm1hv+juZhC4zMpNMUtJfonm3Xh
-Xo1Q6DGj9kmDXx+xjnIJJLRQkBEKD9VPH09xioO1poreRK04tgBF+iE/U/7UW01U
-nwt6d3KKmqkH862ulNe0Xd19Dcm2NM/RxZFY/PeHRwcbFA+BitnTNl92ojuvWjBd
-YpFjJSE2pzB19Uky80BDnLQuLGSMI5LyZyhIpMDfhkRNQ2TJpbXJ4IcTdY30rJ7v
-CG9yq+gZh2+F7OnEshtz57TJnmJmsd3FU6x6q+gk8qHZe8+R+YgBQaqYvXK3GPlT
-r9AoKEgzbLkg2ZomLYlf9kjTy6ri41Kgp7JTBzVI6IiUnO4eNja6maTpYCDMPllR
-LzOLl0wSQd+YAgvjClFeWDdziCtD2xI416pcTbf8TO04ETJV/Wnvclq9gUNbUlJh
-CGABOzfKHM0IMIZO3ij5
-=jvPP
------END PGP SIGNATURE-----
-
---d9rMwqaPJU5gkXo4pw1HjsC1Fq1KWqSli--
+--
+Stefan

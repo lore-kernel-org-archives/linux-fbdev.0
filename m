@@ -1,78 +1,43 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 09 Sep 2016 21:25:32 +0000
-Subject: [PATCH 3/6] dt-bindings: Add TPO TPG110 binding
-Message-Id: <1473456335-22767-4-git-send-email-linus.walleij@linaro.org>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Tue, 06 Sep 2016 09:26:25 +0000
+Subject: Re: [PATCH v4 4/4] gpu: ipu-ic: allow multiple handles to ic
+Message-Id: <1473153985.2805.90.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
+References: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
+ <1471481419-5917-5-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1471481419-5917-5-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Steve Longerbeam <slongerbeam@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
 
-This adds device tree bindings for the TPO TPG110 panel found
-mounted in the Nomadik NHK8815.
+Am Mittwoch, den 17.08.2016, 17:50 -0700 schrieb Steve Longerbeam:
+> The image converter kernel API supports conversion contexts and
+> job queues, so we should allow more than one handle to the IC, so
+> that multiple users can add jobs to the queue.
 
-Acked-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
----
- .../bindings/display/panel/tpo,tpg110.txt          | 47 ++++++++++++++++++++++
- 1 file changed, 47 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt
+The image converter queue can be shared, but hardware access to the IC
+task still has to be exclusive (ipu_ic_task_enable/disable/init/etc.)
 
-diff --git a/Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt b/Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt
-new file mode 100644
-index 000000000000..f5e3c6f2095a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt
-@@ -0,0 +1,47 @@
-+TPO TPG110 Panel
-+========
-+
-+This binding builds on the DPI bindings, adding a few properties
-+as a superset of a DPI. See panel-dpi.txt for the required DPI
-+bindings.
-+
-+Required properties:
-+- compatible : "tpo,tpg110"
-+- grestb-gpios : panel reset GPIO
-+- scen-gpios : serial control enable GPIO
-+- scl-gpios : serial control clock line GPIO
-+- sda-gpios : serial control data line GPIO
-+
-+Required nodes:
-+- Video port for DPI input, see panel-dpi.txt
-+- Panel timing for DPI setup, see panel-dpi.txt
-+
-+Example
-+-------
-+
-+panel {
-+	compatible = "tpo,tpg110", "panel-dpi";
-+	grestb-gpios = <&stmpe_gpio44 5 GPIO_ACTIVE_LOW>;
-+	scen-gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
-+	scl-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
-+	sda-gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
-+	backlight = <&bl>;
-+
-+	port {
-+		nomadik_clcd_panel: endpoint {
-+			remote-endpoint = <&nomadik_clcd_pads>;
-+		};
-+	};
-+
-+	panel-timing {
-+		clock-frequency = <33200000>;
-+		hactive = <800>;
-+		hback-porch = <216>;
-+		hfront-porch = <40>;
-+		hsync-len = <1>;
-+		vactive = <480>;
-+		vback-porch = <35>;
-+		vfront-porch = <10>;
-+		vsync-len = <1>;
-+	};
-+};
--- 
-2.7.4
+> Note however that users that control the IC manually (that do not
+> use the image converter APIs but setup the IC task by hand via calls
+> to ipu_ic_task_enable(), ipu_ic_enable(), etc.) must still be careful not
+> to share the IC handle with other threads. At this point, the only user
+> that still controls the IC manually is the i.mx capture driver. In that
+> case the capture driver only allows one open context to get a handle
+> to the IC at a time, so we should be ok there.
+
+The ipu_ic task handles should be kept exclusive. The image conversion
+queue API could get its own handle (ipu_ic_queue? basically what is now
+struct image_converter) with its own refcounting get/put functions on
+top and each queue should take one exclusive reference on its
+corresponding IC task while requested.:_:
+
+If the capture code uses FSU channel linking to feed the IC preprocessor
+tasks directly from the CSI, the viewfinder and encoder IC tasks should
+not be available for the conversion queues to use.
+
+regards
+Philipp
 

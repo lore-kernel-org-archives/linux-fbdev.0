@@ -1,49 +1,89 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Thu, 22 Sep 2016 10:35:23 +0000
-Subject: [PATCH v2 0/3] video: of: Drive edge selection for sync
-Message-Id: <20160922103526.24925-1-peter.ujfalusi@ti.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 07 Sep 2016 08:16:57 +0000
+Subject: Re: [PATCH] video: fbdev: intelfb: remove impossible condition
+Message-Id: <d1e7fd38-2ece-6477-8ea4-c7776d3d0467@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, airlied-cv59FeDIM0c@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, daniel.vetter-/w4YWyX8dFk@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Maik Broemme <mbroemme@plusserver.de>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Hi,
+--7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx
+Content-Type: multipart/mixed; boundary="RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk";
+ protected-headers="v1"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ Maik Broemme <mbroemme@plusserver.de>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Message-ID: <d1e7fd38-2ece-6477-8ea4-c7776d3d0467@ti.com>
+Subject: Re: [PATCH] video: fbdev: intelfb: remove impossible condition
+References: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1472658269-1234-1-git-send-email-sudipm.mukherjee@gmail.com>
 
-Changes since v1:
-- separated the code changes from the omap/drm videomode conversion patches
-- the DT bindings document is now explicitly states that the drive edge is
-  referring to the pixel clock
+--RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Since we have several panels under omapdrm/displays/ where the data drive edge
-is set to be different then the sync drive edge, the first three patch will add
-support to select the sync drive edge via DT.
-I was not able to locate the datasheet for all the panels and because the
-different edge was used in omapdrm and omapfb for a long time without complains
-from users - and they were written this way - I think it is a valid that we can
-have panels requiring different edge for data and sync to be driven.
+On 31/08/16 18:44, Sudip Mukherjee wrote:
+> xoffset and yoffset of struct fb_var_screeninfo are unsigned and so
+> they can never be less than 0.
+>=20
+> Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
+> ---
+>  drivers/video/fbdev/intelfb/intelfbdrv.c | 5 -----
+>  1 file changed, 5 deletions(-)
+>=20
+> diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/f=
+bdev/intelfb/intelfbdrv.c
+> index bf20744..ff2a5d2 100644
+> --- a/drivers/video/fbdev/intelfb/intelfbdrv.c
+> +++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
+> @@ -1301,11 +1301,6 @@ static int intelfb_check_var(struct fb_var_scree=
+ninfo *var,
+>  		break;
+>  	}
+> =20
+> -	if (v.xoffset < 0)
+> -		v.xoffset =3D 0;
+> -	if (v.yoffset < 0)
+> -		v.yoffset =3D 0;
+> -
+>  	if (v.xoffset > v.xres_virtual - v.xres)
+>  		v.xoffset =3D v.xres_virtual - v.xres;
+>  	if (v.yoffset > v.yres_virtual - v.yres)
+>=20
 
-This series will add support for the sync drive edge setting and the omapdrm's
-videmode conversion series depends on this change. It is also planned that the
-omapdrm is going to move to use the drm/panel in the future and to be able to
-convert the panel drivers we will need this feature.
+Thanks, queued for 4.9.
 
-Regards,
-Peter
----
-Peter Ujfalusi (3):
-  dt-bindings: display: display-timing: Add property to configure sync
-    drive edge
-  video: display_timing: Add flags to select the edge when the sync is
-    driven
-  video: of: display_timing: Add support for syncclk-active property
+ Tomi
 
- .../devicetree/bindings/display/panel/display-timing.txt         | 8 ++++++++
- drivers/video/of_display_timing.c                                | 9 +++++++++
- include/video/display_timing.h                                   | 4 ++++
- 3 files changed, 21 insertions(+)
 
---
-2.10.0
+--RDq2kj6Eu36dBBo7BrHoWmQK8aUqQEEnk--
 
+--7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJXz8z5AAoJEPo9qoy8lh71W2AQAJItadHodUliIT+euVG9TKvn
+Odjs4qyEfJXa6rBQkJRhh3CF5L6dos2WwRvfAGCb36LEn1P3rB9R89yL26XfmAW2
+DC/rEhpGXIK5llJjnBqibd08qbRnHyVVU+xn6ASYmfzSuQNVlX6roCt7xxPmK/8O
+DgIgey/JDYgvT/42gq8x8pdog/VByKvL6NQuATzhvmUHOoerhhRgJfRu+KehSBKs
+HLHGQeRTvgqecnYw8JGnODP1ITxM5mM5nnErx8Zd1XH5u9s1j68bWEBuulXCytrs
+rtqi0wA2ghUMu4BsHNKhR3/JIEeVhf6IoklC3CadydGpku558Xy68Sotzld2jKes
+s+jujULFcHRwgMNhWVDWDpCBcH/xt4ORX1NiwlHmnZ1RIqG/7WXA6KXl7f0HClVS
+HCjfVK8flHBckgem/uAJ1czodFlHeAW2CnL5C/CeAGdAEMzGuEeWZYOIeJU8ROU6
+vEuL1ARP4F2NK09TfaCjGisAjuujcvP9A3X/KzSfoIe6rUr77dJjbf0ujMDmw0by
+dfgIfIzZ1fFsSVDFsb00+sJK2CON6NE56S+0ynPfXA0VZuZOXY+PD8EQxOL7Fwns
+ZREoPcfa0hvTL0kU6pId1B1zaRtyg6+oz8u9Go64v8jHHRVlaWJbQLzGrqbgOgz1
+vjowuaT7nLwb6oBJKZ2G
+=yB2r
+-----END PGP SIGNATURE-----
+
+--7g9Tc4iEdoFFBXjQL5f5wOsgP7VtNFsjx--

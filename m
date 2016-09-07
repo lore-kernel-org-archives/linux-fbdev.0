@@ -1,7 +1,7 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 07 Sep 2016 09:31:47 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 07 Sep 2016 11:12:20 +0000
 Subject: Re: [PATCH] simplefb: Disable and release clocks and regulators in destroy callback
-Message-Id: <4c1de4ed-37de-7be6-4836-3f5f714fb8b2@redhat.com>
+Message-Id: <CAMuHMdU3dgPzvHkd8qti1pwzf1aeUhyv7gdpufYkqxHPS4=VTw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160907090919.27187-1-wens@csie.org>
 In-Reply-To: <20160907090919.27187-1-wens@csie.org>
@@ -10,9 +10,7 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 07-09-16 11:09, Chen-Yu Tsai wrote:
+On Wed, Sep 7, 2016 at 11:09 AM, Chen-Yu Tsai <wens@csie.org> wrote:
 > simplefb gets unregister when a proper framebuffer driver comes in and
 > kicks it out. However the claimed clocks and regulators stay enabled
 > as they are only released in the platform device remove function, which
@@ -20,55 +18,17 @@ On 07-09-16 11:09, Chen-Yu Tsai wrote:
 >
 > Move the clock/regulator cleanup into the framebuffer destroy callback,
 > which gets called as part of the framebuffer unregister process.
->
-> Note this introduces asymmetry in how the resources are claimed and
-> released.
->
-> Signed-off-by: Chen-Yu Tsai <wens@csie.org>
 
-Good catch, patch LGTM:
+Is this called before or after the new proper framebuffer driver kicks in?
+If before, it may cause glitches.
 
-Reviewed-by: Hans de Goede <hdegoede@redhat.com>
+Gr{oetje,eeting}s,
 
-Regards,
+                        Geert
 
-Hans
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-
-> ---
->  drivers/video/fbdev/simplefb.c | 9 ++++++---
->  1 file changed, 6 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index e9cf19977285..3620d10a0d00 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -74,8 +74,14 @@ static int simplefb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
->  	return 0;
->  }
->
-> +struct simplefb_par;
-> +static void simplefb_clocks_destroy(struct simplefb_par *par);
-> +static void simplefb_regulators_destroy(struct simplefb_par *par);
-> +
->  static void simplefb_destroy(struct fb_info *info)
->  {
-> +	simplefb_regulators_destroy(info->par);
-> +	simplefb_clocks_destroy(info->par);
->  	if (info->screen_base)
->  		iounmap(info->screen_base);
->  }
-> @@ -487,11 +493,8 @@ error_fb_release:
->  static int simplefb_remove(struct platform_device *pdev)
->  {
->  	struct fb_info *info = platform_get_drvdata(pdev);
-> -	struct simplefb_par *par = info->par;
->
->  	unregister_framebuffer(info);
-> -	simplefb_regulators_destroy(par);
-> -	simplefb_clocks_destroy(par);
->  	framebuffer_release(info);
->
->  	return 0;
->
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

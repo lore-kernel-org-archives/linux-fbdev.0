@@ -1,43 +1,43 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 30 Sep 2016 07:02:59 +0000
-Subject: [PATCH 2/2] backlight: pwm_bl: Check the pwm state for initial backlight power state
-Message-Id: <20160930070259.5710-3-peter.ujfalusi@ti.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 09 Sep 2016 21:25:29 +0000
+Subject: [PATCH 0/6] Enable Nomadik NHK15 graphics
+Message-Id: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20160930070259.5710-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, jingoohan1@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: linux-arm-kernel@lists.infradead.org
 
-If the pwm is not enabled the backlight initially should not be enabled
-either if we have booted with DT and there is a phandle pointing to the
-backlight node.
+As all other pieces have been merged into the PWM and fbdev
+subsystems, we can turn on graphics on the Nomadik NHK15
+board.
 
-The patch extends the checks to decide if we should keep the backlight off
-initially.
+Tested and works like a charm with boot penguin, console if
+desired and fbsplash. Even blanks the screen properly to save
+energy.
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
- drivers/video/backlight/pwm_bl.c | 4 ++++
- 1 file changed, 4 insertions(+)
+The missing DT bindings should probably have been merged in
+the fbdev tree, but it doesn't matter where they are merged
+so I plan to send this whole series as a pull request to
+ARM SoC. The only non-DT change is the Kconfig change to
+select MFD_SYSCON.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 9bc4715bf116..e4326bbf807f 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -223,6 +223,10 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
- 	if (!regulator_is_enabled(pb->power_supply))
- 		return FB_BLANK_POWERDOWN;
- 
-+	/* The pwm is disabled, keep it like this */
-+	if (!pwm_is_enabled(pb->pwm))
-+		return FB_BLANK_POWERDOWN;
-+
- 	return FB_BLANK_UNBLANK;
- }
- 
+Linus Walleij (6):
+  ARM: dts: add STMPE PWM to the NHK15 device tree
+  dt-bindings: add vendor TPO
+  dt-bindings: Add TPO TPG110 binding
+  ARM: nomadik: select MFD_SYSCON
+  ARM: dts: add PMU to the NHK15 device tree
+  ARM: dts: add the CLCD LCD display to the NHK15
+
+ .../bindings/display/panel/tpo,tpg110.txt          | 47 +++++++++++++++
+ .../devicetree/bindings/vendor-prefixes.txt        |  1 +
+ arch/arm/boot/dts/ste-nomadik-nhk15.dts            | 68 ++++++++++++++++++++++
+ arch/arm/boot/dts/ste-nomadik-stn8815.dtsi         | 28 +++++++++
+ arch/arm/mach-nomadik/Kconfig                      |  1 +
+ 5 files changed, 145 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt
+
 -- 
-2.10.0
+2.7.4
 

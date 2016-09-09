@@ -1,43 +1,42 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Tue, 06 Sep 2016 09:26:25 +0000
-Subject: Re: [PATCH v4 4/4] gpu: ipu-ic: allow multiple handles to ic
-Message-Id: <1473153985.2805.90.camel@pengutronix.de>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 09 Sep 2016 21:25:34 +0000
+Subject: [PATCH 5/6] ARM: dts: add PMU to the NHK15 device tree
+Message-Id: <1473456335-22767-6-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
- <1471481419-5917-5-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1471481419-5917-5-git-send-email-steve_longerbeam@mentor.com>
+References: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steve Longerbeam <slongerbeam@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, plagnioj@jcrosoft.com
+To: linux-arm-kernel@lists.infradead.org
 
-Am Mittwoch, den 17.08.2016, 17:50 -0700 schrieb Steve Longerbeam:
-> The image converter kernel API supports conversion contexts and
-> job queues, so we should allow more than one handle to the IC, so
-> that multiple users can add jobs to the queue.
+The so-called Nomadik Power Mangament Unit is actually a set
+of some power management registers and some miscellaneous
+system control stuff like muxing of entire hardware units.
+Add this as a system controller.
 
-The image converter queue can be shared, but hardware access to the IC
-task still has to be exclusive (ipu_ic_task_enable/disable/init/etc.)
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+---
+ arch/arm/boot/dts/ste-nomadik-stn8815.dtsi | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> Note however that users that control the IC manually (that do not
-> use the image converter APIs but setup the IC task by hand via calls
-> to ipu_ic_task_enable(), ipu_ic_enable(), etc.) must still be careful not
-> to share the IC handle with other threads. At this point, the only user
-> that still controls the IC manually is the i.mx capture driver. In that
-> case the capture driver only allows one open context to get a handle
-> to the IC at a time, so we should be ok there.
-
-The ipu_ic task handles should be kept exclusive. The image conversion
-queue API could get its own handle (ipu_ic_queue? basically what is now
-struct image_converter) with its own refcounting get/put functions on
-top and each queue should take one exclusive reference on its
-corresponding IC task while requested.:_:
-
-If the capture code uses FSU channel linking to feed the IC preprocessor
-tasks directly from the CSI, the viewfinder and encoder IC tasks should
-not be available for the conversion queues to use.
-
-regards
-Philipp
+diff --git a/arch/arm/boot/dts/ste-nomadik-stn8815.dtsi b/arch/arm/boot/dts/ste-nomadik-stn8815.dtsi
+index d2d532a9d783..80a3c9ccccd9 100644
+--- a/arch/arm/boot/dts/ste-nomadik-stn8815.dtsi
++++ b/arch/arm/boot/dts/ste-nomadik-stn8815.dtsi
+@@ -168,6 +168,12 @@
+ 		};
+ 	};
+ 
++	/* Power Management Unit */
++	pmu: pmu@101e9000 {
++		compatible = "stericsson,nomadik-pmu", "syscon";
++		reg = <0x101e0000 0x1000>;
++	};
++
+ 	src: src@101e0000 {
+ 		compatible = "stericsson,nomadik-src";
+ 		reg = <0x101e0000 0x1000>;
+-- 
+2.7.4
 

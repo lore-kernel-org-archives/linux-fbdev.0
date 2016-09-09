@@ -1,50 +1,62 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Fri, 30 Sep 2016 07:02:57 +0000
-Subject: [PATCH 0/2] backlight: pwm_bl: Fix the initial power state selection
-Message-Id: <20160930070259.5710-1-peter.ujfalusi@ti.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Fri, 09 Sep 2016 21:25:30 +0000
+Subject: [PATCH 1/6] ARM: dts: add STMPE PWM to the NHK15 device tree
+Message-Id: <1473456335-22767-2-git-send-email-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
+In-Reply-To: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, jingoohan1@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+This adds the STMPE PWM to the NHK15 device tree.
 
-3698d7e7d221 backlight: pwm_bl: Avoid backlight flicker when probed from DT
-
-added support for avoiding backlight flickering, which in essence was designed
-to not enable the baclkight when the driver loads, but let the user of the
-backlight to enable it later on.
-
-There are boards (like am437x-gp-evm) where we do not have valid GPIO to enable
-the backlight (TPS61081DRC's EN pin is connected to V3_3D) and the regulator
-is always on (VBAT in case of the gp-evm). In this board the logic to check the
-GPIO state and the regulator is failing and the backlight will be enabled as
-soon as the pwm_bl driver is loaded.
-
-By extending the check to look at the PWM state this issue can be avoided and
-the backlight will be enabled only when it's user is asking it to be enabled.
-
-Note:
-I don't know the history of 3698d7e7d221, but I would have opted to add a DT
-bool property (default-off) indicating that the given backlight device must stay
-off when the driver is probing, other driver will enable it later.
-This way all pwm driver could use the same property (gpio-backlight would need
-to be converted) and the backward compatibility would have been retained.
-
-Regards,
-Peter
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Peter Ujfalusi (2):
-  backlight: pwm_bl: Move the checks for initial power state to a
-    separate function
-  backlight: pwm_bl: Check the pwm state for initial backlight power
-    state
+ arch/arm/boot/dts/ste-nomadik-nhk15.dts | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
- drivers/video/backlight/pwm_bl.c | 59 ++++++++++++++++++++++++++--------------
- 1 file changed, 39 insertions(+), 20 deletions(-)
-
---
-2.10.0
+diff --git a/arch/arm/boot/dts/ste-nomadik-nhk15.dts b/arch/arm/boot/dts/ste-nomadik-nhk15.dts
+index d35aa88791ad..3ec5c653ad56 100644
+--- a/arch/arm/boot/dts/ste-nomadik-nhk15.dts
++++ b/arch/arm/boot/dts/ste-nomadik-nhk15.dts
+@@ -140,6 +140,10 @@
+ 						0x03020067 // Up
+ 						0x0303006c>; // Down
+ 			};
++			stmpe0_pwm: stmpe_pwm {
++				compatible = "st,stmpe-pwm";
++				#pwm-cells = <2>;
++			};
+ 		};
+ 		stmpe1: stmpe2401@44 {
+ 			compatible = "st,stmpe2401";
+@@ -183,4 +187,24 @@
+ 			wp-gpios = <&stmpe_gpio44 18 GPIO_ACTIVE_HIGH>;
+ 		};
+ 	};
++
++	bl: backlight {
++		compatible = "pwm-backlight";
++		pwms = <&stmpe0_pwm 0 500000>;
++		pwm-names = "backlight";
++		brightness-levels = <
++			0  1  2  3  4  5  6  7  8  9
++			10 11 12 13 14 15 16 17 18 19
++			20 21 22 23 24 25 26 27 28 29
++			30 31 32 33 34 35 36 37 38 39
++			40 41 42 43 44 45 46 47 48 49
++			50 51 52 53 54 55 56 57 58 59
++			60 61 62 63 64 65 66 67 68 69
++			70 71 72 73 74 75 76 77 78 79
++			80 81 82 83 84 85 86 87 88 89
++			90 91 92 93 94 95 96 97 98 99
++			100
++		>;
++		default-brightness-level = <100>;
++	};
+ };
+-- 
+2.7.4
 

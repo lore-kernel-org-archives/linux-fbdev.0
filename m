@@ -1,227 +1,390 @@
-From: Moshe Green <mgmoshes@gmail.com>
-Date: Sun, 25 Sep 2016 19:58:35 +0000
-Subject: [PATCH] staging: sm750fb: rename getChipType to sm750_get_chip_type
-Message-Id: <17c430c018479bec0e4c631144cbe5a3be48b133.1474833463.git.mgmoshes@gmail.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sun, 11 Sep 2016 15:17:20 +0000
+Subject: [PATCH] video: fbdev: constify fb_fix_screeninfo and fb_var_screeninfo structures
+Message-Id: <1473607040-21295-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9a9ab953f0c55df0ffe75a7a3c35ba6dc9e2f742.1474568117.git.mgmoshes@gmail.com>
-In-Reply-To: <9a9ab953f0c55df0ffe75a7a3c35ba6dc9e2f742.1474568117.git.mgmoshes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: kernel-janitors@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Kristoffer Ericson <kristoffer.ericson@gmail.com>, Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Hans de Goede <hdegoede@redhat.com>, Jaya Kumar <jayalk@intworks.biz>, Paul Mackerras <paulus@samba.org>, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, linux-nvidia@lists.surfsouth.com, Antonino Daplas <adaplas@gmail.com>
 
-Rename CamelCased function getChipType to sm750_get_chip_type
-(prefex with sm750 in order to make the context of
-the function clear).
+These structures are only used to copy into other structures, so declare
+them as const.
 
-This issue was found by checkpatch.pl
+The semantic patch that makes this change in the fb_fix_screeninfo case is
+as follows (http://coccinelle.lip6.fr/).  The fb_var_screeninfo case is
+analogous.
 
-Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+// <smpl>
+@r disable optional_qualifier@
+identifier i;
+position p;
+@@
+static struct fb_fix_screeninfo i@p = { ... };
+
+@ok@
+identifier r.i;
+expression e;
+position p;
+@@
+e = i@p
+
+@bad@
+position p != {r.p,ok.p};
+identifier r.i;
+struct fb_fix_screeninfo e;
+@@
+e@i@p
+
+@depends on !bad disable optional_qualifier@
+identifier r.i;
+@@
+static
++const
+ struct fb_fix_screeninfo i = { ... };
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- drivers/staging/sm750fb/ddk750_chip.c  | 16 ++++++++--------
- drivers/staging/sm750fb/ddk750_chip.h  |  2 +-
- drivers/staging/sm750fb/ddk750_mode.c  |  4 ++--
- drivers/staging/sm750fb/ddk750_power.c |  6 +++---
- drivers/staging/sm750fb/ddk750_swi2c.c |  2 +-
- drivers/staging/sm750fb/sm750_hw.c     |  8 ++++----
- 6 files changed, 19 insertions(+), 19 deletions(-)
+ drivers/video/fbdev/arcfb.c                  |    4 ++--
+ drivers/video/fbdev/asiliantfb.c             |    4 ++--
+ drivers/video/fbdev/aty/aty128fb.c           |    6 +++---
+ drivers/video/fbdev/aty/atyfb_base.c         |    2 +-
+ drivers/video/fbdev/aty/radeon_monitor.c     |    2 +-
+ drivers/video/fbdev/hecubafb.c               |    4 ++--
+ drivers/video/fbdev/hgafb.c                  |    2 +-
+ drivers/video/fbdev/i740fb.c                 |    2 +-
+ drivers/video/fbdev/kyro/fbdev.c             |    2 +-
+ drivers/video/fbdev/pm2fb.c                  |    2 +-
+ drivers/video/fbdev/s1d13xxxfb.c             |    2 +-
+ drivers/video/fbdev/savage/savagefb_driver.c |    2 +-
+ drivers/video/fbdev/simplefb.c               |    4 ++--
+ drivers/video/fbdev/sm712fb.c                |    2 +-
+ drivers/video/fbdev/ssd1307fb.c              |    4 ++--
+ drivers/video/fbdev/tdfxfb.c                 |    4 ++--
+ drivers/video/fbdev/uvesafb.c                |    2 +-
+ drivers/video/fbdev/vfb.c                    |    2 +-
+ drivers/video/fbdev/vga16fb.c                |    2 +-
+ 19 files changed, 27 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index a887f32..3a0afe1 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -10,7 +10,7 @@
- #define roundedDiv(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
- #define MHz(x) ((x) * 1000000)
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index e9cf199..85775df 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -33,14 +33,14 @@
+ #include <linux/parser.h>
+ #include <linux/regulator/consumer.h>
  
--logical_chip_type_t getChipType(void)
-+logical_chip_type_t sm750_get_chip_type(void)
- {
- 	unsigned short physicalID;
- 	char physicalRev;
-@@ -37,7 +37,7 @@ static unsigned int get_mxclk_freq(void)
- 	unsigned int pll_reg;
- 	unsigned int M, N, OD, POD;
+-static struct fb_fix_screeninfo simplefb_fix = {
++static const struct fb_fix_screeninfo simplefb_fix = {
+ 	.id		= "simple",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_TRUECOLOR,
+ 	.accel		= FB_ACCEL_NONE,
+ };
  
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return MHz(130);
- 
- 	pll_reg = PEEK32(MXCLK_PLL_CTRL);
-@@ -60,7 +60,7 @@ static void setChipClock(unsigned int frequency)
- 	unsigned int ulActualMxClk;
- 
- 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return;
- 
- 	if (frequency) {
-@@ -90,7 +90,7 @@ static void setMemoryClock(unsigned int frequency)
- 	/* Cheok_0509: For SM750LE, the memory clock is fixed.
- 	 * Nothing to set.
- 	 */
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return;
- 
- 	if (frequency) {
-@@ -141,7 +141,7 @@ static void setMasterClock(unsigned int frequency)
- 	/* Cheok_0509: For SM750LE, the memory clock is fixed.
- 	 * Nothing to set.
- 	 */
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return;
- 
- 	if (frequency) {
-@@ -182,7 +182,7 @@ unsigned int ddk750_getVMSize(void)
- 	unsigned int data;
- 
- 	/* sm750le only use 64 mb memory*/
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return SZ_64M;
- 
- 	/* for 750,always use power mode0*/
-@@ -221,7 +221,7 @@ int ddk750_initHw(initchip_param_t *pInitParam)
- 	reg |= (CURRENT_GATE_DISPLAY | CURRENT_GATE_LOCALMEM);
- 	setCurrentGate(reg);
- 
--	if (getChipType() != SM750LE) {
-+	if (sm750_get_chip_type() != SM750LE) {
- 		/*	set panel pll and graphic mode via mmio_88 */
- 		reg = PEEK32(VGA_CONFIGURATION);
- 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
-@@ -320,7 +320,7 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 	const int max_OD = 3;
- 	int max_d = 6;
- 
--	if (getChipType() = SM750LE) {
-+	if (sm750_get_chip_type() = SM750LE) {
- 		/* SM750LE don't have
- 		 * programmable PLL and M/N values to work on.
- 		 * Just return the requested clock.
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index 0891384..14357fd 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -69,7 +69,7 @@ typedef struct _initchip_param_t {
+-static struct fb_var_screeninfo simplefb_var = {
++static const struct fb_var_screeninfo simplefb_var = {
+ 	.height		= -1,
+ 	.width		= -1,
+ 	.activate	= FB_ACTIVATE_NOW,
+diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
+index 7e8ddf0..91eea45 100644
+--- a/drivers/video/fbdev/asiliantfb.c
++++ b/drivers/video/fbdev/asiliantfb.c
+@@ -474,7 +474,7 @@ static void chips_hw_init(struct fb_info *p)
+ 		write_fr(chips_init_fr[i].addr, chips_init_fr[i].data);
  }
- initchip_param_t;
  
--logical_chip_type_t getChipType(void);
-+logical_chip_type_t sm750_get_chip_type(void);
- unsigned int calcPllValue(unsigned int request, pll_value_t *pll);
- unsigned int formatPllReg(pll_value_t *pPLL);
- void ddk750_set_mmio(void __iomem *, unsigned short, char);
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index e29d4bd..b767c7d 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -117,7 +117,7 @@ static int programModeRegisters(mode_parameter_t *pModeParam, pll_value_t *pll)
- 		if (pModeParam->horizontal_sync_polarity)
- 			tmp |= DISPLAY_CTRL_HSYNC_PHASE;
+-static struct fb_fix_screeninfo asiliantfb_fix = {
++static const struct fb_fix_screeninfo asiliantfb_fix = {
+ 	.id =		"Asiliant 69000",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+@@ -483,7 +483,7 @@ static struct fb_fix_screeninfo asiliantfb_fix = {
+ 	.smem_len =	0x200000,	/* 2MB */
+ };
  
--		if (getChipType() = SM750LE) {
-+		if (sm750_get_chip_type() = SM750LE) {
- 			displayControlAdjust_SM750LE(pModeParam, tmp);
- 		} else {
- 			reg = PEEK32(CRT_DISPLAY_CTRL) &
-@@ -209,7 +209,7 @@ int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock)
- 	pll.clockType = clock;
+-static struct fb_var_screeninfo asiliantfb_var = {
++static const struct fb_var_screeninfo asiliantfb_var = {
+ 	.xres 		= 640,
+ 	.yres 		= 480,
+ 	.xres_virtual 	= 640,
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index f34ed47f..11026e7 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -212,7 +212,7 @@ struct pci_mmap_map {
+ 	unsigned long prot_mask;
+ };
  
- 	uiActualPixelClk = calcPllValue(parm->pixel_clock, &pll);
--	if (getChipType() = SM750LE) {
-+	if (sm750_get_chip_type() = SM750LE) {
- 		/* set graphic mode via IO method */
- 		outb_p(0x88, 0x3d4);
- 		outb_p(0x06, 0x3d5);
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index b3c3791..7cc6169 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -6,7 +6,7 @@ void ddk750_setDPMS(DPMS_t state)
- {
- 	unsigned int value;
+-static struct fb_fix_screeninfo atyfb_fix = {
++static const struct fb_fix_screeninfo atyfb_fix = {
+ 	.id		= "ATY Mach64",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_PSEUDOCOLOR,
+diff --git a/drivers/video/fbdev/hecubafb.c b/drivers/video/fbdev/hecubafb.c
+index e4031ef..8577195 100644
+--- a/drivers/video/fbdev/hecubafb.c
++++ b/drivers/video/fbdev/hecubafb.c
+@@ -47,7 +47,7 @@
+ #define DPY_W 600
+ #define DPY_H 800
  
--	if (getChipType() = SM750LE) {
-+	if (sm750_get_chip_type() = SM750LE) {
- 		value = PEEK32(CRT_DISPLAY_CTRL) & ~CRT_DISPLAY_CTRL_DPMS_MASK;
- 		value |= (state << CRT_DISPLAY_CTRL_DPMS_SHIFT);
- 		POKE32(CRT_DISPLAY_CTRL, value);
-@@ -19,7 +19,7 @@ void ddk750_setDPMS(DPMS_t state)
+-static struct fb_fix_screeninfo hecubafb_fix = {
++static const struct fb_fix_screeninfo hecubafb_fix = {
+ 	.id =		"hecubafb",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_MONO01,
+@@ -58,7 +58,7 @@ static struct fb_fix_screeninfo hecubafb_fix = {
+ 	.accel =	FB_ACCEL_NONE,
+ };
  
- static unsigned int getPowerMode(void)
- {
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return 0;
- 	return PEEK32(POWER_MODE_CTRL) & POWER_MODE_CTRL_MODE_MASK;
+-static struct fb_var_screeninfo hecubafb_var = {
++static const struct fb_var_screeninfo hecubafb_var = {
+ 	.xres		= DPY_W,
+ 	.yres		= DPY_H,
+ 	.xres_virtual	= DPY_W,
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index cf5ccd0..7bc5f60 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -82,7 +82,7 @@ struct i740fb_par {
+ #define DACSPEED24_SD	128
+ #define DACSPEED32	86
+ 
+-static struct fb_fix_screeninfo i740fb_fix = {
++static const struct fb_fix_screeninfo i740fb_fix = {
+ 	.id =		"i740fb",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
+index 5bb0153..f77478f 100644
+--- a/drivers/video/fbdev/kyro/fbdev.c
++++ b/drivers/video/fbdev/kyro/fbdev.c
+@@ -44,7 +44,7 @@ static struct fb_fix_screeninfo kyro_fix = {
+ 	.accel		= FB_ACCEL_NONE,
+ };
+ 
+-static struct fb_var_screeninfo kyro_var = {
++static const struct fb_var_screeninfo kyro_var = {
+ 	/* 640x480, 16bpp @ 60 Hz */
+ 	.xres		= 640,
+ 	.yres		= 480,
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index aa8d288..1a4070f 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -113,7 +113,7 @@ static struct fb_fix_screeninfo pm2fb_fix = {
+ /*
+  * Default video mode. In case the modedb doesn't work.
+  */
+-static struct fb_var_screeninfo pm2fb_var = {
++static const struct fb_var_screeninfo pm2fb_var = {
+ 	/* "640x480, 8 bpp @ 60 Hz */
+ 	.xres =			640,
+ 	.yres =			480,
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index a9c45c8..1feda0c 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -84,7 +84,7 @@ struct ssd1307fb_array {
+ 	u8	data[0];
+ };
+ 
+-static struct fb_fix_screeninfo ssd1307fb_fix = {
++static const struct fb_fix_screeninfo ssd1307fb_fix = {
+ 	.id		= "Solomon SSD1307",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_MONO10,
+@@ -94,7 +94,7 @@ static struct fb_fix_screeninfo ssd1307fb_fix = {
+ 	.accel		= FB_ACCEL_NONE,
+ };
+ 
+-static struct fb_var_screeninfo ssd1307fb_var = {
++static const struct fb_var_screeninfo ssd1307fb_var = {
+ 	.bits_per_pixel	= 1,
+ };
+ 
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index 621fa44..d5fa313 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -82,7 +82,7 @@
+ #define VOODOO3_MAX_PIXCLOCK 300000
+ #define VOODOO5_MAX_PIXCLOCK 350000
+ 
+-static struct fb_fix_screeninfo tdfx_fix = {
++static const struct fb_fix_screeninfo tdfx_fix = {
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+ 	.ypanstep =	1,
+@@ -90,7 +90,7 @@ static struct fb_fix_screeninfo tdfx_fix = {
+ 	.accel =	FB_ACCEL_3DFX_BANSHEE
+ };
+ 
+-static struct fb_var_screeninfo tdfx_var = {
++static const struct fb_var_screeninfo tdfx_var = {
+ 	/* "640x480, 8 bpp @ 60 Hz */
+ 	.xres =		640,
+ 	.yres =		480,
+diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
+index b9c2f81..378bdcb 100644
+--- a/drivers/video/fbdev/vfb.c
++++ b/drivers/video/fbdev/vfb.c
+@@ -85,7 +85,7 @@ static void rvfree(void *mem, unsigned long size)
+ 	vfree(mem);
  }
-@@ -35,7 +35,7 @@ void setPowerMode(unsigned int powerMode)
  
- 	control_value = PEEK32(POWER_MODE_CTRL) & ~POWER_MODE_CTRL_MODE_MASK;
+-static struct fb_var_screeninfo vfb_default = {
++static const struct fb_var_screeninfo vfb_default = {
+ 	.xres =		640,
+ 	.yres =		480,
+ 	.xres_virtual =	640,
+diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
+index 283d335..5f0690c 100644
+--- a/drivers/video/fbdev/vga16fb.c
++++ b/drivers/video/fbdev/vga16fb.c
+@@ -85,7 +85,7 @@ static struct fb_var_screeninfo vga16fb_defined = {
+ };
  
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return;
+ /* name should not depend on EGA/VGA */
+-static struct fb_fix_screeninfo vga16fb_fix = {
++static const struct fb_fix_screeninfo vga16fb_fix = {
+ 	.id		= "VGA16 VGA",
+ 	.smem_start	= VGA_FB_PHYS,
+ 	.smem_len	= VGA_FB_PHYS_LEN,
+diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
+index 178ae93..98af9e0 100644
+--- a/drivers/video/fbdev/uvesafb.c
++++ b/drivers/video/fbdev/uvesafb.c
+@@ -33,7 +33,7 @@ static struct cb_id uvesafb_cn_id = {
+ static char v86d_path[PATH_MAX] = "/sbin/v86d";
+ static char v86d_started;	/* has v86d been started by uvesafb? */
  
- 	switch (powerMode) {
-diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
-index 8d644a7..6c1ffa1 100644
---- a/drivers/staging/sm750fb/ddk750_swi2c.c
-+++ b/drivers/staging/sm750fb/ddk750_swi2c.c
-@@ -403,7 +403,7 @@ long sm750_sw_i2c_init(
- 	if ((clk_gpio > 31) || (data_gpio > 31))
- 		return -1;
+-static struct fb_fix_screeninfo uvesafb_fix = {
++static const struct fb_fix_screeninfo uvesafb_fix = {
+ 	.id	= "VESA VGA",
+ 	.type	= FB_TYPE_PACKED_PIXELS,
+ 	.accel	= FB_ACCEL_NONE,
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 1b0b233..1928cb2 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -79,7 +79,7 @@ struct arcfb_par {
+ 	spinlock_t lock;
+ };
  
--	if (getChipType() = SM750LE)
-+	if (sm750_get_chip_type() = SM750LE)
- 		return sm750le_i2c_init(clk_gpio, data_gpio);
+-static struct fb_fix_screeninfo arcfb_fix = {
++static const struct fb_fix_screeninfo arcfb_fix = {
+ 	.id =		"arcfb",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_MONO01,
+@@ -89,7 +89,7 @@ static struct fb_fix_screeninfo arcfb_fix = {
+ 	.accel =	FB_ACCEL_NONE,
+ };
  
- 	/* Initialize the GPIO pin for the i2c Clock Register */
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index bff7db5..7dd208c 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -91,7 +91,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
+-static struct fb_var_screeninfo arcfb_var = {
++static const struct fb_var_screeninfo arcfb_var = {
+ 	.xres		= 128,
+ 	.yres		= 64,
+ 	.xres_virtual	= 128,
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index 96aa46d..9a90452 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -83,7 +83,7 @@ static const char *s1d13xxxfb_prod_names[] = {
+ /*
+  * here we define the default struct fb_fix_screeninfo
+  */
+-static struct fb_fix_screeninfo s1d13xxxfb_fix = {
++static const struct fb_fix_screeninfo s1d13xxxfb_fix = {
+ 	.id		= S1D_FBID,
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_PSEUDOCOLOR,
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index 0a46268..fa07242 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -93,7 +93,7 @@
  
- 	parm = &sm750_dev->initParm;
- 	if (parm->chip_clk = 0)
--		parm->chip_clk = (getChipType() = SM750LE) ?
-+		parm->chip_clk = (sm750_get_chip_type() = SM750LE) ?
- 						DEFAULT_SM750LE_CHIP_CLOCK :
- 						DEFAULT_SM750_CHIP_CLOCK;
+ #ifndef CONFIG_PPC_PMAC
+ /* default mode */
+-static struct fb_var_screeninfo default_var = {
++static const struct fb_var_screeninfo default_var = {
+ 	/* 640x480, 60 Hz, Non-Interlaced (25.175 MHz dotclock) */
+ 	640, 480, 640, 480, 0, 0, 8, 0,
+ 	{0, 8, 0}, {0, 8, 0}, {0, 8, 0}, {0, 0, 0},
+@@ -104,7 +104,7 @@ static struct fb_var_screeninfo default_var = {
+ #else /* CONFIG_PPC_PMAC */
+ /* default to 1024x768 at 75Hz on PPC - this will work
+  * on the iMac, the usual 640x480 @ 60Hz doesn't. */
+-static struct fb_var_screeninfo default_var = {
++static const struct fb_var_screeninfo default_var = {
+ 	/* 1024x768, 75 Hz, Non-Interlaced (78.75 MHz dotclock) */
+ 	1024, 768, 1024, 768, 0, 0, 8, 0,
+ 	{0, 8, 0}, {0, 8, 0}, {0, 8, 0}, {0, 0, 0},
+@@ -375,7 +375,7 @@ static const struct aty128_meminfo ddr_sgram = {
+ 	.name = "64-bit DDR SGRAM",
+ };
  
-@@ -107,7 +107,7 @@ int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev)
- 		       PEEK32(SYSTEM_CTRL) | SYSTEM_CTRL_PCI_BURST);
- 	}
+-static struct fb_fix_screeninfo aty128fb_fix = {
++static const struct fb_fix_screeninfo aty128fb_fix = {
+ 	.id		= "ATY Rage128",
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_PSEUDOCOLOR,
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 86ae1d4..73cb4ff 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -56,7 +56,7 @@ struct smtcfb_info {
  
--	if (getChipType() != SM750LE) {
-+	if (sm750_get_chip_type() != SM750LE) {
- 		unsigned int val;
- 		/* does user need CRT? */
- 		if (sm750_dev->nocrt) {
-@@ -183,7 +183,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
- 	dispSet = 0;
- 	channel = *output->channel;
+ void __iomem *smtc_regbaseaddress;	/* Memory Map IO starting address */
  
--	if (getChipType() != SM750LE) {
-+	if (sm750_get_chip_type() != SM750LE) {
- 		if (channel = sm750_primary) {
- 			pr_info("primary channel\n");
- 			if (output->paths & sm750_panel)
-@@ -471,7 +471,7 @@ void hw_sm750_initAccel(struct sm750_dev *sm750_dev)
+-static struct fb_var_screeninfo smtcfb_var = {
++static const struct fb_var_screeninfo smtcfb_var = {
+ 	.xres           = 1024,
+ 	.yres           = 600,
+ 	.xres_virtual   = 1024,
+diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
+index 15d3ccf..4630285 100644
+--- a/drivers/video/fbdev/hgafb.c
++++ b/drivers/video/fbdev/hgafb.c
+@@ -106,7 +106,7 @@ static DEFINE_SPINLOCK(hga_reg_lock);
  
- 	enable2DEngine(1);
+ /* Framebuffer driver structures */
  
--	if (getChipType() = SM750LE) {
-+	if (sm750_get_chip_type() = SM750LE) {
- 		reg = PEEK32(DE_STATE1);
- 		reg |= DE_STATE1_DE_ABORT;
- 		POKE32(DE_STATE1, reg);
--- 
-2.7.4
+-static struct fb_var_screeninfo hga_default_var = {
++static const struct fb_var_screeninfo hga_default_var = {
+ 	.xres		= 720,
+ 	.yres 		= 348,
+ 	.xres_virtual 	= 720,
+diff --git a/drivers/video/fbdev/aty/radeon_monitor.c b/drivers/video/fbdev/aty/radeon_monitor.c
+index f1ce229..278b421 100644
+--- a/drivers/video/fbdev/aty/radeon_monitor.c
++++ b/drivers/video/fbdev/aty/radeon_monitor.c
+@@ -4,7 +4,7 @@
+ 
+ #include "../edid.h"
+ 
+-static struct fb_var_screeninfo radeonfb_default_var = {
++static const struct fb_var_screeninfo radeonfb_default_var = {
+ 	.xres		= 640,
+ 	.yres		= 480,
+ 	.xres_virtual	= 640,
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 6c77ab0..c30a91c 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -1660,7 +1660,7 @@ static struct fb_ops savagefb_ops = {
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static struct fb_var_screeninfo savagefb_var800x600x8 = {
++static const struct fb_var_screeninfo savagefb_var800x600x8 = {
+ 	.accel_flags =	FB_ACCELF_TEXT,
+ 	.xres =		800,
+ 	.yres =		600,
 

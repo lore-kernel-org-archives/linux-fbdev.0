@@ -1,75 +1,36 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 15 Sep 2016 18:30:50 +0000
-Subject: [PATCH v6 2/3] gpu: ipu-v3: Add ipu_rot_mode_is_irt()
-Message-Id: <1473964251-20662-3-git-send-email-steve_longerbeam@mentor.com>
+From: Colin King <colin.king@canonical.com>
+Date: Mon, 12 Sep 2016 10:24:21 +0000
+Subject: [PATCH] video: fbdev: add missing \n at end of printk error message
+Message-Id: <20160912102421.25926-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1473964251-20662-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1473964251-20662-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, dri-devel@lists.freedesktop.org
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Add a macro that returns boolean true if the given ipu_rotate_mode
-requires the use of the Image Rotator.
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+The message is missing a \n, add it.
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/gpu/ipu-v3/ipu-ic.c |  2 +-
- include/video/imx-ipu-v3.h  | 22 +++++++++++++++-------
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/s1d13xxxfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
-index 1a37afc..321eb98 100644
---- a/drivers/gpu/ipu-v3/ipu-ic.c
-+++ b/drivers/gpu/ipu-v3/ipu-ic.c
-@@ -619,7 +619,7 @@ int ipu_ic_task_idma_init(struct ipu_ic *ic, struct ipuv3_channel *channel,
- 	ipu_ic_write(ic, ic_idmac_2, IC_IDMAC_2);
- 	ipu_ic_write(ic, ic_idmac_3, IC_IDMAC_3);
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index 96aa46d..6a271d8 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -929,7 +929,7 @@ static int s1d13xxxfb_suspend(struct platform_device *dev, pm_message_t state)
+ 		s1dfb->disp_save = kmalloc(info->fix.smem_len, GFP_KERNEL);
  
--	if (rot >= IPU_ROTATE_90_RIGHT)
-+	if (ipu_rot_mode_is_irt(rot))
- 		ic->rotation = true;
+ 	if (!s1dfb->disp_save) {
+-		printk(KERN_ERR PFX "no memory to save screen");
++		printk(KERN_ERR PFX "no memory to save screen\n");
+ 		return -ENOMEM;
+ 	}
  
- unlock:
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 49d5439..f39a3d6 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -63,17 +63,25 @@ enum ipu_csi_dest {
- /*
-  * Enumeration of IPU rotation modes
-  */
-+#define IPU_ROT_BIT_VFLIP (1 << 0)
-+#define IPU_ROT_BIT_HFLIP (1 << 1)
-+#define IPU_ROT_BIT_90    (1 << 2)
-+
- enum ipu_rotate_mode {
- 	IPU_ROTATE_NONE = 0,
--	IPU_ROTATE_VERT_FLIP,
--	IPU_ROTATE_HORIZ_FLIP,
--	IPU_ROTATE_180,
--	IPU_ROTATE_90_RIGHT,
--	IPU_ROTATE_90_RIGHT_VFLIP,
--	IPU_ROTATE_90_RIGHT_HFLIP,
--	IPU_ROTATE_90_LEFT,
-+	IPU_ROTATE_VERT_FLIP = IPU_ROT_BIT_VFLIP,
-+	IPU_ROTATE_HORIZ_FLIP = IPU_ROT_BIT_HFLIP,
-+	IPU_ROTATE_180 = (IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
-+	IPU_ROTATE_90_RIGHT = IPU_ROT_BIT_90,
-+	IPU_ROTATE_90_RIGHT_VFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_VFLIP),
-+	IPU_ROTATE_90_RIGHT_HFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_HFLIP),
-+	IPU_ROTATE_90_LEFT = (IPU_ROT_BIT_90 |
-+			      IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
- };
- 
-+/* 90-degree rotations require the IRT unit */
-+#define ipu_rot_mode_is_irt(m) (((m) & IPU_ROT_BIT_90) != 0)
-+
- enum ipu_color_space {
- 	IPUV3_COLORSPACE_RGB,
- 	IPUV3_COLORSPACE_YUV,
 -- 
-2.7.4
+2.9.3
 

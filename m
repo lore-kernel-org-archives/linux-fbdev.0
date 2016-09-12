@@ -1,443 +1,60 @@
-From: Chen-Yu Tsai <wens@csie.org>
-Date: Mon, 05 Sep 2016 12:42:23 +0000
-Subject: Re: [PATCH 6/6] ARM: dts: gr8: Add support for the GR8 evaluation board
-Message-Id: <CAGb2v676VgeAx0mAhhts5=mRJaTNQB-_Z+gVXHFbLn4j0LjYOw@mail.gmail.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 12 Sep 2016 20:34:19 +0000
+Subject: [GIT PULL] CLCD graphics for the Nomadik NHK15
+Message-Id: <CACRpkdZH+aFe-PSR-vmEVNJgKZ5nTgiUJroyhdYfVweQFh0s9A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160831081817.5191-1-maxime.ripard@free-electrons.com>
- <20160831081817.5191-7-maxime.ripard@free-electrons.com>
-In-Reply-To: <20160831081817.5191-7-maxime.ripard@free-electrons.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Maxime Ripard <maxime.ripard@free-electrons.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, David Airlie <airlied@linux.ie>, Jingoo Han <jingoohan1@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Chen-Yu Tsai <wens@csie.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Alexander Kaplan <alex@nextthing.co>, Mylene Josserand <mylene.josserand@free-electrons.com>, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Hi,
+Hi ARM SoC folks,
 
-On Wed, Aug 31, 2016 at 4:18 PM, Maxime Ripard
-<maxime.ripard@free-electrons.com> wrote:
-> From: Mylène Josserand <mylene.josserand@free-electrons.com>
->
-> The GR8-EVB is a small board with an NextThing GR8, an Hynix MLC NAND,
-> an AXP209 PMIC, USB host and OTG, an SPDIF output and a connectors for CSI,
-> I2S and LCD.
->
-> Signed-off-by: Mylène Josserand <mylene.josserand@free-electrons.com>
-> Signed-off-by: Maxime Ripard <maxime.ripard@free-electrons.com>
-> ---
->  arch/arm/boot/dts/Makefile    |   3 +-
->  arch/arm/boot/dts/gr8-evb.dts | 378 ++++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 380 insertions(+), 1 deletion(-)
->  create mode 100644 arch/arm/boot/dts/gr8-evb.dts
->
-> diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-> index 7dd4a07c4784..8226b0a2e178 100644
-> --- a/arch/arm/boot/dts/Makefile
-> +++ b/arch/arm/boot/dts/Makefile
-> @@ -734,7 +734,8 @@ dtb-$(CONFIG_MACH_SUN5I) += \
->         sun5i-a13-olinuxino-micro.dtb \
->         sun5i-a13-q8-tablet.dtb \
->         sun5i-a13-utoo-p66.dtb \
-> -       sun5i-r8-chip.dtb
-> +       sun5i-r8-chip.dtb \
-> +       gr8-evb.dtb
->  dtb-$(CONFIG_MACH_SUN6I) += \
->         sun6i-a31-app4-evb1.dtb \
->         sun6i-a31-colombus.dtb \
-> diff --git a/arch/arm/boot/dts/gr8-evb.dts b/arch/arm/boot/dts/gr8-evb.dts
-> new file mode 100644
-> index 000000000000..e334d18d7bf0
-> --- /dev/null
-> +++ b/arch/arm/boot/dts/gr8-evb.dts
-> @@ -0,0 +1,378 @@
-> +/*
-> + * Copyright 2016 Free Electrons
-> + * Copyright 2016 NextThing Co
-> + *
-> + * Mylène Josserand <mylene.josserand@free-electrons.com>
-> + *
-> + * This file is dual-licensed: you can use it either under the terms
-> + * of the GPL or the X11 license, at your option. Note that this dual
-> + * licensing only applies to this file, and not this project as a
-> + * whole.
-> + *
-> + *  a) This file is free software; you can redistribute it and/or
-> + *     modify it under the terms of the GNU General Public License as
-> + *     published by the Free Software Foundation; either version 2 of the
-> + *     License, or (at your option) any later version.
-> + *
-> + *     This file is distributed in the hope that it will be useful,
-> + *     but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + *     GNU General Public License for more details.
-> + *
-> + * Or, alternatively,
-> + *
-> + *  b) Permission is hereby granted, free of charge, to any person
-> + *     obtaining a copy of this software and associated documentation
-> + *     files (the "Software"), to deal in the Software without
-> + *     restriction, including without limitation the rights to use,
-> + *     copy, modify, merge, publish, distribute, sublicense, and/or
-> + *     sell copies of the Software, and to permit persons to whom the
-> + *     Software is furnished to do so, subject to the following
-> + *     conditions:
-> + *
-> + *     The above copyright notice and this permission notice shall be
-> + *     included in all copies or substantial portions of the Software.
-> + *
-> + *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-> + *     EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-> + *     OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-> + *     NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-> + *     HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-> + *     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-> + *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-> + *     OTHER DEALINGS IN THE SOFTWARE.
-> + */
-> +
-> +/dts-v1/;
-> +#include "gr8.dtsi"
-> +#include "sunxi-common-regulators.dtsi"
-> +
-> +#include <dt-bindings/gpio/gpio.h>
-> +#include <dt-bindings/input/input.h>
-> +#include <dt-bindings/interrupt-controller/irq.h>
-> +
-> +/ {
-> +       model = "NextThing GR8-EVB";
-> +       compatible = "nextthing,gr8-evb", "nextthing,gr8";
-> +
-> +       aliases {
-> +               i2c0 = &i2c0;
-> +               i2c1 = &i2c1;
-> +               i2c2 = &i2c2;
-> +               serial0 = &uart1;
-> +               serial1 = &uart2;
-> +       };
-> +
-> +       chosen {
-> +               stdout-path = "serial0:115200n8";
-> +       };
-> +
-> +       backlight: backlight {
-> +               compatible = "pwm-backlight";
-> +               pwms = <&pwm 0 10000 0>;
-> +               enable-gpios = <&axp_gpio 1 GPIO_ACTIVE_HIGH>;
-> +
-> +               brightness-levels = <0 10 20 30 40 50 60 70 80 90 100>;
-> +               default-brightness-level = <8>;
-> +       };
-> +
-> +       panel {
-> +               compatible = "allwinner,sun4i-a10-sub-evb-5-lcd";
-> +               enable-gpios = <&axp_gpio 0 GPIO_ACTIVE_HIGH>;
-> +               backlight = <&backlight>;
-> +               power-supply = <&reg_vcc3v0>;
-> +               #address-cells = <1>;
-> +               #size-cells = <0>;
-> +
-> +               port@0 {
-> +                       reg = <0>;
-> +                       #address-cells = <1>;
-> +                       #size-cells = <0>;
-> +
-> +                       panel_input: endpoint@0 {
-> +                               reg = <0>;
-> +                               remote-endpoint = <&tcon0_out_panel>;
-> +                       };
-> +               };
-> +       };
-> +};
-> +
-> +&be0 {
-> +       status = "okay";
-> +};
-> +
-> +&codec {
-> +       status = "okay";
-> +};
-> +
-> +&ehci0 {
-> +       status = "okay";
-> +};
-> +
-> +&i2c0 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&i2c0_pins_a>;
-> +       status = "okay";
-> +
-> +       axp209: pmic@34 {
-> +               reg = <0x34>;
-> +
-> +               /*
-> +               * The interrupt is routed through the "External Fast
-> +               * Interrupt Request" pin (ball G13 of the module)
-> +               * directly to the main interrupt controller, without
-> +               * any other controller interfering.
-> +               */
-> +               interrupts = <0>;
-> +       };
-> +};
-> +
-> +#include "axp209.dtsi"
-> +
-> +&i2c1 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&i2c1_pins_a>;
-> +       status = "okay";
-> +
-> +       pcf8563: rtc@51 {
-> +               compatible = "phg,pcf8563";
-> +               reg = <0x51>;
-> +       };
-> +
-> +       wm8978: codec@1a {
-> +               #sound-dai-cells = <0>;
-> +               compatible = "wlf,wm8978";
-> +               reg = <0x1a>;
-> +       };
-> +};
-> +
-> +&i2c2 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&i2c2_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&i2s0 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&i2s0_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&ir0 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&ir0_rx_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&lradc {
-> +       vref-supply = <&reg_ldo2>;
-> +       status = "okay";
-> +
-> +       button@190 {
-> +               label = "Volume Up";
-> +               linux,code = <KEY_VOLUMEUP>;
-> +               channel = <0>;
-> +               voltage = <190000>;
-> +       };
-> +
-> +       button@390 {
-> +               label = "Volume Down";
-> +               linux,code = <KEY_VOLUMEDOWN>;
-> +               channel = <0>;
-> +               voltage = <390000>;
-> +       };
-> +
-> +       button@600 {
-> +               label = "Menu";
-> +               linux,code = <KEY_MENU>;
-> +               channel = <0>;
-> +               voltage = <600000>;
-> +       };
-> +
-> +       button@800 {
-> +               label = "Search";
-> +               linux,code = <KEY_SEARCH>;
-> +               channel = <0>;
-> +               voltage = <800000>;
-> +       };
-> +
-> +       button@980 {
-> +               label = "Home";
-> +               linux,code = <KEY_HOMEPAGE>;
-> +               channel = <0>;
-> +               voltage = <980000>;
-> +       };
-> +
-> +       button@1180 {
-> +               label = "Esc";
-> +               linux,code = <KEY_ESC>;
-> +               channel = <0>;
-> +               voltage = <1180000>;
-> +       };
-> +
-> +       button@1400 {
-> +               label = "Enter";
-> +               linux,code = <KEY_ENTER>;
-> +               channel = <0>;
-> +               voltage = <1400000>;
-> +       };
-> +};
-> +
-> +&mmc0 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&mmc0_pins_a>, <&mmc0_cd_pin_gr8_evb>;
-> +       vmmc-supply = <&reg_vcc3v3>;
-> +       bus-width = <4>;
-> +       cd-gpios = <&pio 6 0 GPIO_ACTIVE_HIGH>; /* PG0 */
-> +       cd-inverted;
-> +       status = "okay";
-> +};
-> +
-> +&nfc {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&nand_pins_a &nand_cs0_pins_a &nand_rb0_pins_a>;
-> +
-> +       /* MLC Support sucks for now */
-> +       status = "disabled";
-> +};
-> +
-> +&ohci0 {
-> +       status = "okay";
-> +};
-> +
-> +&otg_sram {
-> +       status = "okay";
-> +};
-> +
-> +&pio {
-> +       mmc0_cd_pin_gr8_evb: mmc0-cd-pin@0 {
-> +               allwinner,pins = "PG0";
-> +               allwinner,function = "gpio_in";
-> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-> +       };
-> +
-> +       usb0_id_pin_gr8_evb: usb0-id-pin@0 {
-> +               allwinner,pins = "PG2";
-> +               allwinner,function = "gpio_in";
-> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-> +       };
-> +
-> +       usb0_vbus_det_pin_gr8_evb: usb0-vbus-det-pin@0 {
-> +               allwinner,pins = "PG1";
-> +               allwinner,function = "gpio_in";
-> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-> +       };
-> +
-> +       usb1_vbus_pin_gr8_evb: usb1-vbus-pin@0 {
-> +               allwinner,pins = "PG13";
-> +               allwinner,function = "gpio_out";
-> +               allwinner,drive = <SUN4I_PINCTRL_10_MA>;
-> +               allwinner,pull = <SUN4I_PINCTRL_NO_PULL>;
-> +       };
-> +};
-> +
-> +&pwm {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&pwm0_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&reg_dcdc2 {
-> +       regulator-min-microvolt = <1000000>;
-> +       regulator-max-microvolt = <1400000>;
-> +       regulator-name = "vdd-cpu";
-> +       regulator-always-on;
-> +};
-> +
-> +&reg_dcdc3 {
-> +       regulator-min-microvolt = <1000000>;
-> +       regulator-max-microvolt = <1300000>;
-> +       regulator-name = "vdd-sys";
-> +       regulator-always-on;
-> +};
-> +
-> +&reg_ldo1 {
-> +       regulator-name = "vdd-rtc";
-> +};
-> +
-> +&reg_ldo2 {
-> +       regulator-min-microvolt = <2700000>;
-> +       regulator-max-microvolt = <3300000>;
-> +       regulator-name = "avcc";
-> +       regulator-always-on;
-> +};
-> +
-> +&reg_usb1_vbus {
-> +       pinctrl-0 = <&usb1_vbus_pin_gr8_evb>;
-> +       gpio = <&pio 6 13 GPIO_ACTIVE_HIGH>;
-> +       status = "okay";
-> +};
-> +
-> +&rtp {
-> +       allwinner,ts-attached;
-> +};
-> +
-> +&spdif {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&spdif_tx_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&tcon0 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&lcd_rgb666_pins>;
-> +       status = "okay";
-> +};
-> +
-> +&tcon0_out {
-> +       #address-cells = <1>;
-> +       #size-cells = <0>;
-> +
-> +       tcon0_out_panel: endpoint@0 {
-> +               reg = <0>;
-> +               remote-endpoint = <&panel_input>;
-> +       };
-> +};
-> +
-> +&tve0 {
-> +       status = "okay";
-> +};
-> +
-> +&uart1 {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&uart1_pins_a>, <&uart1_cts_rts_pins_a>;
-> +       status = "okay";
-> +};
-> +
-> +&usb_otg {
-> +       /*
-> +        * The GR8-EVB has a somewhat interesting design. There's a
-> +        * pin supposed to control VBUS, an ID pin, a VBUS detect pin,
-> +        * so everything should work just fine.
-> +        *
-> +        * Except that the pin supposed to control VBUS is not
-> +        * connected to any controllable output, neither to the SoC
-> +        * through a GPIO or to the PMIC, and it is pulled down,
-> +        * meaning that we will never be able to enable VBUS on this
-> +        * board.
-> +        */
+this adds CLCD graphics to the Nomadik NHK15 following
+Tomi's merge of the required FBDEV changes.
 
-IIRC, Hans made OTG work with boards that don't have VBUS control.
-All you need is a powered hub. And since there's no chance of VBUS
-going back through the connection to hurt the host on the other end
-when in peripheral mode, I think it's ok to put it in OTG mode here.
+It is all device tree changes except for a oneliner selecting
+MFD_SYSCON from the Nomadik Kconfig, as there are
+no other Nomadik changes pending and nothing else
+should be changing the Nomadik, and since it is pretty
+much in context with the DTS changes, I chose to include
+it here.
 
-The rest looks fine.
+Please pull it in!
 
-ChenYu
+Yours,
+Linus Walleij
 
-> +       dr_mode = "peripheral";
-> +       status = "okay";
-> +};
-> +
-> +&usb_power_supply {
-> +       status = "okay";
-> +};
-> +
-> +&usbphy {
-> +       pinctrl-names = "default";
-> +       pinctrl-0 = <&usb0_id_pin_gr8_evb>, <&usb0_vbus_det_pin_gr8_evb>;
-> +       usb0_id_det-gpio = <&pio 6 2 GPIO_ACTIVE_HIGH>; /* PG2 */
-> +       usb0_vbus_det-gpio = <&pio 6 1 GPIO_ACTIVE_HIGH>; /* PG1 */
-> +       usb0_vbus_power-supply = <&usb_power_supply>;
-> +       usb1_vbus-supply = <&reg_usb1_vbus>;
-> +       status = "okay";
-> +};
-> --
-> 2.9.2
->
+The following changes since commit 29b4817d4018df78086157ea3a55c1d9424a7cfc:
+
+  Linux 4.8-rc1 (2016-08-07 18:18:00 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-nomadik.git
+tags/clcd-nomadik
+
+for you to fetch changes up to 17470b7da11c137267c74ff0d2d4cca56f595c60:
+
+  ARM: dts: add the CLCD LCD display to the NHK15 (2016-09-09 23:16:07 +0200)
+
+----------------------------------------------------------------
+CLCD graphics on the Nomadik NHK15
+
+----------------------------------------------------------------
+Linus Walleij (6):
+      ARM: dts: add STMPE PWM to the NHK15 device tree
+      dt-bindings: add vendor TPO
+      dt-bindings: Add TPO TPG110 binding
+      ARM: nomadik: select MFD_SYSCON
+      ARM: dts: add PMU to the NHK15 device tree
+      ARM: dts: add the CLCD LCD display to the NHK15
+
+ .../bindings/display/panel/tpo,tpg110.txt          | 47 +++++++++++++++
+ .../devicetree/bindings/vendor-prefixes.txt        |  1 +
+ arch/arm/boot/dts/ste-nomadik-nhk15.dts            | 68 ++++++++++++++++++++++
+ arch/arm/boot/dts/ste-nomadik-stn8815.dtsi         | 28 +++++++++
+ arch/arm/mach-nomadik/Kconfig                      |  1 +
+ 5 files changed, 145 insertions(+)
+ create mode 100644
+Documentation/devicetree/bindings/display/panel/tpo,tpg110.txt

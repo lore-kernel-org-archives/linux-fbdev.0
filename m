@@ -1,62 +1,73 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 09 Sep 2016 21:25:30 +0000
-Subject: [PATCH 1/6] ARM: dts: add STMPE PWM to the NHK15 device tree
-Message-Id: <1473456335-22767-2-git-send-email-linus.walleij@linaro.org>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Wed, 14 Sep 2016 12:29:50 +0000
+Subject: [PATCH] video: fbdev: fsl-diu-fb: Return value is not handled correctly
+Message-Id: <1473855470-16632-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1473456335-22767-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: timur@tabi.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This adds the STMPE PWM to the NHK15 device tree.
+-Free memory mapping after mapping done.
+-uninstall framebuffer after framebuffer intallation done.
 
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- arch/arm/boot/dts/ste-nomadik-nhk15.dts | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ drivers/video/fbdev/fsl-diu-fb.c |   12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm/boot/dts/ste-nomadik-nhk15.dts b/arch/arm/boot/dts/ste-nomadik-nhk15.dts
-index d35aa88791ad..3ec5c653ad56 100644
---- a/arch/arm/boot/dts/ste-nomadik-nhk15.dts
-+++ b/arch/arm/boot/dts/ste-nomadik-nhk15.dts
-@@ -140,6 +140,10 @@
- 						0x03020067 // Up
- 						0x0303006c>; // Down
- 			};
-+			stmpe0_pwm: stmpe_pwm {
-+				compatible = "st,stmpe-pwm";
-+				#pwm-cells = <2>;
-+			};
- 		};
- 		stmpe1: stmpe2401@44 {
- 			compatible = "st,stmpe2401";
-@@ -183,4 +187,24 @@
- 			wp-gpios = <&stmpe_gpio44 18 GPIO_ACTIVE_HIGH>;
- 		};
- 	};
-+
-+	bl: backlight {
-+		compatible = "pwm-backlight";
-+		pwms = <&stmpe0_pwm 0 500000>;
-+		pwm-names = "backlight";
-+		brightness-levels = <
-+			0  1  2  3  4  5  6  7  8  9
-+			10 11 12 13 14 15 16 17 18 19
-+			20 21 22 23 24 25 26 27 28 29
-+			30 31 32 33 34 35 36 37 38 39
-+			40 41 42 43 44 45 46 47 48 49
-+			50 51 52 53 54 55 56 57 58 59
-+			60 61 62 63 64 65 66 67 68 69
-+			70 71 72 73 74 75 76 77 78 79
-+			80 81 82 83 84 85 86 87 88 89
-+			90 91 92 93 94 95 96 97 98 99
-+			100
-+		>;
-+		default-brightness-level = <100>;
-+	};
- };
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index fe00a07..12449b4 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1715,8 +1715,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	 */
+ 	if ((unsigned long)data & 31) {
+ 		dev_err(&pdev->dev, "misaligned allocation");
+-		ret = -ENOMEM;
+-		goto error;
++		return -ENOMEM;
+ 	}
+ 
+ 	spin_lock_init(&data->reg_lock);
+@@ -1752,8 +1751,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	data->diu_reg = of_iomap(np, 0);
+ 	if (!data->diu_reg) {
+ 		dev_err(&pdev->dev, "cannot map DIU registers\n");
+-		ret = -EFAULT;
+-		goto error;
++		return -EFAULT;
+ 	}
+ 
+ 	/* Get the IRQ of the DIU */
+@@ -1762,7 +1760,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	if (!data->irq) {
+ 		dev_err(&pdev->dev, "could not get DIU IRQ\n");
+ 		ret = -EINVAL;
+-		goto error;
++		goto err_unmap;
+ 	}
+ 	data->monitor_port = monitor_port;
+ 
+@@ -1797,7 +1795,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 			  data->diu_reg);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "could not claim irq\n");
+-		goto error;
++		goto err_unmap;
+ 	}
+ 
+ 	for (i = 0; i < NUM_AOIS; i++) {
+@@ -1826,7 +1824,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ error:
+ 	for (i = 0; i < NUM_AOIS; i++)
+ 		uninstall_fb(&data->fsl_diu_info[i]);
+-
++err_unmap:
+ 	iounmap(data->diu_reg);
+ 
+ 	return ret;
 -- 
-2.7.4
+1.7.9.5
 

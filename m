@@ -1,33 +1,34 @@
-From: Nahom <nahomagidew@gmail.com>
-Date: Thu, 29 Sep 2016 01:51:14 +0000
-Subject: [PATCH] video: console: bitblit: fixed an indentation coding style issue
-Message-Id: <1475113874-8319-1-git-send-email-nahomagidew@gmail.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Thu, 15 Sep 2016 18:30:48 +0000
+Subject: [PATCH v6 0/3] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v6
+Message-Id: <1473964251-20662-1-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: plagnioj@jcrosoft.com
-Cc: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nahom <nahomagidew@gmail.com>
+To: p.zabel@pengutronix.de, tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, dri-devel@lists.freedesktop.org
 
-Fixed a coding style issue.
-Signed-off-by: Nahom <nahomagidew@gmail.com>
----
- drivers/video/console/bitblit.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Fixed a missed compile error from v5. Also, although "gpu: ipu-v3: Add
+FSU channel linking support" has already been accepted, need to inlcude
+it again here only to allow ipu-image-convert.c to compile.
 
-diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
-index dbfe4ee..4e7d0e3 100644
---- a/drivers/video/console/bitblit.c
-+++ b/drivers/video/console/bitblit.c
-@@ -256,7 +256,7 @@ static void bit_cursor(struct vc_data *vc, struct fb_info *info, int mode,
- 			y += softback_lines;
- 	}
- 
-- 	c = scr_readw((u16 *) vc->vc_pos);
-+	c = scr_readw((u16 *) vc->vc_pos);
- 	attribute = get_attribute(info, c);
- 	src = vc->vc_font.data + ((c & charmask) * (w * vc->vc_font.height));
- 
+Steve Longerbeam (3):
+  gpu: ipu-v3: Add FSU channel linking support
+  gpu: ipu-v3: Add ipu_rot_mode_is_irt()
+  gpu: ipu-v3: Add queued image conversion support
+
+ drivers/gpu/ipu-v3/Makefile            |    3 +-
+ drivers/gpu/ipu-v3/ipu-common.c        |  140 +++
+ drivers/gpu/ipu-v3/ipu-ic.c            |    2 +-
+ drivers/gpu/ipu-v3/ipu-image-convert.c | 1718 ++++++++++++++++++++++++++++++++
+ drivers/gpu/ipu-v3/ipu-prv.h           |   32 +
+ include/video/imx-image-convert.h      |  207 ++++
+ include/video/imx-ipu-v3.h             |   35 +-
+ 7 files changed, 2128 insertions(+), 9 deletions(-)
+ create mode 100644 drivers/gpu/ipu-v3/ipu-image-convert.c
+ create mode 100644 include/video/imx-image-convert.h
+
 -- 
 2.7.4
 

@@ -1,88 +1,75 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Tue, 27 Sep 2016 08:08:45 +0000
-Subject: Re: [PATCH] video: fbdev: add missing \n at end of printk error message
-Message-Id: <71d17288-3772-44ae-46fb-024ce9972bd3@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="HORiAA8wqQg0i35fIa4aSlhT5NSeFqH5s"
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Thu, 15 Sep 2016 18:30:50 +0000
+Subject: [PATCH v6 2/3] gpu: ipu-v3: Add ipu_rot_mode_is_irt()
+Message-Id: <1473964251-20662-3-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160912102421.25926-1-colin.king@canonical.com>
-In-Reply-To: <20160912102421.25926-1-colin.king@canonical.com>
-To: Colin King <colin.king@canonical.com>, Kristoffer Ericson <kristoffer.ericson@gmail.com>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+References: <1473964251-20662-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1473964251-20662-1-git-send-email-steve_longerbeam@mentor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: p.zabel@pengutronix.de, tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, dri-devel@lists.freedesktop.org
 
---HORiAA8wqQg0i35fIa4aSlhT5NSeFqH5s
-Content-Type: multipart/mixed; boundary="KTlUtUNNqh5KSB07xRssLtvCHFS2QcpHW";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Colin King <colin.king@canonical.com>,
- Kristoffer Ericson <kristoffer.ericson@gmail.com>,
- linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <71d17288-3772-44ae-46fb-024ce9972bd3@ti.com>
-Subject: Re: [PATCH] video: fbdev: add missing \n at end of printk error
- message
-References: <20160912102421.25926-1-colin.king@canonical.com>
-In-Reply-To: <20160912102421.25926-1-colin.king@canonical.com>
+Add a macro that returns boolean true if the given ipu_rotate_mode
+requires the use of the Image Rotator.
 
---KTlUtUNNqh5KSB07xRssLtvCHFS2QcpHW
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+---
+ drivers/gpu/ipu-v3/ipu-ic.c |  2 +-
+ include/video/imx-ipu-v3.h  | 22 +++++++++++++++-------
+ 2 files changed, 16 insertions(+), 8 deletions(-)
 
-On 12/09/16 13:24, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
->=20
-> The message is missing a \n, add it.
->=20
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/video/fbdev/s1d13xxxfb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d=
-13xxxfb.c
-> index 96aa46d..6a271d8 100644
-> --- a/drivers/video/fbdev/s1d13xxxfb.c
-> +++ b/drivers/video/fbdev/s1d13xxxfb.c
-> @@ -929,7 +929,7 @@ static int s1d13xxxfb_suspend(struct platform_devic=
-e *dev, pm_message_t state)
->  		s1dfb->disp_save =3D kmalloc(info->fix.smem_len, GFP_KERNEL);
-> =20
->  	if (!s1dfb->disp_save) {
-> -		printk(KERN_ERR PFX "no memory to save screen");
-> +		printk(KERN_ERR PFX "no memory to save screen\n");
->  		return -ENOMEM;
->  	}
-> =20
->=20
+diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
+index 1a37afc..321eb98 100644
+--- a/drivers/gpu/ipu-v3/ipu-ic.c
++++ b/drivers/gpu/ipu-v3/ipu-ic.c
+@@ -619,7 +619,7 @@ int ipu_ic_task_idma_init(struct ipu_ic *ic, struct ipuv3_channel *channel,
+ 	ipu_ic_write(ic, ic_idmac_2, IC_IDMAC_2);
+ 	ipu_ic_write(ic, ic_idmac_3, IC_IDMAC_3);
+ 
+-	if (rot >= IPU_ROTATE_90_RIGHT)
++	if (ipu_rot_mode_is_irt(rot))
+ 		ic->rotation = true;
+ 
+ unlock:
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 49d5439..f39a3d6 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -63,17 +63,25 @@ enum ipu_csi_dest {
+ /*
+  * Enumeration of IPU rotation modes
+  */
++#define IPU_ROT_BIT_VFLIP (1 << 0)
++#define IPU_ROT_BIT_HFLIP (1 << 1)
++#define IPU_ROT_BIT_90    (1 << 2)
++
+ enum ipu_rotate_mode {
+ 	IPU_ROTATE_NONE = 0,
+-	IPU_ROTATE_VERT_FLIP,
+-	IPU_ROTATE_HORIZ_FLIP,
+-	IPU_ROTATE_180,
+-	IPU_ROTATE_90_RIGHT,
+-	IPU_ROTATE_90_RIGHT_VFLIP,
+-	IPU_ROTATE_90_RIGHT_HFLIP,
+-	IPU_ROTATE_90_LEFT,
++	IPU_ROTATE_VERT_FLIP = IPU_ROT_BIT_VFLIP,
++	IPU_ROTATE_HORIZ_FLIP = IPU_ROT_BIT_HFLIP,
++	IPU_ROTATE_180 = (IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
++	IPU_ROTATE_90_RIGHT = IPU_ROT_BIT_90,
++	IPU_ROTATE_90_RIGHT_VFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_VFLIP),
++	IPU_ROTATE_90_RIGHT_HFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_HFLIP),
++	IPU_ROTATE_90_LEFT = (IPU_ROT_BIT_90 |
++			      IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
+ };
+ 
++/* 90-degree rotations require the IRT unit */
++#define ipu_rot_mode_is_irt(m) (((m) & IPU_ROT_BIT_90) != 0)
++
+ enum ipu_color_space {
+ 	IPUV3_COLORSPACE_RGB,
+ 	IPUV3_COLORSPACE_YUV,
+-- 
+2.7.4
 
-Thanks, queued for 4.9.
-
- Tomi
-
-
---KTlUtUNNqh5KSB07xRssLtvCHFS2QcpHW--
-
---HORiAA8wqQg0i35fIa4aSlhT5NSeFqH5s
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJX6ikNAAoJEPo9qoy8lh71nyUP/1XibEwdlgF5UZQk+SjAt3dL
-OFESrStPnffJG0VOY//EYTrLNk9RxGkEA/2OlwbzcU+WrUDaNH5+D8o5DuRcrxCN
-jj0pMksnqnnNzAjDJkbQ2JJeNyGAgzSnydBrbNEsmmm+czXU+7dZ+xIoR6HZe/W1
-V6oeFqfr9ABh1fadLyM/tW5tMSOkWMt9qy6aM91l3PcgdRDsI8cDFmn612CeWIa/
-QNOsfIre4AvsLgxII+fdUQLFBh01SSQtlIkfhm50OZ76cikp/X8Lcqf2U/+rBtP8
-AyxmJxgFHK2ttemCU4JAFxDjBbTPpCg+2MvQJuzfm48Yp4Yg8lScUeB+FG/WtO2w
-58iqAAxSvQzgSyTli9E3gIE+0sYxu7UYgpKqVOYeD9roVw2VIBIxqmWmDFgku3QZ
-sGiqcpG+I4yr+4lEuDNcCRuGXDaox8dLYbBHaCRBlRJfiXGfOfsCUhEid61nL1Lc
-X+8JqAZQvUjsw8FlR220hRU+1kQa3kzsi044jChdhIirQb9h1vPrFqwftGZbDMkE
-P45CRVOdKqk+iiOw5oDt1k0hQFzKWjdNQEOgO7V0avvALzL1MgABORahlzUu6NCz
-CPhqU/bNGPZMXoCWX50xkRRyRpt9T5NWJk8b4rLkA7Z6kNw61mLGuiE4yzFoQqVw
-XxgV80d28rYCffOXgA+z
-=1KRR
------END PGP SIGNATURE-----
-
---HORiAA8wqQg0i35fIa4aSlhT5NSeFqH5s--

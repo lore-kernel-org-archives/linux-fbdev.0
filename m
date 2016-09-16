@@ -1,71 +1,52 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Mon, 12 Sep 2016 21:11:46 +0000
-Subject: Re: [PATCH 00/26] constify local structures
-Message-Id: <alpine.DEB.2.10.1609122311040.3549@hadrien>
+From: Krzysztof Kozlowski <k.kozlowski@samsung.com>
+Date: Fri, 16 Sep 2016 08:32:40 +0000
+Subject: [PATCH v3 2/2] ARM: exynos_defconfig: Remove old non-working MIPI driver
+Message-Id: <1474014760-23173-2-git-send-email-k.kozlowski@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1473599168-30561-1-git-send-email-Julia.Lawall@lip6.fr> <20160911172105.GB5493@intel.com> <alpine.DEB.2.10.1609121051050.3049@hadrien> <20160912131625.GD957@intel.com> <877fah5j35.fsf@linux.intel.com> <20160912201450.GA8889@intel.com>
-In-Reply-To: <20160912201450.GA8889@intel.com>
+References: <1474014760-23173-1-git-send-email-k.kozlowski@samsung.com>
+ <CGME20160916083252eucas1p12f57a9bc08176e10b8e07c3b421bb0ad@eucas1p1.samsung.com>
+In-Reply-To: <1474014760-23173-1-git-send-email-k.kozlowski@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>
-Cc: Felipe Balbi <felipe.balbi@linux.intel.com>, Julia Lawall <julia.lawall@lip6.fr>, linux-renesas-soc@vger.kernel.org, joe@perches.com, kernel-janitors@vger.kernel.org, Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>, linux-pm@vger.kernel.org, platform-driver-x86@vger.kernel.org, linux-media@vger.kernel.org, linux-can@vger.kernel.org, Tatyana Nikolova <tatyana.e.nikolova@intel.com>, Shiraz Saleem <shiraz.saleem@intel.com>, Mustafa Ismail <mustafa.ismail@intel.com>, Chien Tin Tung <chien.tin.tung@intel.com>, linux-rdma@vger.kernel.org, netdev@vger.kernel.org, devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-wireless@vger.kernel.org, Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: linux-arm-kernel@lists.infradead.org
 
+The Exynos MIPI driver does not work anymore (it is board file only) so
+it is removed.  Remove also config options.
 
+Cc: Inki Dae <inki.dae@samsung.com>
+Cc: Donghwa Lee <dh09.lee@samsung.com>
+Cc: Kyungmin Park <kyungmin.park@samsung.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Krzysztof Kozlowski <k.kozlowski@samsung.com>
 
-On Mon, 12 Sep 2016, Jarkko Sakkinen wrote:
+---
 
-> On Mon, Sep 12, 2016 at 04:43:58PM +0300, Felipe Balbi wrote:
-> >
-> > Hi,
-> >
-> > Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com> writes:
-> > > On Mon, Sep 12, 2016 at 10:54:07AM +0200, Julia Lawall wrote:
-> > >>
-> > >>
-> > >> On Sun, 11 Sep 2016, Jarkko Sakkinen wrote:
-> > >>
-> > >> > On Sun, Sep 11, 2016 at 03:05:42PM +0200, Julia Lawall wrote:
-> > >> > > Constify local structures.
-> > >> > >
-> > >> > > The semantic patch that makes this change is as follows:
-> > >> > > (http://coccinelle.lip6.fr/)
-> > >> >
-> > >> > Just my two cents but:
-> > >> >
-> > >> > 1. You *can* use a static analysis too to find bugs or other issues.
-> > >> > 2. However, you should manually do the commits and proper commit
-> > >> >    messages to subsystems based on your findings. And I generally think
-> > >> >    that if one contributes code one should also at least smoke test changes
-> > >> >    somehow.
-> > >> >
-> > >> > I don't know if I'm alone with my opinion. I just think that one should
-> > >> > also do the analysis part and not blindly create and submit patches.
-> > >>
-> > >> All of the patches are compile tested.  And the individual patches are
-> > >
-> > > Compile-testing is not testing. If you are not able to test a commit,
-> > > you should explain why.
-> >
-> > Dude, Julia has been doing semantic patching for years already and
-> > nobody has raised any concerns so far. There's already an expectation
-> > that Coccinelle *works* and Julia's sematic patches are sound.
-> >
-> > Besides, adding 'const' is something that causes virtually no functional
-> > changes to the point that build-testing is really all you need. Any
-> > problems caused by adding 'const' to a definition will be seen by build
-> > errors or warnings.
-> >
-> > Really, just stop with the pointless discussion and go read a bit about
-> > Coccinelle and what semantic patches are giving you. The work done by
-> > Julia and her peers are INRIA have measurable benefits.
-> >
-> > You're really making a thunderstorm in a glass of water.
->
-> Hmm... I've been using coccinelle in cyclic basis for some time now.
-> My comment was oversized but I didn't mean it to be impolite or attack
-> of any kind for that matter.
+This does not really depend on patch #1. The driver is dysfunctional and
+it does not work so defconfig change can be applied separately.
 
-No problem :)  Thanks for the feedback.
+Changes since v2:
+1. Remove also EXYNOS_MIPI_DSI, pointed out by Tomi Valkeinen.
 
-julia
+Changes since v1:
+1. New patch.
+---
+ arch/arm/configs/exynos_defconfig | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/arch/arm/configs/exynos_defconfig b/arch/arm/configs/exynos_defconfig
+index 4e484f406419..c58f6841f8aa 100644
+--- a/arch/arm/configs/exynos_defconfig
++++ b/arch/arm/configs/exynos_defconfig
+@@ -168,8 +168,6 @@ CONFIG_DRM_PANEL_SAMSUNG_LD9040=y
+ CONFIG_DRM_PANEL_SAMSUNG_S6E8AA0=y
+ CONFIG_DRM_NXP_PTN3460=y
+ CONFIG_DRM_PARADE_PS8622=y
+-CONFIG_EXYNOS_VIDEO=y
+-CONFIG_EXYNOS_MIPI_DSI=y
+ CONFIG_LCD_CLASS_DEVICE=y
+ CONFIG_LCD_PLATFORM=y
+ CONFIG_BACKLIGHT_PWM=y
+-- 
+1.9.1
+

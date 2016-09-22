@@ -1,37 +1,42 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Tue, 06 Sep 2016 09:26:14 +0000
-Subject: Re: [PATCH v4 0/4] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v4
-Message-Id: <1473153974.2805.88.camel@pengutronix.de>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Thu, 22 Sep 2016 10:35:25 +0000
+Subject: [PATCH v2 2/3] video: display_timing: Add flags to select the edge when the sync is driven
+Message-Id: <20160922103526.24925-3-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1471481419-5917-1-git-send-email-steve_longerbeam@mentor.com>
- <CAJ+vNU1LfgbvihqgN0LWr1JxpKtW7jW3Xu0DycD0ePqC1K=8EA@mail.gmail.com>
- <CAOMZO5AUyAN9wOEiQQLGL5Nb3EGS4E6Mut040ea7PNAqF5XFVg@mail.gmail.com>
-In-Reply-To: <CAOMZO5AUyAN9wOEiQQLGL5Nb3EGS4E6Mut040ea7PNAqF5XFVg@mail.gmail.com>
+References: <20160922103526.24925-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160922103526.24925-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Estevam <festevam@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Steve Longerbeam <steve_longerbeam@mentor.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI mailing list <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Steve Longerbeam <slongerbeam@gmail.com>, Fabio Estevam <fabio.estevam@nxp.com>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: robh+dt@kernel.org, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, airlied@linux.ie, thierry.reding@gmail.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, daniel.vetter@ffwll.ch, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org
 
-Am Montag, den 05.09.2016, 11:41 -0300 schrieb Fabio Estevam:
-> Hi Philipp,
-> 
-> On Thu, Aug 25, 2016 at 11:17 AM, Tim Harvey <tharvey@gateworks.com> wrote:
-> 
-> > Philipp,
-> >
-> > Have you had a chance to review this last series of Steve's submitted
-> > last week? We are down to 4 patches in gpu/ipu-v3 needed in order to
-> > get his IMX5/6 capture driver into staging and the sooner we do that
-> > the sooner we can get more testing and additional support/features for
-> > it.
-> 
-> Do these patches look good to you? It would be nice to get them into
-> 4.9 if possible.
+The sync can be - and for some panels it must be - driven on different edge
+then the data.
 
-I have applied all but the IC patches so far. For those I have a few
-comments.
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+CC: Rob Herring <robh+dt@kernel.org>
+CC: Mark Rutland <mark.rutland@arm.com>
+CC: devicetree@vger.kernel.org
+---
+ include/video/display_timing.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-regards
-Philipp
+diff --git a/include/video/display_timing.h b/include/video/display_timing.h
+index 28d9d0d566ca..3d289e990aca 100644
+--- a/include/video/display_timing.h
++++ b/include/video/display_timing.h
+@@ -28,6 +28,10 @@ enum display_flags {
+ 	DISPLAY_FLAGS_INTERLACED	= BIT(8),
+ 	DISPLAY_FLAGS_DOUBLESCAN	= BIT(9),
+ 	DISPLAY_FLAGS_DOUBLECLK		= BIT(10),
++	/* drive sync on pos. edge */
++	DISPLAY_FLAGS_SYNC_POSEDGE	= BIT(11),
++	/* drive sync on neg. edge */
++	DISPLAY_FLAGS_SYNC_NEGEDGE	= BIT(12),
+ };
+ 
+ /*
+-- 
+2.10.0
 

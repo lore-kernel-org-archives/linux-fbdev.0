@@ -1,47 +1,84 @@
-From: Philipp Zabel <p.zabel@pengutronix.de>
-Date: Mon, 19 Sep 2016 07:35:24 +0000
-Subject: Re: [PATCH v7 0/3] IPUv3 prep for i.MX5/6 v4l2 staging drivers, v7
-Message-Id: <1474270524.3117.29.camel@pengutronix.de>
+From: Ramiro Oliveira <Ramiro.Oliveira@synopsys.com>
+Date: Thu, 29 Sep 2016 10:26:31 +0000
+Subject: [PATCH] Staging: sm750fb: Fix block comments
+Message-Id: <64eb1190cc20615f22594b1f16a75737f42cfdf2.1475144602.git.roliveir@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1474140838-1082-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1474140838-1082-1-git-send-email-steve_longerbeam@mentor.com>
+References: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
+In-Reply-To: <20160606190432.GA5308@moshe-Lenovo-Yoga-2-Pro>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steve Longerbeam <slongerbeam@gmail.com>
-Cc: tomi.valkeinen@ti.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Ramiro Oliveira <Ramiro.Oliveira@synopsys.com>
 
-Hi Steve,
+Correct the styling of some block comments as reported by checkpatch.
 
-Am Samstag, den 17.09.2016, 12:33 -0700 schrieb Steve Longerbeam:
-> Changes from v6:
-> 
-> - renamed include/video/imx-image-convert.h to imx-ipu-image-convert.h.
-> - changed MIN_W, MIN_H to absolute minimum allowed assuming conversions
->   to/from planar pixel formats and with rotations (16x8).
-> - removed setting defaults if given 0 widths/heights in
->   ipu_image_convert_adjust().
-> 
-> Steve Longerbeam (3):
->   gpu: ipu-v3: Add FSU channel linking support
->   gpu: ipu-v3: Add ipu_rot_mode_is_irt()
->   gpu: ipu-v3: Add queued image conversion support
-> 
->  drivers/gpu/ipu-v3/Makefile            |    3 +-
->  drivers/gpu/ipu-v3/ipu-common.c        |  140 +++
->  drivers/gpu/ipu-v3/ipu-ic.c            |    2 +-
->  drivers/gpu/ipu-v3/ipu-image-convert.c | 1709 ++++++++++++++++++++++++++++++++
->  drivers/gpu/ipu-v3/ipu-prv.h           |   32 +
->  include/video/imx-ipu-image-convert.h  |  207 ++++
->  include/video/imx-ipu-v3.h             |   35 +-
->  7 files changed, 2119 insertions(+), 9 deletions(-)
->  create mode 100644 drivers/gpu/ipu-v3/ipu-image-convert.c
->  create mode 100644 include/video/imx-ipu-image-convert.h
+Signed-off-by: Ramiro Oliveira <roliveir@synopsys.com>
+---
+ drivers/staging/sm750fb/ddk750_swi2c.c | 36 +++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 18 deletions(-)
 
-thanks, I have updated to v7 and sent a pull request:
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 6c1ffa1..011c1bd 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -1,15 +1,15 @@
+ /*******************************************************************
+-*
+-*         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+-*
+-*  All rights are reserved. Reproduction or in part is prohibited
+-*  without the written consent of the copyright owner.
+-*
+-*  swi2c.c --- SM750/SM718 DDK
+-*  This file contains the source code for I2C using software
+-*  implementation.
+-*
+-*******************************************************************/
++ *
++ *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
++ *
++ *  All rights are reserved. Reproduction or in part is prohibited
++ *  without the written consent of the copyright owner.
++ *
++ *  swi2c.c --- SM750/SM718 DDK
++ *  This file contains the source code for I2C using software
++ *  implementation.
++ *
++ *******************************************************************/
+ #include "ddk750_help.h"
+ #include "ddk750_reg.h"
+ #include "ddk750_swi2c.h"
+@@ -89,12 +89,12 @@ static void sw_i2c_wait(void)
+ 	 * always be non-zero,which makes the while loop
+ 	 * never finish.
+ 	 * use non-ultimate for loop below is safe
+-	 * */
++	 */
+ 
+-    /* Change wait algorithm to use PCI bus clock,
+-       it's more reliable than counter loop ..
+-       write 0x61 to 0x3ce and read from 0x3cf
+-       */
++	/* Change wait algorithm to use PCI bus clock,
++	 * it's more reliable than counter loop ..
++	 * write 0x61 to 0x3ce and read from 0x3cf
++	 */
+ 	int i, tmp;
+ 
+ 	for (i = 0; i < 600; i++) {
+@@ -501,8 +501,8 @@ long sm750_sw_i2c_write_reg(
+ 	sw_i2c_start();
+ 
+ 	/* Send the device address and read the data. All should return success
+-	   in order for the writing processed to be successful
+-	*/
++	 * in order for the writing processed to be successful
++	 */
+ 	if ((sw_i2c_write_byte(addr) != 0) ||
+ 	    (sw_i2c_write_byte(reg) != 0) ||
+ 	    (sw_i2c_write_byte(data) != 0)) {
+-- 
+2.9.3
 
-https://lists.freedesktop.org/archives/dri-devel/2016-September/118572.html
-
-regards
-Philipp
 

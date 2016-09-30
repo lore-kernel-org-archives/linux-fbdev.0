@@ -1,75 +1,50 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Sat, 17 Sep 2016 19:33:57 +0000
-Subject: [PATCH v7 2/3] gpu: ipu-v3: Add ipu_rot_mode_is_irt()
-Message-Id: <1474140838-1082-3-git-send-email-steve_longerbeam@mentor.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 30 Sep 2016 07:02:57 +0000
+Subject: [PATCH 0/2] backlight: pwm_bl: Fix the initial power state selection
+Message-Id: <20160930070259.5710-1-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1474140838-1082-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1474140838-1082-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: p.zabel@pengutronix.de, tomi.valkeinen@ti.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: thierry.reding@gmail.com, jingoohan1@gmail.com, lee.jones@linaro.org
+Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-Add a macro that returns boolean true if the given ipu_rotate_mode
-requires the use of the Image Rotator.
+Hi,
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+3698d7e7d221 backlight: pwm_bl: Avoid backlight flicker when probed from DT
+
+added support for avoiding backlight flickering, which in essence was designed
+to not enable the baclkight when the driver loads, but let the user of the
+backlight to enable it later on.
+
+There are boards (like am437x-gp-evm) where we do not have valid GPIO to enable
+the backlight (TPS61081DRC's EN pin is connected to V3_3D) and the regulator
+is always on (VBAT in case of the gp-evm). In this board the logic to check the
+GPIO state and the regulator is failing and the backlight will be enabled as
+soon as the pwm_bl driver is loaded.
+
+By extending the check to look at the PWM state this issue can be avoided and
+the backlight will be enabled only when it's user is asking it to be enabled.
+
+Note:
+I don't know the history of 3698d7e7d221, but I would have opted to add a DT
+bool property (default-off) indicating that the given backlight device must stay
+off when the driver is probing, other driver will enable it later.
+This way all pwm driver could use the same property (gpio-backlight would need
+to be converted) and the backward compatibility would have been retained.
+
+Regards,
+Peter
 ---
- drivers/gpu/ipu-v3/ipu-ic.c |  2 +-
- include/video/imx-ipu-v3.h  | 22 +++++++++++++++-------
- 2 files changed, 16 insertions(+), 8 deletions(-)
+Peter Ujfalusi (2):
+  backlight: pwm_bl: Move the checks for initial power state to a
+    separate function
+  backlight: pwm_bl: Check the pwm state for initial backlight power
+    state
 
-diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
-index 1a37afc..321eb98 100644
---- a/drivers/gpu/ipu-v3/ipu-ic.c
-+++ b/drivers/gpu/ipu-v3/ipu-ic.c
-@@ -619,7 +619,7 @@ int ipu_ic_task_idma_init(struct ipu_ic *ic, struct ipuv3_channel *channel,
- 	ipu_ic_write(ic, ic_idmac_2, IC_IDMAC_2);
- 	ipu_ic_write(ic, ic_idmac_3, IC_IDMAC_3);
- 
--	if (rot >= IPU_ROTATE_90_RIGHT)
-+	if (ipu_rot_mode_is_irt(rot))
- 		ic->rotation = true;
- 
- unlock:
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 49d5439..f39a3d6 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -63,17 +63,25 @@ enum ipu_csi_dest {
- /*
-  * Enumeration of IPU rotation modes
-  */
-+#define IPU_ROT_BIT_VFLIP (1 << 0)
-+#define IPU_ROT_BIT_HFLIP (1 << 1)
-+#define IPU_ROT_BIT_90    (1 << 2)
-+
- enum ipu_rotate_mode {
- 	IPU_ROTATE_NONE = 0,
--	IPU_ROTATE_VERT_FLIP,
--	IPU_ROTATE_HORIZ_FLIP,
--	IPU_ROTATE_180,
--	IPU_ROTATE_90_RIGHT,
--	IPU_ROTATE_90_RIGHT_VFLIP,
--	IPU_ROTATE_90_RIGHT_HFLIP,
--	IPU_ROTATE_90_LEFT,
-+	IPU_ROTATE_VERT_FLIP = IPU_ROT_BIT_VFLIP,
-+	IPU_ROTATE_HORIZ_FLIP = IPU_ROT_BIT_HFLIP,
-+	IPU_ROTATE_180 = (IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
-+	IPU_ROTATE_90_RIGHT = IPU_ROT_BIT_90,
-+	IPU_ROTATE_90_RIGHT_VFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_VFLIP),
-+	IPU_ROTATE_90_RIGHT_HFLIP = (IPU_ROT_BIT_90 | IPU_ROT_BIT_HFLIP),
-+	IPU_ROTATE_90_LEFT = (IPU_ROT_BIT_90 |
-+			      IPU_ROT_BIT_VFLIP | IPU_ROT_BIT_HFLIP),
- };
- 
-+/* 90-degree rotations require the IRT unit */
-+#define ipu_rot_mode_is_irt(m) (((m) & IPU_ROT_BIT_90) != 0)
-+
- enum ipu_color_space {
- 	IPUV3_COLORSPACE_RGB,
- 	IPUV3_COLORSPACE_YUV,
--- 
-2.7.4
+ drivers/video/backlight/pwm_bl.c | 59 ++++++++++++++++++++++++++--------------
+ 1 file changed, 39 insertions(+), 20 deletions(-)
+
+--
+2.10.0
 

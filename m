@@ -1,83 +1,120 @@
-From: Moshe Green <mgmoshes@gmail.com>
-Date: Thu, 15 Sep 2016 20:15:50 +0000
-Subject: [PATCH 1/2] staging: sm750fb: fix line length coding style issues in ddk750_chip.c
-Message-Id: <3073702d63fb782f3b4f3932eb183433f76ce91b.1473970394.git.mgmoshes@gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Fri, 30 Sep 2016 07:02:58 +0000
+Subject: [PATCH 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
+Message-Id: <20160930070259.5710-2-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <523e16874da50855062fcc51b6754e2b9c42b9e5.1472932508.git.mgmoshes@gmail.com>
-In-Reply-To: <523e16874da50855062fcc51b6754e2b9c42b9e5.1472932508.git.mgmoshes@gmail.com>
+References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20160930070259.5710-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
-Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: thierry.reding@gmail.com, jingoohan1@gmail.com, lee.jones@linaro.org
+Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-Fix multiple line length warnings found by the checkpatch.pl tool
-in ddk750_chip.c.
+Move the check for gpio and regulator initial state to a new function and
+document better what we are checking and why.
 
-Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+It is going to be easier to fix or improve the initial power state
+configuration later and it is easier to read the code.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 23 +++++++++++++++--------
- 1 file changed, 15 insertions(+), 8 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++---------------
+ 1 file changed, 35 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index c1356bb..7cba1ab 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -71,9 +71,10 @@ static void setChipClock(unsigned int frequency)
- 		pll.clockType = MXCLK_PLL;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index b2b366bb0f97..9bc4715bf116 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ }
+ #endif
  
- 		/*
--		* Call calcPllValue() to fill up the other fields for PLL structure.
--		* Sometime, the chip cannot set up the exact clock required by User.
--		* Return value from calcPllValue() gives the actual possible clock.
-+		* Call calcPllValue() to fill the other fields of PLL structure.
-+		* Sometime, the chip cannot set up the exact clock
-+		* required by the User.
-+		* Return value of calcPllValue gives the actual possible clock.
- 		*/
- 		ulActualMxClk = calcPllValue(frequency, &pll);
- 
-@@ -94,8 +95,8 @@ static void setMemoryClock(unsigned int frequency)
- 
- 	if (frequency) {
- 		/*
--		 * Set the frequency to the maximum frequency that the DDR Memory can take
--		 * which is 336MHz.
-+		 * Set the frequency to the maximum frequency
-+		 * that the DDR Memory can take which is 336MHz.
- 		 */
- 		if (frequency > MHz(336))
- 			frequency = MHz(336);
-@@ -305,7 +306,9 @@ int ddk750_initHw(initchip_param_t *pInitParam)
- */
- unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
++static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
++{
++	struct device_node *node = pb->dev->of_node;
++
++	/* Not booted with device tree or no phandle link to the node */
++	if (!node || !node->phandle)
++		return FB_BLANK_UNBLANK;
++
++	/*
++	 * If the driver is probed from the device tree and there is a
++	 * phandle link pointing to the backlight node, it is safe to
++	 * assume that another driver will enable the backlight at the
++	 * appropriate time. Therefore, if it is disabled, keep it so.
++	 */
++
++	/*
++	 * if the enable GPIO is set as output and it is disabled, do not enable
++	 * the backlight
++	 */
++	if (pb->enable_gpio) {
++		if (gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
++		    gpiod_get_value(pb->enable_gpio) = 0)
++			return FB_BLANK_POWERDOWN;
++
++		gpiod_direction_output(pb->enable_gpio, 1);
++	}
++
++	/* The regulator is disabled, do not enable the backlight */
++	if (!regulator_is_enabled(pb->power_supply))
++		return FB_BLANK_POWERDOWN;
++
++	return FB_BLANK_UNBLANK;
++}
++
+ static int pwm_backlight_probe(struct platform_device *pdev)
  {
--	/* as sm750 register definition, N located in 2,15 and M located in 1,255	*/
-+	/* as sm750 register definition,
-+	 * N located in 2,15 and M located in 1,255
-+	 */
- 	int N, M, X, d;
- 	int mini_diff;
- 	unsigned int RN, quo, rem, fl_quo;
-@@ -325,12 +328,16 @@ unsigned int calcPllValue(unsigned int request_orig, pll_value_t *pll)
- 	request = request_orig / 1000;
- 	input = pll->inputFreq / 1000;
+ 	struct platform_pwm_backlight_data *data = dev_get_platdata(&pdev->dev);
+@@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+-	int initial_blank = FB_BLANK_UNBLANK;
+ 	struct pwm_args pargs;
+ 	int ret;
  
--	/* for MXCLK register , no POD provided, so need be treated differently	*/
-+	/* for MXCLK register,
-+	 * no POD provided, so need be treated differently
-+	 */
- 	if (pll->clockType = MXCLK_PLL)
- 		max_d = 3;
+@@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
  
- 	for (N = 15; N > 1; N--) {
--		/* RN will not exceed maximum long if @request <= 285 MHZ (for 32bit cpu) */
-+		/* RN will not exceed maximum long
-+		 * if @request <= 285 MHZ (for 32bit cpu)
-+		 */
- 		RN = N * request;
- 		quo = RN / input;
- 		rem = RN % input;/* rem always small than 14318181 */
+-	if (pb->enable_gpio) {
+-		/*
+-		 * If the driver is probed from the device tree and there is a
+-		 * phandle link pointing to the backlight node, it is safe to
+-		 * assume that another driver will enable the backlight at the
+-		 * appropriate time. Therefore, if it is disabled, keep it so.
+-		 */
+-		if (node && node->phandle &&
+-		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
+-		    gpiod_get_value(pb->enable_gpio) = 0)
+-			initial_blank = FB_BLANK_POWERDOWN;
+-		else
+-			gpiod_direction_output(pb->enable_gpio, 1);
+-	}
+-
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+ 		ret = PTR_ERR(pb->power_supply);
+ 		goto err_alloc;
+ 	}
+ 
+-	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+-		initial_blank = FB_BLANK_POWERDOWN;
+-
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER && !node) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+@@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+-	bl->props.power = initial_blank;
++	bl->props.power = pwm_backlight_initial_power_state(pb);
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
 -- 
-2.7.4
+2.10.0
 

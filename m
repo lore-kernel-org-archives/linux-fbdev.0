@@ -1,49 +1,53 @@
 From: Moshe Green <mgmoshes@gmail.com>
-Date: Sun, 02 Oct 2016 10:43:14 +0000
-Subject: Re: [PATCH] staging: sm750fb: rename macro roundedDiv to rounded_div in ddk750_chip.c
-Message-Id: <20161002104314.GA15142@gmail.com>
+Date: Sun, 02 Oct 2016 11:04:46 +0000
+Subject: [PATCH] staging: sm750fb: replace roundedDiv with DIV_ROUND_CLOSEST
+Message-Id: <40d305d6c803600d5b78b792423f4618587229ec.1475406094.git.mgmoshes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bbdf9102afd4b72160d274a575a2f1eea5580afb.1475387062.git.mgmoshes@gmail.com>
- <20161002094747.GA27462@kroah.com>
-In-Reply-To: <20161002094747.GA27462@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Sun, Oct 02, 2016 at 11:47:47AM +0200, Greg KH wrote:
-> On Sun, Oct 02, 2016 at 08:48:32AM +0300, Moshe Green wrote:
-> > Rename CamelCased macro roundedDiv to rounded_div.
-> > 
-> > This issue was found by checkpatch.pl
-> > 
-> > Signed-off-by: Moshe Green <mgmoshes@gmail.com>
-> > ---
-> >  drivers/staging/sm750fb/ddk750_chip.c | 6 +++---
-> >  1 file changed, 3 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> > index 3a0afe1..e4efe91 100644
-> > --- a/drivers/staging/sm750fb/ddk750_chip.c
-> > +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> > @@ -7,7 +7,7 @@
-> >  #include "ddk750_power.h"
-> >  
-> >  /* n / d + 1 / 2 = (2n + d) / 2d */
-> > -#define roundedDiv(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
-> > +#define rounded_div(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
-> 
-> Shouldn't you use the in-kernel function for this instead?
+Replace local implementation of rounded division (roundedDiv macro) with
+the in-kernel implementation (DIV_ROUND_CLOSEST macro) in ddk750_chip.c
 
-(I thought briefly of looking for an existing implementation but
-then chose not to since I wanted to minimize the functional changes in my patches
-for the time being. Additionally I was wary of using a different implementation for a
-division operation.)
+Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-I'll submit a patch that will replace the local implemetaion of rounded
-division with the in-kernel implementation (I'm assuming you're
-referring to the DIV_ROUND_CLOSEST macro from include/linux/kernel.h).
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 3a0afe1..839d673 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -6,8 +6,6 @@
+ #include "ddk750_chip.h"
+ #include "ddk750_power.h"
+ 
+-/* n / d + 1 / 2 = (2n + d) / 2d */
+-#define roundedDiv(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
+ #define MHz(x) ((x) * 1000000)
+ 
+ logical_chip_type_t sm750_get_chip_type(void)
+@@ -102,7 +100,7 @@ static void setMemoryClock(unsigned int frequency)
+ 			frequency = MHz(336);
+ 
+ 		/* Calculate the divisor */
+-		divisor = roundedDiv(get_mxclk_freq(), frequency);
++		divisor = DIV_ROUND_CLOSEST(get_mxclk_freq(), frequency);
+ 
+ 		/* Set the corresponding divisor in the register. */
+ 		reg = PEEK32(CURRENT_GATE) & ~CURRENT_GATE_M2XCLK_MASK;
+@@ -152,7 +150,7 @@ static void setMasterClock(unsigned int frequency)
+ 			frequency = MHz(190);
+ 
+ 		/* Calculate the divisor */
+-		divisor = roundedDiv(get_mxclk_freq(), frequency);
++		divisor = DIV_ROUND_CLOSEST(get_mxclk_freq(), frequency);
+ 
+ 		/* Set the corresponding divisor in the register. */
+ 		reg = PEEK32(CURRENT_GATE) & ~CURRENT_GATE_MCLK_MASK;
+-- 
+2.7.4
 
-Thanks
-Moshe Green

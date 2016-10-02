@@ -1,30 +1,54 @@
-From: Jan Kara <jack@suse.cz>
-Date: Tue, 18 Oct 2016 12:46:28 +0000
-Subject: Re: [PATCH 02/10] mm: remove write/force parameters from __get_user_pages_unlocked()
-Message-Id: <20161018124628.GB29967@quack2.suse.cz>
+From: Moshe Green <mgmoshes@gmail.com>
+Date: Sun, 02 Oct 2016 05:48:32 +0000
+Subject: [PATCH] staging: sm750fb: rename macro roundedDiv to rounded_div in ddk750_chip.c
+Message-Id: <bbdf9102afd4b72160d274a575a2f1eea5580afb.1475387062.git.mgmoshes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-3-lstoakes@gmail.com>
-In-Reply-To: <20161013002020.3062-3-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, netdev@vger.kernel.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-media@vger.kernel.org, Rik van Riel <riel@redhat.com>, intel-gfx@lists.freedesktop.org, adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.orglin
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-On Thu 13-10-16 01:20:12, Lorenzo Stoakes wrote:
-> This patch removes the write and force parameters from
-> __get_user_pages_unlocked() to make the use of FOLL_FORCE explicit in callers as
-> use of this flag can result in surprising behaviour (and hence bugs) within the
-> mm subsystem.
-> 
-> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+Rename CamelCased macro roundedDiv to rounded_div.
 
-The patch looks good. You can add:
+This issue was found by checkpatch.pl
 
-Reviewed-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Moshe Green <mgmoshes@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-								Honza
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 3a0afe1..e4efe91 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -7,7 +7,7 @@
+ #include "ddk750_power.h"
+ 
+ /* n / d + 1 / 2 = (2n + d) / 2d */
+-#define roundedDiv(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
++#define rounded_div(num, denom)	((2 * (num) + (denom)) / (2 * (denom)))
+ #define MHz(x) ((x) * 1000000)
+ 
+ logical_chip_type_t sm750_get_chip_type(void)
+@@ -102,7 +102,7 @@ static void setMemoryClock(unsigned int frequency)
+ 			frequency = MHz(336);
+ 
+ 		/* Calculate the divisor */
+-		divisor = roundedDiv(get_mxclk_freq(), frequency);
++		divisor = rounded_div(get_mxclk_freq(), frequency);
+ 
+ 		/* Set the corresponding divisor in the register. */
+ 		reg = PEEK32(CURRENT_GATE) & ~CURRENT_GATE_M2XCLK_MASK;
+@@ -152,7 +152,7 @@ static void setMasterClock(unsigned int frequency)
+ 			frequency = MHz(190);
+ 
+ 		/* Calculate the divisor */
+-		divisor = roundedDiv(get_mxclk_freq(), frequency);
++		divisor = rounded_div(get_mxclk_freq(), frequency);
+ 
+ 		/* Set the corresponding divisor in the register. */
+ 		reg = PEEK32(CURRENT_GATE) & ~CURRENT_GATE_MCLK_MASK;
 -- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+2.7.4
+

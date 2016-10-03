@@ -1,107 +1,87 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Sat, 29 Oct 2016 19:36:54 +0000
-Subject: [PATCH 00/15] use permission-specific DEVICE_ATTR variants
-Message-Id: <1477769829-22230-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Mon, 03 Oct 2016 09:07:33 +0000
+Subject: [PATCH -resend 3/6] mdacon: replace MDA_ADDR macro by inline function
+Message-Id: <20161003090736.19926-3-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20161003090736.19926-1-jslaby@suse.cz>
+In-Reply-To: <20161003090736.19926-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: netdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org, alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org, linux-mips@linux-mips.org, linux-pm@vger.kernel.org, patches@opensource.wolfsonmicro.com, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-atm-general@lists.sourceforge.net
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
+MDA_ADDR is one of those macros which could be an inline function. So
+convert MDA_ADDR to mda_addr.
 
-Use DEVICE_ATTR_RO etc. for read only attributes etc.  This simplifies the
-source code, improves readbility, and reduces the chance of
-inconsistencies.
+Note that we take x and y as unsigned now. But they are absolute
+coordinates, so this is no problem.
 
-The complete semantic patch is as follows:
-(http://coccinelle.lip6.fr/)
-
-// <smpl>
-@ro@
-declarer name DEVICE_ATTR;
-identifier x,x_show;
-@@
-
-DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
-
-@wo@
-declarer name DEVICE_ATTR;
-identifier x,x_store;
-@@
-
-DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
-
-@rw@
-declarer name DEVICE_ATTR;
-identifier x,x_show,x_store;
-@@
-
-DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-
-@script:ocaml@
-x << ro.x;
-x_show << ro.x_show;
-@@
-
-if not (x^"_show" = x_show) then Coccilib.include_match false
-
-@script:ocaml@
-x << wo.x;
-x_store << wo.x_store;
-@@
-
-if not (x^"_store" = x_store) then Coccilib.include_match false
-
-@script:ocaml@
-x << rw.x;
-x_show << rw.x_show;
-x_store << rw.x_store;
-@@
-
-if not (x^"_show" = x_show && x^"_store" = x_store)
-then Coccilib.include_match false
-
-@@
-declarer name DEVICE_ATTR_RO;
-identifier ro.x,ro.x_show;
-@@
-
-- DEVICE_ATTR(x, \(0444\|S_IRUGO\), x_show, NULL);
-+ DEVICE_ATTR_RO(x);
-
-@@
-declarer name DEVICE_ATTR_WO;
-identifier wo.x,wo.x_store;
-@@
-
-- DEVICE_ATTR(x, \(0200\|S_IWUSR\), NULL, x_store);
-+ DEVICE_ATTR_WO(x);
-
-@@
-declarer name DEVICE_ATTR_RW;
-identifier rw.x,rw.x_show,rw.x_store;
-@@
-
-- DEVICE_ATTR(x, \(0644\|S_IRUGO|S_IWUSR\), x_show, x_store);
-+ DEVICE_ATTR_RW(x);
-// </smpl>
-
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: <linux-fbdev@vger.kernel.org>
 ---
+ drivers/video/console/mdacon.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
- arch/mips/txx9/generic/7segled.c                  |    4 ++--
- arch/powerpc/kernel/iommu.c                       |    3 +--
- arch/tile/kernel/sysfs.c                          |   14 +++++++-------
- drivers/atm/solos-pci.c                           |    2 +-
- drivers/pci/pcie/aspm.c                           |    4 ++--
- drivers/power/supply/wm8350_power.c               |    2 +-
- drivers/ptp/ptp_sysfs.c                           |    2 +-
- drivers/thermal/int340x_thermal/int3400_thermal.c |    2 +-
- drivers/thermal/thermal_hwmon.c                   |    2 +-
- drivers/tty/nozomi.c                              |    4 ++--
- drivers/usb/wusbcore/dev-sysfs.c                  |    6 +++---
- drivers/usb/wusbcore/wusbhc.c                     |   13 +++++--------
- drivers/video/fbdev/wm8505fb.c                    |    2 +-
- sound/soc/omap/mcbsp.c                            |    4 ++--
- sound/soc/soc-dapm.c                              |    2 +-
- 15 files changed, 31 insertions(+), 35 deletions(-)
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index 814606bd26d1..24fe55134eb5 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -420,17 +420,20 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
+ 	}
+ }
+ 
+-#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
++static inline u16 *mda_addr(unsigned int x, unsigned int y)
++{
++	return mda_vram_base + y * mda_num_columns + x;
++}
+ 
+ static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
+ {
+-	scr_writew(mda_convert_attr(ch), MDA_ADDR(x, y));
++	scr_writew(mda_convert_attr(ch), mda_addr(x, y));
+ }
+ 
+ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ 		         int count, int y, int x)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 
+ 	for (; count > 0; count--) {
+ 		scr_writew(mda_convert_attr(scr_readw(s++)), dest++);
+@@ -440,7 +443,7 @@ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ static void mdacon_clear(struct vc_data *c, int y, int x, 
+ 			  int height, int width)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
+ 
+ 	if (width <= 0 || height <= 0)
+@@ -511,16 +514,16 @@ static int mdacon_scroll(struct vc_data *c, int t, int b, int dir, int lines)
+ 	switch (dir) {
+ 
+ 	case SM_UP:
+-		scr_memmovew(MDA_ADDR(0,t), MDA_ADDR(0,t+lines),
++		scr_memmovew(mda_addr(0, t), mda_addr(0, t + lines),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,b-lines), eattr,
++		scr_memsetw(mda_addr(0, b - lines), eattr,
+ 				lines*mda_num_columns*2);
+ 		break;
+ 
+ 	case SM_DOWN:
+-		scr_memmovew(MDA_ADDR(0,t+lines), MDA_ADDR(0,t),
++		scr_memmovew(mda_addr(0, t + lines), mda_addr(0, t),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,t), eattr, lines*mda_num_columns*2);
++		scr_memsetw(mda_addr(0, t), eattr, lines*mda_num_columns*2);
+ 		break;
+ 	}
+ 
+-- 
+2.10.0
+

@@ -1,189 +1,84 @@
 From: Jiri Slaby <jslaby@suse.cz>
-Date: Mon, 03 Oct 2016 09:18:38 +0000
-Subject: [PATCH 6/7] vgacon: switch boolean variables to bool
-Message-Id: <20161003091839.29379-6-jslaby@suse.cz>
+Date: Mon, 03 Oct 2016 09:07:32 +0000
+Subject: [PATCH -resend 2/6] mdacon: make mda_vram_base u16 *
+Message-Id: <20161003090736.19926-2-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161003091839.29379-1-jslaby@suse.cz>
-In-Reply-To: <20161003091839.29379-1-jslaby@suse.cz>
+References: <20161003090736.19926-1-jslaby@suse.cz>
+In-Reply-To: <20161003090736.19926-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org
 
-These variables:
-* vga_can_do_color
-* vgacon_text_mode_force
-* vga_font_is_default
-* vga_hardscroll_enabled
-* vga_hardscroll_user_enable
-* vga_init_done
-* vga_is_gfx
-* vga_palette_blanked
-* vga_512_chars
-are used exclusively as a boolean value, so make them really a bool.
+Given every user of mda_vram_base expects a pointer, let
+mda_vram_base be a pointer to u16.
 
-Remove also useless "? true : false".
+The offset calculation in mda_detect had to be adjusted by / 2 (due to
+different pointer arithmetic now).
 
-__read_mostly annotations removed too as they obfuscate the code and I
-doubt they improve anything measurable given the variables are used
-from .con_scroll, .con_startup and such.
+We introduce a cast to a value returned from VGA_MAP_MEM. But I will
+change VGA_MAP_MEM to return a pointer later too. But vgacon needs a
+similar change first.
 
 Signed-off-by: Jiri Slaby <jslaby@suse.cz>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: <linux-fbdev@vger.kernel.org>
 ---
- drivers/video/console/vgacon.c | 45 +++++++++++++++++++++---------------------
- 1 file changed, 23 insertions(+), 22 deletions(-)
+ drivers/video/console/mdacon.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index ede6a5a85ccd..d13d5d372604 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -88,7 +88,7 @@ static struct uni_pagedir *vgacon_uni_pagedir;
- static int vgacon_refcount;
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index 64c2c5e8d00b..814606bd26d1 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(mda_lock);
  
- /* Description of the hardware situation */
--static int		vga_init_done		__read_mostly;
-+static bool		vga_init_done;
- static unsigned long	vga_vram_base		__read_mostly;	/* Base of video memory */
- static unsigned long	vga_vram_end		__read_mostly;	/* End of video memory */
- static unsigned int	vga_vram_size		__read_mostly;	/* Size of video memory */
-@@ -96,31 +96,31 @@ static u16		vga_video_port_reg	__read_mostly;	/* Video register select port */
- static u16		vga_video_port_val	__read_mostly;	/* Video register value port */
- static unsigned int	vga_video_num_columns;			/* Number of text columns */
- static unsigned int	vga_video_num_lines;			/* Number of text lines */
--static int		vga_can_do_color	__read_mostly;	/* Do we support colors? */
-+static bool		vga_can_do_color;			/* Do we support colors? */
- static unsigned int	vga_default_font_height __read_mostly;	/* Height of default screen font */
- static unsigned char	vga_video_type		__read_mostly;	/* Card type */
--static unsigned char	vga_hardscroll_enabled	__read_mostly;
--static unsigned char	vga_hardscroll_user_enable __read_mostly = 1;
--static unsigned char	vga_font_is_default = 1;
-+static bool		vga_font_is_default = true;
- static int		vga_vesa_blanked;
--static int 		vga_palette_blanked;
--static int 		vga_is_gfx;
--static int 		vga_512_chars;
-+static bool 		vga_palette_blanked;
-+static bool 		vga_is_gfx;
-+static bool 		vga_512_chars;
- static int 		vga_video_font_height;
- static int 		vga_scan_lines		__read_mostly;
- static unsigned int 	vga_rolled_over;
+ /* description of the hardware layout */
  
--static int vgacon_text_mode_force;
-+static bool vgacon_text_mode_force;
-+static bool vga_hardscroll_enabled;
-+static bool vga_hardscroll_user_enable = true;
+-static unsigned long	mda_vram_base;		/* Base of video memory */
++static u16		*mda_vram_base;		/* Base of video memory */
+ static unsigned long	mda_vram_len;		/* Size of video memory */
+ static unsigned int	mda_num_columns;	/* Number of text columns */
+ static unsigned int	mda_num_lines;		/* Number of text lines */
+@@ -205,8 +205,8 @@ static int mda_detect(void)
  
- bool vgacon_text_force(void)
- {
--	return vgacon_text_mode_force ? true : false;
-+	return vgacon_text_mode_force;
- }
- EXPORT_SYMBOL(vgacon_text_force);
+ 	/* do a memory check */
  
- static int __init text_mode(char *str)
- {
--	vgacon_text_mode_force = 1;
-+	vgacon_text_mode_force = true;
- 	return 1;
- }
+-	p = (u16 *) mda_vram_base;
+-	q = (u16 *) (mda_vram_base + 0x01000);
++	p = mda_vram_base;
++	q = mda_vram_base + 0x01000 / 2;
  
-@@ -134,7 +134,7 @@ static int __init no_scroll(char *str)
- 	 * Braille reader made by F.H. Papenmeier (Germany).
- 	 * Use the "no-scroll" bootflag.
- 	 */
--	vga_hardscroll_user_enable = vga_hardscroll_enabled = 0;
-+	vga_hardscroll_user_enable = vga_hardscroll_enabled = false;
- 	return 1;
- }
+ 	p_save = scr_readw(p);
+ 	q_save = scr_readw(q);
+@@ -323,7 +323,7 @@ static const char *mdacon_startup(void)
+ 	mda_num_lines   = 25;
  
-@@ -402,7 +402,7 @@ static const char *vgacon_startup(void)
- 		}
- 	} else {
- 		/* If not, it is color. */
--		vga_can_do_color = 1;
-+		vga_can_do_color = true;
- 		vga_vram_base = 0xb8000;
- 		vga_video_port_reg = VGA_CRT_IC;
- 		vga_video_port_val = VGA_CRT_DC;
-@@ -517,7 +517,7 @@ static const char *vgacon_startup(void)
+ 	mda_vram_len  = 0x01000;
+-	mda_vram_base = VGA_MAP_MEM(0xb0000, mda_vram_len);
++	mda_vram_base = (u16 *)VGA_MAP_MEM(0xb0000, mda_vram_len);
  
- 	if (!vga_init_done) {
- 		vgacon_scrollback_startup();
--		vga_init_done = 1;
-+		vga_init_done = true;
+ 	mda_index_port  = 0x3b4;
+ 	mda_value_port  = 0x3b5;
+@@ -420,7 +420,7 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
  	}
+ }
  
- 	return display_desc;
-@@ -609,7 +609,7 @@ static u8 vgacon_build_attr(struct vc_data *c, u8 color, u8 intensity,
+-#define MDA_ADDR(x,y)  ((u16 *) mda_vram_base + (y)*mda_num_columns + (x))
++#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
  
- static void vgacon_invert_region(struct vc_data *c, u16 * p, int count)
+ static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
  {
--	int col = vga_can_do_color;
-+	const bool col = vga_can_do_color;
- 
- 	while (count--) {
- 		u16 a = scr_readw(p);
-@@ -981,24 +981,24 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
- 		}
- 		if (vga_palette_blanked) {
- 			vga_set_palette(c, color_table);
--			vga_palette_blanked = 0;
-+			vga_palette_blanked = false;
- 			return 0;
- 		}
--		vga_is_gfx = 0;
-+		vga_is_gfx = false;
+@@ -463,7 +463,7 @@ static int mdacon_blank(struct vc_data *c, int blank, int mode_switch)
+ {
+ 	if (mda_type = TYPE_MDA) {
+ 		if (blank) 
+-			scr_memsetw((void *)mda_vram_base, 
++			scr_memsetw(mda_vram_base,
+ 				mda_convert_attr(c->vc_video_erase_char),
+ 				c->vc_screenbuf_size);
  		/* Tell console.c that it has to restore the screen itself */
- 		return 1;
- 	case 1:		/* Normal blanking */
- 	case -1:	/* Obsolete */
- 		if (!mode_switch && vga_video_type = VIDEO_TYPE_VGAC) {
- 			vga_pal_blank(&vgastate);
--			vga_palette_blanked = 1;
-+			vga_palette_blanked = true;
- 			return 0;
- 		}
- 		vgacon_set_origin(c);
- 		scr_memsetw((void *) vga_vram_base, BLANK,
- 			    c->vc_screenbuf_size);
- 		if (mode_switch)
--			vga_is_gfx = 1;
-+			vga_is_gfx = true;
- 		return 1;
- 	default:		/* VESA blanking */
- 		if (vga_video_type = VIDEO_TYPE_VGAC) {
-@@ -1029,7 +1029,8 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
- #define blackwmap 0xa0000
- #define cmapsz 8192
- 
--static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
-+static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
-+		bool ch512)
- {
- 	unsigned short video_port_status = vga_video_port_reg + 6;
- 	int font_select = 0x00, beg, i;
-@@ -1055,7 +1056,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
- 	if (!arg)
- 		return -EINVAL;	/* Return to default font not supported */
- 
--	vga_font_is_default = 0;
-+	vga_font_is_default = false;
- 	font_select = ch512 ? 0x04 : 0x00;
- #else
- 	/*
-@@ -1066,7 +1067,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
- 	if (set) {
- 		vga_font_is_default = !arg;
- 		if (!arg)
--			ch512 = 0;	/* Default font is always 256 */
-+			ch512 = false;	/* Default font is always 256 */
- 		font_select = arg ? (ch512 ? 0x0e : 0x0a) : 0x00;
- 	}
- 
 -- 
 2.10.0
 

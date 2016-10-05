@@ -1,42 +1,63 @@
-From: Michal Hocko <mhocko@kernel.org>
-Date: Wed, 19 Oct 2016 09:23:51 +0000
-Subject: Re: [PATCH 08/10] mm: replace __access_remote_vm() write parameter with gup_flags
-Message-Id: <20161019092350.GF7517@dhcp22.suse.cz>
+From: Adam Ford <aford173@gmail.com>
+Date: Wed, 05 Oct 2016 02:07:59 +0000
+Subject: [PATCH V2] OMAPDSS: Kconfig: Add HDMI for OMAP4 and OMAP5 dependencies
+Message-Id: <1475633279-32424-1-git-send-email-aford173@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-9-lstoakes@gmail.com>
- <20161019075903.GP29967@quack2.suse.cz>
- <20161019081352.GB7562@dhcp22.suse.cz>
- <20161019084045.GA19441@lucifer>
- <20161019085204.GD7517@dhcp22.suse.cz>
- <20161019090646.GA24243@lucifer>
-In-Reply-To: <20161019090646.GA24243@lucifer>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: Jan Kara <jack@suse.cz>, linux-mm@kvack.org, Linus Torvalds <torvalds@linux-foundation.org>, Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>, Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>, Andrew Morton <akpm@linux-foundation.org>, adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-mips@linux-mips.org, linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org, linux-sh
+To: linux-omap@vger.kernel.org
+Cc: tomi.valkeinen@ti.com, airlied@linux.ie, plagnioj@jcrosoft.com, airlied@gmail.com, robdclark@gmail.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Adam Ford <aford173@gmail.com>
 
-On Wed 19-10-16 10:06:46, Lorenzo Stoakes wrote:
-> On Wed, Oct 19, 2016 at 10:52:05AM +0200, Michal Hocko wrote:
-> > yes this is the desirable and expected behavior.
-> >
-> > > wonder if this is desirable behaviour or whether this ought to be limited to
-> > > ptrace system calls. Regardless, by making the flag more visible it makes it
-> > > easier to see that this is happening.
-> >
-> > mem_open already enforces PTRACE_MODE_ATTACH
-> 
-> Ah I missed this, that makes a lot of sense, thanks!
-> 
-> I still wonder whether other invocations of access_remote_vm() in fs/proc/base.c
-> (the principle caller of this function) need FOLL_FORCE, for example the various
-> calls that simply read data from other processes, so I think the point stands
-> about keeping this explicit.
+Make "HDMI for OMAP4" and "HDMI for OMAP5" depend on ARCH_OMAP4
+and SOC_OMAP5/DRA7XX respectively.
 
-I do agree. Making them explicit will help to clean them up later,
-should there be a need.
+Signed-off-by: Adam Ford <aford173@gmail.com>
 
+Changes in v2: Add dependancy for DRA7XX or OMAP5
+
+diff --git a/drivers/gpu/drm/omapdrm/dss/Kconfig b/drivers/gpu/drm/omapdrm/dss/Kconfig
+index d1fa730..befdd7a 100644
+--- a/drivers/gpu/drm/omapdrm/dss/Kconfig
++++ b/drivers/gpu/drm/omapdrm/dss/Kconfig
+@@ -69,13 +69,15 @@ config OMAP2_DSS_HDMI_COMMON
+ 
+ config OMAP4_DSS_HDMI
+ 	bool "HDMI support for OMAP4"
+-        default y
++	depends on ARCH_OMAP4
++	default y
+ 	select OMAP2_DSS_HDMI_COMMON
+ 	help
+ 	  HDMI support for OMAP4 based SoCs.
+ 
+ config OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
++	depends on SOC_OMAP5 || SOC_DRA7XX
+ 	default n
+ 	select OMAP2_DSS_HDMI_COMMON
+ 	help
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/Kconfig b/drivers/video/fbdev/omap2/omapfb/dss/Kconfig
+index 27d2202..19e2e7b 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/Kconfig
++++ b/drivers/video/fbdev/omap2/omapfb/dss/Kconfig
+@@ -65,13 +65,15 @@ config FB_OMAP2_DSS_HDMI_COMMON
+ 
+ config FB_OMAP4_DSS_HDMI
+ 	bool "HDMI support for OMAP4"
+-        default y
++	depends on ARCH_OMAP4
++	default y
+ 	select FB_OMAP2_DSS_HDMI_COMMON
+ 	help
+ 	  HDMI support for OMAP4 based SoCs.
+ 
+ config FB_OMAP5_DSS_HDMI
+ 	bool "HDMI support for OMAP5"
++	depends on SOC_OMAP5 || SOC_DRA7XX
+ 	default n
+ 	select FB_OMAP2_DSS_HDMI_COMMON
+ 	help
 -- 
-Michal Hocko
-SUSE Labs
+2.7.4
+

@@ -1,191 +1,274 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Thu, 27 Oct 2016 07:18:46 +0000
-Subject: Re: [PATCH 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <476602db-0c9c-b642-83c0-be4979addde0@ti.com>
+From: Lorenzo Stoakes <lstoakes@gmail.com>
+Date: Thu, 13 Oct 2016 00:20:17 +0000
+Subject: [PATCH 07/10] mm: replace get_user_pages_remote() write/force parameters with gup_flags
+Message-Id: <20161013002020.3062-8-lstoakes@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
- <20160930070259.5710-2-peter.ujfalusi@ti.com> <20161026121258.GQ8574@dell>
- <fd224a5e-9487-eabf-a68f-bbd3ae49f8ef@ti.com>
-In-Reply-To: <fd224a5e-9487-eabf-a68f-bbd3ae49f8ef@ti.com>
+References: <20161013002020.3062-1-lstoakes@gmail.com>
+In-Reply-To: <20161013002020.3062-1-lstoakes@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Lee Jones <lee.jones@linaro.org>
-Cc: thierry.reding@gmail.com, jingoohan1@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-mm@kvack.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Jan Kara <jack@suse.cz>, Hugh Dickins <hughd@google.com>, Dave Hansen <dave.hansen@linux.intel.com>, Rik van Riel <riel@redhat.com>, Mel Gorman <mgorman@techsingularity.net>, Andrew Morton <akpm@linux-foundation.org>, adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org, linux-media@vger.kernel.org, linux-mips@linux-mips.org, linux-rdma@vger.kernel.org, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-security-module@vger.kernel.org, linux-sh@vger.kerne
 
-On 10/26/16 16:02, Peter Ujfalusi wrote:
-> On 10/26/16 15:12, Lee Jones wrote:
->> On Fri, 30 Sep 2016, Peter Ujfalusi wrote:
->>
->>> Move the check for gpio and regulator initial state to a new function a=
-nd
->>> document better what we are checking and why.
->>>
->>> It is going to be easier to fix or improve the initial power state
->>> configuration later and it is easier to read the code.
->>>
->>> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
->>> ---
->>>  drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++-------=
---------
->>>  1 file changed, 35 insertions(+), 20 deletions(-)
->>>
->>> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight=
-/pwm_bl.c
->>> index b2b366bb0f97..9bc4715bf116 100644
->>> --- a/drivers/video/backlight/pwm_bl.c
->>> +++ b/drivers/video/backlight/pwm_bl.c
->>> @@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *d=
-ev,
->>>  }
->>>  #endif
->>> =20
->>> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data =
-*pb)
->>> +{
->>> +	struct device_node *node =3D pb->dev->of_node;
->>> +
->>> +	/* Not booted with device tree or no phandle link to the node */
->>> +	if (!node || !node->phandle)
->>> +		return FB_BLANK_UNBLANK;
->>
->> This changes the semantics of the current implementation.
->>
->> In the code you're removing, if the enable_gpio is present and no DT
->> is found, we set the GPIO direction to output.  In your implementation,
->> if no DT is found you don't do anything regardless.
->>
->> Is that intentional?
->=20
-> Argh, no, it is not intentional.
->=20
-> It should have been like this:
->=20
-> 	/* Not booted with device tree or no phandle link to the node */
-> 	if (!node || !node->phandle) {
-> 		/* Set enable GPIO if it is valid */
-> 		if (pb->enable_gpio)
-> 			gpiod_direction_output(pb->enable_gpio, 1);
->=20
-> 		return FB_BLANK_UNBLANK;
-> 	}
->=20
-> On the other hand we are not doing the same for the regulator in case of =
-non
-> DT boot or when the backlight has no users. So we do enable the GPIO, but=
- the
-> regulator might be left disabled...
->=20
-> I'll resend the series with this change.
+This patch removes the write and force parameters from get_user_pages_remote()
+and replaces them with a gup_flags parameter to make the use of FOLL_FORCE
+explicit in callers as use of this flag can result in surprising behaviour (and
+hence bugs) within the mm subsystem.
 
-This is not really correct either.
+Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+---
+ drivers/gpu/drm/etnaviv/etnaviv_gem.c   |  7 +++++--
+ drivers/gpu/drm/i915/i915_gem_userptr.c |  6 +++++-
+ drivers/infiniband/core/umem_odp.c      |  7 +++++--
+ fs/exec.c                               |  9 +++++++--
+ include/linux/mm.h                      |  2 +-
+ kernel/events/uprobes.c                 |  6 ++++--
+ mm/gup.c                                | 22 +++++++---------------
+ mm/memory.c                             |  6 +++++-
+ security/tomoyo/domain.c                |  2 +-
+ 9 files changed, 40 insertions(+), 27 deletions(-)
 
-If we boot in legacy mode the data->enable_gpio number is used to get the G=
-PIO
-and we configure the initial state as GPIOF_OUT_INIT_HIGH. So legacy boot w=
-ill
-have the line high in any case.
+diff --git a/drivers/gpu/drm/etnaviv/etnaviv_gem.c b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+index 5ce3603..0370b84 100644
+--- a/drivers/gpu/drm/etnaviv/etnaviv_gem.c
++++ b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+@@ -748,19 +748,22 @@ static struct page **etnaviv_gem_userptr_do_get_pages(
+ 	int ret = 0, pinned, npages = etnaviv_obj->base.size >> PAGE_SHIFT;
+ 	struct page **pvec;
+ 	uintptr_t ptr;
++	unsigned int flags = 0;
+ 
+ 	pvec = drm_malloc_ab(npages, sizeof(struct page *));
+ 	if (!pvec)
+ 		return ERR_PTR(-ENOMEM);
+ 
++	if (!etnaviv_obj->userptr.ro)
++		flags |= FOLL_WRITE;
++
+ 	pinned = 0;
+ 	ptr = etnaviv_obj->userptr.ptr;
+ 
+ 	down_read(&mm->mmap_sem);
+ 	while (pinned < npages) {
+ 		ret = get_user_pages_remote(task, mm, ptr, npages - pinned,
+-					    !etnaviv_obj->userptr.ro, 0,
+-					    pvec + pinned, NULL);
++					    flags, pvec + pinned, NULL);
+ 		if (ret < 0)
+ 			break;
+ 
+diff --git a/drivers/gpu/drm/i915/i915_gem_userptr.c b/drivers/gpu/drm/i915/i915_gem_userptr.c
+index e537930..c6f780f 100644
+--- a/drivers/gpu/drm/i915/i915_gem_userptr.c
++++ b/drivers/gpu/drm/i915/i915_gem_userptr.c
+@@ -508,6 +508,10 @@ __i915_gem_userptr_get_pages_worker(struct work_struct *_work)
+ 	pvec = drm_malloc_gfp(npages, sizeof(struct page *), GFP_TEMPORARY);
+ 	if (pvec != NULL) {
+ 		struct mm_struct *mm = obj->userptr.mm->mm;
++		unsigned int flags = 0;
++
++		if (!obj->userptr.read_only)
++			flags |= FOLL_WRITE;
+ 
+ 		ret = -EFAULT;
+ 		if (atomic_inc_not_zero(&mm->mm_users)) {
+@@ -517,7 +521,7 @@ __i915_gem_userptr_get_pages_worker(struct work_struct *_work)
+ 					(work->task, mm,
+ 					 obj->userptr.ptr + pinned * PAGE_SIZE,
+ 					 npages - pinned,
+-					 !obj->userptr.read_only, 0,
++					 flags,
+ 					 pvec + pinned, NULL);
+ 				if (ret < 0)
+ 					break;
+diff --git a/drivers/infiniband/core/umem_odp.c b/drivers/infiniband/core/umem_odp.c
+index 75077a0..1f0fe32 100644
+--- a/drivers/infiniband/core/umem_odp.c
++++ b/drivers/infiniband/core/umem_odp.c
+@@ -527,6 +527,7 @@ int ib_umem_odp_map_dma_pages(struct ib_umem *umem, u64 user_virt, u64 bcnt,
+ 	u64 off;
+ 	int j, k, ret = 0, start_idx, npages = 0;
+ 	u64 base_virt_addr;
++	unsigned int flags = 0;
+ 
+ 	if (access_mask = 0)
+ 		return -EINVAL;
+@@ -556,6 +557,9 @@ int ib_umem_odp_map_dma_pages(struct ib_umem *umem, u64 user_virt, u64 bcnt,
+ 		goto out_put_task;
+ 	}
+ 
++	if (access_mask & ODP_WRITE_ALLOWED_BIT)
++		flags |= FOLL_WRITE;
++
+ 	start_idx = (user_virt - ib_umem_start(umem)) >> PAGE_SHIFT;
+ 	k = start_idx;
+ 
+@@ -574,8 +578,7 @@ int ib_umem_odp_map_dma_pages(struct ib_umem *umem, u64 user_virt, u64 bcnt,
+ 		 */
+ 		npages = get_user_pages_remote(owning_process, owning_mm,
+ 				user_virt, gup_num_pages,
+-				access_mask & ODP_WRITE_ALLOWED_BIT,
+-				0, local_page_list, NULL);
++				flags, local_page_list, NULL);
+ 		up_read(&owning_mm->mmap_sem);
+ 
+ 		if (npages < 0)
+diff --git a/fs/exec.c b/fs/exec.c
+index 6fcfb3f..4e497b9 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -191,6 +191,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+ {
+ 	struct page *page;
+ 	int ret;
++	unsigned int gup_flags = FOLL_FORCE;
+ 
+ #ifdef CONFIG_STACK_GROWSUP
+ 	if (write) {
+@@ -199,12 +200,16 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+ 			return NULL;
+ 	}
+ #endif
++
++	if (write)
++		gup_flags |= FOLL_WRITE;
++
+ 	/*
+ 	 * We are doing an exec().  'current' is the process
+ 	 * doing the exec and bprm->mm is the new process's mm.
+ 	 */
+-	ret = get_user_pages_remote(current, bprm->mm, pos, 1, write,
+-			1, &page, NULL);
++	ret = get_user_pages_remote(current, bprm->mm, pos, 1, gup_flags,
++			&page, NULL);
+ 	if (ret <= 0)
+ 		return NULL;
+ 
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 686a477..2a481d3 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1276,7 +1276,7 @@ long __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 		      struct vm_area_struct **vmas, int *nonblocking);
+ long get_user_pages_remote(struct task_struct *tsk, struct mm_struct *mm,
+ 			    unsigned long start, unsigned long nr_pages,
+-			    int write, int force, struct page **pages,
++			    unsigned int gup_flags, struct page **pages,
+ 			    struct vm_area_struct **vmas);
+ long get_user_pages(unsigned long start, unsigned long nr_pages,
+ 			    unsigned int gup_flags, struct page **pages,
+diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
+index d4129bb..f9ec9ad 100644
+--- a/kernel/events/uprobes.c
++++ b/kernel/events/uprobes.c
+@@ -300,7 +300,8 @@ int uprobe_write_opcode(struct mm_struct *mm, unsigned long vaddr,
+ 
+ retry:
+ 	/* Read the page with vaddr into memory */
+-	ret = get_user_pages_remote(NULL, mm, vaddr, 1, 0, 1, &old_page, &vma);
++	ret = get_user_pages_remote(NULL, mm, vaddr, 1, FOLL_FORCE, &old_page,
++			&vma);
+ 	if (ret <= 0)
+ 		return ret;
+ 
+@@ -1710,7 +1711,8 @@ static int is_trap_at_addr(struct mm_struct *mm, unsigned long vaddr)
+ 	 * but we treat this as a 'remote' access since it is
+ 	 * essentially a kernel access to the memory.
+ 	 */
+-	result = get_user_pages_remote(NULL, mm, vaddr, 1, 0, 1, &page, NULL);
++	result = get_user_pages_remote(NULL, mm, vaddr, 1, FOLL_FORCE, &page,
++			NULL);
+ 	if (result < 0)
+ 		return result;
+ 
+diff --git a/mm/gup.c b/mm/gup.c
+index dc91303..0deecf3 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -905,9 +905,7 @@ EXPORT_SYMBOL(get_user_pages_unlocked);
+  * @mm:		mm_struct of target mm
+  * @start:	starting user address
+  * @nr_pages:	number of pages from start to pin
+- * @write:	whether pages will be written to by the caller
+- * @force:	whether to force access even when user mapping is currently
+- *		protected (but never forces write access to shared mapping).
++ * @gup_flags:	flags modifying lookup behaviour
+  * @pages:	array that receives pointers to the pages pinned.
+  *		Should be at least nr_pages long. Or NULL, if caller
+  *		only intends to ensure the pages are faulted in.
+@@ -936,9 +934,9 @@ EXPORT_SYMBOL(get_user_pages_unlocked);
+  * or similar operation cannot guarantee anything stronger anyway because
+  * locks can't be held over the syscall boundary.
+  *
+- * If write=0, the page must not be written to. If the page is written to,
+- * set_page_dirty (or set_page_dirty_lock, as appropriate) must be called
+- * after the page is finished with, and before put_page is called.
++ * If gup_flags & FOLL_WRITE = 0, the page must not be written to. If the page
++ * is written to, set_page_dirty (or set_page_dirty_lock, as appropriate) must
++ * be called after the page is finished with, and before put_page is called.
+  *
+  * get_user_pages is typically used for fewer-copy IO operations, to get a
+  * handle on the memory by some means other than accesses via the user virtual
+@@ -955,18 +953,12 @@ EXPORT_SYMBOL(get_user_pages_unlocked);
+  */
+ long get_user_pages_remote(struct task_struct *tsk, struct mm_struct *mm,
+ 		unsigned long start, unsigned long nr_pages,
+-		int write, int force, struct page **pages,
++		unsigned int gup_flags, struct page **pages,
+ 		struct vm_area_struct **vmas)
+ {
+-	unsigned int flags = FOLL_TOUCH | FOLL_REMOTE;
+-
+-	if (write)
+-		flags |= FOLL_WRITE;
+-	if (force)
+-		flags |= FOLL_FORCE;
+-
+ 	return __get_user_pages_locked(tsk, mm, start, nr_pages, pages, vmas,
+-				       NULL, false, flags);
++				       NULL, false,
++				       gup_flags | FOLL_TOUCH | FOLL_REMOTE);
+ }
+ EXPORT_SYMBOL(get_user_pages_remote);
+ 
+diff --git a/mm/memory.c b/mm/memory.c
+index fc1987d..20a9adb 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3873,6 +3873,10 @@ static int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
+ {
+ 	struct vm_area_struct *vma;
+ 	void *old_buf = buf;
++	unsigned int flags = FOLL_FORCE;
++
++	if (write)
++		flags |= FOLL_WRITE;
+ 
+ 	down_read(&mm->mmap_sem);
+ 	/* ignore errors, just check how much was successfully transferred */
+@@ -3882,7 +3886,7 @@ static int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
+ 		struct page *page = NULL;
+ 
+ 		ret = get_user_pages_remote(tsk, mm, addr, 1,
+-				write, 1, &page, &vma);
++				flags, &page, &vma);
+ 		if (ret <= 0) {
+ #ifndef CONFIG_HAVE_IOREMAP_PROT
+ 			break;
+diff --git a/security/tomoyo/domain.c b/security/tomoyo/domain.c
+index ade7c6c..682b73a 100644
+--- a/security/tomoyo/domain.c
++++ b/security/tomoyo/domain.c
+@@ -881,7 +881,7 @@ bool tomoyo_dump_page(struct linux_binprm *bprm, unsigned long pos,
+ 	 * the execve().
+ 	 */
+ 	if (get_user_pages_remote(current, bprm->mm, pos, 1,
+-				0, 1, &page, NULL) <= 0)
++				FOLL_FORCE, &page, NULL) <= 0)
+ 		return false;
+ #else
+ 	page = bprm->page[pos / PAGE_SIZE];
+-- 
+2.10.0
 
-I think the only case we should handle differently is when the GPIO is
-configured as input (I don't think it happens, but just to be sure). In that
-case we need to change the direction to output and set the GPIO as disabled.
-If it was input, it was not driving the line.
-
-In the pwm_backlight_initial_power_state() function we will not need to che=
-ck
-for GPIO direction as it is guaranteed that it is output, we can only check
-for the value of the GPIO.
-
-I will resubmit with this change.
-
->=20
->>
->>> +	/*
->>> +	 * If the driver is probed from the device tree and there is a
->>> +	 * phandle link pointing to the backlight node, it is safe to
->>> +	 * assume that another driver will enable the backlight at the
->>> +	 * appropriate time. Therefore, if it is disabled, keep it so.
->>> +	 */
->>> +
->>> +	/*
->>> +	 * if the enable GPIO is set as output and it is disabled, do not ena=
-ble
->>> +	 * the backlight
->>> +	 */
->>> +	if (pb->enable_gpio) {
->>> +		if (gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
->>> +		    gpiod_get_value(pb->enable_gpio) =3D 0)
->>> +			return FB_BLANK_POWERDOWN;
->>> +
->>> +		gpiod_direction_output(pb->enable_gpio, 1);
->>> +	}
->>> +
->>> +	/* The regulator is disabled, do not enable the backlight */
->>> +	if (!regulator_is_enabled(pb->power_supply))
->>> +		return FB_BLANK_POWERDOWN;
->>> +
->>> +	return FB_BLANK_UNBLANK;
->>> +}
->>> +
->>>  static int pwm_backlight_probe(struct platform_device *pdev)
->>>  {
->>>  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->=
-dev);
->>> @@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->>>  	struct backlight_device *bl;
->>>  	struct device_node *node =3D pdev->dev.of_node;
->>>  	struct pwm_bl_data *pb;
->>> -	int initial_blank =3D FB_BLANK_UNBLANK;
->>>  	struct pwm_args pargs;
->>>  	int ret;
->>> =20
->>> @@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_de=
-vice *pdev)
->>>  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
->>>  	}
->>> =20
->>> -	if (pb->enable_gpio) {
->>> -		/*
->>> -		 * If the driver is probed from the device tree and there is a
->>> -		 * phandle link pointing to the backlight node, it is safe to
->>> -		 * assume that another driver will enable the backlight at the
->>> -		 * appropriate time. Therefore, if it is disabled, keep it so.
->>> -		 */
->>> -		if (node && node->phandle &&
->>> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
->>> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
->>> -			initial_blank =3D FB_BLANK_POWERDOWN;
->>> -		else
->>> -			gpiod_direction_output(pb->enable_gpio, 1);
->>> -	}
->>> -
->>>  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->>>  	if (IS_ERR(pb->power_supply)) {
->>>  		ret =3D PTR_ERR(pb->power_supply);
->>>  		goto err_alloc;
->>>  	}
->>> =20
->>> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
->>> -		initial_blank =3D FB_BLANK_POWERDOWN;
->>> -
->>>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->>>  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
->>>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
->>> @@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->>>  	}
->>> =20
->>>  	bl->props.brightness =3D data->dft_brightness;
->>> -	bl->props.power =3D initial_blank;
->>> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
->>>  	backlight_update_status(bl);
->>> =20
->>>  	platform_set_drvdata(pdev, bl);
->>
->=20
->=20
-
-
---=20
-P=E9ter

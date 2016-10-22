@@ -1,78 +1,70 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Wed, 05 Oct 2016 06:06:15 +0000
-Subject: Re: [PATCH V2] OMAPDSS: Kconfig: Add HDMI for OMAP4 and OMAP5 dependencies
-Message-Id: <ea03842c-d648-1dca-e7cb-5d672bb8bed3@ti.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="r66CmpDfuJbhXVTPBBF4N95FpONCfPAxK"
+From: Lukasz Majewski <l.majewski@majess.pl>
+Date: Sat, 22 Oct 2016 20:58:24 +0000
+Subject: [PATCH] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_backlight_probe()
+Message-Id: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1475633279-32424-1-git-send-email-aford173@gmail.com>
-In-Reply-To: <1475633279-32424-1-git-send-email-aford173@gmail.com>
-To: Adam Ford <aford173@gmail.com>, linux-omap@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Liu Ying <Ying.Liu@freescale.com>, Lukasz Majewski <l.majewski@majess.pl>
 
---r66CmpDfuJbhXVTPBBF4N95FpONCfPAxK
-Content-Type: multipart/mixed; boundary="735Hjfb363C4sM8uGn6bcRQ38SKFsHNTw";
- protected-headers="v1"
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-To: Adam Ford <aford173@gmail.com>, linux-omap@vger.kernel.org
-Cc: airlied@linux.ie, airlied@gmail.com, robdclark@gmail.com,
- dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
- linux-fbdev@vger.kernel.org
-Message-ID: <ea03842c-d648-1dca-e7cb-5d672bb8bed3@ti.com>
-Subject: Re: [PATCH V2] OMAPDSS: Kconfig: Add HDMI for OMAP4 and OMAP5
- dependencies
-References: <1475633279-32424-1-git-send-email-aford173@gmail.com>
-In-Reply-To: <1475633279-32424-1-git-send-email-aford173@gmail.com>
+The commit: a55944ca82d287ca099ca90413af857af9086773 has posed some extra
+restrictions on blanking and unblanking frame buffer device.
 
---735Hjfb363C4sM8uGn6bcRQ38SKFsHNTw
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Unfortunately, pwm_bl driver's probe did not initialize members of
+struct backlight_device necessary for further blank/unblank operation.
 
-On 05/10/16 05:07, Adam Ford wrote:
-> Make "HDMI for OMAP4" and "HDMI for OMAP5" depend on ARCH_OMAP4
-> and SOC_OMAP5/DRA7XX respectively.
->=20
-> Signed-off-by: Adam Ford <aford173@gmail.com>
->=20
-> Changes in v2: Add dependancy for DRA7XX or OMAP5
+This code in case of initial unblank of backlight device (default behaviour)
+sets use_count to 1 and marks this particular backlight device as used
+by all available fb devices (since it is not known during probe how much
+and which fb devices will be assigned).
 
-You don't say it, but I presume this is just to make those kconfig
-options disappear automatically if you don't have the specific ARCH_*
-enabled?
-
-I don't like these, as they will just clutter the Kconfig file. Here you
-only added a few dependencies, but there are a lot more. VENC is only
-there for some SoC versions, SDI is there only for some, same for
-RFBI... And with every new SoC type we'd need to update all these.
-
-Just disable the HDMI from the Kconfig if you don't want it included.
-
- Tomi
+Without this code, the backlight works properly until one tries to blank it
+manually from sysfs with "echo 1 > /sys/class/graphics/fb0/blank".
+Since fb_bl_on[0] and use_count were both set to 0, the logic at
+fb_notifier_callback (@backlight.c) thought that we didn't turn on
+(unblanked) the backlight device and refuses to disable (blank) it.
+As a result we see garbage from fb displayed.
 
 
---735Hjfb363C4sM8uGn6bcRQ38SKFsHNTw--
+Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
+---
+The patch has been tested on i.MX6q with vanilla 4.7 and 4.8 kernels.
+It applies on 4.9-rcX SHA1: dcd4693cf47801b7d988ea897519de90dfd25d17.
 
---r66CmpDfuJbhXVTPBBF4N95FpONCfPAxK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+---
+ drivers/video/backlight/pwm_bl.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 8040fd6..def39e8 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -203,7 +203,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct pwm_bl_data *pb;
+ 	int initial_blank = FB_BLANK_UNBLANK;
+ 	struct pwm_args pargs;
+-	int ret;
++	int ret, i;
+ 
+ 	if (!data) {
+ 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
+@@ -349,6 +349,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	bl->props.brightness = data->dft_brightness;
+ 	bl->props.power = initial_blank;
++
++	if (initial_blank = FB_BLANK_UNBLANK) {
++		for (i = 0; i < FB_MAX; i++)
++			bl->fb_bl_on[i] = true;
++
++		bl->use_count = 1;
++	}
++
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
+-- 
+2.1.4
 
-iQIcBAEBCAAGBQJX9JhYAAoJEPo9qoy8lh71orcP/jEjnAeEpUzf5B4m7nsR2Y4s
-0N+Mu0Qxskqtwukb9yg93N2g15zS8LQC21OZ67L2NPn2wRD5EslVl34qoFbr4cQB
-OGxU8yvABitqX2+l9IWG+jaM1W9etHKLxQFNzjzIZWwh9vsf9TkDqyXcuM5HCILP
-bnHDebAJRxxoVGCORqC+x9CtVDm8iFguLefnxxgKGEwjhgDhGqXCsMAAlTNCumWy
-0jUG6qqvU314+QT353uD5Zn5wcGWxZnxZOJMtxHOOGiyhgnl54saCLa2OKA/O6Fs
-V1sO4lVQclzkI+cabzB1RrC0m7DeAYVKcYE+KpphFGQCkYi6HrhhWiac1WZkpjDN
-gP/Nh2i5O4TOjcZLQo2CqLSP1BvPdMP2/zmlh7g/GZqOyqnUWMrHKwxXP6JLK3t0
-QpyR6N1kgtHg0ixi97roi1ezyijG9VoONtZN+OsGN5YIZxqDFz34nq1Sq05a6p5t
-U85b+g6HnpE8uAw2wtsGjNK1x9ZFur0MJ5/zGFdHI4sI2QSGdFdcIxkMERaw30K6
-pxW9mcQUwjg9tuVIuiVO7V40XYjyDdyNVBy9TC0FIauL51L89hkNncSs8ZYJoZ0W
-8QukJCbQ8I4TODqrTvqD9l61R1cB3b3gIdS5TqbdSu3+1Aeoi4z5iEsNNq5yv6FS
-eI4Y49acTe/KZHYYdl8j
-=E6L/
------END PGP SIGNATURE-----
-
---r66CmpDfuJbhXVTPBBF4N95FpONCfPAxK--

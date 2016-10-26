@@ -1,141 +1,164 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 26 Oct 2016 12:12:58 +0000
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Wed, 26 Oct 2016 13:02:37 +0000
 Subject: Re: [PATCH 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <20161026121258.GQ8574@dell>
+Message-Id: <fd224a5e-9487-eabf-a68f-bbd3ae49f8ef@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
- <20160930070259.5710-2-peter.ujfalusi@ti.com>
-In-Reply-To: <20160930070259.5710-2-peter.ujfalusi@ti.com>
+ <20160930070259.5710-2-peter.ujfalusi@ti.com> <20161026121258.GQ8574@dell>
+In-Reply-To: <20161026121258.GQ8574@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+To: Lee Jones <lee.jones@linaro.org>
 Cc: thierry.reding@gmail.com, jingoohan1@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-On Fri, 30 Sep 2016, Peter Ujfalusi wrote:
-
-> Move the check for gpio and regulator initial state to a new function and
-> document better what we are checking and why.
+On 10/26/16 15:12, Lee Jones wrote:
+> On Fri, 30 Sep 2016, Peter Ujfalusi wrote:
 >=20
-> It is going to be easier to fix or improve the initial power state
-> configuration later and it is easier to read the code.
+>> Move the check for gpio and regulator initial state to a new function and
+>> document better what we are checking and why.
+>>
+>> It is going to be easier to fix or improve the initial power state
+>> configuration later and it is easier to read the code.
+>>
+>> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+>> ---
+>>  drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++--------=
+-------
+>>  1 file changed, 35 insertions(+), 20 deletions(-)
+>>
+>> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/=
+pwm_bl.c
+>> index b2b366bb0f97..9bc4715bf116 100644
+>> --- a/drivers/video/backlight/pwm_bl.c
+>> +++ b/drivers/video/backlight/pwm_bl.c
+>> @@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *de=
+v,
+>>  }
+>>  #endif
+>> =20
+>> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *=
+pb)
+>> +{
+>> +	struct device_node *node =3D pb->dev->of_node;
+>> +
+>> +	/* Not booted with device tree or no phandle link to the node */
+>> +	if (!node || !node->phandle)
+>> +		return FB_BLANK_UNBLANK;
 >=20
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++---------=
-------
->  1 file changed, 35 insertions(+), 20 deletions(-)
+> This changes the semantics of the current implementation.
 >=20
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index b2b366bb0f97..9bc4715bf116 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *dev,
->  }
->  #endif
-> =20
-> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *p=
-b)
-> +{
-> +	struct device_node *node =3D pb->dev->of_node;
-> +
-> +	/* Not booted with device tree or no phandle link to the node */
-> +	if (!node || !node->phandle)
-> +		return FB_BLANK_UNBLANK;
+> In the code you're removing, if the enable_gpio is present and no DT
+> is found, we set the GPIO direction to output.  In your implementation,
+> if no DT is found you don't do anything regardless.
+>=20
+> Is that intentional?
 
-This changes the semantics of the current implementation.
+Argh, no, it is not intentional.
 
-In the code you're removing, if the enable_gpio is present and no DT
-is found, we set the GPIO direction to output.  In your implementation,
-if no DT is found you don't do anything regardless.
+It should have been like this:
 
-Is that intentional?
+	/* Not booted with device tree or no phandle link to the node */
+	if (!node || !node->phandle) {
+		/* Set enable GPIO if it is valid */
+		if (pb->enable_gpio)
+			gpiod_direction_output(pb->enable_gpio, 1);
 
-> +	/*
-> +	 * If the driver is probed from the device tree and there is a
-> +	 * phandle link pointing to the backlight node, it is safe to
-> +	 * assume that another driver will enable the backlight at the
-> +	 * appropriate time. Therefore, if it is disabled, keep it so.
-> +	 */
-> +
-> +	/*
-> +	 * if the enable GPIO is set as output and it is disabled, do not enable
-> +	 * the backlight
-> +	 */
-> +	if (pb->enable_gpio) {
-> +		if (gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
-> +		    gpiod_get_value(pb->enable_gpio) =3D 0)
-> +			return FB_BLANK_POWERDOWN;
-> +
-> +		gpiod_direction_output(pb->enable_gpio, 1);
-> +	}
-> +
-> +	/* The regulator is disabled, do not enable the backlight */
-> +	if (!regulator_is_enabled(pb->power_supply))
-> +		return FB_BLANK_POWERDOWN;
-> +
-> +	return FB_BLANK_UNBLANK;
-> +}
-> +
->  static int pwm_backlight_probe(struct platform_device *pdev)
->  {
->  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->de=
-v);
-> @@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	struct backlight_device *bl;
->  	struct device_node *node =3D pdev->dev.of_node;
->  	struct pwm_bl_data *pb;
-> -	int initial_blank =3D FB_BLANK_UNBLANK;
->  	struct pwm_args pargs;
->  	int ret;
-> =20
-> @@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
->  	}
-> =20
-> -	if (pb->enable_gpio) {
-> -		/*
-> -		 * If the driver is probed from the device tree and there is a
-> -		 * phandle link pointing to the backlight node, it is safe to
-> -		 * assume that another driver will enable the backlight at the
-> -		 * appropriate time. Therefore, if it is disabled, keep it so.
-> -		 */
-> -		if (node && node->phandle &&
-> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
-> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
-> -			initial_blank =3D FB_BLANK_POWERDOWN;
-> -		else
-> -			gpiod_direction_output(pb->enable_gpio, 1);
-> -	}
-> -
->  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->  	if (IS_ERR(pb->power_supply)) {
->  		ret =3D PTR_ERR(pb->power_supply);
->  		goto err_alloc;
->  	}
-> =20
-> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
-> -		initial_blank =3D FB_BLANK_POWERDOWN;
-> -
->  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
->  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> @@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	}
-> =20
->  	bl->props.brightness =3D data->dft_brightness;
-> -	bl->props.power =3D initial_blank;
-> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
->  	backlight_update_status(bl);
-> =20
->  	platform_set_drvdata(pdev, bl);
+		return FB_BLANK_UNBLANK;
+	}
+
+On the other hand we are not doing the same for the regulator in case of non
+DT boot or when the backlight has no users. So we do enable the GPIO, but t=
+he
+regulator might be left disabled...
+
+I'll resend the series with this change.
+
+>=20
+>> +	/*
+>> +	 * If the driver is probed from the device tree and there is a
+>> +	 * phandle link pointing to the backlight node, it is safe to
+>> +	 * assume that another driver will enable the backlight at the
+>> +	 * appropriate time. Therefore, if it is disabled, keep it so.
+>> +	 */
+>> +
+>> +	/*
+>> +	 * if the enable GPIO is set as output and it is disabled, do not enab=
+le
+>> +	 * the backlight
+>> +	 */
+>> +	if (pb->enable_gpio) {
+>> +		if (gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
+>> +		    gpiod_get_value(pb->enable_gpio) =3D 0)
+>> +			return FB_BLANK_POWERDOWN;
+>> +
+>> +		gpiod_direction_output(pb->enable_gpio, 1);
+>> +	}
+>> +
+>> +	/* The regulator is disabled, do not enable the backlight */
+>> +	if (!regulator_is_enabled(pb->power_supply))
+>> +		return FB_BLANK_POWERDOWN;
+>> +
+>> +	return FB_BLANK_UNBLANK;
+>> +}
+>> +
+>>  static int pwm_backlight_probe(struct platform_device *pdev)
+>>  {
+>>  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->d=
+ev);
+>> @@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_devic=
+e *pdev)
+>>  	struct backlight_device *bl;
+>>  	struct device_node *node =3D pdev->dev.of_node;
+>>  	struct pwm_bl_data *pb;
+>> -	int initial_blank =3D FB_BLANK_UNBLANK;
+>>  	struct pwm_args pargs;
+>>  	int ret;
+>> =20
+>> @@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_dev=
+ice *pdev)
+>>  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
+>>  	}
+>> =20
+>> -	if (pb->enable_gpio) {
+>> -		/*
+>> -		 * If the driver is probed from the device tree and there is a
+>> -		 * phandle link pointing to the backlight node, it is safe to
+>> -		 * assume that another driver will enable the backlight at the
+>> -		 * appropriate time. Therefore, if it is disabled, keep it so.
+>> -		 */
+>> -		if (node && node->phandle &&
+>> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
+>> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
+>> -			initial_blank =3D FB_BLANK_POWERDOWN;
+>> -		else
+>> -			gpiod_direction_output(pb->enable_gpio, 1);
+>> -	}
+>> -
+>>  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
+>>  	if (IS_ERR(pb->power_supply)) {
+>>  		ret =3D PTR_ERR(pb->power_supply);
+>>  		goto err_alloc;
+>>  	}
+>> =20
+>> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+>> -		initial_blank =3D FB_BLANK_POWERDOWN;
+>> -
+>>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
+>>  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
+>>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+>> @@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_devic=
+e *pdev)
+>>  	}
+>> =20
+>>  	bl->props.brightness =3D data->dft_brightness;
+>> -	bl->props.power =3D initial_blank;
+>> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
+>>  	backlight_update_status(bl);
+>> =20
+>>  	platform_set_drvdata(pdev, bl);
+>=20
+
 
 --=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+P=E9ter

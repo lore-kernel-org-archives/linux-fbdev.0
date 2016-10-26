@@ -1,29 +1,141 @@
-From: Jan Kara <jack@suse.cz>
-Date: Tue, 18 Oct 2016 12:43:05 +0000
-Subject: Re: [PATCH 01/10] mm: remove write/force parameters from __get_user_pages_locked()
-Message-Id: <20161018124305.GA29967@quack2.suse.cz>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 26 Oct 2016 12:12:58 +0000
+Subject: Re: [PATCH 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
+Message-Id: <20161026121258.GQ8574@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-2-lstoakes@gmail.com>
-In-Reply-To: <20161013002020.3062-2-lstoakes@gmail.com>
+References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
+ <20160930070259.5710-2-peter.ujfalusi@ti.com>
+In-Reply-To: <20160930070259.5710-2-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, netdev@vger.kernel.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-media@vger.kernel.org, Rik van Riel <riel@redhat.com>, intel-gfx@lists.freedesktop.org, adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.orglin
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: thierry.reding@gmail.com, jingoohan1@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-On Thu 13-10-16 01:20:11, Lorenzo Stoakes wrote:
-> This patch removes the write and force parameters from __get_user_pages_locked()
-> to make the use of FOLL_FORCE explicit in callers as use of this flag can result
-> in surprising behaviour (and hence bugs) within the mm subsystem.
-> 
-> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
+On Fri, 30 Sep 2016, Peter Ujfalusi wrote:
 
-Looks good. You can add:
+> Move the check for gpio and regulator initial state to a new function and
+> document better what we are checking and why.
+>=20
+> It is going to be easier to fix or improve the initial power state
+> configuration later and it is easier to read the code.
+>=20
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> ---
+>  drivers/video/backlight/pwm_bl.c | 55 +++++++++++++++++++++++++---------=
+------
+>  1 file changed, 35 insertions(+), 20 deletions(-)
+>=20
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index b2b366bb0f97..9bc4715bf116 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -192,6 +192,40 @@ static int pwm_backlight_parse_dt(struct device *dev,
+>  }
+>  #endif
+> =20
+> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *p=
+b)
+> +{
+> +	struct device_node *node =3D pb->dev->of_node;
+> +
+> +	/* Not booted with device tree or no phandle link to the node */
+> +	if (!node || !node->phandle)
+> +		return FB_BLANK_UNBLANK;
 
-Reviewed-by: Jan Kara <jack@suse.cz>
+This changes the semantics of the current implementation.
 
-								Honza
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+In the code you're removing, if the enable_gpio is present and no DT
+is found, we set the GPIO direction to output.  In your implementation,
+if no DT is found you don't do anything regardless.
+
+Is that intentional?
+
+> +	/*
+> +	 * If the driver is probed from the device tree and there is a
+> +	 * phandle link pointing to the backlight node, it is safe to
+> +	 * assume that another driver will enable the backlight at the
+> +	 * appropriate time. Therefore, if it is disabled, keep it so.
+> +	 */
+> +
+> +	/*
+> +	 * if the enable GPIO is set as output and it is disabled, do not enable
+> +	 * the backlight
+> +	 */
+> +	if (pb->enable_gpio) {
+> +		if (gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
+> +		    gpiod_get_value(pb->enable_gpio) =3D 0)
+> +			return FB_BLANK_POWERDOWN;
+> +
+> +		gpiod_direction_output(pb->enable_gpio, 1);
+> +	}
+> +
+> +	/* The regulator is disabled, do not enable the backlight */
+> +	if (!regulator_is_enabled(pb->power_supply))
+> +		return FB_BLANK_POWERDOWN;
+> +
+> +	return FB_BLANK_UNBLANK;
+> +}
+> +
+>  static int pwm_backlight_probe(struct platform_device *pdev)
+>  {
+>  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->de=
+v);
+> @@ -200,7 +234,6 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	struct backlight_device *bl;
+>  	struct device_node *node =3D pdev->dev.of_node;
+>  	struct pwm_bl_data *pb;
+> -	int initial_blank =3D FB_BLANK_UNBLANK;
+>  	struct pwm_args pargs;
+>  	int ret;
+> =20
+> @@ -267,30 +300,12 @@ static int pwm_backlight_probe(struct platform_devi=
+ce *pdev)
+>  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
+>  	}
+> =20
+> -	if (pb->enable_gpio) {
+> -		/*
+> -		 * If the driver is probed from the device tree and there is a
+> -		 * phandle link pointing to the backlight node, it is safe to
+> -		 * assume that another driver will enable the backlight at the
+> -		 * appropriate time. Therefore, if it is disabled, keep it so.
+> -		 */
+> -		if (node && node->phandle &&
+> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
+> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
+> -			initial_blank =3D FB_BLANK_POWERDOWN;
+> -		else
+> -			gpiod_direction_output(pb->enable_gpio, 1);
+> -	}
+> -
+>  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
+>  	if (IS_ERR(pb->power_supply)) {
+>  		ret =3D PTR_ERR(pb->power_supply);
+>  		goto err_alloc;
+>  	}
+> =20
+> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+> -		initial_blank =3D FB_BLANK_POWERDOWN;
+> -
+>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
+>  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
+>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+> @@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	}
+> =20
+>  	bl->props.brightness =3D data->dft_brightness;
+> -	bl->props.power =3D initial_blank;
+> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
+>  	backlight_update_status(bl);
+> =20
+>  	platform_set_drvdata(pdev, bl);
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

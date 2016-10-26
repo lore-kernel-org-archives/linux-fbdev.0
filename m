@@ -1,78 +1,55 @@
-From: <xa0admin@abbotslangleyprimary.com>
-Date: Wed, 26 Oct 2016 15:58:13 +0000
-Subject: 876758 linux-fbdev
-Message-Id: <147749749391.1197.8088223582818904980@173-13-69-253-newengland.hfc.comcastbusiness.net>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 26 Oct 2016 12:13:29 +0000
+Subject: Re: [PATCH 2/2] backlight: pwm_bl: Check the pwm state for initial backlight power state
+Message-Id: <20161026121329.GR8574@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20160930070259.5710-1-peter.ujfalusi@ti.com>
+ <20160930070259.5710-3-peter.ujfalusi@ti.com>
+In-Reply-To: <20160930070259.5710-3-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: thierry.reding@gmail.com, jingoohan1@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-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
-AAAEAAAAAFBLBQYAAAAAAQABAFYAAACcDgAAAAA
+On Fri, 30 Sep 2016, Peter Ujfalusi wrote:
+
+> If the pwm is not enabled the backlight initially should not be enabled
+> either if we have booted with DT and there is a phandle pointing to the
+> backlight node.
+>=20
+> The patch extends the checks to decide if we should keep the backlight off
+> initially.
+>=20
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> ---
+>  drivers/video/backlight/pwm_bl.c | 4 ++++
+>  1 file changed, 4 insertions(+)
+
+Makes sense to me.
+
+I'm going to apply this until someone screams at me.
+
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index 9bc4715bf116..e4326bbf807f 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -223,6 +223,10 @@ static int pwm_backlight_initial_power_state(const s=
+truct pwm_bl_data *pb)
+>  	if (!regulator_is_enabled(pb->power_supply))
+>  		return FB_BLANK_POWERDOWN;
+> =20
+> +	/* The pwm is disabled, keep it like this */
+> +	if (!pwm_is_enabled(pb->pwm))
+> +		return FB_BLANK_POWERDOWN;
+> +
+>  	return FB_BLANK_UNBLANK;
+>  }
+> =20
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

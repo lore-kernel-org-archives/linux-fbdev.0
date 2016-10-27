@@ -1,147 +1,211 @@
-From: Jan Kara <jack@suse.cz>
-Date: Wed, 19 Oct 2016 07:34:35 +0000
-Subject: Re: [PATCH 05/10] mm: replace get_vaddr_frames() write/force parameters with gup_flags
-Message-Id: <20161019073435.GM29967@quack2.suse.cz>
+From: <gregkh@linuxfoundation.org>
+Date: Thu, 27 Oct 2016 14:39:09 +0000
+Subject: patch "vgacon: switch boolean variables to bool" added to tty-testing
+Message-Id: <1477579149212236@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161013002020.3062-1-lstoakes@gmail.com>
- <20161013002020.3062-6-lstoakes@gmail.com>
-In-Reply-To: <20161013002020.3062-6-lstoakes@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lorenzo Stoakes <lstoakes@gmail.com>
-Cc: linux-mips@linux-mips.org, linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, netdev@vger.kernel.org, sparclinux@vger.kernel.org, linux-ia64@vger.kernel.org, linux-s390@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-media@vger.kernel.org, Rik van Riel <riel@redhat.com>, intel-gfx@lists.freedesktop.org, adi-buildroot-devel@lists.sourceforge.net, ceph-devel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-cris-kernel@axis.com, Linus Torvalds <torvalds@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, linux-alpha@vger.kernel.orglin
+To: linux-fbdev@vger.kernel.org
 
-On Thu 13-10-16 01:20:15, Lorenzo Stoakes wrote:
-> This patch removes the write and force parameters from get_vaddr_frames() and
-> replaces them with a gup_flags parameter to make the use of FOLL_FORCE explicit
-> in callers as use of this flag can result in surprising behaviour (and hence
-> bugs) within the mm subsystem.
-> 
-> Signed-off-by: Lorenzo Stoakes <lstoakes@gmail.com>
 
-Looks good. You can add:
+This is a note to let you know that I've just added the patch titled
 
-Reviewed-by: Jan Kara <jack@suse.cz>
+    vgacon: switch boolean variables to bool
 
-								Honza
+to my tty git tree which can be found at
+    git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty.git
+in the tty-testing branch.
 
-> ---
->  drivers/gpu/drm/exynos/exynos_drm_g2d.c    |  3 ++-
->  drivers/media/platform/omap/omap_vout.c    |  2 +-
->  drivers/media/v4l2-core/videobuf2-memops.c |  6 +++++-
->  include/linux/mm.h                         |  2 +-
->  mm/frame_vector.c                          | 13 ++-----------
->  5 files changed, 11 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/exynos/exynos_drm_g2d.c b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
-> index aa92dec..fbd13fa 100644
-> --- a/drivers/gpu/drm/exynos/exynos_drm_g2d.c
-> +++ b/drivers/gpu/drm/exynos/exynos_drm_g2d.c
-> @@ -488,7 +488,8 @@ static dma_addr_t *g2d_userptr_get_dma_addr(struct drm_device *drm_dev,
->  		goto err_free;
->  	}
->  
-> -	ret = get_vaddr_frames(start, npages, true, true, g2d_userptr->vec);
-> +	ret = get_vaddr_frames(start, npages, FOLL_FORCE | FOLL_WRITE,
-> +		g2d_userptr->vec);
->  	if (ret != npages) {
->  		DRM_ERROR("failed to get user pages from userptr.\n");
->  		if (ret < 0)
-> diff --git a/drivers/media/platform/omap/omap_vout.c b/drivers/media/platform/omap/omap_vout.c
-> index e668dde..a31b95c 100644
-> --- a/drivers/media/platform/omap/omap_vout.c
-> +++ b/drivers/media/platform/omap/omap_vout.c
-> @@ -214,7 +214,7 @@ static int omap_vout_get_userptr(struct videobuf_buffer *vb, u32 virtp,
->  	if (!vec)
->  		return -ENOMEM;
->  
-> -	ret = get_vaddr_frames(virtp, 1, true, false, vec);
-> +	ret = get_vaddr_frames(virtp, 1, FOLL_WRITE, vec);
->  	if (ret != 1) {
->  		frame_vector_destroy(vec);
->  		return -EINVAL;
-> diff --git a/drivers/media/v4l2-core/videobuf2-memops.c b/drivers/media/v4l2-core/videobuf2-memops.c
-> index 3c3b517..1cd322e 100644
-> --- a/drivers/media/v4l2-core/videobuf2-memops.c
-> +++ b/drivers/media/v4l2-core/videobuf2-memops.c
-> @@ -42,6 +42,10 @@ struct frame_vector *vb2_create_framevec(unsigned long start,
->  	unsigned long first, last;
->  	unsigned long nr;
->  	struct frame_vector *vec;
-> +	unsigned int flags = FOLL_FORCE;
-> +
-> +	if (write)
-> +		flags |= FOLL_WRITE;
->  
->  	first = start >> PAGE_SHIFT;
->  	last = (start + length - 1) >> PAGE_SHIFT;
-> @@ -49,7 +53,7 @@ struct frame_vector *vb2_create_framevec(unsigned long start,
->  	vec = frame_vector_create(nr);
->  	if (!vec)
->  		return ERR_PTR(-ENOMEM);
-> -	ret = get_vaddr_frames(start & PAGE_MASK, nr, write, true, vec);
-> +	ret = get_vaddr_frames(start & PAGE_MASK, nr, flags, vec);
->  	if (ret < 0)
->  		goto out_destroy;
->  	/* We accept only complete set of PFNs */
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 27ab538..5ff084f6 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -1305,7 +1305,7 @@ struct frame_vector {
->  struct frame_vector *frame_vector_create(unsigned int nr_frames);
->  void frame_vector_destroy(struct frame_vector *vec);
->  int get_vaddr_frames(unsigned long start, unsigned int nr_pfns,
-> -		     bool write, bool force, struct frame_vector *vec);
-> +		     unsigned int gup_flags, struct frame_vector *vec);
->  void put_vaddr_frames(struct frame_vector *vec);
->  int frame_vector_to_pages(struct frame_vector *vec);
->  void frame_vector_to_pfns(struct frame_vector *vec);
-> diff --git a/mm/frame_vector.c b/mm/frame_vector.c
-> index 81b6749..db77dcb 100644
-> --- a/mm/frame_vector.c
-> +++ b/mm/frame_vector.c
-> @@ -11,10 +11,7 @@
->   * get_vaddr_frames() - map virtual addresses to pfns
->   * @start:	starting user address
->   * @nr_frames:	number of pages / pfns from start to map
-> - * @write:	whether pages will be written to by the caller
-> - * @force:	whether to force write access even if user mapping is
-> - *		readonly. See description of the same argument of
-> -		get_user_pages().
-> + * @gup_flags:	flags modifying lookup behaviour
->   * @vec:	structure which receives pages / pfns of the addresses mapped.
->   *		It should have space for at least nr_frames entries.
->   *
-> @@ -34,23 +31,17 @@
->   * This function takes care of grabbing mmap_sem as necessary.
->   */
->  int get_vaddr_frames(unsigned long start, unsigned int nr_frames,
-> -		     bool write, bool force, struct frame_vector *vec)
-> +		     unsigned int gup_flags, struct frame_vector *vec)
->  {
->  	struct mm_struct *mm = current->mm;
->  	struct vm_area_struct *vma;
->  	int ret = 0;
->  	int err;
->  	int locked;
-> -	unsigned int gup_flags = 0;
->  
->  	if (nr_frames = 0)
->  		return 0;
->  
-> -	if (write)
-> -		gup_flags |= FOLL_WRITE;
-> -	if (force)
-> -		gup_flags |= FOLL_FORCE;
-> -
->  	if (WARN_ON_ONCE(nr_frames > vec->nr_allocated))
->  		nr_frames = vec->nr_allocated;
->  
-> -- 
-> 2.10.0
-> 
+The patch will show up in the next release of the linux-next tree
+(usually sometime within the next 24 hours during the week.)
+
+The patch will be merged to the tty-next branch sometime soon,
+after it passes testing, and the merge window is open.
+
+If you have any questions about this process, please let me know.
+
+
+From 96fd95542391d2ceb15515f41566dbb6776d9858 Mon Sep 17 00:00:00 2001
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Mon, 3 Oct 2016 11:18:38 +0200
+Subject: vgacon: switch boolean variables to bool
+
+These variables:
+* vga_can_do_color
+* vgacon_text_mode_force
+* vga_font_is_default
+* vga_hardscroll_enabled
+* vga_hardscroll_user_enable
+* vga_init_done
+* vga_is_gfx
+* vga_palette_blanked
+* vga_512_chars
+are used exclusively as a boolean value, so make them really a bool.
+
+Remove also useless "? true : false".
+
+__read_mostly annotations removed too as they obfuscate the code and I
+doubt they improve anything measurable given the variables are used
+from .con_scroll, .con_startup and such.
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: <linux-fbdev@vger.kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/video/console/vgacon.c | 45 +++++++++++++++++++++---------------------
+ 1 file changed, 23 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index ede6a5a85ccd..d13d5d372604 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -88,7 +88,7 @@ static struct uni_pagedir *vgacon_uni_pagedir;
+ static int vgacon_refcount;
+ 
+ /* Description of the hardware situation */
+-static int		vga_init_done		__read_mostly;
++static bool		vga_init_done;
+ static unsigned long	vga_vram_base		__read_mostly;	/* Base of video memory */
+ static unsigned long	vga_vram_end		__read_mostly;	/* End of video memory */
+ static unsigned int	vga_vram_size		__read_mostly;	/* Size of video memory */
+@@ -96,31 +96,31 @@ static u16		vga_video_port_reg	__read_mostly;	/* Video register select port */
+ static u16		vga_video_port_val	__read_mostly;	/* Video register value port */
+ static unsigned int	vga_video_num_columns;			/* Number of text columns */
+ static unsigned int	vga_video_num_lines;			/* Number of text lines */
+-static int		vga_can_do_color	__read_mostly;	/* Do we support colors? */
++static bool		vga_can_do_color;			/* Do we support colors? */
+ static unsigned int	vga_default_font_height __read_mostly;	/* Height of default screen font */
+ static unsigned char	vga_video_type		__read_mostly;	/* Card type */
+-static unsigned char	vga_hardscroll_enabled	__read_mostly;
+-static unsigned char	vga_hardscroll_user_enable __read_mostly = 1;
+-static unsigned char	vga_font_is_default = 1;
++static bool		vga_font_is_default = true;
+ static int		vga_vesa_blanked;
+-static int 		vga_palette_blanked;
+-static int 		vga_is_gfx;
+-static int 		vga_512_chars;
++static bool 		vga_palette_blanked;
++static bool 		vga_is_gfx;
++static bool 		vga_512_chars;
+ static int 		vga_video_font_height;
+ static int 		vga_scan_lines		__read_mostly;
+ static unsigned int 	vga_rolled_over;
+ 
+-static int vgacon_text_mode_force;
++static bool vgacon_text_mode_force;
++static bool vga_hardscroll_enabled;
++static bool vga_hardscroll_user_enable = true;
+ 
+ bool vgacon_text_force(void)
+ {
+-	return vgacon_text_mode_force ? true : false;
++	return vgacon_text_mode_force;
+ }
+ EXPORT_SYMBOL(vgacon_text_force);
+ 
+ static int __init text_mode(char *str)
+ {
+-	vgacon_text_mode_force = 1;
++	vgacon_text_mode_force = true;
+ 	return 1;
+ }
+ 
+@@ -134,7 +134,7 @@ static int __init no_scroll(char *str)
+ 	 * Braille reader made by F.H. Papenmeier (Germany).
+ 	 * Use the "no-scroll" bootflag.
+ 	 */
+-	vga_hardscroll_user_enable = vga_hardscroll_enabled = 0;
++	vga_hardscroll_user_enable = vga_hardscroll_enabled = false;
+ 	return 1;
+ }
+ 
+@@ -402,7 +402,7 @@ static const char *vgacon_startup(void)
+ 		}
+ 	} else {
+ 		/* If not, it is color. */
+-		vga_can_do_color = 1;
++		vga_can_do_color = true;
+ 		vga_vram_base = 0xb8000;
+ 		vga_video_port_reg = VGA_CRT_IC;
+ 		vga_video_port_val = VGA_CRT_DC;
+@@ -517,7 +517,7 @@ static const char *vgacon_startup(void)
+ 
+ 	if (!vga_init_done) {
+ 		vgacon_scrollback_startup();
+-		vga_init_done = 1;
++		vga_init_done = true;
+ 	}
+ 
+ 	return display_desc;
+@@ -609,7 +609,7 @@ static u8 vgacon_build_attr(struct vc_data *c, u8 color, u8 intensity,
+ 
+ static void vgacon_invert_region(struct vc_data *c, u16 * p, int count)
+ {
+-	int col = vga_can_do_color;
++	const bool col = vga_can_do_color;
+ 
+ 	while (count--) {
+ 		u16 a = scr_readw(p);
+@@ -981,24 +981,24 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
+ 		}
+ 		if (vga_palette_blanked) {
+ 			vga_set_palette(c, color_table);
+-			vga_palette_blanked = 0;
++			vga_palette_blanked = false;
+ 			return 0;
+ 		}
+-		vga_is_gfx = 0;
++		vga_is_gfx = false;
+ 		/* Tell console.c that it has to restore the screen itself */
+ 		return 1;
+ 	case 1:		/* Normal blanking */
+ 	case -1:	/* Obsolete */
+ 		if (!mode_switch && vga_video_type = VIDEO_TYPE_VGAC) {
+ 			vga_pal_blank(&vgastate);
+-			vga_palette_blanked = 1;
++			vga_palette_blanked = true;
+ 			return 0;
+ 		}
+ 		vgacon_set_origin(c);
+ 		scr_memsetw((void *) vga_vram_base, BLANK,
+ 			    c->vc_screenbuf_size);
+ 		if (mode_switch)
+-			vga_is_gfx = 1;
++			vga_is_gfx = true;
+ 		return 1;
+ 	default:		/* VESA blanking */
+ 		if (vga_video_type = VIDEO_TYPE_VGAC) {
+@@ -1029,7 +1029,8 @@ static int vgacon_blank(struct vc_data *c, int blank, int mode_switch)
+ #define blackwmap 0xa0000
+ #define cmapsz 8192
+ 
+-static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
++static int vgacon_do_font_op(struct vgastate *state, char *arg, int set,
++		bool ch512)
+ {
+ 	unsigned short video_port_status = vga_video_port_reg + 6;
+ 	int font_select = 0x00, beg, i;
+@@ -1055,7 +1056,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+ 	if (!arg)
+ 		return -EINVAL;	/* Return to default font not supported */
+ 
+-	vga_font_is_default = 0;
++	vga_font_is_default = false;
+ 	font_select = ch512 ? 0x04 : 0x00;
+ #else
+ 	/*
+@@ -1066,7 +1067,7 @@ static int vgacon_do_font_op(struct vgastate *state,char *arg,int set,int ch512)
+ 	if (set) {
+ 		vga_font_is_default = !arg;
+ 		if (!arg)
+-			ch512 = 0;	/* Default font is always 256 */
++			ch512 = false;	/* Default font is always 256 */
+ 		font_select = arg ? (ch512 ? 0x0e : 0x0a) : 0x00;
+ 	}
+ 
 -- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+2.10.1
+
+

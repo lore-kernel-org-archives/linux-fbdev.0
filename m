@@ -1,8 +1,10 @@
 From: <gregkh@linuxfoundation.org>
-Date: Thu, 27 Oct 2016 14:39:09 +0000
-Subject: patch "vgacon: switch boolean variables to bool" added to tty-testing
-Message-Id: <1477579149212236@kroah.com>
+Date: Fri, 28 Oct 2016 08:21:10 +0000
+Subject: patch "vgacon: switch boolean variables to bool" added to tty-next
+Message-Id: <147764287017162@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1477579149212236@kroah.com>
+In-Reply-To: <1477579149212236@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,13 +17,13 @@ This is a note to let you know that I've just added the patch titled
 
 to my tty git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty.git
-in the tty-testing branch.
+in the tty-next branch.
 
 The patch will show up in the next release of the linux-next tree
 (usually sometime within the next 24 hours during the week.)
 
-The patch will be merged to the tty-next branch sometime soon,
-after it passes testing, and the merge window is open.
+The patch will also be merged in the next major kernel release
+during the merge window.
 
 If you have any questions about this process, please let me know.
 

@@ -1,12 +1,14 @@
 From: <gregkh@linuxfoundation.org>
-Date: Thu, 27 Oct 2016 14:39:06 +0000
-Subject: patch "tty: vt, cleanup and document con_scroll" added to tty-testing
-Message-Id: <1477579146164199@kroah.com>
+Date: Fri, 28 Oct 2016 08:21:02 +0000
+Subject: patch "tty: vt, cleanup and document con_scroll" added to tty-next
+Message-Id: <147764286250173@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1477579146164199@kroah.com>
+In-Reply-To: <1477579146164199@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jslaby-AlSwsSmVLrQ@public.gmane.org, deller-Mmb7MZpHnFY@public.gmane.org, gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, jejb-6jwH94ZQLHl74goWV3ctuw@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-parisc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thomas-8tQO0IXuy4gnETEX8uN03g@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org
+To: jslaby@suse.cz, deller@gmx.de, gregkh@linuxfoundation.org, jejb@parisc-linux.org, linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, linux-usb@vger.kernel.org, thomas@winischhofer.net, tomi.valkeinen@ti.com
 
 
 This is a note to let you know that I've just added the patch titled
@@ -15,13 +17,13 @@ This is a note to let you know that I've just added the patch titled
 
 to my tty git tree which can be found at
     git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty.git
-in the tty-testing branch.
+in the tty-next branch.
 
 The patch will show up in the next release of the linux-next tree
 (usually sometime within the next 24 hours during the week.)
 
-The patch will be merged to the tty-next branch sometime soon,
-after it passes testing, and the merge window is open.
+The patch will also be merged in the next major kernel release
+during the merge window.
 
 If you have any questions about this process, please let me know.
 

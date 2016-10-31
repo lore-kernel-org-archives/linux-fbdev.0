@@ -1,26 +1,65 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sat, 29 Oct 2016 08:23:29 +0000
-Subject: Re: [PATCH] video: ARM CLCD: fix Vexpress regression
-Message-Id: <CACRpkdaKpG2yYtbwD4_vLOo1CwRKvh=RWvwmVeN56aQu1ur=HA@mail.gmail.com>
+From: Juergen Gross <jgross@suse.com>
+Date: Mon, 31 Oct 2016 16:48:18 +0000
+Subject: [PATCH 00/12] xen: add common function for reading optional value
+Message-Id: <1477932510-28594-1-git-send-email-jgross@suse.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1476945992-5164-1-git-send-email-linus.walleij@linaro.org>
-In-Reply-To: <1476945992-5164-1-git-send-email-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xen.org
+Cc: david.vrabel@citrix.com, boris.ostrovsky@oracle.com, Juergen Gross <jgross@suse.com>, konrad.wilk@oracle.com, roger.pau@citrix.com, peterhuewe@gmx.de, tpmdd@selhorst.net, jarkko.sakkinen@linux.intel.com, jgunthorpe@obsidianresearch.com, tpmdd-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com, linux-input@vger.kernel.org, wei.liu2@citrix.com, paul.durrant@citrix.com, netdev@vger.kernel.org, bhelgaas@google.com, linux-pci@vger.kernel.org, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org
 
-On Thu, Oct 20, 2016 at 8:46 AM, Linus Walleij <linus.walleij@linaro.org> wrote:
+There are multiple instances of code reading an optional unsigned
+parameter from Xenstore via xenbus_scanf(). Instead of repeating the
+same code over and over add a service function doing the job and
+replace the call of xenbus_scanf() with the call of the new function
+where appropriate.
 
-> The CLCD does not come up on Versatile Express as it does not
-> (currently) have a syscon node for controlling the block apart
-> from the CLCD itself. Make sure the .init() function can bail
-> out without an error making it probe again.
->
-> Reported-by: Amit Pundir <amit.pundir@linaro.org>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Juergen Gross (12):
+  xen: introduce xenbus_read_unsigned()
+  xen: make use of xenbus_read_unsigned() in xen-blkback
+  xen: make use of xenbus_read_unsigned() in xen-blkfront
+  xen: make use of xenbus_read_unsigned() in xen-tpmfront
+  xen: make use of xenbus_read_unsigned() in xen-kbdfront
+  xen: make use of xenbus_read_unsigned() in xen-netback
+  xen: make use of xenbus_read_unsigned() in xen-netfront
+  xen: make use of xenbus_read_unsigned() in xen-pcifront
+  xen: make use of xenbus_read_unsigned() in xen-scsifront
+  xen: make use of xenbus_read_unsigned() in xen-fbfront
+  xen: make use of xenbus_read_unsigned() in xen-pciback
+  xen: make use of xenbus_read_unsigned() in xenbus
 
-Tomi can you please pick this up?
+ drivers/block/xen-blkback/xenbus.c        | 36 ++++++--------
+ drivers/block/xen-blkfront.c              | 81 ++++++++++---------------------
+ drivers/char/tpm/xen-tpmfront.c           |  8 +--
+ drivers/input/misc/xen-kbdfront.c         | 13 ++---
+ drivers/net/xen-netback/xenbus.c          | 50 ++++++-------------
+ drivers/net/xen-netfront.c                | 67 +++++++------------------
+ drivers/pci/xen-pcifront.c                |  6 +--
+ drivers/scsi/xen-scsifront.c              |  6 +--
+ drivers/video/fbdev/xen-fbfront.c         | 13 ++---
+ drivers/xen/xen-pciback/xenbus.c          |  8 ++-
+ drivers/xen/xenbus/xenbus_probe_backend.c |  8 +--
+ drivers/xen/xenbus/xenbus_xs.c            | 22 +++++++--
+ include/xen/xenbus.h                      |  4 ++
+ 13 files changed, 112 insertions(+), 210 deletions(-)
 
-Yours,
-Linus Walleij
+Cc: konrad.wilk@oracle.com
+Cc: roger.pau@citrix.com
+Cc: peterhuewe@gmx.de
+Cc: tpmdd@selhorst.net
+Cc: jarkko.sakkinen@linux.intel.com
+Cc: jgunthorpe@obsidianresearch.com
+Cc: tpmdd-devel@lists.sourceforge.net
+Cc: dmitry.torokhov@gmail.com
+Cc: linux-input@vger.kernel.org
+Cc: wei.liu2@citrix.com
+Cc: paul.durrant@citrix.com
+Cc: netdev@vger.kernel.org
+Cc: bhelgaas@google.com
+Cc: linux-pci@vger.kernel.org
+Cc: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org
+-- 
+2.6.6
+

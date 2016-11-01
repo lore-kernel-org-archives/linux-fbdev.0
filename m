@@ -1,43 +1,29 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 01 Nov 2016 12:59:33 +0000
-Subject: [PATCH v3 2/2] backlight: pwm_bl: Check the pwm state for initial backlight power state
-Message-Id: <20161101125933.11168-3-peter.ujfalusi@ti.com>
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Tue, 01 Nov 2016 13:11:04 +0000
+Subject: Re: [PATCH v3 2/2] backlight: pwm_bl: Check the pwm state for initial backlight power state
+Message-Id: <1478005864.2475.85.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20161101125933.11168-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20161101125933.11168-1-peter.ujfalusi@ti.com>
+         <20161101125933.11168-3-peter.ujfalusi@ti.com>
+In-Reply-To: <20161101125933.11168-3-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: thierry.reding@gmail.com, lee.jones@linaro.org, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-If the pwm is not enabled the backlight initially should not be enabled
-either if we have booted with DT and there is a phandle pointing to the
-backlight node.
+Am Dienstag, den 01.11.2016, 14:59 +0200 schrieb Peter Ujfalusi:
+> If the pwm is not enabled the backlight initially should not be enabled
+> either if we have booted with DT and there is a phandle pointing to the
+> backlight node.
+> 
+> The patch extends the checks to decide if we should keep the backlight off
+> initially.
+> 
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 
-The patch extends the checks to decide if we should keep the backlight off
-initially.
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
- drivers/video/backlight/pwm_bl.c | 4 ++++
- 1 file changed, 4 insertions(+)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 4b07da278b4f..f680f7b033b2 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -215,6 +215,10 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
- 	if (!regulator_is_enabled(pb->power_supply))
- 		return FB_BLANK_POWERDOWN;
- 
-+	/* The pwm is disabled, keep it like this */
-+	if (!pwm_is_enabled(pb->pwm))
-+		return FB_BLANK_POWERDOWN;
-+
- 	return FB_BLANK_UNBLANK;
- }
- 
--- 
-2.10.2
+regards
+Philipp
 

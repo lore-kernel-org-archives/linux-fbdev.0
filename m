@@ -1,123 +1,119 @@
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Tue, 15 Nov 2016 23:21:28 +0000
-Subject: Re: [RFCv2 PATCH 3/5] drm/bridge: dw_hdmi: add HDMI notifier support
-Message-Id: <CAJ-oXjSzet5R9d=zJEVxg5EjjUfc1=PM5R2fjc9FgMtJFnx6Uw@mail.gmail.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 01 Nov 2016 12:59:32 +0000
+Subject: [PATCH v3 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
+Message-Id: <20161101125933.11168-2-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl> <1479136968-24477-4-git-send-email-hverkuil@xs4all.nl>
-In-Reply-To: <1479136968-24477-4-git-send-email-hverkuil@xs4all.nl>
+References: <20161101125933.11168-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20161101125933.11168-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-media@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
+To: thierry.reding@gmail.com, lee.jones@linaro.org
+Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-Hi Hans,
+Move the checks to select the initial state for the backlight to a new
+function and document the checks we are doing.
 
-2016-11-14 16:22 GMT+01:00 Hans Verkuil <hverkuil@xs4all.nl>:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
->
-> Add HDMI notifiers to the HDMI bridge driver.
->
-> Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
-> ---
->  drivers/gpu/drm/bridge/Kconfig   |  1 +
->  drivers/gpu/drm/bridge/dw-hdmi.c | 25 ++++++++++++++++++++++++-
->  2 files changed, 25 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/gpu/drm/bridge/Kconfig b/drivers/gpu/drm/bridge/Kconfig
-> index 10e12e7..5f4ebe9 100644
-> --- a/drivers/gpu/drm/bridge/Kconfig
-> +++ b/drivers/gpu/drm/bridge/Kconfig
-> @@ -27,6 +27,7 @@ config DRM_DUMB_VGA_DAC
->  config DRM_DW_HDMI
->         tristate
->         select DRM_KMS_HELPER
-> +       select HDMI_NOTIFIERS
->
->  config DRM_DW_HDMI_AHB_AUDIO
->         tristate "Synopsis Designware AHB Audio interface"
-> diff --git a/drivers/gpu/drm/bridge/dw-hdmi.c b/drivers/gpu/drm/bridge/dw-hdmi.c
-> index ab7023e..bd02da5 100644
-> --- a/drivers/gpu/drm/bridge/dw-hdmi.c
-> +++ b/drivers/gpu/drm/bridge/dw-hdmi.c
-> @@ -16,6 +16,7 @@
->  #include <linux/err.h>
->  #include <linux/clk.h>
->  #include <linux/hdmi.h>
-> +#include <linux/hdmi-notifier.h>
->  #include <linux/mutex.h>
->  #include <linux/of_device.h>
->  #include <linux/spinlock.h>
-> @@ -114,6 +115,7 @@ struct dw_hdmi {
->
->         struct hdmi_data_info hdmi_data;
->         const struct dw_hdmi_plat_data *plat_data;
-> +       struct hdmi_notifier *n;
->
->         int vic;
->
-> @@ -1448,9 +1450,11 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
->                 hdmi->sink_is_hdmi = drm_detect_hdmi_monitor(edid);
->                 hdmi->sink_has_audio = drm_detect_monitor_audio(edid);
->                 drm_mode_connector_update_edid_property(connector, edid);
-> +               hdmi_event_new_edid(hdmi->n, edid, 0);
->                 ret = drm_add_edid_modes(connector, edid);
->                 /* Store the ELD */
->                 drm_edid_to_eld(connector, edid);
-> +               hdmi_event_new_eld(hdmi->n, connector->eld);
->                 kfree(edid);
->         } else {
->                 dev_dbg(hdmi->dev, "failed to get edid\n");
-> @@ -1579,6 +1583,12 @@ static irqreturn_t dw_hdmi_irq(int irq, void *dev_id)
->                         dw_hdmi_update_phy_mask(hdmi);
->                 }
->                 mutex_unlock(&hdmi->mutex);
-> +
-> +               if ((phy_stat & (HDMI_PHY_RX_SENSE | HDMI_PHY_HPD)) = 0)
-> +                       hdmi_event_disconnect(hdmi->n);
-> +               else if ((phy_stat & (HDMI_PHY_RX_SENSE | HDMI_PHY_HPD)) =
-> +                        (HDMI_IH_PHY_STAT0_RX_SENSE | HDMI_PHY_HPD))
-> +                       hdmi_event_connect(hdmi->n);
->         }
->
->         if (intr_stat & HDMI_IH_PHY_STAT0_HPD) {
-> @@ -1732,11 +1742,17 @@ int dw_hdmi_bind(struct device *dev, struct device *master,
->
->         initialize_hdmi_ih_mutes(hdmi);
->
-> +       hdmi->n = hdmi_notifier_get(dev);
-> +       if (!hdmi->n) {
-> +               ret = -ENOMEM;
-> +               goto err_iahb;
-> +       }
-> +
->         ret = devm_request_threaded_irq(dev, irq, dw_hdmi_hardirq,
->                                         dw_hdmi_irq, IRQF_SHARED,
->                                         dev_name(dev), hdmi);
->         if (ret)
-> -               goto err_iahb;
-> +               goto err_hdmi_not;
->
->         /*
->          * To prevent overflows in HDMI_IH_FC_STAT2, set the clk regenerator
-> @@ -1788,6 +1804,8 @@ int dw_hdmi_bind(struct device *dev, struct device *master,
->
->         return 0;
->
-> +err_hdmi_not:
-> +       hdmi_notifier_put(hdmi->n);
->  err_iahb:
->         clk_disable_unprepare(hdmi->iahb_clk);
->  err_isfr:
-> @@ -1804,6 +1822,11 @@ void dw_hdmi_unbind(struct device *dev, struct device *master, void *data)
->         if (hdmi->audio && !IS_ERR(hdmi->audio))
->                 platform_device_unregister(hdmi->audio);
->
-> +       hdmi_notifier_put(hdmi->n);
-> +
-> +       if (!IS_ERR(hdmi->cec))
-> +               platform_device_unregister(hdmi->cec);
-Those two lines should be in your 4/5
-> +
->         /* Disable all interrupts */
->         hdmi_writeb(hdmi, ~0, HDMI_IH_MUTE_PHY_STAT0);
+With the separate function it is going to be easier to fix or improve the
+initial power state configuration later and it is easier to read the code.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+ drivers/video/backlight/pwm_bl.c | 53 ++++++++++++++++++++++++++--------------
+ 1 file changed, 34 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 12614006211e..4b07da278b4f 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ }
+ #endif
+ 
++static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
++{
++	struct device_node *node = pb->dev->of_node;
++
++	/* Not booted with device tree or no phandle link to the node */
++	if (!node || !node->phandle)
++		return FB_BLANK_UNBLANK;
++
++	/*
++	 * If the driver is probed from the device tree and there is a
++	 * phandle link pointing to the backlight node, it is safe to
++	 * assume that another driver will enable the backlight at the
++	 * appropriate time. Therefore, if it is disabled, keep it so.
++	 */
++
++	/* if the enable GPIO is disabled, do not enable the backlight */
++	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
++		return FB_BLANK_POWERDOWN;
++
++	/* The regulator is disabled, do not enable the backlight */
++	if (!regulator_is_enabled(pb->power_supply))
++		return FB_BLANK_POWERDOWN;
++
++	return FB_BLANK_UNBLANK;
++}
++
+ static int pwm_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct platform_pwm_backlight_data *data = dev_get_platdata(&pdev->dev);
+@@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+-	int initial_blank = FB_BLANK_UNBLANK;
+ 	struct pwm_args pargs;
+ 	int ret;
+ 
+@@ -267,20 +292,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
+-	if (pb->enable_gpio) {
+-		/*
+-		 * If the driver is probed from the device tree and there is a
+-		 * phandle link pointing to the backlight node, it is safe to
+-		 * assume that another driver will enable the backlight at the
+-		 * appropriate time. Therefore, if it is disabled, keep it so.
+-		 */
+-		if (node && node->phandle &&
+-		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
+-		    gpiod_get_value(pb->enable_gpio) = 0)
+-			initial_blank = FB_BLANK_POWERDOWN;
+-		else
+-			gpiod_direction_output(pb->enable_gpio, 1);
+-	}
++	/*
++	 * If the GPIO is configured as input, change the direction to output
++	 * and set the GPIO as active.
++	 */
++	if (pb->enable_gpio &&
++	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_IN)
++		gpiod_direction_output(pb->enable_gpio, 1);
+ 
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+@@ -288,9 +306,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		goto err_alloc;
+ 	}
+ 
+-	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+-		initial_blank = FB_BLANK_POWERDOWN;
+-
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER && !node) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+@@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+-	bl->props.power = initial_blank;
++	bl->props.power = pwm_backlight_initial_power_state(pb);
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
+-- 
+2.10.2
+

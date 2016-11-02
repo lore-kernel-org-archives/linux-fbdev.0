@@ -1,207 +1,367 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 22 Nov 2016 16:43:37 +0000
-Subject: [PATCH v6 1/2] console: Move scrollback data into its own struct
-Message-Id: <1479833018-20021-2-git-send-email-manuel.schoelling@gmx.de>
+From: Richard Vidal-Dorsch <richard.dorsch@gmail.com>
+Date: Wed, 02 Nov 2016 08:37:51 +0000
+Subject: [PATCH v4 6/6] Add Advantech iManager Watchdog driver
+Message-Id: <20161102083751.6335-7-richard.dorsch@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479833018-20021-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1479833018-20021-1-git-send-email-manuel.schoelling@gmx.de>
+References: <20161102083751.6335-1-richard.dorsch@gmail.com>
+In-Reply-To: <20161102083751.6335-1-richard.dorsch-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, jdelvare-IBi9RG/b67k@public.gmane.org, linux-0h96xk9xTtrk1uMJSBkQmQ@public.gmane.org, wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org, lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, wim-IQzOog9fTRqzQB+pC5nmwQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-hwmon-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, k.kozlowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: Richard Vidal-Dorsch <richard.dorsch-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, jo.sunga-ELdSlb/RfAS1Z/+hSey0Gg@public.gmane.org, weilun.huang-ELdSlb/RfAS1Z/+hSey0Gg@public.gmane.org, andrew.chou-ELdSlb/RfAS1Z/+hSey0Gg@public.gmane.org
 
-This refactoring is in preparation for persistent scrollback
-support for VGA console.
-
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Signed-off-by: Richard Vidal-Dorsch <richard.dorsch@gmail.com>
 ---
- drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
-----
- 1 file changed, 47 insertions(+), 44 deletions(-)
+ drivers/watchdog/Kconfig        |  11 ++
+ drivers/watchdog/Makefile       |   1 +
+ drivers/watchdog/imanager_wdt.c | 303 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 315 insertions(+)
+ create mode 100644 drivers/watchdog/imanager_wdt.c
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c22a562..48b9764 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static void *vgacon_scrollback;
--static int vgacon_scrollback_tail;
--static int vgacon_scrollback_size;
--static int vgacon_scrollback_rows;
--static int vgacon_scrollback_cnt;
--static int vgacon_scrollback_cur;
--static int vgacon_scrollback_save;
--static int vgacon_scrollback_restore;
-+static struct vgacon_scrollback_info {
-+	void *data;
-+	int tail;
-+	int size;
-+	int rows;
-+	int cnt;
-+	int cur;
-+	int save;
-+	int restore;
-+} vgacon_scrollback;
-=20
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-=20
--	if (vgacon_scrollback) {
--		vgacon_scrollback_cnt  =3D 0;
--		vgacon_scrollback_tail =3D 0;
--		vgacon_scrollback_cur  =3D 0;
--		vgacon_scrollback_rows =3D rows - 1;
--		vgacon_scrollback_size =3D rows * pitch;
-+	if (vgacon_scrollback.data) {
-+		vgacon_scrollback.cnt  =3D 0;
-+		vgacon_scrollback.tail =3D 0;
-+		vgacon_scrollback.cur  =3D 0;
-+		vgacon_scrollback.rows =3D rows - 1;
-+		vgacon_scrollback.size =3D rows * pitch;
- 	}
- }
-=20
- static void vgacon_scrollback_startup(void)
- {
--	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
-FP_NOWAIT);
-+	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
-+		1024, GFP_NOWAIT);
- 	vgacon_scrollback_init(vga_video_num_columns * 2);
- }
-=20
-@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
-c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-+		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback_cnt++;
-+		vgacon_scrollback.cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback_tail +=3D c->vc_size_row;
-+		vgacon_scrollback.tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
--			vgacon_scrollback_tail =3D 0;
-+		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
-+			vgacon_scrollback.tail =3D 0;
-=20
--		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
--			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
-+		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
-+			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-=20
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback_save =3D 0;
-+	vgacon_scrollback.save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback.restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback_restore =3D 1;
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.restore =3D 1;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
-@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback)
-+	if (!vgacon_scrollback.data)
- 		return;
-=20
--	if (!vgacon_scrollback_save) {
-+	if (!vgacon_scrollback.save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback_save =3D 1;
-+		vgacon_scrollback.save =3D 1;
- 	}
-=20
--	vgacon_scrollback_restore =3D 0;
--	start =3D vgacon_scrollback_cur + lines;
-+	vgacon_scrollback.restore =3D 0;
-+	start =3D vgacon_scrollback.cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback_cnt)
--		start =3D vgacon_scrollback_cnt;
-+	if (start > vgacon_scrollback.cnt)
-+		start =3D vgacon_scrollback.cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback_cnt)
--		end =3D vgacon_scrollback_cnt;
-+	if (end > vgacon_scrollback.cnt)
-+		end =3D vgacon_scrollback.cnt;
-=20
--	vgacon_scrollback_cur =3D start;
-+	vgacon_scrollback.cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
-+	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
- 					 c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback_size;
-+		soff +=3D vgacon_scrollback.size;
-=20
--	count =3D vgacon_scrollback_cnt - start;
-+	count =3D vgacon_scrollback.cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback_size - soff);
--		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback.size - soff);
-+		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback, count);
-+			scr_memcpyw(d, vgacon_scrollback.data, count);
- 			d +=3D count;
- 		}
-=20
---=20
-2.1.4
+diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+index fdd3228..d6859da 100644
+--- a/drivers/watchdog/Kconfig
++++ b/drivers/watchdog/Kconfig
+@@ -912,6 +912,17 @@ config WAFER_WDT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called wafer5823wdt.
+ 
++config IMANAGER_WDT
++	tristate "Advantech iManager Watchdog"
++	depends on MFD_IMANAGER
++	select WATCHDOG_CORE
++	help
++	  Support for Advantech iManager watchdog on some Advantech
++	  SOM, MIO, AIMB, and PCM modules/boards.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called imanager_wdt.
++
+ config I6300ESB_WDT
+ 	tristate "Intel 6300ESB Timer/Watchdog"
+ 	depends on PCI
+diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
+index caa9f4a..eb7fccf 100644
+--- a/drivers/watchdog/Makefile
++++ b/drivers/watchdog/Makefile
+@@ -117,6 +117,7 @@ endif
+ obj-$(CONFIG_IT8712F_WDT) += it8712f_wdt.o
+ obj-$(CONFIG_IT87_WDT) += it87_wdt.o
+ obj-$(CONFIG_HP_WATCHDOG) += hpwdt.o
++obj-$(CONFIG_IMANAGER_WDT) += imanager_wdt.o
+ obj-$(CONFIG_KEMPLD_WDT) += kempld_wdt.o
+ obj-$(CONFIG_SC1200_WDT) += sc1200wdt.o
+ obj-$(CONFIG_SCx200_WDT) += scx200_wdt.o
+diff --git a/drivers/watchdog/imanager_wdt.c b/drivers/watchdog/imanager_wdt.c
+new file mode 100644
+index 0000000..53b409e
+--- /dev/null
++++ b/drivers/watchdog/imanager_wdt.c
+@@ -0,0 +1,303 @@
++/*
++ * Advantech iManager Watchdog driver
++ *
++ * Copyright (C) 2016 Advantech Co., Ltd.
++ * Author: Richard Vidal-Dorsch <richard.dorsch@advantech.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
++
++#include <linux/bitops.h>
++#include <linux/byteorder/generic.h>
++#include <linux/device.h>
++#include <linux/mfd/imanager.h>
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/watchdog.h>
++
++#define WDT_DEFAULT_TIMEOUT	30 /* seconds */
++#define WDT_FREQ		10 /* Hz */
++
++struct imanager_wdt_data {
++	struct imanager_device_data *imgr;
++	struct watchdog_device wdt;
++	ulong last_updated;
++	uint timeout;
++};
++
++static uint timeout = WDT_DEFAULT_TIMEOUT;
++module_param(timeout, uint, 0444);
++MODULE_PARM_DESC(timeout,
++		 "Watchdog timeout in seconds. 1 <= timeout <= 65534, default="
++		 __MODULE_STRING(WDT_DEFAULT_TIMEOUT) ".");
++
++static bool nowayout = WATCHDOG_NOWAYOUT;
++module_param(nowayout, bool, 0444);
++MODULE_PARM_DESC(nowayout,
++		 "Watchdog cannot be stopped once started (default="
++		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
++
++enum wdt_ctrl {
++	START = 1, STOP, RESET, GET_TIMEOUT, SET_TIMEOUT, STOPBOOT = 8
++};
++
++enum imanager_wdt_event {
++	WDT_EVT_NONE,
++	WDT_EVT_DELAY,
++	WDT_EVT_PWRBTN,
++	WDT_EVT_NMI,
++	WDT_EVT_RESET,
++	WDT_EVT_WDPIN,
++	WDT_EVT_SCI,
++};
++
++struct event_delay {
++	u16	delay,
++		pwrbtn,
++		nmi,
++		reset,
++		wdpin,
++		sci,
++		dummy;
++} __attribute__((__packed__));
++
++static int imanager_wdt_ctrl(struct imanager_ec_data *ec, int ctrl,
++			     int event_type, uint timeout)
++{
++	struct imanager_ec_message msg = {
++		IMANAGER_MSG_SIMPLE(0, 0, ctrl, NULL)
++	};
++	u8 *fevent = &msg.u.data[0];
++	struct event_delay *event = (struct event_delay *)&msg.u.data[1];
++	int val;
++
++	if (ctrl = SET_TIMEOUT) {
++		memset(event, 0xff, sizeof(*event));
++		msg.wlen = sizeof(*event);
++		*fevent = 0;
++		val = (!timeout) ? 0xffff : cpu_to_be16(timeout * WDT_FREQ);
++
++		switch (event_type) {
++		case WDT_EVT_DELAY:
++			event->delay = val;
++			break;
++		case WDT_EVT_PWRBTN:
++			event->pwrbtn = val;
++			break;
++		case WDT_EVT_NMI:
++			event->nmi = val;
++			break;
++		case WDT_EVT_RESET:
++			event->reset = val;
++			break;
++		case WDT_EVT_WDPIN:
++			event->wdpin = val;
++			break;
++		case WDT_EVT_SCI:
++			event->sci = val;
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
++
++	return imanager_write(ec, EC_CMD_WDT_CTRL, &msg);
++}
++
++static inline int imanager_wdt_disable_all(struct imanager_wdt_data *data)
++{
++	struct imanager_ec_data *ec = &data->imgr->ec;
++
++	return (imanager_wdt_ctrl(ec, STOP, WDT_EVT_NONE, 0) ||
++		imanager_wdt_ctrl(ec, STOPBOOT, WDT_EVT_NONE, 0));
++}
++
++static int imanager_wdt_set(struct imanager_wdt_data *data, uint timeout)
++{
++	struct imanager_ec_data *ec = &data->imgr->ec;
++	int ret;
++
++	if (time_before(jiffies, data->last_updated + HZ + HZ / 2))
++		return 0;
++
++	if (data->timeout = timeout)
++		return 0;
++
++	ret = imanager_wdt_ctrl(ec, SET_TIMEOUT, WDT_EVT_PWRBTN, timeout);
++	if (ret < 0)
++		return ret;
++
++	data->timeout = timeout;
++	data->last_updated = jiffies;
++
++	return 0;
++}
++
++static int imanager_wdt_set_timeout(struct watchdog_device *wdt, uint timeout)
++{
++	struct imanager_wdt_data *data = watchdog_get_drvdata(wdt);
++	struct imanager_device_data *imgr = data->imgr;
++	int ret;
++
++	mutex_lock(&imgr->lock);
++	ret = imanager_wdt_set(data, timeout);
++	mutex_unlock(&imgr->lock);
++
++	return ret;
++}
++
++static uint imanager_wdt_get_timeleft(struct watchdog_device *wdt)
++{
++	struct imanager_wdt_data *data = watchdog_get_drvdata(wdt);
++	uint timeleft = 0;
++	ulong time_diff = ((jiffies - data->last_updated) / HZ);
++
++	if (data->last_updated && (data->timeout > time_diff))
++		timeleft = data->timeout - time_diff;
++
++	return timeleft;
++}
++
++static int imanager_wdt_start(struct watchdog_device *wdt)
++{
++	struct imanager_wdt_data *data = watchdog_get_drvdata(wdt);
++	struct imanager_device_data *imgr = data->imgr;
++	int ret;
++
++	mutex_lock(&imgr->lock);
++	ret = imanager_wdt_ctrl(&imgr->ec, START, WDT_EVT_NONE, 0);
++	data->last_updated = jiffies;
++	mutex_unlock(&imgr->lock);
++
++	return ret;
++}
++
++static int imanager_wdt_stop(struct watchdog_device *wdt)
++{
++	struct imanager_wdt_data *data = watchdog_get_drvdata(wdt);
++	struct imanager_device_data *imgr = data->imgr;
++	int ret;
++
++	mutex_lock(&imgr->lock);
++	ret = imanager_wdt_ctrl(&imgr->ec, STOP, WDT_EVT_NONE, 0);
++	data->last_updated = 0;
++	mutex_unlock(&imgr->lock);
++
++	return ret;
++}
++
++static int imanager_wdt_ping(struct watchdog_device *wdt)
++{
++	struct imanager_wdt_data *data = watchdog_get_drvdata(wdt);
++	struct imanager_device_data *imgr = data->imgr;
++	int ret;
++
++	mutex_lock(&imgr->lock);
++	ret = imanager_wdt_ctrl(&imgr->ec, RESET, WDT_EVT_NONE, 0);
++	data->last_updated = jiffies;
++	mutex_unlock(&imgr->lock);
++
++	return ret;
++}
++
++static const struct watchdog_info imanager_wdt_info = {
++	.options		= WDIOF_SETTIMEOUT |
++				  WDIOF_KEEPALIVEPING |
++				  WDIOF_MAGICCLOSE,
++	.firmware_version	= 0,
++	.identity		= "imanager-wdt",
++};
++
++static const struct watchdog_ops imanager_wdt_ops = {
++	.owner		= THIS_MODULE,
++	.start		= imanager_wdt_start,
++	.stop		= imanager_wdt_stop,
++	.ping		= imanager_wdt_ping,
++	.set_timeout	= imanager_wdt_set_timeout,
++	.get_timeleft	= imanager_wdt_get_timeleft,
++};
++
++static int imanager_wdt_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct imanager_device_data *imgr = dev_get_drvdata(dev->parent);
++	struct imanager_wdt_data *data;
++	struct watchdog_device *wdt_dev;
++	int ret;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->imgr = imgr;
++
++	wdt_dev = &data->wdt;
++	wdt_dev->info		= &imanager_wdt_info;
++	wdt_dev->ops		= &imanager_wdt_ops;
++	wdt_dev->timeout	= WDT_DEFAULT_TIMEOUT;
++	wdt_dev->min_timeout	= 1;
++	wdt_dev->max_timeout	= 0xfffe;
++
++	watchdog_set_nowayout(wdt_dev, nowayout);
++	watchdog_set_drvdata(wdt_dev, data);
++
++	ret = watchdog_register_device(wdt_dev);
++	if (ret) {
++		dev_err(dev, "Could not register watchdog device\n");
++		return ret;
++	}
++
++	platform_set_drvdata(pdev, data);
++
++	imanager_wdt_disable_all(data);
++	imanager_wdt_set_timeout(wdt_dev, timeout);
++
++	dev_info(dev, "Driver loaded (timeout=%d seconds)\n", timeout);
++
++	return 0;
++}
++
++static int imanager_wdt_remove(struct platform_device *pdev)
++{
++	struct imanager_wdt_data *data = platform_get_drvdata(pdev);
++
++	if (!nowayout)
++		imanager_wdt_disable_all(data);
++
++	watchdog_unregister_device(&data->wdt);
++	platform_set_drvdata(pdev, NULL);
++
++	return 0;
++}
++
++static void imanager_wdt_shutdown(struct platform_device *pdev)
++{
++	struct imanager_device_data *imgr = dev_get_drvdata(pdev->dev.parent);
++
++	mutex_lock(&imgr->lock);
++	imanager_wdt_ctrl(&imgr->ec, STOP, WDT_EVT_NONE, 0);
++	mutex_unlock(&imgr->lock);
++}
++
++static struct platform_driver imanager_wdt_driver = {
++	.driver = {
++		.name	= "imanager-wdt",
++	},
++	.probe		= imanager_wdt_probe,
++	.remove		= imanager_wdt_remove,
++	.shutdown	= imanager_wdt_shutdown,
++};
++
++module_platform_driver(imanager_wdt_driver);
++
++MODULE_DESCRIPTION("Advantech iManager Watchdog Driver");
++MODULE_AUTHOR("Richard Vidal-Dorsch <richard.dorsch at advantech.com>");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:imanager-wdt");
+-- 
+2.10.1
 

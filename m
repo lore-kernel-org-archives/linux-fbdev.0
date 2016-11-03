@@ -1,63 +1,67 @@
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Date: Wed, 23 Nov 2016 10:05:29 +0000
-Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161123110529.289a1c7f@free-electrons.com>
+From: Olimpiu Dejeu <olimpiu@arcticsand.com>
+Date: Thu, 03 Nov 2016 18:29:28 +0000
+Subject: [PATCH 2/2] backlight: arcxcnn: devicetree bindings for ArticSand devices
+Message-Id: <1478197768-3694-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
-        <20161123085234.GB3122@kroah.com>
-        <230111fb-498e-11ef-b452-157a36d7f021@ti.com>
-In-Reply-To: <230111fb-498e-11ef-b452-157a36d7f021@ti.com>
+References: <1475166937-6299-1-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1475166937-6299-1-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Noralf =?UTF-8?B?VHLDuG5uZXM=?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, linux-kernel@vger.kernel.org
+To: robh@kernel.org
+Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jg1.han@samsung.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
 
-Hello,
+Resubmition of arcxcnn backliught driver addressing the naming convention
+ concerns raised by Rob H. Note that all the device tree properties are
+ determined by the board design or IC EPROM settings and are not intended
+ to be user adjustable.
 
-On Wed, 23 Nov 2016 11:12:32 +0200, Tomi Valkeinen wrote:
+Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
 
-> > I only want to remove these drivers if we have the same functionality in
-> > mainline for their hardware.  If not, that's a bit rude to those who
-> > actually use them today, don't you think?  
-> 
-> What does it mean for a driver to be in staging? I thought it's
-> basically the same as the driver being out-of-tree, with the difference
-> that the code is in a central git repository for easier co-operation.
-> 
-> If that's what staging means, then I would reject the staging fbdev
-> drivers the same way as I'd reject new fbdev drivers sent as patches to
-> the list.
-> 
-> Or do you mean that we should keep the drivers in staging until there's
-> a matching DRM driver, but drop any plans to move the drivers from
-> staging to drivers/video/? If so, I'm fine with that. This is an RFC,
-> mostly to raise some discussion and push people to actually write those
-> DRM drivers =).
+---
+ .../bindings/leds/backlight/arcxcnn_bl.txt         | 31 ++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
 
-The very reason why I submitted those drivers for staging is because
-lots and lots of people were using out of tree kernel modules for these
-drivers, which was really a pain.
-
-If you now remove those drivers from staging, then those folks will be
-back in the situation they originally were, using annoying out of tree
-modules.
-
-I'm all for removing fbtft drivers progressively as a matching
-DRM-based driver is available for the same hardware. However, if there
-is no DRM-based support for a given piece of hardware supported by
-fbtft, I'd prefer if we kept the fbtft driver for this hardware.
-
-Of course, at some point, we'll have a bunch of left-over fbtft drivers
-that nobody will have converted, and we'll have to take the decision to
-remove them all. But to me, the DRM-based solution for those displays
-is still very young, so it makes sense to leave a bit of time for
-people to convert the drivers over to the new DRM-based solution.
-
-Thanks,
-
-Thomas
+diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+new file mode 100644
+index 0000000..a7b6ff2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+@@ -0,0 +1,33 @@
++Binding for ArcticSand arc2c0608 LED driver
++
++Required properties:
++- compatible: should be "arc,arc2c0608"
++- reg: slave address
++
++Optional properties:
++- default-brightness: brightness value on boot, value from: 0-4095
++- label: The name of the backlight device
++			See Documentation/devicetree/bindings/leds/common.txt
++- led-sources: List of enabled channels from 0 to 5.
++			See Documentation/devicetree/bindings/leds/common.txt
++
++- arc,led-config-0: setting for register ILED_CONFIG_0
++- arc,led-config-1: setting for register ILED_CONFIG_1
++- arc,dim-freq: PWM mode frequence setting (bits [3:0] used)
++- arc,comp-config: setting for register CONFIG_COMP
++- arc,filter-config: setting for register FILTER_CONFIG
++- arc,trim-config: setting for register IMAXTUNE
++
++Note: Optional properties not specified will default to values in IC EPROM
++
++Example:
++
++arc2c0608@30 {
++	compatible = "arc,arc2c0608";
++	reg = <0x30>;
++	default-brightness = <500>;
++	label = "lcd-backlight";
++	linux,default-trigger = "backlight";
++	led-sources = <0 1 2 5>;
++};
++
 -- 
-Thomas Petazzoni, CTO, Free Electrons
-Embedded Linux and Kernel engineering
-http://free-electrons.com
+2.7.4
+

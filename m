@@ -1,77 +1,192 @@
-From: "Dr. Felix Collins" <felixcollinsfnb2@gmail.com>
-Date: Mon, 14 Nov 2016 07:43:19 +0000
-Subject: PLEASE VIEW THE ATTACHED FILE AND CONTACT ME.
-Message-Id: <1666584935.3489547.1479109399212@mail.yahoo.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----=_Part_3489546_1885277376.1479109399212"
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 04 Nov 2016 14:45:07 +0000
+Subject: [PATCH] simplefb: Separate clk / regulator get and enable steps
+Message-Id: <20161104144507.18072-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1666584935.3489547.1479109399212.ref@mail.yahoo.com>
-
-------=_Part_3489546_1885277376.1479109399212
-Content-Type: text/plain; charset=UTF-8
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
+Currently when a simplefb needs both clocks and regulators and one
+of the regulators returns -EPROBE_DEFER when we try to get it, we end
+up disabling the clocks. This causes the screen to go blank; and in some
+cases my cause hardware state to be lost resulting in the framebuffer not
+working at all.
 
+This commit splits the get and enable steps and only enables
+clocks and regulators after successfully getting all of them,
+fixing the disabling of the clocks which were left enabled by
+the firmware setting up the simplefb.
 
-------=_Part_3489546_1885277376.1479109399212
-Content-Type: application/msword
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; 
-	filename="FROM FIRST NATIONAL BANK OF SOUTH AFRICA (F.N.B)..rtf"
-Content-ID: <f03ac67e-da25-e224-9d59-4c56ed95efcb@yahoo.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/video/fbdev/simplefb.c | 56 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 40 insertions(+), 16 deletions(-)
 
-e1xydGYxXGFuc2lcYW5zaWNwZzEyNTJcZGVmZjBcZGVmbGFuZzcxNzd7XGZvbnR0Ymx7XGYwXGZz
-d2lzc1xmY2hhcnNldDAgQXJpYWw7fX0NCntcKlxnZW5lcmF0b3IgTXNmdGVkaXQgNS40MS4xNS4x
-NTEyO31cdmlld2tpbmQ0XHVjMVxwYXJkXGYwXGZzMjQgSSBhbSBGZWxpeCBDb2xsaW5zLCBJIHdv
-cmsgd2l0aCB0aGUgRklSU1QgTkFUSU9OQUwgQkFOSyBPRiBTT1VUSCBBRlJJQ0EgKEYuTi5CKS5c
-cGFyDQpQbGVhc2UgY29udGFjdCBtZSB3aXRoIHRoaXMgZW1haWwgYWRkcmVzc2VzLlxwYXINCmZl
-bGl4Y29sbGluc2FAZ21haWwuY29tXHBhcg0KUGxlYXNlIGNhbGwgbWUgb24gbXkgcHJpdmF0ZSBu
-dW1iZXIgKCsyNy03OSAtMTQxLTIzODUpXHBhcg0KXHBhcg0KXHBhcg0KQVRURU5USU9OOiBTSVIv
-TUFEQU0sXHBhcg0KXHBhcg0KSSBkbyB1bmRlcnN0YW5kIHRoZSBjb25jZXJuIHRoaXMgbGV0dGVy
-IHdpbGwgYnJpbmcgdG8geW91IGZvciB0aGUgZmFjdCB0aGF0IGl0IGNvbWVzIGZyb20gYSB0b3Rh
-bCBzdHJhbmdlciwgYnV0IGJlIHJlc3QgYXNzdXJlZCBmb3IgaXQgY29tZXMgd2l0aCBnb29kIGlu
-dGVudGlvbnMuIEkgZ290IHlvdXIgY29udGFjdCB0aHJvdWdoIHRoZSBTb3V0aCBBZnJpY2FuIElu
-dGVybmF0aW9uYWwgRXhjaGFuZ2UgTmV0d29yayBPbi1saW5lIGhlcmUgaW4gSm9oYW5uZXNidXJn
-LCBTb3V0aCBBZnJpY2EuIEZvciBwdXJwb3NlIG9mIGludHJvZHVjdGlvbiBJIGFtIEZlbGl4IENv
-bGxpbnMsIEkgd29yayB3aXRoIHRoZSBGSVJTVCBOQVRJT05BTCBCQU5LIE9GIFNPVVRIIEFGUklD
-QSAoRi5OLkIpICBUaGVyZSBpcyBhbiBhY2NvdW50IG9wZW5lZCBpbiB0aGlzIGJhbmsgc2luY2Ug
-MTk4MCBhbmQgc2luY2UgMTk5NSBub2JvZHkgaGFzIG9wZXJhdGVkIG9uIHRoaXMgYWNjb3VudCBh
-Z2Fpbi4gQWZ0ZXIgZ29pbmcgdGhyb3VnaCBzb21lIG9sZCBmaWxlcyBpbiB0aGUgcmVjb3Jkcywg
-SSBkaXNjb3ZlcmVkIHRoYXQgaWYgSSBkb24ndCByZW1pdCB0aGlzIG1vbmV5IG91dCB1cmdlbnRs
-eSBpdCB3b3VsZCBiZSBmb3JmZWl0ZWQgZm9yIG5vdGhpbmcuXHBhcg0KXHBhcg0KVGhlIG93bmVy
-IG9mIHRoaXMgYWNjb3VudCBpcyBNci4gU21pdGggLkIuIEFuZHJlYXMsIGEgZm9yZWlnbmVyIGFu
-ZCBhIG1pbmVyIGF0IEtydWdlciBHb2xkIENvLW9wZXJhdGlvbiwgYSBnZW9sb2dpc3QgYnkgcHJv
-ZmVzc2lvbiBhbmQgaGUgZGllZCBzaW5jZSAxOTk0LiBObyBvdGhlciBwZXJzb24ga25vd3MgYWJv
-dXQgdGhpcyBhY2NvdW50IG9yIGFueXRoaW5nIGNvbmNlcm5pbmcgaXQsIHRoZSBhY2NvdW50IGhh
-cyBubyBvdGhlciBiZW5lZmljaWFyeSBhbmQgbXkgaW52ZXN0aWdhdGlvbiBwcm92ZWQgdG8gbWUg
-YXMgd2VsbCB0aGF0IHRoZSBjb21wYW55IGRvZXMgbm90IGtub3cgYW55dGhpbmcgYWJvdXQgdGhp
-cyBhY2NvdW50IGFuZCB0aGUgYW1vdW50IGludm9sdmVkIGlzIFVTRCQ3NSwwMDAuMDAwLDAwICgg
-U2V2ZW50eSBGaXZlIE1pbGxpb24gVW5pdGVkIFN0YXRlcyBEb2xsYXJzKS4gSSBhbSBvbmx5IGNv
-bnRhY3RpbmcgeW91IGFzIGEgZm9yZWlnbmVyIGJlY2F1c2UgdGhpcyBtb25leSBjYW5ub3QgYmUg
-YXBwcm92ZWQgdG8gYSBsb2NhbCBiYW5rIGhlcmUsIGJ1dCBjYW4gb25seSBiZSBhcHByb3ZlZCB0
-byBhbnkgZm9yZWlnbiBhY2NvdW50IGJlY2F1c2UgdGhlIG1vbmV5IGlzIGluIFVuaXRlZCBTdGF0
-ZXMgRG9sbGFycyBhbmQgdGhlIGZvcm1lciBvd25lciBvZiB0aGUgYWNjb3VudCBNci4gU21pdGgg
-LkIgLiBBbmRyZWFzIGlzIGEgZm9yZWlnbmVyIHRvby4gSSBuZWVkIGEgdHJ1dGhmdWwgcGVyc29u
-IGluIHRoaXMgYnVzaW5lc3MgYmVjYXVzZSBJIGRvbid0IHdhbnQgdG8gbWFrZSBtaXN0YWtlcy5c
-cGFyDQpccGFyDQogSSBuZWVkIHlvdXIgc3Ryb25nIGFzc3VyYW5jZSBhbmQgdHJ1c3QuIFdpdGgg
-bXkgcG9zaXRpb24gbm93IGluIG9mZmljZSBJIGNhbiB0cmFuc2ZlciB0aGlzIG1vbmV5IHRvIGFu
-eSBmb3JlaWduIHJlbGlhYmxlIGFjY291bnQsIHRocm91Z2ggb24tbGluZSBiYW5raW5nIG9yIFRl
-bGVncmFwaGljIFRyYW5zZmVyIChULlQpIHdoaWNoIHlvdSBjYW4gcHJvdmlkZSB3aXRoIGFzc3Vy
-YW5jZSB0aGF0IHRoaXMgbW9uZXkgd2lsbCBiZSBpbnRhY3QgcGVuZGluZyBteSBwaHlzaWNhbCBh
-cnJpdmFsIHRvIHlvdXIgY291bnRyeSBmb3Igc2hhcmluZy4gSSB3aWxsIGFwcGx5IGZvciBhbm51
-YWwgbGVhdmUgdG8gZ2V0IGEgdmlzYSBpbW1lZGlhdGVseSBJIGhlYXIgZnJvbSB5b3UgdGhhdCB5
-b3UgYXJlIHJlYWR5IHRvIGFjdCBhbmQgcmVjZWl2ZSB0aGlzIG1vbmV5IGluIHlvdXIgYWNjb3Vu
-dC4gQXQgdGhlIGNvbmNsdXNpb24gb2YgdGhpcyBidXNpbmVzcywgSSB3aWxsIGNvbWUgdG8geW91
-ciBjb3VudHJ5IGZvciB3aXRoZHJhd2FsIGFuZCBzaGFyaW5nIGFuZCBvdGhlciBpbnZlc3RtZW50
-cy4geW91IHdpbGwgYmUgZ2l2ZW4gNDAlIG9mIHRoZSB0b3RhbCBhbW91bnQsIDUwJSB3aWxsIGJl
-IGZvciBtZSAsIGFuZCB3aGlsZSAxMCUgd2lsbCBiZSBmb3IgZXhwZW5zZXMgYm90aCBwYXJ0aWVz
-IG1pZ2h0IGluY3VyIGR1cmluZyB0aGUgcHJvY2VzcyBvZiB0cmFuc2ZlcnJpbmcgdGhpcyBtb25l
-eS5ccGFyDQpccGFyDQpUaGVyZWZvcmUsIGlmIHlvdSBhcmUgd2lsbGluZyBhbmQgaW50ZXJlc3Rl
-ZCB0byByZW5kZXIgdGhlIG5lZWRlZCBhc3Npc3RhbmNlLCBFbmRlYXZvciB0byByZXBseSB0aHJv
-dWdoIG15IGVtYWlsIGFkZHJlc3MsIEkgYWxzbyBuZWVkIHlvdXIgcHJpdmF0ZSBwaG9uZSBhbmQg
-ZmF4IG51bWJlcnMgZm9yIGVhc3kgY29tbXVuaWNhdGlvbi4gSSB3aWxsIGdpdmUgbW9yZSBjbGFy
-aWZpY2F0aW9ucyBvbiB0aGUgbW9kYWxpdGllcyBuZWVkZWQgZm9yIHRoZSBzdWNjZXNzZnVsIGNv
-bXBsZXRpb24gb2YgdGhpcyB0cmFuc2FjdGlvbi5ccGFyDQpccGFyDQpccGFyDQpCZXN0IFJlZ2Fy
-ZHMsXHBhcg0KRHIuIEZlbGl4IENvbGxpbnNccGFyDQogXHBhcg0KfQ0KAA==
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 61f799a..a3c44ec 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -180,10 +180,12 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+ struct simplefb_par {
+ 	u32 palette[PSEUDO_PALETTE_SIZE];
+ #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
++	bool clks_enabled;
+ 	unsigned int clk_count;
+ 	struct clk **clks;
+ #endif
+ #if defined CONFIG_OF && defined CONFIG_REGULATOR
++	bool regulators_enabled;
+ 	u32 regulator_count;
+ 	struct regulator **regulators;
+ #endif
+@@ -208,12 +210,12 @@ struct simplefb_par {
+  * the fb probe will not help us much either. So just complain and carry on,
+  * and hope that the user actually gets a working fb at the end of things.
+  */
+-static int simplefb_clocks_init(struct simplefb_par *par,
+-				struct platform_device *pdev)
++static int simplefb_clocks_get(struct simplefb_par *par,
++			       struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct clk *clock;
+-	int i, ret;
++	int i;
+ 
+ 	if (dev_get_platdata(&pdev->dev) || !np)
+ 		return 0;
+@@ -244,6 +246,14 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+ 		par->clks[i] = clock;
+ 	}
+ 
++	return 0;
++}
++
++static void simplefb_clocks_enable(struct simplefb_par *par,
++				   struct platform_device *pdev)
++{
++	int i, ret;
++
+ 	for (i = 0; i < par->clk_count; i++) {
+ 		if (par->clks[i]) {
+ 			ret = clk_prepare_enable(par->clks[i]);
+@@ -256,8 +266,7 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+ 			}
+ 		}
+ 	}
+-
+-	return 0;
++	par->clks_enabled = true;
+ }
+ 
+ static void simplefb_clocks_destroy(struct simplefb_par *par)
+@@ -269,7 +278,8 @@ static void simplefb_clocks_destroy(struct simplefb_par *par)
+ 
+ 	for (i = 0; i < par->clk_count; i++) {
+ 		if (par->clks[i]) {
+-			clk_disable_unprepare(par->clks[i]);
++			if (par->clks_enabled)
++				clk_disable_unprepare(par->clks[i]);
+ 			clk_put(par->clks[i]);
+ 		}
+ 	}
+@@ -277,8 +287,10 @@ static void simplefb_clocks_destroy(struct simplefb_par *par)
+ 	kfree(par->clks);
+ }
+ #else
+-static int simplefb_clocks_init(struct simplefb_par *par,
++static int simplefb_clocks_get(struct simplefb_par *par,
+ 	struct platform_device *pdev) { return 0; }
++static void simplefb_clocks_enable(struct simplefb_par *par,
++	struct platform_device *pdev) { }
+ static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+ #endif
+ 
+@@ -305,14 +317,14 @@ static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+  * the fb probe will not help us much either. So just complain and carry on,
+  * and hope that the user actually gets a working fb at the end of things.
+  */
+-static int simplefb_regulators_init(struct simplefb_par *par,
+-	struct platform_device *pdev)
++static int simplefb_regulators_get(struct simplefb_par *par,
++				   struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct property *prop;
+ 	struct regulator *regulator;
+ 	const char *p;
+-	int count = 0, i = 0, ret;
++	int count = 0, i = 0;
+ 
+ 	if (dev_get_platdata(&pdev->dev) || !np)
+ 		return 0;
+@@ -354,6 +366,14 @@ static int simplefb_regulators_init(struct simplefb_par *par,
+ 	}
+ 	par->regulator_count = i;
+ 
++	return 0;
++}
++
++static void simplefb_regulators_enable(struct simplefb_par *par,
++				       struct platform_device *pdev)
++{
++	int i, ret;
++
+ 	/* Enable all the regulators */
+ 	for (i = 0; i < par->regulator_count; i++) {
+ 		ret = regulator_enable(par->regulators[i]);
+@@ -365,15 +385,14 @@ static int simplefb_regulators_init(struct simplefb_par *par,
+ 			par->regulators[i] = NULL;
+ 		}
+ 	}
+-
+-	return 0;
++	par->regulators_enabled = true;
+ }
+ 
+ static void simplefb_regulators_destroy(struct simplefb_par *par)
+ {
+ 	int i;
+ 
+-	if (!par->regulators)
++	if (!par->regulators || !par->regulators_enabled)
+ 		return;
+ 
+ 	for (i = 0; i < par->regulator_count; i++)
+@@ -381,8 +400,10 @@ static void simplefb_regulators_destroy(struct simplefb_par *par)
+ 			regulator_disable(par->regulators[i]);
+ }
+ #else
+-static int simplefb_regulators_init(struct simplefb_par *par,
++static int simplefb_regulators_get(struct simplefb_par *par,
+ 	struct platform_device *pdev) { return 0; }
++static void simplefb_regulators_enable(struct simplefb_par *par,
++	struct platform_device *pdev) { }
+ static void simplefb_regulators_destroy(struct simplefb_par *par) { }
+ #endif
+ 
+@@ -453,14 +474,17 @@ static int simplefb_probe(struct platform_device *pdev)
+ 	}
+ 	info->pseudo_palette = par->palette;
+ 
+-	ret = simplefb_clocks_init(par, pdev);
++	ret = simplefb_clocks_get(par, pdev);
+ 	if (ret < 0)
+ 		goto error_unmap;
+ 
+-	ret = simplefb_regulators_init(par, pdev);
++	ret = simplefb_regulators_get(par, pdev);
+ 	if (ret < 0)
+ 		goto error_clocks;
+ 
++	simplefb_clocks_enable(par, pdev);
++	simplefb_regulators_enable(par, pdev);
++
+ 	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+ 			     info->fix.smem_start, info->fix.smem_len,
+ 			     info->screen_base);
+-- 
+2.9.3
 
-------=_Part_3489546_1885277376.1479109399212--

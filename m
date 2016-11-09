@@ -1,124 +1,115 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 22 Nov 2016 13:41:22 +0000
-Subject: [PATCH v4 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <20161122134123.1209-2-peter.ujfalusi@ti.com>
+From: Stefan Agner <stefan@agner.ch>
+Date: Wed, 09 Nov 2016 00:16:43 +0000
+Subject: Re: [PATCH] video: mxsfb: get supply regulator optionally
+Message-Id: <6cf2f575f3fdc188a189d806813a961d@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161122134123.1209-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20161122134123.1209-1-peter.ujfalusi@ti.com>
+References: <20160904042627.30182-1-stefan@agner.ch>
+ <f8368040-bb5a-91e0-7511-df462719b949@ti.com>
+ <4b3a7bda2202a536efaf4a693234c273@agner.ch>
+ <1812b2bf-bd66-3553-4c2d-3d2b08603ca0@ti.com>
+In-Reply-To: <1812b2bf-bd66-3553-4c2d-3d2b08603ca0-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>
+Cc: plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>
 
-Move the checks to select the initial state for the backlight to a new
-function and document the checks we are doing.
+Hi Tomi,
 
-With the separate function it is going to be easier to fix or improve the
-initial power state configuration later and it is easier to read the code.
+I vote to merge this patch, see below:
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Reviewed-by: Thierry Reding <treding@nvidia.com>
----
- drivers/video/backlight/pwm_bl.c | 56 ++++++++++++++++++++++++++--------------
- 1 file changed, 37 insertions(+), 19 deletions(-)
+On 2016-09-07 00:20, Tomi Valkeinen wrote:
+> On 06/09/16 21:23, Stefan Agner wrote:
+>> On 2016-09-06 01:21, Tomi Valkeinen wrote:
+>>> Hi,
+>>>
+>>> On 04/09/16 07:26, Stefan Agner wrote:
+>>>> The lcd-supply is meant to be optional, there are several device-
+>>>> trees not specifying it and the code handles error values silently.
+>>>> Therefor, avoid creating a dummy regulator (and the associated
+>>>> warning) by using devm_regulator_get_optional.
+>>>>
+>>>> While at it, document that fact also in the device-tree bindings.
+>>>
+>>> The binding change looks correct, but using
+>>> devm_regulator_get_optional() does not sound correct.
+>>>
+>>> devm_regulator_get_optional() is to be used when the device in question
+>>> truly can function without the power supply. But if the supply is there,
+>>> it's just not controlled by the SW, devm_regulator_get() is to be used.
+>>
+>> The framebuffer device can even function without a display, no problem
+>> there.. Probably not really useful...
+> 
+> Yes. Of course, the question then becomes, why is the fb driver even
+> dealing with the LCD's regulator. But yes, I know the answer: because
+> that's how it has been done =).
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 12614006211e..5712ddd053dd 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *dev,
- }
- #endif
- 
-+static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
-+{
-+	struct device_node *node = pb->dev->of_node;
-+
-+	/* Not booted with device tree or no phandle link to the node */
-+	if (!node || !node->phandle)
-+		return FB_BLANK_UNBLANK;
-+
-+	/*
-+	 * If the driver is probed from the device tree and there is a
-+	 * phandle link pointing to the backlight node, it is safe to
-+	 * assume that another driver will enable the backlight at the
-+	 * appropriate time. Therefore, if it is disabled, keep it so.
-+	 */
-+
-+	/* if the enable GPIO is disabled, do not enable the backlight */
-+	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
-+		return FB_BLANK_POWERDOWN;
-+
-+	/* The regulator is disabled, do not enable the backlight */
-+	if (!regulator_is_enabled(pb->power_supply))
-+		return FB_BLANK_POWERDOWN;
-+
-+	return FB_BLANK_UNBLANK;
-+}
-+
- static int pwm_backlight_probe(struct platform_device *pdev)
- {
- 	struct platform_pwm_backlight_data *data = dev_get_platdata(&pdev->dev);
-@@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	struct backlight_device *bl;
- 	struct device_node *node = pdev->dev.of_node;
- 	struct pwm_bl_data *pb;
--	int initial_blank = FB_BLANK_UNBLANK;
- 	struct pwm_args pargs;
- 	int ret;
- 
-@@ -267,20 +292,16 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
- 	}
- 
--	if (pb->enable_gpio) {
--		/*
--		 * If the driver is probed from the device tree and there is a
--		 * phandle link pointing to the backlight node, it is safe to
--		 * assume that another driver will enable the backlight at the
--		 * appropriate time. Therefore, if it is disabled, keep it so.
--		 */
--		if (node && node->phandle &&
--		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
--		    gpiod_get_value(pb->enable_gpio) = 0)
--			initial_blank = FB_BLANK_POWERDOWN;
--		else
--			gpiod_direction_output(pb->enable_gpio, 1);
--	}
-+	/*
-+	 * If the GPIO is configured as input, change the direction to output
-+	 * and set the GPIO as active.
-+	 * Do not force the GPIO to active when it was already output as it
-+	 * could cause backlight flickering or we would enable the backlight too
-+	 * early. Leave the decision of the initial backlight state for later.
-+	 */
-+	if (pb->enable_gpio &&
-+	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_IN)
-+		gpiod_direction_output(pb->enable_gpio, 1);
- 
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
- 	if (IS_ERR(pb->power_supply)) {
-@@ -288,9 +309,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		goto err_alloc;
- 	}
- 
--	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
--		initial_blank = FB_BLANK_POWERDOWN;
--
- 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
- 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER && !node) {
- 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-@@ -347,7 +365,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	bl->props.brightness = data->dft_brightness;
--	bl->props.power = initial_blank;
-+	bl->props.power = pwm_backlight_initial_power_state(pb);
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
--- 
-2.11.0.rc2
+Agreed, this property really shouldn't be part of the display controller
+node.
 
+The device tree should describe the hardware, and that is clearly not
+how the hardware is wired up...
+
+The DRM solution to this is having a separate panel node with a
+(mandatory) power-supply property.
+
+> 
+>> devm_regulator_get creates a dummy regulator and a warning. Afaik, the
+>> dummy regulator was meant to be as an aid during development, but not as
+>> a permanent solution. This is what the initial commit of the dummy
+>> regulator says:
+> 
+> Yep, the fixed regulator is afaik the correct solution to represent
+> non-controllable regulators.
+> 
+>>> In order to ease transitions with drivers are boards start using regulators
+>>> provide an option to cause all regulator_get() calls to succeed, with a
+>>> dummy always on regulator being supplied where one has not been configured.
+>>> A warning is printed whenever the dummy regulator is used to aid system
+>>> development.
+>>
+>> I think we should either make the property mandatory and fix the device
+>> trees or we should fix the driver to support an optional regulator. The
+>> code already supports the reg_lcd being NULL, which is probably mostly
+>> pointless right now as devm_regulator_get always returns a dummy
+>> regulator.
+> 
+> To really clean this up, the LCD driver should be separated from the fb
+> driver. But that's pointless work on a framework that should be
+> deprecated (is there a DRM driver for this in the works? =).
+
+Not that I am aware of, but I am considering it actually...
+
+> 
+> I'm fine with the _optional version, that's the easiest cleanup here.
+> And, I guess, it could be even argued that it's correct in some cases,
+> as the fb output could go outside the board, to some externally powered
+> display.
+> 
+> I'm fine with doing more cleanups too, if it eases the maintenance
+> burden in the future. But I don't see what the cleanups for the device
+> trees would really give us here.
+> 
+> Mark, what do you say?
+
+So this is what mark said:
+
+On 2016-09-12 16:47, Mark Brown wrote:
+> On Wed, Sep 07, 2016 at 10:20:25AM +0300, Tomi Valkeinen wrote:
+> 
+>> I'm fine with the _optional version, that's the easiest cleanup here.
+>> And, I guess, it could be even argued that it's correct in some cases,
+>> as the fb output could go outside the board, to some externally powered
+>> display.
+> 
+> I'd *prefer* to see the supplies being specified, if only for the
+> encouragement of the others.  But if you want to do the optional thing
+> anyway...
+
+In this case we really don't want people encourage using this
+property... Making it optional is not the solution, but a band aid until
+we have a proper solution (and deprecate the property...)
+
+--
+Stefan

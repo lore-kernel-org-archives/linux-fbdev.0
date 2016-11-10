@@ -1,7 +1,7 @@
 From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Thu, 03 Nov 2016 18:29:28 +0000
+Date: Thu, 10 Nov 2016 15:44:25 +0000
 Subject: [PATCH 2/2] backlight: arcxcnn: devicetree bindings for ArticSand devices
-Message-Id: <1478197768-3694-1-git-send-email-olimpiu@arcticsand.com>
+Message-Id: <1478792665-5859-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1475166937-6299-1-git-send-email-olimpiu@arcticsand.com>
 In-Reply-To: <1475166937-6299-1-git-send-email-olimpiu@arcticsand.com>
@@ -9,9 +9,9 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: robh@kernel.org
-Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jg1.han@samsung.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
+Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
 
-Resubmition of arcxcnn backliught driver addressing the naming convention
+Resubmition of arcxcnn backlight driver addressing the naming convention
  concerns raised by Rob H. Note that all the device tree properties are
  determined by the board design or IC EPROM settings and are not intended
  to be user adjustable.

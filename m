@@ -1,143 +1,178 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 22 Nov 2016 13:33:22 +0000
-Subject: Re: [PATCH v3 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <193bd483-5403-e92b-d769-0b971abb7caa@ti.com>
+From: Andrey Utkin <andrey_utkin@fastmail.com>
+Date: Thu, 10 Nov 2016 21:47:48 +0000
+Subject: Re: [PATCH v3] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <20161110214748.GB26324@dell-m4800.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161101125933.11168-1-peter.ujfalusi@ti.com>
- <20161101125933.11168-2-peter.ujfalusi@ti.com>
- <20161121081005.GA25171@ulmo.ba.sec>
-In-Reply-To: <20161121081005.GA25171@ulmo.ba.sec>
+References: <1474236417-27150-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1474236417-27150-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: lee.jones@linaro.org, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: Manuel =?iso-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Mon, Sep 19, 2016 at 12:06:57AM +0200, Manuel Sch=F6lling wrote:
+> Add a scrollback buffers for each VGA console. The benefit is that
+> the scrollback history is not flushed when switching between consoles
+> but is persistent.
+> The buffers are allocated on demand when a new console is opened.
 
+Hi,
 
-On 11/21/2016 10:10 AM, Thierry Reding wrote:
-> On Tue, Nov 01, 2016 at 02:59:32PM +0200, Peter Ujfalusi wrote:
->> Move the checks to select the initial state for the backlight to a new
->> function and document the checks we are doing.
->>
->> With the separate function it is going to be easier to fix or improve the
->> initial power state configuration later and it is easier to read the cod=
-e.
->>
->> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
->> ---
->>  drivers/video/backlight/pwm_bl.c | 53 ++++++++++++++++++++++++++-------=
--------
->>  1 file changed, 34 insertions(+), 19 deletions(-)
->>
->> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/=
-pwm_bl.c
->> index 12614006211e..4b07da278b4f 100644
->> --- a/drivers/video/backlight/pwm_bl.c
->> +++ b/drivers/video/backlight/pwm_bl.c
->> @@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *de=
-v,
->>  }
->>  #endif
->> =20
->> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *=
-pb)
->> +{
->> +	struct device_node *node =3D pb->dev->of_node;
->> +
->> +	/* Not booted with device tree or no phandle link to the node */
->> +	if (!node || !node->phandle)
->> +		return FB_BLANK_UNBLANK;
->> +
->> +	/*
->> +	 * If the driver is probed from the device tree and there is a
->> +	 * phandle link pointing to the backlight node, it is safe to
->> +	 * assume that another driver will enable the backlight at the
->> +	 * appropriate time. Therefore, if it is disabled, keep it so.
->> +	 */
->> +
->> +	/* if the enable GPIO is disabled, do not enable the backlight */
->> +	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) =3D 0)
->> +		return FB_BLANK_POWERDOWN;
->> +
->> +	/* The regulator is disabled, do not enable the backlight */
->> +	if (!regulator_is_enabled(pb->power_supply))
->> +		return FB_BLANK_POWERDOWN;
->> +
->> +	return FB_BLANK_UNBLANK;
->> +}
->> +
->>  static int pwm_backlight_probe(struct platform_device *pdev)
->>  {
->>  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->d=
-ev);
->> @@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_devic=
-e *pdev)
->>  	struct backlight_device *bl;
->>  	struct device_node *node =3D pdev->dev.of_node;
->>  	struct pwm_bl_data *pb;
->> -	int initial_blank =3D FB_BLANK_UNBLANK;
->>  	struct pwm_args pargs;
->>  	int ret;
->> =20
->> @@ -267,20 +292,13 @@ static int pwm_backlight_probe(struct platform_dev=
-ice *pdev)
->>  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
->>  	}
->> =20
->> -	if (pb->enable_gpio) {
->> -		/*
->> -		 * If the driver is probed from the device tree and there is a
->> -		 * phandle link pointing to the backlight node, it is safe to
->> -		 * assume that another driver will enable the backlight at the
->> -		 * appropriate time. Therefore, if it is disabled, keep it so.
->> -		 */
->> -		if (node && node->phandle &&
->> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
->> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
->> -			initial_blank =3D FB_BLANK_POWERDOWN;
->> -		else
->> -			gpiod_direction_output(pb->enable_gpio, 1);
->> -	}
->> +	/*
->> +	 * If the GPIO is configured as input, change the direction to output
->> +	 * and set the GPIO as active.
->> +	 */
->> +	if (pb->enable_gpio &&
->> +	    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_IN)
->> +		gpiod_direction_output(pb->enable_gpio, 1);
+I have noticed your message on #kernelnewbies IRC channel.
+
+Thanks for the patch. This is definitely very useful, especially when
+you boot into rescue system and use raw console and not a fancy
+X11-based terminal app.
+
 >=20
-> I'm confused about this. Isn't it redundant to check for the direction
-> if you're going to configure it as output either way? Why not just set
-> it as output unconditionally?
->=20
-> Also, is this not counterproductive? pwm_backlight_initial_power_state()
-> will check the value of the GPIO to determine whether or not to mark the
-> backlight as enabled. If we're setting this to active, then the check in
-> the initial state retrieval will only be false if the GPIO is an output
-> and inactive.
->=20
-> Oh wait... I guess that's exactly why you're doing this. =3D) Perhaps this
-> could be made somewhat clearer by beefing up the comment. As it is, the
-> comment /seems/ rather useless because it restates what the code does. I
-> think it'd be better to explain more verbosely what's going on, to avoid
-> confusing people like me.
+> It always annoys me when I switch back to a console and I can just
+> read half of an error backtrace. This should fix issues like these.
 
-Extending the commit to:
-/*
- * If the GPIO is configured as input, change the direction to output
- * and set the GPIO as active.
- * Do not force the GPIO to active when it was already output as it
- * could cause backlight flickering or we would enable the backlight too
- * early. Leave the decision of the initial backlight state for later.
- */
+Personal feelings don't belong to commit messages. Previous paragraph is
+enough to express the purpose.
 
-> Either way, though, the patch looks correct now that I understand it
-> properly, I'll leave it up to Lee if he wants to insist on a clarifying
-> comment.
 >=20
-> Reviewed-by: Thierry Reding <treding@nvidia.com>
->=20
+> This breaks tools like clear_console that rely on flushing the
+> scrollback history by switching back and forth between consoles
+> which is why this feature is disabled by default.
+> Use the escape sequence \e[3J instead for flushing the buffer.
 
---=20
-P=E9ter
+Have never heard of such tool as clear_console. Why mention it at all,
+where is it used, which are practical configurations which are broken in
+this way?
+
+Does this break clear(1)?
+
+>=20
+> Signed-off-by: Manuel Sch=F6lling <manuel.schoelling@gmx.de>
+> ---
+> Changes in v3:
+>   - Add config option for this feature
+>   - Fallback to old scrollback buffer if kcalloc() fails
+>   - Remove ioctl() call again and add documentation about existing
+>     escape sequence to flush the scrollback buffer
+> Changes in v2:
+>   - Add ioctl() call to flush scrollback buffer
+>   - (Patch v2 was not labeled as such, sorry)
+> ---
+>  drivers/video/console/Kconfig  |  23 +++++-
+>  drivers/video/console/vgacon.c | 160 +++++++++++++++++++++++++++--------=
+------
+>  2 files changed, 128 insertions(+), 55 deletions(-)
+>=20
+> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+> index 38da6e2..67e52f0 100644
+> --- a/drivers/video/console/Kconfig
+> +++ b/drivers/video/console/Kconfig
+> @@ -43,9 +43,26 @@ config VGACON_SOFT_SCROLLBACK_SIZE
+>         range 1 1024
+>         default "64"
+>         help
+> -         Enter the amount of System RAM to allocate for the scrollback
+> -	 buffer.  Each 64KB will give you approximately 16 80x25
+> -	 screenfuls of scrollback buffer
+> +	  Enter the amount of System RAM to allocate for scrollback
+> +	  buffers of VGA consoles. Each 64KB will give you approximately
+> +	  16 80x25 screenfuls of scrollback buffer.
+
+Indentation amended, I don't know which way it should be, please
+double-check or mimic old indentation to stay on safe side.
+
+> +
+> +config VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE
+
+Feels like bad naming. What about VGACON_SOFT_SCROLLBACK_PERSISTENT?
+
+> +	bool "Persistent Scrollback History for each console"
+> +	depends on VGACON_SOFT_SCROLLBACK
+> +	default n
+> +	help
+> +	  Say Y here if for each VGA console a scrollback buffer should
+> +	  be allocated. The scrollback history will persist when switching
+
+Unnatural order of sentence IMHO, however I'm not native English.
+
+> +	  between consoles. If you say N here, scrollback is only supported
+> +	  for the active VGA console and scrollback history will be flushed
+> +	  when switching between consoles.
+
+I think you may put less text here. You can skip details like "buffer
+... allocated", just explain the difference in behaviour.
+
+> +
+> +	  This breaks legacy versions of tools like clear_console which
+> +	  might cause security issues.
+> +	  Use the escape sequence \e[3J instead if this feature is activated.
+
+See above. I'd drop this paragraph if clear(1) is not broken.
+
+> +
+> +	  If you use a RAM-constrained system, say N here.
+
+Which exactly cases to consider? I can't think of any practical one. You
+may want to help user to figure out if he should consider this by
+explaining that VGACON_SOFT_SCROLLBACK_SIZE is taken for each created
+tty device (right?). Or drop this line :)
+
+> =20
+>  config MDA_CONSOLE
+>  	depends on !M68K && !PARISC && ISA
+> diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgaco=
+n.c
+> index 1157661..e70e8fe 100644
+> --- a/drivers/video/console/vgacon.c
+> +++ b/drivers/video/console/vgacon.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - *  linux/drivers/video/vgacon.c -- Low level VGA based console driver
+> + *  linux/drivers/video/console/vgacon.c -- Low level VGA based console =
+driver
+
+Cosmetic changes in separate patch please.
+
+>   *
+>   *	Created 28 Sep 1997 by Geert Uytterhoeven
+>   *
+> @@ -181,70 +181,125 @@ static inline void vga_set_mem_top(struct vc_data =
+*c)
+> =20
+>  #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+>  /* software scrollback */
+> -static void *vgacon_scrollback;
+> -static int vgacon_scrollback_tail;
+> -static int vgacon_scrollback_size;
+> -static int vgacon_scrollback_rows;
+> -static int vgacon_scrollback_cnt;
+> -static int vgacon_scrollback_cur;
+> -static int vgacon_scrollback_save;
+> -static int vgacon_scrollback_restore;
+> -
+> -static void vgacon_scrollback_init(int pitch)
+> +struct vgacon_scrollback_info {
+> +	void *data;
+> +	int tail;
+> +	int size;
+> +	int rows;
+> +	int cnt;
+> +	int cur;
+> +	int save;
+> +	int restore;
+> +};
+
+Refactor in separate patch please.
+It would be much nicer if you make first patch in series which would
+gather all these variables into struct and uses it everywhere, leaving
+external behaviour the same. Then, in following patches, change the
+behaviour, one trait at a time.
+
+> +static struct vgacon_scrollback_info *vgacon_scrollback_cur;
+
+Could you use name vgacon_scrollback instead of new
+vgacon_scrollback_cur? It doesn't change anything conceptually, but is a
+bit shorter and seems to mean current scrollback context anyway, right?
+
+I think I see nothing to comment on below.
+
+Looking forward to see your reply. Would definitely like to test this
+when I have some time.

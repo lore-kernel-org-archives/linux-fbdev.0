@@ -1,45 +1,111 @@
-From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 23 Nov 2016 17:33:55 +0000
-Subject: Re: [PATCH v5 2/2] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1479922435.5446.13.camel@gmx.de>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Mon, 14 Nov 2016 19:59:17 +0000
+Subject: [PATCH v2] Fix loading of module radeonfb on PowerMac
+Message-Id: <1479153557-20849-1-git-send-email-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161118005309.GC26324@dell-m4800.home>
-         <1479679088-3015-1-git-send-email-manuel.schoelling@gmx.de>
-         <1479679088-3015-3-git-send-email-manuel.schoelling@gmx.de>
-         <20161121201704.GA29655@angband.pl>
-In-Reply-To: <20161121201704.GA29655@angband.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Adam Borowski <kilobyte@angband.pl>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, andrey_utkin@fastmail.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
 
-On Mo, 2016-11-21 at 21:17 +0100, Adam Borowski wrote:
-> On Sun, Nov 20, 2016 at 10:58:08PM +0100, Manuel Schölling wrote:
-> > Add a scrollback buffers for each VGA console. The benefit is that
-> > the scrollback history is not flushed when switching between consoles
-> > but is persistent.
-> > The buffers are allocated on demand when a new console is opened.
-> > 
-> > This breaks tools like clear_console that rely on flushing the
-> > scrollback history by switching back and forth between consoles
-> > which is why this feature is disabled by default.
-> > Use the escape sequence \e[3J instead for flushing the buffer.
-> > 
-> > Signed-off-by: Manuel Schölling <manuel.schoelling@gmx.de>
-> > ---
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-> But alas, this commit breaks that very \e[3J.  It does only a \e[2J, leaving
-> the scrollback uncleared.  For comparison, both mainline and with just your
-> preparatory commit, \e[3J works as expected.
-Thanks again for reporting this issue. I was finally able to reproduce
-it.
-Looks like the same problem arises when implementing persistent
-scrollback buffers for framebuffer consoles. I will have to think about
-the underlying issue a bit more, but I guess that the consw struct needs
-another field for a function that flushes the scrollback buffer.
-Before this was just done by switching the console, which is fine if you
-just have one buffer. But now each console has its own buffer, so simply
-calling vc_data's vc_sw->con_switch() won't be sufficient anymore.
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
+
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded.
+
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeon side.
+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 218339a..84d634b 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
++#ifndef CONFIG_PPC
+ 		goto err_release_fb;
++#endif
+ 	}
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
++#ifndef CONFIG_PPC
+ 		goto err_release_pci0;
++#endif
+ 	}
+ 
+ 	/* map the regions */
+@@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_PPC
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
+-- 
+2.1.4
 

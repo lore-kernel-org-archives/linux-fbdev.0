@@ -1,208 +1,117 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 16 Nov 2016 20:30:59 +0000
-Subject: [PATCH v4.1 1/2] console: Move scrollback data into its own struct
-Message-Id: <1479328260-16286-2-git-send-email-manuel.schoelling@gmx.de>
+From: Philipp Hahn <hahn@univention.de>
+Date: Tue, 15 Nov 2016 09:29:45 +0000
+Subject: Bug#822575: fb: switching to cirrusdrmfb from simple
+Message-Id: <20161115092945.22114.99900.reportbug@ivar.knut.univention.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479317933-21849-1-git-send-email-manuel.schoelling@gmx.de>
- <1479328260-16286-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1479328260-16286-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, andrey_utkin@fastmail.com
+To: linux-fbdev@vger.kernel.org
 
-This refactoring is in preparation for persistent scrollback
-support for VGA console.
+Source: linux
+Version: 4.9~rc5-1~exp1
+Followup-For: Bug #822575
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
----
- drivers/video/console/vgacon.c | 90 +++++++++++++++++++++-----------------=
-----
- 1 file changed, 46 insertions(+), 44 deletions(-)
+Dear Maintainer,
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c22a562..1fee18f 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,31 +162,33 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static void *vgacon_scrollback;
--static int vgacon_scrollback_tail;
--static int vgacon_scrollback_size;
--static int vgacon_scrollback_rows;
--static int vgacon_scrollback_cnt;
--static int vgacon_scrollback_cur;
--static int vgacon_scrollback_save;
--static int vgacon_scrollback_restore;
-+static struct vgacon_scrollback_info {
-+	void *data;
-+	int tail;
-+	int size;
-+	int rows;
-+	int cnt;
-+	int cur;
-+	int save;
-+	int restore;
-+} vgacon_scrollback;
-=20
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-=20
--	if (vgacon_scrollback) {
--		vgacon_scrollback_cnt  =3D 0;
--		vgacon_scrollback_tail =3D 0;
--		vgacon_scrollback_cur  =3D 0;
--		vgacon_scrollback_rows =3D rows - 1;
--		vgacon_scrollback_size =3D rows * pitch;
-+	if (vgacon_scrollback.data) {
-+		vgacon_scrollback.cnt  =3D 0;
-+		vgacon_scrollback.tail =3D 0;
-+		vgacon_scrollback.cur  =3D 0;
-+		vgacon_scrollback.rows =3D rows - 1;
-+		vgacon_scrollback.size =3D rows * pitch;
- 	}
- }
-=20
- static void vgacon_scrollback_startup(void)
- {
--	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
-FP_NOWAIT);
-+	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 10=
-24, GFP_NOWAIT);
- 	vgacon_scrollback_init(vga_video_num_columns * 2);
- }
-=20
-@@ -194,38 +196,38 @@ static void vgacon_scrollback_update(struct vc_data *=
-c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-+		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback_cnt++;
-+		vgacon_scrollback.cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback_tail +=3D c->vc_size_row;
-+		vgacon_scrollback.tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
--			vgacon_scrollback_tail =3D 0;
-+		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
-+			vgacon_scrollback.tail =3D 0;
-=20
--		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
--			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
-+		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
-+			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-=20
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback_save =3D 0;
-+	vgacon_scrollback.save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback.restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback_restore =3D 1;
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.restore =3D 1;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
-@@ -239,41 +241,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback)
-+	if (!vgacon_scrollback.data)
- 		return;
-=20
--	if (!vgacon_scrollback_save) {
-+	if (!vgacon_scrollback.save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback_save =3D 1;
-+		vgacon_scrollback.save =3D 1;
- 	}
-=20
--	vgacon_scrollback_restore =3D 0;
--	start =3D vgacon_scrollback_cur + lines;
-+	vgacon_scrollback.restore =3D 0;
-+	start =3D vgacon_scrollback.cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback_cnt)
--		start =3D vgacon_scrollback_cnt;
-+	if (start > vgacon_scrollback.cnt)
-+		start =3D vgacon_scrollback.cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback_cnt)
--		end =3D vgacon_scrollback_cnt;
-+	if (end > vgacon_scrollback.cnt)
-+		end =3D vgacon_scrollback.cnt;
-=20
--	vgacon_scrollback_cur =3D start;
-+	vgacon_scrollback.cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
-+	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
- 					 c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback_size;
-+		soff +=3D vgacon_scrollback.size;
-=20
--	count =3D vgacon_scrollback_cnt - start;
-+	count =3D vgacon_scrollback.cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -287,13 +289,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback_size - soff);
--		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback.size - soff);
-+		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback, count);
-+			scr_memcpyw(d, vgacon_scrollback.data, count);
- 			d +=3D count;
- 		}
-=20
---=20
-2.1.4
+I have the same problem with cirrusfb: After that last message the
+screen does not update anymore (but I can login through ssh).
 
+After lots of research I things the problem is related to
+CONFIG_X86_SYSFB being enabled in Debian by default:
+
+$ git rev-parse HEAD # git://anonscm.debian.org/kernel/linux.git
+6c0c9bcf78dfc886907d006b8cb6c2ea0f075a62
+$ git grep -n -F -e CONFIG_X86_SYSFB -e CONFIG_FB_SIMPLE
+config/armhf/config:1187:CONFIG_FB_SIMPLE=3Dy
+config/kernelarch-x86/config:73:CONFIG_X86_SYSFB=3Dy
+config/kernelarch-x86/config:1776:CONFIG_FB_SIMPLE=3Dy
+
+By default the video RAM is claimed by the boot framebbuffer:
+> # cat /proc/fb
+> 0 simple
+> # grep 80000000 /proc/iomem
+> 80000000-febfffff : PCI Bus 0000:00
+>   80000000-81ffffff : 0000:00:02.0
+>     80000000-801d4fff : BOOTFB
+
+When cirrusdrmfb loads, it disabled the bootfb and tries to claim that
+region. As it is still held by bootfb, this failes:
+> # modprobe cirrus
+> # dmesg
+> [  263.171744] checking generic (80000000 1d5000) vs hw (80000000 2000000)
+> [  263.171753] fb: switching to cirrusdrmfb from simple
+> [  263.171838] Console: switching to colour dummy device 80x25
+> [  263.177052] [drm:cirrus_device_init [cirrus]] *ERROR* can't reserve VR=
+AM
+> [  263.177066] cirrus 0000:00:02.0: Fatal error during GPU init: -6
+> [  263.177072] Trying to free nonexistent resource <0000000082029000-0000=
+000082029fff>
+> [  263.177080] Trying to free nonexistent resource <0000000080000000-0000=
+000081ffffff>
+
+/proc/fb is empty afterwards, as bootfb remains disabled.
+
+My solution was to remove cirrus.ko and cirrusfb.ko from
+/lib/modules/`uname -r`/kernel/ and to re-build the initramfs. That
+prevented cirrus from being loaded, leaving the simple-frame-buffer intact.
+Loading the module by hand breaks the console again.
+
+I found that SUSE bug
+<https://bugzilla.novell.com/show_bug.cgi?id=855821>, where Takashi Iwai
+finally disabled those options for OpenSUSE.
+
+Ubuntu disabled the Cirrus drm driver first,
+<https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1038055>
+but later changed to only disable X86_SYSFB.
+
+So probably it's best to disable X86_SYSFB:
+> config X86_SYSFB
+> 	bool "Mark VGA/VBE/EFI FB as generic system framebuffer"
+> 	help
+> 	  Firmwares often provide initial graphics framebuffers so the BIOS,
+> 	  bootloader or kernel can show basic video-output during boot for
+> 	  user-guidance and debugging. Historically, x86 used the VESA BIOS
+> 	  Extensions and EFI-framebuffers for this, which are mostly limited
+> 	  to x86.
+> 	  This option, if enabled, marks VGA/VBE/EFI framebuffers as generic
+> 	  framebuffers so the new generic system-framebuffer drivers can be
+> 	  used on x86. If the framebuffer is not compatible with the generic
+> 	  modes, it is adverticed as fallback platform framebuffer so legacy
+> 	  drivers like efifb, vesafb and uvesafb can pick it up.
+> 	  If this option is not selected, all system framebuffers are always
+> 	  marked as fallback platform framebuffers as usual.
+>=20
+> 	  Note: Legacy fbdev drivers, including vesafb, efifb, uvesafb, will
+> 	  not be able to pick up generic system framebuffers if this option
+> 	  is selected. You are highly encouraged to enable simplefb as
+> 	  replacement if you select this option. simplefb can correctly deal
+> 	  with generic system framebuffers. But you should still keep vesafb
+> 	  and others enabled as fallback if a system framebuffer is
+> 	  incompatible with simplefb.
+>=20
+> 	  If unsure, say Y.
+
+If you read <https://patchwork.kernel.org/patch/3380911/> there was a
+patched proposed to change it to 'N' and/or to depend on FB_SIMPLE, but
+that patch never made it into linux.
+
+Nor did <https://patchwork.kernel.org/patch/3368351/> or
+<https://patchwork.kernel.org/patch/3528991/>.
+
+I tried to contact David Herrmann himself, but never got a reply.
+
+So I think Debian should disable X86_SYSFB for now, too.
+
+Thank you for your work and help
+Philipp "also a Debian maintainer" Hahn
+-- System Information:
+Debian Release: 8.6
+  APT prefers stable-updates
+  APT policy: (500, 'stable-updates'), (500, 'stable'), (90, 'testing')
+Architecture: amd64 (x86_64)
+
+Kernel: Linux 3.16.0-4-amd64 (SMP w/4 CPU cores)
+Locale: LANG=DE_DE.UTF-8, LC_CTYPE=DE_DE.UTF-8 (charmap=3DUTF-8)
+Shell: /bin/sh linked to /bin/dash
+Init: systemd (via /run/systemd/system)

@@ -1,49 +1,46 @@
-From: Huacai Chen <chenhc@lemote.com>
-Date: Thu, 03 Nov 2016 04:48:43 +0000
-Subject: [PATCH] sm750fb: Fix bugs introduced by early commits
-Message-Id: <1478148523-32416-1-git-send-email-chenhc@lemote.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Wed, 16 Nov 2016 20:30:58 +0000
+Subject: [PATCH v4.1 0/2] console: Add persistent scrollback buffers for all VGA console
+Message-Id: <1479328260-16286-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1479317933-21849-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1479317933-21849-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, andrey_utkin@fastmail.com
 
-Early commit 30ca5cb63c56965 ("staging: sm750fb: change definition of
-PANEL_PLANE_TL fields") and 27b047bbe1ee9c0 ("staging: sm750fb: change
-definition of PANEL_PLANE_BR fields") modify the register bit fields
-definitions. But the modifications are wrong, because the bit mask of
-"bit field 10:0" is not 0xeff, but 0x7ff. The wrong definition bugs
-makes display very strange.
+Well, that's embarrassing: I changed the order of some local commits
+in the last minute, so my patches included a compiler error.
 
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
----
- drivers/staging/sm750fb/ddk750_reg.h | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_reg.h b/drivers/staging/sm750fb/ddk750_reg.h
-index 9552479..4ed6d8d 100644
---- a/drivers/staging/sm750fb/ddk750_reg.h
-+++ b/drivers/staging/sm750fb/ddk750_reg.h
-@@ -601,13 +601,13 @@
- 
- #define PANEL_PLANE_TL                                0x08001C
- #define PANEL_PLANE_TL_TOP_SHIFT                      16
--#define PANEL_PLANE_TL_TOP_MASK                       (0xeff << 16)
--#define PANEL_PLANE_TL_LEFT_MASK                      0xeff
-+#define PANEL_PLANE_TL_TOP_MASK                       (0x7ff << 16)
-+#define PANEL_PLANE_TL_LEFT_MASK                      0x7ff
- 
- #define PANEL_PLANE_BR                                0x080020
- #define PANEL_PLANE_BR_BOTTOM_SHIFT                   16
--#define PANEL_PLANE_BR_BOTTOM_MASK                    (0xeff << 16)
--#define PANEL_PLANE_BR_RIGHT_MASK                     0xeff
-+#define PANEL_PLANE_BR_BOTTOM_MASK                    (0x7ff << 16)
-+#define PANEL_PLANE_BR_RIGHT_MASK                     0x7ff
- 
- #define PANEL_HORIZONTAL_TOTAL                        0x080024
- #define PANEL_HORIZONTAL_TOTAL_TOTAL_SHIFT            16
--- 
-2.7.0
+Changes in v4.1:
+  - Fix compiler error
+Changes in v4:
+  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
+    VGACON_SOFT_SCROLLBACK_PERSISTENT
+  - Split into two patches
+  - Rework documentation
+  - Remove cosmetic changes in comments (postponed)
+Changes in v3:
+  - Add config option for this feature
+  - Fallback to old scrollback buffer if kcalloc() fails
+  - Remove ioctl() call again and add documentation about existing
+    escape sequence to flush the scrollback buffer
+Changes in v2:
+  - Add ioctl() call to flush scrollback buffer
+  - (Patch v2 was not labeled as such, sorry)
 
 
+Manuel Sch=C3=B6lling (2):
+  console: Move scrollback data into its own struct
+  console: Add persistent scrollback buffers for all VGA consoles
+
+ drivers/video/console/Kconfig  |  23 +++++-
+ drivers/video/console/vgacon.c | 158 ++++++++++++++++++++++++++++---------=
+----
+ 2 files changed, 127 insertions(+), 54 deletions(-)
+
+--=20
+2.1.4
 

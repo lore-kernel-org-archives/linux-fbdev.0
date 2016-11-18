@@ -1,7 +1,7 @@
 From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Thu, 10 Nov 2016 15:44:07 +0000
+Date: Fri, 18 Nov 2016 15:17:26 +0000
 Subject: [PATCH 1/2] backlight: arcxcnn: add support for ArticSand devices
-Message-Id: <1478792647-5813-1-git-send-email-olimpiu@arcticsand.com>
+Message-Id: <1479482246-19024-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1475166879-6255-1-git-send-email-olimpiu@arcticsand.com>
 In-Reply-To: <1475166879-6255-1-git-send-email-olimpiu@arcticsand.com>
@@ -11,7 +11,7 @@ Content-Transfer-Encoding: 7bit
 To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
 Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 
-Resubmition of arcxcnn backlight driver addressing the naming convention
+Re-submission of arcxcnn backlight driver addressing the naming convention
  concerns raised by Rob H.
 
 Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>

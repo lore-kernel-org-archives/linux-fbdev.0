@@ -1,69 +1,208 @@
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Tue, 15 Nov 2016 23:35:03 +0000
-Subject: Re: [RFCv2 PATCH 2/5] drm/bridge: dw_hdmi: remove CEC engine register definitions
-Message-Id: <CAJ-oXjTgYmnNhGh8dW4Ke=zFDN5wwHNoJ40bFUKp0T5dTGLrbw@mail.gmail.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Sun, 20 Nov 2016 21:58:07 +0000
+Subject: [PATCH v5 1/2] console: Move scrollback data into its own struct
+Message-Id: <1479679088-3015-2-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl>
- <1479136968-24477-3-git-send-email-hverkuil@xs4all.nl> <CAJ-oXjS-VVkBuYh0inTGAvJbsKzvEqKYrgoSeG6UBQtW_1BEyQ@mail.gmail.com>
- <20161115232754.GB1041@n2100.armlinux.org.uk>
-In-Reply-To: <20161115232754.GB1041@n2100.armlinux.org.uk>
+References: <20161118005309.GC26324@dell-m4800.home>
+ <1479679088-3015-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1479679088-3015-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Russell King - ARM Linux <linux@armlinux.org.uk>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, linux-media@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, andrey_utkin@fastmail.com
 
-2016-11-16 0:27 GMT+01:00 Russell King - ARM Linux <linux@armlinux.org.uk>:
-> On Wed, Nov 16, 2016 at 12:23:50AM +0100, Pierre-Hugues Husson wrote:
->> Hi,
->>
->>
->> 2016-11-14 16:22 GMT+01:00 Hans Verkuil <hverkuil@xs4all.nl>:
->> > From: Russell King <rmk+kernel@arm.linux.org.uk>
->> >
->> > We don't need the CEC engine register definitions, so let's remove them.
->> >
->> > Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
->> > ---
->> >  drivers/gpu/drm/bridge/dw-hdmi.h | 45 ----------------------------------------
->> >  1 file changed, 45 deletions(-)
->> >
->> > diff --git a/drivers/gpu/drm/bridge/dw-hdmi.h b/drivers/gpu/drm/bridge/dw-hdmi.h
->> > index fc9a560..26d6845 100644
->> > --- a/drivers/gpu/drm/bridge/dw-hdmi.h
->> > +++ b/drivers/gpu/drm/bridge/dw-hdmi.h
->> > @@ -478,51 +478,6 @@
->> >  #define HDMI_A_PRESETUP                         0x501A
->> >  #define HDMI_A_SRM_BASE                         0x5020
->> >
->> > -/* CEC Engine Registers */
->> > -#define HDMI_CEC_CTRL                           0x7D00
->> > -#define HDMI_CEC_STAT                           0x7D01
->> > -#define HDMI_CEC_MASK                           0x7D02
->> I don't know if this is relevant for a submission, but the build stops
->> working here because of a missing definition HDMI_CEC_MASK
->> Perhaps this should be inverted with 3/5 to make bissecting easier?
->> I was trying to bissect a kernel panic, and I had to fix this by hand
->
-> Doesn't make sense - patch 3 doesn't reference HDMI_CEC_MASK.
->
-> Please show the build error in full.
-The build is actually fixed with patch 4.
+This refactoring is in preparation for persistent scrollback
+support for VGA console.
 
-Building after patch 2 fails with:
-drivers/gpu/drm/bridge/dw-hdmi.c: In function ‘initialize_hdmi_ih_mutes’:
-drivers/gpu/drm/bridge/dw-hdmi.c:1300:26: error: ‘HDMI_CEC_MASK’
-undeclared (first use in this function)
-  hdmi_writeb(hdmi, 0xff, HDMI_CEC_MASK);
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+---
+ drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
+----
+ 1 file changed, 47 insertions(+), 44 deletions(-)
 
-The point of switching patch 3 and patch 2, is that the build works
-with patch 1,3 applied.
-Applying patch 2 breaks the build, but doesn't change any active code,
-so it's ok.
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c22a562..48b9764 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
++static struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollback;
+=20
+ static void vgacon_scrollback_init(int pitch)
+ {
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+=20
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	if (vgacon_scrollback.data) {
++		vgacon_scrollback.cnt  =3D 0;
++		vgacon_scrollback.tail =3D 0;
++		vgacon_scrollback.cur  =3D 0;
++		vgacon_scrollback.rows =3D rows - 1;
++		vgacon_scrollback.size =3D rows * pitch;
+ 	}
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
++	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
++		1024, GFP_NOWAIT);
+ 	vgacon_scrollback_init(vga_video_num_columns * 2);
+ }
+=20
+@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
+c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		vgacon_scrollback.cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		vgacon_scrollback.tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
++			vgacon_scrollback.tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
++			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	vgacon_scrollback.save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !vgacon_scrollback.restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.restore =3D 1;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	if (!vgacon_scrollback.data)
+ 		return;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!vgacon_scrollback.save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		vgacon_scrollback.save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	vgacon_scrollback.restore =3D 0;
++	start =3D vgacon_scrollback.cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > vgacon_scrollback.cnt)
++		start =3D vgacon_scrollback.cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > vgacon_scrollback.cnt)
++		end =3D vgacon_scrollback.cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	vgacon_scrollback.cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D vgacon_scrollback.size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D vgacon_scrollback.cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback.size - soff);
++		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, vgacon_scrollback.data, count);
+ 			d +=3D count;
+ 		}
+=20
+--=20
+2.1.4
 
-So with the order 1,3,2,4,5, the build is broken only after 2, while
-with 1,2,3,4,5, it is broken after 2 and 3.
-
-I hope this makes my remark more explicit.
-
-If it doesn't, I think it is quite safe to just ignore it

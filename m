@@ -1,21 +1,23 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 18 Nov 2016 14:49:29 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 21 Nov 2016 08:10:05 +0000
 Subject: Re: [PATCH v3 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <20161118144929.GD2301@dell.home>
+Message-Id: <20161121081005.GA25171@ulmo.ba.sec>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="82I3+IH0IqGh5yIs"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20161101125933.11168-1-peter.ujfalusi@ti.com>
  <20161101125933.11168-2-peter.ujfalusi@ti.com>
 In-Reply-To: <20161101125933.11168-2-peter.ujfalusi@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
 To: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Cc: thierry.reding@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+Cc: lee.jones@linaro.org, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-Thierry, Jingoo,
 
-Please have your say.
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Nov 01, 2016 at 02:59:32PM +0200, Peter Ujfalusi wrote:
 > Move the checks to select the initial state for the backlight to a new
 > function and document the checks we are doing.
 >=20
@@ -54,7 +56,7 @@ b)
 > +	 */
 > +
 > +	/* if the enable GPIO is disabled, do not enable the backlight */
-> +	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) =3D 0)
+> +	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) =3D=3D 0)
 > +		return FB_BLANK_POWERDOWN;
 > +
 > +	/* The regulator is disabled, do not enable the backlight */
@@ -90,8 +92,8 @@ ce *pdev)
 > -		 * appropriate time. Therefore, if it is disabled, keep it so.
 > -		 */
 > -		if (node && node->phandle &&
-> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
-> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
+> -		    gpiod_get_direction(pb->enable_gpio) =3D=3D GPIOF_DIR_OUT &&
+> -		    gpiod_get_value(pb->enable_gpio) =3D=3D 0)
 > -			initial_blank =3D FB_BLANK_POWERDOWN;
 > -		else
 > -			gpiod_direction_output(pb->enable_gpio, 1);
@@ -101,35 +103,49 @@ ce *pdev)
 > +	 * and set the GPIO as active.
 > +	 */
 > +	if (pb->enable_gpio &&
-> +	    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_IN)
+> +	    gpiod_get_direction(pb->enable_gpio) =3D=3D GPIOF_DIR_IN)
 > +		gpiod_direction_output(pb->enable_gpio, 1);
-> =20
->  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->  	if (IS_ERR(pb->power_supply)) {
-> @@ -288,9 +306,6 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  		goto err_alloc;
->  	}
-> =20
-> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
-> -		initial_blank =3D FB_BLANK_POWERDOWN;
-> -
->  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
->  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> @@ -347,7 +362,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	}
-> =20
->  	bl->props.brightness =3D data->dft_brightness;
-> -	bl->props.power =3D initial_blank;
-> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
->  	backlight_update_status(bl);
-> =20
->  	platform_set_drvdata(pdev, bl);
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+I'm confused about this. Isn't it redundant to check for the direction
+if you're going to configure it as output either way? Why not just set
+it as output unconditionally?
+
+Also, is this not counterproductive? pwm_backlight_initial_power_state()
+will check the value of the GPIO to determine whether or not to mark the
+backlight as enabled. If we're setting this to active, then the check in
+the initial state retrieval will only be false if the GPIO is an output
+and inactive.
+
+Oh wait... I guess that's exactly why you're doing this. =3D) Perhaps this
+could be made somewhat clearer by beefing up the comment. As it is, the
+comment /seems/ rather useless because it restates what the code does. I
+think it'd be better to explain more verbosely what's going on, to avoid
+confusing people like me.
+
+Either way, though, the patch looks correct now that I understand it
+properly, I'll leave it up to Lee if he wants to insist on a clarifying
+comment.
+
+Reviewed-by: Thierry Reding <treding@nvidia.com>
+
+--82I3+IH0IqGh5yIs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABCAAGBQJYMqvXAAoJEN0jrNd/PrOhYREP/3tbbAOC7RJp4KEdmwmF8ZfI
+z7oJkrI6ttSB++vjUSrXLpe3Fb+b1qa1HNYEKYlBvnugGjUhox/wJ5llpmE40myh
+5tbRdKveMMw03mYVqX6zl9cU9iM4c69quMzBTQ/x9qzEgWtPdMcPYai4jp4+KW7Y
+AkaZaQMnvMOZCipPmbTHs8+pgbO2x9zRnwFq02doP3tEhr+D50qGh5gs5cVWSY1Z
+T4OTTyeK3p85WoB/JkLyIAHrbfoT7vlXtP3nKrOSTFOXx3vXlSgMHDbffAYCU4Hw
+wspYlFrW51sf/K3x3mxkr7lYFH5HXePk3GNwSTZ16Pplncj0APYVIoAO98Y1aZMJ
+rGM9jf1ZHDbb8loW1kx+8WN5Buio0XWbYPbFjjtKCUp+m2xayvTJMWna7KUOXT1c
+xMi9rn6PhSSb1psX3ww6QcrAFCJSyxfIRcs+rgvO03kF2/mJyOtgMaSC9ypiYWlT
+/Me23P0WVFj1gz9hHkysEk6j6FklpG2WXZ0/MlKQNO2SSBiEtok/eSM+klTS42Uj
+Nwi02TOQrQhwxufau/nTj1onT98WK5ilPPm6Lk0ZDEBprhHYAjHcEqP/cxjou81k
+BbaKn5EQy5gy0HKw3LFzz+50gOC6stdY/xbLSMhhMiKZR1jciBpPu6QRMXn8IQhq
+BdaXMIs++Nl3NCgbGz7d
+=A5CP
+-----END PGP SIGNATURE-----
+
+--82I3+IH0IqGh5yIs--

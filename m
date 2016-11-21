@@ -1,31 +1,24 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 18 Nov 2016 18:40:58 +0000
+Date: Mon, 21 Nov 2016 11:57:51 +0000
 Subject: Re: [PATCH 1/2] backlight: arcxcnn: add support for ArticSand devices
-Message-Id: <20161118184058.GC19884@dell.home>
+Message-Id: <20161121115751.GL32509@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1478792647-5813-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1478792647-5813-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+References: <1479482246-19024-1-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1479482246-19024-1-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
-Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org
+To: Olimpiu Dejeu <olimpiu@arcticsand.com>
+Cc: robh@kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com
 
-I'll give this a quick once over, but Jingoo will also need to review.
+On Fri, 18 Nov 2016, Olimpiu Dejeu wrote:
 
-On Thu, 10 Nov 2016, Olimpiu Dejeu wrote:
-
-> Resubmition of arcxcnn backlight driver addressing the naming convention
+> Re-submission of arcxcnn backlight driver addressing the naming convention
 >  concerns raised by Rob H.
-
-This is not a commit log.  It's a changelog which lives at <####>.
-
+>=20
 > Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
 >=20
 > ---
-
-<####>
-
 >  drivers/video/backlight/Kconfig      |   7 +
 >  drivers/video/backlight/Makefile     |   1 +
 >  drivers/video/backlight/arcxcnn_bl.c | 541 +++++++++++++++++++++++++++++=
@@ -34,7 +27,14 @@ This is not a commit log.  It's a changelog which lives at <####>.
 >  4 files changed, 616 insertions(+)
 >  create mode 100644 drivers/video/backlight/arcxcnn_bl.c
 >  create mode 100644 include/linux/i2c/arcxcnn.h
->=20
+
+Same goes for this patch.
+
+Also, make sure you submit you patches so that they are connected in
+people's inboxes.
+
+Use `git send-email` where --thread should be the default.
+
 > diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kc=
 onfig
 > index 5ffa4b4..4e1d2ad 100644
@@ -78,10 +78,6 @@ ht/arcxcnn_bl.c
 > + * Copyright 2016 ArcticSand, Inc.
 > + *
 > + * Licensed under the GPL-2 or later.
-
-As far as I'm aware, this does not constitude as a proper GPL licence
-statement.
-
 > + */
 > +
 > +#include <linux/module.h>
@@ -92,9 +88,7 @@ statement.
 > +#include <linux/of.h>
 > +#include <linux/pwm.h>
 > +#include <linux/regulator/consumer.h>
-
-Alphabetical.
-
+> +
 > +#include "linux/i2c/arcxcnn.h"
 > +
 > +#define ARCXCNN_CMD		(0x00)  /* Command Register */
@@ -134,13 +128,8 @@ y */
 > +#define ARCXCNN_COMP_CONFIG	(0x0A)
 > +#define ARCXCNN_FILT_CONFIG	(0x0B)
 > +#define ARCXCNN_IMAXTUNE	(0x0C)
-
-No need for simple defines to be place inside parenthesis.
-
+> +
 > +#define DEFAULT_BL_NAME		"arctic_bl"
-
-Don't do this.  Just use the name in the place you need to use it.
-
 > +#define MAX_BRIGHTNESS		4095
 > +
 > +static int s_no_reset_on_remove;
@@ -165,9 +154,7 @@ Don't do this.  Just use the name in the place you need to use it.
 > +};
 > +
 > +struct arcxcnn;
-
-Why?
-
+> +
 > +struct arcxcnn {
 > +	char chipname[64];
 > +	enum arcxcnn_chip_id chip_id;
@@ -175,30 +162,17 @@ Why?
 > +	struct i2c_client *client;
 > +	struct backlight_device *bl;
 > +	struct device *dev;
-
-You only need one of 'bl', 'dev' and 'client'.
-
 > +	struct arcxcnn_platform_data *pdata;
-
-pdata should not be stored in ddata.
-
 > +	struct pwm_device *pwm;
 > +	struct regulator *supply;	/* regulator for VDD input */
 > +};
-
-Document using kerneldoc.
-
+> +
 > +static int arcxcnn_write_byte(struct arcxcnn *lp, u8 reg, u8 data)
 > +{
 > +	s32 ret =3D -1;
 > +	int att;
 > +
 > +	for (att =3D 0; att < s_retries; att++) {
-
-This is non-standard.
-
-Why would it fail on first attempt and succeed on the next?
-
 > +		ret =3D i2c_smbus_write_byte_data(lp->client, reg, data);
 > +		if (ret >=3D 0)
 > +			return 0;
@@ -241,26 +215,18 @@ ta)
 > +
 > +	return arcxcnn_write_byte(lp, reg, tmp);
 > +}
-
-I'd really rather you didn't role your own read/write/update API!
-
+> +
 > +static int arcxcnn_set_brightness(struct arcxcnn *lp, u32 brightness)
 > +{
 > +	int ret;
 > +	u8 val;
 > +
 > +	val =3D (brightness & 0xF) << 4;
-
-Define the shift value.
-
 > +	ret =3D arcxcnn_write_byte(lp, ARCXCNN_WLED_ISET_LSB, val);
 > +	if (ret < 0)
 > +		return ret;
 > +	val =3D (brightness >> 4);
 > +	ret =3D arcxcnn_write_byte(lp, ARCXCNN_WLED_ISET_MSB, val);
-
-'\n' here.
-
 > +	return ret;
 > +}
 > +
@@ -275,9 +241,6 @@ Define the shift value.
 > +	/* set brightness */
 > +	if (lp->mode =3D PWM_BASED)
 > +		; /* via pwm */
-
-Replace this with a comment.
-
 > +	else if (lp->mode =3D REGISTER_BASED)
 > +		arcxcnn_set_brightness(lp, brightness);
 > +
@@ -289,11 +252,6 @@ Replace this with a comment.
 > +		/* 1-3 =3D power save, 4 =3D off
 > +		 * place in low-power standby mode
 > +		 */
-
-This is not a valid multi-line kernel comment.
-
-See: Documentation/CodingStyle
-
 > +		arcxcnn_update_bit(lp, ARCXCNN_CMD,
 > +				ARCXCNN_CMD_STDBY, ARCXCNN_CMD_STDBY);
 > +	return 0;
@@ -307,18 +265,10 @@ See: Documentation/CodingStyle
 > +static int arcxcnn_backlight_register(struct arcxcnn *lp)
 > +{
 > +	struct backlight_device *bl;
-
-This variable seems pretty redundant.
-
 > +	struct backlight_properties props;
-
-Dynamically request memory for this.
-
 > +	struct arcxcnn_platform_data *pdata =3D lp->pdata;
 > +	const char *name =3D pdata->name ? : DEFAULT_BL_NAME;
-
-Why do you need to set a name different from the device name?
-
+> +
 > +	memset(&props, 0, sizeof(props));
 > +	props.type =3D BACKLIGHT_PLATFORM;
 > +	props.max_brightness =3D MAX_BRIGHTNESS;
@@ -339,9 +289,6 @@ Why do you need to set a name different from the device name?
 > +}
 > +
 > +static ssize_t arcxcnn_get_chip_id(struct device *dev,
-
-This should be arcxcnn_chip_id_show()
-
 > +		struct device_attribute *attr, char *buf)
 > +{
 > +	struct arcxcnn *lp =3D dev_get_drvdata(dev);
@@ -355,19 +302,11 @@ This should be arcxcnn_chip_id_show()
 > +	struct arcxcnn *lp =3D dev_get_drvdata(dev);
 > +
 > +	return scnprintf(buf, PAGE_SIZE, "%02X\n", lp->pdata->led_str);
-
-This is not pdata.
-
-What is led_str anyway?  It looks like an int, not a string.
-
 > +}
 > +
 > +static ssize_t arcxcnn_set_led_str(struct device *dev,
 > +		struct device_attribute *attr, const char *buf, size_t len)
 > +{
-
-arcxcnn_led_str_store()
-
 > +	struct arcxcnn *lp =3D dev_get_drvdata(dev);
 > +	unsigned long ledstr;
 > +
@@ -378,40 +317,24 @@ arcxcnn_led_str_store()
 > +		/* don't allow 0 for ledstr, use power to turn all off */
 > +		if (ledstr =3D 0)
 > +			return 0;
-
-Shouldn't you be return -EINVAL if 0 is not valid?
-
 > +		lp->pdata->led_str =3D ledstr & 0x3F;
 > +		arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
 > +			ARCXCNN_LEDEN_MASK, lp->pdata->led_str);
-
-What are you lining up against here?
-
 > +	}
-
-'\n'
-
 > +	return len;
 > +}
 > +
 > +static ssize_t arcxcnn_get_bl_ctl_mode(struct device *dev,
 > +	     struct device_attribute *attr, char *buf)
 > +{
-
-arcxcnn_bl_ctl_mode_show()
-
 > +	struct arcxcnn *lp =3D dev_get_drvdata(dev);
 > +	char *strmode =3D NULL;
-
-Why are you pre-initialising here?
-
+> +
 > +	if (lp->mode =3D PWM_BASED)
 > +		strmode =3D "pwm based";
 > +	else if (lp->mode =3D REGISTER_BASED)
 > +		strmode =3D "register based";
-
-Remove "based" and place it in scnprintf instead.
-
+> +
 > +	return scnprintf(buf, PAGE_SIZE, "%s\n", strmode);
 > +}
 > +
@@ -432,12 +355,6 @@ tr);
 > +};
 > +
 > +#ifdef CONFIG_OF
-
-No ifdefery please.
-
-Use if (IS_ENABLED(CONFIG_OF)) before calling arcxcnn_parse_dt()
-instead.
-
 > +static int arcxcnn_parse_dt(struct arcxcnn *lp)
 > +{
 > +	struct device *dev =3D lp->dev;
@@ -447,27 +364,15 @@ instead.
 > +
 > +	if (!node) {
 > +		dev_err(dev, "no platform data.\n");
-
-That's not what this means is it?
-
 > +		return -EINVAL;
 > +	}
-
-'\n'
-
 > +	lp->pdata->led_config_0_set =3D false;
 > +	lp->pdata->led_config_1_set =3D false;
 > +	lp->pdata->dim_freq_set =3D false;
 > +	lp->pdata->comp_config_set =3D false;
 > +	lp->pdata->filter_config_set =3D false;
 > +	lp->pdata->trim_config_set =3D false;
-
-These are already 0.
-
-And you need to take these 'out' of pdata.
-
-Create a config struct to place them all in and add it to ddata.
-
+> +
 > +	ret =3D of_property_read_string(node, "label", &lp->pdata->name);
 > +	if (ret < 0)
 > +		lp->pdata->name =3D NULL;
@@ -509,22 +414,14 @@ Create a config struct to place them all in and add it to ddata.
 > +		lp->pdata->trim_config =3D (u8)prog_val;
 > +		lp->pdata->trim_config_set =3D true;
 > +	}
-
-You need to get these signed off by the DT folk.
-
 > +	ret =3D of_property_count_u32_elems(node, "led-sources");
 > +	if (ret < 0)
 > +		lp->pdata->led_str =3D 0x3F;
-
-What is 3F?  Please define it.
-
 > +	else {
 > +		num_entry =3D ret;
 > +		if (num_entry > 6)
 > +			num_entry =3D 6;
-
-What is 6?  No magic numbers.
-
+> +
 > +		ret =3D of_property_read_u32_array(node, "led-sources", sources,
 > +					num_entry);
 > +		if (ret < 0) {
@@ -535,9 +432,6 @@ What is 6?  No magic numbers.
 > +		lp->pdata->led_str =3D 0;
 > +		while (num_entry > 0)
 > +			lp->pdata->led_str |=3D (1 << sources[--num_entry]);
-
-This is not good code.  Please make it easier to read.
-
 > +	}
 > +	return 0;
 > +}
@@ -565,13 +459,7 @@ id *id)
 > +
 > +	lp->client =3D cl;
 > +	lp->dev =3D &cl->dev;
-
-You don't need both of these.
-
 > +	lp->chip_id =3D id->driver_data;
-
-What are you going to use this for?
-
 > +	lp->pdata =3D dev_get_platdata(&cl->dev);
 > +
 > +	if (!lp->pdata) {
@@ -584,26 +472,18 @@ What are you going to use this for?
 > +		 * is no device tree entry, we are being told we exist because
 > +		 * user-land said so, so make up the info we need
 > +		 */
-
-Not a valid multi-line comment.
-
 > +		ret =3D arcxcnn_parse_dt(lp);
 > +		if (ret < 0) {
 > +			/* no device tree, use defaults based on module params
 > +			 */
-
-Not a valid single-line comment.
-
 > +			lp->pdata->led_config_0_set =3D false;
 > +			lp->pdata->led_config_1_set =3D false;
 > +			lp->pdata->dim_freq_set =3D false;
 > +			lp->pdata->comp_config_set =3D false;
 > +			lp->pdata->filter_config_set =3D false;
 > +			lp->pdata->trim_config_set =3D false;
+> +
 > +			lp->pdata->name =3D NULL;
-
-These are already 0.
-
 > +			lp->pdata->initial_brightness =3D s_ibright;
 > +			lp->pdata->led_str =3D s_iledstr;
 > +		}
@@ -622,17 +502,12 @@ These are already 0.
 > +	chipid <<=3D 8;
 > +	regval =3D arcxcnn_read_byte(lp, 0x1F);
 > +	chipid |=3D regval;
-
-Define all magic numbers.
-
+> +
 > +	/* make sure it belongs to this driver
 > +	 * TODO - handle specific ids
 > +	 */
 > +	if (chipid !=3D 0x02A5) {
 > +		#if 1
-
-What on earth is this?
-
 > +		dev_info(&cl->dev, "Chip Id is %04X\n", chipid);
 > +		#else
 > +		dev_err(&cl->dev, "%04X is not ARC2C\n", chipid);
@@ -651,17 +526,12 @@ What on earth is this?
 > +			lp->pdata->led_config_0);
 > +
 > +	/* if iled config set in DT, set the value, else internal mode */
-
-Spelling.
-
 > +	if (lp->pdata->led_config_1_set)
 > +		arcxcnn_write_byte(lp, ARCXCNN_ILED_CONFIG,
 > +			lp->pdata->led_config_1);
 > +	else
 > +		arcxcnn_write_byte(lp, ARCXCNN_ILED_CONFIG, 0x57);
-
-More magic numbers.
-
+> +
 > +	/* other misc DT settings */
 > +	if (lp->pdata->dim_freq_set)
 > +		arcxcnn_write_byte(lp, ARCXCNN_FADECTRL, lp->pdata->dim_freq);
@@ -674,15 +544,8 @@ More magic numbers.
 > +	if (lp->pdata->trim_config_set)
 > +		arcxcnn_write_byte(lp, ARCXCNN_IMAXTUNE,
 > +			lp->pdata->trim_config);
-
-What are the default values of these registers?
-
-If 0, then just write them without the checks.
-
+> +
 > +	/* set initial LED Strings */
-
-What is LED strings?
-
 > +	arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
 > +		ARCXCNN_LEDEN_MASK, lp->pdata->led_str);
 > +
@@ -703,9 +566,6 @@ What is LED strings?
 > +	}
 > +
 > +	backlight_update_status(lp->bl);
-
-'\n'
-
 > +	return 0;
 > +}
 > +
@@ -719,22 +579,10 @@ What is LED strings?
 > +		/* reset the device */
 > +		arcxcnn_write_byte(lp, ARCXCNN_CMD, ARCXCNN_CMD_RESET);
 > +	}
-
-'\n'
-
 > +	lp->bl->props.brightness =3D 0;
-
-'\n'
-
 > +	backlight_update_status(lp->bl);
-
-'\n'
-
 > +	if (lp->supply)
 > +		regulator_disable(lp->supply);
-
-'\n'
-
 > +	sysfs_remove_group(&lp->dev->kobj, &arcxcnn_attr_group);
 > +
 > +	return 0;
@@ -749,9 +597,6 @@ What is LED strings?
 > +/* Note that the device/chip ID is not fixed in silicon so
 > + * auto-probing of these devices on the bus is most likely
 > + * not possible, use device tree to set i2c bus address
-
-Then why supply it here at all?
-
 > + */
 > +static const struct i2c_device_id arcxcnn_ids[] =3D {
 > +	{"arc2c0608", ARC2C0608},
@@ -764,24 +609,15 @@ Then why supply it here at all?
 > +		   .name =3D "arcxcnn_bl",
 > +		   .of_match_table =3D of_match_ptr(arcxcnn_dt_ids),
 > +		   },
-
-Tabbing.
-
 > +	.probe =3D arcxcnn_probe,
 > +	.remove =3D arcxcnn_remove,
 > +	.id_table =3D arcxcnn_ids,
 > +};
 > +
-
-Superfluous '\n'
-
 > +module_i2c_driver(arcxcnn_driver);
 > +
 > +MODULE_LICENSE("GPL v2");
 > +MODULE_AUTHOR("Brian Dodge <bdodge09@outlook.com>");
-
-Who?
-
 > +MODULE_DESCRIPTION("ARCXCNN Backlight driver");
 > diff --git a/include/linux/i2c/arcxcnn.h b/include/linux/i2c/arcxcnn.h
 > new file mode 100644
@@ -829,13 +665,7 @@ set.
 > + * @comp_config_set	: the value in comp_config is valid
 > + * @filter_config_set	: the value in filter_config is valid
 > + * @trim_config_set	: the value in trim_config is valid
-
-Tab out the ':'s.
-
-This is only platform data if it's set by the platform.
-
-Otherwise it's just a config or bitfields.
-
+> + *
 > + * the _set flags are used to indicate that the value was explicitly set
 > + * in the device tree or platform data. settings not set are left as def=
 ault

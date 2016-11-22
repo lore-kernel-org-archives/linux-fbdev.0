@@ -1,44 +1,37 @@
-From: Martin Kaiser <martin@kaiser.cx>
-Date: Tue, 22 Nov 2016 07:54:18 +0000
-Subject: [PATCH] video: imxfb: correct the bitmask for DMACR_HM/_TM
-Message-Id: <1479801258-3765-1-git-send-email-martin@kaiser.cx>
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Tue, 22 Nov 2016 08:42:14 +0000
+Subject: Re: [PATCH] video: imxfb: correct the bitmask for DMACR_HM/_TM
+Message-Id: <20161122084214.fxn26mfur7wwlgs2@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1479801258-3765-1-git-send-email-martin@kaiser.cx>
+In-Reply-To: <1479801258-3765-1-git-send-email-martin@kaiser.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <kernel@pengutronix.de>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Martin Kaiser <martin@kaiser.cx>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Martin Kaiser <martin@kaiser.cx>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The HM and TM fields in the LCDC DMA Control Register are 7 bits wide.
-Use the correct mask to allow setting all possible bits.
+On Tue, Nov 22, 2016 at 08:54:18AM +0100, Martin Kaiser wrote:
+> The HM and TM fields in the LCDC DMA Control Register are 7 bits wide.
+> Use the correct mask to allow setting all possible bits.
+>=20
+> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+> ---
+>=20
+> This bug was discovered on a board that uses DMACR_TM(16). We ended up
+> with TM=3D0 in the register, the upper three bits were filtered out.
+>=20
+> The LCD DMA Control Register is described in section 33.3.16 of the
+> IMX25 reference manual.
 
-Signed-off-by: Martin Kaiser <martin@kaiser.cx>
----
+For the MX1 which is also supported by this driver, the definitions are
+right. So this needs a more sophisticated patch. Also I wonder why the
+register definition is in include/linux/platform_data and not in the
+driver directly.
 
-This bug was discovered on a board that uses DMACR_TM(16). We ended up
-with TM=0 in the register, the upper three bits were filtered out.
+Best regards
+Uwe
 
-The LCD DMA Control Register is described in section 33.3.16 of the
-IMX25 reference manual.
-
- include/linux/platform_data/video-imxfb.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
-index 18e9083..858c66d 100644
---- a/include/linux/platform_data/video-imxfb.h
-+++ b/include/linux/platform_data/video-imxfb.h
-@@ -48,8 +48,8 @@
- #define LSCR1_GRAY1(x)            (((x) & 0xf))
- 
- #define DMACR_BURST	(1 << 31)
--#define DMACR_HM(x)	(((x) & 0xf) << 16)
--#define DMACR_TM(x)	((x) & 0xf)
-+#define DMACR_HM(x)	(((x) & 0x7f) << 16)
-+#define DMACR_TM(x)	((x) & 0x7f)
- 
- struct imx_fb_videomode {
- 	struct fb_videomode mode;
--- 
-1.7.10.4
-
+--=20
+Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |

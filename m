@@ -1,95 +1,309 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sat, 05 Nov 2016 08:29:29 +0000
-Subject: Re: [PATCH v4 2/6] Add Advantech iManager GPIO driver
-Message-Id: <CACRpkdZfegDfpV-qK8FkvRnCWZQT8R3CkB_t7r+pyNhQ3_hHpA@mail.gmail.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Tue, 22 Nov 2016 16:43:38 +0000
+Subject: [PATCH v6 2/2] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1479833018-20021-3-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161102083751.6335-1-richard.dorsch@gmail.com> <20161102083751.6335-3-richard.dorsch@gmail.com>
-In-Reply-To: <20161102083751.6335-3-richard.dorsch@gmail.com>
+References: <1479833018-20021-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1479833018-20021-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Vidal-Dorsch <richard.dorsch@gmail.com>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Wolfram Sang <wsa@the-dreams.de>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Wim Van Sebroeck <wim@iguana.be>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, linux-hwmon@vger.kernel.org, "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, linux-watchdog@vger.kernel.org, Krzysztof Kozlowski <k.kozlowski@samsung.com>, jo.sunga@advantech.com, weilun.huang@advantech.com, andrew.chou@advantech.com
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-On Wed, Nov 2, 2016 at 9:37 AM, Richard Vidal-Dorsch
-<richard.dorsch@gmail.com> wrote:
+Add a scrollback buffers for each VGA console. The benefit is that
+the scrollback history is not flushed when switching between consoles
+but is persistent.
+The buffers are allocated on demand when a new console is opened.
 
-> Signed-off-by: Richard Vidal-Dorsch <richard.dorsch@gmail.com>
+This breaks tools like clear_console that rely on flushing the
+scrollback history by switching back and forth between consoles
+which is why this feature is disabled by default.
+Use the escape sequence \e[3J instead for flushing the buffer.
 
-> +#include <linux/device.h>
-> +#include <linux/gpio.h>
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+---
+ drivers/video/console/Kconfig  |  25 +++++++-
+ drivers/video/console/vgacon.c | 134 +++++++++++++++++++++++++++----------=
+----
+ 2 files changed, 111 insertions(+), 48 deletions(-)
 
-#include <linux/gpio/driver.h>
-should be enough.
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 38da6e2..c5742d2 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -43,9 +43,28 @@ config VGACON_SOFT_SCROLLBACK_SIZE
+        range 1 1024
+        default "64"
+        help
+-         Enter the amount of System RAM to allocate for the scrollback
+-	 buffer.  Each 64KB will give you approximately 16 80x25
+-	 screenfuls of scrollback buffer
++	  Enter the amount of System RAM to allocate for scrollback
++	  buffers of VGA consoles. Each 64KB will give you approximately
++	  16 80x25 screenfuls of scrollback buffer.
++
++config VGACON_SOFT_SCROLLBACK_PERSISTENT
++	bool "Persistent Scrollback History for each console"
++	depends on VGACON_SOFT_SCROLLBACK
++	default n
++	help
++	  Say Y here if the scrollback history should persist when switching
++	  between consoles. Otherwise, the scrollback history will be flushed
++	  each time the console is switched.
++
++	  This feature might break your tool of choice to flush the scrollback
++	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
++	  will be broken, which might cause security issues.
++	  You can use the escape sequence \e[3J instead if this feature is
++	  activated.
++
++	  Note that a buffer of VGACON_SOFT_SCROLLBACK_SIZE is taken for each
++	  created tty device.
++	  So if you use a RAM-constrained system, say N here.
+=20
+ config MDA_CONSOLE
+ 	depends on !M68K && !PARISC && ISA
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 48b9764..896d02b 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,7 +162,7 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static struct vgacon_scrollback_info {
++struct vgacon_scrollback_info {
+ 	void *data;
+ 	int tail;
+ 	int size;
+@@ -171,64 +171,107 @@ static struct vgacon_scrollback_info {
+ 	int cur;
+ 	int save;
+ 	int restore;
+-} vgacon_scrollback;
++};
++static struct vgacon_scrollback_info *vgacon_scrollback_cur;
++#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
++#else
++static struct vgacon_scrollback_info vgacon_scrollbacks[1];
++#endif
+=20
+-static void vgacon_scrollback_init(int pitch)
++static void vgacon_scrollback_reset(size_t reset_size)
+ {
+-	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+-
+-	if (vgacon_scrollback.data) {
+-		vgacon_scrollback.cnt  =3D 0;
+-		vgacon_scrollback.tail =3D 0;
+-		vgacon_scrollback.cur  =3D 0;
+-		vgacon_scrollback.rows =3D rows - 1;
+-		vgacon_scrollback.size =3D rows * pitch;
++	if (vgacon_scrollback_cur->data && reset_size > 0)
++		memset(vgacon_scrollback_cur->data, 0, reset_size);
++
++	vgacon_scrollback_cur->cnt  =3D 0;
++	vgacon_scrollback_cur->tail =3D 0;
++	vgacon_scrollback_cur->cur  =3D 0;
++}
++
++static void vgacon_scrollback_init(int vc_num)
++{
++	int pitch =3D vga_video_num_columns * 2;
++	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++	int rows =3D size/pitch;
++	void *data;
++
++	data =3D kmalloc_array(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024,
++		GFP_NOWAIT);
++
++	vgacon_scrollbacks[vc_num].data =3D data;
++	vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++
++	vgacon_scrollback_cur->rows =3D rows - 1;
++	vgacon_scrollback_cur->size =3D rows * pitch;
++
++	vgacon_scrollback_reset(size);
++}
++
++static void vgacon_scrollback_switch(int vc_num)
++{
++#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++	vc_num =3D 0;
++#endif
++
++	if (!vgacon_scrollbacks[vc_num].data)
++		vgacon_scrollback_init(vc_num);
++	else {
++#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++#else
++		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++
++		vgacon_scrollback_reset(size);
++#endif
+ 	}
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
+-		1024, GFP_NOWAIT);
+-	vgacon_scrollback_init(vga_video_num_columns * 2);
++	vgacon_scrollback_cur =3D &vgacon_scrollbacks[0];
++	vgacon_scrollback_init(0);
+ }
+=20
+ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size
++	    || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
++		scr_memcpyw(vgacon_scrollback_cur->data +
++			    vgacon_scrollback_cur->tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback.cnt++;
++
++		vgacon_scrollback_cur->cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback.tail +=3D c->vc_size_row;
++		vgacon_scrollback_cur->tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
+-			vgacon_scrollback.tail =3D 0;
++		if (vgacon_scrollback_cur->tail >=3D vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail =3D 0;
+=20
+-		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
+-			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
++		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
++			vgacon_scrollback_cur->cnt =3D vgacon_scrollback_cur->rows;
+=20
+-		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
++		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback.save =3D 0;
++	vgacon_scrollback_cur->save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback.restore) {
++	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback.restore =3D 1;
+-		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
++		vgacon_scrollback_cur->restore =3D 1;
++		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
+ 	}
+ }
+=20
+@@ -242,41 +285,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback.data)
++	if (!vgacon_scrollback_cur->data)
+ 		return;
+=20
+-	if (!vgacon_scrollback.save) {
++	if (!vgacon_scrollback_cur->save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback.save =3D 1;
++		vgacon_scrollback_cur->save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback.restore =3D 0;
+-	start =3D vgacon_scrollback.cur + lines;
++	vgacon_scrollback_cur->restore =3D 0;
++	start =3D vgacon_scrollback_cur->cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback.cnt)
+-		start =3D vgacon_scrollback.cnt;
++	if (start > vgacon_scrollback_cur->cnt)
++		start =3D vgacon_scrollback_cur->cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback.cnt)
+-		end =3D vgacon_scrollback.cnt;
++	if (end > vgacon_scrollback_cur->cnt)
++		end =3D vgacon_scrollback_cur->cnt;
+=20
+-	vgacon_scrollback.cur =3D start;
++	vgacon_scrollback_cur->cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+-					 c->vc_size_row);
++	soff =3D vgacon_scrollback_cur->tail -
++		(c->vc_size_row * (vgacon_scrollback_cur->cnt - end));
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback.size;
++		soff +=3D vgacon_scrollback_cur->size;
+=20
+-	count =3D vgacon_scrollback.cnt - start;
++	count =3D vgacon_scrollback_cur->cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -290,13 +333,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback.size - soff);
+-		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback_cur->size - soff);
++		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback.data, count);
++			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
+ 			d +=3D count;
+ 		}
+=20
+@@ -309,6 +352,7 @@ static void vgacon_scrolldelta(struct vc_data *c, int l=
+ines)
+ #define vgacon_scrollback_startup(...) do { } while (0)
+ #define vgacon_scrollback_init(...)    do { } while (0)
+ #define vgacon_scrollback_update(...)  do { } while (0)
++#define vgacon_scrollback_switch(...)  do { } while (0)
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+@@ -783,7 +827,7 @@ static int vgacon_switch(struct vc_data *c)
+ 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
+ 	}
+=20
+-	vgacon_scrollback_init(c->vc_size_row);
++	vgacon_scrollback_switch(c->vc_num);
+ 	return 0;		/* Redrawing not needed */
+ }
+=20
+--=20
+2.1.4
 
-> +#include <linux/init.h>
-> +#include <linux/mfd/imanager.h>
-> +#include <linux/module.h>
-> +#include <linux/mutex.h>
-> +#include <linux/platform_device.h>
-> +
-> +#define EC_GPIOF_DIR_OUT       BIT(6)
-> +#define EC_GPIOF_DIR_IN                BIT(7)
-> +
-> +struct imanager_gpio_data {
-> +       struct imanager_device_data *imgr;
-> +       struct gpio_chip chip;
-> +};
-
-Maybe some kerneldoc for this. Not necessary though since its sort of
-self-explanatory.
-
-> +static int imanager_gpio_direction_in(struct gpio_chip *chip, uint offset)
-> +{
-> +       struct imanager_gpio_data *data = gpiochip_get_data(chip);
-> +       struct imanager_device_data *imgr = data->imgr;
-> +       struct imanager_device_attribute *attr = imgr->ec.gpio.attr[offset];
-> +
-> +       mutex_lock(&imgr->lock);
-> +       imanager_write8(&imgr->ec, EC_CMD_GPIO_DIR_WR, attr->did,
-> +                       EC_GPIOF_DIR_IN);
-> +       mutex_unlock(&imgr->lock);
-
-It kind of looks like it would be smarter if the imanager_write8() was
-taking and releasing the lock so you don't have to do it everywhere.
-
-> +static int imanager_gpio_get_direction(struct gpio_chip *chip, uint offset)
-> +{
-> +       struct imanager_gpio_data *data = gpiochip_get_data(chip);
-> +       struct imanager_device_data *imgr = data->imgr;
-> +       struct imanager_device_attribute *attr = imgr->ec.gpio.attr[offset];
-> +       int ret;
-> +
-> +       mutex_lock(&imgr->lock);
-> +       ret = imanager_read8(&imgr->ec, EC_CMD_GPIO_DIR_RD, attr->did);
-> +       mutex_unlock(&imgr->lock);
-> +
-> +       return ret & EC_GPIOF_DIR_IN ? GPIOF_DIR_IN : GPIOF_DIR_OUT;
-
-Don't use GPIOF* flags, those are for consumers. Just return 0/1.
-
-> +static int imanager_gpio_get(struct gpio_chip *chip, uint offset)
-> +{
-> +       struct imanager_gpio_data *data = gpiochip_get_data(chip);
-> +       struct imanager_device_data *imgr = data->imgr;
-> +       struct imanager_device_attribute *attr = imgr->ec.gpio.attr[offset];
-> +       int ret;
-> +
-> +       mutex_lock(&imgr->lock);
-> +       ret = imanager_read8(&imgr->ec, EC_CMD_HWP_RD, attr->did);
-> +       mutex_unlock(&imgr->lock);
-> +
-> +       return ret;
-> +}
-
-Can the read function return an error code? In that case it should be checked
-everywhere.
-
-Also be sure to clamp ret like this:
-
-return !!ret;
-
-Apart from this it looks good.
-
-Yours,
-Linus Walleij

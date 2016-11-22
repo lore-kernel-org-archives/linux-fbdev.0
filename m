@@ -1,74 +1,124 @@
-From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 16 Nov 2016 17:40:19 +0000
-Subject: Re: [PATCH v3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1479318019.20980.12.camel@gmx.de>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 22 Nov 2016 13:41:22 +0000
+Subject: [PATCH v4 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
+Message-Id: <20161122134123.1209-2-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1474236417-27150-1-git-send-email-manuel.schoelling@gmx.de>
-         <20161110214748.GB26324@dell-m4800.home>
-In-Reply-To: <20161110214748.GB26324@dell-m4800.home>
+References: <20161122134123.1209-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20161122134123.1209-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrey Utkin <andrey_utkin@fastmail.com>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: thierry.reding@gmail.com, lee.jones@linaro.org
+Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-Hi,
+Move the checks to select the initial state for the backlight to a new
+function and document the checks we are doing.
 
-I finally found the time to rework the patches, but there are a few
-things I want to discuss:
+With the separate function it is going to be easier to fix or improve the
+initial power state configuration later and it is easier to read the code.
 
-> > This breaks tools like clear_console that rely on flushing the
-> > scrollback history by switching back and forth between consoles
-> > which is why this feature is disabled by default.
-> > Use the escape sequence \e[3J instead for flushing the buffer.
-> 
-> Have never heard of such tool as clear_console. Why mention it at all,
-> where is it used, which are practical configurations which are broken in
-> this way?
-clear_console(1) is part of Debian's bash package and (I think) a
-inofficial 'downstream' patch developed by Ubuntu [1]. There has been
-security concerns (which is also why I disabled this feature by
-default).
-However, if there might be security issues, I would strongly suggest to
-keep this part in the documentation - it does no harm anyway, does it?
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Reviewed-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/video/backlight/pwm_bl.c | 56 ++++++++++++++++++++++++++--------------
+ 1 file changed, 37 insertions(+), 19 deletions(-)
 
-> Does this break clear(1)?
-No, my tests with clear(1) worked fine.
-
-> > -         Enter the amount of System RAM to allocate for the scrollback
-> > -	 buffer.  Each 64KB will give you approximately 16 80x25
-> > -	 screenfuls of scrollback buffer
-> > +	  Enter the amount of System RAM to allocate for scrollback
-> > +	  buffers of VGA consoles. Each 64KB will give you approximately
-> > +	  16 80x25 screenfuls of scrollback buffer.
-> 
-> Indentation amended, I don't know which way it should be, please
-> double-check or mimic old indentation to stay on safe side.
-Double-checked! That's at least how I read the docs.
-
-> > +static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-> 
-> Could you use name vgacon_scrollback instead of new
-> vgacon_scrollback_cur? It doesn't change anything conceptually, but is a
-> bit shorter and seems to mean current scrollback context anyway, right?
-> 
-> I think I see nothing to comment on below.
-There is a already an array called 'vgacon_scrollbacks[N]', so I would
-not like to have two variables named 'vgacon_scrollback' and
-'vgacon_scrollbacks'. Either {'vgacon_scrollback_cur' and
-'vgacon_scrollbacks'} or {'vgacon_scrollback' and
-'vgacon_scrollback_list'}.
-You can make a suggestion, if you like.
-
-All other point you mentioned where fixed as you suggested.
-
-Thanks again for your help, Andrey!
-
-Best,
-
-Manuel
-
-[1]
-http://manpages.ubuntu.com/manpages/xenial/en/man1/clear_console.1.html
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 12614006211e..5712ddd053dd 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ }
+ #endif
+ 
++static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
++{
++	struct device_node *node = pb->dev->of_node;
++
++	/* Not booted with device tree or no phandle link to the node */
++	if (!node || !node->phandle)
++		return FB_BLANK_UNBLANK;
++
++	/*
++	 * If the driver is probed from the device tree and there is a
++	 * phandle link pointing to the backlight node, it is safe to
++	 * assume that another driver will enable the backlight at the
++	 * appropriate time. Therefore, if it is disabled, keep it so.
++	 */
++
++	/* if the enable GPIO is disabled, do not enable the backlight */
++	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
++		return FB_BLANK_POWERDOWN;
++
++	/* The regulator is disabled, do not enable the backlight */
++	if (!regulator_is_enabled(pb->power_supply))
++		return FB_BLANK_POWERDOWN;
++
++	return FB_BLANK_UNBLANK;
++}
++
+ static int pwm_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct platform_pwm_backlight_data *data = dev_get_platdata(&pdev->dev);
+@@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+-	int initial_blank = FB_BLANK_UNBLANK;
+ 	struct pwm_args pargs;
+ 	int ret;
+ 
+@@ -267,20 +292,16 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->enable_gpio = gpio_to_desc(data->enable_gpio);
+ 	}
+ 
+-	if (pb->enable_gpio) {
+-		/*
+-		 * If the driver is probed from the device tree and there is a
+-		 * phandle link pointing to the backlight node, it is safe to
+-		 * assume that another driver will enable the backlight at the
+-		 * appropriate time. Therefore, if it is disabled, keep it so.
+-		 */
+-		if (node && node->phandle &&
+-		    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_OUT &&
+-		    gpiod_get_value(pb->enable_gpio) = 0)
+-			initial_blank = FB_BLANK_POWERDOWN;
+-		else
+-			gpiod_direction_output(pb->enable_gpio, 1);
+-	}
++	/*
++	 * If the GPIO is configured as input, change the direction to output
++	 * and set the GPIO as active.
++	 * Do not force the GPIO to active when it was already output as it
++	 * could cause backlight flickering or we would enable the backlight too
++	 * early. Leave the decision of the initial backlight state for later.
++	 */
++	if (pb->enable_gpio &&
++	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_IN)
++		gpiod_direction_output(pb->enable_gpio, 1);
+ 
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+ 	if (IS_ERR(pb->power_supply)) {
+@@ -288,9 +309,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		goto err_alloc;
+ 	}
+ 
+-	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+-		initial_blank = FB_BLANK_POWERDOWN;
+-
+ 	pb->pwm = devm_pwm_get(&pdev->dev, NULL);
+ 	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) != -EPROBE_DEFER && !node) {
+ 		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+@@ -347,7 +365,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	bl->props.brightness = data->dft_brightness;
+-	bl->props.power = initial_blank;
++	bl->props.power = pwm_backlight_initial_power_state(pb);
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
+-- 
+2.11.0.rc2
 

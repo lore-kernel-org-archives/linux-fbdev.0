@@ -1,120 +1,122 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Date: Thu, 10 Nov 2016 23:20:30 +0000
-Subject: Re: [PATCH v2] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_backlight_p
-Message-Id: <20161111002030.6e97ba6c@jawa>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/gN7TUBNO7aQtwGHkpEGY5ux"
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 23 Nov 2016 07:26:41 +0000
+Subject: [PATCH v3] Fix loading of module radeonfb on PowerMac
+Message-Id: <1479886001-27801-1-git-send-email-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
-        <1477985147-18835-1-git-send-email-l.majewski@majess.pl>
-        <20161108232525.639ea49f@jawa>
-        <20161110081615.GO13127@dell>
-In-Reply-To: <20161110081615.GO13127@dell>
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-pwm@vger.kernel.org, linux-kernel@vger.kernel.org, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, linux-fbdev@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, Mathieu Malaterre <malat@debian.org>
 
---Sig_/gN7TUBNO7aQtwGHkpEGY5ux
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-Dear Lee,
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
-> On Tue, 08 Nov 2016, Lukasz Majewski wrote:
->=20
-> > Dear All,
-> >=20
-> > > The commit a55944ca82d2 ("backlight: update bd state & fb_blank
-> > > properties when necessary") has posed some extra restrictions on
-> > > blanking and unblanking frame buffer device.
-> > >=20
-> > > Unfortunately, pwm_bl driver's probe did not initialize members of
-> > > struct backlight_device necessary for further blank/unblank
-> > > operation.
-> > >=20
-> > > This code in case of initial unblank of backlight device (default=20
-> > > behaviour) sets use_count to 1 and marks this particular backlight
-> > > device as used by all available fb devices (since it is not known
-> > > during probe how much and which fb devices will be assigned).
-> > >=20
-> > > Without this code, the backlight works properly until one tries to
-> > > blank it manually from sysfs with "echo 1
-> > > > /sys/class/graphics/fb0/blank". Since fb_bl_on[0] and use_count
-> > > > were both set to 0, the logic at
-> > > fb_notifier_callback (@backlight.c) thought that we didn't turn on
-> > > (unblanked) the backlight device and refuses to disable (blank)
-> > > it. As a result we see garbage from fb displayed.
-> >=20
-> > COmments/acks are more than welcome :-)
->=20
-> Ah, it looks like you dropped Jingoo from the list!
->=20
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
 
-I can only apologize for such situation.... strange mistake.
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
 
-> I'll reply to the original mail with him in CC.
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded.
 
-Thank you for your help.
+The problem is that offb call pci_request_region first, and then radeonfb
+tries to do it, and since one is trying to take over from the other, it can't
+do that because the area is already reserved.
 
-Best regards,
-Lukasz Majewski
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeonfb side.
 
->=20
-> > > Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
-> > > ---
-> > > The patch has been tested on i.MX6q with 4.9-rc3
-> > > SHA1: a909d3e636995ba7c349e2ca5dbb528154d4ac30
-> > > ---
-> > > Changes for v2:
-> > > - Update commit message with proper other commit reference
-> > >=20
-> > > ---
-> > >  drivers/video/backlight/pwm_bl.c | 10 +++++++++-
-> > >  1 file changed, 9 insertions(+), 1 deletion(-)
-> > >=20
-> > > diff --git a/drivers/video/backlight/pwm_bl.c
-> > > b/drivers/video/backlight/pwm_bl.c index 1261400..6859ba0 100644
-> > > --- a/drivers/video/backlight/pwm_bl.c
-> > > +++ b/drivers/video/backlight/pwm_bl.c
-> > > @@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct
-> > > platform_device *pdev) struct pwm_bl_data *pb;
-> > >  	int initial_blank =3D FB_BLANK_UNBLANK;
-> > >  	struct pwm_args pargs;
-> > > -	int ret;
-> > > +	int ret, i;
-> > > =20
-> > >  	if (!data) {
-> > >  		ret =3D pwm_backlight_parse_dt(&pdev->dev,
-> > > &defdata); @@ -348,6 +348,14 @@ static int
-> > > pwm_backlight_probe(struct platform_device *pdev)=20
-> > >  	bl->props.brightness =3D data->dft_brightness;
-> > >  	bl->props.power =3D initial_blank;
-> > > +
-> > > +	if (initial_blank =3D=3D FB_BLANK_UNBLANK) {
-> > > +		for (i =3D 0; i < FB_MAX; i++)
-> > > +			bl->fb_bl_on[i] =3D true;
-> > > +
-> > > +		bl->use_count =3D 1;
-> > > +	}
-> > > +
-> > >  	backlight_update_status(bl);
-> > > =20
-> > >  	platform_set_drvdata(pdev, bl);
-> >=20
->=20
->=20
->=20
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+---
 
+v2: Remove compilation warning
 
---Sig_/gN7TUBNO7aQtwGHkpEGY5ux
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+v3: Hide error messages on PPC
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+ drivers/video/fbdev/aty/radeon_base.c | 27 +++++++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
 
-iEYEARECAAYFAlglAMUACgkQf9/hG2YwgjGPewCfXpDa4UqXsLOWp8sP7cveVO6h
-VI0AnAyZb3J8i7j8rKCIoYqVlprFmsPi
-=+4dj
------END PGP SIGNATURE-----
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 218339a..837c86a 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2314,20 +2330,29 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
++  /* this is not an error on PowerMac where offb already requested mem regions */
++#ifndef CONFIG_PPC
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_fb;
+ 	}
++#endif
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
++#ifndef CONFIG_PPC
+ 	if (ret < 0) {
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_pci0;
+ 	}
++#endif
+ 
+ 	/* map the regions */
+ 	rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
+@@ -2511,10 +2536,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_PPC
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
+-- 
+2.1.4
 
---Sig_/gN7TUBNO7aQtwGHkpEGY5ux--

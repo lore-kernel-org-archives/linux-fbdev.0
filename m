@@ -1,232 +1,84 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 23 Nov 2016 08:19:33 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2016 08:21:33 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161123081932.byoasvcl322hrlin@phenom.ffwll.local>
+Message-Id: <508207ae-7667-c2ac-1e5c-cba28ed05a52@ti.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="0Xb3qFVjh9PAFCBxH3816XON7I7kVRoer"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
-In-Reply-To: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+ <20161123081932.byoasvcl322hrlin@phenom.ffwll.local>
+In-Reply-To: <20161123081932.byoasvcl322hrlin@phenom.ffwll.local>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, linux-kernel@vger.kernel.org
 
-On Wed, Nov 23, 2016 at 10:03:10AM +0200, Tomi Valkeinen wrote:
-> Hi,
-> 
-> Since the fbdev framework is in maintenance mode and all new display drivers
-> should be made with the DRM framework, remove the fbdev drivers from staging.
-> 
-> Note: the patches are created with git format-patch -D, so they can't be
-> applied. Only for review.
+--0Xb3qFVjh9PAFCBxH3816XON7I7kVRoer
+Content-Type: multipart/mixed; boundary="Anho68XRfRE8Rk7XSETgwO9LMAWApqOrO";
+ protected-headers="v1"
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>,
+ Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
+ Teddy Wang <teddy.wang@siliconmotion.com>,
+ Arnaud Patard <arnaud.patard@rtp-net.org>, linux-kernel@vger.kernel.org
+Message-ID: <508207ae-7667-c2ac-1e5c-cba28ed05a52@ti.com>
+Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
+References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
+ <20161123081932.byoasvcl322hrlin@phenom.ffwll.local>
+In-Reply-To: <20161123081932.byoasvcl322hrlin@phenom.ffwll.local>
 
-+1 from my side. Now that we have the simple pipe helpers in drm-kms, and
-a few drivers starting to use them, there's really no reasons left anymore
-to have fbdev drivers.
+--Anho68XRfRE8Rk7XSETgwO9LMAWApqOrO
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-And if anyone wants to use the code as hw documentation, git will keep it
-forever.
--Daniel
-> 
->  Tomi
-> 
-> Tomi Valkeinen (3):
->   staging: remove xgifb
->   staging: remove sm750fb
->   staging: remove fbtft
-> 
->  MAINTAINERS                              |   19 -
->  drivers/staging/Kconfig                  |    6 -
->  drivers/staging/Makefile                 |    3 -
->  drivers/staging/fbtft/Kconfig            |  210 --
->  drivers/staging/fbtft/Makefile           |   40 -
->  drivers/staging/fbtft/README             |   32 -
->  drivers/staging/fbtft/fb_agm1264k-fl.c   |  456 ---
->  drivers/staging/fbtft/fb_bd663474.c      |  184 -
->  drivers/staging/fbtft/fb_hx8340bn.c      |  234 --
->  drivers/staging/fbtft/fb_hx8347d.c       |  169 -
->  drivers/staging/fbtft/fb_hx8353d.c       |  157 -
->  drivers/staging/fbtft/fb_hx8357d.c       |  210 --
->  drivers/staging/fbtft/fb_hx8357d.h       |   70 -
->  drivers/staging/fbtft/fb_ili9163.c       |  273 --
->  drivers/staging/fbtft/fb_ili9320.c       |  278 --
->  drivers/staging/fbtft/fb_ili9325.c       |  277 --
->  drivers/staging/fbtft/fb_ili9340.c       |  149 -
->  drivers/staging/fbtft/fb_ili9341.c       |  166 -
->  drivers/staging/fbtft/fb_ili9481.c       |  112 -
->  drivers/staging/fbtft/fb_ili9486.c       |  112 -
->  drivers/staging/fbtft/fb_pcd8544.c       |  176 -
->  drivers/staging/fbtft/fb_ra8875.c        |  318 --
->  drivers/staging/fbtft/fb_s6d02a1.c       |  166 -
->  drivers/staging/fbtft/fb_s6d1121.c       |  194 --
->  drivers/staging/fbtft/fb_ssd1289.c       |  191 --
->  drivers/staging/fbtft/fb_ssd1305.c       |  216 --
->  drivers/staging/fbtft/fb_ssd1306.c       |  217 --
->  drivers/staging/fbtft/fb_ssd1325.c       |  205 --
->  drivers/staging/fbtft/fb_ssd1331.c       |  196 --
->  drivers/staging/fbtft/fb_ssd1351.c       |  238 --
->  drivers/staging/fbtft/fb_st7735r.c       |  190 -
->  drivers/staging/fbtft/fb_st7789v.c       |  265 --
->  drivers/staging/fbtft/fb_tinylcd.c       |  112 -
->  drivers/staging/fbtft/fb_tls8204.c       |  169 -
->  drivers/staging/fbtft/fb_uc1611.c        |  340 --
->  drivers/staging/fbtft/fb_uc1701.c        |  179 -
->  drivers/staging/fbtft/fb_upd161704.c     |  197 --
->  drivers/staging/fbtft/fb_watterott.c     |  302 --
->  drivers/staging/fbtft/fbtft-bus.c        |  252 --
->  drivers/staging/fbtft/fbtft-core.c       | 1467 --------
->  drivers/staging/fbtft/fbtft-io.c         |  238 --
->  drivers/staging/fbtft/fbtft-sysfs.c      |  219 --
->  drivers/staging/fbtft/fbtft.h            |  421 ---
->  drivers/staging/fbtft/fbtft_device.c     | 1597 ---------
->  drivers/staging/fbtft/flexfb.c           |  619 ----
->  drivers/staging/fbtft/internal.h         |   25 -
->  drivers/staging/sm750fb/Kconfig          |   14 -
->  drivers/staging/sm750fb/Makefile         |    4 -
->  drivers/staging/sm750fb/TODO             |   16 -
->  drivers/staging/sm750fb/ddk750.h         |   24 -
->  drivers/staging/sm750fb/ddk750_chip.c    |  403 ---
->  drivers/staging/sm750fb/ddk750_chip.h    |   79 -
->  drivers/staging/sm750fb/ddk750_display.c |  186 -
->  drivers/staging/sm750fb/ddk750_display.h |  102 -
->  drivers/staging/sm750fb/ddk750_dvi.c     |   60 -
->  drivers/staging/sm750fb/ddk750_dvi.h     |   59 -
->  drivers/staging/sm750fb/ddk750_help.c    |   17 -
->  drivers/staging/sm750fb/ddk750_help.h    |   21 -
->  drivers/staging/sm750fb/ddk750_hwi2c.c   |  254 --
->  drivers/staging/sm750fb/ddk750_hwi2c.h   |   11 -
->  drivers/staging/sm750fb/ddk750_mode.c    |  220 --
->  drivers/staging/sm750fb/ddk750_mode.h    |   41 -
->  drivers/staging/sm750fb/ddk750_power.c   |  165 -
->  drivers/staging/sm750fb/ddk750_power.h   |   50 -
->  drivers/staging/sm750fb/ddk750_reg.h     | 1458 --------
->  drivers/staging/sm750fb/ddk750_sii164.c  |  410 ---
->  drivers/staging/sm750fb/ddk750_sii164.h  |  174 -
->  drivers/staging/sm750fb/ddk750_swi2c.c   |  516 ---
->  drivers/staging/sm750fb/ddk750_swi2c.h   |   71 -
->  drivers/staging/sm750fb/readme           |   38 -
->  drivers/staging/sm750fb/sm750.c          | 1248 -------
->  drivers/staging/sm750fb/sm750.h          |  202 --
->  drivers/staging/sm750fb/sm750_accel.c    |  388 ---
->  drivers/staging/sm750fb/sm750_accel.h    |  225 --
->  drivers/staging/sm750fb/sm750_cursor.c   |  183 -
->  drivers/staging/sm750fb/sm750_cursor.h   |   17 -
->  drivers/staging/sm750fb/sm750_hw.c       |  557 ---
->  drivers/staging/xgifb/Kconfig            |   11 -
->  drivers/staging/xgifb/Makefile           |    4 -
->  drivers/staging/xgifb/TODO               |   13 -
->  drivers/staging/xgifb/XGI_main.h         |  377 --
->  drivers/staging/xgifb/XGI_main_26.c      | 2100 ------------
->  drivers/staging/xgifb/XGIfb.h            |  108 -
->  drivers/staging/xgifb/vb_def.h           |  256 --
->  drivers/staging/xgifb/vb_init.c          | 1363 --------
->  drivers/staging/xgifb/vb_init.h          |    6 -
->  drivers/staging/xgifb/vb_setmode.c       | 5529 ------------------------------
->  drivers/staging/xgifb/vb_setmode.h       |   23 -
->  drivers/staging/xgifb/vb_struct.h        |  164 -
->  drivers/staging/xgifb/vb_table.h         | 2511 --------------
->  drivers/staging/xgifb/vb_util.h          |   45 -
->  drivers/staging/xgifb/vgatypes.h         |   50 -
->  92 files changed, 31639 deletions(-)
->  delete mode 100644 drivers/staging/fbtft/Kconfig
->  delete mode 100644 drivers/staging/fbtft/Makefile
->  delete mode 100644 drivers/staging/fbtft/README
->  delete mode 100644 drivers/staging/fbtft/fb_agm1264k-fl.c
->  delete mode 100644 drivers/staging/fbtft/fb_bd663474.c
->  delete mode 100644 drivers/staging/fbtft/fb_hx8340bn.c
->  delete mode 100644 drivers/staging/fbtft/fb_hx8347d.c
->  delete mode 100644 drivers/staging/fbtft/fb_hx8353d.c
->  delete mode 100644 drivers/staging/fbtft/fb_hx8357d.c
->  delete mode 100644 drivers/staging/fbtft/fb_hx8357d.h
->  delete mode 100644 drivers/staging/fbtft/fb_ili9163.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9320.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9325.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9340.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9341.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9481.c
->  delete mode 100644 drivers/staging/fbtft/fb_ili9486.c
->  delete mode 100644 drivers/staging/fbtft/fb_pcd8544.c
->  delete mode 100644 drivers/staging/fbtft/fb_ra8875.c
->  delete mode 100644 drivers/staging/fbtft/fb_s6d02a1.c
->  delete mode 100644 drivers/staging/fbtft/fb_s6d1121.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1289.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1305.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1306.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1325.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1331.c
->  delete mode 100644 drivers/staging/fbtft/fb_ssd1351.c
->  delete mode 100644 drivers/staging/fbtft/fb_st7735r.c
->  delete mode 100644 drivers/staging/fbtft/fb_st7789v.c
->  delete mode 100644 drivers/staging/fbtft/fb_tinylcd.c
->  delete mode 100644 drivers/staging/fbtft/fb_tls8204.c
->  delete mode 100644 drivers/staging/fbtft/fb_uc1611.c
->  delete mode 100644 drivers/staging/fbtft/fb_uc1701.c
->  delete mode 100644 drivers/staging/fbtft/fb_upd161704.c
->  delete mode 100644 drivers/staging/fbtft/fb_watterott.c
->  delete mode 100644 drivers/staging/fbtft/fbtft-bus.c
->  delete mode 100644 drivers/staging/fbtft/fbtft-core.c
->  delete mode 100644 drivers/staging/fbtft/fbtft-io.c
->  delete mode 100644 drivers/staging/fbtft/fbtft-sysfs.c
->  delete mode 100644 drivers/staging/fbtft/fbtft.h
->  delete mode 100644 drivers/staging/fbtft/fbtft_device.c
->  delete mode 100644 drivers/staging/fbtft/flexfb.c
->  delete mode 100644 drivers/staging/fbtft/internal.h
->  delete mode 100644 drivers/staging/sm750fb/Kconfig
->  delete mode 100644 drivers/staging/sm750fb/Makefile
->  delete mode 100644 drivers/staging/sm750fb/TODO
->  delete mode 100644 drivers/staging/sm750fb/ddk750.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_chip.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_chip.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_display.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_display.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_dvi.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_dvi.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_help.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_help.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_hwi2c.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_hwi2c.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_mode.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_mode.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_power.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_power.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_reg.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_sii164.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_sii164.h
->  delete mode 100644 drivers/staging/sm750fb/ddk750_swi2c.c
->  delete mode 100644 drivers/staging/sm750fb/ddk750_swi2c.h
->  delete mode 100644 drivers/staging/sm750fb/readme
->  delete mode 100644 drivers/staging/sm750fb/sm750.c
->  delete mode 100644 drivers/staging/sm750fb/sm750.h
->  delete mode 100644 drivers/staging/sm750fb/sm750_accel.c
->  delete mode 100644 drivers/staging/sm750fb/sm750_accel.h
->  delete mode 100644 drivers/staging/sm750fb/sm750_cursor.c
->  delete mode 100644 drivers/staging/sm750fb/sm750_cursor.h
->  delete mode 100644 drivers/staging/sm750fb/sm750_hw.c
->  delete mode 100644 drivers/staging/xgifb/Kconfig
->  delete mode 100644 drivers/staging/xgifb/Makefile
->  delete mode 100644 drivers/staging/xgifb/TODO
->  delete mode 100644 drivers/staging/xgifb/XGI_main.h
->  delete mode 100644 drivers/staging/xgifb/XGI_main_26.c
->  delete mode 100644 drivers/staging/xgifb/XGIfb.h
->  delete mode 100644 drivers/staging/xgifb/vb_def.h
->  delete mode 100644 drivers/staging/xgifb/vb_init.c
->  delete mode 100644 drivers/staging/xgifb/vb_init.h
->  delete mode 100644 drivers/staging/xgifb/vb_setmode.c
->  delete mode 100644 drivers/staging/xgifb/vb_setmode.h
->  delete mode 100644 drivers/staging/xgifb/vb_struct.h
->  delete mode 100644 drivers/staging/xgifb/vb_table.h
->  delete mode 100644 drivers/staging/xgifb/vb_util.h
->  delete mode 100644 drivers/staging/xgifb/vgatypes.h
-> 
-> -- 
-> 2.7.4
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+On 23/11/16 10:19, Daniel Vetter wrote:
+> On Wed, Nov 23, 2016 at 10:03:10AM +0200, Tomi Valkeinen wrote:
+>> Hi,
+>>
+>> Since the fbdev framework is in maintenance mode and all new display d=
+rivers
+>> should be made with the DRM framework, remove the fbdev drivers from s=
+taging.
+>>
+>> Note: the patches are created with git format-patch -D, so they can't =
+be
+>> applied. Only for review.
+>=20
+> +1 from my side. Now that we have the simple pipe helpers in drm-kms, a=
+nd
+> a few drivers starting to use them, there's really no reasons left anym=
+ore
+> to have fbdev drivers.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Well, I think there's the MMU problem. If I recall right, someone said
+DRM doesn't compile/work without MMU.
+
+ Tomi
+
+
+--Anho68XRfRE8Rk7XSETgwO9LMAWApqOrO--
+
+--0Xb3qFVjh9PAFCBxH3816XON7I7kVRoer
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJYNVGNAAoJEPo9qoy8lh71h2kQAKqUy7Soxf9TKp8BIKsuZSUv
+OI1i0PSPoFP+QscjiuTPjhE7gc33rA37HB8QHRWirY5vTtGtIZOi9L4CHWSPm3Zd
+UjH57h92W374SMIvx9/ORB70l1/7p6iBd4owPnil8xBKjY/ZzQSZcpgTJYnxyTKp
+SQLUvFoafXMzOkFrq+Ns9K91xBH2F+912l0HH7b/YaDI/xpVPGqu/MxENR/3axx8
+7CWBGXXIs6YRmhJxEPHUiVz9+J9KJPfqCJ3lfW7Sq2jpRH63LKXbltRo6ZDptA8a
+WC0DnvgbaNgFdvmUrocKKEGf7m18FPXgctEVXF122j8RXmJnXAcVgnorDm1AfQP9
+/GQeFd1MOercL+6WFyJwO8GojtrA8wuJHBE4+bF8oEcFXTSzB+6bxL3adV3WFmmU
+Re5Z0gkgiOh0qMPQdAUvGzr9rvmqlLCvHhco+GQiRsuhNJ4AIDtg80usrOlHoKAq
+UI40UYEhfBHAK+lTKneV7ViLlxM52jtn5eThHhC44AnBFwxKVpO3uLZ+IFbBmwkP
+14Nlfc46Fq9FtQ7fZsWA4j2WeOMNwkTCaNtfhpDhV92lskjuxjhBcFWJB9SoS3ME
+fwae+kpsu80A1m6e1La5yGH6z5CTcVHwUVVCFUmyC23hgx00LijF7Uck3DNk1CA4
+Z7y4zVc9IKKW+jiZQTkF
+=ZDln
+-----END PGP SIGNATURE-----
+
+--0Xb3qFVjh9PAFCBxH3816XON7I7kVRoer--

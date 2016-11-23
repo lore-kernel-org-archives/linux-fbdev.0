@@ -1,311 +1,143 @@
-From: Lars-Peter Clausen <lars@metafoo.de>
-Date: Wed, 23 Nov 2016 21:47:49 +0000
-Subject: [PATCH] fbdev: omap/lcd: Remove no-op driver callbacks
-Message-Id: <1479937669-13964-1-git-send-email-lars@metafoo.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2016 08:03:11 +0000
+Subject: [RFC PATCH 1/3] staging: remove xgifb
+Message-Id: <1479888193-23908-2-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
 
-Every single one of the OMAP fbdev LCD drivers implements no-op remove,
-suspend and resume callbacks for their platform_driver. This is not
-necessary as the driver core handles the case where the callbacks are no
-set just fine. So they are just unnecessary boilerplate that can be
-removed.
+Since the fbdev framework is in maintenance mode and all new display
+drivers should be made with the DRM framework, remove xgifb from
+staging. Especially as xgifb has been in staging for 6 years...
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/fbdev/omap/lcd_ams_delta.c | 19 -------------------
- drivers/video/fbdev/omap/lcd_h3.c        | 12 ------------
- drivers/video/fbdev/omap/lcd_htcherald.c | 19 -------------------
- drivers/video/fbdev/omap/lcd_inn1510.c   | 19 -------------------
- drivers/video/fbdev/omap/lcd_inn1610.c   | 19 -------------------
- drivers/video/fbdev/omap/lcd_osk.c       | 18 ------------------
- drivers/video/fbdev/omap/lcd_palmte.c    | 18 ------------------
- drivers/video/fbdev/omap/lcd_palmtt.c    | 18 ------------------
- drivers/video/fbdev/omap/lcd_palmz71.c   | 19 -------------------
- 9 files changed, 161 deletions(-)
+ MAINTAINERS                         |    5 -
+ drivers/staging/Kconfig             |    2 -
+ drivers/staging/Makefile            |    1 -
+ drivers/staging/xgifb/Kconfig       |   11 -
+ drivers/staging/xgifb/Makefile      |    4 -
+ drivers/staging/xgifb/TODO          |   13 -
+ drivers/staging/xgifb/XGI_main.h    |  377 ---
+ drivers/staging/xgifb/XGI_main_26.c | 2100 -------------
+ drivers/staging/xgifb/XGIfb.h       |  108 -
+ drivers/staging/xgifb/vb_def.h      |  256 --
+ drivers/staging/xgifb/vb_init.c     | 1363 ---------
+ drivers/staging/xgifb/vb_init.h     |    6 -
+ drivers/staging/xgifb/vb_setmode.c  | 5529 -----------------------------------
+ drivers/staging/xgifb/vb_setmode.h  |   23 -
+ drivers/staging/xgifb/vb_struct.h   |  164 --
+ drivers/staging/xgifb/vb_table.h    | 2511 ----------------
+ drivers/staging/xgifb/vb_util.h     |   45 -
+ drivers/staging/xgifb/vgatypes.h    |   50 -
+ 18 files changed, 12568 deletions(-)
+ delete mode 100644 drivers/staging/xgifb/Kconfig
+ delete mode 100644 drivers/staging/xgifb/Makefile
+ delete mode 100644 drivers/staging/xgifb/TODO
+ delete mode 100644 drivers/staging/xgifb/XGI_main.h
+ delete mode 100644 drivers/staging/xgifb/XGI_main_26.c
+ delete mode 100644 drivers/staging/xgifb/XGIfb.h
+ delete mode 100644 drivers/staging/xgifb/vb_def.h
+ delete mode 100644 drivers/staging/xgifb/vb_init.c
+ delete mode 100644 drivers/staging/xgifb/vb_init.h
+ delete mode 100644 drivers/staging/xgifb/vb_setmode.c
+ delete mode 100644 drivers/staging/xgifb/vb_setmode.h
+ delete mode 100644 drivers/staging/xgifb/vb_struct.h
+ delete mode 100644 drivers/staging/xgifb/vb_table.h
+ delete mode 100644 drivers/staging/xgifb/vb_util.h
+ delete mode 100644 drivers/staging/xgifb/vgatypes.h
 
-diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
-index f912a20..ef0ed74 100644
---- a/drivers/video/fbdev/omap/lcd_ams_delta.c
-+++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
-@@ -195,27 +195,8 @@ static int ams_delta_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 851b89b9edcb..b97f18d2e93d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11564,11 +11564,6 @@ L:	linux-wireless@vger.kernel.org
+ S:	Supported
+ F:	drivers/staging/wilc1000/
  
--static int ams_delta_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
+-STAGING - XGI Z7,Z9,Z11 PCI DISPLAY DRIVER
+-M:	Arnaud Patard <arnaud.patard@rtp-net.org>
+-S:	Odd Fixes
+-F:	drivers/staging/xgifb/
 -
--static int ams_delta_panel_suspend(struct platform_device *pdev,
--		pm_message_t mesg)
--{
--	return 0;
--}
--
--static int ams_delta_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver ams_delta_panel_driver = {
- 	.probe		= ams_delta_panel_probe,
--	.remove		= ams_delta_panel_remove,
--	.suspend	= ams_delta_panel_suspend,
--	.resume		= ams_delta_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_ams_delta",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_h3.c b/drivers/video/fbdev/omap/lcd_h3.c
-index 21512b0..1ceced7 100644
---- a/drivers/video/fbdev/omap/lcd_h3.c
-+++ b/drivers/video/fbdev/omap/lcd_h3.c
-@@ -103,21 +103,9 @@ static int h3_panel_remove(struct platform_device *pdev)
- 	return 0;
- }
+ STARFIRE/DURALAN NETWORK DRIVER
+ M:	Ion Badulescu <ionut@badula.org>
+ S:	Odd Fixes
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 58a7b3504b82..2afd7466cfde 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -54,8 +54,6 @@ source "drivers/staging/iio/Kconfig"
  
--static int h3_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
--{
--	return 0;
--}
--
--static int h3_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver h3_panel_driver = {
- 	.probe		= h3_panel_probe,
- 	.remove		= h3_panel_remove,
--	.suspend	= h3_panel_suspend,
--	.resume		= h3_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_h3",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_htcherald.c b/drivers/video/fbdev/omap/lcd_htcherald.c
-index 8b4dfa0..a2ca5e9 100644
---- a/drivers/video/fbdev/omap/lcd_htcherald.c
-+++ b/drivers/video/fbdev/omap/lcd_htcherald.c
-@@ -88,27 +88,8 @@ static int htcherald_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
+ source "drivers/staging/sm750fb/Kconfig"
  
--static int htcherald_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
+-source "drivers/staging/xgifb/Kconfig"
 -
--static int htcherald_panel_suspend(struct platform_device *pdev,
--						pm_message_t mesg)
--{
--	return 0;
--}
--
--static int htcherald_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver htcherald_panel_driver = {
- 	.probe		= htcherald_panel_probe,
--	.remove		= htcherald_panel_remove,
--	.suspend	= htcherald_panel_suspend,
--	.resume		= htcherald_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_htcherald",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_inn1510.c b/drivers/video/fbdev/omap/lcd_inn1510.c
-index 49907fa..a549337 100644
---- a/drivers/video/fbdev/omap/lcd_inn1510.c
-+++ b/drivers/video/fbdev/omap/lcd_inn1510.c
-@@ -83,27 +83,8 @@ static int innovator1510_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
+ source "drivers/staging/emxx_udc/Kconfig"
  
--static int innovator1510_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int innovator1510_panel_suspend(struct platform_device *pdev,
--				       pm_message_t mesg)
--{
--	return 0;
--}
--
--static int innovator1510_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver innovator1510_panel_driver = {
- 	.probe		= innovator1510_panel_probe,
--	.remove		= innovator1510_panel_remove,
--	.suspend	= innovator1510_panel_suspend,
--	.resume		= innovator1510_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_inn1510",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_inn1610.c b/drivers/video/fbdev/omap/lcd_inn1610.c
-index 8b42894..7319563 100644
---- a/drivers/video/fbdev/omap/lcd_inn1610.c
-+++ b/drivers/video/fbdev/omap/lcd_inn1610.c
-@@ -104,27 +104,8 @@ static int innovator1610_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int innovator1610_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int innovator1610_panel_suspend(struct platform_device *pdev,
--				       pm_message_t mesg)
--{
--	return 0;
--}
--
--static int innovator1610_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver innovator1610_panel_driver = {
- 	.probe		= innovator1610_panel_probe,
--	.remove		= innovator1610_panel_remove,
--	.suspend	= innovator1610_panel_suspend,
--	.resume		= innovator1610_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_inn1610",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_osk.c b/drivers/video/fbdev/omap/lcd_osk.c
-index b56886c..3f4a18b 100644
---- a/drivers/video/fbdev/omap/lcd_osk.c
-+++ b/drivers/video/fbdev/omap/lcd_osk.c
-@@ -103,26 +103,8 @@ static int osk_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int osk_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int osk_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
--{
--	return 0;
--}
--
--static int osk_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver osk_panel_driver = {
- 	.probe		= osk_panel_probe,
--	.remove		= osk_panel_remove,
--	.suspend	= osk_panel_suspend,
--	.resume		= osk_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_osk",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_palmte.c b/drivers/video/fbdev/omap/lcd_palmte.c
-index 2713fed..c0cee37 100644
---- a/drivers/video/fbdev/omap/lcd_palmte.c
-+++ b/drivers/video/fbdev/omap/lcd_palmte.c
-@@ -81,26 +81,8 @@ static int palmte_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int palmte_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int palmte_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
--{
--	return 0;
--}
--
--static int palmte_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver palmte_panel_driver = {
- 	.probe		= palmte_panel_probe,
--	.remove		= palmte_panel_remove,
--	.suspend	= palmte_panel_suspend,
--	.resume		= palmte_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_palmte",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_palmtt.c b/drivers/video/fbdev/omap/lcd_palmtt.c
-index 1a936d5..621952b 100644
---- a/drivers/video/fbdev/omap/lcd_palmtt.c
-+++ b/drivers/video/fbdev/omap/lcd_palmtt.c
-@@ -87,26 +87,8 @@ static int palmtt_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int palmtt_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int palmtt_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
--{
--	return 0;
--}
--
--static int palmtt_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver palmtt_panel_driver = {
- 	.probe		= palmtt_panel_probe,
--	.remove		= palmtt_panel_remove,
--	.suspend	= palmtt_panel_suspend,
--	.resume		= palmtt_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_palmtt",
- 	},
-diff --git a/drivers/video/fbdev/omap/lcd_palmz71.c b/drivers/video/fbdev/omap/lcd_palmz71.c
-index a20db4f..ccb556d 100644
---- a/drivers/video/fbdev/omap/lcd_palmz71.c
-+++ b/drivers/video/fbdev/omap/lcd_palmz71.c
-@@ -82,27 +82,8 @@ static int palmz71_panel_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static int palmz71_panel_remove(struct platform_device *pdev)
--{
--	return 0;
--}
--
--static int palmz71_panel_suspend(struct platform_device *pdev,
--				 pm_message_t mesg)
--{
--	return 0;
--}
--
--static int palmz71_panel_resume(struct platform_device *pdev)
--{
--	return 0;
--}
--
- static struct platform_driver palmz71_panel_driver = {
- 	.probe		= palmz71_panel_probe,
--	.remove		= palmz71_panel_remove,
--	.suspend	= palmz71_panel_suspend,
--	.resume		= palmz71_panel_resume,
- 	.driver		= {
- 		.name	= "lcd_palmz71",
- 	},
+ source "drivers/staging/speakup/Kconfig"
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 2fa9745db614..31c1054ace20 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -18,7 +18,6 @@ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_IIO)		+= iio/
+ obj-$(CONFIG_FB_SM750)		+= sm750fb/
+-obj-$(CONFIG_FB_XGI)		+= xgifb/
+ obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
+ obj-$(CONFIG_SPEAKUP)		+= speakup/
+ obj-$(CONFIG_MFD_NVEC)		+= nvec/
+diff --git a/drivers/staging/xgifb/Kconfig b/drivers/staging/xgifb/Kconfig
+deleted file mode 100644
+index bb0ca5974ea0..000000000000
+diff --git a/drivers/staging/xgifb/Makefile b/drivers/staging/xgifb/Makefile
+deleted file mode 100644
+index 964a843c4521..000000000000
+diff --git a/drivers/staging/xgifb/TODO b/drivers/staging/xgifb/TODO
+deleted file mode 100644
+index 7eb99140a399..000000000000
+diff --git a/drivers/staging/xgifb/XGI_main.h b/drivers/staging/xgifb/XGI_main.h
+deleted file mode 100644
+index 85079fea7152..000000000000
+diff --git a/drivers/staging/xgifb/XGI_main_26.c b/drivers/staging/xgifb/XGI_main_26.c
+deleted file mode 100644
+index 0c78491ff5a1..000000000000
+diff --git a/drivers/staging/xgifb/XGIfb.h b/drivers/staging/xgifb/XGIfb.h
+deleted file mode 100644
+index af50362395d5..000000000000
+diff --git a/drivers/staging/xgifb/vb_def.h b/drivers/staging/xgifb/vb_def.h
+deleted file mode 100644
+index 94e2e3c7c264..000000000000
+diff --git a/drivers/staging/xgifb/vb_init.c b/drivers/staging/xgifb/vb_init.c
+deleted file mode 100644
+index 062ece22ed84..000000000000
+diff --git a/drivers/staging/xgifb/vb_init.h b/drivers/staging/xgifb/vb_init.h
+deleted file mode 100644
+index 500cabe41a3c..000000000000
+diff --git a/drivers/staging/xgifb/vb_setmode.c b/drivers/staging/xgifb/vb_setmode.c
+deleted file mode 100644
+index d8010c5c1a70..000000000000
+diff --git a/drivers/staging/xgifb/vb_setmode.h b/drivers/staging/xgifb/vb_setmode.h
+deleted file mode 100644
+index 6f082a7a5a4a..000000000000
+diff --git a/drivers/staging/xgifb/vb_struct.h b/drivers/staging/xgifb/vb_struct.h
+deleted file mode 100644
+index 2fd1a5935e1d..000000000000
+diff --git a/drivers/staging/xgifb/vb_table.h b/drivers/staging/xgifb/vb_table.h
+deleted file mode 100644
+index c801deb142f6..000000000000
+diff --git a/drivers/staging/xgifb/vb_util.h b/drivers/staging/xgifb/vb_util.h
+deleted file mode 100644
+index 08db58b396b2..000000000000
+diff --git a/drivers/staging/xgifb/vgatypes.h b/drivers/staging/xgifb/vgatypes.h
+deleted file mode 100644
+index de80e5c108dc..000000000000
 -- 
-2.1.4
+2.7.4
 

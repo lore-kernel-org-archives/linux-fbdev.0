@@ -1,326 +1,226 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Sun, 27 Nov 2016 16:51:49 +0000
-Subject: [PATCH v7 3/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1480265509-20922-4-git-send-email-manuel.schoelling@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 23 Nov 2016 08:03:12 +0000
+Subject: [RFC PATCH 2/3] staging: remove sm750fb
+Message-Id: <1479888193-23908-3-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161123173340.GA24872@angband.pl>
- <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
+References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
+In-Reply-To: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
 
-Add a scrollback buffers for each VGA console. The benefit is that
-the scrollback history is not flushed when switching between consoles
-but is persistent.
-The buffers are allocated on demand when a new console is opened.
+Since the fbdev framework is in maintenance mode and all new display
+drivers should be made with the DRM framework, remove sm750fb from
+staging.
 
-This breaks tools like clear_console that rely on flushing the
-scrollback history by switching back and forth between consoles
-which is why this feature is disabled by default.
-Use the escape sequence \e[3J instead for flushing the buffer.
-
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- drivers/video/console/Kconfig  |  25 +++++++-
- drivers/video/console/vgacon.c | 142 ++++++++++++++++++++++++++-----------=
-----
- 2 files changed, 111 insertions(+), 56 deletions(-)
+ MAINTAINERS                              |    8 -
+ drivers/staging/Kconfig                  |    2 -
+ drivers/staging/Makefile                 |    1 -
+ drivers/staging/sm750fb/Kconfig          |   14 -
+ drivers/staging/sm750fb/Makefile         |    4 -
+ drivers/staging/sm750fb/TODO             |   16 -
+ drivers/staging/sm750fb/ddk750.h         |   24 -
+ drivers/staging/sm750fb/ddk750_chip.c    |  403 ---------
+ drivers/staging/sm750fb/ddk750_chip.h    |   79 --
+ drivers/staging/sm750fb/ddk750_display.c |  186 ----
+ drivers/staging/sm750fb/ddk750_display.h |  102 ---
+ drivers/staging/sm750fb/ddk750_dvi.c     |   60 --
+ drivers/staging/sm750fb/ddk750_dvi.h     |   59 --
+ drivers/staging/sm750fb/ddk750_help.c    |   17 -
+ drivers/staging/sm750fb/ddk750_help.h    |   21 -
+ drivers/staging/sm750fb/ddk750_hwi2c.c   |  254 ------
+ drivers/staging/sm750fb/ddk750_hwi2c.h   |   11 -
+ drivers/staging/sm750fb/ddk750_mode.c    |  220 -----
+ drivers/staging/sm750fb/ddk750_mode.h    |   41 -
+ drivers/staging/sm750fb/ddk750_power.c   |  165 ----
+ drivers/staging/sm750fb/ddk750_power.h   |   50 -
+ drivers/staging/sm750fb/ddk750_reg.h     | 1458 ------------------------------
+ drivers/staging/sm750fb/ddk750_sii164.c  |  410 ---------
+ drivers/staging/sm750fb/ddk750_sii164.h  |  174 ----
+ drivers/staging/sm750fb/ddk750_swi2c.c   |  516 -----------
+ drivers/staging/sm750fb/ddk750_swi2c.h   |   71 --
+ drivers/staging/sm750fb/readme           |   38 -
+ drivers/staging/sm750fb/sm750.c          | 1248 -------------------------
+ drivers/staging/sm750fb/sm750.h          |  202 -----
+ drivers/staging/sm750fb/sm750_accel.c    |  388 --------
+ drivers/staging/sm750fb/sm750_accel.h    |  225 -----
+ drivers/staging/sm750fb/sm750_cursor.c   |  183 ----
+ drivers/staging/sm750fb/sm750_cursor.h   |   17 -
+ drivers/staging/sm750fb/sm750_hw.c       |  557 ------------
+ 34 files changed, 7224 deletions(-)
+ delete mode 100644 drivers/staging/sm750fb/Kconfig
+ delete mode 100644 drivers/staging/sm750fb/Makefile
+ delete mode 100644 drivers/staging/sm750fb/TODO
+ delete mode 100644 drivers/staging/sm750fb/ddk750.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_chip.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_chip.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_display.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_display.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_dvi.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_dvi.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_help.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_help.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_hwi2c.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_hwi2c.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_mode.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_mode.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_power.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_power.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_reg.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_sii164.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_sii164.h
+ delete mode 100644 drivers/staging/sm750fb/ddk750_swi2c.c
+ delete mode 100644 drivers/staging/sm750fb/ddk750_swi2c.h
+ delete mode 100644 drivers/staging/sm750fb/readme
+ delete mode 100644 drivers/staging/sm750fb/sm750.c
+ delete mode 100644 drivers/staging/sm750fb/sm750.h
+ delete mode 100644 drivers/staging/sm750fb/sm750_accel.c
+ delete mode 100644 drivers/staging/sm750fb/sm750_accel.h
+ delete mode 100644 drivers/staging/sm750fb/sm750_cursor.c
+ delete mode 100644 drivers/staging/sm750fb/sm750_cursor.h
+ delete mode 100644 drivers/staging/sm750fb/sm750_hw.c
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 38da6e2..c5742d2 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -43,9 +43,28 @@ config VGACON_SOFT_SCROLLBACK_SIZE
-        range 1 1024
-        default "64"
-        help
--         Enter the amount of System RAM to allocate for the scrollback
--	 buffer.  Each 64KB will give you approximately 16 80x25
--	 screenfuls of scrollback buffer
-+	  Enter the amount of System RAM to allocate for scrollback
-+	  buffers of VGA consoles. Each 64KB will give you approximately
-+	  16 80x25 screenfuls of scrollback buffer.
-+
-+config VGACON_SOFT_SCROLLBACK_PERSISTENT
-+	bool "Persistent Scrollback History for each console"
-+	depends on VGACON_SOFT_SCROLLBACK
-+	default n
-+	help
-+	  Say Y here if the scrollback history should persist when switching
-+	  between consoles. Otherwise, the scrollback history will be flushed
-+	  each time the console is switched.
-+
-+	  This feature might break your tool of choice to flush the scrollback
-+	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
-+	  will be broken, which might cause security issues.
-+	  You can use the escape sequence \e[3J instead if this feature is
-+	  activated.
-+
-+	  Note that a buffer of VGACON_SOFT_SCROLLBACK_SIZE is taken for each
-+	  created tty device.
-+	  So if you use a RAM-constrained system, say N here.
-=20
- config MDA_CONSOLE
- 	depends on !M68K && !PARISC && ISA
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 9a7c2bb..ca23d22 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,7 +162,7 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static struct vgacon_scrollback_info {
-+struct vgacon_scrollback_info {
- 	void *data;
- 	int tail;
- 	int size;
-@@ -171,74 +171,110 @@ static struct vgacon_scrollback_info {
- 	int cur;
- 	int save;
- 	int restore;
--} vgacon_scrollback;
-+};
-+
-+static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
-+#else
-+static struct vgacon_scrollback_info vgacon_scrollbacks[1];
-+#endif
-=20
--static void vgacon_scrollback_reset(size_t reset_size)
-+static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
- {
--	if (vgacon_scrollback.data && reset_size > 0)
--		memset(vgacon_scrollback.data, 0, reset_size);
-+	struct vgacon_scrollback_info *scrollback =3D &vgacon_scrollbacks[vc_num];
-+
-+	if (scrollback->data && reset_size > 0)
-+		memset(scrollback->data, 0, reset_size);
-=20
--	vgacon_scrollback.cnt  =3D 0;
--	vgacon_scrollback.tail =3D 0;
--	vgacon_scrollback.cur  =3D 0;
-+	scrollback->cnt  =3D 0;
-+	scrollback->tail =3D 0;
-+	scrollback->cur  =3D 0;
- }
-=20
--static void vgacon_scrollback_init(int pitch)
-+static void vgacon_scrollback_init(int vc_num)
- {
--	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b97f18d2e93d..772330b38212 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -11528,14 +11528,6 @@ M:	Florian Schilhabel <florian.c.schilhabel@googlemail.com>.
+ S:	Odd Fixes
+ F:	drivers/staging/rtl8712/
+ 
+-STAGING - SILICON MOTION SM750 FRAME BUFFER DRIVER
+-M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+-M:	Teddy Wang <teddy.wang@siliconmotion.com>
+-M:	Sudip Mukherjee <sudip@vectorindia.org>
+-L:	linux-fbdev@vger.kernel.org
+-S:	Maintained
+-F:	drivers/staging/sm750fb/
 -
--	if (vgacon_scrollback.data) {
--		vgacon_scrollback.cnt  =3D 0;
--		vgacon_scrollback.tail =3D 0;
--		vgacon_scrollback.cur  =3D 0;
--		vgacon_scrollback.rows =3D rows - 1;
--		vgacon_scrollback.size =3D rows * pitch;
-+	int pitch =3D vga_video_num_columns * 2;
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+	int rows =3D size / pitch;
-+	void *data;
-+
-+	data =3D kmalloc_array(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024,
-+			     GFP_NOWAIT);
-+
-+	vgacon_scrollbacks[vc_num].data =3D data;
-+	vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+
-+	vgacon_scrollback_cur->rows =3D rows - 1;
-+	vgacon_scrollback_cur->size =3D rows * pitch;
-+
-+	vgacon_scrollback_reset(vc_num, size);
-+}
-+
-+static void vgacon_scrollback_switch(int vc_num)
-+{
-+#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+	vc_num =3D 0;
-+#endif
-+
-+	if (!vgacon_scrollbacks[vc_num].data) {
-+		vgacon_scrollback_init(vc_num);
-+	} else {
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+#else
-+		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+		vgacon_scrollback_reset(vc_num, size);
-+#endif
- 	}
- }
-=20
- static void vgacon_scrollback_startup(void)
- {
--	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
--		1024, GFP_NOWAIT);
--	vgacon_scrollback_init(vga_video_num_columns * 2);
-+	vgacon_scrollback_cur =3D &vgacon_scrollbacks[0];
-+	vgacon_scrollback_init(0);
- }
-=20
- static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size ||
-+	    c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
-+		scr_memcpyw(vgacon_scrollback_cur->data +
-+			    vgacon_scrollback_cur->tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback.cnt++;
-+
-+		vgacon_scrollback_cur->cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback.tail +=3D c->vc_size_row;
-+		vgacon_scrollback_cur->tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
--			vgacon_scrollback.tail =3D 0;
-+		if (vgacon_scrollback_cur->tail >=3D vgacon_scrollback_cur->size)
-+			vgacon_scrollback_cur->tail =3D 0;
-=20
--		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
--			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-+		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
-+			vgacon_scrollback_cur->cnt =3D vgacon_scrollback_cur->rows;
-=20
--		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
- 	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback.save =3D 0;
-+	vgacon_scrollback_cur->save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback.restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback.restore =3D 1;
--		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
-+		vgacon_scrollback_cur->restore =3D 1;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
- 	}
- }
-=20
-@@ -252,41 +288,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback.data)
-+	if (!vgacon_scrollback_cur->data)
- 		return;
-=20
--	if (!vgacon_scrollback.save) {
-+	if (!vgacon_scrollback_cur->save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback.save =3D 1;
-+		vgacon_scrollback_cur->save =3D 1;
- 	}
-=20
--	vgacon_scrollback.restore =3D 0;
--	start =3D vgacon_scrollback.cur + lines;
-+	vgacon_scrollback_cur->restore =3D 0;
-+	start =3D vgacon_scrollback_cur->cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback.cnt)
--		start =3D vgacon_scrollback.cnt;
-+	if (start > vgacon_scrollback_cur->cnt)
-+		start =3D vgacon_scrollback_cur->cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback.cnt)
--		end =3D vgacon_scrollback.cnt;
-+	if (end > vgacon_scrollback_cur->cnt)
-+		end =3D vgacon_scrollback_cur->cnt;
-=20
--	vgacon_scrollback.cur =3D start;
-+	vgacon_scrollback_cur->cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
--					 c->vc_size_row);
-+	soff =3D vgacon_scrollback_cur->tail -
-+		((vgacon_scrollback_cur->cnt - end) * c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback.size;
-+		soff +=3D vgacon_scrollback_cur->size;
-=20
--	count =3D vgacon_scrollback.cnt - start;
-+	count =3D vgacon_scrollback_cur->cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -300,13 +336,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback.size - soff);
--		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback_cur->size - soff);
-+		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback.data, count);
-+			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
- 			d +=3D count;
- 		}
-=20
-@@ -320,13 +356,13 @@ static void vgacon_flush_scrollback(struct vc_data *c)
- {
- 	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-=20
--	if (c->vc_num =3D fg_console)
--		vgacon_scrollback_reset(size);
-+	vgacon_scrollback_reset(c->vc_num, size);
- }
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
- #define vgacon_scrollback_update(...)  do { } while (0)
-+#define vgacon_scrollback_switch(...)  do { } while (0)
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
-@@ -805,7 +841,7 @@ static int vgacon_switch(struct vc_data *c)
- 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
- 	}
-=20
--	vgacon_scrollback_init(c->vc_size_row);
-+	vgacon_scrollback_switch(c->vc_num);
- 	return 0;		/* Redrawing not needed */
- }
-=20
---=20
-2.1.4
+ STAGING - SLICOSS
+ M:	Lior Dotan <liodot@gmail.com>
+ M:	Christopher Harrer <charrer@alacritech.com>
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 2afd7466cfde..fcfe8fcea441 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -52,8 +52,6 @@ source "drivers/staging/vt6656/Kconfig"
+ 
+ source "drivers/staging/iio/Kconfig"
+ 
+-source "drivers/staging/sm750fb/Kconfig"
+-
+ source "drivers/staging/emxx_udc/Kconfig"
+ 
+ source "drivers/staging/speakup/Kconfig"
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index 31c1054ace20..585eb34020a1 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -17,7 +17,6 @@ obj-$(CONFIG_VT6655)		+= vt6655/
+ obj-$(CONFIG_VT6656)		+= vt6656/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_IIO)		+= iio/
+-obj-$(CONFIG_FB_SM750)		+= sm750fb/
+ obj-$(CONFIG_USB_EMXX)		+= emxx_udc/
+ obj-$(CONFIG_SPEAKUP)		+= speakup/
+ obj-$(CONFIG_MFD_NVEC)		+= nvec/
+diff --git a/drivers/staging/sm750fb/Kconfig b/drivers/staging/sm750fb/Kconfig
+deleted file mode 100644
+index ccebc25c2ec1..000000000000
+diff --git a/drivers/staging/sm750fb/Makefile b/drivers/staging/sm750fb/Makefile
+deleted file mode 100644
+index dcce3f487ed5..000000000000
+diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
+deleted file mode 100644
+index a3a877d90066..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750.h b/drivers/staging/sm750fb/ddk750.h
+deleted file mode 100644
+index 2c10a08ed964..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+deleted file mode 100644
+index 839d6730bde9..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+deleted file mode 100644
+index 14357fd1cc6b..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+deleted file mode 100644
+index 4023c476b9e4..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+deleted file mode 100644
+index e3fde428c52b..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
+deleted file mode 100644
+index 8252f771ef9e..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_dvi.h b/drivers/staging/sm750fb/ddk750_dvi.h
+deleted file mode 100644
+index 677939cb5130..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_help.c b/drivers/staging/sm750fb/ddk750_help.c
+deleted file mode 100644
+index 9637dd30d037..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_help.h b/drivers/staging/sm750fb/ddk750_help.h
+deleted file mode 100644
+index 009db9213a73..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
+deleted file mode 100644
+index d391c127ead7..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.h b/drivers/staging/sm750fb/ddk750_hwi2c.h
+deleted file mode 100644
+index 46e22dce2570..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+deleted file mode 100644
+index 05b83646c2d5..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+deleted file mode 100644
+index e846dc2c3d5c..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+deleted file mode 100644
+index 7cc6169f884e..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+deleted file mode 100644
+index 5963691f9a68..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_reg.h b/drivers/staging/sm750fb/ddk750_reg.h
+deleted file mode 100644
+index 4ed6d8d7712a..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+deleted file mode 100644
+index 99a8683e6383..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
+deleted file mode 100644
+index 664ad089f753..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+deleted file mode 100644
+index 72a42330e7a1..000000000000
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.h b/drivers/staging/sm750fb/ddk750_swi2c.h
+deleted file mode 100644
+index b53629cda095..000000000000
+diff --git a/drivers/staging/sm750fb/readme b/drivers/staging/sm750fb/readme
+deleted file mode 100644
+index cfa45958b9d2..000000000000
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+deleted file mode 100644
+index 7d90e250142c..000000000000
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+deleted file mode 100644
+index ff31c5c9cc6f..000000000000
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+deleted file mode 100644
+index 38adae6b5d83..000000000000
+diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+deleted file mode 100644
+index d59d005e0add..000000000000
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+deleted file mode 100644
+index d622d65b6cee..000000000000
+diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+deleted file mode 100644
+index 6c4fc9b73489..000000000000
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+deleted file mode 100644
+index 7dd208caa5eb..000000000000
+-- 
+2.7.4
 

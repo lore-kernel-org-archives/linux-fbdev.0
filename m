@@ -1,50 +1,311 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 22 Nov 2016 16:43:36 +0000
-Subject: [PATCH v6 0/2] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1479833018-20021-1-git-send-email-manuel.schoelling@gmx.de>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Wed, 23 Nov 2016 21:47:49 +0000
+Subject: [PATCH] fbdev: omap/lcd: Remove no-op driver callbacks
+Message-Id: <1479937669-13964-1-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-Changes in v6:
-  - Change of check if feature is enabled in=20
-    vgacon_scrollback_switch()
-Changes in v5:
-  - Clearify documentation
-  - Skip superfluous array initialization
-  - Disable scrollback if buffer allocation fails
-  - Refactor vgacon_switch_scrollback()
-  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
-  - Add check for fg_console in vgacon_scrollback_update
-Changes in v4.1:
-  - Fix compiler error
-Changes in v4:
-  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
-    VGACON_SOFT_SCROLLBACK_PERSISTENT
-  - Split into two patches
-  - Rework documentation
-  - Remove cosmetic changes in comments (postponed)
-Changes in v3:
-  - Add config option for this feature
-  - Fallback to old scrollback buffer if kcalloc() fails
-  - Remove ioctl() call again and add documentation about existing
-    escape sequence to flush the scrollback buffer
-Changes in v2:
-  - Add ioctl() call to flush scrollback buffer
-  - (Patch v2 was not labeled as such, sorry)
+Every single one of the OMAP fbdev LCD drivers implements no-op remove,
+suspend and resume callbacks for their platform_driver. This is not
+necessary as the driver core handles the case where the callbacks are no
+set just fine. So they are just unnecessary boilerplate that can be
+removed.
 
-Manuel Sch=C3=B6lling (2):
-  console: Move scrollback data into its own struct
-  console: Add persistent scrollback buffers for all VGA consoles
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
+---
+ drivers/video/fbdev/omap/lcd_ams_delta.c | 19 -------------------
+ drivers/video/fbdev/omap/lcd_h3.c        | 12 ------------
+ drivers/video/fbdev/omap/lcd_htcherald.c | 19 -------------------
+ drivers/video/fbdev/omap/lcd_inn1510.c   | 19 -------------------
+ drivers/video/fbdev/omap/lcd_inn1610.c   | 19 -------------------
+ drivers/video/fbdev/omap/lcd_osk.c       | 18 ------------------
+ drivers/video/fbdev/omap/lcd_palmte.c    | 18 ------------------
+ drivers/video/fbdev/omap/lcd_palmtt.c    | 18 ------------------
+ drivers/video/fbdev/omap/lcd_palmz71.c   | 19 -------------------
+ 9 files changed, 161 deletions(-)
 
- drivers/video/console/Kconfig  |  25 ++++++-
- drivers/video/console/vgacon.c | 149 +++++++++++++++++++++++++++----------=
-----
- 2 files changed, 120 insertions(+), 54 deletions(-)
-
---=20
+diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
+index f912a20..ef0ed74 100644
+--- a/drivers/video/fbdev/omap/lcd_ams_delta.c
++++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
+@@ -195,27 +195,8 @@ static int ams_delta_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int ams_delta_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int ams_delta_panel_suspend(struct platform_device *pdev,
+-		pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int ams_delta_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver ams_delta_panel_driver = {
+ 	.probe		= ams_delta_panel_probe,
+-	.remove		= ams_delta_panel_remove,
+-	.suspend	= ams_delta_panel_suspend,
+-	.resume		= ams_delta_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_ams_delta",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_h3.c b/drivers/video/fbdev/omap/lcd_h3.c
+index 21512b0..1ceced7 100644
+--- a/drivers/video/fbdev/omap/lcd_h3.c
++++ b/drivers/video/fbdev/omap/lcd_h3.c
+@@ -103,21 +103,9 @@ static int h3_panel_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int h3_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int h3_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver h3_panel_driver = {
+ 	.probe		= h3_panel_probe,
+ 	.remove		= h3_panel_remove,
+-	.suspend	= h3_panel_suspend,
+-	.resume		= h3_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_h3",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_htcherald.c b/drivers/video/fbdev/omap/lcd_htcherald.c
+index 8b4dfa0..a2ca5e9 100644
+--- a/drivers/video/fbdev/omap/lcd_htcherald.c
++++ b/drivers/video/fbdev/omap/lcd_htcherald.c
+@@ -88,27 +88,8 @@ static int htcherald_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int htcherald_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int htcherald_panel_suspend(struct platform_device *pdev,
+-						pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int htcherald_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver htcherald_panel_driver = {
+ 	.probe		= htcherald_panel_probe,
+-	.remove		= htcherald_panel_remove,
+-	.suspend	= htcherald_panel_suspend,
+-	.resume		= htcherald_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_htcherald",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_inn1510.c b/drivers/video/fbdev/omap/lcd_inn1510.c
+index 49907fa..a549337 100644
+--- a/drivers/video/fbdev/omap/lcd_inn1510.c
++++ b/drivers/video/fbdev/omap/lcd_inn1510.c
+@@ -83,27 +83,8 @@ static int innovator1510_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int innovator1510_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int innovator1510_panel_suspend(struct platform_device *pdev,
+-				       pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int innovator1510_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver innovator1510_panel_driver = {
+ 	.probe		= innovator1510_panel_probe,
+-	.remove		= innovator1510_panel_remove,
+-	.suspend	= innovator1510_panel_suspend,
+-	.resume		= innovator1510_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_inn1510",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_inn1610.c b/drivers/video/fbdev/omap/lcd_inn1610.c
+index 8b42894..7319563 100644
+--- a/drivers/video/fbdev/omap/lcd_inn1610.c
++++ b/drivers/video/fbdev/omap/lcd_inn1610.c
+@@ -104,27 +104,8 @@ static int innovator1610_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int innovator1610_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int innovator1610_panel_suspend(struct platform_device *pdev,
+-				       pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int innovator1610_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver innovator1610_panel_driver = {
+ 	.probe		= innovator1610_panel_probe,
+-	.remove		= innovator1610_panel_remove,
+-	.suspend	= innovator1610_panel_suspend,
+-	.resume		= innovator1610_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_inn1610",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_osk.c b/drivers/video/fbdev/omap/lcd_osk.c
+index b56886c..3f4a18b 100644
+--- a/drivers/video/fbdev/omap/lcd_osk.c
++++ b/drivers/video/fbdev/omap/lcd_osk.c
+@@ -103,26 +103,8 @@ static int osk_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int osk_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int osk_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int osk_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver osk_panel_driver = {
+ 	.probe		= osk_panel_probe,
+-	.remove		= osk_panel_remove,
+-	.suspend	= osk_panel_suspend,
+-	.resume		= osk_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_osk",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_palmte.c b/drivers/video/fbdev/omap/lcd_palmte.c
+index 2713fed..c0cee37 100644
+--- a/drivers/video/fbdev/omap/lcd_palmte.c
++++ b/drivers/video/fbdev/omap/lcd_palmte.c
+@@ -81,26 +81,8 @@ static int palmte_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int palmte_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int palmte_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int palmte_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver palmte_panel_driver = {
+ 	.probe		= palmte_panel_probe,
+-	.remove		= palmte_panel_remove,
+-	.suspend	= palmte_panel_suspend,
+-	.resume		= palmte_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_palmte",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_palmtt.c b/drivers/video/fbdev/omap/lcd_palmtt.c
+index 1a936d5..621952b 100644
+--- a/drivers/video/fbdev/omap/lcd_palmtt.c
++++ b/drivers/video/fbdev/omap/lcd_palmtt.c
+@@ -87,26 +87,8 @@ static int palmtt_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int palmtt_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int palmtt_panel_suspend(struct platform_device *pdev, pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int palmtt_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver palmtt_panel_driver = {
+ 	.probe		= palmtt_panel_probe,
+-	.remove		= palmtt_panel_remove,
+-	.suspend	= palmtt_panel_suspend,
+-	.resume		= palmtt_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_palmtt",
+ 	},
+diff --git a/drivers/video/fbdev/omap/lcd_palmz71.c b/drivers/video/fbdev/omap/lcd_palmz71.c
+index a20db4f..ccb556d 100644
+--- a/drivers/video/fbdev/omap/lcd_palmz71.c
++++ b/drivers/video/fbdev/omap/lcd_palmz71.c
+@@ -82,27 +82,8 @@ static int palmz71_panel_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int palmz71_panel_remove(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+-static int palmz71_panel_suspend(struct platform_device *pdev,
+-				 pm_message_t mesg)
+-{
+-	return 0;
+-}
+-
+-static int palmz71_panel_resume(struct platform_device *pdev)
+-{
+-	return 0;
+-}
+-
+ static struct platform_driver palmz71_panel_driver = {
+ 	.probe		= palmz71_panel_probe,
+-	.remove		= palmz71_panel_remove,
+-	.suspend	= palmz71_panel_suspend,
+-	.resume		= palmz71_panel_resume,
+ 	.driver		= {
+ 		.name	= "lcd_palmz71",
+ 	},
+-- 
 2.1.4
 

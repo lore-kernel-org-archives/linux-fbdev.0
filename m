@@ -1,65 +1,40 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Wed, 23 Nov 2016 09:50:52 +0000
+From: Martin Kaiser <martin@kaiser.cx>
+Date: Fri, 25 Nov 2016 08:43:03 +0000
 Subject: Re: [PATCH] video: imxfb: correct the bitmask for DMACR_HM/_TM
-Message-Id: <20161123095052.u63j26ixgc54qhkd@pengutronix.de>
+Message-Id: <20161125084303.GA14156@botnar.kaiser.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1479801258-3765-1-git-send-email-martin@kaiser.cx>
  <20161122084214.fxn26mfur7wwlgs2@pengutronix.de>
  <20161123093113.GA10071@botnar.kaiser.cx>
-In-Reply-To: <20161123093113.GA10071@botnar.kaiser.cx>
+ <20161123095052.u63j26ixgc54qhkd@pengutronix.de>
+In-Reply-To: <20161123095052.u63j26ixgc54qhkd@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Martin Kaiser <martin@kaiser.cx>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Sascha Hauer <kernel@pengutronix.de>
 
-On Wed, Nov 23, 2016 at 10:31:13AM +0100, Martin Kaiser wrote:
-> Hello Uwe, all,
->=20
-> Thus wrote Uwe Kleine-K=F6nig (u.kleine-koenig@pengutronix.de):
->=20
-> > For the MX1 which is also supported by this driver, the definitions are
-> > right.
->=20
-> ok, understood. I wasn't able to dig up an imx1 specification. Do you
-> know if it's publicly available?
+Thus wrote Uwe Kleine-K=F6nig (u.kleine-koenig@pengutronix.de):
 
-http://www.nxp.com/assets/documents/data/en/reference-manuals/MC9328MX1RM.p=
-df
+> > ok, understood. I wasn't able to dig up an imx1 specification. Do you
+> > know if it's publicly available?
 
-> > So this needs a more sophisticated patch. Also I wonder why the
-> > register definition is in include/linux/platform_data and not in the
-> > driver directly.
->=20
-> The DMACR_HM() and _TM() macros are meant to be used when we initialize
-> imx_fb_platform_data's dmacr component for a platform device. It's not
-> straightforward to distinguish between imx1 and imx21 at initialization
-> time.
+> http://www.nxp.com/assets/documents/data/en/reference-manuals/MC9328MX1RM=
+.pdf
 
-So you put the values to use in the device tree? Then the right thing to
-do is to check the device type in the driver and mask accordingly when
-the values are written to the hardware.
+Thanks.
 
-> We could modify imx_fb_platform_data to use different components for
-> dmacr_burst, dmacr_hm, dmacr_tm and calculate the dmacr register value
-> in the driver where is_imx1_fb() is available. Device tree is also using
-> a single dmacr entry, it's probably not a good idea to do this
-> differently for platform devices...
->=20
-> We could also define DMACR_HM_IMX1(), DMACR_HM_IMX21(), ...
->=20
-> Or we could just remove the macros, they are not used by any boards in
-> the mainline kernel. If we don't want to break proprietary board
-> definitions, we could at least add a comment that the macros are
-> incorrect for imx21.
+> So you put the values to use in the device tree? Then the right thing to
+> do is to check the device type in the driver and mask accordingly when
+> the values are written to the hardware.
 
-IMHO dropping the macros is the right thing to do. Maybe even just
-believing the dt and write this value into the register might be
-acceptable.
+Device tree and platform data contain the entire register, not the
+individual components. The macros are provided to build the register
+value from the components, but nobody's using them.
 
-Best regards
-Uwe
+> IMHO dropping the macros is the right thing to do.
 
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Ok, I'll submit a patch for this.
+
+Best regards,
+Martin

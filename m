@@ -1,56 +1,45 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Tue, 01 Nov 2016 12:59:31 +0000
-Subject: [PATCH v3 0/2] backlight: pwm_bl: Fix the initial power state selection
-Message-Id: <20161101125933.11168-1-peter.ujfalusi@ti.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Sat, 26 Nov 2016 10:20:58 +0000
+Subject: [patch] staging: sm750fb: fix a type issue in sm750_set_chip_type()
+Message-Id: <20161126102058.GA7640@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, lee.jones@linaro.org
-Cc: tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+"revId" needs to be unsigned because we use it to test:
 
-Changes since v2:
-- Do not change the way how the GPIO initially configured as input is handled.
-  Configure it as output and set it's state as active.
+	if (revId = SM750LE_REVISION_ID) {
 
-Changes since v1:
-- Handling of the enable GPIO is reworked:
- - Only change direction to output when the pin was input and in this case set
-   the GPIO line physical low
- - With this change we can ensure that the enable GPIO is output so we do not
-   need to check the direction of it later on.
+and SM750LE_REVISION_ID is ((unsigned char )0xfe).
 
-Cover letter:
+Fixes: 81dee67e215b ("staging: sm750fb: add sm750 to staging")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-3698d7e7d221 backlight: pwm_bl: Avoid backlight flicker when probed from DT
-
-added support for avoiding backlight flickering, which in essence was designed
-to not enable the baclkight when the driver loads, but let the user of the
-backlight to enable it later on.
-
-There are boards (like am437x-gp-evm) where we do not have valid GPIO to enable
-the backlight (TPS61081DRC's EN pin is connected to V3_3D) and the regulator
-is always on (VBAT in case of the gp-evm). In this board the logic to check the
-GPIO state and the regulator is failing and the backlight will be enabled as
-soon as the pwm_bl driver is loaded.
-
-By extending the check to look at the PWM state this issue can be avoided and
-the backlight will be enabled only when it's user is asking it to be enabled.
-
-Regards,
-Peter
----
-Peter Ujfalusi (2):
-  backlight: pwm_bl: Move the checks for initial power state to a
-    separate function
-  backlight: pwm_bl: Check the pwm state for initial backlight power
-    state
-
- drivers/video/backlight/pwm_bl.c | 57 ++++++++++++++++++++++++++--------------
- 1 file changed, 38 insertions(+), 19 deletions(-)
-
--- 
-2.10.2
-
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index e97e859..e63b8b2 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -87,7 +87,7 @@ struct initchip_param {
+ };
+ 
+ logical_chip_type_t sm750_get_chip_type(void);
+-void sm750_set_chip_type(unsigned short devId, char revId);
++void sm750_set_chip_type(unsigned short devId, u8 revId);
+ unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
+ unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
+ unsigned int ddk750_get_vm_size(void);
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 94f59f4..f59ce5c 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -14,7 +14,7 @@ logical_chip_type_t sm750_get_chip_type(void)
+ 	return chip;
+ }
+ 
+-void sm750_set_chip_type(unsigned short devId, char revId)
++void sm750_set_chip_type(unsigned short devId, u8 revId)
+ {
+ 	if (devId = 0x718)
+ 		chip = SM718;

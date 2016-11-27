@@ -1,64 +1,208 @@
-From: <xa0admin@abbotslangleyprimary.com>
-Date: Wed, 09 Nov 2016 00:52:58 +0000
-Subject: 9233 linux-fbdev
-Message-Id: <147865277806.4500.6189030519631545637@hinet.net>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Sun, 27 Nov 2016 16:51:47 +0000
+Subject: [PATCH v7 1/3] console: Move scrollback data into its own struct
+Message-Id: <1480265509-20922-2-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20161123173340.GA24872@angband.pl>
+ <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-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
+This refactoring is in preparation for persistent scrollback
+support for VGA console.
+
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+---
+ drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
+----
+ 1 file changed, 47 insertions(+), 44 deletions(-)
+
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c22a562..48b9764 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
++static struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollback;
+=20
+ static void vgacon_scrollback_init(int pitch)
+ {
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+=20
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	if (vgacon_scrollback.data) {
++		vgacon_scrollback.cnt  =3D 0;
++		vgacon_scrollback.tail =3D 0;
++		vgacon_scrollback.cur  =3D 0;
++		vgacon_scrollback.rows =3D rows - 1;
++		vgacon_scrollback.size =3D rows * pitch;
+ 	}
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
++	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
++		1024, GFP_NOWAIT);
+ 	vgacon_scrollback_init(vga_video_num_columns * 2);
+ }
+=20
+@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
+c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		vgacon_scrollback.cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		vgacon_scrollback.tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
++			vgacon_scrollback.tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
++			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	vgacon_scrollback.save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !vgacon_scrollback.restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.restore =3D 1;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	if (!vgacon_scrollback.data)
+ 		return;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!vgacon_scrollback.save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		vgacon_scrollback.save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	vgacon_scrollback.restore =3D 0;
++	start =3D vgacon_scrollback.cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > vgacon_scrollback.cnt)
++		start =3D vgacon_scrollback.cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > vgacon_scrollback.cnt)
++		end =3D vgacon_scrollback.cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	vgacon_scrollback.cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D vgacon_scrollback.size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D vgacon_scrollback.cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback.size - soff);
++		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, vgacon_scrollback.data, count);
+ 			d +=3D count;
+ 		}
+=20
+--=20
+2.1.4
+

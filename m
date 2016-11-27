@@ -1,148 +1,103 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Thu, 17 Nov 2016 07:32:14 +0000
-Subject: Re: [PATCH v2] Fix loading of module radeonfb on PowerMac
-Message-Id: <CA+7wUsxgvtDee66mac_Z31Y5gMdQzz-v4kjmA8KxdJdQU+29fw@mail.gmail.com>
+From: Andrea Ghittino <aghittino@gmail.com>
+Date: Sun, 27 Nov 2016 16:44:19 +0000
+Subject: [PATCH] staging: sm750fb: fix function definition argument style warning
+Message-Id: <20161127164410.GA3398@myhd3>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479153557-20849-1-git-send-email-malat@debian.org>
- <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
-In-Reply-To: <c447ef6d-adf0-651f-e7a6-5f340e957df5@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Milan Kupcevic <milan@debian.org>
+To: linux-fbdev@vger.kernel.org
 
-Tomi,
+Fixes sm750fb function definition argument style warning
+found by checkpatch.pl tool
 
-On Tue, Nov 15, 2016 at 12:46 PM, Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
-> Hi,
->
-> On 14/11/16 21:59, Mathieu Malaterre wrote:
->> When the linux kernel is build with (typical kernel ship with Debian
->> installer):
->>
->> CONFIG_FB_OF=y
->> CONFIG_VT_HW_CONSOLE_BINDING=y
->> CONFIG_FB_RADEON=m
->>
->> The offb driver takes precedence over module radeonfb. It is then
->> impossible to load the module, error reported is:
->>
->> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
->> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
->> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
->> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
->>
->> This patch reproduce the behavior of the module radeon, so as to make it
->> possible to load radeonfb when offb is first loaded.
->>
->> It should be noticed that `offb_destroy` is never called which explain the
->> need to skip error detection on the radeon side.
->>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
->> Link: https://bugs.debian.org/826629#57
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
->> Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
->> ---
->
-> Please always have a changelog in patch new revisions. For individual
-> patches, you can insert the changes here.
->
->>  drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
->>  1 file changed, 26 insertions(+)
->>
->> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
->> index 218339a..84d634b 100644
->> --- a/drivers/video/fbdev/aty/radeon_base.c
->> +++ b/drivers/video/fbdev/aty/radeon_base.c
->> @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
->>       .read   = radeon_show_edid2,
->>  };
->>
->> +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
->> +{
->> +     struct apertures_struct *ap;
->> +
->> +     ap = alloc_apertures(1);
->> +     if (!ap)
->> +             return -ENOMEM;
->> +
->> +     ap->ranges[0].base = pci_resource_start(pdev, 0);
->> +     ap->ranges[0].size = pci_resource_len(pdev, 0);
->> +
->> +     remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
->> +     kfree(ap);
->> +
->> +     return 0;
->> +}
->>
->>  static int radeonfb_pci_register(struct pci_dev *pdev,
->>                                const struct pci_device_id *ent)
->> @@ -2314,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
->>       rinfo->fb_base_phys = pci_resource_start (pdev, 0);
->>       rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
->>
->> +     ret = radeon_kick_out_firmware_fb(pdev);
->> +     if (ret)
->> +             return ret;
->> +
->>       /* request the mem regions */
->>       ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
->>       if (ret < 0) {
->>               printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
->>                       pci_name(rinfo->pdev));
->> +#ifndef CONFIG_PPC
->>               goto err_release_fb;
->> +#endif
->
-> If this is not a problem on PPC, the kernel shouldn't print an error either.
->
->>       }
->>
->>       ret = pci_request_region(pdev, 2, "radeonfb mmio");
->>       if (ret < 0) {
->>               printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
->>                       pci_name(rinfo->pdev));
->> +#ifndef CONFIG_PPC
->>               goto err_release_pci0;
->> +#endif
->
-> Same here.
->
->>       }
->>
->>       /* map the regions */
->> @@ -2511,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
->>       iounmap(rinfo->mmio_base);
->>  err_release_pci2:
->>       pci_release_region(pdev, 2);
->> +#ifndef CONFIG_PPC
->>  err_release_pci0:
->>       pci_release_region(pdev, 0);
->>  err_release_fb:
->>          framebuffer_release(info);
->> +#endif
->>  err_disable:
->>  err_out:
->>       return ret;
->>
->
-> So I don't quite follow what's going on here. Why the CONFIG_PPC
-> conditionals? Is this problem only with OFFB and only with PPC?
-
-The radeonfb fails to load only (conflict with offb):
-- when on PPC (PMAC actually)
-- when compiled as module (CONFIG_FB_RADEON=y is OK)
-
-> And I think the code itself should have comments on this rather strange
-> behavior: the driver fails to get HW resources, but decides to ignore
-> the failure on PPC.
-
-Actually you are right, I missed configuration such as Pegasos[0]
-machine (no openfirmware-framebuffer implemented in their firmware at
-all). So I cannot simply assume that offb already allocated stuff on
-all PPC out there.
-
-Will resent a v3 with proper changelog ASAP.
-
-[0] https://en.wikipedia.org/wiki/Pegasos
+Signed-off-by: Andrea Ghittino <aghittino at gmail.com>
+---
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index e97e859..30653dd 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -91,6 +91,6 @@ void sm750_set_chip_type(unsigned short devId, char revId);
+ unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
+ unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
+ unsigned int ddk750_get_vm_size(void);
+-int ddk750_init_hw(struct initchip_param *);
++int ddk750_init_hw(struct initchip_param *pInitParam);
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 8abca88..c4a4cbf 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -107,6 +107,6 @@ typedef enum _disp_output_t {
+ }
+ disp_output_t;
+ 
+-void ddk750_setLogicalDispOut(disp_output_t);
++void ddk750_setLogicalDispOut(disp_output_t output);
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+index e846dc2..bdcfe69 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.h
++++ b/drivers/staging/sm750fb/ddk750_mode.h
+@@ -35,7 +35,7 @@ typedef struct _mode_parameter_t {
+ }
+ mode_parameter_t;
+ 
+-int ddk750_setModeTiming(mode_parameter_t *, clock_type_t);
++int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock);
+ 
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index eb088b0..6de0458 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -14,7 +14,7 @@ DPMS_t;
+ 	       (PEEK32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | (off)); \
+ }
+ 
+-void ddk750_set_dpms(DPMS_t);
++void ddk750_set_dpms(DPMS_t state);
+ void sm750_set_power_mode(unsigned int powerMode);
+ void sm750_set_current_gate(unsigned int gate);
+ 
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 28f4b9b..3b7bced 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -184,19 +184,23 @@ static inline unsigned long ps_to_hz(unsigned int psvalue)
+ }
+ 
+ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+-int hw_sm750_inithw(struct sm750_dev*, struct pci_dev *);
+-void hw_sm750_initAccel(struct sm750_dev *);
++int hw_sm750_inithw(struct sm750_dev *sm750_dev,, struct pci_dev *pdev);
++void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
+ 
+-int hw_sm750_output_setMode(struct lynxfb_output*, struct fb_var_screeninfo*,
+-			    struct fb_fix_screeninfo*);
+-int hw_sm750_crtc_checkMode(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-int hw_sm750_crtc_setMode(struct lynxfb_crtc*, struct fb_var_screeninfo*,
+-			  struct fb_fix_screeninfo*);
+-int hw_sm750_setColReg(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+-int hw_sm750_setBLANK(struct lynxfb_output*, int);
+-int hw_sm750le_setBLANK(struct lynxfb_output*, int);
++int hw_sm750_output_setMode(struct lynxfb_output *output,
++				struct fb_var_screeninfo *var,
++				struct fb_fix_screeninfo *fix);
++int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
++				struct fb_var_screeninfo* var);
++int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
++				struct fb_var_screeninfo *var,
++			  	struct fb_fix_screeninfo *fix);
++int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
++				ushort red, ushort green , ushort blue);
++int hw_sm750_setBLANK(struct lynxfb_output *output, int blank);
++int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank);
+ int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
+ 			 const struct fb_var_screeninfo *var,
+ 			 const struct fb_info *info);

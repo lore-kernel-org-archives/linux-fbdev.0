@@ -1,56 +1,60 @@
-From: Adam Borowski <kilobyte@angband.pl>
-Date: Tue, 29 Nov 2016 10:44:20 +0000
+From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
+Date: Tue, 29 Nov 2016 16:35:02 +0000
 Subject: Re: [PATCH v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <20161129104420.GA14384@angband.pl>
+Message-Id: <1480437302.2848.8.camel@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20161123173340.GA24872@angband.pl>
- <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
- <20161127213730.GO11418@dell-m4800.home>
- <1480368499.29156.12.camel@gmx.de>
- <20161129100115.GA20034@stationary.pb.com>
+         <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
+         <20161127213730.GO11418@dell-m4800.home> <1480368499.29156.12.camel@gmx.de>
+         <20161129100115.GA20034@stationary.pb.com>
 In-Reply-To: <20161129100115.GA20034@stationary.pb.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrey Utkin <andrey_utkin@fastmail.com>
-Cc: Manuel =?iso-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>, plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Nov 29, 2016 at 10:01:15AM +0000, Andrey Utkin wrote:
+Hi Andrey,
+
+On Di, 2016-11-29 at 10:01 +0000, Andrey Utkin wrote:
 > Regarding logout scrollback clearing not working for me. ncurses-6.0-rc1
 > which I tested it with is the latest available in Gentoo portage, please
 > confirm whether I need any newer version, or should I tune something
 > else. I'd appreciate if you also tested your patch with gentoo setup.
+Are you sure ncurses is involved at all?
+My Debian agetty(8) manpage says:
 
-Could you please check whether its terminfo carries the required
-definitions?  In ncurses sources, that's misc/terminfo.src
+       -J,--noclear
+              Do not clear the screen before prompting for the login name (the
+              screen is normally cleared).
 
-The relevant parts are:
-.--==
-# The 3.0 kernel adds support for clearing scrollback buffer (capability E3).
-# It is the same as xterm's erase-saved-lines feature.
-linux3.0|linux 3.0 kernels,
-        E3=\E[3J, use=linux2.6,
+And digging into the source code of agetty shows these lines [1]:
 
-# This is Linux console for ncurses.
-linux|linux console,
-        use=linux3.0,
-`----
+static void termio_clear(int fd)
+{
+	/*
+	 * Do not write a full reset (ESC c) because this destroys
+	 * the unicode mode again if the terminal was in unicode
+	 * mode.  Also it clears the CONSOLE_MAGIC features which
+	 * are required for some languages/console-fonts.
+	 * Just put the cursor to the home position (ESC [ H),
+	 * erase everything below the cursor (ESC [ J), and set the
+	 * scrolling region to the full window (ESC [ r)
+	 */
+	write_all(fd, "\033[r\033[H\033[J", 9);
+}
 
-I believe the first part was added first; if that's true it's possible this
-will work for you:
-    TERM=linux3.0 clear
+So I guess that agetty relies on on switching the console for flushing
+the scrollback buffer and we'd had to add the \E[3J sequence here.
+
+Note that up until now I just had a look at the theory (manpage and
+source code). I'd need some days to find time to show at runtime that
+this really is the reason why the buffer is not flushed.
+
+Bye,
+
+Manuel
+
+[1] https://github.com/karelzak/util-linux/blob/master/term-utils/agetty.c#L1175
 
 
-I'm not sure what Gentoo does to clear the console during logout: it might
-just invoke "clear" (or its underlying ncurses implementation), it might
-carry a copy of Debian's "clear_console"[1], it might do something else
-entirely.
-
-
-Meow!
-
-[1]. It originally came from Ubuntu, forked there from "clear".
--- 
-The bill declaring Jesus as the King of Poland fails to specify whether
-the addition is at the top or end of the list of kings.  What should the
-historians do?

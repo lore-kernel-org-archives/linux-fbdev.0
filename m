@@ -1,36 +1,27 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Tue, 29 Nov 2016 07:49:49 +0000
-Subject: Re: [PATCH] video: imxfb: remove the macros for initializing the DMACR
-Message-Id: <20161129074949.taj5bwnhge37pi5e@pengutronix.de>
+From: Andrea Ghittino <aghittino@gmail.com>
+Date: Tue, 29 Nov 2016 21:19:42 +0000
+Subject: [PATCH v2] staging: sm750fb: fix tabstop style warning
+Message-Id: <20161129211917.GA4083@myhd3>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161125084303.GA14156@botnar.kaiser.cx>
- <1480372989-6413-1-git-send-email-martin@kaiser.cx>
-In-Reply-To: <1480372989-6413-1-git-send-email-martin@kaiser.cx>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Martin Kaiser <martin@kaiser.cx>
-Cc: Sascha Hauer <kernel@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Nov 28, 2016 at 11:43:09PM +0100, Martin Kaiser wrote:
-> The current definitions of DMACR_HM() and DMACR_TM() are correct only
-> for imx1, they're wrong for imx21.
->=20
-> The macros are meant for legacy board files only, they're not applicable
-> for boards using device tree.
->=20
-> At the moment, there are no boards are using the macros. So it should be
-s/are using the/using these/
+Fixes sm750fb tabstop style warning
+found by checkpatch.pl tool
 
-> safe to drop them rather than making them work for both imx1 and imx21,
-> which would require a change in the platform data struct.
->=20
-> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
-Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Signed-off-by: Andrea Ghittino <aghittino@gmail.com>
+---
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+index 6fd18d2..af0db57 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -395,6 +395,6 @@ int sm750_hw_imageblit(struct lynx_accel *accel,
+ 		pSrcbuf += srcDelta;
+ 	}
+ 
+-	    return 0;
++	return 0;
+ }
+ 

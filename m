@@ -1,206 +1,213 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Date: Mon, 26 Dec 2016 11:34:07 +0000
-Subject: Re: [PATCH] mm/page_alloc: Wait for oom_lock before retrying.
-Message-Id: <20161226113407.GA515@tigerII.localdomain>
+From: SRIKANT RITOLIA <srikant.ritolia@gmail.com>
+Date: Thu, 01 Dec 2016 18:46:39 +0000
+Subject: [PATCH] staging: sm750fb: Aligning Block comments
+Message-Id: <CADeeJYBNp+kwS+wfCRPh2RF1ji1nR4rKf4=mBsDuBSwiJ+=Yrw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161220153948.GA575@tigerII.localdomain>
- <201612221927.BGE30207.OSFJMFLFOHQtOV@I-love.SAKURA.ne.jp>
- <20161222134250.GE413@tigerII.localdomain>
- <201612222301.AFG57832.QOFMSVFOJHLOtF@I-love.SAKURA.ne.jp>
- <20161222140930.GF413@tigerII.localdomain>
- <201612261954.FJE69201.OFLVtFJSQFOHMO@I-love.SAKURA.ne.jp>
-In-Reply-To: <201612261954.FJE69201.OFLVtFJSQFOHMO@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: sergey.senozhatsky@gmail.com, mhocko@suse.com, linux-mm@kvack.org, pmladek@suse.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.senozhatsky.work@gmail.com
+To: linux-fbdev@vger.kernel.org
 
-Cc Greg, Jiri,
+Fix checkpatch.pl warnings:-
+Block comments should align the * on each line
 
-On (12/26/16 19:54), Tetsuo Handa wrote:
-[..]
-> 
-> (3) I got below warning. (Though not reproducible.)
->     If fb_flashcursor() called console_trylock(), console_may_schedule is set to 1?
-
-hmmm... it takes an atomic/spin `printing_lock' lock in vt_console_print(),
-then call console_conditional_schedule() from lf(), being under spin_lock.
-`console_may_schedule' in console_conditional_schedule() still keeps the
-value from console_trylock(), which was ok (console_may_schedule permits
-rescheduling). but preemption got changed under console_trylock(), by
-that spin_lock.
-
-console_trylock() used to always forbid rescheduling; but it got changed
-like a yaer ago.
-
-the other thing is... do we really need to console_conditional_schedule()
-from fbcon_*()? console_unlock() does cond_resched() after every line it
-prints. wouldn't that be enough?
-
-so may be we can drop some of console_conditional_schedule()
-call sites in fbcon. or update console_conditional_schedule()
-function to always return the current preemption value, not the
-one we saw in console_trylock().
-
-(not tested)
-
+Signed-off-by: Srikant Ritolia <srikant.ritolia@gmail.com>
 ---
+ drivers/staging/sm750fb/ddk750.h       | 20 ++++++++++----------
+ drivers/staging/sm750fb/ddk750_chip.c  | 14 +++++++-------
+ drivers/staging/sm750fb/ddk750_chip.h  | 10 +++++-----
+ drivers/staging/sm750fb/ddk750_mode.c  | 12 ++++++------
+ drivers/staging/sm750fb/ddk750_swi2c.c | 22 +++++++++++-----------
+ drivers/staging/sm750fb/ddk750_swi2c.h | 22 +++++++++++-----------
+ 6 files changed, 50 insertions(+), 50 deletions(-)
 
- kernel/printk/printk.c | 35 ++++++++++++++++++++---------------
- 1 file changed, 20 insertions(+), 15 deletions(-)
+diff --git a/drivers/staging/sm750fb/ddk750.h b/drivers/staging/sm750fb/ddk750.h
+index 2c10a08ed964..7ee371443e28 100644
+--- a/drivers/staging/sm750fb/ddk750.h
++++ b/drivers/staging/sm750fb/ddk750.h
+@@ -1,16 +1,16 @@
+ #ifndef DDK750_H__
+ #define DDK750_H__
+ /*******************************************************************
+-*
+-*         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+-*
+-*  All rights are reserved. Reproduction or in part is prohibited
+-*  without the written consent of the copyright owner.
+-*
+-*  RegSC.h --- SM718 SDK
+-*  This file contains the definitions for the System Configuration registers.
+-*
+-*******************************************************************/
++ *
++ *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
++ *
++ *  All rights are reserved. Reproduction or in part is prohibited
++ *  without the written consent of the copyright owner.
++ *
++ *  RegSC.h --- SM718 SDK
++ *  This file contains the definitions for the System Configuration registers.
++ *
++ *******************************************************************/
+ #include "ddk750_reg.h"
+ #include "ddk750_mode.h"
+ #include "ddk750_chip.h"
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c
+b/drivers/staging/sm750fb/ddk750_chip.c
+index 839d6730bde9..b7697ac206cf 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -63,17 +63,17 @@ static void setChipClock(unsigned int frequency)
 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 8b2696420abb..ad4a02cf9f15 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -2075,6 +2075,24 @@ static int console_cpu_notify(unsigned int cpu)
- 	return 0;
- }
- 
-+static int get_console_may_schedule(void)
-+{
-+	/*
-+	 * When PREEMPT_COUNT disabled we can't reliably detect if it's
-+	 * safe to schedule (e.g. calling printk while holding a spin_lock),
-+	 * because preempt_disable()/preempt_enable() are just barriers there
-+	 * and preempt_count() is always 0.
-+	 *
-+	 * RCU read sections have a separate preemption counter when
-+	 * PREEMPT_RCU enabled thus we must take extra care and check
-+	 * rcu_preempt_depth(), otherwise RCU read sections modify
-+	 * preempt_count().
-+	 */
-+	return !oops_in_progress &&
-+		preemptible() &&
-+		!rcu_preempt_depth();
-+}
-+
- /**
-  * console_lock - lock the console system for exclusive use.
-  *
-@@ -2112,20 +2130,7 @@ int console_trylock(void)
- 		return 0;
- 	}
- 	console_locked = 1;
--	/*
--	 * When PREEMPT_COUNT disabled we can't reliably detect if it's
--	 * safe to schedule (e.g. calling printk while holding a spin_lock),
--	 * because preempt_disable()/preempt_enable() are just barriers there
--	 * and preempt_count() is always 0.
--	 *
--	 * RCU read sections have a separate preemption counter when
--	 * PREEMPT_RCU enabled thus we must take extra care and check
--	 * rcu_preempt_depth(), otherwise RCU read sections modify
--	 * preempt_count().
--	 */
--	console_may_schedule = !oops_in_progress &&
--			preemptible() &&
--			!rcu_preempt_depth();
-+	console_may_schedule = get_console_may_schedule();
- 	return 1;
- }
- EXPORT_SYMBOL(console_trylock);
-@@ -2316,7 +2321,7 @@ EXPORT_SYMBOL(console_unlock);
-  */
- void __sched console_conditional_schedule(void)
- {
--	if (console_may_schedule)
-+	if (get_console_may_schedule())
- 		cond_resched();
- }
- EXPORT_SYMBOL(console_conditional_schedule);
+  if (frequency) {
+  /*
+- * Set up PLL, a structure to hold the value to be set in clocks.
+- */
++ * Set up PLL, a structure to hold the value to be set in clocks.
++ */
+  pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
+  pll.clockType = MXCLK_PLL;
 
+  /*
+- * Call calcPllValue() to fill the other fields of PLL structure.
+- * Sometime, the chip cannot set up the exact clock
+- * required by the User.
+- * Return value of calcPllValue gives the actual possible clock.
+- */
++ * Call calcPllValue() to fill the other fields of PLL structure.
++ * Sometime, the chip cannot set up the exact clock
++ * required by the User.
++ * Return value of calcPllValue gives the actual possible clock.
++ */
+  ulActualMxClk = calcPllValue(frequency, &pll);
 
----
+  /* Master Clock Control: MXCLK_PLL */
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h
+b/drivers/staging/sm750fb/ddk750_chip.h
+index 14357fd1cc6b..20031f4e03fa 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -40,27 +40,27 @@ pll_value_t;
+ /* input struct to initChipParam() function */
+ typedef struct _initchip_param_t {
+  unsigned short powerMode;    /* Use power mode 0 or 1 */
+- unsigned short chipClock;    /**
++ unsigned short chipClock;    /*
+       * Speed of main chip clock in MHz unit
+       * 0 = keep the current clock setting
+       * Others = the new main chip clock
+       */
+- unsigned short memClock;     /**
++ unsigned short memClock;     /*
+       * Speed of memory clock in MHz unit
+       * 0 = keep the current clock setting
+       * Others = the new memory clock
+       */
+- unsigned short masterClock;  /**
++ unsigned short masterClock;  /*
+       * Speed of master clock in MHz unit
+       * 0 = keep the current clock setting
+       * Others = the new master clock
+       */
+- unsigned short setAllEngOff; /**
++ unsigned short setAllEngOff; /*
+       * 0 = leave all engine state untouched.
+       * 1 = make sure they are off: 2D, Overlay,
+       * video alpha, alpha, hardware cursors
+       */
+- unsigned char resetMemory;   /**
++ unsigned char resetMemory;   /*
+       * 0 = Do not reset the memory controller
+       * 1 = Reset the memory controller
+       */
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c
+b/drivers/staging/sm750fb/ddk750_mode.c
+index 05b83646c2d5..4c0012b81c7f 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -177,12 +177,12 @@ static int programModeRegisters(mode_parameter_t
+*pModeParam, pll_value_t *pll)
+   DISPLAY_CTRL_PLANE);
 
+  /* May a hardware bug or just my test chip (not confirmed).
+- * PANEL_DISPLAY_CTRL register seems requiring few writes
+- * before a value can be successfully written in.
+- * Added some masks to mask out the reserved bits.
+- * Note: This problem happens by design. The hardware will wait for the
+- *       next vertical sync to turn on/off the plane.
+- */
++ * PANEL_DISPLAY_CTRL register seems requiring few writes
++ * before a value can be successfully written in.
++ * Added some masks to mask out the reserved bits.
++ * Note: This problem happens by design. The hardware will wait for the
++ *       next vertical sync to turn on/off the plane.
++ */
 
-	-ss
+  POKE32(PANEL_DISPLAY_CTRL, tmp | reg);
 
-> ----------------------------------------
-> [  OK  [  255.862188] audit: type31 audit(1482733112.662:148): pid=1 uid=0 auidB94967295 sesB94967295 msg='unit=systemd-tmpfiles-setup-dev comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
-> ] Stopped Create Static Device Nodes in /dev.
-> 
-> [  255.871468] BUG: sleeping function called from invalid context at kernel/printk/printk.c:2325
-> [  255.871469] in_atomic(): 1, irqs_disabled(): 1, pid: 10079, name: plymouthd
-> [  255.871469] 6 locks held by plymouthd/10079:
-> [  255.871470]  #0:  (&tty->ldisc_sem){++++.+}, at: [<ffffffff817413e2>] ldsem_down_read+0x32/0x40
-> [  255.871472]  #1:  (&tty->atomic_write_lock){+.+.+.}, at: [<ffffffff81424309>] tty_write_lock+0x19/0x50
-> [  255.871474]  #2:  (&tty->termios_rwsem){++++..}, at: [<ffffffff81429d59>] n_tty_write+0x99/0x470
-> [  255.871475]  #3:  (&ldata->output_lock){+.+...}, at: [<ffffffff81429df0>] n_tty_write+0x130/0x470
-> [  255.871477]  #4:  (console_lock){+.+.+.}, at: [<ffffffff8110616e>] console_unlock+0x33e/0x6b0
-> [  255.871479]  #5:  (printing_lock){......}, at: [<ffffffff8143baf5>] vt_console_print+0x75/0x3d0
-> [  255.871481] irq event stamp: 15244
-> [  255.871481] hardirqs last  enabled at (15243): [<ffffffff81105011>] __down_trylock_console_sem+0x91/0xa0
-> [  255.871482] hardirqs last disabled at (15244): [<ffffffff81105ea4>] console_unlock+0x74/0x6b0
-> [  255.871482] softirqs last  enabled at (14968): [<ffffffff81096394>] __do_softirq+0x344/0x580
-> [  255.871482] softirqs last disabled at (14963): [<ffffffff810968d3>] irq_exit+0xe3/0x120
-> [  255.871483] CPU: 0 PID: 10079 Comm: plymouthd Not tainted 4.9.0-next-20161224+ #12
-> [  255.871483] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 07/31/2013
-> [  255.871484] Call Trace:
-> [  255.871484]  dump_stack+0x85/0xc9
-> [  255.871485]  ___might_sleep+0x14a/0x250
-> [  255.871485]  console_conditional_schedule+0x22/0x30
-> [  255.871485]  fbcon_redraw.isra.24+0xa3/0x1d0
-> [  255.871486]  ? fbcon_cursor+0x151/0x1c0
-> [  255.871486]  fbcon_scroll+0x11d/0xcb0
-> [  255.871487]  con_scroll+0x160/0x170
-> [  255.871487]  lf+0x9c/0xb0
-> [  255.871487]  vt_console_print+0x2b7/0x3d0
-> [  255.871488]  console_unlock+0x457/0x6b0
-> [  255.871488]  do_con_write.part.19+0x737/0x9e0
-> [  255.871489]  ? mark_held_locks+0x71/0x90
-> [  255.871489]  con_write+0x57/0x60
-> [  255.871489]  n_tty_write+0x1bf/0x470
-> [  255.871490]  ? prepare_to_wait_event+0x110/0x110
-> [  255.871490]  tty_write+0x157/0x2d0
-> [  255.871491]  ? n_tty_open+0xd0/0xd0
-> [  255.871491]  __vfs_write+0x32/0x140
-> [  255.871491]  ? trace_hardirqs_on+0xd/0x10
-> [  255.871492]  ? __audit_syscall_entry+0xaa/0xf0
-> [  255.871492]  vfs_write+0xc2/0x1f0
-> [  255.871493]  ? syscall_trace_enter+0x1cb/0x3e0
-> [  255.871493]  SyS_write+0x53/0xc0
-> [  255.871493]  do_syscall_64+0x67/0x1f0
-> [  255.871494]  entry_SYSCALL64_slow_path+0x25/0x25
-> [  255.871494] RIP: 0033:0x7fb74cf8fc60
-> [  255.871495] RSP: 002b:00007ffcaab3fe88 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-> [  255.871495] RAX: ffffffffffffffda RBX: 000055d3acaf7160 RCX: 00007fb74cf8fc60
-> [  255.871496] RDX: 000000000000003f RSI: 000055d3acafd090 RDI: 0000000000000009
-> [  255.871496] RBP: 000055d3acafc440 R08: 0000000000000070 R09: 0000000000000000
-> [  255.871497] R10: 000000000000003f R11: 0000000000000246 R12: 000055d3acafc330
-> [  255.871497] R13: 000000000000003f R14: 00007ffcaab3ffb0 R15: 0000000000000000
->          Stopping Create Static Device Nodes in /dev...
-> 
-> ----------------------------------------
-> 
-> # ./scripts/faddr2line vmlinux console_unlock+0x74/0x6b0
-> console_unlock+0x74/0x6b0:
-> console_unlock at kernel/printk/printk.c:2228
-> # ./scripts/faddr2line vmlinux console_unlock+0x457/0x6b0
-> console_unlock+0x457/0x6b0:
-> call_console_drivers at kernel/printk/printk.c:1613
->  (inlined by) console_unlock at kernel/printk/printk.c:2277
-> # ./scripts/faddr2line vmlinux vt_console_print+0x2b7/0x3d0
-> vt_console_print+0x2b7/0x3d0:
-> cr at drivers/tty/vt/vt.c:1137
->  (inlined by) vt_console_print at drivers/tty/vt/vt.c:2598
-> # ./scripts/faddr2line vmlinux lf+0x9c/0xb0
-> lf+0x9c/0xb0:
-> lf at drivers/tty/vt/vt.c:1112
-> # ./scripts/faddr2line vmlinux con_scroll+0x160/0x170
-> con_scroll+0x160/0x170:
-> con_scroll at drivers/tty/vt/vt.c:327 (discriminator 1)
-> # ./scripts/faddr2line vmlinux fbcon_scroll+0x11d/0xcb0
-> fbcon_scroll+0x11d/0xcb0:
-> fbcon_scroll at drivers/video/console/fbcon.c:1898
-> # ./scripts/faddr2line vmlinux fbcon_cursor+0x151/0x1c0
-> fbcon_cursor+0x151/0x1c0:
-> fbcon_cursor at drivers/video/console/fbcon.c:1331
-> # ./scripts/faddr2line vmlinux fbcon_redraw.isra.24+0xa3/0x1d0
-> fbcon_redraw.isra.24+0xa3/0x1d0:
-> fbcon_redraw at drivers/video/console/fbcon.c:1756
-> # ./scripts/faddr2line vmlinux console_conditional_schedule+0x22/0x30
-> console_conditional_schedule+0x22/0x30:
-> console_conditional_schedule at kernel/printk/printk.c:2325
-> 
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c
+b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 72a42330e7a1..c0686050c0bc 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -1,15 +1,15 @@
+ /*******************************************************************
+-*
+-*         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+-*
+-*  All rights are reserved. Reproduction or in part is prohibited
+-*  without the written consent of the copyright owner.
+-*
+-*  swi2c.c --- SM750/SM718 DDK
+-*  This file contains the source code for I2C using software
+-*  implementation.
+-*
+-*******************************************************************/
++ *
++ *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
++ *
++ *  All rights are reserved. Reproduction or in part is prohibited
++ *  without the written consent of the copyright owner.
++ *
++ *  swi2c.c --- SM750/SM718 DDK
++ *  This file contains the source code for I2C using software
++ *  implementation.
++ *
++ *******************************************************************/
+ #include "ddk750_help.h"
+ #include "ddk750_reg.h"
+ #include "ddk750_swi2c.h"
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.h
+b/drivers/staging/sm750fb/ddk750_swi2c.h
+index b53629cda095..9dd4107ace54 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.h
++++ b/drivers/staging/sm750fb/ddk750_swi2c.h
+@@ -1,15 +1,15 @@
+ /*******************************************************************
+-*
+-*         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+-*
+-*  All rights are reserved. Reproduction or in part is prohibited
+-*  without the written consent of the copyright owner.
+-*
+-*  swi2c.h --- SM750/SM718 DDK
+-*  This file contains the definitions for i2c using software
+-*  implementation.
+-*
+-*******************************************************************/
++ *
++ *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
++ *
++ *  All rights are reserved. Reproduction or in part is prohibited
++ *  without the written consent of the copyright owner.
++ *
++ *  swi2c.h --- SM750/SM718 DDK
++ *  This file contains the definitions for i2c using software
++ *  implementation.
++ *
++ *******************************************************************/
+ #ifndef _SWI2C_H_
+ #define _SWI2C_H_
+
+-- 
+2.11.0.windows.1

@@ -1,46 +1,90 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:49 +0000
-Subject: [PATCH 08/12] ARM: dts: imx6-sabreauto: add pinctrl for gpt input capture
-Message-Id: <1481158673-15937-9-git-send-email-steve_longerbeam@mentor.com>
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 01 Dec 2016 12:34:02 +0000
+Subject: [PATCH 33/39] Annotate hardware config module parameters in drivers/video/
+Message-Id: <148059564205.31612.17013167193733120962.stgit@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
+References: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
+In-Reply-To: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Steve Longerbeam <steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
+To: linux-kernel@vger.kernel.org
+Cc: gnomes@lxorguk.ukuu.org.uk, linux-fbdev@vger.kernel.org, minyard@acm.org, dhowells@redhat.com, linux-security-module@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, keyrings@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>
 
-Add pinctrl groups for both GPT input capture channels.
+When the kernel is running in secure boot mode, we lock down the kernel to
+prevent userspace from modifying the running kernel image.  Whilst this
+includes prohibiting access to things like /dev/mem, it must also prevent
+access by means of configuring driver modules in such a way as to cause a
+device to access or modify the kernel image.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+To this end, annotate module_param* statements that refer to hardware
+configuration and indicate for future reference what type of parameter they
+specify.  The parameter parser in the core sees this information and can
+skip such parameters with an error message if the kernel is locked down.
+The module initialisation then runs as normal, but just sees whatever the
+default values for those parameters is.
+
+Note that we do still need to do the module initialisation because some
+drivers have viable defaults set in case parameters aren't specified and
+some drivers support automatic configuration (e.g. PNP or PCI) in addition
+to manually coded parameters.
+
+This patch annotates drivers in drivers/video/.
+
+Suggested-by: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Jaya Kumar <jayalk@intworks.biz>
+cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+cc: linux-fbdev@vger.kernel.org
 ---
- arch/arm/boot/dts/imx6qdl-sabreauto.dtsi | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
 
-diff --git a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-index 944a4fa..d74882a 100644
---- a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-@@ -457,6 +457,18 @@
- 			>;
- 		};
+ drivers/video/fbdev/arcfb.c |    8 ++++----
+ drivers/video/fbdev/n411.c  |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 1928cb2b5386..7e87d0d61658 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -645,17 +645,17 @@ module_param(nosplash, uint, 0);
+ MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
+ module_param(arcfb_enable, uint, 0);
+ MODULE_PARM_DESC(arcfb_enable, "Enable communication with Arc board");
+-module_param(dio_addr, ulong, 0);
++module_param_hw(dio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
+-module_param(cio_addr, ulong, 0);
++module_param_hw(cio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
+-module_param(c2io_addr, ulong, 0);
++module_param_hw(c2io_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
+ module_param(splashval, ulong, 0);
+ MODULE_PARM_DESC(splashval, "Splash pattern: 0xFF is black, 0x00 is green");
+ module_param(tuhold, ulong, 0);
+ MODULE_PARM_DESC(tuhold, "Time to hold between strobing data to Arc board");
+-module_param(irq, uint, 0);
++module_param_hw(irq, uint, irq, 0);
+ MODULE_PARM_DESC(irq, "IRQ for the Arc board");
  
-+		pinctrl_gpt_input_capture0: gptinputcapture0grp {
-+			fsl,pins = <
-+				MX6QDL_PAD_SD1_DAT0__GPT_CAPTURE1	0x80000000
-+			>;
-+		};
-+
-+		pinctrl_gpt_input_capture1: gptinputcapture1grp {
-+			fsl,pins = <
-+				MX6QDL_PAD_SD1_DAT1__GPT_CAPTURE2	0x80000000
-+			>;
-+		};
-+
- 		pinctrl_spdif: spdifgrp {
- 			fsl,pins = <
- 				MX6QDL_PAD_KEY_COL3__SPDIF_IN 0x1b0b0
--- 
-2.7.4
+ module_init(arcfb_init);
+diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
+index 053deacad7cc..a3677313396e 100644
+--- a/drivers/video/fbdev/n411.c
++++ b/drivers/video/fbdev/n411.c
+@@ -193,11 +193,11 @@ module_exit(n411_exit);
+ 
+ module_param(nosplash, uint, 0);
+ MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
+-module_param(dio_addr, ulong, 0);
++module_param_hw(dio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
+-module_param(cio_addr, ulong, 0);
++module_param_hw(cio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
+-module_param(c2io_addr, ulong, 0);
++module_param_hw(c2io_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
+ module_param(splashval, ulong, 0);
+ MODULE_PARM_DESC(splashval, "Splash pattern: 0x00 is black, 0x01 is white");
 

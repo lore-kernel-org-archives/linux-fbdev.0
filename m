@@ -1,72 +1,65 @@
-From: Andrey Utkin <andrey_utkin@fastmail.com>
-Date: Thu, 01 Dec 2016 21:31:40 +0000
-Subject: Re: [PATCH v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <20161201213140.GF27009@dell-m4800.home>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Sun, 04 Dec 2016 10:53:53 +0000
+Subject: [PATCH v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161123173340.GA24872@angband.pl>
- <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
- <20161127213730.GO11418@dell-m4800.home>
- <1480368499.29156.12.camel@gmx.de>
- <20161129100115.GA20034@stationary.pb.com>
- <1480626203.7664.7.camel@gmx.de>
-In-Reply-To: <1480626203.7664.7.camel@gmx.de>
+References: <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1480265509-20922-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Manuel =?iso-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, gregkh@linuxfoundation.org, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Dec 01, 2016 at 10:03:23PM +0100, Manuel Sch=F6lling wrote:
-> Hi Andrey,
->=20
-> On Di, 2016-11-29 at 10:01 +0000, Andrey Utkin wrote:
-> > On Mon, Nov 28, 2016 at 10:28:19PM +0100, Manuel Sch=F6lling wrote:
-> > Regarding logout scrollback clearing not working for me. ncurses-6.0-rc1
-> > which I tested it with is the latest available in Gentoo portage, please
-> > confirm whether I need any newer version, or should I tune something
-> > else. I'd appreciate if you also tested your patch with gentoo setup.
->=20
-> I finally setup gentoo
-
-Wow, what a big undertaking.
-
-> running agetty (util-linux-2.26.2) and patching
-> the file term-utils/agetty.c with
->=20
-> static void termio_clear(int fd)
-> {
-> 	/*
-> 	 * Do not write a full reset (ESC c) because this destroys
-> 	 * the unicode mode again if the terminal was in unicode
-> 	 * mode.  Also it clears the CONSOLE_MAGIC features which
-> 	 * are required for some languages/console-fonts.
-> 	 * Just put the cursor to the home position (ESC [ H),
-> 	 * erase everything below the cursor (ESC [ J), and set the
-> 	 * scrolling region to the full window (ESC [ r)
-> 	 */
-> -	write_all(fd, "\033[r\033[H\033[J", 9);
-> +	write_all(fd, "\033[3J\033[r\033[H\033[J", 13);
-> }
->=20
-> solves the issue with the scrollback buffer after log out.
-> Let me know if you agree that this is the right way to go and I will
-> send a patch to the maintainer of util-linux.
-
-I believe you that this works and you must know better than me whether
-this solution is correct. Besides that, I'd suggest updating that large
-block comment before the updated write_all() call to describe the new
-action you're doing. Please CC me in your discussion with util-linux
-maintainers.
-
-Also I'd suggest coming back in a while, to set this feature enabled by
-default. I wonder how many years to wait gracefully until "stable"
-distros update util-linux to ensure secure scrollback wiping. 3? 5?
-
-> Thanks again for spending all this time to test the patch!
-
-Thank you very much for your time and effort in bringing this useful
-feature!
-
-I give all sorts of my approval on this patchset:
 Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
 Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
+
+--
+Changes in v7:
+  - Add new callback to consw struct for flushing video console driver's
+    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
+    by Adam Borowski (kilobyte@angband.pl).
+  - Fix style issues
+Changes in v6:
+  - Change of check if feature is enabled in=20
+    vgacon_scrollback_switch()
+Changes in v5:
+  - Clearify documentation
+  - Skip superfluous array initialization
+  - Disable scrollback if buffer allocation fails
+  - Refactor vgacon_switch_scrollback()
+  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
+  - Add check for fg_console in vgacon_scrollback_update
+Changes in v4.1:
+  - Fix compiler error
+Changes in v4:
+  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
+    VGACON_SOFT_SCROLLBACK_PERSISTENT
+  - Split into two patches
+  - Rework documentation
+  - Remove cosmetic changes in comments (postponed)
+Changes in v3:
+  - Add config option for this feature
+  - Fallback to old scrollback buffer if kcalloc() fails
+  - Remove ioctl() call again and add documentation about existing
+    escape sequence to flush the scrollback buffer
+Changes in v2:
+  - Add ioctl() call to flush scrollback buffer
+  - (Patch v2 was not labeled as such, sorry)
+
+Manuel Sch=C3=B6lling (3):
+  console: Move scrollback data into its own struct
+  console: Add callback to flush scrollback buffer to consw struct
+  console: Add persistent scrollback buffers for all VGA consoles
+
+ drivers/tty/vt/vt.c            |   9 +++
+ drivers/video/console/Kconfig  |  25 ++++++-
+ drivers/video/console/vgacon.c | 165 ++++++++++++++++++++++++++++---------=
+----
+ include/linux/console.h        |   4 +
+ 4 files changed, 148 insertions(+), 55 deletions(-)
+
+--=20
+2.1.4
+

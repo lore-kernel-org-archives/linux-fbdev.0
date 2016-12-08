@@ -1,152 +1,46 @@
 From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:53 +0000
-Subject: [PATCH 12/12] gpu: ipu-v3: Add smfc and ic client devices
-Message-Id: <1481158673-15937-13-git-send-email-steve_longerbeam@mentor.com>
+Date: Thu, 08 Dec 2016 00:57:49 +0000
+Subject: [PATCH 08/12] ARM: dts: imx6-sabreauto: add pinctrl for gpt input capture
+Message-Id: <1481158673-15937-9-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Steve Longerbeam <steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
 
-Adds IPU client devices for the SMFC and IC task units.
+Add pinctrl groups for both GPT input capture channels.
 
 Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 ---
- drivers/gpu/ipu-v3/ipu-common.c | 87 +++++++++++++++++++++++++++++++++++++++--
- include/video/imx-ipu-v3.h      |  3 ++
- 2 files changed, 87 insertions(+), 3 deletions(-)
+ arch/arm/boot/dts/imx6qdl-sabreauto.dtsi | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index b6ca36b..729581d 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -1161,18 +1161,77 @@ static struct ipu_platform_reg client_reg[] = {
- 		.pdata = {
- 			.type = IPU_CSI,
- 			.csi = 0,
--			.dma[0] = IPUV3_CHANNEL_CSI0,
--			.dma[1] = -EINVAL,
-+			.dma[0] = -EINVAL,
- 		},
- 		.name = "imx-ipuv3-csi",
- 	}, {
- 		.pdata = {
- 			.type = IPU_CSI,
- 			.csi = 1,
-+			.dma[0] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-csi",
-+	}, {
-+		.pdata = {
-+			.type = IPU_SMFC,
-+			.smfc = 0,
-+			.dma[0] = IPUV3_CHANNEL_CSI0,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-smfc",
-+	}, {
-+		.pdata = {
-+			.type = IPU_SMFC,
-+			.smfc = 1,
- 			.dma[0] = IPUV3_CHANNEL_CSI1,
- 			.dma[1] = -EINVAL,
- 		},
--		.name = "imx-ipuv3-csi",
-+		.name = "imx-ipuv3-smfc",
-+	}, {
-+		.pdata = {
-+			.type = IPU_IC,
-+			.ic_task = IC_TASK_ENCODER,
-+			.ic = 0,
-+			.dma[0] = IPUV3_CHANNEL_IC_PRP_ENC_MEM,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-ic",
-+	}, {
-+		.pdata = {
-+			.type = IPU_IC,
-+			.ic_task = IC_TASK_VIEWFINDER,
-+			.ic = 0,
-+			.dma[0] = IPUV3_CHANNEL_IC_PRP_VF_MEM,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-ic",
-+	}, {
-+		.pdata = {
-+			.type = IPU_IC,
-+			.ic_task = IC_TASK_POST_PROCESSOR,
-+			.ic = 0,
-+			.dma[0] = IPUV3_CHANNEL_IC_PP_MEM,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-ic",
-+	}, {
-+		.pdata = {
-+			.type = IPU_IC,
-+			.ic_task = IC_TASK_POST_PROCESSOR,
-+			.ic = 1,
-+			.dma[0] = IPUV3_CHANNEL_IC_PP_MEM,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-ic",
-+	}, {
-+		.pdata = {
-+			.type = IPU_IC,
-+			.ic_task = IC_TASK_POST_PROCESSOR,
-+			.ic = 2,
-+			.dma[0] = IPUV3_CHANNEL_IC_PP_MEM,
-+			.dma[1] = -EINVAL,
-+		},
-+		.name = "imx-ipuv3-ic",
- 	}, {
- 		.pdata = {
- 			.type = IPU_DI,
-@@ -1213,6 +1272,28 @@ of_get_ipu_client_node(struct ipu_soc *ipu, struct ipu_platform_reg *reg)
- 			 "ipu%d_csi", ipu->id + 1);
- 		client_id = reg->pdata.csi;
- 		break;
-+	case IPU_SMFC:
-+		snprintf(node_name, sizeof(node_name), "ipu%d_smfc",
-+			 ipu->id + 1);
-+		client_id = reg->pdata.smfc;
-+		break;
-+	case IPU_IC:
-+		switch (reg->pdata.ic_task) {
-+		case IC_TASK_ENCODER:
-+			snprintf(node_name, sizeof(node_name),
-+				 "ipu%d_ic_prpenc", ipu->id + 1);
-+			break;
-+		case IC_TASK_VIEWFINDER:
-+			snprintf(node_name, sizeof(node_name),
-+				 "ipu%d_ic_prpvf", ipu->id + 1);
-+			break;
-+		case IC_TASK_POST_PROCESSOR:
-+			snprintf(node_name, sizeof(node_name),
-+				 "ipu%d_ic_pp", ipu->id + 1);
-+			break;
-+		}
-+		client_id = reg->pdata.ic;
-+		break;
- 	case IPU_DI:
- 		snprintf(node_name, sizeof(node_name),
- 			 "ipu%d_di", ipu->id + 1);
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index 7709af7..4e70ca4 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -418,6 +418,9 @@ int ipu_rot_mode_to_degrees(int *degrees, enum ipu_rotate_mode mode,
- struct ipu_client_platformdata {
- 	enum ipu_unit_type type;
- 	int csi;
-+	int smfc;
-+	int ic_task;
-+	int ic;
- 	int di;
- 	int dc;
- 	int dp;
+diff --git a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
+index 944a4fa..d74882a 100644
+--- a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
+@@ -457,6 +457,18 @@
+ 			>;
+ 		};
+ 
++		pinctrl_gpt_input_capture0: gptinputcapture0grp {
++			fsl,pins = <
++				MX6QDL_PAD_SD1_DAT0__GPT_CAPTURE1	0x80000000
++			>;
++		};
++
++		pinctrl_gpt_input_capture1: gptinputcapture1grp {
++			fsl,pins = <
++				MX6QDL_PAD_SD1_DAT1__GPT_CAPTURE2	0x80000000
++			>;
++		};
++
+ 		pinctrl_spdif: spdifgrp {
+ 			fsl,pins = <
+ 				MX6QDL_PAD_KEY_COL3__SPDIF_IN 0x1b0b0
 -- 
 2.7.4
 

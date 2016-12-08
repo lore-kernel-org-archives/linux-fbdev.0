@@ -1,1182 +1,132 @@
 From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:44 +0000
-Subject: [PATCH 03/12] ARM: dts: imx6qdl: add video capture devices and connections
-Message-Id: <1481158673-15937-4-git-send-email-steve_longerbeam@mentor.com>
+Date: Thu, 08 Dec 2016 00:57:52 +0000
+Subject: [PATCH 11/12] gpu: ipu-v3: lookup ipu client nodes by name
+Message-Id: <1481158673-15937-12-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+To: shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
+Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Steve Longerbeam <steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
 
-From: Philipp Zabel <p.zabel@pengutronix.de>
+To allow for IPU clients containing multiple ports, they are no longer
+a single port node name, but have a name of the format
+"ipu<id>_<unit>". So we can no longer use of_graph_get_port_by_id()
+to lookup the client node.
 
-This patch adds the IPU subunit devices involved in video capture and
-image conversion, and defines all the possible hardware connections
-between them via OF graphs.
-
-External to the IPU:
-
-Video input multiplexers are defined that multiplex inputs from camera
-sensors and the MIPI-CSI2 gasket, to the IPU CSIs.
-
-On i.MX6Q/D two two-input multiplexers in front of IPU1 CSI0 and IPU2 CSI1
-allow to select between CSI0/1 parallel input pads and the MIPI CSI-2 virtual
-channels 0/3.
-
-On i.MX6DL/S two five-input multiplexers in front of IPU1 CSI0 and IPU1 CSI1
-allow to select between CSI0/1 parallel input pads and any of the four MIPI
-CSI-2 virtual channels.
-
-Internal to the IPU:
-
-The IPU CSI, SMFC, IC-PRPENC, IC-PRPVF, and IC-PP subunits are added
-as children of the IPUs, along with the hardware-supported connections
-between them.
-
-Finally, a media device node is defined. A video camera interface
-and mem2mem device are defined as children of the media device.
+Create the function of_get_ipu_client_node() that looks up the client
+node by node name and unit id. The ipu_unit_type enumeration is added
+to the client_reg[] entries to compose the node names.
 
 Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
-Signed-off-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- arch/arm/boot/dts/imx6dl.dtsi  | 190 ++++++++++++++++
- arch/arm/boot/dts/imx6q.dtsi   | 487 +++++++++++++++++++++++++++++++++++++++++
- arch/arm/boot/dts/imx6qdl.dtsi | 368 +++++++++++++++++++++++++++++++
- 3 files changed, 1045 insertions(+)
+ drivers/gpu/ipu-v3/ipu-common.c | 55 +++++++++++++++++++++++++++++++++++------
+ 1 file changed, 47 insertions(+), 8 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6dl.dtsi b/arch/arm/boot/dts/imx6dl.dtsi
-index 1ade195..4bab076 100644
---- a/arch/arm/boot/dts/imx6dl.dtsi
-+++ b/arch/arm/boot/dts/imx6dl.dtsi
-@@ -109,6 +109,120 @@
- 		compatible = "fsl,imx-gpu-subsystem";
- 		cores = <&gpu_2d>, <&gpu_3d>;
- 	};
-+
-+	ipu1_csi0_mux: ipu1_csi0_mux@34 {
-+		compatible = "imx-video-mux";
-+		reg = <0x34 0x07>;
-+		gpr = <&gpr>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <5>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			ipu1_csi0_mux_from_mipi_vc0: endpoint {
-+				remote-endpoint = <&mipi_vc0_to_ipu1_csi0_mux>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			ipu1_csi0_mux_from_mipi_vc1: endpoint {
-+				remote-endpoint = <&mipi_vc1_to_ipu1_csi0_mux>;
-+			};
-+		};
-+
-+		port@2 {
-+			reg = <2>;
-+
-+			ipu1_csi0_mux_from_mipi_vc2: endpoint {
-+				remote-endpoint = <&mipi_vc2_to_ipu1_csi0_mux>;
-+			};
-+		};
-+
-+		port@3 {
-+			reg = <3>;
-+
-+			ipu1_csi0_mux_from_mipi_vc3: endpoint {
-+				remote-endpoint = <&mipi_vc3_to_ipu1_csi0_mux>;
-+			};
-+		};
-+
-+		port@4 {
-+			reg = <4>;
-+
-+			ipu1_csi0_mux_from_parallel_sensor: endpoint {
-+			};
-+		};
-+
-+		port@5 {
-+			reg = <5>;
-+
-+			ipu1_csi0_mux_to_ipu1_csi0: endpoint {
-+				remote-endpoint = <&ipu1_csi0_from_ipu1_csi0_mux>;
-+			};
-+		};
-+	};
-+
-+	ipu1_csi1_mux: ipu1_csi1_mux@34 {
-+		compatible = "imx-video-mux";
-+		reg = <0x34 0x38>;
-+		gpr = <&gpr>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <5>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			ipu1_csi1_mux_from_mipi_vc0: endpoint {
-+				remote-endpoint = <&mipi_vc0_to_ipu1_csi1_mux>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			ipu1_csi1_mux_from_mipi_vc1: endpoint {
-+				remote-endpoint = <&mipi_vc1_to_ipu1_csi1_mux>;
-+			};
-+		};
-+
-+		port@2 {
-+			reg = <2>;
-+
-+			ipu1_csi1_mux_from_mipi_vc2: endpoint {
-+				remote-endpoint = <&mipi_vc2_to_ipu1_csi1_mux>;
-+			};
-+		};
-+
-+		port@3 {
-+			reg = <3>;
-+
-+			ipu1_csi1_mux_from_mipi_vc3: endpoint {
-+				remote-endpoint = <&mipi_vc3_to_ipu1_csi1_mux>;
-+			};
-+		};
-+
-+		port@4 {
-+			reg = <4>;
-+
-+			ipu1_csi1_mux_from_parallel_sensor: endpoint {
-+			};
-+		};
-+
-+		port@5 {
-+			reg = <5>;
-+
-+			ipu1_csi1_mux_to_ipu1_csi1: endpoint {
-+				remote-endpoint = <&ipu1_csi1_from_ipu1_csi1_mux>;
-+			};
-+		};
-+	};
- };
+diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
+index 97218af..b6ca36b 100644
+--- a/drivers/gpu/ipu-v3/ipu-common.c
++++ b/drivers/gpu/ipu-v3/ipu-common.c
+@@ -1159,6 +1159,7 @@ struct ipu_platform_reg {
+ static struct ipu_platform_reg client_reg[] = {
+ 	{
+ 		.pdata = {
++			.type = IPU_CSI,
+ 			.csi = 0,
+ 			.dma[0] = IPUV3_CHANNEL_CSI0,
+ 			.dma[1] = -EINVAL,
+@@ -1166,6 +1167,7 @@ static struct ipu_platform_reg client_reg[] = {
+ 		.name = "imx-ipuv3-csi",
+ 	}, {
+ 		.pdata = {
++			.type = IPU_CSI,
+ 			.csi = 1,
+ 			.dma[0] = IPUV3_CHANNEL_CSI1,
+ 			.dma[1] = -EINVAL,
+@@ -1173,6 +1175,7 @@ static struct ipu_platform_reg client_reg[] = {
+ 		.name = "imx-ipuv3-csi",
+ 	}, {
+ 		.pdata = {
++			.type = IPU_DI,
+ 			.di = 0,
+ 			.dc = 5,
+ 			.dp = IPU_DP_FLOW_SYNC_BG,
+@@ -1182,6 +1185,7 @@ static struct ipu_platform_reg client_reg[] = {
+ 		.name = "imx-ipuv3-crtc",
+ 	}, {
+ 		.pdata = {
++			.type = IPU_DI,
+ 			.di = 1,
+ 			.dc = 1,
+ 			.dp = -EINVAL,
+@@ -1195,6 +1199,46 @@ static struct ipu_platform_reg client_reg[] = {
+ static DEFINE_MUTEX(ipu_client_id_mutex);
+ static int ipu_client_id;
  
- &gpio1 {
-@@ -184,3 +298,79 @@
- &vpu {
- 	compatible = "fsl,imx6dl-vpu", "cnm,coda960";
- };
++static struct device_node *
++of_get_ipu_client_node(struct ipu_soc *ipu, struct ipu_platform_reg *reg)
++{
++	struct device *dev = ipu->dev;
++	struct device_node *client;
++	char node_name[32];
++	u32 id, client_id = 0;
 +
-+&ipu1_csi1 {
-+	port@0 {
-+		reg = <0>;
-+		ipu1_csi1_from_ipu1_csi1_mux: endpoint {
-+			remote-endpoint = <&ipu1_csi1_mux_to_ipu1_csi1>;
-+		};
-+	};
-+};
++	switch (reg->pdata.type) {
++	case IPU_CSI:
++		snprintf(node_name, sizeof(node_name),
++			 "ipu%d_csi", ipu->id + 1);
++		client_id = reg->pdata.csi;
++		break;
++	case IPU_DI:
++		snprintf(node_name, sizeof(node_name),
++			 "ipu%d_di", ipu->id + 1);
++		client_id = reg->pdata.di;
++		break;
++	default:
++		client = NULL;
++		goto out;
++	}
 +
-+&mipi_csi {
-+	sink-ports = <1>;
++	for_each_child_of_node(dev->of_node, client) {
++		if (client->name &&
++		    (of_node_cmp(client->name, node_name) = 0)) {
++			of_property_read_u32(client, "reg", &id);
++			if (id = client_id)
++				break;
++		}
++	}
++out:
++	if (!client)
++		dev_info(dev, "no %s%d node in %s, not using %s%d\n",
++			 node_name, client_id, dev->of_node->full_name,
++			 node_name, client_id);
++	return client;
++}
 +
-+	port@0 {
-+		reg = <0>;
-+
-+		mipi_csi_from_mipi_sensor: endpoint {
-+		};
-+	};
-+
-+	port@1 {
-+		reg = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		mipi_vc0_to_ipu1_csi0_mux: endpoint@0 {
-+			remote-endpoint = <&ipu1_csi0_mux_from_mipi_vc0>;
-+		};
-+
-+		mipi_vc0_to_ipu1_csi1_mux: endpoint@1 {
-+			remote-endpoint = <&ipu1_csi1_mux_from_mipi_vc0>;
-+		};
-+	};
-+
-+	port@2 {
-+		reg = <2>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		mipi_vc1_to_ipu1_csi0_mux: endpoint@0 {
-+			remote-endpoint = <&ipu1_csi0_mux_from_mipi_vc1>;
-+		};
-+
-+		mipi_vc1_to_ipu1_csi1_mux: endpoint@1 {
-+			remote-endpoint = <&ipu1_csi1_mux_from_mipi_vc1>;
-+		};
-+	};
-+
-+	port@3 {
-+		reg = <3>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		mipi_vc2_to_ipu1_csi0_mux: endpoint@0 {
-+			remote-endpoint = <&ipu1_csi0_mux_from_mipi_vc2>;
-+		};
-+
-+		mipi_vc2_to_ipu1_csi1_mux: endpoint@1 {
-+			remote-endpoint = <&ipu1_csi1_mux_from_mipi_vc2>;
-+		};
-+	};
-+
-+	port@4 {
-+		reg = <4>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		mipi_vc3_to_ipu1_csi0_mux: endpoint@0 {
-+			remote-endpoint = <&ipu1_csi0_mux_from_mipi_vc3>;
-+		};
-+
-+		mipi_vc3_to_ipu1_csi1_mux: endpoint@1 {
-+			remote-endpoint = <&ipu1_csi1_mux_from_mipi_vc3>;
-+		};
-+	};
-+};
-diff --git a/arch/arm/boot/dts/imx6q.dtsi b/arch/arm/boot/dts/imx6q.dtsi
-index 2b261ba..a0602c5 100644
---- a/arch/arm/boot/dts/imx6q.dtsi
-+++ b/arch/arm/boot/dts/imx6q.dtsi
-@@ -142,11 +142,270 @@
- 			resets = <&src 4>;
+ static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
+ {
+ 	struct device *dev = ipu->dev;
+@@ -1211,15 +1255,10 @@ static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
+ 		struct platform_device *pdev;
+ 		struct device_node *of_node;
  
- 			ipu2_csi0: ipu2_csi@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
- 				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_csi0_from_mipi_vc2: endpoint {
-+						remote-endpoint = <&mipi_vc2_to_ipu2_csi0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_csi0_to_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu2_smfc0_from_csi0>;
-+					};
-+					ipu2_csi0_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_from_csi0>;
-+					};
-+					ipu2_csi0_to_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpenc_from_csi0>;
-+					};
-+				};
- 			};
+-		/* Associate subdevice with the corresponding port node */
+-		of_node = of_graph_get_port_by_id(dev->of_node, i);
+-		if (!of_node) {
+-			dev_info(dev,
+-				 "no port@%d node in %s, not using %s%d\n",
+-				 i, dev->of_node->full_name,
+-				 (i / 2) ? "DI" : "CSI", i % 2);
++		/* Associate subdevice with the corresponding client node */
++		of_node = of_get_ipu_client_node(ipu, reg);
++		if (!of_node)
+ 			continue;
+-		}
  
- 			ipu2_csi1: ipu2_csi@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
- 				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_csi1_from_ipu2_csi1_mux: endpoint {
-+						remote-endpoint = <&ipu2_csi1_mux_to_ipu2_csi1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_csi1_to_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu2_smfc1_from_csi1>;
-+					};
-+					ipu2_csi1_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_from_csi1>;
-+					};
-+					ipu2_csi1_to_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpenc_from_csi1>;
-+					};
-+				};
-+			};
-+
-+			ipu2_smfc0: ipu2_smfc@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_smfc0_from_csi0: endpoint {
-+						remote-endpoint = <&ipu2_csi0_to_smfc0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_smfc0_to_ic_pp1: pp-endpoint {
-+						remote-endpoint = <&ipu2_ic_pp1_from_smfc0>;
-+					};
-+					ipu2_smfc0_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_from_smfc0>;
-+					};
-+					ipu2_smfc0_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_smfc0>;
-+					};
-+					ipu2_smfc0_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_smfc0>;
-+					};
-+				};
-+			};
-+
-+			ipu2_smfc1: ipu2_smfc@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_smfc1_from_csi1: endpoint {
-+						remote-endpoint = <&ipu2_csi1_to_smfc1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_smfc1_to_ic_pp2: pp-endpoint {
-+						remote-endpoint = <&ipu2_ic_pp2_from_smfc1>;
-+					};
-+					ipu2_smfc1_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_from_smfc1>;
-+					};
-+					ipu2_smfc1_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_smfc1>;
-+					};
-+					ipu2_smfc1_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_smfc1>;
-+					};
-+				};
-+			};
-+
-+			ipu2_ic_prpenc: ipu2_ic_prpenc@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_ic_prpenc_from_csi0: csi0-endpoint {
-+						remote-endpoint = <&ipu2_csi0_to_ic_prpenc>;
-+					};
-+					ipu2_ic_prpenc_from_csi1: csi1-endpoint {
-+						remote-endpoint = <&ipu2_csi1_to_ic_prpenc>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_ic_prpenc_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_ic_prpenc>;
-+					};
-+					ipu2_ic_prpenc_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_ic_prpenc>;
-+					};
-+				};
-+			};
-+
-+			ipu2_ic_prpvf: ipu2_ic_prpvf@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_ic_prpvf_from_csi0: csi0-endpoint {
-+						remote-endpoint = <&ipu2_csi0_to_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_from_csi1: csi1-endpoint {
-+						remote-endpoint = <&ipu2_csi1_to_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu2_smfc0_to_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu2_smfc1_to_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_from_m2m1: m2m1-endpoint {
-+						remote-endpoint = <&m2m1_to_ic_prpvf>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_ic_prpvf_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_to_ic_pp0: pp0-endpoint {
-+						remote-endpoint = <&ipu2_ic_pp0_from_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_to_ic_pp1: pp1-endpoint {
-+						remote-endpoint = <&ipu2_ic_pp1_from_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_to_ic_pp2: pp2-endpoint {
-+						remote-endpoint = <&ipu2_ic_pp2_from_ic_prpvf>;
-+					};
-+					ipu2_ic_prpvf_to_m2m1: m2m1-endpoint {
-+						remote-endpoint = <&m2m1_from_ic_prpvf>;
-+					};
-+				};
-+			};
-+
-+			ipu2_ic_pp0: ipu2_ic_pp@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_ic_pp0_from_m2m1: m2m1-endpoint {
-+						remote-endpoint = <&m2m1_to_ic_pp0>;
-+					};
-+					ipu2_ic_pp0_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_to_ic_pp0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_ic_pp0_to_m2m1: endpoint {
-+						remote-endpoint = <&m2m1_from_ic_pp0>;
-+					};
-+				};
-+			};
-+
-+			ipu2_ic_pp1: ipu2_ic_pp@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_ic_pp1_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu2_smfc0_to_ic_pp1>;
-+					};
-+					ipu2_ic_pp1_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_to_ic_pp1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_ic_pp1_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_ic_pp1>;
-+					};
-+					ipu2_ic_pp1_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_ic_pp1>;
-+					};
-+				};
-+			};
-+
-+			ipu2_ic_pp2: ipu2_ic_pp@2 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <2>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu2_ic_pp2_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu2_smfc1_to_ic_pp2>;
-+					};
-+					ipu2_ic_pp2_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu2_ic_prpvf_to_ic_pp2>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu2_ic_pp2_to_camif2: camif2-endpoint {
-+						remote-endpoint = <&camif2_from_ic_pp2>;
-+					};
-+					ipu2_ic_pp2_to_camif3: camif3-endpoint {
-+						remote-endpoint = <&camif3_from_ic_pp2>;
-+					};
-+				};
- 			};
- 
- 			ipu2_di0: ipu2_di@0 {
-@@ -207,6 +466,73 @@
- 		compatible = "fsl,imx-gpu-subsystem";
- 		cores = <&gpu_2d>, <&gpu_3d>, <&gpu_vg>;
- 	};
-+
-+
-+	ipu1_csi0_mux: ipu1_csi0_mux@4 {
-+		compatible = "imx-video-mux";
-+		reg = <0x04 0x80000>;
-+		gpr = <&gpr>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <2>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			ipu1_csi0_mux_from_mipi_vc0: endpoint {
-+				remote-endpoint = <&mipi_vc0_to_ipu1_csi0_mux>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			ipu1_csi0_mux_from_parallel_sensor: endpoint {
-+			};
-+		};
-+
-+		port@2 {
-+			reg = <2>;
-+
-+			ipu1_csi0_mux_to_ipu1_csi0: endpoint {
-+				remote-endpoint = <&ipu1_csi0_from_ipu1_csi0_mux>;
-+			};
-+		};
-+	};
-+
-+	ipu2_csi1_mux: ipu2_csi1_mux@4 {
-+		compatible = "imx-video-mux";
-+		reg = <0x04 0x100000>;
-+		gpr = <&gpr>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <2>;
-+
-+		port@0 {
-+			reg = <0>;
-+
-+			ipu2_csi1_mux_from_mipi_vc3: endpoint {
-+				remote-endpoint = <&mipi_vc3_to_ipu2_csi1_mux>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+
-+			ipu2_csi1_mux_from_parallel_sensor: endpoint {
-+			};
-+		};
-+
-+		port@2 {
-+			reg = <2>;
-+
-+			ipu2_csi1_mux_to_ipu2_csi1: endpoint {
-+				remote-endpoint = <&ipu2_csi1_from_ipu2_csi1_mux>;
-+			};
-+		};
-+	};
- };
- 
- &gpio1 {
-@@ -266,6 +592,15 @@
- 	};
- };
- 
-+&ipu1_csi1 {
-+	port@0 {
-+		reg = <0>;
-+		ipu1_csi1_from_mipi_vc1: endpoint {
-+			remote-endpoint = <&mipi_vc1_to_ipu1_csi1>;
-+		};
-+	};
-+};
-+
- &ldb {
- 	clocks = <&clks IMX6QDL_CLK_LDB_DI0_SEL>, <&clks IMX6QDL_CLK_LDB_DI1_SEL>,
- 		 <&clks IMX6QDL_CLK_IPU1_DI0_SEL>, <&clks IMX6QDL_CLK_IPU1_DI1_SEL>,
-@@ -312,6 +647,49 @@
- 	};
- };
- 
-+&mipi_csi {
-+	sink-ports = <1>;
-+
-+	port@0 {
-+		reg = <0>;
-+
-+		mipi_csi_from_mipi_sensor: endpoint {
-+		};
-+	};
-+
-+	port@1 {
-+		reg = <1>;
-+
-+		mipi_vc0_to_ipu1_csi0_mux: endpoint {
-+			remote-endpoint = <&ipu1_csi0_mux_from_mipi_vc0>;
-+		};
-+	};
-+
-+	port@2 {
-+		reg = <2>;
-+
-+		mipi_vc1_to_ipu1_csi1: endpoint {
-+			remote-endpoint = <&ipu1_csi1_from_mipi_vc1>;
-+		};
-+	};
-+
-+	port@3 {
-+		reg = <3>;
-+
-+		mipi_vc2_to_ipu2_csi0: endpoint {
-+			remote-endpoint = <&ipu2_csi0_from_mipi_vc2>;
-+		};
-+	};
-+
-+	port@4 {
-+		reg = <4>;
-+
-+		mipi_vc3_to_ipu2_csi1_mux: endpoint {
-+			remote-endpoint = <&ipu2_csi1_mux_from_mipi_vc3>;
-+		};
-+	};
-+};
-+
- &mipi_dsi {
- 	ports {
- 		port@2 {
-@@ -335,3 +713,112 @@
- &vpu {
- 	compatible = "fsl,imx6q-vpu", "cnm,coda960";
- };
-+
-+&media0 {
-+	m2m1: m2m@1 {
-+		compatible = "fsl,imx-media-mem2mem";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <2>;
-+		reg = <1>;
-+
-+		port@0 {
-+			reg = <0>;
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+			m2m1_from_ic_pp0: endpoint {
-+				remote-endpoint = <&ipu2_ic_pp0_to_m2m1>;
-+			};
-+			m2m1_from_ic_prpvf: prpvf-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpvf_to_m2m1>;
-+			};
-+		};
-+
-+		port@2 {
-+			reg = <2>;
-+			m2m1_to_ic_prpvf: prpvf-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpvf_from_m2m1>;
-+			};
-+			m2m1_to_ic_pp0: pp0-endpoint {
-+				remote-endpoint = <&ipu2_ic_pp0_from_m2m1>;
-+			};
-+		};
-+
-+		port@3 {
-+			reg = <3>;
-+		};
-+	};
-+
-+	camif2: camif@2 {
-+		compatible = "fsl,imx-media-camif";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <1>;
-+		reg = <2>;
-+
-+		port@0 {
-+			reg = <0>;
-+			camif2_from_smfc0: smfc0-endpoint {
-+				remote-endpoint = <&ipu2_smfc0_to_camif2>;
-+			};
-+			camif2_from_smfc1: smfc1-endpoint {
-+				remote-endpoint = <&ipu2_smfc1_to_camif2>;
-+			};
-+			camif2_from_ic_prpenc: prpenc-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpenc_to_camif2>;
-+			};
-+			camif2_from_ic_prpvf: prpvf-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpvf_to_camif2>;
-+			};
-+			camif2_from_ic_pp1: pp1-endpoint {
-+				remote-endpoint = <&ipu2_ic_pp1_to_camif2>;
-+			};
-+			camif2_from_ic_pp2: pp2-endpoint {
-+				remote-endpoint = <&ipu2_ic_pp2_to_camif2>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+		};
-+	};
-+
-+	camif3: camif@3 {
-+		compatible = "fsl,imx-media-camif";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		status = "okay";
-+		sink-ports = <1>;
-+		reg = <3>;
-+
-+		port@0 {
-+			reg = <0>;
-+			camif3_from_smfc0: smfc0-endpoint {
-+				remote-endpoint = <&ipu2_smfc0_to_camif3>;
-+			};
-+			camif3_from_smfc1: smfc1-endpoint {
-+				remote-endpoint = <&ipu2_smfc1_to_camif3>;
-+			};
-+			camif3_from_ic_prpenc: prpenc-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpenc_to_camif3>;
-+			};
-+			camif3_from_ic_prpvf: prpvf-endpoint {
-+				remote-endpoint = <&ipu2_ic_prpvf_to_camif3>;
-+			};
-+			camif3_from_ic_pp1: pp1-endpoint {
-+				remote-endpoint = <&ipu2_ic_pp1_to_camif3>;
-+			};
-+			camif3_from_ic_pp2: pp2-endpoint {
-+				remote-endpoint = <&ipu2_ic_pp2_to_camif3>;
-+			};
-+		};
-+
-+		port@1 {
-+			reg = <1>;
-+		};
-+	};
-+};
-diff --git a/arch/arm/boot/dts/imx6qdl.dtsi b/arch/arm/boot/dts/imx6qdl.dtsi
-index 2465187..ea1e2f3 100644
---- a/arch/arm/boot/dts/imx6qdl.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl.dtsi
-@@ -1123,6 +1123,8 @@
- 			mipi_csi: mipi@021dc000 {
- 				compatible = "fsl,imx-mipi-csi2";
- 				reg = <0x021dc000 0x4000>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
- 				interrupts = <0 100 0x04>, <0 101 0x04>;
- 				clocks = <&clks IMX6QDL_CLK_HSI_TX>,
- 					 <&clks IMX6QDL_CLK_VIDEO_27M>,
-@@ -1227,11 +1229,263 @@
- 			resets = <&src 2>;
- 
- 			ipu1_csi0: ipu1_csi@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
- 				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_csi0_from_ipu1_csi0_mux: endpoint {
-+						remote-endpoint = <&ipu1_csi0_mux_to_ipu1_csi0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_csi0_to_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu1_smfc0_from_csi0>;
-+					};
-+					ipu1_csi0_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_from_csi0>;
-+					};
-+					ipu1_csi0_to_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpenc_from_csi0>;
-+					};
-+				};
- 			};
- 
- 			ipu1_csi1: ipu1_csi@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <1>;
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_csi1_to_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu1_smfc1_from_csi1>;
-+					};
-+					ipu1_csi1_to_ic_prpvf: prendpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_from_csi1>;
-+					};
-+					ipu1_csi1_to_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpenc_from_csi1>;
-+					};
-+				};
-+			};
-+
-+			ipu1_smfc0: ipu1_smfc@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_smfc0_from_csi0: endpoint {
-+						remote-endpoint = <&ipu1_csi0_to_smfc0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_smfc0_to_ic_pp1: pp-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp1_from_smfc0>;
-+					};
-+					ipu1_smfc0_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_from_smfc0>;
-+					};
-+					ipu1_smfc0_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_smfc0>;
-+					};
-+					ipu1_smfc0_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_smfc0>;
-+					};
-+				};
-+			};
-+
-+			ipu1_smfc1: ipu1_smfc@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
- 				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_smfc1_from_csi1: endpoint {
-+						remote-endpoint = <&ipu1_csi1_to_smfc1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_smfc1_to_ic_pp2: pp-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp2_from_smfc1>;
-+					};
-+					ipu1_smfc1_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_from_smfc1>;
-+					};
-+					ipu1_smfc1_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_smfc1>;
-+					};
-+					ipu1_smfc1_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_smfc1>;
-+					};
-+				};
-+			};
-+
-+			ipu1_ic_prpenc: ipu1_ic_prpenc@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_ic_prpenc_from_csi0: csi0-endpoint {
-+						remote-endpoint = <&ipu1_csi0_to_ic_prpenc>;
-+					};
-+					ipu1_ic_prpenc_from_csi1: csi1-endpoint {
-+						remote-endpoint = <&ipu1_csi1_to_ic_prpenc>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_ic_prpenc_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_ic_prpenc>;
-+					};
-+					ipu1_ic_prpenc_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_ic_prpenc>;
-+					};
-+				};
-+			};
-+
-+			ipu1_ic_prpvf: ipu1_ic_prpvf@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_ic_prpvf_from_csi0: csi0-endpoint {
-+						remote-endpoint = <&ipu1_csi0_to_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_from_csi1: csi1-endpoint {
-+						remote-endpoint = <&ipu1_csi1_to_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu1_smfc0_to_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu1_smfc1_to_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_from_m2m0: m2m0-endpoint {
-+						remote-endpoint = <&m2m0_to_ic_prpvf>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_ic_prpvf_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_to_ic_pp0: pp0-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp0_from_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_to_ic_pp1: pp1-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp1_from_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_to_ic_pp2: pp2-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp2_from_ic_prpvf>;
-+					};
-+					ipu1_ic_prpvf_to_m2m0: m2m0-endpoint {
-+						remote-endpoint = <&m2m0_from_ic_prpvf>;
-+					};
-+				};
-+			};
-+
-+			ipu1_ic_pp0: ipu1_ic_pp@0 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_ic_pp0_from_m2m0: m2m0-endpoint {
-+						remote-endpoint = <&m2m0_to_ic_pp0>;
-+					};
-+					ipu1_ic_pp0_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_ic_pp0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_ic_pp0_to_m2m0: endpoint {
-+						remote-endpoint = <&m2m0_from_ic_pp0>;
-+					};
-+				};
-+			};
-+
-+			ipu1_ic_pp1: ipu1_ic_pp@1 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_ic_pp1_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu1_smfc0_to_ic_pp1>;
-+					};
-+					ipu1_ic_pp1_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_ic_pp1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_ic_pp1_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_ic_pp1>;
-+					};
-+					ipu1_ic_pp1_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_ic_pp1>;
-+					};
-+				};
-+			};
-+
-+			ipu1_ic_pp2: ipu1_ic_pp@2 {
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				sink-ports = <1>;
-+				reg = <2>;
-+
-+				port@0 {
-+					reg = <0>;
-+					ipu1_ic_pp2_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu1_smfc1_to_ic_pp2>;
-+					};
-+					ipu1_ic_pp2_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_ic_pp2>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					ipu1_ic_pp2_to_camif0: camif0-endpoint {
-+						remote-endpoint = <&camif0_from_ic_pp2>;
-+					};
-+					ipu1_ic_pp2_to_camif1: camif1-endpoint {
-+						remote-endpoint = <&camif1_from_ic_pp2>;
-+					};
-+				};
- 			};
- 
- 			ipu1_di0: ipu1_di@0 {
-@@ -1284,5 +1538,119 @@
- 				};
- 			};
- 		};
-+
-+		media0: media@0 {
-+			compatible = "fsl,imx-media", "simple-bus";
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			status = "okay";
-+
-+			m2m0: m2m@0 {
-+				compatible = "fsl,imx-media-mem2mem";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "okay";
-+				sink-ports = <2>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+					m2m0_from_ic_pp0: endpoint {
-+						remote-endpoint = <&ipu1_ic_pp0_to_m2m0>;
-+					};
-+					m2m0_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_m2m0>;
-+					};
-+				};
-+
-+				port@2 {
-+					reg = <2>;
-+					m2m0_to_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_from_m2m0>;
-+					};
-+					m2m0_to_ic_pp0: pp0-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp0_from_m2m0>;
-+					};
-+				};
-+
-+				port@3 {
-+					reg = <3>;
-+				};
-+			};
-+
-+			camif0: camif@0 {
-+				compatible = "fsl,imx-media-camif";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "okay";
-+				sink-ports = <1>;
-+				reg = <0>;
-+
-+				port@0 {
-+					reg = <0>;
-+					camif0_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu1_smfc0_to_camif0>;
-+					};
-+					camif0_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu1_smfc1_to_camif0>;
-+					};
-+					camif0_from_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpenc_to_camif0>;
-+					};
-+					camif0_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_camif0>;
-+					};
-+					camif0_from_ic_pp1: pp1-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp1_to_camif0>;
-+					};
-+					camif0_from_ic_pp2: pp2-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp2_to_camif0>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+				};
-+			};
-+
-+			camif1: camif@1 {
-+				compatible = "fsl,imx-media-camif";
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+				status = "okay";
-+				sink-ports = <1>;
-+				reg = <1>;
-+
-+				port@0 {
-+					reg = <0>;
-+					camif1_from_smfc0: smfc0-endpoint {
-+						remote-endpoint = <&ipu1_smfc0_to_camif1>;
-+					};
-+					camif1_from_smfc1: smfc1-endpoint {
-+						remote-endpoint = <&ipu1_smfc1_to_camif1>;
-+					};
-+					camif1_from_ic_prpenc: prpenc-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpenc_to_camif1>;
-+					};
-+					camif1_from_ic_prpvf: prpvf-endpoint {
-+						remote-endpoint = <&ipu1_ic_prpvf_to_camif1>;
-+					};
-+					camif1_from_ic_pp1: pp1-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp1_to_camif1>;
-+					};
-+					camif1_from_ic_pp2: pp2-endpoint {
-+						remote-endpoint = <&ipu1_ic_pp2_to_camif1>;
-+					};
-+				};
-+
-+				port@1 {
-+					reg = <1>;
-+				};
-+			};
-+		};
- 	};
- };
+ 		pdev = platform_device_alloc(reg->name, id++);
+ 		if (!pdev) {
 -- 
 2.7.4
 

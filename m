@@ -1,132 +1,246 @@
 From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:52 +0000
-Subject: [PATCH 11/12] gpu: ipu-v3: lookup ipu client nodes by name
-Message-Id: <1481158673-15937-12-git-send-email-steve_longerbeam@mentor.com>
+Date: Thu, 08 Dec 2016 00:57:45 +0000
+Subject: [PATCH 04/12] ARM: dts: imx6-sabrelite: add OV5642 and OV5640 camera sensors
+Message-Id: <1481158673-15937-5-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
+In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: shawnguo-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org, fabio.estevam-3arQi8VN3Tc@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, mark.rutland-5wv7dgnIgG8@public.gmane.org, linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org
-Cc: linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, Steve Longerbeam <steve_longerbeam-nmGgyN9QBj3QT0dZR+AlfA@public.gmane.org>
+To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
 
-To allow for IPU clients containing multiple ports, they are no longer
-a single port node name, but have a name of the format
-"ipu<id>_<unit>". So we can no longer use of_graph_get_port_by_id()
-to lookup the client node.
+Enables the OV5642 parallel-bus sensor, and the OV5640 MIPI CSI-2 sensor.
+Both hang off the same i2c2 bus, so they require different (and non-
+default) i2c slave addresses.
 
-Create the function of_get_ipu_client_node() that looks up the client
-node by node name and unit id. The ipu_unit_type enumeration is added
-to the client_reg[] entries to compose the node names.
+The OV5642 connects to the parallel-bus mux input port on ipu1_csi0_mux.
+
+The OV5640 connects to the input port on the MIPI CSI-2 receiver on
+mipi_csi. It is set to transmit over MIPI virtual channel 1.
+
+Note there is a pin conflict with GPIO6. This pin functions as a power
+input pin to the OV5642, but ENET uses it as the h/w workaround for
+erratum ERR006687, to wake-up the ARM cores on normal RX and TX packet
+done events (see 6261c4c8). So workaround 6261c4c8 is reverted here to
+support the OV5642, and the "fsl,err006687-workaround-present" boolean
+also must be removed. The result is that the CPUidle driver will no longer
+allow entering the deep idle states on the sabrelite.
 
 Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 ---
- drivers/gpu/ipu-v3/ipu-common.c | 55 +++++++++++++++++++++++++++++++++++------
- 1 file changed, 47 insertions(+), 8 deletions(-)
+ arch/arm/boot/dts/imx6dl-sabrelite.dts   |   5 ++
+ arch/arm/boot/dts/imx6q-sabrelite.dts    |   6 ++
+ arch/arm/boot/dts/imx6qdl-sabrelite.dtsi | 122 ++++++++++++++++++++++++++++++-
+ 3 files changed, 129 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-common.c b/drivers/gpu/ipu-v3/ipu-common.c
-index 97218af..b6ca36b 100644
---- a/drivers/gpu/ipu-v3/ipu-common.c
-+++ b/drivers/gpu/ipu-v3/ipu-common.c
-@@ -1159,6 +1159,7 @@ struct ipu_platform_reg {
- static struct ipu_platform_reg client_reg[] = {
- 	{
- 		.pdata = {
-+			.type = IPU_CSI,
- 			.csi = 0,
- 			.dma[0] = IPUV3_CHANNEL_CSI0,
- 			.dma[1] = -EINVAL,
-@@ -1166,6 +1167,7 @@ static struct ipu_platform_reg client_reg[] = {
- 		.name = "imx-ipuv3-csi",
- 	}, {
- 		.pdata = {
-+			.type = IPU_CSI,
- 			.csi = 1,
- 			.dma[0] = IPUV3_CHANNEL_CSI1,
- 			.dma[1] = -EINVAL,
-@@ -1173,6 +1175,7 @@ static struct ipu_platform_reg client_reg[] = {
- 		.name = "imx-ipuv3-csi",
- 	}, {
- 		.pdata = {
-+			.type = IPU_DI,
- 			.di = 0,
- 			.dc = 5,
- 			.dp = IPU_DP_FLOW_SYNC_BG,
-@@ -1182,6 +1185,7 @@ static struct ipu_platform_reg client_reg[] = {
- 		.name = "imx-ipuv3-crtc",
- 	}, {
- 		.pdata = {
-+			.type = IPU_DI,
- 			.di = 1,
- 			.dc = 1,
- 			.dp = -EINVAL,
-@@ -1195,6 +1199,46 @@ static struct ipu_platform_reg client_reg[] = {
- static DEFINE_MUTEX(ipu_client_id_mutex);
- static int ipu_client_id;
- 
-+static struct device_node *
-+of_get_ipu_client_node(struct ipu_soc *ipu, struct ipu_platform_reg *reg)
-+{
-+	struct device *dev = ipu->dev;
-+	struct device_node *client;
-+	char node_name[32];
-+	u32 id, client_id = 0;
+diff --git a/arch/arm/boot/dts/imx6dl-sabrelite.dts b/arch/arm/boot/dts/imx6dl-sabrelite.dts
+index 0f06ca5..fec2524 100644
+--- a/arch/arm/boot/dts/imx6dl-sabrelite.dts
++++ b/arch/arm/boot/dts/imx6dl-sabrelite.dts
+@@ -48,3 +48,8 @@
+ 	model = "Freescale i.MX6 DualLite SABRE Lite Board";
+ 	compatible = "fsl,imx6dl-sabrelite", "fsl,imx6dl";
+ };
 +
-+	switch (reg->pdata.type) {
-+	case IPU_CSI:
-+		snprintf(node_name, sizeof(node_name),
-+			 "ipu%d_csi", ipu->id + 1);
-+		client_id = reg->pdata.csi;
-+		break;
-+	case IPU_DI:
-+		snprintf(node_name, sizeof(node_name),
-+			 "ipu%d_di", ipu->id + 1);
-+		client_id = reg->pdata.di;
-+		break;
-+	default:
-+		client = NULL;
-+		goto out;
-+	}
++&ipu1_csi1_from_ipu1_csi1_mux {
++	data-lanes = <0 1>;
++	clock-lanes = <2>;
++};
+diff --git a/arch/arm/boot/dts/imx6q-sabrelite.dts b/arch/arm/boot/dts/imx6q-sabrelite.dts
+index 66d10d8..9e2d26d 100644
+--- a/arch/arm/boot/dts/imx6q-sabrelite.dts
++++ b/arch/arm/boot/dts/imx6q-sabrelite.dts
+@@ -52,3 +52,9 @@
+ &sata {
+ 	status = "okay";
+ };
 +
-+	for_each_child_of_node(dev->of_node, client) {
-+		if (client->name &&
-+		    (of_node_cmp(client->name, node_name) = 0)) {
-+			of_property_read_u32(client, "reg", &id);
-+			if (id = client_id)
-+				break;
-+		}
-+	}
-+out:
-+	if (!client)
-+		dev_info(dev, "no %s%d node in %s, not using %s%d\n",
-+			 node_name, client_id, dev->of_node->full_name,
-+			 node_name, client_id);
-+	return client;
-+}
++&ipu1_csi1_from_mipi_vc1 {
++	data-lanes = <0 1>;
++	clock-lanes = <2>;
++};
 +
- static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
- {
- 	struct device *dev = ipu->dev;
-@@ -1211,15 +1255,10 @@ static int ipu_add_client_devices(struct ipu_soc *ipu, unsigned long ipu_base)
- 		struct platform_device *pdev;
- 		struct device_node *of_node;
+diff --git a/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi b/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
+index 81dd6cd..d7fcb1a2 100644
+--- a/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
++++ b/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
+@@ -39,6 +39,8 @@
+  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  *     OTHER DEALINGS IN THE SOFTWARE.
+  */
++
++#include <dt-bindings/clock/imx6qdl-clock.h>
+ #include <dt-bindings/gpio/gpio.h>
+ #include <dt-bindings/input/input.h>
  
--		/* Associate subdevice with the corresponding port node */
--		of_node = of_graph_get_port_by_id(dev->of_node, i);
--		if (!of_node) {
--			dev_info(dev,
--				 "no port@%d node in %s, not using %s%d\n",
--				 i, dev->of_node->full_name,
--				 (i / 2) ? "DI" : "CSI", i % 2);
-+		/* Associate subdevice with the corresponding client node */
-+		of_node = of_get_ipu_client_node(ipu, reg);
-+		if (!of_node)
- 			continue;
--		}
+@@ -96,6 +98,15 @@
+ 		};
+ 	};
  
- 		pdev = platform_device_alloc(reg->name, id++);
- 		if (!pdev) {
++	mipi_xclk: mipi_xclk {
++		compatible = "pwm-clock";
++		#clock-cells = <0>;
++		clock-frequency = <22000000>;
++		clock-output-names = "mipi_pwm3";
++		pwms = <&pwm3 0 45>; /* 1 / 45 ns = 22 MHz */
++		status = "okay";
++	};
++
+ 	gpio-keys {
+ 		compatible = "gpio-keys";
+ 		pinctrl-names = "default";
+@@ -220,6 +231,22 @@
+ 	};
+ };
+ 
++&ipu1_csi0_from_ipu1_csi0_mux {
++	bus-width = <8>;
++	data-shift = <12>; /* Lines 19:12 used */
++	hsync-active = <1>;
++	vync-active = <1>;
++};
++
++&ipu1_csi0_mux_from_parallel_sensor {
++	remote-endpoint = <&ov5642_to_ipu1_csi0_mux>;
++};
++
++&ipu1_csi0 {
++	pinctrl-names = "default";
++	pinctrl-0 = <&pinctrl_ipu1_csi0>;
++};
++
+ &audmux {
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_audmux>;
+@@ -271,9 +298,6 @@
+ 	txd1-skew-ps = <0>;
+ 	txd2-skew-ps = <0>;
+ 	txd3-skew-ps = <0>;
+-	interrupts-extended = <&gpio1 6 IRQ_TYPE_LEVEL_HIGH>,
+-			      <&intc 0 119 IRQ_TYPE_LEVEL_HIGH>;
+-	fsl,err006687-workaround-present;
+ 	status = "okay";
+ };
+ 
+@@ -302,6 +326,52 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_i2c2>;
+ 	status = "okay";
++
++	camera: ov5642@42 {
++		compatible = "ovti,ov5642";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ov5642>;
++		clocks = <&clks IMX6QDL_CLK_CKO2>;
++		clock-names = "xclk";
++		reg = <0x42>;
++		xclk = <24000000>;
++		reset-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
++		pwdn-gpios = <&gpio1 6 GPIO_ACTIVE_HIGH>;
++		gp-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
++
++		port {
++			ov5642_to_ipu1_csi0_mux: endpoint {
++				remote-endpoint = <&ipu1_csi0_mux_from_parallel_sensor>;
++				bus-width = <8>;
++				hsync-active = <1>;
++				vsync-active = <1>;
++			};
++		};
++	};
++
++	mipi_camera: ov5640@40 {
++		compatible = "ovti,ov5640_mipi";
++		pinctrl-names = "default";
++		pinctrl-0 = <&pinctrl_ov5640>;
++		clocks = <&mipi_xclk>;
++		clock-names = "xclk";
++		reg = <0x40>;
++		xclk = <22000000>;
++		reset-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>; /* NANDF_D5 */
++		pwdn-gpios = <&gpio6 9 GPIO_ACTIVE_HIGH>; /* NANDF_WP_B */
++
++		port {
++			#address-cells = <1>;
++			#size-cells = <0>;
++
++			ov5640_to_mipi_csi: endpoint@1 {
++				reg = <1>;
++				remote-endpoint = <&mipi_csi_from_mipi_sensor>;
++				data-lanes = <0 1>;
++				clock-lanes = <2>;
++			};
++		};
++	};
+ };
+ 
+ &i2c3 {
+@@ -374,7 +444,6 @@
+ 				MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL	0x1b030
+ 				/* Phy reset */
+ 				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x000b0
+-				MX6QDL_PAD_GPIO_6__ENET_IRQ		0x000b1
+ 			>;
+ 		};
+ 
+@@ -449,6 +518,39 @@
+ 			>;
+ 		};
+ 
++		pinctrl_ov5642: ov5642grp {
++			fsl,pins = <
++				MX6QDL_PAD_SD1_DAT0__GPIO1_IO16 0x80000000
++				MX6QDL_PAD_GPIO_6__GPIO1_IO06   0x80000000
++				MX6QDL_PAD_GPIO_8__GPIO1_IO08   0x80000000
++				MX6QDL_PAD_GPIO_3__CCM_CLKO2    0x80000000
++			>;
++		};
++
++		pinctrl_ipu1_csi0: ipu1grp-csi0 {
++			fsl,pins = <
++				MX6QDL_PAD_CSI0_DAT12__IPU1_CSI0_DATA12    0x80000000
++				MX6QDL_PAD_CSI0_DAT13__IPU1_CSI0_DATA13    0x80000000
++				MX6QDL_PAD_CSI0_DAT14__IPU1_CSI0_DATA14    0x80000000
++				MX6QDL_PAD_CSI0_DAT15__IPU1_CSI0_DATA15    0x80000000
++				MX6QDL_PAD_CSI0_DAT16__IPU1_CSI0_DATA16    0x80000000
++				MX6QDL_PAD_CSI0_DAT17__IPU1_CSI0_DATA17    0x80000000
++				MX6QDL_PAD_CSI0_DAT18__IPU1_CSI0_DATA18    0x80000000
++				MX6QDL_PAD_CSI0_DAT19__IPU1_CSI0_DATA19    0x80000000
++				MX6QDL_PAD_CSI0_PIXCLK__IPU1_CSI0_PIXCLK   0x80000000
++				MX6QDL_PAD_CSI0_MCLK__IPU1_CSI0_HSYNC      0x80000000
++				MX6QDL_PAD_CSI0_VSYNC__IPU1_CSI0_VSYNC     0x80000000
++				MX6QDL_PAD_CSI0_DATA_EN__IPU1_CSI0_DATA_EN 0x80000000
++			>;
++		};
++
++                pinctrl_ov5640: ov5640grp {
++                        fsl,pins = <
++				MX6QDL_PAD_NANDF_D5__GPIO2_IO05 0x000b0
++				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x0b0b0
++                        >;
++                };
++
+ 		pinctrl_pwm1: pwm1grp {
+ 			fsl,pins = <
+ 				MX6QDL_PAD_SD1_DAT3__PWM1_OUT 0x1b0b1
+@@ -605,3 +707,15 @@
+ 	vmmc-supply = <&reg_3p3v>;
+ 	status = "okay";
+ };
++
++&mipi_csi {
++        status = "okay";
++};
++
++/* Incoming port from sensor */
++&mipi_csi_from_mipi_sensor {
++        remote-endpoint = <&ov5640_to_mipi_csi>;
++        data-lanes = <0 1>;
++        clock-lanes = <2>;
++};
++
 -- 
 2.7.4
 

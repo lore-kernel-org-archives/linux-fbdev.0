@@ -1,41 +1,42 @@
-From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 06 Dec 2016 16:32:52 +0000
-Subject: Re: [PATCH v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1481041972.1420.3.camel@gmx.de>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Thu, 08 Dec 2016 08:34:12 +0000
+Subject: [PATCH] fbdev: remove current maintainer
+Message-Id: <1481186052-4987-1-git-send-email-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
-         <20161206100243.GA15139@kroah.com>
-In-Reply-To: <20161206100243.GA15139@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Greg KH <gregkh@linuxfoundation.org>
-Cc: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com, jslaby@suse.cz, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi Greg,
+Remove Tomi Valkeinen from fbdev maintainer and mark fbdev as orphan.
 
-On Di, 2016-12-06 at 11:02 +0100, Greg KH wrote:
-> On Sun, Dec 04, 2016 at 11:53:53AM +0100, Manuel Sch=C3=B6lling wrote:
-> > Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-> > Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-> > Tested-by: Adam Borowski <kilobyte@angband.pl>
-> >=20
-> > --
-> > Changes in v7:
-> >   - Add new callback to consw struct for flushing video console driver's
-> >     scrollback buffer. Fixes issues with escape sequence '\e[3J' report=
-ed
-> >     by Adam Borowski (kilobyte@angband.pl).
-> >   - Fix style issues
->=20
-> But this is now v8, right?  I see two v7 patch series in my inbox :(
->=20
-> confused,
-Sorry for causing confusion. I wasn't sure about the workflow so asked
-on #kernelnewbies a few days ago but apparently I misunderstood the
-advice I got there:
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
 
-This is just the same patch (v7) as I sent before, but I added the
-Tested-By/Reviewed-By tags.
+I just don't have time to even pretend I maintain fbdev, so mark it as Orphan.
 
+Anyone want to pick fbdev maintainership?
+
+ MAINTAINERS | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 851b89b9edcb..fc2790eb4e84 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4968,10 +4968,9 @@ F:	drivers/net/wan/dlci.c
+ F:	drivers/net/wan/sdla.c
+ 
+ FRAMEBUFFER LAYER
+-M:	Tomi Valkeinen <tomi.valkeinen@ti.com>
+ L:	linux-fbdev@vger.kernel.org
+ Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
+-S:	Maintained
++S:	Orphan
+ F:	Documentation/fb/
+ F:	drivers/video/
+ F:	include/video/
+-- 
+2.7.4
 

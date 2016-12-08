@@ -1,46 +1,61 @@
-From: jpap00@gmail.com
-Date: Sun, 18 Dec 2016 13:16:05 +0000
-Subject: PROBLEM: FB_BACKLIGHT prevents building module backlight.ko
-Message-Id: <CAOjmUo6g61M9rW+wu6VX6umHxc5_9L0XHsENrHFcZsdKTZqDAg@mail.gmail.com>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Thu, 08 Dec 2016 00:57:51 +0000
+Subject: [PATCH 10/12] gpu: ipu-v3: Add ipu_unit_type enumeration
+Message-Id: <1481158673-15937-11-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
+In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-Apologies if this is the wrong place to report a potential Kconfig
-issue with fbdev.  Please let me know where I should move the
-discussion in that case.
+Adds an enumeration of the major IPUv3 subunits. Provide that info
+in struct ipu_client_platformdata to more easily determine the IPU
+client type.
 
-I'm trying to compile the backlight.ko module, by setting
+Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+---
+ include/video/imx-ipu-v3.h | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-| CONFIG_BACKLIGHT_CLASS_DEVICE=m
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index 53cd07c..7709af7 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -28,6 +28,23 @@ enum ipuv3_type {
+ 	IPUV3H,
+ };
+ 
++/*
++ * Enumeration of the major IPU subunits
++ */
++enum ipu_unit_type {
++	IPU_IDMAC = 0,
++	IPU_CM,
++	IPU_CSI,
++	IPU_SMFC,
++	IPU_IC,
++	IPU_VDI,
++	IPU_IRT,
++	IPU_DC,
++	IPU_DI,
++	IPU_DP,
++	IPU_DMFC,
++};
++
+ #define IPU_PIX_FMT_GBR24	v4l2_fourcc('G', 'B', 'R', '3')
+ 
+ /*
+@@ -399,6 +416,7 @@ int ipu_rot_mode_to_degrees(int *degrees, enum ipu_rotate_mode mode,
+ 			    bool hflip, bool vflip);
+ 
+ struct ipu_client_platformdata {
++	enum ipu_unit_type type;
+ 	int csi;
+ 	int di;
+ 	int dc;
+-- 
+2.7.4
 
-in my kernel `.config` file.
-
-The `FB_BACKLIGHT=y` configuration (also present in my kernel config)
-appears to override the `CONFIG_BACKLIGHT_CLASS_DEVICE` value above to
-"y", and so the backlight.ko module does not get built.
-
-It looks like this happens in the fbdev Kconfig, because if I change
-`drivers/video/fbdev/Kconfig` as follows so that
-`BACKLIGHT_CLASS_DEVICE` is a "depends on", rather than a "select", it
-builds properly.  In that case `CONFIG_BACKLIGHT_CLASS_DEVICE=m` is
-preserved.
-
-| config FB_BACKLIGHT
-|         bool
-|         depends on FB
-|         select BACKLIGHT_LCD_SUPPORT
-|         depends on BACKLIGHT_CLASS_DEVICE
-|         default n
-
-Without the above change, my kernel config reverts to
-`CONFIG_BACKLIGHT_CLASS_DEVICE=y` and the backlight.ko module is not
-built.
-
-I'm not entirely sure the "depends on" change is the right approach,
-especially with menuconfig.  How best to fix this?
-
-Thank you,
-jpap

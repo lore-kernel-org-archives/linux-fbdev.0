@@ -1,56 +1,51 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 08 Dec 2016 21:28:39 +0000
+Date: Thu, 08 Dec 2016 21:34:37 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <1481232519.26959.49.camel@kernel.crashing.org>
+Message-Id: <1481232877.26959.52.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
  <1481158879.26959.41.camel@kernel.crashing.org>
  <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
-In-Reply-To: <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
+ <CAMuHMdWsKqgvB8QtG6SjHO-mceB5fRK9G51y8RYeos0Ym7pgdA@mail.gmail.com>
+ <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
+ <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
+ <20161208153735.74d7d350@free-electrons.com>
+ <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
+ <20161208152134.wnv4j4i6m5xpoycp@phenom.ffwll.local>
+In-Reply-To: <20161208152134.wnv4j4i6m5xpoycp@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Vetter <daniel@ffwll.ch>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-On Thu, 2016-12-08 at 11:10 +0100, Daniel Vetter wrote:
-> > With drmfb you basically have to shadow everything into memory & copy
-> > over everything, and locks you out of simple 2D accel. For a simple text
-> > console the result is orders of magnitude slower and memory hungry than
-> > a simple fbdev.
->=20
-> Not true, we have full fbdev emulation, and drivers can implement the 2d
-> accel in there. And a bunch of them do. It's just that most teams decided
-> that this is pointless waste of their time.j
+On Thu, 2016-12-08 at 16:21 +0100, Daniel Vetter wrote:
+> Yeah, small drivers like these we have piles now, things exploded a lot
+> after atomic landed two years ago. And they seem to shrink with every
+> release a bit more (since lots more drivers gives you lots more insight
+> into what other refactorings would make sense). Those we have a big pile
+> of, and nowadays (at least with developers expirienced with upstream, but
+> not necessarily with drm) it takes but a few weeks from initial submission
+> to getting them merged.
+> 
+> What we don't yet have a nice tidy example driver of is the even simpler
+> "dumb framebuffer behind a slow bus with explicit/manual upload", for like
+> small i2c/spi panels (and conceptually also usb, even though there bw and
+> panel size are a bit scaled up). We've gained some really nice helpers for
+> this this year, and there's 3 drivers in-flight to make use of it. But
+> since that's right now just a hobbyist effort it's moving a bit slower
+> (and I was mistaken a few weeks back where I assumed that one of them
+> landed already).
 
-Ok so my knowledge might be outdated here. I was complaining to Dave about
-how cirrusdrmfb didn't even use blits for fbcon scrolling and always double
-buffered everything, and Dave made the point that you basically had to do
-that for security reasons that I mostly forgot the details of.
+What I find usually confusing is the interaction with the TTM and
+overall fb memory management, when trying to plumb in simple 2d accel
+to speed up fbcon mostly (but I don't mind making it available to user
+space via ioctls, though that's not a priority).
 
-It looks like bochsdrmfb and astdrmfb are the same. If things have changed,
-then cool. Can you point me to a drmfb driver that is a good (and not too
-complex) example with simple 2d accel ? I'm thinking mostly of color
-expansion, bitblt and solid fill for fbcon, the way I used to do it in
-radeonfb for example.
-
-> > At least that was the case last I looked at the DRM stuff with Dave,
-> > maybe things have changed...=C2=A0
-> >=20
-> > Not everything has a powerful 3D GPU.
->=20
-> That's correct, and drm can cope. And compared to fbdev there's a very
-> active community who improves&refactors it every kernel release to make it
-> even better. Since about 2 years (when atomic landed) we merge new driver=
-s at
-> a rate of 2-3 per kernel release, and those new drivers get ever simpler
-> and smaller thanks to all this work.
-
-Yeah it's hard to follow from outside :-) As I said above, it would
-help if you could point to a good modern example driver to use as
-reference.
-
-Thanks !
+As I mentioned earlier, probably 1 or 2 years ago, Dave made the
+argument that shadowing through memory was necessary and precluded 2D
+accel, though I don't fully remember the root of the argument. If that
+is indeed not the case, then my main objection is lifted.
 
 Cheers,
 Ben.

@@ -1,70 +1,52 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 08 Dec 2016 15:21:34 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 08 Dec 2016 21:23:30 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161208152134.wnv4j4i6m5xpoycp@phenom.ffwll.local>
+Message-Id: <1481232210.26959.47.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
  <1481158879.26959.41.camel@kernel.crashing.org>
- <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
- <CAMuHMdWsKqgvB8QtG6SjHO-mceB5fRK9G51y8RYeos0Ym7pgdA@mail.gmail.com>
- <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
- <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
- <20161208153735.74d7d350@free-electrons.com>
- <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
-In-Reply-To: <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
+ <035da7a8-5a3f-1ef6-f686-479773e78084@ti.com>
+In-Reply-To: <035da7a8-5a3f-1ef6-f686-479773e78084@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Noralf =?ISO-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, airlied@linux.ie
+Cc: linux-kernel@vger.kernel.org
 
-[back from my walk, the sunset here is stellar ;-)]
-
-On Thu, Dec 08, 2016 at 03:44:30PM +0100, Geert Uytterhoeven wrote:
-> Hi Thomas,
+On Thu, 2016-12-08 at 10:01 +0200, Tomi Valkeinen wrote:
 > 
-> On Thu, Dec 8, 2016 at 3:37 PM, Thomas Petazzoni
-> <thomas.petazzoni@free-electrons.com> wrote:
-> > On Thu, 8 Dec 2016 15:22:09 +0100, Geert Uytterhoeven wrote:
-> >> > Wut. We have like 20+ small atomic drivers nowdays.
-> >>
-> >> That's fast! Only two weeks ago you said:
-> >>
-> >> | Bummer, they still haven't landed. But afaik there's at least 4 of
-> >> | them floating around in various places ...
-> >
-> > You're not talking about the same thing I believe.
-> >
-> > When Daniel says "small atomic drivers", he talks about the relatively
-> > small DRM drivers for SoC display controllers, such as the ones you can
-> > find in ARM SoCs.
-> >
-> > When you say "small driver", you're thinking about drivers for I2C or
-> > SPI connected displays.
+> > DRM drivers don't strike me as suitable for small/slow cores with dumb
+> > framebuffers or simple 2D only accel, such as the one found in the ASpeed
+> > BMCs.
 > 
-> No, I wasn't thinking about I2C or SPI connected displays, but about simple
-> dumb memory-mapped frame buffers, which is what fbdev was initially
-> developed for.
+> Then the DRM framework should be improved to be suitable.
 
-Yeah, small drivers like these we have piles now, things exploded a lot
-after atomic landed two years ago. And they seem to shrink with every
-release a bit more (since lots more drivers gives you lots more insight
-into what other refactorings would make sense). Those we have a big pile
-of, and nowadays (at least with developers expirienced with upstream, but
-not necessarily with drm) it takes but a few weeks from initial submission
-to getting them merged.
+Dave ? :-)
 
-What we don't yet have a nice tidy example driver of is the even simpler
-"dumb framebuffer behind a slow bus with explicit/manual upload", for like
-small i2c/spi panels (and conceptually also usb, even though there bw and
-panel size are a bit scaled up). We've gained some really nice helpers for
-this this year, and there's 3 drivers in-flight to make use of it. But
-since that's right now just a hobbyist effort it's moving a bit slower
-(and I was mistaken a few weeks back where I assumed that one of them
-landed already).
+> > With drmfb you basically have to shadow everything into memory & copy
+> > over everything, and locks you out of simple 2D accel. For a simple text
+> > console the result is orders of magnitude slower and memory hungry than
+> > a simple fbdev.
+> 
+> I don't think that's true. You can have a single fbdev buffer and blit
+> there all you want, afaik.
 
-Cheers, Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Well, I had that argument with Dave Airlie which I CCed. The "dumb" ones like
+bochsdrmfb, cirrusdrmfb, astdrmfb ... all use shadowing, meaning they use a
+lot more memory and cannot do any 2D acceleration for fbcon.
+
+From memory, David claimed you cannot directly work on the fb with a "proper"
+DRM driver. Maybe I misunderstood but then the DRM shines by its complete
+absence of useful documentation mixed with bazillion layers of APIs and helpers
+so it's pretty hard to get ones head around it without wasting very large amounts
+of time which I don't have at the moment.
+
+> > Not everything has a powerful 3D GPU.
+> 
+> We don't use GPU on OMAPs (except for 3D).
+
+The CPU in an OMAP is order of magnitude faster than what I have in an
+Aspeed BMC though.
+
+Ben.
+

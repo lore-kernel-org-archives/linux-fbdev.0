@@ -1,211 +1,95 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Sun, 04 Dec 2016 10:53:54 +0000
-Subject: [PATCH v7 1/3] console: Move scrollback data into its own struct
-Message-Id: <1480848836-11330-2-git-send-email-manuel.schoelling@gmx.de>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Thu, 08 Dec 2016 00:57:41 +0000
+Subject: [PATCH 00/12] i.MX media devices and connections
+Message-Id: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
+Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Longerbeam <steve_longerbeam@mentor.com>
 
-This refactoring is in preparation for persistent scrollback
-support for VGA console.
+Hi Philipp, Sascha, Shawn, et al,
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
+I've been working for the past few months on a media driver for i.MX.
+In addition to the media entities for the IPU-external units involved
+with video capture (video mux and MIPI CSI-2 receiver), I've created
+media entities for the IPU CSI, SMFC, and IC subunits. The IC entities
+carry out scaling, CSC, horizontal/vertical flip, and rotation. In
+addition, the IC-PRPVF entity carries out motion compensated
+de-interlace.
 
----
- drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
-----
- 1 file changed, 47 insertions(+), 44 deletions(-)
+The following series adds the OF device nodes and graphs that define
+all the possible hardware connections supported by the i.MX involved
+in video capture and image conversion.
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c22a562..48b9764 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static void *vgacon_scrollback;
--static int vgacon_scrollback_tail;
--static int vgacon_scrollback_size;
--static int vgacon_scrollback_rows;
--static int vgacon_scrollback_cnt;
--static int vgacon_scrollback_cur;
--static int vgacon_scrollback_save;
--static int vgacon_scrollback_restore;
-+static struct vgacon_scrollback_info {
-+	void *data;
-+	int tail;
-+	int size;
-+	int rows;
-+	int cnt;
-+	int cur;
-+	int save;
-+	int restore;
-+} vgacon_scrollback;
-=20
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-=20
--	if (vgacon_scrollback) {
--		vgacon_scrollback_cnt  =3D 0;
--		vgacon_scrollback_tail =3D 0;
--		vgacon_scrollback_cur  =3D 0;
--		vgacon_scrollback_rows =3D rows - 1;
--		vgacon_scrollback_size =3D rows * pitch;
-+	if (vgacon_scrollback.data) {
-+		vgacon_scrollback.cnt  =3D 0;
-+		vgacon_scrollback.tail =3D 0;
-+		vgacon_scrollback.cur  =3D 0;
-+		vgacon_scrollback.rows =3D rows - 1;
-+		vgacon_scrollback.size =3D rows * pitch;
- 	}
- }
-=20
- static void vgacon_scrollback_startup(void)
- {
--	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
-FP_NOWAIT);
-+	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
-+		1024, GFP_NOWAIT);
- 	vgacon_scrollback_init(vga_video_num_columns * 2);
- }
-=20
-@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
-c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-+		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback_cnt++;
-+		vgacon_scrollback.cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback_tail +=3D c->vc_size_row;
-+		vgacon_scrollback.tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
--			vgacon_scrollback_tail =3D 0;
-+		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
-+			vgacon_scrollback.tail =3D 0;
-=20
--		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
--			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
-+		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
-+			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-=20
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback_save =3D 0;
-+	vgacon_scrollback.save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback.restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback_restore =3D 1;
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.restore =3D 1;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
- }
-=20
-@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback)
-+	if (!vgacon_scrollback.data)
- 		return;
-=20
--	if (!vgacon_scrollback_save) {
-+	if (!vgacon_scrollback.save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback_save =3D 1;
-+		vgacon_scrollback.save =3D 1;
- 	}
-=20
--	vgacon_scrollback_restore =3D 0;
--	start =3D vgacon_scrollback_cur + lines;
-+	vgacon_scrollback.restore =3D 0;
-+	start =3D vgacon_scrollback.cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback_cnt)
--		start =3D vgacon_scrollback_cnt;
-+	if (start > vgacon_scrollback.cnt)
-+		start =3D vgacon_scrollback.cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback_cnt)
--		end =3D vgacon_scrollback_cnt;
-+	if (end > vgacon_scrollback.cnt)
-+		end =3D vgacon_scrollback.cnt;
-=20
--	vgacon_scrollback_cur =3D start;
-+	vgacon_scrollback.cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
-+	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
- 					 c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback_size;
-+		soff +=3D vgacon_scrollback.size;
-=20
--	count =3D vgacon_scrollback_cnt - start;
-+	count =3D vgacon_scrollback.cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback_size - soff);
--		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback.size - soff);
-+		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback, count);
-+			scr_memcpyw(d, vgacon_scrollback.data, count);
- 			d +=3D count;
- 		}
-=20
---=20
-2.1.4
+Here are some of the pipelines defined by the OF graphs:
+
+CSI -> IC-PRPENC
+CSI -> IC-PRPVF
+CSI -> IC-PRPVF -> IC-PP
+CSI -> SMFC
+CSI -> SMFC -> IC-PRPVF
+CSI -> SMFC -> IC-PP
+CSI -> SMFC -> IC-PRPVF -> IC-PP
+
+You will notice that three IC-PP nodes are defined (ipu1_ic_pp0,
+ipu1_ic_pp1, ipu1_ic_pp2, and same for ipu2). The reason for that
+is that the IC-PP media entity uses the new ipu-image-conversion
+API, which allows for multiple conversion contexts to be created.
+Each IC-PP entity thus creates its own conversion context, and there
+can be any number of IC-PP entities instantiated as needed by the OF
+graph.
+
+Camera sensor nodes are also added for the SabreAuto, SabreSD, and
+SabreLite reference platforms.
+
+The media driver is now in fairly good shape. It parses the OF graphs
+to create the media pads and links. All the pipelines defined by the
+OF graphs have been tested and are working. My media driver work is
+at:
+
+git@github.com:slongerbeam/mediatree.git, branch imx-media-staging-md-v2.
+
+For an overview of the pipelines supported and usage notes for the
+reference boards, you can refer to Documentation/media/v4l-drivers/imx.rst.
+
+I realize there is collision here with the recent patch series posted by
+Philipp, particularly around the video multiplexer and mipi csi-2 receiver
+subdevs and OF graphs, as well as v4l2 capture drivers.
+
+
+
+Philipp Zabel (1):
+  ARM: dts: imx6qdl: add video capture devices and connections
+
+Steve Longerbeam (11):
+  ARM: dts: imx6qdl: Add compatible, clocks, irqs to MIPI CSI-2 node
+  ARM: dts: imx6qdl: rename ipu client nodes
+  ARM: dts: imx6-sabrelite: add OV5642 and OV5640 camera sensors
+  ARM: dts: imx6-sabresd: add OV5642 and OV5640 camera sensors
+  ARM: dts: imx6-sabreauto: create i2cmux for i2c3
+  ARM: dts: imx6-sabreauto: add reset-gpios property for max7310_b
+  ARM: dts: imx6-sabreauto: add pinctrl for gpt input capture
+  ARM: dts: imx6-sabreauto: add the ADV7180 video decoder
+  gpu: ipu-v3: Add ipu_unit_type enumeration
+  gpu: ipu-v3: lookup ipu client nodes by name
+  gpu: ipu-v3: Add smfc and ic client devices
+
+ arch/arm/boot/dts/imx6dl-sabrelite.dts   |   5 +
+ arch/arm/boot/dts/imx6dl-sabresd.dts     |   5 +
+ arch/arm/boot/dts/imx6dl.dtsi            | 190 ++++++++++++
+ arch/arm/boot/dts/imx6q-sabrelite.dts    |   6 +
+ arch/arm/boot/dts/imx6q-sabresd.dts      |   5 +
+ arch/arm/boot/dts/imx6q.dtsi             | 497 ++++++++++++++++++++++++++++++-
+ arch/arm/boot/dts/imx6qdl-sabreauto.dtsi | 148 +++++++--
+ arch/arm/boot/dts/imx6qdl-sabrelite.dtsi | 122 +++++++-
+ arch/arm/boot/dts/imx6qdl-sabresd.dtsi   | 114 ++++++-
+ arch/arm/boot/dts/imx6qdl.dtsi           | 385 +++++++++++++++++++++++-
+ drivers/gpu/ipu-v3/ipu-common.c          | 142 ++++++++-
+ include/video/imx-ipu-v3.h               |  21 ++
+ 12 files changed, 1593 insertions(+), 47 deletions(-)
+
+-- 
+2.7.4
 

@@ -1,76 +1,71 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 09 Dec 2016 14:04:56 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 09 Dec 2016 20:27:03 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161209140456.7ltqgd4fgg5tykoh@phenom.ffwll.local>
+Message-Id: <1481315223.17253.15.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
+References: <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
+ <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
  <20161208153735.74d7d350@free-electrons.com>
  <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
  <20161208152134.wnv4j4i6m5xpoycp@phenom.ffwll.local>
  <1481232877.26959.52.camel@kernel.crashing.org>
  <1481234249.26959.55.camel@kernel.crashing.org>
  <20161209083442.peoriqsto2llvl2t@phenom.ffwll.local>
- <1481283856.27965.11.camel@kernel.crashing.org>
- <20161209133339.3cpvuxerimoc5huf@phenom.ffwll.local>
- <CANq1E4S51c-fwJMN2P9MnhuErANvwfy41W2WBSSXrFPS3DXPkg@mail.gmail.com>
-In-Reply-To: <CANq1E4S51c-fwJMN2P9MnhuErANvwfy41W2WBSSXrFPS3DXPkg@mail.gmail.com>
+ <20161209084154.rp4wqzv46tuvf3jv@phenom.ffwll.local>
+ <1481284087.27965.13.camel@kernel.crashing.org>
+ <20161209133512.nuohi42ho3rgghau@phenom.ffwll.local>
+In-Reply-To: <20161209133512.nuohi42ho3rgghau@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-On Fri, Dec 09, 2016 at 02:57:24PM +0100, David Herrmann wrote:
-> Hey
+On Fri, 2016-12-09 at 14:35 +0100, Daniel Vetter wrote:
+> > As for multi userspace client, well, swapping an mmap between HW and
+> > memory backing store is a somewhat solved problem already.
 > 
-> On Fri, Dec 9, 2016 at 2:33 PM, Daniel Vetter <daniel@ffwll.ch> wrote:
-> >> > So it is possible, only reason vram dumb buffers look worse is that there's
-> >> > only 3 and no one cares about them, vs about 20 and a very active community
-> >> > of contributors (also for core drm improvements) for the other case.
-> >>
-> >> Well, we could move offb to drm while at it I suppose that would be another
-> >> one (offb is the "dumb driver based on pre-programmed output by firmware).
-> >
-> > One of the still in-flight drm drivers is the simpledrm thing meant for
-> > all kinds of firmware drivers like efifb and similar things on arm for
-> > pre-programmed output set up by firmware. I.e. no modeset support and
-> > otherwise a lot of fake to make it work as drm driver, but the idea that
-> > it's good enough until your real drm driver takes over.
-> 
-> The x86 platform device fixups for SimpleDRM went in some weeks ago,
-> so maybe I should resend the patches. The driver could easily do
-> 'offb'-like devices as well. Trivial to add.
-> 
-> Anyway, Benjamin is right, we always do shadow buffering for trivial
-> drivers. Even in SimpleDRM I blit the shadow buffer on page-flip or
-> dirty-ioctl. Reason is that we cannot easily expose the real
-> framebuffer in DRM via FB-objects. But I also never saw a use-case for
-> it, since all trivial devices I worked with were only either used as
-> fallback or nobody cared for performance.
-> 
-> The generic DRM API is designed for dynamic FB allocation. If your
-> hardware does not allow you to change the scanout source, you will
-> have a hard time trying to expose the static buffers via the dynamic
-> FB-object API. Furthermore, all DRM user-space expects dynamic FB
-> management to work, preferably without a ridiculously low memory
-> limit. That's also why I never bothered changing the drivers.
-> 
-> Despite all of this I still see no reason why a driver could not
-> expose the static, real frambuffers via private ioctls. You can get
-> all your fancy acceleration that way. Then fix user-space to use this
-> API. If enough drivers end up with something similar, move it into the
-> core. Just like we always do in DRM.
+> Hm, I didn't know that, but then all existing drm drivers have fairly
+> simplistic fbdev mmap implementations.
 
-Well, we don't need a private abi. If we dynamically remap the mmaps and
-fixup fbdev to do the same then we could redirect frontbuffer rendering
-for the currently displaying buffer to the static, real framebuffer. That
-would fix the perf issues Ben is fearing I think.
+Hrm, I though the TTM did it ... I remember talking with Thomas
+Hellstrom about that back in the day... you use unmap_mapping_range
+to unmap the existing mappings basically so you can take new faults
+and route them to a different page, but I can't see a call in there
+so maybe he ended up not doing it.
 
-And if we do some nice ttm helpers to hide this all to the level the cma
-helpers are just plug-in-and-go then it'd be real nice I think. But thus
-far no one has cared enough yet to make that happen.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+We used to do that on Cell to "context switch" the local memory of
+the SPU engines between the real SPU and the backing store. It's not
+very hard to do.
+ 
+The main issue is that the mapping attributes change between cached
+and non-cached under the hood, so users have to be careful not to do
+things like use instructions that only work on one type of mapping
+(or do things like misaligned accesses).
+
+> > > whereas drm has a multi-master model and proper isolation. IIrc we've hacked up
+> > > something once, and if there's indeed more interest into vram dumb buffer
+> > > drivers I'm pretty sure we can grow some nice ttm fb helpers (like the cma
+> > > fb helpers we have) to make it all pretty and nice and fast and
+> > > essentially plug-in-and-forget from a driver authors pov.
+> > 
+> > That would be nice. I don't have the bandwidth to swap-in enough
+> > understanding of TTM guts right now but I might look into it some time next 
+> > year if nobody beats me to it.
+> 
+> Probably best would be to first extract some helpers for ttm based vram
+> dumb buffer management, and then start to implement some of the
+> improvements so that all drivers can benefit. Like you've said it's not
+> rocket science, it just needs to be done ;-)
+
+Right :-)
+
+Though getting ones head around the infrastructure in the DRM does take
+time :-) There's a lot of stuff in there, between TTM, GEM etc... and
+not all of it completely "obvious" ...
+
+Cheers,
+Ben.
+
+> -Daniel
+> -- 

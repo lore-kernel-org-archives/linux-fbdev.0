@@ -1,52 +1,140 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Wed, 21 Dec 2016 21:38:14 +0000
-Subject: Re: [PATCH] MAINTAINERS: add myself as maintainer of fbdev
-Message-Id: <20161221213814.GA2152@sudip-tp>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Fri, 09 Dec 2016 09:13:47 +0000
+Subject: Re: [PATCH v4 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
+Message-Id: <20161209091347.GE3625@dell.home>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2069699.WOeY4a5XzP@amdc3058>
- <CGME20161221150707epcas1p223dd762663836f005d6f67e9b7865dbd@epcas1p2.samsung.com>
- <20161221150654.GA14815@sudip-tp>
- <1915709.xWflxUXmem@amdc3058>
-In-Reply-To: <1915709.xWflxUXmem@amdc3058>
+References: <20161122134123.1209-1-peter.ujfalusi@ti.com>
+ <20161122134123.1209-2-peter.ujfalusi@ti.com>
+In-Reply-To: <20161122134123.1209-2-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: thierry.reding@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
 
-On Wed, Dec 21, 2016 at 05:50:05PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Wednesday, December 21, 2016 03:06:55 PM Sudip Mukherjee wrote:
-> > On Thu, Dec 15, 2016 at 03:45:47PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > I would like to help with fbdev maintenance.  I can dedicate some time
-> > > for reviewing and handling patches but won't have time for much more.
-> > > 
-> > 
-> > I thought usually someone takes over the maintainer role after
-> > proving that he cares for a subsystem for a certain period of time.
-> > 
-> > I know Bartlomiej is here for a long time, but fbdev??
-> 
-> I'm not a fbdev expert and I'm not pretending to be one.
-> 
-> I decided to officially handle patches for fbdev after this
-> subsystem has been marked as Orphan in upstream tree (nobody
-> has volunteered to take over from Tomi after he sent his
-> resignation patch to a list a week earlier).
+On Tue, 22 Nov 2016, Peter Ujfalusi wrote:
 
-ohhh.. right... i am seeing that thread now. Sorry for the noise.
-I have two months of lkml and fbdev mails pending, will read them in
-next two weeks of holidays. Only managed to see few mails that had me
-in to or cc.
+> Move the checks to select the initial state for the backlight to a new
+> function and document the checks we are doing.
+>=20
+> With the separate function it is going to be easier to fix or improve the
+> initial power state configuration later and it is easier to read the code.
+>=20
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+> Reviewed-by: Thierry Reding <treding@nvidia.com>
+> ---
+>  drivers/video/backlight/pwm_bl.c | 56 ++++++++++++++++++++++++++--------=
+------
+>  1 file changed, 37 insertions(+), 19 deletions(-)
 
-> 
-> I won't have a lot of time even for this activity so help is
-> very much welcomed.
+Applied for v4.11, thanks.
 
-time is the only thing which is very scarce nowadays. but please
-do ping me if you need any help.
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index 12614006211e..5712ddd053dd 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *dev,
+>  }
+>  #endif
+> =20
+> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *p=
+b)
+> +{
+> +	struct device_node *node =3D pb->dev->of_node;
+> +
+> +	/* Not booted with device tree or no phandle link to the node */
+> +	if (!node || !node->phandle)
+> +		return FB_BLANK_UNBLANK;
+> +
+> +	/*
+> +	 * If the driver is probed from the device tree and there is a
+> +	 * phandle link pointing to the backlight node, it is safe to
+> +	 * assume that another driver will enable the backlight at the
+> +	 * appropriate time. Therefore, if it is disabled, keep it so.
+> +	 */
+> +
+> +	/* if the enable GPIO is disabled, do not enable the backlight */
+> +	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) =3D 0)
+> +		return FB_BLANK_POWERDOWN;
+> +
+> +	/* The regulator is disabled, do not enable the backlight */
+> +	if (!regulator_is_enabled(pb->power_supply))
+> +		return FB_BLANK_POWERDOWN;
+> +
+> +	return FB_BLANK_UNBLANK;
+> +}
+> +
+>  static int pwm_backlight_probe(struct platform_device *pdev)
+>  {
+>  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->de=
+v);
+> @@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	struct backlight_device *bl;
+>  	struct device_node *node =3D pdev->dev.of_node;
+>  	struct pwm_bl_data *pb;
+> -	int initial_blank =3D FB_BLANK_UNBLANK;
+>  	struct pwm_args pargs;
+>  	int ret;
+> =20
+> @@ -267,20 +292,16 @@ static int pwm_backlight_probe(struct platform_devi=
+ce *pdev)
+>  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
+>  	}
+> =20
+> -	if (pb->enable_gpio) {
+> -		/*
+> -		 * If the driver is probed from the device tree and there is a
+> -		 * phandle link pointing to the backlight node, it is safe to
+> -		 * assume that another driver will enable the backlight at the
+> -		 * appropriate time. Therefore, if it is disabled, keep it so.
+> -		 */
+> -		if (node && node->phandle &&
+> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
+> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
+> -			initial_blank =3D FB_BLANK_POWERDOWN;
+> -		else
+> -			gpiod_direction_output(pb->enable_gpio, 1);
+> -	}
+> +	/*
+> +	 * If the GPIO is configured as input, change the direction to output
+> +	 * and set the GPIO as active.
+> +	 * Do not force the GPIO to active when it was already output as it
+> +	 * could cause backlight flickering or we would enable the backlight too
+> +	 * early. Leave the decision of the initial backlight state for later.
+> +	 */
+> +	if (pb->enable_gpio &&
+> +	    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_IN)
+> +		gpiod_direction_output(pb->enable_gpio, 1);
+> =20
+>  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
+>  	if (IS_ERR(pb->power_supply)) {
+> @@ -288,9 +309,6 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  		goto err_alloc;
+>  	}
+> =20
+> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
+> -		initial_blank =3D FB_BLANK_POWERDOWN;
+> -
+>  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
+>  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
+>  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
+> @@ -347,7 +365,7 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	}
+> =20
+>  	bl->props.brightness =3D data->dft_brightness;
+> -	bl->props.power =3D initial_blank;
+> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
+>  	backlight_update_status(bl);
+> =20
+>  	platform_set_drvdata(pdev, bl);
 
-regards
-sudip
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

@@ -1,76 +1,44 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 09 Dec 2016 08:41:54 +0000
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 09 Dec 2016 11:40:26 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161209084154.rp4wqzv46tuvf3jv@phenom.ffwll.local>
+Message-Id: <1481283626.27965.9.camel@kernel.crashing.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
- <CAMuHMdWsKqgvB8QtG6SjHO-mceB5fRK9G51y8RYeos0Ym7pgdA@mail.gmail.com>
- <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
- <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
- <20161208153735.74d7d350@free-electrons.com>
- <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
- <20161208152134.wnv4j4i6m5xpoycp@phenom.ffwll.local>
- <1481232877.26959.52.camel@kernel.crashing.org>
- <1481234249.26959.55.camel@kernel.crashing.org>
- <20161209083442.peoriqsto2llvl2t@phenom.ffwll.local>
-In-Reply-To: <20161209083442.peoriqsto2llvl2t@phenom.ffwll.local>
+References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
+ <1481158879.26959.41.camel@kernel.crashing.org>
+ <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
+ <1481232519.26959.49.camel@kernel.crashing.org>
+ <CAPM=9twUSRvfmh2ENMXTwCx-ULGzmPpyHs_wMM0XGDeWHMhnXw@mail.gmail.com>
+In-Reply-To: <CAPM=9twUSRvfmh2ENMXTwCx-ULGzmPpyHs_wMM0XGDeWHMhnXw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-On Fri, Dec 09, 2016 at 09:34:42AM +0100, Daniel Vetter wrote:
-> On Fri, Dec 09, 2016 at 08:57:29AM +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2016-12-09 at 08:34 +1100, Benjamin Herrenschmidt wrote:
-> > > As I mentioned earlier, probably 1 or 2 years ago, Dave made the
-> > > argument that shadowing through memory was necessary and precluded 2D
-> > > accel, though I don't fully remember the root of the argument. If that
-> > > is indeed not the case, then my main objection is lifted.
-> > 
-> > Things seem to change quickly as Daniel pointed out.
-> > 
-> > So ast and cirrus seem to still use a manual dirty tracking and
-> > shadowing (though I'm not sure why), but the infrastructure for
-> > that has moved from the drivers to the helpers.
-> > 
-> > bochs (qemu) doesn't seem to anymore from what I can see as it
-> > doesn't have a ->dirty callback.
+On Fri, 2016-12-09 at 10:08 +1000, Dave Airlie wrote:
+> What are people using fbcon for that needs acceleration, this is where I get
+> a bit lost.
 > 
-> Yeah if you have discrete vram then your dumb display driver isn't all
-> that pretty. We essentially just have the few drivers Dave hacked up to be
-> able to boot some servers. And there's definitely lots of room for more
-> shared code for those, and also some better infrastructure and helpers to
-> share more cod and make them better.
-
-And since I failed to make this clear: There's not really a fundamental
-reason ast and cirrus use the dirty tracking for fbdev. It's just that
-doing it that way was the fastest way to get those servers booting, and
-ever since no one cared. It's a bit tricky to do right because fbdev
-assumes it always own the framebuffer and that it never moves, whereas drm
-has a multi-master model and proper isolation. IIrc we've hacked up
-something once, and if there's indeed more interest into vram dumb buffer
-drivers I'm pretty sure we can grow some nice ttm fb helpers (like the cma
-fb helpers we have) to make it all pretty and nice and fast and
-essentially plug-in-and-forget from a driver authors pov.
-
-Cheers, Daniel
-
-> The massive pile of dumb framebuffers we all merged over the past 2 years
-> all use system/dma memory for scanout, and for those we have the very nice
-> cma helpers that take care of everything for you. So it is possible, only
-> reason vram dumb buffers look worse is that there's only 3 and no one
-> cares about them, vs about 20 and a very active community of contributors
-> (also for core drm improvements) for the other case.
+> It's a console, if you aren't sshing into the machine.
 > 
-> Althought the MXSFB driver that just landed does use ttm and vram, so
-> maybe that's now improving too.
-> -Daniel
-> -- 
-> Daniel Vetter
-> Software Engineer, Intel Corporation
-> http://blog.ffwll.ch
+> It's main purpose should just be for gathering oopses and you've a lot better
+> chance of getting an oops if you don't have some sketchy gpu accel in the way.
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+There are other uses for systems running Linux than being a server or desktop :-)
+
+> The acceleration that most of the 2D things provide isn't ever that
+> great, and shadowing is a lot more effective if done properly.
+
+Not with a 400Mhz ARM9 processor on a fairly high res display. In these
+case basic old things like color expansion for font rendering, bit
+blits and solid fills for scrolls work beautifully. Anyway I just
+realized that the ARM side of the AST GPU doesn't have the accel bits
+at all anyway, only the host side, so I'm back to just a dumb FB. I
+still want to avoid the copies though.
+
+>  It's a feature
+> that kernel ppl obsess over but I don't get a lot of real world feedback,
+> (booting 9000 scsi nodes with debug on takes a long time was possibly
+> something I heard once, and I think we resolved).
+
+Ben.

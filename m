@@ -1,110 +1,64 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 06 Dec 2016 09:15:37 +0000
-Subject: Re: [PATCH] staging: sm750fb: Aligning Block comments
-Message-Id: <20161206091537.GA12471@kroah.com>
+From: Olimpiu Dejeu <olimpiu@arcticsand.com>
+Date: Fri, 09 Dec 2016 15:49:33 +0000
+Subject: [PATCH V2 2/2] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <1481298573-15463-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CADeeJYBNp+kwS+wfCRPh2RF1ji1nR4rKf4=mBsDuBSwiJ+=Yrw@mail.gmail.com>
-In-Reply-To: <CADeeJYBNp+kwS+wfCRPh2RF1ji1nR4rKf4=mBsDuBSwiJ+=Yrw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 
-On Fri, Dec 02, 2016 at 12:04:39AM +0530, SRIKANT RITOLIA wrote:
-> Fix checkpatch.pl warnings:-
-> Block comments should align the * on each line
-> 
-> Signed-off-by: Srikant Ritolia <srikant.ritolia@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750.h       | 20 ++++++++++----------
->  drivers/staging/sm750fb/ddk750_chip.c  | 14 +++++++-------
->  drivers/staging/sm750fb/ddk750_chip.h  | 10 +++++-----
->  drivers/staging/sm750fb/ddk750_mode.c  | 12 ++++++------
->  drivers/staging/sm750fb/ddk750_swi2c.c | 22 +++++++++++-----------
->  drivers/staging/sm750fb/ddk750_swi2c.h | 22 +++++++++++-----------
->  6 files changed, 50 insertions(+), 50 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750.h b/drivers/staging/sm750fb/ddk750.h
-> index 2c10a08ed964..7ee371443e28 100644
-> --- a/drivers/staging/sm750fb/ddk750.h
-> +++ b/drivers/staging/sm750fb/ddk750.h
-> @@ -1,16 +1,16 @@
->  #ifndef DDK750_H__
->  #define DDK750_H__
->  /*******************************************************************
-> -*
-> -*         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
-> -*
-> -*  All rights are reserved. Reproduction or in part is prohibited
-> -*  without the written consent of the copyright owner.
-> -*
-> -*  RegSC.h --- SM718 SDK
-> -*  This file contains the definitions for the System Configuration registers.
-> -*
-> -*******************************************************************/
-> + *
-> + *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
-> + *
-> + *  All rights are reserved. Reproduction or in part is prohibited
-> + *  without the written consent of the copyright owner.
-> + *
-> + *  RegSC.h --- SM718 SDK
-> + *  This file contains the definitions for the System Configuration registers.
-> + *
-> + *******************************************************************/
->  #include "ddk750_reg.h"
->  #include "ddk750_mode.h"
->  #include "ddk750_chip.h"
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.c
-> b/drivers/staging/sm750fb/ddk750_chip.c
-> index 839d6730bde9..b7697ac206cf 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.c
-> +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> @@ -63,17 +63,17 @@ static void setChipClock(unsigned int frequency)
-> 
->   if (frequency) {
->   /*
-> - * Set up PLL, a structure to hold the value to be set in clocks.
-> - */
-> + * Set up PLL, a structure to hold the value to be set in clocks.
-> + */
->   pll.inputFreq = DEFAULT_INPUT_CLOCK; /* Defined in CLOCK.H */
->   pll.clockType = MXCLK_PLL;
-> 
->   /*
-> - * Call calcPllValue() to fill the other fields of PLL structure.
-> - * Sometime, the chip cannot set up the exact clock
-> - * required by the User.
-> - * Return value of calcPllValue gives the actual possible clock.
-> - */
-> + * Call calcPllValue() to fill the other fields of PLL structure.
-> + * Sometime, the chip cannot set up the exact clock
-> + * required by the User.
-> + * Return value of calcPllValue gives the actual possible clock.
-> + */
->   ulActualMxClk = calcPllValue(frequency, &pll);
-> 
->   /* Master Clock Control: MXCLK_PLL */
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.h
-> b/drivers/staging/sm750fb/ddk750_chip.h
-> index 14357fd1cc6b..20031f4e03fa 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.h
-> +++ b/drivers/staging/sm750fb/ddk750_chip.h
-> @@ -40,27 +40,27 @@ pll_value_t;
->  /* input struct to initChipParam() function */
->  typedef struct _initchip_param_t {
->   unsigned short powerMode;    /* Use power mode 0 or 1 */
-> - unsigned short chipClock;    /**
-> + unsigned short chipClock;    /*
->        * Speed of main chip clock in MHz unit
->        * 0 = keep the current clock setting
->        * Others = the new main chip clock
->        */
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+---
 
-This change doesn't match up with your changelog comment :(
+v1 => v2:
+- Version updated to match other patch in set. No other changes.
 
-Please fix up and resend.
+ .../bindings/leds/backlight/arcxcnn_bl.txt         | 31 ++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
 
-thanks,
+diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+new file mode 100644
+index 0000000..a7b6ff2
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+@@ -0,0 +1,33 @@
++Binding for ArcticSand arc2c0608 LED driver
++
++Required properties:
++- compatible: should be "arc,arc2c0608"
++- reg: slave address
++
++Optional properties:
++- default-brightness: brightness value on boot, value from: 0-4095
++- label: The name of the backlight device
++			See Documentation/devicetree/bindings/leds/common.txt
++- led-sources: List of enabled channels from 0 to 5.
++			See Documentation/devicetree/bindings/leds/common.txt
++
++- arc,led-config-0: setting for register ILED_CONFIG_0
++- arc,led-config-1: setting for register ILED_CONFIG_1
++- arc,dim-freq: PWM mode frequence setting (bits [3:0] used)
++- arc,comp-config: setting for register CONFIG_COMP
++- arc,filter-config: setting for register FILTER_CONFIG
++- arc,trim-config: setting for register IMAXTUNE
++
++Note: Optional properties not specified will default to values in IC EPROM
++
++Example:
++
++arc2c0608@30 {
++	compatible = "arc,arc2c0608";
++	reg = <0x30>;
++	default-brightness = <500>;
++	label = "lcd-backlight";
++	linux,default-trigger = "backlight";
++	led-sources = <0 1 2 5>;
++};
++
+-- 
+2.7.4
 
-greg k-h

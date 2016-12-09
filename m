@@ -1,9 +1,10 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 09 Dec 2016 13:35:12 +0000
+From: David Herrmann <dh.herrmann@gmail.com>
+Date: Fri, 09 Dec 2016 13:57:24 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <20161209133512.nuohi42ho3rgghau@phenom.ffwll.local>
+Message-Id: <CANq1E4S51c-fwJMN2P9MnhuErANvwfy41W2WBSSXrFPS3DXPkg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
+References: <CAMuHMdWsKqgvB8QtG6SjHO-mceB5fRK9G51y8RYeos0Ym7pgdA@mail.gmail.com>
+ <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
  <CAMuHMdWtajvNmPvCzWhBTU0iXU0=Ho=9pHHRM=ZiEbWOwA325A@mail.gmail.com>
  <20161208153735.74d7d350@free-electrons.com>
  <CAMuHMdVGqM9JMqWHt+Gcm2PpOV=sdu23+HEPxXhs_8LQJiE=Bw@mail.gmail.com>
@@ -11,56 +12,53 @@ References: <20161208140210.rfyjf2265flsfpfj@phenom.ffwll.local>
  <1481232877.26959.52.camel@kernel.crashing.org>
  <1481234249.26959.55.camel@kernel.crashing.org>
  <20161209083442.peoriqsto2llvl2t@phenom.ffwll.local>
- <20161209084154.rp4wqzv46tuvf3jv@phenom.ffwll.local>
- <1481284087.27965.13.camel@kernel.crashing.org>
-In-Reply-To: <1481284087.27965.13.camel@kernel.crashing.org>
+ <1481283856.27965.11.camel@kernel.crashing.org>
+ <20161209133339.3cpvuxerimoc5huf@phenom.ffwll.local>
+In-Reply-To: <20161209133339.3cpvuxerimoc5huf@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Fri, Dec 09, 2016 at 10:48:07PM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2016-12-09 at 09:41 +0100, Daniel Vetter wrote:
-> >=20
-> > And since I failed to make this clear: There's not really a
-> > fundamental
-> > reason ast and cirrus use the dirty tracking for fbdev. It's just that
-> > doing it that way was the fastest way to get those servers booting, and
-> > ever since no one cared. It's a bit tricky to do right because fbdev
-> > assumes it always own the framebuffer and that it never moves,=20
->=20
-> That can be worked around from my memories of hacking fbdev many years
-> ago. Basically fbdev only owns it if it's the current VT and you can
-> make it release it if the user switches to KD_GRAPHICS which userspace
-> should always do before taking over.
->=20
-> As for multi userspace client, well, swapping an mmap between HW and
-> memory backing store is a somewhat solved problem already.
+Hey
 
-Hm, I didn't know that, but then all existing drm drivers have fairly
-simplistic fbdev mmap implementations.
+On Fri, Dec 9, 2016 at 2:33 PM, Daniel Vetter <daniel@ffwll.ch> wrote:
+>> > So it is possible, only reason vram dumb buffers look worse is that there's
+>> > only 3 and no one cares about them, vs about 20 and a very active community
+>> > of contributors (also for core drm improvements) for the other case.
+>>
+>> Well, we could move offb to drm while at it I suppose that would be another
+>> one (offb is the "dumb driver based on pre-programmed output by firmware).
+>
+> One of the still in-flight drm drivers is the simpledrm thing meant for
+> all kinds of firmware drivers like efifb and similar things on arm for
+> pre-programmed output set up by firmware. I.e. no modeset support and
+> otherwise a lot of fake to make it work as drm driver, but the idea that
+> it's good enough until your real drm driver takes over.
 
-> > whereas drm has a multi-master model and proper isolation. IIrc we've h=
-acked up
-> > something once, and if there's indeed more interest into vram dumb buff=
-er
-> > drivers I'm pretty sure we can grow some nice ttm fb helpers (like the =
-cma
-> > fb helpers we have) to make it all pretty and nice and fast and
-> > essentially plug-in-and-forget from a driver authors pov.
->=20
-> That would be nice. I don't have the bandwidth to swap-in enough
-> understanding of TTM guts right now but I might look into it some time ne=
-xt=A0
-> year if nobody beats me to it.
+The x86 platform device fixups for SimpleDRM went in some weeks ago,
+so maybe I should resend the patches. The driver could easily do
+'offb'-like devices as well. Trivial to add.
 
-Probably best would be to first extract some helpers for ttm based vram
-dumb buffer management, and then start to implement some of the
-improvements so that all drivers can benefit. Like you've said it's not
-rocket science, it just needs to be done ;-)
--Daniel
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Anyway, Benjamin is right, we always do shadow buffering for trivial
+drivers. Even in SimpleDRM I blit the shadow buffer on page-flip or
+dirty-ioctl. Reason is that we cannot easily expose the real
+framebuffer in DRM via FB-objects. But I also never saw a use-case for
+it, since all trivial devices I worked with were only either used as
+fallback or nobody cared for performance.
+
+The generic DRM API is designed for dynamic FB allocation. If your
+hardware does not allow you to change the scanout source, you will
+have a hard time trying to expose the static buffers via the dynamic
+FB-object API. Furthermore, all DRM user-space expects dynamic FB
+management to work, preferably without a ridiculously low memory
+limit. That's also why I never bothered changing the drivers.
+
+Despite all of this I still see no reason why a driver could not
+expose the static, real frambuffers via private ioctls. You can get
+all your fancy acceleration that way. Then fix user-space to use this
+API. If enough drivers end up with something similar, move it into the
+core. Just like we always do in DRM.
+
+Thanks
+David

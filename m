@@ -1,7 +1,7 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 09 Dec 2016 12:33:32 +0000
+From: Lucas Stach <l.stach@pengutronix.de>
+Date: Fri, 09 Dec 2016 13:19:15 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <CAMuHMdUE9npco8hKcA160+rSFcCXpf7cXh+CX4Q207aA5FrT2g@mail.gmail.com>
+Message-Id: <1481289555.8389.1.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1481158879.26959.41.camel@kernel.crashing.org>
  <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
@@ -20,28 +20,28 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-Hi Ben,
+Am Freitag, den 09.12.2016, 22:44 +1100 schrieb Benjamin Herrenschmidt:
+> On Fri, 2016-12-09 at 09:34 +0100, Daniel Vetter wrote:
+> > Yeah if you have discrete vram then your dumb display driver isn't all
+> > that pretty. We essentially just have the few drivers Dave hacked up to be
+> > able to boot some servers. And there's definitely lots of room for more
+> > shared code for those, and also some better infrastructure and helpers to
+> > share more cod and make them better.
+> > 
+> > The massive pile of dumb framebuffers we all merged over the past 2 years
+> > all use system/dma memory for scanout, and for those we have the very nice
+> > cma helpers that take care of everything for you. 
+> 
+> Do they work if the system/DMA memory has to be physically contiguous
+> and at a fixed address ? The AST "ARM side" GPU is like that.
 
-On Fri, Dec 9, 2016 at 12:44 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->> So it is possible, only reason vram dumb buffers look worse is that there's
->> only 3 and no one cares about them, vs about 20 and a very active community
->> of contributors (also for core drm improvements) for the other case.
->
-> Well, we could move offb to drm while at it I suppose that would be another
-> one (offb is the "dumb driver based on pre-programmed output by firmware).
+Yes, CMA is exactly the solution for that. It provides contiguous memory
+that doesn't need to be removed from the normal Linux memory handling
+and allows for the CMA region to be at specific places if needed. It's
+just a matter of describing the constraints properly.
 
-That would indeed be a great example.
+Regards,
+Lucas
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

@@ -1,72 +1,77 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Date: Mon, 26 Dec 2016 22:21:36 +0000
-Subject: [PATCH v2 RESEND] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_backligh
-Message-Id: <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Tue, 13 Dec 2016 15:08:09 +0000
+Subject: [PATCH 0/4] video/exynos/cec: add HDMI state notifier & use in s5p-cec
+Message-Id: <20161213150813.37966-1-hverkuil@xs4all.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
-In-Reply-To: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Lukasz Majewski <l.majewski@majess.pl>
+To: linux-media@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org, Javier Martinez Canillas <javier@osg.samsung.com>, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>
 
-The commit a55944ca82d2 
-("backlight: update bd state & fb_blank properties when necessary")
-has posed some extra restrictions on blanking and unblanking frame buffer
-device.
+From: Hans Verkuil <hans.verkuil@cisco.com>
 
-Unfortunately, pwm_bl driver's probe did not initialize members of
-struct backlight_device necessary for further blank/unblank operation.
+This patch series adds the HDMI notifier code, based on Russell's code:
 
-This code in case of initial unblank of backlight device (default 
-behaviour) sets use_count to 1 and marks this particular backlight device
-as used by all available fb devices (since it is not known during probe 
-how much and which fb devices will be assigned).
+https://patchwork.kernel.org/patch/9277043/
 
-Without this code, the backlight works properly until one tries to blank it
-manually from sysfs with "echo 1 > /sys/class/graphics/fb0/blank".
-Since fb_bl_on[0] and use_count were both set to 0, the logic at
-fb_notifier_callback (@backlight.c) thought that we didn't turn on
-(unblanked) the backlight device and refuses to disable (blank) it.
-As a result we see garbage from fb displayed.
+It adds support for it to the exynos_hdmi drm driver, adds support for
+it to the CEC framework and finally adds support to the s5p-cec driver,
+which now can be moved out of staging.
 
-Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
----
-The patch has been tested on i.MX6q with vanilla 4.9 kernel.
-It applies on 4.10-rc1.
----
- drivers/video/backlight/pwm_bl.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+Tested with my Odroid U3 exynos4 devboard.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 1261400..6859ba0 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	struct pwm_bl_data *pb;
- 	int initial_blank = FB_BLANK_UNBLANK;
- 	struct pwm_args pargs;
--	int ret;
-+	int ret, i;
- 
- 	if (!data) {
- 		ret = pwm_backlight_parse_dt(&pdev->dev, &defdata);
-@@ -348,6 +348,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 
- 	bl->props.brightness = data->dft_brightness;
- 	bl->props.power = initial_blank;
-+
-+	if (initial_blank = FB_BLANK_UNBLANK) {
-+		for (i = 0; i < FB_MAX; i++)
-+			bl->fb_bl_on[i] = true;
-+
-+		bl->use_count = 1;
-+	}
-+
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
+Comments are welcome. I'd like to get this in for the 4.11 kernel as
+this is a missing piece needed to integrate CEC drivers.
+
+Benjamin, can you look at doing the same notifier integration for your
+st-cec driver as is done for s5p-cec? It would be good to be able to
+move st-cec out of staging at the same time.
+
+Regards,
+
+	Hans
+
+Hans Verkuil (4):
+  video: add HDMI state notifier support
+  exynos_hdmi: add HDMI notifier support
+  cec: integrate HDMI notifier support
+  s5p-cec: add hdmi-notifier support, move out of staging
+
+ .../devicetree/bindings/media/s5p-cec.txt          |   2 +
+ arch/arm/boot/dts/exynos4.dtsi                     |   1 +
+ drivers/gpu/drm/exynos/Kconfig                     |   1 +
+ drivers/gpu/drm/exynos/exynos_hdmi.c               |  24 +++-
+ drivers/media/cec/cec-core.c                       |  50 ++++++++
+ drivers/media/platform/Kconfig                     |  18 +++
+ drivers/media/platform/Makefile                    |   1 +
+ .../media => media/platform}/s5p-cec/Makefile      |   0
+ .../platform}/s5p-cec/exynos_hdmi_cec.h            |   0
+ .../platform}/s5p-cec/exynos_hdmi_cecctrl.c        |   0
+ .../media => media/platform}/s5p-cec/regs-cec.h    |   0
+ .../media => media/platform}/s5p-cec/s5p_cec.c     |  35 +++++-
+ .../media => media/platform}/s5p-cec/s5p_cec.h     |   3 +
+ drivers/staging/media/Kconfig                      |   2 -
+ drivers/staging/media/Makefile                     |   1 -
+ drivers/staging/media/s5p-cec/Kconfig              |   9 --
+ drivers/staging/media/s5p-cec/TODO                 |   7 --
+ drivers/video/Kconfig                              |   3 +
+ drivers/video/Makefile                             |   1 +
+ drivers/video/hdmi-notifier.c                      | 134 +++++++++++++++++++++
+ include/linux/hdmi-notifier.h                      | 109 +++++++++++++++++
+ include/media/cec.h                                |  15 +++
+ 22 files changed, 389 insertions(+), 27 deletions(-)
+ rename drivers/{staging/media => media/platform}/s5p-cec/Makefile (100%)
+ rename drivers/{staging/media => media/platform}/s5p-cec/exynos_hdmi_cec.h (100%)
+ rename drivers/{staging/media => media/platform}/s5p-cec/exynos_hdmi_cecctrl.c (100%)
+ rename drivers/{staging/media => media/platform}/s5p-cec/regs-cec.h (100%)
+ rename drivers/{staging/media => media/platform}/s5p-cec/s5p_cec.c (89%)
+ rename drivers/{staging/media => media/platform}/s5p-cec/s5p_cec.h (97%)
+ delete mode 100644 drivers/staging/media/s5p-cec/Kconfig
+ delete mode 100644 drivers/staging/media/s5p-cec/TODO
+ create mode 100644 drivers/video/hdmi-notifier.c
+ create mode 100644 include/linux/hdmi-notifier.h
+
 -- 
-2.1.4
+2.10.2
 

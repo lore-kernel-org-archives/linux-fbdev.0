@@ -1,33 +1,27 @@
 From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Tue, 13 Dec 2016 07:33:24 +0000
+Date: Tue, 13 Dec 2016 07:36:09 +0000
 Subject: Re: [RFC PATCH 0/3] staging: remove fbdev drivers
-Message-Id: <1481614404.27088.64.camel@redhat.com>
+Message-Id: <1481614569.27088.67.camel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1479888193-23908-1-git-send-email-tomi.valkeinen@ti.com>
- <1481158879.26959.41.camel@kernel.crashing.org>
- <20161208101005.6ufl3d4qvwprosju@phenom.ffwll.local>
- <1481232519.26959.49.camel@kernel.crashing.org>
- <CAPM=9twUSRvfmh2ENMXTwCx-ULGzmPpyHs_wMM0XGDeWHMhnXw@mail.gmail.com>
-In-Reply-To: <CAPM=9twUSRvfmh2ENMXTwCx-ULGzmPpyHs_wMM0XGDeWHMhnXw@mail.gmail.com>
+         <1481158879.26959.41.camel@kernel.crashing.org>
+         <035da7a8-5a3f-1ef6-f686-479773e78084@ti.com>
+         <1481232210.26959.47.camel@kernel.crashing.org>
+In-Reply-To: <1481232210.26959.47.camel@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@gmail.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Teddy Wang <teddy.wang@siliconmotion.com>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Arnaud Patard <arnaud.patard@rtp-net.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Noralf =?ISO-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Arnaud Patard <arnaud.patard@rtp-net.org>, airlied@linux.ie, linux-kernel@vger.kernel.org
 
   Hi,
 
-> The acceleration that most of the 2D things provide isn't ever that
-> great, and shadowing is a lot more effective if done properly.
+> Well, I had that argument with Dave Airlie which I CCed. The "dumb" ones like
+> bochsdrmfb, cirrusdrmfb, astdrmfb ... all use shadowing, meaning they use a
+> lot more memory and cannot do any 2D acceleration for fbcon.
 
-That is probably true for anything pci-ish, because those devices are
-optimized for memory writes and reads are horribly slow.  So you surely
-want avoid device memory reads and shadowing is a effective way to do
-this.
-
-On arm hardware the tradeoff may look quite different, the cpus are
-relatively slow and I think most arm gpus don't have dedicated device
-memory ...
+Well, at least for cirrusdrmfb using 2d accel is kida pointless as this
+only shifts the software bitblit from the kernel to qemu ...
 
 cheers,
   Gerd

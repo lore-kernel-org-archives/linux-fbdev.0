@@ -1,166 +1,135 @@
-From: Vladimir Zapolskiy <vz@mleia.com>
-Date: Wed, 21 Dec 2016 03:27:15 +0000
-Subject: [PATCH 2/4] video: ARM CLCD: use panel device node for panel initialization
-Message-Id: <20161221032717.13154-3-vz@mleia.com>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Tue, 13 Dec 2016 15:08:12 +0000
+Subject: [PATCH 3/4] cec: integrate HDMI notifier support
+Message-Id: <20161213150813.37966-4-hverkuil@xs4all.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161221032717.13154-1-vz@mleia.com>
-In-Reply-To: <20161221032717.13154-1-vz@mleia.com>
+References: <20161213150813.37966-1-hverkuil@xs4all.nl>
+In-Reply-To: <20161213150813.37966-1-hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-media@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Hans Verkuil <hans.verkuil@cisco.com>
 
-There is no necessity to pass an endpoint device node to custom panel
-initialization functions, because a child panel device node should be
-sufficient, note that the existing init_panel() callback declaration from
-linux/amba/clcd.h already prompts to use the panel device node here.
+From: Hans Verkuil <hans.verkuil@cisco.com>
 
-Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
+Support the HDMI notifier framework, simplifying drivers that
+depend on this.
+
+Signed-off-by: Hans Verkuil <hans.verkuil@cisco.com>
 ---
- drivers/video/fbdev/amba-clcd-nomadik.c   |  9 +--------
- drivers/video/fbdev/amba-clcd-nomadik.h   |  5 ++---
- drivers/video/fbdev/amba-clcd-versatile.c | 14 +++-----------
- drivers/video/fbdev/amba-clcd-versatile.h |  5 ++---
- drivers/video/fbdev/amba-clcd.c           |  8 ++++++--
- 5 files changed, 14 insertions(+), 27 deletions(-)
+ drivers/media/cec/cec-core.c | 50 ++++++++++++++++++++++++++++++++++++++++++++
+ include/media/cec.h          | 15 +++++++++++++
+ 2 files changed, 65 insertions(+)
 
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.c b/drivers/video/fbdev/amba-clcd-nomadik.c
-index 0c06fca..a9a8f75 100644
---- a/drivers/video/fbdev/amba-clcd-nomadik.c
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.c
-@@ -214,15 +214,8 @@ static void tpg110_init(struct device *dev, struct device_node *np,
- 	board->disable = tpg110_disable;
+diff --git a/drivers/media/cec/cec-core.c b/drivers/media/cec/cec-core.c
+index aca3ab8..c620a4c 100644
+--- a/drivers/media/cec/cec-core.c
++++ b/drivers/media/cec/cec-core.c
+@@ -195,6 +195,52 @@ static void cec_devnode_unregister(struct cec_devnode *devnode)
+ 	put_device(&devnode->dev);
  }
  
--int nomadik_clcd_init_panel(struct clcd_fb *fb,
--			    struct device_node *endpoint)
-+int nomadik_clcd_init_panel(struct clcd_fb *fb, struct device_node *panel)
- {
--	struct device_node *panel;
--
--	panel = of_graph_get_remote_port_parent(endpoint);
--	if (!panel)
--		return -ENODEV;
--
- 	if (of_device_is_compatible(panel, "tpo,tpg110"))
- 		tpg110_init(&fb->dev->dev, panel, fb->board);
- 	else
-diff --git a/drivers/video/fbdev/amba-clcd-nomadik.h b/drivers/video/fbdev/amba-clcd-nomadik.h
-index 50aa9bd..a24032c 100644
---- a/drivers/video/fbdev/amba-clcd-nomadik.h
-+++ b/drivers/video/fbdev/amba-clcd-nomadik.h
-@@ -6,8 +6,7 @@
- #ifdef CONFIG_ARCH_NOMADIK
- int nomadik_clcd_init_board(struct amba_device *adev,
- 			     struct clcd_board *board);
--int nomadik_clcd_init_panel(struct clcd_fb *fb,
--			    struct device_node *endpoint);
-+int nomadik_clcd_init_panel(struct clcd_fb *fb, struct device_node *panel);
- #else
- static inline int nomadik_clcd_init_board(struct amba_device *adev,
- 					  struct clcd_board *board)
-@@ -15,7 +14,7 @@ static inline int nomadik_clcd_init_board(struct amba_device *adev,
- 	return 0;
- }
- static inline int nomadik_clcd_init_panel(struct clcd_fb *fb,
--					  struct device_node *endpoint)
-+					  struct device_node *panel)
- {
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/amba-clcd-versatile.c b/drivers/video/fbdev/amba-clcd-versatile.c
-index e5d9bfc..d42047d 100644
---- a/drivers/video/fbdev/amba-clcd-versatile.c
-+++ b/drivers/video/fbdev/amba-clcd-versatile.c
-@@ -452,11 +452,9 @@ static const struct versatile_panel versatile_panels[] = {
- 	},
- };
- 
--static void versatile_panel_probe(struct device *dev,
--				  struct device_node *endpoint)
-+static void versatile_panel_probe(struct device *dev, struct device_node *panel)
- {
- 	struct versatile_panel const *vpanel = NULL;
--	struct device_node *panel = NULL;
- 	u32 val;
- 	int ret;
- 	int i;
-@@ -488,11 +486,6 @@ static void versatile_panel_probe(struct device *dev,
- 		return;
- 	}
- 
--	panel = of_graph_get_remote_port_parent(endpoint);
--	if (!panel) {
--		dev_err(dev, "could not locate panel in DT\n");
--		return;
--	}
- 	if (!of_device_is_compatible(panel, vpanel->compatible))
- 		dev_err(dev, "panel in DT is not compatible with the "
- 			"auto-detected panel, continuing anyway\n");
-@@ -514,8 +507,7 @@ static void versatile_panel_probe(struct device *dev,
- 	}
- }
- 
--int versatile_clcd_init_panel(struct clcd_fb *fb,
--			      struct device_node *endpoint)
-+int versatile_clcd_init_panel(struct clcd_fb *fb, struct device_node *panel)
- {
- 	const struct of_device_id *clcd_id;
- 	enum versatile_clcd versatile_clcd_type;
-@@ -551,7 +543,7 @@ int versatile_clcd_init_panel(struct clcd_fb *fb,
- 		fb->board->enable = versatile_clcd_enable;
- 		fb->board->disable = versatile_clcd_disable;
- 		fb->board->decode = versatile_clcd_decode;
--		versatile_panel_probe(dev, endpoint);
-+		versatile_panel_probe(dev, panel);
- 		dev_info(dev, "set up callbacks for Versatile\n");
- 		break;
- 	case REALVIEW_CLCD_EB:
-diff --git a/drivers/video/fbdev/amba-clcd-versatile.h b/drivers/video/fbdev/amba-clcd-versatile.h
-index 1b14359..4692c30 100644
---- a/drivers/video/fbdev/amba-clcd-versatile.h
-+++ b/drivers/video/fbdev/amba-clcd-versatile.h
-@@ -6,11 +6,10 @@
- #include <linux/platform_data/video-clcd-versatile.h>
- 
- #if defined(CONFIG_PLAT_VERSATILE_CLCD) && defined(CONFIG_OF)
--int versatile_clcd_init_panel(struct clcd_fb *fb,
--			      struct device_node *endpoint);
-+int versatile_clcd_init_panel(struct clcd_fb *fb, struct device_node *panel);
- #else
- static inline int versatile_clcd_init_panel(struct clcd_fb *fb,
--				struct device_node *endpoint)
-+					    struct device_node *panel)
- {
- 	return 0;
- }
-diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
-index a806fb8..f25b5fc 100644
---- a/drivers/video/fbdev/amba-clcd.c
-+++ b/drivers/video/fbdev/amba-clcd.c
-@@ -764,7 +764,7 @@ static int clcdfb_of_init_tft_panel(struct clcd_fb *fb, u32 r0, u32 g0, u32 b0)
- 
- static int clcdfb_of_init_display(struct clcd_fb *fb)
- {
--	struct device_node *endpoint;
-+	struct device_node *endpoint, *panel;
- 	int err;
- 	unsigned int bpp;
- 	u32 max_bandwidth;
-@@ -781,8 +781,12 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
- 	if (!endpoint)
- 		return -ENODEV;
- 
-+	panel = of_graph_get_remote_port_parent(endpoint);
-+	if (!panel)
-+		return -ENODEV;
++#ifdef CONFIG_HDMI_NOTIFIERS
++static u16 parse_hdmi_addr(const struct edid *edid)
++{
++	if (!edid || edid->extensions = 0)
++		return CEC_PHYS_ADDR_INVALID;
 +
- 	if (fb->vendor->init_panel) {
--		err = fb->vendor->init_panel(fb, endpoint);
-+		err = fb->vendor->init_panel(fb, panel);
- 		if (err)
- 			return err;
- 	}
++	return cec_get_edid_phys_addr((u8 *)edid,
++				EDID_LENGTH * (edid->extensions + 1), NULL);
++}
++
++static int cec_hdmi_notify(struct notifier_block *nb, unsigned long event,
++			   void *data)
++{
++	struct cec_adapter *adap = container_of(nb, struct cec_adapter, nb);
++	struct hdmi_notifier *n = data;
++	unsigned int phys;
++
++	dprintk(1, "event %lu\n", event);
++
++	switch (event) {
++	case HDMI_DISCONNECTED:
++		cec_s_phys_addr(adap, CEC_PHYS_ADDR_INVALID, false);
++		break;
++
++	case HDMI_NEW_EDID:
++		phys = parse_hdmi_addr(n->edid);
++		cec_s_phys_addr(adap, phys, false);
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++void cec_register_hdmi_notifier(struct cec_adapter *adap,
++				struct hdmi_notifier *notifier)
++{
++	if (WARN_ON(!adap->devnode.registered))
++		return;
++
++	adap->nb.notifier_call = cec_hdmi_notify;
++	adap->notifier = notifier;
++	hdmi_notifier_register(adap->notifier, &adap->nb);
++}
++EXPORT_SYMBOL_GPL(cec_register_hdmi_notifier);
++#endif
++
+ struct cec_adapter *cec_allocate_adapter(const struct cec_adap_ops *ops,
+ 					 void *priv, const char *name, u32 caps,
+ 					 u8 available_las)
+@@ -344,6 +390,10 @@ void cec_unregister_adapter(struct cec_adapter *adap)
+ 	adap->rc = NULL;
+ #endif
+ 	debugfs_remove_recursive(adap->cec_dir);
++#ifdef CONFIG_HDMI_NOTIFIERS
++	if (adap->notifier)
++		hdmi_notifier_unregister(adap->notifier, &adap->nb);
++#endif
+ 	cec_devnode_unregister(&adap->devnode);
+ }
+ EXPORT_SYMBOL_GPL(cec_unregister_adapter);
+diff --git a/include/media/cec.h b/include/media/cec.h
+index 96a0aa7..3b4860d 100644
+--- a/include/media/cec.h
++++ b/include/media/cec.h
+@@ -28,6 +28,11 @@
+ #include <linux/kthread.h>
+ #include <linux/timer.h>
+ #include <linux/cec-funcs.h>
++#ifdef CONFIG_HDMI_NOTIFIERS
++#include <linux/notifier.h>
++#include <linux/hdmi-notifier.h>
++#include <drm/drm_edid.h>
++#endif
+ #include <media/rc-core.h>
+ #include <media/cec-edid.h>
+ 
+@@ -173,6 +178,11 @@ struct cec_adapter {
+ 	bool passthrough;
+ 	struct cec_log_addrs log_addrs;
+ 
++#ifdef CONFIG_HDMI_NOTIFIERS
++	struct hdmi_notifier	*notifier;
++	struct notifier_block	nb;
++#endif
++
+ 	struct dentry *cec_dir;
+ 	struct dentry *status_file;
+ 
+@@ -213,6 +223,11 @@ void cec_transmit_done(struct cec_adapter *adap, u8 status, u8 arb_lost_cnt,
+ 		       u8 nack_cnt, u8 low_drive_cnt, u8 error_cnt);
+ void cec_received_msg(struct cec_adapter *adap, struct cec_msg *msg);
+ 
++#ifdef CONFIG_HDMI_NOTIFIERS
++void cec_register_hdmi_notifier(struct cec_adapter *adap,
++				struct hdmi_notifier *notifier);
++#endif
++
+ #else
+ 
+ static inline int cec_register_adapter(struct cec_adapter *adap,
 -- 
 2.10.2
 

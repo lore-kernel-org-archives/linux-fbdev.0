@@ -1,90 +1,129 @@
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 01 Dec 2016 12:34:02 +0000
-Subject: [PATCH 33/39] Annotate hardware config module parameters in drivers/video/
-Message-Id: <148059564205.31612.17013167193733120962.stgit@warthog.procyon.org.uk>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Tue, 13 Dec 2016 15:08:11 +0000
+Subject: [PATCH 2/4] exynos_hdmi: add HDMI notifier support
+Message-Id: <20161213150813.37966-3-hverkuil@xs4all.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
-In-Reply-To: <148059537897.31612.9461043954611464597.stgit@warthog.procyon.org.uk>
+References: <20161213150813.37966-1-hverkuil@xs4all.nl>
+In-Reply-To: <20161213150813.37966-1-hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: gnomes@lxorguk.ukuu.org.uk, linux-fbdev@vger.kernel.org, minyard@acm.org, dhowells@redhat.com, linux-security-module@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, keyrings@vger.kernel.org, Jaya Kumar <jayalk@intworks.biz>
+To: linux-media@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Hans Verkuil <hans.verkuil@cisco.com>
 
-When the kernel is running in secure boot mode, we lock down the kernel to
-prevent userspace from modifying the running kernel image.  Whilst this
-includes prohibiting access to things like /dev/mem, it must also prevent
-access by means of configuring driver modules in such a way as to cause a
-device to access or modify the kernel image.
+From: Hans Verkuil <hans.verkuil@cisco.com>
 
-To this end, annotate module_param* statements that refer to hardware
-configuration and indicate for future reference what type of parameter they
-specify.  The parameter parser in the core sees this information and can
-skip such parameters with an error message if the kernel is locked down.
-The module initialisation then runs as normal, but just sees whatever the
-default values for those parameters is.
+Implement the HDMI notifier support to allow CEC drivers to
+be informed when there is a new EDID and when a connect or
+disconnect happens.
 
-Note that we do still need to do the module initialisation because some
-drivers have viable defaults set in case parameters aren't specified and
-some drivers support automatic configuration (e.g. PNP or PCI) in addition
-to manually coded parameters.
-
-This patch annotates drivers in drivers/video/.
-
-Suggested-by: One Thousand Gnomes <gnomes@lxorguk.ukuu.org.uk>
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Jaya Kumar <jayalk@intworks.biz>
-cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Hans Verkuil <hans.verkuil@cisco.com>
 ---
+ drivers/gpu/drm/exynos/Kconfig       |  1 +
+ drivers/gpu/drm/exynos/exynos_hdmi.c | 24 +++++++++++++++++++++---
+ 2 files changed, 22 insertions(+), 3 deletions(-)
 
- drivers/video/fbdev/arcfb.c |    8 ++++----
- drivers/video/fbdev/n411.c  |    6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index 1928cb2b5386..7e87d0d61658 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -645,17 +645,17 @@ module_param(nosplash, uint, 0);
- MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
- module_param(arcfb_enable, uint, 0);
- MODULE_PARM_DESC(arcfb_enable, "Enable communication with Arc board");
--module_param(dio_addr, ulong, 0);
-+module_param_hw(dio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
--module_param(cio_addr, ulong, 0);
-+module_param_hw(cio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
--module_param(c2io_addr, ulong, 0);
-+module_param_hw(c2io_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
- module_param(splashval, ulong, 0);
- MODULE_PARM_DESC(splashval, "Splash pattern: 0xFF is black, 0x00 is green");
- module_param(tuhold, ulong, 0);
- MODULE_PARM_DESC(tuhold, "Time to hold between strobing data to Arc board");
--module_param(irq, uint, 0);
-+module_param_hw(irq, uint, irq, 0);
- MODULE_PARM_DESC(irq, "IRQ for the Arc board");
+diff --git a/drivers/gpu/drm/exynos/Kconfig b/drivers/gpu/drm/exynos/Kconfig
+index 465d344f..34f3b6f 100644
+--- a/drivers/gpu/drm/exynos/Kconfig
++++ b/drivers/gpu/drm/exynos/Kconfig
+@@ -77,6 +77,7 @@ config DRM_EXYNOS_DP
+ config DRM_EXYNOS_HDMI
+ 	bool "HDMI"
+ 	depends on DRM_EXYNOS_MIXER || DRM_EXYNOS5433_DECON
++	select HDMI_NOTIFIERS
+ 	help
+ 	  Choose this option if you want to use Exynos HDMI for DRM.
  
- module_init(arcfb_init);
-diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
-index 053deacad7cc..a3677313396e 100644
---- a/drivers/video/fbdev/n411.c
-+++ b/drivers/video/fbdev/n411.c
-@@ -193,11 +193,11 @@ module_exit(n411_exit);
+diff --git a/drivers/gpu/drm/exynos/exynos_hdmi.c b/drivers/gpu/drm/exynos/exynos_hdmi.c
+index e8fb6ef..2bfc411 100644
+--- a/drivers/gpu/drm/exynos/exynos_hdmi.c
++++ b/drivers/gpu/drm/exynos/exynos_hdmi.c
+@@ -31,6 +31,7 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/clk.h>
+ #include <linux/gpio/consumer.h>
++#include <linux/hdmi-notifier.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/io.h>
+ #include <linux/of_address.h>
+@@ -132,6 +133,7 @@ struct hdmi_context {
+ 	struct delayed_work		hotplug_work;
+ 	struct drm_display_mode		current_mode;
+ 	u8				cea_video_id;
++	struct hdmi_notifier		*notifier;
+ 	const struct hdmi_driver_data	*drv_data;
  
- module_param(nosplash, uint, 0);
- MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
--module_param(dio_addr, ulong, 0);
-+module_param_hw(dio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
--module_param(cio_addr, ulong, 0);
-+module_param_hw(cio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
--module_param(c2io_addr, ulong, 0);
-+module_param_hw(c2io_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
- module_param(splashval, ulong, 0);
- MODULE_PARM_DESC(splashval, "Splash pattern: 0x00 is black, 0x01 is white");
+ 	void __iomem			*regs;
+@@ -857,9 +859,12 @@ static enum drm_connector_status hdmi_detect(struct drm_connector *connector,
+ {
+ 	struct hdmi_context *hdata = connector_to_hdmi(connector);
+ 
+-	if (gpiod_get_value(hdata->hpd_gpio))
++	if (gpiod_get_value(hdata->hpd_gpio)) {
++		hdmi_event_connect(hdata->notifier);
+ 		return connector_status_connected;
++	}
+ 
++	hdmi_event_disconnect(hdata->notifier);
+ 	return connector_status_disconnected;
+ }
+ 
+@@ -898,6 +903,9 @@ static int hdmi_get_modes(struct drm_connector *connector)
+ 		edid->width_cm, edid->height_cm);
+ 
+ 	drm_mode_connector_update_edid_property(connector, edid);
++	hdmi_event_connect(hdata->notifier);
++	hdmi_event_new_edid(hdata->notifier, edid,
++			    EDID_LENGTH * (1 + edid->extensions));
+ 
+ 	ret = drm_add_edid_modes(connector, edid);
+ 
+@@ -1544,6 +1552,7 @@ static void hdmi_disable(struct drm_encoder *encoder)
+ 	if (funcs && funcs->disable)
+ 		(*funcs->disable)(crtc);
+ 
++	hdmi_event_disconnect(hdata->notifier);
+ 	cancel_delayed_work(&hdata->hotplug_work);
+ 
+ 	hdmiphy_disable(hdata);
+@@ -1893,15 +1902,22 @@ static int hdmi_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	hdata->notifier = hdmi_notifier_get(&pdev->dev);
++	if (hdata->notifier = NULL) {
++		ret = -ENOMEM;
++		goto err_hdmiphy;
++	}
++
+ 	pm_runtime_enable(dev);
+ 
+ 	ret = component_add(&pdev->dev, &hdmi_component_ops);
+ 	if (ret)
+-		goto err_disable_pm_runtime;
++		goto err_notifier_put;
+ 
+ 	return ret;
+ 
+-err_disable_pm_runtime:
++err_notifier_put:
++	hdmi_notifier_put(hdata->notifier);
+ 	pm_runtime_disable(dev);
+ 
+ err_hdmiphy:
+@@ -1918,9 +1934,11 @@ static int hdmi_remove(struct platform_device *pdev)
+ 	struct hdmi_context *hdata = platform_get_drvdata(pdev);
+ 
+ 	cancel_delayed_work_sync(&hdata->hotplug_work);
++	hdmi_event_disconnect(hdata->notifier);
+ 
+ 	component_del(&pdev->dev, &hdmi_component_ops);
+ 
++	hdmi_notifier_put(hdata->notifier);
+ 	pm_runtime_disable(&pdev->dev);
+ 
+ 	if (!IS_ERR(hdata->reg_hdmi_en))
+-- 
+2.10.2
 

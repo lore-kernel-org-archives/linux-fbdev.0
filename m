@@ -1,143 +1,320 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 21 Dec 2016 16:37:37 +0000
-Subject: [PATCH RESEND v7 2/3] console: Add callback to flush scrollback buffer to consw struct
-Message-Id: <1482338258-21388-3-git-send-email-manuel.schoelling@gmx.de>
+From: Hans Verkuil <hverkuil@xs4all.nl>
+Date: Tue, 13 Dec 2016 15:08:10 +0000
+Subject: [PATCH 1/4] video: add HDMI state notifier support
+Message-Id: <20161213150813.37966-2-hverkuil@xs4all.nl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
- <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+References: <20161213150813.37966-1-hverkuil@xs4all.nl>
+In-Reply-To: <20161213150813.37966-1-hverkuil@xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-media@vger.kernel.org
+Cc: Russell King <linux@armlinux.org.uk>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, Marek Szyprowski <m.szyprowski@samsung.com>, Javier Martinez Canillas <javier@osg.samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Hans Verkuil <hans.verkuil@cisco.com>
 
-This new callback is in preparation for persistent scrollback buffer
-support for VGA consoles.
-With a single scrollback buffer for all consoles, we could flush the
-buffer just by invocating consw->con_switch(). But when each VGA console
-has its own scrollback buffer, we need a new callback to tell the
-video console driver which buffer to flush.
+From: Hans Verkuil <hans.verkuil@cisco.com>
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
+Add support for HDMI hotplug and EDID notifiers, which is used to convey
+information from HDMI drivers to their CEC and audio counterparts.
 
+Based on an earlier version from Russell King:
+
+https://patchwork.kernel.org/patch/9277043/
+
+The hdmi_notifier is a reference counted object containing the HDMI state
+of an HDMI device.
+
+When a new notifier is registered the current state will be reported to
+that notifier at registration time.
+
+Signed-off-by: Hans Verkuil <hans.verkuil@cisco.com>
 ---
- drivers/tty/vt/vt.c            |  9 +++++++++
- drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
- include/linux/console.h        |  4 ++++
- 3 files changed, 36 insertions(+), 1 deletion(-)
+ drivers/video/Kconfig         |   3 +
+ drivers/video/Makefile        |   1 +
+ drivers/video/hdmi-notifier.c | 134 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/hdmi-notifier.h | 109 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 247 insertions(+)
+ create mode 100644 drivers/video/hdmi-notifier.c
+ create mode 100644 include/linux/hdmi-notifier.h
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 4c10a9d..9d3ce50 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
- 		vc->vc_sw->con_save_screen(vc);
- }
-=20
-+static void flush_scrollback(struct vc_data *vc)
-+{
-+	WARN_CONSOLE_UNLOCKED();
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3c20af9..1ee7b9f 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -36,6 +36,9 @@ config VIDEOMODE_HELPERS
+ config HDMI
+ 	bool
+ 
++config HDMI_NOTIFIERS
++	bool
 +
-+	if (vc->vc_sw->con_flush_scrollback)
-+		vc->vc_sw->con_flush_scrollback(vc);
+ if VT
+ 	source "drivers/video/console/Kconfig"
+ endif
+diff --git a/drivers/video/Makefile b/drivers/video/Makefile
+index 9ad3c17..65f5649 100644
+--- a/drivers/video/Makefile
++++ b/drivers/video/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_VGASTATE)            += vgastate.o
+ obj-$(CONFIG_HDMI)                += hdmi.o
++obj-$(CONFIG_HDMI_NOTIFIERS)      += hdmi-notifier.o
+ 
+ obj-$(CONFIG_VT)		  += console/
+ obj-$(CONFIG_LOGO)		  += logo/
+diff --git a/drivers/video/hdmi-notifier.c b/drivers/video/hdmi-notifier.c
+new file mode 100644
+index 0000000..29e4225
+--- /dev/null
++++ b/drivers/video/hdmi-notifier.c
+@@ -0,0 +1,134 @@
++#include <linux/export.h>
++#include <linux/hdmi-notifier.h>
++#include <linux/string.h>
++#include <linux/slab.h>
++#include <linux/list.h>
++
++static LIST_HEAD(hdmi_notifiers);
++static DEFINE_MUTEX(hdmi_notifiers_lock);
++
++struct hdmi_notifier *hdmi_notifier_get(struct device *dev)
++{
++	struct hdmi_notifier *n;
++
++	mutex_lock(&hdmi_notifiers_lock);
++	list_for_each_entry(n, &hdmi_notifiers, head) {
++		if (n->dev = dev) {
++			mutex_unlock(&hdmi_notifiers_lock);
++			kref_get(&n->kref);
++			return n;
++		}
++	}
++	n = kzalloc(sizeof(*n), GFP_KERNEL);
++	if (!n)
++		goto unlock;
++	n->dev = dev;
++	mutex_init(&n->lock);
++	BLOCKING_INIT_NOTIFIER_HEAD(&n->notifiers);
++	kref_init(&n->kref);
++	list_add_tail(&n->head, &hdmi_notifiers);
++unlock:
++	mutex_unlock(&hdmi_notifiers_lock);
++	return n;
++}
++EXPORT_SYMBOL_GPL(hdmi_notifier_get);
++
++static void hdmi_notifier_release(struct kref *kref)
++{
++	struct hdmi_notifier *n +		container_of(kref, struct hdmi_notifier, kref);
++
++	mutex_lock(&hdmi_notifiers_lock);
++	list_del(&n->head);
++	mutex_unlock(&hdmi_notifiers_lock);
++	kfree(n->edid);
++	kfree(n);
 +}
 +
- /*
-  *	Redrawing of screen
-  */
-@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 		case 3: /* erase scroll-back buffer (and whole display) */
- 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
- 				    vc->vc_screenbuf_size);
-+			flush_scrollback(vc);
- 			set_origin(vc);
- 			if (con_is_visible(vc))
- 				update_screen(vc);
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 48b9764..9a7c2bb 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
- 	int restore;
- } vgacon_scrollback;
-=20
-+static void vgacon_scrollback_reset(size_t reset_size)
++void hdmi_notifier_put(struct hdmi_notifier *n)
 +{
-+	if (vgacon_scrollback.data && reset_size > 0)
-+		memset(vgacon_scrollback.data, 0, reset_size);
-+
-+	vgacon_scrollback.cnt  =3D 0;
-+	vgacon_scrollback.tail =3D 0;
-+	vgacon_scrollback.cur  =3D 0;
++	kref_put(&n->kref, hdmi_notifier_release);
 +}
++EXPORT_SYMBOL_GPL(hdmi_notifier_put);
 +
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 	} else
- 		vgacon_cursor(c, CM_MOVE);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
++int hdmi_notifier_register(struct hdmi_notifier *n, struct notifier_block *nb)
 +{
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++	int ret = blocking_notifier_chain_register(&n->notifiers, nb);
 +
-+	if (c->vc_num =3D fg_console)
-+		vgacon_scrollback_reset(size);
++	if (ret)
++		return ret;
++	kref_get(&n->kref);
++	mutex_lock(&n->lock);
++	if (n->connected) {
++		blocking_notifier_call_chain(&n->notifiers, HDMI_CONNECTED, n);
++		if (n->edid_size)
++			blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_EDID, n);
++		if (n->has_eld)
++			blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_ELD, n);
++	}
++	mutex_unlock(&n->lock);
++	return 0;
 +}
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
-@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 			vga_vram_size);
- 	vga_set_mem_top(c);
- }
++EXPORT_SYMBOL_GPL(hdmi_notifier_register);
 +
-+static void vgacon_flush_scrollback(struct vc_data *c)
++int hdmi_notifier_unregister(struct hdmi_notifier *n, struct notifier_block *nb)
 +{
++	int ret = blocking_notifier_chain_unregister(&n->notifiers, nb);
++
++	if (ret = 0)
++		hdmi_notifier_put(n);
++	return ret;
 +}
- #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
-=20
- static const char *vgacon_startup(void)
-@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
- int t, unsigned int b,
- 	return true;
- }
-=20
--
- /*
-  *  The console `switch' structure for the VGA based console
-  */
-@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
- 	.con_save_screen =3D vgacon_save_screen,
- 	.con_build_attr =3D vgacon_build_attr,
- 	.con_invert_region =3D vgacon_invert_region,
-+	.con_flush_scrollback =3D vgacon_flush_scrollback,
- };
- EXPORT_SYMBOL(vga_con);
-=20
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 9c26c66..5949d18 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -73,6 +73,10 @@ struct consw {
- 	u16    *(*con_screen_pos)(struct vc_data *, int);
- 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
- 	/*
-+	 * Flush the video console driver's scrollback buffer
-+	 */
-+	void	(*con_flush_scrollback)(struct vc_data *);
-+	/*
- 	 * Prepare the console for the debugger.  This includes, but is not
- 	 * limited to, unblanking the console, loading an appropriate
- 	 * palette, and allowing debugger generated output.
---=20
-2.1.4
++EXPORT_SYMBOL_GPL(hdmi_notifier_unregister);
++
++void hdmi_event_connect(struct hdmi_notifier *n)
++{
++	mutex_lock(&n->lock);
++	n->connected = true;
++	blocking_notifier_call_chain(&n->notifiers, HDMI_CONNECTED, n);
++	mutex_unlock(&n->lock);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_connect);
++
++void hdmi_event_disconnect(struct hdmi_notifier *n)
++{
++	mutex_lock(&n->lock);
++	n->connected = false;
++	n->has_eld = false;
++	n->edid_size = 0;
++	blocking_notifier_call_chain(&n->notifiers, HDMI_DISCONNECTED, n);
++	mutex_unlock(&n->lock);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_disconnect);
++
++int hdmi_event_new_edid(struct hdmi_notifier *n, const void *edid, size_t size)
++{
++	mutex_lock(&n->lock);
++	if (n->edid_allocated_size < size) {
++		void *p = kmalloc(size, GFP_KERNEL);
++
++		if (p = NULL) {
++			mutex_unlock(&n->lock);
++			return -ENOMEM;
++		}
++		kfree(n->edid);
++		n->edid = p;
++		n->edid_allocated_size = size;
++	}
++	memcpy(n->edid, edid, size);
++	n->edid_size = size;
++	blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_EDID, n);
++	mutex_unlock(&n->lock);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(hdmi_event_new_edid);
++
++void hdmi_event_new_eld(struct hdmi_notifier *n, const u8 eld[128])
++{
++	mutex_lock(&n->lock);
++	memcpy(n->eld, eld, sizeof(n->eld));
++	n->has_eld = true;
++	blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_ELD, n);
++	mutex_unlock(&n->lock);
++}
++EXPORT_SYMBOL_GPL(hdmi_event_new_eld);
+diff --git a/include/linux/hdmi-notifier.h b/include/linux/hdmi-notifier.h
+new file mode 100644
+index 0000000..1d88db0
+--- /dev/null
++++ b/include/linux/hdmi-notifier.h
+@@ -0,0 +1,109 @@
++/*
++ * hdmi-notifier.h - notify interested parties of (dis)connect and EDID
++ * events
++ *
++ * Copyright 2016 Russell King <rmk+kernel@arm.linux.org.uk>
++ * Copyright 2016 Cisco Systems, Inc. and/or its affiliates. All rights reserved.
++ */
++
++#ifndef LINUX_HDMI_NOTIFIER_H
++#define LINUX_HDMI_NOTIFIER_H
++
++#include <linux/types.h>
++#include <linux/notifier.h>
++#include <linux/kref.h>
++
++enum {
++	HDMI_CONNECTED,
++	HDMI_DISCONNECTED,
++	HDMI_NEW_EDID,
++	HDMI_NEW_ELD,
++};
++
++struct device;
++
++struct hdmi_notifier {
++	struct mutex lock;
++	struct list_head head;
++	struct kref kref;
++	struct blocking_notifier_head notifiers;
++	struct device *dev;
++
++	/* Current state */
++	bool connected;
++	bool has_eld;
++	unsigned char eld[128];
++	void *edid;
++	size_t edid_size;
++	size_t edid_allocated_size;
++};
++
++/**
++ * hdmi_notifier_get - find or create a new hdmi_notifier for the given device.
++ * @dev: device that sends the events.
++ *
++ * If a notifier for device @dev already exists, then increase the refcount
++ * and return that notifier.
++ *
++ * If it doesn't exist, then allocate a new notifier struct and return a
++ * pointer to that new struct.
++ *
++ * Return NULL if the memory could not be allocated.
++ */
++struct hdmi_notifier *hdmi_notifier_get(struct device *dev);
++
++/**
++ * hdmi_notifier_put - decrease refcount and delete when the refcount reaches 0.
++ * @n: notifier
++ */
++void hdmi_notifier_put(struct hdmi_notifier *n);
++
++/**
++ * hdmi_notifier_register - register the notifier with the notifier_block.
++ * @n: the HDMI notifier
++ * @nb: the notifier_block
++ */
++int hdmi_notifier_register(struct hdmi_notifier *n, struct notifier_block *nb);
++
++/**
++ * hdmi_notifier_unregister - unregister the notifier with the notifier_block.
++ * @n: the HDMI notifier
++ * @nb: the notifier_block
++ */
++int hdmi_notifier_unregister(struct hdmi_notifier *n, struct notifier_block *nb);
++
++/**
++ * hdmi_event_connect - send a connect event.
++ * @n: the HDMI notifier
++ *
++ * Send an HDMI_CONNECTED event to any registered parties.
++ */
++void hdmi_event_connect(struct hdmi_notifier *n);
++
++/**
++ * hdmi_event_disconnect - send a disconnect event.
++ * @n: the HDMI notifier
++ *
++ * Send an HDMI_DISCONNECTED event to any registered parties.
++ */
++void hdmi_event_disconnect(struct hdmi_notifier *n);
++
++/**
++ * hdmi_event_new_edid - send a new EDID event.
++ * @n: the HDMI notifier
++ *
++ * Send an HDMI_NEW_EDID event to any registered parties.
++ * This function will make a copy the EDID so it can return -ENOMEM if
++ * no memory could be allocated.
++ */
++int hdmi_event_new_edid(struct hdmi_notifier *n, const void *edid, size_t size);
++
++/**
++ * hdmi_event_new_eld - send a new ELD event.
++ * @n: the HDMI notifier
++ *
++ * Send an HDMI_NEW_ELD event to any registered parties.
++ */
++void hdmi_event_new_eld(struct hdmi_notifier *n, const u8 eld[128]);
++
++#endif
+-- 
+2.10.2
 

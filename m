@@ -1,99 +1,72 @@
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Date: Thu, 29 Dec 2016 13:53:57 +0000
-Subject: Re: [PATCH 0/4] video/exynos/cec: add HDMI state notifier & use in s5p-cec
-Message-Id: <0b71ac14-a97a-1eba-26dc-6cf85bab7aa2@samsung.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Sat, 17 Dec 2016 01:03:09 +0000
+Subject: [PATCH] video: use designated initializers
+Message-Id: <20161217010309.GA140492@beast>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20161213150827epcas1p3155035a3c8affb78fb7a3c5b4b60007b@epcas1p3.samsung.com>
- <20161213150813.37966-1-hverkuil@xs4all.nl>
-In-Reply-To: <20161213150813.37966-1-hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hverkuil@xs4all.nl>, linux-media@vger.kernel.org
-Cc: Russell King <linux@armlinux.org.uk>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, Javier Martinez Canillas <javier@osg.samsung.com>, Benjamin Gaignard <benjamin.gaignard@linaro.org>, Krzysztof Kozlowski <krzk@kernel.org>, =?UTF-8?B?64yA7J246riw?= <inki.dae@samsung.com>, Sylwester Nawrocki <s.nawrocki@samsung.com>
+To: linux-kernel@vger.kernel.org
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-fbdev@vger.kernel.org
 
-Hi Hans,
+Prepare to mark sensitive kernel structures for randomization by making
+sure they're using designated initializers. These were identified during
+allyesconfig builds of x86, arm, and arm64, with most initializer fixes
+extracted from grsecurity.
 
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ drivers/video/fbdev/matrox/matroxfb_DAC1064.c | 10 ++++++++--
+ drivers/video/fbdev/matrox/matroxfb_Ti3026.c  |  5 ++++-
+ 2 files changed, 12 insertions(+), 3 deletions(-)
 
-On 2016-12-13 16:08, Hans Verkuil wrote:
-> From: Hans Verkuil <hans.verkuil@cisco.com>
->
-> This patch series adds the HDMI notifier code, based on Russell's code:
->
-> https://patchwork.kernel.org/patch/9277043/
->
-> It adds support for it to the exynos_hdmi drm driver, adds support for
-> it to the CEC framework and finally adds support to the s5p-cec driver,
-> which now can be moved out of staging.
->
-> Tested with my Odroid U3 exynos4 devboard.
->
-> Comments are welcome. I'd like to get this in for the 4.11 kernel as
-> this is a missing piece needed to integrate CEC drivers.
->
-> Benjamin, can you look at doing the same notifier integration for your
-> st-cec driver as is done for s5p-cec? It would be good to be able to
-> move st-cec out of staging at the same time.
-
-Thanks for working on this and taking it from by TODO list! :)
-
-Please add:
-Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-
-If you plan to send an updated version, please send it also to
-linux-samsung-soc@vger.kernel.org, Krzysztof and Inki to get their acks
-for the bindings, dtsi and drm parts.
-
-This HDMI notifier framework will probably be also useful for integrating
-HDMI audio support for Samsung ASoC driver.
-
-> Regards,
->
-> 	Hans
->
-> Hans Verkuil (4):
->    video: add HDMI state notifier support
->    exynos_hdmi: add HDMI notifier support
->    cec: integrate HDMI notifier support
->    s5p-cec: add hdmi-notifier support, move out of staging
->
->   .../devicetree/bindings/media/s5p-cec.txt          |   2 +
->   arch/arm/boot/dts/exynos4.dtsi                     |   1 +
->   drivers/gpu/drm/exynos/Kconfig                     |   1 +
->   drivers/gpu/drm/exynos/exynos_hdmi.c               |  24 +++-
->   drivers/media/cec/cec-core.c                       |  50 ++++++++
->   drivers/media/platform/Kconfig                     |  18 +++
->   drivers/media/platform/Makefile                    |   1 +
->   .../media => media/platform}/s5p-cec/Makefile      |   0
->   .../platform}/s5p-cec/exynos_hdmi_cec.h            |   0
->   .../platform}/s5p-cec/exynos_hdmi_cecctrl.c        |   0
->   .../media => media/platform}/s5p-cec/regs-cec.h    |   0
->   .../media => media/platform}/s5p-cec/s5p_cec.c     |  35 +++++-
->   .../media => media/platform}/s5p-cec/s5p_cec.h     |   3 +
->   drivers/staging/media/Kconfig                      |   2 -
->   drivers/staging/media/Makefile                     |   1 -
->   drivers/staging/media/s5p-cec/Kconfig              |   9 --
->   drivers/staging/media/s5p-cec/TODO                 |   7 --
->   drivers/video/Kconfig                              |   3 +
->   drivers/video/Makefile                             |   1 +
->   drivers/video/hdmi-notifier.c                      | 134 +++++++++++++++++++++
->   include/linux/hdmi-notifier.h                      | 109 +++++++++++++++++
->   include/media/cec.h                                |  15 +++
->   22 files changed, 389 insertions(+), 27 deletions(-)
->   rename drivers/{staging/media => media/platform}/s5p-cec/Makefile (100%)
->   rename drivers/{staging/media => media/platform}/s5p-cec/exynos_hdmi_cec.h (100%)
->   rename drivers/{staging/media => media/platform}/s5p-cec/exynos_hdmi_cecctrl.c (100%)
->   rename drivers/{staging/media => media/platform}/s5p-cec/regs-cec.h (100%)
->   rename drivers/{staging/media => media/platform}/s5p-cec/s5p_cec.c (89%)
->   rename drivers/{staging/media => media/platform}/s5p-cec/s5p_cec.h (97%)
->   delete mode 100644 drivers/staging/media/s5p-cec/Kconfig
->   delete mode 100644 drivers/staging/media/s5p-cec/TODO
->   create mode 100644 drivers/video/hdmi-notifier.c
->   create mode 100644 include/linux/hdmi-notifier.h
->
-
-Best regards
+diff --git a/drivers/video/fbdev/matrox/matroxfb_DAC1064.c b/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
+index a01147fdf270..5d896f879ff9 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
++++ b/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
+@@ -1088,14 +1088,20 @@ static void MGAG100_restore(struct matrox_fb_info *minfo)
+ 
+ #ifdef CONFIG_FB_MATROX_MYSTIQUE
+ struct matrox_switch matrox_mystique = {
+-	MGA1064_preinit, MGA1064_reset, MGA1064_init, MGA1064_restore,
++	.preinit = MGA1064_preinit,
++	.reset = MGA1064_reset,
++	.init = MGA1064_init,
++	.restore = MGA1064_restore,
+ };
+ EXPORT_SYMBOL(matrox_mystique);
+ #endif
+ 
+ #ifdef CONFIG_FB_MATROX_G
+ struct matrox_switch matrox_G100 = {
+-	MGAG100_preinit, MGAG100_reset, MGAG100_init, MGAG100_restore,
++	.preinit = MGAG100_preinit,
++	.reset = MGAG100_reset,
++	.init = MGAG100_init,
++	.restore = MGAG100_restore,
+ };
+ EXPORT_SYMBOL(matrox_G100);
+ #endif
+diff --git a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
+index 68fa037d8cbc..0273351b2342 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
++++ b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
+@@ -738,7 +738,10 @@ static int Ti3026_preinit(struct matrox_fb_info *minfo)
+ }
+ 
+ struct matrox_switch matrox_millennium = {
+-	Ti3026_preinit, Ti3026_reset, Ti3026_init, Ti3026_restore
++	.preinit = Ti3026_preinit,
++	.reset = Ti3026_reset,
++	.init = Ti3026_init,
++	.restore = Ti3026_restore
+ };
+ EXPORT_SYMBOL(matrox_millennium);
+ #endif
 -- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
+2.7.4
 
+
+-- 
+Kees Cook
+Nexus Security

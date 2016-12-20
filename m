@@ -1,41 +1,76 @@
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Mon, 19 Dec 2016 18:13:40 +0000
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Date: Tue, 20 Dec 2016 01:17:36 +0000
 Subject: Re: [PATCH] fbdev: remove current maintainer
-Message-Id: <20161219101340.f5ff2132086668dffddafcdd@linux-foundation.org>
+Message-Id: <5102616.aqlTlCbrFA@avalon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1481186052-4987-1-git-send-email-tomi.valkeinen@ti.com>
-        <20161215121252.c64c56904af3545c97911848@linux-foundation.org>
-        <7413786.2DSvSX0P97@amdc3058>
-In-Reply-To: <7413786.2DSvSX0P97@amdc3058>
+ <20161208100447.cyidy3l2vtn6ozfs@phenom.ffwll.local>
+In-Reply-To: <20161208100447.cyidy3l2vtn6ozfs@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-kernel@vger.kernel.org
 
-On Mon, 19 Dec 2016 14:34:12 +0100 Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> wrote:
+Hi Daniel,
 
-> 
-> Hi,
-> 
-> On Thursday, December 15, 2016 12:12:52 PM Andrew Morton wrote:
-> > On Thu, 8 Dec 2016 10:34:12 +0200 Tomi Valkeinen <tomi.valkeinen@ti.com> wrote:
+On Thursday 08 Dec 2016 11:04:47 Daniel Vetter wrote:
+> On Thu, Dec 08, 2016 at 10:34:12AM +0200, Tomi Valkeinen wrote:
+> > Remove Tomi Valkeinen from fbdev maintainer and mark fbdev as orphan.
 > > 
-> > > Remove Tomi Valkeinen from fbdev maintainer and mark fbdev as orphan.
-> > > 
-> > > ...
-> > >
-> > > I just don't have time to even pretend I maintain fbdev, so mark it as Orphan.
-> > > 
-> > > Anyone want to pick fbdev maintainership?
+> > Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > ---
+> > 
+> > I just don't have time to even pretend I maintain fbdev, so mark it as
+> > Orphan.
+> > 
+> > Anyone want to pick fbdev maintainership?
 > 
-> http://marc.info/?l=linux-fbdev&m8181317415549&w=2
-> 
-> > I'll keep an eye on the mailing list, try to ensure that things keep
-> > ticking along.
-> 
-> Andrew, do you want to manage patches yourself or should I step
-> in and try to do it?
+> I think for fbdev stuff that we need for the fbdev emulation in drm we
+> could merge it through drm-misc.
 
-No, please go ahead.
+Or we could instead invest time on getting rid of that last dependency on 
+fbdev ? :-)
+
+> And I'd very much welcome if you can
+> still review those patches (e.g. the nommu enabling that's floating right
+> now). If you want can also give you commit rights to drm-misc for that
+> area. Or drm-misc maintainers can apply those patches.
+> 
+> Anything else would be still out of scope ofc.
+> 
+> What we might want to do is add dri-devel to the mailing lists, to make
+> sure patch submissions get redicted to the right subsystem. Mail volume
+> seems pretty low compared to dri-devel, I think we can absorb that.
+> -Daniel
+> 
+> >  MAINTAINERS | 3 +--
+> >  1 file changed, 1 insertion(+), 2 deletions(-)
+> > 
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index 851b89b9edcb..fc2790eb4e84 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -4968,10 +4968,9 @@ F:	drivers/net/wan/dlci.c
+> > 
+> >  F:	drivers/net/wan/sdla.c
+> >  
+> >  FRAMEBUFFER LAYER
+> > 
+> > -M:	Tomi Valkeinen <tomi.valkeinen@ti.com>
+> > 
+> >  L:	linux-fbdev@vger.kernel.org
+> >  Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
+> > 
+> > -S:	Maintained
+> > +S:	Orphan
+> > 
+> >  F:	Documentation/fb/
+> >  F:	drivers/video/
+> >  F:	include/video/
+
+-- 
+Regards,
+
+Laurent Pinchart
 

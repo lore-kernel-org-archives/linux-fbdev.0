@@ -1,203 +1,212 @@
-From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Date: Wed, 14 Dec 2016 12:57:09 +0000
-Subject: [PATCH 2/2] stih-cec: add hdmi-notifier support
-Message-Id: <1481720229-7587-3-git-send-email-benjamin.gaignard@linaro.org>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Wed, 21 Dec 2016 16:37:36 +0000
+Subject: [PATCH RESEND v7 1/3] console: Move scrollback data into its own struct
+Message-Id: <1482338258-21388-2-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1481720229-7587-1-git-send-email-benjamin.gaignard@linaro.org>
-In-Reply-To: <1481720229-7587-1-git-send-email-benjamin.gaignard@linaro.org>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+ <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org, hverkuil@xs4all.nl
-Cc: linux-fbdev@vger.kernel.org, linaro-kernel@lists.linaro.org, kernel@stlinux.com, linux@armlinux.org.uk, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-By using the HDMI notifier framework there is no longer any reason
-to manually set the physical address. This was the one blocking
-issue that prevented this driver from going out of staging, so do
-this move as well.
+This refactoring is in preparation for persistent scrollback
+support for VGA console.
 
-Update the bindings documenting the new hdmi phandle and
-update stih410.dtsi and stih407-family.dtsi accordingly.
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
 
-Signed-off-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
 ---
- .../devicetree/bindings/media/stih-cec.txt         |  2 ++
- arch/arm/boot/dts/stih407-family.dtsi              | 12 ---------
- arch/arm/boot/dts/stih410.dtsi                     | 15 ++++++++++-
- drivers/staging/media/st-cec/Kconfig               |  1 +
- drivers/staging/media/st-cec/stih-cec.c            | 29 +++++++++++++++++++++-
- 5 files changed, 45 insertions(+), 14 deletions(-)
+ drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
+----
+ 1 file changed, 47 insertions(+), 44 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/media/stih-cec.txt b/Documentation/devicetree/bindings/media/stih-cec.txt
-index 71c4b2f..7d82121 100644
---- a/Documentation/devicetree/bindings/media/stih-cec.txt
-+++ b/Documentation/devicetree/bindings/media/stih-cec.txt
-@@ -9,6 +9,7 @@ Required properties:
-  - pinctrl-names: Contains only one value - "default"
-  - pinctrl-0: Specifies the pin control groups used for CEC hardware.
-  - resets: Reference to a reset controller
-+ - st,hdmi-handle: Phandle to the HMDI controller
- 
- Example for STIH407:
- 
-@@ -22,4 +23,5 @@ sti-cec@094a087c {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_cec0_default>;
- 	resets = <&softreset STIH407_LPM_SOFTRESET>;
-+	st,hdmi-handle = <&hdmi>;
- };
-diff --git a/arch/arm/boot/dts/stih407-family.dtsi b/arch/arm/boot/dts/stih407-family.dtsi
-index 8f79b41..ef7c79a 100644
---- a/arch/arm/boot/dts/stih407-family.dtsi
-+++ b/arch/arm/boot/dts/stih407-family.dtsi
-@@ -756,18 +756,6 @@
- 				 <&clk_s_c0_flexgen CLK_ETH_PHY>;
- 		};
- 
--		cec: sti-cec@094a087c {
--			compatible = "st,stih-cec";
--			reg = <0x94a087c 0x64>;
--			clocks = <&clk_sysin>;
--			clock-names = "cec-clk";
--			interrupts = <GIC_SPI 140 IRQ_TYPE_NONE>;
--			interrupt-names = "cec-irq";
--			pinctrl-names = "default";
--			pinctrl-0 = <&pinctrl_cec0_default>;
--			resets = <&softreset STIH407_LPM_SOFTRESET>;
--		};
--
- 		rng10: rng@08a89000 {
- 			compatible      = "st,rng";
- 			reg		= <0x08a89000 0x1000>;
-diff --git a/arch/arm/boot/dts/stih410.dtsi b/arch/arm/boot/dts/stih410.dtsi
-index a3ef734..c98d86e 100644
---- a/arch/arm/boot/dts/stih410.dtsi
-+++ b/arch/arm/boot/dts/stih410.dtsi
-@@ -193,7 +193,7 @@
- 							 <&clk_s_d2_quadfs 0>;
- 			};
- 
--			sti-hdmi@8d04000 {
-+			hdmi: sti-hdmi@8d04000 {
- 				compatible = "st,stih407-hdmi";
- 				reg = <0x8d04000 0x1000>;
- 				reg-names = "hdmi-reg";
-@@ -259,5 +259,18 @@
- 			clocks = <&clk_sysin>;
- 			interrupts = <GIC_SPI 205 IRQ_TYPE_EDGE_RISING>;
- 		};
-+
-+		sti-cec@094a087c {
-+			compatible = "st,stih-cec";
-+			reg = <0x94a087c 0x64>;
-+			clocks = <&clk_sysin>;
-+			clock-names = "cec-clk";
-+			interrupts = <GIC_SPI 140 IRQ_TYPE_NONE>;
-+			interrupt-names = "cec-irq";
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&pinctrl_cec0_default>;
-+			resets = <&softreset STIH407_LPM_SOFTRESET>;
-+			st,hdmi-handle = <&hdmi>;
-+		};
- 	};
- };
-diff --git a/drivers/staging/media/st-cec/Kconfig b/drivers/staging/media/st-cec/Kconfig
-index 784d2c6..3072387 100644
---- a/drivers/staging/media/st-cec/Kconfig
-+++ b/drivers/staging/media/st-cec/Kconfig
-@@ -1,6 +1,7 @@
- config VIDEO_STI_HDMI_CEC
-        tristate "STMicroelectronics STiH4xx HDMI CEC driver"
-        depends on VIDEO_DEV && MEDIA_CEC && (ARCH_STI || COMPILE_TEST)
-+       select HDMI_NOTIFIERS
-        ---help---
-          This is a driver for STIH4xx HDMI CEC interface. It uses the
-          generic CEC framework interface.
-diff --git a/drivers/staging/media/st-cec/stih-cec.c b/drivers/staging/media/st-cec/stih-cec.c
-index 2143448..ce94097 100644
---- a/drivers/staging/media/st-cec/stih-cec.c
-+++ b/drivers/staging/media/st-cec/stih-cec.c
-@@ -10,11 +10,13 @@
-  * (at your option) any later version.
-  */
- #include <linux/clk.h>
-+#include <linux/hdmi-notifier.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/mfd/syscon.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_platform.h>
- #include <linux/platform_device.h>
- #include <linux/version.h>
- 
-@@ -130,6 +132,7 @@ struct stih_cec {
- 	void __iomem		*regs;
- 	int			irq;
- 	u32			irq_status;
-+	struct hdmi_notifier    *notifier;
- };
- 
- static int stih_cec_adap_enable(struct cec_adapter *adap, bool enable)
-@@ -304,12 +307,29 @@ static int stih_cec_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	struct resource *res;
- 	struct stih_cec *cec;
-+	struct device_node *np;
-+	struct platform_device *hdmi_dev;
- 	int ret;
- 
- 	cec = devm_kzalloc(dev, sizeof(*cec), GFP_KERNEL);
- 	if (!cec)
- 		return -ENOMEM;
- 
-+	np = of_parse_phandle(pdev->dev.of_node, "st,hdmi-handle", 0);
-+
-+	if (!np) {
-+		dev_err(&pdev->dev, "Failed to find hdmi node in device tree\n");
-+		return -ENODEV;
-+	}
-+
-+	hdmi_dev = of_find_device_by_node(np);
-+	if (!hdmi_dev)
-+		return -EPROBE_DEFER;
-+
-+	cec->notifier = hdmi_notifier_get(&hdmi_dev->dev);
-+	if (!cec->notifier)
-+		return -ENOMEM;
-+
- 	cec->dev = dev;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-@@ -336,7 +356,7 @@ static int stih_cec_probe(struct platform_device *pdev)
- 	cec->adap = cec_allocate_adapter(&sti_cec_adap_ops, cec,
- 			CEC_NAME,
- 			CEC_CAP_LOG_ADDRS | CEC_CAP_PASSTHROUGH |
--			CEC_CAP_PHYS_ADDR | CEC_CAP_TRANSMIT,
-+			CEC_CAP_TRANSMIT,
- 			1, &pdev->dev);
- 	ret = PTR_ERR_OR_ZERO(cec->adap);
- 	if (ret)
-@@ -348,12 +368,19 @@ static int stih_cec_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	cec_register_hdmi_notifier(cec->adap, cec->notifier);
-+
- 	platform_set_drvdata(pdev, cec);
- 	return 0;
- }
- 
- static int stih_cec_remove(struct platform_device *pdev)
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c22a562..48b9764 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
++static struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollback;
+=20
+ static void vgacon_scrollback_init(int pitch)
  {
-+	struct stih_cec *cec = platform_get_drvdata(pdev);
-+
-+	cec_unregister_adapter(cec->adap);
-+	hdmi_notifier_put(cec->notifier);
-+
- 	return 0;
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+=20
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	if (vgacon_scrollback.data) {
++		vgacon_scrollback.cnt  =3D 0;
++		vgacon_scrollback.tail =3D 0;
++		vgacon_scrollback.cur  =3D 0;
++		vgacon_scrollback.rows =3D rows - 1;
++		vgacon_scrollback.size =3D rows * pitch;
+ 	}
  }
- 
--- 
-1.9.1
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
++	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
++		1024, GFP_NOWAIT);
+ 	vgacon_scrollback_init(vga_video_num_columns * 2);
+ }
+=20
+@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
+c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		vgacon_scrollback.cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		vgacon_scrollback.tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
++			vgacon_scrollback.tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
++			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	vgacon_scrollback.save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !vgacon_scrollback.restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.restore =3D 1;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	if (!vgacon_scrollback.data)
+ 		return;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!vgacon_scrollback.save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		vgacon_scrollback.save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	vgacon_scrollback.restore =3D 0;
++	start =3D vgacon_scrollback.cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > vgacon_scrollback.cnt)
++		start =3D vgacon_scrollback.cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > vgacon_scrollback.cnt)
++		end =3D vgacon_scrollback.cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	vgacon_scrollback.cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D vgacon_scrollback.size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D vgacon_scrollback.cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback.size - soff);
++		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, vgacon_scrollback.data, count);
+ 			d +=3D count;
+ 		}
+=20
+--=20
+2.1.4
 

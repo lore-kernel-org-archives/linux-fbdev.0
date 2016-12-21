@@ -1,65 +1,34 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 21 Dec 2016 16:37:35 +0000
-Subject: [PATCH RESEND v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+From: Vladimir Zapolskiy <vz@mleia.com>
+Date: Wed, 21 Dec 2016 03:27:13 +0000
+Subject: [PATCH 0/4] video: ARM CLCD: add support of an optional GPIO to enable panel
+Message-Id: <20161221032717.13154-1-vz@mleia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
+The changeset contains a number of cleanups, changed semantics of
+init_panel() callback, which allows to simplify getting of panel
+properties from panel device tree node, and a handling of optional
+"enable-gpios" panel property, the latter is described in
+display/panel/panel-dpi.txt device tree binding documentation, but
+it has been unsupported by the ARM CLCD driver.
 
---
-Changes in v7:
-  - Add new callback to consw struct for flushing video console driver's
-    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
-    by Adam Borowski (kilobyte@angband.pl).
-  - Fix style issues
-Changes in v6:
-  - Change of check if feature is enabled in=20
-    vgacon_scrollback_switch()
-Changes in v5:
-  - Clearify documentation
-  - Skip superfluous array initialization
-  - Disable scrollback if buffer allocation fails
-  - Refactor vgacon_switch_scrollback()
-  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
-  - Add check for fg_console in vgacon_scrollback_update
-Changes in v4.1:
-  - Fix compiler error
-Changes in v4:
-  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
-    VGACON_SOFT_SCROLLBACK_PERSISTENT
-  - Split into two patches
-  - Rework documentation
-  - Remove cosmetic changes in comments (postponed)
-Changes in v3:
-  - Add config option for this feature
-  - Fallback to old scrollback buffer if kcalloc() fails
-  - Remove ioctl() call again and add documentation about existing
-    escape sequence to flush the scrollback buffer
-Changes in v2:
-  - Add ioctl() call to flush scrollback buffer
-  - (Patch v2 was not labeled as such, sorry)
+Vladimir Zapolskiy (4):
+  video: ARM CLCD: sort included headers out alphabetically
+  video: ARM CLCD: use panel device node for panel initialization
+  video: ARM CLCD: use panel device node for getting backlight and mode
+  video: ARM CLCD: add support of an optional GPIO to enable panel
 
-Manuel Sch=C3=B6lling (3):
-  console: Move scrollback data into its own struct
-  console: Add callback to flush scrollback buffer to consw struct
-  console: Add persistent scrollback buffers for all VGA consoles
+ drivers/video/fbdev/amba-clcd-nomadik.c   |  9 +---
+ drivers/video/fbdev/amba-clcd-nomadik.h   |  5 +-
+ drivers/video/fbdev/amba-clcd-versatile.c | 14 ++----
+ drivers/video/fbdev/amba-clcd-versatile.h |  5 +-
+ drivers/video/fbdev/amba-clcd.c           | 80 +++++++++++++++++++------------
+ include/linux/amba/clcd.h                 |  2 +
+ 6 files changed, 59 insertions(+), 56 deletions(-)
 
- drivers/tty/vt/vt.c            |   9 +++
- drivers/video/console/Kconfig  |  25 ++++++-
- drivers/video/console/vgacon.c | 165 ++++++++++++++++++++++++++++---------=
-----
- include/linux/console.h        |   4 +
- 4 files changed, 148 insertions(+), 55 deletions(-)
-
---=20
-2.1.4
+-- 
+2.10.2
 

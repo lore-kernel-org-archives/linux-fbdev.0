@@ -1,121 +1,330 @@
-From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Date: Wed, 14 Dec 2016 12:57:08 +0000
-Subject: [PATCH 1/2] sti: hdmi: add HDMI notifier support
-Message-Id: <1481720229-7587-2-git-send-email-benjamin.gaignard@linaro.org>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Wed, 21 Dec 2016 16:37:38 +0000
+Subject: [PATCH RESEND v7 3/3] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1482338258-21388-4-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1481720229-7587-1-git-send-email-benjamin.gaignard@linaro.org>
-In-Reply-To: <1481720229-7587-1-git-send-email-benjamin.gaignard@linaro.org>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+ <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org, hverkuil@xs4all.nl
-Cc: linux-fbdev@vger.kernel.org, linaro-kernel@lists.linaro.org, kernel@stlinux.com, linux@armlinux.org.uk, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Implement the HDMI notifier support to allow CEC drivers to
-be informed when there is a new EDID and when a connect or
-disconnect happens.
+Add a scrollback buffers for each VGA console. The benefit is that
+the scrollback history is not flushed when switching between consoles
+but is persistent.
+The buffers are allocated on demand when a new console is opened.
 
-Signed-off-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+This breaks tools like clear_console that rely on flushing the
+scrollback history by switching back and forth between consoles
+which is why this feature is disabled by default.
+Use the escape sequence \e[3J instead for flushing the buffer.
+
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
+
 ---
- drivers/gpu/drm/sti/Kconfig    |  1 +
- drivers/gpu/drm/sti/sti_hdmi.c | 15 +++++++++++++++
- drivers/gpu/drm/sti/sti_hdmi.h |  2 ++
- 3 files changed, 18 insertions(+)
+ drivers/video/console/Kconfig  |  25 +++++++-
+ drivers/video/console/vgacon.c | 142 ++++++++++++++++++++++++++-----------=
+----
+ 2 files changed, 111 insertions(+), 56 deletions(-)
 
-diff --git a/drivers/gpu/drm/sti/Kconfig b/drivers/gpu/drm/sti/Kconfig
-index acd7286..59ceffc 100644
---- a/drivers/gpu/drm/sti/Kconfig
-+++ b/drivers/gpu/drm/sti/Kconfig
-@@ -8,5 +8,6 @@ config DRM_STI
- 	select DRM_PANEL
- 	select FW_LOADER
- 	select SND_SOC_HDMI_CODEC if SND_SOC
-+	select HDMI_NOTIFIERS
- 	help
- 	  Choose this option to enable DRM on STM stiH4xx chipset
-diff --git a/drivers/gpu/drm/sti/sti_hdmi.c b/drivers/gpu/drm/sti/sti_hdmi.c
-index 376b076..6667371 100644
---- a/drivers/gpu/drm/sti/sti_hdmi.c
-+++ b/drivers/gpu/drm/sti/sti_hdmi.c
-@@ -786,6 +786,8 @@ static void sti_hdmi_disable(struct drm_bridge *bridge)
- 	clk_disable_unprepare(hdmi->clk_pix);
- 
- 	hdmi->enabled = false;
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 38da6e2..c5742d2 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -43,9 +43,28 @@ config VGACON_SOFT_SCROLLBACK_SIZE
+        range 1 1024
+        default "64"
+        help
+-         Enter the amount of System RAM to allocate for the scrollback
+-	 buffer.  Each 64KB will give you approximately 16 80x25
+-	 screenfuls of scrollback buffer
++	  Enter the amount of System RAM to allocate for scrollback
++	  buffers of VGA consoles. Each 64KB will give you approximately
++	  16 80x25 screenfuls of scrollback buffer.
 +
-+	hdmi_event_disconnect(hdmi->notifier);
- }
- 
- static void sti_hdmi_pre_enable(struct drm_bridge *bridge)
-@@ -892,6 +894,10 @@ static int sti_hdmi_connector_get_modes(struct drm_connector *connector)
- 	if (!edid)
- 		goto fail;
- 
-+	hdmi_event_connect(hdmi->notifier);
-+	hdmi_event_new_edid(hdmi->notifier, edid,
-+			    EDID_LENGTH * (edid->extensions + 1));
++config VGACON_SOFT_SCROLLBACK_PERSISTENT
++	bool "Persistent Scrollback History for each console"
++	depends on VGACON_SOFT_SCROLLBACK
++	default n
++	help
++	  Say Y here if the scrollback history should persist when switching
++	  between consoles. Otherwise, the scrollback history will be flushed
++	  each time the console is switched.
 +
- 	count = drm_add_edid_modes(connector, edid);
- 	drm_mode_connector_update_edid_property(connector, edid);
- 	drm_edid_to_eld(connector, edid);
-@@ -949,10 +955,12 @@ struct drm_connector_helper_funcs sti_hdmi_connector_helper_funcs = {
- 
- 	if (hdmi->hpd) {
- 		DRM_DEBUG_DRIVER("hdmi cable connected\n");
-+		hdmi_event_connect(hdmi->notifier);
- 		return connector_status_connected;
- 	}
- 
- 	DRM_DEBUG_DRIVER("hdmi cable disconnected\n");
-+	hdmi_event_disconnect(hdmi->notifier);
- 	return connector_status_disconnected;
- }
- 
-@@ -1464,6 +1472,10 @@ static int sti_hdmi_probe(struct platform_device *pdev)
- 		goto release_adapter;
- 	}
- 
-+	hdmi->notifier = hdmi_notifier_get(&pdev->dev);
-+	if (!hdmi->notifier)
-+		goto release_adapter;
++	  This feature might break your tool of choice to flush the scrollback
++	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
++	  will be broken, which might cause security issues.
++	  You can use the escape sequence \e[3J instead if this feature is
++	  activated.
 +
- 	hdmi->reset = devm_reset_control_get(dev, "hdmi");
- 	/* Take hdmi out of reset */
- 	if (!IS_ERR(hdmi->reset))
-@@ -1483,11 +1495,14 @@ static int sti_hdmi_remove(struct platform_device *pdev)
++	  Note that a buffer of VGACON_SOFT_SCROLLBACK_SIZE is taken for each
++	  created tty device.
++	  So if you use a RAM-constrained system, say N here.
+=20
+ config MDA_CONSOLE
+ 	depends on !M68K && !PARISC && ISA
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 9a7c2bb..ca23d22 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,7 +162,7 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static struct vgacon_scrollback_info {
++struct vgacon_scrollback_info {
+ 	void *data;
+ 	int tail;
+ 	int size;
+@@ -171,74 +171,110 @@ static struct vgacon_scrollback_info {
+ 	int cur;
+ 	int save;
+ 	int restore;
+-} vgacon_scrollback;
++};
++
++static struct vgacon_scrollback_info *vgacon_scrollback_cur;
++#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
++#else
++static struct vgacon_scrollback_info vgacon_scrollbacks[1];
++#endif
+=20
+-static void vgacon_scrollback_reset(size_t reset_size)
++static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
  {
- 	struct sti_hdmi *hdmi = dev_get_drvdata(&pdev->dev);
- 
-+	hdmi_event_disconnect(hdmi->notifier);
+-	if (vgacon_scrollback.data && reset_size > 0)
+-		memset(vgacon_scrollback.data, 0, reset_size);
++	struct vgacon_scrollback_info *scrollback =3D &vgacon_scrollbacks[vc_num];
 +
- 	i2c_put_adapter(hdmi->ddc_adapt);
- 	if (hdmi->audio_pdev)
- 		platform_device_unregister(hdmi->audio_pdev);
- 	component_del(&pdev->dev, &sti_hdmi_ops);
- 
-+	hdmi_notifier_put(hdmi->notifier);
- 	return 0;
++	if (scrollback->data && reset_size > 0)
++		memset(scrollback->data, 0, reset_size);
+=20
+-	vgacon_scrollback.cnt  =3D 0;
+-	vgacon_scrollback.tail =3D 0;
+-	vgacon_scrollback.cur  =3D 0;
++	scrollback->cnt  =3D 0;
++	scrollback->tail =3D 0;
++	scrollback->cur  =3D 0;
  }
- 
-diff --git a/drivers/gpu/drm/sti/sti_hdmi.h b/drivers/gpu/drm/sti/sti_hdmi.h
-index 119bc35..70aac98 100644
---- a/drivers/gpu/drm/sti/sti_hdmi.h
-+++ b/drivers/gpu/drm/sti/sti_hdmi.h
-@@ -8,6 +8,7 @@
- #define _STI_HDMI_H_
- 
- #include <linux/hdmi.h>
-+#include <linux/hdmi-notifier.h>
- #include <linux/platform_device.h>
- 
- #include <drm/drmP.h>
-@@ -102,6 +103,7 @@ struct sti_hdmi {
- 	struct platform_device *audio_pdev;
- 	struct hdmi_audio_params audio;
- 	struct drm_connector *drm_connector;
-+	struct hdmi_notifier *notifier;
- };
- 
- u32 hdmi_read(struct sti_hdmi *hdmi, int offset);
--- 
-1.9.1
+=20
+-static void vgacon_scrollback_init(int pitch)
++static void vgacon_scrollback_init(int vc_num)
+ {
+-	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+-
+-	if (vgacon_scrollback.data) {
+-		vgacon_scrollback.cnt  =3D 0;
+-		vgacon_scrollback.tail =3D 0;
+-		vgacon_scrollback.cur  =3D 0;
+-		vgacon_scrollback.rows =3D rows - 1;
+-		vgacon_scrollback.size =3D rows * pitch;
++	int pitch =3D vga_video_num_columns * 2;
++	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++	int rows =3D size / pitch;
++	void *data;
++
++	data =3D kmalloc_array(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024,
++			     GFP_NOWAIT);
++
++	vgacon_scrollbacks[vc_num].data =3D data;
++	vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++
++	vgacon_scrollback_cur->rows =3D rows - 1;
++	vgacon_scrollback_cur->size =3D rows * pitch;
++
++	vgacon_scrollback_reset(vc_num, size);
++}
++
++static void vgacon_scrollback_switch(int vc_num)
++{
++#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++	vc_num =3D 0;
++#endif
++
++	if (!vgacon_scrollbacks[vc_num].data) {
++		vgacon_scrollback_init(vc_num);
++	} else {
++#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
++		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++#else
++		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++
++		vgacon_scrollback_reset(vc_num, size);
++#endif
+ 	}
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
+-		1024, GFP_NOWAIT);
+-	vgacon_scrollback_init(vga_video_num_columns * 2);
++	vgacon_scrollback_cur =3D &vgacon_scrollbacks[0];
++	vgacon_scrollback_init(0);
+ }
+=20
+ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size ||
++	    c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
++		scr_memcpyw(vgacon_scrollback_cur->data +
++			    vgacon_scrollback_cur->tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback.cnt++;
++
++		vgacon_scrollback_cur->cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback.tail +=3D c->vc_size_row;
++		vgacon_scrollback_cur->tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
+-			vgacon_scrollback.tail =3D 0;
++		if (vgacon_scrollback_cur->tail >=3D vgacon_scrollback_cur->size)
++			vgacon_scrollback_cur->tail =3D 0;
+=20
+-		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
+-			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
++		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
++			vgacon_scrollback_cur->cnt =3D vgacon_scrollback_cur->rows;
+=20
+-		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
++		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback.save =3D 0;
++	vgacon_scrollback_cur->save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback.restore) {
++	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback.restore =3D 1;
+-		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
++		vgacon_scrollback_cur->restore =3D 1;
++		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
+ 	}
+ }
+=20
+@@ -252,41 +288,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback.data)
++	if (!vgacon_scrollback_cur->data)
+ 		return;
+=20
+-	if (!vgacon_scrollback.save) {
++	if (!vgacon_scrollback_cur->save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback.save =3D 1;
++		vgacon_scrollback_cur->save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback.restore =3D 0;
+-	start =3D vgacon_scrollback.cur + lines;
++	vgacon_scrollback_cur->restore =3D 0;
++	start =3D vgacon_scrollback_cur->cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback.cnt)
+-		start =3D vgacon_scrollback.cnt;
++	if (start > vgacon_scrollback_cur->cnt)
++		start =3D vgacon_scrollback_cur->cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback.cnt)
+-		end =3D vgacon_scrollback.cnt;
++	if (end > vgacon_scrollback_cur->cnt)
++		end =3D vgacon_scrollback_cur->cnt;
+=20
+-	vgacon_scrollback.cur =3D start;
++	vgacon_scrollback_cur->cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+-					 c->vc_size_row);
++	soff =3D vgacon_scrollback_cur->tail -
++		((vgacon_scrollback_cur->cnt - end) * c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback.size;
++		soff +=3D vgacon_scrollback_cur->size;
+=20
+-	count =3D vgacon_scrollback.cnt - start;
++	count =3D vgacon_scrollback_cur->cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -300,13 +336,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback.size - soff);
+-		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback_cur->size - soff);
++		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback.data, count);
++			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
+ 			d +=3D count;
+ 		}
+=20
+@@ -320,13 +356,13 @@ static void vgacon_flush_scrollback(struct vc_data *c)
+ {
+ 	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
+=20
+-	if (c->vc_num =3D fg_console)
+-		vgacon_scrollback_reset(size);
++	vgacon_scrollback_reset(c->vc_num, size);
+ }
+ #else
+ #define vgacon_scrollback_startup(...) do { } while (0)
+ #define vgacon_scrollback_init(...)    do { } while (0)
+ #define vgacon_scrollback_update(...)  do { } while (0)
++#define vgacon_scrollback_switch(...)  do { } while (0)
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+@@ -805,7 +841,7 @@ static int vgacon_switch(struct vc_data *c)
+ 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
+ 	}
+=20
+-	vgacon_scrollback_init(c->vc_size_row);
++	vgacon_scrollback_switch(c->vc_num);
+ 	return 0;		/* Redrawing not needed */
+ }
+=20
+--=20
+2.1.4
 

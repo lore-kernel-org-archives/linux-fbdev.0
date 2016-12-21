@@ -1,270 +1,115 @@
-From: Hans Verkuil <hverkuil@xs4all.nl>
-Date: Thu, 01 Dec 2016 10:09:35 +0000
-Subject: Re: [RFCv2 PATCH 1/5] video: add HDMI state notifier support
-Message-Id: <a999cfd1-5888-440c-2cba-0d8906358d7a@xs4all.nl>
+From: Vladimir Zapolskiy <vz@mleia.com>
+Date: Wed, 21 Dec 2016 03:27:17 +0000
+Subject: [PATCH 4/4] video: ARM CLCD: add support of an optional GPIO to enable panel
+Message-Id: <20161221032717.13154-5-vz@mleia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl>
- <1479136968-24477-2-git-send-email-hverkuil@xs4all.nl>
-In-Reply-To: <1479136968-24477-2-git-send-email-hverkuil@xs4all.nl>
+References: <20161221032717.13154-1-vz@mleia.com>
+In-Reply-To: <20161221032717.13154-1-vz@mleia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Hans Verkuil <hans.verkuil@cisco.com>, Russell King - ARM Linux <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 11/14/16 16:22, Hans Verkuil wrote:
-> From: Hans Verkuil <hans.verkuil@cisco.com>
->
-> Add support for HDMI hotplug and EDID notifiers, which is used to convey
-> information from HDMI drivers to their CEC and audio counterparts.
+The change adds handling of "enable-gpios" property of panel-dpi device
+node used with an ARM CLCD controller, note that the property already has
+a description in display/panel/panel-dpi.txt documentation and it founds
+practical usage while describing some panel devices connected to other
+types of display controllers.
 
-I realized that the name 'HDMI notifier' isn't the best: the same mechanism
-can be used with e.g. DisplayPort as well.
+Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
+---
+ drivers/video/fbdev/amba-clcd.c | 29 +++++++++++++++++++++++++++++
+ include/linux/amba/clcd.h       |  2 ++
+ 2 files changed, 31 insertions(+)
 
-What would be a good alternative name?
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 0fab92c..0bb8646 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -17,6 +17,7 @@
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/fb.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/init.h>
+ #include <linux/ioport.h>
+ #include <linux/list.h>
+@@ -87,6 +88,9 @@ static void clcdfb_disable(struct clcd_fb *fb)
+ 		writel(val, fb->regs + fb->off_cntl);
+ 	}
+ 
++	if (fb->panel->enable_gpio)
++		gpiod_set_value_cansleep(fb->panel->enable_gpio, 0);
++
+ 	/*
+ 	 * Disable CLCD clock source.
+ 	 */
+@@ -106,6 +110,9 @@ static void clcdfb_enable(struct clcd_fb *fb, u32 cntl)
+ 		clk_enable(fb->clk);
+ 	}
+ 
++	if (fb->panel->enable_gpio)
++		gpiod_set_value_cansleep(fb->panel->enable_gpio, 1);
++
+ 	/*
+ 	 * Bring up by first enabling..
+ 	 */
+@@ -624,6 +631,24 @@ static int clcdfb_snprintf_mode(char *buf, int size, struct fb_videomode *mode)
+ 			mode->refresh);
+ }
+ 
++static int clcdfb_of_get_enable_gpio(struct device *dev,
++				     struct device_node *panel,
++				     struct clcd_panel *clcd_panel)
++{
++	int err;
++
++	clcd_panel->enable_gpio = devm_get_gpiod_from_child(dev, "enable",
++							    &panel->fwnode);
++	if (IS_ERR(clcd_panel->enable_gpio)) {
++		err = PTR_ERR(clcd_panel->enable_gpio);
++		clcd_panel->enable_gpio = NULL;
++		if (err != -ENOENT)
++			return err;
++	}
++
++	return 0;
++}
++
+ static int clcdfb_of_get_backlight(struct device_node *panel,
+ 				   struct clcd_panel *clcd_panel)
+ {
+@@ -781,6 +806,10 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 			return err;
+ 	}
+ 
++	err = clcdfb_of_get_enable_gpio(&fb->dev->dev, panel, fb->panel);
++	if (err)
++		return err;
++
+ 	err = clcdfb_of_get_backlight(panel, fb->panel);
+ 	if (err)
+ 		return err;
+diff --git a/include/linux/amba/clcd.h b/include/linux/amba/clcd.h
+index 1035879..a9c6007 100644
+--- a/include/linux/amba/clcd.h
++++ b/include/linux/amba/clcd.h
+@@ -105,6 +105,7 @@ enum {
+ };
+ 
+ struct backlight_device;
++struct gpio_desc;
+ 
+ struct clcd_panel {
+ 	struct fb_videomode	mode;
+@@ -119,6 +120,7 @@ struct clcd_panel {
+ 				grayscale:1;
+ 	unsigned int		connector;
+ 	struct backlight_device	*backlight;
++	struct gpio_desc	*enable_gpio;
+ 	/*
+ 	 * If the B/R lines are switched between the CLCD
+ 	 * and the panel we need to know this and not try to
+-- 
+2.10.2
 
-"Video Notifier"?
-
-Any objections to that? Or suggestions for a better name?
-
-Regards,
-
-	Hans
-
->
-> Based on an earlier version from Russell King:
->
-> https://patchwork.kernel.org/patch/9277043/
->
-> The hdmi_notifier is a reference counted object containing the HDMI state
-> of an HDMI device.
->
-> When a new notifier is registered the current state will be reported to
-> that notifier at registration time.
->
-> Signed-off-by: Hans Verkuil <hans.verkuil@cisco.com>
-> ---
->  drivers/video/Kconfig         |   3 +
->  drivers/video/Makefile        |   1 +
->  drivers/video/hdmi-notifier.c | 136 ++++++++++++++++++++++++++++++++++++++++++
->  include/linux/hdmi-notifier.h |  43 +++++++++++++
->  4 files changed, 183 insertions(+)
->  create mode 100644 drivers/video/hdmi-notifier.c
->  create mode 100644 include/linux/hdmi-notifier.h
->
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> index 3c20af9..1ee7b9f 100644
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -36,6 +36,9 @@ config VIDEOMODE_HELPERS
->  config HDMI
->  	bool
->
-> +config HDMI_NOTIFIERS
-> +	bool
-> +
->  if VT
->  	source "drivers/video/console/Kconfig"
->  endif
-> diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-> index 9ad3c17..65f5649 100644
-> --- a/drivers/video/Makefile
-> +++ b/drivers/video/Makefile
-> @@ -1,5 +1,6 @@
->  obj-$(CONFIG_VGASTATE)            += vgastate.o
->  obj-$(CONFIG_HDMI)                += hdmi.o
-> +obj-$(CONFIG_HDMI_NOTIFIERS)      += hdmi-notifier.o
->
->  obj-$(CONFIG_VT)		  += console/
->  obj-$(CONFIG_LOGO)		  += logo/
-> diff --git a/drivers/video/hdmi-notifier.c b/drivers/video/hdmi-notifier.c
-> new file mode 100644
-> index 0000000..c2a4f1b
-> --- /dev/null
-> +++ b/drivers/video/hdmi-notifier.c
-> @@ -0,0 +1,136 @@
-> +#include <linux/export.h>
-> +#include <linux/hdmi-notifier.h>
-> +#include <linux/string.h>
-> +#include <linux/slab.h>
-> +#include <linux/list.h>
-> +
-> +struct hdmi_notifiers {
-> +	struct list_head head;
-> +	struct device *dev;
-> +	struct hdmi_notifier *n;
-> +};
-> +
-> +static LIST_HEAD(hdmi_notifiers);
-> +static DEFINE_MUTEX(hdmi_notifiers_lock);
-> +
-> +struct hdmi_notifier *hdmi_notifier_get(struct device *dev)
-> +{
-> +	struct hdmi_notifier *n;
-> +
-> +	mutex_lock(&hdmi_notifiers_lock);
-> +	list_for_each_entry(n, &hdmi_notifiers, head) {
-> +		if (n->dev = dev) {
-> +			mutex_unlock(&hdmi_notifiers_lock);
-> +			kref_get(&n->kref);
-> +			return n;
-> +		}
-> +	}
-> +	n = kzalloc(sizeof(*n), GFP_KERNEL);
-> +	if (!n)
-> +		goto unlock;
-> +	mutex_init(&n->lock);
-> +	BLOCKING_INIT_NOTIFIER_HEAD(&n->notifiers);
-> +	kref_init(&n->kref);
-> +	list_add_tail(&n->head, &hdmi_notifiers);
-> +unlock:
-> +	mutex_unlock(&hdmi_notifiers_lock);
-> +	return n;
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_notifier_get);
-> +
-> +static void hdmi_notifier_release(struct kref *kref)
-> +{
-> +	struct hdmi_notifier *n > +		container_of(kref, struct hdmi_notifier, kref);
-> +
-> +	kfree(n->edid);
-> +	kfree(n);
-> +}
-> +
-> +void hdmi_notifier_put(struct hdmi_notifier *n)
-> +{
-> +	kref_put(&n->kref, hdmi_notifier_release);
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_notifier_put);
-> +
-> +int hdmi_notifier_register(struct hdmi_notifier *n, struct notifier_block *nb)
-> +{
-> +	int ret = blocking_notifier_chain_register(&n->notifiers, nb);
-> +
-> +	if (ret)
-> +		return ret;
-> +	kref_get(&n->kref);
-> +	mutex_lock(&n->lock);
-> +	if (n->connected) {
-> +		blocking_notifier_call_chain(&n->notifiers, HDMI_CONNECTED, n);
-> +		if (n->edid_size)
-> +			blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_EDID, n);
-> +		if (n->has_eld)
-> +			blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_ELD, n);
-> +	}
-> +	mutex_unlock(&n->lock);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_notifier_register);
-> +
-> +int hdmi_notifier_unregister(struct hdmi_notifier *n, struct notifier_block *nb)
-> +{
-> +	int ret = blocking_notifier_chain_unregister(&n->notifiers, nb);
-> +
-> +	if (ret = 0)
-> +		hdmi_notifier_put(n);
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_notifier_unregister);
-> +
-> +void hdmi_event_connect(struct hdmi_notifier *n)
-> +{
-> +	mutex_lock(&n->lock);
-> +	n->connected = true;
-> +	blocking_notifier_call_chain(&n->notifiers, HDMI_CONNECTED, n);
-> +	mutex_unlock(&n->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_event_connect);
-> +
-> +void hdmi_event_disconnect(struct hdmi_notifier *n)
-> +{
-> +	mutex_lock(&n->lock);
-> +	n->connected = false;
-> +	n->has_eld = false;
-> +	n->edid_size = 0;
-> +	blocking_notifier_call_chain(&n->notifiers, HDMI_DISCONNECTED, n);
-> +	mutex_unlock(&n->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_event_disconnect);
-> +
-> +int hdmi_event_new_edid(struct hdmi_notifier *n, const void *edid, size_t size)
-> +{
-> +	mutex_lock(&n->lock);
-> +	if (n->edid_allocated_size < size) {
-> +		void *p = kmalloc(size, GFP_KERNEL);
-> +
-> +		if (p = NULL) {
-> +			mutex_unlock(&n->lock);
-> +			return -ENOMEM;
-> +		}
-> +		kfree(n->edid);
-> +		n->edid = p;
-> +		n->edid_allocated_size = size;
-> +	}
-> +	memcpy(n->edid, edid, size);
-> +	n->edid_size = size;
-> +	blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_EDID, n);
-> +	mutex_unlock(&n->lock);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_event_new_edid);
-> +
-> +void hdmi_event_new_eld(struct hdmi_notifier *n, const u8 eld[128])
-> +{
-> +	mutex_lock(&n->lock);
-> +	memcpy(n->eld, eld, sizeof(n->eld));
-> +	n->has_eld = true;
-> +	blocking_notifier_call_chain(&n->notifiers, HDMI_NEW_ELD, n);
-> +	mutex_unlock(&n->lock);
-> +}
-> +EXPORT_SYMBOL_GPL(hdmi_event_new_eld);
-> diff --git a/include/linux/hdmi-notifier.h b/include/linux/hdmi-notifier.h
-> new file mode 100644
-> index 0000000..f7fc405
-> --- /dev/null
-> +++ b/include/linux/hdmi-notifier.h
-> @@ -0,0 +1,43 @@
-> +#ifndef LINUX_HDMI_NOTIFIER_H
-> +#define LINUX_HDMI_NOTIFIER_H
-> +
-> +#include <linux/types.h>
-> +#include <linux/notifier.h>
-> +#include <linux/kref.h>
-> +
-> +enum {
-> +	HDMI_CONNECTED,
-> +	HDMI_DISCONNECTED,
-> +	HDMI_NEW_EDID,
-> +	HDMI_NEW_ELD,
-> +};
-> +
-> +struct device;
-> +
-> +struct hdmi_notifier {
-> +	struct mutex lock;
-> +	struct list_head head;
-> +	struct kref kref;
-> +	struct blocking_notifier_head notifiers;
-> +	struct device *dev;
-> +
-> +	/* Current state */
-> +	bool connected;
-> +	bool has_eld;
-> +	unsigned char eld[128];
-> +	void *edid;
-> +	size_t edid_size;
-> +	size_t edid_allocated_size;
-> +};
-> +
-> +struct hdmi_notifier *hdmi_notifier_get(struct device *dev);
-> +void hdmi_notifier_put(struct hdmi_notifier *n);
-> +int hdmi_notifier_register(struct hdmi_notifier *n, struct notifier_block *nb);
-> +int hdmi_notifier_unregister(struct hdmi_notifier *n, struct notifier_block *nb);
-> +
-> +void hdmi_event_connect(struct hdmi_notifier *n);
-> +void hdmi_event_disconnect(struct hdmi_notifier *n);
-> +int hdmi_event_new_edid(struct hdmi_notifier *n, const void *edid, size_t size);
-> +void hdmi_event_new_eld(struct hdmi_notifier *n, const u8 eld[128]);
-> +
-> +#endif
->

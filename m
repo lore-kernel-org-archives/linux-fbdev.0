@@ -1,55 +1,65 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 19 Dec 2016 16:13:02 +0000
-Subject: Re: [PATCH] video: fbdev: sh_mobile_lcdcfb: use designated initializers
-Message-Id: <CAMuHMdWE=cZSTCGcoi71xQU+fBpEU5J-ZruxmvQ9RAMEzrJMkw@mail.gmail.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Wed, 21 Dec 2016 16:37:35 +0000
+Subject: [PATCH RESEND v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161217010203.GA140420@beast>
-In-Reply-To: <20161217010203.GA140420@beast>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Dec 17, 2016 at 2:02 AM, Kees Cook <keescook@chromium.org> wrote:
-> Prepare to mark sensitive kernel structures for randomization by making
-> sure they're using designated initializers. These were identified during
-> allyesconfig builds of x86, arm, and arm64, with most initializer fixes
-> extracted from grsecurity.
->
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-> ---
->  drivers/video/fbdev/sh_mobile_lcdcfb.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> index 82c0a8caa9b8..42499a1afa07 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -439,9 +439,9 @@ static unsigned long lcdc_sys_read_data(void *handle)
->  }
->
->  static struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
-> -       lcdc_sys_write_index,
-> -       lcdc_sys_write_data,
-> -       lcdc_sys_read_data,
-> +       .write_index = lcdc_sys_write_index,
-> +       .write_data = lcdc_sys_write_data,
-> +       .read_data = lcdc_sys_read_data,
->  };
->
->  static int sh_mobile_lcdc_sginit(struct fb_info *info,
-
-Gr{oetje,eeting}s,
-
-                        Geert
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Changes in v7:
+  - Add new callback to consw struct for flushing video console driver's
+    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
+    by Adam Borowski (kilobyte@angband.pl).
+  - Fix style issues
+Changes in v6:
+  - Change of check if feature is enabled in=20
+    vgacon_scrollback_switch()
+Changes in v5:
+  - Clearify documentation
+  - Skip superfluous array initialization
+  - Disable scrollback if buffer allocation fails
+  - Refactor vgacon_switch_scrollback()
+  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
+  - Add check for fg_console in vgacon_scrollback_update
+Changes in v4.1:
+  - Fix compiler error
+Changes in v4:
+  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
+    VGACON_SOFT_SCROLLBACK_PERSISTENT
+  - Split into two patches
+  - Rework documentation
+  - Remove cosmetic changes in comments (postponed)
+Changes in v3:
+  - Add config option for this feature
+  - Fallback to old scrollback buffer if kcalloc() fails
+  - Remove ioctl() call again and add documentation about existing
+    escape sequence to flush the scrollback buffer
+Changes in v2:
+  - Add ioctl() call to flush scrollback buffer
+  - (Patch v2 was not labeled as such, sorry)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Manuel Sch=C3=B6lling (3):
+  console: Move scrollback data into its own struct
+  console: Add callback to flush scrollback buffer to consw struct
+  console: Add persistent scrollback buffers for all VGA consoles
+
+ drivers/tty/vt/vt.c            |   9 +++
+ drivers/video/console/Kconfig  |  25 ++++++-
+ drivers/video/console/vgacon.c | 165 ++++++++++++++++++++++++++++---------=
+----
+ include/linux/console.h        |   4 +
+ 4 files changed, 148 insertions(+), 55 deletions(-)
+
+--=20
+2.1.4
+

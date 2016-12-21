@@ -1,246 +1,82 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:45 +0000
-Subject: [PATCH 04/12] ARM: dts: imx6-sabrelite: add OV5642 and OV5640 camera sensors
-Message-Id: <1481158673-15937-5-git-send-email-steve_longerbeam@mentor.com>
+From: Vladimir Zapolskiy <vz@mleia.com>
+Date: Wed, 21 Dec 2016 03:27:16 +0000
+Subject: [PATCH 3/4] video: ARM CLCD: use panel device node for getting backlight and mode
+Message-Id: <20161221032717.13154-4-vz@mleia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
+References: <20161221032717.13154-1-vz@mleia.com>
+In-Reply-To: <20161221032717.13154-1-vz@mleia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Steve Longerbeam <steve_longerbeam@mentor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+To: linux-arm-kernel@lists.infradead.org
 
-Enables the OV5642 parallel-bus sensor, and the OV5640 MIPI CSI-2 sensor.
-Both hang off the same i2c2 bus, so they require different (and non-
-default) i2c slave addresses.
+Having obtained panel device node in clcdfb_of_init_display() it allows to
+generalize and simplify two more helper functions clcdfb_of_get_backlight()
+and clcdfb_of_get_mode().
 
-The OV5642 connects to the parallel-bus mux input port on ipu1_csi0_mux.
-
-The OV5640 connects to the input port on the MIPI CSI-2 receiver on
-mipi_csi. It is set to transmit over MIPI virtual channel 1.
-
-Note there is a pin conflict with GPIO6. This pin functions as a power
-input pin to the OV5642, but ENET uses it as the h/w workaround for
-erratum ERR006687, to wake-up the ARM cores on normal RX and TX packet
-done events (see 6261c4c8). So workaround 6261c4c8 is reverted here to
-support the OV5642, and the "fsl,err006687-workaround-present" boolean
-also must be removed. The result is that the CPUidle driver will no longer
-allow entering the deep idle states on the sabrelite.
-
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
 ---
- arch/arm/boot/dts/imx6dl-sabrelite.dts   |   5 ++
- arch/arm/boot/dts/imx6q-sabrelite.dts    |   6 ++
- arch/arm/boot/dts/imx6qdl-sabrelite.dtsi | 122 ++++++++++++++++++++++++++++++-
- 3 files changed, 129 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/amba-clcd.c | 20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/boot/dts/imx6dl-sabrelite.dts b/arch/arm/boot/dts/imx6dl-sabrelite.dts
-index 0f06ca5..fec2524 100644
---- a/arch/arm/boot/dts/imx6dl-sabrelite.dts
-+++ b/arch/arm/boot/dts/imx6dl-sabrelite.dts
-@@ -48,3 +48,8 @@
- 	model = "Freescale i.MX6 DualLite SABRE Lite Board";
- 	compatible = "fsl,imx6dl-sabrelite", "fsl,imx6dl";
- };
-+
-+&ipu1_csi1_from_ipu1_csi1_mux {
-+	data-lanes = <0 1>;
-+	clock-lanes = <2>;
-+};
-diff --git a/arch/arm/boot/dts/imx6q-sabrelite.dts b/arch/arm/boot/dts/imx6q-sabrelite.dts
-index 66d10d8..9e2d26d 100644
---- a/arch/arm/boot/dts/imx6q-sabrelite.dts
-+++ b/arch/arm/boot/dts/imx6q-sabrelite.dts
-@@ -52,3 +52,9 @@
- &sata {
- 	status = "okay";
- };
-+
-+&ipu1_csi1_from_mipi_vc1 {
-+	data-lanes = <0 1>;
-+	clock-lanes = <2>;
-+};
-+
-diff --git a/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi b/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
-index 81dd6cd..d7fcb1a2 100644
---- a/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl-sabrelite.dtsi
-@@ -39,6 +39,8 @@
-  *     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-  *     OTHER DEALINGS IN THE SOFTWARE.
-  */
-+
-+#include <dt-bindings/clock/imx6qdl-clock.h>
- #include <dt-bindings/gpio/gpio.h>
- #include <dt-bindings/input/input.h>
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index f25b5fc..0fab92c 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -624,16 +624,11 @@ static int clcdfb_snprintf_mode(char *buf, int size, struct fb_videomode *mode)
+ 			mode->refresh);
+ }
  
-@@ -96,6 +98,15 @@
- 		};
- 	};
+-static int clcdfb_of_get_backlight(struct device_node *endpoint,
++static int clcdfb_of_get_backlight(struct device_node *panel,
+ 				   struct clcd_panel *clcd_panel)
+ {
+-	struct device_node *panel;
+ 	struct device_node *backlight;
  
-+	mipi_xclk: mipi_xclk {
-+		compatible = "pwm-clock";
-+		#clock-cells = <0>;
-+		clock-frequency = <22000000>;
-+		clock-output-names = "mipi_pwm3";
-+		pwms = <&pwm3 0 45>; /* 1 / 45 ns = 22 MHz */
-+		status = "okay";
-+	};
-+
- 	gpio-keys {
- 		compatible = "gpio-keys";
- 		pinctrl-names = "default";
-@@ -220,6 +231,22 @@
- 	};
- };
+-	panel = of_graph_get_remote_port_parent(endpoint);
+-	if (!panel)
+-		return -ENODEV;
+-
+ 	/* Look up the optional backlight phandle */
+ 	backlight = of_parse_phandle(panel, "backlight", 0);
+ 	if (backlight) {
+@@ -646,19 +641,14 @@ static int clcdfb_of_get_backlight(struct device_node *endpoint,
+ 	return 0;
+ }
  
-+&ipu1_csi0_from_ipu1_csi0_mux {
-+	bus-width = <8>;
-+	data-shift = <12>; /* Lines 19:12 used */
-+	hsync-active = <1>;
-+	vync-active = <1>;
-+};
-+
-+&ipu1_csi0_mux_from_parallel_sensor {
-+	remote-endpoint = <&ov5642_to_ipu1_csi0_mux>;
-+};
-+
-+&ipu1_csi0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pinctrl_ipu1_csi0>;
-+};
-+
- &audmux {
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_audmux>;
-@@ -271,9 +298,6 @@
- 	txd1-skew-ps = <0>;
- 	txd2-skew-ps = <0>;
- 	txd3-skew-ps = <0>;
--	interrupts-extended = <&gpio1 6 IRQ_TYPE_LEVEL_HIGH>,
--			      <&intc 0 119 IRQ_TYPE_LEVEL_HIGH>;
--	fsl,err006687-workaround-present;
- 	status = "okay";
- };
+-static int clcdfb_of_get_mode(struct device *dev, struct device_node *endpoint,
+-		struct clcd_panel *clcd_panel)
++static int clcdfb_of_get_mode(struct device *dev, struct device_node *panel,
++			      struct clcd_panel *clcd_panel)
+ {
+ 	int err;
+-	struct device_node *panel;
+ 	struct fb_videomode *mode;
+ 	char *name;
+ 	int len;
  
-@@ -302,6 +326,52 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_i2c2>;
- 	status = "okay";
-+
-+	camera: ov5642@42 {
-+		compatible = "ovti,ov5642";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_ov5642>;
-+		clocks = <&clks IMX6QDL_CLK_CKO2>;
-+		clock-names = "xclk";
-+		reg = <0x42>;
-+		xclk = <24000000>;
-+		reset-gpios = <&gpio1 8 GPIO_ACTIVE_LOW>;
-+		pwdn-gpios = <&gpio1 6 GPIO_ACTIVE_HIGH>;
-+		gp-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
-+
-+		port {
-+			ov5642_to_ipu1_csi0_mux: endpoint {
-+				remote-endpoint = <&ipu1_csi0_mux_from_parallel_sensor>;
-+				bus-width = <8>;
-+				hsync-active = <1>;
-+				vsync-active = <1>;
-+			};
-+		};
-+	};
-+
-+	mipi_camera: ov5640@40 {
-+		compatible = "ovti,ov5640_mipi";
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_ov5640>;
-+		clocks = <&mipi_xclk>;
-+		clock-names = "xclk";
-+		reg = <0x40>;
-+		xclk = <22000000>;
-+		reset-gpios = <&gpio2 5 GPIO_ACTIVE_LOW>; /* NANDF_D5 */
-+		pwdn-gpios = <&gpio6 9 GPIO_ACTIVE_HIGH>; /* NANDF_WP_B */
-+
-+		port {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+
-+			ov5640_to_mipi_csi: endpoint@1 {
-+				reg = <1>;
-+				remote-endpoint = <&mipi_csi_from_mipi_sensor>;
-+				data-lanes = <0 1>;
-+				clock-lanes = <2>;
-+			};
-+		};
-+	};
- };
+-	panel = of_graph_get_remote_port_parent(endpoint);
+-	if (!panel)
+-		return -ENODEV;
+-
+ 	/* Only directly connected DPI panels supported for now */
+ 	if (of_device_is_compatible(panel, "panel-dpi"))
+ 		err = clcdfb_of_get_dpi_panel_mode(panel, clcd_panel);
+@@ -791,11 +781,11 @@ static int clcdfb_of_init_display(struct clcd_fb *fb)
+ 			return err;
+ 	}
  
- &i2c3 {
-@@ -374,7 +444,6 @@
- 				MX6QDL_PAD_RGMII_RX_CTL__RGMII_RX_CTL	0x1b030
- 				/* Phy reset */
- 				MX6QDL_PAD_EIM_D23__GPIO3_IO23		0x000b0
--				MX6QDL_PAD_GPIO_6__ENET_IRQ		0x000b1
- 			>;
- 		};
+-	err = clcdfb_of_get_backlight(endpoint, fb->panel);
++	err = clcdfb_of_get_backlight(panel, fb->panel);
+ 	if (err)
+ 		return err;
  
-@@ -449,6 +518,39 @@
- 			>;
- 		};
+-	err = clcdfb_of_get_mode(&fb->dev->dev, endpoint, fb->panel);
++	err = clcdfb_of_get_mode(&fb->dev->dev, panel, fb->panel);
+ 	if (err)
+ 		return err;
  
-+		pinctrl_ov5642: ov5642grp {
-+			fsl,pins = <
-+				MX6QDL_PAD_SD1_DAT0__GPIO1_IO16 0x80000000
-+				MX6QDL_PAD_GPIO_6__GPIO1_IO06   0x80000000
-+				MX6QDL_PAD_GPIO_8__GPIO1_IO08   0x80000000
-+				MX6QDL_PAD_GPIO_3__CCM_CLKO2    0x80000000
-+			>;
-+		};
-+
-+		pinctrl_ipu1_csi0: ipu1grp-csi0 {
-+			fsl,pins = <
-+				MX6QDL_PAD_CSI0_DAT12__IPU1_CSI0_DATA12    0x80000000
-+				MX6QDL_PAD_CSI0_DAT13__IPU1_CSI0_DATA13    0x80000000
-+				MX6QDL_PAD_CSI0_DAT14__IPU1_CSI0_DATA14    0x80000000
-+				MX6QDL_PAD_CSI0_DAT15__IPU1_CSI0_DATA15    0x80000000
-+				MX6QDL_PAD_CSI0_DAT16__IPU1_CSI0_DATA16    0x80000000
-+				MX6QDL_PAD_CSI0_DAT17__IPU1_CSI0_DATA17    0x80000000
-+				MX6QDL_PAD_CSI0_DAT18__IPU1_CSI0_DATA18    0x80000000
-+				MX6QDL_PAD_CSI0_DAT19__IPU1_CSI0_DATA19    0x80000000
-+				MX6QDL_PAD_CSI0_PIXCLK__IPU1_CSI0_PIXCLK   0x80000000
-+				MX6QDL_PAD_CSI0_MCLK__IPU1_CSI0_HSYNC      0x80000000
-+				MX6QDL_PAD_CSI0_VSYNC__IPU1_CSI0_VSYNC     0x80000000
-+				MX6QDL_PAD_CSI0_DATA_EN__IPU1_CSI0_DATA_EN 0x80000000
-+			>;
-+		};
-+
-+                pinctrl_ov5640: ov5640grp {
-+                        fsl,pins = <
-+				MX6QDL_PAD_NANDF_D5__GPIO2_IO05 0x000b0
-+				MX6QDL_PAD_NANDF_WP_B__GPIO6_IO09 0x0b0b0
-+                        >;
-+                };
-+
- 		pinctrl_pwm1: pwm1grp {
- 			fsl,pins = <
- 				MX6QDL_PAD_SD1_DAT3__PWM1_OUT 0x1b0b1
-@@ -605,3 +707,15 @@
- 	vmmc-supply = <&reg_3p3v>;
- 	status = "okay";
- };
-+
-+&mipi_csi {
-+        status = "okay";
-+};
-+
-+/* Incoming port from sensor */
-+&mipi_csi_from_mipi_sensor {
-+        remote-endpoint = <&ov5640_to_mipi_csi>;
-+        data-lanes = <0 1>;
-+        clock-lanes = <2>;
-+};
-+
 -- 
-2.7.4
+2.10.2
 

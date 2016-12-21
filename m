@@ -1,127 +1,143 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Thu, 08 Dec 2016 00:57:47 +0000
-Subject: [PATCH 06/12] ARM: dts: imx6-sabreauto: create i2cmux for i2c3
-Message-Id: <1481158673-15937-7-git-send-email-steve_longerbeam@mentor.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Wed, 21 Dec 2016 16:37:37 +0000
+Subject: [PATCH RESEND v7 2/3] console: Add callback to flush scrollback buffer to consw struct
+Message-Id: <1482338258-21388-3-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1481158673-15937-1-git-send-email-steve_longerbeam@mentor.com>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+ <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: shawnguo@kernel.org, kernel@pengutronix.de, fabio.estevam@nxp.com, robh+dt@kernel.org, mark.rutland@arm.com, linux@armlinux.org.uk, tomi.valkeinen@ti.com, p.zabel@pengutronix.de
-Cc: linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Longerbeam <steve_longerbeam@mentor.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The sabreauto uses a steering pin to select between the SDA signal on
-i2c3 bus, and a data-in pin for an SPI NOR chip. Use i2cmux to control
-this steering pin. Idle state of the i2cmux selects SPI NOR. This is not
-a classic way to use i2cmux, since one side of the mux selects something
-other than an i2c bus, but it works and is probably the cleanest
-solution. Note that if one thread is attempting to access SPI NOR while
-another thread is accessing i2c3, the SPI NOR access will fail since the
-i2cmux has selected the SDA pin rather than SPI NOR data-in. This couldn't
-be avoided in any case, the board is not designed to allow concurrent
-i2c3 and SPI NOR functions (and the default device-tree does not enable
-SPI NOR anyway).
+This new callback is in preparation for persistent scrollback buffer
+support for VGA consoles.
+With a single scrollback buffer for all consoles, we could flush the
+buffer just by invocating consw->con_switch(). But when each VGA console
+has its own scrollback buffer, we need a new callback to tell the
+video console driver which buffer to flush.
 
-Devices hanging off i2c3 should now be defined under i2cmux, so
-that the steering pin can be properly controlled to access those
-devices. The port expanders (MAX7310) are thus moved into i2cmux.
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
 ---
- arch/arm/boot/dts/imx6qdl-sabreauto.dtsi | 65 +++++++++++++++++++++-----------
- 1 file changed, 44 insertions(+), 21 deletions(-)
+ drivers/tty/vt/vt.c            |  9 +++++++++
+ drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
+ include/linux/console.h        |  4 ++++
+ 3 files changed, 36 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-index e000e6f..043d20c 100644
---- a/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-+++ b/arch/arm/boot/dts/imx6qdl-sabreauto.dtsi
-@@ -108,6 +108,44 @@
- 		default-brightness-level = <7>;
- 		status = "okay";
- 	};
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 4c10a9d..9d3ce50 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
+ 		vc->vc_sw->con_save_screen(vc);
+ }
+=20
++static void flush_scrollback(struct vc_data *vc)
++{
++	WARN_CONSOLE_UNLOCKED();
 +
-+	i2cmux {
-+		compatible = "i2c-mux-gpio";
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pinctrl_i2c3mux>;
-+		mux-gpios = <&gpio5 4 0>;
-+		i2c-parent = <&i2c3>;
-+		idle-state = <0>;
++	if (vc->vc_sw->con_flush_scrollback)
++		vc->vc_sw->con_flush_scrollback(vc);
++}
 +
-+		i2c@1 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			reg = <1>;
+ /*
+  *	Redrawing of screen
+  */
+@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
+ 		case 3: /* erase scroll-back buffer (and whole display) */
+ 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
+ 				    vc->vc_screenbuf_size);
++			flush_scrollback(vc);
+ 			set_origin(vc);
+ 			if (con_is_visible(vc))
+ 				update_screen(vc);
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 48b9764..9a7c2bb 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
+ 	int restore;
+ } vgacon_scrollback;
+=20
++static void vgacon_scrollback_reset(size_t reset_size)
++{
++	if (vgacon_scrollback.data && reset_size > 0)
++		memset(vgacon_scrollback.data, 0, reset_size);
 +
-+			max7310_a: gpio@30 {
-+				compatible = "maxim,max7310";
-+				reg = <0x30>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
++	vgacon_scrollback.cnt  =3D 0;
++	vgacon_scrollback.tail =3D 0;
++	vgacon_scrollback.cur  =3D 0;
++}
 +
-+			max7310_b: gpio@32 {
-+				compatible = "maxim,max7310";
-+				reg = <0x32>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
+ static void vgacon_scrollback_init(int pitch)
+ {
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+ 	} else
+ 		vgacon_cursor(c, CM_MOVE);
+ }
 +
-+			max7310_c: gpio@34 {
-+				compatible = "maxim,max7310";
-+				reg = <0x34>;
-+				gpio-controller;
-+				#gpio-cells = <2>;
-+			};
-+		};
-+	};
++static void vgacon_flush_scrollback(struct vc_data *c)
++{
++	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++
++	if (c->vc_num =3D fg_console)
++		vgacon_scrollback_reset(size);
++}
+ #else
+ #define vgacon_scrollback_startup(...) do { } while (0)
+ #define vgacon_scrollback_init(...)    do { } while (0)
+@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+ 			vga_vram_size);
+ 	vga_set_mem_top(c);
+ }
++
++static void vgacon_flush_scrollback(struct vc_data *c)
++{
++}
+ #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
+=20
+ static const char *vgacon_startup(void)
+@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
+ int t, unsigned int b,
+ 	return true;
+ }
+=20
+-
+ /*
+  *  The console `switch' structure for the VGA based console
+  */
+@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
+ 	.con_save_screen =3D vgacon_save_screen,
+ 	.con_build_attr =3D vgacon_build_attr,
+ 	.con_invert_region =3D vgacon_invert_region,
++	.con_flush_scrollback =3D vgacon_flush_scrollback,
  };
- 
- &clks {
-@@ -291,27 +329,6 @@
- 	pinctrl-names = "default";
- 	pinctrl-0 = <&pinctrl_i2c3>;
- 	status = "okay";
--
--	max7310_a: gpio@30 {
--		compatible = "maxim,max7310";
--		reg = <0x30>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
--
--	max7310_b: gpio@32 {
--		compatible = "maxim,max7310";
--		reg = <0x32>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
--
--	max7310_c: gpio@34 {
--		compatible = "maxim,max7310";
--		reg = <0x34>;
--		gpio-controller;
--		#gpio-cells = <2>;
--	};
- };
- 
- &iomuxc {
-@@ -419,6 +436,12 @@
- 			>;
- 		};
- 
-+		pinctrl_i2c3mux: i2c3muxgrp {
-+			fsl,pins = <
-+				MX6QDL_PAD_EIM_A24__GPIO5_IO04 0x80000000
-+			>;
-+		};
-+
- 		pinctrl_pwm3: pwm1grp {
- 			fsl,pins = <
- 				MX6QDL_PAD_SD4_DAT1__PWM3_OUT		0x1b0b1
--- 
-2.7.4
+ EXPORT_SYMBOL(vga_con);
+=20
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 9c26c66..5949d18 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -73,6 +73,10 @@ struct consw {
+ 	u16    *(*con_screen_pos)(struct vc_data *, int);
+ 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
+ 	/*
++	 * Flush the video console driver's scrollback buffer
++	 */
++	void	(*con_flush_scrollback)(struct vc_data *);
++	/*
+ 	 * Prepare the console for the debugger.  This includes, but is not
+ 	 * limited to, unblanking the console, loading an appropriate
+ 	 * palette, and allowing debugger generated output.
+--=20
+2.1.4
 

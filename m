@@ -1,140 +1,206 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 09 Dec 2016 09:13:47 +0000
-Subject: Re: [PATCH v4 1/2] backlight: pwm_bl: Move the checks for initial power state to a separate function
-Message-Id: <20161209091347.GE3625@dell.home>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Date: Mon, 26 Dec 2016 11:34:07 +0000
+Subject: Re: [PATCH] mm/page_alloc: Wait for oom_lock before retrying.
+Message-Id: <20161226113407.GA515@tigerII.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161122134123.1209-1-peter.ujfalusi@ti.com>
- <20161122134123.1209-2-peter.ujfalusi@ti.com>
-In-Reply-To: <20161122134123.1209-2-peter.ujfalusi@ti.com>
+References: <20161220153948.GA575@tigerII.localdomain>
+ <201612221927.BGE30207.OSFJMFLFOHQtOV@I-love.SAKURA.ne.jp>
+ <20161222134250.GE413@tigerII.localdomain>
+ <201612222301.AFG57832.QOFMSVFOJHLOtF@I-love.SAKURA.ne.jp>
+ <20161222140930.GF413@tigerII.localdomain>
+ <201612261954.FJE69201.OFLVtFJSQFOHMO@I-love.SAKURA.ne.jp>
+In-Reply-To: <201612261954.FJE69201.OFLVtFJSQFOHMO@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Cc: thierry.reding@gmail.com, tomi.valkeinen@ti.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.zabel@pengutronix.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: sergey.senozhatsky@gmail.com, mhocko@suse.com, linux-mm@kvack.org, pmladek@suse.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.senozhatsky.work@gmail.com
 
-On Tue, 22 Nov 2016, Peter Ujfalusi wrote:
+Cc Greg, Jiri,
 
-> Move the checks to select the initial state for the backlight to a new
-> function and document the checks we are doing.
->=20
-> With the separate function it is going to be easier to fix or improve the
-> initial power state configuration later and it is easier to read the code.
->=20
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-> Reviewed-by: Thierry Reding <treding@nvidia.com>
-> ---
->  drivers/video/backlight/pwm_bl.c | 56 ++++++++++++++++++++++++++--------=
-------
->  1 file changed, 37 insertions(+), 19 deletions(-)
+On (12/26/16 19:54), Tetsuo Handa wrote:
+[..]
+> 
+> (3) I got below warning. (Though not reproducible.)
+>     If fb_flashcursor() called console_trylock(), console_may_schedule is set to 1?
 
-Applied for v4.11, thanks.
+hmmm... it takes an atomic/spin `printing_lock' lock in vt_console_print(),
+then call console_conditional_schedule() from lf(), being under spin_lock.
+`console_may_schedule' in console_conditional_schedule() still keeps the
+value from console_trylock(), which was ok (console_may_schedule permits
+rescheduling). but preemption got changed under console_trylock(), by
+that spin_lock.
 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
-> index 12614006211e..5712ddd053dd 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -192,6 +192,32 @@ static int pwm_backlight_parse_dt(struct device *dev,
->  }
->  #endif
-> =20
-> +static int pwm_backlight_initial_power_state(const struct pwm_bl_data *p=
-b)
-> +{
-> +	struct device_node *node =3D pb->dev->of_node;
-> +
-> +	/* Not booted with device tree or no phandle link to the node */
-> +	if (!node || !node->phandle)
-> +		return FB_BLANK_UNBLANK;
-> +
-> +	/*
-> +	 * If the driver is probed from the device tree and there is a
-> +	 * phandle link pointing to the backlight node, it is safe to
-> +	 * assume that another driver will enable the backlight at the
-> +	 * appropriate time. Therefore, if it is disabled, keep it so.
-> +	 */
-> +
-> +	/* if the enable GPIO is disabled, do not enable the backlight */
-> +	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) =3D 0)
-> +		return FB_BLANK_POWERDOWN;
-> +
-> +	/* The regulator is disabled, do not enable the backlight */
-> +	if (!regulator_is_enabled(pb->power_supply))
-> +		return FB_BLANK_POWERDOWN;
-> +
-> +	return FB_BLANK_UNBLANK;
-> +}
-> +
->  static int pwm_backlight_probe(struct platform_device *pdev)
->  {
->  	struct platform_pwm_backlight_data *data =3D dev_get_platdata(&pdev->de=
-v);
-> @@ -200,7 +226,6 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	struct backlight_device *bl;
->  	struct device_node *node =3D pdev->dev.of_node;
->  	struct pwm_bl_data *pb;
-> -	int initial_blank =3D FB_BLANK_UNBLANK;
->  	struct pwm_args pargs;
->  	int ret;
-> =20
-> @@ -267,20 +292,16 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
->  		pb->enable_gpio =3D gpio_to_desc(data->enable_gpio);
->  	}
-> =20
-> -	if (pb->enable_gpio) {
-> -		/*
-> -		 * If the driver is probed from the device tree and there is a
-> -		 * phandle link pointing to the backlight node, it is safe to
-> -		 * assume that another driver will enable the backlight at the
-> -		 * appropriate time. Therefore, if it is disabled, keep it so.
-> -		 */
-> -		if (node && node->phandle &&
-> -		    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_OUT &&
-> -		    gpiod_get_value(pb->enable_gpio) =3D 0)
-> -			initial_blank =3D FB_BLANK_POWERDOWN;
-> -		else
-> -			gpiod_direction_output(pb->enable_gpio, 1);
-> -	}
-> +	/*
-> +	 * If the GPIO is configured as input, change the direction to output
-> +	 * and set the GPIO as active.
-> +	 * Do not force the GPIO to active when it was already output as it
-> +	 * could cause backlight flickering or we would enable the backlight too
-> +	 * early. Leave the decision of the initial backlight state for later.
-> +	 */
-> +	if (pb->enable_gpio &&
-> +	    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_IN)
-> +		gpiod_direction_output(pb->enable_gpio, 1);
-> =20
->  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->  	if (IS_ERR(pb->power_supply)) {
-> @@ -288,9 +309,6 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  		goto err_alloc;
->  	}
-> =20
-> -	if (node && node->phandle && !regulator_is_enabled(pb->power_supply))
-> -		initial_blank =3D FB_BLANK_POWERDOWN;
-> -
->  	pb->pwm =3D devm_pwm_get(&pdev->dev, NULL);
->  	if (IS_ERR(pb->pwm) && PTR_ERR(pb->pwm) !=3D -EPROBE_DEFER && !node) {
->  		dev_err(&pdev->dev, "unable to request PWM, trying legacy API\n");
-> @@ -347,7 +365,7 @@ static int pwm_backlight_probe(struct platform_device=
- *pdev)
->  	}
-> =20
->  	bl->props.brightness =3D data->dft_brightness;
-> -	bl->props.power =3D initial_blank;
-> +	bl->props.power =3D pwm_backlight_initial_power_state(pb);
->  	backlight_update_status(bl);
-> =20
->  	platform_set_drvdata(pdev, bl);
+console_trylock() used to always forbid rescheduling; but it got changed
+like a yaer ago.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+the other thing is... do we really need to console_conditional_schedule()
+from fbcon_*()? console_unlock() does cond_resched() after every line it
+prints. wouldn't that be enough?
+
+so may be we can drop some of console_conditional_schedule()
+call sites in fbcon. or update console_conditional_schedule()
+function to always return the current preemption value, not the
+one we saw in console_trylock().
+
+(not tested)
+
+---
+
+ kernel/printk/printk.c | 35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
+
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 8b2696420abb..ad4a02cf9f15 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2075,6 +2075,24 @@ static int console_cpu_notify(unsigned int cpu)
+ 	return 0;
+ }
+ 
++static int get_console_may_schedule(void)
++{
++	/*
++	 * When PREEMPT_COUNT disabled we can't reliably detect if it's
++	 * safe to schedule (e.g. calling printk while holding a spin_lock),
++	 * because preempt_disable()/preempt_enable() are just barriers there
++	 * and preempt_count() is always 0.
++	 *
++	 * RCU read sections have a separate preemption counter when
++	 * PREEMPT_RCU enabled thus we must take extra care and check
++	 * rcu_preempt_depth(), otherwise RCU read sections modify
++	 * preempt_count().
++	 */
++	return !oops_in_progress &&
++		preemptible() &&
++		!rcu_preempt_depth();
++}
++
+ /**
+  * console_lock - lock the console system for exclusive use.
+  *
+@@ -2112,20 +2130,7 @@ int console_trylock(void)
+ 		return 0;
+ 	}
+ 	console_locked = 1;
+-	/*
+-	 * When PREEMPT_COUNT disabled we can't reliably detect if it's
+-	 * safe to schedule (e.g. calling printk while holding a spin_lock),
+-	 * because preempt_disable()/preempt_enable() are just barriers there
+-	 * and preempt_count() is always 0.
+-	 *
+-	 * RCU read sections have a separate preemption counter when
+-	 * PREEMPT_RCU enabled thus we must take extra care and check
+-	 * rcu_preempt_depth(), otherwise RCU read sections modify
+-	 * preempt_count().
+-	 */
+-	console_may_schedule = !oops_in_progress &&
+-			preemptible() &&
+-			!rcu_preempt_depth();
++	console_may_schedule = get_console_may_schedule();
+ 	return 1;
+ }
+ EXPORT_SYMBOL(console_trylock);
+@@ -2316,7 +2321,7 @@ EXPORT_SYMBOL(console_unlock);
+  */
+ void __sched console_conditional_schedule(void)
+ {
+-	if (console_may_schedule)
++	if (get_console_may_schedule())
+ 		cond_resched();
+ }
+ EXPORT_SYMBOL(console_conditional_schedule);
+
+
+---
+
+
+	-ss
+
+> ----------------------------------------
+> [  OK  [  255.862188] audit: type31 audit(1482733112.662:148): pid=1 uid=0 auidB94967295 sesB94967295 msg='unit=systemd-tmpfiles-setup-dev comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
+> ] Stopped Create Static Device Nodes in /dev.
+> 
+> [  255.871468] BUG: sleeping function called from invalid context at kernel/printk/printk.c:2325
+> [  255.871469] in_atomic(): 1, irqs_disabled(): 1, pid: 10079, name: plymouthd
+> [  255.871469] 6 locks held by plymouthd/10079:
+> [  255.871470]  #0:  (&tty->ldisc_sem){++++.+}, at: [<ffffffff817413e2>] ldsem_down_read+0x32/0x40
+> [  255.871472]  #1:  (&tty->atomic_write_lock){+.+.+.}, at: [<ffffffff81424309>] tty_write_lock+0x19/0x50
+> [  255.871474]  #2:  (&tty->termios_rwsem){++++..}, at: [<ffffffff81429d59>] n_tty_write+0x99/0x470
+> [  255.871475]  #3:  (&ldata->output_lock){+.+...}, at: [<ffffffff81429df0>] n_tty_write+0x130/0x470
+> [  255.871477]  #4:  (console_lock){+.+.+.}, at: [<ffffffff8110616e>] console_unlock+0x33e/0x6b0
+> [  255.871479]  #5:  (printing_lock){......}, at: [<ffffffff8143baf5>] vt_console_print+0x75/0x3d0
+> [  255.871481] irq event stamp: 15244
+> [  255.871481] hardirqs last  enabled at (15243): [<ffffffff81105011>] __down_trylock_console_sem+0x91/0xa0
+> [  255.871482] hardirqs last disabled at (15244): [<ffffffff81105ea4>] console_unlock+0x74/0x6b0
+> [  255.871482] softirqs last  enabled at (14968): [<ffffffff81096394>] __do_softirq+0x344/0x580
+> [  255.871482] softirqs last disabled at (14963): [<ffffffff810968d3>] irq_exit+0xe3/0x120
+> [  255.871483] CPU: 0 PID: 10079 Comm: plymouthd Not tainted 4.9.0-next-20161224+ #12
+> [  255.871483] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 07/31/2013
+> [  255.871484] Call Trace:
+> [  255.871484]  dump_stack+0x85/0xc9
+> [  255.871485]  ___might_sleep+0x14a/0x250
+> [  255.871485]  console_conditional_schedule+0x22/0x30
+> [  255.871485]  fbcon_redraw.isra.24+0xa3/0x1d0
+> [  255.871486]  ? fbcon_cursor+0x151/0x1c0
+> [  255.871486]  fbcon_scroll+0x11d/0xcb0
+> [  255.871487]  con_scroll+0x160/0x170
+> [  255.871487]  lf+0x9c/0xb0
+> [  255.871487]  vt_console_print+0x2b7/0x3d0
+> [  255.871488]  console_unlock+0x457/0x6b0
+> [  255.871488]  do_con_write.part.19+0x737/0x9e0
+> [  255.871489]  ? mark_held_locks+0x71/0x90
+> [  255.871489]  con_write+0x57/0x60
+> [  255.871489]  n_tty_write+0x1bf/0x470
+> [  255.871490]  ? prepare_to_wait_event+0x110/0x110
+> [  255.871490]  tty_write+0x157/0x2d0
+> [  255.871491]  ? n_tty_open+0xd0/0xd0
+> [  255.871491]  __vfs_write+0x32/0x140
+> [  255.871491]  ? trace_hardirqs_on+0xd/0x10
+> [  255.871492]  ? __audit_syscall_entry+0xaa/0xf0
+> [  255.871492]  vfs_write+0xc2/0x1f0
+> [  255.871493]  ? syscall_trace_enter+0x1cb/0x3e0
+> [  255.871493]  SyS_write+0x53/0xc0
+> [  255.871493]  do_syscall_64+0x67/0x1f0
+> [  255.871494]  entry_SYSCALL64_slow_path+0x25/0x25
+> [  255.871494] RIP: 0033:0x7fb74cf8fc60
+> [  255.871495] RSP: 002b:00007ffcaab3fe88 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+> [  255.871495] RAX: ffffffffffffffda RBX: 000055d3acaf7160 RCX: 00007fb74cf8fc60
+> [  255.871496] RDX: 000000000000003f RSI: 000055d3acafd090 RDI: 0000000000000009
+> [  255.871496] RBP: 000055d3acafc440 R08: 0000000000000070 R09: 0000000000000000
+> [  255.871497] R10: 000000000000003f R11: 0000000000000246 R12: 000055d3acafc330
+> [  255.871497] R13: 000000000000003f R14: 00007ffcaab3ffb0 R15: 0000000000000000
+>          Stopping Create Static Device Nodes in /dev...
+> 
+> ----------------------------------------
+> 
+> # ./scripts/faddr2line vmlinux console_unlock+0x74/0x6b0
+> console_unlock+0x74/0x6b0:
+> console_unlock at kernel/printk/printk.c:2228
+> # ./scripts/faddr2line vmlinux console_unlock+0x457/0x6b0
+> console_unlock+0x457/0x6b0:
+> call_console_drivers at kernel/printk/printk.c:1613
+>  (inlined by) console_unlock at kernel/printk/printk.c:2277
+> # ./scripts/faddr2line vmlinux vt_console_print+0x2b7/0x3d0
+> vt_console_print+0x2b7/0x3d0:
+> cr at drivers/tty/vt/vt.c:1137
+>  (inlined by) vt_console_print at drivers/tty/vt/vt.c:2598
+> # ./scripts/faddr2line vmlinux lf+0x9c/0xb0
+> lf+0x9c/0xb0:
+> lf at drivers/tty/vt/vt.c:1112
+> # ./scripts/faddr2line vmlinux con_scroll+0x160/0x170
+> con_scroll+0x160/0x170:
+> con_scroll at drivers/tty/vt/vt.c:327 (discriminator 1)
+> # ./scripts/faddr2line vmlinux fbcon_scroll+0x11d/0xcb0
+> fbcon_scroll+0x11d/0xcb0:
+> fbcon_scroll at drivers/video/console/fbcon.c:1898
+> # ./scripts/faddr2line vmlinux fbcon_cursor+0x151/0x1c0
+> fbcon_cursor+0x151/0x1c0:
+> fbcon_cursor at drivers/video/console/fbcon.c:1331
+> # ./scripts/faddr2line vmlinux fbcon_redraw.isra.24+0xa3/0x1d0
+> fbcon_redraw.isra.24+0xa3/0x1d0:
+> fbcon_redraw at drivers/video/console/fbcon.c:1756
+> # ./scripts/faddr2line vmlinux console_conditional_schedule+0x22/0x30
+> console_conditional_schedule+0x22/0x30:
+> console_conditional_schedule at kernel/printk/printk.c:2325
+> 

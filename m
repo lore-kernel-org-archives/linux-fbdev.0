@@ -1,39 +1,38 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 12 Jan 2017 11:27:39 +0000
-Subject: Re: [PATCH 0/6] fbdev/ssd1307fb: Some changes and improvement
-Message-Id: <147628d9-07cf-85b2-560f-fdc37155fda5@ti.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Sun, 01 Jan 2017 16:48:17 +0000
+Subject: [PATCH] video: fbdev: maxinefb: add __initdata to maxinefb_fix
+Message-Id: <1483288577-17122-1-git-send-email-bhumirks@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1484219137.git.jsarha@ti.com>
-In-Reply-To: <cover.1484219137.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: julia.lawall@lip6.fr, tomi.valkeinen@ti.com, Bhumika Goyal <bhumirks@gmail.com>
 
-I did not notice the latest update on MAINTAINERS when sending this
-series. Added Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> to loop.
+The object maxinefb_fix of type fb_fix_screeninfo is never referenced
+after initialization by maxinefb_init. In the init function, the object
+and one of its fields is only stored into another variable. So, the
+object and its fields are never referenced anywhere after initialization
+and therefore add __initdata to its declaration.
 
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/video/fbdev/maxinefb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-On 01/12/17 13:16, Jyri Sarha wrote:
-> We needed these changes for couple of our evm. Everything else is quite
-> straight forward, but removing the reset-active-low dts property is a
-> questionable at least in theory. However, in practice if anyone was
-> using the property in their device-tree blobs, they have never been
-> able to get desired effect with mainline kernel.
-> 
-> Jyri Sarha (3):
->   fbdev: ssd1307fb: Start to use gpiod API for reset gpio
->   fbdev: ssd1307fb: Remove reset-active-low from the DT binding document
->   fbdev: ssd1307fb: Make reset gpio devicetree property optional
-> 
-> Tomi Valkeinen (3):
->   fbdev/ssd1307fb: add support to enable VBAT
->   fbdev/ssd1307fb: clear screen in probe
->   fbdev/ssd1307fb: add support to enable VBAT
-> 
->  .../devicetree/bindings/display/ssd1307fb.txt      |  5 +-
->  drivers/video/fbdev/ssd1307fb.c                    | 55 ++++++++++++++--------
->  2 files changed, 38 insertions(+), 22 deletions(-)
-> 
+diff --git a/drivers/video/fbdev/maxinefb.c b/drivers/video/fbdev/maxinefb.c
+index 5cf52d3..cab7333 100644
+--- a/drivers/video/fbdev/maxinefb.c
++++ b/drivers/video/fbdev/maxinefb.c
+@@ -51,7 +51,7 @@
+ 	.vmode =	FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct fb_fix_screeninfo maxinefb_fix = {
++static struct fb_fix_screeninfo maxinefb_fix __initdata = {
+ 	.id =		"Maxine",
+ 	.smem_len =	(1024*768),
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+-- 
+1.9.1
 

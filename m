@@ -1,12 +1,15 @@
 From: Martin Kaiser <martin@kaiser.cx>
-Date: Mon, 02 Jan 2017 22:20:04 +0000
+Date: Mon, 02 Jan 2017 22:24:02 +0000
 Subject: [PATCH] video: imxfb: always allocate 256 entries for the color map
-Message-Id: <1483395604-6931-1-git-send-email-martin@kaiser.cx>
+Message-Id: <1483395842-9675-1-git-send-email-martin@kaiser.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1483395604-6931-1-git-send-email-martin@kaiser.cx>
+In-Reply-To: <1483395604-6931-1-git-send-email-martin@kaiser.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: b.zolnierkie@samsung.com, kernel@pengutronix.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Martin Kaiser <martin@kaiser.cx>
 
 The current code calculates the number of color map entries as
 1 << info->var.bits_per_pixel. For 32bpp modes, 1 << 32 is 0 when
@@ -20,6 +23,8 @@ safe side.
 
 Signed-off-by: Martin Kaiser <martin@kaiser.cx>
 ---
+Re-sending: corrected a typo in the LKML address, sorry for that.
+
  drivers/video/fbdev/imxfb.c |    6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 

@@ -1,86 +1,212 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 17 Jan 2017 23:14:16 +0000
-Subject: [PATCH 08/13] MIPS: JZ4780: CI20: Add pinctrl configuration for several drivers
-Message-Id: <20170117231421.16310-9-paul@crapouillou.net>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Mon, 02 Jan 2017 14:27:38 +0000
+Subject: [PATCH RESEND v7 1/3] console: Move scrollback data into its own struct
+Message-Id: <1483367260-3836-2-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170117231421.16310-1-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+ <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-We set the pin configuration for the jz4780-nand and jz4780-uart
-drivers.
+This refactoring is in preparation for persistent scrollback
+support for VGA console.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
+
 ---
- arch/mips/boot/dts/ingenic/ci20.dts | 25 +++++++++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
+----
+ 1 file changed, 47 insertions(+), 44 deletions(-)
 
-diff --git a/arch/mips/boot/dts/ingenic/ci20.dts b/arch/mips/boot/dts/ingenic/ci20.dts
-index 1652d8d60b1e..e2cd3ebb7be8 100644
---- a/arch/mips/boot/dts/ingenic/ci20.dts
-+++ b/arch/mips/boot/dts/ingenic/ci20.dts
-@@ -29,18 +29,30 @@
- 
- &uart0 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart0_data>;
- };
- 
- &uart1 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart1_data>;
- };
- 
- &uart3 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart2_dataplusflow>;
- };
- 
- &uart4 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart4_data>;
- };
- 
- &nemc {
-@@ -61,6 +73,16 @@
- 		ingenic,nemc-tAW = <15>;
- 		ingenic,nemc-tSTRV = <100>;
- 
-+		/*
-+		 * Only CLE/ALE are needed for the devices that are connected, rather
-+		 * than the full address line set.
-+		 */
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pins_nemc_data
-+				 &pins_nemc_cle_ale
-+				 &pins_nemc_rd_we
-+				 &pins_nemc_frd_fwe>;
-+
- 		nand@1 {
- 			reg = <1>;
- 
-@@ -69,6 +91,9 @@
- 			nand-ecc-mode = "hw";
- 			nand-on-flash-bbt;
- 
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&pins_nemc_cs1>;
-+
- 			partitions {
- 				compatible = "fixed-partitions";
- 				#address-cells = <2>;
--- 
-2.11.0
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c22a562..48b9764 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
+=20
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
++static struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollback;
+=20
+ static void vgacon_scrollback_init(int pitch)
+ {
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+=20
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	if (vgacon_scrollback.data) {
++		vgacon_scrollback.cnt  =3D 0;
++		vgacon_scrollback.tail =3D 0;
++		vgacon_scrollback.cur  =3D 0;
++		vgacon_scrollback.rows =3D rows - 1;
++		vgacon_scrollback.size =3D rows * pitch;
+ 	}
+ }
+=20
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
++	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
++		1024, GFP_NOWAIT);
+ 	vgacon_scrollback_init(vga_video_num_columns * 2);
+ }
+=20
+@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
+c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		vgacon_scrollback.cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		vgacon_scrollback.tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
++			vgacon_scrollback.tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
++			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	vgacon_scrollback.save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !vgacon_scrollback.restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.restore =3D 1;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	if (!vgacon_scrollback.data)
+ 		return;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!vgacon_scrollback.save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		vgacon_scrollback.save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	vgacon_scrollback.restore =3D 0;
++	start =3D vgacon_scrollback.cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > vgacon_scrollback.cnt)
++		start =3D vgacon_scrollback.cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > vgacon_scrollback.cnt)
++		end =3D vgacon_scrollback.cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	vgacon_scrollback.cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D vgacon_scrollback.size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D vgacon_scrollback.cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback.size - soff);
++		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, vgacon_scrollback.data, count);
+ 			d +=3D count;
+ 		}
+=20
+--=20
+2.1.4
 

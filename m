@@ -1,26 +1,65 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Fri, 06 Jan 2017 20:50:34 +0000
-Subject: Re: [PATCH v2 4/7] x86: put msr-index.h in uapi
-Message-Id: <CAHp75VdDfopdSy-7oy87ZeosDB9+FN4zFBhErPWLQB7tH81zTw@mail.gmail.com>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Mon, 02 Jan 2017 14:27:37 +0000
+Subject: [PATCH RESEND v7 0/3] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
- <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com> <1483695839-18660-5-git-send-email-nicolas.dichtel@6wind.com>
-In-Reply-To: <1483695839-18660-5-git-send-email-nicolas.dichtel@6wind.com>
+References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
+In-Reply-To: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, mmarek@suse.com, linux-kbuild@vger.kernel.org, Linux Documentation List <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>, adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org, Cris <linux-cris-kernel@axis.com>, uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-am33-list@redhat.com, nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org, linux-parisc@vger.kernel.org, LINUX
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
+Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Jan 6, 2017 at 11:43 AM, Nicolas Dichtel
-<nicolas.dichtel@6wind.com> wrote:
-> This header file is exported, thus move it to uapi.
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
 
-Just hint for the future:
--M (move)
--C (copy)
--D (delete) [though this is NOT for applying]
+--
+Changes in v7:
+  - Add new callback to consw struct for flushing video console driver's
+    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
+    by Adam Borowski (kilobyte@angband.pl).
+  - Fix style issues
+Changes in v6:
+  - Change of check if feature is enabled in=20
+    vgacon_scrollback_switch()
+Changes in v5:
+  - Clearify documentation
+  - Skip superfluous array initialization
+  - Disable scrollback if buffer allocation fails
+  - Refactor vgacon_switch_scrollback()
+  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
+  - Add check for fg_console in vgacon_scrollback_update
+Changes in v4.1:
+  - Fix compiler error
+Changes in v4:
+  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
+    VGACON_SOFT_SCROLLBACK_PERSISTENT
+  - Split into two patches
+  - Rework documentation
+  - Remove cosmetic changes in comments (postponed)
+Changes in v3:
+  - Add config option for this feature
+  - Fallback to old scrollback buffer if kcalloc() fails
+  - Remove ioctl() call again and add documentation about existing
+    escape sequence to flush the scrollback buffer
+Changes in v2:
+  - Add ioctl() call to flush scrollback buffer
+  - (Patch v2 was not labeled as such, sorry)
 
--- 
-With Best Regards,
-Andy Shevchenko
+Manuel Sch=C3=B6lling (3):
+  console: Move scrollback data into its own struct
+  console: Add callback to flush scrollback buffer to consw struct
+  console: Add persistent scrollback buffers for all VGA consoles
+
+ drivers/tty/vt/vt.c            |   9 +++
+ drivers/video/console/Kconfig  |  25 ++++++-
+ drivers/video/console/vgacon.c | 165 ++++++++++++++++++++++++++++---------=
+----
+ include/linux/console.h        |   4 +
+ 4 files changed, 148 insertions(+), 55 deletions(-)
+
+--=20
+2.1.4
+

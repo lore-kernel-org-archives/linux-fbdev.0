@@ -1,106 +1,108 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Fri, 13 Jan 2017 20:07:58 +0000
-Subject: [PATCH v10 4/4] console: Make persistent scrollback a boot parameter
-Message-Id: <20170113200758.9880-5-manuel.schoelling@gmx.de>
+From: Lukasz Majewski <l.majewski@majess.pl>
+Date: Mon, 02 Jan 2017 23:54:52 +0000
+Subject: Re: [PATCH v2 RESEND] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_back
+Message-Id: <20170103005452.33d4b117@jawa>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170113200758.9880-1-manuel.schoelling@gmx.de>
-In-Reply-To: <20170113200758.9880-1-manuel.schoelling@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
+        <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
+In-Reply-To: <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>
+Cc: Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+
+--Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-To: gregkh@linuxfoundation.org
-Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-The impact of the persistent scrollback feature on the code size is
-rather small, so the config option is removed. The feature stays
-disabled by default and can be enabled by using the boot command line
-parameter 'vgacon.scrollback_persistent=3D1' or by setting
-VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT=3Dy.
+Dear All,
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/video/console/Kconfig  | 12 +++++++-----
- drivers/video/console/vgacon.c | 25 ++++++++++++-------------
- 2 files changed, 19 insertions(+), 18 deletions(-)
+A gentle ping for this patch :-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index f500e58f7636..5b71bd905a60 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -47,14 +47,16 @@ config VGACON_SOFT_SCROLLBACK_SIZE
- 	  buffers of VGA consoles. Each 64KB will give you approximately
- 	  16 80x25 screenfuls of scrollback buffer.
-=20
--config VGACON_SOFT_SCROLLBACK_PERSISTENT
--	bool "Persistent Scrollback History for each console"
-+config VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT
-+	bool "Persistent Scrollback History for each console by default"
- 	depends on VGACON_SOFT_SCROLLBACK
- 	default n
- 	help
--	  Say Y here if the scrollback history should persist when switching
--	  between consoles. Otherwise, the scrollback history will be flushed
--	  each time the console is switched.
-+	  Say Y here if the scrollback history should persist by default when
-+	  switching between consoles. Otherwise, the scrollback history will be
-+	  flushed each time the console is switched. This feature can also be
-+	  enabled using the boot command line parameter
-+	  'vgacon.scrollback_persistent=3D1'.
-=20
- 	  This feature might break your tool of choice to flush the scrollback
- 	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index ca23d222e029..dc06cb6a15dc 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -174,11 +174,11 @@ struct vgacon_scrollback_info {
- };
-=20
- static struct vgacon_scrollback_info *vgacon_scrollback_cur;
--#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
- static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
--#else
--static struct vgacon_scrollback_info vgacon_scrollbacks[1];
--#endif
-+static bool scrollback_persistent =3D \
-+	IS_ENABLED(CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT);
-+module_param_named(scrollback_persistent, scrollback_persistent, bool, 000=
-0);
-+MODULE_PARM_DESC(scrollback_persistent, "Enable persistent scrollback for =
-all vga consoles");
-=20
- static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
- {
-@@ -213,20 +213,19 @@ static void vgacon_scrollback_init(int vc_num)
-=20
- static void vgacon_scrollback_switch(int vc_num)
- {
--#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
--	vc_num =3D 0;
--#endif
-+	if (!scrollback_persistent)
-+		vc_num =3D 0;
-=20
- 	if (!vgacon_scrollbacks[vc_num].data) {
- 		vgacon_scrollback_init(vc_num);
- 	} else {
--#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
--		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
--#else
--		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+		if (scrollback_persistent) {
-+			vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+		} else {
-+			size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-=20
--		vgacon_scrollback_reset(vc_num, size);
--#endif
-+			vgacon_scrollback_reset(vc_num, size);
-+		}
- 	}
- }
-=20
---=20
-2.11.0
+We had a discussion about it in a following thread:
 
+http://patchwork.ozlabs.org/patch/689786/
+
+According to comments, I've prepared v2 of this commit and also resend
+it recently:
+
+http://patchwork.ozlabs.org/patch/708844/
+
+Any new comments?
+
+
+Thanks in advance,
+=C5=81ukasz Majewski
+
+> The commit a55944ca82d2=20
+> ("backlight: update bd state & fb_blank properties when necessary")
+> has posed some extra restrictions on blanking and unblanking frame
+> buffer device.
+>=20
+> Unfortunately, pwm_bl driver's probe did not initialize members of
+> struct backlight_device necessary for further blank/unblank operation.
+>=20
+> This code in case of initial unblank of backlight device (default=20
+> behaviour) sets use_count to 1 and marks this particular backlight
+> device as used by all available fb devices (since it is not known
+> during probe how much and which fb devices will be assigned).
+>=20
+> Without this code, the backlight works properly until one tries to
+> blank it manually from sysfs with "echo 1
+> > /sys/class/graphics/fb0/blank". Since fb_bl_on[0] and use_count
+> > were both set to 0, the logic at
+> fb_notifier_callback (@backlight.c) thought that we didn't turn on
+> (unblanked) the backlight device and refuses to disable (blank) it.
+> As a result we see garbage from fb displayed.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
+> ---
+> The patch has been tested on i.MX6q with vanilla 4.9 kernel.
+> It applies on 4.10-rc1.
+> ---
+>  drivers/video/backlight/pwm_bl.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/backlight/pwm_bl.c
+> b/drivers/video/backlight/pwm_bl.c index 1261400..6859ba0 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct
+> platform_device *pdev) struct pwm_bl_data *pb;
+>  	int initial_blank =3D FB_BLANK_UNBLANK;
+>  	struct pwm_args pargs;
+> -	int ret;
+> +	int ret, i;
+> =20
+>  	if (!data) {
+>  		ret =3D pwm_backlight_parse_dt(&pdev->dev, &defdata);
+> @@ -348,6 +348,14 @@ static int pwm_backlight_probe(struct
+> platform_device *pdev)=20
+>  	bl->props.brightness =3D data->dft_brightness;
+>  	bl->props.power =3D initial_blank;
+> +
+> +	if (initial_blank =3D=3D FB_BLANK_UNBLANK) {
+> +		for (i =3D 0; i < FB_MAX; i++)
+> +			bl->fb_bl_on[i] =3D true;
+> +
+> +		bl->use_count =3D 1;
+> +	}
+> +
+>  	backlight_update_status(bl);
+> =20
+>  	platform_set_drvdata(pdev, bl);
+
+
+--Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iEYEARECAAYFAlhq6FMACgkQf9/hG2YwgjEKJQCgkppXhM/FER7argZ+MQ1+nI3W
+gJgAniEzToFDO9/e4mPeOewJipg2ukJ+
+=Zeol
+-----END PGP SIGNATURE-----
+
+--Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ--

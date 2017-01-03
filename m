@@ -1,93 +1,151 @@
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-Date: Wed, 11 Jan 2017 12:42:02 +0000
-Subject: Re: [PATCH v2 0/7] uapi: export all headers under uapi directories
-Message-Id: <20170111124202.GD7275@axis.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Tue, 03 Jan 2017 15:03:22 +0000
+Subject: [PATCH] fbcon: Fix vc attr at deinit
+Message-Id: <20170103150322.10350-1-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
- <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
- <3131144.4Ej3KFWRbz@wuerfel>
-In-Reply-To: <3131144.4Ej3KFWRbz@wuerfel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>, linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, adi-buildroot-devel@lists.sourceforge.netl
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, Jan 09, 2017 at 12:33:58PM +0100, Arnd Bergmann wrote:
-> On Friday, January 6, 2017 10:43:52 AM CET Nicolas Dichtel wrote:
-> > Here is the v2 of this series. The first 5 patches are just cleanup: some
-> > exported headers were still under a non-uapi directory.
-> 
-> Since this is meant as a cleanup, I commented on this to point out a cleaner
-> way to do the same.
-> 
-> > The patch 6 was spotted by code review: there is no in-tree user of this
-> > functionality.
-> > The last patch remove the use of header-y. Now all files under an uapi
-> > directory are exported.
-> 
-> Very nice!
-> 
-> > asm is a bit special, most of architectures export asm/<arch>/include/uapi/asm
-> > only, but there is two exceptions:
-> >  - cris which exports arch/cris/include/uapi/arch-v[10|32];
-> 
-> This is interesting, though not your problem. Maybe someone who understands
-> cris better can comment on this: How is the decision made about which of
-> the arch/user.h headers gets used? I couldn't find that in the sources,
-> but it appears to be based on kernel compile-time settings, which is
-> wrong for user space header files that should be independent of the kernel
-> config.
+fbcon can deal with vc_hi_font_mask (the upper 256 chars) and adjust
+the vc attrs dynamically when vc_hi_font_mask is changed at
+fbcon_init().  When the vc_hi_font_mask is set, it remaps the attrs in
+the existing console buffer with one bit shift up (for 9 bits), while
+it remaps with one bit shift down (for 8 bits) when the value is
+cleared.  It works fine as long as the font gets updated after fbcon
+was initialized.
 
-I believe it's since the CRISv10 and CRISv32 are very different beasts,
-and that is selected via kernel config...
+However, we hit a bizarre problem when the console is switched to
+another fb driver (typically from vesafb or efifb to drmfb).  At
+switching to the new fb driver, we temporarily rebind the console to
+the dummy console, then rebind to the new driver.  During the
+switching, we leave the modified attrs as is.  Thus, the new fbcon
+takes over the old buffer as if it were to contain 8 bits chars
+(although the attrs are still shifted for 9 bits), and effectively
+this results in the yellow color texts instead of the original white
+color, as found in the bugzilla entry below.
 
-This part of the CRIS port has been transformed a couple of times from
-the original layout without uapi, and there's still some legacy silliness,
-where some files might have been exported but never used from userspace
-except for some corner cases.
+An easy fix for this is to re-adjust the attrs before leaving the
+fbcon at con_deinit callback.  Since the code to adjust the attrs is
+already present in the current fbcon code, in this patch, we simply
+factor out the relevant code, and call it from fbcon_deinit().
 
-> >  - tile which exports arch/tile/include/uapi/arch.
-> > Because I don't know if the output of 'make headers_install_all' can be changed,
-> > I introduce subdir-y in Kbuild file. The headers_install_all target copies all
-> > asm/<arch>/include/uapi/asm to usr/include/asm-<arch> but
-> > arch/cris/include/uapi/arch-v[10|32] and arch/tile/include/uapi/arch are not
-> > prefixed (they are put asis in usr/include/). If it's acceptable to modify the
-> > output of 'make headers_install_all' to export asm headers in
-> > usr/include/asm-<arch>/asm, then I could remove this new subdir-y and exports
-> > everything under arch/<arch>/include/uapi/.
-> 
-> I don't know if anyone still uses "make headers_install_all", I suspect
-> distros these days all use "make headers_install", so it probably
-> doesn't matter much.
-> 
-> In case of cris, it should be easy enough to move all the contents of the
-> uapi/arch-*/*.h headers into the respective uapi/asm/*.h headers, they
-> only seem to be referenced from there.
+Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id00619
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ drivers/video/console/fbcon.c | 67 ++++++++++++++++++++++++++-----------------
+ 1 file changed, 40 insertions(+), 27 deletions(-)
 
-This would seem to be a reasonable change.
-
-> For tile, I suspect that would not work as the arch/*.h headers are
-> apparently defined as interfaces for both user space and kernel.
-> 
-> > Note also that exported files for asm are a mix of files listed by:
-> >  - include/uapi/asm-generic/Kbuild.asm;
-> >  - arch/x86/include/uapi/asm/Kbuild;
-> >  - arch/x86/include/asm/Kbuild.
-> > This complicates a lot the processing (arch/x86/include/asm/Kbuild is also
-> > used by scripts/Makefile.asm-generic).
-> > 
-> > This series has been tested with a 'make headers_install' on x86 and a
-> > 'make headers_install_all'. I've checked the result of both commands.
-> > 
-> > This patch is built against linus tree. I don't know if it should be
-> > made against antoher tree.
-> 
-> The series should probably get merged through the kbuild tree, but testing
-> it on mainline is fine here.
-> 
-> 	Arnd
-
-/^JN - Jesper Nilsson
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index a44f5627b82a..f4daadff8a6c 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1165,6 +1165,8 @@ static void fbcon_free_font(struct display *p, bool freefont)
+ 	p->userfont = 0;
+ }
+ 
++static void set_vc_hi_font(struct vc_data *vc, bool set);
++
+ static void fbcon_deinit(struct vc_data *vc)
+ {
+ 	struct display *p = &fb_display[vc->vc_num];
+@@ -1200,6 +1202,9 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	if (free_font)
+ 		vc->vc_font.data = NULL;
+ 
++	if (vc->vc_hi_font_mask)
++		set_vc_hi_font(vc, false);
++
+ 	if (!con_is_bound(&fb_con))
+ 		fbcon_exit();
+ 
+@@ -2436,32 +2441,10 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+ 	return 0;
+ }
+ 
+-static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+-			     const u8 * data, int userfont)
++/* set/clear vc_hi_font_mask and update vc attrs accordingly */
++static void set_vc_hi_font(struct vc_data *vc, bool set)
+ {
+-	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+-	struct fbcon_ops *ops = info->fbcon_par;
+-	struct display *p = &fb_display[vc->vc_num];
+-	int resize;
+-	int cnt;
+-	char *old_data = NULL;
+-
+-	if (con_is_visible(vc) && softback_lines)
+-		fbcon_set_origin(vc);
+-
+-	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
+-	if (p->userfont)
+-		old_data = vc->vc_font.data;
+-	if (userfont)
+-		cnt = FNTCHARCNT(data);
+-	else
+-		cnt = 256;
+-	vc->vc_font.data = (void *)(p->fontdata = data);
+-	if ((p->userfont = userfont))
+-		REFCOUNT(data)++;
+-	vc->vc_font.width = w;
+-	vc->vc_font.height = h;
+-	if (vc->vc_hi_font_mask && cnt = 256) {
++	if (!set) {
+ 		vc->vc_hi_font_mask = 0;
+ 		if (vc->vc_can_do_color) {
+ 			vc->vc_complement_mask >>= 1;
+@@ -2484,7 +2467,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+ 			    ((c & 0xfe00) >> 1) | (c & 0xff);
+ 			vc->vc_attr >>= 1;
+ 		}
+-	} else if (!vc->vc_hi_font_mask && cnt = 512) {
++	} else {
+ 		vc->vc_hi_font_mask = 0x100;
+ 		if (vc->vc_can_do_color) {
+ 			vc->vc_complement_mask <<= 1;
+@@ -2516,8 +2499,38 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+ 			} else
+ 				vc->vc_video_erase_char = c & ~0x100;
+ 		}
+-
+ 	}
++}
++
++static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
++			     const u8 * data, int userfont)
++{
++	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
++	struct fbcon_ops *ops = info->fbcon_par;
++	struct display *p = &fb_display[vc->vc_num];
++	int resize;
++	int cnt;
++	char *old_data = NULL;
++
++	if (con_is_visible(vc) && softback_lines)
++		fbcon_set_origin(vc);
++
++	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
++	if (p->userfont)
++		old_data = vc->vc_font.data;
++	if (userfont)
++		cnt = FNTCHARCNT(data);
++	else
++		cnt = 256;
++	vc->vc_font.data = (void *)(p->fontdata = data);
++	if ((p->userfont = userfont))
++		REFCOUNT(data)++;
++	vc->vc_font.width = w;
++	vc->vc_font.height = h;
++	if (vc->vc_hi_font_mask && cnt = 256)
++		set_vc_hi_font(vc, false);
++	else if (!vc->vc_hi_font_mask && cnt = 512)
++		set_vc_hi_font(vc, true);
+ 
+ 	if (resize) {
+ 		int cols, rows;
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+2.11.0
+

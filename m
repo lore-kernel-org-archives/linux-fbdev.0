@@ -1,67 +1,171 @@
 From: Takashi Iwai <tiwai@suse.de>
-Date: Tue, 03 Jan 2017 16:57:23 +0000
+Date: Wed, 04 Jan 2017 13:50:44 +0000
 Subject: Re: [PATCH] fbcon: Fix vc attr at deinit
-Message-Id: <s5hy3ysqdxo.wl-tiwai@suse.de>
+Message-Id: <s5hfukzq6h7.wl-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170103150322.10350-1-tiwai@suse.de>
-        <20170103164905.GA24990@kroah.com>
-In-Reply-To: <20170103164905.GA24990@kroah.com>
+In-Reply-To: <20170103150322.10350-1-tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 03 Jan 2017 17:49:05 +0100,
-Greg Kroah-Hartman wrote:
+On Tue, 03 Jan 2017 16:03:22 +0100,
+Takashi Iwai wrote:
 > 
-> On Tue, Jan 03, 2017 at 04:03:22PM +0100, Takashi Iwai wrote:
-> > fbcon can deal with vc_hi_font_mask (the upper 256 chars) and adjust
-> > the vc attrs dynamically when vc_hi_font_mask is changed at
-> > fbcon_init().  When the vc_hi_font_mask is set, it remaps the attrs in
-> > the existing console buffer with one bit shift up (for 9 bits), while
-> > it remaps with one bit shift down (for 8 bits) when the value is
-> > cleared.  It works fine as long as the font gets updated after fbcon
-> > was initialized.
-> > 
-> > However, we hit a bizarre problem when the console is switched to
-> > another fb driver (typically from vesafb or efifb to drmfb).  At
-> > switching to the new fb driver, we temporarily rebind the console to
-> > the dummy console, then rebind to the new driver.  During the
-> > switching, we leave the modified attrs as is.  Thus, the new fbcon
-> > takes over the old buffer as if it were to contain 8 bits chars
-> > (although the attrs are still shifted for 9 bits), and effectively
-> > this results in the yellow color texts instead of the original white
-> > color, as found in the bugzilla entry below.
-> > 
-> > An easy fix for this is to re-adjust the attrs before leaving the
-> > fbcon at con_deinit callback.  Since the code to adjust the attrs is
-> > already present in the current fbcon code, in this patch, we simply
-> > factor out the relevant code, and call it from fbcon_deinit().
-> > 
-> > Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id00619
-> > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> > ---
-> >  drivers/video/console/fbcon.c | 67 ++++++++++++++++++++++++++-----------------
-> >  1 file changed, 40 insertions(+), 27 deletions(-)
+> fbcon can deal with vc_hi_font_mask (the upper 256 chars) and adjust
+> the vc attrs dynamically when vc_hi_font_mask is changed at
+> fbcon_init().  When the vc_hi_font_mask is set, it remaps the attrs in
+> the existing console buffer with one bit shift up (for 9 bits), while
+> it remaps with one bit shift down (for 8 bits) when the value is
+> cleared.  It works fine as long as the font gets updated after fbcon
+> was initialized.
 > 
-> So this is an old bug?  Should it go to stable kernels?
+> However, we hit a bizarre problem when the console is switched to
+> another fb driver (typically from vesafb or efifb to drmfb).  At
+> switching to the new fb driver, we temporarily rebind the console to
+> the dummy console, then rebind to the new driver.  During the
+> switching, we leave the modified attrs as is.  Thus, the new fbcon
+> takes over the old buffer as if it were to contain 8 bits chars
+> (although the attrs are still shifted for 9 bits), and effectively
+> this results in the yellow color texts instead of the original white
+> color, as found in the bugzilla entry below.
+> 
+> An easy fix for this is to re-adjust the attrs before leaving the
+> fbcon at con_deinit callback.  Since the code to adjust the attrs is
+> already present in the current fbcon code, in this patch, we simply
+> factor out the relevant code, and call it from fbcon_deinit().
+> 
+> Bugzilla: https://bugzilla.suse.com/show_bug.cgi?id00619
+> Signed-off-by: Takashi Iwai <tiwai@suse.de>
 
-Yes, the bug seems to be very old, but only recently revealed
-accidentally (likely) because of the changes in boot sequences with
-systemd & co.
+Actually not only checkpatch but also I can't find the proper
+maintainer for this...
 
-The problem itself is fairly harmless: it just appears on VT1 with a
-weird color after switching to the different fb until you scroll the
-full screen out.  So I didn't care about stable.  But feel free to put
-to stable if you think it's safe.
+Tomi, could you check and take if it's OK?
 
-> And am I the fbcon maintainer now?
-
-Heh, blame scripts/get_maintainer.pl (or I'm still in a new year
-frolic).  Maybe I should have sent to Andrew instead :)
+Ideally, this kind of stuff should have been in rather vt side, I
+suppose.  But since the code is already present in fbcon, it's easier
+to reuse it as a fix for now.
 
 
 thanks,
 
 Takashi
+
+> ---
+>  drivers/video/console/fbcon.c | 67 ++++++++++++++++++++++++++-----------------
+>  1 file changed, 40 insertions(+), 27 deletions(-)
+> 
+> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+> index a44f5627b82a..f4daadff8a6c 100644
+> --- a/drivers/video/console/fbcon.c
+> +++ b/drivers/video/console/fbcon.c
+> @@ -1165,6 +1165,8 @@ static void fbcon_free_font(struct display *p, bool freefont)
+>  	p->userfont = 0;
+>  }
+>  
+> +static void set_vc_hi_font(struct vc_data *vc, bool set);
+> +
+>  static void fbcon_deinit(struct vc_data *vc)
+>  {
+>  	struct display *p = &fb_display[vc->vc_num];
+> @@ -1200,6 +1202,9 @@ static void fbcon_deinit(struct vc_data *vc)
+>  	if (free_font)
+>  		vc->vc_font.data = NULL;
+>  
+> +	if (vc->vc_hi_font_mask)
+> +		set_vc_hi_font(vc, false);
+> +
+>  	if (!con_is_bound(&fb_con))
+>  		fbcon_exit();
+>  
+> @@ -2436,32 +2441,10 @@ static int fbcon_get_font(struct vc_data *vc, struct console_font *font)
+>  	return 0;
+>  }
+>  
+> -static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+> -			     const u8 * data, int userfont)
+> +/* set/clear vc_hi_font_mask and update vc attrs accordingly */
+> +static void set_vc_hi_font(struct vc_data *vc, bool set)
+>  {
+> -	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+> -	struct fbcon_ops *ops = info->fbcon_par;
+> -	struct display *p = &fb_display[vc->vc_num];
+> -	int resize;
+> -	int cnt;
+> -	char *old_data = NULL;
+> -
+> -	if (con_is_visible(vc) && softback_lines)
+> -		fbcon_set_origin(vc);
+> -
+> -	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
+> -	if (p->userfont)
+> -		old_data = vc->vc_font.data;
+> -	if (userfont)
+> -		cnt = FNTCHARCNT(data);
+> -	else
+> -		cnt = 256;
+> -	vc->vc_font.data = (void *)(p->fontdata = data);
+> -	if ((p->userfont = userfont))
+> -		REFCOUNT(data)++;
+> -	vc->vc_font.width = w;
+> -	vc->vc_font.height = h;
+> -	if (vc->vc_hi_font_mask && cnt = 256) {
+> +	if (!set) {
+>  		vc->vc_hi_font_mask = 0;
+>  		if (vc->vc_can_do_color) {
+>  			vc->vc_complement_mask >>= 1;
+> @@ -2484,7 +2467,7 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+>  			    ((c & 0xfe00) >> 1) | (c & 0xff);
+>  			vc->vc_attr >>= 1;
+>  		}
+> -	} else if (!vc->vc_hi_font_mask && cnt = 512) {
+> +	} else {
+>  		vc->vc_hi_font_mask = 0x100;
+>  		if (vc->vc_can_do_color) {
+>  			vc->vc_complement_mask <<= 1;
+> @@ -2516,8 +2499,38 @@ static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+>  			} else
+>  				vc->vc_video_erase_char = c & ~0x100;
+>  		}
+> -
+>  	}
+> +}
+> +
+> +static int fbcon_do_set_font(struct vc_data *vc, int w, int h,
+> +			     const u8 * data, int userfont)
+> +{
+> +	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+> +	struct fbcon_ops *ops = info->fbcon_par;
+> +	struct display *p = &fb_display[vc->vc_num];
+> +	int resize;
+> +	int cnt;
+> +	char *old_data = NULL;
+> +
+> +	if (con_is_visible(vc) && softback_lines)
+> +		fbcon_set_origin(vc);
+> +
+> +	resize = (w != vc->vc_font.width) || (h != vc->vc_font.height);
+> +	if (p->userfont)
+> +		old_data = vc->vc_font.data;
+> +	if (userfont)
+> +		cnt = FNTCHARCNT(data);
+> +	else
+> +		cnt = 256;
+> +	vc->vc_font.data = (void *)(p->fontdata = data);
+> +	if ((p->userfont = userfont))
+> +		REFCOUNT(data)++;
+> +	vc->vc_font.width = w;
+> +	vc->vc_font.height = h;
+> +	if (vc->vc_hi_font_mask && cnt = 256)
+> +		set_vc_hi_font(vc, false);
+> +	else if (!vc->vc_hi_font_mask && cnt = 512)
+> +		set_vc_hi_font(vc, true);
+>  
+>  	if (resize) {
+>  		int cols, rows;
+> -- 
+> 2.11.0
+> 

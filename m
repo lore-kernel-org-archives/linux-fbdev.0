@@ -1,58 +1,89 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Thu, 12 Jan 2017 09:35:52 +0000
-Subject: [PATCH v2] backlight: gpio-backlight: Correct initial power state handling
-Message-Id: <20170112093552.16641-1-peter.ujfalusi@ti.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 04 Jan 2017 12:42:38 +0000
+Subject: [GIT PULL] fbdev fixes for v4.10-rc2
+Message-Id: <6009223.Ou6P7G7uWh@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170104124240epcas5p4e9c51bb5dc001506a5b7923dc1ef7623@epcas5p4.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jingoohan1@gmail.com, lee.jones@linaro.org
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-The default-on property - or the def_value via legacy pdata) should be
-handled as:
-if it is 1, the backlight must be enabled (kept enabled)
-if it is 0, the backlight must be disabled (kept disabled)
 
-This only works for the case when default-on is set. If it is not set then
-the brightness of the backlight is set to 0. Now if the backlight is
-enabled by external driver (graphics) the backlight will stay disabled since
-the brightness is configured as 0. The backlight will not turn on.
+Hi Linus,
 
-The correct action at probe time is to configure the props.power to
-FB_BLANK_UNBLANK if we want the backlight on by default or to
-FB_BLANK_POWERDOWN if the backlight should be off by default.
+Please pull fbdev fixes for v4.10-rc2.  They bring fbdev subsystem
+back into Maintained mode (with me as Maintainer) and add missing
+devm_ioremap() error checking to cobalt_lcdfb driver.
 
-The initial brightness should be set to 1.
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
----
-Hi,
 
-Changes since v1:
-- Added missing Signed-off-by line.
+The following changes since commit 0c744ea4f77d72b3dcebb7a8f2684633ec79be88:
 
-Regards,
-Peter
+  Linux 4.10-rc2 (2017-01-01 14:31:53 -0800)
 
- drivers/video/backlight/gpio_backlight.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+are available in the git repository at:
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 18134416b154..8be7d4d194d3 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -138,7 +138,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 		return PTR_ERR(bl);
- 	}
+  git://github.com/bzolnier/linux.git tags/fbdev-v4.10-rc2
+
+for you to fetch changes up to 4dcd19bfabaee8f9f4bcf203afba09b98ccbaf76:
+
+  video: fbdev: cobalt_lcdfb: Handle return NULL error from devm_ioremap (2017-01-04 12:58:45 +0100)
+
+----------------------------------------------------------------
+fbdev fixes for v4.10-rc2:
+
+- bring fbdev subsystem back into Maintained mode
+- add missing devm_ioremap() error checking to cobalt_lcdfb driver
+
+----------------------------------------------------------------
+Arvind Yadav (1):
+      video: fbdev: cobalt_lcdfb: Handle return NULL error from devm_ioremap
+
+Bartlomiej Zolnierkiewicz (1):
+      MAINTAINERS: add myself as maintainer of fbdev
+
+ MAINTAINERS                        | 4 +++-
+ drivers/video/fbdev/cobalt_lcdfb.c | 5 +++++
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index cfff2c9..2775b14 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5080,9 +5080,11 @@ F:	drivers/net/wan/dlci.c
+ F:	drivers/net/wan/sdla.c
  
--	bl->props.brightness = gbl->def_value;
-+	bl->props.power = gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
-+	bl->props.brightness = 1;
+ FRAMEBUFFER LAYER
++M:	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+ L:	linux-fbdev@vger.kernel.org
++T:	git git://github.com/bzolnier/linux.git
+ Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
+-S:	Orphan
++S:	Maintained
+ F:	Documentation/fb/
+ F:	drivers/video/
+ F:	include/video/
+diff --git a/drivers/video/fbdev/cobalt_lcdfb.c b/drivers/video/fbdev/cobalt_lcdfb.c
+index 2d3b691..038ac69 100644
+--- a/drivers/video/fbdev/cobalt_lcdfb.c
++++ b/drivers/video/fbdev/cobalt_lcdfb.c
+@@ -308,6 +308,11 @@ static int cobalt_lcdfb_probe(struct platform_device *dev)
+ 	info->screen_size = resource_size(res);
+ 	info->screen_base = devm_ioremap(&dev->dev, res->start,
+ 					 info->screen_size);
++	if (!info->screen_base) {
++		framebuffer_release(info);
++		return -ENOMEM;
++	}
 +
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
--- 
-2.11.0
+ 	info->fbops = &cobalt_lcd_fbops;
+ 	info->fix = cobalt_lcdfb_fix;
+ 	info->fix.smem_start = res->start;
 

@@ -1,128 +1,141 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 22 Jan 2017 14:49:42 +0000
-Subject: [PATCH v2 09/14] MIPS: JZ4780: CI20: Add pinctrl configuration for several drivers
-Message-Id: <20170122144947.16158-10-paul@crapouillou.net>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Thu, 05 Jan 2017 11:33:19 +0000
+Subject: [PATCH v8 2/3] console: Add callback to flush scrollback buffer to consw struct
+Message-Id: <20170105113320.18166-3-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170122144947.16158-1-paul@crapouillou.net>
-In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
+References: <20170105113320.18166-1-manuel.schoelling@gmx.de>
+In-Reply-To: <20170105113320.18166-1-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-We set the pin configuration for the jz4780-nand and jz4780-uart
-drivers.
+This new callback is in preparation for persistent scrollback buffer
+support for VGA consoles.
+With a single scrollback buffer for all consoles, we could flush the
+buffer just by invocating consw->con_switch(). But when each VGA console
+has its own scrollback buffer, we need a new callback to tell the
+video console driver which buffer to flush.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
+Tested-by: Adam Borowski <kilobyte@angband.pl>
 ---
- arch/mips/boot/dts/ingenic/ci20.dts | 60 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 60 insertions(+)
+ drivers/tty/vt/vt.c            |  9 +++++++++
+ drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
+ include/linux/console.h        |  4 ++++
+ 3 files changed, 36 insertions(+), 1 deletion(-)
 
-v2: Changed the devicetree bindings to match the new driver
-
-diff --git a/arch/mips/boot/dts/ingenic/ci20.dts b/arch/mips/boot/dts/ingenic/ci20.dts
-index 1652d8d60b1e..fd138d9978c1 100644
---- a/arch/mips/boot/dts/ingenic/ci20.dts
-+++ b/arch/mips/boot/dts/ingenic/ci20.dts
-@@ -29,18 +29,30 @@
- 
- &uart0 {
- 	status = "okay";
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 4c10a9df3b91..9d3ce505e7ab 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
+ 		vc->vc_sw->con_save_screen(vc);
+ }
+=20
++static void flush_scrollback(struct vc_data *vc)
++{
++	WARN_CONSOLE_UNLOCKED();
 +
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart0>;
++	if (vc->vc_sw->con_flush_scrollback)
++		vc->vc_sw->con_flush_scrollback(vc);
++}
++
+ /*
+  *	Redrawing of screen
+  */
+@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
+ 		case 3: /* erase scroll-back buffer (and whole display) */
+ 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
+ 				    vc->vc_screenbuf_size);
++			flush_scrollback(vc);
+ 			set_origin(vc);
+ 			if (con_is_visible(vc))
+ 				update_screen(vc);
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index 48b97648d4af..9a7c2bbc5326 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
+ 	int restore;
+ } vgacon_scrollback;
+=20
++static void vgacon_scrollback_reset(size_t reset_size)
++{
++	if (vgacon_scrollback.data && reset_size > 0)
++		memset(vgacon_scrollback.data, 0, reset_size);
++
++	vgacon_scrollback.cnt  =3D 0;
++	vgacon_scrollback.tail =3D 0;
++	vgacon_scrollback.cur  =3D 0;
++}
++
+ static void vgacon_scrollback_init(int pitch)
+ {
+ 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+ 	} else
+ 		vgacon_cursor(c, CM_MOVE);
+ }
++
++static void vgacon_flush_scrollback(struct vc_data *c)
++{
++	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++
++	if (c->vc_num =3D fg_console)
++		vgacon_scrollback_reset(size);
++}
+ #else
+ #define vgacon_scrollback_startup(...) do { } while (0)
+ #define vgacon_scrollback_init(...)    do { } while (0)
+@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
+lines)
+ 			vga_vram_size);
+ 	vga_set_mem_top(c);
+ }
++
++static void vgacon_flush_scrollback(struct vc_data *c)
++{
++}
+ #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
+=20
+ static const char *vgacon_startup(void)
+@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
+ int t, unsigned int b,
+ 	return true;
+ }
+=20
+-
+ /*
+  *  The console `switch' structure for the VGA based console
+  */
+@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
+ 	.con_save_screen =3D vgacon_save_screen,
+ 	.con_build_attr =3D vgacon_build_attr,
+ 	.con_invert_region =3D vgacon_invert_region,
++	.con_flush_scrollback =3D vgacon_flush_scrollback,
  };
- 
- &uart1 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart1>;
- };
- 
- &uart3 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart2>;
- };
- 
- &uart4 {
- 	status = "okay";
-+
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart4>;
- };
- 
- &nemc {
-@@ -61,6 +73,13 @@
- 		ingenic,nemc-tAW = <15>;
- 		ingenic,nemc-tSTRV = <100>;
- 
-+		/*
-+		 * Only CLE/ALE are needed for the devices that are connected, rather
-+		 * than the full address line set.
-+		 */
-+		pinctrl-names = "default";
-+		pinctrl-0 = <&pins_nemc>;
-+
- 		nand@1 {
- 			reg = <1>;
- 
-@@ -69,6 +88,9 @@
- 			nand-ecc-mode = "hw";
- 			nand-on-flash-bbt;
- 
-+			pinctrl-names = "default";
-+			pinctrl-0 = <&pins_nemc_cs1>;
-+
- 			partitions {
- 				compatible = "fixed-partitions";
- 				#address-cells = <2>;
-@@ -106,3 +128,41 @@
- &bch {
- 	status = "okay";
- };
-+
-+&pinctrl {
-+	pins_uart0: uart0 {
-+		function = "uart0";
-+		groups = "uart0-data";
-+		bias-disable;
-+	};
-+
-+	pins_uart1: uart1 {
-+		function = "uart1";
-+		groups = "uart1-data";
-+		bias-disable;
-+	};
-+
-+	pins_uart2: uart2 {
-+		function = "uart2";
-+		groups = "uart2-data", "uart2-hwflow";
-+		bias-disable;
-+	};
-+
-+	pins_uart4: uart4 {
-+		function = "uart4";
-+		groups = "uart4-data";
-+		bias-disable;
-+	};
-+
-+	pins_nemc: nemc {
-+		function = "nemc";
-+		groups = "nemc-data", "nemc-cle-ale", "nemc-rd-we", "nemc-frd-fwe";
-+		bias-disable;
-+	};
-+
-+	pins_nemc_cs1: nemc-cs1 {
-+		function = "nemc-cs1";
-+		groups = "nemc-cs1";
-+		bias-disable;
-+	};
-+};
--- 
+ EXPORT_SYMBOL(vga_con);
+=20
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 9c26c6685587..5949d1855589 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -73,6 +73,10 @@ struct consw {
+ 	u16    *(*con_screen_pos)(struct vc_data *, int);
+ 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
+ 	/*
++	 * Flush the video console driver's scrollback buffer
++	 */
++	void	(*con_flush_scrollback)(struct vc_data *);
++	/*
+ 	 * Prepare the console for the debugger.  This includes, but is not
+ 	 * limited to, unblanking the console, loading an appropriate
+ 	 * palette, and allowing debugger generated output.
+--=20
 2.11.0
 

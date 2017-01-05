@@ -1,581 +1,191 @@
-From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Fri, 27 Jan 2017 15:19:18 +0000
-Subject: [PATCH v4 1/2] backlight arcxcnn add support for ArcticSand devices
-Message-Id: <1485530358-6171-1-git-send-email-olimpiu@arcticsand.com>
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Date: Thu, 05 Jan 2017 10:27:23 +0000
+Subject: printk: reset may_schedule if console_trylock() from console_unlock()
+Message-Id: <201701051927.IJF65159.OFFtSLQOOFHJMV@I-love.SAKURA.ne.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+To: sergey.senozhatsky@gmail.com
+Cc: pmladek@suse.com, jack@suse.com, tj@kernel.org, kyle@kernel.org, davej@codemonkey.org.uk, calvinowens@fb.com, gregkh@linuxfoundation.org, jslaby@suse.cz, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.senozhatsky.work@gmail.com
 
-backlight: Add support for Arctic Sand LED backlight driver chips
-This driver provides support for the Arctic Sand arc2c0608 chip, 
-    and provides a framework to support future devices.
-Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
----
+(Excluding linux-mm and restarting as a new thread.)
 
-v3 => v4:
-- Code style changes per Joe Perches and Jingoo Han
-v2 => v3:
-- Renamed variables to comply with conventions on naming
-- Corrected device name in arcxcnn.h
-v1 => v2:
-- Removed "magic numbers" to initialize registers
-- Cleaned up device tree bindings
-- Fixed code style to address comments and pass "checkpatch"
-- Removed unneeded debug and testing code
+Sergey Senozhatsky wrote at http://lkml.kernel.org/r/20161226113407.GA515@tigerII.localdomain :
+> Cc Greg, Jiri,
+> 
+> On (12/26/16 19:54), Tetsuo Handa wrote:
+> [..]
+> > 
+> > (3) I got below warning. (Though not reproducible.)
+> >     If fb_flashcursor() called console_trylock(), console_may_schedule is set to 1?
+> 
+> hmmm... it takes an atomic/spin `printing_lock' lock in vt_console_print(),
+> then call console_conditional_schedule() from lf(), being under spin_lock.
+> `console_may_schedule' in console_conditional_schedule() still keeps the
+> value from console_trylock(), which was ok (console_may_schedule permits
+> rescheduling). but preemption got changed under console_trylock(), by
+> that spin_lock.
+> 
+> console_trylock() used to always forbid rescheduling; but it got changed
+> like a year ago.
 
- drivers/video/backlight/Kconfig      |   7 +
- drivers/video/backlight/Makefile     |   1 +
- drivers/video/backlight/arcxcnn_bl.c | 452 +++++++++++++++++++++++++++++++++++
- include/linux/i2c/arcxcnn.h          |  51 ++++
- 4 files changed, 511 insertions(+)
- create mode 100644 drivers/video/backlight/arcxcnn_bl.c
- create mode 100644 include/linux/i2c/arcxcnn.h
+Indeed, it seems to be an oversight in commit 6b97a20d3a7909da
+("printk: set may_schedule for some of console_trylock() callers").
+I understood what has happened. fb_flushcursor() was not the culprit.
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 5ffa4b4..4e1d2ad 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -460,6 +460,13 @@ config BACKLIGHT_BD6107
- 	help
- 	  If you have a Rohm BD6107 say Y to enable the backlight driver.
+> 
+> the other thing is... do we really need to console_conditional_schedule()
+> from fbcon_*()? console_unlock() does cond_resched() after every line it
+> prints. wouldn't that be enough?
+
+Every record, isn't it? How many bytes can a record write to consoles?
+CONSOLE_EXT_LOG_MAX bytes multiplied by MAX_CMDLINECONSOLES ?
+Might take longer than a second for each record?
+
+> 
+> so may be we can drop some of console_conditional_schedule()
+> call sites in fbcon. or update console_conditional_schedule()
+> function to always return the current preemption value, not the
+> one we saw in console_trylock().
+
+Replacing console_may_schedule with get_console_may_schedule() will avoid
+this bug. I noticed that we forgot to reset console_may_schedule to 0
+because the "again:" label is located after the assignment line.
+
+> > ----------------------------------------
+> > [  OK  [  255.862188] audit: type31 audit(1482733112.662:148): pid=1 uid=0 auidB94967295 sesB94967295 msg='unit=systemd-tmpfiles-setup-dev comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
+> > ] Stopped Create Static Device Nodes in /dev.
+> > 
+> > [  255.871468] BUG: sleeping function called from invalid context at kernel/printk/printk.c:2325
+> > [  255.871469] in_atomic(): 1, irqs_disabled(): 1, pid: 10079, name: plymouthd
+> > [  255.871469] 6 locks held by plymouthd/10079:
+> > [  255.871470]  #0:  (&tty->ldisc_sem){++++.+}, at: [<ffffffff817413e2>] ldsem_down_read+0x32/0x40
+> > [  255.871472]  #1:  (&tty->atomic_write_lock){+.+.+.}, at: [<ffffffff81424309>] tty_write_lock+0x19/0x50
+> > [  255.871474]  #2:  (&tty->termios_rwsem){++++..}, at: [<ffffffff81429d59>] n_tty_write+0x99/0x470
+> > [  255.871475]  #3:  (&ldata->output_lock){+.+...}, at: [<ffffffff81429df0>] n_tty_write+0x130/0x470
+> > [  255.871477]  #4:  (console_lock){+.+.+.}, at: [<ffffffff8110616e>] console_unlock+0x33e/0x6b0
+> > [  255.871479]  #5:  (printing_lock){......}, at: [<ffffffff8143baf5>] vt_console_print+0x75/0x3d0
+> > [  255.871481] irq event stamp: 15244
+> > [  255.871481] hardirqs last  enabled at (15243): [<ffffffff81105011>] __down_trylock_console_sem+0x91/0xa0
+> > [  255.871482] hardirqs last disabled at (15244): [<ffffffff81105ea4>] console_unlock+0x74/0x6b0
+> > [  255.871482] softirqs last  enabled at (14968): [<ffffffff81096394>] __do_softirq+0x344/0x580
+> > [  255.871482] softirqs last disabled at (14963): [<ffffffff810968d3>] irq_exit+0xe3/0x120
+> > [  255.871483] CPU: 0 PID: 10079 Comm: plymouthd Not tainted 4.9.0-next-20161224+ #12
+> > [  255.871483] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 07/31/2013
+> > [  255.871484] Call Trace:
+> > [  255.871484]  dump_stack+0x85/0xc9
+> > [  255.871485]  ___might_sleep+0x14a/0x250
+> > [  255.871485]  console_conditional_schedule+0x22/0x30
+> > [  255.871485]  fbcon_redraw.isra.24+0xa3/0x1d0
+> > [  255.871486]  ? fbcon_cursor+0x151/0x1c0
+> > [  255.871486]  fbcon_scroll+0x11d/0xcb0
+> > [  255.871487]  con_scroll+0x160/0x170
+> > [  255.871487]  lf+0x9c/0xb0
+> > [  255.871487]  vt_console_print+0x2b7/0x3d0
+> > [  255.871488]  console_unlock+0x457/0x6b0
+> > [  255.871488]  do_con_write.part.19+0x737/0x9e0
+> > [  255.871489]  ? mark_held_locks+0x71/0x90
+> > [  255.871489]  con_write+0x57/0x60
+> > [  255.871489]  n_tty_write+0x1bf/0x470
+> > [  255.871490]  ? prepare_to_wait_event+0x110/0x110
+> > [  255.871490]  tty_write+0x157/0x2d0
+> > [  255.871491]  ? n_tty_open+0xd0/0xd0
+> > [  255.871491]  __vfs_write+0x32/0x140
+> > [  255.871491]  ? trace_hardirqs_on+0xd/0x10
+> > [  255.871492]  ? __audit_syscall_entry+0xaa/0xf0
+> > [  255.871492]  vfs_write+0xc2/0x1f0
+> > [  255.871493]  ? syscall_trace_enter+0x1cb/0x3e0
+> > [  255.871493]  SyS_write+0x53/0xc0
+> > [  255.871493]  do_syscall_64+0x67/0x1f0
+> > [  255.871494]  entry_SYSCALL64_slow_path+0x25/0x25
+> > [  255.871494] RIP: 0033:0x7fb74cf8fc60
+> > [  255.871495] RSP: 002b:00007ffcaab3fe88 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+> > [  255.871495] RAX: ffffffffffffffda RBX: 000055d3acaf7160 RCX: 00007fb74cf8fc60
+> > [  255.871496] RDX: 000000000000003f RSI: 000055d3acafd090 RDI: 0000000000000009
+> > [  255.871496] RBP: 000055d3acafc440 R08: 0000000000000070 R09: 0000000000000000
+> > [  255.871497] R10: 000000000000003f R11: 0000000000000246 R12: 000055d3acafc330
+> > [  255.871497] R13: 000000000000003f R14: 00007ffcaab3ffb0 R15: 0000000000000000
+> >          Stopping Create Static Device Nodes in /dev...
+
+What happened here was:
+
+(1) /usr/sbin/plymouthd requested write() syscall against tty.
+
+(2) write() syscall invoked console_unlock() via tty_write().
+
+(3) Since write() syscall is sleepable context, console_may_schedule was 1
+    as of entering into console_unlock().
+
+(4) console_unlock() set do_cond_resched to 1 and set console_may_schedule
+    to 0 so that console drivers won't call cond_resched() from
+    console_conditional_schedule() because printk_safe_enter(flags) in
+    console_unlock() disables hardirqs.
+
+(5) /usr/sbin/plymouthd left the "for (;;)" loop in console_unlock().
+
+(6) Since an audit log from /usr/lib/systemd/systemd was added to printk
+    buffer via kauditd_printk_skb() because /usr/sbin/auditd terminated
+    due to shutdown sequence, /usr/sbin/plymouthd found that
+    console_seq != log_next_seq is true.
+
+(7) /usr/sbin/plymouthd calls console_trylock(), and console_trylock() returned
+    1 because nobody was holding console_sem. console_may_schedule was 1 as of
+    returning from console_trylock() because write() syscall is sleepable context.
+
+(8) However, "goto again;" jumped to a line which is after setting
+    console_may_schedule to 0. This is the cause of this problem.
+    As a result, console_may_schedule remained 1.
+
+(9) console_conditional_schedule() was called from vt_console_print() via
+    call_console_drivers(). And cond_resched() was by error called due to (8).
+
+The correct behavior I guess is
+
+----------
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 8b26964..ce53488 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2186,6 +2186,7 @@ void console_unlock(void)
+ 	bool wake_klogd = false;
+ 	bool do_cond_resched, retry;
  
-+config BACKLIGHT_ARCXCNN
-+	tristate "Backlight driver for the Arctic Sands ARCxCnnnn family"
-+	depends on I2C
-+	help
-+	  If you have an ARCxCnnnn family backlight say Y to enable
-+	  the backlight driver.
-+
- endif # BACKLIGHT_CLASS_DEVICE
++again:
+ 	if (console_suspended) {
+ 		up_console_sem();
+ 		return;
+@@ -2204,7 +2205,6 @@ void console_unlock(void)
+ 	do_cond_resched = console_may_schedule;
+ 	console_may_schedule = 0;
  
- endif # BACKLIGHT_LCD_SUPPORT
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 16ec534..8905129 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -55,3 +55,4 @@ obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
- obj-$(CONFIG_BACKLIGHT_TOSA)		+= tosa_bl.o
- obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
- obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
-+obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
-diff --git a/drivers/video/backlight/arcxcnn_bl.c b/drivers/video/backlight/arcxcnn_bl.c
-new file mode 100644
-index 0000000..284df08
---- /dev/null
-+++ b/drivers/video/backlight/arcxcnn_bl.c
-@@ -0,0 +1,452 @@
-+/*
-+ * Backlight driver for ArcticSand ARC_X_C_0N_0N Devices
-+ *
-+ * Copyright 2016 ArcticSand, Inc.
-+ * Author : Brian Dodge <bdodge@arcticsand.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#include <linux/backlight.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+
-+#include "linux/i2c/arcxcnn.h"
-+
-+#define ARCXCNN_CMD		0x00	/* Command Register */
-+#define ARCXCNN_CMD_STDBY	0x80	/*   I2C Standby */
-+#define ARCXCNN_CMD_RESET	0x40	/*   Reset */
-+#define ARCXCNN_CMD_BOOST	0x10	/*   Boost */
-+#define ARCXCNN_CMD_OVP_MASK	0x0C	/*   --- Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_XXV	0x0C	/*   <rsvrd> Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_20V	0x08	/*   20v Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_24V	0x04	/*   24v Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_31V	0x00	/*   31.4v Over Voltage Threshold */
-+#define ARCXCNN_CMD_EXT_COMP	0x01	/*   part (0) or full (1) ext. comp */
-+
-+#define ARCXCNN_CONFIG		0x01	/* Configuration */
-+#define ARCXCNN_STATUS1		0x02	/* Status 1 */
-+#define ARCXCNN_STATUS2		0x03	/* Status 2 */
-+#define ARCXCNN_FADECTRL	0x04	/* Fading Control */
-+#define ARCXCNN_ILED_CONFIG	0x05	/* ILED Configuration */
-+#define ARCXCNN_ILED_DIM_PWM	0x00	/*   config dim mode pwm */
-+#define ARCXCNN_ILED_DIM_INT	0x04	/*   config dim mode internal */
-+#define ARCXCNN_LEDEN		0x06	/* LED Enable Register */
-+#define ARCXCNN_LEDEN_ISETEXT	0x80	/*   Full-scale current set extern */
-+#define ARCXCNN_LEDEN_MASK	0x3F	/*   LED string enables mask */
-+#define ARCXCNN_LEDEN_BITS	0x06	/*   Bits of LED string enables */
-+#define ARCXCNN_LEDEN_LED1	0x01
-+#define ARCXCNN_LEDEN_LED2	0x02
-+#define ARCXCNN_LEDEN_LED3	0x04
-+#define ARCXCNN_LEDEN_LED4	0x08
-+#define ARCXCNN_LEDEN_LED5	0x10
-+#define ARCXCNN_LEDEN_LED6	0x20
-+
-+#define ARCXCNN_WLED_ISET_LSB	0x07	/* LED ISET LSB (in upper nibble) */
-+#define ARCXCNN_WLED_ISET_LSB_SHIFT 0x04  /* ISET LSB Left Shift */
-+#define ARCXCNN_WLED_ISET_MSB	0x08	/* LED ISET MSB (8 bits) */
-+
-+#define ARCXCNN_DIMFREQ		0x09
-+#define ARCXCNN_COMP_CONFIG	0x0A
-+#define ARCXCNN_FILT_CONFIG	0x0B
-+#define ARCXCNN_IMAXTUNE	0x0C
-+#define ARCXCNN_ID_MSB		0x1E
-+#define ARCXCNN_ID_LSB		0x1F
-+
-+#define MAX_BRIGHTNESS		4095
-+
-+static int s_no_reset_on_remove;
-+module_param_named(noreset, s_no_reset_on_remove, int, 0644);
-+MODULE_PARM_DESC(noreset, "No reset on module removal");
-+
-+static int s_ibright = 60;
-+module_param_named(ibright, s_ibright, int, 0644);
-+MODULE_PARM_DESC(ibright, "Initial brightness (when no plat data)");
-+
-+static int s_ileden = ARCXCNN_LEDEN_MASK;
-+module_param_named(ileden, s_ileden, int, 0644);
-+MODULE_PARM_DESC(ileden, "Initial LED String Enables (when no plat data)");
-+
-+struct arcxcnn {
-+	char chipname[64];
-+	struct i2c_client *client;
-+	struct backlight_device *bl;
-+	struct device *dev;
-+	struct arcxcnn_platform_data *pdata;
-+};
-+
-+static int arcxcnn_update_bit(struct arcxcnn *lp, u8 reg, u8 mask, u8 data)
-+{
-+	int ret;
-+	u8 tmp;
-+
-+	ret = i2c_smbus_read_byte_data(lp->client, reg);
-+	if (ret < 0) {
-+		dev_err(lp->dev, "failed to read 0x%.2x\n", reg);
-+		return ret;
-+	}
-+
-+	tmp = (u8)ret;
-+	tmp &= ~mask;
-+	tmp |= data & mask;
-+
-+	return i2c_smbus_write_byte_data(lp->client, reg, tmp);
-+}
-+
-+static int arcxcnn_set_brightness(struct arcxcnn *lp, u32 brightness)
-+{
-+	int ret;
-+	u8 val;
-+
-+	/* lower nibble of brightness goes in upper nibble of LSB register */
-+	val = (brightness & 0xF) << ARCXCNN_WLED_ISET_LSB_SHIFT;
-+	ret = i2c_smbus_write_byte_data(lp->client, ARCXCNN_WLED_ISET_LSB, val);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* remaining 8 bits of brightness go in MSB register */
-+	val = (brightness >> 4);
-+	ret = i2c_smbus_write_byte_data(lp->client, ARCXCNN_WLED_ISET_MSB, val);
-+
-+	return ret;
-+}
-+
-+static int arcxcnn_bl_update_status(struct backlight_device *bl)
-+{
-+	struct arcxcnn *lp = bl_get_data(bl);
-+	u32 brightness = bl->props.brightness;
-+
-+	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-+		brightness = 0;
-+
-+	arcxcnn_set_brightness(lp, brightness);
-+
-+	/* set power-on/off/save modes */
-+	arcxcnn_update_bit(lp, ARCXCNN_CMD, ARCXCNN_CMD_STDBY,
-+		(bl->props.power = 0) ? 0 : ARCXCNN_CMD_STDBY);
-+
-+	return 0;
-+}
-+
-+static const struct backlight_ops arcxcnn_bl_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = arcxcnn_bl_update_status,
-+};
-+
-+static int arcxcnn_backlight_register(struct arcxcnn *lp)
-+{
-+	struct backlight_properties *props;
-+	const char *name = lp->pdata->name ? : "arctic_bl";
-+
-+	props = devm_kzalloc(lp->dev, sizeof(*props), GFP_KERNEL);
-+	if (!props)
-+		return -ENOMEM;
-+
-+	props->type = BACKLIGHT_PLATFORM;
-+	props->max_brightness = MAX_BRIGHTNESS;
-+
-+	if (lp->pdata->initial_brightness > props->max_brightness)
-+		lp->pdata->initial_brightness = props->max_brightness;
-+
-+	props->brightness = lp->pdata->initial_brightness;
-+
-+	lp->bl = devm_backlight_device_register(lp->dev, name, lp->dev, lp,
-+				       &arcxcnn_bl_ops, props);
-+	if (IS_ERR(lp->bl))
-+		return PTR_ERR(lp->bl);
-+
-+	return 0;
-+}
-+
-+static ssize_t arcxcnn_chip_id_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%s\n", lp->chipname);
-+}
-+
-+static ssize_t arcxcnn_leden_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%02X\n", lp->pdata->leden);
-+}
-+
-+static ssize_t arcxcnn_leden_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t len)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
-+	unsigned long leden;
-+
-+	if (kstrtoul(buf, 0, &leden))
-+		return 0;
-+
-+	if (leden != lp->pdata->leden) {
-+		/* don't allow 0 for leden, use power to turn all off */
-+		if (leden = 0)
-+			return -EINVAL;
-+		lp->pdata->leden = leden & ARCXCNN_LEDEN_MASK;
-+		arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
-+			ARCXCNN_LEDEN_MASK, lp->pdata->leden);
-+	}
-+
-+	return len;
-+}
-+
-+static DEVICE_ATTR(chip_id, 0444, arcxcnn_chip_id_show, NULL);
-+static DEVICE_ATTR(leden, 0664, arcxcnn_leden_show, arcxcnn_leden_store);
-+
-+static struct attribute *arcxcnn_attributes[] = {
-+	&dev_attr_chip_id.attr,
-+	&dev_attr_leden.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group arcxcnn_attr_group = {
-+	.attrs = arcxcnn_attributes,
-+};
-+
-+static void arcxcnn_parse_dt(struct arcxcnn *lp)
-+{
-+	struct device *dev = lp->dev;
-+	struct device_node *node = dev->of_node;
-+	u32 prog_val, num_entry, entry, sources[ARCXCNN_LEDEN_BITS];
-+	int ret;
-+
-+	/* device tree entry isn't required, defaults are OK */
-+	if (!node)
-+		return;
-+
-+	ret = of_property_read_string(node, "label", &lp->pdata->name);
-+	if (ret < 0)
-+		lp->pdata->name = NULL;
-+
-+	ret = of_property_read_u32(node, "default-brightness", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->initial_brightness = prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,led-config-0", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->led_config_0 = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,led-config-1", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->led_config_1 = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,dim-freq", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->dim_freq = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,comp-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->comp_config = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,filter-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->filter_config = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arcticsand,trim-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->trim_config = (u8)prog_val;
-+
-+	ret = of_property_count_u32_elems(node, "led-sources");
-+	if (ret < 0) {
-+		lp->pdata->leden = ARCXCNN_LEDEN_MASK; /* all on is default */
-+	} else {
-+		num_entry = ret;
-+		if (num_entry > ARCXCNN_LEDEN_BITS)
-+			num_entry = ARCXCNN_LEDEN_BITS;
-+
-+		ret = of_property_read_u32_array(node, "led-sources", sources,
-+					num_entry);
-+		if (ret < 0) {
-+			dev_err(dev, "led-sources node is invalid.\n");
-+			return;
-+		}
-+
-+		lp->pdata->leden = 0;
-+
-+		/* for each enable in source, set bit in led enable */
-+		for (entry = 0; entry < num_entry; entry++) {
-+			u8 onbit = 1 << sources[entry];
-+
-+			lp->pdata->leden |= onbit;
-+		}
-+	}
-+}
-+
-+static int arcxcnn_probe(struct i2c_client *cl, const struct i2c_device_id *id)
-+{
-+	struct arcxcnn *lp;
-+	int ret;
-+	u8 regval;
-+	u16 chipid;
-+
-+	if (!i2c_check_functionality(cl->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-+		return -EIO;
-+
-+	lp = devm_kzalloc(&cl->dev, sizeof(*lp), GFP_KERNEL);
-+	if (!lp)
-+		return -ENOMEM;
-+
-+	lp->client = cl;
-+	lp->dev = &cl->dev;
-+	lp->pdata = dev_get_platdata(&cl->dev);
-+
-+	/* reset the device */
-+	i2c_smbus_write_byte_data(lp->client,
-+		ARCXCNN_CMD, ARCXCNN_CMD_RESET);
-+
-+	/* read device ID */
-+	regval = i2c_smbus_read_byte_data(lp->client, ARCXCNN_ID_MSB);
-+	chipid = regval;
-+	chipid <<= 8;
-+
-+	regval = i2c_smbus_read_byte_data(lp->client, ARCXCNN_ID_LSB);
-+	chipid |= regval;
-+
-+	snprintf(lp->chipname, sizeof(lp->chipname),
-+		"%s-%04X", id->name, chipid);
-+
-+	if (!lp->pdata) {
-+		lp->pdata = devm_kzalloc(lp->dev,
-+				sizeof(*lp->pdata), GFP_KERNEL);
-+		if (!lp->pdata)
-+			return -ENOMEM;
-+
-+		/* Setup defaults based on power-on defaults */
-+		lp->pdata->name = NULL;
-+		lp->pdata->initial_brightness = s_ibright;
-+		lp->pdata->leden = s_ileden;
-+
-+		lp->pdata->led_config_0 = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_FADECTRL);
-+
-+		lp->pdata->led_config_1 = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_ILED_CONFIG);
-+		/* insure dim mode is not default pwm */
-+		lp->pdata->led_config_1 |= ARCXCNN_ILED_DIM_INT;
-+
-+		lp->pdata->dim_freq = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_DIMFREQ);
-+
-+		lp->pdata->comp_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_COMP_CONFIG);
-+
-+		lp->pdata->filter_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_FILT_CONFIG);
-+
-+		lp->pdata->trim_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_IMAXTUNE);
-+
-+		if (IS_ENABLED(CONFIG_OF))
-+			arcxcnn_parse_dt(lp);
-+	}
-+
-+	i2c_set_clientdata(cl, lp);
-+
-+	/* constrain settings to what is possible */
-+	if (lp->pdata->initial_brightness > MAX_BRIGHTNESS)
-+		lp->pdata->initial_brightness = MAX_BRIGHTNESS;
-+
-+	/* set initial brightness */
-+	arcxcnn_set_brightness(lp, lp->pdata->initial_brightness);
-+
-+	/* set other register values directly */
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_FADECTRL,
-+		lp->pdata->led_config_0);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_ILED_CONFIG,
-+		lp->pdata->led_config_1);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_DIMFREQ,
-+		lp->pdata->dim_freq);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_COMP_CONFIG,
-+		lp->pdata->comp_config);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_FILT_CONFIG,
-+		lp->pdata->filter_config);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_IMAXTUNE,
-+		lp->pdata->trim_config);
-+
-+	/* set initial LED Enables */
-+	arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
-+		ARCXCNN_LEDEN_MASK, lp->pdata->leden);
-+
-+	ret = arcxcnn_backlight_register(lp);
-+	if (ret) {
-+		dev_err(lp->dev,
-+			"failed to register backlight. err: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = sysfs_create_group(&lp->dev->kobj, &arcxcnn_attr_group);
-+	if (ret) {
-+		dev_err(lp->dev, "failed to register sysfs. err: %d\n", ret);
-+		return ret;
-+	}
-+
-+	backlight_update_status(lp->bl);
-+
-+	return 0;
-+}
-+
-+static int arcxcnn_remove(struct i2c_client *cl)
-+{
-+	struct arcxcnn *lp = i2c_get_clientdata(cl);
-+
-+	if (!s_no_reset_on_remove) {
-+		/* disable all strings */
-+		i2c_smbus_write_byte_data(lp->client,
-+			ARCXCNN_LEDEN, 0x00);
-+		/* reset the device */
-+		i2c_smbus_write_byte_data(lp->client,
-+			ARCXCNN_CMD, ARCXCNN_CMD_RESET);
-+	}
-+	lp->bl->props.brightness = 0;
-+
-+	backlight_update_status(lp->bl);
-+
-+	sysfs_remove_group(&lp->dev->kobj, &arcxcnn_attr_group);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id arcxcnn_dt_ids[] = {
-+	{ .compatible = "arc,arc2c0608" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, arcxcnn_dt_ids);
-+
-+static const struct i2c_device_id arcxcnn_ids[] = {
-+	{"arc2c0608", ARC2C0608},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, arcxcnn_ids);
-+
-+static struct i2c_driver arcxcnn_driver = {
-+	.driver = {
-+		.name = "arcxcnn_bl",
-+		.of_match_table = of_match_ptr(arcxcnn_dt_ids),
-+	},
-+	.probe = arcxcnn_probe,
-+	.remove = arcxcnn_remove,
-+	.id_table = arcxcnn_ids,
-+};
-+module_i2c_driver(arcxcnn_driver);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Brian Dodge <bdodge@arcticsand.com>");
-+MODULE_DESCRIPTION("ARCXCNN Backlight driver");
-diff --git a/include/linux/i2c/arcxcnn.h b/include/linux/i2c/arcxcnn.h
-new file mode 100644
-index 0000000..e378d63
---- /dev/null
-+++ b/include/linux/i2c/arcxcnn.h
-@@ -0,0 +1,51 @@
-+/*
-+ * Backlight driver for ArcticSand ARC_X_C_0N_0N Devices
-+ *
-+ * Copyright 2016 ArcticSand, Inc.
-+ * Author : Brian Dodge <bdodge@arcticsand.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _ARCXCNN_H
-+#define _ARCXCNN_H
-+
-+enum arcxcnn_chip_id {
-+	ARC2C0608
-+};
-+
-+/**
-+ * struct arcxcnn_platform_data
-+ * @name		: Backlight driver name (NULL will use default)
-+ * @initial_brightness	: initial value of backlight brightness
-+ * @leden		: initial LED string enables, upper bit is global on/off
-+ * @led_config_0	: fading speed (period between intensity steps)
-+ * @led_config_1	: misc settings, see datasheet
-+ * @dim_freq		: pwm dimming frequency if in pwm mode
-+ * @comp_config		: misc config, see datasheet
-+ * @filter_config	: RC/PWM filter config, see datasheet
-+ * @trim_config		: full scale current trim, see datasheet
-+ */
-+struct arcxcnn_platform_data {
-+	const char *name;
-+	u16 initial_brightness;
-+	u8	leden;
-+	u8	led_config_0;
-+	u8	led_config_1;
-+	u8	dim_freq;
-+	u8	comp_config;
-+	u8	filter_config;
-+	u8	trim_config;
-+};
-+
-+#endif
--- 
-2.7.4
+-again:
+ 	/*
+ 	 * We released the console_sem lock, so we need to recheck if
+ 	 * cpu is online and (if not) is there at least one CON_ANYTIME
+----------
 
+optionally with
+
+----------
+@@ -2297,11 +2297,13 @@ void console_unlock(void)
+ 	retry = console_seq != log_next_seq;
+ 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+ 
+-	if (retry && console_trylock())
+-		goto again;
+-
+ 	if (wake_klogd)
+ 		wake_up_klogd();
++
++	if (retry && console_trylock()) {
++		wake_klogd = false;
++		goto again;
++	}
+ }
+ EXPORT_SYMBOL(console_unlock);
+ 
+----------
+
+so that current thread will act as if current thread again called
+console_unlock() immediately after returning from console_trylock().

@@ -1,45 +1,24 @@
-From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Date: Wed, 04 Jan 2017 09:03:50 +0000
-Subject: Re: [PATCH] uapi: use wildcards to list files
-Message-Id: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+From: Michal Hocko <mhocko@kernel.org>
+Date: Thu, 05 Jan 2017 09:23:07 +0000
+Subject: setting brightness as privileged operation?
+Message-Id: <20170105092307.GD21618@dhcp22.suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161203.192346.1198940437155108508.davem@davemloft.net>
- <1483454144-10519-1-git-send-email-nicolas.dichtel@6wind.com>
- <2108827.WpE3IvfEdH@wuerfel>
-In-Reply-To: <2108827.WpE3IvfEdH@wuerfel>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, netfilter-devel@vger.kernel.org, linux-nfs@vger.kernel.org, linux-raid@vger.kernel.org, linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, linux-rdma@vger.kernel.org, fcoe-devel@open-fcoe.org, alsa-devel@alsa-project.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, davem@davemloft.net, airlied@linux.ie, David Howells <dhowells@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Le 03/01/2017 =E0 22:37, Arnd Bergmann a =E9crit :
-> On Tuesday, January 3, 2017 3:35:44 PM CET Nicolas Dichtel wrote:
->> Regularly, when a new header is created in include/uapi/, the developer
->> forgets to add it in the corresponding Kbuild file. This error is usually
->> detected after the release is out.
->>
->> In fact, all headers under include/uapi/ should be exported, so let's
->> use wildcards.
->=20
-> I think the idea makes a lot of sense: if a header is in uapi, we should
-> really export it. However, using a wildcard expression seems a bit
-> backwards here, I think we should make this implicit and not have the
-> Kbuild file at all.
->=20
-> The "header-y" syntax was originally added back when the uapi headers
-> were mixed with the internal headers in the same directory. After
-> David Howells introduced the separate directory for uapi, it has
-> become a bit redundant.
-Ok, thank you for the explanation, I was wondering why those Kbuild files w=
-ere
-needed.
+Hi,
+I have just learned that my Xfce Power Manager cannot manipulate
+brightness because I do not have policykit installed on my computer.
+There is a reason for that (yeah it depends on systemd which I prefer
+not have).
 
->=20
-> Can you try to modify scripts/Makefile.headersinst instead so we
-> can simply remove the Kbuild files entirely?
-I will try something.
-
-
-Regards,
-Nicolas
+While this is clearly a problem of the Xfce applet I am wondering why
+setting the brightness has to be a privileged operation at all. Is there
+any strong reason for it or just a general policy that we do not give
+world writable files into sysfs?
+-- 
+Michal Hocko
+SUSE Labs

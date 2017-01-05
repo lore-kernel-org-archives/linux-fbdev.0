@@ -1,16 +1,15 @@
 From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 02 Jan 2017 14:27:38 +0000
-Subject: [PATCH RESEND v7 1/3] console: Move scrollback data into its own struct
-Message-Id: <1483367260-3836-2-git-send-email-manuel.schoelling@gmx.de>
+Date: Thu, 05 Jan 2017 11:33:18 +0000
+Subject: [PATCH v8 1/3] console: Move scrollback data into its own struct
+Message-Id: <20170105113320.18166-2-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
- <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
+References: <20170105113320.18166-1-manuel.schoelling@gmx.de>
+In-Reply-To: <20170105113320.18166-1-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
 This refactoring is in preparation for persistent scrollback
 support for VGA console.
@@ -19,14 +18,13 @@ Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
 Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
 Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
 Tested-by: Adam Borowski <kilobyte@angband.pl>
-
 ---
  drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
 ----
  1 file changed, 47 insertions(+), 44 deletions(-)
 
 diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c22a562..48b9764 100644
+index c22a56232b7c..48b97648d4af 100644
 --- a/drivers/video/console/vgacon.c
 +++ b/drivers/video/console/vgacon.c
 @@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
@@ -208,5 +206,5 @@ c, int t, int count)
  		}
 =20
 --=20
-2.1.4
+2.11.0
 

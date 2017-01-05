@@ -1,191 +1,70 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Thu, 05 Jan 2017 10:27:23 +0000
-Subject: printk: reset may_schedule if console_trylock() from console_unlock()
-Message-Id: <201701051927.IJF65159.OFFtSLQOOFHJMV@I-love.SAKURA.ne.jp>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Date: Thu, 05 Jan 2017 10:56:18 +0000
+Subject: Re: printk: reset may_schedule if console_trylock() from console_unlock()
+Message-Id: <20170105105618.GE480@jagdpanzerIV.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <201701051927.IJF65159.OFFtSLQOOFHJMV@I-love.SAKURA.ne.jp>
+In-Reply-To: <201701051927.IJF65159.OFFtSLQOOFHJMV@I-love.SAKURA.ne.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sergey.senozhatsky@gmail.com
-Cc: pmladek@suse.com, jack@suse.com, tj@kernel.org, kyle@kernel.org, davej@codemonkey.org.uk, calvinowens@fb.com, gregkh@linuxfoundation.org, jslaby@suse.cz, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.senozhatsky.work@gmail.com
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: sergey.senozhatsky@gmail.com, pmladek@suse.com, jack@suse.com, tj@kernel.org, kyle@kernel.org, davej@codemonkey.org.uk, calvinowens@fb.com, gregkh@linuxfoundation.org, jslaby@suse.cz, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sergey.senozhatsky.work@gmail.com
 
-(Excluding linux-mm and restarting as a new thread.)
-
-Sergey Senozhatsky wrote at http://lkml.kernel.org/r/20161226113407.GA515@tigerII.localdomain :
-> Cc Greg, Jiri,
+On (01/05/17 19:27), Tetsuo Handa wrote:
+[..]
+> > the other thing is... do we really need to console_conditional_schedule()
+> > from fbcon_*()? console_unlock() does cond_resched() after every line it
+> > prints. wouldn't that be enough?
 > 
-> On (12/26/16 19:54), Tetsuo Handa wrote:
-> [..]
-> > 
-> > (3) I got below warning. (Though not reproducible.)
-> >     If fb_flashcursor() called console_trylock(), console_may_schedule is set to 1?
+> Every record, isn't it?
+
+yes. after every call to console drivers.
+
+
+> How many bytes can a record write to consoles?
+
+1024 - PREFIX_MAX bytes at most.
+
+
+> > so may be we can drop some of console_conditional_schedule()
+> > call sites in fbcon. or update console_conditional_schedule()
+> > function to always return the current preemption value, not the
+> > one we saw in console_trylock().
 > 
-> hmmm... it takes an atomic/spin `printing_lock' lock in vt_console_print(),
-> then call console_conditional_schedule() from lf(), being under spin_lock.
-> `console_may_schedule' in console_conditional_schedule() still keeps the
-> value from console_trylock(), which was ok (console_may_schedule permits
-> rescheduling). but preemption got changed under console_trylock(), by
-> that spin_lock.
+> Replacing console_may_schedule with get_console_may_schedule() will avoid
+> this bug. I noticed that we forgot to reset console_may_schedule to 0
+> because the "again:" label is located after the assignment line.
+
+well...
+we call cond_resched() from under the spin_lock(), which modifies the
+preempt count and cond_resched() which we call from
+console_conditional_schedule() checks that current->preempt count is
+0 before it calls tif_need_resched().
+
+there are configs/setups where spinlock does not modify preempt count,
+but I suspect that on those setups cond_resched() does nothing.
+
+so it looks to me that we just WARN from ___might_sleep() but, at least
+in this particular case, I don't think we can actually schedule().
+but I just had a very quick look, so I may be completely wrong. need
+to double check.
+
+what I tried to say:
+-- I will send out a patch for printk() once we settle down the current
+   work in progress.
+
+why do I want to address this in printk? because who knows, may be there
+is (or there will be) something out there that takes rcu_read_lock() and
+then does the console_conditional_schedule(). rcu does not modify current
+preempt count, it has its own preempt counter, and get_console_may_schedule()
+takes that into account.
+
+
+> What happened here was:
 > 
-> console_trylock() used to always forbid rescheduling; but it got changed
-> like a year ago.
+> [...]
 
-Indeed, it seems to be an oversight in commit 6b97a20d3a7909da
-("printk: set may_schedule for some of console_trylock() callers").
-I understood what has happened. fb_flushcursor() was not the culprit.
+I need more time to walk through your analysis/proposal.
 
-> 
-> the other thing is... do we really need to console_conditional_schedule()
-> from fbcon_*()? console_unlock() does cond_resched() after every line it
-> prints. wouldn't that be enough?
-
-Every record, isn't it? How many bytes can a record write to consoles?
-CONSOLE_EXT_LOG_MAX bytes multiplied by MAX_CMDLINECONSOLES ?
-Might take longer than a second for each record?
-
-> 
-> so may be we can drop some of console_conditional_schedule()
-> call sites in fbcon. or update console_conditional_schedule()
-> function to always return the current preemption value, not the
-> one we saw in console_trylock().
-
-Replacing console_may_schedule with get_console_may_schedule() will avoid
-this bug. I noticed that we forgot to reset console_may_schedule to 0
-because the "again:" label is located after the assignment line.
-
-> > ----------------------------------------
-> > [  OK  [  255.862188] audit: type31 audit(1482733112.662:148): pid=1 uid=0 auidB94967295 sesB94967295 msg='unit=systemd-tmpfiles-setup-dev comm="systemd" exe="/usr/lib/systemd/systemd" hostname=? addr=? terminal=? res=success'
-> > ] Stopped Create Static Device Nodes in /dev.
-> > 
-> > [  255.871468] BUG: sleeping function called from invalid context at kernel/printk/printk.c:2325
-> > [  255.871469] in_atomic(): 1, irqs_disabled(): 1, pid: 10079, name: plymouthd
-> > [  255.871469] 6 locks held by plymouthd/10079:
-> > [  255.871470]  #0:  (&tty->ldisc_sem){++++.+}, at: [<ffffffff817413e2>] ldsem_down_read+0x32/0x40
-> > [  255.871472]  #1:  (&tty->atomic_write_lock){+.+.+.}, at: [<ffffffff81424309>] tty_write_lock+0x19/0x50
-> > [  255.871474]  #2:  (&tty->termios_rwsem){++++..}, at: [<ffffffff81429d59>] n_tty_write+0x99/0x470
-> > [  255.871475]  #3:  (&ldata->output_lock){+.+...}, at: [<ffffffff81429df0>] n_tty_write+0x130/0x470
-> > [  255.871477]  #4:  (console_lock){+.+.+.}, at: [<ffffffff8110616e>] console_unlock+0x33e/0x6b0
-> > [  255.871479]  #5:  (printing_lock){......}, at: [<ffffffff8143baf5>] vt_console_print+0x75/0x3d0
-> > [  255.871481] irq event stamp: 15244
-> > [  255.871481] hardirqs last  enabled at (15243): [<ffffffff81105011>] __down_trylock_console_sem+0x91/0xa0
-> > [  255.871482] hardirqs last disabled at (15244): [<ffffffff81105ea4>] console_unlock+0x74/0x6b0
-> > [  255.871482] softirqs last  enabled at (14968): [<ffffffff81096394>] __do_softirq+0x344/0x580
-> > [  255.871482] softirqs last disabled at (14963): [<ffffffff810968d3>] irq_exit+0xe3/0x120
-> > [  255.871483] CPU: 0 PID: 10079 Comm: plymouthd Not tainted 4.9.0-next-20161224+ #12
-> > [  255.871483] Hardware name: VMware, Inc. VMware Virtual Platform/440BX Desktop Reference Platform, BIOS 6.00 07/31/2013
-> > [  255.871484] Call Trace:
-> > [  255.871484]  dump_stack+0x85/0xc9
-> > [  255.871485]  ___might_sleep+0x14a/0x250
-> > [  255.871485]  console_conditional_schedule+0x22/0x30
-> > [  255.871485]  fbcon_redraw.isra.24+0xa3/0x1d0
-> > [  255.871486]  ? fbcon_cursor+0x151/0x1c0
-> > [  255.871486]  fbcon_scroll+0x11d/0xcb0
-> > [  255.871487]  con_scroll+0x160/0x170
-> > [  255.871487]  lf+0x9c/0xb0
-> > [  255.871487]  vt_console_print+0x2b7/0x3d0
-> > [  255.871488]  console_unlock+0x457/0x6b0
-> > [  255.871488]  do_con_write.part.19+0x737/0x9e0
-> > [  255.871489]  ? mark_held_locks+0x71/0x90
-> > [  255.871489]  con_write+0x57/0x60
-> > [  255.871489]  n_tty_write+0x1bf/0x470
-> > [  255.871490]  ? prepare_to_wait_event+0x110/0x110
-> > [  255.871490]  tty_write+0x157/0x2d0
-> > [  255.871491]  ? n_tty_open+0xd0/0xd0
-> > [  255.871491]  __vfs_write+0x32/0x140
-> > [  255.871491]  ? trace_hardirqs_on+0xd/0x10
-> > [  255.871492]  ? __audit_syscall_entry+0xaa/0xf0
-> > [  255.871492]  vfs_write+0xc2/0x1f0
-> > [  255.871493]  ? syscall_trace_enter+0x1cb/0x3e0
-> > [  255.871493]  SyS_write+0x53/0xc0
-> > [  255.871493]  do_syscall_64+0x67/0x1f0
-> > [  255.871494]  entry_SYSCALL64_slow_path+0x25/0x25
-> > [  255.871494] RIP: 0033:0x7fb74cf8fc60
-> > [  255.871495] RSP: 002b:00007ffcaab3fe88 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
-> > [  255.871495] RAX: ffffffffffffffda RBX: 000055d3acaf7160 RCX: 00007fb74cf8fc60
-> > [  255.871496] RDX: 000000000000003f RSI: 000055d3acafd090 RDI: 0000000000000009
-> > [  255.871496] RBP: 000055d3acafc440 R08: 0000000000000070 R09: 0000000000000000
-> > [  255.871497] R10: 000000000000003f R11: 0000000000000246 R12: 000055d3acafc330
-> > [  255.871497] R13: 000000000000003f R14: 00007ffcaab3ffb0 R15: 0000000000000000
-> >          Stopping Create Static Device Nodes in /dev...
-
-What happened here was:
-
-(1) /usr/sbin/plymouthd requested write() syscall against tty.
-
-(2) write() syscall invoked console_unlock() via tty_write().
-
-(3) Since write() syscall is sleepable context, console_may_schedule was 1
-    as of entering into console_unlock().
-
-(4) console_unlock() set do_cond_resched to 1 and set console_may_schedule
-    to 0 so that console drivers won't call cond_resched() from
-    console_conditional_schedule() because printk_safe_enter(flags) in
-    console_unlock() disables hardirqs.
-
-(5) /usr/sbin/plymouthd left the "for (;;)" loop in console_unlock().
-
-(6) Since an audit log from /usr/lib/systemd/systemd was added to printk
-    buffer via kauditd_printk_skb() because /usr/sbin/auditd terminated
-    due to shutdown sequence, /usr/sbin/plymouthd found that
-    console_seq != log_next_seq is true.
-
-(7) /usr/sbin/plymouthd calls console_trylock(), and console_trylock() returned
-    1 because nobody was holding console_sem. console_may_schedule was 1 as of
-    returning from console_trylock() because write() syscall is sleepable context.
-
-(8) However, "goto again;" jumped to a line which is after setting
-    console_may_schedule to 0. This is the cause of this problem.
-    As a result, console_may_schedule remained 1.
-
-(9) console_conditional_schedule() was called from vt_console_print() via
-    call_console_drivers(). And cond_resched() was by error called due to (8).
-
-The correct behavior I guess is
-
-----------
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 8b26964..ce53488 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -2186,6 +2186,7 @@ void console_unlock(void)
- 	bool wake_klogd = false;
- 	bool do_cond_resched, retry;
- 
-+again:
- 	if (console_suspended) {
- 		up_console_sem();
- 		return;
-@@ -2204,7 +2205,6 @@ void console_unlock(void)
- 	do_cond_resched = console_may_schedule;
- 	console_may_schedule = 0;
- 
--again:
- 	/*
- 	 * We released the console_sem lock, so we need to recheck if
- 	 * cpu is online and (if not) is there at least one CON_ANYTIME
-----------
-
-optionally with
-
-----------
-@@ -2297,11 +2297,13 @@ void console_unlock(void)
- 	retry = console_seq != log_next_seq;
- 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
- 
--	if (retry && console_trylock())
--		goto again;
--
- 	if (wake_klogd)
- 		wake_up_klogd();
-+
-+	if (retry && console_trylock()) {
-+		wake_klogd = false;
-+		goto again;
-+	}
- }
- EXPORT_SYMBOL(console_unlock);
- 
-----------
-
-so that current thread will act as if current thread again called
-console_unlock() immediately after returning from console_trylock().
+	-ss

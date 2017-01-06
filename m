@@ -1,43 +1,66 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 13 Jan 2017 10:35:44 +0000
-Subject: [PATCH v2 0/5] fbdev/ssd1307fb: Some changes and improvement
-Message-Id: <cover.1484303628.git.jsarha@ti.com>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 06 Jan 2017 09:43:54 +0000
+Subject: [PATCH v2 2/7] h8300: put bitsperlong.h in uapi
+Message-Id: <1483695839-18660-3-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+ <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: arnd@arndb.de
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>linux-me
 
-Changes since first version:
-- Cherry-picked "fbdev/ssd1307fb: add support to enable VBAT" again
-  beacuse of weird mixup in the first version
-- Also tested the code on top of v4.10-rc3 with am335x-icev2 evm
+This header file is exported, thus move it to uapi.
 
-We needed these changes for couple of our evm. Some of these patches
-have been on mainline list before, but after that forgotten. Now we
-are forward porting these on for out internal release, so this is a
-good time to get them to mainline too.
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/h8300/include/asm/bitsperlong.h      | 10 +---------
+ arch/h8300/include/uapi/asm/bitsperlong.h | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 9 deletions(-)
+ create mode 100644 arch/h8300/include/uapi/asm/bitsperlong.h
 
-Everything else is quite straight forward, but removing the
-reset-active-low dts property is a questionable at least in
-theory. However, in practice if anyone was using the property in their
-device-tree blobs, they have never been able to get desired effect
-with mainline kernel.
-
-Jyri Sarha (3):
-  fbdev: ssd1307fb: Start to use gpiod API for reset gpio
-  fbdev: ssd1307fb: Remove reset-active-low from the DT binding document
-  fbdev: ssd1307fb: Make reset gpio devicetree property optional
-
-Tomi Valkeinen (2):
-  fbdev/ssd1307fb: add support to enable VBAT
-  fbdev/ssd1307fb: clear screen in probe
-
- .../devicetree/bindings/display/ssd1307fb.txt      |  5 +-
- drivers/video/fbdev/ssd1307fb.c                    | 55 ++++++++++++++--------
- 2 files changed, 38 insertions(+), 22 deletions(-)
-
+diff --git a/arch/h8300/include/asm/bitsperlong.h b/arch/h8300/include/asm/bitsperlong.h
+index e140e46729ac..c0a8e2ee531e 100644
+--- a/arch/h8300/include/asm/bitsperlong.h
++++ b/arch/h8300/include/asm/bitsperlong.h
+@@ -1,14 +1,6 @@
+ #ifndef __ASM_H8300_BITS_PER_LONG
+ #define __ASM_H8300_BITS_PER_LONG
+ 
+-#include <asm-generic/bitsperlong.h>
+-
+-#if !defined(__ASSEMBLY__)
+-/* h8300-unknown-linux required long */
+-#define __kernel_size_t __kernel_size_t
+-typedef unsigned long	__kernel_size_t;
+-typedef long		__kernel_ssize_t;
+-typedef long		__kernel_ptrdiff_t;
+-#endif
++#include <uapi/asm/bitsperlong.h>
+ 
+ #endif /* __ASM_H8300_BITS_PER_LONG */
+diff --git a/arch/h8300/include/uapi/asm/bitsperlong.h b/arch/h8300/include/uapi/asm/bitsperlong.h
+new file mode 100644
+index 000000000000..e56cf72369b6
+--- /dev/null
++++ b/arch/h8300/include/uapi/asm/bitsperlong.h
+@@ -0,0 +1,14 @@
++#ifndef _UAPI_ASM_H8300_BITS_PER_LONG
++#define _UAPI_ASM_H8300_BITS_PER_LONG
++
++#include <asm-generic/bitsperlong.h>
++
++#if !defined(__ASSEMBLY__)
++/* h8300-unknown-linux required long */
++#define __kernel_size_t __kernel_size_t
++typedef unsigned long	__kernel_size_t;
++typedef long		__kernel_ssize_t;
++typedef long		__kernel_ptrdiff_t;
++#endif
++
++#endif /* _UAPI_ASM_H8300_BITS_PER_LONG */
 -- 
-1.9.1
+2.8.1
 

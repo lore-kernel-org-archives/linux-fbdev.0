@@ -1,93 +1,87 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Thu, 12 Jan 2017 11:16:29 +0000
-Subject: [PATCH 3/6] fbdev: ssd1307fb: Make reset gpio devicetree property optional
-Message-Id: <f51373baa8ceaf47879f91d5b6ce3da17d9ebec6.1484219137.git.jsarha@ti.com>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 06 Jan 2017 09:43:58 +0000
+Subject: [PATCH v2 6/7] Makefile.headersinst: remove destination-y option
+Message-Id: <1483695839-18660-7-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1484219137.git.jsarha@ti.com>
-In-Reply-To: <cover.1484219137.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+ <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: arnd@arndb.de
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>linux-me
 
-Make reset gpio devicetree property optional. Depending on the board
-designing there may not be a dedicated gpio for resetting the
-display. Without a proper reset there may be some junk in the display
-memory at probe time, so in such a case the display memory is cleared
-before turning it on. The devicetree binding document is also updated.
+This option was added in commit c7bb349e7c25 ("kbuild: introduce destination-y
+for exported headers") but never used in-tree.
 
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
 ---
- .../devicetree/bindings/display/ssd1307fb.txt         |  4 ++--
- drivers/video/fbdev/ssd1307fb.c                       | 19 +++++++++++++------
- 2 files changed, 15 insertions(+), 8 deletions(-)
+ Documentation/kbuild/makefiles.txt | 23 ++++-------------------
+ scripts/Makefile.headersinst       |  2 +-
+ 2 files changed, 5 insertions(+), 20 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
-index 4aee67f..6617df6 100644
---- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
-+++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
-@@ -8,14 +8,14 @@ Required properties:
-          0x3c or 0x3d
-   - pwm: Should contain the pwm to use according to the OF device tree PWM
-          specification [0]. Only required for the ssd1307.
--  - reset-gpios: Should contain the GPIO used to reset the OLED display. See
--                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
-   - solomon,height: Height in pixel of the screen driven by the controller
-   - solomon,width: Width in pixel of the screen driven by the controller
-   - solomon,page-offset: Offset of pages (band of 8 pixels) that the screen is
-     mapped to.
+diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+index 9b9c4797fc55..37b525d329ae 100644
+--- a/Documentation/kbuild/makefiles.txt
++++ b/Documentation/kbuild/makefiles.txt
+@@ -46,9 +46,8 @@ This document describes the Linux kernel Makefiles.
+ 	== 7 Kbuild syntax for exported headers
+ 		--- 7.1 header-y
+ 		--- 7.2 genhdr-y
+-		--- 7.3 destination-y
+-		--- 7.4 generic-y
+-		--- 7.5 generated-y
++		--- 7.3 generic-y
++		--- 7.4 generated-y
  
- Optional properties:
-+  - reset-gpios: The GPIO used to reset the OLED display, if available. See
-+                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
-   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
-                               to segment mapping
-   - solomon,com-seq: Display uses sequential COM pin configuration
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 8ffaaee..89372af 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -439,6 +439,10 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
+ 	== 8 Kbuild Variables
+ 	== 9 Makefile language
+@@ -1295,21 +1294,7 @@ See subsequent chapter for the syntax of the Kbuild file.
+ 			#include/linux/Kbuild
+ 			genhdr-y += version.h
  
-+	/* Clear the screen if we could not give reset at probe time */
-+	if (!par->reset)
-+		ssd1307fb_update_display(par);
-+
- 	/* Turn on the display */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
- 	if (ret < 0)
-@@ -561,7 +565,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+-	--- 7.3 destination-y
+-
+-	When an architecture has a set of exported headers that needs to be
+-	exported to a different directory destination-y is used.
+-	destination-y specifies the destination directory for all exported
+-	headers in the file where it is present.
+-
+-		Example:
+-			#arch/xtensa/platforms/s6105/include/platform/Kbuild
+-			destination-y := include/linux
+-
+-	In the example above all exported headers in the Kbuild file
+-	will be located in the directory "include/linux" when exported.
+-
+-	--- 7.4 generic-y
++	--- 7.3 generic-y
  
- 	par->device_info = of_device_get_match_data(&client->dev);
+ 	If an architecture uses a verbatim copy of a header from
+ 	include/asm-generic then this is listed in the file
+@@ -1336,7 +1321,7 @@ See subsequent chapter for the syntax of the Kbuild file.
+ 		Example: termios.h
+ 			#include <asm-generic/termios.h>
  
--	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
-+	par->reset = devm_gpiod_get_optional(&client->dev, "reset",
-+					     GPIOD_OUT_LOW);
- 	if (IS_ERR(par->reset)) {
- 		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
- 			PTR_ERR(par->reset));
-@@ -645,11 +650,13 @@ static int ssd1307fb_probe(struct i2c_client *client,
+-	--- 7.5 generated-y
++	--- 7.4 generated-y
  
- 	i2c_set_clientdata(client, info);
+ 	If an architecture generates other header files alongside generic-y
+ 	wrappers, and not included in genhdr-y, then generated-y specifies
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 3e20d03432d2..876b42cfede4 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -14,7 +14,7 @@ kbuild-file := $(srctree)/$(obj)/Kbuild
+ include $(kbuild-file)
  
--	/* Reset the screen */
--	gpiod_set_value(par->reset, 0);
--	udelay(4);
--	gpiod_set_value(par->reset, 1);
--	udelay(4);
-+	if (par->reset) {
-+		/* Reset the screen */
-+		gpiod_set_value(par->reset, 0);
-+		udelay(4);
-+		gpiod_set_value(par->reset, 1);
-+		udelay(4);
-+	}
+ # called may set destination dir (when installing to asm/)
+-_dst := $(if $(destination-y),$(destination-y),$(if $(dst),$(dst),$(obj)))
++_dst := $(if $(dst),$(dst),$(obj))
  
- 	ret = ssd1307fb_init(par);
- 	if (ret)
+ old-kbuild-file := $(srctree)/$(subst uapi/,,$(obj))/Kbuild
+ ifneq ($(wildcard $(old-kbuild-file)),)
 -- 
-1.9.1
+2.8.1
 

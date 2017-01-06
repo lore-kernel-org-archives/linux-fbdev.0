@@ -1,85 +1,118 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Wed, 18 Jan 2017 07:20:18 +0000
-Subject: Re: [PATCH 12/13] pwm: jz4740: Let the pinctrl driver configure the pins
-Message-Id: <20170118072018.GB18989@ulmo.ba.sec>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="aVD9QWMuhilNxW9f"
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 06 Jan 2017 09:43:53 +0000
+Subject: [PATCH v2 1/7] arm: put types.h in uapi
+Message-Id: <1483695839-18660-2-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170117231421.16310-1-paul@crapouillou.net>
- <20170117231421.16310-13-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-13-paul@crapouillou.net>
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com
+References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+ <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: arnd@arndb.de
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>linux-me
 
+This header file is exported, thus move it to uapi.
 
---aVD9QWMuhilNxW9f
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/arm/include/asm/types.h      | 36 +----------------------------------
+ arch/arm/include/uapi/asm/types.h | 40 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 41 insertions(+), 35 deletions(-)
+ create mode 100644 arch/arm/include/uapi/asm/types.h
 
-On Wed, Jan 18, 2017 at 12:14:20AM +0100, Paul Cercueil wrote:
-> Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
-> the pins being properly configured before the driver probes.
->=20
-> One inherent problem of this new approach is that the pinctrl framework
-> does not allow us to configure each pin on demand, when the various PWM
-> channels are requested or released. For instance, the PWM channels can
-> be configured from sysfs, which would require all PWM pins to be configur=
-ed
-> properly beforehand for the PWM function, eventually causing conflicts
-> with other platform or board drivers.
->=20
-> The proper solution here would be to modify the pwm-jz4740 driver to
-> handle only one PWM channel, and create an instance of this driver
-> for each one of the 8 PWM channels. Then, it could use the pinctrl
-> framework to dynamically configure the PWM pin it controls.
->=20
-> Until this can be done, the only jz4740 board supported upstream
-> (Qi lb60) could configure all of its connected PWM pins in PWM function
-> mode, if those are not used by other drivers nor by GPIOs on the
-> board.
->=20
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> ---
->  drivers/pwm/pwm-jz4740.c | 29 -----------------------------
->  1 file changed, 29 deletions(-)
->=20
-> diff --git a/drivers/pwm/pwm-jz4740.c b/drivers/pwm/pwm-jz4740.c
-> index 76d13150283f..a75ff3622450 100644
-> --- a/drivers/pwm/pwm-jz4740.c
-> +++ b/drivers/pwm/pwm-jz4740.c
-> @@ -21,22 +21,10 @@
->  #include <linux/platform_device.h>
->  #include <linux/pwm.h>
-> =20
-> -#include <asm/mach-jz4740/gpio.h>
+diff --git a/arch/arm/include/asm/types.h b/arch/arm/include/asm/types.h
+index a53cdb8f068c..c48fee3d7b3b 100644
+--- a/arch/arm/include/asm/types.h
++++ b/arch/arm/include/asm/types.h
+@@ -1,40 +1,6 @@
+ #ifndef _ASM_TYPES_H
+ #define _ASM_TYPES_H
+ 
+-#include <asm-generic/int-ll64.h>
+-
+-/*
+- * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
+- * unambiguous on ARM as you would expect. For the types below, there is a
+- * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
+- * and the kernel itself, which results in build errors if you try to build with
+- * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
+- * in order to use NEON intrinsics)
+- *
+- * As the typedefs for these types in 'stdint.h' are based on builtin defines
+- * supplied by GCC, we can tweak these to align with the kernel's idea of those
+- * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
+- * source file (provided that -ffreestanding is used).
+- *
+- *                    int32_t         uint32_t               uintptr_t
+- * bare metal GCC     long            unsigned long          unsigned int
+- * glibc GCC          int             unsigned int           unsigned int
+- * kernel             int             unsigned int           unsigned long
+- */
+-
+-#ifdef __INT32_TYPE__
+-#undef __INT32_TYPE__
+-#define __INT32_TYPE__		int
+-#endif
+-
+-#ifdef __UINT32_TYPE__
+-#undef __UINT32_TYPE__
+-#define __UINT32_TYPE__	unsigned int
+-#endif
+-
+-#ifdef __UINTPTR_TYPE__
+-#undef __UINTPTR_TYPE__
+-#define __UINTPTR_TYPE__	unsigned long
+-#endif
++#include <uapi/asm/types.h>
+ 
+ #endif /* _ASM_TYPES_H */
+diff --git a/arch/arm/include/uapi/asm/types.h b/arch/arm/include/uapi/asm/types.h
+new file mode 100644
+index 000000000000..9435a42f575e
+--- /dev/null
++++ b/arch/arm/include/uapi/asm/types.h
+@@ -0,0 +1,40 @@
++#ifndef _UAPI_ASM_TYPES_H
++#define _UAPI_ASM_TYPES_H
++
++#include <asm-generic/int-ll64.h>
++
++/*
++ * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
++ * unambiguous on ARM as you would expect. For the types below, there is a
++ * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
++ * and the kernel itself, which results in build errors if you try to build with
++ * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
++ * in order to use NEON intrinsics)
++ *
++ * As the typedefs for these types in 'stdint.h' are based on builtin defines
++ * supplied by GCC, we can tweak these to align with the kernel's idea of those
++ * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
++ * source file (provided that -ffreestanding is used).
++ *
++ *                    int32_t         uint32_t               uintptr_t
++ * bare metal GCC     long            unsigned long          unsigned int
++ * glibc GCC          int             unsigned int           unsigned int
++ * kernel             int             unsigned int           unsigned long
++ */
++
++#ifdef __INT32_TYPE__
++#undef __INT32_TYPE__
++#define __INT32_TYPE__		int
++#endif
++
++#ifdef __UINT32_TYPE__
++#undef __UINT32_TYPE__
++#define __UINT32_TYPE__	unsigned int
++#endif
++
++#ifdef __UINTPTR_TYPE__
++#undef __UINTPTR_TYPE__
++#define __UINTPTR_TYPE__	unsigned long
++#endif
++
++#endif /* _UAPI_ASM_TYPES_H */
+-- 
+2.8.1
 
-What about the linux/gpio.h header? It seems to me like that would be no
-longer needed after this patch either.
-
-Other than that this looks like the patch I'd expect if the pinmux was
-configured statically, based on board design.
-
-Thierry
-
---aVD9QWMuhilNxW9f
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlh/FzEACgkQ3SOs138+
-s6Fc2g//dBxUhoJLEIycA+khYQpD62rjvdJT1q5wLLQ+Den0WbIVJPY25Pq1mJof
-YfyYtNPRxPxJ0bnrjG1Zg0zbdv2SH/L85r7mDgp5KBkX6iOZejnDlhP687KF8Vre
-VEsTgdd33zu9HJAYNjLgD/J+SIJ+5GM2nl1N4unmondfMt1HVCyMPwGwKqYoxoWC
-wpqdz/wY7kLoU4Q+CDa5Dbois4xy3rsVNgtPDwSsMdzxmHOuKs8R68Bb4fP4K76u
-KxJpzS6sumat3i0TDNmuuk3e0IgsalqiB9NVH08ptil/kkTzQspQ/ajZZQuhnpl6
-av5PSr+15+HCK5dSFpCWdH0SEUYGDAd/PSlIjzx2BU07y/izHI55ww7af2WtPzZK
-RDzsmK9DBln26Nek9G5EggcvNhiUcKDibaZ2uog5jYfPSOgESJwfomp1auoD/b3h
-B8XsuTAK11eMAbyRshFmuRo9uLVnJJCJeO5SG+3gnXBxOZzHE8cxvwL3Lw1VvMvb
-50842gN0fX5dKGO+2KOimOJ/Koov4wmBXVY1buvW4YWU9JkeU439jgiLb16jB1UR
-JnEFOblWuKCVpZNuzib/bNOwfv4xP5YaQfm1uNgVZMNwIzYBxKa8tGllTIQQaY+v
-xej1u4K0SR8CiPc2tw81+HQp9SV/xxIxa4/otXWhORsO//+CR2c=
-=py/u
------END PGP SIGNATURE-----
-
---aVD9QWMuhilNxW9f--

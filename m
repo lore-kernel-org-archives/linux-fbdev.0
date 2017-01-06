@@ -1,107 +1,85 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 22 Jan 2017 14:49:44 +0000
-Subject: [PATCH v2 11/14] mtd: nand: jz4740: Let the pinctrl driver configure the pins
-Message-Id: <20170122144947.16158-12-paul@crapouillou.net>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 06 Jan 2017 09:43:57 +0000
+Subject: [PATCH v2 5/7] Makefile.headersinst: cleanup input files
+Message-Id: <1483695839-18660-6-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170122144947.16158-1-paul@crapouillou.net>
-In-Reply-To: <20170122144947.16158-1-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
+References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
+ <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
-Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org, Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
+To: arnd@arndb.de
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, openrisc@lists.librecores.org, Nicolas Dichtel <nicolas.dichtel@6wind.com>linux-me
 
-Before, this NAND driver would set itself the configuration of the
-chip-select pins for the various NAND banks.
+After the last four patches, all exported headers are under uapi/, thus
+input-files2 are not needed anymore.
+The side effect is that input-files1-name is exactly header-y.
 
-Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
-the pins being properly configured before the driver probes.
+Note also that unput-files3-name is genhdr-y.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
 ---
- drivers/mtd/nand/jz4740_nand.c | 23 +----------------------
- 1 file changed, 1 insertion(+), 22 deletions(-)
+ scripts/Makefile.headersinst | 34 +++++++++++-----------------------
+ 1 file changed, 11 insertions(+), 23 deletions(-)
 
-v2: No changes
-
-diff --git a/drivers/mtd/nand/jz4740_nand.c b/drivers/mtd/nand/jz4740_nand.c
-index 5551c36adbdf..0d06a1f07d82 100644
---- a/drivers/mtd/nand/jz4740_nand.c
-+++ b/drivers/mtd/nand/jz4740_nand.c
-@@ -25,7 +25,6 @@
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 1106d6ca3a38..3e20d03432d2 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -40,31 +40,20 @@ wrapper-files := $(filter $(header-y), $(generic-y))
+ srcdir        := $(srctree)/$(obj)
+ gendir        := $(objtree)/$(gen)
  
- #include <linux/gpio.h>
- 
--#include <asm/mach-jz4740/gpio.h>
- #include <asm/mach-jz4740/jz4740_nand.h>
- 
- #define JZ_REG_NAND_CTRL	0x50
-@@ -310,34 +309,20 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
- 			       uint8_t *nand_dev_id)
- {
- 	int ret;
--	int gpio;
--	char gpio_name[9];
- 	char res_name[6];
- 	uint32_t ctrl;
- 	struct nand_chip *chip = &nand->chip;
- 	struct mtd_info *mtd = nand_to_mtd(chip);
- 
--	/* Request GPIO port. */
--	gpio = JZ_GPIO_MEM_CS0 + bank - 1;
--	sprintf(gpio_name, "NAND CS%d", bank);
--	ret = gpio_request(gpio, gpio_name);
--	if (ret) {
--		dev_warn(&pdev->dev,
--			"Failed to request %s gpio %d: %d\n",
--			gpio_name, gpio, ret);
--		goto notfound_gpio;
--	}
+-oldsrcdir     := $(srctree)/$(subst /uapi,,$(obj))
 -
- 	/* Request I/O resource. */
- 	sprintf(res_name, "bank%d", bank);
- 	ret = jz_nand_ioremap_resource(pdev, res_name,
- 					&nand->bank_mem[bank - 1],
- 					&nand->bank_base[bank - 1]);
- 	if (ret)
--		goto notfound_resource;
-+		return ret;
+ # all headers files for this dir
+ header-y      := $(filter-out $(generic-y), $(header-y))
+ all-files     := $(header-y) $(genhdr-y) $(wrapper-files)
+ output-files  := $(addprefix $(installdir)/, $(all-files))
  
- 	/* Enable chip in bank. */
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_MEM_CS0);
- 	ctrl = readl(nand->base + JZ_REG_NAND_CTRL);
- 	ctrl |= JZ_NAND_CTRL_ENABLE_CHIP(bank - 1);
- 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
-@@ -377,12 +362,8 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
- 	dev_info(&pdev->dev, "No chip found on bank %i\n", bank);
- 	ctrl &= ~(JZ_NAND_CTRL_ENABLE_CHIP(bank - 1));
- 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
- 	jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
- 				 nand->bank_base[bank - 1]);
--notfound_resource:
--	gpio_free(gpio);
--notfound_gpio:
- 	return ret;
- }
+-input-files1  := $(foreach hdr, $(header-y), \
+-		   $(if $(wildcard $(srcdir)/$(hdr)), \
+-			$(wildcard $(srcdir)/$(hdr))) \
+-		   )
+-input-files1-name := $(notdir $(input-files1))
+-input-files2  := $(foreach hdr, $(header-y), \
+-		   $(if  $(wildcard $(srcdir)/$(hdr)),, \
+-			$(if $(wildcard $(oldsrcdir)/$(hdr)), \
+-				$(wildcard $(oldsrcdir)/$(hdr)), \
+-				$(error Missing UAPI file $(srcdir)/$(hdr))) \
+-		   ))
+-input-files2-name := $(notdir $(input-files2))
+-input-files3  := $(foreach hdr, $(genhdr-y), \
+-		   $(if	$(wildcard $(gendir)/$(hdr)), \
+-			$(wildcard $(gendir)/$(hdr)), \
+-			$(error Missing generated UAPI file $(gendir)/$(hdr)) \
+-		   ))
+-input-files3-name := $(notdir $(input-files3))
++# Check that all expected files exist
++$(foreach hdr, $(header-y), \
++  $(if $(wildcard $(srcdir)/$(hdr)),, \
++       $(error Missing UAPI file $(srcdir)/$(hdr)) \
++   ))
++$(foreach hdr, $(genhdr-y), \
++  $(if	$(wildcard $(gendir)/$(hdr)),, \
++       $(error Missing generated UAPI file $(gendir)/$(hdr)) \
++  ))
  
-@@ -503,7 +484,6 @@ static int jz_nand_probe(struct platform_device *pdev)
- err_unclaim_banks:
- 	while (chipnr--) {
- 		unsigned char bank = nand->banks[chipnr];
--		gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
- 		jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
- 					 nand->bank_base[bank - 1]);
- 	}
-@@ -530,7 +510,6 @@ static int jz_nand_remove(struct platform_device *pdev)
- 		if (bank != 0) {
- 			jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
- 						 nand->bank_base[bank - 1]);
--			gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
- 		}
- 	}
- 
+ # Work out what needs to be removed
+ oldheaders    := $(patsubst $(installdir)/%,%,$(wildcard $(installdir)/*.h))
+@@ -78,9 +67,8 @@ printdir = $(patsubst $(INSTALL_HDR_PATH)/%/,%,$(dir $@))
+ quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
+                             file$(if $(word 2, $(all-files)),s))
+       cmd_install = \
+-        $(CONFIG_SHELL) $< $(installdir) $(srcdir) $(input-files1-name); \
+-        $(CONFIG_SHELL) $< $(installdir) $(oldsrcdir) $(input-files2-name); \
+-        $(CONFIG_SHELL) $< $(installdir) $(gendir) $(input-files3-name); \
++        $(CONFIG_SHELL) $< $(installdir) $(srcdir) $(header-y); \
++        $(CONFIG_SHELL) $< $(installdir) $(gendir) $(genhdr-y); \
+         for F in $(wrapper-files); do                                   \
+                 echo "\#include <asm-generic/$$F>" > $(installdir)/$$F;    \
+         done;                                                           \
 -- 
-2.11.0
+2.8.1
 

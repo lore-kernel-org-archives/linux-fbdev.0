@@ -1,143 +1,210 @@
 From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 02 Jan 2017 14:27:39 +0000
-Subject: [PATCH RESEND v7 2/3] console: Add callback to flush scrollback buffer to consw struct
-Message-Id: <1483367260-3836-3-git-send-email-manuel.schoelling@gmx.de>
+Date: Tue, 10 Jan 2017 21:28:35 +0000
+Subject: [PATCH v9 1/4] console: Move scrollback data into its own struct
+Message-Id: <20170110212838.16175-2-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
- <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
+References: <20170110212838.16175-1-manuel.schoelling@gmx.de>
+In-Reply-To: <20170110212838.16175-1-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-This new callback is in preparation for persistent scrollback buffer
-support for VGA consoles.
-With a single scrollback buffer for all consoles, we could flush the
-buffer just by invocating consw->con_switch(). But when each VGA console
-has its own scrollback buffer, we need a new callback to tell the
-video console driver which buffer to flush.
+This refactoring is in preparation for persistent scrollback
+support for VGA console.
 
 Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
 Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
 Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
 Tested-by: Adam Borowski <kilobyte@angband.pl>
-
 ---
- drivers/tty/vt/vt.c            |  9 +++++++++
- drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
- include/linux/console.h        |  4 ++++
- 3 files changed, 36 insertions(+), 1 deletion(-)
+ drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
+----
+ 1 file changed, 47 insertions(+), 44 deletions(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 4c10a9d..9d3ce50 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
- 		vc->vc_sw->con_save_screen(vc);
- }
-=20
-+static void flush_scrollback(struct vc_data *vc)
-+{
-+	WARN_CONSOLE_UNLOCKED();
-+
-+	if (vc->vc_sw->con_flush_scrollback)
-+		vc->vc_sw->con_flush_scrollback(vc);
-+}
-+
- /*
-  *	Redrawing of screen
-  */
-@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 		case 3: /* erase scroll-back buffer (and whole display) */
- 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
- 				    vc->vc_screenbuf_size);
-+			flush_scrollback(vc);
- 			set_origin(vc);
- 			if (con_is_visible(vc))
- 				update_screen(vc);
 diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 48b9764..9a7c2bb 100644
+index c22a56232b7c..48b97648d4af 100644
 --- a/drivers/video/console/vgacon.c
 +++ b/drivers/video/console/vgacon.c
-@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
- 	int restore;
- } vgacon_scrollback;
+@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
 =20
-+static void vgacon_scrollback_reset(size_t reset_size)
-+{
-+	if (vgacon_scrollback.data && reset_size > 0)
-+		memset(vgacon_scrollback.data, 0, reset_size);
-+
-+	vgacon_scrollback.cnt  =3D 0;
-+	vgacon_scrollback.tail =3D 0;
-+	vgacon_scrollback.cur  =3D 0;
-+}
-+
+ #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
+ /* software scrollback */
+-static void *vgacon_scrollback;
+-static int vgacon_scrollback_tail;
+-static int vgacon_scrollback_size;
+-static int vgacon_scrollback_rows;
+-static int vgacon_scrollback_cnt;
+-static int vgacon_scrollback_cur;
+-static int vgacon_scrollback_save;
+-static int vgacon_scrollback_restore;
++static struct vgacon_scrollback_info {
++	void *data;
++	int tail;
++	int size;
++	int rows;
++	int cnt;
++	int cur;
++	int save;
++	int restore;
++} vgacon_scrollback;
+=20
  static void vgacon_scrollback_init(int pitch)
  {
  	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 	} else
- 		vgacon_cursor(c, CM_MOVE);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+	if (c->vc_num =3D fg_console)
-+		vgacon_scrollback_reset(size);
-+}
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
-@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 			vga_vram_size);
- 	vga_set_mem_top(c);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+}
- #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
 =20
- static const char *vgacon_startup(void)
-@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
- int t, unsigned int b,
- 	return true;
+-	if (vgacon_scrollback) {
+-		vgacon_scrollback_cnt  =3D 0;
+-		vgacon_scrollback_tail =3D 0;
+-		vgacon_scrollback_cur  =3D 0;
+-		vgacon_scrollback_rows =3D rows - 1;
+-		vgacon_scrollback_size =3D rows * pitch;
++	if (vgacon_scrollback.data) {
++		vgacon_scrollback.cnt  =3D 0;
++		vgacon_scrollback.tail =3D 0;
++		vgacon_scrollback.cur  =3D 0;
++		vgacon_scrollback.rows =3D rows - 1;
++		vgacon_scrollback.size =3D rows * pitch;
+ 	}
  }
 =20
--
- /*
-  *  The console `switch' structure for the VGA based console
-  */
-@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
- 	.con_save_screen =3D vgacon_save_screen,
- 	.con_build_attr =3D vgacon_build_attr,
- 	.con_invert_region =3D vgacon_invert_region,
-+	.con_flush_scrollback =3D vgacon_flush_scrollback,
- };
- EXPORT_SYMBOL(vga_con);
+ static void vgacon_scrollback_startup(void)
+ {
+-	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
+FP_NOWAIT);
++	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
++		1024, GFP_NOWAIT);
+ 	vgacon_scrollback_init(vga_video_num_columns * 2);
+ }
 =20
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 9c26c66..5949d18 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -73,6 +73,10 @@ struct consw {
- 	u16    *(*con_screen_pos)(struct vc_data *, int);
- 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
- 	/*
-+	 * Flush the video console driver's scrollback buffer
-+	 */
-+	void	(*con_flush_scrollback)(struct vc_data *);
-+	/*
- 	 * Prepare the console for the debugger.  This includes, but is not
- 	 * limited to, unblanking the console, loading an appropriate
- 	 * palette, and allowing debugger generated output.
+@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
+c, int t, int count)
+ {
+ 	void *p;
+=20
+-	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
++	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
+ 		return;
+=20
+ 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
+=20
+ 	while (count--) {
+-		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
++		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
+ 			    p, c->vc_size_row);
+-		vgacon_scrollback_cnt++;
++		vgacon_scrollback.cnt++;
+ 		p +=3D c->vc_size_row;
+-		vgacon_scrollback_tail +=3D c->vc_size_row;
++		vgacon_scrollback.tail +=3D c->vc_size_row;
+=20
+-		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
+-			vgacon_scrollback_tail =3D 0;
++		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
++			vgacon_scrollback.tail =3D 0;
+=20
+-		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
+-			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
++		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
++			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
+=20
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+ static void vgacon_restore_screen(struct vc_data *c)
+ {
+-	vgacon_scrollback_save =3D 0;
++	vgacon_scrollback.save =3D 0;
+=20
+-	if (!vga_is_gfx && !vgacon_scrollback_restore) {
++	if (!vga_is_gfx && !vgacon_scrollback.restore) {
+ 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
+ 			    c->vc_screenbuf_size > vga_vram_size ?
+ 			    vga_vram_size : c->vc_screenbuf_size);
+-		vgacon_scrollback_restore =3D 1;
+-		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
++		vgacon_scrollback.restore =3D 1;
++		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
+ 	}
+ }
+=20
+@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+ 		return;
+ 	}
+=20
+-	if (!vgacon_scrollback)
++	if (!vgacon_scrollback.data)
+ 		return;
+=20
+-	if (!vgacon_scrollback_save) {
++	if (!vgacon_scrollback.save) {
+ 		vgacon_cursor(c, CM_ERASE);
+ 		vgacon_save_screen(c);
+-		vgacon_scrollback_save =3D 1;
++		vgacon_scrollback.save =3D 1;
+ 	}
+=20
+-	vgacon_scrollback_restore =3D 0;
+-	start =3D vgacon_scrollback_cur + lines;
++	vgacon_scrollback.restore =3D 0;
++	start =3D vgacon_scrollback.cur + lines;
+ 	end =3D start + abs(lines);
+=20
+ 	if (start < 0)
+ 		start =3D 0;
+=20
+-	if (start > vgacon_scrollback_cnt)
+-		start =3D vgacon_scrollback_cnt;
++	if (start > vgacon_scrollback.cnt)
++		start =3D vgacon_scrollback.cnt;
+=20
+ 	if (end < 0)
+ 		end =3D 0;
+=20
+-	if (end > vgacon_scrollback_cnt)
+-		end =3D vgacon_scrollback_cnt;
++	if (end > vgacon_scrollback.cnt)
++		end =3D vgacon_scrollback.cnt;
+=20
+-	vgacon_scrollback_cur =3D start;
++	vgacon_scrollback.cur =3D start;
+ 	count =3D end - start;
+-	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
++	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
+ 					 c->vc_size_row);
+ 	soff -=3D count * c->vc_size_row;
+=20
+ 	if (soff < 0)
+-		soff +=3D vgacon_scrollback_size;
++		soff +=3D vgacon_scrollback.size;
+=20
+-	count =3D vgacon_scrollback_cnt - start;
++	count =3D vgacon_scrollback.cnt - start;
+=20
+ 	if (count > c->vc_rows)
+ 		count =3D c->vc_rows;
+@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
+ lines)
+=20
+ 		count *=3D c->vc_size_row;
+ 		/* how much memory to end of buffer left? */
+-		copysize =3D min(count, vgacon_scrollback_size - soff);
+-		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
++		copysize =3D min(count, vgacon_scrollback.size - soff);
++		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
+ 		d +=3D copysize;
+ 		count -=3D copysize;
+=20
+ 		if (count) {
+-			scr_memcpyw(d, vgacon_scrollback, count);
++			scr_memcpyw(d, vgacon_scrollback.data, count);
+ 			d +=3D count;
+ 		}
+=20
 --=20
-2.1.4
+2.11.0
 

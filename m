@@ -1,82 +1,111 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 11 Jan 2017 12:54:46 +0000
-Subject: Re: [PATCH v2] video: fbdev: matroxfb: use designated initializers
-Message-Id: <2879252.YjYsoy7Sv0@amdc3058>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Tue, 10 Jan 2017 21:28:38 +0000
+Subject: [PATCH v9 4/4] console: Make persistent scrollback a boot parameter
+Message-Id: <20170110212838.16175-5-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170103232433.GA117659@beast>
- <CGME20170111125453epcas5p3b7a3a3aecbeac551a9d99e26d1024ccc@epcas5p3.samsung.com>
-In-Reply-To: <20170103232433.GA117659@beast>
+References: <20170110212838.16175-1-manuel.schoelling@gmx.de>
+In-Reply-To: <20170110212838.16175-1-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
+The impact of the persistent scrollback feature on the code size is
+rather small, so the config option is removed. The feature stays
+disabled by default and can be enabled by using the boot command line
+parameter 'vgacon.scrollback_persistent=3D1' or by setting
+VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT=3Dy.
 
-Hi,
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/console/Kconfig  | 12 +++++++-----
+ drivers/video/console/vgacon.c | 25 ++++++++++++-------------
+ 2 files changed, 19 insertions(+), 18 deletions(-)
 
-On Tuesday, January 03, 2017 03:24:33 PM Kees Cook wrote:
-> Prepare to mark sensitive kernel structures for randomization by making
-> sure they're using designated initializers. These were identified during
-> allyesconfig builds of x86, arm, and arm64, with most initializer fixes
-> extracted from grsecurity.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-
-Thanks, queued for 4.11.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  drivers/video/fbdev/matrox/matroxfb_DAC1064.c | 10 ++++++++--
->  drivers/video/fbdev/matrox/matroxfb_Ti3026.c  |  5 ++++-
->  2 files changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/matrox/matroxfb_DAC1064.c b/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
-> index a01147fdf270..b380a393cbc3 100644
-> --- a/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
-> +++ b/drivers/video/fbdev/matrox/matroxfb_DAC1064.c
-> @@ -1088,14 +1088,20 @@ static void MGAG100_restore(struct matrox_fb_info *minfo)
->  
->  #ifdef CONFIG_FB_MATROX_MYSTIQUE
->  struct matrox_switch matrox_mystique = {
-> -	MGA1064_preinit, MGA1064_reset, MGA1064_init, MGA1064_restore,
-> +	.preinit	= MGA1064_preinit,
-> +	.reset		= MGA1064_reset,
-> +	.init		= MGA1064_init,
-> +	.restore	= MGA1064_restore,
->  };
->  EXPORT_SYMBOL(matrox_mystique);
->  #endif
->  
->  #ifdef CONFIG_FB_MATROX_G
->  struct matrox_switch matrox_G100 = {
-> -	MGAG100_preinit, MGAG100_reset, MGAG100_init, MGAG100_restore,
-> +	.preinit	= MGAG100_preinit,
-> +	.reset		= MGAG100_reset,
-> +	.init		= MGAG100_init,
-> +	.restore	= MGAG100_restore,
->  };
->  EXPORT_SYMBOL(matrox_G100);
->  #endif
-> diff --git a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
-> index 68fa037d8cbc..9ff9be85759e 100644
-> --- a/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
-> +++ b/drivers/video/fbdev/matrox/matroxfb_Ti3026.c
-> @@ -738,7 +738,10 @@ static int Ti3026_preinit(struct matrox_fb_info *minfo)
->  }
->  
->  struct matrox_switch matrox_millennium = {
-> -	Ti3026_preinit, Ti3026_reset, Ti3026_init, Ti3026_restore
-> +	.preinit	= Ti3026_preinit,
-> +	.reset		= Ti3026_reset,
-> +	.init		= Ti3026_init,
-> +	.restore	= Ti3026_restore
->  };
->  EXPORT_SYMBOL(matrox_millennium);
->  #endif
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index f500e58f7636..5b71bd905a60 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -47,14 +47,16 @@ config VGACON_SOFT_SCROLLBACK_SIZE
+ 	  buffers of VGA consoles. Each 64KB will give you approximately
+ 	  16 80x25 screenfuls of scrollback buffer.
+=20
+-config VGACON_SOFT_SCROLLBACK_PERSISTENT
+-	bool "Persistent Scrollback History for each console"
++config VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT
++	bool "Persistent Scrollback History for each console by default"
+ 	depends on VGACON_SOFT_SCROLLBACK
+ 	default n
+ 	help
+-	  Say Y here if the scrollback history should persist when switching
+-	  between consoles. Otherwise, the scrollback history will be flushed
+-	  each time the console is switched.
++	  Say Y here if the scrollback history should persist by default when
++	  switching between consoles. Otherwise, the scrollback history will be
++	  flushed each time the console is switched. This feature can also be
++	  enabled using the boot command line parameter
++	  'vgacon.scrollback_persistent=3D1'.
+=20
+ 	  This feature might break your tool of choice to flush the scrollback
+ 	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index ca23d222e029..45a76972495b 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -174,11 +174,9 @@ struct vgacon_scrollback_info {
+ };
+=20
+ static struct vgacon_scrollback_info *vgacon_scrollback_cur;
+-#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+ static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
+-#else
+-static struct vgacon_scrollback_info vgacon_scrollbacks[1];
+-#endif
++static bool scrollback_persistent =3D \
++	IS_ENABLED(CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT);
+=20
+ static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
+ {
+@@ -213,20 +211,19 @@ static void vgacon_scrollback_init(int vc_num)
+=20
+ static void vgacon_scrollback_switch(int vc_num)
+ {
+-#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+-	vc_num =3D 0;
+-#endif
++	if (!scrollback_persistent)
++		vc_num =3D 0;
+=20
+ 	if (!vgacon_scrollbacks[vc_num].data) {
+ 		vgacon_scrollback_init(vc_num);
+ 	} else {
+-#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+-		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
+-#else
+-		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++		if (scrollback_persistent) {
++			vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++		} else {
++			size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
+=20
+-		vgacon_scrollback_reset(vc_num, size);
+-#endif
++			vgacon_scrollback_reset(vc_num, size);
++		}
+ 	}
+ }
+=20
+@@ -1423,4 +1420,6 @@ const struct consw vga_con =3D {
+ };
+ EXPORT_SYMBOL(vga_con);
+=20
++module_param_named(scrollback_persistent, scrollback_persistent, bool, 000=
+0);
++MODULE_PARM_DESC(scrollback_persistent, "Enable persistent scrollback for =
+all vga consoles");
+ MODULE_LICENSE("GPL");
+--=20
+2.11.0
 

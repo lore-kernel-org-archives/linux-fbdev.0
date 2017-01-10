@@ -1,7 +1,7 @@
-From: Vladimir Zapolskiy <vz@mleia.com>
-Date: Tue, 10 Jan 2017 04:06:48 +0000
+From: Vladimir Murzin <vladimir.murzin@arm.com>
+Date: Tue, 10 Jan 2017 13:47:01 +0000
 Subject: Re: [PATCH 0/4] video: ARM CLCD: add support of an optional GPIO to enable panel
-Message-Id: <e6e7c575-d200-bd1f-890e-824fcf0e8c01@mleia.com>
+Message-Id: <50499352-fa14-64c4-1a74-db4827757a2d@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20161221032717.13154-1-vz@mleia.com>
  <CACRpkdZE6VgJA27+Wh=Gxd7yOXpLMyT7yCB2PYA36y0gvosHFQ@mail.gmail.com>
@@ -13,7 +13,9 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-On 01/08/2017 01:32 AM, Vladimir Zapolskiy wrote:
+Hi Vladimir,
+
+On 07/01/17 23:32, Vladimir Zapolskiy wrote:
 > On 01/02/2017 04:22 PM, Russell King - ARM Linux wrote:
 >> On Fri, Dec 30, 2016 at 09:23:59AM +0100, Linus Walleij wrote:
 >>> On Wed, Dec 21, 2016 at 4:27 AM, Vladimir Zapolskiy <vz@mleia.com> wrote:
@@ -53,17 +55,27 @@ On 01/08/2017 01:32 AM, Vladimir Zapolskiy wrote:
 > I've immediately encountered a problem while porting the driver to DRM,
 > because LPC18xx/LPC43xx SoCs are powered by Cortex-M3/M4 cores and DRM
 > framework has build and runtime dependencies on MMU.
+
++Benjamin
+
+In another thread Benjamin pointed at patch [1] in drm/kms part for noMMU.
+
+[1] https://cgit.freedesktop.org/drm/drm-misc/commit/?idba0d98a188cc4ebd8ea54b37d274ec20465e464
+
+Cheers
+Vladimir
+
 > 
 > That said, in short term I would expect a continuation of support for
 > the legacy CLCD framebuffer driver, which works fine on MMU-less SoCs.
 > 
-
-Linus, Russell,
-
-please let me ask you to review/ack the changes, then I'll resend them
-to Andrew for inclusion as suggested by Linus.
-
---
-With best wishes,
-Vladimir
+> --
+> With best wishes,
+> Vladimir
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
+> 
 

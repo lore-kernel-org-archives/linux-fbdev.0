@@ -1,38 +1,59 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 17 Jan 2017 23:14:12 +0000
-Subject: [PATCH 04/13] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
-Message-Id: <20170117231421.16310-5-paul@crapouillou.net>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 11 Jan 2017 12:50:29 +0000
+Subject: Re: [PATCH v2] video: fbdev: sh_mobile_lcdcfb: use designated initializers
+Message-Id: <4446544.3TN0Epkxz7@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170117231421.16310-1-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
+References: <CGME20161220201053epcas1p3440c5c2973397422318bae039948af8e@epcas1p3.samsung.com>
+ <20161220201049.GA18463@beast>
+In-Reply-To: <20161220201049.GA18463@beast>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+To: Kees Cook <keescook@chromium.org>
+Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-fbdev@vger.kernel.org
 
-There is a pinctrl driver for each of the Ingenic SoCs supported by the
-upstream Linux kernel. In order to switch away from the old GPIO
-platform code, we now enable the pinctrl drivers by default for the
-Ingenic SoCs.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
----
- arch/mips/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+Hi,
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index b3c5bde43d34..fc720e37661e 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -359,6 +359,7 @@ config MACH_INGENIC
- 	select SYS_SUPPORTS_ZBOOT_UART16550
- 	select DMA_NONCOHERENT
- 	select IRQ_MIPS_CPU
-+	select PINCTRL
- 	select GPIOLIB
- 	select COMMON_CLK
- 	select GENERIC_IRQ_CHIP
--- 
-2.11.0
+On Tuesday, December 20, 2016 12:10:49 PM Kees Cook wrote:
+> Prepare to mark sensitive kernel structures for randomization by making
+> sure they're using designated initializers. These were identified during
+> allyesconfig builds of x86, arm, and arm64, with most initializer fixes
+> extracted from grsecurity.
+> 
+> Signed-off-by: Kees Cook <keescook@chromium.org>
+> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+
+Thanks, queued for 4.11.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+> v2:
+> - vertical columns, Bartlomiej Zolnierkiewicz
+> ---
+>  drivers/video/fbdev/sh_mobile_lcdcfb.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> index 82c0a8caa9b8..93469f94c09d 100644
+> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+> @@ -439,9 +439,9 @@ static unsigned long lcdc_sys_read_data(void *handle)
+>  }
+>  
+>  static struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
+> -	lcdc_sys_write_index,
+> -	lcdc_sys_write_data,
+> -	lcdc_sys_read_data,
+> +	.write_index	= lcdc_sys_write_index,
+> +	.write_data	= lcdc_sys_write_data,
+> +	.read_data	= lcdc_sys_read_data,
+>  };
+>  
+>  static int sh_mobile_lcdc_sginit(struct fb_info *info,
 

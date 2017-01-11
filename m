@@ -1,141 +1,206 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Fri, 13 Jan 2017 20:07:56 +0000
-Subject: [PATCH v10 2/4] console: Add callback to flush scrollback buffer to consw struct
-Message-Id: <20170113200758.9880-3-manuel.schoelling@gmx.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 11 Jan 2017 15:07:05 +0000
+Subject: Re: [PATCH] simplefb: Separate clk / regulator get and enable steps
+Message-Id: <8943659.T6ei7HPULA@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170113200758.9880-1-manuel.schoelling@gmx.de>
-In-Reply-To: <20170113200758.9880-1-manuel.schoelling@gmx.de>
+References: <20161104144507.18072-1-hdegoede@redhat.com>
+ <CGME20170111150708epcas5p41496db3ee192f7401fd041929dff09b3@epcas5p4.samsung.com>
+In-Reply-To: <20161104144507.18072-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: gregkh@linuxfoundation.org
-Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-This new callback is in preparation for persistent scrollback buffer
-support for VGA consoles.
-With a single scrollback buffer for all consoles, we could flush the
-buffer just by invocating consw->con_switch(). But when each VGA console
-has its own scrollback buffer, we need a new callback to tell the
-video console driver which buffer to flush.
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
----
- drivers/tty/vt/vt.c            |  9 +++++++++
- drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
- include/linux/console.h        |  4 ++++
- 3 files changed, 36 insertions(+), 1 deletion(-)
+Hi,
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 4c10a9df3b91..9d3ce505e7ab 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
- 		vc->vc_sw->con_save_screen(vc);
- }
-=20
-+static void flush_scrollback(struct vc_data *vc)
-+{
-+	WARN_CONSOLE_UNLOCKED();
-+
-+	if (vc->vc_sw->con_flush_scrollback)
-+		vc->vc_sw->con_flush_scrollback(vc);
-+}
-+
- /*
-  *	Redrawing of screen
-  */
-@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 		case 3: /* erase scroll-back buffer (and whole display) */
- 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
- 				    vc->vc_screenbuf_size);
-+			flush_scrollback(vc);
- 			set_origin(vc);
- 			if (con_is_visible(vc))
- 				update_screen(vc);
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 48b97648d4af..9a7c2bbc5326 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
- 	int restore;
- } vgacon_scrollback;
-=20
-+static void vgacon_scrollback_reset(size_t reset_size)
-+{
-+	if (vgacon_scrollback.data && reset_size > 0)
-+		memset(vgacon_scrollback.data, 0, reset_size);
-+
-+	vgacon_scrollback.cnt  =3D 0;
-+	vgacon_scrollback.tail =3D 0;
-+	vgacon_scrollback.cur  =3D 0;
-+}
-+
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 	} else
- 		vgacon_cursor(c, CM_MOVE);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+	if (c->vc_num =3D fg_console)
-+		vgacon_scrollback_reset(size);
-+}
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
-@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 			vga_vram_size);
- 	vga_set_mem_top(c);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+}
- #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
-=20
- static const char *vgacon_startup(void)
-@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
- int t, unsigned int b,
- 	return true;
- }
-=20
--
- /*
-  *  The console `switch' structure for the VGA based console
-  */
-@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
- 	.con_save_screen =3D vgacon_save_screen,
- 	.con_build_attr =3D vgacon_build_attr,
- 	.con_invert_region =3D vgacon_invert_region,
-+	.con_flush_scrollback =3D vgacon_flush_scrollback,
- };
- EXPORT_SYMBOL(vga_con);
-=20
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 9c26c6685587..5949d1855589 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -73,6 +73,10 @@ struct consw {
- 	u16    *(*con_screen_pos)(struct vc_data *, int);
- 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
- 	/*
-+	 * Flush the video console driver's scrollback buffer
-+	 */
-+	void	(*con_flush_scrollback)(struct vc_data *);
-+	/*
- 	 * Prepare the console for the debugger.  This includes, but is not
- 	 * limited to, unblanking the console, loading an appropriate
- 	 * palette, and allowing debugger generated output.
---=20
-2.11.0
+On Friday, November 04, 2016 03:45:07 PM Hans de Goede wrote:
+> Currently when a simplefb needs both clocks and regulators and one
+> of the regulators returns -EPROBE_DEFER when we try to get it, we end
+> up disabling the clocks. This causes the screen to go blank; and in some
+> cases my cause hardware state to be lost resulting in the framebuffer not
+> working at all.
+> 
+> This commit splits the get and enable steps and only enables
+> clocks and regulators after successfully getting all of them,
+> fixing the disabling of the clocks which were left enabled by
+> the firmware setting up the simplefb.
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+
+Thanks, patch queued for 4.11.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+> ---
+>  drivers/video/fbdev/simplefb.c | 56 ++++++++++++++++++++++++++++++------------
+>  1 file changed, 40 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+> index 61f799a..a3c44ec 100644
+> --- a/drivers/video/fbdev/simplefb.c
+> +++ b/drivers/video/fbdev/simplefb.c
+> @@ -180,10 +180,12 @@ static int simplefb_parse_pd(struct platform_device *pdev,
+>  struct simplefb_par {
+>  	u32 palette[PSEUDO_PALETTE_SIZE];
+>  #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
+> +	bool clks_enabled;
+>  	unsigned int clk_count;
+>  	struct clk **clks;
+>  #endif
+>  #if defined CONFIG_OF && defined CONFIG_REGULATOR
+> +	bool regulators_enabled;
+>  	u32 regulator_count;
+>  	struct regulator **regulators;
+>  #endif
+> @@ -208,12 +210,12 @@ struct simplefb_par {
+>   * the fb probe will not help us much either. So just complain and carry on,
+>   * and hope that the user actually gets a working fb at the end of things.
+>   */
+> -static int simplefb_clocks_init(struct simplefb_par *par,
+> -				struct platform_device *pdev)
+> +static int simplefb_clocks_get(struct simplefb_par *par,
+> +			       struct platform_device *pdev)
+>  {
+>  	struct device_node *np = pdev->dev.of_node;
+>  	struct clk *clock;
+> -	int i, ret;
+> +	int i;
+>  
+>  	if (dev_get_platdata(&pdev->dev) || !np)
+>  		return 0;
+> @@ -244,6 +246,14 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+>  		par->clks[i] = clock;
+>  	}
+>  
+> +	return 0;
+> +}
+> +
+> +static void simplefb_clocks_enable(struct simplefb_par *par,
+> +				   struct platform_device *pdev)
+> +{
+> +	int i, ret;
+> +
+>  	for (i = 0; i < par->clk_count; i++) {
+>  		if (par->clks[i]) {
+>  			ret = clk_prepare_enable(par->clks[i]);
+> @@ -256,8 +266,7 @@ static int simplefb_clocks_init(struct simplefb_par *par,
+>  			}
+>  		}
+>  	}
+> -
+> -	return 0;
+> +	par->clks_enabled = true;
+>  }
+>  
+>  static void simplefb_clocks_destroy(struct simplefb_par *par)
+> @@ -269,7 +278,8 @@ static void simplefb_clocks_destroy(struct simplefb_par *par)
+>  
+>  	for (i = 0; i < par->clk_count; i++) {
+>  		if (par->clks[i]) {
+> -			clk_disable_unprepare(par->clks[i]);
+> +			if (par->clks_enabled)
+> +				clk_disable_unprepare(par->clks[i]);
+>  			clk_put(par->clks[i]);
+>  		}
+>  	}
+> @@ -277,8 +287,10 @@ static void simplefb_clocks_destroy(struct simplefb_par *par)
+>  	kfree(par->clks);
+>  }
+>  #else
+> -static int simplefb_clocks_init(struct simplefb_par *par,
+> +static int simplefb_clocks_get(struct simplefb_par *par,
+>  	struct platform_device *pdev) { return 0; }
+> +static void simplefb_clocks_enable(struct simplefb_par *par,
+> +	struct platform_device *pdev) { }
+>  static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+>  #endif
+>  
+> @@ -305,14 +317,14 @@ static void simplefb_clocks_destroy(struct simplefb_par *par) { }
+>   * the fb probe will not help us much either. So just complain and carry on,
+>   * and hope that the user actually gets a working fb at the end of things.
+>   */
+> -static int simplefb_regulators_init(struct simplefb_par *par,
+> -	struct platform_device *pdev)
+> +static int simplefb_regulators_get(struct simplefb_par *par,
+> +				   struct platform_device *pdev)
+>  {
+>  	struct device_node *np = pdev->dev.of_node;
+>  	struct property *prop;
+>  	struct regulator *regulator;
+>  	const char *p;
+> -	int count = 0, i = 0, ret;
+> +	int count = 0, i = 0;
+>  
+>  	if (dev_get_platdata(&pdev->dev) || !np)
+>  		return 0;
+> @@ -354,6 +366,14 @@ static int simplefb_regulators_init(struct simplefb_par *par,
+>  	}
+>  	par->regulator_count = i;
+>  
+> +	return 0;
+> +}
+> +
+> +static void simplefb_regulators_enable(struct simplefb_par *par,
+> +				       struct platform_device *pdev)
+> +{
+> +	int i, ret;
+> +
+>  	/* Enable all the regulators */
+>  	for (i = 0; i < par->regulator_count; i++) {
+>  		ret = regulator_enable(par->regulators[i]);
+> @@ -365,15 +385,14 @@ static int simplefb_regulators_init(struct simplefb_par *par,
+>  			par->regulators[i] = NULL;
+>  		}
+>  	}
+> -
+> -	return 0;
+> +	par->regulators_enabled = true;
+>  }
+>  
+>  static void simplefb_regulators_destroy(struct simplefb_par *par)
+>  {
+>  	int i;
+>  
+> -	if (!par->regulators)
+> +	if (!par->regulators || !par->regulators_enabled)
+>  		return;
+>  
+>  	for (i = 0; i < par->regulator_count; i++)
+> @@ -381,8 +400,10 @@ static void simplefb_regulators_destroy(struct simplefb_par *par)
+>  			regulator_disable(par->regulators[i]);
+>  }
+>  #else
+> -static int simplefb_regulators_init(struct simplefb_par *par,
+> +static int simplefb_regulators_get(struct simplefb_par *par,
+>  	struct platform_device *pdev) { return 0; }
+> +static void simplefb_regulators_enable(struct simplefb_par *par,
+> +	struct platform_device *pdev) { }
+>  static void simplefb_regulators_destroy(struct simplefb_par *par) { }
+>  #endif
+>  
+> @@ -453,14 +474,17 @@ static int simplefb_probe(struct platform_device *pdev)
+>  	}
+>  	info->pseudo_palette = par->palette;
+>  
+> -	ret = simplefb_clocks_init(par, pdev);
+> +	ret = simplefb_clocks_get(par, pdev);
+>  	if (ret < 0)
+>  		goto error_unmap;
+>  
+> -	ret = simplefb_regulators_init(par, pdev);
+> +	ret = simplefb_regulators_get(par, pdev);
+>  	if (ret < 0)
+>  		goto error_clocks;
+>  
+> +	simplefb_clocks_enable(par, pdev);
+> +	simplefb_regulators_enable(par, pdev);
+> +
+>  	dev_info(&pdev->dev, "framebuffer at 0x%lx, 0x%x bytes, mapped to 0x%p\n",
+>  			     info->fix.smem_start, info->fix.smem_len,
+>  			     info->screen_base);
 

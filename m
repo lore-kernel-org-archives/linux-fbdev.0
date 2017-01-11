@@ -1,31 +1,42 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 31 Jan 2017 15:29:58 +0000
-Subject: Re: [PATCH v3 04/14] GPIO: Add gpio-ingenic driver
-Message-Id: <699f0c63e95ecdafe6946fdcdbb97a37@mail.crapouillou.net>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 11 Jan 2017 12:39:58 +0000
+Subject: Re: [PATCH v2] video: imxfb: remove the macros for initializing the DMACR
+Message-Id: <3888193.7ysKGrrrC4@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net>
- <20170125185207.23902-5-paul@crapouillou.net>
- <CACRpkdbcO+1c7izYpn0sb1mkE1ORFETMq=xtzVi1hKbJz0EWfw@mail.gmail.com>
-In-Reply-To: <CACRpkdbcO+1c7izYpn0sb1mkE1ORFETMq=xtzVi1hKbJz0EWfw@mail.gmail.com>
+References: <20161129074949.taj5bwnhge37pi5e@pengutronix.de>
+ <1480449039-14774-1-git-send-email-martin@kaiser.cx>
+ <20161129195721.rwlals7tzusprzpz@pengutronix.de>
+ <CGME20170111124006epcas5p138afe03766a09b68eac3f93a9047ee27@epcas5p1.samsung.com>
+In-Reply-To: <20161129195721.rwlals7tzusprzpz@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Linux MIPS <linux-mips@linux-mips.org>, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, James Hogan <james.hogan@imgtec.com>
+To: Uwe =?ISO-8859-1?Q?Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>, Martin Kaiser <martin@kaiser.cx>
+Cc: Sascha Hauer <kernel@pengutronix.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Le 2017-01-31 15:20, Linus Walleij a =C3=A9crit :
 
->> + of_property_read_u32(dev->of_node, "base", &jzgc->gc.base);
->=20
-> Remove this. Dynamic allocation should be fine, if you're using the
-> new userspace ABI like tools/gpio/* or libgpiod and only that and=20
-> in-kernel
-> consumers, dynamic numbers are just fine.
+Hi,
 
-The problem is that the QI_LB60 board code still have a lot of=20
-references
-to global GPIO numbers. Just grep for JZ_GPIO_PORT in
-arch/mips/jz4740/board-qi_lb60.c to see what I mean...
+On Tuesday, November 29, 2016 08:57:21 PM Uwe Kleine-K=F6nig wrote:
+> On Tue, Nov 29, 2016 at 08:50:39PM +0100, Martin Kaiser wrote:
+> > The current definitions of DMACR_HM() and DMACR_TM() are correct only
+> > for imx1, they're wrong for imx21.
+> >=20
+> > The macros are meant for legacy board files only, they're not applicable
+> > for boards using device tree.
+> >=20
+> > At the moment, there are no boards using these macros. So it should be
+> > safe to drop them rather than making them work for both imx1 and imx21,
+> > which would require a change in the platform data struct.
+> >=20
+> > Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+> Acked-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
--Paul
+Thanks, queued for 4.11.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

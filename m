@@ -1,111 +1,77 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 22 Jan 2017 14:49:46 +0000
-Subject: [PATCH v2 13/14] pwm: jz4740: Let the pinctrl driver configure the pins
-Message-Id: <20170122144947.16158-14-paul@crapouillou.net>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Thu, 12 Jan 2017 11:16:27 +0000
+Subject: [PATCH 1/6] fbdev: ssd1307fb: Start to use gpiod API for reset gpio
+Message-Id: <077530ae240ae44ec22253d8b7c0df3244cb69b4.1484219137.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170122144947.16158-1-paul@crapouillou.net>
-In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
+References: <cover.1484219137.git.jsarha@ti.com>
+In-Reply-To: <cover.1484219137.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, plagnioj-sclMFOaUSTBWk0Htik3J/w@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
-the pins being properly configured before the driver probes.
+Start to use gpiod API for reset gpio.
 
-One inherent problem of this new approach is that the pinctrl framework
-does not allow us to configure each pin on demand, when the various PWM
-channels are requested or released. For instance, the PWM channels can
-be configured from sysfs, which would require all PWM pins to be configured
-properly beforehand for the PWM function, eventually causing conflicts
-with other platform or board drivers.
-
-The proper solution here would be to modify the pwm-jz4740 driver to
-handle only one PWM channel, and create an instance of this driver
-for each one of the 8 PWM channels. Then, it could use the pinctrl
-framework to dynamically configure the PWM pin it controls.
-
-Until this can be done, the only jz4740 board supported upstream
-(Qi lb60) can configure all of its connected PWM pins in PWM function
-mode, since those are not used by other drivers nor by GPIOs on the
-board.
-
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
 ---
- drivers/pwm/pwm-jz4740.c | 29 -----------------------------
- 1 file changed, 29 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-v2: No changes
-
-diff --git a/drivers/pwm/pwm-jz4740.c b/drivers/pwm/pwm-jz4740.c
-index 76d13150283f..a75ff3622450 100644
---- a/drivers/pwm/pwm-jz4740.c
-+++ b/drivers/pwm/pwm-jz4740.c
-@@ -21,22 +21,10 @@
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 2925d5c..8ffaaee 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -73,7 +73,7 @@ struct ssd1307fb_par {
+ 	u32 prechargep2;
+ 	struct pwm_device *pwm;
+ 	u32 pwm_period;
+-	int reset;
++	struct gpio_desc *reset;
+ 	u32 seg_remap;
+ 	u32 vcomh;
+ 	u32 width;
+@@ -561,10 +561,11 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
--#include <asm/mach-jz4740/gpio.h>
- #include <asm/mach-jz4740/timer.h>
+ 	par->device_info = of_device_get_match_data(&client->dev);
  
- #define NUM_PWM 8
+-	par->reset = of_get_named_gpio(client->dev.of_node,
+-					 "reset-gpios", 0);
+-	if (!gpio_is_valid(par->reset)) {
+-		ret = -EINVAL;
++	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
++	if (IS_ERR(par->reset)) {
++		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
++			PTR_ERR(par->reset));
++		ret = PTR_ERR(par->reset);
+ 		goto fb_alloc_error;
+ 	}
  
--static const unsigned int jz4740_pwm_gpio_list[NUM_PWM] = {
--	JZ_GPIO_PWM0,
--	JZ_GPIO_PWM1,
--	JZ_GPIO_PWM2,
--	JZ_GPIO_PWM3,
--	JZ_GPIO_PWM4,
--	JZ_GPIO_PWM5,
--	JZ_GPIO_PWM6,
--	JZ_GPIO_PWM7,
--};
--
- struct jz4740_pwm_chip {
- 	struct pwm_chip chip;
- 	struct clk *clk;
-@@ -49,9 +37,6 @@ static inline struct jz4740_pwm_chip *to_jz4740(struct pwm_chip *chip)
+@@ -642,22 +643,12 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
- static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
- {
--	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
--	int ret;
--
- 	/*
- 	 * Timers 0 and 1 are used for system tasks, so they are unavailable
- 	 * for use as PWMs.
-@@ -59,15 +44,6 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
- 	if (pwm->hwpwm < 2)
- 		return -EBUSY;
+ 	fb_deferred_io_init(info);
  
--	ret = gpio_request(gpio, pwm->label);
+-	ret = devm_gpio_request_one(&client->dev, par->reset,
+-				    GPIOF_OUT_INIT_HIGH,
+-				    "oled-reset");
 -	if (ret) {
--		dev_err(chip->dev, "Failed to request GPIO#%u for PWM: %d\n",
--			gpio, ret);
--		return ret;
+-		dev_err(&client->dev,
+-			"failed to request gpio %d: %d\n",
+-			par->reset, ret);
+-		goto reset_oled_error;
 -	}
 -
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_PWM);
--
- 	jz4740_timer_start(pwm->hwpwm);
+ 	i2c_set_clientdata(client, info);
  
- 	return 0;
-@@ -75,13 +51,8 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
+ 	/* Reset the screen */
+-	gpio_set_value(par->reset, 0);
++	gpiod_set_value(par->reset, 0);
+ 	udelay(4);
+-	gpio_set_value(par->reset, 1);
++	gpiod_set_value(par->reset, 1);
+ 	udelay(4);
  
- static void jz4740_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
- {
--	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
--
- 	jz4740_timer_set_ctrl(pwm->hwpwm, 0);
- 
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
--	gpio_free(gpio);
--
- 	jz4740_timer_stop(pwm->hwpwm);
- }
- 
+ 	ret = ssd1307fb_init(par);
 -- 
-2.11.0
+1.9.1
 

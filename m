@@ -1,105 +1,67 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Date: Fri, 06 Jan 2017 12:29:49 +0000
+From: Lukasz Majewski <lukma@denx.de>
+Date: Fri, 13 Jan 2017 00:27:37 +0000
 Subject: Re: [PATCH v2 RESEND] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_back
-Message-Id: <20170106132949.3fa201f8@jawa>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/ub5e1_3.5/BomBZpGqTCZCC"
+Message-Id: <20170113012737.45f5a3db@jawa>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
         <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
         <20170103083032.GA2977@dell>
 In-Reply-To: <20170103083032.GA2977@dell>
-To: Lee Jones <lee.jones@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1254"
+Content-Transfer-Encoding: base64
+To: Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>
+Cc: Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, l.majewski@majess.pl
 
---Sig_/ub5e1_3.5/BomBZpGqTCZCC
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Hi Lee, Thierry, Jingoo,
-
->=20
-> Please respond to Lukasz.
-
-Gentel Ping....
-
-Best regards,
-=C5=81ukasz Majewski
-
->=20
-> On Mon, 26 Dec 2016, Lukasz Majewski wrote:
->=20
-> > The commit a55944ca82d2=20
-> > ("backlight: update bd state & fb_blank properties when necessary")
-> > has posed some extra restrictions on blanking and unblanking frame
-> > buffer device.
-> >=20
-> > Unfortunately, pwm_bl driver's probe did not initialize members of
-> > struct backlight_device necessary for further blank/unblank
-> > operation.
-> >=20
-> > This code in case of initial unblank of backlight device (default=20
-> > behaviour) sets use_count to 1 and marks this particular backlight
-> > device as used by all available fb devices (since it is not known
-> > during probe how much and which fb devices will be assigned).
-> >=20
-> > Without this code, the backlight works properly until one tries to
-> > blank it manually from sysfs with "echo 1
-> > > /sys/class/graphics/fb0/blank". Since fb_bl_on[0] and use_count
-> > > were both set to 0, the logic at
-> > fb_notifier_callback (@backlight.c) thought that we didn't turn on
-> > (unblanked) the backlight device and refuses to disable (blank) it.
-> > As a result we see garbage from fb displayed.
-> >=20
-> > Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
-> > ---
-> > The patch has been tested on i.MX6q with vanilla 4.9 kernel.
-> > It applies on 4.10-rc1.
-> > ---
-> >  drivers/video/backlight/pwm_bl.c | 10 +++++++++-
-> >  1 file changed, 9 insertions(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/video/backlight/pwm_bl.c
-> > b/drivers/video/backlight/pwm_bl.c index 1261400..6859ba0 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct
-> > platform_device *pdev) struct pwm_bl_data *pb;
-> >  	int initial_blank =3D FB_BLANK_UNBLANK;
-> >  	struct pwm_args pargs;
-> > -	int ret;
-> > +	int ret, i;
-> > =20
-> >  	if (!data) {
-> >  		ret =3D pwm_backlight_parse_dt(&pdev->dev, &defdata);
-> > @@ -348,6 +348,14 @@ static int pwm_backlight_probe(struct
-> > platform_device *pdev)=20
-> >  	bl->props.brightness =3D data->dft_brightness;
-> >  	bl->props.power =3D initial_blank;
-> > +
-> > +	if (initial_blank =3D=3D FB_BLANK_UNBLANK) {
-> > +		for (i =3D 0; i < FB_MAX; i++)
-> > +			bl->fb_bl_on[i] =3D true;
-> > +
-> > +		bl->use_count =3D 1;
-> > +	}
-> > +
-> >  	backlight_update_status(bl);
-> > =20
-> >  	platform_set_drvdata(pdev, bl);
->=20
-
-
---Sig_/ub5e1_3.5/BomBZpGqTCZCC
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEARECAAYFAlhvjcQACgkQf9/hG2YwgjGtXgCfTcxyxNpYQzwQEYuSka+TGcZb
-dcQAnijZYvxmPhhY0e2/Brtl+dWUzNAQ
-=xhCd
------END PGP SIGNATURE-----
-
---Sig_/ub5e1_3.5/BomBZpGqTCZCC--
+RGVhciBBbGwsCgo+IFRoaWVycnksIEppbmdvbywKPiAKPiBQbGVhc2UgcmVzcG9uZCB0byBMdWth
+c3ouCgpZZXMsIHlvdXIgcmVzcG9uc2UgaXMgbW9yZSB0aGFuIHdlbGNvbWUuLi4uLi4uIDotKQoK
+VGhhbmtzIGluIGFkdmFuY2UsCgrFgXVrYXN6IE1hamV3c2tpCgo+IAo+IE9uIE1vbiwgMjYgRGVj
+IDIwMTYsIEx1a2FzeiBNYWpld3NraSB3cm90ZToKPiAKPiA+IFRoZSBjb21taXQgYTU1OTQ0Y2E4
+MmQyIAo+ID4gKCJiYWNrbGlnaHQ6IHVwZGF0ZSBiZCBzdGF0ZSAmIGZiX2JsYW5rIHByb3BlcnRp
+ZXMgd2hlbiBuZWNlc3NhcnkiKQo+ID4gaGFzIHBvc2VkIHNvbWUgZXh0cmEgcmVzdHJpY3Rpb25z
+IG9uIGJsYW5raW5nIGFuZCB1bmJsYW5raW5nIGZyYW1lCj4gPiBidWZmZXIgZGV2aWNlLgo+ID4g
+Cj4gPiBVbmZvcnR1bmF0ZWx5LCBwd21fYmwgZHJpdmVyJ3MgcHJvYmUgZGlkIG5vdCBpbml0aWFs
+aXplIG1lbWJlcnMgb2YKPiA+IHN0cnVjdCBiYWNrbGlnaHRfZGV2aWNlIG5lY2Vzc2FyeSBmb3Ig
+ZnVydGhlciBibGFuay91bmJsYW5rCj4gPiBvcGVyYXRpb24uCj4gPiAKPiA+IFRoaXMgY29kZSBp
+biBjYXNlIG9mIGluaXRpYWwgdW5ibGFuayBvZiBiYWNrbGlnaHQgZGV2aWNlIChkZWZhdWx0IAo+
+ID4gYmVoYXZpb3VyKSBzZXRzIHVzZV9jb3VudCB0byAxIGFuZCBtYXJrcyB0aGlzIHBhcnRpY3Vs
+YXIgYmFja2xpZ2h0Cj4gPiBkZXZpY2UgYXMgdXNlZCBieSBhbGwgYXZhaWxhYmxlIGZiIGRldmlj
+ZXMgKHNpbmNlIGl0IGlzIG5vdCBrbm93bgo+ID4gZHVyaW5nIHByb2JlIGhvdyBtdWNoIGFuZCB3
+aGljaCBmYiBkZXZpY2VzIHdpbGwgYmUgYXNzaWduZWQpLgo+ID4gCj4gPiBXaXRob3V0IHRoaXMg
+Y29kZSwgdGhlIGJhY2tsaWdodCB3b3JrcyBwcm9wZXJseSB1bnRpbCBvbmUgdHJpZXMgdG8KPiA+
+IGJsYW5rIGl0IG1hbnVhbGx5IGZyb20gc3lzZnMgd2l0aCAiZWNobyAxCj4gPiA+IC9zeXMvY2xh
+c3MvZ3JhcGhpY3MvZmIwL2JsYW5rIi4gU2luY2UgZmJfYmxfb25bMF0gYW5kIHVzZV9jb3VudAo+
+ID4gPiB3ZXJlIGJvdGggc2V0IHRvIDAsIHRoZSBsb2dpYyBhdAo+ID4gZmJfbm90aWZpZXJfY2Fs
+bGJhY2sgKEBiYWNrbGlnaHQuYykgdGhvdWdodCB0aGF0IHdlIGRpZG4ndCB0dXJuIG9uCj4gPiAo
+dW5ibGFua2VkKSB0aGUgYmFja2xpZ2h0IGRldmljZSBhbmQgcmVmdXNlcyB0byBkaXNhYmxlIChi
+bGFuaykgaXQuCj4gPiBBcyBhIHJlc3VsdCB3ZSBzZWUgZ2FyYmFnZSBmcm9tIGZiIGRpc3BsYXll
+ZC4KPiA+IAo+ID4gU2lnbmVkLW9mZi1ieTogTHVrYXN6IE1hamV3c2tpIDxsLm1hamV3c2tpQG1h
+amVzcy5wbD4KPiA+IC0tLQo+ID4gVGhlIHBhdGNoIGhhcyBiZWVuIHRlc3RlZCBvbiBpLk1YNnEg
+d2l0aCB2YW5pbGxhIDQuOSBrZXJuZWwuCj4gPiBJdCBhcHBsaWVzIG9uIDQuMTAtcmMxLgo+ID4g
+LS0tCj4gPiAgZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMgfCAxMCArKysrKysrKyst
+Cj4gPiAgMSBmaWxlIGNoYW5nZWQsIDkgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQo+ID4g
+Cj4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMKPiA+IGIv
+ZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMgaW5kZXggMTI2MTQwMC4uNjg1OWJhMCAx
+MDA2NDQKPiA+IC0tLSBhL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5jCj4gPiArKysg
+Yi9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwuYwo+ID4gQEAgLTIwMiw3ICsyMDIsNyBA
+QCBzdGF0aWMgaW50IHB3bV9iYWNrbGlnaHRfcHJvYmUoc3RydWN0Cj4gPiBwbGF0Zm9ybV9kZXZp
+Y2UgKnBkZXYpIHN0cnVjdCBwd21fYmxfZGF0YSAqcGI7Cj4gPiAgCWludCBpbml0aWFsX2JsYW5r
+ID0gRkJfQkxBTktfVU5CTEFOSzsKPiA+ICAJc3RydWN0IHB3bV9hcmdzIHBhcmdzOwo+ID4gLQlp
+bnQgcmV0Owo+ID4gKwlpbnQgcmV0LCBpOwo+ID4gIAo+ID4gIAlpZiAoIWRhdGEpIHsKPiA+ICAJ
+CXJldCA9IHB3bV9iYWNrbGlnaHRfcGFyc2VfZHQoJnBkZXYtPmRldiwgJmRlZmRhdGEpOwo+ID4g
+QEAgLTM0OCw2ICszNDgsMTQgQEAgc3RhdGljIGludCBwd21fYmFja2xpZ2h0X3Byb2JlKHN0cnVj
+dAo+ID4gcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAKPiA+ICAJYmwtPnByb3BzLmJyaWdodG5lc3Mg
+PSBkYXRhLT5kZnRfYnJpZ2h0bmVzczsKPiA+ICAJYmwtPnByb3BzLnBvd2VyID0gaW5pdGlhbF9i
+bGFuazsKPiA+ICsKPiA+ICsJaWYgKGluaXRpYWxfYmxhbmsgPSBGQl9CTEFOS19VTkJMQU5LKSB7
+Cj4gPiArCQlmb3IgKGkgPSAwOyBpIDwgRkJfTUFYOyBpKyspCj4gPiArCQkJYmwtPmZiX2JsX29u
+W2ldID0gdHJ1ZTsKPiA+ICsKPiA+ICsJCWJsLT51c2VfY291bnQgPSAxOwo+ID4gKwl9Cj4gPiAr
+Cj4gPiAgCWJhY2tsaWdodF91cGRhdGVfc3RhdHVzKGJsKTsKPiA+ICAKPiA+ICAJcGxhdGZvcm1f
+c2V0X2RydmRhdGEocGRldiwgYmwpOwo+IAoKQmVzdCByZWdhcmRzLAoKTHVrYXN6IE1hamV3c2tp
+CgotLQoKREVOWCBTb2Z0d2FyZSBFbmdpbmVlcmluZyBHbWJILCAgICAgIE1hbmFnaW5nIERpcmVj
+dG9yOiBXb2xmZ2FuZyBEZW5rCkhSQiAxNjUyMzUgTXVuaWNoLCBPZmZpY2U6IEtpcmNoZW5zdHIu
+NSwgRC04MjE5NCBHcm9lYmVuemVsbCwgR2VybWFueQpQaG9uZTogKCs0OSktODE0Mi02Njk4OS0x
+MCBGYXg6ICgrNDkpLTgxNDItNjY5ODktODAgRW1haWw6IHdkQGRlbnguZGUKLS0KVG8gdW5zdWJz
+Y3JpYmUgZnJvbSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LWZi
+ZGV2IiBpbgp0aGUgYm9keSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9y
+ZwpNb3JlIG1ham9yZG9tbyBpbmZvIGF0ICBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9t
+by1pbmZvLmh0bWw=

@@ -1,17 +1,21 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Thu, 12 Jan 2017 18:17:42 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 13 Jan 2017 11:01:38 +0000
 Subject: Re: [PATCH v2 1/1] of: Pass GPIO label down to gpiod_request when using get_gpiod_from_child
-Message-Id: <20170112181742.GA7475@dtor-ws>
+Message-Id: <11509256.sASrU01HFQ@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170112163924.4414-1-alexander.stein@systec-electronic.com>
+References: <CGME20170112164013epcas5p41425c343028efaff169f1a9ed38b4365@epcas5p4.samsung.com>
+ <20170112163924.4414-1-alexander.stein@systec-electronic.com>
 In-Reply-To: <20170112163924.4414-1-alexander.stein@systec-electronic.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alexander Stein <alexander.stein@systec-electronic.com>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, linux-leds@vger.kernel.org, linux-fbdev@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 
-On Thu, Jan 12, 2017 at 05:39:24PM +0100, Alexander Stein wrote:
+
+Hi,
+
+On Thursday, January 12, 2017 05:39:24 PM Alexander Stein wrote:
 > Currently all users of fwnode_get_named_gpiod() have no way to specify a
 > label for the GPIO. So GPIOs listed in debugfs are shown with label "?".
 > With this change a proper label is used.
@@ -31,13 +35,19 @@ On Thu, Jan 12, 2017 at 05:39:24PM +0100, Alexander Stein wrote:
 >  drivers/gpio/gpiolib.c                    |  5 +++--
 >  drivers/input/keyboard/gpio_keys.c        |  3 ++-
 >  drivers/input/keyboard/gpio_keys_polled.c |  3 ++-
-
-For input:
-
-Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
 >  drivers/leds/leds-gpio.c                  | 13 +++++++------
 >  drivers/video/fbdev/amba-clcd-nomadik.c   | 12 ++++++++----
+
+For fbdev part:
+
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
 >  include/linux/gpio/consumer.h             | 12 ++++++++----
 >  7 files changed, 33 insertions(+), 20 deletions(-)
 > 
@@ -221,9 +231,4 @@ Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 >  {
 >  	return ERR_PTR(-ENOSYS);
 >  }
-> -- 
-> 2.10.2
-> 
 
--- 
-Dmitry

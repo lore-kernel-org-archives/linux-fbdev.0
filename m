@@ -1,46 +1,102 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 26 Jan 2017 15:10:30 +0000
-Subject: Re: [PATCH v2 1/1] of: Pass GPIO label down to gpiod_request when using get_gpiod_from_child
-Message-Id: <CAMuHMdVP+wmv0yWQsB589eWWHxCU=q=VMj6FuqPBAzt_VfNdew@mail.gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 13 Jan 2017 10:35:48 +0000
+Subject: [PATCH v2 4/5] fbdev/ssd1307fb: add support to enable VBAT
+Message-Id: <214ae9ca86009148f233be71a3606917f3150dcd.1484303628.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170112163924.4414-1-alexander.stein@systec-electronic.com>
- <CACRpkdbbRcKvYuE4_oA2pPQsCpEhb_JbPDyvrcuJvK5y1BD6Og@mail.gmail.com>
- <CAMuHMdXUM8dCPwWjXmUP4gefB-_Apw7-LBENxjq7AqimEc+EXQ@mail.gmail.com> <CACRpkdbe2x3q2cqQ0EqaAU-Be0-FXa8q-oUd5XCYdKMnB15gyg@mail.gmail.com>
-In-Reply-To: <CACRpkdbe2x3q2cqQ0EqaAU-Be0-FXa8q-oUd5XCYdKMnB15gyg@mail.gmail.com>
+References: <cover.1484303628.git.jsarha@ti.com>
+In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Alexander Stein <alexander.stein@systec-electronic.com>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-Hi Linus,
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-On Thu, Jan 26, 2017 at 3:44 PM, Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Tue, Jan 24, 2017 at 12:18 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->
->> -gpio-780 (?): gpiod_set_debounce: missing set() or set_debounce() operations
->> +gpio-780 (SW30): gpiod_set_debounce: missing set() or set_debounce() operations
->
-> And there is a special problem.
->
-> I wanted, at one point, to take the timer-based debouncing code out of
-> the GPIO keys input driver and make it into a generic fallback in
-> gpiolib so that *any* GPIO controller could be made to provide
-> debounce.
->
-> I ran into some obstacle feelin it was impossible IIRC but do not
-> remember what it was.
+SSD1306 needs VBAT when it is wired in charge pump configuration. This
+patch adds support to the driver to enable VBAT regulator at init time.
 
-Are these real problems? They are debug prints.
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reviewed-by: Roger Quadros <rogerq@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ .../devicetree/bindings/display/ssd1307fb.txt        |  1 +
+ drivers/video/fbdev/ssd1307fb.c                      | 20 +++++++++++++++++++-
+ 2 files changed, 20 insertions(+), 1 deletion(-)
 
-Gr{oetje,eeting}s,
+diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+index 6617df6..209d931 100644
+--- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+@@ -16,6 +16,7 @@ Required properties:
+ Optional properties:
+   - reset-gpios: The GPIO used to reset the OLED display, if available. See
+                  Documentation/devicetree/bindings/gpio/gpio.txt for details.
++  - vbat-supply: The supply for VBAT
+   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
+                               to segment mapping
+   - solomon,com-seq: Display uses sequential COM pin configuration
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 89372af..616a6a3 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -16,6 +16,7 @@
+ #include <linux/of_gpio.h>
+ #include <linux/pwm.h>
+ #include <linux/uaccess.h>
++#include <linux/regulator/consumer.h>
+ 
+ #define SSD1307FB_DATA			0x40
+ #define SSD1307FB_COMMAND		0x80
+@@ -74,6 +75,7 @@ struct ssd1307fb_par {
+ 	struct pwm_device *pwm;
+ 	u32 pwm_period;
+ 	struct gpio_desc *reset;
++	struct regulator *vbat_reg;
+ 	u32 seg_remap;
+ 	u32 vcomh;
+ 	u32 width;
+@@ -574,6 +576,14 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		goto fb_alloc_error;
+ 	}
+ 
++	par->vbat_reg = devm_regulator_get_optional(&client->dev, "vbat");
++	if (IS_ERR(par->vbat_reg)) {
++		dev_err(&client->dev, "failed to get VBAT regulator: %ld\n",
++			PTR_ERR(par->vbat_reg));
++		ret = PTR_ERR(par->vbat_reg);
++		goto fb_alloc_error;
++	}
++
+ 	if (of_property_read_u32(node, "solomon,width", &par->width))
+ 		par->width = 96;
+ 
+@@ -658,9 +668,15 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		udelay(4);
+ 	}
+ 
++	ret = regulator_enable(par->vbat_reg);
++	if (ret) {
++		dev_err(&client->dev, "failed to enable VBAT: %d\n", ret);
++		goto reset_oled_error;
++	}
++
+ 	ret = ssd1307fb_init(par);
+ 	if (ret)
+-		goto reset_oled_error;
++		goto regulator_enable_error;
+ 
+ 	ret = register_framebuffer(info);
+ 	if (ret) {
+@@ -693,6 +709,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		pwm_disable(par->pwm);
+ 		pwm_put(par->pwm);
+ 	};
++regulator_enable_error:
++	regulator_disable(par->vbat_reg);
+ reset_oled_error:
+ 	fb_deferred_io_cleanup(info);
+ fb_alloc_error:
+-- 
+1.9.1
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

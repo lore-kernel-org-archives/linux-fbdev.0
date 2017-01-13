@@ -1,65 +1,93 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 10 Jan 2017 21:28:34 +0000
-Subject: [PATCH v9 0/4] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <20170110212838.16175-1-manuel.schoelling@gmx.de>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 13 Jan 2017 10:35:47 +0000
+Subject: [PATCH v2 3/5] fbdev: ssd1307fb: Make reset gpio devicetree property optional
+Message-Id: <5745ec4b4e5156ae7c7684fce4c7086f91e67c1f.1484303628.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4640722.jsFVORW8WM@amdc3058>
-In-Reply-To: <4640722.jsFVORW8WM@amdc3058>
+References: <cover.1484303628.git.jsarha@ti.com>
+In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: gregkh@linuxfoundation.org
-Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
---
-Changes in v9:
-  - Make persistent scrollback feature a boot parameter
-Changes in v8:
-  - Add Reviewed-by/Tested-By statements
-Changes in v7:
-  - Add new callback to consw struct for flushing video console driver's
-    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
-    by Adam Borowski (kilobyte@angband.pl).
-  - Fix style issues
-Changes in v6:
-  - Change of check if feature is enabled in=20
-    vgacon_scrollback_switch()
-Changes in v5:
-  - Clearify documentation
-  - Skip superfluous array initialization
-  - Disable scrollback if buffer allocation fails
-  - Refactor vgacon_switch_scrollback()
-  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
-  - Add check for fg_console in vgacon_scrollback_update
-Changes in v4.1:
-  - Fix compiler error
-Changes in v4:
-  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
-    VGACON_SOFT_SCROLLBACK_PERSISTENT
-  - Split into two patches
-  - Rework documentation
-  - Remove cosmetic changes in comments (postponed)
-Changes in v3:
-  - Add config option for this feature
-  - Fallback to old scrollback buffer if kcalloc() fails
-  - Remove ioctl() call again and add documentation about existing
-    escape sequence to flush the scrollback buffer
-Changes in v2:
-  - Add ioctl() call to flush scrollback buffer
-  - (Patch v2 was not labeled as such, sorry)
+Make reset gpio devicetree property optional. Depending on the board
+designing there may not be a dedicated gpio for resetting the
+display. Without a proper reset there may be some junk in the display
+memory at probe time, so in such a case the display memory is cleared
+before turning it on. The devicetree binding document is also updated.
 
-Manuel Sch=C3=B6lling (3):
-  console: Move scrollback data into its own struct
-  console: Add callback to flush scrollback buffer to consw struct
-  console: Add persistent scrollback buffers for all VGA consoles
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ .../devicetree/bindings/display/ssd1307fb.txt         |  4 ++--
+ drivers/video/fbdev/ssd1307fb.c                       | 19 +++++++++++++------
+ 2 files changed, 15 insertions(+), 8 deletions(-)
 
- drivers/tty/vt/vt.c            |   9 +++
- drivers/video/console/Kconfig  |  25 ++++++-
- drivers/video/console/vgacon.c | 165 ++++++++++++++++++++++++++++---------=
-----
- include/linux/console.h        |   4 +
- 4 files changed, 148 insertions(+), 55 deletions(-)
-
---=20
-2.11.0
+diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+index 4aee67f..6617df6 100644
+--- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+@@ -8,14 +8,14 @@ Required properties:
+          0x3c or 0x3d
+   - pwm: Should contain the pwm to use according to the OF device tree PWM
+          specification [0]. Only required for the ssd1307.
+-  - reset-gpios: Should contain the GPIO used to reset the OLED display. See
+-                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
+   - solomon,height: Height in pixel of the screen driven by the controller
+   - solomon,width: Width in pixel of the screen driven by the controller
+   - solomon,page-offset: Offset of pages (band of 8 pixels) that the screen is
+     mapped to.
+ 
+ Optional properties:
++  - reset-gpios: The GPIO used to reset the OLED display, if available. See
++                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
+   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
+                               to segment mapping
+   - solomon,com-seq: Display uses sequential COM pin configuration
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 8ffaaee..89372af 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -439,6 +439,10 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
+ 
++	/* Clear the screen if we could not give reset at probe time */
++	if (!par->reset)
++		ssd1307fb_update_display(par);
++
+ 	/* Turn on the display */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
+ 	if (ret < 0)
+@@ -561,7 +565,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 
+ 	par->device_info = of_device_get_match_data(&client->dev);
+ 
+-	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
++	par->reset = devm_gpiod_get_optional(&client->dev, "reset",
++					     GPIOD_OUT_LOW);
+ 	if (IS_ERR(par->reset)) {
+ 		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
+ 			PTR_ERR(par->reset));
+@@ -645,11 +650,13 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 
+ 	i2c_set_clientdata(client, info);
+ 
+-	/* Reset the screen */
+-	gpiod_set_value(par->reset, 0);
+-	udelay(4);
+-	gpiod_set_value(par->reset, 1);
+-	udelay(4);
++	if (par->reset) {
++		/* Reset the screen */
++		gpiod_set_value(par->reset, 0);
++		udelay(4);
++		gpiod_set_value(par->reset, 1);
++		udelay(4);
++	}
+ 
+ 	ret = ssd1307fb_init(par);
+ 	if (ret)
+-- 
+1.9.1
 

@@ -1,77 +1,119 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 30 Jan 2017 15:23:37 +0000
-Subject: Re: [PATCH 0/4] video: ARM CLCD: add support of an optional GPIO to enable panel
-Message-Id: <2240649.KotMHs5XVh@amdc3058>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 13 Jan 2017 10:46:39 +0000
+Subject: [PATCH v3 1/8] arm: put types.h in uapi
+Message-Id: <1484304406-10820-2-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20161221032717.13154-1-vz@mleia.com> <3057141.7Vn8X5ONyT@amdc3058>
- <ae187f91-ca9b-c51a-d7cb-14fd99baa434@mleia.com>
- <CGME20170130152340epcas5p3f68349ef89c5ec902186ae71011c0c4b@epcas5p3.samsung.com>
-In-Reply-To: <ae187f91-ca9b-c51a-d7cb-14fd99baa434@mleia.com>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: arnd@arndb.de
+Cc: mmarek@suse.com, linux-kbuild@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-am33-list@redhat.com, nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.
 
-On Tuesday, January 17, 2017 03:57:33 AM Vladimir Zapolskiy wrote:
-> On 01/13/2017 01:08 PM, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > On Thursday, January 12, 2017 11:26:14 PM Vladimir Zapolskiy wrote:
-> >> On 01/12/2017 10:27 AM, Linus Walleij wrote:
-> >>> On Thu, Jan 12, 2017 at 1:05 AM, Vladimir Zapolskiy <vz@mleia.com> wrote:
-> >>>> On 01/11/2017 05:16 PM, Linus Walleij wrote:
-> >>>>> On Tue, Jan 10, 2017 at 2:47 PM, Vladimir Murzin
-> >>>>> <vladimir.murzin@arm.com> wrote:
-> >>>>>
-> >>>>>> In another thread Benjamin pointed at patch [1] in drm/kms part for noMMU.
-> >>>>>>
-> >>>>>> [1] https://cgit.freedesktop.org/drm/drm-misc/commit/?idba0d98a188cc4ebd8ea54b37d274ec20465e464
-> >>>>>
-> >>>>> Problem solved?
-> >>>>>
-> >>>>> Vladimir: I do not require in any way that you create a CLCD driver for DRM,
-> >>>>> I just think it would be very very nice...
-> >>>>>
-> >>>>
-> >>>> I have no other option, this series is unreviewed and thus unlikely it will
-> >>>> be applied, still a panel PCB on my board needs power management support.
-> >>>
-> >>> Hm I can ACK it I guess, but mergeing it into an unmaintained subsystem
-> >>> is another issue, just not very optimal. 
-> >>
-> >> + Bartlomiej
-> >>
-> >> Linus, your ack is always more than appreciated.
-> > 
-> > +1
-> > 
-> >> To all appearance Bartlomiej is a new honoured framebuffer layer maintainer.
-> >>
-> >> Bartlomiej, do you have the changes under discussion in your mailbox or
-> >> should I resend them to you directly for review?
-> > 
-> > No need for resend, I picked them from the list and they are on TODO.
-> > 
-> 
-> Bartlomiej, Linus,
-> 
-> I've noticed that 4/4 requires special attention due to the anticipated
-> change of devm_get_gpiod_from_child() interface.
-> 
-> If you have any concerns regarding 4/4, please review and consider to
-> apply the first three clean-up patches in the series, basically I've
-> achieved my goal of describing a power supply for a panel in DTS by
-> introducing a DRM driver (see a note below), however support of
-> "enable-gpios" property mentioned in the "panel-dpi" device tree binding
-> documentation still is seen as beneficial for the CLCD fbdev driver.
+This header file is exported, thus move it to uapi.
 
-Thanks, I queued patches #1-3 for 4.11.  Please ping me later for
-merging patch #4.
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/arm/include/asm/types.h      | 40 ---------------------------------------
+ arch/arm/include/uapi/asm/types.h | 40 +++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 40 insertions(+), 40 deletions(-)
+ delete mode 100644 arch/arm/include/asm/types.h
+ create mode 100644 arch/arm/include/uapi/asm/types.h
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/arm/include/asm/types.h b/arch/arm/include/asm/types.h
+deleted file mode 100644
+index a53cdb8f068c..000000000000
+--- a/arch/arm/include/asm/types.h
++++ /dev/null
+@@ -1,40 +0,0 @@
+-#ifndef _ASM_TYPES_H
+-#define _ASM_TYPES_H
+-
+-#include <asm-generic/int-ll64.h>
+-
+-/*
+- * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
+- * unambiguous on ARM as you would expect. For the types below, there is a
+- * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
+- * and the kernel itself, which results in build errors if you try to build with
+- * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
+- * in order to use NEON intrinsics)
+- *
+- * As the typedefs for these types in 'stdint.h' are based on builtin defines
+- * supplied by GCC, we can tweak these to align with the kernel's idea of those
+- * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
+- * source file (provided that -ffreestanding is used).
+- *
+- *                    int32_t         uint32_t               uintptr_t
+- * bare metal GCC     long            unsigned long          unsigned int
+- * glibc GCC          int             unsigned int           unsigned int
+- * kernel             int             unsigned int           unsigned long
+- */
+-
+-#ifdef __INT32_TYPE__
+-#undef __INT32_TYPE__
+-#define __INT32_TYPE__		int
+-#endif
+-
+-#ifdef __UINT32_TYPE__
+-#undef __UINT32_TYPE__
+-#define __UINT32_TYPE__	unsigned int
+-#endif
+-
+-#ifdef __UINTPTR_TYPE__
+-#undef __UINTPTR_TYPE__
+-#define __UINTPTR_TYPE__	unsigned long
+-#endif
+-
+-#endif /* _ASM_TYPES_H */
+diff --git a/arch/arm/include/uapi/asm/types.h b/arch/arm/include/uapi/asm/types.h
+new file mode 100644
+index 000000000000..9435a42f575e
+--- /dev/null
++++ b/arch/arm/include/uapi/asm/types.h
+@@ -0,0 +1,40 @@
++#ifndef _UAPI_ASM_TYPES_H
++#define _UAPI_ASM_TYPES_H
++
++#include <asm-generic/int-ll64.h>
++
++/*
++ * The C99 types uintXX_t that are usually defined in 'stdint.h' are not as
++ * unambiguous on ARM as you would expect. For the types below, there is a
++ * difference on ARM between GCC built for bare metal ARM, GCC built for glibc
++ * and the kernel itself, which results in build errors if you try to build with
++ * -ffreestanding and include 'stdint.h' (such as when you include 'arm_neon.h'
++ * in order to use NEON intrinsics)
++ *
++ * As the typedefs for these types in 'stdint.h' are based on builtin defines
++ * supplied by GCC, we can tweak these to align with the kernel's idea of those
++ * types, so 'linux/types.h' and 'stdint.h' can be safely included from the same
++ * source file (provided that -ffreestanding is used).
++ *
++ *                    int32_t         uint32_t               uintptr_t
++ * bare metal GCC     long            unsigned long          unsigned int
++ * glibc GCC          int             unsigned int           unsigned int
++ * kernel             int             unsigned int           unsigned long
++ */
++
++#ifdef __INT32_TYPE__
++#undef __INT32_TYPE__
++#define __INT32_TYPE__		int
++#endif
++
++#ifdef __UINT32_TYPE__
++#undef __UINT32_TYPE__
++#define __UINT32_TYPE__	unsigned int
++#endif
++
++#ifdef __UINTPTR_TYPE__
++#undef __UINTPTR_TYPE__
++#define __UINTPTR_TYPE__	unsigned long
++#endif
++
++#endif /* _UAPI_ASM_TYPES_H */
+-- 
+2.8.1
 

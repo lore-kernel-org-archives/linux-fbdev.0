@@ -1,7 +1,7 @@
 From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 11 Jan 2017 21:41:30 +0000
+Date: Fri, 13 Jan 2017 20:00:34 +0000
 Subject: Re: [PATCH v9 4/4] console: Make persistent scrollback a boot parameter
-Message-Id: <1484170890.1301.8.camel@gmx.de>
+Message-Id: <1484337634.1720.4.camel@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <4640722.jsFVORW8WM@amdc3058>
          <20170110212838.16175-5-manuel.schoelling@gmx.de>
@@ -36,25 +36,13 @@ On Tue, 2017-01-10 at 23:58 +0100, Adam Borowski wrote:
 > the near future, perhaps it'd be better to have a shared setting for
 > all
 > console drivers?
-Probably a good idea, but I'm struggling with the implementation a bit:
+According to the guys at #kernelnewbies on IRC everybody hates new
+command line options.
+I'd rather stick to the module parameter for now and maybe introduce a 
+new cmd line option later, once this feature has been implemented in
+several console drivers.
 
-I tried to run 
-
-  if (strstr(boot_command_line, "nopersistentscrollback")) {...}
-
-in vgacon_scrollback_startup() but I am getting 
-
-  WARNING: modpost: Found 2 section mismatch(es).
-
-when compiling. Probably because vgacon_scrollback_startup() is
-executed after init.
-
-I tried to find another way to implement a boot cmd line parameter but
-had no luck.
-If you/somebody could point me in the right direction, it would be very
-much appreciated.
-
-Thanks!
+Bye,
 
 Manuel
 

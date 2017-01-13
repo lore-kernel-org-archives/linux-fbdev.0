@@ -1,114 +1,67 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Tue, 31 Jan 2017 19:42:02 +0000
-Subject: Re: [PATCH 1/2] gpio: Rename devm_get_gpiod_from_child()
-Message-Id: <20170131204202.7b589ca6@bbrezillon>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Fri, 13 Jan 2017 20:07:54 +0000
+Subject: [PATCH v10 0/4] console: Add persistent scrollback buffers for all VGA consoles
+Message-Id: <20170113200758.9880-1-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1485790909-2915-1-git-send-email-boris.brezillon@free-electrons.com>
-        <1485790909-2915-2-git-send-email-boris.brezillon@free-electrons.com>
-        <20170131010607.GC35974@dtor-ws>
-        <20170131090432.72a1b1b8@bbrezillon>
-        <20170131084447.GD8311@dtor-ws>
-        <20170131100721.22c2388d@bbrezillon>
-        <20170131091155.GH8311@dtor-ws>
-        <20170131102424.7b68c0d4@bbrezillon>
-        <20170131183936.GB13642@dtor-ws>
-In-Reply-To: <20170131183936.GB13642@dtor-ws>
+References: <201701112105.R6Zog6jw%fengguang.wu@intel.com>
+In-Reply-To: <201701112105.R6Zog6jw%fengguang.wu@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-On Tue, 31 Jan 2017 10:39:36 -0800
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+Changes in v10:
+  - Fix compilation error if CONFIG_VGACON_SOFT_SCROLLBACK=3Dn
+Changes in v9:
+  - Make persistent scrollback feature a boot parameter
+Changes in v8:
+  - Add Reviewed-by/Tested-By statements
+Changes in v7:
+  - Add new callback to consw struct for flushing video console driver's
+    scrollback buffer. Fixes issues with escape sequence '\e[3J' reported
+    by Adam Borowski (kilobyte@angband.pl).
+  - Fix style issues
+Changes in v6:
+  - Change of check if feature is enabled in=20
+    vgacon_scrollback_switch()
+Changes in v5:
+  - Clearify documentation
+  - Skip superfluous array initialization
+  - Disable scrollback if buffer allocation fails
+  - Refactor vgacon_switch_scrollback()
+  - Rename vgacon_switch_scrollback() to vgacon_scrollback_switch()
+  - Add check for fg_console in vgacon_scrollback_update
+Changes in v4.1:
+  - Fix compiler error
+Changes in v4:
+  - Rename from VGACON_SOFT_SCROLLBACK_FOR_EACH_CONSOLE to
+    VGACON_SOFT_SCROLLBACK_PERSISTENT
+  - Split into two patches
+  - Rework documentation
+  - Remove cosmetic changes in comments (postponed)
+Changes in v3:
+  - Add config option for this feature
+  - Fallback to old scrollback buffer if kcalloc() fails
+  - Remove ioctl() call again and add documentation about existing
+    escape sequence to flush the scrollback buffer
+Changes in v2:
+  - Add ioctl() call to flush scrollback buffer
+  - (Patch v2 was not labeled as such, sorry)
 
-> On Tue, Jan 31, 2017 at 10:24:24AM +0100, Boris Brezillon wrote:
-> > On Tue, 31 Jan 2017 01:11:55 -0800
-> > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> >   
-> > > On Tue, Jan 31, 2017 at 10:07:21AM +0100, Boris Brezillon wrote:  
-> > > > On Tue, 31 Jan 2017 00:44:47 -0800
-> > > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > > >     
-> > > > > On Tue, Jan 31, 2017 at 09:04:32AM +0100, Boris Brezillon wrote:    
-> > > > > > On Mon, 30 Jan 2017 17:06:07 -0800
-> > > > > > Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> > > > > >       
-> > > > > > > On Mon, Jan 30, 2017 at 04:41:48PM +0100, Boris Brezillon wrote:      
-> > > > > > > > Rename devm_get_gpiod_from_child() into
-> > > > > > > > devm_fwnode_get_gpiod_from_child() to reflect the fact that this
-> > > > > > > > function is operating on a fwnode object.        
-> > > > > > > 
-> > > > > > > I believe this is completely pointless rename. Are you planning on
-> > > > > > > adding devm_of_get_gpiod_from_child()? Or
-> > > > > > > devm_acpt_get_gpiod_from_child()? (I sure hope not).      
-> > > > > > 
-> > > > > > Of course not.
-> > > > > >       
-> > > > > > > 
-> > > > > > > Also, on what object? Does it take fwnode as first argument? Or maybe we
-> > > > > > > should call it devm_dev_const_charp_fwnode_get_gpiod_from_child() so we
-> > > > > > > know types of all arguments?      
-> > > > > > 
-> > > > > > Linus suggested to rename this function [1]. I personally don't care
-> > > > > > much about the name, though I agree with Linus that names should be
-> > > > > > consistent and descriptive. Moreover, he's the maintainer, and I tend
-> > > > > > to follow maintainers suggestion when I contribute to a specific
-> > > > > > subsystem.      
-> > > > > 
-> > > > > OK, I did not know that that was Linus' request, my objection still
-> > > > > stands.
-> > > > >     
-> > > > > > 
-> > > > > > IIUC, you're concerned about the length of this function name. If I had
-> > > > > > to drop something it would be the _from_child() suffix, because the
-> > > > > > function is not even checking that the child parameter is actually a
-> > > > > > direct child (or a descendant) of device->fwnode.      
-> > > > > 
-> > > > > OK, that sounds better. Actually, we already have
-> > > > > fwnode_get_named_gpiod(), unfortunately it does not do suffixes
-> > > > > permutations. There are also no users, except
-> > > > > devm_get_gpiod_from_child(). So I would:
-> > > > > 
-> > > > > - rename fwnode_get_named_gpiod() -> static __fwnode_get_named_gpiod()
-> > > > > - made new fwnode_get_named_gpiod() that did suffix permutation and
-> > > > >   called __fwnode_get_named_gpiod() (or pulled its implementation
-> > > > >   inline)    
-> > > > 
-> > > > Sorry but I don't follow you. Why do you need
-> > > > __fwnode_get_named_gpiod(),    
-> > > 
-> > > You do not need it, it will just reduce size of the patch if you use
-> > > it. I'd be perfectly fine not with having it and have everything in
-> > > fwnode_get_named_gpiod().  
-> > 
-> > Okay.
-> >   
-> > >   
-> > > > and what is the suffix permutation you're
-> > > > mentioning here?    
-> > > 
-> > > devm_get_gpiod_from_child() tries to apply "-gpio" and "-gpios" suffixes
-> > > to the supplied GPIO ID while current fwnode_get_named_gpiod() takes
-> > > property name literally.  
-> > 
-> > fwnode_get_named_gpiod() just mimics what of_get_named_gpiod_flags(),
-> > acpi_node_get_gpiod(), of_find_gpio() and acpi_find_gpio() do. It would
-> > be weird/inconsistent to have the con_id suffixing logic moved in the
-> > fwnode_get_named_gpiod() (if that's what you're suggesting, but I'm not
-> > sure it is).  
-> 
-> Hmm, yeah, I agree, that would be weird. Then let's leave
-> devm_get_gpiod_from_child() as is ;)
+Manuel Sch=C3=B6lling (4):
+  console: Move scrollback data into its own struct
+  console: Add callback to flush scrollback buffer to consw struct
+  console: Add persistent scrollback buffers for all VGA consoles
+  console: Make persistent scrollback a boot parameter
 
-Changing the internal implementation has never been the goal of this
-patch. As explained in the commit log, I'm just renaming the function
-to make it consistent with other fwnode functions (as suggested by
-Linus).
-What's happening here is exactly the kind of discussion I wanted to
-avoid, and the reason I decided to not change the
-devm_get_gpiod_from_child() prototype/name in the first place.
+ drivers/tty/vt/vt.c            |   9 +++
+ drivers/video/console/Kconfig  |  27 ++++++-
+ drivers/video/console/vgacon.c | 164 ++++++++++++++++++++++++++++---------=
+----
+ include/linux/console.h        |   4 +
+ 4 files changed, 149 insertions(+), 55 deletions(-)
 
-Linus, is this something you really care about? If that's the case, can
-you step in?
+--=20
+2.11.0
 

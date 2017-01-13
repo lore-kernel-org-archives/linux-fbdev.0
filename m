@@ -1,59 +1,44 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 11 Jan 2017 12:50:29 +0000
-Subject: Re: [PATCH v2] video: fbdev: sh_mobile_lcdcfb: use designated initializers
-Message-Id: <4446544.3TN0Epkxz7@amdc3058>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 13 Jan 2017 10:35:49 +0000
+Subject: [PATCH v2 5/5] fbdev/ssd1307fb: clear screen in probe
+Message-Id: <ac6aa17b8cff892f15a726cdd17487e42dc7ad66.1484303628.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20161220201053epcas1p3440c5c2973397422318bae039948af8e@epcas1p3.samsung.com>
- <20161220201049.GA18463@beast>
-In-Reply-To: <20161220201049.GA18463@beast>
+References: <cover.1484303628.git.jsarha@ti.com>
+In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-fbdev@vger.kernel.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-Hi,
+SSD1306 does not clear the panel's framebuffer automatically, even if a
+HW reset happens, so we need to do that at probe time before enabling
+the panel.
 
-On Tuesday, December 20, 2016 12:10:49 PM Kees Cook wrote:
-> Prepare to mark sensitive kernel structures for randomization by making
-> sure they're using designated initializers. These were identified during
-> allyesconfig builds of x86, arm, and arm64, with most initializer fixes
-> extracted from grsecurity.
-> 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/ssd1307fb.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-Thanks, queued for 4.11.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
-> v2:
-> - vertical columns, Bartlomiej Zolnierkiewicz
-> ---
->  drivers/video/fbdev/sh_mobile_lcdcfb.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> index 82c0a8caa9b8..93469f94c09d 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -439,9 +439,9 @@ static unsigned long lcdc_sys_read_data(void *handle)
->  }
->  
->  static struct sh_mobile_lcdc_sys_bus_ops sh_mobile_lcdc_sys_bus_ops = {
-> -	lcdc_sys_write_index,
-> -	lcdc_sys_write_data,
-> -	lcdc_sys_read_data,
-> +	.write_index	= lcdc_sys_write_index,
-> +	.write_data	= lcdc_sys_write_data,
-> +	.read_data	= lcdc_sys_read_data,
->  };
->  
->  static int sh_mobile_lcdc_sginit(struct fb_info *info,
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 616a6a3..5c87ae4 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -441,9 +441,8 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	/* Clear the screen if we could not give reset at probe time */
+-	if (!par->reset)
+-		ssd1307fb_update_display(par);
++	/* Clear the screen */
++	ssd1307fb_update_display(par);
+ 
+ 	/* Turn on the display */
+ 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
+-- 
+1.9.1
 

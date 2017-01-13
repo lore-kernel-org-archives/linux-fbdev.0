@@ -1,956 +1,2708 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Wed, 25 Jan 2017 18:52:07 +0000
-Subject: [PATCH v3 14/14] MIPS: jz4740: Remove custom GPIO code
-Message-Id: <20170125185207.23902-15-paul@crapouillou.net>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 13 Jan 2017 10:46:45 +0000
+Subject: [PATCH v3 7/8] uapi: export all headers under uapi directories
+Message-Id: <1484304406-10820-8-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net>
-In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+To: arnd@arndb.de
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux@armlinux.org.uk, hch@infradead.org, coreteam@netfilter.org, msalter@redhat.com, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-All the drivers for the various hardware elements of the jz4740 SoC have
-been modified to use the pinctrl framework for their pin configuration
-needs.
-As such, this platform code is now unused and can be deleted.
+Regularly, when a new header is created in include/uapi/, the developer
+forgets to add it in the corresponding Kbuild file. This error is usually
+detected after the release is out.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+In fact, all headers under uapi directories should be exported, thus it's
+useless to have an exhaustive list.
+
+After this patch, the following files, which were not exported, are now
+exported (with make headers_install_all):
+asm-unicore32/shmparam.h
+asm-unicore32/ucontext.h
+asm-hexagon/shmparam.h
+asm-mips/ucontext.h
+asm-mips/hwcap.h
+asm-mips/reg.h
+drm/vgem_drm.h
+drm/armada_drm.h
+drm/omap_drm.h
+drm/etnaviv_drm.h
+asm-tile/shmparam.h
+asm-blackfin/shmparam.h
+asm-blackfin/ucontext.h
+asm-powerpc/perf_regs.h
+rdma/qedr-abi.h
+asm-parisc/kvm_para.h
+asm-openrisc/shmparam.h
+.install
+asm-nios2/kvm_para.h
+asm-nios2/ucontext.h
+asm-sh/kvm_para.h
+asm-sh/ucontext.h
+asm-xtensa/kvm_para.h
+asm-avr32/kvm_para.h
+asm-m32r/kvm_para.h
+asm-h8300/shmparam.h
+asm-h8300/ucontext.h
+asm-metag/kvm_para.h
+asm-metag/shmparam.h
+asm-metag/ucontext.h
+asm-m68k/kvm_para.h
+asm-m68k/shmparam.h
+linux/bcache.h
+linux/kvm.h
+linux/kvm_para.h
+linux/kfd_ioctl.h
+linux/cryptouser.h
+linux/kcm.h
+linux/kcov.h
+linux/seg6_iptunnel.h
+linux/stm.h
+linux/genwqe
+linux/genwqe/.install
+linux/genwqe/genwqe_card.h
+linux/genwqe/..install.cmd
+linux/seg6.h
+linux/cifs
+linux/cifs/.install
+linux/cifs/cifs_mount.h
+linux/cifs/..install.cmd
+linux/auto_dev-ioctl.h
+linux/userio.h
+linux/pr.h
+linux/wil6210_uapi.h
+linux/a.out.h
+linux/nilfs2_ondisk.h
+linux/hash_info.h
+linux/seg6_genl.h
+linux/seg6_hmac.h
+linux/batman_adv.h
+linux/nsfs.h
+linux/qrtr.h
+linux/btrfs_tree.h
+linux/coresight-stm.h
+linux/dma-buf.h
+linux/module.h
+linux/lightnvm.h
+linux/nilfs2_api.h
+asm-cris/kvm_para.h
+asm-arc/kvm_para.h
+asm-arc/ucontext.h
+..install.cmd
+asm-c6x/shmparam.h
+asm-c6x/ucontext.h
+
+Thanks to Julien Floret <julien.floret@6wind.com> for the tip to get all
+subdirs with a pure makefile command.
+
+For the record, note that exported files for asm directories are a mix of
+files listed by:
+ - include/uapi/asm-generic/Kbuild.asm;
+ - arch/<arch>/include/uapi/asm/Kbuild;
+ - arch/<arch>/include/asm/Kbuild.
+
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Acked-by: Russell King <rmk+kernel@armlinux.org.uk>
+Acked-by: Mark Salter <msalter@redhat.com>
 ---
- arch/mips/include/asm/mach-jz4740/gpio.h | 371 ----------------------
- arch/mips/jz4740/Makefile                |   2 -
- arch/mips/jz4740/gpio.c                  | 519 -------------------------------
- 3 files changed, 892 deletions(-)
- delete mode 100644 arch/mips/jz4740/gpio.c
+ Documentation/kbuild/makefiles.txt          |  55 ++--
+ arch/alpha/include/uapi/asm/Kbuild          |  41 ---
+ arch/arc/include/uapi/asm/Kbuild            |   3 -
+ arch/arm/include/uapi/asm/Kbuild            |  17 -
+ arch/arm64/include/uapi/asm/Kbuild          |  18 --
+ arch/avr32/include/uapi/asm/Kbuild          |  20 --
+ arch/blackfin/include/uapi/asm/Kbuild       |  17 -
+ arch/c6x/include/uapi/asm/Kbuild            |   8 -
+ arch/cris/include/uapi/arch-v10/arch/Kbuild |   5 -
+ arch/cris/include/uapi/arch-v32/arch/Kbuild |   3 -
+ arch/cris/include/uapi/asm/Kbuild           |  43 +--
+ arch/frv/include/uapi/asm/Kbuild            |  33 --
+ arch/h8300/include/uapi/asm/Kbuild          |  28 --
+ arch/hexagon/include/asm/Kbuild             |   3 -
+ arch/hexagon/include/uapi/asm/Kbuild        |  13 -
+ arch/ia64/include/uapi/asm/Kbuild           |  45 ---
+ arch/m32r/include/uapi/asm/Kbuild           |  31 --
+ arch/m68k/include/uapi/asm/Kbuild           |  24 --
+ arch/metag/include/uapi/asm/Kbuild          |   8 -
+ arch/microblaze/include/uapi/asm/Kbuild     |  32 --
+ arch/mips/include/uapi/asm/Kbuild           |  37 ---
+ arch/mn10300/include/uapi/asm/Kbuild        |  32 --
+ arch/nios2/include/uapi/asm/Kbuild          |   3 +-
+ arch/openrisc/include/asm/Kbuild            |   3 -
+ arch/openrisc/include/uapi/asm/Kbuild       |   8 -
+ arch/parisc/include/uapi/asm/Kbuild         |  28 --
+ arch/powerpc/include/uapi/asm/Kbuild        |  45 ---
+ arch/s390/include/uapi/asm/Kbuild           |  52 ---
+ arch/score/include/asm/Kbuild               |   4 -
+ arch/score/include/uapi/asm/Kbuild          |  32 --
+ arch/sh/include/uapi/asm/Kbuild             |  23 --
+ arch/sparc/include/uapi/asm/Kbuild          |  48 ---
+ arch/tile/include/asm/Kbuild                |   3 -
+ arch/tile/include/uapi/arch/Kbuild          |  17 -
+ arch/tile/include/uapi/asm/Kbuild           |  19 +-
+ arch/unicore32/include/uapi/asm/Kbuild      |   6 -
+ arch/x86/include/uapi/asm/Kbuild            |  58 ----
+ arch/xtensa/include/uapi/asm/Kbuild         |  23 --
+ include/Kbuild                              |   2 -
+ include/asm-generic/Kbuild.asm              |   1 -
+ include/scsi/fc/Kbuild                      |   0
+ include/uapi/Kbuild                         |  15 -
+ include/uapi/asm-generic/Kbuild             |  36 ---
+ include/uapi/asm-generic/Kbuild.asm         |  62 ++--
+ include/uapi/drm/Kbuild                     |  22 --
+ include/uapi/linux/Kbuild                   | 483 ----------------------------
+ include/uapi/linux/android/Kbuild           |   2 -
+ include/uapi/linux/byteorder/Kbuild         |   3 -
+ include/uapi/linux/caif/Kbuild              |   3 -
+ include/uapi/linux/can/Kbuild               |   6 -
+ include/uapi/linux/dvb/Kbuild               |   9 -
+ include/uapi/linux/hdlc/Kbuild              |   2 -
+ include/uapi/linux/hsi/Kbuild               |   2 -
+ include/uapi/linux/iio/Kbuild               |   3 -
+ include/uapi/linux/isdn/Kbuild              |   2 -
+ include/uapi/linux/mmc/Kbuild               |   2 -
+ include/uapi/linux/netfilter/Kbuild         |  89 -----
+ include/uapi/linux/netfilter/ipset/Kbuild   |   5 -
+ include/uapi/linux/netfilter_arp/Kbuild     |   3 -
+ include/uapi/linux/netfilter_bridge/Kbuild  |  18 --
+ include/uapi/linux/netfilter_ipv4/Kbuild    |  10 -
+ include/uapi/linux/netfilter_ipv6/Kbuild    |  13 -
+ include/uapi/linux/nfsd/Kbuild              |   6 -
+ include/uapi/linux/raid/Kbuild              |   3 -
+ include/uapi/linux/spi/Kbuild               |   2 -
+ include/uapi/linux/sunrpc/Kbuild            |   2 -
+ include/uapi/linux/tc_act/Kbuild            |  15 -
+ include/uapi/linux/tc_ematch/Kbuild         |   5 -
+ include/uapi/linux/usb/Kbuild               |  12 -
+ include/uapi/linux/wimax/Kbuild             |   2 -
+ include/uapi/misc/Kbuild                    |   2 -
+ include/uapi/mtd/Kbuild                     |   6 -
+ include/uapi/rdma/Kbuild                    |  18 --
+ include/uapi/rdma/hfi/Kbuild                |   2 -
+ include/uapi/scsi/Kbuild                    |   6 -
+ include/uapi/scsi/fc/Kbuild                 |   5 -
+ include/uapi/sound/Kbuild                   |  16 -
+ include/uapi/video/Kbuild                   |   4 -
+ include/uapi/xen/Kbuild                     |   5 -
+ include/video/Kbuild                        |   0
+ scripts/Makefile.headersinst                |  45 +--
+ 81 files changed, 92 insertions(+), 1745 deletions(-)
+ delete mode 100644 arch/cris/include/uapi/arch-v10/arch/Kbuild
+ delete mode 100644 arch/cris/include/uapi/arch-v32/arch/Kbuild
+ delete mode 100644 arch/tile/include/uapi/arch/Kbuild
+ delete mode 100644 include/Kbuild
+ delete mode 100644 include/asm-generic/Kbuild.asm
+ delete mode 100644 include/scsi/fc/Kbuild
+ delete mode 100644 include/uapi/Kbuild
+ delete mode 100644 include/uapi/asm-generic/Kbuild
+ delete mode 100644 include/uapi/drm/Kbuild
+ delete mode 100644 include/uapi/linux/Kbuild
+ delete mode 100644 include/uapi/linux/android/Kbuild
+ delete mode 100644 include/uapi/linux/byteorder/Kbuild
+ delete mode 100644 include/uapi/linux/caif/Kbuild
+ delete mode 100644 include/uapi/linux/can/Kbuild
+ delete mode 100644 include/uapi/linux/dvb/Kbuild
+ delete mode 100644 include/uapi/linux/hdlc/Kbuild
+ delete mode 100644 include/uapi/linux/hsi/Kbuild
+ delete mode 100644 include/uapi/linux/iio/Kbuild
+ delete mode 100644 include/uapi/linux/isdn/Kbuild
+ delete mode 100644 include/uapi/linux/mmc/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter/ipset/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter_arp/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter_bridge/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter_ipv4/Kbuild
+ delete mode 100644 include/uapi/linux/netfilter_ipv6/Kbuild
+ delete mode 100644 include/uapi/linux/nfsd/Kbuild
+ delete mode 100644 include/uapi/linux/raid/Kbuild
+ delete mode 100644 include/uapi/linux/spi/Kbuild
+ delete mode 100644 include/uapi/linux/sunrpc/Kbuild
+ delete mode 100644 include/uapi/linux/tc_act/Kbuild
+ delete mode 100644 include/uapi/linux/tc_ematch/Kbuild
+ delete mode 100644 include/uapi/linux/usb/Kbuild
+ delete mode 100644 include/uapi/linux/wimax/Kbuild
+ delete mode 100644 include/uapi/misc/Kbuild
+ delete mode 100644 include/uapi/mtd/Kbuild
+ delete mode 100644 include/uapi/rdma/Kbuild
+ delete mode 100644 include/uapi/rdma/hfi/Kbuild
+ delete mode 100644 include/uapi/scsi/Kbuild
+ delete mode 100644 include/uapi/scsi/fc/Kbuild
+ delete mode 100644 include/uapi/sound/Kbuild
+ delete mode 100644 include/uapi/video/Kbuild
+ delete mode 100644 include/uapi/xen/Kbuild
+ delete mode 100644 include/video/Kbuild
 
-v2: No changes
-v3: No changes
-
-diff --git a/arch/mips/include/asm/mach-jz4740/gpio.h b/arch/mips/include/asm/mach-jz4740/gpio.h
-index 7c7708a23baa..fd847c984701 100644
---- a/arch/mips/include/asm/mach-jz4740/gpio.h
-+++ b/arch/mips/include/asm/mach-jz4740/gpio.h
-@@ -16,380 +16,9 @@
- #ifndef _JZ_GPIO_H
- #define _JZ_GPIO_H
+diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
+index 37b525d329ae..51c072049e45 100644
+--- a/Documentation/kbuild/makefiles.txt
++++ b/Documentation/kbuild/makefiles.txt
+@@ -44,10 +44,11 @@ This document describes the Linux kernel Makefiles.
+ 	   --- 6.11 Post-link pass
  
--#include <linux/types.h>
--
--enum jz_gpio_function {
--    JZ_GPIO_FUNC_NONE,
--    JZ_GPIO_FUNC1,
--    JZ_GPIO_FUNC2,
--    JZ_GPIO_FUNC3,
--};
--
--/*
-- Usually a driver for a SoC component has to request several gpio pins and
-- configure them as function pins.
-- jz_gpio_bulk_request can be used to ease this process.
-- Usually one would do something like:
--
-- static const struct jz_gpio_bulk_request i2c_pins[] = {
--	JZ_GPIO_BULK_PIN(I2C_SDA),
--	JZ_GPIO_BULK_PIN(I2C_SCK),
-- };
--
-- inside the probe function:
--
--    ret = jz_gpio_bulk_request(i2c_pins, ARRAY_SIZE(i2c_pins));
--    if (ret) {
--	...
--
-- inside the remove function:
--
--    jz_gpio_bulk_free(i2c_pins, ARRAY_SIZE(i2c_pins));
--
--*/
--
--struct jz_gpio_bulk_request {
--	int gpio;
--	const char *name;
--	enum jz_gpio_function function;
--};
--
--#define JZ_GPIO_BULK_PIN(pin) { \
--    .gpio = JZ_GPIO_ ## pin, \
--    .name = #pin, \
--    .function = JZ_GPIO_FUNC_ ## pin \
--}
--
--int jz_gpio_bulk_request(const struct jz_gpio_bulk_request *request, size_t num);
--void jz_gpio_bulk_free(const struct jz_gpio_bulk_request *request, size_t num);
--void jz_gpio_bulk_suspend(const struct jz_gpio_bulk_request *request, size_t num);
--void jz_gpio_bulk_resume(const struct jz_gpio_bulk_request *request, size_t num);
--void jz_gpio_enable_pullup(unsigned gpio);
--void jz_gpio_disable_pullup(unsigned gpio);
--int jz_gpio_set_function(int gpio, enum jz_gpio_function function);
--
--int jz_gpio_port_direction_input(int port, uint32_t mask);
--int jz_gpio_port_direction_output(int port, uint32_t mask);
--void jz_gpio_port_set_value(int port, uint32_t value, uint32_t mask);
--uint32_t jz_gpio_port_get_value(int port, uint32_t mask);
--
- #define JZ_GPIO_PORTA(x) ((x) + 32 * 0)
- #define JZ_GPIO_PORTB(x) ((x) + 32 * 1)
- #define JZ_GPIO_PORTC(x) ((x) + 32 * 2)
- #define JZ_GPIO_PORTD(x) ((x) + 32 * 3)
+ 	== 7 Kbuild syntax for exported headers
+-		--- 7.1 header-y
++		--- 7.1 mandatory-y
+ 		--- 7.2 genhdr-y
+ 		--- 7.3 generic-y
+ 		--- 7.4 generated-y
++		--- 7.5 subdir-y
  
--/* Port A function pins */
--#define JZ_GPIO_MEM_DATA0		JZ_GPIO_PORTA(0)
--#define JZ_GPIO_MEM_DATA1		JZ_GPIO_PORTA(1)
--#define JZ_GPIO_MEM_DATA2		JZ_GPIO_PORTA(2)
--#define JZ_GPIO_MEM_DATA3		JZ_GPIO_PORTA(3)
--#define JZ_GPIO_MEM_DATA4		JZ_GPIO_PORTA(4)
--#define JZ_GPIO_MEM_DATA5		JZ_GPIO_PORTA(5)
--#define JZ_GPIO_MEM_DATA6		JZ_GPIO_PORTA(6)
--#define JZ_GPIO_MEM_DATA7		JZ_GPIO_PORTA(7)
--#define JZ_GPIO_MEM_DATA8		JZ_GPIO_PORTA(8)
--#define JZ_GPIO_MEM_DATA9		JZ_GPIO_PORTA(9)
--#define JZ_GPIO_MEM_DATA10		JZ_GPIO_PORTA(10)
--#define JZ_GPIO_MEM_DATA11		JZ_GPIO_PORTA(11)
--#define JZ_GPIO_MEM_DATA12		JZ_GPIO_PORTA(12)
--#define JZ_GPIO_MEM_DATA13		JZ_GPIO_PORTA(13)
--#define JZ_GPIO_MEM_DATA14		JZ_GPIO_PORTA(14)
--#define JZ_GPIO_MEM_DATA15		JZ_GPIO_PORTA(15)
--#define JZ_GPIO_MEM_DATA16		JZ_GPIO_PORTA(16)
--#define JZ_GPIO_MEM_DATA17		JZ_GPIO_PORTA(17)
--#define JZ_GPIO_MEM_DATA18		JZ_GPIO_PORTA(18)
--#define JZ_GPIO_MEM_DATA19		JZ_GPIO_PORTA(19)
--#define JZ_GPIO_MEM_DATA20		JZ_GPIO_PORTA(20)
--#define JZ_GPIO_MEM_DATA21		JZ_GPIO_PORTA(21)
--#define JZ_GPIO_MEM_DATA22		JZ_GPIO_PORTA(22)
--#define JZ_GPIO_MEM_DATA23		JZ_GPIO_PORTA(23)
--#define JZ_GPIO_MEM_DATA24		JZ_GPIO_PORTA(24)
--#define JZ_GPIO_MEM_DATA25		JZ_GPIO_PORTA(25)
--#define JZ_GPIO_MEM_DATA26		JZ_GPIO_PORTA(26)
--#define JZ_GPIO_MEM_DATA27		JZ_GPIO_PORTA(27)
--#define JZ_GPIO_MEM_DATA28		JZ_GPIO_PORTA(28)
--#define JZ_GPIO_MEM_DATA29		JZ_GPIO_PORTA(29)
--#define JZ_GPIO_MEM_DATA30		JZ_GPIO_PORTA(30)
--#define JZ_GPIO_MEM_DATA31		JZ_GPIO_PORTA(31)
--
--#define JZ_GPIO_FUNC_MEM_DATA0		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA1		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA2		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA3		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA4		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA5		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA6		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA7		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA8		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA9		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA10		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA11		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA12		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA13		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA14		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA15		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA16		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA17		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA18		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA19		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA20		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA21		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA22		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA23		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA24		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA25		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA26		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA27		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA28		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA29		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA30		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DATA31		JZ_GPIO_FUNC1
--
--/* Port B function pins */
--#define JZ_GPIO_MEM_ADDR0		JZ_GPIO_PORTB(0)
--#define JZ_GPIO_MEM_ADDR1		JZ_GPIO_PORTB(1)
--#define JZ_GPIO_MEM_ADDR2		JZ_GPIO_PORTB(2)
--#define JZ_GPIO_MEM_ADDR3		JZ_GPIO_PORTB(3)
--#define JZ_GPIO_MEM_ADDR4		JZ_GPIO_PORTB(4)
--#define JZ_GPIO_MEM_ADDR5		JZ_GPIO_PORTB(5)
--#define JZ_GPIO_MEM_ADDR6		JZ_GPIO_PORTB(6)
--#define JZ_GPIO_MEM_ADDR7		JZ_GPIO_PORTB(7)
--#define JZ_GPIO_MEM_ADDR8		JZ_GPIO_PORTB(8)
--#define JZ_GPIO_MEM_ADDR9		JZ_GPIO_PORTB(9)
--#define JZ_GPIO_MEM_ADDR10		JZ_GPIO_PORTB(10)
--#define JZ_GPIO_MEM_ADDR11		JZ_GPIO_PORTB(11)
--#define JZ_GPIO_MEM_ADDR12		JZ_GPIO_PORTB(12)
--#define JZ_GPIO_MEM_ADDR13		JZ_GPIO_PORTB(13)
--#define JZ_GPIO_MEM_ADDR14		JZ_GPIO_PORTB(14)
--#define JZ_GPIO_MEM_ADDR15		JZ_GPIO_PORTB(15)
--#define JZ_GPIO_MEM_ADDR16		JZ_GPIO_PORTB(16)
--#define JZ_GPIO_LCD_CLS			JZ_GPIO_PORTB(17)
--#define JZ_GPIO_LCD_SPL			JZ_GPIO_PORTB(18)
--#define JZ_GPIO_MEM_DCS			JZ_GPIO_PORTB(19)
--#define JZ_GPIO_MEM_RAS			JZ_GPIO_PORTB(20)
--#define JZ_GPIO_MEM_CAS			JZ_GPIO_PORTB(21)
--#define JZ_GPIO_MEM_SDWE		JZ_GPIO_PORTB(22)
--#define JZ_GPIO_MEM_CKE			JZ_GPIO_PORTB(23)
--#define JZ_GPIO_MEM_CKO			JZ_GPIO_PORTB(24)
--#define JZ_GPIO_MEM_CS0			JZ_GPIO_PORTB(25)
--#define JZ_GPIO_MEM_CS1			JZ_GPIO_PORTB(26)
--#define JZ_GPIO_MEM_CS2			JZ_GPIO_PORTB(27)
--#define JZ_GPIO_MEM_CS3			JZ_GPIO_PORTB(28)
--#define JZ_GPIO_MEM_RD			JZ_GPIO_PORTB(29)
--#define JZ_GPIO_MEM_WR			JZ_GPIO_PORTB(30)
--#define JZ_GPIO_MEM_WE0			JZ_GPIO_PORTB(31)
--
--#define JZ_GPIO_FUNC_MEM_ADDR0		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR1		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR2		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR3		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR4		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR5		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR6		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR7		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR8		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR9		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR10		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR11		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR12		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR13		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR14		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR15		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_ADDR16		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_CLS		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_SPL		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_DCS		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_RAS		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CAS		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_SDWE		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CKE		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CKO		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CS0		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CS1		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CS2		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_CS3		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_RD		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WR		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WE0		JZ_GPIO_FUNC1
--
--
--#define JZ_GPIO_MEM_ADDR21		JZ_GPIO_PORTB(17)
--#define JZ_GPIO_MEM_ADDR22		JZ_GPIO_PORTB(18)
--
--#define JZ_GPIO_FUNC_MEM_ADDR21		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_ADDR22		JZ_GPIO_FUNC2
--
--/* Port C function pins */
--#define JZ_GPIO_LCD_DATA0		JZ_GPIO_PORTC(0)
--#define JZ_GPIO_LCD_DATA1		JZ_GPIO_PORTC(1)
--#define JZ_GPIO_LCD_DATA2		JZ_GPIO_PORTC(2)
--#define JZ_GPIO_LCD_DATA3		JZ_GPIO_PORTC(3)
--#define JZ_GPIO_LCD_DATA4		JZ_GPIO_PORTC(4)
--#define JZ_GPIO_LCD_DATA5		JZ_GPIO_PORTC(5)
--#define JZ_GPIO_LCD_DATA6		JZ_GPIO_PORTC(6)
--#define JZ_GPIO_LCD_DATA7		JZ_GPIO_PORTC(7)
--#define JZ_GPIO_LCD_DATA8		JZ_GPIO_PORTC(8)
--#define JZ_GPIO_LCD_DATA9		JZ_GPIO_PORTC(9)
--#define JZ_GPIO_LCD_DATA10		JZ_GPIO_PORTC(10)
--#define JZ_GPIO_LCD_DATA11		JZ_GPIO_PORTC(11)
--#define JZ_GPIO_LCD_DATA12		JZ_GPIO_PORTC(12)
--#define JZ_GPIO_LCD_DATA13		JZ_GPIO_PORTC(13)
--#define JZ_GPIO_LCD_DATA14		JZ_GPIO_PORTC(14)
--#define JZ_GPIO_LCD_DATA15		JZ_GPIO_PORTC(15)
--#define JZ_GPIO_LCD_DATA16		JZ_GPIO_PORTC(16)
--#define JZ_GPIO_LCD_DATA17		JZ_GPIO_PORTC(17)
--#define JZ_GPIO_LCD_PCLK		JZ_GPIO_PORTC(18)
--#define JZ_GPIO_LCD_HSYNC		JZ_GPIO_PORTC(19)
--#define JZ_GPIO_LCD_VSYNC		JZ_GPIO_PORTC(20)
--#define JZ_GPIO_LCD_DE			JZ_GPIO_PORTC(21)
--#define JZ_GPIO_LCD_PS			JZ_GPIO_PORTC(22)
--#define JZ_GPIO_LCD_REV			JZ_GPIO_PORTC(23)
--#define JZ_GPIO_MEM_WE1			JZ_GPIO_PORTC(24)
--#define JZ_GPIO_MEM_WE2			JZ_GPIO_PORTC(25)
--#define JZ_GPIO_MEM_WE3			JZ_GPIO_PORTC(26)
--#define JZ_GPIO_MEM_WAIT		JZ_GPIO_PORTC(27)
--#define JZ_GPIO_MEM_FRE			JZ_GPIO_PORTC(28)
--#define JZ_GPIO_MEM_FWE			JZ_GPIO_PORTC(29)
--
--#define JZ_GPIO_FUNC_LCD_DATA0		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA1		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA2		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA3		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA4		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA5		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA6		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA7		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA8		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA9		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA10		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA11		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA12		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA13		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA14		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA15		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA16		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DATA17		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_PCLK		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_VSYNC		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_HSYNC		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_DE		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_PS		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_LCD_REV		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WE1		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WE2		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WE3		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_WAIT		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_FRE		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MEM_FWE		JZ_GPIO_FUNC1
--
--
--#define JZ_GPIO_MEM_ADDR19		JZ_GPIO_PORTB(22)
--#define JZ_GPIO_MEM_ADDR20		JZ_GPIO_PORTB(23)
--
--#define JZ_GPIO_FUNC_MEM_ADDR19		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_ADDR20		JZ_GPIO_FUNC2
--
--/* Port D function pins */
--#define JZ_GPIO_CIM_DATA0		JZ_GPIO_PORTD(0)
--#define JZ_GPIO_CIM_DATA1		JZ_GPIO_PORTD(1)
--#define JZ_GPIO_CIM_DATA2		JZ_GPIO_PORTD(2)
--#define JZ_GPIO_CIM_DATA3		JZ_GPIO_PORTD(3)
--#define JZ_GPIO_CIM_DATA4		JZ_GPIO_PORTD(4)
--#define JZ_GPIO_CIM_DATA5		JZ_GPIO_PORTD(5)
--#define JZ_GPIO_CIM_DATA6		JZ_GPIO_PORTD(6)
--#define JZ_GPIO_CIM_DATA7		JZ_GPIO_PORTD(7)
--#define JZ_GPIO_MSC_CMD			JZ_GPIO_PORTD(8)
--#define JZ_GPIO_MSC_CLK			JZ_GPIO_PORTD(9)
--#define JZ_GPIO_MSC_DATA0		JZ_GPIO_PORTD(10)
--#define JZ_GPIO_MSC_DATA1		JZ_GPIO_PORTD(11)
--#define JZ_GPIO_MSC_DATA2		JZ_GPIO_PORTD(12)
--#define JZ_GPIO_MSC_DATA3		JZ_GPIO_PORTD(13)
--#define JZ_GPIO_CIM_MCLK		JZ_GPIO_PORTD(14)
--#define JZ_GPIO_CIM_PCLK		JZ_GPIO_PORTD(15)
--#define JZ_GPIO_CIM_VSYNC		JZ_GPIO_PORTD(16)
--#define JZ_GPIO_CIM_HSYNC		JZ_GPIO_PORTD(17)
--#define JZ_GPIO_SPI_CLK			JZ_GPIO_PORTD(18)
--#define JZ_GPIO_SPI_CE0			JZ_GPIO_PORTD(19)
--#define JZ_GPIO_SPI_DT			JZ_GPIO_PORTD(20)
--#define JZ_GPIO_SPI_DR			JZ_GPIO_PORTD(21)
--#define JZ_GPIO_SPI_CE1			JZ_GPIO_PORTD(22)
--#define JZ_GPIO_PWM0			JZ_GPIO_PORTD(23)
--#define JZ_GPIO_PWM1			JZ_GPIO_PORTD(24)
--#define JZ_GPIO_PWM2			JZ_GPIO_PORTD(25)
--#define JZ_GPIO_PWM3			JZ_GPIO_PORTD(26)
--#define JZ_GPIO_PWM4			JZ_GPIO_PORTD(27)
--#define JZ_GPIO_PWM5			JZ_GPIO_PORTD(28)
--#define JZ_GPIO_PWM6			JZ_GPIO_PORTD(30)
--#define JZ_GPIO_PWM7			JZ_GPIO_PORTD(31)
--
--#define JZ_GPIO_FUNC_CIM_DATA		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_CIM_DATA0		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA1		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA2		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA3		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA4		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA5		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA6		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_CIM_DATA7		JZ_GPIO_FUNC_CIM_DATA
--#define JZ_GPIO_FUNC_MSC_CMD		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MSC_CLK		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MSC_DATA		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_MSC_DATA0		JZ_GPIO_FUNC_MSC_DATA
--#define JZ_GPIO_FUNC_MSC_DATA1		JZ_GPIO_FUNC_MSC_DATA
--#define JZ_GPIO_FUNC_MSC_DATA2		JZ_GPIO_FUNC_MSC_DATA
--#define JZ_GPIO_FUNC_MSC_DATA3		JZ_GPIO_FUNC_MSC_DATA
--#define JZ_GPIO_FUNC_CIM_MCLK		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_CIM_PCLK		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_CIM_VSYNC		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_CIM_HSYNC		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_SPI_CLK		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_SPI_CE0		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_SPI_DT		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_SPI_DR		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_SPI_CE1		JZ_GPIO_FUNC1
--
--#define JZ_GPIO_FUNC_PWM		JZ_GPIO_FUNC1
--#define JZ_GPIO_FUNC_PWM0		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM1		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM2		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM3		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM4		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM5		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM6		JZ_GPIO_FUNC_PWM
--#define JZ_GPIO_FUNC_PWM7		JZ_GPIO_FUNC_PWM
--
--#define JZ_GPIO_MEM_SCLK_RSTN		JZ_GPIO_PORTD(18)
--#define JZ_GPIO_MEM_BCLK		JZ_GPIO_PORTD(19)
--#define JZ_GPIO_MEM_SDATO		JZ_GPIO_PORTD(20)
--#define JZ_GPIO_MEM_SDATI		JZ_GPIO_PORTD(21)
--#define JZ_GPIO_MEM_SYNC		JZ_GPIO_PORTD(22)
--#define JZ_GPIO_I2C_SDA			JZ_GPIO_PORTD(23)
--#define JZ_GPIO_I2C_SCK			JZ_GPIO_PORTD(24)
--#define JZ_GPIO_UART0_TXD		JZ_GPIO_PORTD(25)
--#define JZ_GPIO_UART0_RXD		JZ_GPIO_PORTD(26)
--#define JZ_GPIO_MEM_ADDR17		JZ_GPIO_PORTD(27)
--#define JZ_GPIO_MEM_ADDR18		JZ_GPIO_PORTD(28)
--#define JZ_GPIO_UART0_CTS		JZ_GPIO_PORTD(30)
--#define JZ_GPIO_UART0_RTS		JZ_GPIO_PORTD(31)
--
--#define JZ_GPIO_FUNC_MEM_SCLK_RSTN	JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_BCLK		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_SDATO		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_SDATI		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_SYNC		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_I2C_SDA		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_I2C_SCK		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_UART0_TXD		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_UART0_RXD		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_ADDR17		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_MEM_ADDR18		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_UART0_CTS		JZ_GPIO_FUNC2
--#define JZ_GPIO_FUNC_UART0_RTS		JZ_GPIO_FUNC2
--
--#define JZ_GPIO_UART1_RXD		JZ_GPIO_PORTD(30)
--#define JZ_GPIO_UART1_TXD		JZ_GPIO_PORTD(31)
--
--#define JZ_GPIO_FUNC_UART1_RXD		JZ_GPIO_FUNC3
--#define JZ_GPIO_FUNC_UART1_TXD		JZ_GPIO_FUNC3
--
- #endif
-diff --git a/arch/mips/jz4740/Makefile b/arch/mips/jz4740/Makefile
-index 39d70bde8cfe..6b9c1f7c31c9 100644
---- a/arch/mips/jz4740/Makefile
-+++ b/arch/mips/jz4740/Makefile
-@@ -7,8 +7,6 @@
- obj-y += prom.o time.o reset.o setup.o \
- 	platform.o timer.o
+ 	== 8 Kbuild Variables
+ 	== 9 Makefile language
+@@ -1235,7 +1236,7 @@ When kbuild executes, the following steps are followed (roughly):
+ 	that may be shared between individual architectures.
+ 	The recommended approach how to use a generic header file is
+ 	to list the file in the Kbuild file.
+-	See "7.4 generic-y" for further info on syntax etc.
++	See "7.3 generic-y" for further info on syntax etc.
  
--obj-$(CONFIG_MACH_JZ4740) += gpio.o
--
- CFLAGS_setup.o = -I$(src)/../../../scripts/dtc/libfdt
+ --- 6.11 Post-link pass
  
- # board specific support
-diff --git a/arch/mips/jz4740/gpio.c b/arch/mips/jz4740/gpio.c
+@@ -1262,37 +1263,33 @@ The pre-processing does:
+ - drop include of compiler.h
+ - drop all sections that are kernel internal (guarded by ifdef __KERNEL__)
+ 
+-Each relevant directory contains a file name "Kbuild" which specifies the
+-headers to be exported.
+-See subsequent chapter for the syntax of the Kbuild file.
++All headers under include/uapi/, include/generated/uapi/,
++arch/<arch>/include/uapi/asm/ and arch/<arch>/include/generated/uapi/asm/
++are exported.
+ 
+-	--- 7.1 header-y
++A Kbuild file may be defined under arch/<arch>/include/uapi/asm/ and
++arch/<arch>/include/asm/ to list asm files coming from asm-generic.
++See subsequent chapter for the syntax of the Kbuild file.
+ 
+-	header-y specifies header files to be exported.
++	--- 7.1 mandatory-y
+ 
+-		Example:
+-			#include/linux/Kbuild
+-			header-y += usb/
+-			header-y += aio_abi.h
++	mandatory-y is essentially used by include/uapi/asm-generic/Kbuild.asm
++	to define the minimun set of headers that must be exported in
++	include/asm.
+ 
+-	The convention is to list one file per line and
++	The convention is to list one subdir per line and
+ 	preferably in alphabetic order.
+ 
+-	header-y also specifies which subdirectories to visit.
+-	A subdirectory is identified by a trailing '/' which
+-	can be seen in the example above for the usb subdirectory.
+-
+-	Subdirectories are visited before their parent directories.
+-
+ 	--- 7.2 genhdr-y
+ 
+-	genhdr-y specifies generated files to be exported.
+-	Generated files are special as they need to be looked
+-	up in another directory when doing 'make O=...' builds.
++	genhdr-y specifies asm files to be generated.
+ 
+ 		Example:
+-			#include/linux/Kbuild
+-			genhdr-y += version.h
++			#arch/x86/include/uapi/asm/Kbuild
++			genhdr-y += unistd_32.h
++			genhdr-y += unistd_64.h
++			genhdr-y += unistd_x32.h
++
+ 
+ 	--- 7.3 generic-y
+ 
+@@ -1334,6 +1331,18 @@ See subsequent chapter for the syntax of the Kbuild file.
+ 			#arch/x86/include/asm/Kbuild
+ 			generated-y += syscalls_32.h
+ 
++	--- 7.5 subdir-y
++
++	subdir-y may be used to specify a subdirectory to be exported.
++
++		Example:
++			#arch/cris/include/uapi/asm/Kbuild
++			subdir-y += ../arch-v10/arch/
++			subdir-y += ../arch-v32/arch/
++
++	The convention is to list one subdir per line and
++	preferably in alphabetic order.
++
+ == 8 Kbuild Variables
+ 
+ The top Makefile exports the following variables:
+diff --git a/arch/alpha/include/uapi/asm/Kbuild b/arch/alpha/include/uapi/asm/Kbuild
+index d96f2ef5b639..b15bf6bc0e94 100644
+--- a/arch/alpha/include/uapi/asm/Kbuild
++++ b/arch/alpha/include/uapi/asm/Kbuild
+@@ -1,43 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += a.out.h
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += compiler.h
+-header-y += console.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += fpu.h
+-header-y += gentrap.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += pal.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += reg.h
+-header-y += regdef.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += sysinfo.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/arc/include/uapi/asm/Kbuild b/arch/arc/include/uapi/asm/Kbuild
+index f50d02df78d5..b15bf6bc0e94 100644
+--- a/arch/arc/include/uapi/asm/Kbuild
++++ b/arch/arc/include/uapi/asm/Kbuild
+@@ -1,5 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-header-y += elf.h
+-header-y += page.h
+-header-y += cachectl.h
+diff --git a/arch/arm/include/uapi/asm/Kbuild b/arch/arm/include/uapi/asm/Kbuild
+index 46a76cd6acb6..607f702c2d62 100644
+--- a/arch/arm/include/uapi/asm/Kbuild
++++ b/arch/arm/include/uapi/asm/Kbuild
+@@ -1,23 +1,6 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += auxvec.h
+-header-y += byteorder.h
+-header-y += fcntl.h
+-header-y += hwcap.h
+-header-y += ioctls.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += perf_regs.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += unistd.h
+ genhdr-y += unistd-common.h
+ genhdr-y += unistd-oabi.h
+ genhdr-y += unistd-eabi.h
+diff --git a/arch/arm64/include/uapi/asm/Kbuild b/arch/arm64/include/uapi/asm/Kbuild
+index 825b0fe51c2b..13a97aa2285f 100644
+--- a/arch/arm64/include/uapi/asm/Kbuild
++++ b/arch/arm64/include/uapi/asm/Kbuild
+@@ -2,21 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += kvm_para.h
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += fcntl.h
+-header-y += hwcap.h
+-header-y += kvm_para.h
+-header-y += perf_regs.h
+-header-y += param.h
+-header-y += ptrace.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += ucontext.h
+-header-y += unistd.h
+diff --git a/arch/avr32/include/uapi/asm/Kbuild b/arch/avr32/include/uapi/asm/Kbuild
+index 08d8a3d76ea8..610395083364 100644
+--- a/arch/avr32/include/uapi/asm/Kbuild
++++ b/arch/avr32/include/uapi/asm/Kbuild
+@@ -1,26 +1,6 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += auxvec.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+ generic-y += bitsperlong.h
+ generic-y += errno.h
+ generic-y += fcntl.h
+diff --git a/arch/blackfin/include/uapi/asm/Kbuild b/arch/blackfin/include/uapi/asm/Kbuild
+index 0bd28f77abc3..b15bf6bc0e94 100644
+--- a/arch/blackfin/include/uapi/asm/Kbuild
++++ b/arch/blackfin/include/uapi/asm/Kbuild
+@@ -1,19 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += bfin_sport.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += fcntl.h
+-header-y += fixed_code.h
+-header-y += ioctls.h
+-header-y += kvm_para.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += unistd.h
+diff --git a/arch/c6x/include/uapi/asm/Kbuild b/arch/c6x/include/uapi/asm/Kbuild
+index e9bc2b2b8147..13a97aa2285f 100644
+--- a/arch/c6x/include/uapi/asm/Kbuild
++++ b/arch/c6x/include/uapi/asm/Kbuild
+@@ -2,11 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += kvm_para.h
+-
+-header-y += byteorder.h
+-header-y += kvm_para.h
+-header-y += ptrace.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += swab.h
+-header-y += unistd.h
+diff --git a/arch/cris/include/uapi/arch-v10/arch/Kbuild b/arch/cris/include/uapi/arch-v10/arch/Kbuild
 deleted file mode 100644
-index b765773ab8aa..000000000000
---- a/arch/mips/jz4740/gpio.c
+index 9048c87a782b..000000000000
+--- a/arch/cris/include/uapi/arch-v10/arch/Kbuild
 +++ /dev/null
-@@ -1,519 +0,0 @@
--/*
-- *  Copyright (C) 2009-2010, Lars-Peter Clausen <lars@metafoo.de>
-- *  JZ4740 platform GPIO support
-- *
-- *  This program is free software; you can redistribute it and/or modify it
-- *  under  the terms of the GNU General	 Public License as published by the
-- *  Free Software Foundation;  either version 2 of the License, or (at your
-- *  option) any later version.
-- *
-- *  You should have received a copy of the GNU General Public License along
-- *  with this program; if not, write to the Free Software Foundation, Inc.,
-- *  675 Mass Ave, Cambridge, MA 02139, USA.
-- *
-- */
--
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/init.h>
--
--#include <linux/io.h>
--#include <linux/gpio/driver.h>
--/* FIXME: needed for gpio_request(), try to remove consumer API from driver */
--#include <linux/gpio.h>
--#include <linux/delay.h>
--#include <linux/interrupt.h>
--#include <linux/irqchip/ingenic.h>
--#include <linux/bitops.h>
--
--#include <linux/debugfs.h>
--#include <linux/seq_file.h>
--
--#include <asm/mach-jz4740/base.h>
--#include <asm/mach-jz4740/gpio.h>
--
--#define JZ4740_GPIO_BASE_A (32*0)
--#define JZ4740_GPIO_BASE_B (32*1)
--#define JZ4740_GPIO_BASE_C (32*2)
--#define JZ4740_GPIO_BASE_D (32*3)
--
--#define JZ4740_GPIO_NUM_A 32
--#define JZ4740_GPIO_NUM_B 32
--#define JZ4740_GPIO_NUM_C 31
--#define JZ4740_GPIO_NUM_D 32
--
--#define JZ4740_IRQ_GPIO_BASE_A (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_A)
--#define JZ4740_IRQ_GPIO_BASE_B (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_B)
--#define JZ4740_IRQ_GPIO_BASE_C (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_C)
--#define JZ4740_IRQ_GPIO_BASE_D (JZ4740_IRQ_GPIO(0) + JZ4740_GPIO_BASE_D)
--
--#define JZ_REG_GPIO_PIN			0x00
--#define JZ_REG_GPIO_DATA		0x10
--#define JZ_REG_GPIO_DATA_SET		0x14
--#define JZ_REG_GPIO_DATA_CLEAR		0x18
--#define JZ_REG_GPIO_MASK		0x20
--#define JZ_REG_GPIO_MASK_SET		0x24
--#define JZ_REG_GPIO_MASK_CLEAR		0x28
--#define JZ_REG_GPIO_PULL		0x30
--#define JZ_REG_GPIO_PULL_SET		0x34
--#define JZ_REG_GPIO_PULL_CLEAR		0x38
--#define JZ_REG_GPIO_FUNC		0x40
--#define JZ_REG_GPIO_FUNC_SET		0x44
--#define JZ_REG_GPIO_FUNC_CLEAR		0x48
--#define JZ_REG_GPIO_SELECT		0x50
--#define JZ_REG_GPIO_SELECT_SET		0x54
--#define JZ_REG_GPIO_SELECT_CLEAR	0x58
--#define JZ_REG_GPIO_DIRECTION		0x60
--#define JZ_REG_GPIO_DIRECTION_SET	0x64
--#define JZ_REG_GPIO_DIRECTION_CLEAR	0x68
--#define JZ_REG_GPIO_TRIGGER		0x70
--#define JZ_REG_GPIO_TRIGGER_SET		0x74
--#define JZ_REG_GPIO_TRIGGER_CLEAR	0x78
--#define JZ_REG_GPIO_FLAG		0x80
--#define JZ_REG_GPIO_FLAG_CLEAR		0x14
--
--#define GPIO_TO_BIT(gpio) BIT(gpio & 0x1f)
--#define GPIO_TO_REG(gpio, reg) (gpio_to_jz_gpio_chip(gpio)->base + (reg))
--#define CHIP_TO_REG(chip, reg) (gpio_chip_to_jz_gpio_chip(chip)->base + (reg))
--
--struct jz_gpio_chip {
--	unsigned int irq;
--	unsigned int irq_base;
--	uint32_t edge_trigger_both;
--
--	void __iomem *base;
--
--	struct gpio_chip gpio_chip;
--};
--
--static struct jz_gpio_chip jz4740_gpio_chips[];
--
--static inline struct jz_gpio_chip *gpio_to_jz_gpio_chip(unsigned int gpio)
--{
--	return &jz4740_gpio_chips[gpio >> 5];
--}
--
--static inline struct jz_gpio_chip *gpio_chip_to_jz_gpio_chip(struct gpio_chip *gc)
--{
--	return gpiochip_get_data(gc);
--}
--
--static inline struct jz_gpio_chip *irq_to_jz_gpio_chip(struct irq_data *data)
--{
--	struct irq_chip_generic *gc = irq_data_get_irq_chip_data(data);
--	return gc->private;
--}
--
--static inline void jz_gpio_write_bit(unsigned int gpio, unsigned int reg)
--{
--	writel(GPIO_TO_BIT(gpio), GPIO_TO_REG(gpio, reg));
--}
--
--int jz_gpio_set_function(int gpio, enum jz_gpio_function function)
--{
--	if (function = JZ_GPIO_FUNC_NONE) {
--		jz_gpio_write_bit(gpio, JZ_REG_GPIO_FUNC_CLEAR);
--		jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_CLEAR);
--		jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
--	} else {
--		jz_gpio_write_bit(gpio, JZ_REG_GPIO_FUNC_SET);
--		jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_CLEAR);
--		switch (function) {
--		case JZ_GPIO_FUNC1:
--			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_CLEAR);
--			break;
--		case JZ_GPIO_FUNC3:
--			jz_gpio_write_bit(gpio, JZ_REG_GPIO_TRIGGER_SET);
--		case JZ_GPIO_FUNC2: /* Falltrough */
--			jz_gpio_write_bit(gpio, JZ_REG_GPIO_SELECT_SET);
--			break;
--		default:
--			BUG();
--			break;
--		}
--	}
--
--	return 0;
--}
--EXPORT_SYMBOL_GPL(jz_gpio_set_function);
--
--int jz_gpio_bulk_request(const struct jz_gpio_bulk_request *request, size_t num)
--{
--	size_t i;
--	int ret;
--
--	for (i = 0; i < num; ++i, ++request) {
--		ret = gpio_request(request->gpio, request->name);
--		if (ret)
--			goto err;
--		jz_gpio_set_function(request->gpio, request->function);
--	}
--
--	return 0;
--
--err:
--	for (--request; i > 0; --i, --request) {
--		gpio_free(request->gpio);
--		jz_gpio_set_function(request->gpio, JZ_GPIO_FUNC_NONE);
--	}
--
--	return ret;
--}
--EXPORT_SYMBOL_GPL(jz_gpio_bulk_request);
--
--void jz_gpio_bulk_free(const struct jz_gpio_bulk_request *request, size_t num)
--{
--	size_t i;
--
--	for (i = 0; i < num; ++i, ++request) {
--		gpio_free(request->gpio);
--		jz_gpio_set_function(request->gpio, JZ_GPIO_FUNC_NONE);
--	}
--
--}
--EXPORT_SYMBOL_GPL(jz_gpio_bulk_free);
--
--void jz_gpio_bulk_suspend(const struct jz_gpio_bulk_request *request, size_t num)
--{
--	size_t i;
--
--	for (i = 0; i < num; ++i, ++request) {
--		jz_gpio_set_function(request->gpio, JZ_GPIO_FUNC_NONE);
--		jz_gpio_write_bit(request->gpio, JZ_REG_GPIO_DIRECTION_CLEAR);
--		jz_gpio_write_bit(request->gpio, JZ_REG_GPIO_PULL_SET);
--	}
--}
--EXPORT_SYMBOL_GPL(jz_gpio_bulk_suspend);
--
--void jz_gpio_bulk_resume(const struct jz_gpio_bulk_request *request, size_t num)
--{
--	size_t i;
--
--	for (i = 0; i < num; ++i, ++request)
--		jz_gpio_set_function(request->gpio, request->function);
--}
--EXPORT_SYMBOL_GPL(jz_gpio_bulk_resume);
--
--void jz_gpio_enable_pullup(unsigned gpio)
--{
--	jz_gpio_write_bit(gpio, JZ_REG_GPIO_PULL_CLEAR);
--}
--EXPORT_SYMBOL_GPL(jz_gpio_enable_pullup);
--
--void jz_gpio_disable_pullup(unsigned gpio)
--{
--	jz_gpio_write_bit(gpio, JZ_REG_GPIO_PULL_SET);
--}
--EXPORT_SYMBOL_GPL(jz_gpio_disable_pullup);
--
--static int jz_gpio_get_value(struct gpio_chip *chip, unsigned gpio)
--{
--	return !!(readl(CHIP_TO_REG(chip, JZ_REG_GPIO_PIN)) & BIT(gpio));
--}
--
--static void jz_gpio_set_value(struct gpio_chip *chip, unsigned gpio, int value)
--{
--	uint32_t __iomem *reg = CHIP_TO_REG(chip, JZ_REG_GPIO_DATA_SET);
--	reg += !value;
--	writel(BIT(gpio), reg);
--}
--
--static int jz_gpio_direction_output(struct gpio_chip *chip, unsigned gpio,
--	int value)
--{
--	writel(BIT(gpio), CHIP_TO_REG(chip, JZ_REG_GPIO_DIRECTION_SET));
--	jz_gpio_set_value(chip, gpio, value);
--
--	return 0;
--}
--
--static int jz_gpio_direction_input(struct gpio_chip *chip, unsigned gpio)
--{
--	writel(BIT(gpio), CHIP_TO_REG(chip, JZ_REG_GPIO_DIRECTION_CLEAR));
--
--	return 0;
--}
--
--static int jz_gpio_to_irq(struct gpio_chip *chip, unsigned gpio)
--{
--	struct jz_gpio_chip *jz_gpio = gpiochip_get_data(chip);
--
--	return jz_gpio->irq_base + gpio;
--}
--
--int jz_gpio_port_direction_input(int port, uint32_t mask)
--{
--	writel(mask, GPIO_TO_REG(port, JZ_REG_GPIO_DIRECTION_CLEAR));
--
--	return 0;
--}
--EXPORT_SYMBOL(jz_gpio_port_direction_input);
--
--int jz_gpio_port_direction_output(int port, uint32_t mask)
--{
--	writel(mask, GPIO_TO_REG(port, JZ_REG_GPIO_DIRECTION_SET));
--
--	return 0;
--}
--EXPORT_SYMBOL(jz_gpio_port_direction_output);
--
--void jz_gpio_port_set_value(int port, uint32_t value, uint32_t mask)
--{
--	writel(~value & mask, GPIO_TO_REG(port, JZ_REG_GPIO_DATA_CLEAR));
--	writel(value & mask, GPIO_TO_REG(port, JZ_REG_GPIO_DATA_SET));
--}
--EXPORT_SYMBOL(jz_gpio_port_set_value);
--
--uint32_t jz_gpio_port_get_value(int port, uint32_t mask)
--{
--	uint32_t value = readl(GPIO_TO_REG(port, JZ_REG_GPIO_PIN));
--
--	return value & mask;
--}
--EXPORT_SYMBOL(jz_gpio_port_get_value);
--
--#define IRQ_TO_BIT(irq) BIT((irq - JZ4740_IRQ_GPIO(0)) & 0x1f)
--
--static void jz_gpio_check_trigger_both(struct jz_gpio_chip *chip, unsigned int irq)
--{
--	uint32_t value;
--	void __iomem *reg;
--	uint32_t mask = IRQ_TO_BIT(irq);
--
--	if (!(chip->edge_trigger_both & mask))
--		return;
--
--	reg = chip->base;
--
--	value = readl(chip->base + JZ_REG_GPIO_PIN);
--	if (value & mask)
--		reg += JZ_REG_GPIO_DIRECTION_CLEAR;
--	else
--		reg += JZ_REG_GPIO_DIRECTION_SET;
--
--	writel(mask, reg);
--}
--
--static void jz_gpio_irq_demux_handler(struct irq_desc *desc)
--{
--	uint32_t flag;
--	unsigned int gpio_irq;
--	struct jz_gpio_chip *chip = irq_desc_get_handler_data(desc);
--
--	flag = readl(chip->base + JZ_REG_GPIO_FLAG);
--	if (!flag)
--		return;
--
--	gpio_irq = chip->irq_base + __fls(flag);
--
--	jz_gpio_check_trigger_both(chip, gpio_irq);
--
--	generic_handle_irq(gpio_irq);
--};
--
--static inline void jz_gpio_set_irq_bit(struct irq_data *data, unsigned int reg)
--{
--	struct jz_gpio_chip *chip = irq_to_jz_gpio_chip(data);
--	writel(IRQ_TO_BIT(data->irq), chip->base + reg);
--}
--
--static void jz_gpio_irq_unmask(struct irq_data *data)
--{
--	struct jz_gpio_chip *chip = irq_to_jz_gpio_chip(data);
--
--	jz_gpio_check_trigger_both(chip, data->irq);
--	irq_gc_unmask_enable_reg(data);
--};
--
--/* TODO: Check if function is gpio */
--static unsigned int jz_gpio_irq_startup(struct irq_data *data)
--{
--	jz_gpio_set_irq_bit(data, JZ_REG_GPIO_SELECT_SET);
--	jz_gpio_irq_unmask(data);
--	return 0;
--}
--
--static void jz_gpio_irq_shutdown(struct irq_data *data)
--{
--	irq_gc_mask_disable_reg(data);
--
--	/* Set direction to input */
--	jz_gpio_set_irq_bit(data, JZ_REG_GPIO_DIRECTION_CLEAR);
--	jz_gpio_set_irq_bit(data, JZ_REG_GPIO_SELECT_CLEAR);
--}
--
--static int jz_gpio_irq_set_type(struct irq_data *data, unsigned int flow_type)
--{
--	struct jz_gpio_chip *chip = irq_to_jz_gpio_chip(data);
--	unsigned int irq = data->irq;
--
--	if (flow_type = IRQ_TYPE_EDGE_BOTH) {
--		uint32_t value = readl(chip->base + JZ_REG_GPIO_PIN);
--		if (value & IRQ_TO_BIT(irq))
--			flow_type = IRQ_TYPE_EDGE_FALLING;
--		else
--			flow_type = IRQ_TYPE_EDGE_RISING;
--		chip->edge_trigger_both |= IRQ_TO_BIT(irq);
--	} else {
--		chip->edge_trigger_both &= ~IRQ_TO_BIT(irq);
--	}
--
--	switch (flow_type) {
--	case IRQ_TYPE_EDGE_RISING:
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_DIRECTION_SET);
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_TRIGGER_SET);
--		break;
--	case IRQ_TYPE_EDGE_FALLING:
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_DIRECTION_CLEAR);
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_TRIGGER_SET);
--		break;
--	case IRQ_TYPE_LEVEL_HIGH:
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_DIRECTION_SET);
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_TRIGGER_CLEAR);
--		break;
--	case IRQ_TYPE_LEVEL_LOW:
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_DIRECTION_CLEAR);
--		jz_gpio_set_irq_bit(data, JZ_REG_GPIO_TRIGGER_CLEAR);
--		break;
--	default:
--		return -EINVAL;
--	}
--
--	return 0;
--}
--
--static int jz_gpio_irq_set_wake(struct irq_data *data, unsigned int on)
--{
--	struct jz_gpio_chip *chip = irq_to_jz_gpio_chip(data);
--
--	irq_gc_set_wake(data, on);
--	irq_set_irq_wake(chip->irq, on);
--
--	return 0;
--}
--
--#define JZ4740_GPIO_CHIP(_bank) { \
--	.irq_base = JZ4740_IRQ_GPIO_BASE_ ## _bank, \
--	.gpio_chip = { \
--		.label = "Bank " # _bank, \
--		.owner = THIS_MODULE, \
--		.set = jz_gpio_set_value, \
--		.get = jz_gpio_get_value, \
--		.direction_output = jz_gpio_direction_output, \
--		.direction_input = jz_gpio_direction_input, \
--		.to_irq = jz_gpio_to_irq, \
--		.base = JZ4740_GPIO_BASE_ ## _bank, \
--		.ngpio = JZ4740_GPIO_NUM_ ## _bank, \
--	}, \
--}
--
--static struct jz_gpio_chip jz4740_gpio_chips[] = {
--	JZ4740_GPIO_CHIP(A),
--	JZ4740_GPIO_CHIP(B),
--	JZ4740_GPIO_CHIP(C),
--	JZ4740_GPIO_CHIP(D),
--};
--
--static void jz4740_gpio_chip_init(struct jz_gpio_chip *chip, unsigned int id)
--{
--	struct irq_chip_generic *gc;
--	struct irq_chip_type *ct;
--
--	chip->base = ioremap(JZ4740_GPIO_BASE_ADDR + (id * 0x100), 0x100);
--
--	chip->irq = JZ4740_IRQ_INTC_GPIO(id);
--	irq_set_chained_handler_and_data(chip->irq,
--					 jz_gpio_irq_demux_handler, chip);
--
--	gc = irq_alloc_generic_chip(chip->gpio_chip.label, 1, chip->irq_base,
--		chip->base, handle_level_irq);
--
--	gc->wake_enabled = IRQ_MSK(chip->gpio_chip.ngpio);
--	gc->private = chip;
--
--	ct = gc->chip_types;
--	ct->regs.enable = JZ_REG_GPIO_MASK_CLEAR;
--	ct->regs.disable = JZ_REG_GPIO_MASK_SET;
--	ct->regs.ack = JZ_REG_GPIO_FLAG_CLEAR;
--
--	ct->chip.name = "GPIO";
--	ct->chip.irq_mask = irq_gc_mask_disable_reg;
--	ct->chip.irq_unmask = jz_gpio_irq_unmask;
--	ct->chip.irq_ack = irq_gc_ack_set_bit;
--	ct->chip.irq_suspend = ingenic_intc_irq_suspend;
--	ct->chip.irq_resume = ingenic_intc_irq_resume;
--	ct->chip.irq_startup = jz_gpio_irq_startup;
--	ct->chip.irq_shutdown = jz_gpio_irq_shutdown;
--	ct->chip.irq_set_type = jz_gpio_irq_set_type;
--	ct->chip.irq_set_wake = jz_gpio_irq_set_wake;
--	ct->chip.flags = IRQCHIP_SET_TYPE_MASKED;
--
--	irq_setup_generic_chip(gc, IRQ_MSK(chip->gpio_chip.ngpio),
--		IRQ_GC_INIT_NESTED_LOCK, 0, IRQ_NOPROBE | IRQ_LEVEL);
--
--	gpiochip_add_data(&chip->gpio_chip, chip);
--}
--
--static int __init jz4740_gpio_init(void)
--{
--	unsigned int i;
--
--	for (i = 0; i < ARRAY_SIZE(jz4740_gpio_chips); ++i)
--		jz4740_gpio_chip_init(&jz4740_gpio_chips[i], i);
--
--	printk(KERN_INFO "JZ4740 GPIO initialized\n");
--
--	return 0;
--}
--arch_initcall(jz4740_gpio_init);
--
--#ifdef CONFIG_DEBUG_FS
--
--static inline void gpio_seq_reg(struct seq_file *s, struct jz_gpio_chip *chip,
--	const char *name, unsigned int reg)
--{
--	seq_printf(s, "\t%s: %08x\n", name, readl(chip->base + reg));
--}
--
--static int gpio_regs_show(struct seq_file *s, void *unused)
--{
--	struct jz_gpio_chip *chip = jz4740_gpio_chips;
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(jz4740_gpio_chips); ++i, ++chip) {
--		seq_printf(s, "=GPIO %d=\n", i);
--		gpio_seq_reg(s, chip, "Pin", JZ_REG_GPIO_PIN);
--		gpio_seq_reg(s, chip, "Data", JZ_REG_GPIO_DATA);
--		gpio_seq_reg(s, chip, "Mask", JZ_REG_GPIO_MASK);
--		gpio_seq_reg(s, chip, "Pull", JZ_REG_GPIO_PULL);
--		gpio_seq_reg(s, chip, "Func", JZ_REG_GPIO_FUNC);
--		gpio_seq_reg(s, chip, "Select", JZ_REG_GPIO_SELECT);
--		gpio_seq_reg(s, chip, "Direction", JZ_REG_GPIO_DIRECTION);
--		gpio_seq_reg(s, chip, "Trigger", JZ_REG_GPIO_TRIGGER);
--		gpio_seq_reg(s, chip, "Flag", JZ_REG_GPIO_FLAG);
--	}
--
--	return 0;
--}
--
--static int gpio_regs_open(struct inode *inode, struct file *file)
--{
--	return single_open(file, gpio_regs_show, NULL);
--}
--
--static const struct file_operations gpio_regs_operations = {
--	.open		= gpio_regs_open,
--	.read		= seq_read,
--	.llseek		= seq_lseek,
--	.release	= single_release,
--};
--
--static int __init gpio_debugfs_init(void)
--{
--	(void) debugfs_create_file("jz_regs_gpio", S_IFREG | S_IRUGO,
--				NULL, NULL, &gpio_regs_operations);
--	return 0;
--}
--subsys_initcall(gpio_debugfs_init);
--
--#endif
+@@ -1,5 +0,0 @@
+-# UAPI Header export list
+-header-y += sv_addr.agh
+-header-y += sv_addr_ag.h
+-header-y += svinto.h
+-header-y += user.h
+diff --git a/arch/cris/include/uapi/arch-v32/arch/Kbuild b/arch/cris/include/uapi/arch-v32/arch/Kbuild
+deleted file mode 100644
+index 59efffd16b61..000000000000
+--- a/arch/cris/include/uapi/arch-v32/arch/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += cryptocop.h
+-header-y += user.h
+diff --git a/arch/cris/include/uapi/asm/Kbuild b/arch/cris/include/uapi/asm/Kbuild
+index d5564a0ae66a..d0c5471856e0 100644
+--- a/arch/cris/include/uapi/asm/Kbuild
++++ b/arch/cris/include/uapi/asm/Kbuild
+@@ -1,44 +1,5 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += ../arch-v10/arch/
+-header-y += ../arch-v32/arch/
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += elf.h
+-header-y += elf_v10.h
+-header-y += elf_v32.h
+-header-y += errno.h
+-header-y += ethernet.h
+-header-y += etraxgpio.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += ptrace_v10.h
+-header-y += ptrace_v32.h
+-header-y += resource.h
+-header-y += rs485.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += sync_serial.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
++subdir-y += ../arch-v10/arch/
++subdir-y += ../arch-v32/arch/
+diff --git a/arch/frv/include/uapi/asm/Kbuild b/arch/frv/include/uapi/asm/Kbuild
+index 42a2b33461c0..b15bf6bc0e94 100644
+--- a/arch/frv/include/uapi/asm/Kbuild
++++ b/arch/frv/include/uapi/asm/Kbuild
+@@ -1,35 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += registers.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/h8300/include/uapi/asm/Kbuild b/arch/h8300/include/uapi/asm/Kbuild
+index fb6101a5d4f1..b15bf6bc0e94 100644
+--- a/arch/h8300/include/uapi/asm/Kbuild
++++ b/arch/h8300/include/uapi/asm/Kbuild
+@@ -1,30 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += siginfo.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/hexagon/include/asm/Kbuild b/arch/hexagon/include/asm/Kbuild
+index db8ddabc6bd2..f3b1ceb5c1e4 100644
+--- a/arch/hexagon/include/asm/Kbuild
++++ b/arch/hexagon/include/asm/Kbuild
+@@ -1,6 +1,3 @@
+-
+-header-y += ucontext.h
+-
+ generic-y += auxvec.h
+ generic-y += barrier.h
+ generic-y += bug.h
+diff --git a/arch/hexagon/include/uapi/asm/Kbuild b/arch/hexagon/include/uapi/asm/Kbuild
+index c31706c38631..b15bf6bc0e94 100644
+--- a/arch/hexagon/include/uapi/asm/Kbuild
++++ b/arch/hexagon/include/uapi/asm/Kbuild
+@@ -1,15 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += kvm_para.h
+-header-y += param.h
+-header-y += ptrace.h
+-header-y += registers.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += swab.h
+-header-y += unistd.h
+-header-y += user.h
+diff --git a/arch/ia64/include/uapi/asm/Kbuild b/arch/ia64/include/uapi/asm/Kbuild
+index 891002bbb995..13a97aa2285f 100644
+--- a/arch/ia64/include/uapi/asm/Kbuild
++++ b/arch/ia64/include/uapi/asm/Kbuild
+@@ -2,48 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += kvm_para.h
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += break.h
+-header-y += byteorder.h
+-header-y += cmpxchg.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += fpu.h
+-header-y += gcc_intrin.h
+-header-y += ia64regs.h
+-header-y += intel_intrin.h
+-header-y += intrinsics.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += perfmon.h
+-header-y += perfmon_default_smpl.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += ptrace_offsets.h
+-header-y += resource.h
+-header-y += rse.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += ucontext.h
+-header-y += unistd.h
+-header-y += ustack.h
+diff --git a/arch/m32r/include/uapi/asm/Kbuild b/arch/m32r/include/uapi/asm/Kbuild
+index 43937a61d6cf..b15bf6bc0e94 100644
+--- a/arch/m32r/include/uapi/asm/Kbuild
++++ b/arch/m32r/include/uapi/asm/Kbuild
+@@ -1,33 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/m68k/include/uapi/asm/Kbuild b/arch/m68k/include/uapi/asm/Kbuild
+index 6a2d257bdfb2..64368077235a 100644
+--- a/arch/m68k/include/uapi/asm/Kbuild
++++ b/arch/m68k/include/uapi/asm/Kbuild
+@@ -9,27 +9,3 @@ generic-y += socket.h
+ generic-y += sockios.h
+ generic-y += termbits.h
+ generic-y += termios.h
+-
+-header-y += a.out.h
+-header-y += bootinfo.h
+-header-y += bootinfo-amiga.h
+-header-y += bootinfo-apollo.h
+-header-y += bootinfo-atari.h
+-header-y += bootinfo-hp300.h
+-header-y += bootinfo-mac.h
+-header-y += bootinfo-q40.h
+-header-y += bootinfo-vme.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += fcntl.h
+-header-y += ioctls.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += unistd.h
+diff --git a/arch/metag/include/uapi/asm/Kbuild b/arch/metag/include/uapi/asm/Kbuild
+index ab78be2b6eb0..b29731ebd7a9 100644
+--- a/arch/metag/include/uapi/asm/Kbuild
++++ b/arch/metag/include/uapi/asm/Kbuild
+@@ -1,14 +1,6 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += byteorder.h
+-header-y += ech.h
+-header-y += ptrace.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += swab.h
+-header-y += unistd.h
+-
+ generic-y += mman.h
+ generic-y += resource.h
+ generic-y += setup.h
+diff --git a/arch/microblaze/include/uapi/asm/Kbuild b/arch/microblaze/include/uapi/asm/Kbuild
+index 1aac99f87df1..2178c78c7c1a 100644
+--- a/arch/microblaze/include/uapi/asm/Kbuild
++++ b/arch/microblaze/include/uapi/asm/Kbuild
+@@ -2,35 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += types.h
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += elf.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += unistd.h
+diff --git a/arch/mips/include/uapi/asm/Kbuild b/arch/mips/include/uapi/asm/Kbuild
+index f2cf41461146..a0266feba9e6 100644
+--- a/arch/mips/include/uapi/asm/Kbuild
++++ b/arch/mips/include/uapi/asm/Kbuild
+@@ -2,40 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += ipcbuf.h
+-
+-header-y += auxvec.h
+-header-y += bitfield.h
+-header-y += bitsperlong.h
+-header-y += break.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += inst.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += sgidefs.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += sysmips.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/mn10300/include/uapi/asm/Kbuild b/arch/mn10300/include/uapi/asm/Kbuild
+index 040178cdb3eb..b15bf6bc0e94 100644
+--- a/arch/mn10300/include/uapi/asm/Kbuild
++++ b/arch/mn10300/include/uapi/asm/Kbuild
+@@ -1,34 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/nios2/include/uapi/asm/Kbuild b/arch/nios2/include/uapi/asm/Kbuild
+index 69c965304146..374bd123329f 100644
+--- a/arch/nios2/include/uapi/asm/Kbuild
++++ b/arch/nios2/include/uapi/asm/Kbuild
+@@ -1,6 +1,5 @@
++# UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += elf.h
+-
+ generic-y += setup.h
+ generic-y += ucontext.h
+diff --git a/arch/openrisc/include/asm/Kbuild b/arch/openrisc/include/asm/Kbuild
+index 2832f031fb11..561915716fd9 100644
+--- a/arch/openrisc/include/asm/Kbuild
++++ b/arch/openrisc/include/asm/Kbuild
+@@ -1,6 +1,3 @@
+-
+-header-y += ucontext.h
+-
+ generic-y += atomic.h
+ generic-y += auxvec.h
+ generic-y += barrier.h
+diff --git a/arch/openrisc/include/uapi/asm/Kbuild b/arch/openrisc/include/uapi/asm/Kbuild
+index 80761eb82b5f..b15bf6bc0e94 100644
+--- a/arch/openrisc/include/uapi/asm/Kbuild
++++ b/arch/openrisc/include/uapi/asm/Kbuild
+@@ -1,10 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += byteorder.h
+-header-y += elf.h
+-header-y += kvm_para.h
+-header-y += param.h
+-header-y += ptrace.h
+-header-y += sigcontext.h
+-header-y += unistd.h
+diff --git a/arch/parisc/include/uapi/asm/Kbuild b/arch/parisc/include/uapi/asm/Kbuild
+index 348356c99514..3971c60a7e7f 100644
+--- a/arch/parisc/include/uapi/asm/Kbuild
++++ b/arch/parisc/include/uapi/asm/Kbuild
+@@ -2,31 +2,3 @@
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+ generic-y += resource.h
+-
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += pdc.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
+index dab3717e3ea0..b15bf6bc0e94 100644
+--- a/arch/powerpc/include/uapi/asm/Kbuild
++++ b/arch/powerpc/include/uapi/asm/Kbuild
+@@ -1,47 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += bootx.h
+-header-y += byteorder.h
+-header-y += cputable.h
+-header-y += eeh.h
+-header-y += elf.h
+-header-y += epapr_hcalls.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += nvram.h
+-header-y += opal-prd.h
+-header-y += param.h
+-header-y += perf_event.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ps3fb.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += spu_info.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += tm.h
+-header-y += types.h
+-header-y += ucontext.h
+-header-y += unistd.h
+diff --git a/arch/s390/include/uapi/asm/Kbuild b/arch/s390/include/uapi/asm/Kbuild
+index bf736e764cb4..b15bf6bc0e94 100644
+--- a/arch/s390/include/uapi/asm/Kbuild
++++ b/arch/s390/include/uapi/asm/Kbuild
+@@ -1,54 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += chpid.h
+-header-y += chsc.h
+-header-y += clp.h
+-header-y += cmb.h
+-header-y += dasd.h
+-header-y += debug.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += hypfs.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm.h
+-header-y += kvm_para.h
+-header-y += kvm_perf.h
+-header-y += kvm_virtio.h
+-header-y += mman.h
+-header-y += monwriter.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += qeth.h
+-header-y += resource.h
+-header-y += schid.h
+-header-y += sclp_ctl.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sie.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += tape390.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += ucontext.h
+-header-y += unistd.h
+-header-y += virtio-ccw.h
+-header-y += vtoc.h
+-header-y += zcrypt.h
+diff --git a/arch/score/include/asm/Kbuild b/arch/score/include/asm/Kbuild
+index a05218ff3fe4..128ca7ec0220 100644
+--- a/arch/score/include/asm/Kbuild
++++ b/arch/score/include/asm/Kbuild
+@@ -1,7 +1,3 @@
+-
+-header-y +-
+-
+ generic-y += barrier.h
+ generic-y += clkdev.h
+ generic-y += cputime.h
+diff --git a/arch/score/include/uapi/asm/Kbuild b/arch/score/include/uapi/asm/Kbuild
+index 040178cdb3eb..b15bf6bc0e94 100644
+--- a/arch/score/include/uapi/asm/Kbuild
++++ b/arch/score/include/uapi/asm/Kbuild
+@@ -1,34 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/arch/sh/include/uapi/asm/Kbuild b/arch/sh/include/uapi/asm/Kbuild
+index 60613ae78513..b15bf6bc0e94 100644
+--- a/arch/sh/include/uapi/asm/Kbuild
++++ b/arch/sh/include/uapi/asm/Kbuild
+@@ -1,25 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += cpu-features.h
+-header-y += hw_breakpoint.h
+-header-y += ioctls.h
+-header-y += posix_types.h
+-header-y += posix_types_32.h
+-header-y += posix_types_64.h
+-header-y += ptrace.h
+-header-y += ptrace_32.h
+-header-y += ptrace_64.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += types.h
+-header-y += unistd.h
+-header-y += unistd_32.h
+-header-y += unistd_64.h
+diff --git a/arch/sparc/include/uapi/asm/Kbuild b/arch/sparc/include/uapi/asm/Kbuild
+index b5843ee09fb5..b15bf6bc0e94 100644
+--- a/arch/sparc/include/uapi/asm/Kbuild
++++ b/arch/sparc/include/uapi/asm/Kbuild
+@@ -1,50 +1,2 @@
+ # UAPI Header export list
+-# User exported sparc header files
+-
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += apc.h
+-header-y += asi.h
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += display7seg.h
+-header-y += envctrl.h
+-header-y += errno.h
+-header-y += fbio.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += jsflash.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += openpromio.h
+-header-y += param.h
+-header-y += perfctr.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += psr.h
+-header-y += psrcompat.h
+-header-y += pstate.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += traps.h
+-header-y += uctx.h
+-header-y += unistd.h
+-header-y += utrap.h
+-header-y += watchdog.h
+diff --git a/arch/tile/include/asm/Kbuild b/arch/tile/include/asm/Kbuild
+index 2d1f5638974c..057eaa533877 100644
+--- a/arch/tile/include/asm/Kbuild
++++ b/arch/tile/include/asm/Kbuild
+@@ -1,6 +1,3 @@
+-
+-header-y += ../arch/
+-
+ generic-y += bug.h
+ generic-y += bugs.h
+ generic-y += clkdev.h
+diff --git a/arch/tile/include/uapi/arch/Kbuild b/arch/tile/include/uapi/arch/Kbuild
+deleted file mode 100644
+index 97dfbecec6b6..000000000000
+--- a/arch/tile/include/uapi/arch/Kbuild
++++ /dev/null
+@@ -1,17 +0,0 @@
+-# UAPI Header export list
+-header-y += abi.h
+-header-y += chip.h
+-header-y += chip_tilegx.h
+-header-y += chip_tilepro.h
+-header-y += icache.h
+-header-y += interrupts.h
+-header-y += interrupts_32.h
+-header-y += interrupts_64.h
+-header-y += opcode.h
+-header-y += opcode_tilegx.h
+-header-y += opcode_tilepro.h
+-header-y += sim.h
+-header-y += sim_def.h
+-header-y += spr_def.h
+-header-y += spr_def_32.h
+-header-y += spr_def_64.h
+diff --git a/arch/tile/include/uapi/asm/Kbuild b/arch/tile/include/uapi/asm/Kbuild
+index c20db8e428bf..e0a50111e07f 100644
+--- a/arch/tile/include/uapi/asm/Kbuild
++++ b/arch/tile/include/uapi/asm/Kbuild
+@@ -1,21 +1,6 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += cachectl.h
+-header-y += hardwall.h
+-header-y += kvm_para.h
+-header-y += mman.h
+-header-y += ptrace.h
+-header-y += setup.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += ucontext.h
+-header-y += unistd.h
+-
+ generic-y += ucontext.h
++
++subdir-y += ../arch
+diff --git a/arch/unicore32/include/uapi/asm/Kbuild b/arch/unicore32/include/uapi/asm/Kbuild
+index 0514d7ad6855..13a97aa2285f 100644
+--- a/arch/unicore32/include/uapi/asm/Kbuild
++++ b/arch/unicore32/include/uapi/asm/Kbuild
+@@ -1,10 +1,4 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+ 
+-header-y += byteorder.h
+-header-y += kvm_para.h
+-header-y += ptrace.h
+-header-y += sigcontext.h
+-header-y += unistd.h
+-
+ generic-y += kvm_para.h
+diff --git a/arch/x86/include/uapi/asm/Kbuild b/arch/x86/include/uapi/asm/Kbuild
+index 1c532b3f18ea..83b6e9a0dce4 100644
+--- a/arch/x86/include/uapi/asm/Kbuild
++++ b/arch/x86/include/uapi/asm/Kbuild
+@@ -4,61 +4,3 @@ include include/uapi/asm-generic/Kbuild.asm
+ genhdr-y += unistd_32.h
+ genhdr-y += unistd_64.h
+ genhdr-y += unistd_x32.h
+-header-y += a.out.h
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += boot.h
+-header-y += bootparam.h
+-header-y += byteorder.h
+-header-y += debugreg.h
+-header-y += e820.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += hw_breakpoint.h
+-header-y += hyperv.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += ist.h
+-header-y += kvm.h
+-header-y += kvm_para.h
+-header-y += kvm_perf.h
+-header-y += ldt.h
+-header-y += mce.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += msr.h
+-header-y += mtrr.h
+-header-y += param.h
+-header-y += perf_regs.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += posix_types_32.h
+-header-y += posix_types_64.h
+-header-y += posix_types_x32.h
+-header-y += prctl.h
+-header-y += processor-flags.h
+-header-y += ptrace-abi.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += sigcontext32.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += svm.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += ucontext.h
+-header-y += unistd.h
+-header-y += vm86.h
+-header-y += vmx.h
+-header-y += vsyscall.h
+diff --git a/arch/xtensa/include/uapi/asm/Kbuild b/arch/xtensa/include/uapi/asm/Kbuild
+index 56aad54e7fb7..b15bf6bc0e94 100644
+--- a/arch/xtensa/include/uapi/asm/Kbuild
++++ b/arch/xtensa/include/uapi/asm/Kbuild
+@@ -1,25 +1,2 @@
+ # UAPI Header export list
+ include include/uapi/asm-generic/Kbuild.asm
+-
+-header-y += auxvec.h
+-header-y += byteorder.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += types.h
+-header-y += unistd.h
+diff --git a/include/Kbuild b/include/Kbuild
+deleted file mode 100644
+index bab1145bc7a7..000000000000
+--- a/include/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# Top-level Makefile calls into asm-$(ARCH)
+-# List only non-arch directories below
+diff --git a/include/asm-generic/Kbuild.asm b/include/asm-generic/Kbuild.asm
+deleted file mode 100644
+index d2ee86b4c091..000000000000
+--- a/include/asm-generic/Kbuild.asm
++++ /dev/null
+@@ -1 +0,0 @@
+-include include/uapi/asm-generic/Kbuild.asm
+diff --git a/include/scsi/fc/Kbuild b/include/scsi/fc/Kbuild
+deleted file mode 100644
+index e69de29bb2d1..000000000000
+diff --git a/include/uapi/Kbuild b/include/uapi/Kbuild
+deleted file mode 100644
+index 245aa6e05e6a..000000000000
+--- a/include/uapi/Kbuild
++++ /dev/null
+@@ -1,15 +0,0 @@
+-# UAPI Header export list
+-# Top-level Makefile calls into asm-$(ARCH)
+-# List only non-arch directories below
+-
+-
+-header-y += asm-generic/
+-header-y += linux/
+-header-y += sound/
+-header-y += mtd/
+-header-y += rdma/
+-header-y += video/
+-header-y += drm/
+-header-y += xen/
+-header-y += scsi/
+-header-y += misc/
+diff --git a/include/uapi/asm-generic/Kbuild b/include/uapi/asm-generic/Kbuild
+deleted file mode 100644
+index b73de7bb7a62..000000000000
+--- a/include/uapi/asm-generic/Kbuild
++++ /dev/null
+@@ -1,36 +0,0 @@
+-# UAPI Header export list
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += errno-base.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += int-l64.h
+-header-y += int-ll64.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += kvm_para.h
+-header-y += mman-common.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += shmparam.h
+-header-y += siginfo.h
+-header-y += signal-defs.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += ucontext.h
+-header-y += unistd.h
+diff --git a/include/uapi/asm-generic/Kbuild.asm b/include/uapi/asm-generic/Kbuild.asm
+index fcd50b759217..8e6b335664f2 100644
+--- a/include/uapi/asm-generic/Kbuild.asm
++++ b/include/uapi/asm-generic/Kbuild.asm
+@@ -8,38 +8,38 @@ opt-header += a.out.h
+ #
+ # Headers that are mandatory in usr/include/asm/
+ #
+-header-y += auxvec.h
+-header-y += bitsperlong.h
+-header-y += byteorder.h
+-header-y += errno.h
+-header-y += fcntl.h
+-header-y += ioctl.h
+-header-y += ioctls.h
+-header-y += ipcbuf.h
+-header-y += mman.h
+-header-y += msgbuf.h
+-header-y += param.h
+-header-y += poll.h
+-header-y += posix_types.h
+-header-y += ptrace.h
+-header-y += resource.h
+-header-y += sembuf.h
+-header-y += setup.h
+-header-y += shmbuf.h
+-header-y += sigcontext.h
+-header-y += siginfo.h
+-header-y += signal.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += stat.h
+-header-y += statfs.h
+-header-y += swab.h
+-header-y += termbits.h
+-header-y += termios.h
+-header-y += types.h
+-header-y += unistd.h
++mandatory-y += auxvec.h
++mandatory-y += bitsperlong.h
++mandatory-y += byteorder.h
++mandatory-y += errno.h
++mandatory-y += fcntl.h
++mandatory-y += ioctl.h
++mandatory-y += ioctls.h
++mandatory-y += ipcbuf.h
++mandatory-y += mman.h
++mandatory-y += msgbuf.h
++mandatory-y += param.h
++mandatory-y += poll.h
++mandatory-y += posix_types.h
++mandatory-y += ptrace.h
++mandatory-y += resource.h
++mandatory-y += sembuf.h
++mandatory-y += setup.h
++mandatory-y += shmbuf.h
++mandatory-y += sigcontext.h
++mandatory-y += siginfo.h
++mandatory-y += signal.h
++mandatory-y += socket.h
++mandatory-y += sockios.h
++mandatory-y += stat.h
++mandatory-y += statfs.h
++mandatory-y += swab.h
++mandatory-y += termbits.h
++mandatory-y += termios.h
++mandatory-y += types.h
++mandatory-y += unistd.h
+ 
+-header-y += $(foreach hdr,$(opt-header), \
++mandatory-y += $(foreach hdr,$(opt-header), \
+ 	      $(if \
+ 		$(wildcard \
+ 			$(srctree)/arch/$(SRCARCH)/include/uapi/asm/$(hdr) \
+diff --git a/include/uapi/drm/Kbuild b/include/uapi/drm/Kbuild
+deleted file mode 100644
+index 9355dd8eff3b..000000000000
+--- a/include/uapi/drm/Kbuild
++++ /dev/null
+@@ -1,22 +0,0 @@
+-# UAPI Header export list
+-header-y += drm.h
+-header-y += drm_fourcc.h
+-header-y += drm_mode.h
+-header-y += drm_sarea.h
+-header-y += amdgpu_drm.h
+-header-y += exynos_drm.h
+-header-y += i810_drm.h
+-header-y += i915_drm.h
+-header-y += mga_drm.h
+-header-y += nouveau_drm.h
+-header-y += qxl_drm.h
+-header-y += r128_drm.h
+-header-y += radeon_drm.h
+-header-y += savage_drm.h
+-header-y += sis_drm.h
+-header-y += tegra_drm.h
+-header-y += via_drm.h
+-header-y += vmwgfx_drm.h
+-header-y += msm_drm.h
+-header-y += vc4_drm.h
+-header-y += virtgpu_drm.h
+diff --git a/include/uapi/linux/Kbuild b/include/uapi/linux/Kbuild
+deleted file mode 100644
+index f330ba4547cf..000000000000
+--- a/include/uapi/linux/Kbuild
++++ /dev/null
+@@ -1,483 +0,0 @@
+-# UAPI Header export list
+-header-y += android/
+-header-y += byteorder/
+-header-y += can/
+-header-y += caif/
+-header-y += dvb/
+-header-y += hdlc/
+-header-y += hsi/
+-header-y += iio/
+-header-y += isdn/
+-header-y += mmc/
+-header-y += nfsd/
+-header-y += raid/
+-header-y += spi/
+-header-y += sunrpc/
+-header-y += tc_act/
+-header-y += tc_ematch/
+-header-y += netfilter/
+-header-y += netfilter_arp/
+-header-y += netfilter_bridge/
+-header-y += netfilter_ipv4/
+-header-y += netfilter_ipv6/
+-header-y += usb/
+-header-y += wimax/
+-
+-genhdr-y += version.h
+-
+-ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/include/uapi/asm/a.out.h \
+-		  $(srctree)/arch/$(SRCARCH)/include/asm/a.out.h),)
+-header-y += a.out.h
+-endif
+-
+-header-y += acct.h
+-header-y += adb.h
+-header-y += adfs_fs.h
+-header-y += affs_hardblocks.h
+-header-y += agpgart.h
+-header-y += aio_abi.h
+-header-y += am437x-vpfe.h
+-header-y += apm_bios.h
+-header-y += arcfb.h
+-header-y += atalk.h
+-header-y += atmapi.h
+-header-y += atmarp.h
+-header-y += atmbr2684.h
+-header-y += atmclip.h
+-header-y += atmdev.h
+-header-y += atm_eni.h
+-header-y += atm.h
+-header-y += atm_he.h
+-header-y += atm_idt77105.h
+-header-y += atmioc.h
+-header-y += atmlec.h
+-header-y += atmmpc.h
+-header-y += atm_nicstar.h
+-header-y += atmppp.h
+-header-y += atmsap.h
+-header-y += atmsvc.h
+-header-y += atm_tcp.h
+-header-y += atm_zatm.h
+-header-y += audit.h
+-header-y += auto_fs4.h
+-header-y += auto_fs.h
+-header-y += auxvec.h
+-header-y += ax25.h
+-header-y += b1lli.h
+-header-y += baycom.h
+-header-y += bcm933xx_hcs.h
+-header-y += bfs_fs.h
+-header-y += binfmts.h
+-header-y += blkpg.h
+-header-y += blktrace_api.h
+-header-y += blkzoned.h
+-header-y += bpf_common.h
+-header-y += bpf_perf_event.h
+-header-y += bpf.h
+-header-y += bpqether.h
+-header-y += bsg.h
+-header-y += bt-bmc.h
+-header-y += btrfs.h
+-header-y += can.h
+-header-y += capability.h
+-header-y += capi.h
+-header-y += cciss_defs.h
+-header-y += cciss_ioctl.h
+-header-y += cdrom.h
+-header-y += cec.h
+-header-y += cec-funcs.h
+-header-y += cgroupstats.h
+-header-y += chio.h
+-header-y += cm4000_cs.h
+-header-y += cn_proc.h
+-header-y += coda.h
+-header-y += coda_psdev.h
+-header-y += coff.h
+-header-y += connector.h
+-header-y += const.h
+-header-y += cramfs_fs.h
+-header-y += cuda.h
+-header-y += cyclades.h
+-header-y += cycx_cfm.h
+-header-y += dcbnl.h
+-header-y += dccp.h
+-header-y += devlink.h
+-header-y += dlmconstants.h
+-header-y += dlm_device.h
+-header-y += dlm.h
+-header-y += dlm_netlink.h
+-header-y += dlm_plock.h
+-header-y += dm-ioctl.h
+-header-y += dm-log-userspace.h
+-header-y += dn.h
+-header-y += dqblk_xfs.h
+-header-y += edd.h
+-header-y += efs_fs_sb.h
+-header-y += elfcore.h
+-header-y += elf-em.h
+-header-y += elf-fdpic.h
+-header-y += elf.h
+-header-y += errno.h
+-header-y += errqueue.h
+-header-y += ethtool.h
+-header-y += eventpoll.h
+-header-y += fadvise.h
+-header-y += falloc.h
+-header-y += fanotify.h
+-header-y += fb.h
+-header-y += fcntl.h
+-header-y += fd.h
+-header-y += fdreg.h
+-header-y += fib_rules.h
+-header-y += fiemap.h
+-header-y += filter.h
+-header-y += firewire-cdev.h
+-header-y += firewire-constants.h
+-header-y += flat.h
+-header-y += fou.h
+-header-y += fs.h
+-header-y += fsl_hypervisor.h
+-header-y += fuse.h
+-header-y += futex.h
+-header-y += gameport.h
+-header-y += genetlink.h
+-header-y += gen_stats.h
+-header-y += gfs2_ondisk.h
+-header-y += gigaset_dev.h
+-header-y += gpio.h
+-header-y += gsmmux.h
+-header-y += gtp.h
+-header-y += hdlcdrv.h
+-header-y += hdlc.h
+-header-y += hdreg.h
+-header-y += hiddev.h
+-header-y += hid.h
+-header-y += hidraw.h
+-header-y += hpet.h
+-header-y += hsr_netlink.h
+-header-y += hyperv.h
+-header-y += hysdn_if.h
+-header-y += i2c-dev.h
+-header-y += i2c.h
+-header-y += i2o-dev.h
+-header-y += i8k.h
+-header-y += icmp.h
+-header-y += icmpv6.h
+-header-y += if_addr.h
+-header-y += if_addrlabel.h
+-header-y += if_alg.h
+-header-y += if_arcnet.h
+-header-y += if_arp.h
+-header-y += if_bonding.h
+-header-y += if_bridge.h
+-header-y += if_cablemodem.h
+-header-y += if_eql.h
+-header-y += if_ether.h
+-header-y += if_fc.h
+-header-y += if_fddi.h
+-header-y += if_frad.h
+-header-y += if.h
+-header-y += if_hippi.h
+-header-y += if_infiniband.h
+-header-y += if_link.h
+-header-y += if_ltalk.h
+-header-y += if_macsec.h
+-header-y += if_packet.h
+-header-y += if_phonet.h
+-header-y += if_plip.h
+-header-y += if_ppp.h
+-header-y += if_pppol2tp.h
+-header-y += if_pppox.h
+-header-y += if_slip.h
+-header-y += if_team.h
+-header-y += if_tun.h
+-header-y += if_tunnel.h
+-header-y += if_vlan.h
+-header-y += if_x25.h
+-header-y += igmp.h
+-header-y += ila.h
+-header-y += in6.h
+-header-y += inet_diag.h
+-header-y += in.h
+-header-y += inotify.h
+-header-y += input.h
+-header-y += input-event-codes.h
+-header-y += in_route.h
+-header-y += ioctl.h
+-header-y += ip6_tunnel.h
+-header-y += ipc.h
+-header-y += ip.h
+-header-y += ipmi.h
+-header-y += ipmi_msgdefs.h
+-header-y += ipsec.h
+-header-y += ipv6.h
+-header-y += ipv6_route.h
+-header-y += ip_vs.h
+-header-y += ipx.h
+-header-y += irda.h
+-header-y += irqnr.h
+-header-y += isdn_divertif.h
+-header-y += isdn.h
+-header-y += isdnif.h
+-header-y += isdn_ppp.h
+-header-y += iso_fs.h
+-header-y += ivtvfb.h
+-header-y += ivtv.h
+-header-y += ixjuser.h
+-header-y += jffs2.h
+-header-y += joystick.h
+-header-y += kcmp.h
+-header-y += kdev_t.h
+-header-y += kd.h
+-header-y += kernelcapi.h
+-header-y += kernel.h
+-header-y += kernel-page-flags.h
+-header-y += kexec.h
+-header-y += keyboard.h
+-header-y += keyctl.h
+-
+-ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/include/uapi/asm/kvm.h \
+-		  $(srctree)/arch/$(SRCARCH)/include/asm/kvm.h),)
+-header-y += kvm.h
+-endif
+-
+-
+-ifneq ($(wildcard $(srctree)/arch/$(SRCARCH)/include/uapi/asm/kvm_para.h \
+-		  $(srctree)/arch/$(SRCARCH)/include/asm/kvm_para.h),)
+-header-y += kvm_para.h
+-endif
+-
+-header-y += hw_breakpoint.h
+-header-y += l2tp.h
+-header-y += libc-compat.h
+-header-y += lirc.h
+-header-y += limits.h
+-header-y += llc.h
+-header-y += loop.h
+-header-y += lp.h
+-header-y += lwtunnel.h
+-header-y += magic.h
+-header-y += major.h
+-header-y += map_to_7segment.h
+-header-y += matroxfb.h
+-header-y += mdio.h
+-header-y += media.h
+-header-y += media-bus-format.h
+-header-y += mei.h
+-header-y += membarrier.h
+-header-y += memfd.h
+-header-y += mempolicy.h
+-header-y += meye.h
+-header-y += mic_common.h
+-header-y += mic_ioctl.h
+-header-y += mii.h
+-header-y += minix_fs.h
+-header-y += mman.h
+-header-y += mmtimer.h
+-header-y += mpls.h
+-header-y += mpls_iptunnel.h
+-header-y += mqueue.h
+-header-y += mroute6.h
+-header-y += mroute.h
+-header-y += msdos_fs.h
+-header-y += msg.h
+-header-y += mtio.h
+-header-y += nbd.h
+-header-y += ncp_fs.h
+-header-y += ncp.h
+-header-y += ncp_mount.h
+-header-y += ncp_no.h
+-header-y += ndctl.h
+-header-y += neighbour.h
+-header-y += netconf.h
+-header-y += netdevice.h
+-header-y += net_dropmon.h
+-header-y += netfilter_arp.h
+-header-y += netfilter_bridge.h
+-header-y += netfilter_decnet.h
+-header-y += netfilter.h
+-header-y += netfilter_ipv4.h
+-header-y += netfilter_ipv6.h
+-header-y += net.h
+-header-y += netlink_diag.h
+-header-y += netlink.h
+-header-y += netrom.h
+-header-y += net_namespace.h
+-header-y += net_tstamp.h
+-header-y += nfc.h
+-header-y += nfs2.h
+-header-y += nfs3.h
+-header-y += nfs4.h
+-header-y += nfs4_mount.h
+-header-y += nfsacl.h
+-header-y += nfs_fs.h
+-header-y += nfs.h
+-header-y += nfs_idmap.h
+-header-y += nfs_mount.h
+-header-y += nl80211.h
+-header-y += n_r3964.h
+-header-y += nubus.h
+-header-y += nvme_ioctl.h
+-header-y += nvram.h
+-header-y += omap3isp.h
+-header-y += omapfb.h
+-header-y += oom.h
+-header-y += openvswitch.h
+-header-y += packet_diag.h
+-header-y += param.h
+-header-y += parport.h
+-header-y += patchkey.h
+-header-y += pci.h
+-header-y += pci_regs.h
+-header-y += perf_event.h
+-header-y += personality.h
+-header-y += pfkeyv2.h
+-header-y += pg.h
+-header-y += phantom.h
+-header-y += phonet.h
+-header-y += pktcdvd.h
+-header-y += pkt_cls.h
+-header-y += pkt_sched.h
+-header-y += pmu.h
+-header-y += poll.h
+-header-y += posix_acl.h
+-header-y += posix_acl_xattr.h
+-header-y += posix_types.h
+-header-y += ppdev.h
+-header-y += ppp-comp.h
+-header-y += ppp_defs.h
+-header-y += ppp-ioctl.h
+-header-y += pps.h
+-header-y += prctl.h
+-header-y += psci.h
+-header-y += ptp_clock.h
+-header-y += ptrace.h
+-header-y += qnx4_fs.h
+-header-y += qnxtypes.h
+-header-y += quota.h
+-header-y += radeonfb.h
+-header-y += random.h
+-header-y += raw.h
+-header-y += rds.h
+-header-y += reboot.h
+-header-y += reiserfs_fs.h
+-header-y += reiserfs_xattr.h
+-header-y += resource.h
+-header-y += rfkill.h
+-header-y += rio_cm_cdev.h
+-header-y += rio_mport_cdev.h
+-header-y += romfs_fs.h
+-header-y += rose.h
+-header-y += route.h
+-header-y += rtc.h
+-header-y += rtnetlink.h
+-header-y += scc.h
+-header-y += sched.h
+-header-y += scif_ioctl.h
+-header-y += screen_info.h
+-header-y += sctp.h
+-header-y += sdla.h
+-header-y += seccomp.h
+-header-y += securebits.h
+-header-y += selinux_netlink.h
+-header-y += sem.h
+-header-y += serial_core.h
+-header-y += serial.h
+-header-y += serial_reg.h
+-header-y += serio.h
+-header-y += shm.h
+-header-y += signalfd.h
+-header-y += signal.h
+-header-y += smiapp.h
+-header-y += snmp.h
+-header-y += sock_diag.h
+-header-y += socket.h
+-header-y += sockios.h
+-header-y += sonet.h
+-header-y += sonypi.h
+-header-y += soundcard.h
+-header-y += sound.h
+-header-y += stat.h
+-header-y += stddef.h
+-header-y += string.h
+-header-y += suspend_ioctls.h
+-header-y += swab.h
+-header-y += synclink.h
+-header-y += sync_file.h
+-header-y += sysctl.h
+-header-y += sysinfo.h
+-header-y += target_core_user.h
+-header-y += taskstats.h
+-header-y += tcp.h
+-header-y += tcp_metrics.h
+-header-y += telephony.h
+-header-y += termios.h
+-header-y += thermal.h
+-header-y += time.h
+-header-y += timerfd.h
+-header-y += times.h
+-header-y += timex.h
+-header-y += tiocl.h
+-header-y += tipc_config.h
+-header-y += tipc_netlink.h
+-header-y += tipc.h
+-header-y += toshiba.h
+-header-y += tty_flags.h
+-header-y += tty.h
+-header-y += types.h
+-header-y += udf_fs_i.h
+-header-y += udp.h
+-header-y += uhid.h
+-header-y += uinput.h
+-header-y += uio.h
+-header-y += uleds.h
+-header-y += ultrasound.h
+-header-y += un.h
+-header-y += unistd.h
+-header-y += unix_diag.h
+-header-y += usbdevice_fs.h
+-header-y += usbip.h
+-header-y += utime.h
+-header-y += utsname.h
+-header-y += uuid.h
+-header-y += uvcvideo.h
+-header-y += v4l2-common.h
+-header-y += v4l2-controls.h
+-header-y += v4l2-dv-timings.h
+-header-y += v4l2-mediabus.h
+-header-y += v4l2-subdev.h
+-header-y += veth.h
+-header-y += vfio.h
+-header-y += vhost.h
+-header-y += videodev2.h
+-header-y += virtio_9p.h
+-header-y += virtio_balloon.h
+-header-y += virtio_blk.h
+-header-y += virtio_config.h
+-header-y += virtio_console.h
+-header-y += virtio_gpu.h
+-header-y += virtio_ids.h
+-header-y += virtio_input.h
+-header-y += virtio_net.h
+-header-y += virtio_pci.h
+-header-y += virtio_ring.h
+-header-y += virtio_rng.h
+-header-y += virtio_scsi.h
+-header-y += virtio_types.h
+-header-y += virtio_vsock.h
+-header-y += virtio_crypto.h
+-header-y += vm_sockets.h
+-header-y += vt.h
+-header-y += vtpm_proxy.h
+-header-y += wait.h
+-header-y += wanrouter.h
+-header-y += watchdog.h
+-header-y += wimax.h
+-header-y += wireless.h
+-header-y += x25.h
+-header-y += xattr.h
+-header-y += xfrm.h
+-header-y += xilinx-v4l2-controls.h
+-header-y += zorro.h
+-header-y += zorro_ids.h
+-header-y += userfaultfd.h
+diff --git a/include/uapi/linux/android/Kbuild b/include/uapi/linux/android/Kbuild
+deleted file mode 100644
+index ca011eec252a..000000000000
+--- a/include/uapi/linux/android/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += binder.h
+diff --git a/include/uapi/linux/byteorder/Kbuild b/include/uapi/linux/byteorder/Kbuild
+deleted file mode 100644
+index 619225b9ff2e..000000000000
+--- a/include/uapi/linux/byteorder/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += big_endian.h
+-header-y += little_endian.h
+diff --git a/include/uapi/linux/caif/Kbuild b/include/uapi/linux/caif/Kbuild
+deleted file mode 100644
+index 43396612d3a3..000000000000
+--- a/include/uapi/linux/caif/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += caif_socket.h
+-header-y += if_caif.h
+diff --git a/include/uapi/linux/can/Kbuild b/include/uapi/linux/can/Kbuild
+deleted file mode 100644
+index 21c91bf25a29..000000000000
+--- a/include/uapi/linux/can/Kbuild
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# UAPI Header export list
+-header-y += bcm.h
+-header-y += error.h
+-header-y += gw.h
+-header-y += netlink.h
+-header-y += raw.h
+diff --git a/include/uapi/linux/dvb/Kbuild b/include/uapi/linux/dvb/Kbuild
+deleted file mode 100644
+index d40942cfc627..000000000000
+--- a/include/uapi/linux/dvb/Kbuild
++++ /dev/null
+@@ -1,9 +0,0 @@
+-# UAPI Header export list
+-header-y += audio.h
+-header-y += ca.h
+-header-y += dmx.h
+-header-y += frontend.h
+-header-y += net.h
+-header-y += osd.h
+-header-y += version.h
+-header-y += video.h
+diff --git a/include/uapi/linux/hdlc/Kbuild b/include/uapi/linux/hdlc/Kbuild
+deleted file mode 100644
+index 8c1d2cb75e33..000000000000
+--- a/include/uapi/linux/hdlc/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += ioctl.h
+diff --git a/include/uapi/linux/hsi/Kbuild b/include/uapi/linux/hsi/Kbuild
+deleted file mode 100644
+index a16a00544258..000000000000
+--- a/include/uapi/linux/hsi/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += hsi_char.h cs-protocol.h
+diff --git a/include/uapi/linux/iio/Kbuild b/include/uapi/linux/iio/Kbuild
+deleted file mode 100644
+index 86f76d84c44f..000000000000
+--- a/include/uapi/linux/iio/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += events.h
+-header-y += types.h
+diff --git a/include/uapi/linux/isdn/Kbuild b/include/uapi/linux/isdn/Kbuild
+deleted file mode 100644
+index 89e52850bf29..000000000000
+--- a/include/uapi/linux/isdn/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += capicmd.h
+diff --git a/include/uapi/linux/mmc/Kbuild b/include/uapi/linux/mmc/Kbuild
+deleted file mode 100644
+index 8c1d2cb75e33..000000000000
+--- a/include/uapi/linux/mmc/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += ioctl.h
+diff --git a/include/uapi/linux/netfilter/Kbuild b/include/uapi/linux/netfilter/Kbuild
+deleted file mode 100644
+index 03f194aeadc5..000000000000
+--- a/include/uapi/linux/netfilter/Kbuild
++++ /dev/null
+@@ -1,89 +0,0 @@
+-# UAPI Header export list
+-header-y += ipset/
+-header-y += nf_conntrack_common.h
+-header-y += nf_conntrack_ftp.h
+-header-y += nf_conntrack_sctp.h
+-header-y += nf_conntrack_tcp.h
+-header-y += nf_conntrack_tuple_common.h
+-header-y += nf_log.h
+-header-y += nf_tables.h
+-header-y += nf_tables_compat.h
+-header-y += nf_nat.h
+-header-y += nfnetlink.h
+-header-y += nfnetlink_acct.h
+-header-y += nfnetlink_compat.h
+-header-y += nfnetlink_conntrack.h
+-header-y += nfnetlink_cthelper.h
+-header-y += nfnetlink_cttimeout.h
+-header-y += nfnetlink_log.h
+-header-y += nfnetlink_queue.h
+-header-y += x_tables.h
+-header-y += xt_AUDIT.h
+-header-y += xt_CHECKSUM.h
+-header-y += xt_CLASSIFY.h
+-header-y += xt_CONNMARK.h
+-header-y += xt_CONNSECMARK.h
+-header-y += xt_CT.h
+-header-y += xt_DSCP.h
+-header-y += xt_HMARK.h
+-header-y += xt_IDLETIMER.h
+-header-y += xt_LED.h
+-header-y += xt_LOG.h
+-header-y += xt_MARK.h
+-header-y += xt_NFLOG.h
+-header-y += xt_NFQUEUE.h
+-header-y += xt_RATEEST.h
+-header-y += xt_SECMARK.h
+-header-y += xt_SYNPROXY.h
+-header-y += xt_TCPMSS.h
+-header-y += xt_TCPOPTSTRIP.h
+-header-y += xt_TEE.h
+-header-y += xt_TPROXY.h
+-header-y += xt_addrtype.h
+-header-y += xt_bpf.h
+-header-y += xt_cgroup.h
+-header-y += xt_cluster.h
+-header-y += xt_comment.h
+-header-y += xt_connbytes.h
+-header-y += xt_connlabel.h
+-header-y += xt_connlimit.h
+-header-y += xt_connmark.h
+-header-y += xt_conntrack.h
+-header-y += xt_cpu.h
+-header-y += xt_dccp.h
+-header-y += xt_devgroup.h
+-header-y += xt_dscp.h
+-header-y += xt_ecn.h
+-header-y += xt_esp.h
+-header-y += xt_hashlimit.h
+-header-y += xt_helper.h
+-header-y += xt_ipcomp.h
+-header-y += xt_iprange.h
+-header-y += xt_ipvs.h
+-header-y += xt_l2tp.h
+-header-y += xt_length.h
+-header-y += xt_limit.h
+-header-y += xt_mac.h
+-header-y += xt_mark.h
+-header-y += xt_multiport.h
+-header-y += xt_nfacct.h
+-header-y += xt_osf.h
+-header-y += xt_owner.h
+-header-y += xt_physdev.h
+-header-y += xt_pkttype.h
+-header-y += xt_policy.h
+-header-y += xt_quota.h
+-header-y += xt_rateest.h
+-header-y += xt_realm.h
+-header-y += xt_recent.h
+-header-y += xt_rpfilter.h
+-header-y += xt_sctp.h
+-header-y += xt_set.h
+-header-y += xt_socket.h
+-header-y += xt_state.h
+-header-y += xt_statistic.h
+-header-y += xt_string.h
+-header-y += xt_tcpmss.h
+-header-y += xt_tcpudp.h
+-header-y += xt_time.h
+-header-y += xt_u32.h
+diff --git a/include/uapi/linux/netfilter/ipset/Kbuild b/include/uapi/linux/netfilter/ipset/Kbuild
+deleted file mode 100644
+index d2680423d9ab..000000000000
+--- a/include/uapi/linux/netfilter/ipset/Kbuild
++++ /dev/null
+@@ -1,5 +0,0 @@
+-# UAPI Header export list
+-header-y += ip_set.h
+-header-y += ip_set_bitmap.h
+-header-y += ip_set_hash.h
+-header-y += ip_set_list.h
+diff --git a/include/uapi/linux/netfilter_arp/Kbuild b/include/uapi/linux/netfilter_arp/Kbuild
+deleted file mode 100644
+index 62d5637cc0ac..000000000000
+--- a/include/uapi/linux/netfilter_arp/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += arp_tables.h
+-header-y += arpt_mangle.h
+diff --git a/include/uapi/linux/netfilter_bridge/Kbuild b/include/uapi/linux/netfilter_bridge/Kbuild
+deleted file mode 100644
+index 0fbad8ef96de..000000000000
+--- a/include/uapi/linux/netfilter_bridge/Kbuild
++++ /dev/null
+@@ -1,18 +0,0 @@
+-# UAPI Header export list
+-header-y += ebt_802_3.h
+-header-y += ebt_among.h
+-header-y += ebt_arp.h
+-header-y += ebt_arpreply.h
+-header-y += ebt_ip.h
+-header-y += ebt_ip6.h
+-header-y += ebt_limit.h
+-header-y += ebt_log.h
+-header-y += ebt_mark_m.h
+-header-y += ebt_mark_t.h
+-header-y += ebt_nat.h
+-header-y += ebt_nflog.h
+-header-y += ebt_pkttype.h
+-header-y += ebt_redirect.h
+-header-y += ebt_stp.h
+-header-y += ebt_vlan.h
+-header-y += ebtables.h
+diff --git a/include/uapi/linux/netfilter_ipv4/Kbuild b/include/uapi/linux/netfilter_ipv4/Kbuild
+deleted file mode 100644
+index ecb291df390e..000000000000
+--- a/include/uapi/linux/netfilter_ipv4/Kbuild
++++ /dev/null
+@@ -1,10 +0,0 @@
+-# UAPI Header export list
+-header-y += ip_tables.h
+-header-y += ipt_CLUSTERIP.h
+-header-y += ipt_ECN.h
+-header-y += ipt_LOG.h
+-header-y += ipt_REJECT.h
+-header-y += ipt_TTL.h
+-header-y += ipt_ah.h
+-header-y += ipt_ecn.h
+-header-y += ipt_ttl.h
+diff --git a/include/uapi/linux/netfilter_ipv6/Kbuild b/include/uapi/linux/netfilter_ipv6/Kbuild
+deleted file mode 100644
+index 75a668ca2353..000000000000
+--- a/include/uapi/linux/netfilter_ipv6/Kbuild
++++ /dev/null
+@@ -1,13 +0,0 @@
+-# UAPI Header export list
+-header-y += ip6_tables.h
+-header-y += ip6t_HL.h
+-header-y += ip6t_LOG.h
+-header-y += ip6t_NPT.h
+-header-y += ip6t_REJECT.h
+-header-y += ip6t_ah.h
+-header-y += ip6t_frag.h
+-header-y += ip6t_hl.h
+-header-y += ip6t_ipv6header.h
+-header-y += ip6t_mh.h
+-header-y += ip6t_opts.h
+-header-y += ip6t_rt.h
+diff --git a/include/uapi/linux/nfsd/Kbuild b/include/uapi/linux/nfsd/Kbuild
+deleted file mode 100644
+index c11bc404053c..000000000000
+--- a/include/uapi/linux/nfsd/Kbuild
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# UAPI Header export list
+-header-y += cld.h
+-header-y += debug.h
+-header-y += export.h
+-header-y += nfsfh.h
+-header-y += stats.h
+diff --git a/include/uapi/linux/raid/Kbuild b/include/uapi/linux/raid/Kbuild
+deleted file mode 100644
+index e2c3d25405d7..000000000000
+--- a/include/uapi/linux/raid/Kbuild
++++ /dev/null
+@@ -1,3 +0,0 @@
+-# UAPI Header export list
+-header-y += md_p.h
+-header-y += md_u.h
+diff --git a/include/uapi/linux/spi/Kbuild b/include/uapi/linux/spi/Kbuild
+deleted file mode 100644
+index 0cc747eff165..000000000000
+--- a/include/uapi/linux/spi/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += spidev.h
+diff --git a/include/uapi/linux/sunrpc/Kbuild b/include/uapi/linux/sunrpc/Kbuild
+deleted file mode 100644
+index 8e02e47c20fb..000000000000
+--- a/include/uapi/linux/sunrpc/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += debug.h
+diff --git a/include/uapi/linux/tc_act/Kbuild b/include/uapi/linux/tc_act/Kbuild
+deleted file mode 100644
+index e3db7403296f..000000000000
+--- a/include/uapi/linux/tc_act/Kbuild
++++ /dev/null
+@@ -1,15 +0,0 @@
+-# UAPI Header export list
+-header-y += tc_csum.h
+-header-y += tc_defact.h
+-header-y += tc_gact.h
+-header-y += tc_ipt.h
+-header-y += tc_mirred.h
+-header-y += tc_nat.h
+-header-y += tc_pedit.h
+-header-y += tc_skbedit.h
+-header-y += tc_vlan.h
+-header-y += tc_bpf.h
+-header-y += tc_connmark.h
+-header-y += tc_ife.h
+-header-y += tc_tunnel_key.h
+-header-y += tc_skbmod.h
+diff --git a/include/uapi/linux/tc_ematch/Kbuild b/include/uapi/linux/tc_ematch/Kbuild
+deleted file mode 100644
+index 53fca3925535..000000000000
+--- a/include/uapi/linux/tc_ematch/Kbuild
++++ /dev/null
+@@ -1,5 +0,0 @@
+-# UAPI Header export list
+-header-y += tc_em_cmp.h
+-header-y += tc_em_meta.h
+-header-y += tc_em_nbyte.h
+-header-y += tc_em_text.h
+diff --git a/include/uapi/linux/usb/Kbuild b/include/uapi/linux/usb/Kbuild
+deleted file mode 100644
+index 4cc4d6e7e523..000000000000
+--- a/include/uapi/linux/usb/Kbuild
++++ /dev/null
+@@ -1,12 +0,0 @@
+-# UAPI Header export list
+-header-y += audio.h
+-header-y += cdc.h
+-header-y += cdc-wdm.h
+-header-y += ch11.h
+-header-y += ch9.h
+-header-y += functionfs.h
+-header-y += g_printer.h
+-header-y += gadgetfs.h
+-header-y += midi.h
+-header-y += tmc.h
+-header-y += video.h
+diff --git a/include/uapi/linux/wimax/Kbuild b/include/uapi/linux/wimax/Kbuild
+deleted file mode 100644
+index 1c97be49971f..000000000000
+--- a/include/uapi/linux/wimax/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += i2400m.h
+diff --git a/include/uapi/misc/Kbuild b/include/uapi/misc/Kbuild
+deleted file mode 100644
+index e96cae7d58c9..000000000000
+--- a/include/uapi/misc/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# misc Header export list
+-header-y += cxl.h
+diff --git a/include/uapi/mtd/Kbuild b/include/uapi/mtd/Kbuild
+deleted file mode 100644
+index 5a691e10cd0e..000000000000
+--- a/include/uapi/mtd/Kbuild
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# UAPI Header export list
+-header-y += inftl-user.h
+-header-y += mtd-abi.h
+-header-y += mtd-user.h
+-header-y += nftl-user.h
+-header-y += ubi-user.h
+diff --git a/include/uapi/rdma/Kbuild b/include/uapi/rdma/Kbuild
+deleted file mode 100644
+index 82bdf5626859..000000000000
+--- a/include/uapi/rdma/Kbuild
++++ /dev/null
+@@ -1,18 +0,0 @@
+-# UAPI Header export list
+-header-y += ib_user_cm.h
+-header-y += ib_user_mad.h
+-header-y += ib_user_sa.h
+-header-y += ib_user_verbs.h
+-header-y += rdma_netlink.h
+-header-y += rdma_user_cm.h
+-header-y += hfi/
+-header-y += rdma_user_rxe.h
+-header-y += cxgb3-abi.h
+-header-y += cxgb4-abi.h
+-header-y += mlx4-abi.h
+-header-y += mlx5-abi.h
+-header-y += mthca-abi.h
+-header-y += nes-abi.h
+-header-y += ocrdma-abi.h
+-header-y += hns-abi.h
+-header-y += vmw_pvrdma-abi.h
+diff --git a/include/uapi/rdma/hfi/Kbuild b/include/uapi/rdma/hfi/Kbuild
+deleted file mode 100644
+index ef23c294fc71..000000000000
+--- a/include/uapi/rdma/hfi/Kbuild
++++ /dev/null
+@@ -1,2 +0,0 @@
+-# UAPI Header export list
+-header-y += hfi1_user.h
+diff --git a/include/uapi/scsi/Kbuild b/include/uapi/scsi/Kbuild
+deleted file mode 100644
+index d791e0ad509d..000000000000
+--- a/include/uapi/scsi/Kbuild
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# UAPI Header export list
+-header-y += fc/
+-header-y += scsi_bsg_fc.h
+-header-y += scsi_netlink.h
+-header-y += scsi_netlink_fc.h
+-header-y += cxlflash_ioctl.h
+diff --git a/include/uapi/scsi/fc/Kbuild b/include/uapi/scsi/fc/Kbuild
+deleted file mode 100644
+index 5ead9fac265c..000000000000
+--- a/include/uapi/scsi/fc/Kbuild
++++ /dev/null
+@@ -1,5 +0,0 @@
+-# UAPI Header export list
+-header-y += fc_els.h
+-header-y += fc_fs.h
+-header-y += fc_gs.h
+-header-y += fc_ns.h
+diff --git a/include/uapi/sound/Kbuild b/include/uapi/sound/Kbuild
+deleted file mode 100644
+index 9578d8bdbf31..000000000000
+--- a/include/uapi/sound/Kbuild
++++ /dev/null
+@@ -1,16 +0,0 @@
+-# UAPI Header export list
+-header-y += asequencer.h
+-header-y += asoc.h
+-header-y += asound.h
+-header-y += asound_fm.h
+-header-y += compress_offload.h
+-header-y += compress_params.h
+-header-y += emu10k1.h
+-header-y += firewire.h
+-header-y += hdsp.h
+-header-y += hdspm.h
+-header-y += sb16_csp.h
+-header-y += sfnt_info.h
+-header-y += tlv.h
+-header-y += usb_stream.h
+-header-y += snd_sst_tokens.h
+diff --git a/include/uapi/video/Kbuild b/include/uapi/video/Kbuild
+deleted file mode 100644
+index ac7203bb32cc..000000000000
+--- a/include/uapi/video/Kbuild
++++ /dev/null
+@@ -1,4 +0,0 @@
+-# UAPI Header export list
+-header-y += edid.h
+-header-y += sisfb.h
+-header-y += uvesafb.h
+diff --git a/include/uapi/xen/Kbuild b/include/uapi/xen/Kbuild
+deleted file mode 100644
+index 5c459628e8c7..000000000000
+--- a/include/uapi/xen/Kbuild
++++ /dev/null
+@@ -1,5 +0,0 @@
+-# UAPI Header export list
+-header-y += evtchn.h
+-header-y += gntalloc.h
+-header-y += gntdev.h
+-header-y += privcmd.h
+diff --git a/include/video/Kbuild b/include/video/Kbuild
+deleted file mode 100644
+index e69de29bb2d1..000000000000
+diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
+index 876b42cfede4..16ac3e71050e 100644
+--- a/scripts/Makefile.headersinst
++++ b/scripts/Makefile.headersinst
+@@ -1,17 +1,19 @@
+ # =====================================
+ # Installing headers
+ #
+-# header-y  - list files to be installed. They are preprocessed
+-#             to remove __KERNEL__ section of the file
+-# genhdr-y  - Same as header-y but in a generated/ directory
++# All headers under include/uapi, include/generated/uapi,
++# arch/<arch>/include/uapi/asm and arch/<arch>/include/generated/uapi/asm are
++# exported.
++# They are preprocessed to remove __KERNEL__ section of the file.
+ #
+ # =====================================
+ 
+ # generated header directory
+ gen := $(if $(gen),$(gen),$(subst include/,include/generated/,$(obj)))
+ 
++# Kbuild file is optional
+ kbuild-file := $(srctree)/$(obj)/Kbuild
+-include $(kbuild-file)
++-include $(kbuild-file)
+ 
+ # called may set destination dir (when installing to asm/)
+ _dst := $(if $(dst),$(dst),$(obj))
+@@ -25,9 +27,12 @@ include scripts/Kbuild.include
+ 
+ installdir    := $(INSTALL_HDR_PATH)/$(subst uapi/,,$(_dst))
+ 
+-header-y      := $(sort $(header-y))
+-subdirs       := $(patsubst %/,%,$(filter %/, $(header-y)))
+-header-y      := $(filter-out %/, $(header-y))
++subdirs       := $(patsubst $(srctree)/$(obj)/%/.,%,$(wildcard $(srctree)/$(obj)/*/.))
++subdirs       += $(subdir-y)
++header-files  := $(notdir $(wildcard $(srctree)/$(obj)/*.h))
++header-files  += $(notdir $(wildcard $(srctree)/$(obj)/*.agh))
++genhdr-files  := $(notdir $(wildcard $(srctree)/$(gen)/*.h))
++genhdr-files  := $(filter-out $(header-files), $(genhdr-files))
+ 
+ # files used to track state of install/check
+ install-file  := $(installdir)/.install
+@@ -35,25 +40,23 @@ check-file    := $(installdir)/.check
+ 
+ # generic-y list all files an architecture uses from asm-generic
+ # Use this to build a list of headers which require a wrapper
+-wrapper-files := $(filter $(header-y), $(generic-y))
++generic-files := $(notdir $(wildcard $(srctree)/include/uapi/asm-generic/*.h))
++wrapper-files := $(filter $(generic-files), $(generic-y))
++wrapper-files := $(filter-out $(header-files), $(wrapper-files))
+ 
+ srcdir        := $(srctree)/$(obj)
+ gendir        := $(objtree)/$(gen)
+ 
+ # all headers files for this dir
+-header-y      := $(filter-out $(generic-y), $(header-y))
+-all-files     := $(header-y) $(genhdr-y) $(wrapper-files)
++all-files     := $(header-files) $(genhdr-files) $(wrapper-files)
+ output-files  := $(addprefix $(installdir)/, $(all-files))
+ 
+-# Check that all expected files exist
+-$(foreach hdr, $(header-y), \
+-  $(if $(wildcard $(srcdir)/$(hdr)),, \
+-       $(error Missing UAPI file $(srcdir)/$(hdr)) \
+-   ))
+-$(foreach hdr, $(genhdr-y), \
+-  $(if	$(wildcard $(gendir)/$(hdr)),, \
+-       $(error Missing generated UAPI file $(gendir)/$(hdr)) \
+-  ))
++ifneq ($(mandatory-y),)
++missing       := $(filter-out $(all-files),$(mandatory-y))
++ifneq ($(missing),)
++$(error Some mandatory headers ($(missing)) are missing in $(obj))
++endif
++endif
+ 
+ # Work out what needs to be removed
+ oldheaders    := $(patsubst $(installdir)/%,%,$(wildcard $(installdir)/*.h))
+@@ -67,8 +70,8 @@ printdir = $(patsubst $(INSTALL_HDR_PATH)/%/,%,$(dir $@))
+ quiet_cmd_install = INSTALL $(printdir) ($(words $(all-files))\
+                             file$(if $(word 2, $(all-files)),s))
+       cmd_install = \
+-        $(CONFIG_SHELL) $< $(installdir) $(srcdir) $(header-y); \
+-        $(CONFIG_SHELL) $< $(installdir) $(gendir) $(genhdr-y); \
++        $(CONFIG_SHELL) $< $(installdir) $(srcdir) $(header-files); \
++        $(CONFIG_SHELL) $< $(installdir) $(gendir) $(genhdr-files); \
+         for F in $(wrapper-files); do                                   \
+                 echo "\#include <asm-generic/$$F>" > $(installdir)/$$F;    \
+         done;                                                           \
 -- 
-2.11.0
+2.8.1
 

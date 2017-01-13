@@ -1,101 +1,47 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Thu, 19 Jan 2017 20:35:07 +0000
-Subject: Re: [PATCH] fbdev: color map copying bounds checking
-Message-Id: <CAGXu5jL-ejr1qubsTz3J1Kpw5ypKKpgwv2-kpytHuurJLnnQmg@mail.gmail.com>
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 13 Jan 2017 10:35:46 +0000
+Subject: [PATCH v2 2/5] fbdev: ssd1307fb: Remove reset-active-low from the DT binding document
+Message-Id: <b68e1b9b735543b9e1511cfeb8e5d9ceec6c7666.1484303628.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170105224249.GA50925@beast>
-In-Reply-To: <20170105224249.GA50925@beast>
+References: <cover.1484303628.git.jsarha@ti.com>
+In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, Min Chong <mchong@google.com>, Dan Carpenter <dan.carpenter@oracle.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
-Hi again,
+Remove reset-active-low from the devicetree binding document. The actual
+implementation has never been there in the driver code and there is no
+reason to add it because the gpiod API supports gpio flags, including
+GPIO_ACTIVE_LOW, directly trough its own devicetree binding.
 
-It's been two weeks with no response. This fixes a kernel heap OOB
-read. Andrew, can you take this into -mm?
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ Documentation/devicetree/bindings/display/ssd1307fb.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
--Kees
-
-On Thu, Jan 5, 2017 at 2:42 PM, Kees Cook <keescook@chromium.org> wrote:
-> Copying color maps to userspace doesn't check the value of to->start,
-> which will cause kernel heap buffer OOB read due to signedness wraps.
->
-> CVE-2016-8405
->
-> Reported-by: Peter Pi (@heisecode) of Trend Micro
-> Fixes: 1da177e4c3f4 ("Linux-2.6.12-rc2")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
->  drivers/video/fbdev/core/fbcmap.c | 26 ++++++++++++++------------
->  1 file changed, 14 insertions(+), 12 deletions(-)
->
-> diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-> index f89245b8ba8e..68a113594808 100644
-> --- a/drivers/video/fbdev/core/fbcmap.c
-> +++ b/drivers/video/fbdev/core/fbcmap.c
-> @@ -163,17 +163,18 @@ void fb_dealloc_cmap(struct fb_cmap *cmap)
->
->  int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to)
->  {
-> -       int tooff = 0, fromoff = 0;
-> -       int size;
-> +       unsigned int tooff = 0, fromoff = 0;
-> +       size_t size;
->
->         if (to->start > from->start)
->                 fromoff = to->start - from->start;
->         else
->                 tooff = from->start - to->start;
-> -       size = to->len - tooff;
-> -       if (size > (int) (from->len - fromoff))
-> -               size = from->len - fromoff;
-> -       if (size <= 0)
-> +       if (fromoff >= from->len || tooff >= to->len)
-> +               return -EINVAL;
-> +
-> +       size = min_t(size_t, to->len - tooff, from->len - fromoff);
-> +       if (size = 0)
->                 return -EINVAL;
->         size *= sizeof(u16);
->
-> @@ -187,17 +188,18 @@ int fb_copy_cmap(const struct fb_cmap *from, struct fb_cmap *to)
->
->  int fb_cmap_to_user(const struct fb_cmap *from, struct fb_cmap_user *to)
->  {
-> -       int tooff = 0, fromoff = 0;
-> -       int size;
-> +       unsigned int tooff = 0, fromoff = 0;
-> +       size_t size;
->
->         if (to->start > from->start)
->                 fromoff = to->start - from->start;
->         else
->                 tooff = from->start - to->start;
-> -       size = to->len - tooff;
-> -       if (size > (int) (from->len - fromoff))
-> -               size = from->len - fromoff;
-> -       if (size <= 0)
-> +       if (fromoff >= from->len || tooff >= to->len)
-> +               return -EINVAL;
-> +
-> +       size = min_t(size_t, to->len - tooff, from->len - fromoff);
-> +       if (size = 0)
->                 return -EINVAL;
->         size *= sizeof(u16);
->
-> --
-> 2.7.4
->
->
-> --
-> Kees Cook
-> Nexus Security
-
-
-
+diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+index eb31ed4..4aee67f 100644
+--- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
++++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+@@ -8,14 +8,14 @@ Required properties:
+          0x3c or 0x3d
+   - pwm: Should contain the pwm to use according to the OF device tree PWM
+          specification [0]. Only required for the ssd1307.
+-  - reset-gpios: Should contain the GPIO used to reset the OLED display
++  - reset-gpios: Should contain the GPIO used to reset the OLED display. See
++                 Documentation/devicetree/bindings/gpio/gpio.txt for details.
+   - solomon,height: Height in pixel of the screen driven by the controller
+   - solomon,width: Width in pixel of the screen driven by the controller
+   - solomon,page-offset: Offset of pages (band of 8 pixels) that the screen is
+     mapped to.
+ 
+ Optional properties:
+-  - reset-active-low: Is the reset gpio is active on physical low?
+   - solomon,segment-no-remap: Display needs normal (non-inverted) data column
+                               to segment mapping
+   - solomon,com-seq: Display uses sequential COM pin configuration
 -- 
-Kees Cook
-Nexus Security
+1.9.1
+

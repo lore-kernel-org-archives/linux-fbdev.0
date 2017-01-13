@@ -1,60 +1,35 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Tue, 31 Jan 2017 13:09:54 +0000
-Subject: Re: [PATCH v3 01/14] Documentation: dt/bindings: Document pinctrl-ingenic
-Message-Id: <CACRpkdbAgy4sh6NT5DdQD6EQtOZEwevohEA6OGRcVz98yqS52Q@mail.gmail.com>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 13 Jan 2017 10:46:41 +0000
+Subject: [PATCH v3 3/8] nios2: put setup.h in uapi
+Message-Id: <1484304406-10820-4-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net> <20170125185207.23902-2-paul@crapouillou.net>
- <20170130203617.hpljtcmzava3rq2n@rob-hp-laptop> <12dc62a7255bd453ff4e5e89f93ebc58@mail.crapouillou.net>
-In-Reply-To: <12dc62a7255bd453ff4e5e89f93ebc58-p8hskv8pF7lEPksTRSfcJOTW4wlIGRCZ@public.gmane.org>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MIPS <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-pwm-u79uwXL29TY@public.gmane.org
+To: arnd@arndb.de
+Cc: mmarek@suse.com, linux-kbuild@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-am33-list@redhat.com, nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.
 
-On Tue, Jan 31, 2017 at 11:31 AM, Paul Cercueil <paul@crapouillou.net> wrote:
-> [Rob]:
->> From the overlapping register addresses in the examples and this
->> description, it looks like the pinctrlr and gpio controller are 1 block.
->> If so, then there should only be 1 node.
->
-> Well, that's what I had until Linus W. just told me to do the opposite:
->
->> Just pull all these down two levels and make them one device
->> each instead of having them inside the pin controller node
->> like this.
+This header file is exported, but from a userland pov, it's just a wrapper
+to asm-generic/setup.h.
 
-I guess the argument is that they are in the same coherent memory
-range so they should be one device node. That is how we handle
-e.g. system controllers so it makes some sense.
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/nios2/include/uapi/asm/Kbuild | 1 +
+ 1 file changed, 1 insertion(+)
 
-So can the two GPIO controllers be modeled as two subnodes of
-the pin controller then?
+diff --git a/arch/nios2/include/uapi/asm/Kbuild b/arch/nios2/include/uapi/asm/Kbuild
+index e0bb972a50d7..69c965304146 100644
+--- a/arch/nios2/include/uapi/asm/Kbuild
++++ b/arch/nios2/include/uapi/asm/Kbuild
+@@ -2,4 +2,5 @@ include include/uapi/asm-generic/Kbuild.asm
+ 
+ header-y += elf.h
+ 
++generic-y += setup.h
+ generic-y += ucontext.h
+-- 
+2.8.1
 
-Subnodes are certainly OK, we have that for many other devices
-such as interrupt controllers on PCI bridges and what not.
-
-So when the probing of the pin controller is ready it can just
-walk down and populate the GPIO subdevices with
-of_platform_default_populate() or simply by registering the
-device directly with platform_device_add_data() just like an
-MFD device does?
-
-This is nice because we want to use the standard gpio ranges
-to map pins to GPIO lines.
-
-I'm sorry about the unclarities here, but it's essentially an intrinsic
-problem with GPIO that has been with us for years: do we model
-each "bank" as a device or do we just register each bank as a
-gpiochip, or do we even make one gpiochip to cover all the banks.
-All solutions can be found in the kernel... also the different DT bindings:
-one node for a whole slew of GPIO controllers, or seveal nodes
-and I bet also several nodes for memory ranges in close proximity.
-
-I don't know for sure what is the most elegant solution, we might
-need to build some consensus here for the future so it doesn't
-get to heterogeneous.
-
-Yours,
-Linus Walleij

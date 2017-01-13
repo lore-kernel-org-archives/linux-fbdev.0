@@ -1,67 +1,35 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 11 Jan 2017 14:29:49 +0000
-Subject: Re: [PATCH] video: imxfb: always allocate 256 entries for the color map
-Message-Id: <2846203.pYN6Pvhiy7@amdc3058>
+From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Date: Fri, 13 Jan 2017 10:46:42 +0000
+Subject: [PATCH v3 4/8] x86: stop exporting msr-index.h to userland
+Message-Id: <1484304406-10820-5-git-send-email-nicolas.dichtel@6wind.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1483395604-6931-1-git-send-email-martin@kaiser.cx>
- <CGME20170109130015epcas3p460b58a2b926f3af37a62a1dbe73d291f@epcas3p4.samsung.com>
- <20170109125942.tk6iutwdnzzxysix@pengutronix.de>
-In-Reply-To: <20170109125942.tk6iutwdnzzxysix@pengutronix.de>
+References: <3131144.4Ej3KFWRbz@wuerfel>
+ <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
+In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sascha Hauer <s.hauer@pengutronix.de>, Martin Kaiser <martin@kaiser.cx>
-Cc: kernel@pengutronix.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: arnd@arndb.de
+Cc: mmarek@suse.com, linux-kbuild@vger.kernel.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, adi-buildroot-devel@lists.sourceforge.net, linux-c6x-dev@linux-c6x.org, linux-cris-kernel@axis.com, uclinux-h8-devel@lists.sourceforge.jp, linux-hexagon@vger.kernel.org, linux-ia64@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-metag@vger.kernel.org, linux-mips@linux-mips.org, linux-am33-list@redhat.com, nios2-dev@lists.rocketboards.org, openrisc@lists.librecores.org, linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org, linux-arch@vger.kernel.
 
+Suggested-by: Borislav Petkov <bp@alien8.de>
+Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+---
+ arch/x86/include/uapi/asm/Kbuild | 1 -
+ 1 file changed, 1 deletion(-)
 
-Hi,
-
-On Monday, January 09, 2017 01:59:42 PM Sascha Hauer wrote:
-> On Mon, Jan 02, 2017 at 11:24:02PM +0100, Martin Kaiser wrote:
-> > The current code calculates the number of color map entries as
-> > 1 << info->var.bits_per_pixel. For 32bpp modes, 1 << 32 is 0 when
-> > written to an int variable. As a consequence, the subsequent copying
-> > of the default (non-empty) color map into our newly allocated color map
-> > fails and imxfb's probe function returns an error.
-> > 
-> > On both imx1 and imx21 platforms, the color map is used only for modes
-> > with <= 8bpp. By allocating 256 entries for the color map, we're on the
-> > safe side.
-> > 
-> > Signed-off-by: Martin Kaiser <martin@kaiser.cx>
-> 
-> Acked-by: Sascha Hauer <s.hauer@pengutronix.de>
-
-Thanks, patch queued for 4.11.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> Sascha
-> 
-> > ---
-> > Re-sending: corrected a typo in the LKML address, sorry for that.
-> > 
-> >  drivers/video/fbdev/imxfb.c |    6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> > index fe0c4ee..1b0faad 100644
-> > --- a/drivers/video/fbdev/imxfb.c
-> > +++ b/drivers/video/fbdev/imxfb.c
-> > @@ -985,7 +985,11 @@ static int imxfb_probe(struct platform_device *pdev)
-> >  	 */
-> >  	imxfb_check_var(&info->var, info);
-> >  
-> > -	ret = fb_alloc_cmap(&info->cmap, 1 << info->var.bits_per_pixel, 0);
-> > +	/*
-> > +	 * For modes > 8bpp, the color map is bypassed.
-> > +	 * Therefore, 256 entries are enough.
-> > +	 */
-> > +	ret = fb_alloc_cmap(&info->cmap, 256, 0);
-> >  	if (ret < 0)
-> >  		goto failed_cmap;
+diff --git a/arch/x86/include/uapi/asm/Kbuild b/arch/x86/include/uapi/asm/Kbuild
+index 3dec769cadf7..1c532b3f18ea 100644
+--- a/arch/x86/include/uapi/asm/Kbuild
++++ b/arch/x86/include/uapi/asm/Kbuild
+@@ -27,7 +27,6 @@ header-y += ldt.h
+ header-y += mce.h
+ header-y += mman.h
+ header-y += msgbuf.h
+-header-y += msr-index.h
+ header-y += msr.h
+ header-y += mtrr.h
+ header-y += param.h
+-- 
+2.8.1
 

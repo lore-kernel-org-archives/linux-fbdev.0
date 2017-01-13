@@ -1,108 +1,77 @@
-From: Lukasz Majewski <l.majewski@majess.pl>
-Date: Mon, 02 Jan 2017 23:54:52 +0000
-Subject: Re: [PATCH v2 RESEND] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_back
-Message-Id: <20170103005452.33d4b117@jawa>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ"
+From: Jyri Sarha <jsarha@ti.com>
+Date: Fri, 13 Jan 2017 10:35:45 +0000
+Subject: [PATCH v2 1/5] fbdev: ssd1307fb: Start to use gpiod API for reset gpio
+Message-Id: <d8048177ead564c6f7f3da2aa805e069d840209d.1484303628.git.jsarha@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
-        <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
-In-Reply-To: <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>
-Cc: Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+References: <cover.1484303628.git.jsarha@ti.com>
+In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
+Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
 
---Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Start to use gpiod API for reset gpio.
 
-Dear All,
+Signed-off-by: Jyri Sarha <jsarha@ti.com>
+---
+ drivers/video/fbdev/ssd1307fb.c | 25 ++++++++-----------------
+ 1 file changed, 8 insertions(+), 17 deletions(-)
 
-A gentle ping for this patch :-)
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index 2925d5c..8ffaaee 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -73,7 +73,7 @@ struct ssd1307fb_par {
+ 	u32 prechargep2;
+ 	struct pwm_device *pwm;
+ 	u32 pwm_period;
+-	int reset;
++	struct gpio_desc *reset;
+ 	u32 seg_remap;
+ 	u32 vcomh;
+ 	u32 width;
+@@ -561,10 +561,11 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 
+ 	par->device_info = of_device_get_match_data(&client->dev);
+ 
+-	par->reset = of_get_named_gpio(client->dev.of_node,
+-					 "reset-gpios", 0);
+-	if (!gpio_is_valid(par->reset)) {
+-		ret = -EINVAL;
++	par->reset = devm_gpiod_get(&client->dev, "reset", GPIOD_OUT_LOW);
++	if (IS_ERR(par->reset)) {
++		dev_err(&client->dev, "failed to get reset gpio: %ld\n",
++			PTR_ERR(par->reset));
++		ret = PTR_ERR(par->reset);
+ 		goto fb_alloc_error;
+ 	}
+ 
+@@ -642,22 +643,12 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 
+ 	fb_deferred_io_init(info);
+ 
+-	ret = devm_gpio_request_one(&client->dev, par->reset,
+-				    GPIOF_OUT_INIT_HIGH,
+-				    "oled-reset");
+-	if (ret) {
+-		dev_err(&client->dev,
+-			"failed to request gpio %d: %d\n",
+-			par->reset, ret);
+-		goto reset_oled_error;
+-	}
+-
+ 	i2c_set_clientdata(client, info);
+ 
+ 	/* Reset the screen */
+-	gpio_set_value(par->reset, 0);
++	gpiod_set_value(par->reset, 0);
+ 	udelay(4);
+-	gpio_set_value(par->reset, 1);
++	gpiod_set_value(par->reset, 1);
+ 	udelay(4);
+ 
+ 	ret = ssd1307fb_init(par);
+-- 
+1.9.1
 
-We had a discussion about it in a following thread:
-
-http://patchwork.ozlabs.org/patch/689786/
-
-According to comments, I've prepared v2 of this commit and also resend
-it recently:
-
-http://patchwork.ozlabs.org/patch/708844/
-
-Any new comments?
-
-
-Thanks in advance,
-=C5=81ukasz Majewski
-
-> The commit a55944ca82d2=20
-> ("backlight: update bd state & fb_blank properties when necessary")
-> has posed some extra restrictions on blanking and unblanking frame
-> buffer device.
->=20
-> Unfortunately, pwm_bl driver's probe did not initialize members of
-> struct backlight_device necessary for further blank/unblank operation.
->=20
-> This code in case of initial unblank of backlight device (default=20
-> behaviour) sets use_count to 1 and marks this particular backlight
-> device as used by all available fb devices (since it is not known
-> during probe how much and which fb devices will be assigned).
->=20
-> Without this code, the backlight works properly until one tries to
-> blank it manually from sysfs with "echo 1
-> > /sys/class/graphics/fb0/blank". Since fb_bl_on[0] and use_count
-> > were both set to 0, the logic at
-> fb_notifier_callback (@backlight.c) thought that we didn't turn on
-> (unblanked) the backlight device and refuses to disable (blank) it.
-> As a result we see garbage from fb displayed.
->=20
-> Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
-> ---
-> The patch has been tested on i.MX6q with vanilla 4.9 kernel.
-> It applies on 4.10-rc1.
-> ---
->  drivers/video/backlight/pwm_bl.c | 10 +++++++++-
->  1 file changed, 9 insertions(+), 1 deletion(-)
->=20
-> diff --git a/drivers/video/backlight/pwm_bl.c
-> b/drivers/video/backlight/pwm_bl.c index 1261400..6859ba0 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct
-> platform_device *pdev) struct pwm_bl_data *pb;
->  	int initial_blank =3D FB_BLANK_UNBLANK;
->  	struct pwm_args pargs;
-> -	int ret;
-> +	int ret, i;
-> =20
->  	if (!data) {
->  		ret =3D pwm_backlight_parse_dt(&pdev->dev, &defdata);
-> @@ -348,6 +348,14 @@ static int pwm_backlight_probe(struct
-> platform_device *pdev)=20
->  	bl->props.brightness =3D data->dft_brightness;
->  	bl->props.power =3D initial_blank;
-> +
-> +	if (initial_blank =3D=3D FB_BLANK_UNBLANK) {
-> +		for (i =3D 0; i < FB_MAX; i++)
-> +			bl->fb_bl_on[i] =3D true;
-> +
-> +		bl->use_count =3D 1;
-> +	}
-> +
->  	backlight_update_status(bl);
-> =20
->  	platform_set_drvdata(pdev, bl);
-
-
---Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iEYEARECAAYFAlhq6FMACgkQf9/hG2YwgjEKJQCgkppXhM/FER7argZ+MQ1+nI3W
-gJgAniEzToFDO9/e4mPeOewJipg2ukJ+
-=Zeol
------END PGP SIGNATURE-----
-
---Sig_/fMrRwDv5HRq/.IzEZ.MUZJJ--

@@ -1,339 +1,106 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Wed, 25 Jan 2017 18:52:00 +0000
-Subject: [PATCH v3 07/14] MIPS: jz4780: DTS: Add nodes for ingenic pinctrl and gpio drivers
-Message-Id: <20170125185207.23902-8-paul@crapouillou.net>
+From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Date: Fri, 13 Jan 2017 20:07:58 +0000
+Subject: [PATCH v10 4/4] console: Make persistent scrollback a boot parameter
+Message-Id: <20170113200758.9880-5-manuel.schoelling@gmx.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net>
-In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
+References: <20170113200758.9880-1-manuel.schoelling@gmx.de>
+In-Reply-To: <20170113200758.9880-1-manuel.schoelling@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: gregkh@linuxfoundation.org
+Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
 
-For a description of the devicetree node, please read
-Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+The impact of the persistent scrollback feature on the code size is
+rather small, so the config option is removed. The feature stays
+disabled by default and can be enabled by using the boot command line
+parameter 'vgacon.scrollback_persistent=3D1' or by setting
+VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT=3Dy.
 
-For a description of the gpio devicetree nodes, please read
-Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
+Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- arch/mips/boot/dts/ingenic/jz4780.dtsi | 297 +++++++++++++++++++++++++++++++++
- 1 file changed, 297 insertions(+)
+ drivers/video/console/Kconfig  | 12 +++++++-----
+ drivers/video/console/vgacon.c | 25 ++++++++++++-------------
+ 2 files changed, 19 insertions(+), 18 deletions(-)
 
-v2: Changed the devicetree bindings to match the new driver
-v3: No changes
-
-diff --git a/arch/mips/boot/dts/ingenic/jz4780.dtsi b/arch/mips/boot/dts/ingenic/jz4780.dtsi
-index b868b429add2..47e079e9236e 100644
---- a/arch/mips/boot/dts/ingenic/jz4780.dtsi
-+++ b/arch/mips/boot/dts/ingenic/jz4780.dtsi
-@@ -44,6 +44,303 @@
- 		#clock-cells = <1>;
- 	};
- 
-+	pinctrl: ingenic-pinctrl@10010000 {
-+		compatible = "ingenic,jz4780-pinctrl";
-+		reg = <0x10010000 0x600>;
-+
-+		ingenic,pull-ups   = <0x3fffffff 0xfff0030c 0xffffffff
-+							  0xffff4fff 0xfffffb7c 0xffa7f00f>;
-+		ingenic,pull-downs = <0x00000000 0x000f0c03 0x00000000
-+							  0x0000b000 0x00000483 0x00580ff0>;
-+
-+		functions {
-+			uart0 {
-+				uart0-data {
-+					/* RXD, TXD */
-+					ingenic,pins = <0xa0 0 0xa3 0>;
-+				};
-+
-+				uart0-hwflow {
-+					/* CTS, RTS */
-+					ingenic,pins = <0xa1 0 0xa2 0>;
-+				};
-+			};
-+
-+			uart1 {
-+				uart1-data {
-+					/* RXD, TXD */
-+					ingenic,pins = <0x7a 0 0x7c 0>;
-+				};
-+
-+				uart1-hwflow {
-+					/* CTS, RTS */
-+					ingenic,pins = <0x7b 0 0x7d 0>;
-+				};
-+			};
-+
-+			uart2 {
-+				uart2-data {
-+					/* RXD, TXD */
-+					ingenic,pins = <0x66 1 0x67 1>;
-+				};
-+
-+				uart2-hwflow {
-+					/* CTS, RTS */
-+					ingenic,pins = <0x65 1 0x64 1>;
-+				};
-+			};
-+
-+			uart3 {
-+				uart3-data {
-+					/* RXD, TXD */
-+					ingenic,pins = <0x6c 0 0x85 1>;
-+				};
-+
-+				uart3-hwflow {
-+					/* CTS, RTS */
-+					ingenic,pins = <0x88 0 0x89 0>;
-+				};
-+			};
-+
-+			uart4 {
-+				uart4-data {
-+					/* RXD, TXD */
-+					ingenic,pins = <0x54 2 0x4a 2>;
-+				};
-+			};
-+
-+			msc0 {
-+				msc0-8bit-a {
-+					/* D4, D5, D6, D7, RST */
-+					ingenic,pins = <0x04 1 0x05 1 0x06 1 0x07 1
-+									0x18 1>;
-+				};
-+
-+				msc0-4bit-a {
-+					/* D1, D2, D3 */
-+					ingenic,pins = <0x15 1 0x16 1 0x17 1>;
-+				};
-+
-+				msc0-1bit-a {
-+					/* CLK, CMD, D0 */
-+					ingenic,pins = <0x12 1 0x13 1 0x14 1>;
-+				};
-+
-+				msc0-1bit-e {
-+					/* CLK, CMD, D0 */
-+					ingenic,pins = <0x9c 0 0x9d 0 0x94 0>;
-+				};
-+
-+				msc0-4bit-e {
-+					/* D1, D2, D3 */
-+					ingenic,pins = <0x95 0 0x96 0 0x97 0>;
-+				};
-+			};
-+
-+			msc1 {
-+				msc1-1bit-d {
-+					/* CLK, CMD, D0 */
-+					ingenic,pins = <0x78 0 0x79 0 0x74 0>;
-+				};
-+
-+				msc1-4bit-d {
-+					/* D1, D2, D3 */
-+					ingenic,pins = <0x75 0 0x76 0 0x77 0>;
-+				};
-+
-+				msc1-1bit-e {
-+					/* CLK, CMD, D0 */
-+					ingenic,pins = <0x9c 1 0x9d 1 0x94 1>;
-+				};
-+
-+				msc1-4bit-e {
-+					/* D1, D2, D3 */
-+					ingenic,pins = <0x95 1 0x96 1 0x97 1>;
-+				};
-+			};
-+
-+			nemc {
-+				nemc-data {
-+					/* SD0, SD1, SD2, SD3, SD4, SD5, SD6, SD7 */
-+					ingenic,pins = <0x00 0 0x01 0 0x02 0 0x03 0
-+									0x04 0 0x05 0 0x06 0 0x07 0>;
-+				};
-+
-+				nemc-cle-ale {
-+					/* SA0_CL, SA1_AL */
-+					ingenic,pins = <0x20 0 0x21 0>;
-+				};
-+
-+				nemc-addr {
-+					/* SA2, SA3, SA4, SA5 */
-+					ingenic,pins = <0x22 0 0x23 0 0x24 0 0x25 0>;
-+				};
-+
-+				nemc-rd-we {
-+					/* RD, WE */
-+					ingenic,pins = <0x10 0 0x11 0>;
-+				};
-+
-+				nemc-frd-fwe {
-+					/* RD, WE */
-+					ingenic,pins = <0x12 0 0x13 0>;
-+				};
-+			};
-+
-+			nemc-cs1 {
-+				nemc-cs1 {
-+					/* CS1 */
-+					ingenic,pins = <0x15 0>;
-+				};
-+			};
-+
-+			nemc-cs6 {
-+				nemc-cs6 {
-+					/* CS6 */
-+					ingenic,pins = <0x1a 0>;
-+				};
-+			};
-+
-+			i2c0 {
-+				i2c0-data {
-+					/* SDA, SCL */
-+					ingenic,pins = <0x6e 0 0x6f 0>;
-+				};
-+			};
-+
-+			i2c1 {
-+				i2c1-data {
-+					/* SDA, SCL */
-+					ingenic,pins = <0x8e 0 0x8f 0>;
-+				};
-+			};
-+
-+			i2c2 {
-+				i2c2-data {
-+					/* SDA, SCL */
-+					ingenic,pins = <0xb0 2 0xb1 2>;
-+				};
-+			};
-+
-+			i2c3 {
-+				i2c3-data {
-+					/* SDA, SCL */
-+					ingenic,pins = <0x6a 1 0x6b 1>;
-+				};
-+			};
-+
-+			i2c4 {
-+				i2c4-data-pe {
-+					/* SDA, SCL */
-+					ingenic,pins = <0x8c 1 0x8d 1>;
-+				};
-+
-+				i2c4-data-pf {
-+					/* HDMI_SDA, HDMI_SCL */
-+					ingenic,pins = <0xb9 1 0xb8 1>;
-+				};
-+			};
-+
-+			cim {
-+				cim-pb {
-+					ingenic,pins = <0x26 0 0x27 0 0x28 0 0x29 0
-+									0x2a 0 0x2b 0 0x2c 0 0x2d 0
-+									0x2e 0 0x2f 0 0x30 0 0x31 0>;
-+				};
-+			};
-+		};
-+	};
-+
-+	gpa: gpio-controller@10010000 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010000 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 0 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <17>;
-+	};
-+
-+	gpb: gpio-controller@10010100 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010100 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 32 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <16>;
-+	};
-+
-+	gpc: gpio-controller@10010200 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010200 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 64 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <15>;
-+	};
-+
-+	gpd: gpio-controller@10010300 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010300 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 96 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <14>;
-+	};
-+
-+	gpe: gpio-controller@10010400 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010400 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 128 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <13>;
-+	};
-+
-+	gpf: gpio-controller@10010500 {
-+		compatible = "ingenic,jz4780-gpio";
-+		reg = <0x10010500 0x100>;
-+
-+		gpio-controller;
-+		gpio-ranges = <&pinctrl 0 160 32>;
-+		#gpio-cells = <2>;
-+
-+		interrupt-controller;
-+		#interrupt-cells = <2>;
-+
-+		interrupt-parent = <&intc>;
-+		interrupts = <12>;
-+	};
-+
- 	uart0: serial@10030000 {
- 		compatible = "ingenic,jz4780-uart";
- 		reg = <0x10030000 0x100>;
--- 
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index f500e58f7636..5b71bd905a60 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -47,14 +47,16 @@ config VGACON_SOFT_SCROLLBACK_SIZE
+ 	  buffers of VGA consoles. Each 64KB will give you approximately
+ 	  16 80x25 screenfuls of scrollback buffer.
+=20
+-config VGACON_SOFT_SCROLLBACK_PERSISTENT
+-	bool "Persistent Scrollback History for each console"
++config VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT
++	bool "Persistent Scrollback History for each console by default"
+ 	depends on VGACON_SOFT_SCROLLBACK
+ 	default n
+ 	help
+-	  Say Y here if the scrollback history should persist when switching
+-	  between consoles. Otherwise, the scrollback history will be flushed
+-	  each time the console is switched.
++	  Say Y here if the scrollback history should persist by default when
++	  switching between consoles. Otherwise, the scrollback history will be
++	  flushed each time the console is switched. This feature can also be
++	  enabled using the boot command line parameter
++	  'vgacon.scrollback_persistent=3D1'.
+=20
+ 	  This feature might break your tool of choice to flush the scrollback
+ 	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index ca23d222e029..dc06cb6a15dc 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -174,11 +174,11 @@ struct vgacon_scrollback_info {
+ };
+=20
+ static struct vgacon_scrollback_info *vgacon_scrollback_cur;
+-#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+ static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
+-#else
+-static struct vgacon_scrollback_info vgacon_scrollbacks[1];
+-#endif
++static bool scrollback_persistent =3D \
++	IS_ENABLED(CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT);
++module_param_named(scrollback_persistent, scrollback_persistent, bool, 000=
+0);
++MODULE_PARM_DESC(scrollback_persistent, "Enable persistent scrollback for =
+all vga consoles");
+=20
+ static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
+ {
+@@ -213,20 +213,19 @@ static void vgacon_scrollback_init(int vc_num)
+=20
+ static void vgacon_scrollback_switch(int vc_num)
+ {
+-#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+-	vc_num =3D 0;
+-#endif
++	if (!scrollback_persistent)
++		vc_num =3D 0;
+=20
+ 	if (!vgacon_scrollbacks[vc_num].data) {
+ 		vgacon_scrollback_init(vc_num);
+ 	} else {
+-#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
+-		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
+-#else
+-		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
++		if (scrollback_persistent) {
++			vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
++		} else {
++			size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
+=20
+-		vgacon_scrollback_reset(vc_num, size);
+-#endif
++			vgacon_scrollback_reset(vc_num, size);
++		}
+ 	}
+ }
+=20
+--=20
 2.11.0
 

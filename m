@@ -1,38 +1,50 @@
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Date: Mon, 16 Jan 2017 13:41:08 +0000
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Date: Mon, 16 Jan 2017 13:43:28 +0000
 Subject: Re: [PATCH] printk: Correctly handle preemption in console_unlock()
-Message-Id: <201701162241.JDE34880.OFOMVLOJQFtHFS@I-love.SAKURA.ne.jp>
+Message-Id: <20170116134328.GB23242@tigerII.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1484313321-17196-1-git-send-email-pmladek@suse.com>
-        <20170114062825.GB699@tigerII.localdomain>
-        <20170116113834.GF20462@pathway.suse.cz>
-        <20170116115844.GA405@tigerII.localdomain>
-In-Reply-To: <20170116115844.GA405@tigerII.localdomain>
+ <20170114062825.GB699@tigerII.localdomain>
+ <20170116113834.GF20462@pathway.suse.cz>
+ <20170116115844.GA405@tigerII.localdomain>
+ <20170116124822.GR14894@pathway.suse.cz>
+ <20170116132633.GA23242@tigerII.localdomain>
+In-Reply-To: <20170116132633.GA23242@tigerII.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sergey.senozhatsky@gmail.com, pmladek@suse.com
-Cc: rostedt@goodmis.org, peterz@infradead.org, akpm@linux-foundation.org, gregkh@linuxfoundation.org, jslaby@suse.cz, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Sergey Senozhatsky wrote:
-> On (01/16/17 12:38), Petr Mladek wrote:
-> > > apart from that, Tetsuo wasn't really happy with the patch
-> > > http://www.spinics.net/lists/linux-mm/msg103099.html
+On (01/16/17 22:26), Sergey Senozhatsky wrote:
+> On (01/16/17 13:48), Petr Mladek wrote:
+> [..]
+> > The async printk code looks like this:
 > > 
-> > The complain is questionable. If a code is sensitive for preemption,
-> > it should disable preemption.
-> >
-> > Another question is if people expect that printk() would call
-> > cond_resched() or preempt.
+> > vprintk_emit(...)
+> > {
+> > 
+> > 
+> > 		if (can_printk_async()) {
+> > 			/* Offload printing to a schedulable context. */
+> > 			printk_kthread_need_flush_console = true;
+> > 			wake_up_process(printk_kthread);
+> > 		} else {
+> > 			/*
+> > 			 * Try to acquire and then immediately release the
+> > 			 * console semaphore.  The release will print out
+> > 			 * buffers and wake up /dev/kmsg and syslog() users.
+> > 			 */
+> > 			if (console_trylock())
+> > 				console_unlock();
+> > 		}
+> > 
+> > So, there is still the console_trylock() for the sync mode. Or do I
+> > see an outdated variant?
 > 
-> my assumption would be that probably people expect printk to work
-> asap.
+> no, it doesn't.
 
-The code executed with oom_lock held is sensitive for preemption. I tried
-to disable preemption, but it was not accepted. What is so sorry is that
-this is not really a problem of printk() because sleeping for minutes
-(presumably forever) with oom_lock held is triggerable without printk().
-It is a problem of memory page allocator which consumes a lot of CPU time
-for pointless direct reclaim rather than giving CPU time to a thread which
-held the oom_lock. I tried to wait for oom_lock in order to give CPU time
-to the thread holding the oom_lock, but it was not accepted neither.
+I meant that none of this is happening in vprintk_emit(). there is no
+console_sem in vprintk_emit() at all. eveything is done in deferred printk.
+
+	-ss

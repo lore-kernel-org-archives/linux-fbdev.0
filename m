@@ -1,426 +1,310 @@
-From: Manuel =?ISO-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 10 Jan 2017 17:31:57 +0000
-Subject: Re: [PATCH v8 3/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1484069517.1301.4.camel@gmx.de>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 17 Jan 2017 23:14:13 +0000
+Subject: [PATCH 05/13] MIPS: jz4740: DTS: Add node for the jz4740-pinctrl driver
+Message-Id: <20170117231421.16310-6-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170105113320.18166-1-manuel.schoelling@gmx.de>
-         <20170105113320.18166-4-manuel.schoelling@gmx.de>
-         <15146537.m1k7GYybWH@amdc3058>
-         <CGME20170110164435epcas1p314efb9c6ea3ffb971fce06f3bfaec736@epcas1p3.samsung.com>
-         <4640722.jsFVORW8WM@amdc3058>
-In-Reply-To: <4640722.jsFVORW8WM@amdc3058>
+References: <20170117231421.16310-1-paul@crapouillou.net>
+In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: gregkh@linuxfoundation.org, jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
+Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-Hi Bartlomiej,
+For a description of the devicetree node, please read
+Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
 
-First of all thank you for you feedback!
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ arch/mips/boot/dts/ingenic/jz4740.dtsi | 275 +++++++++++++++++++++++++++++++++
+ 1 file changed, 275 insertions(+)
 
-On Tue, 2017-01-10 at 17:44 +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Tuesday, January 10, 2017 05:22:22 PM Bartlomiej Zolnierkiewicz
-> wrote:
-> > 
-> > Hi,
-> > 
-> > The patchset generally looks fine to me but I have a question
-> > regarding new VGACON_SOFT_SCROLLBACK_PERSISTENT config option.
-> > 
-> > Since the code size impact to support the persistent scrollback
-> > feature is minimal wouldn't it be better to always include it?
-> > 
-> > The feature would be disabled by default and could be enabled
-> > by using the new kernel command line parameter (you may also add
-> > a new config option for enabling it by default if desired).
-> 
-> Something like:
-> 
-> #ifdef VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT
-> static bool scrollback_persistent = 1;
-> #else
-> static bool scrollback_persistent;
-> #endif
-> 
-> module_param_named(scrollback_persistent, scrollback_persistent,
-> bool, 0);
-> MODULE_PARM_DESC(scrollback_persistent, "Enable persistent scrollback
-> feature");
-> 
-> and then use scrollback_persistent variable in
-> vgacon_scrollback_switch()
-> to control the actual behavior instead of ifdefs.
-Sounds pretty good to me. You are right: The code size impact is rather
-small. I will apply your suggestions and send you another patch as soon
-as I find the time to implement it (should be any time this week).
+diff --git a/arch/mips/boot/dts/ingenic/jz4740.dtsi b/arch/mips/boot/dts/ingenic/jz4740.dtsi
+index 3e1587f1f77a..c014a7159a2a 100644
+--- a/arch/mips/boot/dts/ingenic/jz4740.dtsi
++++ b/arch/mips/boot/dts/ingenic/jz4740.dtsi
+@@ -55,6 +55,281 @@
+ 		clock-names = "rtc";
+ 	};
+ 
++	pinctrl: ingenic-pinctrl@10010000 {
++		compatible = "ingenic,jz4740-pinctrl";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		ranges;
++
++		gpio-chips {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			ranges;
++
++			gpa: gpa {
++				reg = <0x10010000 0x100>;
++
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				interrupt-controller;
++				#interrupt-cells = <2>;
++
++				interrupt-parent = <&intc>;
++				interrupts = <28>;
++
++				ingenic,pull-ups = <0xffffffff>;
++			};
++
++			gpb: gpb {
++				reg = <0x10010100 0x100>;
++
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				interrupt-controller;
++				#interrupt-cells = <2>;
++
++				interrupt-parent = <&intc>;
++				interrupts = <27>;
++
++				ingenic,pull-ups = <0xffffffff>;
++			};
++
++			gpc: gpc {
++				reg = <0x10010200 0x100>;
++
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				interrupt-controller;
++				#interrupt-cells = <2>;
++
++				interrupt-parent = <&intc>;
++				interrupts = <26>;
++
++				ingenic,pull-ups = <0xffffffff>;
++			};
++
++			gpd: gpd {
++				reg = <0x10010300 0x100>;
++
++				gpio-controller;
++				#gpio-cells = <2>;
++
++				interrupt-controller;
++				#interrupt-cells = <2>;
++
++				interrupt-parent = <&intc>;
++				interrupts = <25>;
++
++				ingenic,pull-ups = <0xdfffffff>;
++			};
++		};
++
++		bias-configs {
++			nobias: pincfg-nobias {
++				bias-disable;
++			};
++
++			pull_up: pincfg-pull-up {
++				bias-pull-up;
++			};
++
++			pull_down: pincfg-pull-down {
++				bias-pull-down;
++			};
++		};
++
++		functions {
++			pinfunc-msc {
++				pins_msc_4bit: pins-msc-4bit {
++					ingenic,pins = <&gpd 8 0 &nobias
++							&gpa 9 0 &nobias
++							&gpa 10 0 &nobias
++							&gpa 11 0 &nobias
++							&gpa 12 0 &nobias
++							&gpa 13 0 &nobias>;
++				};
++			};
++
++			pinfunc-uart0 {
++				pins_uart0_data: pins-uart0-data {
++					ingenic,pins = <&gpd 26 1 &pull_up  /* rxd */
++							&gpd 25 1 &nobias>; /* txd */
++				};
++
++				pins_uart0_dataplusflow: uart0-dataplusflow {
++					ingenic,pins = <&gpd 26 1 &pull_up  /* rxd */
++							&gpd 25 1 &nobias   /* txd */
++							&gpd 31 0 &nobias   /* rts */
++							&gpd 30 0 &nobias>; /* cts */
++				};
++			};
++
++			pinfunc-uart1 {
++				pins_uart1_data: uart1-data {
++					ingenic,pins = <&gpd 30 2 &pull_up   /* rxd */
++							&gpd 31 2 &nobias>;  /* txd */
++				};
++			};
++
++			pinfunc-lcd {
++				pins_lcd_8bit: pins-lcd-8bit {
++					ingenic,pins = <&gpc  0 0 &nobias	/* LCD_DATA0 */
++							&gpc  1 0 &nobias
++							&gpc  2 0 &nobias
++							&gpc  3 0 &nobias
++							&gpc  4 0 &nobias
++							&gpc  5 0 &nobias
++							&gpc  6 0 &nobias
++							&gpc  7 0 &nobias	/* LCD_DATA7 */
++							&gpc 18 0 &nobias	/* PCLK */
++							&gpc 19 0 &nobias	/* HSYNC */
++							&gpc 20 0 &nobias>;	/* VSYNC */
++				};
++
++				pins_lcd_16bit: pins-lcd-16bit {
++					ingenic,pins = <&gpc  0 0 &nobias	/* LCD_DATA0 */
++							&gpc  1 0 &nobias
++							&gpc  2 0 &nobias
++							&gpc  3 0 &nobias
++							&gpc  4 0 &nobias
++							&gpc  5 0 &nobias
++							&gpc  6 0 &nobias
++							&gpc  7 0 &nobias
++							&gpc  8 0 &nobias
++							&gpc  9 0 &nobias
++							&gpc 10 0 &nobias
++							&gpc 11 0 &nobias
++							&gpc 12 0 &nobias
++							&gpc 13 0 &nobias
++							&gpc 14 0 &nobias
++							&gpc 15 0 &nobias	/* LCD_DATA15 */
++							&gpc 18 0 &nobias	/* PCLK */
++							&gpc 19 0 &nobias	/* HSYNC */
++							&gpc 20 0 &nobias	/* VSYNC */
++							&gpc 21 0 &nobias>;	/* DE */
++				};
++
++				pins_lcd_18bit: pins-lcd-18bit {
++					ingenic,pins = <&gpc  0 0 &nobias	/* LCD_DATA0 */
++							&gpc  1 0 &nobias
++							&gpc  2 0 &nobias
++							&gpc  3 0 &nobias
++							&gpc  4 0 &nobias
++							&gpc  5 0 &nobias
++							&gpc  6 0 &nobias
++							&gpc  7 0 &nobias
++							&gpc  8 0 &nobias
++							&gpc  9 0 &nobias
++							&gpc 10 0 &nobias
++							&gpc 11 0 &nobias
++							&gpc 12 0 &nobias
++							&gpc 13 0 &nobias
++							&gpc 14 0 &nobias
++							&gpc 15 0 &nobias
++							&gpc 16 0 &nobias
++							&gpc 17 0 &nobias	/* LCD_DATA17 */
++							&gpc 18 0 &nobias	/* PCLK */
++							&gpc 19 0 &nobias	/* HSYNC */
++							&gpc 20 0 &nobias	/* VSYNC */
++							&gpc 21 0 &nobias>;	/* DE */
++				};
++
++				pins_lcd_special_tft: pins-lcd-special-tft {
++					ingenic,pins = <&gpc  0 0 &nobias	/* LCD_DATA0 */
++							&gpc  1 0 &nobias
++							&gpc  2 0 &nobias
++							&gpc  3 0 &nobias
++							&gpc  4 0 &nobias
++							&gpc  5 0 &nobias
++							&gpc  6 0 &nobias
++							&gpc  7 0 &nobias
++							&gpc  8 0 &nobias
++							&gpc  9 0 &nobias
++							&gpc 10 0 &nobias
++							&gpc 11 0 &nobias
++							&gpc 12 0 &nobias
++							&gpc 13 0 &nobias
++							&gpc 14 0 &nobias
++							&gpc 15 0 &nobias
++							&gpc 16 0 &nobias
++							&gpc 17 0 &nobias	/* LCD_DATA17 */
++							&gpc 18 0 &nobias	/* PCLK */
++							&gpc 19 0 &nobias	/* HSYNC */
++							&gpc 20 0 &nobias	/* VSYNC */
++							&gpc 21 0 &nobias	/* DE */
++							&gpc 22 0 &nobias	/* PS */
++							&gpc 23 0 &nobias	/* REV */
++							&gpb 17 0 &nobias	/* CLS */
++							&gpb 18 0 &nobias>;	/* SPL */
++				};
++
++				pinfunc_lcd_nopins: pins-lcd-no-pins {
++					ingenic,pins = <>;
++				};
++			};
++
++			pinfunc-nand {
++				pins_nand: pins-nand {
++					ingenic,pins = <&gpb 25 0 &nobias
++							&gpb 26 0 &nobias
++							&gpb 27 0 &nobias
++							&gpb 28 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm0 {
++				pins_pwm0: pins-pwm0 {
++					ingenic,pins = <&gpd 23 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm1 {
++				pins_pwm1: pins-pwm1 {
++					ingenic,pins = <&gpd 24 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm2 {
++				pins_pwm2: pins-pwm2 {
++					ingenic,pins = <&gpd 25 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm3 {
++				pins_pwm3: pins-pwm3 {
++					ingenic,pins = <&gpd 26 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm4 {
++				pins_pwm4: pins-pwm4 {
++					ingenic,pins = <&gpd 27 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm5 {
++				pins_pwm5: pins-pwm5 {
++					ingenic,pins = <&gpd 28 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm6 {
++				pins_pwm6: pins-pwm6 {
++					ingenic,pins = <&gpd 30 0 &nobias>;
++				};
++			};
++
++			pinfunc-pwm7 {
++				pins_pwm7: pins-pwm7 {
++					ingenic,pins = <&gpd 31 0 &nobias>;
++				};
++			};
++		};
++	};
++
+ 	uart0: serial@10030000 {
+ 		compatible = "ingenic,jz4740-uart";
+ 		reg = <0x10030000 0x100>;
+-- 
+2.11.0
 
-Thanks again!
-
-Manuel
-
-
-
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
-> > Best regards,
-> > --
-> > Bartlomiej Zolnierkiewicz
-> > Samsung R&D Institute Poland
-> > Samsung Electronics
-> > 
-> > On Thursday, January 05, 2017 12:33:20 PM Manuel Schölling wrote:
-> > > Add a scrollback buffers for each VGA console. The benefit is
-> > > that
-> > > the scrollback history is not flushed when switching between
-> > > consoles
-> > > but is persistent.
-> > > The buffers are allocated on demand when a new console is opened.
-> > > 
-> > > This breaks tools like clear_console that rely on flushing the
-> > > scrollback history by switching back and forth between consoles
-> > > which is why this feature is disabled by default.
-> > > Use the escape sequence \e[3J instead for flushing the buffer.
-> > > 
-> > > Signed-off-by: Manuel Schölling <manuel.schoelling@gmx.de>
-> > > Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-> > > Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-> > > Tested-by: Adam Borowski <kilobyte@angband.pl>
-> > > ---
-> > >  drivers/video/console/Kconfig  |  25 +++++++-
-> > >  drivers/video/console/vgacon.c | 142 ++++++++++++++++++++++++++-
-> > > --------------
-> > >  2 files changed, 111 insertions(+), 56 deletions(-)
-> > > 
-> > > diff --git a/drivers/video/console/Kconfig
-> > > b/drivers/video/console/Kconfig
-> > > index c3f1fb9ee820..f500e58f7636 100644
-> > > --- a/drivers/video/console/Kconfig
-> > > +++ b/drivers/video/console/Kconfig
-> > > @@ -43,9 +43,28 @@ config VGACON_SOFT_SCROLLBACK_SIZE
-> > >         range 1 1024
-> > >         default "64"
-> > >         help
-> > > -         Enter the amount of System RAM to allocate for the
-> > > scrollback
-> > > -	 buffer.  Each 64KB will give you approximately 16 80x25
-> > > -	 screenfuls of scrollback buffer
-> > > +	  Enter the amount of System RAM to allocate for
-> > > scrollback
-> > > +	  buffers of VGA consoles. Each 64KB will give you
-> > > approximately
-> > > +	  16 80x25 screenfuls of scrollback buffer.
-> > > +
-> > > +config VGACON_SOFT_SCROLLBACK_PERSISTENT
-> > > +	bool "Persistent Scrollback History for each console"
-> > > +	depends on VGACON_SOFT_SCROLLBACK
-> > > +	default n
-> > > +	help
-> > > +	  Say Y here if the scrollback history should persist
-> > > when switching
-> > > +	  between consoles. Otherwise, the scrollback history
-> > > will be flushed
-> > > +	  each time the console is switched.
-> > > +
-> > > +	  This feature might break your tool of choice to flush
-> > > the scrollback
-> > > +	  buffer, e.g. clear(1) will work fine but Debian's
-> > > clear_console(1)
-> > > +	  will be broken, which might cause security issues.
-> > > +	  You can use the escape sequence \e[3J instead if this
-> > > feature is
-> > > +	  activated.
-> > > +
-> > > +	  Note that a buffer of VGACON_SOFT_SCROLLBACK_SIZE is
-> > > taken for each
-> > > +	  created tty device.
-> > > +	  So if you use a RAM-constrained system, say N here.
-> > >  
-> > >  config MDA_CONSOLE
-> > >  	depends on !M68K && !PARISC && ISA
-> > > diff --git a/drivers/video/console/vgacon.c
-> > > b/drivers/video/console/vgacon.c
-> > > index 9a7c2bbc5326..ca23d222e029 100644
-> > > --- a/drivers/video/console/vgacon.c
-> > > +++ b/drivers/video/console/vgacon.c
-> > > @@ -162,7 +162,7 @@ static inline void vga_set_mem_top(struct
-> > > vc_data *c)
-> > >  
-> > >  #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
-> > >  /* software scrollback */
-> > > -static struct vgacon_scrollback_info {
-> > > +struct vgacon_scrollback_info {
-> > >  	void *data;
-> > >  	int tail;
-> > >  	int size;
-> > > @@ -171,74 +171,110 @@ static struct vgacon_scrollback_info {
-> > >  	int cur;
-> > >  	int save;
-> > >  	int restore;
-> > > -} vgacon_scrollback;
-> > > +};
-> > > +
-> > > +static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-> > > +#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-> > > +static struct vgacon_scrollback_info
-> > > vgacon_scrollbacks[MAX_NR_CONSOLES];
-> > > +#else
-> > > +static struct vgacon_scrollback_info vgacon_scrollbacks[1];
-> > > +#endif
-> > >  
-> > > -static void vgacon_scrollback_reset(size_t reset_size)
-> > > +static void vgacon_scrollback_reset(int vc_num, size_t
-> > > reset_size)
-> > >  {
-> > > -	if (vgacon_scrollback.data && reset_size > 0)
-> > > -		memset(vgacon_scrollback.data, 0, reset_size);
-> > > +	struct vgacon_scrollback_info *scrollback > > > &vgacon_scrollbacks[vc_num];
-> > > +
-> > > +	if (scrollback->data && reset_size > 0)
-> > > +		memset(scrollback->data, 0, reset_size);
-> > >  
-> > > -	vgacon_scrollback.cnt  = 0;
-> > > -	vgacon_scrollback.tail = 0;
-> > > -	vgacon_scrollback.cur  = 0;
-> > > +	scrollback->cnt  = 0;
-> > > +	scrollback->tail = 0;
-> > > +	scrollback->cur  = 0;
-> > >  }
-> > >  
-> > > -static void vgacon_scrollback_init(int pitch)
-> > > +static void vgacon_scrollback_init(int vc_num)
-> > >  {
-> > > -	int rows = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE *
-> > > 1024/pitch;
-> > > -
-> > > -	if (vgacon_scrollback.data) {
-> > > -		vgacon_scrollback.cnt  = 0;
-> > > -		vgacon_scrollback.tail = 0;
-> > > -		vgacon_scrollback.cur  = 0;
-> > > -		vgacon_scrollback.rows = rows - 1;
-> > > -		vgacon_scrollback.size = rows * pitch;
-> > > +	int pitch = vga_video_num_columns * 2;
-> > > +	size_t size = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-> > > +	int rows = size / pitch;
-> > > +	void *data;
-> > > +
-> > > +	data = kmalloc_array(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
-> > > 1024,
-> > > +			     GFP_NOWAIT);
-> > > +
-> > > +	vgacon_scrollbacks[vc_num].data = data;
-> > > +	vgacon_scrollback_cur = &vgacon_scrollbacks[vc_num];
-> > > +
-> > > +	vgacon_scrollback_cur->rows = rows - 1;
-> > > +	vgacon_scrollback_cur->size = rows * pitch;
-> > > +
-> > > +	vgacon_scrollback_reset(vc_num, size);
-> > > +}
-> > > +
-> > > +static void vgacon_scrollback_switch(int vc_num)
-> > > +{
-> > > +#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-> > > +	vc_num = 0;
-> > > +#endif
-> > > +
-> > > +	if (!vgacon_scrollbacks[vc_num].data) {
-> > > +		vgacon_scrollback_init(vc_num);
-> > > +	} else {
-> > > +#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-> > > +		vgacon_scrollback_cur > > > &vgacon_scrollbacks[vc_num];
-> > > +#else
-> > > +		size_t size = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE
-> > > * 1024;
-> > > +
-> > > +		vgacon_scrollback_reset(vc_num, size);
-> > > +#endif
-> > >  	}
-> > >  }
-> > >  
-> > >  static void vgacon_scrollback_startup(void)
-> > >  {
-> > > -	vgacon_scrollback.data > > > kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
-> > > -		1024, GFP_NOWAIT);
-> > > -	vgacon_scrollback_init(vga_video_num_columns * 2);
-> > > +	vgacon_scrollback_cur = &vgacon_scrollbacks[0];
-> > > +	vgacon_scrollback_init(0);
-> > >  }
-> > >  
-> > >  static void vgacon_scrollback_update(struct vc_data *c, int t,
-> > > int count)
-> > >  {
-> > >  	void *p;
-> > >  
-> > > -	if (!vgacon_scrollback.size || c->vc_num != fg_console)
-> > > +	if (!vgacon_scrollback_cur->data ||
-> > > !vgacon_scrollback_cur->size ||
-> > > +	    c->vc_num != fg_console)
-> > >  		return;
-> > >  
-> > >  	p = (void *) (c->vc_origin + t * c->vc_size_row);
-> > >  
-> > >  	while (count--) {
-> > > -		scr_memcpyw(vgacon_scrollback.data +
-> > > vgacon_scrollback.tail,
-> > > +		scr_memcpyw(vgacon_scrollback_cur->data +
-> > > +			    vgacon_scrollback_cur->tail,
-> > >  			    p, c->vc_size_row);
-> > > -		vgacon_scrollback.cnt++;
-> > > +
-> > > +		vgacon_scrollback_cur->cnt++;
-> > >  		p += c->vc_size_row;
-> > > -		vgacon_scrollback.tail += c->vc_size_row;
-> > > +		vgacon_scrollback_cur->tail += c->vc_size_row;
-> > >  
-> > > -		if (vgacon_scrollback.tail >> > > vgacon_scrollback.size)
-> > > -			vgacon_scrollback.tail = 0;
-> > > +		if (vgacon_scrollback_cur->tail >> > > vgacon_scrollback_cur->size)
-> > > +			vgacon_scrollback_cur->tail = 0;
-> > >  
-> > > -		if (vgacon_scrollback.cnt >
-> > > vgacon_scrollback.rows)
-> > > -			vgacon_scrollback.cnt > > > vgacon_scrollback.rows;
-> > > +		if (vgacon_scrollback_cur->cnt >
-> > > vgacon_scrollback_cur->rows)
-> > > +			vgacon_scrollback_cur->cnt > > > vgacon_scrollback_cur->rows;
-> > >  
-> > > -		vgacon_scrollback.cur = vgacon_scrollback.cnt;
-> > > +		vgacon_scrollback_cur->cur > > > vgacon_scrollback_cur->cnt;
-> > >  	}
-> > >  }
-> > >  
-> > >  static void vgacon_restore_screen(struct vc_data *c)
-> > >  {
-> > > -	vgacon_scrollback.save = 0;
-> > > +	vgacon_scrollback_cur->save = 0;
-> > >  
-> > > -	if (!vga_is_gfx && !vgacon_scrollback.restore) {
-> > > +	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
-> > >  		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c-
-> > > >vc_screenbuf,
-> > >  			    c->vc_screenbuf_size > vga_vram_size
-> > > ?
-> > >  			    vga_vram_size : c-
-> > > >vc_screenbuf_size);
-> > > -		vgacon_scrollback.restore = 1;
-> > > -		vgacon_scrollback.cur = vgacon_scrollback.cnt;
-> > > +		vgacon_scrollback_cur->restore = 1;
-> > > +		vgacon_scrollback_cur->cur > > > vgacon_scrollback_cur->cnt;
-> > >  	}
-> > >  }
-> > >  
-> > > @@ -252,41 +288,41 @@ static void vgacon_scrolldelta(struct
-> > > vc_data *c, int lines)
-> > >  		return;
-> > >  	}
-> > >  
-> > > -	if (!vgacon_scrollback.data)
-> > > +	if (!vgacon_scrollback_cur->data)
-> > >  		return;
-> > >  
-> > > -	if (!vgacon_scrollback.save) {
-> > > +	if (!vgacon_scrollback_cur->save) {
-> > >  		vgacon_cursor(c, CM_ERASE);
-> > >  		vgacon_save_screen(c);
-> > > -		vgacon_scrollback.save = 1;
-> > > +		vgacon_scrollback_cur->save = 1;
-> > >  	}
-> > >  
-> > > -	vgacon_scrollback.restore = 0;
-> > > -	start = vgacon_scrollback.cur + lines;
-> > > +	vgacon_scrollback_cur->restore = 0;
-> > > +	start = vgacon_scrollback_cur->cur + lines;
-> > >  	end = start + abs(lines);
-> > >  
-> > >  	if (start < 0)
-> > >  		start = 0;
-> > >  
-> > > -	if (start > vgacon_scrollback.cnt)
-> > > -		start = vgacon_scrollback.cnt;
-> > > +	if (start > vgacon_scrollback_cur->cnt)
-> > > +		start = vgacon_scrollback_cur->cnt;
-> > >  
-> > >  	if (end < 0)
-> > >  		end = 0;
-> > >  
-> > > -	if (end > vgacon_scrollback.cnt)
-> > > -		end = vgacon_scrollback.cnt;
-> > > +	if (end > vgacon_scrollback_cur->cnt)
-> > > +		end = vgacon_scrollback_cur->cnt;
-> > >  
-> > > -	vgacon_scrollback.cur = start;
-> > > +	vgacon_scrollback_cur->cur = start;
-> > >  	count = end - start;
-> > > -	soff = vgacon_scrollback.tail - ((vgacon_scrollback.cnt
-> > > - end) *
-> > > -					 c->vc_size_row);
-> > > +	soff = vgacon_scrollback_cur->tail -
-> > > +		((vgacon_scrollback_cur->cnt - end) * c-
-> > > >vc_size_row);
-> > >  	soff -= count * c->vc_size_row;
-> > >  
-> > >  	if (soff < 0)
-> > > -		soff += vgacon_scrollback.size;
-> > > +		soff += vgacon_scrollback_cur->size;
-> > >  
-> > > -	count = vgacon_scrollback.cnt - start;
-> > > +	count = vgacon_scrollback_cur->cnt - start;
-> > >  
-> > >  	if (count > c->vc_rows)
-> > >  		count = c->vc_rows;
-> > > @@ -300,13 +336,13 @@ static void vgacon_scrolldelta(struct
-> > > vc_data *c, int lines)
-> > >  
-> > >  		count *= c->vc_size_row;
-> > >  		/* how much memory to end of buffer left? */
-> > > -		copysize = min(count, vgacon_scrollback.size -
-> > > soff);
-> > > -		scr_memcpyw(d, vgacon_scrollback.data + soff,
-> > > copysize);
-> > > +		copysize = min(count, vgacon_scrollback_cur-
-> > > >size - soff);
-> > > +		scr_memcpyw(d, vgacon_scrollback_cur->data +
-> > > soff, copysize);
-> > >  		d += copysize;
-> > >  		count -= copysize;
-> > >  
-> > >  		if (count) {
-> > > -			scr_memcpyw(d, vgacon_scrollback.data,
-> > > count);
-> > > +			scr_memcpyw(d, vgacon_scrollback_cur-
-> > > >data, count);
-> > >  			d += count;
-> > >  		}
-> > >  
-> > > @@ -320,13 +356,13 @@ static void vgacon_flush_scrollback(struct
-> > > vc_data *c)
-> > >  {
-> > >  	size_t size = CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-> > >  
-> > > -	if (c->vc_num = fg_console)
-> > > -		vgacon_scrollback_reset(size);
-> > > +	vgacon_scrollback_reset(c->vc_num, size);
-> > >  }
-> > >  #else
-> > >  #define vgacon_scrollback_startup(...) do { } while (0)
-> > >  #define vgacon_scrollback_init(...)    do { } while (0)
-> > >  #define vgacon_scrollback_update(...)  do { } while (0)
-> > > +#define vgacon_scrollback_switch(...)  do { } while (0)
-> > >  
-> > >  static void vgacon_restore_screen(struct vc_data *c)
-> > >  {
-> > > @@ -805,7 +841,7 @@ static int vgacon_switch(struct vc_data *c)
-> > >  			vgacon_doresize(c, c->vc_cols, c-
-> > > >vc_rows);
-> > >  	}
-> > >  
-> > > -	vgacon_scrollback_init(c->vc_size_row);
-> > > +	vgacon_scrollback_switch(c->vc_num);
-> > >  	return 0;		/* Redrawing not needed */
-> > >  }
-> 
-> 

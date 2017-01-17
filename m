@@ -1,28 +1,104 @@
-From: Jeff Epler <jepler@unpythonic.net>
-Date: Fri, 13 Jan 2017 01:04:27 +0000
-Subject: Re: [PATCH v2 7/7] uapi: export all headers under uapi directories
-Message-Id: <20170113010427.GA22650@unpythonic.net>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 17 Jan 2017 23:14:18 +0000
+Subject: [PATCH 10/13] mtd: nand: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170117231421.16310-11-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com>
- <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com>
- <1483695839-18660-8-git-send-email-nicolas.dichtel@6wind.com>
- <20170109125638.GA15506@infradead.org>
- <464a1323-4450-e563-ff59-9e6d57b75959@6wind.com>
- <alpine.LSU.2.20.1701121727180.19188@erq.vanv.qr>
- <9d68af8a-a609-d7b1-58a9-f1155313b077@6wind.com>
-In-Reply-To: <9d68af8a-a609-d7b1-58a9-f1155313b077@6wind.com>
+References: <20170117231421.16310-1-paul@crapouillou.net>
+In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, Christoph Hellwig <hch@infradead.org>, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, arnd@arndb.de, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org, mmarek@suse.com, linux-metag@v
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
+Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-On Thu, Jan 12, 2017 at 05:32:09PM +0100, Nicolas Dichtel wrote:
-> What I was trying to say is that I export those directories like other are.
-> Removing those files is not related to that series.
+Before, this NAND driver would set itself the configuration of the
+chip-select pins for the various NAND banks.
 
-Perhaps the correct solution is to only copy files matching "*.h" to
-reduce the risk of copying files incidentally created by kbuild but
-which shouldn't be installed as uapi headers.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-jeff
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ drivers/mtd/nand/jz4740_nand.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
+
+diff --git a/drivers/mtd/nand/jz4740_nand.c b/drivers/mtd/nand/jz4740_nand.c
+index 5551c36adbdf..0d06a1f07d82 100644
+--- a/drivers/mtd/nand/jz4740_nand.c
++++ b/drivers/mtd/nand/jz4740_nand.c
+@@ -25,7 +25,6 @@
+ 
+ #include <linux/gpio.h>
+ 
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/mach-jz4740/jz4740_nand.h>
+ 
+ #define JZ_REG_NAND_CTRL	0x50
+@@ -310,34 +309,20 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 			       uint8_t *nand_dev_id)
+ {
+ 	int ret;
+-	int gpio;
+-	char gpio_name[9];
+ 	char res_name[6];
+ 	uint32_t ctrl;
+ 	struct nand_chip *chip = &nand->chip;
+ 	struct mtd_info *mtd = nand_to_mtd(chip);
+ 
+-	/* Request GPIO port. */
+-	gpio = JZ_GPIO_MEM_CS0 + bank - 1;
+-	sprintf(gpio_name, "NAND CS%d", bank);
+-	ret = gpio_request(gpio, gpio_name);
+-	if (ret) {
+-		dev_warn(&pdev->dev,
+-			"Failed to request %s gpio %d: %d\n",
+-			gpio_name, gpio, ret);
+-		goto notfound_gpio;
+-	}
+-
+ 	/* Request I/O resource. */
+ 	sprintf(res_name, "bank%d", bank);
+ 	ret = jz_nand_ioremap_resource(pdev, res_name,
+ 					&nand->bank_mem[bank - 1],
+ 					&nand->bank_base[bank - 1]);
+ 	if (ret)
+-		goto notfound_resource;
++		return ret;
+ 
+ 	/* Enable chip in bank. */
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_MEM_CS0);
+ 	ctrl = readl(nand->base + JZ_REG_NAND_CTRL);
+ 	ctrl |= JZ_NAND_CTRL_ENABLE_CHIP(bank - 1);
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+@@ -377,12 +362,8 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 	dev_info(&pdev->dev, "No chip found on bank %i\n", bank);
+ 	ctrl &= ~(JZ_NAND_CTRL_ENABLE_CHIP(bank - 1));
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
+ 	jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 				 nand->bank_base[bank - 1]);
+-notfound_resource:
+-	gpio_free(gpio);
+-notfound_gpio:
+ 	return ret;
+ }
+ 
+@@ -503,7 +484,6 @@ static int jz_nand_probe(struct platform_device *pdev)
+ err_unclaim_banks:
+ 	while (chipnr--) {
+ 		unsigned char bank = nand->banks[chipnr];
+-		gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
+ 		jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 					 nand->bank_base[bank - 1]);
+ 	}
+@@ -530,7 +510,6 @@ static int jz_nand_remove(struct platform_device *pdev)
+ 		if (bank != 0) {
+ 			jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 						 nand->bank_base[bank - 1]);
+-			gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
+ 		}
+ 	}
+ 
+-- 
+2.11.0
+

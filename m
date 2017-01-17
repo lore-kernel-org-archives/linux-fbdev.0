@@ -1,37 +1,86 @@
-From: Shailendra Verma <shailendra.v@samsung.com>
-Date: Mon, 30 Jan 2017 05:12:58 +0000
-Subject: [PATCH] Video: fbdev - Fix possible NULL derefrence.
-Message-Id: <1485752458-29955-1-git-send-email-shailendra.v@samsung.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 17 Jan 2017 23:14:16 +0000
+Subject: [PATCH 08/13] MIPS: JZ4780: CI20: Add pinctrl configuration for several drivers
+Message-Id: <20170117231421.16310-9-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170130050148epcas1p14f6149d6f0b6f24dc31506ede089724c@epcas1p1.samsung.com>
+References: <20170117231421.16310-1-paul@crapouillou.net>
+In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, LABBE Corentin <clabbe.montjoie@gmail.com>, Julian Scheel <julian@jusst.de>, Julia Lawall <Julia.Lawall@lip6.fr>, Boris Brezillon <boris.brezillon@free-electrons.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, p.shailesh@samsung.com, ashish.kalra@samsung.com, Shailendra Verma <shailendra.v@samsung.com>, Shailendra Verma <shailendra.capricorn@gmail.com>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
+Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-of_device_get_match_data could return NULL, and so can cause
-a NULL pointer dereference later.
+We set the pin configuration for the jz4780-nand and jz4780-uart
+drivers.
 
-Signed-off-by: Shailendra Verma <shailendra.v@samsung.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/fbdev/ssd1307fb.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/mips/boot/dts/ingenic/ci20.dts | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 2925d5c..bdf7d80 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -560,6 +560,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	par->client = client;
+diff --git a/arch/mips/boot/dts/ingenic/ci20.dts b/arch/mips/boot/dts/ingenic/ci20.dts
+index 1652d8d60b1e..e2cd3ebb7be8 100644
+--- a/arch/mips/boot/dts/ingenic/ci20.dts
++++ b/arch/mips/boot/dts/ingenic/ci20.dts
+@@ -29,18 +29,30 @@
  
- 	par->device_info = of_device_get_match_data(&client->dev);
-+	if (!par->device_info) {
-+		dev_err(&client->dev, "no device match found\n");
-+		return -ENODEV;
-+	}
+ &uart0 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart0_data>;
+ };
  
- 	par->reset = of_get_named_gpio(client->dev.of_node,
- 					 "reset-gpios", 0);
+ &uart1 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart1_data>;
+ };
+ 
+ &uart3 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart2_dataplusflow>;
+ };
+ 
+ &uart4 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart4_data>;
+ };
+ 
+ &nemc {
+@@ -61,6 +73,16 @@
+ 		ingenic,nemc-tAW = <15>;
+ 		ingenic,nemc-tSTRV = <100>;
+ 
++		/*
++		 * Only CLE/ALE are needed for the devices that are connected, rather
++		 * than the full address line set.
++		 */
++		pinctrl-names = "default";
++		pinctrl-0 = <&pins_nemc_data
++				 &pins_nemc_cle_ale
++				 &pins_nemc_rd_we
++				 &pins_nemc_frd_fwe>;
++
+ 		nand@1 {
+ 			reg = <1>;
+ 
+@@ -69,6 +91,9 @@
+ 			nand-ecc-mode = "hw";
+ 			nand-on-flash-bbt;
+ 
++			pinctrl-names = "default";
++			pinctrl-0 = <&pins_nemc_cs1>;
++
+ 			partitions {
+ 				compatible = "fixed-partitions";
+ 				#address-cells = <2>;
 -- 
-1.7.9.5
+2.11.0
 

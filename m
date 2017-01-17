@@ -1,141 +1,38 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Tue, 10 Jan 2017 21:28:36 +0000
-Subject: [PATCH v9 2/4] console: Add callback to flush scrollback buffer to consw struct
-Message-Id: <20170110212838.16175-3-manuel.schoelling@gmx.de>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 17 Jan 2017 23:14:12 +0000
+Subject: [PATCH 04/13] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
+Message-Id: <20170117231421.16310-5-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170110212838.16175-1-manuel.schoelling@gmx.de>
-In-Reply-To: <20170110212838.16175-1-manuel.schoelling@gmx.de>
+References: <20170117231421.16310-1-paul@crapouillou.net>
+In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: gregkh@linuxfoundation.org
-Cc: jslaby@suse.com, kilobyte@angband.pl, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
+Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-This new callback is in preparation for persistent scrollback buffer
-support for VGA consoles.
-With a single scrollback buffer for all consoles, we could flush the
-buffer just by invocating consw->con_switch(). But when each VGA console
-has its own scrollback buffer, we need a new callback to tell the
-video console driver which buffer to flush.
+There is a pinctrl driver for each of the Ingenic SoCs supported by the
+upstream Linux kernel. In order to switch away from the old GPIO
+platform code, we now enable the pinctrl drivers by default for the
+Ingenic SoCs.
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/tty/vt/vt.c            |  9 +++++++++
- drivers/video/console/vgacon.c | 24 +++++++++++++++++++++++-
- include/linux/console.h        |  4 ++++
- 3 files changed, 36 insertions(+), 1 deletion(-)
+ arch/mips/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 4c10a9df3b91..9d3ce505e7ab 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -625,6 +625,14 @@ static void save_screen(struct vc_data *vc)
- 		vc->vc_sw->con_save_screen(vc);
- }
-=20
-+static void flush_scrollback(struct vc_data *vc)
-+{
-+	WARN_CONSOLE_UNLOCKED();
-+
-+	if (vc->vc_sw->con_flush_scrollback)
-+		vc->vc_sw->con_flush_scrollback(vc);
-+}
-+
- /*
-  *	Redrawing of screen
-  */
-@@ -1171,6 +1179,7 @@ static void csi_J(struct vc_data *vc, int vpar)
- 		case 3: /* erase scroll-back buffer (and whole display) */
- 			scr_memsetw(vc->vc_screenbuf, vc->vc_video_erase_char,
- 				    vc->vc_screenbuf_size);
-+			flush_scrollback(vc);
- 			set_origin(vc);
- 			if (con_is_visible(vc))
- 				update_screen(vc);
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 48b97648d4af..9a7c2bbc5326 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -173,6 +173,16 @@ static struct vgacon_scrollback_info {
- 	int restore;
- } vgacon_scrollback;
-=20
-+static void vgacon_scrollback_reset(size_t reset_size)
-+{
-+	if (vgacon_scrollback.data && reset_size > 0)
-+		memset(vgacon_scrollback.data, 0, reset_size);
-+
-+	vgacon_scrollback.cnt  =3D 0;
-+	vgacon_scrollback.tail =3D 0;
-+	vgacon_scrollback.cur  =3D 0;
-+}
-+
- static void vgacon_scrollback_init(int pitch)
- {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-@@ -305,6 +315,14 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 	} else
- 		vgacon_cursor(c, CM_MOVE);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+	if (c->vc_num =3D fg_console)
-+		vgacon_scrollback_reset(size);
-+}
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
-@@ -322,6 +340,10 @@ static void vgacon_scrolldelta(struct vc_data *c, int =
-lines)
- 			vga_vram_size);
- 	vga_set_mem_top(c);
- }
-+
-+static void vgacon_flush_scrollback(struct vc_data *c)
-+{
-+}
- #endif /* CONFIG_VGACON_SOFT_SCROLLBACK */
-=20
- static const char *vgacon_startup(void)
-@@ -1329,7 +1351,6 @@ static bool vgacon_scroll(struct vc_data *c, unsigned=
- int t, unsigned int b,
- 	return true;
- }
-=20
--
- /*
-  *  The console `switch' structure for the VGA based console
-  */
-@@ -1362,6 +1383,7 @@ const struct consw vga_con =3D {
- 	.con_save_screen =3D vgacon_save_screen,
- 	.con_build_attr =3D vgacon_build_attr,
- 	.con_invert_region =3D vgacon_invert_region,
-+	.con_flush_scrollback =3D vgacon_flush_scrollback,
- };
- EXPORT_SYMBOL(vga_con);
-=20
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 9c26c6685587..5949d1855589 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -73,6 +73,10 @@ struct consw {
- 	u16    *(*con_screen_pos)(struct vc_data *, int);
- 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
- 	/*
-+	 * Flush the video console driver's scrollback buffer
-+	 */
-+	void	(*con_flush_scrollback)(struct vc_data *);
-+	/*
- 	 * Prepare the console for the debugger.  This includes, but is not
- 	 * limited to, unblanking the console, loading an appropriate
- 	 * palette, and allowing debugger generated output.
---=20
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index b3c5bde43d34..fc720e37661e 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -359,6 +359,7 @@ config MACH_INGENIC
+ 	select SYS_SUPPORTS_ZBOOT_UART16550
+ 	select DMA_NONCOHERENT
+ 	select IRQ_MIPS_CPU
++	select PINCTRL
+ 	select GPIOLIB
+ 	select COMMON_CLK
+ 	select GENERIC_IRQ_CHIP
+-- 
 2.11.0
 

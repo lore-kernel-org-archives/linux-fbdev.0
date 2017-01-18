@@ -1,36 +1,38 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 09 Jan 2017 11:33:46 +0000
-Subject: Re: [PATCH v2 3/7] nios2: put setup.h in uapi
-Message-Id: <3162962.COsNxdSb45@wuerfel>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Wed, 18 Jan 2017 10:33:51 +0000
+Subject: [PATCH v1] video : fbdev : stifb :- Handle return NULL error from ioremap_nocache.
+Message-Id: <1484734911-5299-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <bf83da6b-01ef-bf44-b3e1-ca6fc5636818@6wind.com> <1483695839-18660-1-git-send-email-nicolas.dichtel@6wind.com> <1483695839-18660-4-git-send-email-nicolas.dichtel@6wind.com>
-In-Reply-To: <1483695839-18660-4-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kbuild@vger.kernel.org
-Cc: Nicolas Dichtel <nicolas.dichtel@6wind.com>, linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, coreteam@netfilter.org, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.orgo
+To: jejb@parisc-linux.org, deller@gmx.de, b.zolnierkie@samsung.com
+Cc: linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, January 6, 2017 10:43:55 AM CET Nicolas Dichtel wrote:
+Here, If ioremap_nocache will fail. It will return NULL.
+Kernel can run into a NULL-pointer dereference.
+This error check will avoid NULL pointer dereference.
 
-> diff --git a/arch/nios2/include/uapi/asm/setup.h b/arch/nios2/include/uapi/asm/setup.h
-> new file mode 100644
-> index 000000000000..8d8285997ba8
-> --- /dev/null
-> +++ b/arch/nios2/include/uapi/asm/setup.h
-> @@ -0,0 +1,6 @@
-> +#ifndef _UAPI_ASM_NIOS2_SETUP_H
-> +#define _UAPI_ASM_NIOS2_SETUP_H
-> +
-> +#include <asm-generic/setup.h>
-> +
-> +#endif /* _UAPI_ASM_NIOS2_SETUP_H */
-> 
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/video/fbdev/stifb.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-This one is only a redirect to an asm-generic header, so it can be
-removed completely and replaced with a line in the 
-arch/nios2/include/uapi/asm/ file:
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index accfef7..d5deab3 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1294,6 +1294,10 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ 	strcpy(fix->id, "stifb");
+ 	info->fbops = &stifb_ops;
+ 	info->screen_base = ioremap_nocache(REGION_BASE(fb,1), fix->smem_len);
++	if (!info->screen_base) {
++		printk(KERN_ERR "stifb: Failed to Map memory\n");
++		goto out_err0;
++	}
+ 	info->screen_size = fix->smem_len;
+ 	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_COPYAREA;
+ 	info->pseudo_palette = &fb->pseudo_palette;
+-- 
+1.9.1
 
-generic-y += setup.h
-
-	Arnd

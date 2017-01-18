@@ -1,108 +1,85 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 17 Jan 2017 23:14:20 +0000
-Subject: [PATCH 12/13] pwm: jz4740: Let the pinctrl driver configure the pins
-Message-Id: <20170117231421.16310-13-paul@crapouillou.net>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Wed, 18 Jan 2017 07:20:18 +0000
+Subject: Re: [PATCH 12/13] pwm: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170118072018.GB18989@ulmo.ba.sec>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="aVD9QWMuhilNxW9f"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170117231421.16310-1-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+ <20170117231421.16310-13-paul@crapouillou.net>
+In-Reply-To: <20170117231421.16310-13-paul@crapouillou.net>
+To: Paul Cercueil <paul@crapouillou.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com
 
-Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
-the pins being properly configured before the driver probes.
 
-One inherent problem of this new approach is that the pinctrl framework
-does not allow us to configure each pin on demand, when the various PWM
-channels are requested or released. For instance, the PWM channels can
-be configured from sysfs, which would require all PWM pins to be configured
-properly beforehand for the PWM function, eventually causing conflicts
-with other platform or board drivers.
+--aVD9QWMuhilNxW9f
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The proper solution here would be to modify the pwm-jz4740 driver to
-handle only one PWM channel, and create an instance of this driver
-for each one of the 8 PWM channels. Then, it could use the pinctrl
-framework to dynamically configure the PWM pin it controls.
+On Wed, Jan 18, 2017 at 12:14:20AM +0100, Paul Cercueil wrote:
+> Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+> the pins being properly configured before the driver probes.
+>=20
+> One inherent problem of this new approach is that the pinctrl framework
+> does not allow us to configure each pin on demand, when the various PWM
+> channels are requested or released. For instance, the PWM channels can
+> be configured from sysfs, which would require all PWM pins to be configur=
+ed
+> properly beforehand for the PWM function, eventually causing conflicts
+> with other platform or board drivers.
+>=20
+> The proper solution here would be to modify the pwm-jz4740 driver to
+> handle only one PWM channel, and create an instance of this driver
+> for each one of the 8 PWM channels. Then, it could use the pinctrl
+> framework to dynamically configure the PWM pin it controls.
+>=20
+> Until this can be done, the only jz4740 board supported upstream
+> (Qi lb60) could configure all of its connected PWM pins in PWM function
+> mode, if those are not used by other drivers nor by GPIOs on the
+> board.
+>=20
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> ---
+>  drivers/pwm/pwm-jz4740.c | 29 -----------------------------
+>  1 file changed, 29 deletions(-)
+>=20
+> diff --git a/drivers/pwm/pwm-jz4740.c b/drivers/pwm/pwm-jz4740.c
+> index 76d13150283f..a75ff3622450 100644
+> --- a/drivers/pwm/pwm-jz4740.c
+> +++ b/drivers/pwm/pwm-jz4740.c
+> @@ -21,22 +21,10 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/pwm.h>
+> =20
+> -#include <asm/mach-jz4740/gpio.h>
 
-Until this can be done, the only jz4740 board supported upstream
-(Qi lb60) could configure all of its connected PWM pins in PWM function
-mode, if those are not used by other drivers nor by GPIOs on the
-board.
+What about the linux/gpio.h header? It seems to me like that would be no
+longer needed after this patch either.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
----
- drivers/pwm/pwm-jz4740.c | 29 -----------------------------
- 1 file changed, 29 deletions(-)
+Other than that this looks like the patch I'd expect if the pinmux was
+configured statically, based on board design.
 
-diff --git a/drivers/pwm/pwm-jz4740.c b/drivers/pwm/pwm-jz4740.c
-index 76d13150283f..a75ff3622450 100644
---- a/drivers/pwm/pwm-jz4740.c
-+++ b/drivers/pwm/pwm-jz4740.c
-@@ -21,22 +21,10 @@
- #include <linux/platform_device.h>
- #include <linux/pwm.h>
- 
--#include <asm/mach-jz4740/gpio.h>
- #include <asm/mach-jz4740/timer.h>
- 
- #define NUM_PWM 8
- 
--static const unsigned int jz4740_pwm_gpio_list[NUM_PWM] = {
--	JZ_GPIO_PWM0,
--	JZ_GPIO_PWM1,
--	JZ_GPIO_PWM2,
--	JZ_GPIO_PWM3,
--	JZ_GPIO_PWM4,
--	JZ_GPIO_PWM5,
--	JZ_GPIO_PWM6,
--	JZ_GPIO_PWM7,
--};
--
- struct jz4740_pwm_chip {
- 	struct pwm_chip chip;
- 	struct clk *clk;
-@@ -49,9 +37,6 @@ static inline struct jz4740_pwm_chip *to_jz4740(struct pwm_chip *chip)
- 
- static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
- {
--	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
--	int ret;
--
- 	/*
- 	 * Timers 0 and 1 are used for system tasks, so they are unavailable
- 	 * for use as PWMs.
-@@ -59,15 +44,6 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
- 	if (pwm->hwpwm < 2)
- 		return -EBUSY;
- 
--	ret = gpio_request(gpio, pwm->label);
--	if (ret) {
--		dev_err(chip->dev, "Failed to request GPIO#%u for PWM: %d\n",
--			gpio, ret);
--		return ret;
--	}
--
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_PWM);
--
- 	jz4740_timer_start(pwm->hwpwm);
- 
- 	return 0;
-@@ -75,13 +51,8 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
- 
- static void jz4740_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
- {
--	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
--
- 	jz4740_timer_set_ctrl(pwm->hwpwm, 0);
- 
--	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
--	gpio_free(gpio);
--
- 	jz4740_timer_stop(pwm->hwpwm);
- }
- 
--- 
-2.11.0
+Thierry
 
+--aVD9QWMuhilNxW9f
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlh/FzEACgkQ3SOs138+
+s6Fc2g//dBxUhoJLEIycA+khYQpD62rjvdJT1q5wLLQ+Den0WbIVJPY25Pq1mJof
+YfyYtNPRxPxJ0bnrjG1Zg0zbdv2SH/L85r7mDgp5KBkX6iOZejnDlhP687KF8Vre
+VEsTgdd33zu9HJAYNjLgD/J+SIJ+5GM2nl1N4unmondfMt1HVCyMPwGwKqYoxoWC
+wpqdz/wY7kLoU4Q+CDa5Dbois4xy3rsVNgtPDwSsMdzxmHOuKs8R68Bb4fP4K76u
+KxJpzS6sumat3i0TDNmuuk3e0IgsalqiB9NVH08ptil/kkTzQspQ/ajZZQuhnpl6
+av5PSr+15+HCK5dSFpCWdH0SEUYGDAd/PSlIjzx2BU07y/izHI55ww7af2WtPzZK
+RDzsmK9DBln26Nek9G5EggcvNhiUcKDibaZ2uog5jYfPSOgESJwfomp1auoD/b3h
+B8XsuTAK11eMAbyRshFmuRo9uLVnJJCJeO5SG+3gnXBxOZzHE8cxvwL3Lw1VvMvb
+50842gN0fX5dKGO+2KOimOJ/Koov4wmBXVY1buvW4YWU9JkeU439jgiLb16jB1UR
+JnEFOblWuKCVpZNuzib/bNOwfv4xP5YaQfm1uNgVZMNwIzYBxKa8tGllTIQQaY+v
+xej1u4K0SR8CiPc2tw81+HQp9SV/xxIxa4/otXWhORsO//+CR2c=
+=py/u
+-----END PGP SIGNATURE-----
+
+--aVD9QWMuhilNxW9f--

@@ -1,140 +1,477 @@
-From: Nicolas Dichtel <nicolas.dichtel@6wind.com>
-Date: Fri, 13 Jan 2017 10:46:46 +0000
-Subject: [PATCH v3 8/8] uapi: export all arch specifics directories
-Message-Id: <1484304406-10820-9-git-send-email-nicolas.dichtel@6wind.com>
+From: Lars-Peter Clausen <lars@metafoo.de>
+Date: Sat, 21 Jan 2017 15:16:23 +0000
+Subject: [PATCH 3/3] fbdev: omap/lcd: Make callbacks optional
+Message-Id: <1485011783-22521-3-git-send-email-lars@metafoo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3131144.4Ej3KFWRbz@wuerfel>
- <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
-In-Reply-To: <1484304406-10820-1-git-send-email-nicolas.dichtel@6wind.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: arnd@arndb.de
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org, linux-ia64@vger.kernel.org, linux-doc@vger.kernel.org, airlied@linux.ie, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mtd@lists.infradead.org, sparclinux@vger.kernel.org, linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-am33-list@redhat.com, linux-c6x-dev@linux-c6x.org, linux-rdma@vger.kernel.org, linux-hexagon@vger.kernel.org, linux-sh@vger.kernel.org, linux@armlinux.org.uk, hch@infradead.org, coreteam@netfilter.org, msalter@redhat.com, fcoe-devel@open-fcoe.org, xen-devel@lists.xenproject.org, linux-snps-arc@lists.infradead.org, linux-media@vger.kernel.org, uclinux-h8-devel@lists.sourceforge.jp, linux-xtensa@linux-xtensa.org, linux-kbuild@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, linux-raid@vger.kernel.org, linux-m68k@lists.linux-m68k.org
+To: linux-fbdev@vger.kernel.org
 
-This patch removes the need of subdir-y. Now all files/directories under
-arch/<arch>/include/uapi/ are exported.
+Most OMAP FB LCD drivers don't have anything to do in their panel
+callbacks. This leads to a large set of empty boilerplate functions in the
+panel drivers. Make those callbacks optional by checking if they are set
+before calling them. This allows those boilerplate functions to be removed.
 
-The only change for userland is the layout of the command 'make
-headers_install_all': directories asm-<arch> are replaced by arch-<arch>/.
-Those new directories contains all files/directories of the specified arch.
-
-Note that only cris and tile have more directories than only asm:
- - arch-v[10|32] for cris;
- - arch for tile.
-
-Signed-off-by: Nicolas Dichtel <nicolas.dichtel@6wind.com>
+Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
 ---
- Documentation/kbuild/makefiles.txt | 15 +--------------
- Makefile                           |  4 ++--
- arch/cris/include/uapi/asm/Kbuild  |  3 ---
- arch/tile/include/uapi/asm/Kbuild  |  2 --
- scripts/Makefile.headersinst       |  3 +--
- 5 files changed, 4 insertions(+), 23 deletions(-)
+ drivers/video/fbdev/omap/lcd_ams_delta.c |  6 ------
+ drivers/video/fbdev/omap/lcd_h3.c        | 17 -----------------
+ drivers/video/fbdev/omap/lcd_htcherald.c | 30 ------------------------------
+ drivers/video/fbdev/omap/lcd_inn1510.c   | 18 ------------------
+ drivers/video/fbdev/omap/lcd_inn1610.c   |  6 ------
+ drivers/video/fbdev/omap/lcd_osk.c       | 18 ------------------
+ drivers/video/fbdev/omap/lcd_palmte.c    | 30 ------------------------------
+ drivers/video/fbdev/omap/lcd_palmtt.c    | 23 -----------------------
+ drivers/video/fbdev/omap/lcd_palmz71.c   | 24 ------------------------
+ drivers/video/fbdev/omap/omapfb_main.c   | 31 ++++++++++++++++++++-----------
+ 10 files changed, 20 insertions(+), 183 deletions(-)
 
-diff --git a/Documentation/kbuild/makefiles.txt b/Documentation/kbuild/makefiles.txt
-index 51c072049e45..87a3d7d86776 100644
---- a/Documentation/kbuild/makefiles.txt
-+++ b/Documentation/kbuild/makefiles.txt
-@@ -48,7 +48,6 @@ This document describes the Linux kernel Makefiles.
- 		--- 7.2 genhdr-y
- 		--- 7.3 generic-y
- 		--- 7.4 generated-y
--		--- 7.5 subdir-y
+diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
+index ef0ed74..a4ee947 100644
+--- a/drivers/video/fbdev/omap/lcd_ams_delta.c
++++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
+@@ -136,11 +136,6 @@ static void ams_delta_panel_disable(struct lcd_panel *panel)
+ 	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 0);
+ }
  
- 	== 8 Kbuild Variables
- 	== 9 Makefile language
-@@ -1264,7 +1263,7 @@ The pre-processing does:
- - drop all sections that are kernel internal (guarded by ifdef __KERNEL__)
- 
- All headers under include/uapi/, include/generated/uapi/,
--arch/<arch>/include/uapi/asm/ and arch/<arch>/include/generated/uapi/asm/
-+arch/<arch>/include/uapi/ and arch/<arch>/include/generated/uapi/
- are exported.
- 
- A Kbuild file may be defined under arch/<arch>/include/uapi/asm/ and
-@@ -1331,18 +1330,6 @@ See subsequent chapter for the syntax of the Kbuild file.
- 			#arch/x86/include/asm/Kbuild
- 			generated-y += syscalls_32.h
- 
--	--- 7.5 subdir-y
+-static unsigned long ams_delta_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
 -
--	subdir-y may be used to specify a subdirectory to be exported.
+ static struct lcd_panel ams_delta_panel = {
+ 	.name		= "ams-delta",
+ 	.config		= 0,
+@@ -163,7 +158,6 @@ static struct lcd_panel ams_delta_panel = {
+ 	.cleanup	= ams_delta_panel_cleanup,
+ 	.enable		= ams_delta_panel_enable,
+ 	.disable	= ams_delta_panel_disable,
+-	.get_caps	= ams_delta_panel_get_caps,
+ };
+ 
+ 
+diff --git a/drivers/video/fbdev/omap/lcd_h3.c b/drivers/video/fbdev/omap/lcd_h3.c
+index 4281906..9d2da14 100644
+--- a/drivers/video/fbdev/omap/lcd_h3.c
++++ b/drivers/video/fbdev/omap/lcd_h3.c
+@@ -28,15 +28,6 @@
+ 
+ #define MODULE_NAME	"omapfb-lcd_h3"
+ 
+-static int h3_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
 -
--		Example:
--			#arch/cris/include/uapi/asm/Kbuild
--			subdir-y += ../arch-v10/arch/
--			subdir-y += ../arch-v32/arch/
+-static void h3_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
 -
--	The convention is to list one subdir per line and
--	preferably in alphabetic order.
+ static int h3_panel_enable(struct lcd_panel *panel)
+ {
+ 	int r = 0;
+@@ -63,11 +54,6 @@ static void h3_panel_disable(struct lcd_panel *panel)
+ 		pr_err(MODULE_NAME ": Unable to turn off LCD panel\n");
+ }
+ 
+-static unsigned long h3_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
 -
- == 8 Kbuild Variables
+ static struct lcd_panel h3_panel = {
+ 	.name		= "h3",
+ 	.config		= OMAP_LCDC_PANEL_TFT,
+@@ -85,11 +71,8 @@ static struct lcd_panel h3_panel = {
+ 	.vbp		= 0,
+ 	.pcd		= 0,
  
- The top Makefile exports the following variables:
-diff --git a/Makefile b/Makefile
-index 5f1a84735ff6..a35098157b69 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1126,7 +1126,7 @@ firmware_install:
- export INSTALL_HDR_PATH = $(objtree)/usr
+-	.init		= h3_panel_init,
+-	.cleanup	= h3_panel_cleanup,
+ 	.enable		= h3_panel_enable,
+ 	.disable	= h3_panel_disable,
+-	.get_caps	= h3_panel_get_caps,
+ };
  
- # If we do an all arch process set dst to asm-$(hdr-arch)
--hdr-dst = $(if $(KBUILD_HEADERS), dst=include/asm-$(hdr-arch), dst=include/asm)
-+hdr-dst = $(if $(KBUILD_HEADERS), dst=include/arch-$(hdr-arch), dst=include)
+ static int h3_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_htcherald.c b/drivers/video/fbdev/omap/lcd_htcherald.c
+index dd2ce69..9d692f5b 100644
+--- a/drivers/video/fbdev/omap/lcd_htcherald.c
++++ b/drivers/video/fbdev/omap/lcd_htcherald.c
+@@ -31,30 +31,6 @@
  
- PHONY += archheaders
- archheaders:
-@@ -1147,7 +1147,7 @@ headers_install: __headers
- 	$(if $(wildcard $(srctree)/arch/$(hdr-arch)/include/uapi/asm/Kbuild),, \
- 	  $(error Headers not exportable for the $(SRCARCH) architecture))
- 	$(Q)$(MAKE) $(hdr-inst)=include/uapi
--	$(Q)$(MAKE) $(hdr-inst)=arch/$(hdr-arch)/include/uapi/asm $(hdr-dst)
-+	$(Q)$(MAKE) $(hdr-inst)=arch/$(hdr-arch)/include/uapi $(hdr-dst)
+ #include "omapfb.h"
  
- PHONY += headers_check_all
- headers_check_all: headers_install_all
-diff --git a/arch/cris/include/uapi/asm/Kbuild b/arch/cris/include/uapi/asm/Kbuild
-index d0c5471856e0..b15bf6bc0e94 100644
---- a/arch/cris/include/uapi/asm/Kbuild
-+++ b/arch/cris/include/uapi/asm/Kbuild
-@@ -1,5 +1,2 @@
- # UAPI Header export list
- include include/uapi/asm-generic/Kbuild.asm
+-static int htcherald_panel_init(struct lcd_panel *panel,
+-					struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
 -
--subdir-y += ../arch-v10/arch/
--subdir-y += ../arch-v32/arch/
-diff --git a/arch/tile/include/uapi/asm/Kbuild b/arch/tile/include/uapi/asm/Kbuild
-index e0a50111e07f..0c74c3c5ebfa 100644
---- a/arch/tile/include/uapi/asm/Kbuild
-+++ b/arch/tile/include/uapi/asm/Kbuild
-@@ -2,5 +2,3 @@
- include include/uapi/asm-generic/Kbuild.asm
- 
- generic-y += ucontext.h
+-static void htcherald_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
 -
--subdir-y += ../arch
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 16ac3e71050e..cafaca2d9a23 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -2,7 +2,7 @@
- # Installing headers
- #
- # All headers under include/uapi, include/generated/uapi,
--# arch/<arch>/include/uapi/asm and arch/<arch>/include/generated/uapi/asm are
-+# arch/<arch>/include/uapi and arch/<arch>/include/generated/uapi are
- # exported.
- # They are preprocessed to remove __KERNEL__ section of the file.
- #
-@@ -28,7 +28,6 @@ include scripts/Kbuild.include
- installdir    := $(INSTALL_HDR_PATH)/$(subst uapi/,,$(_dst))
+-static int htcherald_panel_enable(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-static void htcherald_panel_disable(struct lcd_panel *panel)
+-{
+-}
+-
+-static unsigned long htcherald_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+ /* Found on WIZ200 (miknix) and some HERA110 models (darkstar62) */
+ static struct lcd_panel htcherald_panel_1 = {
+ 	.name		= "lcd_herald",
+@@ -74,12 +50,6 @@ static struct lcd_panel htcherald_panel_1 = {
+ 	.vsw		= 3,
+ 	.vfp		= 2,
+ 	.vbp		= 2,
+-
+-	.init		= htcherald_panel_init,
+-	.cleanup	= htcherald_panel_cleanup,
+-	.enable		= htcherald_panel_enable,
+-	.disable	= htcherald_panel_disable,
+-	.get_caps	= htcherald_panel_get_caps,
+ };
  
- subdirs       := $(patsubst $(srctree)/$(obj)/%/.,%,$(wildcard $(srctree)/$(obj)/*/.))
--subdirs       += $(subdir-y)
- header-files  := $(notdir $(wildcard $(srctree)/$(obj)/*.h))
- header-files  += $(notdir $(wildcard $(srctree)/$(obj)/*.agh))
- genhdr-files  := $(notdir $(wildcard $(srctree)/$(gen)/*.h))
+ static int htcherald_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_inn1510.c b/drivers/video/fbdev/omap/lcd_inn1510.c
+index dd1f99a..b284050 100644
+--- a/drivers/video/fbdev/omap/lcd_inn1510.c
++++ b/drivers/video/fbdev/omap/lcd_inn1510.c
+@@ -27,16 +27,6 @@
+ 
+ #include "omapfb.h"
+ 
+-static int innovator1510_panel_init(struct lcd_panel *panel,
+-				    struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
+-
+-static void innovator1510_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
+-
+ static int innovator1510_panel_enable(struct lcd_panel *panel)
+ {
+ 	__raw_writeb(0x7, OMAP1510_FPGA_LCD_PANEL_CONTROL);
+@@ -48,11 +38,6 @@ static void innovator1510_panel_disable(struct lcd_panel *panel)
+ 	__raw_writeb(0x0, OMAP1510_FPGA_LCD_PANEL_CONTROL);
+ }
+ 
+-static unsigned long innovator1510_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+ static struct lcd_panel innovator1510_panel = {
+ 	.name		= "inn1510",
+ 	.config		= OMAP_LCDC_PANEL_TFT,
+@@ -70,11 +55,8 @@ static struct lcd_panel innovator1510_panel = {
+ 	.vbp		= 0,
+ 	.pcd		= 12,
+ 
+-	.init		= innovator1510_panel_init,
+-	.cleanup	= innovator1510_panel_cleanup,
+ 	.enable		= innovator1510_panel_enable,
+ 	.disable	= innovator1510_panel_disable,
+-	.get_caps	= innovator1510_panel_get_caps,
+ };
+ 
+ static int innovator1510_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_inn1610.c b/drivers/video/fbdev/omap/lcd_inn1610.c
+index 2f72eca..1841710 100644
+--- a/drivers/video/fbdev/omap/lcd_inn1610.c
++++ b/drivers/video/fbdev/omap/lcd_inn1610.c
+@@ -69,11 +69,6 @@ static void innovator1610_panel_disable(struct lcd_panel *panel)
+ 	gpio_set_value(15, 0);
+ }
+ 
+-static unsigned long innovator1610_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+ static struct lcd_panel innovator1610_panel = {
+ 	.name		= "inn1610",
+ 	.config		= OMAP_LCDC_PANEL_TFT,
+@@ -95,7 +90,6 @@ static struct lcd_panel innovator1610_panel = {
+ 	.cleanup	= innovator1610_panel_cleanup,
+ 	.enable		= innovator1610_panel_enable,
+ 	.disable	= innovator1610_panel_disable,
+-	.get_caps	= innovator1610_panel_get_caps,
+ };
+ 
+ static int innovator1610_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_osk.c b/drivers/video/fbdev/omap/lcd_osk.c
+index 4b01c4e..b0be577 100644
+--- a/drivers/video/fbdev/omap/lcd_osk.c
++++ b/drivers/video/fbdev/omap/lcd_osk.c
+@@ -29,16 +29,6 @@
+ 
+ #include "omapfb.h"
+ 
+-static int osk_panel_init(struct lcd_panel *panel, struct omapfb_device *fbdev)
+-{
+-	/* gpio2 was allocated in board init */
+-	return 0;
+-}
+-
+-static void osk_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
+-
+ static int osk_panel_enable(struct lcd_panel *panel)
+ {
+ 	/* configure PWL pin */
+@@ -68,11 +58,6 @@ static void osk_panel_disable(struct lcd_panel *panel)
+ 	gpio_set_value(2, 0);
+ }
+ 
+-static unsigned long osk_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+ static struct lcd_panel osk_panel = {
+ 	.name		= "osk",
+ 	.config		= OMAP_LCDC_PANEL_TFT,
+@@ -90,11 +75,8 @@ static struct lcd_panel osk_panel = {
+ 	.vbp		= 0,
+ 	.pcd		= 12,
+ 
+-	.init		= osk_panel_init,
+-	.cleanup	= osk_panel_cleanup,
+ 	.enable		= osk_panel_enable,
+ 	.disable	= osk_panel_disable,
+-	.get_caps	= osk_panel_get_caps,
+ };
+ 
+ static int osk_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_palmte.c b/drivers/video/fbdev/omap/lcd_palmte.c
+index fef7e45..cef9638 100644
+--- a/drivers/video/fbdev/omap/lcd_palmte.c
++++ b/drivers/video/fbdev/omap/lcd_palmte.c
+@@ -25,30 +25,6 @@
+ 
+ #include "omapfb.h"
+ 
+-static int palmte_panel_init(struct lcd_panel *panel,
+-				struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
+-
+-static void palmte_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
+-
+-static int palmte_panel_enable(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-static void palmte_panel_disable(struct lcd_panel *panel)
+-{
+-}
+-
+-static unsigned long palmte_panel_get_caps(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+ static struct lcd_panel palmte_panel = {
+ 	.name		= "palmte",
+ 	.config		= OMAP_LCDC_PANEL_TFT | OMAP_LCDC_INV_VSYNC |
+@@ -67,12 +43,6 @@ static struct lcd_panel palmte_panel = {
+ 	.vfp		= 8,
+ 	.vbp		= 7,
+ 	.pcd		= 0,
+-
+-	.init		= palmte_panel_init,
+-	.cleanup	= palmte_panel_cleanup,
+-	.enable		= palmte_panel_enable,
+-	.disable	= palmte_panel_disable,
+-	.get_caps	= palmte_panel_get_caps,
+ };
+ 
+ static int palmte_panel_probe(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap/lcd_palmtt.c b/drivers/video/fbdev/omap/lcd_palmtt.c
+index bd06314..627f13d 100644
+--- a/drivers/video/fbdev/omap/lcd_palmtt.c
++++ b/drivers/video/fbdev/omap/lcd_palmtt.c
+@@ -32,25 +32,6 @@ GPIO13 - screen blanking
+ 
+ #include "omapfb.h"
+ 
+-static int palmtt_panel_init(struct lcd_panel *panel,
+-	struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
+-
+-static void palmtt_panel_cleanup(struct lcd_panel *panel)
+-{
+-}
+-
+-static int palmtt_panel_enable(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-static void palmtt_panel_disable(struct lcd_panel *panel)
+-{
+-}
+-
+ static unsigned long palmtt_panel_get_caps(struct lcd_panel *panel)
+ {
+ 	return OMAPFB_CAPS_SET_BACKLIGHT;
+@@ -74,10 +55,6 @@ static struct lcd_panel palmtt_panel = {
+ 	.vbp		= 7,
+ 	.pcd		= 0,
+ 
+-	.init		= palmtt_panel_init,
+-	.cleanup	= palmtt_panel_cleanup,
+-	.enable		= palmtt_panel_enable,
+-	.disable	= palmtt_panel_disable,
+ 	.get_caps	= palmtt_panel_get_caps,
+ };
+ 
+diff --git a/drivers/video/fbdev/omap/lcd_palmz71.c b/drivers/video/fbdev/omap/lcd_palmz71.c
+index bff7425..c46d4db 100644
+--- a/drivers/video/fbdev/omap/lcd_palmz71.c
++++ b/drivers/video/fbdev/omap/lcd_palmz71.c
+@@ -26,26 +26,6 @@
+ 
+ #include "omapfb.h"
+ 
+-static int palmz71_panel_init(struct lcd_panel *panel,
+-			      struct omapfb_device *fbdev)
+-{
+-	return 0;
+-}
+-
+-static void palmz71_panel_cleanup(struct lcd_panel *panel)
+-{
+-
+-}
+-
+-static int palmz71_panel_enable(struct lcd_panel *panel)
+-{
+-	return 0;
+-}
+-
+-static void palmz71_panel_disable(struct lcd_panel *panel)
+-{
+-}
+-
+ static unsigned long palmz71_panel_get_caps(struct lcd_panel *panel)
+ {
+ 	return OMAPFB_CAPS_SET_BACKLIGHT;
+@@ -69,10 +49,6 @@ static struct lcd_panel palmz71_panel = {
+ 	.vbp		= 7,
+ 	.pcd		= 0,
+ 
+-	.init		= palmz71_panel_init,
+-	.cleanup	= palmz71_panel_cleanup,
+-	.enable		= palmz71_panel_enable,
+-	.disable	= palmz71_panel_disable,
+ 	.get_caps	= palmz71_panel_get_caps,
+ };
+ 
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 6429f33..1abba07 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -337,7 +337,8 @@ static int omapfb_blank(int blank, struct fb_info *fbi)
+ 		if (fbdev->state = OMAPFB_SUSPENDED) {
+ 			if (fbdev->ctrl->resume)
+ 				fbdev->ctrl->resume();
+-			fbdev->panel->enable(fbdev->panel);
++			if (fbdev->panel->enable)
++				fbdev->panel->enable(fbdev->panel);
+ 			fbdev->state = OMAPFB_ACTIVE;
+ 			if (fbdev->ctrl->get_update_mode() =
+ 					OMAPFB_MANUAL_UPDATE)
+@@ -346,7 +347,8 @@ static int omapfb_blank(int blank, struct fb_info *fbi)
+ 		break;
+ 	case FB_BLANK_POWERDOWN:
+ 		if (fbdev->state = OMAPFB_ACTIVE) {
+-			fbdev->panel->disable(fbdev->panel);
++			if (fbdev->panel->disable)
++				fbdev->panel->disable(fbdev->panel);
+ 			if (fbdev->ctrl->suspend)
+ 				fbdev->ctrl->suspend();
+ 			fbdev->state = OMAPFB_SUSPENDED;
+@@ -1030,7 +1032,8 @@ static void omapfb_get_caps(struct omapfb_device *fbdev, int plane,
+ {
+ 	memset(caps, 0, sizeof(*caps));
+ 	fbdev->ctrl->get_caps(plane, caps);
+-	caps->ctrl |= fbdev->panel->get_caps(fbdev->panel);
++	if (fbdev->panel->get_caps)
++		caps->ctrl |= fbdev->panel->get_caps(fbdev->panel);
+ }
+ 
+ /* For lcd testing */
+@@ -1549,7 +1552,8 @@ static void omapfb_free_resources(struct omapfb_device *fbdev, int state)
+ 	case 7:
+ 		omapfb_unregister_sysfs(fbdev);
+ 	case 6:
+-		fbdev->panel->disable(fbdev->panel);
++		if (fbdev->panel->disable)
++			fbdev->panel->disable(fbdev->panel);
+ 	case 5:
+ 		omapfb_set_update_mode(fbdev, OMAPFB_UPDATE_DISABLED);
+ 	case 4:
+@@ -1557,7 +1561,8 @@ static void omapfb_free_resources(struct omapfb_device *fbdev, int state)
+ 	case 3:
+ 		ctrl_cleanup(fbdev);
+ 	case 2:
+-		fbdev->panel->cleanup(fbdev->panel);
++		if (fbdev->panel->cleanup)
++			fbdev->panel->cleanup(fbdev->panel);
+ 	case 1:
+ 		dev_set_drvdata(fbdev->dev, NULL);
+ 		kfree(fbdev);
+@@ -1680,9 +1685,11 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 		goto cleanup;
+ 	}
+ 
+-	r = fbdev->panel->init(fbdev->panel, fbdev);
+-	if (r)
+-		goto cleanup;
++	if (fbdev->panel->init) {
++		r = fbdev->panel->init(fbdev->panel, fbdev);
++		if (r)
++			goto cleanup;
++	}
+ 
+ 	pr_info("omapfb: configured for panel %s\n", fbdev->panel->name);
+ 
+@@ -1725,9 +1732,11 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 				   OMAPFB_MANUAL_UPDATE : OMAPFB_AUTO_UPDATE);
+ 	init_state++;
+ 
+-	r = fbdev->panel->enable(fbdev->panel);
+-	if (r)
+-		goto cleanup;
++	if (fbdev->panel->enable) {
++		r = fbdev->panel->enable(fbdev->panel);
++		if (r)
++			goto cleanup;
++	}
+ 	init_state++;
+ 
+ 	r = omapfb_register_sysfs(fbdev);
 -- 
-2.8.1
+2.1.4
 

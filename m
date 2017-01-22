@@ -1,330 +1,107 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Mon, 02 Jan 2017 14:27:40 +0000
-Subject: [PATCH RESEND v7 3/3] console: Add persistent scrollback buffers for all VGA consoles
-Message-Id: <1483367260-3836-4-git-send-email-manuel.schoelling@gmx.de>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:44 +0000
+Subject: [PATCH v2 11/14] mtd: nand: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170122144947.16158-12-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
- <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1483367260-3836-1-git-send-email-manuel.schoelling@gmx.de>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org, Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 
-Add a scrollback buffers for each VGA console. The benefit is that
-the scrollback history is not flushed when switching between consoles
-but is persistent.
-The buffers are allocated on demand when a new console is opened.
+Before, this NAND driver would set itself the configuration of the
+chip-select pins for the various NAND banks.
 
-This breaks tools like clear_console that rely on flushing the
-scrollback history by switching back and forth between consoles
-which is why this feature is disabled by default.
-Use the escape sequence \e[3J instead for flushing the buffer.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
-
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/console/Kconfig  |  25 +++++++-
- drivers/video/console/vgacon.c | 142 ++++++++++++++++++++++++++-----------=
-----
- 2 files changed, 111 insertions(+), 56 deletions(-)
+ drivers/mtd/nand/jz4740_nand.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
-diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-index 38da6e2..c5742d2 100644
---- a/drivers/video/console/Kconfig
-+++ b/drivers/video/console/Kconfig
-@@ -43,9 +43,28 @@ config VGACON_SOFT_SCROLLBACK_SIZE
-        range 1 1024
-        default "64"
-        help
--         Enter the amount of System RAM to allocate for the scrollback
--	 buffer.  Each 64KB will give you approximately 16 80x25
--	 screenfuls of scrollback buffer
-+	  Enter the amount of System RAM to allocate for scrollback
-+	  buffers of VGA consoles. Each 64KB will give you approximately
-+	  16 80x25 screenfuls of scrollback buffer.
-+
-+config VGACON_SOFT_SCROLLBACK_PERSISTENT
-+	bool "Persistent Scrollback History for each console"
-+	depends on VGACON_SOFT_SCROLLBACK
-+	default n
-+	help
-+	  Say Y here if the scrollback history should persist when switching
-+	  between consoles. Otherwise, the scrollback history will be flushed
-+	  each time the console is switched.
-+
-+	  This feature might break your tool of choice to flush the scrollback
-+	  buffer, e.g. clear(1) will work fine but Debian's clear_console(1)
-+	  will be broken, which might cause security issues.
-+	  You can use the escape sequence \e[3J instead if this feature is
-+	  activated.
-+
-+	  Note that a buffer of VGACON_SOFT_SCROLLBACK_SIZE is taken for each
-+	  created tty device.
-+	  So if you use a RAM-constrained system, say N here.
-=20
- config MDA_CONSOLE
- 	depends on !M68K && !PARISC && ISA
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 9a7c2bb..ca23d22 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,7 +162,7 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static struct vgacon_scrollback_info {
-+struct vgacon_scrollback_info {
- 	void *data;
- 	int tail;
- 	int size;
-@@ -171,74 +171,110 @@ static struct vgacon_scrollback_info {
- 	int cur;
- 	int save;
- 	int restore;
--} vgacon_scrollback;
-+};
-+
-+static struct vgacon_scrollback_info *vgacon_scrollback_cur;
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+static struct vgacon_scrollback_info vgacon_scrollbacks[MAX_NR_CONSOLES];
-+#else
-+static struct vgacon_scrollback_info vgacon_scrollbacks[1];
-+#endif
-=20
--static void vgacon_scrollback_reset(size_t reset_size)
-+static void vgacon_scrollback_reset(int vc_num, size_t reset_size)
+v2: No changes
+
+diff --git a/drivers/mtd/nand/jz4740_nand.c b/drivers/mtd/nand/jz4740_nand.c
+index 5551c36adbdf..0d06a1f07d82 100644
+--- a/drivers/mtd/nand/jz4740_nand.c
++++ b/drivers/mtd/nand/jz4740_nand.c
+@@ -25,7 +25,6 @@
+ 
+ #include <linux/gpio.h>
+ 
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/mach-jz4740/jz4740_nand.h>
+ 
+ #define JZ_REG_NAND_CTRL	0x50
+@@ -310,34 +309,20 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 			       uint8_t *nand_dev_id)
  {
--	if (vgacon_scrollback.data && reset_size > 0)
--		memset(vgacon_scrollback.data, 0, reset_size);
-+	struct vgacon_scrollback_info *scrollback =3D &vgacon_scrollbacks[vc_num];
-+
-+	if (scrollback->data && reset_size > 0)
-+		memset(scrollback->data, 0, reset_size);
-=20
--	vgacon_scrollback.cnt  =3D 0;
--	vgacon_scrollback.tail =3D 0;
--	vgacon_scrollback.cur  =3D 0;
-+	scrollback->cnt  =3D 0;
-+	scrollback->tail =3D 0;
-+	scrollback->cur  =3D 0;
- }
-=20
--static void vgacon_scrollback_init(int pitch)
-+static void vgacon_scrollback_init(int vc_num)
- {
--	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
+ 	int ret;
+-	int gpio;
+-	char gpio_name[9];
+ 	char res_name[6];
+ 	uint32_t ctrl;
+ 	struct nand_chip *chip = &nand->chip;
+ 	struct mtd_info *mtd = nand_to_mtd(chip);
+ 
+-	/* Request GPIO port. */
+-	gpio = JZ_GPIO_MEM_CS0 + bank - 1;
+-	sprintf(gpio_name, "NAND CS%d", bank);
+-	ret = gpio_request(gpio, gpio_name);
+-	if (ret) {
+-		dev_warn(&pdev->dev,
+-			"Failed to request %s gpio %d: %d\n",
+-			gpio_name, gpio, ret);
+-		goto notfound_gpio;
+-	}
 -
--	if (vgacon_scrollback.data) {
--		vgacon_scrollback.cnt  =3D 0;
--		vgacon_scrollback.tail =3D 0;
--		vgacon_scrollback.cur  =3D 0;
--		vgacon_scrollback.rows =3D rows - 1;
--		vgacon_scrollback.size =3D rows * pitch;
-+	int pitch =3D vga_video_num_columns * 2;
-+	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+	int rows =3D size / pitch;
-+	void *data;
-+
-+	data =3D kmalloc_array(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024,
-+			     GFP_NOWAIT);
-+
-+	vgacon_scrollbacks[vc_num].data =3D data;
-+	vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+
-+	vgacon_scrollback_cur->rows =3D rows - 1;
-+	vgacon_scrollback_cur->size =3D rows * pitch;
-+
-+	vgacon_scrollback_reset(vc_num, size);
-+}
-+
-+static void vgacon_scrollback_switch(int vc_num)
-+{
-+#ifndef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+	vc_num =3D 0;
-+#endif
-+
-+	if (!vgacon_scrollbacks[vc_num].data) {
-+		vgacon_scrollback_init(vc_num);
-+	} else {
-+#ifdef CONFIG_VGACON_SOFT_SCROLLBACK_PERSISTENT
-+		vgacon_scrollback_cur =3D &vgacon_scrollbacks[vc_num];
-+#else
-+		size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-+
-+		vgacon_scrollback_reset(vc_num, size);
-+#endif
- 	}
+ 	/* Request I/O resource. */
+ 	sprintf(res_name, "bank%d", bank);
+ 	ret = jz_nand_ioremap_resource(pdev, res_name,
+ 					&nand->bank_mem[bank - 1],
+ 					&nand->bank_base[bank - 1]);
+ 	if (ret)
+-		goto notfound_resource;
++		return ret;
+ 
+ 	/* Enable chip in bank. */
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_MEM_CS0);
+ 	ctrl = readl(nand->base + JZ_REG_NAND_CTRL);
+ 	ctrl |= JZ_NAND_CTRL_ENABLE_CHIP(bank - 1);
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+@@ -377,12 +362,8 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 	dev_info(&pdev->dev, "No chip found on bank %i\n", bank);
+ 	ctrl &= ~(JZ_NAND_CTRL_ENABLE_CHIP(bank - 1));
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
+ 	jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 				 nand->bank_base[bank - 1]);
+-notfound_resource:
+-	gpio_free(gpio);
+-notfound_gpio:
+ 	return ret;
  }
-=20
- static void vgacon_scrollback_startup(void)
- {
--	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
--		1024, GFP_NOWAIT);
--	vgacon_scrollback_init(vga_video_num_columns * 2);
-+	vgacon_scrollback_cur =3D &vgacon_scrollbacks[0];
-+	vgacon_scrollback_init(0);
- }
-=20
- static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
- {
- 	void *p;
-=20
--	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback_cur->data || !vgacon_scrollback_cur->size ||
-+	    c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
-+		scr_memcpyw(vgacon_scrollback_cur->data +
-+			    vgacon_scrollback_cur->tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback.cnt++;
-+
-+		vgacon_scrollback_cur->cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback.tail +=3D c->vc_size_row;
-+		vgacon_scrollback_cur->tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
--			vgacon_scrollback.tail =3D 0;
-+		if (vgacon_scrollback_cur->tail >=3D vgacon_scrollback_cur->size)
-+			vgacon_scrollback_cur->tail =3D 0;
-=20
--		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
--			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-+		if (vgacon_scrollback_cur->cnt > vgacon_scrollback_cur->rows)
-+			vgacon_scrollback_cur->cnt =3D vgacon_scrollback_cur->rows;
-=20
--		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
+ 
+@@ -503,7 +484,6 @@ static int jz_nand_probe(struct platform_device *pdev)
+ err_unclaim_banks:
+ 	while (chipnr--) {
+ 		unsigned char bank = nand->banks[chipnr];
+-		gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
+ 		jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 					 nand->bank_base[bank - 1]);
  	}
- }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
--	vgacon_scrollback.save =3D 0;
-+	vgacon_scrollback_cur->save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback.restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback.restore =3D 1;
--		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
-+		vgacon_scrollback_cur->restore =3D 1;
-+		vgacon_scrollback_cur->cur =3D vgacon_scrollback_cur->cnt;
- 	}
- }
-=20
-@@ -252,41 +288,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback.data)
-+	if (!vgacon_scrollback_cur->data)
- 		return;
-=20
--	if (!vgacon_scrollback.save) {
-+	if (!vgacon_scrollback_cur->save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback.save =3D 1;
-+		vgacon_scrollback_cur->save =3D 1;
- 	}
-=20
--	vgacon_scrollback.restore =3D 0;
--	start =3D vgacon_scrollback.cur + lines;
-+	vgacon_scrollback_cur->restore =3D 0;
-+	start =3D vgacon_scrollback_cur->cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback.cnt)
--		start =3D vgacon_scrollback.cnt;
-+	if (start > vgacon_scrollback_cur->cnt)
-+		start =3D vgacon_scrollback_cur->cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback.cnt)
--		end =3D vgacon_scrollback.cnt;
-+	if (end > vgacon_scrollback_cur->cnt)
-+		end =3D vgacon_scrollback_cur->cnt;
-=20
--	vgacon_scrollback.cur =3D start;
-+	vgacon_scrollback_cur->cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
--					 c->vc_size_row);
-+	soff =3D vgacon_scrollback_cur->tail -
-+		((vgacon_scrollback_cur->cnt - end) * c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback.size;
-+		soff +=3D vgacon_scrollback_cur->size;
-=20
--	count =3D vgacon_scrollback.cnt - start;
-+	count =3D vgacon_scrollback_cur->cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -300,13 +336,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback.size - soff);
--		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback_cur->size - soff);
-+		scr_memcpyw(d, vgacon_scrollback_cur->data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback.data, count);
-+			scr_memcpyw(d, vgacon_scrollback_cur->data, count);
- 			d +=3D count;
+@@ -530,7 +510,6 @@ static int jz_nand_remove(struct platform_device *pdev)
+ 		if (bank != 0) {
+ 			jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 						 nand->bank_base[bank - 1]);
+-			gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
  		}
-=20
-@@ -320,13 +356,13 @@ static void vgacon_flush_scrollback(struct vc_data *c)
- {
- 	size_t size =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024;
-=20
--	if (c->vc_num =3D fg_console)
--		vgacon_scrollback_reset(size);
-+	vgacon_scrollback_reset(c->vc_num, size);
- }
- #else
- #define vgacon_scrollback_startup(...) do { } while (0)
- #define vgacon_scrollback_init(...)    do { } while (0)
- #define vgacon_scrollback_update(...)  do { } while (0)
-+#define vgacon_scrollback_switch(...)  do { } while (0)
-=20
- static void vgacon_restore_screen(struct vc_data *c)
- {
-@@ -805,7 +841,7 @@ static int vgacon_switch(struct vc_data *c)
- 			vgacon_doresize(c, c->vc_cols, c->vc_rows);
  	}
-=20
--	vgacon_scrollback_init(c->vc_size_row);
-+	vgacon_scrollback_switch(c->vc_num);
- 	return 0;		/* Redrawing not needed */
- }
-=20
---=20
-2.1.4
+ 
+-- 
+2.11.0
 

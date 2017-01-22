@@ -1,69 +1,128 @@
-From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Fri, 27 Jan 2017 15:19:38 +0000
-Subject: [PATCH v4 2/2] backlight arcxcnn devicetree bindings for ArcticSand
-Message-Id: <1485530378-6217-1-git-send-email-olimpiu@arcticsand.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:42 +0000
+Subject: [PATCH v2 09/14] MIPS: JZ4780: CI20: Add pinctrl configuration for several drivers
+Message-Id: <20170122144947.16158-10-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: robh@kernel.org
-Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-backlight: Add devicetree bindings for the Arctic Sand backlight driver
-This patch provides devicetree bindings for the Arctic Sand
-    driver submitted in the previous patch
-Acked-by: Rob Herring <robh@kernel.org>
-Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+We set the pin configuration for the jz4780-nand and jz4780-uart
+drivers.
+
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
+ arch/mips/boot/dts/ingenic/ci20.dts | 60 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-v3 => v4:
-- Added spaces for increased readability per Lee Jones
-v2 => v3:
-- Version updated to match other patch in set. No other changes.
-v1 => v2:
-- Version updated to match other patch in set. No other changes.
+v2: Changed the devicetree bindings to match the new driver
 
- .../bindings/leds/backlight/arcxcnn_bl.txt         | 31 ++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-
-diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-new file mode 100644
-index 0000000..ecb7731
---- /dev/null
-+++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-@@ -0,0 +1,31 @@
-+Binding for ArcticSand arc2c0608 LED driver
+diff --git a/arch/mips/boot/dts/ingenic/ci20.dts b/arch/mips/boot/dts/ingenic/ci20.dts
+index 1652d8d60b1e..fd138d9978c1 100644
+--- a/arch/mips/boot/dts/ingenic/ci20.dts
++++ b/arch/mips/boot/dts/ingenic/ci20.dts
+@@ -29,18 +29,30 @@
+ 
+ &uart0 {
+ 	status = "okay";
 +
-+Required properties:
-+- compatible:		should be "arc,arc2c0608"
-+- reg:			slave address
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart0>;
+ };
+ 
+ &uart1 {
+ 	status = "okay";
 +
-+Optional properties:
-+- default-brightness:	brightness value on boot, value from: 0-4095
-+- label:		The name of the backlight device
-+			See Documentation/devicetree/bindings/leds/common.txt
-+- led-sources:		List of enabled channels from 0 to 5.
-+			See Documentation/devicetree/bindings/leds/common.txt
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart1>;
+ };
+ 
+ &uart3 {
+ 	status = "okay";
 +
-+- arc,led-config-0:	setting for register ILED_CONFIG_0
-+- arc,led-config-1:	setting for register ILED_CONFIG_1
-+- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
-+- arc,comp-config:	setting for register CONFIG_COMP
-+- arc,filter-config:	setting for register FILTER_CONFIG
-+- arc,trim-config:	setting for register IMAXTUNE
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart2>;
+ };
+ 
+ &uart4 {
+ 	status = "okay";
 +
-+Example:
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart4>;
+ };
+ 
+ &nemc {
+@@ -61,6 +73,13 @@
+ 		ingenic,nemc-tAW = <15>;
+ 		ingenic,nemc-tSTRV = <100>;
+ 
++		/*
++		 * Only CLE/ALE are needed for the devices that are connected, rather
++		 * than the full address line set.
++		 */
++		pinctrl-names = "default";
++		pinctrl-0 = <&pins_nemc>;
 +
-+arc2c0608@30 {
-+	compatible = "arc,arc2c0608";
-+	reg = <0x30>;
-+	default-brightness = <500>;
-+	label = "lcd-backlight";
-+	linux,default-trigger = "backlight";
-+	led-sources = <0 1 2 5>;
+ 		nand@1 {
+ 			reg = <1>;
+ 
+@@ -69,6 +88,9 @@
+ 			nand-ecc-mode = "hw";
+ 			nand-on-flash-bbt;
+ 
++			pinctrl-names = "default";
++			pinctrl-0 = <&pins_nemc_cs1>;
++
+ 			partitions {
+ 				compatible = "fixed-partitions";
+ 				#address-cells = <2>;
+@@ -106,3 +128,41 @@
+ &bch {
+ 	status = "okay";
+ };
++
++&pinctrl {
++	pins_uart0: uart0 {
++		function = "uart0";
++		groups = "uart0-data";
++		bias-disable;
++	};
++
++	pins_uart1: uart1 {
++		function = "uart1";
++		groups = "uart1-data";
++		bias-disable;
++	};
++
++	pins_uart2: uart2 {
++		function = "uart2";
++		groups = "uart2-data", "uart2-hwflow";
++		bias-disable;
++	};
++
++	pins_uart4: uart4 {
++		function = "uart4";
++		groups = "uart4-data";
++		bias-disable;
++	};
++
++	pins_nemc: nemc {
++		function = "nemc";
++		groups = "nemc-data", "nemc-cle-ale", "nemc-rd-we", "nemc-frd-fwe";
++		bias-disable;
++	};
++
++	pins_nemc_cs1: nemc-cs1 {
++		function = "nemc-cs1";
++		groups = "nemc-cs1";
++		bias-disable;
++	};
 +};
-+
 -- 
-2.7.4
+2.11.0
 

@@ -1,212 +1,139 @@
-From: =?UTF-8?q?Manuel=20Sch=C3=B6lling?= <manuel.schoelling@gmx.de>
-Date: Wed, 21 Dec 2016 16:37:36 +0000
-Subject: [PATCH RESEND v7 1/3] console: Move scrollback data into its own struct
-Message-Id: <1482338258-21388-2-git-send-email-manuel.schoelling@gmx.de>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:43 +0000
+Subject: [PATCH v2 10/14] mmc: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170122144947.16158-11-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1480848836-11330-1-git-send-email-manuel.schoelling@gmx.de>
- <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
-In-Reply-To: <1482338258-21388-1-git-send-email-manuel.schoelling@gmx.de>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: plagnioj@jcrosoft.com, tomi.valkeinen@ti.com
-Cc: manuel.schoelling@gmx.de, jslaby@suse.cz, gregkh@linuxfoundation.org, andrey_utkin@fastmail.com, kilobyte@angband.pl, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-This refactoring is in preparation for persistent scrollback
-support for VGA console.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-Signed-off-by: Manuel Sch=C3=B6lling <manuel.schoelling@gmx.de>
-Reviewed-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Andrey Utkin <andrey_utkin@fastmail.com>
-Tested-by: Adam Borowski <kilobyte@angband.pl>
-
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/console/vgacon.c | 91 ++++++++++++++++++++++----------------=
-----
- 1 file changed, 47 insertions(+), 44 deletions(-)
+ drivers/mmc/host/jz4740_mmc.c | 45 +++++--------------------------------------
+ 1 file changed, 5 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c22a562..48b9764 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -162,31 +162,34 @@ static inline void vga_set_mem_top(struct vc_data *c)
-=20
- #ifdef CONFIG_VGACON_SOFT_SCROLLBACK
- /* software scrollback */
--static void *vgacon_scrollback;
--static int vgacon_scrollback_tail;
--static int vgacon_scrollback_size;
--static int vgacon_scrollback_rows;
--static int vgacon_scrollback_cnt;
--static int vgacon_scrollback_cur;
--static int vgacon_scrollback_save;
--static int vgacon_scrollback_restore;
-+static struct vgacon_scrollback_info {
-+	void *data;
-+	int tail;
-+	int size;
-+	int rows;
-+	int cnt;
-+	int cur;
-+	int save;
-+	int restore;
-+} vgacon_scrollback;
-=20
- static void vgacon_scrollback_init(int pitch)
+v2: Set pin sleep/default state in suspend/resume callbacks
+
+diff --git a/drivers/mmc/host/jz4740_mmc.c b/drivers/mmc/host/jz4740_mmc.c
+index 819ad32964fc..b5fec5b7ee7b 100644
+--- a/drivers/mmc/host/jz4740_mmc.c
++++ b/drivers/mmc/host/jz4740_mmc.c
+@@ -20,14 +20,13 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/clk.h>
+ 
+ #include <linux/bitops.h>
+-#include <linux/gpio.h>
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/cacheflush.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/dmaengine.h>
+@@ -906,15 +905,6 @@ static const struct mmc_host_ops jz4740_mmc_ops = {
+ 	.enable_sdio_irq = jz4740_mmc_enable_sdio_irq,
+ };
+ 
+-static const struct jz_gpio_bulk_request jz4740_mmc_pins[] = {
+-	JZ_GPIO_BULK_PIN(MSC_CMD),
+-	JZ_GPIO_BULK_PIN(MSC_CLK),
+-	JZ_GPIO_BULK_PIN(MSC_DATA0),
+-	JZ_GPIO_BULK_PIN(MSC_DATA1),
+-	JZ_GPIO_BULK_PIN(MSC_DATA2),
+-	JZ_GPIO_BULK_PIN(MSC_DATA3),
+-};
+-
+ static int jz4740_mmc_request_gpio(struct device *dev, int gpio,
+ 	const char *name, bool output, int value)
  {
- 	int rows =3D CONFIG_VGACON_SOFT_SCROLLBACK_SIZE * 1024/pitch;
-=20
--	if (vgacon_scrollback) {
--		vgacon_scrollback_cnt  =3D 0;
--		vgacon_scrollback_tail =3D 0;
--		vgacon_scrollback_cur  =3D 0;
--		vgacon_scrollback_rows =3D rows - 1;
--		vgacon_scrollback_size =3D rows * pitch;
-+	if (vgacon_scrollback.data) {
-+		vgacon_scrollback.cnt  =3D 0;
-+		vgacon_scrollback.tail =3D 0;
-+		vgacon_scrollback.cur  =3D 0;
-+		vgacon_scrollback.rows =3D rows - 1;
-+		vgacon_scrollback.size =3D rows * pitch;
- 	}
+@@ -978,15 +968,6 @@ static void jz4740_mmc_free_gpios(struct platform_device *pdev)
+ 		gpio_free(pdata->gpio_power);
  }
-=20
- static void vgacon_scrollback_startup(void)
+ 
+-static inline size_t jz4740_mmc_num_pins(struct jz4740_mmc_host *host)
+-{
+-	size_t num_pins = ARRAY_SIZE(jz4740_mmc_pins);
+-	if (host->pdata && host->pdata->data_1bit)
+-		num_pins -= 3;
+-
+-	return num_pins;
+-}
+-
+ static int jz4740_mmc_probe(struct platform_device* pdev)
  {
--	vgacon_scrollback =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE, 1024, G=
-FP_NOWAIT);
-+	vgacon_scrollback.data =3D kcalloc(CONFIG_VGACON_SOFT_SCROLLBACK_SIZE,
-+		1024, GFP_NOWAIT);
- 	vgacon_scrollback_init(vga_video_num_columns * 2);
- }
-=20
-@@ -194,38 +197,38 @@ static void vgacon_scrollback_update(struct vc_data *=
-c, int t, int count)
+ 	int ret;
+@@ -1027,15 +1008,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 		goto err_free_host;
+ 	}
+ 
+-	ret = jz_gpio_bulk_request(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to request mmc pins: %d\n", ret);
+-		goto err_free_host;
+-	}
+-
+ 	ret = jz4740_mmc_request_gpios(mmc, pdev);
+ 	if (ret)
+-		goto err_gpio_bulk_free;
++		goto err_release_dma;
+ 
+ 	mmc->ops = &jz4740_mmc_ops;
+ 	mmc->f_min = JZ_MMC_CLK_RATE / 128;
+@@ -1091,10 +1066,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 	free_irq(host->irq, host);
+ err_free_gpios:
+ 	jz4740_mmc_free_gpios(pdev);
+-err_gpio_bulk_free:
++err_release_dma:
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ err_free_host:
+ 	mmc_free_host(mmc);
+ 
+@@ -1114,7 +1088,6 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 	free_irq(host->irq, host);
+ 
+ 	jz4740_mmc_free_gpios(pdev);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ 
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+@@ -1128,20 +1101,12 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 
+ static int jz4740_mmc_suspend(struct device *dev)
  {
- 	void *p;
-=20
--	if (!vgacon_scrollback_size || c->vc_num !=3D fg_console)
-+	if (!vgacon_scrollback.size || c->vc_num !=3D fg_console)
- 		return;
-=20
- 	p =3D (void *) (c->vc_origin + t * c->vc_size_row);
-=20
- 	while (count--) {
--		scr_memcpyw(vgacon_scrollback + vgacon_scrollback_tail,
-+		scr_memcpyw(vgacon_scrollback.data + vgacon_scrollback.tail,
- 			    p, c->vc_size_row);
--		vgacon_scrollback_cnt++;
-+		vgacon_scrollback.cnt++;
- 		p +=3D c->vc_size_row;
--		vgacon_scrollback_tail +=3D c->vc_size_row;
-+		vgacon_scrollback.tail +=3D c->vc_size_row;
-=20
--		if (vgacon_scrollback_tail >=3D vgacon_scrollback_size)
--			vgacon_scrollback_tail =3D 0;
-+		if (vgacon_scrollback.tail >=3D vgacon_scrollback.size)
-+			vgacon_scrollback.tail =3D 0;
-=20
--		if (vgacon_scrollback_cnt > vgacon_scrollback_rows)
--			vgacon_scrollback_cnt =3D vgacon_scrollback_rows;
-+		if (vgacon_scrollback.cnt > vgacon_scrollback.rows)
-+			vgacon_scrollback.cnt =3D vgacon_scrollback.rows;
-=20
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_suspend(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_sleep_state(dev);
  }
-=20
- static void vgacon_restore_screen(struct vc_data *c)
+ 
+ static int jz4740_mmc_resume(struct device *dev)
  {
--	vgacon_scrollback_save =3D 0;
-+	vgacon_scrollback.save =3D 0;
-=20
--	if (!vga_is_gfx && !vgacon_scrollback_restore) {
-+	if (!vga_is_gfx && !vgacon_scrollback.restore) {
- 		scr_memcpyw((u16 *) c->vc_origin, (u16 *) c->vc_screenbuf,
- 			    c->vc_screenbuf_size > vga_vram_size ?
- 			    vga_vram_size : c->vc_screenbuf_size);
--		vgacon_scrollback_restore =3D 1;
--		vgacon_scrollback_cur =3D vgacon_scrollback_cnt;
-+		vgacon_scrollback.restore =3D 1;
-+		vgacon_scrollback.cur =3D vgacon_scrollback.cnt;
- 	}
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_resume(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_default_state(dev);
  }
-=20
-@@ -239,41 +242,41 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
- 		return;
- 	}
-=20
--	if (!vgacon_scrollback)
-+	if (!vgacon_scrollback.data)
- 		return;
-=20
--	if (!vgacon_scrollback_save) {
-+	if (!vgacon_scrollback.save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
--		vgacon_scrollback_save =3D 1;
-+		vgacon_scrollback.save =3D 1;
- 	}
-=20
--	vgacon_scrollback_restore =3D 0;
--	start =3D vgacon_scrollback_cur + lines;
-+	vgacon_scrollback.restore =3D 0;
-+	start =3D vgacon_scrollback.cur + lines;
- 	end =3D start + abs(lines);
-=20
- 	if (start < 0)
- 		start =3D 0;
-=20
--	if (start > vgacon_scrollback_cnt)
--		start =3D vgacon_scrollback_cnt;
-+	if (start > vgacon_scrollback.cnt)
-+		start =3D vgacon_scrollback.cnt;
-=20
- 	if (end < 0)
- 		end =3D 0;
-=20
--	if (end > vgacon_scrollback_cnt)
--		end =3D vgacon_scrollback_cnt;
-+	if (end > vgacon_scrollback.cnt)
-+		end =3D vgacon_scrollback.cnt;
-=20
--	vgacon_scrollback_cur =3D start;
-+	vgacon_scrollback.cur =3D start;
- 	count =3D end - start;
--	soff =3D vgacon_scrollback_tail - ((vgacon_scrollback_cnt - end) *
-+	soff =3D vgacon_scrollback.tail - ((vgacon_scrollback.cnt - end) *
- 					 c->vc_size_row);
- 	soff -=3D count * c->vc_size_row;
-=20
- 	if (soff < 0)
--		soff +=3D vgacon_scrollback_size;
-+		soff +=3D vgacon_scrollback.size;
-=20
--	count =3D vgacon_scrollback_cnt - start;
-+	count =3D vgacon_scrollback.cnt - start;
-=20
- 	if (count > c->vc_rows)
- 		count =3D c->vc_rows;
-@@ -287,13 +290,13 @@ static void vgacon_scrolldelta(struct vc_data *c, int=
- lines)
-=20
- 		count *=3D c->vc_size_row;
- 		/* how much memory to end of buffer left? */
--		copysize =3D min(count, vgacon_scrollback_size - soff);
--		scr_memcpyw(d, vgacon_scrollback + soff, copysize);
-+		copysize =3D min(count, vgacon_scrollback.size - soff);
-+		scr_memcpyw(d, vgacon_scrollback.data + soff, copysize);
- 		d +=3D copysize;
- 		count -=3D copysize;
-=20
- 		if (count) {
--			scr_memcpyw(d, vgacon_scrollback, count);
-+			scr_memcpyw(d, vgacon_scrollback.data, count);
- 			d +=3D count;
- 		}
-=20
---=20
-2.1.4
+ 
+ static SIMPLE_DEV_PM_OPS(jz4740_mmc_pm_ops, jz4740_mmc_suspend,
+-- 
+2.11.0
 

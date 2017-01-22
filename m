@@ -1,44 +1,80 @@
-From: Jyri Sarha <jsarha@ti.com>
-Date: Fri, 13 Jan 2017 10:35:49 +0000
-Subject: [PATCH v2 5/5] fbdev/ssd1307fb: clear screen in probe
-Message-Id: <ac6aa17b8cff892f15a726cdd17487e42dc7ad66.1484303628.git.jsarha@ti.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:35 +0000
+Subject: [PATCH v2 02/14] Documentation: dt/bindings: Document pinctrl-gpio
+Message-Id: <20170122144947.16158-3-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1484303628.git.jsarha@ti.com>
-In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org
-Cc: robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org, Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+This commit adds documentation for the devicetree bidings of the
+pinctrl-gpio driver, which handles GPIOs of the Ingenic SoCs
+currently supported by the Linux kernel.
 
-SSD1306 does not clear the panel's framebuffer automatically, even if a
-HW reset happens, so we need to do that at probe time before enabling
-the panel.
-
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Jyri Sarha <jsarha@ti.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/fbdev/ssd1307fb.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ .../devicetree/bindings/gpio/ingenic,gpio.txt      | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 616a6a3..5c87ae4 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -441,9 +441,8 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
--	/* Clear the screen if we could not give reset at probe time */
--	if (!par->reset)
--		ssd1307fb_update_display(par);
-+	/* Clear the screen */
-+	ssd1307fb_update_display(par);
- 
- 	/* Turn on the display */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_DISPLAY_ON);
+v2: New patch
+
+diff --git a/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+new file mode 100644
+index 000000000000..b2eb20494365
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+@@ -0,0 +1,45 @@
++Ingenic jz47xx GPIO controller
++
++Required properties:
++  - compatible:
++    - "ingenic,jz4740-gpio" for the JZ4740 SoC
++    - "ingenic,jz4780-gpio" for the JZ4780 SoC
++
++  - reg: Base address and length of each memory resource used by the GPIO
++    controller hardware module.
++
++  - gpio-controller: Marks the device node as a GPIO controller.
++  - #gpio-cells: Should be 2. The first cell is the GPIO number and the second
++    cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>. Only the
++    GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
++  - gpio-ranges: Range of pins managed by the GPIO controller.
++
++Optional properties:
++  - base: The GPIO number to use as the base for this driver.
++  - interrupt-controller: Marks the device node as an interrupt controller.
++  - interrupts: Interrupt specifier for the controllers interrupt.
++    Required if 'interrupt-controller' is specified.
++
++Please refer to gpio.txt in this directory for details of gpio-ranges property
++and the common GPIO bindings used by client devices.
++
++The GPIO controller also acts as an interrupt controller. It uses the default
++two cells specifier as described in Documentation/devicetree/bindings/
++interrupt-controller/interrupts.txt.
++
++Example:
++
++gpa: gpio-controller@10010000 {
++	compatible = "ingenic,jz4740-gpio";
++	reg = <0x10010000 0x100>;
++
++	gpio-controller;
++	gpio-ranges = <&pinctrl 0 0 32>;
++	#gpio-cells = <2>;
++
++	interrupt-controller;
++	#interrupt-cells = <2>;
++
++	interrupt-parent = <&intc>;
++	interrupts = <28>;
++};
 -- 
-1.9.1
+2.11.0
 

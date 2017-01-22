@@ -1,581 +1,436 @@
-From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Mon, 30 Jan 2017 23:01:32 +0000
-Subject: [PATCH v5 1/2] backlight arcxcnn add support for ArcticSand devices
-Message-Id: <1485817292-9415-1-git-send-email-olimpiu@arcticsand.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:37 +0000
+Subject: [PATCH v2 04/14] GPIO: Add gpio-ingenic driver
+Message-Id: <20170122144947.16158-5-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-backlight: Add support for Arctic Sand LED backlight driver chips
-This driver provides support for the Arctic Sand arc2c0608 chip, 
-    and provides a framework to support future devices.
-Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+This driver handles the GPIOs of all the Ingenic JZ47xx SoCs
+currently supported by the upsteam Linux kernel.
+
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
-v4 => v5:
-- Code style changes per Joe Perches and Jingoo Han
-v3 => v4:
-- Code style changes per Joe Perches and Jingoo Han
-v2 => v3:
-- Renamed variables to comply with conventions on naming
-- Corrected device name in arcxcnn.h
-v1 => v2:
-- Removed "magic numbers" to initialize registers
-- Cleaned up device tree bindings
-- Fixed code style to address comments and pass "checkpatch"
-- Removed unneeded debug and testing code
+ drivers/gpio/Kconfig        |  10 ++
+ drivers/gpio/Makefile       |   1 +
+ drivers/gpio/gpio-ingenic.c | 367 ++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 378 insertions(+)
+ create mode 100644 drivers/gpio/gpio-ingenic.c
 
- drivers/video/backlight/Kconfig      |   7 +
- drivers/video/backlight/Makefile     |   1 +
- drivers/video/backlight/arcxcnn_bl.c | 451 +++++++++++++++++++++++++++++++++++
- include/linux/i2c/arcxcnn.h          |  51 ++++
- 4 files changed, 510 insertions(+)
- create mode 100644 drivers/video/backlight/arcxcnn_bl.c
- create mode 100644 include/linux/i2c/arcxcnn.h
+v2: Consider it's a new patch. Completely rewritten from v1.
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 5ffa4b4..4e1d2ad 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -460,6 +460,13 @@ config BACKLIGHT_BD6107
- 	help
- 	  If you have a Rohm BD6107 say Y to enable the backlight driver.
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index d5d36549ecc1..21992ca29342 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -225,6 +225,16 @@ config GPIO_ICH
  
-+config BACKLIGHT_ARCXCNN
-+	tristate "Backlight driver for the Arctic Sands ARCxCnnnn family"
-+	depends on I2C
+ 	  If unsure, say N.
+ 
++config GPIO_INGENIC
++	tristate "Ingenic JZ47xx SoCs GPIO support"
++	depends on MACH_INGENIC || COMPILE_TEST
++	select GPIOLIB_IRQCHIP
 +	help
-+	  If you have an ARCxCnnnn family backlight say Y to enable
-+	  the backlight driver.
++	  Say yes here to support the GPIO functionality present on the
++	  JZ4740 and JZ4780 SoCs from Ingenic.
 +
- endif # BACKLIGHT_CLASS_DEVICE
- 
- endif # BACKLIGHT_LCD_SUPPORT
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 16ec534..8905129 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -55,3 +55,4 @@ obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
- obj-$(CONFIG_BACKLIGHT_TOSA)		+= tosa_bl.o
- obj-$(CONFIG_BACKLIGHT_TPS65217)	+= tps65217_bl.o
- obj-$(CONFIG_BACKLIGHT_WM831X)		+= wm831x_bl.o
-+obj-$(CONFIG_BACKLIGHT_ARCXCNN) 	+= arcxcnn_bl.o
-diff --git a/drivers/video/backlight/arcxcnn_bl.c b/drivers/video/backlight/arcxcnn_bl.c
++	  If unsure, say N.
++
+ config GPIO_IOP
+ 	tristate "Intel IOP GPIO"
+ 	depends on ARCH_IOP32X || ARCH_IOP33X || COMPILE_TEST
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index a7676b82de6f..3c5412ae56f0 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -52,6 +52,7 @@ obj-$(CONFIG_GPIO_GPIO_MM)	+= gpio-gpio-mm.o
+ obj-$(CONFIG_GPIO_GRGPIO)	+= gpio-grgpio.o
+ obj-$(CONFIG_HTC_EGPIO)		+= gpio-htc-egpio.o
+ obj-$(CONFIG_GPIO_ICH)		+= gpio-ich.o
++obj-$(CONFIG_GPIO_INGENIC)	+= gpio-ingenic.o
+ obj-$(CONFIG_GPIO_IOP)		+= gpio-iop.o
+ obj-$(CONFIG_GPIO_IT87)		+= gpio-it87.o
+ obj-$(CONFIG_GPIO_JANZ_TTL)	+= gpio-janz-ttl.o
+diff --git a/drivers/gpio/gpio-ingenic.c b/drivers/gpio/gpio-ingenic.c
 new file mode 100644
-index 0000000..284df08
+index 000000000000..aa9e0cb794c3
 --- /dev/null
-+++ b/drivers/video/backlight/arcxcnn_bl.c
-@@ -0,0 +1,451 @@
++++ b/drivers/gpio/gpio-ingenic.c
+@@ -0,0 +1,367 @@
 +/*
-+ * Backlight driver for ArcticSand ARC_X_C_0N_0N Devices
++ * Ingenic JZ47xx GPIO driver
 + *
-+ * Copyright 2016 ArcticSand, Inc.
-+ * Author : Brian Dodge <bdodge@arcticsand.com>
++ * Copyright (c) 2017 Paul Cercueil <paul@crapouillou.net>
 + *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
++ * License terms: GNU General Public License (GPL) version 2
 + */
 +
-+#include <linux/backlight.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
++#include <linux/gpio/driver.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
 +#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
++#include <linux/of_address.h>
++#include <linux/of_device.h>
++#include <linux/of_irq.h>
 +
-+#include "linux/i2c/arcxcnn.h"
++#define GPIO_PIN	0x00
++#define GPIO_MSK	0x20
 +
-+#define ARCXCNN_CMD		0x00	/* Command Register */
-+#define ARCXCNN_CMD_STDBY	0x80	/*   I2C Standby */
-+#define ARCXCNN_CMD_RESET	0x40	/*   Reset */
-+#define ARCXCNN_CMD_BOOST	0x10	/*   Boost */
-+#define ARCXCNN_CMD_OVP_MASK	0x0C	/*   --- Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_XXV	0x0C	/*   <rsvrd> Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_20V	0x08	/*   20v Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_24V	0x04	/*   24v Over Voltage Threshold */
-+#define ARCXCNN_CMD_OVP_31V	0x00	/*   31.4v Over Voltage Threshold */
-+#define ARCXCNN_CMD_EXT_COMP	0x01	/*   part (0) or full (1) ext. comp */
++#define JZ4740_GPIO_DATA	0x10
++#define JZ4740_GPIO_SELECT	0x50
++#define JZ4740_GPIO_DIR		0x60
++#define JZ4740_GPIO_TRIG	0x70
++#define JZ4740_GPIO_FLAG	0x80
 +
-+#define ARCXCNN_CONFIG		0x01	/* Configuration */
-+#define ARCXCNN_STATUS1		0x02	/* Status 1 */
-+#define ARCXCNN_STATUS2		0x03	/* Status 2 */
-+#define ARCXCNN_FADECTRL	0x04	/* Fading Control */
-+#define ARCXCNN_ILED_CONFIG	0x05	/* ILED Configuration */
-+#define ARCXCNN_ILED_DIM_PWM	0x00	/*   config dim mode pwm */
-+#define ARCXCNN_ILED_DIM_INT	0x04	/*   config dim mode internal */
-+#define ARCXCNN_LEDEN		0x06	/* LED Enable Register */
-+#define ARCXCNN_LEDEN_ISETEXT	0x80	/*   Full-scale current set extern */
-+#define ARCXCNN_LEDEN_MASK	0x3F	/*   LED string enables mask */
-+#define ARCXCNN_LEDEN_BITS	0x06	/*   Bits of LED string enables */
-+#define ARCXCNN_LEDEN_LED1	0x01
-+#define ARCXCNN_LEDEN_LED2	0x02
-+#define ARCXCNN_LEDEN_LED3	0x04
-+#define ARCXCNN_LEDEN_LED4	0x08
-+#define ARCXCNN_LEDEN_LED5	0x10
-+#define ARCXCNN_LEDEN_LED6	0x20
++#define JZ4780_GPIO_INT		0x10
++#define JZ4780_GPIO_PAT1	0x30
++#define JZ4780_GPIO_PAT0	0x40
++#define JZ4780_GPIO_FLAG	0x50
 +
-+#define ARCXCNN_WLED_ISET_LSB	0x07	/* LED ISET LSB (in upper nibble) */
-+#define ARCXCNN_WLED_ISET_LSB_SHIFT 0x04  /* ISET LSB Left Shift */
-+#define ARCXCNN_WLED_ISET_MSB	0x08	/* LED ISET MSB (8 bits) */
++#define REG_SET(x) ((x) + 0x4)
++#define REG_CLEAR(x) ((x) + 0x8)
 +
-+#define ARCXCNN_DIMFREQ		0x09
-+#define ARCXCNN_COMP_CONFIG	0x0A
-+#define ARCXCNN_FILT_CONFIG	0x0B
-+#define ARCXCNN_IMAXTUNE	0x0C
-+#define ARCXCNN_ID_MSB		0x1E
-+#define ARCXCNN_ID_LSB		0x1F
-+
-+#define MAX_BRIGHTNESS		4095
-+
-+static int no_reset_on_remove;
-+module_param_named(noreset, no_reset_on_remove, int, 0644);
-+MODULE_PARM_DESC(noreset, "No reset on module removal");
-+
-+static int ibright = 60;
-+module_param_named(ibright, ibright, int, 0644);
-+MODULE_PARM_DESC(ibright, "Initial brightness (when no plat data)");
-+
-+static int ileden = ARCXCNN_LEDEN_MASK;
-+module_param_named(ileden, ileden, int, 0644);
-+MODULE_PARM_DESC(ileden, "Initial LED String Enables (when no plat data)");
-+
-+struct arcxcnn {
-+	char chipname[64];
-+	struct i2c_client *client;
-+	struct backlight_device *bl;
-+	struct device *dev;
-+	struct arcxcnn_platform_data *pdata;
++enum jz_version {
++	ID_JZ4740,
++	ID_JZ4780,
 +};
 +
-+static int arcxcnn_update_bit(struct arcxcnn *lp, u8 reg, u8 mask, u8 data)
-+{
-+	int ret;
-+	u8 tmp;
++struct ingenic_gpio_chip {
++	void __iomem *base;
++	struct gpio_chip gc;
++	struct irq_chip irq_chip;
++	unsigned int irq;
++	enum jz_version version;
++};
 +
-+	ret = i2c_smbus_read_byte_data(lp->client, reg);
-+	if (ret < 0) {
-+		dev_err(lp->dev, "failed to read 0x%.2x\n", reg);
-+		return ret;
++static inline bool gpio_get_value(struct ingenic_gpio_chip *jzgc, u8 offset)
++{
++	if (jzgc->version >= ID_JZ4780)
++		return readl(jzgc->base + GPIO_PIN) & BIT(offset);
++	else
++		return readl(jzgc->base + JZ4740_GPIO_DATA) & BIT(offset);
++}
++
++static void gpio_set_value(struct ingenic_gpio_chip *jzgc, u8 offset, int value)
++{
++	u8 reg;
++
++	if (jzgc->version >= ID_JZ4780)
++		reg = JZ4780_GPIO_PAT0;
++	else
++		reg = JZ4740_GPIO_DATA;
++
++	if (value)
++		writel(BIT(offset), jzgc->base + REG_SET(reg));
++	else
++		writel(BIT(offset), jzgc->base + REG_CLEAR(reg));
++}
++
++static void irq_set_type(struct ingenic_gpio_chip *jzgc,
++		u8 offset, unsigned int type)
++{
++	u8 reg1, reg2;
++
++	if (jzgc->version >= ID_JZ4780) {
++		reg1 = JZ4780_GPIO_PAT1;
++		reg2 = JZ4780_GPIO_PAT0;
++	} else {
++		reg1 = JZ4740_GPIO_TRIG;
++		reg2 = JZ4740_GPIO_DIR;
 +	}
 +
-+	tmp = (u8)ret;
-+	tmp &= ~mask;
-+	tmp |= data & mask;
++	switch (type) {
++	case IRQ_TYPE_EDGE_RISING:
++		writel(BIT(offset), jzgc->base + REG_SET(reg2));
++		writel(BIT(offset), jzgc->base + REG_SET(reg1));
++		break;
++	case IRQ_TYPE_EDGE_FALLING:
++		writel(BIT(offset), jzgc->base + REG_CLEAR(reg2));
++		writel(BIT(offset), jzgc->base + REG_SET(reg1));
++		break;
++	case IRQ_TYPE_LEVEL_HIGH:
++		writel(BIT(offset), jzgc->base + REG_SET(reg2));
++		writel(BIT(offset), jzgc->base + REG_CLEAR(reg1));
++		break;
++	case IRQ_TYPE_LEVEL_LOW:
++	default:
++		writel(BIT(offset), jzgc->base + REG_CLEAR(reg2));
++		writel(BIT(offset), jzgc->base + REG_CLEAR(reg1));
++		break;
++	};
 +
-+	return i2c_smbus_write_byte_data(lp->client, reg, tmp);
 +}
 +
-+static int arcxcnn_set_brightness(struct arcxcnn *lp, u32 brightness)
++static void ingenic_gpio_irq_mask(struct irq_data *irqd)
 +{
-+	int ret;
-+	u8 val;
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
 +
-+	/* lower nibble of brightness goes in upper nibble of LSB register */
-+	val = (brightness & 0xF) << ARCXCNN_WLED_ISET_LSB_SHIFT;
-+	ret = i2c_smbus_write_byte_data(lp->client, ARCXCNN_WLED_ISET_LSB, val);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* remaining 8 bits of brightness go in MSB register */
-+	val = (brightness >> 4);
-+	ret = i2c_smbus_write_byte_data(lp->client, ARCXCNN_WLED_ISET_MSB, val);
-+
-+	return ret;
++	writel(BIT(irqd->hwirq), jzgc->base + REG_SET(GPIO_MSK));
 +}
 +
-+static int arcxcnn_bl_update_status(struct backlight_device *bl)
++static void ingenic_gpio_irq_unmask(struct irq_data *irqd)
 +{
-+	struct arcxcnn *lp = bl_get_data(bl);
-+	u32 brightness = bl->props.brightness;
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
 +
-+	if (bl->props.state & (BL_CORE_SUSPENDED | BL_CORE_FBBLANK))
-+		brightness = 0;
++	writel(BIT(irqd->hwirq), jzgc->base + REG_CLEAR(GPIO_MSK));
++}
 +
-+	arcxcnn_set_brightness(lp, brightness);
++static void ingenic_gpio_irq_enable(struct irq_data *irqd)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++	int irq = irqd->hwirq;
 +
-+	/* set power-on/off/save modes */
-+	arcxcnn_update_bit(lp, ARCXCNN_CMD, ARCXCNN_CMD_STDBY,
-+		(bl->props.power = 0) ? 0 : ARCXCNN_CMD_STDBY);
++	if (jzgc->version >= ID_JZ4780)
++		writel(BIT(irq), jzgc->base + REG_SET(JZ4780_GPIO_INT));
++	else
++		writel(BIT(irq), jzgc->base + REG_SET(JZ4740_GPIO_SELECT));
 +
++	ingenic_gpio_irq_unmask(irqd);
++}
++
++static void ingenic_gpio_irq_disable(struct irq_data *irqd)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++	int irq = irqd->hwirq;
++
++	ingenic_gpio_irq_mask(irqd);
++
++	if (jzgc->version >= ID_JZ4780)
++		writel(BIT(irq), jzgc->base + REG_CLEAR(JZ4780_GPIO_INT));
++	else
++		writel(BIT(irq), jzgc->base + REG_CLEAR(JZ4740_GPIO_SELECT));
++}
++
++static void ingenic_gpio_irq_ack(struct irq_data *irqd)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++	int irq = irqd->hwirq;
++	bool high;
++
++	if (irqd_get_trigger_type(irqd) = IRQ_TYPE_EDGE_BOTH) {
++		/*
++		 * Switch to an interrupt for the opposite edge to the one that
++		 * triggered the interrupt being ACKed.
++		 */
++		high = gpio_get_value(jzgc, irq);
++		if (high)
++			irq_set_type(jzgc, irq, IRQ_TYPE_EDGE_FALLING);
++		else
++			irq_set_type(jzgc, irq, IRQ_TYPE_EDGE_RISING);
++	}
++
++	if (jzgc->version >= ID_JZ4780)
++		writel(BIT(irq), jzgc->base + REG_CLEAR(JZ4780_GPIO_FLAG));
++	else
++		writel(BIT(irq), jzgc->base + REG_SET(JZ4740_GPIO_DATA));
++}
++
++static int ingenic_gpio_irq_set_type(struct irq_data *irqd, unsigned int type)
++{
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++
++	switch (type) {
++	case IRQ_TYPE_EDGE_BOTH:
++	case IRQ_TYPE_EDGE_RISING:
++	case IRQ_TYPE_EDGE_FALLING:
++		irq_set_handler_locked(irqd, handle_edge_irq);
++		break;
++	case IRQ_TYPE_LEVEL_HIGH:
++	case IRQ_TYPE_LEVEL_LOW:
++		irq_set_handler_locked(irqd, handle_level_irq);
++		break;
++	default:
++		irq_set_handler_locked(irqd, handle_bad_irq);
++	}
++
++	if (type = IRQ_TYPE_EDGE_BOTH) {
++		/*
++		 * The hardware does not support interrupts on both edges. The
++		 * best we can do is to set up a single-edge interrupt and then
++		 * switch to the opposing edge when ACKing the interrupt.
++		 */
++		bool high = gpio_get_value(jzgc, irqd->hwirq);
++
++		type = high ? IRQ_TYPE_EDGE_FALLING : IRQ_TYPE_EDGE_RISING;
++	}
++
++	irq_set_type(jzgc, irqd->hwirq, type);
 +	return 0;
 +}
 +
-+static const struct backlight_ops arcxcnn_bl_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status = arcxcnn_bl_update_status,
-+};
-+
-+static int arcxcnn_backlight_register(struct arcxcnn *lp)
++static int ingenic_gpio_irq_set_wake(struct irq_data *irqd, unsigned int on)
 +{
-+	struct backlight_properties *props;
-+	const char *name = lp->pdata->name ? : "arctic_bl";
++	struct gpio_chip *gc = irq_data_get_irq_chip_data(irqd);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
 +
-+	props = devm_kzalloc(lp->dev, sizeof(*props), GFP_KERNEL);
-+	if (!props)
++	return irq_set_irq_wake(jzgc->irq, on);
++}
++
++static void ingenic_gpio_irq_handler(struct irq_desc *desc)
++{
++	struct gpio_chip *gc = irq_desc_get_handler_data(desc);
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++	struct irq_chip *irq_chip = irq_data_get_irq_chip(&desc->irq_data);
++	unsigned long flag, i;
++
++	chained_irq_enter(irq_chip, desc);
++
++	if (jzgc->version >= ID_JZ4780)
++		flag = readl(jzgc->base + JZ4780_GPIO_FLAG);
++	else
++		flag = readl(jzgc->base + JZ4740_GPIO_FLAG);
++
++	for_each_set_bit(i, &flag, 32)
++		generic_handle_irq(irq_linear_revmap(gc->irqdomain, i));
++	chained_irq_exit(irq_chip, desc);
++}
++
++static void ingenic_gpio_set(struct gpio_chip *gc,
++		unsigned int offset, int value)
++{
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++
++	gpio_set_value(jzgc, offset, value);
++}
++
++static int ingenic_gpio_get(struct gpio_chip *gc, unsigned int offset)
++{
++	struct ingenic_gpio_chip *jzgc = gpiochip_get_data(gc);
++
++	return (int) gpio_get_value(jzgc, offset);
++}
++
++static int ingenic_gpio_direction_input(struct gpio_chip *gc,
++		unsigned int offset)
++{
++	return pinctrl_gpio_direction_input(gc->base + offset);
++}
++
++static int ingenic_gpio_direction_output(struct gpio_chip *gc,
++		unsigned int offset, int value)
++{
++	ingenic_gpio_set(gc, offset, value);
++	return pinctrl_gpio_direction_output(gc->base + offset);
++}
++
++static const struct of_device_id ingenic_gpio_of_match[] = {
++	{ .compatible = "ingenic,jz4740-gpio", .data = (void *)ID_JZ4740 },
++	{ .compatible = "ingenic,jz4780-gpio", .data = (void *)ID_JZ4780 },
++	{},
++};
++MODULE_DEVICE_TABLE(of, ingenic_gpio_of_match);
++
++static int ingenic_gpio_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	const struct of_device_id *of_id = of_match_device(
++			ingenic_gpio_of_match, dev);
++	struct ingenic_gpio_chip *jzgc;
++	int err;
++
++	jzgc = devm_kzalloc(dev, sizeof(*jzgc), GFP_KERNEL);
++	if (!jzgc)
 +		return -ENOMEM;
 +
-+	props->type = BACKLIGHT_PLATFORM;
-+	props->max_brightness = MAX_BRIGHTNESS;
++	jzgc->base = of_iomap(dev->of_node, 0);
++	if (!jzgc->base) {
++		dev_err(dev, "failed to map IO memory\n");
++		return -ENXIO;
++	}
 +
-+	if (lp->pdata->initial_brightness > props->max_brightness)
-+		lp->pdata->initial_brightness = props->max_brightness;
++	jzgc->gc.base = -1;
++	jzgc->gc.ngpio = 32;
++	jzgc->gc.parent = dev;
++	jzgc->gc.of_node = dev->of_node;
++	jzgc->gc.label = "";
++	jzgc->gc.owner = THIS_MODULE;
++	jzgc->version = (enum jz_version)of_id->data;
 +
-+	props->brightness = lp->pdata->initial_brightness;
++	jzgc->gc.set = ingenic_gpio_set;
++	jzgc->gc.get = ingenic_gpio_get;
++	jzgc->gc.direction_input = ingenic_gpio_direction_input;
++	jzgc->gc.direction_output = ingenic_gpio_direction_output;
 +
-+	lp->bl = devm_backlight_device_register(lp->dev, name, lp->dev, lp,
-+				       &arcxcnn_bl_ops, props);
-+	if (IS_ERR(lp->bl))
-+		return PTR_ERR(lp->bl);
++	if (of_property_read_bool(dev->of_node, "gpio-ranges")) {
++		jzgc->gc.request = gpiochip_generic_request;
++		jzgc->gc.free = gpiochip_generic_free;
++	}
 +
-+	return 0;
-+}
++	of_property_read_u32(dev->of_node, "base", &jzgc->gc.base);
 +
-+static ssize_t arcxcnn_chip_id_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
++	err = devm_gpiochip_add_data(dev, &jzgc->gc, jzgc);
++	if (err)
++		return err;
 +
-+	return scnprintf(buf, PAGE_SIZE, "%s\n", lp->chipname);
-+}
-+
-+static ssize_t arcxcnn_leden_show(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
-+
-+	return scnprintf(buf, PAGE_SIZE, "%02X\n", lp->pdata->leden);
-+}
-+
-+static ssize_t arcxcnn_leden_store(struct device *dev,
-+		struct device_attribute *attr, const char *buf, size_t len)
-+{
-+	struct arcxcnn *lp = dev_get_drvdata(dev);
-+	unsigned long leden;
-+
-+	if (kstrtoul(buf, 0, &leden))
++	if (!of_property_read_bool(dev->of_node, "interrupt-controller"))
 +		return 0;
 +
-+	if (leden != lp->pdata->leden) {
-+		/* don't allow 0 for leden, use power to turn all off */
-+		if (leden = 0)
-+			return -EINVAL;
-+		lp->pdata->leden = leden & ARCXCNN_LEDEN_MASK;
-+		arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
-+			ARCXCNN_LEDEN_MASK, lp->pdata->leden);
-+	}
++	jzgc->irq = irq_of_parse_and_map(dev->of_node, 0);
++	if (!jzgc->irq)
++		return -EINVAL;
 +
-+	return len;
-+}
++	jzgc->irq_chip.name = dev->of_node->name;
++	jzgc->irq_chip.irq_enable = ingenic_gpio_irq_enable;
++	jzgc->irq_chip.irq_disable = ingenic_gpio_irq_disable;
++	jzgc->irq_chip.irq_unmask = ingenic_gpio_irq_unmask;
++	jzgc->irq_chip.irq_mask = ingenic_gpio_irq_mask;
++	jzgc->irq_chip.irq_ack = ingenic_gpio_irq_ack;
++	jzgc->irq_chip.irq_set_type = ingenic_gpio_irq_set_type;
++	jzgc->irq_chip.irq_set_wake = ingenic_gpio_irq_set_wake;
++	jzgc->irq_chip.flags = IRQCHIP_MASK_ON_SUSPEND;
 +
-+static DEVICE_ATTR(chip_id, 0444, arcxcnn_chip_id_show, NULL);
-+static DEVICE_ATTR(leden, 0664, arcxcnn_leden_show, arcxcnn_leden_store);
++	err = gpiochip_irqchip_add(&jzgc->gc, &jzgc->irq_chip, 0,
++			handle_level_irq, IRQ_TYPE_NONE);
++	if (err)
++		return err;
 +
-+static struct attribute *arcxcnn_attributes[] = {
-+	&dev_attr_chip_id.attr,
-+	&dev_attr_leden.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group arcxcnn_attr_group = {
-+	.attrs = arcxcnn_attributes,
-+};
-+
-+static void arcxcnn_parse_dt(struct arcxcnn *lp)
-+{
-+	struct device *dev = lp->dev;
-+	struct device_node *node = dev->of_node;
-+	u32 prog_val, num_entry, entry, sources[ARCXCNN_LEDEN_BITS];
-+	int ret;
-+
-+	/* device tree entry isn't required, defaults are OK */
-+	if (!node)
-+		return;
-+
-+	ret = of_property_read_string(node, "label", &lp->pdata->name);
-+	if (ret < 0)
-+		lp->pdata->name = NULL;
-+
-+	ret = of_property_read_u32(node, "default-brightness", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->initial_brightness = prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,led-config-0", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->led_config_0 = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,led-config-1", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->led_config_1 = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,dim-freq", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->dim_freq = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,comp-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->comp_config = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,filter-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->filter_config = (u8)prog_val;
-+
-+	ret = of_property_read_u32(node, "arc,trim-config", &prog_val);
-+	if (ret = 0)
-+		lp->pdata->trim_config = (u8)prog_val;
-+
-+	ret = of_property_count_u32_elems(node, "led-sources");
-+	if (ret < 0) {
-+		lp->pdata->leden = ARCXCNN_LEDEN_MASK; /* all on is default */
-+	} else {
-+		num_entry = ret;
-+		if (num_entry > ARCXCNN_LEDEN_BITS)
-+			num_entry = ARCXCNN_LEDEN_BITS;
-+
-+		ret = of_property_read_u32_array(node, "led-sources", sources,
-+					num_entry);
-+		if (ret < 0) {
-+			dev_err(dev, "led-sources node is invalid.\n");
-+			return;
-+		}
-+
-+		lp->pdata->leden = 0;
-+
-+		/* for each enable in source, set bit in led enable */
-+		for (entry = 0; entry < num_entry; entry++) {
-+			u8 onbit = 1 << sources[entry];
-+			lp->pdata->leden |= onbit;
-+		}
-+	}
-+}
-+
-+static int arcxcnn_probe(struct i2c_client *cl, const struct i2c_device_id *id)
-+{
-+	struct arcxcnn *lp;
-+	int ret;
-+	u8 regval;
-+	u16 chipid;
-+
-+	if (!i2c_check_functionality(cl->adapter, I2C_FUNC_SMBUS_BYTE_DATA))
-+		return -EIO;
-+
-+	lp = devm_kzalloc(&cl->dev, sizeof(*lp), GFP_KERNEL);
-+	if (!lp)
-+		return -ENOMEM;
-+
-+	lp->client = cl;
-+	lp->dev = &cl->dev;
-+	lp->pdata = dev_get_platdata(&cl->dev);
-+
-+	/* reset the device */
-+	i2c_smbus_write_byte_data(lp->client,
-+		ARCXCNN_CMD, ARCXCNN_CMD_RESET);
-+
-+	/* read device ID */
-+	regval = i2c_smbus_read_byte_data(lp->client, ARCXCNN_ID_MSB);
-+	chipid = regval;
-+	chipid <<= 8;
-+
-+	regval = i2c_smbus_read_byte_data(lp->client, ARCXCNN_ID_LSB);
-+	chipid |= regval;
-+
-+	snprintf(lp->chipname, sizeof(lp->chipname),
-+		"%s-%04X", id->name, chipid);
-+
-+	if (!lp->pdata) {
-+		lp->pdata = devm_kzalloc(lp->dev,
-+				sizeof(*lp->pdata), GFP_KERNEL);
-+		if (!lp->pdata)
-+			return -ENOMEM;
-+
-+		/* Setup defaults based on power-on defaults */
-+		lp->pdata->name = NULL;
-+		lp->pdata->initial_brightness = ibright;
-+		lp->pdata->leden = ileden;
-+
-+		lp->pdata->led_config_0 = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_FADECTRL);
-+
-+		lp->pdata->led_config_1 = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_ILED_CONFIG);
-+		/* insure dim mode is not default pwm */
-+		lp->pdata->led_config_1 |= ARCXCNN_ILED_DIM_INT;
-+
-+		lp->pdata->dim_freq = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_DIMFREQ);
-+
-+		lp->pdata->comp_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_COMP_CONFIG);
-+
-+		lp->pdata->filter_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_FILT_CONFIG);
-+
-+		lp->pdata->trim_config = i2c_smbus_read_byte_data(
-+			lp->client, ARCXCNN_IMAXTUNE);
-+
-+		if (IS_ENABLED(CONFIG_OF))
-+			arcxcnn_parse_dt(lp);
-+	}
-+
-+	i2c_set_clientdata(cl, lp);
-+
-+	/* constrain settings to what is possible */
-+	if (lp->pdata->initial_brightness > MAX_BRIGHTNESS)
-+		lp->pdata->initial_brightness = MAX_BRIGHTNESS;
-+
-+	/* set initial brightness */
-+	arcxcnn_set_brightness(lp, lp->pdata->initial_brightness);
-+
-+	/* set other register values directly */
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_FADECTRL,
-+		lp->pdata->led_config_0);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_ILED_CONFIG,
-+		lp->pdata->led_config_1);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_DIMFREQ,
-+		lp->pdata->dim_freq);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_COMP_CONFIG,
-+		lp->pdata->comp_config);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_FILT_CONFIG,
-+		lp->pdata->filter_config);
-+	i2c_smbus_write_byte_data(lp->client, ARCXCNN_IMAXTUNE,
-+		lp->pdata->trim_config);
-+
-+	/* set initial LED Enables */
-+	arcxcnn_update_bit(lp, ARCXCNN_LEDEN,
-+		ARCXCNN_LEDEN_MASK, lp->pdata->leden);
-+
-+	ret = arcxcnn_backlight_register(lp);
-+	if (ret) {
-+		dev_err(lp->dev,
-+			"failed to register backlight. err: %d\n", ret);
-+		return ret;
-+	}
-+
-+	ret = sysfs_create_group(&lp->dev->kobj, &arcxcnn_attr_group);
-+	if (ret) {
-+		dev_err(lp->dev, "failed to register sysfs. err: %d\n", ret);
-+		return ret;
-+	}
-+
-+	backlight_update_status(lp->bl);
-+
++	gpiochip_set_chained_irqchip(&jzgc->gc, &jzgc->irq_chip,
++			jzgc->irq, ingenic_gpio_irq_handler);
 +	return 0;
 +}
 +
-+static int arcxcnn_remove(struct i2c_client *cl)
++static int ingenic_gpio_remove(struct platform_device *pdev)
 +{
-+	struct arcxcnn *lp = i2c_get_clientdata(cl);
-+
-+	if (!no_reset_on_remove) {
-+		/* disable all strings */
-+		i2c_smbus_write_byte_data(lp->client,
-+			ARCXCNN_LEDEN, 0x00);
-+		/* reset the device */
-+		i2c_smbus_write_byte_data(lp->client,
-+			ARCXCNN_CMD, ARCXCNN_CMD_RESET);
-+	}
-+	lp->bl->props.brightness = 0;
-+
-+	backlight_update_status(lp->bl);
-+
-+	sysfs_remove_group(&lp->dev->kobj, &arcxcnn_attr_group);
-+
 +	return 0;
 +}
 +
-+static const struct of_device_id arcxcnn_dt_ids[] = {
-+	{ .compatible = "arc,arc2c0608" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, arcxcnn_dt_ids);
-+
-+static const struct i2c_device_id arcxcnn_ids[] = {
-+	{"arc2c0608", ARC2C0608},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(i2c, arcxcnn_ids);
-+
-+static struct i2c_driver arcxcnn_driver = {
++static struct platform_driver ingenic_gpio_driver = {
 +	.driver = {
-+		.name = "arcxcnn_bl",
-+		.of_match_table = of_match_ptr(arcxcnn_dt_ids),
++		.name = "gpio-ingenic",
++		.of_match_table = of_match_ptr(ingenic_gpio_of_match),
 +	},
-+	.probe = arcxcnn_probe,
-+	.remove = arcxcnn_remove,
-+	.id_table = arcxcnn_ids,
-+};
-+module_i2c_driver(arcxcnn_driver);
-+
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR("Brian Dodge <bdodge@arcticsand.com>");
-+MODULE_DESCRIPTION("ARCXCNN Backlight driver");
-diff --git a/include/linux/i2c/arcxcnn.h b/include/linux/i2c/arcxcnn.h
-new file mode 100644
-index 0000000..e378d63
---- /dev/null
-+++ b/include/linux/i2c/arcxcnn.h
-@@ -0,0 +1,51 @@
-+/*
-+ * Backlight driver for ArcticSand ARCXCNN Devices
-+ *
-+ * Copyright 2016 ArcticSand, Inc.
-+ * Author : Brian Dodge <bdodge@arcticsand.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ * General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, see <http://www.gnu.org/licenses/>.
-+ */
-+
-+#ifndef _ARCXCNN_H
-+#define _ARCXCNN_H
-+
-+enum arcxcnn_chip_id {
-+	ARC2C0608
++	.probe = ingenic_gpio_probe,
++	.remove = ingenic_gpio_remove,
 +};
 +
-+/**
-+ * struct arcxcnn_platform_data
-+ * @name		: Backlight driver name (NULL will use default)
-+ * @initial_brightness	: initial value of backlight brightness
-+ * @leden		: initial LED string enables, upper bit is global on/off
-+ * @led_config_0	: fading speed (period between intensity steps)
-+ * @led_config_1	: misc settings, see datasheet
-+ * @dim_freq		: pwm dimming frequency if in pwm mode
-+ * @comp_config		: misc config, see datasheet
-+ * @filter_config	: RC/PWM filter config, see datasheet
-+ * @trim_config		: full scale current trim, see datasheet
-+ */
-+struct arcxcnn_platform_data {
-+	const char *name;
-+	u16 initial_brightness;
-+	u8	leden;
-+	u8	led_config_0;
-+	u8	led_config_1;
-+	u8	dim_freq;
-+	u8	comp_config;
-+	u8	filter_config;
-+	u8	trim_config;
-+};
++static int __init ingenic_gpio_drv_register(void)
++{
++	return platform_driver_register(&ingenic_gpio_driver);
++}
++subsys_initcall(ingenic_gpio_drv_register);
 +
-+#endif
++static void __exit ingenic_gpio_drv_unregister(void)
++{
++	platform_driver_unregister(&ingenic_gpio_driver);
++}
++module_exit(ingenic_gpio_drv_unregister);
++
++MODULE_AUTHOR("Paul Cercueil <paul@crapouillou.net>");
++MODULE_DESCRIPTION("Ingenic JZ47xx GPIO driver");
++MODULE_LICENSE("GPL");
 -- 
-2.7.4
+2.11.0
 

@@ -1,168 +1,191 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 30 Jan 2017 15:41:49 +0000
-Subject: [PATCH 2/2] gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
-Message-Id: <1485790909-2915-3-git-send-email-boris.brezillon@free-electrons.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 22 Jan 2017 14:49:45 +0000
+Subject: [PATCH v2 12/14] fbdev: jz4740-fb: Let the pinctrl driver configure the pins
+Message-Id: <20170122144947.16158-13-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1485790909-2915-1-git-send-email-boris.brezillon@free-electrons.com>
-In-Reply-To: <1485790909-2915-1-git-send-email-boris.brezillon@free-electrons.com>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170122144947.16158-1-paul@crapouillou.net>
+In-Reply-To: <20170122144947.16158-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-devm_fwnode_get_gpiod_from_child() currently allows GPIO users to
-request a GPIO that is defined in a child fwnode instead of directly in
-the device fwnode.
-Extend this API by adding the devm_fwnode_get_index_gpiod_from_child()
-helper which does the same except you can also specify an index in case
-the 'xx-gpios' property describe several GPIOs.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/gpio/devres.c         | 15 ++++++++-------
- drivers/gpio/gpiolib.c        |  9 +++++----
- include/linux/gpio/consumer.h | 21 +++++++++++++++------
- 3 files changed, 28 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/jz4740_fb.c | 104 ++--------------------------------------
+ 1 file changed, 3 insertions(+), 101 deletions(-)
 
-diff --git a/drivers/gpio/devres.c b/drivers/gpio/devres.c
-index dfbbd92d21b6..be5f947570db 100644
---- a/drivers/gpio/devres.c
-+++ b/drivers/gpio/devres.c
-@@ -123,18 +123,19 @@ struct gpio_desc *__must_check devm_gpiod_get_index(struct device *dev,
- EXPORT_SYMBOL(devm_gpiod_get_index);
+v2: No changes
+
+diff --git a/drivers/video/fbdev/jz4740_fb.c b/drivers/video/fbdev/jz4740_fb.c
+index 87790e9644d0..b57df83fdbd3 100644
+--- a/drivers/video/fbdev/jz4740_fb.c
++++ b/drivers/video/fbdev/jz4740_fb.c
+@@ -17,6 +17,7 @@
+ #include <linux/module.h>
+ #include <linux/mutex.h>
+ #include <linux/platform_device.h>
++#include <linux/pinctrl/consumer.h>
  
- /**
-- * devm_fwnode_get_gpiod_from_child - get a GPIO descriptor from a device's
-- *				      child node
-+ * devm_fwnode_get_index_gpiod_from_child - get a GPIO descriptor from a
-+ *					    device's child node
-  * @dev:	GPIO consumer
-  * @con_id:	function within the GPIO consumer
-+ * @index:	index of the GPIO to obtain in the consumer
-  * @child:	firmware node (child of @dev)
-  *
-  * GPIO descriptors returned from this function are automatically disposed on
-  * driver detach.
-  */
--struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
--						   const char *con_id,
--						   struct fwnode_handle *child)
-+struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(struct device *dev,
-+						const char *con_id, int index,
-+						struct fwnode_handle *child)
- {
- 	static const char * const suffixes[] = { "gpios", "gpio" };
- 	char prop_name[32]; /* 32 is max size of property name */
-@@ -155,7 +156,7 @@ struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
- 			snprintf(prop_name, sizeof(prop_name), "%s",
- 							       suffixes[i]);
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+@@ -27,7 +28,6 @@
+ #include <linux/dma-mapping.h>
  
--		desc = fwnode_get_named_gpiod(child, prop_name);
-+		desc = fwnode_get_named_gpiod(child, prop_name, index);
- 		if (!IS_ERR(desc) || (PTR_ERR(desc) != -ENOENT))
- 			break;
- 	}
-@@ -169,7 +170,7 @@ struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+ #include <asm/mach-jz4740/jz4740_fb.h>
+-#include <asm/mach-jz4740/gpio.h>
  
- 	return desc;
+ #define JZ_REG_LCD_CFG		0x00
+ #define JZ_REG_LCD_VSYNC	0x04
+@@ -146,93 +146,6 @@ static const struct fb_fix_screeninfo jzfb_fix = {
+ 	.accel		= FB_ACCEL_NONE,
+ };
+ 
+-static const struct jz_gpio_bulk_request jz_lcd_ctrl_pins[] = {
+-	JZ_GPIO_BULK_PIN(LCD_PCLK),
+-	JZ_GPIO_BULK_PIN(LCD_HSYNC),
+-	JZ_GPIO_BULK_PIN(LCD_VSYNC),
+-	JZ_GPIO_BULK_PIN(LCD_DE),
+-	JZ_GPIO_BULK_PIN(LCD_PS),
+-	JZ_GPIO_BULK_PIN(LCD_REV),
+-	JZ_GPIO_BULK_PIN(LCD_CLS),
+-	JZ_GPIO_BULK_PIN(LCD_SPL),
+-};
+-
+-static const struct jz_gpio_bulk_request jz_lcd_data_pins[] = {
+-	JZ_GPIO_BULK_PIN(LCD_DATA0),
+-	JZ_GPIO_BULK_PIN(LCD_DATA1),
+-	JZ_GPIO_BULK_PIN(LCD_DATA2),
+-	JZ_GPIO_BULK_PIN(LCD_DATA3),
+-	JZ_GPIO_BULK_PIN(LCD_DATA4),
+-	JZ_GPIO_BULK_PIN(LCD_DATA5),
+-	JZ_GPIO_BULK_PIN(LCD_DATA6),
+-	JZ_GPIO_BULK_PIN(LCD_DATA7),
+-	JZ_GPIO_BULK_PIN(LCD_DATA8),
+-	JZ_GPIO_BULK_PIN(LCD_DATA9),
+-	JZ_GPIO_BULK_PIN(LCD_DATA10),
+-	JZ_GPIO_BULK_PIN(LCD_DATA11),
+-	JZ_GPIO_BULK_PIN(LCD_DATA12),
+-	JZ_GPIO_BULK_PIN(LCD_DATA13),
+-	JZ_GPIO_BULK_PIN(LCD_DATA14),
+-	JZ_GPIO_BULK_PIN(LCD_DATA15),
+-	JZ_GPIO_BULK_PIN(LCD_DATA16),
+-	JZ_GPIO_BULK_PIN(LCD_DATA17),
+-};
+-
+-static unsigned int jzfb_num_ctrl_pins(struct jzfb *jzfb)
+-{
+-	unsigned int num;
+-
+-	switch (jzfb->pdata->lcd_type) {
+-	case JZ_LCD_TYPE_GENERIC_16_BIT:
+-		num = 4;
+-		break;
+-	case JZ_LCD_TYPE_GENERIC_18_BIT:
+-		num = 4;
+-		break;
+-	case JZ_LCD_TYPE_8BIT_SERIAL:
+-		num = 3;
+-		break;
+-	case JZ_LCD_TYPE_SPECIAL_TFT_1:
+-	case JZ_LCD_TYPE_SPECIAL_TFT_2:
+-	case JZ_LCD_TYPE_SPECIAL_TFT_3:
+-		num = 8;
+-		break;
+-	default:
+-		num = 0;
+-		break;
+-	}
+-	return num;
+-}
+-
+-static unsigned int jzfb_num_data_pins(struct jzfb *jzfb)
+-{
+-	unsigned int num;
+-
+-	switch (jzfb->pdata->lcd_type) {
+-	case JZ_LCD_TYPE_GENERIC_16_BIT:
+-		num = 16;
+-		break;
+-	case JZ_LCD_TYPE_GENERIC_18_BIT:
+-		num = 18;
+-		break;
+-	case JZ_LCD_TYPE_8BIT_SERIAL:
+-		num = 8;
+-		break;
+-	case JZ_LCD_TYPE_SPECIAL_TFT_1:
+-	case JZ_LCD_TYPE_SPECIAL_TFT_2:
+-	case JZ_LCD_TYPE_SPECIAL_TFT_3:
+-		if (jzfb->pdata->bpp = 18)
+-			num = 18;
+-		else
+-			num = 16;
+-		break;
+-	default:
+-		num = 0;
+-		break;
+-	}
+-	return num;
+-}
+-
+ /* Based on CNVT_TOHW macro from skeletonfb.c */
+ static inline uint32_t jzfb_convert_color_to_hw(unsigned val,
+ 	struct fb_bitfield *bf)
+@@ -487,8 +400,7 @@ static void jzfb_enable(struct jzfb *jzfb)
+ 
+ 	clk_prepare_enable(jzfb->ldclk);
+ 
+-	jz_gpio_bulk_resume(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+-	jz_gpio_bulk_resume(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
++	pinctrl_pm_select_default_state(&jzfb->pdev->dev);
+ 
+ 	writel(0, jzfb->base + JZ_REG_LCD_STATE);
+ 
+@@ -511,8 +423,7 @@ static void jzfb_disable(struct jzfb *jzfb)
+ 		ctrl = readl(jzfb->base + JZ_REG_LCD_STATE);
+ 	} while (!(ctrl & JZ_LCD_STATE_DISABLED));
+ 
+-	jz_gpio_bulk_suspend(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+-	jz_gpio_bulk_suspend(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
++	pinctrl_pm_select_sleep_state(&jzfb->pdev->dev);
+ 
+ 	clk_disable_unprepare(jzfb->ldclk);
  }
--EXPORT_SYMBOL(devm_fwnode_get_gpiod_from_child);
-+EXPORT_SYMBOL(devm_fwnode_get_index_gpiod_from_child);
+@@ -701,9 +612,6 @@ static int jzfb_probe(struct platform_device *pdev)
+ 	fb->mode = NULL;
+ 	jzfb_set_par(fb);
  
- /**
-  * devm_gpiod_get_index_optional - Resource-managed gpiod_get_index_optional()
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 86bf3b84ada5..9b7a7734e742 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -3309,6 +3309,7 @@ EXPORT_SYMBOL_GPL(gpiod_get_index);
-  * fwnode_get_named_gpiod - obtain a GPIO from firmware node
-  * @fwnode:	handle of the firmware node
-  * @propname:	name of the firmware property representing the GPIO
-+ * @index:	index of the GPIO to obtain in the consumer
-  *
-  * This function can be used for drivers that get their configuration
-  * from firmware.
-@@ -3320,7 +3321,7 @@ EXPORT_SYMBOL_GPL(gpiod_get_index);
-  * In case of error an ERR_PTR() is returned.
-  */
- struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
--					 const char *propname)
-+					 const char *propname, int index)
- {
- 	struct gpio_desc *desc = ERR_PTR(-ENODEV);
- 	bool active_low = false;
-@@ -3333,8 +3334,8 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
- 	if (is_of_node(fwnode)) {
- 		enum of_gpio_flags flags;
+-	jz_gpio_bulk_request(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+-	jz_gpio_bulk_request(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+-
+ 	ret = register_framebuffer(fb);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "Failed to register framebuffer: %d\n", ret);
+@@ -715,9 +623,6 @@ static int jzfb_probe(struct platform_device *pdev)
+ 	return 0;
  
--		desc = of_get_named_gpiod_flags(to_of_node(fwnode), propname, 0,
--						&flags);
-+		desc = of_get_named_gpiod_flags(to_of_node(fwnode), propname,
-+						index, &flags);
- 		if (!IS_ERR(desc)) {
- 			active_low = flags & OF_GPIO_ACTIVE_LOW;
- 			single_ended = flags & OF_GPIO_SINGLE_ENDED;
-@@ -3342,7 +3343,7 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
- 	} else if (is_acpi_node(fwnode)) {
- 		struct acpi_gpio_info info;
+ err_free_devmem:
+-	jz_gpio_bulk_free(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+-	jz_gpio_bulk_free(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+-
+ 	fb_dealloc_cmap(&fb->cmap);
+ 	jzfb_free_devmem(jzfb);
+ err_framebuffer_release:
+@@ -731,9 +636,6 @@ static int jzfb_remove(struct platform_device *pdev)
  
--		desc = acpi_node_get_gpiod(fwnode, propname, 0, &info);
-+		desc = acpi_node_get_gpiod(fwnode, propname, index, &info);
- 		if (!IS_ERR(desc))
- 			active_low = info.polarity = GPIO_ACTIVE_LOW;
- 	}
-diff --git a/include/linux/gpio/consumer.h b/include/linux/gpio/consumer.h
-index 2ce4bc164735..5d1125198fd7 100644
---- a/include/linux/gpio/consumer.h
-+++ b/include/linux/gpio/consumer.h
-@@ -135,10 +135,11 @@ int desc_to_gpio(const struct gpio_desc *desc);
- struct fwnode_handle;
+ 	jzfb_blank(FB_BLANK_POWERDOWN, jzfb->fb);
  
- struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
--					 const char *propname);
--struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
--						const char *con_id,
-+					 const char *propname, int index);
-+struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(struct device *dev,
-+						const char *con_id, int index,
- 						struct fwnode_handle *child);
-+
- #else /* CONFIG_GPIOLIB */
+-	jz_gpio_bulk_free(jz_lcd_ctrl_pins, jzfb_num_ctrl_pins(jzfb));
+-	jz_gpio_bulk_free(jz_lcd_data_pins, jzfb_num_data_pins(jzfb));
+-
+ 	fb_dealloc_cmap(&jzfb->fb->cmap);
+ 	jzfb_free_devmem(jzfb);
  
- static inline int gpiod_count(struct device *dev, const char *con_id)
-@@ -412,19 +413,27 @@ static inline int desc_to_gpio(const struct gpio_desc *desc)
- struct fwnode_handle;
- 
- static inline struct gpio_desc *fwnode_get_named_gpiod(
--	struct fwnode_handle *fwnode, const char *propname)
-+	struct fwnode_handle *fwnode, const char *propname, int index)
- {
- 	return ERR_PTR(-ENOSYS);
- }
- 
--static inline struct gpio_desc *devm_fwnode_get_gpiod_from_child(
--	struct device *dev, const char *con_id, struct fwnode_handle *child)
-+static inline struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(
-+	struct device *dev, const char *con_id, int index,
-+	struct fwnode_handle *child)
- {
- 	return ERR_PTR(-ENOSYS);
- }
- 
- #endif /* CONFIG_GPIOLIB */
- 
-+static inline struct gpio_desc *
-+devm_fwnode_get_gpiod_from_child(struct device *dev, const char *con_id,
-+				 struct fwnode_handle *child)
-+{
-+	return devm_fwnode_get_index_gpiod_from_child(dev, con_id, 0, child);
-+}
-+
- #if IS_ENABLED(CONFIG_GPIOLIB) && IS_ENABLED(CONFIG_GPIO_SYSFS)
- 
- int gpiod_export(struct gpio_desc *desc, bool direction_may_change);
 -- 
-2.7.4
+2.11.0
 

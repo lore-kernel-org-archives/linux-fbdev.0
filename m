@@ -1,78 +1,113 @@
-From: Lukasz Majewski <lukma@denx.de>
-Date: Mon, 23 Jan 2017 00:50:41 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 23 Jan 2017 16:09:17 +0000
 Subject: Re: [PATCH v2 RESEND] video: backlight: pwm_bl: Initialize fb_bl_on[x] and use_count during pwm_back
-Message-Id: <20170123015041.34b8e64d@jawa>
+Message-Id: <20170123160917.GA2043@ulmo.ba.sec>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="2oS5YaxWCcQjTEyO"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1477169904-14997-1-git-send-email-l.majewski@majess.pl>
-        <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
-        <20170103083032.GA2977@dell>
-        <20170113012737.45f5a3db@jawa>
-In-Reply-To: <20170113012737.45f5a3db@jawa>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+ <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
+In-Reply-To: <1482790896-29202-1-git-send-email-l.majewski@majess.pl>
+To: Lukasz Majewski <l.majewski@majess.pl>
+Cc: Lee Jones <lee.jones@linaro.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Liu Ying <Ying.Liu@freescale.com>, Fabio Estevam <fabio.estevam@nxp.com>, Fabio Estevam <festevam@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-RGVhciBBbGwsCgo+IERlYXIgQWxsLAo+IAo+ID4gVGhpZXJyeSwgSmluZ29vLAo+ID4gCj4gPiBQ
-bGVhc2UgcmVzcG9uZCB0byBMdWthc3ouCj4gCj4gWWVzLCB5b3VyIHJlc3BvbnNlIGlzIG1vcmUg
-dGhhbiB3ZWxjb21lLi4uLi4uLiA6LSkKCk1vcmUsIG1vcmUgdGhhbiB3ZWxjb21lLgoKUGluZyBm
-b3IgdGhpcyBwYXRjaC4gSSBkbyB1bmRlcnN0YW5kIHRoYXQga2VybmVsIGRldmVsb3BlcnMgYXJl
-IGJ1c3kKcGVvcGxlLCBidXQgdGhpcyBwYXRjaCBpcyBub3QgcmV2aWV3ZWQgc2luY2UgTm92IGxh
-c3QgeWVhciA6LSkKCj4gCj4gVGhhbmtzIGluIGFkdmFuY2UsCj4gCj4gxYF1a2FzeiBNYWpld3Nr
-aQo+IAo+ID4gCj4gPiBPbiBNb24sIDI2IERlYyAyMDE2LCBMdWthc3ogTWFqZXdza2kgd3JvdGU6
-Cj4gPiAKPiA+ID4gVGhlIGNvbW1pdCBhNTU5NDRjYTgyZDIgCj4gPiA+ICgiYmFja2xpZ2h0OiB1
-cGRhdGUgYmQgc3RhdGUgJiBmYl9ibGFuayBwcm9wZXJ0aWVzIHdoZW4KPiA+ID4gbmVjZXNzYXJ5
-IikgaGFzIHBvc2VkIHNvbWUgZXh0cmEgcmVzdHJpY3Rpb25zIG9uIGJsYW5raW5nIGFuZAo+ID4g
-PiB1bmJsYW5raW5nIGZyYW1lIGJ1ZmZlciBkZXZpY2UuCj4gPiA+IAo+ID4gPiBVbmZvcnR1bmF0
-ZWx5LCBwd21fYmwgZHJpdmVyJ3MgcHJvYmUgZGlkIG5vdCBpbml0aWFsaXplIG1lbWJlcnMgb2YK
-PiA+ID4gc3RydWN0IGJhY2tsaWdodF9kZXZpY2UgbmVjZXNzYXJ5IGZvciBmdXJ0aGVyIGJsYW5r
-L3VuYmxhbmsKPiA+ID4gb3BlcmF0aW9uLgo+ID4gPiAKPiA+ID4gVGhpcyBjb2RlIGluIGNhc2Ug
-b2YgaW5pdGlhbCB1bmJsYW5rIG9mIGJhY2tsaWdodCBkZXZpY2UgKGRlZmF1bHQgCj4gPiA+IGJl
-aGF2aW91cikgc2V0cyB1c2VfY291bnQgdG8gMSBhbmQgbWFya3MgdGhpcyBwYXJ0aWN1bGFyIGJh
-Y2tsaWdodAo+ID4gPiBkZXZpY2UgYXMgdXNlZCBieSBhbGwgYXZhaWxhYmxlIGZiIGRldmljZXMg
-KHNpbmNlIGl0IGlzIG5vdCBrbm93bgo+ID4gPiBkdXJpbmcgcHJvYmUgaG93IG11Y2ggYW5kIHdo
-aWNoIGZiIGRldmljZXMgd2lsbCBiZSBhc3NpZ25lZCkuCj4gPiA+IAo+ID4gPiBXaXRob3V0IHRo
-aXMgY29kZSwgdGhlIGJhY2tsaWdodCB3b3JrcyBwcm9wZXJseSB1bnRpbCBvbmUgdHJpZXMgdG8K
-PiA+ID4gYmxhbmsgaXQgbWFudWFsbHkgZnJvbSBzeXNmcyB3aXRoICJlY2hvIDEKPiA+ID4gPiAv
-c3lzL2NsYXNzL2dyYXBoaWNzL2ZiMC9ibGFuayIuIFNpbmNlIGZiX2JsX29uWzBdIGFuZCB1c2Vf
-Y291bnQKPiA+ID4gPiB3ZXJlIGJvdGggc2V0IHRvIDAsIHRoZSBsb2dpYyBhdAo+ID4gPiBmYl9u
-b3RpZmllcl9jYWxsYmFjayAoQGJhY2tsaWdodC5jKSB0aG91Z2h0IHRoYXQgd2UgZGlkbid0IHR1
-cm4gb24KPiA+ID4gKHVuYmxhbmtlZCkgdGhlIGJhY2tsaWdodCBkZXZpY2UgYW5kIHJlZnVzZXMg
-dG8gZGlzYWJsZSAoYmxhbmspCj4gPiA+IGl0LiBBcyBhIHJlc3VsdCB3ZSBzZWUgZ2FyYmFnZSBm
-cm9tIGZiIGRpc3BsYXllZC4KPiA+ID4gCj4gPiA+IFNpZ25lZC1vZmYtYnk6IEx1a2FzeiBNYWpl
-d3NraSA8bC5tYWpld3NraUBtYWplc3MucGw+Cj4gPiA+IC0tLQo+ID4gPiBUaGUgcGF0Y2ggaGFz
-IGJlZW4gdGVzdGVkIG9uIGkuTVg2cSB3aXRoIHZhbmlsbGEgNC45IGtlcm5lbC4KPiA+ID4gSXQg
-YXBwbGllcyBvbiA0LjEwLXJjMS4KPiA+ID4gLS0tCj4gPiA+ICBkcml2ZXJzL3ZpZGVvL2JhY2ts
-aWdodC9wd21fYmwuYyB8IDEwICsrKysrKysrKy0KPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA5IGlu
-c2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkKPiA+ID4gCj4gPiA+IGRpZmYgLS1naXQgYS9kcml2
-ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwuYwo+ID4gPiBiL2RyaXZlcnMvdmlkZW8vYmFja2xp
-Z2h0L3B3bV9ibC5jIGluZGV4IDEyNjE0MDAuLjY4NTliYTAgMTAwNjQ0Cj4gPiA+IC0tLSBhL2Ry
-aXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5jCj4gPiA+ICsrKyBiL2RyaXZlcnMvdmlkZW8v
-YmFja2xpZ2h0L3B3bV9ibC5jCj4gPiA+IEBAIC0yMDIsNyArMjAyLDcgQEAgc3RhdGljIGludCBw
-d21fYmFja2xpZ2h0X3Byb2JlKHN0cnVjdAo+ID4gPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpIHN0
-cnVjdCBwd21fYmxfZGF0YSAqcGI7Cj4gPiA+ICAJaW50IGluaXRpYWxfYmxhbmsgPSBGQl9CTEFO
-S19VTkJMQU5LOwo+ID4gPiAgCXN0cnVjdCBwd21fYXJncyBwYXJnczsKPiA+ID4gLQlpbnQgcmV0
-Owo+ID4gPiArCWludCByZXQsIGk7Cj4gPiA+ICAKPiA+ID4gIAlpZiAoIWRhdGEpIHsKPiA+ID4g
-IAkJcmV0ID0gcHdtX2JhY2tsaWdodF9wYXJzZV9kdCgmcGRldi0+ZGV2LAo+ID4gPiAmZGVmZGF0
-YSk7IEBAIC0zNDgsNiArMzQ4LDE0IEBAIHN0YXRpYyBpbnQKPiA+ID4gcHdtX2JhY2tsaWdodF9w
-cm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KSAKPiA+ID4gIAlibC0+cHJvcHMuYnJp
-Z2h0bmVzcyA9IGRhdGEtPmRmdF9icmlnaHRuZXNzOwo+ID4gPiAgCWJsLT5wcm9wcy5wb3dlciA9
-IGluaXRpYWxfYmxhbms7Cj4gPiA+ICsKPiA+ID4gKwlpZiAoaW5pdGlhbF9ibGFuayA9IEZCX0JM
-QU5LX1VOQkxBTkspIHsKPiA+ID4gKwkJZm9yIChpID0gMDsgaSA8IEZCX01BWDsgaSsrKQo+ID4g
-PiArCQkJYmwtPmZiX2JsX29uW2ldID0gdHJ1ZTsKPiA+ID4gKwo+ID4gPiArCQlibC0+dXNlX2Nv
-dW50ID0gMTsKPiA+ID4gKwl9Cj4gPiA+ICsKPiA+ID4gIAliYWNrbGlnaHRfdXBkYXRlX3N0YXR1
-cyhibCk7Cj4gPiA+ICAKPiA+ID4gIAlwbGF0Zm9ybV9zZXRfZHJ2ZGF0YShwZGV2LCBibCk7Cj4g
-PiAKPiAKPiBCZXN0IHJlZ2FyZHMsCj4gCj4gTHVrYXN6IE1hamV3c2tpCj4gCj4gLS0KPiAKPiBE
-RU5YIFNvZnR3YXJlIEVuZ2luZWVyaW5nIEdtYkgsICAgICAgTWFuYWdpbmcgRGlyZWN0b3I6IFdv
-bGZnYW5nIERlbmsKPiBIUkIgMTY1MjM1IE11bmljaCwgT2ZmaWNlOiBLaXJjaGVuc3RyLjUsIEQt
-ODIxOTQgR3JvZWJlbnplbGwsIEdlcm1hbnkKPiBQaG9uZTogKCs0OSktODE0Mi02Njk4OS0xMCBG
-YXg6ICgrNDkpLTgxNDItNjY5ODktODAgRW1haWw6IHdkQGRlbnguZGUKCgoKCkJlc3QgcmVnYXJk
-cywKCkx1a2FzeiBNYWpld3NraQoKLS0KCkRFTlggU29mdHdhcmUgRW5naW5lZXJpbmcgR21iSCwg
-ICAgICBNYW5hZ2luZyBEaXJlY3RvcjogV29sZmdhbmcgRGVuawpIUkIgMTY1MjM1IE11bmljaCwg
-T2ZmaWNlOiBLaXJjaGVuc3RyLjUsIEQtODIxOTQgR3JvZWJlbnplbGwsIEdlcm1hbnkKUGhvbmU6
-ICgrNDkpLTgxNDItNjY5ODktMTAgRmF4OiAoKzQ5KS04MTQyLTY2OTg5LTgwIEVtYWlsOiB3ZEBk
-ZW54LmRlCi0tClRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBsaXN0OiBzZW5kIHRoZSBsaW5lICJ1
-bnN1YnNjcmliZSBsaW51eC1mYmRldiIgaW4KdGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9y
-ZG9tb0B2Z2VyLmtlcm5lbC5vcmcKTW9yZSBtYWpvcmRvbW8gaW5mbyBhdCAgaHR0cDovL3ZnZXIu
-a2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+
+--2oS5YaxWCcQjTEyO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Dec 26, 2016 at 11:21:36PM +0100, Lukasz Majewski wrote:
+> The commit a55944ca82d2=20
+> ("backlight: update bd state & fb_blank properties when necessary")
+> has posed some extra restrictions on blanking and unblanking frame buffer
+> device.
+>=20
+> Unfortunately, pwm_bl driver's probe did not initialize members of
+> struct backlight_device necessary for further blank/unblank operation.
+>=20
+> This code in case of initial unblank of backlight device (default=20
+> behaviour) sets use_count to 1 and marks this particular backlight device
+> as used by all available fb devices (since it is not known during probe=
+=20
+> how much and which fb devices will be assigned).
+>=20
+> Without this code, the backlight works properly until one tries to blank =
+it
+> manually from sysfs with "echo 1 > /sys/class/graphics/fb0/blank".
+> Since fb_bl_on[0] and use_count were both set to 0, the logic at
+> fb_notifier_callback (@backlight.c) thought that we didn't turn on
+> (unblanked) the backlight device and refuses to disable (blank) it.
+> As a result we see garbage from fb displayed.
+>=20
+> Signed-off-by: Lukasz Majewski <l.majewski@majess.pl>
+> ---
+> The patch has been tested on i.MX6q with vanilla 4.9 kernel.
+> It applies on 4.10-rc1.
+> ---
+>  drivers/video/backlight/pwm_bl.c | 10 +++++++++-
+>  1 file changed, 9 insertions(+), 1 deletion(-)
+
+It's difficult to wrap one's head around the above-mentioned commit
+a55944ca82d2 ("backlight: update bd state & fb_blank properties when
+necessary"). The solution borders on crazy. That said, this patch
+builds on top of crazy, and given that it looks okay to me.
+
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
+
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index 1261400..6859ba0 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -202,7 +202,7 @@ static int pwm_backlight_probe(struct platform_device=
+ *pdev)
+>  	struct pwm_bl_data *pb;
+>  	int initial_blank =3D FB_BLANK_UNBLANK;
+>  	struct pwm_args pargs;
+> -	int ret;
+> +	int ret, i;
+> =20
+>  	if (!data) {
+>  		ret =3D pwm_backlight_parse_dt(&pdev->dev, &defdata);
+> @@ -348,6 +348,14 @@ static int pwm_backlight_probe(struct platform_devic=
+e *pdev)
+> =20
+>  	bl->props.brightness =3D data->dft_brightness;
+>  	bl->props.power =3D initial_blank;
+> +
+> +	if (initial_blank =3D=3D FB_BLANK_UNBLANK) {
+> +		for (i =3D 0; i < FB_MAX; i++)
+> +			bl->fb_bl_on[i] =3D true;
+> +
+> +		bl->use_count =3D 1;
+> +	}
+> +
+>  	backlight_update_status(bl);
+> =20
+>  	platform_set_drvdata(pdev, bl);
+> --=20
+> 2.1.4
+>=20
+
+--2oS5YaxWCcQjTEyO
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAliGKqsACgkQ3SOs138+
+s6FVxBAAjHCEYVd7/RCu6zBSnrRAzgw2Vv5n8A6EyZ7eFWYr5sYTWkuJu1GvzVQi
++NIyHUFWd9Eg1yjk457QkcSnLDk3zasPsiLIe25YXBZJXLgto2ssjriw8O+FlQVl
+OZe/VFB+Dg84WIQO7BZJaboOufYZbGl5BigbB/PNKaVtROn/BNAgy1anOlH0nD1S
+xh3Atb4PCsBDYAWSnTJEvYugxCvfbu7sw8+icwj7huL22fYNusWx9Wbrp8x72BL1
+hx4Pp/9vZFCMcW/ETUzXZFNclijsmUiLvL/q6O4R1w7ZcGd+y8P1rM8CTKQkCIvk
+HF36Jaa5YockwWsGeLU9EpvQMSDd4E9/NJfGL0URFNuIox+pfvlYAXXj3WhESJI0
+G4viSzOJXSIeOqDHFkMfxNYoaB6MQNIePa5AySYzEen21VFQOj65Z6m77DIjGUcc
+zcgoy4EPNVb4YITl+iemU0rKs3RJwhnQys9p7tNsLVlOHF0K1vKBtQizNk5DZgPT
+oHsKGDjxpJBkfhwv5LSushEN25Hg82iCXXJN+wJqR9xvdRIWsIGRmo9k8v+CKmOC
+cph9Bnp0O7AOJBveHSvFpE5mHTYhOmTCAjAeJzovl/kwmeefIDySOGiOU31X8Ayx
+Y9WrGvgKPhgfu10nn4usF/YNT26gyDjS/mH2aGxWQyo16fExA+4=
+=lbel
+-----END PGP SIGNATURE-----
+
+--2oS5YaxWCcQjTEyO--

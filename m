@@ -1,100 +1,141 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 30 Jan 2017 20:33:12 +0000
-Subject: Re: [PATCH v3 02/14] Documentation: dt/bindings: Document pinctrl-gpio
-Message-Id: <20170130203312.xsvu6rk2sz66m43a@rob-hp-laptop>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 25 Jan 2017 18:52:03 +0000
+Subject: [PATCH v3 10/14] mmc: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170125185207.23902-11-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
  <20170125185207.23902-1-paul@crapouillou.net>
- <20170125185207.23902-3-paul@crapouillou.net>
-In-Reply-To: <20170125185207.23902-3-paul@crapouillou.net>
+In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-On Wed, Jan 25, 2017 at 07:51:55PM +0100, Paul Cercueil wrote:
-> This commit adds documentation for the devicetree bidings of the
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-s/biding/bindings/
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/mmc/host/jz4740_mmc.c | 45 +++++--------------------------------------
+ 1 file changed, 5 insertions(+), 40 deletions(-)
 
-> pinctrl-gpio driver, which handles GPIOs of the Ingenic SoCs
-> currently supported by the Linux kernel.
+v2: Set pin sleep/default state in suspend/resume callbacks
+v3: No changes
 
-The subject makes no reference that this binding is for Ingenic GPIO. 
-Also, drop the "Documentation: " part. It's redundant.
+diff --git a/drivers/mmc/host/jz4740_mmc.c b/drivers/mmc/host/jz4740_mmc.c
+index 819ad32964fc..b5fec5b7ee7b 100644
+--- a/drivers/mmc/host/jz4740_mmc.c
++++ b/drivers/mmc/host/jz4740_mmc.c
+@@ -20,14 +20,13 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+ #include <linux/clk.h>
+ 
+ #include <linux/bitops.h>
+-#include <linux/gpio.h>
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/cacheflush.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/dmaengine.h>
+@@ -906,15 +905,6 @@ static const struct mmc_host_ops jz4740_mmc_ops = {
+ 	.enable_sdio_irq = jz4740_mmc_enable_sdio_irq,
+ };
+ 
+-static const struct jz_gpio_bulk_request jz4740_mmc_pins[] = {
+-	JZ_GPIO_BULK_PIN(MSC_CMD),
+-	JZ_GPIO_BULK_PIN(MSC_CLK),
+-	JZ_GPIO_BULK_PIN(MSC_DATA0),
+-	JZ_GPIO_BULK_PIN(MSC_DATA1),
+-	JZ_GPIO_BULK_PIN(MSC_DATA2),
+-	JZ_GPIO_BULK_PIN(MSC_DATA3),
+-};
+-
+ static int jz4740_mmc_request_gpio(struct device *dev, int gpio,
+ 	const char *name, bool output, int value)
+ {
+@@ -978,15 +968,6 @@ static void jz4740_mmc_free_gpios(struct platform_device *pdev)
+ 		gpio_free(pdata->gpio_power);
+ }
+ 
+-static inline size_t jz4740_mmc_num_pins(struct jz4740_mmc_host *host)
+-{
+-	size_t num_pins = ARRAY_SIZE(jz4740_mmc_pins);
+-	if (host->pdata && host->pdata->data_1bit)
+-		num_pins -= 3;
+-
+-	return num_pins;
+-}
+-
+ static int jz4740_mmc_probe(struct platform_device* pdev)
+ {
+ 	int ret;
+@@ -1027,15 +1008,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 		goto err_free_host;
+ 	}
+ 
+-	ret = jz_gpio_bulk_request(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to request mmc pins: %d\n", ret);
+-		goto err_free_host;
+-	}
+-
+ 	ret = jz4740_mmc_request_gpios(mmc, pdev);
+ 	if (ret)
+-		goto err_gpio_bulk_free;
++		goto err_release_dma;
+ 
+ 	mmc->ops = &jz4740_mmc_ops;
+ 	mmc->f_min = JZ_MMC_CLK_RATE / 128;
+@@ -1091,10 +1066,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 	free_irq(host->irq, host);
+ err_free_gpios:
+ 	jz4740_mmc_free_gpios(pdev);
+-err_gpio_bulk_free:
++err_release_dma:
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ err_free_host:
+ 	mmc_free_host(mmc);
+ 
+@@ -1114,7 +1088,6 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 	free_irq(host->irq, host);
+ 
+ 	jz4740_mmc_free_gpios(pdev);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ 
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+@@ -1128,20 +1101,12 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 
+ static int jz4740_mmc_suspend(struct device *dev)
+ {
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_suspend(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_sleep_state(dev);
+ }
+ 
+ static int jz4740_mmc_resume(struct device *dev)
+ {
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_resume(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_default_state(dev);
+ }
+ 
+ static SIMPLE_DEV_PM_OPS(jz4740_mmc_pm_ops, jz4740_mmc_suspend,
+-- 
+2.11.0
 
-> 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> ---
->  .../devicetree/bindings/gpio/ingenic,gpio.txt      | 45 ++++++++++++++++++++++
->  1 file changed, 45 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-> 
-> v2: New patch
-> v3: No changes
-> 
-> diff --git a/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-> new file mode 100644
-> index 000000000000..b2eb20494365
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-> @@ -0,0 +1,45 @@
-> +Ingenic jz47xx GPIO controller
-> +
-> +Required properties:
-> +  - compatible:
-> +    - "ingenic,jz4740-gpio" for the JZ4740 SoC
-> +    - "ingenic,jz4780-gpio" for the JZ4780 SoC
-> +
-> +  - reg: Base address and length of each memory resource used by the GPIO
-> +    controller hardware module.
-> +
-> +  - gpio-controller: Marks the device node as a GPIO controller.
-> +  - #gpio-cells: Should be 2. The first cell is the GPIO number and the second
-> +    cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>. Only the
-> +    GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
-> +  - gpio-ranges: Range of pins managed by the GPIO controller.
-> +
-> +Optional properties:
-> +  - base: The GPIO number to use as the base for this driver.
-
-Drop this please. This is a Linuxism.
-
-> +  - interrupt-controller: Marks the device node as an interrupt controller.
-> +  - interrupts: Interrupt specifier for the controllers interrupt.
-> +    Required if 'interrupt-controller' is specified.
-
-Some h/w doesn't have interrupt capability? If not, this should not be 
-optional.
-
-> +
-> +Please refer to gpio.txt in this directory for details of gpio-ranges property
-> +and the common GPIO bindings used by client devices.
-> +
-> +The GPIO controller also acts as an interrupt controller. It uses the default
-> +two cells specifier as described in Documentation/devicetree/bindings/
-> +interrupt-controller/interrupts.txt.
-
-Just document #interrupt-cells and its value and drop this paragraph.
-
-> +
-> +Example:
-> +
-> +gpa: gpio-controller@10010000 {
-> +	compatible = "ingenic,jz4740-gpio";
-> +	reg = <0x10010000 0x100>;
-> +
-> +	gpio-controller;
-> +	gpio-ranges = <&pinctrl 0 0 32>;
-> +	#gpio-cells = <2>;
-> +
-> +	interrupt-controller;
-> +	#interrupt-cells = <2>;
-> +
-> +	interrupt-parent = <&intc>;
-> +	interrupts = <28>;
-> +};
-> -- 
-> 2.11.0
-> 

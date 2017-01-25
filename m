@@ -1,120 +1,339 @@
 From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 17 Jan 2017 23:14:15 +0000
-Subject: [PATCH 07/13] MIPS: JZ4740: Qi LB60: Add pinctrl configuration for several drivers
-Message-Id: <20170117231421.16310-8-paul@crapouillou.net>
+Date: Wed, 25 Jan 2017 18:52:00 +0000
+Subject: [PATCH v3 07/14] MIPS: jz4780: DTS: Add nodes for ingenic pinctrl and gpio drivers
+Message-Id: <20170125185207.23902-8-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170117231421.16310-1-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170125185207.23902-1-paul@crapouillou.net>
+In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-We set the pin configuration for the jz4740-nand, jz4740-mmc,
-jz4740-fb, jz4740-pwm and jz4740-uart drivers.
+For a description of the devicetree node, please read
+Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
 
-This will permit those drivers to be cleaned out of the custom GPIO code
-that they currently use.
+For a description of the gpio devicetree nodes, please read
+Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
 
 Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- arch/mips/boot/dts/ingenic/qi_lb60.dts |  5 ++++
- arch/mips/jz4740/board-qi_lb60.c       | 47 +++++++++++++++++++++++++++-------
- 2 files changed, 43 insertions(+), 9 deletions(-)
+ arch/mips/boot/dts/ingenic/jz4780.dtsi | 297 +++++++++++++++++++++++++++++++++
+ 1 file changed, 297 insertions(+)
 
-diff --git a/arch/mips/boot/dts/ingenic/qi_lb60.dts b/arch/mips/boot/dts/ingenic/qi_lb60.dts
-index be1a7d3a3e1b..7b98c4f57b1c 100644
---- a/arch/mips/boot/dts/ingenic/qi_lb60.dts
-+++ b/arch/mips/boot/dts/ingenic/qi_lb60.dts
-@@ -17,3 +17,8 @@
- &rtc_dev {
- 	system-power-controller;
- };
-+
-+&uart0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart0_data>;
-+};
-diff --git a/arch/mips/jz4740/board-qi_lb60.c b/arch/mips/jz4740/board-qi_lb60.c
-index a5bd94b95263..c6ee50a44cb3 100644
---- a/arch/mips/jz4740/board-qi_lb60.c
-+++ b/arch/mips/jz4740/board-qi_lb60.c
-@@ -22,6 +22,8 @@
- #include <linux/input/matrix_keypad.h>
- #include <linux/spi/spi.h>
- #include <linux/spi/spi_gpio.h>
-+#include <linux/pinctrl/machine.h>
-+#include <linux/pinctrl/pinconf-generic.h>
- #include <linux/power_supply.h>
- #include <linux/power/jz4740-battery.h>
- #include <linux/power/gpio-charger.h>
-@@ -447,13 +449,41 @@ static struct platform_device *jz_platform_devices[] __initdata = {
- 	&qi_lb60_audio_device,
- };
+v2: Changed the devicetree bindings to match the new driver
+v3: No changes
+
+diff --git a/arch/mips/boot/dts/ingenic/jz4780.dtsi b/arch/mips/boot/dts/ingenic/jz4780.dtsi
+index b868b429add2..47e079e9236e 100644
+--- a/arch/mips/boot/dts/ingenic/jz4780.dtsi
++++ b/arch/mips/boot/dts/ingenic/jz4780.dtsi
+@@ -44,6 +44,303 @@
+ 		#clock-cells = <1>;
+ 	};
  
--static void __init board_gpio_setup(void)
--{
--	/* We only need to enable/disable pullup here for pins used in generic
--	 * drivers. Everything else is done by the drivers themselves. */
--	jz_gpio_disable_pullup(QI_LB60_GPIO_SD_VCC_EN_N);
--	jz_gpio_disable_pullup(QI_LB60_GPIO_SD_CD);
--}
-+static unsigned long pin_cfg_bias_disable[] = {
-+	    PIN_CONFIG_BIAS_DISABLE,
-+};
++	pinctrl: ingenic-pinctrl@10010000 {
++		compatible = "ingenic,jz4780-pinctrl";
++		reg = <0x10010000 0x600>;
 +
-+static struct pinctrl_map pin_map[] __initdata = {
-+	/* NAND pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-nand",
-+			"10010000.jz4740-pinctrl",
-+			"pinfunc-nand", "pins-nand"),
++		ingenic,pull-ups   = <0x3fffffff 0xfff0030c 0xffffffff
++							  0xffff4fff 0xfffffb7c 0xffa7f00f>;
++		ingenic,pull-downs = <0x00000000 0x000f0c03 0x00000000
++							  0x0000b000 0x00000483 0x00580ff0>;
 +
-+	/* fbdev pin configuration */
-+	PIN_MAP_MUX_GROUP("jz4740-fb", PINCTRL_STATE_DEFAULT,
-+			"10010000.jz4740-pinctrl",
-+			"pinfunc-lcd", "pins-lcd-8bit"),
-+	PIN_MAP_MUX_GROUP("jz4740-fb", PINCTRL_STATE_SLEEP,
-+			"10010000.jz4740-pinctrl",
-+			"pinfunc-lcd", "pins-lcd-no-pins"),
++		functions {
++			uart0 {
++				uart0-data {
++					/* RXD, TXD */
++					ingenic,pins = <0xa0 0 0xa3 0>;
++				};
 +
-+	/* MMC pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl",
-+			"pinfunc-msc", "pins-msc-4bit"),
-+	PIN_MAP_CONFIGS_PIN_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl",
-+			"PD0", pin_cfg_bias_disable),
-+	PIN_MAP_CONFIGS_PIN_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl",
-+			"PD2", pin_cfg_bias_disable),
++				uart0-hwflow {
++					/* CTS, RTS */
++					ingenic,pins = <0xa1 0 0xa2 0>;
++				};
++			};
 +
-+	/* PWM pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-pwm",
-+			"10010000.jz4740-pinctrl",
-+			"pinfunc-pwm4", "pins-pwm4"),
-+};
++			uart1 {
++				uart1-data {
++					/* RXD, TXD */
++					ingenic,pins = <0x7a 0 0x7c 0>;
++				};
 +
- 
- static int __init qi_lb60_init_platform_devices(void)
- {
-@@ -469,6 +499,7 @@ static int __init qi_lb60_init_platform_devices(void)
- 				ARRAY_SIZE(qi_lb60_spi_board_info));
- 
- 	pwm_add_table(qi_lb60_pwm_lookup, ARRAY_SIZE(qi_lb60_pwm_lookup));
-+	pinctrl_register_mappings(pin_map, ARRAY_SIZE(pin_map));
- 
- 	return platform_add_devices(jz_platform_devices,
- 					ARRAY_SIZE(jz_platform_devices));
-@@ -479,8 +510,6 @@ static int __init qi_lb60_board_setup(void)
- {
- 	printk(KERN_INFO "Qi Hardware JZ4740 QI LB60 setup\n");
- 
--	board_gpio_setup();
--
- 	if (qi_lb60_init_platform_devices())
- 		panic("Failed to initialize platform devices");
- 
++				uart1-hwflow {
++					/* CTS, RTS */
++					ingenic,pins = <0x7b 0 0x7d 0>;
++				};
++			};
++
++			uart2 {
++				uart2-data {
++					/* RXD, TXD */
++					ingenic,pins = <0x66 1 0x67 1>;
++				};
++
++				uart2-hwflow {
++					/* CTS, RTS */
++					ingenic,pins = <0x65 1 0x64 1>;
++				};
++			};
++
++			uart3 {
++				uart3-data {
++					/* RXD, TXD */
++					ingenic,pins = <0x6c 0 0x85 1>;
++				};
++
++				uart3-hwflow {
++					/* CTS, RTS */
++					ingenic,pins = <0x88 0 0x89 0>;
++				};
++			};
++
++			uart4 {
++				uart4-data {
++					/* RXD, TXD */
++					ingenic,pins = <0x54 2 0x4a 2>;
++				};
++			};
++
++			msc0 {
++				msc0-8bit-a {
++					/* D4, D5, D6, D7, RST */
++					ingenic,pins = <0x04 1 0x05 1 0x06 1 0x07 1
++									0x18 1>;
++				};
++
++				msc0-4bit-a {
++					/* D1, D2, D3 */
++					ingenic,pins = <0x15 1 0x16 1 0x17 1>;
++				};
++
++				msc0-1bit-a {
++					/* CLK, CMD, D0 */
++					ingenic,pins = <0x12 1 0x13 1 0x14 1>;
++				};
++
++				msc0-1bit-e {
++					/* CLK, CMD, D0 */
++					ingenic,pins = <0x9c 0 0x9d 0 0x94 0>;
++				};
++
++				msc0-4bit-e {
++					/* D1, D2, D3 */
++					ingenic,pins = <0x95 0 0x96 0 0x97 0>;
++				};
++			};
++
++			msc1 {
++				msc1-1bit-d {
++					/* CLK, CMD, D0 */
++					ingenic,pins = <0x78 0 0x79 0 0x74 0>;
++				};
++
++				msc1-4bit-d {
++					/* D1, D2, D3 */
++					ingenic,pins = <0x75 0 0x76 0 0x77 0>;
++				};
++
++				msc1-1bit-e {
++					/* CLK, CMD, D0 */
++					ingenic,pins = <0x9c 1 0x9d 1 0x94 1>;
++				};
++
++				msc1-4bit-e {
++					/* D1, D2, D3 */
++					ingenic,pins = <0x95 1 0x96 1 0x97 1>;
++				};
++			};
++
++			nemc {
++				nemc-data {
++					/* SD0, SD1, SD2, SD3, SD4, SD5, SD6, SD7 */
++					ingenic,pins = <0x00 0 0x01 0 0x02 0 0x03 0
++									0x04 0 0x05 0 0x06 0 0x07 0>;
++				};
++
++				nemc-cle-ale {
++					/* SA0_CL, SA1_AL */
++					ingenic,pins = <0x20 0 0x21 0>;
++				};
++
++				nemc-addr {
++					/* SA2, SA3, SA4, SA5 */
++					ingenic,pins = <0x22 0 0x23 0 0x24 0 0x25 0>;
++				};
++
++				nemc-rd-we {
++					/* RD, WE */
++					ingenic,pins = <0x10 0 0x11 0>;
++				};
++
++				nemc-frd-fwe {
++					/* RD, WE */
++					ingenic,pins = <0x12 0 0x13 0>;
++				};
++			};
++
++			nemc-cs1 {
++				nemc-cs1 {
++					/* CS1 */
++					ingenic,pins = <0x15 0>;
++				};
++			};
++
++			nemc-cs6 {
++				nemc-cs6 {
++					/* CS6 */
++					ingenic,pins = <0x1a 0>;
++				};
++			};
++
++			i2c0 {
++				i2c0-data {
++					/* SDA, SCL */
++					ingenic,pins = <0x6e 0 0x6f 0>;
++				};
++			};
++
++			i2c1 {
++				i2c1-data {
++					/* SDA, SCL */
++					ingenic,pins = <0x8e 0 0x8f 0>;
++				};
++			};
++
++			i2c2 {
++				i2c2-data {
++					/* SDA, SCL */
++					ingenic,pins = <0xb0 2 0xb1 2>;
++				};
++			};
++
++			i2c3 {
++				i2c3-data {
++					/* SDA, SCL */
++					ingenic,pins = <0x6a 1 0x6b 1>;
++				};
++			};
++
++			i2c4 {
++				i2c4-data-pe {
++					/* SDA, SCL */
++					ingenic,pins = <0x8c 1 0x8d 1>;
++				};
++
++				i2c4-data-pf {
++					/* HDMI_SDA, HDMI_SCL */
++					ingenic,pins = <0xb9 1 0xb8 1>;
++				};
++			};
++
++			cim {
++				cim-pb {
++					ingenic,pins = <0x26 0 0x27 0 0x28 0 0x29 0
++									0x2a 0 0x2b 0 0x2c 0 0x2d 0
++									0x2e 0 0x2f 0 0x30 0 0x31 0>;
++				};
++			};
++		};
++	};
++
++	gpa: gpio-controller@10010000 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010000 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 0 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <17>;
++	};
++
++	gpb: gpio-controller@10010100 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010100 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 32 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <16>;
++	};
++
++	gpc: gpio-controller@10010200 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010200 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 64 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <15>;
++	};
++
++	gpd: gpio-controller@10010300 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010300 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 96 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <14>;
++	};
++
++	gpe: gpio-controller@10010400 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010400 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 128 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <13>;
++	};
++
++	gpf: gpio-controller@10010500 {
++		compatible = "ingenic,jz4780-gpio";
++		reg = <0x10010500 0x100>;
++
++		gpio-controller;
++		gpio-ranges = <&pinctrl 0 160 32>;
++		#gpio-cells = <2>;
++
++		interrupt-controller;
++		#interrupt-cells = <2>;
++
++		interrupt-parent = <&intc>;
++		interrupts = <12>;
++	};
++
+ 	uart0: serial@10030000 {
+ 		compatible = "ingenic,jz4780-uart";
+ 		reg = <0x10030000 0x100>;
 -- 
 2.11.0
 

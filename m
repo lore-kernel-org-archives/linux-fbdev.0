@@ -1,47 +1,42 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Mon, 30 Jan 2017 15:41:47 +0000
-Subject: [PATCH 0/2] gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
-Message-Id: <1485790909-2915-1-git-send-email-boris.brezillon@free-electrons.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 25 Jan 2017 18:51:58 +0000
+Subject: [PATCH v3 05/14] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
+Message-Id: <20170125185207.23902-6-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170125185207.23902-1-paul@crapouillou.net>
+In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-Hello Linus,
+There is a pinctrl driver for each of the Ingenic SoCs supported by the
+upstream Linux kernel. In order to switch away from the old GPIO
+platform code, we now enable the pinctrl drivers by default for the
+Ingenic SoCs.
 
-I send these 2 patches separately from the Atmel NAND driver rework
-since these are self-contained and do not have any external
-dependencies.
-
-Feel free to apply them in your tree if you are happy with this
-version and once other subsystem maintainers have acked patch 1.
-
-Thanks,
-
-Boris
-
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
-Changes since v1:
-- Rename the devm_get_gpiod_from_child() helper into
-  devm_fwnode_get_gpiod_from_child()
-- Define as a static inline wrapper around
-  devm_fwnode_get_gpiod_from_child()
+ arch/mips/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-Boris Brezillon (2):
-  gpio: Rename devm_get_gpiod_from_child()
-  gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
+v2: No changes
+v3: No changes
 
- drivers/gpio/devres.c                     | 14 ++++++++------
- drivers/gpio/gpiolib.c                    |  9 +++++----
- drivers/input/keyboard/gpio_keys.c        |  3 ++-
- drivers/input/keyboard/gpio_keys_polled.c |  5 +++--
- drivers/leds/leds-gpio.c                  |  2 +-
- drivers/video/fbdev/amba-clcd-nomadik.c   |  8 ++++----
- include/linux/gpio/consumer.h             | 23 ++++++++++++++++-------
- 7 files changed, 39 insertions(+), 25 deletions(-)
-
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index b3c5bde43d34..fc720e37661e 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -359,6 +359,7 @@ config MACH_INGENIC
+ 	select SYS_SUPPORTS_ZBOOT_UART16550
+ 	select DMA_NONCOHERENT
+ 	select IRQ_MIPS_CPU
++	select PINCTRL
+ 	select GPIOLIB
+ 	select COMMON_CLK
+ 	select GENERIC_IRQ_CHIP
 -- 
-2.7.4
+2.11.0
 

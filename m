@@ -1,101 +1,81 @@
-From: Petr Mladek <pmladek@suse.com>
-Date: Wed, 25 Jan 2017 14:08:45 +0000
-Subject: [PATCH v2] printk: Correctly handle preemption in console_unlock()
-Message-Id: <1485353325-26591-1-git-send-email-pmladek@suse.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 25 Jan 2017 18:51:55 +0000
+Subject: [PATCH v3 02/14] Documentation: dt/bindings: Document pinctrl-gpio
+Message-Id: <20170125185207.23902-3-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170125185207.23902-1-paul@crapouillou.net>
+In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-Some console drivers code calls console_conditional_schedule()
-that looks at @console_may_schedule. The value must be cleared
-when the drivers are called from console_unlock() with
-interrupts disabled. But rescheduling is fine when the same
-code is called, for example, from tty operations where the
-console semaphore is taken via console_lock().
+This commit adds documentation for the devicetree bidings of the
+pinctrl-gpio driver, which handles GPIOs of the Ingenic SoCs
+currently supported by the Linux kernel.
 
-This is why @console_may_schedule is cleared before calling console
-drivers. The original value is stored to decide if we could sleep
-between lines.
-
-Now, @console_may_schedule is not cleared when we call
-console_trylock() and jump back to the "again" goto label.
-This has become a problem, since the commit 6b97a20d3a7909daa066
-("printk: set may_schedule for some of console_trylock() callers").
-@console_may_schedule might get enabled now.
-
-There is also the opposite problem. console_lock() can be called
-only from preemptive context. It can always enable scheduling in
-the console code. But console_trylock() is not able to detect it
-when CONFIG_PREEMPT_COUNT is disabled. Therefore we should use the
-original @console_may_schedule value after re-acquiring
-the console semaphore in console_unlock().
-
-This patch solves both problems by moving the "again" goto label.
-
-Alternative solution was to clear and restore the value around
-call_console_drivers(). Then console_conditional_schedule() could
-be used also inside console_unlock(). But there was a potential race
-with console_flush_on_panic() as reported by Sergey Senozhatsky.
-That function should be called only where there is only one CPU
-and with interrupts disabled. But better be on the safe side
-because stopping CPUs might fail.
-
-Fixes: 6b97a20d3a7909 ("printk: set may_schedule for some of console_trylock() callers")
-Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
-Changes against v2:
+ .../devicetree/bindings/gpio/ingenic,gpio.txt      | 45 ++++++++++++++++++++++
+ 1 file changed, 45 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
 
-  + use conservative solution with the following rules:
+v2: New patch
+v3: No changes
 
-    + always clear console_may_schedule after again goto label
-
-    + save and use the original value to decide about sleeping
-      inside console unlock
-
-    + do not set console_may_schedule using the saved value;
-      it avoids potential race with console_flush_on_panic();
-      also it avoids breaking the complex logic used in other
-      functions manipulating this variable.
-
- kernel/printk/printk.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
-
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 7180088cbb23..cc90c0a5ae21 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -2158,19 +2158,18 @@ void console_unlock(void)
- 	}
- 
- 	/*
--	 * Console drivers are called under logbuf_lock, so
--	 * @console_may_schedule should be cleared before; however, we may
--	 * end up dumping a lot of lines, for example, if called from
--	 * console registration path, and should invoke cond_resched()
--	 * between lines if allowable.  Not doing so can cause a very long
--	 * scheduling stall on a slow console leading to RCU stall and
--	 * softlockup warnings which exacerbate the issue with more
--	 * messages practically incapacitating the system.
-+	 * Console drivers are called with interrupts disabled, so
-+	 * @console_may_schedule must be cleared before. The original
-+	 * value must be stored so that we could schedule between lines.
-+	 *
-+	 * console_trylock() is not able to detect the preemtible
-+	 * context reliably. Therefore the value must be stored before
-+	 * and cleared after the the "again" goto label.
- 	 */
- 	do_cond_resched = console_may_schedule;
-+again:
- 	console_may_schedule = 0;
- 
--again:
- 	/*
- 	 * We released the console_sem lock, so we need to recheck if
- 	 * cpu is online and (if not) is there at least one CON_ANYTIME
+diff --git a/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+new file mode 100644
+index 000000000000..b2eb20494365
+--- /dev/null
++++ b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+@@ -0,0 +1,45 @@
++Ingenic jz47xx GPIO controller
++
++Required properties:
++  - compatible:
++    - "ingenic,jz4740-gpio" for the JZ4740 SoC
++    - "ingenic,jz4780-gpio" for the JZ4780 SoC
++
++  - reg: Base address and length of each memory resource used by the GPIO
++    controller hardware module.
++
++  - gpio-controller: Marks the device node as a GPIO controller.
++  - #gpio-cells: Should be 2. The first cell is the GPIO number and the second
++    cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>. Only the
++    GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
++  - gpio-ranges: Range of pins managed by the GPIO controller.
++
++Optional properties:
++  - base: The GPIO number to use as the base for this driver.
++  - interrupt-controller: Marks the device node as an interrupt controller.
++  - interrupts: Interrupt specifier for the controllers interrupt.
++    Required if 'interrupt-controller' is specified.
++
++Please refer to gpio.txt in this directory for details of gpio-ranges property
++and the common GPIO bindings used by client devices.
++
++The GPIO controller also acts as an interrupt controller. It uses the default
++two cells specifier as described in Documentation/devicetree/bindings/
++interrupt-controller/interrupts.txt.
++
++Example:
++
++gpa: gpio-controller@10010000 {
++	compatible = "ingenic,jz4740-gpio";
++	reg = <0x10010000 0x100>;
++
++	gpio-controller;
++	gpio-ranges = <&pinctrl 0 0 32>;
++	#gpio-cells = <2>;
++
++	interrupt-controller;
++	#interrupt-cells = <2>;
++
++	interrupt-parent = <&intc>;
++	interrupts = <28>;
++};
 -- 
-1.8.5.6
+2.11.0
 

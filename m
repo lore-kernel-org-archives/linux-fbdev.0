@@ -1,101 +1,111 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 09 Jan 2017 08:31:16 +0000
-Subject: Re: [PATCH v3 2/2] backlight arcxcnn devicetree bindings for ArcticSand
-Message-Id: <20170109083116.GA2155@dell>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 25 Jan 2017 18:51:54 +0000
+Subject: [PATCH v3 01/14] Documentation: dt/bindings: Document pinctrl-ingenic
+Message-Id: <20170125185207.23902-2-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1483735714-5500-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1483735714-5500-1-git-send-email-olimpiu@arcticsand.com>
+References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
+ <20170125185207.23902-1-paul@crapouillou.net>
+In-Reply-To: <20170125185207.23902-1-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Cc: robh@kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
 
-On Fri, 06 Jan 2017, Olimpiu Dejeu wrote:
+This commit adds documentation for the devicetree bidings of the
+pinctrl-ingenic driver, which handles pin configuration and pin
+muxing of the Ingenic SoCs currently supported by the Linux kernel.
 
-> backlight: Add devicetree bindings for the Arctic Sand backlight driver
-> This patch provides devicetree bindings for the Arctic Sand
->     driver submitted in the previous patch
-> Acked-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
-> ---
->=20
-> v2 =3D> v3:
-> - Version updated to match other patch in set. No other changes.
-> v1 =3D> v2:
-> - Version updated to match other patch in set. No other changes.
->=20
->  .../bindings/leds/backlight/arcxcnn_bl.txt         | 31 ++++++++++++++++=
-++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcx=
-cnn_bl.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.=
-txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-> new file mode 100644
-> index 0000000..a7b6ff2
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-> @@ -0,0 +1,33 @@
-> +Binding for ArcticSand arc2c0608 LED driver
-> +
-> +Required properties:
-> +- compatible: should be "arc,arc2c0608"
-> +- reg: slave address
-> +
-> +Optional properties:
-> +- default-brightness: brightness value on boot, value from: 0-4095
-> +- label: The name of the backlight device
-> +			See Documentation/devicetree/bindings/leds/common.txt
-> +- led-sources: List of enabled channels from 0 to 5.
-> +			See Documentation/devicetree/bindings/leds/common.txt
-> +
-> +- arc,led-config-0: setting for register ILED_CONFIG_0
-> +- arc,led-config-1: setting for register ILED_CONFIG_1
-> +- arc,dim-freq: PWM mode frequence setting (bits [3:0] used)
-> +- arc,comp-config: setting for register CONFIG_COMP
-> +- arc,filter-config: setting for register FILTER_CONFIG
-> +- arc,trim-config: setting for register IMAXTUNE
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ .../bindings/pinctrl/ingenic,pinctrl.txt           | 77 ++++++++++++++++++++++
+ 1 file changed, 77 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
 
-Nit: Don't you think this is easier to read?
+v2: Rewrote the documentation for the new pinctrl-ingenic driver
+v3: No changes
 
-Required properties:
-- compatible:		should be "arc,arc2c0608"
-- reg:			slave address
+diff --git a/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+new file mode 100644
+index 000000000000..ead5b01ad471
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+@@ -0,0 +1,77 @@
++Ingenic jz47xx pin controller
++
++Please refer to pinctrl-bindings.txt in this directory for details of the
++common pinctrl bindings used by client devices, including the meaning of the
++phrase "pin configuration node".
++
++For the jz47xx SoCs, pin control is tightly bound with GPIO ports. All pins may
++be used as GPIOs, multiplexed device functions are configured within the
++GPIO port configuration registers and it is typical to refer to pins using the
++naming scheme "PxN" where x is a character identifying the GPIO port with
++which the pin is associated and N is an integer from 0 to 31 identifying the
++pin within that GPIO port. For example PA0 is the first pin in GPIO port A, and
++PB31 is the last pin in GPIO port B. The jz4740 contains 4 GPIO ports, PA to
++PD, for a total of 128 pins. The jz4780 contains 6 GPIO ports, PA to PF, for a
++total of 192 pins.
++
++
++Pin controller node
++=========+
++Required properties:
++- compatible: One of:
++  - "ingenic,jz4740-pinctrl"
++  - "ingenic,jz4780-pinctrl"
++
++Optional properties:
++- ingenic,pull-ups: A list of 32-bit bit fields, where each bit set tells the
++  driver that a pull-up resistor is available for this pin.
++  By default, the driver considers that all pins feature a pull-up resistor.
++- ingenic,pull-downs: A list of 32-bit bit fields, where each bit set tells
++  the driver that a pull-down resistor is available for this pin.
++  By default, the driver considers that all pins feature a pull-down
++  resistor.
++
++
++'functions' sub-node
++==========
++
++The 'functions' node will contain sub-nodes that correspond to pin function
++nodes, and no properties. Pin function nodes will contain sub-nodes that
++correspond to pin groups, and no properties.
++
++The names of the pin function nodes will end up being the available functions
++provided by the pinctrl driver.
++The names of the pin group nodes will end up being the available groups
++provided by the pinctrl driver.
++
++Required properties for pin groups:
++- ingenic,pins: <pin mode [pin mode ...]>;
++  where 'pin' is the number of the pin, and 'mode' is the function mode of the
++  pin that should be enabled for this group.
++
++
++Example:
++===+
++pinctrl: ingenic-pinctrl@10010000 {
++	compatible = "ingenic,jz4740-pinctrl";
++	reg = <0x10010000 0x400>;
++
++	ingenic,pull-ups   = <0xffffffff 0xffffffff 0xffffffff 0xdfffffff>;
++	ingenic,pull-downs = <0x00000000 0x00000000 0x00000000 0x00000000>;
++
++	functions {
++		mmc {
++			mmc-1bit {
++				/* CLK, CMD, D0 */
++				ingenic,pins = <0x69 0 0x68 0 0x6a 0>;
++			};
++
++			mmc-4bit {
++				/* D1, D2, D3 */
++				ingenic,pins = <0x6b 0 0x6c 0 0x6d 0>;
++			};
++		};
++	};
++};
+-- 
+2.11.0
 
-Optional properties:
-- default-brightness:	brightness value on boot, value from: 0-4095
-- label:		The name of the backlight device
-			See Documentation/devicetree/bindings/leds/common.txt
-- led-sources:		List of enabled channels from 0 to 5.
-			See Documentation/devicetree/bindings/leds/common.txt
-
-- arc,led-config-0:	setting for register ILED_CONFIG_0
-- arc,led-config-1:	setting for register ILED_CONFIG_1
-- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
-- arc,comp-config:	setting for register CONFIG_COMP
-- arc,filter-config:	setting for register FILTER_CONFIG
-- arc,trim-config:	setting for register IMAXTUNE
-
-> +
-> +Note: Optional properties not specified will default to values in IC EPR=
-OM
-> +
-> +Example:
-> +
-> +arc2c0608@30 {
-> +	compatible =3D "arc,arc2c0608";
-> +	reg =3D <0x30>;
-> +	default-brightness =3D <500>;
-> +	label =3D "lcd-backlight";
-> +	linux,default-trigger =3D "backlight";
-> +	led-sources =3D <0 1 2 5>;
-> +};
-> +
-
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

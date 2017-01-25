@@ -1,54 +1,101 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Sat, 14 Jan 2017 07:26:13 +0000
-Subject: Re: [PATCH v9 4/4] console: Make persistent scrollback a boot parameter
-Message-Id: <20170114072613.GA3856@kroah.com>
+From: Petr Mladek <pmladek@suse.com>
+Date: Wed, 25 Jan 2017 14:08:45 +0000
+Subject: [PATCH v2] printk: Correctly handle preemption in console_unlock()
+Message-Id: <1485353325-26591-1-git-send-email-pmladek@suse.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <4640722.jsFVORW8WM@amdc3058>
- <20170110212838.16175-5-manuel.schoelling@gmx.de>
- <20170110225846.gd2pqczplnkl74d3@angband.pl>
- <1484337634.1720.4.camel@gmx.de>
-In-Reply-To: <1484337634.1720.4.camel@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Manuel =?iso-8859-1?Q?Sch=F6lling?= <manuel.schoelling@gmx.de>
-Cc: Adam Borowski <kilobyte@angband.pl>, jslaby@suse.com, lkml14@scotdoyle.com, rdunlap@infradead.org, shorne@gmail.com, andrey_utkin@fastmail.com, akpm@linux-foundation.org, paul.burton@imgtec.com, daniel.vetter@ffwll.ch, tj@kernel.org, hdegoede@redhat.com, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Petr Mladek <pmladek@suse.com>
 
-On Fri, Jan 13, 2017 at 09:00:34PM +0100, Manuel Sch=F6lling wrote:
-> On Tue, 2017-01-10 at 23:58 +0100, Adam Borowski wrote:
-> > On Tue, Jan 10, 2017 at 10:28:38PM +0100, Manuel Sch=F6lling wrote:
-> > > The impact of the persistent scrollback feature on the code size is
-> > > rather small, so the config option is removed. The feature stays
-> > > disabled by default and can be enabled by using the boot command
-> > > line
-> > > parameter 'vgacon.scrollback_persistent=3D1' or by setting
-> > > VGACON_SOFT_SCROLLBACK_PERSISTENT_ENABLE_BY_DEFAULT=3Dy.
-> > >=20
-> > > Signed-off-by: Manuel Sch=F6lling <manuel.schoelling@gmx.de>
-> > > Suggested-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > +module_param_named(scrollback_persistent, scrollback_persistent,
-> > > bool, 0000);
-> > > +MODULE_PARM_DESC(scrollback_persistent, "Enable persistent
-> > > scrollback for all vga consoles");
-> >=20
-> > A command-line knob settable by the end-user is something more
-> > persistent
-> > than a config option.=A0=A0As you're going to extend this code beyond
-> > vgacon in
-> > the near future, perhaps it'd be better to have a shared setting for
-> > all
-> > console drivers?
-> According to the guys at #kernelnewbies on IRC everybody hates new
-> command line options.
+Some console drivers code calls console_conditional_schedule()
+that looks at @console_may_schedule. The value must be cleared
+when the drivers are called from console_unlock() with
+interrupts disabled. But rescheduling is fine when the same
+code is called, for example, from tty operations where the
+console semaphore is taken via console_lock().
 
-That was me, you can use my name here :)
+This is why @console_may_schedule is cleared before calling console
+drivers. The original value is stored to decide if we could sleep
+between lines.
 
-> I'd rather stick to the module parameter for now and maybe introduce a=20
-> new cmd line option later, once this feature has been implemented in
-> several console drivers.
+Now, @console_may_schedule is not cleared when we call
+console_trylock() and jump back to the "again" goto label.
+This has become a problem, since the commit 6b97a20d3a7909daa066
+("printk: set may_schedule for some of console_trylock() callers").
+@console_may_schedule might get enabled now.
 
-Yes, that should be fine.
+There is also the opposite problem. console_lock() can be called
+only from preemptive context. It can always enable scheduling in
+the console code. But console_trylock() is not able to detect it
+when CONFIG_PREEMPT_COUNT is disabled. Therefore we should use the
+original @console_may_schedule value after re-acquiring
+the console semaphore in console_unlock().
 
-thanks,
+This patch solves both problems by moving the "again" goto label.
 
-greg k-h
+Alternative solution was to clear and restore the value around
+call_console_drivers(). Then console_conditional_schedule() could
+be used also inside console_unlock(). But there was a potential race
+with console_flush_on_panic() as reported by Sergey Senozhatsky.
+That function should be called only where there is only one CPU
+and with interrupts disabled. But better be on the safe side
+because stopping CPUs might fail.
+
+Fixes: 6b97a20d3a7909 ("printk: set may_schedule for some of console_trylock() callers")
+Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+---
+Changes against v2:
+
+  + use conservative solution with the following rules:
+
+    + always clear console_may_schedule after again goto label
+
+    + save and use the original value to decide about sleeping
+      inside console unlock
+
+    + do not set console_may_schedule using the saved value;
+      it avoids potential race with console_flush_on_panic();
+      also it avoids breaking the complex logic used in other
+      functions manipulating this variable.
+
+ kernel/printk/printk.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 7180088cbb23..cc90c0a5ae21 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2158,19 +2158,18 @@ void console_unlock(void)
+ 	}
+ 
+ 	/*
+-	 * Console drivers are called under logbuf_lock, so
+-	 * @console_may_schedule should be cleared before; however, we may
+-	 * end up dumping a lot of lines, for example, if called from
+-	 * console registration path, and should invoke cond_resched()
+-	 * between lines if allowable.  Not doing so can cause a very long
+-	 * scheduling stall on a slow console leading to RCU stall and
+-	 * softlockup warnings which exacerbate the issue with more
+-	 * messages practically incapacitating the system.
++	 * Console drivers are called with interrupts disabled, so
++	 * @console_may_schedule must be cleared before. The original
++	 * value must be stored so that we could schedule between lines.
++	 *
++	 * console_trylock() is not able to detect the preemtible
++	 * context reliably. Therefore the value must be stored before
++	 * and cleared after the the "again" goto label.
+ 	 */
+ 	do_cond_resched = console_may_schedule;
++again:
+ 	console_may_schedule = 0;
+ 
+-again:
+ 	/*
+ 	 * We released the console_sem lock, so we need to recheck if
+ 	 * cpu is online and (if not) is there at least one CON_ANYTIME
+-- 
+1.8.5.6
+

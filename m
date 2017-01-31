@@ -1,235 +1,45 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Tue, 17 Jan 2017 23:14:11 +0000
-Subject: [PATCH 03/13] pinctrl-jz4780: add a pinctrl driver for the Ingenic jz4780 SoC
-Message-Id: <20170117231421.16310-4-paul@crapouillou.net>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Tue, 31 Jan 2017 18:25:36 +0000
+Subject: [PATCH] video: fbdev: offb: switch to using for_each_node_by_type
+Message-Id: <20170131182536.GA30076@dtor-ws>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170117231421.16310-1-paul@crapouillou.net>
-In-Reply-To: <20170117231421.16310-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>
-Cc: linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, james.hogan@imgtec.com, Paul Cercueil <paul@crapouillou.net>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Yongji Xie <xyjxie@linux.vnet.ibm.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This driver reuses the core of the driver already present in
-pinctrl-ingenic.c, and just supplies callbacks to perform the low-level
-operations.
+Instead of open-coding loops let's switch to a nice macro.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
- drivers/pinctrl/ingenic/Kconfig          |   6 ++
- drivers/pinctrl/ingenic/Makefile         |   1 +
- drivers/pinctrl/ingenic/pinctrl-jz4780.c | 179 +++++++++++++++++++++++++++++++
- 3 files changed, 186 insertions(+)
- create mode 100644 drivers/pinctrl/ingenic/pinctrl-jz4780.c
+ drivers/video/fbdev/offb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pinctrl/ingenic/Kconfig b/drivers/pinctrl/ingenic/Kconfig
-index 9923ce127183..15b6514c1948 100644
---- a/drivers/pinctrl/ingenic/Kconfig
-+++ b/drivers/pinctrl/ingenic/Kconfig
-@@ -12,3 +12,9 @@ config PINCTRL_JZ4740
- 	default y
- 	depends on MACH_JZ4740 || COMPILE_TEST
- 	select PINCTRL_INGENIC
-+
-+config PINCTRL_JZ4780
-+	bool "Pinctrl driver for the Ingenic JZ4780 SoC"
-+	default y
-+	depends on MACH_JZ4780 || COMPILE_TEST
-+	select PINCTRL_INGENIC
-diff --git a/drivers/pinctrl/ingenic/Makefile b/drivers/pinctrl/ingenic/Makefile
-index 8b2c8b789dc9..ad691f053207 100644
---- a/drivers/pinctrl/ingenic/Makefile
-+++ b/drivers/pinctrl/ingenic/Makefile
-@@ -1,2 +1,3 @@
- obj-$(CONFIG_PINCTRL_INGENIC)	+= pinctrl-ingenic.o
- obj-$(CONFIG_PINCTRL_JZ4740)	+= pinctrl-jz4740.o
-+obj-$(CONFIG_PINCTRL_JZ4780)	+= pinctrl-jz4780.o
-diff --git a/drivers/pinctrl/ingenic/pinctrl-jz4780.c b/drivers/pinctrl/ingenic/pinctrl-jz4780.c
-new file mode 100644
-index 000000000000..a191cd1711e7
---- /dev/null
-+++ b/drivers/pinctrl/ingenic/pinctrl-jz4780.c
-@@ -0,0 +1,179 @@
-+/*
-+ * Ingenic jz4780 pinctrl driver
-+ *
-+ * Copyright (c) 2013 Imagination Technologies
-+ * Copyright (c) 2017 Paul Cercueil <paul@crapouillou.net>
-+ *
-+ * Authors: Paul Burton <paul.burton@imgtec.com>,
-+ *          Paul Cercueil <paul@crapouillou.net>
-+ *
-+ * License terms: GNU General Public License (GPL) version 2
-+ */
-+
-+#include "pinctrl-ingenic.h"
-+
-+#include <dt-bindings/interrupt-controller/irq.h>
-+#include <linux/errno.h>
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+
-+/* GPIO port register offsets */
-+#define GPIO_PIN	0x00
-+#define GPIO_INT	0x10
-+#define GPIO_INTS	0x14
-+#define GPIO_INTC	0x18
-+#define GPIO_MSK	0x20
-+#define GPIO_MSKS	0x24
-+#define GPIO_MSKC	0x28
-+#define GPIO_PAT1	0x30
-+#define GPIO_PAT1S	0x34
-+#define GPIO_PAT1C	0x38
-+#define GPIO_PAT0	0x40
-+#define GPIO_PAT0S	0x44
-+#define GPIO_PAT0C	0x48
-+#define GPIO_FLG	0x50
-+#define GPIO_FLGC	0x58
-+#define GPIO_PEN	0x70
-+#define GPIO_PENS	0x74
-+#define GPIO_PENC	0x78
-+
-+static void jz4780_set_gpio(void __iomem *base,
-+		unsigned int offset, bool output)
-+{
-+	writel(1 << offset, base + GPIO_INTC);
-+	writel(1 << offset, base + GPIO_MSKS);
-+
-+	if (output)
-+		writel(1 << offset, base + GPIO_PAT1C);
-+	else
-+		writel(1 << offset, base + GPIO_PAT1S);
-+}
-+
-+static int jz4780_get_bias(void __iomem *base, unsigned int offset)
-+{
-+	return !((readl(base + GPIO_PEN) >> offset) & 0x1);
-+}
-+
-+static void jz4780_set_bias(void __iomem *base,
-+		unsigned int offset, bool enable)
-+{
-+	if (enable)
-+		writel(1 << offset, base + GPIO_PENC);
-+	else
-+		writel(1 << offset, base + GPIO_PENS);
-+}
-+
-+static void jz4780_gpio_set_value(void __iomem *base,
-+		unsigned int offset, int value)
-+{
-+	if (value)
-+		writel(1 << offset, base + GPIO_PAT0S);
-+	else
-+		writel(1 << offset, base + GPIO_PAT0C);
-+}
-+
-+static int jz4780_gpio_get_value(void __iomem *base, unsigned int offset)
-+{
-+	return (readl(base + GPIO_PIN) >> offset) & 0x1;
-+}
-+
-+static u32 jz4780_irq_read(void __iomem *base)
-+{
-+	return readl(base + GPIO_FLG);
-+}
-+
-+static void jz4780_irq_mask(void __iomem *base, unsigned int offset, bool mask)
-+{
-+	if (mask)
-+		writel(1 << offset, base + GPIO_MSKS);
-+	else
-+		writel(1 << offset, base + GPIO_MSKC);
-+}
-+
-+static void jz4780_irq_ack(void __iomem *base, unsigned int offset)
-+{
-+	writel(1 << offset, base + GPIO_FLGC);
-+}
-+
-+static void jz4780_irq_set_type(void __iomem *base,
-+		unsigned int offset, unsigned int type)
-+{
-+	enum {
-+		PAT_EDGE_RISING		= 0x3,
-+		PAT_EDGE_FALLING	= 0x2,
-+		PAT_LEVEL_HIGH		= 0x1,
-+		PAT_LEVEL_LOW		= 0x0,
-+	} pat;
-+
-+	switch (type) {
-+	case IRQ_TYPE_EDGE_RISING:
-+		pat = PAT_EDGE_RISING;
-+		break;
-+	case IRQ_TYPE_EDGE_FALLING:
-+		pat = PAT_EDGE_FALLING;
-+		break;
-+	case IRQ_TYPE_LEVEL_HIGH:
-+		pat = PAT_LEVEL_HIGH;
-+		break;
-+	case IRQ_TYPE_LEVEL_LOW:
-+	default:
-+		pat = PAT_LEVEL_LOW;
-+		break;
-+	};
-+
-+	writel(1 << offset, base + ((pat & 0x2) ? GPIO_PAT1S : GPIO_PAT1C));
-+	writel(1 << offset, base + ((pat & 0x1) ? GPIO_PAT0S : GPIO_PAT0C));
-+	writel(1 << offset, base + GPIO_INTS);
-+}
-+
-+static void jz4780_set_function(void __iomem *base,
-+		unsigned int offset, unsigned int func)
-+{
-+	writel(1 << offset, base + GPIO_INTC);
-+	writel(1 << offset, base + GPIO_MSKC);
-+	writel(1 << offset, base + ((func & 0x2) ? GPIO_PAT1S : GPIO_PAT1C));
-+	writel(1 << offset, base + ((func & 0x1) ? GPIO_PAT0S : GPIO_PAT0C));
-+}
-+
-+static const struct ingenic_pinctrl_ops jz4780_pinctrl_ops = {
-+	.nb_functions	= 4,
-+	.set_function	= jz4780_set_function,
-+	.set_gpio	= jz4780_set_gpio,
-+	.set_bias	= jz4780_set_bias,
-+	.get_bias	= jz4780_get_bias,
-+	.gpio_set_value	= jz4780_gpio_set_value,
-+	.gpio_get_value	= jz4780_gpio_get_value,
-+	.irq_read	= jz4780_irq_read,
-+	.irq_mask	= jz4780_irq_mask,
-+	.irq_ack	= jz4780_irq_ack,
-+	.irq_set_type	= jz4780_irq_set_type,
-+};
-+
-+static int jz4780_pinctrl_probe(struct platform_device *pdev)
-+{
-+	return ingenic_pinctrl_probe(pdev, &jz4780_pinctrl_ops);
-+}
-+
-+static const struct of_device_id jz4780_pinctrl_dt_match[] = {
-+	{ .compatible = "ingenic,jz4780-pinctrl", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, jz4780_pinctrl_dt_match);
-+
-+
-+static struct platform_driver jz4780_pinctrl_driver = {
-+	.driver = {
-+		.name = "jz4780-pinctrl",
-+		.of_match_table = of_match_ptr(jz4780_pinctrl_dt_match),
-+		.suppress_bind_attrs = true,
-+	},
-+	.probe = jz4780_pinctrl_probe,
-+};
-+
-+static int __init jz4780_pinctrl_drv_register(void)
-+{
-+	return platform_driver_register(&jz4780_pinctrl_driver);
-+}
-+postcore_initcall(jz4780_pinctrl_drv_register);
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 906c6e75c260..9be884b0c778 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -668,14 +668,14 @@ static int __init offb_init(void)
+ 		offb_init_nodriver(of_chosen, 1);
+ 	}
+ 
+-	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
++	for_each_node_by_type(dp, "display") {
+ 		if (of_get_property(dp, "linux,opened", NULL) &&
+ 		    of_get_property(dp, "linux,boot-display", NULL)) {
+ 			boot_disp = dp;
+ 			offb_init_nodriver(dp, 0);
+ 		}
+ 	}
+-	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
++	for_each_node_by_type(dp, "display") {
+ 		if (of_get_property(dp, "linux,opened", NULL) &&
+ 		    dp != boot_disp)
+ 			offb_init_nodriver(dp, 0);
 -- 
-2.11.0
+2.11.0.483.g087da7b7c-goog
 
+
+-- 
+Dmitry

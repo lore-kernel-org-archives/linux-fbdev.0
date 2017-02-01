@@ -1,78 +1,129 @@
-From: Petr Mladek <pmladek@suse.com>
-Date: Thu, 02 Feb 2017 16:40:12 +0000
-Subject: Re: [PATCH v2] printk: Correctly handle preemption in console_unlock()
-Message-Id: <20170202164012.GI23754@pathway.suse.cz>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 01 Feb 2017 06:55:25 +0000
+Subject: Re: [PATCH v3] Fix loading of module radeonfb on PowerMac
+Message-Id: <CA+7wUsxmntgkiiF2M74rCDxbVfiG+P9s+1UFwsN7C6e-BF7+Hg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1485353325-26591-1-git-send-email-pmladek@suse.com>
- <20170202093011.1e067ea7@gandalf.local.home>
-In-Reply-To: <20170202093011.1e067ea7@gandalf.local.home>
+References: <1479886001-27801-1-git-send-email-malat@debian.org>
+In-Reply-To: <1479886001-27801-1-git-send-email-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Mathieu Malaterre <malat@debian.org>
 
-On Thu 2017-02-02 09:30:11, Steven Rostedt wrote:
-> On Wed, 25 Jan 2017 15:08:45 +0100
-> Petr Mladek <pmladek@suse.com> wrote:
-> 
-> > diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-> > index 7180088cbb23..cc90c0a5ae21 100644
-> > --- a/kernel/printk/printk.c
-> > +++ b/kernel/printk/printk.c
-> > @@ -2158,19 +2158,18 @@ void console_unlock(void)
-> >  	}
-> >  
-> >  	/*
-> > -	 * Console drivers are called under logbuf_lock, so
-> > -	 * @console_may_schedule should be cleared before; however, we may
-> > -	 * end up dumping a lot of lines, for example, if called from
-> > -	 * console registration path, and should invoke cond_resched()
-> > -	 * between lines if allowable.  Not doing so can cause a very long
-> > -	 * scheduling stall on a slow console leading to RCU stall and
-> > -	 * softlockup warnings which exacerbate the issue with more
-> > -	 * messages practically incapacitating the system.
-> 
-> Why did you remove the comment about invoking cond_resched()? It's
-> still pertinent to the code, as there still exists a:
+Any chance this patch could be considered for inclusion this time ?
+
+Thanks
+
+On Wed, Nov 23, 2016 at 8:26 AM, Mathieu Malaterre <malat@debian.org> wrote:
+> When the linux kernel is build with (typical kernel ship with Debian
+> installer):
 >
-> 	if (do_cond_resched)
-> 		cond_resched();
-> 
-> And the rational in the comment is still correct.
-
-The comment was above an assignment to a variable called
-"do_cond_resched". The variable was later used only on one place.
-I hoped that the purpose of cond_resched() was a common knowledge.
-
-The new comment still mentions scheduling between lines. But it
-newly explains why it has to be done here and the relation to
-the "again" label.
-
-Would you prefer to keep the original text as is (modulo the context
-in which the drivers are called) and just add the second paragraph?
-
-Anyway, thank a lot for review.
-
-Best Regards,
-Petr
-
-> -- Steve
-> 
-> > +	 * Console drivers are called with interrupts disabled, so
-> > +	 * @console_may_schedule must be cleared before. The original
-> > +	 * value must be stored so that we could schedule between lines.
-> > +	 *
-> > +	 * console_trylock() is not able to detect the preemtible
-> > +	 * context reliably. Therefore the value must be stored before
-> > +	 * and cleared after the the "again" goto label.
-> >  	 */
-> >  	do_cond_resched = console_may_schedule;
-> > +again:
-> >  	console_may_schedule = 0;
-> >  
-> > -again:
-> >  	/*
-> >  	 * We released the console_sem lock, so we need to recheck if
-> >  	 * cpu is online and (if not) is there at least one CON_ANYTIME
-> 
+> CONFIG_FB_OF=y
+> CONFIG_VT_HW_CONSOLE_BINDING=y
+> CONFIG_FB_RADEON=m
+>
+> The offb driver takes precedence over module radeonfb. It is then
+> impossible to load the module, error reported is:
+>
+> [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+> [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+> [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+> [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+>
+> This patch reproduce the behavior of the module radeon, so as to make it
+> possible to load radeonfb when offb is first loaded.
+>
+> The problem is that offb call pci_request_region first, and then radeonfb
+> tries to do it, and since one is trying to take over from the other, it can't
+> do that because the area is already reserved.
+>
+> It should be noticed that `offb_destroy` is never called which explain the
+> need to skip error detection on the radeonfb side.
+>
+> Signed-off-by: Mathieu Malaterre <malat@debian.org>
+> Link: https://bugs.debian.org/826629#57
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+> Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+> ---
+>
+> v2: Remove compilation warning
+>
+> v3: Hide error messages on PPC
+>
+>  drivers/video/fbdev/aty/radeon_base.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+> index 218339a..837c86a 100644
+> --- a/drivers/video/fbdev/aty/radeon_base.c
+> +++ b/drivers/video/fbdev/aty/radeon_base.c
+> @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
+>         .read   = radeon_show_edid2,
+>  };
+>
+> +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
+> +{
+> +       struct apertures_struct *ap;
+> +
+> +       ap = alloc_apertures(1);
+> +       if (!ap)
+> +               return -ENOMEM;
+> +
+> +       ap->ranges[0].base = pci_resource_start(pdev, 0);
+> +       ap->ranges[0].size = pci_resource_len(pdev, 0);
+> +
+> +       remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
+> +       kfree(ap);
+> +
+> +       return 0;
+> +}
+>
+>  static int radeonfb_pci_register(struct pci_dev *pdev,
+>                                  const struct pci_device_id *ent)
+> @@ -2314,20 +2330,29 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+>         rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+>         rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+>
+> +       ret = radeon_kick_out_firmware_fb(pdev);
+> +       if (ret)
+> +               return ret;
+> +
+>         /* request the mem regions */
+>         ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+> +  /* this is not an error on PowerMac where offb already requested mem regions */
+> +#ifndef CONFIG_PPC
+>         if (ret < 0) {
+>                 printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+>                         pci_name(rinfo->pdev));
+>                 goto err_release_fb;
+>         }
+> +#endif
+>
+>         ret = pci_request_region(pdev, 2, "radeonfb mmio");
+> +#ifndef CONFIG_PPC
+>         if (ret < 0) {
+>                 printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+>                         pci_name(rinfo->pdev));
+>                 goto err_release_pci0;
+>         }
+> +#endif
+>
+>         /* map the regions */
+>         rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
+> @@ -2511,10 +2536,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+>         iounmap(rinfo->mmio_base);
+>  err_release_pci2:
+>         pci_release_region(pdev, 2);
+> +#ifndef CONFIG_PPC
+>  err_release_pci0:
+>         pci_release_region(pdev, 0);
+>  err_release_fb:
+>          framebuffer_release(info);
+> +#endif
+>  err_disable:
+>  err_out:
+>         return ret;
+> --
+> 2.1.4
+>

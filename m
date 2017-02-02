@@ -1,155 +1,191 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 08 Feb 2017 16:07:07 +0000
-Subject: Re: [PATCH 1/8] fb: hisilicon: Add framebuffer driver for hi3660 SoC
-Message-Id: <2996648.XhUWzz1aup@amdc3058>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 02 Feb 2017 13:53:11 +0000
+Subject: [PATCH v3 2/2] gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
+Message-Id: <1486043591-6278-3-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170207024027epcas5p2528e797ee0c34cb60d97f0b659f4acbf@epcas5p2.samsung.com>
- <20170207023559.79455-1-cailiwei@hisilicon.com>
-In-Reply-To: <20170207023559.79455-1-cailiwei@hisilicon.com>
+References: <1486043591-6278-1-git-send-email-boris.brezillon@free-electrons.com>
+In-Reply-To: <1486043591-6278-1-git-send-email-boris.brezillon@free-electrons.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: cailiwei <cailiwei@hisilicon.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, guodong.xu@linaro.org, suzhuangluan@hisilicon.com, dengqingshan@hisilicon.com, xuhongtao8@hisilicon.com, zhengwanchun@hisilicon.com, shizongxuan@huawei.com
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-leds@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
+devm_fwnode_get_gpiod_from_child() currently allows GPIO users to
+request a GPIO that is defined in a child fwnode instead of directly in
+the device fwnode.
+Extend this API by adding the devm_fwnode_get_index_gpiod_from_child()
+helper which does the same except you can also specify an index in case
+the 'xx-gpios' property describe several GPIOs.
 
-Hi,
+Signed-off-by: Boris Brezillon <boris.brezillon@free-electrons.com>
+---
+ drivers/gpio/devres.c         | 20 +++++++++++---------
+ drivers/gpio/gpiolib.c        |  9 +++++----
+ include/linux/gpio/consumer.h | 31 +++++++++++++++++++++----------
+ 3 files changed, 37 insertions(+), 23 deletions(-)
 
-I cannot merge this upstream as it was collectively
-decided that there should be no new fbdev drivers
-(DRM subsystem should be used instead).
-
-[ You may consider submitting this driver to staging
-  subsystem to make hardware usable by kernel while
-  proper DRM driver is being developed. ]
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-On Tuesday, February 07, 2017 10:35:52 AM cailiwei wrote:
-> From: Levy-Cai <cailiwei@hisilicon.com>
-> 
-> Add framebuffer driver for hi3660 SoC, this driver include lcd
-> driver & Hdmi adv7533/adv7535 driver, support lcd display at
-> 1080p@60 and hdmi display at 1080p@60.
-> 
-> Signed-off-by: cailiwei <cailiwei@hisilicon.com>
-> ---
->  drivers/video/fbdev/Kconfig           | 11 ++++++++++
->  drivers/video/fbdev/Makefile          |  1 +
->  drivers/video/fbdev/hisi/Kconfig      |  6 +++++
->  drivers/video/fbdev/hisi/dss/Makefile | 41 +++++++++++++++++++++++++++++++++++
->  4 files changed, 59 insertions(+)
->  mode change 100644 => 100755 drivers/video/fbdev/Kconfig
->  mode change 100644 => 100755 drivers/video/fbdev/Makefile
->  create mode 100755 drivers/video/fbdev/hisi/Kconfig
->  create mode 100755 drivers/video/fbdev/hisi/dss/Makefile
-> 
-> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-> old mode 100644
-> new mode 100755
-> index 5d3b0db5ce0a..85c46cc75908
-> --- a/drivers/video/fbdev/Kconfig
-> +++ b/drivers/video/fbdev/Kconfig
-> @@ -2429,6 +2429,16 @@ config FB_HYPERV
->  	help
->  	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
->  
-> +config FB_HISI
-> +	tristate "Hisilicon Framebuffer support"
-> +	depends on FB
-> +	select FB_CFB_FILLRECT
-> +	select FB_CFB_COPYAREA
-> +	select FB_CFB_IMAGEBLIT
-> +	select REGMAP
-> +	help
-> +	  This framebuffer driver supports Hisilicon FB.
-> +
->  config FB_SIMPLE
->  	bool "Simple framebuffer support"
->  	depends on (FB = y)
-> @@ -2448,6 +2458,7 @@ config FB_SIMPLE
->  source "drivers/video/fbdev/omap/Kconfig"
->  source "drivers/video/fbdev/omap2/Kconfig"
->  source "drivers/video/fbdev/mmp/Kconfig"
-> +source "drivers/video/fbdev/hisi/Kconfig"
->  
->  config FB_SH_MOBILE_MERAM
->  	tristate "SuperH Mobile MERAM read ahead support"
-> diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
-> old mode 100644
-> new mode 100755
-> index ee8c81405a7f..a10d3d2793e3
-> --- a/drivers/video/fbdev/Makefile
-> +++ b/drivers/video/fbdev/Makefile
-> @@ -23,6 +23,7 @@ obj-$(CONFIG_FB_I740)		  += i740fb.o
->  obj-$(CONFIG_FB_MATROX)		  += matrox/
->  obj-$(CONFIG_FB_RIVA)		  += riva/
->  obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
-> +obj-$(CONFIG_FB_HISI)             += hisi/dss/
->  obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
->  obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
->  obj-$(CONFIG_FB_RADEON)		  += aty/
-> diff --git a/drivers/video/fbdev/hisi/Kconfig b/drivers/video/fbdev/hisi/Kconfig
-> new file mode 100755
-> index 000000000000..c30747d52a38
-> --- /dev/null
-> +++ b/drivers/video/fbdev/hisi/Kconfig
-> @@ -0,0 +1,6 @@
-> +config HISI_FB_KIRIN960
-> +	tristate "HISI FB KIRIN960 Framebuffer support"
-> +	depends on FB_HISI
-> +
-> +	help
-> +	  This framebuffer driver supports KIRIN960 FB.
-> diff --git a/drivers/video/fbdev/hisi/dss/Makefile b/drivers/video/fbdev/hisi/dss/Makefile
-> new file mode 100755
-> index 000000000000..60004880dd80
-> --- /dev/null
-> +++ b/drivers/video/fbdev/hisi/dss/Makefile
-> @@ -0,0 +1,41 @@
-> +ifeq ($(CONFIG_HISI_FB_KIRIN960),y)
-> +obj-$(CONFIG_HISI_FB_KIRIN960) := hisifb.o
-> +endif
-> +
-> +hisifb-objs := \
-> +	hisi_mipi_dsi_host.o \
-> +	hisi_mipi_dsi.o \
-> +	hisi_dpe.o \
-> +	hisi_fb_panel.o \
-> +	hisi_fb_isr.o \
-> +	hisi_fb_vsync.o \
-> +	hisi_fb_buf_sync.o \
-> +	hisi_fb_bl.o \
-> +	hisi_fb_utils.o \
-> +	hisi_fb.o \
-> +	hisi_overlay_utils.o \
-> +	hisi_block_algorithm.o \
-> +	hisi_overlay_online.o \
-> +	hisi_overlay_cmdlist_utils.o
-> +
-> +ifeq ($(CONFIG_HISI_FB_KIRIN960),y)
-> +hisifb-objs += \
-> +	hisi_dpe_utils_hi3660.o \
-> +	hisi_overlay_utils_hi3660.o \
-> +	panel/mipi_hikey_nte300nts.o \
-> +	hdmi/adv75xx.o \
-> +	hdmi/mipi_adi_hdmi.o
-> +endif
-> +
-> +EXTRA_CFLAGS += -Idrivers/video/hisi/dss \
-> +		-Idrivers/video/hisi/panel \
-> +		-Idrivers/video/hisi \
-> +		-Iinclude \
-> +		-Idrivers/staging/android
-> +
-> +ifeq ($(CONFIG_HISI_PERIDVFS),y)
-> +EXTRA_CFLAGS += -Idrivers/clk/hisi/peri_dvfs
-> +endif
-> +
-> +clean:
-> +	rm *.o .*cmd
+diff --git a/drivers/gpio/devres.c b/drivers/gpio/devres.c
+index cd1bd1c3d2c0..b2bbcaae6a1f 100644
+--- a/drivers/gpio/devres.c
++++ b/drivers/gpio/devres.c
+@@ -123,10 +123,11 @@ struct gpio_desc *__must_check devm_gpiod_get_index(struct device *dev,
+ EXPORT_SYMBOL(devm_gpiod_get_index);
+ 
+ /**
+- * devm_fwnode_get_gpiod_from_child - get a GPIO descriptor from a device's
+- *				      child node
++ * devm_fwnode_get_index_gpiod_from_child - get a GPIO descriptor from a
++ *					    device's child node
+  * @dev:	GPIO consumer
+  * @con_id:	function within the GPIO consumer
++ * @index:	index of the GPIO to obtain in the consumer
+  * @child:	firmware node (child of @dev)
+  * @flags:	GPIO initialization flags
+  *
+@@ -136,11 +137,11 @@ EXPORT_SYMBOL(devm_gpiod_get_index);
+  * On successfull request the GPIO pin is configured in accordance with
+  * provided @flags.
+  */
+-struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+-						   const char *con_id,
+-						   struct fwnode_handle *child,
+-						   enum gpiod_flags flags,
+-						   const char *label)
++struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(struct device *dev,
++						const char *con_id, int index,
++						struct fwnode_handle *child,
++						enum gpiod_flags flags,
++						const char *label)
+ {
+ 	static const char * const suffixes[] = { "gpios", "gpio" };
+ 	char prop_name[32]; /* 32 is max size of property name */
+@@ -161,7 +162,8 @@ struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+ 			snprintf(prop_name, sizeof(prop_name), "%s",
+ 							       suffixes[i]);
+ 
+-		desc = fwnode_get_named_gpiod(child, prop_name, flags, label);
++		desc = fwnode_get_named_gpiod(child, prop_name, index, flags,
++					      label);
+ 		if (!IS_ERR(desc) || (PTR_ERR(desc) != -ENOENT))
+ 			break;
+ 	}
+@@ -175,7 +177,7 @@ struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+ 
+ 	return desc;
+ }
+-EXPORT_SYMBOL(devm_fwnode_get_gpiod_from_child);
++EXPORT_SYMBOL(devm_fwnode_get_index_gpiod_from_child);
+ 
+ /**
+  * devm_gpiod_get_index_optional - Resource-managed gpiod_get_index_optional()
+diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
+index 20c6c51cbe10..5e5d48c3512c 100644
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -3309,6 +3309,7 @@ EXPORT_SYMBOL_GPL(gpiod_get_index);
+  * fwnode_get_named_gpiod - obtain a GPIO from firmware node
+  * @fwnode:	handle of the firmware node
+  * @propname:	name of the firmware property representing the GPIO
++ * @index:	index of the GPIO to obtain in the consumer
+  * @dflags:	GPIO initialization flags
+  *
+  * This function can be used for drivers that get their configuration
+@@ -3324,7 +3325,7 @@ EXPORT_SYMBOL_GPL(gpiod_get_index);
+  * In case of error an ERR_PTR() is returned.
+  */
+ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+-					 const char *propname,
++					 const char *propname, int index,
+ 					 enum gpiod_flags dflags,
+ 					 const char *label)
+ {
+@@ -3340,8 +3341,8 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+ 	if (is_of_node(fwnode)) {
+ 		enum of_gpio_flags flags;
+ 
+-		desc = of_get_named_gpiod_flags(to_of_node(fwnode), propname, 0,
+-						&flags);
++		desc = of_get_named_gpiod_flags(to_of_node(fwnode), propname,
++						index, &flags);
+ 		if (!IS_ERR(desc)) {
+ 			active_low = flags & OF_GPIO_ACTIVE_LOW;
+ 			single_ended = flags & OF_GPIO_SINGLE_ENDED;
+@@ -3349,7 +3350,7 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+ 	} else if (is_acpi_node(fwnode)) {
+ 		struct acpi_gpio_info info;
+ 
+-		desc = acpi_node_get_gpiod(fwnode, propname, 0, &info);
++		desc = acpi_node_get_gpiod(fwnode, propname, index, &info);
+ 		if (!IS_ERR(desc))
+ 			active_low = info.polarity = GPIO_ACTIVE_LOW;
+ 	}
+diff --git a/include/linux/gpio/consumer.h b/include/linux/gpio/consumer.h
+index f32f49e96c0b..ea9b01d40017 100644
+--- a/include/linux/gpio/consumer.h
++++ b/include/linux/gpio/consumer.h
+@@ -135,14 +135,14 @@ int desc_to_gpio(const struct gpio_desc *desc);
+ struct fwnode_handle;
+ 
+ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+-					 const char *propname,
++					 const char *propname, int index,
+ 					 enum gpiod_flags dflags,
+ 					 const char *label);
+-struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+-						   const char *con_id,
+-						   struct fwnode_handle *child,
+-						   enum gpiod_flags flags,
+-						   const char *label);
++struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(struct device *dev,
++						const char *con_id, int index,
++						struct fwnode_handle *child,
++						enum gpiod_flags flags,
++						const char *label);
+ #else /* CONFIG_GPIOLIB */
+ 
+ static inline int gpiod_count(struct device *dev, const char *con_id)
+@@ -417,7 +417,7 @@ struct fwnode_handle;
+ 
+ static inline
+ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+-					 const char *propname,
++					 const char *propname, int index,
+ 					 enum gpiod_flags dflags,
+ 					 const char *label)
+ {
+@@ -425,17 +425,28 @@ struct gpio_desc *fwnode_get_named_gpiod(struct fwnode_handle *fwnode,
+ }
+ 
+ static inline
++struct gpio_desc *devm_fwnode_get_index_gpiod_from_child(struct device *dev,
++						const char *con_id, int index,
++						struct fwnode_handle *child,
++						enum gpiod_flags flags,
++						const char *label)
++{
++	return ERR_PTR(-ENOSYS);
++}
++
++#endif /* CONFIG_GPIOLIB */
++
++static inline
+ struct gpio_desc *devm_fwnode_get_gpiod_from_child(struct device *dev,
+ 						   const char *con_id,
+ 						   struct fwnode_handle *child,
+ 						   enum gpiod_flags flags,
+ 						   const char *label)
+ {
+-	return ERR_PTR(-ENOSYS);
++	return devm_fwnode_get_index_gpiod_from_child(dev, con_id, 0, child,
++						      flags, label);
+ }
+ 
+-#endif /* CONFIG_GPIOLIB */
+-
+ #if IS_ENABLED(CONFIG_GPIOLIB) && IS_ENABLED(CONFIG_GPIO_SYSFS)
+ 
+ int gpiod_export(struct gpio_desc *desc, bool direction_may_change);
+-- 
+2.7.4
 

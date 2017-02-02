@@ -1,55 +1,45 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 08 Feb 2017 15:15:40 +0000
-Subject: Re: [PATCH v2 0/5] fbdev/ssd1307fb: Some changes and improvement
-Message-Id: <2411010.1mLqlC3XW4@amdc3058>
+From: Boris Brezillon <boris.brezillon@free-electrons.com>
+Date: Thu, 02 Feb 2017 13:53:09 +0000
+Subject: [PATCH v3 0/2] gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
+Message-Id: <1486043591-6278-1-git-send-email-boris.brezillon@free-electrons.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170113103601epcas4p38f03c4eb4147ff5a08e93af2cda635ba@epcas4p3.samsung.com>
- <cover.1484303628.git.jsarha@ti.com>
-In-Reply-To: <cover.1484303628.git.jsarha-l0cyMroinI0@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jyri Sarha <jsarha-l0cyMroinI0@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, tomi.valkeinen-l0cyMroinI0@public.gmane.org, maxime.ripard-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org, bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-leds@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>
 
+Hello Linus,
 
-Hi,
+Here is the v3 rebased on your ib-gpiod-flags branch.
 
-On Friday, January 13, 2017 12:35:44 PM Jyri Sarha wrote:
-> Changes since first version:
-> - Cherry-picked "fbdev/ssd1307fb: add support to enable VBAT" again
->   beacuse of weird mixup in the first version
-> - Also tested the code on top of v4.10-rc3 with am335x-icev2 evm
-> 
-> We needed these changes for couple of our evm. Some of these patches
-> have been on mainline list before, but after that forgotten. Now we
-> are forward porting these on for out internal release, so this is a
-> good time to get them to mainline too.
-> 
-> Everything else is quite straight forward, but removing the
-> reset-active-low dts property is a questionable at least in
-> theory. However, in practice if anyone was using the property in their
-> device-tree blobs, they have never been able to get desired effect
-> with mainline kernel.
-> 
-> Jyri Sarha (3):
->   fbdev: ssd1307fb: Start to use gpiod API for reset gpio
->   fbdev: ssd1307fb: Remove reset-active-low from the DT binding document
->   fbdev: ssd1307fb: Make reset gpio devicetree property optional
-> 
-> Tomi Valkeinen (2):
->   fbdev/ssd1307fb: add support to enable VBAT
->   fbdev/ssd1307fb: clear screen in probe
-> 
->  .../devicetree/bindings/display/ssd1307fb.txt      |  5 +-
->  drivers/video/fbdev/ssd1307fb.c                    | 55 ++++++++++++++--------
->  2 files changed, 38 insertions(+), 22 deletions(-)
+Thanks,
 
-Patchset queued for 4.11, thanks.
+Boris
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+---
+Changes since v2:
+- Rebase on the ib-gpiod-flags
+
+Changes since v1:
+- Rename the devm_get_gpiod_from_child() helper into
+  devm_fwnode_get_gpiod_from_child()
+- Define as a static inline wrapper around
+  devm_fwnode_get_gpiod_from_child()
+
+Boris Brezillon (2):
+  gpio: Rename devm_get_gpiod_from_child()
+  gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
+
+ drivers/gpio/devres.c                     | 18 +++++++++-------
+ drivers/gpio/gpiolib.c                    |  9 ++++----
+ drivers/input/keyboard/gpio_keys.c        |  6 ++++--
+ drivers/input/keyboard/gpio_keys_polled.c |  8 +++----
+ drivers/leds/leds-gpio.c                  |  5 +++--
+ drivers/video/fbdev/amba-clcd-nomadik.c   | 16 +++++++-------
+ include/linux/gpio/consumer.h             | 35 ++++++++++++++++++++-----------
+ 7 files changed, 57 insertions(+), 40 deletions(-)
+
+-- 
+2.7.4
 

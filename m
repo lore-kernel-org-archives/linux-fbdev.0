@@ -1,7 +1,7 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Date: Thu, 02 Feb 2017 13:31:48 +0000
+From: Steven Rostedt <rostedt@goodmis.org>
+Date: Thu, 02 Feb 2017 14:30:11 +0000
 Subject: Re: [PATCH v2] printk: Correctly handle preemption in console_unlock()
-Message-Id: <20170202133148.GA1845@tigerII.localdomain>
+Message-Id: <20170202093011.1e067ea7@gandalf.local.home>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1485353325-26591-1-git-send-email-pmladek@suse.com>
 In-Reply-To: <1485353325-26591-1-git-send-email-pmladek@suse.com>
@@ -9,14 +9,52 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On (01/25/17 15:08), Petr Mladek wrote:
-[..]
-> Fixes: 6b97a20d3a7909 ("printk: set may_schedule for some of console_trylock() callers")
-> Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-> Signed-off-by: Petr Mladek <pmladek@suse.com>
+On Wed, 25 Jan 2017 15:08:45 +0100
+Petr Mladek <pmladek@suse.com> wrote:
 
-Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+> diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+> index 7180088cbb23..cc90c0a5ae21 100644
+> --- a/kernel/printk/printk.c
+> +++ b/kernel/printk/printk.c
+> @@ -2158,19 +2158,18 @@ void console_unlock(void)
+>  	}
+>  
+>  	/*
+> -	 * Console drivers are called under logbuf_lock, so
+> -	 * @console_may_schedule should be cleared before; however, we may
+> -	 * end up dumping a lot of lines, for example, if called from
+> -	 * console registration path, and should invoke cond_resched()
+> -	 * between lines if allowable.  Not doing so can cause a very long
+> -	 * scheduling stall on a slow console leading to RCU stall and
+> -	 * softlockup warnings which exacerbate the issue with more
+> -	 * messages practically incapacitating the system.
 
-	-ss
+Why did you remove the comment about invoking cond_resched()? It's
+still pertinent to the code, as there still exists a:
+
+	if (do_cond_resched)
+		cond_resched();
+
+And the rational in the comment is still correct.
+
+-- Steve
+
+> +	 * Console drivers are called with interrupts disabled, so
+> +	 * @console_may_schedule must be cleared before. The original
+> +	 * value must be stored so that we could schedule between lines.
+> +	 *
+> +	 * console_trylock() is not able to detect the preemtible
+> +	 * context reliably. Therefore the value must be stored before
+> +	 * and cleared after the the "again" goto label.
+>  	 */
+>  	do_cond_resched = console_may_schedule;
+> +again:
+>  	console_may_schedule = 0;
+>  
+> -again:
+>  	/*
+>  	 * We released the console_sem lock, so we need to recheck if
+>  	 * cpu is online and (if not) is there at least one CON_ANYTIME
+

@@ -1,36 +1,22 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 20 Feb 2017 12:53:45 +0000
-Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: fix spelling mistake "palette"
-Message-Id: <2951295.rh4CI0Fi1N@amdc3058>
+From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Date: Thu, 02 Feb 2017 13:31:48 +0000
+Subject: Re: [PATCH v2] printk: Correctly handle preemption in console_unlock()
+Message-Id: <20170202133148.GA1845@tigerII.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170217202321.21529-1-colin.king@canonical.com>
- <CGME20170217202458epcas4p18674de0c5a69a62fd9f5ce3d3ce9b917@epcas4p1.samsung.com>
- <8c50e834-4467-abfc-47ba-51c502564aa9@tabi.org>
-In-Reply-To: <8c50e834-4467-abfc-47ba-51c502564aa9@tabi.org>
+References: <1485353325-26591-1-git-send-email-pmladek@suse.com>
+In-Reply-To: <1485353325-26591-1-git-send-email-pmladek@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@tabi.org>
-Cc: Colin King <colin.king@canonical.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On (01/25/17 15:08), Petr Mladek wrote:
+[..]
+> Fixes: 6b97a20d3a7909 ("printk: set may_schedule for some of console_trylock() callers")
+> Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> Signed-off-by: Petr Mladek <pmladek@suse.com>
 
-Hi,
+Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 
-On Friday, February 17, 2017 02:24:51 PM Timur Tabi wrote:
-> On 02/17/2017 02:23 PM, Colin King wrote:
-> > From: Colin Ian King <colin.king@canonical.com>
-> >
-> > trivial fix to spelling mistakes of "palette"
-> >
-> > Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> 
-> Acked-by: Timur Tabi <timur@tabi.org>
-
-Patch queued for 4.11, thanks. 
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+	-ss

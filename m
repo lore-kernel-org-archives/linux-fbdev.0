@@ -1,7 +1,7 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Wed, 01 Feb 2017 17:18:46 +0000
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+Date: Thu, 02 Feb 2017 10:07:02 +0000
 Subject: Re: [PATCH 1/2] gpio: Rename devm_get_gpiod_from_child()
-Message-Id: <20170201171846.GC40045@dtor-ws>
+Message-Id: <20170202100702.GE2053@lahna.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170131090432.72a1b1b8@bbrezillon>
  <20170131084447.GD8311@dtor-ws>
@@ -18,66 +18,9 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Mika Westerberg <mika.westerberg@linux.intel.com>, Alexandre Courbot <gnurou@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Alexandre Courbot <gnurou@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, Linux Input <linux-input@vger.kernel.org>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <j.anaszewski@samsung.com>, "linux-leds@vger.kernel.org" <linux-leds@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Russell King <linux@armlinux.org.uk>
 
 On Wed, Feb 01, 2017 at 03:51:06PM +0100, Linus Walleij wrote:
-> On Wed, Feb 1, 2017 at 2:22 PM, Boris Brezillon
-> <boris.brezillon@free-electrons.com> wrote:
-> > On Wed, 1 Feb 2017 14:05:43 +0100
-> > Linus Walleij <linus.walleij@linaro.org> wrote:
-> 
-> >> > Linus, is this something you really care about? If that's the case, can
-> >> > you step in?
-> >>
-> >> I can only throw up my hands...
-> >
-> > Sorry for forcing your hand like this, but this is the kind of
-> > discussion I'm not comfortable with (when I need to argue on something
-> > I'm not completely convinced of, or I don't have opinion on).
-> 
-> Sorry, I'm just too stressed by all patches. I now read back on the
-> context below.
-> 
-> >> The way I percieved it, a new function
-> >> was added, but I guess it could be that the diffstat was so
-> >> convoluted in the other patch (by the way that diff sometimes give
-> >> very confusing stuff unless you use the right fuzz) so I misunderstood
-> >> some other renaming as introducing a new function.
-> >
-> > Indeed, a new function is added (see patch 2), and this new function is
-> > taking an additional 'index' parameter. If that's a problem, I can also
-> > change the prototype of devm_get_gpiod_from_child() and patch all
-> > existing users of this function, but I fear we'll end up with pretty
-> > much the same discussion :-/.
-> 
-> Yeah.
-> 
-> >> Please drop the patch if it is controversial.
-> >>
-> >> The name of the function *is* confusing though but maybe it's not
-> >> the biggest problem in the world.
-> >
-> > I can still name the new function as you suggested
-> > (devm_fwnode_get_index_gpiod_from_child()), and keep the existing one
-> > unchanged if you want.
-> 
-> But that is just insane. Then it is just better to apply this and the
-> other patch making the situation manageable.
-> 
-> This is a good time to do it too since I'm anyways patching around
-> in all the consumers this merge window.
-> 
-> Dmitry: is this such a big deal to you?
-
-No, not really. But sometimes it is soooo hard to pass on some
-bikeshedding opportunity ;)
-
-> 
-> commit 40b7318319281b1bdec804f6435f26cadd329c13
-> "gpio: Support for unified device properties interface"
-> 
-> by Mika Westerberg introduced
-> 
 > fwnode_get_named_gpiod()
 > devm_get_gpiod_from_child()
 > 
@@ -88,16 +31,8 @@ bikeshedding opportunity ;)
 > effect of naming this function wrong in the first place.
 > The fwnode API change was on fast-forward and mistakes
 > were made, also by me, mea culpa.
-> 
-> When I write kernel code, I usually intuitively look for a function doing
-> what I want, this naming is unintuitive, and it has confused me so
-> it will confuse others.
-> 
-> Can I please apply these two patches?
 
-You have my ack for the input bits.
-
-Thanks.
-
--- 
-Dmitry
+The name fwnode_get_named_gpiod() tries to follow of_get_named_gpio() so
+that we can easily convert a driver to use fwnodes instead. The other
+function is named so because we look child fwnodes under a device. For
+that, yes certainly we could have invented a better name ;-)

@@ -1,50 +1,97 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Sat, 25 Feb 2017 19:25:11 +0000
-Subject: [PATCH] video: fbdev: pmagb-b-fb: remove incorrect __exit markups
-Message-Id: <20170225192511.GA12591@dtor-ws>
+From: Pierre-Hugues Husson <phh@phh.me>
+Date: Sun, 05 Feb 2017 00:17:45 +0000
+Subject: Re: [RFCv2 PATCH 4/5] drm/bridge: add dw-hdmi cec driver using Hans Verkuil's CEC code
+Message-Id: <CAJ-oXjSsk=cZgpNp-6qLPo13Mj8Cw5mvqEe8mtFVCPSphxJOWQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl> <1479136968-24477-5-git-send-email-hverkuil@xs4all.nl>
+In-Reply-To: <1479136968-24477-5-git-send-email-hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: linux-media@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Russell King <rmk+kernel@armlinux.org.uk>, Russell King - ARM Linux <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
 
-Even if bus is not hot-pluggable, the devices can be unbound from the
-driver via sysfs, so we should not be using __exit annotations on
-remove() methods. The only exception is drivers registered with
-platform_driver_probe() which specifically disables sysfs bind/unbind
-attributes.
+Hi,
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/video/fbdev/pmagb-b-fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+2016-11-14 16:22 GMT+01:00 Hans Verkuil <hverkuil@xs4all.nl>:
+> From: Russell King <rmk+kernel@arm.linux.org.uk>
+>
+> Add a CEC driver for the dw-hdmi hardware using Hans Verkuil's CEC
+> implementation.
+>
+> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+I've seen that the patchset concerning CEC/HDMI notifier after this
+one dropped dw-hdmi support.
+Is this only temporary, or does this driver need someone to take care of it?
 
-diff --git a/drivers/video/fbdev/pmagb-b-fb.c b/drivers/video/fbdev/pmagb-b-fb.c
-index 0822b6f8dddc..2ae88b4e86b0 100644
---- a/drivers/video/fbdev/pmagb-b-fb.c
-+++ b/drivers/video/fbdev/pmagb-b-fb.c
-@@ -353,7 +353,7 @@ static int pmagbbfb_probe(struct device *dev)
- 	return err;
- }
- 
--static int __exit pmagbbfb_remove(struct device *dev)
-+static int pmagbbfb_remove(struct device *dev)
- {
- 	struct tc_dev *tdev = to_tc_dev(dev);
- 	struct fb_info *info = dev_get_drvdata(dev);
-@@ -388,7 +388,7 @@ static struct tc_driver pmagbbfb_driver = {
- 		.name	= "pmagbbfb",
- 		.bus	= &tc_bus_type,
- 		.probe	= pmagbbfb_probe,
--		.remove	= __exit_p(pmagbbfb_remove),
-+		.remove	= pmagbbfb_remove,
- 	},
- };
- 
--- 
-2.11.0.483.g087da7b7c-goog
+> diff --git a/drivers/gpu/drm/bridge/dw-hdmi-cec.c b/drivers/gpu/drm/bridge/dw-hdmi-cec.c
+> new file mode 100644
+> index 0000000..e7e12b5
+> --- /dev/null
+> +++ b/drivers/gpu/drm/bridge/dw-hdmi-cec.c
+> @@ -0,0 +1,346 @@
+> +/* http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/
+> + * tree/drivers/mxc/hdmi-cec/mxc_hdmi-cec.c?h=imx_3.0.35_4.1.0 */
+It is perhaps mandatory to have GPL header?
 
+> +#include <linux/hdmi-notifier.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/io.h>
+> +#include <linux/module.h>
+> +#include <linux/notifier.h>
+> +#include <linux/platform_data/dw_hdmi-cec.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/sched.h>
+> +#include <linux/slab.h>
+> +
+> +#include <drm/drm_edid.h>
+> +
+> +#include <media/cec.h>
+> +#include <media/cec-edid.h>
+> +
+> +#define DEV_NAME "mxc_hdmi_cec"
+I think that to respect the convention it should be dw-hdmi-cec?
 
--- 
-Dmitry
+> +       writeb_relaxed(addresses & 255, cec->base + HDMI_CEC_ADDR_L);
+> +       writeb_relaxed(addresses >> 8, cec->base + HDMI_CEC_ADDR_H);
+Some platforms (at least rockchip) discuss with dw-hdmi with longs
+instead of bytes
+dw-hdmi-i2s-audio.c uses hdmi_read/hdmi_write for that
+
+Is it ok to add write and read functions to dw_hdmi_cec_ops ?
+
+> +static unsigned int parse_hdmi_addr(const struct edid *edid)
+> +{
+> +       if (!edid || edid->extensions = 0)
+> +               return (u16)~0;
+> +
+> +       return cec_get_edid_phys_addr((u8 *)edid,
+> +                               EDID_LENGTH * (edid->extensions + 1), NULL);
+> +}
+> +
+> +static int dw_hdmi_cec_notify(struct notifier_block *nb, unsigned long event,
+> +                             void *data)
+> +{
+> +       struct dw_hdmi_cec *cec = container_of(nb, struct dw_hdmi_cec, nb);
+> +       struct hdmi_notifier *n = data;
+> +       unsigned int phys;
+> +
+> +       dev_info(cec->adap->devnode.parent, "event %lu\n", event);
+> +
+> +       switch (event) {
+> +       case HDMI_CONNECTED:
+> +               break;
+> +
+> +       case HDMI_DISCONNECTED:
+> +               cec_s_phys_addr(cec->adap, CEC_PHYS_ADDR_INVALID, false);
+> +               break;
+> +
+> +       case HDMI_NEW_EDID:
+> +               phys = parse_hdmi_addr(n->edid);
+> +               cec_s_phys_addr(cec->adap, phys, false);
+> +               break;
+> +       }
+> +
+> +       return NOTIFY_OK;
+> +}
+Thanks to "cec: integrate HDMI notifier support" this code can be dropped

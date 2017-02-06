@@ -1,42 +1,37 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 07 Feb 2017 19:48:37 +0000
-Subject: Re: [PATCH] staging: sm750fb: Enclose macro arguments in parentheses
-Message-Id: <20170207194837.GA17813@kroah.com>
+From: Wei Yongjun <weiyj.lk@gmail.com>
+Date: Mon, 06 Feb 2017 14:24:44 +0000
+Subject: [PATCH -next] video: fbdev: sh_mobile_lcdcfb: fix error return code in sh_mobile_lcdc_probe()
+Message-Id: <20170206142444.27505-1-weiyj.lk@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <ca24586f16d0a9ff4d5882156e358600e94fd71c.1486493982.git.gmatthsim@gmail.com>
-In-Reply-To: <ca24586f16d0a9ff4d5882156e358600e94fd71c.1486493982.git.gmatthsim@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-On Tue, Feb 07, 2017 at 11:11:22AM -0800, Matthieu Simon wrote:
-> checkpatch noticed possible precedence issues resulting in the definition
-> of PEEK32 and POKE32. So, these arguments should be enclosed in
-> parentheses.
-> 
-> Signed-off-by: Matthieu Simon <gmatthsim@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_chip.h | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-> index e63b8b293816..a5f910344373 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.h
-> +++ b/drivers/staging/sm750fb/ddk750_chip.h
-> @@ -10,8 +10,8 @@
->  #include <linux/uaccess.h>
->  
->  /* software control endianness */
-> -#define PEEK32(addr) readl(addr + mmio750)
-> -#define POKE32(addr, data) writel(data, addr + mmio750)
-> +#define PEEK32(addr) readl((addr) + mmio750)
-> +#define POKE32(addr, data) writel((data), (addr) + mmio750)
+From: Wei Yongjun <weiyongjun1@huawei.com>
 
-Those are funny macros, how about just making them an inline function so
-that we get the correct type-checking and better documentation as to
-what is going on with them?
+Fix to return error code -ENODEV from the ioremap_nocache() error
+handling case instead of 0, as done elsewhere in this function.
 
-thanks,
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
+---
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-greg k-h
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index 93469f9..ea8b6d5 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -2782,8 +2782,10 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 		priv->forced_fourcc = pdata->ch[0].fourcc;
+ 
+ 	priv->base = ioremap_nocache(res->start, resource_size(res));
+-	if (!priv->base)
++	if (!priv->base) {
++		error = -ENODEV;
+ 		goto err1;
++	}
+ 
+ 	error = sh_mobile_lcdc_setup_clocks(priv, pdata->clock_source);
+ 	if (error) {
+

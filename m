@@ -1,7 +1,7 @@
 From: cailiwei <cailiwei@hisilicon.com>
-Date: Tue, 07 Feb 2017 02:35:56 +0000
-Subject: [PATCH 5/8] fb: hisilicon: Add framebuffer driver for hi3660 SoC
-Message-Id: <20170207023559.79455-5-cailiwei@hisilicon.com>
+Date: Tue, 07 Feb 2017 02:35:57 +0000
+Subject: [PATCH 6/8] fb: hisilicon: Add framebuffer driver for hi3660 SoC
+Message-Id: <20170207023559.79455-6-cailiwei@hisilicon.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170207023559.79455-1-cailiwei@hisilicon.com>
 In-Reply-To: <20170207023559.79455-1-cailiwei@hisilicon.com>
@@ -19,986 +19,24 @@ driver & Hdmi adv7533/adv7535 driver, support lcd display at
 
 Signed-off-by: cailiwei <cailiwei@hisilicon.com>
 ---
- drivers/video/fbdev/hisi/dss/hisi_fb_bl.c       | 323 +++++++++
- drivers/video/fbdev/hisi/dss/hisi_fb_buf_sync.c | 507 ++++++++++++++
- drivers/video/fbdev/hisi/dss/hisi_fb_def.h      | 125 ++++
- drivers/video/fbdev/hisi/dss/hisi_fb_isr.c      | 327 +++++++++
- drivers/video/fbdev/hisi/dss/hisi_fb_panel.c    | 835 +++++++++++++++++++++++
- drivers/video/fbdev/hisi/dss/hisi_fb_panel.h    | 839 ++++++++++++++++++++++++
- 6 files changed, 2956 insertions(+)
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_bl.c
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_buf_sync.c
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_def.h
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_isr.c
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_panel.c
- create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_panel.h
+ drivers/video/fbdev/hisi/dss/hisi_fb_utils.c       |  249 ++++
+ drivers/video/fbdev/hisi/dss/hisi_fb_vsync.c       |  680 +++++++++
+ drivers/video/fbdev/hisi/dss/hisi_mipi_dsi_host.c  |  401 ++++++
+ .../fbdev/hisi/dss/hisi_overlay_cmdlist_utils.c    | 1450 ++++++++++++++++++++
+ .../fbdev/hisi/dss/hisi_overlay_cmdlist_utils.h    |  249 ++++
+ 5 files changed, 3029 insertions(+)
+ create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_utils.c
+ create mode 100755 drivers/video/fbdev/hisi/dss/hisi_fb_vsync.c
+ create mode 100755 drivers/video/fbdev/hisi/dss/hisi_mipi_dsi_host.c
+ create mode 100755 drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.c
+ create mode 100755 drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.h
 
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_bl.c b/drivers/video/fbdev/hisi/dss/hisi_fb_bl.c
+diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_utils.c b/drivers/video/fbdev/hisi/dss/hisi_fb_utils.c
 new file mode 100755
-index 000000000000..ee4b8c7f4abb
+index 000000000000..3c7965716890
 --- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_bl.c
-@@ -0,0 +1,323 @@
-+/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include "hisi_fb.h"
-+#include <linux/leds.h>
-+#define K3_DSS_SBL_WORKQUEUE	"k3_dss_sbl_workqueue"
-+
-+static int lcd_backlight_registered;
-+static unsigned int is_recovery_mode;
-+static int is_no_fastboot_bl_enable;
-+
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+unsigned long backlight_duration = (3 * HZ / 60);
-+#endif
-+
-+void hisifb_set_backlight(struct hisi_fb_data_type *hisifd, uint32_t bkl_lvl)
-+{
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	uint32_t temp = bkl_lvl;
-+
-+	BUG_ON(hisifd = NULL);
-+	pdata = dev_get_platdata(&hisifd->pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	if (!hisifd->panel_power_on || !hisifd->backlight.bl_updated) {
-+		hisifd->bl_level = bkl_lvl;
-+		return;
-+	}
-+
-+	if (pdata->set_backlight) {
-+		if (hisifd->backlight.bl_level_old = temp) {
-+			hisifd->bl_level = bkl_lvl;
-+			return;
-+		}
-+		if (hisifd->backlight.bl_level_old = 0) {
-+			HISI_FB_INFO("backlight level = %d", bkl_lvl);
-+		}
-+		hisifd->bl_level = bkl_lvl;
-+		if (hisifd->panel_info.bl_set_type & BL_SET_BY_MIPI) {
-+			hisifb_set_vsync_activate_state(hisifd, true);
-+			hisifb_activate_vsync(hisifd);
-+		}
-+		pdata->set_backlight(hisifd->pdev, bkl_lvl);
-+		if (hisifd->panel_info.bl_set_type & BL_SET_BY_MIPI) {
-+			hisifb_set_vsync_activate_state(hisifd, false);
-+			hisifb_deactivate_vsync(hisifd);
-+		}
-+		hisifd->backlight.bl_level_old = temp;
-+	}
-+}
-+
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+static void hisifb_bl_workqueue_handler(struct work_struct *work)
-+#else
-+static void hisifb_bl_workqueue_handler(struct hisi_fb_data_type *hisifd)
-+#endif
-+{
-+	struct hisi_fb_panel_data *pdata = NULL;
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+	struct hisifb_backlight *pbacklight = NULL;
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	pbacklight +	    container_of(to_delayed_work(work), struct hisifb_backlight,
-+			 bl_worker);
-+	BUG_ON(pbacklight = NULL);
-+
-+	hisifd = container_of(pbacklight, struct hisi_fb_data_type, backlight);
-+#endif
-+
-+	BUG_ON(hisifd = NULL);
-+	pdata = dev_get_platdata(&hisifd->pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	if (!hisifd->backlight.bl_updated) {
-+		down(&hisifd->blank_sem);
-+
-+		if (hisifd->backlight.frame_updated = 0) {
-+			up(&hisifd->blank_sem);
-+			return;
-+		}
-+
-+		hisifd->backlight.frame_updated = 0;
-+		hisifd->backlight.bl_updated = 1;
-+		if (is_recovery_mode) {
-+			hisifd->bl_level = hisifd->panel_info.bl_default;
-+		} else {
-+			if (!is_no_fastboot_bl_enable) {
-+				is_no_fastboot_bl_enable = 1;
-+				hisifd->bl_level +				    hisifd->panel_info.bl_default;
-+			}
-+		}
-+
-+		hisifb_set_backlight(hisifd, hisifd->bl_level);
-+		up(&hisifd->blank_sem);
-+	}
-+}
-+
-+void hisifb_backlight_update(struct hisi_fb_data_type *hisifd)
-+{
-+	struct hisi_fb_panel_data *pdata = NULL;
-+
-+	BUG_ON(hisifd = NULL);
-+	pdata = dev_get_platdata(&hisifd->pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	if (!hisifd->backlight.bl_updated) {
-+		hisifd->backlight.frame_updated = 1;
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+		schedule_delayed_work(&hisifd->backlight.bl_worker,
-+				      backlight_duration);
-+#else
-+		hisifb_bl_workqueue_handler(hisifd);
-+#endif
-+	}
-+}
-+
-+void hisifb_backlight_cancel(struct hisi_fb_data_type *hisifd)
-+{
-+	struct hisi_fb_panel_data *pdata = NULL;
-+
-+	BUG_ON(hisifd = NULL);
-+	pdata = dev_get_platdata(&hisifd->pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+	cancel_delayed_work(&hisifd->backlight.bl_worker);
-+#endif
-+	hisifd->backlight.bl_updated = 0;
-+	hisifd->backlight.bl_level_old = 0;
-+	hisifd->backlight.frame_updated = 0;
-+
-+	if (pdata->set_backlight) {
-+		hisifd->bl_level = 0;
-+		if (hisifd->panel_info.bl_set_type & BL_SET_BY_MIPI)
-+			hisifb_activate_vsync(hisifd);
-+		pdata->set_backlight(hisifd->pdev, hisifd->bl_level);
-+		if (hisifd->panel_info.bl_set_type & BL_SET_BY_MIPI)
-+			hisifb_deactivate_vsync(hisifd);
-+	}
-+}
-+
-+#ifdef CONFIG_FB_BACKLIGHT
-+static int hisi_fb_bl_get_brightness(struct backlight_device *pbd)
-+{
-+	if (NULL = pbd) {
-+		HISI_FB_ERR("NULL pointer!\n");
-+		return 0;
-+	}
-+	return pbd->props.brightness;
-+}
-+
-+static int hisi_fb_bl_update_status(struct backlight_device *pbd)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	uint32_t bl_lvl = 0;
-+
-+	if (NULL = pbd) {
-+		HISI_FB_ERR("NULL pointer!\n");
-+		return 0;
-+	}
-+
-+	hisifd = bl_get_data(pbd);
-+	if (NULL = hisifd) {
-+		HISI_FB_ERR("NULL pointer!\n");
-+		return 0;
-+	}
-+
-+	bl_lvl = pbd->props.brightness;
-+	bl_lvl = hisifd->fbi->bl_curve[bl_lvl];
-+
-+	down(&hisifd->blank_sem);
-+	hisifb_set_backlight(hisifd, bl_lvl);
-+	up(&hisifd->blank_sem);
-+
-+	return 0;
-+}
-+
-+static struct backlight_ops hisi_fb_bl_ops = {
-+	.get_brightness = hisi_fb_bl_get_brightness,
-+	.update_status = hisi_fb_bl_update_status,
-+};
-+#else
-+static void hisi_fb_set_bl_brightness(struct led_classdev *led_cdev,
-+				      enum led_brightness value)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	int bl_lvl = 0;
-+
-+	if (NULL = led_cdev) {
-+		HISI_FB_ERR("NULL pointer!\n");
-+		return;
-+	}
-+
-+	hisifd = dev_get_drvdata(led_cdev->dev->parent);
-+	if (NULL = hisifd) {
-+		HISI_FB_ERR("NULL pointer!\n");
-+		return;
-+	}
-+
-+	if (value < 0)
-+		value = 0;
-+
-+	if (value > hisifd->panel_info.bl_max)
-+		value = hisifd->panel_info.bl_max;
-+
-+	/* This maps android backlight level 0 to 255 into
-+	   driver backlight level 0 to bl_max with rounding */
-+	bl_lvl +	    (2 * value * hisifd->panel_info.bl_max + hisifd->panel_info.bl_max)
-+	    / (2 * hisifd->panel_info.bl_max);
-+	if (!bl_lvl && value)
-+		bl_lvl = 1;
-+	hisifb_set_backlight(hisifd, bl_lvl);
-+}
-+
-+static struct led_classdev backlight_led = {
-+	.name = DEV_NAME_LCD_BKL,
-+	.brightness_set = hisi_fb_set_bl_brightness,
-+};
-+#endif
-+
-+void hisifb_backlight_register(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+#ifdef CONFIG_FB_BACKLIGHT
-+	struct backlight_device *pbd = NULL;
-+	struct fb_info *fbi = NULL;
-+	char name[16] = { 0 };
-+	struct backlight_properties props;
-+#endif
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	hisifd->backlight.bl_updated = 0;
-+	hisifd->backlight.frame_updated = 0;
-+	hisifd->backlight.bl_level_old = 0;
-+	sema_init(&hisifd->backlight.bl_sem, 1);
-+#ifdef CONFIG_HISI_FB_BACKLIGHT_DELAY
-+	INIT_DELAYED_WORK(&hisifd->backlight.bl_worker,
-+			  hisifb_bl_workqueue_handler);
-+#endif
-+
-+	if (lcd_backlight_registered) return;
-+
-+#ifdef CONFIG_FB_BACKLIGHT
-+	fbi = hisifd->fbi;
-+
-+	snprintf(name, sizeof(name), "hisifb%d_bl", hisifd->index);
-+	props.max_brightness = FB_BACKLIGHT_LEVELS - 1;
-+	props.brightness = FB_BACKLIGHT_LEVELS - 1;
-+	pbd = backlight_device_register(name, fbi->dev, hisifd,
-+					&hisi_fb_bl_ops, &props);
-+	if (IS_ERR(pbd)) {
-+		fbi->bl_dev = NULL;
-+		HISI_FB_ERR("backlight_device_register failed!\n");
-+	}
-+
-+	fbi->bl_dev = pbd;
-+	fb_bl_default_curve(fbi, 0,
-+			    hisifd->panel_info.bl_min,
-+			    hisifd->panel_info.bl_max);
-+#else
-+	backlight_led.brightness = hisifd->panel_info.bl_default;
-+	backlight_led.max_brightness = hisifd->panel_info.bl_max;
-+	/* android supports only one lcd-backlight/lcd for now */
-+#ifdef CONFIG_LEDS_CLASS
-+	if (led_classdev_register(&pdev->dev, &backlight_led)) {
-+		HISI_FB_ERR("led_classdev_register failed!\n");
-+		return;
-+	}
-+#endif
-+#endif
-+
-+	if (HISI_DSS_SUPPORT_DPP_MODULE_BIT(DPP_MODULE_SBL)) {
-+		hisifd->backlight.sbl_queue +		    create_singlethread_workqueue(K3_DSS_SBL_WORKQUEUE);
-+		if (!hisifd->backlight.sbl_queue) {
-+			HISI_FB_ERR("failed to create sbl_queue!\n");
-+			return;
-+		}
-+	}
-+
-+	lcd_backlight_registered = 1;
-+}
-+
-+void hisifb_backlight_unregister(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	if (lcd_backlight_registered) {
-+		lcd_backlight_registered = 0;
-+#ifdef CONFIG_FB_BACKLIGHT
-+		/* remove /sys/class/backlight */
-+		backlight_device_unregister(hisifd->fbi->bl_dev);
-+#else
-+#ifdef CONFIG_LEDS_CLASS
-+		led_classdev_unregister(&backlight_led);
-+#endif
-+#endif
-+		if (hisifd->backlight.sbl_queue) {
-+			destroy_workqueue(hisifd->backlight.sbl_queue);
-+			hisifd->backlight.sbl_queue = NULL;
-+		}
-+	}
-+}
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_buf_sync.c b/drivers/video/fbdev/hisi/dss/hisi_fb_buf_sync.c
-new file mode 100755
-index 000000000000..e36a39ad4d31
---- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_buf_sync.c
-@@ -0,0 +1,507 @@
-+/* Copyright (c) 2008-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include "hisi_fb.h"
-+
-+#define HISI_DSS_LAYERBUF_FREE	"hisi-dss-layerbuf-free"
-+
-+int hisifb_layerbuf_lock(struct hisi_fb_data_type *hisifd,
-+			 dss_overlay_t *pov_req, struct list_head *plock_list)
-+{
-+	dss_overlay_block_t *pov_h_block_infos = NULL;
-+	dss_overlay_block_t *pov_h_block = NULL;
-+	dss_layer_t *layer = NULL;
-+	int i = 0;
-+	int m = 0;
-+	struct hisifb_layerbuf *node = NULL;
-+	struct ion_handle *ionhnd = NULL;
-+	struct iommu_map_format iommu_format;
-+	bool add_tail = false;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(pov_req = NULL);
-+	BUG_ON(plock_list = NULL);
-+
-+	pov_h_block_infos +	    (dss_overlay_block_t *) (pov_req->ov_block_infos_ptr);
-+	for (m = 0; m < pov_req->ov_block_nums; m++) {
-+		pov_h_block = &(pov_h_block_infos[m]);
-+
-+		for (i = 0; i < pov_h_block->layer_nums; i++) {
-+			layer = &(pov_h_block->layer_infos[i]);
-+			add_tail = false;
-+			ionhnd = NULL;
-+
-+			if (layer->dst_rect.y < pov_h_block->ov_block_rect.y)
-+				continue;
-+
-+			if (layer->img.shared_fd < 0)
-+				continue;
-+
-+			if ((layer->img.phy_addr = 0) &&
-+			    (layer->img.vir_addr = 0) &&
-+			    (layer->img.afbc_payload_addr = 0)) {
-+				HISI_FB_ERR
-+				    ("fb%d, layer_idx%d, chn_idx%d, no buffer!\n",
-+				     hisifd->index, layer->layer_idx,
-+				     layer->chn_idx);
-+				continue;
-+			}
-+
-+			if (layer->img.shared_fd >= 0) {
-+				ionhnd +				    ion_import_dma_buf(hisifd->ion_client,
-+						       layer->img.shared_fd);
-+				if (IS_ERR(ionhnd)) {
-+					ionhnd = NULL;
-+					HISI_FB_ERR
-+					    ("fb%d, layer_idx%d, failed to ion_import_dma_buf, "
-+					     "ionclient %p, share_fd %d!\n",
-+					     hisifd->index, i,
-+					     hisifd->ion_client,
-+					     layer->img.shared_fd);
-+				} else {
-+					if (layer->img.mmu_enable = 1) {
-+						memset(&iommu_format, 0,
-+						       sizeof(struct iommu_map_format));
-+								ion_map_iommu(hisifd->ion_client,ionhnd,
-+							      &iommu_format);
-+					}
-+					add_tail = true;
-+				}
-+			}
-+
-+			if (add_tail) {
-+				node +				    kzalloc(sizeof(struct hisifb_layerbuf),
-+					    GFP_KERNEL);
-+				if (node = NULL) {
-+					HISI_FB_ERR
-+					    ("fb%d, layer_idx%d, failed to kzalloc!\n",
-+					     hisifd->index, layer->layer_idx);
-+
-+					if (ionhnd) {
-+						ion_free(hisifd->ion_client,
-+							 ionhnd);
-+						ionhnd = NULL;
-+					}
-+					continue;
-+				}
-+
-+				node->shared_fd = layer->img.shared_fd;
-+				node->frame_no = pov_req->frame_no;
-+				node->ion_handle = ionhnd;
-+				node->has_map_iommu = (ionhnd
-+							&& (layer->img.mmu_enable = 1)) ? true : false;
-+				node->timeline = 0;
-+
-+				node->mmbuf.addr = layer->img.mmbuf_base;
-+				node->mmbuf.size = layer->img.mmbuf_size;
-+
-+				node->vir_addr = layer->img.vir_addr;
-+				node->chn_idx = layer->chn_idx;
-+
-+				list_add_tail(&node->list_node, plock_list);
-+				if (g_debug_layerbuf_sync) {
-+					HISI_FB_INFO
-+					    ("fb%d, frame_no=%d, layer_idx(%d), "
-+					     "shared_fd=%d, ion_handle=%p, "
-+					     "has_map_iommu=%d, timeline=%d, mmbuf(0x%x, %d).\n",
-+					     hisifd->index, node->frame_no, i,
-+					     node->shared_fd, node->ion_handle,
-+					     node->has_map_iommu,
-+					     node->timeline, node->mmbuf.addr,
-+					     node->mmbuf.size);
-+				}
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+void hisifb_layerbuf_flush(struct hisi_fb_data_type *hisifd,
-+			   struct list_head *plock_list)
-+{
-+	struct hisifb_layerbuf *node, *_node_;
-+	unsigned long flags = 0;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(hisifd->ion_client = NULL);
-+	BUG_ON(plock_list = NULL);
-+
-+	spin_lock_irqsave(&(hisifd->buf_sync_ctrl.layerbuf_spinlock), flags);
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = true;
-+	list_for_each_entry_safe(node, _node_, plock_list, list_node) {
-+		list_del(&node->list_node);
-+		list_add_tail(&node->list_node,
-+			      &(hisifd->buf_sync_ctrl.layerbuf_list));
-+	}
-+	spin_unlock_irqrestore(&(hisifd->buf_sync_ctrl.layerbuf_spinlock),
-+			       flags);
-+}
-+
-+void hisifb_layerbuf_unlock(struct hisi_fb_data_type *hisifd,
-+			    struct list_head *pfree_list)
-+{
-+	struct hisifb_layerbuf *node, *_node_;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(hisifd->ion_client = NULL);
-+	BUG_ON(hisifd->mmbuf_gen_pool = NULL);
-+	BUG_ON(pfree_list = NULL);
-+
-+	list_for_each_entry_safe(node, _node_, pfree_list, list_node) {
-+		list_del(&node->list_node);
-+
-+		if (g_debug_layerbuf_sync) {
-+			HISI_FB_INFO
-+			    ("fb%d, frame_no=%d, share_fd=%d, "
-+			     "ion_handle=%p, has_map_iommu=%d, "
-+			     "timeline=%d, mmbuf(0x%x, %d). "
-+			     "vir_addr = 0x%llx, chn_idx = %d\n",
-+			     hisifd->index, node->frame_no, node->shared_fd,
-+			     node->ion_handle, node->has_map_iommu,
-+			     node->timeline, node->mmbuf.addr, node->mmbuf.size,
-+			     node->vir_addr, node->chn_idx);
-+		}
-+
-+		node->timeline = 0;
-+		if (node->ion_handle) {
-+			if (node->has_map_iommu) {
-+				ion_unmap_iommu(hisifd->ion_client,
-+						node->ion_handle);
-+			}
-+			ion_free(hisifd->ion_client, node->ion_handle);
-+		}
-+		kfree(node);
-+	}
-+}
-+
-+void hisifb_layerbuf_lock_exception(struct hisi_fb_data_type *hisifd,
-+				    struct list_head *plock_list)
-+{
-+	unsigned long flags = 0;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(plock_list = NULL);
-+
-+	spin_lock_irqsave(&(hisifd->buf_sync_ctrl.layerbuf_spinlock), flags);
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = false;
-+	spin_unlock_irqrestore(&(hisifd->buf_sync_ctrl.layerbuf_spinlock), flags);
-+
-+	hisifb_layerbuf_unlock(hisifd, plock_list);
-+}
-+
-+static void hisifb_layerbuf_unlock_work(struct work_struct *work)
-+{
-+	struct hisifb_buf_sync *pbuf_sync = NULL;
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	unsigned long flags;
-+	struct hisifb_layerbuf *node, *_node_;
-+	struct list_head free_list;
-+
-+	pbuf_sync +	    container_of(work, struct hisifb_buf_sync, free_layerbuf_work);
-+	BUG_ON(pbuf_sync = NULL);
-+	hisifd +	    container_of(pbuf_sync, struct hisi_fb_data_type, buf_sync_ctrl);
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(hisifd->ion_client = NULL);
-+
-+	INIT_LIST_HEAD(&free_list);
-+	spin_lock_irqsave(&pbuf_sync->layerbuf_spinlock, flags);
-+	list_for_each_entry_safe(node, _node_, &pbuf_sync->layerbuf_list,
-+				 list_node) {
-+		if (node->timeline >= 2) {
-+			list_del(&node->list_node);
-+			list_add_tail(&node->list_node, &free_list);
-+		}
-+	}
-+	spin_unlock_irqrestore(&pbuf_sync->layerbuf_spinlock, flags);
-+
-+	hisifb_layerbuf_unlock(hisifd, &free_list);
-+}
-+
-+#ifdef CONFIG_BUF_SYNC_USED
-+#define BUF_SYNC_TIMEOUT_MSEC	(10 * MSEC_PER_SEC)
-+#define BUF_SYNC_FENCE_NAME	"hisi-dss-fence"
-+#define BUF_SYNC_TIMELINE_NAME	"hisi-dss-timeline"
-+int hisifb_buf_sync_create_fence(struct hisi_fb_data_type *hisifd,
-+				 unsigned value)
-+{
-+	int fd = -1;
-+	struct sync_fence *fence = NULL;
-+	struct sync_pt *pt = NULL;
-+
-+	BUG_ON(hisifd = NULL);
-+	fd = get_unused_fd_flags(0);
-+	if (fd < 0) {
-+		HISI_FB_ERR("get_unused_fd failed!\n");
-+		return fd;
-+	}
-+
-+	pt = sw_sync_pt_create(hisifd->buf_sync_ctrl.timeline, value);
-+	if (pt = NULL) {
-+		return -ENOMEM;
-+	}
-+
-+	fence = sync_fence_create(BUF_SYNC_FENCE_NAME, pt);
-+	if (fence = NULL) {
-+		sync_pt_free(pt);
-+		return -ENOMEM;
-+	}
-+
-+	sync_fence_install(fence, fd);
-+
-+	return fd;
-+}
-+
-+int hisifb_buf_sync_wait(int fence_fd)
-+{
-+	int ret = 0;
-+	struct sync_fence *fence = NULL;
-+
-+	fence = sync_fence_fdget(fence_fd);
-+	if (fence = NULL) {
-+		HISI_FB_ERR("fence_fd=%d, sync_fence_fdget failed!\n",
-+			    fence_fd);
-+		return -EINVAL;
-+	}
-+
-+	ret = sync_fence_wait(fence, BUF_SYNC_TIMEOUT_MSEC);
-+	if (ret < 0) {
-+		HISI_FB_ERR("Waiting on fence failed, fence_fd: %d, ret: %d.\n",
-+			    fence_fd, ret);
-+	}
-+	sync_fence_put(fence);
-+
-+	return ret;
-+}
-+
-+int hisifb_buf_sync_handle(struct hisi_fb_data_type *hisifd,
-+			   dss_overlay_t *pov_req)
-+{
-+	dss_overlay_block_t *pov_h_block_infos = NULL;
-+	dss_overlay_block_t *pov_h_block = NULL;
-+	dss_layer_t *layer = NULL;
-+	int i = 0;
-+	int m = 0;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(pov_req = NULL);
-+
-+	pov_h_block_infos +	    (dss_overlay_block_t *) (pov_req->ov_block_infos_ptr);
-+	for (m = 0; m < pov_req->ov_block_nums; m++) {
-+		pov_h_block = &(pov_h_block_infos[m]);
-+
-+		for (i = 0; i < pov_h_block->layer_nums; i++) {
-+			layer = &(pov_h_block->layer_infos[i]);
-+
-+			if (layer->dst_rect.y < pov_h_block->ov_block_rect.y)
-+				continue;
-+
-+			if (layer->acquire_fence >= 0) {
-+				hisifb_buf_sync_wait(layer->acquire_fence);
-+			}
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+void hisifb_buf_sync_signal(struct hisi_fb_data_type *hisifd)
-+{
-+	struct hisifb_layerbuf *node = NULL;
-+	struct hisifb_layerbuf *_node_ = NULL;
-+
-+	BUG_ON(hisifd = NULL);
-+
-+	spin_lock(&hisifd->buf_sync_ctrl.refresh_lock);
-+	if (hisifd->buf_sync_ctrl.refresh) {
-+		sw_sync_timeline_inc(hisifd->buf_sync_ctrl.timeline,
-+				     hisifd->buf_sync_ctrl.refresh);
-+		hisifd->buf_sync_ctrl.refresh = 0;
-+	}
-+	spin_unlock(&hisifd->buf_sync_ctrl.refresh_lock);
-+
-+	spin_lock(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+	list_for_each_entry_safe(node, _node_,
-+				 &(hisifd->buf_sync_ctrl.layerbuf_list),
-+				 list_node) {
-+		if (hisifd->buf_sync_ctrl.layerbuf_flushed) {
-+			node->timeline++;
-+		}
-+	}
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = false;
-+	spin_unlock(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+
-+	queue_work(hisifd->buf_sync_ctrl.free_layerbuf_queue,
-+		   &(hisifd->buf_sync_ctrl.free_layerbuf_work));
-+}
-+
-+void hisifb_buf_sync_suspend(struct hisi_fb_data_type *hisifd)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&hisifd->buf_sync_ctrl.refresh_lock, flags);
-+	sw_sync_timeline_inc(hisifd->buf_sync_ctrl.timeline,
-+			     hisifd->buf_sync_ctrl.refresh + 1);
-+	hisifd->buf_sync_ctrl.refresh = 0;
-+	hisifd->buf_sync_ctrl.timeline_max++;
-+	spin_unlock_irqrestore(&hisifd->buf_sync_ctrl.refresh_lock, flags);
-+}
-+
-+void hisifb_buf_sync_register(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
-+
-+	spin_lock_init(&hisifd->buf_sync_ctrl.refresh_lock);
-+	hisifd->buf_sync_ctrl.refresh = 0;
-+	hisifd->buf_sync_ctrl.timeline_max = 1;
-+	hisifd->buf_sync_ctrl.timeline +	    sw_sync_timeline_create(BUF_SYNC_TIMELINE_NAME);
-+	if (hisifd->buf_sync_ctrl.timeline = NULL) {
-+		HISI_FB_ERR("cannot create time line!");
-+		return;		/* -ENOMEM */
-+	}
-+
-+	spin_lock_init(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+	INIT_LIST_HEAD(&(hisifd->buf_sync_ctrl.layerbuf_list));
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = false;
-+
-+	INIT_WORK(&(hisifd->buf_sync_ctrl.free_layerbuf_work),
-+		  hisifb_layerbuf_unlock_work);
-+	hisifd->buf_sync_ctrl.free_layerbuf_queue +	    create_singlethread_workqueue(HISI_DSS_LAYERBUF_FREE);
-+	if (!hisifd->buf_sync_ctrl.free_layerbuf_queue) {
-+		HISI_FB_ERR("failed to create free_layerbuf_queue!\n");
-+		return;
-+	}
-+
-+	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
-+}
-+
-+void hisifb_buf_sync_unregister(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
-+
-+	if (hisifd->buf_sync_ctrl.timeline) {
-+		sync_timeline_destroy((struct sync_timeline *)
-+					hisifd->buf_sync_ctrl.timeline);
-+		hisifd->buf_sync_ctrl.timeline = NULL;
-+	}
-+
-+	if (hisifd->buf_sync_ctrl.free_layerbuf_queue) {
-+		destroy_workqueue(hisifd->buf_sync_ctrl.free_layerbuf_queue);
-+		hisifd->buf_sync_ctrl.free_layerbuf_queue = NULL;
-+	}
-+
-+	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
-+}
-+#else
-+int hisifb_buf_sync_wait(int fence_fd)
-+{
-+	return 0;
-+}
-+
-+int hisifb_buf_sync_handle(struct hisi_fb_data_type *hisifd,
-+			   dss_overlay_t *pov_req)
-+{
-+	return 0;
-+}
-+
-+void hisifb_buf_sync_signal(struct hisi_fb_data_type *hisifd)
-+{
-+	struct hisifb_layerbuf *node = NULL;
-+	struct hisifb_layerbuf *_node_ = NULL;
-+
-+	BUG_ON(hisifd = NULL);
-+
-+
-+
-+	spin_lock(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+	list_for_each_entry_safe(node, _node_,
-+				 &(hisifd->buf_sync_ctrl.layerbuf_list),
-+				 list_node) {
-+		if (hisifd->buf_sync_ctrl.layerbuf_flushed) {
-+			node->timeline++;
-+		}
-+	}
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = false;
-+	spin_unlock(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+
-+	queue_work(hisifd->buf_sync_ctrl.free_layerbuf_queue,
-+		   &(hisifd->buf_sync_ctrl.free_layerbuf_work));
-+}
-+
-+void hisifb_buf_sync_suspend(struct hisi_fb_data_type *hisifd)
-+{
-+}
-+
-+void hisifb_buf_sync_register(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
-+	spin_lock_init(&(hisifd->buf_sync_ctrl.layerbuf_spinlock));
-+	INIT_LIST_HEAD(&(hisifd->buf_sync_ctrl.layerbuf_list));
-+	hisifd->buf_sync_ctrl.layerbuf_flushed = false;
-+
-+	INIT_WORK(&(hisifd->buf_sync_ctrl.free_layerbuf_work),
-+		  hisifb_layerbuf_unlock_work);
-+	hisifd->buf_sync_ctrl.free_layerbuf_queue +	    create_singlethread_workqueue(HISI_DSS_LAYERBUF_FREE);
-+	if (!hisifd->buf_sync_ctrl.free_layerbuf_queue) {
-+		HISI_FB_ERR("failed to create free_layerbuf_queue!\n");
-+		return;
-+	}
-+
-+	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
-+}
-+
-+void hisifb_buf_sync_unregister(struct platform_device *pdev)
-+{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	hisifd = platform_get_drvdata(pdev);
-+	BUG_ON(hisifd = NULL);
-+
-+	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
-+
-+	if (hisifd->buf_sync_ctrl.free_layerbuf_queue) {
-+		destroy_workqueue(hisifd->buf_sync_ctrl.free_layerbuf_queue);
-+		hisifd->buf_sync_ctrl.free_layerbuf_queue = NULL;
-+	}
-+
-+	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
-+}
-+#endif
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_def.h b/drivers/video/fbdev/hisi/dss/hisi_fb_def.h
-new file mode 100755
-index 000000000000..3496be2e1838
---- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_def.h
-@@ -0,0 +1,125 @@
-+/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 and
-+ * only version 2 as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#ifndef HISI_FB_DEF_H
-+#define HISI_FB_DEF_H
-+
-+#include <linux/delay.h>
-+#include <linux/string.h>
-+#include <linux/platform_device.h>
-+#include <linux/device.h>
-+#include <linux/kernel.h>
-+#include <asm/bug.h>
-+
-+#ifndef MAX
-+#define MAX(x, y) (((x) > (y)) ? (x) : (y))
-+#endif
-+
-+#ifndef MIN
-+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
-+#endif
-+
-+/* align */
-+#ifndef ALIGN_DOWN
-+#define ALIGN_DOWN(val, al)  ((val) & ~((al)-1))
-+#endif
-+#ifndef ALIGN_UP
-+#define ALIGN_UP(val, al)    (((val) + ((al)-1)) & ~((al)-1))
-+#endif
-+
-+#ifndef BIT
-+#define BIT(x)  (1<<(x))
-+#endif
-+
-+#ifndef IS_EVEN
-+#define IS_EVEN(x)  ((x) % 2 = 0)
-+#endif
-+
-+#ifndef TRUE
-+#define TRUE 1
-+#endif
-+
-+#ifndef FALSE
-+#define FALSE 0
-+#endif
-+
-+#define KHZ	(1000)
-+#define MHZ	(1000 * 1000)
-+
-+enum {
-+	WAIT_TYPE_US = 0,
-+	WAIT_TYPE_MS,
-+};
-+
-+/*--------------------------------------------------------------------------*/
-+extern uint32_t hisi_fb_msg_level;
-+
-+/*
-+ * Message printing priorities:
-+ * LEVEL 0 KERN_EMERG (highest priority)
-+ * LEVEL 1 KERN_ALERT
-+ * LEVEL 2 KERN_CRIT
-+ * LEVEL 3 KERN_ERR
-+ * LEVEL 4 KERN_WARNING
-+ * LEVEL 5 KERN_NOTICE
-+ * LEVEL 6 KERN_INFO
-+ * LEVEL 7 KERN_DEBUG (Lowest priority)
-+ */
-+#define HISI_FB_EMERG(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 0)  \
-+		printk(KERN_EMERG "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_ALERT(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 1)  \
-+		printk(KERN_ALERT "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_CRIT(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 2)  \
-+		printk(KERN_CRIT "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_ERR(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 3)  \
-+		printk(KERN_ERR "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_WARNING(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 4)  \
-+		printk(KERN_WARNING "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_NOTICE(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 5)  \
-+		printk(KERN_NOTICE "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_INFO(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 6)  \
-+		printk(KERN_INFO "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+#define HISI_FB_DEBUG(msg, ...)    \
-+	do { if (hisi_fb_msg_level > 7)  \
-+		printk(KERN_INFO "[hisifb]%s: "msg, __func__, ## __VA_ARGS__); } while (0)
-+
-+#define assert(expr) \
-+	if(!(expr)) { \
-+		printk(KERN_ERR "[hisifb]: assertion failed! %s,%s,%s,line=%d\n",\
-+		#expr, __FILE__, __func__, __LINE__); \
-+	}
-+
-+#define HISI_FB_ASSERT(x)   assert(x)
-+
-+#define outp32(addr, val) writel(val, addr)
-+#define outp16(addr, val) writew(val, addr)
-+#define outp8(addr, val) writeb(val, addr)
-+#define outp(addr, val) outp32(addr, val)
-+
-+#define inp32(addr) readl(addr)
-+#define inp16(addr) readw(addr)
-+#define inp8(addr) readb(addr)
-+#define inp(addr) inp32(addr)
-+
-+#define inpw(port) readw(port)
-+#define outpw(port, val) writew(val, port)
-+#define inpdw(port) readl(port)
-+#define outpdw(port, val) writel(val, port)
-+
-+#endif
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_isr.c b/drivers/video/fbdev/hisi/dss/hisi_fb_isr.c
-new file mode 100755
-index 000000000000..ca361f8028b9
---- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_isr.c
-@@ -0,0 +1,327 @@
++++ b/drivers/video/fbdev/hisi/dss/hisi_fb_utils.c
+@@ -0,0 +1,249 @@
 +/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -1014,314 +52,1332 @@ index 000000000000..ca361f8028b9
 +
 +#include "hisi_fb.h"
 +#include "hisi_overlay_utils.h"
++#if defined (CONFIG_HISI_PERIDVFS)
++#include "peri_volt_poll.h"
++#endif
 +
-+/*******************************************************************************
-+ ** handle isr
-+ */
-+irqreturn_t dss_pdp_isr(int irq, void *ptr)
++#define MAX_BUF 60
++void set_reg(char __iomem *addr, uint32_t val, uint8_t bw, uint8_t bs)
 +{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	uint32_t isr_s1 = 0;
-+	uint32_t isr_s2 = 0;
-+	uint32_t isr_s2_dpp = 0;
-+	uint32_t isr_s2_smmu = 0;
-+	uint32_t mask = 0;
-+	uint32_t isr_te_vsync = 0;
-+	uint32_t i = 0;
-+	uint32_t temp = 0;
-+	struct timeval tv;
-+	dss_module_reg_t *dss_module = NULL;
++	uint32_t mask = (1UL << bw) - 1UL;
++	uint32_t tmp = 0;
 +
-+	hisifd = (struct hisi_fb_data_type *)ptr;
-+	BUG_ON(hisifd = NULL);
-+	dss_module = &(hisifd->dss_module);
++	tmp = inp32(addr);
++	tmp &= ~(mask << bs);
 +
-+	isr_s1 = inp32(hisifd->dss_base + GLB_CPU_PDP_INTS);
-+	isr_s2 = inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INTS);
-+	isr_s2_dpp = inp32(hisifd->dss_base + DSS_DPP_OFFSET + DPP_INTS);
-+	isr_s2_smmu +	    inp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTSTAT_NS);
++	outp32(addr, tmp | ((val & mask) << bs));
 +
-+	outp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTCLR_NS,
-+	       isr_s2_smmu);
-+	outp32(hisifd->dss_base + DSS_DPP_OFFSET + DPP_INTS, isr_s2_dpp);
-+	outp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INTS, isr_s2);
-+	outp32(hisifd->dss_base + GLB_CPU_PDP_INTS, isr_s1);
-+
-+	isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_PDP_INT_MSK));
-+	isr_s2 &+	    ~(inp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INT_MSK));
-+	isr_s2_dpp &= ~(inp32(hisifd->dss_base + DSS_DPP_OFFSET + DPP_INT_MSK));
-+
-+	if (is_mipi_cmd_panel(hisifd)) {
-+		isr_te_vsync = BIT_LCD_TE0_PIN;
-+	} else {
-+		isr_te_vsync = BIT_VSYNC;
++	if (g_debug_set_reg_val) {
++		HISI_FB_INFO("writel: [%p] = 0x%x\n", addr,
++			     tmp | ((val & mask) << bs));
 +	}
-+
-+	if (isr_s2 & BIT_VACTIVE0_END) {
-+		hisifd->vactive0_end_flag = 1;
-+		if (g_err_status & DSS_PDP_LDI_UNDERFLOW) {
-+			temp +			    inp32(hisifd->dss_base + DSS_DPP_OFFSET +
-+				  DPP_DBG_CNT);
-+			HISI_FB_INFO
-+			    ("fb%d, BIT_VACTIVE0_END: frame_no=%d, dpp_dbg =0x%x\n",
-+			     hisifd->index, hisifd->ov_req.frame_no, temp);
-+			g_err_status &= ~DSS_PDP_LDI_UNDERFLOW;
-+		}
-+	}
-+
-+	if (isr_s2 & BIT_VACTIVE0_START) {
-+		if (hisifd->ov_vactive0_start_isr_handler) {
-+			hisifd->ov_vactive0_start_isr_handler(hisifd);
-+		}
-+
-+		if (g_err_status & DSS_PDP_LDI_UNDERFLOW) {
-+			temp +			    inp32(hisifd->dss_base + DSS_DPP_OFFSET +
-+				  DPP_DBG_CNT);
-+			HISI_FB_INFO
-+			    ("fb%d, BIT_VACTIVE0_START: frame_no=%d, dpp_dbg=0x%x\n",
-+			     hisifd->index, hisifd->ov_req.frame_no, temp);
-+		}
-+	}
-+
-+	if (isr_s2 & isr_te_vsync) {
-+		if (hisifd->vsync_isr_handler) {
-+			hisifd->vsync_isr_handler(hisifd);
-+		}
-+
-+		if (hisifd->buf_sync_signal) {
-+			hisifd->buf_sync_signal(hisifd);
-+		}
-+
-+		if (g_err_status &
-+		    (DSS_PDP_LDI_UNDERFLOW | DSS_PDP_SMMU_ERR |
-+		     DSS_SDP_SMMU_ERR)) {
-+			temp +			    inp32(hisifd->dss_base + DSS_DPP_OFFSET +
-+				  DPP_DBG_CNT);
-+			HISI_FB_INFO
-+			    ("isr_te_vsync:frame_no = %d,dpp_dbg = 0x%x\n",
-+			     hisifd->ov_req.frame_no, temp);
-+		}
-+
-+		if (g_debug_ldi_underflow) {
-+			hisifb_get_timestamp(&tv);
-+			HISI_FB_INFO
-+			    ("isr_te_vsync:frame_no = %d,isr_s2 = 0x%x\n",
-+			     hisifd->ov_req.frame_no, isr_s2);
-+		}
-+	}
-+
-+	if (isr_s2 & BIT_LDI_UNFLOW) {
-+		mask = inp32(hisifd->dss_base + DSS_LDI0_OFFSET +
-+			  LDI_CPU_ITF_INT_MSK);
-+		mask |= BIT_LDI_UNFLOW;
-+		outp32(hisifd->dss_base + DSS_LDI0_OFFSET + LDI_CPU_ITF_INT_MSK, mask);
-+
-+		if (g_debug_ldi_underflow_clear) {
-+			if (is_mipi_cmd_panel(hisifd)) {
-+				if (g_ldi_data_gate_en = 0) {
-+					if (hisifd->ldi_underflow_wq) {
-+						disable_ldi(hisifd);
-+						queue_work(hisifd->ldi_underflow_wq,
-+							   &hisifd->ldi_underflow_work);
-+					}
-+				}
-+			} else {
-+				if (hisifd->ldi_underflow_wq) {
-+					disable_ldi(hisifd);
-+					queue_work(hisifd->ldi_underflow_wq,
-+						   &hisifd->ldi_underflow_work);
-+				}
-+			}
-+		}
-+
-+		if (g_debug_ldi_underflow) {
-+			if (g_debug_ovl_online_composer) {
-+				if (hisifd->dss_debug_wq)
-+					queue_work(hisifd->dss_debug_wq,
-+						   &hisifd->dss_debug_work);
-+			}
-+		}
-+		g_err_status |= DSS_PDP_LDI_UNDERFLOW;
-+
-+		if (hisifd->ldi_data_gate_en = 0) {
-+			temp +			    inp32(hisifd->dss_base + DSS_DPP_OFFSET +
-+				  DPP_DBG_CNT);
-+			HISI_FB_INFO
-+			    ("ldi underflow! frame_no = %d,dpp_dbg = 0x%x!\n",
-+			     hisifd->ov_req.frame_no, temp);
-+
-+			for (i = 0; i < DSS_WCHN_W0; i++) {
-+				if ((i != DSS_RCHN_V0) && (i != DSS_RCHN_G0)) {
-+					HISI_FB_INFO
-+					    ("RCH[%d], DMA_BUF_DBG0 = 0x%x,DMA_BUF_DBG1 = 0x%x!!\n",
-+					     i, inp32(dss_module->dma_base[i] +
-+						   DMA_BUF_DBG0),
-+					     inp32(dss_module->dma_base[i] +
-+						   DMA_BUF_DBG1));
-+				}
-+			}
-+			for (i = 0; i < 18; i++) {
-+				HISI_FB_INFO("MCTL_MOD%d_STATUS = 0x%x\n",
-+					     i, inp32(dss_module->mctl_sys_base +
-+						   MCTL_MOD0_STATUS + i * 0x4));
-+			}
-+		}
-+	}
-+
-+	return IRQ_HANDLED;
 +}
 +
-+irqreturn_t dss_sdp_isr(int irq, void *ptr)
++uint32_t set_bits32(uint32_t old_val, uint32_t val, uint8_t bw, uint8_t bs)
 +{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	uint32_t isr_s1 = 0;
-+	uint32_t isr_s2 = 0;
-+	uint32_t isr_s2_smmu = 0;
-+	uint32_t mask = 0;
++	uint32_t mask = (1UL << bw) - 1UL;
++	uint32_t tmp = 0;
 +
-+	hisifd = (struct hisi_fb_data_type *)ptr;
-+	BUG_ON(hisifd = NULL);
++	tmp = old_val;
++	tmp &= ~(mask << bs);
 +
-+	isr_s1 = inp32(hisifd->dss_base + GLB_CPU_SDP_INTS);
-+	isr_s2 = inp32(hisifd->dss_base + DSS_LDI1_OFFSET + LDI_CPU_ITF_INTS);
-+	isr_s2_smmu +	    inp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTSTAT_NS);
-+
-+	outp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTCLR_NS,
-+	       isr_s2_smmu);
-+	outp32(hisifd->dss_base + DSS_LDI1_OFFSET + LDI_CPU_ITF_INTS, isr_s2);
-+	outp32(hisifd->dss_base + GLB_CPU_SDP_INTS, isr_s1);
-+
-+	isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_SDP_INT_MSK));
-+	isr_s2 &+	    ~(inp32(hisifd->dss_base + DSS_LDI1_OFFSET + LDI_CPU_ITF_INT_MSK));
-+
-+	if (isr_s2 & BIT_VACTIVE0_END) {
-+		hisifd->vactive0_end_flag = 1;
-+	}
-+
-+	if (isr_s2 & BIT_VACTIVE0_START) {
-+		if (hisifd->ov_vactive0_start_isr_handler)
-+			hisifd->ov_vactive0_start_isr_handler(hisifd);
-+	}
-+
-+	if (isr_s2 & BIT_VSYNC) {
-+		if (hisifd->vsync_isr_handler) {
-+			hisifd->vsync_isr_handler(hisifd);
-+		}
-+
-+		if (hisifd->buf_sync_signal) {
-+			hisifd->buf_sync_signal(hisifd);
-+		}
-+	}
-+
-+	if (isr_s2 & BIT_LDI_UNFLOW) {
-+		mask +		    inp32(hisifd->dss_base + DSS_LDI1_OFFSET +
-+			  LDI_CPU_ITF_INT_MSK);
-+		mask |= BIT_LDI_UNFLOW;
-+		outp32(hisifd->dss_base + DSS_LDI1_OFFSET + LDI_CPU_ITF_INT_MSK,
-+		       mask);
-+		if (g_debug_ldi_underflow_clear) {
-+			if (is_mipi_cmd_panel(hisifd)) {
-+				if (g_ldi_data_gate_en = 0) {
-+					if (hisifd->ldi_underflow_wq) {
-+						disable_ldi(hisifd);
-+						queue_work(hisifd->ldi_underflow_wq,
-+							   &hisifd->ldi_underflow_work);
-+					}
-+				}
-+			} else {
-+				if (hisifd->ldi_underflow_wq) {
-+					disable_ldi(hisifd);
-+					queue_work(hisifd->ldi_underflow_wq,
-+						   &hisifd->ldi_underflow_work);
-+				}
-+			}
-+		}
-+		if (g_debug_ldi_underflow) {
-+			if (g_debug_ovl_online_composer) {
-+				if (hisifd->dss_debug_wq)
-+					queue_work(hisifd->dss_debug_wq,
-+						   &hisifd->dss_debug_work);
-+			}
-+		}
-+		g_err_status |= DSS_SDP_LDI_UNDERFLOW;
-+		if (hisifd->ldi_data_gate_en = 0)
-+			HISI_FB_ERR("ldi underflow!\n");
-+	}
-+	return IRQ_HANDLED;
++	return (tmp | ((val & mask) << bs));
 +}
 +
-+irqreturn_t dss_adp_isr(int irq, void *ptr)
++void hisifb_set_reg(struct hisi_fb_data_type *hisifd,
++		    char __iomem *addr, uint32_t val, uint8_t bw, uint8_t bs)
 +{
-+	struct hisi_fb_data_type *hisifd = NULL;
-+	uint32_t isr_s1 = 0;
-+	uint32_t isr_s2_smmu = 0;
-+	uint32_t isr_s3_copybit = 0;
++	set_reg(addr, val, bw, bs);
++}
 +
-+	hisifd = (struct hisi_fb_data_type *)ptr;
++bool is_dss_idle_enable(void)
++{
++	return ((g_enable_dss_idle = 1) ? true : false);
++}
++
++uint32_t get_panel_xres(struct hisi_fb_data_type *hisifd)
++{
 +	BUG_ON(hisifd = NULL);
 +
-+	isr_s1 = inp32(hisifd->dss_base + GLB_CPU_OFF_INTS);
-+	isr_s2_smmu +	    inp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTSTAT_NS);
-+
-+	outp32(hisifd->dss_base + DSS_SMMU_OFFSET + SMMU_INTCLR_NS,
-+	       isr_s2_smmu);
-+	outp32(hisifd->dss_base + GLB_CPU_OFF_INTS, isr_s1);
-+
-+	isr_s1 &= ~(inp32(hisifd->dss_base + GLB_CPU_OFF_INT_MSK));
-+	isr_s3_copybit = inp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INTS);
-+	outp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INTS, isr_s3_copybit);
-+	isr_s3_copybit &= ~(inp32(hisifd->dss_base + GLB_CPU_OFF_CAM_INT_MSK));
-+
-+	if (isr_s1 & BIT_OFF_WCH0_INTS) {
-+		if (hisifd->cmdlist_info->cmdlist_wb_flag[WB_TYPE_WCH0] = 1) {
-+			hisifd->cmdlist_info->cmdlist_wb_done[WB_TYPE_WCH0] = 1;
-+			wake_up_interruptible_all(&
-+						  (hisifd->cmdlist_info->cmdlist_wb_wq
-+						   [WB_TYPE_WCH0]));
-+		}
-+	}
-+	if (isr_s1 & BIT_OFF_WCH1_INTS) {
-+		if (hisifd->cmdlist_info->cmdlist_wb_flag[WB_TYPE_WCH1] = 1) {
-+			hisifd->cmdlist_info->cmdlist_wb_done[WB_TYPE_WCH1] = 1;
-+			wake_up_interruptible_all(&
-+						  (hisifd->cmdlist_info->cmdlist_wb_wq
-+						   [WB_TYPE_WCH1]));
-+		}
-+	}
-+	if (isr_s1 & BIT_OFF_WCH0_WCH1_FRM_END_INT) {
-+		if (hisifd->cmdlist_info->cmdlist_wb_flag[WB_TYPE_WCH0_WCH1] =
-+		    1) {
-+			hisifd->cmdlist_info->
-+			    cmdlist_wb_done[WB_TYPE_WCH0_WCH1] = 1;
-+			wake_up_interruptible_all(&
-+						  (hisifd->cmdlist_info->cmdlist_wb_wq
-+						   [WB_TYPE_WCH0_WCH1]));
-+		}
-+	}
-+
-+	if (isr_s3_copybit & BIT_OFF_CAM_WCH2_FRMEND_INTS) {
-+		if (hisifd->copybit_info->copybit_flag = 1) {
-+			hisifd->copybit_info->copybit_done = 1;
-+			wake_up_interruptible_all(&
-+						  (hisifd->copybit_info->copybit_wq));
-+		}
-+
-+		if (hisifd->cmdlist_info->cmdlist_wb_flag[WB_TYPE_WCH2] = 1) {
-+			hisifd->cmdlist_info->cmdlist_wb_done[WB_TYPE_WCH2] = 1;
-+			wake_up_interruptible_all(&
-+						  (hisifd->cmdlist_info->cmdlist_wb_wq
-+						   [WB_TYPE_WCH2]));
-+		}
-+	}
-+
-+	return IRQ_HANDLED;
++	return ((hisifd->resolution_rect.w >
++		 0) ? hisifd->resolution_rect.w : hisifd->panel_info.xres);
 +}
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_panel.c b/drivers/video/fbdev/hisi/dss/hisi_fb_panel.c
++
++uint32_t get_panel_yres(struct hisi_fb_data_type *hisifd)
++{
++	BUG_ON(hisifd = NULL);
++
++	return ((hisifd->resolution_rect.h >
++		 0) ? hisifd->resolution_rect.h : hisifd->panel_info.yres);
++}
++
++uint32_t hisifb_line_length(int index, uint32_t xres, int bpp)
++{
++	return ALIGN_UP(xres * bpp, DMA_STRIDE_ALIGN);
++}
++
++void hisifb_get_timestamp(struct timeval *tv)
++{
++	struct timespec ts;
++
++	ktime_get_ts(&ts);
++	tv->tv_sec = ts.tv_sec;
++	tv->tv_usec = ts.tv_nsec / NSEC_PER_USEC;
++}
++
++uint32_t hisifb_timestamp_diff(struct timeval *lasttime,
++			       struct timeval *curtime)
++{
++	uint32_t ret;
++	ret = (curtime->tv_usec >= lasttime->tv_usec) ?
++	    curtime->tv_usec - lasttime->tv_usec :
++	    1000000 - (lasttime->tv_usec - curtime->tv_usec);
++
++	return ret;
++}
++
++void hisifb_save_file(char *filename, char *buf, uint32_t buf_len)
++{
++	ssize_t write_len = 0;
++	struct file *fd = NULL;
++	mm_segment_t old_fs;
++	loff_t pos = 0;
++
++	BUG_ON(filename = NULL);
++	BUG_ON(buf = NULL);
++
++	fd = filp_open(filename, O_CREAT | O_RDWR, 0644);
++	if (IS_ERR(fd)) {
++		HISI_FB_ERR("filp_open returned:filename %s, error %ld\n",
++			    filename, PTR_ERR(fd));
++		return;
++	}
++
++	old_fs = get_fs();
++	set_fs(KERNEL_DS);
++
++	write_len = vfs_write(fd, (char __user *)buf, buf_len, &pos);
++
++	pos = 0;
++	set_fs(old_fs);
++	filp_close(fd, NULL);
++}
++
++int hisifb_ctrl_on(struct hisi_fb_data_type *hisifd)
++{
++	struct hisi_fb_panel_data *pdata = NULL;
++	int ret = 0;
++
++	BUG_ON(hisifd = NULL);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++
++	if (pdata->on) {
++		ret = pdata->on(hisifd->pdev);
++	}
++
++	hisifb_vsync_resume(hisifd);
++	hisi_overlay_on(hisifd, false);
++
++	if (hisifd->panel_info.esd_enable) {
++		hrtimer_start(&hisifd->esd_ctrl.esd_hrtimer,
++			      ktime_set(ESD_CHECK_TIME_PERIOD / 1000,
++					(ESD_CHECK_TIME_PERIOD % 1000) *
++					1000000), HRTIMER_MODE_REL);
++	}
++
++	return ret;
++}
++
++int hisifb_ctrl_off(struct hisi_fb_data_type *hisifd)
++{
++	struct hisi_fb_panel_data *pdata = NULL;
++	int ret = 0;
++
++	BUG_ON(hisifd = NULL);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++
++	if (hisifd->panel_info.esd_enable) {
++		hrtimer_cancel(&hisifd->esd_ctrl.esd_hrtimer);
++	}
++
++	hisifb_vsync_suspend(hisifd);
++	hisi_overlay_off(hisifd);
++
++	if (pdata->off) {
++		ret = pdata->off(hisifd->pdev);
++	}
++
++	if ((hisifd->index = PRIMARY_PANEL_IDX) ||
++	    (hisifd->index = EXTERNAL_PANEL_IDX)) {
++
++		hisifb_layerbuf_unlock(hisifd,
++				       &(hisifd->buf_sync_ctrl.layerbuf_list));
++	}
++
++	return ret;
++}
++
++int hisifb_ctrl_dss_clk_rate_set(struct fb_info *info, void __user *argp)
++{
++	int ret = 0;
++	struct hisi_fb_data_type *hisifd = NULL;
++	dss_clk_rate_t dss_clk_rate;
++
++	if (NULL = info) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	hisifd = (struct hisi_fb_data_type *)info->par;
++	if (NULL = hisifd) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	if (hisifd->index != PRIMARY_PANEL_IDX) {
++		HISI_FB_ERR("fb%d, not supported!\n", hisifd->index);
++		return -EINVAL;
++	}
++
++	if (NULL = argp) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	if (hisifd->core_clk_upt_support = 0) {
++		HISI_FB_DEBUG("no support core_clk_upt\n");
++		return ret;
++	}
++
++	ret = copy_from_user(&dss_clk_rate, argp, sizeof(dss_clk_rate_t));
++	if (ret) {
++		HISI_FB_ERR("copy_from_user failed!ret=%d.", ret);
++		return ret;
++	}
++
++	down(&hisifd->blank_sem);
++
++	if (!hisifd->panel_power_on) {
++		HISI_FB_DEBUG("fb%d, panel power off!\n", hisifd->index);
++		ret = -EPERM;
++		goto err_out;
++	}
++
++	ret = set_dss_clk_rate(hisifd, dss_clk_rate);
++
++ err_out:
++	up(&hisifd->blank_sem);
++
++	return ret;
++}
++
++/*lint +e665, +e514, +e84, +e886, +e846, +e778*/
++void hisifb_sysfs_attrs_add(struct hisi_fb_data_type *hisifd)
++{
++	BUG_ON(hisifd = NULL);
++
++	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
++
++	if (hisifd->sysfs_attrs_append_fnc) {
++		/* hisifd->sysfs_attrs_append_fnc(hisifd, &dev_attr_lcd_model.attr); */
++	}
++
++	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
++}
+diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_vsync.c b/drivers/video/fbdev/hisi/dss/hisi_fb_vsync.c
 new file mode 100755
-index 000000000000..a26035e8beba
+index 000000000000..3778ac0b4b2c
 --- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_panel.c
-@@ -0,0 +1,835 @@
++++ b/drivers/video/fbdev/hisi/dss/hisi_fb_vsync.c
+@@ -0,0 +1,680 @@
++/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
++ * GNU General Public License for more details.
++ *
++ */
++#pragma GCC diagnostic push
++#pragma GCC diagnostic ignored "-Wformat"
++#include "hisi_fb.h"
++
++/*
++ ** /sys/class/graphics/fb0/vsync_event
++ */
++#if defined(CONFIG_HISI_FB_VSYNC_THREAD)
++#define VSYNC_TIMEOUT_MSEC (100)
++#endif
++#define VSYNC_CTRL_EXPIRE_COUNT	(4)
++
++#ifdef CONFIG_REPORT_VSYNC
++extern void mali_kbase_pm_report_vsync(int);
++#endif
++extern int mipi_dsi_ulps_cfg(struct hisi_fb_data_type *hisifd, int enable);
++extern bool hisi_dss_check_reg_reload_status(struct hisi_fb_data_type *hisifd);
++
++void hisifb_frame_updated(struct hisi_fb_data_type *hisifd)
++{
++	BUG_ON(hisifd = NULL);
++
++	if (hisifd->vsync_ctrl.vsync_report_fnc) {
++		atomic_inc(&(hisifd->vsync_ctrl.buffer_updated));
++	}
++}
++
++void hisifb_vsync_isr_handler(struct hisi_fb_data_type *hisifd)
++{
++	struct hisifb_vsync *vsync_ctrl = NULL;
++	struct hisi_fb_panel_data *pdata = NULL;
++	int buffer_updated = 0;
++	ktime_t pre_vsync_timestamp;
++
++	BUG_ON(hisifd = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++
++	pre_vsync_timestamp = vsync_ctrl->vsync_timestamp;
++	vsync_ctrl->vsync_timestamp = ktime_get();
++	wake_up_interruptible_all(&(vsync_ctrl->vsync_wait));
++
++	if (hisifd->panel_info.vsync_ctrl_type != VSYNC_CTRL_NONE) {
++		spin_lock(&vsync_ctrl->spin_lock);
++		if (vsync_ctrl->vsync_ctrl_expire_count) {
++			vsync_ctrl->vsync_ctrl_expire_count--;
++			if (vsync_ctrl->vsync_ctrl_expire_count = 0)
++				schedule_work(&vsync_ctrl->vsync_ctrl_work);
++		}
++		spin_unlock(&vsync_ctrl->spin_lock);
++	}
++
++	if (vsync_ctrl->vsync_report_fnc) {
++		if (hisifd->vsync_ctrl.vsync_enabled) {
++			buffer_updated +			    atomic_dec_return(&(vsync_ctrl->buffer_updated));
++		} else {
++			buffer_updated = 1;
++		}
++
++		if (buffer_updated < 0) {
++			atomic_cmpxchg(&(vsync_ctrl->buffer_updated),
++				       buffer_updated, 1);
++		} else {
++			vsync_ctrl->vsync_report_fnc(buffer_updated);
++		}
++	}
++
++	if (g_debug_online_vsync) {
++		HISI_FB_INFO("fb%d, VSYNC=%llu, time_diff=%llu.\n",
++			     hisifd->index,
++			     ktime_to_ns(hisifd->vsync_ctrl.vsync_timestamp),
++			     (ktime_to_ns(hisifd->vsync_ctrl.vsync_timestamp) -
++			      ktime_to_ns(pre_vsync_timestamp)));
++	}
++}
++
++static int vsync_timestamp_changed(struct hisi_fb_data_type *hisifd,
++				   ktime_t prev_timestamp)
++{
++	BUG_ON(hisifd = NULL);
++	return !ktime_equal(prev_timestamp, hisifd->vsync_ctrl.vsync_timestamp);
++}
++
++#if defined(CONFIG_HISI_FB_VSYNC_THREAD)
++static int wait_for_vsync_thread(void *data)
++{
++	struct hisi_fb_data_type *hisifd = (struct hisi_fb_data_type *)data;
++	ktime_t prev_timestamp;
++	int ret = 0;
++
++	while (!kthread_should_stop()) {
++		prev_timestamp = hisifd->vsync_ctrl.vsync_timestamp;
++		ret +		    wait_event_interruptible_timeout(hisifd->vsync_ctrl.
++						     vsync_wait,
++						     vsync_timestamp_changed
++						     (hisifd, prev_timestamp)
++						     && hisifd->vsync_ctrl.
++						     vsync_enabled,
++						     msecs_to_jiffies
++						     (VSYNC_TIMEOUT_MSEC));
++
++		/*if (ret = 0) {
++		   HISI_FB_ERR("wait vsync timeout!");
++		   return -ETIMEDOUT;
++		   }
++		*/
++
++		if (ret > 0) {
++			char *envp[2];
++			char buf[64];
++			/* fb%d_VSYNC=%llu */
++			snprintf(buf, sizeof(buf), "VSYNC=%llu",
++				 ktime_to_ns(hisifd->vsync_ctrl.
++					     vsync_timestamp));
++			envp[0] = buf;
++			envp[1] = NULL;
++			kobject_uevent_env(&hisifd->pdev->dev.kobj, KOBJ_CHANGE,
++					   envp);
++		}
++	}
++
++	return 0;
++}
++#else
++static ssize_t vsync_show_event(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	ssize_t ret = -1;
++	int vsync_flag = 0;
++	struct fb_info *fbi = NULL;
++	struct hisi_fb_data_type *hisifd = NULL;
++	ktime_t prev_timestamp;
++
++	if (NULL = dev) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	fbi = dev_get_drvdata(dev);
++	if (NULL = fbi) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	hisifd = (struct hisi_fb_data_type *)fbi->par;
++	if (NULL = hisifd) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	if (NULL = buf) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	prev_timestamp = hisifd->vsync_ctrl.vsync_timestamp;
++
++	/*lint -e666 */
++	ret = wait_event_interruptible(hisifd->vsync_ctrl.vsync_wait,
++				       (vsync_timestamp_changed
++					(hisifd, prev_timestamp)
++					&& hisifd->vsync_ctrl.vsync_enabled));
++	/*lint +e666 */
++	vsync_flag = (vsync_timestamp_changed(hisifd, prev_timestamp) &&
++		      hisifd->vsync_ctrl.vsync_enabled);
++
++	if (vsync_flag) {
++		ret = snprintf(buf, PAGE_SIZE, "VSYNC=%llu, xxxxxxEvent=x \n",
++			       ktime_to_ns(hisifd->vsync_ctrl.vsync_timestamp));
++		buf[strlen(buf) + 1] = '\0';
++
++	} else {
++		return -1;
++	}
++
++	return ret;
++}
++
++static ssize_t vsync_timestamp_show(struct device *dev,
++				    struct device_attribute *attr, char *buf)
++{
++	ssize_t ret = -1;
++	struct fb_info *fbi = NULL;
++	struct hisi_fb_data_type *hisifd = NULL;
++
++	if (NULL = dev) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	fbi = dev_get_drvdata(dev);
++	if (NULL = fbi) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	hisifd = (struct hisi_fb_data_type *)fbi->par;
++	if (NULL = hisifd) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	if (NULL = buf) {
++		HISI_FB_ERR("NULL Pointer.\n");
++		return -1;
++	}
++
++	ret = snprintf(buf, PAGE_SIZE, "%llu \n",
++		       ktime_to_ns(hisifd->vsync_ctrl.vsync_timestamp));
++	buf[strlen(buf) + 1] = '\0';
++
++	return ret;
++}
++
++static DEVICE_ATTR(vsync_event, S_IRUGO, vsync_show_event, NULL);
++static DEVICE_ATTR(vsync_timestamp, S_IRUGO, vsync_timestamp_show, NULL);
++#endif
++
++#ifdef CONFIG_FAKE_VSYNC_USED
++enum hrtimer_restart hisifb_fake_vsync(struct hrtimer *timer)
++{
++	struct hisi_fb_data_type *hisifd = NULL;
++	int fps = 60;
++
++	hisifd +	    container_of(timer, struct hisi_fb_data_type, fake_vsync_hrtimer);
++	BUG_ON(hisifd = NULL);
++
++	if (!hisifd->panel_power_on)
++		goto error;
++
++	if (hisifd->fake_vsync_used && hisifd->vsync_ctrl.vsync_enabled) {
++		hisifd->vsync_ctrl.vsync_timestamp = ktime_get();
++		wake_up_interruptible_all(&hisifd->vsync_ctrl.vsync_wait);
++	}
++
++ error:
++	hrtimer_start(&hisifd->fake_vsync_hrtimer,
++		      ktime_set(0, NSEC_PER_SEC / fps), HRTIMER_MODE_REL);
++
++	return HRTIMER_NORESTART;
++}
++#endif
++
++static void hisifb_vsync_ctrl_workqueue_handler(struct work_struct *work)
++{
++	struct hisi_fb_data_type *hisifd = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++	struct hisi_fb_panel_data *pdata = NULL;
++	unsigned long flags = 0;
++
++	vsync_ctrl = container_of(work, typeof(*vsync_ctrl), vsync_ctrl_work);
++	BUG_ON(vsync_ctrl = NULL);
++	hisifd = vsync_ctrl->hisifd;
++	BUG_ON(hisifd = NULL);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++
++	down(&(hisifd->blank_sem));
++
++	if (!hisifd->panel_power_on) {
++		HISI_FB_INFO("fb%d, panel is power off!", hisifd->index);
++		up(&(hisifd->blank_sem));
++		return;
++	}
++
++	mutex_lock(&(vsync_ctrl->vsync_lock));
++	if (vsync_ctrl->vsync_ctrl_disabled_set &&
++	    (vsync_ctrl->vsync_ctrl_expire_count = 0) &&
++	    vsync_ctrl->vsync_ctrl_enabled &&
++	    !vsync_ctrl->vsync_enabled
++	    && !vsync_ctrl->vsync_ctrl_offline_enabled) {
++		HISI_FB_DEBUG("fb%d, dss clk off!\n", hisifd->index);
++
++		spin_lock_irqsave(&(vsync_ctrl->spin_lock), flags);
++		if (pdata->vsync_ctrl) {
++			pdata->vsync_ctrl(hisifd->pdev, 0);
++		} else {
++			HISI_FB_ERR("fb%d, vsync_ctrl not supported!\n",
++				    hisifd->index);
++		}
++		vsync_ctrl->vsync_ctrl_enabled = 0;
++		vsync_ctrl->vsync_ctrl_disabled_set = 0;
++		spin_unlock_irqrestore(&(vsync_ctrl->spin_lock), flags);
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_MIPI_ULPS) {
++			mipi_dsi_ulps_cfg(hisifd, 0);
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
++			if (hisifd->lp_fnc)
++				hisifd->lp_fnc(hisifd, true);
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_CLK_OFF) {
++			dpe_inner_clk_disable(hisifd);
++			dpe_common_clk_disable(hisifd);
++			mipi_dsi_clk_disable(hisifd);
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
++			/* dpe_regulator_disable(hisifd); */
++		}
++	}
++	mutex_unlock(&(vsync_ctrl->vsync_lock));
++
++	if (vsync_ctrl->vsync_report_fnc) {
++		vsync_ctrl->vsync_report_fnc(1);
++	}
++
++	up(&(hisifd->blank_sem));
++}
++
++void hisifb_vsync_register(struct platform_device *pdev)
++{
++	struct hisi_fb_data_type *hisifd = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++#if defined(CONFIG_HISI_FB_VSYNC_THREAD)
++	char name[64] = { 0 };
++#endif
++
++	BUG_ON(pdev = NULL);
++	hisifd = platform_get_drvdata(pdev);
++	BUG_ON(hisifd = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	if (vsync_ctrl->vsync_created)
++		return;
++
++	vsync_ctrl->hisifd = hisifd;
++	vsync_ctrl->vsync_infinite = 0;
++	vsync_ctrl->vsync_enabled = 0;
++	vsync_ctrl->vsync_ctrl_offline_enabled = 0;
++	vsync_ctrl->vsync_timestamp = ktime_get();
++	init_waitqueue_head(&(vsync_ctrl->vsync_wait));
++	spin_lock_init(&(vsync_ctrl->spin_lock));
++	INIT_WORK(&vsync_ctrl->vsync_ctrl_work,
++		  hisifb_vsync_ctrl_workqueue_handler);
++
++	mutex_init(&(vsync_ctrl->vsync_lock));
++
++	atomic_set(&(vsync_ctrl->buffer_updated), 1);
++#ifdef CONFIG_REPORT_VSYNC
++	vsync_ctrl->vsync_report_fnc = mali_kbase_pm_report_vsync;
++#else
++	vsync_ctrl->vsync_report_fnc = NULL;
++#endif
++
++#ifdef CONFIG_FAKE_VSYNC_USED
++	/* hrtimer for fake vsync timing */
++	hisifd->fake_vsync_used = false;
++	hrtimer_init(&hisifd->fake_vsync_hrtimer, CLOCK_MONOTONIC,
++		     HRTIMER_MODE_REL);
++	hisifd->fake_vsync_hrtimer.function = hisifb_fake_vsync;
++	hrtimer_start(&hisifd->fake_vsync_hrtimer,
++		      ktime_set(0, NSEC_PER_SEC / 60), HRTIMER_MODE_REL);
++#endif
++
++#if defined(CONFIG_HISI_FB_VSYNC_THREAD)
++	snprintf(name, sizeof(name), "hisifb%d_vsync", hisifd->index);
++	vsync_ctrl->vsync_thread +	    kthread_run(wait_for_vsync_thread, hisifd, name);
++	if (IS_ERR(vsync_ctrl->vsync_thread)) {
++		vsync_ctrl->vsync_thread = NULL;
++		HISI_FB_ERR("failed to run vsync thread!\n");
++		return;
++	}
++#else
++	if (hisifd->sysfs_attrs_append_fnc) {
++		hisifd->sysfs_attrs_append_fnc(hisifd,
++					       &dev_attr_vsync_event.attr);
++		hisifd->sysfs_attrs_append_fnc(hisifd,
++					       &dev_attr_vsync_timestamp.attr);
++	}
++#endif
++
++	vsync_ctrl->vsync_created = 1;
++}
++
++void hisifb_vsync_unregister(struct platform_device *pdev)
++{
++	struct hisi_fb_data_type *hisifd = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++
++	BUG_ON(pdev = NULL);
++	hisifd = platform_get_drvdata(pdev);
++	BUG_ON(hisifd = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	if (!vsync_ctrl->vsync_created)
++		return;
++
++#ifdef CONFIG_FAKE_VSYNC_USED
++	hisifd->fake_vsync_used = false;
++	hrtimer_cancel(&hisifd->fake_vsync_hrtimer);
++#endif
++
++#if defined(CONFIG_HISI_FB_VSYNC_THREAD)
++	if (vsync_ctrl->vsync_thread)
++		kthread_stop(vsync_ctrl->vsync_thread);
++#endif
++
++	vsync_ctrl->vsync_created = 0;
++}
++
++void hisifb_set_vsync_activate_state(struct hisi_fb_data_type *hisifd,
++				     bool infinite)
++{
++	struct hisifb_vsync *vsync_ctrl = NULL;
++
++	BUG_ON(hisifd = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	if (hisifd->panel_info.vsync_ctrl_type = VSYNC_CTRL_NONE)
++		return;
++
++	mutex_lock(&(vsync_ctrl->vsync_lock));
++
++	if (infinite) {
++		vsync_ctrl->vsync_infinite_count += 1;
++	} else {
++		vsync_ctrl->vsync_infinite_count -= 1;
++	}
++
++	if (vsync_ctrl->vsync_infinite_count >= 1) {
++		vsync_ctrl->vsync_infinite = 1;
++	}
++
++	if (vsync_ctrl->vsync_infinite_count = 0) {
++		vsync_ctrl->vsync_infinite = 0;
++	}
++
++	mutex_unlock(&(vsync_ctrl->vsync_lock));
++}
++
++void hisifb_activate_vsync(struct hisi_fb_data_type *hisifd)
++{
++	struct hisi_fb_panel_data *pdata = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++	unsigned long flags = 0;
++	int clk_enabled = 0;
++
++	BUG_ON(hisifd = NULL);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	if (hisifd->panel_info.vsync_ctrl_type = VSYNC_CTRL_NONE)
++		return;
++
++	mutex_lock(&(vsync_ctrl->vsync_lock));
++
++	if (vsync_ctrl->vsync_ctrl_enabled = 0) {
++		HISI_FB_DEBUG("fb%d, dss clk on!\n", hisifd->index);
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
++			/* dpe_regulator_enable(hisifd); */
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_CLK_OFF) {
++			mipi_dsi_clk_enable(hisifd);
++			dpe_common_clk_enable(hisifd);
++			dpe_inner_clk_enable(hisifd);
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
++			if (hisifd->lp_fnc)
++				hisifd->lp_fnc(hisifd, false);
++		}
++
++		if (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_MIPI_ULPS) {
++			mipi_dsi_ulps_cfg(hisifd, 1);
++		}
++
++		vsync_ctrl->vsync_ctrl_enabled = 1;
++		clk_enabled = 1;
++	} else if (vsync_ctrl->vsync_ctrl_isr_enabled) {
++		clk_enabled = 1;
++		vsync_ctrl->vsync_ctrl_isr_enabled = 0;
++	} else {
++		;
++	}
++
++	spin_lock_irqsave(&(vsync_ctrl->spin_lock), flags);
++	vsync_ctrl->vsync_ctrl_disabled_set = 0;
++	vsync_ctrl->vsync_ctrl_expire_count = 0;
++	if (clk_enabled) {
++		if (pdata->vsync_ctrl) {
++			pdata->vsync_ctrl(hisifd->pdev, 1);
++		} else {
++			HISI_FB_ERR("fb%d, vsync_ctrl not supported!\n",
++				    hisifd->index);
++		}
++	}
++	spin_unlock_irqrestore(&(vsync_ctrl->spin_lock), flags);
++
++	mutex_unlock(&(vsync_ctrl->vsync_lock));
++}
++
++void hisifb_deactivate_vsync(struct hisi_fb_data_type *hisifd)
++{
++	struct hisi_fb_panel_data *pdata = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++	unsigned long flags = 0;
++
++	BUG_ON(hisifd = NULL);
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	BUG_ON(pdata = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	if (hisifd->panel_info.vsync_ctrl_type = VSYNC_CTRL_NONE)
++		return;
++
++	mutex_lock(&(vsync_ctrl->vsync_lock));
++
++	spin_lock_irqsave(&(vsync_ctrl->spin_lock), flags);
++	if (vsync_ctrl->vsync_infinite = 0)
++		vsync_ctrl->vsync_ctrl_disabled_set = 1;
++
++	if (vsync_ctrl->vsync_ctrl_enabled)
++		vsync_ctrl->vsync_ctrl_expire_count = VSYNC_CTRL_EXPIRE_COUNT;
++	spin_unlock_irqrestore(&(vsync_ctrl->spin_lock), flags);
++
++	mutex_unlock(&(vsync_ctrl->vsync_lock));
++}
++
++int hisifb_vsync_ctrl(struct fb_info *info, void __user *argp)
++{
++	int ret = 0;
++	struct hisi_fb_data_type *hisifd = NULL;
++	struct hisi_fb_panel_data *pdata = NULL;
++	struct hisifb_vsync *vsync_ctrl = NULL;
++	int enable = 0;
++
++	if (NULL = info) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	hisifd = (struct hisi_fb_data_type *)info->par;
++	if (NULL = hisifd) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	if (hisifd->index != PRIMARY_PANEL_IDX) {
++		HISI_FB_ERR("fb%d, not supported!\n", hisifd->index);
++		return -EINVAL;
++	}
++
++	pdata = dev_get_platdata(&hisifd->pdev->dev);
++	if (NULL = pdata) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	if (NULL = vsync_ctrl) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	if (NULL = argp) {
++		HISI_FB_ERR("NULL Pointer!\n");
++		return -EINVAL;
++	}
++
++	ret = copy_from_user(&enable, argp, sizeof(enable));
++	if (ret) {
++		HISI_FB_ERR("hisifb_vsync_ctrl ioctl failed!\n");
++		return ret;
++	}
++
++	enable = (enable) ? 1 : 0;
++
++	mutex_lock(&(vsync_ctrl->vsync_lock));
++
++	if (vsync_ctrl->vsync_enabled = enable) {
++		mutex_unlock(&(vsync_ctrl->vsync_lock));
++		return 0;
++	}
++
++	if (g_debug_online_vsync)
++		HISI_FB_INFO("fb%d, enable=%d!\n", hisifd->index, enable);
++
++	vsync_ctrl->vsync_enabled = enable;
++
++	mutex_unlock(&(vsync_ctrl->vsync_lock));
++
++	down(&hisifd->blank_sem);
++
++	if (!hisifd->panel_power_on) {
++		HISI_FB_INFO("fb%d, panel is power off!", hisifd->index);
++		up(&hisifd->blank_sem);
++		return 0;
++	}
++
++	if (enable) {
++		hisifb_activate_vsync(hisifd);
++	} else {
++		hisifb_deactivate_vsync(hisifd);
++	}
++
++	up(&hisifd->blank_sem);
++
++	return 0;
++}
++
++int hisifb_vsync_resume(struct hisi_fb_data_type *hisifd)
++{
++	struct hisifb_vsync *vsync_ctrl = NULL;
++
++	BUG_ON(hisifd = NULL);
++	vsync_ctrl = &(hisifd->vsync_ctrl);
++	BUG_ON(vsync_ctrl = NULL);
++
++	vsync_ctrl->vsync_enabled = 0;
++	vsync_ctrl->vsync_ctrl_expire_count = 0;
++	vsync_ctrl->vsync_ctrl_disabled_set = 0;
++	vsync_ctrl->vsync_ctrl_enabled = 1;
++	vsync_ctrl->vsync_ctrl_isr_enabled = 1;
++
++	atomic_set(&(vsync_ctrl->buffer_updated), 1);
++
++#if 0
++	if (hisifd->panel_info.vsync_ctrl_type != VSYNC_CTRL_NONE) {
++		if ((hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_MIPI_ULPS)
++		    || (hisifd->panel_info.vsync_ctrl_type & VSYNC_CTRL_CLK_OFF)
++		    || (hisifd->panel_info.
++			vsync_ctrl_type & VSYNC_CTRL_VCC_OFF)) {
++
++			if (hisifd->panel_info.
++			    vsync_ctrl_type & VSYNC_CTRL_MIPI_ULPS) {
++				mipi_dsi_ulps_cfg(hisifd, 0);
++			}
++
++			if (hisifd->panel_info.
++			    vsync_ctrl_type & VSYNC_CTRL_CLK_OFF) {
++				dpe_inner_clk_disable(hisifd);
++				dpe_common_clk_disable(hisifd);
++				mipi_dsi_clk_disable(hisifd);
++			}
++
++			if (hisifd->panel_info.
++			    vsync_ctrl_type & VSYNC_CTRL_VCC_OFF) {
++				dpe_regulator_disable(hisifd);
++			}
++		}
++	}
++#endif
++
++	return 0;
++}
++
++int hisifb_vsync_suspend(struct hisi_fb_data_type *hisifd)
++{
++	return 0;
++}
++
++#pragma GCC diagnostic pop
+diff --git a/drivers/video/fbdev/hisi/dss/hisi_mipi_dsi_host.c b/drivers/video/fbdev/hisi/dss/hisi_mipi_dsi_host.c
+new file mode 100755
+index 000000000000..0d00d3fd9c60
+--- /dev/null
++++ b/drivers/video/fbdev/hisi/dss/hisi_mipi_dsi_host.c
+@@ -0,0 +1,401 @@
++/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 and
++ * only version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
++ * GNU General Public License for more details.
++ *
++ */
++
++#include "hisi_mipi_dsi.h"
++
++/*
++ * mipi dsi short write with 0, 1 2 parameters
++ * Write to GEN_HDR 24 bit register the value:
++ * 1. 00h, MCS_command[15:8] ,VC[7:6],13h
++ * 2. Data1[23:16], MCS_command[15:8] ,VC[7:6],23h
++ */
++int mipi_dsi_swrite(struct dsi_cmd_desc *cm, char __iomem *dsi_base)
++{
++	uint32_t hdr = 0;
++	int len = 0;
++
++	if (cm->dlen && cm->payload = 0) {
++		HISI_FB_ERR("NO payload error!\n");
++		return 0;
++	}
++
++	BUG_ON(cm->dlen > 2);
++	len = cm->dlen;
++	hdr |= DSI_HDR_DTYPE(cm->dtype);
++	hdr |= DSI_HDR_VC(cm->vc);
++	if (len = 1) {
++		hdr |= DSI_HDR_DATA1(cm->payload[0]);
++		hdr |= DSI_HDR_DATA2(0);
++	} else if (len = 2) {
++		hdr |= DSI_HDR_DATA1(cm->payload[0]);
++		hdr |= DSI_HDR_DATA2(cm->payload[1]);
++	} else {
++		hdr |= DSI_HDR_DATA1(0);
++		hdr |= DSI_HDR_DATA2(0);
++	}
++
++	set_reg(dsi_base + MIPIDSI_GEN_HDR_OFFSET, hdr, 24, 0);
++
++	return len;		/* 4 bytes */
++}
++
++/*
++ * mipi dsi long write
++ * Write to GEN_PLD_DATA 32 bit register the value:
++ * Data3[31:24], Data2[23:16], Data1[15:8], MCS_command[7:0]
++ * If need write again to GEN_PLD_DATA 32 bit register the value:
++ * Data7[31:24], Data6[23:16], Data5[15:8], Data4[7:0]
++ *
++ * Write to GEN_HDR 24 bit register the value: WC[23:8] ,VC[7:6],29h
++ */
++int mipi_dsi_lwrite(struct dsi_cmd_desc *cm, char __iomem *dsi_base)
++{
++	uint32_t hdr = 0;
++	int i = 0;
++
++	if (cm->dlen && cm->payload = 0) {
++		HISI_FB_ERR("NO payload error!\n");
++		return 0;
++	}
++
++	/* fill up payload */
++	for (i = 0; i < cm->dlen; i += 4) {
++		set_reg(dsi_base + MIPIDSI_GEN_PLD_DATA_OFFSET,
++			*((uint32_t *) (cm->payload + i)), 32, 0);
++	}
++
++	/* fill up header */
++	hdr |= DSI_HDR_DTYPE(cm->dtype);
++	hdr |= DSI_HDR_VC(cm->vc);
++	hdr |= DSI_HDR_WC(cm->dlen);
++	set_reg(dsi_base + MIPIDSI_GEN_HDR_OFFSET, hdr, 24, 0);
++
++	return cm->dlen;
++}
++
++void mipi_dsi_max_return_packet_size(struct dsi_cmd_desc *cm,
++				     char __iomem *dsi_base)
++{
++	uint32_t hdr = 0;
++
++	/* fill up header */
++	hdr |= DSI_HDR_DTYPE(cm->dtype);
++	hdr |= DSI_HDR_VC(cm->vc);
++	hdr |= DSI_HDR_WC(cm->dlen);
++	set_reg(dsi_base + MIPIDSI_GEN_HDR_OFFSET, hdr, 24, 0);
++}
++
++uint32_t mipi_dsi_read(uint32_t *out, char __iomem *dsi_base)
++{
++	uint32_t pkg_status;
++	uint32_t try_times = 700;
++
++	do {
++		pkg_status = inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
++		if (!(pkg_status & 0x10))
++			break;
++		udelay(50);
++	} while (--try_times);
++
++	*out = inp32(dsi_base + MIPIDSI_GEN_PLD_DATA_OFFSET);
++	if (!try_times)
++		HISI_FB_ERR("mipi_dsi_read timeout\n"
++			    "MIPIDSI_CMD_PKT_STATUS = 0x%x \n"
++			    "MIPIDSI_PHY_STATUS = 0x%x \n",
++			    inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET),
++			    inp32(dsi_base + MIPIDSI_PHY_STATUS_OFFSET));
++
++	return try_times;
++}
++
++void mipi_dsi_sread(uint32_t *out, char __iomem *dsi_base)
++{
++	unsigned long dw_jiffies = 0;
++	uint32_t tmp = 0;
++
++	dw_jiffies = jiffies + HZ / 2;
++	do {
++		tmp = inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
++		if ((tmp & 0x00000040) = 0x00000040) {
++			break;
++		}
++	} while (time_after(dw_jiffies, jiffies));
++
++	dw_jiffies = jiffies + HZ / 2;
++	do {
++		tmp = inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
++		if ((tmp & 0x00000040) != 0x00000040) {
++			break;
++		}
++	} while (time_after(dw_jiffies, jiffies));
++
++	*out = inp32(dsi_base + MIPIDSI_GEN_PLD_DATA_OFFSET);
++}
++
++void mipi_dsi_lread(uint32_t *out, char __iomem *dsi_base)
++{
++	/* do something here */
++}
++
++/*
++ * prepare cmd buffer to be txed
++ */
++int mipi_dsi_cmd_add(struct dsi_cmd_desc *cm, char __iomem *dsi_base)
++{
++	int len = 0;
++
++	BUG_ON(cm = NULL);
++	BUG_ON(dsi_base = NULL);
++
++	switch (cm->dtype) {
++	case DTYPE_GEN_WRITE:
++	case DTYPE_GEN_WRITE1:
++	case DTYPE_GEN_WRITE2:
++
++	case DTYPE_DCS_WRITE:
++	case DTYPE_DCS_WRITE1:
++		len = mipi_dsi_swrite(cm, dsi_base);
++		break;
++	case DTYPE_GEN_LWRITE:
++	case DTYPE_DCS_LWRITE:
++	case DTYPE_DSC_LWRITE:
++
++		len = mipi_dsi_lwrite(cm, dsi_base);
++		break;
++	default:
++		HISI_FB_ERR("dtype=%x NOT supported!\n", cm->dtype);
++		break;
++	}
++
++	return len;
++}
++
++int mipi_dsi_cmds_tx(struct dsi_cmd_desc *cmds, int cnt,
++		     char __iomem *dsi_base)
++{
++	struct dsi_cmd_desc *cm = NULL;
++	int i = 0;
++
++	BUG_ON(cmds = NULL);
++	BUG_ON(dsi_base = NULL);
++
++	cm = cmds;
++
++	for (i = 0; i < cnt; i++) {
++		mipi_dsi_cmd_add(cm, dsi_base);
++
++		if (cm->wait) {
++			if (cm->waittype = WAIT_TYPE_US)
++				udelay(cm->wait);
++			else if (cm->waittype = WAIT_TYPE_MS)
++				mdelay(cm->wait);
++			else
++				mdelay(cm->wait * 1000);
++		}
++		cm++;
++	}
++
++	return cnt;
++}
++
++void mipi_dsi_check_0lane_is_ready(char __iomem *dsi_base)
++{
++	unsigned long dw_jiffies = 0;
++	uint32_t tmp = 0;
++
++	dw_jiffies = jiffies + HZ / 10;
++	do {
++		tmp = inp32(dsi_base + MIPIDSI_PHY_STATUS_OFFSET);
++		if ((tmp & 0x10) = 0x10) {
++			HISI_FB_INFO("0 lane is stopping state");
++			return;
++		}
++	} while (time_after(dw_jiffies, jiffies));
++
++	HISI_FB_ERR("0 lane is not stopping state:tmp=0x%x", tmp);
++}
++
++static void mipi_dsi_sread_request(struct dsi_cmd_desc *cm,
++				   char __iomem *dsi_base)
++{
++	uint32_t hdr = 0;
++
++	/* fill up header */
++	hdr |= DSI_HDR_DTYPE(cm->dtype);
++	hdr |= DSI_HDR_VC(cm->vc);
++	hdr |= DSI_HDR_DATA1(cm->payload[0]);
++	hdr |= DSI_HDR_DATA2(0);
++	set_reg(dsi_base + MIPIDSI_GEN_HDR_OFFSET, hdr, 24, 0);
++}
++
++static int mipi_dsi_read_add(uint32_t *out, struct dsi_cmd_desc *cm,
++			     char __iomem *dsi_base)
++{
++	unsigned long dw_jiffies = 0;
++	uint32_t pkg_status = 0;
++	uint32_t phy_status = 0;
++	int is_timeout = 1;
++	int ret = 0;
++
++	BUG_ON(cm = NULL);
++	BUG_ON(dsi_base = NULL);
++
++	if (cm->dtype = DTYPE_DCS_READ) {
++		mipi_dsi_sread_request(cm, dsi_base);
++
++		if (!mipi_dsi_read(out, dsi_base)) {
++			HISI_FB_ERR("Read register 0x%X timeout\n",
++				    cm->payload[0]);
++			return -1;
++		}
++	} else if (cm->dtype = DTYPE_GEN_READ1) {
++
++		/*read status register */
++		dw_jiffies = jiffies + HZ;
++		do {
++			pkg_status +			    inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
++			phy_status +			    inp32(dsi_base + MIPIDSI_PHY_STATUS_OFFSET);
++			if ((pkg_status & 0x1) = 0x1 && !(phy_status & 0x2)) {
++				is_timeout = 0;
++				break;
++			}
++		} while (time_after(dw_jiffies, jiffies));
++
++		if (is_timeout) {
++			HISI_FB_ERR("mipi_dsi_read timeout :0x%x\n"
++					"MIPIDSI_CMD_PKT_STATUS = 0x%x\n"
++					"MIPIDSI_PHY_STATUS = 0x%x \n"
++					"MIPIDSI_INT_ST1_OFFSET = 0x%x \n",
++					cm->payload[0],
++					inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET),
++					inp32(dsi_base + MIPIDSI_PHY_STATUS_OFFSET),
++					inp32(dsi_base + MIPIDSI_INT_ST1_OFFSET));
++			return -1;
++		}
++		/*send read cmd to fifo */
++		set_reg(dsi_base + MIPIDSI_GEN_HDR_OFFSET,
++			((cm->payload[0] << 8) | cm->dtype), 24, 0);
++
++		is_timeout = 1;
++		/*wait dsi read data */
++		dw_jiffies = jiffies + HZ;
++		do {
++			pkg_status +			    inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET);
++			if (!(pkg_status & 0x10)) {
++				is_timeout = 0;
++				break;
++			}
++		} while (time_after(dw_jiffies, jiffies));
++
++		if (is_timeout) {
++			HISI_FB_ERR("mipi_dsi_read timeout :0x%x\n"
++					"MIPIDSI_CMD_PKT_STATUS = 0x%x\n"
++					"MIPIDSI_PHY_STATUS = 0x%x \n"
++					"MIPIDSI_INT_ST1_OFFSET = 0x%x \n",
++					cm->payload[0],
++					inp32(dsi_base + MIPIDSI_CMD_PKT_STATUS_OFFSET),
++					inp32(dsi_base + MIPIDSI_PHY_STATUS_OFFSET),
++					inp32(dsi_base + MIPIDSI_INT_ST1_OFFSET));
++			return -1;
++		}
++		/*get read data */
++		*out = inp32(dsi_base + MIPIDSI_GEN_PLD_DATA_OFFSET);
++	} else {
++		ret = -1;
++		HISI_FB_ERR("dtype=%x NOT supported!\n", cm->dtype);
++	}
++
++	return ret;
++}
++
++int mipi_dsi_cmds_rx(uint32_t *out, struct dsi_cmd_desc *cmds, int cnt,
++		     char __iomem *dsi_base)
++{
++	struct dsi_cmd_desc *cm = NULL;
++	int i = 0;
++	int err_num = 0;
++
++	BUG_ON(cmds = NULL);
++	BUG_ON(dsi_base = NULL);
++
++	cm = cmds;
++
++	for (i = 0; i < cnt; i++) {
++		if (mipi_dsi_read_add(&(out[i]), cm, dsi_base)) {
++			err_num++;
++		}
++
++		if (cm->wait) {
++			if (cm->waittype = WAIT_TYPE_US)
++				udelay(cm->wait);
++			else if (cm->waittype = WAIT_TYPE_MS)
++				mdelay(cm->wait);
++			else
++				mdelay(cm->wait * 1000);
++		}
++		cm++;
++	}
++
++	return err_num;
++}
++
++int mipi_dsi_read_compare(struct mipi_dsi_read_compare_data *data,
++			  char __iomem *dsi_base)
++{
++	uint32_t *read_value = NULL;
++	uint32_t *expected_value = NULL;
++	uint32_t *read_mask = NULL;
++	char **reg_name = NULL;
++	int log_on = 0;
++	struct dsi_cmd_desc *cmds = NULL;
++
++	int cnt = 0;
++	int cnt_not_match = 0;
++	int ret = 0;
++	int i;
++
++	BUG_ON(data = NULL);
++	BUG_ON(dsi_base = NULL);
++
++	read_value = data->read_value;
++	expected_value = data->expected_value;
++	read_mask = data->read_mask;
++	reg_name = data->reg_name;
++	log_on = data->log_on;
++
++	cmds = data->cmds;
++	cnt = data->cnt;
++
++	ret = mipi_dsi_cmds_rx(read_value, cmds, cnt, dsi_base);
++	if (ret) {
++		HISI_FB_ERR("Read error number: %d\n", ret);
++		return cnt;
++	}
++
++	for (i = 0; i < cnt; i++) {
++		if (log_on) {
++			HISI_FB_INFO("Read reg %s: 0x%x, value = 0x%x\n",
++				     reg_name[i], cmds[i].payload[0],
++				     read_value[i]);
++		}
++
++		if (expected_value[i] != (read_value[i] & read_mask[i])) {
++			cnt_not_match++;
++		}
++	}
++
++	return cnt_not_match;
++}
+diff --git a/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.c b/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.c
+new file mode 100755
+index 000000000000..6b1832f49e3c
+--- /dev/null
++++ b/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.c
+@@ -0,0 +1,1450 @@
 +/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -1336,827 +1392,1396 @@ index 000000000000..a26035e8beba
 + */
 +
 +#include "hisi_fb.h"
-+#include "hisi_fb_panel.h"
 +
-+DEFINE_SEMAPHORE(hisi_fb_dts_resource_sem);
-+mipi_ifbc_division_t g_mipi_ifbc_division[MIPI_DPHY_NUM][IFBC_TYPE_MAX] = {
++#define MAX_ITEM_OFFSET	(0x3F)
++#define CMDLIST_ADDR_OFFSET	(0x3FFFF)
 +
-+	{
-+	 {XRES_DIV_1, YRES_DIV_1, IFBC_COMP_MODE_0, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_0, PXL0_DSI_GT_EN_1}
-+	 ,
++#define CMDLIST_HEADER_LEN	(SZ_1K)
++#define CMDLIST_ITEM_LEN	(SZ_8K)
++#define MAX_ITEM_INDEX	(SZ_1K)
 +
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_0, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
++dss_cmdlist_data_t *g_cmdlist_data = NULL;
++uint32_t g_online_cmdlist_idxs = 0;
++uint32_t g_offline_cmdlist_idxs = 0;
 +
-+	 {XRES_DIV_3, YRES_DIV_1, IFBC_COMP_MODE_1, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_2, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_2, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_3, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_OPEN, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_3, YRES_DIV_1, IFBC_COMP_MODE_4, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_OPEN, PXL0_DIVCFG_2, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_5, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_3, YRES_DIV_1, IFBC_COMP_MODE_5, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_2, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_6, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_3, YRES_DIV_1, IFBC_COMP_MODE_6, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_2, PXL0_DSI_GT_EN_3}
-+	 }
-+	,
-+
-+	{
-+	 {XRES_DIV_2, YRES_DIV_1, IFBC_COMP_MODE_0, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_1, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_4, YRES_DIV_1, IFBC_COMP_MODE_0, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_3, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_6, YRES_DIV_1, IFBC_COMP_MODE_1, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_5, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_4, YRES_DIV_1, IFBC_COMP_MODE_2, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_3, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_4, YRES_DIV_1, IFBC_COMP_MODE_3, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_OPEN, PXL0_DIVCFG_3, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_3, YRES_DIV_2, IFBC_COMP_MODE_4, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_OPEN, PXL0_DIVCFG_5, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_4, YRES_DIV_1, IFBC_COMP_MODE_5, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_3, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_6, YRES_DIV_1, IFBC_COMP_MODE_5, PXL0_DIV2_GT_EN_CLOSE,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_5, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_4, YRES_DIV_1, IFBC_COMP_MODE_6, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_3, PXL0_DSI_GT_EN_3}
-+	 ,
-+
-+	 {XRES_DIV_6, YRES_DIV_1, IFBC_COMP_MODE_6, PXL0_DIV2_GT_EN_OPEN,
-+	  PXL0_DIV4_GT_EN_CLOSE, PXL0_DIVCFG_5, 3}
-+	 }
-+};
-+
-+int gpio_cmds_tx(struct gpio_desc *cmds, int cnt)
++/* get cmdlist indexs */
++int hisi_cmdlist_get_cmdlist_idxs(dss_overlay_t *pov_req,
++				  uint32_t *cmdlist_pre_idxs,
++				  uint32_t *cmdlist_idxs)
 +{
-+	int ret = 0;
-+	struct gpio_desc *cm = NULL;
++	uint32_t cmdlist_idxs_temp = 0;
 +	int i = 0;
++	int k = 0;
++	int m = 0;
++	dss_layer_t *layer = NULL;
++	dss_wb_layer_t *wb_layer = NULL;
++	dss_overlay_block_t *pov_h_block_infos = NULL;
++	dss_overlay_block_t *pov_h_block = NULL;
++	bool no_ovl_idx = false;
 +
-+	cm = cmds;
-+	for (i = 0; i < cnt; i++) {
-+		if ((cm = NULL) || (cm->label = NULL)) {
-+			HISI_FB_ERR("cm or cm->label is null! index=%d\n", i);
-+			ret = -1;
-+			goto error;
-+		}
++	BUG_ON(pov_req = NULL);
 +
-+		if (!gpio_is_valid(*(cm->gpio))) {
-+			HISI_FB_ERR
-+			    ("gpio invalid, dtype=%d, lable=%s, gpio=%d!\n",
-+			     cm->dtype, cm->label, *(cm->gpio));
-+			ret = -1;
-+			goto error;
-+		}
++	pov_h_block_infos = (dss_overlay_block_t *) pov_req->ov_block_infos_ptr;
++	for (m = 0; m < pov_req->ov_block_nums; m++) {
++		pov_h_block = &(pov_h_block_infos[m]);
++		for (i = 0; i < pov_h_block->layer_nums; i++) {
++			layer = &(pov_h_block->layer_infos[i]);
 +
-+		if (cm->dtype = DTYPE_GPIO_INPUT) {
-+			if (gpio_direction_input(*(cm->gpio)) != 0) {
-+				HISI_FB_ERR
-+				    ("failed to gpio_direction_input, lable=%s, gpio=%d!\n",
-+				     cm->label, *(cm->gpio));
-+				ret = -1;
-+				goto error;
-+			}
-+		} else if (cm->dtype = DTYPE_GPIO_OUTPUT) {
-+			if (gpio_direction_output(*(cm->gpio), cm->value) != 0) {
-+				HISI_FB_ERR
-+				    ("failed to gpio_direction_output, label%s, gpio=%d!\n",
-+				     cm->label, *(cm->gpio));
-+				ret = -1;
-+				goto error;
-+			}
-+		} else if (cm->dtype = DTYPE_GPIO_REQUEST) {
-+			if (gpio_request(*(cm->gpio), cm->label) != 0) {
-+				HISI_FB_ERR
-+				    ("failed to gpio_request, lable=%s, gpio=%d!\n",
-+				     cm->label, *(cm->gpio));
-+				ret = -1;
-+				goto error;
-+			}
-+		} else if (cm->dtype = DTYPE_GPIO_FREE) {
-+			gpio_free(*(cm->gpio));
-+		} else {
-+			HISI_FB_ERR("dtype=%x NOT supported\n", cm->dtype);
-+			ret = -1;
-+			goto error;
-+		}
++			if (layer->need_cap & (CAP_BASE | CAP_DIM | CAP_PURE_COLOR))
++				continue;
 +
-+		if (cm->wait) {
-+			if (cm->waittype = WAIT_TYPE_US)
-+				udelay(cm->wait);
-+			else if (cm->waittype = WAIT_TYPE_MS)
-+				mdelay(cm->wait);
-+			else
-+				mdelay(cm->wait * 1000);
-+		}
-+
-+		cm++;
-+	}
-+
-+	return 0;
-+
-+ error:
-+	return ret;
-+}
-+
-+int resource_cmds_tx(struct platform_device *pdev,
-+		     struct resource_desc *cmds, int cnt)
-+{
-+	int ret = 0;
-+	struct resource *res = NULL;
-+	struct resource_desc *cm = NULL;
-+	int i = 0;
-+
-+	BUG_ON(pdev = NULL);
-+	cm = cmds;
-+
-+	for (i = 0; i < cnt; i++) {
-+		if ((cm = NULL) || (cm->name = NULL)) {
-+			HISI_FB_ERR("cm or cm->name is null! index=%d\n", i);
-+			ret = -1;
-+			goto error;
-+		}
-+
-+		res = platform_get_resource_byname(pdev, cm->flag, cm->name);
-+		if (!res) {
-+			HISI_FB_ERR("failed to get %s resource!\n", cm->name);
-+			ret = -1;
-+			goto error;
-+		}
-+		*(cm->value) = res->start;
-+		cm++;
-+	}
-+
-+ error:
-+	return ret;
-+}
-+
-+int vcc_cmds_tx(struct platform_device *pdev, struct vcc_desc *cmds, int cnt)
-+{
-+	int ret = 0;
-+	struct vcc_desc *cm = NULL;
-+	int i = 0;
-+
-+	cm = cmds;
-+	for (i = 0; i < cnt; i++) {
-+		if ((cm = NULL) || (cm->id = NULL)) {
-+			HISI_FB_ERR("cm or cm->id is null! index=%d\n", i);
-+			ret = -1;
-+			goto error;
-+		}
-+
-+		if (cm->dtype = DTYPE_VCC_GET) {
-+			BUG_ON(pdev = NULL);
-+			*(cm->regulator) +			    devm_regulator_get(&pdev->dev, cm->id);
-+			if (IS_ERR(*(cm->regulator))) {
-+				HISI_FB_ERR("failed to get %s regulator!\n",
-+					    cm->id);
-+				ret = -1;
-+				goto error;
-+			}
-+		} else if (cm->dtype = DTYPE_VCC_PUT) {
-+			if (!IS_ERR(*(cm->regulator))) {
-+				devm_regulator_put(*(cm->regulator));
-+			}
-+		} else if (cm->dtype = DTYPE_VCC_ENABLE) {
-+			if (!IS_ERR(*(cm->regulator))) {
-+				if (regulator_enable(*(cm->regulator)) != 0) {
-+					HISI_FB_ERR
-+					    ("failed to enable %s regulator!\n",
-+					     cm->id);
-+					ret = -1;
-+					goto error;
-+				}
-+			}
-+		} else if (cm->dtype = DTYPE_VCC_DISABLE) {
-+			if (!IS_ERR(*(cm->regulator))) {
-+				if (regulator_disable(*(cm->regulator)) != 0) {
-+					HISI_FB_ERR
-+					    ("failed to disable %s regulator!\n",
-+					     cm->id);
-+					ret = -1;
-+					goto error;
-+				}
-+			}
-+		} else if (cm->dtype = DTYPE_VCC_SET_VOLTAGE) {
-+			if (!IS_ERR(*(cm->regulator))) {
-+				if (regulator_set_voltage
-+				    (*(cm->regulator), cm->min_uV,
-+				     cm->max_uV) != 0) {
-+					HISI_FB_ERR
-+					    ("failed to set %s regulator voltage!\n",
-+					     cm->id);
-+					ret = -1;
-+					goto error;
-+				}
-+			}
-+		} else {
-+			HISI_FB_ERR("dtype=%x NOT supported\n", cm->dtype);
-+			ret = -1;
-+			goto error;
-+		}
-+
-+		if (cm->wait) {
-+			if (cm->waittype = WAIT_TYPE_US)
-+				udelay(cm->wait);
-+			else if (cm->waittype = WAIT_TYPE_MS)
-+				mdelay(cm->wait);
-+			else
-+				mdelay(cm->wait * 1000);
-+		}
-+
-+		cm++;
-+	}
-+
-+	return 0;
-+
-+ error:
-+	return ret;
-+}
-+
-+int pinctrl_cmds_tx(struct platform_device *pdev, struct pinctrl_cmd_desc *cmds,
-+		    int cnt)
-+{
-+	int ret = 0;
-+
-+	int i = 0;
-+	struct pinctrl_cmd_desc *cm = NULL;
-+
-+	cm = cmds;
-+	for (i = 0; i < cnt; i++) {
-+		if (cm = NULL) {
-+			HISI_FB_ERR("cm is null! index=%d\n", i);
-+			continue;
-+		}
-+		if (cm->dtype = DTYPE_PINCTRL_GET) {
-+			BUG_ON(pdev = NULL);
-+			cm->pctrl_data->p = devm_pinctrl_get(&pdev->dev);
-+			if (IS_ERR(cm->pctrl_data->p)) {
-+				ret = -1;
-+				HISI_FB_ERR("failed to get p, index=%d!\n", i);
-+				goto err;
-+			}
-+		} else if (cm->dtype = DTYPE_PINCTRL_STATE_GET) {
-+			if (cm->mode = DTYPE_PINCTRL_STATE_DEFAULT) {
-+				cm->pctrl_data->pinctrl_def +				    pinctrl_lookup_state(cm->pctrl_data->p,
-+							 PINCTRL_STATE_DEFAULT);
-+				if (IS_ERR(cm->pctrl_data->pinctrl_def)) {
-+					ret = -1;
-+					HISI_FB_ERR
-+					    ("failed to get pinctrl_def, index=%d!\n",
-+					     i);
-+					goto err;
-+				}
-+			} else if (cm->mode = DTYPE_PINCTRL_STATE_IDLE) {
-+				cm->pctrl_data->pinctrl_idle +				    pinctrl_lookup_state(cm->pctrl_data->p,
-+							 PINCTRL_STATE_IDLE);
-+				if (IS_ERR(cm->pctrl_data->pinctrl_idle)) {
-+					ret = -1;
-+					HISI_FB_ERR
-+					    ("failed to get pinctrl_idle, index=%d!\n",
-+					     i);
-+					goto err;
-+				}
++			if (layer->chn_idx = DSS_RCHN_V2) {
++				cmdlist_idxs_temp |= (1 << DSS_CMDLIST_V2);
 +			} else {
-+				ret = -1;
-+				HISI_FB_ERR("unknown pinctrl type to get!\n");
-+				goto err;
++				cmdlist_idxs_temp |= (1 << layer->chn_idx);
 +			}
-+		} else if (cm->dtype = DTYPE_PINCTRL_SET) {
-+			if (cm->mode = DTYPE_PINCTRL_STATE_DEFAULT) {
-+				if (cm->pctrl_data->p
-+				    && cm->pctrl_data->pinctrl_def) {
-+					ret +					    pinctrl_select_state(cm->pctrl_data->p,
-+								 cm->pctrl_data->pinctrl_def);
-+					if (ret) {
-+						HISI_FB_ERR
-+						    ("could not set this pin to default state!\n");
-+						ret = -1;
-+						goto err;
++		}
++	}
++
++	if (pov_req->wb_enable = 1) {
++		for (k = 0; k < pov_req->wb_layer_nums; k++) {
++			wb_layer = &(pov_req->wb_layer_infos[k]);
++
++			if (wb_layer->chn_idx = DSS_WCHN_W2) {
++				no_ovl_idx = true;
++				cmdlist_idxs_temp |= (1 << DSS_CMDLIST_W2);
++			} else {
++				cmdlist_idxs_temp |= (1 << wb_layer->chn_idx);
++			}
++		}
++	}
++
++	if (no_ovl_idx = false) {
++		cmdlist_idxs_temp |+		    (1 << (DSS_CMDLIST_OV0 + pov_req->ovl_idx));
++	}
++
++	if (cmdlist_idxs_temp & (~HISI_DSS_CMDLIST_IDXS_MAX)) {
++		HISI_FB_ERR("cmdlist_idxs_temp(0x%x) is invalid!\n",
++			    cmdlist_idxs_temp);
++		return -EINVAL;
++	}
++
++	if (cmdlist_idxs && cmdlist_pre_idxs) {
++		*cmdlist_idxs = cmdlist_idxs_temp;
++		*cmdlist_pre_idxs &= (~(*cmdlist_idxs));
++	} else if (cmdlist_idxs) {
++		*cmdlist_idxs = cmdlist_idxs_temp;
++	} else if (cmdlist_pre_idxs) {
++		*cmdlist_pre_idxs = cmdlist_idxs_temp;
++	} else {
++		HISI_FB_ERR("cmdlist_idxs && cmdlist_pre_idxs is NULL!\n");
++		return -EINVAL;
++	}
++
++	if (g_debug_ovl_cmdlist) {
++		HISI_FB_INFO("cmdlist_pre_idxs(0x%x), cmdlist_idxs(0x%x).\n",
++			     (cmdlist_pre_idxs ? *cmdlist_pre_idxs : 0),
++			     (cmdlist_idxs ? *cmdlist_idxs : 0));
++	}
++
++	return 0;
++}
++
++uint32_t hisi_cmdlist_get_cmdlist_need_start(struct hisi_fb_data_type *hisifd,
++					     uint32_t cmdlist_idxs)
++{
++	uint32_t cmdlist_idxs_temp = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_idxs_temp = g_offline_cmdlist_idxs;
++	g_offline_cmdlist_idxs |= cmdlist_idxs;
++	cmdlist_idxs_temp = (g_offline_cmdlist_idxs & (~cmdlist_idxs_temp));
++
++	cmdlist_idxs_temp |= (cmdlist_idxs & g_online_cmdlist_idxs);
++	g_online_cmdlist_idxs &= (~cmdlist_idxs_temp);
++
++	if (g_debug_ovl_cmdlist) {
++		HISI_FB_INFO
++		    ("g_online_cmdlist_idxs=0x%x, cmdlist_idxs_need_start=0x%x\n",
++		     g_online_cmdlist_idxs, cmdlist_idxs_temp);
++	}
++
++	return cmdlist_idxs_temp;
++}
++
++/*
++ ** data0: addr0[17:0]
++ ** data1: addr0[17:0] + addr1[5:0]
++ ** data2: addr0[17:0] + addr2[5:0]
++ **
++ ** cnt[1:0]:
++ ** 2'b00:	reg0
++ ** 2'b01: reg0, reg1
++ ** 2'b10: reg0, reg1, reg2
++ ** 2'b11: ((inp32(addr0) & data1) | data2) -> addr0
++ */
++void hisi_cmdlist_set_reg(struct hisi_fb_data_type *hisifd, char __iomem *addr,
++			  uint32_t value, uint8_t bw, uint8_t bs)
++{
++	uint32_t mask = (1 << bw) - 1;
++	dss_cmdlist_node_t *node = NULL;
++	int cmdlist_idx = -1;
++	int index = 0;
++	uint32_t new_addr = 0;
++	uint32_t old_addr = 0;
++	int condition = 0;
++
++	BUG_ON(addr = NULL);
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_idx = hisifd->cmdlist_idx;
++	BUG_ON((cmdlist_idx < 0) || (cmdlist_idx >= HISI_DSS_CMDLIST_MAX));
++
++	node +	    list_entry(hisifd->cmdlist_data->cmdlist_head_temp[cmdlist_idx].prev,
++	    	dss_cmdlist_node_t, list_node);
++	BUG_ON(node = NULL);
++
++	if (node->node_type = CMDLIST_NODE_NOP) {
++		HISI_FB_ERR("can't set register value to NOP node!");
++		return;
++	}
++
++	index = node->item_index;
++	new_addr = (uint32_t) (addr - hisifd->dss_base + hisifd->dss_base_phy);
++	new_addr = (new_addr >> 2) & CMDLIST_ADDR_OFFSET;
++	old_addr = node->list_item[index].reg_addr.ul32 & CMDLIST_ADDR_OFFSET;
++	condition = (((new_addr - old_addr) < MAX_ITEM_OFFSET)
++		     && (new_addr >= old_addr));
++
++	if (bw != 32) {
++		if (node->item_flag != 0)
++			index++;
++
++		node->list_item[index].reg_addr.bits.add0 = new_addr;
++		node->list_item[index].data0 = value;
++		node->list_item[index].data1 = ~(mask << bs);
++		node->list_item[index].data2 = (mask & value) << bs;
++		node->list_item[index].reg_addr.bits.cnt = 3;
++		node->item_flag = 3;
++	} else {
++		if (node->item_flag = 0) {
++			node->list_item[index].reg_addr.bits.add0 = new_addr;
++			node->list_item[index].data0 = value;
++			node->list_item[index].reg_addr.bits.cnt = 0;
++			node->item_flag = 1;
++		} else if (node->item_flag = 1 && condition) {
++			node->list_item[index].reg_addr.bits.add1 +			    new_addr - old_addr;
++			node->list_item[index].data1 = value;
++			node->list_item[index].reg_addr.bits.cnt = 1;
++			node->item_flag = 2;
++		} else if (node->item_flag = 2 && condition) {
++			node->list_item[index].reg_addr.bits.add2 +			    new_addr - old_addr;
++			node->list_item[index].data2 = value;
++			node->list_item[index].reg_addr.bits.cnt = 2;
++			node->item_flag = 3;
++		} else {
++			index++;
++			node->list_item[index].reg_addr.bits.add0 = new_addr;
++			node->list_item[index].data0 = value;
++			node->list_item[index].reg_addr.bits.cnt = 0;
++			node->item_flag = 1;
++		}
++	}
++
++	BUG_ON(index >= MAX_ITEM_INDEX);
++
++	node->item_index = index;
++	node->list_header->total_items.bits.count = node->item_index + 1;
++}
++
++/*
++ ** flush cache for cmdlist, make sure that
++ ** cmdlist has writen through to memory before config register
++ */
++void hisi_cmdlist_flush_cache(struct hisi_fb_data_type *hisifd,
++			      struct ion_client *ion_client,
++			      uint32_t cmdlist_idxs)
++{
++	uint32_t i = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	dss_cmdlist_node_t *node = NULL;
++	dss_cmdlist_node_t *_node_ = NULL;
++	struct sg_table *table = NULL;
++	struct list_head *cmdlist_heads = NULL;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			cmdlist_heads +			    &(hisifd->cmdlist_data->cmdlist_head_temp[i]);
++			if (!cmdlist_heads) {
++				HISI_FB_ERR("cmdlist_data is NULL!\n");
++				continue;
++			}
++
++			list_for_each_entry_safe_reverse(node, _node_,
++							 cmdlist_heads,
++							 list_node) {
++
++				if (!node->header_ion_handle) {
++					HISI_FB_ERR
++					    ("header_ion_handle is NULL!\n");
++				} else {
++					table = ion_sg_table(ion_client,
++							 node->header_ion_handle);
++					BUG_ON(table = NULL);
++					dma_sync_sg_for_device(NULL, table->sgl,
++							       table->nents,
++							       DMA_TO_DEVICE);
++				}
++
++				if (!node->item_ion_handle) {
++					HISI_FB_ERR("item_ion_handle is NULL!\n");
++				} else {
++					table = ion_sg_table(ion_client,
++							 node->item_ion_handle);
++					BUG_ON(table = NULL);
++					dma_sync_sg_for_device(NULL, table->sgl,
++							       table->nents,
++							       DMA_TO_DEVICE);
++				}
++			}
++		}
++
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++}
++
++dss_cmdlist_node_t *hisi_cmdlist_node_alloc(struct ion_client *ion_client)
++{
++	int ret = 0;
++	dss_cmdlist_node_t *node = NULL;
++	size_t header_len = CMDLIST_HEADER_LEN;
++	size_t item_len = CMDLIST_ITEM_LEN;
++
++	BUG_ON(ion_client = NULL);
++
++	node +	    (dss_cmdlist_node_t *) kzalloc(sizeof(dss_cmdlist_node_t),
++					   GFP_KERNEL);
++	if (IS_ERR(node)) {
++		HISI_FB_ERR("failed to alloc dss_cmdlist_node_t!");
++		goto err_alloc_cmdlist_node;
++	}
++
++	memset(node, 0, sizeof(dss_cmdlist_node_t));
++
++	/*alloc buffer for header */
++	node->header_ion_handle +	    ion_alloc(ion_client, header_len, 0, ION_HEAP(ION_GRALLOC_HEAP_ID), 0);
++	if (IS_ERR(node->header_ion_handle)) {
++		HISI_FB_ERR("failed to ion_alloc node->header_ion_handle!");
++		goto err_header_ion_handle;
++	}
++
++	node->list_header +	    (cmd_header_t *) ion_map_kernel(ion_client,
++					    node->header_ion_handle);
++	if (!node->list_header) {
++		HISI_FB_ERR("failed to ion_map_kernel node->list_header!");
++		goto err_header_ion_map;
++	}
++	memset(node->list_header, 0, header_len);
++
++	ret +	    ion_phys(ion_client, node->header_ion_handle, &node->header_phys,
++		     &header_len);
++	if (ret < 0) {
++		HISI_FB_ERR("failed to ion_phys node->header_phys!");
++		goto err_header_ion_phys;
++	}
++
++	/*alloc buffer for items */
++	node->item_ion_handle +	    ion_alloc(ion_client, item_len, 0, ION_HEAP(ION_GRALLOC_HEAP_ID), 0);
++	if (!node->item_ion_handle) {
++		HISI_FB_ERR("failed to ion_alloc node->item_ion_handle!");
++		goto err_item_ion_handle;
++	}
++
++	node->list_item +	    (cmd_item_t *) ion_map_kernel(ion_client, node->item_ion_handle);
++	if (!node->list_item) {
++		HISI_FB_ERR("failed to ion_map_kernel node->list_item!");
++		goto err_item_ion_map;
++	}
++
++	memset(node->list_item, 0, item_len);
++	ret +	    ion_phys(ion_client, node->item_ion_handle, &node->item_phys,
++		     &item_len);
++	if (ret < 0) {
++		HISI_FB_ERR("failed to ion_phys node->item_phys!");
++		goto err_item_ion_phys;
++	}
++
++	/* fill node info */
++	node->item_flag = 0;
++	node->item_index = 0;
++
++	node->is_used = 0;
++	node->node_type = CMDLIST_NODE_NONE;
++	return node;
++
++ err_item_ion_phys:
++	if (node->item_ion_handle)
++		ion_unmap_kernel(ion_client, node->item_ion_handle);
++ err_item_ion_map:
++	if (node->item_ion_handle)
++		ion_free(ion_client, node->item_ion_handle);
++ err_item_ion_handle:
++ err_header_ion_phys:
++	if (node->header_ion_handle)
++		ion_unmap_kernel(ion_client, node->header_ion_handle);
++ err_header_ion_map:
++	if (node->header_ion_handle)
++		ion_free(ion_client, node->header_ion_handle);
++ err_header_ion_handle:
++	if (node)
++		kfree(node);
++ err_alloc_cmdlist_node:
++	return NULL;
++}
++
++void hisi_cmdlist_node_free(struct ion_client *ion_client,
++			    dss_cmdlist_node_t *node)
++{
++	BUG_ON(ion_client = NULL);
++	BUG_ON(node = NULL);
++
++	if (node->header_ion_handle) {
++		ion_unmap_kernel(ion_client, node->header_ion_handle);
++		ion_free(ion_client, node->header_ion_handle);
++	}
++
++	if (node->item_ion_handle) {
++		ion_unmap_kernel(ion_client, node->item_ion_handle);
++		ion_free(ion_client, node->item_ion_handle);
++	}
++
++	kfree(node);
++	node = NULL;
++}
++
++static dss_cmdlist_node_t *hisi_cmdlist_get_free_node(dss_cmdlist_node_t *
++						      node[], int *id)
++{
++	int i = 0;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_NODE_MAX; i++) {
++		if (node[i] && (node[i]->is_used = 0)) {
++			node[i]->is_used = 1;
++			*id = i + 1;
++			return node[i];
++		}
++	}
++
++	return NULL;
++}
++
++int hisi_cmdlist_add_nop_node(struct hisi_fb_data_type *hisifd,
++			      uint32_t cmdlist_idxs, int pending, int reserved)
++{
++	dss_cmdlist_node_t *node = NULL;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int id = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			node +			    hisi_cmdlist_get_free_node(hisifd->cmdlist_data->
++						       cmdlist_nodes_temp[i],
++						       &id);
++			if (!node) {
++				HISI_FB_ERR
++				    ("failed to hisi_get_free_cmdlist_node!\n");
++				return -EINVAL;
++			}
++
++			node->list_header->flag.bits.id = id;
++			node->list_header->flag.bits.nop = 0x1;
++			node->list_header->flag.bits.pending +			    pending ? 0x1 : 0x0;
++			node->list_header->flag.bits.valid_flag +			    CMDLIST_NODE_VALID;
++			node->list_header->next_list = node->header_phys;
++
++			node->is_used = 1;
++			node->node_type = CMDLIST_NODE_NOP;
++			node->reserved = reserved ? 0x1 : 0x0;
++
++			/*add this nop to list */
++			list_add_tail(&(node->list_node),
++				      &(hisifd->cmdlist_data->cmdlist_head_temp[i]));
++
++			if (node->list_node.prev !+			    &(hisifd->cmdlist_data->cmdlist_head_temp[i])) {
++				dss_cmdlist_node_t *pre_node = NULL;
++				pre_node +				    list_entry(node->list_node.prev,
++					       dss_cmdlist_node_t, list_node);
++				pre_node->list_header->next_list +				    node->header_phys;
++				if (node->list_header->flag.bits.pending = 0x1) {
++					pre_node->reserved = 0x0;
++				}
++
++				pre_node->list_header->flag.bits.task_end = 0x1;
++
++				if (g_debug_ovl_cmdlist) {
++					HISI_FB_DEBUG
++					    ("i = %d, next_list = 0x%x\n", i,
++					     (uint32_t) (node->header_phys));
++				}
++			}
++		}
++
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++
++	return 0;
++}
++
++int hisi_cmdlist_add_new_node(struct hisi_fb_data_type *hisifd,
++			      uint32_t cmdlist_idxs, int pending, int task_end,
++			      int remove, int last, uint32_t wb_type)
++{
++	char __iomem *cmdlist_base = NULL;
++	dss_cmdlist_node_t *node = NULL;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int id = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			node +			    hisi_cmdlist_get_free_node(hisifd->cmdlist_data->
++						       cmdlist_nodes_temp[i],
++						       &id);
++			if (!node) {
++				HISI_FB_ERR
++				    ("failed to hisi_get_free_cmdnode!\n");
++				return -EINVAL;
++			}
++
++			/*fill the header and item info */
++			node->list_header->flag.bits.id = id;
++			node->list_header->flag.bits.pending +			    pending ? 0x1 : 0x0;
++
++			if (i < DSS_CMDLIST_W0) {
++				node->list_header->flag.bits.event_list +				    remove ? 0x8 : (0xE + i);
++			} else if (i < DSS_CMDLIST_OV0) {
++				node->list_header->flag.bits.event_list +				    remove ? 0x8 : (0x16 + i);
++			} else if (i = DSS_CMDLIST_V2) {
++				node->list_header->flag.bits.event_list +				    remove ? 0x8 : 0x16;
++			} else if (i = DSS_CMDLIST_W2) {
++				node->list_header->flag.bits.event_list +				    remove ? 0x8 : 0x20;
++			} else {
++				node->list_header->flag.bits.event_list +				    remove ? 0x8 : (0xE + i);
++			}
++
++			node->list_header->flag.bits.task_end +			    task_end ? 0x1 : 0x0;
++			node->list_header->flag.bits.last = last ? 0x1 : 0x0;
++
++			node->list_header->flag.bits.valid_flag +			    CMDLIST_NODE_VALID;
++			node->list_header->flag.bits.exec = 0x1;
++			node->list_header->list_addr = node->item_phys;
++			node->list_header->next_list = node->item_phys;
++
++			node->is_used = 1;
++			node->node_type = CMDLIST_NODE_FRAME;
++			node->item_flag = 0;
++			node->reserved = 0;
++
++			/* add this nop to list */
++			list_add_tail(&(node->list_node),
++				      &(hisifd->cmdlist_data->cmdlist_head_temp[i]));
++
++			if (node->list_node.prev !+			    &(hisifd->cmdlist_data->cmdlist_head_temp[i])) {
++				dss_cmdlist_node_t *pre_node = NULL;
++				pre_node +				    list_entry(node->list_node.prev,
++					       dss_cmdlist_node_t, list_node);
++				pre_node->list_header->next_list +				    node->header_phys;
++				pre_node->reserved = 0x0;
++				if (g_debug_ovl_cmdlist) {
++					HISI_FB_DEBUG
++					    ("i = %d, next_list = 0x%x\n", i,
++					     (uint32_t) node->header_phys);
++				}
++			}
++		}
++
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++
++	return 0;
++}
++
++int hisi_cmdlist_del_all_node(struct list_head *cmdlist_heads)
++{
++	dss_cmdlist_node_t *node = NULL;
++	dss_cmdlist_node_t *_node_ = NULL;
++
++	BUG_ON(cmdlist_heads = NULL);
++
++	list_for_each_entry_safe(node, _node_, cmdlist_heads, list_node) {
++		if (node->reserved != 0x1) {
++			list_del(&node->list_node);
++
++			memset(node->list_header, 0, CMDLIST_HEADER_LEN);
++			memset(node->list_item, 0, CMDLIST_ITEM_LEN);
++
++			node->item_index = 0;
++			node->item_flag = 0;
++			node->node_type = CMDLIST_NODE_NONE;
++			node->is_used = 0;
++		}
++	}
++
++	return 0;
++}
++
++int hisi_cmdlist_check_cmdlist_state(struct hisi_fb_data_type *hisifd,
++				     uint32_t cmdlist_idxs)
++{
++	char __iomem *cmdlist_base = NULL;
++	uint32_t offset = 0;
++	uint32_t tmp = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int delay_count = 0;
++	bool is_timeout = true;
++	int ret = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	offset = 0x40;
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			while (1) {
++				tmp +				    inp32(cmdlist_base + CMDLIST_CH0_STATUS +
++					  i * offset);
++				if (((tmp & 0xF) = 0x0) || delay_count > 5000) {
++					is_timeout +					    (delay_count > 5000) ? true : false;
++					delay_count = 0;
++					break;
++				} else {
++					udelay(1);
++					++delay_count;
++				}
++			}
++
++			if (is_timeout) {
++				HISI_FB_ERR
++				    ("cmdlist_ch%d not in idle state,ints=0x%x !\n",
++				     i, tmp);
++				ret = -1;
++			}
++		}
++
++		cmdlist_idxs_temp = (cmdlist_idxs_temp >> 1);
++	}
++
++	return ret;
++}
++
++/*
++ ** stop the pending state for one new frame
++ ** if the current cmdlist status is e_status_wait.
++ */
++int hisi_cmdlist_exec(struct hisi_fb_data_type *hisifd, uint32_t cmdlist_idxs)
++{
++	char __iomem *cmdlist_base = NULL;
++	uint32_t offset = 0;
++	uint32_t tmp = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int delay_count = 0;
++	bool is_timeout = true;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	offset = 0x40;
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			while (1) {
++				tmp +				    inp32(cmdlist_base + CMDLIST_CH0_STATUS +
++					  i * offset);
++				if (((tmp & 0xF) = 0x0) || delay_count > 500) {
++					is_timeout +					    (delay_count > 500) ? true : false;
++					delay_count = 0;
++					break;
++				} else {
++					udelay(1);
++					++delay_count;
++				}
++			}
++
++			if (is_timeout) {
++				HISI_FB_ERR
++				    ("cmdlist_ch%d not in idle state,ints=0x%x !\n",
++				     i, tmp);
++				if (g_debug_ovl_cmdlist) {
++					hisi_cmdlist_dump_all_node(hisifd, NULL,
++								   cmdlist_idxs);
++				}
++			}
++		}
++
++		cmdlist_idxs_temp = (cmdlist_idxs_temp >> 1);
++	}
++	return 0;
++}
++
++/*
++ **start cmdlist.
++ **it will set cmdlist into pending state.
++ */
++extern uint32_t g_dss_module_ovl_base[DSS_MCTL_IDX_MAX][MODULE_OVL_MAX];
++int hisi_cmdlist_config_start(struct hisi_fb_data_type *hisifd, int mctl_idx,
++			      uint32_t cmdlist_idxs, uint32_t wb_compose_type)
++{
++	char __iomem *mctl_base = NULL;
++	char __iomem *cmdlist_base = NULL;
++	dss_cmdlist_node_t *cmdlist_node = NULL;
++	uint32_t offset = 0;
++	uint32_t list_addr = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int temp = 0;
++	int status_temp = 0;
++	int ints_temp = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	mctl_base +	    hisifd->dss_base +
++	    g_dss_module_ovl_base[mctl_idx][MODULE_MCTL_BASE];
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	offset = 0x40;
++	cmdlist_idxs_temp = cmdlist_idxs;
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			status_temp +			    inp32(cmdlist_base + CMDLIST_CH0_STATUS +
++				  i * offset);
++			ints_temp +			    inp32(cmdlist_base + CMDLIST_CH0_INTS + i * offset);
++
++			if (mctl_idx >= DSS_MCTL2) {
++				cmdlist_node +				    list_first_entry(&(hisifd->cmdlist_data_tmp
++						      [wb_compose_type]->cmdlist_head_temp[i]),
++						     dss_cmdlist_node_t,
++						     list_node);
++			} else {
++				cmdlist_node +				    list_first_entry(&(hisifd->cmdlist_data->
++				    		 cmdlist_head_temp[i]),
++						     dss_cmdlist_node_t,
++						     list_node);
++			}
++
++			list_addr = cmdlist_node->header_phys;
++			if (g_debug_ovl_cmdlist) {
++				HISI_FB_INFO
++				    ("list_addr:0x%x, i=%d, ints_temp=0x%x\n",
++				     list_addr, i, ints_temp);
++			}
++
++			temp |= (1 << i);
++			outp32(cmdlist_base + CMDLIST_ADDR_MASK_EN, BIT(i));
++			if (g_debug_set_reg_val) {
++				HISI_FB_INFO("writel: [%p] = 0x%lx\n",
++					     cmdlist_base +
++					     CMDLIST_ADDR_MASK_EN, BIT(i));
++			}
++
++			set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i*offset,
++					mctl_idx, 3, 2);
++			if (mctl_idx <= DSS_MCTL1) {
++				set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i*offset, 0x1, 1, 6);
++			} else {
++				set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i*offset, 0x0, 1, 6);
++			}
++
++			set_reg(cmdlist_base + CMDLIST_CH0_STAAD + i*offset,
++					list_addr, 32, 0);
++			set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i*offset, 0x1, 1, 0);
++			if ((mctl_idx <= DSS_MCTL1)
++			    && ((ints_temp & 0x2) = 0x2)) {
++				set_reg(cmdlist_base + CMDLIST_SWRST, 0x1, 1, i);
++			}
++
++			if (mctl_idx >= DSS_MCTL2) {
++				if (((status_temp & 0xF) = 0x0)
++				    || ((ints_temp & 0x2) = 0x2)) {
++					set_reg(cmdlist_base + CMDLIST_SWRST,
++						0x1, 1, i);
++				} else {
++					HISI_FB_INFO
++					    ("i=%d, status_temp=0x%x, ints_temp=0x%x\n",
++					     i, status_temp, ints_temp);
++				}
++			}
++		}
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++
++	outp32(cmdlist_base + CMDLIST_ADDR_MASK_DIS, temp);
++	if (g_debug_set_reg_val) {
++		HISI_FB_INFO("writel: [%p] = 0x%x\n",
++			     cmdlist_base + CMDLIST_ADDR_MASK_DIS, temp);
++	}
++
++	if (mctl_idx >= DSS_MCTL2) {
++		set_reg(mctl_base + MCTL_CTL_ST_SEL, 0x1, 1, 0);
++		set_reg(mctl_base + MCTL_CTL_SW_ST, 0x1, 1, 0);
++	}
++
++	return 0;
++}
++
++void hisi_cmdlist_config_mif_reset(struct hisi_fb_data_type *hisifd,
++				   dss_overlay_t *pov_req,
++				   uint32_t cmdlist_idxs, int mctl_idx)
++{
++	char __iomem *dss_base = NULL;
++	char __iomem *tmp_base = NULL;
++
++	uint32_t cmdlist_idxs_temp = 0;
++	int delay_count = 0;
++	bool is_timeout = true;
++	int i = 0;
++	int j = 0;
++	int mif_sub_ch_nums = 4;
++	int tmp = 0;
++	int mif_nums_max = 0;
++
++	BUG_ON(hisifd = NULL);
++	BUG_ON(pov_req = NULL);
++
++	dss_base = hisifd->dss_base;
++
++	if (mctl_idx <= DSS_MCTL1) {
++		mif_nums_max = DSS_WCHN_W0;
++	} else {
++		mif_nums_max = DSS_CHN_MAX;
++	}
++
++	if (mctl_idx = DSS_MCTL5) {
++		for (i = DSS_RCHN_V2; i < DSS_CHN_MAX_DEFINE; i++) {
++			is_timeout = false;
++
++			while (1) {
++				for (j = 1; j <= mif_sub_ch_nums; j++) {
++					tmp |+					    inp32(dss_base + DSS_MIF_OFFSET +
++						  MIF_STAT1 +
++						  0x10 * (i * mif_sub_ch_nums +j));
++				}
++
++				if (((tmp & 0x1f) = 0x0) || delay_count > 500) {
++					is_timeout +					    (delay_count > 500) ? true : false;
++					delay_count = 0;
++					break;
++				} else {
++					udelay(10);
++					++delay_count;
++				}
++			}
++
++			if (is_timeout) {
++				HISI_FB_ERR("mif_ch%d MIF_STAT1=0x%x !\n", i,
++					    tmp);
++			}
++		}
++
++		tmp_base = hisifd->dss_module.mif_ch_base[DSS_RCHN_V2];
++		if (tmp_base) {
++			set_reg(tmp_base + MIF_CTRL0, 0x0, 1, 0);
++		}
++
++		tmp_base = hisifd->dss_module.mif_ch_base[DSS_WCHN_W2];
++		if (tmp_base) {
++			set_reg(tmp_base + MIF_CTRL0, 0x0, 1, 0);
++		}
++	} else {
++		cmdlist_idxs_temp = cmdlist_idxs;
++		for (i = 0; i < mif_nums_max; i++) {
++			if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++				is_timeout = false;
++
++				while (1) {
++					for (j = 1; j <= mif_sub_ch_nums; j++) {
++						tmp |+						    inp32(dss_base + DSS_MIF_OFFSET + MIF_STAT1 +
++							  0x10 * (i * mif_sub_ch_nums + j));
++					}
++					if (((tmp & 0x1f) = 0x0)
++					    || delay_count > 500) {
++						is_timeout +						    (delay_count > 500) ? true : false;
++						delay_count = 0;
++						break;
++					} else {
++						udelay(10);
++						++delay_count;
 +					}
 +				}
-+			} else if (cm->mode = DTYPE_PINCTRL_STATE_IDLE) {
-+				if (cm->pctrl_data->p
-+				    && cm->pctrl_data->pinctrl_idle) {
-+					ret +					    pinctrl_select_state(cm->pctrl_data->p,
-+								 cm->pctrl_data->pinctrl_idle);
-+					if (ret) {
-+						HISI_FB_ERR
-+						    ("could not set this pin to idle state!\n");
-+						ret = -1;
-+						goto err;
-+					}
++
++				if (is_timeout) {
++					HISI_FB_ERR
++					    ("mif_ch%d MIF_STAT1=0x%x !\n", i, tmp);
 +				}
-+			} else {
-+				ret = -1;
-+				HISI_FB_ERR("unknown pinctrl type to set!\n");
-+				goto err;
 +			}
-+		} else if (cm->dtype = DTYPE_PINCTRL_PUT) {
-+			if (cm->pctrl_data->p)
-+				pinctrl_put(cm->pctrl_data->p);
-+		} else {
-+			HISI_FB_ERR("not supported command type!\n");
-+			ret = -1;
-+			goto err;
++
++			cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
 +		}
 +
-+		cm++;
++		cmdlist_idxs_temp = cmdlist_idxs;
++		for (i = 0; i < mif_nums_max; i++) {
++			if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++				tmp_base = hisifd->dss_module.mif_ch_base[i];
++				if (tmp_base) {
++					set_reg(tmp_base + MIF_CTRL0, 0x0, 1,
++						0);
++				}
++			}
++			cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++		}
++	}
++	mdelay(5);
++
++	if (mctl_idx = DSS_MCTL5) {
++		tmp_base = hisifd->dss_module.mif_ch_base[DSS_RCHN_V2];
++		if (tmp_base) {
++			set_reg(tmp_base + MIF_CTRL0, 0x1, 1, 0);
++		}
++
++		tmp_base = hisifd->dss_module.mif_ch_base[DSS_WCHN_W2];
++		if (tmp_base) {
++			set_reg(tmp_base + MIF_CTRL0, 0x1, 1, 0);
++		}
++	} else {
++		cmdlist_idxs_temp = cmdlist_idxs;
++		for (i = 0; i < mif_nums_max; i++) {
++			if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++				tmp_base = hisifd->dss_module.mif_ch_base[i];
++				if (tmp_base) {
++					set_reg(tmp_base + MIF_CTRL0, 0x1, 1,
++						0);
++				}
++			}
++			cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++		}
++	}
++}
++
++void hisi_cmdlist_config_reset(struct hisi_fb_data_type *hisifd,
++			       dss_overlay_t *pov_req, uint32_t cmdlist_idxs)
++{
++	char __iomem *dss_base = NULL;
++	char __iomem *cmdlist_base = NULL;
++	char __iomem *tmp_base = NULL;
++	struct hisi_panel_info *pinfo = NULL;
++
++	uint32_t offset = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	int i = 0;
++	int ovl_idx = 0;
++	int mctl_idx = 0;
++	int ints_temp = 0;
++	int start_sel = 0;
++	uint32_t start_sel_temp = 0;
++
++	BUG_ON(hisifd = NULL);
++	BUG_ON(pov_req = NULL);
++
++	HISI_FB_DEBUG("fb%d, +.\n", hisifd->index);
++
++	dss_base = hisifd->dss_base;
++	cmdlist_base = dss_base + DSS_CMDLIST_OFFSET;
++	ovl_idx = pov_req->ovl_idx;
++	pinfo = &(hisifd->panel_info);
++
++	if (cmdlist_idxs = 0) return;
++
++	mctl_idx = ovl_idx;
++	if (pov_req->wb_compose_type = DSS_WB_COMPOSE_COPYBIT) {
++		mctl_idx = DSS_MCTL5;
++	}
++
++	offset = 0x40;
++	cmdlist_idxs_temp = HISI_DSS_CMDLIST_IDXS_MAX;
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			ints_temp +			    inp32(cmdlist_base + CMDLIST_CH0_INTS + i * offset);
++			start_sel +			    inp32(cmdlist_base + CMDLIST_CH0_CTRL + i * offset);
++
++			if (((ints_temp & 0x2) = 0x2)
++			    && ((start_sel & 0x1c) = 0)) {
++				set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i * offset, 0x6, 3, 2);
++				start_sel_temp |= (1 << i);
++			}
++		}
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++
++	tmp_base = hisifd->dss_module.mctl_base[mctl_idx];
++	if (tmp_base) {
++		set_reg(tmp_base + MCTL_CTL_CLEAR, 0x1, 1, 0);
++	}
++
++	hisi_cmdlist_config_mif_reset(hisifd, pov_req, cmdlist_idxs, mctl_idx);
++	cmdlist_idxs_temp = start_sel_temp;
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			set_reg(cmdlist_base + CMDLIST_CH0_CTRL + i * offset, mctl_idx, 3, 2);
++		}
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++	}
++
++	if (mctl_idx >= DSS_MCTL2) {
++		offset = 0x40;
++		cmdlist_idxs_temp = cmdlist_idxs;
++		for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++			if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++				set_reg(cmdlist_base + CMDLIST_CH0_CTRL +
++					i * offset, 0x6, 3, 2);
++				set_reg(cmdlist_base + CMDLIST_CH0_CTRL +
++					i * offset, 0x0, 1, 0);
++			}
++			cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
++		}
++	}
++
++	HISI_FB_DEBUG("fb%d, -.\n", hisifd->index);
++	return;
++}
++
++int hisi_cmdlist_config_stop(struct hisi_fb_data_type *hisifd,
++			     uint32_t cmdlist_pre_idxs)
++{
++	dss_overlay_t *pov_req = NULL;
++	char __iomem *cmdlist_base = NULL;
++	int i = 0;
++	uint32_t tmp = 0;
++	uint32_t offset = 0;
++	int ret = 0;
++
++	BUG_ON(hisifd = NULL);
++	pov_req = &(hisifd->ov_req);
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	offset = 0x40;
++
++	ret +	    hisi_cmdlist_add_new_node(hisifd, cmdlist_pre_idxs, 0, 1, 1, 1, 0);
++	if (ret != 0) {
++		HISI_FB_ERR("fb%d, hisi_cmdlist_add_new_node err:%d \n",
++			    hisifd->index, ret);
++		goto err_return;
++	}
++
++	for (i = 0; i < DSS_WCHN_W0; i++) {
++		tmp = (0x1 << i);
++		hisifd->cmdlist_idx = i;
++
++		if ((cmdlist_pre_idxs & tmp) = tmp) {
++			hisifd->set_reg(hisifd,
++					hisifd->dss_module.mctl_base[pov_req->
++								     ovl_idx] +
++					MCTL_CTL_MUTEX_RCH0 + i * 0x4, 0, 32,
++					0);
++			hisifd->set_reg(hisifd, cmdlist_base + CMDLIST_CH0_CTRL + i * offset, 0x6, 3, 2);
++		}
 +	}
 +
 +	return 0;
 +
-+ err:
++ err_return:
 +	return ret;
 +}
 +
-+int panel_next_on(struct platform_device *pdev)
++void hisi_dss_cmdlist_qos_on(struct hisi_fb_data_type *hisifd)
 +{
-+	int ret = 0;
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	struct hisi_fb_panel_data *next_pdata = NULL;
-+	struct platform_device *next_pdev = NULL;
++	char __iomem *cmdlist_base = NULL;
 +
-+	BUG_ON(pdev = NULL);
-+	pdata = dev_get_platdata(&pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	next_pdev = pdata->next;
-+	if (next_pdev) {
-+		next_pdata = dev_get_platdata(&next_pdev->dev);
-+		if ((next_pdata) && (next_pdata->on))
-+			ret = next_pdata->on(next_pdev);
-+	}
-+
-+	return ret;
-+}
-+
-+int panel_next_off(struct platform_device *pdev)
-+{
-+	int ret = 0;
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	struct hisi_fb_panel_data *next_pdata = NULL;
-+	struct platform_device *next_pdev = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	pdata = dev_get_platdata(&pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	next_pdev = pdata->next;
-+	if (next_pdev) {
-+		next_pdata = dev_get_platdata(&next_pdev->dev);
-+		if ((next_pdata) && (next_pdata->off))
-+			ret = next_pdata->off(next_pdev);
-+	}
-+
-+	return ret;
-+}
-+
-+int panel_next_remove(struct platform_device *pdev)
-+{
-+	int ret = 0;
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	struct hisi_fb_panel_data *next_pdata = NULL;
-+	struct platform_device *next_pdev = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	pdata = dev_get_platdata(&pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	next_pdev = pdata->next;
-+	if (next_pdev) {
-+		next_pdata = dev_get_platdata(&next_pdev->dev);
-+		if ((next_pdata) && (next_pdata->remove))
-+			ret = next_pdata->remove(next_pdev);
-+	}
-+
-+	return ret;
-+}
-+
-+int panel_next_set_backlight(struct platform_device *pdev, uint32_t bl_level)
-+{
-+	int ret = 0;
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	struct hisi_fb_panel_data *next_pdata = NULL;
-+	struct platform_device *next_pdev = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	pdata = dev_get_platdata(&pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	next_pdev = pdata->next;
-+	if (next_pdev) {
-+		next_pdata = dev_get_platdata(&next_pdev->dev);
-+		if ((next_pdata) && (next_pdata->set_backlight))
-+			ret = next_pdata->set_backlight(next_pdev, bl_level);
-+	}
-+
-+	return ret;
-+}
-+
-+int panel_next_vsync_ctrl(struct platform_device *pdev, int enable)
-+{
-+	int ret = 0;
-+	struct hisi_fb_panel_data *pdata = NULL;
-+	struct hisi_fb_panel_data *next_pdata = NULL;
-+	struct platform_device *next_pdev = NULL;
-+
-+	BUG_ON(pdev = NULL);
-+	pdata = dev_get_platdata(&pdev->dev);
-+	BUG_ON(pdata = NULL);
-+
-+	next_pdev = pdata->next;
-+	if (next_pdev) {
-+		next_pdata = dev_get_platdata(&next_pdev->dev);
-+		if ((next_pdata) && (next_pdata->vsync_ctrl))
-+			ret = next_pdata->vsync_ctrl(next_pdev, enable);
-+	}
-+
-+	return ret;
-+}
-+
-+bool is_ldi_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+	if (hisifd->panel_info.type & PANEL_LCDC)
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_mipi_cmd_panel(struct hisi_fb_data_type *hisifd)
-+{
 +	BUG_ON(hisifd = NULL);
 +
-+	if (hisifd->panel_info.type & (PANEL_MIPI_CMD | PANEL_DUAL_MIPI_CMD))
-+		return true;
-+
-+	return false;
++	cmdlist_base = hisifd->dss_base + DSS_CMDLIST_OFFSET;
++	set_reg(cmdlist_base + CMDLIST_CTRL, 0x3, 2, 4);
 +}
 +
-+bool is_mipi_cmd_panel_ext(struct hisi_panel_info *pinfo)
++void hisi_dump_cmdlist_node_items(cmd_item_t *item, uint32_t count)
 +{
-+	BUG_ON(pinfo = NULL);
++	uint32_t index = 0;
++	uint32_t addr = 0;
 +
-+	if (pinfo->type & (PANEL_MIPI_CMD | PANEL_DUAL_MIPI_CMD))
-+		return true;
-+
-+	return false;
++	for (index = 0; index < count; index++) {
++		addr = item[index].reg_addr.bits.add0;
++		addr = addr & CMDLIST_ADDR_OFFSET;
++		addr = addr << 2;
++		HISI_FB_INFO
++		    ("set addr:0x%x value:0x%x add1:0x%x value:0x%x "
++		     "add2:0x%x value:0x%x \n",
++		     addr, item[index].data0,
++		     item[index].reg_addr.bits.add1 << 2, item[index].data1,
++		     item[index].reg_addr.bits.add2 << 2, item[index].data2);
++	}
 +}
 +
-+bool is_mipi_video_panel(struct hisi_fb_data_type *hisifd)
++static void hisi_dump_cmdlist_content(struct list_head *cmdlist_head,
++				      char *filename, uint32_t addr)
 +{
++	dss_cmdlist_node_t *node = NULL;
++	dss_cmdlist_node_t *_node_ = NULL;
++
++	BUG_ON(cmdlist_head = NULL);
++	BUG_ON(filename = NULL);
++
++	if (g_dump_cmdlist_content = 0)
++		return;
++
++	HISI_FB_INFO("%s\n", filename);
++
++	list_for_each_entry_safe(node, _node_, cmdlist_head, list_node) {
++		if (node->header_phys = addr) {
++			hisifb_save_file(filename, (char *)(node->list_header),
++					 CMDLIST_HEADER_LEN);
++		}
++
++		if (node->item_phys = addr) {
++			hisifb_save_file(filename, (char *)(node->list_item),
++					 CMDLIST_ITEM_LEN);
++		}
++	}
++}
++
++static void hisi_dump_cmdlist_one_node(struct list_head *cmdlist_head,
++				       uint32_t cmdlist_idx)
++{
++	dss_cmdlist_node_t *node = NULL;
++	dss_cmdlist_node_t *_node_ = NULL;
++	uint32_t count = 0;
++	int i = 0;
++	char filename[256] = { 0 };
++
++	BUG_ON(cmdlist_head = NULL);
++
++	list_for_each_entry_safe(node, _node_, cmdlist_head, list_node) {
++		if (node->node_type = CMDLIST_NODE_NOP) {
++			HISI_FB_INFO("node type = NOP node\n");
++		} else if (node->node_type = CMDLIST_NODE_FRAME) {
++			HISI_FB_INFO("node type = Frame node\n");
++		}
++
++		HISI_FB_INFO
++		    ("\t qos  | flag | pending | tast_end | last  | event_list | list_addr  | next_list  | count | id | is_used | reserved | cmdlist_idx\n");
++		HISI_FB_INFO
++		    ("\t ------+---------+------------+------------+------------+------------\n");
++		HISI_FB_INFO
++		    ("\t 0x%2x | 0x%2x |0x%6x | 0x%5x | 0x%3x | 0x%8x | 0x%8x | 0x%8x | 0x%3x | 0x%2x | 0x%2x | 0x%2x | 0x%2x\n",
++		     node->list_header->flag.bits.qos,
++		     node->list_header->flag.bits.valid_flag,
++		     node->list_header->flag.bits.pending,
++		     node->list_header->flag.bits.task_end,
++		     node->list_header->flag.bits.last,
++		     node->list_header->flag.bits.event_list,
++		     node->list_header->list_addr, node->list_header->next_list,
++		     node->list_header->total_items.bits.count,
++		     node->list_header->flag.bits.id, node->is_used,
++		     node->reserved, cmdlist_idx);
++
++		if (i = 0) {
++			snprintf(filename, 256,
++				 "/data/dssdump/list_start_0x%x.txt",
++				 (uint32_t) node->header_phys);
++			hisi_dump_cmdlist_content(cmdlist_head, filename,
++						  node->header_phys);
++		}
++#if 0
++		if ((node->list_header->next_list != 0x0) &&
++		    (node->list_header->next_list != 0xFFFFFFFF)) {
++			snprintf(filename, 256,
++				 "/data/dssdump/next_list_0x%x.txt",
++				 node->list_header->next_list);
++			hisi_dump_cmdlist_content(cmdlist_head, filename,
++						  node->list_header->next_list);
++		}
++
++		if ((node->list_header->list_addr != 0x0) &&
++		    (node->list_header->list_addr != 0xFFFFFFFF)) {
++			snprintf(filename, 256,
++				 "/data/dssdump/list_addr_0x%x.txt",
++				 node->list_header->list_addr);
++			hisi_dump_cmdlist_content(cmdlist_head, filename,
++						  node->list_header->list_addr);
++		}
++#endif
++		count = node->list_header->total_items.bits.count;
++		hisi_dump_cmdlist_node_items(node->list_item, count);
++
++		i++;
++	}
++}
++
++int hisi_cmdlist_dump_all_node(struct hisi_fb_data_type *hisifd,
++			       dss_overlay_t *pov_req, uint32_t cmdlist_idxs)
++{
++	int i = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	uint32_t wb_compose_type = 0;
++
 +	BUG_ON(hisifd = NULL);
 +
-+	if (hisifd->panel_info.
-+	    type & (PANEL_MIPI_VIDEO | PANEL_DUAL_MIPI_VIDEO | PANEL_RGB2MIPI))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_mipi_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+
-+	if (hisifd->panel_info.type & (PANEL_MIPI_VIDEO | PANEL_MIPI_CMD |
-+				       PANEL_DUAL_MIPI_VIDEO |
-+				       PANEL_DUAL_MIPI_CMD))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_dual_mipi_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+
-+	if (hisifd->panel_info.
-+	    type & (PANEL_DUAL_MIPI_VIDEO | PANEL_DUAL_MIPI_CMD))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_dual_mipi_panel_ext(struct hisi_panel_info *pinfo)
-+{
-+	BUG_ON(pinfo = NULL);
-+
-+	if (pinfo->type & (PANEL_DUAL_MIPI_VIDEO | PANEL_DUAL_MIPI_CMD))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_hisi_writeback_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+
-+	if (hisifd->panel_info.type & PANEL_WRITEBACK)
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_ifbc_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+
-+	if (hisifd->panel_info.ifbc_type != IFBC_TYPE_NONE)
-+		return true;
-+
-+	return false;
-+}
-+
-+bool is_ifbc_vesa_panel(struct hisi_fb_data_type *hisifd)
-+{
-+	BUG_ON(hisifd = NULL);
-+
-+	if ((hisifd->panel_info.ifbc_type = IFBC_TYPE_VESA2X_SINGLE) ||
-+	    (hisifd->panel_info.ifbc_type = IFBC_TYPE_VESA3X_SINGLE) ||
-+	    (hisifd->panel_info.ifbc_type = IFBC_TYPE_VESA2X_DUAL) ||
-+	    (hisifd->panel_info.ifbc_type = IFBC_TYPE_VESA3X_DUAL))
-+		return true;
-+
-+	return false;
-+}
-+
-+bool mipi_panel_check_reg(struct hisi_fb_data_type *hisifd,
-+			  uint32_t *read_value)
-+{
-+	int ret = 0;
-+	char lcd_reg_05[] = { 0x05 };
-+	char lcd_reg_0a[] = { 0x0a };
-+	char lcd_reg_0e[] = { 0x0e };
-+	char lcd_reg_0f[] = { 0x0f };
-+
-+	struct dsi_cmd_desc lcd_check_reg[] = {
-+		{DTYPE_GEN_WRITE1, 0, 10, WAIT_TYPE_US,
-+		 sizeof(lcd_reg_05), lcd_reg_05}
-+		,
-+		{DTYPE_GEN_WRITE1, 0, 10, WAIT_TYPE_US,
-+		 sizeof(lcd_reg_0a), lcd_reg_0a}
-+		,
-+		{DTYPE_GEN_WRITE1, 0, 10, WAIT_TYPE_US,
-+		 sizeof(lcd_reg_0e), lcd_reg_0e}
-+		,
-+		{DTYPE_GEN_WRITE1, 0, 10, WAIT_TYPE_US,
-+		 sizeof(lcd_reg_0f), lcd_reg_0f}
-+		,
-+	};
-+
-+	ret = mipi_dsi_cmds_rx(read_value, lcd_check_reg,
-+			       ARRAY_SIZE(lcd_check_reg),
-+			       hisifd->mipi_dsi0_base);
-+	if (ret) {
-+		HISI_FB_ERR("Read error number: %d\n", ret);
-+		return false;
++	if (pov_req) {
++		if (pov_req->wb_enable)
++			wb_compose_type = pov_req->wb_compose_type;
 +	}
 +
-+	return true;
-+}
-+
-+int mipi_ifbc_get_rect(struct hisi_fb_data_type *hisifd, struct dss_rect *rect)
-+{
-+	uint32_t ifbc_type = 0;
-+	uint32_t mipi_idx = 0;
-+	uint32_t xres_div = 1;
-+	uint32_t yres_div = 1;
-+
-+	BUG_ON(hisifd = NULL);
-+	BUG_ON(rect = NULL);
-+
-+	ifbc_type = hisifd->panel_info.ifbc_type;
-+	BUG_ON((ifbc_type < IFBC_TYPE_NONE) || (ifbc_type >= IFBC_TYPE_MAX));
-+
-+	mipi_idx = is_dual_mipi_panel(hisifd) ? 1 : 0;
-+
-+	xres_div = g_mipi_ifbc_division[mipi_idx][ifbc_type].xres_div;
-+	yres_div = g_mipi_ifbc_division[mipi_idx][ifbc_type].yres_div;
-+
-+	if ((rect->w % xres_div) > 0) {
-+		HISI_FB_ERR
-+		    ("fb%d, xres(%d) is not division_h(%d) pixel aligned!\n",
-+		     hisifd->index, rect->w, xres_div);
++	cmdlist_idxs_temp = cmdlist_idxs;
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if (0x1 = (cmdlist_idxs_temp & 0x1)) {
++			if (pov_req && pov_req->wb_enable) {
++				hisi_dump_cmdlist_one_node(&(hisifd->cmdlist_data_tmp
++							    [wb_compose_type]->cmdlist_head_temp[i]), i);
++			} else {
++				hisi_dump_cmdlist_one_node(&
++							   (hisifd->cmdlist_data->cmdlist_head_temp[i]), i);
++			}
++		}
++		cmdlist_idxs_temp = cmdlist_idxs_temp >> 1;
 +	}
-+
-+	if ((rect->h % yres_div) > 0) {
-+		HISI_FB_ERR
-+		    ("fb%d, yres(%d) is not division_v(%d) pixel aligned!\n",
-+		     hisifd->index, rect->h, yres_div);
-+	}
-+
-+	if ((mipi_idx = 0) && (ifbc_type = IFBC_TYPE_RSP3X)
-+	    && (hisifd->panel_info.type = PANEL_MIPI_CMD)) {
-+		rect->w *= 2;
-+		rect->h /= 2;
-+	}
-+
-+	rect->w /= xres_div;
-+	rect->h /= yres_div;
 +
 +	return 0;
 +}
 +
-+bool hisi_fb_device_probe_defer(uint32_t panel_type, uint32_t bl_type)
++int hisi_cmdlist_del_node(struct hisi_fb_data_type *hisifd,
++			  dss_overlay_t *pov_req, uint32_t cmdlist_idxs)
 +{
-+	bool flag = true;
-+
-+	down(&hisi_fb_dts_resource_sem);
-+
-+	switch (panel_type) {
-+	case PANEL_NO:
-+		if (g_dts_resouce_ready & DTS_FB_RESOURCE_INIT_READY) {
-+			flag = false;
-+		}
-+		break;
-+	case PANEL_LCDC:
-+	case PANEL_MIPI2RGB:
-+	case PANEL_RGB2MIPI:
-+		if ((g_dts_resouce_ready & DTS_FB_RESOURCE_INIT_READY) &&
-+		    (g_dts_resouce_ready & DTS_SPI_READY)) {
-+			if (bl_type & (BL_SET_BY_PWM | BL_SET_BY_BLPWM)) {
-+				if (g_dts_resouce_ready & DTS_PWM_READY)
-+					flag = false;
-+			} else {
-+				flag = false;
-+			}
-+		}
-+		break;
-+	case PANEL_MIPI_VIDEO:
-+	case PANEL_MIPI_CMD:
-+	case PANEL_DUAL_MIPI_VIDEO:
-+	case PANEL_DUAL_MIPI_CMD:
-+	case PANEL_EDP:
-+		if (g_dts_resouce_ready & DTS_FB_RESOURCE_INIT_READY) {
-+			if (bl_type & (BL_SET_BY_PWM | BL_SET_BY_BLPWM)) {
-+				if (g_dts_resouce_ready & DTS_PWM_READY)
-+					flag = false;
-+			} else {
-+				flag = false;
-+			}
-+		}
-+		break;
-+	case PANEL_HDMI:
-+		if (g_dts_resouce_ready & DTS_PANEL_PRIMARY_READY)
-+			flag = false;
-+		break;
-+	case PANEL_WRITEBACK:
-+		if (g_dts_resouce_ready & DTS_PANEL_OFFLINECOMPOSER_READY)
-+			flag = false;
-+		break;
-+	default:
-+		HISI_FB_ERR("not support this panel type(%d).\n", panel_type);
-+		break;
-+	}
-+
-+	up(&hisi_fb_dts_resource_sem);
-+
-+	return flag;
-+}
-+
-+void hisi_fb_device_set_status0(uint32_t status)
-+{
-+	down(&hisi_fb_dts_resource_sem);
-+	g_dts_resouce_ready |= status;
-+	up(&hisi_fb_dts_resource_sem);
-+}
-+
-+int hisi_fb_device_set_status1(struct hisi_fb_data_type *hisifd)
-+{
-+	int ret = 0;
++	int i = 0;
++	uint32_t cmdlist_idxs_temp = 0;
++	uint32_t wb_compose_type = 0;
 +
 +	BUG_ON(hisifd = NULL);
 +
-+	down(&hisi_fb_dts_resource_sem);
-+
-+	switch (hisifd->panel_info.type) {
-+	case PANEL_LCDC:
-+	case PANEL_MIPI_VIDEO:
-+	case PANEL_MIPI_CMD:
-+	case PANEL_DUAL_MIPI_VIDEO:
-+	case PANEL_DUAL_MIPI_CMD:
-+	case PANEL_EDP:
-+	case PANEL_MIPI2RGB:
-+	case PANEL_RGB2MIPI:
-+	case PANEL_HDMI:
-+		if (hisifd->index = PRIMARY_PANEL_IDX) {
-+			g_dts_resouce_ready |= DTS_PANEL_PRIMARY_READY;
-+		} else if (hisifd->index = EXTERNAL_PANEL_IDX) {
-+			g_dts_resouce_ready |= DTS_PANEL_EXTERNAL_READY;
-+		} else {
-+			HISI_FB_ERR("not support fb(%d).\n", hisifd->index);
-+		}
-+		break;
-+	case PANEL_WRITEBACK:
-+		g_dts_resouce_ready |= DTS_PANEL_WRITEBACK_READY;
-+		break;
-+	default:
-+		HISI_FB_ERR("not support this panel type(%d).\n",
-+			    hisifd->panel_info.type);
-+		ret = -1;
-+		break;
++	if (pov_req) {
++		if (pov_req->wb_enable)
++			wb_compose_type = pov_req->wb_compose_type;
 +	}
 +
-+	up(&hisi_fb_dts_resource_sem);
++	cmdlist_idxs_temp = cmdlist_idxs;
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		if ((cmdlist_idxs_temp & 0x1) = 0x1) {
++			if (pov_req && pov_req->wb_enable) {
++				hisi_cmdlist_del_all_node(&(hisifd->cmdlist_data_tmp
++							   [wb_compose_type]->cmdlist_head_temp[i]));
++			} else {
++				hisi_cmdlist_del_all_node(&
++							  (hisifd->cmdlist_data->cmdlist_head_temp[i]));
++			}
++		}
++		cmdlist_idxs_temp = (cmdlist_idxs_temp >> 1);
++	}
 +
-+	return ret;
++	return 0;
 +}
 +
-+struct platform_device *hisi_fb_device_alloc(struct hisi_fb_panel_data *pdata,
-+					     uint32_t type, uint32_t id)
++static dss_cmdlist_data_t *hisi_cmdlist_data_alloc(struct hisi_fb_data_type
++						   *hisifd)
 +{
-+	struct platform_device *this_dev = NULL;
-+	char dev_name[32] = { 0 };
++	int i = 0;
++	int j = 0;
++	dss_cmdlist_data_t *cmdlist_data = NULL;
 +
-+	BUG_ON(pdata = NULL);
++	BUG_ON(hisifd = NULL);
 +
-+	switch (type) {
-+	case PANEL_MIPI_VIDEO:
-+	case PANEL_MIPI_CMD:
-+	case PANEL_DUAL_MIPI_VIDEO:
-+	case PANEL_DUAL_MIPI_CMD:
-+		snprintf(dev_name, sizeof(dev_name), DEV_NAME_MIPIDSI);
-+		break;
-+	case PANEL_EDP:
-+		snprintf(dev_name, sizeof(dev_name), DEV_NAME_EDP);
-+		break;
-+	case PANEL_NO:
-+	case PANEL_LCDC:
-+	case PANEL_HDMI:
-+	case PANEL_WRITEBACK:
-+		snprintf(dev_name, sizeof(dev_name), DEV_NAME_DSS_DPE);
-+		break;
-+	case PANEL_RGB2MIPI:
-+		snprintf(dev_name, sizeof(dev_name), DEV_NAME_RGB2MIPI);
-+		break;
-+	default:
-+		HISI_FB_ERR("invalid panel type = %d!\n", type);
++	cmdlist_data +	    (dss_cmdlist_data_t *) kmalloc(sizeof(dss_cmdlist_data_t),
++					   GFP_ATOMIC);
++	if (cmdlist_data) {
++		memset(cmdlist_data, 0, sizeof(dss_cmdlist_data_t));
++	} else {
++		HISI_FB_ERR("failed to kmalloc cmdlist_data!\n");
 +		return NULL;
 +	}
 +
-+	if (pdata != NULL)
-+		pdata->next = NULL;
-+	else
-+		return NULL;
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		INIT_LIST_HEAD(&(cmdlist_data->cmdlist_head_temp[i]));
 +
-+	this_dev +	    platform_device_alloc(dev_name,
-+				  (((uint32_t) type << 16) | (uint32_t) id));
-+	if (this_dev) {
-+		if (platform_device_add_data
-+		    (this_dev, pdata, sizeof(struct hisi_fb_panel_data))) {
-+			HISI_FB_ERR("failed to platform_device_add_data!\n");
-+			platform_device_put(this_dev);
-+			return NULL;
++		for (j = 0; j < HISI_DSS_CMDLIST_NODE_MAX; j++) {
++			cmdlist_data->cmdlist_nodes_temp[i][j] +			    hisi_cmdlist_node_alloc(hisifd->ion_client);
++			if (cmdlist_data->cmdlist_nodes_temp[i][j] = NULL) {
++				HISI_FB_ERR
++				    ("failed to hisi_cmdlist_node_alloc!\n");
++				kfree(cmdlist_data);
++				return NULL;
++			}
 +		}
 +	}
 +
-+	return this_dev;
++	return cmdlist_data;
 +}
-diff --git a/drivers/video/fbdev/hisi/dss/hisi_fb_panel.h b/drivers/video/fbdev/hisi/dss/hisi_fb_panel.h
++
++static void hisi_cmdlist_data_free(struct hisi_fb_data_type *hisifd,
++				   dss_cmdlist_data_t *cmdlist_data)
++{
++	int i = 0;
++	int j = 0;
++
++	BUG_ON(hisifd = NULL);
++	BUG_ON(cmdlist_data = NULL);
++
++	for (i = 0; i < HISI_DSS_CMDLIST_MAX; i++) {
++		for (j = 0; j < HISI_DSS_CMDLIST_NODE_MAX; j++) {
++			hisi_cmdlist_node_free(hisifd->ion_client,
++					       hisifd->cmdlist_data->cmdlist_nodes_temp[i][j]);
++		}
++	}
++}
++
++static dss_cmdlist_info_t *hisi_cmdlist_info_alloc(struct hisi_fb_data_type
++						   *hisifd)
++{
++	int i = 0;
++	dss_cmdlist_info_t *cmdlist_info = NULL;
++
++	BUG_ON(hisifd = NULL);
++
++	cmdlist_info +	    (dss_cmdlist_info_t *) kmalloc(sizeof(dss_cmdlist_info_t), GFP_ATOMIC);
++	if (cmdlist_info) {
++		memset(cmdlist_info, 0, sizeof(dss_cmdlist_info_t));
++	} else {
++		HISI_FB_ERR("failed to kmalloc cmdlist_info!\n");
++		return NULL;
++	}
++
++	sema_init(&(cmdlist_info->cmdlist_wb_common_sem), 1);
++
++	for (i = 0; i < WB_TYPE_MAX; i++) {
++		sema_init(&(cmdlist_info->cmdlist_wb_sem[i]), 1);
++		init_waitqueue_head(&(cmdlist_info->cmdlist_wb_wq[i]));
++		cmdlist_info->cmdlist_wb_done[i] = 0;
++		cmdlist_info->cmdlist_wb_flag[i] = 0;
++	}
++
++	return cmdlist_info;
++}
++
++static dss_copybit_info_t *hisi_copybit_info_alloc(struct hisi_fb_data_type
++						   *hisifd)
++{
++	dss_copybit_info_t *copybit_info = NULL;
++
++	BUG_ON(hisifd = NULL);
++
++	copybit_info +	    (dss_copybit_info_t *) kmalloc(sizeof(dss_copybit_info_t),
++					   GFP_ATOMIC);
++	if (copybit_info) {
++		memset(copybit_info, 0, sizeof(dss_copybit_info_t));
++	} else {
++		HISI_FB_ERR("failed to kmalloc copybit_info!\n");
++		return NULL;
++	}
++
++	sema_init(&(copybit_info->copybit_sem), 1);
++
++	init_waitqueue_head(&(copybit_info->copybit_wq));
++	copybit_info->copybit_done = 0;
++
++	return copybit_info;
++}
++
++void hisi_cmdlist_data_get_online(struct hisi_fb_data_type *hisifd)
++{
++	int tmp = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	tmp = (hisifd->frame_count + 1) % HISI_DSS_CMDLIST_DATA_MAX;
++	hisifd->cmdlist_data = hisifd->cmdlist_data_tmp[tmp];
++	hisi_cmdlist_del_node(hisifd, NULL, HISI_DSS_CMDLIST_IDXS_MAX);
++
++	tmp = hisifd->frame_count % HISI_DSS_CMDLIST_DATA_MAX;
++	hisifd->cmdlist_data = hisifd->cmdlist_data_tmp[tmp];
++	hisi_cmdlist_del_node(hisifd, NULL, HISI_DSS_CMDLIST_IDXS_MAX);
++}
++
++int hisi_cmdlist_init(struct hisi_fb_data_type *hisifd)
++{
++	int ret = 0;
++	int i = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	for (i = 0; i < HISI_DSS_CMDLIST_BLOCK_MAX; i++) {
++		hisifd->ov_block_rects[i] +		    (dss_rect_t *) kmalloc(sizeof(dss_rect_t), GFP_ATOMIC);
++		if (!hisifd->ov_block_rects[i]) {
++			HISI_FB_ERR("ov_block_rects[%d] failed to alloc!", i);
++			return -EINVAL;
++		}
++	}
++
++	if (hisifd->index = AUXILIARY_PANEL_IDX) {
++		hisifd->cmdlist_data_tmp[0] = hisi_cmdlist_data_alloc(hisifd);
++		hisifd->cmdlist_data_tmp[1] = hisi_cmdlist_data_alloc(hisifd);
++		hisifd->cmdlist_info = hisi_cmdlist_info_alloc(hisifd);
++		hisifd->copybit_info = hisi_copybit_info_alloc(hisifd);
++	} else {
++		if (hisifd->index = PRIMARY_PANEL_IDX
++		    || (hisifd->index = EXTERNAL_PANEL_IDX
++			&& !hisifd->panel_info.fake_hdmi)) {
++			for (i = 0; i < HISI_DSS_CMDLIST_DATA_MAX; i++) {
++				hisifd->cmdlist_data_tmp[i] +				    hisi_cmdlist_data_alloc(hisifd);
++			}
++		}
++	}
++
++	hisifd->cmdlist_data = hisifd->cmdlist_data_tmp[0];
++	hisifd->cmdlist_idx = -1;
++
++	return ret;
++}
++
++int hisi_cmdlist_deinit(struct hisi_fb_data_type *hisifd)
++{
++	int i = 0;
++
++	BUG_ON(hisifd = NULL);
++
++	for (i = 0; i < HISI_DSS_CMDLIST_BLOCK_MAX; i++) {
++		if (hisifd->ov_block_rects[i]) {
++			kfree(hisifd->ov_block_rects[i]);
++			hisifd->ov_block_rects[i] = NULL;
++		}
++	}
++
++	for (i = 0; i < HISI_DSS_CMDLIST_DATA_MAX; i++) {
++		if (hisifd->cmdlist_data_tmp[i]) {
++			hisi_cmdlist_data_free(hisifd,
++					       hisifd->cmdlist_data_tmp[i]);
++			kfree(hisifd->cmdlist_data_tmp[i]);
++			hisifd->cmdlist_data_tmp[i] = NULL;
++		}
++	}
++
++	if (hisifd->index = AUXILIARY_PANEL_IDX) {
++		if (hisifd->cmdlist_info) {
++			kfree(hisifd->cmdlist_info);
++			hisifd->cmdlist_info = NULL;
++		}
++
++		if (hisifd->copybit_info) {
++			kfree(hisifd->copybit_info);
++			hisifd->copybit_info = NULL;
++		}
++	}
++
++	return 0;
++}
+diff --git a/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.h b/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.h
 new file mode 100755
-index 000000000000..8afb1f42a8c5
+index 000000000000..5f5d8c0fd506
 --- /dev/null
-+++ b/drivers/video/fbdev/hisi/dss/hisi_fb_panel.h
-@@ -0,0 +1,839 @@
++++ b/drivers/video/fbdev/hisi/dss/hisi_overlay_cmdlist_utils.h
+@@ -0,0 +1,249 @@
 +/* Copyright (c) 2013-2014, Hisilicon Tech. Co., Ltd. All rights reserved.
 + *
 + * This program is free software; you can redistribute it and/or modify
@@ -2169,833 +2794,243 @@ index 000000000000..8afb1f42a8c5
 + * GNU General Public License for more details.
 + *
 + */
-+#ifndef HISI_FB_PANEL_H
-+#define HISI_FB_PANEL_H
++#ifndef _CMD_LIST_UTILS_H_
++#define _CMD_LIST_UTILS_H_
++#include "hisi_overlay_utils_hi3660.h"
 +
-+#include "hisi_fb_def.h"
-+#include "hisi_mipi_dsi.h"
-+#include "hisi_dss.h"
++#define HISI_DSS_CMDLIST_DATA_MAX	(3)
++#define HISI_DSS_CMDLIST_NODE_MAX	(32)
++#define HISI_DSS_CMDLIST_BLOCK_MAX	(32)
 +
-+/* panel type list */
-+#define PANEL_NO	BIT(0)	/* No Panel */
-+#define PANEL_LCDC	BIT(1)	/* internal LCDC type */
-+#define PANEL_HDMI	BIT(2)	/* HDMI TV */
-+#define PANEL_MIPI_VIDEO	BIT(3)	/* MIPI */
-+#define PANEL_MIPI_CMD	BIT(4)	/* MIPI */
-+#define PANEL_DUAL_MIPI_VIDEO	BIT(5)	/* DUAL MIPI */
-+#define PANEL_DUAL_MIPI_CMD	BIT(6)	/* DUAL MIPI */
-+#define PANEL_EDP	BIT(7)	/* LVDS */
-+#define PANEL_MIPI2RGB	BIT(8)	/* MIPI to RGB */
-+#define PANEL_RGB2MIPI	BIT(9)	/* RGB to MIPI */
-+#define PANEL_WRITEBACK	BIT(11)	/* Wifi display */
++#define HISI_DSS_SUPPORT_DPP_MODULE_BIT(module) \
++	(BIT(module) & HISI_DSS_DPP_MAX_SUPPORT_BIT)
 +
-+/* dts initial */
-+#define DTS_FB_RESOURCE_INIT_READY	BIT(0)
-+#define DTS_PWM_READY	BIT(1)
-+
-+#define DTS_SPI_READY	BIT(3)
-+#define DTS_PANEL_PRIMARY_READY	BIT(4)
-+#define DTS_PANEL_EXTERNAL_READY	BIT(5)
-+#define DTS_PANEL_OFFLINECOMPOSER_READY	BIT(6)
-+#define DTS_PANEL_WRITEBACK_READY	BIT(7)
-+
-+/* device name */
-+#define DEV_NAME_DSS_DPE		"dss_dpe"
-+#define DEV_NAME_SPI			"spi_dev0"
-+#define DEV_NAME_HDMI			"hdmi"
-+#define DEV_NAME_EDP			"edp"
-+#define DEV_NAME_MIPI2RGB		"mipi2rgb"
-+#define DEV_NAME_RGB2MIPI		"rgb2mipi"
-+#define DEV_NAME_MIPIDSI		"mipi_dsi"
-+#define DEV_NAME_FB				"hisi_fb"
-+#define DEV_NAME_PWM			"hisi_pwm"
-+#define DEV_NAME_BLPWM			"hisi_blpwm"
-+#define DEV_NAME_LCD_BKL		"lcd_backlight0"
-+
-+/* vcc name */
-+#define REGULATOR_PDP_NAME	"regulator_dsssubsys"
-+#define REGULATOR_MMBUF	"regulator_mmbuf"
-+
-+/* irq name */
-+#define IRQ_PDP_NAME	"irq_pdp"
-+#define IRQ_SDP_NAME	"irq_sdp"
-+#define IRQ_ADP_NAME	"irq_adp"
-+#define IRQ_DSI0_NAME	"irq_dsi0"
-+#define IRQ_DSI1_NAME	"irq_dsi1"
-+
-+/* dts compatible */
-+#define DTS_COMP_FB_NAME	"hisilicon,hisifb"
-+#define DTS_COMP_PWM_NAME	"hisilicon,hisipwm"
-+#define DTS_COMP_BLPWM_NAME	"hisilicon,hisiblpwm"
-+#define DTS_PATH_LOGO_BUFFER	"/reserved-memory/logo-buffer"
-+
-+/* lcd resource name */
-+#define LCD_BL_TYPE_NAME	"lcd-bl-type"
-+#define FPGA_FLAG_NAME "fpga_flag"
-+#define LCD_DISPLAY_TYPE_NAME	"lcd-display-type"
-+#define LCD_IFBC_TYPE_NAME	"lcd-ifbc-type"
-+
-+/* backlight type */
-+#define BL_SET_BY_NONE	BIT(0)
-+#define BL_SET_BY_PWM	BIT(1)
-+#define BL_SET_BY_BLPWM	BIT(2)
-+#define BL_SET_BY_MIPI	BIT(3)
-+#define BL_SET_BY_SH_BLPWM	BIT(4)
-+
-+/* supported display effect type */
-+#define COMFORM_MODE			BIT(0)
-+#define ACM_COLOR_ENHANCE_MODE	BIT(1)
-+#define IC_COLOR_ENHANCE_MODE	BIT(2)
-+#define CINEMA_MODE				BIT(3)
-+#define VR_MODE                     BIT(4)
-+#define LED_RG_COLOR_TEMP_MODE	BIT(16)
-+#define GAMMA_MAP    BIT(19)
-+
-+#define LCD_BL_IC_NAME_MAX	(50)
-+#define DEV_DSS_VOLTAGE_ID (20)
-+
-+enum BLPWM_PRECISION_TYPE {
-+	BLPWM_PRECISION_DEFAULT_TYPE = 0,
-+	BLPWM_PRECISION_10000_TYPE = 1,
-+	BLPWM_PRECISION_2048_TYPE = 2,
++enum dpp_module_idx {
++	DPP_MODULE_POST_SCF = 0,
++	DPP_MODULE_DBUF,
++	DPP_MODULE_SBL,
++	DPP_MODULE_ACM,
++	DPP_MODULE_ACE,
++	DPP_MODULE_LCP_IGM,
++	DPP_MODULE_LCP_GMP,
++	DPP_MODULE_LCP_XCC,
++	DPP_MODULE_GAMA,
++	DPP_MODULE_DITHER,
++	DPP_MODULE_IFBC,
++	DPP_MODULE_MAX
 +};
 +
-+enum LCD_INIT_STEP {
-+	LCD_INIT_NONE = 0,
-+	LCD_INIT_POWER_ON,
-+	LCD_INIT_LDI_SEND_SEQUENCE,
-+	LCD_INIT_MIPI_LP_SEND_SEQUENCE,
-+	LCD_INIT_MIPI_HS_SEND_SEQUENCE,
++enum wb_type {
++	WB_TYPE_WCH0,
++	WB_TYPE_WCH1,
++	WB_TYPE_WCH2,
++	WB_TYPE_WCH0_WCH1,
++
++	WB_TYPE_MAX,
 +};
 +
-+enum LCD_UNINIT_STEP {
-+	LCD_UNINIT_NONE = 0,
-+	LCD_UNINIT_POWER_OFF,
-+	LCD_UNINIT_LDI_SEND_SEQUENCE,
-+	LCD_UNINIT_MIPI_LP_SEND_SEQUENCE,
-+	LCD_UNINIT_MIPI_HS_SEND_SEQUENCE,
++enum dss_cmdlist_idx {
++	DSS_CMDLIST_NONE = -1,
++	DSS_CMDLIST_D2 = 0,
++	DSS_CMDLIST_D3,
++	DSS_CMDLIST_V0,
++	DSS_CMDLIST_G0,
++	DSS_CMDLIST_V1,
++	DSS_CMDLIST_G1,
++	DSS_CMDLIST_D0,
++	DSS_CMDLIST_D1,
++
++	DSS_CMDLIST_W0,
++	DSS_CMDLIST_W1,
++
++	DSS_CMDLIST_OV0,
++	DSS_CMDLIST_OV1,
++	DSS_CMDLIST_OV2,
++	DSS_CMDLIST_OV3,
++
++	DSS_CMDLIST_V2,
++	DSS_CMDLIST_W2,
++	DSS_CMDLIST_MAX,
 +};
 +
-+enum LCD_ESD_RECOVER_STEP {
-+	LCD_ESD_RECOVER_NONE = 0,
-+	LCD_ESD_RECOVER_POWER_OFF,
-+	LCD_ESD_RECOVER_POWER_ON,
++typedef union {
++	struct {
++		uint32_t exec:1;
++		uint32_t last:1;
++		uint32_t nop:1;
++		uint32_t interrupt:1;
++		uint32_t pending:1;
++		uint32_t id:10;
++		uint32_t event_list:6;
++		uint32_t qos:1;
++		uint32_t task_end:1;
++		uint32_t reserved:1;
++		uint32_t valid_flag:8;
++	} bits;
++	uint32_t ul32;
++} cmd_flag_t;
++
++typedef union {
++	struct {
++		uint32_t count:14;
++		uint32_t reserved:18;
++	} bits;
++	uint32_t ul32;
++} total_items_t;
++
++typedef union {
++	struct {
++		uint32_t add0:18;
++		uint32_t add1:6;
++		uint32_t add2:6;
++		uint32_t cnt:2;
++	} bits;
++	uint32_t ul32;
++} reg_addr_t;
++
++typedef struct cmd_item {
++	reg_addr_t reg_addr;
++	uint32_t data0;
++	uint32_t data1;
++	uint32_t data2;
++} cmd_item_t;
++
++typedef struct cmd_header {
++	cmd_flag_t flag;
++	uint32_t next_list;
++	total_items_t total_items;
++	uint32_t list_addr;
++} cmd_header_t;
++
++enum dss_cmdlist_node_valid {
++	CMDLIST_NODE_INVALID = 0x0,
++	CMDLIST_NODE_VALID = 0xA5,
 +};
 +
-+enum LCD_REFRESH_DIRECTION {
-+	LCD_REFRESH_LEFT_TOP = 0,
-+	LCD_REFRESH_RIGHT_TOP,
-+	LCD_REFRESH_LEFT_BOTTOM,
-+	LCD_REFRESH_RIGHT_BOTTOM,
++enum dss_cmdlist_node_type {
++	CMDLIST_NODE_NONE = 0x0,
++	CMDLIST_NODE_NOP = 0x1,
++	CMDLIST_NODE_FRAME = 0x2,
 +};
 +
-+enum IFBC_TYPE {
-+	IFBC_TYPE_NONE = 0,
-+	IFBC_TYPE_ORISE2X,
-+	IFBC_TYPE_ORISE3X,
-+	IFBC_TYPE_HIMAX2X,
-+	IFBC_TYPE_RSP2X,
-+	IFBC_TYPE_RSP3X,
-+	IFBC_TYPE_VESA2X_SINGLE,
-+	IFBC_TYPE_VESA3X_SINGLE,
-+	IFBC_TYPE_VESA2X_DUAL,
-+	IFBC_TYPE_VESA3X_DUAL,
-+
-+	IFBC_TYPE_MAX
++enum dss_cmdlist_status {
++	e_status_idle = 0x0,
++	e_status_wait = 0x1,
++	e_status_other,
 +};
 +
-+enum IFBC_COMP_MODE {
-+	IFBC_COMP_MODE_0 = 0,
-+	IFBC_COMP_MODE_1,
-+	IFBC_COMP_MODE_2,
-+	IFBC_COMP_MODE_3,
-+	IFBC_COMP_MODE_4,
-+	IFBC_COMP_MODE_5,
-+	IFBC_COMP_MODE_6,
-+};
-+
-+enum XRES_DIV {
-+	XRES_DIV_1 = 1,
-+	XRES_DIV_2,
-+	XRES_DIV_3,
-+	XRES_DIV_4,
-+	XRES_DIV_5,
-+	XRES_DIV_6,
-+};
-+
-+enum YRES_DIV {
-+	YRES_DIV_1 = 1,
-+	YRES_DIV_2,
-+	YRES_DIV_3,
-+	YRES_DIV_4,
-+	YRES_DIV_5,
-+	YRES_DIV_6,
-+};
-+
-+enum PXL0_DIVCFG {
-+	PXL0_DIVCFG_0 = 0,
-+	PXL0_DIVCFG_1,
-+	PXL0_DIVCFG_2,
-+	PXL0_DIVCFG_3,
-+	PXL0_DIVCFG_4,
-+	PXL0_DIVCFG_5,
-+	PXL0_DIVCFG_6,
-+	PXL0_DIVCFG_7,
-+};
-+
-+enum PXL0_DIV2_GT_EN {
-+	PXL0_DIV2_GT_EN_CLOSE = 0,
-+	PXL0_DIV2_GT_EN_OPEN,
-+};
-+
-+enum PXL0_DIV4_GT_EN {
-+	PXL0_DIV4_GT_EN_CLOSE = 0,
-+	PXL0_DIV4_GT_EN_OPEN,
-+};
-+
-+enum PXL0_DSI_GT_EN {
-+	PXL0_DSI_GT_EN_0 = 0,
-+	PXL0_DSI_GT_EN_1,
-+	PXL0_DSI_GT_EN_2,
-+	PXL0_DSI_GT_EN_3,
-+};
-+
-+enum VSYNC_CTRL_TYPE {
-+	VSYNC_CTRL_NONE = 0x0,
-+	VSYNC_CTRL_ISR_OFF = BIT(0),
-+	VSYNC_CTRL_MIPI_ULPS = BIT(1),
-+	VSYNC_CTRL_CLK_OFF = BIT(2),
-+	VSYNC_CTRL_VCC_OFF = BIT(3),
-+};
-+
-+enum PERI_VOLTAGE_VALUE {
-+	PERI_VOLTAGE_07V = 0x0,
-+	PERI_VOLTAGE_08V = 0x2,
-+};
-+
-+#define MIPI_DSI_BIT_CLK_STR1	"00001"
-+#define MIPI_DSI_BIT_CLK_STR2	"00010"
-+#define MIPI_DSI_BIT_CLK_STR3	"00100"
-+#define MIPI_DSI_BIT_CLK_STR4	"01000"
-+#define MIPI_DSI_BIT_CLK_STR5	"10000"
-+
-+/* resource desc */
-+struct resource_desc {
-+	uint32_t flag;
-+	char *name;
-+	uint32_t *value;
-+};
-+
-+/* dtype for vcc */
-+enum {
-+	DTYPE_VCC_GET,
-+	DTYPE_VCC_PUT,
-+	DTYPE_VCC_ENABLE,
-+	DTYPE_VCC_DISABLE,
-+	DTYPE_VCC_SET_VOLTAGE,
-+};
-+
-+/* vcc desc */
-+struct vcc_desc {
-+	int dtype;
-+	char *id;
-+	struct regulator **regulator;
-+	int min_uV;
-+	int max_uV;
-+	int waittype;
-+	int wait;
-+};
-+
-+/* pinctrl operation */
-+enum {
-+	DTYPE_PINCTRL_GET,
-+	DTYPE_PINCTRL_STATE_GET,
-+	DTYPE_PINCTRL_SET,
-+	DTYPE_PINCTRL_PUT,
-+};
-+
-+/* pinctrl state */
-+enum {
-+	DTYPE_PINCTRL_STATE_DEFAULT,
-+	DTYPE_PINCTRL_STATE_IDLE,
-+};
-+
-+/* pinctrl data */
-+struct pinctrl_data {
-+	struct pinctrl *p;
-+	struct pinctrl_state *pinctrl_def;
-+	struct pinctrl_state *pinctrl_idle;
-+};
-+struct pinctrl_cmd_desc {
-+	int dtype;
-+	struct pinctrl_data *pctrl_data;
-+	int mode;
-+};
-+
-+/* dtype for gpio */
-+enum {
-+	DTYPE_GPIO_REQUEST,
-+	DTYPE_GPIO_FREE,
-+	DTYPE_GPIO_INPUT,
-+	DTYPE_GPIO_OUTPUT,
-+};
-+
-+/* gpio desc */
-+struct gpio_desc {
-+	int dtype;
-+	int waittype;
-+	int wait;
-+	char *label;
-+	uint32_t *gpio;
-+	int value;
-+};
-+
-+struct spi_cmd_desc {
-+	int reg_len;
-+	char *reg;
-+	int val_len;
-+	char *val;
-+	int waittype;
-+	int wait;
-+};
-+
-+enum {
-+	IFBC_ORISE_CTL_8LINE = 0,
-+	IFBC_ORISE_CTL_16LINE,
-+	IFBC_ORISE_CTL_32LINE,
-+	IFBC_ORISE_CTL_FRAME,
-+};
-+
-+typedef struct mipi_ifbc_division {
-+	uint32_t xres_div;
-+	uint32_t yres_div;
-+	uint32_t comp_mode;
-+	uint32_t pxl0_div2_gt_en;
-+	uint32_t pxl0_div4_gt_en;
-+	uint32_t pxl0_divxcfg;
-+	uint32_t pxl0_dsi_gt_en;
-+} mipi_ifbc_division_t;
-+
-+struct ldi_panel_info {
-+	uint32_t h_back_porch;
-+	uint32_t h_front_porch;
-+	uint32_t h_pulse_width;
-+
-+	/*
-+	 ** note: vbp > 8 if used overlay compose,
-+	 ** also lcd vbp > 8 in lcd power on sequence
-+	 */
-+	uint32_t v_back_porch;
-+	uint32_t v_front_porch;
-+	uint32_t v_pulse_width;
-+
-+	uint8_t hsync_plr;
-+	uint8_t vsync_plr;
-+	uint8_t pixelclk_plr;
-+	uint8_t data_en_plr;
-+
-+	/* for cabc */
-+	uint8_t dpi0_overlap_size;
-+	uint8_t dpi1_overlap_size;
-+};
-+
-+/* DSI PHY configuration */
-+struct mipi_dsi_phy_ctrl {
-+	uint64_t lane_byte_clk;
-+	uint32_t clk_division;
-+
-+	uint32_t clk_lane_lp2hs_time;
-+	uint32_t clk_lane_hs2lp_time;
-+	uint32_t data_lane_lp2hs_time;
-+	uint32_t data_lane_hs2lp_time;
-+	uint32_t clk2data_delay;
-+	uint32_t data2clk_delay;
-+
-+	uint32_t clk_pre_delay;
-+	uint32_t clk_post_delay;
-+	uint32_t clk_t_lpx;
-+	uint32_t clk_t_hs_prepare;
-+	uint32_t clk_t_hs_zero;
-+	uint32_t clk_t_hs_trial;
-+	uint32_t clk_t_wakeup;
-+	uint32_t data_pre_delay;
-+	uint32_t data_post_delay;
-+	uint32_t data_t_lpx;
-+	uint32_t data_t_hs_prepare;
-+	uint32_t data_t_hs_zero;
-+	uint32_t data_t_hs_trial;
-+	uint32_t data_t_ta_go;
-+	uint32_t data_t_ta_get;
-+	uint32_t data_t_wakeup;
-+
-+	uint32_t phy_stop_wait_time;
-+
-+	uint32_t rg_vrefsel_vcm;
-+	uint32_t rg_hstx_ckg_sel;
-+	uint32_t rg_pll_fbd_div5f;
-+	uint32_t rg_pll_fbd_div1f;
-+	uint32_t rg_pll_fbd_2p;
-+	uint32_t rg_pll_enbwt;
-+	uint32_t rg_pll_fbd_p;
-+	uint32_t rg_pll_fbd_s;
-+	uint32_t rg_pll_pre_div1p;
-+	uint32_t rg_pll_pre_p;
-+	uint32_t rg_pll_vco_750m;
-+	uint32_t rg_pll_lpf_rs;
-+	uint32_t rg_pll_lpf_cs;
-+	uint32_t rg_pll_enswc;
-+	uint32_t rg_pll_chp;
-+
-+
-+	uint32_t pll_register_override;
-+	uint32_t pll_power_down;
-+	uint32_t rg_band_sel;
-+	uint32_t rg_phase_gen_en;
-+	uint32_t reload_sel;
-+	uint32_t rg_pll_cp_p;
-+	uint32_t rg_pll_refsel;
-+	uint32_t rg_pll_cp;
-+	uint32_t load_command;
-+};
-+
-+struct mipi_panel_info {
-+	uint8_t dsi_version;
-+	uint8_t vc;
-+	uint8_t lane_nums;
-+	uint8_t lane_nums_select_support;
-+	uint8_t color_mode;
-+	uint32_t dsi_bit_clk;	/* clock lane(p/n) */
-+	uint32_t burst_mode;
-+	uint32_t max_tx_esc_clk;
-+	uint8_t non_continue_en;
-+
-+	uint32_t dsi_bit_clk_val1;
-+	uint32_t dsi_bit_clk_val2;
-+	uint32_t dsi_bit_clk_val3;
-+	uint32_t dsi_bit_clk_val4;
-+	uint32_t dsi_bit_clk_val5;
-+	uint32_t dsi_bit_clk_upt;
-+	/*uint32_t dsi_pclk_rate; */
-+
-+	uint32_t hs_wr_to_time;
-+
-+	uint32_t clk_post_adjust;
-+	uint32_t clk_pre_adjust;
-+	uint32_t clk_pre_delay_adjust;
-+	uint32_t clk_t_hs_exit_adjust;
-+	uint32_t clk_t_hs_trial_adjust;
-+	uint32_t clk_t_hs_prepare_adjust;
-+	int clk_t_lpx_adjust;
-+	uint32_t clk_t_hs_zero_adjust;
-+	uint32_t data_post_delay_adjust;
-+	int data_t_lpx_adjust;
-+	uint32_t data_t_hs_prepare_adjust;
-+	uint32_t data_t_hs_zero_adjust;
-+	uint32_t data_t_hs_trial_adjust;
-+	uint32_t rg_vrefsel_vcm_adjust;
-+
-+	uint32_t rg_vrefsel_vcm_clk_adjust;
-+	uint32_t rg_vrefsel_vcm_data_adjust;
-+};
-+
-+struct sbl_panel_info {
-+	uint32_t strength_limit;
-+	uint32_t calibration_a;
-+	uint32_t calibration_b;
-+	uint32_t calibration_c;
-+	uint32_t calibration_d;
-+	uint32_t t_filter_control;
-+	uint32_t backlight_min;
-+	uint32_t backlight_max;
-+	uint32_t backlight_scale;
-+	uint32_t ambient_light_min;
-+	uint32_t filter_a;
-+	uint32_t filter_b;
-+	uint32_t logo_left;
-+	uint32_t logo_top;
-+	uint32_t variance_intensity_space;
-+	uint32_t slope_max;
-+	uint32_t slope_min;
-+};
-+
-+typedef struct dss_sharpness_bit {
-+	uint32_t sharp_en;
-+	uint32_t sharp_mode;
-+
-+	uint32_t flt0_c0;
-+	uint32_t flt0_c1;
-+	uint32_t flt0_c2;
-+
-+	uint32_t flt1_c0;
-+	uint32_t flt1_c1;
-+	uint32_t flt1_c2;
-+
-+	uint32_t flt2_c0;
-+	uint32_t flt2_c1;
-+	uint32_t flt2_c2;
-+
-+	uint32_t ungain;
-+	uint32_t ovgain;
-+
-+	uint32_t lineamt1;
-+	uint32_t linedeten;
-+	uint32_t linethd2;
-+	uint32_t linethd1;
-+
-+	uint32_t sharpthd1;
-+	uint32_t sharpthd1mul;
-+	uint32_t sharpamt1;
-+
-+	uint32_t edgethd1;
-+	uint32_t edgethd1mul;
-+	uint32_t edgeamt1;
-+} sharp2d_t;
-+
-+struct dsc_panel_info {
-+
-+	uint32_t bits_per_pixel;
-+	uint32_t block_pred_enable;
-+	uint32_t linebuf_depth;
-+	uint32_t bits_per_component;
-+	uint32_t slice_width;
-+	uint32_t slice_height;
-+	uint32_t initial_xmit_delay;
-+	uint32_t first_line_bpg_offset;
-+	uint32_t mux_word_size;
-+	uint32_t initial_offset;
-+	uint32_t flatness_max_qp;
-+	uint32_t flatness_min_qp;
-+	uint32_t rc_edge_factor;
-+	uint32_t rc_model_size;
-+	uint32_t rc_tgt_offset_lo;
-+	uint32_t rc_tgt_offset_hi;
-+	uint32_t rc_quant_incr_limit1;
-+	uint32_t rc_quant_incr_limit0;
-+	uint32_t rc_buf_thresh0;
-+	uint32_t rc_buf_thresh1;
-+	uint32_t rc_buf_thresh2;
-+	uint32_t rc_buf_thresh3;
-+	uint32_t rc_buf_thresh4;
-+	uint32_t rc_buf_thresh5;
-+	uint32_t rc_buf_thresh6;
-+	uint32_t rc_buf_thresh7;
-+	uint32_t rc_buf_thresh8;
-+	uint32_t rc_buf_thresh9;
-+	uint32_t rc_buf_thresh10;
-+	uint32_t rc_buf_thresh11;
-+	uint32_t rc_buf_thresh12;
-+	uint32_t rc_buf_thresh13;
-+	uint32_t range_min_qp0;
-+	uint32_t range_max_qp0;
-+	uint32_t range_bpg_offset0;
-+	uint32_t range_min_qp1;
-+	uint32_t range_max_qp1;
-+	uint32_t range_bpg_offset1;
-+	uint32_t range_min_qp2;
-+	uint32_t range_max_qp2;
-+	uint32_t range_bpg_offset2;
-+	uint32_t range_min_qp3;
-+	uint32_t range_max_qp3;
-+	uint32_t range_bpg_offset3;
-+	uint32_t range_min_qp4;
-+	uint32_t range_max_qp4;
-+	uint32_t range_bpg_offset4;
-+	uint32_t range_min_qp5;
-+	uint32_t range_max_qp5;
-+	uint32_t range_bpg_offset5;
-+	uint32_t range_min_qp6;
-+	uint32_t range_max_qp6;
-+	uint32_t range_bpg_offset6;
-+	uint32_t range_min_qp7;
-+	uint32_t range_max_qp7;
-+	uint32_t range_bpg_offset7;
-+	uint32_t range_min_qp8;
-+	uint32_t range_max_qp8;
-+	uint32_t range_bpg_offset8;
-+	uint32_t range_min_qp9;
-+	uint32_t range_max_qp9;
-+	uint32_t range_bpg_offset9;
-+	uint32_t range_min_qp10;
-+	uint32_t range_max_qp10;
-+	uint32_t range_bpg_offset10;
-+	uint32_t range_min_qp11;
-+	uint32_t range_max_qp11;
-+	uint32_t range_bpg_offset11;
-+	uint32_t range_min_qp12;
-+	uint32_t range_max_qp12;
-+	uint32_t range_bpg_offset12;
-+	uint32_t range_min_qp13;
-+	uint32_t range_max_qp13;
-+	uint32_t range_bpg_offset13;
-+	uint32_t range_min_qp14;
-+	uint32_t range_max_qp14;
-+	uint32_t range_bpg_offset14;
-+};
-+
-+struct hisi_panel_info {
-+	uint32_t type;
-+	uint32_t xres;
-+	uint32_t yres;
-+	uint32_t width;
-+	uint32_t height;
-+	uint32_t bpp;
-+	uint32_t fps;
-+	uint32_t fps_updt;
-+	uint32_t orientation;
-+	uint32_t bgr_fmt;
-+	uint32_t bl_set_type;
-+	uint32_t bl_min;
-+	uint32_t bl_max;
-+	uint32_t bl_default;
-+	uint32_t blpwm_precision_type;
-+	uint32_t blpwm_out_div_value;
-+	uint32_t blpwm_input_ena;
-+	uint32_t blpwm_in_num;
-+	uint32_t blpwm_input_precision;
-+	uint32_t bl_ic_ctrl_mode;
-+	uint64_t pxl_clk_rate;
-+	uint64_t pxl_clk_rate_adjust;
-+	uint32_t pxl_clk_rate_div;
-+	uint32_t vsync_ctrl_type;
-+	uint8_t fake_hdmi;
-+	uint8_t reserved[3];
-+
-+	uint32_t ifbc_type;
-+	uint32_t ifbc_cmp_dat_rev0;
-+	uint32_t ifbc_cmp_dat_rev1;
-+	uint32_t ifbc_auto_sel;
-+	uint32_t ifbc_orise_ctl;
-+	uint32_t ifbc_orise_ctr;
-+
-+	uint8_t lcd_init_step;
-+	uint8_t lcd_uninit_step;
-+	uint8_t lcd_uninit_step_support;
-+	uint8_t lcd_refresh_direction_ctrl;
-+	uint8_t lcd_adjust_support;
-+
-+	uint8_t sbl_support;
-+	uint8_t color_temperature_support;
-+	uint8_t color_temp_rectify_support;
-+	uint32_t color_temp_rectify_R;
-+	uint32_t color_temp_rectify_G;
-+	uint32_t color_temp_rectify_B;
-+	uint8_t comform_mode_support;
-+	uint8_t cinema_mode_support;
-+	uint8_t frc_enable;
-+	uint8_t esd_enable;
-+	uint8_t esd_skip_mipi_check;
-+	uint8_t esd_recover_step;
-+	uint8_t dirty_region_updt_support;
-+	uint8_t dsi_bit_clk_upt_support;
-+	uint8_t fps_updt_support;
-+	uint8_t panel_effect_support;
-+
-+	uint8_t prefix_ce_support;
-+	uint8_t prefix_sharpness1D_support;
-+	uint8_t prefix_sharpness2D_support;
-+	sharp2d_t *sharp2d_table;
-+
-+	uint8_t gmp_support;
-+	uint8_t gamma_support;
-+	uint8_t gamma_type;
-+	uint8_t xcc_support;
-+	uint8_t acm_support;
-+	uint8_t acm_ce_support;
-+	uint8_t hiace_support;
-+	uint8_t dither_support;
-+	uint8_t arsr1p_sharpness_support;
-+	uint8_t post_scf_support;
-+	uint8_t default_gmp_off;
-+
-+	uint32_t acm_valid_num;
-+	uint32_t r0_hh;
-+	uint32_t r0_lh;
-+	uint32_t r1_hh;
-+	uint32_t r1_lh;
-+	uint32_t r2_hh;
-+	uint32_t r2_lh;
-+	uint32_t r3_hh;
-+	uint32_t r3_lh;
-+	uint32_t r4_hh;
-+	uint32_t r4_lh;
-+	uint32_t r5_hh;
-+	uint32_t r5_lh;
-+	uint32_t r6_hh;
-+	uint32_t r6_lh;
-+
-+	uint32_t cinema_acm_valid_num;
-+	uint32_t cinema_r0_hh;
-+	uint32_t cinema_r0_lh;
-+	uint32_t cinema_r1_hh;
-+	uint32_t cinema_r1_lh;
-+	uint32_t cinema_r2_hh;
-+	uint32_t cinema_r2_lh;
-+	uint32_t cinema_r3_hh;
-+	uint32_t cinema_r3_lh;
-+	uint32_t cinema_r4_hh;
-+	uint32_t cinema_r4_lh;
-+	uint32_t cinema_r5_hh;
-+	uint32_t cinema_r5_lh;
-+	uint32_t cinema_r6_hh;
-+	uint32_t cinema_r6_lh;
-+
-+	uint32_t *acm_lut_hue_table;
-+	uint32_t acm_lut_hue_table_len;
-+	uint32_t *acm_lut_value_table;
-+	uint32_t acm_lut_value_table_len;
-+	uint32_t *acm_lut_sata_table;
-+	uint32_t acm_lut_sata_table_len;
-+	uint32_t *acm_lut_satr_table;
-+	uint32_t acm_lut_satr_table_len;
-+
-+	uint32_t *cinema_acm_lut_hue_table;
-+	uint32_t cinema_acm_lut_hue_table_len;
-+	uint32_t *cinema_acm_lut_value_table;
-+	uint32_t cinema_acm_lut_value_table_len;
-+	uint32_t *cinema_acm_lut_sata_table;
-+	uint32_t cinema_acm_lut_sata_table_len;
-+	uint32_t *cinema_acm_lut_satr_table;
-+	uint32_t cinema_acm_lut_satr_table_len;
-+
-+	uint32_t *acm_lut_satr0_table;
-+	uint32_t acm_lut_satr0_table_len;
-+	uint32_t *acm_lut_satr1_table;
-+	uint32_t acm_lut_satr1_table_len;
-+	uint32_t *acm_lut_satr2_table;
-+	uint32_t acm_lut_satr2_table_len;
-+	uint32_t *acm_lut_satr3_table;
-+	uint32_t acm_lut_satr3_table_len;
-+	uint32_t *acm_lut_satr4_table;
-+	uint32_t acm_lut_satr4_table_len;
-+	uint32_t *acm_lut_satr5_table;
-+	uint32_t acm_lut_satr5_table_len;
-+	uint32_t *acm_lut_satr6_table;
-+	uint32_t acm_lut_satr6_table_len;
-+	uint32_t *acm_lut_satr7_table;
-+	uint32_t acm_lut_satr7_table_len;
-+
-+	uint32_t *cinema_acm_lut_satr0_table;
-+	uint32_t *cinema_acm_lut_satr1_table;
-+	uint32_t *cinema_acm_lut_satr2_table;
-+	uint32_t *cinema_acm_lut_satr3_table;
-+	uint32_t *cinema_acm_lut_satr4_table;
-+	uint32_t *cinema_acm_lut_satr5_table;
-+	uint32_t *cinema_acm_lut_satr6_table;
-+	uint32_t *cinema_acm_lut_satr7_table;
-+
-+	uint32_t *gamma_lut_table_R;
-+	uint32_t *gamma_lut_table_G;
-+	uint32_t *gamma_lut_table_B;
-+	uint32_t gamma_lut_table_len;
-+	uint32_t *cinema_gamma_lut_table_R;
-+	uint32_t *cinema_gamma_lut_table_G;
-+	uint32_t *cinema_gamma_lut_table_B;
-+	uint32_t cinema_gamma_lut_table_len;
-+	uint32_t *igm_lut_table_R;
-+	uint32_t *igm_lut_table_G;
-+	uint32_t *igm_lut_table_B;
-+	uint32_t igm_lut_table_len;
-+	uint32_t *gmp_lut_table_low32bit;
-+	uint32_t *gmp_lut_table_high4bit;
-+	uint32_t gmp_lut_table_len;
-+	uint32_t *xcc_table;
-+	uint32_t xcc_table_len;
-+
-+	uint32_t *pgainlsc0;
-+	uint32_t *pgainlsc1;
-+	uint32_t pgainlsc_len;
-+	uint32_t *hcoeff0y;
-+	uint32_t *hcoeff1y;
-+	uint32_t *hcoeff2y;
-+	uint32_t *hcoeff3y;
-+	uint32_t *hcoeff4y;
-+	uint32_t *hcoeff5y;
-+	uint32_t hcoeffy_len;
-+	uint32_t *vcoeff0y;
-+	uint32_t *vcoeff1y;
-+	uint32_t *vcoeff2y;
-+	uint32_t *vcoeff3y;
-+	uint32_t *vcoeff4y;
-+	uint32_t *vcoeff5y;
-+	uint32_t vcoeffy_len;
-+	uint32_t *hcoeff0uv;
-+	uint32_t *hcoeff1uv;
-+	uint32_t *hcoeff2uv;
-+	uint32_t *hcoeff3uv;
-+	uint32_t hcoeffuv_len;
-+	uint32_t *vcoeff0uv;
-+	uint32_t *vcoeff1uv;
-+	uint32_t *vcoeff2uv;
-+	uint32_t *vcoeff3uv;
-+	uint32_t vcoeffuv_len;
-+
-+	struct spi_device *spi_dev;
-+	struct ldi_panel_info ldi;
-+	struct ldi_panel_info ldi_updt;
-+	struct ldi_panel_info ldi_lfps;
-+	struct mipi_panel_info mipi;
-+	struct sbl_panel_info smart_bl;
-+	struct dsc_panel_info vesa_dsc;
-+	struct lcd_dirty_region_info dirty_region_info;
-+
-+	struct mipi_dsi_phy_ctrl dsi_phy_ctrl;
-+
-+	struct hiace_alg_parameter hiace_param;
-+	struct ce_algorithm_parameter ce_alg_param;
-+};
-+
-+struct hisi_fb_data_type;
-+struct hisi_fb_panel_data {
-+	struct hisi_panel_info *panel_info;
-+
-+	/* function entry chain */
-+	int (*on) (struct platform_device *pdev);
-+	int (*off) (struct platform_device *pdev);
-+	int (*remove) (struct platform_device *pdev);
-+	int (*set_backlight) (struct platform_device *pdev, uint32_t bl_level);
-+	int (*vsync_ctrl) (struct platform_device *pdev, int enable);
-+
-+	struct platform_device *next;
-+};
-+
-+/*******************************************************************************
++/*
++ ** for normal node,all variable should be filled.
++ ** for NOP node, just the list_header,header_ion_handle, list_node, node_flag should be filled.
++ ** node_type must be CMDLIST_NODE_NOP when it is NOP node.
++ ** And item_ion_handle in NOP node should be NULL.
++ */
++typedef struct dss_cmdlist_node {
++	struct list_head list_node;
++
++	struct ion_handle *header_ion_handle;
++	ion_phys_addr_t header_phys;
++	cmd_header_t *list_header;
++
++	struct ion_handle *item_ion_handle;
++	ion_phys_addr_t item_phys;
++	cmd_item_t *list_item;
++
++	uint32_t item_index;
++	int item_flag;
++	uint32_t node_type;
++	int is_used;
++	int reserved;
++} dss_cmdlist_node_t;
++
++typedef struct dss_cmdlist_heads {
++	struct list_head cmdlist_head;
++
++	dss_cmdlist_node_t *cmdlist_nodes[HISI_DSS_CMDLIST_NODE_MAX];
++} dss_cmdlist_heads_t;
++
++typedef struct dss_cmdlist_data {
++	dss_cmdlist_heads_t *cmdlist_heads[HISI_DSS_CMDLIST_MAX];
++	struct list_head cmdlist_head_temp[HISI_DSS_CMDLIST_MAX];
++	dss_cmdlist_node_t
++	    *cmdlist_nodes_temp[HISI_DSS_CMDLIST_MAX]
++	    [HISI_DSS_CMDLIST_NODE_MAX];
++} dss_cmdlist_data_t;
++
++typedef struct dss_cmdlist_info {
++	struct semaphore cmdlist_wb_common_sem;
++	struct semaphore cmdlist_wb_sem[WB_TYPE_MAX];
++	wait_queue_head_t cmdlist_wb_wq[WB_TYPE_MAX];
++	uint32_t cmdlist_wb_done[WB_TYPE_MAX];
++	uint32_t cmdlist_wb_flag[WB_TYPE_MAX];
++} dss_cmdlist_info_t;
++
++typedef struct dss_copybit_info {
++	struct semaphore copybit_sem;
++	wait_queue_head_t copybit_wq;
++	uint32_t copybit_flag;
++	uint32_t copybit_done;
++} dss_copybit_info_t;
++
++typedef struct dss_wb_info {
++	uint32_t to_be_continued;
++	uint32_t cmdlist_idxs;
++	uint32_t wb_compose_type;
++	uint32_t mctl_idx;
++} dss_wb_info_t;
++
++extern dss_cmdlist_data_t *g_cmdlist_data;
++
++/******************************************************************************
 + ** FUNCTIONS PROTOTYPES
 + */
-+#define MIPI_DPHY_NUM	(2)
++void hisi_cmdlist_set_reg(struct hisi_fb_data_type *hisifd,
++			  char __iomem *addr, uint32_t value, uint8_t bw,
++			  uint8_t bs);
++void hisi_cmdlist_flush_cache(struct hisi_fb_data_type *hisifd,
++			      struct ion_client *ion_client,
++			      uint32_t cmdlist_idxs);
 +
-+extern uint32_t g_dts_resouce_ready;
-+extern mipi_ifbc_division_t g_mipi_ifbc_division[MIPI_DPHY_NUM][IFBC_TYPE_MAX];
-+int resource_cmds_tx(struct platform_device *pdev,
-+		     struct resource_desc *cmds, int cnt);
-+int vcc_cmds_tx(struct platform_device *pdev, struct vcc_desc *cmds, int cnt);
-+int pinctrl_cmds_tx(struct platform_device *pdev, struct pinctrl_cmd_desc *cmds,
-+		    int cnt);
-+int gpio_cmds_tx(struct gpio_desc *cmds, int cnt);
-+extern struct spi_device *g_spi_dev;
++dss_cmdlist_node_t *hisi_cmdlist_node_alloc(struct ion_client *ion_client);
++void hisi_cmdlist_node_free(struct ion_client *ion_client,
++			    dss_cmdlist_node_t *node);
 +
-+int panel_next_on(struct platform_device *pdev);
-+int panel_next_off(struct platform_device *pdev);
-+int panel_next_remove(struct platform_device *pdev);
-+int panel_next_set_backlight(struct platform_device *pdev, uint32_t bl_level);
-+int panel_next_vsync_ctrl(struct platform_device *pdev, int enable);
++uint32_t hisi_cmdlist_get_cmdlist_need_start(struct hisi_fb_data_type *hisifd,
++					     uint32_t cmdlist_idxs);
 +
-+bool is_ldi_panel(struct hisi_fb_data_type *hisifd);
-+bool is_mipi_cmd_panel(struct hisi_fb_data_type *hisifd);
-+bool is_mipi_cmd_panel_ext(struct hisi_panel_info *pinfo);
-+bool is_mipi_video_panel(struct hisi_fb_data_type *hisifd);
-+bool is_mipi_panel(struct hisi_fb_data_type *hisifd);
-+bool is_dual_mipi_panel(struct hisi_fb_data_type *hisifd);
-+bool is_dual_mipi_panel_ext(struct hisi_panel_info *pinfo);
-+bool is_ifbc_panel(struct hisi_fb_data_type *hisifd);
-+bool is_ifbc_vesa_panel(struct hisi_fb_data_type *hisifd);
-+bool mipi_panel_check_reg(struct hisi_fb_data_type *hisifd,
-+			  uint32_t *read_value);
-+int mipi_ifbc_get_rect(struct hisi_fb_data_type *hisifd, struct dss_rect *rect);
-+bool is_hisi_writeback_panel(struct hisi_fb_data_type *hisifd);
-+void hisi_fb_device_set_status0(uint32_t status);
-+int hisi_fb_device_set_status1(struct hisi_fb_data_type *hisifd);
-+bool hisi_fb_device_probe_defer(uint32_t panel_type, uint32_t bl_type);
-+#endif				/* HISI_FB_PANEL_H */
++int hisi_cmdlist_get_cmdlist_idxs(dss_overlay_t *pov_req,
++				  uint32_t *cmdlist_pre_idxs,
++				  uint32_t *cmdlist_idxs);
++void hisi_cmdlist_data_get_online(struct hisi_fb_data_type *hisifd);
++
++int hisi_cmdlist_add_nop_node(struct hisi_fb_data_type *hisifd,
++			      uint32_t cmdlist_idxs, int pending, int reserved);
++int hisi_cmdlist_add_new_node(struct hisi_fb_data_type *hisifd,
++			      uint32_t cmdlist_idxs, int pending, int task_end,
++			      int remove, int last, uint32_t wb_type);
++int hisi_cmdlist_del_all_node(struct list_head *cmdlist_heads);
++
++int hisi_cmdlist_config_start(struct hisi_fb_data_type *hisifd, int mctl_idx,
++			      uint32_t cmdlist_idxs, uint32_t wb_compose_type);
++int hisi_cmdlist_config_stop(struct hisi_fb_data_type *hisifd,
++			     uint32_t cmdlist_idxs);
++void hisi_cmdlist_config_reset(struct hisi_fb_data_type *hisifd,
++			       dss_overlay_t *pov_req, uint32_t cmdlist_idxs);
++
++int hisi_cmdlist_del_node(struct hisi_fb_data_type *hisifd,
++			  dss_overlay_t *pov_req, uint32_t cmdlist_idxs);
++int hisi_cmdlist_check_cmdlist_state(struct hisi_fb_data_type *hisifd,
++				     uint32_t cmdlist_idxs);
++
++int hisi_cmdlist_exec(struct hisi_fb_data_type *hisifd, uint32_t cmdlist_idxs);
++void hisi_dss_cmdlist_qos_on(struct hisi_fb_data_type *hisifd);
++int hisi_cmdlist_dump_all_node(struct hisi_fb_data_type *hisifd,
++			       dss_overlay_t *pov_req, uint32_t cmdlist_idxs);
++
++int hisi_cmdlist_init(struct hisi_fb_data_type *hisifd);
++int hisi_cmdlist_deinit(struct hisi_fb_data_type *hisifd);
++
++#endif
 -- 
 2.12.0-rc0
 

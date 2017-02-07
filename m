@@ -1,100 +1,136 @@
-From: SIMRAN SINGHAL <singhalsimran0@gmail.com>
-Date: Tue, 28 Feb 2017 19:29:08 +0000
-Subject: Re: [Outreachy kernel] [PATCH 3/5] staging: rtl8712: Remove unnecessary else after return
-Message-Id: <CALrZqyPqNUCdbEpQT2KkGS8F8Up6d_Uc56YHVLxf_QDFghooWw@mail.gmail.com>
+From: cailiwei <cailiwei@hisilicon.com>
+Date: Tue, 07 Feb 2017 02:35:52 +0000
+Subject: [PATCH 1/8] fb: hisilicon: Add framebuffer driver for hi3660 SoC
+Message-Id: <20170207023559.79455-1-cailiwei@hisilicon.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com>
- <1488219268-3006-3-git-send-email-singhalsimran0@gmail.com> <alpine.DEB.2.20.1702272216140.2127@hadrien>
-In-Reply-To: <alpine.DEB.2.20.1702272216140.2127@hadrien>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <julia.lawall@lip6.fr>
-Cc: Greg KH <gregkh@linuxfoundation.org>, lustre-devel@lists.lustre.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, outreachy-kernel@googlegroups.com
+To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, b.zolnierkie@samsung.com, guodong.xu@linaro.org
+Cc: suzhuangluan@hisilicon.com, dengqingshan@hisilicon.com, xuhongtao8@hisilicon.com, zhengwanchun@hisilicon.com, shizongxuan@huawei.com, cailiwei@hisilicon.com
 
-On Tue, Feb 28, 2017 at 2:49 AM, Julia Lawall <julia.lawall@lip6.fr> wrote:
->
->
-> On Mon, 27 Feb 2017, simran singhal wrote:
->
->> This patch fixes the checkpatch warning that else is not generally
->> useful after a break or return.
->>
->> This was done using Coccinelle:
->> @@
->> expression e2;
->> statement s1;
->> @@
->> if(e2) { ... return ...; }
->> -else
->>          s1
->
-> One might be surprised that the following code was detected using the
-> above semantic patch, because in the code below there is no return in the
-> if branches.  Actually, as a special feature, when one has an if branch
-> that ends in return, Coccinelle will skip through any gotos and see if the
-> return is matched afterward.  Indeed it is a common pattern to have
->
-> if (...) {
->    foo(x);
->    bar(y);
->    return -ENOMEM;
-> }
->
-> But the code can also be cut up as eg
->
-> if (...) {
->    ret = -ENOMEM;
->    goto out;
-> }
-> ...
-> out:
->    foo(x);
->    bar(y);
->    return ret;
->
-> To avoid having to write multiple patterns for these cases, Coccinelle
-> will just jump through the return in the second case, allowing the same
-> pattern to match both of them.
->
-Julia, Thanks for explaination. Its really helpful.
+From: Levy-Cai <cailiwei@hisilicon.com>
 
-But I think there is no problem in removing else.
-Because it will execute this
+Add framebuffer driver for hi3660 SoC, this driver include lcd
+driver & Hdmi adv7533/adv7535 driver, support lcd display at
+1080p@60 and hdmi display at 1080p@60.
 
- padapter->dvobjpriv.inirp_init(padapter);
+Signed-off-by: cailiwei <cailiwei@hisilicon.com>
+---
+ drivers/video/fbdev/Kconfig           | 11 ++++++++++
+ drivers/video/fbdev/Makefile          |  1 +
+ drivers/video/fbdev/hisi/Kconfig      |  6 +++++
+ drivers/video/fbdev/hisi/dss/Makefile | 41 +++++++++++++++++++++++++++++++++++
+ 4 files changed, 59 insertions(+)
+ mode change 100644 => 100755 drivers/video/fbdev/Kconfig
+ mode change 100644 => 100755 drivers/video/fbdev/Makefile
+ create mode 100755 drivers/video/fbdev/hisi/Kconfig
+ create mode 100755 drivers/video/fbdev/hisi/dss/Makefile
 
-when if condition will not satisfy.
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+old mode 100644
+new mode 100755
+index 5d3b0db5ce0a..85c46cc75908
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2429,6 +2429,16 @@ config FB_HYPERV
+ 	help
+ 	  This framebuffer driver supports Microsoft Hyper-V Synthetic Video.
+ 
++config FB_HISI
++	tristate "Hisilicon Framebuffer support"
++	depends on FB
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	select REGMAP
++	help
++	  This framebuffer driver supports Hisilicon FB.
++
+ config FB_SIMPLE
+ 	bool "Simple framebuffer support"
+ 	depends on (FB = y)
+@@ -2448,6 +2458,7 @@ config FB_SIMPLE
+ source "drivers/video/fbdev/omap/Kconfig"
+ source "drivers/video/fbdev/omap2/Kconfig"
+ source "drivers/video/fbdev/mmp/Kconfig"
++source "drivers/video/fbdev/hisi/Kconfig"
+ 
+ config FB_SH_MOBILE_MERAM
+ 	tristate "SuperH Mobile MERAM read ahead support"
+diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
+old mode 100644
+new mode 100755
+index ee8c81405a7f..a10d3d2793e3
+--- a/drivers/video/fbdev/Makefile
++++ b/drivers/video/fbdev/Makefile
+@@ -23,6 +23,7 @@ obj-$(CONFIG_FB_I740)		  += i740fb.o
+ obj-$(CONFIG_FB_MATROX)		  += matrox/
+ obj-$(CONFIG_FB_RIVA)		  += riva/
+ obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
++obj-$(CONFIG_FB_HISI)             += hisi/dss/
+ obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
+ obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
+ obj-$(CONFIG_FB_RADEON)		  += aty/
+diff --git a/drivers/video/fbdev/hisi/Kconfig b/drivers/video/fbdev/hisi/Kconfig
+new file mode 100755
+index 000000000000..c30747d52a38
+--- /dev/null
++++ b/drivers/video/fbdev/hisi/Kconfig
+@@ -0,0 +1,6 @@
++config HISI_FB_KIRIN960
++	tristate "HISI FB KIRIN960 Framebuffer support"
++	depends on FB_HISI
++
++	help
++	  This framebuffer driver supports KIRIN960 FB.
+diff --git a/drivers/video/fbdev/hisi/dss/Makefile b/drivers/video/fbdev/hisi/dss/Makefile
+new file mode 100755
+index 000000000000..60004880dd80
+--- /dev/null
++++ b/drivers/video/fbdev/hisi/dss/Makefile
+@@ -0,0 +1,41 @@
++ifeq ($(CONFIG_HISI_FB_KIRIN960),y)
++obj-$(CONFIG_HISI_FB_KIRIN960) := hisifb.o
++endif
++
++hisifb-objs := \
++	hisi_mipi_dsi_host.o \
++	hisi_mipi_dsi.o \
++	hisi_dpe.o \
++	hisi_fb_panel.o \
++	hisi_fb_isr.o \
++	hisi_fb_vsync.o \
++	hisi_fb_buf_sync.o \
++	hisi_fb_bl.o \
++	hisi_fb_utils.o \
++	hisi_fb.o \
++	hisi_overlay_utils.o \
++	hisi_block_algorithm.o \
++	hisi_overlay_online.o \
++	hisi_overlay_cmdlist_utils.o
++
++ifeq ($(CONFIG_HISI_FB_KIRIN960),y)
++hisifb-objs += \
++	hisi_dpe_utils_hi3660.o \
++	hisi_overlay_utils_hi3660.o \
++	panel/mipi_hikey_nte300nts.o \
++	hdmi/adv75xx.o \
++	hdmi/mipi_adi_hdmi.o
++endif
++
++EXTRA_CFLAGS += -Idrivers/video/hisi/dss \
++		-Idrivers/video/hisi/panel \
++		-Idrivers/video/hisi \
++		-Iinclude \
++		-Idrivers/staging/android
++
++ifeq ($(CONFIG_HISI_PERIDVFS),y)
++EXTRA_CFLAGS += -Idrivers/clk/hisi/peri_dvfs
++endif
++
++clean:
++	rm *.o .*cmd
+-- 
+2.12.0-rc0
 
-> julia
->
->>
->> Signed-off-by: simran singhal <singhalsimran0@gmail.com>
->> ---
->>  drivers/staging/rtl8712/os_intfs.c | 3 +--
->>  1 file changed, 1 insertion(+), 2 deletions(-)
->>
->> diff --git a/drivers/staging/rtl8712/os_intfs.c b/drivers/staging/rtl8712/os_intfs.c
->> index 8836b31..3062167 100644
->> --- a/drivers/staging/rtl8712/os_intfs.c
->> +++ b/drivers/staging/rtl8712/os_intfs.c
->> @@ -411,8 +411,7 @@ static int netdev_open(struct net_device *pnetdev)
->>                       goto netdev_open_error;
->>               if (!padapter->dvobjpriv.inirp_init)
->>                       goto netdev_open_error;
->> -             else
->> -                     padapter->dvobjpriv.inirp_init(padapter);
->> +             padapter->dvobjpriv.inirp_init(padapter);
->>               r8712_set_ps_mode(padapter, padapter->registrypriv.power_mgnt,
->>                                 padapter->registrypriv.smart_ps);
->>       }
->> --
->> 2.7.4
->>
->> --
->> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
->> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
->> To post to this group, send email to outreachy-kernel@googlegroups.com.
->> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/1488219268-3006-3-git-send-email-singhalsimran0%40gmail.com.
->> For more options, visit https://groups.google.com/d/optout.
->>

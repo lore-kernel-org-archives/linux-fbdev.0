@@ -1,19 +1,19 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 07 Feb 2017 16:33:12 +0000
+Date: Wed, 08 Feb 2017 12:54:38 +0000
 Subject: Re: [PATCH v4 1/2] backlight arcxcnn add support for ArcticSand devices
-Message-Id: <20170207163312.diq4xv5np7otmwe6@dell>
+Message-Id: <20170208125438.ndul7lseivqmgxf2@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1485530358-6171-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1485530358-6171-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+In-Reply-To: <1485530358-6171-1-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
-Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org
+To: Olimpiu Dejeu <olimpiu@arcticsand.com>, daniel.thompson@linaro.org
+Cc: robh@kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com
 
-Jingoo,
+Cc'ing Daniel Thompson, the new Maintainer.
 
-Are you still maintaining Backlight, or did you get bored?
+On Fri, 27 Jan 2017, Olimpiu Dejeu wrote:
 
 > backlight: Add support for Arctic Sand LED backlight driver chips
 > This driver provides support for the Arctic Sand arc2c0608 chip,=20

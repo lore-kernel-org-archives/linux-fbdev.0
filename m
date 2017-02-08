@@ -1,81 +1,86 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Tue, 28 Feb 2017 19:14:21 +0000
-Subject: Re: [Outreachy kernel] Re: [PATCH 1/5] staging: lustre: Remove unnecessary else after return
-Message-Id: <alpine.DEB.2.20.1702282012460.2171@hadrien>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 08 Feb 2017 12:54:02 +0000
+Subject: Re: [PATCH v5 2/2] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <20170208125402.7uyw5scgqr5b67bl@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com> <1488223529.25838.8.camel@perches.com> <CALrZqyMTTk4o5Y5e3DzH_cqXxvHsHDtByG0oYwWMjekZSR7Kkw@mail.gmail.com> <1488228200.25838.14.camel@perches.com>
- <CALrZqyP-BRPj4jEFgU=B_AV7E4-tJfgaXwwxRhUprLg_4gWQkg@mail.gmail.com>
-In-Reply-To: <CALrZqyP-BRPj4jEFgU=B_AV7E4-tJfgaXwwxRhUprLg_4gWQkg@mail.gmail.com>
+References: <1485817307-9463-1-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1485817307-9463-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: SIMRAN SINGHAL <singhalsimran0@gmail.com>
-Cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@linuxfoundation.org>, lustre-devel@lists.lustre.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, outreachy-kernel@googlegroups.com
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>, daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
+Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org
 
+Cc'ing Daniel Thompson, the new Maintainer.
 
+On Mon, 30 Jan 2017, Olimpiu Dejeu wrote:
 
-On Wed, 1 Mar 2017, SIMRAN SINGHAL wrote:
+> backlight: Add devicetree bindings for the Arctic Sand backlight driver
+> This patch provides devicetree bindings for the Arctic Sand
+>     driver submitted in the previous patch
+> Acked-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+> ---
+>=20
+> v4 =3D> v5:
+> - Added spaces for increased readability per Lee Jones
+> v3 =3D> v4:
+> - Added spaces for increased readability per Lee Jones
+> v2 =3D> v3:
+> - Version updated to match other patch in set. No other changes.
+> v1 =3D> v2:
+> - Version updated to match other patch in set. No other changes.
+>=20
+>  .../bindings/leds/backlight/arcxcnn_bl.txt         | 33 ++++++++++++++++=
+++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcx=
+cnn_bl.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.=
+txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> new file mode 100644
+> index 0000000..ecb7731
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> @@ -0,0 +1,33 @@
+> +Binding for ArcticSand arc2c0608 LED driver
+> +
+> +Required properties:
+> +- compatible:		should be "arc,arc2c0608"
+> +- reg:			slave address
+> +
+> +Optional properties:
+> +- default-brightness:	brightness value on boot, value from: 0-4095
+> +- label:		The name of the backlight device
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +- led-sources:		List of enabled channels from 0 to 5.
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +
+> +- arc,led-config-0:	setting for register ILED_CONFIG_0
+> +- arc,led-config-1:	setting for register ILED_CONFIG_1
+> +- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
+> +- arc,comp-config:	setting for register CONFIG_COMP
+> +- arc,filter-config:	setting for register FILTER_CONFIG
+> +- arc,trim-config:	setting for register IMAXTUNE
+> +
+> +Note: Optional properties not specified will default to values in IC EPR=
+OM
+> +
+> +Example:
+> +
+> +arc2c0608@30 {
+> +	compatible =3D "arc,arc2c0608";
+> +	reg =3D <0x30>;
+> +	default-brightness =3D <500>;
+> +	label =3D "lcd-backlight";
+> +	linux,default-trigger =3D "backlight";
+> +	led-sources =3D <0 1 2 5>;
+> +};
+> +
 
-> On Tue, Feb 28, 2017 at 2:13 AM, Joe Perches <joe@perches.com> wrote:
-> > On Tue, 2017-02-28 at 01:51 +0530, SIMRAN SINGHAL wrote:
-> >> On Tue, Feb 28, 2017 at 12:55 AM, Joe Perches <joe@perches.com> wrote:
-> >> > On Mon, 2017-02-27 at 23:44 +0530, simran singhal wrote:
-> >> > > This patch fixes the checkpatch warning that else is not generally
-> >> > > useful after a break or return.
-> >> >
-> >> > checkpatch doesn't actually warn for this style
-> >> >
-> >> >         if (foo)
-> >> >                 return bar;
-> >> >         else
-> >> >                 return baz;
-> >> >
-> >>
-> >> ok, My bad
-> >> so, I have to change commit message as checkpatch doesn't warn for this style.
-> >
-> > Perhaps better would be to leave them unchanged instead.
-> >
-> >> > > diff --git a/drivers/staging/lustre/lnet/klnds/socklnd/socklnd.c b/drivers/staging/lustre/lnet/klnds/socklnd/socklnd.c
-> > []
-> >> > > @@ -1806,8 +1806,7 @@ ksocknal_close_matching_conns(struct lnet_process_id id, __u32 ipaddr)
-> >> > >
-> >> > >       if (!count)
-> >> > >               return -ENOENT;
-> >> > > -     else
-> >> > > -             return 0;
-> >> > > +     return 0;
-> >
-> > There might be a case for this one.
-> > error returns are generally in the form
-> >
-> > {
-> >         [...]
-> >
-> >         err = func(...);
-> >         if (err < 0)
-> >                 return err;
-> >
-> >         return 0;
-> > }
-> Not sure, what's the problem in removing else as according to me
-> there is no use of else.
->
-> In this case if (if condition) does not satisfy then else condition will
-> be satisfied and function will return 0.
-
-I think that "there might be a case for" was a positive comment.  In any
-case, it looks nicer to me if success is outside of a conditional and
-failure is under a conditional.  Or to be more precise, Coccinelle bug
-finding rules tend to work better if that property is respected.
-
-julia
-
->
-> --
-> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
-> To post to this group, send email to outreachy-kernel@googlegroups.com.
-> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/CALrZqyP-BRPj4jEFgU%3DB_AV7E4-tJfgaXwwxRhUprLg_4gWQkg%40mail.gmail.com.
-> For more options, visit https://groups.google.com/d/optout.
->
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

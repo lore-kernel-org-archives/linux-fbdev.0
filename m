@@ -1,50 +1,81 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Sat, 25 Feb 2017 19:24:46 +0000
-Subject: [PATCH] video: fbdev: pmag-ba-fb: remove incorrect __exit markups
-Message-Id: <20170225192446.GA12502@dtor-ws>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 08 Feb 2017 12:53:24 +0000
+Subject: Re: [PATCH v4 2/2] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <20170208125324.w3udiu2jxrwf2rld@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1485530378-6217-1-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1485530378-6217-1-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Olimpiu Dejeu <olimpiu@arcticsand.com>, daniel.thompson@linaro.org
+Cc: robh@kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com
 
-Even if bus is not hot-pluggable, the devices can be unbound from the
-driver via sysfs, so we should not be using __exit annotations on
-remove() methods. The only exception is drivers registered with
-platform_driver_probe() which specifically disables sysfs bind/unbind
-attributes.
+Cc'ing Daniel Thompson, the new Maintainer.
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/video/fbdev/pmag-ba-fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Fri, 27 Jan 2017, Olimpiu Dejeu wrote:
 
-diff --git a/drivers/video/fbdev/pmag-ba-fb.c b/drivers/video/fbdev/pmag-ba-fb.c
-index 5872bc4af3ce..f49317f137ec 100644
---- a/drivers/video/fbdev/pmag-ba-fb.c
-+++ b/drivers/video/fbdev/pmag-ba-fb.c
-@@ -235,7 +235,7 @@ static int pmagbafb_probe(struct device *dev)
- 	return err;
- }
- 
--static int __exit pmagbafb_remove(struct device *dev)
-+static int pmagbafb_remove(struct device *dev)
- {
- 	struct tc_dev *tdev = to_tc_dev(dev);
- 	struct fb_info *info = dev_get_drvdata(dev);
-@@ -270,7 +270,7 @@ static struct tc_driver pmagbafb_driver = {
- 		.name	= "pmagbafb",
- 		.bus	= &tc_bus_type,
- 		.probe	= pmagbafb_probe,
--		.remove	= __exit_p(pmagbafb_remove),
-+		.remove	= pmagbafb_remove,
- 	},
- };
- 
--- 
-2.11.0.483.g087da7b7c-goog
+> backlight: Add devicetree bindings for the Arctic Sand backlight driver
+> This patch provides devicetree bindings for the Arctic Sand
+>     driver submitted in the previous patch
+> Acked-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+> ---
+>=20
+> v3 =3D> v4:
+> - Added spaces for increased readability per Lee Jones
+> v2 =3D> v3:
+> - Version updated to match other patch in set. No other changes.
+> v1 =3D> v2:
+> - Version updated to match other patch in set. No other changes.
+>=20
+>  .../bindings/leds/backlight/arcxcnn_bl.txt         | 31 ++++++++++++++++=
+++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcx=
+cnn_bl.txt
+>=20
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.=
+txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> new file mode 100644
+> index 0000000..ecb7731
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> @@ -0,0 +1,31 @@
+> +Binding for ArcticSand arc2c0608 LED driver
+> +
+> +Required properties:
+> +- compatible:		should be "arc,arc2c0608"
+> +- reg:			slave address
+> +
+> +Optional properties:
+> +- default-brightness:	brightness value on boot, value from: 0-4095
+> +- label:		The name of the backlight device
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +- led-sources:		List of enabled channels from 0 to 5.
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +
+> +- arc,led-config-0:	setting for register ILED_CONFIG_0
+> +- arc,led-config-1:	setting for register ILED_CONFIG_1
+> +- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
+> +- arc,comp-config:	setting for register CONFIG_COMP
+> +- arc,filter-config:	setting for register FILTER_CONFIG
+> +- arc,trim-config:	setting for register IMAXTUNE
+> +
+> +Example:
+> +
+> +arc2c0608@30 {
+> +	compatible =3D "arc,arc2c0608";
+> +	reg =3D <0x30>;
+> +	default-brightness =3D <500>;
+> +	label =3D "lcd-backlight";
+> +	linux,default-trigger =3D "backlight";
+> +	led-sources =3D <0 1 2 5>;
+> +};
+> +
 
-
--- 
-Dmitry
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

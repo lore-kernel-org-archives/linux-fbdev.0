@@ -1,63 +1,39 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 03 Feb 2017 13:58:50 +0000
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Thu, 09 Feb 2017 17:14:32 +0000
 Subject: Re: [PATCH v3 04/14] GPIO: Add gpio-ingenic driver
-Message-Id: <CACRpkdZNodsRJ33wTJGgrAJpSs=_bXa0yv5ate_7XwjKR0xEnw@mail.gmail.com>
+Message-Id: <b032ad924ae905ce4fd11535d08c29a8@mail.crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net> <20170125185207.23902-5-paul@crapouillou.net>
- <CACRpkdbcO+1c7izYpn0sb1mkE1ORFETMq=xtzVi1hKbJz0EWfw@mail.gmail.com> <699f0c63e95ecdafe6946fdcdbb97a37@mail.crapouillou.net>
-In-Reply-To: <699f0c63e95ecdafe6946fdcdbb97a37-p8hskv8pF7lEPksTRSfcJOTW4wlIGRCZ@public.gmane.org>
+ <20170125185207.23902-1-paul@crapouillou.net>
+ <20170125185207.23902-5-paul@crapouillou.net>
+ <CACRpkdaqQ2==B1_o-Ru81Nbu_kUF+Kxn=XFYms-1e=nAtHiJ4A@mail.gmail.com>
+In-Reply-To: <CACRpkdaqQ2==B1_o-Ru81Nbu_kUF+Kxn=XFYms-1e=nAtHiJ4A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
-Cc: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MIPS <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-p
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Linux MIPS <linux-mips@linux-mips.org>, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, James Hogan <james.hogan@imgtec.com>
 
-On Tue, Jan 31, 2017 at 4:29 PM, Paul Cercueil <paul@crapouillou.net> wrote:
-> Le 2017-01-31 15:20, Linus Walleij a =C3=A9crit :
->
->>> + of_property_read_u32(dev->of_node, "base", &jzgc->gc.base);
->>
->>
->> Remove this. Dynamic allocation should be fine, if you're using the
->> new userspace ABI like tools/gpio/* or libgpiod and only that and
->> in-kernel
->> consumers, dynamic numbers are just fine.
->
->
-> The problem is that the QI_LB60 board code still have a lot of references
-> to global GPIO numbers. Just grep for JZ_GPIO_PORT in
-> arch/mips/jz4740/board-qi_lb60.c to see what I mean...
+Hi,
 
-OK I understand we might need a compromise here to get the code moving.
+> What some drivers do when they just get/set a bit in a register
+> to get/set or set the direction of a GPIO, is to select GPIO_GENERIC
+> and just bgpio_init() with the right iomem pointers, then the core
+> will register handlers for get, set, set_direcition callback and
+> get_direction and your driver can just focus on the remainders.
 
-But we need to keep it out of the device tree.
+GPIO_GENERIC and bgpio_init() would work for my .set() / .get() 
+callbacks,
+not for my .direction_input() / .direction_output() callbacks which need
+to set more than one register.
 
-I think it's better to put a base table relative to the memory base in
-the driver in that case:
+> If you're not just replacing these with GPIO_GENERIC, please also
+> include a .get_direction() callback.
 
-unsigned int gpio_global_base;
+My .direction_input() and .direction_output() callbacks just call into
+the pinctrl driver, using pinctrl_gpio_direction_[in,out]put().
+I didn't find a way to get the direction info from the pinctrl driver,
+is that something that the core should provide?
 
-switch (memory_base_address) {
-case 0x41000000:
-    gpio_global_base =3D 0x00;
-    break;
-case 0x42000000:
-    gpio_global_base =3D 0x20;
-
-(...)
-
-etc. (Those are not your base addresses but you get the idea).
-
-Include a few comments like:
-
-/*
- * DO NOT EXPAND THIS: FOR BACKWARD GPIO NUMBERSPACE
- * COMPATIBIBILITY ONLY: WORK TO TRANSITION CONSUMERS TO
- * USE THE GPIO DESCRIPTOR API IN <linux/gpio/consumer.h> INSTEAD.
- */
-
-Then I'll be happy :)
-
-Yours,
-Linus Walleij
+Thanks,
+-Paul

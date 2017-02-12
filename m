@@ -1,97 +1,45 @@
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Sun, 05 Feb 2017 00:17:45 +0000
-Subject: Re: [RFCv2 PATCH 4/5] drm/bridge: add dw-hdmi cec driver using Hans Verkuil's CEC code
-Message-Id: <CAJ-oXjSsk=cZgpNp-6qLPo13Mj8Cw5mvqEe8mtFVCPSphxJOWQ@mail.gmail.com>
+From: Borislav Petkov <bp@alien8.de>
+Date: Sun, 12 Feb 2017 14:57:31 +0000
+Subject: [PATCH] video/viafbdev: Make PROC_FS dependency explicit
+Message-Id: <20170212145731.7068-1-bp@alien8.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl> <1479136968-24477-5-git-send-email-hverkuil@xs4all.nl>
-In-Reply-To: <1479136968-24477-5-git-send-email-hverkuil@xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-media@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Russell King <rmk+kernel@armlinux.org.uk>, Russell King - ARM Linux <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
 
-Hi,
+From: Borislav Petkov <bp@suse.de>
 
-2016-11-14 16:22 GMT+01:00 Hans Verkuil <hverkuil@xs4all.nl>:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
->
-> Add a CEC driver for the dw-hdmi hardware using Hans Verkuil's CEC
-> implementation.
->
-> Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
-I've seen that the patchset concerning CEC/HDMI notifier after this
-one dropped dw-hdmi support.
-Is this only temporary, or does this driver need someone to take care of it?
+Fix:
 
-> diff --git a/drivers/gpu/drm/bridge/dw-hdmi-cec.c b/drivers/gpu/drm/bridge/dw-hdmi-cec.c
-> new file mode 100644
-> index 0000000..e7e12b5
-> --- /dev/null
-> +++ b/drivers/gpu/drm/bridge/dw-hdmi-cec.c
-> @@ -0,0 +1,346 @@
-> +/* http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/
-> + * tree/drivers/mxc/hdmi-cec/mxc_hdmi-cec.c?h=imx_3.0.35_4.1.0 */
-It is perhaps mandatory to have GPL header?
+  drivers/video/fbdev/via/viafbdev.c: In function ‘viafb_remove_proc’:
+  drivers/video/fbdev/via/viafbdev.c:1635:4: warning: unused variable ‘iga2_entry’ [-Wunused-variable]
+     *iga2_entry = shared->iga2_proc_entry;
+      ^~~~~~~~~~
+  drivers/video/fbdev/via/viafbdev.c:1634:4: warning: unused variable ‘iga1_entry’ [-Wunused-variable]
+     *iga1_entry = shared->iga1_proc_entry,
 
-> +#include <linux/hdmi-notifier.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/io.h>
-> +#include <linux/module.h>
-> +#include <linux/notifier.h>
-> +#include <linux/platform_data/dw_hdmi-cec.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/sched.h>
-> +#include <linux/slab.h>
-> +
-> +#include <drm/drm_edid.h>
-> +
-> +#include <media/cec.h>
-> +#include <media/cec-edid.h>
-> +
-> +#define DEV_NAME "mxc_hdmi_cec"
-I think that to respect the convention it should be dw-hdmi-cec?
+build warning from randconfig builds.
 
-> +       writeb_relaxed(addresses & 255, cec->base + HDMI_CEC_ADDR_L);
-> +       writeb_relaxed(addresses >> 8, cec->base + HDMI_CEC_ADDR_H);
-Some platforms (at least rockchip) discuss with dw-hdmi with longs
-instead of bytes
-dw-hdmi-i2s-audio.c uses hdmi_read/hdmi_write for that
+Signed-off-by: Borislav Petkov <bp@suse.de>
+---
+ drivers/video/fbdev/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Is it ok to add write and read functions to dw_hdmi_cec_ops ?
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 5d3b0db5ce0a..86ec39784c5a 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1539,7 +1539,7 @@ config FB_SIS_315
+ 
+ config FB_VIA
+        tristate "VIA UniChrome (Pro) and Chrome9 display support"
+-       depends on FB && PCI && X86 && GPIOLIB && I2C
++       depends on FB && PCI && X86 && GPIOLIB && I2C && PROC_FS
+        select FB_CFB_FILLRECT
+        select FB_CFB_COPYAREA
+        select FB_CFB_IMAGEBLIT
+-- 
+2.11.0
 
-> +static unsigned int parse_hdmi_addr(const struct edid *edid)
-> +{
-> +       if (!edid || edid->extensions = 0)
-> +               return (u16)~0;
-> +
-> +       return cec_get_edid_phys_addr((u8 *)edid,
-> +                               EDID_LENGTH * (edid->extensions + 1), NULL);
-> +}
-> +
-> +static int dw_hdmi_cec_notify(struct notifier_block *nb, unsigned long event,
-> +                             void *data)
-> +{
-> +       struct dw_hdmi_cec *cec = container_of(nb, struct dw_hdmi_cec, nb);
-> +       struct hdmi_notifier *n = data;
-> +       unsigned int phys;
-> +
-> +       dev_info(cec->adap->devnode.parent, "event %lu\n", event);
-> +
-> +       switch (event) {
-> +       case HDMI_CONNECTED:
-> +               break;
-> +
-> +       case HDMI_DISCONNECTED:
-> +               cec_s_phys_addr(cec->adap, CEC_PHYS_ADDR_INVALID, false);
-> +               break;
-> +
-> +       case HDMI_NEW_EDID:
-> +               phys = parse_hdmi_addr(n->edid);
-> +               cec_s_phys_addr(cec->adap, phys, false);
-> +               break;
-> +       }
-> +
-> +       return NOTIFY_OK;
-> +}
-Thanks to "cec: integrate HDMI notifier support" this code can be dropped

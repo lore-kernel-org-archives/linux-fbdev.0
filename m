@@ -1,38 +1,94 @@
-From: Martin Kaiser <martin@kaiser.cx>
-Date: Mon, 27 Feb 2017 10:56:42 +0000
-Subject: [PATCH 2/2] dt-bindings: display: imx: entry for LAUSCR
-Message-Id: <1488193030-13064-2-git-send-email-martin@kaiser.cx>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Mon, 13 Feb 2017 00:13:49 +0000
+Subject: [PATCH] video: remove incorrect __exit markups
+Message-Id: <20170213001349.GA1839@dtor-ws>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
-In-Reply-To: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Martin Kaiser <martin@kaiser.cx>, Philipp Zabel <p.zabel@pengutronix.de>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Allow setting the LCDC AUS Mode Control Register from the device tree.
-This setting is optional, the register is available only on imx21 and
-compatible chipsets.
+Even if bus is not hot-pluggable, the devices can be unbound from the
+driver via sysfs, so we should not be using __exit annotations on
+remove() methods. The only exception is drivers registered with
+platform_driver_probe() which specifically disables sysfs bind/unbind
+attributes.
 
-Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+Also pmagb(a|b)fb_erase_cursor() are called from non __init codepaths,
+so they should not be marked as __init either.
+
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
- Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/pmag-ba-fb.c | 6 +++---
+ drivers/video/fbdev/pmagb-b-fb.c | 6 +++---
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-index 7a5c0e2..bd5077f 100644
---- a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-@@ -13,6 +13,8 @@ Required nodes:
- 	Additional, the display node has to define properties:
- 	- bits-per-pixel: Bits per pixel
- 	- fsl,pcr: LCDC PCR value
-+	A display node may optionally define
-+	- fsl,lauscr: LCDC AUS Mode Control Register value (only for imx21)
+diff --git a/drivers/video/fbdev/pmag-ba-fb.c b/drivers/video/fbdev/pmag-ba-fb.c
+index 5872bc4af3ce..1fd02f40708e 100644
+--- a/drivers/video/fbdev/pmag-ba-fb.c
++++ b/drivers/video/fbdev/pmag-ba-fb.c
+@@ -129,7 +129,7 @@ static struct fb_ops pmagbafb_ops = {
+ /*
+  * Turn the hardware cursor off.
+  */
+-static void __init pmagbafb_erase_cursor(struct fb_info *info)
++static void pmagbafb_erase_cursor(struct fb_info *info)
+ {
+ 	struct pmagbafb_par *par = info->par;
  
- Optional properties:
- - lcd-supply: Regulator for LCD supply voltage.
+@@ -235,7 +235,7 @@ static int pmagbafb_probe(struct device *dev)
+ 	return err;
+ }
+ 
+-static int __exit pmagbafb_remove(struct device *dev)
++static int pmagbafb_remove(struct device *dev)
+ {
+ 	struct tc_dev *tdev = to_tc_dev(dev);
+ 	struct fb_info *info = dev_get_drvdata(dev);
+@@ -270,7 +270,7 @@ static struct tc_driver pmagbafb_driver = {
+ 		.name	= "pmagbafb",
+ 		.bus	= &tc_bus_type,
+ 		.probe	= pmagbafb_probe,
+-		.remove	= __exit_p(pmagbafb_remove),
++		.remove	= pmagbafb_remove,
+ 	},
+ };
+ 
+diff --git a/drivers/video/fbdev/pmagb-b-fb.c b/drivers/video/fbdev/pmagb-b-fb.c
+index 0822b6f8dddc..46e96c451506 100644
+--- a/drivers/video/fbdev/pmagb-b-fb.c
++++ b/drivers/video/fbdev/pmagb-b-fb.c
+@@ -133,7 +133,7 @@ static struct fb_ops pmagbbfb_ops = {
+ /*
+  * Turn the hardware cursor off.
+  */
+-static void __init pmagbbfb_erase_cursor(struct fb_info *info)
++static void pmagbbfb_erase_cursor(struct fb_info *info)
+ {
+ 	struct pmagbbfb_par *par = info->par;
+ 
+@@ -353,7 +353,7 @@ static int pmagbbfb_probe(struct device *dev)
+ 	return err;
+ }
+ 
+-static int __exit pmagbbfb_remove(struct device *dev)
++static int pmagbbfb_remove(struct device *dev)
+ {
+ 	struct tc_dev *tdev = to_tc_dev(dev);
+ 	struct fb_info *info = dev_get_drvdata(dev);
+@@ -388,7 +388,7 @@ static struct tc_driver pmagbbfb_driver = {
+ 		.name	= "pmagbbfb",
+ 		.bus	= &tc_bus_type,
+ 		.probe	= pmagbbfb_probe,
+-		.remove	= __exit_p(pmagbbfb_remove),
++		.remove	= pmagbbfb_remove,
+ 	},
+ };
+ 
 -- 
-2.1.4
+2.11.0.483.g087da7b7c-goog
 
+
+-- 
+Dmitry

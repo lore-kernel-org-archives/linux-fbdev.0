@@ -1,160 +1,192 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 02 Feb 2017 16:40:09 +0000
-Subject: Re: [PATCH v3] Fix loading of module radeonfb on PowerMac
-Message-Id: <1614785.YlLW5dDsiH@amdc3058>
+From: Joe Perches <joe@perches.com>
+Date: Fri, 17 Feb 2017 07:11:13 +0000
+Subject: [PATCH 00/35] treewide trivial patches converting pr_warning to pr_warn
+Message-Id: <cover.1487314666.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479886001-27801-1-git-send-email-malat@debian.org>
- <CA+7wUsxmntgkiiF2M74rCDxbVfiG+P9s+1UFwsN7C6e-BF7+Hg@mail.gmail.com>
- <CGME20170202164012epcas1p27979c64291f64849bba9aad23224ecd5@epcas1p2.samsung.com>
-In-Reply-To: <CA+7wUsxmntgkiiF2M74rCDxbVfiG+P9s+1UFwsN7C6e-BF7+Hg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mathieu Malaterre <malat@debian.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Alexander Shishkin <alexander.shishkin@linux.intel.com>, Karol Herbst <karolherbst@gmail.com>, Pekka Paalanen <ppaalanen@gmail.com>, Richard Weinberger <richard@nod.at>, Fabio Estevam <fabio.estevam@nxp.com>, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, tboot-devel@lists.sourceforge.net, nouveau@lists.freedesktop.org, oprofile-list@lists.sf.net, sfi-devel@simplefirmware.org, xen-devel@lists.xenproject.org, linux-acpi@vger.kernel.org, drbd-dev@lists.linbit.com, virtualization@lists.linux-foundation.org, linux-crypto@vger.kernel.org, linux-ide@vger.kernel.org, gigaset307x-common@lists.sourceforge.net, linux-media@vger.kernel.org, linux-omap@vger.kernel.org, linux-mtd@lists.infradead.org, devicetree@vger.kernel.org, acpi4asus-user@lists.sourceforge.net, platform-driver-x86@vger.kernel.org, linux-scsi@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, netdev@vger.kernel.org, linux-input@vger.kernel.org, adi-buildroot-devel@lists.sourceforge.net, amd-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org
 
+There are ~4300 uses of pr_warn and ~250 uses of the older
+pr_warning in the kernel source tree.
 
-Hi,
+Make the use of pr_warn consistent across all kernel files.
 
-On Wednesday, February 01, 2017 07:55:25 AM Mathieu Malaterre wrote:
-> Any chance this patch could be considered for inclusion this time ?
-> 
-> Thanks
-> 
-> On Wed, Nov 23, 2016 at 8:26 AM, Mathieu Malaterre <malat@debian.org> wrote:
-> > When the linux kernel is build with (typical kernel ship with Debian
-> > installer):
-> >
-> > CONFIG_FB_OF=y
-> > CONFIG_VT_HW_CONSOLE_BINDING=y
-> > CONFIG_FB_RADEON=m
-> >
-> > The offb driver takes precedence over module radeonfb. It is then
-> > impossible to load the module, error reported is:
-> >
-> > [   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
-> > [   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
-> > [   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
-> > [   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
-> >
-> > This patch reproduce the behavior of the module radeon, so as to make it
-> > possible to load radeonfb when offb is first loaded.
-> >
-> > The problem is that offb call pci_request_region first, and then radeonfb
-> > tries to do it, and since one is trying to take over from the other, it can't
-> > do that because the area is already reserved.
-> >
-> > It should be noticed that `offb_destroy` is never called which explain the
-> > need to skip error detection on the radeonfb side.
-> >
-> > Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> > Link: https://bugs.debian.org/826629#57
-> > Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
-> > Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> > ---
-> >
-> > v2: Remove compilation warning
-> >
-> > v3: Hide error messages on PPC
-> >
-> >  drivers/video/fbdev/aty/radeon_base.c | 27 +++++++++++++++++++++++++++
-> >  1 file changed, 27 insertions(+)
-> >
-> > diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-> > index 218339a..837c86a 100644
-> > --- a/drivers/video/fbdev/aty/radeon_base.c
-> > +++ b/drivers/video/fbdev/aty/radeon_base.c
-> > @@ -2259,6 +2259,22 @@ static struct bin_attribute edid2_attr = {
-> >         .read   = radeon_show_edid2,
-> >  };
-> >
-> > +static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
-> > +{
-> > +       struct apertures_struct *ap;
-> > +
-> > +       ap = alloc_apertures(1);
-> > +       if (!ap)
-> > +               return -ENOMEM;
-> > +
-> > +       ap->ranges[0].base = pci_resource_start(pdev, 0);
-> > +       ap->ranges[0].size = pci_resource_len(pdev, 0);
-> > +
-> > +       remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
-> > +       kfree(ap);
-> > +
-> > +       return 0;
-> > +}
-> >
-> >  static int radeonfb_pci_register(struct pci_dev *pdev,
-> >                                  const struct pci_device_id *ent)
-> > @@ -2314,20 +2330,29 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
-> >         rinfo->fb_base_phys = pci_resource_start (pdev, 0);
-> >         rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
-> >
-> > +       ret = radeon_kick_out_firmware_fb(pdev);
-> > +       if (ret)
-> > +               return ret;
-> > +
-> >         /* request the mem regions */
-> >         ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
-> > +  /* this is not an error on PowerMac where offb already requested mem regions */
-> > +#ifndef CONFIG_PPC
+This excludes all files in tools/ as there is a separate
+define pr_warning for that directory tree and pr_warn is
+not used in tools/.
 
-This doesn't look correct:
+Done with 'sed s/\bpr_warning\b/pr_warn/' and some emacsing.
 
-- PPC is not only PowerMac and offb supports more cards
-  than radeon (while radeonfb can be used for secondary
-  graphics card)
+Miscellanea:
 
-- offb can be disabled
+o Coalesce formats and realign arguments
 
-  (i.e. in CONFIG_FB_OF=n && CONFIG_FB_RADEON=y case error
-  checking will be missing now)
+Some files not compiled - no cross-compilers
 
-The last put_fb_info() on fb_info should call ->fb_destroy
-(offb_destroy in our case) and remove_conflicting_framebuffers()
-is calling put_fb_info() so there is some extra reference on
-fb_info somewhere preventing it from going away.
+Joe Perches (35):
+  alpha: Convert remaining uses of pr_warning to pr_warn
+  ARM: ep93xx: Convert remaining uses of pr_warning to pr_warn
+  arm64: Convert remaining uses of pr_warning to pr_warn
+  arch/blackfin: Convert remaining uses of pr_warning to pr_warn
+  ia64: Convert remaining use of pr_warning to pr_warn
+  powerpc: Convert remaining uses of pr_warning to pr_warn
+  sh: Convert remaining uses of pr_warning to pr_warn
+  sparc: Convert remaining use of pr_warning to pr_warn
+  x86: Convert remaining uses of pr_warning to pr_warn
+  drivers/acpi: Convert remaining uses of pr_warning to pr_warn
+  block/drbd: Convert remaining uses of pr_warning to pr_warn
+  gdrom: Convert remaining uses of pr_warning to pr_warn
+  drivers/char: Convert remaining use of pr_warning to pr_warn
+  clocksource: Convert remaining use of pr_warning to pr_warn
+  drivers/crypto: Convert remaining uses of pr_warning to pr_warn
+  fmc: Convert remaining use of pr_warning to pr_warn
+  drivers/gpu: Convert remaining uses of pr_warning to pr_warn
+  drivers/ide: Convert remaining uses of pr_warning to pr_warn
+  drivers/input: Convert remaining uses of pr_warning to pr_warn
+  drivers/isdn: Convert remaining uses of pr_warning to pr_warn
+  drivers/macintosh: Convert remaining uses of pr_warning to pr_warn
+  drivers/media: Convert remaining use of pr_warning to pr_warn
+  drivers/mfd: Convert remaining uses of pr_warning to pr_warn
+  drivers/mtd: Convert remaining uses of pr_warning to pr_warn
+  drivers/of: Convert remaining uses of pr_warning to pr_warn
+  drivers/oprofile: Convert remaining uses of pr_warning to pr_warn
+  drivers/platform: Convert remaining uses of pr_warning to pr_warn
+  drivers/rapidio: Convert remaining use of pr_warning to pr_warn
+  drivers/scsi: Convert remaining use of pr_warning to pr_warn
+  drivers/sh: Convert remaining use of pr_warning to pr_warn
+  drivers/tty: Convert remaining uses of pr_warning to pr_warn
+  drivers/video: Convert remaining uses of pr_warning to pr_warn
+  kernel/trace: Convert remaining uses of pr_warning to pr_warn
+  lib: Convert remaining uses of pr_warning to pr_warn
+  sound/soc: Convert remaining uses of pr_warning to pr_warn
 
-Please look into fixing this.
+ arch/alpha/kernel/perf_event.c                     |  4 +-
+ arch/arm/mach-ep93xx/core.c                        |  4 +-
+ arch/arm64/include/asm/syscall.h                   |  8 ++--
+ arch/arm64/kernel/hw_breakpoint.c                  |  8 ++--
+ arch/arm64/kernel/smp.c                            |  4 +-
+ arch/blackfin/kernel/nmi.c                         |  2 +-
+ arch/blackfin/kernel/ptrace.c                      |  2 +-
+ arch/blackfin/mach-bf533/boards/stamp.c            |  2 +-
+ arch/blackfin/mach-bf537/boards/cm_bf537e.c        |  2 +-
+ arch/blackfin/mach-bf537/boards/cm_bf537u.c        |  2 +-
+ arch/blackfin/mach-bf537/boards/stamp.c            |  2 +-
+ arch/blackfin/mach-bf537/boards/tcm_bf537.c        |  2 +-
+ arch/blackfin/mach-bf561/boards/cm_bf561.c         |  2 +-
+ arch/blackfin/mach-bf561/boards/ezkit.c            |  2 +-
+ arch/blackfin/mm/isram-driver.c                    |  4 +-
+ arch/ia64/kernel/setup.c                           |  6 +--
+ arch/powerpc/kernel/pci-common.c                   |  4 +-
+ arch/powerpc/mm/init_64.c                          |  5 +--
+ arch/powerpc/mm/mem.c                              |  3 +-
+ arch/powerpc/platforms/512x/mpc512x_shared.c       |  4 +-
+ arch/powerpc/platforms/85xx/socrates_fpga_pic.c    |  7 ++--
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c         |  2 +-
+ arch/powerpc/platforms/pasemi/dma_lib.c            |  4 +-
+ arch/powerpc/platforms/powernv/opal.c              |  8 ++--
+ arch/powerpc/platforms/powernv/pci-ioda.c          | 10 ++---
+ arch/powerpc/platforms/ps3/device-init.c           | 14 +++----
+ arch/powerpc/platforms/ps3/mm.c                    |  4 +-
+ arch/powerpc/platforms/ps3/os-area.c               |  2 +-
+ arch/powerpc/platforms/pseries/iommu.c             |  8 ++--
+ arch/powerpc/platforms/pseries/setup.c             |  4 +-
+ arch/powerpc/sysdev/fsl_pci.c                      |  9 ++---
+ arch/powerpc/sysdev/mpic.c                         | 10 ++---
+ arch/powerpc/sysdev/xics/icp-native.c              | 10 ++---
+ arch/powerpc/sysdev/xics/ics-opal.c                |  4 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c                |  4 +-
+ arch/powerpc/sysdev/xics/xics-common.c             |  8 ++--
+ arch/sh/boards/mach-sdk7786/nmi.c                  |  2 +-
+ arch/sh/drivers/pci/fixups-sdk7786.c               |  2 +-
+ arch/sh/kernel/io_trapped.c                        |  2 +-
+ arch/sh/kernel/setup.c                             |  2 +-
+ arch/sh/mm/consistent.c                            |  5 +--
+ arch/sparc/kernel/smp_64.c                         |  5 +--
+ arch/x86/kernel/amd_gart_64.c                      | 12 ++----
+ arch/x86/kernel/apic/apic.c                        | 46 ++++++++++------------
+ arch/x86/kernel/apic/apic_noop.c                   |  2 +-
+ arch/x86/kernel/setup_percpu.c                     |  4 +-
+ arch/x86/kernel/tboot.c                            | 15 ++++---
+ arch/x86/kernel/tsc_sync.c                         |  8 ++--
+ arch/x86/mm/kmmio.c                                |  8 ++--
+ arch/x86/mm/mmio-mod.c                             |  5 +--
+ arch/x86/mm/numa.c                                 | 12 +++---
+ arch/x86/mm/numa_emulation.c                       |  6 +--
+ arch/x86/mm/testmmiotrace.c                        |  5 +--
+ arch/x86/oprofile/op_x86_model.h                   |  6 +--
+ arch/x86/platform/olpc/olpc-xo15-sci.c             |  2 +-
+ arch/x86/platform/sfi/sfi.c                        |  3 +-
+ arch/x86/xen/debugfs.c                             |  2 +-
+ arch/x86/xen/setup.c                               |  2 +-
+ drivers/acpi/apei/apei-base.c                      | 32 +++++++--------
+ drivers/acpi/apei/einj.c                           |  4 +-
+ drivers/acpi/apei/erst-dbg.c                       |  4 +-
+ drivers/acpi/apei/ghes.c                           | 30 +++++++-------
+ drivers/acpi/apei/hest.c                           | 10 ++---
+ drivers/acpi/resource.c                            |  4 +-
+ drivers/block/drbd/drbd_nl.c                       | 13 +++---
+ drivers/cdrom/gdrom.c                              |  4 +-
+ drivers/char/virtio_console.c                      |  2 +-
+ drivers/clocksource/samsung_pwm_timer.c            |  4 +-
+ drivers/crypto/n2_core.c                           | 12 +++---
+ drivers/fmc/fmc-fakedev.c                          |  2 +-
+ drivers/gpu/drm/amd/powerplay/hwmgr/smu7_hwmgr.c   |  2 +-
+ drivers/gpu/drm/amd/powerplay/inc/pp_debug.h       |  2 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/fiji_smc.c    |  4 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/iceland_smc.c | 14 +++----
+ .../gpu/drm/amd/powerplay/smumgr/polaris10_smc.c   |  4 +-
+ drivers/gpu/drm/amd/powerplay/smumgr/tonga_smc.c   |  4 +-
+ drivers/ide/tx4938ide.c                            |  2 +-
+ drivers/ide/tx4939ide.c                            |  5 +--
+ drivers/input/gameport/gameport.c                  |  4 +-
+ drivers/input/joystick/gamecon.c                   |  3 +-
+ drivers/input/misc/apanel.c                        |  3 +-
+ drivers/input/misc/xen-kbdfront.c                  |  8 ++--
+ drivers/input/serio/serio.c                        |  8 ++--
+ drivers/isdn/gigaset/interface.c                   |  2 +-
+ drivers/isdn/hardware/mISDN/avmfritz.c             | 17 ++++----
+ drivers/isdn/hardware/mISDN/hfcmulti.c             |  8 ++--
+ drivers/isdn/hardware/mISDN/hfcpci.c               |  4 +-
+ drivers/isdn/hardware/mISDN/hfcsusb.c              |  4 +-
+ drivers/isdn/hardware/mISDN/mISDNipac.c            |  4 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c            | 10 ++---
+ drivers/isdn/hardware/mISDN/netjet.c               |  8 ++--
+ drivers/isdn/hardware/mISDN/w6692.c                | 12 +++---
+ drivers/isdn/mISDN/hwchannel.c                     |  8 ++--
+ drivers/macintosh/windfarm_fcu_controls.c          |  5 +--
+ drivers/macintosh/windfarm_lm87_sensor.c           |  4 +-
+ drivers/macintosh/windfarm_pm72.c                  | 22 +++++------
+ drivers/macintosh/windfarm_rm31.c                  |  6 +--
+ drivers/media/platform/sh_vou.c                    |  4 +-
+ drivers/mfd/db8500-prcmu.c                         |  2 +-
+ drivers/mfd/sta2x11-mfd.c                          |  4 +-
+ drivers/mfd/twl4030-power.c                        |  7 +---
+ drivers/mtd/chips/cfi_cmdset_0002.c                | 12 ++++--
+ drivers/mtd/nand/cmx270_nand.c                     |  4 +-
+ drivers/mtd/ofpart.c                               |  4 +-
+ drivers/of/fdt.c                                   | 20 +++++-----
+ drivers/oprofile/oprofile_perf.c                   |  8 ++--
+ drivers/platform/x86/asus-laptop.c                 |  2 +-
+ drivers/platform/x86/eeepc-laptop.c                |  2 +-
+ drivers/platform/x86/intel_oaktrail.c              | 10 ++---
+ drivers/rapidio/rio-sysfs.c                        |  4 +-
+ drivers/scsi/a3000.c                               |  2 +-
+ drivers/sh/intc/core.c                             |  4 +-
+ drivers/tty/hvc/hvcs.c                             |  2 +-
+ drivers/tty/tty_io.c                               |  4 +-
+ drivers/video/fbdev/aty/radeon_base.c              |  4 +-
+ drivers/video/fbdev/core/fbmon.c                   |  4 +-
+ drivers/video/fbdev/pxafb.c                        |  7 ++--
+ kernel/trace/trace_benchmark.c                     |  4 +-
+ lib/cpu_rmap.c                                     |  2 +-
+ lib/dma-debug.c                                    |  2 +-
+ sound/soc/fsl/imx-audmux.c                         |  6 +--
+ sound/soc/samsung/s3c-i2s-v2.c                     |  6 +--
+ 122 files changed, 367 insertions(+), 397 deletions(-)
 
-> >         if (ret < 0) {
-> >                 printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
-> >                         pci_name(rinfo->pdev));
-> >                 goto err_release_fb;
-> >         }
-> > +#endif
-> >
-> >         ret = pci_request_region(pdev, 2, "radeonfb mmio");
-> > +#ifndef CONFIG_PPC
-> >         if (ret < 0) {
-> >                 printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
-> >                         pci_name(rinfo->pdev));
-> >                 goto err_release_pci0;
-> >         }
-> > +#endif
-> >
-> >         /* map the regions */
-> >         rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
-> > @@ -2511,10 +2536,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
-> >         iounmap(rinfo->mmio_base);
-> >  err_release_pci2:
-> >         pci_release_region(pdev, 2);
-> > +#ifndef CONFIG_PPC
-> >  err_release_pci0:
-> >         pci_release_region(pdev, 0);
-> >  err_release_fb:
-> >          framebuffer_release(info);
-> > +#endif
-> >  err_disable:
-> >  err_out:
-> >         return ret;
-> > --
-> > 2.1.4
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+2.10.0.rc2.1.g053435c
 

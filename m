@@ -1,86 +1,92 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 08 Feb 2017 12:54:02 +0000
-Subject: Re: [PATCH v5 2/2] backlight arcxcnn devicetree bindings for ArcticSand
-Message-Id: <20170208125402.7uyw5scgqr5b67bl@dell>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Fri, 17 Feb 2017 06:22:27 +0000
+Subject: [PATCH v3] omapfb: dss: Handle return error in dss_init_ports.
+Message-Id: <1487311827-15644-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1485817307-9463-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1485817307-9463-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>, daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
-Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Cc'ing Daniel Thompson, the new Maintainer.
+Here, dss_init_ports is not handling return error form
+dpi_init_port and sdi_init_port. Now dss_init_ports is returning
+always 0. And it's making below code as a dead code.
 
-On Mon, 30 Jan 2017, Olimpiu Dejeu wrote:
+static int dss_bind(struct device *dev)
+{
+  .
+  .
+  r = dss_init_ports(pdev); //dss_init_ports will return always 0
+  if (r)// This condition will always false
+      goto err_init_ports; //Dead Code
+  .
+  .
+}
 
-> backlight: Add devicetree bindings for the Arctic Sand backlight driver
-> This patch provides devicetree bindings for the Arctic Sand
->     driver submitted in the previous patch
-> Acked-by: Rob Herring <robh@kernel.org>
-> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
-> ---
->=20
-> v4 =3D> v5:
-> - Added spaces for increased readability per Lee Jones
-> v3 =3D> v4:
-> - Added spaces for increased readability per Lee Jones
-> v2 =3D> v3:
-> - Version updated to match other patch in set. No other changes.
-> v1 =3D> v2:
-> - Version updated to match other patch in set. No other changes.
->=20
->  .../bindings/leds/backlight/arcxcnn_bl.txt         | 33 ++++++++++++++++=
-++++++
->  1 file changed, 31 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcx=
-cnn_bl.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.=
-txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-> new file mode 100644
-> index 0000000..ecb7731
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
-> @@ -0,0 +1,33 @@
-> +Binding for ArcticSand arc2c0608 LED driver
-> +
-> +Required properties:
-> +- compatible:		should be "arc,arc2c0608"
-> +- reg:			slave address
-> +
-> +Optional properties:
-> +- default-brightness:	brightness value on boot, value from: 0-4095
-> +- label:		The name of the backlight device
-> +			See Documentation/devicetree/bindings/leds/common.txt
-> +- led-sources:		List of enabled channels from 0 to 5.
-> +			See Documentation/devicetree/bindings/leds/common.txt
-> +
-> +- arc,led-config-0:	setting for register ILED_CONFIG_0
-> +- arc,led-config-1:	setting for register ILED_CONFIG_1
-> +- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
-> +- arc,comp-config:	setting for register CONFIG_COMP
-> +- arc,filter-config:	setting for register FILTER_CONFIG
-> +- arc,trim-config:	setting for register IMAXTUNE
-> +
-> +Note: Optional properties not specified will default to values in IC EPR=
-OM
-> +
-> +Example:
-> +
-> +arc2c0608@30 {
-> +	compatible =3D "arc,arc2c0608";
-> +	reg =3D <0x30>;
-> +	default-brightness =3D <500>;
-> +	label =3D "lcd-backlight";
-> +	linux,default-trigger =3D "backlight";
-> +	led-sources =3D <0 1 2 5>;
-> +};
-> +
+This change is to handle return error from dpi_init_port and
+sdi_init_port. Also, It will remove dead code from function 'dss_bind'.
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+
+Changes in v3:
+             -We should not stop initialization after port init fails.
+             - Trying to get port initalization successful.
+Changes in v2:
+             - handle cleanup of partially initialized ports.
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dss.c | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index 47d7f69..2b1e5c6 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -114,6 +114,8 @@ struct dss_features {
+ 
+ static bool dss_initialized;
+ 
++static void dss_uninit_ports(struct platform_device *pdev);
++
+ bool omapdss_is_initialized(void)
+ {
+ 	return dss_initialized;
+@@ -946,6 +948,7 @@ static int dss_init_ports(struct platform_device *pdev)
+ 	struct device_node *parent = pdev->dev.of_node;
+ 	struct device_node *port;
+ 	int r;
++	int ret = 0;
+ 
+ 	if (parent = NULL)
+ 		return 0;
+@@ -972,17 +975,24 @@ static int dss_init_ports(struct platform_device *pdev)
+ 
+ 		switch (port_type) {
+ 		case OMAP_DISPLAY_TYPE_DPI:
+-			dpi_init_port(pdev, port);
++			ret = dpi_init_port(pdev, port);
++			if (ret)
++				continue;
+ 			break;
+ 		case OMAP_DISPLAY_TYPE_SDI:
+-			sdi_init_port(pdev, port);
++			ret = sdi_init_port(pdev, port);
++			if (ret)
++				continue;
+ 			break;
+ 		default:
+ 			break;
+ 		}
+ 	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
+ 
+-	return 0;
++	if (ret)
++		dss_uninit_ports(pdev);
++
++	return ret;
+ }
+ 
+ static void dss_uninit_ports(struct platform_device *pdev)
+-- 
+1.9.1
+

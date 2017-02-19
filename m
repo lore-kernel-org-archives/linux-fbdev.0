@@ -1,79 +1,58 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Sun, 19 Feb 2017 08:13:11 +0000
+Date: Sun, 19 Feb 2017 08:26:18 +0000
 Subject: Re: [PATCH] backlight: report error on failure
-Message-Id: <20170219081311.GA30444@wychelm.lan>
+Message-Id: <20170219082618.GB30444@wychelm.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1484774630-4228-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1484774630-4228-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <588FC682.9040503@gmail.com>
+ <58A876EF.1040803@gmail.com>
+In-Reply-To: <58A876EF.1040803@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, Jan 18, 2017 at 09:23:50PM +0000, Sudip Mukherjee wrote:
-> It is possible to update the backlight power and the brightness using
-> the sysfs and on writing it either returns the count or if the callback
-> function does not exist then returns the error code 'ENXIO'.
+On Sat, Feb 18, 2017 at 04:31:43PM +0000, Sudip Mukherjee wrote:
+> On Monday 30 January 2017 11:04 PM, Sudip Mukherjee wrote:
+> > On Wednesday 18 January 2017 09:23 PM, Sudip Mukherjee wrote:
+> > > It is possible to update the backlight power and the brightness using
+> > > the sysfs and on writing it either returns the count or if the callback
+> > > function does not exist then returns the error code 'ENXIO'.
+> > > 
+> > > We have a situation where the userspace client is writing to the sysfs
+> > > to update the power and since the callback function exists the client
+> > > receives the return value as count and considers the operation to be
+> > > successful. That is correct as the write to the sysfs was successful.
+> > > But there is no way to know if the actual operation was done or not.
+> > > 
+> > > backlight_update_status() returns the error code if it fails. Pass that
+> > > to the userspace client who is trying to update the power so that the
+> > > client knows that the operation failed.
+> > > 
+> > > Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
+> > > ---
+> > 
+> > A gentle ping.
 > 
-> We have a situation where the userspace client is writing to the sysfs
-> to update the power and since the callback function exists the client
-> receives the return value as count and considers the operation to be
-> successful. That is correct as the write to the sysfs was successful.
-> But there is no way to know if the actual operation was done or not.
-
-For brightness there is the actual_brightness file... but I don't think
-there's anything for power.
-
-
-> backlight_update_status() returns the error code if it fails. Pass that
-> to the userspace client who is trying to update the power so that the
-> client knows that the operation failed.
-
-Strictly speaking this is an ABI change. Its probably a harmless one
-making it ok to change but I'm interested what testing or code review 
-you've done to be sure the userspace doesn't do odd things if the kernel
-starts to pass through errors.
-
-
-> Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
-> ---
->  drivers/video/backlight/backlight.c | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
+> Hi Andrew,
 > 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-> index 288318a..74b72b5 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -146,9 +146,9 @@ static ssize_t bl_power_store(struct device *dev, struct device_attribute *attr,
->  		pr_debug("set power to %lu\n", power);
->  		if (bd->props.power != power) {
->  			bd->props.power = power;
-> -			backlight_update_status(bd);
-> +			rc = backlight_update_status(bd);
->  		}
-> -		rc = count;
-> +		rc = rc ? rc : count;
+> Its more than one month now that this patch was submitted. Can you please
+> take it through your tree... else it will miss the merge window.
 
-Shouldn't bd->props,power be rolled back on error?
+Sorry you've been waiting so long for a review. Your "gentle ping" did
+result in a few minor tweaks to the maintainers but what it didn't
+(until today) provoke was  review!
 
-Without it we end up in an odd situation with the lazy updates, 
-specifically if the userspace observes original error and retries then we
-will spuriously succeed due to the lazy update (leaving us not much 
-better off than without this change).
+To be honest, the ABI changes in the patch meant I wanted to check a 
+few things first. However prompted by this mail I've just replied with 
+the review I *should* have sent out a week ago [asking you rather than 
+me to fill in some details about the likely effect of the ABI change ;-) ].
 
-
->  	mutex_unlock(&bd->ops_lock);
->  
-> @@ -176,8 +176,7 @@ int backlight_device_set_brightness(struct backlight_device *bd,
->  		else {
->  			pr_debug("set brightness to %lu\n", brightness);
->  			bd->props.brightness = brightness;
-> -			backlight_update_status(bd);
-> -			rc = 0;
-> +			rc = backlight_update_status(bd);
-
-Again, there is no roll back on error.
+BTW, I did do some archeology eariler in the week and I think the kernel
+has been swallowing error codes here for >10 years, so I'm curious if this
+is a theoretic bug fix or are you aware of some tangible problem in 
+userspace that results from it?
 
 
 Daniel.

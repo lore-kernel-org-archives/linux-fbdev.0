@@ -1,34 +1,54 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 20 Feb 2017 13:56:41 +0000
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Tue, 21 Feb 2017 11:20:10 +0000
 Subject: Re: [PATCH v3 01/14] Documentation: dt/bindings: Document pinctrl-ingenic
-Message-Id: <CACRpkdbAA33FFrMgx-eZPmpBBfQ_hF+=dSu0hANVthdbadicDg@mail.gmail.com>
+Message-Id: <f19fea79c2616455f5f08070923428cc@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net> <20170125185207.23902-2-paul@crapouillou.net>
- <20170130203617.hpljtcmzava3rq2n@rob-hp-laptop> <12dc62a7255bd453ff4e5e89f93ebc58@mail.crapouillou.net>
- <CACRpkdbAgy4sh6NT5DdQD6EQtOZEwevohEA6OGRcVz98yqS52Q@mail.gmail.com> <fd3c507484a9ee34a08c9f92e60624db@mail.crapouillou.net>
-In-Reply-To: <fd3c507484a9ee34a08c9f92e60624db-p8hskv8pF7lEPksTRSfcJOTW4wlIGRCZ@public.gmane.org>
+ <20170125185207.23902-1-paul@crapouillou.net>
+ <20170125185207.23902-2-paul@crapouillou.net>
+ <20170130203617.hpljtcmzava3rq2n@rob-hp-laptop>
+ <12dc62a7255bd453ff4e5e89f93ebc58@mail.crapouillou.net>
+ <CACRpkdbAgy4sh6NT5DdQD6EQtOZEwevohEA6OGRcVz98yqS52Q@mail.gmail.com>
+ <fd3c507484a9ee34a08c9f92e60624db@mail.crapouillou.net>
+ <CACRpkdbAA33FFrMgx-eZPmpBBfQ_hF+=dSu0hANVthdbadicDg@mail.gmail.com>
+In-Reply-To: <CACRpkdbAA33FFrMgx-eZPmpBBfQ_hF+=dSu0hANVthdbadicDg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
-Cc: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MIPS <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org" <linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, linux-pwm-u79uwXL29TY@public.gmane.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Rob Herring <robh@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Linux MIPS <linux-mips@linux-mips.org>, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, James Hogan <james.hogan@imgtec.com>
 
-On Thu, Feb 9, 2017 at 6:28 PM, Paul Cercueil <paul@crapouillou.net> wrote:
+Le 2017-02-20 14:56, Linus Walleij a écrit :
+> On Thu, Feb 9, 2017 at 6:28 PM, Paul Cercueil <paul@crapouillou.net> 
+> wrote:
+> 
+>> I was thinking that instead of having one pinctrl-ingenic instance 
+>> covering
+>> 0x600 of register space, and 6 instances of gpio-ingenic having 0x100 
+>> each,
+>> I could just have 6 instances of pinctrl-ingenic, each one with an 
+>> instance
+>> of gpio-ingenic declared as a sub-node, each handling just 0x100 of 
+>> memory
+>> space.
+> 
+> My head is spinning,  but I think I get it. What is wrong with the 
+> solution
+> I proposed with one pin control instance covering the whole 0x600 and 
+> with 6
+> subnodes of GPIO?
+> 
+> The GPIO nodes do not even have to have an address range associated 
+> with
+> them you know, that can be distributed out with regmap code accessing
+> the parent regmap.
 
-> I was thinking that instead of having one pinctrl-ingenic instance covering
-> 0x600 of register space, and 6 instances of gpio-ingenic having 0x100 each,
-> I could just have 6 instances of pinctrl-ingenic, each one with an instance
-> of gpio-ingenic declared as a sub-node, each handling just 0x100 of memory
-> space.
+OK, but then each GPIO chip 'X' still need to know its offset in the 
+register
+area, which is (pinctrl_base + X * 0x100).
+What's the best way to pass that info to the driver? (I assume it's not 
+with
+a custom DT binding...).
 
-My head is spinning,  but I think I get it. What is wrong with the solution
-I proposed with one pin control instance covering the whole 0x600 and with 6
-subnodes of GPIO?
-
-The GPIO nodes do not even have to have an address range associated with
-them you know, that can be distributed out with regmap code accessing
-the parent regmap.
-
-Yours,
-Linus Walleij
+Regards,
+-Paul

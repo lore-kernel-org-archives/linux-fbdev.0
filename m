@@ -1,48 +1,22 @@
-From: simran singhal <singhalsimran0@gmail.com>
-Date: Mon, 27 Feb 2017 18:26:25 +0000
-Subject: [PATCH 2/5] staging: rtl8192u: Remove unnecessary else after return
-Message-Id: <1488219268-3006-2-git-send-email-singhalsimran0@gmail.com>
+From: Qin's Yanjun <Qin.Yanjun@null.net>
+Date: Thu, 23 Feb 2017 15:09:29 +0000
+Subject: RE:
+Message-Id: <cf3faff95fb3db02602e6f37c5cd928f@mail.aknet.kz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com>
-In-Reply-To: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: lustre-devel@lists.lustre.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, outreachy-kernel@googlegroups.com
+To: linux-fbdev@vger.kernel.org
 
-This patch fixes the checkpatch warning that else is not generally
-useful after a break or return.
 
-This was done using Coccinelle:
+How are you today and your family? I require your attention and honest
+co-operation about some issues which i will really want to discuss with you
+which.  Looking forward to read from you soon.  
 
-@@
-expression e2;
-statement s1;
-@@
-if(e2) { ... return ...; }
--else
-         s1
+Qin's
 
-Signed-off-by: simran singhal <singhalsimran0@gmail.com>
----
- drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-index 2453413..4d6c928 100644
---- a/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-+++ b/drivers/staging/rtl8192u/ieee80211/ieee80211_crypt_tkip.c
-@@ -374,8 +374,7 @@ static int ieee80211_tkip_encrypt(struct sk_buff *skb, int hdr_len, void *priv)
- 
- 	if (!tcb_desc->bHwSec)
- 		return ret;
--	else
--		return 0;
-+	return 0;
- 
- 
- }
--- 
-2.7.4
+______________________________
+
+Sky Silk, http://aknet.kz
 

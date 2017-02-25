@@ -1,45 +1,50 @@
-From: Boris Brezillon <boris.brezillon@free-electrons.com>
-Date: Thu, 02 Feb 2017 13:53:09 +0000
-Subject: [PATCH v3 0/2] gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
-Message-Id: <1486043591-6278-1-git-send-email-boris.brezillon@free-electrons.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Sat, 25 Feb 2017 19:25:11 +0000
+Subject: [PATCH] video: fbdev: pmagb-b-fb: remove incorrect __exit markups
+Message-Id: <20170225192511.GA12591@dtor-ws>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, linux-gpio@vger.kernel.org
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Bryan Wu <cooloney@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-leds@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Boris Brezillon <boris.brezillon@free-electrons.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hello Linus,
+Even if bus is not hot-pluggable, the devices can be unbound from the
+driver via sysfs, so we should not be using __exit annotations on
+remove() methods. The only exception is drivers registered with
+platform_driver_probe() which specifically disables sysfs bind/unbind
+attributes.
 
-Here is the v3 rebased on your ib-gpiod-flags branch.
-
-Thanks,
-
-Boris
-
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
-Changes since v2:
-- Rebase on the ib-gpiod-flags
+ drivers/video/fbdev/pmagb-b-fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Changes since v1:
-- Rename the devm_get_gpiod_from_child() helper into
-  devm_fwnode_get_gpiod_from_child()
-- Define as a static inline wrapper around
-  devm_fwnode_get_gpiod_from_child()
+diff --git a/drivers/video/fbdev/pmagb-b-fb.c b/drivers/video/fbdev/pmagb-b-fb.c
+index 0822b6f8dddc..2ae88b4e86b0 100644
+--- a/drivers/video/fbdev/pmagb-b-fb.c
++++ b/drivers/video/fbdev/pmagb-b-fb.c
+@@ -353,7 +353,7 @@ static int pmagbbfb_probe(struct device *dev)
+ 	return err;
+ }
+ 
+-static int __exit pmagbbfb_remove(struct device *dev)
++static int pmagbbfb_remove(struct device *dev)
+ {
+ 	struct tc_dev *tdev = to_tc_dev(dev);
+ 	struct fb_info *info = dev_get_drvdata(dev);
+@@ -388,7 +388,7 @@ static struct tc_driver pmagbbfb_driver = {
+ 		.name	= "pmagbbfb",
+ 		.bus	= &tc_bus_type,
+ 		.probe	= pmagbbfb_probe,
+-		.remove	= __exit_p(pmagbbfb_remove),
++		.remove	= pmagbbfb_remove,
+ 	},
+ };
+ 
+-- 
+2.11.0.483.g087da7b7c-goog
 
-Boris Brezillon (2):
-  gpio: Rename devm_get_gpiod_from_child()
-  gpio: Add the devm_fwnode_get_index_gpiod_from_child() helper
-
- drivers/gpio/devres.c                     | 18 +++++++++-------
- drivers/gpio/gpiolib.c                    |  9 ++++----
- drivers/input/keyboard/gpio_keys.c        |  6 ++++--
- drivers/input/keyboard/gpio_keys_polled.c |  8 +++----
- drivers/leds/leds-gpio.c                  |  5 +++--
- drivers/video/fbdev/amba-clcd-nomadik.c   | 16 +++++++-------
- include/linux/gpio/consumer.h             | 35 ++++++++++++++++++++-----------
- 7 files changed, 57 insertions(+), 40 deletions(-)
 
 -- 
-2.7.4
-
+Dmitry

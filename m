@@ -1,74 +1,106 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 22 Feb 2017 08:52:54 +0000
-Subject: Re: [PATCH] backlight: report error on failure
-Message-Id: <20170222085254.dgafttyoqzs2fbzh@dell>
+From: Martin Kaiser <martin@kaiser.cx>
+Date: Mon, 27 Feb 2017 10:56:41 +0000
+Subject: [PATCH 1/2] video: fbdev: imxfb: support AUS mode
+Message-Id: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1484774630-4228-1-git-send-email-sudipm.mukherjee@gmail.com>
- <588FC682.9040503@gmail.com>
- <58A876EF.1040803@gmail.com>
- <20170219082618.GB30444@wychelm.lan>
- <20170220205241.GA10427@sudip-tp>
-In-Reply-To: <20170220205241.GA10427@sudip-tp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Andrew Morton <akpm@linux-foundation.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: Martin Kaiser <martin@kaiser.cx>, Sascha Hauer <kernel@pengutronix.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
 
-On Mon, 20 Feb 2017, Sudip Mukherjee wrote:
+Some displays require setting AUS mode in the LDCD AUS Mode Control
+Register to work with the imxfb driver. Like the value of the Panel
+Configuration Register, the AUS Mode Control Register's value depends on
+the display mode.
 
-> On Sun, Feb 19, 2017 at 08:26:18AM +0000, Daniel Thompson wrote:
-> > On Sat, Feb 18, 2017 at 04:31:43PM +0000, Sudip Mukherjee wrote:
-> > > On Monday 30 January 2017 11:04 PM, Sudip Mukherjee wrote:
-> > > > On Wednesday 18 January 2017 09:23 PM, Sudip Mukherjee wrote:
-> > > > > It is possible to update the backlight power and the brightness u=
-sing
-> > > > > the sysfs and on writing it either returns the count or if the ca=
-llback
-> > > > > function does not exist then returns the error code 'ENXIO'.
-> > > > >=20
-> > > > > We have a situation where the userspace client is writing to the =
-sysfs
-> > > > > to update the power and since the callback function exists the cl=
-ient
-> > > > > receives the return value as count and considers the operation to=
- be
-> > > > > successful. That is correct as the write to the sysfs was success=
-ful.
-> > > > > But there is no way to know if the actual operation was done or n=
-ot.
-> > > > >=20
-> > > > > backlight_update_status() returns the error code if it fails. Pas=
-s that
-> > > > > to the userspace client who is trying to update the power so that=
- the
-> > > > > client knows that the operation failed.
-> > > > >=20
-> > > > > Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
-> > > > > ---
-> > > >=20
-> > > > A gentle ping.
-> > >=20
-> > > Hi Andrew,
-> > >=20
-> > > Its more than one month now that this patch was submitted. Can you pl=
-ease
-> > > take it through your tree... else it will miss the merge window.
-> >=20
-> > Sorry you've been waiting so long for a review. Your "gentle ping" did
-> > result in a few minor tweaks to the maintainers but what it didn't
-> > (until today) provoke was  review!
->=20
-> what tweaks? I can see that now you are the new maintainer.Is that the
-> result of my ping? :)
+Allow setting this register from the device tree. Make the device tree
+node optional to keep the DT ABI stable. This register is available only
+on imx21 and compatible chipsets.
 
-Pings never have any effect and are thus always discouraged. ;)
+Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+---
+ drivers/video/fbdev/imxfb.c               | 19 +++++++++++++++++++
+ include/linux/platform_data/video-imxfb.h |  1 +
+ 2 files changed, 20 insertions(+)
 
-The amount of pending reviews on Backlight patches were what provoked
-me to find a new, diligent Maintainer for the subsystem.
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 1b0faad..a05cad4 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -117,6 +117,8 @@
+ 
+ #define IMXFB_LSCR1_DEFAULT 0x00120300
+ 
++#define LCDC_LAUSCR	0x80
++
+ /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
+ static const char *fb_mode;
+ 
+@@ -158,6 +160,7 @@ struct imxfb_info {
+ 	dma_addr_t		dbar2;
+ 
+ 	u_int			pcr;
++	u_int			lauscr;
+ 	u_int			pwmr;
+ 	u_int			lscr1;
+ 	u_int			dmacr;
+@@ -422,6 +425,11 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	pcr |= imxfb_mode->pcr & ~(0x3f | (7 << 25));
+ 
+ 	fbi->pcr = pcr;
++	/*
++	 * The LCDC AUS Mode Control Register does not exist on imx1.
++	 */
++	if (!is_imx1_fb(fbi))
++		fbi->lauscr = imxfb_mode->lauscr;
+ 
+ 	/*
+ 	 * Copy the RGB parameters for this display
+@@ -638,6 +646,9 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 	if (fbi->dmacr)
+ 		writel(fbi->dmacr, fbi->regs + LCDC_DMACR);
+ 
++	if (fbi->lauscr)
++		writel(fbi->lauscr, fbi->regs + LCDC_LAUSCR);
++
+ 	return 0;
+ }
+ 
+@@ -707,6 +718,7 @@ static int imxfb_of_read_mode(struct device *dev, struct device_node *np,
+ 	struct fb_videomode *of_mode = &imxfb_mode->mode;
+ 	u32 bpp;
+ 	u32 pcr;
++	u32 lauscr;
+ 
+ 	ret = of_property_read_string(np, "model", &of_mode->name);
+ 	if (ret)
+@@ -734,6 +746,13 @@ static int imxfb_of_read_mode(struct device *dev, struct device_node *np,
+ 	imxfb_mode->bpp = bpp;
+ 	imxfb_mode->pcr = pcr;
+ 
++	/*
++	 * fsl,lauscr is optional
++	 */
++	ret = of_property_read_u32(np, "fsl,lauscr", &lauscr);
++	if (ret = 0)
++		imxfb_mode->lauscr = lauscr;
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
+index a5c0a71..fdd2d4c 100644
+--- a/include/linux/platform_data/video-imxfb.h
++++ b/include/linux/platform_data/video-imxfb.h
+@@ -50,6 +50,7 @@
+ struct imx_fb_videomode {
+ 	struct fb_videomode mode;
+ 	u32 pcr;
++	u32 lauscr;
+ 	unsigned char	bpp;
+ };
+ 
+-- 
+2.1.4
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

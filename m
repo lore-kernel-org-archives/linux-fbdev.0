@@ -1,50 +1,82 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Sun, 12 Feb 2017 20:48:59 +0000
-Subject: Re: [PATCH v3 04/14] GPIO: Add gpio-ingenic driver
-Message-Id: <CACRpkdbusY=gsZ=a9yGfRMi5t=+539OwKt0i5FNczxNyEVPHwg@mail.gmail.com>
+From: simran singhal <singhalsimran0@gmail.com>
+Date: Mon, 27 Feb 2017 18:26:27 +0000
+Subject: [PATCH 4/5] staging: sm750fb: Remove unnecessary else after return
+Message-Id: <1488219268-3006-4-git-send-email-singhalsimran0@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <27071da2f01d48141e8ac3dfaa13255d@mail.crapouillou.net>
- <20170125185207.23902-1-paul@crapouillou.net> <20170125185207.23902-5-paul@crapouillou.net>
- <CACRpkdaqQ2==B1_o-Ru81Nbu_kUF+Kxn=XFYms-1e=nAtHiJ4A@mail.gmail.com> <b032ad924ae905ce4fd11535d08c29a8@mail.crapouillou.net>
-In-Reply-To: <b032ad924ae905ce4fd11535d08c29a8@mail.crapouillou.net>
+References: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com>
+In-Reply-To: <1488219268-3006-1-git-send-email-singhalsimran0@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>, Mika Westerberg <mika.westerberg@linux.intel.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Ulf Hansson <ulf.hansson@linaro.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, linux-p
+To: gregkh@linuxfoundation.org
+Cc: lustre-devel@lists.lustre.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, outreachy-kernel@googlegroups.com
 
-On Thu, Feb 9, 2017 at 6:14 PM, Paul Cercueil <paul@crapouillou.net> wrote:
+This patch fixes the checkpatch warning that else is not generally
+useful after a break or return.
 
->> If you're not just replacing these with GPIO_GENERIC, please also
->> include a .get_direction() callback.
->
-> My .direction_input() and .direction_output() callbacks just call into
-> the pinctrl driver, using pinctrl_gpio_direction_[in,out]put().
-> I didn't find a way to get the direction info from the pinctrl driver,
-> is that something that the core should provide?
+This was done using Coccinelle:
+@@
+expression e2;
+statement s1;
+@@
+if(e2) { ... return ...; }
+-else
+         s1
 
-Hm OK you have a clear point there, there is no such callback.
+Signed-off-by: simran singhal <singhalsimran0@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_sii164.c | 6 ++----
+ drivers/staging/sm750fb/ddk750_swi2c.c  | 6 ++----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-OK I do not require you to fix that at this time.
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index 259006a..6906598 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -368,8 +368,7 @@ unsigned char sii164IsConnected(void)
+ 	hotPlugValue = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT) & SII164_DETECT_HOT_PLUG_STATUS_MASK;
+ 	if (hotPlugValue = SII164_DETECT_HOT_PLUG_STATUS_ON)
+ 		return 1;
+-	else
+-		return 0;
++	return 0;
+ }
+ 
+ /*
+@@ -387,8 +386,7 @@ unsigned char sii164CheckInterrupt(void)
+ 	detectReg = i2cReadReg(SII164_I2C_ADDRESS, SII164_DETECT) & SII164_DETECT_MONITOR_STATE_MASK;
+ 	if (detectReg = SII164_DETECT_MONITOR_STATE_CHANGE)
+ 		return 1;
+-	else
+-		return 0;
++	return 0;
+ }
+ 
+ /*
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index a4ac07c..5997349 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -199,8 +199,7 @@ static unsigned char sw_i2c_read_sda(void)
+ 	gpio_data = peek32(sw_i2c_data_gpio_data_reg);
+ 	if (gpio_data & (1 << sw_i2c_data_gpio))
+ 		return 1;
+-	else
+-		return 0;
++	return 0;
+ }
+ 
+ /*
+@@ -295,8 +294,7 @@ static long sw_i2c_write_byte(unsigned char data)
+ 
+ 	if (i < 0xff)
+ 		return 0;
+-	else
+-		return -1;
++	return -1;
+ }
+ 
+ /*
+-- 
+2.7.4
 
-I am hesitant about providing ever more callbacks from GPIO
-to pin control, I might need some help for consolidation here.
-
-With Mika's patches we have a .set_config() call to
-pinctrl_gpio_set_config() so essentially
-we *could* actually refactor all pin control drivers providing
-a GPIO back-end to use:
-
-pinctrl_gpio_set_config(gpio, PIN_CONF_PACKED(PIN_CONFIG_INPUT_ENABLE, 0));
-pinctrl_gpio_set_config(gpio, PIN_CONF_PACKED(PIN_CONFIG_OUTPUT, val));
-
-And replace the calls to pinctrl_gpio_direction_input()
-and pinctrl_gpio_direction_output() with this throughout.
-
-It makes things a bit simpler. If we need to figure things
-out the reverse direction then pinctrl_gpio_get_config()
-should be implemented and used as back-end for
-figuring out direction.
-
-Yours,
-Linus Walleij

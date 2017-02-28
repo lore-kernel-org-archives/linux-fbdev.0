@@ -1,52 +1,74 @@
-From: Pierre-Hugues Husson <phh@phh.me>
-Date: Sun, 05 Feb 2017 00:22:53 +0000
-Subject: Re: [RFCv2 PATCH 3/5] drm/bridge: dw_hdmi: add HDMI notifier support
-Message-Id: <CAJ-oXjTap_uVu0Ezm+L8JYc1gC2MZo4+ZRm25RbS16iE3pRrYA@mail.gmail.com>
+From: Olimpiu Dejeu <olimpiu@arcticsand.com>
+Date: Tue, 28 Feb 2017 18:20:35 +0000
+Subject: [PATCH v6 2/2] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <1488306035-16461-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1479136968-24477-1-git-send-email-hverkuil@xs4all.nl> <1479136968-24477-4-git-send-email-hverkuil@xs4all.nl>
-In-Reply-To: <1479136968-24477-4-git-send-email-hverkuil@xs4all.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: linux-media@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Russell King <rmk+kernel@arm.linux.org.uk>, linux-fbdev@vger.kernel.org, Russell King - ARM Linux <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
+To: robh@kernel.org
+Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com, daniel.thompson@linaro.org, Olimpiu Dejeu <olimpiu@arcticsand.com>
 
-Hi
+backlight: Add devicetree bindings for the Arctic Sand backlight driver
+This patch provides devicetree bindings for the Arctic Sand
+    driver submitted in the previous patch
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+---
+v5 => v6:
+- Version updated to match other patch in set. No other changes.
+v4 => v5:
+- Added spaces for increased readability per Lee Jones
+v3 => v4:
+- Added spaces for increased readability per Lee Jones
+v2 => v3:
+- Version updated to match other patch in set. No other changes.
+v1 => v2:
+- Version updated to match other patch in set. No other changes.
 
-2016-11-14 16:22 GMT+01:00 Hans Verkuil <hverkuil@xs4all.nl>:
-> From: Russell King <rmk+kernel@arm.linux.org.uk>
->
-> Add HDMI notifiers to the HDMI bridge driver.
+ .../bindings/leds/backlight/arcxcnn_bl.txt         | 33 ++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
 
+diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+new file mode 100644
+index 0000000..ecb7731
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+@@ -0,0 +1,33 @@
++Binding for ArcticSand arc2c0608 LED driver
++
++Required properties:
++- compatible:		should be "arc,arc2c0608"
++- reg:			slave address
++
++Optional properties:
++- default-brightness:	brightness value on boot, value from: 0-4095
++- label:		The name of the backlight device
++			See Documentation/devicetree/bindings/leds/common.txt
++- led-sources:		List of enabled channels from 0 to 5.
++			See Documentation/devicetree/bindings/leds/common.txt
++
++- arc,led-config-0:	setting for register ILED_CONFIG_0
++- arc,led-config-1:	setting for register ILED_CONFIG_1
++- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
++- arc,comp-config:	setting for register CONFIG_COMP
++- arc,filter-config:	setting for register FILTER_CONFIG
++- arc,trim-config:	setting for register IMAXTUNE
++
++Note: Optional properties not specified will default to values in IC EPROM
++
++Example:
++
++arc2c0608@30 {
++	compatible = "arc,arc2c0608";
++	reg = <0x30>;
++	default-brightness = <500>;
++	label = "lcd-backlight";
++	linux,default-trigger = "backlight";
++	led-sources = <0 1 2 5>;
++};
++
+-- 
+2.7.4
 
-> @@ -1448,9 +1450,11 @@ static int dw_hdmi_connector_get_modes(struct drm_connector *connector)
->                 hdmi->sink_is_hdmi = drm_detect_hdmi_monitor(edid);
->                 hdmi->sink_has_audio = drm_detect_monitor_audio(edid);
->                 drm_mode_connector_update_edid_property(connector, edid);
-> +               hdmi_event_new_edid(hdmi->n, edid, 0);
-Considering current hdmi-notifier code, the size must not be 0
-
-Should this be done this way?
-> hdmi_event_new_edid(hdmi->n, edid, (edid->extensions + 1) * EDID_LENGTH);
-
->                 ret = drm_add_edid_modes(connector, edid);
->                 /* Store the ELD */
->                 drm_edid_to_eld(connector, edid);
-> +               hdmi_event_new_eld(hdmi->n, connector->eld);
->                 kfree(edid);
->         } else {
->                 dev_dbg(hdmi->dev, "failed to get edid\n");
-> @@ -1579,6 +1583,12 @@ static irqreturn_t dw_hdmi_irq(int irq, void *dev_id)
->                         dw_hdmi_update_phy_mask(hdmi);
->                 }
->                 mutex_unlock(&hdmi->mutex);
-> +
-> +               if ((phy_stat & (HDMI_PHY_RX_SENSE | HDMI_PHY_HPD)) = 0)
-> +                       hdmi_event_disconnect(hdmi->n);
-> +               else if ((phy_stat & (HDMI_PHY_RX_SENSE | HDMI_PHY_HPD)) =
-> +                        (HDMI_IH_PHY_STAT0_RX_SENSE | HDMI_PHY_HPD))
-> +                       hdmi_event_connect(hdmi->n);
-On rk3288, I never get this event (connect) to trigger, everything
-else (disconnect/edid/eld) are ok though. (which is enough for CEC)
-I'll need some extra debugging...
-Do you have a platform to test on, which does trigger this event?

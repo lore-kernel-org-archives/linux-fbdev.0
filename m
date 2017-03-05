@@ -1,36 +1,77 @@
-From: Anton Vasilyev <vasilyev@ispras.ru>
-Date: Wed, 01 Mar 2017 16:38:08 +0000
-Subject: [PATCH] Incorrect URL given in drivers/video/fbdev/Kconfig
-Message-Id: <1488386288-27328-1-git-send-email-vasilyev@ispras.ru>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Sun, 05 Mar 2017 11:36:49 +0000
+Subject: [PATCH 2/3] staging: sm750fb: function prototype argument should have an identifier name
+Message-Id: <20170305112450.9066-3-arushisinghal19971997@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
+In-Reply-To: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Anton Vasilyev <vasilyev@ispras.ru>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, outreachy-kernel@googlegroups.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
 
-Modify link to FrameBuffer HOWTO because original link become unavailable
+function prototype arguments like 'struct vb_device_info *','unsigned
+long' etc. should have an identifier name.
 
-Found by Linux Driver Verification project (linuxtesting.org)
-
-Signed-off-by: Anton Vasilyev <vasilyev@ispras.ru>
+Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
 ---
- drivers/video/fbdev/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_display.h | 2 +-
+ drivers/staging/sm750fb/ddk750_mode.h    | 2 +-
+ drivers/staging/sm750fb/ddk750_power.h   | 2 +-
+ drivers/staging/sm750fb/sm750.h          | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5d3b0db..f78043e 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -26,7 +26,7 @@ menuconfig FB
- 	  You need an utility program called fbset to make full use of frame
- 	  buffer devices. Please read <file:Documentation/fb/framebuffer.txt>
- 	  and the Framebuffer-HOWTO at
--	  <http://www.munted.org.uk/programming/Framebuffer-HOWTO-1.3.html> for more
-+	  <http://www.tldp.org/HOWTO/pdf/Framebuffer-HOWTO.pdf> for more
- 	  information.
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 8bf22e4f0d8b..369f1740a42b 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -103,6 +103,6 @@ typedef enum _disp_output_t {
  
- 	  Say Y here and to the driver for your graphics board below if you
+ disp_output_t;
+ 
+-void ddk750_setLogicalDispOut(disp_output_t);
++void ddk750_setLogicalDispOut(disp_output_t output);
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+index b4cd90a5d2bc..0292d87aa98b 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.h
++++ b/drivers/staging/sm750fb/ddk750_mode.h
+@@ -36,6 +36,6 @@ typedef struct _mode_parameter_t {
+ 
+ mode_parameter_t;
+ 
+-int ddk750_setModeTiming(mode_parameter_t *, clock_type_t);
++int ddk750_setModeTiming(mode_parameter_t *parm, clock_type_t clock);
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 1f22a67493af..d2948a7f0cdc 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -15,7 +15,7 @@ DPMS_t;
+ 	       (peek32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | (off)); \
+ }
+ 
+-void ddk750_set_dpms(DPMS_t);
++void ddk750_set_dpms(DPMS_t state);
+ void sm750_set_power_mode(unsigned int powerMode);
+ void sm750_set_current_gate(unsigned int gate);
+ 
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 306711ed55f9..5ea455dee949 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -184,7 +184,7 @@ static inline unsigned long ps_to_hz(unsigned int psvalue)
+ }
+ 
+ int hw_sm750_map(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+-int hw_sm750_inithw(struct sm750_dev*, struct pci_dev *);
++int hw_sm750_inithw(struct sm750_dev *sm750_dev, struct pci_dev *pdev);
+ void hw_sm750_initAccel(struct sm750_dev *);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
 -- 
-2.7.4
+2.11.0
 

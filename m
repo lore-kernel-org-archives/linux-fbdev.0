@@ -1,68 +1,100 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 14 Mar 2017 16:08:40 +0000
-Subject: Re: [PATCH v7 2/2] backlight arcxcnn add support for ArcticSand devices
-Message-Id: <44a210ee-f0c4-3933-c696-09446028d249@linaro.org>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Sun, 05 Mar 2017 11:36:48 +0000
+Subject: [PATCH 1/3] staging: sm750fb: fixes add blank line after function/struct/union/enum declarations
+Message-Id: <20170305112450.9066-2-arushisinghal19971997@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1489429323-6103-1-git-send-email-olimpiu@arcticsand.com>
- <d628cdbc-dbc4-1065-23e8-63c0d6a2dd86@linaro.org>
- <61f6e116-6190-72f3-ca89-54c9a94a6ac2@arcticsand.com>
-In-Reply-To: <61f6e116-6190-72f3-ca89-54c9a94a6ac2-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+References: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
+In-Reply-To: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brian Dodge <bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>, robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
-Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, outreachy-kernel@googlegroups.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
 
-On 14/03/17 15:53, Brian Dodge wrote:
-> Hi Daniel,
->
-> Yes checkpatch.pl was telling us this. I didn't think we had the
-> "authority" to modify that file.
+This patch fixes the warnings reported by checkpatch.pl
+for please use a blank line after function/struct/union/enum
+declarations.
 
-You don't really need authority to propose changes (e.g. send a patch). 
-I guess you might attract sharp words from a maintainer if the proposed 
-change were conspicuously reckless or extremely short sighted ("my use 
-case is the only one that really matters") but I don't see any risk of 
-that here.
+Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.h | 1 +
+ drivers/staging/sm750fb/ddk750_mode.h    | 2 ++
+ drivers/staging/sm750fb/ddk750_power.h   | 1 +
+ drivers/staging/sm750fb/sm750_cursor.c   | 3 +++
+ 4 files changed, 7 insertions(+)
 
-Think of it like this: if folks with @arcticsand.com mail addresses 
-don't try to document the vendor prefix, who will?
-
-
- > Is it OK if we put the
-> vendor-prefixes.txt change in the first patch (device tree bindings) or
-> so you think we should have an 0003 patch for just that?
-
-Personally I'd add it as a new patch but I'd make it the *first* patch 
-in the series.
-
-
-Daniel.
-
-
-PS Top posting *is* something that will eventually attract sharp words
-    from some maintainers ;-)
-
-
-> On 03/14/2017 06:16 AM, Daniel Thompson wrote:
->> On 13/03/17 18:22, Olimpiu Dejeu wrote:
->>> backlight: Add support for Arctic Sand LED backlight driver chips
->>> This driver provides support for the Arctic Sand arc2c0608 chip,
->>>     and provides a framework to support future devices.
->>> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
->>
->> Please could you also submit a patch to add arc to
->> ./Documentation/devicetree/bindings/vendor-prefixes.txt.
->>
->> checkpatch.pl should have been asking you to do since v1 but only if
->> you test the patch series against a clean kernel (tools such as aiaiai
->> can help with this).
->>
->> However, once that is attended to:
->>
->> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
->>
->>
->> Daniel.
->
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index e2a3f84ca4c5..8bf22e4f0d8b 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -100,6 +100,7 @@ typedef enum _disp_output_t {
+ 	do_CRT_PRI = CRT_2_PRI | PRI_TP_ON | DPMS_ON | DAC_ON,
+ 	do_CRT_SEC = CRT_2_SEC | SEC_TP_ON | DPMS_ON | DAC_ON,
+ }
++
+ disp_output_t;
+ 
+ void ddk750_setLogicalDispOut(disp_output_t);
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+index 2183e664cf4b..b4cd90a5d2bc 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.h
++++ b/drivers/staging/sm750fb/ddk750_mode.h
+@@ -7,6 +7,7 @@ typedef enum _spolarity_t {
+ 	POS = 0, /* positive */
+ 	NEG, /* negative */
+ }
++
+ spolarity_t;
+ 
+ typedef struct _mode_parameter_t {
+@@ -32,6 +33,7 @@ typedef struct _mode_parameter_t {
+ 	/* Clock Phase. This clock phase only applies to Panel. */
+ 	spolarity_t clock_phase_polarity;
+ }
++
+ mode_parameter_t;
+ 
+ int ddk750_setModeTiming(mode_parameter_t *, clock_type_t);
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index ec0b99d6a7ad..1f22a67493af 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -7,6 +7,7 @@ typedef enum _DPMS_t {
+ 	crtDPMS_SUSPEND = 0x2,
+ 	crtDPMS_OFF = 0x3,
+ }
++
+ DPMS_t;
+ 
+ #define setDAC(off) {							\
+diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+index aa232c31b312..1e29a0f0a53d 100644
+--- a/drivers/staging/sm750fb/sm750_cursor.c
++++ b/drivers/staging/sm750fb/sm750_cursor.c
+@@ -54,6 +54,7 @@ void sm750_hw_cursor_enable(struct lynx_cursor *cursor)
+ 	reg = (cursor->offset & HWC_ADDRESS_ADDRESS_MASK) | HWC_ADDRESS_ENABLE;
+ 	poke32(HWC_ADDRESS, reg);
+ }
++
+ void sm750_hw_cursor_disable(struct lynx_cursor *cursor)
+ {
+ 	poke32(HWC_ADDRESS, 0);
+@@ -65,6 +66,7 @@ void sm750_hw_cursor_setSize(struct lynx_cursor *cursor,
+ 	cursor->w = w;
+ 	cursor->h = h;
+ }
++
+ void sm750_hw_cursor_setPos(struct lynx_cursor *cursor,
+ 						int x, int y)
+ {
+@@ -74,6 +76,7 @@ void sm750_hw_cursor_setPos(struct lynx_cursor *cursor,
+ 		(x & HWC_LOCATION_X_MASK));
+ 	poke32(HWC_LOCATION, reg);
+ }
++
+ void sm750_hw_cursor_setColor(struct lynx_cursor *cursor,
+ 						u32 fg, u32 bg)
+ {
+-- 
+2.11.0
 

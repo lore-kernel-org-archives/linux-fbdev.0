@@ -1,119 +1,43 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 19 Mar 2017 16:05:26 +0000
-Subject: Re: [Outreachy kernel] [PATCH v3] staging: sm750fb: Code readability is improved
-Message-Id: <CAMuHMdWy7HVbvKqGyuQ2bRLTfS_hMZt54-eJttZ91cTkNnzpGA@mail.gmail.com>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 08 Mar 2017 10:14:33 +0000
+Subject: [PATCH] video/logo: tidyup fb_logo_late_init initcall timing
+Message-Id: <87h934oz7j.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170319130744.GA24605@arushi-HP-Pavilion-Notebook>
- <alpine.DEB.2.20.1703191409140.2108@hadrien> <CAMuHMdU_jvNSbi5mfexMZHjvXqny6v+3F4Cc_OCTpD0jngWaQQ@mail.gmail.com>
- <CA+XqjF87GbaU4jkF1cCskbLnf=ev5vYHmB67gOrApg9vOgYEsQ@mail.gmail.com>
-In-Reply-To: <CA+XqjF87GbaU4jkF1cCskbLnf=ev5vYHmB67gOrApg9vOgYEsQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arushi Singhal <arushisinghal19971997@gmail.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, driverdevel <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, outreachy-kernel@googlegroups.com
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Laurent <laurent.pinchart@ideasonboard.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Fabian Frederick <fabf@skynet.be>, Andrew Morton <akpm@linux-foundation.org>, shimoda <yoshihiro.shimoda.uh@renesas.com>, Koji Matsuoka <koji.matsuoka.xm@renesas.com>, shiiba <naoya.shiiba.nx@renesas.com>, sakato <ryusuke.sakato.bx@renesas.com>, Hosoya <yoshifumi.hosoya.wj@renesas.com>, Fukawa <tomoharu.fukawa.eb@renesas.com>, Hien Dang <hien.dang.eb@renesas.com>, Khiem Nguyen <khiem.nguyen.xt@renesas.com>, Kouei Abe <kouei.abe.cp@renesas.com>, Harunobu Kurokawa <harunobu.kurokawa.dn@renesas.com>, Hiroyuki Yokoyama <hiroyuki.yokoyama.vx@renesas.com>, Takeshi Kihara <takeshi.kihara.df@renesas.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On Sun, Mar 19, 2017 at 4:52 PM, Arushi Singhal
-<arushisinghal19971997@gmail.com> wrote:
-> On Sun, Mar 19, 2017 at 7:34 PM, Geert Uytterhoeven <geert@linux-m68k.org>
-> wrote:
->>
->> On Sun, Mar 19, 2017 at 2:11 PM, Julia Lawall <julia.lawall@lip6.fr>
->> wrote:
->> > On Sun, 19 Mar 2017, Arushi Singhal wrote:
->> >> New variables are added to make the code more readable.
->> >>
->> >> Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
->> >> ---
->> >>  changes in v3
->> >>  -try to make the code much more readable.
->> >>
->> >>  drivers/staging/sm750fb/ddk750_mode.c | 61
->> >> ++++++++++++++++++++---------------
->> >>  1 file changed, 35 insertions(+), 26 deletions(-)
->> >>
->> >> diff --git a/drivers/staging/sm750fb/ddk750_mode.c
->> >> b/drivers/staging/sm750fb/ddk750_mode.c
->> >> index eea5aef2956f..5f18ce4d10de 100644
->> >> --- a/drivers/staging/sm750fb/ddk750_mode.c
->> >> +++ b/drivers/staging/sm750fb/ddk750_mode.c
->> >> @@ -81,33 +81,42 @@ static int programModeRegisters(mode_parameter_t
->> >> *pModeParam, struct pll_value *
->> >>       if (pll->clockType = SECONDARY_PLL) {
->> >>               /* programe secondary pixel clock */
->> >>               poke32(CRT_PLL_CTRL, sm750_format_pll_reg(pll));
->> >> -             poke32(CRT_HORIZONTAL_TOTAL,
->> >> -                    (((pModeParam->horizontal_total - 1) <<
->> >> -                      CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT) &
->> >> -                     CRT_HORIZONTAL_TOTAL_TOTAL_MASK) |
->> >> -                    ((pModeParam->horizontal_display_end - 1) &
->> >> -                     CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK));
->> >> -
->> >> -             poke32(CRT_HORIZONTAL_SYNC,
->> >> -                    ((pModeParam->horizontal_sync_width <<
->> >> -                      CRT_HORIZONTAL_SYNC_WIDTH_SHIFT) &
->> >> -                     CRT_HORIZONTAL_SYNC_WIDTH_MASK) |
->> >> -                    ((pModeParam->horizontal_sync_start - 1) &
->> >> -                     CRT_HORIZONTAL_SYNC_START_MASK));
->> >>
->> >> -             poke32(CRT_VERTICAL_TOTAL,
->> >> -                    (((pModeParam->vertical_total - 1) <<
->> >> -                      CRT_VERTICAL_TOTAL_TOTAL_SHIFT) &
->> >> -                     CRT_VERTICAL_TOTAL_TOTAL_MASK) |
->> >> -                    ((pModeParam->vertical_display_end - 1) &
->> >> -                     CRT_VERTICAL_TOTAL_DISPLAY_END_MASK));
->> >> -
->> >> -             poke32(CRT_VERTICAL_SYNC,
->> >> -                    ((pModeParam->vertical_sync_height <<
->> >> -                      CRT_VERTICAL_SYNC_HEIGHT_SHIFT) &
->> >> -                     CRT_VERTICAL_SYNC_HEIGHT_MASK) |
->> >> -                    ((pModeParam->vertical_sync_start - 1) &
->> >> -                     CRT_VERTICAL_SYNC_START_MASK));
->> >> +             unsigned int a = (pModeParam->horizontal_total - 1) <<
->> >> +                             CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT;
->> >> +             unsigned int b = a & CRT_HORIZONTAL_TOTAL_TOTAL_MASK;
->> >> +             unsigned int c = (pModeParam->horizontal_display_end - 1)
->> >> &
->> >> +                             CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK;
->> >> +             unsigned int temp = b | c;
->> >> +
->> >> +             poke32(CRT_HORIZONTAL_TOTAL, temp);
->> >> +
->> >> +             unsigned int a = (pModeParam->horizontal_sync_width <<
->> >> +                             CRT_HORIZONTAL_SYNC_WIDTH_SHIFT);
->> >> +             unsigned int b = a & CRT_HORIZONTAL_SYNC_WIDTH_MASK;
->> >> +             unsigned int c = (pModeParam->horizontal_sync_start - 1)
->> >> &
->> >> +                             CRT_HORIZONTAL_SYNC_START_MASK;
->> >> +             unsigned int temp = b | c;
->> >
->> > This is back to the original incorrect solution.  You can't declare
->> > variables on the fly in Linux code.  Variables have to be declared at
->> > the
->> > top of a block.
->>
->> Arushi: have you tried to compile this?
->
-> Yes.
-> It's not showing any error.
+From: Takeshi Kihara <takeshi.kihara.df@renesas.com>
 
-No, not an error.
+Some video driver might returns -EPROBE_DEFER when probe timing,
+but logo init function doesn't care it.
+Thus, such kernel can't have logo when boot time.
 
-> Is it not fine when you compiled :( ?
+This patch solves this issue by exchanging current
+late_initcall to late_initcall_sync
 
- But you did introduce warnings, like:
+Signed-off-by: Takeshi Kihara <takeshi.kihara.df@renesas.com>
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/video/logo/logo.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-drivers/staging/sm750fb/ddk750_mode.c: In function 'programModeRegisters':
-drivers/staging/sm750fb/ddk750_mode.c:87:3: warning: ISO C90 forbids
-mixed declarations and code [-Wdeclaration-after-statement]
+diff --git a/drivers/video/logo/logo.c b/drivers/video/logo/logo.c
+index b6bc4a0..4d50bfd 100644
+--- a/drivers/video/logo/logo.c
++++ b/drivers/video/logo/logo.c
+@@ -34,7 +34,7 @@ static int __init fb_logo_late_init(void)
+ 	return 0;
+ }
+ 
+-late_initcall(fb_logo_late_init);
++late_initcall_sync(fb_logo_late_init);
+ 
+ /* logo's are marked __initdata. Use __ref to tell
+  * modpost that it is intended that this function uses data
+-- 
+1.9.1
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

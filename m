@@ -1,114 +1,106 @@
-From: Laura Abbott <labbott@redhat.com>
-Date: Tue, 07 Mar 2017 20:55:17 +0000
-Subject: [PATCHv3 00/16] set_memory_* functions header refactor
-Message-Id: <1488920133-27229-1-git-send-email-labbott@redhat.com>
+From: Martin Kaiser <martin@kaiser.cx>
+Date: Wed, 08 Mar 2017 18:22:55 +0000
+Subject: [PATCH 1/2 v3] video: fbdev: imxfb: support AUS mode
+Message-Id: <1488997376-1564-1-git-send-email-martin@kaiser.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
+In-Reply-To: <1488193030-13064-1-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>, Kees Cook <keescook@chromium.org>, Mark Rutland <mark.rutland@arm.com>, Arnd Bergmann <arnd@arndb.de>, David Airlie <airlied@linux.ie>, Alexander Shishkin <alexander.shishkin@linux.intel.com>, Wim Van Sebroeck <wim@iguana.be>, Guenter Roeck <linux@roeck-us.net>, linux-watchdog@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, Daniel Borkmann <daniel@iogearbox.net>, Jessica Yu <jeyu@redhat.com>, Takashi Iwai <tiwai@suse.com>, Andrew Morton <akpm@linux-foundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org, Laura Abbott <labbott@redhat.com>, linux-arm-kernel@lists.infradead.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
 
-Hi,
+Some displays require setting AUS mode in the LDCD AUS Mode Control
+Register to work with the imxfb driver. Like the value of the Panel
+Configuration Register, the AUS mode setting depends on the display
+mode.
 
-This is v3 of the series to decouple set_memory_* from cacheflush.h. This
-version contains a few minor alphabetical order fixes and some fixes caught
-by the 0day bot. Several places unfortunately need an #ifdef around the
-header for arches without the set_memory_* functions.
+Allow setting AUS mode from the device tree by adding a boolean
+property. Make this property optional to keep the DT ABI stable.
+AUS mode can be set only on imx21 and compatible chipsets.
 
-Andrew, it might be best to wait a few days to let the 0day bot churn on this
-series.
+Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+---
+v3:
+   use a boolean DT property instead of the register value
+   separate patches for DT binding and code changes
 
-Thanks,
-Laura
+v2:
+   re-sending DT bindings and code changes as one patch
 
-Laura Abbott (16):
-  treewide: Move set_memory_* functions away from cacheflush.h
-  arm: Use set_memory.h header
-  arm64: Use set_memory.h header
-  s390: Use set_memory.h header
-  x86: Use set_memory.h header
-  agp: Use set_memory.h header
-  drm: Use set_memory.h header
-  intel_th: Use set_memory.h header
-  watchdog: hpwdt: Use set_memory.h header
-  bpf: Use set_memory.h header
-  module: Use set_memory.h header
-  PM / hibernate: Use set_memory.h header
-  ALSA: Use set_memory.h header
-  misc: sram: Use set_memory.h header
-  video: vermilion: Use set_memory.h header
-  treewide: Decouple cacheflush.h and set_memory.h
+ drivers/video/fbdev/imxfb.c               | 17 +++++++++++++++++
+ include/linux/platform_data/video-imxfb.h |  1 +
+ 2 files changed, 18 insertions(+)
 
- arch/arm/include/asm/cacheflush.h         | 20 -------
- arch/arm/include/asm/set_memory.h         | 32 ++++++++++++
- arch/arm/kernel/ftrace.c                  |  1 +
- arch/arm/kernel/machine_kexec.c           |  1 +
- arch/arm/mm/pageattr.c                    |  1 +
- arch/arm/net/bpf_jit_32.c                 |  1 +
- arch/arm64/include/asm/Kbuild             |  1 +
- arch/arm64/include/asm/cacheflush.h       |  5 --
- arch/arm64/mm/pageattr.c                  |  1 +
- arch/arm64/net/bpf_jit_comp.c             |  1 +
- arch/s390/include/asm/Kbuild              |  1 +
- arch/s390/include/asm/cacheflush.h        | 34 ------------
- arch/s390/include/asm/set_memory.h        | 31 +++++++++++
- arch/s390/kernel/ftrace.c                 |  1 +
- arch/s390/kernel/kprobes.c                |  2 +-
- arch/s390/kernel/machine_kexec.c          |  1 +
- arch/s390/mm/init.c                       |  1 +
- arch/s390/mm/pageattr.c                   |  1 +
- arch/s390/mm/vmem.c                       |  1 +
- arch/s390/net/bpf_jit_comp.c              |  1 +
- arch/x86/include/asm/cacheflush.h         | 85 ------------------------------
- arch/x86/include/asm/set_memory.h         | 87 +++++++++++++++++++++++++++++++
- arch/x86/kernel/amd_gart_64.c             |  2 +-
- arch/x86/kernel/cpu/amd.c                 |  2 +-
- arch/x86/kernel/cpu/bugs.c                |  2 +-
- arch/x86/kernel/ftrace.c                  |  2 +-
- arch/x86/kernel/machine_kexec_32.c        |  2 +-
- arch/x86/kernel/machine_kexec_64.c        |  1 +
- arch/x86/mm/init.c                        |  2 +-
- arch/x86/mm/init_32.c                     |  2 +-
- arch/x86/mm/init_64.c                     |  2 +-
- arch/x86/mm/ioremap.c                     |  2 +-
- arch/x86/mm/pageattr.c                    |  1 +
- arch/x86/net/bpf_jit_comp.c               |  1 +
- arch/x86/pci/pcbios.c                     |  2 +-
- arch/x86/platform/efi/efi.c               |  2 +-
- arch/x86/realmode/init.c                  |  2 +-
- drivers/char/agp/amd-k7-agp.c             |  1 +
- drivers/char/agp/ati-agp.c                |  1 +
- drivers/char/agp/generic.                 |  0
- drivers/char/agp/generic.c                |  4 +-
- drivers/char/agp/intel-gtt.c              |  1 +
- drivers/char/agp/sworks-agp.c             |  1 +
- drivers/gpu/drm/amd/amdgpu/amdgpu_gart.c  |  3 ++
- drivers/gpu/drm/gma500/gtt.c              |  1 +
- drivers/gpu/drm/gma500/psb_drv.c          |  1 +
- drivers/gpu/drm/radeon/radeon_gart.c      |  3 ++
- drivers/gpu/drm/ttm/ttm_page_alloc.c      |  3 ++
- drivers/gpu/drm/ttm/ttm_page_alloc_dma.c  |  3 ++
- drivers/gpu/drm/ttm/ttm_tt.c              |  3 ++
- drivers/hwtracing/intel_th/msu.c          |  4 +-
- drivers/misc/sram-exec.c                  |  3 +-
- drivers/video/fbdev/vermilion/vermilion.c |  2 +-
- drivers/watchdog/hpwdt.c                  |  2 +-
- include/asm-generic/set_memory.h          | 12 +++++
- include/linux/filter.h                    |  4 +-
- kernel/module.c                           |  3 ++
- kernel/power/snapshot.c                   |  3 ++
- sound/pci/hda/hda_intel.c                 |  2 +-
- sound/pci/intel8x0.c                      |  4 +-
- sound/x86/intel_hdmi_audio.c              |  2 +-
- 61 files changed, 237 insertions(+), 166 deletions(-)
- create mode 100644 arch/arm/include/asm/set_memory.h
- delete mode 100644 arch/s390/include/asm/cacheflush.h
- create mode 100644 arch/s390/include/asm/set_memory.h
- create mode 100644 arch/x86/include/asm/set_memory.h
- create mode 100644 drivers/char/agp/generic.
- create mode 100644 include/asm-generic/set_memory.h
-
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index 1b0faad..463fbf2 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -117,6 +117,9 @@
+ 
+ #define IMXFB_LSCR1_DEFAULT 0x00120300
+ 
++#define LCDC_LAUSCR	0x80
++#define LAUSCR_AUS_MODE	(1<<31)
++
+ /* Used fb-mode. Can be set on kernel command line, therefore file-static. */
+ static const char *fb_mode;
+ 
+@@ -158,6 +161,7 @@ struct imxfb_info {
+ 	dma_addr_t		dbar2;
+ 
+ 	u_int			pcr;
++	u_int			lauscr;
+ 	u_int			pwmr;
+ 	u_int			lscr1;
+ 	u_int			dmacr;
+@@ -422,6 +426,11 @@ static int imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	pcr |= imxfb_mode->pcr & ~(0x3f | (7 << 25));
+ 
+ 	fbi->pcr = pcr;
++	/*
++	 * The LCDC AUS Mode Control Register does not exist on imx1.
++	 */
++	if (!is_imx1_fb(fbi) && imxfb_mode->aus_mode)
++		fbi->lauscr = LAUSCR_AUS_MODE;
+ 
+ 	/*
+ 	 * Copy the RGB parameters for this display
+@@ -638,6 +647,9 @@ static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *inf
+ 	if (fbi->dmacr)
+ 		writel(fbi->dmacr, fbi->regs + LCDC_DMACR);
+ 
++	if (fbi->lauscr)
++		writel(fbi->lauscr, fbi->regs + LCDC_LAUSCR);
++
+ 	return 0;
+ }
+ 
+@@ -734,6 +746,11 @@ static int imxfb_of_read_mode(struct device *dev, struct device_node *np,
+ 	imxfb_mode->bpp = bpp;
+ 	imxfb_mode->pcr = pcr;
+ 
++	/*
++	 * fsl,aus_mode is optional
++	 */
++	imxfb_mode->aus_mode = of_property_read_bool(np, "fsl,aus_mode");
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/platform_data/video-imxfb.h b/include/linux/platform_data/video-imxfb.h
+index a5c0a71..cf9348b 100644
+--- a/include/linux/platform_data/video-imxfb.h
++++ b/include/linux/platform_data/video-imxfb.h
+@@ -50,6 +50,7 @@
+ struct imx_fb_videomode {
+ 	struct fb_videomode mode;
+ 	u32 pcr;
++	bool aus_mode;
+ 	unsigned char	bpp;
+ };
+ 
 -- 
-2.7.4
+2.1.4
 

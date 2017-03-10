@@ -1,33 +1,25 @@
-From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Fri, 10 Mar 2017 21:57:06 +0000
-Subject: [PATCH 0/3] multiple checkpatch issues
-Message-Id: <20170310215657.7069-1-arushisinghal19971997@gmail.com>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Fri, 10 Mar 2017 22:05:33 +0000
+Subject: Re: [PATCH 0/3] multiple checkpatch issues
+Message-Id: <20170310220533.GA19329@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
-In-Reply-To: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
+References: <20170310215657.7069-1-arushisinghal19971997@gmail.com>
+In-Reply-To: <20170310215657.7069-1-arushisinghal19971997@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
+To: Arushi Singhal <arushisinghal19971997@gmail.com>
+Cc: outreachy-kernel@googlegroups.com, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com
 
-Improve readability by fixing multiple checkpatch.pl
-issues in sm750fb driver. 
+On Sat, Mar 11, 2017 at 03:26:54AM +0530, Arushi Singhal wrote:
+> Improve readability by fixing multiple checkpatch.pl
+> issues in sm750fb driver. 
 
-Arushi Singhal (3):
-  staging: sm750fb: function prototype argument should have an
-    identifier name
-  staging: sm750fb: fixes add blank line after
-    function/struct/union/enum declarations
-  staging: sm750fb: Alignment should match open parenthesis
+Note, _PLEASE_ put the subsystem/driver name in this 0/X email subject
+line, like your patches have them.  It makes it easier when I sort
+patches by driver/subsystem when reviewing them.  As it is, I end up
+always ignoring these 0/X emails.
 
- drivers/staging/sm750fb/ddk750_display.h |  2 +-
- drivers/staging/sm750fb/ddk750_mode.c    | 79 ++++++++++++++++----------------
- drivers/staging/sm750fb/ddk750_mode.h    |  2 +-
- drivers/staging/sm750fb/ddk750_power.h   |  2 +-
- drivers/staging/sm750fb/sm750.h          |  2 +-
- drivers/staging/sm750fb/sm750_cursor.c   |  3 ++
- 6 files changed, 46 insertions(+), 44 deletions(-)
+thanks,
 
--- 
-2.11.0
+greg k-h

@@ -1,10 +1,10 @@
 From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Fri, 10 Mar 2017 21:57:20 +0000
+Date: Sat, 11 Mar 2017 03:36:09 +0000
 Subject: [PATCH 2/3] staging: sm750fb: fixes add blank line after function/struct/union/enum declarations
-Message-Id: <20170310215657.7069-3-arushisinghal19971997@gmail.com>
+Message-Id: <20170311032410.8265-3-arushisinghal19971997@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170310215657.7069-1-arushisinghal19971997@gmail.com>
-In-Reply-To: <20170310215657.7069-1-arushisinghal19971997@gmail.com>
+References: <20170311032410.8265-1-arushisinghal19971997@gmail.com>
+In-Reply-To: <20170311032410.8265-1-arushisinghal19971997@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

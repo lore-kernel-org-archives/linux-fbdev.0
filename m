@@ -1,15 +1,13 @@
 From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Tue, 21 Mar 2017 16:58:47 +0000
-Subject: [PATCH v9 2/3] backlight arcxcnn devicetree bindings for ArcticSand
-Message-Id: <1490115528-11044-2-git-send-email-olimpiu@arcticsand.com>
+Date: Mon, 13 Mar 2017 18:21:50 +0000
+Subject: [PATCH v7 1/2] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <1489429310-6055-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1490115528-11044-1-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1490115528-11044-1-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: robh@kernel.org
-Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com, daniel.thompson@linaro.org, lkp@intel.com, fengguang.wu@intel.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
+To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 
 backlight: Add devicetree bindings for the Arctic Sand backlight driver
 This patch provides devicetree bindings for the Arctic Sand
@@ -18,10 +16,6 @@ Acked-by: Rob Herring <robh@kernel.org>
 Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
 ---
-v8 => v9:
-- Version updated to match other patch in set. No other changes.
-v7 => v8:
-- Version updated to match other patch in set. No other changes.
 v6 => v7:
 - Version updated to match other patch in set. No other changes.
 v5 => v6:

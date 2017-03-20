@@ -1,33 +1,94 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 21 Mar 2017 15:17:19 +0000
-Subject: Re: [PATCH 32/35] drivers/video: Convert remaining uses of pr_warning to pr_warn
-Message-Id: <1984841.FWX9diQjjK@amdc3058>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Mon, 20 Mar 2017 14:18:56 +0000
+Subject: [PATCH v5] staging:sm750fb: Code readability is improved.
+Message-Id: <20170320140656.GA5137@arushi-HP-Pavilion-Notebook>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1487314666.git.joe@perches.com>
- <CGME20170217071321epcas1p4117d349f33feb99c5e0f9a3288ef5a0e@epcas1p4.samsung.com>
- <e216f8cba5b81587b0c8300e9384e8efc12aa22b.1487314667.git.joe@perches.com>
-In-Reply-To: <e216f8cba5b81587b0c8300e9384e8efc12aa22b.1487314667.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com
 
-On Thursday, February 16, 2017 11:11:45 PM Joe Perches wrote:
-> To enable eventual removal of pr_warning
-> 
-> This makes pr_warn use consistent for drivers/video
-> 
-> Prior to this patch, there were 6 uses of pr_warning and
-> 25 uses of pr_warn in drivers/video
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
+New variables are added to make the code more readable.
 
-Patch queued for 4.12, thanks.
+Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+---
+ changes in v5
+ -try to make the code much more readable.
+ - defined the variable at the top of a block.
+ - change the variable from temp to tmp.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ drivers/staging/sm750fb/ddk750_mode.c | 55 +++++++++++++++++++----------------
+ 1 file changed, 30 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index eea5aef2956f..37b5d4850fb9 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -81,33 +81,38 @@ static int programModeRegisters(mode_parameter_t *pModeParam, struct pll_value *
+ 	if (pll->clockType = SECONDARY_PLL) {
+ 		/* programe secondary pixel clock */
+ 		poke32(CRT_PLL_CTRL, sm750_format_pll_reg(pll));
+-		poke32(CRT_HORIZONTAL_TOTAL,
+-		       (((pModeParam->horizontal_total - 1) <<
+-			 CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT) &
+-			CRT_HORIZONTAL_TOTAL_TOTAL_MASK) |
+-		       ((pModeParam->horizontal_display_end - 1) &
+-			CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK));
+-
+-		poke32(CRT_HORIZONTAL_SYNC,
+-		       ((pModeParam->horizontal_sync_width <<
+-			 CRT_HORIZONTAL_SYNC_WIDTH_SHIFT) &
+-			CRT_HORIZONTAL_SYNC_WIDTH_MASK) |
+-		       ((pModeParam->horizontal_sync_start - 1) &
+-			CRT_HORIZONTAL_SYNC_START_MASK));
+ 
+-		poke32(CRT_VERTICAL_TOTAL,
+-		       (((pModeParam->vertical_total - 1) <<
+-			 CRT_VERTICAL_TOTAL_TOTAL_SHIFT) &
+-			CRT_VERTICAL_TOTAL_TOTAL_MASK) |
+-		       ((pModeParam->vertical_display_end - 1) &
+-			CRT_VERTICAL_TOTAL_DISPLAY_END_MASK));
++		tmp = ((pModeParam->horizontal_total - 1) <<
++		       CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT) &
++		     CRT_HORIZONTAL_TOTAL_TOTAL_MASK;
++		tmp |= (pModeParam->horizontal_display_end - 1) &
++		      CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK;
+ 
+-		poke32(CRT_VERTICAL_SYNC,
+-		       ((pModeParam->vertical_sync_height <<
+-			 CRT_VERTICAL_SYNC_HEIGHT_SHIFT) &
+-			CRT_VERTICAL_SYNC_HEIGHT_MASK) |
+-		       ((pModeParam->vertical_sync_start - 1) &
+-			CRT_VERTICAL_SYNC_START_MASK));
++		poke32(CRT_HORIZONTAL_TOTAL, tmp);
++
++		tmp = (pModeParam->horizontal_sync_width <<
++		       CRT_HORIZONTAL_SYNC_WIDTH_SHIFT) &
++		     CRT_HORIZONTAL_SYNC_WIDTH_MASK;
++		tmp |= (pModeParam->horizontal_sync_start - 1) &
++		      CRT_HORIZONTAL_SYNC_START_MASK;
++
++		poke32(CRT_HORIZONTAL_SYNC, tmp);
++
++		tmp = ((pModeParam->vertical_total - 1) <<
++		       CRT_VERTICAL_TOTAL_TOTAL_SHIFT) &
++		     CRT_VERTICAL_TOTAL_TOTAL_MASK;
++		tmp |= (pModeParam->vertical_display_end - 1) &
++		      CRT_VERTICAL_TOTAL_DISPLAY_END_MASK;
++
++		poke32(CRT_VERTICAL_TOTAL, tmp);
++
++		tmp = ((pModeParam->vertical_sync_height <<
++		       CRT_VERTICAL_SYNC_HEIGHT_SHIFT)) &
++		     CRT_VERTICAL_SYNC_HEIGHT_MASK;
++		tmp |= (pModeParam->vertical_sync_start - 1) &
++		      CRT_VERTICAL_SYNC_START_MASK;
++
++		poke32(CRT_VERTICAL_SYNC, tmp);
+ 
+ 		tmp = DISPLAY_CTRL_TIMING | DISPLAY_CTRL_PLANE;
+ 		if (pModeParam->vertical_sync_polarity)
+-- 
+2.11.0
 

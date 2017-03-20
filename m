@@ -1,25 +1,31 @@
-From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Tue, 21 Mar 2017 11:38:37 +0000
-Subject: [PATCH 0/2] Remove Typrdefs
-Message-Id: <20170321112639.32495-1-arushisinghal19971997@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 20 Mar 2017 16:49:05 +0000
+Subject: Re: [PATCH] video: fbdev: pmagb-b-fb: remove incorrect __exit markups
+Message-Id: <2044127.WH4JhakCYy@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170225192516epcas3p427ddaefb80f7721a40db8fa3312bef16@epcas3p4.samsung.com>
+ <20170225192511.GA12591@dtor-ws>
+In-Reply-To: <20170225192511.GA12591@dtor-ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: w.d.hubbs@gmail.com
-Cc: linux-fbdev@vger.kernel.org, outreachy-kernel@googlegroups.com, teddy.wang@siliconmotion.com, sudipm.mukherjee@gmail.com, gregkh@linuxfoundation.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Typedefs are removed in sm750fb driver.
+On Saturday, February 25, 2017 11:25:11 AM Dmitry Torokhov wrote:
+> Even if bus is not hot-pluggable, the devices can be unbound from the
+> driver via sysfs, so we should not be using __exit annotations on
+> remove() methods. The only exception is drivers registered with
+> platform_driver_probe() which specifically disables sysfs bind/unbind
+> attributes.
+> 
+> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Arushi Singhal (2):
-  staging: sm750fb: Remove typedefs from struct
-  staging: sm750fb: Remove typedefs from enum
+Patch queued for 4.12, thanks.
 
- drivers/staging/sm750fb/ddk750_mode.c |  8 +++++---
- drivers/staging/sm750fb/ddk750_mode.h | 19 ++++++++-----------
- drivers/staging/sm750fb/sm750_hw.c    |  2 +-
- 3 files changed, 14 insertions(+), 15 deletions(-)
-
--- 
-2.11.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

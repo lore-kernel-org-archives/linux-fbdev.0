@@ -1,50 +1,31 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Wed, 01 Mar 2017 23:31:09 +0000
-Subject: [PATCH] video: fbdev: pmag-aa-fb: remove incorrect __exit markups
-Message-Id: <20170301233109.GA8563@dtor-ws>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 20 Mar 2017 16:49:16 +0000
+Subject: Re: [PATCH] video: fbdev: pmag-aa-fb: remove incorrect __exit markups
+Message-Id: <6090318.4Vxfg9eOhE@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170301233114epcas2p3a6fa255ce9b90f7715ab7f7f89866ec9@epcas2p3.samsung.com>
+ <20170301233109.GA8563@dtor-ws>
+In-Reply-To: <20170301233109.GA8563@dtor-ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Even if bus is not hot-pluggable, devices can be unbound from the
-driver via sysfs, so we should not be using __exit annotations on
-remove() methods. The only exception is drivers registered with
-platform_driver_probe() which specifically disables sysfs bind/unbind
-attributes.
+On Wednesday, March 01, 2017 03:31:09 PM Dmitry Torokhov wrote:
+> Even if bus is not hot-pluggable, devices can be unbound from the
+> driver via sysfs, so we should not be using __exit annotations on
+> remove() methods. The only exception is drivers registered with
+> platform_driver_probe() which specifically disables sysfs bind/unbind
+> attributes.
+> 
+> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/video/fbdev/pmag-aa-fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Patch queued for 4.12, thanks.
 
-diff --git a/drivers/video/fbdev/pmag-aa-fb.c b/drivers/video/fbdev/pmag-aa-fb.c
-index ffe2dd482f84..39922f072db4 100644
---- a/drivers/video/fbdev/pmag-aa-fb.c
-+++ b/drivers/video/fbdev/pmag-aa-fb.c
-@@ -247,7 +247,7 @@ static int pmagaafb_probe(struct device *dev)
- 	return err;
- }
- 
--static int __exit pmagaafb_remove(struct device *dev)
-+static int pmagaafb_remove(struct device *dev)
- {
- 	struct tc_dev *tdev = to_tc_dev(dev);
- 	struct fb_info *info = dev_get_drvdata(dev);
-@@ -280,7 +280,7 @@ static struct tc_driver pmagaafb_driver = {
- 		.name	= "pmagaafb",
- 		.bus	= &tc_bus_type,
- 		.probe	= pmagaafb_probe,
--		.remove	= __exit_p(pmagaafb_remove),
-+		.remove	= pmagaafb_remove,
- 	},
- };
- 
--- 
-2.12.0.rc1.440.g5b76565f74-goog
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-
--- 
-Dmitry

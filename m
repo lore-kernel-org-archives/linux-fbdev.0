@@ -1,59 +1,51 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Thu, 02 Mar 2017 01:31:01 +0000
-Subject: [PATCH] video: fbdev: i810: remove incorrect __exit markups
-Message-Id: <20170302013101.GA2047@dtor-ws>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 20 Mar 2017 17:19:17 +0000
+Subject: Re: [PATCH] video: fbdev: i810: remove incorrect __exit markups
+Message-Id: <1880466.B5ZPIScV32@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170302013109epcas3p3ae90f60d7aa8f14bb09eb5ec342cfaeb@epcas3p3.samsung.com>
+ <20170302013101.GA2047@dtor-ws>
+In-Reply-To: <20170302013101.GA2047@dtor-ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Even if bus is not hot-pluggable, devices can be unbound from the
-driver via sysfs, so we should not be using __exit annotations on
-remove() methods. The only exception is drivers registered with
-platform_driver_probe() which specifically disables sysfs bind/unbind
-attributes.
+On Wednesday, March 01, 2017 05:31:01 PM Dmitry Torokhov wrote:
+> Even if bus is not hot-pluggable, devices can be unbound from the
+> driver via sysfs, so we should not be using __exit annotations on
+> remove() methods. The only exception is drivers registered with
+> platform_driver_probe() which specifically disables sysfs bind/unbind
+> attributes.
+> 
+> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 
-Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
----
- drivers/video/fbdev/i810/i810_main.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Patch queued for 4.12, thanks.
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index 483ab2592d0c..2488baab7c89 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -81,7 +81,7 @@ static u32 voffset;
- static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor);
- static int i810fb_init_pci(struct pci_dev *dev,
- 			   const struct pci_device_id *entry);
--static void __exit i810fb_remove_pci(struct pci_dev *dev);
-+static void i810fb_remove_pci(struct pci_dev *dev);
- static int i810fb_resume(struct pci_dev *dev);
- static int i810fb_suspend(struct pci_dev *dev, pm_message_t state);
- 
-@@ -128,7 +128,7 @@ static struct pci_driver i810fb_driver = {
- 	.name     =	"i810fb",
- 	.id_table =	i810fb_pci_tbl,
- 	.probe    =	i810fb_init_pci,
--	.remove   =	__exit_p(i810fb_remove_pci),
-+	.remove   =	i810fb_remove_pci,
- 	.suspend  =     i810fb_suspend,
- 	.resume   =     i810fb_resume,
- };
-@@ -2123,7 +2123,7 @@ static void i810fb_release_resource(struct fb_info *info,
- 
- }
- 
--static void __exit i810fb_remove_pci(struct pci_dev *dev)
-+static void i810fb_remove_pci(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct i810fb_par *par = info->par;
--- 
-2.12.0.rc1.440.g5b76565f74-goog
+It seems that there are still some fbdev drivers with this issue:
 
+$ git grep __exit_p drivers/video/fbdev/
+drivers/video/fbdev/amifb.c:    .remove = __exit_p(amifb_remove),
+drivers/video/fbdev/atmel_lcdfb.c:      .remove         = __exit_p(atmel_lcdfb_remove),
+drivers/video/fbdev/omap2/omapfb/displays/connector-analog-tv.c:        .remove = __exit_p(tvc_remove),
+drivers/video/fbdev/omap2/omapfb/displays/connector-dvi.c:      .remove = __exit_p(dvic_remove),
+drivers/video/fbdev/omap2/omapfb/displays/connector-hdmi.c:     .remove = __exit_p(hdmic_remove),
+drivers/video/fbdev/omap2/omapfb/displays/encoder-opa362.c:     .remove = __exit_p(opa362_remove),
+drivers/video/fbdev/omap2/omapfb/displays/encoder-tfp410.c:     .remove = __exit_p(tfp410_remove),
+drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c:  .remove = __exit_p(tpd_remove),
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c:  .remove = __exit_p(panel_dpi_remove),
+drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c:       .remove = __exit_p(dsicm_remove),
+drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c:    .remove = __exit_p(sharp_ls_remove),
+drivers/video/fbdev/omap2/omapfb/vrfb.c:        .remove         = __exit_p(vrfb_remove),
 
--- 
-Dmitry
+(these drivers don't disable sysfs bind/unbind attributes)
+
+Could you please also take care of fixing them?
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

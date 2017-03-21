@@ -1,37 +1,27 @@
-From: Martin Kaiser <martin@kaiser.cx>
-Date: Sat, 04 Mar 2017 08:52:35 +0000
-Subject: Re: [PATCH 2/2] dt-bindings: display: imx: entry for LAUSCR
-Message-Id: <20170304085235.GA25286@botnar.kaiser.cx>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Tue, 21 Mar 2017 15:18:36 +0000
+Subject: [PATCH v2 0/2] Remove Typedefs.
+Message-Id: <20170321150638.9175-1-arushisinghal19971997@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
- <1488193030-13064-2-git-send-email-martin@kaiser.cx>
- <20170302161330.6xguzjv3ttwbv5ek@rob-hp-laptop>
-In-Reply-To: <20170302161330.6xguzjv3ttwbv5ek@rob-hp-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Philipp Zabel <p.zabel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-fbdev@vger.kernel.org
+Cc: outreachy-kernel@googlegroups.com, Michael.Hennerich@analog.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com, linux-iio@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
 
-Hi,
+Typedefs are removed in sm750fb driver.
 
-Thus wrote Rob Herring (robh@kernel.org):
+Arushi Singhal (2):
+  staging: sm750fb: Remove typedef from "typedef struct _mode_parameter_t"
+  staging: sm750fb: Remove typedef from "typedef enum _spolarity_t"
 
-> On Mon, Feb 27, 2017 at 11:56:42AM +0100, Martin Kaiser wrote:
+ drivers/staging/sm750fb/ddk750_mode.c |  8 +++++---
+ drivers/staging/sm750fb/ddk750_mode.h | 19 ++++++++-----------
+ drivers/staging/sm750fb/sm750_hw.c    |  2 +-
+ 3 files changed, 14 insertions(+), 15 deletions(-)
 
-> >  	- fsl,pcr: LCDC PCR value
-> > +	A display node may optionally define
-> > +	- fsl,lauscr: LCDC AUS Mode Control Register value (only for imx21)
+-- 
+changes in v2
+ -change the spelling of coverpatch subject.
+2.11.0
 
-> Looks like we already got one, but generally we don't just put magic 
-> register values in the DT. What does this register control?
-
-it contains settings related to AUS mode. This mode sets different
-mappings between framebuffer memory and display pixels. It seems that
-these mappings were originally defined for displays from AUO.
-
-The only bit from this register that I really need is "AUS mode on/off".
-I could put this into the device tree instead of the entire register.
-
-Best regards,
-Martin

@@ -1,37 +1,33 @@
-From: Olimpiu Dejeu <olimpiu@arcticsand.com>
-Date: Tue, 21 Mar 2017 16:58:46 +0000
-Subject: [PATCH v9 1/3] backlight arcxcnn add arc to vendor prefix
-Message-Id: <1490115528-11044-1-git-send-email-olimpiu@arcticsand.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 21 Mar 2017 15:17:19 +0000
+Subject: Re: [PATCH 32/35] drivers/video: Convert remaining uses of pr_warning to pr_warn
+Message-Id: <1984841.FWX9diQjjK@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1487314666.git.joe@perches.com>
+ <CGME20170217071321epcas1p4117d349f33feb99c5e0f9a3288ef5a0e@epcas1p4.samsung.com>
+ <e216f8cba5b81587b0c8300e9384e8efc12aa22b.1487314667.git.joe@perches.com>
+In-Reply-To: <e216f8cba5b81587b0c8300e9384e8efc12aa22b.1487314667.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: robh@kernel.org
-Cc: lee.jones@linaro.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, jingoohan1@gmail.com, bdodge@arcticsand.com, joe@perches.com, medasaro@arcticsand.com, daniel.thompson@linaro.org, lkp@intel.com, fengguang.wu@intel.com, Olimpiu Dejeu <olimpiu@arcticsand.com>
+To: Joe Perches <joe@perches.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-backlight: Add arc to vendor prefixes
-Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
----
-v8 => v9:
-- Version updated to match other patch in set. No other changes.
-v8:
-- Version to match other patches in set
+On Thursday, February 16, 2017 11:11:45 PM Joe Perches wrote:
+> To enable eventual removal of pr_warning
+> 
+> This makes pr_warn use consistent for drivers/video
+> 
+> Prior to this patch, there were 6 uses of pr_warning and
+> 25 uses of pr_warn in drivers/video
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
- Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
- 1 file changed, 1 insertion(+)
+Patch queued for 4.12, thanks.
 
-diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
-index 16d3b5e..6f33a4b 100644
---- a/Documentation/devicetree/bindings/vendor-prefixes.txt
-+++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
-@@ -28,6 +28,7 @@ andestech	Andes Technology Corporation
- apm	Applied Micro Circuits Corporation (APM)
- aptina	Aptina Imaging
- arasan	Arasan Chip Systems
-+arc	Arctic Sand
- aries	Aries Embedded GmbH
- arm	ARM Ltd.
- armadeus	ARMadeus Systems SARL
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

@@ -1,117 +1,71 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 20 Mar 2017 16:38:51 +0000
-Subject: Re: [PATCH v3] omapfb: dss: Handle return error in dss_init_ports.
-Message-Id: <1628164.x9NLckFqdM@amdc3058>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Tue, 21 Mar 2017 15:18:38 +0000
+Subject: [PATCH v2 2/2] staging: sm750fb: Remove typedef from "typedef enum _spolarity_t"
+Message-Id: <20170321150638.9175-3-arushisinghal19971997@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170217061504epcas4p1ca29ea6ab098359de52d547c4fe7cd11@epcas4p1.samsung.com>
- <1487311827-15644-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1487311827-15644-1-git-send-email-arvind.yadav.cs@gmail.com>
+References: <20170321150638.9175-1-arushisinghal19971997@gmail.com>
+In-Reply-To: <20170321150638.9175-1-arushisinghal19971997@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: outreachy-kernel@googlegroups.com, Michael.Hennerich@analog.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, speakup@linux-speakup.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com, linux-iio@vger.kernel.org, Arushi Singhal <arushisinghal19971997@gmail.com>
 
+This patch removes typedefs from enum and renames it from "typedef enum
+_spolarity_t" to "enum spolarity" as per kernel coding standards."
 
-Hi,
-
-On Friday, February 17, 2017 11:40:27 AM Arvind Yadav wrote:
-> Here, dss_init_ports is not handling return error form
-> dpi_init_port and sdi_init_port. Now dss_init_ports is returning
-> always 0. And it's making below code as a dead code.
-> 
-> static int dss_bind(struct device *dev)
-> {
->   .
->   .
->   r = dss_init_ports(pdev); //dss_init_ports will return always 0
->   if (r)// This condition will always false
->       goto err_init_ports; //Dead Code
->   .
->   .
-> }
-> 
-> This change is to handle return error from dpi_init_port and
-> sdi_init_port. Also, It will remove dead code from function 'dss_bind'.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-> 
-> Changes in v3:
->              -We should not stop initialization after port init fails.
-
-This is what v2 did and v3 still does. I asked about stopping
-the initialization after the first failure.
-
-Anyway, I fixed this and queued the patch for 4.12 (the updated
-version is attached to this mail for reference), thanks!
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Subject: [PATCH] omapfb: dss: Handle return errors in dss_init_ports()
-
-dss_init_ports() is not handling return errors from dpi_init_port() and
-sdi_init_port(). It is also always returning 0 currently which results in
-part of error handling code in dss_bind() being unused.
-
-Fix dss_init_ports() to handle return errors from dpi_init_port() and
-sdi_init_port().
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: tomi.valkeinen@ti.com
-[b.zolnierkie: fail early on errors, minor fixups]
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/dss.c |   16 +++++++++++-----
- 1 file changed, 11 insertions(+), 5 deletions(-)
+changes in v2
+ -change the subject and commit message of PATCH.
 
-Index: b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-=================================--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c	2017-03-20 17:24:24.387753929 +0100
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c	2017-03-20 17:32:32.767766228 +0100
-@@ -941,11 +941,13 @@ static int dss_init_features(struct plat
- 	return 0;
- }
+ drivers/staging/sm750fb/ddk750_mode.h | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+index 9dc4d6c5a779..d5eae36d85cb 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.h
++++ b/drivers/staging/sm750fb/ddk750_mode.h
+@@ -3,11 +3,10 @@
  
-+static void dss_uninit_ports(struct platform_device *pdev);
-+
- static int dss_init_ports(struct platform_device *pdev)
- {
- 	struct device_node *parent = pdev->dev.of_node;
- 	struct device_node *port;
--	int r;
-+	int r, ret = 0;
+ #include "ddk750_chip.h"
  
- 	if (parent = NULL)
- 		return 0;
-@@ -972,17 +974,21 @@ static int dss_init_ports(struct platfor
+-typedef enum _spolarity_t {
++enum spolarity {
+ 	POS = 0, /* positive */
+ 	NEG, /* negative */
+-}
+-spolarity_t;
++};
  
- 		switch (port_type) {
- 		case OMAP_DISPLAY_TYPE_DPI:
--			dpi_init_port(pdev, port);
-+			ret = dpi_init_port(pdev, port);
- 			break;
- 		case OMAP_DISPLAY_TYPE_SDI:
--			sdi_init_port(pdev, port);
-+			ret = sdi_init_port(pdev, port);
- 			break;
- 		default:
- 			break;
- 		}
--	} while ((port = omapdss_of_get_next_port(parent, port)) != NULL);
-+	} while (!ret &&
-+		 (port = omapdss_of_get_next_port(parent, port)) != NULL);
+ struct mode_parameter {
+ 	/* Horizontal timing. */
+@@ -15,14 +14,14 @@ struct mode_parameter {
+ 	unsigned long horizontal_display_end;
+ 	unsigned long horizontal_sync_start;
+ 	unsigned long horizontal_sync_width;
+-	spolarity_t horizontal_sync_polarity;
++	enum spolarity horizontal_sync_polarity;
  
--	return 0;
-+	if (ret)
-+		dss_uninit_ports(pdev);
-+
-+	return ret;
- }
+ 	/* Vertical timing. */
+ 	unsigned long vertical_total;
+ 	unsigned long vertical_display_end;
+ 	unsigned long vertical_sync_start;
+ 	unsigned long vertical_sync_height;
+-	spolarity_t vertical_sync_polarity;
++	enum spolarity vertical_sync_polarity;
  
- static void dss_uninit_ports(struct platform_device *pdev)
+ 	/* Refresh timing. */
+ 	unsigned long pixel_clock;
+@@ -30,7 +29,7 @@ struct mode_parameter {
+ 	unsigned long vertical_frequency;
+ 
+ 	/* Clock Phase. This clock phase only applies to Panel. */
+-	spolarity_t clock_phase_polarity;
++	enum spolarity clock_phase_polarity;
+ };
+ 
+ int ddk750_setModeTiming(struct mode_parameter *parm, clock_type_t clock);
+-- 
+2.11.0
 

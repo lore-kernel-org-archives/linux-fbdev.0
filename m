@@ -1,107 +1,36 @@
-From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Wed, 22 Mar 2017 02:49:50 +0000
-Subject: staging: iio: Replace a bit shift by a use of BIT.
-Message-Id: <20170322024942.GA21242@arushi-HP-Pavilion-Notebook>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 22 Mar 2017 06:01:38 +0000
+Subject: Re: staging: iio: Replace a bit shift by a use of BIT.
+Message-Id: <20170322060138.GA13416@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170322024942.GA21242@arushi-HP-Pavilion-Notebook>
+In-Reply-To: <20170322024942.GA21242@arushi-HP-Pavilion-Notebook>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Arushi Singhal <arushisinghal19971997@gmail.com>
+Cc: outreachy-kernel@googlegroups.com, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-This patch replaces bit shifting on 1 with the BIT(x) macro.
-This was done with coccinelle:
-@@
-constant c;
-@@
+On Wed, Mar 22, 2017 at 08:19:42AM +0530, Arushi Singhal wrote:
+> This patch replaces bit shifting on 1 with the BIT(x) macro.
+> This was done with coccinelle:
+> @@
+> constant c;
+> @@
+> 
+> -1 << c
+> +BIT(c)
+> 
+> Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+> ---
+>  drivers/staging/iio/adc/ad7816.c |  2 +-
+>  drivers/staging/iio/cdc/ad7150.c |  2 +-
+>  drivers/staging/iio/cdc/ad7746.c | 22 +++++++++++-----------
+>  3 files changed, 13 insertions(+), 13 deletions(-)
 
--1 << c
-+BIT(c)
+Please be careful about your cc: list, you missed the correct list, and
+added one not needed at all.  And you forgot the [PATCH] prefix :(
 
-Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
----
- drivers/staging/iio/adc/ad7816.c |  2 +-
- drivers/staging/iio/cdc/ad7150.c |  2 +-
- drivers/staging/iio/cdc/ad7746.c | 22 +++++++++++-----------
- 3 files changed, 13 insertions(+), 13 deletions(-)
+thanks,
 
-diff --git a/drivers/staging/iio/adc/ad7816.c b/drivers/staging/iio/adc/ad7816.c
-index 17d280581e24..42f637ca0251 100644
---- a/drivers/staging/iio/adc/ad7816.c
-+++ b/drivers/staging/iio/adc/ad7816.c
-@@ -222,7 +222,7 @@ static ssize_t ad7816_show_value(struct device *dev,
- 		value = (s8)((data >> AD7816_TEMP_FLOAT_OFFSET) - 103);
- 		data &= AD7816_TEMP_FLOAT_MASK;
- 		if (value < 0)
--			data = (1 << AD7816_TEMP_FLOAT_OFFSET) - data;
-+			data = (BIT(AD7816_TEMP_FLOAT_OFFSET)) - data;
- 		return sprintf(buf, "%d.%.2d\n", value, data * 25);
- 	}
- 	return sprintf(buf, "%u\n", data);
-diff --git a/drivers/staging/iio/cdc/ad7150.c b/drivers/staging/iio/cdc/ad7150.c
-index ca72af3e9d4b..c5574b3ee939 100644
---- a/drivers/staging/iio/cdc/ad7150.c
-+++ b/drivers/staging/iio/cdc/ad7150.c
-@@ -232,7 +232,7 @@ static int ad7150_write_event_config(struct iio_dev *indio_dev,
- 	if (ret < 0)
- 		goto error_ret;
- 
--	cfg = ret & ~((0x03 << 5) | (0x1 << 7));
-+	cfg = ret & ~((0x03 << 5) | (BIT(7)));
- 
- 	switch (type) {
- 	case IIO_EV_TYPE_MAG_ADAPTIVE:
-diff --git a/drivers/staging/iio/cdc/ad7746.c b/drivers/staging/iio/cdc/ad7746.c
-index 81f8b9ee1120..8c573817826f 100644
---- a/drivers/staging/iio/cdc/ad7746.c
-+++ b/drivers/staging/iio/cdc/ad7746.c
-@@ -45,20 +45,20 @@
- #define AD7746_STATUS_RDYCAP		BIT(0)
- 
- /* Capacitive Channel Setup Register Bit Designations (AD7746_REG_CAP_SETUP) */
--#define AD7746_CAPSETUP_CAPEN		(1 << 7)
--#define AD7746_CAPSETUP_CIN2		(1 << 6) /* AD7746 only */
--#define AD7746_CAPSETUP_CAPDIFF		(1 << 5)
--#define AD7746_CAPSETUP_CACHOP		(1 << 0)
-+#define AD7746_CAPSETUP_CAPEN		(BIT(7))
-+#define AD7746_CAPSETUP_CIN2		(BIT(6)) /* AD7746 only */
-+#define AD7746_CAPSETUP_CAPDIFF		(BIT(5))
-+#define AD7746_CAPSETUP_CACHOP		(BIT(0))
- 
- /* Voltage/Temperature Setup Register Bit Designations (AD7746_REG_VT_SETUP) */
--#define AD7746_VTSETUP_VTEN		(1 << 7)
-+#define AD7746_VTSETUP_VTEN		(BIT(7))
- #define AD7746_VTSETUP_VTMD_INT_TEMP	(0 << 5)
--#define AD7746_VTSETUP_VTMD_EXT_TEMP	(1 << 5)
-+#define AD7746_VTSETUP_VTMD_EXT_TEMP	(BIT(5))
- #define AD7746_VTSETUP_VTMD_VDD_MON	(2 << 5)
- #define AD7746_VTSETUP_VTMD_EXT_VIN	(3 << 5)
--#define AD7746_VTSETUP_EXTREF		(1 << 4)
--#define AD7746_VTSETUP_VTSHORT		(1 << 1)
--#define AD7746_VTSETUP_VTCHOP		(1 << 0)
-+#define AD7746_VTSETUP_EXTREF		(BIT(4))
-+#define AD7746_VTSETUP_VTSHORT		(BIT(1))
-+#define AD7746_VTSETUP_VTCHOP		(BIT(0))
- 
- /* Excitation Setup Register Bit Designations (AD7746_REG_EXC_SETUP) */
- #define AD7746_EXCSETUP_CLKCTRL		BIT(7)
-@@ -75,14 +75,14 @@
- #define AD7746_CONF_VTFS_MASK		GENMASK(7, 6)
- #define AD7746_CONF_CAPFS_MASK		GENMASK(5, 3)
- #define AD7746_CONF_MODE_IDLE		(0 << 0)
--#define AD7746_CONF_MODE_CONT_CONV	(1 << 0)
-+#define AD7746_CONF_MODE_CONT_CONV	(BIT(0))
- #define AD7746_CONF_MODE_SINGLE_CONV	(2 << 0)
- #define AD7746_CONF_MODE_PWRDN		(3 << 0)
- #define AD7746_CONF_MODE_OFFS_CAL	(5 << 0)
- #define AD7746_CONF_MODE_GAIN_CAL	(6 << 0)
- 
- /* CAPDAC Register Bit Designations (AD7746_REG_CAPDACx) */
--#define AD7746_CAPDAC_DACEN		(1 << 7)
-+#define AD7746_CAPDAC_DACEN		(BIT(7))
- #define AD7746_CAPDAC_DACP(x)		((x) & 0x7F)
- 
- /*
--- 
-2.11.0
-
+greg k-h

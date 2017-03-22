@@ -1,31 +1,41 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 20 Mar 2017 16:48:51 +0000
-Subject: Re: [PATCH] video: fbdev: pmag-ba-fb: remove incorrect __exit markups
-Message-Id: <10214243.2FlnkMB6Cj@amdc3058>
+From: Arushi Singhal <arushisinghal19971997@gmail.com>
+Date: Wed, 22 Mar 2017 02:53:52 +0000
+Subject: [PATCH] staging: sm750fb: Replace a bit shift by a use of BIT.
+Message-Id: <20170322024152.GA12064@arushi-HP-Pavilion-Notebook>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170225192451epcas2p45e9994c5b5618eb73560680041016efc@epcas2p4.samsung.com>
- <20170225192446.GA12502@dtor-ws>
-In-Reply-To: <20170225192446.GA12502@dtor-ws>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com
 
-On Saturday, February 25, 2017 11:24:46 AM Dmitry Torokhov wrote:
-> Even if bus is not hot-pluggable, the devices can be unbound from the
-> driver via sysfs, so we should not be using __exit annotations on
-> remove() methods. The only exception is drivers registered with
-> platform_driver_probe() which specifically disables sysfs bind/unbind
-> attributes.
-> 
-> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+This patch replaces bit shifting on 1 with the BIT(x) macro.
+This was done with coccinelle:
+@@
+constant c;
+@@
 
-Patch queued for 4.12, thanks.
+-1 << c
++BIT(c)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 5e4bfb601cea..112ee4182a0a 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -44,7 +44,7 @@ static unsigned int get_mxclk_freq(void)
+ 	OD = (pll_reg & PLL_CTRL_OD_MASK) >> PLL_CTRL_OD_SHIFT;
+ 	POD = (pll_reg & PLL_CTRL_POD_MASK) >> PLL_CTRL_POD_SHIFT;
+ 
+-	return DEFAULT_INPUT_CLOCK * M / N / (1 << OD) / (1 << POD);
++	return DEFAULT_INPUT_CLOCK * M / N / (BIT(OD)) / (BIT(POD));
+ }
+ 
+ /*
+-- 
+2.11.0
 

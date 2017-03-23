@@ -1,49 +1,25 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 07 Mar 2017 17:39:35 +0000
-Subject: Re: [PATCH 1/3] staging: sm750fb: fixes add blank line after function/struct/union/enum declarations
-Message-Id: <20170307173935.GL4171@mwanda>
+From: "Jan Beulich" <JBeulich@suse.com>
+Date: Thu, 23 Mar 2017 13:37:40 +0000
+Subject: Re: [Xen-devel] [PATCH] xen, fbfront: fix connecting to backend
+Message-Id: <58D3DDB40200007800146C6B@prv-mh.provo.novell.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170305112450.9066-1-arushisinghal19971997@gmail.com>
- <20170305112450.9066-2-arushisinghal19971997@gmail.com>
-In-Reply-To: <20170305112450.9066-2-arushisinghal19971997@gmail.com>
+References: <20170323125252.11763-1-jgross@suse.com>
+In-Reply-To: <20170323125252.11763-1-jgross@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arushi Singhal <arushisinghal19971997@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com
+To: Juergen Gross <jgross@suse.com>
+Cc: xen-devel@lists.xenproject.org, boris.ostrovsky@oracle.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
-On Sun, Mar 05, 2017 at 04:54:48PM +0530, Arushi Singhal wrote:
-> This patch fixes the warnings reported by checkpatch.pl
-> for please use a blank line after function/struct/union/enum
-> declarations.
-> 
-> Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_display.h | 1 +
->  drivers/staging/sm750fb/ddk750_mode.h    | 2 ++
->  drivers/staging/sm750fb/ddk750_power.h   | 1 +
->  drivers/staging/sm750fb/sm750_cursor.c   | 3 +++
->  4 files changed, 7 insertions(+)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
-> index e2a3f84ca4c5..8bf22e4f0d8b 100644
-> --- a/drivers/staging/sm750fb/ddk750_display.h
-> +++ b/drivers/staging/sm750fb/ddk750_display.h
-> @@ -100,6 +100,7 @@ typedef enum _disp_output_t {
->  	do_CRT_PRI = CRT_2_PRI | PRI_TP_ON | DPMS_ON | DAC_ON,
->  	do_CRT_SEC = CRT_2_SEC | SEC_TP_ON | DPMS_ON | DAC_ON,
->  }
-> +
->  disp_output_t;
+>>> On 23.03.17 at 13:52, <jgross@suse.com> wrote:
+> Connecting to the backend isn't working reliably in xen-fbfront: in
+> case XenbusStateInitWait of the backend has been missed the backend
+> transition to XenbusStateConnected will trigger the connected state
+> only without doing the actions required when the backend has
+> connected.
 
+Looks like xen-kbdfront does exactly the same - shouldn't it also be
+changed then?
 
-Nah...  This is a typedef and this change makes it even worse.  It
-should be on the same line as the }.
-
-} disp_output_t;
-
-But actually this typedef is not allowed.
-
-regards,
-dan carpenter
+Jan
 

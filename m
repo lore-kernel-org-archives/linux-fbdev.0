@@ -1,31 +1,48 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 17 Mar 2017 14:48:09 +0000
-Subject: Re: [PATCH v8 3/3] backlight arcxcnn add support for ArcticSand devices
-Message-Id: <201703172233.osJjGFrP%fengguang.wu@intel.com>
+From: Juergen Gross <jgross@suse.com>
+Date: Thu, 23 Mar 2017 12:52:52 +0000
+Subject: [PATCH] xen, fbfront: fix connecting to backend
+Message-Id: <20170323125252.11763-1-jgross@suse.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1489607133-7870-3-git-send-email-olimpiu@arcticsand.com>
-In-Reply-To: <1489607133-7870-3-git-send-email-olimpiu@arcticsand.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org
+Cc: b.zolnierkie@samsung.com, boris.ostrovsky@oracle.com, Juergen Gross <jgross@suse.com>, stable@vger.kernel.org
 
-Hi Olimpiu,
+Connecting to the backend isn't working reliably in xen-fbfront: in
+case XenbusStateInitWait of the backend has been missed the backend
+transition to XenbusStateConnected will trigger the connected state
+only without doing the actions required when the backend has
+connected.
 
-[auto build test WARNING on robh/for-next]
-[also build test WARNING on v4.11-rc2 next-20170310]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Olimpiu-Dejeu/backlight-arcxcnn-add-arc-to-vendor-prefix/20170317-205447
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/robh/linux.git for-next
-
-
-coccinelle warnings: (new ones prefixed by >>)
-
->> drivers/video/backlight/arcxcnn_bl.c:183:1-3: WARNING: PTR_ERR_OR_ZERO can be used
-
-Please review and possibly fold the followup patch.
-
+Cc: stable@vger.kernel.org
+Signed-off-by: Juergen Gross <jgross@suse.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/video/fbdev/xen-fbfront.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index d0115a7..3ee309c 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -643,7 +643,6 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+ 		break;
+ 
+ 	case XenbusStateInitWait:
+-InitWait:
+ 		xenbus_switch_state(dev, XenbusStateConnected);
+ 		break;
+ 
+@@ -654,7 +653,8 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+ 		 * get Connected twice here.
+ 		 */
+ 		if (dev->state != XenbusStateConnected)
+-			goto InitWait; /* no InitWait seen yet, fudge it */
++			/* no InitWait seen yet, fudge it */
++			xenbus_switch_state(dev, XenbusStateConnected);
+ 
+ 		if (xenbus_read_unsigned(info->xbdev->otherend,
+ 					 "request-update", 0))
+-- 
+2.10.2
+

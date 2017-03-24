@@ -1,53 +1,49 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Thu, 23 Mar 2017 21:11:13 +0000
+From: Philipp Zabel <p.zabel@pengutronix.de>
+Date: Fri, 24 Mar 2017 09:13:29 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: Fix GPIO out for unimplemented .get_direction()
-Message-Id: <c2b7b840-a0fd-a3db-7bef-8fea9cbae0fa@ti.com>
+Message-Id: <1490346809.3068.1.camel@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1490203285-28324-1-git-send-email-geert+renesas@glider.be>
 In-Reply-To: <1490203285-28324-1-git-send-email-geert+renesas@glider.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Geert Uytterhoeven <geert+renesas@glider.be>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Philipp Zabel <p.zabel@pengutronix.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 03/22/2017 07:21 PM, Geert Uytterhoeven wrote:
+On Wed, 2017-03-22 at 18:21 +0100, Geert Uytterhoeven wrote:
 > Commit 7613c922315e308a ("backlight: pwm_bl: Move the checks for initial
 > power state to a separate function") not just moved some code, but made
 > slight changes in semantics.
->
+> 
 > If a gpiochip doesn't implement the optional .get_direction() callback,
 > gpiod_get_direction always returns -EINVAL, which is never equal to
 > GPIOF_DIR_IN, leading to the GPIO not being configured for output.
-
-The platforms I have tested the gpio drivers do implement the get_direction=
-()=20
-callback and I was not aware of this behaviour.
-
+>
 > To avoid this, invert the test and check for not GPIOF_DIR_OUT instead,
 > like the original code did.
->
+> 
 > This restores the display on r8a7740/armadillo.
->
-> Fixes: 7613c922315e308a ("backlight: pwm_bl: Move the checks for initial =
-power state to a separate function")
+> 
+> Fixes: 7613c922315e308a ("backlight: pwm_bl: Move the checks for initial power state to a separate function")
 > Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Reviewed-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
+
+regards
+Philipp
 
 > ---
 >  drivers/video/backlight/pwm_bl.c | 7 ++++---
 >  1 file changed, 4 insertions(+), 3 deletions(-)
->
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
-wm_bl.c
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
 > index d7efcb632f7d9dde..002f1ce22bd02032 100644
 > --- a/drivers/video/backlight/pwm_bl.c
 > +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -297,14 +297,15 @@ static int pwm_backlight_probe(struct platform_devi=
-ce *pdev)
+> @@ -297,14 +297,15 @@ static int pwm_backlight_probe(struct platform_device *pdev)
 >  	}
->
+>  
 >  	/*
 > -	 * If the GPIO is configured as input, change the direction to output
 > -	 * and set the GPIO as active.
@@ -59,13 +55,10 @@ ce *pdev)
 >  	 * early. Leave the decision of the initial backlight state for later.
 >  	 */
 >  	if (pb->enable_gpio &&
-> -	    gpiod_get_direction(pb->enable_gpio) =3D GPIOF_DIR_IN)
-> +	    gpiod_get_direction(pb->enable_gpio) !=3D GPIOF_DIR_OUT)
+> -	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_IN)
+> +	    gpiod_get_direction(pb->enable_gpio) != GPIOF_DIR_OUT)
 >  		gpiod_direction_output(pb->enable_gpio, 1);
->
->  	pb->power_supply =3D devm_regulator_get(&pdev->dev, "power");
->
+>  
+>  	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
 
 
---=20
-P=E9ter

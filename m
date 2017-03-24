@@ -1,94 +1,72 @@
-From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Mon, 20 Mar 2017 14:18:56 +0000
-Subject: [PATCH v5] staging:sm750fb: Code readability is improved.
-Message-Id: <20170320140656.GA5137@arushi-HP-Pavilion-Notebook>
+From: Pushkar Jambhlekar <pushkar.iit@gmail.com>
+Date: Fri, 24 Mar 2017 05:40:08 +0000
+Subject: [PATCH] drivers/video/fbdev: Fixing coding guidelines in acornfb.c
+Message-Id: <1490333288-7532-1-git-send-email-pushkar.iit@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pushkar Jambhlekar <pushkar.iit@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-New variables are added to make the code more readable.
+Fixing coding guidelines error reported by 'checkpatch.pl'
 
-Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+Signed-off-by: Pushkar Jambhlekar <pushkar.iit@gmail.com>
 ---
- changes in v5
- -try to make the code much more readable.
- - defined the variable at the top of a block.
- - change the variable from temp to tmp.
+ drivers/video/fbdev/acornfb.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
- drivers/staging/sm750fb/ddk750_mode.c | 55 +++++++++++++++++++----------------
- 1 file changed, 30 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index eea5aef2956f..37b5d4850fb9 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -81,33 +81,38 @@ static int programModeRegisters(mode_parameter_t *pModeParam, struct pll_value *
- 	if (pll->clockType = SECONDARY_PLL) {
- 		/* programe secondary pixel clock */
- 		poke32(CRT_PLL_CTRL, sm750_format_pll_reg(pll));
--		poke32(CRT_HORIZONTAL_TOTAL,
--		       (((pModeParam->horizontal_total - 1) <<
--			 CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT) &
--			CRT_HORIZONTAL_TOTAL_TOTAL_MASK) |
--		       ((pModeParam->horizontal_display_end - 1) &
--			CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK));
--
--		poke32(CRT_HORIZONTAL_SYNC,
--		       ((pModeParam->horizontal_sync_width <<
--			 CRT_HORIZONTAL_SYNC_WIDTH_SHIFT) &
--			CRT_HORIZONTAL_SYNC_WIDTH_MASK) |
--		       ((pModeParam->horizontal_sync_start - 1) &
--			CRT_HORIZONTAL_SYNC_START_MASK));
+diff --git a/drivers/video/fbdev/acornfb.c b/drivers/video/fbdev/acornfb.c
+index fb75b7e..0c325b4 100644
+--- a/drivers/video/fbdev/acornfb.c
++++ b/drivers/video/fbdev/acornfb.c
+@@ -101,7 +101,7 @@ extern unsigned int vram_size;	/* set by setup.c */
+ #ifdef HAS_VIDC20
+ #include <mach/acornfb.h>
  
--		poke32(CRT_VERTICAL_TOTAL,
--		       (((pModeParam->vertical_total - 1) <<
--			 CRT_VERTICAL_TOTAL_TOTAL_SHIFT) &
--			CRT_VERTICAL_TOTAL_TOTAL_MASK) |
--		       ((pModeParam->vertical_display_end - 1) &
--			CRT_VERTICAL_TOTAL_DISPLAY_END_MASK));
-+		tmp = ((pModeParam->horizontal_total - 1) <<
-+		       CRT_HORIZONTAL_TOTAL_TOTAL_SHIFT) &
-+		     CRT_HORIZONTAL_TOTAL_TOTAL_MASK;
-+		tmp |= (pModeParam->horizontal_display_end - 1) &
-+		      CRT_HORIZONTAL_TOTAL_DISPLAY_END_MASK;
+-#define MAX_SIZE	2*1024*1024
++#define MAX_SIZE	(2*1024*1024)
  
--		poke32(CRT_VERTICAL_SYNC,
--		       ((pModeParam->vertical_sync_height <<
--			 CRT_VERTICAL_SYNC_HEIGHT_SHIFT) &
--			CRT_VERTICAL_SYNC_HEIGHT_MASK) |
--		       ((pModeParam->vertical_sync_start - 1) &
--			CRT_VERTICAL_SYNC_START_MASK));
-+		poke32(CRT_HORIZONTAL_TOTAL, tmp);
-+
-+		tmp = (pModeParam->horizontal_sync_width <<
-+		       CRT_HORIZONTAL_SYNC_WIDTH_SHIFT) &
-+		     CRT_HORIZONTAL_SYNC_WIDTH_MASK;
-+		tmp |= (pModeParam->horizontal_sync_start - 1) &
-+		      CRT_HORIZONTAL_SYNC_START_MASK;
-+
-+		poke32(CRT_HORIZONTAL_SYNC, tmp);
-+
-+		tmp = ((pModeParam->vertical_total - 1) <<
-+		       CRT_VERTICAL_TOTAL_TOTAL_SHIFT) &
-+		     CRT_VERTICAL_TOTAL_TOTAL_MASK;
-+		tmp |= (pModeParam->vertical_display_end - 1) &
-+		      CRT_VERTICAL_TOTAL_DISPLAY_END_MASK;
-+
-+		poke32(CRT_VERTICAL_TOTAL, tmp);
-+
-+		tmp = ((pModeParam->vertical_sync_height <<
-+		       CRT_VERTICAL_SYNC_HEIGHT_SHIFT)) &
-+		     CRT_VERTICAL_SYNC_HEIGHT_MASK;
-+		tmp |= (pModeParam->vertical_sync_start - 1) &
-+		      CRT_VERTICAL_SYNC_START_MASK;
-+
-+		poke32(CRT_VERTICAL_SYNC, tmp);
+ /* VIDC20 has a different set of rules from the VIDC:
+  *  hcr  : must be multiple of 4
+@@ -162,7 +162,7 @@ static void acornfb_set_timing(struct fb_info *info)
+ 	if (memcmp(&current_vidc, &vidc, sizeof(vidc))) {
+ 		current_vidc = vidc;
  
- 		tmp = DISPLAY_CTRL_TIMING | DISPLAY_CTRL_PLANE;
- 		if (pModeParam->vertical_sync_polarity)
+-		vidc_writel(VIDC20_CTRL| vidc.control);
++		vidc_writel(VIDC20_CTRL | vidc.control);
+ 		vidc_writel(0xd0000000 | vidc.pll_ctl);
+ 		vidc_writel(0x80000000 | vidc.h_cycle);
+ 		vidc_writel(0x81000000 | vidc.h_sync_width);
+@@ -297,7 +297,7 @@ acornfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 		pal.p = 0;
+ 		vidc_writel(0x10000000);
+ 		for (i = 0; i < 256; i += 1) {
+-			pal.vidc20.red   = current_par.palette[ i       & 31].vidc20.red;
++			pal.vidc20.red   = current_par.palette[i       & 31].vidc20.red;
+ 			pal.vidc20.green = current_par.palette[(i >> 1) & 31].vidc20.green;
+ 			pal.vidc20.blue  = current_par.palette[(i >> 2) & 31].vidc20.blue;
+ 			vidc_writel(pal.p);
+@@ -1043,8 +1043,7 @@ static int acornfb_probe(struct platform_device *dev)
+ 		base = dma_alloc_wc(current_par.dev, size, &handle,
+ 				    GFP_KERNEL);
+ 		if (base = NULL) {
+-			printk(KERN_ERR "acornfb: unable to allocate screen "
+-			       "memory\n");
++			printk(KERN_ERR "acornfb: unable to allocate screen memory\n");
+ 			return -ENOMEM;
+ 		}
+ 
+@@ -1103,8 +1102,7 @@ static int acornfb_probe(struct platform_device *dev)
+ 	v_sync = h_sync / (fb_info.var.yres + fb_info.var.upper_margin +
+ 		 fb_info.var.lower_margin + fb_info.var.vsync_len);
+ 
+-	printk(KERN_INFO "Acornfb: %dkB %cRAM, %s, using %dx%d, "
+-		"%d.%03dkHz, %dHz\n",
++	printk(KERN_INFO "Acornfb: %dkB %cRAM, %s, using %dx%d, %d.%03dkHz, %dHz\n",
+ 		fb_info.fix.smem_len / 1024,
+ 		current_par.using_vram ? 'V' : 'D',
+ 		VIDC_NAME, fb_info.var.xres, fb_info.var.yres,
 -- 
-2.11.0
+2.7.4
 

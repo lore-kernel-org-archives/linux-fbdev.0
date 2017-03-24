@@ -1,55 +1,69 @@
-From: Prasant Jalan <prasant.jalan@gmail.com>
-Date: Fri, 31 Mar 2017 19:22:02 +0000
-Subject: [PATCH 2/2] staging: sm750fb: removed line continuations in quoted strings
-Message-Id: <1490987402-9301-2-git-send-email-prasant.jalan@gmail.com>
+From: Matthew Wilcox <willy@infradead.org>
+Date: Fri, 24 Mar 2017 16:13:16 +0000
+Subject: [PATCH v3 5/7] zram: Convert to using memset_l
+Message-Id: <20170324161318.18718-6-willy@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1490987402-9301-1-git-send-email-prasant.jalan@gmail.com>
-In-Reply-To: <1490987402-9301-1-git-send-email-prasant.jalan@gmail.com>
+References: <20170324161318.18718-1-willy@infradead.org>
+In-Reply-To: <20170324161318.18718-1-willy@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: sudip.mukherjee@codethink.co.uk, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Prasant Jalan <prasant.jalan@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, linux-arch@vger.kernel.org, linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, x86@kernel.org, linux-mips@linux-mips.org, linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org, Minchan Kim <minchan@kernel.org>, Matthew Wilcox <mawilcox@microsoft.com>
 
-checkpatch gives WARNING: Avoid line continuations in quoted strings.
+From: Matthew Wilcox <mawilcox@microsoft.com>
 
-Trivial fix by removing line continuations and adding another quote at
-the start of next line.
+zram was the motivation for creating memset_l().  Minchan Kim sees a 7%
+performance improvement on x86 with 100MB of non-zero deduplicatable
+data:
 
-Signed-off-by: Prasant Jalan <prasant.jalan@gmail.com>
+        perf stat -r 10 dd if=/dev/zram0 of=/dev/null
+
+vanilla:        0.232050465 seconds time elapsed ( +-  0.51% )
+memset_l:	0.217219387 seconds time elapsed ( +-  0.07% )
+
+Signed-off-by: Matthew Wilcox <mawilcox@microsoft.com>
+Tested-by: Minchan Kim <minchan@kernel.org>
 ---
- drivers/staging/sm750fb/sm750.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ drivers/block/zram/zram_drv.c | 15 +++------------
+ 1 file changed, 3 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 445c68d..386d4ad 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -837,15 +837,15 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+diff --git a/drivers/block/zram/zram_drv.c b/drivers/block/zram/zram_drv.c
+index e27d89a36c34..25dcad309695 100644
+--- a/drivers/block/zram/zram_drv.c
++++ b/drivers/block/zram/zram_drv.c
+@@ -157,20 +157,11 @@ static inline void update_used_max(struct zram *zram,
+ 	} while (old_max != cur_max);
+ }
  
- 	/* some member of info->var had been set by fb_find_mode */
+-static inline void zram_fill_page(char *ptr, unsigned long len,
++static inline void zram_fill_page(void *ptr, unsigned long len,
+ 					unsigned long value)
+ {
+-	int i;
+-	unsigned long *page = (unsigned long *)ptr;
+-
+ 	WARN_ON_ONCE(!IS_ALIGNED(len, sizeof(unsigned long)));
+-
+-	if (likely(value = 0)) {
+-		memset(ptr, 0, len);
+-	} else {
+-		for (i = 0; i < len / sizeof(*page); i++)
+-			page[i] = value;
+-	}
++	memset_l(ptr, value, len / sizeof(unsigned long));
+ }
  
--	pr_info("Member of info->var is :\n\
--		xres=%d\n\
--		yres=%d\n\
--		xres_virtual=%d\n\
--		yres_virtual=%d\n\
--		xoffset=%d\n\
--		yoffset=%d\n\
--		bits_per_pixel=%d\n \
--		...\n",
-+	pr_info("Member of info->var is :\n"
-+		"xres=%d\n"
-+		"yres=%d\n"
-+		"xres_virtual=%d\n"
-+		"yres_virtual=%d\n"
-+		"xoffset=%d\n"
-+		"yoffset=%d\n"
-+		"bits_per_pixel=%d\n"
-+		" ...\n",
- 		var->xres,
- 		var->yres,
- 		var->xres_virtual,
+ static bool page_same_filled(void *ptr, unsigned long *element)
+@@ -193,7 +184,7 @@ static bool page_same_filled(void *ptr, unsigned long *element)
+ static void handle_same_page(struct bio_vec *bvec, unsigned long element)
+ {
+ 	struct page *page = bvec->bv_page;
+-	void *user_mem;
++	char *user_mem;
+ 
+ 	user_mem = kmap_atomic(page);
+ 	zram_fill_page(user_mem + bvec->bv_offset, bvec->bv_len, element);
 -- 
-2.7.4
+2.11.0
 

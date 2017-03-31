@@ -1,48 +1,55 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 15 Mar 2017 20:24:22 +0000
-Subject: Re: [PATCH 2/2 v3] dt-bindings: display: imx: entry for AUS mode
-Message-Id: <20170315202422.7agjocsvwxdi5ha2@rob-hp-laptop>
+From: Prasant Jalan <prasant.jalan@gmail.com>
+Date: Fri, 31 Mar 2017 19:22:02 +0000
+Subject: [PATCH 2/2] staging: sm750fb: removed line continuations in quoted strings
+Message-Id: <1490987402-9301-2-git-send-email-prasant.jalan@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
- <1488997376-1564-1-git-send-email-martin@kaiser.cx>
- <1488997376-1564-2-git-send-email-martin@kaiser.cx>
-In-Reply-To: <1488997376-1564-2-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
+References: <1490987402-9301-1-git-send-email-prasant.jalan@gmail.com>
+In-Reply-To: <1490987402-9301-1-git-send-email-prasant.jalan@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: sudipm.mukherjee@gmail.com
+Cc: sudip.mukherjee@codethink.co.uk, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Prasant Jalan <prasant.jalan@gmail.com>
 
-On Wed, Mar 08, 2017 at 07:22:56PM +0100, Martin Kaiser wrote:
-> Allow setting the AUS mode for a display from the device tree.
-> Use an optional boolean property. AUS mode can be set only on imx21
-> and compatible chipsets.
-> 
-> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
-> ---
-> v3:
->    use a boolean DT property instead of the register value
->    separate patches for DT binding and code changes
-> 
-> v2:
->    re-sending DT bindings and code changes as one patch
-> 
->  Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-> index 7a5c0e2..cacae0e 100644
-> --- a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-> +++ b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-> @@ -13,6 +13,8 @@ Required nodes:
->  	Additional, the display node has to define properties:
->  	- bits-per-pixel: Bits per pixel
->  	- fsl,pcr: LCDC PCR value
-> +	A display node may optionally define
-> +	- fsl,aus_mode: boolean to enable AUS mode (only for imx21)
+checkpatch gives WARNING: Avoid line continuations in quoted strings.
 
-fsl,aus-mode
+Trivial fix by removing line continuations and adding another quote at
+the start of next line.
 
-With that,
+Signed-off-by: Prasant Jalan <prasant.jalan@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Acked-by: Rob Herring <robh@kernel.org>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 445c68d..386d4ad 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -837,15 +837,15 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
+ 
+ 	/* some member of info->var had been set by fb_find_mode */
+ 
+-	pr_info("Member of info->var is :\n\
+-		xres=%d\n\
+-		yres=%d\n\
+-		xres_virtual=%d\n\
+-		yres_virtual=%d\n\
+-		xoffset=%d\n\
+-		yoffset=%d\n\
+-		bits_per_pixel=%d\n \
+-		...\n",
++	pr_info("Member of info->var is :\n"
++		"xres=%d\n"
++		"yres=%d\n"
++		"xres_virtual=%d\n"
++		"yres_virtual=%d\n"
++		"xoffset=%d\n"
++		"yoffset=%d\n"
++		"bits_per_pixel=%d\n"
++		" ...\n",
+ 		var->xres,
+ 		var->yres,
+ 		var->xres_virtual,
+-- 
+2.7.4
+

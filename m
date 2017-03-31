@@ -1,41 +1,81 @@
-From: Arushi Singhal <arushisinghal19971997@gmail.com>
-Date: Wed, 22 Mar 2017 02:53:52 +0000
-Subject: [PATCH] staging: sm750fb: Replace a bit shift by a use of BIT.
-Message-Id: <20170322024152.GA12064@arushi-HP-Pavilion-Notebook>
+From: Prasant Jalan <prasant.jalan@gmail.com>
+Date: Fri, 31 Mar 2017 19:22:01 +0000
+Subject: [PATCH 1/2] staging: sm750fb: fixing function return with lock held
+Message-Id: <1490987402-9301-1-git-send-email-prasant.jalan@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com
+Cc: sudip.mukherjee@codethink.co.uk, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Prasant Jalan <prasant.jalan@gmail.com>
 
-This patch replaces bit shifting on 1 with the BIT(x) macro.
-This was done with coccinelle:
-@@
-constant c;
-@@
+lynxfb_suspend() & lynxfb_resume() return on errors while holding
+console_lock.
 
--1 << c
-+BIT(c)
+Adding 'goto' such that proper cleanups can be done before returning
+from function and therefore console_lock can be released before
+returning.
 
-Signed-off-by: Arushi Singhal <arushisinghal19971997@gmail.com>
+Signed-off-by: Prasant Jalan <prasant.jalan@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/sm750.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 5e4bfb601cea..112ee4182a0a 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -44,7 +44,7 @@ static unsigned int get_mxclk_freq(void)
- 	OD = (pll_reg & PLL_CTRL_OD_MASK) >> PLL_CTRL_OD_SHIFT;
- 	POD = (pll_reg & PLL_CTRL_POD_MASK) >> PLL_CTRL_POD_SHIFT;
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index c618c56..445c68d 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -419,7 +419,7 @@ static int lynxfb_suspend(struct pci_dev *pdev, pm_message_t mesg)
+ 		if (ret) {
+ 			dev_err(&pdev->dev,
+ 				"error:%d occurred in pci_save_state\n", ret);
+-			return ret;
++			goto lynxfb_suspend_err;
+ 		}
  
--	return DEFAULT_INPUT_CLOCK * M / N / (1 << OD) / (1 << POD);
-+	return DEFAULT_INPUT_CLOCK * M / N / (BIT(OD)) / (BIT(POD));
+ 		ret = pci_set_power_state(pdev, pci_choose_state(pdev, mesg));
+@@ -427,11 +427,13 @@ static int lynxfb_suspend(struct pci_dev *pdev, pm_message_t mesg)
+ 			dev_err(&pdev->dev,
+ 				"error:%d occurred in pci_set_power_state\n",
+ 				ret);
+-			return ret;
++			goto lynxfb_suspend_err;
+ 		}
+ 	}
+ 
+ 	pdev->dev.power.power_state = mesg;
++
++lynxfb_suspend_err:
+ 	console_unlock();
+ 	return ret;
  }
+@@ -456,7 +458,7 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 	if (ret) {
+ 		dev_err(&pdev->dev,
+ 			"error:%d occurred in pci_set_power_state\n", ret);
+-		return ret;
++		goto lynxfb_resume_err;
+ 	}
  
- /*
+ 	if (pdev->dev.power.power_state.event != PM_EVENT_FREEZE) {
+@@ -466,7 +468,7 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 			dev_err(&pdev->dev,
+ 				"error:%d occurred in pci_enable_device\n",
+ 				ret);
+-			return ret;
++			goto lynxfb_resume_err;
+ 		}
+ 		pci_set_master(pdev);
+ 	}
+@@ -498,6 +500,8 @@ static int lynxfb_resume(struct pci_dev *pdev)
+ 	}
+ 
+ 	pdev->dev.power.power_state.event = PM_EVENT_RESUME;
++
++lynxfb_resume_err:
+ 	console_unlock();
+ 	return ret;
+ }
 -- 
-2.11.0
+2.7.4
 

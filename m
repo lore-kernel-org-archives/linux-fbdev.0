@@ -1,11 +1,11 @@
 From: Paul Cercueil <paul@crapouillou.net>
-Date: Fri, 28 Apr 2017 20:08:24 +0000
-Subject: [PATCH v5 14/14] MIPS: jz4740: Remove custom GPIO code
-Message-Id: <20170428200824.10906-15-paul@crapouillou.net>
+Date: Sun, 02 Apr 2017 20:42:44 +0000
+Subject: [PATCH v4 14/14] MIPS: jz4740: Remove custom GPIO code
+Message-Id: <20170402204244.14216-15-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net>
- <20170428200824.10906-1-paul@crapouillou.net>
-In-Reply-To: <20170428200824.10906-1-paul@crapouillou.net>
+References: <20170125185207.23902-2-paul@crapouillou.net>
+ <20170402204244.14216-1-paul@crapouillou.net>
+In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -28,7 +28,6 @@ Signed-off-by: Paul Cercueil <paul@crapouillou.net>
  v2: No changes
  v3: No changes
  v4: No changes
- v5: No changes
 
 diff --git a/arch/mips/include/asm/mach-jz4740/gpio.h b/arch/mips/include/asm/mach-jz4740/gpio.h
 index 7c7708a23baa..fd847c984701 100644

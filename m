@@ -1,80 +1,132 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Tue, 11 Apr 2017 08:43:18 +0000
-Subject: [PATCH] efifb: arm/arm64: validate fb BAR instead of claiming it
-Message-Id: <1491900198-26187-1-git-send-email-ard.biesheuvel@linaro.org>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 02 Apr 2017 20:42:37 +0000
+Subject: [PATCH v4 07/14] MIPS: jz4780: DTS: Add nodes for ingenic pinctrl and gpio drivers
+Message-Id: <20170402204244.14216-8-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170125185207.23902-2-paul@crapouillou.net>
+ <20170402204244.14216-1-paul@crapouillou.net>
+In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-Claiming the BAR that matches the framebuffer base address in a PCI
-header fixup quirk only works as expected when the PCI device is on
-bus 0. If not, it will produce the following error:
+For a description of the devicetree node, please read
+Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
 
-pci 0000:01:01.0: can't claim BAR 0 [mem 0x10000000-0x10ffffff pref]:
-                                                 no compatible bridge window
-pci 0000:01:01.0: BAR 0: failed to claim resource for efifb!
+For a description of the gpio devicetree nodes, please read
+Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
 
-Since claiming the entire path up to the root is non-trivial at this
-point, and also undesirable given that we have no way of making sure
-that the existing configuration is sound, let's not claim anything at
-all, and simply record the resource so we can check that it did not
-move when the EFI fb driver is probed.
-
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/fbdev/efifb.c | 23 +++++++++++++++-----
- 1 file changed, 17 insertions(+), 6 deletions(-)
+ arch/mips/boot/dts/ingenic/jz4780.dtsi | 89 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 89 insertions(+)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index b827a8113e26..21d635ef5be2 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -146,6 +146,8 @@ ATTRIBUTE_GROUPS(efifb);
+ v2: Changed the devicetree bindings to match the new driver
+ v3: No changes
+ v4: Update the bindings for the v4 version of the drivers
+
+diff --git a/arch/mips/boot/dts/ingenic/jz4780.dtsi b/arch/mips/boot/dts/ingenic/jz4780.dtsi
+index b868b429add2..f90199a7925d 100644
+--- a/arch/mips/boot/dts/ingenic/jz4780.dtsi
++++ b/arch/mips/boot/dts/ingenic/jz4780.dtsi
+@@ -44,6 +44,95 @@
+ 		#clock-cells = <1>;
+ 	};
  
- static bool pci_dev_disabled;	/* FB base matches BAR of a disabled device */
- 
-+static struct resource *pci_dev_bar_resource;
++	pinctrl: ingenic-pinctrl@10010000 {
++		compatible = "ingenic,jz4780-pinctrl";
++		reg = <0x10010000 0x600>;
 +
- static int efifb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
-@@ -179,6 +181,20 @@ static int efifb_probe(struct platform_device *dev)
- 	}
- 	printk(KERN_INFO "efifb: probing for efifb\n");
- 
-+	if (pci_dev_bar_resource) {
-+		u64 base = screen_info.lfb_base;
-+		u64 size = screen_info.lfb_size;
++		gpa: gpio-controller@0 {
++			compatible = "ingenic,gpio-bank-a", "ingenic,jz4780-gpio";
 +
-+		if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
-+			base |= (u64)screen_info.ext_lfb_base << 32;
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 0 32>;
++			#gpio-cells = <2>;
 +
-+		if (pci_dev_bar_resource->start > base ||
-+		    pci_dev_bar_resource->end < base + size - 1) {
-+			pr_err("efifb: PCI BAR has moved, disabling ...\n");
-+			return -ENODEV;
-+		}
-+	}
++			interrupt-controller;
++			#interrupt-cells = <2>;
 +
- 	/* just assume they're all unset if any are */
- 	if (!screen_info.blue_size) {
- 		screen_info.blue_size = 8;
-@@ -383,12 +399,7 @@ static void claim_efifb_bar(struct pci_dev *dev, int idx)
- 		return;
- 	}
- 
--	if (pci_claim_resource(dev, idx)) {
--		pci_dev_disabled = true;
--		dev_err(&dev->dev,
--			"BAR %d: failed to claim resource for efifb!\n", idx);
--		return;
--	}
-+	pci_dev_bar_resource = dev->resource + idx;
- 
- 	dev_info(&dev->dev, "BAR %d: assigned to efifb\n", idx);
- }
++			interrupt-parent = <&intc>;
++			interrupts = <17>;
++		};
++
++		gpb: gpio-controller@1 {
++			compatible = "ingenic,gpio-bank-b", "ingenic,jz4780-gpio";
++
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 32 32>;
++			#gpio-cells = <2>;
++
++			interrupt-controller;
++			#interrupt-cells = <2>;
++
++			interrupt-parent = <&intc>;
++			interrupts = <16>;
++		};
++
++		gpc: gpio-controller@2 {
++			compatible = "ingenic,gpio-bank-c", "ingenic,jz4780-gpio";
++
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 64 32>;
++			#gpio-cells = <2>;
++
++			interrupt-controller;
++			#interrupt-cells = <2>;
++
++			interrupt-parent = <&intc>;
++			interrupts = <15>;
++		};
++
++		gpd: gpio-controller@3 {
++			compatible = "ingenic,gpio-bank-d", "ingenic,jz4780-gpio";
++
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 96 32>;
++			#gpio-cells = <2>;
++
++			interrupt-controller;
++			#interrupt-cells = <2>;
++
++			interrupt-parent = <&intc>;
++			interrupts = <14>;
++		};
++
++		gpe: gpio-controller@4 {
++			compatible = "ingenic,gpio-bank-e", "ingenic,jz4780-gpio";
++
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 128 32>;
++			#gpio-cells = <2>;
++
++			interrupt-controller;
++			#interrupt-cells = <2>;
++
++			interrupt-parent = <&intc>;
++			interrupts = <13>;
++		};
++
++		gpf: gpio-controller@5 {
++			compatible = "ingenic,gpio-bank-f", "ingenic,jz4780-gpio";
++
++			gpio-controller;
++			gpio-ranges = <&pinctrl 0 160 32>;
++			#gpio-cells = <2>;
++
++			interrupt-controller;
++			#interrupt-cells = <2>;
++
++			interrupt-parent = <&intc>;
++			interrupts = <12>;
++		};
++	};
++
+ 	uart0: serial@10030000 {
+ 		compatible = "ingenic,jz4780-uart";
+ 		reg = <0x10030000 0x100>;
 -- 
-2.7.4
+2.11.0
 

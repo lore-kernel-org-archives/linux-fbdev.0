@@ -1,35 +1,113 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 21 Apr 2017 14:49:43 +0000
-Subject: Re: [PATCH 1/2 v4] video: fbdev: imxfb: support AUS mode
-Message-Id: <8077683.5av1QGK6yz@amdc3058>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 02 Apr 2017 20:42:43 +0000
+Subject: [PATCH v4 13/14] pwm: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170402204244.14216-14-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
- <CGME20170421102953epcas5p20a57e27742e4d0d7df27e9e0e7ef8dfd@epcas5p2.samsung.com>
- <1492770549-7347-1-git-send-email-martin@kaiser.cx>
-In-Reply-To: <1492770549-7347-1-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
+References: <20170125185207.23902-2-paul@crapouillou.net>
+ <20170402204244.14216-1-paul@crapouillou.net>
+In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-On Friday, April 21, 2017 12:29:08 PM Martin Kaiser wrote:
-> Some displays require setting AUS mode in the LDCD AUS Mode Control
-> Register to work with the imxfb driver. Like the value of the Panel
-> Configuration Register, the AUS mode setting depends on the display
-> mode.
-> 
-> Allow setting AUS mode from the device tree by adding a boolean
-> property. Make this property optional to keep the DT ABI stable.
-> AUS mode can be set only on imx21 and compatible chipsets.
-> 
-> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-Patch queued for 4.12, thanks.
+One inherent problem of this new approach is that the pinctrl framework
+does not allow us to configure each pin on demand, when the various PWM
+channels are requested or released. For instance, the PWM channels can
+be configured from sysfs, which would require all PWM pins to be configured
+properly beforehand for the PWM function, eventually causing conflicts
+with other platform or board drivers.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+The proper solution here would be to modify the pwm-jz4740 driver to
+handle only one PWM channel, and create an instance of this driver
+for each one of the 8 PWM channels. Then, it could use the pinctrl
+framework to dynamically configure the PWM pin it controls.
+
+Until this can be done, the only jz4740 board supported upstream
+(Qi lb60) can configure all of its connected PWM pins in PWM function
+mode, since those are not used by other drivers nor by GPIOs on the
+board.
+
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+---
+ drivers/pwm/pwm-jz4740.c | 29 -----------------------------
+ 1 file changed, 29 deletions(-)
+
+ v2: No changes
+ v3: No changes
+ v4: No changes
+
+diff --git a/drivers/pwm/pwm-jz4740.c b/drivers/pwm/pwm-jz4740.c
+index 76d13150283f..a75ff3622450 100644
+--- a/drivers/pwm/pwm-jz4740.c
++++ b/drivers/pwm/pwm-jz4740.c
+@@ -21,22 +21,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/pwm.h>
+ 
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/mach-jz4740/timer.h>
+ 
+ #define NUM_PWM 8
+ 
+-static const unsigned int jz4740_pwm_gpio_list[NUM_PWM] = {
+-	JZ_GPIO_PWM0,
+-	JZ_GPIO_PWM1,
+-	JZ_GPIO_PWM2,
+-	JZ_GPIO_PWM3,
+-	JZ_GPIO_PWM4,
+-	JZ_GPIO_PWM5,
+-	JZ_GPIO_PWM6,
+-	JZ_GPIO_PWM7,
+-};
+-
+ struct jz4740_pwm_chip {
+ 	struct pwm_chip chip;
+ 	struct clk *clk;
+@@ -49,9 +37,6 @@ static inline struct jz4740_pwm_chip *to_jz4740(struct pwm_chip *chip)
+ 
+ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+-	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
+-	int ret;
+-
+ 	/*
+ 	 * Timers 0 and 1 are used for system tasks, so they are unavailable
+ 	 * for use as PWMs.
+@@ -59,15 +44,6 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
+ 	if (pwm->hwpwm < 2)
+ 		return -EBUSY;
+ 
+-	ret = gpio_request(gpio, pwm->label);
+-	if (ret) {
+-		dev_err(chip->dev, "Failed to request GPIO#%u for PWM: %d\n",
+-			gpio, ret);
+-		return ret;
+-	}
+-
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_PWM);
+-
+ 	jz4740_timer_start(pwm->hwpwm);
+ 
+ 	return 0;
+@@ -75,13 +51,8 @@ static int jz4740_pwm_request(struct pwm_chip *chip, struct pwm_device *pwm)
+ 
+ static void jz4740_pwm_free(struct pwm_chip *chip, struct pwm_device *pwm)
+ {
+-	unsigned int gpio = jz4740_pwm_gpio_list[pwm->hwpwm];
+-
+ 	jz4740_timer_set_ctrl(pwm->hwpwm, 0);
+ 
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
+-	gpio_free(gpio);
+-
+ 	jz4740_timer_stop(pwm->hwpwm);
+ }
+ 
+-- 
+2.11.0
 

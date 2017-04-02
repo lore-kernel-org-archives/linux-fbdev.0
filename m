@@ -1,83 +1,110 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Sat, 08 Apr 2017 13:32:44 +0000
-Subject: [PATCH v4 1/2] linux/kernel.h: Add ALIGN_DOWN macro
-Message-Id: <20170408133245.30147-2-krzk@kernel.org>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 02 Apr 2017 20:42:41 +0000
+Subject: [PATCH v4 11/14] mtd: nand: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170402204244.14216-12-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170408133245.30147-1-krzk@kernel.org>
-In-Reply-To: <20170408133245.30147-1-krzk@kernel.org>
+References: <20170125185207.23902-2-paul@crapouillou.net>
+ <20170402204244.14216-1-paul@crapouillou.net>
+In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Hogan <james.hogan@imgtec.com>, Matt Mackall <mpm@selenic.com>, Herbert Xu <herbert@gondor.apana.org.au>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, "David S. Miller" <davem@davemloft.net>, Dave Airlie <airlied@redhat.com>, David Airlie <airlied@linux.ie>, Bernie Thompson <bernie@plugable.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>, linux-kernel@vger.kernel.org, linux-metag@vger.kernel.org, linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-Few parts of kernel define their own macro for aligning down so provide
-a common define for this, with the same usage and assumptions as existing
-ALIGN.
+Before, this NAND driver would set itself the configuration of the
+chip-select pins for the various NAND banks.
 
-Convert also three existing implementations to this one.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Acked-by: Boris Brezillon <boris.brezillon@free-electrons.com>
 ---
+ drivers/mtd/nand/jz4740_nand.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
-The metag change was not even compiled due to lack of cross compiler.
----
- arch/metag/kernel/stacktrace.c | 2 --
- drivers/gpu/drm/udl/udl_fb.c   | 2 +-
- include/linux/kernel.h         | 1 +
- include/video/udlfb.h          | 2 +-
- 4 files changed, 3 insertions(+), 4 deletions(-)
+ v2: No changes
+ v3: No changes
+ v4: No changes
 
-diff --git a/arch/metag/kernel/stacktrace.c b/arch/metag/kernel/stacktrace.c
-index 91ffc4b75c33..09d67b7f51ca 100644
---- a/arch/metag/kernel/stacktrace.c
-+++ b/arch/metag/kernel/stacktrace.c
-@@ -31,8 +31,6 @@ static void tbi_boing_init(void)
- }
- #endif
+diff --git a/drivers/mtd/nand/jz4740_nand.c b/drivers/mtd/nand/jz4740_nand.c
+index 5551c36adbdf..0d06a1f07d82 100644
+--- a/drivers/mtd/nand/jz4740_nand.c
++++ b/drivers/mtd/nand/jz4740_nand.c
+@@ -25,7 +25,6 @@
  
--#define ALIGN_DOWN(addr, size)  ((addr)&(~((size)-1)))
+ #include <linux/gpio.h>
+ 
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/mach-jz4740/jz4740_nand.h>
+ 
+ #define JZ_REG_NAND_CTRL	0x50
+@@ -310,34 +309,20 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 			       uint8_t *nand_dev_id)
+ {
+ 	int ret;
+-	int gpio;
+-	char gpio_name[9];
+ 	char res_name[6];
+ 	uint32_t ctrl;
+ 	struct nand_chip *chip = &nand->chip;
+ 	struct mtd_info *mtd = nand_to_mtd(chip);
+ 
+-	/* Request GPIO port. */
+-	gpio = JZ_GPIO_MEM_CS0 + bank - 1;
+-	sprintf(gpio_name, "NAND CS%d", bank);
+-	ret = gpio_request(gpio, gpio_name);
+-	if (ret) {
+-		dev_warn(&pdev->dev,
+-			"Failed to request %s gpio %d: %d\n",
+-			gpio_name, gpio, ret);
+-		goto notfound_gpio;
+-	}
 -
- /*
-  * Unwind the current stack frame and store the new register values in the
-  * structure passed as argument. Unwinding is equivalent to a function return,
-diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/udl_fb.c
-index d05abc69e305..4a6500362564 100644
---- a/drivers/gpu/drm/udl/udl_fb.c
-+++ b/drivers/gpu/drm/udl/udl_fb.c
-@@ -37,7 +37,7 @@ struct udl_fbdev {
- };
+ 	/* Request I/O resource. */
+ 	sprintf(res_name, "bank%d", bank);
+ 	ret = jz_nand_ioremap_resource(pdev, res_name,
+ 					&nand->bank_mem[bank - 1],
+ 					&nand->bank_base[bank - 1]);
+ 	if (ret)
+-		goto notfound_resource;
++		return ret;
  
- #define DL_ALIGN_UP(x, a) ALIGN(x, a)
--#define DL_ALIGN_DOWN(x, a) ALIGN(x-(a-1), a)
-+#define DL_ALIGN_DOWN(x, a) ALIGN_DOWN(x, a)
+ 	/* Enable chip in bank. */
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_MEM_CS0);
+ 	ctrl = readl(nand->base + JZ_REG_NAND_CTRL);
+ 	ctrl |= JZ_NAND_CTRL_ENABLE_CHIP(bank - 1);
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+@@ -377,12 +362,8 @@ static int jz_nand_detect_bank(struct platform_device *pdev,
+ 	dev_info(&pdev->dev, "No chip found on bank %i\n", bank);
+ 	ctrl &= ~(JZ_NAND_CTRL_ENABLE_CHIP(bank - 1));
+ 	writel(ctrl, nand->base + JZ_REG_NAND_CTRL);
+-	jz_gpio_set_function(gpio, JZ_GPIO_FUNC_NONE);
+ 	jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 				 nand->bank_base[bank - 1]);
+-notfound_resource:
+-	gpio_free(gpio);
+-notfound_gpio:
+ 	return ret;
+ }
  
- /** Read the red component (0..255) of a 32 bpp colour. */
- #define DLO_RGB_GETRED(col) (uint8_t)((col) & 0xFF)
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 4c26dc3a8295..3d9f8420f973 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -47,6 +47,7 @@
+@@ -503,7 +484,6 @@ static int jz_nand_probe(struct platform_device *pdev)
+ err_unclaim_banks:
+ 	while (chipnr--) {
+ 		unsigned char bank = nand->banks[chipnr];
+-		gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
+ 		jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 					 nand->bank_base[bank - 1]);
+ 	}
+@@ -530,7 +510,6 @@ static int jz_nand_remove(struct platform_device *pdev)
+ 		if (bank != 0) {
+ 			jz_nand_iounmap_resource(nand->bank_mem[bank - 1],
+ 						 nand->bank_base[bank - 1]);
+-			gpio_free(JZ_GPIO_MEM_CS0 + bank - 1);
+ 		}
+ 	}
  
- /* @a is a power of 2 value */
- #define ALIGN(x, a)		__ALIGN_KERNEL((x), (a))
-+#define ALIGN_DOWN(x, a)	__ALIGN_KERNEL((x) - ((a) - 1), (a))
- #define __ALIGN_MASK(x, mask)	__ALIGN_KERNEL_MASK((x), (mask))
- #define PTR_ALIGN(p, a)		((typeof(p))ALIGN((unsigned long)(p), (a)))
- #define IS_ALIGNED(x, a)		(((x) & ((typeof(x))(a) - 1)) = 0)
-diff --git a/include/video/udlfb.h b/include/video/udlfb.h
-index f9466fa54ba4..3ea90aea5617 100644
---- a/include/video/udlfb.h
-+++ b/include/video/udlfb.h
-@@ -92,6 +92,6 @@ struct dlfb_data {
- 
- /* remove these once align.h patch is taken into kernel */
- #define DL_ALIGN_UP(x, a) ALIGN(x, a)
--#define DL_ALIGN_DOWN(x, a) ALIGN(x-(a-1), a)
-+#define DL_ALIGN_DOWN(x, a) ALIGN_DOWN(x, a)
- 
- #endif
 -- 
-2.9.3
+2.11.0
 

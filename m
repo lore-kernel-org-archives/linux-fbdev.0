@@ -1,80 +1,142 @@
 From: Paul Cercueil <paul@crapouillou.net>
-Date: Fri, 28 Apr 2017 20:08:11 +0000
-Subject: [PATCH v5 01/14] dt/bindings: Document pinctrl-ingenic
-Message-Id: <20170428200824.10906-2-paul@crapouillou.net>
+Date: Sun, 02 Apr 2017 20:42:40 +0000
+Subject: [PATCH v4 10/14] mmc: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170402204244.14216-11-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net>
- <20170428200824.10906-1-paul@crapouillou.net>
-In-Reply-To: <20170428200824.10906-1-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
+References: <20170125185207.23902-2-paul@crapouillou.net>
+ <20170402204244.14216-1-paul@crapouillou.net>
+In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
-Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
+To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
+Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-This commit adds documentation for the devicetree bindings of the
-pinctrl-ingenic driver, which handles pin configuration and pin
-muxing of the Ingenic SoCs currently supported by the Linux kernel.
+Now that the JZ4740 and similar SoCs have a pinctrl driver, we rely on
+the pins being properly configured before the driver probes.
 
 Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
- .../bindings/pinctrl/ingenic,pinctrl.txt           | 41 ++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+ drivers/mmc/host/jz4740_mmc.c | 44 +++++--------------------------------------
+ 1 file changed, 5 insertions(+), 39 deletions(-)
 
- v2: Rewrote the documentation for the new pinctrl-ingenic driver
+ v2: Set pin sleep/default state in suspend/resume callbacks
  v3: No changes
- v4: Update for the v4 version of the pinctrl-ingenic driver
- v5: Rename 'ingenic-pinctrl@...' to 'pin-controller@...' in example
+ v4: Re-insert accidentally removed <linux/gpio.h> include
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
-new file mode 100644
-index 000000000000..ca313a7aeaff
---- /dev/null
-+++ b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
-@@ -0,0 +1,41 @@
-+Ingenic jz47xx pin controller
-+
-+Please refer to pinctrl-bindings.txt in this directory for details of the
-+common pinctrl bindings used by client devices, including the meaning of the
-+phrase "pin configuration node".
-+
-+For the jz47xx SoCs, pin control is tightly bound with GPIO ports. All pins may
-+be used as GPIOs, multiplexed device functions are configured within the
-+GPIO port configuration registers and it is typical to refer to pins using the
-+naming scheme "PxN" where x is a character identifying the GPIO port with
-+which the pin is associated and N is an integer from 0 to 31 identifying the
-+pin within that GPIO port. For example PA0 is the first pin in GPIO port A, and
-+PB31 is the last pin in GPIO port B. The jz4740 contains 4 GPIO ports, PA to
-+PD, for a total of 128 pins. The jz4780 contains 6 GPIO ports, PA to PF, for a
-+total of 192 pins.
-+
-+
-+Required properties:
-+--------------------
-+
-+ - compatible: One of:
-+    - "ingenic,jz4740-pinctrl"
-+    - "ingenic,jz4770-pinctrl"
-+    - "ingenic,jz4780-pinctrl"
-+ - reg: Address range of the pinctrl registers.
-+
-+
-+GPIO sub-nodes
-+--------------
-+
-+The pinctrl node can have optional sub-nodes for the Ingenic GPIO driver;
-+please refer to ../gpio/ingenic,gpio.txt.
-+
-+
-+Example:
-+--------
-+
-+pinctrl: pin-controller@10010000 {
-+	compatible = "ingenic,jz4740-pinctrl";
-+	reg = <0x10010000 0x400>;
-+};
+diff --git a/drivers/mmc/host/jz4740_mmc.c b/drivers/mmc/host/jz4740_mmc.c
+index 819ad32964fc..42b3ee566dc7 100644
+--- a/drivers/mmc/host/jz4740_mmc.c
++++ b/drivers/mmc/host/jz4740_mmc.c
+@@ -20,6 +20,7 @@
+ #include <linux/irq.h>
+ #include <linux/interrupt.h>
+ #include <linux/module.h>
++#include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/delay.h>
+ #include <linux/scatterlist.h>
+@@ -27,7 +28,6 @@
+ 
+ #include <linux/bitops.h>
+ #include <linux/gpio.h>
+-#include <asm/mach-jz4740/gpio.h>
+ #include <asm/cacheflush.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/dmaengine.h>
+@@ -906,15 +906,6 @@ static const struct mmc_host_ops jz4740_mmc_ops = {
+ 	.enable_sdio_irq = jz4740_mmc_enable_sdio_irq,
+ };
+ 
+-static const struct jz_gpio_bulk_request jz4740_mmc_pins[] = {
+-	JZ_GPIO_BULK_PIN(MSC_CMD),
+-	JZ_GPIO_BULK_PIN(MSC_CLK),
+-	JZ_GPIO_BULK_PIN(MSC_DATA0),
+-	JZ_GPIO_BULK_PIN(MSC_DATA1),
+-	JZ_GPIO_BULK_PIN(MSC_DATA2),
+-	JZ_GPIO_BULK_PIN(MSC_DATA3),
+-};
+-
+ static int jz4740_mmc_request_gpio(struct device *dev, int gpio,
+ 	const char *name, bool output, int value)
+ {
+@@ -978,15 +969,6 @@ static void jz4740_mmc_free_gpios(struct platform_device *pdev)
+ 		gpio_free(pdata->gpio_power);
+ }
+ 
+-static inline size_t jz4740_mmc_num_pins(struct jz4740_mmc_host *host)
+-{
+-	size_t num_pins = ARRAY_SIZE(jz4740_mmc_pins);
+-	if (host->pdata && host->pdata->data_1bit)
+-		num_pins -= 3;
+-
+-	return num_pins;
+-}
+-
+ static int jz4740_mmc_probe(struct platform_device* pdev)
+ {
+ 	int ret;
+@@ -1027,15 +1009,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 		goto err_free_host;
+ 	}
+ 
+-	ret = jz_gpio_bulk_request(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-	if (ret) {
+-		dev_err(&pdev->dev, "Failed to request mmc pins: %d\n", ret);
+-		goto err_free_host;
+-	}
+-
+ 	ret = jz4740_mmc_request_gpios(mmc, pdev);
+ 	if (ret)
+-		goto err_gpio_bulk_free;
++		goto err_release_dma;
+ 
+ 	mmc->ops = &jz4740_mmc_ops;
+ 	mmc->f_min = JZ_MMC_CLK_RATE / 128;
+@@ -1091,10 +1067,9 @@ static int jz4740_mmc_probe(struct platform_device* pdev)
+ 	free_irq(host->irq, host);
+ err_free_gpios:
+ 	jz4740_mmc_free_gpios(pdev);
+-err_gpio_bulk_free:
++err_release_dma:
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ err_free_host:
+ 	mmc_free_host(mmc);
+ 
+@@ -1114,7 +1089,6 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 	free_irq(host->irq, host);
+ 
+ 	jz4740_mmc_free_gpios(pdev);
+-	jz_gpio_bulk_free(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+ 
+ 	if (host->use_dma)
+ 		jz4740_mmc_release_dma_channels(host);
+@@ -1128,20 +1102,12 @@ static int jz4740_mmc_remove(struct platform_device *pdev)
+ 
+ static int jz4740_mmc_suspend(struct device *dev)
+ {
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_suspend(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_sleep_state(dev);
+ }
+ 
+ static int jz4740_mmc_resume(struct device *dev)
+ {
+-	struct jz4740_mmc_host *host = dev_get_drvdata(dev);
+-
+-	jz_gpio_bulk_resume(jz4740_mmc_pins, jz4740_mmc_num_pins(host));
+-
+-	return 0;
++	return pinctrl_pm_select_default_state(dev);
+ }
+ 
+ static SIMPLE_DEV_PM_OPS(jz4740_mmc_pm_ops, jz4740_mmc_suspend,
 -- 
 2.11.0
 

@@ -1,90 +1,83 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 07 Apr 2017 10:56:29 +0000
-Subject: Re: [PATCH v4 03/14] pinctrl-ingenic: add a pinctrl driver for the Ingenic jz47xx SoCs
-Message-Id: <20170407105629.n6a2cxt3pof66gu2@dell>
+From: Bastian Stender <bst@pengutronix.de>
+Date: Mon, 03 Apr 2017 13:53:44 +0000
+Subject: [PATCH] fbdev/ssd1307fb: fix optional VBAT support
+Message-Id: <20170403135344.31091-1-bst@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net>
- <20170402204244.14216-1-paul@crapouillou.net>
- <20170402204244.14216-4-paul@crapouillou.net>
- <CACRpkdbeudhXDE8KEgB_kZSAUUwS4Sd3=+GyR0YZ2-PQnEa9zw@mail.gmail.com>
-In-Reply-To: <CACRpkdbeudhXDE8KEgB_kZSAUUwS4Sd3=+GyR0YZ2-PQnEa9zw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: Paul Cercueil <paul@crapouillou.net>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, James Hogan <james.hogan@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
-On Fri, 07 Apr 2017, Linus Walleij wrote:
+SSD1306 needs VBAT when it is wired in charge pump configuration only.
+Other controllers of the SSD1307 family do not need it at all. This was
+introduced by commit ba14301e0356c99803e07db60e129a2ca9e50ff0.
 
-> On Sun, Apr 2, 2017 at 10:42 PM, Paul Cercueil <paul@crapouillou.net> wro=
-te:
->=20
-> > This driver handles pin configuration and pin muxing for the
-> > JZ4740 and JZ4780 SoCs from Ingenic.
-> >
-> > Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> (...)
-> > +       select MFD_CORE
-> (...)
-> > +#include <linux/mfd/core.h>
->=20
-> That's unorthodox. Still quite pretty!
-> I would nee Lee Jones to say something about this, as it is
-> essentially hijacking MFD into the pinctrl subsystem.
->=20
-> > +static struct mfd_cell ingenic_pinctrl_mfd_cells[] =3D {
-> > +       {
-> > +               .id =3D 0,
-> > +               .name =3D "GPIOA",
-> > +               .of_compatible =3D "ingenic,gpio-bank-a",
-> > +       },
-> > +       {
-> > +               .id =3D 1,
-> > +               .name =3D "GPIOB",
-> > +               .of_compatible =3D "ingenic,gpio-bank-b",
-> > +       },
-> > +       {
-> > +               .id =3D 2,
-> > +               .name =3D "GPIOC",
-> > +               .of_compatible =3D "ingenic,gpio-bank-c",
-> > +       },
-> > +       {
-> > +               .id =3D 3,
-> > +               .name =3D "GPIOD",
-> > +               .of_compatible =3D "ingenic,gpio-bank-d",
-> > +       },
-> > +       {
-> > +               .id =3D 4,
-> > +               .name =3D "GPIOE",
-> > +               .of_compatible =3D "ingenic,gpio-bank-e",
-> > +       },
-> > +       {
-> > +               .id =3D 5,
-> > +               .name =3D "GPIOF",
-> > +               .of_compatible =3D "ingenic,gpio-bank-f",
-> > +       },
-> > +};
-> (...)
-> > +       err =3D devm_mfd_add_devices(dev, 0, ingenic_pinctrl_mfd_cells,
-> > +                       ARRAY_SIZE(ingenic_pinctrl_mfd_cells), NULL, 0,=
- NULL);
-> > +       if (err) {
-> > +               dev_err(dev, "Failed to add MFD devices\n");
-> > +               return err;
-> > +       }
->=20
-> I guess the alternative would be to reimplement the MFD structure.
->=20
-> Did you check the approach to use "simple-mfd" and just let the subnodes
-> spawn as devices that way? I guess you did and this adds something
-> necessary.
+Without VBAT configuration the driver now fails with:
 
-I'd like to hear what the OP has to say about why this is necessary.
-However, as a first glimpse, I'm dead against exporting MFD
-functionality to outside of the subsystem.
+	failed to get VBAT regulator: -19
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+This is caused by misinterpretation of devm_regulator_get_optional
+which "returns a struct regulator corresponding to the regulator
+producer or IS_ERR() condition".
+
+Handle -ENODEV without bailing out and making VBAT support really
+optional.
+
+Signed-off-by: Bastian Stender <bst@pengutronix.de>
+---
+ drivers/video/fbdev/ssd1307fb.c | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index bd017b57c47f..1c9e2c51e692 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -578,10 +578,14 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 
+ 	par->vbat_reg = devm_regulator_get_optional(&client->dev, "vbat");
+ 	if (IS_ERR(par->vbat_reg)) {
+-		dev_err(&client->dev, "failed to get VBAT regulator: %ld\n",
+-			PTR_ERR(par->vbat_reg));
+ 		ret = PTR_ERR(par->vbat_reg);
+-		goto fb_alloc_error;
++		if (ret = -ENODEV) {
++			par->vbat_reg = NULL;
++		} else {
++			dev_err(&client->dev, "failed to get VBAT regulator: %ld\n",
++				ret);
++			goto fb_alloc_error;
++		}
+ 	}
+ 
+ 	if (of_property_read_u32(node, "solomon,width", &par->width))
+@@ -668,10 +672,13 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		udelay(4);
+ 	}
+ 
+-	ret = regulator_enable(par->vbat_reg);
+-	if (ret) {
+-		dev_err(&client->dev, "failed to enable VBAT: %d\n", ret);
+-		goto reset_oled_error;
++	if (par->vbat_reg) {
++		ret = regulator_enable(par->vbat_reg);
++		if (ret) {
++			dev_err(&client->dev, "failed to enable VBAT: %d\n",
++				ret);
++			goto reset_oled_error;
++		}
+ 	}
+ 
+ 	ret = ssd1307fb_init(par);
+@@ -710,7 +717,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
+ 		pwm_put(par->pwm);
+ 	};
+ regulator_enable_error:
+-	regulator_disable(par->vbat_reg);
++	if (par->vbat_reg)
++		regulator_disable(par->vbat_reg);
+ reset_oled_error:
+ 	fb_deferred_io_cleanup(info);
+ fb_alloc_error:
+-- 
+2.11.0
+

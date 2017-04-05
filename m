@@ -1,49 +1,89 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 07 Apr 2017 09:34:38 +0000
-Subject: Re: [PATCH v4 04/14] GPIO: Add gpio-ingenic driver
-Message-Id: <CACRpkdaH1J8J6y9cBEfspiAUYTB+NXcoOK1j4Uzud943TgVsow@mail.gmail.com>
+From: David Howells <dhowells@redhat.com>
+Date: Wed, 05 Apr 2017 17:01:34 +0000
+Subject: [PATCH 32/38] Annotate hardware config module parameters in drivers/video/
+Message-Id: <149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net> <20170402204244.14216-1-paul@crapouillou.net>
- <20170402204244.14216-5-paul@crapouillou.net>
-In-Reply-To: <20170402204244.14216-5-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
+References: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
+In-Reply-To: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
-Cc: Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, James Hogan <james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MIPS <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: linux-security-module@vger.kernel.org
 
-On Sun, Apr 2, 2017 at 10:42 PM, Paul Cercueil <paul@crapouillou.net> wrote:
+When the kernel is running in secure boot mode, we lock down the kernel to
+prevent userspace from modifying the running kernel image.  Whilst this
+includes prohibiting access to things like /dev/mem, it must also prevent
+access by means of configuring driver modules in such a way as to cause a
+device to access or modify the kernel image.
 
-> This driver handles the GPIOs of all the Ingenic JZ47xx SoCs
-> currently supported by the upsteam Linux kernel.
->
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+To this end, annotate module_param* statements that refer to hardware
+configuration and indicate for future reference what type of parameter they
+specify.  The parameter parser in the core sees this information and can
+skip such parameters with an error message if the kernel is locked down.
+The module initialisation then runs as normal, but just sees whatever the
+default values for those parameters is.
 
-I guess you saw the Kconfig complaint from the build robot, please fix that
-so we get silent builds.
+Note that we do still need to do the module initialisation because some
+drivers have viable defaults set in case parameters aren't specified and
+some drivers support automatic configuration (e.g. PNP or PCI) in addition
+to manually coded parameters.
 
->  v2: Consider it's a new patch. Completely rewritten from v1.
->  v3: Add missing include <linux/pinctrl/consumer.h> and drop semicolon after }
->  v4: Completely rewritten from v3.
+This patch annotates drivers in drivers/video/.
 
-I really like v4 :)
+Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+Signed-off-by: David Howells <dhowells@redhat.com>
+cc: Jaya Kumar <jayalk@intworks.biz>
+cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+cc: linux-fbdev@vger.kernel.org
+---
 
-> +static inline bool gpio_get_value(struct ingenic_gpio_chip *jzgc, u8 offset)
+ drivers/video/fbdev/arcfb.c |    8 ++++----
+ drivers/video/fbdev/n411.c  |    6 +++---
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-Actually the return value should be an int.
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 1928cb2b5386..7e87d0d61658 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -645,17 +645,17 @@ module_param(nosplash, uint, 0);
+ MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
+ module_param(arcfb_enable, uint, 0);
+ MODULE_PARM_DESC(arcfb_enable, "Enable communication with Arc board");
+-module_param(dio_addr, ulong, 0);
++module_param_hw(dio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
+-module_param(cio_addr, ulong, 0);
++module_param_hw(cio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
+-module_param(c2io_addr, ulong, 0);
++module_param_hw(c2io_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
+ module_param(splashval, ulong, 0);
+ MODULE_PARM_DESC(splashval, "Splash pattern: 0xFF is black, 0x00 is green");
+ module_param(tuhold, ulong, 0);
+ MODULE_PARM_DESC(tuhold, "Time to hold between strobing data to Arc board");
+-module_param(irq, uint, 0);
++module_param_hw(irq, uint, irq, 0);
+ MODULE_PARM_DESC(irq, "IRQ for the Arc board");
+ 
+ module_init(arcfb_init);
+diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
+index 053deacad7cc..a3677313396e 100644
+--- a/drivers/video/fbdev/n411.c
++++ b/drivers/video/fbdev/n411.c
+@@ -193,11 +193,11 @@ module_exit(n411_exit);
+ 
+ module_param(nosplash, uint, 0);
+ MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
+-module_param(dio_addr, ulong, 0);
++module_param_hw(dio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
+-module_param(cio_addr, ulong, 0);
++module_param_hw(cio_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
+-module_param(c2io_addr, ulong, 0);
++module_param_hw(c2io_addr, ulong, ioport, 0);
+ MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
+ module_param(splashval, ulong, 0);
+ MODULE_PARM_DESC(splashval, "Splash pattern: 0x00 is black, 0x01 is white");
 
-I know, it is a historical artifact, if we change it we need to change
-it everywhere.
-
-> +       /* DO NOT EXPAND THIS: FOR BACKWARD GPIO NUMBERSPACE COMPATIBIBILITY
-> +        * ONLY: WORK TO TRANSITION CONSUMERS TO USE THE GPIO DESCRIPTOR API IN
-> +        * <linux/gpio/consumer.h> INSTEAD.
-> +        */
-> +       jzgc->gc.base = cell->id * 32;
-
-OK then :)
-
-This is merge material.
-
-Yours,
-Linus Walleij

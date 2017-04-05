@@ -1,94 +1,57 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 04 Apr 2017 14:52:40 +0000
-Subject: Re: [PATCH v4 02/14] dt/bindings: Document gpio-ingenic
-Message-Id: <20170404145240.z3vx24svh4dduo2o@rob-hp-laptop>
+From: Juergen Gross <jgross@suse.com>
+Date: Wed, 05 Apr 2017 08:18:21 +0000
+Subject: Re: [PATCH] xen, fbfront: fix connecting to backend
+Message-Id: <3226cec6-8f68-6d15-4427-eb8f2d1944a1@suse.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net>
- <20170402204244.14216-1-paul@crapouillou.net>
- <20170402204244.14216-3-paul@crapouillou.net>
-In-Reply-To: <20170402204244.14216-3-paul@crapouillou.net>
+References: <20170323125252.11763-1-jgross@suse.com>
+In-Reply-To: <20170323125252.11763-1-jgross@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, b.zolnierkie@samsung.com
+Cc: boris.ostrovsky@oracle.com, stable@vger.kernel.org
 
-On Sun, Apr 02, 2017 at 10:42:32PM +0200, Paul Cercueil wrote:
-> This commit adds documentation for the devicetree bindings of the
-> gpio-ingenic driver, which handles GPIOs of the Ingenic SoCs
-> currently supported by the Linux kernel.
+On 23/03/17 13:52, Juergen Gross wrote:
+> Connecting to the backend isn't working reliably in xen-fbfront: in
+> case XenbusStateInitWait of the backend has been missed the backend
+> transition to XenbusStateConnected will trigger the connected state
+> only without doing the actions required when the backend has
+> connected.
 > 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> Cc: stable@vger.kernel.org
+> Signed-off-by: Juergen Gross <jgross@suse.com>
+
+Bartlomiej, any comments? Can you please take this patch or should I
+carry it through the Xen tree?
+
+
+Juergen
+
 > ---
->  .../devicetree/bindings/gpio/ingenic,gpio.txt      | 48 ++++++++++++++++++++++
->  1 file changed, 48 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+>  drivers/video/fbdev/xen-fbfront.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
->  v2: New patch
->  v3: No changes
->  v4: Update for the v4 version of the gpio-ingenic driver
+> diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+> index d0115a7..3ee309c 100644
+> --- a/drivers/video/fbdev/xen-fbfront.c
+> +++ b/drivers/video/fbdev/xen-fbfront.c
+> @@ -643,7 +643,6 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+>  		break;
+>  
+>  	case XenbusStateInitWait:
+> -InitWait:
+>  		xenbus_switch_state(dev, XenbusStateConnected);
+>  		break;
+>  
+> @@ -654,7 +653,8 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+>  		 * get Connected twice here.
+>  		 */
+>  		if (dev->state != XenbusStateConnected)
+> -			goto InitWait; /* no InitWait seen yet, fudge it */
+> +			/* no InitWait seen yet, fudge it */
+> +			xenbus_switch_state(dev, XenbusStateConnected);
+>  
+>  		if (xenbus_read_unsigned(info->xbdev->otherend,
+>  					 "request-update", 0))
 > 
-> diff --git a/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-> new file mode 100644
-> index 000000000000..f54af444f7c3
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
-> @@ -0,0 +1,48 @@
-> +Ingenic jz47xx GPIO controller
-> +
-> +That the Ingenic GPIO driver node must be a sub-node of the Ingenic pinctrl
-> +driver node.
-> +
-> +Required properties:
-> +--------------------
-> +
-> + - compatible: Must contain one of:
-> +    - "ingenic,jz4740-gpio"
-> +    - "ingenic,jz4770-gpio"
-> +    - "ingenic,jz4780-gpio"
-> +	And one of:
-> +	- "ingenic,gpio-bank-a"
-> +	- "ingenic,gpio-bank-b"
-> +	- "ingenic,gpio-bank-c"
-> +	- "ingenic,gpio-bank-d"
-> +	- "ingenic,gpio-bank-e" (for SoC version > jz4740)
-> +	- "ingenic,gpio-bank-f" (for SoC version > jz4740)
 
-This is quite strange. Why do you need the bank? Doesn't gpio-ranges 
-give you that info? Maybe use reg property here instead.
-
-> + - interrupt-controller: Marks the device node as an interrupt controller.
-> + - interrupts: Interrupt specifier for the controllers interrupt.
-> + - #interrupt-cells: Should be 2. Refer to
-> +   ../interrupt-controller/interrupts.txt for more details.
-> + - gpio-controller: Marks the device node as a GPIO controller.
-> + - #gpio-cells: Should be 2. The first cell is the GPIO number and the second
-> +    cell specifies GPIO flags, as defined in <dt-bindings/gpio/gpio.h>. Only the
-> +    GPIO_ACTIVE_HIGH and GPIO_ACTIVE_LOW flags are supported.
-> + - gpio-ranges: Range of pins managed by the GPIO controller. Refer to
-> +   'gpio.txt' in this directory for more details.
-> +
-> +Example:
-> +--------
-> +
-> +&pinctrl {
-> +	gpa: gpio-controller@0 {
-
-gpio@...
-
-> +		compatible = "ingenic,gpio-bank-a", "ingenic,jz4740-gpio";
-> +
-> +		gpio-controller;
-> +		gpio-ranges = <&pinctrl 0 0 32>;
-> +		#gpio-cells = <2>;
-> +
-> +		interrupt-controller;
-> +		#interrupt-cells = <2>;
-> +
-> +		interrupt-parent = <&intc>;
-> +		interrupts = <28>;
-> +	};
-> +};
-> -- 
-> 2.11.0
-> 

@@ -1,49 +1,58 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 14 Apr 2017 11:27:11 +0000
-Subject: Re: [PATCH 32/38] Annotate hardware config module parameters in drivers/video/
-Message-Id: <1776542.mxlLkUsWmV@amdc3058>
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Fri, 07 Apr 2017 19:04:07 +0000
+Subject: [PATCH] fbdev: omapfb: delete check_required_callbacks()
+Message-Id: <20170407190407.30265-1-aaro.koskinen@iki.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
-	<149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
-	<CGME20170414112713epcas5p218f3663e4f0ea4ca1bfaf4155d4724c8@epcas5p2.samsung.com>
-In-Reply-To: <149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-security-module@vger.kernel.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lars-Peter Clausen <lars@metafoo.de>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>
 
-On Wednesday, April 05, 2017 06:01:34 PM David Howells wrote:
-> When the kernel is running in secure boot mode, we lock down the kernel to
-> prevent userspace from modifying the running kernel image.  Whilst this
-> includes prohibiting access to things like /dev/mem, it must also prevent
-> access by means of configuring driver modules in such a way as to cause a
-> device to access or modify the kernel image.
-> 
-> To this end, annotate module_param* statements that refer to hardware
-> configuration and indicate for future reference what type of parameter they
-> specify.  The parameter parser in the core sees this information and can
-> skip such parameters with an error message if the kernel is locked down.
-> The module initialisation then runs as normal, but just sees whatever the
-> default values for those parameters is.
-> 
-> Note that we do still need to do the module initialisation because some
-> drivers have viable defaults set in case parameters aren't specified and
-> some drivers support automatic configuration (e.g. PNP or PCI) in addition
-> to manually coded parameters.
-> 
-> This patch annotates drivers in drivers/video/.
-> 
-> Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> cc: Jaya Kumar <jayalk@intworks.biz>
-> cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> cc: linux-fbdev@vger.kernel.org
+Commit 561eb9d09a93 ("fbdev: omap/lcd: Make callbacks optional") made
+panel callbacks optional but forgot to update check_required_callbacks().
+As a result many (all?) OMAP systems using omapfb will crash at boot.
+Fix by deleting the whole function.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Fixes: 561eb9d09a93 ("fbdev: omap/lcd: Make callbacks optional")
+Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+---
+ drivers/video/fbdev/omap/omapfb_main.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 1abba07..f4cbfb3 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1608,19 +1608,6 @@ static int omapfb_find_ctrl(struct omapfb_device *fbdev)
+ 	return 0;
+ }
+ 
+-static void check_required_callbacks(struct omapfb_device *fbdev)
+-{
+-#define _C(x) (fbdev->ctrl->x != NULL)
+-#define _P(x) (fbdev->panel->x != NULL)
+-	BUG_ON(fbdev->ctrl = NULL || fbdev->panel = NULL);
+-	BUG_ON(!(_C(init) && _C(cleanup) && _C(get_caps) &&
+-		 _C(set_update_mode) && _C(setup_plane) && _C(enable_plane) &&
+-		 _P(init) && _P(cleanup) && _P(enable) && _P(disable) &&
+-		 _P(get_caps)));
+-#undef _P
+-#undef _C
+-}
+-
+ /*
+  * Called by LDM binding to probe and attach a new device.
+  * Initialization sequence:
+@@ -1705,8 +1692,6 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 		omapfb_ops.fb_mmap = omapfb_mmap;
+ 	init_state++;
+ 
+-	check_required_callbacks(fbdev);
+-
+ 	r = planes_init(fbdev);
+ 	if (r)
+ 		goto cleanup;
+-- 
+2.9.2
 

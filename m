@@ -1,128 +1,80 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 02 Apr 2017 20:42:38 +0000
-Subject: [PATCH v4 08/14] MIPS: JZ4740: Qi LB60: Add pinctrl configuration for several drivers
-Message-Id: <20170402204244.14216-9-paul@crapouillou.net>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Tue, 11 Apr 2017 08:43:18 +0000
+Subject: [PATCH] efifb: arm/arm64: validate fb BAR instead of claiming it
+Message-Id: <1491900198-26187-1-git-send-email-ard.biesheuvel@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net>
- <20170402204244.14216-1-paul@crapouillou.net>
-In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+To: linux-arm-kernel@lists.infradead.org
 
-We set the pin configuration for the jz4740-nand, jz4740-mmc,
-jz4740-fb, jz4740-pwm and jz4740-uart drivers.
+Claiming the BAR that matches the framebuffer base address in a PCI
+header fixup quirk only works as expected when the PCI device is on
+bus 0. If not, it will produce the following error:
 
-This will permit those drivers to be cleaned out of the custom GPIO code
-that they currently use.
+pci 0000:01:01.0: can't claim BAR 0 [mem 0x10000000-0x10ffffff pref]:
+                                                 no compatible bridge window
+pci 0000:01:01.0: BAR 0: failed to claim resource for efifb!
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Since claiming the entire path up to the root is non-trivial at this
+point, and also undesirable given that we have no way of making sure
+that the existing configuration is sound, let's not claim anything at
+all, and simply record the resource so we can check that it did not
+move when the EFI fb driver is probed.
+
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- arch/mips/boot/dts/ingenic/qi_lb60.dts | 13 +++++++++++
- arch/mips/jz4740/board-qi_lb60.c       | 42 ++++++++++++++++++++++++++--------
- 2 files changed, 46 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/efifb.c | 23 +++++++++++++++-----
+ 1 file changed, 17 insertions(+), 6 deletions(-)
 
- v2: Changed the devicetree bindings to match the new driver
- v3: No changes
- v4: No changes
-
-diff --git a/arch/mips/boot/dts/ingenic/qi_lb60.dts b/arch/mips/boot/dts/ingenic/qi_lb60.dts
-index be1a7d3a3e1b..b715ee2ac2ee 100644
---- a/arch/mips/boot/dts/ingenic/qi_lb60.dts
-+++ b/arch/mips/boot/dts/ingenic/qi_lb60.dts
-@@ -17,3 +17,16 @@
- &rtc_dev {
- 	system-power-controller;
- };
-+
-+&uart0 {
-+	pinctrl-names = "default";
-+	pinctrl-0 = <&pins_uart0>;
-+};
-+
-+&pinctrl {
-+	pins_uart0: uart0 {
-+		function = "uart0";
-+		groups = "uart0-data";
-+		bias-disable;
-+	};
-+};
-diff --git a/arch/mips/jz4740/board-qi_lb60.c b/arch/mips/jz4740/board-qi_lb60.c
-index a5bd94b95263..bf3dcc9ee9f8 100644
---- a/arch/mips/jz4740/board-qi_lb60.c
-+++ b/arch/mips/jz4740/board-qi_lb60.c
-@@ -22,6 +22,8 @@
- #include <linux/input/matrix_keypad.h>
- #include <linux/spi/spi.h>
- #include <linux/spi/spi_gpio.h>
-+#include <linux/pinctrl/machine.h>
-+#include <linux/pinctrl/pinconf-generic.h>
- #include <linux/power_supply.h>
- #include <linux/power/jz4740-battery.h>
- #include <linux/power/gpio-charger.h>
-@@ -447,13 +449,36 @@ static struct platform_device *jz_platform_devices[] __initdata = {
- 	&qi_lb60_audio_device,
- };
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index b827a8113e26..21d635ef5be2 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -146,6 +146,8 @@ ATTRIBUTE_GROUPS(efifb);
  
--static void __init board_gpio_setup(void)
--{
--	/* We only need to enable/disable pullup here for pins used in generic
--	 * drivers. Everything else is done by the drivers themselves. */
--	jz_gpio_disable_pullup(QI_LB60_GPIO_SD_VCC_EN_N);
--	jz_gpio_disable_pullup(QI_LB60_GPIO_SD_CD);
--}
-+static unsigned long pin_cfg_bias_disable[] = {
-+	    PIN_CONFIG_BIAS_DISABLE,
-+};
-+
-+static struct pinctrl_map pin_map[] __initdata = {
-+	/* NAND pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-nand",
-+			"10010000.jz4740-pinctrl", "nand", "nand"),
-+
-+	/* fbdev pin configuration */
-+	PIN_MAP_MUX_GROUP("jz4740-fb", PINCTRL_STATE_DEFAULT,
-+			"10010000.jz4740-pinctrl", "lcd", "lcd-8bit"),
-+	PIN_MAP_MUX_GROUP("jz4740-fb", PINCTRL_STATE_SLEEP,
-+			"10010000.jz4740-pinctrl", "lcd", "lcd-no-pins"),
-+
-+	/* MMC pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl", "mmc", "mmc-1bit"),
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl", "mmc", "mmc-4bit"),
-+	PIN_MAP_CONFIGS_PIN_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl", "PD0", pin_cfg_bias_disable),
-+	PIN_MAP_CONFIGS_PIN_DEFAULT("jz4740-mmc.0",
-+			"10010000.jz4740-pinctrl", "PD2", pin_cfg_bias_disable),
-+
-+	/* PWM pin configuration */
-+	PIN_MAP_MUX_GROUP_DEFAULT("jz4740-pwm",
-+			"10010000.jz4740-pinctrl", "pwm4", "pwm4"),
-+};
-+
+ static bool pci_dev_disabled;	/* FB base matches BAR of a disabled device */
  
- static int __init qi_lb60_init_platform_devices(void)
++static struct resource *pci_dev_bar_resource;
++
+ static int efifb_probe(struct platform_device *dev)
  {
-@@ -469,6 +494,7 @@ static int __init qi_lb60_init_platform_devices(void)
- 				ARRAY_SIZE(qi_lb60_spi_board_info));
+ 	struct fb_info *info;
+@@ -179,6 +181,20 @@ static int efifb_probe(struct platform_device *dev)
+ 	}
+ 	printk(KERN_INFO "efifb: probing for efifb\n");
  
- 	pwm_add_table(qi_lb60_pwm_lookup, ARRAY_SIZE(qi_lb60_pwm_lookup));
-+	pinctrl_register_mappings(pin_map, ARRAY_SIZE(pin_map));
++	if (pci_dev_bar_resource) {
++		u64 base = screen_info.lfb_base;
++		u64 size = screen_info.lfb_size;
++
++		if (screen_info.capabilities & VIDEO_CAPABILITY_64BIT_BASE)
++			base |= (u64)screen_info.ext_lfb_base << 32;
++
++		if (pci_dev_bar_resource->start > base ||
++		    pci_dev_bar_resource->end < base + size - 1) {
++			pr_err("efifb: PCI BAR has moved, disabling ...\n");
++			return -ENODEV;
++		}
++	}
++
+ 	/* just assume they're all unset if any are */
+ 	if (!screen_info.blue_size) {
+ 		screen_info.blue_size = 8;
+@@ -383,12 +399,7 @@ static void claim_efifb_bar(struct pci_dev *dev, int idx)
+ 		return;
+ 	}
  
- 	return platform_add_devices(jz_platform_devices,
- 					ARRAY_SIZE(jz_platform_devices));
-@@ -479,8 +505,6 @@ static int __init qi_lb60_board_setup(void)
- {
- 	printk(KERN_INFO "Qi Hardware JZ4740 QI LB60 setup\n");
+-	if (pci_claim_resource(dev, idx)) {
+-		pci_dev_disabled = true;
+-		dev_err(&dev->dev,
+-			"BAR %d: failed to claim resource for efifb!\n", idx);
+-		return;
+-	}
++	pci_dev_bar_resource = dev->resource + idx;
  
--	board_gpio_setup();
--
- 	if (qi_lb60_init_platform_devices())
- 		panic("Failed to initialize platform devices");
- 
+ 	dev_info(&dev->dev, "BAR %d: assigned to efifb\n", idx);
+ }
 -- 
-2.11.0
+2.7.4
 

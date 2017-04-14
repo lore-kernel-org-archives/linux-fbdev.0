@@ -1,29 +1,37 @@
-From: Martin Kaiser <martin@kaiser.cx>
-Date: Fri, 21 Apr 2017 10:31:07 +0000
-Subject: Re: [PATCH 1/2 v3 resend] video: fbdev: imxfb: support AUS mode
-Message-Id: <20170421103107.GA15804@botnar.kaiser.cx>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 14 Apr 2017 13:50:04 +0000
+Subject: [PATCH] video: console: Remove reference to CONFIG_8xx
+Message-Id: <20170414135004.46D646831E@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
- <CGME20170421074622epcas3p1a7c713728386d1ac175bd8104867ffd0@epcas3p1.samsung.com>
- <1492760753-8374-1-git-send-email-martin@kaiser.cx>
- <7991281.N2SBFgRzh8@amdc3058>
-In-Reply-To: <7991281.N2SBFgRzh8@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
 
-Thus wrote Bartlomiej Zolnierkiewicz (b.zolnierkie@samsung.com):
+CONFIG_8xx is deprecated and should soon be removed in favor
+of CONFIG_PPC_8xx.
 
-> It hadn't been lost, I've been waiting on v4, please see:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ This is the last instance of CONFIG_8xx outside of arch/powerpc/
 
-> https://lkml.org/lkml/2017/3/15/709
+ drivers/video/console/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> [ Rob has requested rename of the property to "fsl,aus-mode". ]
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 5b71bd905a60..2111d06f8c81 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -6,7 +6,7 @@ menu "Console display driver support"
+ 
+ config VGA_CONSOLE
+ 	bool "VGA text console" if EXPERT || !X86
+-	depends on !4xx && !8xx && !SPARC && !M68K && !PARISC && !FRV && \
++	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+ 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
+-- 
+2.12.0
 
-Sorry, I didn't notice that Rob wanted me to rename the property. I just
-sent out v4.
-
-Thanks,
-Martin

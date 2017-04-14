@@ -1,89 +1,49 @@
-From: David Howells <dhowells@redhat.com>
-Date: Wed, 05 Apr 2017 17:01:34 +0000
-Subject: [PATCH 32/38] Annotate hardware config module parameters in drivers/video/
-Message-Id: <149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 14 Apr 2017 11:27:11 +0000
+Subject: Re: [PATCH 32/38] Annotate hardware config module parameters in drivers/video/
+Message-Id: <1776542.mxlLkUsWmV@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
-In-Reply-To: <149141141298.29162.5612793122429261720.stgit@warthog.procyon.org.uk>
+	<149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
+	<CGME20170414112713epcas5p218f3663e4f0ea4ca1bfaf4155d4724c8@epcas5p2.samsung.com>
+In-Reply-To: <149141169417.29162.14993661679501972758.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-security-module@vger.kernel.org
 
-When the kernel is running in secure boot mode, we lock down the kernel to
-prevent userspace from modifying the running kernel image.  Whilst this
-includes prohibiting access to things like /dev/mem, it must also prevent
-access by means of configuring driver modules in such a way as to cause a
-device to access or modify the kernel image.
+On Wednesday, April 05, 2017 06:01:34 PM David Howells wrote:
+> When the kernel is running in secure boot mode, we lock down the kernel to
+> prevent userspace from modifying the running kernel image.  Whilst this
+> includes prohibiting access to things like /dev/mem, it must also prevent
+> access by means of configuring driver modules in such a way as to cause a
+> device to access or modify the kernel image.
+> 
+> To this end, annotate module_param* statements that refer to hardware
+> configuration and indicate for future reference what type of parameter they
+> specify.  The parameter parser in the core sees this information and can
+> skip such parameters with an error message if the kernel is locked down.
+> The module initialisation then runs as normal, but just sees whatever the
+> default values for those parameters is.
+> 
+> Note that we do still need to do the module initialisation because some
+> drivers have viable defaults set in case parameters aren't specified and
+> some drivers support automatic configuration (e.g. PNP or PCI) in addition
+> to manually coded parameters.
+> 
+> This patch annotates drivers in drivers/video/.
+> 
+> Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> cc: Jaya Kumar <jayalk@intworks.biz>
+> cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> cc: linux-fbdev@vger.kernel.org
 
-To this end, annotate module_param* statements that refer to hardware
-configuration and indicate for future reference what type of parameter they
-specify.  The parameter parser in the core sees this information and can
-skip such parameters with an error message if the kernel is locked down.
-The module initialisation then runs as normal, but just sees whatever the
-default values for those parameters is.
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Note that we do still need to do the module initialisation because some
-drivers have viable defaults set in case parameters aren't specified and
-some drivers support automatic configuration (e.g. PNP or PCI) in addition
-to manually coded parameters.
-
-This patch annotates drivers in drivers/video/.
-
-Suggested-by: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-Signed-off-by: David Howells <dhowells@redhat.com>
-cc: Jaya Kumar <jayalk@intworks.biz>
-cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-cc: linux-fbdev@vger.kernel.org
----
-
- drivers/video/fbdev/arcfb.c |    8 ++++----
- drivers/video/fbdev/n411.c  |    6 +++---
- 2 files changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
-index 1928cb2b5386..7e87d0d61658 100644
---- a/drivers/video/fbdev/arcfb.c
-+++ b/drivers/video/fbdev/arcfb.c
-@@ -645,17 +645,17 @@ module_param(nosplash, uint, 0);
- MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
- module_param(arcfb_enable, uint, 0);
- MODULE_PARM_DESC(arcfb_enable, "Enable communication with Arc board");
--module_param(dio_addr, ulong, 0);
-+module_param_hw(dio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
--module_param(cio_addr, ulong, 0);
-+module_param_hw(cio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
--module_param(c2io_addr, ulong, 0);
-+module_param_hw(c2io_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
- module_param(splashval, ulong, 0);
- MODULE_PARM_DESC(splashval, "Splash pattern: 0xFF is black, 0x00 is green");
- module_param(tuhold, ulong, 0);
- MODULE_PARM_DESC(tuhold, "Time to hold between strobing data to Arc board");
--module_param(irq, uint, 0);
-+module_param_hw(irq, uint, irq, 0);
- MODULE_PARM_DESC(irq, "IRQ for the Arc board");
- 
- module_init(arcfb_init);
-diff --git a/drivers/video/fbdev/n411.c b/drivers/video/fbdev/n411.c
-index 053deacad7cc..a3677313396e 100644
---- a/drivers/video/fbdev/n411.c
-+++ b/drivers/video/fbdev/n411.c
-@@ -193,11 +193,11 @@ module_exit(n411_exit);
- 
- module_param(nosplash, uint, 0);
- MODULE_PARM_DESC(nosplash, "Disable doing the splash screen");
--module_param(dio_addr, ulong, 0);
-+module_param_hw(dio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(dio_addr, "IO address for data, eg: 0x480");
--module_param(cio_addr, ulong, 0);
-+module_param_hw(cio_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(cio_addr, "IO address for control, eg: 0x400");
--module_param(c2io_addr, ulong, 0);
-+module_param_hw(c2io_addr, ulong, ioport, 0);
- MODULE_PARM_DESC(c2io_addr, "IO address for secondary control, eg: 0x408");
- module_param(splashval, ulong, 0);
- MODULE_PARM_DESC(splashval, "Splash pattern: 0x00 is black, 0x01 is white");
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

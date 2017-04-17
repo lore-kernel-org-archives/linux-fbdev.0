@@ -1,75 +1,51 @@
-From: Paul Kocialkowski <contact@paulk.fr>
-Date: Mon, 17 Apr 2017 15:38:46 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 17 Apr 2017 19:36:06 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: Fix condition to set enable gpio as output
-Message-Id: <1492443526.12267.4.camel@paulk.fr>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-CtD7ssR0i9DXtq8WomxN"
+Message-Id: <CAMuHMdVLUmT_NJt86tspYEZnsFEiEwiNu_19RQu0qhtcyP1SdQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170416103546.3021-1-contact@paulk.fr>
-         <CAMuHMdV1+caNwbuk=Kw7cRUxcp1iC=YArnQXf2mcn+qnc6+OOQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdV1+caNwbuk=Kw7cRUxcp1iC=YArnQXf2mcn+qnc6+OOQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
-To: Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
-Cc: "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Linux PWM List <linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux Fbdev development list <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+References: <20170416103546.3021-1-contact@paulk.fr> <CAMuHMdV1+caNwbuk=Kw7cRUxcp1iC=YArnQXf2mcn+qnc6+OOQ@mail.gmail.com>
+ <1492443526.12267.4.camel@paulk.fr>
+In-Reply-To: <1492443526.12267.4.camel@paulk.fr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Paul Kocialkowski <contact@paulk.fr>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux PWM List <linux-pwm@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-tegra@vger.kernel.org
 
+Hi Paul,
 
---=-CtD7ssR0i9DXtq8WomxN
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Mon, Apr 17, 2017 at 5:38 PM, Paul Kocialkowski <contact@paulk.fr> wrote:
+> Le dimanche 16 avril 2017 à 22:55 +0200, Geert Uytterhoeven a écrit :
+>> On Sun, Apr 16, 2017 at 12:35 PM, Paul Kocialkowski <contact@paulk.fr> wrote:
+>> > The move to a dedicated pwm_backlight_initial_power_state function in
+>> > commit 7613c922315e308a6486d802abed2eb74443dffd modified the condition
+>> > to set the enable gpio as output. This breaks specific use cases using
+>> > that GPIO, such as tegra124-based nyan Chromebooks where backlight
+>> > stopped working.
+>> >
+>> > This puts the condition back to the way it was before the move.
+>> >
+>> > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
+>>
+>> Does "[PATCH v2] backlight: pwm_bl: Fix GPIO out for unimplemented
+>> .get_direction()"
+>> (https://lkml.org/lkml/2017/4/4/225) fix your issue?
+>
+> This definitely solves the issue!
+>
+> Since this fixes broken backlight (that, in turn, makes systems unusable),
+> perhaps this should be included in the next rc cycle?
 
-Hi,
+You mean v4.11 final, as there probably won't be another rc?
+Yes!
 
-Le dimanche 16 avril 2017 =C3=A0 22:55 +0200, Geert Uytterhoeven a =C3=A9cr=
-it=C2=A0:
-> On Sun, Apr 16, 2017 at 12:35 PM, Paul Kocialkowski <contact@paulk.fr> wr=
-ote:
-> > The move to a dedicated pwm_backlight_initial_power_state function in
-> > commit 7613c922315e308a6486d802abed2eb74443dffd modified the condition
-> > to set the enable gpio as output. This breaks specific use cases using
-> > that GPIO, such as tegra124-based nyan Chromebooks where backlight
-> > stopped working.
-> >=20
-> > This puts the condition back to the way it was before the move.
-> >=20
-> > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
->=20
-> Does "[PATCH v2] backlight: pwm_bl: Fix GPIO out for unimplemented
-> .get_direction()"
-> (https://lkml.org/lkml/2017/4/4/225) fix your issue?
+Gr{oetje,eeting}s,
 
-This definitely solves the issue!
+                        Geert
 
-Since this fixes broken backlight (that, in turn, makes systems unusable),
-perhaps this should be included in the next rc cycle?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Cheers!
-
---=20
-Paul Kocialkowski, developer of free digital technology at the lower levels
-
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-CtD7ssR0i9DXtq8WomxN
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlj04YYACgkQhP3B6o/u
-lQwn7Q/+N9vmCWl3gxixdLDLxRguK49d2NsspLp+j+0hr9P3ZyABbgNRQEobu4iX
-co+eb67SKgcIryEjuikKstTruHv291N6HtlZ9eQnmFjfKMbDFseIfBq9RQ1vRX3/
-X1rKeifqfRBrDYR+PS16HtWv446stXe4Ta8yTJ0pR1n+h00SjhWxNIEJmUda/lZ0
-n7ccxKVFvEGFxGLfj1GXDNP80N9Rb8OlDX1nWfgMuMWMKU1beMjmocLfGqXoMy4k
-fr+5CpZhPGwvjMc/7C4dGRCgUwbRkfwKFHxsHMuy5Yf/r7u4kA4pVLNa3bnpPleL
-tvExZ8nBdL5MnbuwBuSKEHYugq3kBR+qgG1xRL6trCNUGpMkpVTYtBQYei6fBOdX
-i5piOkbVb9Q0ymcNjgwa6YOJUI5a4BEf+3siSNSu6L4aP55QENMzoxoWCJjmOSfE
-VNK+zHrDgqf6ofkk0FWysDjt48Izbn/SfksPgDEFe5xDYkV5lmtvd5eCx7ZVVIiw
-SepdqDrzupvQMMfN/x8+Rc8fypCCQGR9tSe2p+DgIqKzUJaJJ+NIFTXFli6Gkct2
-xV80M61B+Zkw2lqCfn+3WABoblQPKLDeeNWDbV2cktj5/o9BBnLSypputR8NTibm
-BpQXeCkeYtk2MAuniNYUwwl7xRceSUQgjZeMnCtQUYISKCxby9g=
-=yHIX
------END PGP SIGNATURE-----
-
---=-CtD7ssR0i9DXtq8WomxN--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

@@ -1,37 +1,32 @@
-From: "Ms. Katherine" <ulia@distral.ro>
-Date: Mon, 24 Apr 2017 18:52:12 +0000
-Subject: EXTREMELY IMPORTANT
-Message-Id: <20170424185219.079DA51B334E@mail.distral.ro>
+From: "eyad.majali@gmail.com" <eyad.majali@gmail.com>
+Date: Wed, 19 Apr 2017 07:39:38 +0000
+Subject: Help regarding fbcon hangs the kernel, hard lockup
+Message-Id: <58f7145c.30a0df0a.97356.aa47@mx.google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Dear Beloved, Sorry for the inconvenience, I am getting in touch with you r=
-egarding an extremely important and urgent matter, Please I need your urgen=
-t assistance and idea to finish up a project (Orphanage Home) Due to my hea=
-lth condition, Everything is available to finish up the project, All I need=
- is your idea and trust.
-
-Sehr geehrte Geliebte, traurig f=FCr die Unannehmlichkeiten, ich bin in Kon=
-takt mit Ihnen =FCber eine =E4u=DFerst wichtige und dringende Angelegenheit=
-, Bitte brauche ich Ihre dringende Hilfe und Idee, um ein Projekt zu beende=
-n (Orphanage Home) Wegen meines Gesundheitszustandes ist alles verf=FCgbar =
-Beenden Sie das Projekt, Alles was ich brauche ist Ihre Idee und Vertrauen.
-
-Please contact me for more details.
-Contact Email: kathrynnmison@gmail.com
-
-Thanks
-
----
-This email has been checked for viruses by Avast antivirus software.
-https://www.avast.com/antivirus
-
-
---=20
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
+SSdtIGJ1aWxkaW5nIGEgbGludXgga2VybmVsIDMuNCBmb3IgZW1iZWRkZWQgZGV2aWNlIChTdW54
+aSBwbGF0Zm9ybSkgLCB3aHkgMy40PyBiZWNhdXNlIGl0J3MgdGhlIHZlcnNpb24gY2FtZSB3aXRo
+IHRoZSBTREsgYW5kIGl0IGhhcyBhbGwgdGhlIGRyaXZlcnMgb2YgdGhlIG1hbnVmYWN0dXJlciwg
+dGhlcmUgZXhpc3QgYSBtYWlubGluZSBrZXJuZWwgd2l0aCBkZWNlbnQgc3VwcG9ydCBidXQgbGFj
+a3MgZHJpdmVycyBsaWtlIGhhcmR3YXJlIEdQVSB2aWRlbyBkZWNvZGluZyBhbmQgb3RoZXIgc3lz
+dGVtIHNwZWNpZmljIGRyaXZlcnMuIHNvIHRoZSBwcm9ibGVtIGlzIHRoZSBmb2xsb3dpbmcgOiBm
+YmNvbiBpcyBjb21waWxlZCBhcyBidWlsdCBpbiBtb2R1bGUgLCB3aGVuZXZlciB0aGUgZnJhbWVi
+dWZmZXIgcmVnaXN0ZXJzIHRoZSBmYiBkZXZpY2UgdGhlIHN5c3RlbSBoYW5ncyAod2l0aCBmYmNv
+biBsb2FkZWQpIHdpdGhvdXQgZmJjb24gdGhlIHN5c3RlbSBib290cyBvaywgc28gSSBjaGFuZ2Vk
+IHRoZSBtb2R1bGUgbG9hZGluZyBvcmRlciBhbmQgbWFkZSB2aWRlbyBkcml2ZXJzIGxvYWQgYmVm
+b3JlIGZiY29uICwgbm93IHRoZSBmYiBkZXZpY2UgcmVnaXN0ZXJzIHN1Y2Nlc3NmdWxseSBidXQg
+d2hlbiB0aGUgZmJjb24gbG9hZHMgdGhlIHN5c3RlbSBoYW5ncy4gYWZ0ZXIgaW50ZW5zaXZlIGRl
+YnVnZ2luZyB3aXRoIHByaW50aydzIGl0IHNlZW1zIHRoZSBmYmNvbiBoYW5ncyB3aGVuIGl0IGNh
+bGxzIGZiY29uX3Rha2VvdmVyIHdoaWNoIGNhbGxzIHRha2Vfb3Zlcl9jb25zb2xlIGFuZCB0aGUg
+c3lzdGVtIGZyZWV6ZXMuIGlmIEkgY29tcGlsZSBmYmNvbiBhcyBleHRlcm5hbCBtb2R1bGUgYW5k
+IHB1dCBpdCBpbiAvZXRjL21vZHVsZXMgdGhlIHN5c3RlbSBoYW5ncyB3aGVuIGxvYWRpbmcgaXQs
+IGhvd2V2ZXIgaWYgbG9hZGVkIHVzaW5nIC9ldGMvcmMubG9jYWwgb3IgbWFudWFsbHkgYWZ0ZXIg
+c3lzdGVtIGJvb3QgaXQgbG9hZHMgb2sgLCBidXQgd2hlbiBJIHRyeSB0byBzd2l0Y2ggdG8gdmly
+dHVhbCB0ZXJtaW5hbCBhbHQrRjEgaXQgc3RheXMgb24gdGhlIEdVSSBhbmQgdGhlIHN5c3RlbSBo
+YW5ncyEhIEknbSByZWFsbHkgc2NyYXRjaGluZyBteSBoZWFkIGFuZCBjYW4ndCBmaWd1cmUgaXQg
+b3V0ICwgYW55IGhlbHAgaXMgcmVhbGx5IGFwcHJlY2lhdGVk
 

@@ -1,37 +1,50 @@
-From: Andrea della Porta <sfaragnaus@gmail.com>
-Date: Fri, 07 Apr 2017 00:24:39 +0000
-Subject: [PATCH] staging: sm750fb: ddk750_display.c - fixed checkpatch warning: line over 80 chars
-Message-Id: <20170407002439.GA8300@gmail.com>
+From: Martin Kaiser <martin@kaiser.cx>
+Date: Fri, 21 Apr 2017 10:29:09 +0000
+Subject: [PATCH 2/2] dt-bindings: display: imx: entry for AUS mode
+Message-Id: <1492770549-7347-2-git-send-email-martin@kaiser.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1488193030-13064-1-git-send-email-martin@kaiser.cx>
+ <1492770549-7347-1-git-send-email-martin@kaiser.cx>
+In-Reply-To: <1492770549-7347-1-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
 
-staging: sm750fb: ddk750_display.c - fixed the following checkpatch warning:
-WARNING: line over 80 characters
-#149: FILE: drivers/staging/sm750fb/ddk750_display.c:149:
-+               swPanelPowerSequence((output & PNL_SEQ_MASK) >> PNL_SEQ_OFFSET, 4);
+Allow setting AUS mode for a display from the device tree. Use an
+optional boolean property. AUS mode can be set only on imx21 and
+compatible chipsets.
 
-Signed-off-by: Andrea della Porta <sfaragnaus@gmail.com>
+Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/staging/sm750fb/ddk750_display.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+v4:
+   rename the DT property to fsl,aus-mode
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index e4724a6..9b116ed6 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -146,7 +146,8 @@ void ddk750_setLogicalDispOut(disp_output_t output)
+v3:
+   use a boolean DT property instead of the register value
+   separate patches for DT binding and code changes
+
+v2:
+   re-sending DT bindings and code changes as one patch
+
+ Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
+index 7a5c0e2..e5a8b36 100644
+--- a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
++++ b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
+@@ -13,6 +13,8 @@ Required nodes:
+ 	Additional, the display node has to define properties:
+ 	- bits-per-pixel: Bits per pixel
+ 	- fsl,pcr: LCDC PCR value
++	A display node may optionally define
++	- fsl,aus-mode: boolean to enable AUS mode (only for imx21)
  
- 	if (output & PNL_SEQ_USAGE) {
- 		/* set  panel sequence */
--		swPanelPowerSequence((output & PNL_SEQ_MASK) >> PNL_SEQ_OFFSET, 4);
-+		swPanelPowerSequence((output & PNL_SEQ_MASK) >> PNL_SEQ_OFFSET,
-+				     4);
- 	}
- 
- 	if (output & DAC_USAGE)
+ Optional properties:
+ - lcd-supply: Regulator for LCD supply voltage.
 -- 
-2.4.10
+2.1.4
 

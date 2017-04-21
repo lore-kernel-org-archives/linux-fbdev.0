@@ -1,51 +1,31 @@
-From: Martin Kaiser <martin@kaiser.cx>
-Date: Fri, 21 Apr 2017 12:29:50 +0000
-Subject: [PATCH 2/2 v4] dt-bindings: display: imx: entry for AUS mode
-Message-Id: <1492777790-12748-1-git-send-email-martin@kaiser.cx>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 21 Apr 2017 14:50:00 +0000
+Subject: Re: [PATCH 2/2 v4] dt-bindings: display: imx: entry for AUS mode
+Message-Id: <1888652.8EDPoKnYDF@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1492770549-7347-1-git-send-email-martin@kaiser.cx>
-In-Reply-To: <1492770549-7347-1-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
+        <CGME20170421123117epcas3p4f765aaa33299644fd0e31ef8faa5cdde@epcas3p4.samsung.com>
+        <1492777790-12748-1-git-send-email-martin@kaiser.cx>
+In-Reply-To: <1492777790-12748-1-git-send-email-martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
+To: Martin Kaiser <martin-XxZfDwE/svGeZLLa646FqQ@public.gmane.org>
+Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Sascha Hauer <kernel-bIcnvbaLZ9MEGnE8C9+IrQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Allow setting AUS mode for a display from the device tree. Use an
-optional boolean property. AUS mode can be set only on imx21 and
-compatible chipsets.
+On Friday, April 21, 2017 02:29:50 PM Martin Kaiser wrote:
+> Allow setting AUS mode for a display from the device tree. Use an
+> optional boolean property. AUS mode can be set only on imx21 and
+> compatible chipsets.
+> 
+> Signed-off-by: Martin Kaiser <martin@kaiser.cx>
+> Acked-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Martin Kaiser <martin@kaiser.cx>
-Acked-by: Rob Herring <robh@kernel.org>
----
-sending this again, I missed the v4 in the Subject line
+Patch queued for 4.12, thanks.
 
-v4:
-   rename the DT property to fsl,aus-mode
-
-v3:
-   use a boolean DT property instead of the register value
-   separate patches for DT binding and code changes
-
-v2:
-   re-sending DT bindings and code changes as one patch
-
- Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-index 7a5c0e2..e5a8b36 100644
---- a/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-+++ b/Documentation/devicetree/bindings/display/imx/fsl,imx-fb.txt
-@@ -13,6 +13,8 @@ Required nodes:
- 	Additional, the display node has to define properties:
- 	- bits-per-pixel: Bits per pixel
- 	- fsl,pcr: LCDC PCR value
-+	A display node may optionally define
-+	- fsl,aus-mode: boolean to enable AUS mode (only for imx21)
- 
- Optional properties:
- - lcd-supply: Regulator for LCD supply voltage.
--- 
-2.1.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

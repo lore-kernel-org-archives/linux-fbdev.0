@@ -1,84 +1,27 @@
-From: Bastian Stender <bst@pengutronix.de>
-Date: Fri, 07 Apr 2017 15:29:45 +0000
-Subject: Re: [PATCH] fbdev/ssd1307fb: fix optional VBAT support
-Message-Id: <d715f2f1-e1c5-23d5-fc34-b26305c5f9bf@pengutronix.de>
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Fri, 21 Apr 2017 13:15:02 +0000
+Subject: Re: [PATCH v5 0/2] crypto: hw_random - Add new Exynos RNG driver
+Message-Id: <20170421131502.GC14803@gondor.apana.org.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170403135344.31091-1-bst@pengutronix.de>
-In-Reply-To: <20170403135344.31091-1-bst@pengutronix.de>
+References: <20170411180835.8928-1-krzk@kernel.org>
+In-Reply-To: <20170411180835.8928-1-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: James Hogan <james.hogan@imgtec.com>, Matt Mackall <mpm@selenic.com>, Kukjin Kim <kgene@kernel.org>, Javier Martinez Canillas <javier@osg.samsung.com>, "David S. Miller" <davem@davemloft.net>, Dave Airlie <airlied@redhat.com>, David Airlie <airlied@linux.ie>, Bernie Thompson <bernie@plugable.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>, linux-kernel@vger.kernel.org, linux-metag@vger.kernel.org, linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Stephan =?iso-8859-1?Q?M=FCller?= <smueller@chronox.de>
 
-Hey,
+On Tue, Apr 11, 2017 at 08:08:33PM +0200, Krzysztof Kozlowski wrote:
+> Hi,
+> 
+> This is a follow up of my questions around exynos-rng [1].
+> 
+> Changes since v4:
+> ========> 1. Patch 2/2: Use "stdrng" name, as suggested by Herbert.
+> 2. Patch 2/2: Add Bartlomiej's reviewed-by.
 
-On 04/07/2017 05:21 PM, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, April 03, 2017 03:53:44 PM Bastian Stender wrote:
->> SSD1306 needs VBAT when it is wired in charge pump configuration only.
->> Other controllers of the SSD1307 family do not need it at all. This was
->> introduced by commit ba14301e0356c99803e07db60e129a2ca9e50ff0.
->
-> checkpatch.pl complained about this:
->
-> ERROR: Please use git commit description style 'commit <12+ chars of sha1> ("<title line>")' - ie: 'commit ba14301e0356 ("fbdev/ssd1307fb: add support to enable VBAT")'
-> #6:
-> introduced by commit ba14301e0356c99803e07db60e129a2ca9e50ff0.
->
-> I fixed this while applying the patch.
-
-Yes, saw that after the patch was already sent. Thanks.
-
->> Without VBAT configuration the driver now fails with:
->>
->> 	failed to get VBAT regulator: -19
->>
->> This is caused by misinterpretation of devm_regulator_get_optional
->> which "returns a struct regulator corresponding to the regulator
->> producer or IS_ERR() condition".
->>
->> Handle -ENODEV without bailing out and making VBAT support really
->> optional.
->>
->> Signed-off-by: Bastian Stender <bst@pengutronix.de>
->
-> [...]
->
->> @@ -578,10 +578,14 @@ static int ssd1307fb_probe(struct i2c_client *client,
->>
->>  	par->vbat_reg = devm_regulator_get_optional(&client->dev, "vbat");
->>  	if (IS_ERR(par->vbat_reg)) {
->> -		dev_err(&client->dev, "failed to get VBAT regulator: %ld\n",
->> -			PTR_ERR(par->vbat_reg));
->>  		ret = PTR_ERR(par->vbat_reg);
->> -		goto fb_alloc_error;
->> +		if (ret = -ENODEV) {
->> +			par->vbat_reg = NULL;
->> +		} else {
->> +			dev_err(&client->dev, "failed to get VBAT regulator: %ld\n",
->> +				ret);
->
-> gcc complained after this change:
->
-> drivers/video/fbdev/ssd1307fb.c: In function ‘ssd1307fb_probe’:
-> drivers/video/fbdev/ssd1307fb.c:586:5: warning: format ‘%ld’ expects argument of type ‘long int’, but argument 3 has type ‘int’ [-Wformat]
->
-> I fixed this while applying the patch.
-
-Woops, thanks so much.
-
->
-> [...]
->
-> Patch queued for 4.11, thanks!
-
-Cool :)
-
-Regards,
-Bastian
-
+All applied.  Thanks.
 -- 
-Pengutronix e.K.
-Industrial Linux Solutions
-http://www.pengutronix.de/
-Peiner Str. 6-8, 31137 Hildesheim, Germany
-Amtsgericht Hildesheim, HRA 2686
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt

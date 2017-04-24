@@ -1,109 +1,39 @@
-From: Paul Kocialkowski <contact@paulk.fr>
-Date: Sat, 22 Apr 2017 13:00:35 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: Fix condition to set enable gpio as output
-Message-Id: <1492866035.1768.3.camel@paulk.fr>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-gbyA9w8WJqjznjENtKeY"
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 24 Apr 2017 15:09:41 +0000
+Subject: Re: [PATCH v8 1/3] backlight arcxcnn add arc to vendor prefix
+Message-Id: <CAL_JsqJ+=fQ2e752iCHs0dbdrkotuDtKp=2Z2_xnyCtMnxWV8A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170416103546.3021-1-contact@paulk.fr>
-         <CAMuHMdV1+caNwbuk=Kw7cRUxcp1iC=YArnQXf2mcn+qnc6+OOQ@mail.gmail.com>
-         <1492443526.12267.4.camel@paulk.fr>
-         <CAMuHMdVLUmT_NJt86tspYEZnsFEiEwiNu_19RQu0qhtcyP1SdQ@mail.gmail.com>
-         <1492505196.2014.0.camel@paulk.fr>
-         <e5a9e6ce-b1dd-96ae-c051-60be7cbfbe1d@linaro.org>
-In-Reply-To: <e5a9e6ce-b1dd-96ae-c051-60be7cbfbe1d@linaro.org>
-To: Daniel Thompson <daniel.thompson@linaro.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux PWM List <linux-pwm@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-tegra@vger.kernel.org
-
-
---=-gbyA9w8WJqjznjENtKeY
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-Le jeudi 20 avril 2017 =C3=A0 10:55 +0100, Daniel Thompson a =C3=A9crit=C2=
-=A0:
-> On 18/04/17 09:46, Paul Kocialkowski wrote:
-> > Hi,
-> >=20
-> > Le lundi 17 avril 2017 =C3=A0 21:36 +0200, Geert Uytterhoeven a =C3=A9c=
-rit :
-> > > On Mon, Apr 17, 2017 at 5:38 PM, Paul Kocialkowski <contact@paulk.fr>
-> > > wrote:
-> > > > Le dimanche 16 avril 2017 =C3=A0 22:55 +0200, Geert Uytterhoeven a =
-=C3=A9crit :
-> > > > > On Sun, Apr 16, 2017 at 12:35 PM, Paul Kocialkowski <contact@paul=
-k.fr>
-> > > > > wrote:
-> > > > > > The move to a dedicated pwm_backlight_initial_power_state funct=
-ion
-> > > > > > in
-> > > > > > commit 7613c922315e308a6486d802abed2eb74443dffd modified the
-> > > > > > condition
-> > > > > > to set the enable gpio as output. This breaks specific use case=
-s
-> > > > > > using
-> > > > > > that GPIO, such as tegra124-based nyan Chromebooks where backli=
-ght
-> > > > > > stopped working.
-> > > > > >=20
-> > > > > > This puts the condition back to the way it was before the move.
-> > > > > >=20
-> > > > > > Signed-off-by: Paul Kocialkowski <contact@paulk.fr>
-> > > > >=20
-> > > > > Does "[PATCH v2] backlight: pwm_bl: Fix GPIO out for unimplemente=
-d
-> > > > > .get_direction()"
-> > > > > (https://lkml.org/lkml/2017/4/4/225) fix your issue?
-> > > >=20
-> > > > This definitely solves the issue!
-> > > >=20
-> > > > Since this fixes broken backlight (that, in turn, makes systems
-> > > > unusable),
-> > > > perhaps this should be included in the next rc cycle?
-> > >=20
-> > > You mean v4.11 final, as there probably won't be another rc?
-> > > Yes!
-> >=20
-> > I'm all for it!
->=20
-> Thanks for keeping our attention on this. I sent a PR yesterday (and=C2=
-=A0
-> hope my GPG key has attracted enough signatures).
-
-Thanks for acting fast and getting this merged already. This is greatly
-appreciated!
-
-Cheers,
-
---=20
-Paul Kocialkowski, developer of free digital technology at the lower levels
-
-Website: https://www.paulk.fr/
-Coding blog: https://code.paulk.fr/
-Git repositories: https://git.paulk.fr/ https://git.code.paulk.fr/
---=-gbyA9w8WJqjznjENtKeY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <1489607133-7870-1-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1489607133-7870-1-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+Cc: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, Joe Perches <joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org>, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
------BEGIN PGP SIGNATURE-----
+On Wed, Mar 15, 2017 at 2:45 PM, Olimpiu Dejeu <olimpiu@arcticsand.com> wrote:
+> backlight: Add arc to vendor prefixes
+> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+> ---
+> v8:
+> - Version to match other patches in set
+>
+>  Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
+>  1 file changed, 1 insertion(+)
+>
+> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+> index 16d3b5e..6f33a4b 100644
+> --- a/Documentation/devicetree/bindings/vendor-prefixes.txt
+> +++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+> @@ -28,6 +28,7 @@ andestech     Andes Technology Corporation
+>  apm    Applied Micro Circuits Corporation (APM)
+>  aptina Aptina Imaging
+>  arasan Arasan Chip Systems
+> +arc    Arctic Sand
 
-iQIzBAABCAAdFiEEAbcMXZQMtj1fphLChP3B6o/ulQwFAlj7U/MACgkQhP3B6o/u
-lQwX/A/+JbDJmBgnnab3JGdjnC1veF3ROcsNLnb8GBsML770SCaMl3+tVadFSQuj
-bW87g/3TC/Bh4hcryQD3sS9s/+1S3WsB6bef5nZU1o9jpAk/h3YmTc4+aBvjDdW/
-C3HzBfo30kRrHa6nXWzosRs2KdLvoT1wWeEIto7xRJNFmGGJSoBjSTFKCiKXvEVS
-uFc/FXQTRLoRptXEczuU7dBHbq5VaLEWXojakT42RdXxqoOxfW22gQZ2op9iwOon
-tO0dKcMuDcI1R/h4ZCQz1RusK9uGiwksclWVCC+tJCXrsMmdP9PAD27VMdLeo2A4
-a+13fOP/6SqOwJFcNEpsxhDAorwlC9oB4vgLAF7YCp4X2C3mutvB11Ym+RHrsf4i
-CtsKABm4qBQZRLNSlhyX/57CnaOSjYx2QOqi6W2+pFJU6Jkk2aJGvqvA0Fg/dvFx
-7HeH/tQQxyBzziy7oX9loy80IOnHkssCQwmlDbEl881Ls7grSl/GzDKUTMo4qW/2
-7+zQOHribtsFFvG73BVttWPus1EYxP6LNbrtds7SNCOiWBnsZGEsv6yB5gCjS869
-1s1DMKPrr2HToKrWiTn3yyhhalogm5+5RcdJdAhkjFNf34AdWAQ3qPesEZQZKwmL
-V4RrdG6S7562tXNN6f+yDeLR/6Wp/4bN9pEjl/Z+jiyZ50sS1gU=
-=AEc7
------END PGP SIGNATURE-----
+arc is also a cpu arch. While not a vendor, it could be confusing. How
+about "arctic" instead?
 
---=-gbyA9w8WJqjznjENtKeY--
+BTW, some reason your patches are not going to the DT list.
 
+Rob

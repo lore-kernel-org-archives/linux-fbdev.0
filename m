@@ -1,142 +1,93 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Fri, 28 Apr 2017 20:08:17 +0000
-Subject: [PATCH v5 07/14] MIPS: jz4780: DTS: Add nodes for ingenic pinctrl and gpio drivers
-Message-Id: <20170428200824.10906-8-paul@crapouillou.net>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 25 Apr 2017 08:17:29 +0000
+Subject: Re: [PATCH v8 2/3] backlight arcxcnn devicetree bindings for ArcticSand
+Message-Id: <20170425081729.53yt2qcnnlx46x3g@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net>
- <20170428200824.10906-1-paul@crapouillou.net>
-In-Reply-To: <20170428200824.10906-1-paul@crapouillou.net>
+References: <1489607133-7870-1-git-send-email-olimpiu@arcticsand.com>
+ <1489607133-7870-2-git-send-email-olimpiu@arcticsand.com>
+In-Reply-To: <1489607133-7870-2-git-send-email-olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
+Cc: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, medasaro-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org
 
-For a description of the devicetree node, please read
-Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+On Wed, 15 Mar 2017, Olimpiu Dejeu wrote:
 
-For a description of the gpio devicetree nodes, please read
-Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+> backlight: Add devicetree bindings for the Arctic Sand backlight driver
+> This patch provides devicetree bindings for the Arctic Sand
+>     driver submitted in the previous patch
+> Acked-by: Rob Herring <robh@kernel.org>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+> ---
+> v7 =3D> v8:
+> - Version updated to match other patch in set. No other changes.
+> v6 =3D> v7:
+> - Version updated to match other patch in set. No other changes.
+> v5 =3D> v6:
+> - Version updated to match other patch in set. No other changes.
+> v4 =3D> v5:
+> - Added spaces for increased readability per Lee Jones
+> v3 =3D> v4:
+> - Added spaces for increased readability per Lee Jones
+> v2 =3D> v3:
+> - Version updated to match other patch in set. No other changes.
+> v1 =3D> v2:
+> - Version updated to match other patch in set. No other changes.
+>=20
+>  .../bindings/leds/backlight/arcxcnn_bl.txt         | 33 ++++++++++++++++=
+++++++
+>  1 file changed, 31 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/leds/backlight/arcx=
+cnn_bl.txt
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
----
- arch/mips/boot/dts/ingenic/jz4780.dtsi | 98 ++++++++++++++++++++++++++++++++++
- 1 file changed, 98 insertions(+)
+Applied, thanks.
 
- v2: Changed the devicetree bindings to match the new driver
- v3: No changes
- v4: Update the bindings for the v4 version of the drivers
- v5: Add 'reg' properties and rename pinctrl/gpio nodes
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.=
+txt b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> new file mode 100644
+> index 0000000..ecb7731
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/backlight/arcxcnn_bl.txt
+> @@ -0,0 +1,33 @@
+> +Binding for ArcticSand arc2c0608 LED driver
+> +
+> +Required properties:
+> +- compatible:		should be "arc,arc2c0608"
+> +- reg:			slave address
+> +
+> +Optional properties:
+> +- default-brightness:	brightness value on boot, value from: 0-4095
+> +- label:		The name of the backlight device
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +- led-sources:		List of enabled channels from 0 to 5.
+> +			See Documentation/devicetree/bindings/leds/common.txt
+> +
+> +- arc,led-config-0:	setting for register ILED_CONFIG_0
+> +- arc,led-config-1:	setting for register ILED_CONFIG_1
+> +- arc,dim-freq:		PWM mode frequence setting (bits [3:0] used)
+> +- arc,comp-config:	setting for register CONFIG_COMP
+> +- arc,filter-config:	setting for register FILTER_CONFIG
+> +- arc,trim-config:	setting for register IMAXTUNE
+> +
+> +Note: Optional properties not specified will default to values in IC EPR=
+OM
+> +
+> +Example:
+> +
+> +arc2c0608@30 {
+> +	compatible =3D "arc,arc2c0608";
+> +	reg =3D <0x30>;
+> +	default-brightness =3D <500>;
+> +	label =3D "lcd-backlight";
+> +	linux,default-trigger =3D "backlight";
+> +	led-sources =3D <0 1 2 5>;
+> +};
+> +
 
-diff --git a/arch/mips/boot/dts/ingenic/jz4780.dtsi b/arch/mips/boot/dts/ingenic/jz4780.dtsi
-index b868b429add2..4853ef67b3ab 100644
---- a/arch/mips/boot/dts/ingenic/jz4780.dtsi
-+++ b/arch/mips/boot/dts/ingenic/jz4780.dtsi
-@@ -44,6 +44,104 @@
- 		#clock-cells = <1>;
- 	};
- 
-+	pinctrl: pin-controller@10010000 {
-+		compatible = "ingenic,jz4780-pinctrl";
-+		reg = <0x10010000 0x600>;
-+
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+
-+		gpa: gpio@0 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <0>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 0 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <17>;
-+		};
-+
-+		gpb: gpio@1 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <1>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 32 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <16>;
-+		};
-+
-+		gpc: gpio@2 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <2>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 64 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <15>;
-+		};
-+
-+		gpd: gpio@3 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <3>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 96 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <14>;
-+		};
-+
-+		gpe: gpio@4 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <4>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 128 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <13>;
-+		};
-+
-+		gpf: gpio@5 {
-+			compatible = "ingenic,jz4780-gpio";
-+			reg = <5>;
-+
-+			gpio-controller;
-+			gpio-ranges = <&pinctrl 0 160 32>;
-+			#gpio-cells = <2>;
-+
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+
-+			interrupt-parent = <&intc>;
-+			interrupts = <12>;
-+		};
-+	};
-+
- 	uart0: serial@10030000 {
- 		compatible = "ingenic,jz4780-uart";
- 		reg = <0x10030000 0x100>;
--- 
-2.11.0
-
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

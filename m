@@ -1,36 +1,47 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 07 Apr 2017 15:27:48 +0000
-Subject: Re: [PATCH] xen, fbfront: fix connecting to backend
-Message-Id: <2465865.io8KzH0K34@amdc3058>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 26 Apr 2017 09:20:07 +0000
+Subject: [PATCH] omapfb: Use devm_kcalloc() in vrfb_probe()
+Message-Id: <4a7b1751-4319-4bde-cf26-2de2a4096c68@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170323125252.11763-1-jgross@suse.com>
-        <CGME20170323141121epcas4p205b564a0ceb1a7c4f01493fbb2e53491@epcas4p2.samsung.com>
-        <3aab36b2-d2e3-5d51-f2c8-33cb0a885930@oracle.com>
-In-Reply-To: <3aab36b2-d2e3-5d51-f2c8-33cb0a885930@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Boris Ostrovsky <boris.ostrovsky@oracle.com>, Juergen Gross <jgross@suse.com>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xenproject.org, linux-fbdev@vger.kernel.org, stable@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-On Thursday, March 23, 2017 10:11:12 AM Boris Ostrovsky wrote:
-> On 03/23/2017 08:52 AM, Juergen Gross wrote:
-> > Connecting to the backend isn't working reliably in xen-fbfront: in
-> > case XenbusStateInitWait of the backend has been missed the backend
-> > transition to XenbusStateConnected will trigger the connected state
-> > only without doing the actions required when the backend has
-> > connected.
-> >
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Juergen Gross <jgross@suse.com>
-> 
-> Reviewed-by: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 26 Apr 2017 11:08:30 +0200
 
-Patch queued for 4.11, thanks.
+* A multiplication for the size determination of a memory allocation
+  indicated that an array data structure should be processed.
+  Thus use the corresponding function "devm_kcalloc".
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+* Replace the specification of a data structure by a pointer dereference
+  to make the corresponding size determination a bit safer according to
+  the Linux coding style convention.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/omap2/omapfb/vrfb.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+index f346b02eee1d..54b51a7a290a 100644
+--- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
++++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+@@ -358,11 +358,7 @@ static int __init vrfb_probe(struct platform_device *pdev)
+ 		return PTR_ERR(vrfb_base);
+ 
+ 	num_ctxs = pdev->num_resources - 1;
+-
+-	ctxs = devm_kzalloc(&pdev->dev,
+-			sizeof(struct vrfb_ctx) * num_ctxs,
+-			GFP_KERNEL);
+-
++	ctxs = devm_kcalloc(&pdev->dev, num_ctxs, sizeof(*ctxs), GFP_KERNEL);
+ 	if (!ctxs)
+ 		return -ENOMEM;
+ 
+-- 
+2.12.2
 

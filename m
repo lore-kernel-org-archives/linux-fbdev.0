@@ -1,57 +1,80 @@
-From: Maksim Salau <maksim.salau@gmail.com>
-Date: Mon, 24 Apr 2017 08:13:49 +0000
-Subject: [PATCH v2] video: fbdev: udlfb: Fix buffer on stack
-Message-Id: <20170424081349.26152-1-maksim.salau@gmail.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Fri, 28 Apr 2017 20:08:11 +0000
+Subject: [PATCH v5 01/14] dt/bindings: Document pinctrl-ingenic
+Message-Id: <20170428200824.10906-2-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170402204244.14216-2-paul@crapouillou.net>
+ <20170428200824.10906-1-paul@crapouillou.net>
+In-Reply-To: <20170428200824.10906-1-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
+Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 
-Allocate buffers on HEAP instead of STACK for local array
-that is to be sent using usb_control_msg().
+This commit adds documentation for the devicetree bindings of the
+pinctrl-ingenic driver, which handles pin configuration and pin
+muxing of the Ingenic SoCs currently supported by the Linux kernel.
 
-Signed-off-by: Maksim Salau <maksim.salau@gmail.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- Changes in v2:
-   declared set_def_chn as 'static const' to avoid double copying;
-   replaced allocation and copying with a single call to kmemdup.
+ .../bindings/pinctrl/ingenic,pinctrl.txt           | 41 ++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
 
- drivers/video/fbdev/udlfb.c | 14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
+ v2: Rewrote the documentation for the new pinctrl-ingenic driver
+ v3: No changes
+ v4: Update for the v4 version of the pinctrl-ingenic driver
+ v5: Rename 'ingenic-pinctrl@...' to 'pin-controller@...' in example
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index e9c2f7b..6a3c353 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1487,15 +1487,25 @@ static struct device_attribute fb_device_attrs[] = {
- static int dlfb_select_std_channel(struct dlfb_data *dev)
- {
- 	int ret;
--	u8 set_def_chn[] = {	   0x57, 0xCD, 0xDC, 0xA7,
-+	void *buf;
-+	static const u8 set_def_chn[] = {
-+				0x57, 0xCD, 0xDC, 0xA7,
- 				0x1C, 0x88, 0x5E, 0x15,
- 				0x60, 0xFE, 0xC6, 0x97,
- 				0x16, 0x3D, 0x47, 0xF2  };
- 
-+	buf = kmemdup(set_def_chn, sizeof(set_def_chn), GFP_KERNEL);
+diff --git a/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+new file mode 100644
+index 000000000000..ca313a7aeaff
+--- /dev/null
++++ b/Documentation/devicetree/bindings/pinctrl/ingenic,pinctrl.txt
+@@ -0,0 +1,41 @@
++Ingenic jz47xx pin controller
 +
-+	if (!buf)
-+		return -ENOMEM;
++Please refer to pinctrl-bindings.txt in this directory for details of the
++common pinctrl bindings used by client devices, including the meaning of the
++phrase "pin configuration node".
 +
- 	ret = usb_control_msg(dev->udev, usb_sndctrlpipe(dev->udev, 0),
- 			NR_USB_REQUEST_CHANNEL,
- 			(USB_DIR_OUT | USB_TYPE_VENDOR), 0, 0,
--			set_def_chn, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);
-+			buf, sizeof(set_def_chn), USB_CTRL_SET_TIMEOUT);
++For the jz47xx SoCs, pin control is tightly bound with GPIO ports. All pins may
++be used as GPIOs, multiplexed device functions are configured within the
++GPIO port configuration registers and it is typical to refer to pins using the
++naming scheme "PxN" where x is a character identifying the GPIO port with
++which the pin is associated and N is an integer from 0 to 31 identifying the
++pin within that GPIO port. For example PA0 is the first pin in GPIO port A, and
++PB31 is the last pin in GPIO port B. The jz4740 contains 4 GPIO ports, PA to
++PD, for a total of 128 pins. The jz4780 contains 6 GPIO ports, PA to PF, for a
++total of 192 pins.
 +
-+	kfree(buf);
 +
- 	return ret;
- }
- 
++Required properties:
++--------------------
++
++ - compatible: One of:
++    - "ingenic,jz4740-pinctrl"
++    - "ingenic,jz4770-pinctrl"
++    - "ingenic,jz4780-pinctrl"
++ - reg: Address range of the pinctrl registers.
++
++
++GPIO sub-nodes
++--------------
++
++The pinctrl node can have optional sub-nodes for the Ingenic GPIO driver;
++please refer to ../gpio/ingenic,gpio.txt.
++
++
++Example:
++--------
++
++pinctrl: pin-controller@10010000 {
++	compatible = "ingenic,jz4740-pinctrl";
++	reg = <0x10010000 0x400>;
++};
 -- 
-2.9.3
+2.11.0
 

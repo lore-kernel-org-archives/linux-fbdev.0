@@ -1,115 +1,131 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 28 Apr 2017 19:51:25 +0000
-Subject: [PATCH] fbdev: sti: don't select CONFIG_VT
-Message-Id: <20170428195151.57706-1-arnd@arndb.de>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Fri, 28 Apr 2017 20:08:19 +0000
+Subject: [PATCH v5 09/14] MIPS: JZ4780: CI20: Add pinctrl configuration for several drivers
+Message-Id: <20170428200824.10906-10-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170402204244.14216-2-paul@crapouillou.net>
+ <20170428200824.10906-1-paul@crapouillou.net>
+In-Reply-To: <20170428200824.10906-1-paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, jejb@parisc-linux.org, Alexander Beregalov <a.beregalov@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>
+Cc: Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Paul Cercueil <paul-icTtO2rgO2OTuSrc4Mpeew@public.gmane.org>
 
-While working on another build error, I ran into several variations of
-this dependency loop:
+We set the pin configuration for the jz4780-nand and jz4780-uart
+drivers.
 
-subsection "Kconfig recursive dependency limitations"
-drivers/input/Kconfig:8:	symbol INPUT is selected by VT
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/tty/Kconfig:12:	symbol VT is selected by FB_STI
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/video/fbdev/Kconfig:677:	symbol FB_STI depends on FB
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/video/fbdev/Kconfig:5:	symbol FB is selected by DRM_KMS_FB_HELPER
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/gpu/drm/Kconfig:72:	symbol DRM_KMS_FB_HELPER is selected by DRM_KMS_CMA_HELPER
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/gpu/drm/Kconfig:137:	symbol DRM_KMS_CMA_HELPER is selected by DRM_HDLCD
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/gpu/drm/arm/Kconfig:6:	symbol DRM_HDLCD depends on OF
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/of/Kconfig:4:	symbol OF is selected by X86_INTEL_CE
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-arch/x86/Kconfig:523:	symbol X86_INTEL_CE depends on X86_IO_APIC
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-arch/x86/Kconfig:1011:	symbol X86_IO_APIC depends on X86_LOCAL_APIC
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-arch/x86/Kconfig:1005:	symbol X86_LOCAL_APIC depends on X86_UP_APIC
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-arch/x86/Kconfig:980:	symbol X86_UP_APIC depends on PCI_MSI
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/pci/Kconfig:11:	symbol PCI_MSI is selected by AMD_IOMMU
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/iommu/Kconfig:106:	symbol AMD_IOMMU depends on IOMMU_SUPPORT
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/iommu/Kconfig:5:	symbol IOMMU_SUPPORT is selected by DRM_ETNAVIV
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/gpu/drm/etnaviv/Kconfig:2:	symbol DRM_ETNAVIV depends on THERMAL
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/thermal/Kconfig:5:	symbol THERMAL is selected by ACPI_VIDEO
-For a resolution refer to Documentation/kbuild/kconfig-language.txt
-subsection "Kconfig recursive dependency limitations"
-drivers/acpi/Kconfig:183:	symbol ACPI_VIDEO is selected by INPUT
-
-This doesn't currently show up as I fixed the 'THERMAL' part of it,
-but I noticed that the FB_STI dependency should not be there but
-was introduced by slightly incorrect bug-fix patch that tried to
-fix a link error.
-
-Instead of selecting 'VT' to make us enter the drivers/video/console
-directory at compile-time, it's sufficient to build the
-drivers/video/console/sticore.c file by adding its directory
-to when CONFIG_FB_STI is enabled. Alternatively, we could move the
-sticore code to another directory that is always built when we
-have at STI_CONSOLE or FB_STI enabled.
-
-Fixes: 17085a934592 ("parisc: stifb: should depend on STI_CONSOLE")
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
- drivers/video/Makefile      | 1 +
- drivers/video/fbdev/Kconfig | 2 --
- 2 files changed, 1 insertion(+), 2 deletions(-)
+ arch/mips/boot/dts/ingenic/ci20.dts | 60 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 60 insertions(+)
 
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 9ad3c17d6456..445b2c230b56 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -2,6 +2,7 @@ obj-$(CONFIG_VGASTATE)            += vgastate.o
- obj-$(CONFIG_HDMI)                += hdmi.o
+ v2: Changed the devicetree bindings to match the new driver
+ v3: No changes
+ v4: No changes
+ v5: No changes
+
+diff --git a/arch/mips/boot/dts/ingenic/ci20.dts b/arch/mips/boot/dts/ingenic/ci20.dts
+index 1652d8d60b1e..fd138d9978c1 100644
+--- a/arch/mips/boot/dts/ingenic/ci20.dts
++++ b/arch/mips/boot/dts/ingenic/ci20.dts
+@@ -29,18 +29,30 @@
  
- obj-$(CONFIG_VT)		  += console/
-+obj-$(CONFIG_FB_STI)		  += console/
- obj-$(CONFIG_LOGO)		  += logo/
- obj-y				  += backlight/
+ &uart0 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart0>;
+ };
  
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 4e36e14d878f..a5797a697114 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -680,8 +680,6 @@ config FB_STI
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	select STI_CONSOLE
--	select VT
- 	default y
- 	---help---
- 	  STI refers to the HP "Standard Text Interface" which is a set of
+ &uart1 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart1>;
+ };
+ 
+ &uart3 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart2>;
+ };
+ 
+ &uart4 {
+ 	status = "okay";
++
++	pinctrl-names = "default";
++	pinctrl-0 = <&pins_uart4>;
+ };
+ 
+ &nemc {
+@@ -61,6 +73,13 @@
+ 		ingenic,nemc-tAW = <15>;
+ 		ingenic,nemc-tSTRV = <100>;
+ 
++		/*
++		 * Only CLE/ALE are needed for the devices that are connected, rather
++		 * than the full address line set.
++		 */
++		pinctrl-names = "default";
++		pinctrl-0 = <&pins_nemc>;
++
+ 		nand@1 {
+ 			reg = <1>;
+ 
+@@ -69,6 +88,9 @@
+ 			nand-ecc-mode = "hw";
+ 			nand-on-flash-bbt;
+ 
++			pinctrl-names = "default";
++			pinctrl-0 = <&pins_nemc_cs1>;
++
+ 			partitions {
+ 				compatible = "fixed-partitions";
+ 				#address-cells = <2>;
+@@ -106,3 +128,41 @@
+ &bch {
+ 	status = "okay";
+ };
++
++&pinctrl {
++	pins_uart0: uart0 {
++		function = "uart0";
++		groups = "uart0-data";
++		bias-disable;
++	};
++
++	pins_uart1: uart1 {
++		function = "uart1";
++		groups = "uart1-data";
++		bias-disable;
++	};
++
++	pins_uart2: uart2 {
++		function = "uart2";
++		groups = "uart2-data", "uart2-hwflow";
++		bias-disable;
++	};
++
++	pins_uart4: uart4 {
++		function = "uart4";
++		groups = "uart4-data";
++		bias-disable;
++	};
++
++	pins_nemc: nemc {
++		function = "nemc";
++		groups = "nemc-data", "nemc-cle-ale", "nemc-rd-we", "nemc-frd-fwe";
++		bias-disable;
++	};
++
++	pins_nemc_cs1: nemc-cs1 {
++		function = "nemc-cs1";
++		groups = "nemc-cs1";
++		bias-disable;
++	};
++};
 -- 
-2.9.0
+2.11.0
 

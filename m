@@ -1,64 +1,41 @@
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-Date: Tue, 04 Apr 2017 10:54:35 +0000
-Subject: [PATCH v2] backlight: pwm_bl: Fix GPIO out for unimplemented .get_direction()
-Message-Id: <1491303275-27180-1-git-send-email-geert+renesas@glider.be>
+From: "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Date: Fri, 28 Apr 2017 10:33:47 +0000
+Subject: Re: [PATCH] staging: sm750fb: Combine set GPIO 30 & 31 into one statement
+Message-Id: <20170428103347.GA7868@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CO2PR07MB633E8089233A3B02B79D979931E0@CO2PR07MB633.namprd07.prod.outlook.com>
+In-Reply-To: <CO2PR07MB633E8089233A3B02B79D979931E0@CO2PR07MB633.namprd07.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Philipp Zabel <p.zabel@pengutronix.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
+To: Lynn Lei <lynnl.jr@outlook.com>
+Cc: "sudipm.mukherjee@gmail.com" <sudipm.mukherjee@gmail.com>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "teddy.wang@siliconmotion.com" <teddy.wang@siliconmotion.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Commit 7613c922315e308a ("backlight: pwm_bl: Move the checks for initial
-power state to a separate function") not just moved some code, but made
-slight changes in semantics.
+On Tue, Apr 25, 2017 at 03:53:02PM +0000, Lynn Lei wrote:
+> Combine two separate set GPIO(30 & 31) operations into one statement.
 
-If a gpiochip doesn't implement the optional .get_direction() callback,
-gpiod_get_direction always returns -EINVAL, which is never equal to
-GPIOF_DIR_IN, leading to the GPIO not being configured for output.
+Why?
 
-To avoid this, invert the test and check for not GPIOF_DIR_OUT instead,
-like the original code did.
+> 
+> Signed-off-by: Lynn Lei <lynnl.jr@outlook.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_hwi2c.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> diff --git a/drivers/staging/sm750fb/ddk750_hwi2c.c b/drivers/staging/sm750fb/ddk750_hwi2c.c
+> index 68716ef7cb06..ddb7a6dc265a 100644
+> --- a/drivers/staging/sm750fb/ddk750_hwi2c.c
+> +++ b/drivers/staging/sm750fb/ddk750_hwi2c.c
+> @@ -49,8 +49,7 @@ void sm750_hw_i2c_close(void)
+>  
+>  	/* Set GPIO 30 & 31 back as GPIO pins */
+>  	value = peek32(GPIO_MUX);
+> -	value &= ~GPIO_MUX_30;
+> -	value &= ~GPIO_MUX_31;
+> +	value &= ~(GPIO_MUX_30 | GPIO_MUX_31);
 
-This restores the display on r8a7740/armadillo.
+Why does this matter?
 
-Fixes: 7613c922315e308a ("backlight: pwm_bl: Move the checks for initial power state to a separate function")
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
----
-This fixes a regression introduced in v4.11-rc1.
+thanks,
 
-v2:
-  - Add Reviewed-by, Acked-by.
-
- drivers/video/backlight/pwm_bl.c | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index d7efcb632f7d9dde..002f1ce22bd02032 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -297,14 +297,15 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	}
- 
- 	/*
--	 * If the GPIO is configured as input, change the direction to output
--	 * and set the GPIO as active.
-+	 * If the GPIO is not known to be already configured as output, that
-+	 * is, if gpiod_get_direction returns either GPIOF_DIR_IN or -EINVAL,
-+	 * change the direction to output and set the GPIO as active.
- 	 * Do not force the GPIO to active when it was already output as it
- 	 * could cause backlight flickering or we would enable the backlight too
- 	 * early. Leave the decision of the initial backlight state for later.
- 	 */
- 	if (pb->enable_gpio &&
--	    gpiod_get_direction(pb->enable_gpio) = GPIOF_DIR_IN)
-+	    gpiod_get_direction(pb->enable_gpio) != GPIOF_DIR_OUT)
- 		gpiod_direction_output(pb->enable_gpio, 1);
- 
- 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
--- 
-2.7.4
-
+greg k-h

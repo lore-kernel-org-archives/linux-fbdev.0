@@ -1,11 +1,11 @@
 From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 02 Apr 2017 20:42:40 +0000
-Subject: [PATCH v4 10/14] mmc: jz4740: Let the pinctrl driver configure the pins
-Message-Id: <20170402204244.14216-11-paul@crapouillou.net>
+Date: Fri, 28 Apr 2017 20:08:20 +0000
+Subject: [PATCH v5 10/14] mmc: jz4740: Let the pinctrl driver configure the pins
+Message-Id: <20170428200824.10906-11-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net>
- <20170402204244.14216-1-paul@crapouillou.net>
-In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
+References: <20170402204244.14216-2-paul@crapouillou.net>
+ <20170428200824.10906-1-paul@crapouillou.net>
+In-Reply-To: <20170428200824.10906-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -24,6 +24,7 @@ Acked-by: Ulf Hansson <ulf.hansson@linaro.org>
  v2: Set pin sleep/default state in suspend/resume callbacks
  v3: No changes
  v4: Re-insert accidentally removed <linux/gpio.h> include
+ v5: No changes
 
 diff --git a/drivers/mmc/host/jz4740_mmc.c b/drivers/mmc/host/jz4740_mmc.c
 index 819ad32964fc..42b3ee566dc7 100644

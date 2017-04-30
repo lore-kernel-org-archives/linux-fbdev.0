@@ -1,43 +1,35 @@
-From: Paul Cercueil <paul@crapouillou.net>
-Date: Sun, 02 Apr 2017 20:42:35 +0000
-Subject: [PATCH v4 05/14] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
-Message-Id: <20170402204244.14216-6-paul@crapouillou.net>
+From: Karim Eshapa <karim.eshapa@gmail.com>
+Date: Sun, 30 Apr 2017 16:42:43 +0000
+Subject: [PATCH] drivers:video:fbdev:omap:lcd_mipid.c: Use time comparison kernel macros
+Message-Id: <1493570563-7188-1-git-send-email-karim.eshapa@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170125185207.23902-2-paul@crapouillou.net>
- <20170402204244.14216-1-paul@crapouillou.net>
-In-Reply-To: <20170402204244.14216-1-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>
-Cc: Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
+To: tomi.valkeinen@ti.com
+Cc: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
 
-There is a pinctrl driver for each of the Ingenic SoCs supported by the
-upstream Linux kernel. In order to switch away from the old GPIO
-platform code, we now enable the pinctrl drivers by default for the
-Ingenic SoCs.
+Use time_before_eq time comparison defind kernel macro
+that has safety check.
 
-Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
 ---
- arch/mips/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/omap/lcd_mipid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- v2: No changes
- v3: No changes
- v4: No changes
-
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index a008a9f03072..b88cf931b829 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -363,6 +363,7 @@ config MACH_INGENIC
- 	select SYS_SUPPORTS_ZBOOT_UART16550
- 	select DMA_NONCOHERENT
- 	select IRQ_MIPS_CPU
-+	select PINCTRL
- 	select GPIOLIB
- 	select COMMON_CLK
- 	select GENERIC_IRQ_CHIP
+diff --git a/drivers/video/fbdev/omap/lcd_mipid.c b/drivers/video/fbdev/omap/lcd_mipid.c
+index c81f150..df9e6eb 100644
+--- a/drivers/video/fbdev/omap/lcd_mipid.c
++++ b/drivers/video/fbdev/omap/lcd_mipid.c
+@@ -174,7 +174,7 @@ static void hw_guard_wait(struct mipid_device *md)
+ {
+ 	unsigned long wait = md->hw_guard_end - jiffies;
+ 
+-	if ((long)wait > 0 && wait <= md->hw_guard_wait) {
++	if ((long)wait > 0 && time_before_eq(wait,  md->hw_guard_wait)) {
+ 		set_current_state(TASK_UNINTERRUPTIBLE);
+ 		schedule_timeout(wait);
+ 	}
 -- 
-2.11.0
+2.7.4
 

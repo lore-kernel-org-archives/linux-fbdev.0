@@ -1,88 +1,24 @@
-From: Jiri Kosina <jikos@kernel.org>
-Date: Fri, 05 May 2017 13:35:29 +0000
-Subject: Re: [PATCH] Implement driver for Topaz signature pads
-Message-Id: <alpine.LSU.2.20.1705051532590.26873@cbobk.fhfr.pm>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 02 May 2017 11:24:40 +0000
+Subject: Re: [PATCH v2] video: fbdev: udlfb: Fix buffer on stack
+Message-Id: <26682216.dMGF8KnooD@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170407221018.vvav4f46e5c6ojfh@debian>
-In-Reply-To: <20170407221018.vvav4f46e5c6ojfh@debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org, benjamin.tissoires@redhat.com, b.zolnierkie@samsung.com
+To: linux-fbdev@vger.kernel.org
 
-On Fri, 7 Apr 2017, Alyssa Rosenzweig wrote:
+On Monday, April 24, 2017 11:13:49 AM Maksim Salau wrote:
+> Allocate buffers on HEAP instead of STACK for local array
+> that is to be sent using usb_control_msg().
+> 
+> Signed-off-by: Maksim Salau <maksim.salau@gmail.com>
 
-> diff --git a/drivers/hid/hid-topaz.c b/drivers/hid/hid-topaz.c
-> new file mode 100644
-> index 000000000000..92a8f34a367f
-> --- /dev/null
-> +++ b/drivers/hid/hid-topaz.c
-[ ... snip ... ]
-> +static int topaz_send(struct hid_device *dev, u8 *packet, size_t sz)
-> +{
-> +	int ret;
-> +
-> +	u8 *buf = kmemdup(packet, sz, GFP_KERNEL);
-> +
-> +	if (!buf)
-> +		return -ENOMEM;
-> +
-> +	if (!dev->ll_driver->output_report)
-> +		return -ENODEV;
+Patch queued for 4.12, thanks.
 
-Memory pointed to by *buf is leaked here.
-
-> +static int topazfb_probe(struct hid_device *dev)
-> +{
-> +	struct fb_info *info;
-> +	struct topazfb_par *par;
-> +
-> +	info = framebuffer_alloc(sizeof(struct topazfb_par), NULL);
-> +
-> +	par = info->par;
-> +	par->hid = dev;
-> +
-> +	info->fbops = &topazfb_ops;
-> +	info->fix = topazfb_fix;
-> +	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_IMAGEBLIT
-> +				     | FBINFO_HWACCEL_FILLRECT;
-> +
-> +	/* this is only a pseudo frame buffer device */
-> +	info->screen_base = NULL;
-> +	info->screen_size = 0;
-> +
-> +	/* LBK766 is 320x240; other models may differ */
-> +	info->var.xres = 320;
-> +	info->var.yres = 240;
-> +
-> +	info->var.bits_per_pixel = 1;
-> +	info->var.grayscale = 1;
-> +	info->var.red.offset = 0;
-> +	info->var.red.length = 1;
-> +	info->var.green.offset = 0;
-> +	info->var.green.length = 1;
-> +	info->var.blue.offset = 0;
-> +	info->var.blue.length = 1;
-> +	info->var.transp.offset = 0;
-> +	info->var.transp.length = 1;
-> +
-> +	if (register_framebuffer(info) < 0)
-> +		return -EINVAL;
-
-Another leak (*info) here?
-
-[ ... snip ... ]
-> +static const struct hid_device_id topaz_devices[] = {
-> +	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPAZ, USB_DEVICE_ID_TOPAZ_LBK766) },
-> +	{ }
-> +};
-
-You have to add this to hid_have_special_driver[] as well
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

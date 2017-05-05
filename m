@@ -1,69 +1,88 @@
-From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Wed, 10 May 2017 21:55:55 +0000
-Subject: [PATCH 5/9] staging: sm750fb: Remove typedef from "typedef enum _logical_chip_type_t"
-Message-Id: <1494453359-3722-6-git-send-email-mdujava@kocurkovo.cz>
+From: Jiri Kosina <jikos@kernel.org>
+Date: Fri, 05 May 2017 13:35:29 +0000
+Subject: Re: [PATCH] Implement driver for Topaz signature pads
+Message-Id: <alpine.LSU.2.20.1705051532590.26873@cbobk.fhfr.pm>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170407221018.vvav4f46e5c6ojfh@debian>
+In-Reply-To: <20170407221018.vvav4f46e5c6ojfh@debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org, benjamin.tissoires@redhat.com, b.zolnierkie@samsung.com
 
-This patch removes typedefs from enum and renames it from "typedef enum
-_logical_chip_type_t" to "enum logical_chip_type" as per kernel coding
-standards.
+On Fri, 7 Apr 2017, Alyssa Rosenzweig wrote:
 
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
----
- drivers/staging/sm750fb/ddk750_chip.c | 4 ++--
- drivers/staging/sm750fb/ddk750_chip.h | 8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
+> diff --git a/drivers/hid/hid-topaz.c b/drivers/hid/hid-topaz.c
+> new file mode 100644
+> index 000000000000..92a8f34a367f
+> --- /dev/null
+> +++ b/drivers/hid/hid-topaz.c
+[ ... snip ... ]
+> +static int topaz_send(struct hid_device *dev, u8 *packet, size_t sz)
+> +{
+> +	int ret;
+> +
+> +	u8 *buf = kmemdup(packet, sz, GFP_KERNEL);
+> +
+> +	if (!buf)
+> +		return -ENOMEM;
+> +
+> +	if (!dev->ll_driver->output_report)
+> +		return -ENODEV;
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 944dd25..1d62c2d 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -7,9 +7,9 @@
- 
- #define MHz(x) ((x) * 1000000)
- 
--static logical_chip_type_t chip;
-+static enum logical_chip_type chip;
- 
--logical_chip_type_t sm750_get_chip_type(void)
-+enum logical_chip_type sm750_get_chip_type(void)
- {
- 	return chip;
- }
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index 2c7a9b9..f2eee2b 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -23,13 +23,13 @@ static inline void poke32(u32 data, u32 addr)
- }
- 
- /* This is all the chips recognized by this library */
--typedef enum _logical_chip_type_t {
-+enum logical_chip_type {
- 	SM_UNKNOWN,
- 	SM718,
- 	SM750,
- 	SM750LE,
--}
--logical_chip_type_t;
-+};
-+
- 
- typedef enum _clock_type_t {
- 	MXCLK_PLL,
-@@ -93,7 +93,7 @@ struct initchip_param {
- 	/* More initialization parameter can be added if needed */
- };
- 
--logical_chip_type_t sm750_get_chip_type(void);
-+enum logical_chip_type sm750_get_chip_type(void);
- void sm750_set_chip_type(unsigned short devId, u8 revId);
- unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
- unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
+Memory pointed to by *buf is leaked here.
+
+> +static int topazfb_probe(struct hid_device *dev)
+> +{
+> +	struct fb_info *info;
+> +	struct topazfb_par *par;
+> +
+> +	info = framebuffer_alloc(sizeof(struct topazfb_par), NULL);
+> +
+> +	par = info->par;
+> +	par->hid = dev;
+> +
+> +	info->fbops = &topazfb_ops;
+> +	info->fix = topazfb_fix;
+> +	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_IMAGEBLIT
+> +				     | FBINFO_HWACCEL_FILLRECT;
+> +
+> +	/* this is only a pseudo frame buffer device */
+> +	info->screen_base = NULL;
+> +	info->screen_size = 0;
+> +
+> +	/* LBK766 is 320x240; other models may differ */
+> +	info->var.xres = 320;
+> +	info->var.yres = 240;
+> +
+> +	info->var.bits_per_pixel = 1;
+> +	info->var.grayscale = 1;
+> +	info->var.red.offset = 0;
+> +	info->var.red.length = 1;
+> +	info->var.green.offset = 0;
+> +	info->var.green.length = 1;
+> +	info->var.blue.offset = 0;
+> +	info->var.blue.length = 1;
+> +	info->var.transp.offset = 0;
+> +	info->var.transp.length = 1;
+> +
+> +	if (register_framebuffer(info) < 0)
+> +		return -EINVAL;
+
+Another leak (*info) here?
+
+[ ... snip ... ]
+> +static const struct hid_device_id topaz_devices[] = {
+> +	{ HID_USB_DEVICE(USB_VENDOR_ID_TOPAZ, USB_DEVICE_ID_TOPAZ_LBK766) },
+> +	{ }
+> +};
+
+You have to add this to hid_have_special_driver[] as well
+
+Thanks,
+
 -- 
-1.8.3.1
+Jiri Kosina
+SUSE Labs
 

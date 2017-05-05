@@ -1,84 +1,32 @@
-From: <xa0admin@abbotslangleyprimary.com>
-Date: Tue, 02 May 2017 09:32:45 +0000
-Subject: 43110 linux-fbdev
-Message-Id: <149371756526.23201.17094428083037042044@cross.net.id>
+From: Rob Herring <robh@kernel.org>
+Date: Fri, 05 May 2017 19:57:24 +0000
+Subject: Re: [PATCH v5 02/14] dt/bindings: Document gpio-ingenic
+Message-Id: <20170505195724.mph4uov3vd52hscm@rob-hp-laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170402204244.14216-2-paul@crapouillou.net>
+ <20170428200824.10906-1-paul@crapouillou.net>
+ <20170428200824.10906-3-paul@crapouillou.net>
+In-Reply-To: <20170428200824.10906-3-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Paul Cercueil <paul@crapouillou.net>
+Cc: Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, james.hogan@imgtec.com, linux-gpio@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-UEsDBAoAAAAAADtLokonrv6T0g8AANIPAAAJAAAAMjQwMTYuemlwUEsDBBQAAAAIADtLokqEx5aR
-PA8AAJpUAAAIAAAAMjQwMTYuanOlHGtz2kbwe2f6H1Rm2og65yTG4KTYncHH0y8cwBDX0w8YBMI8
-hCQexmn+e/dWsjHosYszYwtJu7e3t7ev2zvozSed2cCaaI61qpc6cvS4GOeK5Z4+e+oOHi7Oql8f
-3UurXnuvdarfBs7lsu3eVKaNmZVPat+1X39xjNncmWhb2PuOMR21O4ZeM/qFx6m+3fa9lugnknBN
-JLPaj19/WbQdLW82vp4Z047TrNmlx/m9dqK9s1fOxeLd3q+/vKsMr/q16nxy/dg1z+7x1W1+/K3R
-PpXnxcICETdxXoHbzms4Ng4iafObOqAhdJMWvtrAnXyb+RQR9oKKT5tkS/GsDZx4+FUEGHvycayG
-QsI30YRMe4UYEXLAhzX27ZP2qmMEBmji22LhRJvED8FYbpOKnIJ4QrkYMFIEHFDmhfEtBBERtiVX
-XSPi60iy9w/GMyq+ipmNTvwgZnoiHqG+AUbKwcmMJ1FY200kDkJHo3hC+wFwcP5z8SSmISLGm23E
-64ttNYmS8MAXMb6j0WMYRDScFcJK48HVLTCSZRqyD04wPFQyoIIbOPgWEbOxfSEeZWvgkQkMwuor
-jbUSxg/reszRZgDHeFnPRT/UGVLs2QggET0xlZqvfSt+bgWGoLM4l/EDuo8HtxhG5zIGOiQm8CQe
-vJNbD3NU+GYnt44tQnE6DI82G3jTZDBk4zkIz29EcYfAF5ljDOjgbfRwGK5EZwT0RLxE8OVa3Vr1
-jsOIGZUpd75mZDrhS2T/tR/Ga1zS5JqEQo1GiWACFvSCWYYEtRiPjPfrAeOVkUOuwZEhDF+++E18
-IiMGYkUrau4mKpfZ9jqV1XwjLOJHeO+PQZqIvTHes8tQgSDiC5bnS3vExBacyOnAO3Zi48k0VEnw
-TYgmNEda1GjxujZ13yvive/88D7YMtoNBu1058QWW0XQ6ZC+6tn/xK+XfE8Zt4YJDvTbbklQmAu4
-f2DYRkymvY4Hu3nZUGtNuIzEsLOdlMZG/hoj9FTiOb9m5G6zwU+lZv39IpHuMsLcyHCf7TBU0Hi3
-7S5u6zNGcmOMLYi1RBLVeOXsWEl1SCSJBDOyaMqmCZ84jwerooznW2PRLE/HOBGn7K//YzPPCqPP
-p9ec0+k1PtHr3GAalZfshWWkJgVXFsGQU7plRMNuwLAjPFyxGs/113jwAyPP9eSrM7LmZKQXxFu2
-Ln/3YqJDhPnZT6m8M6HGjqBnbsnVmApJDBXJRZaA8HEruN5UVowwN/dsgC4KPDL0s30WL7dLRqiz
-CZs1GCl1gZg+rq6ZjOAyjAc3idC0v17AxGsSEQctop8uw+8ajNqQw6hwvIifndLvUMByCV/s7pRt
-haalifpZvvxaXvGFVLyhnUbJ5eRLp4x5+kZIsBim33gl8+BNfQiCwxci9ohIgBY7VBTJ2BCqc1ki
-LvwgMqSfzIEYCytqHTCwiD60/vD8lNzqAC/M8NQP3RFj6VJnKKNR3uhu1/p/zj4bMMyCU2i8YaQZ
-1g7eAanEVbOWu2d92JRfau83bwZebwZjQ6k1zpc9edkWw5W7O1pdWO2KsYj8rjHm18EPRr5iMCZ5
-FsUV3vOt2pkQTqNOWOO6TOn8VMyb9Pd7jNTJiV9nrtmxxtKmVz1mmxCPtJ6X1awMpmvoURax7Z6W
-DBc29b1ShNLgNT4T83AC4R9vb2x6dTPw16nbOoAf4UHgnIy4iEv6OmXqVBLAShiR3htzrSQR9fDq
-Becf/sDILslAPPE2NmaMQAjzQ541sCa7lU7CHKkZsW2LuM9I563Vtkrh7aYq4seWtc4D23px/RSa
-NSKBLjJ2LsaMhKbKqEnWG4wyjc6Yy4J9Wo0v8q87NSY/tan5tOUbg7EIb1/32K6/qZSyMXHmLBcu
-h6ArqzGc03tG9oHPGiO7bnSKpGcCe2u7DGu53z1rel0eqDJy0h5R+OuaDNV9nLzV+4U5DiQbui/1
-PZ4OWcpiZFczf/JIbzh3qDXIs+9gnFnyQ1WBdiUel7bPJekLvHZvWLxGrdiQYJS6PrWf+cIrZcZ1
-Rmb1dcclU4hFznI1BtZ+x9xpqziQ4jEGI+Pd8jr/s8ikzteY7o4zi81CLCs30xkFvAZj1dEhcq3B
-T0nZvX+J8KF84CffQzJWSFWb3BDCxrwoGZjNtZ993KKE95G2M0nSRQmEcDe84oLEjwWl/NpVjYhV
-tzZ97uCC9n+FHEMHTYajbzImrsNI/I0zxsDGFcKwHrxZ5BTHqPNfGqIeMfKejwcZRjp5dBhzqgXv
-gjym0x+OGDWRFwbwZSzqUfyoD+PB6beCuacvCxpDC6C0ywuMcEqT1jyEUR7uZkbUFC8YZanlPcOe
-Tml/VPDCm98Lo0rz6jgfg/oVI6O+3GXHBAmE02lG5Kz4GZz5E40x2kQiS51WY8Ro5yVAEsmIxnCA
-TUJcDH5K8eDrcdFm1B66i1mbcKHDJ9pmClesSk9sMCzkGAV2jaGvJwzT03jpbxy/OQQyjpKe/8QB
-5ufzC4zS+3zHc+FbGllj6JxbHO96qm1zM6fhr2PI+dEZYXbCmOcKY34ajAm4Hvuck56QkPPZAyGi
-HmH22GeTTtbwBaV78p5RomkxVnmcw4FDRjawXyMWXp7dMziqxc08PtKr9HVxjSGmLvVVpTJjuXLO
-8NkXl2/ayt7IhPZe+iGCZ39z1nZ1bqftB2IpParTR4rIiULx7lSjNhmCztmELQ9ajOLEDWvDF5vH
-28YXhp86CBsWPu9WOtxLuBa9QN/0vhEaNFu2nzMi6tygQ0xxYo/Yq44HDylljXEreMsspuyi8pzz
-DNg3WaHb7bt8WKZhOIoNHQ9Vb17mF6X8XxhLoANGRp1kiGxPeUZ6xwnbvnGbvEMsIiyXsYlh9chv
-bPqYnC3IhLf9RQe5PYZL7DPyKY/t85AaIN4FQwTDr8FhIUb0JO0KtknX3jZ+FGcMrgYMG2zdMKyM
-thJ6C/OAdOnx8OWAcbJ70qVtEcHUkJbcQOWuJyxehhpDQSazN4QQpBHMZr0lKcMATxla0n54ZfKx
-eW13xMg56krVGd7MGwIjuSWsYcA8HEe7PtIQtrOOCPM9YIw+yagt7jGMIuEPjJRiZx6wnmf2+Wec
-8Y6dMk2IQuXCcBgR2B0QUX6SIJwPo5M+Y81PrUZOGWer25wvlURXzOKs+XU3I/YPV2Aj1jZjSNkH
-DJ0h200bJ4Nd4AvAa0O/YVTgLITp8X1+iU8l1iM8YOQlyb0EQwruilNZnRkvu+1vPqLkZ3sMz4rP
-nsC4qQlh0gkiEXhPFD+vaoygRuyP3F7kuD/5Y9p0StlkePOOwdNxJPKmCfWUqNLYwX9ElCX7E0a8
-TGbfeb/1ZPeuG3L4rd1pnpeK1tnU1E7gt6QSpliJrrDEXmIPnsSjLYW56ImuFK4whdz7Xay6Qoq5
-nk49LYa6h5WWKT0jZAmfpNDTImVL8wlw8j0hl/h6tJKmuJOiZogx0Owt9bSPntXTafm0ED05lyNX
-LoUuEJKWZbkYQq+WJfW0FGkApKHvY6lnvH5lATqTeJ+SJT0l8xLYl9251BVPCzEUqmUKGkjhcQcQ
-RSklhW2KJ6lIpoTM95YjaGre1aQwxhIG2luqllk1lvRiaFpSABMyXfaIdIXrCmmJkehBd8uRcGwg
-5HEoj4USRkHoKVHyRqJLkcqvunKOA0idy1ZL1gV2rngDNCANMjOl4ggYymMz4GEkVnirZH9XM8am
-7EmxBGwQGnQlrmXzDi6IUwUGMyL9Ij1RlnfX1fOWbElRhyZpD01PH0MneJspKCZkqqQDf3LVnetK
-Ms2lmJuiOwXZKUmh7JQUhS0VG09ACsSXF4q9Fby5q3ky64kloOFs5ktAuFZCKShGmktFUUxBEACF
-Xo5h1Cghj6eSJyGQK7AAL10JGrccQmPovoR8PE+z0rp0uSld6HDUhVmpOMLqm3MEL1CQWamuMt0y
-xVSRsrqeCgLzC1Sk5/GryQJmCoDuP4N2fC7q8AdswtuCQEpZX3LCQ8uC3IHVpRwC2wAugz3Irt2X
-zlT3MVQ3x8B+HqR3LAEtIzy9OIY5UqNXn8fY/Fj1AxAEQytgISPxCRr+VdQzKTVj0HcBBIcaVjbF
-d1M9APGCnoLpkULNoDeGc9ESUukXEFKyrwkQlY1ygQuO/gwxyy20jjRQhPGmUNURMJRLsEIXoJm8
-EkAFIBWxEKbsDoUzNVeeOAyYB1BGx1VkK13ZF9ORDahl1XQoXWhekQPgPOPbnlIoT++OgGxGAucK
-eIRMpIsCjXaAGDCx0J+ngUpMSlNxQMp4ZEvA8LCnppCmLaBrHSzC7wSkBdQLSpdHA+gIiKItK0uo
-45DL0GzZhTE+LlDF0QTVRbV5tg0B4gWQUBdF1GNdmawu/yrAqxRoLZiN12tzKeemVDoOPaJOKLnb
-akhZdRHHyD9qPYyiKcDIgHfwpVMAw1T854J8cRoACSxnw7Uerj2eQFOUqkMxBwJSWZUSxT/zEbxS
-NACaBTFhC+9aV8K6MT0aC1c4wgbxFuCzL/9Dj6j0TaLMYFC+K1VSQiana4MpK9FLByxpBC7TATeK
-XllxqYwYeUM9xsn1vQxi+J5FKNeiBAqToOS1ApZbDugX+DoLvAjaRNbtgnUBN0Xv2Y8UKBxU2GMg
-ruimSkLxqkgt4d+jLpQMQDWLQNBZmL7Lz6LfwWYwHUqEEFyUCjfF0KdvWsKCAX5XXvZxibLMClcp
-isIEejA/vh6m5Yu6qT8g6dtQGv/wATpW9uYoRXjBBlyEgpQO1UAUvYwybSWwv0q/v3//dyL76y+D
-nqZPjKWWb88MPXmX6BtQZUjcGm0n8a+e1E5ONAXNOU57pScOPgLs01EieffxX+83ITUV4keV25uL
-fKP4tX1frs9LjxDhjUV7pG//zuT2zz7Cj0JSyaD3m5E9y9F01dOp2YPCcLV+MW7dzs8c+wq6+pgN
-eX0czDv2R8akPzNDsPf21GCualNI/MxmxzgbVxoP/QnQNnPwtYM57C/D5nG13tADRN8HqSU1oX36
-8vnTwYfU59TH1MGfTbekDjSo0wpwHuHKKuR8uevBLn870VKpT4eZww+H6aOjVCakcVL74w8tounH
-o8N05sPB0efMS7/BpuVW5alXhx9dmI5Lt91i9evDypvpXnvkGkkli+nNLHexvD89n1xXry7dprZ3
-gt+ebEMp0yvPnMFiygphQ02Y/yuf5xcPEzvXqj1d3j+as/zgWS22iSez/wNQSwECPwAUAAAACAA7
-S6JKhMeWkTwPAACaVAAACAAkAAAAAAAAACAAAAAAAAAAMjQwMTYuanMKACAAAAAAAAEAGAC56unE
-YMPSAbnq6cRgw9IBEojIxGDD0gFQSwUGAAAAAAEAAQBaAAAAYg8AAAAAUEsBAj8ACgAAAAAAO0ui
-Sieu/pPSDwAA0g8AAAkAJAAAAAAAAAAgAAAAAAAAADI0MDE2LnppcAoAIAAAAAAAAQAYAOdL7MRg
-w9IB50vsxGDD0gGB6srEYMPSAVBLBQYAAAAAAQABAFsAAAD5DwAAAAA
+On Fri, Apr 28, 2017 at 10:08:12PM +0200, Paul Cercueil wrote:
+> This commit adds documentation for the devicetree bindings of the
+> gpio-ingenic driver, which handles GPIOs of the Ingenic SoCs
+> currently supported by the Linux kernel.
+> 
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> ---
+>  .../devicetree/bindings/gpio/ingenic,gpio.txt      | 46 ++++++++++++++++++++++
+>  1 file changed, 46 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/gpio/ingenic,gpio.txt
+> 
+>  v2: New patch
+>  v3: No changes
+>  v4: Update for the v4 version of the gpio-ingenic driver
+>  v5: Remove gpio-bank-... compatible strings, and add 'reg' property
+
+Acked-by: Rob Herring <robh@kernel.org>

@@ -1,55 +1,62 @@
-From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Wed, 10 May 2017 21:55:59 +0000
-Subject: [PATCH 9/9] staging: sm750fb: Remove typedef from "typedef enum _sii164_hot_plug_mode_t"
-Message-Id: <1494453359-3722-10-git-send-email-mdujava@kocurkovo.cz>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 05 May 2017 19:47:20 +0000
+Subject: [PATCH 3.16-stable 62/87] video: mx3fb: always enable BACKLIGHT_LCD_SUPPORT
+Message-Id: <20170505194745.3627137-63-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170505194745.3627137-1-arnd@arndb.de>
+In-Reply-To: <20170505194745.3627137-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Ben Hutchings <ben@decadent.org.uk>
+Cc: stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Alexander Stein <alexander.stein@systec-electronic.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 
-This patch removes typedefs from enum and renames it from "typedef enum
-_sii164_hot_plug_mode_t" to "enum sii164_hot_plug_mode" as per kernel
-coding standards.
+Commit d06268f2c4867279648f499a31fba79a4066f3af upstream.
 
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+Commit 7edaa761ee81b ("video: mx3fb: Add backlight control support")
+changed the mx3fb driver so it always selects the BACKLIGHT_CLASS_DEVICE
+symbol, but that is hidden behind BACKLIGHT_LCD_SUPPORT in Kconfig, so
+we get a Kconfig warning for multi_v5_defconfig, which doesn't have that:
+
+Warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
+DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
+&& FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
+EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
+which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
+
+This makes sure we always enable both symbols together for mx3fb, like
+we do for the other drivers that can't be built without backlight
+support. Note that a better solution would be to ensure the driver can
+work with or without backlight support.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Alexander Stein <alexander.stein@systec-electronic.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/staging/sm750fb/ddk750_sii164.c | 2 +-
- drivers/staging/sm750fb/ddk750_sii164.h | 4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
-index 0431833..f7bf84e8 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.c
-+++ b/drivers/staging/sm750fb/ddk750_sii164.c
-@@ -296,7 +296,7 @@ void sii164SetPower(unsigned char powerUp)
-  *  sii164SelectHotPlugDetectionMode
-  *      This function selects the mode of the hot plug detection.
-  */
--static void sii164SelectHotPlugDetectionMode(sii164_hot_plug_mode_t hotPlugMode)
-+static void sii164SelectHotPlugDetectionMode(enum sii164_hot_plug_mode hotPlugMode)
- {
- 	unsigned char detectReg;
- 
-diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
-index 6968cf5..e06ba72 100644
---- a/drivers/staging/sm750fb/ddk750_sii164.h
-+++ b/drivers/staging/sm750fb/ddk750_sii164.h
-@@ -4,12 +4,12 @@
- #define USE_DVICHIP
- 
- /* Hot Plug detection mode structure */
--typedef enum _sii164_hot_plug_mode_t {
-+enum sii164_hot_plug_mode {
- 	SII164_HOTPLUG_DISABLE = 0,         /* Disable Hot Plug output bit (always high). */
- 	SII164_HOTPLUG_USE_MDI,             /* Use Monitor Detect Interrupt bit. */
- 	SII164_HOTPLUG_USE_RSEN,            /* Use Receiver Sense detect bit. */
- 	SII164_HOTPLUG_USE_HTPLG            /* Use Hot Plug detect bit. */
--} sii164_hot_plug_mode_t;
-+};
- 
- 
- /* Silicon Image SiI164 chip prototype */
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index fac73ceb90e5..3b453c34f7a2 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2332,10 +2332,11 @@ config FB_MSM
+ config FB_MX3
+ 	tristate "MX3 Framebuffer support"
+ 	depends on FB && MX3_IPU
++	select BACKLIGHT_CLASS_DEVICE
++	select BACKLIGHT_LCD_SUPPORT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select BACKLIGHT_CLASS_DEVICE
+ 	default y
+ 	help
+ 	  This is a framebuffer device for the i.MX31 LCD Controller. So
 -- 
-1.8.3.1
+2.9.0
 

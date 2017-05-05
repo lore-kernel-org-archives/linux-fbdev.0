@@ -1,84 +1,95 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 12 May 2017 08:08:03 +0000
-Subject: [PATCH 2/3] mdacon: make mda_vram_base u16 *
-Message-Id: <20170512080804.2508-2-jslaby@suse.cz>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 05 May 2017 15:27:06 +0000
+Subject: Re: [PATCH] fbdev: sti: don't select CONFIG_VT
+Message-Id: <3242330.XRvUNh2arJ@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170512080804.2508-1-jslaby@suse.cz>
-In-Reply-To: <20170512080804.2508-1-jslaby@suse.cz>
+References: <CGME20170428195120epcas2p2792c14bbbd4cf86be1b84c7f3d0f2040@epcas2p2.samsung.com>
+        <20170428195151.57706-1-arnd@arndb.de>
+In-Reply-To: <20170428195151.57706-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, jejb@parisc-linux.org, Alexander Beregalov <a.beregalov@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Given every user of mda_vram_base expects a pointer, let
-mda_vram_base be a pointer to u16.
+On Friday, April 28, 2017 09:51:25 PM Arnd Bergmann wrote:
+> While working on another build error, I ran into several variations of
+> this dependency loop:
+> 
+> subsection "Kconfig recursive dependency limitations"
+> drivers/input/Kconfig:8:	symbol INPUT is selected by VT
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/tty/Kconfig:12:	symbol VT is selected by FB_STI
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/video/fbdev/Kconfig:677:	symbol FB_STI depends on FB
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/video/fbdev/Kconfig:5:	symbol FB is selected by DRM_KMS_FB_HELPER
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/gpu/drm/Kconfig:72:	symbol DRM_KMS_FB_HELPER is selected by DRM_KMS_CMA_HELPER
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/gpu/drm/Kconfig:137:	symbol DRM_KMS_CMA_HELPER is selected by DRM_HDLCD
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/gpu/drm/arm/Kconfig:6:	symbol DRM_HDLCD depends on OF
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/of/Kconfig:4:	symbol OF is selected by X86_INTEL_CE
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> arch/x86/Kconfig:523:	symbol X86_INTEL_CE depends on X86_IO_APIC
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> arch/x86/Kconfig:1011:	symbol X86_IO_APIC depends on X86_LOCAL_APIC
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> arch/x86/Kconfig:1005:	symbol X86_LOCAL_APIC depends on X86_UP_APIC
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> arch/x86/Kconfig:980:	symbol X86_UP_APIC depends on PCI_MSI
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/pci/Kconfig:11:	symbol PCI_MSI is selected by AMD_IOMMU
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/iommu/Kconfig:106:	symbol AMD_IOMMU depends on IOMMU_SUPPORT
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/iommu/Kconfig:5:	symbol IOMMU_SUPPORT is selected by DRM_ETNAVIV
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/gpu/drm/etnaviv/Kconfig:2:	symbol DRM_ETNAVIV depends on THERMAL
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/thermal/Kconfig:5:	symbol THERMAL is selected by ACPI_VIDEO
+> For a resolution refer to Documentation/kbuild/kconfig-language.txt
+> subsection "Kconfig recursive dependency limitations"
+> drivers/acpi/Kconfig:183:	symbol ACPI_VIDEO is selected by INPUT
+> 
+> This doesn't currently show up as I fixed the 'THERMAL' part of it,
+> but I noticed that the FB_STI dependency should not be there but
+> was introduced by slightly incorrect bug-fix patch that tried to
+> fix a link error.
+> 
+> Instead of selecting 'VT' to make us enter the drivers/video/console
+> directory at compile-time, it's sufficient to build the
+> drivers/video/console/sticore.c file by adding its directory
+> to when CONFIG_FB_STI is enabled. Alternatively, we could move the
+> sticore code to another directory that is always built when we
+> have at STI_CONSOLE or FB_STI enabled.
+> 
+> Fixes: 17085a934592 ("parisc: stifb: should depend on STI_CONSOLE")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-The offset calculation in mda_detect had to be adjusted by / 2 (due to
-different pointer arithmetic now).
+Patch queued for 4.12, thanks.
 
-We introduce a cast to a value returned from VGA_MAP_MEM. But I will
-change VGA_MAP_MEM to return a pointer later too. But vgacon needs a
-similar change first.
-
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: <linux-fbdev@vger.kernel.org>
----
- drivers/video/console/mdacon.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
-index 424af6bdb408..3ec2b178bb88 100644
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -48,7 +48,7 @@ static DEFINE_SPINLOCK(mda_lock);
- 
- /* description of the hardware layout */
- 
--static unsigned long	mda_vram_base;		/* Base of video memory */
-+static u16		*mda_vram_base;		/* Base of video memory */
- static unsigned long	mda_vram_len;		/* Size of video memory */
- static unsigned int	mda_num_columns;	/* Number of text columns */
- static unsigned int	mda_num_lines;		/* Number of text lines */
-@@ -205,8 +205,8 @@ static int mda_detect(void)
- 
- 	/* do a memory check */
- 
--	p = (u16 *) mda_vram_base;
--	q = (u16 *) (mda_vram_base + 0x01000);
-+	p = mda_vram_base;
-+	q = mda_vram_base + 0x01000 / 2;
- 
- 	p_save = scr_readw(p);
- 	q_save = scr_readw(q);
-@@ -323,7 +323,7 @@ static const char *mdacon_startup(void)
- 	mda_num_lines   = 25;
- 
- 	mda_vram_len  = 0x01000;
--	mda_vram_base = VGA_MAP_MEM(0xb0000, mda_vram_len);
-+	mda_vram_base = (u16 *)VGA_MAP_MEM(0xb0000, mda_vram_len);
- 
- 	mda_index_port  = 0x3b4;
- 	mda_value_port  = 0x3b5;
-@@ -420,7 +420,7 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
- 	}
- }
- 
--#define MDA_ADDR(x,y)  ((u16 *) mda_vram_base + (y)*mda_num_columns + (x))
-+#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
- 
- static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
- {
-@@ -463,7 +463,7 @@ static int mdacon_blank(struct vc_data *c, int blank, int mode_switch)
- {
- 	if (mda_type = TYPE_MDA) {
- 		if (blank) 
--			scr_memsetw((void *)mda_vram_base, 
-+			scr_memsetw(mda_vram_base,
- 				mda_convert_attr(c->vc_video_erase_char),
- 				c->vc_screenbuf_size);
- 		/* Tell console.c that it has to restore the screen itself */
--- 
-2.13.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

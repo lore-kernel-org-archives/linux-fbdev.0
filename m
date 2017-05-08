@@ -1,51 +1,43 @@
-From: Michal Hocko <mhocko@kernel.org>
-Date: Wed, 17 May 2017 11:02:22 +0000
-Subject: Re: setting brightness as privileged operation?
-Message-Id: <20170517110221.GJ18247@dhcp22.suse.cz>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Mon, 08 May 2017 06:11:16 +0000
+Subject: [PATCH] sm501fb: Silence a coccinelle script warning.
+Message-Id: <20170508061116.31471-1-christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170105092307.GD21618@dhcp22.suse.cz>
- <20170511210755.GA1360@xo-6d-61-c0.localdomain>
- <20170512062003.GB6803@dhcp22.suse.cz>
- <20170512094712.GA29780@amd>
-In-Reply-To: <20170512094712.GA29780@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, khoroshilov@ispras.ru
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-On Fri 12-05-17 11:47:12, Pavel Machek wrote:
-> On Fri 2017-05-12 08:20:04, Michal Hocko wrote:
-> > On Thu 11-05-17 23:07:55, Pavel Machek wrote:
-> > > On Thu 2017-01-05 10:23:07, Michal Hocko wrote:
-> > > > Hi,
-> > > > I have just learned that my Xfce Power Manager cannot manipulate
-> > > > brightness because I do not have policykit installed on my computer.
-> > > > There is a reason for that (yeah it depends on systemd which I prefer
-> > > > not have).
-> > > > 
-> > > > While this is clearly a problem of the Xfce applet I am wondering why
-> > > > setting the brightness has to be a privileged operation at all. Is there
-> > > > any strong reason for it or just a general policy that we do not give
-> > > > world writable files into sysfs?
-> > > 
-> > > Well, if you have another user logged in using ssh, and changing _your_
-> > > brightness, that will be somehow annoying, right?
-> > 
-> > I am pretty sure that such a user can do much larger harm than playing
-> > with brigtness of my LCD. Anyway I went with my own rc.local hack.
-> 
-> Can he? Those are bugs to be fixed. We don't want them in kernel...
+According to surrounding goto, it is likely that 'goto err_probed_panel' is
+expected here.
+This change is just done in order to silence some coccinelle scripts
+which try to detect wrongly ordered goto.
 
-Good luck with that whack a mole. But more seriously. Having an
-untrusted user on a system requires many measures including a very
-restricted access to mounted filesystems to contain such a user.
-Something tells me that /sys is one of the first candidate to deny
-access to.
+If 'info->fb[HEAD_PANEL]' and' 'info->fb[HEAD_CRT]' are both NULL, this
+means that no 'framebuffer_alloc' has been performed, so 'goto err_alloc'
+looks fine.
+Anyway, it is also harmless in this case to call 'framebuffer_release'.
+The code looks more straight forward.
 
-Instead it seems that we enforce people to use policy kit and other crap
-to allow to use my HW as I want. I will not argue more here, I have a
-workaround for me but this is just weird...
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/video/fbdev/sm501fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 67e314fdd947..4d89b045ce40 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1990,7 +1990,7 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 	    info->fb[HEAD_CRT] = NULL) {
+ 		dev_err(dev, "no framebuffers found\n");
+ 		ret = -ENODEV;
+-		goto err_alloc;
++		goto err_probed_panel;
+ 	}
+ 
+ 	/* get the resources for both of the framebuffers */
 -- 
-Michal Hocko
-SUSE Labs
+2.11.0
+

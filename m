@@ -1,64 +1,40 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Fri, 05 May 2017 22:24:09 +0000
-Subject: Re: [PATCH v2] backlight: report error on failure
-Message-Id: <CAHp75Vf-Gd-+Jtoj-bVh+6a-2cLeDuuDLva98VU-E3dFMdjMfA@mail.gmail.com>
+From: Olimpiu Dejeu <olimpiu@arcticsand.com>
+Date: Mon, 08 May 2017 19:00:34 +0000
+Subject: [PATCH v10 1/3] DT add arctic to vendor prefix for ArcticSand
+Message-Id: <1494270034-22902-1-git-send-email-olimpiu@arcticsand.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1494019985-5417-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1494019985-5417-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+To: robh-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org
+Cc: lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, bdodge-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org, joe-6d6DIl74uiNBDgjK7y7TUQ@public.gmane.org, daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, lkp-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, fengguang.wu-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, Olimpiu Dejeu <olimpiu-eV7fy4qpoLhpLGFMi4vTTA@public.gmane.org>
 
-On Sat, May 6, 2017 at 12:33 AM, Sudip Mukherjee
-<sudipm.mukherjee@gmail.com> wrote:
-> It is possible to update the backlight power and the brightness using
-> the sysfs and on writing it either returns the count or if the callback
-> function does not exist then returns the error code 'ENXIO'.
->
-> We have a situation where the userspace client is writing to the sysfs
-> to update the power and since the callback function exists the client
-> receives the return value as count and considers the operation to be
-> successful. That is correct as the write to the sysfs was successful.
-> But there is no way to know if the actual operation was done or not.
->
-> backlight_update_status() returns the error code if it fails. Pass that
-> to the userspace client who is trying to update the power so that the
-> client knows that the operation failed.
->
-> This is not a change of ABI as the userspace expects an error of ENXIO,
-> after this patch the range of errors that are returned to the userspace
-> will increase.
+dt-bindings: vendor-prefixes: add arctic to vendor prefix
 
-One nit.
+Signed-off-by: Olimpiu Dejeu <olimpiu@arcticsand.com>
+---
+v9 => v10:
+- (Re-submit) Per Rob Herring's request changed vendor-prefix to arctic
+v8 => v9:
+- Version updated to match other patch in set. No other changes.
+v8:
+- Version to match other patches in set
 
-> @@ -143,12 +143,16 @@ static ssize_t bl_power_store(struct device *dev, struct device_attribute *attr,
->         rc = -ENXIO;
->         mutex_lock(&bd->ops_lock);
->         if (bd->ops) {
+ Documentation/devicetree/bindings/vendor-prefixes.txt | 1 +
+ 1 file changed, 1 insertion(+)
 
-> +               rc = 0;
-
-You may remove this...
-
->                 pr_debug("set power to %lu\n", power);
->                 if (bd->props.power != power) {
-> +                       old_power = bd->props.power;
->                         bd->props.power = power;
-> -                       backlight_update_status(bd);
-> +                       rc = backlight_update_status(bd);
-> +                       if (rc)
-> +                               bd->props.power = old_power;
-
->                 }
-> -               rc = count;
-> +               rc = rc ? rc : count;
-
-... and replace this by
-} else
- rc = count;
-
+diff --git a/Documentation/devicetree/bindings/vendor-prefixes.txt b/Documentation/devicetree/bindings/vendor-prefixes.txt
+index 16d3b5e..6f33a4b 100644
+--- a/Documentation/devicetree/bindings/vendor-prefixes.txt
++++ b/Documentation/devicetree/bindings/vendor-prefixes.txt
+@@ -28,6 +28,7 @@ andestech	Andes Technology Corporation
+ apm	Applied Micro Circuits Corporation (APM)
+ aptina	Aptina Imaging
+ arasan	Arasan Chip Systems
++arctic	Arctic Sand
+ aries	Aries Embedded GmbH
+ arm	ARM Ltd.
+ armadeus	ARMadeus Systems SARL
 -- 
-With Best Regards,
-Andy Shevchenko
+2.7.4
+

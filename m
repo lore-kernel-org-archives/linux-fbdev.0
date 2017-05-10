@@ -1,52 +1,63 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 16 May 2017 11:28:57 +0000
-Subject: [PATCH] fbdev: via: remove possibly unused variables
-Message-Id: <20170516112906.4144714-1-arnd@arndb.de>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:58 +0000
+Subject: [PATCH 8/9] staging: sm750fb: Remove typedef from "typedef enum _DPMS_t"
+Message-Id: <1494453359-3722-9-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-When CONFIG_PROC_FS is disabled, we get warnings about unused variables
-as remove_proc_entry() evaluates to an empty macro.
+This patch removes typedefs from enum and renames it from
+"typedef enum _DPMS_t" to "enum DPMS" as per kernel coding standards.
 
-drivers/video/fbdev/via/viafbdev.c: In function 'viafb_remove_proc':
-drivers/video/fbdev/via/viafbdev.c:1635:4: error: unused variable 'iga2_entry' [-Werror=unused-variable]
-drivers/video/fbdev/via/viafbdev.c:1634:4: error: unused variable 'iga1_entry' [-Werror=unused-variable]
-
-These are easy to avoid by using the pointer from the structure.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/video/fbdev/via/viafbdev.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ drivers/staging/sm750fb/ddk750_power.c | 2 +-
+ drivers/staging/sm750fb/ddk750_power.h | 7 +++----
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-index 510772bed4f4..89ee4d73bcff 100644
---- a/drivers/video/fbdev/via/viafbdev.c
-+++ b/drivers/video/fbdev/via/viafbdev.c
-@@ -1630,16 +1630,14 @@ static void viafb_init_proc(struct viafb_shared *shared)
- }
- static void viafb_remove_proc(struct viafb_shared *shared)
+diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
+index 222ae1a..bc91e73 100644
+--- a/drivers/staging/sm750fb/ddk750_power.c
++++ b/drivers/staging/sm750fb/ddk750_power.c
+@@ -2,7 +2,7 @@
+ #include "ddk750_reg.h"
+ #include "ddk750_power.h"
+ 
+-void ddk750_set_dpms(DPMS_t state)
++void ddk750_set_dpms(enum DPMS state)
  {
--	struct proc_dir_entry *viafb_entry = shared->proc_entry,
--		*iga1_entry = shared->iga1_proc_entry,
--		*iga2_entry = shared->iga2_proc_entry;
-+	struct proc_dir_entry *viafb_entry = shared->proc_entry;
+ 	unsigned int value;
  
- 	if (!viafb_entry)
- 		return;
+diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
+index 44c4fc5..6764e53 100644
+--- a/drivers/staging/sm750fb/ddk750_power.h
++++ b/drivers/staging/sm750fb/ddk750_power.h
+@@ -1,20 +1,19 @@
+ #ifndef DDK750_POWER_H__
+ #define DDK750_POWER_H__
  
--	remove_proc_entry("output_devices", iga2_entry);
-+	remove_proc_entry("output_devices", shared->iga2_proc_entry);
- 	remove_proc_entry("iga2", viafb_entry);
--	remove_proc_entry("output_devices", iga1_entry);
-+	remove_proc_entry("output_devices", shared->iga1_proc_entry);
- 	remove_proc_entry("iga1", viafb_entry);
- 	remove_proc_entry("supported_output_devices", viafb_entry);
+-typedef enum _DPMS_t {
++enum DPMS {
+ 	crtDPMS_ON = 0x0,
+ 	crtDPMS_STANDBY = 0x1,
+ 	crtDPMS_SUSPEND = 0x2,
+ 	crtDPMS_OFF = 0x3,
+-}
+-DPMS_t;
++};
+ 
+ #define setDAC(off) {							\
+ 	poke32(MISC_CTRL,						\
+ 	       (peek32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | (off)); \
+ }
+ 
+-void ddk750_set_dpms(DPMS_t state);
++void ddk750_set_dpms(enum DPMS state);
+ void sm750_set_power_mode(unsigned int powerMode);
+ void sm750_set_current_gate(unsigned int gate);
  
 -- 
-2.9.0
+1.8.3.1
 

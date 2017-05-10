@@ -1,63 +1,112 @@
 From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Wed, 10 May 2017 21:55:58 +0000
-Subject: [PATCH 8/9] staging: sm750fb: Remove typedef from "typedef enum _DPMS_t"
-Message-Id: <1494453359-3722-9-git-send-email-mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:54 +0000
+Subject: [PATCH 4/9] staging: sm750fb: removing unnecessary binary operations
+Message-Id: <1494453359-3722-5-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-This patch removes typedefs from enum and renames it from
-"typedef enum _DPMS_t" to "enum DPMS" as per kernel coding standards.
+This patch remove unnecessary operation (eg. ``X | (0x0 << Y)`` to ``X``).
 
 Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/staging/sm750fb/ddk750_power.c | 2 +-
- drivers/staging/sm750fb/ddk750_power.h | 7 +++----
- 2 files changed, 4 insertions(+), 5 deletions(-)
+ drivers/staging/sm750fb/ddk750_display.h | 32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_power.c b/drivers/staging/sm750fb/ddk750_power.c
-index 222ae1a..bc91e73 100644
---- a/drivers/staging/sm750fb/ddk750_power.c
-+++ b/drivers/staging/sm750fb/ddk750_power.c
-@@ -2,7 +2,7 @@
- #include "ddk750_reg.h"
- #include "ddk750_power.h"
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index cef7f46..f9e1614 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -9,8 +9,8 @@
+ #define PNL_2_OFFSET	0
+ #define PNL_2_MASK	(3 << PNL_2_OFFSET)
+ #define PNL_2_USAGE	(PNL_2_MASK << 16)
+-#define PNL_2_PRI	((0 << PNL_2_OFFSET) | PNL_2_USAGE)
+-#define PNL_2_SEC	((2 << PNL_2_OFFSET) | PNL_2_USAGE)
++#define PNL_2_PRI	(PNL_2_USAGE)
++#define PNL_2_SEC	(PNL_2_USAGE | (2 << PNL_2_OFFSET))
  
--void ddk750_set_dpms(DPMS_t state)
-+void ddk750_set_dpms(enum DPMS state)
- {
- 	unsigned int value;
+ /*
+  * primary timing & plane enable bit
+@@ -20,8 +20,8 @@
+ #define PRI_TP_OFFSET	4
+ #define PRI_TP_MASK	BIT(PRI_TP_OFFSET)
+ #define PRI_TP_USAGE	(PRI_TP_MASK << 16)
+-#define PRI_TP_ON	((0x1 << PRI_TP_OFFSET) | PRI_TP_USAGE)
+-#define PRI_TP_OFF	((0x0 << PRI_TP_OFFSET) | PRI_TP_USAGE)
++#define PRI_TP_ON	(PRI_TP_USAGE | BIT(PRI_TP_OFFSET))
++#define PRI_TP_OFF	(PRI_TP_USAGE)
  
-diff --git a/drivers/staging/sm750fb/ddk750_power.h b/drivers/staging/sm750fb/ddk750_power.h
-index 44c4fc5..6764e53 100644
---- a/drivers/staging/sm750fb/ddk750_power.h
-+++ b/drivers/staging/sm750fb/ddk750_power.h
-@@ -1,20 +1,19 @@
- #ifndef DDK750_POWER_H__
- #define DDK750_POWER_H__
+ /*
+  * panel sequency status
+@@ -30,8 +30,8 @@
+ #define PNL_SEQ_OFFSET	6
+ #define PNL_SEQ_MASK	BIT(PNL_SEQ_OFFSET)
+ #define PNL_SEQ_USAGE	(PNL_SEQ_MASK << 16)
+-#define PNL_SEQ_ON	(BIT(PNL_SEQ_OFFSET) | PNL_SEQ_USAGE)
+-#define PNL_SEQ_OFF	((0 << PNL_SEQ_OFFSET) | PNL_SEQ_USAGE)
++#define PNL_SEQ_ON	(PNL_SEQ_USAGE | BIT(PNL_SEQ_OFFSET))
++#define PNL_SEQ_OFF	(PNL_SEQ_USAGE)
  
--typedef enum _DPMS_t {
-+enum DPMS {
- 	crtDPMS_ON = 0x0,
- 	crtDPMS_STANDBY = 0x1,
- 	crtDPMS_SUSPEND = 0x2,
- 	crtDPMS_OFF = 0x3,
--}
--DPMS_t;
-+};
+ /*
+  * dual digital output
+@@ -40,8 +40,8 @@
+ #define DUAL_TFT_OFFSET	8
+ #define DUAL_TFT_MASK	BIT(DUAL_TFT_OFFSET)
+ #define DUAL_TFT_USAGE	(DUAL_TFT_MASK << 16)
+-#define DUAL_TFT_ON	(BIT(DUAL_TFT_OFFSET) | DUAL_TFT_USAGE)
+-#define DUAL_TFT_OFF	((0 << DUAL_TFT_OFFSET) | DUAL_TFT_USAGE)
++#define DUAL_TFT_ON	(DUAL_TFT_USAGE | BIT(DUAL_TFT_OFFSET))
++#define DUAL_TFT_OFF	(DUAL_TFT_USAGE)
  
- #define setDAC(off) {							\
- 	poke32(MISC_CTRL,						\
- 	       (peek32(MISC_CTRL) & ~MISC_CTRL_DAC_POWER_OFF) | (off)); \
- }
+ /*
+  * secondary timing & plane enable bit
+@@ -51,8 +51,8 @@
+ #define SEC_TP_OFFSET	5
+ #define SEC_TP_MASK	BIT(SEC_TP_OFFSET)
+ #define SEC_TP_USAGE	(SEC_TP_MASK << 16)
+-#define SEC_TP_ON	((0x1 << SEC_TP_OFFSET) | SEC_TP_USAGE)
+-#define SEC_TP_OFF	((0x0 << SEC_TP_OFFSET) | SEC_TP_USAGE)
++#define SEC_TP_ON	(SEC_TP_USAGE | BIT(SEC_TP_OFFSET))
++#define SEC_TP_OFF	(SEC_TP_USAGE)
  
--void ddk750_set_dpms(DPMS_t state);
-+void ddk750_set_dpms(enum DPMS state);
- void sm750_set_power_mode(unsigned int powerMode);
- void sm750_set_current_gate(unsigned int gate);
+ /*
+  * crt path select
+@@ -61,8 +61,8 @@
+ #define CRT_2_OFFSET	2
+ #define CRT_2_MASK	(3 << CRT_2_OFFSET)
+ #define CRT_2_USAGE	(CRT_2_MASK << 16)
+-#define CRT_2_PRI	((0x0 << CRT_2_OFFSET) | CRT_2_USAGE)
+-#define CRT_2_SEC	((0x2 << CRT_2_OFFSET) | CRT_2_USAGE)
++#define CRT_2_PRI	(CRT_2_USAGE)
++#define CRT_2_SEC	(CRT_2_USAGE | (0x2 << CRT_2_OFFSET))
  
+ /*
+  * DAC affect both DVI and DSUB
+@@ -71,8 +71,8 @@
+ #define DAC_OFFSET	7
+ #define DAC_MASK	BIT(DAC_OFFSET)
+ #define DAC_USAGE	(DAC_MASK << 16)
+-#define DAC_ON		((0x0 << DAC_OFFSET) | DAC_USAGE)
+-#define DAC_OFF		((0x1 << DAC_OFFSET) | DAC_USAGE)
++#define DAC_ON		(DAC_USAGE)
++#define DAC_OFF		(DAC_USAGE | BIT(DAC_OFFSET))
+ 
+ /*
+  * DPMS only affect D-SUB head
+@@ -81,8 +81,8 @@
+ #define DPMS_OFFSET	9
+ #define DPMS_MASK	(3 << DPMS_OFFSET)
+ #define DPMS_USAGE	(DPMS_MASK << 16)
+-#define DPMS_ON		((0 << DPMS_OFFSET) | DPMS_USAGE)
+-#define DPMS_OFF	((3 << DPMS_OFFSET) | DPMS_USAGE)
++#define DPMS_ON		(DPMS_USAGE)
++#define DPMS_OFF	(DPMS_USAGE | (0x3 << DPMS_OFFSET))
+ 
+ /*
+  * LCD1 means panel path TFT1  & panel path DVI (so enable DAC)
 -- 
 1.8.3.1
 

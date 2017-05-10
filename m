@@ -1,62 +1,69 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 05 May 2017 19:47:20 +0000
-Subject: [PATCH 3.16-stable 62/87] video: mx3fb: always enable BACKLIGHT_LCD_SUPPORT
-Message-Id: <20170505194745.3627137-63-arnd@arndb.de>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:55 +0000
+Subject: [PATCH 5/9] staging: sm750fb: Remove typedef from "typedef enum _logical_chip_type_t"
+Message-Id: <1494453359-3722-6-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170505194745.3627137-1-arnd@arndb.de>
-In-Reply-To: <20170505194745.3627137-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ben Hutchings <ben@decadent.org.uk>
-Cc: stable@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Alexander Stein <alexander.stein@systec-electronic.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+To: linux-fbdev@vger.kernel.org
 
-Commit d06268f2c4867279648f499a31fba79a4066f3af upstream.
+This patch removes typedefs from enum and renames it from "typedef enum
+_logical_chip_type_t" to "enum logical_chip_type" as per kernel coding
+standards.
 
-Commit 7edaa761ee81b ("video: mx3fb: Add backlight control support")
-changed the mx3fb driver so it always selects the BACKLIGHT_CLASS_DEVICE
-symbol, but that is hidden behind BACKLIGHT_LCD_SUPPORT in Kconfig, so
-we get a Kconfig warning for multi_v5_defconfig, which doesn't have that:
-
-Warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
-DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
-&& FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
-EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
-which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
-
-This makes sure we always enable both symbols together for mx3fb, like
-we do for the other drivers that can't be built without backlight
-support. Note that a better solution would be to ensure the driver can
-work with or without backlight support.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Alexander Stein <alexander.stein@systec-electronic.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/video/fbdev/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 4 ++--
+ drivers/staging/sm750fb/ddk750_chip.h | 8 ++++----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index fac73ceb90e5..3b453c34f7a2 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2332,10 +2332,11 @@ config FB_MSM
- config FB_MX3
- 	tristate "MX3 Framebuffer support"
- 	depends on FB && MX3_IPU
-+	select BACKLIGHT_CLASS_DEVICE
-+	select BACKLIGHT_LCD_SUPPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	select BACKLIGHT_CLASS_DEVICE
- 	default y
- 	help
- 	  This is a framebuffer device for the i.MX31 LCD Controller. So
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 944dd25..1d62c2d 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -7,9 +7,9 @@
+ 
+ #define MHz(x) ((x) * 1000000)
+ 
+-static logical_chip_type_t chip;
++static enum logical_chip_type chip;
+ 
+-logical_chip_type_t sm750_get_chip_type(void)
++enum logical_chip_type sm750_get_chip_type(void)
+ {
+ 	return chip;
+ }
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 2c7a9b9..f2eee2b 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -23,13 +23,13 @@ static inline void poke32(u32 data, u32 addr)
+ }
+ 
+ /* This is all the chips recognized by this library */
+-typedef enum _logical_chip_type_t {
++enum logical_chip_type {
+ 	SM_UNKNOWN,
+ 	SM718,
+ 	SM750,
+ 	SM750LE,
+-}
+-logical_chip_type_t;
++};
++
+ 
+ typedef enum _clock_type_t {
+ 	MXCLK_PLL,
+@@ -93,7 +93,7 @@ struct initchip_param {
+ 	/* More initialization parameter can be added if needed */
+ };
+ 
+-logical_chip_type_t sm750_get_chip_type(void);
++enum logical_chip_type sm750_get_chip_type(void);
+ void sm750_set_chip_type(unsigned short devId, u8 revId);
+ unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
+ unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
 -- 
-2.9.0
+1.8.3.1
 

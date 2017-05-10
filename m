@@ -1,35 +1,34 @@
-From: Karim Eshapa <karim.eshapa@gmail.com>
-Date: Mon, 15 May 2017 19:14:26 +0000
-Subject: [PATCH] video: fbdev: omap2: omapfb: displays: panel-dsi-cm: Use time comparison kernel macro.
-Message-Id: <1494875666-4109-1-git-send-email-karim.eshapa@gmail.com>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:53 +0000
+Subject: [PATCH 3/9] staging: sm750fb: reordering of macro definitions
+Message-Id: <1494453359-3722-4-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: b.zolnierkie@samsung.com, peter.ujfalusi@ti.com, tj@kernel.org, mingo@kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Karim Eshapa <karim.eshapa@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-Use time_before_eq() kernel macro for
-time comparison more safe.
+This patch reorder definition of macros so all macros are in same order.
 
-Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c | 2 +-
+ drivers/staging/sm750fb/ddk750_display.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-index fd2b372d..7f20bc2 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
-@@ -100,7 +100,7 @@ static void hw_guard_wait(struct panel_drv_data *ddata)
- {
- 	unsigned long wait = ddata->hw_guard_end - jiffies;
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index 6f639d7..cef7f46 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -81,8 +81,8 @@
+ #define DPMS_OFFSET	9
+ #define DPMS_MASK	(3 << DPMS_OFFSET)
+ #define DPMS_USAGE	(DPMS_MASK << 16)
+-#define DPMS_OFF	((3 << DPMS_OFFSET) | DPMS_USAGE)
+ #define DPMS_ON		((0 << DPMS_OFFSET) | DPMS_USAGE)
++#define DPMS_OFF	((3 << DPMS_OFFSET) | DPMS_USAGE)
  
--	if ((long)wait > 0 && wait <= ddata->hw_guard_wait) {
-+	if ((long)wait > 0 && time_before_eq(wait, ddata->hw_guard_wait)) {
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		schedule_timeout(wait);
- 	}
+ /*
+  * LCD1 means panel path TFT1  & panel path DVI (so enable DAC)
 -- 
-2.7.4
+1.8.3.1
 

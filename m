@@ -1,59 +1,55 @@
-From: Richa Jha <richaj@cdac.in>
-Date: Mon, 22 May 2017 10:33:00 +0000
-Subject: [PATCH] Removed CamelCase from file drivers/staging/sm750fb/ddk750_chip.c
-Message-Id: <1495448460-24057-1-git-send-email-richaj@cdac.in>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:59 +0000
+Subject: [PATCH 9/9] staging: sm750fb: Remove typedef from "typedef enum _sii164_hot_plug_mode_t"
+Message-Id: <1494453359-3722-10-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Richa Jha <richaj@cdac.in>
+To: linux-fbdev@vger.kernel.org
 
-Changes :
-devId ---> dev_id
-revId ---> rev_id
+This patch removes typedefs from enum and renames it from "typedef enum
+_sii164_hot_plug_mode_t" to "enum sii164_hot_plug_mode" as per kernel
+coding standards.
 
-Signed-off-by: Richa Jha <richaj@cdac.in>
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/ddk750_sii164.c | 2 +-
+ drivers/staging/sm750fb/ddk750_sii164.h | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 5e4bfb6..8e51f60 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -14,14 +14,14 @@ logical_chip_type_t sm750_get_chip_type(void)
- 	return chip;
- }
- 
--void sm750_set_chip_type(unsigned short devId, u8 revId)
-+void sm750_set_chip_type(unsigned short dev_id, u8 rev_id)
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index 0431833..f7bf84e8 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -296,7 +296,7 @@ void sii164SetPower(unsigned char powerUp)
+  *  sii164SelectHotPlugDetectionMode
+  *      This function selects the mode of the hot plug detection.
+  */
+-static void sii164SelectHotPlugDetectionMode(sii164_hot_plug_mode_t hotPlugMode)
++static void sii164SelectHotPlugDetectionMode(enum sii164_hot_plug_mode hotPlugMode)
  {
--	if (devId = 0x718) {
-+	if (dev_id = 0x718) {
- 		chip = SM718;
--	} else if (devId = 0x750) {
-+	} else if (dev_id = 0x750) {
- 		chip = SM750;
- 		/* SM750 and SM750LE are different in their revision ID only. */
--		if (revId = SM750LE_REVISION_ID) {
-+		if (rev_id = SM750LE_REVISION_ID) {
- 			chip = SM750LE;
- 			pr_info("found sm750le\n");
- 		}
+ 	unsigned char detectReg;
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.h b/drivers/staging/sm750fb/ddk750_sii164.h
+index 6968cf5..e06ba72 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.h
++++ b/drivers/staging/sm750fb/ddk750_sii164.h
+@@ -4,12 +4,12 @@
+ #define USE_DVICHIP
+ 
+ /* Hot Plug detection mode structure */
+-typedef enum _sii164_hot_plug_mode_t {
++enum sii164_hot_plug_mode {
+ 	SII164_HOTPLUG_DISABLE = 0,         /* Disable Hot Plug output bit (always high). */
+ 	SII164_HOTPLUG_USE_MDI,             /* Use Monitor Detect Interrupt bit. */
+ 	SII164_HOTPLUG_USE_RSEN,            /* Use Receiver Sense detect bit. */
+ 	SII164_HOTPLUG_USE_HTPLG            /* Use Hot Plug detect bit. */
+-} sii164_hot_plug_mode_t;
++};
+ 
+ 
+ /* Silicon Image SiI164 chip prototype */
 -- 
-2.1.4
-
-
--------------------------------------------------------------------------------------------------------------------------------
-[ C-DAC is on Social-Media too. Kindly follow us at:
-Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
-
-This e-mail is for the sole use of the intended recipient(s) and may
-contain confidential and privileged information. If you are not the
-intended recipient, please contact the sender by reply e-mail and destroy
-all copies and the original message. Any unauthorized review, use,
-disclosure, dissemination, forwarding, printing or copying of this email
-is strictly prohibited and appropriate legal action will be taken.
--------------------------------------------------------------------------------------------------------------------------------
+1.8.3.1
 

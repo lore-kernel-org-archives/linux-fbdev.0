@@ -1,84 +1,75 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Sun, 21 May 2017 22:02:07 +0000
-Subject: [PATCH 0/3] mfd: move include files out of include/linux/i2c
-Message-Id: <20170521220212.1404-1-wsa@the-dreams.de>
+From: Matej Dujava <mdujava@kocurkovo.cz>
+Date: Wed, 10 May 2017 21:55:57 +0000
+Subject: [PATCH 7/9] staging: sm750fb: Remove typedef from "typedef enum _disp_output_t"
+Message-Id: <1494453359-3722-8-git-send-email-mdujava@kocurkovo.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
+To: linux-fbdev@vger.kernel.org
 
-It doesn't make sense to use include/linux/i2c for client drivers which may in
-fact rather be hwmon or input or whatever devices. As a result, I want to
-deprecate include/linux/i2c for good. This series moves the include files to a
-better location, for the mfd subsystem to include/linux/mfd. Because of twl.h,
-this touches quite some subsystems, but I still think it is worth it.
+This patch removes typedefs from enum and renames it from "typedef enum
+_disp_output_t" to "enum disp_output" as per kernel coding standards.
 
-I prefer the series to go upstream via the subsystem tree; if you prefer that I
-take it via I2C, just let me know.
+Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+---
+ drivers/staging/sm750fb/ddk750_display.c | 2 +-
+ drivers/staging/sm750fb/ddk750_display.h | 8 ++++----
+ drivers/staging/sm750fb/sm750_hw.c       | 2 +-
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-No runtime testing because of no HW, but buildbot is happy with this series at
-least. A branch can be found here:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/platform_data
-
-Thanks and kind regards,
-
-   Wolfram
-
-
-Wolfram Sang (3):
-  mfd: dm355evm_msp: move header file out of I2C realm
-  mfd: tps65010: move header file out of I2C realm
-  mfd: twl: move header file out of I2C realm
-
- arch/arm/mach-omap1/board-h2-mmc.c        | 2 +-
- arch/arm/mach-omap1/board-h2.c            | 2 +-
- arch/arm/mach-omap1/board-h3-mmc.c        | 2 +-
- arch/arm/mach-omap1/board-h3.c            | 2 +-
- arch/arm/mach-omap1/board-osk.c           | 2 +-
- arch/arm/mach-omap2/common.h              | 2 +-
- arch/arm/mach-omap2/omap_twl.c            | 2 +-
- arch/arm/mach-s3c24xx/mach-osiris-dvs.c   | 2 +-
- arch/arm/mach-s3c24xx/mach-osiris.c       | 2 +-
- drivers/gpio/gpio-twl4030.c               | 2 +-
- drivers/iio/adc/twl4030-madc.c            | 2 +-
- drivers/iio/adc/twl6030-gpadc.c           | 2 +-
- drivers/input/keyboard/twl4030_keypad.c   | 2 +-
- drivers/input/misc/dm355evm_keys.c        | 2 +-
- drivers/input/misc/twl4030-pwrbutton.c    | 2 +-
- drivers/input/misc/twl4030-vibra.c        | 2 +-
- drivers/mfd/dm355evm_msp.c                | 2 +-
- drivers/mfd/tps65010.c                    | 2 +-
- drivers/mfd/twl-core.c                    | 6 +++---
- drivers/mfd/twl4030-audio.c               | 2 +-
- drivers/mfd/twl4030-irq.c                 | 2 +-
- drivers/mfd/twl4030-power.c               | 2 +-
- drivers/mfd/twl6030-irq.c                 | 2 +-
- drivers/phy/phy-twl4030-usb.c             | 2 +-
- drivers/power/supply/twl4030_charger.c    | 2 +-
- drivers/pwm/pwm-twl-led.c                 | 2 +-
- drivers/pwm/pwm-twl.c                     | 2 +-
- drivers/regulator/twl-regulator.c         | 2 +-
- drivers/regulator/twl6030-regulator.c     | 2 +-
- drivers/rtc/rtc-dm355evm.c                | 2 +-
- drivers/rtc/rtc-twl.c                     | 2 +-
- drivers/usb/host/ohci-omap.c              | 2 +-
- drivers/usb/phy/phy-isp1301-omap.c        | 2 +-
- drivers/usb/phy/phy-twl6030-usb.c         | 2 +-
- drivers/video/backlight/pandora_bl.c      | 2 +-
- drivers/video/fbdev/omap/lcd_h3.c         | 2 +-
- drivers/watchdog/twl4030_wdt.c            | 2 +-
- include/linux/{i2c => mfd}/dm355evm_msp.h | 0
- include/linux/{i2c => mfd}/tps65010.h     | 2 +-
- include/linux/{i2c => mfd}/twl.h          | 0
- sound/soc/codecs/twl4030.c                | 2 +-
- 41 files changed, 41 insertions(+), 41 deletions(-)
- rename include/linux/{i2c => mfd}/dm355evm_msp.h (100%)
- rename include/linux/{i2c => mfd}/tps65010.h (99%)
- rename include/linux/{i2c => mfd}/twl.h (100%)
-
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index 9b116ed6..13b91c3 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -110,7 +110,7 @@ static void swPanelPowerSequence(int disp, int delay)
+ 	primary_wait_vertical_sync(delay);
+ }
+ 
+-void ddk750_setLogicalDispOut(disp_output_t output)
++void ddk750_setLogicalDispOut(enum disp_output output)
+ {
+ 	unsigned int reg;
+ 
+diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
+index f9e1614..8b0830f 100644
+--- a/drivers/staging/sm750fb/ddk750_display.h
++++ b/drivers/staging/sm750fb/ddk750_display.h
+@@ -88,7 +88,7 @@
+  * LCD1 means panel path TFT1  & panel path DVI (so enable DAC)
+  * CRT means crt path DSUB
+  */
+-typedef enum _disp_output_t {
++enum disp_output {
+ 	do_LCD1_PRI = PNL_2_PRI | PRI_TP_ON | PNL_SEQ_ON | DAC_ON,
+ 	do_LCD1_SEC = PNL_2_SEC | SEC_TP_ON | PNL_SEQ_ON | DAC_ON,
+ 	do_LCD2_PRI = CRT_2_PRI | PRI_TP_ON | DUAL_TFT_ON,
+@@ -99,9 +99,9 @@
+ 	 */
+ 	do_CRT_PRI = CRT_2_PRI | PRI_TP_ON | DPMS_ON | DAC_ON,
+ 	do_CRT_SEC = CRT_2_SEC | SEC_TP_ON | DPMS_ON | DAC_ON,
+-}
+-disp_output_t;
++};
+ 
+-void ddk750_setLogicalDispOut(disp_output_t output);
++
++void ddk750_setLogicalDispOut(enum disp_output output);
+ 
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index 3cdc4ae..f7d1e67 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -184,7 +184,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
+ 			    struct fb_fix_screeninfo *fix)
+ {
+ 	int ret;
+-	disp_output_t dispSet;
++	enum disp_output dispSet;
+ 	int channel;
+ 
+ 	ret = 0;
 -- 
-2.11.0
+1.8.3.1
 

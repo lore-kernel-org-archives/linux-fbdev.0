@@ -1,95 +1,41 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 05 May 2017 15:27:06 +0000
-Subject: Re: [PATCH] fbdev: sti: don't select CONFIG_VT
-Message-Id: <3242330.XRvUNh2arJ@amdc3058>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 11 May 2017 12:47:01 +0000
+Subject: [PATCH] fbdev: avoid int-in-bool-context warning
+Message-Id: <20170511124717.179251-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170428195120epcas2p2792c14bbbd4cf86be1b84c7f3d0f2040@epcas2p2.samsung.com>
-        <20170428195151.57706-1-arnd@arndb.de>
-In-Reply-To: <20170428195151.57706-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, jejb@parisc-linux.org, Alexander Beregalov <a.beregalov@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Friday, April 28, 2017 09:51:25 PM Arnd Bergmann wrote:
-> While working on another build error, I ran into several variations of
-> this dependency loop:
-> 
-> subsection "Kconfig recursive dependency limitations"
-> drivers/input/Kconfig:8:	symbol INPUT is selected by VT
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/tty/Kconfig:12:	symbol VT is selected by FB_STI
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/video/fbdev/Kconfig:677:	symbol FB_STI depends on FB
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/video/fbdev/Kconfig:5:	symbol FB is selected by DRM_KMS_FB_HELPER
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/gpu/drm/Kconfig:72:	symbol DRM_KMS_FB_HELPER is selected by DRM_KMS_CMA_HELPER
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/gpu/drm/Kconfig:137:	symbol DRM_KMS_CMA_HELPER is selected by DRM_HDLCD
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/gpu/drm/arm/Kconfig:6:	symbol DRM_HDLCD depends on OF
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/of/Kconfig:4:	symbol OF is selected by X86_INTEL_CE
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> arch/x86/Kconfig:523:	symbol X86_INTEL_CE depends on X86_IO_APIC
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> arch/x86/Kconfig:1011:	symbol X86_IO_APIC depends on X86_LOCAL_APIC
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> arch/x86/Kconfig:1005:	symbol X86_LOCAL_APIC depends on X86_UP_APIC
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> arch/x86/Kconfig:980:	symbol X86_UP_APIC depends on PCI_MSI
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/pci/Kconfig:11:	symbol PCI_MSI is selected by AMD_IOMMU
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/iommu/Kconfig:106:	symbol AMD_IOMMU depends on IOMMU_SUPPORT
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/iommu/Kconfig:5:	symbol IOMMU_SUPPORT is selected by DRM_ETNAVIV
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/gpu/drm/etnaviv/Kconfig:2:	symbol DRM_ETNAVIV depends on THERMAL
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/thermal/Kconfig:5:	symbol THERMAL is selected by ACPI_VIDEO
-> For a resolution refer to Documentation/kbuild/kconfig-language.txt
-> subsection "Kconfig recursive dependency limitations"
-> drivers/acpi/Kconfig:183:	symbol ACPI_VIDEO is selected by INPUT
-> 
-> This doesn't currently show up as I fixed the 'THERMAL' part of it,
-> but I noticed that the FB_STI dependency should not be there but
-> was introduced by slightly incorrect bug-fix patch that tried to
-> fix a link error.
-> 
-> Instead of selecting 'VT' to make us enter the drivers/video/console
-> directory at compile-time, it's sufficient to build the
-> drivers/video/console/sticore.c file by adding its directory
-> to when CONFIG_FB_STI is enabled. Alternatively, we could move the
-> sticore code to another directory that is always built when we
-> have at STI_CONSOLE or FB_STI enabled.
-> 
-> Fixes: 17085a934592 ("parisc: stifb: should depend on STI_CONSOLE")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+gcc-7 suspects this code might be wrong because we use the
+result of a multiplication as a bool:
 
-Patch queued for 4.12, thanks.
+drivers/video/fbdev/core/fbmon.c: In function 'fb_edid_add_monspecs':
+drivers/video/fbdev/core/fbmon.c:1051:84: error: '*' in boolean context, suggest '&&' instead [-Werror=int-in-bool-context]
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+It's actually fine, so let's add a comparison to zero to make
+that clear to the compiler too.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/core/fbmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index eaa6bab21839..99e45a49e435 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1048,7 +1048,7 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ 
+ 	for (i = 0; i < (128 - edid[2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
+ 	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE)
+-		if (PIXEL_CLOCK)
++		if (PIXEL_CLOCK != 0)
+ 			edt[num++] = block - edid;
+ 
+ 	/* Yikes, EDID data is totally useless */
+-- 
+2.9.0
 

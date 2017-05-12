@@ -1,43 +1,87 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Mon, 08 May 2017 06:11:16 +0000
-Subject: [PATCH] sm501fb: Silence a coccinelle script warning.
-Message-Id: <20170508061116.31471-1-christophe.jaillet@wanadoo.fr>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Fri, 12 May 2017 08:08:04 +0000
+Subject: [PATCH 3/3] mdacon: replace MDA_ADDR macro by inline function
+Message-Id: <20170512080804.2508-3-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170512080804.2508-1-jslaby@suse.cz>
+In-Reply-To: <20170512080804.2508-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, khoroshilov@ispras.ru
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-According to surrounding goto, it is likely that 'goto err_probed_panel' is
-expected here.
-This change is just done in order to silence some coccinelle scripts
-which try to detect wrongly ordered goto.
+MDA_ADDR is one of those macros which could be an inline function. So
+convert MDA_ADDR to mda_addr.
 
-If 'info->fb[HEAD_PANEL]' and' 'info->fb[HEAD_CRT]' are both NULL, this
-means that no 'framebuffer_alloc' has been performed, so 'goto err_alloc'
-looks fine.
-Anyway, it is also harmless in this case to call 'framebuffer_release'.
-The code looks more straight forward.
+Note that we take x and y as unsigned now. But they are absolute
+coordinates, so this is no problem.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: <linux-fbdev@vger.kernel.org>
 ---
- drivers/video/fbdev/sm501fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/console/mdacon.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index 67e314fdd947..4d89b045ce40 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1990,7 +1990,7 @@ static int sm501fb_probe(struct platform_device *pdev)
- 	    info->fb[HEAD_CRT] = NULL) {
- 		dev_err(dev, "no framebuffers found\n");
- 		ret = -ENODEV;
--		goto err_alloc;
-+		goto err_probed_panel;
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index 3ec2b178bb88..d0d427a2f1a3 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -420,17 +420,20 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
+ 	}
+ }
+ 
+-#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
++static inline u16 *mda_addr(unsigned int x, unsigned int y)
++{
++	return mda_vram_base + y * mda_num_columns + x;
++}
+ 
+ static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
+ {
+-	scr_writew(mda_convert_attr(ch), MDA_ADDR(x, y));
++	scr_writew(mda_convert_attr(ch), mda_addr(x, y));
+ }
+ 
+ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ 		         int count, int y, int x)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 
+ 	for (; count > 0; count--) {
+ 		scr_writew(mda_convert_attr(scr_readw(s++)), dest++);
+@@ -440,7 +443,7 @@ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
+ static void mdacon_clear(struct vc_data *c, int y, int x, 
+ 			  int height, int width)
+ {
+-	u16 *dest = MDA_ADDR(x, y);
++	u16 *dest = mda_addr(x, y);
+ 	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
+ 
+ 	if (width <= 0 || height <= 0)
+@@ -512,16 +515,16 @@ static bool mdacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
+ 	switch (dir) {
+ 
+ 	case SM_UP:
+-		scr_memmovew(MDA_ADDR(0,t), MDA_ADDR(0,t+lines),
++		scr_memmovew(mda_addr(0, t), mda_addr(0, t + lines),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,b-lines), eattr,
++		scr_memsetw(mda_addr(0, b - lines), eattr,
+ 				lines*mda_num_columns*2);
+ 		break;
+ 
+ 	case SM_DOWN:
+-		scr_memmovew(MDA_ADDR(0,t+lines), MDA_ADDR(0,t),
++		scr_memmovew(mda_addr(0, t + lines), mda_addr(0, t),
+ 				(b-t-lines)*mda_num_columns*2);
+-		scr_memsetw(MDA_ADDR(0,t), eattr, lines*mda_num_columns*2);
++		scr_memsetw(mda_addr(0, t), eattr, lines*mda_num_columns*2);
+ 		break;
  	}
  
- 	/* get the resources for both of the framebuffers */
 -- 
-2.11.0
+2.13.0
 

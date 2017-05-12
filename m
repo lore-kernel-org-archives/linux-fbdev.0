@@ -1,41 +1,54 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 11 May 2017 12:47:01 +0000
-Subject: [PATCH] fbdev: avoid int-in-bool-context warning
-Message-Id: <20170511124717.179251-1-arnd@arndb.de>
+From: Johan Hovold <johan@kernel.org>
+Date: Fri, 12 May 2017 10:17:25 +0000
+Subject: [PATCH] video: fbdev: add missing USB-descriptor endianness conversions
+Message-Id: <20170512101725.2207-1-johan@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-gcc-7 suspects this code might be wrong because we use the
-result of a multiplication as a bool:
+Add the missing endianness conversions when printing the USB
+device-descriptor idVendor, idProduct and bcdDevice fields during probe.
 
-drivers/video/fbdev/core/fbmon.c: In function 'fb_edid_add_monspecs':
-drivers/video/fbdev/core/fbmon.c:1051:84: error: '*' in boolean context, suggest '&&' instead [-Werror=int-in-bool-context]
-
-It's actually fine, so let's add a comparison to zero to make
-that clear to the compiler too.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Johan Hovold <johan@kernel.org>
 ---
- drivers/video/fbdev/core/fbmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/smscufx.c | 5 +++--
+ drivers/video/fbdev/udlfb.c   | 5 +++--
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
-index eaa6bab21839..99e45a49e435 100644
---- a/drivers/video/fbdev/core/fbmon.c
-+++ b/drivers/video/fbdev/core/fbmon.c
-@@ -1048,7 +1048,7 @@ void fb_edid_add_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index ec2e7e353685..449fceaf79d5 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1646,8 +1646,9 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	dev_dbg(dev->gdev, "%s %s - serial #%s\n",
+ 		usbdev->manufacturer, usbdev->product, usbdev->serial);
+ 	dev_dbg(dev->gdev, "vid_%04x&pid_%04x&rev_%04x driver's ufx_data struct at %p\n",
+-		usbdev->descriptor.idVendor, usbdev->descriptor.idProduct,
+-		usbdev->descriptor.bcdDevice, dev);
++		le16_to_cpu(usbdev->descriptor.idVendor),
++		le16_to_cpu(usbdev->descriptor.idProduct),
++		le16_to_cpu(usbdev->descriptor.bcdDevice), dev);
+ 	dev_dbg(dev->gdev, "console enable=%d\n", console);
+ 	dev_dbg(dev->gdev, "fb_defio enable=%d\n", fb_defio);
  
- 	for (i = 0; i < (128 - edid[2]) / DETAILED_TIMING_DESCRIPTION_SIZE;
- 	     i++, block += DETAILED_TIMING_DESCRIPTION_SIZE)
--		if (PIXEL_CLOCK)
-+		if (PIXEL_CLOCK != 0)
- 			edt[num++] = block - edid;
- 
- 	/* Yikes, EDID data is totally useless */
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 6a3c353de7c3..a868cbb51a34 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1613,8 +1613,9 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 	pr_info("%s %s - serial #%s\n",
+ 		usbdev->manufacturer, usbdev->product, usbdev->serial);
+ 	pr_info("vid_%04x&pid_%04x&rev_%04x driver's dlfb_data struct at %p\n",
+-		usbdev->descriptor.idVendor, usbdev->descriptor.idProduct,
+-		usbdev->descriptor.bcdDevice, dev);
++		le16_to_cpu(usbdev->descriptor.idVendor),
++		le16_to_cpu(usbdev->descriptor.idProduct),
++		le16_to_cpu(usbdev->descriptor.bcdDevice), dev);
+ 	pr_info("console enable=%d\n", console);
+ 	pr_info("fb_defio enable=%d\n", fb_defio);
+ 	pr_info("shadow enable=%d\n", shadow);
 -- 
-2.9.0
+2.13.0
 

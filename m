@@ -1,75 +1,132 @@
-From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Wed, 10 May 2017 21:55:56 +0000
-Subject: [PATCH 6/9] staging: sm750fb: Remove typedef from "typedef enum _clock_type"
-Message-Id: <1494453359-3722-7-git-send-email-mdujava@kocurkovo.cz>
+From: Jiri Slaby <jslaby@suse.cz>
+Date: Fri, 12 May 2017 08:08:02 +0000
+Subject: [PATCH 1/3] mdacon: align code in mda_detect properly
+Message-Id: <20170512080804.2508-1-jslaby@suse.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: tomi.valkeinen@ti.com
+Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-This patch removes typedefs from enum and renames it from "typedef enum
-_clock_type_t" to "enum clock_type" as per kernel coding standards.
+This is just a whitespace cleanup. The code was a mess having multiple
+commands on one line like:
+scr_writew(0xAA55, p); if (scr_readw(p) = 0xAA55) count++;
 
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+Indent that properly and make it nicer for reading.
+
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: <linux-fbdev@vger.kernel.org>
 ---
- drivers/staging/sm750fb/ddk750_chip.h | 8 ++++----
- drivers/staging/sm750fb/ddk750_mode.c | 2 +-
- drivers/staging/sm750fb/sm750_hw.c    | 2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/console/mdacon.c | 60 ++++++++++++++++++++++++------------------
+ 1 file changed, 35 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index f2eee2b..e5cb436 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -31,17 +31,17 @@ enum logical_chip_type {
- };
+diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
+index ec192a1bf297..424af6bdb408 100644
+--- a/drivers/video/console/mdacon.c
++++ b/drivers/video/console/mdacon.c
+@@ -208,10 +208,17 @@ static int mda_detect(void)
+ 	p = (u16 *) mda_vram_base;
+ 	q = (u16 *) (mda_vram_base + 0x01000);
  
- 
--typedef enum _clock_type_t {
-+enum clock_type {
- 	MXCLK_PLL,
- 	PRIMARY_PLL,
- 	SECONDARY_PLL,
- 	VGA0_PLL,
- 	VGA1_PLL,
--}
--clock_type_t;
-+};
+-	p_save = scr_readw(p); q_save = scr_readw(q);
++	p_save = scr_readw(p);
++	q_save = scr_readw(q);
 +
++	scr_writew(0xAA55, p);
++	if (scr_readw(p) = 0xAA55)
++		count++;
++
++	scr_writew(0x55AA, p);
++	if (scr_readw(p) = 0x55AA)
++		count++;
  
- struct pll_value {
--	clock_type_t clockType;
-+	enum clock_type clockType;
- 	unsigned long inputFreq; /* Input clock frequency to the PLL */
+-	scr_writew(0xAA55, p); if (scr_readw(p) = 0xAA55) count++;
+-	scr_writew(0x55AA, p); if (scr_readw(p) = 0x55AA) count++;
+ 	scr_writew(p_save, p);
  
- 	/* Use this when clockType = PANEL_PLL */
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index bb673e1..24d3447 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -205,7 +205,7 @@ static int programModeRegisters(struct mode_parameter *pModeParam,
- 	return ret;
- }
+ 	if (count != 2) {
+@@ -220,13 +227,18 @@ static int mda_detect(void)
  
--int ddk750_setModeTiming(struct mode_parameter *parm, clock_type_t clock)
-+int ddk750_setModeTiming(struct mode_parameter *parm, enum clock_type clock)
- {
- 	struct pll_value pll;
- 	unsigned int uiActualPixelClk;
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index baf1bbd..3cdc4ae 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -253,7 +253,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
- 	int ret, fmt;
- 	u32 reg;
- 	struct mode_parameter modparm;
--	clock_type_t clock;
-+	enum clock_type clock;
- 	struct sm750_dev *sm750_dev;
- 	struct lynxfb_par *par;
+ 	/* check if we have 4K or 8K */
+ 
+-	scr_writew(0xA55A, q); scr_writew(0x0000, p);
+-	if (scr_readw(q) = 0xA55A) count++;
++	scr_writew(0xA55A, q);
++	scr_writew(0x0000, p);
++	if (scr_readw(q) = 0xA55A)
++		count++;
+ 	
+-	scr_writew(0x5AA5, q); scr_writew(0x0000, p);
+-	if (scr_readw(q) = 0x5AA5) count++;
++	scr_writew(0x5AA5, q);
++	scr_writew(0x0000, p);
++	if (scr_readw(q) = 0x5AA5)
++		count++;
+ 
+-	scr_writew(p_save, p); scr_writew(q_save, q);
++	scr_writew(p_save, p);
++	scr_writew(q_save, q);
+ 	
+ 	if (count = 4) {
+ 		mda_vram_len = 0x02000;
+@@ -240,14 +252,12 @@ static int mda_detect(void)
+ 	/* Edward: These two mess `tests' mess up my cursor on bootup */
+ 
+ 	/* cursor low register */
+-	if (! test_mda_b(0x66, 0x0f)) {
++	if (!test_mda_b(0x66, 0x0f))
+ 		return 0;
+-	}
+ 
+ 	/* cursor low register */
+-	if (! test_mda_b(0x99, 0x0f)) {
++	if (!test_mda_b(0x99, 0x0f))
+ 		return 0;
+-	}
+ #endif
+ 
+ 	/* See if the card is a Hercules, by checking whether the vsync
+@@ -257,25 +267,25 @@ static int mda_detect(void)
+ 	
+ 	p_save = q_save = inb_p(mda_status_port) & MDA_STATUS_VSYNC;
+ 
+-	for (count=0; count < 50000 && p_save = q_save; count++) {
++	for (count = 0; count < 50000 && p_save = q_save; count++) {
+ 		q_save = inb(mda_status_port) & MDA_STATUS_VSYNC;
+ 		udelay(2);
+ 	}
+ 
+ 	if (p_save != q_save) {
+ 		switch (inb_p(mda_status_port) & 0x70) {
+-			case 0x10:
+-				mda_type = TYPE_HERCPLUS;
+-				mda_type_name = "HerculesPlus";
+-				break;
+-			case 0x50:
+-				mda_type = TYPE_HERCCOLOR;
+-				mda_type_name = "HerculesColor";
+-				break;
+-			default:
+-				mda_type = TYPE_HERC;
+-				mda_type_name = "Hercules";
+-				break;
++		case 0x10:
++			mda_type = TYPE_HERCPLUS;
++			mda_type_name = "HerculesPlus";
++			break;
++		case 0x50:
++			mda_type = TYPE_HERCCOLOR;
++			mda_type_name = "HerculesColor";
++			break;
++		default:
++			mda_type = TYPE_HERC;
++			mda_type_name = "Hercules";
++			break;
+ 		}
+ 	}
  
 -- 
-1.8.3.1
+2.13.0
 

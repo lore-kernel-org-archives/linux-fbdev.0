@@ -1,58 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 29 May 2017 09:20:33 +0000
-Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Message-Id: <7306372.PblijfWnMI@amdc3058>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Sun, 21 May 2017 22:09:53 +0000
+Subject: [PATCH 2/2] video: adp8870: move header file out of I2C realm
+Message-Id: <20170521220953.2602-3-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170521220212.1404-1-wsa@the-dreams.de>
-	<CGME20170521220224epcas2p4fbcfe69660d457b8af95ddc196c04a9b@epcas2p4.samsung.com>
-	<20170521220212.1404-4-wsa@the-dreams.de>
-In-Reply-To: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+References: <20170521220953.2602-1-wsa@the-dreams.de>
+In-Reply-To: <20170521220953.2602-1-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
-Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Wim Van Sebroeck <wim@>
+To: linux-i2c@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Steven Miao <realmz6@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Monday, May 22, 2017 12:02:10 AM Wolfram Sang wrote:
-> include/linux/i2c is not for client devices. Move the header file to a
-> more appropriate location.
-> 
-> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+include/linux/i2c is not for client devices. Move the header file to a
+more appropriate location.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+ arch/blackfin/mach-bf537/boards/stamp.c        | 2 +-
+ drivers/video/backlight/adp8870_bl.c           | 2 +-
+ include/linux/{i2c => platform_data}/adp8870.h | 0
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ rename include/linux/{i2c => platform_data}/adp8870.h (100%)
 
-> ---
->  arch/arm/mach-omap2/common.h            | 2 +-
->  arch/arm/mach-omap2/omap_twl.c          | 2 +-
->  drivers/gpio/gpio-twl4030.c             | 2 +-
->  drivers/iio/adc/twl4030-madc.c          | 2 +-
->  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
->  drivers/input/keyboard/twl4030_keypad.c | 2 +-
->  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
->  drivers/input/misc/twl4030-vibra.c      | 2 +-
->  drivers/mfd/twl-core.c                  | 6 +++---
->  drivers/mfd/twl4030-audio.c             | 2 +-
->  drivers/mfd/twl4030-irq.c               | 2 +-
->  drivers/mfd/twl4030-power.c             | 2 +-
->  drivers/mfd/twl6030-irq.c               | 2 +-
->  drivers/phy/phy-twl4030-usb.c           | 2 +-
->  drivers/power/supply/twl4030_charger.c  | 2 +-
->  drivers/pwm/pwm-twl-led.c               | 2 +-
->  drivers/pwm/pwm-twl.c                   | 2 +-
->  drivers/regulator/twl-regulator.c       | 2 +-
->  drivers/regulator/twl6030-regulator.c   | 2 +-
->  drivers/rtc/rtc-twl.c                   | 2 +-
->  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
->  drivers/video/backlight/pandora_bl.c    | 2 +-
->  drivers/watchdog/twl4030_wdt.c          | 2 +-
->  include/linux/{i2c => mfd}/twl.h        | 0
->  sound/soc/codecs/twl4030.c              | 2 +-
->  25 files changed, 26 insertions(+), 26 deletions(-)
->  rename include/linux/{i2c => mfd}/twl.h (100%)
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/blackfin/mach-bf537/boards/stamp.c b/arch/blackfin/mach-bf537/boards/stamp.c
+index 7db90c72bd8ddc..7528148dc4925b 100644
+--- a/arch/blackfin/mach-bf537/boards/stamp.c
++++ b/arch/blackfin/mach-bf537/boards/stamp.c
+@@ -1995,7 +1995,7 @@ static struct adp5588_gpio_platform_data adp5588_gpio_data = {
+ #endif
+ 
+ #if IS_ENABLED(CONFIG_BACKLIGHT_ADP8870)
+-#include <linux/i2c/adp8870.h>
++#include <linux/platform_data/adp8870.h>
+ static struct led_info adp8870_leds[] = {
+ 	{
+ 		.name = "adp8870-led7",
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+index 21acac90fd773f..058d1def2d1f4b 100644
+--- a/drivers/video/backlight/adp8870_bl.c
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -18,7 +18,7 @@
+ #include <linux/workqueue.h>
+ #include <linux/slab.h>
+ 
+-#include <linux/i2c/adp8870.h>
++#include <linux/platform_data/adp8870.h>
+ #define ADP8870_EXT_FEATURES
+ #define ADP8870_USE_LEDS
+ 
+diff --git a/include/linux/i2c/adp8870.h b/include/linux/platform_data/adp8870.h
+similarity index 100%
+rename from include/linux/i2c/adp8870.h
+rename to include/linux/platform_data/adp8870.h
+-- 
+2.11.0
 

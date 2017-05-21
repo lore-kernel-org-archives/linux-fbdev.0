@@ -1,110 +1,57 @@
-From: Richa Jha <richaj@cdac.in>
-Date: Mon, 22 May 2017 12:23:31 +0000
-Subject: [PATCH] Fixed cameCase check in file  drivers/staging/sm750fb/ddk750_chip.c
-Message-Id: <1495455091-25431-1-git-send-email-richaj@cdac.in>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Sun, 21 May 2017 22:09:52 +0000
+Subject: [PATCH 1/2] video: adp8860: move header file out of I2C realm
+Message-Id: <20170521220953.2602-2-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1495449937-24573-1-git-send-email-richaj@cdac.in>
-In-Reply-To: <1495449937-24573-1-git-send-email-richaj@cdac.in>
+References: <20170521220953.2602-1-wsa@the-dreams.de>
+In-Reply-To: <20170521220953.2602-1-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Richa Jha <richaj@cdac.in>
+To: linux-i2c@vger.kernel.org
+Cc: Wolfram Sang <wsa@the-dreams.de>, Steven Miao <realmz6@gmail.com>, Michael Hennerich <michael.hennerich@analog.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Changes :
+include/linux/i2c is not for client devices. Move the header file to a
+more appropriate location.
 
-ulActualMxClk ---> ul_actual_max_clk
-pInitParam    ---> p_init_param
-
-Signed-off-by: Richa Jha <richaj@cdac.in>
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 ---
- drivers/staging/sm750fb/ddk750_chip.c | 18 +++++++++---------
- 1 file changed, 9 insertions(+), 9 deletions(-)
+ arch/blackfin/mach-bf537/boards/stamp.c        | 2 +-
+ drivers/video/backlight/adp8860_bl.c           | 2 +-
+ include/linux/{i2c => platform_data}/adp8860.h | 0
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+ rename include/linux/{i2c => platform_data}/adp8860.h (100%)
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 7b1180a..00bca17 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -55,7 +55,7 @@ static unsigned int get_mxclk_freq(void)
- static void set_chip_clock(unsigned int frequency)
- {
- 	struct pll_value pll;
--	unsigned int ulActualMxClk;
-+	unsigned int ul_actual_max_clk;
+diff --git a/arch/blackfin/mach-bf537/boards/stamp.c b/arch/blackfin/mach-bf537/boards/stamp.c
+index 24985e658c19cd..7db90c72bd8ddc 100644
+--- a/arch/blackfin/mach-bf537/boards/stamp.c
++++ b/arch/blackfin/mach-bf537/boards/stamp.c
+@@ -2047,7 +2047,7 @@ static struct adp8870_backlight_platform_data adp8870_pdata = {
+ #endif
  
- 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
- 	if (sm750_get_chip_type() = SM750LE)
-@@ -75,7 +75,7 @@ static void set_chip_clock(unsigned int frequency)
- 		 * Return value of sm750_calc_pll_value gives the actual
- 		 * possible clock.
- 		 */
--		ulActualMxClk = sm750_calc_pll_value(frequency, &pll);
-+		ul_actual_max_clk = sm750_calc_pll_value(frequency, &pll);
+ #if IS_ENABLED(CONFIG_BACKLIGHT_ADP8860)
+-#include <linux/i2c/adp8860.h>
++#include <linux/platform_data/adp8860.h>
+ static struct led_info adp8860_leds[] = {
+ 	{
+ 		.name = "adp8860-led7",
+diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
+index 510e559c060e59..e7315bf14d6015 100644
+--- a/drivers/video/backlight/adp8860_bl.c
++++ b/drivers/video/backlight/adp8860_bl.c
+@@ -18,7 +18,7 @@
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
  
- 		/* Master Clock Control: MXCLK_PLL */
- 		poke32(MXCLK_PLL_CTRL, sm750_format_pll_reg(&pll));
-@@ -210,11 +210,11 @@ unsigned int ddk750_get_vm_size(void)
- 	return data;
- }
+-#include <linux/i2c/adp8860.h>
++#include <linux/platform_data/adp8860.h>
+ #define ADP8860_EXT_FEATURES
+ #define ADP8860_USE_LEDS
  
--int ddk750_init_hw(struct initchip_param *pInitParam)
-+int ddk750_init_hw(struct initchip_param *p_init_param)
- {
- 	unsigned int reg;
- 
--	if (pInitParam->powerMode != 0)
-+	if (p_init_param->powerMode != 0)
- 		p_init_param->powerMode = 0;
- 	sm750_set_power_mode(p_init_param->powerMode);
- 
-@@ -237,13 +237,13 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
- 	}
- 
- 	/* Set the Main Chip Clock */
--	set_chip_clock(MHz((unsigned int)pInitParam->chipClock));
-+	set_chip_clock(MHz((unsigned int)p_init_param->chipClock));
- 
- 	/* Set up memory clock. */
--	set_memory_clock(MHz(pInitParam->memClock));
-+	set_memory_clock(MHz(p_init_param->memClock));
- 
- 	/* Set up master clock */
--	set_master_clock(MHz(pInitParam->masterClock));
-+	set_master_clock(MHz(p_init_param->masterClock));
- 
- 	/*
- 	 * Reset the memory controller.
-@@ -251,7 +251,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
- 	 * the system might hang when sw accesses the memory.
- 	 * The memory should be resetted after changing the MXCLK.
- 	 */
--	if (pInitParam->resetMemory = 1) {
-+	if (p_init_param->resetMemory = 1) {
- 		reg = peek32(MISC_CTRL);
- 		reg &= ~MISC_CTRL_LOCALMEM_RESET;
- 		poke32(MISC_CTRL, reg);
-@@ -260,7 +260,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
- 		poke32(MISC_CTRL, reg);
- 	}
- 
--	if (pInitParam->setAllEngOff = 1) {
-+	if (p_init_param->setAllEngOff = 1) {
- 		sm750_enable_2d_engine(0);
- 
- 		/* Disable Overlay, if a former application left it on */
+diff --git a/include/linux/i2c/adp8860.h b/include/linux/platform_data/adp8860.h
+similarity index 100%
+rename from include/linux/i2c/adp8860.h
+rename to include/linux/platform_data/adp8860.h
 -- 
-2.1.4
-
-
--------------------------------------------------------------------------------------------------------------------------------
-[ C-DAC is on Social-Media too. Kindly follow us at:
-Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
-
-This e-mail is for the sole use of the intended recipient(s) and may
-contain confidential and privileged information. If you are not the
-intended recipient, please contact the sender by reply e-mail and destroy
-all copies and the original message. Any unauthorized review, use,
-disclosure, dissemination, forwarding, printing or copying of this email
-is strictly prohibited and appropriate legal action will be taken.
--------------------------------------------------------------------------------------------------------------------------------
+2.11.0
 

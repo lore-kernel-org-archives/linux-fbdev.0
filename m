@@ -1,27 +1,191 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 11 May 2017 11:06:47 +0000
-Subject: Re: [PATCH v5 04/14] GPIO: Add gpio-ingenic driver
-Message-Id: <CACRpkdb+uQpdOfCFTKaMvp=nUxksA0=FWCDbY+JbB_=jDDcXfA@mail.gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Sun, 21 May 2017 22:02:09 +0000
+Subject: [PATCH 2/3] mfd: tps65010: move header file out of I2C realm
+Message-Id: <20170521220212.1404-3-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net> <20170428200824.10906-1-paul@crapouillou.net>
- <20170428200824.10906-5-paul@crapouillou.net> <3a779fca-5a56-44e5-2acf-12b8abdaf906@crapouillou.net>
-In-Reply-To: <3a779fca-5a56-44e5-2acf-12b8abdaf906@crapouillou.net>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+In-Reply-To: <20170521220212.1404-1-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, James Hogan <james.hogan@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>"linux-mtd@lists.infradead.org" <li>
+To: linux-arm-kernel@lists.infradead.org
 
-On Mon, May 8, 2017 at 12:05 AM, Paul Cercueil <paul@crapouillou.net> wrote:
+include/linux/i2c is not for client devices. Move the header file to a
+more appropriate location.
 
-> It looks like the gpio_get_value() is broken on jz4740.
->
-> I'll send a v6.
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
+ arch/arm/mach-omap1/board-h2-mmc.c      | 2 +-
+ arch/arm/mach-omap1/board-h2.c          | 2 +-
+ arch/arm/mach-omap1/board-h3-mmc.c      | 2 +-
+ arch/arm/mach-omap1/board-h3.c          | 2 +-
+ arch/arm/mach-omap1/board-osk.c         | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris-dvs.c | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris.c     | 2 +-
+ drivers/mfd/tps65010.c                  | 2 +-
+ drivers/usb/host/ohci-omap.c            | 2 +-
+ drivers/usb/phy/phy-isp1301-omap.c      | 2 +-
+ drivers/video/fbdev/omap/lcd_h3.c       | 2 +-
+ include/linux/{i2c => mfd}/tps65010.h   | 2 +-
+ 12 files changed, 12 insertions(+), 12 deletions(-)
+ rename include/linux/{i2c => mfd}/tps65010.h (99%)
 
-OK I don't apply this series then, waiting for v6.
+diff --git a/arch/arm/mach-omap1/board-h2-mmc.c b/arch/arm/mach-omap1/board-h2-mmc.c
+index 357be2debc9da8..91bda9c802ff38 100644
+--- a/arch/arm/mach-omap1/board-h2-mmc.c
++++ b/arch/arm/mach-omap1/board-h2-mmc.c
+@@ -14,7 +14,7 @@
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
+ #include <linux/platform_data/gpio-omap.h>
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #include "board-h2.h"
+ #include "mmc.h"
+diff --git a/arch/arm/mach-omap1/board-h2.c b/arch/arm/mach-omap1/board-h2.c
+index 675254ee4b1e93..dece47d76282ac 100644
+--- a/arch/arm/mach-omap1/board-h2.c
++++ b/arch/arm/mach-omap1/board-h2.c
+@@ -28,7 +28,7 @@
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/physmap.h>
+ #include <linux/input.h>
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ #include <linux/smc91x.h>
+ #include <linux/omapfb.h>
+ #include <linux/platform_data/gpio-omap.h>
+diff --git a/arch/arm/mach-omap1/board-h3-mmc.c b/arch/arm/mach-omap1/board-h3-mmc.c
+index 4f58bfa5e7549e..692c267a9a9052 100644
+--- a/arch/arm/mach-omap1/board-h3-mmc.c
++++ b/arch/arm/mach-omap1/board-h3-mmc.c
+@@ -14,7 +14,7 @@
+ #include <linux/gpio.h>
+ #include <linux/platform_device.h>
+ 
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #include "common.h"
+ #include "board-h3.h"
+diff --git a/arch/arm/mach-omap1/board-h3.c b/arch/arm/mach-omap1/board-h3.c
+index e62f9d454f1005..6d32beeb2d8857 100644
+--- a/arch/arm/mach-omap1/board-h3.c
++++ b/arch/arm/mach-omap1/board-h3.c
+@@ -28,7 +28,7 @@
+ #include <linux/mtd/physmap.h>
+ #include <linux/input.h>
+ #include <linux/spi/spi.h>
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ #include <linux/smc91x.h>
+ #include <linux/omapfb.h>
+ #include <linux/platform_data/gpio-omap.h>
+diff --git a/arch/arm/mach-omap1/board-osk.c b/arch/arm/mach-omap1/board-osk.c
+index 4dfb995048103b..f20361b8ffb6e0 100644
+--- a/arch/arm/mach-omap1/board-osk.c
++++ b/arch/arm/mach-omap1/board-osk.c
+@@ -38,7 +38,7 @@
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
+ #include <linux/mtd/physmap.h>
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ #include <linux/platform_data/gpio-omap.h>
+ #include <linux/platform_data/omap1_bl.h>
+ 
+diff --git a/arch/arm/mach-s3c24xx/mach-osiris-dvs.c b/arch/arm/mach-s3c24xx/mach-osiris-dvs.c
+index 262ab07447483a..6cac7da15e2b0d 100644
+--- a/arch/arm/mach-s3c24xx/mach-osiris-dvs.c
++++ b/arch/arm/mach-s3c24xx/mach-osiris-dvs.c
+@@ -17,7 +17,7 @@
+ #include <linux/cpufreq.h>
+ #include <linux/gpio.h>
+ 
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #include <plat/cpu-freq.h>
+ #include <mach/gpio-samsung.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-osiris.c b/arch/arm/mach-s3c24xx/mach-osiris.c
+index 70b0eb7d31347f..64b1a0b7b803a1 100644
+--- a/arch/arm/mach-s3c24xx/mach-osiris.c
++++ b/arch/arm/mach-s3c24xx/mach-osiris.c
+@@ -24,7 +24,7 @@
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+ 
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #include <asm/mach-types.h>
+ #include <asm/mach/arch.h>
+diff --git a/drivers/mfd/tps65010.c b/drivers/mfd/tps65010.c
+index d829a6131f09e5..2ab67386b4ef1e 100644
+--- a/drivers/mfd/tps65010.c
++++ b/drivers/mfd/tps65010.c
+@@ -32,7 +32,7 @@
+ #include <linux/mutex.h>
+ #include <linux/platform_device.h>
+ 
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #include <linux/gpio/driver.h>
+ 
+diff --git a/drivers/usb/host/ohci-omap.c b/drivers/usb/host/ohci-omap.c
+index a4d814b7f38066..91393ec7d8503c 100644
+--- a/drivers/usb/host/ohci-omap.c
++++ b/drivers/usb/host/ohci-omap.c
+@@ -53,7 +53,7 @@
+ #define DRIVER_DESC "OHCI OMAP driver"
+ 
+ #ifdef CONFIG_TPS65010
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ #else
+ 
+ #define LOW	0
+diff --git a/drivers/usb/phy/phy-isp1301-omap.c b/drivers/usb/phy/phy-isp1301-omap.c
+index 042c5a8fd423d8..c6052c814bcc24 100644
+--- a/drivers/usb/phy/phy-isp1301-omap.c
++++ b/drivers/usb/phy/phy-isp1301-omap.c
+@@ -96,7 +96,7 @@ struct isp1301 {
+ 
+ #if IS_REACHABLE(CONFIG_TPS65010)
+ 
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ 
+ #else
+ 
+diff --git a/drivers/video/fbdev/omap/lcd_h3.c b/drivers/video/fbdev/omap/lcd_h3.c
+index 9d2da146813ef0..796f4634c4c6f1 100644
+--- a/drivers/video/fbdev/omap/lcd_h3.c
++++ b/drivers/video/fbdev/omap/lcd_h3.c
+@@ -21,7 +21,7 @@
+ 
+ #include <linux/module.h>
+ #include <linux/platform_device.h>
+-#include <linux/i2c/tps65010.h>
++#include <linux/mfd/tps65010.h>
+ #include <linux/gpio.h>
+ 
+ #include "omapfb.h"
+diff --git a/include/linux/i2c/tps65010.h b/include/linux/mfd/tps65010.h
+similarity index 99%
+rename from include/linux/i2c/tps65010.h
+rename to include/linux/mfd/tps65010.h
+index 08aa92278d71cd..a1fb9bc5311de4 100644
+--- a/include/linux/i2c/tps65010.h
++++ b/include/linux/mfd/tps65010.h
+@@ -1,4 +1,4 @@
+-/* linux/i2c/tps65010.h
++/* linux/mfd/tps65010.h
+  *
+  * Functions to access TPS65010 power management device.
+  *
+-- 
+2.11.0
 
-The series looks good so as soon you think it is finished
-I can apply it I think.
-
-Yours,
-Linus Walleij

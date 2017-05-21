@@ -1,132 +1,84 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 12 May 2017 08:08:02 +0000
-Subject: [PATCH 1/3] mdacon: align code in mda_detect properly
-Message-Id: <20170512080804.2508-1-jslaby@suse.cz>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Sun, 21 May 2017 22:02:07 +0000
+Subject: [PATCH 0/3] mfd: move include files out of include/linux/i2c
+Message-Id: <20170521220212.1404-1-wsa@the-dreams.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-samsung-soc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, rtc-linux-/JYPxA39Uh5TLH3MbocFFw@public.gmane.org
 
-This is just a whitespace cleanup. The code was a mess having multiple
-commands on one line like:
-scr_writew(0xAA55, p); if (scr_readw(p) = 0xAA55) count++;
+It doesn't make sense to use include/linux/i2c for client drivers which may in
+fact rather be hwmon or input or whatever devices. As a result, I want to
+deprecate include/linux/i2c for good. This series moves the include files to a
+better location, for the mfd subsystem to include/linux/mfd. Because of twl.h,
+this touches quite some subsystems, but I still think it is worth it.
 
-Indent that properly and make it nicer for reading.
+I prefer the series to go upstream via the subsystem tree; if you prefer that I
+take it via I2C, just let me know.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: <linux-fbdev@vger.kernel.org>
----
- drivers/video/console/mdacon.c | 60 ++++++++++++++++++++++++------------------
- 1 file changed, 35 insertions(+), 25 deletions(-)
+No runtime testing because of no HW, but buildbot is happy with this series at
+least. A branch can be found here:
 
-diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
-index ec192a1bf297..424af6bdb408 100644
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -208,10 +208,17 @@ static int mda_detect(void)
- 	p = (u16 *) mda_vram_base;
- 	q = (u16 *) (mda_vram_base + 0x01000);
- 
--	p_save = scr_readw(p); q_save = scr_readw(q);
-+	p_save = scr_readw(p);
-+	q_save = scr_readw(q);
-+
-+	scr_writew(0xAA55, p);
-+	if (scr_readw(p) = 0xAA55)
-+		count++;
-+
-+	scr_writew(0x55AA, p);
-+	if (scr_readw(p) = 0x55AA)
-+		count++;
- 
--	scr_writew(0xAA55, p); if (scr_readw(p) = 0xAA55) count++;
--	scr_writew(0x55AA, p); if (scr_readw(p) = 0x55AA) count++;
- 	scr_writew(p_save, p);
- 
- 	if (count != 2) {
-@@ -220,13 +227,18 @@ static int mda_detect(void)
- 
- 	/* check if we have 4K or 8K */
- 
--	scr_writew(0xA55A, q); scr_writew(0x0000, p);
--	if (scr_readw(q) = 0xA55A) count++;
-+	scr_writew(0xA55A, q);
-+	scr_writew(0x0000, p);
-+	if (scr_readw(q) = 0xA55A)
-+		count++;
- 	
--	scr_writew(0x5AA5, q); scr_writew(0x0000, p);
--	if (scr_readw(q) = 0x5AA5) count++;
-+	scr_writew(0x5AA5, q);
-+	scr_writew(0x0000, p);
-+	if (scr_readw(q) = 0x5AA5)
-+		count++;
- 
--	scr_writew(p_save, p); scr_writew(q_save, q);
-+	scr_writew(p_save, p);
-+	scr_writew(q_save, q);
- 	
- 	if (count = 4) {
- 		mda_vram_len = 0x02000;
-@@ -240,14 +252,12 @@ static int mda_detect(void)
- 	/* Edward: These two mess `tests' mess up my cursor on bootup */
- 
- 	/* cursor low register */
--	if (! test_mda_b(0x66, 0x0f)) {
-+	if (!test_mda_b(0x66, 0x0f))
- 		return 0;
--	}
- 
- 	/* cursor low register */
--	if (! test_mda_b(0x99, 0x0f)) {
-+	if (!test_mda_b(0x99, 0x0f))
- 		return 0;
--	}
- #endif
- 
- 	/* See if the card is a Hercules, by checking whether the vsync
-@@ -257,25 +267,25 @@ static int mda_detect(void)
- 	
- 	p_save = q_save = inb_p(mda_status_port) & MDA_STATUS_VSYNC;
- 
--	for (count=0; count < 50000 && p_save = q_save; count++) {
-+	for (count = 0; count < 50000 && p_save = q_save; count++) {
- 		q_save = inb(mda_status_port) & MDA_STATUS_VSYNC;
- 		udelay(2);
- 	}
- 
- 	if (p_save != q_save) {
- 		switch (inb_p(mda_status_port) & 0x70) {
--			case 0x10:
--				mda_type = TYPE_HERCPLUS;
--				mda_type_name = "HerculesPlus";
--				break;
--			case 0x50:
--				mda_type = TYPE_HERCCOLOR;
--				mda_type_name = "HerculesColor";
--				break;
--			default:
--				mda_type = TYPE_HERC;
--				mda_type_name = "Hercules";
--				break;
-+		case 0x10:
-+			mda_type = TYPE_HERCPLUS;
-+			mda_type_name = "HerculesPlus";
-+			break;
-+		case 0x50:
-+			mda_type = TYPE_HERCCOLOR;
-+			mda_type_name = "HerculesColor";
-+			break;
-+		default:
-+			mda_type = TYPE_HERC;
-+			mda_type_name = "Hercules";
-+			break;
- 		}
- 	}
- 
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/platform_data
+
+Thanks and kind regards,
+
+   Wolfram
+
+
+Wolfram Sang (3):
+  mfd: dm355evm_msp: move header file out of I2C realm
+  mfd: tps65010: move header file out of I2C realm
+  mfd: twl: move header file out of I2C realm
+
+ arch/arm/mach-omap1/board-h2-mmc.c        | 2 +-
+ arch/arm/mach-omap1/board-h2.c            | 2 +-
+ arch/arm/mach-omap1/board-h3-mmc.c        | 2 +-
+ arch/arm/mach-omap1/board-h3.c            | 2 +-
+ arch/arm/mach-omap1/board-osk.c           | 2 +-
+ arch/arm/mach-omap2/common.h              | 2 +-
+ arch/arm/mach-omap2/omap_twl.c            | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris-dvs.c   | 2 +-
+ arch/arm/mach-s3c24xx/mach-osiris.c       | 2 +-
+ drivers/gpio/gpio-twl4030.c               | 2 +-
+ drivers/iio/adc/twl4030-madc.c            | 2 +-
+ drivers/iio/adc/twl6030-gpadc.c           | 2 +-
+ drivers/input/keyboard/twl4030_keypad.c   | 2 +-
+ drivers/input/misc/dm355evm_keys.c        | 2 +-
+ drivers/input/misc/twl4030-pwrbutton.c    | 2 +-
+ drivers/input/misc/twl4030-vibra.c        | 2 +-
+ drivers/mfd/dm355evm_msp.c                | 2 +-
+ drivers/mfd/tps65010.c                    | 2 +-
+ drivers/mfd/twl-core.c                    | 6 +++---
+ drivers/mfd/twl4030-audio.c               | 2 +-
+ drivers/mfd/twl4030-irq.c                 | 2 +-
+ drivers/mfd/twl4030-power.c               | 2 +-
+ drivers/mfd/twl6030-irq.c                 | 2 +-
+ drivers/phy/phy-twl4030-usb.c             | 2 +-
+ drivers/power/supply/twl4030_charger.c    | 2 +-
+ drivers/pwm/pwm-twl-led.c                 | 2 +-
+ drivers/pwm/pwm-twl.c                     | 2 +-
+ drivers/regulator/twl-regulator.c         | 2 +-
+ drivers/regulator/twl6030-regulator.c     | 2 +-
+ drivers/rtc/rtc-dm355evm.c                | 2 +-
+ drivers/rtc/rtc-twl.c                     | 2 +-
+ drivers/usb/host/ohci-omap.c              | 2 +-
+ drivers/usb/phy/phy-isp1301-omap.c        | 2 +-
+ drivers/usb/phy/phy-twl6030-usb.c         | 2 +-
+ drivers/video/backlight/pandora_bl.c      | 2 +-
+ drivers/video/fbdev/omap/lcd_h3.c         | 2 +-
+ drivers/watchdog/twl4030_wdt.c            | 2 +-
+ include/linux/{i2c => mfd}/dm355evm_msp.h | 0
+ include/linux/{i2c => mfd}/tps65010.h     | 2 +-
+ include/linux/{i2c => mfd}/twl.h          | 0
+ sound/soc/codecs/twl4030.c                | 2 +-
+ 41 files changed, 41 insertions(+), 41 deletions(-)
+ rename include/linux/{i2c => mfd}/dm355evm_msp.h (100%)
+ rename include/linux/{i2c => mfd}/tps65010.h (99%)
+ rename include/linux/{i2c => mfd}/twl.h (100%)
+
 -- 
-2.13.0
+2.11.0
 

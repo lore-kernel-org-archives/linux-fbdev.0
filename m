@@ -1,20 +1,18 @@
-From: Jonathan Cameron <jic23@kernel.org>
-Date: Mon, 22 May 2017 20:34:08 +0000
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Mon, 22 May 2017 23:37:58 +0000
 Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
-Message-Id: <20170522213408.0c5871d6@kernel.org>
+Message-Id: <20170522233758.GC12016@dtor-ws>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170521220212.1404-1-wsa@the-dreams.de>
-        <20170521220212.1404-4-wsa@the-dreams.de>
-In-Reply-To: <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+In-Reply-To: <20170521220212.1404-4-wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa@the-dreams.de>
-Cc: linux-i2c@vger.kernel.org, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Linus Walleij <linus.walleij@linaro.org>, Alexandre Courbot <gnurou@gmail.com>, Hartmut Knaack <knaack.h@gmx.de>, Lars-Peter Clausen <lars@metafoo.de>, Peter Meerwald-Stadler <pmeerw@pmeerw.net>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Lee Jones <lee.jones@linaro.org>, Kishon Vijay Abraham I <kishon@ti.com>, Sebastian Reichel <sre@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Alessandro Zummo <a.zummo@towertech.it>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Wim
 
-On Mon, 22 May 2017 00:02:10 +0200
-Wolfram Sang <wsa@the-dreams.de> wrote:
-
+On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
 > include/linux/i2c is not for client devices. Move the header file to a
 > more appropriate location.
 > 
@@ -23,15 +21,14 @@ Wolfram Sang <wsa@the-dreams.de> wrote:
 >  arch/arm/mach-omap2/common.h            | 2 +-
 >  arch/arm/mach-omap2/omap_twl.c          | 2 +-
 >  drivers/gpio/gpio-twl4030.c             | 2 +-
-
 >  drivers/iio/adc/twl4030-madc.c          | 2 +-
 >  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
-Acked-by: Jonathan Cameron <jic23@kernel.org>
-
-Thanks,
 >  drivers/input/keyboard/twl4030_keypad.c | 2 +-
 >  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
 >  drivers/input/misc/twl4030-vibra.c      | 2 +-
+
+Acked-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
 >  drivers/mfd/twl-core.c                  | 6 +++---
 >  drivers/mfd/twl4030-audio.c             | 2 +-
 >  drivers/mfd/twl4030-irq.c               | 2 +-
@@ -386,4 +383,9 @@ Thanks,
 >  #include <linux/slab.h>
 >  #include <linux/gpio.h>
 >  #include <sound/core.h>
+> -- 
+> 2.11.0
+> 
 
+-- 
+Dmitry

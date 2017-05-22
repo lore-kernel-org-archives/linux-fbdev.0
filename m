@@ -1,87 +1,59 @@
-From: Jiri Slaby <jslaby@suse.cz>
-Date: Fri, 12 May 2017 08:08:04 +0000
-Subject: [PATCH 3/3] mdacon: replace MDA_ADDR macro by inline function
-Message-Id: <20170512080804.2508-3-jslaby@suse.cz>
+From: Richa Jha <richaj@cdac.in>
+Date: Mon, 22 May 2017 10:57:37 +0000
+Subject: [PATCH] Fixed cameCase check in file  drivers/staging/sm750fb/ddk750_chip.c
+Message-Id: <1495449937-24573-1-git-send-email-richaj@cdac.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170512080804.2508-1-jslaby@suse.cz>
-In-Reply-To: <20170512080804.2508-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com
-Cc: linux-fbdev@vger.kernel.org, Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: gregkh@linuxfoundation.org
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Richa Jha <richaj@cdac.in>
 
-MDA_ADDR is one of those macros which could be an inline function. So
-convert MDA_ADDR to mda_addr.
+Changes :
 
-Note that we take x and y as unsigned now. But they are absolute
-coordinates, so this is no problem.
+ulActualMxClk ---> ul_actual_max_clk
+p_init_param  ---> pInitParam
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: <linux-fbdev@vger.kernel.org>
+Signed-off-by: Richa Jha <richaj@cdac.in>
 ---
- drivers/video/console/mdacon.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/staging/sm750fb/ddk750_chip.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/console/mdacon.c b/drivers/video/console/mdacon.c
-index 3ec2b178bb88..d0d427a2f1a3 100644
---- a/drivers/video/console/mdacon.c
-+++ b/drivers/video/console/mdacon.c
-@@ -420,17 +420,20 @@ static void mdacon_invert_region(struct vc_data *c, u16 *p, int count)
- 	}
- }
- 
--#define MDA_ADDR(x, y)  (mda_vram_base + (y)*mda_num_columns + (x))
-+static inline u16 *mda_addr(unsigned int x, unsigned int y)
-+{
-+	return mda_vram_base + y * mda_num_columns + x;
-+}
- 
- static void mdacon_putc(struct vc_data *c, int ch, int y, int x)
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 4f646f2..00bca17 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -55,7 +55,7 @@ static unsigned int get_mxclk_freq(void)
+ static void set_chip_clock(unsigned int frequency)
  {
--	scr_writew(mda_convert_attr(ch), MDA_ADDR(x, y));
-+	scr_writew(mda_convert_attr(ch), mda_addr(x, y));
- }
+ 	struct pll_value pll;
+-	unsigned int ul_actual_max_Clk;
++	unsigned int ul_actual_max_clk;
  
- static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
- 		         int count, int y, int x)
- {
--	u16 *dest = MDA_ADDR(x, y);
-+	u16 *dest = mda_addr(x, y);
+ 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
+ 	if (sm750_get_chip_type() = SM750LE)
+@@ -75,7 +75,7 @@ static void set_chip_clock(unsigned int frequency)
+ 		 * Return value of sm750_calc_pll_value gives the actual
+ 		 * possible clock.
+ 		 */
+-		ul_actual_max_Clk = sm750_calc_pll_value(frequency, &pll);
++		ul_actual_max_clk = sm750_calc_pll_value(frequency, &pll);
  
- 	for (; count > 0; count--) {
- 		scr_writew(mda_convert_attr(scr_readw(s++)), dest++);
-@@ -440,7 +443,7 @@ static void mdacon_putcs(struct vc_data *c, const unsigned short *s,
- static void mdacon_clear(struct vc_data *c, int y, int x, 
- 			  int height, int width)
- {
--	u16 *dest = MDA_ADDR(x, y);
-+	u16 *dest = mda_addr(x, y);
- 	u16 eattr = mda_convert_attr(c->vc_video_erase_char);
- 
- 	if (width <= 0 || height <= 0)
-@@ -512,16 +515,16 @@ static bool mdacon_scroll(struct vc_data *c, unsigned int t, unsigned int b,
- 	switch (dir) {
- 
- 	case SM_UP:
--		scr_memmovew(MDA_ADDR(0,t), MDA_ADDR(0,t+lines),
-+		scr_memmovew(mda_addr(0, t), mda_addr(0, t + lines),
- 				(b-t-lines)*mda_num_columns*2);
--		scr_memsetw(MDA_ADDR(0,b-lines), eattr,
-+		scr_memsetw(mda_addr(0, b - lines), eattr,
- 				lines*mda_num_columns*2);
- 		break;
- 
- 	case SM_DOWN:
--		scr_memmovew(MDA_ADDR(0,t+lines), MDA_ADDR(0,t),
-+		scr_memmovew(mda_addr(0, t + lines), mda_addr(0, t),
- 				(b-t-lines)*mda_num_columns*2);
--		scr_memsetw(MDA_ADDR(0,t), eattr, lines*mda_num_columns*2);
-+		scr_memsetw(mda_addr(0, t), eattr, lines*mda_num_columns*2);
- 		break;
- 	}
- 
+ 		/* Master Clock Control: MXCLK_PLL */
+ 		poke32(MXCLK_PLL_CTRL, sm750_format_pll_reg(&pll));
 -- 
-2.13.0
+2.1.4
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+[ C-DAC is on Social-Media too. Kindly follow us at:
+Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
+
+This e-mail is for the sole use of the intended recipient(s) and may
+contain confidential and privileged information. If you are not the
+intended recipient, please contact the sender by reply e-mail and destroy
+all copies and the original message. Any unauthorized review, use,
+disclosure, dissemination, forwarding, printing or copying of this email
+is strictly prohibited and appropriate legal action will be taken.
+-------------------------------------------------------------------------------------------------------------------------------
 

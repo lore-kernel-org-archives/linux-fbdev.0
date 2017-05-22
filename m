@@ -1,37 +1,38 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 22 May 2017 15:31:20 +0000
-Subject: Re: [PATCH v5 05/14] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
-Message-Id: <CACRpkdauf5c2i4o5i8QY8YHPNjizkvTu6kAbnquWiP_=v2=KdQ@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Mon, 22 May 2017 11:51:58 +0000
+Subject: Re: [PATCH] Fixed cameCase check in file drivers/staging/sm750fb/ddk750_chip.c
+Message-Id: <20170522115158.sarc4wdluqiinw4w@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net> <20170428200824.10906-1-paul@crapouillou.net>
- <20170428200824.10906-6-paul@crapouillou.net>
-In-Reply-To: <20170428200824.10906-6-paul@crapouillou.net>
+References: <1495449937-24573-1-git-send-email-richaj@cdac.in>
+In-Reply-To: <1495449937-24573-1-git-send-email-richaj@cdac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>, Ralf Baechle <ralf@linux-mips.org>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, James Hogan <james.hogan@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>
+To: Richa Jha <richaj@cdac.in>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org, sudipm.mukherjee@gmail.com
 
-On Fri, Apr 28, 2017 at 10:08 PM, Paul Cercueil <paul@crapouillou.net> wrote:
+On Mon, May 22, 2017 at 04:15:37PM +0530, Richa Jha wrote:
+> Changes :
+> 
+> ulActualMxClk ---> ul_actual_max_clk
+> p_init_param  ---> pInitParam
 
-> There is a pinctrl driver for each of the Ingenic SoCs supported by the
-> upstream Linux kernel. In order to switch away from the old GPIO
-> platform code, we now enable the pinctrl drivers by default for the
-> Ingenic SoCs.
->
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+It doesn't touch p_init_param.
 
-I applied all the patches to a branch in pinctrl and merged into my
-devel branch for testing:
+> -------------------------------------------------------------------------------------------------------------------------------
+> [ C-DAC is on Social-Media too. Kindly follow us at:
+> Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
+> 
+> This e-mail is for the sole use of the intended recipient(s) and may
+> contain confidential and privileged information. If you are not the
+> intended recipient, please contact the sender by reply e-mail and destroy
+> all copies and the original message. Any unauthorized review, use,
+> disclosure, dissemination, forwarding, printing or copying of this email
+> is strictly prohibited and appropriate legal action will be taken.
+> -------------------------------------------------------------------------------------------------------------------------------
 
-https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl.git/
-Branch: ingenic
+These non-disclosure things aren't allowed.
 
-Ralf: are you OK with this? It would be nice to have your ACK on
-all patches. If you want you can pull this branch into the MIPS
-tree, or we can hope for it all to settle nicely because of low platform
-activity in MIPS on this platform, so it only needs to come in
-from my trees.
+regards,
+dan carpenter
 
-Yours,
-Linus Walleij

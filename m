@@ -1,26 +1,110 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 11 May 2017 11:01:30 +0000
-Subject: Re: [PATCH v5 03/14] pinctrl: add a pinctrl driver for the Ingenic jz47xx SoCs
-Message-Id: <CACRpkdYR8Y77VXrNz=NwczgxZvitkO72bAYcDuhneZbVVsT6=g@mail.gmail.com>
+From: Richa Jha <richaj@cdac.in>
+Date: Tue, 23 May 2017 13:19:39 +0000
+Subject: staging: sm750fb: removed hungarian prfx and replace CamelCase variables
+Message-Id: <1495544859-2639-1-git-send-email-richaj@cdac.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net> <20170428200824.10906-1-paul@crapouillou.net>
- <20170428200824.10906-4-paul@crapouillou.net> <7941dbfbaeaf5c23bb177e66165060d3@crapouillou.net>
-In-Reply-To: <7941dbfbaeaf5c23bb177e66165060d3@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Ralf Baechle <ralf@linux-mips.org>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, James Hogan <james.hogan@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>"linux-mtd@lists.infradead.org" <li>
+To: gregkh@linuxfoundation.org
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Richa Jha <richaj@cdac.in>
 
-On Wed, May 3, 2017 at 11:12 AM, Paul Cercueil <paul@crapouillou.net> wrote:
+Replace CamelCase variable names with underscores and remove
+ hungarian prefixes to comply with the standard kernel coding style
 
-> The dependency on MFD is gone but now I notice I forgot to remove the
-> 'select MFD_CORE'
-> in the Kconfig. It'd be great if you can make a quick edit when merging
-> this,
-> otherwise I'll send a v6.
+Signed-off-by: Richa Jha <richaj@cdac.in>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-No problem I can fix it up.
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 8e51f60..56b8d66 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -55,7 +55,7 @@ static unsigned int get_mxclk_freq(void)
+ static void set_chip_clock(unsigned int frequency)
+ {
+ 	struct pll_value pll;
+-	unsigned int ulActualMxClk;
++	unsigned int actual_max_clk;
+ 
+ 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
+ 	if (sm750_get_chip_type() = SM750LE)
+@@ -75,7 +75,7 @@ static void set_chip_clock(unsigned int frequency)
+ 		 * Return value of sm750_calc_pll_value gives the actual
+ 		 * possible clock.
+ 		 */
+-		ulActualMxClk = sm750_calc_pll_value(frequency, &pll);
++		actual_max_clk = sm750_calc_pll_value(frequency, &pll);
+ 
+ 		/* Master Clock Control: MXCLK_PLL */
+ 		poke32(MXCLK_PLL_CTRL, sm750_format_pll_reg(&pll));
+@@ -210,13 +210,13 @@ unsigned int ddk750_get_vm_size(void)
+ 	return data;
+ }
+ 
+-int ddk750_init_hw(struct initchip_param *pInitParam)
++int ddk750_init_hw(struct initchip_param *init_param)
+ {
+ 	unsigned int reg;
+ 
+-	if (pInitParam->powerMode != 0)
+-		pInitParam->powerMode = 0;
+-	sm750_set_power_mode(pInitParam->powerMode);
++	if (init_param->powerMode != 0)
++		init_param->powerMode = 0;
++	sm750_set_power_mode(init_param->powerMode);
+ 
+ 	/* Enable display power gate & LOCALMEM power gate*/
+ 	reg = peek32(CURRENT_GATE);
+@@ -237,13 +237,13 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 	}
+ 
+ 	/* Set the Main Chip Clock */
+-	set_chip_clock(MHz((unsigned int)pInitParam->chipClock));
++	set_chip_clock(MHz((unsigned int)init_param->chipClock));
+ 
+ 	/* Set up memory clock. */
+-	set_memory_clock(MHz(pInitParam->memClock));
++	set_memory_clock(MHz(init_param->memClock));
+ 
+ 	/* Set up master clock */
+-	set_master_clock(MHz(pInitParam->masterClock));
++	set_master_clock(MHz(init_param->masterClock));
+ 
+ 	/*
+ 	 * Reset the memory controller.
+@@ -251,7 +251,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 	 * the system might hang when sw accesses the memory.
+ 	 * The memory should be resetted after changing the MXCLK.
+ 	 */
+-	if (pInitParam->resetMemory = 1) {
++	if (init_param->resetMemory = 1) {
+ 		reg = peek32(MISC_CTRL);
+ 		reg &= ~MISC_CTRL_LOCALMEM_RESET;
+ 		poke32(MISC_CTRL, reg);
+@@ -260,7 +260,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 		poke32(MISC_CTRL, reg);
+ 	}
+ 
+-	if (pInitParam->setAllEngOff = 1) {
++	if (init_param->setAllEngOff = 1) {
+ 		sm750_enable_2d_engine(0);
+ 
+ 		/* Disable Overlay, if a former application left it on */
+-- 
+2.1.4
 
-Yours,
-Linus Walleij
+
+-------------------------------------------------------------------------------------------------------------------------------
+[ C-DAC is on Social-Media too. Kindly follow us at:
+Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
+
+This e-mail is for the sole use of the intended recipient(s) and may
+contain confidential and privileged information. If you are not the
+intended recipient, please contact the sender by reply e-mail and destroy
+all copies and the original message. Any unauthorized review, use,
+disclosure, dissemination, forwarding, printing or copying of this email
+is strictly prohibited and appropriate legal action will be taken.
+-------------------------------------------------------------------------------------------------------------------------------
+

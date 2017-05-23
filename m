@@ -1,95 +1,106 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 22 May 2017 11:10:09 +0000
-Subject: Re: [PATCH v5] backlight: report error on failure
-Message-Id: <20170522111009.c75vhzfx4wo5ffjp@dell>
+From: Richa Jha <richaj@cdac.in>
+Date: Tue, 23 May 2017 05:43:16 +0000
+Subject: staging: sm750fb: Replace CamelCase variable names with underscores
+Message-Id: <1495517476-31531-1-git-send-email-richaj@cdac.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1495054507-9988-1-git-send-email-sudipm.mukherjee@gmail.com>
-In-Reply-To: <1495054507-9988-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Andy Shevchenko <andy.shevchenko@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: gregkh@linuxfoundation.org
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Richa Jha <richaj@cdac.in>
 
-On Wed, 17 May 2017, Sudip Mukherjee wrote:
+    Replace CamelCase variable names with underscores to comply with
+    the standard kernel coding style
 
-> It is possible to update the backlight power and the brightness using
-> the sysfs and on writing it either returns the count or if the callback
-> function does not exist then returns the error code 'ENXIO'.
->=20
-> We have a situation where the userspace client is writing to the sysfs
-> to update the power and since the callback function exists the client
-> receives the return value as count and considers the operation to be
-> successful. That is correct as the write to the sysfs was successful.
-> But there is no way to know if the actual operation was done or not.
->=20
-> backlight_update_status() returns the error code if it fails. Pass that
-> to the userspace client who is trying to update the power so that the
-> client knows that the operation failed.
->=20
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Signed-off-by: Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
-> ---
->=20
-> v5: dropped the ternary condition
-> v4: ABI comment removed from commit message
-> v3: remove rc =3D 0, and update rc with count in else condition.
-> v2: update power with old value on failure.
->=20
->  drivers/video/backlight/backlight.c | 15 ++++++++++-----
->  1 file changed, 10 insertions(+), 5 deletions(-)
+Signed-off-by: Richa Jha <richaj@cdac.in>
+---
+ drivers/staging/sm750fb/ddk750_chip.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Applied, thanks.
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 7b1180a..00bca17 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -55,7 +55,7 @@ static unsigned int get_mxclk_freq(void)
+ static void set_chip_clock(unsigned int frequency)
+ {
+ 	struct pll_value pll;
+-	unsigned int ulActualMxClk;
++	unsigned int ul_actual_max_clk;
+ 
+ 	/* Cheok_0509: For SM750LE, the chip clock is fixed. Nothing to set. */
+ 	if (sm750_get_chip_type() = SM750LE)
+@@ -75,7 +75,7 @@ static void set_chip_clock(unsigned int frequency)
+ 		 * Return value of sm750_calc_pll_value gives the actual
+ 		 * possible clock.
+ 		 */
+-		ulActualMxClk = sm750_calc_pll_value(frequency, &pll);
++		ul_actual_max_clk = sm750_calc_pll_value(frequency, &pll);
+ 
+ 		/* Master Clock Control: MXCLK_PLL */
+ 		poke32(MXCLK_PLL_CTRL, sm750_format_pll_reg(&pll));
+@@ -210,11 +210,11 @@ unsigned int ddk750_get_vm_size(void)
+ 	return data;
+ }
+ 
+-int ddk750_init_hw(struct initchip_param *pInitParam)
++int ddk750_init_hw(struct initchip_param *p_init_param)
+ {
+ 	unsigned int reg;
+ 
+-	if (pInitParam->powerMode != 0)
++	if (p_init_param->powerMode != 0)
+ 		p_init_param->powerMode = 0;
+ 	sm750_set_power_mode(p_init_param->powerMode);
+ 
+@@ -237,13 +237,13 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 	}
+ 
+ 	/* Set the Main Chip Clock */
+-	set_chip_clock(MHz((unsigned int)pInitParam->chipClock));
++	set_chip_clock(MHz((unsigned int)p_init_param->chipClock));
+ 
+ 	/* Set up memory clock. */
+-	set_memory_clock(MHz(pInitParam->memClock));
++	set_memory_clock(MHz(p_init_param->memClock));
+ 
+ 	/* Set up master clock */
+-	set_master_clock(MHz(pInitParam->masterClock));
++	set_master_clock(MHz(p_init_param->masterClock));
+ 
+ 	/*
+ 	 * Reset the memory controller.
+@@ -251,7 +251,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 	 * the system might hang when sw accesses the memory.
+ 	 * The memory should be resetted after changing the MXCLK.
+ 	 */
+-	if (pInitParam->resetMemory = 1) {
++	if (p_init_param->resetMemory = 1) {
+ 		reg = peek32(MISC_CTRL);
+ 		reg &= ~MISC_CTRL_LOCALMEM_RESET;
+ 		poke32(MISC_CTRL, reg);
+@@ -260,7 +260,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
+ 		poke32(MISC_CTRL, reg);
+ 	}
+ 
+-	if (pInitParam->setAllEngOff = 1) {
++	if (p_init_param->setAllEngOff = 1) {
+ 		sm750_enable_2d_engine(0);
+ 
+ 		/* Disable Overlay, if a former application left it on */
+-- 
+2.1.4
 
-> diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backligh=
-t/backlight.c
-> index 288318a..8049e76 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -134,7 +134,7 @@ static ssize_t bl_power_store(struct device *dev, str=
-uct device_attribute *attr,
->  {
->  	int rc;
->  	struct backlight_device *bd =3D to_backlight_device(dev);
-> -	unsigned long power;
-> +	unsigned long power, old_power;
-> =20
->  	rc =3D kstrtoul(buf, 0, &power);
->  	if (rc)
-> @@ -145,10 +145,16 @@ static ssize_t bl_power_store(struct device *dev, s=
-truct device_attribute *attr,
->  	if (bd->ops) {
->  		pr_debug("set power to %lu\n", power);
->  		if (bd->props.power !=3D power) {
-> +			old_power =3D bd->props.power;
->  			bd->props.power =3D power;
-> -			backlight_update_status(bd);
-> +			rc =3D backlight_update_status(bd);
-> +			if (rc)
-> +				bd->props.power =3D old_power;
-> +			else
-> +				rc =3D count;
-> +		} else {
-> +			rc =3D count;
->  		}
-> -		rc =3D count;
->  	}
->  	mutex_unlock(&bd->ops_lock);
-> =20
-> @@ -176,8 +182,7 @@ int backlight_device_set_brightness(struct backlight_=
-device *bd,
->  		else {
->  			pr_debug("set brightness to %lu\n", brightness);
->  			bd->props.brightness =3D brightness;
-> -			backlight_update_status(bd);
-> -			rc =3D 0;
-> +			rc =3D backlight_update_status(bd);
->  		}
->  	}
->  	mutex_unlock(&bd->ops_lock);
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+-------------------------------------------------------------------------------------------------------------------------------
+[ C-DAC is on Social-Media too. Kindly follow us at:
+Facebook: https://www.facebook.com/CDACINDIA & Twitter: @cdacindia ]
+
+This e-mail is for the sole use of the intended recipient(s) and may
+contain confidential and privileged information. If you are not the
+intended recipient, please contact the sender by reply e-mail and destroy
+all copies and the original message. Any unauthorized review, use,
+disclosure, dissemination, forwarding, printing or copying of this email
+is strictly prohibited and appropriate legal action will be taken.
+-------------------------------------------------------------------------------------------------------------------------------
+

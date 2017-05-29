@@ -1,57 +1,36 @@
-From: Wolfram Sang <wsa@the-dreams.de>
-Date: Sun, 21 May 2017 22:09:53 +0000
-Subject: [PATCH 2/2] video: adp8870: move header file out of I2C realm
-Message-Id: <20170521220953.2602-3-wsa@the-dreams.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 29 May 2017 09:23:16 +0000
+Subject: Re: [PATCH 2/2] video: adp8870: move header file out of I2C realm
+Message-Id: <1674548.6H3ihMLElO@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170521220953.2602-1-wsa@the-dreams.de>
-In-Reply-To: <20170521220953.2602-1-wsa@the-dreams.de>
+        <CGME20170521220958epcas1p30bab0556e81fe48cff9f65b09177dd9c@epcas1p3.samsung.com>
+        <20170521220953.2602-3-wsa@the-dreams.de>
+In-Reply-To: <20170521220953.2602-3-wsa@the-dreams.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-i2c@vger.kernel.org
-Cc: Wolfram Sang <wsa@the-dreams.de>, Steven Miao <realmz6@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Wolfram Sang <wsa@the-dreams.de>
+Cc: linux-i2c@vger.kernel.org, Steven Miao <realmz6@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, adi-buildroot-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-include/linux/i2c is not for client devices. Move the header file to a
-more appropriate location.
+On Monday, May 22, 2017 12:09:53 AM Wolfram Sang wrote:
+> include/linux/i2c is not for client devices. Move the header file to a
+> more appropriate location.
+> 
+> Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
----
- arch/blackfin/mach-bf537/boards/stamp.c        | 2 +-
- drivers/video/backlight/adp8870_bl.c           | 2 +-
- include/linux/{i2c => platform_data}/adp8870.h | 0
- 3 files changed, 2 insertions(+), 2 deletions(-)
- rename include/linux/{i2c => platform_data}/adp8870.h (100%)
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-diff --git a/arch/blackfin/mach-bf537/boards/stamp.c b/arch/blackfin/mach-bf537/boards/stamp.c
-index 7db90c72bd8ddc..7528148dc4925b 100644
---- a/arch/blackfin/mach-bf537/boards/stamp.c
-+++ b/arch/blackfin/mach-bf537/boards/stamp.c
-@@ -1995,7 +1995,7 @@ static struct adp5588_gpio_platform_data adp5588_gpio_data = {
- #endif
- 
- #if IS_ENABLED(CONFIG_BACKLIGHT_ADP8870)
--#include <linux/i2c/adp8870.h>
-+#include <linux/platform_data/adp8870.h>
- static struct led_info adp8870_leds[] = {
- 	{
- 		.name = "adp8870-led7",
-diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
-index 21acac90fd773f..058d1def2d1f4b 100644
---- a/drivers/video/backlight/adp8870_bl.c
-+++ b/drivers/video/backlight/adp8870_bl.c
-@@ -18,7 +18,7 @@
- #include <linux/workqueue.h>
- #include <linux/slab.h>
- 
--#include <linux/i2c/adp8870.h>
-+#include <linux/platform_data/adp8870.h>
- #define ADP8870_EXT_FEATURES
- #define ADP8870_USE_LEDS
- 
-diff --git a/include/linux/i2c/adp8870.h b/include/linux/platform_data/adp8870.h
-similarity index 100%
-rename from include/linux/i2c/adp8870.h
-rename to include/linux/platform_data/adp8870.h
--- 
-2.11.0
+> ---
+>  arch/blackfin/mach-bf537/boards/stamp.c        | 2 +-
+>  drivers/video/backlight/adp8870_bl.c           | 2 +-
+>  include/linux/{i2c => platform_data}/adp8870.h | 0
+>  3 files changed, 2 insertions(+), 2 deletions(-)
+>  rename include/linux/{i2c => platform_data}/adp8870.h (100%)
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

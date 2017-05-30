@@ -1,12 +1,33 @@
-From: "Boyer, Andrew" <Andrew.Boyer@dell.com>
-Date: Tue, 30 May 2017 12:43:56 +0000
-Subject: [bug report] drm/vmwgfx: Cursor not visible in VMware in 4.11+ kernel
-Message-Id: <D552E12B.17F31%Andrew.Boyer@emc.com>
+From: Sinclair Yeh <syeh@vmware.com>
+Date: Tue, 30 May 2017 15:17:19 +0000
+Subject: Re: [bug report] drm/vmwgfx: Cursor not visible in VMware in 4.11+ kernel
+Message-Id: <MWHPR05MB3296B6DB061E3C02E9E531C2A8F00@MWHPR05MB3296.namprd05.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <D552E12B.17F31%Andrew.Boyer@emc.com>
+In-Reply-To: <D552E12B.17F31%Andrew.Boyer@emc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev@vger.kernel.org
+
+Hi,
+
+Please apply this patch to your tree.  This patch is queue for our next pul=
+l request.
+
+https://cgit.freedesktop.org/mesa/vmwgfx/commit/?id=3D324722b1e1582d45e865d=
+cd2233a17edcfbd1638
+
+Sinclair
+
+
+________________________________________
+From: Boyer, Andrew <Andrew.Boyer@emc.com>
+Sent: Tuesday, May 30, 2017 5:43 AM
+To: linux-fbdev@vger.kernel.org
+Cc: Sinclair Yeh
+Subject: [bug report] drm/vmwgfx: Cursor not visible in VMware in 4.11+ ker=
+nel
 
 Hello linux-fbdev,
 My apologies if this is misdirected.
@@ -107,4 +128,3 @@ P.S. From the log:
 [    2.018019] [drm] Using command buffers with DMA pool.
 [    2.018031] [drm] DX: no.
 [    2.018033] [drm] Atomic: yes
-

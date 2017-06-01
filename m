@@ -1,77 +1,75 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Tue, 27 Jun 2017 20:03:23 +0000
-Subject: Re: [PATCH] drivers/fbdev: efifb: allow BAR to be moved instead of claiming it
-Message-Id: <CAKv+Gu-Z+86AvnU--naXLFNOis42_qRmxjs-73wHcKUvWALXow@mail.gmail.com>
+From: Mike Gerow <gerow@google.com>
+Date: Thu, 01 Jun 2017 20:25:59 +0000
+Subject: [PATCH] video: fbdev: udlfb: drop log level for blanking
+Message-Id: <20170601202559.GA96809@google.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="AqsLC8rIMeq19msA"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170627161936.2301-1-ard.biesheuvel@linaro.org> <20170627200206.5jpvnaokvgqwxoul@redhat.com>
-In-Reply-To: <20170627200206.5jpvnaokvgqwxoul-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Peter Jones <pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, "linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Matt Fleming <matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Lorenzo Pieralisi <lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org>, Bjorn Helgaas <bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-On 27 June 2017 at 20:02, Peter Jones <pjones@redhat.com> wrote:
-> On Tue, Jun 27, 2017 at 04:19:36PM +0000, Ard Biesheuvel wrote:
->> On UEFI systems, the firmware may expose a Graphics Output Protocol (GOP)
->> instance to which the efifb driver attempts to attach in order to provide
->> a minimal, unaccelerated framebuffer. The GOP protocol itself is not very
->> sophisticated, and only describes the offset and size of the framebuffer
->> in memory, and the pixel format.
->>
->> If the GOP framebuffer is provided by a PCI device, it will have been
->> configured and enabled by the UEFI firmware, and the GOP protocol will
->> simply point into a live BAR region. However, the GOP protocol itself does
->> not describe this relation, and so we have to take care not to reconfigure
->> the BAR without taking efifb's dependency on it into account.
->>
->> Commit 55d728a40d36 ("efi/fb: Avoid reconfiguration of BAR that covers
->> the framebuffer") attempted to do so by claiming the BAR resource early
->> on, which prevents the PCI resource allocation routines from changing it.
->> However, it turns out that this only works if the PCI device is not
->> behind any bridges, since the bridge resources need to be claimed first.
->>
->> So instead, allow the BAR to be moved, but make the efifb driver deal
->> with that gracefully. So record the resource that covers the BAR early
->> on, and if it turns out the have moved by the time we probe the efifb
->> driver, update the framebuffer address accordingly.
->>
->> While this is less likely to occur on x86, given that the firmware's
->> PCI resource allocation is more likely to be preserved, this is a
->> worthwhile sanity check to have in place, and so let's remove the
->> #ifdef !CONFIG_X86 that surrounds it.
->>
->> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
->> ---
->>  drivers/video/fbdev/efifb.c | 24 ++++++++++++--------
->>  1 file changed, 15 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
->> index b827a8113e26..6220de3e25d3 100644
->> --- a/drivers/video/fbdev/efifb.c
->> +++ b/drivers/video/fbdev/efifb.c
->> @@ -146,6 +146,9 @@ ATTRIBUTE_GROUPS(efifb);
->>
->>  static bool pci_dev_disabled;        /* FB base matches BAR of a disabled device */
->>
->> +static struct resource *bar_resource;
->> +static u64 bar_offset;
->> +
->>  static int efifb_probe(struct platform_device *dev)
->>  {
->>       struct fb_info *info;
->> @@ -200,6 +203,13 @@ static int efifb_probe(struct platform_device *dev)
->>               efifb_fix.smem_start |= ext_lfb_base;
->>       }
->>
->> +     if (bar_resource &&
->> +         bar_resource->start + bar_offset != efifb_fix.smem_start) {
->> +
->> +             pr_warn("efifb: PCI BAR has moved, updating fb address\n");
->> +             efifb_fix.smem_start = bar_resource->start + bar_offset;
->
-> Does this really need a pr_warn()?  Seems like it should be dev_info(),
-> the point of the patch is to make moving it not be a problem.
->
 
-Yes, good point.
+--AqsLC8rIMeq19msA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Log blanking that goes from FB_BLANK_UNBLANK to itself at debug. It turns
+out Xorg likes to habitually unblank when already unblanked and this can
+fill up logs over a long period of time.
+
+Signed-off-by: Mike Gerow <gerow@google.com>
+---
+ drivers/video/fbdev/udlfb.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 6a3c353de7c3..611de916abcf 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1105,8 +1105,17 @@ static int dlfb_ops_blank(int blank_mode, struct fb_=
+info *info)
+ 	char *bufptr;
+ 	struct urb *urb;
+=20
+-	pr_info("/dev/fb%d FB_BLANK mode %d --> %d\n",
+-		info->node, dev->blank_mode, blank_mode);
++	/*
++	 * Xorg likes to habitually unblank when already unblanked so log these
++	 * kinds of events at debug.
++	 */
++	if (dev->blank_mode =3D=3D FB_BLANK_UNBLANK &&
++	    blank_mode =3D=3D FB_BLANK_UNBLANK)
++		pr_debug("/dev/fb%d FB_BLANK mode %d --> %d (FB_BLANK_UNBLANK --> FB_BLA=
+NK_UNBLANK)\n",
++			 info->node, FB_BLANK_UNBLANK, FB_BLANK_UNBLANK);
++	else
++		pr_info("/dev/fb%d FB_BLANK mode %d --> %d\n",
++			info->node, dev->blank_mode, blank_mode);
+=20
+ 	if ((dev->blank_mode =3D=3D FB_BLANK_POWERDOWN) &&
+ 	    (blank_mode !=3D FB_BLANK_POWERDOWN)) {
+--=20
+2.13.0.219.gdb65acc882-goog
+
+
+--=20
+Mike Gerow
+gerow@google.com
+
+--AqsLC8rIMeq19msA
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJZMHhXAAoJECb8JZRr34gjY4EIAM617SUKDue9gb2M9g+4f0mh
+6HJsNJJB5QuCg9qX0zgVeLABSO0pNOgWZ80ETNRUUXi9QmYoG/n6fZWiemaLD29K
+IxRCPXkUk9tnXaIFo5z5MrD7d5aDoxSKN4Ha2CABtoctWXW9EH5EapKpEDPV4jMy
+oQfdQDu4zlH+4PHT6FL71B64beGDZ9FgtJaJ3cdRFIJwn7ObQXN6Fk3pU/ErY4jy
+ErYja9xrWHYxu5odP7IVzndO8AgU79CdfREKsqAKFj3if1/AfFnMFnfR+IuFRI5O
+Zd35yTmqFIiCkMHtssrx+579gQx4gykMQa9fy0HdSmMT52yTTFwdyleVjzuqXFo=
+=asdm
+-----END PGP SIGNATURE-----
+
+--AqsLC8rIMeq19msA--

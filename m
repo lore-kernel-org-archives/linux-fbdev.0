@@ -1,91 +1,36 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Wed, 28 Jun 2017 11:16:32 +0000
-Subject: [PATCH 2/2] pwm-backlight: Add support for pwm-delay-us property
-Message-Id: <20170628111632.22582-2-enric.balletbo@collabora.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sun, 04 Jun 2017 19:36:54 +0000
+Subject: [PATCH] staging: sm750fb: change default screen resolution
+Message-Id: <1496605014-10358-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170628111632.22582-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170628111632.22582-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, huang lin <hl@rock-chips.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-From: huang lin <hl@rock-chips.com>
+Update the default screen resolution and also use 24bpp for a better
+screen performance.
 
-Some panel backlight (i.e. N116BGE-L41), in their power sequence
-specifications, request a delay between PWM signal and the backlight
-enable signal, so use the pwm-delay-us property to meet the timing.
-
-Signed-off-by: huang lin <hl@rock-chips.com>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Tested-by: Teddy Wang <teddy.wang@siliconmotion.com>
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 ---
- drivers/video/backlight/pwm_bl.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 002f1ce..c5c4ef0 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -10,6 +10,7 @@
-  * published by the Free Software Foundation.
-  */
- 
-+#include <linux/delay.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio.h>
- #include <linux/module.h>
-@@ -30,6 +31,7 @@ struct pwm_bl_data {
- 	unsigned int		period;
- 	unsigned int		lth_brightness;
- 	unsigned int		*levels;
-+	unsigned int		pwm_delay;
- 	bool			enabled;
- 	struct regulator	*power_supply;
- 	struct gpio_desc	*enable_gpio;
-@@ -54,10 +56,14 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
- 
-+	pwm_enable(pb->pwm);
-+
-+	if (pb->pwm_delay)
-+		usleep_range(pb->pwm_delay, pb->pwm_delay + 2000);
-+
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
- 
--	pwm_enable(pb->pwm);
- 	pb->enabled = true;
- }
- 
-@@ -66,12 +72,15 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (!pb->enabled)
- 		return;
- 
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
- 
-+	if (pb->pwm_delay)
-+		usleep_range(pb->pwm_delay, pb->pwm_delay + 2000);
-+
-+	pwm_config(pb->pwm, 0, pb->period);
-+	pwm_disable(pb->pwm);
-+
- 	regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
-@@ -273,6 +282,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->dev = &pdev->dev;
- 	pb->enabled = false;
- 
-+	of_property_read_u32(pdev->dev.of_node, "pwm-delay-us", &pb->pwm_delay);
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
- 						  GPIOD_ASIS);
- 	if (IS_ERR(pb->enable_gpio)) {
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index a7f722a..d5934f3 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -33,7 +33,7 @@
+ static int g_noaccel;
+ static int g_nomtrr;
+ static const char *g_fbmode[] = {NULL, NULL};
+-static const char *g_def_fbmode = "800x600-16@60";
++static const char *g_def_fbmode = "1024x768-24@60";
+ static char *g_settings;
+ static int g_dualview;
+ static char *g_option;
 -- 
-2.9.3
+1.9.1
 

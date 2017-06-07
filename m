@@ -1,31 +1,37 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Tue, 13 Jun 2017 09:40:55 +0000
-Subject: Re: [PATCH] Drivers: sm750fb - style fix
-Message-Id: <20170613094055.GH5677@kroah.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Wed, 07 Jun 2017 09:55:40 +0000
+Subject: [PATCH] video: fbdev: pxafb:  Handle return value of clk_prepare_enable
+Message-Id: <5e0ce70b74924acc351ce4d8ef846c28f8e6ceda.1496829008.git.arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170608081707.1825-1-robsonde@gmail.com>
-In-Reply-To: <20170608081707.1825-1-robsonde@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Derek Robson <robsonde@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, Jun 08, 2017 at 08:17:07PM +1200, Derek Robson wrote:
-> Fix checkpatch.pl warnings of the form "function definition argument
-> 'foo' should also have an identifier name" in header files.
-> 
-> Signed-off-by: Derek Robson <robsonde@gmail.com>
-> ---
->  drivers/staging/sm750fb/sm750.h | 24 ++++++++++++++++--------
->  1 file changed, 16 insertions(+), 8 deletions(-)
+clk_prepare_enable() can fail here and we must check its return value.
 
-You sent a bunch of patches, with very vague subjects.  Please be more
-specific, say what part of the kernel you are working on (i.e. staging),
-and number your patches so I know what order they should be applied in.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/video/fbdev/pxafb.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Please fix up all of them and resend.
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index b21a89b..c3d49e1 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1436,7 +1436,10 @@ static void pxafb_enable_controller(struct pxafb_info *fbi)
+ 	pr_debug("reg_lccr3 0x%08x\n", (unsigned int) fbi->reg_lccr3);
+ 
+ 	/* enable LCD controller clock */
+-	clk_prepare_enable(fbi->clk);
++	if (clk_prepare_enable(fbi->clk)) {
++		pr_err("%s: Failed to prepare clock\n", __func__);
++		return;
++	}
+ 
+ 	if (fbi->lccr0 & LCCR0_LCDT)
+ 		return;
+-- 
+1.9.1
 
-thanks,
-
-greg k-h

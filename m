@@ -1,51 +1,65 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 20 Jun 2017 21:41:25 +0000
-Subject: Re: [PATCH] sm501fb: Silence a coccinelle script warning.
-Message-Id: <20170620214125.GA5843@sudip-laptop>
+From: Mike Gerow <gerow@google.com>
+Date: Wed, 07 Jun 2017 21:42:55 +0000
+Subject: [PATCH v2] video: fbdev: udlfb: drop log level for blanking
+Message-Id: <20170607214255.GA37736@google.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="0OAP2g/MAC+5xKAE"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170508061141epcas3p4d89f8f964dbe8a327de1abf80da94e6a@epcas3p4.samsung.com>
- <20170508061116.31471-1-christophe.jaillet@wanadoo.fr>
- <3551083.sIQ6JeN0q9@amdc3058>
-In-Reply-To: <3551083.sIQ6JeN0q9@amdc3058>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, khoroshilov@ispras.ru, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-
-Hi Bartlomiej,
-
-On Wed, Jun 14, 2017 at 12:54:58PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Monday, May 08, 2017 08:11:16 AM Christophe JAILLET wrote:
-> > According to surrounding goto, it is likely that 'goto err_probed_panel' is
-> > expected here.
-> > This change is just done in order to silence some coccinelle scripts
-> > which try to detect wrongly ordered goto.
-> > 
-> > If 'info->fb[HEAD_PANEL]' and' 'info->fb[HEAD_CRT]' are both NULL, this
-> > means that no 'framebuffer_alloc' has been performed, so 'goto err_alloc'
-> > looks fine.
-> > Anyway, it is also harmless in this case to call 'framebuffer_release'.
-> > The code looks more straight forward.
-> > 
-> > Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> 
-> It seems that the code for supporting only selected framebuffers
-> (only HEAD_PANEL fb or only HEAD_CRT fb) is broken anyway as at least
-> the suspend/resume support assumes that both framebuffers are always
-> present. Also all sm501fb driver users always try try to initialize
-> both framebuffers. Therefore I would prefer the removal of non-working
-> individual framebuffers support (the code that your patch modifies
-> would be removed as well). Could you please look into it?
-
-Looks like it will be easier to fix the suspend/resume functions and
-the part of probe which creates the device files for both.
-Let me have a look and I will try to send you a patch over the weekend.
+To: linux-fbdev@vger.kernel.org
 
 
---
-Regards
-Sudip
+--0OAP2g/MAC+5xKAE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Drop log level for blanking from info to debug. Xorg likes to habitually
+unblank when already unblanked and this can fill up logs over a long period
+of time.
+
+Signed-off-by: Mike Gerow <gerow@google.com>
+---
+ drivers/video/fbdev/udlfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 6a3c353de7c3..ca1f6fe2b1cb 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1105,8 +1105,8 @@ static int dlfb_ops_blank(int blank_mode, struct fb_i=
+nfo *info)
+ 	char *bufptr;
+ 	struct urb *urb;
+=20
+-	pr_info("/dev/fb%d FB_BLANK mode %d --> %d\n",
+-		info->node, dev->blank_mode, blank_mode);
++	pr_debug("/dev/fb%d FB_BLANK mode %d --> %d\n",
++		 info->node, dev->blank_mode, blank_mode);
+=20
+ 	if ((dev->blank_mode =3D=3D FB_BLANK_POWERDOWN) &&
+ 	    (blank_mode !=3D FB_BLANK_POWERDOWN)) {
+--=20
+2.13.0.506.g27d5fe0cd-goog
+
+
+--=20
+Mike Gerow
+gerow@google.com
+
+--0OAP2g/MAC+5xKAE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQEcBAEBAgAGBQJZOHNYAAoJECb8JZRr34gjzc8H/1W3Rq3PGJQo8XmSjHQltHT4
+uN45QWAd3tFtNBLHkwCdHkEHtk3cWYBznWNHXqC0D+lHyj0ZOHn9PJuP7tv/26UY
+pN4FFmBHSq4/rIWw1iDD9DgLEwbUUzyYcTIfhfq5pkao+QZep7PgF+phaboSTwzM
+BaWBLlr19mRIm+7pA/bU+B+1JAJ/u3n6S+ma8s03b3NIefNnMTvgZgcEJQdMAPdL
+//eARJWM2Fw2TppjHhgM5ZM/Rw2Mn6bpenZfVKr95lz/TLJOdSLBUMymCmS7IcV2
+C/l1O5wH9nD8csT/urYSFA3qG0dGbA0c6BtAHtnR0tjmpini22wIQk7de41riPg=
+=fiiz
+-----END PGP SIGNATURE-----
+
+--0OAP2g/MAC+5xKAE--

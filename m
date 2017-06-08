@@ -1,74 +1,57 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Fri, 23 Jun 2017 09:33:45 +0000
-Subject: Re: [PATCH v3] backlight: lm3630a: bump REG_MAX value to 0x50 instead of 0x1F
-Message-Id: <763c3fe2-d8a1-b9c9-b973-5ffdfac5daa3@linaro.org>
+From: Derek Robson <robsonde@gmail.com>
+Date: Thu, 08 Jun 2017 08:17:07 +0000
+Subject: [PATCH] Drivers: sm750fb - style fix
+Message-Id: <20170608081707.1825-1-robsonde@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170623035433.3446-1-bshah@kde.org>
-In-Reply-To: <20170623035433.3446-1-bshah@kde.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhushan Shah <bshah@kde.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Derek Robson <robsonde@gmail.com>
 
-On 23/06/17 04:54, Bhushan Shah wrote:
-> In the lm3630a_chip_init we try to write to 0x50 register, which is
-> higher value then the max_register value, this resulted in regmap_write
-> return -EIO.
-> 
-> Fix this by bumping REG_MAX value to 0x50.
-> 
-> This code was introduced with the chip revision in commit 28e64a68a2ef,
-> however setting filter strength was failing silently because it used
-> unsigned int for storing and comparing the return values. Bug related to
-> signedness was fixed in 2a0c316bf3cc, which made it error out correctly
-> instead of failing silently.
-> 
-> I found this issue by using this driver on LGE Nexus 5 (hammerhead).
-> After this commit lm3630a_chip_init succeeds instead of failing with
-> -EIO.
-> 
-> Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
-> Fixes: 2a0c316bf3cc ("drivers/video/backlight/lm3630a_bl.c: fix
-> signedness bug in lm3630a_chip_init()")
-> 
-> Signed-off-by: Bhushan Shah <bshah@kde.org>
-> Suggested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Fix checkpatch.pl warnings of the form "function definition argument
+'foo' should also have an identifier name" in header files.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Derek Robson <robsonde@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.h | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-
-> ---
-> 
-> Changes since v2:
->      - Include information about commits which introduced bug in commit message
->      - Include information about test hardware in commit message
->      - Expand define name to REG_FILTER_STRENGTH
-> 
->   drivers/video/backlight/lm3630a_bl.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> index 60d6c2ac87aa..2030a6b77a09 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -31,7 +31,8 @@
->   #define REG_FAULT	0x0B
->   #define REG_PWM_OUTLOW	0x12
->   #define REG_PWM_OUTHIGH	0x13
-> -#define REG_MAX		0x1F
-> +#define REG_FILTER_STRENGTH	0x50
-> +#define REG_MAX		0x50
->   
->   #define INT_DEBOUNCE_MSEC	10
->   struct lm3630a_chip {
-> @@ -80,7 +81,7 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
->   
->   	usleep_range(1000, 2000);
->   	/* set Filter Strength Register */
-> -	rval = lm3630a_write(pchip, 0x50, 0x03);
-> +	rval = lm3630a_write(pchip, REG_FILTER_STRENGTH, 0x03);
->   	/* set Cofig. register */
->   	rval |= lm3630a_update(pchip, REG_CONFIG, 0x07, pdata->pwm_ctrl);
->   	/* set boost control */
-> 
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 5b186dafedec..4386122799b2 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -189,14 +189,22 @@ void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
+ 
+-int hw_sm750_output_setMode(struct lynxfb_output*, struct fb_var_screeninfo*,
+-			    struct fb_fix_screeninfo*);
+-int hw_sm750_crtc_checkMode(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-int hw_sm750_crtc_setMode(struct lynxfb_crtc*, struct fb_var_screeninfo*,
+-			  struct fb_fix_screeninfo*);
+-int hw_sm750_setColReg(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+-int hw_sm750_setBLANK(struct lynxfb_output*, int);
+-int hw_sm750le_setBLANK(struct lynxfb_output*, int);
++int hw_sm750_output_setMode(struct lynxfb_output *output,
++			    struct fb_var_screeninfo *var,
++			    struct fb_fix_screeninfo *fix);
++
++int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
++			    struct fb_var_screeninfo *var);
++
++int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
++			  struct fb_var_screeninfo *var,
++			  struct fb_fix_screeninfo *fix);
++
++int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
++		       ushort red, ushort green, ushort blue);
++
++int hw_sm750_setBLANK(struct lynxfb_output *output, int blank);
++int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank);
+ int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
+ 			 const struct fb_var_screeninfo *var,
+ 			 const struct fb_info *info);
+-- 
+2.13.0
 

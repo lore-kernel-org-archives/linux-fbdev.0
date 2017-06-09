@@ -1,24 +1,53 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 23 Jun 2017 17:32:32 +0000
-Subject: Re: [PATCH] staging: sm750fb: Remove typedefs from _logical_chip_type_t and _clock_type_t
-Message-Id: <20170623173232.GF19626@kroah.com>
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Fri, 09 Jun 2017 12:07:13 +0000
+Subject: [PATCH v1] omapfb: Use sysfs_match_string() helper
+Message-Id: <20170609120713.21861-1-andriy.shevchenko@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170619172120.GA28772@singhal-Inspiron-5558>
-In-Reply-To: <20170619172120.GA28772@singhal-Inspiron-5558>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simran Singhal <singhalsimran0@gmail.com>
-Cc: devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 19, 2017 at 10:51:21PM +0530, Simran Singhal wrote:
-> This patch removes typedefs from enum _logical_chip_type_t and enum
-> _clock_type_t and rename them to logical_chip_type_t and clock_type_t
-> respectively.
+Use sysfs_match_string() helper instead of open coded variant.
 
-Why are you doing two different typedef fixups in a single patch?
-Please only do one at a time.
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-thanks,
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
+index 9e2a67fdf4d2..44b96af4ef4e 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/manager-sysfs.c
+@@ -182,22 +182,16 @@ static ssize_t manager_trans_key_type_show(struct omap_overlay_manager *mgr,
+ static ssize_t manager_trans_key_type_store(struct omap_overlay_manager *mgr,
+ 					    const char *buf, size_t size)
+ {
+-	enum omap_dss_trans_key_type key_type;
+ 	struct omap_overlay_manager_info info;
+ 	int r;
+ 
+-	for (key_type = OMAP_DSS_COLOR_KEY_GFX_DST;
+-			key_type < ARRAY_SIZE(trans_key_type_str); key_type++) {
+-		if (sysfs_streq(buf, trans_key_type_str[key_type]))
+-			break;
+-	}
+-
+-	if (key_type = ARRAY_SIZE(trans_key_type_str))
+-		return -EINVAL;
++	r = sysfs_match_string(trans_key_type_str, buf);
++	if (r < 0)
++		return r;
+ 
+ 	mgr->get_manager_info(mgr, &info);
+ 
+-	info.trans_key_type = key_type;
++	info.trans_key_type = r;
+ 
+ 	r = mgr->set_manager_info(mgr, &info);
+ 	if (r)
+-- 
+2.11.0
 
-greg k-h

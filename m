@@ -1,49 +1,37 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 16 Jun 2017 07:17:13 +0000
-Subject: [PATCH 08/11] sgiseeq: switch to dma_alloc_attrs
-Message-Id: <20170616071716.17321-9-hch@lst.de>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Sat, 10 Jun 2017 09:05:33 +0000
+Subject: [PATCH 4/7] [media] cx25821: use MEDIA_REVISION instead of KERNEL_VERSION
+Message-Id: <20170610090536.12472-5-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170616071716.17321-1-hch@lst.de>
-In-Reply-To: <20170616071716.17321-1-hch@lst.de>
+References: <20170610090536.12472-1-jthumshirn@suse.de>
+In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: linux-kernel@vger.kernel.org
+To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
 
-Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
+Use MEDIA_REVISION instead of KERNEL_VERSION to encode the
+CX25821_VERSION_CODE.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
- drivers/net/ethernet/seeq/sgiseeq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/media/pci/cx25821/cx25821.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/net/ethernet/seeq/sgiseeq.c b/drivers/net/ethernet/seeq/sgiseeq.c
-index 70347720fdf9..573691bc3b71 100644
---- a/drivers/net/ethernet/seeq/sgiseeq.c
-+++ b/drivers/net/ethernet/seeq/sgiseeq.c
-@@ -737,8 +737,8 @@ static int sgiseeq_probe(struct platform_device *pdev)
- 	sp = netdev_priv(dev);
+diff --git a/drivers/media/pci/cx25821/cx25821.h b/drivers/media/pci/cx25821/cx25821.h
+index 0f20e89b0cde..7fea6b07cf19 100644
+--- a/drivers/media/pci/cx25821/cx25821.h
++++ b/drivers/media/pci/cx25821/cx25821.h
+@@ -41,7 +41,7 @@
+ #include <linux/version.h>
+ #include <linux/mutex.h>
  
- 	/* Make private data page aligned */
--	sr = dma_alloc_noncoherent(&pdev->dev, sizeof(*sp->srings),
--				&sp->srings_dma, GFP_KERNEL);
-+	sr = dma_alloc_attrs(&pdev->dev, sizeof(*sp->srings), &sp->srings_dma,
-+			     GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
- 	if (!sr) {
- 		printk(KERN_ERR "Sgiseeq: Page alloc failed, aborting.\n");
- 		err = -ENOMEM;
-@@ -813,8 +813,8 @@ static int sgiseeq_remove(struct platform_device *pdev)
- 	struct sgiseeq_private *sp = netdev_priv(dev);
+-#define CX25821_VERSION_CODE KERNEL_VERSION(0, 0, 106)
++#define CX25821_VERSION_CODE MEDIA_REVISION(0, 0, 106)
  
- 	unregister_netdev(dev);
--	dma_free_noncoherent(&pdev->dev, sizeof(*sp->srings), sp->srings,
--			     sp->srings_dma);
-+	dma_free_attrs(&pdev->dev, sizeof(*sp->srings), sp->srings,
-+		       sp->srings_dma, DMA_ATTR_NON_CONSISTENT);
- 	free_netdev(dev);
- 
- 	return 0;
+ #define UNSET (-1U)
+ #define NO_SYNC_LINE (-1U)
 -- 
-2.11.0
+2.12.3
 

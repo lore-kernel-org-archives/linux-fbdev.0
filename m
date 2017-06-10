@@ -1,48 +1,37 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 30 Jun 2017 11:21:09 +0000
-Subject: [PATCH v2 4/4] ARM: dts: rockchip: add pwm-delay-us backlight setting.
-Message-Id: <20170630112109.13785-4-enric.balletbo@collabora.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Sat, 10 Jun 2017 09:05:34 +0000
+Subject: [PATCH 5/7] [media] media: s3c-camif: Use MEDIA_REVISON instead of KERNEL_VERSION
+Message-Id: <20170610090536.12472-6-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170630112109.13785-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+References: <20170610090536.12472-1-jthumshirn@suse.de>
+In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
 
-The minnie devices comes with an AUO B101EAN01 panel which is different
-from default veyron devices, thus the power on/off timing sequence is
-slightly different. The datasheet specifies a pwm delay of 200 ms, so
-update the pwm-delay-us accordingly.
+Use MEDIA_REVISON instead of KERNEL_VERSION to encode the driver
+version.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
-Heiko,
- I'm not able to test this patch in a minnie device because I don't have
-one, so could you do a quick try, please?
+ drivers/media/platform/s3c-camif/camif-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
- Enric
-
-Changes since v1:
- - Add this new patch as minnie has differents timings.
-
- arch/arm/boot/dts/rk3288-veyron-minnie.dts | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-index 544de60..8680a83 100644
---- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-+++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-@@ -123,6 +123,7 @@
- 			240 241 242 243 244 245 246 247
- 			248 249 250 251 252 253 254 255>;
- 	power-supply = <&backlight_regulator>;
-+	pwm-delay-us = <200000 200000>;
- };
+diff --git a/drivers/media/platform/s3c-camif/camif-core.c b/drivers/media/platform/s3c-camif/camif-core.c
+index ec4001970313..98bd5719fdf5 100644
+--- a/drivers/media/platform/s3c-camif/camif-core.c
++++ b/drivers/media/platform/s3c-camif/camif-core.c
+@@ -317,7 +317,7 @@ static int camif_media_dev_init(struct camif_dev *camif)
+ 		 ip_rev = S3C6410_CAMIF_IP_REV ? "6410" : "244X");
+ 	strlcpy(md->bus_info, "platform", sizeof(md->bus_info));
+ 	md->hw_revision = ip_rev;
+-	md->driver_version = KERNEL_VERSION(1, 0, 0);
++	md->driver_version = MEDIA_REVISION(1, 0, 0);
  
- &emmc {
+ 	md->dev = camif->dev;
+ 
 -- 
-2.9.3
+2.12.3
 

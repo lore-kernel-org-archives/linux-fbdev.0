@@ -1,23 +1,30 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 14 Jun 2017 10:23:22 +0000
-Subject: Re: [PATCH v2] video: fbdev: udlfb: drop log level for blanking
-Message-Id: <1812727.iHiPExx227@amdc3058>
+Date: Wed, 14 Jun 2017 13:29:25 +0000
+Subject: Re: [PATCH 3/3] mdacon: replace MDA_ADDR macro by inline function
+Message-Id: <2877114.cEPvJS5kDY@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170607214255.GA37736@google.com>
-In-Reply-To: <20170607214255.GA37736@google.com>
+References: <20170512080804.2508-1-jslaby@suse.cz>
+        <20170512080804.2508-3-jslaby@suse.cz>
+        <CGME20170614132927epcas1p311aa2291f0d36ce0691955287c9af3a2@epcas1p3.samsung.com>
+In-Reply-To: <20170512080804.2508-3-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: tomi.valkeinen@ti.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wednesday, June 07, 2017 05:42:55 PM Mike Gerow wrote:
-> Drop log level for blanking from info to debug. Xorg likes to habitually
-> unblank when already unblanked and this can fill up logs over a long period
-> of time.
+On Friday, May 12, 2017 10:08:04 AM Jiri Slaby wrote:
+> MDA_ADDR is one of those macros which could be an inline function. So
+> convert MDA_ADDR to mda_addr.
 > 
-> Signed-off-by: Mike Gerow <gerow@google.com>
+> Note that we take x and y as unsigned now. But they are absolute
+> coordinates, so this is no problem.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: <linux-fbdev@vger.kernel.org>
 
-Patch queued for 4.12, thanks.
+Patch queued for 4.13, thanks.
 
 Best regards,
 --

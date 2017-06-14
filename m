@@ -1,45 +1,33 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Sat, 10 Jun 2017 09:05:31 +0000
-Subject: [PATCH 2/7] video: fbdev: don't use KERNEL_VERSION macro for MEDIA_REVISION
-Message-Id: <20170610090536.12472-3-jthumshirn@suse.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 14 Jun 2017 13:28:18 +0000
+Subject: Re: [PATCH 1/3] mdacon: align code in mda_detect properly
+Message-Id: <1768744.2ZqNpAST7L@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170610090536.12472-1-jthumshirn@suse.de>
-In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
+References: <20170512080804.2508-1-jslaby@suse.cz>
+        <CGME20170614132820epcas1p32f19f6899a8ec80379799506133005f0@epcas1p3.samsung.com>
+In-Reply-To: <20170512080804.2508-1-jslaby@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+To: Jiri Slaby <jslaby@suse.cz>
+Cc: dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Don't use the KERNEL_VERSION() macro for the v4l2 capabilities, use
-MEDIA_REVISION instead.
+On Friday, May 12, 2017 10:08:02 AM Jiri Slaby wrote:
+> This is just a whitespace cleanup. The code was a mess having multiple
+> commands on one line like:
+> scr_writew(0xAA55, p); if (scr_readw(p) = 0xAA55) count++;
+> 
+> Indent that properly and make it nicer for reading.
+> 
+> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+> Cc: <linux-fbdev@vger.kernel.org>
 
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
----
- drivers/video/fbdev/matrox/matroxfb_base.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Patch queued for 4.13, thanks.
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 11eb094396ae..eb92a325033c 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -113,6 +113,7 @@
- #include <linux/interrupt.h>
- #include <linux/slab.h>
- #include <linux/uaccess.h>
-+#include <linux/media.h>
- 
- #ifdef CONFIG_PPC_PMAC
- #include <asm/machdep.h>
-@@ -1091,7 +1092,7 @@ static int matroxfb_ioctl(struct fb_info *info,
- 				strcpy(r.driver, "matroxfb");
- 				strcpy(r.card, "Matrox");
- 				sprintf(r.bus_info, "PCI:%s", pci_name(minfo->pcidev));
--				r.version = KERNEL_VERSION(1,0,0);
-+				r.version = MEDIA_REVISION(1, 0, 0);
- 				r.capabilities = V4L2_CAP_VIDEO_OUTPUT;
- 				if (copy_to_user(argp, &r, sizeof(r)))
- 					return -EFAULT;
--- 
-2.12.3
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

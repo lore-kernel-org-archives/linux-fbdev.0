@@ -1,43 +1,28 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 30 Jun 2017 11:21:08 +0000
-Subject: [PATCH v2 3/4] ARM: dts: rockchip: set pre/post pwm-delay-us property.
-Message-Id: <20170630112109.13785-3-enric.balletbo@collabora.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 14 Jun 2017 13:48:19 +0000
+Subject: Re: [PATCH] video: fbdev: omap2: omapfb: displays: panel-dsi-cm: Use time comparison kernel macro.
+Message-Id: <3422682.9ua2BuFz3Q@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170630112109.13785-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+References: <CGME20170515191442epcas5p32579d3f083abfeb3a329a25de53e6acc@epcas5p3.samsung.com>
+        <1494875666-4109-1-git-send-email-karim.eshapa@gmail.com>
+In-Reply-To: <1494875666-4109-1-git-send-email-karim.eshapa@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
+To: Karim Eshapa <karim.eshapa@gmail.com>
+Cc: tomi.valkeinen@ti.com, peter.ujfalusi@ti.com, tj@kernel.org, mingo@kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-For veyron the binding should provide both pwm timings, the delay between
-you enable the PWM and set the enable signal, and the delay between you
-disable the PWM signal and clear the enable signal. Update the binding
-accordingly, in this case the panels connected to the veyron boards have
-a symetric power sequence, hence the same value is used.
+On Monday, May 15, 2017 09:14:26 PM Karim Eshapa wrote:
+> Use time_before_eq() kernel macro for
+> time comparison more safe.
+> 
+> Signed-off-by: Karim Eshapa <karim.eshapa@gmail.com>
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
----
-Changes since v1:
- - Add this new patch to fix current binding on veyron.
+Patch queued for 4.13, thanks.
 
- arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-index d752a31..c0e8ce2 100644
---- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-+++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-@@ -96,7 +96,7 @@
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&bl_en>;
- 		pwms = <&pwm0 0 1000000 0>;
--		pwm-delay-us = <10000>;
-+		pwm-delay-us = <10000 10000>;
- 	};
- 
- 	gpio-charger {
--- 
-2.9.3
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

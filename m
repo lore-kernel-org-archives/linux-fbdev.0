@@ -1,11 +1,49 @@
-From: "Dave Dawes" <dmoore32@student.savannahstate.edu>
-Date: Mon, 12 Jun 2017 14:51:50 +0000
-Subject: I Would love to discuse something with you.
-Message-Id: <CY1PR0101MB12255762F615068F92F45DC983CD0@CY1PR0101MB1225.prod.exchangelabs.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 16 Jun 2017 07:17:13 +0000
+Subject: [PATCH 08/11] sgiseeq: switch to dma_alloc_attrs
+Message-Id: <20170616071716.17321-9-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170616071716.17321-1-hch@lst.de>
+In-Reply-To: <20170616071716.17321-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Recipients <dmoore32-oe7qfRrRQff1ikKbInQQOjcbuqLmMDG7h13vi7wywA4@public.gmane.org>
+To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
+Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/net/ethernet/seeq/sgiseeq.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/net/ethernet/seeq/sgiseeq.c b/drivers/net/ethernet/seeq/sgiseeq.c
+index 70347720fdf9..573691bc3b71 100644
+--- a/drivers/net/ethernet/seeq/sgiseeq.c
++++ b/drivers/net/ethernet/seeq/sgiseeq.c
+@@ -737,8 +737,8 @@ static int sgiseeq_probe(struct platform_device *pdev)
+ 	sp = netdev_priv(dev);
  
+ 	/* Make private data page aligned */
+-	sr = dma_alloc_noncoherent(&pdev->dev, sizeof(*sp->srings),
+-				&sp->srings_dma, GFP_KERNEL);
++	sr = dma_alloc_attrs(&pdev->dev, sizeof(*sp->srings), &sp->srings_dma,
++			     GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
+ 	if (!sr) {
+ 		printk(KERN_ERR "Sgiseeq: Page alloc failed, aborting.\n");
+ 		err = -ENOMEM;
+@@ -813,8 +813,8 @@ static int sgiseeq_remove(struct platform_device *pdev)
+ 	struct sgiseeq_private *sp = netdev_priv(dev);
+ 
+ 	unregister_netdev(dev);
+-	dma_free_noncoherent(&pdev->dev, sizeof(*sp->srings), sp->srings,
+-			     sp->srings_dma);
++	dma_free_attrs(&pdev->dev, sizeof(*sp->srings), sp->srings,
++		       sp->srings_dma, DMA_ATTR_NON_CONSISTENT);
+ 	free_netdev(dev);
+ 
+ 	return 0;
+-- 
+2.11.0
+

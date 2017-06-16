@@ -1,59 +1,40 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 28 Jun 2017 15:55:47 +0000
-Subject: Re: [PATCH] fbcon: Make fbcon a built-time depency for fbdev
-Message-Id: <CAKMK7uGLW84s879rst2AMPTByvfsFLcPnKMi+uGN885iutAsTw@mail.gmail.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 16 Jun 2017 07:17:08 +0000
+Subject: [PATCH 03/11] au1100fb: remove a bogus dma_free_nonconsistent call
+Message-Id: <20170616071716.17321-4-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170628103635.24651-1-daniel.vetter@ffwll.ch>
- <20170628110819.70eb0ce0@gandalf.local.home>
-In-Reply-To: <20170628110819.70eb0ce0@gandalf.local.home>
+References: <20170616071716.17321-1-hch@lst.de>
+In-Reply-To: <20170616071716.17321-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
-On Wed, Jun 28, 2017 at 5:08 PM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> On Wed, 28 Jun 2017 12:36:35 +0200
-> Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
->
->> There's a bunch of folks who're trying to make printk less
->> contended and faster, but there's a problem: printk uses the
->> console_lock, and the console lock has become the BKL for all things
->> fbdev/fbcon, which in turn pulled in half the drm subsystem under that
->> lock. That's awkward.
->>
->
-> I applied your patch and compiled it, and got this error while
-> installing modules:
->
->   DEPMOD  4.12.0-rc5-test+
-> depmod: ERROR: Found 11 modules in dependency cycles!
-> depmod: ERROR: Cycle detected: fbcon -> bitblit -> softcursor -> fb -> fbcon
-> depmod: ERROR: Cycle detected: softcursor -> fb -> fbcon_rotate -> fbcon_ccw -> softcursor
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fb
-> depmod: ERROR: Cycle detected: softcursor -> fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> softcursor
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fb
-> depmod: ERROR: Cycle detected: softcursor -> fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> softcursor
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> fb
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> fb
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> tileblit -> fb
-> depmod: ERROR: Cycle detected: fbcon -> bitblit -> softcursor -> fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> tileblit -> fbdev
-> depmod: ERROR: Cycle detected: fb -> fbcon_rotate -> fbcon_ccw -> fbcon_ud -> fbcon_cw -> tileblit -> fb
-> /work/git/linux-trace.git/Makefile:1251: recipe for target '_modinst_post' failed
->
->
-> Config attached.
->
-> Oh, and I changed CONFIG_FB to be a module, which is probably where the
-> error happened.
+au1100fb is using managed dma allocations, so it doesn't need to
+explicitly free the dma memory in the error path (and if it did
+it would have to use the managed version).
 
-Yeah I only compile tested all the combos and didn't realize that
-depmod is only run at install time. I indeed created a depency loop
-here. I think the simplest solution would be to stuff all the fbcon
-code into the fb.ko module, I'm trying to figure out whether that can
-be done without massive code movement.
--Daniel
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/video/fbdev/au1100fb.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index 35df2c1a8a63..8de42f617d16 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -532,10 +532,6 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 		clk_disable_unprepare(fbdev->lcdclk);
+ 		clk_put(fbdev->lcdclk);
+ 	}
+-	if (fbdev->fb_mem) {
+-		dma_free_noncoherent(&dev->dev, fbdev->fb_len, fbdev->fb_mem,
+-				     fbdev->fb_phys);
+-	}
+ 	if (fbdev->info.cmap.len != 0) {
+ 		fb_dealloc_cmap(&fbdev->info.cmap);
+ 	}
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+2.11.0
+

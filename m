@@ -1,75 +1,64 @@
-From: Matej Dujava <mdujava@kocurkovo.cz>
-Date: Wed, 10 May 2017 21:55:57 +0000
-Subject: [PATCH 7/9] staging: sm750fb: Remove typedef from "typedef enum _disp_output_t"
-Message-Id: <1494453359-3722-8-git-send-email-mdujava@kocurkovo.cz>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 16 Jun 2017 07:17:09 +0000
+Subject: [PATCH 04/11] sound/hal2: switch to dma_alloc_attrs
+Message-Id: <20170616071716.17321-5-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170616071716.17321-1-hch@lst.de>
+In-Reply-To: <20170616071716.17321-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
-This patch removes typedefs from enum and renames it from "typedef enum
-_disp_output_t" to "enum disp_output" as per kernel coding standards.
+Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
 
-Signed-off-by: Matej Dujava <mdujava@kocurkovo.cz>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/staging/sm750fb/ddk750_display.c | 2 +-
- drivers/staging/sm750fb/ddk750_display.h | 8 ++++----
- drivers/staging/sm750fb/sm750_hw.c       | 2 +-
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ sound/mips/hal2.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
-index 9b116ed6..13b91c3 100644
---- a/drivers/staging/sm750fb/ddk750_display.c
-+++ b/drivers/staging/sm750fb/ddk750_display.c
-@@ -110,7 +110,7 @@ static void swPanelPowerSequence(int disp, int delay)
- 	primary_wait_vertical_sync(delay);
+diff --git a/sound/mips/hal2.c b/sound/mips/hal2.c
+index 00fc9241d266..17a78a93e885 100644
+--- a/sound/mips/hal2.c
++++ b/sound/mips/hal2.c
+@@ -461,15 +461,15 @@ static int hal2_alloc_dmabuf(struct hal2_codec *codec)
+ 	int count = H2_BUF_SIZE / H2_BLOCK_SIZE;
+ 	int i;
+ 
+-	codec->buffer = dma_alloc_noncoherent(NULL, H2_BUF_SIZE,
+-					      &buffer_dma, GFP_KERNEL);
++	codec->buffer = dma_alloc_attrs(NULL, H2_BUF_SIZE, &buffer_dma,
++					GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
+ 	if (!codec->buffer)
+ 		return -ENOMEM;
+-	desc = dma_alloc_noncoherent(NULL, count * sizeof(struct hal2_desc),
+-				     &desc_dma, GFP_KERNEL);
++	desc = dma_alloc_attrs(NULL, count * sizeof(struct hal2_desc),
++			       &desc_dma, GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
+ 	if (!desc) {
+-		dma_free_noncoherent(NULL, H2_BUF_SIZE,
+-				     codec->buffer, buffer_dma);
++		dma_free_attrs(NULL, H2_BUF_SIZE, codec->buffer, buffer_dma,
++			       DMA_ATTR_NON_CONSISTENT);
+ 		return -ENOMEM;
+ 	}
+ 	codec->buffer_dma = buffer_dma;
+@@ -490,10 +490,10 @@ static int hal2_alloc_dmabuf(struct hal2_codec *codec)
+ 
+ static void hal2_free_dmabuf(struct hal2_codec *codec)
+ {
+-	dma_free_noncoherent(NULL, codec->desc_count * sizeof(struct hal2_desc),
+-			     codec->desc, codec->desc_dma);
+-	dma_free_noncoherent(NULL, H2_BUF_SIZE, codec->buffer,
+-			     codec->buffer_dma);
++	dma_free_attrs(NULL, codec->desc_count * sizeof(struct hal2_desc),
++		       codec->desc, codec->desc_dma, DMA_ATTR_NON_CONSISTENT);
++	dma_free_attrs(NULL, H2_BUF_SIZE, codec->buffer, codec->buffer_dma,
++		       DMA_ATTR_NON_CONSISTENT);
  }
  
--void ddk750_setLogicalDispOut(disp_output_t output)
-+void ddk750_setLogicalDispOut(enum disp_output output)
- {
- 	unsigned int reg;
- 
-diff --git a/drivers/staging/sm750fb/ddk750_display.h b/drivers/staging/sm750fb/ddk750_display.h
-index f9e1614..8b0830f 100644
---- a/drivers/staging/sm750fb/ddk750_display.h
-+++ b/drivers/staging/sm750fb/ddk750_display.h
-@@ -88,7 +88,7 @@
-  * LCD1 means panel path TFT1  & panel path DVI (so enable DAC)
-  * CRT means crt path DSUB
-  */
--typedef enum _disp_output_t {
-+enum disp_output {
- 	do_LCD1_PRI = PNL_2_PRI | PRI_TP_ON | PNL_SEQ_ON | DAC_ON,
- 	do_LCD1_SEC = PNL_2_SEC | SEC_TP_ON | PNL_SEQ_ON | DAC_ON,
- 	do_LCD2_PRI = CRT_2_PRI | PRI_TP_ON | DUAL_TFT_ON,
-@@ -99,9 +99,9 @@
- 	 */
- 	do_CRT_PRI = CRT_2_PRI | PRI_TP_ON | DPMS_ON | DAC_ON,
- 	do_CRT_SEC = CRT_2_SEC | SEC_TP_ON | DPMS_ON | DAC_ON,
--}
--disp_output_t;
-+};
- 
--void ddk750_setLogicalDispOut(disp_output_t output);
-+
-+void ddk750_setLogicalDispOut(enum disp_output output);
- 
- #endif
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index 3cdc4ae..f7d1e67 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -184,7 +184,7 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
- 			    struct fb_fix_screeninfo *fix)
- {
- 	int ret;
--	disp_output_t dispSet;
-+	enum disp_output dispSet;
- 	int channel;
- 
- 	ret = 0;
+ static struct snd_pcm_hardware hal2_pcm_hw = {
 -- 
-1.8.3.1
+2.11.0
 

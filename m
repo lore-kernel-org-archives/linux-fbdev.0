@@ -1,24 +1,66 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 14 Jun 2017 10:08:49 +0000
-Subject: Re: [PATCH] video: fbdev: add missing USB-descriptor endianness conversions
-Message-Id: <9094754.joiGxUtmsd@amdc3058>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 16 Jun 2017 07:17:14 +0000
+Subject: [PATCH 09/11] au1000_eth: switch to dma_alloc_attrs
+Message-Id: <20170616071716.17321-10-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170616071716.17321-1-hch@lst.de>
+In-Reply-To: <20170616071716.17321-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
-On Friday, May 12, 2017 12:17:25 PM Johan Hovold wrote:
-> Add the missing endianness conversions when printing the USB
-> device-descriptor idVendor, idProduct and bcdDevice fields during probe.
-> 
-> Signed-off-by: Johan Hovold <johan@kernel.org>
+Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
 
-Patch queued for 4.12, thanks.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/net/ethernet/amd/au1000_eth.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/net/ethernet/amd/au1000_eth.c b/drivers/net/ethernet/amd/au1000_eth.c
+index a3c90fe5de00..73ca8879ada7 100644
+--- a/drivers/net/ethernet/amd/au1000_eth.c
++++ b/drivers/net/ethernet/amd/au1000_eth.c
+@@ -1180,9 +1180,10 @@ static int au1000_probe(struct platform_device *pdev)
+ 	/* Allocate the data buffers
+ 	 * Snooping works fine with eth on all au1xxx
+ 	 */
+-	aup->vaddr = (u32)dma_alloc_noncoherent(NULL, MAX_BUF_SIZE *
+-						(NUM_TX_BUFFS + NUM_RX_BUFFS),
+-						&aup->dma_addr,	0);
++	aup->vaddr = (u32)dma_alloc_attrs(NULL, MAX_BUF_SIZE *
++					  (NUM_TX_BUFFS + NUM_RX_BUFFS),
++					  &aup->dma_addr, 0,
++					  DMA_ATTR_NON_CONSISTENT);
+ 	if (!aup->vaddr) {
+ 		dev_err(&pdev->dev, "failed to allocate data buffers\n");
+ 		err = -ENOMEM;
+@@ -1361,8 +1362,9 @@ static int au1000_probe(struct platform_device *pdev)
+ err_remap2:
+ 	iounmap(aup->mac);
+ err_remap1:
+-	dma_free_noncoherent(NULL, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
+-			     (void *)aup->vaddr, aup->dma_addr);
++	dma_free_attrs(NULL, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
++			(void *)aup->vaddr, aup->dma_addr,
++			DMA_ATTR_NON_CONSISTENT);
+ err_vaddr:
+ 	free_netdev(dev);
+ err_alloc:
+@@ -1394,9 +1396,9 @@ static int au1000_remove(struct platform_device *pdev)
+ 		if (aup->tx_db_inuse[i])
+ 			au1000_ReleaseDB(aup, aup->tx_db_inuse[i]);
+ 
+-	dma_free_noncoherent(NULL, MAX_BUF_SIZE *
+-			(NUM_TX_BUFFS + NUM_RX_BUFFS),
+-			(void *)aup->vaddr, aup->dma_addr);
++	dma_free_attrs(NULL, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
++			(void *)aup->vaddr, aup->dma_addr,
++			DMA_ATTR_NON_CONSISTENT);
+ 
+ 	iounmap(aup->macdma);
+ 	iounmap(aup->mac);
+-- 
+2.11.0
 

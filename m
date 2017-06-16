@@ -1,42 +1,36 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Wed, 21 Jun 2017 08:08:06 +0000
-Subject: [PATCH RESEND 1/7] [media] media: introduce MEDIA_REVISION macro
-Message-Id: <20170621080812.6817-2-jthumshirn@suse.de>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Fri, 16 Jun 2017 08:57:30 +0000
+Subject: Re: [alsa-devel] [PATCH 04/11] sound/hal2: switch to   dma_alloc_attrs
+Message-Id: <s5hwp8c9uo5.wl-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170621080812.6817-1-jthumshirn@suse.de>
-In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
+References: <20170616071716.17321-1-hch@lst.de>
+        <20170616071716.17321-5-hch@lst.de>
+        <s5h1sqkb9l7.wl-tiwai@suse.de>
+        <20170616085147.GA11211@lst.de>
+In-Reply-To: <20170616085147.GA11211@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
 
-Currently the media code abuses the KERNEL_VERSION macro to encode a
-version triplet.
+On Fri, 16 Jun 2017 10:51:47 +0200,
+Christoph Hellwig wrote:
+> 
+> On Fri, Jun 16, 2017 at 10:49:56AM +0200, Takashi Iwai wrote:
+> > On Fri, 16 Jun 2017 09:17:09 +0200,
+> > Christoph Hellwig wrote:
+> > > 
+> > > Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
+> > > 
+> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
+> > 
+> > Should I take this one through sound git tree, or would you prefer
+> > taking all through another?
+> 
+> Feel free to take it through the sound tree.
 
-Introduce a MEDIA_REVISION macro to get rid of the confusing and
-creative KERNEL_VERSION usage in the media subsystem.
+OK, applied now.  Thanks!
 
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
----
- include/uapi/linux/media.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
-index 4890787731b8..25e2ae4432bd 100644
---- a/include/uapi/linux/media.h
-+++ b/include/uapi/linux/media.h
-@@ -30,7 +30,9 @@
- #include <linux/types.h>
- #include <linux/version.h>
- 
--#define MEDIA_API_VERSION	KERNEL_VERSION(0, 1, 0)
-+#define MEDIA_REVISION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-+
-+#define MEDIA_API_VERSION	MEDIA_REVISION(0, 1, 0)
- 
- struct media_device_info {
- 	char driver[16];
--- 
-2.12.3
-
+Takashi

@@ -1,108 +1,41 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Wed, 21 Jun 2017 08:08:08 +0000
-Subject: [PATCH RESEND 3/7] [media] media: document the use of MEDIA_REVISION instead of KERNEL_VERSION
-Message-Id: <20170621080812.6817-4-jthumshirn@suse.de>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Mon, 19 Jun 2017 20:32:58 +0000
+Subject: [PATCH 2/2] staging: sm750fb: change default screen resolution
+Message-Id: <1497904378-4808-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170621080812.6817-1-jthumshirn@suse.de>
-In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
+References: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
 
-Update the documentation to introduce the use of MEDIA_REVISON instead
-of KERNEL_VERSION for the verison triplets of a media drivers hardware
-revision or driver version.
+The previous patch which updated screen resolution was tested under
+wrong environment. sm750 driver does not support 24bpp. It only
+supports 8bpp, 16bpp and 32bpp.
+Lets update the default screen resolution to use 32bpp for a better
+screen performance.
 
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Fixes: ac669251087d ("staging: sm750fb: change default screen resolution")
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 ---
- Documentation/media/uapi/cec/cec-ioc-adap-g-caps.rst        | 2 +-
- Documentation/media/uapi/mediactl/media-ioc-device-info.rst | 4 ++--
- Documentation/media/uapi/v4l/vidioc-querycap.rst            | 6 +++---
- include/media/media-device.h                                | 5 ++---
- 4 files changed, 8 insertions(+), 9 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/media/uapi/cec/cec-ioc-adap-g-caps.rst b/Documentation/media/uapi/cec/cec-ioc-adap-g-caps.rst
-index a0e961f11017..749054f11c77 100644
---- a/Documentation/media/uapi/cec/cec-ioc-adap-g-caps.rst
-+++ b/Documentation/media/uapi/cec/cec-ioc-adap-g-caps.rst
-@@ -56,7 +56,7 @@ returns the information to the application. The ioctl never fails.
- 	:ref:`cec-capabilities`.
-     * - __u32
-       - ``version``
--      - CEC Framework API version, formatted with the ``KERNEL_VERSION()``
-+      - CEC Framework API version, formatted with the ``MEDIA_REVISION()``
- 	macro.
- 
- 
-diff --git a/Documentation/media/uapi/mediactl/media-ioc-device-info.rst b/Documentation/media/uapi/mediactl/media-ioc-device-info.rst
-index f690f9afc470..7a18cb6dbe84 100644
---- a/Documentation/media/uapi/mediactl/media-ioc-device-info.rst
-+++ b/Documentation/media/uapi/mediactl/media-ioc-device-info.rst
-@@ -96,7 +96,7 @@ ioctl never fails.
- 
-        -  ``media_version``
- 
--       -  Media API version, formatted with the ``KERNEL_VERSION()`` macro.
-+       -  Media API version, formatted with the ``MEDIA_REVISION()`` macro.
- 
-     -  .. row 6
- 
-@@ -113,7 +113,7 @@ ioctl never fails.
-        -  ``driver_version``
- 
-        -  Media device driver version, formatted with the
--	  ``KERNEL_VERSION()`` macro. Together with the ``driver`` field
-+	  ``MEDIA_REVISION()`` macro. Together with the ``driver`` field
- 	  this identifies a particular driver.
- 
-     -  .. row 8
-diff --git a/Documentation/media/uapi/v4l/vidioc-querycap.rst b/Documentation/media/uapi/v4l/vidioc-querycap.rst
-index 12e0d9a63cd8..b66d9caa7211 100644
---- a/Documentation/media/uapi/v4l/vidioc-querycap.rst
-+++ b/Documentation/media/uapi/v4l/vidioc-querycap.rst
-@@ -90,13 +90,13 @@ specification the ioctl returns an ``EINVAL`` error code.
- 	example, a stable or distribution-modified kernel uses the V4L2
- 	stack from a newer kernel.
- 
--	The version number is formatted using the ``KERNEL_VERSION()``
-+	The version number is formatted using the ``MEDIA_REVISION()``
- 	macro:
-     * - :cspan:`2`
- 
--	``#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))``
-+	``#define MEDIA_REVISION(a,b,c) (((a) << 16) + ((b) << 8) + (c))``
- 
--	``__u32 version = KERNEL_VERSION(0, 8, 1);``
-+	``__u32 version = MEDIA_REVISION(0, 8, 1);``
- 
- 	``printf ("Version: %u.%u.%u\\n",``
- 
-diff --git a/include/media/media-device.h b/include/media/media-device.h
-index 6896266031b9..6b3057266ad1 100644
---- a/include/media/media-device.h
-+++ b/include/media/media-device.h
-@@ -247,9 +247,9 @@ void media_device_cleanup(struct media_device *mdev);
-  *
-  *  - &media_entity.hw_revision is the hardware device revision in a
-  *    driver-specific format. When possible the revision should be formatted
-- *    with the KERNEL_VERSION() macro.
-+ *    with the MEDIA_REVISION() macro.
-  *
-- *  - &media_entity.driver_version is formatted with the KERNEL_VERSION()
-+ *  - &media_entity.driver_version is formatted with the MEDIA_REVISION()
-  *    macro. The version minor must be incremented when new features are added
-  *    to the userspace API without breaking binary compatibility. The version
-  *    major must be incremented when binary compatibility is broken.
-@@ -265,7 +265,6 @@ void media_device_cleanup(struct media_device *mdev);
- int __must_check __media_device_register(struct media_device *mdev,
- 					 struct module *owner);
- 
--
- /**
-  * media_device_register() - Registers a media device element
-  *
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 8199dbe..aa26280 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -33,7 +33,7 @@
+ static int g_noaccel;
+ static int g_nomtrr;
+ static const char *g_fbmode[] = {NULL, NULL};
+-static const char *g_def_fbmode = "1024x768-24@60";
++static const char *g_def_fbmode = "1024x768-32@60";
+ static char *g_settings;
+ static int g_dualview;
+ static char *g_option;
 -- 
-2.12.3
+1.9.1
 

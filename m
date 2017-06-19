@@ -1,51 +1,29 @@
-From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
-Date: Wed, 28 Jun 2017 15:47:00 +0000
-Subject: [PATCH v2 07/10] video: goldfishfb: Add support for device tree bindings
-Message-Id: <1498664922-28493-8-git-send-email-aleksandar.markovic@rt-rk.com>
+From: INFO <mguerrero@huv.gov.co>
+Date: Mon, 19 Jun 2017 19:39:18 +0000
+Subject: Re: Reply Urgent
+Message-Id: <20170619143918.2132176qvnaamicm@correo.huv.gov.co>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1498664922-28493-1-git-send-email-aleksandar.markovic@rt-rk.com>
-In-Reply-To: <1498664922-28493-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-mips@linux-mips.org
-Cc: Aleksandar Markovic <aleksandar.markovic@imgtec.com>, Miodrag Dinic <miodrag.dinic@imgtec.com>, Goran Ferenc <goran.ferenc@imgtec.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Douglas Leung <douglas.leung@imgtec.com>, James Hogan <james.hogan@imgtec.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Burton <paul.burton@imgtec.com>, Petar Jovanovic <petar.jovanovic@imgtec.com>, Raghu Gandham <raghu.gandham@imgtec.com>
+To: linux-fbdev@vger.kernel.org
 
-From: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
+Hello,
 
-Add ability to the Goldfish FB driver to be recognized by OS via DT.
+How are you doing? I have been sent to inform you that, We have an  
+inheritance of a deceased client with your surname. Contact Mr Andrew  
+Bailey Reply Email To: myinfand@gmail.com with your "Full Names" for  
+more info.  Thanks for your understanding.
 
-Signed-off-by: Miodrag Dinic <miodrag.dinic@imgtec.com>
-Signed-off-by: Goran Ferenc <goran.ferenc@imgtec.com>
-Signed-off-by: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
----
- drivers/video/fbdev/goldfishfb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+Reply ASAP thank you.
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 7f6c9e6..3b70044 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct of_device_id goldfish_fb_of_match[] = {
-+	{ .compatible = "google,goldfish-fb", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
- 
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
- 	.driver = {
--		.name = "goldfish_fb"
-+		.name = "goldfish_fb",
-+		.of_match_table = goldfish_fb_of_match,
- 	}
- };
- 
--- 
-2.7.4
+Melissa.
+----------------------------------
+Correo Corporativo Hospital Universitario del Valle E.S.E
+*******************************************************************************
+
+"Estamos re-dimensionandonos para crecer!"
+
+******************************************************************************
+
 

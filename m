@@ -1,39 +1,65 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Fri, 30 Jun 2017 07:27:29 +0000
-Subject: Re: [PATCH RESEND 0/7] Introduce MEDIA_VERSION to end KENREL_VERSION abuse in media
-Message-Id: <20170630072729.GC5236@linux-x5ow.site>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Mon, 19 Jun 2017 16:31:09 +0000
+Subject: [PATCH 1/2] drm/exynos/decon: Add include guard to the Exynos7 header
+Message-Id: <20170619163110.28173-1-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170621080812.6817-1-jthumshirn@suse.de>
- <20170624171507.38353b10@vento.lan>
- <20170629094259.GG3808@linux-x5ow.site>
- <20170629100105.6af3b77a@xeon-e3>
-In-Reply-To: <20170629100105.6af3b77a@xeon-e3>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Stephen Hemminger <stephen@networkplumber.org>
-Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, Hans Verkuil <hans.verkuil@cisco.com>, Andrew Morton <akpm@linux-foundation.org>, Mauro Carvalho Chehab <mchehab@kernel.org>, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
 
-On Thu, Jun 29, 2017 at 10:01:05AM -0700, Stephen Hemminger wrote:
-> If you read Linus's comments on version.
-> Driver version is meaningless and there is a desire to rip it out of all
-> drivers. The reason is that drivers must always behave the same, i.e you
-> can't use version to change API/ABI behavior.=20
+Although header is included only once but still having an include guard
+is a good practice.  To avoid confusion, add SoC prefix to existing
+Exynos5433 header include guard.
 
-Indeed this causes more harm than good. We had support calls regarding the
-mlx4 driver because of not incremented MODLE_VERSION()s. If we follow your
-and Linus' path we shouldn't just get rid of the KERNEL_VERSION() usage
-in media and replace it with a new version, but kill all the versioning
-stuff out of media (and others) except for maybe the HW version.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ include/video/exynos5433_decon.h | 6 +++---
+ include/video/exynos7_decon.h    | 5 +++++
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-> Any upstream driver should never use KERNEL_VERSION().
+diff --git a/include/video/exynos5433_decon.h b/include/video/exynos5433_decon.h
+index 78957c9626f5..b30362da5692 100644
+--- a/include/video/exynos5433_decon.h
++++ b/include/video/exynos5433_decon.h
+@@ -6,8 +6,8 @@
+  * published by the Free Software Foundationr
+  */
+ 
+-#ifndef EXYNOS_REGS_DECON_H
+-#define EXYNOS_REGS_DECON_H
++#ifndef EXYNOS5433_REGS_DECON_H
++#define EXYNOS5433_REGS_DECON_H
+ 
+ /* Exynos543X DECON */
+ #define DECON_VIDCON0			0x0000
+@@ -206,4 +206,4 @@
+ #define CRCCTRL_CRCEN			(0x1 << 0)
+ #define CRCCTRL_MASK			(0x7)
+ 
+-#endif /* EXYNOS_REGS_DECON_H */
++#endif /* EXYNOS5433_REGS_DECON_H */
+diff --git a/include/video/exynos7_decon.h b/include/video/exynos7_decon.h
+index a62b11b613f6..d28829659a17 100644
+--- a/include/video/exynos7_decon.h
++++ b/include/video/exynos7_decon.h
+@@ -9,6 +9,9 @@
+  * option) any later version.
+  */
+ 
++#ifndef EXYNOS7_REGS_DECON_H
++#define EXYNOS7_REGS_DECON_H
++
+ /* VIDCON0 */
+ #define VIDCON0					0x00
+ 
+@@ -347,3 +350,5 @@
+ 
+ #define DECON_UPDATE_SLAVE_SYNC			(1 << 4)
+ #define DECON_UPDATE_STANDALONE_F		(1 << 0)
++
++#endif /* EXYNOS7_REGS_DECON_H */
+-- 
+2.9.3
 
-Exactly my reasoning.
-
---=20
-Johannes Thumshirn                                          Storage
-jthumshirn@suse.de                                +49 911 74053 689
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=FCrnberg
-GF: Felix Imend=F6rffer, Jane Smithard, Graham Norton
-HRB 21284 (AG N=FCrnberg)
-Key fingerprint =3D EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850

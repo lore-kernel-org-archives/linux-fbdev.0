@@ -1,56 +1,164 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Date: Tue, 27 Jun 2017 13:06:39 +0000
-Subject: Re: [Ksummit-discuss] [TECH TOPIC] printk redesign
-Message-Id: <20170627130639.GA1886@jagdpanzerIV.localdomain>
+From: Dhananjay Balan <mail@dbalan.in>
+Date: Tue, 20 Jun 2017 16:50:13 +0000
+Subject: [PATCH] staging: sm750fb: move common locking code to a macro
+Message-Id: <20170620165013.11013-1-mail@dbalan.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170619052146.GA2889@jagdpanzerIV.localdomain>
-	<CGME20170622134852epcas2p4b6deccc56b52c71eada58fba2d527793@epcas2p4.samsung.com>
-	<CAKMK7uGWBFJ70KPexoyyYiWMOkKTga5KEO5zPtN70pRHBV90cQ@mail.gmail.com>
-	<10423619.jNvHD4M0jW@amdc3058>
-In-Reply-To: <10423619.jNvHD4M0jW@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "ksummit-discuss@lists.linuxfoundation.org" <ksummit-discuss@lists.linuxfoundation.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Dhananjay Balan <mail@dbalan.in>
 
-On (06/23/17 11:07), Bartlomiej Zolnierkiewicz wrote:
-> On Thursday, June 22, 2017 03:48:34 PM Daniel Vetter wrote:
-> > On Thu, Jun 22, 2017 at 3:42 PM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
-> > > Tears pretty much guaranteed, and after a few hacks from Alan&me I
-> > > concluded that the only way to fix this is to at least partially
-> > > rewrite fbdev (a dead subsystem, so no one's volunteering), with the
-> > > risk that you get to revert it all because someone is indeed relying
-> > > on that super-flexible module loading order sequence. The simplest fix
-> > > would probably be to make the entire fbdev->fbcon setup depency a
-> > > hard-coded function call, or maybe at most a one-shot symbol_get
-> > > attempt.
-> > 
-> > I did once hash out a plan how to fix this with the least amount of pain:
-> > 
-> > 1. Merge a patch to build the fbcon support into the overall fb.ko
-> > module, so that the dynamic loading nonsense is essentially disabled,
-> > and fbcon becomes a Kconfig/compile-time only option, no longer a
-> > runtime-selectable thing.
-> > 
-> > 2. Wait 1 year and pray that no one reports a regression. If you're
-> > unlucky, try to fence them of with a runtime option to disable fbcon.
-> > 
-> > 3. Rip out the notifier nonsense and replace it by direct function
-> > calls. You can only do that once 1. won't be reverted anymore.
-> > 
-> > 4. Push the console_lock donw the callchains until it's again at the
-> > right spots, auditing all the other stuff meanwhile to make sure the
-> > locking is still correct.
-> > 
-> > 5. Apply your patch to make console_lock sane.
-> > 
-> > Adding fbdev maintainers and lists just.
-> 
-> Your plan sounds good to me.
+The locking and unlocking code used by copy routines is common, so
+moved it to a macro.
 
-cool.
+Signed-off-by: Dhananjay Balan <mail@dbalan.in>
+---
+ drivers/staging/sm750fb/sm750.c | 81 ++++++++++++++++-------------------------
+ 1 file changed, 31 insertions(+), 50 deletions(-)
 
-I'm willing to help. let's coordinate.
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 386d4adcd91d..d8ab83aea46d 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -156,12 +156,25 @@ static int lynxfb_ops_cursor(struct fb_info *info, struct fb_cursor *fbcursor)
+ 	return 0;
+ }
+ 
++/*
++ * If not using spin_lock, system will die if user frequently loads and
++ * immediately unloads driver (dual)
++ */
++#define dual_safe_call(func, ...)					\
++	do {								\
++		if (sm750_dev->fb_count > 1)				\
++			spin_lock(&sm750_dev->slock);			\
++		func(__VA_ARGS__);					\
++		if (sm750_dev->fb_count > 1)				\
++			spin_unlock(&sm750_dev->slock);			\
++	} while (0)
++
+ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 				const struct fb_fillrect *region)
+ {
+ 	struct lynxfb_par *par;
+ 	struct sm750_dev *sm750_dev;
+-	unsigned int base, pitch, Bpp, rop;
++	unsigned int base, pitch, bit_pp, rop;
+ 	u32 color;
+ 
+ 	if (info->state != FBINFO_STATE_RUNNING)
+@@ -176,26 +189,15 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+-	Bpp = info->var.bits_per_pixel >> 3;
++	bit_pp = info->var.bits_per_pixel >> 3;
+ 
+-	color = (Bpp = 1) ? region->color :
++	color = (bit_pp = 1) ? region->color :
+ 		((u32 *)info->pseudo_palette)[region->color];
+ 	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR : HW_ROP2_COPY;
+ 
+-	/*
+-	 * If not use spin_lock,system will die if user load driver
+-	 * and immediately unload driver frequently (dual)
+-	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
+-
+-	sm750_dev->accel.de_fillrect(&sm750_dev->accel,
+-				     base, pitch, Bpp,
+-				     region->dx, region->dy,
+-				     region->width, region->height,
+-				     color, rop);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	dual_safe_call(sm750_dev->accel.de_fillrect, &sm750_dev->accel,
++		       base, pitch, bit_pp, region->dx, region->dy,
++		       region->width, region->height, color, rop);
+ }
+ 
+ static void lynxfb_ops_copyarea(struct fb_info *info,
+@@ -203,7 +205,7 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ {
+ 	struct lynxfb_par *par;
+ 	struct sm750_dev *sm750_dev;
+-	unsigned int base, pitch, Bpp;
++	unsigned int base, pitch, bit_pp;
+ 
+ 	par = info->par;
+ 	sm750_dev = par->dev;
+@@ -214,28 +216,18 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+-	Bpp = info->var.bits_per_pixel >> 3;
++	bit_pp = info->var.bits_per_pixel >> 3;
+ 
+-	/*
+-	 * If not use spin_lock, system will die if user load driver
+-	 * and immediately unload driver frequently (dual)
+-	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
+-
+-	sm750_dev->accel.de_copyarea(&sm750_dev->accel,
+-				     base, pitch, region->sx, region->sy,
+-				     base, pitch, Bpp, region->dx, region->dy,
+-				     region->width, region->height,
+-				     HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	dual_safe_call(sm750_dev->accel.de_copyarea, &sm750_dev->accel,
++		       base, pitch, region->sx, region->sy,
++		       base, pitch, bit_pp, region->dx, region->dy,
++		       region->width, region->height, HW_ROP2_COPY);
+ }
+ 
+ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 				 const struct fb_image *image)
+ {
+-	unsigned int base, pitch, Bpp;
++	unsigned int base, pitch, bit_pp;
+ 	unsigned int fgcol, bgcol;
+ 	struct lynxfb_par *par;
+ 	struct sm750_dev *sm750_dev;
+@@ -248,7 +240,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	 */
+ 	base = par->crtc.oScreen;
+ 	pitch = info->fix.line_length;
+-	Bpp = info->var.bits_per_pixel >> 3;
++	bit_pp = info->var.bits_per_pixel >> 3;
+ 
+ 	/* TODO: Implement hardware acceleration for image->depth > 1 */
+ 	if (image->depth != 1) {
+@@ -265,21 +257,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 		bgcol = image->bg_color;
+ 	}
+ 
+-	/*
+-	 * If not use spin_lock, system will die if user load driver
+-	 * and immediately unload driver frequently (dual)
+-	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
+-
+-	sm750_dev->accel.de_imageblit(&sm750_dev->accel,
+-				      image->data, image->width >> 3, 0,
+-				      base, pitch, Bpp,
+-				      image->dx, image->dy,
+-				      image->width, image->height,
+-				      fgcol, bgcol, HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	dual_safe_call(sm750_dev->accel.de_imageblit, &sm750_dev->accel,
++		       image->data, image->width >> 3, 0, base, pitch,
++		       bit_pp, image->dx, image->dy, image->width,
++		       image->height, fgcol, bgcol, HW_ROP2_COPY);
+ }
+ 
+ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
+-- 
+2.13.1
 
-	-ss

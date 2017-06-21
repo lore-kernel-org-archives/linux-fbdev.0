@@ -1,37 +1,79 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Sat, 10 Jun 2017 09:05:34 +0000
-Subject: [PATCH 5/7] [media] media: s3c-camif: Use MEDIA_REVISON instead of KERNEL_VERSION
-Message-Id: <20170610090536.12472-6-jthumshirn@suse.de>
+From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
+Date: Wed, 21 Jun 2017 08:36:08 +0000
+Subject: Re: [Nouveau] [PATCH 01/11] drm/fb-helper: do a generic fb_setcmap helper in terms of crtc .gamma_se
+Message-Id: <517b7144-9612-2249-cff6-cdebcb628f7b@daenzer.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170610090536.12472-1-jthumshirn@suse.de>
-In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
+References: <1497986735-14418-1-git-send-email-peda@axentia.se>
+ <1497986735-14418-2-git-send-email-peda@axentia.se>
+ <20170621073804.akyg4rxvoavjjt2v@phenom.ffwll.local>
+ <dfd961c1-2ca9-d85e-fc28-d873666b9bf3@daenzer.net>
+ <20170621081454.ymykfka5peelkqxp@phenom.ffwll.local>
+In-Reply-To: <20170621081454.ymykfka5peelkqxp@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Peter Rosin <peda@axentia.se>, Philippe Cornu <philippe.cornu@st.com>, =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>, Yannick Fertre <yannick.fertre@st.com>, Gerd Hoffmann <kraxel@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Vincent Abriou <vincent.abriou@st.com>, Ben Skeggs <bskeggs@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, dri-devel@lists.freedesktop.org
 
-Use MEDIA_REVISON instead of KERNEL_VERSION to encode the driver
-version.
+On 21/06/17 05:14 PM, Daniel Vetter wrote:
+> On Wed, Jun 21, 2017 at 04:59:31PM +0900, Michel Dänzer wrote:
+>> On 21/06/17 04:38 PM, Daniel Vetter wrote:
+>>> On Tue, Jun 20, 2017 at 09:25:25PM +0200, Peter Rosin wrote:
+>>>> This makes the redundant fb helpers .load_lut, .gamma_set and .gamma_get
+>>>> totally obsolete.
+>>>>
+>>>> I think the gamma_store can end up invalid on error. But the way I read
+>>>> it, that can happen in drm_mode_gamma_set_ioctl as well, so why should
+>>>> this pesky legacy fbdev stuff be any better?
+>>>>
+>>>> drm_fb_helper_save_lut_atomic justs saves the gamma lut for later. However,
+>>>> it saves it to the gamma_store which should already be up to date with what
+>>>> .gamma_get would return and is thus a nop. So, zap it.
+>>>
+>>> Removing drm_fb_helper_save_lut_atomic should be a separate patch I
+>>> think.
+>>>  
+>>>> Signed-off-by: Peter Rosin <peda@axentia.se>
+>>
+>> [...]
+>>
+>>>> @@ -1167,50 +1150,6 @@ void drm_fb_helper_set_suspend_unlocked(struct drm_fb_helper *fb_helper,
+>>>>  }
+>>>>  EXPORT_SYMBOL(drm_fb_helper_set_suspend_unlocked);
+>>>>  
+>>>> -static int setcolreg(struct drm_crtc *crtc, u16 red, u16 green,
+>>>> -		     u16 blue, u16 regno, struct fb_info *info)
+>>>> -{
+>>>> -	struct drm_fb_helper *fb_helper = info->par;
+>>>> -	struct drm_framebuffer *fb = fb_helper->fb;
+>>>> -
+>>>> -	if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
+>>>
+>>> This case here seems gone, and it was also the pièce de résistance when I
+>>> tried tackling fbdev lut support. As far as I understand this stuff we do
+>>> not support FB_VISUAL_TRUECOLOR palette, and all that bitshifting here is
+>>> pointless. But I'm honestly not really clear.
+>>>
+>>> I think removing this case should also be a separate patch, and I'd very
+>>> much prefer that someone with some fbdev-clue would ack it.
+>>
+>> No need for anyone with fbdev-clue, just run fbset -i. :)
 
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
----
- drivers/media/platform/s3c-camif/camif-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Adding Bartlomiej and the linux-fbdev list, just in case I'm wrong below.
 
-diff --git a/drivers/media/platform/s3c-camif/camif-core.c b/drivers/media/platform/s3c-camif/camif-core.c
-index ec4001970313..98bd5719fdf5 100644
---- a/drivers/media/platform/s3c-camif/camif-core.c
-+++ b/drivers/media/platform/s3c-camif/camif-core.c
-@@ -317,7 +317,7 @@ static int camif_media_dev_init(struct camif_dev *camif)
- 		 ip_rev = S3C6410_CAMIF_IP_REV ? "6410" : "244X");
- 	strlcpy(md->bus_info, "platform", sizeof(md->bus_info));
- 	md->hw_revision = ip_rev;
--	md->driver_version = KERNEL_VERSION(1, 0, 0);
-+	md->driver_version = MEDIA_REVISION(1, 0, 0);
- 
- 	md->dev = camif->dev;
- 
+
+>> fbcon uses a TRUECOLOR visual at depths > 8.
+> 
+> Then I understand even less what exactly this code does ... Should we keep
+> it?
+
+I think we need it. It updates the entries of info->pseudo_palette,
+which is kind of a pseudocolor palette mapping 16 indices to pixel
+values to write to the framebuffer.
+
+If the setcolreg hook is removed, the setcmap hook needs to do this instead.
+
+
 -- 
-2.12.3
-
+Earthling Michel Dänzer               |               http://www.amd.com
+Libre software enthusiast             |             Mesa and X developer

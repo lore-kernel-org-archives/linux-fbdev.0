@@ -1,79 +1,45 @@
-From: =?UTF-8?Q?Michel_D=c3=a4nzer?= <michel@daenzer.net>
-Date: Wed, 21 Jun 2017 08:36:08 +0000
-Subject: Re: [Nouveau] [PATCH 01/11] drm/fb-helper: do a generic fb_setcmap helper in terms of crtc .gamma_se
-Message-Id: <517b7144-9612-2249-cff6-cdebcb628f7b@daenzer.net>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Wed, 21 Jun 2017 08:08:07 +0000
+Subject: [PATCH RESEND 2/7] video: fbdev: don't use KERNEL_VERSION macro for MEDIA_REVISION
+Message-Id: <20170621080812.6817-3-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1497986735-14418-1-git-send-email-peda@axentia.se>
- <1497986735-14418-2-git-send-email-peda@axentia.se>
- <20170621073804.akyg4rxvoavjjt2v@phenom.ffwll.local>
- <dfd961c1-2ca9-d85e-fc28-d873666b9bf3@daenzer.net>
- <20170621081454.ymykfka5peelkqxp@phenom.ffwll.local>
-In-Reply-To: <20170621081454.ymykfka5peelkqxp@phenom.ffwll.local>
+References: <20170621080812.6817-1-jthumshirn@suse.de>
+In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Peter Rosin <peda@axentia.se>, Philippe Cornu <philippe.cornu@st.com>, =?UTF-8?Q?Christian_K=c3=b6nig?= <christian.koenig@amd.com>, Yannick Fertre <yannick.fertre@st.com>, Gerd Hoffmann <kraxel@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Vincent Abriou <vincent.abriou@st.com>, Ben Skeggs <bskeggs@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, nouveau@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
 
-On 21/06/17 05:14 PM, Daniel Vetter wrote:
-> On Wed, Jun 21, 2017 at 04:59:31PM +0900, Michel Dänzer wrote:
->> On 21/06/17 04:38 PM, Daniel Vetter wrote:
->>> On Tue, Jun 20, 2017 at 09:25:25PM +0200, Peter Rosin wrote:
->>>> This makes the redundant fb helpers .load_lut, .gamma_set and .gamma_get
->>>> totally obsolete.
->>>>
->>>> I think the gamma_store can end up invalid on error. But the way I read
->>>> it, that can happen in drm_mode_gamma_set_ioctl as well, so why should
->>>> this pesky legacy fbdev stuff be any better?
->>>>
->>>> drm_fb_helper_save_lut_atomic justs saves the gamma lut for later. However,
->>>> it saves it to the gamma_store which should already be up to date with what
->>>> .gamma_get would return and is thus a nop. So, zap it.
->>>
->>> Removing drm_fb_helper_save_lut_atomic should be a separate patch I
->>> think.
->>>  
->>>> Signed-off-by: Peter Rosin <peda@axentia.se>
->>
->> [...]
->>
->>>> @@ -1167,50 +1150,6 @@ void drm_fb_helper_set_suspend_unlocked(struct drm_fb_helper *fb_helper,
->>>>  }
->>>>  EXPORT_SYMBOL(drm_fb_helper_set_suspend_unlocked);
->>>>  
->>>> -static int setcolreg(struct drm_crtc *crtc, u16 red, u16 green,
->>>> -		     u16 blue, u16 regno, struct fb_info *info)
->>>> -{
->>>> -	struct drm_fb_helper *fb_helper = info->par;
->>>> -	struct drm_framebuffer *fb = fb_helper->fb;
->>>> -
->>>> -	if (info->fix.visual = FB_VISUAL_TRUECOLOR) {
->>>
->>> This case here seems gone, and it was also the pièce de résistance when I
->>> tried tackling fbdev lut support. As far as I understand this stuff we do
->>> not support FB_VISUAL_TRUECOLOR palette, and all that bitshifting here is
->>> pointless. But I'm honestly not really clear.
->>>
->>> I think removing this case should also be a separate patch, and I'd very
->>> much prefer that someone with some fbdev-clue would ack it.
->>
->> No need for anyone with fbdev-clue, just run fbset -i. :)
+Don't use the KERNEL_VERSION() macro for the v4l2 capabilities, use
+MEDIA_REVISION instead.
 
-Adding Bartlomiej and the linux-fbdev list, just in case I'm wrong below.
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+---
+ drivers/video/fbdev/matrox/matroxfb_base.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-
->> fbcon uses a TRUECOLOR visual at depths > 8.
-> 
-> Then I understand even less what exactly this code does ... Should we keep
-> it?
-
-I think we need it. It updates the entries of info->pseudo_palette,
-which is kind of a pseudocolor palette mapping 16 indices to pixel
-values to write to the framebuffer.
-
-If the setcolreg hook is removed, the setcmap hook needs to do this instead.
-
-
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index 11eb094396ae..eb92a325033c 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -113,6 +113,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/slab.h>
+ #include <linux/uaccess.h>
++#include <linux/media.h>
+ 
+ #ifdef CONFIG_PPC_PMAC
+ #include <asm/machdep.h>
+@@ -1091,7 +1092,7 @@ static int matroxfb_ioctl(struct fb_info *info,
+ 				strcpy(r.driver, "matroxfb");
+ 				strcpy(r.card, "Matrox");
+ 				sprintf(r.bus_info, "PCI:%s", pci_name(minfo->pcidev));
+-				r.version = KERNEL_VERSION(1,0,0);
++				r.version = MEDIA_REVISION(1, 0, 0);
+ 				r.capabilities = V4L2_CAP_VIDEO_OUTPUT;
+ 				if (copy_to_user(argp, &r, sizeof(r)))
+ 					return -EFAULT;
 -- 
-Earthling Michel Dänzer               |               http://www.amd.com
-Libre software enthusiast             |             Mesa and X developer
+2.12.3
+

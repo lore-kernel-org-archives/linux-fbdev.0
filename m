@@ -1,95 +1,37 @@
-From: AbdAllah-MEZITI <abdallah.meziti.pro@gmail.com>
-Date: Mon, 26 Jun 2017 17:26:19 +0000
-Subject: [PATCH v2] staging: sm750fb: always take the lock
-Message-Id: <1498497981-3240-1-git-send-email-abdallah.meziti.pro@gmail.com>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Wed, 21 Jun 2017 08:08:10 +0000
+Subject: [PATCH RESEND 5/7] [media] media: s3c-camif: Use MEDIA_REVISON instead of KERNEL_VERSION
+Message-Id: <20170621080812.6817-6-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170621080812.6817-1-jthumshirn@suse.de>
+In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: AbdAllah MEZITI <abdallah.meziti.pro@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
 
-This patch
-- Always take the lock:
-The current code only takes the lock if multiple instances are in use.
-This is error-prone, and confuses static analyzers.
-As taking the lock in case of a single instance is harmless and cheap,
-change the code to always take the lock.
-- That also fix the sparse warning:
-drivers/staging/sm750fb/sm750.c:159:13: warning: context imbalance in 'lynxfb_ops_fillrect' - different lock contexts for basic block
-drivers/staging/sm750fb/sm750.c:231:9: warning: context imbalance in 'lynxfb_ops_copyarea' - different lock contexts for basic block
-drivers/staging/sm750fb/sm750.c:235:13: warning: context imbalance in 'lynxfb_ops_imageblit' - different lock contexts for basic block
+Use MEDIA_REVISON instead of KERNEL_VERSION to encode the driver
+version.
 
-Signed-off-by: AbdAllah MEZITI <abdallah.meziti.pro@gmail.com>
-
-v2:
- - add and fix the changelog text.
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
- drivers/staging/sm750fb/sm750.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/media/platform/s3c-camif/camif-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 386d4ad..4a22190 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -186,16 +186,14 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
- 	 * If not use spin_lock,system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
+diff --git a/drivers/media/platform/s3c-camif/camif-core.c b/drivers/media/platform/s3c-camif/camif-core.c
+index ec4001970313..98bd5719fdf5 100644
+--- a/drivers/media/platform/s3c-camif/camif-core.c
++++ b/drivers/media/platform/s3c-camif/camif-core.c
+@@ -317,7 +317,7 @@ static int camif_media_dev_init(struct camif_dev *camif)
+ 		 ip_rev = S3C6410_CAMIF_IP_REV ? "6410" : "244X");
+ 	strlcpy(md->bus_info, "platform", sizeof(md->bus_info));
+ 	md->hw_revision = ip_rev;
+-	md->driver_version = KERNEL_VERSION(1, 0, 0);
++	md->driver_version = MEDIA_REVISION(1, 0, 0);
  
- 	sm750_dev->accel.de_fillrect(&sm750_dev->accel,
- 				     base, pitch, Bpp,
- 				     region->dx, region->dy,
- 				     region->width, region->height,
- 				     color, rop);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
- }
+ 	md->dev = camif->dev;
  
- static void lynxfb_ops_copyarea(struct fb_info *info,
-@@ -220,16 +218,14 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
- 	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
- 
- 	sm750_dev->accel.de_copyarea(&sm750_dev->accel,
- 				     base, pitch, region->sx, region->sy,
- 				     base, pitch, Bpp, region->dx, region->dy,
- 				     region->width, region->height,
- 				     HW_ROP2_COPY);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
- }
- 
- static void lynxfb_ops_imageblit(struct fb_info *info,
-@@ -269,8 +265,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
- 
- 	sm750_dev->accel.de_imageblit(&sm750_dev->accel,
- 				      image->data, image->width >> 3, 0,
-@@ -278,8 +273,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 				      image->dx, image->dy,
- 				      image->width, image->height,
- 				      fgcol, bgcol, HW_ROP2_COPY);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
- }
- 
- static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
 -- 
-2.7.4
+2.12.3
 

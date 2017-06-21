@@ -1,38 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 14 Jun 2017 13:28:57 +0000
-Subject: Re: [PATCH 2/3] mdacon: make mda_vram_base u16 *
-Message-Id: <1519838.mppWii43AC@amdc3058>
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Wed, 21 Jun 2017 08:08:11 +0000
+Subject: [PATCH RESEND 6/7] [media] media: bcm2048: use MEDIA_REVISION isntead of KERNEL_VERSION
+Message-Id: <20170621080812.6817-7-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170512080804.2508-1-jslaby@suse.cz>
-        <20170512080804.2508-2-jslaby@suse.cz>
-        <CGME20170614132859epcas1p3f3db84642709f6ae79e4ca495a4c8ebe@epcas1p3.samsung.com>
-In-Reply-To: <20170512080804.2508-2-jslaby@suse.cz>
+References: <20170621080812.6817-1-jthumshirn@suse.de>
+In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jiri Slaby <jslaby@suse.cz>
-Cc: dri-devel@lists.freedesktop.org, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
 
-On Friday, May 12, 2017 10:08:03 AM Jiri Slaby wrote:
-> Given every user of mda_vram_base expects a pointer, let
-> mda_vram_base be a pointer to u16.
-> 
-> The offset calculation in mda_detect had to be adjusted by / 2 (due to
-> different pointer arithmetic now).
-> 
-> We introduce a cast to a value returned from VGA_MAP_MEM. But I will
-> change VGA_MAP_MEM to return a pointer later too. But vgacon needs a
-> similar change first.
-> 
-> Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-> Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: <linux-fbdev@vger.kernel.org>
+Use MEDIA_REVISION isntead of KERNEL_VERSION to encode the bcm2048
+driver version.
 
-Patch queued for 4.13, thanks.
+Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+---
+ drivers/staging/media/bcm2048/radio-bcm2048.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/staging/media/bcm2048/radio-bcm2048.c b/drivers/staging/media/bcm2048/radio-bcm2048.c
+index 38f72d069e27..ffe9b63cbf59 100644
+--- a/drivers/staging/media/bcm2048/radio-bcm2048.c
++++ b/drivers/staging/media/bcm2048/radio-bcm2048.c
+@@ -48,7 +48,7 @@
+ /* driver definitions */
+ #define BCM2048_DRIVER_AUTHOR	"Eero Nurkkala <ext-eero.nurkkala@nokia.com>"
+ #define BCM2048_DRIVER_NAME	BCM2048_NAME
+-#define BCM2048_DRIVER_VERSION	KERNEL_VERSION(0, 0, 1)
++#define BCM2048_DRIVER_VERSION	MEDIA_REVISION(0, 0, 1)
+ #define BCM2048_DRIVER_CARD	"Broadcom bcm2048 FM Radio Receiver"
+ #define BCM2048_DRIVER_DESC	"I2C driver for BCM2048 FM Radio Receiver"
+ 
+-- 
+2.12.3
 

@@ -1,7 +1,7 @@
 From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Wed, 21 Jun 2017 08:08:11 +0000
-Subject: [PATCH RESEND 6/7] [media] media: bcm2048: use MEDIA_REVISION isntead of KERNEL_VERSION
-Message-Id: <20170621080812.6817-7-jthumshirn@suse.de>
+Date: Wed, 21 Jun 2017 08:08:06 +0000
+Subject: [PATCH RESEND 1/7] [media] media: introduce MEDIA_REVISION macro
+Message-Id: <20170621080812.6817-2-jthumshirn@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170621080812.6817-1-jthumshirn@suse.de>
 In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
@@ -11,27 +11,32 @@ Content-Transfer-Encoding: 7bit
 To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
 Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>, Johannes Thumshirn <jthumshirn@suse.de>
 
-Use MEDIA_REVISION isntead of KERNEL_VERSION to encode the bcm2048
-driver version.
+Currently the media code abuses the KERNEL_VERSION macro to encode a
+version triplet.
+
+Introduce a MEDIA_REVISION macro to get rid of the confusing and
+creative KERNEL_VERSION usage in the media subsystem.
 
 Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
 ---
- drivers/staging/media/bcm2048/radio-bcm2048.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/uapi/linux/media.h | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/staging/media/bcm2048/radio-bcm2048.c b/drivers/staging/media/bcm2048/radio-bcm2048.c
-index 38f72d069e27..ffe9b63cbf59 100644
---- a/drivers/staging/media/bcm2048/radio-bcm2048.c
-+++ b/drivers/staging/media/bcm2048/radio-bcm2048.c
-@@ -48,7 +48,7 @@
- /* driver definitions */
- #define BCM2048_DRIVER_AUTHOR	"Eero Nurkkala <ext-eero.nurkkala@nokia.com>"
- #define BCM2048_DRIVER_NAME	BCM2048_NAME
--#define BCM2048_DRIVER_VERSION	KERNEL_VERSION(0, 0, 1)
-+#define BCM2048_DRIVER_VERSION	MEDIA_REVISION(0, 0, 1)
- #define BCM2048_DRIVER_CARD	"Broadcom bcm2048 FM Radio Receiver"
- #define BCM2048_DRIVER_DESC	"I2C driver for BCM2048 FM Radio Receiver"
+diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
+index 4890787731b8..25e2ae4432bd 100644
+--- a/include/uapi/linux/media.h
++++ b/include/uapi/linux/media.h
+@@ -30,7 +30,9 @@
+ #include <linux/types.h>
+ #include <linux/version.h>
  
+-#define MEDIA_API_VERSION	KERNEL_VERSION(0, 1, 0)
++#define MEDIA_REVISION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
++
++#define MEDIA_API_VERSION	MEDIA_REVISION(0, 1, 0)
+ 
+ struct media_device_info {
+ 	char driver[16];
 -- 
 2.12.3
 

@@ -1,80 +1,55 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Fri, 30 Jun 2017 11:25:05 +0000
-Subject: Re: [PATCH v2 1/4] dt-bindings: pwm-backlight: add pwm-delay-us property
-Message-Id: <20170630112505.GA18448@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
+From: Bhushan Shah <bshah@kde.org>
+Date: Wed, 21 Jun 2017 05:43:52 +0000
+Subject: [PATCH v2] backlight: lm3630a: bump REG_MAX value to 0x50 instead of 0x1F
+Message-Id: <20170621053152.3008-1-bshah@kde.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170630112109.13785-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, huang lin <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
+References: <20170621052450.2258-1-bshah@kde.org>
+In-Reply-To: <20170621052450.2258-1-bshah@kde.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bhushan Shah <bshah@kde.org>
 
+In the lm3630a_chip_init we try to write to 0x50 register, which is
+higher value then the max_register value, this resulted in regmap_write
+return -EIO.
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Fix this by bumping REG_MAX value to 0x50.
 
-On Fri 2017-06-30 13:21:06, Enric Balletbo i Serra wrote:
-> From: huang lin <hl@rock-chips.com>
->=20
-> Add a pwm-delay-us property to specify the delay between setting an
-> initial (non-zero) PWM value and enabling the backlight, and also the
-> delay between disabling the backlight and setting PWM value to 0.
->=20
-> Signed-off-by: huang lin <hl@rock-chips.com>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> Changes since v1:
->  - As suggested by Daniel Thompson
->    - Do not assume power-on delay and power-off delay will be the same
->=20
-> v1: https://lkml.org/lkml/2017/6/28/219
->=20
->  Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 +=
-+++++
->  1 file changed, 6 insertions(+)
->=20
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlig=
-ht.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> index 764db86..49b037e 100644
-> --- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> +++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> @@ -17,6 +17,11 @@ Optional properties:
->                 "pwms" property (see PWM binding[0])
->    - enable-gpios: contains a single GPIO specifier for the GPIO which en=
-ables
->                    and disables the backlight (see GPIO binding[1])
-> +  - pwm-delay-us: delay between setting an initial (non-zero) PWM value =
-and
-> +                  enabling the backlight, and also the delay between dis=
-abling
-> +                  the backlight and setting PWM value to 0.
+Signed-off-by: Bhushan Shah <bshah@kde.org>
+Suggested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
 
-"Hardware needs a delay between setting an initial (non-zero) PWM and
-enabling the backlight using GPIO. The 1st cell specifies this delay
-in micro seconds. Hardware also needs a delay between disabing the
-backlight using GPIO and setting PWM value to 0. The 2nd cell is this
-delay in micro seconds."
+Changes since v1:
+    - Fix the lm3630a_write call to use proper value (sent worng patch earlier)
 
-Pavel
+ drivers/video/backlight/lm3630a_bl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 60d6c2ac87aa..b641f706dbc9 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -31,7 +31,8 @@
+ #define REG_FAULT	0x0B
+ #define REG_PWM_OUTLOW	0x12
+ #define REG_PWM_OUTHIGH	0x13
+-#define REG_MAX		0x1F
++#define REG_FLTR_STR	0x50
++#define REG_MAX		0x50
+ 
+ #define INT_DEBOUNCE_MSEC	10
+ struct lm3630a_chip {
+@@ -80,7 +81,7 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
+ 
+ 	usleep_range(1000, 2000);
+ 	/* set Filter Strength Register */
+-	rval = lm3630a_write(pchip, 0x50, 0x03);
++	rval = lm3630a_write(pchip, REG_FLTR_STR, 0x03);
+ 	/* set Cofig. register */
+ 	rval |= lm3630a_update(pchip, REG_CONFIG, 0x07, pdata->pwm_ctrl);
+ 	/* set boost control */
+-- 
+2.13.0
 
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllWNRAACgkQMOfwapXb+vL0lACgrF9/F+yTmwc38tPUt6qc1q6J
-4ioAnjHpcp7oisDTay0pWf7y8XMYk3NJ
-=Kb7S
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--

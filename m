@@ -1,24 +1,49 @@
-From: Tejun Heo <tj@kernel.org>
-Date: Mon, 26 Jun 2017 20:53:30 +0000
-Subject: Re: [PATCH 02/11] dma-mapping: replace dmam_alloc_noncoherent with dmam_alloc_attrs
-Message-Id: <20170626205330.GC27428@htj.duckdns.org>
+From: Bhushan Shah <bshah@kde.org>
+Date: Wed, 21 Jun 2017 05:36:50 +0000
+Subject: [PATCH] backlight: lm3630a: bump REG_MAX value to 0x50 instead of 0x1F
+Message-Id: <20170621052450.2258-1-bshah@kde.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170616071716.17321-1-hch@lst.de>
- <20170616071716.17321-3-hch@lst.de>
- <20170626070730.GB12711@infradead.org>
-In-Reply-To: <20170626070730.GB12711@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-fbdev@vger.kernel.org, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, alsa-devel@alsa-project.org, Christoph Hellwig <hch@lst.de>, linux-serial@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-metag@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bhushan Shah <bshah@kde.org>
 
-On Mon, Jun 26, 2017 at 12:07:30AM -0700, Christoph Hellwig wrote:
-> Tejun, does this look ok to you?
+In the lm3630a_chip_init we try to write to 0x50 register, which is
+higher value then the max_register value, this resulted in regmap_write
+return -EIO.
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Fix this by bumping REG_MAX value to 0x50.
 
-Thanks.
+Signed-off-by: Bhushan Shah <bshah@kde.org>
+Suggested-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ drivers/video/backlight/lm3630a_bl.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 60d6c2ac87aa..42496b6c09d0 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -31,7 +31,8 @@
+ #define REG_FAULT	0x0B
+ #define REG_PWM_OUTLOW	0x12
+ #define REG_PWM_OUTHIGH	0x13
+-#define REG_MAX		0x1F
++#define REG_FLTR_STR	0x50
++#define REG_MAX		0x50
+ 
+ #define INT_DEBOUNCE_MSEC	10
+ struct lm3630a_chip {
+@@ -80,7 +81,7 @@ static int lm3630a_chip_init(struct lm3630a_chip *pchip)
+ 
+ 	usleep_range(1000, 2000);
+ 	/* set Filter Strength Register */
+-	rval = lm3630a_write(pchip, 0x50, 0x03);
++	rval = lm3630a_write(pchip, FLTR_STR, 0x03);
+ 	/* set Cofig. register */
+ 	rval |= lm3630a_update(pchip, REG_CONFIG, 0x07, pdata->pwm_ctrl);
+ 	/* set boost control */
 -- 
-tejun
+2.13.0
+

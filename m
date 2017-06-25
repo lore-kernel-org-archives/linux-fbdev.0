@@ -1,31 +1,31 @@
 From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 20 Jun 2017 20:44:18 +0000
+Date: Sun, 25 Jun 2017 12:43:34 +0000
 Subject: Re: [PATCH 1/2] staging: sm750fb: avoid conflicting vesafb
-Message-Id: <20170620204418.GB5603@sudip-laptop>
+Message-Id: <20170625124334.GA6942@sudip-laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
- <CAHp75VdQ0BoKtbr5m--sZH1yHs=Oo-B577VnxoO8E-0jn0QzCA@mail.gmail.com>
- <20170620200858.GA5287@sudip-laptop>
- <20170620202055.zhleonjxyzzrl5d3@mwanda>
- <CAHp75Vd9YGWOU9rDPX5qnU5ia9+xJXVXhCGELeqvUqn1unBL7Q@mail.gmail.com>
-In-Reply-To: <CAHp75Vd9YGWOU9rDPX5qnU5ia9+xJXVXhCGELeqvUqn1unBL7Q@mail.gmail.com>
+In-Reply-To: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Dan Carpenter <dan.carpenter@oracle.com>, devel@driverdev.osuosl.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Teddy Wang <teddy.wang@siliconmotion.com>
 
-On Tue, Jun 20, 2017 at 11:40:59PM +0300, Andy Shevchenko wrote:
-> On Tue, Jun 20, 2017 at 11:20 PM, Dan Carpenter
-> <dan.carpenter@oracle.com> wrote:
-> > That's totally bogus.  Just say you don't know.  It's never a
-> > reguirement that people fix AMD drivers before they can review code...
+On Mon, Jun 19, 2017 at 09:32:57PM +0100, Sudip Mukherjee wrote:
+> From: Teddy Wang <teddy.wang@siliconmotion.com>
 > 
-> Agree. It's not a cargo cult.
-> If there any real thing behind that #ifdef  I would like to hear.
+> If vesafb is enabled in the config then /dev/fb0 is created by vesa
+> and this sm750 driver gets fb1, fb2. But we need to be fb0 and fb1 to
+> effectively work with xorg.
+> So if it has been alloted fb1, then try to remove the other fb0.
+> 
+> Signed-off-by: Teddy Wang <teddy.wang@siliconmotion.com>
+> Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+> ---
 
-I dont know the real thing behind that. You can hear the real thing if
-you send that patch to drm. And that is the only reason I mentioned that.
+Hi Greg,
+You applied the second patch but not this one. Did I miss any review
+comments from you about this one?
 
 --
 Regards

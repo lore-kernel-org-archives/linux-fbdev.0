@@ -1,37 +1,60 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Sat, 10 Jun 2017 09:05:33 +0000
-Subject: [PATCH 4/7] [media] cx25821: use MEDIA_REVISION instead of KERNEL_VERSION
-Message-Id: <20170610090536.12472-5-jthumshirn@suse.de>
+From: Derek Robson <robsonde@gmail.com>
+Date: Sun, 25 Jun 2017 01:54:59 +0000
+Subject: [PATCH V3] staging: sm750fb - add parameter names
+Message-Id: <20170625015459.30558-1-robsonde@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170610090536.12472-1-jthumshirn@suse.de>
-In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org
+Cc: linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Derek Robson <robsonde@gmail.com>
 
-Use MEDIA_REVISION instead of KERNEL_VERSION to encode the
-CX25821_VERSION_CODE.
+Fixed checkpatch.pl warnings of the form "function definition argument
+'foo' should also have an identifier name" in header files.
 
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Signed-off-by: Derek Robson <robsonde@gmail.com>
 ---
- drivers/media/pci/cx25821/cx25821.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+V2 had V1 comment above the line
+V1 had vauge subject line
 
-diff --git a/drivers/media/pci/cx25821/cx25821.h b/drivers/media/pci/cx25821/cx25821.h
-index 0f20e89b0cde..7fea6b07cf19 100644
---- a/drivers/media/pci/cx25821/cx25821.h
-+++ b/drivers/media/pci/cx25821/cx25821.h
-@@ -41,7 +41,7 @@
- #include <linux/version.h>
- #include <linux/mutex.h>
+ drivers/staging/sm750fb/sm750.h | 24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750.h b/drivers/staging/sm750fb/sm750.h
+index 5b186dafedec..4386122799b2 100644
+--- a/drivers/staging/sm750fb/sm750.h
++++ b/drivers/staging/sm750fb/sm750.h
+@@ -189,14 +189,22 @@ void hw_sm750_initAccel(struct sm750_dev *sm750_dev);
+ int hw_sm750_deWait(void);
+ int hw_sm750le_deWait(void);
  
--#define CX25821_VERSION_CODE KERNEL_VERSION(0, 0, 106)
-+#define CX25821_VERSION_CODE MEDIA_REVISION(0, 0, 106)
- 
- #define UNSET (-1U)
- #define NO_SYNC_LINE (-1U)
+-int hw_sm750_output_setMode(struct lynxfb_output*, struct fb_var_screeninfo*,
+-			    struct fb_fix_screeninfo*);
+-int hw_sm750_crtc_checkMode(struct lynxfb_crtc*, struct fb_var_screeninfo*);
+-int hw_sm750_crtc_setMode(struct lynxfb_crtc*, struct fb_var_screeninfo*,
+-			  struct fb_fix_screeninfo*);
+-int hw_sm750_setColReg(struct lynxfb_crtc*, ushort, ushort, ushort, ushort);
+-int hw_sm750_setBLANK(struct lynxfb_output*, int);
+-int hw_sm750le_setBLANK(struct lynxfb_output*, int);
++int hw_sm750_output_setMode(struct lynxfb_output *output,
++			    struct fb_var_screeninfo *var,
++			    struct fb_fix_screeninfo *fix);
++
++int hw_sm750_crtc_checkMode(struct lynxfb_crtc *crtc,
++			    struct fb_var_screeninfo *var);
++
++int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
++			  struct fb_var_screeninfo *var,
++			  struct fb_fix_screeninfo *fix);
++
++int hw_sm750_setColReg(struct lynxfb_crtc *crtc, ushort index,
++		       ushort red, ushort green, ushort blue);
++
++int hw_sm750_setBLANK(struct lynxfb_output *output, int blank);
++int hw_sm750le_setBLANK(struct lynxfb_output *output, int blank);
+ int hw_sm750_pan_display(struct lynxfb_crtc *crtc,
+ 			 const struct fb_var_screeninfo *var,
+ 			 const struct fb_info *info);
 -- 
-2.12.3
+2.13.0
 

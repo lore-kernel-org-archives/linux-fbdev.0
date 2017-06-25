@@ -1,55 +1,128 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sat, 10 Jun 2017 09:04:40 +0000
-Subject: Re: [PATCH] drm: omapdrm: remove unused variable
-Message-Id: <2360322.E0GRGgjHx9@avalon>
+From: AbdAllah-MEZITI <abdallah.meziti.pro@gmail.com>
+Date: Sun, 25 Jun 2017 19:10:36 +0000
+Subject: [PATCH] staging: sm750fb: fix sparce warning.
+Message-Id: <1498417843-12060-1-git-send-email-abdallah.meziti.pro@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170609103143.3095325-1-arnd@arndb.de>
-In-Reply-To: <20170609103143.3095325-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Hi Arnd,
+This patch fixes the following sparce warnings: different lock contexts for basic block.
 
-Thank you for the patch.
+drivers/staging/sm750fb//sm750.c:159:13: warning: context imbalance in 'lynxfb_ops_fillrect' - different lock contexts for basic block
+drivers/staging/sm750fb//sm750.c:231:9: warning: context imbalance in 'lynxfb_ops_copyarea' - different lock contexts for basic block
+drivers/staging/sm750fb//sm750.c:235:13: warning: context imbalance in 'lynxfb_ops_imageblit' - different lock contexts for basic block
 
-On Friday 09 Jun 2017 12:31:03 Arnd Bergmann wrote:
-> Removing the default display name left a harmless warning:
-> 
-> fbdev/omap2/omapfb/dss/core.c: In function 'omap_dss_probe':
-> fbdev/omap2/omapfb/dss/core.c:196:30: error: unused variable 'pdata'
-> [-Werror=unused-variable]
-> 
-> This removes the now-unused variable as well.
-> 
-> Fixes: 278cba7eaf54 ("drm: omapdrm: Remove unused default display name
-> support")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: AbdAllah-MEZITI <abdallah.meziti.pro@gmail.com>
+---
+ drivers/staging/sm750fb/sm750.c | 69 ++++++++++++++++++++++++++++-------------
+ 1 file changed, 47 insertions(+), 22 deletions(-)
 
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-> ---
->  drivers/video/fbdev/omap2/omapfb/dss/core.c | 1 -
->  1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c
-> b/drivers/video/fbdev/omap2/omapfb/dss/core.c index
-> eecf695c16f4..09e5bb013d28 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
-> @@ -193,7 +193,6 @@ static struct notifier_block omap_dss_pm_notif_block = {
-> 
->  static int __init omap_dss_probe(struct platform_device *pdev)
->  {
-> -	struct omap_dss_board_info *pdata = pdev->dev.platform_data;
->  	int r;
-> 
->  	core.pdev = pdev;
-
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 664c220..5494a29 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -186,16 +186,24 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	 * If not use spin_lock,system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
+ 	 */
+-	if (sm750_dev->fb_count > 1)
++	if (sm750_dev->fb_count > 1) {
+ 		spin_lock(&sm750_dev->slock);
+ 
+-	sm750_dev->accel.de_fillrect(&sm750_dev->accel,
+-				     base, pitch, Bpp,
+-				     region->dx, region->dy,
+-				     region->width, region->height,
+-				     color, rop);
+-	if (sm750_dev->fb_count > 1)
++		sm750_dev->accel.de_fillrect(&sm750_dev->accel,
++					     base, pitch, Bpp,
++					     region->dx, region->dy,
++					     region->width, region->height,
++					     color, rop);
++
+ 		spin_unlock(&sm750_dev->slock);
++	} else {
++		sm750_dev->accel.de_fillrect(&sm750_dev->accel,
++					     base, pitch, Bpp,
++					     region->dx, region->dy,
++					     region->width, region->height,
++					     color, rop);
++	}
++
+ }
+ 
+ static void lynxfb_ops_copyarea(struct fb_info *info,
+@@ -220,16 +228,24 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	 * If not use spin_lock, system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
+ 	 */
+-	if (sm750_dev->fb_count > 1)
++	if (sm750_dev->fb_count > 1) {
+ 		spin_lock(&sm750_dev->slock);
+ 
+-	sm750_dev->accel.de_copyarea(&sm750_dev->accel,
+-				     base, pitch, region->sx, region->sy,
+-				     base, pitch, Bpp, region->dx, region->dy,
+-				     region->width, region->height,
+-				     HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
++		sm750_dev->accel.de_copyarea(&sm750_dev->accel,
++					     base, pitch, region->sx, region->sy,
++					     base, pitch, Bpp, region->dx, region->dy,
++					     region->width, region->height,
++					     HW_ROP2_COPY);
++
+ 		spin_unlock(&sm750_dev->slock);
++	} else {
++		sm750_dev->accel.de_copyarea(&sm750_dev->accel,
++					     base, pitch, region->sx, region->sy,
++					     base, pitch, Bpp, region->dx, region->dy,
++					     region->width, region->height,
++					     HW_ROP2_COPY);
++	}
++
+ }
+ 
+ static void lynxfb_ops_imageblit(struct fb_info *info,
+@@ -269,17 +285,26 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	 * If not use spin_lock, system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
+ 	 */
+-	if (sm750_dev->fb_count > 1)
++	if (sm750_dev->fb_count > 1) {
+ 		spin_lock(&sm750_dev->slock);
+ 
+-	sm750_dev->accel.de_imageblit(&sm750_dev->accel,
+-				      image->data, image->width >> 3, 0,
+-				      base, pitch, Bpp,
+-				      image->dx, image->dy,
+-				      image->width, image->height,
+-				      fgcol, bgcol, HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
++		sm750_dev->accel.de_imageblit(&sm750_dev->accel,
++					      image->data, image->width >> 3, 0,
++					      base, pitch, Bpp,
++					      image->dx, image->dy,
++					      image->width, image->height,
++					      fgcol, bgcol, HW_ROP2_COPY);
++
+ 		spin_unlock(&sm750_dev->slock);
++	} else {
++		sm750_dev->accel.de_imageblit(&sm750_dev->accel,
++					      image->data, image->width >> 3, 0,
++					      base, pitch, Bpp,
++					      image->dx, image->dy,
++					      image->width, image->height,
++					      fgcol, bgcol, HW_ROP2_COPY);
++	}
++
+ }
+ 
+ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
 -- 
-Regards,
-
-Laurent Pinchart
+2.7.4
 

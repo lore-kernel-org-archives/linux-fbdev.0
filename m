@@ -1,36 +1,44 @@
-From: Takashi Iwai <tiwai@suse.de>
-Date: Fri, 16 Jun 2017 08:57:30 +0000
-Subject: Re: [alsa-devel] [PATCH 04/11] sound/hal2: switch to   dma_alloc_attrs
-Message-Id: <s5hwp8c9uo5.wl-tiwai@suse.de>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Date: Mon, 26 Jun 2017 22:05:18 +0000
+Subject: [PATCH] video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()
+Message-Id: <20170626220518.GA9369@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170616071716.17321-1-hch@lst.de>
-        <20170616071716.17321-5-hch@lst.de>
-        <s5h1sqkb9l7.wl-tiwai@suse.de>
-        <20170616085147.GA11211@lst.de>
-In-Reply-To: <20170616085147.GA11211@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-On Fri, 16 Jun 2017 10:51:47 +0200,
-Christoph Hellwig wrote:
-> 
-> On Fri, Jun 16, 2017 at 10:49:56AM +0200, Takashi Iwai wrote:
-> > On Fri, 16 Jun 2017 09:17:09 +0200,
-> > Christoph Hellwig wrote:
-> > > 
-> > > Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
-> > > 
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > 
-> > Should I take this one through sound git tree, or would you prefer
-> > taking all through another?
-> 
-> Feel free to take it through the sound tree.
+Value assigned to variable vdisplay at line 990 is overwritten
+at line 1039 before it can be used. Also, variable assignment
+at line 987 is the same as at line 1039. This makes such
+variable assignments useless.
 
-OK, applied now.  Thanks!
+Remove these variable assignments and the code related.
 
+Addresses-Covertity-ID: 1226900
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-Takashi
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 11026e7..3142d7f 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -984,12 +984,6 @@ static int aty_var_to_crtc(const struct fb_info *info,
+ 		v_total <<= 1;
+ 	}
+ 
+-	vdisplay = yres;
+-#ifdef CONFIG_FB_ATY_GENERIC_LCD
+-	if ((par->lcd_table != 0) && (crtc->lcd_gen_cntl & LCD_ON))
+-		vdisplay  = par->lcd_height;
+-#endif
+-
+ 	v_disp--;
+ 	v_sync_strt--;
+ 	v_sync_end--;
+-- 
+2.5.0
+

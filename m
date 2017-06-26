@@ -1,49 +1,25 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 16 Jun 2017 07:17:12 +0000
-Subject: [PATCH 07/11] 53c700: switch to dma_alloc_attrs
-Message-Id: <20170616071716.17321-8-hch@lst.de>
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Date: Mon, 26 Jun 2017 18:21:05 +0000
+Subject: Re: [PATCH 07/11] 53c700: switch to dma_alloc_attrs
+Message-Id: <yq1efu6390u.fsf@oracle.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170616071716.17321-1-hch@lst.de>
-In-Reply-To: <20170616071716.17321-1-hch@lst.de>
+        <20170616071716.17321-8-hch@lst.de>
+In-Reply-To: <20170616071716.17321-8-hch@lst.de> (Christoph Hellwig's message
+        of "Fri, 16 Jun 2017 09:17:12 +0200")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: linux-kernel@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-scsi@vger.kernel.org, linux-serial@vger.kernel.org, netdev@vger.kernel.org, linux-metag@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org
 
-Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent wrapper.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/scsi/53c700.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Christoph,
 
-diff --git a/drivers/scsi/53c700.c b/drivers/scsi/53c700.c
-index 95e32a47face..4b3b08025ef6 100644
---- a/drivers/scsi/53c700.c
-+++ b/drivers/scsi/53c700.c
-@@ -296,8 +296,8 @@ NCR_700_detect(struct scsi_host_template *tpnt,
- 	if(tpnt->sdev_attrs = NULL)
- 		tpnt->sdev_attrs = NCR_700_dev_attrs;
- 
--	memory = dma_alloc_noncoherent(hostdata->dev, TOTAL_MEM_SIZE,
--				       &pScript, GFP_KERNEL);
-+	memory = dma_alloc_attrs(hostdata->dev, TOTAL_MEM_SIZE, &pScript,
-+				 GFP_KERNEL, DMA_ATTR_NON_CONSISTENT);
- 	if(memory = NULL) {
- 		printk(KERN_ERR "53c700: Failed to allocate memory for driver, detaching\n");
- 		return NULL;
-@@ -410,8 +410,8 @@ NCR_700_release(struct Scsi_Host *host)
- 	struct NCR_700_Host_Parameters *hostdata = 
- 		(struct NCR_700_Host_Parameters *)host->hostdata[0];
- 
--	dma_free_noncoherent(hostdata->dev, TOTAL_MEM_SIZE,
--			       hostdata->script, hostdata->pScript);
-+	dma_free_attrs(hostdata->dev, TOTAL_MEM_SIZE, hostdata->script,
-+		       hostdata->pScript, DMA_ATTR_NON_CONSISTENT);
- 	return 1;
- }
- 
+> Use dma_alloc_attrs directly instead of the dma_alloc_noncoherent
+> wrapper.
+
+Applied to 4.13/scsi-queue.
+
 -- 
-2.11.0
-
+Martin K. Petersen	Oracle Linux Engineering

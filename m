@@ -1,38 +1,112 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 20 Jun 2017 10:58:02 +0000
-Subject: Re: [PATCH 03/11] au1100fb: remove a bogus dma_free_nonconsistent call
-Message-Id: <2219033.M9DERpzktn@amdc3058>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Tue, 27 Jun 2017 16:19:36 +0000
+Subject: [PATCH] drivers/fbdev: efifb: allow BAR to be moved instead of claiming it
+Message-Id: <20170627161936.2301-1-ard.biesheuvel@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170616071716.17321-1-hch@lst.de>
- <8727942.IUH8e0tH8t@amdc3058> <20170620091045.GA10272@lst.de>
- <CGME20170620105805epcas1p4ea41a72356c35f2a16197b970939fb65@epcas1p4.samsung.com>
-In-Reply-To: <20170620091045.GA10272@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-fbdev@vger.kernel.org, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org, nios2-dev@lists.rocketboards.org, linux-metag@vger.kernel.org
+To: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-efi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: matt-mF/unelCI9GS6iBeEJttW/XRex20P6io@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, pjones-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, lorenzo.pieralisi-5wv7dgnIgG8@public.gmane.org, bhelgaas-hpIqsD4AKlfQT0dZR+AlfA@public.gmane.org, Ard Biesheuvel <ard.biesheuvel-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-On Tuesday, June 20, 2017 11:10:45 AM Christoph Hellwig wrote:
-> On Mon, Jun 19, 2017 at 01:15:04PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On Friday, June 16, 2017 09:17:08 AM Christoph Hellwig wrote:
-> > > au1100fb is using managed dma allocations, so it doesn't need to
-> > > explicitly free the dma memory in the error path (and if it did
-> > > it would have to use the managed version).
-> > > 
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> > 
-> > Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Are you fine with picking this up through the new dma-mapping tree?
+On UEFI systems, the firmware may expose a Graphics Output Protocol (GOP)
+instance to which the efifb driver attempts to attach in order to provide
+a minimal, unaccelerated framebuffer. The GOP protocol itself is not very
+sophisticated, and only describes the offset and size of the framebuffer
+in memory, and the pixel format.
 
-Yes, this is why Ack-ed it.
+If the GOP framebuffer is provided by a PCI device, it will have been
+configured and enabled by the UEFI firmware, and the GOP protocol will
+simply point into a live BAR region. However, the GOP protocol itself does
+not describe this relation, and so we have to take care not to reconfigure
+the BAR without taking efifb's dependency on it into account.
 
-If you prefer me to merge it through fbdev for 4.13 please let me know.
+Commit 55d728a40d36 ("efi/fb: Avoid reconfiguration of BAR that covers
+the framebuffer") attempted to do so by claiming the BAR resource early
+on, which prevents the PCI resource allocation routines from changing it.
+However, it turns out that this only works if the PCI device is not
+behind any bridges, since the bridge resources need to be claimed first.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+So instead, allow the BAR to be moved, but make the efifb driver deal
+with that gracefully. So record the resource that covers the BAR early
+on, and if it turns out the have moved by the time we probe the efifb
+driver, update the framebuffer address accordingly.
+
+While this is less likely to occur on x86, given that the firmware's
+PCI resource allocation is more likely to be preserved, this is a
+worthwhile sanity check to have in place, and so let's remove the
+
+Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+---
+ drivers/video/fbdev/efifb.c | 24 ++++++++++++--------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index b827a8113e26..6220de3e25d3 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -146,6 +146,9 @@ ATTRIBUTE_GROUPS(efifb);
+ 
+ static bool pci_dev_disabled;	/* FB base matches BAR of a disabled device */
+ 
++static struct resource *bar_resource;
++static u64 bar_offset;
++
+ static int efifb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
+@@ -200,6 +203,13 @@ static int efifb_probe(struct platform_device *dev)
+ 		efifb_fix.smem_start |= ext_lfb_base;
+ 	}
+ 
++	if (bar_resource &&
++	    bar_resource->start + bar_offset != efifb_fix.smem_start) {
++
++		pr_warn("efifb: PCI BAR has moved, updating fb address\n");
++		efifb_fix.smem_start = bar_resource->start + bar_offset;
++	}
++
+ 	efifb_defined.bits_per_pixel = screen_info.lfb_depth;
+ 	efifb_defined.xres = screen_info.lfb_width;
+ 	efifb_defined.yres = screen_info.lfb_height;
+@@ -364,11 +374,11 @@ static struct platform_driver efifb_driver = {
+ 
+ builtin_platform_driver(efifb_driver);
+ 
+-#if defined(CONFIG_PCI) && !defined(CONFIG_X86)
++#if defined(CONFIG_PCI)
+ 
+ static bool pci_bar_found;	/* did we find a BAR matching the efifb base? */
+ 
+-static void claim_efifb_bar(struct pci_dev *dev, int idx)
++static void record_efifb_bar_resource(struct pci_dev *dev, int idx, u64 offset)
+ {
+ 	u16 word;
+ 
+@@ -383,12 +393,8 @@ static void claim_efifb_bar(struct pci_dev *dev, int idx)
+ 		return;
+ 	}
+ 
+-	if (pci_claim_resource(dev, idx)) {
+-		pci_dev_disabled = true;
+-		dev_err(&dev->dev,
+-			"BAR %d: failed to claim resource for efifb!\n", idx);
+-		return;
+-	}
++	bar_resource = &dev->resource[idx];
++	bar_offset = offset;
+ 
+ 	dev_info(&dev->dev, "BAR %d: assigned to efifb\n", idx);
+ }
+@@ -415,7 +421,7 @@ static void efifb_fixup_resources(struct pci_dev *dev)
+ 			continue;
+ 
+ 		if (res->start <= base && res->end >= base + size - 1) {
+-			claim_efifb_bar(dev, i);
++			record_efifb_bar_resource(dev, i, base - res->start);
+ 			break;
+ 		}
+ 	}
+-- 
+2.9.3
 

@@ -1,57 +1,46 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 25 Jun 2017 15:07:39 +0000
-Subject: Re: [PATCH 1/2] staging: sm750fb: avoid conflicting vesafb
-Message-Id: <20170625150739.GA9422@sudip-laptop>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Wed, 28 Jun 2017 11:16:31 +0000
+Subject: [PATCH 1/2] dt-bindings: pwm-backlight: Add pwm-delay-us property
+Message-Id: <20170628111632.22582-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
- <20170625124334.GA6942@sudip-laptop>
- <20170625125451.GB2728@kroah.com>
- <20170625135429.GA8651@sudip-laptop>
- <20170625142723.GA11105@kroah.com>
-In-Reply-To: <20170625142723.GA11105@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Teddy Wang <teddy.wang@siliconmotion.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, huang lin <hl@rock-chips.com>
 
-On Sun, Jun 25, 2017 at 04:27:23PM +0200, Greg Kroah-Hartman wrote:
-> On Sun, Jun 25, 2017 at 02:54:29PM +0100, Sudip Mukherjee wrote:
-> > On Sun, Jun 25, 2017 at 02:54:51PM +0200, Greg Kroah-Hartman wrote:
-> > > On Sun, Jun 25, 2017 at 01:43:34PM +0100, Sudip Mukherjee wrote:
-> > > > On Mon, Jun 19, 2017 at 09:32:57PM +0100, Sudip Mukherjee wrote:
-> > > > > From: Teddy Wang <teddy.wang@siliconmotion.com>
-> > > > > 
-> > > > > If vesafb is enabled in the config then /dev/fb0 is created by vesa
-> > > > > and this sm750 driver gets fb1, fb2. But we need to be fb0 and fb1 to
-> > > > > effectively work with xorg.
-> > > > > So if it has been alloted fb1, then try to remove the other fb0.
-> > > > > 
-> > > > > Signed-off-by: Teddy Wang <teddy.wang@siliconmotion.com>
-> > > > > Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-> > > > > ---
-> > > > 
-> > > > Hi Greg,
-> > > > You applied the second patch but not this one. Did I miss any review
-> > > > comments from you about this one?
-> > > 
-> > > All of the other complaints about this patch were not sufficient for me
-> > > to justify ignoring it?  Why would I not listen to them?
-> > 
-> > This patch is doing what all the drm drivers are doing. So you want
-> > us to do something completely new rather than following the established
-> > practice of a drm driver?
-> 
-> I despise cargo-cult programming.  You could not answer the "why", so
-> why would I accept such a patch?
+From: huang lin <hl@rock-chips.com>
 
-Did a quick research into "why".
-The patch d8801e4df91e ("x86/PCI: Set IORESOURCE_ROM_SHADOW only for the
-default VGA device") has started setting IORESOURCE_ROM_SHADOW in flags
-for a default VGA device and that is being done only for x86.
-And so, we will need that #ifdef to check IORESOURCE_ROM_SHADOW as that
-needs to be checked only for a x86 and not for other arch.
+Add a pwm-delay-us property to specify the delay between setting an
+initial (non-zero) PWM value and enabling the backlight, and also the
+delay between disabling the backlight and setting PWM value to 0.
 
---
-Regards
-Sudip
+Signed-off-by: huang lin <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+ Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 764db86..f75b08f 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -17,6 +17,9 @@ Optional properties:
+                "pwms" property (see PWM binding[0])
+   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+                   and disables the backlight (see GPIO binding[1])
++  - pwm-delay-us: delay between setting an initial (non-zero) PWM value and
++                  enabling the backlight, and also the delay between disabling
++                  the backlight and setting PWM value to 0.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+@@ -32,4 +35,5 @@ Example:
+ 
+ 		power-supply = <&vdd_bl_reg>;
+ 		enable-gpios = <&gpio 58 0>;
++		pwm-delay-us = <10000>;
+ 	};
+-- 
+2.9.3
+

@@ -1,63 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 14 Jun 2017 10:54:58 +0000
-Subject: Re: [PATCH] sm501fb: Silence a coccinelle script warning.
-Message-Id: <3551083.sIQ6JeN0q9@amdc3058>
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Date: Wed, 28 Jun 2017 00:28:07 +0000
+Subject: [PATCH 3/3] omapfb: use of_graph_get_remote_endpoint()
+Message-Id: <87injhez1k.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170508061141epcas3p4d89f8f964dbe8a327de1abf80da94e6a@epcas3p4.samsung.com>
-        <20170508061116.31471-1-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20170508061116.31471-1-christophe.jaillet@wanadoo.fr>
+References: <87mv8tez69.wl%kuninori.morimoto.gx@renesas.com>
+In-Reply-To: <87mv8tez69.wl%kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: khoroshilov@ispras.ru, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
 
-Hi,
+From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
 
-On Monday, May 08, 2017 08:11:16 AM Christophe JAILLET wrote:
-> According to surrounding goto, it is likely that 'goto err_probed_panel' is
-> expected here.
-> This change is just done in order to silence some coccinelle scripts
-> which try to detect wrongly ordered goto.
-> 
-> If 'info->fb[HEAD_PANEL]' and' 'info->fb[HEAD_CRT]' are both NULL, this
-> means that no 'framebuffer_alloc' has been performed, so 'goto err_alloc'
-> looks fine.
-> Anyway, it is also harmless in this case to call 'framebuffer_release'.
-> The code looks more straight forward.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Now, we can use of_graph_get_remote_endpoint(). Let's use it.
 
-It seems that the code for supporting only selected framebuffers
-(only HEAD_PANEL fb or only HEAD_CRT fb) is broken anyway as at least
-the suspend/resume support assumes that both framebuffers are always
-present. Also all sm501fb driver users always try try to initialize
-both framebuffers. Therefore I would prefer the removal of non-working
-individual framebuffers support (the code that your patch modifies
-would be removed as well). Could you please look into it?
+Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+---
+based on 4c9c3d595f1bad021cc126d20879df4016801736
+("of_graph: add of_graph_get_remote_endpoint()")
 
-> ---
->  drivers/video/fbdev/sm501fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-> index 67e314fdd947..4d89b045ce40 100644
-> --- a/drivers/video/fbdev/sm501fb.c
-> +++ b/drivers/video/fbdev/sm501fb.c
-> @@ -1990,7 +1990,7 @@ static int sm501fb_probe(struct platform_device *pdev)
->  	    info->fb[HEAD_CRT] = NULL) {
->  		dev_err(dev, "no framebuffers found\n");
->  		ret = -ENODEV;
-> -		goto err_alloc;
-> +		goto err_probed_panel;
->  	}
->  
->  	/* get the resources for both of the framebuffers */
+ drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
+index d356a25..f1eb8b0 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
+@@ -16,6 +16,7 @@
+ #include <linux/err.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_graph.h>
+ #include <linux/seq_file.h>
+ 
+ #include <video/omapfb_dss.h>
+@@ -128,7 +129,7 @@ static struct device_node *omapdss_of_get_remote_port(const struct device_node *
+ {
+ 	struct device_node *np;
+ 
+-	np = of_parse_phandle(node, "remote-endpoint", 0);
++	np = of_graph_get_remote_endpoint(node);
+ 	if (!np)
+ 		return NULL;
+ 
+-- 
+1.9.1
 

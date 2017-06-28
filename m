@@ -1,97 +1,91 @@
-From: Dhananjay Balan <mail@dbalan.in>
-Date: Thu, 29 Jun 2017 11:24:35 +0000
-Subject: [PATCH] drivers: staging: sm750: Hold lock irrespective of fb numbers.
-Message-Id: <20170629112435.30376-1-mail@dbalan.in>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Wed, 28 Jun 2017 11:16:32 +0000
+Subject: [PATCH 2/2] pwm-backlight: Add support for pwm-delay-us property
+Message-Id: <20170628111632.22582-2-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170628111632.22582-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170628111632.22582-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Dhananjay Balan <mail@dbalan.in>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, huang lin <hl@rock-chips.com>
 
-Start holding the lock for all cases irrespective of number of fb,
-there could be a deadlock since this number could change in the
-lifetime of this lock
+From: huang lin <hl@rock-chips.com>
 
-Signed-off-by: Dhananjay Balan <mail@dbalan.in>
+Some panel backlight (i.e. N116BGE-L41), in their power sequence
+specifications, request a delay between PWM signal and the backlight
+enable signal, so use the pwm-delay-us property to meet the timing.
+
+Signed-off-by: huang lin <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
- drivers/staging/sm750fb/sm750.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index d5934f372387..af5c3c93a077 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -183,19 +183,19 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
- 	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR : HW_ROP2_COPY;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 002f1ce..c5c4ef0 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -10,6 +10,7 @@
+  * published by the Free Software Foundation.
+  */
  
- 	/*
--	 * If not use spin_lock,system will die if user load driver
-+	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
-+	 * since they fb_count could change during the lifetime of
-+	 * this lock, we are holding it for all cases.
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
++#include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
+@@ -30,6 +31,7 @@ struct pwm_bl_data {
+ 	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
++	unsigned int		pwm_delay;
+ 	bool			enabled;
+ 	struct regulator	*power_supply;
+ 	struct gpio_desc	*enable_gpio;
+@@ -54,10 +56,14 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
  
- 	sm750_dev->accel.de_fillrect(&sm750_dev->accel,
- 				     base, pitch, Bpp,
- 				     region->dx, region->dy,
- 				     region->width, region->height,
- 				     color, rop);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
++	pwm_enable(pb->pwm);
++
++	if (pb->pwm_delay)
++		usleep_range(pb->pwm_delay, pb->pwm_delay + 2000);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
  }
  
- static void lynxfb_ops_copyarea(struct fb_info *info,
-@@ -219,17 +219,17 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
- 	/*
- 	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
-+	 * since they fb_count could change during the lifetime of
-+	 * this lock, we are holding it for all cases.
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
+@@ -66,12 +72,15 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
  
- 	sm750_dev->accel.de_copyarea(&sm750_dev->accel,
- 				     base, pitch, region->sx, region->sy,
- 				     base, pitch, Bpp, region->dx, region->dy,
- 				     region->width, region->height,
- 				     HW_ROP2_COPY);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	if (pb->pwm_delay)
++		usleep_range(pb->pwm_delay, pb->pwm_delay + 2000);
++
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
  }
+@@ -273,6 +282,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
  
- static void lynxfb_ops_imageblit(struct fb_info *info,
-@@ -268,9 +268,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 	/*
- 	 * If not use spin_lock, system will die if user load driver
- 	 * and immediately unload driver frequently (dual)
-+	 * since they fb_count could change during the lifetime of
-+	 * this lock, we are holding it for all cases.
- 	 */
--	if (sm750_dev->fb_count > 1)
--		spin_lock(&sm750_dev->slock);
-+	spin_lock(&sm750_dev->slock);
- 
- 	sm750_dev->accel.de_imageblit(&sm750_dev->accel,
- 				      image->data, image->width >> 3, 0,
-@@ -278,8 +279,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
- 				      image->dx, image->dy,
- 				      image->width, image->height,
- 				      fgcol, bgcol, HW_ROP2_COPY);
--	if (sm750_dev->fb_count > 1)
--		spin_unlock(&sm750_dev->slock);
-+	spin_unlock(&sm750_dev->slock);
- }
- 
- static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
++	of_property_read_u32(pdev->dev.of_node, "pwm-delay-us", &pb->pwm_delay);
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+ 						  GPIOD_ASIS);
+ 	if (IS_ERR(pb->enable_gpio)) {
 -- 
-2.13.2
+2.9.3
 

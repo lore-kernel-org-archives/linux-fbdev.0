@@ -1,95 +1,41 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 29 Jun 2017 13:07:48 +0000
-Subject: Re: [PATCH 1/2] dt-bindings: pwm-backlight: Add pwm-delay-us property
-Message-Id: <af29d976-408d-c71a-3eda-db0023e6f1c2@linaro.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 29 Jun 2017 12:57:39 +0000
+Subject: Re: =?utf-8?B?562U5aSN?= =?utf-8?Q?=3A?= [PATCH 1/2] staging: sm750fb: avoid conflicting vesafb
+Message-Id: <20170629125739.GA31064@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170628111632.22582-1-enric.balletbo@collabora.com>
- <20170628133004.GA3507@localhost>
- <CAFqH_53pUu7w6NTEFPtcawG0mG__71dJMAO2wKNCOqtQ04WYRg@mail.gmail.com>
-In-Reply-To: <CAFqH_53pUu7w6NTEFPtcawG0mG__71dJMAO2wKNCOqtQ04WYRg@mail.gmail.com>
+References: <1497904378-4808-1-git-send-email-sudipm.mukherjee@gmail.com>
+ <20170625124334.GA6942@sudip-laptop>
+ <20170625125451.GB2728@kroah.com>
+ <20170625135429.GA8651@sudip-laptop>
+ <20170625142723.GA11105@kroah.com>
+ <20170625150739.GA9422@sudip-laptop>
+ <31608A86C142F84E93092EC1B170B676743012DD@TWMBS01.tw.smi.ad>
+In-Reply-To: <31608A86C142F84E93092EC1B170B676743012DD@TWMBS01.tw.smi.ad>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Enric Balletbo Serra <eballetbo@gmail.com>, Pavel Machek <pavel@ucw.cz>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, huang lin <hl@rock-chips.com>
-
-On 28/06/17 15:15, Enric Balletbo Serra wrote:
-> Hi Daniel, Pavel,
-> 
-> 2017-06-28 15:30 GMT+02:00 Pavel Machek <pavel@ucw.cz>:
->> On Wed 2017-06-28 13:16:31, Enric Balletbo i Serra wrote:
->>> From: huang lin <hl@rock-chips.com>
->>>
->>> Add a pwm-delay-us property to specify the delay between setting an
->>> initial (non-zero) PWM value and enabling the backlight, and also the
->>> delay between disabling the backlight and setting PWM value to 0.
->>
->>
->>
->>> Signed-off-by: huang lin <hl@rock-chips.com>
->>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
->>> ---
->>>   Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 4 ++++
->>>   1 file changed, 4 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
->>> index 764db86..f75b08f 100644
->>> --- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
->>> +++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
->>> @@ -17,6 +17,9 @@ Optional properties:
->>>                  "pwms" property (see PWM binding[0])
->>>     - enable-gpios: contains a single GPIO specifier for the GPIO which enables
->>>                     and disables the backlight (see GPIO binding[1])
->>> +  - pwm-delay-us: delay between setting an initial (non-zero) PWM value and
->>> +                  enabling the backlight, and also the delay between disabling
->>> +                  the backlight and setting PWM value to 0.
->>>
->>
->>> If is safe to assume power-on delay and power-off delay will be the same?
->>>
->>> I've only took a quick look but several backlight controllers support asymetric power-on/off sequences..
-> 
-> Daniel, right the ones I checked are symmetric but asymmetric timings
-> are possible I guess, so I think now that specify the two delays is
-> more accurate, maybe the binding should be something like this?
-> 
->    pwm-delay-us = <delay_before_on  delay_after_off>;
-
-I think so. Like you I can't actually point at any asymmetric power 
-sequence diagrams but there are a controller devices with power 
-sequencing registers that support asymmetry. I'm inclined to take that 
-as a hint...
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Teddy Wang =?utf-8?B?546L5Yqb5by6?= <teddy.wang@siliconmotion.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>
 
 
->> I understood it as "you set PWM and it takes a while for display to
->> light up"
->> but that's not correct. Changelog from second patch makes it
->> clear. Please
->> clarify it here, too.
-> 
-> Pavel, oh, your dude is interesting ...
-> 
-> That's the idea, the sequence is:
->    Power on, you set the PWM signal, wait a bit and set the LED_EN signal.
->    Power off, you clear the LED_EN signal, wait a bit and stop the PWM signal.
-> 
-> Note that the patch inverts the sequence, before this patch first you
-> set LED_EN signal and then the PWM signal
-> 
-> I assumed that the sequence was wrong but maybe I'm mistaken and there
-> are some panels that follow the original sequence. On the few panels I
-> checked the power on/off sequence is how I described above, i.e. see
-> [1] p. 17, the sequence is first PWM and then LED_EN. I'll take a look
-> at other panel datasheets, or if you know one, could you provide me
-> the datasheet?
-> 
-> Thanks,
-> 
-> [1] http://www.jxlcd.com/Upload/PicFiles/N116BGE-L41.pdf
-> 
->>
->>                                                                  Pavel
->> --
->> (english) http://www.livejournal.com/~pavelmachek
->> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+A: Top-posting.
+Q: What is the most annoying thing in e-mail?
 
+A: No.
+Q: Should I include quotations after my reply?
+
+http://daringfireball.net/2007/07/on_top
+
+On Wed, Jun 28, 2017 at 06:18:57AM +0000, Teddy Wang 王力强 wrote:
+> Hi Greg,
+> 
+> 	Is the reason Sudip gave you for the question of "why" sufficient ?
+> This patch is very important for the driver running in the X86 platform.  Without this patch, many SM750 graphic chip customers complain  the Ubuntu OS can't run well. When they install the OS, the screen will be full of garbage in xorg.
+> Ubuntu 16.04.2 LTS and above will enable sm750 staging driver by default.  We need this patch. Thanks.
+
+This patch is long-gone from my queue, it needs to be resent with the
+added information for me to be able to accept it.
+
+thanks,
+
+greg k-h

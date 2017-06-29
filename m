@@ -1,48 +1,40 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Date: Sat, 24 Jun 2017 20:15:07 +0000
+From: Johannes Thumshirn <jthumshirn@suse.de>
+Date: Thu, 29 Jun 2017 09:42:59 +0000
 Subject: Re: [PATCH RESEND 0/7] Introduce MEDIA_VERSION to end KENREL_VERSION abuse in media
-Message-Id: <20170624171507.38353b10@vento.lan>
+Message-Id: <20170629094259.GG3808@linux-x5ow.site>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170621080812.6817-1-jthumshirn@suse.de>
-In-Reply-To: <20170621080812.6817-1-jthumshirn@suse.de>
+ <20170624171507.38353b10@vento.lan>
+In-Reply-To: <20170624171507.38353b10@vento.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johannes Thumshirn <jthumshirn@suse.de>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
 Cc: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
 
-Em Wed, 21 Jun 2017 10:08:05 +0200
-Johannes Thumshirn <jthumshirn@suse.de> escreveu:
+On Sat, Jun 24, 2017 at 05:15:07PM -0300, Mauro Carvalho Chehab wrote:
+> Sorry, but I can't see any advantage on it. On the downside, it
+> includes the media controller header file (media.h) where it
+> is not needed.
 
-> Currently the media subsystem has a very creative abuse of the
-> KERNEL_VERSION macro to encode an arbitrary version triplet for media
-> drivers and device hardware revisions.
-> 
-> This series introduces a new macro called MEDIA_REVISION which encodes
-> a version triplet like KERNEL_VERSION does, but clearly has media
-> centric semantics and doesn't fool someone into thinking specific
-> parts are defined for a specific kernel version only like in out of
-> tree drivers.
+My reasoning was the differences in semantics. KERNEL_VERSION() is for
+encoding the kernel's version triplet not a API or Hardware or whatever
+version. Other subsystems do this as well, for instance in NVMe we have the
+NVME_VS() macro which is used to encode the NVMe Spec compliance from a hum=
+an
+readable form to the hardware's u32. Also KERNEL_VERISON() shouldn't have
+in-tree users IMHO. Yes there is _one_ other user of it in-tree which is EX=
+T4
+and I already talked to Jan Kara about it and we decided to leave it in unt=
+il
+4.20.
 
-Sorry, but I can't see any advantage on it. On the downside, it
-includes the media controller header file (media.h) where it
-is not needed.
-
-> 
-> Johannes Thumshirn (7):
->   [media] media: introduce MEDIA_REVISION macro
->   video: fbdev: don't use KERNEL_VERSION macro for MEDIA_REVISION
->   [media] media: document the use of MEDIA_REVISION instead of
->     KERNEL_VERSION
->   [media] cx25821: use MEDIA_REVISION instead of KERNEL_VERSION
->   [media] media: s3c-camif: Use MEDIA_REVISON instead of KERNEL_VERSION
->   [media] media: bcm2048: use MEDIA_REVISION isntead of KERNEL_VERSION
->   staging/atomisp: use MEDIA_VERSION instead of KERNEL_VERSION
-
-That's said, some of the above shouldn't be using KERNEL_VERSION
-at all. The V4L2 core sets the version already. So, drivers like
-cx25821, s3c-camif, bcm2048 and atomisp are likely doing the wrong
-thing.
-
-Thanks,
-Mauro
+Byte,
+	Johannes
+--=20
+Johannes Thumshirn                                          Storage
+jthumshirn@suse.de                                +49 911 74053 689
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 N=FCrnberg
+GF: Felix Imend=F6rffer, Jane Smithard, Graham Norton
+HRB 21284 (AG N=FCrnberg)
+Key fingerprint =3D EC38 9CAB C2C4 F25D 8600 D0D0 0393 969D 2D76 0850

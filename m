@@ -1,42 +1,97 @@
-From: Johannes Thumshirn <jthumshirn@suse.de>
-Date: Sat, 10 Jun 2017 09:05:30 +0000
-Subject: [PATCH 1/7] [media] media: introduce MEDIA_REVISION macro
-Message-Id: <20170610090536.12472-2-jthumshirn@suse.de>
+From: Dhananjay Balan <mail@dbalan.in>
+Date: Thu, 29 Jun 2017 11:24:35 +0000
+Subject: [PATCH] drivers: staging: sm750: Hold lock irrespective of fb numbers.
+Message-Id: <20170629112435.30376-1-mail@dbalan.in>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170610090536.12472-1-jthumshirn@suse.de>
-In-Reply-To: <20170610090536.12472-1-jthumshirn@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
-Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Johannes Thumshirn <jthumshirn@suse.de>
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Dhananjay Balan <mail@dbalan.in>
 
-Currently the media code abuses the KERNEL_VERSION macro to encode a
-version triplet.
+Start holding the lock for all cases irrespective of number of fb,
+there could be a deadlock since this number could change in the
+lifetime of this lock
 
-Introduce a MEDIA_REVISION macro to get rid of the confusing and
-creative KERNEL_VERSION usage in the media subsystem.
-
-Signed-off-by: Johannes Thumshirn <jthumshirn@suse.de>
+Signed-off-by: Dhananjay Balan <mail@dbalan.in>
 ---
- include/uapi/linux/media.h | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/staging/sm750fb/sm750.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/include/uapi/linux/media.h b/include/uapi/linux/media.h
-index 4890787731b8..25e2ae4432bd 100644
---- a/include/uapi/linux/media.h
-+++ b/include/uapi/linux/media.h
-@@ -30,7 +30,9 @@
- #include <linux/types.h>
- #include <linux/version.h>
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index d5934f372387..af5c3c93a077 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -183,19 +183,19 @@ static void lynxfb_ops_fillrect(struct fb_info *info,
+ 	rop = (region->rop != ROP_COPY) ? HW_ROP2_XOR : HW_ROP2_COPY;
  
--#define MEDIA_API_VERSION	KERNEL_VERSION(0, 1, 0)
-+#define MEDIA_REVISION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
-+
-+#define MEDIA_API_VERSION	MEDIA_REVISION(0, 1, 0)
+ 	/*
+-	 * If not use spin_lock,system will die if user load driver
++	 * If not use spin_lock, system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
++	 * since they fb_count could change during the lifetime of
++	 * this lock, we are holding it for all cases.
+ 	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
++	spin_lock(&sm750_dev->slock);
  
- struct media_device_info {
- 	char driver[16];
+ 	sm750_dev->accel.de_fillrect(&sm750_dev->accel,
+ 				     base, pitch, Bpp,
+ 				     region->dx, region->dy,
+ 				     region->width, region->height,
+ 				     color, rop);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	spin_unlock(&sm750_dev->slock);
+ }
+ 
+ static void lynxfb_ops_copyarea(struct fb_info *info,
+@@ -219,17 +219,17 @@ static void lynxfb_ops_copyarea(struct fb_info *info,
+ 	/*
+ 	 * If not use spin_lock, system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
++	 * since they fb_count could change during the lifetime of
++	 * this lock, we are holding it for all cases.
+ 	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
++	spin_lock(&sm750_dev->slock);
+ 
+ 	sm750_dev->accel.de_copyarea(&sm750_dev->accel,
+ 				     base, pitch, region->sx, region->sy,
+ 				     base, pitch, Bpp, region->dx, region->dy,
+ 				     region->width, region->height,
+ 				     HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	spin_unlock(&sm750_dev->slock);
+ }
+ 
+ static void lynxfb_ops_imageblit(struct fb_info *info,
+@@ -268,9 +268,10 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 	/*
+ 	 * If not use spin_lock, system will die if user load driver
+ 	 * and immediately unload driver frequently (dual)
++	 * since they fb_count could change during the lifetime of
++	 * this lock, we are holding it for all cases.
+ 	 */
+-	if (sm750_dev->fb_count > 1)
+-		spin_lock(&sm750_dev->slock);
++	spin_lock(&sm750_dev->slock);
+ 
+ 	sm750_dev->accel.de_imageblit(&sm750_dev->accel,
+ 				      image->data, image->width >> 3, 0,
+@@ -278,8 +279,7 @@ static void lynxfb_ops_imageblit(struct fb_info *info,
+ 				      image->dx, image->dy,
+ 				      image->width, image->height,
+ 				      fgcol, bgcol, HW_ROP2_COPY);
+-	if (sm750_dev->fb_count > 1)
+-		spin_unlock(&sm750_dev->slock);
++	spin_unlock(&sm750_dev->slock);
+ }
+ 
+ static int lynxfb_ops_pan_display(struct fb_var_screeninfo *var,
 -- 
-2.12.3
+2.13.2
 

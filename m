@@ -1,44 +1,48 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Mon, 26 Jun 2017 22:05:18 +0000
-Subject: [PATCH] video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()
-Message-Id: <20170626220518.GA9369@embeddedgus>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 30 Jun 2017 11:21:09 +0000
+Subject: [PATCH v2 4/4] ARM: dts: rockchip: add pwm-delay-us backlight setting.
+Message-Id: <20170630112109.13785-4-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170630112109.13785-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-Value assigned to variable vdisplay at line 990 is overwritten
-at line 1039 before it can be used. Also, variable assignment
-at line 987 is the same as at line 1039. This makes such
-variable assignments useless.
+The minnie devices comes with an AUO B101EAN01 panel which is different
+from default veyron devices, thus the power on/off timing sequence is
+slightly different. The datasheet specifies a pwm delay of 200 ms, so
+update the pwm-delay-us accordingly.
 
-Remove these variable assignments and the code related.
-
-Addresses-Covertity-ID: 1226900
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 6 ------
- 1 file changed, 6 deletions(-)
+Heiko,
+ I'm not able to test this patch in a minnie device because I don't have
+one, so could you do a quick try, please?
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 11026e7..3142d7f 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -984,12 +984,6 @@ static int aty_var_to_crtc(const struct fb_info *info,
- 		v_total <<= 1;
- 	}
+Thanks,
+ Enric
+
+Changes since v1:
+ - Add this new patch as minnie has differents timings.
+
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+index 544de60..8680a83 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
++++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+@@ -123,6 +123,7 @@
+ 			240 241 242 243 244 245 246 247
+ 			248 249 250 251 252 253 254 255>;
+ 	power-supply = <&backlight_regulator>;
++	pwm-delay-us = <200000 200000>;
+ };
  
--	vdisplay = yres;
--#ifdef CONFIG_FB_ATY_GENERIC_LCD
--	if ((par->lcd_table != 0) && (crtc->lcd_gen_cntl & LCD_ON))
--		vdisplay  = par->lcd_height;
--#endif
--
- 	v_disp--;
- 	v_sync_strt--;
- 	v_sync_end--;
+ &emmc {
 -- 
-2.5.0
+2.9.3
 

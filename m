@@ -1,78 +1,134 @@
-From: Philipp Hahn <pmhahn@pmhahn.de>
-Date: Tue, 20 Jun 2017 10:08:56 +0000
-Subject: Re: [Qemu-devel] [RFH] qemu-2.6 memory corruption with OVMF and linux-4.9
-Message-Id: <d323a0b6-164f-7378-c565-e42128cf56b6@pmhahn.de>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 30 Jun 2017 11:21:07 +0000
+Subject: [PATCH v2 2/4] pwm-backlight: add support for pwm-delay-us property
+Message-Id: <20170630112109.13785-2-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5d090b82-dae7-ac67-a032-92c2e776b70f@univention.de>
- <2e7e9fe3-e603-d75f-84c6-d0fb048266da@redhat.com>
- <58d3a273-e857-fe9e-0b1e-a4aca4aa54ef@univention.de>
-In-Reply-To: <58d3a273-e857-fe9e-0b1e-a4aca4aa54ef@univention.de>
+References: <20170630112109.13785-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Hahn <hahn@univention.de>, Laszlo Ersek <lersek@redhat.com>
-Cc: qemu-devel@nongnu.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Peter Jones <pjones@redhat.com>, linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, huang lin <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
 
-Hello,
+From: huang lin <hl@rock-chips.com>
 
-Am 18.06.2017 um 20:22 schrieb Philipp Hahn:
-> Am 17.06.2017 um 18:51 schrieb Laszlo Ersek:
->> (I also recommend using the "vbindiff" tool for such problems, it is
->> great for picking out patterns.)
->>
->>           ** ** ** ** ** ** ** **   8  9 ** ** ** 13 14 15
->>           -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --
->> 00000000  01 e8 00 00 00 00 00 00  8c 5e 00 00 00 10 ff f1
->> 00000010  5b 78 8a 3e 00 00 00 00  00 00 00 00 00 00 00 00
->> 00000020  8c 77 00 00 00 12 00 02  18 f0 00 00 00 00 00 00
->> 00000030  00 1e 00 00 00 00 00 00  8c 8c 00 00 00 12 00 02
->> 00000040  07 70 00 00 00 00 00 00  00 14 00 00 00 00 00 00
->> 00000050  8c 9c 00 00 00 12 00 02  22 00 00 00 00 00 00 00
->> 00000060  00 40 00 00 00 00 00 00  8c ac 00 00 00 10 ff f1
->>
->> 00000000  01 e8 00 00 00 00 00 00  00 3c 00 00 00 17 00 00
->> 00000010  5b 78 8a 3e 00 00 00 00  00 3c 00 00 00 07 00 00
->> 00000020  8c 77 00 00 00 12 00 02  00 3c 00 00 00 07 00 00
->> 00000030  00 1e 00 00 00 00 00 00  00 3c 00 00 00 17 00 00
->> 00000040  07 70 00 00 00 00 00 00  00 3c 00 00 00 07 00 00
->> 00000050  8c 9c 00 00 00 12 00 02  00 3c 00 00 00 07 00 00
->> 00000060  00 40 00 00 00 00 00 00  00 3c 00 00 00 17 00 00
->>           -- -- -- -- -- -- -- --  -- -- -- -- -- -- -- --
->>           ** ** ** ** ** ** ** **   8  9 ** ** ** 13 14 15
->>
->> The columns that I marked with "**" are identical between "good" and
->> "bad". (These are columns 0-7, 10-12.)
->>
->> Column 8 is overwritten by zeros (every 16th byte).
->>
->> Column 9 is overwritten by 0x3c (every 16th byte).
->>
->> Column 13 is super interesting. The most significant nibble in that
->> column is not disturbed. And, in the least significant nibble, the least
->> significant three bits are turned on. Basically, the corruption could be
->> described, for this column (i.e., every 16th byte), as
->>
->>   bad = good | 0x7
->>
->> Column 14 is overwritten by zeros (every 16th byte).
->>
->> Column 15 is overwritten by zeros (every 16th byte).
->>
->> My take is that your host machine has faulty RAM. Please run memtest86+
->> or something similar.
-> 
-> I will do so, but for me very unlikely:
-> - it never happens with BIOS, only with OVMF
-> - for each test I start q new QEMU process, which should use a different
-> memory region
-> - it repeatedly hits e1000 or libata.ko
+Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+request a delay between set the PWM signal and enable the backlight and
+between clear the PWM signal and disable the backlight. Add support for
+the new pwm-delay-us property to meet the timing.
 
-Okay: memtest+-5.01 run for 8h and did not find any errors in those 3
-passes.
+Note that this patch inverts current sequence. Before this patch the
+enable signal was set before the PWM signal and vice-versa on power off.
 
-> After updating from OVMF to 0~20161202.7bbe0b3e-1 from
-> (0~20160813.de74668f-2 it has not yet happened again.
+I assumed that this sequence was wrong, at least it is on different panel
+datasheets that I checked, so I inverted the sequence to follow:
 
-Anyway, thank you for your help.
+  On power on, set the PWM signal, wait, and set the LED_EN signal.
+  On power off, clear the LED_EN signal, wait, and stop the PWM signal.
 
-Philipp
+Signed-off-by: huang lin <hl@rock-chips.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
+ - Move the check of dt property to the parse dt function.
+
+v1: https://lkml.org/lkml/2017/6/28/219
+
+ drivers/video/backlight/pwm_bl.c | 24 ++++++++++++++++++++----
+ include/linux/pwm_backlight.h    |  1 +
+ 2 files changed, 21 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 002f1ce..0f5470e 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -10,6 +10,7 @@
+  * published by the Free Software Foundation.
+  */
+ 
++#include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
+@@ -35,6 +36,7 @@ struct pwm_bl_data {
+ 	struct gpio_desc	*enable_gpio;
+ 	unsigned int		scale;
+ 	bool			legacy;
++	unsigned int		pwm_delay[2];
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -54,10 +56,14 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
++	if (pb->pwm_delay[0])
++		usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] + 2000);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +72,15 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	if (pb->pwm_delay[1])
++		usleep_range(pb->pwm_delay[1], pb->pwm_delay[1] + 2000);
++
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+@@ -174,6 +183,12 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
++	/* read pwm to enable pre/post delays from DT property */
++	ret = of_property_read_u32_array(node, "pwm-delay-us", data->pwm_delay,
++					 ARRAY_SIZE(data->pwm_delay));
++	if (ret < 0)
++		return ret;
++
+ 	data->enable_gpio = -EINVAL;
+ 	return 0;
+ }
+@@ -272,6 +287,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
++	memcpy(pb->pwm_delay, data->pwm_delay, sizeof(pb->pwm_delay));
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+ 						  GPIOD_ASIS);
+diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
+index efdd922..bf37131 100644
+--- a/include/linux/pwm_backlight.h
++++ b/include/linux/pwm_backlight.h
+@@ -13,6 +13,7 @@ struct platform_pwm_backlight_data {
+ 	unsigned int lth_brightness;
+ 	unsigned int pwm_period_ns;
+ 	unsigned int *levels;
++	unsigned int pwm_delay[2];
+ 	/* TODO remove once all users are switched to gpiod_* API */
+ 	int enable_gpio;
+ 	int (*init)(struct device *dev);
+-- 
+2.9.3
+

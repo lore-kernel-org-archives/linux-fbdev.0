@@ -1,47 +1,32 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 26 Jun 2017 09:19:27 +0000
-Subject: Re: [PATCH] staging: sm750fb: always take the lock
-Message-Id: <CAMuHMdXvE6MuAop33DYYqO10z_RiV1wQ38AR8O4z_SKKMas5-Q@mail.gmail.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 30 Jun 2017 08:02:42 +0000
+Subject: [PATCH] video: fbdev: imxfb: use after free in imxfb_remove()
+Message-Id: <20170630080242.emnw7l53f52pvzeo@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1498455936-2108-1-git-send-email-abdallah.meziti.pro@gmail.com>
- <CAMuHMdUp2JQAYz3Smb4bH=SSc6tCb2iLQG1-5uQguz_wxyybfQ@mail.gmail.com> <CAH6sp9N621aYHde3Gfg=fxM8dCGzDYftP1_8EGQuwhJBj0kggg@mail.gmail.com>
-In-Reply-To: <CAH6sp9N621aYHde3Gfg=fxM8dCGzDYftP1_8EGQuwhJBj0kggg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Frans Klaver <fransklaver@gmail.com>
-Cc: AbdAllah-MEZITI <abdallah.meziti.pro@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, driverdevel <devel@driverdev.osuosl.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-On Mon, Jun 26, 2017 at 11:16 AM, Frans Klaver <fransklaver@gmail.com> wrote:
-> On Mon, Jun 26, 2017 at 11:11 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Mon, Jun 26, 2017 at 7:45 AM, AbdAllah-MEZITI
->> <abdallah.meziti.pro@gmail.com> wrote:
->>> This patch
->>> - will always take the lock
->>
->> Why?
->>
->> "The current code only takes the lock if multiple instances are in use.
->>  This is error-prone, and confuses static analyzers.
->>  As taking the lock in case of a single instance is harmful and cheap,
->>  change the code to always take the lock."
->
-> I would argue that it's not harmful, lest people get confused about
+We free "info" then dereference it on the next line.  I've moved the
+call to framebuffer_release() down a line to avoid this problem.
 
-Sorry, I meant "harmless". I should start caring as much for commit
-messages I write for other people as for those I write for myself ;-)
+Fixes: b7d2d37276c1 ("video: imxfb: Remove unused fields from platform data structure")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-> it. And I agree that this explanation is much more useful than just
-> mentioning the warnings that you saw.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+index c166e0725be5..1d0c3592b290 100644
+--- a/drivers/video/fbdev/imxfb.c
++++ b/drivers/video/fbdev/imxfb.c
+@@ -1080,10 +1080,9 @@ static int imxfb_remove(struct platform_device *pdev)
+ 
+ 	fb_dealloc_cmap(&info->cmap);
+ 	kfree(info->pseudo_palette);
+-	framebuffer_release(info);
+-
+ 	dma_free_wc(&pdev->dev, fbi->map_size, info->screen_base,
+ 		    fbi->map_dma);
++	framebuffer_release(info);
+ 
+ 	iounmap(fbi->regs);
+ 	release_mem_region(res->start, resource_size(res));

@@ -1,50 +1,43 @@
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Wed, 28 Jun 2017 00:28:07 +0000
-Subject: [PATCH 3/3] omapfb: use of_graph_get_remote_endpoint()
-Message-Id: <87injhez1k.wl%kuninori.morimoto.gx@renesas.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 30 Jun 2017 11:21:08 +0000
+Subject: [PATCH v2 3/4] ARM: dts: rockchip: set pre/post pwm-delay-us property.
+Message-Id: <20170630112109.13785-3-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <87mv8tez69.wl%kuninori.morimoto.gx@renesas.com>
-In-Reply-To: <87mv8tez69.wl%kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>
+References: <20170630112109.13785-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170630112109.13785-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
+For veyron the binding should provide both pwm timings, the delay between
+you enable the PWM and set the enable signal, and the delay between you
+disable the PWM signal and clear the enable signal. Update the binding
+accordingly, in this case the panels connected to the veyron boards have
+a symetric power sequence, hence the same value is used.
 
-From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-
-Now, we can use of_graph_get_remote_endpoint(). Let's use it.
-
-Signed-off-by: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
-based on 4c9c3d595f1bad021cc126d20879df4016801736
-("of_graph: add of_graph_get_remote_endpoint()")
+Changes since v1:
+ - Add this new patch to fix current binding on veyron.
 
- drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-index d356a25..f1eb8b0 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-@@ -16,6 +16,7 @@
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_graph.h>
- #include <linux/seq_file.h>
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index d752a31..c0e8ce2 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -96,7 +96,7 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bl_en>;
+ 		pwms = <&pwm0 0 1000000 0>;
+-		pwm-delay-us = <10000>;
++		pwm-delay-us = <10000 10000>;
+ 	};
  
- #include <video/omapfb_dss.h>
-@@ -128,7 +129,7 @@ static struct device_node *omapdss_of_get_remote_port(const struct device_node *
- {
- 	struct device_node *np;
- 
--	np = of_parse_phandle(node, "remote-endpoint", 0);
-+	np = of_graph_get_remote_endpoint(node);
- 	if (!np)
- 		return NULL;
- 
+ 	gpio-charger {
 -- 
-1.9.1
+2.9.3
 

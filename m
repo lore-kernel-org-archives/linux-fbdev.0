@@ -1,99 +1,33 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 11 Jul 2017 20:37:51 +0000
-Subject: Re: [PATCH 3/3] drm/msm: hijack firmware fb's memory
-Message-Id: <CAKMK7uGHcrYzbijaf5_CzvyxbXYDrREFEsk9oqse6ne63cAnAQ@mail.gmail.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Sun, 02 Jul 2017 16:35:01 +0000
+Subject: Re: [PATCH v5 05/14] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
+Message-Id: <1499013301.1477.0@smtp.crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170711133822.31978-1-robdclark@gmail.com> <20170711133822.31978-4-robdclark@gmail.com>
- <CAKMK7uGLEaiZcTgd=2JzO22=+uMqF7iGzeJTy5Jdf2Qsf4Ecaw@mail.gmail.com>
- <CAF6AEGsh-5SAEtSjWz9kPZRpZA7yaVOS3PiKAutMLJEdTS7ogg@mail.gmail.com>
- <CAKMK7uE2CFdO_m7WQGfvHgJYX=qOOmVQpE_Ps72x=6ymKU_5ug@mail.gmail.com> <CAF6AEGtVvhOTOBFX11OocA4YXpNj-JRtdFXDjQntUS5yfB2onA@mail.gmail.com>
-In-Reply-To: <CAF6AEGtVvhOTOBFX11OocA4YXpNj-JRtdFXDjQntUS5yfB2onA@mail.gmail.com>
+References: <20170402204244.14216-2-paul@crapouillou.net>
+        <20170428200824.10906-1-paul@crapouillou.net>
+        <20170428200824.10906-6-paul@crapouillou.net>
+        <CACRpkdauf5c2i4o5i8QY8YHPNjizkvTu6kAbnquWiP_=v2=KdQ@mail.gmail.com>
+In-Reply-To: <CACRpkdauf5c2i4o5i8QY8YHPNjizkvTu6kAbnquWiP_=v2=KdQ-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <robdclark@gmail.com>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Ralf Baechle <ralf-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Boris Brezillon <boris.brezillon-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Maarten ter Huurne <maarten-Ph2Y2OKCxY1M656bX5wj8A@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Paul Burton <paul.burton-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, James Hogan <james.hogan-1AXoQHu6uovQT0dZR+AlfA@public.gmane.org>, "linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Linux MIPS <linux-mips-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>, "linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
-On Tue, Jul 11, 2017 at 9:53 PM, Rob Clark <robdclark@gmail.com> wrote:
-> On Tue, Jul 11, 2017 at 10:42 AM, Daniel Vetter <daniel@ffwll.ch> wrote:
->> On Tue, Jul 11, 2017 at 4:31 PM, Rob Clark <robdclark@gmail.com> wrote:
->>> On Tue, Jul 11, 2017 at 10:03 AM, Daniel Vetter <daniel@ffwll.ch> wrote:
->>>> On Tue, Jul 11, 2017 at 3:38 PM, Rob Clark <robdclark@gmail.com> wrote:
->>>>> +static unsigned long hijack_firmware_fb(struct drm_device *dev)
->>>>> +{
->>>>> +       struct msm_drm_private *priv = dev->dev_private;
->>>>> +       unsigned long size;
->>>>> +       int i;
->>>>> +
->>>>> +       /* if we have simplefb/efifb, find it's aperture and hijack
->>>>> +        * that before we kick out the firmware fb's.
->>>>> +        *
->>>>> +        * TODO we probably should hold registration_lock
->>>>> +        */
->>>>> +       for (i = 0; i < FB_MAX; i++) {
->>>>> +               struct fb_info *fb = get_fb_info(i);
->>>>> +
->>>>> +               if (IS_ERR_OR_NULL(fb))
->>>>> +                       continue;
->>>>> +
->>>>> +               if (!fb->apertures->count)
->>>>> +                       continue;
->>>>> +
->>>>> +               /* if we find efifb or simplefb, we are about to
->>>>> +                * kick them out, so hijack their memory:
->>>>> +                */
->>>>> +               if ((strcmp(fb->fix.id, "EFI VGA") = 0) ||
->>>>> +                               (strcmp(fb->fix.id, "simple") = 0)) {
->>>>> +
->>>>> +                       priv->vram.paddr = fb->apertures->ranges[0].base;
->>>>> +                       size = fb->apertures->ranges[0].size;
->>>>> +               }
->>>>> +
->>>>> +               put_fb_info(fb);
->>>>> +
->>>>> +               if (size)
->>>>> +                       return size;
->>>>> +       }
->>>>> +
->>>>> +       return 0;
->>>>> +}
->>>>
->>>> I think this should be a helper function in at least drm_fb_helper.c,
->>>> which would then fill in both base&size in a passed-in struct. But
->>>> yeah this seems a lot better than the old one.
->>>
->>> Yeah, I guess we could do that.. but probably not in drm_fb_helper.c
->>> since that is compile-time optional.  Better suggestions about where
->>> it should live?  If you have fbdev but not DRM_FBDEV_EMULATION you
->>> still want to do this, I think.  Otherwise we can't completely take
->>> over the display setup by firmware (ie. no way to create
->>> plane->state->fb).
->>
->> Hm right, maybe add a drm_fwfb_helper.c or so. If you look at
->> i915_kick_out_vgacon(), that might be another candidate for that file.
->> Putting it into fbdev itself seems like a bad idea, because
->> maintenance pains.
->
-> Hmm, would it be weird to have an:
->
->   obj-$(CONFIG_FB) += drm_fbfw_helper.o
->
-> in drm/Makefile?  Or is there a better way to do that?
->
-> I'm also wondering a bit about the CONFIG_FB=n case.. you might still
-> have CONFIG_EFI, so maybe we should fall back to pulling this out of
-> screen_info and looking for a simple-framebuffer node in the CONFIG_OF
-> case?
->
-> (also maybe worth noting that on ARM/ARM64 we don't have
-> CONFIG_VGA_CONSOLE.. so there are a lot of fun permutations..)
+Hi Linus,
 
-I'd include the source always (because of the above, e.g. kicking
-vgacon doesn't depend on CONFIG_FB), and then we'll probably have to
-sprinkle a pile of ugly #ifdef all over that file. Still better to
-have these hacks in one place only at least.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+> I applied all the patches to a branch in pinctrl and merged into my
+> devel branch for testing:
+> 
+> https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-pinctrl.git/
+> Branch: ingenic
+> 
+> Ralf: are you OK with this? It would be nice to have your ACK on
+> all patches. If you want you can pull this branch into the MIPS
+> tree, or we can hope for it all to settle nicely because of low 
+> platform
+> activity in MIPS on this platform, so it only needs to come in
+> from my trees.
+
+There has been no word from Ralf, is this going into 4.13?
+

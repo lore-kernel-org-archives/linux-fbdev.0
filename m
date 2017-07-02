@@ -1,49 +1,75 @@
-From: Tejun Heo <tj@kernel.org>
-Date: Sat, 15 Jul 2017 11:03:16 +0000
-Subject: Re: Lots of new warnings with gcc-7.1.1
-Message-Id: <20170715110316.GD2969123@devbig577.frc2.facebook.com>
+From: Lynn Lei <lynnl.wit@gmail.com>
+Date: Sun, 02 Jul 2017 14:27:40 +0000
+Subject: [PATCH] staging: sm750fb: refactor method and fix potential type inconsistence
+Message-Id: <20170702142335.GA9915@lynnl.wit>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+55aFzXz-PxKSJP=hfHD+mfCX4M6+HMacWMkDz7KB8-3y55qw@mail.gmail.com>
- <848b3f21-9516-8a66-e4b3-9056ce38d6f6@roeck-us.net>
- <CA+55aFyKpezj3oHwtBShyf9x-DJNAGQhrq55iVGM42eWKQtP3w@mail.gmail.com>
- <CA+55aFx5mCk+nzDG+gGzDUqE4gzJVERL_oO+PN-PA6oKaUhCpg@mail.gmail.com>
- <CAK8P3a2itguODKUNtw8m-7RReUkyEqk8fHYRLa-ZjJYjwwhYdg@mail.gmail.com>
-In-Reply-To: <CAK8P3a2itguODKUNtw8m-7RReUkyEqk8fHYRLa-ZjJYjwwhYdg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Guenter Roeck <linux@roeck-us.net>, Jean Delvare <jdelvare@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sathya Prakash <sathya.prakash@broadcom.com>, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, the arch/x86 maintainers <x86@kernel.org>, xen-devel <xen-devel@lists.xenproject.org>, linux-block <linux-block@vger.kernel.org>, Linux Media Mailing List <linux-media@vger.kernel.org>, IDE-ML <linux-ide@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Network Development <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Hello,
+make reg variable typed `u32' not `unsigned int'
+this can fix potential type inconsistence in some platforms
 
-On Wed, Jul 12, 2017 at 03:31:02PM +0200, Arnd Bergmann wrote:
-> > We also have about a bazillion
-> >
-> >     warning: ‘*’ in boolean context, suggest ‘&&’ instead
-> >
-> > warnings in drivers/ata/libata-core.c, all due to a single macro that
-> > uses a pattern that gcc-7.1.1 doesn't like. The warning looks a bit
-> > debatable, but I suspect the macro could easily be changed too.
-> >
-> > Tejun, would you hate just moving the "multiply by 1000" part _into_
-> > that EZ() macro? Something like the attached (UNTESTED!) patch?
-> 
-> Tejun applied an almost identical patch of mine a while ago, but it seems to
-> have gotten lost in the meantime in some rebase:
+refactor swPanelPowerSequence() make the code less redundant
 
-Yeah, I was scratching my head remembering your patch.  Sorry about
-that.  It should have been routed through for-4.12-fixes.
+a early check for disp to skip unnecessary delay
 
-> https://patchwork.kernel.org/patch/9721397/
-> https://patchwork.kernel.org/patch/9721399/
-> 
-> I guess I should have resubmitted the second patch with the suggested
-> improvement.
+Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
+---
+ drivers/staging/sm750fb/ddk750_display.c | 36 ++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 20 deletions(-)
 
-The new one looks good to me.
-
-Thanks.
-
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index 9b116ed6ecc7..0f666dc2729a 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -86,28 +86,24 @@ static void primary_wait_vertical_sync(int delay)
+ 
+ static void swPanelPowerSequence(int disp, int delay)
+ {
+-	unsigned int reg;
++	u32 reg;
++	u32 opt[] = {
++		PANEL_DISPLAY_CTRL_FPEN, PANEL_DISPLAY_CTRL_DATA,
++		PANEL_DISPLAY_CTRL_VBIASEN, PANEL_DISPLAY_CTRL_FPEN,
++	};
++	u32 size, i;
++
++	if (disp = 0)
++		return;
++
++	size = sizeof(opt) / sizeof(u32);
+ 
+ 	/* disp should be 1 to open sequence */
+-	reg = peek32(PANEL_DISPLAY_CTRL);
+-	reg |= (disp ? PANEL_DISPLAY_CTRL_FPEN : 0);
+-	poke32(PANEL_DISPLAY_CTRL, reg);
+-	primary_wait_vertical_sync(delay);
+-
+-	reg = peek32(PANEL_DISPLAY_CTRL);
+-	reg |= (disp ? PANEL_DISPLAY_CTRL_DATA : 0);
+-	poke32(PANEL_DISPLAY_CTRL, reg);
+-	primary_wait_vertical_sync(delay);
+-
+-	reg = peek32(PANEL_DISPLAY_CTRL);
+-	reg |= (disp ? PANEL_DISPLAY_CTRL_VBIASEN : 0);
+-	poke32(PANEL_DISPLAY_CTRL, reg);
+-	primary_wait_vertical_sync(delay);
+-
+-	reg = peek32(PANEL_DISPLAY_CTRL);
+-	reg |= (disp ? PANEL_DISPLAY_CTRL_FPEN : 0);
+-	poke32(PANEL_DISPLAY_CTRL, reg);
+-	primary_wait_vertical_sync(delay);
++	for (i = 0; i < size; i++) {
++		reg = peek32(PANEL_DISPLAY_CTRL) | opt[i];
++		poke32(PANEL_DISPLAY_CTRL, reg);
++		primary_wait_vertical_sync(delay);
++	}
+ }
+ 
+ void ddk750_setLogicalDispOut(disp_output_t output)
 -- 
-tejun
+2.13.2
+

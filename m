@@ -1,34 +1,22 @@
-From: Lynn Lei <lynnl.wit@gmail.com>
-Date: Sun, 02 Jul 2017 04:39:24 +0000
-Subject: [PATCH] staging: sm750fb: fixed a assignment typo
-Message-Id: <20170702043924.GA6794@lynnl.wit>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Mon, 03 Jul 2017 06:29:59 +0000
+Subject: Re: [PATCH] staging: sm750fb: fixed a assignment typo
+Message-Id: <20170703062959.GA14494@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170702043924.GA6794@lynnl.wit>
+In-Reply-To: <20170702043924.GA6794@lynnl.wit>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Lynn Lei <lynnl.wit@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Fixed a typo issue in get_mxclk_freq().
+On Sun, Jul 02, 2017 at 12:39:24PM +0800, Lynn Lei wrote:
+> Fixed a typo issue in get_mxclk_freq().
 
-Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
----
- drivers/staging/sm750fb/ddk750_chip.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+What typo issue is that?  Please always be specific in the changelog
+text.
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-index 5e4bfb601cea..c51761221131 100644
---- a/drivers/staging/sm750fb/ddk750_chip.c
-+++ b/drivers/staging/sm750fb/ddk750_chip.c
-@@ -40,7 +40,7 @@ static unsigned int get_mxclk_freq(void)
- 
- 	pll_reg = peek32(MXCLK_PLL_CTRL);
- 	M = (pll_reg & PLL_CTRL_M_MASK) >> PLL_CTRL_M_SHIFT;
--	N = (pll_reg & PLL_CTRL_N_MASK) >> PLL_CTRL_M_SHIFT;
-+	N = (pll_reg & PLL_CTRL_N_MASK) >> PLL_CTRL_N_SHIFT;
- 	OD = (pll_reg & PLL_CTRL_OD_MASK) >> PLL_CTRL_OD_SHIFT;
- 	POD = (pll_reg & PLL_CTRL_POD_MASK) >> PLL_CTRL_POD_SHIFT;
- 
--- 
-2.13.2
+thanks,
 
+greg k-h

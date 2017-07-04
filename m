@@ -1,44 +1,29 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Wed, 19 Jul 2017 05:35:11 +0000
-Subject: [PATCH] omapfb: panel-tpo-td043mtea1: constify attribute_group structures.
-Message-Id: <fe9b4aed7a13f673cbc9419c43840443052ebaa8.1500441685.git.arvind.yadav.cs@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 04 Jul 2017 14:14:40 +0000
+Subject: Re: [PATCH] vmlfb: Fix error handling in cr_pll_init()
+Message-Id: <1766140.hGBLfEqc96@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170622214347epcas4p12f0d1d6fad27b6b1ee41223329e3d8e2@epcas4p1.samsung.com>
+        <1498167814-5178-1-git-send-email-khoroshilov@ispras.ru>
+In-Reply-To: <1498167814-5178-1-git-send-email-khoroshilov@ispras.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Alan Hourihane <alanh@fairlite.demon.co.uk>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
-attribute_group are not supposed to change at runtime. All functions
-working with attribute_group provided by <linux/sysfs.h> work
-with const attribute_group. So mark the non-const structs as const.
+On Friday, June 23, 2017 12:43:34 AM Alexey Khoroshilov wrote:
+> There is an error path, where iomemory is left mapped.
+> 
+> Found by Linux Driver Verification project (linuxtesting.org).
+> 
+> Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-   2673	    368	      0	   3041	    be1	panel-tpo-td043mtea1.o
+Patch queued for 4.13, thanks.
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-   2737	    304	      0	   3041	    be1	panel-tpo-td043mtea1.o
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-index 51e628b..ea8c79a 100644
---- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-+++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
-@@ -282,7 +282,7 @@ static DEVICE_ATTR(gamma, S_IRUGO | S_IWUSR,
- 	NULL,
- };
- 
--static struct attribute_group tpo_td043_attr_group = {
-+static const struct attribute_group tpo_td043_attr_group = {
- 	.attrs = tpo_td043_attrs,
- };
- 
--- 
-1.9.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

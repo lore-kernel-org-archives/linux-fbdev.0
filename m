@@ -1,52 +1,36 @@
-From: Lynn Lei <lynnl.wit@gmail.com>
-Date: Sun, 02 Jul 2017 23:14:54 +0000
-Subject: [PATCH] staging: sm750fb: coordinate conditional compilation
-Message-Id: <20170702231454.GA5545@lynnl.wit>
+From: Lynn Lei <lynnl.yet@gmail.com>
+Date: Tue, 04 Jul 2017 15:22:42 +0000
+Subject: [PATCH 1/4] video: fbdev: sm712fb.c: using __func__ macro for pr_debug
+Message-Id: <20170704152242.GA23851@lynnl.yet>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-coordinate conditional compilation with g_dcftSupportedDviController[]
+Inside function sm7xx_vga_setup()
 
-fix exceed-80-characters issue
+Using a generic function macro for debug information display
 
 Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
 ---
- drivers/staging/sm750fb/ddk750_dvi.c | 15 ++++++++++-----
- 1 file changed, 10 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_dvi.c b/drivers/staging/sm750fb/ddk750_dvi.c
-index 171ae063f06f..c4f329c2f1ed 100644
---- a/drivers/staging/sm750fb/ddk750_dvi.c
-+++ b/drivers/staging/sm750fb/ddk750_dvi.c
-@@ -42,14 +42,19 @@ int dviInit(
- 	unsigned char pllFilterValue
- 			)
- {
-+#ifdef DVI_CTRL_SII164
- 	dvi_ctrl_device_t *pCurrentDviCtrl;
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 73cb4ffff3c5..4d3684333b7b 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -785,7 +785,7 @@ static void __init sm7xx_vga_setup(char *options)
+ 	smtc_scr_info.lfb_height = 0;
+ 	smtc_scr_info.lfb_depth = 0;
  
- 	pCurrentDviCtrl = g_dcftSupportedDviController;
--	if (pCurrentDviCtrl->pfnInit) {
--		return pCurrentDviCtrl->pfnInit(edgeSelect, busSelect, dualEdgeClkSelect, hsyncEnable,
--						vsyncEnable, deskewEnable, deskewSetting, continuousSyncEnable,
--						pllFilterEnable, pllFilterValue);
--	}
-+
-+	return pCurrentDviCtrl->pfnInit(
-+		edgeSelect, busSelect, dualEdgeClkSelect,
-+		hsyncEnable, vsyncEnable, deskewEnable,
-+		deskewSetting, continuousSyncEnable,
-+		pllFilterEnable, pllFilterValue
-+	);
-+#endif
-+
- 	return -1; /* error */
- }
+-	pr_debug("sm7xx_vga_setup = %s\n", options);
++	pr_debug("%s = %s\n", __func__, options);
  
+ 	for (i = 0; i < ARRAY_SIZE(vesa_mode_table); i++) {
+ 		if (strstr(options, vesa_mode_table[i].index)) {
 -- 
 2.13.2
 

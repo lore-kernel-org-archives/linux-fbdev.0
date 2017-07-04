@@ -1,87 +1,50 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 13 Jul 2017 21:32:22 +0000
-Subject: [PATCH v3 1/2] firmware/dmi: Export dmi_system_id_match
-Message-Id: <20170713213223.28503-1-hdegoede@redhat.com>
+From: Lynn Lei <lynnl.yet@gmail.com>
+Date: Tue, 04 Jul 2017 15:24:17 +0000
+Subject: [PATCH 3/4] video: fbdev: sm712fb.c: fixed prefer unsigned int warning
+Message-Id: <20170704152417.GA29324@lynnl.yet>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In some cases a driver cannot use dmi_check_system because it
-needs to do more complex checks, involving runtime (non const)
-variables. In such case the driver will implement its own loop over
-a dmi_system_id table and to do the dmi matching part of the checks
-it needs access to dmi_system_id_match.
+Fixed several prefer 'unsigned int' over 'unsigned' warnings checked by
+scripts/checkpatch.pl:
+  Prefer 'unsigned int' to bare use of 'unsigned'
 
-This commit renames dmi_matches to dmi_system_id_match to better reflect
-what it does and exports it for use in such drivers.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
 ---
-Changes in v3:
--Split out of "video/console: Add dmi quirk table for x86 systems which
- need fbcon rotation" patch
----
- drivers/firmware/dmi_scan.c | 9 +++++----
- include/linux/dmi.h         | 1 +
- 2 files changed, 6 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-index 783041964439..b48ac837f625 100644
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -777,10 +777,10 @@ void __init dmi_set_dump_stack_arch_desc(void)
- }
- 
- /**
-- *	dmi_matches - check if dmi_system_id structure matches system DMI data
-+ *	dmi_system_id_match - check if dmi_system_id matches system DMI data
-  *	@dmi: pointer to the dmi_system_id structure to check
-  */
--static bool dmi_matches(const struct dmi_system_id *dmi)
-+bool dmi_system_id_match(const struct dmi_system_id *dmi)
- {
- 	int i;
- 
-@@ -804,6 +804,7 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index d492a9e9ac50..172e94146878 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -798,8 +798,8 @@ static void __init sm7xx_vga_setup(char *options)
  	}
- 	return true;
  }
-+EXPORT_SYMBOL(dmi_system_id_match);
  
- /**
-  *	dmi_is_end_of_table - check for end-of-table marker
-@@ -833,7 +834,7 @@ int dmi_check_system(const struct dmi_system_id *list)
- 	const struct dmi_system_id *d;
+-static void sm712_setpalette(int regno, unsigned red, unsigned green,
+-			     unsigned blue, struct fb_info *info)
++static void sm712_setpalette(int regno, unsigned int red, unsigned int green,
++			     unsigned int blue, struct fb_info *info)
+ {
+ 	/* set bit 5:4 = 01 (write LCD RAM only) */
+ 	smtc_seqw(0x66, (smtc_seqr(0x66) & 0xC3) | 0x10);
+@@ -896,8 +896,9 @@ static int smtc_blank(int blank_mode, struct fb_info *info)
+ 	return 0;
+ }
  
- 	for (d = list; !dmi_is_end_of_table(d); d++)
--		if (dmi_matches(d)) {
-+		if (dmi_system_id_match(d)) {
- 			count++;
- 			if (d->callback && d->callback(d))
- 				break;
-@@ -860,7 +861,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
- 	const struct dmi_system_id *d;
- 
- 	for (d = list; !dmi_is_end_of_table(d); d++)
--		if (dmi_matches(d))
-+		if (dmi_system_id_match(d))
- 			return d;
- 
- 	return NULL;
-diff --git a/include/linux/dmi.h b/include/linux/dmi.h
-index 9bbf21a516e4..5ee3955607b3 100644
---- a/include/linux/dmi.h
-+++ b/include/linux/dmi.h
-@@ -96,6 +96,7 @@ struct dmi_dev_onboard {
- };
- 
- extern struct kobject *dmi_kobj;
-+extern bool dmi_system_id_match(const struct dmi_system_id *dmi);
- extern int dmi_check_system(const struct dmi_system_id *list);
- const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list);
- extern const char * dmi_get_system_info(int field);
+-static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
+-			  unsigned blue, unsigned trans, struct fb_info *info)
++static int smtc_setcolreg(unsigned int regno, unsigned int red,
++			  unsigned int green, unsigned int blue,
++			  unsigned int trans, struct fb_info *info)
+ {
+ 	struct smtcfb_info *sfb;
+ 	u32 val;
 -- 
-2.13.0
+2.13.2
 

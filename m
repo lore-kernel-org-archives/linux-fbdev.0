@@ -1,62 +1,33 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Sat, 15 Jul 2017 20:07:39 +0000
-Subject: [PATCH 04/11] fbdev: da8xx-fb: Drop unnecessary static
-Message-Id: <1500149266-32357-5-git-send-email-Julia.Lawall@lip6.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 04 Jul 2017 14:05:31 +0000
+Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: constify mfb_template and fsl_diu_match.
+Message-Id: <2900087.7UC3Ktz3FX@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500149266-32357-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1500149266-32357-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <CGME20170620061854epcas1p1916f630eb91f3c64792583af6de713f0@epcas1p1.samsung.com>
+        <9c07b512d764aa87a17dc871b9b2feaf050ff8c5.1497939324.git.arvind.yadav.cs@gmail.com>
+In-Reply-To: <9c07b512d764aa87a17dc871b9b2feaf050ff8c5.1497939324.git.arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: keescook@chromium.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: timur@tabi.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Drop static on a local variable, when the variable is initialized before
-any possible use.  Thus, the static has no benefit.
+On Tuesday, June 20, 2017 11:48:14 AM Arvind Yadav wrote:
+> File size before:
+>    text	   data	    bss	    dec	    hex	filename
+>    2469	   1552	     24	   4045	    fcd	drivers/video/fbdev/fsl-diu-fb.o
+> 
+> File size After adding 'const':
+>    text	   data	    bss	    dec	    hex	filename
+>    3821	    200	     24	   4045	    fcd	drivers/video/fbdev/fsl-diu-fb.o
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-The semantic patch that fixes this problem is as follows:
-(http://coccinelle.lip6.fr/)
+Patch queued for 4.13, thanks.
 
-// <smpl>
-@bad exists@
-position p;
-identifier x;
-type T;
-@@
-static T x@p;
-...
-x = <+...x...+>
-
-@@
-identifier x;
-expression e;
-type T;
-position p != bad.p;
-@@
--static
- T x@p;
- ... when != x
-     when strict
-?x = e;
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
-These patches are all independent of each other.
-
- drivers/video/fbdev/da8xx-fb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -u -p a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1341,7 +1341,7 @@ static int fb_probe(struct platform_devi
- {
- 	struct da8xx_lcdc_platform_data *fb_pdata  						dev_get_platdata(&device->dev);
--	static struct resource *lcdc_regs;
-+	struct resource *lcdc_regs;
- 	struct lcd_ctrl_config *lcd_cfg;
- 	struct fb_videomode *lcdc_info;
- 	struct fb_info *da8xx_fb_info;
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

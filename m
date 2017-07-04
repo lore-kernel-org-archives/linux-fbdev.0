@@ -1,30 +1,54 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 12 Jul 2017 16:31:21 +0000
-Subject: Re: [PATCH] atyfb: hide unused variable
-Message-Id: <2581869.RWDtV5qma6@amdc3058>
+Date: Tue, 04 Jul 2017 15:44:57 +0000
+Subject: Re: [PATCH] video: fbdev: imxfb: use after free in imxfb_remove()
+Message-Id: <2088323.70idy6k2dB@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170710111335epcas4p38f91ea2aa1c12161af113766b989e8f1@epcas4p3.samsung.com>
-        <20170710111312.747154-1-arnd@arndb.de>
-In-Reply-To: <20170710111312.747154-1-arnd@arndb.de>
+References: <20170630080242.emnw7l53f52pvzeo@mwanda>
+In-Reply-To: <20170630080242.emnw7l53f52pvzeo@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: "Gustavo A. R. Silva" <garsilva@embeddedor.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-On Monday, July 10, 2017 01:12:46 PM Arnd Bergmann wrote:
-> The vdisplay variable is now only accessed inside of an #ifdef, producing
-> a harmless warning:
-> 
-> drivers/video/fbdev/aty/atyfb_base.c: In function 'aty_var_to_crtc':
-> drivers/video/fbdev/aty/atyfb_base.c:805:19: error: unused variable 'vdisplay' [-Werror=unused-variable]
-> 
-> This moves the declaration into the ifdef as well.
-> 
-> Fixes: dd7d958ae912 ("video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Patch queued for 4.13, thanks.
+Hi,
+
+On Friday, June 30, 2017 11:02:42 AM Dan Carpenter wrote:
+> We free "info" then dereference it on the next line.  I've moved the
+> call to framebuffer_release() down a line to avoid this problem.
+> 
+> Fixes: b7d2d37276c1 ("video: imxfb: Remove unused fields from platform data structure")
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> 
+> diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
+> index c166e0725be5..1d0c3592b290 100644
+> --- a/drivers/video/fbdev/imxfb.c
+> +++ b/drivers/video/fbdev/imxfb.c
+> @@ -1080,10 +1080,9 @@ static int imxfb_remove(struct platform_device *pdev)
+>  
+>  	fb_dealloc_cmap(&info->cmap);
+>  	kfree(info->pseudo_palette);
+> -	framebuffer_release(info);
+> -
+>  	dma_free_wc(&pdev->dev, fbi->map_size, info->screen_base,
+>  		    fbi->map_dma);
+> +	framebuffer_release(info);
+>  
+>  	iounmap(fbi->regs);
+
+Good catch.
+
+While you are at it, please:
+
+- move framebuffer_release() after iounmap() (memory occupied by
+  fbi will also be freed by framebuffer_release() call, please see
+  framebuffer_alloc() for details)
+
+- make the ordering in imxfb_remove() match the ordering of error
+  path in imxfb_probe() (to improve consistency and prevent similar
+  ordering errors in future)
+
+>  	release_mem_region(res->start, resource_size(res));
 
 Best regards,
 --

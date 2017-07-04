@@ -1,46 +1,36 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:28 +0000
-Subject: [PATCH 03/28] video: fbdev: aty128fb: constify pci_device_id.
-Message-Id: <1500572393-18844-4-git-send-email-arvind.yadav.cs@gmail.com>
+From: Lynn Lei <lynnl.yet@gmail.com>
+Date: Tue, 04 Jul 2017 15:24:38 +0000
+Subject: [PATCH 4/4] video: fbdev: sm712fb.c: fixed constant-left comparison warning
+Message-Id: <20170704152438.GA30443@lynnl.yet>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: sudipm.mukherjee@gmail.com
+Cc: teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+Fixed a constant-left comparison warning issue check by
+scripts/checkpatch.pl:
+  WARNING: Comparisons should place the constant on the right side of the test
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-  11525	   2048	      8	  13581	   350d	video/fbdev/aty/aty128fb.o
-
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-  13061	    512	      8	  13581	   350d	video/fbdev/aty/aty128fb.o
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
 ---
- drivers/video/fbdev/aty/aty128fb.c | 2 +-
+ drivers/video/fbdev/sm712fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index fa07242..ba64e26 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -166,7 +166,7 @@ static int aty128_pci_resume(struct pci_dev *pdev);
- static int aty128_do_resume(struct pci_dev *pdev);
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 172e94146878..502d0de2feec 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1478,7 +1478,7 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 	}
  
- /* supported Rage128 chipsets */
--static struct pci_device_id aty128_pci_tbl[] = {
-+static const struct pci_device_id aty128_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RAGE128_LE,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, rage_M3_pci },
- 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RAGE128_LF,
+ 	/* can support 32 bpp */
+-	if (15 = sfb->fb->var.bits_per_pixel)
++	if (sfb->fb->var.bits_per_pixel = 15)
+ 		sfb->fb->var.bits_per_pixel = 16;
+ 
+ 	sfb->fb->var.xres_virtual = sfb->fb->var.xres;
 -- 
-2.7.4
+2.13.2
 

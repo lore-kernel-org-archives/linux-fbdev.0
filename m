@@ -1,46 +1,25 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:29 +0000
-Subject: [PATCH 04/28] video: fbdev: sunxvr2500: constify pci_device_id.
-Message-Id: <1500572393-18844-5-git-send-email-arvind.yadav.cs@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 04 Jul 2017 15:29:11 +0000
+Subject: Re: [PATCH] video: fbdev: matrox: the list iterator can't be NULL
+Message-Id: <7422018.lga753Zp0e@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+On Friday, June 30, 2017 11:00:30 AM Dan Carpenter wrote:
+> My static checker is complaining because we check "drv" for NULL and
+> then we dereference it to get the next item in the list.  It can't be
+> NULL so we can remove this check.
+> 
+> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-    390	    552	      0	    942	    3ae	drivers/video/fbdev/sunxvr2500.o
+Patch queued for 4.13, thanks.
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-    686	    256	      0	    942	    3ae	drivers/video/fbdev/sunxvr2500.o
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
----
- drivers/video/fbdev/sunxvr2500.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/sunxvr2500.c b/drivers/video/fbdev/sunxvr2500.c
-index 1a05329..544465b 100644
---- a/drivers/video/fbdev/sunxvr2500.c
-+++ b/drivers/video/fbdev/sunxvr2500.c
-@@ -220,7 +220,7 @@ static int s3d_pci_register(struct pci_dev *pdev,
- 	return err;
- }
- 
--static struct pci_device_id s3d_pci_table[] = {
-+static const struct pci_device_id s3d_pci_table[] = {
- 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x002c),	},
- 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x002d),	},
- 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x002e),	},
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

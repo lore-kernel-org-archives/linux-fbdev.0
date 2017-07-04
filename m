@@ -1,17 +1,33 @@
-From: daven bango <davenbango22@gmail.com>
-Date: Sun, 30 Jul 2017 23:33:53 +0000
-Subject: 
-Message-Id: <CAH3Vmx2Z0bxEC2WYRyi8c+8y3cfBewBwT8tQ-OKJ4iqKi9kthQ@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 04 Jul 2017 15:00:57 +0000
+Subject: Re: [PATCH] video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()
+Message-Id: <30595844.JA8gAC7Mhf@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170626220521epcas2p21e20ebaf7d36ec6d7a5cd54b81afdb4c@epcas2p2.samsung.com>
+        <20170626220518.GA9369@embeddedgus>
+In-Reply-To: <20170626220518.GA9369@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi, I am Barrister Daven Bango, Can i trust and cooperate with you in an
-international transaction? I look forward to your urgent response in my
-email (bar.davenbango@gmail.com) Thanks.
+On Monday, June 26, 2017 05:05:18 PM Gustavo A. R. Silva wrote:
+> Value assigned to variable vdisplay at line 990 is overwritten
+> at line 1039 before it can be used. Also, variable assignment
+> at line 987 is the same as at line 1039. This makes such
+> variable assignments useless.
+> 
+> Remove these variable assignments and the code related.
+> 
+> Addresses-Covertity-ID: 1226900
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+
+Patch queued for 4.13, thanks.
 
 Best regards,
-Barrister Daven Bango
-skype: bardaven01
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

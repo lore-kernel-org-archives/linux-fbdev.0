@@ -1,104 +1,60 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 13 Jul 2017 13:52:40 +0000
-Subject: [GIT PULL] fbdev changes for v4.13
-Message-Id: <1632483.QGZKEaCAg3@amdc3058>
+From: Joe Perches <joe@perches.com>
+Date: Wed, 05 Jul 2017 20:02:09 +0000
+Subject: [PATCH 00/18] treewide: Move storage class before return type
+Message-Id: <cover.1499284835.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170713135243epcas1p2cc3fb7d2817de70613a4079fcb83e2b1@epcas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Andrew Morton <akpm@linux-foundation.org>, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu, linux-m68k@lists.linux-m68k.org, linux-efi@vger.kernel.org, linux-s390@vger.kernel.org, linux-serial@vger.kernel.org, linux-ia64@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org, linux-cris-kernel@axis.com, linux-sh@vger.kernel.org
 
+Move the inline/asmlinkage keywords before the return types
+Add a checkpatch test for this too.
 
-Hi Linus,
+Joe Perches (18):
+  checkpatch: improve the STORAGE_CLASS test
+  ARM: KVM: Move asmlinkage before type
+  ARM: HP Jornada 7XX: Move inline before return type
+  CRIS: gpio: Move inline before return type
+  FRV: tlbflush: Move asmlinkage before return type
+  ia64: Move inline before return type
+  ia64: sn: pci: Move inline before type
+  m68k: coldfire: Move inline before return type
+  MIPS: SMP: Move asmlinkage before return type
+  sh: Move inline before return type
+  x86/efi: Move asmlinkage before return type
+  drivers: s390: Move static and inline before return type
+  drivers: tty: serial: Move inline before return type
+  USB: serial: safe_serial: Move __inline__ before return type
+  video: fbdev: intelfb: Move inline before return type
+  video: fbdev: omap: Move inline before return type
+  ARM: samsung: usb-ohci: Move inline before return type
+  ALSA: opl4: Move inline before return type
 
-Please pull fbdev changes for v4.13.  There is nothing really major here,
-just a couple of small bugfixes, improvements and cleanups.
+ arch/arm/include/asm/kvm_hyp.h                 |  8 ++++----
+ arch/arm/mach-sa1100/jornada720_ssp.c          |  2 +-
+ arch/cris/arch-v10/drivers/gpio.c              |  4 ++--
+ arch/frv/include/asm/tlbflush.h                |  8 ++++----
+ arch/ia64/kernel/mca.c                         |  2 +-
+ arch/ia64/sn/pci/pcibr/pcibr_ate.c             |  2 +-
+ arch/ia64/sn/pci/tioce_provider.c              |  4 ++--
+ arch/m68k/coldfire/intc-simr.c                 |  4 ++--
+ arch/mips/include/asm/smp.h                    |  2 +-
+ arch/sh/mm/cache-sh5.c                         |  2 +-
+ arch/x86/include/asm/efi.h                     |  4 ++--
+ drivers/s390/net/ctcm_main.c                   |  2 +-
+ drivers/s390/net/qeth_l3_main.c                |  2 +-
+ drivers/tty/serial/ioc3_serial.c               |  4 ++--
+ drivers/tty/serial/ioc4_serial.c               |  4 ++--
+ drivers/usb/serial/safe_serial.c               |  2 +-
+ drivers/video/fbdev/intelfb/intelfbdrv.c       |  2 +-
+ drivers/video/fbdev/omap/lcdc.c                |  6 +++---
+ include/linux/platform_data/usb-ohci-s3c2410.h |  2 +-
+ scripts/checkpatch.pl                          | 12 ++++++++++--
+ sound/drivers/opl4/opl4_lib.c                  |  2 +-
+ 21 files changed, 44 insertions(+), 36 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-The following changes since commit 32c1431eea4881a6b17bd7c639315010aeefa452:
-
-  Linux 4.12-rc5 (2017-06-11 16:48:20 -0700)
-
-are available in the git repository at:
-
-  https://github.com/bzolnier/linux.git tags/fbdev-v4.13
-
-for you to fetch changes up to 4c99ceda0d067c06f228a27b6870f548d3218cc6:
-
-  fbdev: make get_fb_unmapped_area depends of !MMU (2017-07-12 18:28:11 +0200)
-
-----------------------------------------------------------------
-fbdev changes for v4.13:
-
-- fix get_fb_unmapped_area() helper handling (Benjamin Gaignard)
-- check return value of clk_prepare_enable() in pxafb driver (Arvind Yadav)
-- fix error path handling in vmlfb driver (Alexey Khoroshilov)
-- printks fixes/cleanups for uvesafb driver (Joe Perches)
-- fix unusued variable warning in atyfb driver (Arnd Bergmann)
-- constifications for sh_mobile_lcdcfb, fsl-diu-fb, omapfb (Arvind Yadav)
-- mdacon driver cleanups (Jiri Slaby)
-- misc cleanups
-  (Andy Shevchenko, Karim Eshapa, Gustavo A. R. Silva, Dan Carpenter)
-
-----------------------------------------------------------------
-Alexey Khoroshilov (1):
-      vmlfb: Fix error handling in cr_pll_init()
-
-Andy Shevchenko (1):
-      omapfb: Use sysfs_match_string() helper
-
-Arnd Bergmann (1):
-      atyfb: hide unused variable
-
-Arvind Yadav (5):
-      video: fbdev: pxafb: Handle return value of clk_prepare_enable
-      video: fbdev: sh_mobile_lcdcfb: constify sh_mobile_lcdc_bl_ops.
-      video: fbdev: fsl-diu-fb: constify mfb_template and fsl_diu_match.
-      omapfb: panel-dsi-cm: constify dsicm_attr_group
-      fbdev: omapfb: constify ctrl_caps, color_caps, panel_attr_grp and ctrl_attr_grp
-
-Bartlomiej Zolnierkiewicz (1):
-      Merge tag 'v4.12-rc5' of git://git.kernel.org/.../torvalds/linux into fbdev-for-next
-
-Benjamin Gaignard (1):
-      fbdev: make get_fb_unmapped_area depends of !MMU
-
-Dan Carpenter (1):
-      video: fbdev: matrox: the list iterator can't be NULL
-
-Gustavo A. R. Silva (1):
-      video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()
-
-Jiri Slaby (3):
-      mdacon: align code in mda_detect properly
-      mdacon: make mda_vram_base u16 *
-      mdacon: replace MDA_ADDR macro by inline function
-
-Joe Perches (1):
-      uvesafb: Fix continuation printks without KERN_LEVEL to pr_cont, neatening
-
-Karim Eshapa (1):
-      video: fbdev: omap2: omapfb: displays: panel-dsi-cm: Use time comparison kernel macro.
-
- drivers/video/console/mdacon.c                     |  89 +++++++------
- drivers/video/fbdev/aty/atyfb_base.c               |  10 +-
- drivers/video/fbdev/core/fbmem.c                   |   5 +-
- drivers/video/fbdev/fsl-diu-fb.c                   |   4 +-
- drivers/video/fbdev/matrox/matroxfb_base.c         |   2 +-
- drivers/video/fbdev/omap/omapfb_main.c             |   8 +-
- .../fbdev/omap2/omapfb/displays/panel-dsi-cm.c     |   4 +-
- .../video/fbdev/omap2/omapfb/dss/manager-sysfs.c   |  14 +-
- drivers/video/fbdev/pxafb.c                        |   5 +-
- drivers/video/fbdev/sh_mobile_lcdcfb.c             |   2 +-
- drivers/video/fbdev/uvesafb.c                      | 148 +++++++++------------
- drivers/video/fbdev/vermilion/cr_pll.c             |   1 +
- 12 files changed, 137 insertions(+), 155 deletions(-)
+-- 
+2.10.0.rc2.1.g053435c
 

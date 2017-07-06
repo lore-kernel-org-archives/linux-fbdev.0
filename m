@@ -1,18 +1,18 @@
 From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 06 Jul 2017 08:01:32 +0000
+Date: Thu, 06 Jul 2017 08:13:22 +0000
 Subject: Re: [PATCH v2 2/4] pwm-backlight: add support for pwm-delay-us property
-Message-Id: <20170706080132.GL16144@ulmo.fritz.box>
+Message-Id: <20170706081322.GM16144@ulmo.fritz.box>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1hKfHPzOXWu1rh0v"
+Content-Type: multipart/mixed; boundary="kunpHVz1op/+13PW"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170630112109.13785-1-enric.balletbo@collabora.com>
  <20170630112109.13785-2-enric.balletbo@collabora.com>
-In-Reply-To: <20170630112109.13785-2-enric.balletbo@collabora.com>
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, huang lin <hl@rock-chips.com>
+In-Reply-To: <20170630112109.13785-2-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, huang lin <hl-TNX95d0MmH7DzftRWevZcw@public.gmane.org>
 
 
---1hKfHPzOXWu1rh0v
+--kunpHVz1op/+13PW
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
@@ -33,12 +33,7 @@ On Fri, Jun 30, 2017 at 01:21:07PM +0200, Enric Balletbo i Serra wrote:
 >=20
 >   On power on, set the PWM signal, wait, and set the LED_EN signal.
 >   On power off, clear the LED_EN signal, wait, and stop the PWM signal.
-
-I think this should be two separate patches to make it easier to revert
-the inverted sequence should it prove to regress on other panels.
-
-Two more comments below.
-
+>=20
 > Signed-off-by: huang lin <hl@rock-chips.com>
 > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
@@ -83,15 +78,6 @@ wm_bl.c
 > +
 > +	if (pb->pwm_delay[0])
 > +		usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] + 2000);
-
-2000 us is kind of arbitrary. What if pwm_delay[0] is on the order of 20
-us? Making the delay 2 ms longer (in the worst case) seems somewhat
-excessive. Why not something like:
-
-	usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] * 2);
-
-?
-
 > +
 >  	if (pb->enable_gpio)
 >  		gpiod_set_value_cansleep(pb->enable_gpio, 1);
@@ -125,29 +111,38 @@ a *pb)
 >  	}
 > =20
 > +	/* read pwm to enable pre/post delays from DT property */
+> +	ret =3D of_property_read_u32_array(node, "pwm-delay-us", data->pwm_dela=
+y,
+> +					 ARRAY_SIZE(data->pwm_delay));
+> +	if (ret < 0)
+> +		return ret;
 
-This comment is confusing. This isn't reading anything from the PWM.
+Also I think you need to make sure you have a fallback in place in case
+that this fails, otherwise the property is no longer optional.
+
+Ignoring -EINVAL should do the trick since data->pwm_delay should be
+zeroed out by the memset() earlier in this function.
 
 Thierry
 
---1hKfHPzOXWu1rh0v
+--kunpHVz1op/+13PW
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlld7lkACgkQ3SOs138+
-s6ESkQ//Q9KgkEjoCjIx+nZN0oSuEYZOEXCTlP+NNNwuklxz8mVnvf1lwsIGKtjG
-UI1U+ukCT+aky88yVfLYMCZ7+OQUQ2m9FWPIPPSG3tzGpwYdfQ4l3dD73Bm7Xp3l
-hGOf9n8YzzoObSeYabi7O/JsWj0cSumcSz30uiiv+wRffXrPKF6qHTK7pm0+DKC3
-dGUKvbh+HmZ2N8xvBizIYNOJn5BRLjUzpVmeE+Zg9sL7SO3GHXxMpc1xvhNejnu2
-Q4OmEIbGoTIxdwuQc87IBpqUU0/IEdC+eMH1OugQW9Jyah2dD5Vsirw+enWMv5r9
-zSrDetASIDQIafXhiXUC8rtjJDnH3+tPeRDHd4UDeCXUMTlnG541vO+ziL4rOO7z
-rf6AXWlDnG+LQCpmy5YD8tqFPxSQj7NfYQQ1CwCwYCuGPrlulQJ4x8r0jO/HkQ6B
-PhxMiun8zjRKj7itzJeZII7gJT1rLvDLUfwCFzbMz6gfnPzwD34A2a/EQrbBNI6G
-P8gBGp9cuGaKeSF7mjcHGPRk8LuRSUVtNxOOwNrCF/fykinaGnFfsx0eF9vcFWFd
-ol9Y+lE8UsYmMZvJp0NBDXUMrNbAX+UfsDKLTUdvwvzTb6v687m+0TkaXyju062R
-iFw259hcgEHu+FHKqA3J0nKeWYppvQosq8HJwKlGcObVVpkoqhc=
-=C0A3
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlld8R8ACgkQ3SOs138+
+s6G+VA/9Gqujd96+fWUYXmZPtX2B/+Cjblg8U273lulvd8KmAkXoUsZvchfG3+8s
+dxxzb/hDn6OuEYBXgiaQo1EwTluycNWvRaATE82i90kRxkF7ZXy5grcBaj/kUFYt
+caWWSyihUR8BUZtLT2urg/66Bm8Xcgeo9+gjJfGEPrAUhOdgSLdcSvg1X3enIi3Y
+DXN/T5gGj2O0sRL2GxFZAisS/s9QwSk5XAurw1yMFLFgjttj7avA37kU/lmmKkQt
+iX+69P0LryhS+U3+rHpLFYb6rdP9u7QRTqwdh5lgx0DOwZW3zInDk243CMy0aNza
+v7Y+Tnji1NnH5Th+SUyTdQ6bBSUgwBvxii+SKhTnPyDsCcYRJL6RVGCJCGjvil3T
+vBba2nqNvJeGsD4Qvc3wlJ1tNk0h4GG3G2wqzhXBapRSU5hnmFUvxH9AGL+ebOXs
+qs4kyKM4vuEwpQOW6RInSvTdKCDdb3/Qqn/hlIu3XgP5id8VYsFIK/KKmDFCZCwu
+9EAr0Rce/UzPUm+E1ST2Y7tdAPheWt64grlVOUF87rnGQbYKFcpIqotuDw0muFJs
+IUMjlvNKewgVHfw2o7YVbR4pW3wMXhyzjuDh0vdRjkqomDHbl/+MTpV5Rp1R3bi+
+PxHZECJRQu5mB7EEhng9B9o46OAZrOh0EUkabpMwhABRSzInMPM=
+=QPOy
 -----END PGP SIGNATURE-----
 
---1hKfHPzOXWu1rh0v--
+--kunpHVz1op/+13PW--

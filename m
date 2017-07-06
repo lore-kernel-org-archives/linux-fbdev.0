@@ -1,136 +1,226 @@
-From: "Jingoo Han" <jingoohan1@gmail.com>
-Date: Wed, 26 Jul 2017 17:01:53 +0000
-Subject: Re: [PATCH v4 3/5] pwm-backlight: add support for PWM delays proprieties.
-Message-Id: <000001d30630$e2a3d160$a7eb7420$@gmail.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Thu, 06 Jul 2017 12:57:35 +0000
+Subject: [PATCH 4/4] drm/<drivers>: Drop fbdev info flags
+Message-Id: <20170706125735.28299-5-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170721104813.5389-1-enric.balletbo@collabora.com> <20170721104813.5389-3-enric.balletbo@collabora.com> <0e2d4f9b-0f27-3793-0c27-2a2df5c32cf0@linaro.org>
-In-Reply-To: <0e2d4f9b-0f27-3793-0c27-2a2df5c32cf0@linaro.org>
+References: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Daniel Thompson' <daniel.thompson@linaro.org>, 'Enric Balletbo i Serra' <enric.balletbo@collabora.com>, 'Thierry Reding' <thierry.reding@gmail.com>, 'Lee Jones' <lee.jones@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, 'Rob Herring' <robh+dt@kernel.org>, 'Pavel Machek' <pavel@ucw.cz>, 'Richard Purdie' <rpurdie@rpsys.net>, 'Jacek Anaszewski' <jacek.anaszewski@gmail.com>, 'Heiko Stuebner' <heiko@sntech.de>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>
 
-On Monday, July 24, 2017 11:22 AM, Daniel Thompson wrote:
-> On 21/07/17 11:48, Enric Balletbo i Serra wrote:
-> > Some panels (i.e. N116BGE-L41), in their power sequence specifications,
-> > request a delay between set the PWM signal and enable the backlight and
-> > between clear the PWM signal and disable the backlight. Add support for
-> > the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
-> > the timings.
-> >
-> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> 
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+- FBINFO_CAN_FORCE_OUTPUT has been a lie ever since we nerfed&removed
+  the entire panic handling code in our fbdev emulation. We might
+  restore kms panic output, but not through the bazillion of legacy
+  code layers called fbdev/fbcon, there's just no way to make that
+  work safely.
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+- With the module check change FBINFO_DEFAULT is always 0, so can be
+  removed too.
 
-Best regards,
-Jingoo Han
+That removes another change to cargo-cult stuff in kms drivers, yay!
 
-> 
-> 
-> > ---
-> > Changes since v3:
-> >   - Use two named members instead of pwm_delay[] (Daniel and Pavel)
-> >   - Use msleep instead of usleep_range. (Pavel)
-> > Changes since v2:
-> >   - Move the pwm/enable sequence to another patch (Thierry Reding)
-> > Changes since v1:
-> >   - As suggested by Daniel Thompson
-> >     - Do not assume power-on delay and power-off delay will be the same
-> >   - Move the check of dt property to the parse dt function.
-> >
-> >   drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
-> >   include/linux/pwm_backlight.h    |  2 ++
-> >   2 files changed, 21 insertions(+)
-> >
-> > diff --git a/drivers/video/backlight/pwm_bl.c
-> b/drivers/video/backlight/pwm_bl.c
-> > index 909a686..6cf6109 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -10,6 +10,7 @@
-> >    * published by the Free Software Foundation.
-> >    */
-> >
-> > +#include <linux/delay.h>
-> >   #include <linux/gpio/consumer.h>
-> >   #include <linux/gpio.h>
-> >   #include <linux/module.h>
-> > @@ -35,6 +36,8 @@ struct pwm_bl_data {
-> >   	struct gpio_desc	*enable_gpio;
-> >   	unsigned int		scale;
-> >   	bool			legacy;
-> > +	unsigned int		post_pwm_on_delay;
-> > +	unsigned int		pwm_off_delay;
-> >   	int			(*notify)(struct device *,
-> >   					  int brightness);
-> >   	void			(*notify_after)(struct device *,
-> > @@ -56,6 +59,9 @@ static void pwm_backlight_power_on(struct pwm_bl_data
-> *pb, int brightness)
-> >
-> >   	pwm_enable(pb->pwm);
-> >
-> > +	if (pb->post_pwm_on_delay)
-> > +		msleep(pb->post_pwm_on_delay);
-> > +
-> >   	if (pb->enable_gpio)
-> >   		gpiod_set_value_cansleep(pb->enable_gpio, 1);
-> >
-> > @@ -70,6 +76,9 @@ static void pwm_backlight_power_off(struct pwm_bl_data
-> *pb)
-> >   	if (pb->enable_gpio)
-> >   		gpiod_set_value_cansleep(pb->enable_gpio, 0);
-> >
-> > +	if (pb->pwm_off_delay)
-> > +		msleep(pb->pwm_off_delay);
-> > +
-> >   	pwm_config(pb->pwm, 0, pb->period);
-> >   	pwm_disable(pb->pwm);
-> >
-> > @@ -175,6 +184,14 @@ static int pwm_backlight_parse_dt(struct device
-> *dev,
-> >   		data->max_brightness--;
-> >   	}
-> >
-> > +	/*
-> > +	 * These values are optional and set as 0 by default, the out
-> values
-> > +	 * are modified only if a valid u32 value can be decoded.
-> > +	 */
-> > +	of_property_read_u32(node, "post-pwm-on-delay-ms",
-> > +			     &data->post_pwm_on_delay);
-> > +	of_property_read_u32(node, "pwm-off-delay-ms", &data-
-> >pwm_off_delay);
-> > +
-> >   	data->enable_gpio = -EINVAL;
-> >   	return 0;
-> >   }
-> > @@ -273,6 +290,8 @@ static int pwm_backlight_probe(struct
-> platform_device *pdev)
-> >   	pb->exit = data->exit;
-> >   	pb->dev = &pdev->dev;
-> >   	pb->enabled = false;
-> > +	pb->post_pwm_on_delay = data->post_pwm_on_delay;
-> > +	pb->pwm_off_delay = data->pwm_off_delay;
-> >
-> >   	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
-> >   						  GPIOD_ASIS);
-> > diff --git a/include/linux/pwm_backlight.h
-> b/include/linux/pwm_backlight.h
-> > index efdd922..62f59c4 100644
-> > --- a/include/linux/pwm_backlight.h
-> > +++ b/include/linux/pwm_backlight.h
-> > @@ -13,6 +13,8 @@ struct platform_pwm_backlight_data {
-> >   	unsigned int lth_brightness;
-> >   	unsigned int pwm_period_ns;
-> >   	unsigned int *levels;
-> > +	unsigned int post_pwm_on_delay;
-> > +	unsigned int pwm_off_delay;
-> >   	/* TODO remove once all users are switched to gpiod_* API */
-> >   	int enable_gpio;
-> >   	int (*init)(struct device *dev);
-> >
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+---
+ drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c            | 1 -
+ drivers/gpu/drm/armada/armada_fbdev.c             | 1 -
+ drivers/gpu/drm/ast/ast_fb.c                      | 1 -
+ drivers/gpu/drm/bochs/bochs_fbdev.c               | 1 -
+ drivers/gpu/drm/cirrus/cirrus_fbdev.c             | 1 -
+ drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c | 1 -
+ drivers/gpu/drm/i915/intel_fbdev.c                | 1 -
+ drivers/gpu/drm/mgag200/mgag200_fb.c              | 1 -
+ drivers/gpu/drm/msm/msm_fbdev.c                   | 1 -
+ drivers/gpu/drm/omapdrm/omap_fbdev.c              | 1 -
+ drivers/gpu/drm/qxl/qxl_fb.c                      | 1 -
+ drivers/gpu/drm/radeon/radeon_fb.c                | 1 -
+ drivers/gpu/drm/udl/udl_fb.c                      | 1 -
+ drivers/gpu/drm/virtio/virtgpu_fb.c               | 1 -
+ drivers/gpu/drm/vmwgfx/vmwgfx_fb.c                | 1 -
+ 15 files changed, 15 deletions(-)
 
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
+index c0d8c6ff6380..1c57fefc364c 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c
+@@ -245,7 +245,6 @@ static int amdgpufb_create(struct drm_fb_helper *helper,
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &amdgpufb_ops;
+ 
+ 	tmp = amdgpu_bo_gpu_offset(abo) - adev->mc.vram_start;
+diff --git a/drivers/gpu/drm/armada/armada_fbdev.c b/drivers/gpu/drm/armada/armada_fbdev.c
+index 602dfead8eef..5b479b0ed06c 100644
+--- a/drivers/gpu/drm/armada/armada_fbdev.c
++++ b/drivers/gpu/drm/armada/armada_fbdev.c
+@@ -81,7 +81,6 @@ static int armada_fb_create(struct drm_fb_helper *fbh,
+ 
+ 	strlcpy(info->fix.id, "armada-drmfb", sizeof(info->fix.id));
+ 	info->par = fbh;
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &armada_fb_ops;
+ 	info->fix.smem_start = obj->phys_addr;
+ 	info->fix.smem_len = obj->obj.size;
+diff --git a/drivers/gpu/drm/ast/ast_fb.c b/drivers/gpu/drm/ast/ast_fb.c
+index 4ad4acd0ccab..53ca6d099234 100644
+--- a/drivers/gpu/drm/ast/ast_fb.c
++++ b/drivers/gpu/drm/ast/ast_fb.c
+@@ -231,7 +231,6 @@ static int astfb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "astdrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &astfb_ops;
+ 
+ 	info->apertures->ranges[0].base = pci_resource_start(dev->pdev, 0);
+diff --git a/drivers/gpu/drm/bochs/bochs_fbdev.c b/drivers/gpu/drm/bochs/bochs_fbdev.c
+index 49d5a2b7d630..14eb8d0d5a00 100644
+--- a/drivers/gpu/drm/bochs/bochs_fbdev.c
++++ b/drivers/gpu/drm/bochs/bochs_fbdev.c
+@@ -118,7 +118,6 @@ static int bochsfb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "bochsdrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &bochsfb_ops;
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+diff --git a/drivers/gpu/drm/cirrus/cirrus_fbdev.c b/drivers/gpu/drm/cirrus/cirrus_fbdev.c
+index 7fa58eeadc9d..c69586163d92 100644
+--- a/drivers/gpu/drm/cirrus/cirrus_fbdev.c
++++ b/drivers/gpu/drm/cirrus/cirrus_fbdev.c
+@@ -215,7 +215,6 @@ static int cirrusfb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "cirrusdrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &cirrusfb_ops;
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+diff --git a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
+index f5ac80daeef2..9740eed9231a 100644
+--- a/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
++++ b/drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c
+@@ -131,7 +131,6 @@ static int hibmc_drm_fb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "hibmcdrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &hibmc_drm_fb_ops;
+ 
+ 	drm_fb_helper_fill_fix(info, hi_fbdev->fb->fb.pitches[0],
+diff --git a/drivers/gpu/drm/i915/intel_fbdev.c b/drivers/gpu/drm/i915/intel_fbdev.c
+index 5536591d3da0..b953365a3eec 100644
+--- a/drivers/gpu/drm/i915/intel_fbdev.c
++++ b/drivers/gpu/drm/i915/intel_fbdev.c
+@@ -232,7 +232,6 @@ static int intelfb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "inteldrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &intelfb_ops;
+ 
+ 	/* setup aperture base/size for vesafb takeover */
+diff --git a/drivers/gpu/drm/mgag200/mgag200_fb.c b/drivers/gpu/drm/mgag200/mgag200_fb.c
+index 5d3b1fac906f..e94d78a32fe0 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_fb.c
++++ b/drivers/gpu/drm/mgag200/mgag200_fb.c
+@@ -210,7 +210,6 @@ static int mgag200fb_create(struct drm_fb_helper *helper,
+ 
+ 	strcpy(info->fix.id, "mgadrmfb");
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &mgag200fb_ops;
+ 
+ 	/* setup aperture base/size for vesafb takeover */
+diff --git a/drivers/gpu/drm/msm/msm_fbdev.c b/drivers/gpu/drm/msm/msm_fbdev.c
+index 5ecf4ff9a059..9c00fedfc741 100644
+--- a/drivers/gpu/drm/msm/msm_fbdev.c
++++ b/drivers/gpu/drm/msm/msm_fbdev.c
+@@ -143,7 +143,6 @@ static int msm_fbdev_create(struct drm_fb_helper *helper,
+ 	helper->fb = fb;
+ 
+ 	fbi->par = helper;
+-	fbi->flags = FBINFO_DEFAULT;
+ 	fbi->fbops = &msm_fb_ops;
+ 
+ 	strcpy(fbi->fix.id, "msm");
+diff --git a/drivers/gpu/drm/omapdrm/omap_fbdev.c b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+index daf81a0a2899..9273118040b7 100644
+--- a/drivers/gpu/drm/omapdrm/omap_fbdev.c
++++ b/drivers/gpu/drm/omapdrm/omap_fbdev.c
+@@ -184,7 +184,6 @@ static int omap_fbdev_create(struct drm_fb_helper *helper,
+ 	helper->fb = fb;
+ 
+ 	fbi->par = helper;
+-	fbi->flags = FBINFO_DEFAULT;
+ 	fbi->fbops = &omap_fb_ops;
+ 
+ 	strcpy(fbi->fix.id, MODULE_NAME);
+diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
+index 69e7359b562a..844c4a31ca13 100644
+--- a/drivers/gpu/drm/qxl/qxl_fb.c
++++ b/drivers/gpu/drm/qxl/qxl_fb.c
+@@ -275,7 +275,6 @@ static int qxlfb_create(struct qxl_fbdev *qfbdev,
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &qxlfb_ops;
+ 
+ 	/*
+diff --git a/drivers/gpu/drm/radeon/radeon_fb.c b/drivers/gpu/drm/radeon/radeon_fb.c
+index 356ad90a5238..e141fcd5e8e1 100644
+--- a/drivers/gpu/drm/radeon/radeon_fb.c
++++ b/drivers/gpu/drm/radeon/radeon_fb.c
+@@ -264,7 +264,6 @@ static int radeonfb_create(struct drm_fb_helper *helper,
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &radeonfb_ops;
+ 
+ 	tmp = radeon_bo_gpu_offset(rbo) - rdev->mc.vram_start;
+diff --git a/drivers/gpu/drm/udl/udl_fb.c b/drivers/gpu/drm/udl/udl_fb.c
+index 4a6500362564..a5c54dc60def 100644
+--- a/drivers/gpu/drm/udl/udl_fb.c
++++ b/drivers/gpu/drm/udl/udl_fb.c
+@@ -393,7 +393,6 @@ static int udlfb_create(struct drm_fb_helper *helper,
+ 	info->fix.smem_len = size;
+ 	info->fix.smem_start = (unsigned long)ufbdev->ufb.obj->vmapping;
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_CAN_FORCE_OUTPUT;
+ 	info->fbops = &udlfb_ops;
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 	drm_fb_helper_fill_var(info, &ufbdev->helper, sizes->fb_width, sizes->fb_height);
+diff --git a/drivers/gpu/drm/virtio/virtgpu_fb.c b/drivers/gpu/drm/virtio/virtgpu_fb.c
+index 33df067b11c1..046e28b69d99 100644
+--- a/drivers/gpu/drm/virtio/virtgpu_fb.c
++++ b/drivers/gpu/drm/virtio/virtgpu_fb.c
+@@ -273,7 +273,6 @@ static int virtio_gpufb_create(struct drm_fb_helper *helper,
+ 	vfbdev->helper.fb = fb;
+ 
+ 	strcpy(info->fix.id, "virtiodrmfb");
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &virtio_gpufb_ops;
+ 	info->pixmap.flags = FB_PIXMAP_SYSTEM;
+ 
+diff --git a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
+index 6f4cb4678cbc..d23a18aae476 100644
+--- a/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
++++ b/drivers/gpu/drm/vmwgfx/vmwgfx_fb.c
+@@ -779,7 +779,6 @@ int vmw_fb_init(struct vmw_private *vmw_priv)
+ 	info->screen_base = (char __iomem *)par->vmalloc;
+ 	info->screen_size = fb_size;
+ 
+-	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &vmw_fb_ops;
+ 
+ 	/* 24 depth per default */
+-- 
+2.13.2
 

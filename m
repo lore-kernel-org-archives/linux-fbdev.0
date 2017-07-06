@@ -1,32 +1,40 @@
-From: David Lechner <david@lechnology.com>
-Date: Mon, 31 Jul 2017 20:43:38 +0000
-Subject: Re: [PATCH v2 0/2] Invert margin colors when terminal is inverted
-Message-Id: <80ad0768-069f-a7e7-2f4f-c0ed6b58b910@lechnology.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Thu, 06 Jul 2017 12:57:34 +0000
+Subject: [PATCH 3/4] drm/qxl: Drop fbdev hwaccel flags
+Message-Id: <20170706125735.28299-4-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501528185-9976-1-git-send-email-david@lechnology.com>
- <20170731203025.6a59fdbd@alans-desktop>
-In-Reply-To: <20170731203025.6a59fdbd@alans-desktop>
+References: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, virtualization@lists.linux-foundation.org, Daniel Vetter <daniel.vetter@intel.com>, Dave Airlie <airlied@redhat.com>
 
-On 07/31/2017 02:30 PM, Alan Cox wrote:
-> On Mon, 31 Jul 2017 14:09:43 -0500
-> David Lechner <david@lechnology.com> wrote:
->=20
->> This is v2 of "fbcon: Use background color for margins=E2=80=8B"[1].
->>
->> It turns out that using the text background color was not a good choice.=
- So,
->> I've started over.
->=20
-> Can you explain why making the margins simply match the border colour
-> (when possible) isn't a better option ? They are after all simply
-> software extensions to the border.
->=20
+It's not accelarated, just system memory. Note we don't even need to
+set the default flag since that's now always 0.
 
-So, basically, you are proposing that it would be better to add a module=20
-parameter to select the margin color? That does sound like a better=20
-option to me.
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Gerd Hoffmann <kraxel@redhat.com>
+Cc: virtualization@lists.linux-foundation.org
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+---
+ drivers/gpu/drm/qxl/qxl_fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/qxl/qxl_fb.c b/drivers/gpu/drm/qxl/qxl_fb.c
+index 573e7e9a5f98..69e7359b562a 100644
+--- a/drivers/gpu/drm/qxl/qxl_fb.c
++++ b/drivers/gpu/drm/qxl/qxl_fb.c
+@@ -275,7 +275,7 @@ static int qxlfb_create(struct qxl_fbdev *qfbdev,
+ 
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 
+-	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT;
++	info->flags = FBINFO_DEFAULT;
+ 	info->fbops = &qxlfb_ops;
+ 
+ 	/*
+-- 
+2.13.2
+

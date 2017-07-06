@@ -1,101 +1,65 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 06 Jul 2017 09:55:01 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Thu, 06 Jul 2017 09:57:26 +0000
 Subject: Re: [PATCH v2 2/4] pwm-backlight: add support for pwm-delay-us property
-Message-Id: <20170706095501.GA8690@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="a8Wt8u1KmwUX3Y2C"
+Message-Id: <429fe130-4744-2846-185f-2d74bc20e68c@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170630112109.13785-1-enric.balletbo@collabora.com>
  <20170630112109.13785-2-enric.balletbo@collabora.com>
- <20170706080132.GL16144@ulmo.fritz.box>
- <20170706091231.GA6741@amd>
+ <20170706080132.GL16144@ulmo.fritz.box> <20170706091231.GA6741@amd>
  <ac8bd991-be3c-c090-8e71-8f901b0a45a7@linaro.org>
  <20170706092448.GQ16144@ulmo.fritz.box>
 In-Reply-To: <20170706092448.GQ16144@ulmo.fritz.box>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, huang lin <hl@rock-chips.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, huang lin <hl@rock-chips.com>
 
-
---a8Wt8u1KmwUX3Y2C
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi!
-
-On Thu 2017-07-06 11:24:48, Thierry Reding wrote:
+On 06/07/17 10:24, Thierry Reding wrote:
 > On Thu, Jul 06, 2017 at 10:17:18AM +0100, Daniel Thompson wrote:
-> > On 06/07/17 10:12, Pavel Machek wrote:
-> > > On Thu 2017-07-06 10:01:32, Thierry Reding wrote:
-> > > > On Fri, Jun 30, 2017 at 01:21:07PM +0200, Enric Balletbo i Serra wr=
-ote:
-> > > > > From: huang lin <hl@rock-chips.com>
-> > > > >=20
-> > > > > Some panels (i.e. N116BGE-L41), in their power sequence specifica=
-tions,
-> > > > > request a delay between set the PWM signal and enable the backlig=
-ht and
-> > > > > between clear the PWM signal and disable the backlight. Add suppo=
-rt for
-> > > > > the new pwm-delay-us property to meet the timing.
-> > > > >=20
-> > > > > Note that this patch inverts current sequence. Before this patch =
-the
-> > > > > enable signal was set before the PWM signal and vice-versa on pow=
-er off.
-> > > > >=20
-> > > > > I assumed that this sequence was wrong, at least it is on differe=
-nt panel
-> > > > > datasheets that I checked, so I inverted the sequence to follow:
-> > > > >=20
-> > > > >    On power on, set the PWM signal, wait, and set the LED_EN sign=
-al.
-> > > > >    On power off, clear the LED_EN signal, wait, and stop the PWM =
-signal.
-> > > >=20
-> > > > I think this should be two separate patches to make it easier to re=
-vert
-> > > > the inverted sequence should it prove to regress on other panels.
-> > >=20
-> > > Don't make this overly complex. This is trivial. No need to split it
-> > > into more patches.
-> >=20
-> > Agree. IMHO getting the code that reads the (optional) new parameter co=
-rrect
-> > is the best way to manage risk of regression since in most cases the de=
-lay
-> > will be skipped anyway.
->=20
+>> On 06/07/17 10:12, Pavel Machek wrote:
+>>> On Thu 2017-07-06 10:01:32, Thierry Reding wrote:
+>>>> On Fri, Jun 30, 2017 at 01:21:07PM +0200, Enric Balletbo i Serra wrote:
+>>>>> From: huang lin <hl@rock-chips.com>
+>>>>>
+>>>>> Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+>>>>> request a delay between set the PWM signal and enable the backlight and
+>>>>> between clear the PWM signal and disable the backlight. Add support for
+>>>>> the new pwm-delay-us property to meet the timing.
+>>>>>
+>>>>> Note that this patch inverts current sequence. Before this patch the
+>>>>> enable signal was set before the PWM signal and vice-versa on power off.
+>>>>>
+>>>>> I assumed that this sequence was wrong, at least it is on different panel
+>>>>> datasheets that I checked, so I inverted the sequence to follow:
+>>>>>
+>>>>>     On power on, set the PWM signal, wait, and set the LED_EN signal.
+>>>>>     On power off, clear the LED_EN signal, wait, and stop the PWM signal.
+>>>>
+>>>> I think this should be two separate patches to make it easier to revert
+>>>> the inverted sequence should it prove to regress on other panels.
+>>>
+>>> Don't make this overly complex. This is trivial. No need to split it
+>>> into more patches.
+>>
+>> Agree. IMHO getting the code that reads the (optional) new parameter correct
+>> is the best way to manage risk of regression since in most cases the delay
+>> will be skipped anyway.
+> 
 > The potential regression that I'm referring to would be caused by
 > inversing the sequence (GPIO enable -> PWM enable). That's completely
 > unrelated to the delays introduced by this patch. Many boards use this
 > driver and they've been running with the old sequence for many years.
-> Granted, it's fairly unlikely to regress, but it's still a
-> possibility.
->=20
+> Granted, it's fairly unlikely to regress, but it's still a possibility.
+> 
 > Given that both changes are logically separate, I think separate patches
 > are totally appropriate. I also don't think that this would overly
 > complicate things.
 
-Ah, yes, you are right; should be two patches.
+... and you are right on both counts!
 
-Best regards,
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Thanks for the detailed reply.
 
---a8Wt8u1KmwUX3Y2C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Daniel.
 
-iEYEARECAAYFAlleCPUACgkQMOfwapXb+vKMQQCgoxZkgvVQdmYUuMs+3XKcnbOL
-hTEAn3kRTtDk0Kcyd7EUAOqFiaGxUeb+
-=w4Mb
------END PGP SIGNATURE-----
-
---a8Wt8u1KmwUX3Y2C--

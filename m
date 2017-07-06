@@ -1,65 +1,61 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 06 Jul 2017 09:57:26 +0000
-Subject: Re: [PATCH v2 2/4] pwm-backlight: add support for pwm-delay-us property
-Message-Id: <429fe130-4744-2846-185f-2d74bc20e68c@linaro.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Thu, 06 Jul 2017 07:03:52 +0000
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Message-Id: <20170706070352.xdecvsnremwqed72@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170630112109.13785-1-enric.balletbo@collabora.com>
- <20170630112109.13785-2-enric.balletbo@collabora.com>
- <20170706080132.GL16144@ulmo.fritz.box> <20170706091231.GA6741@amd>
- <ac8bd991-be3c-c090-8e71-8f901b0a45a7@linaro.org>
- <20170706092448.GQ16144@ulmo.fritz.box>
-In-Reply-To: <20170706092448.GQ16144@ulmo.fritz.box>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170706064453.GH16144@ulmo.fritz.box>
+In-Reply-To: <20170706064453.GH16144-m5CkvRiFyV9wFLYp8hBm2A@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, huang lin <hl@rock-chips.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Wi
 
-On 06/07/17 10:24, Thierry Reding wrote:
-> On Thu, Jul 06, 2017 at 10:17:18AM +0100, Daniel Thompson wrote:
->> On 06/07/17 10:12, Pavel Machek wrote:
->>> On Thu 2017-07-06 10:01:32, Thierry Reding wrote:
->>>> On Fri, Jun 30, 2017 at 01:21:07PM +0200, Enric Balletbo i Serra wrote:
->>>>> From: huang lin <hl@rock-chips.com>
->>>>>
->>>>> Some panels (i.e. N116BGE-L41), in their power sequence specifications,
->>>>> request a delay between set the PWM signal and enable the backlight and
->>>>> between clear the PWM signal and disable the backlight. Add support for
->>>>> the new pwm-delay-us property to meet the timing.
->>>>>
->>>>> Note that this patch inverts current sequence. Before this patch the
->>>>> enable signal was set before the PWM signal and vice-versa on power off.
->>>>>
->>>>> I assumed that this sequence was wrong, at least it is on different panel
->>>>> datasheets that I checked, so I inverted the sequence to follow:
->>>>>
->>>>>     On power on, set the PWM signal, wait, and set the LED_EN signal.
->>>>>     On power off, clear the LED_EN signal, wait, and stop the PWM signal.
->>>>
->>>> I think this should be two separate patches to make it easier to revert
->>>> the inverted sequence should it prove to regress on other panels.
->>>
->>> Don't make this overly complex. This is trivial. No need to split it
->>> into more patches.
->>
->> Agree. IMHO getting the code that reads the (optional) new parameter correct
->> is the best way to manage risk of regression since in most cases the delay
->> will be skipped anyway.
-> 
-> The potential regression that I'm referring to would be caused by
-> inversing the sequence (GPIO enable -> PWM enable). That's completely
-> unrelated to the delays introduced by this patch. Many boards use this
-> driver and they've been running with the old sequence for many years.
-> Granted, it's fairly unlikely to regress, but it's still a possibility.
-> 
-> Given that both changes are logically separate, I think separate patches
-> are totally appropriate. I also don't think that this would overly
-> complicate things.
+On Thu, 06 Jul 2017, Thierry Reding wrote:
 
-... and you are right on both counts!
+> On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
+> > include/linux/i2c is not for client devices. Move the header file to a
+> > more appropriate location.
+> >=20
+> > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> > ---
+> >  arch/arm/mach-omap2/common.h            | 2 +-
+> >  arch/arm/mach-omap2/omap_twl.c          | 2 +-
+> >  drivers/gpio/gpio-twl4030.c             | 2 +-
+> >  drivers/iio/adc/twl4030-madc.c          | 2 +-
+> >  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
+> >  drivers/input/keyboard/twl4030_keypad.c | 2 +-
+> >  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
+> >  drivers/input/misc/twl4030-vibra.c      | 2 +-
+> >  drivers/mfd/twl-core.c                  | 6 +++---
+> >  drivers/mfd/twl4030-audio.c             | 2 +-
+> >  drivers/mfd/twl4030-irq.c               | 2 +-
+> >  drivers/mfd/twl4030-power.c             | 2 +-
+> >  drivers/mfd/twl6030-irq.c               | 2 +-
+> >  drivers/phy/phy-twl4030-usb.c           | 2 +-
+> >  drivers/power/supply/twl4030_charger.c  | 2 +-
+> >  drivers/pwm/pwm-twl-led.c               | 2 +-
+> >  drivers/pwm/pwm-twl.c                   | 2 +-
+> >  drivers/regulator/twl-regulator.c       | 2 +-
+> >  drivers/regulator/twl6030-regulator.c   | 2 +-
+> >  drivers/rtc/rtc-twl.c                   | 2 +-
+> >  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
+> >  drivers/video/backlight/pandora_bl.c    | 2 +-
+> >  drivers/watchdog/twl4030_wdt.c          | 2 +-
+> >  include/linux/{i2c =3D> mfd}/twl.h        | 0
+> >  sound/soc/codecs/twl4030.c              | 2 +-
+> >  25 files changed, 26 insertions(+), 26 deletions(-)
+> >  rename include/linux/{i2c =3D> mfd}/twl.h (100%)
+>=20
+> I didn't see this get applied yet, so just in case anyone was waiting
+> for me (this is trivial, so I don't think there's a need):
 
-Thanks for the detailed reply.
+You're not the last. :)
 
-
-Daniel.
-
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

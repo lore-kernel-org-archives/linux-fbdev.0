@@ -1,85 +1,68 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Mon, 17 Jul 2017 04:06:42 +0000
-Subject: Re: [PATCH] video: xilinxfb: constify fb_fix_screeninfo and fb_var_screeninfo structures
-Message-Id: <f9952748-5663-19ae-5417-aaf3c3f01d7e@embeddedor.com>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Thu, 06 Jul 2017 17:07:35 +0000
+Subject: Re: [PATCH v2 1/4] dt-bindings: pwm-backlight: add pwm-delay-us property
+Message-Id: <CAL_Jsq+xpdsqbreQpN6oTdr+X2cHNnJr8tVEzG+tgTvhZUka6g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170708012416.GA1843@embeddedgus>
- <c55390b8-c64b-e7ee-8099-5147970d5311@xilinx.com>
-In-Reply-To: <c55390b8-c64b-e7ee-8099-5147970d5311@xilinx.com>
+References: <20170630112109.13785-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170630112109.13785-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, Linux PWM List <linux-pwm@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, huang lin <hl@rock-chips.com>
 
+On Fri, Jun 30, 2017 at 6:21 AM, Enric Balletbo i Serra
+<enric.balletbo@collabora.com> wrote:
+> From: huang lin <hl@rock-chips.com>
+>
+> Add a pwm-delay-us property to specify the delay between setting an
+> initial (non-zero) PWM value and enabling the backlight, and also the
+> delay between disabling the backlight and setting PWM value to 0.
+>
+> Signed-off-by: huang lin <hl@rock-chips.com>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> ---
+> Changes since v1:
+>  - As suggested by Daniel Thompson
+>    - Do not assume power-on delay and power-off delay will be the same
+>
+> v1: https://lkml.org/lkml/2017/6/28/219
+>
+>  Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
+>  1 file changed, 6 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+> index 764db86..49b037e 100644
+> --- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+> +++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+> @@ -17,6 +17,11 @@ Optional properties:
+>                 "pwms" property (see PWM binding[0])
+>    - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+>                    and disables the backlight (see GPIO binding[1])
+> +  - pwm-delay-us: delay between setting an initial (non-zero) PWM value and
+> +                  enabling the backlight, and also the delay between disabling
+> +                  the backlight and setting PWM value to 0.
+> +                  The 1st cell is the pre-delay in micro seconds.
+> +                  The 2nd cell is the post-delay in micro seconds.
 
+pre and post imply a time before and after a certain event, but these
+are for 2 different events. These are more like an enable/on delay and
+disable/off delay which probably should be separate properties. What
+happens when we need the opposite sequence or a different sequence?
+Maybe some panel requires the PWM to be 0 until some time after
+enabling.
 
-On 07/10/2017 02:29 AM, Michal Simek wrote:
-> On 8.7.2017 03:24, Gustavo A. R. Silva wrote:
->> These structures are only used to copy into other structures,
->> so declare them as const.
->>
->> This issue was detected using Coccinelle and the following semantic patch:
->>
->> @r disable optional_qualifier@
->> identifier i;
->> position p;
->> @@
->> static struct fb_fix_screeninfo i@p = { ... };
->>
->> @ok@
->> identifier r.i;
->> expression e;
->> position p;
->> @@
->> e = i@p
->>
->> @bad@
->> position p != {r.p,ok.p};
->> identifier r.i;
->> struct fb_fix_screeninfo e;
->> @@
->> e@i@p
->>
->> @depends on !bad disable optional_qualifier@
->> identifier r.i;
->> @@
->> static
->> +const
->>   struct fb_fix_screeninfo i = { ... };
->>
->> The semantic patch for fb_var_screeninfo is analogous.
->>
->> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
->> ---
->>   drivers/video/fbdev/xilinxfb.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
->> index 17dc119..0bda18e 100644
->> --- a/drivers/video/fbdev/xilinxfb.c
->> +++ b/drivers/video/fbdev/xilinxfb.c
->> @@ -110,14 +110,14 @@ static struct xilinxfb_platform_data xilinx_fb_default_pdata = {
->>   /*
->>    * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
->>    */
->> -static struct fb_fix_screeninfo xilinx_fb_fix = {
->> +static const struct fb_fix_screeninfo xilinx_fb_fix = {
->>   	.id =		"Xilinx",
->>   	.type =		FB_TYPE_PACKED_PIXELS,
->>   	.visual =	FB_VISUAL_TRUECOLOR,
->>   	.accel =	FB_ACCEL_NONE
->>   };
->>   
->> -static struct fb_var_screeninfo xilinx_fb_var = {
->> +static const struct fb_var_screeninfo xilinx_fb_var = {
->>   	.bits_per_pixel =	BITS_PER_PIXEL,
->>   
->>   	.red =		{ RED_SHIFT, 8, 0 },
->>
-> Acked-by: Michal Simek <michal.simek@xilinx.com>
+I don't understand why you even need a post delay. The PWM can be set
+to 0 while enabled, right? So if the PWM is set to 0 while enabled and
+then disable the backlight, then there's no delay. Plus this doesn't
+make much sense to me electrically either. The PWM duty cycle is going
+to be completely async to the enable line change. The PWM state could
+go from 1 to 0 at any point in time relative to the enable line
+change.
 
-Thank you, Michal.
+These issues are the problem with generic bindings. Adding 1 property
+is no big deal, but then what happens with the next variation. These
+timing constraints need to be able to be implied by the panel's
+compatible.
 
--- 
-Gustavo A. R. Silva
-
+Rob

@@ -1,36 +1,72 @@
-From: Lynn Lei <lynnl.yet@gmail.com>
-Date: Tue, 04 Jul 2017 15:22:42 +0000
-Subject: [PATCH 1/4] video: fbdev: sm712fb.c: using __func__ macro for pr_debug
-Message-Id: <20170704152242.GA23851@lynnl.yet>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Thu, 06 Jul 2017 12:57:31 +0000
+Subject: [PATCH 0/4] Make fbcon a built-time depency for fbdev, take 2
+Message-Id: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, Intel Graphics Development <intel-gfx@lists.freedesktop.org>
 
-Inside function sm7xx_vga_setup()
+Hi all,
 
-Using a generic function macro for debug information display
+So the original simple hack failed and we need to do a bit more. This time
+tested including depmod for all combos. And since I had the pleasure to read
+more fbdev code, 3 simple patches on top to clean up some more.
 
-Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
----
- drivers/video/fbdev/sm712fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Cheers, Daniel
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 73cb4ffff3c5..4d3684333b7b 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -785,7 +785,7 @@ static void __init sm7xx_vga_setup(char *options)
- 	smtc_scr_info.lfb_height = 0;
- 	smtc_scr_info.lfb_depth = 0;
- 
--	pr_debug("sm7xx_vga_setup = %s\n", options);
-+	pr_debug("%s = %s\n", __func__, options);
- 
- 	for (i = 0; i < ARRAY_SIZE(vesa_mode_table); i++) {
- 		if (strstr(options, vesa_mode_table[i].index)) {
+Daniel Vetter (4):
+  fbcon: Make fbcon a built-time depency for fbdev
+  fbdev: Nuke FBINFO_MODULE
+  drm/qxl: Drop fbdev hwaccel flags
+  drm/<drivers>: Drop fbdev info flags
+
+ drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c               |  1 -
+ drivers/gpu/drm/armada/armada_fbdev.c                |  1 -
+ drivers/gpu/drm/ast/ast_fb.c                         |  1 -
+ drivers/gpu/drm/bochs/bochs_fbdev.c                  |  1 -
+ drivers/gpu/drm/cirrus/cirrus_fbdev.c                |  1 -
+ drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c    |  1 -
+ drivers/gpu/drm/i915/intel_fbdev.c                   |  1 -
+ drivers/gpu/drm/mgag200/mgag200_fb.c                 |  1 -
+ drivers/gpu/drm/msm/msm_fbdev.c                      |  1 -
+ drivers/gpu/drm/omapdrm/omap_fbdev.c                 |  1 -
+ drivers/gpu/drm/qxl/qxl_fb.c                         |  1 -
+ drivers/gpu/drm/radeon/radeon_fb.c                   |  1 -
+ drivers/gpu/drm/udl/udl_fb.c                         |  1 -
+ drivers/gpu/drm/virtio/virtgpu_fb.c                  |  1 -
+ drivers/gpu/drm/vmwgfx/vmwgfx_fb.c                   |  1 -
+ drivers/video/console/Kconfig                        |  2 +-
+ drivers/video/console/Makefile                       |  8 --------
+ drivers/video/fbdev/core/Makefile                    | 11 +++++++++++
+ drivers/video/{console => fbdev/core}/bitblit.c      |  4 ----
+ drivers/video/{console => fbdev/core}/fbcon.c        | 15 ++++-----------
+ drivers/video/{console => fbdev/core}/fbcon.h        |  0
+ drivers/video/{console => fbdev/core}/fbcon_ccw.c    |  4 ----
+ drivers/video/{console => fbdev/core}/fbcon_cw.c     |  4 ----
+ drivers/video/{console => fbdev/core}/fbcon_rotate.c |  4 ----
+ drivers/video/{console => fbdev/core}/fbcon_rotate.h |  0
+ drivers/video/{console => fbdev/core}/fbcon_ud.c     |  4 ----
+ drivers/video/fbdev/core/fbmem.c                     | 10 ++++++++--
+ drivers/video/{console => fbdev/core}/softcursor.c   |  4 ----
+ drivers/video/{console => fbdev/core}/tileblit.c     |  5 -----
+ include/linux/fb.h                                   |  7 +------
+ include/linux/fbcon.h                                | 12 ++++++++++++
+ 31 files changed, 37 insertions(+), 72 deletions(-)
+ rename drivers/video/{console => fbdev/core}/bitblit.c (98%)
+ rename drivers/video/{console => fbdev/core}/fbcon.c (99%)
+ rename drivers/video/{console => fbdev/core}/fbcon.h (100%)
+ rename drivers/video/{console => fbdev/core}/fbcon_ccw.c (98%)
+ rename drivers/video/{console => fbdev/core}/fbcon_cw.c (98%)
+ rename drivers/video/{console => fbdev/core}/fbcon_rotate.c (95%)
+ rename drivers/video/{console => fbdev/core}/fbcon_rotate.h (100%)
+ rename drivers/video/{console => fbdev/core}/fbcon_ud.c (98%)
+ rename drivers/video/{console => fbdev/core}/softcursor.c (93%)
+ rename drivers/video/{console => fbdev/core}/tileblit.c (96%)
+ create mode 100644 include/linux/fbcon.h
+
 -- 
 2.13.2
 

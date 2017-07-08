@@ -1,46 +1,75 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:43 +0000
-Subject: [PATCH 18/28] video: fbdev: mb862xx: constify pci_device_id.
-Message-Id: <1500572393-18844-19-git-send-email-arvind.yadav.cs@gmail.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Date: Sat, 08 Jul 2017 01:09:56 +0000
+Subject: [PATCH] video/mbx: constify fb_fix_screeninfo and fb_var_screeninfo structures
+Message-Id: <20170708010956.GA22914@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+These structures are only used to copy into other structures,
+so declare them as const.
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-   7326	   1320	      0	   8646	   21c6	fbdev/mb862xx/mb862xxfbdrv.o
+This issue was detected using Coccinelle and the following semantic patch:
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-   7454	   1192	      0	   8646	   21c6	fbdev/mb862xx/mb862xxfbdrv.o
+@r disable optional_qualifier@
+identifier i;
+position p;
+@@
+static struct fb_fix_screeninfo i@p = { ... };
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+@ok@
+identifier r.i;
+expression e;
+position p;
+@@
+e = i@p
+
+@bad@
+position p != {r.p,ok.p};
+identifier r.i;
+struct fb_fix_screeninfo e;
+@@
+e@i@p
+
+@depends on !bad disable optional_qualifier@
+identifier r.i;
+@@
+static
++const
+ struct fb_fix_screeninfo i = { ... };
+
+The semantic patch for fb_var_screeninfo is analogous.
+
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 ---
- drivers/video/fbdev/mb862xx/mb862xxfbdrv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/mbx/mbxfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-index f9ec5c0..cd37252 100644
---- a/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-+++ b/drivers/video/fbdev/mb862xx/mb862xxfbdrv.c
-@@ -982,7 +982,7 @@ static inline int mb862xx_pci_gdc_init(struct mb862xxfb_par *par)
- #define CHIP_ID(id)	\
- 	{ PCI_DEVICE(PCI_VENDOR_ID_FUJITSU_LIMITED, id) }
+diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
+index 698df954..539b85d 100644
+--- a/drivers/video/fbdev/mbx/mbxfb.c
++++ b/drivers/video/fbdev/mbx/mbxfb.c
+@@ -79,7 +79,7 @@ struct mbxfb_info {
  
--static struct pci_device_id mb862xx_pci_tbl[] = {
-+static const struct pci_device_id mb862xx_pci_tbl[] = {
- 	/* MB86295/MB86296 */
- 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALP),
- 	CHIP_ID(PCI_DEVICE_ID_FUJITSU_CORALPA),
+ };
+ 
+-static struct fb_var_screeninfo mbxfb_default = {
++static const struct fb_var_screeninfo mbxfb_default = {
+ 	.xres = 640,
+ 	.yres = 480,
+ 	.xres_virtual = 640,
+@@ -102,7 +102,7 @@ static struct fb_var_screeninfo mbxfb_default = {
+ 	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
+ };
+ 
+-static struct fb_fix_screeninfo mbxfb_fix = {
++static const struct fb_fix_screeninfo mbxfb_fix = {
+ 	.id = "MBX",
+ 	.type = FB_TYPE_PACKED_PIXELS,
+ 	.visual = FB_VISUAL_TRUECOLOR,
 -- 
-2.7.4
+2.5.0
 

@@ -1,46 +1,75 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:35 +0000
-Subject: [PATCH 10/28] video: fbdev: via: constify pci_device_id.
-Message-Id: <1500572393-18844-11-git-send-email-arvind.yadav.cs@gmail.com>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Date: Sat, 08 Jul 2017 01:15:52 +0000
+Subject: [PATCH] video/chips: constify fb_fix_screeninfo and fb_var_screeninfo structures
+Message-Id: <20170708011552.GA26138@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+These structures are only used to copy into other structures,
+so declare them as const.
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-   3856	    968	    128	   4952	   1358	video/fbdev/via/via-core.o
+This issue was detected using Coccinelle and the following semantic patch:
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-   4304	    520	    128	   4952	   1358	video/fbdev/via/via-core.o
+@r disable optional_qualifier@
+identifier i;
+position p;
+@@
+static struct fb_fix_screeninfo i@p = { ... };
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+@ok@
+identifier r.i;
+expression e;
+position p;
+@@
+e = i@p
+
+@bad@
+position p != {r.p,ok.p};
+identifier r.i;
+struct fb_fix_screeninfo e;
+@@
+e@i@p
+
+@depends on !bad disable optional_qualifier@
+identifier r.i;
+@@
+static
++const
+ struct fb_fix_screeninfo i = { ... };
+
+The semantic patch for fb_var_screeninfo is analogous.
+
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 ---
- drivers/video/fbdev/via/via-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/chipsfb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
-index 1d28e16..77774d8 100644
---- a/drivers/video/fbdev/via/via-core.c
-+++ b/drivers/video/fbdev/via/via-core.c
-@@ -724,7 +724,7 @@ static void via_pci_remove(struct pci_dev *pdev)
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index 59abdc6..f103665 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -292,7 +292,7 @@ static void chips_hw_init(void)
+ 		write_fr(chips_init_fr[i].addr, chips_init_fr[i].data);
  }
  
+-static struct fb_fix_screeninfo chipsfb_fix = {
++static const struct fb_fix_screeninfo chipsfb_fix = {
+ 	.id =		"C&T 65550",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_PSEUDOCOLOR,
+@@ -309,7 +309,7 @@ static struct fb_fix_screeninfo chipsfb_fix = {
+ 	.smem_len =	0x100000,	/* 1MB */
+ };
  
--static struct pci_device_id via_pci_table[] = {
-+static const struct pci_device_id via_pci_table[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_CLE266_DID),
- 	  .driver_data = UNICHROME_CLE266 },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_K400_DID),
+-static struct fb_var_screeninfo chipsfb_var = {
++static const struct fb_var_screeninfo chipsfb_var = {
+ 	.xres = 800,
+ 	.yres = 600,
+ 	.xres_virtual = 800,
 -- 
-2.7.4
+2.5.0
 

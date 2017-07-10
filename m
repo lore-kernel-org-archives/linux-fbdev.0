@@ -1,30 +1,47 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 31 Jul 2017 13:29:00 +0000
-Subject: Re: [PATCH v5 05/14] MIPS: ingenic: Enable pinctrl for all ingenic SoCs
-Message-Id: <CACRpkdZKAR-Ya-j-g=uyb24s1KqyEhbKOxzi=BdAaa29L1BO+w@mail.gmail.com>
+From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Date: Mon, 10 Jul 2017 14:48:55 +0000
+Subject: [PATCH] fbdev: make get_fb_unmapped_area depends of !MMU
+Message-Id: <1499698135-24526-1-git-send-email-benjamin.gaignard@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170402204244.14216-2-paul@crapouillou.net> <20170428200824.10906-1-paul@crapouillou.net>
- <20170428200824.10906-6-paul@crapouillou.net> <CACRpkdauf5c2i4o5i8QY8YHPNjizkvTu6kAbnquWiP_=v2=KdQ@mail.gmail.com>
- <1499013301.1477.0@smtp.crapouillou.net> <CACRpkdb=Zti+C+2me_WP0=m6z12G5Kz+W_cPcZsw=CVzBO_wAg@mail.gmail.com>
- <20170703135555.GA686@linux-mips.org>
-In-Reply-To: <20170703135555.GA686@linux-mips.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Paul Cercueil <paul@crapouillou.net>, Alexandre Courbot <gnurou@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Boris Brezillon <boris.brezillon@free-electrons.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maarten ter Huurne <maarten@treewalker.org>, Lars-Peter Clausen <lars@metafoo.de>, Paul Burton <paul.burton@imgtec.com>, James Hogan <james.hogan@imgtec.com>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux MIPS <linux-mips@linux-mips.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, noralf@tronnes.org, dri-devel@lists.freedesktop.org, emil.l.velikov@gmail.com, yannick.fertre@st.com
+Cc: Benjamin Gaignard <benjamin.gaignard@linaro.org>
 
-On Mon, Jul 3, 2017 at 3:55 PM, Ralf Baechle <ralf@linux-mips.org> wrote:
-> On Mon, Jul 03, 2017 at 11:07:09AM +0200, Linus Walleij wrote:
->
->> > There has been no word from Ralf, is this going into 4.13?
->
-> Acked-by: Ralf Baechle <ralf@linux-mips.org>
->
-> for the whole series.
+Even if CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA flag is selected
+do not compile and use get_fb_unmapped_area() if CONFIG_MMU is
+also set. This will avoid mmap errors when compiling multi
+architectures at same time.
 
-Thanks Ralf, I missed to add this in, but everything seems to have
-landed smoothly in v4.13.
+Signed-off-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 069fe79..16b5aef 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1492,7 +1492,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA
++#if defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA) && !defined(CONFIG_MMU)
+ unsigned long get_fb_unmapped_area(struct file *filp,
+ 				   unsigned long addr, unsigned long len,
+ 				   unsigned long pgoff, unsigned long flags)
+@@ -1519,7 +1519,8 @@ unsigned long get_fb_unmapped_area(struct file *filp,
+ 	.open =		fb_open,
+ 	.release =	fb_release,
+ #if defined(HAVE_ARCH_FB_UNMAPPED_AREA) || \
+-    defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA)
++	(defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA) && \\
++	 !defined(CONFIG_MMU))
+ 	.get_unmapped_area = get_fb_unmapped_area,
+ #endif
+ #ifdef CONFIG_FB_DEFERRED_IO
+-- 
+1.9.1
+

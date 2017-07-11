@@ -1,23 +1,46 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Thu, 27 Jul 2017 12:03:57 +0000
-Subject: Re: [PATCHv2 0/2] backlight: Add TI LMU backlight driver
-Message-Id: <20170727120356.GG10026@atomide.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Tue, 11 Jul 2017 21:03:01 +0000
+Subject: Re: [PATCH RESEND] staging: sm750fb: avoid conflicting vesafb
+Message-Id: <20170711210301.GA4515@sudip-laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170717133956.20691-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20170717133956.20691-1-sebastian.reichel@collabora.co.uk>
+References: <1498856263-4544-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1498856263-4544-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Teddy Wang <teddy.wang@siliconmotion.com>, stable@vger.kernel.org
 
-* Sebastian Reichel <sebastian.reichel@collabora.co.uk> [170717 06:40]:
-> Hi,
+Hi Greg,
+
+On Fri, Jun 30, 2017 at 09:57:43PM +0100, Sudip Mukherjee wrote:
+> From: Teddy Wang <teddy.wang@siliconmotion.com>
 > 
-> This adds backlight support for TI LMU devices. I updated the
-> patches from Milo Kim according to the comments from Daniel
-> Thompson and tested the result on Droid 4.
+> If vesafb is enabled in the config then /dev/fb0 is created by vesa
+> and this sm750 driver gets fb1, fb2. But we need to be fb0 and fb1 to
+> effectively work with xorg.
+> So if it has been alloted fb1, then try to remove the other fb0.
+> 
+> Cc: <stable@vger.kernel.org> # v4.4+
+> Signed-off-by: Teddy Wang <teddy.wang@siliconmotion.com>
+> Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+> ---
+> 
+> In the previous send, why #ifdef is used was asked.
+> https://lkml.org/lkml/2017/6/25/57
+> 
+> Answered at: https://lkml.org/lkml/2017/6/25/69
+> Also pasting here for reference.
+> 
+> 'Did a quick research into "why".
+> The patch d8801e4df91e ("x86/PCI: Set IORESOURCE_ROM_SHADOW only for the
+> default VGA device") has started setting IORESOURCE_ROM_SHADOW in flags
+> for a default VGA device and that is being done only for x86.
+> And so, we will need that #ifdef to check IORESOURCE_ROM_SHADOW as that
+> needs to be checked only for a x86 and not for other arch.'
 
-Works for me:
+A gentle ping.
 
-Tested-by: Tony Lindgren <tony@atomide.com>
+--
+Regards
+Sudip

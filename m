@@ -1,72 +1,49 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Thu, 06 Jul 2017 12:57:31 +0000
-Subject: [PATCH 0/4] Make fbcon a built-time depency for fbdev, take 2
-Message-Id: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
+From: Rob Clark <robdclark@gmail.com>
+Date: Tue, 11 Jul 2017 13:38:19 +0000
+Subject: [PATCH 0/3] drm/msm: hijack firmware fb's memory
+Message-Id: <20170711133822.31978-1-robdclark@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Hi all,
+The first patch I've already sent to list and plan to include in a
+v4.13-fixes pull request, but I'm resending as part of this patchset
+since 3/3 depends on it.
 
-So the original simple hack failed and we need to do a bit more. This time
-tested including depmod for all combos. And since I had the pleasure to read
-more fbdev code, 3 simple patches on top to clean up some more.
+The 2nd patch exports get_fb_info()/put_fb_info() so that in the 3rd
+patch we can iterate over the registered fb's (before kicking out fw
+fb) and find the stolen memory from bootloader display.
 
-Cheers, Daniel
+Note that the firmware fb might either be efifb or simplefb, depending
+on EFI boot or not.  So a devicetree based solution to this is not
+useful.
 
-Daniel Vetter (4):
-  fbcon: Make fbcon a built-time depency for fbdev
-  fbdev: Nuke FBINFO_MODULE
-  drm/qxl: Drop fbdev hwaccel flags
-  drm/<drivers>: Drop fbdev info flags
+This is prep-work for a larger patchset for drm/msm to readback and
+take over display setup by bootloader (although that also requires
+some CCF and other changes.. RFC patchset coming soon).  In the RFC
+patchset, drm/msm will wrap the stolen mem in a GEM object and use
+that to create a drm_framebuffer object for the read-back plane state
+(and if the drm fbdev emulation layer is enabled, it will try to re-
+use this for the fbdev scanout buffer).
 
- drivers/gpu/drm/amd/amdgpu/amdgpu_fb.c               |  1 -
- drivers/gpu/drm/armada/armada_fbdev.c                |  1 -
- drivers/gpu/drm/ast/ast_fb.c                         |  1 -
- drivers/gpu/drm/bochs/bochs_fbdev.c                  |  1 -
- drivers/gpu/drm/cirrus/cirrus_fbdev.c                |  1 -
- drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_fbdev.c    |  1 -
- drivers/gpu/drm/i915/intel_fbdev.c                   |  1 -
- drivers/gpu/drm/mgag200/mgag200_fb.c                 |  1 -
- drivers/gpu/drm/msm/msm_fbdev.c                      |  1 -
- drivers/gpu/drm/omapdrm/omap_fbdev.c                 |  1 -
- drivers/gpu/drm/qxl/qxl_fb.c                         |  1 -
- drivers/gpu/drm/radeon/radeon_fb.c                   |  1 -
- drivers/gpu/drm/udl/udl_fb.c                         |  1 -
- drivers/gpu/drm/virtio/virtgpu_fb.c                  |  1 -
- drivers/gpu/drm/vmwgfx/vmwgfx_fb.c                   |  1 -
- drivers/video/console/Kconfig                        |  2 +-
- drivers/video/console/Makefile                       |  8 --------
- drivers/video/fbdev/core/Makefile                    | 11 +++++++++++
- drivers/video/{console => fbdev/core}/bitblit.c      |  4 ----
- drivers/video/{console => fbdev/core}/fbcon.c        | 15 ++++-----------
- drivers/video/{console => fbdev/core}/fbcon.h        |  0
- drivers/video/{console => fbdev/core}/fbcon_ccw.c    |  4 ----
- drivers/video/{console => fbdev/core}/fbcon_cw.c     |  4 ----
- drivers/video/{console => fbdev/core}/fbcon_rotate.c |  4 ----
- drivers/video/{console => fbdev/core}/fbcon_rotate.h |  0
- drivers/video/{console => fbdev/core}/fbcon_ud.c     |  4 ----
- drivers/video/fbdev/core/fbmem.c                     | 10 ++++++++--
- drivers/video/{console => fbdev/core}/softcursor.c   |  4 ----
- drivers/video/{console => fbdev/core}/tileblit.c     |  5 -----
- include/linux/fb.h                                   |  7 +------
- include/linux/fbcon.h                                | 12 ++++++++++++
- 31 files changed, 37 insertions(+), 72 deletions(-)
- rename drivers/video/{console => fbdev/core}/bitblit.c (98%)
- rename drivers/video/{console => fbdev/core}/fbcon.c (99%)
- rename drivers/video/{console => fbdev/core}/fbcon.h (100%)
- rename drivers/video/{console => fbdev/core}/fbcon_ccw.c (98%)
- rename drivers/video/{console => fbdev/core}/fbcon_cw.c (98%)
- rename drivers/video/{console => fbdev/core}/fbcon_rotate.c (95%)
- rename drivers/video/{console => fbdev/core}/fbcon_rotate.h (100%)
- rename drivers/video/{console => fbdev/core}/fbcon_ud.c (98%)
- rename drivers/video/{console => fbdev/core}/softcursor.c (93%)
- rename drivers/video/{console => fbdev/core}/tileblit.c (96%)
- create mode 100644 include/linux/fbcon.h
+If no objections to the 2nd patch, I guess it is probably easiest if
+it is merged via msm-next for 4.14.
+
+Rob Clark (3):
+  drm/msm: kick out firmware framebuffer
+  fbdev: fbmem: export get/put_fb_info()
+  drm/msm: hijack firmware fb's memory
+
+ drivers/gpu/drm/msm/msm_drv.c    | 102 ++++++++++++++++++++++++++++++++-------
+ drivers/gpu/drm/msm/msm_drv.h    |   2 +
+ drivers/gpu/drm/msm/msm_fbdev.c  |   2 +-
+ drivers/video/fbdev/core/fbmem.c |   6 ++-
+ include/linux/fb.h               |   2 +
+ 5 files changed, 93 insertions(+), 21 deletions(-)
 
 -- 
-2.13.2
+2.13.0
 

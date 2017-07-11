@@ -1,30 +1,68 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 12 Jul 2017 16:32:04 +0000
-Subject: Re: [PATCH v2] fbdev: make get_fb_unmapped_area depends of !MMU
-Message-Id: <1601047.VjR1LebSsk@amdc3058>
+From: Rob Clark <robdclark@gmail.com>
+Date: Tue, 11 Jul 2017 13:38:21 +0000
+Subject: [PATCH 2/3] fbdev: fbmem: export get/put_fb_info()
+Message-Id: <20170711133822.31978-3-robdclark@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170712074407epcas2p1a2d7d15f28f9183d20e7919bb25be8fd@epcas2p1.samsung.com>
-        <1499845387-10394-1-git-send-email-benjamin.gaignard@linaro.org>
-In-Reply-To: <1499845387-10394-1-git-send-email-benjamin.gaignard@linaro.org>
+References: <20170711133822.31978-1-robdclark@gmail.com>
+In-Reply-To: <20170711133822.31978-1-robdclark@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Cc: daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, noralf@tronnes.org, dri-devel@lists.freedesktop.org, emil.l.velikov@gmail.com, yannick.fertre@st.com, eric.engestrom@imgtec.com
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Archit Taneja <architt@codeaurora.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Clark <robdclark@gmail.com>
 
-On Wednesday, July 12, 2017 09:43:07 AM Benjamin Gaignard wrote:
-> Even if CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA flag is selected
-> do not compile and use get_fb_unmapped_area() if CONFIG_MMU is
-> also set. This will avoid mmap errors when compiling multi
-> architectures at same time.
-> 
-> Signed-off-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Needed for following patch.
 
-Patch queued for 4.13, thanks.
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 6 ++++--
+ include/linux/fb.h               | 2 ++
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 5324358f110f..db88c7bf3afe 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -50,7 +50,7 @@ EXPORT_SYMBOL(registered_fb);
+ int num_registered_fb __read_mostly;
+ EXPORT_SYMBOL(num_registered_fb);
+ 
+-static struct fb_info *get_fb_info(unsigned int idx)
++struct fb_info *get_fb_info(unsigned int idx)
+ {
+ 	struct fb_info *fb_info;
+ 
+@@ -65,14 +65,16 @@ static struct fb_info *get_fb_info(unsigned int idx)
+ 
+ 	return fb_info;
+ }
++EXPORT_SYMBOL(get_fb_info);
+ 
+-static void put_fb_info(struct fb_info *fb_info)
++void put_fb_info(struct fb_info *fb_info)
+ {
+ 	if (!atomic_dec_and_test(&fb_info->count))
+ 		return;
+ 	if (fb_info->fbops->fb_destroy)
+ 		fb_info->fbops->fb_destroy(fb_info);
+ }
++EXPORT_SYMBOL(put_fb_info);
+ 
+ int lock_fb_info(struct fb_info *info)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a964d076b4dc..eccae50db5ed 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -650,6 +650,8 @@ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ extern struct class *fb_class;
+ 
++extern struct fb_info *get_fb_info(unsigned int idx);
++extern void put_fb_info(struct fb_info *fb_info);
+ extern int lock_fb_info(struct fb_info *info);
+ 
+ static inline void unlock_fb_info(struct fb_info *info)
+-- 
+2.13.0
 

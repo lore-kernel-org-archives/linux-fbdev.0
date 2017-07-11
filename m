@@ -1,7 +1,7 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 11 Jul 2017 09:26:53 +0000
+Date: Tue, 11 Jul 2017 14:52:19 +0000
 Subject: [PATCH] fbdev: Nuke FBINFO_MODULE
-Message-Id: <20170711092653.28065-1-daniel.vetter@ffwll.ch>
+Message-Id: <20170711145219.22410-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170706125735.28299-3-daniel.vetter@ffwll.ch>
 In-Reply-To: <20170706125735.28299-3-daniel.vetter@ffwll.ch>
@@ -19,6 +19,8 @@ fb_info->flags assignments in drm drivers.
 v2: Fixup matrox (reported by kbuild). Also nuke FBINFO_FLAG_* defines
 that I've failed to spot.
 
+v3: Don't nuke FBINFO_FLAG_DEFAULT, that's used all over the place.
+
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: linux-fbdev@vger.kernel.org
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
@@ -26,8 +28,8 @@ Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
  drivers/video/fbdev/core/fbcon.c           |  2 +-
  drivers/video/fbdev/core/fbmem.c           |  4 ++--
  drivers/video/fbdev/matrox/matroxfb_base.c |  4 +---
- include/linux/fb.h                         | 11 +----------
- 4 files changed, 5 insertions(+), 16 deletions(-)
+ include/linux/fb.h                         | 10 +---------
+ 4 files changed, 5 insertions(+), 15 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
 index 86b3bcbd01a8..431a1533a2fe 100644
@@ -80,7 +82,7 @@ index 11eb094396ae..15b412b4b783 100644
  				      FBINFO_HWACCEL_FILLRECT |  /* And fillrect */
  				      FBINFO_HWACCEL_IMAGEBLIT | /* And imageblit */
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a964d076b4dc..4c021b6dc384 100644
+index a964d076b4dc..f4386b0ccf40 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
 @@ -400,7 +400,7 @@ struct fb_tile_ops {
@@ -92,7 +94,7 @@ index a964d076b4dc..4c021b6dc384 100644
  #define FBINFO_HWACCEL_DISABLED	0x0002
  	/* When FBINFO_HWACCEL_DISABLED is set:
  	 *  Hardware acceleration is turned off.  Software implementations
-@@ -533,15 +533,6 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
+@@ -533,14 +533,6 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
  	return a;
  }
  
@@ -104,10 +106,9 @@ index a964d076b4dc..4c021b6dc384 100644
 -
 -// This will go away
 -#define FBINFO_FLAG_MODULE	FBINFO_MODULE
--#define FBINFO_FLAG_DEFAULT	FBINFO_DEFAULT
+ #define FBINFO_FLAG_DEFAULT	FBINFO_DEFAULT
  
  /* This will go away
-  * fbset currently hacks in FB_ACCELF_TEXT into var.accel_flags
 -- 
 2.13.2
 

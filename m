@@ -1,28 +1,49 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sun, 30 Jul 2017 18:26:15 +0000
-Subject: Re: [PATCH 5/6] drm/tinydrm: add support for LEGO MINDSTORMS EV3 LCD
-Message-Id: <CAHp75VdEcsdnhzi9PX6ziDTbp3KWNtyCZdBseYZ8_yNzus0-ng@mail.gmail.com>
+From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+Date: Wed, 12 Jul 2017 07:43:07 +0000
+Subject: [PATCH v2] fbdev: make get_fb_unmapped_area depends of !MMU
+Message-Id: <1499845387-10394-1-git-send-email-benjamin.gaignard@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501355870-13960-1-git-send-email-david@lechnology.com>
- <1501355870-13960-6-git-send-email-david@lechnology.com>
-In-Reply-To: <1501355870-13960-6-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Lechner <david@lechnology.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, dri-devel@lists.freedesktop.org, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+To: b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, noralf@tronnes.org, dri-devel@lists.freedesktop.org, emil.l.velikov@gmail.com, yannick.fertre@st.com, eric.engestrom@imgtec.com
 
-On Sat, Jul 29, 2017 at 10:17 PM, David Lechner <david@lechnology.com> wrote:
-> LEGO MINDSTORMS EV3 has an LCD with a ST7586 controller. This adds a new
-> module for the ST7586 controller with parameters for the EV3 LCD dispay.
+Even if CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA flag is selected
+do not compile and use get_fb_unmapped_area() if CONFIG_MMU is
+also set. This will avoid mmap errors when compiling multi
+architectures at same time.
 
->  .../devicetree/bindings/display/mipi-panel.txt     |  2 +-
->  drivers/gpu/drm/tinydrm/mipi-panel.c               | 87 ++++++++++++++++++++++\]
+Signed-off-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
+---
+version 2:
+- remove duplicated "\"
 
-C'mon, changes here have nothing to do with the framework itself!
+ drivers/video/fbdev/core/fbmem.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-Header, OTOH, has been looking fine.
-
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 069fe79..f20c5d2 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1492,7 +1492,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA
++#if defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA) && !defined(CONFIG_MMU)
+ unsigned long get_fb_unmapped_area(struct file *filp,
+ 				   unsigned long addr, unsigned long len,
+ 				   unsigned long pgoff, unsigned long flags)
+@@ -1519,7 +1519,8 @@ unsigned long get_fb_unmapped_area(struct file *filp,
+ 	.open =		fb_open,
+ 	.release =	fb_release,
+ #if defined(HAVE_ARCH_FB_UNMAPPED_AREA) || \
+-    defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA)
++	(defined(CONFIG_FB_PROVIDE_GET_FB_UNMAPPED_AREA) && \
++	 !defined(CONFIG_MMU))
+ 	.get_unmapped_area = get_fb_unmapped_area,
+ #endif
+ #ifdef CONFIG_FB_DEFERRED_IO
 -- 
-With Best Regards,
-Andy Shevchenko
+1.9.1
+

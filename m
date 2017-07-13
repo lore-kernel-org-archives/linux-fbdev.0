@@ -1,51 +1,87 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 21 Jul 2017 10:48:13 +0000
-Subject: [PATCH v4 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
-Message-Id: <20170721104813.5389-5-enric.balletbo@collabora.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 13 Jul 2017 21:32:22 +0000
+Subject: [PATCH v3 1/2] firmware/dmi: Export dmi_system_id_match
+Message-Id: <20170713213223.28503-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170721104813.5389-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170721104813.5389-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+To: linux-fbdev@vger.kernel.org
 
-The minnie devices comes with an AUO B101EAN01 panel which is different
-from default veyron devices, thus the power on/off timing sequence is
-slightly different. The datasheet specifies a pwm delay of 200 ms, so
-update the PMW delay proprieties accordingly.
+In some cases a driver cannot use dmi_check_system because it
+needs to do more complex checks, involving runtime (non const)
+variables. In such case the driver will implement its own loop over
+a dmi_system_id table and to do the dmi matching part of the checks
+it needs access to dmi_system_id_match.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+This commit renames dmi_matches to dmi_system_id_match to better reflect
+what it does and exports it for use in such drivers.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-Heiko,
- I'm not able to test this patch in a minnie device because I don't have
-one, so could you do a quick try, please?
+Changes in v3:
+-Split out of "video/console: Add dmi quirk table for x86 systems which
+ need fbcon rotation" patch
+---
+ drivers/firmware/dmi_scan.c | 9 +++++----
+ include/linux/dmi.h         | 1 +
+ 2 files changed, 6 insertions(+), 4 deletions(-)
 
-Changes since v3:
- - Use new -ms names for proprieties.
- - Fix the delay, should be 200ms instead of 20ms (Pavel)
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch as minnie has differents timings
-
- arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-index 544de60..4c5307e6 100644
---- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-+++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-@@ -123,6 +123,8 @@
- 			240 241 242 243 244 245 246 247
- 			248 249 250 251 252 253 254 255>;
- 	power-supply = <&backlight_regulator>;
-+	post-pwm-on-delay-ms = <200>;
-+	pwm-off-delay-ms = <200>;
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index 783041964439..b48ac837f625 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -777,10 +777,10 @@ void __init dmi_set_dump_stack_arch_desc(void)
+ }
+ 
+ /**
+- *	dmi_matches - check if dmi_system_id structure matches system DMI data
++ *	dmi_system_id_match - check if dmi_system_id matches system DMI data
+  *	@dmi: pointer to the dmi_system_id structure to check
+  */
+-static bool dmi_matches(const struct dmi_system_id *dmi)
++bool dmi_system_id_match(const struct dmi_system_id *dmi)
+ {
+ 	int i;
+ 
+@@ -804,6 +804,7 @@ static bool dmi_matches(const struct dmi_system_id *dmi)
+ 	}
+ 	return true;
+ }
++EXPORT_SYMBOL(dmi_system_id_match);
+ 
+ /**
+  *	dmi_is_end_of_table - check for end-of-table marker
+@@ -833,7 +834,7 @@ int dmi_check_system(const struct dmi_system_id *list)
+ 	const struct dmi_system_id *d;
+ 
+ 	for (d = list; !dmi_is_end_of_table(d); d++)
+-		if (dmi_matches(d)) {
++		if (dmi_system_id_match(d)) {
+ 			count++;
+ 			if (d->callback && d->callback(d))
+ 				break;
+@@ -860,7 +861,7 @@ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
+ 	const struct dmi_system_id *d;
+ 
+ 	for (d = list; !dmi_is_end_of_table(d); d++)
+-		if (dmi_matches(d))
++		if (dmi_system_id_match(d))
+ 			return d;
+ 
+ 	return NULL;
+diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+index 9bbf21a516e4..5ee3955607b3 100644
+--- a/include/linux/dmi.h
++++ b/include/linux/dmi.h
+@@ -96,6 +96,7 @@ struct dmi_dev_onboard {
  };
  
- &emmc {
+ extern struct kobject *dmi_kobj;
++extern bool dmi_system_id_match(const struct dmi_system_id *dmi);
+ extern int dmi_check_system(const struct dmi_system_id *list);
+ const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list);
+ extern const char * dmi_get_system_info(int field);
 -- 
-2.9.3
+2.13.0
 

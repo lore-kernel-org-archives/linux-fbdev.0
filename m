@@ -1,142 +1,149 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 12 Jul 2017 10:40:45 +0000
+From: Sean Paul <seanpaul@chromium.org>
+Date: Thu, 13 Jul 2017 14:47:53 +0000
 Subject: Re: [PATCH 1/4] fbcon: Make fbcon a built-time depency for fbdev
-Message-Id: <1829417.jhVqBZyytf@amdc3058>
+Message-Id: <20170713144753.n344ilasywtsqfxi@art_vandelay>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
- <CGME20170706125748epcas4p4e0fd263e320131774a6561f5f9bd087a@epcas4p4.samsung.com>
  <20170706125735.28299-2-daniel.vetter@ffwll.ch>
 In-Reply-To: <20170706125735.28299-2-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Steven Rostedt <rostedt@goodmis.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Steven Rostedt <rostedt@goodmis.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-On Thursday, July 06, 2017 02:57:32 PM Daniel Vetter wrote:
-> There's a bunch of folks who're trying to make printk less
-> contended and faster, but there's a problem: printk uses the
-> console_lock, and the console lock has become the BKL for all things
-> fbdev/fbcon, which in turn pulled in half the drm subsystem under that
-> lock. That's awkward.
-> 
-> There reasons for that is probably just a historical accident:
-> 
-> - fbcon is a runtime option of fbdev, i.e. at runtime you can pick
->   whether your fbdev driver instances are used as kernel consoles.
->   Unfortunately this wasn't implemented with some module option, but
->   through some module loading magic: As long as you don't load
->   fbcon.ko, there's no fbdev console support, but loading it (in any
->   order wrt fbdev drivers) will create console instances for all fbdev
->   drivers.
-> 
-> - This was implemented through a notifier chain. fbcon.ko enumerates
->   all fbdev instances at load time and also registers itself as
->   listener in the fbdev notifier. The fbdev core tries to register new
->   fbdev instances with fbcon using the notifier.
-> 
-> - On top of that the modifier chain is also used at runtime by the
->   fbdev subsystem to e.g. control backlights for panels.
-> 
-> - The problem is that the notifier puts a mutex locking context
->   between fbdev and fbcon, which mixes up the locking contexts for
->   both the runtime usage and the register time usage to notify fbcon.
->   And at runtime fbcon (through the fbdev core) might call into the
->   notifier from a printk critical section while console_lock is held.
-> 
-> - This means console_lock must be an outer lock for the entire fbdev
->   subsystem, which also means it must be acquired when registering a
->   new framebuffer driver as the outermost lock since we might call
->   into fbcon (through the notifier) which would result in a locking
->   inversion if fbcon would acquire the console_lock from its notifier
->   callback (which it needs to register the console).
-> 
-> - console_lock can be held anywhere, since printk can be called
->   anywhere, and through the above story, plus drm/kms being an fbdev
->   driver, we pull in a shocking amount of locking hiercharchy
->   underneath the console_lock. Which makes cleaning up printk really
->   hard (not even splitting console_lock into an rwsem is all that
->   useful due to this).
-> 
-> There's various ways to address this, but the cleanest would be to
-> make fbcon a compile-time option, where fbdev directly calls the fbcon
-> register functions from register_framebuffer, or dummy static inline
-> versions if fbcon is disabled. Maybe augmented with a runtime knob to
-> disable fbcon, if that's needed (for debugging perhaps).
-> 
-> But this could break some users who rely on the magic "loading
-> fbcon.ko enables/disables fbdev framebuffers at runtime" thing, even
-> if that's unlikely. Hence we must be careful:
-> 
-> 1. Create a compile-time dependency between fbcon and fbdev in the
-> least minimal way. This is what this patch does.
-> 
-> 2. Wait at least 1 year to give possible users time to scream about
-> how we broke their setup. Unlikely, since all distros make fbcon
-> compile-in, and embedded platforms only compile stuff they know they
-> need anyway. But still.
-> 
-> 3. Convert the notifier to direct functions calls, with dummy static
-> inlines if fbcon is disabled. We'll still need the fb notifier for the
-> other uses (like backlights), but we can probably move it into the fb
-> core (atm it must be built-into vmlinux).
-> 
-> 4. Push console_lock down the call-chain, until it is down in
-> console_register again.
-> 
-> 5. Finally start to clean up and rework the printk/console locking.
-> 
-> For context of this saga see
-> 
-> commit 50e244cc793d511b86adea24972f3a7264cae114
-> Author: Alan Cox <alan@linux.intel.com>
-> Date:   Fri Jan 25 10:28:15 2013 +1000
-> 
->     fb: rework locking to fix lock ordering on takeover
-> 
-> plus the pile of commits on top that tried to make this all work
-> without terminally upsetting lockdep. We've uncovered all this when
-> console_lock lockdep annotations where added in
-> 
-> commit daee779718a319ff9f83e1ba3339334ac650bb22
-> Author: Daniel Vetter <daniel.vetter@ffwll.ch>
-> Date:   Sat Sep 22 19:52:11 2012 +0200
-> 
->     console: implement lockdep support for console_lock
-> 
-> On the patch itself:
-> - Switch CONFIG_FRAMEBUFFER_CONSOLE to be a boolean, using the overall
->   CONFIG_FB tristate to decided whether it should be a module or
->   built-in.
-> 
-> - At first I thought I could force the build depency with just a dummy
->   symbol that fbcon.ko exports and fb.ko uses. But that leads to a
->   module depency cycle (it works fine when built-in).
-> 
->   Since this tight binding is the entire goal the simplest solution is
->   to move all the fbcon modules (and there's a bunch of optinal
->   source-files which are each modules of their own, for no good
->   reason) into the overall fb.ko core module. That's a bit more than
->   what I would have liked to do in this patch, but oh well.
-> 
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-> Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+On Thu, Jul 06, 2017 at 02:57:32PM +0200, Daniel Vetter wrote:
+
+<snip>
+
 > Cc: dri-devel@lists.freedesktop.org
 > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Just 2 nits, code looks good.
+
+Reviewed-by: Sean Paul <seanpaul@chromium.org>
 
 > ---
 > v2: Switch to building fbcon code into fb.ko right away because the
 > cheap trick leads to a module depency loop.
 > ---
+>  drivers/video/console/Kconfig                        |  2 +-
+>  drivers/video/console/Makefile                       |  8 --------
+>  drivers/video/fbdev/core/Makefile                    | 11 +++++++++++
+>  drivers/video/{console => fbdev/core}/bitblit.c      |  4 ----
+>  drivers/video/{console => fbdev/core}/fbcon.c        | 13 +++----------
+>  drivers/video/{console => fbdev/core}/fbcon.h        |  0
+>  drivers/video/{console => fbdev/core}/fbcon_ccw.c    |  4 ----
+>  drivers/video/{console => fbdev/core}/fbcon_cw.c     |  4 ----
+>  drivers/video/{console => fbdev/core}/fbcon_rotate.c |  4 ----
+>  drivers/video/{console => fbdev/core}/fbcon_rotate.h |  0
+>  drivers/video/{console => fbdev/core}/fbcon_ud.c     |  4 ----
+>  drivers/video/fbdev/core/fbmem.c                     |  6 ++++++
+>  drivers/video/{console => fbdev/core}/softcursor.c   |  4 ----
+>  drivers/video/{console => fbdev/core}/tileblit.c     |  5 -----
+>  include/linux/fbcon.h                                | 12 ++++++++++++
+>  15 files changed, 33 insertions(+), 48 deletions(-)
+>  rename drivers/video/{console => fbdev/core}/bitblit.c (98%)
+>  rename drivers/video/{console => fbdev/core}/fbcon.c (99%)
+>  rename drivers/video/{console => fbdev/core}/fbcon.h (100%)
+>  rename drivers/video/{console => fbdev/core}/fbcon_ccw.c (98%)
+>  rename drivers/video/{console => fbdev/core}/fbcon_cw.c (98%)
+>  rename drivers/video/{console => fbdev/core}/fbcon_rotate.c (95%)
+>  rename drivers/video/{console => fbdev/core}/fbcon_rotate.h (100%)
+>  rename drivers/video/{console => fbdev/core}/fbcon_ud.c (98%)
+>  rename drivers/video/{console => fbdev/core}/softcursor.c (93%)
+>  rename drivers/video/{console => fbdev/core}/tileblit.c (96%)
+>  create mode 100644 include/linux/fbcon.h
+> 
+> diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+> index 2111d06f8c81..7f1f1fbcef9e 100644
+> --- a/drivers/video/console/Kconfig
+> +++ b/drivers/video/console/Kconfig
+> @@ -117,7 +117,7 @@ config DUMMY_CONSOLE_ROWS
+>            Select 25 if you use a 640x480 resolution by default.
+>  
+>  config FRAMEBUFFER_CONSOLE
+> -	tristate "Framebuffer Console support"
+> +	bool "Framebuffer Console support"
+>  	depends on FB && !UML
+>  	select VT_HW_CONSOLE_BINDING
+>  	select CRC32
+> diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
+> index 43bfa485db96..eb2cbec52643 100644
+> --- a/drivers/video/console/Makefile
+> +++ b/drivers/video/console/Makefile
+> @@ -7,13 +7,5 @@ obj-$(CONFIG_SGI_NEWPORT_CONSOLE) += newport_con.o
+>  obj-$(CONFIG_STI_CONSOLE)         += sticon.o sticore.o
+>  obj-$(CONFIG_VGA_CONSOLE)         += vgacon.o
+>  obj-$(CONFIG_MDA_CONSOLE)         += mdacon.o
+> -obj-$(CONFIG_FRAMEBUFFER_CONSOLE) += fbcon.o bitblit.o softcursor.o
+> -ifeq ($(CONFIG_FB_TILEBLITTING),y)
+> -obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += tileblit.o
+> -endif
+> -ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
+> -obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+> -                                         fbcon_ccw.o
+> -endif
+>  
+>  obj-$(CONFIG_FB_STI)              += sticore.o
+> diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+> index 9e3ddf225393..0214b863ac3f 100644
+> --- a/drivers/video/fbdev/core/Makefile
+> +++ b/drivers/video/fbdev/core/Makefile
+> @@ -4,6 +4,17 @@ obj-$(CONFIG_FB)                  += fb.o
+>  fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
+>                                       modedb.o fbcvt.o
+>  fb-$(CONFIG_FB_DEFERRED_IO)       += fb_defio.o
+> +
+> +ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE),y)
+> +fb-y				  += fbcon.o bitblit.o softcursor.o
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+fb-$(CONFIG_FRAMEBUFFER_CONSOLE) ?
 
+> +ifeq ($(CONFIG_FB_TILEBLITTING),y)
+> +fb-y				  += tileblit.o
+> +endif
+> +ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
+> +fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+> +				     fbcon_ccw.o
+> +endif
+> +endif
+>  fb-objs                           := $(fb-y)
+>  
+>  obj-$(CONFIG_FB_CFB_FILLRECT)  += cfbfillrect.o
+
+<snip>
+
+> diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
+> new file mode 100644
+> index 000000000000..0fac6305d51c
+> --- /dev/null
+> +++ b/include/linux/fbcon.h
+
+IANAL, but it seems like you're missing some GPL legalese here?
+
+Sean
+
+> @@ -0,0 +1,12 @@
+> +#ifndef _LINUX_FBCON_H
+> +#define _LINUX_FBCON_H
+> +
+> +#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+> +void __init fb_console_init(void);
+> +void __exit fb_console_exit(void);
+> +#else
+> +static void fb_console_init(void) {}
+> +static void fb_console_exit(void) {}
+> +#endif
+> +
+> +#endif /* _LINUX_FBCON_H */
+> -- 
+> 2.13.2
+> 
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+
+-- 
+Sean Paul, Software Engineer, Google / Chromium OS

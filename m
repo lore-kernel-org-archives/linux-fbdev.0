@@ -1,49 +1,36 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Tue, 11 Jul 2017 13:38:19 +0000
-Subject: [PATCH 0/3] drm/msm: hijack firmware fb's memory
-Message-Id: <20170711133822.31978-1-robdclark@gmail.com>
+From: Bhumika Goyal <bhumirks@gmail.com>
+Date: Fri, 14 Jul 2017 09:26:06 +0000
+Subject: [PATCH] drivers/video/fbdev/omap/lcd_mipid.c: add const to lcd_panel structure
+Message-Id: <1500023646-8846-1-git-send-email-bhumirks@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: julia.lawall@lip6.fr, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bhumika Goyal <bhumirks@gmail.com>
 
-The first patch I've already sent to list and plan to include in a
-v4.13-fixes pull request, but I'm resending as part of this patchset
-since 3/3 depends on it.
+Make lcd_panel structure const as it is only copied to some object.
+As the only usage of this structure is a copy operation, so it can be
+made const.
 
-The 2nd patch exports get_fb_info()/put_fb_info() so that in the 3rd
-patch we can iterate over the registered fb's (before kicking out fw
-fb) and find the stolen memory from bootloader display.
+Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+---
+ drivers/video/fbdev/omap/lcd_mipid.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Note that the firmware fb might either be efifb or simplefb, depending
-on EFI boot or not.  So a devicetree based solution to this is not
-useful.
-
-This is prep-work for a larger patchset for drm/msm to readback and
-take over display setup by bootloader (although that also requires
-some CCF and other changes.. RFC patchset coming soon).  In the RFC
-patchset, drm/msm will wrap the stolen mem in a GEM object and use
-that to create a drm_framebuffer object for the read-back plane state
-(and if the drm fbdev emulation layer is enabled, it will try to re-
-use this for the fbdev scanout buffer).
-
-If no objections to the 2nd patch, I guess it is probably easiest if
-it is merged via msm-next for 4.14.
-
-Rob Clark (3):
-  drm/msm: kick out firmware framebuffer
-  fbdev: fbmem: export get/put_fb_info()
-  drm/msm: hijack firmware fb's memory
-
- drivers/gpu/drm/msm/msm_drv.c    | 102 ++++++++++++++++++++++++++++++++-------
- drivers/gpu/drm/msm/msm_drv.h    |   2 +
- drivers/gpu/drm/msm/msm_fbdev.c  |   2 +-
- drivers/video/fbdev/core/fbmem.c |   6 ++-
- include/linux/fb.h               |   2 +
- 5 files changed, 93 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/video/fbdev/omap/lcd_mipid.c b/drivers/video/fbdev/omap/lcd_mipid.c
+index df9e6eb..e3a8543 100644
+--- a/drivers/video/fbdev/omap/lcd_mipid.c
++++ b/drivers/video/fbdev/omap/lcd_mipid.c
+@@ -496,7 +496,7 @@ static void mipid_cleanup(struct lcd_panel *panel)
+ 		mipid_esd_stop_check(md);
+ }
+ 
+-static struct lcd_panel mipid_panel = {
++static const struct lcd_panel mipid_panel = {
+ 	.config		= OMAP_LCDC_PANEL_TFT,
+ 
+ 	.bpp		= 16,
 -- 
-2.13.0
+1.9.1
 

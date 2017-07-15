@@ -1,46 +1,62 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:51 +0000
-Subject: [PATCH 26/28] video: fbdev: pm3fb: constify pci_device_id.
-Message-Id: <1500572393-18844-27-git-send-email-arvind.yadav.cs@gmail.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sat, 15 Jul 2017 20:07:39 +0000
+Subject: [PATCH 04/11] fbdev: da8xx-fb: Drop unnecessary static
+Message-Id: <1500149266-32357-5-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+References: <1500149266-32357-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1500149266-32357-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: keescook@chromium.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+Drop static on a local variable, when the variable is initialized before
+any possible use.  Thus, the static has no benefit.
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-  10332	    596	     16	  10944	   2ac0	drivers/video/fbdev/pm3fb.o
+The semantic patch that fixes this problem is as follows:
+(http://coccinelle.lip6.fr/)
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-  10396	    532	     16	  10944	   2ac0	drivers/video/fbdev/pm3fb.o
+// <smpl>
+@bad exists@
+position p;
+identifier x;
+type T;
+@@
+static T x@p;
+...
+x = <+...x...+>
 
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+@@
+identifier x;
+expression e;
+type T;
+position p != bad.p;
+@@
+-static
+ T x@p;
+ ... when != x
+     when strict
+?x = e;
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- drivers/video/fbdev/pm3fb.c | 2 +-
+These patches are all independent of each other.
+
+ drivers/video/fbdev/da8xx-fb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
-index 6ff5077..6130aa5 100644
---- a/drivers/video/fbdev/pm3fb.c
-+++ b/drivers/video/fbdev/pm3fb.c
-@@ -1479,7 +1479,7 @@ static void pm3fb_remove(struct pci_dev *dev)
- 	}
- }
- 
--static struct pci_device_id pm3fb_id_table[] = {
-+static const struct pci_device_id pm3fb_id_table[] = {
- 	{ PCI_VENDOR_ID_3DLABS, 0x0a,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ 0, }
--- 
-2.7.4
+diff -u -p a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1341,7 +1341,7 @@ static int fb_probe(struct platform_devi
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata  						dev_get_platdata(&device->dev);
+-	static struct resource *lcdc_regs;
++	struct resource *lcdc_regs;
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
 

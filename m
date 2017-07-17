@@ -1,261 +1,46 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sun, 30 Jul 2017 06:59:19 +0000
-Subject: [PATCH v6] video/console: Add dmi quirk table for x86 systems which need fbcon rotation
-Message-Id: <20170730065919.26757-1-hdegoede@redhat.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 17 Jul 2017 21:28:10 +0000
+Subject: [PATCH v3 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
+Message-Id: <20170717212811.25374-4-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20170717212811.25374-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170717212811.25374-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-Some x86 clamshell design devices use portrait tablet screens and a
-display engine which cannot rotate in hardware, so we need to rotate
-the fbcon to compensate.
+For veyron the binding should provide both PWM timings, the delay between
+you enable the PWM and set the enable signal, and the delay between you
+disable the PWM signal and clear the enable signal. Update the binding
+accordingly, in this case the panels connected to the veyron boards have
+a symmetric power sequence, hence the same value is used.
 
-This commit adds a DMI based quirk table which is initially populated with
-4 such devices: The Asus T100HA, GPD Pocket, the GPD win and the I.T.Works
-TW891, so that the console comes up in the right orientation on these
-devices OOTB.
-
-Unfortunately these (cheap) devices also typically have quite generic DMI
-data, so we match on a combination of DMI data, screen resolution and a
-list of known BIOS dates to avoid false positives.
-
-Suggested-by: Jean Delvare <jdelvare@suse.de>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
-Changes in v2:
--Extend the commit message explaining why dmi_check_system does not work
- and this commit exports and uses dmi_matches instead
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch to fix current binding on veyron.
 
-Changes in v3:
--The exporting of dmi_matches has been split out in a separate patch
--Use u32 for width/height in struct fbcon_dmi_rotate_data to match the
- type of fb_var_screeninfo.xres / .yres
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Changes in v4:
--Use dmi_first_match instead of exporting dmi_matches
--Use DMI_EXACT_MATCH
--Add the Asus T100HA to the list of devices needing rotation
-
-Changes in v5:
--Add Reviewed-by: Jean Delvare <jdelvare@suse.de>
--Add extra BIOS-date to known GDP pocket BIOS dates
-
-Changes in v6:
--Add another extra BIOS-date to known GDP pocket BIOS dates
----
- drivers/video/console/Makefile           |   3 +
- drivers/video/console/fbcon.c            |  12 ++-
- drivers/video/console/fbcon.h            |   7 +-
- drivers/video/console/fbcon_dmi_quirks.c | 131 +++++++++++++++++++++++++++++++
- 4 files changed, 149 insertions(+), 4 deletions(-)
- create mode 100644 drivers/video/console/fbcon_dmi_quirks.c
-
-diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
-index 43bfa48..32ee2ad 100644
---- a/drivers/video/console/Makefile
-+++ b/drivers/video/console/Makefile
-@@ -15,5 +15,8 @@ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
- obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
-                                          fbcon_ccw.o
- endif
-+ifeq ($(CONFIG_DMI),y)
-+obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_dmi_quirks.o
-+endif
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index d752a31..4cef71f 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -96,7 +96,8 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bl_en>;
+ 		pwms = <&pwm0 0 1000000 0>;
+-		pwm-delay-us = <10000>;
++		post-pwm-on-delay-us = <10000>;
++		pwm-off-delay-us = <10000>;
+ 	};
  
- obj-$(CONFIG_FB_STI)              += sticore.o
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 12ded23..3db5ac2 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -135,7 +135,7 @@ static char fontname[40];
- static int info_idx = -1;
- 
- /* console rotation */
--static int initial_rotation;
-+static int initial_rotation = -1;
- static int fbcon_has_sysfs;
- 
- static const struct consw fb_con;
-@@ -954,7 +954,10 @@ static const char *fbcon_startup(void)
- 	ops->cur_rotate = -1;
- 	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
--	p->con_rotate = initial_rotation;
-+	if (initial_rotation != -1)
-+		p->con_rotate = initial_rotation;
-+	else
-+		p->con_rotate = fbcon_platform_get_rotate(info);
- 	set_blitting_type(vc, info);
- 
- 	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1091,7 +1094,10 @@ static void fbcon_init(struct vc_data *vc, int init)
- 
- 	ops = info->fbcon_par;
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
--	p->con_rotate = initial_rotation;
-+	if (initial_rotation != -1)
-+		p->con_rotate = initial_rotation;
-+	else
-+		p->con_rotate = fbcon_platform_get_rotate(info);
- 	set_blitting_type(vc, info);
- 
- 	cols = vc->vc_cols;
-diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
-index 7aaa4ea..60e25e1 100644
---- a/drivers/video/console/fbcon.h
-+++ b/drivers/video/console/fbcon.h
-@@ -261,5 +261,10 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
- #define fbcon_set_rotate(x) do {} while(0)
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
- 
--#endif /* _VIDEO_FBCON_H */
-+#ifdef CONFIG_DMI
-+int fbcon_platform_get_rotate(struct fb_info *info);
-+#else
-+#define fbcon_platform_get_rotate(i) FB_ROTATE_UR
-+#endif /* CONFIG_DMI */
- 
-+#endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/console/fbcon_dmi_quirks.c b/drivers/video/console/fbcon_dmi_quirks.c
-new file mode 100644
-index 0000000..7fbf7df
---- /dev/null
-+++ b/drivers/video/console/fbcon_dmi_quirks.c
-@@ -0,0 +1,131 @@
-+/*
-+ *  fbcon_dmi_quirks.c -- DMI based quirk detection for fbcon
-+ *
-+ *	Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of this archive for
-+ *  more details.
-+ */
-+
-+#include <linux/dmi.h>
-+#include <linux/fb.h>
-+#include <linux/kernel.h>
-+#include "fbcon.h"
-+
-+/*
-+ * Some x86 clamshell design devices use portrait tablet screens and a display
-+ * engine which cannot rotate in hardware, so we need to rotate the fbcon to
-+ * compensate. Unfortunately these (cheap) devices also typically have quite
-+ * generic DMI data, so we match on a combination of DMI data, screen resolution
-+ * and a list of known BIOS dates to avoid false positives.
-+ */
-+
-+struct fbcon_dmi_rotate_data {
-+	int width;
-+	int height;
-+	const char * const *bios_dates;
-+	int rotate;
-+};
-+
-+static const struct fbcon_dmi_rotate_data rotate_data_asus_t100ha = {
-+	.width = 800,
-+	.height = 1280,
-+	.rotate = FB_ROTATE_CCW,
-+};
-+
-+static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
-+	.width = 1200,
-+	.height = 1920,
-+	.bios_dates = (const char * const []){ "05/26/2017", "06/28/2017",
-+		"07/05/2017", NULL },
-+	.rotate = FB_ROTATE_CW,
-+};
-+
-+static const struct fbcon_dmi_rotate_data rotate_data_gpd_win = {
-+	.width = 720,
-+	.height = 1280,
-+	.bios_dates = (const char * const []){
-+		"10/25/2016", "11/18/2016", "02/21/2017",
-+		"03/20/2017", NULL },
-+	.rotate = FB_ROTATE_CW,
-+};
-+
-+static const struct fbcon_dmi_rotate_data rotate_data_itworks_tw891 = {
-+	.width = 800,
-+	.height = 1280,
-+	.bios_dates = (const char * const []){ "10/16/2015", NULL },
-+	.rotate = FB_ROTATE_CW,
-+};
-+
-+static const struct dmi_system_id rotate_data[] = {
-+	{	/* Asus T100HA */
-+		.matches = {
-+		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
-+		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100HAN"),
-+		},
-+		.driver_data = (void *)&rotate_data_asus_t100ha,
-+	}, {	/*
-+		 * GPD Pocket, note that the the DMI data is less generic then
-+		 * it seems, devices with a board-vendor of "AMI Corporation"
-+		 * are quite rare, as are devices which have both board- *and*
-+		 * product-id set to "Default String"
-+		 */
-+		.matches = {
-+		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
-+		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
-+		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
-+		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
-+		},
-+		.driver_data = (void *)&rotate_data_gpd_pocket,
-+	}, {	/* GPD Win (same note on DMI match as GPD Pocket) */
-+		.matches = {
-+		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
-+		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
-+		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
-+		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
-+		},
-+		.driver_data = (void *)&rotate_data_gpd_win,
-+	}, {	/* I.T.Works TW891 */
-+		.matches = {
-+		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "To be filled by O.E.M."),
-+		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "TW891"),
-+		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
-+		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "TW891"),
-+		},
-+		.driver_data = (void *)&rotate_data_itworks_tw891,
-+	},
-+	{}
-+};
-+
-+int fbcon_platform_get_rotate(struct fb_info *info)
-+{
-+	const struct dmi_system_id *match;
-+	const struct fbcon_dmi_rotate_data *data;
-+	const char *bios_date;
-+	int i;
-+
-+	for (match = dmi_first_match(rotate_data);
-+	     match;
-+	     match = dmi_first_match(match + 1)) {
-+		data = match->driver_data;
-+
-+		if (data->width != info->var.xres ||
-+		    data->height != info->var.yres)
-+			continue;
-+
-+		if (!data->bios_dates)
-+			return data->rotate;
-+
-+		bios_date = dmi_get_system_info(DMI_BIOS_DATE);
-+		if (!bios_date)
-+			continue;
-+
-+		for (i = 0; data->bios_dates[i]; i++) {
-+			if (!strcmp(data->bios_dates[i], bios_date))
-+				return data->rotate;
-+		}
-+	}
-+
-+	return FB_ROTATE_UR;
-+}
+ 	gpio-charger {
 -- 
-2.9.4
+2.9.3
 

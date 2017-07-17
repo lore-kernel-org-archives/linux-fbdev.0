@@ -1,22 +1,18 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 06 Jul 2017 06:42:15 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 17 Jul 2017 12:21:44 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: make of_device_ids const
-Message-Id: <20170706064215.GG16144@ulmo.fritz.box>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="S5HS5MvDw4DmbRmb"
+Message-Id: <20170717122144.hw72eeqiobfdkhtv@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <b9daeb15d40f6682803d8dafde3bc3dcb63909ff.1497940816.git.arvind.yadav.cs@gmail.com>
 In-Reply-To: <b9daeb15d40f6682803d8dafde3bc3dcb63909ff.1497940816.git.arvind.yadav.cs@gmail.com>
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-
-
---S5HS5MvDw4DmbRmb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+MIME-Version: 1.0
+Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: thierry.reding@gmail.com, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, Jun 20, 2017 at 01:22:15PM +0530, Arvind Yadav wrote:
+On Tue, 20 Jun 2017, Arvind Yadav wrote:
+
 > of_device_ids are not supposed to change at runtime. All functions
 > working with of_device_ids provided by <linux/of.h> work with const
 > of_device_ids. So mark the non-const structs as const.
@@ -26,26 +22,25 @@ On Tue, Jun 20, 2017 at 01:22:15PM +0530, Arvind Yadav wrote:
 >  drivers/video/backlight/pwm_bl.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Thierry Reding <thierry.reding@gmail.com>
+Applied, thanks.
 
---S5HS5MvDw4DmbRmb
-Content-Type: application/pgp-signature; name="signature.asc"
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/p=
+wm_bl.c
+> index 002f1ce..9bd1768 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -178,7 +178,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
+>  	return 0;
+>  }
+> =20
+> -static struct of_device_id pwm_backlight_of_match[] =3D {
+> +static const struct of_device_id pwm_backlight_of_match[] =3D {
+>  	{ .compatible =3D "pwm-backlight" },
+>  	{ }
+>  };
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlld28cACgkQ3SOs138+
-s6HWcQ//bcbYjBR/BpikStnKGl5UjCOgm/P1R9tBYEA7XvQdu8ga1WLZt7D4lO5a
-yy1CGl9DOltfBp7wJOAUvgD1ZVlD+JaWRXoi6FODeZjUoJHpC/0F0lsQpzHsmANl
-Ebg0DgBb4Abq9LsQkVRWdrZgeyXEOhqpkPZOSlmoMaJ0v5+ULXHy6Tm+z1wLTTRi
-xkZSv1tVUxJSQfF706OHPoKK5X9d5kBbHrgMR9DYtc4aEDUflaN1gwIxq7My2vrY
-3aLUzTNiuQJ3g0tYlxiWwlTAZIChn8cMQRbN5UxxpNAS5wvIRN1rkL6BzxCpIUS4
-Joh1g23vpGmiGvTXzXxzHYpuoCC/8XvU1+gzLwbMy5ByVYBhDh3I4F5fI7fn+V99
-xDbUAKBuxti578Kg8VXNI3acBH7euMGQeBTBMY5Kt1GxTLRX+PICu/g7Mh6UWTVZ
-ahcLAorh+549LdtcoBVSYz/4xGBxFDAapk9lGotsYtIyb9v51prMmtIRsN0EofJc
-7XQzuZu7quy77XJCRLwKBBSjoaOBKkt4j6s8Lse8/wKAN9ZjOrkjtVdynGoZ1+lt
-BQq5Z/9lEWX/Lv0syZwd5P5BInB7Qo3GuEJW0b8AFW2Fa3VSm9uMMMPK/J/cGEnK
-ff5/E0RJnbLiVmVMmLNzs90VE8Tevis9ylOdx3dtRMOULgFcSJo=
-=wGob
------END PGP SIGNATURE-----
-
---S5HS5MvDw4DmbRmb--
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

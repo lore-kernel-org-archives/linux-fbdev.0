@@ -1,91 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 06 Jul 2017 10:04:28 +0000
-Subject: Re: [PATCH] video: fbdev: imxfb: use after free in imxfb_remove()
-Message-Id: <1955130.RvGiQGmOcs@amdc3058>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 17 Jul 2017 21:28:08 +0000
+Subject: [PATCH v3 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
+Message-Id: <20170717212811.25374-2-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170630080242.emnw7l53f52pvzeo@mwanda>
-In-Reply-To: <20170630080242.emnw7l53f52pvzeo@mwanda>
+References: <20170717212811.25374-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170717212811.25374-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-On Wednesday, July 05, 2017 03:02:47 PM Dan Carpenter wrote:
-> On Tue, Jul 04, 2017 at 05:44:57PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > Hi,
-> > 
-> > On Friday, June 30, 2017 11:02:42 AM Dan Carpenter wrote:
-> > > We free "info" then dereference it on the next line.  I've moved the
-> > > call to framebuffer_release() down a line to avoid this problem.
-> > > 
-> > > Fixes: b7d2d37276c1 ("video: imxfb: Remove unused fields from platform data structure")
-> > > Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> > > 
-> > > diff --git a/drivers/video/fbdev/imxfb.c b/drivers/video/fbdev/imxfb.c
-> > > index c166e0725be5..1d0c3592b290 100644
-> > > --- a/drivers/video/fbdev/imxfb.c
-> > > +++ b/drivers/video/fbdev/imxfb.c
-> > > @@ -1080,10 +1080,9 @@ static int imxfb_remove(struct platform_device *pdev)
-> > >  
-> > >  	fb_dealloc_cmap(&info->cmap);
-> > >  	kfree(info->pseudo_palette);
-> > > -	framebuffer_release(info);
-> > > -
-> > >  	dma_free_wc(&pdev->dev, fbi->map_size, info->screen_base,
-> > >  		    fbi->map_dma);
-> > > +	framebuffer_release(info);
-> > >  
-> > >  	iounmap(fbi->regs);
-> > 
-> > Good catch.
-> > 
-> > While you are at it, please:
-> > 
-> > - move framebuffer_release() after iounmap() (memory occupied by
-> >   fbi will also be freed by framebuffer_release() call, please see
-> >   framebuffer_alloc() for details)
-> > 
-> 
-> I'm still recovering from an illness so I might not be thinking
-> straight.  I don't see a bug here.  But I agree that it should mirror
+Hardware needs a delay between setting an initial (non-zero) PWM and
+enabling the backlight using GPIO. The post-pwm-on-delay-us specifies
+this delay in micro seconds. Hardware also needs a delay between disabing
+the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-us
+is this delay in micro seconds.
 
-Please take a look at the imxfb_probe():
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+Based on the original Huang Lin <hl@rock-chips.com> work.
 
-...
-	struct imxfb_info *fbi;
-...
-	info = framebuffer_alloc(sizeof(struct imxfb_info), &pdev->dev);
-	if (!info)
-		return -ENOMEM;
+Changes since v2:
+ - Use separate properties (Rob Herring)
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
 
-	fbi = info->par;
-...
+ Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-and framebuffer_alloc():
-
-struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
-...
-	int fb_info_size = sizeof(struct fb_info);
-...
-	p = kzalloc(fb_info_size + size, GFP_KERNEL);
-
-	if (!p)
-		return NULL;
-
-	info = (struct fb_info *) p;
-
-	if (size)
-		info->par = p + fb_info_size;
-...
-
-> the probe function so I'll re-write the patch.
-
-Great!
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 764db86..810527c 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -17,6 +17,10 @@ Optional properties:
+                "pwms" property (see PWM binding[0])
+   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+                   and disables the backlight (see GPIO binding[1])
++  - post-pwm-on-delay-us: Delay in us between setting an initial (non-zero) PWM
++                          and enabling the backlight using GPIO.
++  - pwm-off-delay-us: Delay in us between disabling the backlight using GPIO
++                      and setting PWM value to 0.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+@@ -32,4 +36,6 @@ Example:
+ 
+ 		power-supply = <&vdd_bl_reg>;
+ 		enable-gpios = <&gpio 58 0>;
++		post-pwm-on-delay-us = <10000>;
++		pwm-off-delay-us = <10000>;
+ 	};
+-- 
+2.9.3
 

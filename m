@@ -1,84 +1,48 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 20 Jul 2017 11:05:26 +0000
-Subject: Re: [PATCH v3 3/5] pwm-backlight: add support for PWM delays proprieties.
-Message-Id: <20170720110526.GA22000@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 17 Jul 2017 21:28:11 +0000
+Subject: [PATCH v3 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
+Message-Id: <20170717212811.25374-5-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170717212811.25374-1-enric.balletbo@collabora.com>
- <20170717212811.25374-3-enric.balletbo@collabora.com>
- <d38fa016-ea9c-edf8-9684-5c1235d27c82@linaro.org>
- <20170720080656.GC13103@amd>
- <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
-In-Reply-To: <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+In-Reply-To: <20170717212811.25374-1-enric.balletbo@collabora.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
+The minnie devices comes with an AUO B101EAN01 panel which is different
+from default veyron devices, thus the power on/off timing sequence is
+slightly different. The datasheet specifies a pwm delay of 200 ms, so
+update the PMW delay proprieties accordingly.
 
---vtzGhvizbBRQ85DL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+Heiko,
+ I'm not able to test this patch in a minnie device because I don't have
+one, so could you do a quick try, please?
 
-On Thu 2017-07-20 11:37:17, Daniel Thompson wrote:
-> On 20/07/17 09:06, Pavel Machek wrote:
-> >Hi!
-> >
-> >>>--- a/drivers/video/backlight/pwm_bl.c
-> >>>+++ b/drivers/video/backlight/pwm_bl.c
-> >>>@@ -10,6 +10,7 @@
-> >>>   * published by the Free Software Foundation.
-> >>>   */
-> >>>+#include <linux/delay.h>
-> >>>  #include <linux/gpio/consumer.h>
-> >>>  #include <linux/gpio.h>
-> >>>  #include <linux/module.h>
-> >>>@@ -35,6 +36,7 @@ struct pwm_bl_data {
-> >>>  	struct gpio_desc	*enable_gpio;
-> >>>  	unsigned int		scale;
-> >>>  	bool			legacy;
-> >>>+	unsigned int		pwm_delay[2];
-> >>
-> >>Two named members would be better here (eliminating the "magic" 0
-> >>and 1).
-> >
-> >My thought, too.
-> >
-> >>>@@ -56,6 +58,9 @@ static void pwm_backlight_power_on(struct pwm_bl_dat=
-a *pb, int brightness)
-> >>>  	pwm_enable(pb->pwm);
-> >>>+	if (pb->pwm_delay[0])
-> >>>+		usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] * 2);
-> >
-> >Plus I'd just do the delay unconditionally :-).
->=20
-> ... does this still apply if this code is switched to msleep()?
->=20
-> msleep() has no wait avoidance[1] and if lots of drivers are reckless abo=
-ut
-> sleeping for 10ms it soon starts to show up in the boot time (especially
-> optimized ones).
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch as minnie has differents timings
 
-No, not for msleep.
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Best regards,
-								Pavel
+diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+index 544de60..a5b7387 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
++++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+@@ -123,6 +123,8 @@
+ 			240 241 242 243 244 245 246 247
+ 			248 249 250 251 252 253 254 255>;
+ 	power-supply = <&backlight_regulator>;
++	post-pwm-on-delay-us = <20000>;
++	pwm-off-delay-us = <20000>;
+ };
+ 
+ &emmc {
+-- 
+2.9.3
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---vtzGhvizbBRQ85DL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllwjnYACgkQMOfwapXb+vLpMgCgmarGNgd3DbEgXqvRGHS2LSp5
-xwAAoL+7wZiNED/sdMLLb4J90eylXU5Z
-=43HD
------END PGP SIGNATURE-----
-
---vtzGhvizbBRQ85DL--

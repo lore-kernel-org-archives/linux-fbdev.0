@@ -1,46 +1,44 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:27 +0000
-Subject: [PATCH 02/28] video: fbdev: atyfb: constify pci_device_id.
-Message-Id: <1500572393-18844-3-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Wed, 19 Jul 2017 05:35:11 +0000
+Subject: [PATCH] omapfb: panel-tpo-td043mtea1: constify attribute_group structures.
+Message-Id: <fe9b4aed7a13f673cbc9419c43840443052ebaa8.1500441685.git.arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+attribute_group are not supposed to change at runtime. All functions
+working with attribute_group provided by <linux/sysfs.h> work
+with const attribute_group. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-  17534	   1824	     48	  19406	   4bce	video/fbdev/aty/atyfb_base.o
+   2673	    368	      0	   3041	    be1	panel-tpo-td043mtea1.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-  18686	    672	     48	  19406	   4bce	video/fbdev/aty/atyfb_base.o
+   2737	    304	      0	   3041	    be1	panel-tpo-td043mtea1.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 2 +-
+ drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 11026e7..d38cfc6 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -3762,7 +3762,7 @@ static void atyfb_pci_remove(struct pci_dev *pdev)
- 	atyfb_remove(info);
- }
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+index 51e628b..ea8c79a 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td043mtea1.c
+@@ -282,7 +282,7 @@ static DEVICE_ATTR(gamma, S_IRUGO | S_IWUSR,
+ 	NULL,
+ };
  
--static struct pci_device_id atyfb_pci_tbl[] = {
-+static const struct pci_device_id atyfb_pci_tbl[] = {
- #ifdef CONFIG_FB_ATY_GX
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_CHIP_MACH64GX) },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_CHIP_MACH64CX) },
+-static struct attribute_group tpo_td043_attr_group = {
++static const struct attribute_group tpo_td043_attr_group = {
+ 	.attrs = tpo_td043_attrs,
+ };
+ 
 -- 
-2.7.4
+1.9.1
 

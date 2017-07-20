@@ -1,45 +1,46 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 05 Jul 2017 20:02:24 +0000
-Subject: [PATCH 15/18] video: fbdev: intelfb: Move inline before return type
-Message-Id: <8ba151a1fdc84e42cbf4aafc798513c0158edee1.1499284835.git.joe@perches.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:38 +0000
+Subject: [PATCH 13/28] video: fbdev: i810: constify pci_device_id.
+Message-Id: <1500572393-18844-14-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1499284835.git.joe@perches.com>
-In-Reply-To: <cover.1499284835.git.joe@perches.com>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>, Maik Broemme <mbroemme@libmpq.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Make the code like the rest of the kernel.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-But there is an oddity here because the inline should probably be removed.
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  13132	    520	     56	  13708	   358c	video/fbdev/i810/i810_main.o
 
-It's an extern function in intelfb.h and it is used in intelfbdrv.c and
-intelfbhw.c.
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  13356	    296	     56	  13708	   358c	video/fbdev/i810/i810_main.o
 
-The inline is kept here as I suppose it's possible for some compiler to
-make the uses inline in intelfbdrv and and also create an external function
-for intelfbhw.
-
-Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/intelfb/intelfbdrv.c | 2 +-
+ drivers/video/fbdev/i810/i810_main.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
-index 6b444400a86c..ffc391208b27 100644
---- a/drivers/video/fbdev/intelfb/intelfbdrv.c
-+++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
-@@ -907,7 +907,7 @@ static void intelfb_pci_unregister(struct pci_dev *pdev)
-  *                       helper functions                      *
-  ***************************************************************/
+diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
+index 2488baa..f0a758a 100644
+--- a/drivers/video/fbdev/i810/i810_main.c
++++ b/drivers/video/fbdev/i810/i810_main.c
+@@ -107,7 +107,7 @@ static const char * const i810_pci_list[] = {
+ 	"Intel(R) 815 (Internal Graphics with AGP) Framebuffer Device"
+ };
  
--int __inline__ intelfb_var_to_depth(const struct fb_var_screeninfo *var)
-+__inline__ int intelfb_var_to_depth(const struct fb_var_screeninfo *var)
- {
- 	DBG_MSG("intelfb_var_to_depth: bpp: %d, green.length is %d\n",
- 		var->bits_per_pixel, var->green.length);
+-static struct pci_device_id i810fb_pci_tbl[] = {
++static const struct pci_device_id i810fb_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG1,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG3,
 -- 
-2.10.0.rc2.1.g053435c
+2.7.4
 

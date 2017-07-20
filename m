@@ -1,90 +1,46 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Thu, 06 Jul 2017 12:57:33 +0000
-Subject: [PATCH 2/4] fbdev: Nuke FBINFO_MODULE
-Message-Id: <20170706125735.28299-3-daniel.vetter@ffwll.ch>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:39 +0000
+Subject: [PATCH 14/28] video: fbdev: arkfb: constify pci_device_id.
+Message-Id: <1500572393-18844-15-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20170706125735.28299-1-daniel.vetter@ffwll.ch>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Daniel Vetter <daniel.vetter@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Instead check info->ops->owner, which amounts to the same.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Spotted because I want to remove the pile of broken and cargo-culted
-fb_info->flags assignments in drm drivers.
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  12511	   1920	      0	  14431	   385f	drivers/video/fbdev/arkfb.o
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  12607	   1824	      0	  14431	   385f	drivers/video/fbdev/arkfb.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/core/fbcon.c | 2 +-
- drivers/video/fbdev/core/fbmem.c | 4 ++--
- include/linux/fb.h               | 7 +------
- 3 files changed, 4 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/arkfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 86b3bcbd01a8..431a1533a2fe 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -564,7 +564,7 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 	unsigned short *save = NULL, *r, *q;
- 	int logo_height;
+diff --git a/drivers/video/fbdev/arkfb.c b/drivers/video/fbdev/arkfb.c
+index 6a317de..13ba371 100644
+--- a/drivers/video/fbdev/arkfb.c
++++ b/drivers/video/fbdev/arkfb.c
+@@ -1157,7 +1157,7 @@ static int ark_pci_resume (struct pci_dev* dev)
  
--	if (info->flags & FBINFO_MODULE) {
-+	if (info->fbops->owner) {
- 		logo_shown = FBCON_LOGO_DONTSHOW;
- 		return;
- 	}
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 283d57cf8526..2636f192e8c9 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -463,7 +463,7 @@ static int fb_show_logo_line(struct fb_info *info, int rotate,
+ /* List of boards that we are trying to support */
  
- 	/* Return if the frame buffer is not mapped or suspended */
- 	if (logo = NULL || info->state != FBINFO_STATE_RUNNING ||
--	    info->flags & FBINFO_MODULE)
-+	    info->fbops->owner)
- 		return 0;
- 
- 	image.depth = 8;
-@@ -601,7 +601,7 @@ int fb_prepare_logo(struct fb_info *info, int rotate)
- 	memset(&fb_logo, 0, sizeof(struct logo_data));
- 
- 	if (info->flags & FBINFO_MISC_TILEBLITTING ||
--	    info->flags & FBINFO_MODULE)
-+	    info->fbops->owner)
- 		return 0;
- 
- 	if (info->fix.visual = FB_VISUAL_DIRECTCOLOR) {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a964d076b4dc..40b767fa622f 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -400,7 +400,7 @@ struct fb_tile_ops {
- #endif /* CONFIG_FB_TILEBLITTING */
- 
- /* FBINFO_* = fb_info.flags bit flags */
--#define FBINFO_MODULE		0x0001	/* Low-level driver is a module */
-+#define FBINFO_DEFAULT		0
- #define FBINFO_HWACCEL_DISABLED	0x0002
- 	/* When FBINFO_HWACCEL_DISABLED is set:
- 	 *  Hardware acceleration is turned off.  Software implementations
-@@ -533,11 +533,6 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
- 	return a;
- }
- 
--#ifdef MODULE
--#define FBINFO_DEFAULT	FBINFO_MODULE
--#else
--#define FBINFO_DEFAULT	0
--#endif
- 
- // This will go away
- #define FBINFO_FLAG_MODULE	FBINFO_MODULE
+-static struct pci_device_id ark_devices[] = {
++static const struct pci_device_id ark_devices[] = {
+ 	{PCI_DEVICE(0xEDD8, 0xA099)},
+ 	{0, 0, 0, 0, 0, 0, 0}
+ };
 -- 
-2.13.2
+2.7.4
 

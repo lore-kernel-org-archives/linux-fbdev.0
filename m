@@ -1,75 +1,46 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Sat, 08 Jul 2017 01:09:56 +0000
-Subject: [PATCH] video/mbx: constify fb_fix_screeninfo and fb_var_screeninfo structures
-Message-Id: <20170708010956.GA22914@embeddedgus>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:31 +0000
+Subject: [PATCH 06/28] video: fbdev: intelfb: constify pci_device_id.
+Message-Id: <1500572393-18844-7-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-These structures are only used to copy into other structures,
-so declare them as const.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-This issue was detected using Coccinelle and the following semantic patch:
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  11749	    896	     24	  12669	   317d	video/fbdev/intelfb/intelfbdrv.o
 
-@r disable optional_qualifier@
-identifier i;
-position p;
-@@
-static struct fb_fix_screeninfo i@p = { ... };
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  12173	    472	     24	  12669	   317d	video/fbdev/intelfb/intelfbdrv.o
 
-@ok@
-identifier r.i;
-expression e;
-position p;
-@@
-e = i@p
-
-@bad@
-position p != {r.p,ok.p};
-identifier r.i;
-struct fb_fix_screeninfo e;
-@@
-e@i@p
-
-@depends on !bad disable optional_qualifier@
-identifier r.i;
-@@
-static
-+const
- struct fb_fix_screeninfo i = { ... };
-
-The semantic patch for fb_var_screeninfo is analogous.
-
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/mbx/mbxfb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/intelfb/intelfbdrv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
-index 698df954..539b85d 100644
---- a/drivers/video/fbdev/mbx/mbxfb.c
-+++ b/drivers/video/fbdev/mbx/mbxfb.c
-@@ -79,7 +79,7 @@ struct mbxfb_info {
+diff --git a/drivers/video/fbdev/intelfb/intelfbdrv.c b/drivers/video/fbdev/intelfb/intelfbdrv.c
+index 6b444400..0127e81 100644
+--- a/drivers/video/fbdev/intelfb/intelfbdrv.c
++++ b/drivers/video/fbdev/intelfb/intelfbdrv.c
+@@ -173,7 +173,7 @@ static int intelfb_set_fbinfo(struct intelfb_info *dinfo);
+ #define INTELFB_CLASS_MASK 0
+ #endif
  
- };
- 
--static struct fb_var_screeninfo mbxfb_default = {
-+static const struct fb_var_screeninfo mbxfb_default = {
- 	.xres = 640,
- 	.yres = 480,
- 	.xres_virtual = 640,
-@@ -102,7 +102,7 @@ static struct fb_var_screeninfo mbxfb_default = {
- 	.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
- };
- 
--static struct fb_fix_screeninfo mbxfb_fix = {
-+static const struct fb_fix_screeninfo mbxfb_fix = {
- 	.id = "MBX",
- 	.type = FB_TYPE_PACKED_PIXELS,
- 	.visual = FB_VISUAL_TRUECOLOR,
+-static struct pci_device_id intelfb_pci_table[] = {
++static const struct pci_device_id intelfb_pci_table[] = {
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_830M, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_830M },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_845G, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_845G },
+ 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_85XGM, PCI_ANY_ID, PCI_ANY_ID, PCI_CLASS_DISPLAY_VGA << 8, INTELFB_CLASS_MASK, INTEL_85XGM },
 -- 
-2.5.0
+2.7.4
 

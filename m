@@ -1,33 +1,46 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 04 Jul 2017 15:00:57 +0000
-Subject: Re: [PATCH] video: fbdev: aty: remove useless variable assignments in aty_var_to_crtc()
-Message-Id: <30595844.JA8gAC7Mhf@amdc3058>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:46 +0000
+Subject: [PATCH 21/28] video: fbdev: imsttfb: constify pci_device_id.
+Message-Id: <1500572393-18844-22-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170626220521epcas2p21e20ebaf7d36ec6d7a5cd54b81afdb4c@epcas2p2.samsung.com>
-        <20170626220518.GA9369@embeddedgus>
-In-Reply-To: <20170626220518.GA9369@embeddedgus>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
 Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, June 26, 2017 05:05:18 PM Gustavo A. R. Silva wrote:
-> Value assigned to variable vdisplay at line 990 is overwritten
-> at line 1039 before it can be used. Also, variable assignment
-> at line 987 is the same as at line 1039. This makes such
-> variable assignments useless.
-> 
-> Remove these variable assignments and the code related.
-> 
-> Addresses-Covertity-ID: 1226900
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Patch queued for 4.13, thanks.
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+   6736	    856	      0	   7592	   1da8	drivers/video/fbdev/imsttfb.o
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+   6832	    760	      0	   7592	   1da8	drivers/video/fbdev/imsttfb.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/video/fbdev/imsttfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index 4363c64..ecdcf35 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1318,7 +1318,7 @@ imsttfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ 	}
+ }
+ 
+-static struct pci_device_id imsttfb_pci_tbl[] = {
++static const struct pci_device_id imsttfb_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_IMS, PCI_DEVICE_ID_IMS_TT128,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, IBM },
+ 	{ PCI_VENDOR_ID_IMS, PCI_DEVICE_ID_IMS_TT3D,
+-- 
+2.7.4
 

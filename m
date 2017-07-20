@@ -1,7 +1,7 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:52 +0000
-Subject: [PATCH 27/28] video: fbdev: matroxfb: constify pci_device_id.
-Message-Id: <1500572393-18844-28-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:35 +0000
+Subject: [PATCH 10/28] video: fbdev: via: constify pci_device_id.
+Message-Id: <1500572393-18844-11-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
@@ -17,39 +17,30 @@ const pci_device_id. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-  19884	   3036	     96	  23016	   59e8	fbdev/matrox/matroxfb_base.o
+   3856	    968	    128	   4952	   1358	video/fbdev/via/via-core.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-  20300	   2620	     96	  23016	   59e8	fbdev/matrox/matroxfb_base.o
+   4304	    520	    128	   4952	   1358	video/fbdev/via/via-core.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/matrox/matroxfb_base.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/via/via-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 11eb094..a582907 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1623,7 +1623,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
- 	unsigned int memsize;
- 	int err;
- 
--	static struct pci_device_id intel_82437[] = {
-+	static const struct pci_device_id intel_82437[] = {
- 		{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82437) },
- 		{ },
- 	};
-@@ -2116,7 +2116,7 @@ static void pci_remove_matrox(struct pci_dev* pdev) {
- 	matroxfb_remove(minfo, 1);
+diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
+index 1d28e16..77774d8 100644
+--- a/drivers/video/fbdev/via/via-core.c
++++ b/drivers/video/fbdev/via/via-core.c
+@@ -724,7 +724,7 @@ static void via_pci_remove(struct pci_dev *pdev)
  }
  
--static struct pci_device_id matroxfb_devices[] = {
-+static const struct pci_device_id matroxfb_devices[] = {
- #ifdef CONFIG_FB_MATROX_MILLENIUM
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_MIL,
- 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
+ 
+-static struct pci_device_id via_pci_table[] = {
++static const struct pci_device_id via_pci_table[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_CLE266_DID),
+ 	  .driver_data = UNICHROME_CLE266 },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_VIA, UNICHROME_K400_DID),
 -- 
 2.7.4
 

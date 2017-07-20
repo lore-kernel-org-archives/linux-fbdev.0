@@ -1,7 +1,7 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:41 +0000
-Subject: [PATCH 16/28] video: fbdev: vermilion: constify pci_device_id.
-Message-Id: <1500572393-18844-17-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:27 +0000
+Subject: [PATCH 02/28] video: fbdev: atyfb: constify pci_device_id.
+Message-Id: <1500572393-18844-3-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
@@ -17,30 +17,30 @@ const pci_device_id. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-   7953	    568	     96	   8617	   21a9 fbdev/vermilion/vermilion.o
+  17534	   1824	     48	  19406	   4bce	video/fbdev/aty/atyfb_base.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-   8017	    504	     96	   8617	   21a9 fbdev/vermilion/vermilion.o
+  18686	    672	     48	  19406	   4bce	video/fbdev/aty/atyfb_base.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/vermilion/vermilion.c | 2 +-
+ drivers/video/fbdev/aty/atyfb_base.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
-index ce4c472..3fde493 100644
---- a/drivers/video/fbdev/vermilion/vermilion.c
-+++ b/drivers/video/fbdev/vermilion/vermilion.c
-@@ -1044,7 +1044,7 @@ static struct fb_ops vmlfb_ops = {
- 	.fb_setcolreg = vmlfb_setcolreg
- };
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 11026e7..d38cfc6 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3762,7 +3762,7 @@ static void atyfb_pci_remove(struct pci_dev *pdev)
+ 	atyfb_remove(info);
+ }
  
--static struct pci_device_id vml_ids[] = {
-+static const struct pci_device_id vml_ids[] = {
- 	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, VML_DEVICE_VDC)},
- 	{0}
- };
+-static struct pci_device_id atyfb_pci_tbl[] = {
++static const struct pci_device_id atyfb_pci_tbl[] = {
+ #ifdef CONFIG_FB_ATY_GX
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_CHIP_MACH64GX) },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_CHIP_MACH64CX) },
 -- 
 2.7.4
 

@@ -1,48 +1,55 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 21 Jul 2017 10:48:12 +0000
-Subject: [PATCH v4 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
-Message-Id: <20170721104813.5389-4-enric.balletbo@collabora.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:52 +0000
+Subject: [PATCH 27/28] video: fbdev: matroxfb: constify pci_device_id.
+Message-Id: <1500572393-18844-28-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170721104813.5389-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170721104813.5389-1-enric.balletbo@collabora.com>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-For veyron the binding should provide both PWM timings, the delay between
-you enable the PWM and set the enable signal, and the delay between you
-disable the PWM signal and clear the enable signal. Update the binding
-accordingly, in this case the panels connected to the veyron boards have
-a symmetric power sequence, hence the same value is used.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  19884	   3036	     96	  23016	   59e8	fbdev/matrox/matroxfb_base.o
+
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  20300	   2620	     96	  23016	   59e8	fbdev/matrox/matroxfb_base.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
-Changes since v3:
- - Use new -ms names for proprieties.
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch to fix current binding on veyron.
+ drivers/video/fbdev/matrox/matroxfb_base.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
- arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-index d752a31..5a8c7f3 100644
---- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-+++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-@@ -96,7 +96,8 @@
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&bl_en>;
- 		pwms = <&pwm0 0 1000000 0>;
--		pwm-delay-us = <10000>;
-+		post-pwm-on-delay-ms = <10>;
-+		pwm-off-delay-ms = <10>;
- 	};
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index 11eb094..a582907 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -1623,7 +1623,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
+ 	unsigned int memsize;
+ 	int err;
  
- 	gpio-charger {
+-	static struct pci_device_id intel_82437[] = {
++	static const struct pci_device_id intel_82437[] = {
+ 		{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82437) },
+ 		{ },
+ 	};
+@@ -2116,7 +2116,7 @@ static void pci_remove_matrox(struct pci_dev* pdev) {
+ 	matroxfb_remove(minfo, 1);
+ }
+ 
+-static struct pci_device_id matroxfb_devices[] = {
++static const struct pci_device_id matroxfb_devices[] = {
+ #ifdef CONFIG_FB_MATROX_MILLENIUM
+ 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_MIL,
+ 		PCI_ANY_ID,	PCI_ANY_ID,	0, 0, 0},
 -- 
-2.9.3
+2.7.4
 

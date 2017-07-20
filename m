@@ -1,46 +1,46 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Mon, 17 Jul 2017 21:28:10 +0000
-Subject: [PATCH v3 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
-Message-Id: <20170717212811.25374-4-enric.balletbo@collabora.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:45 +0000
+Subject: [PATCH 20/28] video: fbdev: sunxvr500: constify pci_device_id.
+Message-Id: <1500572393-18844-21-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170717212811.25374-1-enric.balletbo@collabora.com>
-In-Reply-To: <20170717212811.25374-1-enric.balletbo@collabora.com>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-For veyron the binding should provide both PWM timings, the delay between
-you enable the PWM and set the enable signal, and the delay between you
-disable the PWM signal and clear the enable signal. Update the binding
-accordingly, in this case the panels connected to the veyron boards have
-a symmetric power sequence, hence the same value is used.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+    170	    488	      0	    658	    292	drivers/video/fbdev/sunxvr500.o
+
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+    394	    264	      0	    658	    292	drivers/video/fbdev/sunxvr500.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch to fix current binding on veyron.
+ drivers/video/fbdev/sunxvr500.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-index d752a31..4cef71f 100644
---- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-+++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-@@ -96,7 +96,8 @@
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&bl_en>;
- 		pwms = <&pwm0 0 1000000 0>;
--		pwm-delay-us = <10000>;
-+		post-pwm-on-delay-us = <10000>;
-+		pwm-off-delay-us = <10000>;
- 	};
+diff --git a/drivers/video/fbdev/sunxvr500.c b/drivers/video/fbdev/sunxvr500.c
+index dc0d886..bc59593 100644
+--- a/drivers/video/fbdev/sunxvr500.c
++++ b/drivers/video/fbdev/sunxvr500.c
+@@ -393,7 +393,7 @@ static int e3d_pci_register(struct pci_dev *pdev,
+ 	return err;
+ }
  
- 	gpio-charger {
+-static struct pci_device_id e3d_pci_table[] = {
++static const struct pci_device_id e3d_pci_table[] = {
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a0),	},
+ 	{	PCI_DEVICE(0x1091, 0x7a0),			},
+ 	{	PCI_DEVICE(PCI_VENDOR_ID_3DLABS, 0x7a2),	},
 -- 
-2.9.3
+2.7.4
 

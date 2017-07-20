@@ -1,7 +1,7 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:38 +0000
-Subject: [PATCH 13/28] video: fbdev: i810: constify pci_device_id.
-Message-Id: <1500572393-18844-14-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:48 +0000
+Subject: [PATCH 23/28] video: fbdev: gxfb: constify pci_device_id.
+Message-Id: <1500572393-18844-24-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
@@ -17,30 +17,30 @@ const pci_device_id. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-  13132	    520	     56	  13708	   358c	video/fbdev/i810/i810_main.o
+   2643	   1616	     16	   4275	   10b3	video/fbdev/geode/gxfb_core.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-  13356	    296	     56	  13708	   358c	video/fbdev/i810/i810_main.o
+   2707	   1552	     16	   4275	   10b3	video/fbdev/geode/gxfb_core.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/i810/i810_main.c | 2 +-
+ drivers/video/fbdev/geode/gxfb_core.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/i810/i810_main.c b/drivers/video/fbdev/i810/i810_main.c
-index 2488baa..f0a758a 100644
---- a/drivers/video/fbdev/i810/i810_main.c
-+++ b/drivers/video/fbdev/i810/i810_main.c
-@@ -107,7 +107,7 @@ static const char * const i810_pci_list[] = {
- 	"Intel(R) 815 (Internal Graphics with AGP) Framebuffer Device"
- };
+diff --git a/drivers/video/fbdev/geode/gxfb_core.c b/drivers/video/fbdev/geode/gxfb_core.c
+index ec9fc9a..f4f7637 100644
+--- a/drivers/video/fbdev/geode/gxfb_core.c
++++ b/drivers/video/fbdev/geode/gxfb_core.c
+@@ -474,7 +474,7 @@ static void gxfb_remove(struct pci_dev *pdev)
+ 	framebuffer_release(info);
+ }
  
--static struct pci_device_id i810fb_pci_tbl[] = {
-+static const struct pci_device_id i810fb_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG1,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82810_IG3,
+-static struct pci_device_id gxfb_id_table[] = {
++static const struct pci_device_id gxfb_id_table[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_NS, PCI_DEVICE_ID_NS_GX_VIDEO) },
+ 	{ 0, }
+ };
 -- 
 2.7.4
 

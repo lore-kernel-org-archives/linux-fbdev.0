@@ -1,50 +1,46 @@
-From: Lynn Lei <lynnl.yet@gmail.com>
-Date: Tue, 04 Jul 2017 15:24:17 +0000
-Subject: [PATCH 3/4] video: fbdev: sm712fb.c: fixed prefer unsigned int warning
-Message-Id: <20170704152417.GA29324@lynnl.yet>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:44 +0000
+Subject: [PATCH 19/28] video: fbdev: tdfx: constify pci_device_id.
+Message-Id: <1500572393-18844-20-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sudipm.mukherjee@gmail.com
-Cc: teddy.wang@siliconmotion.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Fixed several prefer 'unsigned int' over 'unsigned' warnings checked by
-scripts/checkpatch.pl:
-  Prefer 'unsigned int' to bare use of 'unsigned'
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+   8432	   1456	     16	   9904	   26b0	drivers/video/fbdev/tdfxfb.o
+
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+   8560	   1328	     16	   9904	   26b0	drivers/video/fbdev/tdfxfb.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/sm712fb.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/tdfxfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index d492a9e9ac50..172e94146878 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -798,8 +798,8 @@ static void __init sm7xx_vga_setup(char *options)
- 	}
- }
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index d5fa313..dec1fed 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -120,7 +120,7 @@ static const struct fb_var_screeninfo tdfx_var = {
+ static int tdfxfb_probe(struct pci_dev *pdev, const struct pci_device_id *id);
+ static void tdfxfb_remove(struct pci_dev *pdev);
  
--static void sm712_setpalette(int regno, unsigned red, unsigned green,
--			     unsigned blue, struct fb_info *info)
-+static void sm712_setpalette(int regno, unsigned int red, unsigned int green,
-+			     unsigned int blue, struct fb_info *info)
- {
- 	/* set bit 5:4 = 01 (write LCD RAM only) */
- 	smtc_seqw(0x66, (smtc_seqr(0x66) & 0xC3) | 0x10);
-@@ -896,8 +896,9 @@ static int smtc_blank(int blank_mode, struct fb_info *info)
- 	return 0;
- }
- 
--static int smtc_setcolreg(unsigned regno, unsigned red, unsigned green,
--			  unsigned blue, unsigned trans, struct fb_info *info)
-+static int smtc_setcolreg(unsigned int regno, unsigned int red,
-+			  unsigned int green, unsigned int blue,
-+			  unsigned int trans, struct fb_info *info)
- {
- 	struct smtcfb_info *sfb;
- 	u32 val;
+-static struct pci_device_id tdfxfb_id_table[] = {
++static const struct pci_device_id tdfxfb_id_table[] = {
+ 	{ PCI_VENDOR_ID_3DFX, PCI_DEVICE_ID_3DFX_BANSHEE,
+ 	  PCI_ANY_ID, PCI_ANY_ID, PCI_BASE_CLASS_DISPLAY << 16,
+ 	  0xff0000, 0 },
 -- 
-2.13.2
+2.7.4
 

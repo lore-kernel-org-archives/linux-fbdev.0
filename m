@@ -1,87 +1,46 @@
-From: David Lechner <david@lechnology.com>
-Date: Mon, 31 Jul 2017 19:09:45 +0000
-Subject: [PATCH v2 2/2] fbcon: add VT notifier for VT_UPDATE event
-Message-Id: <1501528185-9976-3-git-send-email-david@lechnology.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:49 +0000
+Subject: [PATCH 24/28] video: fbdev: neofb: constify pci_device_id.
+Message-Id: <1500572393-18844-25-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501528185-9976-1-git-send-email-david@lechnology.com>
-In-Reply-To: <1501528185-9976-1-git-send-email-david@lechnology.com>
+References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: David Lechner <david@lechnology.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This adds notifier callback for VT events. We are currently interested
-in the VT_UPDATE event, which indicates there was some major change to
-the VT. This is used to redraw the margins. For example when the console
-is inverted we receive the VT_UPDATE event. The color of the margins depend
-on the inverted state, so it is necessary redraw the margins at this time.
+pci_device_id are not supposed to change at runtime. All functions
+working with pci_device_id provided by <linux/pci.h> work with
+const pci_device_id. So mark the non-const structs as const.
 
-Signed-off-by: David Lechner <david@lechnology.com>
+File size before:
+   text	   data	    bss	    dec	    hex	filename
+  12766	   1064	     21	  13851	   361b	drivers/video/fbdev/neofb.o
+
+File size After adding 'const':
+   text	   data	    bss	    dec	    hex	filename
+  13086	    744	     21	  13851	   361b	drivers/video/fbdev/neofb.o
+
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/console/fbcon.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+ drivers/video/fbdev/neofb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 12ded23..8e7ac2f 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3329,6 +3329,28 @@ static int fbcon_event_notify(struct notifier_block *self,
- 	return ret;
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index db023a9..5d3a444 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -2138,7 +2138,7 @@ static void neofb_remove(struct pci_dev *dev)
+ 	}
  }
  
-+static int vt_notifier_call(struct notifier_block *blk,
-+			    unsigned long code, void *_param)
-+{
-+	struct vt_notifier_param *param = _param;
-+	struct vc_data *vc = param->vc;
-+
-+	switch (code) {
-+	case VT_UPDATE:
-+		/*
-+		 * This event could indicate that the terminal has been
-+		 * inverted (or there was some other major change), in which
-+		 * case we need to re-draw the margins.
-+		 */
-+		if (con_is_visible(vc) && vc->vc_mode = KD_TEXT)
-+			fbcon_clear_margins(vc, 0);
-+		break;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_OK;
-+}
-+
- /*
-  *  The console `switch' structure for the frame buffer based console
-  */
-@@ -3364,6 +3386,10 @@ static struct notifier_block fbcon_event_notifier = {
- 	.notifier_call	= fbcon_event_notify,
- };
+-static struct pci_device_id neofb_devices[] = {
++static const struct pci_device_id neofb_devices[] = {
+ 	{PCI_VENDOR_ID_NEOMAGIC, PCI_CHIP_NM2070,
+ 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, FB_ACCEL_NEOMAGIC_NM2070},
  
-+static struct notifier_block vt_notifier_block = {
-+	.notifier_call = vt_notifier_call,
-+};
-+
- static ssize_t store_rotate(struct device *device,
- 			    struct device_attribute *attr, const char *buf,
- 			    size_t count)
-@@ -3612,6 +3638,7 @@ static int __init fb_console_init(void)
- 
- 	console_lock();
- 	fb_register_client(&fbcon_event_notifier);
-+	register_vt_notifier(&vt_notifier_block);
- 	fbcon_device = device_create(fb_class, NULL, MKDEV(0, 0), NULL,
- 				     "fbcon");
- 
-@@ -3650,6 +3677,7 @@ static void __exit fbcon_deinit_device(void)
- static void __exit fb_console_exit(void)
- {
- 	console_lock();
-+	unregister_vt_notifier(&vt_notifier_block);
- 	fb_unregister_client(&fbcon_event_notifier);
- 	fbcon_deinit_device();
- 	device_destroy(fb_class, MKDEV(0, 0));
 -- 
 2.7.4
 

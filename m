@@ -1,7 +1,7 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:42 +0000
-Subject: [PATCH 17/28] video: fbdev: nvidia: constify pci_device_id.
-Message-Id: <1500572393-18844-18-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:26 +0000
+Subject: [PATCH 01/28] video: fbdev: radeon: constify pci_device_id.
+Message-Id: <1500572393-18844-2-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
@@ -17,30 +17,30 @@ const pci_device_id. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-  12149	    768	     36	  12953	   3299	video/fbdev/nvidia/nvidia.o
+  19709	   5024	     32	  24765	   60bd	video/fbdev/aty/radeon_base.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-  12213	    704	     36	  12953	   3299	video/fbdev/nvidia/nvidia.o
+  22893	   1840	     32	  24765	   60bd	video/fbdev/aty/radeon_base.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/nvidia/nvidia.c | 2 +-
+ drivers/video/fbdev/aty/radeon_base.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/nvidia/nvidia.c b/drivers/video/fbdev/nvidia/nvidia.c
-index ce7dab7..418a2d0 100644
---- a/drivers/video/fbdev/nvidia/nvidia.c
-+++ b/drivers/video/fbdev/nvidia/nvidia.c
-@@ -55,7 +55,7 @@
- /* HW cursor parameters */
- #define MAX_CURS		32
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 6b4c787..dba479e 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -96,7 +96,7 @@
+ #define CHIP_DEF(id, family, flags)					\
+ 	{ PCI_VENDOR_ID_ATI, id, PCI_ANY_ID, PCI_ANY_ID, 0, 0, (flags) | (CHIP_FAMILY_##family) }
  
--static struct pci_device_id nvidiafb_pci_tbl[] = {
-+static const struct pci_device_id nvidiafb_pci_tbl[] = {
- 	{PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
- 	 PCI_BASE_CLASS_DISPLAY << 16, 0xff0000, 0},
- 	{ 0, }
+-static struct pci_device_id radeonfb_pci_table[] = {
++static const struct pci_device_id radeonfb_pci_table[] = {
+         /* Radeon Xpress 200m */
+ 	CHIP_DEF(PCI_CHIP_RS480_5955,   RS480,  CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	CHIP_DEF(PCI_CHIP_RS482_5975,	RS480,	CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
 -- 
 2.7.4
 

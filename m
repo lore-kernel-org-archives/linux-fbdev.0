@@ -1,7 +1,7 @@
 From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:30 +0000
-Subject: [PATCH 05/28] video: fbdev: asiliantfb: constify pci_device_id.
-Message-Id: <1500572393-18844-6-git-send-email-arvind.yadav.cs@gmail.com>
+Date: Thu, 20 Jul 2017 17:51:51 +0000
+Subject: [PATCH 26/28] video: fbdev: pm3fb: constify pci_device_id.
+Message-Id: <1500572393-18844-27-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
 In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
@@ -17,30 +17,30 @@ const pci_device_id. So mark the non-const structs as const.
 
 File size before:
    text	   data	    bss	    dec	    hex	filename
-   4703	    512	      0	   5215	   145f	drivers/video/fbdev/asiliantfb.o
+  10332	    596	     16	  10944	   2ac0	drivers/video/fbdev/pm3fb.o
 
 File size After adding 'const':
    text	   data	    bss	    dec	    hex	filename
-   4767	    448	      0	   5215	   145f	drivers/video/fbdev/asiliantfb.o
+  10396	    532	     16	  10944	   2ac0	drivers/video/fbdev/pm3fb.o
 
 Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/asiliantfb.c | 2 +-
+ drivers/video/fbdev/pm3fb.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/asiliantfb.c b/drivers/video/fbdev/asiliantfb.c
-index 91eea45..ea31054 100644
---- a/drivers/video/fbdev/asiliantfb.c
-+++ b/drivers/video/fbdev/asiliantfb.c
-@@ -592,7 +592,7 @@ static void asiliantfb_remove(struct pci_dev *dp)
- 	framebuffer_release(p);
+diff --git a/drivers/video/fbdev/pm3fb.c b/drivers/video/fbdev/pm3fb.c
+index 6ff5077..6130aa5 100644
+--- a/drivers/video/fbdev/pm3fb.c
++++ b/drivers/video/fbdev/pm3fb.c
+@@ -1479,7 +1479,7 @@ static void pm3fb_remove(struct pci_dev *dev)
+ 	}
  }
  
--static struct pci_device_id asiliantfb_pci_tbl[] = {
-+static const struct pci_device_id asiliantfb_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_CT, PCI_DEVICE_ID_CT_69000, PCI_ANY_ID, PCI_ANY_ID },
- 	{ 0 }
- };
+-static struct pci_device_id pm3fb_id_table[] = {
++static const struct pci_device_id pm3fb_id_table[] = {
+ 	{ PCI_VENDOR_ID_3DLABS, 0x0a,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ 0, }
 -- 
 2.7.4
 

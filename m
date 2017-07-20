@@ -1,66 +1,61 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 20 Jul 2017 08:10:38 +0000
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Date: Thu, 20 Jul 2017 10:03:40 +0000
 Subject: Re: [PATCH v3 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
-Message-Id: <20170720081038.GD13103@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="q9KOos5vDmpwPx9o"
+Message-Id: <CAFqH_51DezYBsf9Ny1MngOFxZc5HazbH_RHtbwhHodpQmTw0Mg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170717212811.25374-1-enric.balletbo@collabora.com>
- <20170717212811.25374-5-enric.balletbo@collabora.com>
-In-Reply-To: <20170717212811.25374-5-enric.balletbo@collabora.com>
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+ <20170717212811.25374-5-enric.balletbo@collabora.com> <20170720081038.GD13103@amd>
+In-Reply-To: <20170720081038.GD13103@amd>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, Linux PWM List <linux-pwm@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>
 
+Pavel,
 
---q9KOos5vDmpwPx9o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+2017-07-20 10:10 GMT+02:00 Pavel Machek <pavel@ucw.cz>:
+> On Mon 2017-07-17 23:28:11, Enric Balletbo i Serra wrote:
+>> The minnie devices comes with an AUO B101EAN01 panel which is different
+>> from default veyron devices, thus the power on/off timing sequence is
+>> slightly different. The datasheet specifies a pwm delay of 200 ms, so
+>> update the PMW delay proprieties accordingly.
+>
+> Wait a wait a moment!
+>
+>> --- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+>> +++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+>> @@ -123,6 +123,8 @@
+>>                       240 241 242 243 244 245 246 247
+>>                       248 249 250 251 252 253 254 255>;
+>>       power-supply = <&backlight_regulator>;
+>> +     post-pwm-on-delay-us = <20000>;
+>
+> -us = <20 000>;
+>
+> This is not 200 msec.
+>
 
-On Mon 2017-07-17 23:28:11, Enric Balletbo i Serra wrote:
-> The minnie devices comes with an AUO B101EAN01 panel which is different
-> from default veyron devices, thus the power on/off timing sequence is
-> slightly different. The datasheet specifies a pwm delay of 200 ms, so
-> update the PMW delay proprieties accordingly.
+Oops, good catch.
 
-Wait a wait a moment!
+> Plus, it is quite anti-social to do udelay(200 000).
+>
+> Plus, it is very anti-socifal to use udelay_range(200msec,
+> 400msec).
+>
+> Whoever told you udelay_range is good thing to use -- it is not, and
+> it is certainly not worth making user wait 200msec more!
+>
 
-> --- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-> +++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-> @@ -123,6 +123,8 @@
->  			240 241 242 243 244 245 246 247
->  			248 249 250 251 252 253 254 255>;
->  	power-supply =3D <&backlight_regulator>;
-> +	post-pwm-on-delay-us =3D <20000>;
+Checked again some datasheets and seems that or not require a delay or
+the delays are 10ms+, so according to [1] I'll use msleep instead.
 
--us =3D <20 000>;
+[1] https://www.kernel.org/doc/Documentation/timers/timers-howto.txt
 
-This is not 200 msec.
+Thanks,
+ Enric
 
-Plus, it is quite anti-social to do udelay(200 000).
-
-Plus, it is very anti-socifal to use udelay_range(200msec,
-400msec).
-
-Whoever told you udelay_range is good thing to use -- it is not, and
-it is certainly not worth making user wait 200msec more!
-
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---q9KOos5vDmpwPx9o
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAllwZX4ACgkQMOfwapXb+vLJ1QCgwpNZaA/L48IiOMzV3VaQpMzw
-1vwAn2VqChHxXxuBdBFIyX4uakny7hr2
-=Pz6u
------END PGP SIGNATURE-----
-
---q9KOos5vDmpwPx9o--
+>                                                                         Pavel
+> --
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

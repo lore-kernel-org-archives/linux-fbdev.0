@@ -1,95 +1,73 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sun, 30 Jul 2017 18:19:06 +0000
-Subject: Re: [PATCH 2/6] drm/tinydrm: add helpers for ST7586 controllers
-Message-Id: <CAHp75VdwMbe4g_xAtm3EgK4TiF3mubCWKykFA6Pn=iVk53XMRQ@mail.gmail.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 21 Jul 2017 10:48:09 +0000
+Subject: [PATCH v4 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20170721104813.5389-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501355870-13960-1-git-send-email-david@lechnology.com>
- <1501355870-13960-3-git-send-email-david@lechnology.com>
-In-Reply-To: <1501355870-13960-3-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Lechner <david@lechnology.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>, dri-devel@lists.freedesktop.org, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-On Sat, Jul 29, 2017 at 10:17 PM, David Lechner <david@lechnology.com> wrote:
-> This adds helper functions and support for ST7586 controllers. These
-> controllers have an unusual memory layout where 3 pixels are packed into
-> 1 byte.
->
-> +-------+-----------------+
-> | bit   | 7 6 5 4 3 2 1 0 |
-> +-------+-----------------+
-> | pixel | 0 0 0 1 1 1 2 2 |
-> +-------+-----------------+
->
-> So, there are a nuber of places in the tinydrm pipline where this format
+Before this patch the enable signal was set before the PWM signal and
+vice-versa on power off. This sequence is wrong, at least, it is on
+the different panels datasheets that I checked, so I inverted the sequence
+to follow the specs.
 
-number
+For reference the following panels have the mentioned sequence:
+  - N133HSE-EA1 (Innolux)
+  - N116BGE (Innolux)
+  - N156BGE-L21 (Innolux)
+  - B101EAN0 (Auo)
+  - B101AW03 (Auo)
+  - LTN101NT05 (Samsung)
+  - CLAA101WA01A (Chunghwa)
 
-> needs to be taken into consideration.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+Changes since v3:
+ - List the part numbers for the panel checked (Daniel Thompson)
+Changes since v2:
+ - Add this as a separate patch (Thierry Reding)
+Changes since v1:
+ - None
 
-> + * tinydrm_rgb565_to_st7586 - Convert RGB565 to ST7586 clip buffer
+ drivers/video/backlight/pwm_bl.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-How this can be generic tinydrm helper?
-Why driver can't handle it by its own and avoid spreading stuff into
-generic header?
-
-> +void tinydrm_rgb565_to_st7586(u8 *dst, void *vaddr,
-
-> + * tinydrm_xrgb8888_to_st7586 - Convert XRGB8888 to ST7586 clip buffer
-
-> +void tinydrm_xrgb8888_to_st7586(u8 *dst, void *vaddr,
-
-Ditto.
-
-> -       switch (fb->format->format) {
-> -       case DRM_FORMAT_RGB565:
-> -               if (swap)
-> -                       tinydrm_swab16(dst, src, fb, clip);
-> -               else
-> -                       tinydrm_memcpy(dst, src, fb, clip);
-> +       switch (pixel_fmt) {
-> +       case MIPI_DCS_PIXEL_FMT_16BIT:
-> +               switch (fb->format->format) {
-> +               case DRM_FORMAT_RGB565:
-> +                       if (swap)
-> +                               tinydrm_swab16(dst, src, fb, clip);
-> +                       else
-> +                               tinydrm_memcpy(dst, src, fb, clip);
-> +                       break;
-
-Can't you use some other approach? Callbacks? Plugins?
-
-> +       switch (mipi->pixel_fmt) {
-> +       case MIPI_DCS_PIXEL_FMT_16BIT:
-> +               len = width * height * sizeof(u16);
-> +               break;
-> +       case MIPI_DCS_PIXEL_FMT_ST7586_332:
-> +               width = (width + 2) / 3;
-> +               len = width * height;
-> +               break;
-
-Ditto.
-
-> +       case MIPI_DCS_PIXEL_FMT_ST7586_332:
-> +               /* 3 pixels per byte */
-> +               bufsize = (mode->vdisplay + 2) / 3 * mode->hdisplay;
-> +               break;
-
-Ditto.
-
-> -       if (cmd = MIPI_DCS_WRITE_MEMORY_START && !mipi->swap_bytes)
-> +       if (cmd = MIPI_DCS_WRITE_MEMORY_START && !mipi->swap_bytes &&
-> +           mipi->pixel_fmt != MIPI_DCS_PIXEL_FMT_ST7586_332)
-
-Ditto.
-
-If we allow this we end up to have 100500 LOCs in tinydrm-helpers.c
-which will have nothing to do with the framework itself.
-
-
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 002f1ce..909a686 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
 -- 
-With Best Regards,
-Andy Shevchenko
+2.9.3
+

@@ -1,42 +1,61 @@
-From: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 03 Jul 2017 06:21:52 +0000
-Subject: Re: [PATCH] staging: sm750fb: refactor the clock frequency calculation method
-Message-Id: <20170703062152.GC13523@kroah.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 21 Jul 2017 10:48:10 +0000
+Subject: [PATCH v4 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
+Message-Id: <20170721104813.5389-2-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170702122426.GA17561@lynnl.wit>
-In-Reply-To: <20170702122426.GA17561@lynnl.wit>
+References: <20170721104813.5389-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170721104813.5389-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lynn Lei <lynnl.wit@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, teddy.wang@siliconmotion.com, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org
 
-On Sun, Jul 02, 2017 at 08:24:26PM +0800, Lynn Lei wrote:
-> speed up calculation by merging two divisions into one.
+Hardware needs a delay between setting an initial (non-zero) PWM and
+enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
+this delay in milli seconds. Hardware also needs a delay between disabing
+the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
+is this delay in milli seconds.
 
-How much did you speed it up?  Please provide proof of anything like
-this if you say it is a speed up.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+Based on the original Huang Lin <hl@rock-chips.com> work.
 
-> 
-> Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
-> ---
->  drivers/staging/sm750fb/ddk750_chip.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
-> index c51761221131..5970c3792f27 100644
-> --- a/drivers/staging/sm750fb/ddk750_chip.c
-> +++ b/drivers/staging/sm750fb/ddk750_chip.c
-> @@ -44,7 +44,7 @@ static unsigned int get_mxclk_freq(void)
->  	OD = (pll_reg & PLL_CTRL_OD_MASK) >> PLL_CTRL_OD_SHIFT;
->  	POD = (pll_reg & PLL_CTRL_POD_MASK) >> PLL_CTRL_POD_SHIFT;
->  
-> -	return DEFAULT_INPUT_CLOCK * M / N / (1 << OD) / (1 << POD);
-> +	return DEFAULT_INPUT_CLOCK * M / N / (1 << (OD + POD));
+Changes since v3:
+ - Replace us for ms.
+ - Add Acked-by: Pavel Machek <pavel@ucw.cz>
+Changes since v2:
+ - Use separate properties (Rob Herring)
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
 
-Are you sure that gcc didn't already do this for you?  It's a constant
-number, I doubt this did anything at all.
+ Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-thanks,
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 764db86..3108109 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -17,6 +17,10 @@ Optional properties:
+                "pwms" property (see PWM binding[0])
+   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+                   and disables the backlight (see GPIO binding[1])
++  - post-pwm-on-delay-ms: Delay in ms between setting an initial (non-zero) PWM
++                          and enabling the backlight using GPIO.
++  - pwm-off-delay-ms: Delay in ms between disabling the backlight using GPIO
++                      and setting PWM value to 0.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+@@ -32,4 +36,6 @@ Example:
+ 
+ 		power-supply = <&vdd_bl_reg>;
+ 		enable-gpios = <&gpio 58 0>;
++		post-pwm-on-delay-ms = <10>;
++		pwm-off-delay-ms = <10>;
+ 	};
+-- 
+2.9.3
 
-greg k-h

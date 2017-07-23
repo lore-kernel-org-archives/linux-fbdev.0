@@ -1,28 +1,252 @@
-From: Andy Shevchenko <andy.shevchenko@gmail.com>
-Date: Sun, 30 Jul 2017 18:24:03 +0000
-Subject: Re: [PATCH 4/6] drm/tinydrm: mipi-panel: refactor to use driver id
-Message-Id: <CAHp75VcdGi=TkB_7fPHROYoKJFUPZPGi=HvUAHuAvgZy-1_Epw@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 23 Jul 2017 10:32:39 +0000
+Subject: [PATCH v4] video/console: Add dmi quirk table for x86 systems which need fbcon rotation
+Message-Id: <20170723103239.26019-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501355870-13960-1-git-send-email-david@lechnology.com> <1501355870-13960-5-git-send-email-david@lechnology.com>
-In-Reply-To: <1501355870-13960-5-git-send-email-david-nq/r/kbU++upp/zk7JDF2g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Lechner <david-nq/r/kbU++upp/zk7JDF2g@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, =?UTF-8?Q?Noralf_Tr=C3=B8nnes?= <noralf-L59+Z2yzLopAfugRpC6u6w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm Mailing List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-On Sat, Jul 29, 2017 at 10:17 PM, David Lechner <david@lechnology.com> wrote:
-> This refactors the mipi-panel module to use the driver id for panel-specific
-> data. This is in preparation for adding additional panels.
->
+Some x86 clamshell design devices use portrait tablet screens and a
+display engine which cannot rotate in hardware, so we need to rotate
+the fbcon to compensate.
 
-Wouldn't be better to split glue driver from what looks like more
-generic in the first place? Then you will not need to spread some
-stuff
-over generic files.
+This commit adds a DMI based quirk table which is initially populated with
+4 such devices: The Asus T100HA, GPD Pocket, the GPD win and the I.T.Works
+TW891, so that the console comes up in the right orientation on these
+devices OOTB.
 
-Are we going to disrupt genericy of the framework already with second driver?!
+Unfortunately these (cheap) devices also typically have quite generic DMI
+data, so we match on a combination of DMI data, screen resolution and a
+list of known BIOS dates to avoid false positives.
 
+Suggested-by: Jean Delvare <jdelvare@suse.de>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-Extend the commit message explaining why dmi_check_system does not work
+ and this commit exports and uses dmi_matches instead
+
+Changes in v3:
+-The exporting of dmi_matches has been split out in a separate patch
+-Use u32 for width/height in struct fbcon_dmi_rotate_data to match the
+ type of fb_var_screeninfo.xres / .yres
+
+Changes in v4:
+-Use dmi_first_match instead of exporting dmi_matches
+-Use DMI_EXACT_MATCH
+-Add the Asus T100HA to the list of devices needing rotation
+---
+ drivers/video/console/Makefile           |   3 +
+ drivers/video/console/fbcon.c            |  12 ++-
+ drivers/video/console/fbcon.h            |   7 +-
+ drivers/video/console/fbcon_dmi_quirks.c | 130 +++++++++++++++++++++++++++++++
+ 4 files changed, 148 insertions(+), 4 deletions(-)
+ create mode 100644 drivers/video/console/fbcon_dmi_quirks.c
+
+diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
+index 43bfa485db96..32ee2ad37369 100644
+--- a/drivers/video/console/Makefile
++++ b/drivers/video/console/Makefile
+@@ -15,5 +15,8 @@ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
+ obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+                                          fbcon_ccw.o
+ endif
++ifeq ($(CONFIG_DMI),y)
++obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_dmi_quirks.o
++endif
+ 
+ obj-$(CONFIG_FB_STI)              += sticore.o
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 12ded23f1aaf..3db5ac2bfbb7 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -135,7 +135,7 @@ static char fontname[40];
+ static int info_idx = -1;
+ 
+ /* console rotation */
+-static int initial_rotation;
++static int initial_rotation = -1;
+ static int fbcon_has_sysfs;
+ 
+ static const struct consw fb_con;
+@@ -954,7 +954,10 @@ static const char *fbcon_startup(void)
+ 	ops->cur_rotate = -1;
+ 	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+-	p->con_rotate = initial_rotation;
++	if (initial_rotation != -1)
++		p->con_rotate = initial_rotation;
++	else
++		p->con_rotate = fbcon_platform_get_rotate(info);
+ 	set_blitting_type(vc, info);
+ 
+ 	if (info->fix.type != FB_TYPE_TEXT) {
+@@ -1091,7 +1094,10 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 
+ 	ops = info->fbcon_par;
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+-	p->con_rotate = initial_rotation;
++	if (initial_rotation != -1)
++		p->con_rotate = initial_rotation;
++	else
++		p->con_rotate = fbcon_platform_get_rotate(info);
+ 	set_blitting_type(vc, info);
+ 
+ 	cols = vc->vc_cols;
+diff --git a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+index 7aaa4eabbba0..60e25e173fdb 100644
+--- a/drivers/video/console/fbcon.h
++++ b/drivers/video/console/fbcon.h
+@@ -261,5 +261,10 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
+ #define fbcon_set_rotate(x) do {} while(0)
+ #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
+ 
+-#endif /* _VIDEO_FBCON_H */
++#ifdef CONFIG_DMI
++int fbcon_platform_get_rotate(struct fb_info *info);
++#else
++#define fbcon_platform_get_rotate(i) FB_ROTATE_UR
++#endif /* CONFIG_DMI */
+ 
++#endif /* _VIDEO_FBCON_H */
+diff --git a/drivers/video/console/fbcon_dmi_quirks.c b/drivers/video/console/fbcon_dmi_quirks.c
+new file mode 100644
+index 000000000000..01fefd888454
+--- /dev/null
++++ b/drivers/video/console/fbcon_dmi_quirks.c
+@@ -0,0 +1,130 @@
++/*
++ *  fbcon_dmi_quirks.c -- DMI based quirk detection for fbcon
++ *
++ *	Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of this archive for
++ *  more details.
++ */
++
++#include <linux/dmi.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include "fbcon.h"
++
++/*
++ * Some x86 clamshell design devices use portrait tablet screens and a display
++ * engine which cannot rotate in hardware, so we need to rotate the fbcon to
++ * compensate. Unfortunately these (cheap) devices also typically have quite
++ * generic DMI data, so we match on a combination of DMI data, screen resolution
++ * and a list of known BIOS dates to avoid false positives.
++ */
++
++struct fbcon_dmi_rotate_data {
++	int width;
++	int height;
++	const char * const *bios_dates;
++	int rotate;
++};
++
++static const struct fbcon_dmi_rotate_data rotate_data_asus_t100ha = {
++	.width = 800,
++	.height = 1280,
++	.rotate = FB_ROTATE_CCW,
++};
++
++static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
++	.width = 1200,
++	.height = 1920,
++	.bios_dates = (const char * const []){ "05/26/2017", NULL },
++	.rotate = FB_ROTATE_CW,
++};
++
++static const struct fbcon_dmi_rotate_data rotate_data_gpd_win = {
++	.width = 720,
++	.height = 1280,
++	.bios_dates = (const char * const []){
++		"10/25/2016", "11/18/2016", "02/21/2017",
++		"03/20/2017", NULL },
++	.rotate = FB_ROTATE_CW,
++};
++
++static const struct fbcon_dmi_rotate_data rotate_data_itworks_tw891 = {
++	.width = 800,
++	.height = 1280,
++	.bios_dates = (const char * const []){ "10/16/2015", NULL },
++	.rotate = FB_ROTATE_CW,
++};
++
++static const struct dmi_system_id rotate_data[] = {
++	{	/* Asus T100HA */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100HAN"),
++		},
++		.driver_data = (void *)&rotate_data_asus_t100ha,
++	}, {	/*
++		 * GPD Pocket, note that the the DMI data is less generic then
++		 * it seems, devices with a board-vendor of "AMI Corporation"
++		 * are quite rare, as are devices which have both board- *and*
++		 * product-id set to "Default String"
++		 */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
++		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
++		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
++		},
++		.driver_data = (void *)&rotate_data_gpd_pocket,
++	}, {	/* GPD Win (same note on DMI match as GPD Pocket) */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
++		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
++		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
++		},
++		.driver_data = (void *)&rotate_data_gpd_win,
++	}, {	/* I.T.Works TW891 */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "To be filled by O.E.M."),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "TW891"),
++		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
++		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "TW891"),
++		},
++		.driver_data = (void *)&rotate_data_itworks_tw891,
++	},
++	{}
++};
++
++int fbcon_platform_get_rotate(struct fb_info *info)
++{
++	const struct dmi_system_id *match;
++	const struct fbcon_dmi_rotate_data *data;
++	const char *bios_date;
++	int i;
++
++	for (match = dmi_first_match(rotate_data);
++	     match;
++	     match = dmi_first_match(match + 1)) {
++		data = match->driver_data;
++
++		if (data->width != info->var.xres ||
++		    data->height != info->var.yres)
++			continue;
++
++		if (!data->bios_dates)
++			return data->rotate;
++
++		bios_date = dmi_get_system_info(DMI_BIOS_DATE);
++		if (!bios_date)
++			continue;
++
++		for (i = 0; data->bios_dates[i]; i++) {
++			if (!strcmp(data->bios_dates[i], bios_date))
++				return data->rotate;
++		}
++	}
++
++	return FB_ROTATE_UR;
++}
 -- 
-With Best Regards,
-Andy Shevchenko
+2.13.0
+

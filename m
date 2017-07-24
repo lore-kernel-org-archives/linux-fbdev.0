@@ -1,7 +1,7 @@
 From: Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>
-Date: Mon, 24 Jul 2017 01:29:37 +0000
+Date: Mon, 24 Jul 2017 01:37:36 +0000
 Subject: [PATCH 3/3][resend] omapfb: use of_graph_get_remote_endpoint()
-Message-Id: <87a83uy6es.wl%kuninori.morimoto.gx@renesas.com>
+Message-Id: <877eyyy61h.wl%kuninori.morimoto.gx@renesas.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <87eft6y6hm.wl%kuninori.morimoto.gx@renesas.com>
 In-Reply-To: <87eft6y6hm.wl%kuninori.morimoto.gx-zM6kxYcvzFBBDgjK7y7TUQ@public.gmane.org>

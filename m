@@ -1,65 +1,90 @@
-From: David Lechner <david@lechnology.com>
-Date: Sat, 29 Jul 2017 19:17:50 +0000
-Subject: [PATCH 6/6] ARM: dts: da850-lego-ev3: Add node for LCD display
-Message-Id: <1501355870-13960-7-git-send-email-david@lechnology.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Date: Tue, 25 Jul 2017 17:38:51 +0000
+Subject: [RESEND PATCH v2 1/2] drm/exynos/decon: Move headers from global to local place
+Message-Id: <1501004332-8093-1-git-send-email-krzk@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501355870-13960-1-git-send-email-david@lechnology.com>
-In-Reply-To: <1501355870-13960-1-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org
-Cc: David Lechner <david@lechnology.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Inki Dae <inki.dae@samsung.com>, Joonyoung Shim <jy0922.shim@samsung.com>, Seung-Woo Kim <sw0312.kim@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, David Airlie <airlied@linux.ie>, Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>
 
-This adds a new node for the LEGO MINDSTORMS EV3 LCD display.
+The DECON headers contain only defines for registers.  There are no
+other drivers using them so this should be put locally to the Exynos DRM
+driver.  Keeping headers local helps managing the code.
 
-Signed-off-by: David Lechner <david@lechnology.com>
+Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+
 ---
- arch/arm/boot/dts/da850-lego-ev3.dts | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
 
-diff --git a/arch/arm/boot/dts/da850-lego-ev3.dts b/arch/arm/boot/dts/da850-lego-ev3.dts
-index 45983c0..249b317 100644
---- a/arch/arm/boot/dts/da850-lego-ev3.dts
-+++ b/arch/arm/boot/dts/da850-lego-ev3.dts
-@@ -249,6 +249,15 @@
- 			0x4c 0x00000080 0x000000f0
- 		>;
- 	};
-+
-+	ev3_lcd_pins: pinmux_lcd {
-+		pinctrl-single,bits = <
-+			/* SIMO, GP2[11], GP2[12], CLK */
-+			0x14 0x00188100 0x00ffff00
-+			/* GP5[0] */
-+			0x30 0x80000000 0xf0000000
-+		>;
-+	};
- };
+Changes since v1:
+1. Just re-order patches in patchset.
+---
+ drivers/gpu/drm/exynos/exynos5433_drm_decon.c                          | 3 +--
+ drivers/gpu/drm/exynos/exynos7_drm_decon.c                             | 2 +-
+ .../exynos5433_decon.h => drivers/gpu/drm/exynos/regs-decon5433.h      | 0
+ include/video/exynos7_decon.h => drivers/gpu/drm/exynos/regs-decon7.h  | 3 +--
+ 4 files changed, 3 insertions(+), 5 deletions(-)
+ rename include/video/exynos5433_decon.h => drivers/gpu/drm/exynos/regs-decon5433.h (100%)
+ rename include/video/exynos7_decon.h => drivers/gpu/drm/exynos/regs-decon7.h (99%)
+
+diff --git a/drivers/gpu/drm/exynos/exynos5433_drm_decon.c b/drivers/gpu/drm/exynos/exynos5433_drm_decon.c
+index 5792ca88ab7a..5aca8c16f2bc 100644
+--- a/drivers/gpu/drm/exynos/exynos5433_drm_decon.c
++++ b/drivers/gpu/drm/exynos/exynos5433_drm_decon.c
+@@ -19,13 +19,12 @@
+ #include <linux/pm_runtime.h>
+ #include <linux/regmap.h>
  
- &pinconf {
-@@ -357,6 +366,21 @@
- 	};
- };
+-#include <video/exynos5433_decon.h>
+-
+ #include "exynos_drm_drv.h"
+ #include "exynos_drm_crtc.h"
+ #include "exynos_drm_fb.h"
+ #include "exynos_drm_plane.h"
+ #include "exynos_drm_iommu.h"
++#include "regs-decon5433.h"
  
-+&spi1 {
-+	status = "okay";
-+	pinctrl-0 = <&ev3_lcd_pins>;
-+	pinctrl-names = "default";
-+	cs-gpios = <&gpio 44 GPIO_ACTIVE_LOW>;
-+
-+	display@0{
-+		compatible = "lego,ev3-lcd";
-+		reg = <0>;
-+		spi-max-frequency = <10000000>;
-+		dc-gpios = <&gpio 43 GPIO_ACTIVE_HIGH>;
-+		reset-gpios = <&gpio 80 GPIO_ACTIVE_HIGH>;
-+	};
-+};
-+
- &ehrpwm0 {
- 	status = "okay";
- };
+ #define DSD_CFG_MUX 0x1004
+ #define DSD_CFG_MUX_TE_UNMASK_GLOBAL BIT(13)
+diff --git a/drivers/gpu/drm/exynos/exynos7_drm_decon.c b/drivers/gpu/drm/exynos/exynos7_drm_decon.c
+index 3e88269fdc2e..387e436c97d2 100644
+--- a/drivers/gpu/drm/exynos/exynos7_drm_decon.c
++++ b/drivers/gpu/drm/exynos/exynos7_drm_decon.c
+@@ -25,13 +25,13 @@
+ 
+ #include <video/of_display_timing.h>
+ #include <video/of_videomode.h>
+-#include <video/exynos7_decon.h>
+ 
+ #include "exynos_drm_crtc.h"
+ #include "exynos_drm_plane.h"
+ #include "exynos_drm_drv.h"
+ #include "exynos_drm_fb.h"
+ #include "exynos_drm_iommu.h"
++#include "regs-decon7.h"
+ 
+ /*
+  * DECON stands for Display and Enhancement controller.
+diff --git a/include/video/exynos5433_decon.h b/drivers/gpu/drm/exynos/regs-decon5433.h
+similarity index 100%
+rename from include/video/exynos5433_decon.h
+rename to drivers/gpu/drm/exynos/regs-decon5433.h
+diff --git a/include/video/exynos7_decon.h b/drivers/gpu/drm/exynos/regs-decon7.h
+similarity index 99%
+rename from include/video/exynos7_decon.h
+rename to drivers/gpu/drm/exynos/regs-decon7.h
+index a62b11b613f6..339ea1007ff5 100644
+--- a/include/video/exynos7_decon.h
++++ b/drivers/gpu/drm/exynos/regs-decon7.h
+@@ -1,5 +1,4 @@
+-/* include/video/exynos7_decon.h
+- *
++/*
+  * Copyright (c) 2014 Samsung Electronics Co., Ltd.
+  * Author: Ajay Kumar <ajaykumar.rs@samsung.com>
+  *
 -- 
 2.7.4
 

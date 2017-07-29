@@ -1,48 +1,57 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 20 Jul 2017 08:04:28 +0000
-Subject: Re: [PATCH v3 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
-Message-Id: <20170720080428.GB13103@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="TakKZr9L6Hm6aLOc"
+From: David Lechner <david@lechnology.com>
+Date: Sat, 29 Jul 2017 19:17:44 +0000
+Subject: [PATCH 0/6] Support for LEGO MINDSTORMS EV3 LCD display
+Message-Id: <1501355870-13960-1-git-send-email-david@lechnology.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170717212811.25374-1-enric.balletbo@collabora.com>
- <20170717212811.25374-2-enric.balletbo@collabora.com>
-In-Reply-To: <20170717212811.25374-2-enric.balletbo@collabora.com>
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org
+Cc: David Lechner <david@lechnology.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
+The goal of this series is to get the built-in LCD of the LEGO MINDSTORMS EV3
+working. But, most of the content here is building up the infrastructure to do
+that.
 
---TakKZr9L6Hm6aLOc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The controller used in the EV3 uses MIPI commands, but it uses a different
+memory layout. The current tinydrm stuff is hard-coded for RGB565, so most
+of the patches are adding support for other memory layouts.
 
-On Mon 2017-07-17 23:28:08, Enric Balletbo i Serra wrote:
-> Hardware needs a delay between setting an initial (non-zero) PWM and
-> enabling the backlight using GPIO. The post-pwm-on-delay-us specifies
-> this delay in micro seconds. Hardware also needs a delay between disabing
-> the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-us
-> is this delay in micro seconds.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+I've also made the one existing tinydrm driver generic so that it can work for
+any MIPI display rather than copying a bunch of boiler-plate code for each
+panel and/or controller.
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Once all of this is done, it is really easy to add a new panel. :-)
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+David Lechner (6):
+  drm/tinydrm: Add parameter for MIPI DCS pixel format
+  drm/tinydrm: add helpers for ST7586 controllers
+  drm/tinydrm: rename mi028qt module to mipi-panel
+  drm/tinydrm: mipi-panel: refactor to use driver id
+  drm/tinydrm: add support for LEGO MINDSTORMS EV3 LCD
+  ARM: dts: da850-lego-ev3: Add node for LCD display
 
---TakKZr9L6Hm6aLOc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+ .../devicetree/bindings/display/mipi-panel.txt     |  27 ++
+ .../bindings/display/multi-inno,mi0283qt.txt       |  27 --
+ MAINTAINERS                                        |   6 +-
+ arch/arm/boot/dts/da850-lego-ev3.dts               |  24 ++
+ drivers/gpu/drm/tinydrm/Kconfig                    |  13 +-
+ drivers/gpu/drm/tinydrm/Makefile                   |   2 +-
+ drivers/gpu/drm/tinydrm/core/tinydrm-helpers.c     | 148 ++++++++
+ drivers/gpu/drm/tinydrm/mi0283qt.c                 | 282 ---------------
+ drivers/gpu/drm/tinydrm/mipi-dbi.c                 | 117 ++++--
+ drivers/gpu/drm/tinydrm/mipi-panel.c               | 395 +++++++++++++++++++++
+ include/drm/tinydrm/mipi-dbi.h                     |   9 +-
+ include/drm/tinydrm/st7586.h                       |  34 ++
+ include/drm/tinydrm/tinydrm-helpers.h              |   6 +
+ include/video/mipi_display.h                       |  16 +-
+ 14 files changed, 759 insertions(+), 347 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/display/mipi-panel.txt
+ delete mode 100644 Documentation/devicetree/bindings/display/multi-inno,mi0283qt.txt
+ delete mode 100644 drivers/gpu/drm/tinydrm/mi0283qt.c
+ create mode 100644 drivers/gpu/drm/tinydrm/mipi-panel.c
+ create mode 100644 include/drm/tinydrm/st7586.h
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+-- 
+2.7.4
 
-iEYEARECAAYFAllwZAsACgkQMOfwapXb+vK9ZwCdEqd8WQzcgov6kYCLGT+QNmdn
-9p8AnR0EMIiWBYpskPy2Vuk6RVmfG14r
-=z/h7
------END PGP SIGNATURE-----
-
---TakKZr9L6Hm6aLOc--

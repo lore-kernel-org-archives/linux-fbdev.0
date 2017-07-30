@@ -1,7 +1,7 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 25 Jul 2017 16:05:38 +0000
-Subject: [PATCH v5] video/console: Add dmi quirk table for x86 systems which need fbcon rotation
-Message-Id: <20170725160538.1983-1-hdegoede@redhat.com>
+Date: Sun, 30 Jul 2017 06:59:19 +0000
+Subject: [PATCH v6] video/console: Add dmi quirk table for x86 systems which need fbcon rotation
+Message-Id: <20170730065919.26757-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -42,6 +42,9 @@ Changes in v4:
 Changes in v5:
 -Add Reviewed-by: Jean Delvare <jdelvare@suse.de>
 -Add extra BIOS-date to known GDP pocket BIOS dates
+
+Changes in v6:
+-Add another extra BIOS-date to known GDP pocket BIOS dates
 ---
  drivers/video/console/Makefile           |   3 +
  drivers/video/console/fbcon.c            |  12 ++-
@@ -118,7 +121,7 @@ index 7aaa4ea..60e25e1 100644
 +#endif /* _VIDEO_FBCON_H */
 diff --git a/drivers/video/console/fbcon_dmi_quirks.c b/drivers/video/console/fbcon_dmi_quirks.c
 new file mode 100644
-index 0000000..5b45ed2
+index 0000000..7fbf7df
 --- /dev/null
 +++ b/drivers/video/console/fbcon_dmi_quirks.c
 @@ -0,0 +1,131 @@
@@ -161,8 +164,8 @@ index 0000000..5b45ed2
 +static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
 +	.width = 1200,
 +	.height = 1920,
-+	.bios_dates = (const char * const []){ "05/26/2017", "07/05/2017",
-+		NULL },
++	.bios_dates = (const char * const []){ "05/26/2017", "06/28/2017",
++		"07/05/2017", NULL },
 +	.rotate = FB_ROTATE_CW,
 +};
 +

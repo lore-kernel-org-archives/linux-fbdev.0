@@ -1,46 +1,43 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 31 Jul 2017 16:38:19 +0000
-Subject: Re: [PATCH RESEND] fbdev: omapfb: remove unused variable
-Message-Id: <2971705.ICzXV4uNZt@amdc3058>
+From: David Lechner <david@lechnology.com>
+Date: Mon, 31 Jul 2017 19:09:43 +0000
+Subject: [PATCH v2 0/2] Invert margin colors when terminal is inverted
+Message-Id: <1501528185-9976-1-git-send-email-david@lechnology.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170726135825epcas4p3c5326b3893927c4be0db0fde076d0799@epcas4p3.samsung.com>
- <20170726135816.2216688-1-arnd@arndb.de> <10646277.hB6jvi1uWb@amdc3058>
-In-Reply-To: <10646277.hB6jvi1uWb@amdc3058>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
+Cc: David Lechner <david@lechnology.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
 
-On Wednesday, July 26, 2017 04:27:30 PM Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Wednesday, July 26, 2017 03:57:55 PM Arnd Bergmann wrote:
-> > Removing the default display name left a harmless warning:
-> > 
-> > fbdev/omap2/omapfb/dss/core.c: In function 'omap_dss_probe':
-> > fbdev/omap2/omapfb/dss/core.c:196:30: error: unused variable 'pdata' [-Werror=unused-variable]
-> > 
-> > This removes the now-unused variable as well.
-> > 
-> > Fixes: 278cba7eaf54 ("drm: omapdrm: Remove unused default display name support")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-> > ---
-> > Originally submitted on June 9, no reply other than the Reviewed-by tag.
-> > The patch is still needed
-> 
-> It is not lost and will be queued for 4.13 fbdev fixes pull request.
-> 
-> [ The guilty commit went through DRM tree and pulling it into fbdev
->   tree just to fix the warning was not feasible.. ]
+This is v2 of "fbcon: Use background color for margins=E2=80=8B"[1].
 
-Patch queued for 4.13, thanks. 
+It turns out that using the text background color was not a good choice. So,
+I've started over.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+In this series, the margin color depends on the terminal's inversion state.=
+ If
+it is not inverted, then the margins are black as they currently are. But n=
+ow,
+if the terminal is inverted, the margin color is also inverted, so it is wh=
+ite.
+
+In order to detect when the terminal is inverted, I had to add a notifier
+callback for the VT_UPDATE event. Otherwise, running `setterm -inverse on`
+would not change the margins until I also ran `clear`.
+
+[1]: https://patchwork.kernel.org/patch/9869421/
+
+David Lechner (2):
+  fbcon: Invert margin colors when terminal is inverted
+  fbcon: add VT notifier for VT_UPDATE event
+
+ drivers/video/console/bitblit.c   |  2 +-
+ drivers/video/console/fbcon.c     | 28 ++++++++++++++++++++++++++++
+ drivers/video/console/fbcon_ccw.c |  2 +-
+ drivers/video/console/fbcon_cw.c  |  2 +-
+ drivers/video/console/fbcon_ud.c  |  2 +-
+ 5 files changed, 32 insertions(+), 4 deletions(-)
+
+--=20
+2.7.4
 

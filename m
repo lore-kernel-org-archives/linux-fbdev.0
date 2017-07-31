@@ -1,46 +1,85 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Thu, 20 Jul 2017 17:51:40 +0000
-Subject: [PATCH 15/28] video: fbdev: kyro: constify pci_device_id.
-Message-Id: <1500572393-18844-16-git-send-email-arvind.yadav.cs@gmail.com>
+From: David Lechner <david@lechnology.com>
+Date: Mon, 31 Jul 2017 19:09:44 +0000
+Subject: [PATCH v2 1/2] fbcon: Invert margin colors when terminal is inverted
+Message-Id: <1501528185-9976-2-git-send-email-david@lechnology.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+References: <1501528185-9976-1-git-send-email-david@lechnology.com>
+In-Reply-To: <1501528185-9976-1-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: David Lechner <david@lechnology.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org
 
-pci_device_id are not supposed to change at runtime. All functions
-working with pci_device_id provided by <linux/pci.h> work with
-const pci_device_id. So mark the non-const structs as const.
+This uses white (7) for the margin color when a fbcon terminal is inverted,
+e.g. with `setterm -inverse on`.
 
-File size before:
-   text	   data	    bss	    dec	    hex	filename
-   3190	   2704	     24	   5918	   171e	video/fbdev/kyro/fbdev.o
+The motivation for this is screens where the black does not blend into the
+screen. For example, using an LCD (not the backlit kind), white text on a
+black background is hard to read, so inverting the colors is preferred.
+However, if the margins are not also inverted, it leaves ugly black bars
+on the right and bottom of the text area.
 
-File size After adding 'const':
-   text	   data	    bss	    dec	    hex	filename
-   3290	   2640	     24	   5918	   171e	video/fbdev/kyro/fbdev.o
-
-Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Signed-off-by: David Lechner <david@lechnology.com>
 ---
- drivers/video/fbdev/kyro/fbdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/console/bitblit.c   | 2 +-
+ drivers/video/console/fbcon_ccw.c | 2 +-
+ drivers/video/console/fbcon_cw.c  | 2 +-
+ drivers/video/console/fbcon_ud.c  | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/kyro/fbdev.c b/drivers/video/fbdev/kyro/fbdev.c
-index f77478f..a7bd9f2 100644
---- a/drivers/video/fbdev/kyro/fbdev.c
-+++ b/drivers/video/fbdev/kyro/fbdev.c
-@@ -633,7 +633,7 @@ static int kyrofb_ioctl(struct fb_info *info,
- 	return 0;
- }
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+index dbfe4ee..13cad9e 100644
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -213,7 +213,7 @@ static void bit_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 	unsigned int bs = info->var.yres - bh;
+ 	struct fb_fillrect region;
  
--static struct pci_device_id kyrofb_pci_tbl[] = {
-+static const struct pci_device_id kyrofb_pci_tbl[] = {
- 	{ PCI_VENDOR_ID_ST, PCI_DEVICE_ID_STG4000,
- 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ 0, }
+-	region.color = 0;
++	region.color = vc->vc_decscnm ? 7 : 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+diff --git a/drivers/video/console/fbcon_ccw.c b/drivers/video/console/fbcon_ccw.c
+index 5a3cbf6..371f0155 100644
+--- a/drivers/video/console/fbcon_ccw.c
++++ b/drivers/video/console/fbcon_ccw.c
+@@ -198,7 +198,7 @@ static void ccw_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 	unsigned int bs = vc->vc_rows*ch;
+ 	struct fb_fillrect region;
+ 
+-	region.color = 0;
++	region.color = vc->vc_decscnm ? 7 : 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
+index e7ee44d..541e66c 100644
+--- a/drivers/video/console/fbcon_cw.c
++++ b/drivers/video/console/fbcon_cw.c
+@@ -181,7 +181,7 @@ static void cw_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 	unsigned int rs = info->var.yres - rw;
+ 	struct fb_fillrect region;
+ 
+-	region.color = 0;
++	region.color = vc->vc_decscnm ? 7 : 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+diff --git a/drivers/video/console/fbcon_ud.c b/drivers/video/console/fbcon_ud.c
+index 19e3714..61fe137 100644
+--- a/drivers/video/console/fbcon_ud.c
++++ b/drivers/video/console/fbcon_ud.c
+@@ -228,7 +228,7 @@ static void ud_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 	unsigned int bh = info->var.yres - (vc->vc_rows*ch);
+ 	struct fb_fillrect region;
+ 
+-	region.color = 0;
++	region.color = vc->vc_decscnm ? 7 : 0;
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
 -- 
 2.7.4
 

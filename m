@@ -1,87 +1,29 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Tue, 08 Aug 2017 08:11:35 +0000
-Subject: Re: [PATCH v3 3/5] pwm-backlight: add support for PWM delays proprieties.
-Message-Id: <20170808081135.GD12854@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DrWhICOqskFTAXiy"
+From: Tommy Giesler <mail@tomgie.de>
+Date: Tue, 01 Aug 2017 06:44:42 +0000
+Subject: [sm750fb] Sunix 2D VGA controller causes kernel panic and crash on boot
+Message-Id: <b04b0b06f2e7dbb0f9d3db29a86e0a1a@tomgie.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170717212811.25374-1-enric.balletbo@collabora.com>
- <20170717212811.25374-3-enric.balletbo@collabora.com>
- <d38fa016-ea9c-edf8-9684-5c1235d27c82@linaro.org>
- <20170720080656.GC13103@amd>
- <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
-In-Reply-To: <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
+I have recently submitted a bug report to the Ubuntu bugtracker, since 
+one of our test installations of Ubuntu 17.10 kept failing to boot and I 
+was pointed to this mailing list.
 
---DrWhICOqskFTAXiy
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The system is using a Sunix 2D graphics controller, which uses a Silicon 
+Motion SM750, for video output.
 
-On Thu 2017-07-20 11:37:17, Daniel Thompson wrote:
-> On 20/07/17 09:06, Pavel Machek wrote:
-> >Hi!
-> >
-> >>>--- a/drivers/video/backlight/pwm_bl.c
-> >>>+++ b/drivers/video/backlight/pwm_bl.c
-> >>>@@ -10,6 +10,7 @@
-> >>>   * published by the Free Software Foundation.
-> >>>   */
-> >>>+#include <linux/delay.h>
-> >>>  #include <linux/gpio/consumer.h>
-> >>>  #include <linux/gpio.h>
-> >>>  #include <linux/module.h>
-> >>>@@ -35,6 +36,7 @@ struct pwm_bl_data {
-> >>>  	struct gpio_desc	*enable_gpio;
-> >>>  	unsigned int		scale;
-> >>>  	bool			legacy;
-> >>>+	unsigned int		pwm_delay[2];
-> >>
-> >>Two named members would be better here (eliminating the "magic" 0
-> >>and 1).
-> >
-> >My thought, too.
-> >
-> >>>@@ -56,6 +58,9 @@ static void pwm_backlight_power_on(struct pwm_bl_dat=
-a *pb, int brightness)
-> >>>  	pwm_enable(pb->pwm);
-> >>>+	if (pb->pwm_delay[0])
-> >>>+		usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] * 2);
-> >
-> >Plus I'd just do the delay unconditionally :-).
->=20
-> ... does this still apply if this code is switched to msleep()?
+Starting with Kernel 4.11 the system was no longer able to boot when 
+using the sm750fb module.
 
-No.
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1707641
 
-> msleep() has no wait avoidance[1] and if lots of drivers are reckless abo=
-ut
-> sleeping for 10ms it soon starts to show up in the boot time (especially
-> optimized ones).
-=2E..
-> [1] As it happens I can't see that many early bail out paths in
->     usleep_range() either.
+After blacklisting the module the system was working fine again. There 
+were no known issues prior to Kernel 4.11.
 
-Well, in usleep_range(1,2) should be fast enough operation, and
-usleep_range(0,0) should be similar to usleep_range(1,2) at worst :-).
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+Since all the log files were already attached in the Ubuntu bugtracker, 
+I hope it is fine, that I don't attach them here again.
 
---DrWhICOqskFTAXiy
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlmJcjcACgkQMOfwapXb+vKPRACfVe6FGJaudAE2XIMyyPmrAIqR
-AkcAnjKBMmalv49Ha8uuthVrpzZ/1S0Y
-=M3I1
------END PGP SIGNATURE-----
-
---DrWhICOqskFTAXiy--
+Please let me know, if you need any further information.

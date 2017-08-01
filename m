@@ -1,29 +1,28 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 04 Jul 2017 14:05:31 +0000
-Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: constify mfb_template and fsl_diu_match.
-Message-Id: <2900087.7UC3Ktz3FX@amdc3058>
+Date: Tue, 01 Aug 2017 13:47:40 +0000
+Subject: Re: [PATCH] video: fbdev: Convert to using %pOF instead of full_name
+Message-Id: <4331639.hUALxSEUjp@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170620061854epcas1p1916f630eb91f3c64792583af6de713f0@epcas1p1.samsung.com>
-        <9c07b512d764aa87a17dc871b9b2feaf050ff8c5.1497939324.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <9c07b512d764aa87a17dc871b9b2feaf050ff8c5.1497939324.git.arvind.yadav.cs@gmail.com>
+References: <CGME20170718214516epcas5p41593e7a72c2abb4ab7f78934027679fb@epcas5p4.samsung.com>
+        <20170718214339.7774-56-robh@kernel.org>
+In-Reply-To: <20170718214339.7774-56-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: timur@tabi.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Rob Herring <robh@kernel.org>
+Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Tuesday, June 20, 2017 11:48:14 AM Arvind Yadav wrote:
-> File size before:
->    text	   data	    bss	    dec	    hex	filename
->    2469	   1552	     24	   4045	    fcd	drivers/video/fbdev/fsl-diu-fb.o
+On Tuesday, July 18, 2017 04:43:36 PM Rob Herring wrote:
+> Now that we have a custom printf format specifier, convert users of
+> full_name to use %pOF instead. This is preparation to remove storing
+> of the full path string for each node.
 > 
-> File size After adding 'const':
->    text	   data	    bss	    dec	    hex	filename
->    3821	    200	     24	   4045	    fcd	drivers/video/fbdev/fsl-diu-fb.o
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: linux-fbdev@vger.kernel.org
 
-Patch queued for 4.13, thanks.
+The patch Looks fine to me. Do you want me to merge it through fbdev
+tree or do you have some other plan for %pOF conversion patches?
 
 Best regards,
 --

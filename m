@@ -1,34 +1,37 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sat, 26 Aug 2017 12:26:38 +0000
-Subject: [PATCH] video/console: Add new BIOS date for GPD pocket to dmi quirk table
-Message-Id: <20170826122638.29936-1-hdegoede@redhat.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 01 Aug 2017 14:06:06 +0000
+Subject: Re: [PATCH] omapfb: panel-tpo-td043mtea1: constify attribute_group structures.
+Message-Id: <4879588.Re4nTIH29Q@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170719052351epcas4p20dce52e9c9754e094195d57458529ecb@epcas4p2.samsung.com>
+        <fe9b4aed7a13f673cbc9419c43840443052ebaa8.1500441685.git.arvind.yadav.cs@gmail.com>
+In-Reply-To: <fe9b4aed7a13f673cbc9419c43840443052ebaa8.1500441685.git.arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-GPD has released a new BIOS for the pocket, update the dmi data
-accordingly.
+On Wednesday, July 19, 2017 10:53:11 AM Arvind Yadav wrote:
+> attribute_group are not supposed to change at runtime. All functions
+> working with attribute_group provided by <linux/sysfs.h> work
+> with const attribute_group. So mark the non-const structs as const.
+> 
+> File size before:
+>    text	   data	    bss	    dec	    hex	filename
+>    2673	    368	      0	   3041	    be1	panel-tpo-td043mtea1.o
+> 
+> File size After adding 'const':
+>    text	   data	    bss	    dec	    hex	filename
+>    2737	    304	      0	   3041	    be1	panel-tpo-td043mtea1.o
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/console/fbcon_dmi_quirks.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch queued for 4.14, thanks.
 
-diff --git a/drivers/video/console/fbcon_dmi_quirks.c b/drivers/video/console/fbcon_dmi_quirks.c
-index 7fbf7df765ea..9027f044a0e1 100644
---- a/drivers/video/console/fbcon_dmi_quirks.c
-+++ b/drivers/video/console/fbcon_dmi_quirks.c
-@@ -38,7 +38,7 @@ static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
- 	.width = 1200,
- 	.height = 1920,
- 	.bios_dates = (const char * const []){ "05/26/2017", "06/28/2017",
--		"07/05/2017", NULL },
-+		"07/05/2017", "08/07/2017", NULL },
- 	.rotate = FB_ROTATE_CW,
- };
- 
--- 
-2.13.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

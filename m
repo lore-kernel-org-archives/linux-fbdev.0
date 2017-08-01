@@ -1,23 +1,25 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 15:37:45 +0000
-Subject: Re: [PATCH 00/28] constify fbdev pci_device_id.
-Message-Id: <3297262.0f1bRl44hx@amdc3058>
+Date: Tue, 01 Aug 2017 12:14:30 +0000
+Subject: Re: [PATCH 4/4] video: fbdev: sm712fb.c: fixed constant-left comparison warning
+Message-Id: <3640086.h2Bc0PA1af@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170720174007epcas3p2b1560c96711fde38a06d74d24493f952@epcas3p2.samsung.com>
-        <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1500572393-18844-1-git-send-email-arvind.yadav.cs@gmail.com>
+References: <CGME20170704152446epcas5p1e19c064adddaba7963deea1b91d23fa4@epcas5p1.samsung.com>
+        <20170704152438.GA30443@lynnl.yet>
+In-Reply-To: <20170704152438.GA30443@lynnl.yet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: paulus@samba.org, benh@kernel.crashing.org, adaplas@gmail.com, mbroemme@libmpq.org, FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lynn Lei <lynnl.yet@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thursday, July 20, 2017 11:09:25 PM Arvind Yadav wrote:
-> pci_device_id are not supposed to change at runtime. All functions
-> working with pci_device_id provided by <linux/pci.h> work with
-> const pci_device_id. So mark the non-const structs as const.
+On Tuesday, July 04, 2017 11:24:38 PM Lynn Lei wrote:
+> Fixed a constant-left comparison warning issue check by
+> scripts/checkpatch.pl:
+>   WARNING: Comparisons should place the constant on the right side of the test
+> 
+> Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
 
-Patches #1-28 queued for 4.14, thanks.
+Patch queued for 4.14, thanks.
 
 Best regards,
 --

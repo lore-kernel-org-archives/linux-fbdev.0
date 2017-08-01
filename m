@@ -1,26 +1,29 @@
-From: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Date: Sun, 06 Aug 2017 07:21:26 +0000
-Subject: [PATCH 0/2] constify usb_device_id.
-Message-Id: <1502003368-12355-1-git-send-email-arvind.yadav.cs@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 01 Aug 2017 12:59:27 +0000
+Subject: Re: [PATCH] drivers/video/fbdev/omap/lcd_mipid.c: add const to lcd_panel structure
+Message-Id: <1507371.52Fe6WDrgq@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170714091425epcas3p330b5342b7aba66540b83256d401b7055@epcas3p3.samsung.com>
+        <1500023646-8846-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1500023646-8846-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: steve.glendinning@shawell.net, b.zolnierkie@samsung.com, bernie@plugable.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bhumika Goyal <bhumirks@gmail.com>
+Cc: julia.lawall@lip6.fr, tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
-usb_device_id are not supposed to change at runtime. All functions
-working with usb_device_id provided by <linux/usb.h> work with
-const usb_device_id. So mark the non-const structs as const.
+On Friday, July 14, 2017 02:44:06 PM Bhumika Goyal wrote:
+> Make lcd_panel structure const as it is only copied to some object.
+> As the only usage of this structure is a copy operation, so it can be
+> made const.
+> 
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 
-Arvind Yadav (2):
-  [PATCH 1/2] video: fbdev: smscufx: constify usb_device_id.
-  [PATCH 2/2] video: fbdev: udlfb: constify usb_device_id.
+Patch queued for 4.14, thanks.
 
- drivers/video/fbdev/smscufx.c | 2 +-
- drivers/video/fbdev/udlfb.c   | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

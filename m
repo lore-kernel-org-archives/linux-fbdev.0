@@ -1,49 +1,53 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 13:09:57 +0000
-Subject: Re: [PATCH 04/11] fbdev: da8xx-fb: Drop unnecessary static
-Message-Id: <2086929.avP79hnAKk@amdc3058>
+Date: Tue, 01 Aug 2017 12:34:31 +0000
+Subject: Re: [PATCH] video/chips: constify fb_fix_screeninfo and fb_var_screeninfo structures
+Message-Id: <2575493.n74KlNstDc@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1500149266-32357-1-git-send-email-Julia.Lawall@lip6.fr>
-        <CGME20170715203255epcas2p40497b7388043ff9ec488a3f0fbbdf63f@epcas2p4.samsung.com>
-        <1500149266-32357-5-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1500149266-32357-5-git-send-email-Julia.Lawall@lip6.fr>
+References: <CGME20170708011556epcas3p2900f8ed5102858fc64d194feb7874305@epcas3p2.samsung.com>
+        <20170708011552.GA26138@embeddedgus>
+In-Reply-To: <20170708011552.GA26138@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: keescook@chromium.org, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Saturday, July 15, 2017 10:07:39 PM Julia Lawall wrote:
-> Drop static on a local variable, when the variable is initialized before
-> any possible use.  Thus, the static has no benefit.
+On Friday, July 07, 2017 08:15:52 PM Gustavo A. R. Silva wrote:
+> These structures are only used to copy into other structures,
+> so declare them as const.
 > 
-> The semantic patch that fixes this problem is as follows:
-> (http://coccinelle.lip6.fr/)
+> This issue was detected using Coccinelle and the following semantic patch:
 > 
-> // <smpl>
-> @bad exists@
+> @r disable optional_qualifier@
+> identifier i;
 > position p;
-> identifier x;
-> type T;
 > @@
-> static T x@p;
-> ...
-> x = <+...x...+>
+> static struct fb_fix_screeninfo i@p = { ... };
 > 
-> @@
-> identifier x;
+> @ok@
+> identifier r.i;
 > expression e;
-> type T;
-> position p != bad.p;
+> position p;
 > @@
-> -static
->  T x@p;
->  ... when != x
->      when strict
-> ?x = e;
-> // </smpl>
+> e = i@p
 > 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+> @bad@
+> position p != {r.p,ok.p};
+> identifier r.i;
+> struct fb_fix_screeninfo e;
+> @@
+> e@i@p
+> 
+> @depends on !bad disable optional_qualifier@
+> identifier r.i;
+> @@
+> static
+> +const
+>  struct fb_fix_screeninfo i = { ... };
+> 
+> The semantic patch for fb_var_screeninfo is analogous.
+> 
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 
 Patch queued for 4.14, thanks.
 

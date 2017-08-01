@@ -1,31 +1,23 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 14:04:12 +0000
-Subject: Re: [PATCH] omapfb: panel-sony-acx565akm: constify attribute_group structures.
-Message-Id: <4895469.EV6kLxFEj8@amdc3058>
+Date: Tue, 01 Aug 2017 12:14:11 +0000
+Subject: Re: [PATCH 3/4] video: fbdev: sm712fb.c: fixed prefer unsigned int warning
+Message-Id: <10653847.sdbNbVYdn0@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170719052638epcas3p38153e17e63deab45c6d39fd1c56e3af2@epcas3p3.samsung.com>
-        <0daabb462abd99a557da903c961de0eae1782998.1500441926.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <0daabb462abd99a557da903c961de0eae1782998.1500441926.git.arvind.yadav.cs@gmail.com>
+References: <CGME20170704152425epcas1p35d84c9ae15ec2e16c1bfa3851d137b18@epcas1p3.samsung.com>
+        <20170704152417.GA29324@lynnl.yet>
+In-Reply-To: <20170704152417.GA29324@lynnl.yet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lynn Lei <lynnl.yet@gmail.com>
+Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 19, 2017 10:55:57 AM Arvind Yadav wrote:
-> attribute_group are not supposed to change at runtime. All functions
-> working with attribute_group provided by <linux/sysfs.h> work
-> with const attribute_group. So mark the non-const structs as const.
+On Tuesday, July 04, 2017 11:24:17 PM Lynn Lei wrote:
+> Fixed several prefer 'unsigned int' over 'unsigned' warnings checked by
+> scripts/checkpatch.pl:
+>   Prefer 'unsigned int' to bare use of 'unsigned'
 > 
-> File size before:
->    text	   data	    bss	    dec	    hex	filename
->    5227	    560	      0	   5787	   169b	panel-sony-acx565akm
-> 
-> File size After adding 'const':
->    text	   data	    bss	    dec	    hex	filename
->    5291	    496	      0	   5787	   169b	panel-sony-acx565akm.o
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+> Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
 
 Patch queued for 4.14, thanks.
 

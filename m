@@ -1,30 +1,49 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 18 Aug 2017 17:49:26 +0000
-Subject: Re: [PATCH] video: fbdev: add const to bin_attribute structures
-Message-Id: <11839540.IE8C3lnAOm@amdc3058>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Wed, 02 Aug 2017 09:04:39 +0000
+Subject: [PATCH] video: fbdev: constify copied structures
+Message-Id: <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170802171007epcas3p1b03e51adbcbd3f6b1396b313a6d0873f@epcas3p1.samsung.com>
-        <1501693795-13090-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1501693795-13090-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bhumika Goyal <bhumirks@gmail.com>
-Cc: julia.lawall@lip6.fr, bernie@plugable.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On Wednesday, August 02, 2017 10:39:55 PM Bhumika Goyal wrote:
-> Add const to bin_attribute structures as they are only passed to the
-> functions sysfs_{remove/create}_bin_file or
-> device_{remove/create}_bin_file. The corresponding arguments are of
-> type const, so declare the structures to be const.
-> 
-> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+Make const some structures that are only copied into other structures.
 
-Patch queued for 4.14, thanks.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+---
+ drivers/video/fbdev/xilinxfb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
+index 17dc119..9531474 100644
+--- a/drivers/video/fbdev/xilinxfb.c
++++ b/drivers/video/fbdev/xilinxfb.c
+@@ -100,7 +100,7 @@ struct xilinxfb_platform_data {
+ /*
+  * Default xilinxfb configuration
+  */
+-static struct xilinxfb_platform_data xilinx_fb_default_pdata = {
++static const struct xilinxfb_platform_data xilinx_fb_default_pdata = {
+ 	.xres = 640,
+ 	.yres = 480,
+ 	.xvirt = 1024,
+@@ -110,14 +110,14 @@ struct xilinxfb_platform_data {
+ /*
+  * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
+  */
+-static struct fb_fix_screeninfo xilinx_fb_fix = {
++static const struct fb_fix_screeninfo xilinx_fb_fix = {
+ 	.id =		"Xilinx",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+ 	.accel =	FB_ACCEL_NONE
+ };
+ 
+-static struct fb_var_screeninfo xilinx_fb_var = {
++static const struct fb_var_screeninfo xilinx_fb_var = {
+ 	.bits_per_pixel =	BITS_PER_PIXEL,
+ 
+ 	.red =		{ RED_SHIFT, 8, 0 },
 

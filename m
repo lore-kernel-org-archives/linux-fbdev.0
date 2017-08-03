@@ -1,68 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 15:43:24 +0000
-Subject: Re: [PATCH] fbdev: Nuke FBINFO_MODULE
-Message-Id: <2983645.ftmugOAeCm@amdc3058>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Thu, 03 Aug 2017 19:27:39 +0000
+Subject: [PATCH] video: fbdev: vt8623fb: constify vt8623_timing_regs
+Message-Id: <1501788459-32425-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170706125735.28299-3-daniel.vetter@ffwll.ch>
- <CAKMK7uEDWYZFZLeCO9==dZk0pg6-bwP1H-hZAibeCsV6Vz+jqA@mail.gmail.com>
- <3012281.mcLmPQijCc@amdc3058>
- <CGME20170801154325epcas1p2af41ab0f0c9040074622b0627a679ba5@epcas1p2.samsung.com>
-In-Reply-To: <3012281.mcLmPQijCc@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Daniel Vetter <daniel.vetter@intel.com>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Bhumika Goyal <bhumirks@gmail.com>
 
-On Thursday, July 13, 2017 04:01:50 PM Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday, July 12, 2017 05:07:42 PM Daniel Vetter wrote:
-> > On Wed, Jul 12, 2017 at 2:54 PM, Bartlomiej Zolnierkiewicz
-> > <b.zolnierkie@samsung.com> wrote:
-> > > On Wednesday, July 12, 2017 02:42:14 PM Daniel Vetter wrote:
-> > >> On Wed, Jul 12, 2017 at 12:41:34PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > >> > On Tuesday, July 11, 2017 04:52:19 PM Daniel Vetter wrote:
-> > >> > > Instead check info->ops->owner, which amounts to the same.
-> > >> > >
-> > >> > > Spotted because I want to remove the pile of broken and cargo-culted
-> > >> > > fb_info->flags assignments in drm drivers.
-> > >> > >
-> > >> > > v2: Fixup matrox (reported by kbuild). Also nuke FBINFO_FLAG_* defines
-> > >> > > that I've failed to spot.
-> > >> > >
-> > >> > > v3: Don't nuke FBINFO_FLAG_DEFAULT, that's used all over the place.
-> > >> > >
-> > >> > > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > >> > > Cc: linux-fbdev@vger.kernel.org
-> > >> > > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > >> >
-> > >> > Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > >>
-> > >> Do you plan to pick these two patches up yourself, or do you expect me to
-> > >> merge them?
-> > >
-> > > Since the original patchset contained DRM changes (two last patches)
-> > > depending on fbdev changes (two first patches, the patch being discussed
-> > > was the second one) I assumed that you would like to take them all
-> > > through DRM tree. If this is not what is preferred, please tell me.
-> > 
-> > There's no direct depency between 1&2 and 3&4, the only effect of
-> > merging them through separate trees is that the bootup logo might not
-> > show up when it's expected, until the trees are merged together. We
-> > could merge them through separate trees if you prefer that (I forgot
-> > to mention that in the cover letter), but I'm fine with putting them
-> > all into drm-misc with your ack for 4.14.
-> > 
-> > Whatever you prefer, I don't mind either way.
-> 
-> Then I will merge patches 1&2 for v4.14 through fbdev tree (there are
-> some other changes pending touching fbdev core and I would like to avoid
-> conflicts between fbdev & drm-misc trees). Thanks!
+vt8623_timing_regs is only passed as the first argument to
+svga_check_timings and as the second argument to svga_set_timings,
+both of which are const.  So make vt8623_timing_regs const also.
 
-Patch queued for 4.14, thanks.
+Done with the help of Coccinelle.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+---
+ drivers/video/fbdev/vt8623fb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/vt8623fb.c b/drivers/video/fbdev/vt8623fb.c
+index 9f34879..5cac871 100644
+--- a/drivers/video/fbdev/vt8623fb.c
++++ b/drivers/video/fbdev/vt8623fb.c
+@@ -81,7 +81,7 @@ struct vt8623fb_info {
+ static struct vga_regset vt8623_fetch_count_regs[]   = {{0x1C, 0, 7}, {0x1D, 0, 1}, VGA_REGSET_END};
+ static struct vga_regset vt8623_start_address_regs[] = {{0x0d, 0, 7}, {0x0c, 0, 7}, {0x34, 0, 7}, {0x48, 0, 1}, VGA_REGSET_END};
+ 
+-static struct svga_timing_regs vt8623_timing_regs     = {
++static const struct svga_timing_regs vt8623_timing_regs     = {
+ 	vt8623_h_total_regs, vt8623_h_display_regs, vt8623_h_blank_start_regs,
+ 	vt8623_h_blank_end_regs, vt8623_h_sync_start_regs, vt8623_h_sync_end_regs,
+ 	vt8623_v_total_regs, vt8623_v_display_regs, vt8623_v_blank_start_regs,
 

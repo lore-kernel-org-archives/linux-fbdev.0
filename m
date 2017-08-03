@@ -1,30 +1,23 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 13:23:38 +0000
-Subject: Re: [PATCH] video: bfin-lq035q1-fb: constify dev_pm_ops
-Message-Id: <2523728.I0KZokJJZq@amdc3058>
+From: sohu0106 <sohu0106@126.com>
+Date: Thu, 03 Aug 2017 14:01:40 +0000
+Subject: driver/video/fbdev/aty/atyfb_base.c: atyfb_ioctl() stack infoleak
+Message-Id: <592b793c.aa4f.15da866df61.Coremail.sohu0106@126.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170717011910epcas2p2df602abe7ade94050b8277cc186ce1e4@epcas2p2.samsung.com>
-        <20170717011906.GA25787@embeddedgus>
-In-Reply-To: <20170717011906.GA25787@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 
-On Sunday, July 16, 2017 08:19:06 PM Gustavo A. R. Silva wrote:
-> This dev_pm_ops structure is only stored in the pm field of a
-> device_driver structure. This field is declared const, so
-> dev_pm_ops structures that have this property can be declared
-> as const also.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-
-Patch queued for 4.14, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+CgoKZHJpdmVyL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYl9iYXNlLmMKSW4gYXR5ZmJfaW9jdGwoKSBz
+dHJ1Y3R1cmUgYXR5Y2xrIGlzIGNvcGllZCB0byB1c2VybGFuZCB3aXRoIHBhZGRpbmcgYnl0ZXMg
+YWZ0ZXIgInZjbGtfcG9zdF9kaXYiIGZpZWxkIHVuaXRpYWxpemVkLiAgSXQgbGVhZHMgdG8gbGVh
+a2luZyBvZiBjb250ZW50cyBvZiBrZXJuZWwgc3RhY2sgbWVtb3J5LgoKCgozIMKgZHJpdmVycy92
+aWRlby9mYmRldi9hdHkvYXR5ZmJfYmFzZS5jCsKgQEAgLTE4NTcsNiArMTg1Nyw5IEBAIHN0YXRp
+YyBpbnQgYXR5ZmJfaW9jdGwoc3RydWN0IGZiX2luZm8gKmluZm8sIHVfaW50IGNtZCwgdV9sb25n
+IGFyZykKwqAgCQlpZiAoTTY0X0hBUyhJTlRFR1JBVEVEKSkgewrCoCAJCQlzdHJ1Y3QgYXR5Y2xr
+IGNsazsKwqAgCQkJdW5pb24gYXR5X3BsbCAqcGxsID0gJnBhci0+cGxsOwrCoCsJCQkKwqArCQkJ
+bWVtc2V0KCAmY2xrLCAwLCBzaXplb2Yoc3RydWN0IGF0eWNsaykgKTsKwqArCQkJCsKgIAkJCXUz
+MiBkc3BfY29uZmlnID0gcGxsLT5jdC5kc3BfY29uZmlnOwrCoCAJCQl1MzIgZHNwX29uX29mZiA9
+IHBsbC0+Y3QuZHNwX29uX29mZjsKwqAgCQkJY2xrLnJlZl9jbGtfcGVyID0gcGFyLT5yZWZfY2xr
+X3BlcjsKCgrCoA=

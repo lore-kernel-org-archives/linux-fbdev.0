@@ -1,7 +1,7 @@
-From: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>
-Date: Thu, 03 Aug 2017 20:11:37 +0000
+From: David Lechner <david@lechnology.com>
+Date: Fri, 04 Aug 2017 01:08:57 +0000
 Subject: Re: [PATCH 0/6] Support for LEGO MINDSTORMS EV3 LCD display
-Message-Id: <260320c5-8064-6388-168b-acad5a1aa0f2@tronnes.org>
+Message-Id: <03f423be-7b4c-13ec-7126-c0d9af6ebe4a@lechnology.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1501355870-13960-1-git-send-email-david@lechnology.com>
  <5d8f6518-8d7e-c029-2da4-e3417afb3e40@lechnology.com>
@@ -13,35 +13,46 @@ References: <1501355870-13960-1-git-send-email-david@lechnology.com>
  <cf740449-c952-08d4-d63c-d92e71fa3092@lechnology.com>
  <CAHp75Vdaq0ersEa2_XneUQtsJMj2GCRZL4Wi=1HQorLkb4SaVg@mail.gmail.com>
  <CAHp75Vf2GVASatG_aJrBPNHR-jQLoYtOPan5ezcoWRDuEsXbNw@mail.gmail.com>
-In-Reply-To: <CAHp75Vf2GVASatG_aJrBPNHR-jQLoYtOPan5ezcoWRDuEsXbNw-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+ <260320c5-8064-6388-168b-acad5a1aa0f2@tronnes.org>
+In-Reply-To: <260320c5-8064-6388-168b-acad5a1aa0f2@tronnes.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andy Shevchenko <andy.shevchenko-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Lechner <david-nq/r/kbU++upp/zk7JDF2g@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree <devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Sekhar Nori <nsekhar-l0cyMroinI0@public.gmane.org>, Kevin Hilman <khilman-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm Mailing List <linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Daniel Vetter <daniel-/w4YWyX8dFk@public.gmane.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: =?UTF-8?Q?Noralf_Tr=c3=b8nnes?= <noralf@tronnes.org>, Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, Kevin Hilman <khilman@kernel.org>, Sekhar Nori <nsekhar@ti.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Rob Herring <robh+dt@kernel.org>, linux-arm Mailing List <linux-arm-kernel@lists.infradead.org>
 
-
-Den 03.08.2017 19.11, skrev Andy Shevchenko:
-> On Thu, Aug 3, 2017 at 8:09 PM, Andy Shevchenko
-> <andy.shevchenko@gmail.com> wrote:
->> On Thu, Aug 3, 2017 at 6:18 PM, David Lechner <david@lechnology.com> wrote:
->>
->>> The particular display I have is this one:
->>> http://wiki.seeed.cc/Grove-OLED_Display_1.12inch/
+On 08/03/2017 03:11 PM, Noralf Tr=C3=B8nnes wrote:
+>=20
+> Den 03.08.2017 19.11, skrev Andy Shevchenko:
+>> On Thu, Aug 3, 2017 at 8:09 PM, Andy Shevchenko
+>> <andy.shevchenko@gmail.com> wrote:
+>>> On Thu, Aug 3, 2017 at 6:18 PM, David Lechner <david@lechnology.com>=20
+>>> wrote:
 >>>
->>> It looks like it uses a command/data scheme like the MIPI displays, but
->>> doesn't use any of the standard values for the commands. The controller can
->>> do parallel, SPI and I2C, but the display I have is wired for I2C.
->> It looks very similar to ssd1306. Some description refers to ssd1308.
-> http://www.mouser.com/catalog/specsheets/Seeed_104030008.pdf
->
+>>>> The particular display I have is this one:
+>>>> http://wiki.seeed.cc/Grove-OLED_Display_1.12inch/
+>>>>
+>>>> It looks like it uses a command/data scheme like the MIPI displays, but
+>>>> doesn't use any of the standard values for the commands. The=20
+>>>> controller can
+>>>> do parallel, SPI and I2C, but the display I have is wired for I2C.
+>>> It looks very similar to ssd1306. Some description refers to ssd1308.
+>> http://www.mouser.com/catalog/specsheets/Seeed_104030008.pdf
+>>
+>=20
+> That pdf refers to another one:=20
+> http://wiki.seeed.cc/Grove-OLED_Display_0.96inch/
+> There's an fbdev driver that supports ssd1305, ssd1306, ssd1307 and=20
+> ssd1309:
+> https://www.kernel.org/doc/Documentation/devicetree/bindings/display/ssd1=
+307fb.txt=20
+>=20
+> http://elixir.free-electrons.com/linux/latest/source/drivers/video/fbdev/=
+ssd1307fb.c=20
+>=20
+> Maybe the ssd1308 will work with that driver...
+>=20
 
-That pdf refers to another one: 
-http://wiki.seeed.cc/Grove-OLED_Display_0.96inch/
-There's an fbdev driver that supports ssd1305, ssd1306, ssd1307 and ssd1309:
-https://www.kernel.org/doc/Documentation/devicetree/bindings/display/ssd1307fb.txt
-http://elixir.free-electrons.com/linux/latest/source/drivers/video/fbdev/ssd1307fb.c
-Maybe the ssd1308 will work with that driver...
-
-Noralf.
-
+The display I have uses a ssd1327 controller. It is 16-bit grayscale.=20
+The ssd130x are all 1-bit monochrome. So, probably more like the ssd1325=20
+driver in fbftf.

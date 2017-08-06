@@ -1,40 +1,26 @@
-From: =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>
-Date: Sun, 27 Aug 2017 18:23:29 +0000
-Subject: [PATCH] vgacon: Prevent faulty bootparams.screeninfo from causing harm
-Message-Id: <1503858209-14909-1-git-send-email-jschoenh@amazon.de>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Sun, 06 Aug 2017 07:21:26 +0000
+Subject: [PATCH 0/2] constify usb_device_id.
+Message-Id: <1502003368-12355-1-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: steve.glendinning@shawell.net, b.zolnierkie@samsung.com, bernie@plugable.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-If a zero for the number of colums or rows manages to slip through,
-gotoxy() will underflow vc->vc_pos, causing the next action on the
-referenced memory to end with a page fault.
+usb_device_id are not supposed to change at runtime. All functions
+working with usb_device_id provided by <linux/usb.h> work with
+const usb_device_id. So mark the non-const structs as const.
 
-Make the check in vgacon_startup() more pessimistic to prevent that.
+Arvind Yadav (2):
+  [PATCH 1/2] video: fbdev: smscufx: constify usb_device_id.
+  [PATCH 2/2] video: fbdev: udlfb: constify usb_device_id.
 
-Signed-off-by: Jan H. Sch=C3=B6nherr <jschoenh@amazon.de>
----
- drivers/video/console/vgacon.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/smscufx.c | 2 +-
+ drivers/video/fbdev/udlfb.c   | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index dc06cb6..445b1dc 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -398,9 +398,8 @@ static const char *vgacon_startup(void)
- #endif
- 	}
-=20
--	/* boot_params.screen_info initialized? */
--	if ((screen_info.orig_video_mode  =3D 0) &&
--	    (screen_info.orig_video_lines =3D 0) &&
-+	/* boot_params.screen_info reasonably initialized? */
-+	if ((screen_info.orig_video_lines =3D 0) ||
- 	    (screen_info.orig_video_cols  =3D 0))
- 		goto no_vga;
-=20
---=20
-2.3.1.dirty
+-- 
+2.7.4
 

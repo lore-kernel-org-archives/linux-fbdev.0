@@ -1,34 +1,38 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 07 Aug 2017 15:11:48 +0000
-Subject: Re: [PATCH] fbdev: matrox: hide unused 'hotplug' variable
-Message-Id: <3387426.dX5mCNm2tR@amdc3058>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Sun, 06 Aug 2017 07:21:28 +0000
+Subject: [PATCH 2/2] video: fbdev: udlfb: constify usb_device_id.
+Message-Id: <1502003368-12355-3-git-send-email-arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170802093751epcas3p4c7955b185ba3a2e39c230da58de3e9e0@epcas3p4.samsung.com>
-        <20170802093722.3666961-1-arnd@arndb.de>
-In-Reply-To: <20170802093722.3666961-1-arnd@arndb.de>
+References: <1502003368-12355-1-git-send-email-arvind.yadav.cs@gmail.com>
+In-Reply-To: <1502003368-12355-1-git-send-email-arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Sean Paul <seanpaul@chromium.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: steve.glendinning@shawell.net, b.zolnierkie@samsung.com, bernie@plugable.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, August 02, 2017 11:36:47 AM Arnd Bergmann wrote:
-> The variable has become unused in modular configurations
-> which triggers a harmless warning:
-> 
-> drivers/video/fbdev/matrox/matroxfb_base.c:1583:12: error: 'hotplug' defined but not used [-Werror=unused-variable]
-> 
-> This moves it into an #ifdef section of the file, matching
-> all its references.
-> 
-> Fixes: 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+usb_device_id are not supposed to change at runtime. All functions
+working with usb_device_id provided by <linux/usb.h> work with
+const usb_device_id. So mark the non-const structs as const.
 
-Patch queued for 4.14, thanks.
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+---
+ drivers/video/fbdev/udlfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 05ef657..d836e6e 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -54,7 +54,7 @@ static const u32 udlfb_info_flags = FBINFO_DEFAULT | FBINFO_READS_FAST |
+  * which is compatible with all known USB 2.0 era graphics chips and firmware,
+  * but allows DisplayLink to increment those for any future incompatible chips
+  */
+-static struct usb_device_id id_table[] = {
++static const struct usb_device_id id_table[] = {
+ 	{.idVendor = 0x17e9,
+ 	 .bInterfaceClass = 0xff,
+ 	 .bInterfaceSubClass = 0x00,
+-- 
+2.7.4
 

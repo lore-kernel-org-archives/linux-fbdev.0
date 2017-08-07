@@ -1,31 +1,34 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 02 Aug 2017 11:45:07 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 07 Aug 2017 15:11:48 +0000
 Subject: Re: [PATCH] fbdev: matrox: hide unused 'hotplug' variable
-Message-Id: <CAK8P3a3+5DQCwckCM1DTkaf3e9pqozK5y2ppRXwvJt0qBCxLzg@mail.gmail.com>
+Message-Id: <3387426.dX5mCNm2tR@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170802093722.3666961-1-arnd@arndb.de> <20170802100124.bcr3ux6bt4hnlu6r@phenom.ffwll.local>
- <ba8a1b02-913c-0873-9a98-7569080fd66d@gmail.com>
-In-Reply-To: <ba8a1b02-913c-0873-9a98-7569080fd66d@gmail.com>
+References: <CGME20170802093751epcas3p4c7955b185ba3a2e39c230da58de3e9e0@epcas3p4.samsung.com>
+        <20170802093722.3666961-1-arnd@arndb.de>
+In-Reply-To: <20170802093722.3666961-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dan Carpenter <dan.carpenter@oracle.com>, Sean Paul <seanpaul@chromium.org>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Sean Paul <seanpaul@chromium.org>, Arvind Yadav <arvind.yadav.cs@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Aug 2, 2017 at 1:14 PM, Arvind Yadav <arvind.yadav.cs@gmail.com> wrote:
-> Hi Arnd,
->
-> With is change we can get below error. If MODULE is define.
->
-> drivers/video/fbdev/matrox/matroxfb_base.c: In function ‘initMatrox2’:
-> drivers/video/fbdev/matrox/matroxfb_base.c:1799:23: error: ‘hotplug’
-> undeclared (first use in this function)
->   minfo->fbcon.flags = hotplug ? FBINFO_FLAG_MODULE : FBINFO_FLAG_DEFAULT;
->
-> Please check this.
+On Wednesday, August 02, 2017 11:36:47 AM Arnd Bergmann wrote:
+> The variable has become unused in modular configurations
+> which triggers a harmless warning:
+> 
+> drivers/video/fbdev/matrox/matroxfb_base.c:1583:12: error: 'hotplug' defined but not used [-Werror=unused-variable]
+> 
+> This moves it into an #ifdef section of the file, matching
+> all its references.
+> 
+> Fixes: 376b3ff54c9a ("fbdev: Nuke FBINFO_MODULE")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-I think you are looking at an older tree, the patch only applies to today's
-fbdev/fbdev-for-next branch, containing commit 376b3ff54c9a ("fbdev: Nuke
-FBINFO_MODULE"), which was applied last night.
+Patch queued for 4.14, thanks.
 
-       Arnd
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

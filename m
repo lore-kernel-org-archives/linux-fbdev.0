@@ -1,45 +1,48 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 09:41:38 +0000
-Subject: Re: [sm750fb] Sunix 2D VGA controller causes kernel panic and crash on boot
-Message-Id: <12729534.0lnoZXW8NA@amdc3058>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Tue, 08 Aug 2017 22:17:30 +0000
+Subject: [PATCH] video: fbdev: pxa3xx_gcu: fix error return code in pxa3xx_gcu_probe()
+Message-Id: <20170808221729.GA2208@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <b04b0b06f2e7dbb0f9d3db29a86e0a1a@tomgie.de>
-In-Reply-To: <b04b0b06f2e7dbb0f9d3db29a86e0a1a@tomgie.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
+platform_get_irq() returns an error code, but the pxa3xx_gcu driver
+ignores it and always returns -ENODEV. This is not correct and,
+prevents -EPROBE_DEFER from being propagated properly.
 
-Hi,
+Also, notice that platform_get_irq() no longer returns 0 on error:
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?=
+id=E330b9a6bb35dc7097a4f02cb1ae7b6f96df92af
 
-I added staging mailing list and Greg to Cc:
-(sm750fb driver is a part of STAGING subsystem,, not FBDEV one).
+Print and propagate the return value of platform_get_irq on failure.
 
-On Tuesday, August 01, 2017 08:44:42 AM Tommy Giesler wrote:
-> I have recently submitted a bug report to the Ubuntu bugtracker, since 
-> one of our test installations of Ubuntu 17.10 kept failing to boot and I 
-> was pointed to this mailing list.
-> 
-> The system is using a Sunix 2D graphics controller, which uses a Silicon 
-> Motion SM750, for video output.
-> 
-> Starting with Kernel 4.11 the system was no longer able to boot when 
-> using the sm750fb module.
-> 
-> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1707641
-> 
-> After blacklisting the module the system was working fine again. There 
-> were no known issues prior to Kernel 4.11.
-> 
-> Since all the log files were already attached in the Ubuntu bugtracker, 
-> I hope it is fine, that I don't attach them here again.
-> 
-> Please let me know, if you need any further information.
+This issue was detected with the help of Coccinelle.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-=
+gcu.c
+index 50bce45..933619d 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -626,8 +626,8 @@ static int pxa3xx_gcu_probe(struct platform_device *pde=
+v)
+ 	/* request the IRQ */
+ 	irq =3D platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+-		dev_err(dev, "no IRQ defined\n");
+-		return -ENODEV;
++		dev_err(dev, "no IRQ defined: %d\n", irq);
++		return irq;
+ 	}
+=20
+ 	ret =3D devm_request_irq(dev, irq, pxa3xx_gcu_handle_irq,
+--=20
+2.5.0
 

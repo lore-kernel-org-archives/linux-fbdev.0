@@ -1,31 +1,87 @@
-From: David Lechner <david@lechnology.com>
-Date: Wed, 23 Aug 2017 15:58:15 +0000
-Subject: Re: [PATCH v3] fbcon: add fbcon=margin:<color> command line option
-Message-Id: <dc3757f4-b542-8a5a-cfe7-a6f6a63196b8@lechnology.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Tue, 08 Aug 2017 08:11:35 +0000
+Subject: Re: [PATCH v3 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20170808081135.GD12854@amd>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="DrWhICOqskFTAXiy"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1501605357-30815-1-git-send-email-david@lechnology.com>
- <CGME20170818191930epcas3p16e6cac84fc9579a57208110214773221@epcas3p1.samsung.com>
- <0f404f59-f494-bd33-9a9a-f9b07a0dd7ee@lechnology.com>
- <1712803.5baJPN1EnC@amdc3058>
-In-Reply-To: <1712803.5baJPN1EnC@amdc3058>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20170717212811.25374-1-enric.balletbo@collabora.com>
+ <20170717212811.25374-3-enric.balletbo@collabora.com>
+ <d38fa016-ea9c-edf8-9684-5c1235d27c82@linaro.org>
+ <20170720080656.GC13103@amd>
+ <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
+In-Reply-To: <38adad8d-754b-d1dd-167a-913afd8075d6@linaro.org>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-On 08/23/2017 10:56 AM, Bartlomiej Zolnierkiewicz wrote:
-> 
 
->>>
->>> Given the standard console palette contains 16 colors, why limit this to
->>> the first 8 colors, and not 0 to 15?
->>
->> Good question. I think in some of my previous attempts there was a 0x7
->> mask involved somewhere and this is a carryover from that. But, after
->> having looked at this again, I don't see a reason for limiting to 7.
-> 
-> Could you please prepare the incremental patch raising the number of colors
-> possible to use?
+--DrWhICOqskFTAXiy
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, I will do this.
+On Thu 2017-07-20 11:37:17, Daniel Thompson wrote:
+> On 20/07/17 09:06, Pavel Machek wrote:
+> >Hi!
+> >
+> >>>--- a/drivers/video/backlight/pwm_bl.c
+> >>>+++ b/drivers/video/backlight/pwm_bl.c
+> >>>@@ -10,6 +10,7 @@
+> >>>   * published by the Free Software Foundation.
+> >>>   */
+> >>>+#include <linux/delay.h>
+> >>>  #include <linux/gpio/consumer.h>
+> >>>  #include <linux/gpio.h>
+> >>>  #include <linux/module.h>
+> >>>@@ -35,6 +36,7 @@ struct pwm_bl_data {
+> >>>  	struct gpio_desc	*enable_gpio;
+> >>>  	unsigned int		scale;
+> >>>  	bool			legacy;
+> >>>+	unsigned int		pwm_delay[2];
+> >>
+> >>Two named members would be better here (eliminating the "magic" 0
+> >>and 1).
+> >
+> >My thought, too.
+> >
+> >>>@@ -56,6 +58,9 @@ static void pwm_backlight_power_on(struct pwm_bl_dat=
+a *pb, int brightness)
+> >>>  	pwm_enable(pb->pwm);
+> >>>+	if (pb->pwm_delay[0])
+> >>>+		usleep_range(pb->pwm_delay[0], pb->pwm_delay[0] * 2);
+> >
+> >Plus I'd just do the delay unconditionally :-).
+>=20
+> ... does this still apply if this code is switched to msleep()?
+
+No.
+
+> msleep() has no wait avoidance[1] and if lots of drivers are reckless abo=
+ut
+> sleeping for 10ms it soon starts to show up in the boot time (especially
+> optimized ones).
+=2E..
+> [1] As it happens I can't see that many early bail out paths in
+>     usleep_range() either.
+
+Well, in usleep_range(1,2) should be fast enough operation, and
+usleep_range(0,0) should be similar to usleep_range(1,2) at worst :-).
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--DrWhICOqskFTAXiy
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlmJcjcACgkQMOfwapXb+vKPRACfVe6FGJaudAE2XIMyyPmrAIqR
+AkcAnjKBMmalv49Ha8uuthVrpzZ/1S0Y
+=M3I1
+-----END PGP SIGNATURE-----
+
+--DrWhICOqskFTAXiy--

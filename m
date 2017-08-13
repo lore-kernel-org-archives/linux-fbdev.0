@@ -1,149 +1,88 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Sun, 20 Aug 2017 17:56:51 +0000
-Subject: [PATCH] video: fbdev: annotate fb_fix_screeninfo with const and  __initconst
-Message-Id: <1503251091-23485-1-git-send-email-bhumirks@gmail.com>
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Sun, 13 Aug 2017 13:37:00 +0000
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Message-Id: <20170813133700.tv4ka7anvbzcplr7@ninjato>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="bf2u36sx3yv46k44"
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, b.zolnierkie@samsung.com, nicolas.ferre@microchip.com, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170706064453.GH16144@ulmo.fritz.box>
+ <20170706070352.xdecvsnremwqed72@dell>
+In-Reply-To: <20170706070352.xdecvsnremwqed72@dell>
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.>
 
-Make these const as they are only used during a copy operation.
-Some structures are used as a copy operation inside __init functions, so
-make them const and replace __initdata with __initconst to avoid section
-conflict error.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
----
- drivers/video/fbdev/68328fb.c     | 2 +-
- drivers/video/fbdev/atmel_lcdfb.c | 2 +-
- drivers/video/fbdev/dnfb.c        | 2 +-
- drivers/video/fbdev/grvga.c       | 2 +-
- drivers/video/fbdev/pmag-aa-fb.c  | 2 +-
- drivers/video/fbdev/pmag-ba-fb.c  | 2 +-
- drivers/video/fbdev/pmagb-b-fb.c  | 2 +-
- drivers/video/fbdev/ps3fb.c       | 2 +-
- drivers/video/fbdev/skeletonfb.c  | 2 +-
- 9 files changed, 9 insertions(+), 9 deletions(-)
+--bf2u36sx3yv46k44
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
-index c0c6b88..d48e960 100644
---- a/drivers/video/fbdev/68328fb.c
-+++ b/drivers/video/fbdev/68328fb.c
-@@ -72,7 +72,7 @@
-       	.vmode =	FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo mc68x328fb_fix __initdata = {
-+static const struct fb_fix_screeninfo mc68x328fb_fix __initconst = {
- 	.id =		"68328fb",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.xpanstep =	1,
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index 669ecc7..e06358d 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -320,7 +320,7 @@ static inline void atmel_lcdfb_power_control(struct atmel_lcdfb_info *sinfo, int
- 	}
- }
- 
--static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
-+static const struct fb_fix_screeninfo atmel_lcdfb_fix __initconst = {
- 	.type		= FB_TYPE_PACKED_PIXELS,
- 	.visual		= FB_VISUAL_TRUECOLOR,
- 	.xpanstep	= 0,
-diff --git a/drivers/video/fbdev/dnfb.c b/drivers/video/fbdev/dnfb.c
-index 3526899..7b1492d 100644
---- a/drivers/video/fbdev/dnfb.c
-+++ b/drivers/video/fbdev/dnfb.c
-@@ -126,7 +126,7 @@ struct fb_var_screeninfo dnfb_var = {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo dnfb_fix = {
-+static const struct fb_fix_screeninfo dnfb_fix = {
- 	.id		= "Apollo Mono",
- 	.smem_start	= (FRAME_BUFFER_START + IO_BASE),
- 	.smem_len	= FRAME_BUFFER_LEN,
-diff --git a/drivers/video/fbdev/grvga.c b/drivers/video/fbdev/grvga.c
-index b471f92..8fc8f46 100644
---- a/drivers/video/fbdev/grvga.c
-+++ b/drivers/video/fbdev/grvga.c
-@@ -70,7 +70,7 @@ struct grvga_par {
-     }
-  };
- 
--static struct fb_fix_screeninfo grvga_fix = {
-+static const struct fb_fix_screeninfo grvga_fix = {
- 	.id =		"AG SVGACTRL",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =       FB_VISUAL_PSEUDOCOLOR,
-diff --git a/drivers/video/fbdev/pmag-aa-fb.c b/drivers/video/fbdev/pmag-aa-fb.c
-index 39922f0..b07ef49 100644
---- a/drivers/video/fbdev/pmag-aa-fb.c
-+++ b/drivers/video/fbdev/pmag-aa-fb.c
-@@ -90,7 +90,7 @@ struct aafb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo aafb_fix = {
-+static const struct fb_fix_screeninfo aafb_fix = {
- 	.id		= "PMAG-AA",
- 	.smem_len	= (2048 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/pmag-ba-fb.c b/drivers/video/fbdev/pmag-ba-fb.c
-index 1fd02f4..8d1a878 100644
---- a/drivers/video/fbdev/pmag-ba-fb.c
-+++ b/drivers/video/fbdev/pmag-ba-fb.c
-@@ -67,7 +67,7 @@ struct pmagbafb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo pmagbafb_fix = {
-+static const struct fb_fix_screeninfo pmagbafb_fix = {
- 	.id		= "PMAG-BA",
- 	.smem_len	= (1024 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/pmagb-b-fb.c b/drivers/video/fbdev/pmagb-b-fb.c
-index 46e96c4..5ad9b63 100644
---- a/drivers/video/fbdev/pmagb-b-fb.c
-+++ b/drivers/video/fbdev/pmagb-b-fb.c
-@@ -57,7 +57,7 @@ struct pmagbbfb_par {
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
- 
--static struct fb_fix_screeninfo pmagbbfb_fix = {
-+static const struct fb_fix_screeninfo pmagbbfb_fix = {
- 	.id		= "PMAGB-BA",
- 	.smem_len	= (2048 * 1024),
- 	.type		= FB_TYPE_PACKED_PIXELS,
-diff --git a/drivers/video/fbdev/ps3fb.c b/drivers/video/fbdev/ps3fb.c
-index b269abd..5ed2db3 100644
---- a/drivers/video/fbdev/ps3fb.c
-+++ b/drivers/video/fbdev/ps3fb.c
-@@ -952,7 +952,7 @@ static irqreturn_t ps3fb_vsync_interrupt(int irq, void *ptr)
- 	.fb_compat_ioctl = ps3fb_ioctl
- };
- 
--static struct fb_fix_screeninfo ps3fb_fix = {
-+static const struct fb_fix_screeninfo ps3fb_fix = {
- 	.id =		DEVICE_NAME,
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_TRUECOLOR,
-diff --git a/drivers/video/fbdev/skeletonfb.c b/drivers/video/fbdev/skeletonfb.c
-index 09a1d8c..7f4e908 100644
---- a/drivers/video/fbdev/skeletonfb.c
-+++ b/drivers/video/fbdev/skeletonfb.c
-@@ -84,7 +84,7 @@
-  * if we don't use modedb. If we do use modedb see xxxfb_init how to use it
-  * to get a fb_var_screeninfo. Otherwise define a default var as well. 
-  */
--static struct fb_fix_screeninfo xxxfb_fix = {
-+static const struct fb_fix_screeninfo xxxfb_fix = {
- 	.id =		"FB's name", 
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_PSEUDOCOLOR,
--- 
-1.9.1
+On Thu, Jul 06, 2017 at 08:03:52AM +0100, Lee Jones wrote:
+> On Thu, 06 Jul 2017, Thierry Reding wrote:
+>=20
+> > On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
+> > > include/linux/i2c is not for client devices. Move the header file to a
+> > > more appropriate location.
+> > >=20
+> > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> > > ---
+> > >  arch/arm/mach-omap2/common.h            | 2 +-
+> > >  arch/arm/mach-omap2/omap_twl.c          | 2 +-
+> > >  drivers/gpio/gpio-twl4030.c             | 2 +-
+> > >  drivers/iio/adc/twl4030-madc.c          | 2 +-
+> > >  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
+> > >  drivers/input/keyboard/twl4030_keypad.c | 2 +-
+> > >  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
+> > >  drivers/input/misc/twl4030-vibra.c      | 2 +-
+> > >  drivers/mfd/twl-core.c                  | 6 +++---
+> > >  drivers/mfd/twl4030-audio.c             | 2 +-
+> > >  drivers/mfd/twl4030-irq.c               | 2 +-
+> > >  drivers/mfd/twl4030-power.c             | 2 +-
+> > >  drivers/mfd/twl6030-irq.c               | 2 +-
+> > >  drivers/phy/phy-twl4030-usb.c           | 2 +-
+> > >  drivers/power/supply/twl4030_charger.c  | 2 +-
+> > >  drivers/pwm/pwm-twl-led.c               | 2 +-
+> > >  drivers/pwm/pwm-twl.c                   | 2 +-
+> > >  drivers/regulator/twl-regulator.c       | 2 +-
+> > >  drivers/regulator/twl6030-regulator.c   | 2 +-
+> > >  drivers/rtc/rtc-twl.c                   | 2 +-
+> > >  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
+> > >  drivers/video/backlight/pandora_bl.c    | 2 +-
+> > >  drivers/watchdog/twl4030_wdt.c          | 2 +-
+> > >  include/linux/{i2c =3D> mfd}/twl.h        | 0
+> > >  sound/soc/codecs/twl4030.c              | 2 +-
+> > >  25 files changed, 26 insertions(+), 26 deletions(-)
+> > >  rename include/linux/{i2c =3D> mfd}/twl.h (100%)
+> >=20
+> > I didn't see this get applied yet, so just in case anyone was waiting
+> > for me (this is trivial, so I don't think there's a need):
+>=20
+> You're not the last. :)
 
+Given the triviality of the change for non-MFD subsystems, can we apply
+this for 4.14?
+
+
+--bf2u36sx3yv46k44
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmQVfwACgkQFA3kzBSg
+KbanFg//dxik+zStgiZtWtrgtgSmpeUOGOsX3FXnRhJCPNTaXUuGOMuuhjFgK3p3
+uDOXYfGtsdDPrnAGj3m8yjJI8JqQ1GI/9FtMxW9Jwcr3N6ZJ9dQYqzN7XMXwgnhd
+prXN/iTZgkF/XT1ZOc6GMXne2jbqhJOuRY3sk+N40xQHsOBa8ThqxqssFyJbn0BF
+jjSQP5TNp0KefTYS9ZyJGbnFxNZQhMb+AWHCMDgib2jCTQIIAQD5iMLH3aoCZEOn
+rQDxnEHlOwcR+qYKdz8LVPU5tOR2uEsY16F4awUYVR+6lkx3KLKsBFHZr7tZ2QPn
++w0767Mr+wyphuuG77YoBvTLU8pDJxwSYR21XGYqvJvYNdwVHCy5Y4M+DTV3xG8g
+DsY45lDHNspdDJvwBpZZRBO29uGPtqfCJfDgUpxvDllF99ES72urbNUXn5YrdvVy
+sTrUzmgX4kiBRzA6mpyG4autZE9Z6q/xNslSrV/0ll0arUMbzpMmVFQwE6yRgRsB
+1Ha3prXevF/UNZQcvnhHruUcakuzPgvK0hpdhirON2OTqXChTOHLKWquA+aYQ9lB
+cBe7cZhAUXkimtWvNheqOYEg8ZStjW1uNup5eHujXNYw/HY8+3p/cr/9Jf05xvQz
+H3Qawecv5x3sLjvuv0PuhEdFPr5dKQfLGoDZrLqmFLfYTJ3NWoE=
+=hKZZ
+-----END PGP SIGNATURE-----
+
+--bf2u36sx3yv46k44--

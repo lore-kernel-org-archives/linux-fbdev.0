@@ -1,7 +1,9 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Mon, 14 Aug 2017 16:21:08 +0000
+From: Wolfram Sang <wsa@the-dreams.de>
+Date: Mon, 14 Aug 2017 16:29:41 +0000
 Subject: Re: [PATCH 2/3] mfd: tps65010: move header file out of I2C realm
-Message-Id: <20170814162108.GW8569@atomide.com>
+Message-Id: <20170814162941.qns2k2u4t643kivy@ninjato>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="ya6n3qjf3z2qe7rn"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170521220212.1404-1-wsa@the-dreams.de>
  <20170521220212.1404-3-wsa@the-dreams.de>
@@ -9,48 +11,46 @@ References: <20170521220212.1404-1-wsa@the-dreams.de>
  <20170813133445.vqbfelwshvrififp@ninjato>
  <20170814064355.foiilzr5cmwk65hr@dell>
  <20170814084412.dfbsqfwrgmy5bsu3@dell>
-In-Reply-To: <20170814084412.dfbsqfwrgmy5bsu3@dell>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <20170814162108.GW8569@atomide.com>
+In-Reply-To: <20170814162108.GW8569@atomide.com>
 To: linux-arm-kernel@lists.infradead.org
 
-* Lee Jones <lee.jones@linaro.org> [170814 01:44]:
-> On Mon, 14 Aug 2017, Lee Jones wrote:
-> 
-> > On Sun, 13 Aug 2017, Wolfram Sang wrote:
-> > 
-> > > On Tue, May 23, 2017 at 08:18:19AM +0100, Lee Jones wrote:
-> > > > On Mon, 22 May 2017, Wolfram Sang wrote:
-> > > > 
-> > > > > include/linux/i2c is not for client devices. Move the header file to a
-> > > > > more appropriate location.
-> > > > > 
-> > > > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-> > > > > ---
-> > > > >  arch/arm/mach-omap1/board-h2-mmc.c      | 2 +-
-> > > > >  arch/arm/mach-omap1/board-h2.c          | 2 +-
-> > > > >  arch/arm/mach-omap1/board-h3-mmc.c      | 2 +-
-> > > > >  arch/arm/mach-omap1/board-h3.c          | 2 +-
-> > > > >  arch/arm/mach-omap1/board-osk.c         | 2 +-
-> > > > >  arch/arm/mach-s3c24xx/mach-osiris-dvs.c | 2 +-
-> > > > >  arch/arm/mach-s3c24xx/mach-osiris.c     | 2 +-
-> > > > 
-> > > > >  drivers/mfd/tps65010.c                  | 2 +-
-> > > > 
-> > > > For my own reference:
-> > > >   Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-> > > 
-> > > Same here: ok for 4.14 or something needed?
-> > 
-> > Can this patch be applied on its own, or does it have dependencies?
-> 
-> Even if it doesn't, it still requires Acks.
 
-As long as this has been compile tested with omap1_defconfig:
+--ya6n3qjf3z2qe7rn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Tony Lindgren <tony@atomide.com>
 
-Regards,
+> > Even if it doesn't, it still requires Acks.
+>=20
+> As long as this has been compile tested with omap1_defconfig:
+>=20
+> Acked-by: Tony Lindgren <tony@atomide.com>
 
-Tony
+Hah, just in time. I was about to send out the new version, thanks! :D
+
+buildbot did test it and I did compile tests, too.
+
+
+--ya6n3qjf3z2qe7rn
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAlmRz/EACgkQFA3kzBSg
+Kba1IQ//dkgmlc6CmdbxsBJlvUw7AkoD4MoyGFDuE5UHDB/xkZTyizhhLmI9iDJF
+T2OQXXJknWGt502VSjr8oxdrneEAuPLAiREI5MB3NJwmf41KmqdyBwRE2VlSQ+aS
+5kBpdCbREcYlvx+oWzUb6mU3yxJkrPGDbIVyaB8jEm+KRZqJuLuI86bQbTe1VKm0
+w1t/w7w+Z4mnuAUllia/PQY72VbnKx39hPqsbsk8cw8X6effYsuYQ7ujn/54gmYy
+sG+UKtCdFDncsmrLq4Bh/RyNwVhj4ixAVf5OI9FHXX3PjhBnqkyX1HgpWblOwPdH
+ZTUaWnlayOWqs3XgTrWNQQfggtx6DubyQZqDmJU2QxNDPR+lbuvR4/vMKzoqPsqf
+ZqShs9TBQckeOV2g5GetixO4Y7RDm3GChg/CF9eeHIOPV8xuDiaujZauXU87IqYL
+HHmuR+ki1w9Ckn1rcaKM3J+Bs7uodVDXNGD+pvFY3ZZ72sJsQOEUdZ+2jkZd98Vs
+rzheI/XZ+YeJbLp2frOyp9RZR6YYzgZcunjTN8nJiNHulhvGqq/2eHai7gaKUWBV
+Pf8HjO3PcVXX8d8DEMpNA6r3atvPUFD43sNAFVjlMs04On9xXmSLlykcre/ZzLXa
+dHZCGAMwkP+6TyMT+0KNsbBsi43xn/dESDOMH0QZHmZZmtzPA6A=
+=ehu4
+-----END PGP SIGNATURE-----
+
+--ya6n3qjf3z2qe7rn--

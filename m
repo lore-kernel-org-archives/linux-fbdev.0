@@ -1,30 +1,78 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 21 Aug 2017 13:59:07 +0000
-Subject: Re: [PATCH 2/2] video: fbdev: udlfb: constify usb_device_id.
-Message-Id: <2987061.3B478VWBN6@amdc3058>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 14 Aug 2017 06:42:47 +0000
+Subject: Re: [PATCH 3/3] mfd: twl: move header file out of I2C realm
+Message-Id: <20170814064247.qvggx4ito4vgjqvs@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1502003368-12355-1-git-send-email-arvind.yadav.cs@gmail.com>
-        <CGME20170806070945epcas5p26f5add8b71807b88b5e3a4475e777921@epcas5p2.samsung.com>
-        <1502003368-12355-3-git-send-email-arvind.yadav.cs@gmail.com>
-In-Reply-To: <1502003368-12355-3-git-send-email-arvind.yadav.cs@gmail.com>
+References: <20170521220212.1404-1-wsa@the-dreams.de>
+ <20170521220212.1404-4-wsa@the-dreams.de>
+ <20170706064453.GH16144@ulmo.fritz.box>
+ <20170706070352.xdecvsnremwqed72@dell>
+ <20170813133700.tv4ka7anvbzcplr7@ninjato>
+In-Reply-To: <20170813133700.tv4ka7anvbzcplr7@ninjato>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: steve.glendinning@shawell.net, bernie@plugable.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>
+Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Linus Walleij <linus.walleij-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Alexandre Courbot <gnurou-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Hartmut Knaack <knaack.h-Mmb7MZpHnFY@public.gmane.org>, Lars-Peter Clausen <lars-Qo5EllUWu/uELgA04lAiVw@public.gmane.org>, Peter Meerwald-Stadler <pmeerw-jW+XmwGofnusTnJN9+BGXg@public.gmane.org>, Dmitry Torokhov <dmitry.torokhov-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Kishon Vijay Abraham I <kishon-l0cyMroinI0@public.gmane.org>, Sebastian Reichel <sre-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Alessandro Zummo <a.zummo-BfzFCNDTiLLj+vYz1yj4TQ@public.gmane.org>, Alexandre Belloni <alexandre.belloni-wi1+55ScJUtKEb57/3fJTNBPR1lH4CV8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.>
 
-On Sunday, August 06, 2017 12:39:28 PM Arvind Yadav wrote:
-> usb_device_id are not supposed to change at runtime. All functions
-> working with usb_device_id provided by <linux/usb.h> work with
-> const usb_device_id. So mark the non-const structs as const.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+On Sun, 13 Aug 2017, Wolfram Sang wrote:
 
-Patch queued for 4.14, thanks.
+> On Thu, Jul 06, 2017 at 08:03:52AM +0100, Lee Jones wrote:
+> > On Thu, 06 Jul 2017, Thierry Reding wrote:
+> >=20
+> > > On Mon, May 22, 2017 at 12:02:10AM +0200, Wolfram Sang wrote:
+> > > > include/linux/i2c is not for client devices. Move the header file t=
+o a
+> > > > more appropriate location.
+> > > >=20
+> > > > Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+> > > > ---
+> > > >  arch/arm/mach-omap2/common.h            | 2 +-
+> > > >  arch/arm/mach-omap2/omap_twl.c          | 2 +-
+> > > >  drivers/gpio/gpio-twl4030.c             | 2 +-
+> > > >  drivers/iio/adc/twl4030-madc.c          | 2 +-
+> > > >  drivers/iio/adc/twl6030-gpadc.c         | 2 +-
+> > > >  drivers/input/keyboard/twl4030_keypad.c | 2 +-
+> > > >  drivers/input/misc/twl4030-pwrbutton.c  | 2 +-
+> > > >  drivers/input/misc/twl4030-vibra.c      | 2 +-
+> > > >  drivers/mfd/twl-core.c                  | 6 +++---
+> > > >  drivers/mfd/twl4030-audio.c             | 2 +-
+> > > >  drivers/mfd/twl4030-irq.c               | 2 +-
+> > > >  drivers/mfd/twl4030-power.c             | 2 +-
+> > > >  drivers/mfd/twl6030-irq.c               | 2 +-
+> > > >  drivers/phy/phy-twl4030-usb.c           | 2 +-
+> > > >  drivers/power/supply/twl4030_charger.c  | 2 +-
+> > > >  drivers/pwm/pwm-twl-led.c               | 2 +-
+> > > >  drivers/pwm/pwm-twl.c                   | 2 +-
+> > > >  drivers/regulator/twl-regulator.c       | 2 +-
+> > > >  drivers/regulator/twl6030-regulator.c   | 2 +-
+> > > >  drivers/rtc/rtc-twl.c                   | 2 +-
+> > > >  drivers/usb/phy/phy-twl6030-usb.c       | 2 +-
+> > > >  drivers/video/backlight/pandora_bl.c    | 2 +-
+> > > >  drivers/watchdog/twl4030_wdt.c          | 2 +-
+> > > >  include/linux/{i2c =3D> mfd}/twl.h        | 0
+> > > >  sound/soc/codecs/twl4030.c              | 2 +-
+> > > >  25 files changed, 26 insertions(+), 26 deletions(-)
+> > > >  rename include/linux/{i2c =3D> mfd}/twl.h (100%)
+> > >=20
+> > > I didn't see this get applied yet, so just in case anyone was waiting
+> > > for me (this is trivial, so I don't think there's a need):
+> >=20
+> > You're not the last. :)
+>=20
+> Given the triviality of the change for non-MFD subsystems, can we apply
+> this for 4.14?
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+I can't apply anything without Acks for *all* of the subsystems above.
 
+As you well know, it is the submitters responsibility to obtain them.
+
+My suggestion would be to collect the Acks you've received up until
+this point and identify which SS's are still lacking in change log
+section of a RESEND.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

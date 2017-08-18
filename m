@@ -1,68 +1,29 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Wed, 30 Aug 2017 13:19:42 +0000
-Subject: [PATCH] video: fbdev: sis: fix duplicated code for different branches
-Message-Id: <20170830131942.GA8173@embeddedgus>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 18 Aug 2017 17:24:20 +0000
+Subject: Re: [PATCH] fbdev: fix 1bpp logo for unusual width
+Message-Id: <3724763.2PmRKLHeP2@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170728203405epcas5p3c58c5c8d751b74f94f73520a8108358b@epcas5p3.samsung.com>
+        <1501274033-6978-1-git-send-email-david@lechnology.com>
+In-Reply-To: <1501274033-6978-1-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: David Lechner <david@lechnology.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Refactor code in order to avoid identical code for different branches.
+On Friday, July 28, 2017 03:33:53 PM David Lechner wrote:
+> This check is needed in the case where the width of the framebuffer
+> is not a multiple of 8 pixels. For example, LEGO MINDSTORMS EV3 has
+> a 178x128 1bpp display.
+> 
+> Signed-off-by: David Lechner <david@lechnology.com>
 
-This issue was detected with the help of Coccinelle.
+Patch queued for 4.14, thanks.
 
-Addresses-Coverity-ID: 1226761
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
-This issue was reported by Coverity and it was tested by compilation only.
-Please, verify if any of these issues should be addressed differently.
-Also, notice that this code has been there since 2005.
-
- drivers/video/fbdev/sis/init301.c | 15 +++------------
- 1 file changed, 3 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/video/fbdev/sis/init301.c b/drivers/video/fbdev/sis/init301.c
-index 20f7234..99d5a25 100644
---- a/drivers/video/fbdev/sis/init301.c
-+++ b/drivers/video/fbdev/sis/init301.c
-@@ -6848,8 +6848,6 @@ SiS_SetGroup2(struct SiS_Private *SiS_Pr, unsigned short ModeNo, unsigned short
- 	   if(SiS_Pr->SiS_VGAHDE >= 1280) {
-               tempch = 20;
-               tempbx &= ~0x20;
--           } else if(SiS_Pr->SiS_VGAHDE >= 1024) {
--              tempch = 25;
-            } else {
- 	      tempch = 25; /* OK */
- 	   }
-@@ -7964,14 +7962,9 @@ SiS_SetCHTVReg(struct SiS_Private *SiS_Pr, unsigned short ModeNo, unsigned short
-             }
-          }
-       } else {						/* ---- PAL ---- */
--         /* We don't play around with FSCI in PAL mode */
--         if(resindex = 0x04) {
--            SiS_SetCH70xxANDOR(SiS_Pr,0x20,0x00,0xEF);	/* loop filter off */
--            SiS_SetCH70xxANDOR(SiS_Pr,0x21,0x01,0xFE);	/* ACIV on */
--         } else {
--            SiS_SetCH70xxANDOR(SiS_Pr,0x20,0x00,0xEF);	/* loop filter off */
--            SiS_SetCH70xxANDOR(SiS_Pr,0x21,0x01,0xFE);	/* ACIV on */
--         }
-+	/* We don't play around with FSCI in PAL mode */
-+	SiS_SetCH70xxANDOR(SiS_Pr, 0x20, 0x00, 0xEF);	/* loop filter off */
-+	SiS_SetCH70xxANDOR(SiS_Pr, 0x21, 0x01, 0xFE);	/* ACIV on */
-       }
- 
- #endif  /* 300 */
-@@ -9657,8 +9650,6 @@ SetDelayComp(struct SiS_Private *SiS_Pr, unsigned short ModeNo)
- 	      delay = 0x0a;
- 	   } else if(IS_SIS740) {
- 	      delay = 0x00;
--	   } else if(SiS_Pr->ChipType < SIS_330) {
--	      delay = 0x0c;
- 	   } else {
- 	      delay = 0x0c;
- 	   }
--- 
-2.5.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

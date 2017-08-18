@@ -1,29 +1,51 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 12:14:11 +0000
-Subject: Re: [PATCH 3/4] video: fbdev: sm712fb.c: fixed prefer unsigned int warning
-Message-Id: <10653847.sdbNbVYdn0@amdc3058>
+From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
+Date: Fri, 18 Aug 2017 13:08:59 +0000
+Subject: [PATCH v4 7/8] video: goldfishfb: Add support for device tree bindings
+Message-Id: <1503061833-26563-8-git-send-email-aleksandar.markovic@rt-rk.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170704152425epcas1p35d84c9ae15ec2e16c1bfa3851d137b18@epcas1p3.samsung.com>
-        <20170704152417.GA29324@lynnl.yet>
-In-Reply-To: <20170704152417.GA29324@lynnl.yet>
+References: <1503061833-26563-1-git-send-email-aleksandar.markovic@rt-rk.com>
+In-Reply-To: <1503061833-26563-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lynn Lei <lynnl.yet@gmail.com>
-Cc: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-mips@linux-mips.org
+Cc: Aleksandar Markovic <aleksandar.markovic@imgtec.com>, Miodrag Dinic <miodrag.dinic@imgtec.com>, Goran Ferenc <goran.ferenc@imgtec.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bo Hu <bohu@google.com>, Douglas Leung <douglas.leung@imgtec.com>, James Hogan <james.hogan@imgtec.com>, Jin Qian <jinqian@google.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Burton <paul.burton@imgtec.com>, Petar Jovanovic <petar.jovanovic@imgtec.com>, Raghu Gandham <raghu.gandham@imgtec.com>
 
-On Tuesday, July 04, 2017 11:24:17 PM Lynn Lei wrote:
-> Fixed several prefer 'unsigned int' over 'unsigned' warnings checked by
-> scripts/checkpatch.pl:
->   Prefer 'unsigned int' to bare use of 'unsigned'
-> 
-> Signed-off-by: Lynn Lei <lynnl.wit@gmail.com>
+From: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
 
-Patch queued for 4.14, thanks.
+Add ability to the Goldfish FB driver to be recognized by OS via DT.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Miodrag Dinic <miodrag.dinic@imgtec.com>
+Signed-off-by: Goran Ferenc <goran.ferenc@imgtec.com>
+Signed-off-by: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
+---
+ drivers/video/fbdev/goldfishfb.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 7f6c9e6..3b70044 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id goldfish_fb_of_match[] = {
++	{ .compatible = "google,goldfish-fb", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+ 
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+ 	.driver = {
+-		.name = "goldfish_fb"
++		.name = "goldfish_fb",
++		.of_match_table = goldfish_fb_of_match,
+ 	}
+ };
+ 
+-- 
+2.7.4
 

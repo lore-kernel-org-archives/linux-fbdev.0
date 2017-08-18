@@ -1,25 +1,56 @@
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Date: Wed, 02 Aug 2017 09:04:39 +0000
-Subject: [PATCH] video: fbdev: constify copied structures
-Message-Id: <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 18 Aug 2017 17:41:16 +0000
+Subject: Re: [PATCH] video: fbdev: constify copied structures
+Message-Id: <7127868.v7Fj1TocLv@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170802093008epcas2p48a98827ec2c27fbd6f6de8913d47c02b@epcas2p4.samsung.com>
+ <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Make const some structures that are only copied into other structures.
+
+Hi,
+
+On Wednesday, August 02, 2017 11:04:39 AM Julia Lawall wrote:
+> Make const some structures that are only copied into other structures.
+> 
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
+fb_fix_screeninfo and fb_var_screeninfo structures were already
+const-ified by commit 40445365a43f ("video: xilinxfb: constify
+fb_fix_screeninfo and fb_var_screeninfo structures") in my -next
+tree (git://github.com/bzolnier/linux.git fbdev-for-next) so
+I just applied xilinx_fb_default_pdata part (patch included below
+for reference).
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Subject: [PATCH] video: fbdev: xilinxfb: constify copied structure
+
+Make const xilinx_fb_default_pdata structure that is only copied into
+other structure.
 
 Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
+Cc: Michal Simek <michal.simek@xilinx.com>
+Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>,
+[b.zolnierkie: split from a bigger patch]
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/fbdev/xilinxfb.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/xilinxfb.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/xilinxfb.c b/drivers/video/fbdev/xilinxfb.c
-index 17dc119..9531474 100644
---- a/drivers/video/fbdev/xilinxfb.c
-+++ b/drivers/video/fbdev/xilinxfb.c
+Index: b/drivers/video/fbdev/xilinxfb.c
+=================================--- a/drivers/video/fbdev/xilinxfb.c	2017-08-18 19:34:11.383004874 +0200
++++ b/drivers/video/fbdev/xilinxfb.c	2017-08-18 19:34:35.383005478 +0200
 @@ -100,7 +100,7 @@ struct xilinxfb_platform_data {
  /*
   * Default xilinxfb configuration
@@ -29,21 +60,4 @@ index 17dc119..9531474 100644
  	.xres = 640,
  	.yres = 480,
  	.xvirt = 1024,
-@@ -110,14 +110,14 @@ struct xilinxfb_platform_data {
- /*
-  * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
-  */
--static struct fb_fix_screeninfo xilinx_fb_fix = {
-+static const struct fb_fix_screeninfo xilinx_fb_fix = {
- 	.id =		"Xilinx",
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_TRUECOLOR,
- 	.accel =	FB_ACCEL_NONE
- };
- 
--static struct fb_var_screeninfo xilinx_fb_var = {
-+static const struct fb_var_screeninfo xilinx_fb_var = {
- 	.bits_per_pixel =	BITS_PER_PIXEL,
- 
- 	.red =		{ RED_SHIFT, 8, 0 },
 

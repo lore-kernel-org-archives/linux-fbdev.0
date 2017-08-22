@@ -1,51 +1,36 @@
-From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
-Date: Fri, 18 Aug 2017 13:08:59 +0000
-Subject: [PATCH v4 7/8] video: goldfishfb: Add support for device tree bindings
-Message-Id: <1503061833-26563-8-git-send-email-aleksandar.markovic@rt-rk.com>
+From: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Date: Tue, 22 Aug 2017 18:29:48 +0000
+Subject: [PATCH] video: fm2fb: constify zorro_device_id
+Message-Id: <e530300dd132c9567ea6f7e8c6b923ed4dfb35a0.1503425803.git.arvind.yadav.cs@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1503061833-26563-1-git-send-email-aleksandar.markovic@rt-rk.com>
-In-Reply-To: <1503061833-26563-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-mips@linux-mips.org
-Cc: Aleksandar Markovic <aleksandar.markovic@imgtec.com>, Miodrag Dinic <miodrag.dinic@imgtec.com>, Goran Ferenc <goran.ferenc@imgtec.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bo Hu <bohu@google.com>, Douglas Leung <douglas.leung@imgtec.com>, James Hogan <james.hogan@imgtec.com>, Jin Qian <jinqian@google.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Burton <paul.burton@imgtec.com>, Petar Jovanovic <petar.jovanovic@imgtec.com>, Raghu Gandham <raghu.gandham@imgtec.com>
+To: b.zolnierkie@samsung.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
+zorro_device_id are not supposed to change at runtime. All functions
+working with zorro_device_id provided by <linux/zorro.h> work with
+const zorro_device_id. So mark the non-const structs as const.
 
-Add ability to the Goldfish FB driver to be recognized by OS via DT.
-
-Signed-off-by: Miodrag Dinic <miodrag.dinic@imgtec.com>
-Signed-off-by: Goran Ferenc <goran.ferenc@imgtec.com>
-Signed-off-by: Aleksandar Markovic <aleksandar.markovic@imgtec.com>
+Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 ---
- drivers/video/fbdev/goldfishfb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/fm2fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 7f6c9e6..3b70044 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	return 0;
- }
+diff --git a/drivers/video/fbdev/fm2fb.c b/drivers/video/fbdev/fm2fb.c
+index e69d47a..ac7a4eb 100644
+--- a/drivers/video/fbdev/fm2fb.c
++++ b/drivers/video/fbdev/fm2fb.c
+@@ -213,7 +213,7 @@ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
  
-+static const struct of_device_id goldfish_fb_of_match[] = {
-+	{ .compatible = "google,goldfish-fb", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+ static int fm2fb_probe(struct zorro_dev *z, const struct zorro_device_id *id);
  
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
- 	.driver = {
--		.name = "goldfish_fb"
-+		.name = "goldfish_fb",
-+		.of_match_table = goldfish_fb_of_match,
- 	}
- };
- 
+-static struct zorro_device_id fm2fb_devices[] = {
++static const struct zorro_device_id fm2fb_devices[] = {
+ 	{ ZORRO_PROD_BSC_FRAMEMASTER_II },
+ 	{ ZORRO_PROD_HELFRICH_RAINBOW_II },
+ 	{ 0 }
 -- 
 2.7.4
 

@@ -1,43 +1,29 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 22 Aug 2017 06:00:55 +0000
+From: Andreas Schwab <schwab@linux-m68k.org>
+Date: Tue, 22 Aug 2017 16:17:07 +0000
 Subject: Re: 32-bit powerpc, aty128fb: vmap allocation for size 135168 failed
-Message-Id: <87a82sb0q0.fsf@concordia.ellerman.id.au>
+Message-Id: <87378ja870.fsf@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee>
- <87mv6xjc2g.fsf@concordia.ellerman.id.au>
- <alpine.LRH.2.20.1708190007310.26479@math.ut.ee>
-In-Reply-To: <alpine.LRH.2.20.1708190007310.26479@math.ut.ee>
+In-Reply-To: <alpine.LRH.2.20.1708180825590.15982@math.ut.ee> (Meelis Roos's
+ message of "Fri, 18 Aug 2017 08:37:46 +0300 (EEST)")
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Meelis Roos <mroos@linux.ee>
 Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Meelis Roos <mroos@linux.ee> writes:
+On Aug 18 2017, Meelis Roos <mroos@linux.ee> wrote:
 
->> Meelis Roos <mroos@linux.ee> writes:
->> 
->> > I was trying 4.13.0-rc5-00075-gac9a40905a61 on my PowerMac G4 with 1G 
->> > RAM and after some time of sddm respawning and X trying to restart, 
->> > dmesg is full of messages about vmap allocation failures.
->> 
->> Did it just start happening? ie. did rc4 work?
->
-> It goes back to at least 4.0 - that's the oldest kernel I had laying 
-> around precompiled. The messages about ROM signature changed somewehere 
-> between 4.0 and 4.7 (4.7 is already like 4.13) but after some time, the 
-> same vmalloc errors appear.
->
-> Maybe the userspace has changed with more respawning that brings the 
-> problem out.
->
-> I tried to read the code but I do not understand it yet. The warning 
-> seems to come from generic pci_map_rom() checking ROM size, and 
-> returning rom pointer to aty128fb (it returns resource size too but that 
-> is ignored). aty128fb starts to look at the x86 PCI ROM signature again 
-> but does not tell that the signature is missing. How come?
+> Aug 17 23:53:57 pohl kernel: [ 2940.146546] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1111
+> Aug 17 23:54:02 pohl kernel: [ 2944.804838] aty128fb 0000:00:10.0: Invalid PCI ROM header signature: expecting 0xaa55, got 0x1110
 
-OK thanks. Unfortunately I can't really help on the graphics side of
-things. Hopefully someone on Cc has more clues than me.
+I think these messages are harmless and expected.  This device has no
+x86 option ROM but a OpenFirmware one.  This is likely unrelated to the
+sddm crash.
 
-cheers
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."

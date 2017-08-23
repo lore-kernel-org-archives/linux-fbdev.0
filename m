@@ -1,46 +1,62 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 21 Aug 2017 14:04:14 +0000
-Subject: Re: [PATCH 1/2] video: fbdev: Fix multiple style issues in xilinxfb
-Message-Id: <2014067.suSortcy05@amdc3058>
+From: Himanshu Jha <himanshujha199640@gmail.com>
+Date: Wed, 23 Aug 2017 17:42:40 +0000
+Subject: [PATCH v2] fbdev: vgastate: fix line over 80 character and remove unnecessary space
+Message-Id: <1503509440-17279-1-git-send-email-himanshujha199640@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170808081042epcas4p3b6787c3895bec41cb37aa4ae868adb45@epcas4p3.samsung.com>
- <b07b143769ed5dccf44e9de4cb0d5c6203b3eca0.1502179820.git.michal.simek@xilinx.com>
-In-Reply-To: <b07b143769ed5dccf44e9de4cb0d5c6203b3eca0.1502179820.git.michal.simek@xilinx.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Himanshu Jha <himanshujha199640@gmail.com>
 
-On Tuesday, August 08, 2017 10:10:25 AM Michal Simek wrote:
-> From: Hyun Kwon <hyun.kwon@xilinx.com>
-> 
-> All reported by from checkpatch
-> ./scripts/checkpatch.pl --max-line-length 120 -strict -f
-> drivers/video/fbdev/xilinxfb.c
-> 
-> WARNING: Block comments should align the * on each line
-> WARNING: Block comments use a trailing */ on a separate line
-> WARNING: Block comments use * on subsequent lines
-> WARNING: please, no space before tabs
-> WARNING: Prefer 'unsigned int' to bare use of 'unsigned'
-> WARNING: braces {} are not necessary for single statement blocks
-> WARNING: Missing a blank line after declarations
-> WARNING: struct of_device_id should normally be const
-> CHECK: Please don't use multiple blank lines
-> CHECK: Blank lines aren't necessary after an open brace '{'
-> CHECK: Alignment should match open parenthesis
-> CHECK: 'Endianess' may be misspelled - perhaps 'Endianness'?
-> CHECK: spaces preferred around that '*' (ctx:VxV)
-> ERROR: that open brace { should be on the previous line
-> 
-> Signed-off-by: Hyun Kwon <hyun.kwon@xilinx.com>
-> Signed-off-by: Michal Simek <michal.simek@xilinx.com>
+Fixes the following checkpatch warnings:
 
-Patch queued for 4.14, thanks.
+WARNING: line over 80 characters
+WARNING: space prohibited between function name and open parenthesis '('
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its
+function/variable
+
+Signed-off-by: Himanshu Jha <himanshujha199640@gmail.com>
+---
+ drivers/video/vgastate.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/vgastate.c b/drivers/video/vgastate.c
+index 548c751..b17d8e0 100644
+--- a/drivers/video/vgastate.c
++++ b/drivers/video/vgastate.c
+@@ -31,8 +31,9 @@ struct regstate {
+ 	__u8 misc;
+ };
  
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-static inline unsigned char vga_rcrtcs(void __iomem *regbase, unsigned short iobase,
+-				       unsigned char reg)
++static inline unsigned char vga_rcrtcs(void __iomem *regbase,
++					unsigned short iobase,
++					unsigned char reg)
+ {
+ 	vga_w(regbase, iobase + 0x4, reg);
+ 	return vga_r(regbase, iobase + 0x5);
+@@ -454,8 +455,9 @@ int save_vga(struct vgastate *state)
+ 	}
+ 	return 0;
+ }
++EXPORT_SYMBOL(save_vga);
+ 
+-int restore_vga (struct vgastate *state)
++int restore_vga(struct vgastate *state)
+ {
+ 	if (state->vidstate = NULL)
+ 		return 1;
+@@ -480,8 +482,6 @@ int restore_vga (struct vgastate *state)
+ 	vga_cleanup(state);
+ 	return 0;
+ }
+-
+-EXPORT_SYMBOL(save_vga);
+ EXPORT_SYMBOL(restore_vga);
+ 
+ MODULE_AUTHOR("James Simmons <jsimmons@users.sf.net>");
+-- 
+2.7.4
 

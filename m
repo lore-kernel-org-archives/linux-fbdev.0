@@ -1,63 +1,86 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 18 Aug 2017 17:41:16 +0000
-Subject: Re: [PATCH] video: fbdev: constify copied structures
-Message-Id: <7127868.v7Fj1TocLv@amdc3058>
+Date: Wed, 23 Aug 2017 16:12:41 +0000
+Subject: Re: [PATCH] drivers: video: Fix 80 character limit and remove unnecessary space
+Message-Id: <5135691.E4iXgiitH9@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170802093008epcas2p48a98827ec2c27fbd6f6de8913d47c02b@epcas2p4.samsung.com>
- <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1501664679-10356-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <CGME20170821140419epcas1p44df6f964a3977e1305cd4845cfcef783@epcas1p4.samsung.com>
+        <1503324231-10675-1-git-send-email-himanshujha199640@gmail.com>
+In-Reply-To: <1503324231-10675-1-git-send-email-himanshujha199640@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Himanshu Jha <himanshujha199640@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
 
 Hi,
 
-On Wednesday, August 02, 2017 11:04:39 AM Julia Lawall wrote:
-> Make const some structures that are only copied into other structures.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Please use a more descriptive patch subject, i.e.
+"fbdev: vgastate: fix checkpatch.pl reported warnings".
 
-fb_fix_screeninfo and fb_var_screeninfo structures were already
-const-ified by commit 40445365a43f ("video: xilinxfb: constify
-fb_fix_screeninfo and fb_var_screeninfo structures") in my -next
-tree (git://github.com/bzolnier/linux.git fbdev-for-next) so
-I just applied xilinx_fb_default_pdata part (patch included below
-for reference).
+Please also cc: fbdev mailing list (linux-fbdev@vger.kernel.org
+on fbdev patches).
+
+On Monday, August 21, 2017 07:33:51 PM Himanshu Jha wrote:
+> Fixes the following checkpatch warnings:
+> WARNING: line over 80 characters
+> WARNING: space prohibited between function name and open parenthesis '('
+> WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+> 
+> Signed-off-by: Himanshu Jha <himanshujha199640@gmail.com>
+> ---
+>  drivers/video/vgastate.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/video/vgastate.c b/drivers/video/vgastate.c
+> index 548c751..a52283d 100644
+> --- a/drivers/video/vgastate.c
+> +++ b/drivers/video/vgastate.c
+> @@ -31,8 +31,9 @@ struct regstate {
+>  	__u8 misc;
+>  };
+>  
+> -static inline unsigned char vga_rcrtcs(void __iomem *regbase, unsigned short iobase,
+> -				       unsigned char reg)
+> +static inline unsigned char vga_rcrtcs(void __iomem *regbase,
+> +						unsigned short iobase,
+> +							unsigned char reg)
+
+This is not an improvement and doesn't conform to the kernel CodingStyle.
+
+It should be:
+
+static inline unsigned char vga_rcrtcs(void __iomem *regbase,
+				       unsigned short iobase,
+				       unsigned char reg)
+
+>  {
+>  	vga_w(regbase, iobase + 0x4, reg);
+>  	return vga_r(regbase, iobase + 0x5);
+> @@ -454,8 +455,9 @@ int save_vga(struct vgastate *state)
+>  	}
+>  	return 0;
+>  }
+> +EXPORT_SYMBOL(save_vga);
+>  
+> -int restore_vga (struct vgastate *state)
+> +int restore_vga(struct vgastate *state)
+>  {
+>  	if (state->vidstate = NULL)
+>  		return 1;
+> @@ -480,8 +482,6 @@ int restore_vga (struct vgastate *state)
+>  	vga_cleanup(state);
+>  	return 0;
+>  }
+> -
+> -EXPORT_SYMBOL(save_vga);
+>  EXPORT_SYMBOL(restore_vga);
+>  
+>  MODULE_AUTHOR("James Simmons <jsimmons@users.sf.net>");
 
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
-
-
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: [PATCH] video: fbdev: xilinxfb: constify copied structure
-
-Make const xilinx_fb_default_pdata structure that is only copied into
-other structure.
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: Michal Simek <michal.simek@xilinx.com>
-Cc: Soren Brinkmann <soren.brinkmann@xilinx.com>,
-[b.zolnierkie: split from a bigger patch]
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/video/fbdev/xilinxfb.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: b/drivers/video/fbdev/xilinxfb.c
-=================================--- a/drivers/video/fbdev/xilinxfb.c	2017-08-18 19:34:11.383004874 +0200
-+++ b/drivers/video/fbdev/xilinxfb.c	2017-08-18 19:34:35.383005478 +0200
-@@ -100,7 +100,7 @@ struct xilinxfb_platform_data {
- /*
-  * Default xilinxfb configuration
-  */
--static struct xilinxfb_platform_data xilinx_fb_default_pdata = {
-+static const struct xilinxfb_platform_data xilinx_fb_default_pdata = {
- 	.xres = 640,
- 	.yres = 480,
- 	.xvirt = 1024,
 

@@ -1,29 +1,54 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 18 Aug 2017 17:24:20 +0000
-Subject: Re: [PATCH] fbdev: fix 1bpp logo for unusual width
-Message-Id: <3724763.2PmRKLHeP2@amdc3058>
+From: David Lechner <david@lechnology.com>
+Date: Wed, 23 Aug 2017 19:18:53 +0000
+Subject: [PATCH] fbcon: remove restriction on margin color
+Message-Id: <1503515933-8045-1-git-send-email-david@lechnology.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170728203405epcas5p3c58c5c8d751b74f94f73520a8108358b@epcas5p3.samsung.com>
-        <1501274033-6978-1-git-send-email-david@lechnology.com>
-In-Reply-To: <1501274033-6978-1-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Lechner <david@lechnology.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: David Lechner <david@lechnology.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
 
-On Friday, July 28, 2017 03:33:53 PM David Lechner wrote:
-> This check is needed in the case where the width of the framebuffer
-> is not a multiple of 8 pixels. For example, LEGO MINDSTORMS EV3 has
-> a 178x128 1bpp display.
-> 
-> Signed-off-by: David Lechner <david@lechnology.com>
+This removes the restriction on the value range of the fbcon=margin:
+parameter. The color value really depends on the driver being used.
 
-Patch queued for 4.14, thanks.
+Signed-off-by: David Lechner <david@lechnology.com>
+---
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+This is a follow up to "fbcon: add fbcon=margin:<color> command line option".
+
+https://lkml.org/lkml/2017/8/23/479
+
+ Documentation/fb/fbcon.txt    | 2 +-
+ drivers/video/console/fbcon.c | 2 --
+ 2 files changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/Documentation/fb/fbcon.txt b/Documentation/fb/fbcon.txt
+index 1822b19..a38d3aa 100644
+--- a/Documentation/fb/fbcon.txt
++++ b/Documentation/fb/fbcon.txt
+@@ -153,7 +153,7 @@ C. Boot options
+ 	This option specifies the color of the margins. The margins are the
+ 	leftover area at the right and the bottom of the screen that are not
+ 	used by text. By default, this area will be black. The 'color' value
+-	is 0 to 7 where 0 is black and 7 is white.
++	is an integer number that depends on the framebuffer driver being used.
+ 
+ C. Attaching, Detaching and Unloading
+ 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 1bce7a7..82e5d6b 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -497,8 +497,6 @@ static int __init fb_console_setup(char *this_opt)
+ 			options += 7;
+ 			if (*options)
+ 				margin_color = simple_strtoul(options, &options, 0);
+-			if (margin_color > 7)
+-				margin_color = 0;
+ 			continue;
+ 		}
+ 	}
+-- 
+2.7.4
 

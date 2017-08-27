@@ -1,31 +1,59 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 18 Aug 2017 17:51:13 +0000
-Subject: Re: [PATCH] video: fbdev: vt8623fb: constify vt8623_timing_regs
-Message-Id: <1629225.J5Y5szTP3h@amdc3058>
+From: =?UTF-8?q?Jan=20H=2E=20Sch=C3=B6nherr?= <jschoenh@amazon.de>
+Date: Sun, 27 Aug 2017 13:56:46 +0000
+Subject: [PATCH] vgacon, x86/boot: Prevent faulty bootparams.screeninfo from causing harm
+Message-Id: <1503842206-30039-1-git-send-email-jschoenh@amazon.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170803195321epcas2p22165d98ea90602f4b22233f35b36e30e@epcas2p2.samsung.com>
-        <1501788459-32425-1-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1501788459-32425-1-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Bhumika Goyal <bhumirks@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-On Thursday, August 03, 2017 09:27:39 PM Julia Lawall wrote:
-> vt8623_timing_regs is only passed as the first argument to
-> svga_check_timings and as the second argument to svga_set_timings,
-> both of which are const.  So make vt8623_timing_regs const also.
-> 
-> Done with the help of Coccinelle.
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+If a zero for the number of colums or rows manages to slip through,
+gotoxy() will underflow vc->vc_pos, causing the next action on the
+referenced memory to end with a page fault.
 
-Patch queued for 4.14, thanks.
+Make the check in vgacon more pessimistic to prevent that. Also change
+a similar check in the x86 boot code with a similar problem.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Jan H. Sch=C3=B6nherr <jschoenh@amazon.de>
+---
+Let me know, if I should split this into two patches.
+
+ arch/x86/boot/compressed/misc.c | 3 +--
+ drivers/video/console/vgacon.c  | 5 ++---
+ 2 files changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/boot/compressed/misc.c b/arch/x86/boot/compressed/mis=
+c.c
+index a0838ab..c14217c 100644
+--- a/arch/x86/boot/compressed/misc.c
++++ b/arch/x86/boot/compressed/misc.c
+@@ -116,8 +116,7 @@ void __putstr(const char *s)
+ 		}
+ 	}
+=20
+-	if (boot_params->screen_info.orig_video_mode =3D 0 &&
+-	    lines =3D 0 && cols =3D 0)
++	if (lines =3D 0 || cols =3D 0)
+ 		return;
+=20
+ 	x =3D boot_params->screen_info.orig_x;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index dc06cb6..445b1dc 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -398,9 +398,8 @@ static const char *vgacon_startup(void)
+ #endif
+ 	}
+=20
+-	/* boot_params.screen_info initialized? */
+-	if ((screen_info.orig_video_mode  =3D 0) &&
+-	    (screen_info.orig_video_lines =3D 0) &&
++	/* boot_params.screen_info reasonably initialized? */
++	if ((screen_info.orig_video_lines =3D 0) ||
+ 	    (screen_info.orig_video_cols  =3D 0))
+ 		goto no_vga;
+=20
+--=20
+2.3.1.dirty
 

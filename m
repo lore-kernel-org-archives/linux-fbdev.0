@@ -1,59 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 12:34:31 +0000
-Subject: Re: [PATCH] video/chips: constify fb_fix_screeninfo and fb_var_screeninfo structures
-Message-Id: <2575493.n74KlNstDc@amdc3058>
+From: Vladis Dronov <vdronov@redhat.com>
+Date: Tue, 29 Aug 2017 13:50:04 +0000
+Subject: [PATCH] video: fbdev: aty: do not leak uninitialized padding in clk to userspace
+Message-Id: <20170829135004.5739-1-vdronov@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170708011556epcas3p2900f8ed5102858fc64d194feb7874305@epcas3p2.samsung.com>
-        <20170708011552.GA26138@embeddedgus>
-In-Reply-To: <20170708011552.GA26138@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Vladis Dronov <vdronov@redhat.com>
 
-On Friday, July 07, 2017 08:15:52 PM Gustavo A. R. Silva wrote:
-> These structures are only used to copy into other structures,
-> so declare them as const.
-> 
-> This issue was detected using Coccinelle and the following semantic patch:
-> 
-> @r disable optional_qualifier@
-> identifier i;
-> position p;
-> @@
-> static struct fb_fix_screeninfo i@p = { ... };
-> 
-> @ok@
-> identifier r.i;
-> expression e;
-> position p;
-> @@
-> e = i@p
-> 
-> @bad@
-> position p != {r.p,ok.p};
-> identifier r.i;
-> struct fb_fix_screeninfo e;
-> @@
-> e@i@p
-> 
-> @depends on !bad disable optional_qualifier@
-> identifier r.i;
-> @@
-> static
-> +const
->  struct fb_fix_screeninfo i = { ... };
-> 
-> The semantic patch for fb_var_screeninfo is analogous.
-> 
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+'clk' is copied to a userland with padding byte(s) after 'vclk_post_div'
+field unitialized, leaking data from the stack. Fix this ensuring all of
+'clk' is initialized to zero.
 
-Patch queued for 4.14, thanks.
+References: https://github.com/torvalds/linux/pull/441
+Reported-by: sohu0106 <sohu0106@126.com>
+Signed-off-by: Vladis Dronov <vdronov@redhat.com>
+---
+ drivers/video/fbdev/aty/atyfb_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b55fdac..e4c91d7 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -1855,7 +1855,7 @@ static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ #if defined(DEBUG) && defined(CONFIG_FB_ATY_CT)
+ 	case ATYIO_CLKR:
+ 		if (M64_HAS(INTEGRATED)) {
+-			struct atyclk clk;
++			struct atyclk clk = { 0 };
+ 			union aty_pll *pll = &par->pll;
+ 			u32 dsp_config = pll->ct.dsp_config;
+ 			u32 dsp_on_off = pll->ct.dsp_on_off;
+-- 
+2.9.5

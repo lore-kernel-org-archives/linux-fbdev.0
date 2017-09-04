@@ -1,22 +1,59 @@
-From: mackenzie <antoine.touze@univ-tours.fr>
-Date: Sun, 10 Sep 2017 11:19:09 +0000
-Subject: [SUSPECTED SPAM] I am a Buyer
-Message-Id: <407965311.45474009.1505042349493.JavaMail.zimbra@univ-tours.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 04 Sep 2017 13:26:55 +0000
+Subject: Re: [PATCH] video: fbdev: make fb_videomode const
+Message-Id: <2256568.NTq7reR8tp@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20170826152551epcas3p129fba70a978dca27cfe64d86ecefd404@epcas3p1.samsung.com>
+ <1503761137-25263-1-git-send-email-bhumirks@gmail.com>
+In-Reply-To: <1503761137-25263-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: @bombadil.infradead.org
+To: linux-arm-kernel@lists.infradead.org
 
+On Saturday, August 26, 2017 08:55:37 PM Bhumika Goyal wrote:
+> Make these const as they are only passed to a const argument of the
+> function fb_find_mode.
+> Done using Coccinelle.
+> 
+> @match disable optional_qualifier@
+> identifier s;
+> @@
+> static struct fb_videomode s = {...};
+> 
+> @ref@
+> position p;
+> identifier match.s;
+> @@
+> s@p
+> 
+> @good1@
+> identifier match.s;
+> expression list[5] es;
+> position ref.p;
+> @@
+> fb_find_mode(es,&s@p,...)
+> 
+> @bad depends on  !good1@
+> position ref.p;
+> identifier match.s;
+> @@
+> s@p
+> 
+> @depends on forall !bad disable optional_qualifier@
+> identifier match.s;
+> @@
+> static
+> + const
+> struct fb_videomode s;
+> 
+> Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
 
+Patch queued for 4.14, thanks.
 
-Dear Sir/Madam,
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-I am Becca MacKenzie, We are interested in your products and want to make you and your company our major suppliers but first we would like your to send us your best price list and Catalog if possible.
-
-We will be ordering in large quantity so we are looking forward in making a good relationship with you and your company.
-
-For my quick response write only to my contact email: becca.mackenzie100@outlook.com
-
-Regards
-Becca MacKenzie

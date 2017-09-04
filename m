@@ -1,34 +1,31 @@
-From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:12 +0000
-Subject: [PATCH 03/10] driver:gpu: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-3-git-send-email-allen.lkml@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 04 Sep 2017 13:32:32 +0000
+Subject: Re: [PATCH] video: fbdev: aty: do not leak uninitialized padding in clk to userspace
+Message-Id: <2710268.UQ4S50vCLC@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <CGME20170829135015epcas3p2c8daeacf3b6b2960cf13f225231b19c2@epcas3p2.samsung.com>
+        <20170829135004.5739-1-vdronov@redhat.com>
+In-Reply-To: <20170829135004.5739-1-vdronov@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: Vladis Dronov <vdronov@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
----
- drivers/gpu/drm/gma500/mid_bios.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Tuesday, August 29, 2017 03:50:04 PM Vladis Dronov wrote:
+> 'clk' is copied to a userland with padding byte(s) after 'vclk_post_div'
+> field unitialized, leaking data from the stack. Fix this ensuring all of
+> 'clk' is initialized to zero.
+> 
+> References: https://github.com/torvalds/linux/pull/441
+> Reported-by: sohu0106 <sohu0106@126.com>
+> Signed-off-by: Vladis Dronov <vdronov@redhat.com>
 
-diff --git a/drivers/gpu/drm/gma500/mid_bios.c b/drivers/gpu/drm/gma500/mid_bios.c
-index d75ecb3..1fa1633 100644
---- a/drivers/gpu/drm/gma500/mid_bios.c
-+++ b/drivers/gpu/drm/gma500/mid_bios.c
-@@ -237,7 +237,7 @@ static int mid_get_vbt_data_r10(struct drm_psb_private *dev_priv, u32 addr)
- 
- 	gct = kmalloc(sizeof(*gct) * vbt.panel_count, GFP_KERNEL);
- 	if (!gct)
--		return -1;
-+		return -ENOMEM;
- 
- 	gct_virtual = ioremap(addr + sizeof(vbt),
- 			sizeof(*gct) * vbt.panel_count);
--- 
-2.7.4
+Patch queued for 4.14, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

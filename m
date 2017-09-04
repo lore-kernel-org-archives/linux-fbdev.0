@@ -1,34 +1,30 @@
-From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:11 +0000
-Subject: [PATCH 02/10] drivers:crypto: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-2-git-send-email-allen.lkml@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 04 Sep 2017 13:58:01 +0000
+Subject: Re: [PATCH] video: fbdev: sis: fix duplicated code for different branches
+Message-Id: <2720040.oNlgtMK5vT@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <CGME20170830131945epcas1p47e42f63ff4ae1d88501d4750ad455618@epcas1p4.samsung.com>
+        <20170830131942.GA8173@embeddedgus>
+In-Reply-To: <20170830131942.GA8173@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
----
- drivers/crypto/omap-aes-gcm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wednesday, August 30, 2017 08:19:42 AM Gustavo A. R. Silva wrote:
+> Refactor code in order to avoid identical code for different branches.
+> 
+> This issue was detected with the help of Coccinelle.
+> 
+> Addresses-Coverity-ID: 1226761
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-diff --git a/drivers/crypto/omap-aes-gcm.c b/drivers/crypto/omap-aes-gcm.c
-index 7d4f8a4..2542224 100644
---- a/drivers/crypto/omap-aes-gcm.c
-+++ b/drivers/crypto/omap-aes-gcm.c
-@@ -186,7 +186,7 @@ static int do_encrypt_iv(struct aead_request *req, u32 *tag, u32 *iv)
- 	sk_req = skcipher_request_alloc(ctx->ctr, GFP_KERNEL);
- 	if (!sk_req) {
- 		pr_err("skcipher: Failed to allocate request\n");
--		return -1;
-+		return -ENOMEM;
- 	}
- 
- 	init_completion(&result.completion);
--- 
-2.7.4
+Patch queued for 4.14, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

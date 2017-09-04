@@ -1,50 +1,29 @@
-From: Russell King <rmk+kernel@armlinux.org.uk>
-Date: Fri, 29 Sep 2017 10:51:28 +0000
-Subject: [PATCH 7/8] video: sa1100fb: fix video memory allocation leak
-Message-Id: <E1dxstE-0006jU-BQ@rmk-PC.armlinux.org.uk>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 04 Sep 2017 12:47:15 +0000
+Subject: Re: [PATCH] video: fm2fb: constify zorro_device_id
+Message-Id: <11489231.Ik3V9PHcY1@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170929105004.GY20805@n2100.armlinux.org.uk>
-In-Reply-To: <20170929105004.GY20805@n2100.armlinux.org.uk>
+References: <CGME20170822181806epcas1p402a52d6fa3b22d5609d2b1ffe9d1f080@epcas1p4.samsung.com>
+        <e530300dd132c9567ea6f7e8c6b923ed4dfb35a0.1503425803.git.arvind.yadav.cs@gmail.com>
+In-Reply-To: <e530300dd132c9567ea6f7e8c6b923ed4dfb35a0.1503425803.git.arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-Don't leak the video memory allocation if register_framebuffer() fails.
+On Tuesday, August 22, 2017 11:47:48 PM Arvind Yadav wrote:
+> zorro_device_id are not supposed to change at runtime. All functions
+> working with zorro_device_id provided by <linux/zorro.h> work with
+> const zorro_device_id. So mark the non-const structs as const.
+> 
+> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
----
- drivers/video/fbdev/sa1100fb.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+Patch queued for 4.14, thanks.
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 16a974471c02..56d514b5d252 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1262,8 +1262,11 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, fbi);
- 
- 	ret = register_framebuffer(&fbi->fb);
--	if (ret < 0)
--		goto failed;
-+	if (ret < 0) {
-+		dma_free_wc(fbi->dev, fbi->map_size, fbi->map_cpu,
-+			    fbi->map_dma);
-+		return ret;
-+	}
- 
- #ifdef CONFIG_CPU_FREQ
- 	fbi->freq_transition.notifier_call = sa1100fb_freq_transition;
-@@ -1274,9 +1277,6 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 
- 	/* This driver cannot be unloaded at the moment */
- 	return 0;
--
-- failed:
--	return ret;
- }
- 
- static struct platform_driver sa1100fb_driver = {
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

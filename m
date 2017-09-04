@@ -1,40 +1,54 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Tue, 12 Sep 2017 05:39:30 +0000
-Subject: [PATCH] video: fbdev: Fix an errro handling path in 'au1200fb_drv_probe()'
-Message-Id: <20170912053930.18931-1-christophe.jaillet@wanadoo.fr>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 04 Sep 2017 14:26:01 +0000
+Subject: [PATCH] video/console: Add rotated LCD-panel DMI quirk for the VIOS LTH17
+Message-Id: <20170904142601.30641-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, tj@kernel.org, viro@zeniv.linux.org.uk
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: linux-fbdev@vger.kernel.org
 
-If 'dmam_alloc_attrs()' fails, we must go through the error handling code,
-as done elsewhere in this function. Otherwise, there is a resource leak.
+The VIOS LTH17 Cherry Trail bases netbook has its LCD panel mounted
+rotated 90 degrees, add a DMI quirk for this.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Cc: Daniel Drake <drake@endlessm.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
-I'm also puzzled by the 'framebuffer_alloc()' call a few lines above.
-'ret' is known to be 0 at this point. I guess that -ENOMEM should also be
-returned.
----
- drivers/video/fbdev/au1200fb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/console/fbcon_dmi_quirks.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 5f04b4096c42..99d6cfb168b5 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1701,7 +1701,8 @@ static int au1200fb_drv_probe(struct platform_device *dev)
- 		if (!fbdev->fb_mem) {
- 			print_err("fail to allocate frambuffer (size: %dK))",
- 				  fbdev->fb_len / 1024);
--			return -ENOMEM;
-+			ret = -ENOMEM;
-+			goto failed;
- 		}
+diff --git a/drivers/video/console/fbcon_dmi_quirks.c b/drivers/video/console/fbcon_dmi_quirks.c
+index 9027f044a0e1..3fd40568070b 100644
+--- a/drivers/video/console/fbcon_dmi_quirks.c
++++ b/drivers/video/console/fbcon_dmi_quirks.c
+@@ -58,6 +58,12 @@ static const struct fbcon_dmi_rotate_data rotate_data_itworks_tw891 = {
+ 	.rotate = FB_ROTATE_CW,
+ };
  
- 		/*
++static const struct fbcon_dmi_rotate_data rotate_data_vios_lth17 = {
++	.width = 800,
++	.height = 1280,
++	.rotate = FB_ROTATE_CW,
++};
++
+ static const struct dmi_system_id rotate_data[] = {
+ 	{	/* Asus T100HA */
+ 		.matches = {
+@@ -94,6 +100,14 @@ static const struct dmi_system_id rotate_data[] = {
+ 		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "TW891"),
+ 		},
+ 		.driver_data = (void *)&rotate_data_itworks_tw891,
++	}, {	/* VIOS LTH17 */
++		.matches = {
++		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "VIOS"),
++		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "LTH17"),
++		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "VIOS"),
++		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "LTH17"),
++		},
++		.driver_data = (void *)&rotate_data_vios_lth17,
+ 	},
+ 	{}
+ };
 -- 
-2.11.0
+2.13.4
 

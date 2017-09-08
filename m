@@ -1,77 +1,53 @@
-From: Russell King <rmk+kernel@armlinux.org.uk>
-Date: Fri, 29 Sep 2017 10:51:22 +0000
-Subject: [PATCH 6/8] video: sa1100fb: clean up failure path
-Message-Id: <E1dxst8-0006jN-Vn@rmk-PC.armlinux.org.uk>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Fri, 08 Sep 2017 11:54:44 +0000
+Subject: [PATCH 3/3] drm/i915: Add "panel orientation" property to the panel connector
+Message-Id: <20170908115444.19122-4-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170929105004.GY20805@n2100.armlinux.org.uk>
-In-Reply-To: <20170929105004.GY20805@n2100.armlinux.org.uk>
+References: <20170908115444.19122-1-hdegoede@redhat.com>
+In-Reply-To: <20170908115444.19122-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>
 
-We merely return from the failed path, so remove all the gotos and use
-return statements instead.
+For now this is always set to DRM_MODE_PANEL_ORIENTATION_UNKNOWN
+unless there is a dmi based quirk overriding the value.
 
-Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+In the future we should probably provide an initial value based on
+the VBT (at least for some panel types).
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/sa1100fb.c | 21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
+ drivers/gpu/drm/i915/intel_panel.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 7fa6c8f74ec6..16a974471c02 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1222,41 +1222,36 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 
- 	fbi = sa1100fb_init_fbinfo(&pdev->dev);
--	ret = -ENOMEM;
- 	if (!fbi)
--		goto failed;
-+		return -ENOMEM;
- 
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	fbi->base = devm_ioremap_resource(&pdev->dev, res);
--	if (IS_ERR(fbi->base)) {
--		ret = PTR_ERR(fbi->base);
--		goto failed;
--	}
-+	if (IS_ERR(fbi->base))
-+		return PTR_ERR(fbi->base);
- 
- 	fbi->clk = devm_clk_get(&pdev->dev, NULL);
--	if (IS_ERR(fbi->clk)) {
--		ret = PTR_ERR(fbi->clk);
--		goto failed;
--	}
-+	if (IS_ERR(fbi->clk))
-+		return PTR_ERR(fbi->clk);
- 
- 	ret = devm_request_irq(&pdev->dev, irq, sa1100fb_handle_irq, 0,
- 			       "LCD", fbi);
- 	if (ret) {
- 		dev_err(&pdev->dev, "request_irq failed: %d\n", ret);
--		goto failed;
-+		return ret;
- 	}
- 
- 	if (machine_is_shannon()) {
- 		ret = devm_gpio_request_one(&pdev->dev, SHANNON_GPIO_DISP_EN,
- 			GPIOF_OUT_INIT_LOW, "display enable");
- 		if (ret)
--			goto failed;
+diff --git a/drivers/gpu/drm/i915/intel_panel.c b/drivers/gpu/drm/i915/intel_panel.c
+index 72f8cbb237b1..4a52c9d5790a 100644
+--- a/drivers/gpu/drm/i915/intel_panel.c
++++ b/drivers/gpu/drm/i915/intel_panel.c
+@@ -1926,6 +1926,22 @@ int intel_panel_init(struct intel_panel *panel,
+ 		     struct drm_display_mode *alt_fixed_mode,
+ 		     struct drm_display_mode *downclock_mode)
+ {
++	struct intel_connector *intel_connector +		container_of(panel, struct intel_connector, panel);
++	int ret;
++
++	if (fixed_mode) {
++		ret = drm_connector_create_panel_orientation_property(
++						intel_connector->base.dev);
++		if (ret)
 +			return ret;
- 	}
++
++		drm_connector_attach_panel_orientation_property(
++				&intel_connector->base,
++				fixed_mode->hdisplay, fixed_mode->vdisplay,
++				DRM_MODE_PANEL_ORIENTATION_UNKNOWN);
++	}
++
+ 	intel_panel_init_backlight_funcs(panel);
  
- 	/* Initialize video memory */
- 	ret = sa1100fb_map_video_memory(fbi);
- 	if (ret)
--		goto failed;
-+		return ret;
- 
- 	/*
- 	 * This makes sure that our colour bitfield
+ 	panel->fixed_mode = fixed_mode;
 -- 
-2.7.4
+2.13.4
 

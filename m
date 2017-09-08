@@ -1,74 +1,53 @@
-From: Bhumika Goyal <bhumirks@gmail.com>
-Date: Thu, 14 Sep 2017 12:44:14 +0000
-Subject: [PATCH] video: fbdev: make fb_var_screeninfo static, const and __initconst
-Message-Id: <1505392334-8001-1-git-send-email-bhumirks@gmail.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Fri, 08 Sep 2017 15:35:28 +0000
+Subject: [PATCH] MAINTAINERS: Add dri-devel as a mailing list for anything fbdev
+Message-Id: <20170908153528.17528-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1504093228-7439-1-git-send-email-bhumirks@gmail.com>
-In-Reply-To: <1504093228-7439-1-git-send-email-bhumirks@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: julia.lawall@lip6.fr, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bhumika Goyal <bhumirks@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, dri-devel@lists.freedesktop.org, Hans de Goede <hdegoede@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>
 
-Make these structures static as they are not referenced in any other
-file. Make them const as they are used only during a copy operation.
-Replace __initdata with __initconst in file igafb.c to avoid section
-conflict error.
+fbdev is in maintenance only, except that it's still used by drm
+through the drm fbdev emulation, to be able to use fbcon. And people
+might want to sometimes extend fbcon to enable new features for drm
+drivers, e.g. Hans' panel orientation work.
 
-Signed-off-by: Bhumika Goyal <bhumirks@gmail.com>
+The problem is that when those patches only touch fbdev code they'll
+never show up on drm developer's radar, which means we end up with
+designs that don't really fit whell into the full stack. That happened
+a bit with the panel orientation work, where an fbcon patch made it
+into 4.14, implementing a design that won't really work on the drm
+side. Which means we now have to redo things, and on top coordinate 2
+subsystem trees.
+
+Since fbdev is super low-volume we can prevent this in the future by
+simply adding the dri-devel mailing list to the fbdev subsystem.
+
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: Sean Paul <seanpaul@chromium.org>
+Cc: David Airlie <airlied@linux.ie>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 ---
-The changes are not compile tested as I could not find the right 
-architecture to cross compile the files.
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/video/fbdev/dnfb.c  | 2 +-
- drivers/video/fbdev/igafb.c | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/dnfb.c b/drivers/video/fbdev/dnfb.c
-index 7b1492d..0941500 100644
---- a/drivers/video/fbdev/dnfb.c
-+++ b/drivers/video/fbdev/dnfb.c
-@@ -115,7 +115,7 @@
- 	.fb_imageblit	= cfb_imageblit,
- };
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ba51d0906955..af9766a32949 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5391,6 +5391,7 @@ F:	drivers/net/wan/sdla.c
  
--struct fb_var_screeninfo dnfb_var = {
-+static const struct fb_var_screeninfo dnfb_var = {
- 	.xres		= 1280,
- 	.yres		= 1024,
- 	.xres_virtual	= 2048,
-diff --git a/drivers/video/fbdev/igafb.c b/drivers/video/fbdev/igafb.c
-index 486f188..607b6c0 100644
---- a/drivers/video/fbdev/igafb.c
-+++ b/drivers/video/fbdev/igafb.c
-@@ -97,7 +97,7 @@ struct fb_var_screeninfo default_var = {
- };
- 
- #ifdef CONFIG_SPARC
--struct fb_var_screeninfo default_var_1024x768 __initdata = {
-+static const struct fb_var_screeninfo default_var_1024x768 __initconst = {
- 	/* 1024x768, 75 Hz, Non-Interlaced (78.75 MHz dotclock) */
- 	.xres		= 1024,
- 	.yres		= 768,
-@@ -120,7 +120,7 @@ struct fb_var_screeninfo default_var_1024x768 __initdata = {
- 	.vmode		= FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
- };
- 
--struct fb_var_screeninfo default_var_1152x900 __initdata = {
-+static const struct fb_var_screeninfo default_var_1152x900 __initconst = {
- 	/* 1152x900, 76 Hz, Non-Interlaced (110.0 MHz dotclock) */
- 	.xres		= 1152,
- 	.yres		= 900,
-@@ -143,7 +143,7 @@ struct fb_var_screeninfo default_var_1152x900 __initdata = {
- 	.vmode		= FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
- };
- 
--struct fb_var_screeninfo default_var_1280x1024 __initdata = {
-+static const struct fb_var_screeninfo default_var_1280x1024 __initconst = {
- 	/* 1280x1024, 75 Hz, Non-Interlaced (135.00 MHz dotclock) */
- 	.xres		= 1280,
- 	.yres		= 1024,
+ FRAMEBUFFER LAYER
+ M:	Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
++L:	dri-devel@lists.freedesktop.org
+ L:	linux-fbdev@vger.kernel.org
+ T:	git git://github.com/bzolnier/linux.git
+ Q:	http://patchwork.kernel.org/project/linux-fbdev/list/
 -- 
-1.9.1
+2.14.1
 

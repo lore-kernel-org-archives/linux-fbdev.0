@@ -1,56 +1,66 @@
-From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:13 +0000
-Subject: [PATCH 04/10] drivers:mpt: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-4-git-send-email-allen.lkml@gmail.com>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Sat, 09 Sep 2017 17:11:09 +0000
+Subject: Re: [Outreachy kernel] [PATCH] staging: sm750fb: Remove extra blank lines
+Message-Id: <alpine.DEB.2.20.1709091910580.2149@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+References: <1504953287-14740-1-git-send-email-harshasharmaiitr@gmail.com>
+In-Reply-To: <1504953287-14740-1-git-send-email-harshasharmaiitr@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: Harsha Sharma <harshasharmaiitr@gmail.com>
+Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com, linux-fbdev@vger.kernel.org
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
----
- drivers/message/fusion/mptbase.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index 84eab28..7920b2b 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -4328,15 +4328,15 @@ initChainBuffers(MPT_ADAPTER *ioc)
- 	if (ioc->ReqToChain = NULL) {
- 		sz = ioc->req_depth * sizeof(int);
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
- 
- 		ioc->ReqToChain = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ReqToChain alloc  @ %p, sz=%d bytes\n",
- 			 	ioc->name, mem, sz));
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
- 
- 		ioc->RequestNB = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "RequestNB alloc  @ %p, sz=%d bytes\n",
-@@ -4402,8 +4402,8 @@ initChainBuffers(MPT_ADAPTER *ioc)
- 	sz = num_chain * sizeof(int);
- 	if (ioc->ChainToChain = NULL) {
- 		mem = kmalloc(sz, GFP_ATOMIC);
--		if (mem = NULL)
--			return -1;
-+		if (!mem)
-+			return -ENOMEM;
- 
- 		ioc->ChainToChain = (int *) mem;
- 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ChainToChain alloc @ %p, sz=%d bytes\n",
--- 
-2.7.4
 
+On Sat, 9 Sep 2017, Harsha Sharma wrote:
+
+> This was reported by checkpatch.pl
+>
+> Signed-off-by: Harsha Sharma <harshasharmaiitr@gmail.com>
+
+Acked-by: Julia Lawall <julia.lawall@lip6.fr>
+
+> ---
+>  drivers/staging/sm750fb/sm750_cursor.c | 4 ----
+>  1 file changed, 4 deletions(-)
+>
+> diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
+> index aa47a16..6b27b06 100644
+> --- a/drivers/staging/sm750fb/sm750_cursor.c
+> +++ b/drivers/staging/sm750fb/sm750_cursor.c
+> @@ -18,8 +18,6 @@
+>  #include "sm750.h"
+>  #include "sm750_cursor.h"
+>
+> -
+> -
+>  #define poke32(addr, data) \
+>  writel((data), cursor->mmio + (addr))
+>
+> @@ -45,7 +43,6 @@
+>  #define HWC_COLOR_3                         0xC
+>  #define HWC_COLOR_3_RGB565_MASK             0xffff
+>
+> -
+>  /* hw_cursor_xxx works for voyager,718 and 750 */
+>  void sm750_hw_cursor_enable(struct lynx_cursor *cursor)
+>  {
+> @@ -134,7 +131,6 @@ void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
+>  	}
+>  }
+>
+> -
+>  void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
+>  			      const u8 *pcol, const u8 *pmsk)
+>  {
+> --
+> 1.9.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
+> To post to this group, send email to outreachy-kernel@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/1504953287-14740-1-git-send-email-harshasharmaiitr%40gmail.com.
+> For more options, visit https://groups.google.com/d/optout.
+>

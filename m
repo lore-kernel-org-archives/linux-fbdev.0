@@ -1,34 +1,22 @@
-From: Allen Pais <allen.lkml@gmail.com>
-Date: Wed, 13 Sep 2017 07:44:18 +0000
-Subject: [PATCH 09/10] driver:video: return -ENOMEM on allocation failure.
-Message-Id: <1505287939-14106-9-git-send-email-allen.lkml@gmail.com>
+From: mackenzie <antoine.touze@univ-tours.fr>
+Date: Sun, 10 Sep 2017 09:40:21 +0000
+Subject: [SUSPECTED SPAM] Can you be our Supplier
+Message-Id: <1093485825.45464970.1505036421295.JavaMail.zimbra@univ-tours.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
+To: @bombadil.infradead.org
 
-Signed-off-by: Allen Pais <allen.lkml@gmail.com>
----
- drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index f6a0b9a..5cd238d 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -2058,7 +2058,7 @@ static int matroxfb_probe(struct pci_dev* pdev, const struct pci_device_id* dumm
- 
- 	minfo = kzalloc(sizeof(*minfo), GFP_KERNEL);
- 	if (!minfo)
--		return -1;
-+		return -ENOMEM;
- 
- 	minfo->pcidev = pdev;
- 	minfo->dead = 0;
--- 
-2.7.4
 
+Dear Sir/Madam,
+
+I am Becca MacKenzie, We are interested in your products and want to make you and your company our major suppliers but first we would like your to send us your best price list and Catalog if possible.
+
+We will be ordering in large quantity so we are looking forward in making a good relationship with you and your company.
+
+My contact email: becca.mackenzie100@outlook.com
+
+Regards
+Becca MacKenzie

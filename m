@@ -1,28 +1,22 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 04 Sep 2017 13:04:27 +0000
-Subject: Re: [PATCH] fbcon: remove restriction on margin color
-Message-Id: <1884938.EAvpoJ61mR@amdc3058>
+From: mackenzie <antoine.touze@univ-tours.fr>
+Date: Sun, 10 Sep 2017 11:19:09 +0000
+Subject: [SUSPECTED SPAM] I am a Buyer
+Message-Id: <407965311.45474009.1505042349493.JavaMail.zimbra@univ-tours.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170823191907epcas4p4f5ba212776ffd4d5d5629bc48dc13eb0@epcas4p4.samsung.com>
-        <1503515933-8045-1-git-send-email-david@lechnology.com>
-In-Reply-To: <1503515933-8045-1-git-send-email-david@lechnology.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Lechner <david@lechnology.com>
-Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org
+To: @bombadil.infradead.org
 
-On Wednesday, August 23, 2017 02:18:53 PM David Lechner wrote:
-> This removes the restriction on the value range of the fbcon=margin:
-> parameter. The color value really depends on the driver being used.
-> 
-> Signed-off-by: David Lechner <david@lechnology.com>
 
-Patch queued for 4.14, thanks.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Dear Sir/Madam,
 
+I am Becca MacKenzie, We are interested in your products and want to make you and your company our major suppliers but first we would like your to send us your best price list and Catalog if possible.
+
+We will be ordering in large quantity so we are looking forward in making a good relationship with you and your company.
+
+For my quick response write only to my contact email: becca.mackenzie100@outlook.com
+
+Regards
+Becca MacKenzie

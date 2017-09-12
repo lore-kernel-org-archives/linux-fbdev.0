@@ -1,44 +1,40 @@
-From: David Sterba <dsterba@suse.cz>
-Date: Wed, 13 Sep 2017 15:13:08 +0000
-Subject: Re: [PATCH 10/10] fs:btrfs: return -ENOMEM on allocation failure.
-Message-Id: <20170913151308.GL29043@twin.jikos.cz>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Tue, 12 Sep 2017 05:39:30 +0000
+Subject: [PATCH] video: fbdev: Fix an errro handling path in 'au1200fb_drv_probe()'
+Message-Id: <20170912053930.18931-1-christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
- <1505287939-14106-10-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-10-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Allen Pais <allen.lkml@gmail.com>
-Cc: linux-kernel@vger.kernel.org, nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org
+To: b.zolnierkie@samsung.com, tj@kernel.org, viro@zeniv.linux.org.uk
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-On Wed, Sep 13, 2017 at 01:02:19PM +0530, Allen Pais wrote:
-> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
-> ---
->  fs/btrfs/check-integrity.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/fs/btrfs/check-integrity.c b/fs/btrfs/check-integrity.c
-> index 7d5a9b5..efa4c23 100644
-> --- a/fs/btrfs/check-integrity.c
-> +++ b/fs/btrfs/check-integrity.c
-> @@ -2913,7 +2913,7 @@ int btrfsic_mount(struct btrfs_fs_info *fs_info,
->  	state = kvzalloc(sizeof(*state), GFP_KERNEL);
->  	if (!state) {
->  		pr_info("btrfs check-integrity: allocation failed!\n");
-> -		return -1;
-> +		return -ENOMEM;
+If 'dmam_alloc_attrs()' fails, we must go through the error handling code,
+as done elsewhere in this function. Otherwise, there is a resource leak.
 
-Makes sense, also please fix the -1 a few lines below that also result
-from failed memory allocation, indirectly from btrfsic_dev_state_alloc().
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+I'm also puzzled by the 'framebuffer_alloc()' call a few lines above.
+'ret' is known to be 0 at this point. I guess that -ENOMEM should also be
+returned.
+---
+ drivers/video/fbdev/au1200fb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
->  	}
->  
->  	if (!btrfsic_is_initialized) {
-> -- 
-> 2.7.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-btrfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 5f04b4096c42..99d6cfb168b5 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1701,7 +1701,8 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		if (!fbdev->fb_mem) {
+ 			print_err("fail to allocate frambuffer (size: %dK))",
+ 				  fbdev->fb_len / 1024);
+-			return -ENOMEM;
++			ret = -ENOMEM;
++			goto failed;
+ 		}
+ 
+ 		/*
+-- 
+2.11.0
+

@@ -1,37 +1,54 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 01 Aug 2017 13:53:28 +0000
-Subject: Re: [PATCH] video: fbdev: uvesafb: constify attribute_group structures.
-Message-Id: <2391550.2naV14eqVs@amdc3058>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 12 Sep 2017 11:45:45 +0000
+Subject: [PATCH] backlight: s6e63m0: make const arrays static, reduces object code size
+Message-Id: <20170912114545.2131-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170719051736epcas5p3b707e162f6741c876a069f0eb0768fd7@epcas5p3.samsung.com>
-        <aa3e89c4a81699a5e7799f9c20cc7a123e2fce37.1500441256.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <aa3e89c4a81699a5e7799f9c20cc7a123e2fce37.1500441256.git.arvind.yadav.cs@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: spock@gentoo.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 19, 2017 10:46:55 AM Arvind Yadav wrote:
-> attribute_group are not supposed to change at runtime. All functions
-> working with attribute_group provided by <linux/sysfs.h> work
-> with const attribute_group. So mark the non-const structs as const.
-> 
-> File size before:
->    text	   data	    bss	    dec	    hex	filename
->   15426	   4952	    187	  20565	   5055	drivers/video/fbdev/uvesafb.o
-> 
-> File size After adding 'const':
->    text	   data	    bss	    dec	    hex	filename
->   15490	   4888	    187	  20565	   5055	drivers/video/fbdev/uvesafb.o
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+From: Colin Ian King <colin.king@canonical.com>
 
-Patch queued for 4.14, thanks.
+Don't populate const arrays on the stack, instead make them
+static.  Makes the object code smaller by nearly 400 bytes:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Before:
+   text	   data	    bss	    dec	    hex	filename
+  15164	   6336	      0	  21500	   53fc	drivers/video/backlight/s6e63m0.o
+
+After:
+   text	   data	    bss	    dec	    hex	filename
+  14669	   6432	      0	  21101	   526d	drivers/video/backlight/s6e63m0.o
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/backlight/s6e63m0.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/backlight/s6e63m0.c b/drivers/video/backlight/s6e63m0.c
+index 3c4a22a3063a..965c660b2f6b 100644
+--- a/drivers/video/backlight/s6e63m0.c
++++ b/drivers/video/backlight/s6e63m0.c
+@@ -446,7 +446,7 @@ static int s6e63m0_gamma_ctl(struct s6e63m0 *lcd, int gamma)
+ static int s6e63m0_ldi_init(struct s6e63m0 *lcd)
+ {
+ 	int ret, i;
+-	const unsigned short *init_seq[] = {
++	static const unsigned short *init_seq[] = {
+ 		seq_panel_condition_set,
+ 		seq_display_condition_set,
+ 		seq_gamma_setting,
+@@ -467,7 +467,7 @@ static int s6e63m0_ldi_init(struct s6e63m0 *lcd)
+ static int s6e63m0_ldi_enable(struct s6e63m0 *lcd)
+ {
+ 	int ret = 0, i;
+-	const unsigned short *enable_seq[] = {
++	static const unsigned short *enable_seq[] = {
+ 		seq_stand_by_off,
+ 		seq_display_on,
+ 	};
+-- 
+2.14.1
 

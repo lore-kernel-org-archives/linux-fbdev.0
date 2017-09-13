@@ -1,201 +1,34 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 18 Sep 2017 16:20:18 +0000
-Subject: [PATCH v2 1/4] video: fb: Make fbcon dmi quirks usuable for drm drivers too
-Message-Id: <20170918162021.12021-1-hdegoede@redhat.com>
+From: Allen Pais <allen.lkml@gmail.com>
+Date: Wed, 13 Sep 2017 07:44:15 +0000
+Subject: [PATCH 06/10] drivers:ethernet: return -ENOMEM on allocation failure.
+Message-Id: <1505287939-14106-6-git-send-email-allen.lkml@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>
+To: linux-kernel@vger.kernel.org
+Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
 
-Some x86 clamshell design devices use portrait tablet LCD panels and a
-display engine which cannot (transparently) rotate in hardware, so we
-need to rotate things in software / let user space deal with this.
-
-The fbcon code has a set of DMI based quirks to automatically detect
-such tablet LCD panels and rotate the fbcon to compensate.
-
-The plan was for userspace (e.g. a Wayland compositor) to simply read
-/sys/class/graphics/fbcon/rotate and apply the rotation from there to
-the LCD panel to compensate.
-
-However this will not work when an external monitor gets plugged in,
-since with fbcon rotation is not per output, so the fbcon quirk code
-disables the rotation when an external monitor is present.
-
-Using /sys/class/graphics/fbcon/rotate will not help in that case
-since it will indicate no rotation is in use. So instead we are going
-to need a drm connecter property for this.
-
-This commit is a preparation patch for adding the drm-connecter
-property, by making the fbcon quirk code generally usable so that
-the drm code can use it to check for rotation quirks.
-
-Note this commit re-uses the FB_CMDLINE Kconfig option for selecting
-if the quirk code should be build, since that is already selected by
-both the drm and fbcon code.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 ---
-Changes in v2:
--Rebased on 4.14-rc1
----
- drivers/video/fbdev/core/Makefile                  |  6 +++---
- .../core/{fbcon_dmi_quirks.c => fb_dmi_quirks.c}   | 15 +++++++++------
- drivers/video/fbdev/core/fbcon.c                   | 22 ++++++++++++++--------
- drivers/video/fbdev/core/fbcon.h                   |  6 ------
- include/linux/fb.h                                 |  6 ++++++
- 5 files changed, 32 insertions(+), 23 deletions(-)
- rename drivers/video/fbdev/core/{fbcon_dmi_quirks.c => fb_dmi_quirks.c} (91%)
+ drivers/net/ethernet/sun/cassini.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 73493bbd7a15..06caf037a822 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -1,4 +1,7 @@
- obj-$(CONFIG_FB_CMDLINE)          += fb_cmdline.o
-+ifeq ($(CONFIG_DMI),y)
-+obj-$(CONFIG_FB_CMDLINE)          += fb_dmi_quirks.o
-+endif
- obj-$(CONFIG_FB_NOTIFY)           += fb_notify.o
- obj-$(CONFIG_FB)                  += fb.o
- fb-y                              := fbmem.o fbmon.o fbcmap.o fbsysfs.o \
-@@ -14,9 +17,6 @@ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
- fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
- 				     fbcon_ccw.o
- endif
--ifeq ($(CONFIG_DMI),y)
--fb-y				  += fbcon_dmi_quirks.o
--endif
- endif
- fb-objs                           := $(fb-y)
- 
-diff --git a/drivers/video/fbdev/core/fbcon_dmi_quirks.c b/drivers/video/fbdev/core/fb_dmi_quirks.c
-similarity index 91%
-rename from drivers/video/fbdev/core/fbcon_dmi_quirks.c
-rename to drivers/video/fbdev/core/fb_dmi_quirks.c
-index 6904e47d1e51..d5fdf3245f83 100644
---- a/drivers/video/fbdev/core/fbcon_dmi_quirks.c
-+++ b/drivers/video/fbdev/core/fb_dmi_quirks.c
-@@ -1,5 +1,5 @@
- /*
-- *  fbcon_dmi_quirks.c -- DMI based quirk detection for fbcon
-+ *  fb_dmi_quirks.c -- DMI based LCD panel rotation quirk detection
-  *
-  *	Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
-  *
-@@ -11,7 +11,6 @@
- #include <linux/dmi.h>
- #include <linux/fb.h>
- #include <linux/kernel.h>
--#include "fbcon.h"
- 
- /*
-  * Some x86 clamshell design devices use portrait tablet screens and a display
-@@ -112,7 +111,11 @@ static const struct dmi_system_id rotate_data[] = {
- 	{}
- };
- 
--int fbcon_platform_get_rotate(struct fb_info *info)
-+/*
-+ * Note this function returns the rotation necessary to put the display
-+ * the right way up, or -1 if there is no quirk.
-+ */
-+int fb_get_panel_rotate_quirk(int width, int height)
- {
- 	const struct dmi_system_id *match;
- 	const struct fbcon_dmi_rotate_data *data;
-@@ -124,8 +127,7 @@ int fbcon_platform_get_rotate(struct fb_info *info)
- 	     match = dmi_first_match(match + 1)) {
- 		data = match->driver_data;
- 
--		if (data->width != info->var.xres ||
--		    data->height != info->var.yres)
-+		if (data->width != width || data->height != height)
- 			continue;
- 
- 		if (!data->bios_dates)
-@@ -141,5 +143,6 @@ int fbcon_platform_get_rotate(struct fb_info *info)
- 		}
+diff --git a/drivers/net/ethernet/sun/cassini.c b/drivers/net/ethernet/sun/cassini.c
+index 382993c..fc0ea3a 100644
+--- a/drivers/net/ethernet/sun/cassini.c
++++ b/drivers/net/ethernet/sun/cassini.c
+@@ -3984,7 +3984,7 @@ static inline int cas_alloc_rx_desc(struct cas *cp, int ring)
+ 	size = RX_DESC_RINGN_SIZE(ring);
+ 	for (i = 0; i < size; i++) {
+ 		if ((page[i] = cas_page_alloc(cp, GFP_KERNEL)) = NULL)
+-			return -1;
++			return -ENOMEM;
  	}
- 
--	return FB_ROTATE_UR;
-+	return -1;
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(fb_get_panel_rotate_quirk);
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 04612f938bab..2e17ea02c295 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
- 	ops->cur_rotate = -1;
- 	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
--		p->con_rotate = fbcon_platform_get_rotate(info);
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = fb_get_panel_rotate_quirk(info->var.xres,
-+							  info->var.yres);
-+	if (p->con_rotate = -1)
-+		p->con_rotate = FB_ROTATE_UR;
-+
- 	set_blitting_type(vc, info);
- 
- 	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
- 
- 	ops = info->fbcon_par;
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
--		p->con_rotate = fbcon_platform_get_rotate(info);
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = fb_get_panel_rotate_quirk(info->var.xres,
-+							  info->var.yres);
-+	if (p->con_rotate = -1)
-+		p->con_rotate = FB_ROTATE_UR;
-+
- 	set_blitting_type(vc, info);
- 
- 	cols = vc->vc_cols;
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 18f3ac144237..3746828356ed 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -261,10 +261,4 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
- #define fbcon_set_rotate(x) do {} while(0)
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
- 
--#ifdef CONFIG_DMI
--int fbcon_platform_get_rotate(struct fb_info *info);
--#else
--#define fbcon_platform_get_rotate(i) FB_ROTATE_UR
--#endif /* CONFIG_DMI */
--
- #endif /* _VIDEO_FBCON_H */
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f4386b0ccf40..7527965c5b53 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -814,6 +814,12 @@ extern int fb_find_mode(struct fb_var_screeninfo *var,
- 			const struct fb_videomode *default_mode,
- 			unsigned int default_bpp);
- 
-+#ifdef CONFIG_DMI
-+int fb_get_panel_rotate_quirk(int width, int height);
-+#else
-+#define fb_get_panel_rotate_quirk(width, height) (-1)
-+#endif /* CONFIG_DMI */
-+
- /* Convenience logging macros */
- #define fb_err(fb_info, fmt, ...)					\
- 	pr_err("fb%d: " fmt, (fb_info)->node, ##__VA_ARGS__)
 -- 
-2.14.1
+2.7.4
 

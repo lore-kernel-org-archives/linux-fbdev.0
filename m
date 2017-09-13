@@ -1,28 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 04 Sep 2017 12:59:46 +0000
-Subject: Re: [PATCH] video: ARM CLCD: constify amba_id
-Message-Id: <12336489.qVb3ILOcGD@amdc3058>
+From: Allen Pais <allen.lkml@gmail.com>
+Date: Wed, 13 Sep 2017 07:44:11 +0000
+Subject: [PATCH 02/10] drivers:crypto: return -ENOMEM on allocation failure.
+Message-Id: <1505287939-14106-2-git-send-email-allen.lkml@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170823172539epcas2p4bf9c8256b20d614907bc572c0bf60926@epcas2p4.samsung.com>
-        <b142bfffbda07fe20b845161aebc0472edf21cbe.1503509038.git.arvind.yadav.cs@gmail.com>
-In-Reply-To: <b142bfffbda07fe20b845161aebc0472edf21cbe.1503509038.git.arvind.yadav.cs@gmail.com>
+References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: linux@armlinux.org.uk, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
 
-On Wednesday, August 23, 2017 10:55:26 PM Arvind Yadav wrote:
-> amba_id are not supposed to change at runtime. All functions
-> working with const amba_id. So mark the non-const structs as const.
-> 
-> Signed-off-by: Arvind Yadav <arvind.yadav.cs@gmail.com>
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/crypto/omap-aes-gcm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Patch queued for 4.14, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/crypto/omap-aes-gcm.c b/drivers/crypto/omap-aes-gcm.c
+index 7d4f8a4..2542224 100644
+--- a/drivers/crypto/omap-aes-gcm.c
++++ b/drivers/crypto/omap-aes-gcm.c
+@@ -186,7 +186,7 @@ static int do_encrypt_iv(struct aead_request *req, u32 *tag, u32 *iv)
+ 	sk_req = skcipher_request_alloc(ctx->ctr, GFP_KERNEL);
+ 	if (!sk_req) {
+ 		pr_err("skcipher: Failed to allocate request\n");
+-		return -1;
++		return -ENOMEM;
+ 	}
+ 
+ 	init_completion(&result.completion);
+-- 
+2.7.4
 

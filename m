@@ -1,67 +1,51 @@
-From: Russell King <rmk+kernel@armlinux.org.uk>
-Date: Fri, 29 Sep 2017 10:51:12 +0000
-Subject: [PATCH 4/8] video: sa1100fb: use devm_request_irq()
-Message-Id: <E1dxssy-0006j9-86@rmk-PC.armlinux.org.uk>
+From: Colin King <colin.king@canonical.com>
+Date: Wed, 13 Sep 2017 15:03:09 +0000
+Subject: [PATCH] drivers/video/fbdev/atyfb: make const arrays static, reduces object code size
+Message-Id: <20170913150309.6250-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170929105004.GY20805@n2100.armlinux.org.uk>
-In-Reply-To: <20170929105004.GY20805@n2100.armlinux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Use devm_request_irq() to request the interrupt (a little earlier too)
-so we can avoid having to manually clean this up.
+From: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+Don't populate the const arrays ragepro_tbl and ragexl_tbl on the stack,
+instead make them static.  Makes the object code smaller by over 380 bytes:
+
+Before:
+   text	   data	    bss	    dec	    hex	filename
+  41089	  10592	    768	  52449	   cce1 atyfb_base.o
+
+After:
+   text	   data	    bss	    dec	    hex	filename
+  40544	  10752	    768	  52064	   cb60	atyfb_base.o
+
+(gcc version 7.2.0, x86_64)
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
 ---
- drivers/video/fbdev/sa1100fb.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index ab83970dbfd9..a48fdb676f3e 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1239,22 +1239,23 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 		goto failed;
- 	}
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index 3ec72f19114b..a9a8272f7a6e 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -2272,10 +2272,10 @@ static void aty_bl_exit(struct backlight_device *bd)
  
--	/* Initialize video memory */
--	ret = sa1100fb_map_video_memory(fbi);
--	if (ret)
--		goto failed;
--
--	ret = request_irq(irq, sa1100fb_handle_irq, 0, "LCD", fbi);
-+	ret = devm_request_irq(&pdev->dev, irq, sa1100fb_handle_irq, 0,
-+			       "LCD", fbi);
- 	if (ret) {
- 		dev_err(&pdev->dev, "request_irq failed: %d\n", ret);
- 		goto failed;
- 	}
- 
-+	/* Initialize video memory */
-+	ret = sa1100fb_map_video_memory(fbi);
-+	if (ret)
-+		goto failed;
-+
- 	if (machine_is_shannon()) {
- 		ret = gpio_request_one(SHANNON_GPIO_DISP_EN,
- 			GPIOF_OUT_INIT_LOW, "display enable");
- 		if (ret)
--			goto err_free_irq;
-+			goto failed;
- 	}
- 
- 	/*
-@@ -1282,8 +1283,6 @@ static int sa1100fb_probe(struct platform_device *pdev)
-  err_reg_fb:
- 	if (machine_is_shannon())
- 		gpio_free(SHANNON_GPIO_DISP_EN);
-- err_free_irq:
--	free_irq(irq, fbi);
-  failed:
- 	return ret;
- }
+ static void aty_calc_mem_refresh(struct atyfb_par *par, int xclk)
+ {
+-	const int ragepro_tbl[] = {
++	static const int ragepro_tbl[] = {
+ 		44, 50, 55, 66, 75, 80, 100
+ 	};
+-	const int ragexl_tbl[] = {
++	static const int ragexl_tbl[] = {
+ 		50, 66, 75, 83, 90, 95, 100, 105,
+ 		110, 115, 120, 125, 133, 143, 166
+ 	};
 -- 
-2.7.4
+2.14.1
 

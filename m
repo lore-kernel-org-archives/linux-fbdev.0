@@ -1,22 +1,56 @@
-From: mackenzie <antoine.touze@univ-tours.fr>
-Date: Sun, 10 Sep 2017 09:40:21 +0000
-Subject: [SUSPECTED SPAM] Can you be our Supplier
-Message-Id: <1093485825.45464970.1505036421295.JavaMail.zimbra@univ-tours.fr>
+From: Allen Pais <allen.lkml@gmail.com>
+Date: Wed, 13 Sep 2017 07:44:13 +0000
+Subject: [PATCH 04/10] drivers:mpt: return -ENOMEM on allocation failure.
+Message-Id: <1505287939-14106-4-git-send-email-allen.lkml@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: @bombadil.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: nouveau@lists.freedesktop.org, linux-crypto@vger.kernel.org, dri-devel@lists.freedesktop.org, MPT-FusionLinux.pdl@broadcom.com, linux-scsi@vger.kernel.org, netdev@vger.kernel.org, megaraidlinux.pdl@broadcom.com, target-devel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-btrfs@vger.kernel.org, Allen Pais <allen.lkml@gmail.com>
 
+Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+---
+ drivers/message/fusion/mptbase.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
+index 84eab28..7920b2b 100644
+--- a/drivers/message/fusion/mptbase.c
++++ b/drivers/message/fusion/mptbase.c
+@@ -4328,15 +4328,15 @@ initChainBuffers(MPT_ADAPTER *ioc)
+ 	if (ioc->ReqToChain = NULL) {
+ 		sz = ioc->req_depth * sizeof(int);
+ 		mem = kmalloc(sz, GFP_ATOMIC);
+-		if (mem = NULL)
+-			return -1;
++		if (!mem)
++			return -ENOMEM;
+ 
+ 		ioc->ReqToChain = (int *) mem;
+ 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ReqToChain alloc  @ %p, sz=%d bytes\n",
+ 			 	ioc->name, mem, sz));
+ 		mem = kmalloc(sz, GFP_ATOMIC);
+-		if (mem = NULL)
+-			return -1;
++		if (!mem)
++			return -ENOMEM;
+ 
+ 		ioc->RequestNB = (int *) mem;
+ 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "RequestNB alloc  @ %p, sz=%d bytes\n",
+@@ -4402,8 +4402,8 @@ initChainBuffers(MPT_ADAPTER *ioc)
+ 	sz = num_chain * sizeof(int);
+ 	if (ioc->ChainToChain = NULL) {
+ 		mem = kmalloc(sz, GFP_ATOMIC);
+-		if (mem = NULL)
+-			return -1;
++		if (!mem)
++			return -ENOMEM;
+ 
+ 		ioc->ChainToChain = (int *) mem;
+ 		dinitprintk(ioc, printk(MYIOC_s_DEBUG_FMT "ChainToChain alloc @ %p, sz=%d bytes\n",
+-- 
+2.7.4
 
-Dear Sir/Madam,
-
-I am Becca MacKenzie, We are interested in your products and want to make you and your company our major suppliers but first we would like your to send us your best price list and Catalog if possible.
-
-We will be ordering in large quantity so we are looking forward in making a good relationship with you and your company.
-
-My contact email: becca.mackenzie100@outlook.com
-
-Regards
-Becca MacKenzie

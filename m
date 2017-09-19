@@ -1,27 +1,45 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 05 Sep 2017 13:23:07 +0000
-Subject: Re: [PATCH] video/console: Add rotated LCD-panel DMI quirk for the VIOS LTH17
-Message-Id: <3138896.F1RFtikzIH@amdc3058>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 19 Sep 2017 21:32:01 +0000
+Subject: [PATCH] video: fbdev: radeon: make const array post_divs static, reduces object code size
+Message-Id: <20170919213201.31845-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170904142601.30641-2-hdegoede@redhat.com>
-In-Reply-To: <20170904142601.30641-2-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Monday, September 04, 2017 04:26:01 PM Hans de Goede wrote:
-> The VIOS LTH17 Cherry Trail bases netbook has its LCD panel mounted
-> rotated 90 degrees, add a DMI quirk for this.
-> 
-> Cc: Daniel Drake <drake@endlessm.com>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+From: Colin Ian King <colin.king@canonical.com>
 
-Patch queued for 4.14, thanks.
+Don't populate the read-only const array post_divs on the stack,
+nstead make it static. Makes the object code smaller by 90 bytes:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Before:
+   text	   data	    bss	    dec	    hex	filename
+  40231	   8584	    896	  49711	   c22f	radeon_base.o
+
+After:
+   text	   data	    bss	    dec	    hex	filename
+  39914	   8744	    960	  49618	   c1d2	radeon_base.o
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/aty/radeon_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 1e2ec360f8c1..8ad1643e7d1c 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -1534,7 +1534,7 @@ void radeon_write_mode (struct radeonfb_info *rinfo, struct radeon_regs *mode,
+ static void radeon_calc_pll_regs(struct radeonfb_info *rinfo, struct radeon_regs *regs,
+ 				 unsigned long freq)
+ {
+-	const struct {
++	static const struct {
+ 		int divider;
+ 		int bitvalue;
+ 	} *post_div,
+-- 
+2.14.1
 

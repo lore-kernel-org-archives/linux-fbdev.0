@@ -1,47 +1,55 @@
-From: Colin King <colin.king@canonical.com>
-Date: Wed, 13 Sep 2017 15:41:37 +0000
-Subject: [PATCH] video: fbdev: sis: make const array specialtv static, reduces object code size
-Message-Id: <20170913154137.6886-1-colin.king@canonical.com>
+From: Himanshu Jha <himanshujha199640@gmail.com>
+Date: Thu, 28 Sep 2017 20:28:31 +0000
+Subject: [PATCH] video: fbdev: pxa3xx_gcu: Use setup_timer and mod_timer
+Message-Id: <1506629791-11695-1-git-send-email-himanshujha199640@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com
+Cc: gustavo@embeddedor.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Himanshu Jha <himanshujha199640@gmail.com>
 
-From: Colin Ian King <colin.king@canonical.com>
+Use setup_timer and mod_timer API instead of structure assignments.
 
-Don't populate the const array specialtv on the stack, instead make it
-static.  Makes the object code smaller by over 1100 bytes:
+This is done using Coccinelle and semantic patch used
+for this as follows:
 
-Before:
-   text	   data	    bss	    dec	    hex	filename
- 179899	   7504	      0	 187403	  2dc0b	drivers/video/fbdev/sis/init301.o
+@@
+expression x,y,z,a,b;
+@@
 
-After:
-   text	   data	    bss	    dec	    hex	filename
- 178720	   7568	      0	 186288	  2d7b0	drivers/video/fbdev/sis/init301.o
+-init_timer (&x);
++setup_timer (&x, y, z);
++mod_timer (&a, b);
+-x.function = y;
+-x.data = z;
+-x.expires = b;
+-add_timer(&a);
 
-(gcc version 7.2.0, x86_64)
-
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Himanshu Jha <himanshujha199640@gmail.com>
 ---
- drivers/video/fbdev/sis/init301.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/pxa3xx-gcu.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/sis/init301.c b/drivers/video/fbdev/sis/init301.c
-index 1ec9c3e0e1d8..02ee752d5000 100644
---- a/drivers/video/fbdev/sis/init301.c
-+++ b/drivers/video/fbdev/sis/init301.c
-@@ -6486,7 +6486,7 @@ SiS_SetTVSpecial(struct SiS_Private *SiS_Pr, unsigned short ModeNo)
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 933619d..3366076 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -520,12 +520,8 @@ static void pxa3xx_gcu_debug_timedout(unsigned long ptr)
+ 	QERROR("Timer DUMP");
  
-   if(!(SiS_Pr->SiS_TVMode & TVSetPAL)) {
-      if(SiS_Pr->SiS_TVMode & TVSetNTSC1024) {
--        const unsigned char specialtv[] = {
-+        static const unsigned char specialtv[] = {
- 		0xa7,0x07,0xf2,0x6e,0x17,0x8b,0x73,0x53,
- 		0x13,0x40,0x34,0xf4,0x63,0xbb,0xcc,0x7a,
- 		0x58,0xe4,0x73,0xda,0x13
+ 	/* init the timer structure */
+-	init_timer(&pxa3xx_gcu_debug_timer);
+-	pxa3xx_gcu_debug_timer.function = pxa3xx_gcu_debug_timedout;
+-	pxa3xx_gcu_debug_timer.data = ptr;
+-	pxa3xx_gcu_debug_timer.expires = jiffies + 5*HZ; /* one second */
+-
+-	add_timer(&pxa3xx_gcu_debug_timer);
++	setup_timer(&pxa3xx_gcu_debug_timer, pxa3xx_gcu_debug_timedout, ptr);
++	mod_timer(&pxa3xx_gcu_debug_timer, jiffies + 5 * HZ);
+ }
+ 
+ static void pxa3xx_gcu_init_debug_timer(void)
 -- 
-2.14.1
+2.7.4
 

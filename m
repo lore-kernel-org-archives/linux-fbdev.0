@@ -1,7 +1,7 @@
 From: Russell King <rmk+kernel@armlinux.org.uk>
-Date: Fri, 29 Sep 2017 10:51:07 +0000
-Subject: [PATCH 3/8] video: sa1100fb: use devm_ioremap_resource()
-Message-Id: <E1dxsst-0006j1-2Y@rmk-PC.armlinux.org.uk>
+Date: Fri, 29 Sep 2017 10:51:33 +0000
+Subject: [PATCH 8/8] video: sa1100fb: move pseudo palette into sa1100fb_info structure
+Message-Id: <E1dxstJ-0006jc-Ne@rmk-PC.armlinux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20170929105004.GY20805@n2100.armlinux.org.uk>
 In-Reply-To: <20170929105004.GY20805@n2100.armlinux.org.uk>
@@ -10,66 +10,66 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Use devm_ioremap_resource() to map the LCD controller memory region,
-and remove the unnecessary cleanup for this.
+Move the pseudo palette inside the driver private data structure so we
+don't have to play tricks to cater for it.
 
 Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
 ---
- drivers/video/fbdev/sa1100fb.c | 20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/sa1100fb.c | 9 +++------
+ drivers/video/fbdev/sa1100fb.h | 2 ++
+ 2 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index 1562d7607dd2..ab83970dbfd9 100644
+index 56d514b5d252..15ae50063296 100644
 --- a/drivers/video/fbdev/sa1100fb.c
 +++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1217,29 +1217,28 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 		return -EINVAL;
- 	}
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	irq = platform_get_irq(pdev, 0);
--	if (irq < 0 || !res)
-+	if (irq < 0)
- 		return -EINVAL;
- 
--	if (!request_mem_region(res->start, resource_size(res), "LCD"))
--		return -EBUSY;
+@@ -323,13 +323,11 @@ sa1100fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 		 * according to the RGB bitfield information.
+ 		 */
+ 		if (regno < 16) {
+-			u32 *pal = fbi->fb.pseudo_palette;
 -
- 	fbi = sa1100fb_init_fbinfo(&pdev->dev);
- 	ret = -ENOMEM;
+ 			val  = chan_to_field(red, &fbi->fb.var.red);
+ 			val |= chan_to_field(green, &fbi->fb.var.green);
+ 			val |= chan_to_field(blue, &fbi->fb.var.blue);
+ 
+-			pal[regno] = val;
++			fbi->pseudo_palette[regno] = val;
+ 			ret = 0;
+ 		}
+ 		break;
+@@ -1132,8 +1130,7 @@ static struct sa1100fb_info *sa1100fb_init_fbinfo(struct device *dev)
+ 	struct sa1100fb_info *fbi;
+ 	unsigned i;
+ 
+-	fbi = devm_kzalloc(dev, sizeof(struct sa1100fb_info) + sizeof(u32) * 16,
+-			   GFP_KERNEL);
++	fbi = devm_kzalloc(dev, sizeof(struct sa1100fb_info), GFP_KERNEL);
  	if (!fbi)
- 		goto failed;
+ 		return NULL;
  
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	fbi->base = devm_ioremap_resource(&pdev->dev, res);
-+	if (IS_ERR(fbi->base)) {
-+		ret = PTR_ERR(fbi->base);
-+		goto failed;
-+	}
+@@ -1158,7 +1155,7 @@ static struct sa1100fb_info *sa1100fb_init_fbinfo(struct device *dev)
+ 	fbi->fb.fbops		= &sa1100fb_ops;
+ 	fbi->fb.flags		= FBINFO_DEFAULT;
+ 	fbi->fb.monspecs	= monspecs;
+-	fbi->fb.pseudo_palette	= (fbi + 1);
++	fbi->fb.pseudo_palette	= fbi->pseudo_palette;
+ 
+ 	fbi->rgb[RGB_4]		= &rgb_4;
+ 	fbi->rgb[RGB_8]		= &rgb_8;
+diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
+index 0139d13377a5..7a1a9ca33cec 100644
+--- a/drivers/video/fbdev/sa1100fb.h
++++ b/drivers/video/fbdev/sa1100fb.h
+@@ -69,6 +69,8 @@ struct sa1100fb_info {
+ 
+ 	const struct sa1100fb_mach_info *inf;
+ 	struct clk *clk;
 +
- 	fbi->clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(fbi->clk)) {
- 		ret = PTR_ERR(fbi->clk);
- 		goto failed;
- 	}
++	u32 pseudo_palette[16];
+ };
  
--	fbi->base = ioremap(res->start, resource_size(res));
--	if (!fbi->base)
--		goto failed;
--
- 	/* Initialize video memory */
- 	ret = sa1100fb_map_video_memory(fbi);
- 	if (ret)
-@@ -1286,9 +1285,6 @@ static int sa1100fb_probe(struct platform_device *pdev)
-  err_free_irq:
- 	free_irq(irq, fbi);
-  failed:
--	if (fbi)
--		iounmap(fbi->base);
--	release_mem_region(res->start, resource_size(res));
- 	return ret;
- }
- 
+ #define TO_INF(ptr,member)	container_of(ptr,struct sa1100fb_info,member)
 -- 
 2.7.4
 

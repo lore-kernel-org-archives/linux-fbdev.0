@@ -1,66 +1,67 @@
-From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Sat, 09 Sep 2017 17:11:09 +0000
-Subject: Re: [Outreachy kernel] [PATCH] staging: sm750fb: Remove extra blank lines
-Message-Id: <alpine.DEB.2.20.1709091910580.2149@hadrien>
+From: Russell King <rmk+kernel@armlinux.org.uk>
+Date: Fri, 29 Sep 2017 10:51:12 +0000
+Subject: [PATCH 4/8] video: sa1100fb: use devm_request_irq()
+Message-Id: <E1dxssy-0006j9-86@rmk-PC.armlinux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1504953287-14740-1-git-send-email-harshasharmaiitr@gmail.com>
-In-Reply-To: <1504953287-14740-1-git-send-email-harshasharmaiitr@gmail.com>
+References: <20170929105004.GY20805@n2100.armlinux.org.uk>
+In-Reply-To: <20170929105004.GY20805@n2100.armlinux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Harsha Sharma <harshasharmaiitr@gmail.com>
-Cc: gregkh@linuxfoundation.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com, linux-fbdev@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
+Use devm_request_irq() to request the interrupt (a little earlier too)
+so we can avoid having to manually clean this up.
 
+Signed-off-by: Russell King <rmk+kernel@armlinux.org.uk>
+---
+ drivers/video/fbdev/sa1100fb.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-On Sat, 9 Sep 2017, Harsha Sharma wrote:
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index ab83970dbfd9..a48fdb676f3e 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -1239,22 +1239,23 @@ static int sa1100fb_probe(struct platform_device *pdev)
+ 		goto failed;
+ 	}
+ 
+-	/* Initialize video memory */
+-	ret = sa1100fb_map_video_memory(fbi);
+-	if (ret)
+-		goto failed;
+-
+-	ret = request_irq(irq, sa1100fb_handle_irq, 0, "LCD", fbi);
++	ret = devm_request_irq(&pdev->dev, irq, sa1100fb_handle_irq, 0,
++			       "LCD", fbi);
+ 	if (ret) {
+ 		dev_err(&pdev->dev, "request_irq failed: %d\n", ret);
+ 		goto failed;
+ 	}
+ 
++	/* Initialize video memory */
++	ret = sa1100fb_map_video_memory(fbi);
++	if (ret)
++		goto failed;
++
+ 	if (machine_is_shannon()) {
+ 		ret = gpio_request_one(SHANNON_GPIO_DISP_EN,
+ 			GPIOF_OUT_INIT_LOW, "display enable");
+ 		if (ret)
+-			goto err_free_irq;
++			goto failed;
+ 	}
+ 
+ 	/*
+@@ -1282,8 +1283,6 @@ static int sa1100fb_probe(struct platform_device *pdev)
+  err_reg_fb:
+ 	if (machine_is_shannon())
+ 		gpio_free(SHANNON_GPIO_DISP_EN);
+- err_free_irq:
+-	free_irq(irq, fbi);
+  failed:
+ 	return ret;
+ }
+-- 
+2.7.4
 
-> This was reported by checkpatch.pl
->
-> Signed-off-by: Harsha Sharma <harshasharmaiitr@gmail.com>
-
-Acked-by: Julia Lawall <julia.lawall@lip6.fr>
-
-> ---
->  drivers/staging/sm750fb/sm750_cursor.c | 4 ----
->  1 file changed, 4 deletions(-)
->
-> diff --git a/drivers/staging/sm750fb/sm750_cursor.c b/drivers/staging/sm750fb/sm750_cursor.c
-> index aa47a16..6b27b06 100644
-> --- a/drivers/staging/sm750fb/sm750_cursor.c
-> +++ b/drivers/staging/sm750fb/sm750_cursor.c
-> @@ -18,8 +18,6 @@
->  #include "sm750.h"
->  #include "sm750_cursor.h"
->
-> -
-> -
->  #define poke32(addr, data) \
->  writel((data), cursor->mmio + (addr))
->
-> @@ -45,7 +43,6 @@
->  #define HWC_COLOR_3                         0xC
->  #define HWC_COLOR_3_RGB565_MASK             0xffff
->
-> -
->  /* hw_cursor_xxx works for voyager,718 and 750 */
->  void sm750_hw_cursor_enable(struct lynx_cursor *cursor)
->  {
-> @@ -134,7 +131,6 @@ void sm750_hw_cursor_setData(struct lynx_cursor *cursor, u16 rop,
->  	}
->  }
->
-> -
->  void sm750_hw_cursor_setData2(struct lynx_cursor *cursor, u16 rop,
->  			      const u8 *pcol, const u8 *pmsk)
->  {
-> --
-> 1.9.1
->
-> --
-> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
-> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
-> To post to this group, send email to outreachy-kernel@googlegroups.com.
-> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/1504953287-14740-1-git-send-email-harshasharmaiitr%40gmail.com.
-> For more options, visit https://groups.google.com/d/optout.
->

@@ -1,80 +1,111 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 03 Oct 2017 09:35:16 +0000
-Subject: Re: [PATCH] MAINTAINERS: Add dri-devel as a mailing list for anything fbdev
-Message-Id: <2609576.3hhed3xSd1@amdc3058>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Sun, 01 Oct 2017 15:33:17 +0000
+Subject: [PATCH v2 4/4] drm/fb-helper: Apply panel orientation connector prop to the primary plane
+Message-Id: <20171001153317.2343-5-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20170908153528.17528-1-daniel.vetter@ffwll.ch>
- <CGME20171003092447epcas1p3b2680fedd296b515dbd66e279d09c9ab@epcas1p3.samsung.com>
- <20171003092439.st4c6ook5xbzefkh@phenom.ffwll.local>
-In-Reply-To: <20171003092439.st4c6ook5xbzefkh@phenom.ffwll.local>
+References: <20171001153317.2343-1-hdegoede@redhat.com>
+In-Reply-To: <20171001153317.2343-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Hans de Goede <hdegoede@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>
 
-On Tuesday, October 03, 2017 11:24:39 AM Daniel Vetter wrote:
-> On Mon, Oct 02, 2017 at 10:29:26AM +0200, Daniel Vetter wrote:
-> > On Fri, Sep 08, 2017 at 11:39:44AM -0400, Sean Paul wrote:
-> > > On Fri, Sep 8, 2017 at 11:35 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
-> > > > fbdev is in maintenance only, except that it's still used by drm
-> > > > through the drm fbdev emulation, to be able to use fbcon. And people
-> > > > might want to sometimes extend fbcon to enable new features for drm
-> > > > drivers, e.g. Hans' panel orientation work.
-> > > >
-> > > > The problem is that when those patches only touch fbdev code they'll
-> > > > never show up on drm developer's radar, which means we end up with
-> > > > designs that don't really fit whell into the full stack. That happened
-> > > > a bit with the panel orientation work, where an fbcon patch made it
-> > > > into 4.14, implementing a design that won't really work on the drm
-> > > > side. Which means we now have to redo things, and on top coordinate 2
-> > > > subsystem trees.
-> > > >
-> > > > Since fbdev is super low-volume we can prevent this in the future by
-> > > > simply adding the dri-devel mailing list to the fbdev subsystem.
-> > > >
-> > > > Cc: Hans de Goede <hdegoede@redhat.com>
-> > > > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > > Cc: linux-fbdev@vger.kernel.org
-> > > > Cc: dri-devel@lists.freedesktop.org
-> > > > Cc: Sean Paul <seanpaul@chromium.org>
-> > > 
-> > > Acked-by: Sean Paul <seanpaul@chromium.org>
-> > 
-> > Bartlomiej, ack from you too?
-> 
-> Dave Airlie acked it on irc, so pushed to drm-misc-next.
+Apply the "panel orientation" drm connector prop to the primary plane,
+so that fbcon and fbdev using userspace programs display the right way
+up.
 
-Fine with me.
+Fixes: https://bugs.freedesktop.org/show_bug.cgi?id=94894
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-New patch in v2 of this patch-set
+---
+ drivers/gpu/drm/drm_fb_helper.c | 53 +++++++++++++++++++++++++++++++++++++=
+++--
+ 1 file changed, 51 insertions(+), 2 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> -Daniel
-> > 
-> > Thanks, Daniel
-> > > 
-> > > > Cc: David Airlie <airlied@linux.ie>
-> > > > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> > > > ---
-> > > >  MAINTAINERS | 1 +
-> > > >  1 file changed, 1 insertion(+)
-> > > >
-> > > > diff --git a/MAINTAINERS b/MAINTAINERS
-> > > > index ba51d0906955..af9766a32949 100644
-> > > > --- a/MAINTAINERS
-> > > > +++ b/MAINTAINERS
-> > > > @@ -5391,6 +5391,7 @@ F:        drivers/net/wan/sdla.c
-> > > >
-> > > >  FRAMEBUFFER LAYER
-> > > >  M:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > > > +L:     dri-devel@lists.freedesktop.org
-> > > >  L:     linux-fbdev@vger.kernel.org
-> > > >  T:     git git://github.com/bzolnier/linux.git
-> > > >  Q:     http://patchwork.kernel.org/project/linux-fbdev/list/
-> > > > --
-> > > > 2.14.1
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helpe=
+r.c
+index 1b8f013ffa65..75c409430a26 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -41,6 +41,7 @@
+ #include <drm/drm_atomic.h>
+ #include <drm/drm_atomic_helper.h>
+=20
++#include "drm_crtc_internal.h"
+ #include "drm_crtc_helper_internal.h"
+=20
+ static bool drm_fbdev_emulation =3D true;
+@@ -347,6 +348,53 @@ int drm_fb_helper_debug_leave(struct fb_info *info)
+ }
+ EXPORT_SYMBOL(drm_fb_helper_debug_leave);
+=20
++static int get_plane_rotation_from_panel_orientation(
++	struct drm_fb_helper *fb_helper, struct drm_plane *plane)
++{
++	int i, rotation =3D DRM_MODE_ROTATE_0;
++	struct drm_connector *conn;
++	uint64_t valid_mask =3D 0;
++
++	drm_fb_helper_for_each_connector(fb_helper, i) {
++		conn =3D fb_helper->connector_info[i]->connector;
++		if (conn->state->crtc && conn->state->crtc->primary =3D plane) {
++			switch (conn->display_info.panel_orientation) {
++			case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
++				rotation =3D DRM_MODE_ROTATE_180;
++				break;
++			case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
++				rotation =3D DRM_MODE_ROTATE_90;
++				break;
++			case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
++				rotation =3D DRM_MODE_ROTATE_270;
++				break;
++			}
++			break;
++		}
++	}
++
++	/*
++	 * Check the necessary rotation to compensate for the panel orientation
++	 * is supported.
++	 * Note currently we simply leave things as is when not supported, maybe
++	 * we shouls set a hint in fb_info to tell fbcon to rotate in this case
++	 * so that atleast the console ends up the right way. Maybe, but this:
++	 * a) Is not necessary for any known models with a non upright panel
++	 * b) Is tricky because fbcon rotation applies to all outputs rather
++	 *    then a single one
++	 */
++	if (!plane->rotation_property)
++		return DRM_MODE_ROTATE_0;
++
++	for (i =3D 0; i < plane->rotation_property->num_values; i++)
++		valid_mask |=3D (1ULL << plane->rotation_property->values[i]);
++
++	if (rotation & ~valid_mask)
++		return DRM_MODE_ROTATE_0;
++
++	return rotation;
++}
++
+ static int restore_fbdev_mode_atomic(struct drm_fb_helper *fb_helper, bool=
+ active)
+ {
+ 	struct drm_device *dev =3D fb_helper->dev;
+@@ -376,8 +424,9 @@ static int restore_fbdev_mode_atomic(struct drm_fb_help=
+er *fb_helper, bool activ
+ 			goto out_state;
+ 		}
+=20
+-		plane_state->rotation =3D DRM_MODE_ROTATE_0;
+-
++		plane_state->rotation +			get_plane_rotation_from_panel_orientation(fb_h=
+elper,
++								  plane);
+ 		plane->old_fb =3D plane->fb;
+ 		plane_mask |=3D 1 << drm_plane_index(plane);
+=20
+--=20
+2.14.2
 

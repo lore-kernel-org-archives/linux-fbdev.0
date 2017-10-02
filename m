@@ -1,38 +1,70 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 25 Oct 2017 17:23:09 +0000
-Subject: Re: [RFC 10/14] bootsplash: Add animation support
-Message-Id: <e1dd42e7-d6f8-a0a8-409d-fab95b24279c@suse.de>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 02 Oct 2017 08:29:26 +0000
+Subject: Re: [PATCH] MAINTAINERS: Add dri-devel as a mailing list for anything fbdev
+Message-Id: <20171002082926.di5qyio7egwfimxc@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171025124602.28292-1-mstaudt@suse.de>
- <20171025124602.28292-11-mstaudt@suse.de>
- <2b47c2af-1ddd-a526-601e-1781bef65232@infradead.org>
-In-Reply-To: <2b47c2af-1ddd-a526-601e-1781bef65232@infradead.org>
+References: <20170908153528.17528-1-daniel.vetter@ffwll.ch>
+ <CAOw6vbJs7OmZLRhhYXjO1ruSutO7U5E71ZF=WpYa+WhG+D629Q@mail.gmail.com>
+In-Reply-To: <CAOw6vbJs7OmZLRhhYXjO1ruSutO7U5E71ZF=WpYa+WhG+D629Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
+To: Sean Paul <seanpaul@chromium.org>
+Cc: linux-fbdev <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, LKML <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Hans de Goede <hdegoede@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>
 
-On 10/25/2017 07:20 PM, Randy Dunlap wrote:
-> On 10/25/17 05:45, Max Staudt wrote:
->> @@ -117,17 +128,45 @@ static bool is_fb_compatible(struct fb_info *info)
->>   */
->>  void bootsplash_render_full(struct fb_info *info)
->>  {
->> +	bool is_update = false;
->> +
->>  	mutex_lock(&splash_global.data_lock);
->>  
->> -	if (!is_fb_compatible(info))
->> -		goto out;
->> +	/* If we've painted on this FB recently, we don't have to do
->> +	 * the sanity checks and background drawing again.
->> +	 */
+On Fri, Sep 08, 2017 at 11:39:44AM -0400, Sean Paul wrote:
+> On Fri, Sep 8, 2017 at 11:35 AM, Daniel Vetter <daniel.vetter@ffwll.ch> wrote:
+> > fbdev is in maintenance only, except that it's still used by drm
+> > through the drm fbdev emulation, to be able to use fbcon. And people
+> > might want to sometimes extend fbcon to enable new features for drm
+> > drivers, e.g. Hans' panel orientation work.
+> >
+> > The problem is that when those patches only touch fbdev code they'll
+> > never show up on drm developer's radar, which means we end up with
+> > designs that don't really fit whell into the full stack. That happened
+> > a bit with the panel orientation work, where an fbcon patch made it
+> > into 4.14, implementing a design that won't really work on the drm
+> > side. Which means we now have to redo things, and on top coordinate 2
+> > subsystem trees.
+> >
+> > Since fbdev is super low-volume we can prevent this in the future by
+> > simply adding the dri-devel mailing list to the fbdev subsystem.
+> >
+> > Cc: Hans de Goede <hdegoede@redhat.com>
+> > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Cc: linux-fbdev@vger.kernel.org
+> > Cc: dri-devel@lists.freedesktop.org
+> > Cc: Sean Paul <seanpaul@chromium.org>
 > 
-> multi-line comment style needs to be corrected in multiple places (in
-> several of the patches).
+> Acked-by: Sean Paul <seanpaul@chromium.org>
 
-Sorry, I'll fix that. Thanks.
+Bartlomiej, ack from you too?
 
+Thanks, Daniel
+> 
+> > Cc: David Airlie <airlied@linux.ie>
+> > Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+> > ---
+> >  MAINTAINERS | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index ba51d0906955..af9766a32949 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -5391,6 +5391,7 @@ F:        drivers/net/wan/sdla.c
+> >
+> >  FRAMEBUFFER LAYER
+> >  M:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > +L:     dri-devel@lists.freedesktop.org
+> >  L:     linux-fbdev@vger.kernel.org
+> >  T:     git git://github.com/bzolnier/linux.git
+> >  Q:     http://patchwork.kernel.org/project/linux-fbdev/list/
+> > --
+> > 2.14.1
+> >
 
-Max
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

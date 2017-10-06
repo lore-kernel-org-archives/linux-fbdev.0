@@ -1,44 +1,52 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Mon, 23 Oct 2017 09:24:55 +0000
-Subject: [PATCH v4 0/7] drm/fbdev: Panel orientation connector property support
-Message-Id: <20171023092502.1095-1-hdegoede@redhat.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Fri, 06 Oct 2017 19:58:24 +0000
+Subject: [PATCH 2/3] backlight: tdo24m: add the reset line gpio
+Message-Id: <20171006195826.27500-2-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20171006195826.27500-1-robert.jarzmik@free.fr>
+In-Reply-To: <20171006195826.27500-1-robert.jarzmik@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-Hi All,
+The Toppoly panels have a global reset line. Add an optional gpio
+control for this line, for platforms which have the ability to drive it.
 
-Here is v4 of my series to add a "panel orientation" property to
-the drm-connector for the LCD panel to let userspace know about LCD
-panels which are not mounted upright, as well as detecting upside-down
-panels without needing quirks (like we do for 90 degree rotated screens).
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+ drivers/video/backlight/tdo24m.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-New in v3:
--As requested by Daniel v3 moves the quirks over from the fbdev
- subsys to the drm subsys. I've done this by simpy starting with a copy of
- the quirk table and eventually removing the fbdev version.
+diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
+index e4bd63e9db6b..e4b2dfabf192 100644
+--- a/drivers/video/backlight/tdo24m.c
++++ b/drivers/video/backlight/tdo24m.c
+@@ -10,6 +10,7 @@
+  */
+ 
+ #include <linux/module.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+ #include <linux/device.h>
+@@ -32,6 +33,7 @@ struct tdo24m {
+ 	struct spi_message	msg;
+ 	struct spi_transfer	xfer;
+ 	uint8_t			*buf;
++	struct gpio_desc	*xres;
+ 
+ 	int (*adj_mode)(struct tdo24m *lcd, int mode);
+ 	int color_invert;
+@@ -364,6 +366,7 @@ static int tdo24m_probe(struct spi_device *spi)
+ 	if (lcd->buf = NULL)
+ 		return -ENOMEM;
+ 
++	lcd->xres = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
+ 	m = &lcd->msg;
+ 	x = &lcd->xfer;
+ 
+-- 
+2.11.0
 
-New in v4:
--Fix drm_fb_helper code setting an invalid rotation value on the primary
- plane of disabled/unused crtcs (caught by Fi.CI)
-
-The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
-are all drm patches since patches 2-5 depend on patch 1 I believe it
-would be best to merge patches 1-5 through the drm tree.
-
-For merging patches 6-7 I see 3 options:
-
-1) Wait a kernel cycle, things will work fine without them, they are really
-just there to remove the fbdev copy of the quirks
-
-2) Merge all 7 patches through the drm tree
-
-3) Use a stable tag in the drm tree which the fbdev tree can merge and then
-merge patches 6-7 through the drm tree.
-
-Regards,
-
-Hans

@@ -1,99 +1,55 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Mon, 23 Oct 2017 09:24:56 +0000
-Subject: [PATCH v4 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
-Message-Id: <20171023092502.1095-2-hdegoede@redhat.com>
+From: Adam Jackson <ajax@redhat.com>
+Date: Tue, 10 Oct 2017 17:39:56 +0000
+Subject: [PATCH] uvesafb: Fix URLs in the documentation
+Message-Id: <20171010173956.30884-1-ajax@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171023092502.1095-1-hdegoede@redhat.com>
-In-Reply-To: <20171023092502.1095-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>
+To: linux-fbdev@vger.kernel.org
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but upside-down or rotated 90 degrees. In this case we want the console
-to automatically be rotated to compensate.
-
-The fbdev-driver may know about the need to rotate. Add a new
-fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
-If the fbdev-driver knows that some sort of rotation is necessary then
-it can set this field to a FB_ROTATE_* value to tell the fbcon console
-driver to rotate the console.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Adam Jackson <ajax@redhat.com>
 ---
- drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
- drivers/video/fbdev/core/fbsysfs.c |  1 +
- include/linux/fb.h                 |  5 +++++
- 3 files changed, 18 insertions(+), 6 deletions(-)
+ Documentation/fb/uvesafb.txt | 5 +++--
+ MAINTAINERS                  | 2 +-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 04612f938bab..fb317ed76b45 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
- 	ops->cur_rotate = -1;
- 	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
+diff --git a/Documentation/fb/uvesafb.txt b/Documentation/fb/uvesafb.txt
+index f6362d88763b..aa924196c366 100644
+--- a/Documentation/fb/uvesafb.txt
++++ b/Documentation/fb/uvesafb.txt
+@@ -15,7 +15,8 @@ than x86.  Check the v86d documentation for a list of currently supported
+ arches.
+ 
+ v86d source code can be downloaded from the following website:
+-  http://dev.gentoo.org/~spock/projects/uvesafb
 +
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
++  https://github.com/mjanusz/v86d
  
- 	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+ Please refer to the v86d documentation for detailed configuration and
+ installation instructions.
+@@ -177,7 +178,7 @@ from the Video BIOS if you set pixclock to 0 in fb_var_screeninfo.
  
- 	ops = info->fbcon_par;
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
-+
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
+ --
+  Michal Januszewski <spock@gentoo.org>
+- Last updated: 2009-03-30
++ Last updated: 2017-10-10
  
- 	cols = vc->vc_cols;
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 15755ce1d26c..e31a182b42bf 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 		info->par = p + fb_info_size;
+  Documentation of the uvesafb options is loosely based on vesafb.txt.
  
- 	info->device = dev;
-+	info->fbcon_rotate_hint = -1;
- 
- #ifdef CONFIG_FB_BACKLIGHT
- 	mutex_init(&info->bl_curve_mutex);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f4386b0ccf40..10cf71cc5d13 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -464,6 +464,11 @@ struct fb_info {
- 	atomic_t count;
- 	int node;
- 	int flags;
-+	/*
-+	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
-+	 * a lcd is not mounted upright and fbcon should rotate to compensate.
-+	 */
-+	int fbcon_rotate_hint;
- 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
- 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
- 	struct fb_var_screeninfo var;	/* Current var */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 2d3d750b19c0..fd1a7fed4c7d 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -14165,7 +14165,7 @@ S:	Maintained
+ UVESAFB DRIVER
+ M:	Michal Januszewski <spock@gentoo.org>
+ L:	linux-fbdev@vger.kernel.org
+-W:	http://dev.gentoo.org/~spock/projects/uvesafb/
++W:	https://github.com/mjanusz/v86d
+ S:	Maintained
+ F:	Documentation/fb/uvesafb.txt
+ F:	drivers/video/fbdev/uvesafb.*
 -- 
-2.14.2
+2.13.5
 

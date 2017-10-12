@@ -1,49 +1,30 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 12 Oct 2017 17:55:41 +0000
-Subject: Re: [Nouveau] [PATCH 03/10] driver:gpu: return -ENOMEM on allocation failure.
-Message-Id: <20171012175541.5jh3ovdzpyj5fflv@phenom.ffwll.local>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 12 Oct 2017 15:21:02 +0000
+Subject: Re: [09/10] driver:video: return -ENOMEM on allocation failure.
+Message-Id: <2516367.jAOG8y8MHW@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1505287939-14106-1-git-send-email-allen.lkml@gmail.com>
- <1505287939-14106-3-git-send-email-allen.lkml@gmail.com>
-In-Reply-To: <1505287939-14106-3-git-send-email-allen.lkml@gmail.com>
+References: <1505287939-14106-9-git-send-email-allen.lkml@gmail.com>
+        <CGME20171012152104epcas2p1eb369268eae1872368d15bdc729de041@epcas2p1.samsung.com>
+In-Reply-To: <1505287939-14106-9-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Allen Pais <allen.lkml@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-scsi@vger.kernel.org, nouveau@lists.freedesktop.org, megaraidlinux.pdl@broadcom.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, target-devel@vger.kernel.org, linux-crypto@vger.kernel.org, netdev@vger.kernel.org, MPT-FusionLinux.pdl@broadcom.com, linux-btrfs@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Wed, Sep 13, 2017 at 01:02:12PM +0530, Allen Pais wrote:
+
+[ cc: list trimmed down do linux-fbdev/dri-devel/linux-kernel ]
+
+On Wednesday, September 13, 2017 01:02:18 PM Allen wrote:
 > Signed-off-by: Allen Pais <allen.lkml@gmail.com>
 
-Applied to drm-misc-next, thanks.
--Daniel
+Patch queued for 4.15 (with patch description fixed to
+"video: fbdev: matrox: return -ENOMEM on allocation failure"),
+thanks.
 
-> ---
->  drivers/gpu/drm/gma500/mid_bios.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/gpu/drm/gma500/mid_bios.c b/drivers/gpu/drm/gma500/mid_bios.c
-> index d75ecb3..1fa1633 100644
-> --- a/drivers/gpu/drm/gma500/mid_bios.c
-> +++ b/drivers/gpu/drm/gma500/mid_bios.c
-> @@ -237,7 +237,7 @@ static int mid_get_vbt_data_r10(struct drm_psb_private *dev_priv, u32 addr)
->  
->  	gct = kmalloc(sizeof(*gct) * vbt.panel_count, GFP_KERNEL);
->  	if (!gct)
-> -		return -1;
-> +		return -ENOMEM;
->  
->  	gct_virtual = ioremap(addr + sizeof(vbt),
->  			sizeof(*gct) * vbt.panel_count);
-> -- 
-> 2.7.4
-> 
-> _______________________________________________
-> Nouveau mailing list
-> Nouveau@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/nouveau
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch

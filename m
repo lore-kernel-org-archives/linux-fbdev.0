@@ -1,40 +1,151 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 12 Oct 2017 15:30:49 +0000
-Subject: Re: [PATCH] video: fbdev: sis: make const array specialtv static, reduces object code size
-Message-Id: <502610747.RoFXOuGC48@amdc3058>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Fri, 13 Oct 2017 19:42:49 +0000
+Subject: [PATCH v2 3/3] backlight: tdo24m: add model and status sysfs entries
+Message-Id: <20171013194250.9001-3-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170913154142epcas2p41e38ee4285ed856ee6b98edf267da1de@epcas2p4.samsung.com>
-        <20170913154137.6886-1-colin.king@canonical.com>
-In-Reply-To: <20170913154137.6886-1-colin.king@canonical.com>
+References: <20171013194250.9001-1-robert.jarzmik@free.fr>
+In-Reply-To: <20171013194250.9001-1-robert.jarzmik@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-On Wednesday, September 13, 2017 04:41:37 PM Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Don't populate the const array specialtv on the stack, instead make it
-> static.  Makes the object code smaller by over 1100 bytes:
-> 
-> Before:
->    text	   data	    bss	    dec	    hex	filename
->  179899	   7504	      0	 187403	  2dc0b	drivers/video/fbdev/sis/init301.o
-> 
-> After:
->    text	   data	    bss	    dec	    hex	filename
->  178720	   7568	      0	 186288	  2d7b0	drivers/video/fbdev/sis/init301.o
-> 
-> (gcc version 7.2.0, x86_64)
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Add entries to query the panel ASIC to acquire the model number and the
+status field. This comes in handy to check that the SPI connection is
+functional and that the panel's firmware is alive.
 
-Patch queued for 4.15, thanks.
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+---
+ drivers/video/backlight/tdo24m.c | 73 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 72 insertions(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
+index e4b2dfabf192..113c28c2145a 100644
+--- a/drivers/video/backlight/tdo24m.c
++++ b/drivers/video/backlight/tdo24m.c
+@@ -22,7 +22,7 @@
+ 
+ #define POWER_IS_ON(pwr)	((pwr) <= FB_BLANK_NORMAL)
+ 
+-#define TDO24M_SPI_BUFF_SIZE	(4)
++#define TDO24M_SPI_BUFF_SIZE	(6)
+ #define MODE_QVGA	0
+ #define MODE_VGA	1
+ 
+@@ -33,6 +33,7 @@ struct tdo24m {
+ 	struct spi_message	msg;
+ 	struct spi_transfer	xfer;
+ 	uint8_t			*buf;
++	uint8_t			*rx_buf;
+ 	struct gpio_desc	*xres;
+ 
+ 	int (*adj_mode)(struct tdo24m *lcd, int mode);
+@@ -219,6 +220,30 @@ static int tdo24m_writes(struct tdo24m *lcd, const uint32_t *array)
+ 	return err;
+ }
+ 
++static int tdo24m_read_command(struct tdo24m *lcd, unsigned char cmd,
++			       unsigned int *id)
++{
++	struct spi_transfer *x = &lcd->xfer;
++	int err = 0, i;
++
++	lcd->buf[0] = cmd >> 1;
++	lcd->buf[1] = (cmd & 0x01) << 7;
++	lcd->buf[2] = 0;
++	lcd->buf[3] = 0;
++	lcd->buf[4] = 0;
++
++	x->len = 6;
++	err = spi_sync(lcd->spi_dev, &lcd->msg);
++
++	for (i = 0; i < sizeof(lcd->rx_buf) - 2; i++)
++		lcd->rx_buf[i] = (lcd->rx_buf[i + 1] << 2) |
++			(lcd->rx_buf[i + 2] >> 6);
++	*id = (lcd->rx_buf[0] << 24) | (lcd->rx_buf[1] << 16) |
++		(lcd->rx_buf[2] << 8) | lcd->rx_buf[3];
++
++	return err;
++}
++
+ static int tdo24m_adj_mode(struct tdo24m *lcd, int mode)
+ {
+ 	switch (mode) {
+@@ -327,6 +352,43 @@ static int tdo24m_set_mode(struct lcd_device *ld, struct fb_videomode *m)
+ 	return lcd->adj_mode(lcd, mode);
+ }
+ 
++static ssize_t tdo24m_model_show(struct device *dev,
++				 struct device_attribute *attr, char *buf)
++{
++	struct tdo24m *lcd = dev_get_drvdata(dev);
++	uint32_t data;
++	int err;
++
++	err = tdo24m_read_command(lcd, 0x04, &data);
++	if (!err)
++		return snprintf(buf, PAGE_SIZE, "0x%06x\n", data >> 8);
++
++	return err;
++}
++static DEVICE_ATTR_RO(tdo24m_model);
++
++static ssize_t tdo24m_status_show(struct device *dev,
++				  struct device_attribute *attr, char *buf)
++{
++	struct tdo24m *lcd = dev_get_drvdata(dev);
++	uint32_t data;
++	int err;
++
++	err = tdo24m_read_command(lcd, 0x09, &data);
++	if (!err)
++		return snprintf(buf, PAGE_SIZE, "0x%08x\n", data);
++
++	return err;
++}
++static DEVICE_ATTR_RO(tdo24m_status);
++
++static struct attribute *tdo24m_attrs[] = {
++	&dev_attr_tdo24m_model.attr,
++	&dev_attr_tdo24m_status.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(tdo24m);
++
+ static struct lcd_ops tdo24m_ops = {
+ 	.get_power	= tdo24m_get_power,
+ 	.set_power	= tdo24m_set_power,
+@@ -365,6 +427,9 @@ static int tdo24m_probe(struct spi_device *spi)
+ 	lcd->buf = devm_kzalloc(&spi->dev, TDO24M_SPI_BUFF_SIZE, GFP_KERNEL);
+ 	if (lcd->buf = NULL)
+ 		return -ENOMEM;
++	lcd->rx_buf = devm_kzalloc(&spi->dev, TDO24M_SPI_BUFF_SIZE, GFP_KERNEL);
++	if (lcd->rx_buf = NULL)
++		return -ENOMEM;
+ 
+ 	lcd->xres = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
+ 	m = &lcd->msg;
+@@ -374,6 +439,7 @@ static int tdo24m_probe(struct spi_device *spi)
+ 
+ 	x->cs_change = 0;
+ 	x->tx_buf = &lcd->buf[0];
++	x->rx_buf = &lcd->rx_buf[0];
+ 	spi_message_add_tail(x, m);
+ 
+ 	switch (model) {
+@@ -396,6 +462,11 @@ static int tdo24m_probe(struct spi_device *spi)
+ 		return PTR_ERR(lcd->lcd_dev);
+ 
+ 	spi_set_drvdata(spi, lcd);
++
++	err = devm_device_add_groups(&spi->dev, tdo24m_groups);
++	if (err)
++		return err;
++
+ 	err = tdo24m_power(lcd, FB_BLANK_UNBLANK);
+ 	if (err)
+ 		return err;
+-- 
+2.11.0
 

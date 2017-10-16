@@ -1,90 +1,44 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Mon, 23 Oct 2017 07:14:24 +0000
-Subject: [PATCH v3 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation_quirk
-Message-Id: <20171023071425.5090-7-hdegoede@redhat.com>
+From: Jeffy Chen <jeffy.chen@rock-chips.com>
+Date: Mon, 16 Oct 2017 10:06:35 +0000
+Subject: [RESEND PATCH v2 0/5] rockchip: kevin: Enable edp display
+Message-Id: <20171016100640.26575-1-jeffy.chen@rock-chips.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171023071425.5090-1-hdegoede@redhat.com>
-In-Reply-To: <20171023071425.5090-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: dmitry.torokhov@gmail.com, heiko@sntech.de, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, tfiga@chromium.org, broonie@kernel.org, seanpaul@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Andrzej Hajda <a.hajda@samsung.com>, linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Thompson <daniel.thompson@linaro.org>, David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, linux-samsung-soc@vger.kernel.org, Seung-Woo Kim <sw0312.kim@samsung.com>, Inki Dae <inki.dae@samsung.com>, linux-rockchip@lists.infradead.org, Kyungmin Park <kyungmi>
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but rotated by 90 degrees. In this case we want the console to
-automatically be rotated to compensate.
 
-The drm subsys has a quirk table for this, use the
-drm_get_panel_orientation_quirk function to get the panel orientation
-and set info->fbcon_rotate_hint based on this, so that the fbcon console
-on top of efifb gets automatically=C2=A0rotated to compensate for the panel
-orientation.
+Make edp display works on chromebook kevin(at least for boot animation).
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/fbdev/Kconfig |  1 +
- drivers/video/fbdev/efifb.c | 21 ++++++++++++++++++++-
- 2 files changed, 21 insertions(+), 1 deletion(-)
+Also solve some issues i meet during the bringup.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5e58f5ec0a28..c4a90c497839 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -772,6 +772,7 @@ config FB_VESA
- config FB_EFI
- 	bool "EFI-based Framebuffer Support"
- 	depends on (FB =3D y) && !IA64 && EFI
-+	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 3a010641f630..8c7f6aeee205 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -15,6 +15,8 @@
- #include <linux/screen_info.h>
- #include <video/vga.h>
- #include <asm/efi.h>
-+#include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
-+#include <drm/drm_mode.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
-=20
- static bool request_mem_succeeded =3D false;
- static bool nowc =3D false;
-@@ -156,7 +158,7 @@ static u64 bar_offset;
- static int efifb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
--	int err;
-+	int err, orientation;
- 	unsigned int size_vmode;
- 	unsigned int size_remap;
- 	unsigned int size_total;
-@@ -328,6 +330,23 @@ static int efifb_probe(struct platform_device *dev)
- 	info->fix =3D efifb_fix;
- 	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
-=20
-+	orientation =3D drm_get_panel_orientation_quirk(efifb_defined.xres,
-+						      efifb_defined.yres);
-+	switch (orientation) {
-+	default:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
-+		break;
-+	}
-+
- 	err =3D sysfs_create_groups(&dev->dev.kobj, efifb_groups);
- 	if (err) {
- 		pr_err("efifb: cannot add sysfs attrs\n");
---=20
-2.14.2
+Changes in v2:
+Use device link to correct the suspend/resume and shutdown ordering,
+instead of converting rockchip spi's suspend/resume PM callbacks to
+late suspend/resume PM callbacks.
+
+Jeffy Chen (4):
+  arm64: dts: rockchip: Enable edp disaplay on kevin
+  backlight: pwm_bl: Add device link for pwm_bl and pwm
+  drm/rockchip: Fix error handling path in rockchip_dp_bind()
+  drm/rockchip: Add device links for master and components
+
+Tomasz Figa (1):
+  drm/bridge/analogix: Do not use device's drvdata
+
+ arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dts  | 29 +++++++++++
+ arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi       | 16 ++++++
+ drivers/gpu/drm/bridge/analogix/analogix_dp_core.c | 50 ++++++++-----------
+ drivers/gpu/drm/exynos/exynos_dp.c                 | 26 +++++-----
+ drivers/gpu/drm/rockchip/analogix_dp-rockchip.c    | 57 ++++++++++++++--------
+ drivers/gpu/drm/rockchip/rockchip_drm_drv.c        | 24 +++++++--
+ drivers/video/backlight/pwm_bl.c                   |  2 +
+ include/drm/bridge/analogix_dp.h                   | 19 +++++---
+ 8 files changed, 151 insertions(+), 72 deletions(-)
+
+-- 
+2.11.0
+
 

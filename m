@@ -1,41 +1,55 @@
 From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Sun, 15 Oct 2017 14:26:25 +0000
-Subject: Re: [PATCH] video: fbdev: Fix an errro handling path in 'au1200fb_drv_probe()'
-Message-Id: <197e2a4e-bfc9-c0d5-11fc-c071be0c18b3@wanadoo.fr>
+Date: Mon, 16 Oct 2017 19:04:51 +0000
+Subject: [PATCH 5/8] video: fbdev: au1200fb: Fix error handling path
+Message-Id: <1c406b36210dc5e6e4443d52a3cbc2307f7b706e.1508179264.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170912054234epcas4p2afadfa32766d7a186c00f1fdc568c7bf@epcas4p2.samsung.com>
- <20170912053930.18931-1-christophe.jaillet@wanadoo.fr>
- <12781513.OMEBNrce0f@amdc3058>
-In-Reply-To: <12781513.OMEBNrce0f@amdc3058>
+References: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: tj@kernel.org, viro@zeniv.linux.org.uk, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, tj@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-Le 12/10/2017 à 18:25, Bartlomiej Zolnierkiewicz a écrit :
-> [ added dri-devel ML to cc: ]
->
-> On Tuesday, September 12, 2017 07:39:30 AM Christophe JAILLET wrote:
->> If 'dmam_alloc_attrs()' fails, we must go through the error handling code,
->> as done elsewhere in this function. Otherwise, there is a resource leak.
->>
->> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
->> ---
->> I'm also puzzled by the 'framebuffer_alloc()' call a few lines above.
->> 'ret' is known to be 0 at this point. I guess that -ENOMEM should also be
->> returned.
-> Yes, moreover the "failed:" error path is incomplete (please take
-> a look at au1200fb_drv_remove() for comparison) and needs to be fixed.
->
-> Could you please take care of it?
+Rewrite the exit path based on 'au1200fb_drv_remove()'.
+We can safely iterate for all already handled planes. Even if not
+completely initialized, the functions that are called will silently accept
+the 'fb_info' structure that is passed.
 
-I will try, but be indulgent :)
+As soon as we find a NULL in the '_au1200fb_infos' array, we know that we
+have released all what we needed to release. So we can 'break'.
 
-My understanding of the code is that they are several issues all related 
-to this error handling path (double free, missing memory release, 
-invalid irq release...)
-I will try to sort it out, but my first tries will likely be incomplete 
-and/or broken.
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/video/fbdev/au1200fb.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-CJ
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 0d8ed0ef9183..e531543bc707 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1760,11 +1760,19 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 	return 0;
+ 
+ failed:
+-	/* NOTE: This only does the current plane/window that failed; others are still active */
+-	if (fbi) {
++	for (plane = 0; plane < device_count; ++plane) {
++		fbi = _au1200fb_infos[plane];
++		if (!fbi)
++			break;
++
++		/* Clean up all probe data */
++		unregister_framebuffer(fbi);
+ 		if (fbi->cmap.len != 0)
+ 			fb_dealloc_cmap(&fbi->cmap);
+ 		kfree(fbi->pseudo_palette);
++
++		framebuffer_release(fbi);
++		_au1200fb_infos[plane] = NULL;
+ 	}
+ 	return ret;
+ }
+-- 
+2.11.0
+

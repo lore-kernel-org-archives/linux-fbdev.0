@@ -1,52 +1,54 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Fri, 13 Oct 2017 19:42:48 +0000
-Subject: [PATCH v2 2/3] backlight: tdo24m: add the reset line gpio
-Message-Id: <20171013194250.9001-2-robert.jarzmik@free.fr>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Mon, 16 Oct 2017 19:04:46 +0000
+Subject: [PATCH 0/8] video: fbdev: au1200fb: Fix error handling path of 'au1200fb_drv_probe()'
+Message-Id: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171013194250.9001-1-robert.jarzmik@free.fr>
-In-Reply-To: <20171013194250.9001-1-robert.jarzmik@free.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
+To: b.zolnierkie@samsung.com, tj@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-The Toppoly panels have a global reset line. Add an optional gpio
-control for this line, for platforms which have the ability to drive it.
+This patch serie tries to fix several issues found in the error handling
+code of 'au1200fb_drv_probe()'.
+The 5 first patches fixes various issues (double free, missing error code,
+un-released resources on error, incorrect IRQ releasing and incomplete
+error handling path)
 
-Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+The 3 last patches are just cleanups.
+
+
+I've spilt the serie in 8 steps that look logical to me. They could
+also be merged together if preferred.
+
+
+These patches are provided as-is and ARE NOT even compile-tested (sorry in
+advance if a patch is broken) because I don't have a cross compiler for MIPS
+and won't install one.
+
+
+This serie already goes further that the fixes I usually provide, so
+please excuse me if I missed something or if it is somehow broken and/or
+incomplete.
+
 ---
- drivers/video/backlight/tdo24m.c | 3 +++
- 1 file changed, 3 insertions(+)
+V1 previously posted is patch 3/8 of this serie
 
-diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
-index e4bd63e9db6b..e4b2dfabf192 100644
---- a/drivers/video/backlight/tdo24m.c
-+++ b/drivers/video/backlight/tdo24m.c
-@@ -10,6 +10,7 @@
-  */
- 
- #include <linux/module.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/device.h>
-@@ -32,6 +33,7 @@ struct tdo24m {
- 	struct spi_message	msg;
- 	struct spi_transfer	xfer;
- 	uint8_t			*buf;
-+	struct gpio_desc	*xres;
- 
- 	int (*adj_mode)(struct tdo24m *lcd, int mode);
- 	int color_invert;
-@@ -364,6 +366,7 @@ static int tdo24m_probe(struct spi_device *spi)
- 	if (lcd->buf = NULL)
- 		return -ENOMEM;
- 
-+	lcd->xres = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
- 	m = &lcd->msg;
- 	x = &lcd->xfer;
- 
+Christophe JAILLET (8):
+  video: fbdev: au1200fb: Fix a potential double free
+  video: fbdev: au1200fb: Return an error code if a memory allocation
+    fails
+  video: fbdev: au1200fb: Release some resources if a memory allocation
+    fails
+  video: fbdev: au1200fb: Fix error handling path
+  video: fbdev: au1200fb: Fix error handling path
+  video: fbdev: au1200fb: Remove some dead code
+  video: fbdev: au1200fb: Propagate an error code
+  video: fbdev: au1200fb: Style clean up
+
+ drivers/video/fbdev/au1200fb.c | 43 ++++++++++++++++++++++--------------------
+ 1 file changed, 23 insertions(+), 20 deletions(-)
+
 -- 
 2.11.0
 

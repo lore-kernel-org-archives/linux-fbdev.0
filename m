@@ -1,52 +1,54 @@
-From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
-Date: Thu, 26 Oct 2017 12:49:45 +0000
-Subject: [PATCH 1/2] backlight: pwm_bl: Enable PWM before switching regulator on
-Message-Id: <1509022186-19636-3-git-send-email-LW@KARO-electronics.de>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Mon, 16 Oct 2017 19:04:54 +0000
+Subject: [PATCH 8/8] video: fbdev: au1200fb: Style clean up
+Message-Id: <b794f519c83f40d08795b9745aeb311cfe649780.1508179264.git.christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1509022186-19636-1-git-send-email-LW@KARO-electronics.de>
-In-Reply-To: <1509022186-19636-1-git-send-email-LW@KARO-electronics.de>
+References: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
+In-Reply-To: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Rob Herring <robh+dt@kernel.org>, Thierry Reding <thierry.reding@gmail.com>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, linux-pwm@vger.kernel.org
-Cc: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, tj@kernel.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-When the PWM is re-enabled after being switched off, the backlight may
-flicker due to the backlight power being switched on while the PWM is
-still unconfigured. This is especially true if the PWM output is
-active low (assuming that the PWM output is low when the PWM is not
-enabled).
-Configure the PWM before switching backlight power on to prevent this.
+Style clean-up.
 
-Signed-off-by: Lothar Wa=C3=9Fmann <LW@KARO-electronics.de>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
- drivers/video/backlight/pwm_bl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/au1200fb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm=
-_bl.c
-index 002f1ce..921f322 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -50,6 +50,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb=
-, int brightness)
- 	if (pb->enabled)
- 		return;
-=20
-+	pwm_enable(pb->pwm);
-+
- 	err =3D regulator_enable(pb->power_supply);
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
-@@ -57,7 +59,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb=
-, int brightness)
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
-=20
--	pwm_enable(pb->pwm);
- 	pb->enabled =3D true;
- }
-=20
---=20
-2.1.4
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 687ea2a8f810..87d5a62bf6ca 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1546,14 +1546,13 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
+ 	}
+ 
+ 	fbi->pseudo_palette = kcalloc(16, sizeof(u32), GFP_KERNEL);
+-	if (!fbi->pseudo_palette) {
++	if (!fbi->pseudo_palette)
+ 		return -ENOMEM;
+-	}
+ 
+ 	ret = fb_alloc_cmap(&fbi->cmap, AU1200_LCD_NBR_PALETTE_ENTRIES, 0);
+ 	if (ret < 0) {
+ 		print_err("Fail to allocate colormap (%d entries)",
+-			   AU1200_LCD_NBR_PALETTE_ENTRIES);
++			  AU1200_LCD_NBR_PALETTE_ENTRIES);
+ 		return ret;
+ 	}
+ 
+@@ -1717,7 +1716,8 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		print_dbg("phys=0x%08x, size=%dK", fbdev->fb_phys, fbdev->fb_len / 1024);
+ 
+ 		/* Init FB data */
+-		if ((ret = au1200fb_init_fbinfo(fbdev)) < 0)
++		ret = au1200fb_init_fbinfo(fbdev);
++		if (ret < 0)
+ 			goto failed;
+ 
+ 		/* Register new framebuffer */
+-- 
+2.11.0
 

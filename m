@@ -1,44 +1,26 @@
-From: Jeffy Chen <jeffy.chen@rock-chips.com>
-Date: Mon, 16 Oct 2017 10:06:35 +0000
-Subject: [RESEND PATCH v2 0/5] rockchip: kevin: Enable edp display
-Message-Id: <20171016100640.26575-1-jeffy.chen@rock-chips.com>
+From: Mr.Robert@vger.kernel.org
+Date: Tue, 17 Oct 2017 17:17:10 +0000
+Subject: Do you need financial help?
+Message-Id: <8e15687f-86ce-400a-9e2a-96b84017dcf8@exmail.hanil.ac.kr>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com, heiko@sntech.de, briannorris@chromium.org, rjw@rjwysocki.net, dianders@chromium.org, tfiga@chromium.org, broonie@kernel.org, seanpaul@chromium.org, Jeffy Chen <jeffy.chen@rock-chips.com>, Andrzej Hajda <a.hajda@samsung.com>, linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Thompson <daniel.thompson@linaro.org>, David Airlie <airlied@linux.ie>, Catalin Marinas <catalin.marinas@arm.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, linux-samsung-soc@vger.kernel.org, Seung-Woo Kim <sw0312.kim@samsung.com>, Inki Dae <inki.dae@samsung.com>, linux-rockchip@lists.infradead.org, Kyungmin Park <kyungmi>
+To: Recipients@vger.kernel.org
 
+Do you need a loan to enhance your business?, loan to consolidate your debt,loan for personal use, loan for credit card, medical care loan,car loan,mortgage loan, student loan, loan for any purposes? e.t.c. get loan at 1% interest rate annually, hurry up now and fill out this below application details if interested: contact us at: iceblueinvestmentgroup01@gmail.com
 
-Make edp display works on chromebook kevin(at least for boot animation).
-
-Also solve some issues i meet during the bringup.
-
-Changes in v2:
-Use device link to correct the suspend/resume and shutdown ordering,
-instead of converting rockchip spi's suspend/resume PM callbacks to
-late suspend/resume PM callbacks.
-
-Jeffy Chen (4):
-  arm64: dts: rockchip: Enable edp disaplay on kevin
-  backlight: pwm_bl: Add device link for pwm_bl and pwm
-  drm/rockchip: Fix error handling path in rockchip_dp_bind()
-  drm/rockchip: Add device links for master and components
-
-Tomasz Figa (1):
-  drm/bridge/analogix: Do not use device's drvdata
-
- arch/arm64/boot/dts/rockchip/rk3399-gru-kevin.dts  | 29 +++++++++++
- arch/arm64/boot/dts/rockchip/rk3399-gru.dtsi       | 16 ++++++
- drivers/gpu/drm/bridge/analogix/analogix_dp_core.c | 50 ++++++++-----------
- drivers/gpu/drm/exynos/exynos_dp.c                 | 26 +++++-----
- drivers/gpu/drm/rockchip/analogix_dp-rockchip.c    | 57 ++++++++++++++--------
- drivers/gpu/drm/rockchip/rockchip_drm_drv.c        | 24 +++++++--
- drivers/video/backlight/pwm_bl.c                   |  2 +
- include/drm/bridge/analogix_dp.h                   | 19 +++++---
- 8 files changed, 151 insertions(+), 72 deletions(-)
-
--- 
-2.11.0
+APPLICATION DETAILS
+Full Name---------------
+Gender:___________________
+Contact Address:____________
+Country:______________________
+State:__________________________
+Amount Needed as Loan:___________
+Loan Duration:____________________
+Occupation:___________________ _____
+Purpose for Loan:____________________
+Phone:________________________ _______
+Regard,
 
 

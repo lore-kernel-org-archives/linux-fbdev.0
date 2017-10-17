@@ -1,38 +1,34 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Mon, 16 Oct 2017 19:04:49 +0000
-Subject: [PATCH 3/8] video: fbdev: au1200fb: Release some resources if a memory allocation fails
-Message-Id: <dcbd4ba45087e3cb22bc35ee11db5eb3016573b7.1508179264.git.christophe.jaillet@wanadoo.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 17 Oct 2017 13:10:59 +0000
+Subject: Re: [PATCH 1/1] drivers:video: use setup_timer
+Message-Id: <15879603.v8aXiaZcPX@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
+References: <CGME20170921110539epcas2p303a5bbfd69d03cfe4e79a0833027eb2f@epcas2p3.samsung.com>
+        <1505991931-30437-1-git-send-email-allen.lkml@gmail.com>
+In-Reply-To: <1505991931-30437-1-git-send-email-allen.lkml@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, tj@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Allen Pais <allen.lkml@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-We should go through the error handling code instead of returning -ENOMEM
-directly.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/video/fbdev/au1200fb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+Hi,
 
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 7fa41026984d..cf54168d44dc 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1702,7 +1702,8 @@ static int au1200fb_drv_probe(struct platform_device *dev)
- 		if (!fbdev->fb_mem) {
- 			print_err("fail to allocate frambuffer (size: %dK))",
- 				  fbdev->fb_len / 1024);
--			return -ENOMEM;
-+			ret = -ENOMEM;
-+			goto failed;
- 		}
- 
- 		/*
--- 
-2.11.0
+On Thursday, September 21, 2017 04:35:31 PM Allen Pais wrote:
+>     Use setup_timer function instead of initializing timer with the
+>     function and data fields.
+> 
+> Signed-off-by: Allen Pais <allen.lkml@gmail.com>
+
+Thanks for the patch but I've ended applying a bit more complete one
+from Himanshu Jha:
+
+https://lkml.org/lkml/2017/9/28/695
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

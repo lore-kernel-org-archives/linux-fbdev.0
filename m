@@ -1,151 +1,99 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Fri, 13 Oct 2017 19:42:49 +0000
-Subject: [PATCH v2 3/3] backlight: tdo24m: add model and status sysfs entries
-Message-Id: <20171013194250.9001-3-robert.jarzmik@free.fr>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Mon, 23 Oct 2017 09:24:56 +0000
+Subject: [PATCH v4 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
+Message-Id: <20171023092502.1095-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171013194250.9001-1-robert.jarzmik@free.fr>
-In-Reply-To: <20171013194250.9001-1-robert.jarzmik@free.fr>
+References: <20171023092502.1095-1-hdegoede@redhat.com>
+In-Reply-To: <20171023092502.1095-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>
 
-Add entries to query the panel ASIC to acquire the model number and the
-status field. This comes in handy to check that the SPI connection is
-functional and that the panel's firmware is alive.
+On some hardware the LCD panel is not mounted upright in the casing,
+but upside-down or rotated 90 degrees. In this case we want the console
+to automatically be rotated to compensate.
 
-Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+The fbdev-driver may know about the need to rotate. Add a new
+fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
+If the fbdev-driver knows that some sort of rotation is necessary then
+it can set this field to a FB_ROTATE_* value to tell the fbcon console
+driver to rotate the console.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/backlight/tdo24m.c | 73 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 72 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
+ drivers/video/fbdev/core/fbsysfs.c |  1 +
+ include/linux/fb.h                 |  5 +++++
+ 3 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
-index e4b2dfabf192..113c28c2145a 100644
---- a/drivers/video/backlight/tdo24m.c
-+++ b/drivers/video/backlight/tdo24m.c
-@@ -22,7 +22,7 @@
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 04612f938bab..fb317ed76b45 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
+ 	ops->cur_rotate = -1;
+ 	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
- #define POWER_IS_ON(pwr)	((pwr) <= FB_BLANK_NORMAL)
+ 	if (info->fix.type != FB_TYPE_TEXT) {
+@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
  
--#define TDO24M_SPI_BUFF_SIZE	(4)
-+#define TDO24M_SPI_BUFF_SIZE	(6)
- #define MODE_QVGA	0
- #define MODE_VGA	1
+ 	ops = info->fbcon_par;
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
-@@ -33,6 +33,7 @@ struct tdo24m {
- 	struct spi_message	msg;
- 	struct spi_transfer	xfer;
- 	uint8_t			*buf;
-+	uint8_t			*rx_buf;
- 	struct gpio_desc	*xres;
+ 	cols = vc->vc_cols;
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 15755ce1d26c..e31a182b42bf 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 		info->par = p + fb_info_size;
  
- 	int (*adj_mode)(struct tdo24m *lcd, int mode);
-@@ -219,6 +220,30 @@ static int tdo24m_writes(struct tdo24m *lcd, const uint32_t *array)
- 	return err;
- }
+ 	info->device = dev;
++	info->fbcon_rotate_hint = -1;
  
-+static int tdo24m_read_command(struct tdo24m *lcd, unsigned char cmd,
-+			       unsigned int *id)
-+{
-+	struct spi_transfer *x = &lcd->xfer;
-+	int err = 0, i;
-+
-+	lcd->buf[0] = cmd >> 1;
-+	lcd->buf[1] = (cmd & 0x01) << 7;
-+	lcd->buf[2] = 0;
-+	lcd->buf[3] = 0;
-+	lcd->buf[4] = 0;
-+
-+	x->len = 6;
-+	err = spi_sync(lcd->spi_dev, &lcd->msg);
-+
-+	for (i = 0; i < sizeof(lcd->rx_buf) - 2; i++)
-+		lcd->rx_buf[i] = (lcd->rx_buf[i + 1] << 2) |
-+			(lcd->rx_buf[i + 2] >> 6);
-+	*id = (lcd->rx_buf[0] << 24) | (lcd->rx_buf[1] << 16) |
-+		(lcd->rx_buf[2] << 8) | lcd->rx_buf[3];
-+
-+	return err;
-+}
-+
- static int tdo24m_adj_mode(struct tdo24m *lcd, int mode)
- {
- 	switch (mode) {
-@@ -327,6 +352,43 @@ static int tdo24m_set_mode(struct lcd_device *ld, struct fb_videomode *m)
- 	return lcd->adj_mode(lcd, mode);
- }
- 
-+static ssize_t tdo24m_model_show(struct device *dev,
-+				 struct device_attribute *attr, char *buf)
-+{
-+	struct tdo24m *lcd = dev_get_drvdata(dev);
-+	uint32_t data;
-+	int err;
-+
-+	err = tdo24m_read_command(lcd, 0x04, &data);
-+	if (!err)
-+		return snprintf(buf, PAGE_SIZE, "0x%06x\n", data >> 8);
-+
-+	return err;
-+}
-+static DEVICE_ATTR_RO(tdo24m_model);
-+
-+static ssize_t tdo24m_status_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-+{
-+	struct tdo24m *lcd = dev_get_drvdata(dev);
-+	uint32_t data;
-+	int err;
-+
-+	err = tdo24m_read_command(lcd, 0x09, &data);
-+	if (!err)
-+		return snprintf(buf, PAGE_SIZE, "0x%08x\n", data);
-+
-+	return err;
-+}
-+static DEVICE_ATTR_RO(tdo24m_status);
-+
-+static struct attribute *tdo24m_attrs[] = {
-+	&dev_attr_tdo24m_model.attr,
-+	&dev_attr_tdo24m_status.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(tdo24m);
-+
- static struct lcd_ops tdo24m_ops = {
- 	.get_power	= tdo24m_get_power,
- 	.set_power	= tdo24m_set_power,
-@@ -365,6 +427,9 @@ static int tdo24m_probe(struct spi_device *spi)
- 	lcd->buf = devm_kzalloc(&spi->dev, TDO24M_SPI_BUFF_SIZE, GFP_KERNEL);
- 	if (lcd->buf = NULL)
- 		return -ENOMEM;
-+	lcd->rx_buf = devm_kzalloc(&spi->dev, TDO24M_SPI_BUFF_SIZE, GFP_KERNEL);
-+	if (lcd->rx_buf = NULL)
-+		return -ENOMEM;
- 
- 	lcd->xres = devm_gpiod_get(&spi->dev, "reset", GPIOD_OUT_LOW);
- 	m = &lcd->msg;
-@@ -374,6 +439,7 @@ static int tdo24m_probe(struct spi_device *spi)
- 
- 	x->cs_change = 0;
- 	x->tx_buf = &lcd->buf[0];
-+	x->rx_buf = &lcd->rx_buf[0];
- 	spi_message_add_tail(x, m);
- 
- 	switch (model) {
-@@ -396,6 +462,11 @@ static int tdo24m_probe(struct spi_device *spi)
- 		return PTR_ERR(lcd->lcd_dev);
- 
- 	spi_set_drvdata(spi, lcd);
-+
-+	err = devm_device_add_groups(&spi->dev, tdo24m_groups);
-+	if (err)
-+		return err;
-+
- 	err = tdo24m_power(lcd, FB_BLANK_UNBLANK);
- 	if (err)
- 		return err;
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	mutex_init(&info->bl_curve_mutex);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index f4386b0ccf40..10cf71cc5d13 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -464,6 +464,11 @@ struct fb_info {
+ 	atomic_t count;
+ 	int node;
+ 	int flags;
++	/*
++	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
++	 * a lcd is not mounted upright and fbcon should rotate to compensate.
++	 */
++	int fbcon_rotate_hint;
+ 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
+ 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
+ 	struct fb_var_screeninfo var;	/* Current var */
 -- 
-2.11.0
+2.14.2
 

@@ -1,42 +1,39 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Mon, 16 Oct 2017 19:04:47 +0000
-Subject: [PATCH 1/8] video: fbdev: au1200fb: Fix a potential double free
-Message-Id: <73dc8ec4bf94cb2f81ee264225ba0f509c96bebd.1508179264.git.christophe.jaillet@wanadoo.fr>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Mon, 23 Oct 2017 07:14:18 +0000
+Subject: [PATCH v3 0/7] drm/fbdev: Panel orientation connector property support
+Message-Id: <20171023071425.5090-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
-In-Reply-To: <cover.1508179264.git.christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, tj@kernel.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Bastien Nocera <hadess@hadess.net>
 
-If 'fb_alloc_cmap()' fails, 'fbi->pseudo_palette' is freed and an error
-code is returned by 'au1200fb_init_fbinfo()'.
-The only caller, 'au1200fb_drv_probe()' goes to an error handling path
-where resources allocated in 'fb_alloc_cmap()' are freed.
-This leads to a double free of 'fbi->pseudo_palette'.
+Hi All,
 
-Fix it by letting the caller free all resources in case of failure in
-'au1200fb_init_fbinfo()'.
+Here is v3 of my series to add a "panel orientation" property to
+the drm-connector for the LCD panel to let userspace know about LCD
+panels which are not mounted upright, as well as detecting upside-down
+panels without needing quirks (like we do for 90 degree rotated screens).
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
----
- drivers/video/fbdev/au1200fb.c | 1 -
- 1 file changed, 1 deletion(-)
+As requested by Daniel this version moves the quirks over from the fbdev
+subsys to the drm subsys. I've done this by simpy starting with a copy of
+the quirk table and eventually removing the fbdev version.
 
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 5f04b4096c42..a5facc2ad90b 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1553,7 +1553,6 @@ static int au1200fb_init_fbinfo(struct au1200fb_device *fbdev)
- 	if (fb_alloc_cmap(&fbi->cmap, AU1200_LCD_NBR_PALETTE_ENTRIES, 0) < 0) {
- 		print_err("Fail to allocate colormap (%d entries)",
- 			   AU1200_LCD_NBR_PALETTE_ENTRIES);
--		kfree(fbi->pseudo_palette);
- 		return -EFAULT;
- 	}
- 
--- 
-2.11.0
+The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
+are all drm patches since patches 2-5 depend on patch 1 I believe it
+would be best to merge patches 1-5 through the drm tree.
 
+For merging patches 6-7 I see 3 options:
+
+1) Wait a kernel cycle, things will work fine without them, they are really
+just there to remove the fbdev copy of the quirks
+
+2) Merge all 7 patches through the drm tree
+
+3) Use a stable tag in the drm tree which the fbdev tree can merge and then
+merge patches 6-7 through the drm tree.
+
+Regards,
+
+Hans

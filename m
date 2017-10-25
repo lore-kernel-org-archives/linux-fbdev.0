@@ -1,51 +1,117 @@
-From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
-Date: Fri, 20 Oct 2017 14:33:37 +0000
-Subject: [PATCH v5 4/5] video: goldfishfb: Add support for device tree bindings
-Message-Id: <1508510055-6167-5-git-send-email-aleksandar.markovic@rt-rk.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 25 Oct 2017 12:45:59 +0000
+Subject: [RFC 11/14] bootsplash: Redraw fully on console_unblank
+Message-Id: <20171025124602.28292-12-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1508510055-6167-1-git-send-email-aleksandar.markovic@rt-rk.com>
-In-Reply-To: <1508510055-6167-1-git-send-email-aleksandar.markovic@rt-rk.com>
+References: <20171025124602.28292-1-mstaudt@suse.de>
+In-Reply-To: <20171025124602.28292-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-mips@linux-mips.org
-Cc: Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Douglas Leung <douglas.leung@mips.com>, James Hogan <james.hogan@mips.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Burton <paul.burton@mips.com>, Petar Jovanovic <petar.jovanovic@mips.com>, Raghu Gandham <raghu.gandham@mips.com>
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
 
-From: Aleksandar Markovic <aleksandar.markovic@mips.com>
+After exiting a KD_GRAPHICS program and falling back to the text
+console, a previously enabled splash needs to be fully redrawn.
 
-Add ability to the Goldfish FB driver to be recognized by OS via DT.
+Without this patch, the following fails:
 
-Signed-off-by: Miodrag Dinic <miodrag.dinic@mips.com>
-Signed-off-by: Goran Ferenc <goran.ferenc@mips.com>
-Signed-off-by: Aleksandar Markovic <aleksandar.markovic@mips.com>
+1. Switch to a text console
+2. Enable splash
+3. Start X (or any other KD_GRAPHICS program)
+4. Exit X
+5. Splash is not seen, apart from animations
+
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+Reviewed-by: Oliver Neukum <oneukum@suse.com>
 ---
- drivers/video/fbdev/goldfishfb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/tty/vt/vt.c                   |  2 ++
+ drivers/video/fbdev/core/bootsplash.c | 15 +++++++++------
+ include/linux/bootsplash.h            |  4 ++++
+ 3 files changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 7f6c9e6..3b70044 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	return 0;
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 2ebaba16f785..416735ab6dc1 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -102,6 +102,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/kdb.h>
+ #include <linux/ctype.h>
++#include <linux/bootsplash.h>
+ 
+ #define MAX_NR_CON_DRIVER 16
+ 
+@@ -3903,6 +3904,7 @@ void do_unblank_screen(int leaving_gfx)
+ 	}
+ 
+ 	console_blanked = 0;
++	bootsplash_mark_dirty();
+ 	if (vc->vc_sw->con_blank(vc, 0, leaving_gfx) || vt_force_oops_output(vc))
+ 		/* Low-level driver cannot restore -> do it ourselves */
+ 		update_screen(vc);
+diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
+index e44376d89750..df2757d6e422 100644
+--- a/drivers/video/fbdev/core/bootsplash.c
++++ b/drivers/video/fbdev/core/bootsplash.c
+@@ -186,6 +186,13 @@ bool bootsplash_would_render_now(void)
+ 		&& bootsplash_is_enabled();
  }
  
-+static const struct of_device_id goldfish_fb_of_match[] = {
-+	{ .compatible = "google,goldfish-fb", },
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
++void bootsplash_mark_dirty(void)
++{
++	mutex_lock(&splash_global.data_lock);
++	splash_global.splash_fb = NULL;
++	mutex_unlock(&splash_global.data_lock);
++}
++
+ bool bootsplash_is_enabled(void)
+ {
+ 	unsigned long flags;
+@@ -242,9 +249,7 @@ void bootsplash_enable(void)
  
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
- 	.driver = {
--		.name = "goldfish_fb"
-+		.name = "goldfish_fb",
-+		.of_match_table = goldfish_fb_of_match,
+ 	if (!was_enabled) {
+ 		/* Force a full redraw when the splash is re-activated */
+-		mutex_lock(&splash_global.data_lock);
+-		splash_global.splash_fb = NULL;
+-		mutex_unlock(&splash_global.data_lock);
++		bootsplash_mark_dirty();
+ 
+ 		queue_work(splash_global.wq, &splash_work_redraw_vc);
  	}
- };
+@@ -329,9 +334,7 @@ static int splash_resume(struct device *device)
+ 	/* Force full redraw on resume since we've probably lost the
+ 	 * framebuffer's contents meanwhile
+ 	 */
+-	mutex_lock(&splash_global.data_lock);
+-	splash_global.splash_fb = NULL;
+-	mutex_unlock(&splash_global.data_lock);
++	bootsplash_mark_dirty();
  
+ 	if (bootsplash_would_render_now())
+ 		queue_work(splash_global.wq, &splash_work_redraw_vc);
+diff --git a/include/linux/bootsplash.h b/include/linux/bootsplash.h
+index 101e70818363..a7f36043e6f6 100644
+--- a/include/linux/bootsplash.h
++++ b/include/linux/bootsplash.h
+@@ -21,6 +21,8 @@ extern void bootsplash_render_full(struct fb_info *info);
+ 
+ extern bool bootsplash_would_render_now(void);
+ 
++extern void bootsplash_mark_dirty(void);
++
+ extern bool bootsplash_is_enabled(void);
+ extern void bootsplash_disable(void);
+ extern void bootsplash_enable(void);
+@@ -33,6 +35,8 @@ extern void bootsplash_init(void);
+ 
+ #define bootsplash_would_render_now() (false)
+ 
++#define bootsplash_mark_dirty()
++
+ #define bootsplash_is_enabled() (false)
+ #define bootsplash_disable()
+ #define bootsplash_enable()
 -- 
-2.7.4
+2.12.3
 

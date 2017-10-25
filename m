@@ -1,57 +1,201 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 30 Oct 2017 10:33:34 +0000
-Subject: Re: [PATCH 2/2] backlight: pwm_bl: add configurable delay between re-enabling PWM and switching back
-Message-Id: <20171030103334.75ii247j6owrnrdb@dell>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 25 Oct 2017 12:46:01 +0000
+Subject: [RFC 13/14] bootsplash: Add main documentation
+Message-Id: <20171025124602.28292-14-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1509022186-19636-1-git-send-email-LW@KARO-electronics.de>
- <1509022186-19636-4-git-send-email-LW@KARO-electronics.de>
- <20171027140307.x7mtgvy5py7l5nqf@rob-hp-laptop>
-In-Reply-To: <20171027140307.x7mtgvy5py7l5nqf@rob-hp-laptop>
+References: <20171025124602.28292-1-mstaudt@suse.de>
+In-Reply-To: <20171025124602.28292-1-mstaudt@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Rob Herring <robh@kernel.org>
-Cc: Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@KARO-electronics.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Thierry Reding <thierry.reding@gmail.com>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-leds@vger.kernel.org, linux-pwm@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
 
-On Fri, 27 Oct 2017, Rob Herring wrote:
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+Reviewed-by: Oliver Neukum <oneukum@suse.com>
+---
+ Documentation/fb/bootsplash.txt | 169 ++++++++++++++++++++++++++++++++++++=
+++++
+ 1 file changed, 169 insertions(+)
+ create mode 100644 Documentation/fb/bootsplash.txt
 
-> On Thu, Oct 26, 2017 at 02:49:46PM +0200, Lothar Waßmann wrote:
-> > When switching the backlight on, the LCD may need some time to adjust
-> > to the configured PWM duty cycle. Add a configurable delay between
-> > configuring the PWM and enabling the backlight regulator to account
-> > for this.
-> > 
-> > Signed-off-by: Lothar Waßmann <LW@KARO-electronics.de>
-> > ---
-> >  .../bindings/leds/backlight/pwm-backlight.txt      |  4 ++++
-> >  drivers/video/backlight/pwm_bl.c                   | 22 +++++++++++++++++++---
-> >  2 files changed, 23 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> > index 764db86..95594c3 100644
-> > --- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> > +++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> > @@ -17,6 +17,10 @@ Optional properties:
-> >                 "pwms" property (see PWM binding[0])
-> >    - enable-gpios: contains a single GPIO specifier for the GPIO which enables
-> >                    and disables the backlight (see GPIO binding[1])
-> > +  - turn-on-delay-ms: delay in milliseconds between configuring the PWM
-> > +		  and switching PWM on. This may be required to eliminate
-> > +		  flicker when switching the PWM on after it has been
-> > +		  disabled.
-> 
-> The subject talks about turning on the backlight regulator, but this 
-> only talks about the PWM.
+diff --git a/Documentation/fb/bootsplash.txt b/Documentation/fb/bootsplash.=
+txt
+new file mode 100644
+index 000000000000..e2b7c956e6c2
+--- /dev/null
++++ b/Documentation/fb/bootsplash.txt
+@@ -0,0 +1,169 @@
++What is the Linux bootsplash?
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++The Linux bootsplash is a graphical replacement for the 'quiet' boot optio=
+n,
++typically showing a logo and a spinner animation as the system starts.
++
++Currently, it is a part of the Framebuffer Console support, and can be fou=
+nd
++as CONFIG_BOOTSPLASH in the kernel configuration. This means that as long =
+as
++it is enabled, it hijacks fbcon's output and draws a splash screen instead.
++
++
++
++Motivation
++=3D=3D=3D=3D=3D+
++- The 'quiet' boot option only suppresses most messages during boot, but
++  errors are still shown.
++
++- A user space implementation can only show a logo once user space has been
++  initialized far enough to allow this. A kernel splash can display a spla=
+sh
++  immediately as soon as fbcon can be displayed.
++
++- Implementing a splash screen in user space (e.g. Plymouth) is problematic
++  due to resource conflicts.
++
++  For example, if Plymouth is holding /dev/fb0 (provided via vesafb/efifb)
++  open, then most DRM drivers can't replace it because the address space is
++  still busy - thus leading to a VRAM reservation error.
++
++  See: https://bugzilla.opensuse.org/show_bug.cgi?id=980750
++
++
++
++Hooks - how the bootsplash is integrated
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
++drivers/video/fbdev/core/fbcon.c
++
++  fbcon_init() calls bootsplash_init(), which loads the default bootsplash
++  file or the one specified on the kernel command line.
++
++  fbcon_switch() draws the bootsplash when it's active, and is also one of
++  the callers of set_blitting_type().
++
++  set_blitting_type() calls fbcon_set_dummyops() when the bootsplash is
++  active, overriding the text rendering functions.
++
++  fbcon_cursor() will call bootsplash_disable() when an oops is being
++  printed in order to make a kernel panic visible.
++
++drivers/video/fbdev/core/dummyblit.c
++
++  This contains the dummy text rendering functions used to suppress text
++  output while the bootsplash is shown.
++
++drivers/tty/vt/keyboard.c
++
++  kbd_keycode() can call bootsplash_disable() when the user presses ESC
++  or F1-F12 (changing VT). This is to provide a built-in way of disabling
++  the splash manually at any time.
++
++drivers/tty/vt/vt_ioctl.c
++
++  vt_ioctl() will call bootsplash_disable() when a graphical application
++  such as the X server is started (i.e. when setting the VT to KD_GRAPHICS=
+).
++
++
++
++Command line arguments
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
++bool	bootsplash.enable	Whether to show a splash screen during boot
++				(default: off)
++
++string	bootsplash.filename	Which file in the initrd to load
++				(default: /bootsplash)
++
++
++
++sysfs run-time configuration
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
++bool	/sys/devices/platform/bootsplash.0/enabled	Enable/disable
++
++trigger	/sys/devices/platform/bootsplash.0/drop_splash	Unload splash data
++							and free memory
++
++
++Kconfig
++=3D=3D=3D=3D
++
++bool	BOOTSPLASH		Whether to compile in bootsplash support
++				(depends on fbcon compiled in, i.e.
++				 FRAMEBUFFER_CONSOLE=3Dy)
++
++string	BOOTSPLASH_FILE		Which file in the initrd to load
++				(default: /bootsplash)
++
++
++
++Bootsplash file format
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
++A file specified in the kernel configuration as CONFIG_BOOTSPLASH_FILE or
++specified on the command line as bootsplash.filename will be loaded and
++displayed as soon as fbcon is initialized.
++
++
++There are 3 main blocks in each file:
++
++  - one File header
++  -   n Picture headers
++  -   m (Blob header + payload) blocks
++
++
++The structures are defined in drivers/video/fbdev/core/bootsplash_file.h
++and represent these blocks:
++
++  - struct splash_file_header
++
++    Represents the file header, with splash-wide information including:
++     -> The magic string "Linux bootsplash"
++     -> The file format version (for incompatible updates, hopefully never)
++     -> The background color
++     -> Number of picture and blob blocks
++     -> Animation speed (we only allow one speed for all animations)
++
++    The file header is followed by the first picture header.
++
++
++  - struct splash_picture_header
++
++    Represents an object (picture) drawn on screen, including its immutable
++    properties:
++     -> Width, height
++     -> Positioning relative to screen corners or in the center
++     -> Animation, if any
++     -> Animation type
++     -> Number of blobs
++
++    The picture header is followed by another picture header, up until n
++    picture headers (as defined in the file header) have been read. Then,
++    the (blob header, payload) pairs follow.
++
++
++  - struct splash_blob_header
++    (followed by payload)
++
++    Represents one raw data stream. So far, only picture data is defined.
++
++    The blob header is followed by a payload, then padding to n*16 bytes,
++    then (if further blobs are defined in the file header) a further blob
++    header.
++
++
++A note about alignment:
++
++The bootsplash file is designed to be loaded into memory as-is (plus
++performing an endianness conversion before further processing).
++
++All structures are a multiple of 16 bytes long, all elements therein are
++aligned to multiples of their length, and the payloads are always padded
++up to multiples of 16 bytes. This is to allow aligned accesses in all
++cases while still simply mapping the structures over an in-memory copy of
++the bootsplash file.
++
++
++Please see drivers/video/fbdev/core/bootsplash_file.h for further details =
+and
++possible values in the file.
+--=20
+2.12.3
 
-From my understanding "switching PWM on" = enabling the regulator.
-
-I don't see any disparity here.  Or am I missing something?
-
-> >  [0]: Documentation/devicetree/bindings/pwm/pwm.txt
-> >  [1]: Documentation/devicetree/bindings/gpio/gpio.txt
-
--- 
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog

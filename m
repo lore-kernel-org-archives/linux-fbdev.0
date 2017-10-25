@@ -1,77 +1,330 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Sat, 28 Oct 2017 17:35:29 +0000
-Subject: Re: [RFC PATCH] clk: move of_clk_get_parent_count() declaration to <linux/__clk.h>
-Message-Id: <CAK7LNATuSGfQwL1sP9Z9qtkWgnO5agfPbYjs5m6EkOvexTzzZA@mail.gmail.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 25 Oct 2017 12:45:58 +0000
+Subject: [RFC 10/14] bootsplash: Add animation support
+Message-Id: <20171025124602.28292-11-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1507166751-2012-1-git-send-email-yamada.masahiro@socionext.com> <20171012231709.GH18706@codeaurora.org>
-In-Reply-To: <20171012231709.GH18706@codeaurora.org>
+References: <20171025124602.28292-1-mstaudt@suse.de>
+In-Reply-To: <20171025124602.28292-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stephen Boyd <sboyd@codeaurora.org>
-Cc: linux-clk <linux-clk@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-fbdev@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, Russell King <linux@armlinux.org.uk>, Shawn Guo <shawnguo@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Each 'picture' in the splash file can consist of multiple 'blobs'.
 
+If animation is enabled, these blobs become the frames of an animation,
+in the order in which they are stored in the file.
 
-2017-10-13 8:17 GMT+09:00 Stephen Boyd <sboyd@codeaurora.org>:
-> On 10/05, Masahiro Yamada wrote:
->> The clock consumer, drivers/video/fbdev/simplefb.c, includes
->> <linux/clk-provider.h> just for calling of_clk_get_parent_count().
->> This is ugly.
->>
->> Looking at simplefb_clocks_get(), of_clk_get_parent_count() seems
->> useful for clock consumers as well as for clock providers.
->>
->> Unfortunately, we do not have a good home for declarations shared
->> between consumers and providers.
->>
->> Create a new header <linux/__clk.h>, and move it over to it.  This
->> header must be included via <linux/clk.h> or <linux/clk-provider.h>
->> (this is why it is prefixed with double-underscore).  Add #error
->> so the build terminates if it is included directly.
->>
->> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
->> ---
->
-> How about we add a get_all_the_clks_for_the_device() sort of API
-> that uses the bulk clk code but also allocates the array by
-> reading the number of clks from DT? Please think of a better name
-> of course. We can figure out how to handle non-DT platforms if we
-> need to. With clkdev we could probably handle it with some sort
-> of lookup table search given a device name. Don't add that part
-> until we have a user though. I assume simplefb is all DT
-> platforms?
+Note: There is only one global timer, so all animations happen at
+      the same frame rate. It doesn't really make sense to animate
+      more than one object at a time anyway.
 
-of_reset_control_array_get() is implemented like that.
+Furthermore, this patch introduces a check for reusing a framebuffer
+where the splash has recently been painted on - in this case, we only
+redraw the objects that are animated.
 
-It gets all the resets specified in DT, and automatically
-allocates the array of necessary number of pointers.
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+Reviewed-by: Oliver Neukum <oneukum@suse.com>
+---
+ drivers/video/fbdev/core/bootsplash.c          | 62 +++++++++++++++++++++++---
+ drivers/video/fbdev/core/bootsplash_file.h     | 31 ++++++++++++-
+ drivers/video/fbdev/core/bootsplash_internal.h |  5 ++-
+ drivers/video/fbdev/core/bootsplash_load.c     | 24 ++++++++++
+ drivers/video/fbdev/core/bootsplash_render.c   | 28 +++++++++++-
+ 5 files changed, 140 insertions(+), 10 deletions(-)
 
-clk-bulk and reset-array were implemented in a different way.
-
-
-
-> Either way, it looks like what we really want here is a way to
-> get every clk for a device and not look at the details.
-
-Yes.  This is helpful for generic drivers.
-
-
->  USB has a
-> similar case, which I think Shawn Guo/Dong Aisheng was trying to
-> add an OF based bulk clk_get() API called of_clk_bulk_get()
-> for[1]. If this get all clks API works there too then we should
-> use it. If it can be non-DT specific, even better.
->
-> [1] http://lkml.kernel.org/r/1506415441-4435-1-git-send-email-aisheng.dong@nxp.com
-
-OK, we can implement it based on Shawn/Dong's work.
-
-My concern is clk-bulk.c still needs to include #<linux/clk-provider.h>,
-but it is a bit odd since clk-bulk.c is a helper for clk consumers.
-
-
+diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
+index 3253506d26a7..e44376d89750 100644
+--- a/drivers/video/fbdev/core/bootsplash.c
++++ b/drivers/video/fbdev/core/bootsplash.c
+@@ -64,6 +64,17 @@ static void splash_callback_redraw_vc(struct work_struct *ignored)
+ static DECLARE_WORK(splash_work_redraw_vc, splash_callback_redraw_vc);
+ 
+ 
++static void splash_callback_animation(struct work_struct *ignored)
++{
++	if (bootsplash_would_render_now()) {
++		/* This will also re-schedule this delayed worker */
++		splash_callback_redraw_vc(ignored);
++	}
++}
++
++static DECLARE_DELAYED_WORK(splash_dwork_animation, splash_callback_animation);
++
++
+ 
+ 
+ /*
+@@ -117,17 +128,45 @@ static bool is_fb_compatible(struct fb_info *info)
+  */
+ void bootsplash_render_full(struct fb_info *info)
+ {
++	bool is_update = false;
++
+ 	mutex_lock(&splash_global.data_lock);
+ 
+-	if (!is_fb_compatible(info))
+-		goto out;
++	/* If we've painted on this FB recently, we don't have to do
++	 * the sanity checks and background drawing again.
++	 */
++	if (splash_global.splash_fb = info)
++		is_update = true;
++
++
++	if (!is_update) {
++		/* Check whether we actually support this FB. */
++		splash_global.splash_fb = NULL;
++
++		if (!is_fb_compatible(info))
++			goto out;
+ 
+-	bootsplash_do_render_background(info);
++		/* Draw the background only once */
++		bootsplash_do_render_background(info);
+ 
+-	bootsplash_do_render_pictures(info);
++		/* Mark this FB as last seen */
++		splash_global.splash_fb = info;
++	}
++
++
++	bootsplash_do_render_pictures(info, is_update);
+ 
+ 	bootsplash_do_render_flush(info);
+ 
++	bootsplash_do_step_animations();
++
++	/* Schedule update for animated splash screens */
++	if (splash_global.header->frame_ms > 0)
++		queue_delayed_work(splash_global.wq,
++				   &splash_dwork_animation,
++				   msecs_to_jiffies(
++					splash_global.header->frame_ms));
++
+ out:
+ 	mutex_unlock(&splash_global.data_lock);
+ }
+@@ -201,8 +240,14 @@ void bootsplash_enable(void)
+ 	spin_unlock_irqrestore(&splash_global.state_lock, flags);
+ 
+ 
+-	if (!was_enabled)
++	if (!was_enabled) {
++		/* Force a full redraw when the splash is re-activated */
++		mutex_lock(&splash_global.data_lock);
++		splash_global.splash_fb = NULL;
++		mutex_unlock(&splash_global.data_lock);
++
+ 		queue_work(splash_global.wq, &splash_work_redraw_vc);
++	}
+ }
+ 
+ 
+@@ -281,6 +326,13 @@ ATTRIBUTE_GROUPS(splash_dev);
+ 
+ static int splash_resume(struct device *device)
+ {
++	/* Force full redraw on resume since we've probably lost the
++	 * framebuffer's contents meanwhile
++	 */
++	mutex_lock(&splash_global.data_lock);
++	splash_global.splash_fb = NULL;
++	mutex_unlock(&splash_global.data_lock);
++
+ 	if (bootsplash_would_render_now())
+ 		queue_work(splash_global.wq, &splash_work_redraw_vc);
+ 
+diff --git a/drivers/video/fbdev/core/bootsplash_file.h b/drivers/video/fbdev/core/bootsplash_file.h
+index 59a084a05171..367d55888ab4 100644
+--- a/drivers/video/fbdev/core/bootsplash_file.h
++++ b/drivers/video/fbdev/core/bootsplash_file.h
+@@ -74,7 +74,14 @@ struct splash_file_header {
+ 	u16 num_blobs;
+ 	u8 num_pics;
+ 
+-	u8 padding[103];
++	/* Milliseconds to wait before painting the next frame in
++	 * an animation.
++	 * This is actually a minimum, as the system is allowed to
++	 * stall for longer between frames.
++	 */
++	u16 frame_ms;
++
++	u8 padding[101];
+ } __attribute__((__packed__));
+ 
+ 
+@@ -108,7 +115,22 @@ struct splash_pic_header {
+ 	 */
+ 	u8 corner_offset;
+ 
+-	u8 padding[9];
++
++	/* Animation type.
++	 *  0 - off
++	 *  1 - forward loop
++	 */
++	u8 anim_type;
++
++	/* Animation loop point.
++	 * Actual meaning depends on animation type:
++	 * Type 0 - Unused
++	 *      1 - Frame at which to restart the forward loop
++	 *          (allowing for "intro" frames)
++	 */
++	u8 anim_loop;
++
++	u8 padding[7];
+ } __attribute__((__packed__));
+ 
+ 
+@@ -137,6 +159,11 @@ struct splash_blob_header {
+  * Enums for on-disk types
+  */
+ 
++enum splash_anim_type {
++	SPLASH_ANIM_NONE = 0,
++	SPLASH_ANIM_LOOP_FORWARD = 1,
++};
++
+ enum splash_corner {
+ 	SPLASH_CORNER_CENTER = 0,
+ 	SPLASH_CORNER_TOP_LEFT = 1,
+diff --git a/drivers/video/fbdev/core/bootsplash_internal.h b/drivers/video/fbdev/core/bootsplash_internal.h
+index 791591d10d6b..ba63f3eb99ec 100644
+--- a/drivers/video/fbdev/core/bootsplash_internal.h
++++ b/drivers/video/fbdev/core/bootsplash_internal.h
+@@ -40,6 +40,8 @@ struct splash_pic_priv {
+ 
+ 	struct splash_blob_priv *blobs;
+ 	u16 blobs_loaded;
++
++	u16 anim_nextframe;
+ };
+ 
+ 
+@@ -98,8 +100,9 @@ extern struct splash_priv splash_global;
+  */
+ 
+ void bootsplash_do_render_background(struct fb_info *info);
+-void bootsplash_do_render_pictures(struct fb_info *info);
++void bootsplash_do_render_pictures(struct fb_info *info, bool is_update);
+ void bootsplash_do_render_flush(struct fb_info *info);
++void bootsplash_do_step_animations(void);
+ 
+ 
+ void bootsplash_free_locked(void);
+diff --git a/drivers/video/fbdev/core/bootsplash_load.c b/drivers/video/fbdev/core/bootsplash_load.c
+index 2f983a74664c..da171cc961a4 100644
+--- a/drivers/video/fbdev/core/bootsplash_load.c
++++ b/drivers/video/fbdev/core/bootsplash_load.c
+@@ -67,6 +67,7 @@ void bootsplash_free_locked(void)
+ 
+ int bootsplash_activate_buf(char *buf, long buflen)
+ {
++	bool have_anim = false;
+ 	unsigned int i;
+ 	char *walker;
+ 
+@@ -141,6 +142,13 @@ int bootsplash_activate_buf(char *buf, long buflen)
+ 			goto err;
+ 		}
+ 
++		if (ph->anim_type > SPLASH_ANIM_LOOP_FORWARD) {
++			pr_warn("Picture %u: Unsupported animation type %u.\n",
++				i, ph->anim_type);
++
++			ph->anim_type = SPLASH_ANIM_NONE;
++		}
++
+ 		pp->pic_header = ph;
+ 		pp->blobs = vzalloc(ph->num_blobs
+ 					* sizeof(struct splash_blob_priv));
+@@ -213,6 +221,7 @@ int bootsplash_activate_buf(char *buf, long buflen)
+ 	/* Walk over pictures and ensure all blob slots are filled */
+ 	for (i = 0; i < splash_global.header->num_pics; i++) {
+ 		struct splash_pic_priv *pp = &splash_global.pics[i];
++		struct splash_pic_header *ph = pp->pic_header;
+ 
+ 		if (pp->blobs_loaded != pp->pic_header->num_blobs) {
+ 			pr_err("Picture %u doesn't have all blob slots filled.\n",
+@@ -220,9 +229,24 @@ int bootsplash_activate_buf(char *buf, long buflen)
+ 
+ 			goto err;
+ 		}
++
++		if (ph->num_blobs < 2 || ph->anim_loop > pp->blobs_loaded)
++			/* Nothing to animate or loading error */
++			ph->anim_type = SPLASH_ANIM_NONE;
++		else if (ph->anim_type)
++			have_anim = true;
+ 	}
+ 
+ 
++	/* Disable animation timer if there is nothing to animate */
++	if (!have_anim)
++		splash_global.header->frame_ms = 0;
++
++	/* Enforce minimum delay between frames */
++	if (splash_global.header->frame_ms > 0
++	    && splash_global.header->frame_ms < 20)
++		splash_global.header->frame_ms = 20;
++
+ 	/* Force a full redraw when the splash is re-activated */
+ 	splash_global.splash_fb = NULL;
+ 
+diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
+index 444233583f6f..b3667a0f067b 100644
+--- a/drivers/video/fbdev/core/bootsplash_render.c
++++ b/drivers/video/fbdev/core/bootsplash_render.c
+@@ -151,7 +151,7 @@ void bootsplash_do_render_background(struct fb_info *info)
+ }
+ 
+ 
+-void bootsplash_do_render_pictures(struct fb_info *info)
++void bootsplash_do_render_pictures(struct fb_info *info, bool is_update)
+ {
+ 	unsigned int i;
+ 
+@@ -167,7 +167,11 @@ void bootsplash_do_render_pictures(struct fb_info *info)
+ 		if (pp->blobs_loaded < 1)
+ 			continue;
+ 
+-		bp = &pp->blobs[0];
++		/* Skip static pictures when refreshing animations */
++		if (ph->anim_type = SPLASH_ANIM_NONE && is_update)
++			continue;
++
++		bp = &pp->blobs[pp->anim_nextframe];
+ 
+ 		if (!bp || bp->blob_header->type != 0)
+ 			continue;
+@@ -274,3 +278,23 @@ void bootsplash_do_render_flush(struct fb_info *info)
+ 		info->fbops->fb_copyarea(info, &area);
+ 	}
+ }
++
++
++void bootsplash_do_step_animations(void)
++{
++	unsigned int i;
++
++	/* Step every animation once */
++	for (i = 0; i < splash_global.header->num_pics; i++) {
++		struct splash_pic_priv *pp = &splash_global.pics[i];
++
++		if (pp->blobs_loaded < 1)
++			continue;
++
++		if (pp->pic_header->anim_type = SPLASH_ANIM_LOOP_FORWARD) {
++			pp->anim_nextframe++;
++			if (pp->anim_nextframe >= pp->pic_header->num_blobs)
++				pp->anim_nextframe = pp->pic_header->anim_loop;
++		}
++	}
++}
 -- 
-Best Regards
-Masahiro Yamada
+2.12.3
+

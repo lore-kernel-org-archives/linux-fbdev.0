@@ -1,144 +1,112 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 23 Oct 2017 06:57:41 +0000
-Subject: Re: [PATCH v2 4/4] drm/fb-helper: Apply panel orientation connector prop to the primary plane
-Message-Id: <471a91f4-a4d0-f3a8-d10f-d0e995325dbb@redhat.com>
+From: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW@KARO-electronics.de>
+Date: Thu, 26 Oct 2017 12:49:46 +0000
+Subject: [PATCH 2/2] backlight: pwm_bl: add configurable delay between re-enabling PWM and switching backligh
+Message-Id: <1509022186-19636-4-git-send-email-LW@KARO-electronics.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171001153317.2343-1-hdegoede@redhat.com>
- <20171001153317.2343-5-hdegoede@redhat.com>
- <20171002081557.hfhecrmpvc4gxx25@phenom.ffwll.local>
-In-Reply-To: <20171002081557.hfhecrmpvc4gxx25@phenom.ffwll.local>
+References: <1509022186-19636-1-git-send-email-LW@KARO-electronics.de>
+In-Reply-To: <1509022186-19636-1-git-send-email-LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel@ffwll.ch>, Hans de Goede <j.w.r.degoede@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: =?UTF-8?q?Lothar=20Wa=C3=9Fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
 
-Hi,
+When switching the backlight on, the LCD may need some time to adjust
+to the configured PWM duty cycle. Add a configurable delay between
+configuring the PWM and enabling the backlight regulator to account
+for this.
 
-On 02-10-17 10:15, Daniel Vetter wrote:
-> On Sun, Oct 01, 2017 at 05:33:17PM +0200, Hans de Goede wrote:
->> Apply the "panel orientation" drm connector prop to the primary plane,
->> so that fbcon and fbdev using userspace programs display the right way
->> up.
->>
->> Fixes: https://bugs.freedesktop.org/show_bug.cgi?id=94894
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->> Changes in v2:
->> -New patch in v2 of this patch-set
->> ---
->>   drivers/gpu/drm/drm_fb_helper.c | 53 +++++++++++++++++++++++++++++++++=
-++++++--
->>   1 file changed, 51 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_he=
-lper.c
->> index 1b8f013ffa65..75c409430a26 100644
->> --- a/drivers/gpu/drm/drm_fb_helper.c
->> +++ b/drivers/gpu/drm/drm_fb_helper.c
->> @@ -41,6 +41,7 @@
->>   #include <drm/drm_atomic.h>
->>   #include <drm/drm_atomic_helper.h>
->>  =20
->> +#include "drm_crtc_internal.h"
->>   #include "drm_crtc_helper_internal.h"
->>  =20
->>   static bool drm_fbdev_emulation =3D true;
->> @@ -347,6 +348,53 @@ int drm_fb_helper_debug_leave(struct fb_info *info)
->>   }
->>   EXPORT_SYMBOL(drm_fb_helper_debug_leave);
->>  =20
->> +static int get_plane_rotation_from_panel_orientation(
->> +	struct drm_fb_helper *fb_helper, struct drm_plane *plane)
->> +{
->> +	int i, rotation =3D DRM_MODE_ROTATE_0;
->> +	struct drm_connector *conn;
->> +	uint64_t valid_mask =3D 0;
->> +
->> +	drm_fb_helper_for_each_connector(fb_helper, i) {
->> +		conn =3D fb_helper->connector_info[i]->connector;
->> +		if (conn->state->crtc && conn->state->crtc->primary =3D plane) {
->> +			switch (conn->display_info.panel_orientation) {
->> +			case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
->> +				rotation =3D DRM_MODE_ROTATE_180;
->> +				break;
->> +			case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
->> +				rotation =3D DRM_MODE_ROTATE_90;
->> +				break;
->> +			case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
->> +				rotation =3D DRM_MODE_ROTATE_270;
->> +				break;
->> +			}
->> +			break;
->> +		}
->> +	}
->> +
->> +	/*
->> +	 * Check the necessary rotation to compensate for the panel orientation
->> +	 * is supported.
->> +	 * Note currently we simply leave things as is when not supported, may=
-be
->> +	 * we shouls set a hint in fb_info to tell fbcon to rotate in this case
->> +	 * so that atleast the console ends up the right way. Maybe, but this:
->> +	 * a) Is not necessary for any known models with a non upright panel
->> +	 * b) Is tricky because fbcon rotation applies to all outputs rather
->> +	 *    then a single one
->> +	 */
->> +	if (!plane->rotation_property)
->> +		return DRM_MODE_ROTATE_0;
->> +
->> +	for (i =3D 0; i < plane->rotation_property->num_values; i++)
->> +		valid_mask |=3D (1ULL << plane->rotation_property->values[i]);
->> +
->> +	if (rotation & ~valid_mask)
->> +		return DRM_MODE_ROTATE_0;
->> +
->> +	return rotation;
->> +}
->> +
->>   static int restore_fbdev_mode_atomic(struct drm_fb_helper *fb_helper, =
-bool active)
->>   {
->>   	struct drm_device *dev =3D fb_helper->dev;
->> @@ -376,8 +424,9 @@ static int restore_fbdev_mode_atomic(struct drm_fb_h=
-elper *fb_helper, bool activ
->>   			goto out_state;
->>   		}
->>  =20
->> -		plane_state->rotation =3D DRM_MODE_ROTATE_0;
->> -
->> +		plane_state->rotation >> +			get_plane_rotation_from_panel_orientatio=
-n(fb_helper,
->> +								  plane);
->=20
-> This is the loop to reset all the planes to default values, feels a bit
-> awkward to change the rotation value in there. Also gives you that
-> unpretty loop to check you're on the right plane.
->=20
-> I think a cleaner way to do this would be:
-> - add a rotation member to struct drm_fb_helper_crtc
-> - set that when setting up the configuration drm_setup_crtcs
-> - look up crtc->primary plane_state and set it int the loop below this one
->    here (which is the one that actually sets the mode)
+Signed-off-by: Lothar Waßmann <LW@KARO-electronics.de>
+---
+ .../bindings/leds/backlight/pwm-backlight.txt      |  4 ++++
+ drivers/video/backlight/pwm_bl.c                   | 22 +++++++++++++++++++---
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
-Ah yes much better, I've done this for v3. Thank you for the hints.
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 764db86..95594c3 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -17,6 +17,10 @@ Optional properties:
+                "pwms" property (see PWM binding[0])
+   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+                   and disables the backlight (see GPIO binding[1])
++  - turn-on-delay-ms: delay in milliseconds between configuring the PWM
++		  and switching PWM on. This may be required to eliminate
++		  flicker when switching the PWM on after it has been
++		  disabled.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 921f322..9578f65 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -23,6 +23,7 @@
+ #include <linux/pwm_backlight.h>
+ #include <linux/regulator/consumer.h>
+ #include <linux/slab.h>
++#include <linux/delay.h>
+ 
+ struct pwm_bl_data {
+ 	struct pwm_device	*pwm;
+@@ -35,6 +36,7 @@ struct pwm_bl_data {
+ 	struct gpio_desc	*enable_gpio;
+ 	unsigned int		scale;
+ 	bool			legacy;
++	int			turn_on_delay_ms;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -52,6 +54,17 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 
+ 	pwm_enable(pb->pwm);
+ 
++	if (pb->turn_on_delay_ms > 0) {
++		dev_dbg(pb->dev, "Sleeping %u..%uµs\n",
++			pb->turn_on_delay_ms * 1000,
++			pb->turn_on_delay_ms * 1100);
++		if (pb->turn_on_delay_ms > 20)
++			msleep(pb->turn_on_delay_ms);
++		else
++			usleep_range(pb->turn_on_delay_ms * 1000,
++			     pb->turn_on_delay_ms * 1100);
++	}
++
+ 	err = regulator_enable(pb->power_supply);
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+@@ -108,8 +121,9 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		duty_cycle = compute_duty_cycle(pb, brightness);
+ 		pwm_config(pb->pwm, duty_cycle, pb->period);
+ 		pwm_backlight_power_on(pb, brightness);
+-	} else
++	} else {
+ 		pwm_backlight_power_off(pb);
++	}
+ 
+ 	if (pb->notify_after)
+ 		pb->notify_after(pb->dev, brightness);
+@@ -264,9 +278,9 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 				pb->scale = data->levels[i];
+ 
+ 		pb->levels = data->levels;
+-	} else
++	} else {
+ 		pb->scale = data->max_brightness;
+-
++	}
+ 	pb->notify = data->notify;
+ 	pb->notify_after = data->notify_after;
+ 	pb->check_fb = data->check_fb;
+@@ -329,6 +343,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		goto err_alloc;
+ 	}
+ 
++	of_property_read_u32(node, "turn-on-delay-ms", &pb->turn_on_delay_ms);
++
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+ 
+ 	/*
+-- 
+2.1.4
 
-Regards,
-
-Hans
-
-
-
->=20
-> Cheers, Daniel
->>   		plane->old_fb =3D plane->fb;
->>   		plane_mask |=3D 1 << drm_plane_index(plane);
->>  =20
->> --=20
->> 2.14.2
->>
->> _______________________________________________
->> dri-devel mailing list
->> dri-devel@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/dri-devel
->=20

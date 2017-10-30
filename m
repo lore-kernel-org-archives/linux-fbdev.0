@@ -1,30 +1,23 @@
 From: Timo Ketola <timo@exertus.fi>
-Date: Mon, 30 Oct 2017 08:11:51 +0000
-Subject: Backlight confusion
-Message-Id: <81af4f35-15ff-91e1-828c-aee716dfdc5c@exertus.fi>
+Date: Mon, 30 Oct 2017 08:17:59 +0000
+Subject: Re: Backlight confusion
+Message-Id: <da5604a4-7f86-657b-fe88-7436f70a1c2f@exertus.fi>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <81af4f35-15ff-91e1-828c-aee716dfdc5c@exertus.fi>
+In-Reply-To: <81af4f35-15ff-91e1-828c-aee716dfdc5c@exertus.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Hi,
+So sorry:
 
-I'm confused.
+On 30.10.2017 10:11, Timo Ketola wrote:
+> then backlight driver had to know how many backlights there are
 
-There is a commit 8c16f3303c34 in linux-stable. Its idea is to reduce
-calls to low level backlight drivers. But what happens now, at least in
-my case, is that on first blank event after boot bd->fb_bl_on[node] is
-false, backlight_update_status is not called and backlight is left on.
-As I understand it all FBs must change their state at least once before
-backlight driver is completely synced with framebuffers.
+should have been of course:
 
-I don't understand how is this supposed to work. I could initialize
-fb_bl_on and use_count for the initial state where FBs are unblanked but
-then backlight driver had to know how many backlights there are. I have
-not found any hints how other drivers might solve this.
-
-Could anybody enlighten me in my confusion?
+then backlight driver had to know how many *framebuffers* there are
 
 --
 

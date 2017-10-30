@@ -1,43 +1,51 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 17 Oct 2017 13:07:33 +0000
-Subject: Re: [PATCH] video: fbdev: pxa3xx_gcu: Use setup_timer and mod_timer
-Message-Id: <2142686.yESyXOL10f@amdc3058>
+From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
+Date: Mon, 30 Oct 2017 11:56:35 +0000
+Subject: [PATCH v6 4/5] video: goldfishfb: Add support for device tree bindings
+Message-Id: <1509364642-21771-5-git-send-email-aleksandar.markovic@rt-rk.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170928201649epcas2p396ef5c6a3bca9eee120f9800c3a22b43@epcas2p3.samsung.com>
-        <1506629791-11695-1-git-send-email-himanshujha199640@gmail.com>
-In-Reply-To: <1506629791-11695-1-git-send-email-himanshujha199640@gmail.com>
+References: <1509364642-21771-1-git-send-email-aleksandar.markovic@rt-rk.com>
+In-Reply-To: <1509364642-21771-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Himanshu Jha <himanshujha199640@gmail.com>
-Cc: gustavo@embeddedor.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-mips@linux-mips.org
+Cc: Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Douglas Leung <douglas.leung@mips.com>, James Hogan <james.hogan@mips.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Miodrag Dinic <miodrag.dinic@imgtec.com>, Paul Burton <paul.burton@mips.com>, Petar Jovanovic <petar.jovanovic@mips.com>, Raghu Gandham <raghu.gandham@mips.com>
 
+From: Aleksandar Markovic <aleksandar.markovic@mips.com>
 
-On Friday, September 29, 2017 01:46:31 AM Himanshu Jha wrote:
-> Use setup_timer and mod_timer API instead of structure assignments.
-> 
-> This is done using Coccinelle and semantic patch used
-> for this as follows:
-> 
-> @@
-> expression x,y,z,a,b;
-> @@
-> 
-> -init_timer (&x);
-> +setup_timer (&x, y, z);
-> +mod_timer (&a, b);
-> -x.function = y;
-> -x.data = z;
-> -x.expires = b;
-> -add_timer(&a);
-> 
-> Signed-off-by: Himanshu Jha <himanshujha199640@gmail.com>
+Add ability to the Goldfish FB driver to be recognized by OS via DT.
 
-Patch queued for 4.15, thanks.
+Signed-off-by: Miodrag Dinic <miodrag.dinic@mips.com>
+Signed-off-by: Goran Ferenc <goran.ferenc@mips.com>
+Signed-off-by: Aleksandar Markovic <aleksandar.markovic@mips.com>
+---
+ drivers/video/fbdev/goldfishfb.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 7f6c9e6..3b70044 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id goldfish_fb_of_match[] = {
++	{ .compatible = "google,goldfish-fb", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+ 
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+ 	.driver = {
+-		.name = "goldfish_fb"
++		.name = "goldfish_fb",
++		.of_match_table = goldfish_fb_of_match,
+ 	}
+ };
+ 
+-- 
+2.7.4
 

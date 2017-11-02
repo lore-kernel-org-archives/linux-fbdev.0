@@ -1,48 +1,51 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 28 Nov 2017 16:02:37 +0000
-Subject: Re: [PATCH v3 3/4] DTS: GTA04: fix panel compatibility string
-Message-Id: <20171128160237.GC28152@atomide.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Thu, 02 Nov 2017 11:02:16 +0000
+Subject: [PATCH] video: udlfb: Fix read EDID timeout
+Message-Id: <20171102110216.fw4gqa6zkhsofl3o@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1511884135.git.hns@goldelico.com>
- <5f68789942fb8063ba5a98f5dd7989a05f94c0d6.1511884135.git.hns@goldelico.com>
-In-Reply-To: <5f68789942fb8063ba5a98f5dd7989a05f94c0d6.1511884135.git.hns@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
+To: linux-fbdev@vger.kernel.org
 
-* H. Nikolaus Schaller <hns@goldelico.com> [171128 15:52]:
-> Official vendor string is now "tpo" and not "toppoly".
-> 
-> Requires patch "omapdrm: panel: fix compatible vendor string for td028ttec1"
+While usb_control_msg function expects timeout in miliseconds, a value
+of HZ is used. Replace it with USB_CTRL_GET_TIMEOUT and also fix error
+message which looks like:
+udlfb: Read EDID byte 78 failed err ffffff92
+as error is either negative errno or number of bytes transferred use %d
+format specifier.
 
-This is not a fix then, this is a clean up as you change the compatible
-earlier. Please resend this separately once the driver changes have
-been merged.
+Retuned EDID is in second byte, so return error when less than two bytes
+are received.
 
-Regards,
+Fixes: 18dffdf8913a ("staging: udlfb: enhance EDID and mode handling support")
 
-Tony
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+---
+ drivers/video/fbdev/udlfb.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-> Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
-> ---
->  arch/arm/boot/dts/omap3-gta04.dtsi | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-> index 4504908c23fe..ec27ed67a22a 100644
-> --- a/arch/arm/boot/dts/omap3-gta04.dtsi
-> +++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-> @@ -86,7 +86,7 @@
->  
->  		/* lcd panel */
->  		lcd: td028ttec1@0 {
-> -			compatible = "toppoly,td028ttec1";
-> +			compatible = "tpo,td028ttec1";
->  			reg = <0>;
->  			spi-max-frequency = <100000>;
->  			spi-cpol;
-> -- 
-> 2.12.2
-> 
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index ef08a104fb42..d44f14242016 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -769,11 +769,11 @@ static int dlfb_get_edid(struct dlfb_data *dev, char *edid, int len)
+ 
+ 	for (i = 0; i < len; i++) {
+ 		ret = usb_control_msg(dev->udev,
+-				    usb_rcvctrlpipe(dev->udev, 0), (0x02),
+-				    (0x80 | (0x02 << 5)), i << 8, 0xA1, rbuf, 2,
+-				    HZ);
+-		if (ret < 1) {
+-			pr_err("Read EDID byte %d failed err %x\n", i, ret);
++				      usb_rcvctrlpipe(dev->udev, 0), 0x02,
++				      (0x80 | (0x02 << 5)), i << 8, 0xA1,
++				      rbuf, 2, USB_CTRL_GET_TIMEOUT);
++		if (ret < 2) {
++			pr_err("Read EDID byte %d failed: %d\n", i, ret);
+ 			i--;
+ 			break;
+ 		}
+-- 
+2.11.0
+

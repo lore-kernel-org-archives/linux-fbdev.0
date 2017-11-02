@@ -1,74 +1,51 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 07 Nov 2017 14:13:06 +0000
-Subject: [PATCH 2/2] fbdev: radeon: stop use ktime_get() for HZ calibration
-Message-Id: <20171107141319.3390036-2-arnd@arndb.de>
+From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
+Date: Thu, 02 Nov 2017 16:21:23 +0000
+Subject: [PATCH v7 4/5] video: goldfishfb: Add support for device tree bindings
+Message-Id: <1509639716-4787-5-git-send-email-aleksandar.markovic@rt-rk.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171107141319.3390036-1-arnd@arndb.de>
-In-Reply-To: <20171107141319.3390036-1-arnd@arndb.de>
+References: <1509639716-4787-1-git-send-email-aleksandar.markovic@rt-rk.com>
+In-Reply-To: <1509639716-4787-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Colin Ian King <colin.king@canonical.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+To: linux-mips@linux-mips.org
+Cc: Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Douglas Leung <douglas.leung@mips.com>, James Hogan <james.hogan@mips.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Miodrag Dinic <miodrag.dinic@imgtec.com>, Paul Burton <paul.burton@mips.com>, Petar Jovanovic <petar.jovanovic@mips.com>, Raghu Gandham <raghu.gandham@mips.com>
 
-do_gettimeofday() is deprecated and a bit clumsy. This changes
-radeon_probe_pll_params() over to using ktime_get() with monotonic
-times. There is no need to check for negative values any more
-since the monotonic clocksource cannot go backwards, but I'm
-adding a check for zero-division in case of a bad clocksource.
+From: Aleksandar Markovic <aleksandar.markovic@mips.com>
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Add ability to the Goldfish FB driver to be recognized by OS via DT.
+
+Signed-off-by: Miodrag Dinic <miodrag.dinic@mips.com>
+Signed-off-by: Goran Ferenc <goran.ferenc@mips.com>
+Signed-off-by: Aleksandar Markovic <aleksandar.markovic@mips.com>
 ---
- drivers/video/fbdev/aty/radeon_base.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/goldfishfb.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 8ad1643e7d1c..8b7048fbf6dc 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -583,8 +583,8 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
- 	int hTotal, vTotal, num, denom, m, n;
- 	unsigned long long hz, vclk;
- 	long xtal;
--	struct timeval start_tv, stop_tv;
--	long total_secs, total_usecs;
-+	ktime_t start_time, stop_time;
-+	u64 total_usecs;
- 	int i;
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 7f6c9e6..3b70044 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
  
- 	/* Ugh, we cut interrupts, bad bad bad, but we want some precision
-@@ -600,7 +600,7 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
- 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) = 0)
- 			break;
++static const struct of_device_id goldfish_fb_of_match[] = {
++	{ .compatible = "google,goldfish-fb", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
  
--	do_gettimeofday(&start_tv);
-+	start_time = ktime_get();
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+ 	.driver = {
+-		.name = "goldfish_fb"
++		.name = "goldfish_fb",
++		.of_match_table = goldfish_fb_of_match,
+ 	}
+ };
  
- 	for(i=0; i<1000000; i++)
- 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) != 0)
-@@ -610,18 +610,14 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
- 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) = 0)
- 			break;
- 	
--	do_gettimeofday(&stop_tv);
-+	stop_time = ktime_get();
- 	
- 	local_irq_enable();
- 
--	total_secs = stop_tv.tv_sec - start_tv.tv_sec;
--	if (total_secs > 10)
-+	total_usecs = ktime_us_delta(stop_time, start_time);
-+	if (total_usecs >= 10 * USEC_PER_SEC || total_usecs = 0)
- 		return -1;
--	total_usecs = stop_tv.tv_usec - start_tv.tv_usec;
--	total_usecs += total_secs * 1000000;
--	if (total_usecs < 0)
--		total_usecs = -total_usecs;
--	hz = 1000000/total_usecs;
-+	hz = USEC_PER_SEC/(u32)total_usecs;
-  
- 	hTotal = ((INREG(CRTC_H_TOTAL_DISP) & 0x1ff) + 1) * 8;
- 	vTotal = ((INREG(CRTC_V_TOTAL_DISP) & 0x3ff) + 1);
 -- 
-2.9.0
+2.7.4
 

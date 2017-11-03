@@ -1,56 +1,51 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 10 Nov 2017 15:31:38 +0000
-Subject: Re: [PATCH] video: fbdev: pxa3xx_gcu: Convert timers to use timer_setup()
-Message-Id: <1873548.3BWMf1Kard@amdc3058>
+From: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
+Date: Fri, 03 Nov 2017 17:21:37 +0000
+Subject: [PATCH v8 4/5] video: goldfishfb: Add support for device tree bindings
+Message-Id: <1509729730-26621-5-git-send-email-aleksandar.markovic@rt-rk.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171109184844epcas3p2cce92ea7c58b3a517914b069013a08d0@epcas3p2.samsung.com>
- <20171109184840.GA115388@beast>
-In-Reply-To: <20171109184840.GA115388@beast>
+References: <1509729730-26621-1-git-send-email-aleksandar.markovic@rt-rk.com>
+In-Reply-To: <1509729730-26621-1-git-send-email-aleksandar.markovic@rt-rk.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Kees Cook <keescook@chromium.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Himanshu Jha <himanshujha199640@gmail.com>, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-mips@linux-mips.org
+Cc: Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Douglas Leung <douglas.leung@mips.com>, James Hogan <james.hogan@mips.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Miodrag Dinic <miodrag.dinic@imgtec.com>, Paul Burton <paul.burton@mips.com>, Petar Jovanovic <petar.jovanovic@mips.com>, Raghu Gandham <raghu.gandham@mips.com>
 
-On Thursday, November 09, 2017 10:48:40 AM Kees Cook wrote:
-> In preparation for unconditionally passing the struct timer_list pointer to
-> all timer callbacks, switch to using the new timer_setup() and from_timer()
-> to pass the timer pointer explicitly.
-> 
-> This also fixes the use of the "priv" variable in QERROR(), since it was
-> pointing to struct timer_list, not struct pxa3xx_gcu_priv.
-> 
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-> Cc: Himanshu Jha <himanshujha199640@gmail.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Kees Cook <keescook@chromium.org>
-> ---
-> If you can take this for v4.15, please do. Otherwise, I can carry it in the
-> timers tree in late rc1. Thanks!
+From: Aleksandar Markovic <aleksandar.markovic@mips.com>
 
-Thanks, I queued this for v4.15 with a trivial fix for:
+Add ability to the Goldfish FB driver to be recognized by OS via DT.
 
->  #else
-> -static inline void pxa3xx_gcu_init_debug_timer(void) {}
-> +static inline void pxa3xx_gcu_init_debug_timer(struct pxa3xx_gcu_priv *) {}
->  #endif
+Signed-off-by: Miodrag Dinic <miodrag.dinic@mips.com>
+Signed-off-by: Goran Ferenc <goran.ferenc@mips.com>
+Signed-off-by: Aleksandar Markovic <aleksandar.markovic@mips.com>
+---
+ drivers/video/fbdev/goldfishfb.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-which caused:
-
-drivers/video/fbdev/pxa3xx-gcu.c: In function ‘pxa3xx_gcu_init_debug_timer’:
-drivers/video/fbdev/pxa3xx-gcu.c:534:133: error: parameter name omitted
-make[3]: *** [drivers/video/fbdev/pxa3xx-gcu.o] Error 1
-make[3]: *** Waiting for unfinished jobs....
-
-for the non-debug case.
-
-I also queued the original fbdev conversion patch on top of this one.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 7f6c9e6..3b70044 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -304,12 +304,18 @@ static int goldfish_fb_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static const struct of_device_id goldfish_fb_of_match[] = {
++	{ .compatible = "google,goldfish-fb", },
++	{},
++};
++MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+ 
+ static struct platform_driver goldfish_fb_driver = {
+ 	.probe		= goldfish_fb_probe,
+ 	.remove		= goldfish_fb_remove,
+ 	.driver = {
+-		.name = "goldfish_fb"
++		.name = "goldfish_fb",
++		.of_match_table = goldfish_fb_of_match,
+ 	}
+ };
+ 
+-- 
+2.7.4
 

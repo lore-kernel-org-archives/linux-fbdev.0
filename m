@@ -1,255 +1,230 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:35:49 +0000
-Subject: [PATCH v7 3/7] drm: Add support for a panel-orientation connector property, v6
-Message-Id: <20171125193553.23986-4-hdegoede@redhat.com>
+Date: Sat, 04 Nov 2017 14:08:28 +0000
+Subject: [PATCH v5 7/7] fbcon: Remove dmi quirk table
+Message-Id: <20171104140828.32469-8-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125193553.23986-1-hdegoede@redhat.com>
-In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
+References: <20171104140828.32469-1-hdegoede@redhat.com>
+In-Reply-To: <20171104140828.32469-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Carlo Caione <carlo@endlessm.com>, Bastien Nocera <hadess@hadess.net>, Robert McQueen <robert@endlessm.com>
 
-On some devices the LCD panel is mounted in the casing in such a way that
-the up/top side of the panel does not match with the top side of the
-device (e.g. it is mounted upside-down).
-
-This commit adds the necessary infra for lcd-panel drm_connector-s to
-have a "panel orientation" property to communicate how the panel is
-orientated vs the casing.
-
-Userspace can use this property to check for non-normal orientation and
-then adjust the displayed image accordingly by rotating it to compensate.
-
-Changes in v2:
--Store panel_orientation in drm_display_info, so that drm_fb_helper.c can
- access it easily
--Have a single drm_connector_init_panel_orientation_property rather then
- create and attach functions. The caller is expected to set
- drm_display_info.panel_orientation before calling this, then this will
- check for platform specific quirks overriding the panel_orientation and if
- the panel_orientation is set after this then it will attach the property.
-
-Changes in v6:
--Use an enum (with kerneldoc) rather then #defines for
- DRM_MODE_PANEL_ORIENTATION_*
+This is now all handled in the drivers and communicated through
+fb_info.fbcon_rotate_hint.
 
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/Kconfig         |  1 +
- drivers/gpu/drm/drm_connector.c | 73 +++++++++++++++++++++++++++++++++++++++++
- include/drm/drm_connector.h     | 40 ++++++++++++++++++++++
- include/drm/drm_mode_config.h   |  7 ++++
- 4 files changed, 121 insertions(+)
+ drivers/video/fbdev/core/Makefile           |   3 -
+ drivers/video/fbdev/core/fbcon.c            |   4 +-
+ drivers/video/fbdev/core/fbcon.h            |   6 --
+ drivers/video/fbdev/core/fbcon_dmi_quirks.c | 145 ----------------------------
+ 4 files changed, 2 insertions(+), 156 deletions(-)
+ delete mode 100644 drivers/video/fbdev/core/fbcon_dmi_quirks.c
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 9d005ac98c2b..0b166e626eb6 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -7,6 +7,7 @@
- menuconfig DRM
- 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
- 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
-+	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select HDMI
- 	select FB_CMDLINE
- 	select I2C
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index 25f4b2e9a44f..624edeb5c50d 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -24,6 +24,7 @@
- #include <drm/drm_connector.h>
- #include <drm/drm_edid.h>
- #include <drm/drm_encoder.h>
-+#include <drm/drm_utils.h>
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 73493bbd7a15..0214b863ac3f 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -14,9 +14,6 @@ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
+ fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
+ 				     fbcon_ccw.o
+ endif
+-ifeq ($(CONFIG_DMI),y)
+-fb-y				  += fbcon_dmi_quirks.o
+-endif
+ endif
+ fb-objs                           := $(fb-y)
  
- #include "drm_crtc_internal.h"
- #include "drm_internal.h"
-@@ -212,6 +213,8 @@ int drm_connector_init(struct drm_device *dev,
- 	mutex_init(&connector->mutex);
- 	connector->edid_blob_ptr = NULL;
- 	connector->status = connector_status_unknown;
-+	connector->display_info.panel_orientation +		DRM_MODE_PANEL_ORIENTATION_UNKNOWN;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index fb317ed76b45..157a40670a47 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -968,7 +968,7 @@ static const char *fbcon_startup(void)
+ 	if (p->con_rotate = -1)
+ 		p->con_rotate = info->fbcon_rotate_hint;
+ 	if (p->con_rotate = -1)
+-		p->con_rotate = fbcon_platform_get_rotate(info);
++		p->con_rotate = FB_ROTATE_UR;
  
- 	drm_connector_get_cmdline_mode(connector);
+ 	set_blitting_type(vc, info);
  
-@@ -668,6 +671,13 @@ static const struct drm_prop_enum_list drm_aspect_ratio_enum_list[] = {
- 	{ DRM_MODE_PICTURE_ASPECT_16_9, "16:9" },
- };
+@@ -1111,7 +1111,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	if (p->con_rotate = -1)
+ 		p->con_rotate = info->fbcon_rotate_hint;
+ 	if (p->con_rotate = -1)
+-		p->con_rotate = fbcon_platform_get_rotate(info);
++		p->con_rotate = FB_ROTATE_UR;
  
-+static const struct drm_prop_enum_list drm_panel_orientation_enum_list[] = {
-+	{ DRM_MODE_PANEL_ORIENTATION_NORMAL,	"Normal"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP,	"Upside Down"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_LEFT_UP,	"Left Side Up"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_RIGHT_UP,	"Right Side Up"	},
-+};
-+
- static const struct drm_prop_enum_list drm_dvi_i_select_enum_list[] = {
- 	{ DRM_MODE_SUBCONNECTOR_Automatic, "Automatic" }, /* DVI-I and TV-out */
- 	{ DRM_MODE_SUBCONNECTOR_DVID,      "DVI-D"     }, /* DVI-I  */
-@@ -776,6 +786,18 @@ DRM_ENUM_NAME_FN(drm_get_tv_subconnector_name,
-  *
-  * CRTC_ID:
-  * 	Mode object ID of the &drm_crtc this connector should be connected to.
-+ *
-+ * Connectors for LCD panels may also have one standardized property:
-+ *
-+ * panel orientation:
-+ *	On some devices the LCD panel is mounted in the casing in such a way
-+ *	that the up/top side of the panel does not match with the top side of
-+ *	the device. Userspace can use this property to check for this.
-+ *	Note that input coordinates from touchscreens (input devices with
-+ *	INPUT_PROP_DIRECT) will still map 1:1 to the actual LCD panel
-+ *	coordinates, so if userspace rotates the picture to adjust for
-+ *	the orientation it must also apply the same transformation to the
-+ *	touchscreen input coordinates.
-  */
+ 	set_blitting_type(vc, info);
  
- int drm_connector_create_standard_properties(struct drm_device *dev)
-@@ -1251,6 +1273,57 @@ void drm_mode_connector_set_link_status_property(struct drm_connector *connector
- }
- EXPORT_SYMBOL(drm_mode_connector_set_link_status_property);
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index 18f3ac144237..3746828356ed 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -261,10 +261,4 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
+ #define fbcon_set_rotate(x) do {} while(0)
+ #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
  
-+/**
-+ * drm_connector_init_panel_orientation_property -
-+ *	initialize the connecters panel_orientation property
-+ * @connector: connector for which to init the panel-orientation property.
-+ * @width: width in pixels of the panel, used for panel quirk detection
-+ * @height: height in pixels of the panel, used for panel quirk detection
-+ *
-+ * This function should only be called for built-in panels, after setting
-+ * connector->display_info.panel_orientation first (if known).
-+ *
-+ * This function will check for platform specific (e.g. DMI based) quirks
-+ * overriding display_info.panel_orientation first, then if panel_orientation
-+ * is not DRM_MODE_PANEL_ORIENTATION_UNKNOWN it will attach the
-+ * "panel orientation" property to the connector.
-+ *
-+ * Returns:
-+ * Zero on success, negative errno on failure.
-+ */
-+int drm_connector_init_panel_orientation_property(
-+	struct drm_connector *connector, int width, int height)
-+{
-+	struct drm_device *dev = connector->dev;
-+	struct drm_display_info *info = &connector->display_info;
-+	struct drm_property *prop;
-+	int orientation_quirk;
-+
-+	orientation_quirk = drm_get_panel_orientation_quirk(width, height);
-+	if (orientation_quirk != DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-+		info->panel_orientation = orientation_quirk;
-+
-+	if (info->panel_orientation = DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-+		return 0;
-+
-+	prop = dev->mode_config.panel_orientation_property;
-+	if (!prop) {
-+		prop = drm_property_create_enum(dev, DRM_MODE_PROP_IMMUTABLE,
-+				"panel orientation",
-+				drm_panel_orientation_enum_list,
-+				ARRAY_SIZE(drm_panel_orientation_enum_list));
-+		if (!prop)
-+			return -ENOMEM;
-+
-+		dev->mode_config.panel_orientation_property = prop;
-+	}
-+
-+	drm_object_attach_property(&connector->base, prop,
-+				   info->panel_orientation);
-+	return 0;
-+}
-+EXPORT_SYMBOL(drm_connector_init_panel_orientation_property);
-+
- int drm_mode_connector_set_obj_prop(struct drm_mode_object *obj,
- 				    struct drm_property *property,
- 				    uint64_t value)
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 66d6c99d15e5..f39ff52feb3b 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -175,6 +175,35 @@ enum drm_link_status {
- 	DRM_LINK_STATUS_BAD = DRM_MODE_LINK_STATUS_BAD,
- };
- 
-+/**
-+ * enum drm_panel_orientation - panel_orientation info for &drm_display_info
-+ *
-+ * This enum is used to track the (LCD) panel orientation. There are no
-+ * separate #defines for the uapi!
-+ *
-+ * @DRM_MODE_PANEL_ORIENTATION_UNKNOWN: The drm driver has not provided any
-+ *					panel orientation information (normal
-+ *					for non panels) in this case the "panel
-+ *					orientation" connector prop will not be
-+ *					attached.
-+ * @DRM_MODE_PANEL_ORIENTATION_NORMAL:	The top side of the panel matches the
-+ *					top side of the device's casing.
-+ * @DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP: The top side of the panel matches the
-+ *					bottom side of the device's casing, iow
-+ *					the panel is mounted upside-down.
-+ * @DRM_MODE_PANEL_ORIENTATION_LEFT_UP:	The left side of the panel matches the
-+ *					top side of the device's casing.
-+ * @DRM_MODE_PANEL_ORIENTATION_RIGHT_UP: The right side of the panel matches the
-+ *					top side of the device's casing.
-+ */
-+enum drm_panel_orientation {
-+	DRM_MODE_PANEL_ORIENTATION_UNKNOWN = -1,
-+	DRM_MODE_PANEL_ORIENTATION_NORMAL = 0,
-+	DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP,
-+	DRM_MODE_PANEL_ORIENTATION_LEFT_UP,
-+	DRM_MODE_PANEL_ORIENTATION_RIGHT_UP,
-+};
-+
- /**
-  * struct drm_display_info - runtime data about the connected sink
-  *
-@@ -222,6 +251,15 @@ struct drm_display_info {
- #define DRM_COLOR_FORMAT_YCRCB422	(1<<2)
- #define DRM_COLOR_FORMAT_YCRCB420	(1<<3)
- 
-+	/**
-+	 * @panel_orientation: Read only connector property for built-in panels,
-+	 * indicating the orientation of the panel vs the device's casing.
-+	 * drm_connector_init() sets this to DRM_MODE_PANEL_ORIENTATION_UNKNOWN.
-+	 * When not UNKNOWN this gets used by the drm_fb_helpers to rotate the
-+	 * fb to compensate and gets exported as prop to userspace.
-+	 */
-+	int panel_orientation;
-+
- 	/**
- 	 * @color_formats: HDMI Color formats, selects between RGB and YCrCb
- 	 * modes. Used DRM_COLOR_FORMAT\_ defines, which are _not_ the same ones
-@@ -1035,6 +1073,8 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector,
- 					    const struct edid *edid);
- void drm_mode_connector_set_link_status_property(struct drm_connector *connector,
- 						 uint64_t link_status);
-+int drm_connector_init_panel_orientation_property(
-+	struct drm_connector *connector, int width, int height);
- 
- /**
-  * struct drm_tile_group - Tile group metadata
-diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-index 5306ebd537b2..cb9ffbda36cc 100644
---- a/include/drm/drm_mode_config.h
-+++ b/include/drm/drm_mode_config.h
-@@ -735,6 +735,13 @@ struct drm_mode_config {
- 	 */
- 	struct drm_property *non_desktop_property;
- 
-+	/**
-+	 * @panel_orientation_property: Optional connector property indicating
-+	 * how the lcd-panel is mounted inside the casing (e.g. normal or
-+	 * upside-down).
-+	 */
-+	struct drm_property *panel_orientation_property;
-+
- 	/* dumb ioctl parameters */
- 	uint32_t preferred_depth, prefer_shadow;
- 
+-#ifdef CONFIG_DMI
+-int fbcon_platform_get_rotate(struct fb_info *info);
+-#else
+-#define fbcon_platform_get_rotate(i) FB_ROTATE_UR
+-#endif /* CONFIG_DMI */
+-
+ #endif /* _VIDEO_FBCON_H */
+diff --git a/drivers/video/fbdev/core/fbcon_dmi_quirks.c b/drivers/video/fbdev/core/fbcon_dmi_quirks.c
+deleted file mode 100644
+index 6904e47d1e51..000000000000
+--- a/drivers/video/fbdev/core/fbcon_dmi_quirks.c
++++ /dev/null
+@@ -1,145 +0,0 @@
+-/*
+- *  fbcon_dmi_quirks.c -- DMI based quirk detection for fbcon
+- *
+- *	Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
+- *
+- *  This file is subject to the terms and conditions of the GNU General Public
+- *  License.  See the file COPYING in the main directory of this archive for
+- *  more details.
+- */
+-
+-#include <linux/dmi.h>
+-#include <linux/fb.h>
+-#include <linux/kernel.h>
+-#include "fbcon.h"
+-
+-/*
+- * Some x86 clamshell design devices use portrait tablet screens and a display
+- * engine which cannot rotate in hardware, so we need to rotate the fbcon to
+- * compensate. Unfortunately these (cheap) devices also typically have quite
+- * generic DMI data, so we match on a combination of DMI data, screen resolution
+- * and a list of known BIOS dates to avoid false positives.
+- */
+-
+-struct fbcon_dmi_rotate_data {
+-	int width;
+-	int height;
+-	const char * const *bios_dates;
+-	int rotate;
+-};
+-
+-static const struct fbcon_dmi_rotate_data rotate_data_asus_t100ha = {
+-	.width = 800,
+-	.height = 1280,
+-	.rotate = FB_ROTATE_CCW,
+-};
+-
+-static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
+-	.width = 1200,
+-	.height = 1920,
+-	.bios_dates = (const char * const []){ "05/26/2017", "06/28/2017",
+-		"07/05/2017", "08/07/2017", NULL },
+-	.rotate = FB_ROTATE_CW,
+-};
+-
+-static const struct fbcon_dmi_rotate_data rotate_data_gpd_win = {
+-	.width = 720,
+-	.height = 1280,
+-	.bios_dates = (const char * const []){
+-		"10/25/2016", "11/18/2016", "12/23/2016", "12/26/2016",
+-		"02/21/2017", "03/20/2017", "05/25/2017", NULL },
+-	.rotate = FB_ROTATE_CW,
+-};
+-
+-static const struct fbcon_dmi_rotate_data rotate_data_itworks_tw891 = {
+-	.width = 800,
+-	.height = 1280,
+-	.bios_dates = (const char * const []){ "10/16/2015", NULL },
+-	.rotate = FB_ROTATE_CW,
+-};
+-
+-static const struct fbcon_dmi_rotate_data rotate_data_vios_lth17 = {
+-	.width = 800,
+-	.height = 1280,
+-	.rotate = FB_ROTATE_CW,
+-};
+-
+-static const struct dmi_system_id rotate_data[] = {
+-	{	/* Asus T100HA */
+-		.matches = {
+-		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
+-		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100HAN"),
+-		},
+-		.driver_data = (void *)&rotate_data_asus_t100ha,
+-	}, {	/*
+-		 * GPD Pocket, note that the the DMI data is less generic then
+-		 * it seems, devices with a board-vendor of "AMI Corporation"
+-		 * are quite rare, as are devices which have both board- *and*
+-		 * product-id set to "Default String"
+-		 */
+-		.matches = {
+-		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
+-		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
+-		},
+-		.driver_data = (void *)&rotate_data_gpd_pocket,
+-	}, {	/* GPD Win (same note on DMI match as GPD Pocket) */
+-		.matches = {
+-		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
+-		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
+-		},
+-		.driver_data = (void *)&rotate_data_gpd_win,
+-	}, {	/* I.T.Works TW891 */
+-		.matches = {
+-		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "To be filled by O.E.M."),
+-		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "TW891"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
+-		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "TW891"),
+-		},
+-		.driver_data = (void *)&rotate_data_itworks_tw891,
+-	}, {	/* VIOS LTH17 */
+-		.matches = {
+-		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "VIOS"),
+-		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "LTH17"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "VIOS"),
+-		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "LTH17"),
+-		},
+-		.driver_data = (void *)&rotate_data_vios_lth17,
+-	},
+-	{}
+-};
+-
+-int fbcon_platform_get_rotate(struct fb_info *info)
+-{
+-	const struct dmi_system_id *match;
+-	const struct fbcon_dmi_rotate_data *data;
+-	const char *bios_date;
+-	int i;
+-
+-	for (match = dmi_first_match(rotate_data);
+-	     match;
+-	     match = dmi_first_match(match + 1)) {
+-		data = match->driver_data;
+-
+-		if (data->width != info->var.xres ||
+-		    data->height != info->var.yres)
+-			continue;
+-
+-		if (!data->bios_dates)
+-			return data->rotate;
+-
+-		bios_date = dmi_get_system_info(DMI_BIOS_DATE);
+-		if (!bios_date)
+-			continue;
+-
+-		for (i = 0; data->bios_dates[i]; i++) {
+-			if (!strcmp(data->bios_dates[i], bios_date))
+-				return data->rotate;
+-		}
+-	}
+-
+-	return FB_ROTATE_UR;
+-}
 -- 
 2.14.3
 

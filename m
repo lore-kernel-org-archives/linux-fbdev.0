@@ -1,255 +1,42 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:16:18 +0000
-Subject: [PATCH v6 3/7] drm: Add support for a panel-orientation connector property, v6
-Message-Id: <20171125191622.16289-4-hdegoede@redhat.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sat, 04 Nov 2017 21:24:20 +0000
+Subject: [PATCH 2/3] sm501fb: unregister framebuffer only if registered
+Message-Id: <1509830661-7384-2-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125191622.16289-1-hdegoede@redhat.com>
-In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
+References: <1509830661-7384-1-git-send-email-sudipm.mukherjee@gmail.com>
+In-Reply-To: <1509830661-7384-1-git-send-email-sudipm.mukherjee@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On some devices the LCD panel is mounted in the casing in such a way that
-the up/top side of the panel does not match with the top side of the
-device (e.g. it is mounted upside-down).
+There are cases when panel and crt both are not defined and only one of
+them is defined and initialized. In such cases, while removing the
+device, unregister the framebuffer only if it was registered.
 
-This commit adds the necessary infra for lcd-panel drm_connector-s to
-have a "panel orientation" property to communicate how the panel is
-orientated vs the casing.
-
-Userspace can use this property to check for non-normal orientation and
-then adjust the displayed image accordingly by rotating it to compensate.
-
-Changes in v2:
--Store panel_orientation in drm_display_info, so that drm_fb_helper.c can
- access it easily
--Have a single drm_connector_init_panel_orientation_property rather then
- create and attach functions. The caller is expected to set
- drm_display_info.panel_orientation before calling this, then this will
- check for platform specific quirks overriding the panel_orientation and if
- the panel_orientation is set after this then it will attach the property.
-
-Changes in v6:
--Use an enum (with kerneldoc) rather then #defines for
- DRM_MODE_PANEL_ORIENTATION_*
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 ---
- drivers/gpu/drm/Kconfig         |  1 +
- drivers/gpu/drm/drm_connector.c | 73 +++++++++++++++++++++++++++++++++++++++++
- include/drm/drm_connector.h     | 40 ++++++++++++++++++++++
- include/drm/drm_mode_config.h   |  7 ++++
- 4 files changed, 121 insertions(+)
+ drivers/video/fbdev/sm501fb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 9d005ac98c2b..0b166e626eb6 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -7,6 +7,7 @@
- menuconfig DRM
- 	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
- 	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
-+	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select HDMI
- 	select FB_CMDLINE
- 	select I2C
-diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-index 25f4b2e9a44f..624edeb5c50d 100644
---- a/drivers/gpu/drm/drm_connector.c
-+++ b/drivers/gpu/drm/drm_connector.c
-@@ -24,6 +24,7 @@
- #include <drm/drm_connector.h>
- #include <drm/drm_edid.h>
- #include <drm/drm_encoder.h>
-+#include <drm/drm_utils.h>
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 381475f..577a483 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -2079,8 +2079,10 @@ static int sm501fb_remove(struct platform_device *pdev)
+ 	sm501_free_init_fb(info, HEAD_CRT);
+ 	sm501_free_init_fb(info, HEAD_PANEL);
  
- #include "drm_crtc_internal.h"
- #include "drm_internal.h"
-@@ -212,6 +213,8 @@ int drm_connector_init(struct drm_device *dev,
- 	mutex_init(&connector->mutex);
- 	connector->edid_blob_ptr = NULL;
- 	connector->status = connector_status_unknown;
-+	connector->display_info.panel_orientation +		DRM_MODE_PANEL_ORIENTATION_UNKNOWN;
+-	unregister_framebuffer(fbinfo_crt);
+-	unregister_framebuffer(fbinfo_pnl);
++	if (fbinfo_crt)
++		unregister_framebuffer(fbinfo_crt);
++	if (fbinfo_pnl)
++		unregister_framebuffer(fbinfo_pnl);
  
- 	drm_connector_get_cmdline_mode(connector);
- 
-@@ -668,6 +671,13 @@ static const struct drm_prop_enum_list drm_aspect_ratio_enum_list[] = {
- 	{ DRM_MODE_PICTURE_ASPECT_16_9, "16:9" },
- };
- 
-+static const struct drm_prop_enum_list drm_panel_orientation_enum_list[] = {
-+	{ DRM_MODE_PANEL_ORIENTATION_NORMAL,	"Normal"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP,	"Upside Down"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_LEFT_UP,	"Left Side Up"	},
-+	{ DRM_MODE_PANEL_ORIENTATION_RIGHT_UP,	"Right Side Up"	},
-+};
-+
- static const struct drm_prop_enum_list drm_dvi_i_select_enum_list[] = {
- 	{ DRM_MODE_SUBCONNECTOR_Automatic, "Automatic" }, /* DVI-I and TV-out */
- 	{ DRM_MODE_SUBCONNECTOR_DVID,      "DVI-D"     }, /* DVI-I  */
-@@ -776,6 +786,18 @@ DRM_ENUM_NAME_FN(drm_get_tv_subconnector_name,
-  *
-  * CRTC_ID:
-  * 	Mode object ID of the &drm_crtc this connector should be connected to.
-+ *
-+ * Connectors for LCD panels may also have one standardized property:
-+ *
-+ * panel orientation:
-+ *	On some devices the LCD panel is mounted in the casing in such a way
-+ *	that the up/top side of the panel does not match with the top side of
-+ *	the device. Userspace can use this property to check for this.
-+ *	Note that input coordinates from touchscreens (input devices with
-+ *	INPUT_PROP_DIRECT) will still map 1:1 to the actual LCD panel
-+ *	coordinates, so if userspace rotates the picture to adjust for
-+ *	the orientation it must also apply the same transformation to the
-+ *	touchscreen input coordinates.
-  */
- 
- int drm_connector_create_standard_properties(struct drm_device *dev)
-@@ -1251,6 +1273,57 @@ void drm_mode_connector_set_link_status_property(struct drm_connector *connector
- }
- EXPORT_SYMBOL(drm_mode_connector_set_link_status_property);
- 
-+/**
-+ * drm_connector_init_panel_orientation_property -
-+ *	initialize the connecters panel_orientation property
-+ * @connector: connector for which to init the panel-orientation property.
-+ * @width: width in pixels of the panel, used for panel quirk detection
-+ * @height: height in pixels of the panel, used for panel quirk detection
-+ *
-+ * This function should only be called for built-in panels, after setting
-+ * connector->display_info.panel_orientation first (if known).
-+ *
-+ * This function will check for platform specific (e.g. DMI based) quirks
-+ * overriding display_info.panel_orientation first, then if panel_orientation
-+ * is not DRM_MODE_PANEL_ORIENTATION_UNKNOWN it will attach the
-+ * "panel orientation" property to the connector.
-+ *
-+ * Returns:
-+ * Zero on success, negative errno on failure.
-+ */
-+int drm_connector_init_panel_orientation_property(
-+	struct drm_connector *connector, int width, int height)
-+{
-+	struct drm_device *dev = connector->dev;
-+	struct drm_display_info *info = &connector->display_info;
-+	struct drm_property *prop;
-+	int orientation_quirk;
-+
-+	orientation_quirk = drm_get_panel_orientation_quirk(width, height);
-+	if (orientation_quirk != DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-+		info->panel_orientation = orientation_quirk;
-+
-+	if (info->panel_orientation = DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-+		return 0;
-+
-+	prop = dev->mode_config.panel_orientation_property;
-+	if (!prop) {
-+		prop = drm_property_create_enum(dev, DRM_MODE_PROP_IMMUTABLE,
-+				"panel orientation",
-+				drm_panel_orientation_enum_list,
-+				ARRAY_SIZE(drm_panel_orientation_enum_list));
-+		if (!prop)
-+			return -ENOMEM;
-+
-+		dev->mode_config.panel_orientation_property = prop;
-+	}
-+
-+	drm_object_attach_property(&connector->base, prop,
-+				   info->panel_orientation);
-+	return 0;
-+}
-+EXPORT_SYMBOL(drm_connector_init_panel_orientation_property);
-+
- int drm_mode_connector_set_obj_prop(struct drm_mode_object *obj,
- 				    struct drm_property *property,
- 				    uint64_t value)
-diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index 66d6c99d15e5..f39ff52feb3b 100644
---- a/include/drm/drm_connector.h
-+++ b/include/drm/drm_connector.h
-@@ -175,6 +175,35 @@ enum drm_link_status {
- 	DRM_LINK_STATUS_BAD = DRM_MODE_LINK_STATUS_BAD,
- };
- 
-+/**
-+ * enum drm_panel_orientation - panel_orientation info for &drm_display_info
-+ *
-+ * This enum is used to track the (LCD) panel orientation. There are no
-+ * separate #defines for the uapi!
-+ *
-+ * @DRM_MODE_PANEL_ORIENTATION_UNKNOWN: The drm driver has not provided any
-+ *					panel orientation information (normal
-+ *					for non panels) in this case the "panel
-+ *					orientation" connector prop will not be
-+ *					attached.
-+ * @DRM_MODE_PANEL_ORIENTATION_NORMAL:	The top side of the panel matches the
-+ *					top side of the device's casing.
-+ * @DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP: The top side of the panel matches the
-+ *					bottom side of the device's casing, iow
-+ *					the panel is mounted upside-down.
-+ * @DRM_MODE_PANEL_ORIENTATION_LEFT_UP:	The left side of the panel matches the
-+ *					top side of the device's casing.
-+ * @DRM_MODE_PANEL_ORIENTATION_RIGHT_UP: The right side of the panel matches the
-+ *					top side of the device's casing.
-+ */
-+enum drm_panel_orientation {
-+	DRM_MODE_PANEL_ORIENTATION_UNKNOWN = -1,
-+	DRM_MODE_PANEL_ORIENTATION_NORMAL = 0,
-+	DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP,
-+	DRM_MODE_PANEL_ORIENTATION_LEFT_UP,
-+	DRM_MODE_PANEL_ORIENTATION_RIGHT_UP,
-+};
-+
- /**
-  * struct drm_display_info - runtime data about the connected sink
-  *
-@@ -222,6 +251,15 @@ struct drm_display_info {
- #define DRM_COLOR_FORMAT_YCRCB422	(1<<2)
- #define DRM_COLOR_FORMAT_YCRCB420	(1<<3)
- 
-+	/**
-+	 * @panel_orientation: Read only connector property for built-in panels,
-+	 * indicating the orientation of the panel vs the device's casing.
-+	 * drm_connector_init() sets this to DRM_MODE_PANEL_ORIENTATION_UNKNOWN.
-+	 * When not UNKNOWN this gets used by the drm_fb_helpers to rotate the
-+	 * fb to compensate and gets exported as prop to userspace.
-+	 */
-+	int panel_orientation;
-+
- 	/**
- 	 * @color_formats: HDMI Color formats, selects between RGB and YCrCb
- 	 * modes. Used DRM_COLOR_FORMAT\_ defines, which are _not_ the same ones
-@@ -1035,6 +1073,8 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector,
- 					    const struct edid *edid);
- void drm_mode_connector_set_link_status_property(struct drm_connector *connector,
- 						 uint64_t link_status);
-+int drm_connector_init_panel_orientation_property(
-+	struct drm_connector *connector, int width, int height);
- 
- /**
-  * struct drm_tile_group - Tile group metadata
-diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-index 5306ebd537b2..cb9ffbda36cc 100644
---- a/include/drm/drm_mode_config.h
-+++ b/include/drm/drm_mode_config.h
-@@ -735,6 +735,13 @@ struct drm_mode_config {
- 	 */
- 	struct drm_property *non_desktop_property;
- 
-+	/**
-+	 * @panel_orientation_property: Optional connector property indicating
-+	 * how the lcd-panel is mounted inside the casing (e.g. normal or
-+	 * upside-down).
-+	 */
-+	struct drm_property *panel_orientation_property;
-+
- 	/* dumb ioctl parameters */
- 	uint32_t preferred_depth, prefer_shadow;
- 
+ 	sm501fb_stop(info);
+ 	kfree(info);
 -- 
-2.14.3
+2.1.4
 

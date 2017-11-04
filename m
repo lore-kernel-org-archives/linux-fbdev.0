@@ -1,59 +1,40 @@
-From: Johan Hovold <johan@kernel.org>
-Date: Mon, 13 Nov 2017 10:27:19 +0000
-Subject: [PATCH] video: fbdev: atmel_lcdfb: fix display-timings lookup
-Message-Id: <20171113102719.9634-1-johan@kernel.org>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Sat, 04 Nov 2017 14:08:21 +0000
+Subject: [PATCH v5 0/7] drm/fbdev: Panel orientation connector property support
+Message-Id: <20171104140828.32469-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, stable <stable@vger.kernel.org>, Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Carlo Caione <carlo@endlessm.com>, Bastien Nocera <hadess@hadess.net>, Robert McQueen <robert@endlessm.com>
 
-Fix child-node lookup during probe, which ended up searching the whole
-device tree depth-first starting at the parent rather than just matching
-on its children.
+Hi All,
 
-To make things worse, the parent display node was also prematurely
-freed.
+Here is v5 of my series to add a "panel orientation" property to
+the drm-connector for the LCD panel to let userspace know about LCD
+panels which are not mounted upright, as well as detecting upside-down
+panels without needing quirks (like we do for 90 degree rotated screens).
 
-Note that the display and timings node references are never put after a
-successful dt-initialisation so the nodes would leak on later probe
-deferrals and on driver unbind.
+New in v5:
+-Add kernel-doc comment documenting drm_get_panel_orientation_quirk()
+-drm_fb_helper: Only use hardware (crtc primary plane) rotation for
+ 180 degrees for now as 9-/270 degrees rotation requires special handling
 
-Fixes: b985172b328a ("video: atmel_lcdfb: add device tree suport")
-Cc: stable <stable@vger.kernel.org>     # 3.13
-Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
-Signed-off-by: Johan Hovold <johan@kernel.org>
----
- drivers/video/fbdev/atmel_lcdfb.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+New in v4:
+-Fix drm_fb_helper code setting an invalid rotation value on the primary
+ plane of disabled/unused crtcs (caught by Fi.CI)
 
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index e06358da4b99..3dee267d7c75 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -1119,7 +1119,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
- 		goto put_display_node;
- 	}
- 
--	timings_np = of_find_node_by_name(display_np, "display-timings");
-+	timings_np = of_get_child_by_name(display_np, "display-timings");
- 	if (!timings_np) {
- 		dev_err(dev, "failed to find display-timings node\n");
- 		ret = -ENODEV;
-@@ -1140,6 +1140,12 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
- 		fb_add_videomode(&fb_vm, &info->modelist);
- 	}
- 
-+	/*
-+	 * FIXME: Make sure we are not referencing any fields in display_np
-+	 * and timings_np and drop our references to them before returning to
-+	 * avoid leaking the nodes on probe deferral and driver unbind.
-+	 */
-+
- 	return 0;
- 
- put_timings_node:
--- 
-2.15.0
+New in v3:
+-As requested by Daniel v3 moves the quirks over from the fbdev
+ subsys to the drm subsys. I've done this by simpy starting with a copy of
+ the quirk table and eventually removing the fbdev version.
 
+The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
+are all drm patches and patches 6-7 are fbdev/fbcon patches again. As
+discussed previously the plan is to merge all 7 patches through the
+drm tree.
+
+Regards,
+
+Hans

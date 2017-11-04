@@ -1,79 +1,99 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 20:50:06 +0000
-Subject: [PATCH 5/5] video: smscufx: Adjust three checks for null pointers
-Message-Id: <0c4fc190-122a-6a46-2dcc-a17b4acd84b5@users.sourceforge.net>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Sat, 04 Nov 2017 14:08:22 +0000
+Subject: [PATCH v5 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
+Message-Id: <20171104140828.32469-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
-In-Reply-To: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
+References: <20171104140828.32469-1-hdegoede@redhat.com>
+In-Reply-To: <20171104140828.32469-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Carlo Caione <carlo@endlessm.com>, Bastien Nocera <hadess@hadess.net>, Robert McQueen <robert@endlessm.com>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 21:21:20 +0100
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+On some hardware the LCD panel is not mounted upright in the casing,
+but upside-down or rotated 90 degrees. In this case we want the console
+to automatically be rotated to compensate.
 
-The script “checkpatch.pl” pointed information out like the following.
+The fbdev-driver may know about the need to rotate. Add a new
+fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
+If the fbdev-driver knows that some sort of rotation is necessary then
+it can set this field to a FB_ROTATE_* value to tell the fbcon console
+driver to rotate the console.
 
-Comparison to NULL could be written …
-
-Thus fix the affected source code places.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/smscufx.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
+ drivers/video/fbdev/core/fbsysfs.c |  1 +
+ include/linux/fb.h                 |  5 +++++
+ 3 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 03d35429e1b9..d14604536e63 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1081,7 +1081,7 @@ static int ufx_ops_open(struct fb_info *info, int user)
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 04612f938bab..fb317ed76b45 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
+ 	ops->cur_rotate = -1;
+ 	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
- 	kref_get(&dev->kref);
+ 	if (info->fix.type != FB_TYPE_TEXT) {
+@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
  
--	if (fb_defio && (info->fbdefio = NULL)) {
-+	if (fb_defio && !info->fbdefio) {
- 		/* enable defio at last moment if not disabled by client */
+ 	ops = info->fbcon_par;
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
- 		struct fb_deferred_io *fbdefio;
-@@ -1556,8 +1556,7 @@ static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
- 	}
+ 	cols = vc->vc_cols;
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 15755ce1d26c..e31a182b42bf 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 		info->par = p + fb_info_size;
  
- 	/* If everything else has failed, fall back to safe default mode */
--	if (default_vmode = NULL) {
--
-+	if (!default_vmode) {
- 		struct fb_videomode fb_vmode = {0};
+ 	info->device = dev;
++	info->fbcon_rotate_hint = -1;
  
- 		/* Add the standard VESA modes to our modelist
-@@ -1583,8 +1582,7 @@ static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
- 	}
- 
- 	/* If we have good mode and no active clients */
--	if ((default_vmode != NULL) && (dev->fb_count = 0)) {
--
-+	if (default_vmode && dev->fb_count = 0) {
- 		fb_videomode_to_var(&info->var, default_vmode);
- 		ufx_var_color_format(&info->var);
- 
-@@ -1594,10 +1592,9 @@ static int ufx_setup_modes(struct ufx_data *dev, struct fb_info *info,
- 			(info->var.bits_per_pixel / 8);
- 
- 		result = ufx_realloc_framebuffer(dev, info);
--
--	} else
-+	} else {
- 		result = -EINVAL;
--
-+	}
- error:
- 	if (edid && (dev->edid != edid))
- 		kfree(edid);
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	mutex_init(&info->bl_curve_mutex);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index f4386b0ccf40..10cf71cc5d13 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -464,6 +464,11 @@ struct fb_info {
+ 	atomic_t count;
+ 	int node;
+ 	int flags;
++	/*
++	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
++	 * a lcd is not mounted upright and fbcon should rotate to compensate.
++	 */
++	int fbcon_rotate_hint;
+ 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
+ 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
+ 	struct fb_var_screeninfo var;	/* Current var */
 -- 
-2.15.0
+2.14.3
 

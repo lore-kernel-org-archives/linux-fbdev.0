@@ -1,33 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 09 Nov 2017 15:45:52 +0000
-Subject: Re: [PATCH] video/fbdev/dnfb: Use common error handling code in dnfb_probe()
-Message-Id: <10508179.6F5ylYl9eO@amdc3058>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sat, 04 Nov 2017 21:24:19 +0000
+Subject: [PATCH 1/3] sm501fb: deallocate colormap only if allocated
+Message-Id: <1509830661-7384-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171105144325epcas2p2768d40aa015f0c2e9254b38d8f0f0eb9@epcas2p2.samsung.com>
- <af7afaa3-5467-32c3-9e80-a6c9eb220205@users.sourceforge.net>
-In-Reply-To: <af7afaa3-5467-32c3-9e80-a6c9eb220205@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Sunday, November 05, 2017 03:43:05 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 5 Nov 2017 14:54:52 +0100
-> 
-> Add a jump target so that a bit of exception handling can be better reused
-> at the end of this function.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+There are cases when panel and crt both are not defined and only one of
+them is defined and initialized. In such cases, while removing the
+device deallocate the colormap only if that particular fb is defined.
 
-Patch queued for 4.15, thanks.
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+---
+ drivers/video/fbdev/sm501fb.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 076dd27..381475f 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1889,6 +1889,9 @@ static void sm501_free_init_fb(struct sm501fb_info *info,
+ {
+ 	struct fb_info *fbi = info->fb[head];
+ 
++	if (!fbi)
++		return;
++
+ 	fb_dealloc_cmap(&fbi->cmap);
+ }
+ 
+-- 
+2.1.4
 

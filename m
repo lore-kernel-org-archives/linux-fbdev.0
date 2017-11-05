@@ -1,30 +1,62 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 17 Nov 2017 20:28:34 +0000
-Subject: Re: [PATCH V1 1/4] qcom: spmi-wled: Add support for qcom wled driver
-Message-Id: <20171117202834.mqe26lslox3nlsfo@rob-hp-laptop>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 05 Nov 2017 14:43:05 +0000
+Subject: [PATCH] video/fbdev/dnfb: Use common error handling code in dnfb_probe()
+Message-Id: <af7afaa3-5467-32c3-9e80-a6c9eb220205@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1510834717-21765-1-git-send-email-kgunda@codeaurora.org>
- <1510834717-21765-2-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1510834717-21765-2-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-On Thu, Nov 16, 2017 at 05:48:34PM +0530, Kiran Gunda wrote:
-> WLED driver provides the interface to the display driver to
-> adjust the brightness of the display backlight.
-> 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> ---
->  .../bindings/leds/backlight/qcom-spmi-wled.txt     |  90 ++++
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 5 Nov 2017 14:54:52 +0100
 
-Please split bindings to separate patch.
+Add a jump target so that a bit of exception handling can be better reused
+at the end of this function.
 
->  drivers/video/backlight/Kconfig                    |   9 +
->  drivers/video/backlight/Makefile                   |   1 +
->  drivers/video/backlight/qcom-spmi-wled.c           | 504 +++++++++++++++++++++
->  4 files changed, 604 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
->  create mode 100644 drivers/video/backlight/qcom-spmi-wled.c
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/dnfb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/fbdev/dnfb.c b/drivers/video/fbdev/dnfb.c
+index 09415009d797..5505fa00c634 100644
+--- a/drivers/video/fbdev/dnfb.c
++++ b/drivers/video/fbdev/dnfb.c
+@@ -242,16 +242,13 @@ static int dnfb_probe(struct platform_device *dev)
+ 	info->screen_base = (u_char *) info->fix.smem_start;
+ 
+ 	err = fb_alloc_cmap(&info->cmap, 2, 0);
+-	if (err < 0) {
+-		framebuffer_release(info);
+-		return err;
+-	}
++	if (err < 0)
++		goto release_framebuffer;
+ 
+ 	err = register_framebuffer(info);
+ 	if (err < 0) {
+ 		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-		return err;
++		goto release_framebuffer;
+ 	}
+ 	platform_set_drvdata(dev, info);
+ 
+@@ -265,6 +262,10 @@ static int dnfb_probe(struct platform_device *dev)
+ 
+ 	printk("apollo frame buffer alive and kicking !\n");
+ 	return err;
++
++release_framebuffer:
++	framebuffer_release(info);
++	return err;
+ }
+ 
+ static struct platform_driver dnfb_driver = {
+-- 
+2.15.0
+

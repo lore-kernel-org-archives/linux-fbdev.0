@@ -1,44 +1,37 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 16:06:37 +0000
-Subject: [PATCH 2/2] video: ssd1307fb: Improve a size determination in ssd1307fb_probe()
-Message-Id: <37c07df9-5d12-63e3-48a6-c349b146b1dc@users.sourceforge.net>
+From: Huacai Chen <chenhc@lemote.com>
+Date: Mon, 06 Nov 2017 00:43:03 +0000
+Subject: [PATCH] sm750fb: Fix parameter mistake in poke32
+Message-Id: <1509928983-13176-1-git-send-email-chenhc@lemote.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
-In-Reply-To: <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bastian Stender <bst@pengutronix.de>, Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 16:50:26 +0100
+In commit c075b6f2d357ea9 ("staging: sm750fb: Replace POKE32 and PEEK32
+by inline functions"), POKE32 has been replaced by the inline function
+poke32. But it exchange the "addr" and "data" parameters by mistake, so
+fix it.
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Huacai Chen <chenhc@lemote.com>
+Signed-off-by: Liangliang Huang <huangll@lemote.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_chip.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index fb0ef1922d49..bb32b2dd1f7a 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -628,7 +628,8 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 		goto fb_alloc_error;
- 	}
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index 09c223f..aee82fc 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -18,7 +18,7 @@ static inline u32 peek32(u32 addr)
+ 	return readl(addr + mmio750);
+ }
  
--	ssd1307fb_defio = devm_kzalloc(&client->dev, sizeof(struct fb_deferred_io), GFP_KERNEL);
-+	ssd1307fb_defio = devm_kzalloc(&client->dev, sizeof(*ssd1307fb_defio),
-+				       GFP_KERNEL);
- 	if (!ssd1307fb_defio) {
- 		ret = -ENOMEM;
- 		goto fb_alloc_error;
+-static inline void poke32(u32 data, u32 addr)
++static inline void poke32(u32 addr, u32 data)
+ {
+ 	writel(data, addr + mmio750);
+ }
 -- 
-2.15.0
+2.7.0
 

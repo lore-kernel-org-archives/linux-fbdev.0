@@ -1,36 +1,63 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Wed, 08 Nov 2017 21:09:30 +0000
-Subject: [PATCH 2/4] DTS: GTA04: fix panel compatibility string
-Message-Id: <93a85b01b5a4b254469a3068a774ce2f38dc4e67.1510175371.git.hns@goldelico.com>
+From: Ben Hutchings <ben@decadent.org.uk>
+Date: Mon, 06 Nov 2017 23:03:02 +0000
+Subject: [PATCH 3.16 260/294] video: mx3fb: always enable BACKLIGHT_LCD_SUPPORT
+Message-Id: <lsq.1510009382.392135534@decadent.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1510175371.git.hns@goldelico.com>
-In-Reply-To: <cover.1510175371.git.hns@goldelico.com>
+In-Reply-To: <lsq.1510009377.526284287@decadent.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
-Cc: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: akpm@linux-foundation.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alexander Stein <alexander.stein@systec-electronic.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org
 
-Vendor string is "tpo" and not "toppoly".
+3.16.50-rc1 review patch.  If anyone has any objections, please let me know.
 
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+------------------
+
+From: Arnd Bergmann <arnd@arndb.de>
+
+commit 9c8ee3c7341393811d5be5eb61b815e76f92c799 upstream.
+
+Commit 7edaa761ee81b ("video: mx3fb: Add backlight control support")
+changed the mx3fb driver so it always selects the BACKLIGHT_CLASS_DEVICE
+symbol, but that is hidden behind BACKLIGHT_LCD_SUPPORT in Kconfig, so
+we get a Kconfig warning for multi_v5_defconfig, which doesn't have that:
+
+Warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
+DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
+&& FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
+EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
+which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
+
+This makes sure we always enable both symbols together for mx3fb, like
+we do for the other drivers that can't be built without backlight
+support. Note that a better solution would be to ensure the driver can
+work with or without backlight support.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Alexander Stein <alexander.stein@systec-electronic.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
 ---
- arch/arm/boot/dts/omap3-gta04.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
-index 4504908c23fe..ec27ed67a22a 100644
---- a/arch/arm/boot/dts/omap3-gta04.dtsi
-+++ b/arch/arm/boot/dts/omap3-gta04.dtsi
-@@ -86,7 +86,7 @@
- 
- 		/* lcd panel */
- 		lcd: td028ttec1@0 {
--			compatible = "toppoly,td028ttec1";
-+			compatible = "tpo,td028ttec1";
- 			reg = <0>;
- 			spi-max-frequency = <100000>;
- 			spi-cpol;
--- 
-2.12.2
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2330,10 +2330,11 @@ config FB_MSM
+ config FB_MX3
+ 	tristate "MX3 Framebuffer support"
+ 	depends on FB && MX3_IPU
++	select BACKLIGHT_CLASS_DEVICE
++	select BACKLIGHT_LCD_SUPPORT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select BACKLIGHT_CLASS_DEVICE
+ 	default y
+ 	help
+ 	  This is a framebuffer device for the i.MX31 LCD Controller. So
 

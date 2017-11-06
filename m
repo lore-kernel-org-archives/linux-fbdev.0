@@ -1,33 +1,205 @@
-From: Nicolas Ferre <nicolas.ferre@microchip.com>
-Date: Mon, 06 Nov 2017 10:06:15 +0000
-Subject: Re: video: atmel_lcdfb: Use common error handling code in atmel_lcdfb_of_init()
-Message-Id: <2d650d87-034c-d05b-b3aa-f689f25ab184@microchip.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 06 Nov 2017 10:17:13 +0000
+Subject: Re: [Intel-gfx] [PATCH v5 5/7] drm/i915: Add "panel orientation" property to the panel connector
+Message-Id: <20171106101713.aincg4hy3bu6lvhf@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2db677d2-ad4e-1f79-344b-dfa38ce948c9@users.sourceforge.net>
- <5477205e-2067-de4f-8736-71a2c9dc1653@microchip.com>
- <8d297cae-5dd1-d345-8d9d-9bf3ec32d4f8@users.sourceforge.net>
-In-Reply-To: <8d297cae-5dd1-d345-8d9d-9bf3ec32d4f8@users.sourceforge.net>
+References: <20171104140828.32469-1-hdegoede@redhat.com>
+ <20171104140828.32469-6-hdegoede@redhat.com>
+In-Reply-To: <20171104140828.32469-6-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hans de Goede <j.w.r.degoede@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>, Daniel Vetter <daniel.vetter@intel.com>, Robert McQueen <robert@endlessm.com>, Carlo Caione <carlo@endlessm.com>
 
-On 06/11/2017 at 10:32, SF Markus Elfring wrote:
->> Sorry but NACK: the message was malformed and resulted in the
->> duplication of the error log that you spotted.
->>
->> The proper way to fix this is to modify the second occurrence of this message.
+On Sat, Nov 04, 2017 at 03:08:26PM +0100, Hans de Goede wrote:
+> Ideally we could use the VBT for this, that would be simple, in
+> intel_dsi_init() check dev_priv->vbt.dsi.config->rotation, set
+> connector->display_info.panel_orientation accordingly and call
+> drm_connector_init_panel_orientation_property(), done.
 > 
-> * Would you like to achieve that a corresponding message will mention
->   anything around a property “atmel,dmacon” (instead of “bits-per-pixel”)?
+> Unfortunately vbt.dsi.config->rotation is always 0 even on tablets
+> with an upside down LCD and where the GOP is properly rotating the
+> EFI fb in hardware.
+> 
+> So instead we end up reading the rotation from the primary plane.
+> To read the info from the primary plane, we need to know which crtc
+> the panel is hooked up to, so we do this the first time the panel
+> encoder's get_config function get called, as by then the encoder
+> crtc routing has been set up.
+> 
+> This commit only implements the panel orientation property for DSI
+> panels on BYT / CHT / BXT hardware, as all known non normal oriented
+> panels are only found on this hardware.
+> 
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -Read back the rotation applied by the GOP from the primary plane
+>  instead of relying on dev_priv->vbt.dsi.config->rotation, because it
+>  seems that the VBT rotation filed is always 0 even on devices where the
+>  GOP does apply a rotation
+> 
+> Changes in v3:
+> -Rewrite the code to read back the orientation from the primary
+>  plane to contain all of this in intel_dsi.c instead of poking a bunch
+>  of holes between all the different layers
+> ---
+>  drivers/gpu/drm/i915/intel_drv.h   |  1 +
+>  drivers/gpu/drm/i915/intel_dsi.c   | 48 ++++++++++++++++++++++++++++++++++++++
+>  drivers/gpu/drm/i915/intel_dsi.h   |  2 ++
+>  drivers/gpu/drm/i915/intel_panel.c | 16 +++++++++++++
+>  4 files changed, 67 insertions(+)
+> 
+> diff --git a/drivers/gpu/drm/i915/intel_drv.h b/drivers/gpu/drm/i915/intel_drv.h
+> index 47d022d48718..11efc6cb74c8 100644
+> --- a/drivers/gpu/drm/i915/intel_drv.h
+> +++ b/drivers/gpu/drm/i915/intel_drv.h
+> @@ -1727,6 +1727,7 @@ void intel_panel_enable_backlight(const struct intel_crtc_state *crtc_state,
+>  				  const struct drm_connector_state *conn_state);
+>  void intel_panel_disable_backlight(const struct drm_connector_state *old_conn_state);
+>  void intel_panel_destroy_backlight(struct drm_connector *connector);
+> +void intel_panel_set_orientation(struct intel_panel *panel, int orientation);
+>  enum drm_connector_status intel_panel_detect(struct drm_i915_private *dev_priv);
+>  extern struct drm_display_mode *intel_find_panel_downclock(
+>  				struct drm_i915_private *dev_priv,
+> diff --git a/drivers/gpu/drm/i915/intel_dsi.c b/drivers/gpu/drm/i915/intel_dsi.c
+> index 83f15848098a..3e2f12db8d15 100644
+> --- a/drivers/gpu/drm/i915/intel_dsi.c
+> +++ b/drivers/gpu/drm/i915/intel_dsi.c
+> @@ -1084,13 +1084,16 @@ static void bxt_dsi_get_pipe_config(struct intel_encoder *encoder,
+>  	struct drm_display_mode *adjusted_mode_sw;
+>  	struct intel_crtc *intel_crtc;
+>  	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
+> +	struct intel_panel *panel = &intel_dsi->attached_connector->panel;
+>  	unsigned int lane_count = intel_dsi->lane_count;
+>  	unsigned int bpp, fmt;
+> +	int orientation;
+>  	enum port port;
+>  	u16 hactive, hfp, hsync, hbp, vfp, vsync, vbp;
+>  	u16 hfp_sw, hsync_sw, hbp_sw;
+>  	u16 crtc_htotal_sw, crtc_hsync_start_sw, crtc_hsync_end_sw,
+>  				crtc_hblank_start_sw, crtc_hblank_end_sw;
+> +	u32 val;
+>  
+>  	/* FIXME: hw readout should not depend on SW state */
+>  	intel_crtc = to_intel_crtc(encoder->base.crtc);
+> @@ -1234,6 +1237,49 @@ static void bxt_dsi_get_pipe_config(struct intel_encoder *encoder,
+>  	if (adjusted_mode->crtc_hblank_end = crtc_hblank_end_sw)
+>  		adjusted_mode->crtc_hblank_end >  					adjusted_mode_sw->crtc_hblank_end;
+> +
+> +	if (!intel_dsi->got_panel_orientation) {
+> +		val = I915_READ(PLANE_CTL(intel_crtc->pipe, 0));
+> +		/* The rotation is used to correct for the panel orientation */
+> +		switch (val & PLANE_CTL_ROTATE_MASK) {
+> +		case PLANE_CTL_ROTATE_0:
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_NORMAL;
+> +			break;
+> +		case PLANE_CTL_ROTATE_90:
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_RIGHT_UP;
+> +			break;
+> +		case PLANE_CTL_ROTATE_180:
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP;
+> +			break;
+> +		case PLANE_CTL_ROTATE_270:
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_LEFT_UP;
+> +			break;
+> +		}
+> +		intel_panel_set_orientation(panel, orientation);
+> +		intel_dsi->got_panel_orientation = true;
+> +	}
+> +}
+> +
+> +static void vlv_dsi_get_pipe_config(struct intel_encoder *encoder)
+> +{
+> +	struct drm_i915_private *dev_priv = to_i915(encoder->base.dev);
+> +	struct intel_crtc *intel_crtc = to_intel_crtc(encoder->base.crtc);
+> +	struct intel_dsi *intel_dsi = enc_to_intel_dsi(&encoder->base);
+> +	struct intel_panel *panel = &intel_dsi->attached_connector->panel;
+> +	int orientation;
+> +	u32 val;
+> +
+> +	if (!intel_dsi->got_panel_orientation) {
+> +		val = I915_READ(DSPCNTR(intel_crtc->plane));
+> +
+> +		if (val & DISPPLANE_ROTATE_180)
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP;
+> +		else
+> +			orientation = DRM_MODE_PANEL_ORIENTATION_NORMAL;
+> +
+> +		intel_panel_set_orientation(panel, orientation);
+> +		intel_dsi->got_panel_orientation = true;
+> +	}
+>  }
+>  
+>  static void intel_dsi_get_config(struct intel_encoder *encoder,
+> @@ -1245,6 +1291,8 @@ static void intel_dsi_get_config(struct intel_encoder *encoder,
+>  
+>  	if (IS_GEN9_LP(dev_priv))
+>  		bxt_dsi_get_pipe_config(encoder, pipe_config);
+> +	else if (IS_VALLEYVIEW(dev_priv) || IS_CHERRYVIEW(dev_priv))
+> +		vlv_dsi_get_pipe_config(encoder);
 
-Yes: that would actually fix the wrong log message.
+get_config gets called all the time, this feels like the wrong place for
+this. I assume you want this somewhere at init time? We also don't have
+funny hacks for the fixed_mode readout in intel_lvds.c.
 
-> * Can it make sense to adjust the used message format then?
+Also I'd kinda assume you'd only do this as a fallback, for when the quirk
+table doesn't have an entry?
+-Daniel
 
-In another patch, why not... Beware about the added complexity though.
+>  
+>  	pclk = intel_dsi_get_pclk(encoder, pipe_config->pipe_bpp,
+>  				  pipe_config);
+> diff --git a/drivers/gpu/drm/i915/intel_dsi.h b/drivers/gpu/drm/i915/intel_dsi.h
+> index 7afeb9580f41..92c2fe31f3fd 100644
+> --- a/drivers/gpu/drm/i915/intel_dsi.h
+> +++ b/drivers/gpu/drm/i915/intel_dsi.h
+> @@ -52,6 +52,8 @@ struct intel_dsi {
+>  	/* if true, use HS mode, otherwise LP */
+>  	bool hs;
+>  
+> +	bool got_panel_orientation;
+> +
+>  	/* virtual channel */
+>  	int channel;
+>  
+> diff --git a/drivers/gpu/drm/i915/intel_panel.c b/drivers/gpu/drm/i915/intel_panel.c
+> index adc51e452e3e..7d571bef847e 100644
+> --- a/drivers/gpu/drm/i915/intel_panel.c
+> +++ b/drivers/gpu/drm/i915/intel_panel.c
+> @@ -1842,6 +1842,22 @@ void intel_panel_destroy_backlight(struct drm_connector *connector)
+>  	panel->backlight.present = false;
+>  }
+>  
+> +void intel_panel_set_orientation(struct intel_panel *panel, int orientation)
+> +{
+> +	struct intel_connector *panel_conn;
+> +	int width = 0, height = 0;
+> +
+> +	if (panel->fixed_mode) {
+> +		width = panel->fixed_mode->hdisplay;
+> +		height = panel->fixed_mode->vdisplay;
+> +	}
+> +
+> +	panel_conn = container_of(panel, struct intel_connector, panel);
+> +	panel_conn->base.display_info.panel_orientation = orientation;
+> +	drm_connector_init_panel_orientation_property(&panel_conn->base,
+> +						      width, height);
+> +}
+> +
+>  /* Set up chip specific backlight functions */
+>  static void
+>  intel_panel_init_backlight_funcs(struct intel_panel *panel)
+> -- 
+> 2.14.3
+> 
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
 
-Regards,
 -- 
-Nicolas Ferre
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

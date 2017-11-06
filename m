@@ -1,26 +1,26 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 06 Nov 2017 09:00:25 +0000
+Date: Mon, 06 Nov 2017 09:32:20 +0000
 Subject: Re: video: atmel_lcdfb: Use common error handling code in atmel_lcdfb_of_init()
-Message-Id: <5e11db02-618e-ac60-921f-2971458a4484@users.sourceforge.net>
+Message-Id: <8d297cae-5dd1-d345-8d9d-9bf3ec32d4f8@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <2db677d2-ad4e-1f79-344b-dfa38ce948c9@users.sourceforge.net>
  <5477205e-2067-de4f-8736-71a2c9dc1653@microchip.com>
- <20171106085329.szz2ocu5d2iurlov@mwanda>
-In-Reply-To: <20171106085329.szz2ocu5d2iurlov@mwanda>
+In-Reply-To: <5477205e-2067-de4f-8736-71a2c9dc1653@microchip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Nicolas Ferre <nicolas.ferre@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
->> If you want to lower the size of strings in this driver, you can do it,
->> but not like this.
+> Sorry but NACK: the message was malformed and resulted in the
+> duplication of the error log that you spotted.
 > 
-> Just so we're clear, GCC already detects and combines it when you use
-> the same string constant twice.
+> The proper way to fix this is to modify the second occurrence of this message.
 
-Do you distinguish between merging of constants and the combination
-of statements for such an use case?
+* Would you like to achieve that a corresponding message will mention
+  anything around a property “atmel,dmacon” (instead of “bits-per-pixel”)?
+
+* Can it make sense to adjust the used message format then?
 
 Regards,
 Markus

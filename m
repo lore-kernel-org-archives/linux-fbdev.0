@@ -1,184 +1,269 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 20 Nov 2017 13:52:24 +0000
-Subject: [GIT PULL] fbdev changes for v4.15
-Message-Id: <2543232.dkZFGG5Tsa@amdc3058>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 06 Nov 2017 09:20:07 +0000
+Subject: Re: [Intel-gfx] [PATCH v5 4/7] drm/fb-helper: Apply panel orientation connector prop to the primary 
+Message-Id: <20171106092007.gfr6ik6geajkfjes@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171120135226epcas1p297dd4a390fdc985b2fddca177715acc3@epcas1p2.samsung.com>
+References: <20171104140828.32469-1-hdegoede@redhat.com>
+ <20171104140828.32469-5-hdegoede@redhat.com>
+In-Reply-To: <20171104140828.32469-5-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Kees Cook <keescook@chromium.org>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Hans de Goede <j.w.r.degoede@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>, Daniel Vetter <daniel.vetter@intel.com>, Robert McQueen <robert@endlessm.com>, Carlo Caione <carlo@endlessm.com>
 
+On Sat, Nov 04, 2017 at 03:08:25PM +0100, Hans de Goede wrote:
+> Apply the "panel orientation" drm connector prop to the primary plane so
+> that fbcon and fbdev using userspace programs display the right way up.
+>=20
+> Fixes: https://bugs.freedesktop.org/show_bug.cgi?id=94894
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in v2:
+> -New patch in v2 of this patch-set
+>=20
+> Changes in v3:
+> -Use a rotation member in struct drm_fb_helper_crtc and set that from
+>  drm_setup_crtcs instead of looping over all crtc's to find the right one
+>  later
+> -Since we now no longer look at rotation quirks directly in the fbcon
+>  code, set fb_info.fbcon_rotate_hint when the panel is not mounted upright
+>  and we cannot use hardware rotation
+>=20
+> Changes in v4:
+> -Make drm_fb_helper_init() init drm_fb_helper_crtc.rotation to
+>  DRM_MODE_ROTATE_0 for all crtcs, so that we do not end up setting the
+>  plane_state's rotation to an invalid value for disabled crtcs
+>  (caught by Fi.CI)
+>=20
+> Changes in v5:
+> -Only use hardware (crtc primary plane) rotation for DRM_ROTATE_180,
+>  90 / 270 degree rotation requires special handling which we lack atm
+> -Add a TODO comment for 90 / 270 degree hardware rotation
+> -Add some comments to better document the default case when mapping
+>  sw_rotations to fbcon_rotate_hints
 
-Hi Linus,
+Yeah the above stuff really needs to be in the commit message. Or you need
+to explain in prose, but just copying the changelog is easier.
 
-Please pull fbdev changes for v4.15.  There is nothing really major here
-(though removal of the dead igafb driver stands out in diffstat), please
-see the signed tag description for details.
+People forgetting to update the patch justification is the no1 reason we
+want to record the changelogs ...
 
-Test merge revealed a small merge conflict in include/video/iga.h caused
-by SPDX tags addition (the resolution is trivial, just remove the file).
+Otherwise lgtm
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
+> ---
+>  drivers/gpu/drm/drm_fb_helper.c | 90 +++++++++++++++++++++++++++++++++++=
++++++-
+>  include/drm/drm_fb_helper.h     |  8 ++++
+>  2 files changed, 96 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_hel=
+per.c
+> index 116d1f1337c7..5a557488bff4 100644
+> --- a/drivers/gpu/drm/drm_fb_helper.c
+> +++ b/drivers/gpu/drm/drm_fb_helper.c
+> @@ -41,6 +41,7 @@
+>  #include <drm/drm_atomic.h>
+>  #include <drm/drm_atomic_helper.h>
+> =20
+> +#include "drm_crtc_internal.h"
+>  #include "drm_crtc_helper_internal.h"
+> =20
+>  static bool drm_fbdev_emulation =3D true;
+> @@ -350,6 +351,7 @@ EXPORT_SYMBOL(drm_fb_helper_debug_leave);
+>  static int restore_fbdev_mode_atomic(struct drm_fb_helper *fb_helper, bo=
+ol active)
+>  {
+>  	struct drm_device *dev =3D fb_helper->dev;
+> +	struct drm_plane_state *plane_state;
+>  	struct drm_plane *plane;
+>  	struct drm_atomic_state *state;
+>  	int i, ret;
+> @@ -368,8 +370,6 @@ static int restore_fbdev_mode_atomic(struct drm_fb_he=
+lper *fb_helper, bool activ
+>  retry:
+>  	plane_mask =3D 0;
+>  	drm_for_each_plane(plane, dev) {
+> -		struct drm_plane_state *plane_state;
+> -
+>  		plane_state =3D drm_atomic_get_plane_state(state, plane);
+>  		if (IS_ERR(plane_state)) {
+>  			ret =3D PTR_ERR(plane_state);
+> @@ -392,6 +392,11 @@ static int restore_fbdev_mode_atomic(struct drm_fb_h=
+elper *fb_helper, bool activ
+> =20
+>  	for (i =3D 0; i < fb_helper->crtc_count; i++) {
+>  		struct drm_mode_set *mode_set =3D &fb_helper->crtc_info[i].mode_set;
+> +		struct drm_plane *primary =3D mode_set->crtc->primary;
+> +
+> +		/* Cannot fail as we've already gotten the plane state above */
+> +		plane_state =3D drm_atomic_get_new_plane_state(state, primary);
+> +		plane_state->rotation =3D fb_helper->crtc_info[i].rotation;
+> =20
+>  		ret =3D __drm_atomic_helper_set_config(mode_set, state);
+>  		if (ret !=3D 0)
+> @@ -821,6 +826,7 @@ int drm_fb_helper_init(struct drm_device *dev,
+>  		if (!fb_helper->crtc_info[i].mode_set.connectors)
+>  			goto out_free;
+>  		fb_helper->crtc_info[i].mode_set.num_connectors =3D 0;
+> +		fb_helper->crtc_info[i].rotation =3D DRM_MODE_ROTATE_0;
+>  	}
+> =20
+>  	i =3D 0;
+> @@ -2334,6 +2340,62 @@ static int drm_pick_crtcs(struct drm_fb_helper *fb=
+_helper,
+>  	return best_score;
+>  }
+> =20
+> +/*
+> + * This function checks if rotation is necessary because of panel orient=
+ation
+> + * and if it is, if it is supported.
+> + * If rotation is necessary and supported, its gets set in fb_crtc.rotat=
+ion.
+> + * If rotation is necessary but not supported, a DRM_MODE_ROTATE_* flag =
+gets
+> + * or-ed into fb_helper->sw_rotations. In drm_setup_crtcs_fb() we check =
+if only
+> + * one bit is set and then we set fb_info.fbcon_rotate_hint to make fbco=
+n do
+> + * the unsupported rotation.
+> + */
+> +static void drm_setup_crtc_rotation(struct drm_fb_helper *fb_helper,
+> +				    struct drm_fb_helper_crtc *fb_crtc,
+> +				    struct drm_connector *connector)
+> +{
+> +	struct drm_plane *plane =3D fb_crtc->mode_set.crtc->primary;
+> +	uint64_t valid_mask =3D 0;
+> +	int i, rotation;
+> +
+> +	fb_crtc->rotation =3D DRM_MODE_ROTATE_0;
+> +
+> +	switch (connector->display_info.panel_orientation) {
+> +	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
+> +		rotation =3D DRM_MODE_ROTATE_180;
+> +		break;
+> +	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
+> +		rotation =3D DRM_MODE_ROTATE_90;
+> +		break;
+> +	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
+> +		rotation =3D DRM_MODE_ROTATE_270;
+> +		break;
+> +	default:
+> +		rotation =3D DRM_MODE_ROTATE_0;
+> +	}
+> +
+> +	/*
+> +	 * TODO: support 90 / 270 degree hardware rotation,
+> +	 * depending on the hardware this may require the framebuffer
+> +	 * to be in a specific tiling format.
+> +	 */
+> +	if (rotation !=3D DRM_MODE_ROTATE_180 || !plane->rotation_property) {
+> +		fb_helper->sw_rotations |=3D rotation;
+> +		return;
+> +	}
+> +
+> +	for (i =3D 0; i < plane->rotation_property->num_values; i++)
+> +		valid_mask |=3D (1ULL << plane->rotation_property->values[i]);
+> +
+> +	if (!(rotation & valid_mask)) {
+> +		fb_helper->sw_rotations |=3D rotation;
+> +		return;
+> +	}
+> +
+> +	fb_crtc->rotation =3D rotation;
+> +	/* Rotating in hardware, fbcon should not rotate */
+> +	fb_helper->sw_rotations |=3D DRM_MODE_ROTATE_0;
+> +}
+> +
+>  static void drm_setup_crtcs(struct drm_fb_helper *fb_helper,
+>  			    u32 width, u32 height)
+>  {
+> @@ -2393,6 +2455,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *f=
+b_helper,
+>  		drm_fb_helper_modeset_release(fb_helper,
+>  					      &fb_helper->crtc_info[i].mode_set);
+> =20
+> +	fb_helper->sw_rotations =3D 0;
+>  	drm_fb_helper_for_each_connector(fb_helper, i) {
+>  		struct drm_display_mode *mode =3D modes[i];
+>  		struct drm_fb_helper_crtc *fb_crtc =3D crtcs[i];
+> @@ -2412,6 +2475,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *f=
+b_helper,
+>  			modeset->mode =3D drm_mode_duplicate(dev,
+>  							   fb_crtc->desired_mode);
+>  			drm_connector_get(connector);
+> +			drm_setup_crtc_rotation(fb_helper, fb_crtc, connector);
+>  			modeset->connectors[modeset->num_connectors++] =3D connector;
+>  			modeset->x =3D offset->x;
+>  			modeset->y =3D offset->y;
+> @@ -2453,6 +2517,28 @@ static void drm_setup_crtcs_fb(struct drm_fb_helpe=
+r *fb_helper)
+>  		}
+>  	}
+>  	mutex_unlock(&fb_helper->dev->mode_config.mutex);
+> +
+> +	switch (fb_helper->sw_rotations) {
+> +	case DRM_MODE_ROTATE_0:
+> +		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
+> +		break;
+> +	case DRM_MODE_ROTATE_90:
+> +		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
+> +		break;
+> +	case DRM_MODE_ROTATE_180:
+> +		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
+> +		break;
+> +	case DRM_MODE_ROTATE_270:
+> +		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
+> +		break;
+> +	default:
+> +		/*
+> +		 * Multiple bits are set / multiple rotations requested
+> +		 * fbcon cannot handle separate rotation settings per
+> +		 * output, so fallback to unrotated.
+> +		 */
+> +		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
+> +	}
+>  }
+> =20
+>  /* Note: Drops fb_helper->lock before returning. */
+> diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+> index 33fe95927742..7fca941c2c57 100644
+> --- a/include/drm/drm_fb_helper.h
+> +++ b/include/drm/drm_fb_helper.h
+> @@ -48,6 +48,7 @@ struct drm_fb_helper_crtc {
+>  	struct drm_mode_set mode_set;
+>  	struct drm_display_mode *desired_mode;
+>  	int x, y;
+> +	int rotation;
+>  };
+> =20
+>  /**
+> @@ -158,6 +159,13 @@ struct drm_fb_helper {
+>  	struct drm_fb_helper_crtc *crtc_info;
+>  	int connector_count;
+>  	int connector_info_alloc_count;
+> +	/**
+> +	 * @rotations:
+> +	 * Bitmask of all rotations requested for panel-orientation which
+> +	 * could not be handled in hardware. If only one bit is set
+> +	 * fbdev->fbcon_rotate_hint gets set to the requested rotation.
+> +	 */
+> +	int sw_rotations;
+>  	/**
+>  	 * @connector_info:
+>  	 *
+> --=20
+> 2.14.3
+>=20
+> _______________________________________________
+> Intel-gfx mailing list
+> Intel-gfx@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
 
-The following changes since commit 8a5776a5f49812d29fe4b2d0a2d71675c3facf3f:
-
-  Linux 4.14-rc4 (2017-10-08 20:53:29 -0700)
-
-are available in the git repository at:
-
-  https://github.com/bzolnier/linux.git tags/fbdev-v4.15
-
-for you to fetch changes up to 5f215d252496543ba22299bccef5062d30d63cfe:
-
-  OMAPFB: prevent buffer underflow in omapfb_parse_vram_param() (2017-11-17 17:21:49 +0100)
-
-----------------------------------------------------------------
-fbdev changes for v4.15:
-
-- convert timers to use timer_setup() (Kees Cook, Thierry Reding)
-
-- fix panels support on iMX boards in mxsfb driver (Stefan Agner)
-
-- fix timeout on EDID read in udlfb driver (Ladislav Michl)
-
-- add missing modes to fix out of bounds access in controlfb driver
-  (Geert Uytterhoeven)
-
-- update initialisation paths in sa1100fb driver to be more robust
-  (Russell King)
-
-- fix error handling path of ->probe method in au1200fb driver
-  (Christophe JAILLET)
-
-- fix handling of cases when either panel or crt is defined in sm501fb
-  driver (Sudip Mukherjee, Colin Ian King)
-
-- add ability to the Goldfish FB driver to be recognized by OS via DT
-  (Aleksandar Markovic)
-
-- structures constifications (Bhumika Goyal)
-
-- misc fixes (Allen Pais, Gustavo A. R. Silva, Dan Carpenter)
-
-- misc cleanups (Colin Ian King, Himanshu Jha, Markus Elfring)
-
-- remove dead igafb driver
-
-----------------------------------------------------------------
-Aleksandar Markovic (2):
-      Documentation: Add device tree binding for Goldfish FB driver
-      video: goldfishfb: Add support for device tree bindings
-
-Allen Pais (1):
-      video: fbdev: matroxfb: return -ENOMEM on allocation failure
-
-Bartlomiej Zolnierkiewicz (2):
-      Merge tag 'v4.14-rc4' of git://git.kernel.org/.../torvalds/linux into fbdev-for-next
-      video: fbdev: remove dead igafb driver
-
-Bhumika Goyal (1):
-      video: fbdev: dnfb: make fb_var_screeninfo static and const
-
-Christophe JAILLET (8):
-      video: fbdev: au1200fb: Fix a potential double free
-      video: fbdev: au1200fb: Return an error code if a memory allocation fails
-      video: fbdev: au1200fb: Release some resources if a memory allocation fails
-      video: fbdev: au1200fb: Fix incorrect IRQ freeing
-      video: fbdev: au1200fb: Fix error handling path
-      video: fbdev: au1200fb: Remove some dead code
-      video: fbdev: au1200fb: Propagate an error code
-      video: fbdev: au1200fb: Style clean up
-
-Colin Ian King (5):
-      video: fbdev: aty: make const arrays static, reduces object code size
-      video: fbdev: sis: make const array specialtv static, reduces object code size
-      video: fbdev: radeon: make const array post_divs static, reduces object code size
-      video: fbdev: intelfb: remove redundant variables
-      video: fbdev: sm501fb: fix potential null pointer dereference on fbi
-
-Dan Carpenter (1):
-      OMAPFB: prevent buffer underflow in omapfb_parse_vram_param()
-
-Geert Uytterhoeven (1):
-      fbdev: controlfb: Add missing modes to fix out of bounds access
-
-Gustavo A. R. Silva (4):
-      video: fbdev: sm501fb: mark expected switch fall-through in sm501fb_blank_crt
-      video: fbdev: aty: radeon_pm: mark expected switch fall-throughs
-      video: fbdev: cirrusfb: mark expected switch fall-throughs
-      video: fbdev: sis_main: mark expected switch fall-throughs
-
-Himanshu Jha (1):
-      video: fbdev: pxa3xx_gcu: Use setup_timer and mod_timer
-
-Kees Cook (2):
-      video: fbdev: pxa3xx_gcu: Convert timers to use timer_setup()
-      video: fbdev: Convert timers to use timer_setup()
-
-Ladislav Michl (1):
-      video: udlfb: Fix read EDID timeout
-
-Markus Elfring (1):
-      video/fbdev/dnfb: Use common error handling code in dnfb_probe()
-
-Russell King (8):
-      video: sa1100fb: use devm_kzalloc()
-      video: sa1100fb: use devm_clk_get()
-      video: sa1100fb: use devm_ioremap_resource()
-      video: sa1100fb: use devm_request_irq()
-      video: sa1100fb: use devm_gpio_request_one()
-      video: sa1100fb: clean up failure path
-      video: sa1100fb: fix video memory allocation leak
-      video: sa1100fb: move pseudo palette into sa1100fb_info structure
-
-Stefan Agner (1):
-      video: fbdev: mxsfb: fix pixelclock polarity
-
-Sudip Mukherjee (3):
-      sm501fb: deallocate colormap only if allocated
-      sm501fb: unregister framebuffer only if registered
-      sm501fb: suspend and resume fb if it exists
-
-Thierry Reding (1):
-      fbcon: Initialize ops->info early
-
- .../bindings/display/google,goldfish-fb.txt        |  17 +
- drivers/video/fbdev/Kconfig                        |  10 -
- drivers/video/fbdev/Makefile                       |   1 -
- drivers/video/fbdev/aty/atyfb_base.c               |   4 +-
- drivers/video/fbdev/aty/radeon_base.c              |  10 +-
- drivers/video/fbdev/aty/radeon_pm.c                |   3 +
- drivers/video/fbdev/au1200fb.c                     |  43 +-
- drivers/video/fbdev/cirrusfb.c                     |   6 +-
- drivers/video/fbdev/controlfb.h                    |   2 +
- drivers/video/fbdev/core/fbcon.c                   |  11 +-
- drivers/video/fbdev/core/fbcon.h                   |   1 +
- drivers/video/fbdev/dnfb.c                         |  15 +-
- drivers/video/fbdev/goldfishfb.c                   |   8 +-
- drivers/video/fbdev/igafb.c                        | 579 ---------------------
- drivers/video/fbdev/intelfb/intelfbhw.c            |   9 +-
- drivers/video/fbdev/matrox/matroxfb_base.c         |   2 +-
- drivers/video/fbdev/mxsfb.c                        |  13 +-
- drivers/video/fbdev/omap/hwa742.c                  |   6 +-
- drivers/video/fbdev/omap2/omapfb/dss/dsi.c         |   6 +-
- drivers/video/fbdev/omap2/omapfb/omapfb-main.c     |   2 +-
- drivers/video/fbdev/pxa3xx-gcu.c                   |  24 +-
- drivers/video/fbdev/sa1100fb.c                     |  75 +--
- drivers/video/fbdev/sa1100fb.h                     |   2 +
- drivers/video/fbdev/sis/init301.c                  |   2 +-
- drivers/video/fbdev/sis/sis_main.c                 |   4 +
- drivers/video/fbdev/sm501fb.c                      |  22 +-
- drivers/video/fbdev/udlfb.c                        |  10 +-
- include/video/iga.h                                |  24 -
- 28 files changed, 164 insertions(+), 747 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/display/google,goldfish-fb.txt
- delete mode 100644 drivers/video/fbdev/igafb.c
- delete mode 100644 include/video/iga.h
-
+--=20
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

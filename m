@@ -1,99 +1,74 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:35:47 +0000
-Subject: [PATCH v7 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
-Message-Id: <20171125193553.23986-2-hdegoede@redhat.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 07 Nov 2017 14:13:06 +0000
+Subject: [PATCH 2/2] fbdev: radeon: stop use ktime_get() for HZ calibration
+Message-Id: <20171107141319.3390036-2-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125193553.23986-1-hdegoede@redhat.com>
-In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
+References: <20171107141319.3390036-1-arnd@arndb.de>
+In-Reply-To: <20171107141319.3390036-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Colin Ian King <colin.king@canonical.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but upside-down or rotated 90 degrees. In this case we want the console
-to automatically be rotated to compensate.
+do_gettimeofday() is deprecated and a bit clumsy. This changes
+radeon_probe_pll_params() over to using ktime_get() with monotonic
+times. There is no need to check for negative values any more
+since the monotonic clocksource cannot go backwards, but I'm
+adding a check for zero-division in case of a bad clocksource.
 
-The fbdev-driver may know about the need to rotate. Add a new
-fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
-If the fbdev-driver knows that some sort of rotation is necessary then
-it can set this field to a FB_ROTATE_* value to tell the fbcon console
-driver to rotate the console.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
- drivers/video/fbdev/core/fbsysfs.c |  1 +
- include/linux/fb.h                 |  5 +++++
- 3 files changed, 18 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/aty/radeon_base.c | 18 +++++++-----------
+ 1 file changed, 7 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 04612f938bab..fb317ed76b45 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
- 	ops->cur_rotate = -1;
- 	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
-+
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 8ad1643e7d1c..8b7048fbf6dc 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -583,8 +583,8 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
+ 	int hTotal, vTotal, num, denom, m, n;
+ 	unsigned long long hz, vclk;
+ 	long xtal;
+-	struct timeval start_tv, stop_tv;
+-	long total_secs, total_usecs;
++	ktime_t start_time, stop_time;
++	u64 total_usecs;
+ 	int i;
  
- 	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	/* Ugh, we cut interrupts, bad bad bad, but we want some precision
+@@ -600,7 +600,7 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
+ 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) = 0)
+ 			break;
  
- 	ops = info->fbcon_par;
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
-+
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
+-	do_gettimeofday(&start_tv);
++	start_time = ktime_get();
  
- 	cols = vc->vc_cols;
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 15755ce1d26c..e31a182b42bf 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 		info->par = p + fb_info_size;
+ 	for(i=0; i<1000000; i++)
+ 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) != 0)
+@@ -610,18 +610,14 @@ static int radeon_probe_pll_params(struct radeonfb_info *rinfo)
+ 		if (((INREG(CRTC_VLINE_CRNT_VLINE) >> 16) & 0x3ff) = 0)
+ 			break;
+ 	
+-	do_gettimeofday(&stop_tv);
++	stop_time = ktime_get();
+ 	
+ 	local_irq_enable();
  
- 	info->device = dev;
-+	info->fbcon_rotate_hint = -1;
- 
- #ifdef CONFIG_FB_BACKLIGHT
- 	mutex_init(&info->bl_curve_mutex);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index bc24e48e396d..d1e5bed39140 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -465,6 +465,11 @@ struct fb_info {
- 	atomic_t count;
- 	int node;
- 	int flags;
-+	/*
-+	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
-+	 * a lcd is not mounted upright and fbcon should rotate to compensate.
-+	 */
-+	int fbcon_rotate_hint;
- 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
- 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
- 	struct fb_var_screeninfo var;	/* Current var */
+-	total_secs = stop_tv.tv_sec - start_tv.tv_sec;
+-	if (total_secs > 10)
++	total_usecs = ktime_us_delta(stop_time, start_time);
++	if (total_usecs >= 10 * USEC_PER_SEC || total_usecs = 0)
+ 		return -1;
+-	total_usecs = stop_tv.tv_usec - start_tv.tv_usec;
+-	total_usecs += total_secs * 1000000;
+-	if (total_usecs < 0)
+-		total_usecs = -total_usecs;
+-	hz = 1000000/total_usecs;
++	hz = USEC_PER_SEC/(u32)total_usecs;
+  
+ 	hTotal = ((INREG(CRTC_H_TOTAL_DISP) & 0x1ff) + 1) * 8;
+ 	vTotal = ((INREG(CRTC_V_TOTAL_DISP) & 0x3ff) + 1);
 -- 
-2.14.3
+2.9.0
 

@@ -1,40 +1,75 @@
-From: Stephen Boyd <sboyd@codeaurora.org>
-Date: Thu, 02 Nov 2017 05:32:23 +0000
-Subject: Re: [RFC PATCH] clk: move of_clk_get_parent_count() declaration to <linux/__clk.h>
-Message-Id: <20171102053223.GH30645@codeaurora.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 07 Nov 2017 14:13:05 +0000
+Subject: [PATCH 1/2] fbdev: pxa3xx: use ktime_get_ts64 for time stamps
+Message-Id: <20171107141319.3390036-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1507166751-2012-1-git-send-email-yamada.masahiro@socionext.com>
- <20171012231709.GH18706@codeaurora.org>
- <CAK7LNATuSGfQwL1sP9Z9qtkWgnO5agfPbYjs5m6EkOvexTzzZA@mail.gmail.com>
-In-Reply-To: <CAK7LNATuSGfQwL1sP9Z9qtkWgnO5agfPbYjs5m6EkOvexTzzZA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: linux-clk <linux-clk@vger.kernel.org>, Stephen Warren <swarren@wwwdotorg.org>, linux-fbdev@vger.kernel.org, Michael Turquette <mturquette@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>, Russell King <linux@armlinux.org.uk>, Shawn Guo <shawnguo@kernel.org>, Dong Aisheng <aisheng.dong@nxp.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Himanshu Jha <himanshujha199640@gmail.com>
 
-On 10/29, Masahiro Yamada wrote:
-> 2017-10-13 8:17 GMT+09:00 Stephen Boyd <sboyd@codeaurora.org>:
-> 
-> >  USB has a
-> > similar case, which I think Shawn Guo/Dong Aisheng was trying to
-> > add an OF based bulk clk_get() API called of_clk_bulk_get()
-> > for[1]. If this get all clks API works there too then we should
-> > use it. If it can be non-DT specific, even better.
-> >
-> > [1] http://lkml.kernel.org/r/1506415441-4435-1-git-send-email-aisheng.dong@nxp.com
-> 
-> OK, we can implement it based on Shawn/Dong's work.
-> 
-> My concern is clk-bulk.c still needs to include #<linux/clk-provider.h>,
-> but it is a bit odd since clk-bulk.c is a helper for clk consumers.
-> 
-> 
+do_gettimeofday() is deprecated because it is not y2038 safe, so I'm
+changing the calculation for the diagnostic output over to using
+'timespec64'.
 
-Understood. I'm not concerned though, it's one place where this
-happens, not in a bunch of random drivers. What exactly do you
-need from clk-provider.h in clk-bulk.c though?
+We really only print time deltas here, so changing it to monotonic
+time makes this more robust, the correct accessor for this is
+ktime_get_ts64().
 
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 3366076f9e0f..ddca4425adc8 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -104,7 +104,7 @@ struct pxa3xx_gcu_priv {
+ 	wait_queue_head_t	  wait_idle;
+ 	wait_queue_head_t	  wait_free;
+ 	spinlock_t		  spinlock;
+-	struct timeval 		  base_time;
++	struct timespec64	  base_time;
+ 
+ 	struct pxa3xx_gcu_batch *free;
+ 	struct pxa3xx_gcu_batch *ready;
+@@ -126,18 +126,20 @@ gc_writel(struct pxa3xx_gcu_priv *priv, unsigned int off, unsigned long val)
+ 
+ #define QPRINT(priv, level, msg)					\
+ 	do {								\
+-		struct timeval tv;					\
++		struct timespec64 ts;					\
+ 		struct pxa3xx_gcu_shared *shared = priv->shared;	\
+ 		u32 base = gc_readl(priv, REG_GCRBBR);			\
+ 									\
+-		do_gettimeofday(&tv);					\
++		ktime_get_ts64(&ts);					\
++		ts = timespec64_sub(ts, priv->base_time);		\
+ 									\
+-		printk(level "%ld.%03ld.%03ld - %-17s: %-21s (%s, "	\
++		printk(level "%lld.%03ld.%03ld - %-17s: %-21s (%s, "	\
+ 			"STATUS "					\
+ 			"0x%02lx, B 0x%08lx [%ld], E %5ld, H %5ld, "	\
+ 			"T %5ld)\n",					\
+-			tv.tv_sec - priv->base_time.tv_sec,		\
+-			tv.tv_usec / 1000, tv.tv_usec % 1000,		\
++			(s64)(tv.tv_sec),				\
++			tv.tv_usec / NSEC_PER_MSEC,			\
++			(tv.tv_usec % NSEC_PER_MSEC) / USEC_PER_MSEC,	\
+ 			__func__, msg,					\
+ 			shared->hw_running ? "running" : "   idle",	\
+ 			gc_readl(priv, REG_GCISCR),			\
+@@ -164,7 +166,7 @@ pxa3xx_gcu_reset(struct pxa3xx_gcu_priv *priv)
+ 	priv->shared->buffer_phys = priv->shared_phys;
+ 	priv->shared->magic = PXA3XX_GCU_SHARED_MAGIC;
+ 
+-	do_gettimeofday(&priv->base_time);
++	ktime_get_ts64(&priv->base_time);
+ 
+ 	/* set up the ring buffer pointers */
+ 	gc_writel(priv, REG_GCRBLR, 0);
 -- 
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.9.0
+

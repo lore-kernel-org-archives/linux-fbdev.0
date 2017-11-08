@@ -1,38 +1,62 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 09 Nov 2017 15:53:42 +0000
-Subject: Re: [PATCH] video: fbdev: intelfb: remove redundant variables
-Message-Id: <5552409.pVDogND5TS@amdc3058>
+From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Date: Wed, 08 Nov 2017 17:10:59 +0000
+Subject: [PATCH] video: fbdev: sis_main: mark expected switch fall-throughs
+Message-Id: <20171108171059.GA7495@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171106131737epcas3p2c8da62f9f262825461ca244b597a863f@epcas3p2.samsung.com>
- <20171106131711.6499-1-colin.king@canonical.com>
-In-Reply-To: <20171106131711.6499-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, Maik Broemme <mbroemme@libmpq.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Thomas Winischhofer <thomas@winischhofer.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-On Monday, November 06, 2017 01:17:11 PM Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Variables err_max, err_target and f_best are being assigned values but
-> these are never read, hence they are redundant variables and can be
-> removed. Cleans up clang warnings:
-> 
-> drivers/video/fbdev/intelfb/intelfbhw.c:946:2: warning: Value stored to
-> 'err_max' is never read
-> drivers/video/fbdev/intelfb/intelfbhw.c:947:2: warning: Value stored to
-> 'err_target' is never read
-> drivers/video/fbdev/intelfb/intelfbhw.c:995:6: warning: Value stored to
-> 'f_best' is never read
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-Patch queued for 4.15, thanks.
+Addresses-Coverity-ID: 115025
+Addresses-Coverity-ID: 115026
+Addresses-Coverity-ID: 115027
+Addresses-Coverity-ID: 115028
+Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+---
+ drivers/video/fbdev/sis/sis_main.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index e923038..ecdd054 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -1702,6 +1702,7 @@ static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if(ivideo->warncount++ < 10)
+ 			printk(KERN_INFO
+ 				"sisfb: Deprecated ioctl call received - update your application!\n");
++		/* fall through */
+ 	   case SISFB_GET_INFO:  /* For communication with X driver */
+ 		ivideo->sisfb_infoblock.sisfb_id         = SISFB_ID;
+ 		ivideo->sisfb_infoblock.sisfb_version    = VER_MAJOR;
+@@ -1755,6 +1756,7 @@ static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if(ivideo->warncount++ < 10)
+ 			printk(KERN_INFO
+ 				"sisfb: Deprecated ioctl call received - update your application!\n");
++		/* fall through */
+ 	   case SISFB_GET_VBRSTATUS:
+ 		if(sisfb_CheckVBRetrace(ivideo))
+ 			return put_user((u32)1, argp);
+@@ -1765,6 +1767,7 @@ static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if(ivideo->warncount++ < 10)
+ 			printk(KERN_INFO
+ 				"sisfb: Deprecated ioctl call received - update your application!\n");
++		/* fall through */
+ 	   case SISFB_GET_AUTOMAXIMIZE:
+ 		if(ivideo->sisfb_max)
+ 			return put_user((u32)1, argp);
+@@ -1775,6 +1778,7 @@ static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if(ivideo->warncount++ < 10)
+ 			printk(KERN_INFO
+ 				"sisfb: Deprecated ioctl call received - update your application!\n");
++		/* fall through */
+ 	   case SISFB_SET_AUTOMAXIMIZE:
+ 		if(get_user(gpu32, argp))
+ 			return -EFAULT;
+-- 
+2.7.4
 

@@ -1,69 +1,31 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 28 Nov 2017 08:13:42 +0000
-Subject: Re: [PATCH V3 24/29] backlight: deprecate pci_get_bus_and_slot()
-Message-Id: <20171128081342.qvylfa6p5rvqoyxk@dell>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 08 Nov 2017 10:48:01 +0000
+Subject: Re: [PATCH 0/2] backlight: pwm_bl: prevent backlight flicker when switching PWM on
+Message-Id: <cec1af21-8a6d-f9f3-eaf0-197ba68d87ee@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
- <1511801886-6753-25-git-send-email-okaya@codeaurora.org>
- <000001d367b8$726bd7f0$574387d0$@gmail.com>
-In-Reply-To: <000001d367b8$726bd7f0$574387d0$@gmail.com>
+References: <1509022186-19636-1-git-send-email-LW@KARO-electronics.de>
+ <1509022186-19636-2-git-send-email-LW@KARO-electronics.de>
+In-Reply-To: <1509022186-19636-2-git-send-email-LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
-To: Jingoo Han <jingoohan1@gmail.com>
-Cc: 'Sinan Kaya' <okaya@codeaurora.org>, linux-pci@vger.kernel.org, timur@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, intel-gfx@lists.freedesktop.org, 'Daniel Thompson' <daniel.thompson@linaro.org>, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, "'open list:FRAMEBUFFER LAYER'" <linux-fbdev@vger.kernel.org>, 'open list' <linux-kernel@vger.kernel.org>
+To: =?UTF-8?Q?Lothar_Wa=c3=9fmann?= <LW-bxm8fMRDkQLDiMYJYoSAnRvVK+yQ3ZXh@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 
-On Mon, 27 Nov 2017, Jingoo Han wrote:
-> On Monday, November 27, 2017 11:58 AM, Sinan Kaya wrote:
-> >=20
-> > pci_get_bus_and_slot() is restrictive such that it assumes domain=3D0 as
-> > where a PCI device is present. This restricts the device drivers to be
-> > reused for other domain numbers.
->=20
-> I think that this will be useful. I introduced multi domains into
-> ARM-based PCIe driver. (e.g. domain 0, and domain 1) So, APIs to choose
-> domain will be used later.
->=20
-> >=20
-> > Getting ready to remove pci_get_bus_and_slot() function in favor of
-> > pci_get_domain_bus_and_slot().
-> >=20
-> > Hard-coding the domain as 0.
-> >=20
-> > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
->=20
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+On 26/10/17 13:49, Lothar Wa=C3=9Fmann wrote:
+> These patches implement some measures to prevent backlight flicker
+> when the backlight is being switched on for a display with an active
+> low brightness control pin.
+> GIT: [PATCH 1/2] backlight: pwm_bl: Enable PWM before switching regulator
+> GIT: [PATCH 2/2] backlight: pwm_bl: add configurable delay between
 
-I can't apply this.
+Other than hoisting the pwm_enable() even earlier in the setup sequence=20
+this patchset seems to have a significant overlap with Enric's recent=20
+posting:
 
-It looks like I was missing from the list of addressees.
+   https://lkml.org/lkml/2017/7/21/211
 
-Please resend v3 with all the Acks you've acquired.
+Any chance of a shared view on this, especially on the DT bindings?
 
-> > ---
-> >  drivers/video/backlight/apple_bl.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >=20
-> > diff --git a/drivers/video/backlight/apple_bl.c
-> > b/drivers/video/backlight/apple_bl.c
-> > index d843296..6a34ab9 100644
-> > --- a/drivers/video/backlight/apple_bl.c
-> > +++ b/drivers/video/backlight/apple_bl.c
-> > @@ -143,7 +143,7 @@ static int apple_bl_add(struct acpi_device *dev)
-> >  	struct pci_dev *host;
-> >  	int intensity;
-> >=20
-> > -	host =3D pci_get_bus_and_slot(0, 0);
-> > +	host =3D pci_get_domain_bus_and_slot(0, 0, 0);
-> >=20
-> >  	if (!host) {
-> >  		pr_err("unable to find PCI host\n");
->=20
->=20
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+
+Daniel.

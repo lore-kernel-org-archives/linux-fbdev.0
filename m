@@ -1,32 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 09 Nov 2017 14:01:20 +0000
-Subject: Re: [PATCH v8 4/5] video: goldfishfb: Add support for device tree bindings
-Message-Id: <2028677.JpbK7Rfe55@amdc3058>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Wed, 08 Nov 2017 21:09:32 +0000
+Subject: [PATCH 4/4] omapdss: fix problem enabling VDDS_DSI on OMAP3530 (OpenPandora)
+Message-Id: <b94c5e773994ee55df9225fc84825bacb3fcb256.1510175371.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1509729730-26621-1-git-send-email-aleksandar.markovic@rt-rk.com>
-        <CGME20171103172320epcas2p2c8f7472bd7f9af088d964b006ca04984@epcas2p2.samsung.com>
-        <1509729730-26621-5-git-send-email-aleksandar.markovic@rt-rk.com>
-In-Reply-To: <1509729730-26621-5-git-send-email-aleksandar.markovic@rt-rk.com>
+References: <cover.1510175371.git.hns@goldelico.com>
+In-Reply-To: <cover.1510175371.git.hns@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aleksandar Markovic <aleksandar.markovic@rt-rk.com>
-Cc: linux-mips@linux-mips.org, Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, Douglas Leung <douglas.leung@mips.com>, James Hogan <james.hogan@mips.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Miodrag Dinic <miodrag.dinic@imgtec.com>, Paul Burton <paul.burton@mips.com>, Petar Jovanovic <petar.jovanovic@mips.com>, Raghu Gandham <raghu.gandham@mips.com>
+To: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
+Cc: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
 
-On Friday, November 03, 2017 06:21:37 PM Aleksandar Markovic wrote:
-> From: Aleksandar Markovic <aleksandar.markovic@mips.com>
-> 
-> Add ability to the Goldfish FB driver to be recognized by OS via DT.
-> 
-> Signed-off-by: Miodrag Dinic <miodrag.dinic@mips.com>
-> Signed-off-by: Goran Ferenc <goran.ferenc@mips.com>
-> Signed-off-by: Aleksandar Markovic <aleksandar.markovic@mips.com>
+commit d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature to dpi code")
 
-Patch queued for 4.15, thanks.
+introduced a new match table which turned out to be wrong, at least
+for the 600 MHz OpenPandora using the OMAP3530.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+The effect was strange: only the Blue channel of the RGB panel was
+driven while Red and Green stayed black. So a coloured picture turned
+into blue/black.
+
+The GTA04 with DM3730 didn't show the effect.
+
+It turned out that VDDS_DSI was not properly initialized on OMAP3530,
+because the .family string is just "OMAP3" for these processors and
+not "OMAP3xxx".
+
+Therefore we match the .machine attribute.
+
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/gpu/drm/omapdrm/dss/dpi.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
+index 4ed5fde11313..aae3626910bb 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dpi.c
++++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
+@@ -566,8 +566,7 @@ static int dpi_verify_pll(struct dss_pll *pll)
+ }
+ 
+ static const struct soc_device_attribute dpi_soc_devices[] = {
+-	{ .family = "OMAP3[456]*" },
+-	{ .family = "[AD]M37*" },
++	{ .machine = "OMAP3[456]*" },
+ 	{ /* sentinel */ }
+ };
+ 
+-- 
+2.12.2
 

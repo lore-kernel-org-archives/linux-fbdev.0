@@ -1,94 +1,66 @@
-From: Sebastian Reichel <sre@kernel.org>
-Date: Thu, 30 Nov 2017 22:06:33 +0000
-Subject: Re: [PATCH v3 4/4] DTS: Pandora: fix panel compatibility string
-Message-Id: <20171130220633.imkfyeiqtftnw4j4@earth>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="nt4vnptky4atvscp"
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 09 Nov 2017 17:08:26 +0000
+Subject: Re: [PATCH] video: fbdev: Convert timers to use timer_setup()
+Message-Id: <15752127.NCT7iFVURk@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1511884135.git.hns@goldelico.com>
- <b6001c7b7fb98e7a3ad4c712084fea9dae9e6b27.1511884135.git.hns@goldelico.com>
- <20171128160437.GD28152@atomide.com>
- <ADAFBBA4-6AC4-4EC4-AB0E-98B59718E12E@goldelico.com>
- <20171128161834.GE28152@atomide.com>
- <4EE1E298-6461-48FF-977C-958DD16AD83A@goldelico.com>
- <20171130152430.GM28152@atomide.com>
-In-Reply-To: <20171130152430.GM28152@atomide.com>
-To: Tony Lindgren <tony@atomide.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, DTML <devicetree@vger.kernel.org>, linux-fbdev@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@openphoenux.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, "H. Nikolaus Schaller" <hns@goldelico.com>, dri-devel@lists.freedesktop.org, Russell King <linux@armlinux.org.uk>, Rob Herring <robh+dt@kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Julia Lawall <Julia.Lawall@lip6.fr>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, =?iso-8859-1?Q?Beno=EEt?= Cousson <bcousson@baylibre.com>, kernel@pyra-handheld.com, linux-omap <linux-omap@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+References: <CGME20171024152032epcas3p4976e268e33d58750b7c09380e857bba0@epcas3p4.samsung.com>
+        <20171024152026.GA104655@beast>
+In-Reply-To: <20171024152026.GA104655@beast>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kees Cook <keescook@chromium.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, David Lechner <david@lechnology.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sean Paul <seanpaul@chromium.org>, Jean Delvare <jdelvare@suse.de>, Hans de Goede <hdegoede@redhat.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
 
+On Tuesday, October 24, 2017 08:20:26 AM Kees Cook wrote:
 
---nt4vnptky4atvscp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+> index 933619da1a94..e88447eac32c 100644
+> --- a/drivers/video/fbdev/pxa3xx-gcu.c
+> +++ b/drivers/video/fbdev/pxa3xx-gcu.c
+> @@ -513,16 +513,10 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
+>  #ifdef PXA3XX_GCU_DEBUG_TIMER
+>  static struct timer_list pxa3xx_gcu_debug_timer;
+>  
+> -static void pxa3xx_gcu_debug_timedout(unsigned long ptr)
+> +static void pxa3xx_gcu_debug_timedout(struct timer_list *unused)
+>  {
+> -	struct pxa3xx_gcu_priv *priv = (struct pxa3xx_gcu_priv *) ptr;
+> -
+>  	QERROR("Timer DUMP");
 
-Hi,
+QERROR() macro is using priv so this code now fails to build.
 
-On Thu, Nov 30, 2017 at 07:24:30AM -0800, Tony Lindgren wrote:
-> * H. Nikolaus Schaller <hns@goldelico.com> [171128 18:35]:
-> > Hi,
-> >=20
-> > > Am 28.11.2017 um 17:18 schrieb Tony Lindgren <tony@atomide.com>:
-> > >=20
-> > > * H. Nikolaus Schaller <hns@goldelico.com> [171128 16:17]:
-> > >> Hi Tony,
-> > >>=20
-> > >>> Am 28.11.2017 um 17:04 schrieb Tony Lindgren <tony@atomide.com>:
-> > >>>=20
-> > >>> * H. Nikolaus Schaller <hns@goldelico.com> [171128 15:52]:
-> > >>>> We can remove the unnecessary "omapdss," prefix because
-> > >>>> the omapdrm driver takes care of it when matching with
-> > >>>> the driver table.
-> > >>>=20
-> > >>> So is this needed as a fix or is this another clean-up?
-> > >>>=20
-> > >>> So is this is really needed as a fix?
-> > >>=20
-> > >> Hm. How do you differentiate between "fix" and "cleanup"?
-> > >> Maybe it is more a wording than a content issue...
-> > >>=20
-> > >> For me it is a "fix" because it is semantically wrong to have
-> > >> a prefix where it is not needed. And "fixing" it changes the
-> > >> compiler output by 8 bytes.
-> > >=20
-> > > How about let's call it a "typo fix" then? :)
-> >=20
-> > Well, it is not really a typo.
->=20
-> Well what if the stable people pick it into earlier stable series
-> based on the word fix in the subject? That has happened before.
->=20
-> I suggest you update the dts patches to use wording like
-> "update compatible to use new naming" or something similar.
+[ Please compile these timer changes with PXA3XX_GCU_DEBUG and
+  PXA3XX_GCU_DEBUG_TIMER defined. ]
 
-Patch 4/4 is a Fix and should be applied to stable trees. "omapdss,"
-prefix was never supposed to be in the DTS files, is not supposed to
-be in there now and will break some time in the future.
+Also please port your changes over fbdvev-for-next tree as
+currently this patch doesn't apply (fbdev tree contains
+"video: fbdev: pxa3xx_gcu: Use setup_timer and mod_timer"
+cleanup).
 
-Explanation: The early init of omapdss adds the prefix at runtime,
-so that the binding can use generic properties and the kernel can
-use omapdss specific drivers until the generic ones can be used.
+> -	/* init the timer structure */
+> -	init_timer(&pxa3xx_gcu_debug_timer);
+> -	pxa3xx_gcu_debug_timer.function = pxa3xx_gcu_debug_timedout;
+> -	pxa3xx_gcu_debug_timer.data = ptr;
+>  	pxa3xx_gcu_debug_timer.expires = jiffies + 5*HZ; /* one second */
+>  
+>  	add_timer(&pxa3xx_gcu_debug_timer);
+> @@ -530,7 +524,9 @@ static void pxa3xx_gcu_debug_timedout(unsigned long ptr)
+>  
+>  static void pxa3xx_gcu_init_debug_timer(void)
+>  {
+> -	pxa3xx_gcu_debug_timedout((unsigned long) &pxa3xx_gcu_debug_timer);
+> +	/* init the timer structure */
+> +	timer_setup(&pxa3xx_gcu_debug_timer, pxa3xx_gcu_debug_timedout, 0);
+> +	pxa3xx_gcu_debug_timedout(NULL);
+>  }
+>  #else
+>  static inline void pxa3xx_gcu_init_debug_timer(void) {}
 
--- Sebastian
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
---nt4vnptky4atvscp
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAloggOYACgkQ2O7X88g7
-+poY8w/+LukAeMDv10ezogc+xAbg7rWzErh43W2ZI/pibY0rEKuuq0yNmYsyjzov
-tfDTL91fM8soDgX2+rG1E4NOdZgolNqsqbvAB4TXWrzW0ORyjdbG+D2/1rgKBfY+
-h8Dn/66QNuUd6+eTx+6AANgMzjNzHLRJwoM0eISYFCU3L6EXB8YFqoXApUqY5LBg
-do3v5DFqO+6obHUGJ8oJTjapCIEiIMsQ4DLFbLPIiAAJY48yNt8oWzRldcIDEzBp
-s1Cs7M+Zi5PbZDl8Q2YC19Q4YcMONR03VK3W+98T6P9dl0+Al0UW1YQhw3ZaqVih
-juCgcINTbVIgxI0ISzfJfiNOmOea5lLp8o++upAhhsnP2tEZHjyGe97OAc8S+ETx
-a8mjNYtKsFvBVHsh/d52PIa+H7NoW3UBkQWZsxyfpzqhibJAAN5O4DJHQXpdq7uM
-ce4IOR/LK7RDIGhTneW2vR//fwBMYWrQspfYTvx24N6mqe/gyw3PnYQjAsJNSXjC
-YBA4T99apk6BuXiRNzM7mpbUjOKrgGNUtBQKAKD9YUcAm+HfxMPdBiAwQFHlLpVX
-+BMBxARqPy3gHGoQtUyg/TlTVHRPbaF0uhQLoXuBG7Awe5CqK0BE4+Dht8ogLIQ4
-4FAn98DRUhlOEs724cOGwA4DlTdBziaGuSaE9Q4r/1IuhLGaUXw=
-=LhAU
------END PGP SIGNATURE-----
-
---nt4vnptky4atvscp--

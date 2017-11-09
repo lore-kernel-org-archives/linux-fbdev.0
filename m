@@ -1,45 +1,85 @@
-From: Joe Perches <joe@perches.com>
-Date: Mon, 06 Nov 2017 18:32:33 +0000
-Subject: Re: [PATCH v2] video: atmel_lcdfb: Use unique error messages in atmel_lcdfb_of_init()
-Message-Id: <1509993153.2431.48.camel@perches.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Thu, 09 Nov 2017 18:48:40 +0000
+Subject: [PATCH] video: fbdev: pxa3xx_gcu: Convert timers to use timer_setup()
+Message-Id: <20171109184840.GA115388@beast>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2db677d2-ad4e-1f79-344b-dfa38ce948c9@users.sourceforge.net>
-         <5477205e-2067-de4f-8736-71a2c9dc1653@microchip.com>
-         <8d297cae-5dd1-d345-8d9d-9bf3ec32d4f8@users.sourceforge.net>
-         <2d650d87-034c-d05b-b3aa-f689f25ab184@microchip.com>
-         <a768c806-8c15-5d74-02ac-38724482ac67@users.sourceforge.net>
-In-Reply-To: <a768c806-8c15-5d74-02ac-38724482ac67@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Himanshu Jha <himanshujha199640@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 2017-11-06 at 19:14 +0100, SF Markus Elfring wrote:
-> A duplicate error message was used so far in this function implementation.
-> Thus use a consistent message format instead together with property names
-> where constant merging can be applied by the compiler in four cases.
-[]
-> diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-[]
-> @@ -1021,6 +1021,8 @@ static void atmel_lcdfb_power_control_gpio(struct atmel_lcdfb_pdata *pdata, int
->  		gpio_set_value(og->gpio, on);
->  }
->  
-> +static char const property_failure[] = "failed to get property %s\n";
+In preparation for unconditionally passing the struct timer_list pointer to
+all timer callbacks, switch to using the new timer_setup() and from_timer()
+to pass the timer pointer explicitly.
 
-Yuck.  This makes it harder to grep the sources.
-Just use the normal format string in each place.
+This also fixes the use of the "priv" variable in QERROR(), since it was
+pointing to struct timer_list, not struct pxa3xx_gcu_priv.
 
-> +
->  static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
->  {
->  	struct fb_info *info = sinfo->info;
-> @@ -1048,25 +1050,25 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
->  
->  	ret = of_property_read_u32(display_np, "bits-per-pixel", &var->bits_per_pixel);
->  	if (ret < 0) {
-> -		dev_err(dev, "failed to get property bits-per-pixel\n");
-> +		dev_err(dev, property_failure, "bits-per-pixel");
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Himanshu Jha <himanshujha199640@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+If you can take this for v4.15, please do. Otherwise, I can carry it in the
+timers tree in late rc1. Thanks!
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-This likely doesn't even save any code size.
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 164fb524744a..208cd5a5e15c 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -512,24 +512,26 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
+ 
+ #ifdef PXA3XX_GCU_DEBUG_TIMER
+ static struct timer_list pxa3xx_gcu_debug_timer;
++static struct pxa3xx_gcu_priv *debug_timer_priv;
+ 
+-static void pxa3xx_gcu_debug_timedout(unsigned long ptr)
++static void pxa3xx_gcu_debug_timedout(struct timer_list *unused)
+ {
+-	struct pxa3xx_gcu_priv *priv = (struct pxa3xx_gcu_priv *) ptr;
++	struct pxa3xx_gcu_priv *priv = debug_timer_priv;
+ 
+ 	QERROR("Timer DUMP");
+ 
+-	/* init the timer structure */
+-	setup_timer(&pxa3xx_gcu_debug_timer, pxa3xx_gcu_debug_timedout, ptr);
+ 	mod_timer(&pxa3xx_gcu_debug_timer, jiffies + 5 * HZ);
+ }
+ 
+-static void pxa3xx_gcu_init_debug_timer(void)
++static void pxa3xx_gcu_init_debug_timer(struct pxa3xx_gcu_priv *priv)
+ {
+-	pxa3xx_gcu_debug_timedout((unsigned long) &pxa3xx_gcu_debug_timer);
++	/* init the timer structure */
++	debug_timer_priv = priv;
++	timer_setup(&pxa3xx_gcu_debug_timer, pxa3xx_gcu_debug_timedout, 0);
++	pxa3xx_gcu_debug_timedout(NULL);
+ }
+ #else
+-static inline void pxa3xx_gcu_init_debug_timer(void) {}
++static inline void pxa3xx_gcu_init_debug_timer(struct pxa3xx_gcu_priv *) {}
+ #endif
+ 
+ static int
+@@ -666,7 +668,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, priv);
+ 	priv->resource_mem = r;
+ 	pxa3xx_gcu_reset(priv);
+-	pxa3xx_gcu_init_debug_timer();
++	pxa3xx_gcu_init_debug_timer(priv);
+ 
+ 	dev_info(dev, "registered @0x%p, DMA 0x%p (%d bytes), IRQ %d\n",
+ 			(void *) r->start, (void *) priv->shared_phys,
+-- 
+2.7.4
+
+
+-- 
+Kees Cook
+Pixel Security

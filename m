@@ -1,53 +1,42 @@
-From: Jeremy Lacomis <j.lacomis@gmail.com>
-Date: Tue, 28 Nov 2017 13:58:41 +0000
-Subject: Re: [PATCH v2] staging: sm750b: Fix coding style issues in sm750_accel.c
-Message-Id: <20171128135841.GA561@gs17931.sp.cs.cmu.edu>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Thu, 09 Nov 2017 11:56:55 +0000
+Subject: Re: [RFC 00/14] Kernel based bootsplash
+Message-Id: <20171109115655.GA18436@atrey.karlin.mff.cuni.cz>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1511649387.20482.5.camel@perches.com>
- <20171125224812.23914-1-j.lacomis@gmail.com>
- <20171128131331.GA12924@kroah.com>
-In-Reply-To: <20171128131331.GA12924@kroah.com>
+References: <20171025124602.28292-1-mstaudt@suse.de>
+In-Reply-To: <20171025124602.28292-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Max Staudt <mstaudt@suse.de>
+Cc: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
 
-On Tue, Nov 28, 2017 at 02:13:31PM +0100, Greg Kroah-Hartman wrote:
-> On Sat, Nov 25, 2017 at 05:48:11PM -0500, Jeremy Lacomis wrote:
-> > This is a patch to sm750_accel.c that fixes 80-character line length
-> > warnings found by checkpatch.pl. It also fixes some grammatical errors
-> > in comments and moves parameter-specific comments from inline to before
-> > the function.
-> > 
-> > Signed-off-by: Jeremy Lacomis <j.lacomis@gmail.com>
-> > ---
-> > Changes in v2:
-> > - Change function comments to the kernel-doc format
-> > 
-> >  drivers/staging/sm750fb/sm750_accel.c | 189 ++++++++++++++++++----------------
-> >  1 file changed, 103 insertions(+), 86 deletions(-)
-> > 
-> > diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-> > index 1035e91e7cd3..42cd920111bf 100644
-> > --- a/drivers/staging/sm750fb/sm750_accel.c
-> > +++ b/drivers/staging/sm750fb/sm750_accel.c
-> > @@ -1,4 +1,4 @@
-> > -// SPDX-License-Identifier: GPL-2.0
-> > +/* SPDX-License-Identifier: GPL-2.0 */
+Hi!
+
+> Dear fbdev and fbcon developers,
 > 
-> Why did you change this line?  That is not correct.
+> Could you please voice your opinion on the following patch series?
+> 
+> 
+> This series adds simple bootsplash functionality on top of fbcon.
+> 
+> A (simple!) kernel based bootsplash allows system integrators to show an
+> earlier and more reliable bootsplash, completely hiding the kernel's
+> text output and VT (the 'quiet' option still displays warnings and a
+> blinking cursor).
 
-Sorry about this Greg, I wasn't familiar with the format of the license
-identifier line, and it seemed inconsistent with the rest of the comments at the
-time.
+"More reliable bootsplash" seems like an anti-goal. More reliable boot
+should be the goal...
 
-> Only ever do one "logical" thing per patch.  If you have to say "also"
-> in a changelog text, that's a huge hint you are doing something wrong.
+You should be able to display nice splash screen from initrd...
 
-I'll keep this in mind. I think my natural inclination is to be afraid that the
-patches I'm sending in are _too_ trivial and breaking up these things into
-several different patches would create more work for the maintainers.
+We may want to fix the blinking cursor.
 
-Thanks,
-- Jeremy
+But if there are warnings, it is better to see the warnings then to
+hide them. If root filesystem can't be mounted (for example) it is
+good to know the reason, not to stare at the blank screen (or at boot splash).
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html

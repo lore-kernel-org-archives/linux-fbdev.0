@@ -1,44 +1,31 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Mon, 06 Nov 2017 22:45:50 +0000
-Subject: [PATCH] video: fbdev: cirrusfb: mark expected switch fall-throughs
-Message-Id: <20171106224550.GA2583@embeddedor.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 09 Nov 2017 16:00:16 +0000
+Subject: Re: [PATCH] video: fbdev: cirrusfb: mark expected switch fall-throughs
+Message-Id: <2619770.VHeb1jtPGe@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20171106224555epcas3p153ad90e2c81169658eded4e40655cb31@epcas3p1.samsung.com>
+ <20171106224550.GA2583@embeddedor.com>
+In-Reply-To: <20171106224550.GA2583@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In preparation to enabling -Wimplicit-fallthrough, mark switch cases
-where we are expecting to fall through.
+On Monday, November 06, 2017 04:45:50 PM Gustavo A. R. Silva wrote:
+> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+> where we are expecting to fall through.
+> 
+> Notice that in this particular case I placed the "fall through" comment
+> on its own line, which is what GCC is expecting to find.
+> 
+> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
 
-Notice that in this particular case I placed the "fall through" comment
-on its own line, which is what GCC is expecting to find.
+Patch queued for 4.15, thanks.
 
-Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
----
- drivers/video/fbdev/cirrusfb.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/cirrusfb.c b/drivers/video/fbdev/cirrusfb.c
-index d992aa5..b3be06d 100644
---- a/drivers/video/fbdev/cirrusfb.c
-+++ b/drivers/video/fbdev/cirrusfb.c
-@@ -1477,10 +1477,12 @@ static void init_vgachip(struct fb_info *info)
- 		mdelay(100);
- 		/* mode */
- 		vga_wgfx(cinfo->regbase, CL_GR31, 0x00);
--	case BT_GD5480:  /* fall through */
-+		/* fall through */
-+	case BT_GD5480:
- 		/* from Klaus' NetBSD driver: */
- 		vga_wgfx(cinfo->regbase, CL_GR2F, 0x00);
--	case BT_ALPINE:  /* fall through */
-+		/* fall through */
-+	case BT_ALPINE:
- 		/* put blitter into 542x compat */
- 		vga_wgfx(cinfo->regbase, CL_GR33, 0x00);
- 		break;
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

@@ -1,126 +1,60 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sat, 04 Nov 2017 13:13:21 +0000
-Subject: Re: [Intel-gfx] [PATCH v3 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation
-Message-Id: <e3845905-ded6-1b2c-c38c-bd6d2b6ee4ee@redhat.com>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 10 Nov 2017 17:32:31 +0000
+Subject: [PATCH] video: fbdev: sm501fb: fix potential null pointer dereference on fbi
+Message-Id: <20171110173231.24598-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171023071425.5090-1-hdegoede@redhat.com>
- <20171023071425.5090-7-hdegoede@redhat.com>
- <20171030095345.663btb7tq2qpnzys@phenom.ffwll.local>
-In-Reply-To: <20171030095345.663btb7tq2qpnzys@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel@ffwll.ch>, Hans de Goede <j.w.r.degoede@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, Daniel Drake <drake@endlessm.com>, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+From: Colin Ian King <colin.king@canonical.com>
 
-On 30-10-17 10:53, Daniel Vetter wrote:
-> On Mon, Oct 23, 2017 at 09:14:24AM +0200, Hans de Goede wrote:
->> On some hardware the LCD panel is not mounted upright in the casing,
->> but rotated by 90 degrees. In this case we want the console to
->> automatically be rotated to compensate.
->>
->> The drm subsys has a quirk table for this, use the
->> drm_get_panel_orientation_quirk function to get the panel orientation
->> and set info->fbcon_rotate_hint based on this, so that the fbcon console
->> on top of efifb gets automatically=C2=A0rotated to compensate for the pa=
-nel
->> orientation.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->> ---
->>   drivers/video/fbdev/Kconfig |  1 +
->>   drivers/video/fbdev/efifb.c | 21 ++++++++++++++++++++-
->>   2 files changed, 21 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
->> index 5e58f5ec0a28..c4a90c497839 100644
->> --- a/drivers/video/fbdev/Kconfig
->> +++ b/drivers/video/fbdev/Kconfig
->> @@ -772,6 +772,7 @@ config FB_VESA
->>   config FB_EFI
->>   	bool "EFI-based Framebuffer Support"
->>   	depends on (FB =3D y) && !IA64 && EFI
->> +	select DRM_PANEL_ORIENTATION_QUIRKS
->>   	select FB_CFB_FILLRECT
->>   	select FB_CFB_COPYAREA
->>   	select FB_CFB_IMAGEBLIT
->> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
->> index 3a010641f630..8c7f6aeee205 100644
->> --- a/drivers/video/fbdev/efifb.c
->> +++ b/drivers/video/fbdev/efifb.c
->> @@ -15,6 +15,8 @@
->>   #include <linux/screen_info.h>
->>   #include <video/vga.h>
->>   #include <asm/efi.h>
->> +#include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
->> +#include <drm/drm_mode.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
->>  =20
->>   static bool request_mem_succeeded =3D false;
->>   static bool nowc =3D false;
->> @@ -156,7 +158,7 @@ static u64 bar_offset;
->>   static int efifb_probe(struct platform_device *dev)
->>   {
->>   	struct fb_info *info;
->> -	int err;
->> +	int err, orientation;
->>   	unsigned int size_vmode;
->>   	unsigned int size_remap;
->>   	unsigned int size_total;
->> @@ -328,6 +330,23 @@ static int efifb_probe(struct platform_device *dev)
->>   	info->fix =3D efifb_fix;
->>   	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
->>  =20
->> +	orientation =3D drm_get_panel_orientation_quirk(efifb_defined.xres,
->> +						      efifb_defined.yres);
->=20
-> Oh right, that's the reason for the separate function. Still ugh.
->=20
-> Maybe add a comment in the kernel-doc for why it is what it is ...
+The pointer fbi is dereferenced with par = fbi->par before there is a
+null check on fbi, hence there is a potential null pointer dereference
+on a null par.  Fix this by moving the dereference after the null
+pointer check.
 
-Actually the drm_get_panel_orientation_quirk() function was missing
-a kernel-doc comment documenting it altogether. For v5 of this
-patch-set I've added a kernel-doc comment and I've added this bit
-to that kernel-doc comment to explain why drm_get_panel_orientation_quirk()
-lives in a separate .ko target:
+Detected by CoverityScan, CID#1461301 ("Dereference before null check")
 
-  * Note this function is also used outside of the drm-subsys, by for examp=
-le
-  * the efifb code. Because of this this function gets compiled into its own
-  * kernel-module when built as a module.
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/sm501fb.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-Regards,
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 8d4fdb373299..6f0a19501c6a 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -2100,11 +2100,12 @@ static int sm501fb_suspend_fb(struct sm501fb_info *info,
+ 			      enum sm501_controller head)
+ {
+ 	struct fb_info *fbi = info->fb[head];
+-	struct sm501fb_par *par = fbi->par;
++	struct sm501fb_par *par;
+ 
+ 	if (!fbi)
+ 		return 0;
+ 
++	par = fbi->par;
+ 	if (par->screen.size = 0)
+ 		return 0;
+ 
+@@ -2150,11 +2151,12 @@ static void sm501fb_resume_fb(struct sm501fb_info *info,
+ 			      enum sm501_controller head)
+ {
+ 	struct fb_info *fbi = info->fb[head];
+-	struct sm501fb_par *par = fbi->par;
++	struct sm501fb_par *par;
+ 
+ 	if (!fbi)
+ 		return;
+ 
++	par = fbi->par;
+ 	if (par->screen.size = 0)
+ 		return;
+ 
+-- 
+2.14.1
 
-Hans
-
-
-
-> -Daniel
->=20
->> +	switch (orientation) {
->> +	default:
->> +		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
->> +		break;
->> +	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
->> +		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
->> +		break;
->> +	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
->> +		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
->> +		break;
->> +	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
->> +		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
->> +		break;
->> +	}
->> +
->>   	err =3D sysfs_create_groups(&dev->dev.kobj, efifb_groups);
->>   	if (err) {
->>   		pr_err("efifb: cannot add sysfs attrs\n");
->> --=20
->> 2.14.2
->>
->> _______________________________________________
->> Intel-gfx mailing list
->> Intel-gfx@lists.freedesktop.org
->> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
->=20

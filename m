@@ -1,51 +1,54 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:16:15 +0000
-Subject: [PATCH v6 0/7] drm/fbdev: Panel orientation connector property support
-Message-Id: <20171125191622.16289-1-hdegoede@redhat.com>
+From: Johan Hovold <johan@kernel.org>
+Date: Mon, 13 Nov 2017 10:20:48 +0000
+Subject: [PATCH 2/3] backlight: max8925_bl: fix device-tree node lookup
+Message-Id: <20171113102049.9342-2-johan@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171113102049.9342-1-johan@kernel.org>
+In-Reply-To: <20171113102049.9342-1-johan@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, stable <stable@vger.kernel.org>, Qing Xu <qingx@marvell.com>, Haojian Zhuang <haojian.zhuang@gmail.com>
 
-Hi All,
+Fix child-node lookup during probe, which ended up searching the whole
+device tree depth-first starting at the parent rather than just matching
+on its children.
 
-Here is v6 of my series to add a "panel orientation" property to
-the drm-connector for the LCD panel to let userspace know about LCD
-panels which are not mounted upright, as well as detecting upside-down
-panels without needing quirks (like we do for 90 degree rotated screens).
+To make things worse, the parent mfd node was also prematurely freed,
+while the child backlight node was leaked.
 
-Bartlomiej, can we please have your Acked-by for merging patches 1,
-6 and 7 through the drm tree?
+Fixes: 47ec340cb8e2 ("mfd: max8925: Support dt for backlight")
+Cc: stable <stable@vger.kernel.org>     # 3.9
+Cc: Qing Xu <qingx@marvell.com>
+Cc: Haojian Zhuang <haojian.zhuang@gmail.com>
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/video/backlight/max8925_bl.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-New in v6:
--Fix / reference kernel-doc comments
--Don't export the DRM_MODE_PANEL_ORIENTATION_* defines in the UAPI
--Move i915 dsi hardware rotation state read-out to intel_dsi_init()
-
-New in v5:
--Add kernel-doc comment documenting drm_get_panel_orientation_quirk()
--drm_fb_helper: Only use hardware (crtc primary plane) rotation for
- 180 degrees for now as 9-/270 degrees rotation requires special handling
-
-New in v4:
--Fix drm_fb_helper code setting an invalid rotation value on the primary
- plane of disabled/unused crtcs (caught by Fi.CI)
-
-New in v3:
--As requested by Daniel v3 moves the quirks over from the fbdev
- subsys to the drm subsys. I've done this by simpy starting with a copy of
- the quirk table and eventually removing the fbdev version.
-
-The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
-are all drm patches and patches 6-7 are fbdev/fbcon patches again. As
-discussed previously the plan is to merge all 7 patches through the
-drm tree.
-
-Regards,
-
-Hans
+diff --git a/drivers/video/backlight/max8925_bl.c b/drivers/video/backlight/max8925_bl.c
+index 7b738d60ecc2..f3aa6088f1d9 100644
+--- a/drivers/video/backlight/max8925_bl.c
++++ b/drivers/video/backlight/max8925_bl.c
+@@ -116,7 +116,7 @@ static void max8925_backlight_dt_init(struct platform_device *pdev)
+ 	if (!pdata)
+ 		return;
+ 
+-	np = of_find_node_by_name(nproot, "backlight");
++	np = of_get_child_by_name(nproot, "backlight");
+ 	if (!np) {
+ 		dev_err(&pdev->dev, "failed to find backlight node\n");
+ 		return;
+@@ -125,6 +125,8 @@ static void max8925_backlight_dt_init(struct platform_device *pdev)
+ 	if (!of_property_read_u32(np, "maxim,max8925-dual-string", &val))
+ 		pdata->dual_string = val;
+ 
++	of_node_put(np);
++
+ 	pdev->dev.platform_data = pdata;
+ }
+ 
+-- 
+2.15.0
 

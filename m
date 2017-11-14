@@ -1,28 +1,29 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 09 Nov 2017 15:57:10 +0000
-Subject: Re: [PATCH] video: fbdev: sm501fb: mark expected switch fall-through in sm501fb_blank_crt
-Message-Id: <12199764.4hoRUuLNjp@amdc3058>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 14 Nov 2017 06:12:28 +0000
+Subject: [PATCH] OMAPFB: prevent buffer underflow in omapfb_parse_vram_param()
+Message-Id: <20171114061228.iv5irewl6ougl4zm@mwanda>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171106223123epcas2p205e8d945db1baf075e0e1005e308e81d@epcas2p2.samsung.com>
- <20171106223117.GA705@embeddedor.com>
-In-Reply-To: <20171106223117.GA705@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Monday, November 06, 2017 04:31:18 PM Gustavo A. R. Silva wrote:
-> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
-> where we are expecting to fall through.
-> 
-> Signed-off-by: Gustavo A. R. Silva <garsilva@embeddedor.com>
+We cap the upper bound of "fbnum" but we also need to check for
+negatives or make the type unsigned.
 
-Patch queued for 4.15, thanks.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+index 1d7c012f09db..e08e5664e330 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-main.c
+@@ -1477,7 +1477,7 @@ static int omapfb_alloc_fbmem_display(struct fb_info *fbi, unsigned long size,
+ static int omapfb_parse_vram_param(const char *param, int max_entries,
+ 		unsigned long *sizes, unsigned long *paddrs)
+ {
+-	int fbnum;
++	unsigned int fbnum;
+ 	unsigned long size;
+ 	unsigned long paddr = 0;
+ 	char *p, *start;

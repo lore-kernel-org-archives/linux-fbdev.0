@@ -1,96 +1,50 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 29 Nov 2017 09:59:14 +0000
-Subject: Re: [Intel-gfx] [PATCH v6 0/7] drm/fbdev: Panel orientation connector property support
-Message-Id: <20171129095914.lsnsis77vfwmj4rt@phenom.ffwll.local>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Thu, 16 Nov 2017 08:50:19 +0000
+Subject: [PATCH v2 4/4] drm: omapdrm: Fix DPI on platforms using the DSI VDDS
+Message-Id: <dd2427920427440e051951071377265fc0a830d4.1510822218.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
- <20171128102754.wn4wqyfickotmqgw@phenom.ffwll.local>
- <cdef944b-8dc4-67a0-c719-a216e657a03f@redhat.com>
-In-Reply-To: <cdef944b-8dc4-67a0-c719-a216e657a03f@redhat.com>
+References: <cover.1510822218.git.hns@goldelico.com>
+In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, Hans de Goede <j.w.r.degoede@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
 
-On Tue, Nov 28, 2017 at 02:36:09PM +0100, Hans de Goede wrote:
-> Hi,
-> 
-> On 28-11-17 11:27, Daniel Vetter wrote:
-> > On Sat, Nov 25, 2017 at 06:33:34PM +0100, Hans de Goede wrote:
-> > > Hi All,
-> > > 
-> > > Here is v6 of my series to add a "panel orientation" property to
-> > > the drm-connector for the LCD panel to let userspace know about LCD
-> > > panels which are not mounted upright, as well as detecting upside-down
-> > > panels without needing quirks (like we do for 90 degree rotated screens).
-> > > 
-> > > Bartlomiej, can we please have your Acked-by for merging patches 1,
-> > > 6 and 7 through the drm tree?
-> > > 
-> > > New in v6:
-> > > -Fix / reference kernel-doc comments
-> > > -Don't export the DRM_MODE_PANEL_ORIENTATION_* defines in the UAPI
-> > > -Move i915 dsi hardware rotation state read-out to intel_dsi_init()
-> > > 
-> > > New in v5:
-> > > -Add kernel-doc comment documenting drm_get_panel_orientation_quirk()
-> > > -drm_fb_helper: Only use hardware (crtc primary plane) rotation for
-> > >   180 degrees for now as 9-/270 degrees rotation requires special handling
-> > > 
-> > > New in v4:
-> > > -Fix drm_fb_helper code setting an invalid rotation value on the primary
-> > >   plane of disabled/unused crtcs (caught by Fi.CI)
-> > > 
-> > > New in v3:
-> > > -As requested by Daniel v3 moves the quirks over from the fbdev
-> > >   subsys to the drm subsys. I've done this by simpy starting with a copy of
-> > >   the quirk table and eventually removing the fbdev version.
-> > > 
-> > > The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
-> > > are all drm patches and patches 6-7 are fbdev/fbcon patches again. As
-> > > discussed previously the plan is to merge all 7 patches through the
-> > > drm tree.
-> > 
-> > I think from the drm and i915 side of things this all looks ready (well
-> > pls double-check that CI also approves before merging).
-> 
-> The CI says state is warning, see:
-> https://patchwork.freedesktop.org/series/32447/
-> and specifically:
-> https://intel-gfx-ci.01.org/tree/drm-tip/Patchwork_7290/shards.html
-> 
-> Which I find hard to read as I see no tests going to orange, only
-> 3 tests moving to red, which AFAICT is failed. Clicking on the tests
-> link to get history all 3 tests seem to fail in the same way quite
-> often (2 out of 3) or somewhat often (the last one). Also the failures
-> seem unrelated to my changes
-> 
-> So how do I deal with this, resend v7 to get CI to run again and hope
-> I get a success result for all tests this time ?
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
--rc1 set CI on fire, we had to entirely disable reporting shard results.
+Commit d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature
+to dpi code") replaced usage of platform data version with SoC matching
+to configure DPI VDDS. The SoC match entries were incorrect, they should
+have matched on the machine name instead of the SoC family. Fix it.
 
-Note that in the mail report you get annotations of known bugs, and the
-skip<->pass flip-floppers are fallout from CI being on fire.
+The result was observed on OpenPandora with OMAP3530 where the panel only
+had the Blue channel and Red&Green were missing. It was not observed on
+GTA04 with DM3730.
 
-So looks all good to go.
--Daniel
+Fixes: d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature to dpi code")
+Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
+Tested-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ drivers/gpu/drm/omapdrm/dss/dpi.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-
-> 
-> > Just needs an ack/review from Bart, and then it's probably simplest if you
-> > merge it all through drm-misc - the i915 side is tiny.
-> 
-> Ok, I will wait for an Ack from Bart and then merge this through drm-misc,
-> thank you for the review.
-> 
-> Regards,
-> 
-> Hans
-> 
-
+diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
+index 4ed5fde11313..a91e5f1a0490 100644
+--- a/drivers/gpu/drm/omapdrm/dss/dpi.c
++++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
+@@ -566,8 +566,8 @@ static int dpi_verify_pll(struct dss_pll *pll)
+ }
+ 
+ static const struct soc_device_attribute dpi_soc_devices[] = {
+-	{ .family = "OMAP3[456]*" },
+-	{ .family = "[AD]M37*" },
++	{ .machine = "OMAP3[456]*" },
++	{ .machine = "[AD]M37*" },
+ 	{ /* sentinel */ }
+ };
+ 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.12.2
+

@@ -1,201 +1,96 @@
-From: Kiran Gunda <kgunda@codeaurora.org>
-Date: Thu, 16 Nov 2017 12:30:36 +0000
-Subject: [PATCH V1 3/4] qcom: spmi-wled: Add support for OVP interrupt handling
-Message-Id: <1510834717-21765-4-git-send-email-kgunda@codeaurora.org>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Thu, 16 Nov 2017 08:50:16 +0000
+Subject: [PATCH v2 1/4] omapdrm: fix compatible string for td028ttec1
+Message-Id: <474bfc72b67e1d0e2a223084a69f04d2baa1dda8.1510822218.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1510834717-21765-1-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1510834717-21765-1-git-send-email-kgunda@codeaurora.org>
+References: <cover.1510822218.git.hns@goldelico.com>
+In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: linux-arm-msm-owner@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
 
-WLED peripheral has over voltage protection(OVP) circuitry and the OVP
-fault is notified through an interrupt. Though this fault condition rising
-is due to an incorrect hardware configuration is mitigated in the hardware,
-it still needs to be detected and handled. Add support for it.
+The vendor name was "toppoly" but other panels and the vendor list
+have defined it as "tpo". So let's fix it in driver and bindings.
 
-When WLED module is enabled, keep OVP fault interrupt disabled for 10 ms to
-account for soft start delay.
-
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
- .../bindings/leds/backlight/qcom-spmi-wled.txt     |  7 +-
- drivers/video/backlight/qcom-spmi-wled.c           | 83 ++++++++++++++++++++++
- 2 files changed, 87 insertions(+), 3 deletions(-)
+ .../display/panel/{toppoly,td028ttec1.txt => tpo,td028ttec1.txt}      | 4 ++--
+ drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c               | 4 ++--
+ drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c      | 4 +++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
+ rename Documentation/devicetree/bindings/display/panel/{toppoly,td028ttec1.txt => tpo,td028ttec1.txt} (84%)
 
-diff --git a/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt b/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
-index 768608c..d39ee93 100644
---- a/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
-+++ b/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
-@@ -92,7 +92,7 @@ The PMIC is connected to the host processor via SPMI bus.
- 	Usage:      optional
- 	Value type: <string>
- 	Definition: Interrupt names associated with the interrupts.
--		    Must be "sc-irq".
-+		    Currently supported interrupts are "sc-irq" and "ovp-irq".
+diff --git a/Documentation/devicetree/bindings/display/panel/toppoly,td028ttec1.txt b/Documentation/devicetree/bindings/display/panel/tpo,td028ttec1.txt
+similarity index 84%
+rename from Documentation/devicetree/bindings/display/panel/toppoly,td028ttec1.txt
+rename to Documentation/devicetree/bindings/display/panel/tpo,td028ttec1.txt
+index 7175dc3740ac..ed34253d9fb1 100644
+--- a/Documentation/devicetree/bindings/display/panel/toppoly,td028ttec1.txt
++++ b/Documentation/devicetree/bindings/display/panel/tpo,td028ttec1.txt
+@@ -2,7 +2,7 @@ Toppoly TD028TTEC1 Panel
+ ============
  
- Example:
+ Required properties:
+-- compatible: "toppoly,td028ttec1"
++- compatible: "tpo,td028ttec1"
  
-@@ -102,8 +102,9 @@ qcom-wled@d800 {
- 	reg-names = "qcom-wled-ctrl-base", "qcom-wled-sink-base";
- 	label = "backlight";
+ Optional properties:
+ - label: a symbolic name for the panel
+@@ -14,7 +14,7 @@ Example
+ -------
  
--	interrupts = <0x3 0xd8 0x2 IRQ_TYPE_EDGE_RISING>;
--	interrupt-names = "sc-irq";
-+	interrupts = <0x3 0xd8 0x2 IRQ_TYPE_EDGE_RISING>,
-+			<0x3 0xd8 0x1 IRQ_TYPE_EDGE_RISING>;
-+	interrupt-names = "sc-irq", "ovp-irq";
- 	qcom,fs-current-limit = <25000>;
- 	qcom,current-boost-limit = <970>;
- 	qcom,switching-freq = <800>;
-diff --git a/drivers/video/backlight/qcom-spmi-wled.c b/drivers/video/backlight/qcom-spmi-wled.c
-index 7dbaaa7..8b2a77a 100644
---- a/drivers/video/backlight/qcom-spmi-wled.c
-+++ b/drivers/video/backlight/qcom-spmi-wled.c
-@@ -29,9 +29,15 @@
- #define QCOM_WLED_SC_DLY_MS			20
- #define QCOM_WLED_SC_CNT_MAX			5
- #define QCOM_WLED_SC_RESET_CNT_DLY_US		1000000
-+#define QCOM_WLED_SOFT_START_DLY_US		10000
+ lcd-panel: td028ttec1@0 {
+-	compatible = "toppoly,td028ttec1";
++	compatible = "tpo,td028ttec1";
+ 	reg = <0>;
+ 	spi-max-frequency = <100000>;
+ 	spi-cpol;
+diff --git a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
+index 0a38a0e8c925..2dab491478c2 100644
+--- a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
++++ b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
+@@ -452,7 +452,7 @@ static int td028ttec1_panel_remove(struct spi_device *spi)
+ }
  
- /* WLED control registers */
- #define QCOM_WLED_CTRL_FAULT_STATUS		0x08
-+#define  QCOM_WLED_CTRL_ILIM_FAULT_BIT		BIT(0)
-+#define  QCOM_WLED_CTRL_OVP_FAULT_BIT		BIT(1)
-+#define  QCOM_WLED_CTRL_SC_FAULT_BIT		BIT(2)
-+
-+#define QCOM_WLED_CTRL_INT_RT_STS		0x10
- 
- #define QCOM_WLED_CTRL_MOD_ENABLE		0x46
- #define  QCOM_WLED_CTRL_MOD_EN_MASK		BIT(7)
-@@ -90,6 +96,7 @@ struct qcom_wled_config {
- 	u32 fs_current;
- 	u32 string_cfg;
- 	int sc_irq;
-+	int ovp_irq;
- 	bool en_cabc;
- 	bool ext_pfet_sc_pro_en;
- };
-@@ -106,6 +113,7 @@ struct qcom_wled {
- 	u32 brightness;
- 	u32 sc_count;
- 	bool prev_state;
-+	bool ovp_irq_disabled;
+ static const struct of_device_id td028ttec1_of_match[] = {
+-	{ .compatible = "omapdss,toppoly,td028ttec1", },
++	{ .compatible = "omapdss,tpo,td028ttec1", },
+ 	{},
  };
  
- static int qcom_wled_module_enable(struct qcom_wled *wled, int val)
-@@ -115,6 +123,28 @@ static int qcom_wled_module_enable(struct qcom_wled *wled, int val)
- 	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
- 			QCOM_WLED_CTRL_MOD_ENABLE, QCOM_WLED_CTRL_MOD_EN_MASK,
- 			val << QCOM_WLED_CTRL_MODULE_EN_SHIFT);
-+	if (rc < 0)
-+		return rc;
-+	/*
-+	 * Wait for at least 10ms before enabling OVP fault interrupt after
-+	 * enabling the module so that soft start is completed. Keep the OVP
-+	 * interrupt disabled when the module is disabled.
-+	 */
-+	if (val) {
-+		usleep_range(QCOM_WLED_SOFT_START_DLY_US,
-+				QCOM_WLED_SOFT_START_DLY_US + 1000);
-+
-+		if (wled->cfg.ovp_irq > 0 && wled->ovp_irq_disabled) {
-+			enable_irq(wled->cfg.ovp_irq);
-+			wled->ovp_irq_disabled = false;
-+		}
-+	} else {
-+		if (wled->cfg.ovp_irq > 0 && !wled->ovp_irq_disabled) {
-+			disable_irq(wled->cfg.ovp_irq);
-+			wled->ovp_irq_disabled = true;
-+		}
-+	}
-+
- 	return rc;
+@@ -471,7 +471,7 @@ static struct spi_driver td028ttec1_spi_driver = {
+ 
+ module_spi_driver(td028ttec1_spi_driver);
+ 
+-MODULE_ALIAS("spi:toppoly,td028ttec1");
++MODULE_ALIAS("spi:tpo,td028ttec1");
+ MODULE_AUTHOR("H. Nikolaus Schaller <hns@goldelico.com>");
+ MODULE_DESCRIPTION("Toppoly TD028TTEC1 panel driver");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+index 57e9e146ff74..b67b324e9919 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c
+@@ -455,6 +455,8 @@ static int td028ttec1_panel_remove(struct spi_device *spi)
  }
  
-@@ -264,12 +294,42 @@ static irqreturn_t qcom_wled_sc_irq_handler(int irq, void *_wled)
- 	return IRQ_HANDLED;
- }
+ static const struct of_device_id td028ttec1_of_match[] = {
++	{ .compatible = "omapdss,tpo,td028ttec1", },
++	/* keep to not break older DTB */
+ 	{ .compatible = "omapdss,toppoly,td028ttec1", },
+ 	{},
+ };
+@@ -474,7 +476,7 @@ static struct spi_driver td028ttec1_spi_driver = {
  
-+static irqreturn_t qcom_wled_ovp_irq_handler(int irq, void *_wled)
-+{
-+	struct qcom_wled *wled = _wled;
-+	int rc;
-+	u32 int_sts, fault_sts;
-+
-+	rc = regmap_read(wled->regmap,
-+			wled->ctrl_addr + QCOM_WLED_CTRL_INT_RT_STS, &int_sts);
-+	if (rc < 0) {
-+		pr_err("Error in reading WLED_INT_RT_STS rc=%d\n", rc);
-+		return IRQ_HANDLED;
-+	}
-+
-+	rc = regmap_read(wled->regmap, wled->ctrl_addr +
-+			QCOM_WLED_CTRL_FAULT_STATUS, &fault_sts);
-+	if (rc < 0) {
-+		pr_err("Error in reading WLED_FAULT_STATUS rc=%d\n", rc);
-+		return IRQ_HANDLED;
-+	}
-+
-+	if (fault_sts &
-+		(QCOM_WLED_CTRL_OVP_FAULT_BIT | QCOM_WLED_CTRL_ILIM_FAULT_BIT))
-+		pr_err("WLED OVP fault detected, int_sts=%x fault_sts= %x\n",
-+			int_sts, fault_sts);
-+
-+	return IRQ_HANDLED;
-+}
-+
- static int qcom_wled_setup(struct qcom_wled *wled)
- {
- 	int rc, temp, i;
- 	u8 sink_en = 0;
-+	u32 val;
- 	u8 string_cfg = wled->cfg.string_cfg;
- 	int sc_irq = wled->cfg.sc_irq;
-+	int ovp_irq = wled->cfg.ovp_irq;
+ module_spi_driver(td028ttec1_spi_driver);
  
- 	rc = regmap_update_bits(wled->regmap,
- 			wled->ctrl_addr + QCOM_WLED_CTRL_OVP,
-@@ -367,6 +427,25 @@ static int qcom_wled_setup(struct qcom_wled *wled)
- 		}
- 	}
- 
-+	if (ovp_irq >= 0) {
-+		rc = devm_request_threaded_irq(&wled->pdev->dev, ovp_irq,
-+				NULL, qcom_wled_ovp_irq_handler, IRQF_ONESHOT,
-+				"qcom_wled_ovp_irq", wled);
-+		if (rc < 0) {
-+			dev_err(&wled->pdev->dev, "Unable to request ovp(%d) IRQ(err:%d)\n",
-+				ovp_irq, rc);
-+			return rc;
-+		}
-+
-+		rc = regmap_read(wled->regmap, wled->ctrl_addr +
-+				QCOM_WLED_CTRL_MOD_ENABLE, &val);
-+		/* disable the OVP irq only if the module is not enabled */
-+		if (!rc && !(val & QCOM_WLED_CTRL_MOD_EN_MASK)) {
-+			disable_irq(ovp_irq);
-+			wled->ovp_irq_disabled = true;
-+		}
-+	}
-+
- 	return 0;
- }
- 
-@@ -539,6 +618,10 @@ static int qcom_wled_configure(struct qcom_wled *wled, struct device *dev)
- 	if (wled->cfg.sc_irq < 0)
- 		dev_dbg(&wled->pdev->dev, "sc irq is not used\n");
- 
-+	wled->cfg.ovp_irq = platform_get_irq_byname(wled->pdev, "ovp-irq");
-+	if (wled->cfg.ovp_irq < 0)
-+		dev_dbg(&wled->pdev->dev, "ovp irq is not used\n");
-+
- 	return 0;
- }
- 
+-MODULE_ALIAS("spi:toppoly,td028ttec1");
++MODULE_ALIAS("spi:tpo,td028ttec1");
+ MODULE_AUTHOR("H. Nikolaus Schaller <hns@goldelico.com>");
+ MODULE_DESCRIPTION("Toppoly TD028TTEC1 panel driver");
+ MODULE_LICENSE("GPL");
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.12.2
 

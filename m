@@ -1,43 +1,37 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 24 Nov 2017 20:52:19 +0000
-Subject: [PATCH 3/4] video: udlfb: Improve a size determination in dlfb_alloc_urb_list()
-Message-Id: <d55401c9-1fbb-93b9-40de-2b93396e8def@users.sourceforge.net>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Thu, 16 Nov 2017 08:50:18 +0000
+Subject: [PATCH v2 3/4] DTS: Pandora: fix panel compatibility string
+Message-Id: <f9e764c18a8fc77160ddea4fb61e63f703a0c19e.1510822218.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
-In-Reply-To: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
+References: <cover.1510822218.git.hns@goldelico.com>
+In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 24 Nov 2017 21:30:37 +0100
+We can remove the "omapdss," prefix because the
+omapdrm driver takes care of it.
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
 ---
- drivers/video/fbdev/udlfb.c | 2 +-
+ arch/arm/boot/dts/omap3-pandora-common.dtsi | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index cb2d59ca67a4..059883962698 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1867,7 +1867,7 @@ static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size)
- 	INIT_LIST_HEAD(&dev->urbs.list);
+diff --git a/arch/arm/boot/dts/omap3-pandora-common.dtsi b/arch/arm/boot/dts/omap3-pandora-common.dtsi
+index 53e007abdc71..64d967ec8c58 100644
+--- a/arch/arm/boot/dts/omap3-pandora-common.dtsi
++++ b/arch/arm/boot/dts/omap3-pandora-common.dtsi
+@@ -626,7 +626,7 @@
  
- 	while (i < count) {
--		unode = kzalloc(sizeof(struct urb_node), GFP_KERNEL);
-+		unode = kzalloc(sizeof(*unode), GFP_KERNEL);
- 		if (!unode)
- 			break;
- 		unode->dev = dev;
+ 	lcd: lcd@1 {
+ 		reg = <1>;	/* CS1 */
+-		compatible =	"omapdss,tpo,td043mtea1";
++		compatible =	"tpo,td043mtea1";
+ 		spi-max-frequency = <100000>;
+ 		spi-cpol;
+ 		spi-cpha;
 -- 
-2.15.0
+2.12.2
 

@@ -1,127 +1,36 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 09 Nov 2017 13:34:06 +0000
-Subject: Re: [PATCH] video: fbdev: mxsfb: fix pixelclock polarity
-Message-Id: <17182140.Z5dLF1tZkm@amdc3058>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Thu, 16 Nov 2017 08:50:17 +0000
+Subject: [PATCH v2 2/4] DTS: GTA04: fix panel compatibility string
+Message-Id: <09d975dd62afa1dfa43d94079cc9a44731af4b3b.1510822218.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1453771756-5418-1-git-send-email-stefan@agner.ch>
-        <1542360.CFa2kFFNPO@amdc3058> <ccddc4dd5793a718636af4e2e4f009a4@agner.ch>
-        <CGME20171109133407epcas1p23f7ebf05f0d20e00ef56cf64425bdb60@epcas1p2.samsung.com>
-In-Reply-To: <ccddc4dd5793a718636af4e2e4f009a4@agner.ch>
+References: <cover.1510822218.git.hns@goldelico.com>
+In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stefan Agner <stefan@agner.ch>
-Cc: shawnguo@kernel.org, plagnioj@jcrosoft.com, s.hauer@pengutronix.de, Ying.Liu@freescale.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, LW@karo-electronics.de, fabio.estevam@freescale.com, max.krummenacher@toradex.com, mauro.salvini@smigroup.net
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
+Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
 
-On Tuesday, October 17, 2017 06:01:58 PM Stefan Agner wrote:
-> On 2017-10-17 15:56, Bartlomiej Zolnierkiewicz wrote:
-> > Hi,
-> > 
-> > Stefan/Shawn:
-> > 
-> > Should I merge this patch? It seems to be still needed:
-> > 
-> > https://www.spinics.net/lists/linux-fbdev/msg23112.html
-> 
-> In my opinion yes, it fixes an issue... 
-> 
-> FWIW, I normally use the DRM driver when using mainline which does not
-> suffer from this issue, so I did not mind much that this fix never made
-> it...
+Vendor string is "tpo" and not "toppoly".
 
-I queued your patch (with Shawn's ACK) for 4.15, thanks!
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-gta04.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> --
-> Stefan
-> 
-> > 
-> > Best regards,
-> > --
-> > Bartlomiej Zolnierkiewicz
-> > Samsung R&D Institute Poland
-> > Samsung Electronics
-> > 
-> > On Friday, May 06, 2016 01:29:59 PM Stefan Agner wrote:
-> >> Hi Shawn,
-> >>
-> >> On 2016-01-25 17:29, Stefan Agner wrote:
-> >> > The PIXDATA flags of the display_flags enum are controller centric,
-> >> > e.g. NEGEDGE means the controller shall drive the data signals on
-> >> > pixelclocks negative edge. However, the drivers flag is display
-> >> > centric: Sample the data on negative (falling) edge.
-> >> >
-> >> > Therefore, change the if statement to check for the POSEDGE flag
-> >> > (which is typically not set):
-> >> > Drive on positive edge => sample on negative edge
-> >>
-> >> Any comment on that patch?
-> >>
-> >> --
-> >> Stefan
-> >>
-> >>
-> >> >
-> >> > Signed-off-by: Stefan Agner <stefan@agner.ch>
-> >> > ---
-> >> > Hi all
-> >> >
-> >> > Shawn, I would like to have at least your Ack on this before merge.
-> >> >
-> >> > It seems that this has been wrong since the driver is able to use
-> >> > the timings from the device tree, introduced with 669406534b4a
-> >> > ("video: mxsfb: get display timings from device tree").
-> >> >
-> >> > Not sure how many device trees actually specify the wrong pixel clock
-> >> > polarity due to that. At least the initial flag convertion from the
-> >> > old platform data structures done with 0d9f8217db15 ("ARM: mxs: move
-> >> > display timing configurations into device tree") seems to be affected
-> >> > and would need to be changed accordingly...
-> >> >
-> >> > Not sure how we should handle this, maybe just invert all
-> >> > pixelclk-active properties where the mxsfb driver is in use...?
-> >> >
-> >> > --
-> >> > Stefan
-> >> >
-> >> >  drivers/video/fbdev/mxsfb.c | 13 +++++++++++--
-> >> >  1 file changed, 11 insertions(+), 2 deletions(-)
-> >> >
-> >> > diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-> >> > index 4e6608c..38898a9 100644
-> >> > --- a/drivers/video/fbdev/mxsfb.c
-> >> > +++ b/drivers/video/fbdev/mxsfb.c
-> >> > @@ -150,7 +150,7 @@
-> >> >  #define STMLCDIF_24BIT 3 /** pixel data bus to the display is of 24
-> >> > bit width */
-> >> >
-> >> >  #define MXSFB_SYNC_DATA_ENABLE_HIGH_ACT	(1 << 6)
-> >> > -#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negtive edge sampling */
-> >> > +#define MXSFB_SYNC_DOTCLK_FALLING_ACT	(1 << 7) /* negative edge sampling */
-> >> >
-> >> >  enum mxsfb_devtype {
-> >> >  	MXSFB_V3,
-> >> > @@ -788,7 +788,16 @@ static int mxsfb_init_fbinfo_dt(struct mxsfb_info *host,
-> >> >
-> >> >  	if (vm.flags & DISPLAY_FLAGS_DE_HIGH)
-> >> >  		host->sync |= MXSFB_SYNC_DATA_ENABLE_HIGH_ACT;
-> >> > -	if (vm.flags & DISPLAY_FLAGS_PIXDATA_NEGEDGE)
-> >> > +
-> >> > +	/*
-> >> > +	 * The PIXDATA flags of the display_flags enum are controller
-> >> > +	 * centric, e.g. NEGEDGE means drive data on negative edge.
-> >> > +	 * However, the drivers flag is display centric: Sample the
-> >> > +	 * data on negative (falling) edge. Therefore, check for the
-> >> > +	 * POSEDGE flag:
-> >> > +	 * drive on positive edge => sample on negative edge
-> >> > +	 */
-> >> > +	if (vm.flags & DISPLAY_FLAGS_PIXDATA_POSEDGE)
-> >> >  		host->sync |= MXSFB_SYNC_DOTCLK_FALLING_ACT;
-> >> >
-> >> >  put_display_node:
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index 4504908c23fe..ec27ed67a22a 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -86,7 +86,7 @@
+ 
+ 		/* lcd panel */
+ 		lcd: td028ttec1@0 {
+-			compatible = "toppoly,td028ttec1";
++			compatible = "tpo,td028ttec1";
+ 			reg = <0>;
+ 			spi-max-frequency = <100000>;
+ 			spi-cpol;
+-- 
+2.12.2
 

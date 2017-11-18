@@ -1,263 +1,548 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Mon, 06 Nov 2017 09:17:31 +0000
-Subject: Re: [Intel-gfx] [PATCH v5 3/7] drm: Add support for a panel-orientation connector property
-Message-Id: <20171106091731.euiukbeacfrwwhbl@phenom.ffwll.local>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sat, 18 Nov 2017 02:30:11 +0000
+Subject: [PATCH v2 11/13] nubus: Rename struct nubus_dev
+Message-Id: <5e067466707d62a196921a7c62dbc917b61e2813.1510960933.git.fthain@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171104140828.32469-1-hdegoede@redhat.com>
- <20171104140828.32469-4-hdegoede@redhat.com>
-In-Reply-To: <20171104140828.32469-4-hdegoede@redhat.com>
+References: <cover.1510960933.git.fthain@telegraphics.com.au>
+In-Reply-To: <cover.1510960933.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans de Goede <j.w.r.degoede@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, intel-gfx <intel-gfx@lists.freedesktop.org>, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Bastien Nocera <hadess@hadess.net>, Daniel Vetter <daniel.vetter@intel.com>, Robert McQueen <robert@endlessm.com>, Carlo Caione <carlo@endlessm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Sat, Nov 04, 2017 at 03:08:24PM +0100, Hans de Goede wrote:
-> On some devices the LCD panel is mounted in the casing in such a way that
-> the up/top side of the panel does not match with the top side of the
-> device (e.g. it is mounted upside-down).
-> 
-> This commit adds the necessary infra for lcd-panel drm_connector-s to
-> have a "panel orientation" property to communicate how the panel is
-> orientated vs the casing.
-> 
-> Userspace can use this property to check for non-normal orientation and
-> then adjust the displayed image accordingly by rotating it to compensate.
-> 
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
+It is misleading to call a functional resource a "device". In adopting
+the Linux Driver Model, struct nubus_board will embed a struct device.
+This will compound the problem because drivers will bind with boards,
+not with functional resources.
 
-btw in drm we'd like to record the per-patch changelog, pls put them above
-the ---. I know everyone's different, it's silly.
+Rename struct nubus_dev as struct nubus_rsrc. "Functional resource" is
+the vendor's terminology so this helps to avoid confusion.
 
-> Changes in v2:
-> -Rebased on 4.14-rc1
-> -Store panel_orientation in drm_display_info, so that drm_fb_helper.c can
->  access it easily
-> -Have a single drm_connector_init_panel_orientation_property rather then
->  create and attach functions. The caller is expected to set
->  drm_display_info.panel_orientation before calling this, then this will
->  check for platform specific quirks overriding the panel_orientation and if
->  the panel_orientation is set after this then it will attach the property.
-> ---
->  drivers/gpu/drm/Kconfig         |  1 +
->  drivers/gpu/drm/drm_connector.c | 73 +++++++++++++++++++++++++++++++++++++++++
->  include/drm/drm_connector.h     | 11 +++++++
->  include/drm/drm_mode_config.h   |  7 ++++
->  include/uapi/drm/drm_mode.h     |  7 ++++
->  5 files changed, 99 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-> index 9d005ac98c2b..0b166e626eb6 100644
-> --- a/drivers/gpu/drm/Kconfig
-> +++ b/drivers/gpu/drm/Kconfig
-> @@ -7,6 +7,7 @@
->  menuconfig DRM
->  	tristate "Direct Rendering Manager (XFree86 4.1.0 and higher DRI support)"
->  	depends on (AGP || AGP=n) && !EMULATED_CMPXCHG && HAS_DMA
-> +	select DRM_PANEL_ORIENTATION_QUIRKS
->  	select HDMI
->  	select FB_CMDLINE
->  	select I2C
-> diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connector.c
-> index 704fc8934616..129c83a84320 100644
-> --- a/drivers/gpu/drm/drm_connector.c
-> +++ b/drivers/gpu/drm/drm_connector.c
-> @@ -24,6 +24,7 @@
->  #include <drm/drm_connector.h>
->  #include <drm/drm_edid.h>
->  #include <drm/drm_encoder.h>
-> +#include <drm/drm_utils.h>
->  
->  #include "drm_crtc_internal.h"
->  #include "drm_internal.h"
-> @@ -212,6 +213,8 @@ int drm_connector_init(struct drm_device *dev,
->  	mutex_init(&connector->mutex);
->  	connector->edid_blob_ptr = NULL;
->  	connector->status = connector_status_unknown;
-> +	connector->display_info.panel_orientation > +		DRM_MODE_PANEL_ORIENTATION_UNKNOWN;
->  
->  	drm_connector_get_cmdline_mode(connector);
->  
-> @@ -664,6 +667,13 @@ static const struct drm_prop_enum_list drm_aspect_ratio_enum_list[] = {
->  	{ DRM_MODE_PICTURE_ASPECT_16_9, "16:9" },
->  };
->  
-> +static const struct drm_prop_enum_list drm_panel_orientation_enum_list[] = {
-> +	{ DRM_MODE_PANEL_ORIENTATION_NORMAL,	"Normal"	},
-> +	{ DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP,	"Upside Down"	},
-> +	{ DRM_MODE_PANEL_ORIENTATION_LEFT_UP,	"Left Side Up"	},
-> +	{ DRM_MODE_PANEL_ORIENTATION_RIGHT_UP,	"Right Side Up"	},
-> +};
-> +
->  static const struct drm_prop_enum_list drm_dvi_i_select_enum_list[] = {
->  	{ DRM_MODE_SUBCONNECTOR_Automatic, "Automatic" }, /* DVI-I and TV-out */
->  	{ DRM_MODE_SUBCONNECTOR_DVID,      "DVI-D"     }, /* DVI-I  */
-> @@ -768,6 +778,18 @@ DRM_ENUM_NAME_FN(drm_get_tv_subconnector_name,
->   *
->   * CRTC_ID:
->   * 	Mode object ID of the &drm_crtc this connector should be connected to.
-> + *
-> + * Connectors for LCD panels may also have one standardized property:
-> + *
-> + * panel orientation:
-> + *	On some devices the LCD panel is mounted in the casing in such a way
-> + *	that the up/top side of the panel does not match with the top side of
-> + *	the device. Userspace can use this property to check for this.
-> + *	Note that input coordinates from touchscreens (input devices with
-> + *	INPUT_PROP_DIRECT) will still map 1:1 to the actual LCD panel
-> + *	coordinates, so if userspace rotates the picture to adjust for
-> + *	the orientation it must also apply the same transformation to the
-> + *	touchscreen input coordinates.
->   */
->  
->  int drm_connector_create_standard_properties(struct drm_device *dev)
-> @@ -1234,6 +1256,57 @@ void drm_mode_connector_set_link_status_property(struct drm_connector *connector
->  }
->  EXPORT_SYMBOL(drm_mode_connector_set_link_status_property);
->  
-> +/**
-> + * drm_connector_init_panel_orientation_property -
-> + *	initialize the connecters panel_orientation property
-> + * @connector: connector for which to init the panel-orientation property.
-> + * @width: width in pixels of the panel, used for panel quirk detection
-> + * @height: height in pixels of the panel, used for panel quirk detection
-> + *
-> + * This function should only be called for built-in panels, after setting
-> + * connector->display_info.panel_orientation first (if known).
-> + *
-> + * This function will check for platform specific (e.g. DMI based) quirks
-> + * overriding display_info.panel_orientation first, then if panel_orientation
-> + * is not DRM_MODE_PANEL_ORIENTATION_UNKNOWN it will attach the
-> + * "panel orientation" property to the connector.
-> + *
-> + * Returns:
-> + * Zero on success, negative errno on failure.
-> + */
-> +int drm_connector_init_panel_orientation_property(
-> +	struct drm_connector *connector, int width, int height)
-> +{
-> +	struct drm_device *dev = connector->dev;
-> +	struct drm_display_info *info = &connector->display_info;
-> +	struct drm_property *prop;
-> +	int orientation_quirk;
-> +
-> +	orientation_quirk = drm_get_panel_orientation_quirk(width, height);
-> +	if (orientation_quirk != DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-> +		info->panel_orientation = orientation_quirk;
-> +
-> +	if (info->panel_orientation = DRM_MODE_PANEL_ORIENTATION_UNKNOWN)
-> +		return 0;
-> +
-> +	prop = dev->mode_config.panel_orientation_property;
-> +	if (!prop) {
-> +		prop = drm_property_create_enum(dev, DRM_MODE_PROP_IMMUTABLE,
-> +				"panel orientation",
-> +				drm_panel_orientation_enum_list,
-> +				ARRAY_SIZE(drm_panel_orientation_enum_list));
-> +		if (!prop)
-> +			return -ENOMEM;
-> +
-> +		dev->mode_config.panel_orientation_property = prop;
-> +	}
-> +
-> +	drm_object_attach_property(&connector->base, prop,
-> +				   info->panel_orientation);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(drm_connector_init_panel_orientation_property);
-> +
->  int drm_mode_connector_set_obj_prop(struct drm_mode_object *obj,
->  				    struct drm_property *property,
->  				    uint64_t value)
-> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-> index b4285c40e1e4..e6883065a461 100644
-> --- a/include/drm/drm_connector.h
-> +++ b/include/drm/drm_connector.h
-> @@ -222,6 +222,15 @@ struct drm_display_info {
->  #define DRM_COLOR_FORMAT_YCRCB422	(1<<2)
->  #define DRM_COLOR_FORMAT_YCRCB420	(1<<3)
->  
-> +	/**
-> +	 * @panel_orientation: Read only connector property for built-in panels,
-> +	 * indicating the orientation of the panel vs the device's casing.
-> +	 * drm_connector_init() sets this to DRM_MODE_PANEL_ORIENTATION_UNKNOWN.
-> +	 * When not UNKNOWN this gets used by the drm_fb_helpers to rotate the
-> +	 * fb to compensate and gets exported as prop to userspace.
-> +	 */
-> +	int panel_orientation;
-> +
->  	/**
->  	 * @color_formats: HDMI Color formats, selects between RGB and YCrCb
->  	 * modes. Used DRM_COLOR_FORMAT\_ defines, which are _not_ the same ones
-> @@ -1019,6 +1028,8 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector,
->  					    const struct edid *edid);
->  void drm_mode_connector_set_link_status_property(struct drm_connector *connector,
->  						 uint64_t link_status);
-> +int drm_connector_init_panel_orientation_property(
-> +	struct drm_connector *connector, int width, int height);
->  
->  /**
->   * struct drm_tile_group - Tile group metadata
-> diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-> index 0b4ac2ebc610..7d4ee1726e0a 100644
-> --- a/include/drm/drm_mode_config.h
-> +++ b/include/drm/drm_mode_config.h
-> @@ -728,6 +728,13 @@ struct drm_mode_config {
->  	 */
->  	struct drm_property *suggested_y_property;
->  
-> +	/**
-> +	 * @panel_orientation_property: Optional connector property indicating
-> +	 * how the lcd-panel is mounted inside the casing (e.g. normal or
-> +	 * upside-down).
-> +	 */
-> +	struct drm_property *panel_orientation_property;
-> +
->  	/* dumb ioctl parameters */
->  	uint32_t preferred_depth, prefer_shadow;
->  
-> diff --git a/include/uapi/drm/drm_mode.h b/include/uapi/drm/drm_mode.h
-> index 34b6bb34b002..f60fae67bc1f 100644
-> --- a/include/uapi/drm/drm_mode.h
-> +++ b/include/uapi/drm/drm_mode.h
-> @@ -127,6 +127,13 @@ extern "C" {
->  #define DRM_MODE_LINK_STATUS_GOOD	0
->  #define DRM_MODE_LINK_STATUS_BAD	1
->  
-> +/* Panel Orientation options */
-> +#define DRM_MODE_PANEL_ORIENTATION_UNKNOWN	-1
-> +#define DRM_MODE_PANEL_ORIENTATION_NORMAL	0
-> +#define DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP	1
-> +#define DRM_MODE_PANEL_ORIENTATION_LEFT_UP	2
-> +#define DRM_MODE_PANEL_ORIENTATION_RIGHT_UP	3
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Tested-by: Stan Johnson <userm57@yahoo.com>
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+ drivers/net/ethernet/8390/mac8390.c     |  26 ++++----
+ drivers/net/ethernet/natsemi/macsonic.c |  22 +++----
+ drivers/nubus/nubus.c                   | 105 ++++++++++++++++----------------
+ drivers/nubus/proc.c                    |  15 ++---
+ drivers/video/fbdev/macfb.c             |   2 +-
+ include/linux/nubus.h                   |  30 +++++----
+ 6 files changed, 98 insertions(+), 102 deletions(-)
 
-Ugh, pls don't put enum properties into the uapi header. Userspace is
-supposed to look at the strings, not the numbers. We've already screwed
-this up a few times.
-
-That also means an enum, with kerneldoc, would be more suitable. Please
-put it into drm_connector.h.
-
-Except for that minor thing looks all good. With the uapi cleanup up as
-desribed above:
-
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-
-
-> +
->  /*
->   * DRM_MODE_ROTATE_<degrees>
->   *
-> -- 
-> 2.14.3
-> 
-> _______________________________________________
-> Intel-gfx mailing list
-> Intel-gfx@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/intel-gfx
-
+diff --git a/drivers/net/ethernet/8390/mac8390.c b/drivers/net/ethernet/8390/mac8390.c
+index 9497f18eaba0..929ff6419621 100644
+--- a/drivers/net/ethernet/8390/mac8390.c
++++ b/drivers/net/ethernet/8390/mac8390.c
+@@ -123,7 +123,8 @@ enum mac8390_access {
+ };
+ 
+ extern int mac8390_memtest(struct net_device *dev);
+-static int mac8390_initdev(struct net_device *dev, struct nubus_dev *ndev,
++static int mac8390_initdev(struct net_device *dev,
++			   struct nubus_rsrc *ndev,
+ 			   enum mac8390_type type);
+ 
+ static int mac8390_open(struct net_device *dev);
+@@ -169,11 +170,11 @@ static void word_memcpy_tocard(unsigned long tp, const void *fp, int count);
+ static void word_memcpy_fromcard(void *tp, unsigned long fp, int count);
+ static u32 mac8390_msg_enable;
+ 
+-static enum mac8390_type __init mac8390_ident(struct nubus_dev *dev)
++static enum mac8390_type __init mac8390_ident(struct nubus_rsrc *fres)
+ {
+-	switch (dev->dr_sw) {
++	switch (fres->dr_sw) {
+ 	case NUBUS_DRSW_3COM:
+-		switch (dev->dr_hw) {
++		switch (fres->dr_hw) {
+ 		case NUBUS_DRHW_APPLE_SONIC_NB:
+ 		case NUBUS_DRHW_APPLE_SONIC_LC:
+ 		case NUBUS_DRHW_SONNET:
+@@ -184,7 +185,7 @@ static enum mac8390_type __init mac8390_ident(struct nubus_dev *dev)
+ 		break;
+ 
+ 	case NUBUS_DRSW_APPLE:
+-		switch (dev->dr_hw) {
++		switch (fres->dr_hw) {
+ 		case NUBUS_DRHW_ASANTE_LC:
+ 			return MAC8390_NONE;
+ 		case NUBUS_DRHW_CABLETRON:
+@@ -201,7 +202,7 @@ static enum mac8390_type __init mac8390_ident(struct nubus_dev *dev)
+ 	case NUBUS_DRSW_TECHWORKS:
+ 	case NUBUS_DRSW_DAYNA2:
+ 	case NUBUS_DRSW_DAYNA_LC:
+-		if (dev->dr_hw = NUBUS_DRHW_CABLETRON)
++		if (fres->dr_hw = NUBUS_DRHW_CABLETRON)
+ 			return MAC8390_CABLETRON;
+ 		else
+ 			return MAC8390_APPLE;
+@@ -212,7 +213,7 @@ static enum mac8390_type __init mac8390_ident(struct nubus_dev *dev)
+ 		break;
+ 
+ 	case NUBUS_DRSW_KINETICS:
+-		switch (dev->dr_hw) {
++		switch (fres->dr_hw) {
+ 		case NUBUS_DRHW_INTERLAN:
+ 			return MAC8390_INTERLAN;
+ 		default:
+@@ -225,8 +226,8 @@ static enum mac8390_type __init mac8390_ident(struct nubus_dev *dev)
+ 		 * These correspond to Dayna Sonic cards
+ 		 * which use the macsonic driver
+ 		 */
+-		if (dev->dr_hw = NUBUS_DRHW_SMC9194 ||
+-		    dev->dr_hw = NUBUS_DRHW_INTERLAN)
++		if (fres->dr_hw = NUBUS_DRHW_SMC9194 ||
++		    fres->dr_hw = NUBUS_DRHW_INTERLAN)
+ 			return MAC8390_NONE;
+ 		else
+ 			return MAC8390_DAYNA;
+@@ -289,7 +290,8 @@ static int __init mac8390_memsize(unsigned long membase)
+ 	return i * 0x1000;
+ }
+ 
+-static bool __init mac8390_init(struct net_device *dev, struct nubus_dev *ndev,
++static bool __init mac8390_init(struct net_device *dev,
++				struct nubus_rsrc *ndev,
+ 				enum mac8390_type cardtype)
+ {
+ 	struct nubus_dir dir;
+@@ -394,7 +396,7 @@ static bool __init mac8390_init(struct net_device *dev, struct nubus_dev *ndev,
+ struct net_device * __init mac8390_probe(int unit)
+ {
+ 	struct net_device *dev;
+-	struct nubus_dev *ndev = NULL;
++	struct nubus_rsrc *ndev = NULL;
+ 	int err = -ENODEV;
+ 	struct ei_device *ei_local;
+ 
+@@ -489,7 +491,7 @@ static const struct net_device_ops mac8390_netdev_ops = {
+ };
+ 
+ static int __init mac8390_initdev(struct net_device *dev,
+-				  struct nubus_dev *ndev,
++				  struct nubus_rsrc *ndev,
+ 				  enum mac8390_type type)
+ {
+ 	static u32 fwrd4_offsets[16] = {
+diff --git a/drivers/net/ethernet/natsemi/macsonic.c b/drivers/net/ethernet/natsemi/macsonic.c
+index a42433fb6949..14f3fb50dc21 100644
+--- a/drivers/net/ethernet/natsemi/macsonic.c
++++ b/drivers/net/ethernet/natsemi/macsonic.c
+@@ -428,26 +428,26 @@ static int mac_nubus_sonic_ethernet_addr(struct net_device *dev,
+ 	return 0;
+ }
+ 
+-static int macsonic_ident(struct nubus_dev *ndev)
++static int macsonic_ident(struct nubus_rsrc *fres)
+ {
+-	if (ndev->dr_hw = NUBUS_DRHW_ASANTE_LC &&
+-	    ndev->dr_sw = NUBUS_DRSW_SONIC_LC)
++	if (fres->dr_hw = NUBUS_DRHW_ASANTE_LC &&
++	    fres->dr_sw = NUBUS_DRSW_SONIC_LC)
+ 		return MACSONIC_DAYNALINK;
+-	if (ndev->dr_hw = NUBUS_DRHW_SONIC &&
+-	    ndev->dr_sw = NUBUS_DRSW_APPLE) {
++	if (fres->dr_hw = NUBUS_DRHW_SONIC &&
++	    fres->dr_sw = NUBUS_DRSW_APPLE) {
+ 		/* There has to be a better way to do this... */
+-		if (strstr(ndev->board->name, "DuoDock"))
++		if (strstr(fres->board->name, "DuoDock"))
+ 			return MACSONIC_DUODOCK;
+ 		else
+ 			return MACSONIC_APPLE;
+ 	}
+ 
+-	if (ndev->dr_hw = NUBUS_DRHW_SMC9194 &&
+-	    ndev->dr_sw = NUBUS_DRSW_DAYNA)
++	if (fres->dr_hw = NUBUS_DRHW_SMC9194 &&
++	    fres->dr_sw = NUBUS_DRSW_DAYNA)
+ 		return MACSONIC_DAYNA;
+ 
+-	if (ndev->dr_hw = NUBUS_DRHW_APPLE_SONIC_LC &&
+-	    ndev->dr_sw = 0) { /* huh? */
++	if (fres->dr_hw = NUBUS_DRHW_APPLE_SONIC_LC &&
++	    fres->dr_sw = 0) { /* huh? */
+ 		return MACSONIC_APPLE16;
+ 	}
+ 	return -1;
+@@ -456,7 +456,7 @@ static int macsonic_ident(struct nubus_dev *ndev)
+ static int mac_nubus_sonic_probe(struct net_device *dev)
+ {
+ 	static int slots;
+-	struct nubus_dev* ndev = NULL;
++	struct nubus_rsrc *ndev = NULL;
+ 	struct sonic_local* lp = netdev_priv(dev);
+ 	unsigned long base_addr, prom_addr;
+ 	u16 sonic_dcr;
+diff --git a/drivers/nubus/nubus.c b/drivers/nubus/nubus.c
+index c61327325553..acbccf611adc 100644
+--- a/drivers/nubus/nubus.c
++++ b/drivers/nubus/nubus.c
+@@ -32,7 +32,7 @@
+ 
+ /* Globals */
+ 
+-struct nubus_dev *nubus_devices;
++struct nubus_rsrc *nubus_func_rsrcs;
+ struct nubus_board *nubus_boards;
+ 
+ /* Meaning of "bytelanes":
+@@ -228,12 +228,11 @@ int nubus_get_root_dir(const struct nubus_board *board,
+ EXPORT_SYMBOL(nubus_get_root_dir);
+ 
+ /* This is a slyly renamed version of the above */
+-int nubus_get_func_dir(const struct nubus_dev *dev,
+-		       struct nubus_dir *dir)
++int nubus_get_func_dir(const struct nubus_rsrc *fres, struct nubus_dir *dir)
+ {
+-	dir->ptr = dir->base = dev->directory;
++	dir->ptr = dir->base = fres->directory;
+ 	dir->done = 0;
+-	dir->mask = dev->board->lanes;
++	dir->mask = fres->board->lanes;
+ 	return 0;
+ }
+ EXPORT_SYMBOL(nubus_get_func_dir);
+@@ -306,11 +305,10 @@ EXPORT_SYMBOL(nubus_rewinddir);
+ 
+ /* Driver interface functions, more or less like in pci.c */
+ 
+-struct nubus_dev*
+-nubus_find_type(unsigned short category, unsigned short type,
+-		const struct nubus_dev *from)
++struct nubus_rsrc *nubus_find_type(unsigned short category, unsigned short type,
++                                   const struct nubus_rsrc *from)
+ {
+-	struct nubus_dev *itor = from ? from->next : nubus_devices;
++	struct nubus_rsrc *itor = from ? from->next : nubus_func_rsrcs;
+ 
+ 	while (itor) {
+ 		if (itor->category = category && itor->type = type)
+@@ -321,10 +319,10 @@ nubus_find_type(unsigned short category, unsigned short type,
+ }
+ EXPORT_SYMBOL(nubus_find_type);
+ 
+-struct nubus_dev*
+-nubus_find_slot(unsigned int slot, const struct nubus_dev *from)
++struct nubus_rsrc *nubus_find_slot(unsigned int slot,
++                                   const struct nubus_rsrc *from)
+ {
+-	struct nubus_dev *itor = from ? from->next : nubus_devices;
++	struct nubus_rsrc *itor = from ? from->next : nubus_func_rsrcs;
+ 
+ 	while (itor) {
+ 		if (itor->board->slot = slot)
+@@ -403,19 +401,19 @@ static int __init nubus_get_display_vidmode(struct nubus_board *board,
+ 	return 0;
+ }
+ 
+-static int __init nubus_get_display_resource(struct nubus_dev *dev,
++static int __init nubus_get_display_resource(struct nubus_rsrc *fres,
+                                              struct proc_dir_entry *procdir,
+                                              const struct nubus_dirent *ent)
+ {
+ 	switch (ent->type) {
+ 	case NUBUS_RESID_GAMMADIR:
+ 		pr_debug("    gamma directory offset: 0x%06x\n", ent->data);
+-		nubus_get_block_rsrc_dir(dev->board, procdir, ent);
++		nubus_get_block_rsrc_dir(fres->board, procdir, ent);
+ 		break;
+ 	case 0x0080 ... 0x0085:
+ 		pr_debug("    mode 0x%02x info offset: 0x%06x\n",
+ 			ent->type, ent->data);
+-		nubus_get_display_vidmode(dev->board, procdir, ent);
++		nubus_get_display_vidmode(fres->board, procdir, ent);
+ 		break;
+ 	default:
+ 		pr_debug("    unknown resource 0x%02x, data 0x%06x\n",
+@@ -425,7 +423,7 @@ static int __init nubus_get_display_resource(struct nubus_dev *dev,
+ 	return 0;
+ }
+ 
+-static int __init nubus_get_network_resource(struct nubus_dev *dev,
++static int __init nubus_get_network_resource(struct nubus_rsrc *fres,
+                                              struct proc_dir_entry *procdir,
+                                              const struct nubus_dirent *ent)
+ {
+@@ -447,7 +445,7 @@ static int __init nubus_get_network_resource(struct nubus_dev *dev,
+ 	return 0;
+ }
+ 
+-static int __init nubus_get_cpu_resource(struct nubus_dev *dev,
++static int __init nubus_get_cpu_resource(struct nubus_rsrc *fres,
+                                          struct proc_dir_entry *procdir,
+                                          const struct nubus_dirent *ent)
+ {
+@@ -480,19 +478,19 @@ static int __init nubus_get_cpu_resource(struct nubus_dev *dev,
+ 	return 0;
+ }
+ 
+-static int __init nubus_get_private_resource(struct nubus_dev *dev,
++static int __init nubus_get_private_resource(struct nubus_rsrc *fres,
+                                              struct proc_dir_entry *procdir,
+                                              const struct nubus_dirent *ent)
+ {
+-	switch (dev->category) {
++	switch (fres->category) {
+ 	case NUBUS_CAT_DISPLAY:
+-		nubus_get_display_resource(dev, procdir, ent);
++		nubus_get_display_resource(fres, procdir, ent);
+ 		break;
+ 	case NUBUS_CAT_NETWORK:
+-		nubus_get_network_resource(dev, procdir, ent);
++		nubus_get_network_resource(fres, procdir, ent);
+ 		break;
+ 	case NUBUS_CAT_CPU:
+-		nubus_get_cpu_resource(dev, procdir, ent);
++		nubus_get_cpu_resource(fres, procdir, ent);
+ 		break;
+ 	default:
+ 		pr_debug("    unknown resource 0x%02x, data 0x%06x\n",
+@@ -502,24 +500,25 @@ static int __init nubus_get_private_resource(struct nubus_dev *dev,
+ 	return 0;
+ }
+ 
+-static struct nubus_dev * __init
++static struct nubus_rsrc * __init
+ nubus_get_functional_resource(struct nubus_board *board, int slot,
+ 			      const struct nubus_dirent *parent)
+ {
+ 	struct nubus_dir dir;
+ 	struct nubus_dirent ent;
+-	struct nubus_dev *dev;
++	struct nubus_rsrc *fres;
+ 
+ 	pr_debug("  Functional resource 0x%02x:\n", parent->type);
+ 	nubus_get_subdir(parent, &dir);
+ 	dir.procdir = nubus_proc_add_rsrc_dir(board->procdir, parent, board);
+ 
+ 	/* Actually we should probably panic if this fails */
+-	if ((dev = kzalloc(sizeof(*dev), GFP_ATOMIC)) = NULL)
++	fres = kzalloc(sizeof(*fres), GFP_ATOMIC);
++	if (!fres)
+ 		return NULL;
+-	dev->resid = parent->type;
+-	dev->directory = dir.base;
+-	dev->board = board;
++	fres->resid = parent->type;
++	fres->directory = dir.base;
++	fres->board = board;
+ 
+ 	while (nubus_readdir(&dir, &ent) != -1) {
+ 		switch (ent.type) {
+@@ -528,10 +527,10 @@ nubus_get_functional_resource(struct nubus_board *board, int slot,
+ 			unsigned short nbtdata[4];
+ 
+ 			nubus_get_rsrc_mem(nbtdata, &ent, 8);
+-			dev->category = nbtdata[0];
+-			dev->type     = nbtdata[1];
+-			dev->dr_sw    = nbtdata[2];
+-			dev->dr_hw    = nbtdata[3];
++			fres->category = nbtdata[0];
++			fres->type     = nbtdata[1];
++			fres->dr_sw    = nbtdata[2];
++			fres->dr_hw    = nbtdata[3];
+ 			pr_debug("    type: [cat 0x%x type 0x%x sw 0x%x hw 0x%x]\n",
+ 				nbtdata[0], nbtdata[1], nbtdata[2], nbtdata[3]);
+ 			nubus_proc_add_rsrc_mem(dir.procdir, &ent, 8);
+@@ -589,11 +588,11 @@ nubus_get_functional_resource(struct nubus_board *board, int slot,
+ 		default:
+ 			/* Local/Private resources have their own
+ 			   function */
+-			nubus_get_private_resource(dev, dir.procdir, &ent);
++			nubus_get_private_resource(fres, dir.procdir, &ent);
+ 		}
+ 	}
+ 
+-	return dev;
++	return fres;
+ }
+ 
+ /* This is *really* cool. */
+@@ -727,7 +726,6 @@ static int __init nubus_get_board_resource(struct nubus_board *board, int slot,
+ 	return 0;
+ }
+ 
+-/* Add a board (might be many devices) to the list */
+ static struct nubus_board * __init nubus_add_board(int slot, int bytelanes)
+ {
+ 	struct nubus_board *board;
+@@ -799,10 +797,11 @@ static struct nubus_board * __init nubus_add_board(int slot, int bytelanes)
+ 	pr_debug("Slot %X:\n", slot);
+ 
+ 	/* Each slot should have one board resource and any number of
+-	   functional resources.  So we'll fill in some fields in the
+-	   struct nubus_board from the board resource, then walk down
+-	   the list of functional resources, spinning out a nubus_dev
+-	   for each of them. */
++	 * functional resources.  So we'll fill in some fields in the
++	 * struct nubus_board from the board resource, then walk down
++	 * the list of functional resources, spinning out a nubus_rsrc
++	 * for each of them.
++	 */
+ 	if (nubus_readdir(&dir, &ent) = -1) {
+ 		/* We can't have this! */
+ 		pr_err("Slot %X: Board resource not found!\n", slot);
+@@ -817,32 +816,32 @@ static struct nubus_board * __init nubus_add_board(int slot, int bytelanes)
+ 	nubus_get_board_resource(board, slot, &ent);
+ 
+ 	while (nubus_readdir(&dir, &ent) != -1) {
+-		struct nubus_dev *dev;
+-		struct nubus_dev **devp;
++		struct nubus_rsrc *fres;
++		struct nubus_rsrc **fresp;
+ 
+-		dev = nubus_get_functional_resource(board, slot, &ent);
+-		if (dev = NULL)
++		fres = nubus_get_functional_resource(board, slot, &ent);
++		if (fres = NULL)
+ 			continue;
+ 
+ 		/* Resources should appear in ascending ID order. This sanity
+ 		 * check prevents duplicate resource IDs.
+ 		 */
+-		if (dev->resid <= prev_resid) {
+-			kfree(dev);
++		if (fres->resid <= prev_resid) {
++			kfree(fres);
+ 			continue;
+ 		}
+-		prev_resid = dev->resid;
++		prev_resid = fres->resid;
+ 
+ 		/* We zeroed this out above */
+-		if (board->first_dev = NULL)
+-			board->first_dev = dev;
++		if (board->first_func_rsrc = NULL)
++			board->first_func_rsrc = fres;
+ 
+-		/* Put it on the global NuBus device chain. Keep entries in order. */
+-		for (devp = &nubus_devices; *devp != NULL;
+-		     devp = &((*devp)->next))
++		/* Put it on the func. resource list. Keep entries in order. */
++		for (fresp = &nubus_func_rsrcs; *fresp != NULL;
++		     fresp = &((*fresp)->next))
+ 			/* spin */;
+-		*devp = dev;
+-		dev->next = NULL;
++		*fresp = fres;
++		fres->next = NULL;
+ 	}
+ 
+ 	/* Put it on the global NuBus board chain. Keep entries in order. */
+diff --git a/drivers/nubus/proc.c b/drivers/nubus/proc.c
+index 69c505795c30..bef086111b76 100644
+--- a/drivers/nubus/proc.c
++++ b/drivers/nubus/proc.c
+@@ -36,17 +36,14 @@
+ static int
+ nubus_devices_proc_show(struct seq_file *m, void *v)
+ {
+-	struct nubus_dev *dev = nubus_devices;
++	struct nubus_rsrc *frsrc = nubus_func_rsrcs;
+ 
+-	while (dev) {
++	while (frsrc) {
+ 		seq_printf(m, "%x\t%04x %04x %04x %04x",
+-			      dev->board->slot,
+-			      dev->category,
+-			      dev->type,
+-			      dev->dr_sw,
+-			      dev->dr_hw);
+-		seq_printf(m, "\t%08lx\n", dev->board->slot_addr);
+-		dev = dev->next;
++		           frsrc->board->slot, frsrc->category, frsrc->type,
++		           frsrc->dr_sw, frsrc->dr_hw);
++		seq_printf(m, "\t%08lx\n", frsrc->board->slot_addr);
++		frsrc = frsrc->next;
+ 	}
+ 	return 0;
+ }
+diff --git a/drivers/video/fbdev/macfb.c b/drivers/video/fbdev/macfb.c
+index cda7587cbc86..e86a2796e3d9 100644
+--- a/drivers/video/fbdev/macfb.c
++++ b/drivers/video/fbdev/macfb.c
+@@ -556,7 +556,7 @@ static void __init iounmap_macfb(void)
+ static int __init macfb_init(void)
+ {
+ 	int video_cmap_len, video_is_nubus = 0;
+-	struct nubus_dev* ndev = NULL;
++	struct nubus_rsrc *ndev = NULL;
+ 	char *option = NULL;
+ 	int err;
+ 
+diff --git a/include/linux/nubus.h b/include/linux/nubus.h
+index 0e40c9d6b977..8a40505a52ef 100644
+--- a/include/linux/nubus.h
++++ b/include/linux/nubus.h
+@@ -33,7 +33,7 @@ struct nubus_dirent {
+ 
+ struct nubus_board {
+ 	struct nubus_board *next;
+-	struct nubus_dev *first_dev;
++	struct nubus_rsrc *first_func_rsrc;
+ 
+ 	/* Only 9-E actually exist, though 0-8 are also theoretically
+ 	   possible, and 0 is a special case which represents the
+@@ -62,11 +62,11 @@ struct nubus_board {
+ 	struct proc_dir_entry *procdir;
+ };
+ 
+-struct nubus_dev {
+-	/* Next link in device list */
+-	struct nubus_dev *next;
++struct nubus_rsrc {
++	/* Next link in list */
++	struct nubus_rsrc *next;
+ 
+-	/* The functional resource ID of this device */
++	/* The functional resource ID */
+ 	unsigned char resid;
+ 	/* These are mostly here for convenience; we could always read
+ 	   them from the ROMs if we wanted to */
+@@ -81,8 +81,8 @@ struct nubus_dev {
+ 	struct nubus_board *board;
+ };
+ 
+-/* This is all NuBus devices (used to find devices later on) */
+-extern struct nubus_dev *nubus_devices;
++/* This is all NuBus functional resources (used to find devices later on) */
++extern struct nubus_rsrc *nubus_func_rsrcs;
+ /* This is all NuBus cards */
+ extern struct nubus_board *nubus_boards;
+ 
+@@ -115,13 +115,12 @@ static inline void nubus_proc_add_rsrc(struct proc_dir_entry *procdir,
+                                        const struct nubus_dirent *ent) {}
+ #endif
+ 
+-/* If we need more precision we can add some more of these */
+-struct nubus_dev *nubus_find_type(unsigned short category,
+-				  unsigned short type,
+-				  const struct nubus_dev *from);
+-/* Might have more than one device in a slot, you know... */
+-struct nubus_dev *nubus_find_slot(unsigned int slot,
+-				  const struct nubus_dev *from);
++struct nubus_rsrc *nubus_find_type(unsigned short category,
++                                   unsigned short type,
++                                   const struct nubus_rsrc *from);
++
++struct nubus_rsrc *nubus_find_slot(unsigned int slot,
++                                   const struct nubus_rsrc *from);
+ 
+ /* These are somewhat more NuBus-specific.  They all return 0 for
+    success and -1 for failure, as you'd expect. */
+@@ -134,8 +133,7 @@ int nubus_get_root_dir(const struct nubus_board *board,
+ int nubus_get_board_dir(const struct nubus_board* board,
+ 			struct nubus_dir* dir);
+ /* The functional directory */
+-int nubus_get_func_dir(const struct nubus_dev *dev,
+-		       struct nubus_dir *dir);
++int nubus_get_func_dir(const struct nubus_rsrc *fres, struct nubus_dir *dir);
+ 
+ /* These work on any directory gotten via the above */
+ int nubus_readdir(struct nubus_dir *dir,
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.13.6
+

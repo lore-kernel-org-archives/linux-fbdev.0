@@ -1,28 +1,33 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 17 Nov 2017 20:30:14 +0000
+From: kgunda@codeaurora.org
+Date: Mon, 20 Nov 2017 11:54:58 +0000
 Subject: Re: [PATCH V1 2/4] qcom: spmi-wled: Add support for short circuit handling
-Message-Id: <20171117203014.66r2n6x5mwuc6doe@rob-hp-laptop>
+Message-Id: <55de69a721a1806ed9beec6ae36b6572@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1510834717-21765-1-git-send-email-kgunda@codeaurora.org>
  <1510834717-21765-3-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1510834717-21765-3-git-send-email-kgunda-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
+ <20171117203014.66r2n6x5mwuc6doe@rob-hp-laptop>
+In-Reply-To: <20171117203014.66r2n6x5mwuc6doe@rob-hp-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda-sgV2jX0FEOL9JmXXK+q4OQ@public.gmane.org>
-Cc: bjorn.andersson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-arm-msm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-msm-owner-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Rob Herring <robh@kernel.org>
+Cc: bjorn.andersson@linaro.org, linux-arm-msm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
 
-On Thu, Nov 16, 2017 at 05:48:35PM +0530, Kiran Gunda wrote:
-> Handle the short circuit(SC) interrupt and check if the SC interrupt
-> is valid. Re-enable the module to check if it goes away. Disable the
-> module altogether if the SC event persists.
+On 2017-11-18 02:00, Rob Herring wrote:
+> On Thu, Nov 16, 2017 at 05:48:35PM +0530, Kiran Gunda wrote:
+>> Handle the short circuit(SC) interrupt and check if the SC interrupt
+>> is valid. Re-enable the module to check if it goes away. Disable the
+>> module altogether if the SC event persists.
+>> 
+>> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+>> ---
+>>  .../bindings/leds/backlight/qcom-spmi-wled.txt     |  22 ++++
 > 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-> ---
->  .../bindings/leds/backlight/qcom-spmi-wled.txt     |  22 ++++
-
-... and also put all the binding in one patch. I want to review the full 
-view of the h/w, not piecemeal.
-
->  drivers/video/backlight/qcom-spmi-wled.c           | 126 ++++++++++++++++++++-
->  2 files changed, 142 insertions(+), 6 deletions(-)
+> ... and also put all the binding in one patch. I want to review the 
+> full
+> view of the h/w, not piecemeal.
+> 
+Sure. Will send the next series with the changes suggested.
+>>  drivers/video/backlight/qcom-spmi-wled.c           | 126 
+>> ++++++++++++++++++++-
+>>  2 files changed, 142 insertions(+), 6 deletions(-)

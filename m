@@ -1,28 +1,37 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 17:40:16 +0000
-Subject: [PATCH 0/3] video/fbdev/omap: Adjustments for two function implementations
-Message-Id: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
+From: Johan Hovold <johan@kernel.org>
+Date: Mon, 20 Nov 2017 10:45:43 +0000
+Subject: [PATCH v2 0/4] backlight: fix device-tree node lookups
+Message-Id: <20171120104547.2639-1-johan@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 18:38:48 +0100
+A number of drivers have been using the wrong OF helper when doing child-node
+lookups during probe. This meant that they were doing tree-wide searches rather
+than matching on child nodes and that the parent node could end up being
+prematurely freed.
 
-Three update suggestions were taken into account
-from static source code analysis.
+Johan
 
-Markus Elfring (3):
-  Delete an error message for a failed memory allocation in omapfb_do_probe()
-  Improve a size determination in omapfb_do_probe()
-  Delete an error message for a failed memory allocation in mipid_spi_probe()
+v2
+ - add patch 4/4 which fixes two node leaks in as3711_bl instead of marking
+   the leaks using FIXMEs in patch 1/4
 
- drivers/video/fbdev/omap/lcd_mipid.c   | 4 +---
- drivers/video/fbdev/omap/omapfb_main.c | 4 +---
- 2 files changed, 2 insertions(+), 6 deletions(-)
+
+Johan Hovold (4):
+  backlight: as3711_bl: fix device-tree node lookup
+  backlight: max8925_bl: fix device-tree node lookup
+  backlight: tps65217_bl: fix device-tree node lookup
+  backlight: as3711_bl: fix device-tree node leaks
+
+ drivers/video/backlight/as3711_bl.c   | 45 ++++++++++++++++++++++-------------
+ drivers/video/backlight/max8925_bl.c  |  4 +++-
+ drivers/video/backlight/tps65217_bl.c |  4 ++--
+ include/linux/mfd/as3711.h            |  4 ++--
+ 4 files changed, 36 insertions(+), 21 deletions(-)
 
 -- 
 2.15.0

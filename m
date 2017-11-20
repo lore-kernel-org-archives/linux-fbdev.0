@@ -1,74 +1,102 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Tue, 21 Nov 2017 10:38:13 +0000
-Subject: Re: [PATCH v2 4/4] drm: omapdrm: Fix DPI on platforms using the DSI VDDS
-Message-Id: <040DF543-B168-4537-A3B1-B0D4A2BD1E7D@goldelico.com>
+From: Johan Hovold <johan@kernel.org>
+Date: Mon, 20 Nov 2017 10:45:47 +0000
+Subject: [PATCH v2 4/4] backlight: as3711_bl: fix device-tree node leaks
+Message-Id: <20171120104547.2639-5-johan@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1510822218.git.hns@goldelico.com> <dd2427920427440e051951071377265fc0a830d4.1510822218.git.hns@goldelico.com> <7f34033e-4af7-f5f5-47ef-759249ddfe39@ti.com>
-In-Reply-To: <7f34033e-4af7-f5f5-47ef-759249ddfe39@ti.com>
+References: <20171120104547.2639-1-johan@kernel.org>
+In-Reply-To: <20171120104547.2639-1-johan@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
+To: Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-Hi,
+Two framebuffer device-node names were looked up during probe, but were
+only used as flags to indicate the presence of two framebuffer device.
 
-> Am 21.11.2017 um 11:25 schrieb Tomi Valkeinen <tomi.valkeinen@ti.com>:
-> 
-> On 16/11/17 10:50, H. Nikolaus Schaller wrote:
->> From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->> 
->> Commit d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature
->> to dpi code") replaced usage of platform data version with SoC matching
->> to configure DPI VDDS. The SoC match entries were incorrect, they should
->> have matched on the machine name instead of the SoC family. Fix it.
->> 
->> The result was observed on OpenPandora with OMAP3530 where the panel only
->> had the Blue channel and Red&Green were missing. It was not observed on
->> GTA04 with DM3730.
->> 
->> Fixes: d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature to dpi code")
->> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
->> Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
->> Tested-by: H. Nikolaus Schaller <hns@goldelico.com>
->> ---
->> drivers/gpu/drm/omapdrm/dss/dpi.c | 4 ++--
->> 1 file changed, 2 insertions(+), 2 deletions(-)
->> 
->> diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
->> index 4ed5fde11313..a91e5f1a0490 100644
->> --- a/drivers/gpu/drm/omapdrm/dss/dpi.c
->> +++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
->> @@ -566,8 +566,8 @@ static int dpi_verify_pll(struct dss_pll *pll)
->> }
->> 
->> static const struct soc_device_attribute dpi_soc_devices[] = {
->> -	{ .family = "OMAP3[456]*" },
->> -	{ .family = "[AD]M37*" },
->> +	{ .machine = "OMAP3[456]*" },
->> +	{ .machine = "[AD]M37*" },
->> 	{ /* sentinel */ }
->> };
->> 
->> 
-> 
-> I have picked this one.
+Drop the unused framebuffer name along with a likewise unused device
+pointer from the driver data, and update the platform data to pass in
+booleans instead of the framebuffer strings. This allows us do drop the
+node references acquired during probe, which would otherwise leak.
 
-Fine.
+Note that there are no other in-kernel users of the modified
+platform-data fields.
 
-> I think the rest of the patches are more of a
-> cleanup, right? And you'll be sending v3 at some point.
+Fixes: 59eb2b5e57ea ("drivers/video/backlight/as3711_bl.c: add OF support")
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Signed-off-by: Johan Hovold <johan@kernel.org>
+---
+ drivers/video/backlight/as3711_bl.c | 12 ++++++------
+ include/linux/mfd/as3711.h          |  4 ++--
+ 2 files changed, 8 insertions(+), 8 deletions(-)
 
-Yes. Should we wait for more comments or should I send now?
-
-BR and thanks,
-Nikolaus Schaller
-
-
-> 
-> Tomi
-> 
-> -- 
-> Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-> Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
+index e55304d5cf07..ca544aa764b8 100644
+--- a/drivers/video/backlight/as3711_bl.c
++++ b/drivers/video/backlight/as3711_bl.c
+@@ -28,8 +28,6 @@ enum as3711_bl_type {
+ 
+ struct as3711_bl_data {
+ 	bool powered;
+-	const char *fb_name;
+-	struct device *fb_dev;
+ 	enum as3711_bl_type type;
+ 	int brightness;
+ 	struct backlight_device *bl;
+@@ -273,7 +271,9 @@ static int as3711_backlight_parse_dt(struct device *dev)
+ 
+ 	fb = of_parse_phandle(bl, "su1-dev", 0);
+ 	if (fb) {
+-		pdata->su1_fb = fb->full_name;
++		of_node_put(fb);
++
++		pdata->su1_fb = true;
+ 
+ 		ret = of_property_read_u32(bl, "su1-max-uA", &pdata->su1_max_uA);
+ 		if (pdata->su1_max_uA <= 0)
+@@ -286,7 +286,9 @@ static int as3711_backlight_parse_dt(struct device *dev)
+ 	if (fb) {
+ 		int count = 0;
+ 
+-		pdata->su2_fb = fb->full_name;
++		of_node_put(fb);
++
++		pdata->su2_fb = true;
+ 
+ 		ret = of_property_read_u32(bl, "su2-max-uA", &pdata->su2_max_uA);
+ 		if (pdata->su2_max_uA <= 0)
+@@ -425,7 +427,6 @@ static int as3711_backlight_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->su1_fb) {
+ 		su = &supply->su1;
+-		su->fb_name = pdata->su1_fb;
+ 		su->type = AS3711_BL_SU1;
+ 
+ 		max_brightness = min(pdata->su1_max_uA, 31);
+@@ -436,7 +437,6 @@ static int as3711_backlight_probe(struct platform_device *pdev)
+ 
+ 	if (pdata->su2_fb) {
+ 		su = &supply->su2;
+-		su->fb_name = pdata->su2_fb;
+ 		su->type = AS3711_BL_SU2;
+ 
+ 		switch (pdata->su2_fbprot) {
+diff --git a/include/linux/mfd/as3711.h b/include/linux/mfd/as3711.h
+index 34cc85864be5..ddd0b953323b 100644
+--- a/include/linux/mfd/as3711.h
++++ b/include/linux/mfd/as3711.h
+@@ -108,9 +108,9 @@ struct as3711_regulator_pdata {
+ };
+ 
+ struct as3711_bl_pdata {
+-	const char *su1_fb;
++	bool su1_fb;
+ 	int su1_max_uA;
+-	const char *su2_fb;
++	bool su2_fb;
+ 	int su2_max_uA;
+ 	enum as3711_su2_feedback su2_feedback;
+ 	enum as3711_su2_fbprot su2_fbprot;
+-- 
+2.15.0
 

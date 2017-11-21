@@ -1,50 +1,59 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Thu, 16 Nov 2017 08:50:19 +0000
-Subject: [PATCH v2 4/4] drm: omapdrm: Fix DPI on platforms using the DSI VDDS
-Message-Id: <dd2427920427440e051951071377265fc0a830d4.1510822218.git.hns@goldelico.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Tue, 21 Nov 2017 10:25:30 +0000
+Subject: Re: [PATCH v2 4/4] drm: omapdrm: Fix DPI on platforms using the DSI VDDS
+Message-Id: <7f34033e-4af7-f5f5-47ef-759249ddfe39@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1510822218.git.hns@goldelico.com>
-In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+ <dd2427920427440e051951071377265fc0a830d4.1510822218.git.hns@goldelico.com>
+In-Reply-To: <dd2427920427440e051951071377265fc0a830d4.1510822218.git.hns@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?Q?Beno=c3=aet_Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kernel@pyra-handheld.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+On 16/11/17 10:50, H. Nikolaus Schaller wrote:
+> From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> 
+> Commit d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature
+> to dpi code") replaced usage of platform data version with SoC matching
+> to configure DPI VDDS. The SoC match entries were incorrect, they should
+> have matched on the machine name instead of the SoC family. Fix it.
+> 
+> The result was observed on OpenPandora with OMAP3530 where the panel only
+> had the Blue channel and Red&Green were missing. It was not observed on
+> GTA04 with DM3730.
+> 
+> Fixes: d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature to dpi code")
+> Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
+> Tested-by: H. Nikolaus Schaller <hns@goldelico.com>
+> ---
+>  drivers/gpu/drm/omapdrm/dss/dpi.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
+> index 4ed5fde11313..a91e5f1a0490 100644
+> --- a/drivers/gpu/drm/omapdrm/dss/dpi.c
+> +++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
+> @@ -566,8 +566,8 @@ static int dpi_verify_pll(struct dss_pll *pll)
+>  }
+>  
+>  static const struct soc_device_attribute dpi_soc_devices[] = {
+> -	{ .family = "OMAP3[456]*" },
+> -	{ .family = "[AD]M37*" },
+> +	{ .machine = "OMAP3[456]*" },
+> +	{ .machine = "[AD]M37*" },
+>  	{ /* sentinel */ }
+>  };
+>  
+> 
 
-Commit d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature
-to dpi code") replaced usage of platform data version with SoC matching
-to configure DPI VDDS. The SoC match entries were incorrect, they should
-have matched on the machine name instead of the SoC family. Fix it.
+I have picked this one. I think the rest of the patches are more of a
+cleanup, right? And you'll be sending v3 at some point.
 
-The result was observed on OpenPandora with OMAP3530 where the panel only
-had the Blue channel and Red&Green were missing. It was not observed on
-GTA04 with DM3730.
+ Tomi
 
-Fixes: d178e034d565 ("drm: omapdrm: Move FEAT_DPI_USES_VDDS_DSI feature to dpi code")
-Signed-off-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Reported-by: H. Nikolaus Schaller <hns@goldelico.com>
-Tested-by: H. Nikolaus Schaller <hns@goldelico.com>
----
- drivers/gpu/drm/omapdrm/dss/dpi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/omapdrm/dss/dpi.c b/drivers/gpu/drm/omapdrm/dss/dpi.c
-index 4ed5fde11313..a91e5f1a0490 100644
---- a/drivers/gpu/drm/omapdrm/dss/dpi.c
-+++ b/drivers/gpu/drm/omapdrm/dss/dpi.c
-@@ -566,8 +566,8 @@ static int dpi_verify_pll(struct dss_pll *pll)
- }
- 
- static const struct soc_device_attribute dpi_soc_devices[] = {
--	{ .family = "OMAP3[456]*" },
--	{ .family = "[AD]M37*" },
-+	{ .machine = "OMAP3[456]*" },
-+	{ .machine = "[AD]M37*" },
- 	{ /* sentinel */ }
- };
- 
 -- 
-2.12.2
-
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

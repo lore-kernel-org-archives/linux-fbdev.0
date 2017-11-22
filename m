@@ -1,53 +1,42 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 13 Nov 2017 13:55:25 +0000
-Subject: Re: [PATCH 3/3] backlight: tps65217_bl: fix device-tree node lookup
-Message-Id: <b51c0d08-7e41-ccce-2b95-92c820d879b7@linaro.org>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Wed, 22 Nov 2017 22:49:19 +0000
+Subject: [PATCH V2 24/29] backlight: deprecate pci_get_bus_and_slot()
+Message-Id: <1511390964-9979-25-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171113102049.9342-1-johan@kernel.org>
- <20171113102049.9342-3-johan@kernel.org>
-In-Reply-To: <20171113102049.9342-3-johan@kernel.org>
+References: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Johan Hovold <johan@kernel.org>, Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, dri-devel@lists.freedesktop.org, Matthias Kaehlcke <matthias@kaehlcke.net>
+To: linux-arm-kernel@lists.infradead.org
 
-On 13/11/17 10:20, Johan Hovold wrote:
-> Fix child-node lookup during probe, which ended up searching the whole
-> device tree depth-first starting at the parent rather than just matching
-> on its children.
-> 
-> This would only cause trouble if the child node is missing while there
-> is an unrelated node named "backlight" elsewhere in the tree.
-> 
-> Fixes: eebfdc17cc6c ("backlight: Add TPS65217 WLED driver")
-> Cc: stable <stable@vger.kernel.org>     # 3.7
-> Cc: Matthias Kaehlcke <matthias@kaehlcke.net>
-> Signed-off-by: Johan Hovold <johan@kernel.org>
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
+Hard-coding the domain as 0.
 
-> ---
->   drivers/video/backlight/tps65217_bl.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/tps65217_bl.c b/drivers/video/backlight/tps65217_bl.c
-> index 380917c86276..762e3feed097 100644
-> --- a/drivers/video/backlight/tps65217_bl.c
-> +++ b/drivers/video/backlight/tps65217_bl.c
-> @@ -184,11 +184,11 @@ static struct tps65217_bl_pdata *
->   tps65217_bl_parse_dt(struct platform_device *pdev)
->   {
->   	struct tps65217 *tps = dev_get_drvdata(pdev->dev.parent);
-> -	struct device_node *node = of_node_get(tps->dev->of_node);
-> +	struct device_node *node;
->   	struct tps65217_bl_pdata *pdata, *err;
->   	u32 val;
->   
-> -	node = of_find_node_by_name(node, "backlight");
-> +	node = of_get_child_by_name(tps->dev->of_node, "backlight");
->   	if (!node)
->   		return ERR_PTR(-ENODEV);
->   
-> 
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/video/backlight/apple_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/apple_bl.c b/drivers/video/backlight/apple_bl.c
+index d843296..6a34ab9 100644
+--- a/drivers/video/backlight/apple_bl.c
++++ b/drivers/video/backlight/apple_bl.c
+@@ -143,7 +143,7 @@ static int apple_bl_add(struct acpi_device *dev)
+ 	struct pci_dev *host;
+ 	int intensity;
+ 
+-	host = pci_get_bus_and_slot(0, 0);
++	host = pci_get_domain_bus_and_slot(0, 0, 0);
+ 
+ 	if (!host) {
+ 		pr_err("unable to find PCI host\n");
+-- 
+1.9.1
+

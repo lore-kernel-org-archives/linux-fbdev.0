@@ -1,40 +1,49 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 10:17:00 +0000
-Subject: [PATCH] video: bf54x-lq043fb: Delete an error message for a failed memory allocation in bfin_bf54x_p
-Message-Id: <9eff0ce0-070d-77aa-8855-73a96eb778fd@users.sourceforge.net>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Wed, 22 Nov 2017 05:31:11 +0000
+Subject: [PATCH 26/30] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
+Message-Id: <1511328675-21981-27-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 11:04:22 +0100
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-Omit an extra message for a memory allocation failure in this function.
+Use pci_get_domain_bus_and_slot() with a domain number of 0 where we can't
+extract the domain number. Other places, use the actual domain number from
+the device.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/video/fbdev/bf54x-lq043fb.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/video/fbdev/intelfb/intelfbhw.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/bf54x-lq043fb.c b/drivers/video/fbdev/bf54x-lq043fb.c
-index 8f1f97c75619..69a8c5d82ad7 100644
---- a/drivers/video/fbdev/bf54x-lq043fb.c
-+++ b/drivers/video/fbdev/bf54x-lq043fb.c
-@@ -605,9 +605,6 @@ static int bfin_bf54x_probe(struct platform_device *pdev)
- 	fbinfo->pseudo_palette = devm_kzalloc(&pdev->dev, sizeof(u32) * 16,
- 					      GFP_KERNEL);
- 	if (!fbinfo->pseudo_palette) {
--		printk(KERN_ERR DRIVER_NAME
--		       "Fail to allocate pseudo_palette\n");
--
- 		ret = -ENOMEM;
- 		goto out4;
+diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
+index d31ed4e..496c045 100644
+--- a/drivers/video/fbdev/intelfb/intelfbhw.c
++++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+@@ -175,13 +175,15 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+ {
+ 	struct pci_dev *bridge_dev;
+ 	u16 tmp;
++	u16 devfn;
+ 	int stolen_overhead;
+ 
+ 	if (!pdev || !aperture_size || !stolen_size)
+ 		return 1;
+ 
++	devfn = PCI_DEVFN(0, 0);
+ 	/* Find the bridge device.  It is always 0:0.0 */
+-	if (!(bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0)))) {
++	if (!(bridge_dev = pci_get_domain_bus_and_slot(0, 0, devfn))) {
+ 		ERR_MSG("cannot find bridge device\n");
+ 		return 1;
  	}
 -- 
-2.15.0
+1.9.1
 

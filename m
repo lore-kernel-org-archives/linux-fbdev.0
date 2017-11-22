@@ -1,29 +1,41 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 10:16:01 +0000
-Subject: [PATCH 0/4] video: sm501fb: Adjustments for seven function implementations
-Message-Id: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Wed, 22 Nov 2017 05:31:10 +0000
+Subject: [PATCH 25/30] backlight: deprecate pci_get_bus_and_slot()
+Message-Id: <1511328675-21981-26-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Alexey Khoroshilov <khoroshilov@ispras.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bhumika Goyal <bhumirks@gmail.com>, Colin Ian King <colin.king@canonical.com>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 11:10:01 +0100
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-A few update suggestions were taken into account
-from static source code analysis.
+Use pci_get_domain_bus_and_slot() with a domain number of 0 where we can't
+extract the domain number. Other places, use the actual domain number from
+the device.
 
-Markus Elfring (4):
-  Delete error messages for a failed memory allocation in two functions
-  Improve a size determination in sm501fb_probe()
-  Combine substrings for four messages
-  Adjust 15 checks for null pointers
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/video/backlight/apple_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbdev/sm501fb.c | 66 ++++++++++++++++++-------------------------
- 1 file changed, 28 insertions(+), 38 deletions(-)
-
+diff --git a/drivers/video/backlight/apple_bl.c b/drivers/video/backlight/apple_bl.c
+index d843296..6a34ab9 100644
+--- a/drivers/video/backlight/apple_bl.c
++++ b/drivers/video/backlight/apple_bl.c
+@@ -143,7 +143,7 @@ static int apple_bl_add(struct acpi_device *dev)
+ 	struct pci_dev *host;
+ 	int intensity;
+ 
+-	host = pci_get_bus_and_slot(0, 0);
++	host = pci_get_domain_bus_and_slot(0, 0, 0);
+ 
+ 	if (!host) {
+ 		pr_err("unable to find PCI host\n");
 -- 
-2.15.0
+1.9.1
 

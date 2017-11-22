@@ -1,41 +1,44 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 17:41:32 +0000
-Subject: [PATCH 1/3] video: omap: Delete an error message for a failed memory allocation in omapfb_do_probe()
-Message-Id: <e6b19a4a-566b-d1a0-1847-ed1167e118b6@users.sourceforge.net>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Wed, 22 Nov 2017 22:49:20 +0000
+Subject: [PATCH V2 25/29] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
+Message-Id: <1511390964-9979-26-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
-In-Reply-To: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
+References: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 18:09:15 +0100
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-Omit an extra message for a memory allocation failure in this function.
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-This issue was detected by using the Coccinelle software.
+Find the domain number from pdev.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/video/fbdev/omap/omapfb_main.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/video/fbdev/intelfb/intelfbhw.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-index 3479a47a3082..b0d91524bf6c 100644
---- a/drivers/video/fbdev/omap/omapfb_main.c
-+++ b/drivers/video/fbdev/omap/omapfb_main.c
-@@ -1647,8 +1647,6 @@ static int omapfb_do_probe(struct platform_device *pdev,
+diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
+index d31ed4e..f695867 100644
+--- a/drivers/video/fbdev/intelfb/intelfbhw.c
++++ b/drivers/video/fbdev/intelfb/intelfbhw.c
+@@ -181,7 +181,9 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
+ 		return 1;
  
- 	fbdev = kzalloc(sizeof(struct omapfb_device), GFP_KERNEL);
- 	if (fbdev = NULL) {
--		dev_err(&pdev->dev,
--			"unable to allocate memory for device info\n");
- 		r = -ENOMEM;
- 		goto cleanup;
+ 	/* Find the bridge device.  It is always 0:0.0 */
+-	if (!(bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0)))) {
++	bridge_dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus), 0,
++						 PCI_DEVFN(0, 0));
++	if (!bridge_dev) {
+ 		ERR_MSG("cannot find bridge device\n");
+ 		return 1;
  	}
 -- 
-2.15.0
+1.9.1
 

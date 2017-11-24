@@ -1,60 +1,42 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 08 Nov 2017 10:43:31 +0000
-Subject: Re: [PATCH] backlight: ili922x: remove redundant variable len
-Message-Id: <20171108104331.phpfymg2kslgwg3v@dell>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 24 Nov 2017 21:28:12 +0000
+Subject: [PATCH] video/fbdev/stifb: Delete an error message for a failed memory allocation in stifb_init_fb()
+Message-Id: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171105115326.5276-1-colin.king@canonical.com>
-In-Reply-To: <20171105115326.5276-1-colin.king@canonical.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Colin King <colin.king@canonical.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Helge Deller <deller@gmx.de>, "James E. J. Bottomley" <jejb@parisc-linux.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-On Sun, 05 Nov 2017, Colin King wrote:
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 24 Nov 2017 22:22:06 +0100
 
-> From: Colin Ian King <colin.king@canonical.com>
->=20
-> The variable len is assigned but never read, therefore it is redundant
-> and can be removed. Cleans up clang warning:
->=20
-> drivers/video/backlight/ili922x.c:276:2: warning: Value stored to 'len'
-> is never read
->=20
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
-> ---
->  drivers/video/backlight/ili922x.c | 3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
+Omit an extra message for a memory allocation failure in this function.
 
-Applied, thanks.
+This issue was detected by using the Coccinelle software.
 
-> diff --git a/drivers/video/backlight/ili922x.c b/drivers/video/backlight/=
-ili922x.c
-> index a9e9cef..2b6c6aa 100644
-> --- a/drivers/video/backlight/ili922x.c
-> +++ b/drivers/video/backlight/ili922x.c
-> @@ -251,7 +251,7 @@ static int ili922x_write(struct spi_device *spi, u8 r=
-eg, u16 value)
->  	struct spi_transfer xfer_regindex, xfer_regvalue;
->  	unsigned char tbuf[CMD_BUFSIZE];
->  	unsigned char rbuf[CMD_BUFSIZE];
-> -	int ret, len =3D 0;
-> +	int ret;
-> =20
->  	memset(&xfer_regindex, 0, sizeof(struct spi_transfer));
->  	memset(&xfer_regvalue, 0, sizeof(struct spi_transfer));
-> @@ -273,7 +273,6 @@ static int ili922x_write(struct spi_device *spi, u8 r=
-eg, u16 value)
->  	ret =3D spi_sync(spi, &msg);
-> =20
->  	spi_message_init(&msg);
-> -	len =3D 0;
->  	tbuf[0] =3D set_tx_byte(START_BYTE(ili922x_id, START_RS_REG,
->  					 START_RW_WRITE));
->  	tbuf[1] =3D set_tx_byte((value & 0xFF00) >> 8);
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/stifb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---=20
-Lee Jones
-Linaro STMicroelectronics Landing Team Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index 6ded5c198998..fe217a2f7d21 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1126,10 +1126,8 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ 	int bpp, xres, yres;
+ 
+ 	fb = kzalloc(sizeof(*fb), GFP_ATOMIC);
+-	if (!fb) {
+-		printk(KERN_ERR "stifb: Could not allocate stifb structure\n");
++	if (!fb)
+ 		return -ENODEV;
+-	}
+ 	
+ 	info = &fb->info;
+ 
+-- 
+2.15.0
+

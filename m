@@ -1,63 +1,52 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 20:46:39 +0000
-Subject: [PATCH 3/5] video: smscufx: Return an error code only as a constant in ufx_realloc_framebuffer()
-Message-Id: <4bc004f9-b7b1-bcf6-de3b-32042a510144@users.sourceforge.net>
+Date: Fri, 24 Nov 2017 20:54:19 +0000
+Subject: [PATCH 4/4] video: udlfb: Delete an unnecessary return statement in two functions
+Message-Id: <1e2d3f13-0184-4504-9813-0982fa3f4c67@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
-In-Reply-To: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
+References: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
+In-Reply-To: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sat, 25 Nov 2017 19:56:44 +0100
+Date: Fri, 24 Nov 2017 21:36:39 +0100
 
-* Return an error code without storing it in an intermediate variable.
+The script "checkpatch.pl" pointed information out like the following.
 
-* Delete the label "error" and local variable "retval"
-  which became unnecessary with this refactoring.
+WARNING: void function return statements are not generally useful
+
+Thus remove such a statement in the affected functions.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/smscufx.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/udlfb.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 08271dafd138..c77fc45a76fc 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1294,7 +1294,6 @@ static struct fb_ops ufx_ops = {
-  * Assumes no active clients have framebuffer open */
- static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
- {
--	int retval = -ENOMEM;
- 	int old_len = info->fix.smem_len;
- 	int new_len;
- 	unsigned char *old_fb = info->screen_base;
-@@ -1310,7 +1309,7 @@ static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
- 		 */
- 		new_fb = vmalloc(new_len);
- 		if (!new_fb)
--			goto error;
-+			return -ENOMEM;
- 
- 		if (info->screen_base) {
- 			memcpy(new_fb, old_fb, old_len);
-@@ -1322,11 +1321,7 @@ static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
- 		info->fix.smem_start = (unsigned long) new_fb;
- 		info->flags = smscufx_info_flags;
- 	}
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 059883962698..c6bf7088f5f4 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -505,8 +505,6 @@ static void dlfb_compress_hline(
+ 	*command_buffer_ptr = cmd;
+ 	*pixel_start_ptr = pixel;
+ 	*device_address_ptr = dev_addr;
 -
--	retval = 0;
--
--error:
--	return retval;
-+	return 0;
+-	return;
  }
  
- /* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, master,
+ /*
+@@ -1768,8 +1766,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
+ 	kref_put(&dev->kref, dlfb_free);
+ 
+ 	/* consider dlfb_data freed */
+-
+-	return;
+ }
+ 
+ static struct usb_driver dlfb_driver = {
 -- 
 2.15.0
 

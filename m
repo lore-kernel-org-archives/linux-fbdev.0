@@ -1,123 +1,43 @@
-From: "Toma, Taghreed" <Taghreed.Toma@southend.nhs.uk>
-Date: Thu, 30 Nov 2017 13:17:38 +0000
-Subject: RE: IT Service Desk Support
-Message-Id: <6C497D8A4F87814E9643F9655AF4D83E01D651DDD3@SOHEXMB001.Southend.nhs.uk>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 24 Nov 2017 20:52:19 +0000
+Subject: [PATCH 3/4] video: udlfb: Improve a size determination in dlfb_alloc_urb_list()
+Message-Id: <d55401c9-1fbb-93b9-40de-2b93396e8def@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <6C497D8A4F87814E9643F9655AF4D83E01D651D509@SOHEXMB001.Southend.nhs.uk>
-In-Reply-To: <6C497D8A4F87814E9643F9655AF4D83E01D651D509@SOHEXMB001.Southend.nhs.uk>
+References: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
+In-Reply-To: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Toma, Taghreed" <Taghreed.Toma@southend.nhs.uk>
-
-Dear Colleague,
-
-     Note that Microsoft Outlook Windows Updates is scheduled for today and=
- installed on all users' workstations.
-Please Click here<https://c0abz825.caspio.com/dp.asp?AppKey=FB1060001e2b213=
-9eaf74d19913f> to Updates your account, Your device will prompt to restart =
-after the update has been completely installed.
-
-Thank you for your cooperation.
-
-Information Services
-HR Management
-Approved
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D
-This email has been processed by the Southend Hospital mail gateway. Any ex=
-ecutable files or known viruses have been removed - We do not accept or sen=
-d emails larger than 35MB. Confidential information in this email must be h=
-andled in accordance with the Data Protection Act 1998. Details of all emai=
-ls are archived for seven days. If this message has been sent to you in err=
-or please discard the email, notify the sender and do not open any attachme=
-nts or act on the contents. For more information contact the IT Department,=
- Southend University Hospital NHS Foundation Trust on +44 1702 385 678
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Fri, 24 Nov 2017 21:30:37 +0100
+
+Replace the specification of a data structure by a pointer dereference
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/udlfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index cb2d59ca67a4..059883962698 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1867,7 +1867,7 @@ static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size)
+ 	INIT_LIST_HEAD(&dev->urbs.list);
+ 
+ 	while (i < count) {
+-		unode = kzalloc(sizeof(struct urb_node), GFP_KERNEL);
++		unode = kzalloc(sizeof(*unode), GFP_KERNEL);
+ 		if (!unode)
+ 			break;
+ 		unode->dev = dev;
+-- 
+2.15.0
 

@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:37 +0000
+Date: Sat, 25 Nov 2017 19:16:18 +0000
 Subject: [PATCH v6 3/7] drm: Add support for a panel-orientation connector property, v6
-Message-Id: <20171125173341.14162-4-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-4-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -168,7 +168,7 @@ index 25f4b2e9a44f..624edeb5c50d 100644
  				    struct drm_property *property,
  				    uint64_t value)
 diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-index df9807a3caae..51365551a57f 100644
+index 66d6c99d15e5..f39ff52feb3b 100644
 --- a/include/drm/drm_connector.h
 +++ b/include/drm/drm_connector.h
 @@ -175,6 +175,35 @@ enum drm_link_status {
@@ -223,7 +223,7 @@ index df9807a3caae..51365551a57f 100644
  	/**
  	 * @color_formats: HDMI Color formats, selects between RGB and YCrCb
  	 * modes. Used DRM_COLOR_FORMAT\_ defines, which are _not_ the same ones
-@@ -1025,6 +1063,8 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector,
+@@ -1035,6 +1073,8 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector,
  					    const struct edid *edid);
  void drm_mode_connector_set_link_status_property(struct drm_connector *connector,
  						 uint64_t link_status);
@@ -233,7 +233,7 @@ index df9807a3caae..51365551a57f 100644
  /**
   * struct drm_tile_group - Tile group metadata
 diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-index b21e827c5c78..3716e6b8fed5 100644
+index 5306ebd537b2..cb9ffbda36cc 100644
 --- a/include/drm/drm_mode_config.h
 +++ b/include/drm/drm_mode_config.h
 @@ -735,6 +735,13 @@ struct drm_mode_config {

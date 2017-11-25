@@ -1,90 +1,50 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:16:21 +0000
-Subject: [PATCH v6 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation_quirk
-Message-Id: <20171125191622.16289-7-hdegoede@redhat.com>
+Date: Sat, 25 Nov 2017 19:35:46 +0000
+Subject: [PATCH v7 0/7] drm/fbdev: Panel orientation connector property support
+Message-Id: <20171125193553.23986-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125191622.16289-1-hdegoede@redhat.com>
-In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but rotated by 90 degrees. In this case we want the console to
-automatically be rotated to compensate.
+Here is v7 of my series to add a "panel orientation" property to
+the drm-connector for the LCD panel to let userspace know about LCD
+panels which are not mounted upright, as well as detecting upside-down
+panels without needing quirks (like we do for 90 degree rotated screens).
 
-The drm subsys has a quirk table for this, use the
-drm_get_panel_orientation_quirk function to get the panel orientation
-and set info->fbcon_rotate_hint based on this, so that the fbcon console
-on top of efifb gets automatically=C2=A0rotated to compensate for the panel
-orientation.
+Bartlomiej, can we please have your Acked-by for merging patches 1,
+6 and 7 through the drm tree?
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/fbdev/Kconfig |  1 +
- drivers/video/fbdev/efifb.c | 21 ++++++++++++++++++++-
- 2 files changed, 21 insertions(+), 1 deletion(-)
+New in v7:
+-Fix embarrassing build error in efifb due to me only rebuilding modules
+ after cleanups from v6
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5e58f5ec0a28..c4a90c497839 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -772,6 +772,7 @@ config FB_VESA
- config FB_EFI
- 	bool "EFI-based Framebuffer Support"
- 	depends on (FB =3D y) && !IA64 && EFI
-+	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index d1bf9c2a78a7..88697ab1005b 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -16,6 +16,8 @@
- #include <linux/screen_info.h>
- #include <video/vga.h>
- #include <asm/efi.h>
-+#include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
-+#include <drm/drm_mode.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
-=20
- static bool request_mem_succeeded =3D false;
- static bool nowc =3D false;
-@@ -157,7 +159,7 @@ static u64 bar_offset;
- static int efifb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
--	int err;
-+	int err, orientation;
- 	unsigned int size_vmode;
- 	unsigned int size_remap;
- 	unsigned int size_total;
-@@ -329,6 +331,23 @@ static int efifb_probe(struct platform_device *dev)
- 	info->fix =3D efifb_fix;
- 	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
-=20
-+	orientation =3D drm_get_panel_orientation_quirk(efifb_defined.xres,
-+						      efifb_defined.yres);
-+	switch (orientation) {
-+	default:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
-+		break;
-+	}
-+
- 	err =3D sysfs_create_groups(&dev->dev.kobj, efifb_groups);
- 	if (err) {
- 		pr_err("efifb: cannot add sysfs attrs\n");
---=20
-2.14.3
+New in v6:
+-Fix / reference kernel-doc comments
+-Don't export the DRM_MODE_PANEL_ORIENTATION_* defines in the UAPI
+-Move i915 dsi hardware rotation state read-out to intel_dsi_init()
 
+New in v5:
+-Add kernel-doc comment documenting drm_get_panel_orientation_quirk()
+-drm_fb_helper: Only use hardware (crtc primary plane) rotation for
+ 180 degrees for now as 9-/270 degrees rotation requires special handling
+
+New in v4:
+-Fix drm_fb_helper code setting an invalid rotation value on the primary
+ plane of disabled/unused crtcs (caught by Fi.CI)
+
+New in v3:
+-As requested by Daniel v3 moves the quirks over from the fbdev
+ subsys to the drm subsys. I've done this by simpy starting with a copy of
+ the quirk table and eventually removing the fbdev version.
+
+The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
+are all drm patches and patches 6-7 are fbdev/fbcon patches again. As
+discussed previously the plan is to merge all 7 patches through the
+drm tree.
+
+Regards,
+
+Hans

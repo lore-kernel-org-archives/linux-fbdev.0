@@ -1,44 +1,63 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 10:18:26 +0000
-Subject: [PATCH 2/4] video: sm501fb: Improve a size determination in sm501fb_probe()
-Message-Id: <08ed1e90-5714-04b7-b3dc-067a3d9bc38b@users.sourceforge.net>
+Date: Sat, 25 Nov 2017 20:46:39 +0000
+Subject: [PATCH 3/5] video: smscufx: Return an error code only as a constant in ufx_realloc_framebuffer()
+Message-Id: <4bc004f9-b7b1-bcf6-de3b-32042a510144@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
-In-Reply-To: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
+References: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
+In-Reply-To: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Alexey Khoroshilov <khoroshilov@ispras.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bhumika Goyal <bhumirks@gmail.com>, Colin Ian King <colin.king@canonical.com>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 10:22:37 +0100
+Date: Sat, 25 Nov 2017 19:56:44 +0100
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+* Return an error code without storing it in an intermediate variable.
 
-This issue was detected by using the Coccinelle software.
+* Delete the label "error" and local variable "retval"
+  which became unnecessary with this refactoring.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/sm501fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/fbdev/smscufx.c | 9 ++-------
+ 1 file changed, 2 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index e8301c4e7d44..80bda5a655c0 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1932,8 +1932,7 @@ static int sm501fb_probe(struct platform_device *pdev)
- 	int ret;
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 08271dafd138..c77fc45a76fc 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1294,7 +1294,6 @@ static struct fb_ops ufx_ops = {
+  * Assumes no active clients have framebuffer open */
+ static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
+ {
+-	int retval = -ENOMEM;
+ 	int old_len = info->fix.smem_len;
+ 	int new_len;
+ 	unsigned char *old_fb = info->screen_base;
+@@ -1310,7 +1309,7 @@ static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
+ 		 */
+ 		new_fb = vmalloc(new_len);
+ 		if (!new_fb)
+-			goto error;
++			return -ENOMEM;
  
- 	/* allocate our framebuffers */
+ 		if (info->screen_base) {
+ 			memcpy(new_fb, old_fb, old_len);
+@@ -1322,11 +1321,7 @@ static int ufx_realloc_framebuffer(struct ufx_data *dev, struct fb_info *info)
+ 		info->fix.smem_start = (unsigned long) new_fb;
+ 		info->flags = smscufx_info_flags;
+ 	}
 -
--	info = kzalloc(sizeof(struct sm501fb_info), GFP_KERNEL);
-+	info = kzalloc(sizeof(*info), GFP_KERNEL);
- 	if (!info)
- 		return -ENOMEM;
+-	retval = 0;
+-
+-error:
+-	return retval;
++	return 0;
+ }
  
+ /* sets up I2C Controller for 100 Kbps, std. speed, 7-bit addr, master,
 -- 
 2.15.0
 

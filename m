@@ -1,36 +1,40 @@
-From: Colin King <colin.king@canonical.com>
-Date: Thu, 23 Nov 2017 10:55:53 +0000
-Subject: [PATCH] video: fbdev: remove redundant self assignment of 'height'
-Message-Id: <20171123105553.18969-1-colin.king@canonical.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 25 Nov 2017 16:05:26 +0000
+Subject: [PATCH 1/2] video: ssd1307fb: Delete an error message for a failed memory allocation in ssd1307fb_pr
+Message-Id: <5a697bfd-f2be-7724-c0c4-55dd98ee5006@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
+In-Reply-To: <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bastian Stender <bst@pengutronix.de>, Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 25 Nov 2017 16:45:56 +0100
 
-The assignment of height to itself is redundant and can be removed.
-Detected with Coccinelle.
+Omit an extra message for a memory allocation failure in this function.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/vga16fb.c | 1 -
+ drivers/video/fbdev/ssd1307fb.c | 1 -
  1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/vga16fb.c b/drivers/video/fbdev/vga16fb.c
-index 5f0690c8fc93..2c6a576ed84c 100644
---- a/drivers/video/fbdev/vga16fb.c
-+++ b/drivers/video/fbdev/vga16fb.c
-@@ -1055,7 +1055,6 @@ static void vga16fb_copyarea(struct fb_info *info, const struct fb_copyarea *are
- 	case FB_TYPE_VGA_PLANES:
- 		if (info->fix.type_aux = FB_AUX_VGA_PLANES_VGA4) {
- 			width = width/8;
--			height = height;
- 			line_ofs = info->fix.line_length - width;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index f599520374dd..fb0ef1922d49 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -630,7 +630,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
- 			setmode(1);
+ 	ssd1307fb_defio = devm_kzalloc(&client->dev, sizeof(struct fb_deferred_io), GFP_KERNEL);
+ 	if (!ssd1307fb_defio) {
+-		dev_err(&client->dev, "Couldn't allocate deferred io.\n");
+ 		ret = -ENOMEM;
+ 		goto fb_alloc_error;
+ 	}
 -- 
-2.14.1
+2.15.0
 

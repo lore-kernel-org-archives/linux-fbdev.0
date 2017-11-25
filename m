@@ -1,37 +1,93 @@
-From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Thu, 16 Nov 2017 08:50:18 +0000
-Subject: [PATCH v2 3/4] DTS: Pandora: fix panel compatibility string
-Message-Id: <f9e764c18a8fc77160ddea4fb61e63f703a0c19e.1510822218.git.hns@goldelico.com>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Sat, 25 Nov 2017 19:35:52 +0000
+Subject: [PATCH v7 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation_quirk
+Message-Id: <20171125193553.23986-7-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1510822218.git.hns@goldelico.com>
-In-Reply-To: <cover.1510822218.git.hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+References: <20171125193553.23986-1-hdegoede@redhat.com>
+In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Tony Lindgren <tony-4v6yS6AI5VpBDgjK7y7TUQ@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>
-Cc: dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-We can remove the "omapdss," prefix because the
-omapdrm driver takes care of it.
+On some hardware the LCD panel is not mounted upright in the casing,
+but rotated by 90 degrees. In this case we want the console to
+automatically be rotated to compensate.
 
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+The drm subsys has a quirk table for this, use the
+drm_get_panel_orientation_quirk function to get the panel orientation
+and set info->fbcon_rotate_hint based on this, so that the fbcon console
+on top of efifb gets automatically=C2=A0rotated to compensate for the panel
+orientation.
+
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- arch/arm/boot/dts/omap3-pandora-common.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v7:
+-Fix compile error from v6
+---
+ drivers/video/fbdev/Kconfig |  1 +
+ drivers/video/fbdev/efifb.c | 21 ++++++++++++++++++++-
+ 2 files changed, 21 insertions(+), 1 deletion(-)
 
-diff --git a/arch/arm/boot/dts/omap3-pandora-common.dtsi b/arch/arm/boot/dts/omap3-pandora-common.dtsi
-index 53e007abdc71..64d967ec8c58 100644
---- a/arch/arm/boot/dts/omap3-pandora-common.dtsi
-+++ b/arch/arm/boot/dts/omap3-pandora-common.dtsi
-@@ -626,7 +626,7 @@
- 
- 	lcd: lcd@1 {
- 		reg = <1>;	/* CS1 */
--		compatible =	"omapdss,tpo,td043mtea1";
-+		compatible =	"tpo,td043mtea1";
- 		spi-max-frequency = <100000>;
- 		spi-cpol;
- 		spi-cpha;
--- 
-2.12.2
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 5e58f5ec0a28..c4a90c497839 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -772,6 +772,7 @@ config FB_VESA
+ config FB_EFI
+ 	bool "EFI-based Framebuffer Support"
+ 	depends on (FB =3D y) && !IA64 && EFI
++	select DRM_PANEL_ORIENTATION_QUIRKS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index d1bf9c2a78a7..46a4484e3da7 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -16,6 +16,8 @@
+ #include <linux/screen_info.h>
+ #include <video/vga.h>
+ #include <asm/efi.h>
++#include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
++#include <drm/drm_connector.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
+=20
+ static bool request_mem_succeeded =3D false;
+ static bool nowc =3D false;
+@@ -157,7 +159,7 @@ static u64 bar_offset;
+ static int efifb_probe(struct platform_device *dev)
+ {
+ 	struct fb_info *info;
+-	int err;
++	int err, orientation;
+ 	unsigned int size_vmode;
+ 	unsigned int size_remap;
+ 	unsigned int size_total;
+@@ -329,6 +331,23 @@ static int efifb_probe(struct platform_device *dev)
+ 	info->fix =3D efifb_fix;
+ 	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
+=20
++	orientation =3D drm_get_panel_orientation_quirk(efifb_defined.xres,
++						      efifb_defined.yres);
++	switch (orientation) {
++	default:
++		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
++		break;
++	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
++		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
++		break;
++	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
++		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
++		break;
++	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
++		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
++		break;
++	}
++
+ 	err =3D sysfs_create_groups(&dev->dev.kobj, efifb_groups);
+ 	if (err) {
+ 		pr_err("efifb: cannot add sysfs attrs\n");
+--=20
+2.14.3
 

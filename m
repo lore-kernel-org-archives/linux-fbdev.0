@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:36 +0000
+Date: Sat, 25 Nov 2017 19:16:17 +0000
 Subject: [PATCH v6 2/7] drm: Add panel orientation quirks, v6.
-Message-Id: <20171125173341.14162-3-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-3-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

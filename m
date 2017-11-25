@@ -1,38 +1,51 @@
-From: Johan Hovold <johan@kernel.org>
-Date: Mon, 20 Nov 2017 10:45:43 +0000
-Subject: [PATCH v2 0/4] backlight: fix device-tree node lookups
-Message-Id: <20171120104547.2639-1-johan@kernel.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 25 Nov 2017 20:47:46 +0000
+Subject: [PATCH 4/5] video: smscufx: Improve a size determination in two functions
+Message-Id: <0c32185c-afe2-5667-2455-6aa7e48e70c0@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
+In-Reply-To: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Johan Hovold <johan@kernel.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-A number of drivers have been using the wrong OF helper when doing child-node
-lookups during probe. This meant that they were doing tree-wide searches rather
-than matching on child nodes and that the parent node could end up being
-prematurely freed.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sat, 25 Nov 2017 21:10:22 +0100
 
-Johan
+Replace the specification of data structures by pointer dereferences
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
-v2
- - add patch 4/4 which fixes two node leaks in as3711_bl instead of marking
-   the leaks using FIXMEs in patch 1/4
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/smscufx.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-
-Johan Hovold (4):
-  backlight: as3711_bl: fix device-tree node lookup
-  backlight: max8925_bl: fix device-tree node lookup
-  backlight: tps65217_bl: fix device-tree node lookup
-  backlight: as3711_bl: fix device-tree node leaks
-
- drivers/video/backlight/as3711_bl.c   | 45 ++++++++++++++++++++++-------------
- drivers/video/backlight/max8925_bl.c  |  4 +++-
- drivers/video/backlight/tps65217_bl.c |  4 ++--
- include/linux/mfd/as3711.h            |  4 ++--
- 4 files changed, 36 insertions(+), 21 deletions(-)
-
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index c77fc45a76fc..03d35429e1b9 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1086,8 +1086,7 @@ static int ufx_ops_open(struct fb_info *info, int user)
+ 
+ 		struct fb_deferred_io *fbdefio;
+ 
+-		fbdefio = kzalloc(sizeof(struct fb_deferred_io), GFP_KERNEL);
+-
++		fbdefio = kzalloc(sizeof(*fbdefio), GFP_KERNEL);
+ 		if (fbdefio) {
+ 			fbdefio->delay = UFX_DEFIO_WRITE_DELAY;
+ 			fbdefio->deferred_io = ufx_dpy_deferred_io;
+@@ -1857,7 +1856,7 @@ static int ufx_alloc_urb_list(struct ufx_data *dev, int count, size_t size)
+ 	INIT_LIST_HEAD(&dev->urbs.list);
+ 
+ 	while (i < count) {
+-		unode = kzalloc(sizeof(struct urb_node), GFP_KERNEL);
++		unode = kzalloc(sizeof(*unode), GFP_KERNEL);
+ 		if (!unode)
+ 			break;
+ 		unode->dev = dev;
 -- 
 2.15.0
 

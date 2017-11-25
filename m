@@ -1,8 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:34 +0000
+Date: Sat, 25 Nov 2017 19:16:15 +0000
 Subject: [PATCH v6 0/7] drm/fbdev: Panel orientation connector property support
-Message-Id: <20171125173341.14162-1-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20171125173341.14162-1-hdegoede@redhat.com>
+In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

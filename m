@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:41 +0000
+Date: Sat, 25 Nov 2017 19:16:22 +0000
 Subject: [PATCH v6 7/7] fbcon: Remove dmi quirk table
-Message-Id: <20171125173341.14162-8-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-8-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -38,10 +38,10 @@ index d34fd182ca68..37710316a680 100644
  fb-objs                           := $(fb-y)
  
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 30014e5867db..5baf7bc054e1 100644
+index fb317ed76b45..157a40670a47 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -969,7 +969,7 @@ static const char *fbcon_startup(void)
+@@ -968,7 +968,7 @@ static const char *fbcon_startup(void)
  	if (p->con_rotate = -1)
  		p->con_rotate = info->fbcon_rotate_hint;
  	if (p->con_rotate = -1)
@@ -50,7 +50,7 @@ index 30014e5867db..5baf7bc054e1 100644
  
  	set_blitting_type(vc, info);
  
-@@ -1112,7 +1112,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+@@ -1111,7 +1111,7 @@ static void fbcon_init(struct vc_data *vc, int init)
  	if (p->con_rotate = -1)
  		p->con_rotate = info->fbcon_rotate_hint;
  	if (p->con_rotate = -1)
@@ -60,10 +60,10 @@ index 30014e5867db..5baf7bc054e1 100644
  	set_blitting_type(vc, info);
  
 diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 9f7744fbc962..21912a3ba32f 100644
+index 18f3ac144237..3746828356ed 100644
 --- a/drivers/video/fbdev/core/fbcon.h
 +++ b/drivers/video/fbdev/core/fbcon.h
-@@ -262,10 +262,4 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
+@@ -261,10 +261,4 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
  #define fbcon_set_rotate(x) do {} while(0)
  #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
  

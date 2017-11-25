@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:39 +0000
+Date: Sat, 25 Nov 2017 19:16:20 +0000
 Subject: [PATCH v6 5/7] drm/i915: Add "panel orientation" property to the panel connector, v6.
-Message-Id: <20171125173341.14162-6-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-6-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

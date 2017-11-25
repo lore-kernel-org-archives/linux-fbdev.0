@@ -1,44 +1,99 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 21:21:18 +0000
-Subject: [PATCH 1/5] radeon_backlight: Delete an error message for a failed memory allocation in radeonfb_bl_
-Message-Id: <f41ab46f-3e9b-a340-3178-44e37a9127d0@users.sourceforge.net>
+From: Hans de Goede <j.w.r.degoede@gmail.com>
+Date: Sat, 25 Nov 2017 19:35:47 +0000
+Subject: [PATCH v7 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
+Message-Id: <20171125193553.23986-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
-In-Reply-To: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
+References: <20171125193553.23986-1-hdegoede@redhat.com>
+In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 21:27:51 +0100
+On some hardware the LCD panel is not mounted upright in the casing,
+but upside-down or rotated 90 degrees. In this case we want the console
+to automatically be rotated to compensate.
 
-Omit an extra message for a memory allocation failure in this function.
+The fbdev-driver may know about the need to rotate. Add a new
+fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
+If the fbdev-driver knows that some sort of rotation is necessary then
+it can set this field to a FB_ROTATE_* value to tell the fbcon console
+driver to rotate the console.
 
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/video/fbdev/aty/radeon_backlight.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
+ drivers/video/fbdev/core/fbsysfs.c |  1 +
+ include/linux/fb.h                 |  5 +++++
+ 3 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_backlight.c b/drivers/video/fbdev/aty/radeon_backlight.c
-index 301d6d6aeead..ce5b22d710b3 100644
---- a/drivers/video/fbdev/aty/radeon_backlight.c
-+++ b/drivers/video/fbdev/aty/radeon_backlight.c
-@@ -144,10 +144,8 @@ void radeonfb_bl_init(struct radeonfb_info *rinfo)
- #endif
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 04612f938bab..fb317ed76b45 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
+ 	ops->cur_rotate = -1;
+ 	ops->cur_blink_jiffies = HZ / 5;
+ 	info->fbcon_par = ops;
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
- 	pdata = kmalloc(sizeof(struct radeon_bl_privdata), GFP_KERNEL);
--	if (!pdata) {
--		printk("radeonfb: Memory allocation failed\n");
-+	if (!pdata)
- 		goto error;
--	}
+ 	if (info->fix.type != FB_TYPE_TEXT) {
+@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
  
- 	snprintf(name, sizeof(name), "radeonbl%d", rinfo->info->node);
+ 	ops = info->fbcon_par;
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+-	if (initial_rotation != -1)
+-		p->con_rotate = initial_rotation;
+-	else
++
++	p->con_rotate = initial_rotation;
++	if (p->con_rotate = -1)
++		p->con_rotate = info->fbcon_rotate_hint;
++	if (p->con_rotate = -1)
+ 		p->con_rotate = fbcon_platform_get_rotate(info);
++
+ 	set_blitting_type(vc, info);
  
+ 	cols = vc->vc_cols;
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 15755ce1d26c..e31a182b42bf 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 		info->par = p + fb_info_size;
+ 
+ 	info->device = dev;
++	info->fbcon_rotate_hint = -1;
+ 
+ #ifdef CONFIG_FB_BACKLIGHT
+ 	mutex_init(&info->bl_curve_mutex);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index bc24e48e396d..d1e5bed39140 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -465,6 +465,11 @@ struct fb_info {
+ 	atomic_t count;
+ 	int node;
+ 	int flags;
++	/*
++	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
++	 * a lcd is not mounted upright and fbcon should rotate to compensate.
++	 */
++	int fbcon_rotate_hint;
+ 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
+ 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
+ 	struct fb_var_screeninfo var;	/* Current var */
 -- 
-2.15.0
+2.14.3
 

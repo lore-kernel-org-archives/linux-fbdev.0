@@ -1,15 +1,15 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 04 Nov 2017 14:08:23 +0000
-Subject: [PATCH v5 2/7] drm: Add panel orientation quirks
-Message-Id: <20171104140828.32469-3-hdegoede@redhat.com>
+Date: Sat, 25 Nov 2017 19:35:48 +0000
+Subject: [PATCH v7 2/7] drm: Add panel orientation quirks, v6.
+Message-Id: <20171125193553.23986-3-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171104140828.32469-1-hdegoede@redhat.com>
-In-Reply-To: <20171104140828.32469-1-hdegoede@redhat.com>
+References: <20171125193553.23986-1-hdegoede@redhat.com>
+In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Carlo Caione <carlo@endlessm.com>, Bastien Nocera <hadess@hadess.net>, Robert McQueen <robert@endlessm.com>
+To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
 Some x86 clamshell design devices use portrait tablet screens and a display
 engine which cannot rotate in hardware, so the firmware just leaves things
@@ -25,23 +25,41 @@ the display is not mounted upright inside the devices case through a new
 panel orientation drm-connector property, as well as to tell fbcon to
 rotate the console so that it shows the right way up.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
 Changes in v5:
 -Add a kernel-doc comment documenting drm_get_panel_orientation_quirk()
 -Remove board_* matches from the dmi-matches for the VIOS LTH17 laptop,
  keeping only the (identical) sys_vendor and product_name matches.
  This is necessary because an older version of the bios has
  board_vendor set to VOIS instead of VIOS
+
+Changes in v6:
+-Add reference to added kernel-docs in Documentation/gpu/drm-kms-helpers.rst
+
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
+ Documentation/gpu/drm-kms-helpers.rst          |   3 +
  drivers/gpu/drm/Kconfig                        |   3 +
  drivers/gpu/drm/Makefile                       |   1 +
  drivers/gpu/drm/drm_panel_orientation_quirks.c | 174 +++++++++++++++++++++++++
  include/drm/drm_utils.h                        |  18 +++
- 4 files changed, 196 insertions(+)
+ 5 files changed, 199 insertions(+)
  create mode 100644 drivers/gpu/drm/drm_panel_orientation_quirks.c
  create mode 100644 include/drm/drm_utils.h
 
+diff --git a/Documentation/gpu/drm-kms-helpers.rst b/Documentation/gpu/drm-kms-helpers.rst
+index 13dd237418cc..3ea622876b67 100644
+--- a/Documentation/gpu/drm-kms-helpers.rst
++++ b/Documentation/gpu/drm-kms-helpers.rst
+@@ -163,6 +163,9 @@ Panel Helper Reference
+ .. kernel-doc:: drivers/gpu/drm/drm_panel.c
+    :export:
+ 
++.. kernel-doc:: drivers/gpu/drm/drm_panel_orientation_quirks.c
++   :export:
++
+ Display Port Helper Functions Reference
+ =================== 
 diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
 index 4d9f21831741..9d005ac98c2b 100644
 --- a/drivers/gpu/drm/Kconfig
@@ -57,10 +75,10 @@ index 4d9f21831741..9d005ac98c2b 100644
  	bool "DRM DP AUX Interface"
  	depends on DRM
 diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index a3fdc5a68dff..ffb621819bbf 100644
+index e9500844333e..e5bf68b9c171 100644
 --- a/drivers/gpu/drm/Makefile
 +++ b/drivers/gpu/drm/Makefile
-@@ -46,6 +46,7 @@ obj-$(CONFIG_DRM_DEBUG_MM_SELFTEST) += selftests/
+@@ -47,6 +47,7 @@ obj-$(CONFIG_DRM_DEBUG_MM_SELFTEST) += selftests/
  
  obj-$(CONFIG_DRM)	+= drm.o
  obj-$(CONFIG_DRM_MIPI_DSI) += drm_mipi_dsi.o

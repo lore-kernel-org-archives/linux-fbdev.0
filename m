@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:38 +0000
+Date: Sat, 25 Nov 2017 19:16:19 +0000
 Subject: [PATCH v6 4/7] drm/fb-helper: Apply panel orientation connector prop to the primary plane, v6.
-Message-Id: <20171125173341.14162-5-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-5-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
@@ -46,7 +46,7 @@ Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
 diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helpe=
 r.c
-index 07374008f146..3d20b77f3fb9 100644
+index 832739ff58bf..57d6bad379f8 100644
 --- a/drivers/gpu/drm/drm_fb_helper.c
 +++ b/drivers/gpu/drm/drm_fb_helper.c
 @@ -41,6 +41,7 @@
@@ -57,7 +57,7 @@ index 07374008f146..3d20b77f3fb9 100644
  #include "drm_crtc_helper_internal.h"
 =20
  static bool drm_fbdev_emulation =3D true;
-@@ -350,6 +351,7 @@ EXPORT_SYMBOL(drm_fb_helper_debug_leave);
+@@ -356,6 +357,7 @@ EXPORT_SYMBOL(drm_fb_helper_debug_leave);
  static int restore_fbdev_mode_atomic(struct drm_fb_helper *fb_helper, bool=
  active)
  {
@@ -66,7 +66,7 @@ index 07374008f146..3d20b77f3fb9 100644
  	struct drm_plane *plane;
  	struct drm_atomic_state *state;
  	int i, ret;
-@@ -368,8 +370,6 @@ static int restore_fbdev_mode_atomic(struct drm_fb_help=
+@@ -374,8 +376,6 @@ static int restore_fbdev_mode_atomic(struct drm_fb_help=
 er *fb_helper, bool activ
  retry:
  	plane_mask =3D 0;
@@ -76,7 +76,7 @@ er *fb_helper, bool activ
  		plane_state =3D drm_atomic_get_plane_state(state, plane);
  		if (IS_ERR(plane_state)) {
  			ret =3D PTR_ERR(plane_state);
-@@ -392,6 +392,11 @@ static int restore_fbdev_mode_atomic(struct drm_fb_hel=
+@@ -398,6 +398,11 @@ static int restore_fbdev_mode_atomic(struct drm_fb_hel=
 per *fb_helper, bool activ
 =20
  	for (i =3D 0; i < fb_helper->crtc_count; i++) {
@@ -89,7 +89,7 @@ per *fb_helper, bool activ
 =20
  		ret =3D __drm_atomic_helper_set_config(mode_set, state);
  		if (ret !=3D 0)
-@@ -821,6 +826,7 @@ int drm_fb_helper_init(struct drm_device *dev,
+@@ -829,6 +834,7 @@ int drm_fb_helper_init(struct drm_device *dev,
  		if (!fb_helper->crtc_info[i].mode_set.connectors)
  			goto out_free;
  		fb_helper->crtc_info[i].mode_set.num_connectors =3D 0;
@@ -97,7 +97,7 @@ per *fb_helper, bool activ
  	}
 =20
  	i =3D 0;
-@@ -2338,6 +2344,62 @@ static int drm_pick_crtcs(struct drm_fb_helper *fb_h=
+@@ -2353,6 +2359,62 @@ static int drm_pick_crtcs(struct drm_fb_helper *fb_h=
 elper,
  	return best_score;
  }
@@ -166,7 +166,7 @@ do
  static void drm_setup_crtcs(struct drm_fb_helper *fb_helper,
  			    u32 width, u32 height)
  {
-@@ -2397,6 +2459,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *fb_=
+@@ -2412,6 +2474,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *fb_=
 helper,
  		drm_fb_helper_modeset_release(fb_helper,
  					      &fb_helper->crtc_info[i].mode_set);
@@ -175,7 +175,7 @@ helper,
  	drm_fb_helper_for_each_connector(fb_helper, i) {
  		struct drm_display_mode *mode =3D modes[i];
  		struct drm_fb_helper_crtc *fb_crtc =3D crtcs[i];
-@@ -2416,6 +2479,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *fb_=
+@@ -2431,6 +2494,7 @@ static void drm_setup_crtcs(struct drm_fb_helper *fb_=
 helper,
  			modeset->mode =3D drm_mode_duplicate(dev,
  							   fb_crtc->desired_mode);
@@ -184,7 +184,7 @@ helper,
  			modeset->connectors[modeset->num_connectors++] =3D connector;
  			modeset->x =3D offset->x;
  			modeset->y =3D offset->y;
-@@ -2457,6 +2521,28 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper =
+@@ -2472,6 +2536,28 @@ static void drm_setup_crtcs_fb(struct drm_fb_helper =
 *fb_helper)
  		}
  	}
@@ -215,7 +215,7 @@ helper,
 =20
  /* Note: Drops fb_helper->lock before returning. */
 diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index 33fe95927742..d0667e4ba886 100644
+index 877e5b395c02..1494b12a984a 100644
 --- a/include/drm/drm_fb_helper.h
 +++ b/include/drm/drm_fb_helper.h
 @@ -48,6 +48,7 @@ struct drm_fb_helper_crtc {

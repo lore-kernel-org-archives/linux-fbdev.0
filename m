@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:40 +0000
+Date: Sat, 25 Nov 2017 19:16:21 +0000
 Subject: [PATCH v6 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation_quirk
-Message-Id: <20171125173341.14162-7-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-7-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
@@ -28,7 +28,7 @@ Signed-off-by: Hans de Goede <hdegoede@redhat.com>
  2 files changed, 21 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 2f615b7f1c9f..2566cfbdebfb 100644
+index 5e58f5ec0a28..c4a90c497839 100644
 --- a/drivers/video/fbdev/Kconfig
 +++ b/drivers/video/fbdev/Kconfig
 @@ -772,6 +772,7 @@ config FB_VESA

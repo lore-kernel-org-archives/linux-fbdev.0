@@ -1,10 +1,10 @@
 From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 17:33:35 +0000
+Date: Sat, 25 Nov 2017 19:16:16 +0000
 Subject: [PATCH v6 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
-Message-Id: <20171125173341.14162-2-hdegoede@redhat.com>
+Message-Id: <20171125191622.16289-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125173341.14162-1-hdegoede@redhat.com>
-In-Reply-To: <20171125173341.14162-1-hdegoede@redhat.com>
+References: <20171125191622.16289-1-hdegoede@redhat.com>
+In-Reply-To: <20171125191622.16289-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -29,12 +29,12 @@ Signed-off-by: Hans de Goede <hdegoede@redhat.com>
  3 files changed, 18 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 929ca472c524..30014e5867db 100644
+index 04612f938bab..fb317ed76b45 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -964,10 +964,13 @@ static const char *fbcon_startup(void)
+@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
+ 	ops->cur_rotate = -1;
  	ops->cur_blink_jiffies = HZ / 5;
- 	ops->info = info;
  	info->fbcon_par = ops;
 -	if (initial_rotation != -1)
 -		p->con_rotate = initial_rotation;
@@ -49,7 +49,7 @@ index 929ca472c524..30014e5867db 100644
  	set_blitting_type(vc, info);
  
  	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1104,10 +1107,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
  
  	ops = info->fbcon_par;
  	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);

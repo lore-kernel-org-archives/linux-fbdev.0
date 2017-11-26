@@ -1,63 +1,64 @@
-From: Ben Hutchings <ben@decadent.org.uk>
-Date: Mon, 06 Nov 2017 23:03:02 +0000
-Subject: [PATCH 3.16 260/294] video: mx3fb: always enable BACKLIGHT_LCD_SUPPORT
-Message-Id: <lsq.1510009382.392135534@decadent.org.uk>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 20:42:49 +0000
+Subject: [PATCH 1/2] video: fbdev-MMP: Delete an error message for a failed memory allocation in two function
+Message-Id: <9aa9c376-22a3-f682-d9a4-5ee95cfd75a0@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-In-Reply-To: <lsq.1510009377.526284287@decadent.org.uk>
+References: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
+In-Reply-To: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: akpm@linux-foundation.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Alexander Stein <alexander.stein@systec-electronic.com>, Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>, Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-3.16.50-rc1 review patch.  If anyone has any objections, please let me know.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 21:16:30 +0100
 
-------------------
+Omit an extra message for a memory allocation failure in these functions.
 
-From: Arnd Bergmann <arnd@arndb.de>
+This issue was detected by using the Coccinelle software.
 
-commit 9c8ee3c7341393811d5be5eb61b815e76f92c799 upstream.
-
-Commit 7edaa761ee81b ("video: mx3fb: Add backlight control support")
-changed the mx3fb driver so it always selects the BACKLIGHT_CLASS_DEVICE
-symbol, but that is hidden behind BACKLIGHT_LCD_SUPPORT in Kconfig, so
-we get a Kconfig warning for multi_v5_defconfig, which doesn't have that:
-
-Warning: (DRM_RADEON && DRM_NOUVEAU && DRM_I915 && DRM_GMA500 &&
-DRM_SHMOBILE && DRM_TILCDC && FB_BACKLIGHT && FB_MX3 && USB_APPLEDISPLAY
-&& FB_OLPC_DCON && ASUS_LAPTOP && SONY_LAPTOP && THINKPAD_ACPI &&
-EEEPC_LAPTOP && ACPI_CMPC && SAMSUNG_Q10) selects BACKLIGHT_CLASS_DEVICE
-which has unmet direct dependencies (HAS_IOMEM && BACKLIGHT_LCD_SUPPORT)
-
-This makes sure we always enable both symbols together for mx3fb, like
-we do for the other drivers that can't be built without backlight
-support. Note that a better solution would be to ensure the driver can
-work with or without backlight support.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Alexander Stein <alexander.stein@systec-electronic.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
-Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/mmp/fb/mmpfb.c    | 5 ++---
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 6 ++----
+ 2 files changed, 4 insertions(+), 7 deletions(-)
 
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2330,10 +2330,11 @@ config FB_MSM
- config FB_MX3
- 	tristate "MX3 Framebuffer support"
- 	depends on FB && MX3_IPU
-+	select BACKLIGHT_CLASS_DEVICE
-+	select BACKLIGHT_LCD_SUPPORT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
--	select BACKLIGHT_CLASS_DEVICE
- 	default y
- 	help
- 	  This is a framebuffer device for the i.MX31 LCD Controller. So
+diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
+index 92279e02dd94..292b3e403044 100644
+--- a/drivers/video/fbdev/mmp/fb/mmpfb.c
++++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
+@@ -495,10 +495,9 @@ static int modes_setup(struct mmpfb_info *fbi)
+ 	/* put videomode list to info structure */
+ 	videomodes = kzalloc(sizeof(struct fb_videomode) * videomode_num,
+ 			GFP_KERNEL);
+-	if (!videomodes) {
+-		dev_err(fbi->dev, "can't malloc video modes\n");
++	if (!videomodes)
+ 		return -ENOMEM;
+-	}
++
+ 	for (i = 0; i < videomode_num; i++)
+ 		mmpmode_to_fbmode(&videomodes[i], &mmp_modes[i]);
+ 	fb_videomode_to_modelist(videomodes, videomode_num, &info->modelist);
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+index b6f83d5df9fd..9f912ea0bfce 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+@@ -407,11 +407,9 @@ static int path_init(struct mmphw_path_plat *path_plat,
+ 
+ 	/* init driver data */
+ 	path_info = kzalloc(sizeof(struct mmp_path_info), GFP_KERNEL);
+-	if (!path_info) {
+-		dev_err(ctrl->dev, "%s: unable to alloc path_info for %s\n",
+-				__func__, config->name);
++	if (!path_info)
+ 		return 0;
+-	}
++
+ 	path_info->name = config->name;
+ 	path_info->id = path_plat->id;
+ 	path_info->dev = ctrl->dev;
+-- 
+2.15.0
 

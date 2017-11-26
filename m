@@ -1,41 +1,28 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Wed, 22 Nov 2017 05:31:10 +0000
-Subject: [PATCH 25/30] backlight: deprecate pci_get_bus_and_slot()
-Message-Id: <1511328675-21981-26-git-send-email-okaya@codeaurora.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 20:41:43 +0000
+Subject: [PATCH 0/2] video/fbdev/mmp: Adjustments for two function implementations
+Message-Id: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1511328675-21981-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-where a PCI device is present. This restricts the device drivers to be
-reused for other domain numbers.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 21:38:42 +0100
 
-Use pci_get_domain_bus_and_slot() with a domain number of 0 where we can't
-extract the domain number. Other places, use the actual domain number from
-the device.
+Two update suggestions were taken into account
+from static source code analysis.
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
----
- drivers/video/backlight/apple_bl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Markus Elfring (2):
+  Delete an error message for a failed memory allocation in two functions
+  Improve a size determination in path_init()
 
-diff --git a/drivers/video/backlight/apple_bl.c b/drivers/video/backlight/apple_bl.c
-index d843296..6a34ab9 100644
---- a/drivers/video/backlight/apple_bl.c
-+++ b/drivers/video/backlight/apple_bl.c
-@@ -143,7 +143,7 @@ static int apple_bl_add(struct acpi_device *dev)
- 	struct pci_dev *host;
- 	int intensity;
- 
--	host = pci_get_bus_and_slot(0, 0);
-+	host = pci_get_domain_bus_and_slot(0, 0, 0);
- 
- 	if (!host) {
- 		pr_err("unable to find PCI host\n");
+ drivers/video/fbdev/mmp/fb/mmpfb.c    | 5 ++---
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 8 +++-----
+ 2 files changed, 5 insertions(+), 8 deletions(-)
+
 -- 
-1.9.1
+2.15.0
 

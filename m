@@ -1,10 +1,8 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 20:43:52 +0000
-Subject: [PATCH 2/2] video: fbdev-MMP: Improve a size determination in path_init()
-Message-Id: <293fb9cb-3020-bded-b1bd-67bbb2820aa2@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 21:32:06 +0000
+Subject: [PATCH] video: matroxfb: Delete an error message for a failed memory allocation in matroxfb_crtc2_pr
+Message-Id: <f903f284-bdba-7eb7-c666-301577fcfa94@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
-In-Reply-To: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -12,32 +10,34 @@ To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zol
 Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 21:21:33 +0100
+Date: Sun, 26 Nov 2017 22:13:55 +0100
 
-Replace the specification of a data structure by a pointer dereference
-as the parameter for the operator "sizeof" to make the corresponding size
-determination a bit safer according to the Linux coding style convention.
+Omit an extra message for a memory allocation failure in this function.
 
 This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/matrox/matroxfb_crtc2.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-index 9f912ea0bfce..fcdbb2df137f 100644
---- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-@@ -406,7 +406,7 @@ static int path_init(struct mmphw_path_plat *path_plat,
- 	dev_info(ctrl->dev, "%s: %s\n", __func__, config->name);
- 
- 	/* init driver data */
--	path_info = kzalloc(sizeof(struct mmp_path_info), GFP_KERNEL);
-+	path_info = kzalloc(sizeof(*path_info), GFP_KERNEL);
- 	if (!path_info)
- 		return 0;
- 
+diff --git a/drivers/video/fbdev/matrox/matroxfb_crtc2.c b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
+index 02796a4317a9..f64e1d55d7a1 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_crtc2.c
++++ b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
+@@ -696,10 +696,9 @@ static void* matroxfb_crtc2_probe(struct matrox_fb_info* minfo) {
+ 	if (!minfo->devflags.crtc2)
+ 		return NULL;
+ 	m2info = kzalloc(sizeof(*m2info), GFP_KERNEL);
+-	if (!m2info) {
+-		printk(KERN_ERR "matroxfb_crtc2: Not enough memory for CRTC2 control structs\n");
++	if (!m2info)
+ 		return NULL;
+-	}
++
+ 	m2info->primary_dev = minfo;
+ 	if (matroxfb_dh_registerfb(m2info)) {
+ 		kfree(m2info);
 -- 
 2.15.0
 

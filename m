@@ -1,44 +1,54 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Wed, 22 Nov 2017 22:49:20 +0000
-Subject: [PATCH V2 25/29] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
-Message-Id: <1511390964-9979-26-git-send-email-okaya@codeaurora.org>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 13:00:16 +0000
+Subject: [PATCH] video: sh_mobile_lcdcfb: Delete an error message for a failed memory allocation in two funct
+Message-Id: <478c51ab-b4ef-47e1-0b53-8b4e1f3b931a@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1511390964-9979-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Arvind Yadav <arvind.yadav.cs@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Kees Cook <keescook@chromium.org>, Wei Yongjun <weiyongjun1@huawei.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-where a PCI device is present. This restricts the device drivers to be
-reused for other domain numbers.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 13:48:55 +0100
 
-Getting ready to remove pci_get_bus_and_slot() function in favor of
-pci_get_domain_bus_and_slot().
+Omit an extra message for a memory allocation failure in these functions.
 
-Find the domain number from pdev.
+This issue was detected by using the Coccinelle software.
 
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/intelfb/intelfbhw.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/intelfb/intelfbhw.c b/drivers/video/fbdev/intelfb/intelfbhw.c
-index d31ed4e..f695867 100644
---- a/drivers/video/fbdev/intelfb/intelfbhw.c
-+++ b/drivers/video/fbdev/intelfb/intelfbhw.c
-@@ -181,7 +181,9 @@ int intelfbhw_get_memory(struct pci_dev *pdev, int *aperture_size,
- 		return 1;
- 
- 	/* Find the bridge device.  It is always 0:0.0 */
--	if (!(bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0)))) {
-+	bridge_dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus), 0,
-+						 PCI_DEVFN(0, 0));
-+	if (!bridge_dev) {
- 		ERR_MSG("cannot find bridge device\n");
- 		return 1;
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index c3a46506e47e..0f9b37034eaf 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -2149,10 +2149,8 @@ sh_mobile_lcdc_channel_fb_register(struct sh_mobile_lcdc_chan *ch)
+ 	if (info->fbdefio) {
+ 		ch->sglist = vmalloc(sizeof(struct scatterlist) *
+ 				     ch->fb_size >> PAGE_SHIFT);
+-		if (!ch->sglist) {
+-			dev_err(ch->lcdc->dev, "cannot allocate sglist\n");
++		if (!ch->sglist)
+ 			return -ENOMEM;
+-		}
  	}
+ 
+ 	info->bl_dev = ch->bl;
+@@ -2718,10 +2716,8 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+-	if (!priv) {
+-		dev_err(&pdev->dev, "cannot allocate device data\n");
++	if (!priv)
+ 		return -ENOMEM;
+-	}
+ 
+ 	priv->dev = &pdev->dev;
+ 	priv->meram_dev = pdata->meram_dev;
 -- 
-1.9.1
+2.15.0
 

@@ -1,230 +1,137 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:35:53 +0000
-Subject: [PATCH v7 7/7] fbcon: Remove dmi quirk table
-Message-Id: <20171125193553.23986-8-hdegoede@redhat.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 07:38:49 +0000
+Subject: [PATCH v2 2/5] video: smscufx: Less checks in ufx_usb_probe() after error detection
+Message-Id: <3f66c1b1-bf12-94ed-4dc9-34094c0d5816@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125193553.23986-1-hdegoede@redhat.com>
-In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
+References: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
+ <73df7ce0-c4b0-aec7-ee7e-74f55a0fe708@users.sourceforge.net>
+In-Reply-To: <73df7ce0-c4b0-aec7-ee7e-74f55a0fe708@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-This is now all handled in the drivers and communicated through
-fb_info.fbcon_rotate_hint.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 08:18:20 +0100
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Up to four checks could be repeated by the ufx_usb_probe() function
+during error handling even if the relevant properties can be determined
+for the involved variables before by source code analysis.
+
+* Return directly after a call of the function "kzalloc" failed
+  at the beginning.
+
+* Adjust jump targets so that extra checks can be omitted at the end.
+
+* Delete initialisations for the variables "info" and "retval"
+  which became unnecessary with this refactoring.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/core/Makefile           |   3 -
- drivers/video/fbdev/core/fbcon.c            |   4 +-
- drivers/video/fbdev/core/fbcon.h            |   6 --
- drivers/video/fbdev/core/fbcon_dmi_quirks.c | 145 ----------------------------
- 4 files changed, 2 insertions(+), 156 deletions(-)
- delete mode 100644 drivers/video/fbdev/core/fbcon_dmi_quirks.c
 
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index d34fd182ca68..37710316a680 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -15,9 +15,6 @@ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
- fb-y				  += fbcon_rotate.o fbcon_cw.o fbcon_ud.o \
- 				     fbcon_ccw.o
- endif
--ifeq ($(CONFIG_DMI),y)
--fb-y				  += fbcon_dmi_quirks.o
--endif
- endif
- fb-objs                           := $(fb-y)
+v2:
+A call of the function "fb_dealloc_cmap" was preserved for the exception
+handling at the end.
+
+ drivers/video/fbdev/smscufx.c | 46 ++++++++++++++++++-------------------------
+ 1 file changed, 19 insertions(+), 27 deletions(-)
+
+diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
+index 32de07d77184..a48a2dec3f5e 100644
+--- a/drivers/video/fbdev/smscufx.c
++++ b/drivers/video/fbdev/smscufx.c
+@@ -1619,8 +1619,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ {
+ 	struct usb_device *usbdev;
+ 	struct ufx_data *dev;
+-	struct fb_info *info = NULL;
+-	int retval = -ENOMEM;
++	struct fb_info *info;
++	int retval;
+ 	u32 id_rev, fpga_rev;
  
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index fb317ed76b45..157a40670a47 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -968,7 +968,7 @@ static const char *fbcon_startup(void)
- 	if (p->con_rotate = -1)
- 		p->con_rotate = info->fbcon_rotate_hint;
- 	if (p->con_rotate = -1)
--		p->con_rotate = fbcon_platform_get_rotate(info);
-+		p->con_rotate = FB_ROTATE_UR;
+ 	/* usb initialization */
+@@ -1629,7 +1629,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
  
- 	set_blitting_type(vc, info);
+ 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
+ 	if (!dev)
+-		goto error;
++		return -ENOMEM;
  
-@@ -1111,7 +1111,7 @@ static void fbcon_init(struct vc_data *vc, int init)
- 	if (p->con_rotate = -1)
- 		p->con_rotate = info->fbcon_rotate_hint;
- 	if (p->con_rotate = -1)
--		p->con_rotate = fbcon_platform_get_rotate(info);
-+		p->con_rotate = FB_ROTATE_UR;
+ 	/* we need to wait for both usb and fbdev to spin down on disconnect */
+ 	kref_init(&dev->kref); /* matching kref_put in usb .disconnect fn */
+@@ -1649,9 +1649,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	dev_dbg(dev->gdev, "fb_defio enable=%d\n", fb_defio);
  
- 	set_blitting_type(vc, info);
+ 	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
+-		retval = -ENOMEM;
+ 		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
+-		goto error;
++		goto e_nomem;
+ 	}
  
-diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
-index 18f3ac144237..3746828356ed 100644
---- a/drivers/video/fbdev/core/fbcon.h
-+++ b/drivers/video/fbdev/core/fbcon.h
-@@ -261,10 +261,4 @@ extern void fbcon_set_rotate(struct fbcon_ops *ops);
- #define fbcon_set_rotate(x) do {} while(0)
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
+ 	/* We don't register a new USB class. Our client interface is fbdev */
+@@ -1659,9 +1658,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+ 	info = framebuffer_alloc(0, &usbdev->dev);
+ 	if (!info) {
+-		retval = -ENOMEM;
+ 		dev_err(dev->gdev, "framebuffer_alloc failed\n");
+-		goto error;
++		goto e_nomem;
+ 	}
  
--#ifdef CONFIG_DMI
--int fbcon_platform_get_rotate(struct fb_info *info);
--#else
--#define fbcon_platform_get_rotate(i) FB_ROTATE_UR
--#endif /* CONFIG_DMI */
+ 	dev->info = info;
+@@ -1672,7 +1670,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (retval < 0) {
+ 		dev_err(dev->gdev, "fb_alloc_cmap failed %x\n", retval);
+-		goto error;
++		goto destroy_modedb;
+ 	}
+ 
+ 	INIT_DELAYED_WORK(&dev->free_framebuffer_work,
+@@ -1733,26 +1731,20 @@ static int ufx_usb_probe(struct usb_interface *interface,
+ 	return 0;
+ 
+ error:
+-	if (dev) {
+-		if (info) {
+-			if (info->cmap.len != 0)
+-				fb_dealloc_cmap(&info->cmap);
+-			if (info->monspecs.modedb)
+-				fb_destroy_modedb(info->monspecs.modedb);
+-			vfree(info->screen_base);
 -
- #endif /* _VIDEO_FBCON_H */
-diff --git a/drivers/video/fbdev/core/fbcon_dmi_quirks.c b/drivers/video/fbdev/core/fbcon_dmi_quirks.c
-deleted file mode 100644
-index 6904e47d1e51..000000000000
---- a/drivers/video/fbdev/core/fbcon_dmi_quirks.c
-+++ /dev/null
-@@ -1,145 +0,0 @@
--/*
-- *  fbcon_dmi_quirks.c -- DMI based quirk detection for fbcon
-- *
-- *	Copyright (C) 2017 Hans de Goede <hdegoede@redhat.com>
-- *
-- *  This file is subject to the terms and conditions of the GNU General Public
-- *  License.  See the file COPYING in the main directory of this archive for
-- *  more details.
-- */
+-			fb_destroy_modelist(&info->modelist);
 -
--#include <linux/dmi.h>
--#include <linux/fb.h>
--#include <linux/kernel.h>
--#include "fbcon.h"
--
--/*
-- * Some x86 clamshell design devices use portrait tablet screens and a display
-- * engine which cannot rotate in hardware, so we need to rotate the fbcon to
-- * compensate. Unfortunately these (cheap) devices also typically have quite
-- * generic DMI data, so we match on a combination of DMI data, screen resolution
-- * and a list of known BIOS dates to avoid false positives.
-- */
--
--struct fbcon_dmi_rotate_data {
--	int width;
--	int height;
--	const char * const *bios_dates;
--	int rotate;
--};
--
--static const struct fbcon_dmi_rotate_data rotate_data_asus_t100ha = {
--	.width = 800,
--	.height = 1280,
--	.rotate = FB_ROTATE_CCW,
--};
--
--static const struct fbcon_dmi_rotate_data rotate_data_gpd_pocket = {
--	.width = 1200,
--	.height = 1920,
--	.bios_dates = (const char * const []){ "05/26/2017", "06/28/2017",
--		"07/05/2017", "08/07/2017", NULL },
--	.rotate = FB_ROTATE_CW,
--};
--
--static const struct fbcon_dmi_rotate_data rotate_data_gpd_win = {
--	.width = 720,
--	.height = 1280,
--	.bios_dates = (const char * const []){
--		"10/25/2016", "11/18/2016", "12/23/2016", "12/26/2016",
--		"02/21/2017", "03/20/2017", "05/25/2017", NULL },
--	.rotate = FB_ROTATE_CW,
--};
--
--static const struct fbcon_dmi_rotate_data rotate_data_itworks_tw891 = {
--	.width = 800,
--	.height = 1280,
--	.bios_dates = (const char * const []){ "10/16/2015", NULL },
--	.rotate = FB_ROTATE_CW,
--};
--
--static const struct fbcon_dmi_rotate_data rotate_data_vios_lth17 = {
--	.width = 800,
--	.height = 1280,
--	.rotate = FB_ROTATE_CW,
--};
--
--static const struct dmi_system_id rotate_data[] = {
--	{	/* Asus T100HA */
--		.matches = {
--		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "ASUSTeK COMPUTER INC."),
--		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "T100HAN"),
--		},
--		.driver_data = (void *)&rotate_data_asus_t100ha,
--	}, {	/*
--		 * GPD Pocket, note that the the DMI data is less generic then
--		 * it seems, devices with a board-vendor of "AMI Corporation"
--		 * are quite rare, as are devices which have both board- *and*
--		 * product-id set to "Default String"
--		 */
--		.matches = {
--		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
--		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
--		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
--		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
--		},
--		.driver_data = (void *)&rotate_data_gpd_pocket,
--	}, {	/* GPD Win (same note on DMI match as GPD Pocket) */
--		.matches = {
--		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "AMI Corporation"),
--		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "Default string"),
--		  DMI_EXACT_MATCH(DMI_BOARD_SERIAL, "Default string"),
--		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "Default string"),
--		},
--		.driver_data = (void *)&rotate_data_gpd_win,
--	}, {	/* I.T.Works TW891 */
--		.matches = {
--		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "To be filled by O.E.M."),
--		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "TW891"),
--		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "To be filled by O.E.M."),
--		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "TW891"),
--		},
--		.driver_data = (void *)&rotate_data_itworks_tw891,
--	}, {	/* VIOS LTH17 */
--		.matches = {
--		  DMI_EXACT_MATCH(DMI_SYS_VENDOR, "VIOS"),
--		  DMI_EXACT_MATCH(DMI_PRODUCT_NAME, "LTH17"),
--		  DMI_EXACT_MATCH(DMI_BOARD_VENDOR, "VIOS"),
--		  DMI_EXACT_MATCH(DMI_BOARD_NAME, "LTH17"),
--		},
--		.driver_data = (void *)&rotate_data_vios_lth17,
--	},
--	{}
--};
--
--int fbcon_platform_get_rotate(struct fb_info *info)
--{
--	const struct dmi_system_id *match;
--	const struct fbcon_dmi_rotate_data *data;
--	const char *bios_date;
--	int i;
--
--	for (match = dmi_first_match(rotate_data);
--	     match;
--	     match = dmi_first_match(match + 1)) {
--		data = match->driver_data;
--
--		if (data->width != info->var.xres ||
--		    data->height != info->var.yres)
--			continue;
--
--		if (!data->bios_dates)
--			return data->rotate;
--
--		bios_date = dmi_get_system_info(DMI_BIOS_DATE);
--		if (!bios_date)
--			continue;
--
--		for (i = 0; data->bios_dates[i]; i++) {
--			if (!strcmp(data->bios_dates[i], bios_date))
--				return data->rotate;
+-			framebuffer_release(info);
 -		}
+-
+-		kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
+-		kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
+-
+-		/* dev has been deallocated. Do not dereference */
 -	}
 -
--	return FB_ROTATE_UR;
--}
++	fb_dealloc_cmap(&info->cmap);
++destroy_modedb:
++	fb_destroy_modedb(info->monspecs.modedb);
++	vfree(info->screen_base);
++	fb_destroy_modelist(&info->modelist);
++	framebuffer_release(info);
++put_ref:
++	kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
++	kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
+ 	return retval;
++
++e_nomem:
++	retval = -ENOMEM;
++	goto put_ref;
+ }
+ 
+ static void ufx_usb_disconnect(struct usb_interface *interface)
 -- 
-2.14.3
+2.15.0
 

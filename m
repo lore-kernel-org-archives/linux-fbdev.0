@@ -1,39 +1,41 @@
-From: Ji Zhang <ji.zhang@mediatek.com>
-Date: Thu, 30 Nov 2017 08:17:22 +0000
-Subject: [PATCH] fbdev: arm64 use __raw I/O memory api
-Message-Id: <1512029842-10939-1-git-send-email-ji.zhang@mediatek.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 17:41:32 +0000
+Subject: [PATCH 1/3] video: omap: Delete an error message for a failed memory allocation in omapfb_do_probe()
+Message-Id: <e6b19a4a-566b-d1a0-1847-ed1167e118b6@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
+In-Reply-To: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Matthias Brugger <matthias.bgg@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-mediatek@lists.infradead.org, wsd_upstream@mediatek.com, Ji Zhang <ji.zhang@mediatek.com>, shadanji@163.com
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-Since arm64 also has __raw I/O accessors, add __aarch64__ in fb.h.
-This is a supplement for commmit
-981409b25e2a99409b26daa67293ca1cfd5ea0a0
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 18:09:15 +0100
 
-Signed-off-by: Ji Zhang <ji.zhang@mediatek.com>
+Omit an extra message for a memory allocation failure in this function.
+
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- include/linux/fb.h | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/omap/omapfb_main.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index bc24e48..cea8a2c 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -564,7 +564,10 @@ static inline struct apertures_struct *alloc_apertures(unsigned int max_num) {
- #define fb_memcpy_fromfb sbus_memcpy_fromio
- #define fb_memcpy_tofb sbus_memcpy_toio
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 3479a47a3082..b0d91524bf6c 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1647,8 +1647,6 @@ static int omapfb_do_probe(struct platform_device *pdev,
  
--#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) || defined(__hppa__) || defined(__sh__) || defined(__powerpc__) || defined(__avr32__) || defined(__bfin__) || defined(__arm__)
-+#elif defined(__i386__) || defined(__alpha__) || defined(__x86_64__) ||	\
-+	defined(__hppa__) || defined(__sh__) || defined(__powerpc__) ||	\
-+	defined(__avr32__) || defined(__bfin__) || defined(__arm__) ||	\
-+	defined(__aarch64__)
- 
- #define fb_readb __raw_readb
- #define fb_readw __raw_readw
+ 	fbdev = kzalloc(sizeof(struct omapfb_device), GFP_KERNEL);
+ 	if (fbdev = NULL) {
+-		dev_err(&pdev->dev,
+-			"unable to allocate memory for device info\n");
+ 		r = -ENOMEM;
+ 		goto cleanup;
+ 	}
 -- 
-1.9.1
+2.15.0
 

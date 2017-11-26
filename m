@@ -1,39 +1,43 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 21:27:32 +0000
-Subject: [PATCH 4/5] radeon_backlight: Return directly after a failed kmalloc() in radeonfb_bl_init()
-Message-Id: <3c7e74d9-0be1-cbfd-4070-d60904c55696@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 10:18:26 +0000
+Subject: [PATCH 2/4] video: sm501fb: Improve a size determination in sm501fb_probe()
+Message-Id: <08ed1e90-5714-04b7-b3dc-067a3d9bc38b@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
-In-Reply-To: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
+References: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
+In-Reply-To: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Alexey Khoroshilov <khoroshilov@ispras.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bhumika Goyal <bhumirks@gmail.com>, Colin Ian King <colin.king@canonical.com>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 21:50:28 +0100
+Date: Sun, 26 Nov 2017 10:22:37 +0100
 
-Return directly after a call of the function "kmalloc" failed
-at the beginning.
+Replace the specification of a data structure by a pointer dereference
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
+
+This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/aty/radeon_backlight.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/sm501fb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/radeon_backlight.c b/drivers/video/fbdev/aty/radeon_backlight.c
-index c5e0e3557cc2..7f7ed6f72ddb 100644
---- a/drivers/video/fbdev/aty/radeon_backlight.c
-+++ b/drivers/video/fbdev/aty/radeon_backlight.c
-@@ -145,7 +145,7 @@ void radeonfb_bl_init(struct radeonfb_info *rinfo)
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index e8301c4e7d44..80bda5a655c0 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1932,8 +1932,7 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 	int ret;
  
- 	pdata = kmalloc(sizeof(*pdata), GFP_KERNEL);
- 	if (!pdata)
--		goto error;
-+		return;
- 
- 	snprintf(name, sizeof(name), "radeonbl%d", rinfo->info->node);
+ 	/* allocate our framebuffers */
+-
+-	info = kzalloc(sizeof(struct sm501fb_info), GFP_KERNEL);
++	info = kzalloc(sizeof(*info), GFP_KERNEL);
+ 	if (!info)
+ 		return -ENOMEM;
  
 -- 
 2.15.0

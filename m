@@ -1,117 +1,44 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 25 Oct 2017 12:45:59 +0000
-Subject: [RFC 11/14] bootsplash: Redraw fully on console_unblank
-Message-Id: <20171025124602.28292-12-mstaudt@suse.de>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 14:16:37 +0000
+Subject: [PATCH 1/2] video: s3c-fb: Delete an error message for a failed memory allocation in s3c_fb_probe()
+Message-Id: <734da0dc-cc64-50f5-7816-bf3f5dd2e9a4@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171025124602.28292-1-mstaudt@suse.de>
-In-Reply-To: <20171025124602.28292-1-mstaudt@suse.de>
+References: <2c837da0-6b0f-12e7-4d76-960b660a8911@users.sourceforge.net>
+In-Reply-To: <2c837da0-6b0f-12e7-4d76-960b660a8911@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: mstaudt@suse.de, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-After exiting a KD_GRAPHICS program and falling back to the text
-console, a previously enabled splash needs to be fully redrawn.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 15:00:16 +0100
 
-Without this patch, the following fails:
+Omit an extra message for a memory allocation failure in this function.
 
-1. Switch to a text console
-2. Enable splash
-3. Start X (or any other KD_GRAPHICS program)
-4. Exit X
-5. Splash is not seen, apart from animations
+This issue was detected by using the Coccinelle software.
 
-Signed-off-by: Max Staudt <mstaudt@suse.de>
-Reviewed-by: Oliver Neukum <oneukum@suse.com>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/tty/vt/vt.c                   |  2 ++
- drivers/video/fbdev/core/bootsplash.c | 15 +++++++++------
- include/linux/bootsplash.h            |  4 ++++
- 3 files changed, 15 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/s3c-fb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 2ebaba16f785..416735ab6dc1 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -102,6 +102,7 @@
- #include <linux/uaccess.h>
- #include <linux/kdb.h>
- #include <linux/ctype.h>
-+#include <linux/bootsplash.h>
- 
- #define MAX_NR_CON_DRIVER 16
- 
-@@ -3903,6 +3904,7 @@ void do_unblank_screen(int leaving_gfx)
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 5f4f696c2ecf..0914c973cbd9 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1384,10 +1384,8 @@ static int s3c_fb_probe(struct platform_device *pdev)
  	}
  
- 	console_blanked = 0;
-+	bootsplash_mark_dirty();
- 	if (vc->vc_sw->con_blank(vc, 0, leaving_gfx) || vt_force_oops_output(vc))
- 		/* Low-level driver cannot restore -> do it ourselves */
- 		update_screen(vc);
-diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
-index e44376d89750..df2757d6e422 100644
---- a/drivers/video/fbdev/core/bootsplash.c
-+++ b/drivers/video/fbdev/core/bootsplash.c
-@@ -186,6 +186,13 @@ bool bootsplash_would_render_now(void)
- 		&& bootsplash_is_enabled();
- }
+ 	sfb = devm_kzalloc(dev, sizeof(struct s3c_fb), GFP_KERNEL);
+-	if (!sfb) {
+-		dev_err(dev, "no memory for framebuffers\n");
++	if (!sfb)
+ 		return -ENOMEM;
+-	}
  
-+void bootsplash_mark_dirty(void)
-+{
-+	mutex_lock(&splash_global.data_lock);
-+	splash_global.splash_fb = NULL;
-+	mutex_unlock(&splash_global.data_lock);
-+}
-+
- bool bootsplash_is_enabled(void)
- {
- 	unsigned long flags;
-@@ -242,9 +249,7 @@ void bootsplash_enable(void)
+ 	dev_dbg(dev, "allocate new framebuffer %p\n", sfb);
  
- 	if (!was_enabled) {
- 		/* Force a full redraw when the splash is re-activated */
--		mutex_lock(&splash_global.data_lock);
--		splash_global.splash_fb = NULL;
--		mutex_unlock(&splash_global.data_lock);
-+		bootsplash_mark_dirty();
- 
- 		queue_work(splash_global.wq, &splash_work_redraw_vc);
- 	}
-@@ -329,9 +334,7 @@ static int splash_resume(struct device *device)
- 	/* Force full redraw on resume since we've probably lost the
- 	 * framebuffer's contents meanwhile
- 	 */
--	mutex_lock(&splash_global.data_lock);
--	splash_global.splash_fb = NULL;
--	mutex_unlock(&splash_global.data_lock);
-+	bootsplash_mark_dirty();
- 
- 	if (bootsplash_would_render_now())
- 		queue_work(splash_global.wq, &splash_work_redraw_vc);
-diff --git a/include/linux/bootsplash.h b/include/linux/bootsplash.h
-index 101e70818363..a7f36043e6f6 100644
---- a/include/linux/bootsplash.h
-+++ b/include/linux/bootsplash.h
-@@ -21,6 +21,8 @@ extern void bootsplash_render_full(struct fb_info *info);
- 
- extern bool bootsplash_would_render_now(void);
- 
-+extern void bootsplash_mark_dirty(void);
-+
- extern bool bootsplash_is_enabled(void);
- extern void bootsplash_disable(void);
- extern void bootsplash_enable(void);
-@@ -33,6 +35,8 @@ extern void bootsplash_init(void);
- 
- #define bootsplash_would_render_now() (false)
- 
-+#define bootsplash_mark_dirty()
-+
- #define bootsplash_is_enabled() (false)
- #define bootsplash_disable()
- #define bootsplash_enable()
 -- 
-2.12.3
+2.15.0
 

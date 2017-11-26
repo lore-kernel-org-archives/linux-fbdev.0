@@ -1,43 +1,43 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 21:32:06 +0000
-Subject: [PATCH] video: matroxfb: Delete an error message for a failed memory allocation in matroxfb_crtc2_pr
-Message-Id: <f903f284-bdba-7eb7-c666-301577fcfa94@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 17:42:23 +0000
+Subject: [PATCH 2/3] video: omap: Improve a size determination in omapfb_do_probe()
+Message-Id: <3e367b91-a7ae-fc2e-f145-d62cfee14c77@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
+In-Reply-To: <1e17c727-884d-5745-2726-48dd3a53c32f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 22:13:55 +0100
+Date: Sun, 26 Nov 2017 18:16:20 +0100
 
-Omit an extra message for a memory allocation failure in this function.
+Replace the specification of a data structure by a pointer dereference
+as the parameter for the operator "sizeof" to make the corresponding size
+determination a bit safer according to the Linux coding style convention.
 
 This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/fbdev/matrox/matroxfb_crtc2.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/omap/omapfb_main.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/matrox/matroxfb_crtc2.c b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-index 02796a4317a9..f64e1d55d7a1 100644
---- a/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_crtc2.c
-@@ -696,10 +696,9 @@ static void* matroxfb_crtc2_probe(struct matrox_fb_info* minfo) {
- 	if (!minfo->devflags.crtc2)
- 		return NULL;
- 	m2info = kzalloc(sizeof(*m2info), GFP_KERNEL);
--	if (!m2info) {
--		printk(KERN_ERR "matroxfb_crtc2: Not enough memory for CRTC2 control structs\n");
-+	if (!m2info)
- 		return NULL;
--	}
-+
- 	m2info->primary_dev = minfo;
- 	if (matroxfb_dh_registerfb(m2info)) {
- 		kfree(m2info);
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index b0d91524bf6c..c47059430ca8 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -1645,7 +1645,7 @@ static int omapfb_do_probe(struct platform_device *pdev,
+ 		goto cleanup;
+ 	}
+ 
+-	fbdev = kzalloc(sizeof(struct omapfb_device), GFP_KERNEL);
++	fbdev = kzalloc(sizeof(*fbdev), GFP_KERNEL);
+ 	if (fbdev = NULL) {
+ 		r = -ENOMEM;
+ 		goto cleanup;
 -- 
 2.15.0
 

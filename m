@@ -1,52 +1,29 @@
 From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 24 Nov 2017 20:54:19 +0000
-Subject: [PATCH 4/4] video: udlfb: Delete an unnecessary return statement in two functions
-Message-Id: <1e2d3f13-0184-4504-9813-0982fa3f4c67@users.sourceforge.net>
+Date: Sun, 26 Nov 2017 10:16:01 +0000
+Subject: [PATCH 0/4] video: sm501fb: Adjustments for seven function implementations
+Message-Id: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
-In-Reply-To: <6fb11bb4-2c1d-a939-087b-de31c42328b9@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Alexey Khoroshilov <khoroshilov@ispras.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bhumika Goyal <bhumirks@gmail.com>, Colin Ian King <colin.king@canonical.com>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Fri, 24 Nov 2017 21:36:39 +0100
+Date: Sun, 26 Nov 2017 11:10:01 +0100
 
-The script "checkpatch.pl" pointed information out like the following.
+A few update suggestions were taken into account
+from static source code analysis.
 
-WARNING: void function return statements are not generally useful
+Markus Elfring (4):
+  Delete error messages for a failed memory allocation in two functions
+  Improve a size determination in sm501fb_probe()
+  Combine substrings for four messages
+  Adjust 15 checks for null pointers
 
-Thus remove such a statement in the affected functions.
+ drivers/video/fbdev/sm501fb.c | 66 ++++++++++++++++++-------------------------
+ 1 file changed, 28 insertions(+), 38 deletions(-)
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/video/fbdev/udlfb.c | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 059883962698..c6bf7088f5f4 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -505,8 +505,6 @@ static void dlfb_compress_hline(
- 	*command_buffer_ptr = cmd;
- 	*pixel_start_ptr = pixel;
- 	*device_address_ptr = dev_addr;
--
--	return;
- }
- 
- /*
-@@ -1768,8 +1766,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
- 	kref_put(&dev->kref, dlfb_free);
- 
- 	/* consider dlfb_data freed */
--
--	return;
- }
- 
- static struct usb_driver dlfb_driver = {
 -- 
 2.15.0
 

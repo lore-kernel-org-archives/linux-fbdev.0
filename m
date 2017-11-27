@@ -1,99 +1,98 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 04 Nov 2017 14:08:22 +0000
-Subject: [PATCH v5 1/7] fbcon: Add fbcon_rotate_hint to struct fb_info
-Message-Id: <20171104140828.32469-2-hdegoede@redhat.com>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Mon, 27 Nov 2017 16:58:03 +0000
+Subject: [PATCH V3 26/29] video: fbdev: nvidia: deprecate pci_get_bus_and_slot()
+Message-Id: <1511801886-6753-27-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171104140828.32469-1-hdegoede@redhat.com>
-In-Reply-To: <20171104140828.32469-1-hdegoede@redhat.com>
+References: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1511801886-6753-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, David Airlie <airlied@linux.ie>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Daniel Drake <drake@endlessm.com>, Hans de Goede <hdegoede@redhat.com>, Carlo Caione <carlo@endlessm.com>, Bastien Nocera <hadess@hadess.net>, Robert McQueen <robert@endlessm.com>
+To: linux-pci@vger.kernel.org, timur@codeaurora.org
+Cc: "open list:NVIDIA rivafb and nvidiafb FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, intel-gfx@lists.freedesktop.org, open list <linux-kernel@vger.kernel.org>, linux-arm-kernel@lists.infradead.org
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but upside-down or rotated 90 degrees. In this case we want the console
-to automatically be rotated to compensate.
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-The fbdev-driver may know about the need to rotate. Add a new
-fbcon_rotate_hint field to struct fb_info, which gets initialized to -1.
-If the fbdev-driver knows that some sort of rotation is necessary then
-it can set this field to a FB_ROTATE_* value to tell the fbcon console
-driver to rotate the console.
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+struct nvidia_par has a pointer to struct pci_dev. Use the pci_dev
+member to extract the domain information and pass it to
+pci_get_domain_bus_and_slot() function.
+
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/video/fbdev/core/fbcon.c   | 18 ++++++++++++------
- drivers/video/fbdev/core/fbsysfs.c |  1 +
- include/linux/fb.h                 |  5 +++++
- 3 files changed, 18 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/nvidia/nv_hw.c    | 11 ++++++-----
+ drivers/video/fbdev/nvidia/nv_setup.c |  3 ++-
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 04612f938bab..fb317ed76b45 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -963,10 +963,13 @@ static const char *fbcon_startup(void)
- 	ops->cur_rotate = -1;
- 	ops->cur_blink_jiffies = HZ / 5;
- 	info->fbcon_par = ops;
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
-+
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
+diff --git a/drivers/video/fbdev/nvidia/nv_hw.c b/drivers/video/fbdev/nvidia/nv_hw.c
+index 81c80ac..8335da4 100644
+--- a/drivers/video/fbdev/nvidia/nv_hw.c
++++ b/drivers/video/fbdev/nvidia/nv_hw.c
+@@ -683,10 +683,11 @@ static void nForceUpdateArbitrationSettings(unsigned VClk,
+ 	nv10_sim_state sim_data;
+ 	unsigned int M, N, P, pll, MClk, NVClk, memctrl;
+ 	struct pci_dev *dev;
++	int domain = pci_domain_nr(par->pci_dev->bus);
  
- 	if (info->fix.type != FB_TYPE_TEXT) {
-@@ -1103,10 +1106,13 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	if ((par->Chipset & 0x0FF0) = 0x01A0) {
+ 		unsigned int uMClkPostDiv;
+-		dev = pci_get_bus_and_slot(0, 3);
++		dev = pci_get_domain_bus_and_slot(domain, 0, 3);
+ 		pci_read_config_dword(dev, 0x6C, &uMClkPostDiv);
+ 		uMClkPostDiv = (uMClkPostDiv >> 8) & 0xf;
  
- 	ops = info->fbcon_par;
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
--	if (initial_rotation != -1)
--		p->con_rotate = initial_rotation;
--	else
-+
-+	p->con_rotate = initial_rotation;
-+	if (p->con_rotate = -1)
-+		p->con_rotate = info->fbcon_rotate_hint;
-+	if (p->con_rotate = -1)
- 		p->con_rotate = fbcon_platform_get_rotate(info);
-+
- 	set_blitting_type(vc, info);
+@@ -694,7 +695,7 @@ static void nForceUpdateArbitrationSettings(unsigned VClk,
+ 			uMClkPostDiv = 4;
+ 		MClk = 400000 / uMClkPostDiv;
+ 	} else {
+-		dev = pci_get_bus_and_slot(0, 5);
++		dev = pci_get_domain_bus_and_slot(domain, 0, 5);
+ 		pci_read_config_dword(dev, 0x4c, &MClk);
+ 		MClk /= 1000;
+ 	}
+@@ -707,13 +708,13 @@ static void nForceUpdateArbitrationSettings(unsigned VClk,
+ 	sim_data.pix_bpp = (char)pixelDepth;
+ 	sim_data.enable_video = 0;
+ 	sim_data.enable_mp = 0;
+-	dev = pci_get_bus_and_slot(0, 1);
++	dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+ 	pci_read_config_dword(dev, 0x7C, &sim_data.memory_type);
+ 	pci_dev_put(dev);
+ 	sim_data.memory_type = (sim_data.memory_type >> 12) & 1;
+ 	sim_data.memory_width = 64;
  
- 	cols = vc->vc_cols;
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 15755ce1d26c..e31a182b42bf 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -58,6 +58,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 		info->par = p + fb_info_size;
+-	dev = pci_get_bus_and_slot(0, 3);
++	dev = pci_get_domain_bus_and_slot(domain, 0, 3);
+ 	pci_read_config_dword(dev, 0, &memctrl);
+ 	pci_dev_put(dev);
+ 	memctrl >>= 16;
+@@ -721,7 +722,7 @@ static void nForceUpdateArbitrationSettings(unsigned VClk,
+ 	if ((memctrl = 0x1A9) || (memctrl = 0x1AB) || (memctrl = 0x1ED)) {
+ 		u32 dimm[3];
  
- 	info->device = dev;
-+	info->fbcon_rotate_hint = -1;
+-		dev = pci_get_bus_and_slot(0, 2);
++		dev = pci_get_domain_bus_and_slot(domain, 0, 2);
+ 		pci_read_config_dword(dev, 0x40, &dimm[0]);
+ 		dimm[0] = (dimm[0] >> 8) & 0x4f;
+ 		pci_read_config_dword(dev, 0x44, &dimm[1]);
+diff --git a/drivers/video/fbdev/nvidia/nv_setup.c b/drivers/video/fbdev/nvidia/nv_setup.c
+index 2f2e162..b17acd2 100644
+--- a/drivers/video/fbdev/nvidia/nv_setup.c
++++ b/drivers/video/fbdev/nvidia/nv_setup.c
+@@ -264,7 +264,8 @@ static void nv10GetConfig(struct nvidia_par *par)
+ 	}
+ #endif
  
- #ifdef CONFIG_FB_BACKLIGHT
- 	mutex_init(&info->bl_curve_mutex);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index f4386b0ccf40..10cf71cc5d13 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -464,6 +464,11 @@ struct fb_info {
- 	atomic_t count;
- 	int node;
- 	int flags;
-+	/*
-+	 * -1 by default, set to a FB_ROTATE_* value by the driver, if it knows
-+	 * a lcd is not mounted upright and fbcon should rotate to compensate.
-+	 */
-+	int fbcon_rotate_hint;
- 	struct mutex lock;		/* Lock for open/release/ioctl funcs */
- 	struct mutex mm_lock;		/* Lock for fb_mmap and smem_* fields */
- 	struct fb_var_screeninfo var;	/* Current var */
+-	dev = pci_get_bus_and_slot(0, 1);
++	dev = pci_get_domain_bus_and_slot(pci_domain_nr(par->pci_dev->bus),
++					  0, 1);
+ 	if ((par->Chipset & 0xffff) = 0x01a0) {
+ 		u32 amt;
+ 
 -- 
-2.14.3
+1.9.1
 

@@ -1,37 +1,30 @@
-From: Huacai Chen <chenhc@lemote.com>
-Date: Mon, 06 Nov 2017 00:43:03 +0000
-Subject: [PATCH] sm750fb: Fix parameter mistake in poke32
-Message-Id: <1509928983-13176-1-git-send-email-chenhc@lemote.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 21:20:13 +0000
+Subject: [PATCH 0/5] Radeon backlight: Adjustments for radeonfb_bl_init()
+Message-Id: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-In commit c075b6f2d357ea9 ("staging: sm750fb: Replace POKE32 and PEEK32
-by inline functions"), POKE32 has been replaced by the inline function
-poke32. But it exchange the "addr" and "data" parameters by mistake, so
-fix it.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 22:14:04 +0100
 
-Signed-off-by: Huacai Chen <chenhc@lemote.com>
-Signed-off-by: Liangliang Huang <huangll@lemote.com>
----
- drivers/staging/sm750fb/ddk750_chip.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+A few update suggestions were taken into account
+from static source code analysis.
 
-diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
-index 09c223f..aee82fc 100644
---- a/drivers/staging/sm750fb/ddk750_chip.h
-+++ b/drivers/staging/sm750fb/ddk750_chip.h
-@@ -18,7 +18,7 @@ static inline u32 peek32(u32 addr)
- 	return readl(addr + mmio750);
- }
- 
--static inline void poke32(u32 data, u32 addr)
-+static inline void poke32(u32 addr, u32 data)
- {
- 	writel(data, addr + mmio750);
- }
+Markus Elfring (5):
+  Delete an error message for a failed memory allocation
+  Improve a size determination
+  Delete an unnecessary return statement
+  Return directly after a failed kmalloc()
+  Delete a jump target
+
+ drivers/video/fbdev/aty/radeon_backlight.c | 17 +++++------------
+ 1 file changed, 5 insertions(+), 12 deletions(-)
+
 -- 
-2.7.0
+2.15.0
 

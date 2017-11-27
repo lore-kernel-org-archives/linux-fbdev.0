@@ -1,93 +1,50 @@
-From: Hans de Goede <j.w.r.degoede@gmail.com>
-Date: Sat, 25 Nov 2017 19:35:52 +0000
-Subject: [PATCH v7 6/7] efifb: Set info->fbcon_rotate_hint based on drm_get_panel_orientation_quirk
-Message-Id: <20171125193553.23986-7-hdegoede@redhat.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 09:38:18 +0000
+Subject: [PATCH] video: adv7393fb: Delete two error messages for a failed memory allocation in bfin_adv7393_f
+Message-Id: <21f1ee42-17f3-5012-0810-2d0a2890dcc1@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171125193553.23986-1-hdegoede@redhat.com>
-In-Reply-To: <20171125193553.23986-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Vetter <daniel.vetter@intel.com>, Jani Nikula <jani.nikula@linux.intel.com>, Sean Paul <seanpaul@chromium.org>, Dave Airlie <airlied@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, intel-gfx <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-On some hardware the LCD panel is not mounted upright in the casing,
-but rotated by 90 degrees. In this case we want the console to
-automatically be rotated to compensate.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 10:33:19 +0100
 
-The drm subsys has a quirk table for this, use the
-drm_get_panel_orientation_quirk function to get the panel orientation
-and set info->fbcon_rotate_hint based on this, so that the fbcon console
-on top of efifb gets automatically=C2=A0rotated to compensate for the panel
-orientation.
+Omit extra messages for a memory allocation failure in this function.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
-Changes in v7:
--Fix compile error from v6
----
- drivers/video/fbdev/Kconfig |  1 +
- drivers/video/fbdev/efifb.c | 21 ++++++++++++++++++++-
- 2 files changed, 21 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/bfin_adv7393fb.c | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 5e58f5ec0a28..c4a90c497839 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -772,6 +772,7 @@ config FB_VESA
- config FB_EFI
- 	bool "EFI-based Framebuffer Support"
- 	depends on (FB =3D y) && !IA64 && EFI
-+	select DRM_PANEL_ORIENTATION_QUIRKS
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index d1bf9c2a78a7..46a4484e3da7 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -16,6 +16,8 @@
- #include <linux/screen_info.h>
- #include <video/vga.h>
- #include <asm/efi.h>
-+#include <drm/drm_utils.h> /* For drm_get_panel_orientation_quirk */
-+#include <drm/drm_connector.h>  /* For DRM_MODE_PANEL_ORIENTATION_* */
-=20
- static bool request_mem_succeeded =3D false;
- static bool nowc =3D false;
-@@ -157,7 +159,7 @@ static u64 bar_offset;
- static int efifb_probe(struct platform_device *dev)
- {
- 	struct fb_info *info;
--	int err;
-+	int err, orientation;
- 	unsigned int size_vmode;
- 	unsigned int size_remap;
- 	unsigned int size_total;
-@@ -329,6 +331,23 @@ static int efifb_probe(struct platform_device *dev)
- 	info->fix =3D efifb_fix;
- 	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_MISC_FIRMWARE;
-=20
-+	orientation =3D drm_get_panel_orientation_quirk(efifb_defined.xres,
-+						      efifb_defined.yres);
-+	switch (orientation) {
-+	default:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UR;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_BOTTOM_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_UD;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_LEFT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CCW;
-+		break;
-+	case DRM_MODE_PANEL_ORIENTATION_RIGHT_UP:
-+		info->fbcon_rotate_hint =3D FB_ROTATE_CW;
-+		break;
-+	}
-+
- 	err =3D sysfs_create_groups(&dev->dev.kobj, efifb_groups);
- 	if (err) {
- 		pr_err("efifb: cannot add sysfs attrs\n");
---=20
-2.14.3
+diff --git a/drivers/video/fbdev/bfin_adv7393fb.c b/drivers/video/fbdev/bfin_adv7393fb.c
+index 542ffaddc6ab..aed6b934f009 100644
+--- a/drivers/video/fbdev/bfin_adv7393fb.c
++++ b/drivers/video/fbdev/bfin_adv7393fb.c
+@@ -389,10 +389,8 @@ static int bfin_adv7393_fb_probe(struct i2c_client *client,
+ 	}
+ 
+ 	fbdev = kzalloc(sizeof(*fbdev), GFP_KERNEL);
+-	if (!fbdev) {
+-		dev_err(&client->dev, "failed to allocate device private record");
++	if (!fbdev)
+ 		return -ENOMEM;
+-	}
+ 
+ 	i2c_set_clientdata(client, fbdev);
+ 
+@@ -461,7 +459,6 @@ static int bfin_adv7393_fb_probe(struct i2c_client *client,
+ 
+ 	fbdev->info.pseudo_palette = kzalloc(sizeof(u32) * 16, GFP_KERNEL);
+ 	if (!fbdev->info.pseudo_palette) {
+-		dev_err(&client->dev, "failed to allocate pseudo_palette\n");
+ 		ret = -ENOMEM;
+ 		goto free_fb_mem;
+ 	}
+-- 
+2.15.0
 

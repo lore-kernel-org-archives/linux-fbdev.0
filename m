@@ -1,77 +1,56 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 27 Nov 2017 16:46:14 +0000
-Subject: [PATCH v2] fbdev: pxa3xx: use ktime_get_ts64 for time stamps
-Message-Id: <20171127164755.525720-1-arnd@arndb.de>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 21:28:31 +0000
+Subject: [PATCH 5/5] radeon_backlight: Delete a jump target in radeonfb_bl_init()
+Message-Id: <3b2295cf-59c8-b5af-25e5-c1d075093e19@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
+In-Reply-To: <93c99f89-2d97-0e95-fe57-7b7a0824e864@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Himanshu Jha <himanshujha199640@gmail.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-do_gettimeofday() is deprecated because it is not y2038 safe, so I'm
-changing the calculation for the diagnostic output over to using
-'timespec64'.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Mon, 27 Nov 2017 22:03:03 +0100
 
-We really only print time deltas here, so changing it to monotonic
-time makes this more robust, the correct accessor for this is
-ktime_get_ts64().
+* Replace a goto statement by a direct call of the function "kfree"
+  in an if branch.
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+* Delete the jump label "error" which became unnecessary with
+  this refactoring.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
-v2: fix typo
----
- drivers/video/fbdev/pxa3xx-gcu.c | 16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/video/fbdev/aty/radeon_backlight.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 55fbb432c053..0955622a1227 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -104,7 +104,7 @@ struct pxa3xx_gcu_priv {
- 	wait_queue_head_t	  wait_idle;
- 	wait_queue_head_t	  wait_free;
- 	spinlock_t		  spinlock;
--	struct timeval 		  base_time;
-+	struct timespec64	  base_time;
+diff --git a/drivers/video/fbdev/aty/radeon_backlight.c b/drivers/video/fbdev/aty/radeon_backlight.c
+index 7f7ed6f72ddb..3c5b8291e773 100644
+--- a/drivers/video/fbdev/aty/radeon_backlight.c
++++ b/drivers/video/fbdev/aty/radeon_backlight.c
+@@ -157,7 +157,8 @@ void radeonfb_bl_init(struct radeonfb_info *rinfo)
+ 	if (IS_ERR(bd)) {
+ 		rinfo->info->bl_dev = NULL;
+ 		printk("radeonfb: Backlight registration failed\n");
+-		goto error;
++		kfree(pdata);
++		return;
+ 	}
  
- 	struct pxa3xx_gcu_batch *free;
- 	struct pxa3xx_gcu_batch *ready;
-@@ -126,18 +126,20 @@ gc_writel(struct pxa3xx_gcu_priv *priv, unsigned int off, unsigned long val)
+ 	pdata->rinfo = rinfo;
+@@ -188,11 +189,6 @@ void radeonfb_bl_init(struct radeonfb_info *rinfo)
+ 	backlight_update_status(bd);
  
- #define QPRINT(priv, level, msg)					\
- 	do {								\
--		struct timeval tv;					\
-+		struct timespec64 ts;					\
- 		struct pxa3xx_gcu_shared *shared = priv->shared;	\
- 		u32 base = gc_readl(priv, REG_GCRBBR);			\
- 									\
--		do_gettimeofday(&tv);					\
-+		ktime_get_ts64(&ts);					\
-+		ts = timespec64_sub(ts, priv->base_time);		\
- 									\
--		printk(level "%ld.%03ld.%03ld - %-17s: %-21s (%s, "	\
-+		printk(level "%lld.%03ld.%03ld - %-17s: %-21s (%s, "	\
- 			"STATUS "					\
- 			"0x%02lx, B 0x%08lx [%ld], E %5ld, H %5ld, "	\
- 			"T %5ld)\n",					\
--			tv.tv_sec - priv->base_time.tv_sec,		\
--			tv.tv_usec / 1000, tv.tv_usec % 1000,		\
-+			(s64)(ts.tv_sec),				\
-+			ts.tv_nsec / NSEC_PER_MSEC,			\
-+			(ts.tv_nsec % NSEC_PER_MSEC) / USEC_PER_MSEC,	\
- 			__func__, msg,					\
- 			shared->hw_running ? "running" : "   idle",	\
- 			gc_readl(priv, REG_GCISCR),			\
-@@ -164,7 +166,7 @@ pxa3xx_gcu_reset(struct pxa3xx_gcu_priv *priv)
- 	priv->shared->buffer_phys = priv->shared_phys;
- 	priv->shared->magic = PXA3XX_GCU_SHARED_MAGIC;
+ 	printk("radeonfb: Backlight initialized (%s)\n", name);
+-
+-	return;
+-
+-error:
+-	kfree(pdata);
+ }
  
--	do_gettimeofday(&priv->base_time);
-+	ktime_get_ts64(&priv->base_time);
- 
- 	/* set up the ring buffer pointers */
- 	gc_writel(priv, REG_GCRBLR, 0);
+ void radeonfb_bl_exit(struct radeonfb_info *rinfo)
 -- 
-2.9.0
+2.15.0
 

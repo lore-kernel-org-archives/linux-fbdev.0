@@ -1,53 +1,42 @@
-From: "Jingoo Han" <jingoohan1@gmail.com>
-Date: Mon, 27 Nov 2017 18:07:15 +0000
-Subject: Re: [PATCH 2/2] video: s3c-fb: Improve a size determination in s3c_fb_probe()
-Message-Id: <000301d367aa$8efbbc40$acf334c0$@gmail.com>
+From: Russell King - ARM Linux <linux@armlinux.org.uk>
+Date: Mon, 27 Nov 2017 17:11:45 +0000
+Subject: Re: [PATCH 0/8] sa1100fb updates
+Message-Id: <20171127171145.GI31757@n2100.armlinux.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2c837da0-6b0f-12e7-4d76-960b660a8911@users.sourceforge.net>
- <3eb68979-60cd-81e2-7a6b-9caf4afc1737@users.sourceforge.net>
-In-Reply-To: <3eb68979-60cd-81e2-7a6b-9caf4afc1737@users.sourceforge.net>
+References: <CGME20170929105024epcas5p336177e386c65b530c4cb5fac379cedfa@epcas5p3.samsung.com>
+ <20170929105004.GY20805@n2100.armlinux.org.uk>
+ <2590375.JKTUJ5JGIV@amdc3058>
+In-Reply-To: <2590375.JKTUJ5JGIV@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'SF Markus Elfring' <elfring@users.sourceforge.net>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>
-Cc: kernel-janitors@vger.kernel.org, 'LKML' <linux-kernel@vger.kernel.org>
+To: linux-arm-kernel@lists.infradead.org
 
-On Sunday, November 26, 2017 9:18 AM, SF Markus Elfring wrote:
+On Tue, Oct 17, 2017 at 03:32:30PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Friday, September 29, 2017 11:50:04 AM Russell King - ARM Linux wrote:
+> > Hi Bart,
 > 
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 26 Nov 2017 15:03:03 +0100
+> Hi Russell,
 > 
-> Replace the specification of a data structure by a pointer dereference
-> as the parameter for the operator "sizeof" to make the corresponding size
-> determination a bit safer according to the Linux coding style convention.
+> > This series updates the sa1100fb fbdev driver's initialisation paths
+> > to be more robust.  In doing these updates, I realised that we omitted
+> > to free some memory which was allocated for the framebuffer if
+> > initialisation fails - something that was hidden due to the complex
+> > cleanup that the driver performs.  Switching to managed resources made
+> > this more obvious.
+> > 
+> > Tested on H3600 iPAQ and Assabet.
+> > 
+> >  drivers/video/fbdev/sa1100fb.c | 75 +++++++++++++++---------------------------
+> >  drivers/video/fbdev/sa1100fb.h |  2 ++
+> >  2 files changed, 29 insertions(+), 48 deletions(-)
 > 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> I queued all patches for 4.15, thanks!
 
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Now that 4.15-rc1 is out, something tells me that was not actually
+the case.  Any ideas what happened?
 
-Best regards,
-Jingoo Han
-
-> ---
->  drivers/video/fbdev/s3c-fb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
-> index 0914c973cbd9..8c7623d63eb1 100644
-> --- a/drivers/video/fbdev/s3c-fb.c
-> +++ b/drivers/video/fbdev/s3c-fb.c
-> @@ -1383,7 +1383,7 @@ static int s3c_fb_probe(struct platform_device *pdev)
->  		return -EINVAL;
->  	}
-> 
-> -	sfb = devm_kzalloc(dev, sizeof(struct s3c_fb), GFP_KERNEL);
-> +	sfb = devm_kzalloc(dev, sizeof(*sfb), GFP_KERNEL);
->  	if (!sfb)
->  		return -ENOMEM;
-> 
-> --
-> 2.15.0
-
-
+-- 
+RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
+FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
+According to speedtest.net: 8.21Mbps down 510kbps up

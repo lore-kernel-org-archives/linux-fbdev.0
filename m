@@ -1,44 +1,24 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 09:00:47 +0000
-Subject: [PATCH] video: fsl-diu-fb: Delete an error message for a failed memory allocation in fsl_diu_init()
-Message-Id: <39d05a48-e649-fb88-0e86-4f7528fd67f8@users.sourceforge.net>
+From: Timur Tabi <timur@tabi.org>
+Date: Mon, 27 Nov 2017 17:31:10 +0000
+Subject: Re: [PATCH] video: fsl-diu-fb: Delete an error message for a failed memory allocation in fsl_diu_ini
+Message-Id: <f1760f28-84f4-24d9-9cf4-ca94b0537338@tabi.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <39d05a48-e649-fb88-0e86-4f7528fd67f8@users.sourceforge.net>
+In-Reply-To: <39d05a48-e649-fb88-0e86-4f7528fd67f8@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Timur Tabi <timur@tabi.org>
+To: SF Markus Elfring <elfring@users.sourceforge.net>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Mon, 27 Nov 2017 09:56:09 +0100
+On 11/27/17 3:00 AM, SF Markus Elfring wrote:
+> From: Markus Elfring<elfring@users.sourceforge.net>
+> Date: Mon, 27 Nov 2017 09:56:09 +0100
+> 
+> Omit an extra message for a memory allocation failure in this function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring<elfring@users.sourceforge.net>
 
-Omit an extra message for a memory allocation failure in this function.
-
-This issue was detected by using the Coccinelle software.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
----
- drivers/video/fbdev/fsl-diu-fb.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
-
-diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-index 25abbcf38913..1bfd13cbd4e3 100644
---- a/drivers/video/fbdev/fsl-diu-fb.c
-+++ b/drivers/video/fbdev/fsl-diu-fb.c
-@@ -1960,12 +1960,8 @@ static int __init fsl_diu_init(void)
- 
- 	of_node_put(np);
- 	coherence_data = vmalloc(coherence_data_size);
--	if (!coherence_data) {
--		pr_err("fsl-diu-fb: could not allocate coherence data "
--		       "(size=%zu)\n", coherence_data_size);
-+	if (!coherence_data)
- 		return -ENOMEM;
--	}
--
- #endif
- 
- 	ret = platform_driver_register(&fsl_diu_driver);
--- 
-2.15.0
-
+Acked-by: Timur Tabi <timur@tabi.org>

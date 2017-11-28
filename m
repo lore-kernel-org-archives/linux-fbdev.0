@@ -1,7 +1,9 @@
 From: Julia Lawall <julia.lawall@lip6.fr>
-Date: Tue, 28 Nov 2017 09:26:00 +0000
+Date: Tue, 28 Nov 2017 09:28:47 +0000
 Subject: Re: omapfb/dss: Delete an error message for a failed memory allocation in three functions
-Message-Id: <alpine.DEB.2.20.1711281025210.3443@hadrien>
+Message-Id: <alpine.DEB.2.20.1711281026410.3443@hadrien>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="8323329-798230509-1511861328=:3443"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <d29a0bae-7b6f-b8f6-6809-5a097cd5a26a@ti.com>
@@ -9,78 +11,49 @@ References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <d82fbab2-865f-3051-f487-d310ee819cf3@users.sourceforge.net>
  <1511833514.32426.86.camel@perches.com>
  <7e7e64cf-dbe5-614a-f1e5-29d7b6cf9297@users.sourceforge.net>
- <alpine.DEB.2.20.1711280844180.2450@hadrien>
- <c504db1d-415a-9bd4-172c-b1c17dd3740f@users.sourceforge.net>
-In-Reply-To: <c504db1d-415a-9bd4-172c-b1c17dd3740f@users.sourceforge.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ <1511856244.19952.14.camel@perches.com>
+ <0ecf4b17-7757-adb4-b978-a80ebb15cfe6@users.sourceforge.net>
+In-Reply-To: <0ecf4b17-7757-adb4-b978-a80ebb15cfe6@users.sourceforge.net>
 To: SF Markus Elfring <elfring@users.sourceforge.net>
 Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Joe Perches <joe@perches.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, linux-omap@vger.kernel.org
+
+--8323329-798230509-1511861328=:3443
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 
 
 On Tue, 28 Nov 2017, SF Markus Elfring wrote:
 
-> >>>> It seems that I got no responses so far for clarification requests
-> >>>> according to the documentation in a direction I hoped for.
-> >>>
-> >>> That's because you are pretty unresponsive to direction.
-> >>
-> >> From which places did you get this impression?
-> >
-> > Perhaps from the text that you have written only four lines below.
-> > All comments are dismissed as "the usual mixture of disagreements and acceptance".
+> > How many times have I told you to include the reason for
+> > your patches in your proposed commit message?
 >
-> A mixture will always evolve.
->
-> * Some acceptance might not need further considerations.
->
-> * But the disagreements are remembered differently.
->   They have got a potential for further improvements in some areas.
+> It might be useful to look again.
 >
 >
-> > If you look at the patches sent by others, who learn from
-> > the feedback provided to them,
+> > Too often.
 >
-> I am also learning to some degree continuously.
->
->
-> > there are not so many responses on the disagreements side.
->
-> How do you think about to look at the details for such an observation?
+> I answered this feedback to some degree.
 >
 >
-> > So the mixture is not usual.
+> > Many people do not know that a generic kmalloc does a
+> > dump_stack() on OOM.
 >
-> I find that it can be also a matter of statistics.
+> This is another interesting information, isn't it?
 >
->
-> > Since you send lots of patches on the same issues,
->
-> Yes. - I am trying to fix some implementation details by the means
-> of source code analysis and corresponding transformation.
-> The patch count is still growing.
->
->
-> > there should be no disagreements at all at this point.
->
-> I got an other impression. The probability for disagreements is increasing
-> in relation to the number of contributors to which I show change possibilities.
+> It is expected that the function “devm_kzalloc” has got a similar property.
 
-No.  You should learn from the previous submissions what concerns people
-have and address them up front.
+
+You don't have to expect this.  Go look at the definition of devm_kzalloc
+and see whether it has the property or not.
+
+> For which hardware and software combinations would you like to see
+> facts there?
+
+This is not for Joe to decide, it's for the person who receives the patch
+to decide.  You could start with the ones for which the code actually
+compiles, using the standard make file and no special options, and a
+recent version of gcc.
 
 julia
-
->
-> There are also other open issues remaining which can get another
-> solution somehow.
->
-> Regards,
-> Markus
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+--8323329-798230509-1511861328=:3443--

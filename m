@@ -1,7 +1,7 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Tue, 28 Nov 2017 08:49:45 +0000
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 28 Nov 2017 09:11:48 +0000
 Subject: Re: omapfb/dss: Delete an error message for a failed memory allocation in three functions
-Message-Id: <20171128084945.GA29091@lenoch>
+Message-Id: <0ecf4b17-7757-adb4-b978-a80ebb15cfe6@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <d29a0bae-7b6f-b8f6-6809-5a097cd5a26a@ti.com>
@@ -12,35 +12,51 @@ References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <1511856244.19952.14.camel@perches.com>
 In-Reply-To: <1511856244.19952.14.camel@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: SF Markus Elfring <elfring@users.sourceforge.net>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Joe Perches <joe@perches.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Andrew F. Davis" <afd@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>
 
-On Tue, Nov 28, 2017 at 12:04:04AM -0800, Joe Perches wrote:
-> On Tue, 2017-11-28 at 08:41 +0100, SF Markus Elfring wrote:
-> > > > It seems that I got no responses so far for clarification requests
-> > > > according to the documentation in a direction I hoped for.
-> > > 
-> > > That's because you are pretty unresponsive to direction.
-> > 
-> > From which places did you get this impression?
-> 
 > How many times have I told you to include the reason for
-> your patches in
-> your proposed commit message?  Too often.
-> 
-> For instance, specific to this patch:
-> 
+> your patches in your proposed commit message?
+
+It might be useful to look again.
+
+
+> Too often.
+
+I answered this feedback to some degree.
+
+
 > Many people do not know that a generic kmalloc does a
-> dump_stack() on OOM.  That information should be part
-> of the commit message.
-> 
+> dump_stack() on OOM.
+
+This is another interesting information, isn't it?
+
+It is expected that the function “devm_kzalloc” has got a similar property.
+
+
+> That information should be part of the commit message.
+
+How do you think about to provide it also in any reference documentation
+in a clearer way?
+
+I would be more confident then to copy it into my messages.
+Do you want that I take your current answer as an official note
+for my work (instead of waiting for adjustments of other areas)?
+
+
 > Also removing the printk code reduces overall code size.
+
+Such an effect can be nice if the involved contributors can agree on
+the deletion of questionable error messages at all.
+
+
 > The actual size reduction should be described in the
 > commit message too.
 
-Could we, please, return one step back and reevaluate need for
-kmalloc. That would eliminate original "problem" as well.
+For which hardware and software combinations would you like to see
+facts there?
 
-	ladis
+Regards,
+Markus

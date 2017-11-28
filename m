@@ -1,51 +1,44 @@
 From: "H. Nikolaus Schaller" <hns@goldelico.com>
-Date: Tue, 28 Nov 2017 16:04:38 +0000
-Subject: Re: [PATCH v2 2/4] DTS: GTA04: fix panel compatibility string
-Message-Id: <AB65CE5D-C055-4344-9872-F3556981BCEE@goldelico.com>
+Date: Tue, 28 Nov 2017 15:48:53 +0000
+Subject: [PATCH v3 0/4] Fixes for omapdrm on OpenPandora and GTA04
+Message-Id: <cover.1511884135.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1510822218.git.hns@goldelico.com> <09d975dd62afa1dfa43d94079cc9a44731af4b3b.1510822218.git.hns@goldelico.com> <20171128145727.GY28152@atomide.com> <C108B0B6-FED7-44DB-9A18-39E3BE93E586@goldelico.com> <20171128151039.GZ28152@atomide.com> <F14B3797-8154-4958-82AB-8E39C75BB97B@goldelico.com> <20171128160057.GB28152@atomide.com>
-In-Reply-To: <20171128160057.GB28152@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?Q?Beno=C3=AEt_Cousson?= <bcousson@baylibre.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
+To: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
+Cc: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
 
+Changes V3:
+* stay compatible with old DTB files which still use "toppoly" (suggested by Tomi Valkeinen)
+* replaced MODULE_ALIAS entries by MODULE_DEVICE_TABLE (suggested by Andrew F. Davis)
+* removed DSI VDDS patch as it has already been accepted
 
-> Am 28.11.2017 um 17:00 schrieb Tony Lindgren <tony@atomide.com>:
-> 
-> * H. Nikolaus Schaller <hns@goldelico.com> [171128 15:51]:
->>> Am 28.11.2017 um 16:10 schrieb Tony Lindgren <tony@atomide.com>:
->>> OK fine dropping both. Please update the description in both dts
->>> patches to make it clear they are needed as a fix. Preferrably
->>> with a proper fixes tag.
->> 
->> Well, it is not "needed" in a strong sense since current mainline&stable
->> works. It is more a style and consistency fix to use "tpo," everywhere.
->> 
->>> 
->>> Having "We can remove the "omapdss," prefix" in the description sure
->>> does not sounds like it's needed as a fix :)
->> 
->> The description has been improved on -v3.
-> 
-> Thanks.
-> 
->>> Sounds like maybe these two should be just a single patch for
->>> a proper fix?
->> 
->> Hm. I usually get the feedback to separate DT and driver fixes into
->> separate commits... Therefore I submit patch sets in the hope they
->> are not picked apart :)
-> 
-> See "both dts patches" part above. Yes the dts patches can and should
-> be sent separately. In almost every case if the dts patches cannot be
-> applied separately it means your driver changes are breaking things.
+2017-11-16 09:50:22: Changes V2:
+* replaced patch to fix DSI VDDS for OMAP3 by equivalent patch from Laurent Pinchart
+* keep previous compatibility option in panel driver to handle older device tree binaries
 
-That is why the v3 driver now accepts both, the old and the new vendor
-name. This means applying the driver alone is safe. Applying or not
-applying DTS patch afterwards is also safe.
+2017-11-08 22:09:36:
+This patch set fixes vendor names of the panels
+and fixes a problem on omapdrm with enabling
+VDD_DSI for OMAP3 which is needed for displaying
+the Red and Green channel on OMAP3530 (Pandora).
 
-BR,
-Nikolaus
+H. Nikolaus Schaller (4):
+  omapdrm: panel: fix compatible vendor string for td028ttec1
+  omapdrm: panel: td028ttec1: replace MODULE_ALIAS by
+    MODULE_DEVICE_TABLE
+  DTS: GTA04: fix panel compatibility string
+  DTS: Pandora: fix panel compatibility string
+
+ .../panel/{toppoly,td028ttec1.txt => tpo,td028ttec1.txt}    |  4 ++--
+ arch/arm/boot/dts/omap3-gta04.dtsi                          |  2 +-
+ arch/arm/boot/dts/omap3-pandora-common.dtsi                 |  2 +-
+ drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c     | 13 ++++++++++++-
+ .../fbdev/omap2/omapfb/displays/panel-tpo-td028ttec1.c      | 12 +++++++++++-
+ 5 files changed, 27 insertions(+), 6 deletions(-)
+ rename Documentation/devicetree/bindings/display/panel/{toppoly,td028ttec1.txt => tpo,td028ttec1.txt} (84%)
+
+-- 
+2.12.2
 

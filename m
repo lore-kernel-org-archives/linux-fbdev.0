@@ -1,42 +1,43 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 12:19:17 +0000
-Subject: [PATCH] video: sh_mobile_meram: Delete an error message for a failed memory allocation in sh_mobile_
-Message-Id: <1feb3cf8-77e6-367e-5f5c-23fdd96339ec@users.sourceforge.net>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 28 Nov 2017 17:42:39 +0000
+Subject: [PATCH resend V3 24/29] backlight: deprecate pci_get_bus_and_slot()
+Message-Id: <1511890959-6706-1-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-pci@vger.kernel.org, timur@codeaurora.org
+Cc: lee.jones@linaro.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sinan Kaya <okaya@codeaurora.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 26 Nov 2017 13:08:43 +0100
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-Omit an extra message for a memory allocation failure in this function.
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-This issue was detected by using the Coccinelle software.
+Hard-coding the domain as 0.
 
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 ---
- drivers/video/fbdev/sh_mobile_meram.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/backlight/apple_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/sh_mobile_meram.c b/drivers/video/fbdev/sh_mobile_meram.c
-index baadfb207b2e..b5a6735aeb87 100644
---- a/drivers/video/fbdev/sh_mobile_meram.c
-+++ b/drivers/video/fbdev/sh_mobile_meram.c
-@@ -644,10 +644,8 @@ static int sh_mobile_meram_probe(struct platform_device *pdev)
- 	}
+diff --git a/drivers/video/backlight/apple_bl.c b/drivers/video/backlight/apple_bl.c
+index d843296..6a34ab9 100644
+--- a/drivers/video/backlight/apple_bl.c
++++ b/drivers/video/backlight/apple_bl.c
+@@ -143,7 +143,7 @@ static int apple_bl_add(struct acpi_device *dev)
+ 	struct pci_dev *host;
+ 	int intensity;
  
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
--	if (!priv) {
--		dev_err(&pdev->dev, "cannot allocate device data\n");
-+	if (!priv)
- 		return -ENOMEM;
--	}
+-	host = pci_get_bus_and_slot(0, 0);
++	host = pci_get_domain_bus_and_slot(0, 0, 0);
  
- 	/* Initialize private data. */
- 	mutex_init(&priv->lock);
+ 	if (!host) {
+ 		pr_err("unable to find PCI host\n");
 -- 
-2.15.0
+1.9.1
 

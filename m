@@ -1,67 +1,38 @@
-From: Russell King - ARM Linux <linux@armlinux.org.uk>
-Date: Mon, 27 Nov 2017 17:40:28 +0000
-Subject: Re: [PATCH 0/8] sa1100fb updates
-Message-Id: <20171127174028.GJ31757@n2100.armlinux.org.uk>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Tue, 28 Nov 2017 15:48:56 +0000
+Subject: [PATCH v3 3/4] DTS: GTA04: fix panel compatibility string
+Message-Id: <5f68789942fb8063ba5a98f5dd7989a05f94c0d6.1511884135.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20170929105024epcas5p336177e386c65b530c4cb5fac379cedfa@epcas5p3.samsung.com>
- <2590375.JKTUJ5JGIV@amdc3058>
- <20171127171145.GI31757@n2100.armlinux.org.uk>
- <4330027.F5ASplytpk@amdc3058>
-In-Reply-To: <4330027.F5ASplytpk@amdc3058>
+References: <cover.1511884135.git.hns@goldelico.com>
+In-Reply-To: <cover.1511884135.git.hns@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
+Cc: dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
 
-On Mon, Nov 27, 2017 at 06:30:11PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, November 27, 2017 05:11:45 PM Russell King - ARM Linux wrote:
-> > On Tue, Oct 17, 2017 at 03:32:30PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > On Friday, September 29, 2017 11:50:04 AM Russell King - ARM Linux wrote:
-> > > > Hi Bart,
-> > > 
-> > > Hi Russell,
-> > > 
-> > > > This series updates the sa1100fb fbdev driver's initialisation paths
-> > > > to be more robust.  In doing these updates, I realised that we omitted
-> > > > to free some memory which was allocated for the framebuffer if
-> > > > initialisation fails - something that was hidden due to the complex
-> > > > cleanup that the driver performs.  Switching to managed resources made
-> > > > this more obvious.
-> > > > 
-> > > > Tested on H3600 iPAQ and Assabet.
-> > > > 
-> > > >  drivers/video/fbdev/sa1100fb.c | 75 +++++++++++++++---------------------------
-> > > >  drivers/video/fbdev/sa1100fb.h |  2 ++
-> > > >  2 files changed, 29 insertions(+), 48 deletions(-)
-> > > 
-> > > I queued all patches for 4.15, thanks!
-> > 
-> > Now that 4.15-rc1 is out, something tells me that was not actually
-> > the case.  Any ideas what happened?
-> 
-> Could you please explain the issue that you are seeing a bit more?
-> 
-> For me it looks all fine:
-> 
-> $ git log --oneline v4.15-rc1 drivers/video/fbdev/sa1100fb.c
-> cb6bc3f video: sa1100fb: move pseudo palette into sa1100fb_info structure
-> 0ab7658 video: sa1100fb: fix video memory allocation leak
-> c244f8e video: sa1100fb: clean up failure path
-> 5634cba video: sa1100fb: use devm_gpio_request_one()
-> f6fc8c9 video: sa1100fb: use devm_request_irq()
-> df6b228 video: sa1100fb: use devm_ioremap_resource()
-> e43064c video: sa1100fb: use devm_clk_get()
-> ba1d36b video: sa1100fb: use devm_kzalloc()
-> ...
+Official vendor string is now "tpo" and not "toppoly".
 
-Looks like I hadn't rebased that particular branch, so they were still
-showing up in my origin.. git log.  Sorry about the false warning.
+Requires patch "omapdrm: panel: fix compatible vendor string for td028ttec1"
 
-This is the problem of carrying close to 400 patches in separate
-branches, and git log origin.. not able to show the commits that the
-selection are based upon.
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-gta04.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index 4504908c23fe..ec27ed67a22a 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -86,7 +86,7 @@
+ 
+ 		/* lcd panel */
+ 		lcd: td028ttec1@0 {
+-			compatible = "toppoly,td028ttec1";
++			compatible = "tpo,td028ttec1";
+ 			reg = <0>;
+ 			spi-max-frequency = <100000>;
+ 			spi-cpol;
 -- 
-RMK's Patch system: http://www.armlinux.org.uk/developer/patches/
-FTTC broadband for 0.8mile line in suburbia: sync at 8.8Mbps down 630kbps up
-According to speedtest.net: 8.21Mbps down 510kbps up
+2.12.2
+

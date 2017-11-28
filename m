@@ -1,7 +1,7 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 28 Nov 2017 09:11:48 +0000
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Tue, 28 Nov 2017 09:26:00 +0000
 Subject: Re: omapfb/dss: Delete an error message for a failed memory allocation in three functions
-Message-Id: <0ecf4b17-7757-adb4-b978-a80ebb15cfe6@users.sourceforge.net>
+Message-Id: <alpine.DEB.2.20.1711281025210.3443@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <d29a0bae-7b6f-b8f6-6809-5a097cd5a26a@ti.com>
@@ -9,54 +9,78 @@ References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
  <d82fbab2-865f-3051-f487-d310ee819cf3@users.sourceforge.net>
  <1511833514.32426.86.camel@perches.com>
  <7e7e64cf-dbe5-614a-f1e5-29d7b6cf9297@users.sourceforge.net>
- <1511856244.19952.14.camel@perches.com>
-In-Reply-To: <1511856244.19952.14.camel@perches.com>
+ <alpine.DEB.2.20.1711280844180.2450@hadrien>
+ <c504db1d-415a-9bd4-172c-b1c17dd3740f@users.sourceforge.net>
+In-Reply-To: <c504db1d-415a-9bd4-172c-b1c17dd3740f@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Joe Perches <joe@perches.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, "Andrew F. Davis" <afd@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>
-
-> How many times have I told you to include the reason for
-> your patches in your proposed commit message?
-
-It might be useful to look again.
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, "Andrew F. Davis" <afd@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Joe Perches <joe@perches.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, linux-omap@vger.kernel.org
 
 
-> Too often.
 
-I answered this feedback to some degree.
+On Tue, 28 Nov 2017, SF Markus Elfring wrote:
 
+> >>>> It seems that I got no responses so far for clarification requests
+> >>>> according to the documentation in a direction I hoped for.
+> >>>
+> >>> That's because you are pretty unresponsive to direction.
+> >>
+> >> From which places did you get this impression?
+> >
+> > Perhaps from the text that you have written only four lines below.
+> > All comments are dismissed as "the usual mixture of disagreements and acceptance".
+>
+> A mixture will always evolve.
+>
+> * Some acceptance might not need further considerations.
+>
+> * But the disagreements are remembered differently.
+>   They have got a potential for further improvements in some areas.
+>
+>
+> > If you look at the patches sent by others, who learn from
+> > the feedback provided to them,
+>
+> I am also learning to some degree continuously.
+>
+>
+> > there are not so many responses on the disagreements side.
+>
+> How do you think about to look at the details for such an observation?
+>
+>
+> > So the mixture is not usual.
+>
+> I find that it can be also a matter of statistics.
+>
+>
+> > Since you send lots of patches on the same issues,
+>
+> Yes. - I am trying to fix some implementation details by the means
+> of source code analysis and corresponding transformation.
+> The patch count is still growing.
+>
+>
+> > there should be no disagreements at all at this point.
+>
+> I got an other impression. The probability for disagreements is increasing
+> in relation to the number of contributors to which I show change possibilities.
 
-> Many people do not know that a generic kmalloc does a
-> dump_stack() on OOM.
+No.  You should learn from the previous submissions what concerns people
+have and address them up front.
 
-This is another interesting information, isn't it?
+julia
 
-It is expected that the function “devm_kzalloc” has got a similar property.
-
-
-> That information should be part of the commit message.
-
-How do you think about to provide it also in any reference documentation
-in a clearer way?
-
-I would be more confident then to copy it into my messages.
-Do you want that I take your current answer as an official note
-for my work (instead of waiting for adjustments of other areas)?
-
-
-> Also removing the printk code reduces overall code size.
-
-Such an effect can be nice if the involved contributors can agree on
-the deletion of questionable error messages at all.
-
-
-> The actual size reduction should be described in the
-> commit message too.
-
-For which hardware and software combinations would you like to see
-facts there?
-
-Regards,
-Markus
+>
+> There are also other open issues remaining which can get another
+> solution somehow.
+>
+> Regards,
+> Markus
+> --
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>

@@ -1,119 +1,39 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 20 Nov 2017 11:33:04 +0000
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 29 Nov 2017 11:28:54 +0000
 Subject: Re: [PATCH v2 1/4] backlight: as3711_bl: fix device-tree node lookup
-Message-Id: <83a0c1bc-b303-70e9-606b-71161bcf3763@linaro.org>
+Message-Id: <20171129112854.c2niizszlo4u2uq2@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171120104547.2639-1-johan@kernel.org>
  <20171120104547.2639-2-johan@kernel.org>
 In-Reply-To: <20171120104547.2639-2-johan@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johan Hovold <johan@kernel.org>, Lee Jones <lee.jones@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, stable <stable@vger.kernel.org>, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Johan Hovold <johan@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, stable <stable@vger.kernel.org>, linux-fbdev@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
+On Mon, 20 Nov 2017, Johan Hovold wrote:
 
-
-On 20/11/17 10:45, Johan Hovold wrote:
 > Fix child-node lookup during probe, which ended up searching the whole
 > device tree depth-first starting at the parent rather than just matching
 > on its children.
-> 
+>=20
 > To make things worse, the parent mfd node was also prematurely freed.
-> 
-> Fixes: 59eb2b5e57ea ("drivers/video/backlight/as3711_bl.c: add OF support")
+>=20
+> Fixes: 59eb2b5e57ea ("drivers/video/backlight/as3711_bl.c: add OF support=
+")
 > Cc: stable <stable@vger.kernel.org>     # 3.10
 > Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 > Signed-off-by: Johan Hovold <johan@kernel.org>
-
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
 > ---
->   drivers/video/backlight/as3711_bl.c | 33 +++++++++++++++++++++++----------
->   1 file changed, 23 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/as3711_bl.c b/drivers/video/backlight/as3711_bl.c
-> index 734a9158946b..e55304d5cf07 100644
-> --- a/drivers/video/backlight/as3711_bl.c
-> +++ b/drivers/video/backlight/as3711_bl.c
-> @@ -262,10 +262,10 @@ static int as3711_bl_register(struct platform_device *pdev,
->   static int as3711_backlight_parse_dt(struct device *dev)
->   {
->   	struct as3711_bl_pdata *pdata = dev_get_platdata(dev);
-> -	struct device_node *bl > -		of_find_node_by_name(dev->parent->of_node, "backlight"), *fb;
-> +	struct device_node *bl, *fb;
->   	int ret;
->   
-> +	bl = of_get_child_by_name(dev->parent->of_node, "backlight");
->   	if (!bl) {
->   		dev_dbg(dev, "backlight node not found\n");
->   		return -ENODEV;
-> @@ -279,7 +279,7 @@ static int as3711_backlight_parse_dt(struct device *dev)
->   		if (pdata->su1_max_uA <= 0)
->   			ret = -EINVAL;
->   		if (ret < 0)
-> -			return ret;
-> +			goto err_put_bl;
->   	}
->   
->   	fb = of_parse_phandle(bl, "su2-dev", 0);
-> @@ -292,7 +292,7 @@ static int as3711_backlight_parse_dt(struct device *dev)
->   		if (pdata->su2_max_uA <= 0)
->   			ret = -EINVAL;
->   		if (ret < 0)
-> -			return ret;
-> +			goto err_put_bl;
->   
->   		if (of_find_property(bl, "su2-feedback-voltage", NULL)) {
->   			pdata->su2_feedback = AS3711_SU2_VOLTAGE;
-> @@ -314,8 +314,10 @@ static int as3711_backlight_parse_dt(struct device *dev)
->   			pdata->su2_feedback = AS3711_SU2_CURR_AUTO;
->   			count++;
->   		}
-> -		if (count != 1)
-> -			return -EINVAL;
-> +		if (count != 1) {
-> +			ret = -EINVAL;
-> +			goto err_put_bl;
-> +		}
->   
->   		count = 0;
->   		if (of_find_property(bl, "su2-fbprot-lx-sd4", NULL)) {
-> @@ -334,8 +336,10 @@ static int as3711_backlight_parse_dt(struct device *dev)
->   			pdata->su2_fbprot = AS3711_SU2_GPIO4;
->   			count++;
->   		}
-> -		if (count != 1)
-> -			return -EINVAL;
-> +		if (count != 1) {
-> +			ret = -EINVAL;
-> +			goto err_put_bl;
-> +		}
->   
->   		count = 0;
->   		if (of_find_property(bl, "su2-auto-curr1", NULL)) {
-> @@ -355,11 +359,20 @@ static int as3711_backlight_parse_dt(struct device *dev)
->   		 * At least one su2-auto-curr* must be specified iff
->   		 * AS3711_SU2_CURR_AUTO is used
->   		 */
-> -		if (!count ^ (pdata->su2_feedback != AS3711_SU2_CURR_AUTO))
-> -			return -EINVAL;
-> +		if (!count ^ (pdata->su2_feedback != AS3711_SU2_CURR_AUTO)) {
-> +			ret = -EINVAL;
-> +			goto err_put_bl;
-> +		}
->   	}
->   
-> +	of_node_put(bl);
-> +
->   	return 0;
-> +
-> +err_put_bl:
-> +	of_node_put(bl);
-> +
-> +	return ret;
->   }
->   
->   static int as3711_backlight_probe(struct platform_device *pdev)
-> 
+>  drivers/video/backlight/as3711_bl.c | 33 +++++++++++++++++++++++--------=
+--
+>  1 file changed, 23 insertions(+), 10 deletions(-)
+
+Applied, thanks.
+
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

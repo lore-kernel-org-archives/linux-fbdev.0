@@ -1,56 +1,56 @@
 From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 28 Nov 2017 16:18:34 +0000
+Date: Thu, 30 Nov 2017 15:24:30 +0000
 Subject: Re: [PATCH v3 4/4] DTS: Pandora: fix panel compatibility string
-Message-Id: <20171128161834.GE28152@atomide.com>
+Message-Id: <20171130152430.GM28152@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1511884135.git.hns@goldelico.com>
  <b6001c7b7fb98e7a3ad4c712084fea9dae9e6b27.1511884135.git.hns@goldelico.com>
  <20171128160437.GD28152@atomide.com>
  <ADAFBBA4-6AC4-4EC4-AB0E-98B59718E12E@goldelico.com>
-In-Reply-To: <ADAFBBA4-6AC4-4EC4-AB0E-98B59718E12E-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
+ <20171128161834.GE28152@atomide.com>
+ <4EE1E298-6461-48FF-977C-958DD16AD83A@goldelico.com>
+In-Reply-To: <4EE1E298-6461-48FF-977C-958DD16AD83A@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "H. Nikolaus Schaller" <hns-xXXSsgcRVICgSpxsJD1C4w@public.gmane.org>
-Cc: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, David Airlie <airlied-cv59FeDIM0c@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Mark Rutland <mark.rutland-5wv7dgnIgG8@public.gmane.org>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson-rdvid1DuHRBWk0Htik3J/w@public.gmane.org>, Russell King <linux-I+IVW8TIWO2tmTQ+vhA3Yw@public.gmane.org>, Tomi Valkeinen <tomi.valkeinen-l0cyMroinI0@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Laurent Pinchart <laurent.pinchart-ryLnwIuWjnjg/C1BVhZhaw@public.gmane.org>, Julia Lawall <Julia.Lawall-L2FTfq7BK8M@public.gmane.org>, Sean Paul <seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org>, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, letux-kernel-S0jZdbWzriLCfDggNXIi3w@public.gmane.org, kernel-Jl6IXVxNIMRxAtABVqVhTwC/G2K4zDHf@public.gmane.org
+To: "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>, Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>, dri-devel@lists.freedesktop.org, DTML <devicetree@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-omap <linux-omap@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-fbdev@vger.kernel.org, Discussions about the Letux Kernel <letux-kernel@op>
 
-* H. Nikolaus Schaller <hns@goldelico.com> [171128 16:17]:
-> Hi Tony,
+* H. Nikolaus Schaller <hns@goldelico.com> [171128 18:35]:
+> Hi,
 > 
-> > Am 28.11.2017 um 17:04 schrieb Tony Lindgren <tony@atomide.com>:
+> > Am 28.11.2017 um 17:18 schrieb Tony Lindgren <tony@atomide.com>:
 > > 
-> > * H. Nikolaus Schaller <hns@goldelico.com> [171128 15:52]:
-> >> We can remove the unnecessary "omapdss," prefix because
-> >> the omapdrm driver takes care of it when matching with
-> >> the driver table.
+> > * H. Nikolaus Schaller <hns@goldelico.com> [171128 16:17]:
+> >> Hi Tony,
+> >> 
+> >>> Am 28.11.2017 um 17:04 schrieb Tony Lindgren <tony@atomide.com>:
+> >>> 
+> >>> * H. Nikolaus Schaller <hns@goldelico.com> [171128 15:52]:
+> >>>> We can remove the unnecessary "omapdss," prefix because
+> >>>> the omapdrm driver takes care of it when matching with
+> >>>> the driver table.
+> >>> 
+> >>> So is this needed as a fix or is this another clean-up?
+> >>> 
+> >>> So is this is really needed as a fix?
+> >> 
+> >> Hm. How do you differentiate between "fix" and "cleanup"?
+> >> Maybe it is more a wording than a content issue...
+> >> 
+> >> For me it is a "fix" because it is semantically wrong to have
+> >> a prefix where it is not needed. And "fixing" it changes the
+> >> compiler output by 8 bytes.
 > > 
-> > So is this needed as a fix or is this another clean-up?
-> > 
-> > So is this is really needed as a fix?
+> > How about let's call it a "typo fix" then? :)
 > 
-> Hm. How do you differentiate between "fix" and "cleanup"?
-> Maybe it is more a wording than a content issue...
-> 
-> For me it is a "fix" because it is semantically wrong to have
-> a prefix where it is not needed. And "fixing" it changes the
-> compiler output by 8 bytes.
+> Well, it is not really a typo.
 
-How about let's call it a "typo fix" then? :)
+Well what if the stable people pick it into earlier stable series
+based on the word fix in the subject? That has happened before.
 
-> "Cleanup" would be for me removing whitespace or empty lines
-> or typos in comments.
->
-> > If this is just clean-up, again, please resend once the driver
-> > changes have cleared.
-> 
-> There is no change to the pandora driver involved here. The Pandora
-> panel driver is already correct. Just the DTS has some redundant
-> content which should be removed.
-> 
-> So there is no dependency for this patch.
-
-OK please resend separately after the driver changes have merged
-then.
+I suggest you update the dts patches to use wording like
+"update compatible to use new naming" or something similar.
 
 Regards,
 

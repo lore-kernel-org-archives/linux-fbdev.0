@@ -1,31 +1,63 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Mon, 11 Dec 2017 21:39:48 +0000
-Subject: [PATCH 0/6] video: udlfb: (not only) Logging cleanup
-Message-Id: <20171211213948.GA29173@lenoch>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 01 Dec 2017 12:06:48 +0000
+Subject: [PATCH v5 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
+Message-Id: <20171201120651.29633-2-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20171201120651.29633-1-enric.balletbo@collabora.com>
+In-Reply-To: <20171201120651.29633-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
 
-This patchset is a side product of debugging on unreliable USB host
-where devices saw a lot of disconnects. It turned out that udlfb
-logging is just too noisy to be usefull as produced syslog is hard
-to read.
+Hardware needs a delay between setting an initial (non-zero) PWM and
+enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
+this delay in milli seconds. Hardware also needs a delay between disabing
+the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
+is this delay in milli seconds.
 
-Hence this attempt to clean things up.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+Based on the original Huang Lin <hl@rock-chips.com> work.
 
-Comments and suggestions welcome and appreciated, as always.
+Changes since v4:
+ - Rebase on top of mainline.
+Changes since v3:
+ - Replace us for ms.
+ - Add Acked-by: Pavel Machek <pavel@ucw.cz>
+Changes since v2:
+ - Use separate properties (Rob Herring)
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
 
-Ladislav Michl (6):
-  video: udlfb: Do not name private data 'dev'
-  video: udlfb: Remove unnecessary 'return'
-  video: udlfb: Remove unnecessary local variable
-  video: udlfb: Delete error messages for failed allocations
-  video: udlfb: Remove redundant gdev variable
-  video: udlfb: Switch from the pr_*() to the dev_*() logging functions
+ Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
- drivers/video/fbdev/udlfb.c | 617 ++++++++++++++++++++------------------------
- include/video/udlfb.h       |   3 +-
- 2 files changed, 284 insertions(+), 336 deletions(-)
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 764db86..3108109 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -17,6 +17,10 @@ Optional properties:
+                "pwms" property (see PWM binding[0])
+   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
+                   and disables the backlight (see GPIO binding[1])
++  - post-pwm-on-delay-ms: Delay in ms between setting an initial (non-zero) PWM
++                          and enabling the backlight using GPIO.
++  - pwm-off-delay-ms: Delay in ms between disabling the backlight using GPIO
++                      and setting PWM value to 0.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+@@ -32,4 +36,6 @@ Example:
+ 
+ 		power-supply = <&vdd_bl_reg>;
+ 		enable-gpios = <&gpio 58 0>;
++		post-pwm-on-delay-ms = <10>;
++		pwm-off-delay-ms = <10>;
+ 	};
+-- 
+2.9.3
 

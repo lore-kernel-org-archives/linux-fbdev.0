@@ -1,51 +1,78 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 29 Dec 2017 18:26:42 +0000
-Subject: Re: [PATCH 0/5] video-SMSC UFX: Adjustments for five function implementations
-Message-Id: <1736749.UIs06O4xc5@amdc3058>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 01 Dec 2017 12:06:47 +0000
+Subject: [PATCH v5 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20171201120651.29633-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
- <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
-In-Reply-To: <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Steve Glendinning <steve.glendinning@shawell.net>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-On Saturday, November 25, 2017 09:42:57 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sat, 25 Nov 2017 21:38:42 +0100
-> 
-> A few update suggestions were taken into account
-> from static source code analysis.
-> 
-> Markus Elfring (5):
->   Delete an error message for a failed memory allocation in two functions
+Before this patch the enable signal was set before the PWM signal and
+vice-versa on power off. This sequence is wrong, at least, it is on
+the different panels datasheets that I checked, so I inverted the sequence
+to follow the specs.
 
-This patch removes the information about the device for which the allocation
-fails.
+For reference the following panels have the mentioned sequence:
+  - N133HSE-EA1 (Innolux)
+  - N116BGE (Innolux)
+  - N156BGE-L21 (Innolux)
+  - B101EAN0 (Auo)
+  - B101AW03 (Auo)
+  - LTN101NT05 (Samsung)
+  - CLAA101WA01A (Chunghwa)
 
->   Less checks in ufx_usb_probe() after error detection
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+---
+Changes since v4:
+ - Rebase on top of mainline.
+ - Add the acks from Daniel Thompson and Jingoo Han.
+Changes since v3:
+ - List the part numbers for the panel checked (Daniel Thompson)
+Changes since v2:
+ - Add this as a separate patch (Thierry Reding)
+Changes since v1:
+ - None
 
-This patch depends on the earlier patch (which is not being merged) so please
-re-base it if you want it to be applied.
+ drivers/video/backlight/pwm_bl.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
->   Return an error code only as a constant in ufx_realloc_framebuffer()
-
-ditto
-
->   Improve a size determination in two functions
-
-Patch queued for 4.16, thanks.
-
->   Adjust three checks for null pointers
-
-This patch contains unrelated change ({} braces addition) which should be
-dropped.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1c2289d..698ec68 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+-- 
+2.9.3
 

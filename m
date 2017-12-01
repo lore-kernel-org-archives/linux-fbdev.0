@@ -1,68 +1,53 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 03 Dec 2017 18:20:47 +0000
-Subject: Re: omapfb/dss: Delete an error message for a failed memory allocation in three functions
-Message-Id: <21554e23-e714-3f6f-cd70-4c277823bab3@users.sourceforge.net>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 01 Dec 2017 12:06:51 +0000
+Subject: [PATCH v5 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
+Message-Id: <20171201120651.29633-5-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
- <d29a0bae-7b6f-b8f6-6809-5a097cd5a26a@ti.com>
- <1511809633.32426.70.camel@perches.com>
- <d82fbab2-865f-3051-f487-d310ee819cf3@users.sourceforge.net>
- <1511833514.32426.86.camel@perches.com>
- <7e7e64cf-dbe5-614a-f1e5-29d7b6cf9297@users.sourceforge.net>
- <1511856244.19952.14.camel@perches.com>
-In-Reply-To: <1511856244.19952.14.camel@perches.com>
+References: <20171201120651.29633-1-enric.balletbo@collabora.com>
+In-Reply-To: <20171201120651.29633-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Joe Perches <joe@perches.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org
-Cc: "Andrew F. Davis" <afd@ti.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
-> How many times have I told you to include the reason for your patches
-> in your proposed commit message?
+The minnie devices comes with an AUO B101EAN01 panel which is different
+from default veyron devices, thus the power on/off timing sequence is
+slightly different. The datasheet specifies a pwm delay of 200 ms, so
+update the PMW delay proprieties accordingly.
 
-Will it be useful to look again at the involved circumstances?
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+Heiko,
+ I'm not able to test this patch in a minnie device because I don't have
+one, so could you do a quick try, please?
 
+Changes since v4:
+ - Rebase on top of mainline.
+Changes since v3:
+ - Use new -ms names for proprieties.
+ - Fix the delay, should be 200ms instead of 20ms (Pavel)
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch as minnie has differents timings
 
-> Too often.
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Did I answer any concerns partly?
+diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+index 544de60..4c5307e6 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
++++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+@@ -123,6 +123,8 @@
+ 			240 241 242 243 244 245 246 247
+ 			248 249 250 251 252 253 254 255>;
+ 	power-supply = <&backlight_regulator>;
++	post-pwm-on-delay-ms = <200>;
++	pwm-off-delay-ms = <200>;
+ };
+ 
+ &emmc {
+-- 
+2.9.3
 
-
-> Many people do not know that a generic kmalloc does a dump_stack() on OOM.
-
-Do you see a need to represent such information better?
-
-Is it expected that the function “devm_kzalloc” has got a similar property?
-
-
-> That information should be part of the commit message.
-
-How do you think about to share it also from any reference documentation
-in a clearer way?
-
-Do we stumble on a target conflict in this case?
-
-I am generally trying to improve the software situation to some degree.
-I prefer then to work with safe information sources.
-Unfortunately, I might have not reached a desired confidence level here
-for a more detailed commit message. I assume that software development
-efforts could increase in significant ways if something should be improved
-further in a direction I hope. But this could mean that time frames will
-grow for corresponding clarifications.
-
-* Does such a situation block progress on the deletion of other remaining
-  questionable error messages?
-
-* Would you like to increase the software development attention anyhow?
-
-
-
-By the way:
-It seems that my update suggestion for the directory “omapfb/dss”
-could be superseded by the patch “omapfb: dss: Do not duplicate features data”
-from Ladislav Michl.
-https://patchwork.kernel.org/patch/10082027/
-https://lkml.kernel.org/r/<20171129123308.GA26578@lenoch>
-
-Regards,
-Markus

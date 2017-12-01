@@ -1,43 +1,39 @@
-From: Felix Brack <fb@ltec.ch>
-Date: Wed, 27 Dec 2017 10:23:20 +0000
-Subject: Re: [PATCH] backlight: otm3225a: add support for ORISE OTM3225A LCD SoC
-Message-Id: <ca075f8a-8eff-f4e9-d2c3-1db6add63493@ltec.ch>
+From: "H. Nikolaus Schaller" <hns@goldelico.com>
+Date: Fri, 01 Dec 2017 07:41:22 +0000
+Subject: [PATCH v4 1/2] DTS: GTA04: improve panel compatibility string
+Message-Id: <280160905017f67c91b96bf38ea9b6094ec277c3.1512114082.git.hns@goldelico.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1513792670-4114-1-git-send-email-fb@ltec.ch>
- <000601d37b49$89598210$9c0c8630$@gmail.com>
- <8288d7dc-8a53-695b-3e88-139d5c8fe555@linaro.org>
-In-Reply-To: <8288d7dc-8a53-695b-3e88-139d5c8fe555@linaro.org>
+References: <cover.1512114082.git.hns@goldelico.com>
+In-Reply-To: <cover.1512114082.git.hns@goldelico.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org
-Cc: lee.jones@linaro.org, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Beno=C3=AEt=20Cousson?= <bcousson@baylibre.com>, Tony Lindgren <tony@atomide.com>, Russell King <linux@armlinux.org.uk>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, "H. Nikolaus Schaller" <hns@goldelico.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, kernel@pyra-handheld.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Hello Daniel,
+Official vendor string is now "tpo" and not "toppoly".
 
-On 22.12.2017 18:33, Daniel Thompson wrote:
-> On 22/12/17 17:23, Jingoo Han wrote:>> diff --git
-> a/drivers/video/backlight/otm3225a.c
->>> b/drivers/video/backlight/otm3225a.c
->>> new file mode 100644
->>> index 0000000..0de75f8
->>> --- /dev/null
->>> +++ b/drivers/video/backlight/otm3225a.c
->>> @@ -0,0 +1,210 @@
->>> +/*
->>> + * Driver for ORISE Technology OTM3225A SOC for TFT LCD
->>> + *
->>> + * Copyright (C) 2014-2017, EETS GmbH, Felix Brack <fb@ltec.ch>
->>
->> Please change the year of copyright as below. >
->> + * Copyright (C) 2017, EETS GmbH, Felix Brack <fb@ltec.ch>
-> 
-> ... and include (or just rely entirely on) a SPDX header to describe the
-> licensing of the file.
->
-Thanks for the hint. I have opted for this first line in the source
-file: "// SPDX-License-Identifier: GPL-2.0"
-> 
-> Daniel.
+Requires patch "omapdrm: panel: fix compatible vendor string for td028ttec1"
+so that the driver understands both.
 
-kind regards, Felix
+Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+---
+ arch/arm/boot/dts/omap3-gta04.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/omap3-gta04.dtsi b/arch/arm/boot/dts/omap3-gta04.dtsi
+index 4504908c23fe..ec27ed67a22a 100644
+--- a/arch/arm/boot/dts/omap3-gta04.dtsi
++++ b/arch/arm/boot/dts/omap3-gta04.dtsi
+@@ -86,7 +86,7 @@
+ 
+ 		/* lcd panel */
+ 		lcd: td028ttec1@0 {
+-			compatible = "toppoly,td028ttec1";
++			compatible = "tpo,td028ttec1";
+ 			reg = <0>;
+ 			spi-max-frequency = <100000>;
+ 			spi-cpol;
+-- 
+2.12.2
+

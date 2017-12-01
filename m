@@ -1,23 +1,53 @@
-From: Felipe Balbi <felipe.balbi@linux.intel.com>
-Date: Wed, 20 Dec 2017 09:46:06 +0000
-Subject: Re: [-next PATCH 0/4] sysfs and DEVICE_ATTR_<foo>
-Message-Id: <87r2rppw9t.fsf@linux.intel.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Fri, 01 Dec 2017 10:54:25 +0000
+Subject: Re: [PATCH v4 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20171201105425.bdkusyij5sstka23@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1513706701.git.joe@perches.com>
-In-Reply-To: <cover.1513706701.git.joe@perches.com>
+References: <20170721104813.5389-1-enric.balletbo@collabora.com>
+ <20170721104813.5389-3-enric.balletbo@collabora.com>
+ <0e2d4f9b-0f27-3793-0c27-2a2df5c32cf0@linaro.org>
+ <000001d30630$e2a3d160$a7eb7420$@gmail.com>
+ <CAFqH_52odQdYqSZsCYAydQ5vUudZor7gO+Ro3ccVJb6t+e5KhA@mail.gmail.com>
+In-Reply-To: <CAFqH_52odQdYqSZsCYAydQ5vUudZor7gO+Ro3ccVJb6t+e5KhA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>, linux-arm-kernel@lists.infradead.org, linux-acpi@vger.kernel.org, openipmi-developer@lists.sourceforge.net, intel-gfx@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org, linux-nvme@lists.infradead.org, platform-driver-x86@vger.kernel.org, linux-s390@vger.kernel.org, esc.storagedev@microsemi.com, linux-scsi@vger.kernel.org, linux-pm@vger.kernel.org, linux-serial@vger.kernel.org, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, linux-omap@vger.kernel.org
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-sh@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Enric Balletbo Serra <eballetbo@gmail.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Heiko Stuebner <heiko@sntech.de>, Linux PWM List <linux-pwm@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>
 
+On Fri, 01 Dec 2017, Enric Balletbo Serra wrote:
+> 2017-07-26 19:01 GMT+02:00 Jingoo Han <jingoohan1@gmail.com>:
+> > On Monday, July 24, 2017 11:22 AM, Daniel Thompson wrote:
+> >> On 21/07/17 11:48, Enric Balletbo i Serra wrote:
+> >> > Some panels (i.e. N116BGE-L41), in their power sequence specificatio=
+ns,
+> >> > request a delay between set the PWM signal and enable the backlight =
+and
+> >> > between clear the PWM signal and disable the backlight. Add support =
+for
+> >> > the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
+> >> > the timings.
+> >> >
+> >> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> >>
+> >> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> >
+> > Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> >
+>=20
+> A lot of time has passed since these patches received the acks but I'm
+> still without seeing the patches in linux-next. There is some action I
+> need to do ? (rebase?). I'd really like to see those to land in next
+> merge window if all is ok.
 
-Hi,
+Looks like you are still missing Acks on some of the patches and have
+questions outstanding.
 
-Joe Perches <joe@perches.com> writes:
->  drivers/usb/phy/phy-tahvo.c                        |  2 +-
+Best thing to do is rebase and resubmit with all of the Acks you've
+collected applied.
 
-Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
-
--- 
-balbi
+--=20
+Lee Jones
+Linaro STMicroelectronics Landing Team Lead
+Linaro.org =E2=94=82 Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

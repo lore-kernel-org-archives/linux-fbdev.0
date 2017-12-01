@@ -1,33 +1,50 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 22 Dec 2017 22:23:26 +0000
-Subject: [RFC PATCH] backlight: otm3225a: otm3225a_ops can be static
-Message-Id: <20171222222326.GA55764@lkp-sb04>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 01 Dec 2017 12:06:50 +0000
+Subject: [PATCH v5 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
+Message-Id: <20171201120651.29633-4-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1513792670-4114-1-git-send-email-fb@ltec.ch>
-In-Reply-To: <1513792670-4114-1-git-send-email-fb@ltec.ch>
+References: <20171201120651.29633-1-enric.balletbo@collabora.com>
+In-Reply-To: <20171201120651.29633-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Felix Brack <fb@ltec.ch>
-Cc: kbuild-all@01.org, linux-fbdev@vger.kernel.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
 
+For veyron the binding should provide both PWM timings, the delay between
+you enable the PWM and set the enable signal, and the delay between you
+disable the PWM signal and clear the enable signal. Update the binding
+accordingly, in this case the panels connected to the veyron boards have
+a symmetric power sequence, hence the same value is used.
 
-Fixes: 640b353b5467 ("backlight: otm3225a: add support for ORISE OTM3225A LCD SoC")
-Signed-off-by: Fengguang Wu <fengguang.wu@intel.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 ---
- otm3225a.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes since v4:
+ - Rebased on top of mainline.
+Changes since v3:
+ - Use new -ms names for proprieties.
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch to fix current binding on veyron.
 
-diff --git a/drivers/video/backlight/otm3225a.c b/drivers/video/backlight/otm3225a.c
-index 0de75f8..056ac8b 100644
---- a/drivers/video/backlight/otm3225a.c
-+++ b/drivers/video/backlight/otm3225a.c
-@@ -137,7 +137,7 @@ static int otm3225a_get_power(struct lcd_device *ld)
- 	return dd->power;
- }
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index d752a31..5a8c7f3 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -96,7 +96,8 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bl_en>;
+ 		pwms = <&pwm0 0 1000000 0>;
+-		pwm-delay-us = <10000>;
++		post-pwm-on-delay-ms = <10>;
++		pwm-off-delay-ms = <10>;
+ 	};
  
--struct lcd_ops otm3225a_ops = {
-+static struct lcd_ops otm3225a_ops = {
- 	.set_power = otm3225a_set_power,
- 	.get_power = otm3225a_get_power,
- };
+ 	gpio-charger {
+-- 
+2.9.3
+

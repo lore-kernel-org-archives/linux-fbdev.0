@@ -1,44 +1,68 @@
-From: Tony Lindgren <tony@atomide.com>
-Date: Tue, 19 Dec 2017 14:37:33 +0000
-Subject: Re: [PATCH v4 1/2] DTS: GTA04: improve panel compatibility string
-Message-Id: <20171219143733.GL3875@atomide.com>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 03 Dec 2017 18:20:47 +0000
+Subject: Re: omapfb/dss: Delete an error message for a failed memory allocation in three functions
+Message-Id: <21554e23-e714-3f6f-cd70-4c277823bab3@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1512114082.git.hns@goldelico.com>
- <280160905017f67c91b96bf38ea9b6094ec277c3.1512114082.git.hns@goldelico.com>
- <20171211152203.GH24344@atomide.com>
- <e52a086f-6748-0e5e-f9b5-d4532c34d215@ti.com>
-In-Reply-To: <e52a086f-6748-0e5e-f9b5-d4532c34d215@ti.com>
+References: <c48a01db-c477-3bd3-5cb4-548e47810ccb@users.sourceforge.net>
+ <d29a0bae-7b6f-b8f6-6809-5a097cd5a26a@ti.com>
+ <1511809633.32426.70.camel@perches.com>
+ <d82fbab2-865f-3051-f487-d310ee819cf3@users.sourceforge.net>
+ <1511833514.32426.86.camel@perches.com>
+ <7e7e64cf-dbe5-614a-f1e5-29d7b6cf9297@users.sourceforge.net>
+ <1511856244.19952.14.camel@perches.com>
+In-Reply-To: <1511856244.19952.14.camel@perches.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: "H. Nikolaus Schaller" <hns@goldelico.com>, Thierry Reding <thierry.reding@gmail.com>, David Airlie <airlied@linux.ie>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, =?utf-8?Q?Beno=C3=AEt?= Cousson <bcousson@baylibre.com>, Russell King <linux@armlinux.org.uk>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Julia Lawall <Julia.Lawall@lip6.fr>, Sean Paul <seanpaul@chromium.org>, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, letux-kernel@openphoenux.org, kernel@pyra-handheld.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Joe Perches <joe@perches.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-doc@vger.kernel.org
+Cc: "Andrew F. Davis" <afd@ti.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>
 
-* Tomi Valkeinen <tomi.valkeinen@ti.com> [171219 10:51]:
-> On 11/12/17 17:22, Tony Lindgren wrote:
-> > * H. Nikolaus Schaller <hns@goldelico.com> [171201 07:44]:
-> > > Official vendor string is now "tpo" and not "toppoly".
-> > > 
-> > > Requires patch "omapdrm: panel: fix compatible vendor string for td028ttec1"
-> > > so that the driver understands both.
-> > 
-> > Tomi, so what's the plan with the dependency patch, is that for v4.16
-> > or for the v4.15-rc cycle?
-> 
-> The dependency patch for this one is queued for v4.16 (I just sent a pull
-> request today). I could pick this one up (if you give an ack) if I send
-> another DRM pull request, but I probably don't have anything else to send so
-> most likely I won't pick this up for v4.16.
+> How many times have I told you to include the reason for your patches
+> in your proposed commit message?
 
-OK thanks I'll queue both of these for v4.16 then.
+Will it be useful to look again at the involved circumstances?
 
-> The patch 2/2 in the series doesn't have dependencies and can be applied as
-> a fix for 4.15, or for 4.16.
-> 
-> Neither of these are critical, as things work fine without these patches.
 
-OK thanks for confirming that.
+> Too often.
+
+Did I answer any concerns partly?
+
+
+> Many people do not know that a generic kmalloc does a dump_stack() on OOM.
+
+Do you see a need to represent such information better?
+
+Is it expected that the function “devm_kzalloc” has got a similar property?
+
+
+> That information should be part of the commit message.
+
+How do you think about to share it also from any reference documentation
+in a clearer way?
+
+Do we stumble on a target conflict in this case?
+
+I am generally trying to improve the software situation to some degree.
+I prefer then to work with safe information sources.
+Unfortunately, I might have not reached a desired confidence level here
+for a more detailed commit message. I assume that software development
+efforts could increase in significant ways if something should be improved
+further in a direction I hope. But this could mean that time frames will
+grow for corresponding clarifications.
+
+* Does such a situation block progress on the deletion of other remaining
+  questionable error messages?
+
+* Would you like to increase the software development attention anyhow?
+
+
+
+By the way:
+It seems that my update suggestion for the directory “omapfb/dss”
+could be superseded by the patch “omapfb: dss: Do not duplicate features data”
+from Ladislav Michl.
+https://patchwork.kernel.org/patch/10082027/
+https://lkml.kernel.org/r/<20171129123308.GA26578@lenoch>
 
 Regards,
-
-Tony
+Markus

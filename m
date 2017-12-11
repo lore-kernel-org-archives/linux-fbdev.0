@@ -1,20 +1,42 @@
-From: Loretta Robles <Loretta.Robles@hci.utah.edu>
-Date: Sat, 30 Dec 2017 00:28:56 +0000
-Subject: RE: ATTENTION!!!
-Message-Id: <35D4F79A8B8138489F38DE5CF6200454E572AB2F@HCI-EX-MB2.hci.utah.edu>
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Mon, 11 Dec 2017 21:40:59 +0000
+Subject: [PATCH 2/6] video: udlfb: Remove unnecessary 'return'
+Message-Id: <20171211214059.GC29173@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <35D4F79A8B8138489F38DE5CF6200454E570015C@HCI-EX-MB2.hci.utah.edu>
-In-Reply-To: <35D4F79A8B8138489F38DE5CF6200454E570015C@HCI-EX-MB2.hci.utah.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Loretta Robles <Loretta.Robles@hci.utah.edu>
+To: linux-fbdev@vger.kernel.org
 
+Remove unnecessary void return at the end of a function.
 
-________________________________
-From: Loretta Robles
-Sent: Friday, December 29, 2017 1:01 PM
-To: Loretta Robles
-Subject: ATTENTION!!!
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+---
+ drivers/video/fbdev/udlfb.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-You have been randomly selected for a donation. Contact soriz4040@gmail.com for claims.
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 16a3287409b2..4abf538c9b72 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -505,8 +505,6 @@ static void dlfb_compress_hline(
+ 	*command_buffer_ptr = cmd;
+ 	*pixel_start_ptr = pixel;
+ 	*device_address_ptr = dev_addr;
+-
+-	return;
+ }
+ 
+ /*
+@@ -1777,8 +1775,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
+ 	kref_put(&dlfb->kref, dlfb_free);
+ 
+ 	/* consider dlfb_data freed */
+-
+-	return;
+ }
+ 
+ static struct usb_driver dlfb_driver = {
+-- 
+2.15.1
+

@@ -1,7 +1,7 @@
 From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 13 Dec 2017 19:47:46 +0000
-Subject: [RFC PATCH v2 04/13] bootsplash: Add corner positioning
-Message-Id: <20171213194755.3409-5-mstaudt@suse.de>
+Date: Wed, 13 Dec 2017 19:47:53 +0000
+Subject: [RFC PATCH v2 11/13] bootsplash: sysfs entries to load and unload files
+Message-Id: <20171213194755.3409-12-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
 In-Reply-To: <20171213194755.3409-1-mstaudt@suse.de>
@@ -11,230 +11,154 @@ Content-Transfer-Encoding: 7bit
 To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
 Cc: michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, mstaudt@suse.de, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-This allows showing multiple logos, each in its own position,
-relative to the eight screen corners.
+Users can use this to replace their splash screen at runtime by writing
+a path and filename to /sys/devices/platform/bootsplash.0/load_file and
+making sure the splash is enabled.
+
+Notes:
+  - The path has to be a path in /lib/firmware since request_firmware()
+    is used to fetch the data.
+  - When setting the splash from the shell, echo -n has to be used as
+    any trailing '\n' newline will be interpreted as part of the path.
+
+Writes to /sys/devices/platform/bootsplash.0/drop_splash will cause the
+current splash theme to be freed and the console to switch to text mode,
 
 Signed-off-by: Max Staudt <mstaudt@suse.de>
 ---
- drivers/video/fbdev/core/bootsplash_render.c | 136 ++++++++++++++++++++++++++-
- include/uapi/linux/bootsplash_file.h         |  45 ++++++++-
- 2 files changed, 178 insertions(+), 3 deletions(-)
+ .../ABI/testing/sysfs-platform-bootsplash          | 32 +++++++++++++
+ Documentation/bootsplash.rst                       |  8 ++++
+ drivers/video/fbdev/core/bootsplash.c              | 54 ++++++++++++++++++++++
+ 3 files changed, 94 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
-index 8c09c306ff67..07e3a4eab811 100644
---- a/drivers/video/fbdev/core/bootsplash_render.c
-+++ b/drivers/video/fbdev/core/bootsplash_render.c
-@@ -155,6 +155,7 @@ void bootsplash_do_render_pictures(struct fb_info *info,
- 	for (i = 0; i < fp->header->num_pics; i++) {
- 		struct splash_blob_priv *bp;
- 		struct splash_pic_priv *pp = &fp->pics[i];
-+		const struct splash_pic_header *ph = pp->pic_header;
- 		long dst_xoff, dst_yoff;
- 
- 		if (pp->blobs_loaded < 1)
-@@ -165,8 +166,139 @@ void bootsplash_do_render_pictures(struct fb_info *info,
- 		if (!bp || bp->blob_header->type != 0)
- 			continue;
- 
--		dst_xoff = (info->var.xres - pp->pic_header->width) / 2;
--		dst_yoff = (info->var.yres - pp->pic_header->height) / 2;
-+		switch (ph->position) {
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_LEFT:
-+			dst_xoff = 0;
-+			dst_yoff = 0;
+diff --git a/Documentation/ABI/testing/sysfs-platform-bootsplash b/Documentation/ABI/testing/sysfs-platform-bootsplash
+index 742c7b035ded..f8f4b259220e 100644
+--- a/Documentation/ABI/testing/sysfs-platform-bootsplash
++++ b/Documentation/ABI/testing/sysfs-platform-bootsplash
+@@ -9,3 +9,35 @@ Description:
+ 		1: Splash is shown whenever fbcon would show a text console
+ 		   (i.e. no graphical application is running), and a splash
+ 		   file is loaded.
 +
-+			dst_xoff += ph->position_offset;
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = 0;
++What:		/sys/devices/platform/bootsplash.0/drop_splash
++Date:		Oct 2017
++KernelVersion:	4.14
++Contact:	Max Staudt <mstaudt@suse.de>
++Description:
++		Can only be set.
 +
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_yoff = 0;
++		Any value written will cause the current splash theme file
++		to be unloaded and the text console to be redrawn.
 +
-+			dst_xoff -= ph->position_offset;
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
++What:		/sys/devices/platform/bootsplash.0/load_file
++Date:		Oct 2017
++KernelVersion:	4.14
++Contact:	Max Staudt <mstaudt@suse.de>
++Description:
++		Can only be set.
 +
-+			dst_xoff -= ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
++		Any value written will cause the splash to be disabled and
++		internal memory structures to be freed.
 +
-+			dst_xoff -= ph->position_offset;
-+			dst_yoff -= ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
++		A firmware path written will cause a new theme file to be
++		loaded and the current bootsplash to be replaced.
++		The current enabled/disabled status is not touched.
++		If the splash is already active, it will be redrawn.
 +
-+			dst_yoff -= ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_LEFT:
-+			dst_xoff = 0 + ph->position_offset;
-+			dst_yoff = info->var.yres - pp->pic_header->height
-+						  - ph->position_offset;
-+			break;
-+		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_LEFT:
-+			dst_xoff = 0;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
++		The path has to be a path in /lib/firmware since
++		request_firmware() is used to fetch the data.
 +
-+			dst_xoff += ph->position_offset;
-+			break;
-+
-+		case SPLASH_CORNER_TOP_LEFT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff -= ph->position_offset;
-+			dst_yoff -= ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_TOP:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_yoff -= ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_TOP_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff += ph->position_offset;
-+			dst_yoff -= ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff += ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_BOTTOM_RIGHT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff += ph->position_offset;
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_BOTTOM:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_BOTTOM_LEFT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff -= ph->position_offset;
-+			dst_yoff += ph->position_offset;
-+			break;
-+		case SPLASH_CORNER_LEFT:
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+
-+			dst_xoff -= ph->position_offset;
-+			break;
-+
-+		default:
-+			/* As a fallback, center the picture. */
-+			dst_xoff = info->var.xres - pp->pic_header->width;
-+			dst_xoff /= 2;
-+			dst_yoff = info->var.yres - pp->pic_header->height;
-+			dst_yoff /= 2;
-+			break;
-+		}
- 
- 		if (dst_xoff < 0
- 		    || dst_yoff < 0
-diff --git a/include/uapi/linux/bootsplash_file.h b/include/uapi/linux/bootsplash_file.h
-index 89dc9cca8f0c..71cedcc68933 100644
---- a/include/uapi/linux/bootsplash_file.h
-+++ b/include/uapi/linux/bootsplash_file.h
-@@ -91,7 +91,32 @@ struct splash_pic_header {
- 	 */
- 	uint8_t num_blobs;
- 
--	uint8_t padding[27];
-+	/*
-+	 * Corner to move the picture to / from.
-+	 *  0x00 - Top left
-+	 *  0x01 - Top
-+	 *  0x02 - Top right
-+	 *  0x03 - Right
-+	 *  0x04 - Bottom right
-+	 *  0x05 - Bottom
-+	 *  0x06 - Bottom left
-+	 *  0x07 - Left
-+	 *
-+	 * Flags:
-+	 *  0x10 - Calculate offset from the corner towards the center,
-+	 *         rather than from the center towards the corner
-+	 */
-+	uint8_t position;
-+
-+	/*
-+	 * Pixel offset from the selected position.
-+	 * Example: If the picture is in the top right corner, it will
-+	 *          be placed position_offset pixels from the top and
-+	 *          position_offset pixels from the right margin.
-+	 */
-+	uint16_t position_offset;
-+
-+	uint8_t padding[24];
- } __attribute__((__packed__));
++		When setting the splash from the shell, echo -n has to be
++		used as any trailing '\n' newline will be interpreted as
++		part of the path.
+diff --git a/Documentation/bootsplash.rst b/Documentation/bootsplash.rst
+index 8bd6805af6bf..d793612ebf2e 100644
+--- a/Documentation/bootsplash.rst
++++ b/Documentation/bootsplash.rst
+@@ -58,6 +58,14 @@ sysfs run-time configuration
+   a splash theme file is also loaded.
  
  
-@@ -115,4 +140,22 @@ struct splash_blob_header {
- 	uint8_t padding[9];
- } __attribute__((__packed__));
++``/sys/devices/platform/bootsplash.0/drop_splash``
++  Unload splash data and free memory.
++
++``/sys/devices/platform/bootsplash.0/load_file``
++  Load a splash file from ``/lib/firmware/``.
++  Note that trailing newlines will be interpreted as part of the file name.
++
++
  
+ Kconfig
+ ===diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
+index 13fcaabbc2ca..16cb0493629d 100644
+--- a/drivers/video/fbdev/core/bootsplash.c
++++ b/drivers/video/fbdev/core/bootsplash.c
+@@ -251,11 +251,65 @@ static ssize_t splash_store_enabled(struct device *device,
+ 	return count;
+ }
+ 
++static ssize_t splash_store_drop_splash(struct device *device,
++					struct device_attribute *attr,
++					const char *buf, size_t count)
++{
++	struct splash_file_priv *fp;
 +
++	if (!buf || !count || !splash_state.file)
++		return count;
 +
++	mutex_lock(&splash_state.data_lock);
++	fp = splash_state.file;
++	splash_state.file = NULL;
++	mutex_unlock(&splash_state.data_lock);
 +
-+/*
-+ * Enums for on-disk types
-+ */
-+enum splash_position {
-+	SPLASH_CORNER_TOP_LEFT = 0,
-+	SPLASH_CORNER_TOP = 1,
-+	SPLASH_CORNER_TOP_RIGHT = 2,
-+	SPLASH_CORNER_RIGHT = 3,
-+	SPLASH_CORNER_BOTTOM_RIGHT = 4,
-+	SPLASH_CORNER_BOTTOM = 5,
-+	SPLASH_CORNER_BOTTOM_LEFT = 6,
-+	SPLASH_CORNER_LEFT = 7,
-+	SPLASH_POS_FLAG_CORNER = 0x10,
-+};
++	/* Redraw the text console */
++	schedule_work(&splash_state.work_redraw_vc);
 +
- #endif
++	bootsplash_free_file(fp);
++
++	return count;
++}
++
++static ssize_t splash_store_load_file(struct device *device,
++				      struct device_attribute *attr,
++				      const char *buf, size_t count)
++{
++	struct splash_file_priv *fp, *fp_old;
++
++	if (!count)
++		return 0;
++
++	fp = bootsplash_load_firmware(&splash_state.splash_device->dev,
++				      buf);
++
++	if (!fp)
++		return -ENXIO;
++
++	mutex_lock(&splash_state.data_lock);
++	fp_old = splash_state.file;
++	splash_state.splash_fb = NULL;
++	splash_state.file = fp;
++	mutex_unlock(&splash_state.data_lock);
++
++	/* Update the splash or text console */
++	schedule_work(&splash_state.work_redraw_vc);
++
++	bootsplash_free_file(fp_old);
++	return count;
++}
++
+ static DEVICE_ATTR(enabled, 0644, splash_show_enabled, splash_store_enabled);
++static DEVICE_ATTR(drop_splash, 0200, NULL, splash_store_drop_splash);
++static DEVICE_ATTR(load_file, 0200, NULL, splash_store_load_file);
+ 
+ 
+ static struct attribute *splash_dev_attrs[] = {
+ 	&dev_attr_enabled.attr,
++	&dev_attr_drop_splash.attr,
++	&dev_attr_load_file.attr,
+ 	NULL
+ };
+ 
 -- 
 2.12.3
 

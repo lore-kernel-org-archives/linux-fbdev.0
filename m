@@ -1,122 +1,703 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 01 Dec 2017 12:06:49 +0000
-Subject: [PATCH v5 3/5] pwm-backlight: add support for PWM delays proprieties.
-Message-Id: <20171201120651.29633-3-enric.balletbo@collabora.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 13 Dec 2017 19:47:44 +0000
+Subject: [RFC PATCH v2 02/13] bootsplash: Add file reading and picture rendering
+Message-Id: <20171213194755.3409-3-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171201120651.29633-1-enric.balletbo@collabora.com>
-In-Reply-To: <20171201120651.29633-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+References: <20171213194755.3409-1-mstaudt@suse.de>
+In-Reply-To: <20171213194755.3409-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, mstaudt@suse.de, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-Some panels (i.e. N116BGE-L41), in their power sequence specifications,
-request a delay between set the PWM signal and enable the backlight and
-between clear the PWM signal and disable the backlight. Add support for
-the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
-the timings.
+Load logo(s) from a file and render them in the center of the screen.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+This removes the "black screen" functionality, which can now be emulated
+by providing a splash file with no pictures and a black background.
+
+Signed-off-by: Max Staudt <mstaudt@suse.de>
 ---
-Changes since v4:
- - Rebased on top of mainline.
- - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
-Changes since v3:
- - Use two named members instead of pwm_delay[] (Daniel and Pavel)
- - Use msleep instead of usleep_range. (Pavel)
-Changes since v2:
- - Move the pwm/enable sequence to another patch (Thierry Reding)
-Changes since v1:
- - As suggested by Daniel Thompson
-   - Do not assume power-on delay and power-off delay will be the same
- - Move the check of dt property to the parse dt function.
+ MAINTAINERS                                    |   1 +
+ drivers/video/fbdev/core/Makefile              |   2 +-
+ drivers/video/fbdev/core/bootsplash.c          |  36 +++-
+ drivers/video/fbdev/core/bootsplash_internal.h |  45 ++++-
+ drivers/video/fbdev/core/bootsplash_load.c     | 225 +++++++++++++++++++++++++
+ drivers/video/fbdev/core/bootsplash_render.c   | 103 ++++++++++-
+ include/uapi/linux/bootsplash_file.h           | 118 +++++++++++++
+ 7 files changed, 522 insertions(+), 8 deletions(-)
+ create mode 100644 drivers/video/fbdev/core/bootsplash_load.c
+ create mode 100644 include/uapi/linux/bootsplash_file.h
 
- drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
- include/linux/pwm_backlight.h    |  2 ++
- 2 files changed, 21 insertions(+)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 698ec68..8e3f124 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -10,6 +10,7 @@
-  * published by the Free Software Foundation.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b5633b56391e..5c237445761e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2712,6 +2712,7 @@ S:	Maintained
+ F:	drivers/video/fbdev/core/bootsplash*.*
+ F:	drivers/video/fbdev/core/dummycon.c
+ F:	include/linux/bootsplash.h
++F:	include/uapi/linux/bootsplash_file.h
+ 
+ BPF (Safe dynamic programs and tools)
+ M:	Alexei Starovoitov <ast@kernel.org>
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 66895321928e..6a8d1bab8a01 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -31,4 +31,4 @@ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
+ 
+ obj-$(CONFIG_BOOTSPLASH)       += bootsplash.o bootsplash_render.o \
+-                                  dummyblit.o
++                                  bootsplash_load.o dummyblit.o
+diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
+index e449755af268..843c5400fefc 100644
+--- a/drivers/video/fbdev/core/bootsplash.c
++++ b/drivers/video/fbdev/core/bootsplash.c
+@@ -32,6 +32,7 @@
+ #include <linux/workqueue.h>
+ 
+ #include "bootsplash_internal.h"
++#include "uapi/linux/bootsplash_file.h"
+ 
+ 
+ /*
+@@ -102,10 +103,17 @@ static bool is_fb_compatible(const struct fb_info *info)
   */
- 
-+#include <linux/delay.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio.h>
- #include <linux/module.h>
-@@ -35,6 +36,8 @@ struct pwm_bl_data {
- 	struct gpio_desc	*enable_gpio;
- 	unsigned int		scale;
- 	bool			legacy;
-+	unsigned int		post_pwm_on_delay;
-+	unsigned int		pwm_off_delay;
- 	int			(*notify)(struct device *,
- 					  int brightness);
- 	void			(*notify_after)(struct device *,
-@@ -56,6 +59,9 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 
- 	pwm_enable(pb->pwm);
- 
-+	if (pb->post_pwm_on_delay)
-+		msleep(pb->post_pwm_on_delay);
+ void bootsplash_render_full(struct fb_info *info)
+ {
++	mutex_lock(&splash_state.data_lock);
 +
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
- 
-@@ -70,6 +76,9 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
- 
-+	if (pb->pwm_off_delay)
-+		msleep(pb->pwm_off_delay);
+ 	if (!is_fb_compatible(info))
+-		return;
++		goto out;
 +
- 	pwm_config(pb->pwm, 0, pb->period);
- 	pwm_disable(pb->pwm);
++	bootsplash_do_render_background(info, splash_state.file);
++
++	bootsplash_do_render_pictures(info, splash_state.file);
  
-@@ -178,6 +187,14 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 		data->max_brightness--;
+-	bootsplash_do_render_background(info);
++out:
++	mutex_unlock(&splash_state.data_lock);
+ }
+ 
+ 
+@@ -116,6 +124,7 @@ bool bootsplash_would_render_now(void)
+ {
+ 	return !oops_in_progress
+ 		&& !console_blanked
++		&& splash_state.file
+ 		&& bootsplash_is_enabled();
+ }
+ 
+@@ -252,6 +261,7 @@ static struct platform_driver splash_driver = {
+ void bootsplash_init(void)
+ {
+ 	int ret;
++	struct splash_file_priv *fp;
+ 
+ 	/* Initialized already? */
+ 	if (splash_state.splash_device)
+@@ -280,8 +290,26 @@ void bootsplash_init(void)
  	}
  
-+	/*
-+	 * These values are optional and set as 0 by default, the out values
-+	 * are modified only if a valid u32 value can be decoded.
-+	 */
-+	of_property_read_u32(node, "post-pwm-on-delay-ms",
-+			     &data->post_pwm_on_delay);
-+	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
-+
- 	data->enable_gpio = -EINVAL;
- 	return 0;
- }
-@@ -276,6 +293,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->exit = data->exit;
- 	pb->dev = &pdev->dev;
- 	pb->enabled = false;
-+	pb->post_pwm_on_delay = data->post_pwm_on_delay;
-+	pb->pwm_off_delay = data->pwm_off_delay;
  
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
- 						  GPIOD_ASIS);
-diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-index e8afbd7..8ea265a 100644
---- a/include/linux/pwm_backlight.h
-+++ b/include/linux/pwm_backlight.h
-@@ -14,6 +14,8 @@ struct platform_pwm_backlight_data {
- 	unsigned int lth_brightness;
- 	unsigned int pwm_period_ns;
- 	unsigned int *levels;
-+	unsigned int post_pwm_on_delay;
-+	unsigned int pwm_off_delay;
- 	/* TODO remove once all users are switched to gpiod_* API */
- 	int enable_gpio;
- 	int (*init)(struct device *dev);
++	mutex_init(&splash_state.data_lock);
++	set_bit(0, &splash_state.enabled);
++
+ 	INIT_WORK(&splash_state.work_redraw_vc, splash_callback_redraw_vc);
+ 
++
++	if (!splash_state.bootfile || !strlen(splash_state.bootfile))
++		return;
++
++	fp = bootsplash_load_firmware(&splash_state.splash_device->dev,
++				      splash_state.bootfile);
++
++	if (!fp)
++		goto err;
++
++	mutex_lock(&splash_state.data_lock);
++	splash_state.splash_fb = NULL;
++	splash_state.file = fp;
++	mutex_unlock(&splash_state.data_lock);
++
+ 	return;
+ 
+ err_device:
+@@ -292,3 +320,7 @@ void bootsplash_init(void)
+ err:
+ 	pr_err("Failed to initialize.\n");
+ }
++
++
++module_param_named(bootfile, splash_state.bootfile, charp, 0444);
++MODULE_PARM_DESC(bootfile, "Bootsplash file to load on boot");
+diff --git a/drivers/video/fbdev/core/bootsplash_internal.h b/drivers/video/fbdev/core/bootsplash_internal.h
+index b11da5cb90bf..71e2a27ac0b8 100644
+--- a/drivers/video/fbdev/core/bootsplash_internal.h
++++ b/drivers/video/fbdev/core/bootsplash_internal.h
+@@ -15,15 +15,43 @@
+ 
+ #include <linux/types.h>
+ #include <linux/fb.h>
++#include <linux/firmware.h>
+ #include <linux/kernel.h>
+ #include <linux/mutex.h>
+ #include <linux/spinlock.h>
+ 
++#include "uapi/linux/bootsplash_file.h"
++
+ 
+ /*
+  * Runtime types
+  */
++struct splash_blob_priv {
++	struct splash_blob_header *blob_header;
++	const void *data;
++};
++
++
++struct splash_pic_priv {
++	const struct splash_pic_header *pic_header;
++
++	struct splash_blob_priv *blobs;
++	u16 blobs_loaded;
++};
++
++
++struct splash_file_priv {
++	const struct firmware *fw;
++	const struct splash_file_header *header;
++
++	struct splash_pic_priv *pics;
++};
++
++
+ struct splash_priv {
++	/* Bootup and runtime state */
++	char *bootfile;
++
+ 	/*
+ 	 * Enabled/disabled state, to be used with atomic bit operations.
+ 	 *   Bit 0: 0 = Splash hidden
+@@ -43,6 +71,13 @@ struct splash_priv {
+ 	struct platform_device *splash_device;
+ 
+ 	struct work_struct work_redraw_vc;
++
++	/* Splash data structures including lock for everything below */
++	struct mutex data_lock;
++
++	struct fb_info *splash_fb;
++
++	struct splash_file_priv *file;
+ };
+ 
+ 
+@@ -50,6 +85,14 @@ struct splash_priv {
+ /*
+  * Rendering functions
+  */
+-void bootsplash_do_render_background(struct fb_info *info);
++void bootsplash_do_render_background(struct fb_info *info,
++				     const struct splash_file_priv *fp);
++void bootsplash_do_render_pictures(struct fb_info *info,
++				   const struct splash_file_priv *fp);
++
++
++void bootsplash_free_file(struct splash_file_priv *fp);
++struct splash_file_priv *bootsplash_load_firmware(struct device *device,
++						  const char *path);
+ 
+ #endif
+diff --git a/drivers/video/fbdev/core/bootsplash_load.c b/drivers/video/fbdev/core/bootsplash_load.c
+new file mode 100644
+index 000000000000..fd807571ab7d
+--- /dev/null
++++ b/drivers/video/fbdev/core/bootsplash_load.c
+@@ -0,0 +1,225 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * (Loading and freeing functions)
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#define pr_fmt(fmt) "bootsplash: " fmt
++
++
++#include <linux/bootsplash.h>
++#include <linux/fb.h>
++#include <linux/firmware.h>
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/printk.h>
++#include <linux/types.h>
++#include <linux/vmalloc.h>
++
++#include "bootsplash_internal.h"
++#include "uapi/linux/bootsplash_file.h"
++
++
++
++
++/*
++ * Free all vmalloc()'d resources describing a splash file.
++ */
++void bootsplash_free_file(struct splash_file_priv *fp)
++{
++	if (!fp)
++		return;
++
++	if (fp->pics) {
++		unsigned int i;
++
++		for (i = 0; i < fp->header->num_pics; i++) {
++			struct splash_pic_priv *pp = &fp->pics[i];
++
++			if (pp->blobs)
++				vfree(pp->blobs);
++		}
++
++		vfree(fp->pics);
++	}
++
++	release_firmware(fp->fw);
++	vfree(fp);
++}
++
++
++
++
++/*
++ * Load a splash screen from a "firmware" file.
++ *
++ * Parsing, and sanity checks.
++ */
++#ifdef __BIG_ENDIAN
++	#define BOOTSPLASH_MAGIC BOOTSPLASH_MAGIC_BE
++#else
++	#define BOOTSPLASH_MAGIC BOOTSPLASH_MAGIC_LE
++#endif
++
++struct splash_file_priv *bootsplash_load_firmware(struct device *device,
++						  const char *path)
++{
++	const struct firmware *fw;
++	struct splash_file_priv *fp;
++	unsigned int i;
++	const u8 *walker;
++
++	if (request_firmware(&fw, path, device))
++		return NULL;
++
++	if (fw->size < sizeof(struct splash_file_header)
++	    || memcmp(fw->data, BOOTSPLASH_MAGIC, sizeof(fp->header->id))) {
++		pr_err("Not a bootsplash file.\n");
++
++		release_firmware(fw);
++		return NULL;
++	}
++
++	fp = vzalloc(sizeof(struct splash_file_priv));
++	if (!fp) {
++		release_firmware(fw);
++		return NULL;
++	}
++
++	pr_info("Loading splash file (%li bytes)\n", fw->size);
++
++	fp->fw = fw;
++	fp->header = (struct splash_file_header *)fw->data;
++
++	/* Sanity checks */
++	if (fp->header->version != BOOTSPLASH_VERSION) {
++		pr_err("Loaded v%d file, but we only support version %d\n",
++			fp->header->version,
++			BOOTSPLASH_VERSION);
++
++		goto err;
++	}
++
++	if (fw->size < sizeof(struct splash_file_header)
++		+ fp->header->num_pics
++			* sizeof(struct splash_pic_header)
++		+ fp->header->num_blobs
++			* sizeof(struct splash_blob_header)) {
++		pr_err("File incomplete.\n");
++
++		goto err;
++	}
++
++	/* Read picture headers */
++	if (fp->header->num_pics) {
++		fp->pics = vzalloc(fp->header->num_pics
++				   * sizeof(struct splash_pic_priv));
++		if (!fp->pics)
++			goto err;
++	}
++
++	walker = fw->data + sizeof(struct splash_file_header);
++	for (i = 0; i < fp->header->num_pics; i++) {
++		struct splash_pic_priv *pp = &fp->pics[i];
++		struct splash_pic_header *ph = (void *)walker;
++
++		pr_debug("Picture %u: Size %ux%u\n", i, ph->width, ph->height);
++
++		if (ph->num_blobs < 1) {
++			pr_err("Picture %u: Zero blobs? Aborting load.\n", i);
++			goto err;
++		}
++
++		pp->pic_header = ph;
++		pp->blobs = vzalloc(ph->num_blobs
++					* sizeof(struct splash_blob_priv));
++		if (!pp->blobs)
++			goto err;
++
++		walker += sizeof(struct splash_pic_header);
++	}
++
++	/* Read blob headers */
++	for (i = 0; i < fp->header->num_blobs; i++) {
++		struct splash_blob_header *bh = (void *)walker;
++		struct splash_pic_priv *pp;
++
++		if (walker + sizeof(struct splash_blob_header)
++		    > fw->data + fw->size)
++			goto err;
++
++		walker += sizeof(struct splash_blob_header);
++
++		if (walker + bh->length > fw->data + fw->size)
++			goto err;
++
++		if (bh->picture_id >= fp->header->num_pics)
++			goto nextblob;
++
++		pp = &fp->pics[bh->picture_id];
++
++		pr_debug("Blob %u, pic %u, blobs_loaded %u, num_blobs %u.\n",
++			 i, bh->picture_id,
++			 pp->blobs_loaded, pp->pic_header->num_blobs);
++
++		if (pp->blobs_loaded >= pp->pic_header->num_blobs)
++			goto nextblob;
++
++		switch (bh->type) {
++		case 0:
++			/* Raw 24-bit packed pixels */
++			if (bh->length != pp->pic_header->width
++					* pp->pic_header->height * 3) {
++				pr_err("Blob %u, type 1: Length doesn't match picture.\n",
++				       i);
++
++				goto err;
++			}
++			break;
++		default:
++			pr_warn("Blob %u, unknown type %u.\n", i, bh->type);
++			goto nextblob;
++		}
++
++		pp->blobs[pp->blobs_loaded].blob_header = bh;
++		pp->blobs[pp->blobs_loaded].data = walker;
++		pp->blobs_loaded++;
++
++nextblob:
++		walker += bh->length;
++		if (bh->length % 16)
++			walker += 16 - (bh->length % 16);
++	}
++
++	if (walker != fw->data + fw->size)
++		pr_warn("Trailing data in splash file.\n");
++
++	/* Walk over pictures and ensure all blob slots are filled */
++	for (i = 0; i < fp->header->num_pics; i++) {
++		struct splash_pic_priv *pp = &fp->pics[i];
++
++		if (pp->blobs_loaded != pp->pic_header->num_blobs) {
++			pr_err("Picture %u doesn't have all blob slots filled.\n",
++			       i);
++
++			goto err;
++		}
++	}
++
++	pr_info("Loaded (%ld bytes, %u pics, %u blobs).\n",
++		fw->size,
++		fp->header->num_pics,
++		fp->header->num_blobs);
++
++	return fp;
++
++
++err:
++	bootsplash_free_file(fp);
++	return NULL;
++}
+diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
+index 4d7e0117f653..2ae36949d0e3 100644
+--- a/drivers/video/fbdev/core/bootsplash_render.c
++++ b/drivers/video/fbdev/core/bootsplash_render.c
+@@ -19,6 +19,7 @@
+ #include <linux/types.h>
+ 
+ #include "bootsplash_internal.h"
++#include "uapi/linux/bootsplash_file.h"
+ 
+ 
+ 
+@@ -70,16 +71,69 @@ static inline u32 pack_pixel(const struct fb_var_screeninfo *dst_var,
+ }
+ 
+ 
+-void bootsplash_do_render_background(struct fb_info *info)
++/*
++ * Copy from source and blend into the destination picture.
++ * Currently assumes that the source picture is 24bpp.
++ * Currently assumes that the destination is <= 32bpp.
++ */
++static int splash_convert_to_fb(u8 *dst,
++				const struct fb_var_screeninfo *dst_var,
++				unsigned int dst_stride,
++				unsigned int dst_xoff,
++				unsigned int dst_yoff,
++				const u8 *src,
++				unsigned int src_width,
++				unsigned int src_height)
++{
++	unsigned int x, y;
++	unsigned int src_stride = 3 * src_width; /* Assume 24bpp packed */
++	u32 dst_octpp = dst_var->bits_per_pixel / 8;
++
++	dst_xoff += dst_var->xoffset;
++	dst_yoff += dst_var->yoffset;
++
++	/* Copy with stride and pixel size adjustment */
++	for (y = 0;
++	     y < src_height && y + dst_yoff < dst_var->yres_virtual;
++	     y++) {
++		const u8 *srcline = src + (y * src_stride);
++		u8 *dstline = dst + ((y + dst_yoff) * dst_stride)
++				  + (dst_xoff * dst_octpp);
++
++		for (x = 0;
++		     x < src_width && x + dst_xoff < dst_var->xres_virtual;
++		     x++) {
++			u8 red, green, blue;
++			u32 dstpix;
++
++			/* Read pixel */
++			red = *srcline++;
++			green = *srcline++;
++			blue = *srcline++;
++
++			/* Write pixel */
++			dstpix = pack_pixel(dst_var, red, green, blue);
++			memcpy(dstline, &dstpix, dst_octpp);
++
++			dstline += dst_octpp;
++		}
++	}
++
++	return 0;
++}
++
++
++void bootsplash_do_render_background(struct fb_info *info,
++				     const struct splash_file_priv *fp)
+ {
+ 	unsigned int x, y;
+ 	u32 dstpix;
+ 	u32 dst_octpp = info->var.bits_per_pixel / 8;
+ 
+ 	dstpix = pack_pixel(&info->var,
+-			    0,
+-			    0,
+-			    0);
++			    fp->header->bg_red,
++			    fp->header->bg_green,
++			    fp->header->bg_blue);
+ 
+ 	for (y = 0; y < info->var.yres_virtual; y++) {
+ 		u8 *dstline = info->screen_buffer + (y * info->fix.line_length);
+@@ -91,3 +145,44 @@ void bootsplash_do_render_background(struct fb_info *info)
+ 		}
+ 	}
+ }
++
++
++void bootsplash_do_render_pictures(struct fb_info *info,
++				   const struct splash_file_priv *fp)
++{
++	unsigned int i;
++
++	for (i = 0; i < fp->header->num_pics; i++) {
++		struct splash_blob_priv *bp;
++		struct splash_pic_priv *pp = &fp->pics[i];
++		long dst_xoff, dst_yoff;
++
++		if (pp->blobs_loaded < 1)
++			continue;
++
++		bp = &pp->blobs[0];
++
++		if (!bp || bp->blob_header->type != 0)
++			continue;
++
++		dst_xoff = (info->var.xres - pp->pic_header->width) / 2;
++		dst_yoff = (info->var.yres - pp->pic_header->height) / 2;
++
++		if (dst_xoff < 0
++		    || dst_yoff < 0
++		    || dst_xoff + pp->pic_header->width > info->var.xres
++		    || dst_yoff + pp->pic_header->height > info->var.yres) {
++			pr_info_once("Picture %u is out of bounds at current resolution: %dx%d\n"
++				     "(this will only be printed once every reboot)\n",
++				     i, info->var.xres, info->var.yres);
++
++			continue;
++		}
++
++		/* Draw next splash frame */
++		splash_convert_to_fb(info->screen_buffer, &info->var,
++				info->fix.line_length, dst_xoff, dst_yoff,
++				bp->data,
++				pp->pic_header->width, pp->pic_header->height);
++	}
++}
+diff --git a/include/uapi/linux/bootsplash_file.h b/include/uapi/linux/bootsplash_file.h
+new file mode 100644
+index 000000000000..89dc9cca8f0c
+--- /dev/null
++++ b/include/uapi/linux/bootsplash_file.h
+@@ -0,0 +1,118 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * (File format)
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
++ */
++
++#ifndef __BOOTSPLASH_FILE_H
++#define __BOOTSPLASH_FILE_H
++
++
++#define BOOTSPLASH_VERSION 55561
++
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++
++
++/*
++ * On-disk types
++ *
++ * A splash file consists of:
++ *  - One single 'struct splash_file_header'
++ *  - An array of 'struct splash_pic_header'
++ *  - An array of raw data blocks, each padded to 16 bytes and
++ *    preceded by a 'struct splash_blob_header'
++ *
++ * A single-frame splash may look like this:
++ *
++ * +--------------------+
++ * |                    |
++ * | splash_file_header |
++ * |  -> num_blobs = 1  |
++ * |  -> num_pics = 1   |
++ * |                    |
++ * +--------------------+
++ * |                    |
++ * | splash_pic_header  |
++ * |                    |
++ * +--------------------+
++ * |                    |
++ * | splash_blob_header |
++ * |  -> type = 0       |
++ * |  -> picture_id = 0 |
++ * |                    |
++ * | (raw RGB data)     |
++ * | (pad to 16 bytes)  |
++ * |                    |
++ * +--------------------+
++ *
++ * All multi-byte values are stored on disk in the native format
++ * expected by the system the file will be used on.
++ */
++#define BOOTSPLASH_MAGIC_BE "Linux bootsplash"
++#define BOOTSPLASH_MAGIC_LE "hsalpstoob xuniL"
++
++struct splash_file_header {
++	uint8_t  id[16]; /* "Linux bootsplash" (no trailing NUL) */
++
++	/* Splash file format version to avoid clashes */
++	uint16_t version;
++
++	/* The background color */
++	uint8_t bg_red;
++	uint8_t bg_green;
++	uint8_t bg_blue;
++	uint8_t bg_reserved;
++
++	/*
++	 * Number of pic/blobs so we can allocate memory for internal
++	 * structures ahead of time when reading the file
++	 */
++	uint16_t num_blobs;
++	uint8_t num_pics;
++
++	uint8_t padding[103];
++} __attribute__((__packed__));
++
++
++struct splash_pic_header {
++	uint16_t width;
++	uint16_t height;
++
++	/*
++	 * Number of data packages associated with this picture.
++	 * Currently, the only use for more than 1 is for animations.
++	 */
++	uint8_t num_blobs;
++
++	uint8_t padding[27];
++} __attribute__((__packed__));
++
++
++struct splash_blob_header {
++	/* Length of the data block in bytes. */
++	uint32_t length;
++
++	/*
++	 * Type of the contents.
++	 *  0 - Raw RGB data.
++	 */
++	uint16_t type;
++
++	/*
++	 * Picture this blob is associated with.
++	 * Blobs will be added to a picture in the order they are
++	 * found in the file.
++	 */
++	uint8_t picture_id;
++
++	uint8_t padding[9];
++} __attribute__((__packed__));
++
++#endif
 -- 
-2.9.3
+2.12.3
 

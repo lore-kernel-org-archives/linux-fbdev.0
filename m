@@ -1,50 +1,240 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 01 Dec 2017 12:06:50 +0000
-Subject: [PATCH v5 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
-Message-Id: <20171201120651.29633-4-enric.balletbo@collabora.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 13 Dec 2017 19:47:46 +0000
+Subject: [RFC PATCH v2 04/13] bootsplash: Add corner positioning
+Message-Id: <20171213194755.3409-5-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171201120651.29633-1-enric.balletbo@collabora.com>
-In-Reply-To: <20171201120651.29633-1-enric.balletbo@collabora.com>
+References: <20171213194755.3409-1-mstaudt@suse.de>
+In-Reply-To: <20171213194755.3409-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, mstaudt@suse.de, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-For veyron the binding should provide both PWM timings, the delay between
-you enable the PWM and set the enable signal, and the delay between you
-disable the PWM signal and clear the enable signal. Update the binding
-accordingly, in this case the panels connected to the veyron boards have
-a symmetric power sequence, hence the same value is used.
+This allows showing multiple logos, each in its own position,
+relative to the eight screen corners.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Signed-off-by: Max Staudt <mstaudt@suse.de>
 ---
-Changes since v4:
- - Rebased on top of mainline.
-Changes since v3:
- - Use new -ms names for proprieties.
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch to fix current binding on veyron.
+ drivers/video/fbdev/core/bootsplash_render.c | 136 ++++++++++++++++++++++++++-
+ include/uapi/linux/bootsplash_file.h         |  45 ++++++++-
+ 2 files changed, 178 insertions(+), 3 deletions(-)
 
- arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-index d752a31..5a8c7f3 100644
---- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-+++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
-@@ -96,7 +96,8 @@
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&bl_en>;
- 		pwms = <&pwm0 0 1000000 0>;
--		pwm-delay-us = <10000>;
-+		post-pwm-on-delay-ms = <10>;
-+		pwm-off-delay-ms = <10>;
- 	};
+diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
+index 8c09c306ff67..07e3a4eab811 100644
+--- a/drivers/video/fbdev/core/bootsplash_render.c
++++ b/drivers/video/fbdev/core/bootsplash_render.c
+@@ -155,6 +155,7 @@ void bootsplash_do_render_pictures(struct fb_info *info,
+ 	for (i = 0; i < fp->header->num_pics; i++) {
+ 		struct splash_blob_priv *bp;
+ 		struct splash_pic_priv *pp = &fp->pics[i];
++		const struct splash_pic_header *ph = pp->pic_header;
+ 		long dst_xoff, dst_yoff;
  
- 	gpio-charger {
+ 		if (pp->blobs_loaded < 1)
+@@ -165,8 +166,139 @@ void bootsplash_do_render_pictures(struct fb_info *info,
+ 		if (!bp || bp->blob_header->type != 0)
+ 			continue;
+ 
+-		dst_xoff = (info->var.xres - pp->pic_header->width) / 2;
+-		dst_yoff = (info->var.yres - pp->pic_header->height) / 2;
++		switch (ph->position) {
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_LEFT:
++			dst_xoff = 0;
++			dst_yoff = 0;
++
++			dst_xoff += ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = 0;
++
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = 0;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_LEFT:
++			dst_xoff = 0 + ph->position_offset;
++			dst_yoff = info->var.yres - pp->pic_header->height
++						  - ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_LEFT:
++			dst_xoff = 0;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			break;
++
++		case SPLASH_CORNER_TOP_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_TOP:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_TOP_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			break;
++
++		default:
++			/* As a fallback, center the picture. */
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++			break;
++		}
+ 
+ 		if (dst_xoff < 0
+ 		    || dst_yoff < 0
+diff --git a/include/uapi/linux/bootsplash_file.h b/include/uapi/linux/bootsplash_file.h
+index 89dc9cca8f0c..71cedcc68933 100644
+--- a/include/uapi/linux/bootsplash_file.h
++++ b/include/uapi/linux/bootsplash_file.h
+@@ -91,7 +91,32 @@ struct splash_pic_header {
+ 	 */
+ 	uint8_t num_blobs;
+ 
+-	uint8_t padding[27];
++	/*
++	 * Corner to move the picture to / from.
++	 *  0x00 - Top left
++	 *  0x01 - Top
++	 *  0x02 - Top right
++	 *  0x03 - Right
++	 *  0x04 - Bottom right
++	 *  0x05 - Bottom
++	 *  0x06 - Bottom left
++	 *  0x07 - Left
++	 *
++	 * Flags:
++	 *  0x10 - Calculate offset from the corner towards the center,
++	 *         rather than from the center towards the corner
++	 */
++	uint8_t position;
++
++	/*
++	 * Pixel offset from the selected position.
++	 * Example: If the picture is in the top right corner, it will
++	 *          be placed position_offset pixels from the top and
++	 *          position_offset pixels from the right margin.
++	 */
++	uint16_t position_offset;
++
++	uint8_t padding[24];
+ } __attribute__((__packed__));
+ 
+ 
+@@ -115,4 +140,22 @@ struct splash_blob_header {
+ 	uint8_t padding[9];
+ } __attribute__((__packed__));
+ 
++
++
++
++/*
++ * Enums for on-disk types
++ */
++enum splash_position {
++	SPLASH_CORNER_TOP_LEFT = 0,
++	SPLASH_CORNER_TOP = 1,
++	SPLASH_CORNER_TOP_RIGHT = 2,
++	SPLASH_CORNER_RIGHT = 3,
++	SPLASH_CORNER_BOTTOM_RIGHT = 4,
++	SPLASH_CORNER_BOTTOM = 5,
++	SPLASH_CORNER_BOTTOM_LEFT = 6,
++	SPLASH_CORNER_LEFT = 7,
++	SPLASH_POS_FLAG_CORNER = 0x10,
++};
++
+ #endif
 -- 
-2.9.3
+2.12.3
 

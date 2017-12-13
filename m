@@ -1,703 +1,248 @@
 From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 13 Dec 2017 19:47:44 +0000
-Subject: [RFC PATCH v2 02/13] bootsplash: Add file reading and picture rendering
-Message-Id: <20171213194755.3409-3-mstaudt@suse.de>
+Date: Wed, 13 Dec 2017 19:47:52 +0000
+Subject: [RFC PATCH v2 10/13] Documentation: Add bootsplash main documentation
+Message-Id: <20171213194755.3409-11-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
 In-Reply-To: <20171213194755.3409-1-mstaudt@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
 To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
 Cc: michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, mstaudt@suse.de, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-Load logo(s) from a file and render them in the center of the screen.
-
-This removes the "black screen" functionality, which can now be emulated
-by providing a splash file with no pictures and a black background.
-
 Signed-off-by: Max Staudt <mstaudt@suse.de>
 ---
- MAINTAINERS                                    |   1 +
- drivers/video/fbdev/core/Makefile              |   2 +-
- drivers/video/fbdev/core/bootsplash.c          |  36 +++-
- drivers/video/fbdev/core/bootsplash_internal.h |  45 ++++-
- drivers/video/fbdev/core/bootsplash_load.c     | 225 +++++++++++++++++++++++++
- drivers/video/fbdev/core/bootsplash_render.c   | 103 ++++++++++-
- include/uapi/linux/bootsplash_file.h           | 118 +++++++++++++
- 7 files changed, 522 insertions(+), 8 deletions(-)
- create mode 100644 drivers/video/fbdev/core/bootsplash_load.c
- create mode 100644 include/uapi/linux/bootsplash_file.h
+ .../ABI/testing/sysfs-platform-bootsplash          |  11 ++
+ Documentation/bootsplash.rst                       | 177 +++++++++++++++++=
+++++
+ MAINTAINERS                                        |   2 +
+ 3 files changed, 190 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-platform-bootsplash
+ create mode 100644 Documentation/bootsplash.rst
 
+diff --git a/Documentation/ABI/testing/sysfs-platform-bootsplash b/Document=
+ation/ABI/testing/sysfs-platform-bootsplash
+new file mode 100644
+index 000000000000..742c7b035ded
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-platform-bootsplash
+@@ -0,0 +1,11 @@
++What:		/sys/devices/platform/bootsplash.0/enabled
++Date:		Oct 2017
++KernelVersion:	4.14
++Contact:	Max Staudt <mstaudt@suse.de>
++Description:
++		Can be set and read.
++
++		0: Splash is disabled.
++		1: Splash is shown whenever fbcon would show a text console
++		   (i.e. no graphical application is running), and a splash
++		   file is loaded.
+diff --git a/Documentation/bootsplash.rst b/Documentation/bootsplash.rst
+new file mode 100644
+index 000000000000..8bd6805af6bf
+--- /dev/null
++++ b/Documentation/bootsplash.rst
+@@ -0,0 +1,177 @@
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++The Linux bootsplash
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++:Date: November, 2017
++:Author: Max Staudt <mstaudt@suse.de>
++
++
++The Linux bootsplash is a graphical replacement for the '``quiet``' boot
++option, typically showing a logo and a spinner animation as the system sta=
+rts.
++
++Currently, it is a part of the Framebuffer Console support, and can be fou=
+nd
++as ``CONFIG_BOOTSPLASH`` in the kernel configuration. This means that as l=
+ong
++as it is enabled, it hijacks fbcon's output and draws a splash screen inst=
+ead.
++
++Purely compiling in the bootsplash will not render it functional - to actu=
+ally
++render a splash, you will also need a splash theme file. See the example
++utility and script in ``tools/bootsplash`` for a live demo.
++
++
++
++Motivation
++=3D=3D=3D=3D=3D
++
++- The '``quiet``' boot option only suppresses most messages during boot, b=
+ut
++  errors are still shown.
++
++- A user space implementation can only show a logo once user space has been
++  initialized far enough to allow this. A kernel splash can display a spla=
+sh
++  immediately as soon as fbcon can be displayed.
++
++- Implementing a splash screen in user space (e.g. Plymouth) is problematic
++  due to resource conflicts.
++
++  For example, if Plymouth is keeping ``/dev/fb0`` (provided via vesafb/ef=
+ifb)
++  open, then most DRM drivers can't replace it because the address space is
++  still busy - thus leading to a VRAM reservation error.
++
++  See: https://bugzilla.opensuse.org/show_bug.cgi?id=980750
++
++
++
++Command line arguments
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++``bootsplash.bootfile``
++  Which file in the initrd to load.
++  Default: none, i.e. a non-functional splash, falling back to showing tex=
+t.
++
++
++
++sysfs run-time configuration
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++``/sys/devices/platform/bootsplash.0/enabled``
++  Enable/disable the bootsplash.
++  The system boots with this set to 1, but will not show a splash unless
++  a splash theme file is also loaded.
++
++
++
++Kconfig
++=3D=3D=3D+
++``BOOTSPLASH``
++  Whether to compile in bootsplash support
++  (depends on fbcon compiled in, i.e. ``FRAMEBUFFER_CONSOLE=3Dy``)
++
++
++
++Bootsplash file format
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++A file specified in the kernel configuration as ``CONFIG_BOOTSPLASH_FILE``
++or specified on the command line as ``bootsplash.bootfile`` will be loaded
++and displayed as soon as fbcon is initialized.
++
++
++Main blocks
++-----------
++
++There are 3 main blocks in each file:
++
++  - one File header
++  -   n Picture headers
++  -   m (Blob header + payload) blocks
++
++
++Structures
++----------
++
++The on-disk structures are defined in
++``drivers/video/fbdev/core/bootsplash_file.h`` and represent these blocks:
++
++  - ``struct splash_file_header``
++
++    Represents the file header, with splash-wide information including:
++
++      - The magic string "``Linux bootsplash``" on big-endian platforms
++        (the reverse on little endian)
++      - The file format version (for incompatible updates, hopefully never)
++      - The background color
++      - Number of picture and blob blocks
++      - Animation speed (we only allow one delay for all animations)
++
++    The file header is followed by the first picture header.
++
++
++  - ``struct splash_picture_header``
++
++    Represents an object (picture) drawn on screen, including its immutable
++    properties:
++      - Width, height
++      - Positioning relative to screen corners or in the center
++      - Animation, if any
++      - Animation type
++      - Number of blobs
++
++    The picture header is followed by another picture header, up until n
++    picture headers (as defined in the file header) have been read. Then,
++    the (blob header, payload) pairs follow.
++
++
++  - ``struct splash_blob_header``
++    (followed by payload)
++
++    Represents one raw data stream. So far, only picture data is defined.
++
++    The blob header is followed by a payload, then padding to n*16 bytes,
++    then (if further blobs are defined in the file header) a further blob
++    header.
++
++
++Alignment
++---------
++
++The bootsplash file is designed to be loaded into memory as-is.
++
++All structures are a multiple of 16 bytes long, all elements therein are
++aligned to multiples of their length, and the payloads are always padded
++up to multiples of 16 bytes. This is to allow aligned accesses in all
++cases while still simply mapping the structures over an in-memory copy of
++the bootsplash file.
++
++
++Further information
++-------------------
++
++Please see ``drivers/video/fbdev/core/bootsplash_file.h`` for further
++details and possible values in the file.
++
++
++
++Hooks - how the bootsplash is integrated
++=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
++
++``drivers/video/fbdev/core/fbcon.c``
++  ``fbcon_init()`` calls ``bootsplash_init()``, which loads the default
++  bootsplash file or the one specified on the kernel command line.
++
++  ``fbcon_switch()`` draws the bootsplash when it's active, and is also
++  one of the callers of ``set_blitting_type()``.
++
++  ``set_blitting_type()`` calls ``fbcon_set_dummyops()`` when the
++  bootsplash is active, overriding the text rendering functions.
++
++  ``fbcon_cursor()`` will call ``bootsplash_disable()`` when an oops is
++  being printed in order to make a kernel panic visible.
++
++``drivers/video/fbdev/core/dummyblit.c``
++  This contains the dummy text rendering functions used to suppress text
++  output while the bootsplash is shown.
++
++``drivers/tty/vt/keyboard.c``
++  ``kbd_keycode()`` can call ``bootsplash_disable()`` when the user
++  presses ESC or F1-F12 (changing VT). This is to provide a built-in way
++  of disabling the splash manually at any time.
 diff --git a/MAINTAINERS b/MAINTAINERS
-index b5633b56391e..5c237445761e 100644
+index 5c237445761e..7ffac272434e 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -2712,6 +2712,7 @@ S:	Maintained
+@@ -2709,6 +2709,8 @@ BOOTSPLASH
+ M:	Max Staudt <mstaudt@suse.de>
+ L:	linux-fbdev@vger.kernel.org
+ S:	Maintained
++F:	Documentation/ABI/testing/sysfs-platform-bootsplash
++F:	Documentation/bootsplash.rst
  F:	drivers/video/fbdev/core/bootsplash*.*
  F:	drivers/video/fbdev/core/dummycon.c
  F:	include/linux/bootsplash.h
-+F:	include/uapi/linux/bootsplash_file.h
- 
- BPF (Safe dynamic programs and tools)
- M:	Alexei Starovoitov <ast@kernel.org>
-diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
-index 66895321928e..6a8d1bab8a01 100644
---- a/drivers/video/fbdev/core/Makefile
-+++ b/drivers/video/fbdev/core/Makefile
-@@ -31,4 +31,4 @@ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
- obj-$(CONFIG_FB_DDC)           += fb_ddc.o
- 
- obj-$(CONFIG_BOOTSPLASH)       += bootsplash.o bootsplash_render.o \
--                                  dummyblit.o
-+                                  bootsplash_load.o dummyblit.o
-diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
-index e449755af268..843c5400fefc 100644
---- a/drivers/video/fbdev/core/bootsplash.c
-+++ b/drivers/video/fbdev/core/bootsplash.c
-@@ -32,6 +32,7 @@
- #include <linux/workqueue.h>
- 
- #include "bootsplash_internal.h"
-+#include "uapi/linux/bootsplash_file.h"
- 
- 
- /*
-@@ -102,10 +103,17 @@ static bool is_fb_compatible(const struct fb_info *info)
-  */
- void bootsplash_render_full(struct fb_info *info)
- {
-+	mutex_lock(&splash_state.data_lock);
-+
- 	if (!is_fb_compatible(info))
--		return;
-+		goto out;
-+
-+	bootsplash_do_render_background(info, splash_state.file);
-+
-+	bootsplash_do_render_pictures(info, splash_state.file);
- 
--	bootsplash_do_render_background(info);
-+out:
-+	mutex_unlock(&splash_state.data_lock);
- }
- 
- 
-@@ -116,6 +124,7 @@ bool bootsplash_would_render_now(void)
- {
- 	return !oops_in_progress
- 		&& !console_blanked
-+		&& splash_state.file
- 		&& bootsplash_is_enabled();
- }
- 
-@@ -252,6 +261,7 @@ static struct platform_driver splash_driver = {
- void bootsplash_init(void)
- {
- 	int ret;
-+	struct splash_file_priv *fp;
- 
- 	/* Initialized already? */
- 	if (splash_state.splash_device)
-@@ -280,8 +290,26 @@ void bootsplash_init(void)
- 	}
- 
- 
-+	mutex_init(&splash_state.data_lock);
-+	set_bit(0, &splash_state.enabled);
-+
- 	INIT_WORK(&splash_state.work_redraw_vc, splash_callback_redraw_vc);
- 
-+
-+	if (!splash_state.bootfile || !strlen(splash_state.bootfile))
-+		return;
-+
-+	fp = bootsplash_load_firmware(&splash_state.splash_device->dev,
-+				      splash_state.bootfile);
-+
-+	if (!fp)
-+		goto err;
-+
-+	mutex_lock(&splash_state.data_lock);
-+	splash_state.splash_fb = NULL;
-+	splash_state.file = fp;
-+	mutex_unlock(&splash_state.data_lock);
-+
- 	return;
- 
- err_device:
-@@ -292,3 +320,7 @@ void bootsplash_init(void)
- err:
- 	pr_err("Failed to initialize.\n");
- }
-+
-+
-+module_param_named(bootfile, splash_state.bootfile, charp, 0444);
-+MODULE_PARM_DESC(bootfile, "Bootsplash file to load on boot");
-diff --git a/drivers/video/fbdev/core/bootsplash_internal.h b/drivers/video/fbdev/core/bootsplash_internal.h
-index b11da5cb90bf..71e2a27ac0b8 100644
---- a/drivers/video/fbdev/core/bootsplash_internal.h
-+++ b/drivers/video/fbdev/core/bootsplash_internal.h
-@@ -15,15 +15,43 @@
- 
- #include <linux/types.h>
- #include <linux/fb.h>
-+#include <linux/firmware.h>
- #include <linux/kernel.h>
- #include <linux/mutex.h>
- #include <linux/spinlock.h>
- 
-+#include "uapi/linux/bootsplash_file.h"
-+
- 
- /*
-  * Runtime types
-  */
-+struct splash_blob_priv {
-+	struct splash_blob_header *blob_header;
-+	const void *data;
-+};
-+
-+
-+struct splash_pic_priv {
-+	const struct splash_pic_header *pic_header;
-+
-+	struct splash_blob_priv *blobs;
-+	u16 blobs_loaded;
-+};
-+
-+
-+struct splash_file_priv {
-+	const struct firmware *fw;
-+	const struct splash_file_header *header;
-+
-+	struct splash_pic_priv *pics;
-+};
-+
-+
- struct splash_priv {
-+	/* Bootup and runtime state */
-+	char *bootfile;
-+
- 	/*
- 	 * Enabled/disabled state, to be used with atomic bit operations.
- 	 *   Bit 0: 0 = Splash hidden
-@@ -43,6 +71,13 @@ struct splash_priv {
- 	struct platform_device *splash_device;
- 
- 	struct work_struct work_redraw_vc;
-+
-+	/* Splash data structures including lock for everything below */
-+	struct mutex data_lock;
-+
-+	struct fb_info *splash_fb;
-+
-+	struct splash_file_priv *file;
- };
- 
- 
-@@ -50,6 +85,14 @@ struct splash_priv {
- /*
-  * Rendering functions
-  */
--void bootsplash_do_render_background(struct fb_info *info);
-+void bootsplash_do_render_background(struct fb_info *info,
-+				     const struct splash_file_priv *fp);
-+void bootsplash_do_render_pictures(struct fb_info *info,
-+				   const struct splash_file_priv *fp);
-+
-+
-+void bootsplash_free_file(struct splash_file_priv *fp);
-+struct splash_file_priv *bootsplash_load_firmware(struct device *device,
-+						  const char *path);
- 
- #endif
-diff --git a/drivers/video/fbdev/core/bootsplash_load.c b/drivers/video/fbdev/core/bootsplash_load.c
-new file mode 100644
-index 000000000000..fd807571ab7d
---- /dev/null
-+++ b/drivers/video/fbdev/core/bootsplash_load.c
-@@ -0,0 +1,225 @@
-+/*
-+ * Kernel based bootsplash.
-+ *
-+ * (Loading and freeing functions)
-+ *
-+ * Authors:
-+ * Max Staudt <mstaudt@suse.de>
-+ *
-+ * SPDX-License-Identifier: GPL-2.0
-+ */
-+
-+#define pr_fmt(fmt) "bootsplash: " fmt
-+
-+
-+#include <linux/bootsplash.h>
-+#include <linux/fb.h>
-+#include <linux/firmware.h>
-+#include <linux/kernel.h>
-+#include <linux/mutex.h>
-+#include <linux/printk.h>
-+#include <linux/types.h>
-+#include <linux/vmalloc.h>
-+
-+#include "bootsplash_internal.h"
-+#include "uapi/linux/bootsplash_file.h"
-+
-+
-+
-+
-+/*
-+ * Free all vmalloc()'d resources describing a splash file.
-+ */
-+void bootsplash_free_file(struct splash_file_priv *fp)
-+{
-+	if (!fp)
-+		return;
-+
-+	if (fp->pics) {
-+		unsigned int i;
-+
-+		for (i = 0; i < fp->header->num_pics; i++) {
-+			struct splash_pic_priv *pp = &fp->pics[i];
-+
-+			if (pp->blobs)
-+				vfree(pp->blobs);
-+		}
-+
-+		vfree(fp->pics);
-+	}
-+
-+	release_firmware(fp->fw);
-+	vfree(fp);
-+}
-+
-+
-+
-+
-+/*
-+ * Load a splash screen from a "firmware" file.
-+ *
-+ * Parsing, and sanity checks.
-+ */
-+#ifdef __BIG_ENDIAN
-+	#define BOOTSPLASH_MAGIC BOOTSPLASH_MAGIC_BE
-+#else
-+	#define BOOTSPLASH_MAGIC BOOTSPLASH_MAGIC_LE
-+#endif
-+
-+struct splash_file_priv *bootsplash_load_firmware(struct device *device,
-+						  const char *path)
-+{
-+	const struct firmware *fw;
-+	struct splash_file_priv *fp;
-+	unsigned int i;
-+	const u8 *walker;
-+
-+	if (request_firmware(&fw, path, device))
-+		return NULL;
-+
-+	if (fw->size < sizeof(struct splash_file_header)
-+	    || memcmp(fw->data, BOOTSPLASH_MAGIC, sizeof(fp->header->id))) {
-+		pr_err("Not a bootsplash file.\n");
-+
-+		release_firmware(fw);
-+		return NULL;
-+	}
-+
-+	fp = vzalloc(sizeof(struct splash_file_priv));
-+	if (!fp) {
-+		release_firmware(fw);
-+		return NULL;
-+	}
-+
-+	pr_info("Loading splash file (%li bytes)\n", fw->size);
-+
-+	fp->fw = fw;
-+	fp->header = (struct splash_file_header *)fw->data;
-+
-+	/* Sanity checks */
-+	if (fp->header->version != BOOTSPLASH_VERSION) {
-+		pr_err("Loaded v%d file, but we only support version %d\n",
-+			fp->header->version,
-+			BOOTSPLASH_VERSION);
-+
-+		goto err;
-+	}
-+
-+	if (fw->size < sizeof(struct splash_file_header)
-+		+ fp->header->num_pics
-+			* sizeof(struct splash_pic_header)
-+		+ fp->header->num_blobs
-+			* sizeof(struct splash_blob_header)) {
-+		pr_err("File incomplete.\n");
-+
-+		goto err;
-+	}
-+
-+	/* Read picture headers */
-+	if (fp->header->num_pics) {
-+		fp->pics = vzalloc(fp->header->num_pics
-+				   * sizeof(struct splash_pic_priv));
-+		if (!fp->pics)
-+			goto err;
-+	}
-+
-+	walker = fw->data + sizeof(struct splash_file_header);
-+	for (i = 0; i < fp->header->num_pics; i++) {
-+		struct splash_pic_priv *pp = &fp->pics[i];
-+		struct splash_pic_header *ph = (void *)walker;
-+
-+		pr_debug("Picture %u: Size %ux%u\n", i, ph->width, ph->height);
-+
-+		if (ph->num_blobs < 1) {
-+			pr_err("Picture %u: Zero blobs? Aborting load.\n", i);
-+			goto err;
-+		}
-+
-+		pp->pic_header = ph;
-+		pp->blobs = vzalloc(ph->num_blobs
-+					* sizeof(struct splash_blob_priv));
-+		if (!pp->blobs)
-+			goto err;
-+
-+		walker += sizeof(struct splash_pic_header);
-+	}
-+
-+	/* Read blob headers */
-+	for (i = 0; i < fp->header->num_blobs; i++) {
-+		struct splash_blob_header *bh = (void *)walker;
-+		struct splash_pic_priv *pp;
-+
-+		if (walker + sizeof(struct splash_blob_header)
-+		    > fw->data + fw->size)
-+			goto err;
-+
-+		walker += sizeof(struct splash_blob_header);
-+
-+		if (walker + bh->length > fw->data + fw->size)
-+			goto err;
-+
-+		if (bh->picture_id >= fp->header->num_pics)
-+			goto nextblob;
-+
-+		pp = &fp->pics[bh->picture_id];
-+
-+		pr_debug("Blob %u, pic %u, blobs_loaded %u, num_blobs %u.\n",
-+			 i, bh->picture_id,
-+			 pp->blobs_loaded, pp->pic_header->num_blobs);
-+
-+		if (pp->blobs_loaded >= pp->pic_header->num_blobs)
-+			goto nextblob;
-+
-+		switch (bh->type) {
-+		case 0:
-+			/* Raw 24-bit packed pixels */
-+			if (bh->length != pp->pic_header->width
-+					* pp->pic_header->height * 3) {
-+				pr_err("Blob %u, type 1: Length doesn't match picture.\n",
-+				       i);
-+
-+				goto err;
-+			}
-+			break;
-+		default:
-+			pr_warn("Blob %u, unknown type %u.\n", i, bh->type);
-+			goto nextblob;
-+		}
-+
-+		pp->blobs[pp->blobs_loaded].blob_header = bh;
-+		pp->blobs[pp->blobs_loaded].data = walker;
-+		pp->blobs_loaded++;
-+
-+nextblob:
-+		walker += bh->length;
-+		if (bh->length % 16)
-+			walker += 16 - (bh->length % 16);
-+	}
-+
-+	if (walker != fw->data + fw->size)
-+		pr_warn("Trailing data in splash file.\n");
-+
-+	/* Walk over pictures and ensure all blob slots are filled */
-+	for (i = 0; i < fp->header->num_pics; i++) {
-+		struct splash_pic_priv *pp = &fp->pics[i];
-+
-+		if (pp->blobs_loaded != pp->pic_header->num_blobs) {
-+			pr_err("Picture %u doesn't have all blob slots filled.\n",
-+			       i);
-+
-+			goto err;
-+		}
-+	}
-+
-+	pr_info("Loaded (%ld bytes, %u pics, %u blobs).\n",
-+		fw->size,
-+		fp->header->num_pics,
-+		fp->header->num_blobs);
-+
-+	return fp;
-+
-+
-+err:
-+	bootsplash_free_file(fp);
-+	return NULL;
-+}
-diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
-index 4d7e0117f653..2ae36949d0e3 100644
---- a/drivers/video/fbdev/core/bootsplash_render.c
-+++ b/drivers/video/fbdev/core/bootsplash_render.c
-@@ -19,6 +19,7 @@
- #include <linux/types.h>
- 
- #include "bootsplash_internal.h"
-+#include "uapi/linux/bootsplash_file.h"
- 
- 
- 
-@@ -70,16 +71,69 @@ static inline u32 pack_pixel(const struct fb_var_screeninfo *dst_var,
- }
- 
- 
--void bootsplash_do_render_background(struct fb_info *info)
-+/*
-+ * Copy from source and blend into the destination picture.
-+ * Currently assumes that the source picture is 24bpp.
-+ * Currently assumes that the destination is <= 32bpp.
-+ */
-+static int splash_convert_to_fb(u8 *dst,
-+				const struct fb_var_screeninfo *dst_var,
-+				unsigned int dst_stride,
-+				unsigned int dst_xoff,
-+				unsigned int dst_yoff,
-+				const u8 *src,
-+				unsigned int src_width,
-+				unsigned int src_height)
-+{
-+	unsigned int x, y;
-+	unsigned int src_stride = 3 * src_width; /* Assume 24bpp packed */
-+	u32 dst_octpp = dst_var->bits_per_pixel / 8;
-+
-+	dst_xoff += dst_var->xoffset;
-+	dst_yoff += dst_var->yoffset;
-+
-+	/* Copy with stride and pixel size adjustment */
-+	for (y = 0;
-+	     y < src_height && y + dst_yoff < dst_var->yres_virtual;
-+	     y++) {
-+		const u8 *srcline = src + (y * src_stride);
-+		u8 *dstline = dst + ((y + dst_yoff) * dst_stride)
-+				  + (dst_xoff * dst_octpp);
-+
-+		for (x = 0;
-+		     x < src_width && x + dst_xoff < dst_var->xres_virtual;
-+		     x++) {
-+			u8 red, green, blue;
-+			u32 dstpix;
-+
-+			/* Read pixel */
-+			red = *srcline++;
-+			green = *srcline++;
-+			blue = *srcline++;
-+
-+			/* Write pixel */
-+			dstpix = pack_pixel(dst_var, red, green, blue);
-+			memcpy(dstline, &dstpix, dst_octpp);
-+
-+			dstline += dst_octpp;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+
-+void bootsplash_do_render_background(struct fb_info *info,
-+				     const struct splash_file_priv *fp)
- {
- 	unsigned int x, y;
- 	u32 dstpix;
- 	u32 dst_octpp = info->var.bits_per_pixel / 8;
- 
- 	dstpix = pack_pixel(&info->var,
--			    0,
--			    0,
--			    0);
-+			    fp->header->bg_red,
-+			    fp->header->bg_green,
-+			    fp->header->bg_blue);
- 
- 	for (y = 0; y < info->var.yres_virtual; y++) {
- 		u8 *dstline = info->screen_buffer + (y * info->fix.line_length);
-@@ -91,3 +145,44 @@ void bootsplash_do_render_background(struct fb_info *info)
- 		}
- 	}
- }
-+
-+
-+void bootsplash_do_render_pictures(struct fb_info *info,
-+				   const struct splash_file_priv *fp)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < fp->header->num_pics; i++) {
-+		struct splash_blob_priv *bp;
-+		struct splash_pic_priv *pp = &fp->pics[i];
-+		long dst_xoff, dst_yoff;
-+
-+		if (pp->blobs_loaded < 1)
-+			continue;
-+
-+		bp = &pp->blobs[0];
-+
-+		if (!bp || bp->blob_header->type != 0)
-+			continue;
-+
-+		dst_xoff = (info->var.xres - pp->pic_header->width) / 2;
-+		dst_yoff = (info->var.yres - pp->pic_header->height) / 2;
-+
-+		if (dst_xoff < 0
-+		    || dst_yoff < 0
-+		    || dst_xoff + pp->pic_header->width > info->var.xres
-+		    || dst_yoff + pp->pic_header->height > info->var.yres) {
-+			pr_info_once("Picture %u is out of bounds at current resolution: %dx%d\n"
-+				     "(this will only be printed once every reboot)\n",
-+				     i, info->var.xres, info->var.yres);
-+
-+			continue;
-+		}
-+
-+		/* Draw next splash frame */
-+		splash_convert_to_fb(info->screen_buffer, &info->var,
-+				info->fix.line_length, dst_xoff, dst_yoff,
-+				bp->data,
-+				pp->pic_header->width, pp->pic_header->height);
-+	}
-+}
-diff --git a/include/uapi/linux/bootsplash_file.h b/include/uapi/linux/bootsplash_file.h
-new file mode 100644
-index 000000000000..89dc9cca8f0c
---- /dev/null
-+++ b/include/uapi/linux/bootsplash_file.h
-@@ -0,0 +1,118 @@
-+/*
-+ * Kernel based bootsplash.
-+ *
-+ * (File format)
-+ *
-+ * Authors:
-+ * Max Staudt <mstaudt@suse.de>
-+ *
-+ * SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note
-+ */
-+
-+#ifndef __BOOTSPLASH_FILE_H
-+#define __BOOTSPLASH_FILE_H
-+
-+
-+#define BOOTSPLASH_VERSION 55561
-+
-+
-+#include <linux/kernel.h>
-+#include <linux/types.h>
-+
-+
-+/*
-+ * On-disk types
-+ *
-+ * A splash file consists of:
-+ *  - One single 'struct splash_file_header'
-+ *  - An array of 'struct splash_pic_header'
-+ *  - An array of raw data blocks, each padded to 16 bytes and
-+ *    preceded by a 'struct splash_blob_header'
-+ *
-+ * A single-frame splash may look like this:
-+ *
-+ * +--------------------+
-+ * |                    |
-+ * | splash_file_header |
-+ * |  -> num_blobs = 1  |
-+ * |  -> num_pics = 1   |
-+ * |                    |
-+ * +--------------------+
-+ * |                    |
-+ * | splash_pic_header  |
-+ * |                    |
-+ * +--------------------+
-+ * |                    |
-+ * | splash_blob_header |
-+ * |  -> type = 0       |
-+ * |  -> picture_id = 0 |
-+ * |                    |
-+ * | (raw RGB data)     |
-+ * | (pad to 16 bytes)  |
-+ * |                    |
-+ * +--------------------+
-+ *
-+ * All multi-byte values are stored on disk in the native format
-+ * expected by the system the file will be used on.
-+ */
-+#define BOOTSPLASH_MAGIC_BE "Linux bootsplash"
-+#define BOOTSPLASH_MAGIC_LE "hsalpstoob xuniL"
-+
-+struct splash_file_header {
-+	uint8_t  id[16]; /* "Linux bootsplash" (no trailing NUL) */
-+
-+	/* Splash file format version to avoid clashes */
-+	uint16_t version;
-+
-+	/* The background color */
-+	uint8_t bg_red;
-+	uint8_t bg_green;
-+	uint8_t bg_blue;
-+	uint8_t bg_reserved;
-+
-+	/*
-+	 * Number of pic/blobs so we can allocate memory for internal
-+	 * structures ahead of time when reading the file
-+	 */
-+	uint16_t num_blobs;
-+	uint8_t num_pics;
-+
-+	uint8_t padding[103];
-+} __attribute__((__packed__));
-+
-+
-+struct splash_pic_header {
-+	uint16_t width;
-+	uint16_t height;
-+
-+	/*
-+	 * Number of data packages associated with this picture.
-+	 * Currently, the only use for more than 1 is for animations.
-+	 */
-+	uint8_t num_blobs;
-+
-+	uint8_t padding[27];
-+} __attribute__((__packed__));
-+
-+
-+struct splash_blob_header {
-+	/* Length of the data block in bytes. */
-+	uint32_t length;
-+
-+	/*
-+	 * Type of the contents.
-+	 *  0 - Raw RGB data.
-+	 */
-+	uint16_t type;
-+
-+	/*
-+	 * Picture this blob is associated with.
-+	 * Blobs will be added to a picture in the order they are
-+	 * found in the file.
-+	 */
-+	uint8_t picture_id;
-+
-+	uint8_t padding[9];
-+} __attribute__((__packed__));
-+
-+#endif
--- 
+--=20
 2.12.3
 

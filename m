@@ -1,380 +1,828 @@
-From: kgunda@codeaurora.org
-Date: Mon, 11 Dec 2017 09:40:24 +0000
-Subject: Re: [PATCH V1 2/4] qcom: spmi-wled: Add support for short circuit handling
-Message-Id: <f1295a358459da5ad0e680657f3d7457@codeaurora.org>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 13 Dec 2017 19:47:43 +0000
+Subject: [RFC PATCH v2 01/13] bootsplash: Initial implementation showing black screen
+Message-Id: <20171213194755.3409-2-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1510834717-21765-1-git-send-email-kgunda@codeaurora.org>
- <1510834717-21765-3-git-send-email-kgunda@codeaurora.org>
- <20171205043515.GE28761@minitux>
-In-Reply-To: <20171205043515.GE28761@minitux>
+References: <20171213194755.3409-1-mstaudt@suse.de>
+In-Reply-To: <20171213194755.3409-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, mstaudt@suse.de, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-On 2017-12-05 10:05, Bjorn Andersson wrote:
-> On Thu 16 Nov 04:18 PST 2017, Kiran Gunda wrote:
-> 
->> Handle the short circuit(SC) interrupt and check if the SC interrupt
->> is valid. Re-enable the module to check if it goes away. Disable the
->> module altogether if the SC event persists.
->> 
->> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> ---
->>  .../bindings/leds/backlight/qcom-spmi-wled.txt     |  22 ++++
->>  drivers/video/backlight/qcom-spmi-wled.c           | 126 
->> ++++++++++++++++++++-
->>  2 files changed, 142 insertions(+), 6 deletions(-)
->> 
->> diff --git 
->> a/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt 
->> b/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
->> index f1ea25b..768608c 100644
->> --- 
->> a/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
->> +++ 
->> b/Documentation/devicetree/bindings/leds/backlight/qcom-spmi-wled.txt
->> @@ -74,6 +74,26 @@ The PMIC is connected to the host processor via 
->> SPMI bus.
->>  	Definition: Specify if cabc (content adaptive backlight control) is
->>  		    needed.
->> 
->> +- qcom,ext-pfet-sc-pro-en
-> 
-> Please use readable names, rather than a bunch of abbreviations.
-> 
-Ok. Will address it in next series.
->> +	Usage:      optional
->> +	Value type: <bool>
->> +	Definition: Specify if external PFET control for short circuit
->> +		    protection is needed.
-> 
-> What does this mean? At least change the wording to "...protection is
-> used".
-> 
-Ok. Will address it in next series.
->> +
->> +- interrupts
->> +	Usage:      optional
->> +	Value type: <prop encoded array>
->> +	Definition: Interrupts associated with WLED. Interrupts can be
->> +		    specified as per the encoding listed under
->> +		    Documentation/devicetree/bindings/spmi/
->> +		    qcom,spmi-pmic-arb.txt.
->> +
->> +- interrupt-names
->> +	Usage:      optional
->> +	Value type: <string>
->> +	Definition: Interrupt names associated with the interrupts.
->> +		    Must be "sc-irq".
-> 
-> This is obviously an irq, so no need to include that in the name. I
-> would also prefer if you use the name "short" to make this easier to
-> read.
-> 
-Ok. Will address it in next series.
->> +
->>  Example:
->> 
->>  qcom-wled@d800 {
->> @@ -82,6 +102,8 @@ qcom-wled@d800 {
->>  	reg-names = "qcom-wled-ctrl-base", "qcom-wled-sink-base";
->>  	label = "backlight";
->> 
->> +	interrupts = <0x3 0xd8 0x2 IRQ_TYPE_EDGE_RISING>;
-> 
-> We tend to write these on the form <decimal, hex, decimal, enum>, 
-> please
-> follow this.
-> 
-Ok. Will address it in next series.
->> +	interrupt-names = "sc-irq";
->>  	qcom,fs-current-limit = <25000>;
->>  	qcom,current-boost-limit = <970>;
->>  	qcom,switching-freq = <800>;
->> diff --git a/drivers/video/backlight/qcom-spmi-wled.c 
->> b/drivers/video/backlight/qcom-spmi-wled.c
->> index 14c3adc..7dbaaa7 100644
->> --- a/drivers/video/backlight/qcom-spmi-wled.c
->> +++ b/drivers/video/backlight/qcom-spmi-wled.c
->> @@ -11,6 +11,9 @@
->>   * GNU General Public License for more details.
->>   */
->> 
->> +#include <linux/delay.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/ktime.h>
->>  #include <linux/kernel.h>
->>  #include <linux/backlight.h>
->>  #include <linux/module.h>
->> @@ -23,7 +26,13 @@
->>  #define QCOM_WLED_DEFAULT_BRIGHTNESS		2048
->>  #define  QCOM_WLED_MAX_BRIGHTNESS		4095
->> 
->> +#define QCOM_WLED_SC_DLY_MS			20
->> +#define QCOM_WLED_SC_CNT_MAX			5
->> +#define QCOM_WLED_SC_RESET_CNT_DLY_US		1000000
-> 
-> With times of this ballpark you can just use jiffies, with this just
-> being HZ.
-> 
-Ok. Will address it in next series.
->> +
->>  /* WLED control registers */
->> +#define QCOM_WLED_CTRL_FAULT_STATUS		0x08
->> +
->>  #define QCOM_WLED_CTRL_MOD_ENABLE		0x46
->>  #define  QCOM_WLED_CTRL_MOD_EN_MASK		BIT(7)
->>  #define  QCOM_WLED_CTRL_MODULE_EN_SHIFT		7
->> @@ -37,6 +46,15 @@
->>  #define QCOM_WLED_CTRL_ILIM			0x4e
->>  #define  QCOM_WLED_CTRL_ILIM_MASK		GENMASK(2, 0)
->> 
->> +#define QCOM_WLED_CTRL_SHORT_PROTECT		0x5e
->> +#define  QCOM_WLED_CTRL_SHORT_EN_MASK		BIT(7)
->> +
->> +#define QCOM_WLED_CTRL_SEC_ACCESS		0xd0
->> +#define  QCOM_WLED_CTRL_SEC_UNLOCK		0xa5
->> +
->> +#define QCOM_WLED_CTRL_TEST1			0xe2
->> +#define  QCOM_WLED_EXT_FET_DTEST2		0x09
->> +
->>  /* WLED sink registers */
->>  #define QCOM_WLED_SINK_CURR_SINK_EN		0x46
->>  #define  QCOM_WLED_SINK_CURR_SINK_MASK		GENMASK(7, 4)
->> @@ -71,19 +89,23 @@ struct qcom_wled_config {
->>  	u32 switch_freq;
->>  	u32 fs_current;
->>  	u32 string_cfg;
->> +	int sc_irq;
-> 
-> Keep data parsed directly from DT in the config and move this to
-> qcom_wled.
-> 
-Ok. Will address it in next series.
->>  	bool en_cabc;
->> +	bool ext_pfet_sc_pro_en;
-> 
-> This name is long and hard to parse. "external_pfet" would be much
-> easier to read.
-> 
-Ok. Will address it in next series.
->>  };
->> 
->>  struct qcom_wled {
->>  	const char *name;
->>  	struct platform_device *pdev;
->>  	struct regmap *regmap;
->> +	struct mutex lock;
->> +	struct qcom_wled_config cfg;
->> +	ktime_t last_sc_event_time;
->>  	u16 sink_addr;
->>  	u16 ctrl_addr;
->>  	u32 brightness;
->> +	u32 sc_count;
->>  	bool prev_state;
->> -
->> -	struct qcom_wled_config cfg;
-> 
-> Moving this seems unnecessary.
-> 
-Ok. Will address it in next series.
->>  };
->> 
->>  static int qcom_wled_module_enable(struct qcom_wled *wled, int val)
->> @@ -157,25 +179,26 @@ static int qcom_wled_update_status(struct 
->> backlight_device *bl)
->>  	    bl->props.state & BL_CORE_FBBLANK)
->>  		brightness = 0;
->> 
->> +	mutex_lock(&wled->lock);
-> 
-> Is this lock necessary?
-> 
-Yes. It avoid the race between the upate_status and sc_irq as the module 
-is enabled
-at one place and disabled at other place respectively.
->> +static irqreturn_t qcom_wled_sc_irq_handler(int irq, void *_wled)
->> +{
->> +	struct qcom_wled *wled = _wled;
->> +	int rc;
->> +	u32 val;
->> +	s64 elapsed_time;
->> +
->> +	rc = regmap_read(wled->regmap,
->> +		wled->ctrl_addr + QCOM_WLED_CTRL_FAULT_STATUS, &val);
->> +	if (rc < 0) {
->> +		pr_err("Error in reading WLED_FAULT_STATUS rc=%d\n", rc);
->> +		return IRQ_HANDLED;
->> +	}
->> +
->> +	wled->sc_count++;
->> +	pr_err("WLED short circuit detected %d times fault_status=%x\n",
->> +		wled->sc_count, val);
-> 
-> Who will read this and is it worth the extra read of FAULT_STATUS just
-> to produce this print?
-> 
-As this SC irq gets triggered in very rare conditions, i think it is 
-okay
-to have a print for the information purpose.
->> +	mutex_lock(&wled->lock);
->> +	rc = qcom_wled_module_enable(wled, false);
->> +	if (rc < 0) {
->> +		pr_err("wled disable failed rc:%d\n", rc);
->> +		goto unlock_mutex;
->> +	}
->> +
->> +	elapsed_time = ktime_us_delta(ktime_get(),
->> +				wled->last_sc_event_time);
->> +	if (elapsed_time > QCOM_WLED_SC_RESET_CNT_DLY_US) {
->> +		wled->sc_count = 0;
->> +	} else if (wled->sc_count > QCOM_WLED_SC_CNT_MAX) {
-> 
-> This isn't really "else elapsed_time was more than DLY_US". Split this
-> into:
-> 
-> if (elapsed_time > xyz)
-> 	wled->sc_count = 0;
-> 
-> if (wled->sc_count > QCOM_WLED_SC_CNT_MAX)
-> 	...
-> 
-Ok. sure.
->> +		pr_err("SC trigged %d times, disabling WLED forever!\n",
-> 
-> "forever" as in "until someone turns it on again"?
-> 
-Yes. It is turned on for the next reboot or some one forcefully enables 
-it form the
-sysfs.
+This is the initial prototype for a lean Linux kernel bootsplash.
 
->> +			wled->sc_count);
->> +		goto unlock_mutex;
->> +	}
->> +
->> +	wled->last_sc_event_time = ktime_get();
->> +
->> +	msleep(QCOM_WLED_SC_DLY_MS);
->> +	rc = qcom_wled_module_enable(wled, true);
->> +	if (rc < 0)
->> +		pr_err("wled enable failed rc:%d\n", rc);
->> +
->> +unlock_mutex:
->> +	mutex_unlock(&wled->lock);
->> +
->> +	return IRQ_HANDLED;
->> +}
->> +
->>  static int qcom_wled_setup(struct qcom_wled *wled)
->>  {
->>  	int rc, temp, i;
->>  	u8 sink_en = 0;
->>  	u8 string_cfg = wled->cfg.string_cfg;
->> +	int sc_irq = wled->cfg.sc_irq;
->> 
->>  	rc = regmap_update_bits(wled->regmap,
->>  			wled->ctrl_addr + QCOM_WLED_CTRL_OVP,
->> @@ -261,6 +334,39 @@ static int qcom_wled_setup(struct qcom_wled 
->> *wled)
->>  		return rc;
->>  	}
->> 
->> +	if (sc_irq >= 0) {
-> 
-> I think things will be cleaner if you let qcom_wled_setup() configure
-> the hardware based on the wled->cfg (as is done to this point) and then
-> deal with the interrupts in a separate code path from the probe
-> function.
-> 
-Ok. sure.
->> +		rc = devm_request_threaded_irq(&wled->pdev->dev, sc_irq,
->> +				NULL, qcom_wled_sc_irq_handler, IRQF_ONESHOT,
->> +				"qcom_wled_sc_irq", wled);
->> +		if (rc < 0) {
->> +			pr_err("Unable to request sc(%d) IRQ(err:%d)\n",
->> +				sc_irq, rc);
-> 
-> sc_irq is just a number without meaning, no need to print it.
-> 
-Sure. Will remove it.
->> +			return rc;
->> +		}
->> +
->> +		rc = regmap_update_bits(wled->regmap,
->> +				wled->ctrl_addr + QCOM_WLED_CTRL_SHORT_PROTECT,
->> +				QCOM_WLED_CTRL_SHORT_EN_MASK,
->> +				QCOM_WLED_CTRL_SHORT_EN_MASK);
->> +		if (rc < 0)
->> +			return rc;
->> +
->> +		if (wled->cfg.ext_pfet_sc_pro_en) {
->> +			/* unlock the secure access regisetr */
-> 
-> Spelling of register, and this operation does "Unlock the secure
-> register access" it doesn't unlock the secure access register.
-> 
-Sure. Will correct it.
->> +			rc = regmap_write(wled->regmap, wled->ctrl_addr +
->> +					QCOM_WLED_CTRL_SEC_ACCESS,
->> +					QCOM_WLED_CTRL_SEC_UNLOCK);
->> +			if (rc < 0)
->> +				return rc;
->> +
->> +			rc = regmap_write(wled->regmap,
->> +					wled->ctrl_addr + QCOM_WLED_CTRL_TEST1,
->> +					QCOM_WLED_EXT_FET_DTEST2);
-> 
-> What is the relationship between DTEST2 and the external FET?
-> External FET is controlled through the DTEST2 register. External FET is 
-> not part of the
-WLED IP so it is controlled from the DTEST pins.
->> +			if (rc < 0)
->> +				return rc;
->> +		}
->> +	}
->> +
->>  	return 0;
->>  }
->> 
->> @@ -271,6 +377,7 @@ static int qcom_wled_setup(struct qcom_wled *wled)
->>  	.switch_freq = 11,
->>  	.string_cfg = 0xf,
->>  	.en_cabc = 0,
->> +	.ext_pfet_sc_pro_en = 1,
->>  };
->> 
->>  struct qcom_wled_var_cfg {
->> @@ -376,6 +483,7 @@ static int qcom_wled_configure(struct qcom_wled 
->> *wled, struct device *dev)
->>  		bool *val_ptr;
->>  	} bool_opts[] = {
->>  		{ "qcom,en-cabc", &cfg->en_cabc, },
->> +		{ "qcom,ext-pfet-sc-pro", &cfg->ext_pfet_sc_pro_en, },
->>  	};
->> 
->>  	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
->> @@ -427,6 +535,10 @@ static int qcom_wled_configure(struct qcom_wled 
->> *wled, struct device *dev)
->>  			*bool_opts[i].val_ptr = true;
->>  	}
->> 
->> +	wled->cfg.sc_irq = platform_get_irq_byname(wled->pdev, "sc-irq");
->> +	if (wled->cfg.sc_irq < 0)
->> +		dev_dbg(&wled->pdev->dev, "sc irq is not used\n");
->> +
-> 
-> Move this to qcom_wled_probe() or into its own code path, together with
-> the rest of the sc_irq initialization.
-> 
-> And as you're not enabling or disabling it you can store it in a local
-> variable.
-> 
-Ok. Sure.
->>  	return 0;
->>  }
->> 
-> 
-> Regards,
-> Bjorn
+It works by replacing fbcon's FB manipulation routines (such as
+bitblit, tileblit) with dummy functions, effectively disabling text
+output, and drawing the splash directly onto the FB device.
+
+As it is now, it will show a black screen rather than a logo, and
+only if manually enabled via the kernel cmdline:
+
+  bootsplash.enable=1
+
+There is a userland API via sysfs, to show/hide the splash on request
+by dracut, systemd, or other init systems.
+
+The reasons for implementing a bootsplash in kernel space are:
+
+ - Quieting things more and nicer than with the quiet boot option:
+   Currently the 'quiet' boot option does not remove the blinking
+   cursor and errors are still printed. There are use cases where this
+   is not desirable (such as embedded and desktop systems, digital
+   signage, etc.) and a vendor logo is preferable.
+
+ - Showing graphics, and never text, when the GUI crashes:
+   This is an extension of the above use case, where recovery is meant
+   to happen as invisibly to the user as possible. A system integrator
+   needs the flexibility to hide "scary text" from users in all cases
+   other than a panic.
+   This is especially desirable in embedded systems such as digital
+   signage.
+
+ - Racy VT API:
+   Userspace bootsplashes and GUIs (e.g. plymouth and X) tend to kick
+   each other out via the non-exclusive KDSETMODE ioctl. This can
+   result in situations such as the user being stuck in X with chvt
+   and Ctrl-Alt-Fx no longer working.
+
+ - Mode switching from FB to KMS:
+   We cannot switch from a generic framebuffer (vesafb, efifb) to a
+   KMS driver while a userspace splash keeps /dev/fb0 open. The device
+   will vanish, but the address space is still busy, so the KMS driver
+   cannot reserve its VRAM.
+
+ - Simplification of userspace integration:
+   Right now, hooking up a splash screen in userspace is quite complex.
+   Having it in the kernel makes this a breeze, as hooks for
+   switch_root, remounting r/w, etc. become obsolete.
+
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+---
+ MAINTAINERS                                    |   8 +
+ drivers/video/console/Kconfig                  |  24 ++
+ drivers/video/fbdev/core/Makefile              |   3 +
+ drivers/video/fbdev/core/bootsplash.c          | 294 +++++++++++++++++++++++++
+ drivers/video/fbdev/core/bootsplash_internal.h |  55 +++++
+ drivers/video/fbdev/core/bootsplash_render.c   |  93 ++++++++
+ drivers/video/fbdev/core/dummyblit.c           |  89 ++++++++
+ drivers/video/fbdev/core/fbcon.c               |  22 ++
+ drivers/video/fbdev/core/fbcon.h               |   5 +
+ include/linux/bootsplash.h                     |  43 ++++
+ 10 files changed, 636 insertions(+)
+ create mode 100644 drivers/video/fbdev/core/bootsplash.c
+ create mode 100644 drivers/video/fbdev/core/bootsplash_internal.h
+ create mode 100644 drivers/video/fbdev/core/bootsplash_render.c
+ create mode 100644 drivers/video/fbdev/core/dummyblit.c
+ create mode 100644 include/linux/bootsplash.h
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a74227ad082e..b5633b56391e 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2705,6 +2705,14 @@ S:	Supported
+ F:	drivers/net/bonding/
+ F:	include/uapi/linux/if_bonding.h
+ 
++BOOTSPLASH
++M:	Max Staudt <mstaudt@suse.de>
++L:	linux-fbdev@vger.kernel.org
++S:	Maintained
++F:	drivers/video/fbdev/core/bootsplash*.*
++F:	drivers/video/fbdev/core/dummycon.c
++F:	include/linux/bootsplash.h
++
+ BPF (Safe dynamic programs and tools)
+ M:	Alexei Starovoitov <ast@kernel.org>
+ M:	Daniel Borkmann <daniel@iogearbox.net>
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 7f1f1fbcef9e..f3ff976266fe 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -151,6 +151,30 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+          such that other users of the framebuffer will remain normally
+          oriented.
+ 
++config BOOTSPLASH
++	bool "Bootup splash screen"
++	depends on FRAMEBUFFER_CONSOLE
++	---help---
++	  This option enables the Linux bootsplash screen.
++
++	  The bootsplash is a full-screen logo or animation indicating a
++	  booting system. It replaces the classic scrolling text with a
++	  graphical alternative, similar to other systems.
++
++	  Since this is technically implemented as a hook on top of fbcon,
++	  it can only work if the FRAMEBUFFER_CONSOLE is enabled and a
++	  framebuffer driver is active. Thus, to get a text-free boot,
++	  the system needs to boot with vesafb, efifb, or similar.
++
++	  Once built into the kernel, the bootsplash needs to be enabled
++	  with bootsplash.enabled=1 and a splash file needs to be supplied.
++
++	  Further documentation can be found in:
++	    Documentation/fb/bootsplash.txt
++
++	  If unsure, say N.
++	  This is typically used by distributors and system integrators.
++
+ config STI_CONSOLE
+         bool "STI text console"
+         depends on PARISC
+diff --git a/drivers/video/fbdev/core/Makefile b/drivers/video/fbdev/core/Makefile
+index 73493bbd7a15..66895321928e 100644
+--- a/drivers/video/fbdev/core/Makefile
++++ b/drivers/video/fbdev/core/Makefile
+@@ -29,3 +29,6 @@ obj-$(CONFIG_FB_SYS_IMAGEBLIT) += sysimgblt.o
+ obj-$(CONFIG_FB_SYS_FOPS)      += fb_sys_fops.o
+ obj-$(CONFIG_FB_SVGALIB)       += svgalib.o
+ obj-$(CONFIG_FB_DDC)           += fb_ddc.o
++
++obj-$(CONFIG_BOOTSPLASH)       += bootsplash.o bootsplash_render.o \
++                                  dummyblit.o
+diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
+new file mode 100644
+index 000000000000..e449755af268
+--- /dev/null
++++ b/drivers/video/fbdev/core/bootsplash.c
+@@ -0,0 +1,294 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * (Main file: Glue code, workers, timer, PM, kernel and userland API)
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#define pr_fmt(fmt) "bootsplash: " fmt
++
++
++#include <linux/atomic.h>
++#include <linux/bootsplash.h>
++#include <linux/console.h>
++#include <linux/device.h> /* dev_warn() */
++#include <linux/fb.h>
++#include <linux/fs.h>
++#include <linux/kernel.h>
++#include <linux/jiffies.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/printk.h>
++#include <linux/selection.h> /* console_blanked */
++#include <linux/stringify.h>
++#include <linux/types.h>
++#include <linux/vmalloc.h>
++#include <linux/vt_kern.h>
++#include <linux/workqueue.h>
++
++#include "bootsplash_internal.h"
++
++
++/*
++ * We only have one splash screen, so let's keep a single
++ * instance of the internal state.
++ */
++static struct splash_priv splash_state;
++
++
++static void splash_callback_redraw_vc(struct work_struct *ignored)
++{
++	if (console_blanked)
++		return;
++
++	console_lock();
++	if (vc_cons[fg_console].d)
++		update_screen(vc_cons[fg_console].d);
++	console_unlock();
++}
++
++
++static bool is_fb_compatible(const struct fb_info *info)
++{
++	if (!(info->flags & FBINFO_BE_MATH)
++	    != !fb_be_math((struct fb_info *)info)) {
++		dev_warn(info->device,
++			 "Can't draw on foreign endianness framebuffer.\n");
++
++		return false;
++	}
++
++	if (info->flags & FBINFO_MISC_TILEBLITTING) {
++		dev_warn(info->device,
++			 "Can't draw splash on tiling framebuffer.\n");
++
++		return false;
++	}
++
++	if (info->fix.type != FB_TYPE_PACKED_PIXELS
++	    || (info->fix.visual != FB_VISUAL_TRUECOLOR
++		&& info->fix.visual != FB_VISUAL_DIRECTCOLOR)) {
++		dev_warn(info->device,
++			 "Can't draw splash on non-packed or non-truecolor framebuffer.\n");
++
++		dev_warn(info->device,
++			 "  type: %u   visual: %u\n",
++			 info->fix.type, info->fix.visual);
++
++		return false;
++	}
++
++	if (info->var.bits_per_pixel != 16
++	    && info->var.bits_per_pixel != 24
++	    && info->var.bits_per_pixel != 32) {
++		dev_warn(info->device,
++			 "We only support drawing on framebuffers with 16, 24, or 32 bpp, not %d.\n",
++			 info->var.bits_per_pixel);
++
++		return false;
++	}
++
++	return true;
++}
++
++
++/*
++ * Called by fbcon_switch() when an instance is activated or refreshed.
++ */
++void bootsplash_render_full(struct fb_info *info)
++{
++	if (!is_fb_compatible(info))
++		return;
++
++	bootsplash_do_render_background(info);
++}
++
++
++/*
++ * External status enquiry and on/off switch
++ */
++bool bootsplash_would_render_now(void)
++{
++	return !oops_in_progress
++		&& !console_blanked
++		&& bootsplash_is_enabled();
++}
++
++bool bootsplash_is_enabled(void)
++{
++	bool was_enabled;
++
++	/* Make sure we have the newest state */
++	smp_rmb();
++
++	was_enabled = test_bit(0, &splash_state.enabled);
++
++	return was_enabled;
++}
++
++void bootsplash_disable(void)
++{
++	int was_enabled;
++
++	was_enabled = test_and_clear_bit(0, &splash_state.enabled);
++
++	if (was_enabled) {
++		if (oops_in_progress) {
++			/* Redraw screen now so we can see a panic */
++			if (vc_cons[fg_console].d)
++				update_screen(vc_cons[fg_console].d);
++		} else {
++			/* No urgency, redraw at next opportunity */
++			schedule_work(&splash_state.work_redraw_vc);
++		}
++	}
++}
++
++void bootsplash_enable(void)
++{
++	bool was_enabled;
++
++	if (oops_in_progress)
++		return;
++
++	was_enabled = test_and_set_bit(0, &splash_state.enabled);
++
++	if (!was_enabled)
++		schedule_work(&splash_state.work_redraw_vc);
++}
++
++
++/*
++ * Userland API via platform device in sysfs
++ */
++static ssize_t splash_show_enabled(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%d\n", bootsplash_is_enabled());
++}
++
++static ssize_t splash_store_enabled(struct device *device,
++				    struct device_attribute *attr,
++				    const char *buf, size_t count)
++{
++	bool enable;
++	int err;
++
++	if (!buf || !count)
++		return -EFAULT;
++
++	err = kstrtobool(buf, &enable);
++	if (err)
++		return err;
++
++	if (enable)
++		bootsplash_enable();
++	else
++		bootsplash_disable();
++
++	return count;
++}
++
++static DEVICE_ATTR(enabled, 0644, splash_show_enabled, splash_store_enabled);
++
++
++static struct attribute *splash_dev_attrs[] = {
++	&dev_attr_enabled.attr,
++	NULL
++};
++
++ATTRIBUTE_GROUPS(splash_dev);
++
++
++
++
++/*
++ * Power management fixup via platform device
++ *
++ * When the system is woken from sleep or restored after hibernating, we
++ * cannot expect the screen contents to still be present in video RAM.
++ * Thus, we have to redraw the splash if we're currently active.
++ */
++static int splash_resume(struct device *device)
++{
++	if (bootsplash_would_render_now())
++		schedule_work(&splash_state.work_redraw_vc);
++
++	return 0;
++}
++
++static int splash_suspend(struct device *device)
++{
++	cancel_work_sync(&splash_state.work_redraw_vc);
++
++	return 0;
++}
++
++
++static const struct dev_pm_ops splash_pm_ops = {
++	.thaw = splash_resume,
++	.restore = splash_resume,
++	.resume = splash_resume,
++	.suspend = splash_suspend,
++	.freeze = splash_suspend,
++};
++
++static struct platform_driver splash_driver = {
++	.driver = {
++		.name = "bootsplash",
++		.pm = &splash_pm_ops,
++	},
++};
++
++
++/*
++ * Main init
++ */
++void bootsplash_init(void)
++{
++	int ret;
++
++	/* Initialized already? */
++	if (splash_state.splash_device)
++		return;
++
++
++	/* Register platform device to export user API */
++	ret = platform_driver_register(&splash_driver);
++	if (ret) {
++		pr_err("platform_driver_register() failed: %d\n", ret);
++		goto err;
++	}
++
++	splash_state.splash_device
++		= platform_device_alloc("bootsplash", 0);
++
++	if (!splash_state.splash_device)
++		goto err_driver;
++
++	splash_state.splash_device->dev.groups = splash_dev_groups;
++
++	ret = platform_device_add(splash_state.splash_device);
++	if (ret) {
++		pr_err("platform_device_add() failed: %d\n", ret);
++		goto err_device;
++	}
++
++
++	INIT_WORK(&splash_state.work_redraw_vc, splash_callback_redraw_vc);
++
++	return;
++
++err_device:
++	platform_device_put(splash_state.splash_device);
++	splash_state.splash_device = NULL;
++err_driver:
++	platform_driver_unregister(&splash_driver);
++err:
++	pr_err("Failed to initialize.\n");
++}
+diff --git a/drivers/video/fbdev/core/bootsplash_internal.h b/drivers/video/fbdev/core/bootsplash_internal.h
+new file mode 100644
+index 000000000000..b11da5cb90bf
+--- /dev/null
++++ b/drivers/video/fbdev/core/bootsplash_internal.h
+@@ -0,0 +1,55 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * (Internal data structures used at runtime)
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#ifndef __BOOTSPLASH_INTERNAL_H
++#define __BOOTSPLASH_INTERNAL_H
++
++
++#include <linux/types.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include <linux/mutex.h>
++#include <linux/spinlock.h>
++
++
++/*
++ * Runtime types
++ */
++struct splash_priv {
++	/*
++	 * Enabled/disabled state, to be used with atomic bit operations.
++	 *   Bit 0: 0 = Splash hidden
++	 *          1 = Splash shown
++	 *
++	 * Note: fbcon.c uses this twice, by calling
++	 *       bootsplash_would_render_now() in set_blitting_type() and
++	 *       in fbcon_switch().
++	 *       This is racy, but eventually consistent: Turning the
++	 *       splash on/off will cause a redraw, which calls
++	 *       fbcon_switch(), which calls set_blitting_type().
++	 *       So the last on/off toggle will make things consistent.
++	 */
++	unsigned long enabled;
++
++	/* Our gateway to userland via sysfs */
++	struct platform_device *splash_device;
++
++	struct work_struct work_redraw_vc;
++};
++
++
++
++/*
++ * Rendering functions
++ */
++void bootsplash_do_render_background(struct fb_info *info);
++
++#endif
+diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
+new file mode 100644
+index 000000000000..4d7e0117f653
+--- /dev/null
++++ b/drivers/video/fbdev/core/bootsplash_render.c
+@@ -0,0 +1,93 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * (Rendering functions)
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#define pr_fmt(fmt) "bootsplash: " fmt
++
++
++#include <linux/bootsplash.h>
++#include <linux/fb.h>
++#include <linux/kernel.h>
++#include <linux/printk.h>
++#include <linux/types.h>
++
++#include "bootsplash_internal.h"
++
++
++
++
++/*
++ * Rendering: Internal drawing routines
++ */
++
++
++/*
++ * Pack pixel into target format and do Big/Little Endian handling.
++ * This would be a good place to handle endianness conversion if necessary.
++ */
++static inline u32 pack_pixel(const struct fb_var_screeninfo *dst_var,
++			     u8 red, u8 green, u8 blue)
++{
++	u32 dstpix;
++
++	/* Quantize pixel */
++	red = red >> (8 - dst_var->red.length);
++	green = green >> (8 - dst_var->green.length);
++	blue = blue >> (8 - dst_var->blue.length);
++
++	/* Pack pixel */
++	dstpix = red << (dst_var->red.offset)
++		| green << (dst_var->green.offset)
++		| blue << (dst_var->blue.offset);
++
++	/*
++	 * Move packed pixel to the beginning of the memory cell,
++	 * so we can memcpy() it out easily
++	 */
++#ifdef __BIG_ENDIAN
++	switch (dst_var->bits_per_pixel) {
++	case 16:
++		dstpix <<= 16;
++		break;
++	case 24:
++		dstpix <<= 8;
++		break;
++	case 32:
++		break;
++	}
++#else
++	/* This is intrinsically unnecessary on Little Endian */
++#endif
++
++	return dstpix;
++}
++
++
++void bootsplash_do_render_background(struct fb_info *info)
++{
++	unsigned int x, y;
++	u32 dstpix;
++	u32 dst_octpp = info->var.bits_per_pixel / 8;
++
++	dstpix = pack_pixel(&info->var,
++			    0,
++			    0,
++			    0);
++
++	for (y = 0; y < info->var.yres_virtual; y++) {
++		u8 *dstline = info->screen_buffer + (y * info->fix.line_length);
++
++		for (x = 0; x < info->var.xres_virtual; x++) {
++			memcpy(dstline, &dstpix, dst_octpp);
++
++			dstline += dst_octpp;
++		}
++	}
++}
+diff --git a/drivers/video/fbdev/core/dummyblit.c b/drivers/video/fbdev/core/dummyblit.c
+new file mode 100644
+index 000000000000..8c22ff92ce24
+--- /dev/null
++++ b/drivers/video/fbdev/core/dummyblit.c
+@@ -0,0 +1,89 @@
++/*
++ *  linux/drivers/video/fbdev/core/dummyblit.c -- Dummy Blitting Operation
++ *
++ *  Authors:
++ *  Max Staudt <mstaudt@suse.de>
++ *
++ *  These functions are used in place of blitblit/tileblit to suppress
++ *  fbcon's text output while a splash is shown.
++ *
++ *  Only suppressing actual rendering keeps the text buffer in the VC layer
++ *  intact and makes it easy to switch back from the bootsplash to a full
++ *  text console with a simple redraw (with the original functions in place).
++ *
++ *  Based on linux/drivers/video/fbdev/core/bitblit.c
++ *       and linux/drivers/video/fbdev/core/tileblit.c
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#include <linux/module.h>
++#include <linux/fb.h>
++#include <linux/vt_kern.h>
++#include <linux/console.h>
++#include <asm/types.h>
++#include "fbcon.h"
++
++static void dummy_bmove(struct vc_data *vc, struct fb_info *info, int sy,
++			int sx, int dy, int dx, int height, int width)
++{
++	;
++}
++
++static void dummy_clear(struct vc_data *vc, struct fb_info *info, int sy,
++			int sx, int height, int width)
++{
++	;
++}
++
++static void dummy_putcs(struct vc_data *vc, struct fb_info *info,
++			const unsigned short *s, int count, int yy, int xx,
++			int fg, int bg)
++{
++	;
++}
++
++static void dummy_clear_margins(struct vc_data *vc, struct fb_info *info,
++				int color, int bottom_only)
++{
++	;
++}
++
++static void dummy_cursor(struct vc_data *vc, struct fb_info *info, int mode,
++			int softback_lines, int fg, int bg)
++{
++	;
++}
++
++static int dummy_update_start(struct fb_info *info)
++{
++	/*
++	 * Copied from bitblit.c and tileblit.c
++	 *
++	 * As of Linux 4.12, nobody seems to care about our return value.
++	 */
++	struct fbcon_ops *ops = info->fbcon_par;
++	int err;
++
++	err = fb_pan_display(info, &ops->var);
++	ops->var.xoffset = info->var.xoffset;
++	ops->var.yoffset = info->var.yoffset;
++	ops->var.vmode = info->var.vmode;
++	return err;
++}
++
++void fbcon_set_dummyops(struct fbcon_ops *ops)
++{
++	ops->bmove = dummy_bmove;
++	ops->clear = dummy_clear;
++	ops->putcs = dummy_putcs;
++	ops->clear_margins = dummy_clear_margins;
++	ops->cursor = dummy_cursor;
++	ops->update_start = dummy_update_start;
++	ops->rotate_font = NULL;
++}
++EXPORT_SYMBOL_GPL(fbcon_set_dummyops);
++
++MODULE_AUTHOR("Max Staudt <mstaudt@suse.de>");
++MODULE_DESCRIPTION("Dummy Blitting Operation");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 04612f938bab..9a39a6fcfe98 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -80,6 +80,7 @@
+ #include <asm/irq.h>
+ 
+ #include "fbcon.h"
++#include <linux/bootsplash.h>
+ 
+ #ifdef FBCONDEBUG
+ #  define DPRINTK(fmt, args...) printk(KERN_DEBUG "%s: " fmt, __func__ , ## args)
+@@ -542,6 +543,8 @@ static int do_fbcon_takeover(int show_logo)
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++)
+ 		con2fb_map[i] = info_idx;
+ 
++	bootsplash_init();
++
+ 	err = do_take_over_console(&fb_con, first_fb_vc, last_fb_vc,
+ 				fbcon_is_default);
+ 
+@@ -661,6 +664,9 @@ static void set_blitting_type(struct vc_data *vc, struct fb_info *info)
+ 	else {
+ 		fbcon_set_rotation(info);
+ 		fbcon_set_bitops(ops);
++
++		if (bootsplash_would_render_now())
++			fbcon_set_dummyops(ops);
+ 	}
+ }
+ 
+@@ -683,6 +689,19 @@ static void set_blitting_type(struct vc_data *vc, struct fb_info *info)
+ 	ops->p = &fb_display[vc->vc_num];
+ 	fbcon_set_rotation(info);
+ 	fbcon_set_bitops(ops);
++
++	/*
++	 * Note:
++	 * This is *eventually correct*.
++	 * Setting the fbcon operations and drawing the splash happen at
++	 * different points in time. If the splash is enabled/disabled
++	 * in between, then bootsplash_{en,dis}able will schedule a
++	 * redraw, which will again render the splash (or not) and set
++	 * the correct fbcon ops.
++	 * The last run will then be the right one.
++	 */
++	if (bootsplash_would_render_now())
++		fbcon_set_dummyops(ops);
+ }
+ 
+ static int fbcon_invalid_charcount(struct fb_info *info, unsigned charcount)
+@@ -2184,6 +2203,9 @@ static int fbcon_switch(struct vc_data *vc)
+ 	info = registered_fb[con2fb_map[vc->vc_num]];
+ 	ops = info->fbcon_par;
+ 
++	if (bootsplash_would_render_now())
++		bootsplash_render_full(info);
++
+ 	if (softback_top) {
+ 		if (softback_lines)
+ 			fbcon_set_origin(vc);
+diff --git a/drivers/video/fbdev/core/fbcon.h b/drivers/video/fbdev/core/fbcon.h
+index 18f3ac144237..45f94347fe5e 100644
+--- a/drivers/video/fbdev/core/fbcon.h
++++ b/drivers/video/fbdev/core/fbcon.h
+@@ -214,6 +214,11 @@ static inline int attr_col_ec(int shift, struct vc_data *vc,
+ #define SCROLL_REDRAW	   0x004
+ #define SCROLL_PAN_REDRAW  0x005
+ 
++#ifdef CONFIG_BOOTSPLASH
++extern void fbcon_set_dummyops(struct fbcon_ops *ops);
++#else /* CONFIG_BOOTSPLASH */
++#define fbcon_set_dummyops(x)
++#endif /* CONFIG_BOOTSPLASH */
+ #ifdef CONFIG_FB_TILEBLITTING
+ extern void fbcon_set_tileops(struct vc_data *vc, struct fb_info *info);
+ #endif
+diff --git a/include/linux/bootsplash.h b/include/linux/bootsplash.h
+new file mode 100644
+index 000000000000..c6dd0b43180d
+--- /dev/null
++++ b/include/linux/bootsplash.h
+@@ -0,0 +1,43 @@
++/*
++ * Kernel based bootsplash.
++ *
++ * Authors:
++ * Max Staudt <mstaudt@suse.de>
++ *
++ * SPDX-License-Identifier: GPL-2.0
++ */
++
++#ifndef __LINUX_BOOTSPLASH_H
++#define __LINUX_BOOTSPLASH_H
++
++#include <linux/fb.h>
++
++
++#ifdef CONFIG_BOOTSPLASH
++
++extern void bootsplash_render_full(struct fb_info *info);
++
++extern bool bootsplash_would_render_now(void);
++
++extern bool bootsplash_is_enabled(void);
++extern void bootsplash_disable(void);
++extern void bootsplash_enable(void);
++
++extern void bootsplash_init(void);
++
++#else /* CONFIG_BOOTSPLASH */
++
++#define bootsplash_render_full(x)
++
++#define bootsplash_would_render_now() (false)
++
++#define bootsplash_is_enabled() (false)
++#define bootsplash_disable()
++#define bootsplash_enable()
++
++#define bootsplash_init()
++
++#endif /* CONFIG_BOOTSPLASH */
++
++
++#endif
+-- 
+2.12.3
+

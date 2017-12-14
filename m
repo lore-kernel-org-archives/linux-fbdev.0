@@ -1,125 +1,61 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 13 Dec 2017 21:35:06 +0000
+From: Max Staudt <mstaudt@suse.de>
+Date: Thu, 14 Dec 2017 15:36:49 +0000
 Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
-Message-Id: <20171213213506.GD26573@phenom.ffwll.local>
+Message-Id: <d66a994a-cb3a-c1fb-8f91-adbd475a40f0@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171213194755.3409-4-mstaudt@suse.de>
-In-Reply-To: <20171213194755.3409-4-mstaudt@suse.de>
+ <20171213213506.GD26573@phenom.ffwll.local>
+In-Reply-To: <20171213213506.GD26573@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Max Staudt <mstaudt@suse.de>
-Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, philm@manjaro.org, bernhard.rosenkranzer@linaro.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, michal@markovi.net, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-On Wed, Dec 13, 2017 at 08:47:45PM +0100, Max Staudt wrote:
-> Framebuffers with deferred I/O need to be flushed to the screen
-> explicitly, since we use neither the mmap nor the file I/O abstractions
-> that handle this for userspace FB clients.
+On 12/13/2017 10:35 PM, Daniel Vetter wrote:
+> Using drm directly would allow you to flush the contents without the fake
+> (and tbh, really expensive on most drivers) copy op. If you insist on
+> using fbdev for this stuff, then at least add a new hook to flush cpu
+> rendering.
+
+My reasoning is as follows:
+
+1) The splash screen is meant to appear as early as possible in the boot process, and even on devices that don't have a DRM driver. For example, an ARM box with only efifb. Thus, the choice to work on top of FB.
+
+2) We need to go out of the way when a graphical application starts, and come back when it's done. fbcon already has the logic for this, and fbcon is also the thing we're trying to hide. So it seems natural to add the splash on top of fbcon - at least for now.
+
+3) I can't use DRM from the kernel, for the same reason for which there is no "drmcon" to supplant fbcon: There is no interface to reserve framebuffer memory from kernel space: To get memory for a framebuffer, one needs to have a struct file that is passed through the DRM stack down into the drivers.
+
+If this interface existed, then there could be a generic "fb2drm" translation layer, and we would no longer need FB compatibility code in each KMS driver. Actually, I tried to implement this translation layer a year ago, and hit too many walls.
+
+I've prepared the code for a future in which fbdev no longer exists: My sysfs interface is generically called "bootsplash", in the hope that it will one day move on top of KMS. The hooks into fbcon are minimal and the code is straightforward to port to KMS operations rather than FB. But that's for another day, as far as I can see.
+
+4) I don't fully understand what you'd like me to do. Last time I tried to add a new entry to the fbops struct (namely fb_open_adj_file()), you told me not to touch the framebuffer subsystem anymore, as it is meant to die and driver developers shall use KMS instead. Have I misunderstood?
+
+Something like fb->flush() to finish kernel space accesses would be nice to have, but would need to be implemented for all affected drivers separately. The copy op hack is ugly, but solves the problem generically.
+
+
+What shall I do?
+
+Shall I add a new FB op for flushing when writing to the raw memory from the kernel?
+As far as I can see, it would be needed for defio drivers only, is that correct?
+
+
+>> +	 *
+>> +	 * A few DRM drivers' FB implementations are broken by not using
+>> +	 * deferred_io when they really should - we match on the known
+>> +	 * bad ones manually for now.
+>> +	 */
+>> +	if (info->fbdefio
+>> +	    || !strcmp(info->fix.id, "astdrmfb")
+>> +	    || !strcmp(info->fix.id, "cirrusdrmfb")
+>> +	    || !strcmp(info->fix.id, "mgadrmfb")) {
 > 
-> Example: xenfb
-> 
-> Some framebuffer drivers implement lazy access to the screen without
-> actually exposing a fbdefio interface - we also match some known ones,
-> currently:
->  - ast
->  - cirrus
->  - mgag200
-> 
-> Signed-off-by: Max Staudt <mstaudt@suse.de>
-> Reviewed-by: Oliver Neukum <oneukum@suse.com>
-> ---
->  drivers/video/fbdev/core/bootsplash.c          |  2 ++
->  drivers/video/fbdev/core/bootsplash_internal.h |  1 +
->  drivers/video/fbdev/core/bootsplash_render.c   | 33 ++++++++++++++++++++++++++
->  3 files changed, 36 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/core/bootsplash.c b/drivers/video/fbdev/core/bootsplash.c
-> index 843c5400fefc..815b007f81ca 100644
-> --- a/drivers/video/fbdev/core/bootsplash.c
-> +++ b/drivers/video/fbdev/core/bootsplash.c
-> @@ -112,6 +112,8 @@ void bootsplash_render_full(struct fb_info *info)
->  
->  	bootsplash_do_render_pictures(info, splash_state.file);
->  
-> +	bootsplash_do_render_flush(info);
-> +
->  out:
->  	mutex_unlock(&splash_state.data_lock);
->  }
-> diff --git a/drivers/video/fbdev/core/bootsplash_internal.h b/drivers/video/fbdev/core/bootsplash_internal.h
-> index 71e2a27ac0b8..0acb383aa4e3 100644
-> --- a/drivers/video/fbdev/core/bootsplash_internal.h
-> +++ b/drivers/video/fbdev/core/bootsplash_internal.h
-> @@ -89,6 +89,7 @@ void bootsplash_do_render_background(struct fb_info *info,
->  				     const struct splash_file_priv *fp);
->  void bootsplash_do_render_pictures(struct fb_info *info,
->  				   const struct splash_file_priv *fp);
-> +void bootsplash_do_render_flush(struct fb_info *info);
->  
->  
->  void bootsplash_free_file(struct splash_file_priv *fp);
-> diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
-> index 2ae36949d0e3..8c09c306ff67 100644
-> --- a/drivers/video/fbdev/core/bootsplash_render.c
-> +++ b/drivers/video/fbdev/core/bootsplash_render.c
-> @@ -186,3 +186,36 @@ void bootsplash_do_render_pictures(struct fb_info *info,
->  				pp->pic_header->width, pp->pic_header->height);
->  	}
->  }
-> +
-> +
-> +void bootsplash_do_render_flush(struct fb_info *info)
-> +{
-> +	/*
-> +	 * FB drivers using deferred_io (such as Xen) need to sync the
-> +	 * screen after modifying its contents. When the FB is mmap()ed
-> +	 * from userspace, this happens via a dirty pages callback, but
-> +	 * when modifying the FB from the kernel, there is no such thing.
-> +	 *
-> +	 * So let's issue a fake fb_copyarea (copying the FB onto itself)
-> +	 * to trick the FB driver into syncing the screen.
+> We have a shared defio implementation now in drm_fb_helper.c, there's not
+> really many excuses to not fix up these drivers to just use those ...
 
-Using drm directly would allow you to flush the contents without the fake
-(and tbh, really expensive on most drivers) copy op. If you insist on
-using fbdev for this stuff, then at least add a new hook to flush cpu
-rendering.
+I'll look into it.
 
-> +	 *
-> +	 * A few DRM drivers' FB implementations are broken by not using
-> +	 * deferred_io when they really should - we match on the known
-> +	 * bad ones manually for now.
-> +	 */
-> +	if (info->fbdefio
-> +	    || !strcmp(info->fix.id, "astdrmfb")
-> +	    || !strcmp(info->fix.id, "cirrusdrmfb")
-> +	    || !strcmp(info->fix.id, "mgadrmfb")) {
 
-We have a shared defio implementation now in drm_fb_helper.c, there's not
-really many excuses to not fix up these drivers to just use those ...
--Daniel
-
-> +		struct fb_copyarea area;
-> +
-> +		area.dx = 0;
-> +		area.dy = 0;
-> +		area.width = info->var.xres;
-> +		area.height = info->var.yres;
-> +		area.sx = 0;
-> +		area.sy = 0;
-> +
-> +		info->fbops->fb_copyarea(info, &area);
-> +	}
-> +}
-> -- 
-> 2.12.3
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+Thanks!
+Max

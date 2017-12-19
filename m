@@ -1,123 +1,69 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 19 Dec 2017 17:26:38 +0000
+From: Max Staudt <mstaudt@suse.de>
+Date: Tue, 19 Dec 2017 18:40:12 +0000
 Subject: Re: [RFC PATCH v2 00/13] Kernel based bootsplash
-Message-Id: <CAKMK7uEEVEHbvHifobaTdgKkbS5HbyVAqGRkHUQNpWWSr7dasg@mail.gmail.com>
+Message-Id: <573d4050-7607-b8e4-7552-83966f551ba3@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171219161630.GI26573@phenom.ffwll.local>
  <2f8a1a08-911d-a511-2968-4d89418ac212@suse.de>
-In-Reply-To: <2f8a1a08-911d-a511-2968-4d89418ac212@suse.de>
+ <CAKMK7uEEVEHbvHifobaTdgKkbS5HbyVAqGRkHUQNpWWSr7dasg@mail.gmail.com>
+In-Reply-To: <CAKMK7uEEVEHbvHifobaTdgKkbS5HbyVAqGRkHUQNpWWSr7dasg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Max Staudt <mstaudt@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, philm@manjaro.org, =?UTF-8?Q?Bero_Rosenkr=C3=A4nzer?= <bernhard.rosenkranzer@linaro.org>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, philm@manjaro.org, =?UTF-8?Q?Bero_Rosenkr=c3=a4nzer?= <bernhard.rosenkranzer@linaro.org>
 
-On Tue, Dec 19, 2017 at 6:04 PM, Max Staudt <mstaudt@suse.de> wrote:
-> On 12/19/2017 05:16 PM, Daniel Vetter wrote:
->> On Wed, Dec 13, 2017 at 08:47:42PM +0100, Max Staudt wrote:
->>> Dear fbdev and fbcon developers,
->>>
->>> Thank you very much for your input for the first patch series.
->>>
->>> I've included your feedback into this second roll, and kindly ask for
->>> your opinion on the new patch series.
->>
->> Ok I've realized that my assumptions about why you need this aren't
->> holding up.
->>
->> So from reading these patches it sounded like you want an in-kernel boot
->> splash because that would be on the display faster than a userspace one
->> like plymouth. That's the only reasons I can see for this (if there's
->> another good justification, please bring it up).
->
-> Yep, that's one of the reasons.
->
-> You can find a lot more in the commit message for my first patch.
->
->
-> For example, having a userspace splash that starts as early as it can (thus on vesafb/efifb on a PC) will cause the KMS driver to fail reserving the entirety of video RAM, and thus fail loading. This cannot be fixed.
->
-> Reproducer:  https://bugzilla.opensuse.org/show_bug.cgi?id=980750
+On 12/19/2017 06:26 PM, Daniel Vetter wrote:
+> On Tue, Dec 19, 2017 at 6:04 PM, Max Staudt <mstaudt@suse.de> wrote:
+>> Well, those could enable fbcon if they want the bootsplash. Shouldn't make a difference anyway if they're powerful enough to run Linux. As long as the bootsplash is shown, no fbcon drawing operations are executed, so there is no expensive scrolling or such to hog the system.
+> 
+> It's too big, and those folks tend to be super picky about space.
 
-Aka fbdev is broken and can't actually be hotunplugged.
+I know, they really are.
 
-> Furthermore, Plymouth is quite broken. For example, it may lock (via VT_SETMODE) the VT even though Plymouth is in "disabled" state and X has already taken control of the VT. This causes the kernel to throw away X's PID as the VT owner, and thus chvt and Ctrl-Alt-Fx no longer work because X can neither release the console (VT_RELDISP fails), nor does the kernel send it the signal to do so. This is hard to impossible to fix.
+However, given just how big and clunky modern systems have become, I raise my doubts about a few extra KB for fbcon code to be relevant.
 
-Aka plymouth is broken.
+My feeling is that the kernel splash probably saves even more space on the userspace side than it adds on the kernel side, thus netting a reduction in overall code size.
 
-> A third reason is that in practice, Plymouth's start is delayed for reasons such as the above. Yes, race conditions are being worked around with sleeps. It'd be nice to have a splash as early as possible, without having to worry about races.
 
-Aka more breakage.
+> So essentially you're telling me that on a current general purpose
+> distro the gfx driver loading is a dumpster fire, and we're fixing
+> this by ignoring it an adding a hole new layer on top. That doesn't
+> sound like any kind of good idea to me.
 
-> So some issues are hard to fix, others are impossible to fix in userspace. I figured that rather than hacking back and forth and defining APIs in both the kernel and userspace (redoing a sizable part of Plymouth, or writing a replacement), I might as well put small and simple code in the kernel straight away.
->
-> And if it's hooked into fbcon, we get stuff for free:
->  - It shows *really* early, even before userland is available.
->  - There are no fights, no races for the device. Of any kind.
->  - The code is small and simple.
->
->
-> Further reasoning so far, from the comments to my v1 patch series:
->
->   https://lkml.org/lkml/2017/11/10/374
->   https://lkml.org/lkml/2017/11/9/324
->
->
->> I only know of very embedded setups (tv top boxes, in vehicle
->> entertainment) where that kind of "time to first image" really matters,
->> and those systems:
->> - have a real hw kms driver
->> - don't have fbcon or fbdev emulation enabled (except for some closed
->>   source stacks that are a bit slow to adapt to the new world, and we
->>   don't care about those in gfx).
->
-> Well, those could enable fbcon if they want the bootsplash. Shouldn't make a difference anyway if they're powerful enough to run Linux. As long as the bootsplash is shown, no fbcon drawing operations are executed, so there is no expensive scrolling or such to hog the system.
+Yes. It is a vast improvement over the status quo, and people are asking for it. And the bootsplash layer can be moved elsewhere, just change the hooks and keep the loading/rendering.
 
-It's too big, and those folks tend to be super picky about space.
+Also, gfx driver loading isn't a dumpster fire, it mostly just works. It just mustn't be done 100% carelessly.
 
->> But from discussions it sounds like you very much want to use this on
->> servers, which makes 0 sense to me. On a server something like plymouth
->> should do a perfectly reasonable job.
->
-> As I said in the other thread, every little helps.
->
-> For example, even on a server, a nice bootsplash makes a Linux system more attractive to novice users.
->
-> On desktops, it's basically mandatory, as users seem to be scared of text scrolling by.
->
->
->> So, why exactly do we need this?
->
-> For the aforementioned reasons, and to have a nice, unified bootsplash code on *all* devices.
->
->
->> (let's stop the other thread meanwhile, there's no point discussing
->> implementation details if the why? question isn't answered yet)
->
-> Sure, I hope this helps.
 
-So essentially you're telling me that on a current general purpose
-distro the gfx driver loading is a dumpster fire, and we're fixing
-this by ignoring it an adding a hole new layer on top. That doesn't
-sound like any kind of good idea to me.
+> So if just using drm for everything isn't possible (since drm drivers
+> can at least in theory be hotunplugged), can we at least fix the
+> existing fbdev kernel bugs? Not being able to unplug a drm driver when
+> it's still open sounds like a rather serious issues that probably
+> should be fixed anyway ... so we're better able to hotunplug an fbdev
+> driver when it's in use.
 
-So if just using drm for everything isn't possible (since drm drivers
-can at least in theory be hotunplugged), can we at least fix the
-existing fbdev kernel bugs? Not being able to unplug a drm driver when
-it's still open sounds like a rather serious issues that probably
-should be fixed anyway ... so we're better able to hotunplug an fbdev
-driver when it's in use.
+I don't see it as a bug. The fbdev driver gets unloaded as much as possible, but as long as a userspace application keeps the address_space mmap()ed, there's nothing we can do, short of forcibly removing it and segfaulting the process the next time it tries to render something. Am I missing something?
 
-Also I'm not clear at all on the "papering over races with sleeps"
-part. DRM drivers shouldn't be racy when getting loaded ...
 
-Or we get simpledrm merged (for efifb and vesafb support) and someone
-types the xendrm driver (there is floating around, it's just old) and
-we could forget about any real fbdev drivers except the drm based
-ones.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+> Also I'm not clear at all on the "papering over races with sleeps"
+> part. DRM drivers shouldn't be racy when getting loaded ...
+
+The DRM driver loading isn't racy, but the fbdev can't be fully unloaded while Plymouth has the address_space mmap()ed. If Plymouth sleeps until drivers that are included in initramfs are (hopefully) loaded, then it will forego using its FB backend.
+
+A solution we've experimented with is dropping the FB backend from Plymouth. It instantly fixed the busy video RAM bug. However it made the folks relying on efifb very, very unhappy.
+
+
+> Or we get simpledrm merged (for efifb and vesafb support) and someone
+> types the xendrm driver (there is floating around, it's just old) and
+> we could forget about any real fbdev drivers except the drm based
+> ones.
+
+And drmcon, unless we come up with a better idea than hooking into the *con driver.
+
+Sure, that'd help a lot. But what do we do until then?
+
+
+
+Max

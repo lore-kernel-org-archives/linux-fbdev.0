@@ -1,7 +1,7 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Tue, 19 Dec 2017 16:26:26 +0000
+From: Ray Strode <halfline@gmail.com>
+Date: Tue, 19 Dec 2017 21:01:24 +0000
 Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
-Message-Id: <84bf675c-5415-00a3-d4b4-0ff2b14f0c2a@suse.de>
+Message-Id: <CAA_UwzLoTDQMJUWTZq-U=crNpAKmc5DpBNwJtr3DOO2ywaTD7g@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171213194755.3409-4-mstaudt@suse.de>
@@ -11,27 +11,29 @@ References: <20171213194755.3409-1-mstaudt@suse.de>
  <8bbb0497-4a10-2f81-0040-6e7cd4e7353c@suse.de>
  <20171219135715.GG26573@phenom.ffwll.local>
  <8036b6a6-6ed5-2f34-e854-1c397a9f34d4@suse.de>
- <CAKMK7uHHJdN+5zyTnOrvSWJAjkms-cVUcF-mP=X3gEA1Jvedrw@mail.gmail.com>
-In-Reply-To: <CAKMK7uHHJdN+5zyTnOrvSWJAjkms-cVUcF-mP=X3gEA1Jvedrw@mail.gmail.com>
+In-Reply-To: <8036b6a6-6ed5-2f34-e854-1c397a9f34d4@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, philm@manjaro.org, =?UTF-8?Q?Bero_Rosenkr=c3=a4nzer?= <bernhard.rosenkranzer@linaro.org>
+To: Max Staudt <mstaudt@suse.de>
+Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, philm@manjaro.org, bernhard.rosenkranzer@linaro.org
 
-On 12/19/2017 05:09 PM, Daniel Vetter wrote:
-> btw the reason drmcon didn't move is that David Herrmann moved on from
-> hacking on graphics stuff, and no one needs it. There's nothing
-> fundamentally wrong with his patches for a basic emergency console on
-> plain drm, or the simpledrm driver to get a basic drm framebuffer up
-> on vesafb/efifb and friends. Just wanted to bring this in since you
-> sound like you're expecting this to magically have happened somehow.
-> We don't merge code without real use-cases.
+Hi,
 
-Don't worry, I'm not expecting this to have magically happened. It will happen when it will happen, or maybe never.
+On Tue, Dec 19, 2017 at 10:41 AM, Max Staudt <mstaudt@suse.de> wrote:
+> I'm hooking into the in-kernel terminal emulator, because the bootsplash is a
+> functional extension of that. It just happens that fbcon sits on top of FB, so I
+> work with what I get.
+>
+> And the console in turn happens to work on all FB and KMS drivers, so it
+> makes users of all kinds of drivers happy. In fact, that's why the FB emulation
+> in KMS drivers came to be in the first place, if I remember right - to ensure
+> fbcon continues to work.
 
-I'm just working with that I've got right now, and once a successor to fbcon takes it's throne, I'm very happy to help move the bootsplash over.
+But what about multi-monitor? what about hidpi screens?  Ideally you want
+each monitor to show the splash in a way that best fits that monitor.
 
+You can't do that if you're drawing all over fbcon... and it's not like multiple
+monitors and 4k screens are niche these days.
 
-
-Max
+--Ray

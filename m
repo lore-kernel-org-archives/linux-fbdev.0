@@ -1,41 +1,205 @@
-From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
-Date: Sun, 31 Dec 2017 12:53:26 +0000
-Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
-Message-Id: <20171231125326.6e4d912b@alans-desktop>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 19 Dec 2017 05:38:00 +0000
+Subject: [PATCH V4 24/26] video: fbdev: riva: deprecate pci_get_bus_and_slot()
+Message-Id: <1513661883-28662-25-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171213194755.3409-1-mstaudt@suse.de>
- <20171213194755.3409-4-mstaudt@suse.de>
- <20171213213506.GD26573@phenom.ffwll.local>
- <d66a994a-cb3a-c1fb-8f91-adbd475a40f0@suse.de>
- <20171219122313.GE26573@phenom.ffwll.local>
- <8bbb0497-4a10-2f81-0040-6e7cd4e7353c@suse.de>
- <20171219135715.GG26573@phenom.ffwll.local>
- <1513692473.14829.14.camel@suse.com>
-In-Reply-To: <1513692473.14829.14.camel@suse.com>
+References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Oliver Neukum <oneukum@suse.com>
-Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, Stefan Dirsch <sndirsch@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Max Staudt <mstaudt@suse.de>, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
+To: linux-pci@vger.kernel.org, timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sinan Kaya <okaya@codeaurora.org>, Antonino Daplas <adaplas@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:NVIDIA rivafb and nvidiafb
+        FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
 
-On Tue, 19 Dec 2017 15:07:53 +0100
-Oliver Neukum <oneukum@suse.com> wrote:
+pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+where a PCI device is present. This restricts the device drivers to be
+reused for other domain numbers.
 
-> Am Dienstag, den 19.12.2017, 14:57 +0100 schrieb Daniel Vetter:
-> > > Would you like me to extend the FB API or not?  
-> > 
-> > Yes. Well for real I'd like you to do kms, so maybe you need to explain
-> > why exactly you absolutely have to use fbdev (aka which driver isn't
-> > supported by drm that you want to enable this on).  
-> 
-> Hi,
-> 
-> those would be at a minimum efifb, vesafb, xenfb
-> Those are obviously not sexy, but from a practical point of view
-> they are the minimum you need to support.
+Getting ready to remove pci_get_bus_and_slot() function in favor of
+pci_get_domain_bus_and_slot().
 
-I think it's more constructive to look at it the other way around. What
-drivers do we have that actually need to be used which don't have DRM
-equivalents - and how do we fix that instead ?
+struct riva_par has a pointer to struct pci_dev. Use the pci_dev member
+to extract the domain information.
 
-Alan
+Change the function signature for CalcStateExt and RivaGetConfig to pass
+in struct pci_dev in addition to RIVA_HW_INST so that code inside the
+riva_hw.c can also calculate domain number and pass it to
+pci_get_domain_bus_and_slot().
+
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/video/fbdev/riva/fbdev.c     |  2 +-
+ drivers/video/fbdev/riva/nv_driver.c |  7 ++++---
+ drivers/video/fbdev/riva/riva_hw.c   | 20 +++++++++++++-------
+ drivers/video/fbdev/riva/riva_hw.h   |  3 ++-
+ 4 files changed, 20 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/fbdev/riva/fbdev.c b/drivers/video/fbdev/riva/fbdev.c
+index 1ea78bb..ff82823 100644
+--- a/drivers/video/fbdev/riva/fbdev.c
++++ b/drivers/video/fbdev/riva/fbdev.c
+@@ -780,7 +780,7 @@ static int riva_load_video_mode(struct fb_info *info)
+ 	else
+ 		newmode.misc_output |= 0x80;	
+ 
+-	rc = CalcStateExt(&par->riva, &newmode.ext, bpp, width,
++	rc = CalcStateExt(&par->riva, &newmode.ext, par->pdev, bpp, width,
+ 			  hDisplaySize, height, dotClock);
+ 	if (rc)
+ 		goto out;
+diff --git a/drivers/video/fbdev/riva/nv_driver.c b/drivers/video/fbdev/riva/nv_driver.c
+index f3694cf..a3d9c66 100644
+--- a/drivers/video/fbdev/riva/nv_driver.c
++++ b/drivers/video/fbdev/riva/nv_driver.c
+@@ -159,6 +159,7 @@ unsigned long riva_get_memlen(struct riva_par *par)
+ 	unsigned int chipset = par->Chipset;
+ 	struct pci_dev* dev;
+ 	u32 amt;
++	int domain = pci_domain_nr(par->pdev->bus);
+ 
+ 	switch (chip->Architecture) {
+ 	case NV_ARCH_03:
+@@ -226,12 +227,12 @@ unsigned long riva_get_memlen(struct riva_par *par)
+ 	case NV_ARCH_30:
+ 		if(chipset = NV_CHIP_IGEFORCE2) {
+ 
+-			dev = pci_get_bus_and_slot(0, 1);
++			dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+ 			pci_read_config_dword(dev, 0x7C, &amt);
+ 			pci_dev_put(dev);
+ 			memlen = (((amt >> 6) & 31) + 1) * 1024;
+ 		} else if (chipset = NV_CHIP_0x01F0) {
+-			dev = pci_get_bus_and_slot(0, 1);
++			dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+ 			pci_read_config_dword(dev, 0x84, &amt);
+ 			pci_dev_put(dev);
+ 			memlen = (((amt >> 4) & 127) + 1) * 1024;
+@@ -417,6 +418,6 @@ unsigned long riva_get_maxdclk(struct riva_par *par)
+ 	}
+ 	par->riva.flatPanel = (par->FlatPanel > 0) ? TRUE : FALSE;
+ 
+-	RivaGetConfig(&par->riva, par->Chipset);
++	RivaGetConfig(&par->riva, par->pdev, par->Chipset);
+ }
+ 
+diff --git a/drivers/video/fbdev/riva/riva_hw.c b/drivers/video/fbdev/riva/riva_hw.c
+index 8bdf37f..0601c13 100644
+--- a/drivers/video/fbdev/riva/riva_hw.c
++++ b/drivers/video/fbdev/riva/riva_hw.c
+@@ -1108,7 +1108,8 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+     unsigned      pixelDepth,
+     unsigned     *burst,
+     unsigned     *lwm,
+-    RIVA_HW_INST *chip
++    RIVA_HW_INST *chip,
++    struct pci_dev *pdev
+ )
+ {
+     nv10_fifo_info fifo_data;
+@@ -1116,8 +1117,9 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+     unsigned int M, N, P, pll, MClk, NVClk;
+     unsigned int uMClkPostDiv;
+     struct pci_dev *dev;
++    int domain = pci_domain_nr(pdev->bus);
+ 
+-    dev = pci_get_bus_and_slot(0, 3);
++    dev = pci_get_domain_bus_and_slot(domain, 0, 3);
+     pci_read_config_dword(dev, 0x6C, &uMClkPostDiv);
+     pci_dev_put(dev);
+     uMClkPostDiv = (uMClkPostDiv >> 8) & 0xf;
+@@ -1132,7 +1134,7 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+     sim_data.enable_video   = 0;
+     sim_data.enable_mp      = 0;
+ 
+-    dev = pci_get_bus_and_slot(0, 1);
++    dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+     pci_read_config_dword(dev, 0x7C, &sim_data.memory_type);
+     pci_dev_put(dev);
+     sim_data.memory_type    = (sim_data.memory_type >> 12) & 1;
+@@ -1234,6 +1236,7 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+ (
+     RIVA_HW_INST  *chip,
+     RIVA_HW_STATE *state,
++    struct pci_dev *pdev,
+     int            bpp,
+     int            width,
+     int            hDisplaySize,
+@@ -1300,7 +1303,7 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+                                           pixelDepth * 8,
+                                          &(state->arbitration0),
+                                          &(state->arbitration1),
+-                                          chip);
++                                          chip, pdev);
+             } else {
+                 nv10UpdateArbitrationSettings(VClk, 
+                                           pixelDepth * 8, 
+@@ -2102,10 +2105,12 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+ static void nv10GetConfig
+ (
+     RIVA_HW_INST *chip,
++    struct pci_dev *pdev,
+     unsigned int chipset
+ )
+ {
+     struct pci_dev* dev;
++    int domain = pci_domain_nr(pdev->bus);
+     u32 amt;
+ 
+ #ifdef __BIG_ENDIAN
+@@ -2118,12 +2123,12 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+      * Fill in chip configuration.
+      */
+     if(chipset = NV_CHIP_IGEFORCE2) {
+-        dev = pci_get_bus_and_slot(0, 1);
++        dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+         pci_read_config_dword(dev, 0x7C, &amt);
+         pci_dev_put(dev);
+         chip->RamAmountKBytes = (((amt >> 6) & 31) + 1) * 1024;
+     } else if(chipset = NV_CHIP_0x01F0) {
+-        dev = pci_get_bus_and_slot(0, 1);
++        dev = pci_get_domain_bus_and_slot(domain, 0, 1);
+         pci_read_config_dword(dev, 0x84, &amt);
+         pci_dev_put(dev);
+         chip->RamAmountKBytes = (((amt >> 4) & 127) + 1) * 1024;
+@@ -2224,6 +2229,7 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+ int RivaGetConfig
+ (
+     RIVA_HW_INST *chip,
++    struct pci_dev *pdev,
+     unsigned int chipset
+ )
+ {
+@@ -2245,7 +2251,7 @@ static char nv3_get_param(nv3_fifo_info *res_info, nv3_sim_state * state, nv3_ar
+         case NV_ARCH_10:
+         case NV_ARCH_20:
+         case NV_ARCH_30:
+-            nv10GetConfig(chip, chipset);
++            nv10GetConfig(chip, pdev, chipset);
+             break;
+         default:
+             return (-1);
+diff --git a/drivers/video/fbdev/riva/riva_hw.h b/drivers/video/fbdev/riva/riva_hw.h
+index c2769f7..5e7b354 100644
+--- a/drivers/video/fbdev/riva/riva_hw.h
++++ b/drivers/video/fbdev/riva/riva_hw.h
+@@ -536,6 +536,7 @@
+ (
+     RIVA_HW_INST  *chip,
+     RIVA_HW_STATE *state,
++    struct pci_dev *pdev,
+     int            bpp,
+     int            width,
+     int            hDisplaySize,
+@@ -546,7 +547,7 @@
+ /*
+  * External routines.
+  */
+-int RivaGetConfig(RIVA_HW_INST *, unsigned int);
++int RivaGetConfig(RIVA_HW_INST *chip, struct pci_dev *pdev, unsigned int c);
+ /*
+  * FIFO Free Count. Should attempt to yield processor if RIVA is busy.
+  */
+-- 
+1.9.1
+

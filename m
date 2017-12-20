@@ -1,7 +1,7 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 20 Dec 2017 13:14:31 +0000
+From: Ray Strode <halfline@gmail.com>
+Date: Wed, 20 Dec 2017 15:35:56 +0000
 Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
-Message-Id: <bf6607cf-d3e7-5873-1905-c37474e89fb3@suse.de>
+Message-Id: <CAA_Uwz+e=b9-TvFVUuL0er114XZuFDopGDhHORiZAmpisHeF8A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171213194755.3409-4-mstaudt@suse.de>
@@ -12,49 +12,44 @@ References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171219135715.GG26573@phenom.ffwll.local>
  <8036b6a6-6ed5-2f34-e854-1c397a9f34d4@suse.de>
  <CAA_UwzLoTDQMJUWTZq-U=crNpAKmc5DpBNwJtr3DOO2ywaTD7g@mail.gmail.com>
-In-Reply-To: <CAA_UwzLoTDQMJUWTZq-U=crNpAKmc5DpBNwJtr3DOO2ywaTD7g@mail.gmail.com>
+ <bf6607cf-d3e7-5873-1905-c37474e89fb3@suse.de>
+In-Reply-To: <bf6607cf-d3e7-5873-1905-c37474e89fb3@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ray Strode <halfline@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, philm@manjaro.org, bernhard.rosenkranzer@linaro.org
+To: Max Staudt <mstaudt@suse.de>
+Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, philm@manjaro.org, =?UTF-8?Q?Bero_Rosenkr=C3=A4nzer?= <bernhard.rosenkranzer@linaro.org>
 
-On 12/19/2017 10:01 PM, Ray Strode wrote:
-> Hi,
-> 
-> On Tue, Dec 19, 2017 at 10:41 AM, Max Staudt <mstaudt@suse.de> wrote:
->> I'm hooking into the in-kernel terminal emulator, because the bootsplash is a
->> functional extension of that. It just happens that fbcon sits on top of FB, so I
->> work with what I get.
->>
->> And the console in turn happens to work on all FB and KMS drivers, so it
->> makes users of all kinds of drivers happy. In fact, that's why the FB emulation
->> in KMS drivers came to be in the first place, if I remember right - to ensure
->> fbcon continues to work.
-> 
-> But what about multi-monitor? what about hidpi screens?  Ideally you want
-> each monitor to show the splash in a way that best fits that monitor.
+Hi,
 
-Actually, I don't want that :)
+> Actually, I don't want that :)
+>
+> This was a design decision that I've made to keep the code small and simple to audit.
+> As it is, the simple bootsplash code will make 99% of people happy.
+You think only 1% of linux users have more than one monitor or a 4k screen?
 
-This was a design decision that I've made to keep the code small and simple to audit.
-As it is, the simple bootsplash code will make 99% of people happy. It includes positioning of objects in corners and in the center, and a background color, and thus can render something that doesn't look funny in all but the most extreme cases.
+> I've made this decision from the point of view of someone who wants to ship a general
+> purpose distribution. If you have a look around and compare this to e.g. the Windows or
+> Mac OS X bootsplashes, the possibilities that my kernel code provides already
+> surpasses them.
+I haven't looked specifically, but I don't believe you :-)  You're
+telling me the apple boot
+splash isn't scaled up on machines with retina displays?  I don't use
+OSX (or windows),
+so I don't know, but I'd be really surprised.
 
-I've made this decision from the point of view of someone who wants to ship a general purpose distribution. If you have a look around and compare this to e.g. the Windows or Mac OS X bootsplashes, the possibilities that my kernel code provides already surpasses them.
+> If you really want such sophisticated features, supplanting the initial bootsplash  with
+> Plymouth (or not using it at all) is a better solution. In my opinion, it is overengineering,
+> at least for kernel code.
+disagree..it's support for basic, commodity hardware these days.
 
-If you really want such sophisticated features, supplanting the initial bootsplash  with Plymouth (or not using it at all) is a better solution. In my opinion, it is overengineering, at least for kernel code.
+> As for HiDPI, if you're working on an embedded device with a fixed screen size -
+> say a phone - you can easily include a huge picture the size of the screen in the
+> bootsplash.
+I'm talking about a situation where you have a dell xps or whatever
+with an external
+monitor attached.  Each monitor should be able to show the splash
+without deforming
+it, and without making it huge or microscopic. pretty basic stuff...
 
-
-So... I'll just take what the fbdev emulation gives me. In most cases (single screen systems), this looks good. In most remaining cases, you have two identical monitors that show exactly the same thing. And whatever remains can live with whatever mode the DRM driver decides to set for the fbdev emulation.
-
-
-As for HiDPI, if you're working on an embedded device with a fixed screen size - say a phone - you can easily include a huge picture the size of the screen in the bootsplash.
-
-
-Again, it's feature creep now. Apple just centers a, well, an apple in the middle of the screen. Windows may even boot in 640x480 and then do a mode switch when showing the desktop (not sure whether this is still true with the latest version). Neither of them scales for HiDPI, and neither cares about multiple monitors. People are happy.
-
-
-So in the end, it's a matter of taste. I agree that in user space, exploring these features is fun. But in kernel space, it's definitely important to keep the code short and simple. I'm convinced that I've found a good balance :)
-
-
-Max
+--Ray

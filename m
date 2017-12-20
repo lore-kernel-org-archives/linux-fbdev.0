@@ -1,7 +1,7 @@
 From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 20 Dec 2017 14:10:54 +0000
+Date: Wed, 20 Dec 2017 14:16:25 +0000
 Subject: Re: [RFC PATCH v2 00/13] Kernel based bootsplash
-Message-Id: <3549c7c9-6d26-047a-ed4e-a2c81c44c079@suse.de>
+Message-Id: <0bb4de88-77f4-8c6a-d8df-e418e9f29e78@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171219161630.GI26573@phenom.ffwll.local>
@@ -9,83 +9,32 @@ References: <20171213194755.3409-1-mstaudt@suse.de>
  <CAKMK7uEEVEHbvHifobaTdgKkbS5HbyVAqGRkHUQNpWWSr7dasg@mail.gmail.com>
  <573d4050-7607-b8e4-7552-83966f551ba3@suse.de>
  <20171220094355.GJ26573@phenom.ffwll.local>
-In-Reply-To: <20171220094355.GJ26573@phenom.ffwll.local>
+ <e9734508-9b2c-0c18-f6ef-6ca984a33b32@baylibre.com>
+In-Reply-To: <e9734508-9b2c-0c18-f6ef-6ca984a33b32@baylibre.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Bero_Rosenkr=c3=a4nzer?= <bernhard.rosenkranzer@linaro.org>, philm@manjaro.org
+To: Neil Armstrong <narmstrong@baylibre.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, =?UTF-8?Q?Bero_Rosenkr=c3=a4nzer?= <bernhard.rosenkranzer@linaro.org>, philm@manjaro.org
 
-On 12/20/2017 10:43 AM, Daniel Vetter wrote:
-> On Tue, Dec 19, 2017 at 07:40:12PM +0100, Max Staudt wrote:
->> On 12/19/2017 06:26 PM, Daniel Vetter wrote:
->>> So essentially you're telling me that on a current general purpose
->>> distro the gfx driver loading is a dumpster fire, and we're fixing
->>> this by ignoring it an adding a hole new layer on top. That doesn't
->>> sound like any kind of good idea to me.
->>
->> Yes. It is a vast improvement over the status quo, and people are asking
->> for it. And the bootsplash layer can be moved elsewhere, just change the
->> hooks and keep the loading/rendering.
->>
->> Also, gfx driver loading isn't a dumpster fire, it mostly just works. It
->> just mustn't be done 100% carelessly.
-> 
-> You've talked about using sleep and stuff to paper over races. That
-> doesn't sound good at all.
+On 12/20/2017 11:06 AM, Neil Armstrong wrote:
+> My 2cents about this patchset:
+> You did a good job about all the animation and splash logic, but for me all this fbcon
+> stuff is a huge hack, please use a standard and modern display subsystem en leave fbcon
+> die alone....
 
-Sorry, I was unclear.
+Thanks for the compliment!
 
-It's Plymouth's ShowDelay that, unintentionally, papers over this bug.
+As for fbcon: I think you're confusing things. fbcon is not the same as fbdev.
 
-The driver loading bug will happen with any user based splash - it's not limited to Plymouth.
+I've hooked into the terminal emulator because it allows me to hide exactly the thing I want to hide (text), it allows me to show what I want when I want (splash or text), and it spares me from defining a third competing user of the device.
 
-On the other hand, if you don't start a graphical application before having loaded the final graphics driver, everything is good and there is no race.
-
-So, module loading works as intended ;)
+I understand that you want old code to die, and as it is now, catering for the old code will cater for everyone, including the new style drivers (via their legacy interface).
 
 
->>> So if just using drm for everything isn't possible (since drm drivers
->>> can at least in theory be hotunplugged), can we at least fix the
->>> existing fbdev kernel bugs? Not being able to unplug a drm driver when
->>> it's still open sounds like a rather serious issues that probably
->>> should be fixed anyway ... so we're better able to hotunplug an fbdev
->>> driver when it's in use.
->>
->> I don't see it as a bug. The fbdev driver gets unloaded as much as
->> possible, but as long as a userspace application keeps the address_space
->> mmap()ed, there's nothing we can do, short of forcibly removing it and
->> segfaulting the process the next time it tries to render something. Am I
->> missing something?
-> 
-> I guess you could remap that too ... But yeah SIGBUS ftw. Wrap rendering
-> in a sighandler and abort if you hit that. In drm we try to be a bit
-> better and keep things around until userspace has gone.
-
-Hmm. Are you sure it's okay to SIG these processes just because someone else has decided to unload a driver? That is counter to everything else that I've seen so far.
-
-Also, is it even feasible, implementation wise?
+> My DRM ARM systems would love to have such bootsplash, so please, make it happen using DRM
+> then leave the fbcon based stuff like efifb migrate to DRM in a second time !
+The current solution will "just work" on your systems as it is. I'm not ignoring them. If you've ever used a kernel console on your DRM ARM device, then the current splash will work exactly as good.
 
 
->>> Or we get simpledrm merged (for efifb and vesafb support) and someone
->>> types the xendrm driver (there is floating around, it's just old) and
->>> we could forget about any real fbdev drivers except the drm based
->>> ones.
->>
->> And drmcon, unless we come up with a better idea than hooking into the *con driver.
-> 
-> If we have everything as drm drivers, you can just use plymouth (with no
-> fbdev backend ofc) and everyone is happy. Including the efifb folks (it's
-> simply going to be called efidrmfb or something like that). So no idea why
-> you need a *con.
 
-Hmm, that still makes us wait until userspace has appeared...
-
-And the reason I built it into *con is because the logic for appearing/disappearing is basically the same, and in this chain it makes sense for the bootsplash show/hide logic to be chained behind *con.
-
-
->> Sure, that'd help a lot. But what do we do until then?
-> 
-> Make it happen? Twiddling thumbs is an option too ofc, but it tends to not
-> result in results :-)
-
-I'm afraid I don't have the time to write an in-kernel terminal emulator, thus the wish to build upon the existing one...
+Max

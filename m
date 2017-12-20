@@ -1,7 +1,7 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 20 Dec 2017 09:45:28 +0000
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 20 Dec 2017 13:14:31 +0000
 Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
-Message-Id: <20171220094527.GK26573@phenom.ffwll.local>
+Message-Id: <bf6607cf-d3e7-5873-1905-c37474e89fb3@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171213194755.3409-4-mstaudt@suse.de>
@@ -11,49 +11,50 @@ References: <20171213194755.3409-1-mstaudt@suse.de>
  <8bbb0497-4a10-2f81-0040-6e7cd4e7353c@suse.de>
  <20171219135715.GG26573@phenom.ffwll.local>
  <8036b6a6-6ed5-2f34-e854-1c397a9f34d4@suse.de>
- <CAKMK7uHgPheSuGc6v3aSxzaJ_BNMGRs3zZ=Mv7M_us37QS8-sg@mail.gmail.com>
- <24fd8767-bdf2-0073-2161-a0cf3b61780d@suse.de>
-In-Reply-To: <24fd8767-bdf2-0073-2161-a0cf3b61780d@suse.de>
+ <CAA_UwzLoTDQMJUWTZq-U=crNpAKmc5DpBNwJtr3DOO2ywaTD7g@mail.gmail.com>
+In-Reply-To: <CAA_UwzLoTDQMJUWTZq-U=crNpAKmc5DpBNwJtr3DOO2ywaTD7g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Max Staudt <mstaudt@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, philm@manjaro.org, Bero =?iso-8859-1?Q?Rosenkr=E4nzer?= <bernhard.rosenkranzer@linaro.org>
+To: Ray Strode <halfline@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, philm@manjaro.org, bernhard.rosenkranzer@linaro.org
 
-On Tue, Dec 19, 2017 at 05:23:52PM +0100, Max Staudt wrote:
-> On 12/19/2017 05:02 PM, Daniel Vetter wrote:
-> > On Tue, Dec 19, 2017 at 4:41 PM, Max Staudt <mstaudt@suse.de> wrote:
-> >> On 12/19/2017 02:57 PM, Daniel Vetter wrote:
-> >>> The problem is that defio is totally not how a real driver works.
-> >>
-> >> But they do exist and I can't ignore them.
-> >>
-> >> I'm afraid I don't understand - why are those, such as xenfb, not real drivers?
-> > 
-> > I mean kms drivers. The problem is that the magic mapping that fbdev
-> > expects is real pain. Everyone else, including kms, expects an
-> > explicit flush operation. So instead of hacking around even more with
-> > the defio corner cases that don't work, I'm suggesting we just add
-> > that flush operation. At least internally.
-> > 
-> > Fixing kms drivers to implement a better defio is probably not a
-> > reasonable investement of time.
+On 12/19/2017 10:01 PM, Ray Strode wrote:
+> Hi,
 > 
-> Ah yes, I understand now, you mean that KMS drivers have explicit flush,
-> and defio is a hack to retrofit such drivers to an API that never
-> supported a flush operation (the fbdev API), but always used to expose
-> the video memory directly. Right?
+> On Tue, Dec 19, 2017 at 10:41 AM, Max Staudt <mstaudt@suse.de> wrote:
+>> I'm hooking into the in-kernel terminal emulator, because the bootsplash is a
+>> functional extension of that. It just happens that fbcon sits on top of FB, so I
+>> work with what I get.
+>>
+>> And the console in turn happens to work on all FB and KMS drivers, so it
+>> makes users of all kinds of drivers happy. In fact, that's why the FB emulation
+>> in KMS drivers came to be in the first place, if I remember right - to ensure
+>> fbcon continues to work.
 > 
-> If yes, then I agree. Fixing the defio in the KMS drivers wouldn't even
-> solve my problem - I'd still need to implement flush. So might as well
-> care about the flush straight away, yep!
+> But what about multi-monitor? what about hidpi screens?  Ideally you want
+> each monitor to show the splash in a way that best fits that monitor.
 
-Yup.
+Actually, I don't want that :)
 
-I'll leave the more fundamental discussion to the other thread on the
-cover letter.
--Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+This was a design decision that I've made to keep the code small and simple to audit.
+As it is, the simple bootsplash code will make 99% of people happy. It includes positioning of objects in corners and in the center, and a background color, and thus can render something that doesn't look funny in all but the most extreme cases.
+
+I've made this decision from the point of view of someone who wants to ship a general purpose distribution. If you have a look around and compare this to e.g. the Windows or Mac OS X bootsplashes, the possibilities that my kernel code provides already surpasses them.
+
+If you really want such sophisticated features, supplanting the initial bootsplash  with Plymouth (or not using it at all) is a better solution. In my opinion, it is overengineering, at least for kernel code.
+
+
+So... I'll just take what the fbdev emulation gives me. In most cases (single screen systems), this looks good. In most remaining cases, you have two identical monitors that show exactly the same thing. And whatever remains can live with whatever mode the DRM driver decides to set for the fbdev emulation.
+
+
+As for HiDPI, if you're working on an embedded device with a fixed screen size - say a phone - you can easily include a huge picture the size of the screen in the bootsplash.
+
+
+Again, it's feature creep now. Apple just centers a, well, an apple in the middle of the screen. Windows may even boot in 640x480 and then do a mode switch when showing the desktop (not sure whether this is still true with the latest version). Neither of them scales for HiDPI, and neither cares about multiple monitors. People are happy.
+
+
+So in the end, it's a matter of taste. I agree that in user space, exploring these features is fun. But in kernel space, it's definitely important to keep the code short and simple. I'm convinced that I've found a good balance :)
+
+
+Max

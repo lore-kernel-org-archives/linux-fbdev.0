@@ -1,91 +1,116 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Mon, 04 Dec 2017 22:12:12 +0000
-Subject: Re: [PATCH v7 0/7] drm/fbdev: Panel orientation connector property support
-Message-Id: <7fff127d-b4aa-a422-fc4a-a7a32f4b8870@redhat.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Thu, 21 Dec 2017 22:07:56 +0000
+Subject: [PATCH v3] Fix loading of module radeonfb on PowerMac
+Message-Id: <20171221220757.24672-1-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125193602epcas2p4cbcc2891d085fb24f17c6e209a0d2024@epcas2p4.samsung.com>
- <20171125193553.23986-1-hdegoede@redhat.com> <8763653.ZUg3vedi83@amdc3058>
-In-Reply-To: <8763653.ZUg3vedi83@amdc3058>
+References: <1479153557-20849-1-git-send-email-malat@debian.org>
+In-Reply-To: <1479153557-20849-1-git-send-email-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <j.w.r.degoede@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, intel-gfx <intel-gfx@lists.freedesktop.org>, dri-devel@lists.freedesktop.org, Dave Airlie <airlied@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Mathieu Malaterre <malat@debian.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Hi,
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-On 01-12-17 19:02, Bartlomiej Zolnierkiewicz wrote:
-> On Saturday, November 25, 2017 08:35:46 PM Hans de Goede wrote:
->> Here is v7 of my series to add a "panel orientation" property to
->> the drm-connector for the LCD panel to let userspace know about LCD
->> panels which are not mounted upright, as well as detecting upside-down
->> panels without needing quirks (like we do for 90 degree rotated screens).
->>
->> Bartlomiej, can we please have your Acked-by for merging patches 1,
->> 6 and 7 through the drm tree?
-> 
-> Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
-Thank you.
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
 
-> Given that you add (can be in a incremental patch) a comment to:
-> 
->    drivers/gpu/drm/drm_panel_orientation_quirks.c [ at the top ]
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
 
-I've fixed this up before merging, adding this comment:
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded.
 
-  * Note the quirks in this file are shared with fbdev/efifb and as such
-  * must not depend on other drm code.
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeon side.
 
-> and
-> 
->    drivers/gpu/drm/Kconfig [ to config DRM_PANEL_ORIENTATION_QUIRKS ]
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+---
+v2: Only fails when CONFIG_PCC is not set
+v3: Only fails when CONFIG_FB_OF is not set, CONFIG_PCC was too broad. Since the conflicts in region is due to OFfb explicitly refers to it.
 
-Not everyone likes adding comments to Kconfig files I've had
-push-back against that in the past. So I will post a follow-up patch
-for this and then we will see from there.
+ drivers/video/fbdev/aty/radeon_base.c | 26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-> explaining that the code in question is shared with fbdev/efifb (so
-> hopefully people will be careful and not try to make this code DRM
-> specific at some point in a future).
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 4d77daeecf99..221879196531 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2259,6 +2259,22 @@ static const struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2312,19 +2328,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
++#ifndef CONFIG_FB_OF
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_fb;
++#endif
+ 	}
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
+ 	if (ret < 0) {
++#ifndef CONFIG_FB_OF
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_pci0;
++#endif
+ 	}
+ 
+ 	/* map the regions */
+@@ -2509,10 +2533,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_FB_OF
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
+-- 
+2.11.0
 
-Regards,
-
-Hans
-
-
-
->> New in v7:
->> -Fix embarrassing build error in efifb due to me only rebuilding modules
->>   after cleanups from v6
->>
->> New in v6:
->> -Fix / reference kernel-doc comments
->> -Don't export the DRM_MODE_PANEL_ORIENTATION_* defines in the UAPI
->> -Move i915 dsi hardware rotation state read-out to intel_dsi_init()
->>
->> New in v5:
->> -Add kernel-doc comment documenting drm_get_panel_orientation_quirk()
->> -drm_fb_helper: Only use hardware (crtc primary plane) rotation for
->>   180 degrees for now as 9-/270 degrees rotation requires special handling
->>
->> New in v4:
->> -Fix drm_fb_helper code setting an invalid rotation value on the primary
->>   plane of disabled/unused crtcs (caught by Fi.CI)
->>
->> New in v3:
->> -As requested by Daniel v3 moves the quirks over from the fbdev
->>   subsys to the drm subsys. I've done this by simpy starting with a copy of
->>   the quirk table and eventually removing the fbdev version.
->>
->> The 1st patch in this series is a small fbdev/fbcon patch, patches 2-5
->> are all drm patches and patches 6-7 are fbdev/fbcon patches again. As
->> discussed previously the plan is to merge all 7 patches through the
->> drm tree.
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 

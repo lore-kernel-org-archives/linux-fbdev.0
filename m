@@ -1,54 +1,87 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 29 Dec 2017 17:53:29 +0000
-Subject: Re: [PATCH] video/fbdev/vt8500lcdfb: Delete an error message for a failed memory allocation in vt850
-Message-Id: <3740850.4D0mjicDMo@amdc3058>
+From: Yisheng Xie <xieyisheng1@huawei.com>
+Date: Sat, 23 Dec 2017 10:59:24 +0000
+Subject: [PATCH v3 11/27] video: replace devm_ioremap_nocache with devm_ioremap
+Message-Id: <1514026764-33087-1-git-send-email-xieyisheng1@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171124195318epcas2p1b030ce8d47da92659b3c6068c0810778@epcas2p1.samsung.com>
- <d229eccd-ab20-d594-caa1-55fb464357ac@users.sourceforge.net>
-In-Reply-To: <d229eccd-ab20-d594-caa1-55fb464357ac@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: ysxie@foxmail.com, Yisheng Xie <xieyisheng1@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On Friday, November 24, 2017 08:53:02 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Fri, 24 Nov 2017 20:42:08 +0100
-> 
-> Omit an extra message for a memory allocation failure in this function.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> ---
->  drivers/video/fbdev/vt8500lcdfb.c | 4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/vt8500lcdfb.c b/drivers/video/fbdev/vt8500lcdfb.c
-> index 1a1176bf0906..5c5cd2923041 100644
-> --- a/drivers/video/fbdev/vt8500lcdfb.c
-> +++ b/drivers/video/fbdev/vt8500lcdfb.c
-> @@ -289,10 +289,8 @@ static int vt8500lcd_probe(struct platform_device *pdev)
->  
->  	fbi = devm_kzalloc(&pdev->dev, sizeof(struct vt8500lcd_info)
->  			+ sizeof(u32) * 16, GFP_KERNEL);
-> -	if (!fbi) {
-> -		dev_err(&pdev->dev, "Failed to initialize framebuffer device\n");
-> +	if (!fbi)
->  		return -ENOMEM;
-> -	}
->  
+Default ioremap is ioremap_nocache, so devm_ioremap has the same
+function with devm_ioremap_nocache, which can just be killed to
+save the size of devres.o
 
-This removes the information about the device for which the allocation
-fails (but as there can be only one vt8500lcdfb device in the system this
-change is okay).
+This patch is to use use devm_ioremap instead of devm_ioremap_nocache,
+which should not have any function change but prepare for killing
+devm_ioremap_nocache.
 
-Patch queued for 4.16, thanks.
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
+---
+ drivers/video/fbdev/mbx/mbxfb.c       | 9 ++++-----
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c | 2 +-
+ drivers/video/fbdev/pxa168fb.c        | 4 ++--
+ 3 files changed, 7 insertions(+), 8 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/mbx/mbxfb.c b/drivers/video/fbdev/mbx/mbxfb.c
+index 539b85d..fcecf48 100644
+--- a/drivers/video/fbdev/mbx/mbxfb.c
++++ b/drivers/video/fbdev/mbx/mbxfb.c
+@@ -940,9 +940,8 @@ static int mbxfb_probe(struct platform_device *dev)
+ 	}
+ 	mfbi->reg_phys_addr = mfbi->reg_res->start;
+ 
+-	mfbi->reg_virt_addr = devm_ioremap_nocache(&dev->dev,
+-						   mfbi->reg_phys_addr,
+-						   res_size(mfbi->reg_req));
++	mfbi->reg_virt_addr = devm_ioremap(&dev->dev, mfbi->reg_phys_addr,
++					   res_size(mfbi->reg_req));
+ 	if (!mfbi->reg_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap Marathon registers\n");
+ 		ret = -EINVAL;
+@@ -950,8 +949,8 @@ static int mbxfb_probe(struct platform_device *dev)
+ 	}
+ 	virt_base_2700 = mfbi->reg_virt_addr;
+ 
+-	mfbi->fb_virt_addr = devm_ioremap_nocache(&dev->dev, mfbi->fb_phys_addr,
+-						  res_size(mfbi->fb_req));
++	mfbi->fb_virt_addr = devm_ioremap(&dev->dev, mfbi->fb_phys_addr,
++					  res_size(mfbi->fb_req));
+ 	if (!mfbi->fb_virt_addr) {
+ 		dev_err(&dev->dev, "failed to ioremap frame buffer\n");
+ 		ret = -EINVAL;
+diff --git a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+index b6f83d5..8bbc873 100644
+--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
++++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
+@@ -500,7 +500,7 @@ static int mmphw_probe(struct platform_device *pdev)
+ 		goto failed;
+ 	}
+ 
+-	ctrl->reg_base = devm_ioremap_nocache(ctrl->dev,
++	ctrl->reg_base = devm_ioremap(ctrl->dev,
+ 			res->start, resource_size(res));
+ 	if (ctrl->reg_base = NULL) {
+ 		dev_err(ctrl->dev, "%s: res %pR map failed\n", __func__, res);
+diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+index def3a50..7d74f07 100644
+--- a/drivers/video/fbdev/pxa168fb.c
++++ b/drivers/video/fbdev/pxa168fb.c
+@@ -668,8 +668,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
+ 	/*
+ 	 * Map LCD controller registers.
+ 	 */
+-	fbi->reg_base = devm_ioremap_nocache(&pdev->dev, res->start,
+-					     resource_size(res));
++	fbi->reg_base = devm_ioremap(&pdev->dev, res->start,
++				     resource_size(res));
+ 	if (fbi->reg_base = NULL) {
+ 		ret = -ENOMEM;
+ 		goto failed_free_info;
+-- 
+1.8.3.1
 

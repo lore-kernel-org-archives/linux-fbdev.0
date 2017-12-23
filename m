@@ -1,45 +1,127 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Fri, 01 Dec 2017 08:18:18 +0000
-Subject: Re: [PATCH v3 1/4] omapdrm: panel: fix compatible vendor string for td028ttec1
-Message-Id: <da3ce573-1593-3377-1243-ff500e9522b3@ti.com>
+From: Yisheng Xie <xieyisheng1@huawei.com>
+Date: Sat, 23 Dec 2017 10:55:25 +0000
+Subject: [PATCH v3 00/27] kill devm_ioremap_nocache
+Message-Id: <1514026525-32538-1-git-send-email-xieyisheng1@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1511884135.git.hns@goldelico.com>
- <6ae8f4b7d794c536650cc99025e5b026089cea30.1511884135.git.hns@goldelico.com>
- <20171201015730.nvw6sblxn566dhhb@rob-hp-laptop>
-In-Reply-To: <20171201015730.nvw6sblxn566dhhb@rob-hp-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>, "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Julia Lawall <Julia.Lawall@lip6.fr>, letux-kernel@openphoenux.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Sean Paul <seanpaul@chromium.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, =?UTF-8?Q?Beno=c3=aet_Cousson?= <bcousson@baylibre.com>, kernel@pyra-handheld.com, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: ysxie@foxmail.com, ulf.hansson@linaro.org, linux-mmc@vger.kernel.org, boris.brezillon@free-electrons.com, richard@nod.at, marek.vasut@gmail.com, cyrille.pitchen@wedev4u.fr, linux-mtd@lists.infradead.org, alsa-devel@alsa-project.org, wim@iguana.be, linux@roeck-us.net, linux-watchdog@vger.kernel.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linus.walleij@linaro.org, linux-gpio@vger.kernel.org, ralf@linux-mips.org, linux-mips@linux-mips.org, lgirdwood@gmail.com, broonie@kernel.org, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, arnd@arndb.de, andriy.shevchenko@linux.intel.com, industrypack-devel@lists.sourceforge.net, wg@grandegger.com, mkl@pengutronix.de, linux-can@vger.kernel.org, mcheh
 
-On 01/12/17 03:57, Rob Herring wrote:
+Hi all,
 
->> diff --git a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
->> index 0a38a0e8c925..a0dfa14f4fab 100644
->> --- a/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
->> +++ b/drivers/gpu/drm/omapdrm/displays/panel-tpo-td028ttec1.c
->> @@ -452,6 +452,8 @@ static int td028ttec1_panel_remove(struct spi_device *spi)
->>  }
->>  
->>  static const struct of_device_id td028ttec1_of_match[] = {
->> +	{ .compatible = "omapdss,tpo,td028ttec1", },
-> 
-> Why the omapdss part?
+When I tried to use devm_ioremap function and review related code, I found
+devm_ioremap and devm_ioremap_nocache is almost the same with each other,
+except one use ioremap while the other use ioremap_nocache. While ioremap's
+default function is ioremap_nocache, so devm_ioremap_nocache also have the
+same function with devm_ioremap, which can just be killed to reduce the size
+of devres.o(from 20304 bytes to 18992 bytes in my compile environment).
 
-This driver is omapdrm specific. But I don't want the dts file to have
-omapdrm specific compatible strings, so that the dts files do not have
-to be changed when in the future we move to common DRM panel drivers
+I have posted two versions, which use macro instead of function for
+devm_ioremap_nocache[1] or devm_ioremap[2]. And Greg suggest me to kill
+devm_ioremap_nocache for no need to keep a macro around for the duplicate
+thing. So here comes v3 and please help to review.
 
-So:
+Thanks so much!
+Yisheng Xie
 
-- In the .dts, we have compatible = "tpo,td028ttec1"
-- At early boot time, we append "omapdss," to compatible strings for
-panels connected to the DSS node.
-- The omapdrm specific drivers match to "omapdss,tpo,td028ttec1"
+[1] https://lkml.org/lkml/2017/11/20/135
+[2] https://lkml.org/lkml/2017/11/25/21
 
- Tomi
+Yisheng Xie (27):
+  ASOC: replace devm_ioremap_nocache with devm_ioremap
+  spi: replace devm_ioremap_nocache with devm_ioremap
+  staging: replace devm_ioremap_nocache with devm_ioremap
+  ipack: replace devm_ioremap_nocache with devm_ioremap
+  media: replace devm_ioremap_nocache with devm_ioremap
+  gpio: replace devm_ioremap_nocache with devm_ioremap
+  mmc: replace devm_ioremap_nocache with devm_ioremap
+  PCI: replace devm_ioremap_nocache with devm_ioremap
+  platform/x86: replace devm_ioremap_nocache with devm_ioremap
+  tty: replace devm_ioremap_nocache with devm_ioremap
+  video: replace devm_ioremap_nocache with devm_ioremap
+  rtc: replace devm_ioremap_nocache with devm_ioremap
+  char: replace devm_ioremap_nocache with devm_ioremap
+  mtd: nand: replace devm_ioremap_nocache with devm_ioremap
+  dmaengine: replace devm_ioremap_nocache with devm_ioremap
+  ata: replace devm_ioremap_nocache with devm_ioremap
+  irqchip: replace devm_ioremap_nocache with devm_ioremap
+  pinctrl: replace devm_ioremap_nocache with devm_ioremap
+  drm: replace devm_ioremap_nocache with devm_ioremap
+  regulator: replace devm_ioremap_nocache with devm_ioremap
+  watchdog: replace devm_ioremap_nocache with devm_ioremap
+  tools/testing/nvdimm: replace devm_ioremap_nocache with devm_ioremap
+  MIPS: pci: replace devm_ioremap_nocache with devm_ioremap
+  can: replace devm_ioremap_nocache with devm_ioremap
+  wireless: replace devm_ioremap_nocache with devm_ioremap
+  ethernet: replace devm_ioremap_nocache with devm_ioremap
+  devres: kill devm_ioremap_nocache
+
+ Documentation/driver-model/devres.txt           |  1 -
+ arch/mips/pci/pci-ar2315.c                      |  3 +--
+ drivers/ata/pata_arasan_cf.c                    |  3 +--
+ drivers/ata/pata_octeon_cf.c                    |  9 ++++----
+ drivers/ata/pata_rb532_cf.c                     |  2 +-
+ drivers/char/hw_random/bcm63xx-rng.c            |  3 +--
+ drivers/char/hw_random/octeon-rng.c             | 10 ++++-----
+ drivers/dma/altera-msgdma.c                     |  3 +--
+ drivers/dma/sprd-dma.c                          |  4 ++--
+ drivers/gpio/gpio-ath79.c                       |  3 +--
+ drivers/gpio/gpio-em.c                          |  6 ++---
+ drivers/gpio/gpio-htc-egpio.c                   |  4 ++--
+ drivers/gpio/gpio-xgene.c                       |  3 +--
+ drivers/gpu/drm/hisilicon/hibmc/hibmc_drm_drv.c |  2 +-
+ drivers/gpu/drm/msm/msm_drv.c                   |  2 +-
+ drivers/gpu/drm/sti/sti_dvo.c                   |  3 +--
+ drivers/gpu/drm/sti/sti_hda.c                   |  4 ++--
+ drivers/gpu/drm/sti/sti_hdmi.c                  |  2 +-
+ drivers/gpu/drm/sti/sti_tvout.c                 |  2 +-
+ drivers/gpu/drm/sti/sti_vtg.c                   |  2 +-
+ drivers/ipack/devices/ipoctal.c                 | 13 +++++------
+ drivers/irqchip/irq-renesas-intc-irqpin.c       |  4 ++--
+ drivers/media/platform/tegra-cec/tegra_cec.c    |  4 ++--
+ drivers/mmc/host/sdhci-acpi.c                   |  3 +--
+ drivers/mtd/nand/fsl_upm.c                      |  4 ++--
+ drivers/net/can/sja1000/sja1000_platform.c      |  4 ++--
+ drivers/net/ethernet/altera/altera_tse_main.c   |  3 +--
+ drivers/net/ethernet/ethoc.c                    |  8 +++----
+ drivers/net/ethernet/lantiq_etop.c              |  4 ++--
+ drivers/net/ethernet/ti/netcp_core.c            |  2 +-
+ drivers/net/wireless/ath/ath9k/ahb.c            |  2 +-
+ drivers/pci/dwc/pci-dra7xx.c                    |  2 +-
+ drivers/pinctrl/bcm/pinctrl-ns2-mux.c           |  2 +-
+ drivers/pinctrl/bcm/pinctrl-nsp-mux.c           |  4 ++--
+ drivers/pinctrl/freescale/pinctrl-imx1-core.c   |  2 +-
+ drivers/pinctrl/pinctrl-amd.c                   |  4 ++--
+ drivers/platform/x86/intel_pmc_core.c           |  5 ++---
+ drivers/regulator/ti-abb-regulator.c            |  6 ++---
+ drivers/rtc/rtc-sh.c                            |  4 ++--
+ drivers/spi/spi-jcore.c                         |  3 +--
+ drivers/staging/fsl-mc/bus/mc-io.c              |  8 +++----
+ drivers/tty/mips_ejtag_fdc.c                    |  4 ++--
+ drivers/tty/serial/8250/8250_omap.c             |  3 +--
+ drivers/tty/serial/lantiq.c                     |  3 +--
+ drivers/tty/serial/meson_uart.c                 |  3 +--
+ drivers/tty/serial/owl-uart.c                   |  2 +-
+ drivers/tty/serial/pic32_uart.c                 |  4 ++--
+ drivers/video/fbdev/mbx/mbxfb.c                 |  9 ++++----
+ drivers/video/fbdev/mmp/hw/mmp_ctrl.c           |  2 +-
+ drivers/video/fbdev/pxa168fb.c                  |  4 ++--
+ drivers/watchdog/bcm63xx_wdt.c                  |  4 ++--
+ drivers/watchdog/rc32434_wdt.c                  |  4 ++--
+ include/linux/io.h                              |  2 --
+ lib/devres.c                                    | 29 -------------------------
+ scripts/coccinelle/free/devm_free.cocci         |  2 --
+ sound/soc/au1x/ac97c.c                          |  4 ++--
+ sound/soc/au1x/i2sc.c                           |  4 ++--
+ sound/soc/intel/atom/sst/sst_acpi.c             | 20 ++++++++---------
+ sound/soc/intel/boards/mfld_machine.c           |  4 ++--
+ sound/soc/sh/fsi.c                              |  4 ++--
+ tools/testing/nvdimm/Kbuild                     |  2 +-
+ tools/testing/nvdimm/test/iomap.c               |  2 +-
+ 62 files changed, 109 insertions(+), 168 deletions(-)
 
 -- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+1.8.3.1
+

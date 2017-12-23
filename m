@@ -1,141 +1,105 @@
-From: "Pieter \"PoroCYon\" Sluys" <pcy@national.shitposting.agency>
-Date: Wed, 20 Dec 2017 14:53:00 +0000
-Subject: Re: [PATCH] vfb: fix video mode and line_length being set when loaded
-Message-Id: <81bf0d1e-ee7a-29ea-d19e-ffeb41d285fe@national.shitposting.agency>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="------------78D131A0C3556277D4625C94"
+From: Yisheng Xie <xieyisheng1@huawei.com>
+Date: Sat, 23 Dec 2017 11:02:59 +0000
+Subject: [PATCH v3 27/27] devres: kill devm_ioremap_nocache
+Message-Id: <1514026979-33838-1-git-send-email-xieyisheng1@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <39a57338-18ac-c64f-1cf1-70a5f905990a@national.shitposting.agency>
- <CAMuHMdXjkY=6=CDMPNFtxtjw8g52ivV-HdnKX3-mao0TPTabMw@mail.gmail.com>
-In-Reply-To: <CAMuHMdXjkY=6=CDMPNFtxtjw8g52ivV-HdnKX3-mao0TPTabMw@mail.gmail.com>
-To: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, gregkh@linuxfoundation.org
+Cc: ysxie@foxmail.com, ulf.hansson@linaro.org, linux-mmc@vger.kernel.org, boris.brezillon@free-electrons.com, richard@nod.at, marek.vasut@gmail.com, cyrille.pitchen@wedev4u.fr, linux-mtd@lists.infradead.org, alsa-devel@alsa-project.org, wim@iguana.be, linux@roeck-us.net, linux-watchdog@vger.kernel.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linus.walleij@linaro.org, linux-gpio@vger.kernel.org, ralf@linux-mips.org, linux-mips@linux-mips.org, lgirdwood@gmail.com, broonie@kernel.org, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, arnd@arndb.de, andriy.shevchenko@linux.intel.com, industrypack-devel@lists.sourceforge.net, wg@grandegger.com, mkl@pengutronix.de, linux-can@vger.kernel.org, mcheh
 
-This is a multi-part message in MIME format.
---------------78D131A0C3556277D4625C94
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+Now, nobody use devm_ioremap_nocache anymore, can it can just be
+removed. After this patch the size of devres.o will be reduced from
+20304 bytes to 18992 bytes.
 
-Geert Uytterhoeven:
-> Please add your "Signed-off-by", cfr.
-> Documentation/process/submitting-patches.rst.
-
-Sorry I knew I would've messed up *something*.
-
-> You can drop the tests for 2 and 4, as these are no longer used by the driver.
-
-Done that.
-
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Pieter "PoroCYon" Sluys <pcy@national.shitposting.agency>
-
+Suggested-by: Greg KH <gregkh@linuxfoundation.org>
+Signed-off-by: Yisheng Xie <xieyisheng1@huawei.com>
 ---
- drivers/video/fbdev/vfb.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+ Documentation/driver-model/devres.txt   |  1 -
+ include/linux/io.h                      |  2 --
+ lib/devres.c                            | 29 -----------------------------
+ scripts/coccinelle/free/devm_free.cocci |  2 --
+ 4 files changed, 34 deletions(-)
 
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index da653a080394..5fb360283c6b 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -239,8 +239,23 @@ static int vfb_check_var(struct fb_var_screeninfo *var,
-  */
- static int vfb_set_par(struct fb_info *info)
- {
-+	switch (info->var.bits_per_pixel) {
-+		case 1:
-+			info->fix.visual = FB_VISUAL_MONO01;
-+			break;
-+		case 8:
-+			info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+			break;
-+		case 16:
-+		case 24:
-+		case 32:
-+			info->fix.visual = FB_VISUAL_TRUECOLOR;
-+			break;
-+	}
-+
- 	info->fix.line_length = get_line_length(info->var.xres_virtual,
- 						info->var.bits_per_pixel);
-+
- 	return 0;
- }
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index c180045..c3fddb5 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -292,7 +292,6 @@ IOMAP
+   devm_ioport_map()
+   devm_ioport_unmap()
+   devm_ioremap()
+-  devm_ioremap_nocache()
+   devm_ioremap_wc()
+   devm_ioremap_resource() : checks resource, requests memory region, ioremaps
+   devm_iounmap()
+diff --git a/include/linux/io.h b/include/linux/io.h
+index 32e30e8..a9c7270 100644
+--- a/include/linux/io.h
++++ b/include/linux/io.h
+@@ -75,8 +75,6 @@ static inline void devm_ioport_unmap(struct device *dev, void __iomem *addr)
+ 
+ void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
+ 			   resource_size_t size);
+-void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
+-				   resource_size_t size);
+ void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
+ 				   resource_size_t size);
+ void devm_iounmap(struct device *dev, void __iomem *addr);
+diff --git a/lib/devres.c b/lib/devres.c
+index 5f2aedd..f818fcf 100644
+--- a/lib/devres.c
++++ b/lib/devres.c
+@@ -44,35 +44,6 @@ void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
+ EXPORT_SYMBOL(devm_ioremap);
+ 
+ /**
+- * devm_ioremap_nocache - Managed ioremap_nocache()
+- * @dev: Generic device to remap IO address for
+- * @offset: Resource address to map
+- * @size: Size of map
+- *
+- * Managed ioremap_nocache().  Map is automatically unmapped on driver
+- * detach.
+- */
+-void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
+-				   resource_size_t size)
+-{
+-	void __iomem **ptr, *addr;
+-
+-	ptr = devres_alloc(devm_ioremap_release, sizeof(*ptr), GFP_KERNEL);
+-	if (!ptr)
+-		return NULL;
+-
+-	addr = ioremap_nocache(offset, size);
+-	if (addr) {
+-		*ptr = addr;
+-		devres_add(dev, ptr);
+-	} else
+-		devres_free(ptr);
+-
+-	return addr;
+-}
+-EXPORT_SYMBOL(devm_ioremap_nocache);
+-
+-/**
+  * devm_ioremap_wc - Managed ioremap_wc()
+  * @dev: Generic device to remap IO address for
+  * @offset: Resource address to map
+diff --git a/scripts/coccinelle/free/devm_free.cocci b/scripts/coccinelle/free/devm_free.cocci
+index c990d2c..36b8752 100644
+--- a/scripts/coccinelle/free/devm_free.cocci
++++ b/scripts/coccinelle/free/devm_free.cocci
+@@ -51,8 +51,6 @@ expression x;
+ |
+  x = devm_ioremap(...)
+ |
+- x = devm_ioremap_nocache(...)
+-|
+  x = devm_ioport_map(...)
+ )
+ 
+-- 
+1.8.3.1
 
-@@ -450,6 +465,8 @@ static int vfb_probe(struct platform_device *dev)
- 		goto err2;
- 	platform_set_drvdata(dev, info);
-
-+	vfb_set_par(info);
-+
- 	fb_info(info, "Virtual frame buffer device, using %ldK of video memory\n",
- 		videomemorysize >> 10);
- 	return 0;
---
-2.15.1
-
-
---------------78D131A0C3556277D4625C94
-Content-Type: text/plain; charset=UTF-8;
- name="README"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment;
- filename="README"
-
-Rml4IHZmYiBub3Qgc2V0dGluZyB0aGUgdmlkZW8gbW9kZSBhbmQgbGluZV9sZW5ndGggd2hl
-biBsb2FkZWQuCkNvcHlyaWdodCAyMDE3IFBpZXRlciAiUG9yb0NZb24iIFNsdXlzIDxwY3lA
-bmF0aW9uYWwuc2hpdHBvc3RpbmcuYWdlbmN5Pgp1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdQ
-THYyCg==
---------------78D131A0C3556277D4625C94
-Content-Type: text/x-patch;
- name="vfb.c.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
- filename="vfb.c.patch"
-
----
- drivers/video/fbdev/vfb.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
-
-diff --git a/drivers/video/fbdev/vfb.c b/drivers/video/fbdev/vfb.c
-index da653a080394..5fb360283c6b 100644
---- a/drivers/video/fbdev/vfb.c
-+++ b/drivers/video/fbdev/vfb.c
-@@ -239,8 +239,23 @@ static int vfb_check_var(struct fb_var_screeninfo *v=
-ar,
-  */
- static int vfb_set_par(struct fb_info *info)
- {
-+	switch (info->var.bits_per_pixel) {
-+		case 1:
-+			info->fix.visual =3D FB_VISUAL_MONO01;
-+			break;
-+		case 8:
-+			info->fix.visual =3D FB_VISUAL_PSEUDOCOLOR;
-+			break;
-+		case 16:
-+		case 24:
-+		case 32:
-+			info->fix.visual =3D FB_VISUAL_TRUECOLOR;
-+			break;
-+	}
-+
- 	info->fix.line_length =3D get_line_length(info->var.xres_virtual,
- 						info->var.bits_per_pixel);
-+
- 	return 0;
- }
-=20
-@@ -450,6 +465,8 @@ static int vfb_probe(struct platform_device *dev)
- 		goto err2;
- 	platform_set_drvdata(dev, info);
-=20
-+	vfb_set_par(info);
-+
- 	fb_info(info, "Virtual frame buffer device, using %ldK of video memory\=
-n",
- 		videomemorysize >> 10);
- 	return 0;
---
-2.15.1
-
---------------78D131A0C3556277D4625C94--

@@ -1,63 +1,91 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 01 Dec 2017 12:06:48 +0000
-Subject: [PATCH v5 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
-Message-Id: <20171201120651.29633-2-enric.balletbo@collabora.com>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Thu, 28 Dec 2017 08:27:41 +0000
+Subject: [PATCH v3] backlight: tdo24m: fix the spi cs between transfers
+Message-Id: <20171228082742.13415-1-robert.jarzmik@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171201120651.29633-1-enric.balletbo@collabora.com>
-In-Reply-To: <20171201120651.29633-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Robert Jarzmik <robert.jarzmik@free.fr>
 
-Hardware needs a delay between setting an initial (non-zero) PWM and
-enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
-this delay in milli seconds. Hardware also needs a delay between disabing
-the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
-is this delay in milli seconds.
+Currently the LCD display (TD035S) on the cm-x300 platform is broken and
+remains blank.
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
+The TD0245S specification requires that the chipselect is toggled
+between commands sent to the panel. This was also the purpose of the
+former patch of commit f64dcac0b124 ("backlight: tdo24m: ensure chip
+select changes between transfers").
+
+Unfortunately, the "cs_change" field of a SPI transfer is
+misleading. Its true meaning is that for a SPI message holding multiple
+transfers, the chip select is toggled between each transfer, but for the
+last transfer it remains asserted.
+
+In this driver, all the SPI messages contain exactly one transfer, which
+means that each transfer is the last of its message, and as a
+consequence the chip select is never toggled.
+
+Actually, there was a second bug hidding the first one, hence the
+problem was not seen until v4.6. This problem was fixed by commit
+a52db659c79c ("spi: pxa2xx: Fix cs_change management") for PXA based
+boards.
+
+This fix makes the TD035S work again on a cm-x300 board. The same
+applies to other PXA boards, ie. corgi and tosa.
+
+Fixes: a52db659c79c ("spi: pxa2xx: Fix cs_change management")
+Reported-by: Andrea Adami <andrea.adami@gmail.com>
+Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
-Based on the original Huang Lin <hl@rock-chips.com> work.
+Since v1: added 2 other panels
+Since v2: added Daniel's ack
+---
+ drivers/video/backlight/corgi_lcd.c | 2 +-
+ drivers/video/backlight/tdo24m.c    | 2 +-
+ drivers/video/backlight/tosa_lcd.c  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-Changes since v4:
- - Rebase on top of mainline.
-Changes since v3:
- - Replace us for ms.
- - Add Acked-by: Pavel Machek <pavel@ucw.cz>
-Changes since v2:
- - Use separate properties (Rob Herring)
-Changes since v1:
- - As suggested by Daniel Thompson
-   - Do not assume power-on delay and power-off delay will be the same
-
- Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-index 764db86..3108109 100644
---- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-+++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-@@ -17,6 +17,10 @@ Optional properties:
-                "pwms" property (see PWM binding[0])
-   - enable-gpios: contains a single GPIO specifier for the GPIO which enables
-                   and disables the backlight (see GPIO binding[1])
-+  - post-pwm-on-delay-ms: Delay in ms between setting an initial (non-zero) PWM
-+                          and enabling the backlight using GPIO.
-+  - pwm-off-delay-ms: Delay in ms between disabling the backlight using GPIO
-+                      and setting PWM value to 0.
- 
- [0]: Documentation/devicetree/bindings/pwm/pwm.txt
- [1]: Documentation/devicetree/bindings/gpio/gpio.txt
-@@ -32,4 +36,6 @@ Example:
- 
- 		power-supply = <&vdd_bl_reg>;
- 		enable-gpios = <&gpio 58 0>;
-+		post-pwm-on-delay-ms = <10>;
-+		pwm-off-delay-ms = <10>;
+diff --git a/drivers/video/backlight/corgi_lcd.c b/drivers/video/backlight/corgi_lcd.c
+index d7c239ea3d09..f5574060f9c8 100644
+--- a/drivers/video/backlight/corgi_lcd.c
++++ b/drivers/video/backlight/corgi_lcd.c
+@@ -177,7 +177,7 @@ static int corgi_ssp_lcdtg_send(struct corgi_lcd *lcd, int adrs, uint8_t data)
+ 	struct spi_message msg;
+ 	struct spi_transfer xfer = {
+ 		.len		= 1,
+-		.cs_change	= 1,
++		.cs_change	= 0,
+ 		.tx_buf		= lcd->buf,
  	};
+ 
+diff --git a/drivers/video/backlight/tdo24m.c b/drivers/video/backlight/tdo24m.c
+index eab1f842f9c0..e4bd63e9db6b 100644
+--- a/drivers/video/backlight/tdo24m.c
++++ b/drivers/video/backlight/tdo24m.c
+@@ -369,7 +369,7 @@ static int tdo24m_probe(struct spi_device *spi)
+ 
+ 	spi_message_init(m);
+ 
+-	x->cs_change = 1;
++	x->cs_change = 0;
+ 	x->tx_buf = &lcd->buf[0];
+ 	spi_message_add_tail(x, m);
+ 
+diff --git a/drivers/video/backlight/tosa_lcd.c b/drivers/video/backlight/tosa_lcd.c
+index 6a41ea92737a..4dc5ee8debeb 100644
+--- a/drivers/video/backlight/tosa_lcd.c
++++ b/drivers/video/backlight/tosa_lcd.c
+@@ -49,7 +49,7 @@ static int tosa_tg_send(struct spi_device *spi, int adrs, uint8_t data)
+ 	struct spi_message msg;
+ 	struct spi_transfer xfer = {
+ 		.len		= 1,
+-		.cs_change	= 1,
++		.cs_change	= 0,
+ 		.tx_buf		= buf,
+ 	};
+ 
 -- 
-2.9.3
+2.11.0
 

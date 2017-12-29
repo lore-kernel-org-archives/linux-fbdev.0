@@ -1,42 +1,30 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Mon, 11 Dec 2017 21:40:59 +0000
-Subject: [PATCH 2/6] video: udlfb: Remove unnecessary 'return'
-Message-Id: <20171211214059.GC29173@lenoch>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 29 Dec 2017 17:36:53 +0000
+Subject: Re: [PATCH] video: fbdev: remove redundant self assignment of 'height'
+Message-Id: <1976355.NVJMmshGZV@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20171123105559epcas5p2098447b1667bcb96fa6162fdd939dce0@epcas5p2.samsung.com>
+ <20171123105553.18969-1-colin.king@canonical.com>
+In-Reply-To: <20171123105553.18969-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Remove unnecessary void return at the end of a function.
+On Thursday, November 23, 2017 10:55:53 AM Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> The assignment of height to itself is redundant and can be removed.
+> Detected with Coccinelle.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- drivers/video/fbdev/udlfb.c | 4 ----
- 1 file changed, 4 deletions(-)
+Patch queued for 4.16, thanks.
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 16a3287409b2..4abf538c9b72 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -505,8 +505,6 @@ static void dlfb_compress_hline(
- 	*command_buffer_ptr = cmd;
- 	*pixel_start_ptr = pixel;
- 	*device_address_ptr = dev_addr;
--
--	return;
- }
- 
- /*
-@@ -1777,8 +1775,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
- 	kref_put(&dlfb->kref, dlfb_free);
- 
- 	/* consider dlfb_data freed */
--
--	return;
- }
- 
- static struct usb_driver dlfb_driver = {
--- 
-2.15.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

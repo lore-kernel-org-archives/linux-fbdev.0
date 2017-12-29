@@ -1,130 +1,55 @@
-From: Yisheng Xie <xieyisheng1@huawei.com>
-Date: Mon, 25 Dec 2017 01:34:25 +0000
-Subject: Re: [PATCH v3 00/27] kill devm_ioremap_nocache
-Message-Id: <8dd19411-5b06-0aa4-fd0e-e5b112c25dcb@huawei.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 29 Dec 2017 18:05:17 +0000
+Subject: Re: [PATCH] video/fbdev/stifb: Delete an error message for a failed memory allocation in stifb_init_
+Message-Id: <1680261.Msdj7gi9fB@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1514026525-32538-1-git-send-email-xieyisheng1@huawei.com>
- <20171223134831.GB10103@kroah.com>
- <b8ff7f17-7f2c-f220-9833-7ae5bd7343d5@c-s.fr>
-In-Reply-To: <b8ff7f17-7f2c-f220-9833-7ae5bd7343d5@c-s.fr>
+References: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
+        <CGME20171124213055epcas4p45c641222185056871b97f4e7bc235d2e@epcas4p4.samsung.com>
+        <25624997.nONnEdNj0s@daneel.sf-tec.de>
+In-Reply-To: <25624997.nONnEdNj0s@daneel.sf-tec.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: christophe leroy <christophe.leroy@c-s.fr>, Greg KH <gregkh@linuxfoundation.org>
-Cc: linux-mips@linux-mips.org, ulf.hansson@linaro.org, jakub.kicinski@netronome.com, platform-driver-x86@vger.kernel.org, airlied@linux.ie, linux-wireless@vger.kernel.org, linus.walleij@linaro.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org, daniel.vetter@intel.com, dan.j.williams@intel.com, jason@lakedaemon.net, linux-rtc@vger.kernel.org, boris.brezillon@free-electrons.com, mchehab@kernel.org, dmaengine@vger.kernel.org, vinod.koul@intel.com, richard@nod.at, marek.vasut@gmail.com, industrypack-devel@lists.sourceforge.net, linux-pci@vger.kernel.org, dvhart@infradead.org, linux@roeck-us.net, linux-media@vger.kernel.org, seanpaul@chromium.org, devel@driverdev.osuosl.org, linux-watchdog@vger.kernel.org, arnd@arndb.de, b.zolnierkie@samsung.com, marc.zyngier@arm.com, jslaby@su
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, "James E. J. Bottomley" <jejb@parisc-linux.org>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
+On Friday, November 24, 2017 10:30:34 PM Rolf Eike Beer wrote:
+> Markus Elfring wrote:
+> > From: Markus Elfring <elfring@users.sourceforge.net>
+> > Date: Fri, 24 Nov 2017 22:22:06 +0100
+> > 
+> > Omit an extra message for a memory allocation failure in this function.
+> > 
+> > This issue was detected by using the Coccinelle software.
+> > 
+> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> > ---
+> >  drivers/video/fbdev/stifb.c | 4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
+> > 
+> > diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+> > index 6ded5c198998..fe217a2f7d21 100644
+> > --- a/drivers/video/fbdev/stifb.c
+> > +++ b/drivers/video/fbdev/stifb.c
+> > @@ -1126,10 +1126,8 @@ static int __init stifb_init_fb(struct sti_struct
+> > *sti, int bpp_pref) int bpp, xres, yres;
+> > 
+> >  	fb = kzalloc(sizeof(*fb), GFP_ATOMIC);
+> > -	if (!fb) {
+> > -		printk(KERN_ERR "stifb: Could not allocate stifb structure\n");
+> > +	if (!fb)
+> >  		return -ENODEV;
+> > -	}
+> > 
+> >  	info = &fb->info;
+> 
+> This should be -ENOMEM.
 
+Markus, please fix this issue first (before doing cleanups).
 
-On 2017/12/24 17:05, christophe leroy wrote:
-> 
-> 
-> Le 23/12/2017 à 14:48, Greg KH a écrit :
->> On Sat, Dec 23, 2017 at 06:55:25PM +0800, Yisheng Xie wrote:
->>> Hi all,
->>>
->>> When I tried to use devm_ioremap function and review related code, I found
->>> devm_ioremap and devm_ioremap_nocache is almost the same with each other,
->>> except one use ioremap while the other use ioremap_nocache.
->>
->> For all arches?  Really?  Look at MIPS, and x86, they have different
->> functions.
->>
->>> While ioremap's
->>> default function is ioremap_nocache, so devm_ioremap_nocache also have the
->>> same function with devm_ioremap, which can just be killed to reduce the size
->>> of devres.o(from 20304 bytes to 18992 bytes in my compile environment).
->>>
->>> I have posted two versions, which use macro instead of function for
->>> devm_ioremap_nocache[1] or devm_ioremap[2]. And Greg suggest me to kill
->>> devm_ioremap_nocache for no need to keep a macro around for the duplicate
->>> thing. So here comes v3 and please help to review.
->>
->> I don't think this can be done, what am I missing?  These functions are
->> not identical, sorry for missing that before.
-> 
-> devm_ioremap() and devm_ioremap_nocache() are quite similar, both use devm_ioremap_release() for the release, why not just defining:
-> 
-> static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
->                resource_size_t size, bool nocache)
-> {
-> [...]
->     if (nocache)
->         addr = ioremap_nocache(offset, size);
->     else
->         addr = ioremap(offset, size);
-> [...]
-> }
-> 
-> then in include/linux/io.h
-> 
-> static inline void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
->                resource_size_t size)
-> {return __devm_ioremap(dev, offset, size, false);}
-> 
-> static inline void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
->                    resource_size_t size);
-> {return __devm_ioremap(dev, offset, size, true);}
-
-Yeah, this seems good to me, right now we have devm_ioremap, devm_ioremap_wc, devm_ioremap_nocache
-May be we can use an enum like:
-typedef enum {
-	DEVM_IOREMAP = 0,
-	DEVM_IOREMAP_NOCACHE,
-	DEVM_IOREMAP_WC,
-} devm_ioremap_type;
-
-static inline void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
-                resource_size_t size)
- {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);}
-
- static inline void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
-                    resource_size_t size);
- {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_NOCACHE);}
-
- static inline void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
-                    resource_size_t size);
- {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_WC);}
-
- static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
-                resource_size_t size, devm_ioremap_type type)
- {
-     void __iomem **ptr, *addr = NULL;
- [...]
-     switch (type){
-     case DEVM_IOREMAP:
-         addr = ioremap(offset, size);
-         break;
-     case DEVM_IOREMAP_NOCACHE:
-         addr = ioremap_nocache(offset, size);
-         break;
-     case DEVM_IOREMAP_WC:
-         addr = ioremap_wc(offset, size);
-         break;
-     }
- [...]
- }
-
-Thanks
-Yisheng
-
-> 
-> Christophe
-> 
->>
->> thanks,
->>
->> greg k-h
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe linux-watchdog" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> ---
-> L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-> https://www.avast.com/antivirus
-> 
-> 
-> .
-> 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

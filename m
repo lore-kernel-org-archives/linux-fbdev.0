@@ -1,79 +1,47 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Fri, 29 Dec 2017 17:13:39 +0000
+From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+Date: Sun, 31 Dec 2017 12:35:58 +0000
 Subject: Re: [RFC PATCH v2 00/13] Kernel based bootsplash
-Message-Id: <878tdlzccc.fsf@intel.com>
+Message-Id: <20171231123558.7136f0c6@alans-desktop>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20171213194755.3409-1-mstaudt@suse.de>
  <20171219161630.GI26573@phenom.ffwll.local>
-In-Reply-To: <20171219161630.GI26573@phenom.ffwll.local>
+ <2f8a1a08-911d-a511-2968-4d89418ac212@suse.de>
+ <CAKMK7uEEVEHbvHifobaTdgKkbS5HbyVAqGRkHUQNpWWSr7dasg@mail.gmail.com>
+ <573d4050-7607-b8e4-7552-83966f551ba3@suse.de>
+In-Reply-To: <573d4050-7607-b8e4-7552-83966f551ba3@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>, Max Staudt <mstaudt@suse.de>
-Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
+To: Max Staudt <mstaudt@suse.de>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, michal@markovi.net, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, sndirsch@suse.com, Oliver Neukum <oneukum@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, philm@manjaro.org, Bero =?UTF-8?B?Um9zZW5rcsOkbnplcg==?= <bernhard.rosenkranzer@linaro.org>
 
-On Tue, 19 Dec 2017, Daniel Vetter <daniel@ffwll.ch> wrote:
-> On Wed, Dec 13, 2017 at 08:47:42PM +0100, Max Staudt wrote:
->> Dear fbdev and fbcon developers,
->> 
->> Thank you very much for your input for the first patch series.
->> 
->> I've included your feedback into this second roll, and kindly ask for
->> your opinion on the new patch series.
->
-> Ok I've realized that my assumptions about why you need this aren't
-> holding up.
->
-> So from reading these patches it sounded like you want an in-kernel boot
-> splash because that would be on the display faster than a userspace one
-> like plymouth. That's the only reasons I can see for this (if there's
-> another good justification, please bring it up).
->
-> I only know of very embedded setups (tv top boxes, in vehicle
-> entertainment) where that kind of "time to first image" really matters,
-> and those systems:
-> - have a real hw kms driver
-> - don't have fbcon or fbdev emulation enabled (except for some closed
->   source stacks that are a bit slow to adapt to the new world, and we
->   don't care about those in gfx).
->
-> But from discussions it sounds like you very much want to use this on
-> servers, which makes 0 sense to me. On a server something like plymouth
-> should do a perfectly reasonable job.
->
-> So, why exactly do we need this?
+On Tue, 19 Dec 2017 19:40:12 +0100
+Max Staudt <mstaudt@suse.de> wrote:
 
-Okay, I'll take another step back from the implementation and most of
-the discussion here, and look at what *I* would like to see on screen
-when I have my user hat on and my kernel developer hat securely stowed
-away.
+> On 12/19/2017 06:26 PM, Daniel Vetter wrote:
+> > On Tue, Dec 19, 2017 at 6:04 PM, Max Staudt <mstaudt@suse.de> wrote:  
+> >> Well, those could enable fbcon if they want the bootsplash. Shouldn't make a difference anyway if they're powerful enough to run Linux. As long as the bootsplash is shown, no fbcon drawing operations are executed, so there is no expensive scrolling or such to hog the system.  
+> > 
+> > It's too big, and those folks tend to be super picky about space.  
+> 
+> I know, they really are.
+> 
+> However, given just how big and clunky modern systems have become, I raise my doubts about a few extra KB for fbcon code to be relevant.
 
-I think the first issue is the boot manager (e.g. grub) messing up
-whatever the BIOS or GOP or whatever drew. If I don't touch any buttons,
-I'd prefer the Lenovo or VAIO or NUC or whatever logo stay there. IIRC
-some BIOSes let you set up your own splash if you like, though that's
-not really relevant for me. So already the boot manager takeover is a
-problem.
+For embedded every KB counts. That is likely to remain the same for some
+time because at the end of the day small devices are constrained about the
+amount of SRAM you can put on die and the amount of power you can afford
+for DRAM. 
 
-The next issue is the framebuffer driver takeover. It's not unlike the
-above, just one step further. If you like your grub image to stay there,
-let it stay there. (Or, if the boot manager was nice enough to not mess
-up the screen, let the BIOS image stay there.) All the way to KMS and
-userspace.
+> > this by ignoring it an adding a hole new layer on top. That doesn't
+> > sound like any kind of good idea to me.  
+> 
+> Yes. It is a vast improvement over the status quo, and people are asking for it. And the bootsplash layer can be moved elsewhere, just change the hooks and keep the loading/rendering.
+> 
+> Also, gfx driver loading isn't a dumpster fire, it mostly just works. It just mustn't be done 100% carelessly.
 
-IMHO the user friendly experience is already gone by the time we reach
-any kernel/userspace bootsplash. We want our command-line tools to STFU
-if they don't have anything interesting to say. As a user, 99.99+% of
-the time I don't care what grub or dmesg have to say.
+It's a total mess (the fbcon layer loading and locking that is). Doing all
+this extra kernel stuff is like sitting in a hole and instead of trying to
+climb out digging the hole bigger so you've got more room to sit in it.
 
-Of course, with the kernel developer hat on, I want all of the clues
-every time in case something goes wrong. But this shouldn't have to be
-mutually exclusive.
-
-
-BR,
-Jani.
-
-
--- 
-Jani Nikula, Intel Open Source Technology Center
+Alan

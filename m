@@ -1,43 +1,32 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 17 Jan 2018 20:54:31 +0000
-Subject: [RFC PATCH v3 09/13] fbcon: Disable bootsplash on oops
-Message-Id: <20180117205435.2860-10-mstaudt@suse.de>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Tue, 02 Jan 2018 13:38:24 +0000
+Subject: Re: [PATCH V4 22/26] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
+Message-Id: <7099e2af-4704-4611-94c0-830483de4578@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180117205435.2860-1-mstaudt@suse.de>
-In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
+References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+ <1513661883-28662-23-git-send-email-okaya@codeaurora.org>
+In-Reply-To: <1513661883-28662-23-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
+To: linux-pci@vger.kernel.org, timur@codeaurora.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Maik Broemme <mbroemme@libmpq.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)" <linux-fbdev@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Max Staudt <mstaudt@suse.de>
-Reviewed-by: Oliver Neukum <oneukum@suse.com>
----
- drivers/video/fbdev/core/fbcon.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+On 12/19/2017 12:37 AM, Sinan Kaya wrote:
+> pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+> where a PCI device is present. This restricts the device drivers to be
+> reused for other domain numbers.
+> 
+> Getting ready to remove pci_get_bus_and_slot() function in favor of
+> pci_get_domain_bus_and_slot().
+> 
+> Find the domain number from pdev.
+> 
+> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 9a39a6fcfe98..8a9c67e1c5d8 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1343,6 +1343,16 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
- 	int y;
-  	int c = scr_readw((u16 *) vc->vc_pos);
- 
-+	/*
-+	 * Disable the splash here so we don't have to hook into
-+	 * vt_console_print() in drivers/tty/vt/vt.c
-+	 *
-+	 * We'd disable the splash just before the call to
-+	 * hide_cursor() anyway, so this spot is just fine.
-+	 */
-+	if (oops_in_progress)
-+		bootsplash_disable();
-+
- 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
- 
- 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
+Any feedback here ? most of the remaining patches have the ACK except these.
+
 -- 
-2.12.3
-
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.

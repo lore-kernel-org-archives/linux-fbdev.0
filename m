@@ -1,354 +1,38 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 17 Jan 2018 20:54:32 +0000
-Subject: [RFC PATCH v3 10/13] Documentation: Add bootsplash main documentation
-Message-Id: <20180117205435.2860-11-mstaudt@suse.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 03 Jan 2018 11:18:15 +0000
+Subject: Re: [PATCH V4 22/26] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
+Message-Id: <1712261.2Mai7cXr8p@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180117205435.2860-1-mstaudt@suse.de>
-In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
+References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
+        <CGME20180102133833epcas1p4003614ea6c95c4568e8433acbb30f52d@epcas1p4.samsung.com>
+        <7099e2af-4704-4611-94c0-830483de4578@codeaurora.org>
+In-Reply-To: <7099e2af-4704-4611-94c0-830483de4578@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sinan Kaya <okaya@codeaurora.org>
+Cc: linux-pci@vger.kernel.org, timur@codeaurora.org, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Maik Broemme <mbroemme@libmpq.org>, "open list:INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)" <linux-fbdev@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
 
-Signed-off-by: Max Staudt <mstaudt@suse.de>
----
- .../ABI/testing/sysfs-platform-bootsplash          |  11 +
- Documentation/bootsplash.rst                       | 285 +++++++++++++++++=
-++++
- MAINTAINERS                                        |   2 +
- 3 files changed, 298 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-platform-bootsplash
- create mode 100644 Documentation/bootsplash.rst
+On Tuesday, January 02, 2018 08:38:24 AM Sinan Kaya wrote:
+> On 12/19/2017 12:37 AM, Sinan Kaya wrote:
+> > pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
+> > where a PCI device is present. This restricts the device drivers to be
+> > reused for other domain numbers.
+> > 
+> > Getting ready to remove pci_get_bus_and_slot() function in favor of
+> > pci_get_domain_bus_and_slot().
+> > 
+> > Find the domain number from pdev.
+> > 
+> > Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+> 
+> Any feedback here ? most of the remaining patches have the ACK except these.
 
-diff --git a/Documentation/ABI/testing/sysfs-platform-bootsplash b/Document=
-ation/ABI/testing/sysfs-platform-bootsplash
-new file mode 100644
-index 000000000000..742c7b035ded
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-platform-bootsplash
-@@ -0,0 +1,11 @@
-+What:		/sys/devices/platform/bootsplash.0/enabled
-+Date:		Oct 2017
-+KernelVersion:	4.14
-+Contact:	Max Staudt <mstaudt@suse.de>
-+Description:
-+		Can be set and read.
-+
-+		0: Splash is disabled.
-+		1: Splash is shown whenever fbcon would show a text console
-+		   (i.e. no graphical application is running), and a splash
-+		   file is loaded.
-diff --git a/Documentation/bootsplash.rst b/Documentation/bootsplash.rst
-new file mode 100644
-index 000000000000..611f0c558925
---- /dev/null
-+++ b/Documentation/bootsplash.rst
-@@ -0,0 +1,285 @@
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+The Linux bootsplash
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+:Date: November, 2017
-+:Author: Max Staudt <mstaudt@suse.de>
-+
-+
-+The Linux bootsplash is a graphical replacement for the '``quiet``' boot
-+option, typically showing a logo and a spinner animation as the system sta=
-rts.
-+
-+Currently, it is a part of the Framebuffer Console support, and can be fou=
-nd
-+as ``CONFIG_BOOTSPLASH`` in the kernel configuration. This means that as l=
-ong
-+as it is enabled, it hijacks fbcon's output and draws a splash screen inst=
-ead.
-+
-+Purely compiling in the bootsplash will not render it functional - to actu=
-ally
-+render a splash, you will also need a splash theme file. See the example
-+utility and script in ``tools/bootsplash`` for a live demo.
-+
-+
-+
-+Motivation
-+=3D=3D=3D=3D=3D
-+
-+- The '``quiet``' boot option only suppresses most messages during boot, b=
-ut
-+  errors are still shown.
-+
-+- A user space implementation can only show a logo once user space has been
-+  initialized far enough to allow this. A kernel splash can display a spla=
-sh
-+  immediately as soon as fbcon can be displayed.
-+
-+- Implementing a splash screen in user space (e.g. Plymouth) is problematic
-+  due to resource conflicts.
-+
-+  For example, if Plymouth is keeping ``/dev/fb0`` (provided via vesafb/ef=
-ifb)
-+  open, then most DRM drivers can't replace it because the address space is
-+  still busy - thus leading to a VRAM reservation error.
-+
-+  See: https://bugzilla.opensuse.org/show_bug.cgi?id=980750
-+
-+
-+
-+Command line arguments
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+``bootsplash.bootfile``
-+  Which file in the initramfs to load.
-+
-+  The splash theme is loaded via request_firmware(), thus to load
-+  ``/lib/firmware/bootsplash/mytheme`` pass the command line:
-+
-+  ``bootsplash.bootfile=3Dbootsplash/mytheme``
-+
-+  Note: The splash file *has to be* in the initramfs, as it needs to be
-+  available when the splash is initialized early on.
-+
-+  Default: none, i.e. a non-functional splash, falling back to showing tex=
-t.
-+
-+
-+
-+sysfs run-time configuration
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+``/sys/devices/platform/bootsplash.0/enabled``
-+  Enable/disable the bootsplash.
-+  The system boots with this set to 1, but will not show a splash unless
-+  a splash theme file is also loaded.
-+
-+
-+
-+Kconfig
-+=3D=3D=3D+
-+``BOOTSPLASH``
-+  Whether to compile in bootsplash support
-+  (depends on fbcon compiled in, i.e. ``FRAMEBUFFER_CONSOLE=3Dy``)
-+
-+
-+
-+Bootsplash file format
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+A file specified in the kernel configuration as ``CONFIG_BOOTSPLASH_FILE``
-+or specified on the command line as ``bootsplash.bootfile`` will be loaded
-+and displayed as soon as fbcon is initialized.
-+
-+
-+Main blocks
-+-----------
-+
-+There are 3 main blocks in each file:
-+
-+  - one File header
-+  -   n Picture headers
-+  -   m (Blob header + payload) blocks
-+
-+
-+Structures
-+----------
-+
-+The on-disk structures are defined in
-+``drivers/video/fbdev/core/bootsplash_file.h`` and represent these blocks:
-+
-+  - ``struct splash_file_header``
-+
-+    Represents the file header, with splash-wide information including:
-+
-+      - The magic string "``Linux bootsplash``" on big-endian platforms
-+        (the reverse on little endian)
-+      - The file format version (for incompatible updates, hopefully never)
-+      - The background color
-+      - Number of picture and blob blocks
-+      - Animation speed (we only allow one delay for all animations)
-+
-+    The file header is followed by the first picture header.
-+
-+
-+  - ``struct splash_picture_header``
-+
-+    Represents an object (picture) drawn on screen, including its immutable
-+    properties:
-+      - Width, height
-+      - Positioning relative to screen corners or in the center
-+      - Animation, if any
-+      - Animation type
-+      - Number of blobs
-+
-+    The picture header is followed by another picture header, up until n
-+    picture headers (as defined in the file header) have been read. Then,
-+    the (blob header, payload) pairs follow.
-+
-+
-+  - ``struct splash_blob_header``
-+    (followed by payload)
-+
-+    Represents one raw data stream. So far, only picture data is defined.
-+
-+    The blob header is followed by a payload, then padding to n*16 bytes,
-+    then (if further blobs are defined in the file header) a further blob
-+    header.
-+
-+
-+Alignment
-+---------
-+
-+The bootsplash file is designed to be loaded into memory as-is.
-+
-+All structures are a multiple of 16 bytes long, all elements therein are
-+aligned to multiples of their length, and the payloads are always padded
-+up to multiples of 16 bytes. This is to allow aligned accesses in all
-+cases while still simply mapping the structures over an in-memory copy of
-+the bootsplash file.
-+
-+
-+Further information
-+-------------------
-+
-+Please see ``drivers/video/fbdev/core/bootsplash_file.h`` for further
-+details and possible values in the file.
-+
-+
-+
-+Hooks - how the bootsplash is integrated
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-+
-+``drivers/video/fbdev/core/fbcon.c``
-+  ``fbcon_init()`` calls ``bootsplash_init()``, which loads the default
-+  bootsplash file or the one specified on the kernel command line.
-+
-+  ``fbcon_switch()`` draws the bootsplash when it's active, and is also
-+  one of the callers of ``set_blitting_type()``.
-+
-+  ``set_blitting_type()`` calls ``fbcon_set_dummyops()`` when the
-+  bootsplash is active, overriding the text rendering functions.
-+
-+  ``fbcon_cursor()`` will call ``bootsplash_disable()`` when an oops is
-+  being printed in order to make a kernel panic visible.
-+
-+``drivers/video/fbdev/core/dummyblit.c``
-+  This contains the dummy text rendering functions used to suppress text
-+  output while the bootsplash is shown.
-+
-+``drivers/tty/vt/keyboard.c``
-+  ``kbd_keycode()`` can call ``bootsplash_disable()`` when the user
-+  presses ESC or F1-F12 (changing VT). This is to provide a built-in way
-+  of disabling the splash manually at any time.
-+
-+
-+
-+FAQ: Frequently Asked Questions
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
-+I want to see the log! How do I show the log?
-+---------------------------------------------
-+
-+Press ESC while the splash is shown, or remove the ``bootsplash.bootfile``
-+parameter from the kernel cmdline. Without that parameter, the bootsplash
-+will boot disabled.
-+
-+
-+Why use FB instead of modern DRM/KMS?
-+-------------------------------------
-+
-+This is a semantic problem:
-+ - What memory to draw the splash to?
-+ - And what mode will the screen be set to?
-+
-+Using the fbdev emulation solves these issues.
-+
-+Let's start from a bare KMS system, without fbcon, and without fbdev
-+emulation. In this case, as long as userspace doesn't open the KMS
-+device, the state of the screen is undefined. No framebuffer is
-+allocated in video RAM, and no particular mode is set.
-+
-+In this case, we'd have to allocate a framebuffer to show the splash,
-+and set our mode ourselves. This either wastes a screenful of video RAM
-+if the splash is to co-exist with the userspace program's own allocated
-+framebuffer, or there is a flicker as we deactivate and delete the
-+bootsplash's framebuffer and hand control over to userspace. Since we
-+may set a different mode than userspace, we'd also have flicker due
-+to mode switching.
-+
-+This logic is already contained in every KMS driver that performs fbdev
-+emulation. So we might as well use that. And the correct API to do so is
-+fbdev. Plus, we get compatibility with old, pure fbdev drivers for free.
-+With the fbdev emulation, there is *always* a well-defined framebuffer
-+to draw on. And the selection of mode has already been done by the
-+graphics driver, so we don't need to reinvent that wheel, either.
-+Finally, if userspace decides to use /dev/fbX, we don't have to worry
-+about wasting video RAM, either.
-+
-+
-+Why is the bootsplash integrated in fbcon?
-+------------------------------------------
-+
-+Right now, the bootsplash is drawn from within fbcon, as this allows us
-+to easily know *when* to draw - i.e. when we're safe from fbcon and
-+userspace drawing all over our beautiful splash logo.
-+
-+Separating them is not easy - see the to-do list below.
-+
-+
-+
-+TO DO list for future development
-+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D+
-+Second enable/disable switch for the system
-+-------------------------------------------
-+
-+It may be helpful to differentiate between the system and the user
-+switching off the bootsplash. Thus, the system may make it disappear and
-+reappear e.g. for a password prompt, yet once the user has pressed ESC,
-+it could stay gone.
-+
-+
-+Fix buggy DRM/KMS drivers
-+-------------------------
-+
-+Currently, the splash code manually checks for fbdev emulation provided by
-+the ast, cirrus, and mgag200 DRM/KMS drivers.
-+These drivers use a manual mechanism similar to deferred I/O for their FB
-+emulation, and thus need to be manually flushed onto the screen in the same
-+way.
-+
-+This may be improved upon in several ways:
-+
-+1. Changing these drivers to expose the fbdev BO's memory directly, like
-+   bochsdrmfb does.
-+2. Creating a new fb_ops->fb_flush() API to allow the kernel to flush the
-+   framebuffer once the bootsplash has been drawn into it.
-+
-+
-+Separating from fbcon
-+---------------------
-+
-+Separating these two components would yield independence from fbcon being
-+compiled into the kernel, and thus lowering code size in embedded
-+applications.
-+
-+To do this cleanly will involve a clean separation of users of an FB device
-+within the kernel, i.e. fbcon, bootsplash, and userspace. Right now, the
-+legacy fbcon code and VT code co-operate to switch between fbcon and
-+userspace (by setting the VT into KD_GRAPHICS mode). Installing a muxer
-+between these components ensues refactoring of old code and checking for
-+correct locking.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 5c237445761e..7ffac272434e 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2709,6 +2709,8 @@ BOOTSPLASH
- M:	Max Staudt <mstaudt@suse.de>
- L:	linux-fbdev@vger.kernel.org
- S:	Maintained
-+F:	Documentation/ABI/testing/sysfs-platform-bootsplash
-+F:	Documentation/bootsplash.rst
- F:	drivers/video/fbdev/core/bootsplash*.*
- F:	drivers/video/fbdev/core/dummycon.c
- F:	include/linux/bootsplash.h
---=20
-2.12.3
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

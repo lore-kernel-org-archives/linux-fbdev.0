@@ -1,40 +1,46 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 03 Jan 2018 11:18:44 +0000
-Subject: Re: [PATCH V4 24/26] video: fbdev: riva: deprecate pci_get_bus_and_slot()
-Message-Id: <5036032.4uFqTqHFln@amdc3058>
+Date: Wed, 03 Jan 2018 15:16:08 +0000
+Subject: Re: [-next PATCH 2/4] treewide: Use DEVICE_ATTR_RW
+Message-Id: <4624388.pPJCIclP0U@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
- <CGME20180102133737epcas1p2cb1a62d59d9a83564db1f265c1643bf4@epcas1p2.samsung.com>
- <04f4cf20-9b57-3eff-79b6-abfda1258174@codeaurora.org>
-In-Reply-To: <04f4cf20-9b57-3eff-79b6-abfda1258174@codeaurora.org>
+References: <cover.1513706701.git.joe@perches.com>
+ <CGME20171219181536epcas2p18d023209dc13ac504457c07b8b2b8965@epcas2p1.samsung.com>
+ <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
+In-Reply-To: <cd38f14f06e1f447b3159ffe8c69c0df8241bb6e.1513706701.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sinan Kaya <okaya@codeaurora.org>
-Cc: "open list:NVIDIA (rivafb and nvidiafb)
- FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, linux-pci@vger.kernel.org, timur@codeaurora.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER
- LAYER" <dri-devel@lists.freedesktop.org>, linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Joe Perches <joe@perches.com>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, Heiko Carstens <heiko.carstens@de.ibm.com>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Jaroslav Kysela <perex@perex.cz>, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-s390@vger.kernel.org, linux-omap@vger.kernel.org, "James E.J. Bottomley" <jejb@linux.vnet.ibm.com>, linux-scsi@vger.kernel.org, Takashi Iwai <tiwai@suse.com>, Sebastian Ott <sebott@linux.vnet.ibm.com>, James Smart <james.smart@broadcom.com>, Cezary Jackiewicz <cezary.jackiewicz@gmail.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Zhang Rui <rui.zhang@intel.com>, Dick Kennedy <dick.kennedy@broadcom.com>, Mathias Nyman <mathias.nyman@intel.com>, linux-pm@vger.kernel.org, Peter Oberparleiter <oberpar@linux.vnet.ibm.com>, intel-gfx@lists.freedesktop.org, Eduardo Valentin <edube>
 
-On Tuesday, January 02, 2018 08:37:32 AM Sinan Kaya wrote:
-> On 12/19/2017 12:38 AM, Sinan Kaya wrote:
-> > pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-> > where a PCI device is present. This restricts the device drivers to be
-> > reused for other domain numbers.
-> > 
-> > Getting ready to remove pci_get_bus_and_slot() function in favor of
-> > pci_get_domain_bus_and_slot().
-> > 
-> > struct riva_par has a pointer to struct pci_dev. Use the pci_dev member
-> > to extract the domain information.
-> > 
-> > Change the function signature for CalcStateExt and RivaGetConfig to pass
-> > in struct pci_dev in addition to RIVA_HW_INST so that code inside the
-> > riva_hw.c can also calculate domain number and pass it to
-> > pci_get_domain_bus_and_slot().
-> > 
-> > Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+On Tuesday, December 19, 2017 10:15:07 AM Joe Perches wrote:
+> Convert DEVICE_ATTR uses to DEVICE_ATTR_RW where possible.
 > 
-> Any feedback here, most of the remaining patches have the ACK except these?
+> Done with perl script:
+> 
+> $ git grep -w --name-only DEVICE_ATTR | \
+>   xargs perl -i -e 'local $/; while (<>) { s/\bDEVICE_ATTR\s*\(\s*(\w+)\s*,\s*\(?(\s*S_IRUGO\s*\|\s*S_IWUSR|\s*S_IWUSR\s*\|\s*S_IRUGO\s*|\s*0644\s*)\)?\s*,\s*\1_show\s*,\s*\1_store\s*\)/DEVICE_ATTR_RW(\1)/g; print;}'
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+>  arch/s390/kernel/topology.c          |  3 +--
+>  arch/tile/kernel/sysfs.c             |  2 +-
+>  drivers/gpu/drm/i915/i915_sysfs.c    |  6 ++---
+>  drivers/platform/x86/compal-laptop.c | 18 +++++----------
+>  drivers/s390/cio/device.c            |  2 +-
+>  drivers/scsi/lpfc/lpfc_attr.c        | 43 ++++++++++++------------------------
+>  drivers/thermal/thermal_sysfs.c      |  9 ++++----
+>  drivers/tty/serial/sh-sci.c          |  2 +-
+>  drivers/usb/host/xhci-dbgcap.c       |  2 +-
+>  drivers/usb/phy/phy-tahvo.c          |  2 +-
+>  drivers/video/fbdev/auo_k190x.c      |  4 ++--
+>  drivers/video/fbdev/w100fb.c         |  4 ++--
+>  lib/test_firmware.c                  | 14 +++++-------
+>  lib/test_kmod.c                      | 14 +++++-------
+>  sound/soc/omap/mcbsp.c               |  4 ++--
+>  15 files changed, 49 insertions(+), 80 deletions(-)
+
+For fbdev changes:
 
 Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 

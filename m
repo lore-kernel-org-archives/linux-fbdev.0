@@ -1,36 +1,36 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 15 Jan 2018 14:56:24 +0000
-Subject: Re: [RFC PATCH V2] fbdev: mxsfb: use framebuffer_alloc in the correct way
-Message-Id: <34458775.rnx4xjQx0Z@amdc3058>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 03 Jan 2018 09:49:53 +0000
+Subject: Re: [PATCH v2 2/3] backlight: tdo24m: add the reset line gpio
+Message-Id: <20180103094953.dhlzmyz6c2mymv7v@oak.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180105103713.GA4196@panicking>
-In-Reply-To: <20180105103713.GA4196@panicking>
+References: <20171013194250.9001-1-robert.jarzmik@free.fr>
+ <20171013194250.9001-2-robert.jarzmik@free.fr>
+ <20171215115309.ez7odo7sh5zz7vge@oak.lan>
+ <87shcaewah.fsf@belgarion.home>
+ <874logbar8.fsf@belgarion.home>
+In-Reply-To: <874logbar8.fsf@belgarion.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Robert Jarzmik <robert.jarzmik@free.fr>
+Cc: Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, January 07, 2018 11:10:08 AM Stefan Agner wrote:
-> On 2018-01-05 11:37, Michael Trimarchi wrote:
-> > framebuffer_alloc allocated the fb_info struct plus the extra
-> > par and set fb_info->par pointer equal to this extra par. We
-> > can refer the mxcfb_info from fb_info->par
-> > 
-> > Signed-off-by: Michael Trimarchi <michael@amarulasolutions.com>
+On Sun, Dec 24, 2017 at 12:55:55PM +0100, Robert Jarzmik wrote:
+> Robert Jarzmik <robert.jarzmik@free.fr> writes:
 > 
-> Looks good to me.
+> > Daniel Thompson <daniel.thompson@linaro.org> writes:
+> >
+> >> On Fri, Oct 13, 2017 at 09:42:48PM +0200, Robert Jarzmik wrote:
+> >> Also, this adds a new optional property, doesn't the devicetree binding 
+> >> docs need to be update to match this?
+> > Ah yes, that too. I'll add it for v3.
+> Actually I won't ... because there is no description for tdo24m I could find.
 > 
-> Reviewed-by: Stefan Agner <stefan@agner.ch>
-> 
-> And seems to work fine using i.MX 7.
-> 
-> Tested-by: Stefan Agner <stefan@agner.ch>
+> If that's a problem for you, I'll drop that patch as well.
 
-Patch queued for 4.16, thanks.
+I think I'm ok to drop this, if only because based on current upstream 
+state I think this code will never be given a reset line anyway (or is
+there a partner patch for mach-pxa that hasn't been posted yet).
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
 
+Daniel.

@@ -1,127 +1,54 @@
-From: Yisheng Xie <xieyisheng1@huawei.com>
-Date: Fri, 12 Jan 2018 09:12:12 +0000
-Subject: Re: [PATCH v3 00/27] kill devm_ioremap_nocache
-Message-Id: <ff498c83-d1ee-7553-e20c-a07369f8dad6@huawei.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 03 Jan 2018 17:38:47 +0000
+Subject: Re: [RFC PATCH v2 00/13] Kernel based bootsplash
+Message-Id: <af4600fc-ad5d-411c-d899-9fe557a79add@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1514026525-32538-1-git-send-email-xieyisheng1@huawei.com>
- <20171223134831.GB10103@kroah.com>
- <b8ff7f17-7f2c-f220-9833-7ae5bd7343d5@c-s.fr>
- <8dd19411-5b06-0aa4-fd0e-e5b112c25dcb@huawei.com>
- <1eb206ed-95e9-5839-485d-0e549ff3f505@c-s.fr>
-In-Reply-To: <1eb206ed-95e9-5839-485d-0e549ff3f505@c-s.fr>
+References: <20171213194755.3409-1-mstaudt@suse.de>
+ <20171219161630.GI26573@phenom.ffwll.local> <878tdlzccc.fsf@intel.com>
+In-Reply-To: <878tdlzccc.fsf@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Christophe LEROY <christophe.leroy@c-s.fr>, Greg KH <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, ysxie@foxmail.com, ulf.hansson@linaro.org, linux-mmc@vger.kernel.org, boris.brezillon@free-electrons.com, richard@nod.at, marek.vasut@gmail.com, cyrille.pitchen@wedev4u.fr, linux-mtd@lists.infradead.org, alsa-devel@alsa-project.org, wim@iguana.be, linux@roeck-us.net, linux-watchdog@vger.kernel.org, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, linus.walleij@linaro.org, linux-gpio@vger.kernel.org, ralf@linux-mips.org, linux-mips@linux-mips.org, lgirdwood@gmail.com, broonie@kernel.org, tglx@linutronix.de, jason@lakedaemon.net, marc.zyngier@arm.com, arnd@arndb.de, andriy.shevchenko@linux.intel.com, industrypack-devel@lists.sourceforge.net, wg@grandegger.com, mkl@pengutronix.deli
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jani Nikula <jani.nikula@linux.intel.com>, Daniel Vetter <daniel@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, sndirsch@suse.com, oneukum@suse.com, tiwai@suse.com, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, philm@manjaro.org, bernhard.rosenkranzer@linaro.org
 
-Hi Christophe ，
+On 12/29/2017 06:13 PM, Jani Nikula wrote:
+> I think the first issue is the boot manager (e.g. grub) messing up
+> whatever the BIOS or GOP or whatever drew. If I don't touch any buttons,
+> I'd prefer the Lenovo or VAIO or NUC or whatever logo stay there. IIRC
+> some BIOSes let you set up your own splash if you like, though that's
+> not really relevant for me. So already the boot manager takeover is a
+> problem.
+> 
+> The next issue is the framebuffer driver takeover. It's not unlike the
+> above, just one step further. If you like your grub image to stay there,
+> let it stay there. (Or, if the boot manager was nice enough to not mess
+> up the screen, let the BIOS image stay there.) All the way to KMS and
+> userspace.
+> 
+> IMHO the user friendly experience is already gone by the time we reach
+> any kernel/userspace bootsplash. We want our command-line tools to STFU
+> if they don't have anything interesting to say. As a user, 99.99+% of
+> the time I don't care what grub or dmesg have to say.
 
-On 2018/1/4 16:05, Christophe LEROY wrote:
-> 
-> 
-> Le 25/12/2017 à 02:34, Yisheng Xie a écrit :
->>
->>
->> On 2017/12/24 17:05, christophe leroy wrote:
->>>
->>>
->>> Le 23/12/2017 à 14:48, Greg KH a écrit :
->>>> On Sat, Dec 23, 2017 at 06:55:25PM +0800, Yisheng Xie wrote:
->>>>> Hi all,
->>>>>
->>>>> When I tried to use devm_ioremap function and review related code, I found
->>>>> devm_ioremap and devm_ioremap_nocache is almost the same with each other,
->>>>> except one use ioremap while the other use ioremap_nocache.
->>>>
->>>> For all arches?  Really?  Look at MIPS, and x86, they have different
->>>> functions.
->>>>
->>>>> While ioremap's
->>>>> default function is ioremap_nocache, so devm_ioremap_nocache also have the
->>>>> same function with devm_ioremap, which can just be killed to reduce the size
->>>>> of devres.o(from 20304 bytes to 18992 bytes in my compile environment).
->>>>>
->>>>> I have posted two versions, which use macro instead of function for
->>>>> devm_ioremap_nocache[1] or devm_ioremap[2]. And Greg suggest me to kill
->>>>> devm_ioremap_nocache for no need to keep a macro around for the duplicate
->>>>> thing. So here comes v3 and please help to review.
->>>>
->>>> I don't think this can be done, what am I missing?  These functions are
->>>> not identical, sorry for missing that before.
->>>
->>> devm_ioremap() and devm_ioremap_nocache() are quite similar, both use devm_ioremap_release() for the release, why not just defining:
->>>
->>> static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
->>>                 resource_size_t size, bool nocache)
->>> {
->>> [...]
->>>      if (nocache)
->>>          addr = ioremap_nocache(offset, size);
->>>      else
->>>          addr = ioremap(offset, size);
->>> [...]
->>> }
->>>
->>> then in include/linux/io.h
->>>
->>> static inline void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
->>>                 resource_size_t size)
->>> {return __devm_ioremap(dev, offset, size, false);}
->>>
->>> static inline void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
->>>                     resource_size_t size);
->>> {return __devm_ioremap(dev, offset, size, true);}
->>
->> Yeah, this seems good to me, right now we have devm_ioremap, devm_ioremap_wc, devm_ioremap_nocache
->> May be we can use an enum like:
->> typedef enum {
->>     DEVM_IOREMAP = 0,
->>     DEVM_IOREMAP_NOCACHE,
->>     DEVM_IOREMAP_WC,
->> } devm_ioremap_type;
->>
->> static inline void __iomem *devm_ioremap(struct device *dev, resource_size_t offset,
->>                  resource_size_t size)
->>   {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP);}
->>
->>   static inline void __iomem *devm_ioremap_nocache(struct device *dev, resource_size_t offset,
->>                      resource_size_t size);
->>   {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_NOCACHE);}
->>
->>   static inline void __iomem *devm_ioremap_wc(struct device *dev, resource_size_t offset,
->>                      resource_size_t size);
->>   {return __devm_ioremap(dev, offset, size, DEVM_IOREMAP_WC);}
->>
->>   static void __iomem *__devm_ioremap(struct device *dev, resource_size_t offset,
->>                  resource_size_t size, devm_ioremap_type type)
->>   {
->>       void __iomem **ptr, *addr = NULL;
->>   [...]
->>       switch (type){
->>       case DEVM_IOREMAP:
->>           addr = ioremap(offset, size);
->>           break;
->>       case DEVM_IOREMAP_NOCACHE:
->>           addr = ioremap_nocache(offset, size);
->>           break;
->>       case DEVM_IOREMAP_WC:
->>           addr = ioremap_wc(offset, size);
->>           break;
->>       }
->>   [...]
->>   }
-> 
-> 
-> That looks good to me, will you submit a v4 ?
+Agreed - the kernel should go out of the user's way if they want it to be silent. It's already possible, as long as KMS is not in use (since that automatically sets a mode and thus usually clears the screen).
 
-Sorry for late response. And I will submit the v4 as your suggestion.
+What you want is really the opposite of the kernel splash, or any splash on top of Linux (kernel or userspace) at all.
 
-Thanks
-Yisheng
+Returning to cases where a splash running on Linux may be desired:
+I see adding to the initial logo as an interesting use case. An animation to show that the kernel hasn't crashed while booting is quite useful. Something like adding a spinning wheel underneath the initial logo helps. Macs do (or used to do) that after showing the apple, IIRC. I think this is where something simple and kernel based is helpful, vs. something userspace based. Maybe they can even build on top of each other, just like LILO used to print each letter as a confirmation of successfully executing a part of itself.
 
-> 
-> Christophe
-> 
->>
 
+Thinking of it: Loading a KMS driver basically always necessitates a mode change on variable resolution platforms such as PCs. And changing mode requires clearing the screen. Now, what if we could preload the new framebuffer with a splash, rather than a blank screen?
+
+That's not generally feasible (for example, double buffering is an implicit requirement), but who knows, maybe in the future. Just an odd idea.
+
+
+> Of course, with the kernel developer hat on, I want all of the clues
+> every time in case something goes wrong. But this shouldn't have to be
+> mutually exclusive.
+
+I agree - that's why it's important to be able to disable the bootsplash by changing the kernel cmdline.
+
+
+Max

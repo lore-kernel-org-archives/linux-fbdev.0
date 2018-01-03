@@ -1,94 +1,44 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Mon, 15 Jan 2018 16:18:57 +0000
-Subject: Re: [PATCH v3] video: udlfb: Switch from the pr_*() to the dev_*() logging functions
-Message-Id: <20180115161857.GA9434@lenoch>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 03 Jan 2018 18:04:43 +0000
+Subject: Re: [RFC PATCH v2 03/13] bootsplash: Flush framebuffer after drawing
+Message-Id: <02b45e84-aacb-801b-e1a2-d53707a3de6d@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180115154027.GA2455@lenoch>
-In-Reply-To: <20180115154027.GA2455@lenoch>
+References: <20171213194755.3409-1-mstaudt@suse.de>
+ <20171213194755.3409-4-mstaudt@suse.de>
+ <20171213213506.GD26573@phenom.ffwll.local>
+ <d66a994a-cb3a-c1fb-8f91-adbd475a40f0@suse.de>
+ <20171219122313.GE26573@phenom.ffwll.local>
+ <8bbb0497-4a10-2f81-0040-6e7cd4e7353c@suse.de>
+ <20171219135715.GG26573@phenom.ffwll.local>
+ <1513692473.14829.14.camel@suse.com> <20171231125326.6e4d912b@alans-desktop>
+In-Reply-To: <20171231125326.6e4d912b@alans-desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Alan Cox <gnomes@lxorguk.ukuu.org.uk>, Oliver Neukum <oneukum@suse.com>
+Cc: linux-fbdev@vger.kernel.org, michal@markovi.net, b.zolnierkie@samsung.com, Stefan Dirsch <sndirsch@suse.com>, Takashi Iwai <tiwai@suse.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, bernhard.rosenkranzer@linaro.org, philm@manjaro.org
 
-On Mon, Jan 15, 2018 at 05:01:30PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, January 15, 2018 04:40:27 PM Ladislav Michl wrote:
-> > Use dev_err() and dev_info() instead of pr_err() and pr_info().
-> > USB device is used as argument to dev_*() functions for probe
-> > and urb manipulation, FB device for framebuffer related info.
-> > 
-> > Also noisy device probe output was partly removed as idVendor,
-> > idProduct, name and serial are already printed by usb core,
-> > and partly turned into debug output.
-> > 
-> > Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
-> > ---
-> >  Changes:
-> >  - v2: Moved warnings removal into separate patch
-> >  - v3: Fixed warning about ignored return value, fixed space
-> >        before end of comment text, fixed few checkpatch warnings
-> > 
-> >  drivers/video/fbdev/udlfb.c | 232 ++++++++++++++++++++++----------------------
-> >  1 file changed, 116 insertions(+), 116 deletions(-)
+On 12/31/2017 01:53 PM, Alan Cox wrote:
+> On Tue, 19 Dec 2017 15:07:53 +0100
+> Oliver Neukum <oneukum@suse.com> wrote:
 > 
-> [...]
+>> Am Dienstag, den 19.12.2017, 14:57 +0100 schrieb Daniel Vetter:
+>>>> Would you like me to extend the FB API or not?  
+>>>
+>>> Yes. Well for real I'd like you to do kms, so maybe you need to explain
+>>> why exactly you absolutely have to use fbdev (aka which driver isn't
+>>> supported by drm that you want to enable this on).  
+>>
+>> Hi,
+>>
+>> those would be at a minimum efifb, vesafb, xenfb
+>> Those are obviously not sexy, but from a practical point of view
+>> they are the minimum you need to support.
 > 
-> > @@ -1455,7 +1452,7 @@ static const struct bin_attribute edid_attr = {
-> >  	.write = edid_store
-> >  };
-> >  
-> > -static struct device_attribute fb_device_attrs[] = {
-> > +static const struct device_attribute fb_device_attrs[] = {
-> 
-> This has been introduced in v3 and should be in a separate pre-patch.
+> I think it's more constructive to look at it the other way around. What
+> drivers do we have that actually need to be used which don't have DRM
+> equivalents - and how do we fix that instead ?
+It's *at least* the above named drivers: efifb, vesafb, xenfb.
 
-Well, as I hadn't the same toolchain installed I didn't want to risk another
-warning. Members of this structure are assigned to the const pointer later.
 
-I'll take opportunity and constify some more pointers.
-
-> >  	__ATTR_RO(metrics_bytes_rendered),
-> >  	__ATTR_RO(metrics_bytes_identical),
-> >  	__ATTR_RO(metrics_bytes_sent),
-> 
-> [...]
-> 
-> > @@ -1569,56 +1568,46 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dlfb,
-> >  
-> >  static void dlfb_init_framebuffer_work(struct work_struct *work);
-> >  
-> > -static int dlfb_usb_probe(struct usb_interface *interface,
-> > -			const struct usb_device_id *id)
-> > +static int dlfb_usb_probe(struct usb_interface *intf,
-> > +			  const struct usb_device_id *id)
-> >  {
-> > -	struct usb_device *usbdev;
-> >  	struct dlfb_data *dlfb;
-> >  	int retval = -ENOMEM;
-> > +	struct usb_device *usbdev = interface_to_usbdev(intf);
-> >  
-> >  	/* usb initialization */
-> > -
-> > -	usbdev = interface_to_usbdev(interface);
-> > -
-> >  	dlfb = kzalloc(sizeof(*dlfb), GFP_KERNEL);
-> > -	if (dlfb = NULL) {
-> > -		dev_err(&interface->dev, "dlfb_usb_probe: failed alloc of dev struct\n");
-> 
-> This dev_err() removal has been introduced in v3 and I believe that
-> it should be reversed (according to previous request of not deleting
-> allocation error messages).
-
-Reversed (it is the only allocation failure point in this function, so it 
-should be clear where it failed, but let's leave it here)
-
-> > +	if (!dlfb)
-> >  		goto error;
-> > -	}
-> 
-> The rest looks fine.
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
+Max

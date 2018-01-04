@@ -1,137 +1,171 @@
-From: hl <hl@rock-chips.com>
-Date: Thu, 04 Jan 2018 02:18:33 +0000
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Thu, 04 Jan 2018 08:22:10 +0000
 Subject: Re: [RFC] pwm-backlight: Allow backlight to remain disabled on boot
-Message-Id: <6b14a283-0ded-e22c-8f81-5c241ad57463@rock-chips.com>
+Message-Id: <6a77b1bc-29fa-2bc5-baeb-0cba8747137a@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
-In-Reply-To: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
+ <6b14a283-0ded-e22c-8f81-5c241ad57463@rock-chips.com>
+In-Reply-To: <6b14a283-0ded-e22c-8f81-5c241ad57463@rock-chips.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi All,
+Hi,
 
-     Since many panel power sequence request backlight stay disable
+On 2018-01-04 04:18, hl wrote:
+> Hi All,
+> 
+>     Since many panel power sequence request backlight stay disable
+> 
+> before panel power ready, but with now pwm-backlight drvier, it default to
+> 
+> enable backlight when pwm-backlight probe, it mess up the panel power
+> sequence.
+> 
+> So we need this patch. This patch have been fly for a long time, does
+> anyone have plan
+> 
+> to merge it?
 
-before panel power ready, but with now pwm-backlight drvier, it default to
+you should not need this anymore since we have:
+892c7788c724backlight: pwm_bl: Fix GPIO out for unimplemented
+.get_direction()
 
-enable backlight when pwm-backlight probe, it mess up the panel power 
-sequence.
+d1b812945750 backlight: pwm_bl: Check the PWM state for initial
+backlight power state
 
-So we need this patch. This patch have been fly for a long time, does 
-anyone have plan
+7613c922315e backlight: pwm_bl: Move the checks for initial power state
+to a separate function
 
-to merge it?
+With these in place the backlight will be kept disabled if it was
+disabled during boot _if_ you have booted via DT _and_ you have a
+phandle pointing to the backlight node (implying that the backlight is
+managed by the display driver).
 
+> 
+> 
+> On Thursday, July 31, 2014 07:42 PM, Thierry Reding wrote:
+>> From: Thierry Reding <treding@nvidia.com>
+>>
+>> The default for backlight devices is to be enabled immediately when
+>> registering with the backlight core. This can be useful for setups that
+>> use a simple framebuffer device and where the backlight cannot otherwise
+>> be hooked up to the panel.
+>>
+>> However, when dealing with more complex setups, such as those of recent
+>> ARM SoCs, this can be problematic. Since the backlight is usually setup
+>> separately from the display controller, the probe order is not usually
+>> deterministic. That can lead to situations where the backlight will be
+>> powered up and the panel will show an uninitialized framebuffer.
+>>
+>> Furthermore, subsystems such as DRM have advanced functionality to set
+>> the power mode of a panel. In order to allow such setups to power up the
+>> panel at exactly the right moment, a way is needed to prevent the
+>> backlight core from powering the backlight up automatically when it is
+>> registered.
+>>
+>> This commit introduces a new boot_off field in the platform data (and
+>> also implements getting the same information from device tree). When set
+>> the initial backlight power mode will be set to "off".
+>>
+>> Signed-off-by: Thierry Reding <treding@nvidia.com>
+>> ---
+>> I've been meaning to send this for a while but was always holding back
+>> because of the indoctrination that this type of configuration shouldn't
+>> be part of device tree. However this issue was recently raised again in
+>> the context of power up sequences for display panels. As described above
+>> the issue is that panel datasheets recommend that the backlight attached
+>> to a panel be turned on at the very last step to avoid visual glitches
+>> during the panel's power up sequence. With the current implementation it
+>> is typical for the backlight to be probed before the display panel. That
+>> has, in many cases, the side-effect of enabling the backlight, therefore
+>> making the screen content visible before it's actually initialized.
+>>
+>> Some panels come up with random garbage when uninitialized, others show
+>> all white. With some luck the panel will be all black and users won't
+>> really notice.
+>>
+>> This patch is an attempt to enable boards to override the default of
+>> turning on the backlight for the pwm-backlight driver. I'm not sure if
+>> there was a specific reason to turn on the backlight by default when
+>> this driver was initially written, but the fact is that since it has
+>> pretty much always been like this we can't really go and change the
+>> default, otherwise a lot of people may end up with no backlight and no
+>> clue as to how to enable it. So the only reasonable thing we can do is
+>> to keep the old behaviour and give new boards a way to override it if
+>> they know that some other part of the stack will enable it at the right
+>> moment.
+>>
+>>   .../devicetree/bindings/video/backlight/pwm-backlight.txt         | 1 +
+>>   drivers/video/backlight/pwm_bl.c                                  |
+>> 8 ++++++++
+>>   include/linux/pwm_backlight.h                                     |
+>> 2 ++
+>>   3 files changed, 11 insertions(+)
+>>
+>> diff --git
+>> a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+>> b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+>> index 764db86d441a..65e001a1733d 100644
+>> --- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+>> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
+>> @@ -17,6 +17,7 @@ Optional properties:
+>>                  "pwms" property (see PWM binding[0])
+>>     - enable-gpios: contains a single GPIO specifier for the GPIO
+>> which enables
+>>                     and disables the backlight (see GPIO binding[1])
+>> +  - backlight-boot-off: keep the backlight disabled on boot
+>>     [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+>>   [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+>> diff --git a/drivers/video/backlight/pwm_bl.c
+>> b/drivers/video/backlight/pwm_bl.c
+>> index d7a3d13e72ec..62adfc9d37a7 100644
+>> --- a/drivers/video/backlight/pwm_bl.c
+>> +++ b/drivers/video/backlight/pwm_bl.c
+>> @@ -173,6 +173,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
+>>           data->max_brightness--;
+>>       }
+>>   +    data->boot_off = of_property_read_bool(node,
+>> "backlight-boot-off");
+>> +
+>>       return 0;
+>>   }
+>>   @@ -317,6 +319,12 @@ static int pwm_backlight_probe(struct
+>> platform_device *pdev)
+>>       }
+>>         bl->props.brightness = data->dft_brightness;
+>> +
+>> +    if (data->boot_off)
+>> +        bl->props.power = FB_BLANK_POWERDOWN;
+>> +    else
+>> +        bl->props.power = FB_BLANK_UNBLANK;
+>> +
+>>       backlight_update_status(bl);
+>>         platform_set_drvdata(pdev, bl);
+>> diff --git a/include/linux/pwm_backlight.h
+>> b/include/linux/pwm_backlight.h
+>> index efdd9227a49c..1fc14989da4a 100644
+>> --- a/include/linux/pwm_backlight.h
+>> +++ b/include/linux/pwm_backlight.h
+>> @@ -15,6 +15,8 @@ struct platform_pwm_backlight_data {
+>>       unsigned int *levels;
+>>       /* TODO remove once all users are switched to gpiod_* API */
+>>       int enable_gpio;
+>> +    bool boot_off;
+>> +
+>>       int (*init)(struct device *dev);
+>>       int (*notify)(struct device *dev, int brightness);
+>>       void (*notify_after)(struct device *dev, int brightness);
+> 
+> 
+> 
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
 
-On Thursday, July 31, 2014 07:42 PM, Thierry Reding wrote:
-> From: Thierry Reding <treding@nvidia.com>
->
-> The default for backlight devices is to be enabled immediately when
-> registering with the backlight core. This can be useful for setups that
-> use a simple framebuffer device and where the backlight cannot otherwise
-> be hooked up to the panel.
->
-> However, when dealing with more complex setups, such as those of recent
-> ARM SoCs, this can be problematic. Since the backlight is usually setup
-> separately from the display controller, the probe order is not usually
-> deterministic. That can lead to situations where the backlight will be
-> powered up and the panel will show an uninitialized framebuffer.
->
-> Furthermore, subsystems such as DRM have advanced functionality to set
-> the power mode of a panel. In order to allow such setups to power up the
-> panel at exactly the right moment, a way is needed to prevent the
-> backlight core from powering the backlight up automatically when it is
-> registered.
->
-> This commit introduces a new boot_off field in the platform data (and
-> also implements getting the same information from device tree). When set
-> the initial backlight power mode will be set to "off".
->
-> Signed-off-by: Thierry Reding <treding@nvidia.com>
-> ---
-> I've been meaning to send this for a while but was always holding back
-> because of the indoctrination that this type of configuration shouldn't
-> be part of device tree. However this issue was recently raised again in
-> the context of power up sequences for display panels. As described above
-> the issue is that panel datasheets recommend that the backlight attached
-> to a panel be turned on at the very last step to avoid visual glitches
-> during the panel's power up sequence. With the current implementation it
-> is typical for the backlight to be probed before the display panel. That
-> has, in many cases, the side-effect of enabling the backlight, therefore
-> making the screen content visible before it's actually initialized.
->
-> Some panels come up with random garbage when uninitialized, others show
-> all white. With some luck the panel will be all black and users won't
-> really notice.
->
-> This patch is an attempt to enable boards to override the default of
-> turning on the backlight for the pwm-backlight driver. I'm not sure if
-> there was a specific reason to turn on the backlight by default when
-> this driver was initially written, but the fact is that since it has
-> pretty much always been like this we can't really go and change the
-> default, otherwise a lot of people may end up with no backlight and no
-> clue as to how to enable it. So the only reasonable thing we can do is
-> to keep the old behaviour and give new boards a way to override it if
-> they know that some other part of the stack will enable it at the right
-> moment.
->
->   .../devicetree/bindings/video/backlight/pwm-backlight.txt         | 1 +
->   drivers/video/backlight/pwm_bl.c                                  | 8 ++++++++
->   include/linux/pwm_backlight.h                                     | 2 ++
->   3 files changed, 11 insertions(+)
->
-> diff --git a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-> index 764db86d441a..65e001a1733d 100644
-> --- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
-> @@ -17,6 +17,7 @@ Optional properties:
->                  "pwms" property (see PWM binding[0])
->     - enable-gpios: contains a single GPIO specifier for the GPIO which enables
->                     and disables the backlight (see GPIO binding[1])
-> +  - backlight-boot-off: keep the backlight disabled on boot
->   
->   [0]: Documentation/devicetree/bindings/pwm/pwm.txt
->   [1]: Documentation/devicetree/bindings/gpio/gpio.txt
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index d7a3d13e72ec..62adfc9d37a7 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -173,6 +173,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
->   		data->max_brightness--;
->   	}
->   
-> +	data->boot_off = of_property_read_bool(node, "backlight-boot-off");
-> +
->   	return 0;
->   }
->   
-> @@ -317,6 +319,12 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->   	}
->   
->   	bl->props.brightness = data->dft_brightness;
-> +
-> +	if (data->boot_off)
-> +		bl->props.power = FB_BLANK_POWERDOWN;
-> +	else
-> +		bl->props.power = FB_BLANK_UNBLANK;
-> +
->   	backlight_update_status(bl);
->   
->   	platform_set_drvdata(pdev, bl);
-> diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-> index efdd9227a49c..1fc14989da4a 100644
-> --- a/include/linux/pwm_backlight.h
-> +++ b/include/linux/pwm_backlight.h
-> @@ -15,6 +15,8 @@ struct platform_pwm_backlight_data {
->   	unsigned int *levels;
->   	/* TODO remove once all users are switched to gpiod_* API */
->   	int enable_gpio;
-> +	bool boot_off;
-> +
->   	int (*init)(struct device *dev);
->   	int (*notify)(struct device *dev, int brightness);
->   	void (*notify_after)(struct device *dev, int brightness);
+- Péter
 
-
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

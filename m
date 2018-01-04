@@ -1,56 +1,69 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Thu, 04 Jan 2018 19:37:20 +0000
-Subject: [PATCH v2 1/5] video: udlfb: Remove unnecessary local variable
-Message-Id: <20180104193720.GB22612@lenoch>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 04 Jan 2018 15:40:38 +0000
+Subject: Re: [PATCH 0/6] video: udlfb: (not only) Logging cleanup
+Message-Id: <1594475.76bM9bkN7v@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-'urb' is not needed and can be removed.
+On Monday, December 11, 2017 10:39:48 PM Ladislav Michl wrote:
+> This patchset is a side product of debugging on unreliable USB host
+> where devices saw a lot of disconnects. It turned out that udlfb
+> logging is just too noisy to be usefull as produced syslog is hard
+> to read.
+> 
+> Hence this attempt to clean things up.
+> 
+> Comments and suggestions welcome and appreciated, as always.
+> 
+> Ladislav Michl (6):
+>   video: udlfb: Do not name private data 'dev'
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- Changes:
- - v2: None (just made patch #1)
+This patch no longer applies cleanly after following patches:
 
- drivers/video/fbdev/udlfb.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+11ab5a6 video: udlfb: Delete an unnecessary return statement in two functions
+74fb251 video: udlfb: Improve a size determination in dlfb_alloc_urb_list()
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 99ce445986b3..5f68f8c720ec 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1919,7 +1919,6 @@ static struct urb *dlfb_get_urb(struct dlfb_data *dev)
- 	int ret;
- 	struct list_head *entry;
- 	struct urb_node *unode;
--	struct urb *urb = NULL;
- 	unsigned long flags;
- 
- 	/* Wait for an in-flight buffer to complete and get re-queued */
-@@ -1928,7 +1927,7 @@ static struct urb *dlfb_get_urb(struct dlfb_data *dev)
- 		atomic_set(&dev->lost_pixels, 1);
- 		pr_warn("wait for urb interrupted: %x available: %d\n",
- 		       ret, dev->urbs.available);
--		goto error;
-+		return NULL;
- 	}
- 
- 	spin_lock_irqsave(&dev->urbs.lock, flags);
-@@ -1941,10 +1940,7 @@ static struct urb *dlfb_get_urb(struct dlfb_data *dev)
- 	spin_unlock_irqrestore(&dev->urbs.lock, flags);
- 
- 	unode = list_entry(entry, struct urb_node, entry);
--	urb = unode->urb;
--
--error:
--	return urb;
-+	return unode->urb;
- }
- 
- static int dlfb_submit_urb(struct dlfb_data *dev, struct urb *urb, size_t len)
--- 
-2.15.1
+have been merged into fbdev-for-next.
+
+>   video: udlfb: Remove unnecessary 'return'
+
+I've already applied identical patch from Markus which was posted
+some time earlier.
+
+>   video: udlfb: Remove unnecessary local variable
+
+Please make this patch #1 in the series.
+
+>   video: udlfb: Delete error messages for failed allocations
+
+In one place this patch removes the information about the device for
+which the allocation fails and generally I would prefer to still have
+the information about devices for which allocation fails (so please
+consider dropping this patch and converting relevant places to use
+dev_*() logging functions).
+
+>   video: udlfb: Remove redundant gdev variable
+
+Please make this patch #2 in the series.
+
+>   video: udlfb: Switch from the pr_*() to the dev_*() logging functions
+
+This patch also removes some log entries completely and I would prefer
+such changes to be split into a separate pre-patch (please also give
+a valid rationale for the removal in the patch description).
+
+>  drivers/video/fbdev/udlfb.c | 617 ++++++++++++++++++++------------------------
+>  include/video/udlfb.h       |   3 +-
+>  2 files changed, 284 insertions(+), 336 deletions(-)
+
+Please rebase, fix and resubmit, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

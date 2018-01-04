@@ -1,66 +1,33 @@
-From: Petr Sedlak <hugosedlak@gmail.com>
-Date: Mon, 22 Jan 2018 20:43:06 +0000
-Subject: [PATCH] staging: sm750fb: fix CamelCase for dispSet var
-Message-Id: <1516653786-6560-1-git-send-email-hugosedlak@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 04 Jan 2018 13:31:58 +0000
+Subject: Re: [PATCH v2] fbdev: pxa3xx: use ktime_get_ts64 for time stamps
+Message-Id: <3904349.nl3lDnz3Dp@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20171127164821epcas2p4a0a1849ceaa7a4f58a14bddc4419d4ec@epcas2p4.samsung.com>
+ <20171127164755.525720-1-arnd@arndb.de>
+In-Reply-To: <20171127164755.525720-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-Cc: Petr Sedlak <hugosedlak@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Himanshu Jha <himanshujha199640@gmail.com>, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-Fix warning reported by checkpatch:
+On Monday, November 27, 2017 05:46:14 PM Arnd Bergmann wrote:
+> do_gettimeofday() is deprecated because it is not y2038 safe, so I'm
+> changing the calculation for the diagnostic output over to using
+> 'timespec64'.
+> 
+> We really only print time deltas here, so changing it to monotonic
+> time makes this more robust, the correct accessor for this is
+> ktime_get_ts64().
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-  CHECK: Avoid CamelCase: <dispSet>
+Patch queued for 4.16, thanks.
 
-By renaming dispSet to disp_set
-
-Signed-off-by: Petr Sedlak <hugosedlak@gmail.com>
----
- drivers/staging/sm750fb/sm750_hw.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
-index ffd114a..a8c7986 100644
---- a/drivers/staging/sm750fb/sm750_hw.c
-+++ b/drivers/staging/sm750fb/sm750_hw.c
-@@ -185,29 +185,29 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
- 			    struct fb_fix_screeninfo *fix)
- {
- 	int ret;
--	disp_output_t dispSet;
-+	disp_output_t disp_set;
- 	int channel;
- 
- 	ret = 0;
--	dispSet = 0;
-+	disp_set = 0;
- 	channel = *output->channel;
- 
- 	if (sm750_get_chip_type() != SM750LE) {
- 		if (channel = sm750_primary) {
- 			pr_info("primary channel\n");
- 			if (output->paths & sm750_panel)
--				dispSet |= do_LCD1_PRI;
-+				disp_set |= do_LCD1_PRI;
- 			if (output->paths & sm750_crt)
--				dispSet |= do_CRT_PRI;
-+				disp_set |= do_CRT_PRI;
- 
- 		} else {
- 			pr_info("secondary channel\n");
- 			if (output->paths & sm750_panel)
--				dispSet |= do_LCD1_SEC;
-+				disp_set |= do_LCD1_SEC;
- 			if (output->paths & sm750_crt)
--				dispSet |= do_CRT_SEC;
-+				disp_set |= do_CRT_SEC;
- 		}
--		ddk750_setLogicalDispOut(dispSet);
-+		ddk750_setLogicalDispOut(disp_set);
- 	} else {
- 		/* just open DISPLAY_CONTROL_750LE register bit 3:0 */
- 		u32 reg;
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

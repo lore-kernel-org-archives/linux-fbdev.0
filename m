@@ -1,36 +1,30 @@
-From: Ulf Magnusson <ulfalizer@gmail.com>
-Date: Tue, 30 Jan 2018 19:22:57 +0000
-Subject: [PATCH v2 02/10] video: fbdev: kconfig: Remove empty help text
-Message-Id: <20180130192349.8420-3-ulfalizer@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 04 Jan 2018 13:37:46 +0000
+Subject: Re: [PATCH] fbdev: au1200fb: delete duplicate header contents
+Message-Id: <17042840.GgI3QMGfLJ@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180130192349.8420-1-ulfalizer@gmail.com>
-In-Reply-To: <20180130192349.8420-1-ulfalizer@gmail.com>
+References: <CGME20171128152248epcas4p479d822a4cac1b766e2199e517ad8606d@epcas4p4.samsung.com>
+ <20171128152222.6260-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20171128152222.6260-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kbuild@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, yamada.masahiro@socionext.com, mcgrof@kernel.org, Ulf Magnusson <ulfalizer@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Hans de Goede <j.w.r.degoede@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-In preparation for adding a warning ("kconfig: Warn if help text is
-blank"): https://lkml.org/lkml/2018/1/30/516
+On Tuesday, November 28, 2017 04:22:22 PM Rasmus Villemoes wrote:
+> This file has been copy-pasted-pasted:
+> 
+>   ~/linux$ x=drivers/video/fbdev/au1200fb.h; diff -u <(head -n 286 $x; head -n 286 $x) $x
+>   ~/linux$
+> 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
----
- drivers/video/fbdev/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+Patch queued for 4.16, thanks.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 6962b4583fd7..11e699f1062b 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1156,7 +1156,6 @@ config FB_I810_I2C
- 	bool "Enable DDC Support"
- 	depends on FB_I810 && FB_I810_GTF
- 	select FB_DDC
--	help
- 
- config FB_LE80578
- 	tristate "Intel LE80578 (Vermilion) support"
--- 
-2.14.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

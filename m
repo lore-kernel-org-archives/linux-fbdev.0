@@ -1,36 +1,50 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Date: Mon, 15 Jan 2018 16:46:07 +0000
-Subject: Re: [PATCH] console/dummy: leave .con_font_get set to NULL
-Message-Id: <nycvar.YSQ.7.76.1801151142420.13881@knanqh.ubzr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 04 Jan 2018 14:10:56 +0000
+Subject: Re: [PATCH] omapfb: dss: Do not duplicate features data
+Message-Id: <3826269.phH0ahbWjF@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180105214302epcas3p1881997414f06e7ff06141318a610ac5b@epcas3p1.samsung.com>
- <nycvar.YSQ.7.76.1801051636340.1528@knanqh.ubzr>
- <2055048.eRiUAMEKEU@amdc3058>
-In-Reply-To: <2055048.eRiUAMEKEU@amdc3058>
+References: <20171129123308.GA26578@lenoch>
+In-Reply-To: <20171129123308.GA26578@lenoch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-On Mon, 15 Jan 2018, Bartlomiej Zolnierkiewicz wrote:
-
-> On Friday, January 05, 2018 04:42:58 PM Nicolas Pitre wrote:
-> > 
-> > When this method is set, the caller expects struct console_font fields
-> > to be properly initialized when it returns. Leave it unset otherwise
-> > nonsensical (leaked kernel stack) values are returned to user space.
-> > 
-> > Signed-off-by: Nicolas Pitre <nico@linaro.org>
-> > Cc: stable@kernel.org
+On Wednesday, November 29, 2017 06:03:14 PM Ladislav Michl wrote:
+> On Wed, Nov 29, 2017 at 10:45:52AM -0600, Adam Ford wrote:
+> [snip]
+> > If it's correct and the patch is this one:
+> > https://patchwork.kernel.org/patch/10082025/
 > 
-> Please check your patches with tools/checkpatch.pl script:
+> Yes.
 > 
-> ERROR: The 'stable' address should be 'stable@vger.kernel.org'
-> #9: 
-> Cc: stable@kernel.org
+> > Then you can mark me as:
+> > 
+> > Tested-by: Adam Ford <aford173@gmail.com> #omap3630
+> 
+> Thank you for testing. I'll wait a bit more for eventual objections
+> and Marcus' decision about his credit before sending v2 :)
 
-Oops. I cut and pasted it it from commit ea0ee33988778fb73e4f4.  ;-)
+After adding Adam's Tested-by tag and fixing minor CodingStyle
+errors reported by checkpatch.pl:
 
+ERROR: "foo* bar" should be "foo *bar"
+#37: FILE: drivers/video/fbdev/omap2/omapfb/dss/dispc.c:3979:
++static const struct dispc_features* dispc_get_features(void)
 
-Nicolas
+ERROR: "foo* bar" should be "foo *bar"
+#114: FILE: drivers/video/fbdev/omap2/omapfb/dss/dss.c:890:
++static const struct dss_features* dss_get_features(void)
+
+ERROR: "foo* bar" should be "foo *bar"
+#199: FILE: drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c:192:
++static const struct hdmi_phy_features* hdmi_phy_get_features(void)
+
+I've queued your patch for 4.16, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

@@ -1,143 +1,112 @@
-From: SF Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 07 Jan 2018 16:02:21 +0000
-Subject: [PATCH v3 1/3] video: smscufx: Less checks in ufx_usb_probe() after error detection
-Message-Id: <03be4276-520e-1d22-1c6e-e35c8df2b1e8@users.sourceforge.net>
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Thu, 04 Jan 2018 19:38:33 +0000
+Subject: [PATCH v2 3/5] video: udlfb: Remove noisy warnings
+Message-Id: <20180104193833.GD22612@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
- <f12dd7c4-412d-813e-c859-e5d4b3e6d56f@users.sourceforge.net>
- <1736749.UIs06O4xc5@amdc3058>
- <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
-In-Reply-To: <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Steve Glendinning <steve.glendinning@shawell.net>
-Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Sun, 7 Jan 2018 15:56:11 +0100
+These warnings comes from times of driver development and do
+not carry any usefull debugging information.
 
-Up to four checks could be repeated by the ufx_usb_probe() function
-during error handling even if the relevant properties can be determined
-for the involved variables before by source code analysis.
-
-* Return directly after a call of the function "kzalloc" failed
-  at the beginning.
-
-* Adjust jump targets so that extra checks can be omitted at the end.
-
-* Delete initialisations for the variables "info" and "retval"
-  which became unnecessary with this refactoring.
-
-Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 ---
+ Changes:
+ - v2: New patch
 
-v3:
-This update suggestion was rebased on source files from the software
-"Linux next-20180105".
+ drivers/video/fbdev/udlfb.c | 20 --------------------
+ 1 file changed, 20 deletions(-)
 
-v2:
-A call of the function "fb_dealloc_cmap" was preserved for the exception
-handling at the end.
-
- drivers/video/fbdev/smscufx.c | 46 ++++++++++++++++++-------------------------
- 1 file changed, 19 insertions(+), 27 deletions(-)
-
-diff --git a/drivers/video/fbdev/smscufx.c b/drivers/video/fbdev/smscufx.c
-index 8db7085e5d1a..893daeb1ffd9 100644
---- a/drivers/video/fbdev/smscufx.c
-+++ b/drivers/video/fbdev/smscufx.c
-@@ -1620,8 +1620,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
- {
- 	struct usb_device *usbdev;
- 	struct ufx_data *dev;
--	struct fb_info *info = NULL;
--	int retval = -ENOMEM;
-+	struct fb_info *info;
-+	int retval;
- 	u32 id_rev, fpga_rev;
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index d4e15d97a264..4a6644432970 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -921,11 +921,7 @@ static void dlfb_free(struct kref *kref)
+ 	struct dlfb_data *dev = container_of(kref, struct dlfb_data, kref);
  
- 	/* usb initialization */
-@@ -1631,7 +1631,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
- 	if (dev = NULL) {
- 		dev_err(&usbdev->dev, "ufx_usb_probe: failed alloc of dev struct\n");
--		goto error;
-+		return -ENOMEM;
- 	}
- 
- 	/* we need to wait for both usb and fbdev to spin down on disconnect */
-@@ -1652,9 +1652,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	dev_dbg(dev->gdev, "fb_defio enable=%d\n", fb_defio);
- 
- 	if (!ufx_alloc_urb_list(dev, WRITES_IN_FLIGHT, MAX_TRANSFER)) {
--		retval = -ENOMEM;
- 		dev_err(dev->gdev, "ufx_alloc_urb_list failed\n");
--		goto error;
-+		goto e_nomem;
- 	}
- 
- 	/* We don't register a new USB class. Our client interface is fbdev */
-@@ -1662,9 +1661,8 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	/* allocates framebuffer driver structure, not framebuffer memory */
- 	info = framebuffer_alloc(0, &usbdev->dev);
- 	if (!info) {
--		retval = -ENOMEM;
- 		dev_err(dev->gdev, "framebuffer_alloc failed\n");
--		goto error;
-+		goto e_nomem;
- 	}
- 
- 	dev->info = info;
-@@ -1675,7 +1673,7 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	retval = fb_alloc_cmap(&info->cmap, 256, 0);
- 	if (retval < 0) {
- 		dev_err(dev->gdev, "fb_alloc_cmap failed %x\n", retval);
--		goto error;
-+		goto destroy_modedb;
- 	}
- 
- 	INIT_DELAYED_WORK(&dev->free_framebuffer_work,
-@@ -1736,26 +1734,20 @@ static int ufx_usb_probe(struct usb_interface *interface,
- 	return 0;
- 
- error:
--	if (dev) {
--		if (info) {
--			if (info->cmap.len != 0)
--				fb_dealloc_cmap(&info->cmap);
--			if (info->monspecs.modedb)
--				fb_destroy_modedb(info->monspecs.modedb);
--			vfree(info->screen_base);
+ 	vfree(dev->backing_buffer);
 -
--			fb_destroy_modelist(&info->modelist);
+ 	kfree(dev->edid);
 -
--			framebuffer_release(info);
--		}
+-	pr_warn("freeing dlfb_data %p\n", dev);
 -
--		kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
--		kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
--
--		/* dev has been deallocated. Do not dereference */
--	}
--
-+	fb_dealloc_cmap(&info->cmap);
-+destroy_modedb:
-+	fb_destroy_modedb(info->monspecs.modedb);
-+	vfree(info->screen_base);
-+	fb_destroy_modelist(&info->modelist);
-+	framebuffer_release(info);
-+put_ref:
-+	kref_put(&dev->kref, ufx_free); /* ref for framebuffer */
-+	kref_put(&dev->kref, ufx_free); /* last ref from kref_init */
- 	return retval;
-+
-+e_nomem:
-+	retval = -ENOMEM;
-+	goto put_ref;
+ 	kfree(dev);
  }
  
- static void ufx_usb_disconnect(struct usb_interface *interface)
+@@ -942,8 +938,6 @@ static void dlfb_free_framebuffer(struct dlfb_data *dev)
+ 	struct fb_info *info = dev->info;
+ 
+ 	if (info) {
+-		int node = info->node;
+-
+ 		unregister_framebuffer(info);
+ 
+ 		if (info->cmap.len != 0)
+@@ -958,8 +952,6 @@ static void dlfb_free_framebuffer(struct dlfb_data *dev)
+ 
+ 		/* Assume info structure is freed after this point */
+ 		framebuffer_release(info);
+-
+-		pr_warn("fb_info for /dev/fb%d has been freed\n", node);
+ 	}
+ 
+ 	/* ref taken in probe() as part of registering framebfufer */
+@@ -1060,8 +1052,6 @@ static int dlfb_ops_set_par(struct fb_info *info)
+ 	u16 *pix_framebuffer;
+ 	int i;
+ 
+-	pr_notice("set_par mode %dx%d\n", info->var.xres, info->var.yres);
+-
+ 	result = dlfb_set_video_mode(dev, &info->var);
+ 
+ 	if ((result = 0) && (dev->fb_count = 0)) {
+@@ -1164,8 +1154,6 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dev, struct fb_info *info)
+ 	unsigned char *new_fb;
+ 	unsigned char *new_back = NULL;
+ 
+-	pr_warn("Reallocating framebuffer. Addresses will change!\n");
+-
+ 	new_len = info->fix.line_length * info->var.yres;
+ 
+ 	if (PAGE_ALIGN(new_len) > old_len) {
+@@ -1415,9 +1403,6 @@ static ssize_t edid_show(
+ 	if (off + count > dev->edid_size)
+ 		count = dev->edid_size - off;
+ 
+-	pr_info("sysfs edid copy %p to %p, %d bytes\n",
+-		dev->edid, buf, (int) count);
+-
+ 	memcpy(buf, dev->edid, count);
+ 
+ 	return count;
+@@ -1443,7 +1428,6 @@ static ssize_t edid_store(
+ 	if (!dev->edid || memcmp(src, dev->edid, src_size))
+ 		return -EINVAL;
+ 
+-	pr_info("sysfs written EDID is new default\n");
+ 	dlfb_ops_set_par(fb_info);
+ 	return src_size;
+ }
+@@ -1827,8 +1811,6 @@ static void dlfb_free_urb_list(struct dlfb_data *dev)
+ 	int ret;
+ 	unsigned long flags;
+ 
+-	pr_notice("Freeing all render urbs\n");
+-
+ 	/* keep waiting and freeing, until we've got 'em all */
+ 	while (count--) {
+ 
+@@ -1907,8 +1889,6 @@ static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size)
+ 	dev->urbs.count = i;
+ 	dev->urbs.available = i;
+ 
+-	pr_notice("allocated %d %d byte urbs\n", i, (int) size);
+-
+ 	return i;
+ }
+ 
 -- 
 2.15.1
 

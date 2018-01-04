@@ -1,67 +1,66 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 17 Jan 2018 20:54:29 +0000
-Subject: [RFC PATCH v3 07/13] vt: Add keyboard hook to disable bootsplash
-Message-Id: <20180117205435.2860-8-mstaudt@suse.de>
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Thu, 04 Jan 2018 19:37:51 +0000
+Subject: [PATCH v2 2/5] video: udlfb: Remove redundant gdev variable
+Message-Id: <20180104193751.GC22612@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180117205435.2860-1-mstaudt@suse.de>
-In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
+To: linux-fbdev@vger.kernel.org
 
-Let's disable the splash if the user presses ESC or F1-F12 on a VT.
+gdev is not really needed as the same content can be read
+from udev->dev.
 
-The F1-F12 check is to disable the splash on VT switches.
-
-Signed-off-by: Max Staudt <mstaudt@suse.de>
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 ---
- drivers/tty/vt/keyboard.c | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ Changes:
+ - v2: None (just made patch #2)
 
-diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
-index f4166263bb3a..a248429194bb 100644
---- a/drivers/tty/vt/keyboard.c
-+++ b/drivers/tty/vt/keyboard.c
-@@ -47,6 +47,8 @@
+ drivers/video/fbdev/udlfb.c | 4 +---
+ include/video/udlfb.h       | 1 -
+ 2 files changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 5f68f8c720ec..d4e15d97a264 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1605,7 +1605,6 @@ static int dlfb_usb_probe(struct usb_interface *interface,
+ 	kref_init(&dev->kref); /* matching kref_put in usb .disconnect fn */
  
- #include <asm/irq_regs.h>
+ 	dev->udev = usbdev;
+-	dev->gdev = &usbdev->dev; /* our generic struct device * */
+ 	usb_set_intfdata(interface, dev);
  
-+#include <linux/bootsplash.h>
-+
- extern void ctrl_alt_del(void);
+ 	pr_info("%s %s - serial #%s\n",
+@@ -1670,7 +1669,7 @@ static void dlfb_init_framebuffer_work(struct work_struct *work)
+ 	int i;
  
- /*
-@@ -1353,6 +1355,28 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
- 	}
- #endif
+ 	/* allocates framebuffer driver structure, not framebuffer memory */
+-	info = framebuffer_alloc(0, dev->gdev);
++	info = framebuffer_alloc(0, &dev->udev->dev);
+ 	if (!info) {
+ 		pr_err("framebuffer_alloc failed\n");
+ 		goto error;
+@@ -1765,7 +1764,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
  
-+	/* Trap keys when bootsplash is shown */
-+	if (bootsplash_would_render_now()) {
-+		/* Deactivate bootsplash on ESC or Alt+Fxx VT switch */
-+		if (keycode >= KEY_F1 && keycode <= KEY_F12) {
-+			bootsplash_disable();
-+
-+			/*
-+			 * No return here since we want to actually
-+			 * perform the VT switch.
-+			 */
-+		} else {
-+			if (keycode = KEY_ESC)
-+				bootsplash_disable();
-+
-+			/*
-+			 * Just drop any other keys.
-+			 * Their effect would be hidden by the splash.
-+			 */
-+			return;
-+		}
-+	}
-+
- 	if (kbd->kbdmode = VC_MEDIUMRAW) {
- 		/*
- 		 * This is extended medium raw mode, with keys above 127
+ 	usb_set_intfdata(interface, NULL);
+ 	dev->udev = NULL;
+-	dev->gdev = NULL;
+ 
+ 	/* if clients still have us open, will be freed on last close */
+ 	if (dev->fb_count = 0)
+diff --git a/include/video/udlfb.h b/include/video/udlfb.h
+index 1252a7a89bc0..7b4f567dd1fe 100644
+--- a/include/video/udlfb.h
++++ b/include/video/udlfb.h
+@@ -35,7 +35,6 @@ struct urb_list {
+ 
+ struct dlfb_data {
+ 	struct usb_device *udev;
+-	struct device *gdev; /* &udev->dev */
+ 	struct fb_info *info;
+ 	struct urb_list urbs;
+ 	struct kref kref;
 -- 
-2.12.3
+2.15.1
 

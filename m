@@ -1,50 +1,52 @@
-From: Max Staudt <mstaudt@suse.de>
-Date: Wed, 17 Jan 2018 20:54:30 +0000
-Subject: [RFC PATCH v3 08/13] sysrq: Disable bootsplash on SAK
-Message-Id: <20180117205435.2860-9-mstaudt@suse.de>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 07 Jan 2018 11:58:47 +0000
+Subject: [PATCH v2 2/2] video/fbdev/stifb: Delete an error message for a failed memory allocation in stifb_in
+Message-Id: <f92f41b1-d4fa-4ffa-8c19-af4eb0d2d8cf@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180117205435.2860-1-mstaudt@suse.de>
-In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
+References: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
+ <CGME20171124213055epcas4p45c641222185056871b97f4e7bc235d2e@epcas4p4.samsung.com>
+ <25624997.nONnEdNj0s@daneel.sf-tec.de> <1680261.Msdj7gi9fB@amdc3058>
+ <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
+In-Reply-To: <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
-Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
+To: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Helge Deller <deller@gmx.de>, "James E. J. Bottomley" <jejb@parisc-linux.org>, Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
-When the user requests a clean TTY via the SAK SysRq, that means he
-really wants to use the console.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 7 Jan 2018 12:34:22 +0100
 
-Let's disable the bootsplash, even if the request is not on a VT, as
-the user probably knows what he's doing and it's more helpful to get
-out of his way.
+Omit an extra message for a memory allocation failure in this function.
 
-Signed-off-by: Max Staudt <mstaudt@suse.de>
-Reviewed-by: Oliver Neukum <oneukum@suse.com>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/tty/sysrq.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/tty/sysrq.c b/drivers/tty/sysrq.c
-index 3ffc1ce29023..bc6a24c9dfa8 100644
---- a/drivers/tty/sysrq.c
-+++ b/drivers/tty/sysrq.c
-@@ -49,6 +49,7 @@
- #include <linux/syscalls.h>
- #include <linux/of.h>
- #include <linux/rcupdate.h>
-+#include <linux/bootsplash.h>
+v2:
+This update suggestion was rebased on source files from the software
+"Linux next-20180105" together with a change for an error code.
+
+ drivers/video/fbdev/stifb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index 511a594889af..dec8efb4f256 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1126,10 +1126,8 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ 	int bpp, xres, yres;
  
- #include <asm/ptrace.h>
- #include <asm/irq_regs.h>
-@@ -104,6 +105,8 @@ static void sysrq_handle_SAK(int key)
- {
- 	struct work_struct *SAK_work = &vc_cons[fg_console].SAK_work;
- 	schedule_work(SAK_work);
-+
-+	bootsplash_disable();
- }
- static struct sysrq_key_op sysrq_SAK_op = {
- 	.handler	= sysrq_handle_SAK,
+ 	fb = kzalloc(sizeof(*fb), GFP_ATOMIC);
+-	if (!fb) {
+-		printk(KERN_ERR "stifb: Could not allocate stifb structure\n");
++	if (!fb)
+ 		return -ENOMEM;
+-	}
+ 	
+ 	info = &fb->info;
+ 
 -- 
-2.12.3
+2.15.1
 

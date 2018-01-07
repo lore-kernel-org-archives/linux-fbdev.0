@@ -1,63 +1,45 @@
-From: Sean Paul <seanpaul@chromium.org>
-Date: Mon, 29 Jan 2018 19:29:50 +0000
-Subject: [PULL] Backlight helpers from tinydrm
-Message-Id: <20180129192950.bvmhkz3h42t5a25r@art_vandelay>
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 07 Jan 2018 11:56:45 +0000
+Subject: [PATCH v2 1/2] video/fbdev/stifb: Return -ENOMEM after a failed kzalloc() in stifb_init_fb()
+Message-Id: <6341951e-df28-0b40-974e-dedd890b5228@users.sourceforge.net>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
+ <CGME20171124213055epcas4p45c641222185056871b97f4e7bc235d2e@epcas4p4.samsung.com>
+ <25624997.nONnEdNj0s@daneel.sf-tec.de> <1680261.Msdj7gi9fB@amdc3058>
+ <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
+In-Reply-To: <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, dim-tools@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, intel-gfx@lists.freedesktop.org, Rodrigo Vivi <rodrigo.vivi@intel.com>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Meghana Madhyastha <meghana.madhyastha@gmail.com>
+To: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Helge Deller <deller@gmx.de>, "James E. J. Bottomley" <jejb@parisc-linux.org>, Rolf Eike Beer <eike-kernel@sf-tec.de>
+Cc: kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Sun, 7 Jan 2018 11:33:59 +0100
 
-Hi Lee,
-Here's the pull request for Meghana's patch set. It's based on 4.15, and just
-contains the backlight portion of the set. I couldn't include the rest as it
-depends on patches that only exist in drm-misc-next atm.
+Replace an error code for the indication of a memory allocation failure
+in this function.
 
-Thanks for coordinating with me on this!
+Fixes: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac ("Linux-2.6.12-rc2: Initial git repository build")
+Suggested-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/video/fbdev/stifb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-topic/backlight_for_lag-2018-01-29:
-This contains the backlight portion of Meghana Madhyastha's patch set to
-migrate the backlight helpers from tinydrm to the backlight subsystem.
-
-https://patchwork.freedesktop.org/series/36522/
-
-Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
-
-Cheers, Sean
-
-
-The following changes since commit d8a5b80568a9cb66810e75b182018e9edb68e8ff:
-
-  Linux 4.15 (2018-01-28 13:20:33 -0800)
-
-are available in the Git repository at:
-
-  git://anongit.freedesktop.org/drm/drm-misc tags/topic/backlight_for_lag-2018-01-29
-
-for you to fetch changes up to 2e4ef3347b4a4eb65c4fd950d94bbd75fed4d798:
-
-  video: backlight: Add devres versions of of_find_backlight (2018-01-29 10:34:53 -0500)
-
-----------------------------------------------------------------
-This contains the backlight portion of Meghana Madhyastha's patch set to
-migrate the backlight helpers from tinydrm to the backlight subsystem.
-
-https://patchwork.freedesktop.org/series/36522/
-
-Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
-
-----------------------------------------------------------------
-Meghana Madhyastha (3):
-      video: backlight: Add helpers to enable and disable backlight
-      video: backlight: Add of_find_backlight helper in backlight.c
-      video: backlight: Add devres versions of of_find_backlight
-
- drivers/video/backlight/backlight.c | 73 +++++++++++++++++++++++++++++++++++++
- include/linux/backlight.h           | 58 +++++++++++++++++++++++++++++
- 2 files changed, 131 insertions(+)
-
+diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
+index 6ded5c198998..511a594889af 100644
+--- a/drivers/video/fbdev/stifb.c
++++ b/drivers/video/fbdev/stifb.c
+@@ -1128,7 +1128,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
+ 	fb = kzalloc(sizeof(*fb), GFP_ATOMIC);
+ 	if (!fb) {
+ 		printk(KERN_ERR "stifb: Could not allocate stifb structure\n");
+-		return -ENODEV;
++		return -ENOMEM;
+ 	}
+ 	
+ 	info = &fb->info;
 -- 
-Sean Paul, Software Engineer, Google / Chromium OS
+2.15.1
+

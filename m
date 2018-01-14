@@ -1,51 +1,34 @@
-From: Aishwarya Pant <aishpant@gmail.com>
-Date: Tue, 23 Jan 2018 14:51:31 +0000
-Subject: [PATCH] Documentation/ABI: add sysfs interface for s6e63m0 lcd driver
-Message-Id: <20180123143931.GA9687@mordor.localdomain>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Sun, 14 Jan 2018 21:07:07 +0000
+Subject: [PATCH 0/3] tree-wide: don't use GPIOF_* with gpiod_get_direction
+Message-Id: <20180114210711.13863-1-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Julia Lawall <julia.lawall@lip6.fr>
+To: linux-gpio@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org
 
-Document sysfs attributes of s6e63m0 lcd panel driver by looking through
-git logs and reading code.
+The documentation was wrong, gpiod_get_direction() returns 0/1 instead of the
+GPIOF_* flags. The docs were fixed with commit 94fc73094abe47 ("gpio: correct
+docs about return value of gpiod_get_direction"). Now, fix the users who got it
+as wrong as I did when developing bus recovery for the R-Car I2C driver.
 
-Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
----
- Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+We get rid of two users of 'linux/gpio.h' this way :)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
-new file mode 100644
-index 000000000000..db056bd38404
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
-@@ -0,0 +1,22 @@
-+sysfs interface for the S6E63M0 AMOLED LCD panel driver
-+-------------------------------------------------------
-+
-+What:		/sys/class/lcd/<lcd>/gamma_mode
-+Date:		May, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:
-+		(RW) Read or write the gamma mode. Following three modes are
-+		supported:
-+		0 - gamma value 2.2,
-+		1 - gamma value 1.9 and
-+		2 - gamma value 1.7.
-+
-+
-+What:		/sys/class/lcd/<lcd>/gamma_table
-+Date:		May, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-+Description:
-+		(RO) Displays the size of the gamma table i.e. the number of
-+		gamma modes available.
+Only build tested due to no hardware.
+
+
+Wolfram Sang (3):
+  extcon: int3496: don't use GPIOF_* with gpiod_get_direction
+  serial: mxs-auart: don't use GPIOF_* with gpiod_get_direction
+  backlight: pwm_bl: don't use GPIOF_* with gpiod_get_direction
+
+ drivers/extcon/extcon-intel-int3496.c | 4 ++--
+ drivers/tty/serial/mxs-auart.c        | 3 +--
+ drivers/video/backlight/pwm_bl.c      | 6 +++---
+ 3 files changed, 6 insertions(+), 7 deletions(-)
+
 -- 
-2.16.1
+2.11.0
 

@@ -1,31 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 15 Jan 2018 15:41:55 +0000
-Subject: Re: [PATCH] video: fbdev/mmp: add MODULE_LICENSE
-Message-Id: <3496747.BcLCnlFzkA@amdc3058>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Sun, 14 Jan 2018 21:07:10 +0000
+Subject: [PATCH 3/3] backlight: pwm_bl: don't use GPIOF_* with gpiod_get_direction
+Message-Id: <20180114210711.13863-4-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180110163714epcas1p1c5ade714ef7fb2f8ed58c3f352eb2ee4@epcas1p1.samsung.com>
-        <20180110163709.642189-1-arnd@arndb.de>
-In-Reply-To: <20180110163709.642189-1-arnd@arndb.de>
+References: <20180114210711.13863-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20180114210711.13863-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-gpio@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, January 10, 2018 05:36:32 PM Arnd Bergmann wrote:
-> Kbuild complains about the lack of a license tag in this driver:
-> 
-> WARNING: modpost: missing MODULE_LICENSE() in drivers/video/fbdev/mmp/mmp_disp.o
-> 
-> This adds the license, author and description tags.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+The documentation was wrong, gpiod_get_direction() returns 0/1 instead
+of the GPIOF_* flags. The docs were fixed with commit 94fc73094abe47
+("gpio: correct docs about return value of gpiod_get_direction"). Now,
+fix this user (until a better, system-wide solution is in place).
 
-Patch queued for 4.16, thanks.
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
+Only build tested!
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ drivers/video/backlight/pwm_bl.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1c2289ddd555a6..0fa7d2bd0e4811 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -301,14 +301,14 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	/*
+ 	 * If the GPIO is not known to be already configured as output, that
+-	 * is, if gpiod_get_direction returns either GPIOF_DIR_IN or -EINVAL,
+-	 * change the direction to output and set the GPIO as active.
++	 * is, if gpiod_get_direction returns either 1 or -EINVAL, change the
++	 * direction to output and set the GPIO as active.
+ 	 * Do not force the GPIO to active when it was already output as it
+ 	 * could cause backlight flickering or we would enable the backlight too
+ 	 * early. Leave the decision of the initial backlight state for later.
+ 	 */
+ 	if (pb->enable_gpio &&
+-	    gpiod_get_direction(pb->enable_gpio) != GPIOF_DIR_OUT)
++	    gpiod_get_direction(pb->enable_gpio) != 0)
+ 		gpiod_direction_output(pb->enable_gpio, 1);
+ 
+ 	pb->power_supply = devm_regulator_get(&pdev->dev, "power");
+-- 
+2.11.0
 

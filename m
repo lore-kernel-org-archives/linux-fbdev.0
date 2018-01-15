@@ -1,176 +1,173 @@
-From: hl <huanglin821201@gmail.com>
-Date: Thu, 04 Jan 2018 09:33:21 +0000
-Subject: Re: [RFC] pwm-backlight: Allow backlight to remain disabled on boot
-Message-Id: <d9601340-fb29-6c83-c35f-f6375f1648cd@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 15 Jan 2018 16:14:04 +0000
+Subject: [PATCH 1/2] fbdev: don't select I2C directly
+Message-Id: <20180115161431.803248-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1406806970-12561-1-git-send-email-thierry.reding@gmail.com>
- <6b14a283-0ded-e22c-8f81-5c241ad57463@rock-chips.com>
- <6a77b1bc-29fa-2bc5-baeb-0cba8747137a@ti.com>
-In-Reply-To: <6a77b1bc-29fa-2bc5-baeb-0cba8747137a@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Rob Clark <robdclark@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Wolfram Sang <wsa@the-dreams.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, linux-i2c@vger.kernel.org
 
-Hi
+Using a Kconfig 'select' statement for a user-visible symbol that other
+drivers depend on often causes circular dependencies. A new one showed
+up when I wanted to add an NVMEM dependency to the DRM_MSM driver:
 
+drivers/i2c/Kconfig:7:error: recursive dependency detected!
+drivers/i2c/Kconfig:7:	symbol I2C is selected by FB_DDC
+drivers/video/fbdev/Kconfig:63:	symbol FB_DDC is selected by FB_CYBER2000_D=
+DC
+drivers/video/fbdev/Kconfig:390:	symbol FB_CYBER2000_DDC depends on FB_CYBE=
+R2000
+drivers/video/fbdev/Kconfig:378:	symbol FB_CYBER2000 depends on FB
+drivers/video/fbdev/Kconfig:5:	symbol FB is selected by DRM_KMS_FB_HELPER
+drivers/gpu/drm/Kconfig:77:	symbol DRM_KMS_FB_HELPER depends on DRM_KMS_HEL=
+PER
+drivers/gpu/drm/Kconfig:71:	symbol DRM_KMS_HELPER is selected by DRM_MSM
+drivers/gpu/drm/msm/Kconfig:2:	symbol DRM_MSM depends on NVMEM
+drivers/nvmem/Kconfig:1:	symbol NVMEM is selected by EEPROM_AT24
+drivers/misc/eeprom/Kconfig:3:	symbol EEPROM_AT24 depends on I2C
 
-On Thursday, January 04, 2018 04:22 PM, Peter Ujfalusi wrote:
-> Hi,
->
-> On 2018-01-04 04:18, hl wrote:
->> Hi All,
->>
->>      Since many panel power sequence request backlight stay disable
->>
->> before panel power ready, but with now pwm-backlight drvier, it default to
->>
->> enable backlight when pwm-backlight probe, it mess up the panel power
->> sequence.
->>
->> So we need this patch. This patch have been fly for a long time, does
->> anyone have plan
->>
->> to merge it?
-> you should not need this anymore since we have:
-> 892c7788c724backlight: pwm_bl: Fix GPIO out for unimplemented
-> .get_direction()
->
-> d1b812945750 backlight: pwm_bl: Check the PWM state for initial
-> backlight power state
->
-> 7613c922315e backlight: pwm_bl: Move the checks for initial power state
-> to a separate function
->
-> With these in place the backlight will be kept disabled if it was
-> disabled during boot _if_ you have booted via DT _and_ you have a
-> phandle pointing to the backlight node (implying that the backlight is
-> managed by the display driver).
-Oh, thanks for reminding me.
->
->>
->> On Thursday, July 31, 2014 07:42 PM, Thierry Reding wrote:
->>> From: Thierry Reding <treding@nvidia.com>
->>>
->>> The default for backlight devices is to be enabled immediately when
->>> registering with the backlight core. This can be useful for setups that
->>> use a simple framebuffer device and where the backlight cannot otherwise
->>> be hooked up to the panel.
->>>
->>> However, when dealing with more complex setups, such as those of recent
->>> ARM SoCs, this can be problematic. Since the backlight is usually setup
->>> separately from the display controller, the probe order is not usually
->>> deterministic. That can lead to situations where the backlight will be
->>> powered up and the panel will show an uninitialized framebuffer.
->>>
->>> Furthermore, subsystems such as DRM have advanced functionality to set
->>> the power mode of a panel. In order to allow such setups to power up the
->>> panel at exactly the right moment, a way is needed to prevent the
->>> backlight core from powering the backlight up automatically when it is
->>> registered.
->>>
->>> This commit introduces a new boot_off field in the platform data (and
->>> also implements getting the same information from device tree). When set
->>> the initial backlight power mode will be set to "off".
->>>
->>> Signed-off-by: Thierry Reding <treding@nvidia.com>
->>> ---
->>> I've been meaning to send this for a while but was always holding back
->>> because of the indoctrination that this type of configuration shouldn't
->>> be part of device tree. However this issue was recently raised again in
->>> the context of power up sequences for display panels. As described above
->>> the issue is that panel datasheets recommend that the backlight attached
->>> to a panel be turned on at the very last step to avoid visual glitches
->>> during the panel's power up sequence. With the current implementation it
->>> is typical for the backlight to be probed before the display panel. That
->>> has, in many cases, the side-effect of enabling the backlight, therefore
->>> making the screen content visible before it's actually initialized.
->>>
->>> Some panels come up with random garbage when uninitialized, others show
->>> all white. With some luck the panel will be all black and users won't
->>> really notice.
->>>
->>> This patch is an attempt to enable boards to override the default of
->>> turning on the backlight for the pwm-backlight driver. I'm not sure if
->>> there was a specific reason to turn on the backlight by default when
->>> this driver was initially written, but the fact is that since it has
->>> pretty much always been like this we can't really go and change the
->>> default, otherwise a lot of people may end up with no backlight and no
->>> clue as to how to enable it. So the only reasonable thing we can do is
->>> to keep the old behaviour and give new boards a way to override it if
->>> they know that some other part of the stack will enable it at the right
->>> moment.
->>>
->>>    .../devicetree/bindings/video/backlight/pwm-backlight.txt         | 1 +
->>>    drivers/video/backlight/pwm_bl.c                                  |
->>> 8 ++++++++
->>>    include/linux/pwm_backlight.h                                     |
->>> 2 ++
->>>    3 files changed, 11 insertions(+)
->>>
->>> diff --git
->>> a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->>> b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->>> index 764db86d441a..65e001a1733d 100644
->>> --- a/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->>> +++ b/Documentation/devicetree/bindings/video/backlight/pwm-backlight.txt
->>> @@ -17,6 +17,7 @@ Optional properties:
->>>                   "pwms" property (see PWM binding[0])
->>>      - enable-gpios: contains a single GPIO specifier for the GPIO
->>> which enables
->>>                      and disables the backlight (see GPIO binding[1])
->>> +  - backlight-boot-off: keep the backlight disabled on boot
->>>      [0]: Documentation/devicetree/bindings/pwm/pwm.txt
->>>    [1]: Documentation/devicetree/bindings/gpio/gpio.txt
->>> diff --git a/drivers/video/backlight/pwm_bl.c
->>> b/drivers/video/backlight/pwm_bl.c
->>> index d7a3d13e72ec..62adfc9d37a7 100644
->>> --- a/drivers/video/backlight/pwm_bl.c
->>> +++ b/drivers/video/backlight/pwm_bl.c
->>> @@ -173,6 +173,8 @@ static int pwm_backlight_parse_dt(struct device *dev,
->>>            data->max_brightness--;
->>>        }
->>>    +    data->boot_off = of_property_read_bool(node,
->>> "backlight-boot-off");
->>> +
->>>        return 0;
->>>    }
->>>    @@ -317,6 +319,12 @@ static int pwm_backlight_probe(struct
->>> platform_device *pdev)
->>>        }
->>>          bl->props.brightness = data->dft_brightness;
->>> +
->>> +    if (data->boot_off)
->>> +        bl->props.power = FB_BLANK_POWERDOWN;
->>> +    else
->>> +        bl->props.power = FB_BLANK_UNBLANK;
->>> +
->>>        backlight_update_status(bl);
->>>          platform_set_drvdata(pdev, bl);
->>> diff --git a/include/linux/pwm_backlight.h
->>> b/include/linux/pwm_backlight.h
->>> index efdd9227a49c..1fc14989da4a 100644
->>> --- a/include/linux/pwm_backlight.h
->>> +++ b/include/linux/pwm_backlight.h
->>> @@ -15,6 +15,8 @@ struct platform_pwm_backlight_data {
->>>        unsigned int *levels;
->>>        /* TODO remove once all users are switched to gpiod_* API */
->>>        int enable_gpio;
->>> +    bool boot_off;
->>> +
->>>        int (*init)(struct device *dev);
->>>        int (*notify)(struct device *dev, int brightness);
->>>        void (*notify_after)(struct device *dev, int brightness);
->>
->>
->> _______________________________________________
->> linux-arm-kernel mailing list
->> linux-arm-kernel@lists.infradead.org
->> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
-> - Péter
->
-> Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-> Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
->
->
+Here, the problem is that many fbdev drivers have an i2c based interface
+and just 'select i2c' for that, while we also select the framebuffer
+subsystem indirectly from a DRM driver that now depends on i2c.
+
+This does away with the 'select' statement and instead uses 'depends on',
+like almost all I2C users.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/Kconfig | 19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 6962b4583fd7..892eb1863100 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -64,7 +64,6 @@ config FB_DDC
+        tristate
+        depends on FB
+        select I2C_ALGOBIT
+-       select I2C
+        default n
+=20
+ config FB_BOOT_VESA_SUPPORT
+@@ -390,6 +389,7 @@ config FB_CYBER2000
+ config FB_CYBER2000_DDC
+ 	bool "DDC for CyberPro support"
+ 	depends on FB_CYBER2000
++	depends on I2C=3Dy || I2C=FB_CYBER2000
+ 	select FB_DDC
+ 	default y
+ 	help
+@@ -634,7 +634,7 @@ config FB_BF537_LQ035
+ config FB_BFIN_7393
+ 	tristate "Blackfin ADV7393 Video encoder"
+ 	depends on FB && BLACKFIN
+-	select I2C
++	depends on I2C
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -1026,6 +1026,7 @@ config FB_NVIDIA
+ config FB_NVIDIA_I2C
+        bool "Enable DDC Support"
+        depends on FB_NVIDIA
++       depends on I2C=3Dy || I2C=FB_NVIDIA
+        select FB_DDC
+        help
+ 	  This enables I2C support for nVidia Chipsets.  This is used
+@@ -1073,6 +1074,7 @@ config FB_RIVA
+ config FB_RIVA_I2C
+        bool "Enable DDC Support"
+        depends on FB_RIVA
++       depends on I2C=3Dy || I2C=FB_RIVA
+        select FB_DDC
+        help
+ 	  This enables I2C support for nVidia Chipsets.  This is used
+@@ -1102,6 +1104,7 @@ config FB_RIVA_BACKLIGHT
+ config FB_I740
+ 	tristate "Intel740 support"
+ 	depends on FB && PCI
++	depends on I2C
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -1155,6 +1158,7 @@ config FB_I810_GTF
+ config FB_I810_I2C
+ 	bool "Enable DDC Support"
+ 	depends on FB_I810 && FB_I810_GTF
++	depends on I2C=3Dy || I2C=FB_I810
+ 	select FB_DDC
+ 	help
+=20
+@@ -1206,6 +1210,7 @@ config FB_INTEL_DEBUG
+ config FB_INTEL_I2C
+ 	bool "DDC/I2C for Intel framebuffer support"
+ 	depends on FB_INTEL
++	depends on I2C=3Dy || I2C=FB_INTEL
+ 	select FB_DDC
+ 	default y
+ 	help
+@@ -1285,6 +1290,7 @@ config FB_MATROX_G
+ config FB_MATROX_I2C
+ 	tristate "Matrox I2C support"
+ 	depends on FB_MATROX
++	depends on I2C
+ 	select FB_DDC
+ 	---help---
+ 	  This drivers creates I2C buses which are needed for accessing the
+@@ -1350,6 +1356,7 @@ config FB_RADEON
+ config FB_RADEON_I2C
+ 	bool "DDC/I2C for ATI Radeon support"
+ 	depends on FB_RADEON
++	depends on I2C=3Dy || I2C=FB_RADEON
+ 	select FB_DDC
+ 	default y
+ 	help
+@@ -1460,6 +1467,7 @@ config FB_S3
+ config FB_S3_DDC
+ 	bool "DDC for S3 support"
+ 	depends on FB_S3
++	depends on I2C=3Dy || I2C=FB_S3
+ 	select FB_DDC
+ 	default y
+ 	help
+@@ -1485,6 +1493,7 @@ config FB_SAVAGE
+ config FB_SAVAGE_I2C
+        bool "Enable DDC2 Support"
+        depends on FB_SAVAGE
++       depends on I2C=3Dy || I2C=FB_SAVAGE
+        select FB_DDC
+        help
+ 	  This enables I2C support for S3 Savage Chipsets.  This is used
+@@ -1629,6 +1638,7 @@ config FB_3DFX_ACCEL
+ config FB_3DFX_I2C
+ 	bool "Enable DDC/I2C support"
+ 	depends on FB_3DFX
++	depends on I2C=3Dy || I2C=FB_3DFX
+ 	select FB_DDC
+ 	default y
+ 	help
+@@ -1669,6 +1679,7 @@ config FB_VT8623
+ config FB_TRIDENT
+ 	tristate "Trident/CyberXXX/CyberBlade support"
+ 	depends on FB && PCI
++	depends on I2C
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -2299,8 +2310,8 @@ endchoice
+=20
+ config FB_MB862XX_I2C
+ 	bool "Support I2C bus on MB862XX GDC"
+-	depends on FB_MB862XX && I2C
+-	depends on FB_MB862XX=3Dm || I2C=3Dy
++	depends on FB_MB862XX
++	depends on I2C=3Dy || I2C=FB_MB862XX
+ 	default y
+ 	help
+ 	  Selecting this option adds Coral-P(A)/Lime GDC I2C bus adapter
+--=20
+2.9.0
 

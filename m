@@ -1,42 +1,61 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Mon, 15 Jan 2018 15:30:19 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 15 Jan 2018 15:37:59 +0000
 Subject: Re: [PATCH v2 0/5] video: udlfb: (not only) Logging cleanup
-Message-Id: <20180115153019.GA2232@lenoch>
+Message-Id: <1797708.Y8U6k1bA3b@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180104193623.GA22612@lenoch>
 In-Reply-To: <20180104193623.GA22612@lenoch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Bartlomiej,
-
-On Mon, Jan 15, 2018 at 03:28:35PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> I queued patches #1-4 for v4.16, thanks.
-> 
-> > >   video: udlfb: Switch from the pr_*() to the dev_*() logging functions
-> 
-> This one introduces new compile time warning:
-> 
-> drivers/video/fbdev/udlfb.c: In function ‘dlfb_init_framebuffer_work’:
-> drivers/video/fbdev/udlfb.c:1694:24: warning: ignoring return value of ‘device_create_bin_file’, declared with attribute warn_unused_result [-Wunused-result]
->   device_create_bin_file(info->dev, &edid_attr);
->                         ^
-> 
-> Checking of device_create_bin_file()'s return value should not be removed,
-> 
-> [ ditto for device_create_file() ]
-> 
-> Also please fix the new comment introduced by the patch:
-> 
-> +               /* parent device is used otherwise*/
-> 
-> [  ...e*/ -> ...e */ ]
-
-Fixed those and few more checkpatch warnings and will send v3 of just this
-patch. However I'd like to know what toolchain are you using as I didn't
-see above warning.
-
-Thank you,
-	ladis
+T24gTW9uZGF5LCBKYW51YXJ5IDE1LCAyMDE4IDA0OjMwOjE5IFBNIExhZGlzbGF2IE1pY2hsIHdy
+b3RlOgo+IEJhcnRsb21pZWosCj4gCj4gT24gTW9uLCBKYW4gMTUsIDIwMTggYXQgMDM6Mjg6MzVQ
+TSArMDEwMCwgQmFydGxvbWllaiBab2xuaWVya2lld2ljeiB3cm90ZToKPiA+IEkgcXVldWVkIHBh
+dGNoZXMgIzEtNCBmb3IgdjQuMTYsIHRoYW5rcy4KPiA+IAo+ID4gPiA+ICAgdmlkZW86IHVkbGZi
+OiBTd2l0Y2ggZnJvbSB0aGUgcHJfKigpIHRvIHRoZSBkZXZfKigpIGxvZ2dpbmcgZnVuY3Rpb25z
+Cj4gPiAKPiA+IFRoaXMgb25lIGludHJvZHVjZXMgbmV3IGNvbXBpbGUgdGltZSB3YXJuaW5nOgo+
+ID4gCj4gPiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L3VkbGZiLmM6IEluIGZ1bmN0aW9uIOKAmGRsZmJf
+aW5pdF9mcmFtZWJ1ZmZlcl93b3Jr4oCZOgo+ID4gZHJpdmVycy92aWRlby9mYmRldi91ZGxmYi5j
+OjE2OTQ6MjQ6IHdhcm5pbmc6IGlnbm9yaW5nIHJldHVybiB2YWx1ZSBvZiDigJhkZXZpY2VfY3Jl
+YXRlX2Jpbl9maWxl4oCZLCBkZWNsYXJlZCB3aXRoIGF0dHJpYnV0ZSB3YXJuX3VudXNlZF9yZXN1
+bHQgWy1XdW51c2VkLXJlc3VsdF0KPiA+ICAgZGV2aWNlX2NyZWF0ZV9iaW5fZmlsZShpbmZvLT5k
+ZXYsICZlZGlkX2F0dHIpOwo+ID4gICAgICAgICAgICAgICAgICAgICAgICAgXgo+ID4gCj4gPiBD
+aGVja2luZyBvZiBkZXZpY2VfY3JlYXRlX2Jpbl9maWxlKCkncyByZXR1cm4gdmFsdWUgc2hvdWxk
+IG5vdCBiZSByZW1vdmVkLAo+ID4gCj4gPiBbIGRpdHRvIGZvciBkZXZpY2VfY3JlYXRlX2ZpbGUo
+KSBdCj4gPiAKPiA+IEFsc28gcGxlYXNlIGZpeCB0aGUgbmV3IGNvbW1lbnQgaW50cm9kdWNlZCBi
+eSB0aGUgcGF0Y2g6Cj4gPiAKPiA+ICsgICAgICAgICAgICAgICAvKiBwYXJlbnQgZGV2aWNlIGlz
+IHVzZWQgb3RoZXJ3aXNlKi8KPiA+IAo+ID4gWyAgLi4uZSovIC0+IC4uLmUgKi8gXQo+IAo+IEZp
+eGVkIHRob3NlIGFuZCBmZXcgbW9yZSBjaGVja3BhdGNoIHdhcm5pbmdzIGFuZCB3aWxsIHNlbmQg
+djMgb2YganVzdCB0aGlzCj4gcGF0Y2guIEhvd2V2ZXIgSSdkIGxpa2UgdG8ga25vdyB3aGF0IHRv
+b2xjaGFpbiBhcmUgeW91IHVzaW5nIGFzIEkgZGlkbid0Cj4gc2VlIGFib3ZlIHdhcm5pbmcuCgok
+IH4vYmluL2FhcmNoNjQtbGludXgtZ251LWdjYyAtdgpVc2luZyBidWlsdC1pbiBzcGVjcy4KQ09M
+TEVDVF9HQ0M9L3Vzci9iaW4vYWFyY2g2NC1saW51eC1nbnUtZ2NjCkNPTExFQ1RfTFRPX1dSQVBQ
+RVI9L3Vzci9saWIvZ2NjLWNyb3NzL2FhcmNoNjQtbGludXgtZ251LzQuOC9sdG8td3JhcHBlcgpU
+YXJnZXQ6IGFhcmNoNjQtbGludXgtZ251CkNvbmZpZ3VyZWQgd2l0aDogLi4vc3JjL2NvbmZpZ3Vy
+ZSAtdiAtLXdpdGgtcGtndmVyc2lvbj0nVWJ1bnR1L0xpbmFybyA0LjguNC0ydWJ1bnR1MX4xNC4w
+NC4xJyAtLXdpdGgtYnVndXJsPWZpbGU6Ly8vdXNyL3NoYXJlL2RvYy9nY2MtNC44L1JFQURNRS5C
+dWdzIC0tZW5hYmxlLWxhbmd1YWdlcz1jLGMrKyxqYXZhLGdvLGQsZm9ydHJhbixvYmpjLG9iai1j
+KysgLS1wcmVmaXg9L3VzciAtLXByb2dyYW0tc3VmZml4PS00LjggLS1lbmFibGUtc2hhcmVkIC0t
+ZW5hYmxlLWxpbmtlci1idWlsZC1pZCAtLWxpYmV4ZWNkaXI9L3Vzci9saWIgLS13aXRob3V0LWlu
+Y2x1ZGVkLWdldHRleHQgLS1lbmFibGUtdGhyZWFkcz1wb3NpeCAtLXdpdGgtZ3h4LWluY2x1ZGUt
+ZGlyPS91c3IvYWFyY2g2NC1saW51eC1nbnUvaW5jbHVkZS9jKysvNC44LjQgLS1saWJkaXI9L3Vz
+ci9saWIgLS1lbmFibGUtbmxzIC0td2l0aC1zeXNyb290PS8gLS1lbmFibGUtY2xvY2FsZT1nbnUg
+LS1lbmFibGUtbGlic3RkY3h4LWRlYnVnIC0tZW5hYmxlLWxpYnN0ZGN4eC10aW1lPXllcyAtLWVu
+YWJsZS1nbnUtdW5pcXVlLW9iamVjdCAtLWRpc2FibGUtbGlibXVkZmxhcCAtLWRpc2FibGUtbGli
+c2FuaXRpemVyIC0tZGlzYWJsZS1saWJxdWFkbWF0aCAtLWVuYWJsZS1wbHVnaW4gLS13aXRoLXN5
+c3RlbS16bGliIC0tZGlzYWJsZS1icm93c2VyLXBsdWdpbiAtLWVuYWJsZS1qYXZhLWF3dD1ndGsg
+LS1lbmFibGUtZ3RrLWNhaXJvIC0td2l0aC1qYXZhLWhvbWU9L3Vzci9saWIvanZtL2phdmEtMS41
+LjAtZ2NqLTQuOC1hcm02NC1jcm9zcy9qcmUgLS1lbmFibGUtamF2YS1ob21lIC0td2l0aC1qdm0t
+cm9vdC1kaXI9L3Vzci9saWIvanZtL2phdmEtMS41LjAtZ2NqLTQuOC1hcm02NC1jcm9zcyAtLXdp
+dGgtanZtLWphci1kaXI9L3Vzci9saWIvanZtLWV4cG9ydHMvamF2YS0xLjUuMC1nY2otNC44LWFy
+bTY0LWNyb3NzIC0td2l0aC1hcmNoLWRpcmVjdG9yeT1hcm02NCAtLXdpdGgtZWNqLWphcj0vdXNy
+L3NoYXJlL2phdmEvZWNsaXBzZS1lY2ouamFyIC0tZGlzYWJsZS1saWJnY2ogLS1lbmFibGUtbXVs
+dGlhcmNoIC0tZGlzYWJsZS13ZXJyb3IgLS1lbmFibGUtY2hlY2tpbmc9cmVsZWFzZSAtLWJ1aWxk
+PXg4Nl82NC1saW51eC1nbnUgLS1ob3N0PXg4Nl82NC1saW51eC1nbnUgLS10YXJnZXQ9YWFyY2g2
+NC1saW51eC1nbnUgLS1wcm9ncmFtLXByZWZpeD1hYXJjaDY0LWxpbnV4LWdudS0gLS1pbmNsdWRl
+ZGlyPS91c3IvYWFyY2g2NC1saW51eC1nbnUvaW5jbHVkZQpUaHJlYWQgbW9kZWw6IHBvc2l4Cmdj
+YyB2ZXJzaW9uIDQuOC40IChVYnVudHUvTGluYXJvIDQuOC40LTJ1YnVudHUxfjE0LjA0LjEpIAoK
+QmVzdCByZWdhcmRzLAotLQpCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6ClNhbXN1bmcgUiZEIElu
+c3RpdHV0ZSBQb2xhbmQKU2Ftc3VuZyBFbGVjdHJvbmljcwo

@@ -1,30 +1,67 @@
-From: Dong Aisheng <aisheng.dong@nxp.com>
-Date: Tue, 23 Jan 2018 12:50:39 +0000
-Subject: [RFC PATCH 0/2] clk: new APIs to handle all available clocks
-Message-Id: <1516711841-25234-1-git-send-email-aisheng.dong@nxp.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 17 Jan 2018 20:54:29 +0000
+Subject: [RFC PATCH v3 07/13] vt: Add keyboard hook to disable bootsplash
+Message-Id: <20180117205435.2860-8-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180117205435.2860-1-mstaudt@suse.de>
+In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
 
-This RFC patch series is a continue of discussion from here,
-https://patchwork.kernel.org/patch/9986293/
-that some users may want to handle all available clocks from device
-tree without need to know the detailed clock information likes clock
-numbers and names. This is useful in writing some generic drivers to
-handle clock part.
+Let's disable the splash if the user presses ESC or F1-F12 on a VT.
 
-Dong Aisheng (2):
-  clk: add new APIs to operate on all available clocks
-  video: simplefb: switch to use clk_bulk API to simplify clock
-    operations
+The F1-F12 check is to disable the splash on VT switches.
 
- drivers/clk/clk-bulk.c         | 64 ++++++++++++++++++++++++++++++++++++++
- drivers/video/fbdev/simplefb.c | 70 ++++++++----------------------------------
- include/linux/clk.h            | 61 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 137 insertions(+), 58 deletions(-)
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+---
+ drivers/tty/vt/keyboard.c | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
 
+diff --git a/drivers/tty/vt/keyboard.c b/drivers/tty/vt/keyboard.c
+index f4166263bb3a..a248429194bb 100644
+--- a/drivers/tty/vt/keyboard.c
++++ b/drivers/tty/vt/keyboard.c
+@@ -47,6 +47,8 @@
+ 
+ #include <asm/irq_regs.h>
+ 
++#include <linux/bootsplash.h>
++
+ extern void ctrl_alt_del(void);
+ 
+ /*
+@@ -1353,6 +1355,28 @@ static void kbd_keycode(unsigned int keycode, int down, int hw_raw)
+ 	}
+ #endif
+ 
++	/* Trap keys when bootsplash is shown */
++	if (bootsplash_would_render_now()) {
++		/* Deactivate bootsplash on ESC or Alt+Fxx VT switch */
++		if (keycode >= KEY_F1 && keycode <= KEY_F12) {
++			bootsplash_disable();
++
++			/*
++			 * No return here since we want to actually
++			 * perform the VT switch.
++			 */
++		} else {
++			if (keycode = KEY_ESC)
++				bootsplash_disable();
++
++			/*
++			 * Just drop any other keys.
++			 * Their effect would be hidden by the splash.
++			 */
++			return;
++		}
++	}
++
+ 	if (kbd->kbdmode = VC_MEDIUMRAW) {
+ 		/*
+ 		 * This is extended medium raw mode, with keys above 127
 -- 
-2.7.4
+2.12.3
 

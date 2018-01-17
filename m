@@ -1,89 +1,240 @@
-From: Aishwarya Pant <aishpant@gmail.com>
-Date: Fri, 26 Jan 2018 14:55:42 +0000
-Subject: [PATCH 5/5] backlight: adp8860: document sysfs attributes
-Message-Id: <c7c9c2b13698320b590b52b7bf5796a87df49bd5.1516978005.git.aishpant@gmail.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 17 Jan 2018 20:54:26 +0000
+Subject: [RFC PATCH v3 04/13] bootsplash: Add corner positioning
+Message-Id: <20180117205435.2860-5-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1516978005.git.aishpant@gmail.com>
-In-Reply-To: <cover.1516978005.git.aishpant@gmail.com>
+References: <20180117205435.2860-1-mstaudt@suse.de>
+In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Michael Hennerich <michael.hennerich@analog.com>
-Cc: Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
 
-Add documentation for sysfs interface of adp8860 series backlight
-devices by reading through code and git commits.
+This allows showing multiple logos, each in its own position,
+relative to the eight screen corners.
 
-Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+Signed-off-by: Max Staudt <mstaudt@suse.de>
 ---
- .../ABI/testing/sysfs-class-backlight-adp8860      | 54 ++++++++++++++++++=
-++++
- 1 file changed, 54 insertions(+)
- create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp8860
+ drivers/video/fbdev/core/bootsplash_render.c | 136 ++++++++++++++++++++++++++-
+ include/uapi/linux/bootsplash_file.h         |  45 ++++++++-
+ 2 files changed, 178 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-backlight-adp8860 b/Docu=
-mentation/ABI/testing/sysfs-class-backlight-adp8860
-new file mode 100644
-index 000000000000..54d61c788b1b
---- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-class-backlight-adp8860
-@@ -0,0 +1,54 @@
-+sysfs interface for analog devices adp8860 backlight driver
-+-----------------------------------------------------------
+diff --git a/drivers/video/fbdev/core/bootsplash_render.c b/drivers/video/fbdev/core/bootsplash_render.c
+index 8c09c306ff67..07e3a4eab811 100644
+--- a/drivers/video/fbdev/core/bootsplash_render.c
++++ b/drivers/video/fbdev/core/bootsplash_render.c
+@@ -155,6 +155,7 @@ void bootsplash_do_render_pictures(struct fb_info *info,
+ 	for (i = 0; i < fp->header->num_pics; i++) {
+ 		struct splash_blob_priv *bp;
+ 		struct splash_pic_priv *pp = &fp->pics[i];
++		const struct splash_pic_header *ph = pp->pic_header;
+ 		long dst_xoff, dst_yoff;
+ 
+ 		if (pp->blobs_loaded < 1)
+@@ -165,8 +166,139 @@ void bootsplash_do_render_pictures(struct fb_info *info,
+ 		if (!bp || bp->blob_header->type != 0)
+ 			continue;
+ 
+-		dst_xoff = (info->var.xres - pp->pic_header->width) / 2;
+-		dst_yoff = (info->var.yres - pp->pic_header->height) / 2;
++		switch (ph->position) {
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_LEFT:
++			dst_xoff = 0;
++			dst_yoff = 0;
 +
-+The backlight brightness control operates at three different levels for the
-+adp8860, adp8861 and adp8863 devices: daylight (level 1), office (level 2)=
- and
-+dark (level 3). By default the brightness operates at the daylight brightn=
-ess
-+level.
++			dst_xoff += ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = 0;
 +
-+What:		/sys/class/backlight/<backlight>/ambient_light_level
-+Date:		Apr, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Michael Hennerich <michael.hennerich@analog.com>
-+Description:
-+		(RO) 13-bit conversion value for the first light sensor=E2=80=94high
-+		byte (Bit 12 to Bit 8). The value is updated every 80 ms (when
-+		the light sensor is enabled).
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_TOP_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = 0;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_BOTTOM_LEFT:
++			dst_xoff = 0 + ph->position_offset;
++			dst_yoff = info->var.yres - pp->pic_header->height
++						  - ph->position_offset;
++			break;
++		case SPLASH_POS_FLAG_CORNER | SPLASH_CORNER_LEFT:
++			dst_xoff = 0;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			break;
++
++		case SPLASH_CORNER_TOP_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_TOP:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_TOP_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			dst_yoff -= ph->position_offset;
++			break;
++		case SPLASH_CORNER_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM_RIGHT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff += ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_BOTTOM_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			dst_yoff += ph->position_offset;
++			break;
++		case SPLASH_CORNER_LEFT:
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++
++			dst_xoff -= ph->position_offset;
++			break;
++
++		default:
++			/* As a fallback, center the picture. */
++			dst_xoff = info->var.xres - pp->pic_header->width;
++			dst_xoff /= 2;
++			dst_yoff = info->var.yres - pp->pic_header->height;
++			dst_yoff /= 2;
++			break;
++		}
+ 
+ 		if (dst_xoff < 0
+ 		    || dst_yoff < 0
+diff --git a/include/uapi/linux/bootsplash_file.h b/include/uapi/linux/bootsplash_file.h
+index 89dc9cca8f0c..71cedcc68933 100644
+--- a/include/uapi/linux/bootsplash_file.h
++++ b/include/uapi/linux/bootsplash_file.h
+@@ -91,7 +91,32 @@ struct splash_pic_header {
+ 	 */
+ 	uint8_t num_blobs;
+ 
+-	uint8_t padding[27];
++	/*
++	 * Corner to move the picture to / from.
++	 *  0x00 - Top left
++	 *  0x01 - Top
++	 *  0x02 - Top right
++	 *  0x03 - Right
++	 *  0x04 - Bottom right
++	 *  0x05 - Bottom
++	 *  0x06 - Bottom left
++	 *  0x07 - Left
++	 *
++	 * Flags:
++	 *  0x10 - Calculate offset from the corner towards the center,
++	 *         rather than from the center towards the corner
++	 */
++	uint8_t position;
++
++	/*
++	 * Pixel offset from the selected position.
++	 * Example: If the picture is in the top right corner, it will
++	 *          be placed position_offset pixels from the top and
++	 *          position_offset pixels from the right margin.
++	 */
++	uint16_t position_offset;
++
++	uint8_t padding[24];
+ } __attribute__((__packed__));
+ 
+ 
+@@ -115,4 +140,22 @@ struct splash_blob_header {
+ 	uint8_t padding[9];
+ } __attribute__((__packed__));
+ 
 +
 +
-+What:		/sys/class/backlight/<backlight>/ambient_light_zone
-+Date:		Apr, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Michael Hennerich <michael.hennerich@analog.com>
-+Description:
-+		(RW) Read or write the specific level at which the backlight
-+		operates. Value "0" enables automatic ambient light sensing, and
-+		values "1", "2" or "3" set the control to daylight, office or
-+		dark respectively.
 +
++/*
++ * Enums for on-disk types
++ */
++enum splash_position {
++	SPLASH_CORNER_TOP_LEFT = 0,
++	SPLASH_CORNER_TOP = 1,
++	SPLASH_CORNER_TOP_RIGHT = 2,
++	SPLASH_CORNER_RIGHT = 3,
++	SPLASH_CORNER_BOTTOM_RIGHT = 4,
++	SPLASH_CORNER_BOTTOM = 5,
++	SPLASH_CORNER_BOTTOM_LEFT = 6,
++	SPLASH_CORNER_LEFT = 7,
++	SPLASH_POS_FLAG_CORNER = 0x10,
++};
 +
-+What:		/sys/class/backlight/<backlight>/l1_daylight_max
-+What:		/sys/class/backlight/<backlight>/l2_office_max
-+What:		/sys/class/backlight/<backlight>/l3_dark_max
-+Date:		Apr, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Michael Hennerich <michael.hennerich@analog.com>
-+Description:
-+		(RW) Maximum current setting for the backlight when brightness
-+		is at one of the three levels (daylight, office or dark). This
-+		is an input code between 0 and 127, which is transformed to a
-+		value between 0 mA and 30 mA using linear or non-linear
-+		algorithms.
-+
-+
-+What:		/sys/class/backlight/<backlight>/l1_daylight_dim
-+What:		/sys/class/backlight/<backlight>/l2_office_dim
-+What:		/sys/class/backlight/<backlight>/l3_dark_dim
-+Date:		Apr, 2010
-+KernelVersion:	v2.6.35
-+Contact:	Michael Hennerich <michael.hennerich@analog.com>
-+Description:
-+		(RW) Dim current setting for the backlight when brightness is at
-+		one of the three levels (daylight, office or dark). This is an
-+		input code between 0 and 127, which is transformed to a value
-+		between 0 mA and 30 mA using linear or non-linear algorithms.
---=20
-2.16.1
+ #endif
+-- 
+2.12.3
 

@@ -1,34 +1,43 @@
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Date: Sun, 14 Jan 2018 21:07:07 +0000
-Subject: [PATCH 0/3] tree-wide: don't use GPIOF_* with gpiod_get_direction
-Message-Id: <20180114210711.13863-1-wsa+renesas@sang-engineering.com>
+From: Max Staudt <mstaudt@suse.de>
+Date: Wed, 17 Jan 2018 20:54:31 +0000
+Subject: [RFC PATCH v3 09/13] fbcon: Disable bootsplash on oops
+Message-Id: <20180117205435.2860-10-mstaudt@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180117205435.2860-1-mstaudt@suse.de>
+In-Reply-To: <20180117205435.2860-1-mstaudt@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-gpio@vger.kernel.org
-Cc: linux-renesas-soc@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org
+To: b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org
+Cc: mstaudt@suse.de, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, tiwai@suse.com, oneukum@suse.com, msrb@suse.com, sndirsch@suse.com, michal@markovi.net, philm@manjaro.org, bernhard.rosenkranzer@linaro.org, kernel.max@enpas.org
 
-The documentation was wrong, gpiod_get_direction() returns 0/1 instead of the
-GPIOF_* flags. The docs were fixed with commit 94fc73094abe47 ("gpio: correct
-docs about return value of gpiod_get_direction"). Now, fix the users who got it
-as wrong as I did when developing bus recovery for the R-Car I2C driver.
+Signed-off-by: Max Staudt <mstaudt@suse.de>
+Reviewed-by: Oliver Neukum <oneukum@suse.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-We get rid of two users of 'linux/gpio.h' this way :)
-
-Only build tested due to no hardware.
-
-
-Wolfram Sang (3):
-  extcon: int3496: don't use GPIOF_* with gpiod_get_direction
-  serial: mxs-auart: don't use GPIOF_* with gpiod_get_direction
-  backlight: pwm_bl: don't use GPIOF_* with gpiod_get_direction
-
- drivers/extcon/extcon-intel-int3496.c | 4 ++--
- drivers/tty/serial/mxs-auart.c        | 3 +--
- drivers/video/backlight/pwm_bl.c      | 6 +++---
- 3 files changed, 6 insertions(+), 7 deletions(-)
-
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 9a39a6fcfe98..8a9c67e1c5d8 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1343,6 +1343,16 @@ static void fbcon_cursor(struct vc_data *vc, int mode)
+ 	int y;
+  	int c = scr_readw((u16 *) vc->vc_pos);
+ 
++	/*
++	 * Disable the splash here so we don't have to hook into
++	 * vt_console_print() in drivers/tty/vt/vt.c
++	 *
++	 * We'd disable the splash just before the call to
++	 * hide_cursor() anyway, so this spot is just fine.
++	 */
++	if (oops_in_progress)
++		bootsplash_disable();
++
+ 	ops->cur_blink_jiffies = msecs_to_jiffies(vc->vc_cur_blink_ms);
+ 
+ 	if (fbcon_is_inactive(vc, info) || vc->vc_deccm != 1)
 -- 
-2.11.0
+2.12.3
 

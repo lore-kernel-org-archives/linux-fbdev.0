@@ -1,32 +1,66 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 02 Jan 2018 13:38:24 +0000
-Subject: Re: [PATCH V4 22/26] video: fbdev: intelfb: deprecate pci_get_bus_and_slot()
-Message-Id: <7099e2af-4704-4611-94c0-830483de4578@codeaurora.org>
+From: Petr Sedlak <hugosedlak@gmail.com>
+Date: Mon, 22 Jan 2018 20:43:06 +0000
+Subject: [PATCH] staging: sm750fb: fix CamelCase for dispSet var
+Message-Id: <1516653786-6560-1-git-send-email-hugosedlak@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1513661883-28662-1-git-send-email-okaya@codeaurora.org>
- <1513661883-28662-23-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1513661883-28662-23-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pci@vger.kernel.org, timur@codeaurora.org
-Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Maik Broemme <mbroemme@libmpq.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)" <linux-fbdev@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: Petr Sedlak <hugosedlak@gmail.com>
 
-On 12/19/2017 12:37 AM, Sinan Kaya wrote:
-> pci_get_bus_and_slot() is restrictive such that it assumes domain=0 as
-> where a PCI device is present. This restricts the device drivers to be
-> reused for other domain numbers.
-> 
-> Getting ready to remove pci_get_bus_and_slot() function in favor of
-> pci_get_domain_bus_and_slot().
-> 
-> Find the domain number from pdev.
-> 
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Fix warning reported by checkpatch:
 
-Any feedback here ? most of the remaining patches have the ACK except these.
+  CHECK: Avoid CamelCase: <dispSet>
 
+By renaming dispSet to disp_set
+
+Signed-off-by: Petr Sedlak <hugosedlak@gmail.com>
+---
+ drivers/staging/sm750fb/sm750_hw.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index ffd114a..a8c7986 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -185,29 +185,29 @@ int hw_sm750_output_setMode(struct lynxfb_output *output,
+ 			    struct fb_fix_screeninfo *fix)
+ {
+ 	int ret;
+-	disp_output_t dispSet;
++	disp_output_t disp_set;
+ 	int channel;
+ 
+ 	ret = 0;
+-	dispSet = 0;
++	disp_set = 0;
+ 	channel = *output->channel;
+ 
+ 	if (sm750_get_chip_type() != SM750LE) {
+ 		if (channel = sm750_primary) {
+ 			pr_info("primary channel\n");
+ 			if (output->paths & sm750_panel)
+-				dispSet |= do_LCD1_PRI;
++				disp_set |= do_LCD1_PRI;
+ 			if (output->paths & sm750_crt)
+-				dispSet |= do_CRT_PRI;
++				disp_set |= do_CRT_PRI;
+ 
+ 		} else {
+ 			pr_info("secondary channel\n");
+ 			if (output->paths & sm750_panel)
+-				dispSet |= do_LCD1_SEC;
++				disp_set |= do_LCD1_SEC;
+ 			if (output->paths & sm750_crt)
+-				dispSet |= do_CRT_SEC;
++				disp_set |= do_CRT_SEC;
+ 		}
+-		ddk750_setLogicalDispOut(dispSet);
++		ddk750_setLogicalDispOut(disp_set);
+ 	} else {
+ 		/* just open DISPLAY_CONTROL_750LE register bit 3:0 */
+ 		u32 reg;
 -- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.7.4
+

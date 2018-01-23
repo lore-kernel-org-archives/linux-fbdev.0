@@ -1,130 +1,51 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 31 Jan 2018 07:42:45 +0000
-Subject: [PATCH v4] Fix loading of module radeonfb on PowerMac
-Message-Id: <20180131074245.7306-1-malat@debian.org>
+From: Aishwarya Pant <aishpant@gmail.com>
+Date: Tue, 23 Jan 2018 14:51:31 +0000
+Subject: [PATCH] Documentation/ABI: add sysfs interface for s6e63m0 lcd driver
+Message-Id: <20180123143931.GA9687@mordor.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171221220757.24672-1-malat@debian.org>
-In-Reply-To: <20171221220757.24672-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Mathieu Malaterre <malat@debian.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-When the linux kernel is build with (typical kernel ship with Debian
-installer):
+Document sysfs attributes of s6e63m0 lcd panel driver by looking through
+git logs and reading code.
 
-CONFIG_FB_OF=y
-CONFIG_VT_HW_CONSOLE_BINDING=y
-CONFIG_FB_RADEON=m
-
-The offb driver takes precedence over module radeonfb. It is then
-impossible to load the module, error reported is:
-
-[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
-[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
-[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
-[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
-
-This patch reproduce the behavior of the module radeon, so as to make it
-possible to load radeonfb when offb is first loaded, see commit a56f7428d753
-("drm/radeon: Add early unregister of firmware fb's").
-
-It should be noticed that `offb_destroy` is never called which explain the
-need to skip error detection on the radeon side.
-
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
-Link: https://bugs.debian.org/826629#57
-Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
-Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 ---
-v2: Only fails when CONFIG_PCC is not set
-v3: Only fails when CONFIG_FB_OF is not set, CONFIG_PCC was too broad. Since the conflicts in region is due to OFfb explicitly refers to it.
-v4: Use drm_fb_helper_remove_conflicting_framebuffers from drm_fb_helper
+ Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
 
- drivers/video/fbdev/aty/radeon_base.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
-
-diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
-index 4d77daeecf99..ae669f424537 100644
---- a/drivers/video/fbdev/aty/radeon_base.c
-+++ b/drivers/video/fbdev/aty/radeon_base.c
-@@ -70,6 +70,7 @@
- #include <linux/pci.h>
- #include <linux/vmalloc.h>
- #include <linux/device.h>
-+#include <drm/drm_fb_helper.h>
- 
- #include <asm/io.h>
- #include <linux/uaccess.h>
-@@ -2259,6 +2260,23 @@ static const struct bin_attribute edid2_attr = {
- 	.read	= radeon_show_edid2,
- };
- 
-+static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
-+{
-+	struct apertures_struct *ap;
+diff --git a/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+new file mode 100644
+index 000000000000..db056bd38404
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+@@ -0,0 +1,22 @@
++sysfs interface for the S6E63M0 AMOLED LCD panel driver
++-------------------------------------------------------
 +
-+	ap = alloc_apertures(1);
-+	if (!ap)
-+		return -ENOMEM;
++What:		/sys/class/lcd/<lcd>/gamma_mode
++Date:		May, 2010
++KernelVersion:	v2.6.35
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RW) Read or write the gamma mode. Following three modes are
++		supported:
++		0 - gamma value 2.2,
++		1 - gamma value 1.9 and
++		2 - gamma value 1.7.
 +
-+	ap->ranges[0].base = pci_resource_start(pdev, 0);
-+	ap->ranges[0].size = pci_resource_len(pdev, 0);
 +
-+	drm_fb_helper_remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
-+
-+	kfree(ap);
-+
-+	return 0;
-+}
- 
- static int radeonfb_pci_register(struct pci_dev *pdev,
- 				 const struct pci_device_id *ent)
-@@ -2312,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
- 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
- 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
- 
-+	ret = radeon_kick_out_firmware_fb(pdev);
-+	if (ret)
-+		return ret;
-+
- 	/* request the mem regions */
- 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
- 	if (ret < 0) {
-+#ifndef CONFIG_FB_OF
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
- 			pci_name(rinfo->pdev));
- 		goto err_release_fb;
-+#endif
- 	}
- 
- 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
- 	if (ret < 0) {
-+#ifndef CONFIG_FB_OF
- 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
- 			pci_name(rinfo->pdev));
- 		goto err_release_pci0;
-+#endif
- 	}
- 
- 	/* map the regions */
-@@ -2509,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
- 	iounmap(rinfo->mmio_base);
- err_release_pci2:
- 	pci_release_region(pdev, 2);
-+#ifndef CONFIG_FB_OF
- err_release_pci0:
- 	pci_release_region(pdev, 0);
- err_release_fb:
-         framebuffer_release(info);
-+#endif
- err_disable:
- err_out:
- 	return ret;
++What:		/sys/class/lcd/<lcd>/gamma_table
++Date:		May, 2010
++KernelVersion:	v2.6.35
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++Description:
++		(RO) Displays the size of the gamma table i.e. the number of
++		gamma modes available.
 -- 
-2.11.0
+2.16.1
 

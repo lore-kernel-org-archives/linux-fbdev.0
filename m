@@ -1,112 +1,40 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 23 Jan 2018 14:45:43 +0000
-Subject: Re: [PATCH] fbdev: simplefb: add support for 'memory-region' property on DT node
-Message-Id: <5cca2764-e29e-0ab7-11b1-dccb846ceb4e@redhat.com>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Thu, 25 Jan 2018 15:47:30 +0000
+Subject: [PATCH v1 1/2] Kconfig : Remove HAS_IOMEM dependency for Graphics support
+Message-Id: <a4d2db8f1f9e1b8fa36815eb6a562224f9ab2ca2.1516892845.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1516707296-23667-1-git-send-email-hayashi.kunihiko@socionext.com>
-In-Reply-To: <1516707296-23667-1-git-send-email-hayashi.kunihiko@socionext.com>
+References: <cover.1516892845.git.alifm@linux.vnet.ibm.com>
+In-Reply-To: <cover.1516892845.git.alifm@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: schwidefsky@de.ibm.com, borntraeger@de.ibm.com, stefan.kristiansson@saunalahti.fi, tomi.valkeinen@ti.com
 
-Hi,
+The 'commit e25df1205f37 ("[S390] Kconfig: menus with depends on HAS_IOMEM.")'
+added the HAS_IOMEM dependecy for "Graphics support". This disabled the
+"Graphics support" menu for S390. But if we enable VT layer for S390,
+we would also need to enable the dummy console. So let's remove the
+HAS_IOMEM dependency.
 
-On 23-01-18 12:34, Kunihiko Hayashi wrote:
-> Enables 'memory-region' property referring to the memory description on
-> the reserved-memory node in case of devicetree use.
-> If there is no 'reg' property that specifies the address and size of
-> the framebuffer, the address and size written in the memory description
-> on the reserved-memory node can be used for the framebuffer.
-> 
-> Furthermore, the reserved-memory node needs to have "no-map" attributes
-> because simplefb driver maps the region by ioremap_wc().
-> 
-> Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
+Tested-by: Dong Jia Shi <bjsdjshi@linux.vnet.ibm.com>
+---
+ drivers/video/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Seems reasonable to me:
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3c20af9..41e7ba9 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -3,7 +3,6 @@
+ #
+ 
+ menu "Graphics support"
+-	depends on HAS_IOMEM
+ 
+ config HAVE_FB_ATMEL
+ 	bool
+-- 
+2.7.4
 
-Acked-by: Hans de Goede <hdegoede@redhat.com>
-
-Regards,
-
-Hans
-
-> ---
->   .../bindings/display/simple-framebuffer.txt        |  3 ++
->   drivers/video/fbdev/simplefb.c                     | 32 ++++++++++++++++++++++
->   2 files changed, 35 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/display/simple-framebuffer.txt b/Documentation/devicetree/bindings/display/simple-framebuffer.txt
-> index 5a9ce51..be5139f 100644
-> --- a/Documentation/devicetree/bindings/display/simple-framebuffer.txt
-> +++ b/Documentation/devicetree/bindings/display/simple-framebuffer.txt
-> @@ -56,6 +56,9 @@ Optional properties:
->     framebuffer remains active.
->   
->   - display : phandle pointing to the primary display hardware node
-> +- memory-region: phandle to a node describing memory region as framebuffer
-> +		 memory instead of reg property. The node should include
-> +		 'no-map'.
->   
->   Example:
->   
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index a3c44ec..aefc4b1 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -29,6 +29,7 @@
->   #include <linux/clk.h>
->   #include <linux/clk-provider.h>
->   #include <linux/of.h>
-> +#include <linux/of_address.h>
->   #include <linux/of_platform.h>
->   #include <linux/parser.h>
->   #include <linux/regulator/consumer.h>
-> @@ -294,6 +295,35 @@ static void simplefb_clocks_enable(struct simplefb_par *par,
->   static void simplefb_clocks_destroy(struct simplefb_par *par) { }
->   #endif
->   
-> +#if defined CONFIG_OF
-> +static struct resource *simplefb_parse_dt_reserved_mem(struct device *dev)
-> +{
-> +	static struct resource res;
-> +	struct device_node *np;
-> +	int ret;
-> +
-> +	np = of_parse_phandle(dev->of_node, "memory-region", 0);
-> +	if (!np)
-> +		return NULL;
-> +
-> +	ret = of_address_to_resource(np, 0, &res);
-> +	if (ret < 0)
-> +		return NULL;
-> +
-> +	if (!of_find_property(np, "no-map", NULL)) {
-> +		dev_err(dev, "Can't apply mapped reserved-memory\n");
-> +		return NULL;
-> +	}
-> +
-> +	return &res;
-> +}
-> +#else
-> +static struct resource *simplefb_parse_dt_reserved_mem(struct device *dev)
-> +{
-> +	return NULL;
-> +}
-> +#endif
-> +
->   #if defined CONFIG_OF && defined CONFIG_REGULATOR
->   
->   #define SUPPLY_SUFFIX "-supply"
-> @@ -428,6 +458,8 @@ static int simplefb_probe(struct platform_device *pdev)
->   		return ret;
->   
->   	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (!mem)
-> +		mem = simplefb_parse_dt_reserved_mem(&pdev->dev);
->   	if (!mem) {
->   		dev_err(&pdev->dev, "No memory resource\n");
->   		return -EINVAL;
-> 

@@ -1,39 +1,63 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 04 Jan 2018 17:08:11 +0000
-Subject: Re: [0/4] video-UDLFB: Adjustments for five function implementations
-Message-Id: <3534828.CjlOGYDRrE@amdc3058>
+From: Sean Paul <seanpaul@chromium.org>
+Date: Mon, 29 Jan 2018 19:29:50 +0000
+Subject: [PULL] Backlight helpers from tinydrm
+Message-Id: <20180129192950.bvmhkz3h42t5a25r@art_vandelay>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171124204825epcas1p41626d598b6e437dfb4c6b648e3730cc1@epcas1p4.samsung.com>
- <1768474.zA76iyE2Y1@amdc3058>
- <ea9813ee-a5a8-7e35-bac5-b2e0652f6602@users.sourceforge.net>
-In-Reply-To: <ea9813ee-a5a8-7e35-bac5-b2e0652f6602@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, dim-tools@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, intel-gfx@lists.freedesktop.org, Rodrigo Vivi <rodrigo.vivi@intel.com>, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>, Meghana Madhyastha <meghana.madhyastha@gmail.com>
 
-On Friday, December 29, 2017 07:10:00 PM SF Markus Elfring wrote:
-> >>   Delete an error message for a failed memory allocation in two functions
-> > 
-> > This patch removes the information about the device for which the allocation fails.
-> 
-> * Do you find a Linux allocation failure report insufficient in this use case?
 
-Yes, there is more information available currently in the driver and
-I see no real improvement in removing it.
+Hi Lee,
+Here's the pull request for Meghana's patch set. It's based on 4.15, and just
+contains the backlight portion of the set. I couldn't include the rest as it
+depends on patches that only exist in drm-misc-next atm.
 
-> * Are you looking for any more clarification?
+Thanks for coordinating with me on this!
 
-I will not apply any of such patches for now. The only exception
-being drivers that support hardware that can have only one instance
-in the system (but it needs to be explicitly stated in the patch
-description and the patch needs to be reviewed by a someone else
-than the author).
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+topic/backlight_for_lag-2018-01-29:
+This contains the backlight portion of Meghana Madhyastha's patch set to
+migrate the backlight helpers from tinydrm to the backlight subsystem.
 
+https://patchwork.freedesktop.org/series/36522/
+
+Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+
+Cheers, Sean
+
+
+The following changes since commit d8a5b80568a9cb66810e75b182018e9edb68e8ff:
+
+  Linux 4.15 (2018-01-28 13:20:33 -0800)
+
+are available in the Git repository at:
+
+  git://anongit.freedesktop.org/drm/drm-misc tags/topic/backlight_for_lag-2018-01-29
+
+for you to fetch changes up to 2e4ef3347b4a4eb65c4fd950d94bbd75fed4d798:
+
+  video: backlight: Add devres versions of of_find_backlight (2018-01-29 10:34:53 -0500)
+
+----------------------------------------------------------------
+This contains the backlight portion of Meghana Madhyastha's patch set to
+migrate the backlight helpers from tinydrm to the backlight subsystem.
+
+https://patchwork.freedesktop.org/series/36522/
+
+Cc: Meghana Madhyastha <meghana.madhyastha@gmail.com>
+
+----------------------------------------------------------------
+Meghana Madhyastha (3):
+      video: backlight: Add helpers to enable and disable backlight
+      video: backlight: Add of_find_backlight helper in backlight.c
+      video: backlight: Add devres versions of of_find_backlight
+
+ drivers/video/backlight/backlight.c | 73 +++++++++++++++++++++++++++++++++++++
+ include/linux/backlight.h           | 58 +++++++++++++++++++++++++++++
+ 2 files changed, 131 insertions(+)
+
+-- 
+Sean Paul, Software Engineer, Google / Chromium OS

@@ -1,112 +1,91 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Thu, 04 Jan 2018 19:38:33 +0000
-Subject: [PATCH v2 3/5] video: udlfb: Remove noisy warnings
-Message-Id: <20180104193833.GD22612@lenoch>
+From: Enric Balletbo Serra <eballetbo@gmail.com>
+Date: Tue, 30 Jan 2018 09:30:36 +0000
+Subject: Re: [PATCH v5 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <CAFqH_531DL3DYp4kn_Gjxprp7NNoAnP4MMD4-PRN=yJ+mXJNnA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20171201120651.29633-1-enric.balletbo@collabora.com>
+In-Reply-To: <20171201120651.29633-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Linux PWM List <linux-pwm@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>
 
-These warnings comes from times of driver development and do
-not carry any usefull debugging information.
+Hi,
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- Changes:
- - v2: New patch
+2017-12-01 13:06 GMT+01:00 Enric Balletbo i Serra
+<enric.balletbo@collabora.com>:
+> Before this patch the enable signal was set before the PWM signal and
+> vice-versa on power off. This sequence is wrong, at least, it is on
+> the different panels datasheets that I checked, so I inverted the sequence
+> to follow the specs.
+>
+> For reference the following panels have the mentioned sequence:
+>   - N133HSE-EA1 (Innolux)
+>   - N116BGE (Innolux)
+>   - N156BGE-L21 (Innolux)
+>   - B101EAN0 (Auo)
+>   - B101AW03 (Auo)
+>   - LTN101NT05 (Samsung)
+>   - CLAA101WA01A (Chunghwa)
+>
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> ---
+> Changes since v4:
+>  - Rebase on top of mainline.
+>  - Add the acks from Daniel Thompson and Jingoo Han.
+> Changes since v3:
+>  - List the part numbers for the panel checked (Daniel Thompson)
+> Changes since v2:
+>  - Add this as a separate patch (Thierry Reding)
+> Changes since v1:
+>  - None
+>
+>  drivers/video/backlight/pwm_bl.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index 1c2289d..698ec68 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+>         if (err < 0)
+>                 dev_err(pb->dev, "failed to enable power supply\n");
+>
+> +       pwm_enable(pb->pwm);
+> +
+>         if (pb->enable_gpio)
+>                 gpiod_set_value_cansleep(pb->enable_gpio, 1);
+>
+> -       pwm_enable(pb->pwm);
+>         pb->enabled = true;
+>  }
+>
+> @@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+>         if (!pb->enabled)
+>                 return;
+>
+> -       pwm_config(pb->pwm, 0, pb->period);
+> -       pwm_disable(pb->pwm);
+> -
+>         if (pb->enable_gpio)
+>                 gpiod_set_value_cansleep(pb->enable_gpio, 0);
+>
+> +       pwm_config(pb->pwm, 0, pb->period);
+> +       pwm_disable(pb->pwm);
+> +
+>         regulator_disable(pb->power_supply);
+>         pb->enabled = false;
+>  }
+> --
+> 2.9.3
+>
 
- drivers/video/fbdev/udlfb.c | 20 --------------------
- 1 file changed, 20 deletions(-)
+A gentle ping, It's been nearly two months since I sent this patchset,
+there is anything else that prevents these patches to land or
+incorporate in linux-next?
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index d4e15d97a264..4a6644432970 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -921,11 +921,7 @@ static void dlfb_free(struct kref *kref)
- 	struct dlfb_data *dev = container_of(kref, struct dlfb_data, kref);
- 
- 	vfree(dev->backing_buffer);
--
- 	kfree(dev->edid);
--
--	pr_warn("freeing dlfb_data %p\n", dev);
--
- 	kfree(dev);
- }
- 
-@@ -942,8 +938,6 @@ static void dlfb_free_framebuffer(struct dlfb_data *dev)
- 	struct fb_info *info = dev->info;
- 
- 	if (info) {
--		int node = info->node;
--
- 		unregister_framebuffer(info);
- 
- 		if (info->cmap.len != 0)
-@@ -958,8 +952,6 @@ static void dlfb_free_framebuffer(struct dlfb_data *dev)
- 
- 		/* Assume info structure is freed after this point */
- 		framebuffer_release(info);
--
--		pr_warn("fb_info for /dev/fb%d has been freed\n", node);
- 	}
- 
- 	/* ref taken in probe() as part of registering framebfufer */
-@@ -1060,8 +1052,6 @@ static int dlfb_ops_set_par(struct fb_info *info)
- 	u16 *pix_framebuffer;
- 	int i;
- 
--	pr_notice("set_par mode %dx%d\n", info->var.xres, info->var.yres);
--
- 	result = dlfb_set_video_mode(dev, &info->var);
- 
- 	if ((result = 0) && (dev->fb_count = 0)) {
-@@ -1164,8 +1154,6 @@ static int dlfb_realloc_framebuffer(struct dlfb_data *dev, struct fb_info *info)
- 	unsigned char *new_fb;
- 	unsigned char *new_back = NULL;
- 
--	pr_warn("Reallocating framebuffer. Addresses will change!\n");
--
- 	new_len = info->fix.line_length * info->var.yres;
- 
- 	if (PAGE_ALIGN(new_len) > old_len) {
-@@ -1415,9 +1403,6 @@ static ssize_t edid_show(
- 	if (off + count > dev->edid_size)
- 		count = dev->edid_size - off;
- 
--	pr_info("sysfs edid copy %p to %p, %d bytes\n",
--		dev->edid, buf, (int) count);
--
- 	memcpy(buf, dev->edid, count);
- 
- 	return count;
-@@ -1443,7 +1428,6 @@ static ssize_t edid_store(
- 	if (!dev->edid || memcmp(src, dev->edid, src_size))
- 		return -EINVAL;
- 
--	pr_info("sysfs written EDID is new default\n");
- 	dlfb_ops_set_par(fb_info);
- 	return src_size;
- }
-@@ -1827,8 +1811,6 @@ static void dlfb_free_urb_list(struct dlfb_data *dev)
- 	int ret;
- 	unsigned long flags;
- 
--	pr_notice("Freeing all render urbs\n");
--
- 	/* keep waiting and freeing, until we've got 'em all */
- 	while (count--) {
- 
-@@ -1907,8 +1889,6 @@ static int dlfb_alloc_urb_list(struct dlfb_data *dev, int count, size_t size)
- 	dev->urbs.count = i;
- 	dev->urbs.available = i;
- 
--	pr_notice("allocated %d %d byte urbs\n", i, (int) size);
--
- 	return i;
- }
- 
--- 
-2.15.1
-
+Thanks,
+ Enric

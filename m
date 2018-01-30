@@ -1,36 +1,40 @@
-From: Ulf Magnusson <ulfalizer@gmail.com>
-Date: Tue, 30 Jan 2018 19:05:24 +0000
-Subject: [PATCH 02/10] video: fbdev: kconfig: Remove empty help text
-Message-Id: <20180130190555.6577-3-ulfalizer@gmail.com>
+From: Peter Malone <peter.malone@gmail.com>
+Date: Tue, 30 Jan 2018 20:30:42 +0000
+Subject: [PATCH]        Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
+Message-Id: <20180130203042.4797-1-peter.malone@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180130190555.6577-1-ulfalizer@gmail.com>
-In-Reply-To: <20180130190555.6577-1-ulfalizer@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kbuild@vger.kernel.org
-Cc: yamada.masahiro@socionext.com, mcgrof@kernel.org, Ulf Magnusson <ulfalizer@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <j.w.r.degoede@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Michal Simek <michal.simek@xilinx.com>, Arnd Bergmann <arnd@arndb.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-In preparation for adding a warning ("kconfig: Warn if help text is
-blank"): https://lkml.org/lkml/2018/1/30/516
-
-Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+Signed-off-by: Peter Malone <peter.malone@gmail.com>
 ---
- drivers/video/fbdev/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/video/fbdev/sbuslib.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 6962b4583fd7..11e699f1062b 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1156,7 +1156,6 @@ config FB_I810_I2C
- 	bool "Enable DDC Support"
- 	depends on FB_I810 && FB_I810_GTF
- 	select FB_DDC
--	help
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index af6fc97f4ba4..a436d44f1b7f 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ured;
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+-		int index, count, i;
++		unsigned int index, count, i;
  
- config FB_LE80578
- 	tristate "Intel LE80578 (Vermilion) support"
+ 		if (get_user(index, &c->index) ||
+ 		    __get_user(count, &c->count) ||
+@@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+ 		struct fb_cmap *cmap = &info->cmap;
+-		int index, count, i;
++		unsigned int index, count, i;
+ 		u8 red, green, blue;
+ 
+ 		if (get_user(index, &c->index) ||
 -- 
-2.14.1
+2.14.3
 

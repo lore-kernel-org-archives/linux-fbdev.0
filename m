@@ -1,37 +1,36 @@
-From: Corentin Labbe <clabbe.montjoie@gmail.com>
-Date: Mon, 22 Jan 2018 12:35:00 +0000
-Subject: [PATCH] video: remove unused kconfig SH_LCD_MIPI_DSI
-Message-Id: <20180122123500.12359-1-clabbe.montjoie@gmail.com>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Tue, 30 Jan 2018 19:22:57 +0000
+Subject: [PATCH v2 02/10] video: fbdev: kconfig: Remove empty help text
+Message-Id: <20180130192349.8420-3-ulfalizer@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180130192349.8420-1-ulfalizer@gmail.com>
+In-Reply-To: <20180130192349.8420-1-ulfalizer@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, Corentin Labbe <clabbe.montjoie@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, yamada.masahiro@socionext.com, mcgrof@kernel.org, Ulf Magnusson <ulfalizer@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michal Simek <michal.simek@xilinx.com>, Randy Dunlap <rdunlap@infradead.org>, Arnd Bergmann <arnd@arndb.de>, Hans de Goede <j.w.r.degoede@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-SH_LCD_MIPI_DSI is unused since commit 18b6562c243f ("fbdev: sh_mipi_dsi: remove driver")
-So no need to keep it.
-Fixes: 18b6562c243f ("fbdev: sh_mipi_dsi: remove driver")
+In preparation for adding a warning ("kconfig: Warn if help text is
+blank"): https://lkml.org/lkml/2018/1/30/516
 
-Signed-off-by: Corentin Labbe <clabbe.montjoie@gmail.com>
+Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
 ---
- drivers/video/Kconfig | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/video/fbdev/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 3c20af999893..429f15b2b51a 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -8,9 +8,6 @@ menu "Graphics support"
- config HAVE_FB_ATMEL
- 	bool
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 6962b4583fd7..11e699f1062b 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1156,7 +1156,6 @@ config FB_I810_I2C
+ 	bool "Enable DDC Support"
+ 	depends on FB_I810 && FB_I810_GTF
+ 	select FB_DDC
+-	help
  
--config SH_LCD_MIPI_DSI
--	bool
--
- source "drivers/char/agp/Kconfig"
- 
- source "drivers/gpu/vga/Kconfig"
+ config FB_LE80578
+ 	tristate "Intel LE80578 (Vermilion) support"
 -- 
-2.13.6
+2.14.1
 

@@ -1,63 +1,52 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 02 Jan 2018 15:38:41 +0000
-Subject: Re: [PATCH v3] backlight: tdo24m: fix the spi cs between transfers
-Message-Id: <20180102153841.vhzll4gcwuoemk3l@dell>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Wed, 31 Jan 2018 08:33:21 +0000
+Subject: Re: [PATCH] Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
+Message-Id: <CA+7wUsyQhz2b437z0iYLOSo-35itALmGk39X4N0gR+HoCyod9A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20171228082742.13415-1-robert.jarzmik@free.fr>
-In-Reply-To: <20171228082742.13415-1-robert.jarzmik@free.fr>
+References: <20180130203042.4797-1-peter.malone@gmail.com>
+In-Reply-To: <20180130203042.4797-1-peter.malone@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Peter Malone <peter.malone@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org
 
-On Thu, 28 Dec 2017, Robert Jarzmik wrote:
+Hi Peter,
 
-> Currently the LCD display (TD035S) on the cm-x300 platform is broken and
-> remains blank.
->=20
-> The TD0245S specification requires that the chipselect is toggled
-> between commands sent to the panel. This was also the purpose of the
-> former patch of commit f64dcac0b124 ("backlight: tdo24m: ensure chip
-> select changes between transfers").
->=20
-> Unfortunately, the "cs_change" field of a SPI transfer is
-> misleading. Its true meaning is that for a SPI message holding multiple
-> transfers, the chip select is toggled between each transfer, but for the
-> last transfer it remains asserted.
->=20
-> In this driver, all the SPI messages contain exactly one transfer, which
-> means that each transfer is the last of its message, and as a
-> consequence the chip select is never toggled.
->=20
-> Actually, there was a second bug hidding the first one, hence the
-> problem was not seen until v4.6. This problem was fixed by commit
-> a52db659c79c ("spi: pxa2xx: Fix cs_change management") for PXA based
-> boards.
->=20
-> This fix makes the TD035S work again on a cm-x300 board. The same
-> applies to other PXA boards, ie. corgi and tosa.
->=20
-> Fixes: a52db659c79c ("spi: pxa2xx: Fix cs_change management")
+On Tue, Jan 30, 2018 at 9:30 PM, Peter Malone <peter.malone@gmail.com> wrote:
+> Signed-off-by: Peter Malone <peter.malone@gmail.com>
 
-Since this fixes an old kernel, I'm not going to apply it for -fixes.
+AFAIK empty commit message is not acceptable upstream
 
-> Reported-by: Andrea Adami <andrea.adami@gmail.com>
-> Signed-off-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
-> Since v1: added 2 other panels
-> Since v2: added Daniel's ack
-> ---
->  drivers/video/backlight/corgi_lcd.c | 2 +-
->  drivers/video/backlight/tdo24m.c    | 2 +-
->  drivers/video/backlight/tosa_lcd.c  | 2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
-
-Applied to -next, thanks.
-
---=20
-Lee Jones
-Linaro Services Technical Lead
-Linaro.org =E2=94=82 Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+>  drivers/video/fbdev/sbuslib.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+> index af6fc97f4ba4..a436d44f1b7f 100644
+> --- a/drivers/video/fbdev/sbuslib.c
+> +++ b/drivers/video/fbdev/sbuslib.c
+> @@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+>                 unsigned char __user *ured;
+>                 unsigned char __user *ugreen;
+>                 unsigned char __user *ublue;
+> -               int index, count, i;
+> +               unsigned int index, count, i;
+>
+>                 if (get_user(index, &c->index) ||
+>                     __get_user(count, &c->count) ||
+> @@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+>                 unsigned char __user *ugreen;
+>                 unsigned char __user *ublue;
+>                 struct fb_cmap *cmap = &info->cmap;
+> -               int index, count, i;
+> +               unsigned int index, count, i;
+>                 u8 red, green, blue;
+>
+>                 if (get_user(index, &c->index) ||
+> --
+> 2.14.3
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html

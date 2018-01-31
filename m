@@ -1,38 +1,40 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 29 Dec 2017 18:10:22 +0000
-Subject: Re: [PATCH 0/2] video: ssd1307fb: Adjustments for ssd1307fb_probe()
-Message-Id: <2091464.qzRHS0Wsad@amdc3058>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Wed, 31 Jan 2018 09:34:21 +0000
+Subject: [PATCH 02/11] video: fbdev: kconfig: Remove blank help text
+Message-Id: <20180131093434.20050-3-ulfalizer@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125160425epcas5p43b2d94fbcc74745017c4c91ff08de685@epcas5p4.samsung.com>
- <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
-In-Reply-To: <9433118e-4c2b-db31-7064-df692a99c1b2@users.sourceforge.net>
+References: <20180131093434.20050-1-ulfalizer@gmail.com>
+In-Reply-To: <20180131093434.20050-1-ulfalizer@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, dri-devel@lists.freedesktop.org, Bastian Stender <bst@pengutronix.de>
+To: linux-kbuild@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, yamada.masahiro@socionext.com, mcgrof@kernel.org, rdunlap@infradead.org, dan.carpenter@oracle.com, pebolle@tiscali.nl, Ulf Magnusson <ulfalizer@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>, Hans de Goede <j.w.r.degoede@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On Saturday, November 25, 2017 05:04:02 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sat, 25 Nov 2017 16:56:46 +0100
-> 
-> Two update suggestions were taken into account
-> from static source code analysis.
-> 
-> Markus Elfring (2):
->   Delete an error message for a failed memory allocation
+Blank help texts are probably either a typo, a Kconfig misunderstanding,
+or some kind of half-committing to adding a help text (in which case a
+TODO comment would be clearer, if the help text really can't be added
+right away).
 
-This patch removes the information about the device for which the allocation
-fails.
+Best to remove them, IMO.
 
->   Improve a size determination
+Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+---
+ drivers/video/fbdev/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-This patch depends on the earlier patch (which is not being merged) so please
-re-base it if you want it to be applied.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 6962b4583fd7..11e699f1062b 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -1156,7 +1156,6 @@ config FB_I810_I2C
+ 	bool "Enable DDC Support"
+ 	depends on FB_I810 && FB_I810_GTF
+ 	select FB_DDC
+-	help
+ 
+ config FB_LE80578
+ 	tristate "Intel LE80578 (Vermilion) support"
+-- 
+2.14.1
 

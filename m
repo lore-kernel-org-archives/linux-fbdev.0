@@ -1,66 +1,66 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 04 Jan 2018 15:05:15 +0000
-Subject: Re: [PATCH] vfb: fix video mode and line_length being set when loaded
-Message-Id: <3149875.iSmVjzXX7W@amdc3058>
+From: Peter Malone <peter.malone@gmail.com>
+Date: Wed, 31 Jan 2018 14:57:55 +0000
+Subject: [PATCH v2] Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
+Message-Id: <20180131145755.26109-1-peter.malone@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <39a57338-18ac-c64f-1cf1-70a5f905990a@national.shitposting.agency>
-        <CGME20171220145325epcas4p2734200912e99f122f834413362cf6504@epcas4p2.samsung.com>
-        <81bf0d1e-ee7a-29ea-d19e-ffeb41d285fe@national.shitposting.agency>
-In-Reply-To: <81bf0d1e-ee7a-29ea-d19e-ffeb41d285fe@national.shitposting.agency>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Pieter \"PoroCYon\" Sluys" <pcy@national.shitposting.agency>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-fbdev@vger.kernel.org
 
-On Wednesday, December 20, 2017 02:53:00 PM Pieter PoroCYon Sluys wrote:
-> Geert Uytterhoeven:
-> > Please add your "Signed-off-by", cfr.
-> > Documentation/process/submitting-patches.rst.
-> 
-> Sorry I knew I would've messed up *something*.
-> 
-> > You can drop the tests for 2 and 4, as these are no longer used by the driver.
-> 
-> Done that.
-> 
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Pieter "PoroCYon" Sluys <pcy@national.shitposting.agency>
+Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in
+sbusfb_ioctl_helper().
 
-I've queued your patch for 4.16 kernel (after fixing few minor
-issues [*]), thanks!
+'index' is defined as an int in sbusfb_ioctl_helper().
+We retrieve this from the user:
+if (get_user(index, &c->index) ||
+    __get_user(count, &c->count) ||
+    __get_user(ured, &c->red) ||
+    __get_user(ugreen, &c->green) ||
+    __get_user(ublue, &c->blue))
+       return -EFAULT;
 
-[*] next time please remember to:
+and then we use 'index' in the following way:
+red = cmap->red[index + i] >> 8;
+green = cmap->green[index + i] >> 8;
+blue = cmap->blue[index + i] >> 8;
 
-* always include full patch description in the later patch revisions
+This is a classic information leak vulnerability. 'index' should be
+an unsigned int, given its usage above.
 
-* put things that don't belong to patch description after "---" so
-  they will not be included in the final commit
+This patch is straight-forward; it changes 'index' to unsigned int
+in two switch-cases: FBIOGETCMAP_SPARC && FBIOPUTCMAP_SPARC.
 
-* in the later patch revisions include ChangeLog after "---" and also
-  put patch version in the patch summary line / mail subject
-  (i.e. "[PATCH v2] ...")
+Signed-off-by: Peter Malone <peter.malone@gmail.com>
+---
 
-* add tags (i.e. "Reviewed-by: ...") from patch reviewers / testers
-  into the patch description
+v2: fixed formatting
 
-* check your patch with scripts/checkpatch.pl tool and fix reported
-  issues, i.e.:
+ drivers/video/fbdev/sbuslib.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-ERROR: switch and case should be at the same indent
-#69: FILE: drivers/video/fbdev/vfb.c:242:
-+       switch (info->var.bits_per_pixel) {
-+               case 1:
-[...]
-+               case 8:
-[...]
-+               case 16:
-+               case 24:
-+               case 32:
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index af6fc97f4ba4..a436d44f1b7f 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ured;
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+-		int index, count, i;
++		unsigned int index, count, i;
+ 
+ 		if (get_user(index, &c->index) ||
+ 		    __get_user(count, &c->count) ||
+@@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+ 		struct fb_cmap *cmap = &info->cmap;
+-		int index, count, i;
++		unsigned int index, count, i;
+ 		u8 red, green, blue;
+ 
+ 		if (get_user(index, &c->index) ||
+-- 
+2.14.3
 

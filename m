@@ -1,52 +1,130 @@
 From: Mathieu Malaterre <malat@debian.org>
-Date: Wed, 31 Jan 2018 08:33:21 +0000
-Subject: Re: [PATCH] Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
-Message-Id: <CA+7wUsyQhz2b437z0iYLOSo-35itALmGk39X4N0gR+HoCyod9A@mail.gmail.com>
+Date: Wed, 31 Jan 2018 07:42:45 +0000
+Subject: [PATCH v4] Fix loading of module radeonfb on PowerMac
+Message-Id: <20180131074245.7306-1-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180130203042.4797-1-peter.malone@gmail.com>
-In-Reply-To: <20180130203042.4797-1-peter.malone@gmail.com>
+References: <20171221220757.24672-1-malat@debian.org>
+In-Reply-To: <20171221220757.24672-1-malat@debian.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Malone <peter.malone@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>, Mathieu Malaterre <malat@debian.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Hi Peter,
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-On Tue, Jan 30, 2018 at 9:30 PM, Peter Malone <peter.malone@gmail.com> wrote:
-> Signed-off-by: Peter Malone <peter.malone@gmail.com>
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
 
-AFAIK empty commit message is not acceptable upstream
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
 
->  drivers/video/fbdev/sbuslib.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-> index af6fc97f4ba4..a436d44f1b7f 100644
-> --- a/drivers/video/fbdev/sbuslib.c
-> +++ b/drivers/video/fbdev/sbuslib.c
-> @@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
->                 unsigned char __user *ured;
->                 unsigned char __user *ugreen;
->                 unsigned char __user *ublue;
-> -               int index, count, i;
-> +               unsigned int index, count, i;
->
->                 if (get_user(index, &c->index) ||
->                     __get_user(count, &c->count) ||
-> @@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
->                 unsigned char __user *ugreen;
->                 unsigned char __user *ublue;
->                 struct fb_cmap *cmap = &info->cmap;
-> -               int index, count, i;
-> +               unsigned int index, count, i;
->                 u8 red, green, blue;
->
->                 if (get_user(index, &c->index) ||
-> --
-> 2.14.3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded, see commit a56f7428d753
+("drm/radeon: Add early unregister of firmware fb's").
+
+It should be noticed that `offb_destroy` is never called which explain the
+need to skip error detection on the radeon side.
+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+---
+v2: Only fails when CONFIG_PCC is not set
+v3: Only fails when CONFIG_FB_OF is not set, CONFIG_PCC was too broad. Since the conflicts in region is due to OFfb explicitly refers to it.
+v4: Use drm_fb_helper_remove_conflicting_framebuffers from drm_fb_helper
+
+ drivers/video/fbdev/aty/radeon_base.c | 28 ++++++++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 4d77daeecf99..ae669f424537 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -70,6 +70,7 @@
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+ #include <linux/device.h>
++#include <drm/drm_fb_helper.h>
+ 
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+@@ -2259,6 +2260,23 @@ static const struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
+ 
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	drm_fb_helper_remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++
++	kfree(ap);
++
++	return 0;
++}
+ 
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2312,19 +2330,27 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
++#ifndef CONFIG_FB_OF
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_fb;
++#endif
+ 	}
+ 
+ 	ret = pci_request_region(pdev, 2, "radeonfb mmio");
+ 	if (ret < 0) {
++#ifndef CONFIG_FB_OF
+ 		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
+ 			pci_name(rinfo->pdev));
+ 		goto err_release_pci0;
++#endif
+ 	}
+ 
+ 	/* map the regions */
+@@ -2509,10 +2535,12 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	iounmap(rinfo->mmio_base);
+ err_release_pci2:
+ 	pci_release_region(pdev, 2);
++#ifndef CONFIG_FB_OF
+ err_release_pci0:
+ 	pci_release_region(pdev, 0);
+ err_release_fb:
+         framebuffer_release(info);
++#endif
+ err_disable:
+ err_out:
+ 	return ret;
+-- 
+2.11.0
+

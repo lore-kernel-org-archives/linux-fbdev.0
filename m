@@ -1,50 +1,94 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 16 Feb 2018 17:40:34 +0000
-Subject: [RESEND PATCH v5 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
-Message-Id: <20180216174034.15936-5-enric.balletbo@collabora.com>
+From: Michael Hennerich <michael.hennerich@analog.com>
+Date: Thu, 01 Feb 2018 16:28:28 +0000
+Subject: Re: [PATCH 5/5] backlight: adp8860: document sysfs attributes
+Message-Id: <aedcd1c4-45df-b3e7-c6d1-ca4085df9b7d@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180216174034.15936-1-enric.balletbo@collabora.com>
-In-Reply-To: <20180216174034.15936-1-enric.balletbo@collabora.com>
+References: <cover.1516978005.git.aishpant@gmail.com>
+ <c7c9c2b13698320b590b52b7bf5796a87df49bd5.1516978005.git.aishpant@gmail.com>
+In-Reply-To: <c7c9c2b13698320b590b52b7bf5796a87df49bd5.1516978005.git.aishpant@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Aishwarya Pant <aishpant@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-The minnie devices comes with an AUO B101EAN01 panel which is different
-from default veyron devices, thus the power on/off timing sequence is
-slightly different. The datasheet specifies a pwm delay of 200 ms, so
-update the PMW delay proprieties accordingly.
+On 26.01.2018 15:55, Aishwarya Pant wrote:
+> Add documentation for sysfs interface of adp8860 series backlight
+> devices by reading through code and git commits.
+>=20
+> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
-Changes since v4:
- - Rebase on top of mainline.
-Changes since v3:
- - Use new -ms names for proprieties.
- - Fix the delay, should be 200ms instead of 20ms (Pavel)
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch as minnie has differents timings
+Acked-by: Michael Hennerich <michael.hennerich@analog.com>
 
- arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-index 544de6027aaa..4c5307e62001 100644
---- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-+++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-@@ -123,6 +123,8 @@
- 			240 241 242 243 244 245 246 247
- 			248 249 250 251 252 253 254 255>;
- 	power-supply = <&backlight_regulator>;
-+	post-pwm-on-delay-ms = <200>;
-+	pwm-off-delay-ms = <200>;
- };
- 
- &emmc {
--- 
-2.15.1
-
+> ---
+>   .../ABI/testing/sysfs-class-backlight-adp8860      | 54 +++++++++++++++=
++++++++
+>   1 file changed, 54 insertions(+)
+>   create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp8=
+860
+>=20
+> diff --git a/Documentation/ABI/testing/sysfs-class-backlight-adp8860 b/Do=
+cumentation/ABI/testing/sysfs-class-backlight-adp8860
+> new file mode 100644
+> index 000000000000..54d61c788b1b
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-class-backlight-adp8860
+> @@ -0,0 +1,54 @@
+> +sysfs interface for analog devices adp8860 backlight driver
+> +-----------------------------------------------------------
+> +
+> +The backlight brightness control operates at three different levels for =
+the
+> +adp8860, adp8861 and adp8863 devices: daylight (level 1), office (level =
+2) and
+> +dark (level 3). By default the brightness operates at the daylight brigh=
+tness
+> +level.
+> +
+> +What:		/sys/class/backlight/<backlight>/ambient_light_level
+> +Date:		Apr, 2010
+> +KernelVersion:	v2.6.35
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RO) 13-bit conversion value for the first light sensor=E2=80=94high
+> +		byte (Bit 12 to Bit 8). The value is updated every 80 ms (when
+> +		the light sensor is enabled).
+> +
+> +
+> +What:		/sys/class/backlight/<backlight>/ambient_light_zone
+> +Date:		Apr, 2010
+> +KernelVersion:	v2.6.35
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RW) Read or write the specific level at which the backlight
+> +		operates. Value "0" enables automatic ambient light sensing, and
+> +		values "1", "2" or "3" set the control to daylight, office or
+> +		dark respectively.
+> +
+> +
+> +What:		/sys/class/backlight/<backlight>/l1_daylight_max
+> +What:		/sys/class/backlight/<backlight>/l2_office_max
+> +What:		/sys/class/backlight/<backlight>/l3_dark_max
+> +Date:		Apr, 2010
+> +KernelVersion:	v2.6.35
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RW) Maximum current setting for the backlight when brightness
+> +		is at one of the three levels (daylight, office or dark). This
+> +		is an input code between 0 and 127, which is transformed to a
+> +		value between 0 mA and 30 mA using linear or non-linear
+> +		algorithms.
+> +
+> +
+> +What:		/sys/class/backlight/<backlight>/l1_daylight_dim
+> +What:		/sys/class/backlight/<backlight>/l2_office_dim
+> +What:		/sys/class/backlight/<backlight>/l3_dark_dim
+> +Date:		Apr, 2010
+> +KernelVersion:	v2.6.35
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RW) Dim current setting for the backlight when brightness is at
+> +		one of the three levels (daylight, office or dark). This is an
+> +		input code between 0 and 127, which is transformed to a value
+> +		between 0 mA and 30 mA using linear or non-linear algorithms.
+>=20

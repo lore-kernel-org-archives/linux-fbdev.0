@@ -1,27 +1,61 @@
-From: "Stanley, Johnnie C" <stanley.johnnie@cleanharbors.com>
-Date: Mon, 19 Feb 2018 14:34:06 +0000
-Subject: RE: Information Technology Security
-Message-Id: <245F851BC29DDA4C99D40F8ED7B0264101722EC07C@CORPEXMBP22.cleanharbors.com>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Thu, 01 Feb 2018 18:41:27 +0000
+Subject: [PATCH v2 0/3]Enable CONFIG_VT support for S390
+Message-Id: <cover.1517508744.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: geert@linux-m68k.org, borntraeger@de.ibm.com, stefan.kristiansson@saunalahti.fi, tomi.valkeinen@ti.com, schwidefsky@de.ibm.com, alifm@linux.vnet.ibm.com
 
-We are asking all Outlook users to update their security Info due to recent security incidents online.
+Hi,
 
-Starting from  19-2-2018 you wont be able to log in to your Outlook Account.
+This series of patches add support for an additional tty
+and console for a S390 KVM guest using a virtio-gpu device[1].
 
-This is for your own safety to continue using your Outlook account, and upgrade, to our Latest security Server
+Patch 1 enables the "Graphics support" menu which is
+needed to enable dummy console, since the VT layer needs it.
+It also fixes a build error for Opencore framebuffer driver. 
 
-Click the Update button below.
+Patch 2 fixes few linker issues.
 
-Update Now<https://c0abe993.caspio.com/dp/a2d26000075e906a030a4433b05a>
+Patch 3 add support for enabling VT layer for S390.
 
 
-NOTE: Your account will be Terminated and disabled, if not updated!!!
+ChangeLog
+---------
+v1 -> v2
 
-We apologize for any inconveniences.
+v1 was posted under a different subject and here is a link to it:
+https://www.spinics.net/lists/linux-s390/msg18175.html
 
-Thanks,
-Microsoft account team
+   - Combine patch 1 and 2 from v1 into one patch (patch 1).
+   - Additional patches to enable CONFIG_VT for S390.
+
+
+Thanks
+Farhan
+
+
+[1] https://lists.nongnu.org/archive/html/qemu-devel/2017-09/msg04184.html
+
+
+Farhan Ali (3):
+  Kconfig : Remove HAS_IOMEM dependency for Graphics support
+  s390/char : Rename EBCDIC keymap variables
+  s390/setup : enable display support for KVM guest
+
+ arch/s390/kernel/setup.c      |  2 ++
+ drivers/s390/char/defkeymap.c | 66 ++++++++++++++++++++++---------------------
+ drivers/s390/char/keyboard.c  | 32 ++++++++++-----------
+ drivers/s390/char/keyboard.h  | 11 ++++++++
+ drivers/tty/Kconfig           |  2 +-
+ drivers/video/Kconfig         |  1 -
+ drivers/video/console/Kconfig |  2 +-
+ drivers/video/fbdev/Kconfig   |  2 +-
+ 8 files changed, 66 insertions(+), 52 deletions(-)
+
+-- 
+2.7.4
+

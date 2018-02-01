@@ -1,92 +1,65 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Tue, 13 Feb 2018 18:07:45 +0000
-Subject: [PATCH] video: offb: Deallocate the color map
-Message-Id: <20180213180747.12666-1-malat@debian.org>
+From: Michael Hennerich <michael.hennerich@analog.com>
+Date: Thu, 01 Feb 2018 16:28:06 +0000
+Subject: Re: [PATCH 4/5] backlight: adp5520: document sysfs attributes
+Message-Id: <53d4187f-98e3-4227-fdae-8a80f3ae3132@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1516978005.git.aishpant@gmail.com>
+ <fe0d47871d84f83a927e139928afaf754141b7fe.1516978005.git.aishpant@gmail.com>
+In-Reply-To: <fe0d47871d84f83a927e139928afaf754141b7fe.1516978005.git.aishpant@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Mathieu Malaterre <malat@debian.org>, Rob Herring <robh@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Aishwarya Pant <aishpant@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-The function offb_destroy did not deallocate the color map leaving some
-memory around after destruction. Call the color map deallocate function to
-remove the memory leak.
+On 26.01.2018 15:54, Aishwarya Pant wrote:
+> Add documentation for sysfs interface of adp5520/adp5501 analog devices
+> backlight driver by reading code and looking through git commit logs.
+> 
+> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 
-Handle another case where color map should have been deallocated during an
-error code path.
+Acked-by: Michael Hennerich <michael.hennerich@analog.com>
 
-Fix memory leaks reported by kmemleak:
-
-# dmesg
-...
-[ 1884.719941] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
-# cat /sys/kernel/debug/kmemleak
-unreferenced object 0xde3d9000 (size 512):
-  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
-  hex dump (first 32 bytes):
-    00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
-    55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
-  backtrace:
-    [<f1433400>] fb_alloc_cmap_gfp+0x54/0x15c
-    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
-    [<b5a1c019>] offb_init+0xd0/0x164
-    [<322f82a3>] do_one_initcall+0x4c/0x178
-    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
-    [<2a17fa0e>] kernel_init+0x24/0x118
-    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
-unreferenced object 0xde3d9200 (size 512):
-  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
-  hex dump (first 32 bytes):
-    00 00 00 00 aa aa aa aa 00 00 00 00 55 55 aa aa  ............UU..
-    55 55 55 55 ff ff ff ff 55 55 55 55 ff ff ff ff  UUUU....UUUU....
-  backtrace:
-    [<4bf3594d>] fb_alloc_cmap_gfp+0x6c/0x15c
-    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
-    [<b5a1c019>] offb_init+0xd0/0x164
-    [<322f82a3>] do_one_initcall+0x4c/0x178
-    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
-    [<2a17fa0e>] kernel_init+0x24/0x118
-    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
-unreferenced object 0xde3d9600 (size 512):
-  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
-  hex dump (first 32 bytes):
-    00 00 aa aa 00 00 aa aa 00 00 aa aa 00 00 aa aa  ................
-    55 55 ff ff 55 55 ff ff 55 55 ff ff 55 55 ff ff  UU..UU..UU..UU..
-  backtrace:
-    [<23a3ea03>] fb_alloc_cmap_gfp+0x84/0x15c
-    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
-    [<b5a1c019>] offb_init+0xd0/0x164
-    [<322f82a3>] do_one_initcall+0x4c/0x178
-    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
-    [<2a17fa0e>] kernel_init+0x24/0x118
-    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
-
-Signed-off-by: Mathieu Malaterre <malat@debian.org>
----
- drivers/video/fbdev/offb.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-index 6f65d132eba1..30786445de04 100644
---- a/drivers/video/fbdev/offb.c
-+++ b/drivers/video/fbdev/offb.c
-@@ -282,6 +282,7 @@ static void offb_destroy(struct fb_info *info)
- 	if (info->screen_base)
- 		iounmap(info->screen_base);
- 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
-+	fb_dealloc_cmap(&info->cmap);
- 	framebuffer_release(info);
- }
- 
-@@ -520,6 +521,7 @@ static void __init offb_init_fb(const char *name,
- 	return;
- 
- out_err:
-+	fb_dealloc_cmap(&info->cmap);
- 	iounmap(info->screen_base);
- out_aper:
- 	iounmap(par->cmap_adr);
--- 
-2.11.0
-
+> ---
+>   .../ABI/testing/sysfs-class-backlight-adp5520      | 31 ++++++++++++++++++++++
+>   1 file changed, 31 insertions(+)
+>   create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp5520
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-class-backlight-adp5520 b/Documentation/ABI/testing/sysfs-class-backlight-adp5520
+> new file mode 100644
+> index 000000000000..34b6ebafa210
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-class-backlight-adp5520
+> @@ -0,0 +1,31 @@
+> +sysfs interface for analog devices adp5520(01) backlight driver
+> +---------------------------------------------------------------
+> +
+> +The backlight brightness control operates at three different levels for the
+> +adp5520 and adp5501 devices: daylight (level 1), office (level 2) and dark
+> +(level 3). By default the brightness operates at the daylight brightness level.
+> +
+> +What:		/sys/class/backlight/<backlight>/daylight_max
+> +What:		/sys/class/backlight/<backlight>/office_max
+> +What:		/sys/class/backlight/<backlight>/dark_max
+> +Date:		Sep, 2009
+> +KernelVersion:	v2.6.32
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RW) Maximum current setting for the backlight when brightness
+> +		is at one of the three levels (daylight, office or dark). This
+> +		is an input code between 0 and 127, which is transformed to a
+> +		value between 0 mA and 30 mA using linear or non-linear
+> +		algorithms.
+> +
+> +What:		/sys/class/backlight/<backlight>/daylight_dim
+> +What:		/sys/class/backlight/<backlight>/office_dim
+> +What:		/sys/class/backlight/<backlight>/dark_dim
+> +Date:		Sep, 2009
+> +KernelVersion:	v2.6.32
+> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
+> +Description:
+> +		(RW) Dim current setting for the backlight when brightness is at
+> +		one of the three levels (daylight, office or dark). This is an
+> +		input code between 0 and 127, which is transformed to a value
+> +		between 0 mA and 30 mA using linear or non-linear algorithms.
+> 

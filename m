@@ -1,66 +1,62 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Thu, 04 Jan 2018 19:37:51 +0000
-Subject: [PATCH v2 2/5] video: udlfb: Remove redundant gdev variable
-Message-Id: <20180104193751.GC22612@lenoch>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 01 Feb 2018 15:52:42 +0000
+Subject: Re: [PATCH 02/11] video: fbdev: kconfig: Remove blank help text
+Message-Id: <3132455.r9uCTL3ZTk@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180131093434.20050-1-ulfalizer@gmail.com>
+ <CGME20180131093527epcas2p3978f33b8407c31bd95e01bca682346da@epcas2p3.samsung.com>
+ <20180131093434.20050-3-ulfalizer@gmail.com>
+In-Reply-To: <20180131093434.20050-3-ulfalizer@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Ulf Magnusson <ulfalizer@gmail.com>
+Cc: pebolle@tiscali.nl, Hans de Goede <j.w.r.degoede@gmail.com>, Arnd Bergmann <arnd@arndb.de>, linux-kbuild@vger.kernel.org, rdunlap@infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Michal Simek <michal.simek@xilinx.com>, yamada.masahiro@socionext.com, mcgrof@kernel.org, linux-fbdev@vger.kernel.org, dan.carpenter@oracle.com
 
-gdev is not really needed as the same content can be read
-from udev->dev.
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
----
- Changes:
- - v2: None (just made patch #2)
+Hi,
 
- drivers/video/fbdev/udlfb.c | 4 +---
- include/video/udlfb.h       | 1 -
- 2 files changed, 1 insertion(+), 4 deletions(-)
+On Wednesday, January 31, 2018 10:34:21 AM Ulf Magnusson wrote:
+> Blank help texts are probably either a typo, a Kconfig misunderstanding,
+> or some kind of half-committing to adding a help text (in which case a
+> TODO comment would be clearer, if the help text really can't be added
+> right away).
+> 
+> Best to remove them, IMO.
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 5f68f8c720ec..d4e15d97a264 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -1605,7 +1605,6 @@ static int dlfb_usb_probe(struct usb_interface *interface,
- 	kref_init(&dev->kref); /* matching kref_put in usb .disconnect fn */
- 
- 	dev->udev = usbdev;
--	dev->gdev = &usbdev->dev; /* our generic struct device * */
- 	usb_set_intfdata(interface, dev);
- 
- 	pr_info("%s %s - serial #%s\n",
-@@ -1670,7 +1669,7 @@ static void dlfb_init_framebuffer_work(struct work_struct *work)
- 	int i;
- 
- 	/* allocates framebuffer driver structure, not framebuffer memory */
--	info = framebuffer_alloc(0, dev->gdev);
-+	info = framebuffer_alloc(0, &dev->udev->dev);
- 	if (!info) {
- 		pr_err("framebuffer_alloc failed\n");
- 		goto error;
-@@ -1765,7 +1764,6 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
- 
- 	usb_set_intfdata(interface, NULL);
- 	dev->udev = NULL;
--	dev->gdev = NULL;
- 
- 	/* if clients still have us open, will be freed on last close */
- 	if (dev->fb_count = 0)
-diff --git a/include/video/udlfb.h b/include/video/udlfb.h
-index 1252a7a89bc0..7b4f567dd1fe 100644
---- a/include/video/udlfb.h
-+++ b/include/video/udlfb.h
-@@ -35,7 +35,6 @@ struct urb_list {
- 
- struct dlfb_data {
- 	struct usb_device *udev;
--	struct device *gdev; /* &udev->dev */
- 	struct fb_info *info;
- 	struct urb_list urbs;
- 	struct kref kref;
--- 
-2.15.1
+How about actually adding some meaningful help texts instead
+(as a general rule each user visible option should have valid
+help text)?
+
+> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+> ---
+>  drivers/video/fbdev/Kconfig | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 6962b4583fd7..11e699f1062b 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -1156,7 +1156,6 @@ config FB_I810_I2C
+>  	bool "Enable DDC Support"
+>  	depends on FB_I810 && FB_I810_GTF
+>  	select FB_DDC
+> -	help
+
+Please add a missing help text instead (take a look at FB_SAVAGE_I2C
+config option to see how a valid help text entry should look like).
+
+In the longer term we should consider removing *_I2C config options
+and just make the main config options always enable I2C subsystem
+directly if needed/useful (some fbdev drivers are doing it this way
+already).
+
+>  config FB_LE80578
+>  	tristate "Intel LE80578 (Vermilion) support"
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

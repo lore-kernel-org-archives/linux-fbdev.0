@@ -1,80 +1,104 @@
-From: Vladimir Zapolskiy <vz@mleia.com>
-Date: Mon, 19 Feb 2018 21:47:36 +0000
-Subject: [PATCH] video: of: display_timing: Remove of_display_timings_exist() function
-Message-Id: <20180219214736.9447-1-vz@mleia.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 01 Feb 2018 13:04:46 +0000
+Subject: [PATCH] drm/fb-helper: Scale back depth to supported maximum
+Message-Id: <20180201130446.6165-1-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1399985901-30756-1-git-send-email-l.stach@pengutronix.de>
-In-Reply-To: <1399985901-30756-1-git-send-email-l.stach@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eric Anholt <eric@anholt.net>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Dave Airlie <airlied@redhat.com>, David Lechner <david@lechnology.com>
+Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
 
-Since introduction of of_display_timings_exist() function in commit
-cc3f414cf2e40 ("video: add of helper for display timings/videomode") it
-didn't attract any users, and the function has no potential, because
-of_get_display_timings() covers its functionality and does more.
+The following happened when migrating an old fbdev driver to DRM:
 
-Drop the unused exported function from the kernel.
+The Integrator/CP PL111 supports 16BPP but only ARGB1555/ABGR1555
+or XRGB1555/XBGR1555 i.e. the maximum depth is 15.
 
-Signed-off-by: Vladimir Zapolskiy <vz@mleia.com>
+This makes the initialization of the framebuffer fail since
+the code in drm_fb_helper_single_fb_probe() assigns the same value
+to sizes.surface_bpp and sizes.surface_depth. I.e. it simply assumes
+a 1-to-1 mapping between BPP and depth, which is true in most cases
+but typically not for this hardware.
+
+To support the odd case of a driver supporting 16BPP with only 15
+bits of depth, this patch will make the code loop over the formats
+supported on the primary plane and cap the depth to the maximum
+supported.
+
+On the PL110 Integrator, this makes drm_mode_legacy_fb_format()
+select DRM_FORMAT_XRGB1555 which is acceptable for this driver, and
+thus we get framebuffer, penguin and console on the Integrator/CP.
+
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/video/of_display_timing.c | 20 --------------------
- include/video/of_display_timing.h |  5 -----
- 2 files changed, 25 deletions(-)
+ drivers/gpu/drm/drm_fb_helper.c | 40 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 39 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 8ce0a99..83b8963 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -244,23 +244,3 @@ struct display_timings *of_get_display_timings(const struct device_node *np)
- 	return NULL;
- }
- EXPORT_SYMBOL_GPL(of_get_display_timings);
--
--/**
-- * of_display_timings_exist - check if a display-timings node is provided
-- * @np: device_node with the timing
-- **/
--int of_display_timings_exist(const struct device_node *np)
--{
--	struct device_node *timings_np;
--
--	if (!np)
--		return -EINVAL;
--
--	timings_np = of_parse_phandle(np, "display-timings", 0);
--	if (!timings_np)
--		return -EINVAL;
--
--	of_node_put(timings_np);
--	return 1;
--}
--EXPORT_SYMBOL_GPL(of_display_timings_exist);
-diff --git a/include/video/of_display_timing.h b/include/video/of_display_timing.h
-index 956455f..bb29e59 100644
---- a/include/video/of_display_timing.h
-+++ b/include/video/of_display_timing.h
-@@ -19,7 +19,6 @@ struct display_timings;
- int of_get_display_timing(const struct device_node *np, const char *name,
- 		struct display_timing *dt);
- struct display_timings *of_get_display_timings(const struct device_node *np);
--int of_display_timings_exist(const struct device_node *np);
- #else
- static inline int of_get_display_timing(const struct device_node *np,
- 		const char *name, struct display_timing *dt)
-@@ -31,10 +30,6 @@ of_get_display_timings(const struct device_node *np)
- {
- 	return NULL;
- }
--static inline int of_display_timings_exist(const struct device_node *np)
--{
--	return -ENOSYS;
--}
- #endif
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index e56166334455..5076f9103740 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -1720,6 +1720,8 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 	int i;
+ 	struct drm_fb_helper_surface_size sizes;
+ 	int gamma_size = 0;
++	struct drm_plane *plane;
++	int best_depth = 0;
  
- #endif
+ 	memset(&sizes, 0, sizeof(struct drm_fb_helper_surface_size));
+ 	sizes.surface_depth = 24;
+@@ -1727,7 +1729,10 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 	sizes.fb_width = (u32)-1;
+ 	sizes.fb_height = (u32)-1;
+ 
+-	/* if driver picks 8 or 16 by default use that for both depth/bpp */
++	/*
++	 * If driver picks 8 or 16 by default use that for both depth/bpp
++	 * to begin with
++	 */
+ 	if (preferred_bpp != sizes.surface_bpp)
+ 		sizes.surface_depth = sizes.surface_bpp = preferred_bpp;
+ 
+@@ -1762,6 +1767,39 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 		}
+ 	}
+ 
++	/*
++	 * If we run into a situation where, for example, the primary plane
++	 * supports RGBA5551 (16 bpp, depth 15) but not RGB565 (16 bpp, depth
++	 * 16) we need to scale down the depth of the sizes we request.
++	 */
++	drm_for_each_plane(plane, fb_helper->dev) {
++		/* Only check the primary plane */
++		if (plane->type != DRM_PLANE_TYPE_PRIMARY)
++			continue;
++
++		for (i = 0; i < plane->format_count; i++) {
++			const struct drm_format_info *fmt;
++
++			fmt = drm_format_info(plane->format_types[i]);
++			/* We found a perfect fit, great */
++			if (fmt->depth = sizes.surface_depth)
++				break;
++
++			/* Skip depths above what we're looking for */
++			if (fmt->depth > sizes.surface_depth)
++				continue;
++
++			/* Best depth found so far */
++			if (fmt->depth > best_depth)
++				best_depth = fmt->depth;
++		}
++	}
++	if (sizes.surface_depth != best_depth) {
++		DRM_DEBUG("requested bpp %d, scaled depth down to %d",
++			  sizes.surface_bpp, best_depth);
++		sizes.surface_depth = best_depth;
++	}
++
+ 	crtc_count = 0;
+ 	for (i = 0; i < fb_helper->crtc_count; i++) {
+ 		struct drm_display_mode *desired_mode;
 -- 
-2.10.2
+2.14.3
 

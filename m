@@ -1,72 +1,56 @@
-From: Claudiu Beznea <Claudiu.Beznea@microchip.com>
-Date: Mon, 26 Feb 2018 08:11:45 +0000
-Subject: Re: [PATCH v3 01/10] pwm: extend PWM framework with PWM modes
-Message-Id: <a26cdf7b-024e-957b-8691-c3c898d0d9d6@microchip.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Thu, 01 Feb 2018 11:06:42 +0000
+Subject: Re: [PATCH 2/5] backlight: lp855x: document sysfs attributes
+Message-Id: <20180201110642.qyjwyrdwglevlk5f@oak.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519300881-8136-2-git-send-email-claudiu.beznea@microchip.com>
- <201802250410.reI8wAy2%fengguang.wu@intel.com>
-In-Reply-To: <201802250410.reI8wAy2%fengguang.wu@intel.com>
+References: <cover.1516978005.git.aishpant@gmail.com>
+ <09cd01366bf3b5c3030ad25450b46a9a3bc8a747.1516978005.git.aishpant@gmail.com>
+In-Reply-To: <09cd01366bf3b5c3030ad25450b46a9a3bc8a747.1516978005.git.aishpant@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kbuild test robot <lkp@intel.com>
-Cc: kbuild-all@01.org, thierry.reding@gmail.com, shc_work@mail.ru, kgene@kernel.org, krzk@kernel.org, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, kamil@wypas.org, b.zolnierkie@samsung.com, jdelvare@suse.com, linux@roeck-us.net, dmitry.torokhov@gmail.com, rpurdie@rpsys.net, jacek.anaszewski@gmail.com, pavel@ucw.cz, mchehab@kernel.org, sean@mess.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, milo.kim@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com, linux-pwm@vger.kernel.orgl
+To: Aishwarya Pant <aishpant@gmail.com>
+Cc: Milo Kim <milo.kim@ti.com>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Julia Lawall <julia.lawall@lip6.fr>, Greg KH <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>
 
-I'll rebase it on latest for-next in next version.
-
-Thank you,
-Claudiu Beznea
-
-On 24.02.2018 22:49, kbuild test robot wrote:
-> Hi Claudiu,
+On Fri, Jan 26, 2018 at 08:23:00PM +0530, Aishwarya Pant wrote:
+> Add documentation for sysfs interface of Texas Instruments lp855x
+> backlight driver by reading code and looking through git commit logs.
 > 
-> Thank you for the patch! Perhaps something to improve:
-> 
-> [auto build test WARNING on pwm/for-next]
-> [also build test WARNING on v4.16-rc2 next-20180223]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Claudiu-Beznea/extend-PWM-framework-to-support-PWM-modes/20180225-024011
-> base:   https://git.kernel.org/pub/scm/linux/kernel/git/thierry.reding/linux-pwm.git for-next
-> config: xtensa-allmodconfig (attached as .config)
-> compiler: xtensa-linux-gcc (GCC) 7.2.0
-> reproduce:
->         wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
->         chmod +x ~/bin/make.cross
->         # save the attached .config to linux build tree
->         make.cross ARCH=xtensa 
-> 
-> All warnings (new ones prefixed by >>):
-> 
->>> drivers//pwm/pwm-sun4i.c:36:0: warning: "PWM_MODE" redefined
->     #define PWM_MODE  BIT(7)
->     
->    In file included from drivers//pwm/pwm-sun4i.c:19:0:
->    include/linux/pwm.h:40:0: note: this is the location of the previous definition
->     #define PWM_MODE(name)  BIT(PWM_MODE_##name##_BIT)
->     
-> 
-> vim +/PWM_MODE +36 drivers//pwm/pwm-sun4i.c
-> 
-> 09853ce7 Alexandre Belloni 2014-12-17  29  
-> 09853ce7 Alexandre Belloni 2014-12-17  30  #define PWMCH_OFFSET		15
-> 09853ce7 Alexandre Belloni 2014-12-17  31  #define PWM_PRESCAL_MASK	GENMASK(3, 0)
-> 09853ce7 Alexandre Belloni 2014-12-17  32  #define PWM_PRESCAL_OFF		0
-> 09853ce7 Alexandre Belloni 2014-12-17  33  #define PWM_EN			BIT(4)
-> 09853ce7 Alexandre Belloni 2014-12-17  34  #define PWM_ACT_STATE		BIT(5)
-> 09853ce7 Alexandre Belloni 2014-12-17  35  #define PWM_CLK_GATING		BIT(6)
-> 09853ce7 Alexandre Belloni 2014-12-17 @36  #define PWM_MODE		BIT(7)
-> 09853ce7 Alexandre Belloni 2014-12-17  37  #define PWM_PULSE		BIT(8)
-> 09853ce7 Alexandre Belloni 2014-12-17  38  #define PWM_BYPASS		BIT(9)
-> 09853ce7 Alexandre Belloni 2014-12-17  39  
-> 
-> :::::: The code at line 36 was first introduced by commit
-> :::::: 09853ce7bc1003a490c7ee74a5705d7a7cf16b7d pwm: Add Allwinner SoC support
-> 
-> :::::: TO: Alexandre Belloni <alexandre.belloni@free-electrons.com>
-> :::::: CC: Thierry Reding <thierry.reding@gmail.com>
-> 
+> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 > ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+>  .../ABI/testing/sysfs-class-backlight-lp855x          | 19 +++++++++++++++++++
+>  1 file changed, 19 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-lp855x
 > 
+> diff --git a/Documentation/ABI/testing/sysfs-class-backlight-lp855x b/Documentation/ABI/testing/sysfs-class-backlight-lp855x
+> new file mode 100644
+> index 000000000000..5b9d38958875
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-class-backlight-lp855x
+> @@ -0,0 +1,19 @@
+> +sysfs interface for Texas Instruments lp855x backlight driver
+> +------------------------------------------------------------
+> +
+> +What:		/sys/class/backlight/<backlight>/chip_id
+> +Date:		Mar, 2012
+> +KernelVersion:	v3.10
+> +Contact:	Milo Kim <milo.kim@ti.com>
+> +Description:
+> +		(RO) Displays the lp8755x chip id. Possible values are:
+> +		lp8550, lp8551, lp8552, lp8553, lp8555, lp8556 or lp8557.
+> +
+> +
+> +What:		/sys/class/backlight/<backlight>/bl_ctl_mode
+> +Date:		Mar, 2012
+> +KernelVersion:	v3.10
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +Description:
+> +		(RO) Displays whether the brightness is controlled by the pwm
+> +		input("pwm based) or the i2c register("register based").
+
+Since like the first patch in the series, these look like they are for
+debugging. That thread is still active but whatever the outcome of that
+thread please assume it also applies to this patch.
+
+
+Daniel.

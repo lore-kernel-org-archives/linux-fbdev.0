@@ -1,111 +1,160 @@
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
-Date: Thu, 22 Feb 2018 12:01:21 +0000
-Subject: [PATCH v3 10/10] pwm: atmel: add push-pull mode support
-Message-Id: <1519300881-8136-11-git-send-email-claudiu.beznea@microchip.com>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Sat, 03 Feb 2018 17:42:25 +0000
+Subject: warning: "EDID_LENGTH" redefined (was Re: [PATCH v4] Fix loading of module radeonfb on PowerMac)
+Message-Id: <CA+7wUsyS=burMw_FPyX8sU99_iMk1Ee1x3iBUiFMff7J0Av6Vg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
-In-Reply-To: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, shc_work@mail.ru, kgene@kernel.org, krzk@kernel.org, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, kamil@wypas.org, b.zolnierkie@samsung.com, jdelvare@suse.com, linux@roeck-us.net, dmitry.torokhov@gmail.com, rpurdie@rpsys.net, jacek.anaszewski@gmail.com, pavel@ucw.cz, mchehab@kernel.org, sean@mess.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, milo.kim@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com
-Cc: linux-hwmon@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-leds@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+To: Dave Airlie <airlied@redhat.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org
 
-Add support for PWM push-pull mode. This is only supported by SAMA5D2 SoCs.
+Hi Dave,
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
----
- drivers/pwm/pwm-atmel.c | 40 ++++++++++++++++++++++++++++++++++++----
- 1 file changed, 36 insertions(+), 4 deletions(-)
+Since I am not very familiar with the drm vs fbdev architecture, could
+you please suggest a patch for the following [*].
 
-diff --git a/drivers/pwm/pwm-atmel.c b/drivers/pwm/pwm-atmel.c
-index d2482fe28cfa..da4b58c1ecf2 100644
---- a/drivers/pwm/pwm-atmel.c
-+++ b/drivers/pwm/pwm-atmel.c
-@@ -33,8 +33,11 @@
- 
- #define PWM_CMR			0x0
- /* Bit field in CMR */
--#define PWM_CMR_CPOL		(1 << 9)
--#define PWM_CMR_UPD_CDTY	(1 << 10)
-+#define PWM_CMR_CPOL		BIT(9)
-+#define PWM_CMR_UPD_CDTY	BIT(10)
-+#define PWM_CMR_DTHI		BIT(17)
-+#define PWM_CMR_DTLI		BIT(18)
-+#define PWM_CMR_PPM		BIT(19)
- #define PWM_CMR_CPRE_MSK	0xF
- 
- /* The following registers for PWM v1 */
-@@ -219,16 +222,19 @@ static int atmel_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
- {
- 	struct atmel_pwm_chip *atmel_pwm = to_atmel_pwm_chip(chip);
- 	struct pwm_state cstate;
-+	struct pwm_caps caps;
- 	unsigned long cprd, cdty;
- 	u32 pres, val;
- 	int ret;
- 
- 	pwm_get_state(pwm, &cstate);
-+	pwm_get_caps(chip, pwm, &caps);
- 
- 	if (state->enabled) {
- 		if (cstate.enabled &&
- 		    cstate.polarity = state->polarity &&
--		    cstate.period = state->period) {
-+		    cstate.period = state->period &&
-+		    cstate.mode = state->mode) {
- 			cprd = atmel_pwm_ch_readl(atmel_pwm, pwm->hwpwm,
- 						  atmel_pwm->data->regs.period);
- 			atmel_pwm_calculate_cdty(state, cprd, &cdty);
-@@ -263,6 +269,18 @@ static int atmel_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
- 			val &= ~PWM_CMR_CPOL;
- 		else
- 			val |= PWM_CMR_CPOL;
-+
-+		/* PWM mode. */
-+		if (caps.modes & PWM_MODE(PUSH_PULL)) {
-+			if (state->mode = PWM_MODE(PUSH_PULL)) {
-+				val |= PWM_CMR_PPM | PWM_CMR_DTLI;
-+				val &= ~PWM_CMR_DTHI;
-+			} else {
-+				val &= ~(PWM_CMR_PPM | PWM_CMR_DTLI |
-+					 PWM_CMR_DTHI);
-+			}
-+		}
-+
- 		atmel_pwm_ch_writel(atmel_pwm, pwm->hwpwm, PWM_CMR, val);
- 		atmel_pwm_set_cprd_cdty(chip, pwm, cprd, cdty);
- 		mutex_lock(&atmel_pwm->isr_lock);
-@@ -315,6 +333,20 @@ static const struct atmel_pwm_data atmel_pwm_data_v2 = {
- 	},
- };
- 
-+static const struct atmel_pwm_data atmel_pwm_data_v3 = {
-+	.regs = {
-+		.period		= PWMV2_CPRD,
-+		.period_upd	= PWMV2_CPRDUPD,
-+		.duty		= PWMV2_CDTY,
-+		.duty_upd	= PWMV2_CDTYUPD,
-+	},
-+	.caps = {
-+		.modes = PWM_MODE(NORMAL) |
-+			 PWM_MODE(COMPLEMENTARY) |
-+			 PWM_MODE(PUSH_PULL),
-+	},
-+};
-+
- static const struct platform_device_id atmel_pwm_devtypes[] = {
- 	{
- 		.name = "at91sam9rl-pwm",
-@@ -337,7 +369,7 @@ static const struct of_device_id atmel_pwm_dt_ids[] = {
- 		.data = &atmel_pwm_data_v2,
- 	}, {
- 		.compatible = "atmel,sama5d2-pwm",
--		.data = &atmel_pwm_data_v2,
-+		.data = &atmel_pwm_data_v3,
- 	}, {
- 		/* sentinel */
- 	},
--- 
-2.7.4
+Reference:
+f453ba0460742 (Dave Airlie         2008-11-07 14:05:41 -0800  32)
+#define EDID_LENGTH 128
 
+
+Thanks
+
+[*]
+On Sat, Feb 3, 2018 at 3:39 AM, kbuild test robot <lkp@intel.com> wrote:
+> Hi Mathieu,
+>
+> Thank you for the patch! Perhaps something to improve:
+>
+> [auto build test WARNING on linus/master]
+> [also build test WARNING on v4.15 next-20180202]
+> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+>
+> url:    https://github.com/0day-ci/linux/commits/Mathieu-Malaterre/Fix-loading-of-module-radeonfb-on-PowerMac/20180203-085907
+> config: x86_64-randconfig-x009-201804 (attached as .config)
+> compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
+> reproduce:
+>         # save the attached .config to linux build tree
+>         make ARCH=x86_64
+>
+> All warnings (new ones prefixed by >>):
+>
+>    In file included from drivers/video/fbdev/aty/radeon_base.c:91:0:
+>>> drivers/video/fbdev/aty/../edid.h:21:0: warning: "EDID_LENGTH" redefined
+>     #define EDID_LENGTH    0x80
+>
+>    In file included from include/drm/drm_crtc.h:44:0,
+>                     from include/drm/drm_fb_helper.h:35,
+>                     from drivers/video/fbdev/aty/radeon_base.c:73:
+>    include/drm/drm_edid.h:32:0: note: this is the location of the previous definition
+>     #define EDID_LENGTH 128
+>
+>    Cyclomatic Complexity 1 arch/x86/include/asm/bitops.h:fls64
+>    Cyclomatic Complexity 1 include/linux/log2.h:__ilog2_u64
+>    Cyclomatic Complexity 1 include/asm-generic/getorder.h:__get_order
+>    Cyclomatic Complexity 1 include/linux/string.h:strnlen
+>    Cyclomatic Complexity 4 include/linux/string.h:strlen
+>    Cyclomatic Complexity 6 include/linux/string.h:strlcpy
+>    Cyclomatic Complexity 4 include/linux/string.h:memcpy
+>    Cyclomatic Complexity 1 arch/x86/include/asm/paravirt.h:arch_local_irq_disable
+>    Cyclomatic Complexity 1 arch/x86/include/asm/paravirt.h:arch_local_irq_enable
+>    Cyclomatic Complexity 1 include/linux/spinlock.h:spinlock_check
+>    Cyclomatic Complexity 1 include/linux/spinlock.h:spin_unlock_irqrestore
+>    Cyclomatic Complexity 1 include/linux/jiffies.h:_msecs_to_jiffies
+>    Cyclomatic Complexity 3 include/linux/jiffies.h:msecs_to_jiffies
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readb
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readw
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readl
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:writeb
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:writel
+>    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:ioremap
+>    Cyclomatic Complexity 1 include/linux/kobject.h:kobject_name
+>    Cyclomatic Complexity 2 include/linux/device.h:dev_name
+>    Cyclomatic Complexity 1 include/linux/device.h:dev_get_drvdata
+>    Cyclomatic Complexity 1 include/linux/device.h:dev_set_drvdata
+>    Cyclomatic Complexity 1 include/linux/io.h:arch_phys_wc_add
+>    Cyclomatic Complexity 1 include/linux/io.h:arch_phys_wc_del
+>    Cyclomatic Complexity 68 include/linux/slab.h:kmalloc_large
+>    Cyclomatic Complexity 3 include/linux/slab.h:kmalloc
+>    Cyclomatic Complexity 1 include/linux/slab.h:kzalloc
+>    Cyclomatic Complexity 1 include/linux/pci.h:pci_get_drvdata
+>    Cyclomatic Complexity 1 include/linux/pci.h:pci_set_drvdata
+>    Cyclomatic Complexity 1 include/linux/pci.h:pci_name
+>    Cyclomatic Complexity 2 include/linux/fb.h:alloc_apertures
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeonfb.h:radeon_pll_errata_after_index
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeonfb.h:radeon_pll_errata_after_data
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:round_div
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeonfb.h:var_to_depth
+>    Cyclomatic Complexity 5 drivers/video/fbdev/aty/radeonfb.h:radeon_get_dstbpp
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:radeonfb_bl_init
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:radeonfb_bl_exit
+>    Cyclomatic Complexity 1 include/drm/drm_fb_helper.h:drm_fb_helper_remove_conflicting_framebuffers
+>    Cyclomatic Complexity 21 drivers/video/fbdev/aty/radeon_base.c:radeon_calc_pll_regs
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeonfb_exit
+>    Cyclomatic Complexity 6 drivers/video/fbdev/aty/radeon_base.c:radeon_find_mem_vbios
+>    Cyclomatic Complexity 4 drivers/video/fbdev/aty/radeon_base.c:radeon_kick_out_firmware_fb
+>    Cyclomatic Complexity 5 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pci_unregister
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_show_one_edid
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_show_edid2
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_show_edid1
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_set_fbinfo
+>    Cyclomatic Complexity 18 drivers/video/fbdev/aty/radeon_base.c:radeonfb_check_var
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_unmap_ROM
+>    Cyclomatic Complexity 7 drivers/video/fbdev/aty/radeon_base.c:radeon_map_ROM
+>    Cyclomatic Complexity 16 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setup
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeonfb_init
+>    Cyclomatic Complexity 8 drivers/video/fbdev/aty/radeon_base.c:_radeon_msleep
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_pll_errata_after_index_slow
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_pll_errata_after_data_slow
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:_OUTREGP
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__INPLL
+>    Cyclomatic Complexity 20 drivers/video/fbdev/aty/radeon_base.c:radeon_probe_pll_params
+>    Cyclomatic Complexity 10 drivers/video/fbdev/aty/radeon_base.c:radeon_get_pllinfo
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_save_state
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__OUTPLL
+>    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__OUTPLLP
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:_radeon_fifo_wait
+>    Cyclomatic Complexity 17 drivers/video/fbdev/aty/radeon_base.c:radeon_write_pll_regs
+>    Cyclomatic Complexity 25 drivers/video/fbdev/aty/radeon_base.c:radeon_identify_vram
+>    Cyclomatic Complexity 31 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pci_register
+>    Cyclomatic Complexity 10 drivers/video/fbdev/aty/radeon_base.c:radeonfb_ioctl
+>    Cyclomatic Complexity 4 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pan_display
+>    Cyclomatic Complexity 16 drivers/video/fbdev/aty/radeon_base.c:radeon_setcolreg
+>    Cyclomatic Complexity 9 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setcmap
+>    Cyclomatic Complexity 6 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setcolreg
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_engine_flush
+>    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:_radeon_engine_idle
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_lvds_timer_func
+>    Cyclomatic Complexity 17 drivers/video/fbdev/aty/radeon_base.c:radeon_screen_blank
+>    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeonfb_blank
+>    Cyclomatic Complexity 7 drivers/video/fbdev/aty/radeon_base.c:radeon_write_mode
+>    Cyclomatic Complexity 42 drivers/video/fbdev/aty/radeon_base.c:radeonfb_set_par
+>    In file included from drivers/video/fbdev/aty/radeon_base.c:91:0:
+>>> drivers/video/fbdev/aty/../edid.h:21:0: warning: "EDID_LENGTH" redefined
+>     #define EDID_LENGTH    0x80
+>
+>    In file included from include/drm/drm_crtc.h:44:0,
+>                     from include/drm/drm_fb_helper.h:35,
+>                     from drivers/video/fbdev/aty/radeon_base.c:73:
+>    include/drm/drm_edid.h:32:0: note: this is the location of the previous definition
+>     #define EDID_LENGTH 128
+>
+>
+> vim +/EDID_LENGTH +21 drivers/video/fbdev/aty/../edid.h
+>
+> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  20
+> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16 @21  #define EDID_LENGTH                                0x80
+> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  22  #define EDID_HEADER                                0x00
+> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  23  #define EDID_HEADER_END                            0x07
+> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  24
+>
+> :::::: The code at line 21 was first introduced by commit
+> :::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
+>
+> :::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
+> :::::: CC: Linus Torvalds <torvalds@ppc970.osdl.org>
+>
+> ---
+> 0-DAY kernel test infrastructure                Open Source Technology Center
+> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation

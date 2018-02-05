@@ -1,34 +1,62 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 28 Feb 2018 15:26:41 +0000
-Subject: Re: [PATCH 0/3] console: Expand dummy functions for CFI
-Message-Id: <20180228152641.GA16045@kroah.com>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Mon, 05 Feb 2018 19:05:39 +0000
+Subject: [PATCH v3 03/20] kconfig: Remove leftover references to AVR32 symbol
+Message-Id: <20180205190552.14282-1-ulfalizer@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180227000432epcas2p1408299421426381f05a548283953b064@epcas2p1.samsung.com>
- <1519689860-7421-1-git-send-email-keescook@chromium.org>
- <1712993.EvPlpO244k@amdc3058> <2698133.VOZeH6rfJt@amdc3058>
-In-Reply-To: <2698133.VOZeH6rfJt@amdc3058>
+References: <20180205081151.GA11907@Red>
+In-Reply-To: <20180205081151.GA11907@Red>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>, linux-fbdev@vger.kernel.org, Thomas Winischhofer <thomas@winischhofer.net>, Kees Cook <keescook@chromium.org>, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sami Tolvanen <samitolvanen@google.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: clabbe.montjoie@gmail.com, linux-kernel@vger.kernel.org
+Cc: viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, ulfalizer@gmail.com, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Christophe Leroy <christophe.leroy@c-s.fr>, Sean Paul <seanpaul@chromium.org>, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On Wed, Feb 28, 2018 at 04:14:38PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday, February 28, 2018 04:09:47 PM Bartlomiej Zolnierkiewicz wro=
-te:
-> > On Monday, February 26, 2018 04:04:17 PM Kees Cook wrote:
-> > > This is a small series that cleans up struct consw a bit and
-> > > prepares it for Control Flow Integrity checking (i.e. Clang's
-> > > -fsanitize=CFi).
-> >=20
-> > for drivers/video/ parts:
-> >=20
-> > Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->=20
-> also I'll be happy to merge all patches through fbdev tree
-> (if Greg is fine with it and ACKs drivers/usb/ parts)
+The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+support for AVR32 architecture"). Remove the remaining references to it
+from the Kconfig files.
 
-I've already taken this through the tty tree, sorry about that.
-Shouldn't cause any merge issues.
+Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+---
+Changes in v3:
+Removal of the AVR32 dependency in PWM_ATMEL is already pending:
+https://lkml.org/lkml/2018/1/18/699
 
-greg k-h
+Changes in v2:
+Removal of AVR32_AT32AP_CPUFREQ is already pending in
+https://marc.info/?i 180118200202.11883-1-clabbe.montjoie%40gmail.com (which
+also does it properly -- I forgot to search for related files here). Just
+remove the other references.
+
+ drivers/spi/Kconfig           | 2 +-
+ drivers/video/console/Kconfig | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 603783976b81..c1e455d46c7f 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -72,7 +72,7 @@ config SPI_ARMADA_3700
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+ 	depends on HAS_DMA
+-	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
++	depends on (ARCH_AT91 || COMPILE_TEST)
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+ 	  many AT32 (AVR32) and AT91 (ARM) chips.
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 7f1f1fbcef9e..be63759b6027 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -7,7 +7,7 @@ menu "Console display driver support"
+ config VGA_CONSOLE
+ 	bool "VGA text console" if EXPERT || !X86
+ 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+-		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
++		!SUPERH && !BLACKFIN && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+ 		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
+ 	default y
+-- 
+2.14.1
+

@@ -1,88 +1,102 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 05 Feb 2018 14:39:52 +0000
-Subject: Re: [PATCH 1/5] backlight: lp8788: document sysfs attributes
-Message-Id: <20180205143952.tqzywm6wtgw23jvb@oak.lan>
+From: Ludovic Desroches <ludovic.desroches@microchip.com>
+Date: Mon, 05 Feb 2018 08:23:35 +0000
+Subject: [PATCH] video: fbdev: convert to use GPIO descriptors
+Message-Id: <20180205082335.5727-1-ludovic.desroches@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1516978005.git.aishpant@gmail.com>
- <6523e26889d3dd65e90ea27c0d302a95aeb9da8b.1516978005.git.aishpant@gmail.com>
- <20180131110727.rmmwyqzwozwhda6z@oak.lan>
- <878tceckli.fsf@intel.com>
- <20180201113604.kcue6auuivud52qz@oak.lan>
- <20180205072550.GA9376@mordor.localdomain>
-In-Reply-To: <20180205072550.GA9376@mordor.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aishwarya Pant <aishpant@gmail.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, Milo Kim <milo.kim@ti.com>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Julia Lawall <julia.lawall@lip6.fr>, Greg KH <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: b.zolnierkie@samsung.com, linus.walleij@linaro.org, linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@microchip.com>, alexandre.belloni@free-electrons.com
 
-On Mon, Feb 05, 2018 at 12:55:50PM +0530, Aishwarya Pant wrote:
-> On Thu, Feb 01, 2018 at 11:36:04AM +0000, Daniel Thompson wrote:
-> > On Wed, Jan 31, 2018 at 01:51:21PM +0200, Jani Nikula wrote:
-> > > On Wed, 31 Jan 2018, Daniel Thompson <daniel.thompson@linaro.org> wrote:
-> > > > On Fri, Jan 26, 2018 at 08:20:08PM +0530, Aishwarya Pant wrote:
-> > > >> Add documentation for sysfs interfaces of lp8788 backlight driver by
-> > > >> looking through the code and the git commit history.
-> > > >> 
-> > > >> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
-> > > >> ---
-> > > >>  Documentation/ABI/testing/sysfs-class-backlight-lp8788 | 10 ++++++++++
-> > > >>  1 file changed, 10 insertions(+)
-> > > >>  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-lp8788
-> > > >> 
-> > > >> diff --git a/Documentation/ABI/testing/sysfs-class-backlight-lp8788 b/Documentation/ABI/testing/sysfs-class-backlight-lp8788
-> > > >> new file mode 100644
-> > > >> index 000000000000..c0e565c8d63d
-> > > >> --- /dev/null
-> > > >> +++ b/Documentation/ABI/testing/sysfs-class-backlight-lp8788
-> > > >> @@ -0,0 +1,10 @@
-> > > >> +sysfs interface for Texas Instruments lp8788 mfd backlight driver
-> > > >> +-----------------------------------------------------------------
-> > > >> +
-> > > >> +What:		/sys/class/backlight/<backlight>/bl_ctl_mode
-> > > >> +Date:		Feb, 2013
-> > > >> +KernelVersion:	v3.10
-> > > >> +Contact:	Milo Kim <milo.kim@ti.com>
-> > > >> +Description:
-> > > >> +		(RO) Displays whether the brightness is controlled by the PWM
-> > > >> +		input("PWM based") or the I2C register("Register based").
-> > > >
-> > > > I rather dislike drivers with this type of "bonus" sysfs controls. I'm
-> > > > struggling to come up with any reason why the userspace would want to
-> > > > read this control (and I think bl_ctl_mode gets the fewest hits after
-> > > > searching with google hits of any search I've tried) . It looks to me 
-> > > > like this is debug information that should never have gone into sysfs 
-> > > > at all.
-> > > 
-> > > Agreed. I think the same holds for the other extra sysfs attributes. At
-> > > worst, having these prevents the backlight class from adding the names
-> > > later on, which is just backwards.
-> > 
-> > The problem is that they do exist...
-> > 
-> > For controls which appear to be misplaced debug attributes I think I am
-> > happy to nuke the values entirely. It is extremely improbable that any
-> > userspace will notice.
-> > 
-> > Unfortunately some of the controls look like they could be poked by an
-> > custom userspace so I'm quite so confident about nuking these ones...and if we
-> > don't nuke we should document (so thanks Aishwarya!). 
-> > 
-> 
-> Hi
-> 
-> Thanks for reviewing. Should I take it to assume that we would like to keep the
-> debug-like attributes in documentation for now?
+Use GPIO descriptors instead of relying on the old method.
 
-The opposite I think!
+Signed-off-by: Ludovic Desroches <ludovic.desroches@microchip.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 30 ++++++++++++------------------
+ 1 file changed, 12 insertions(+), 18 deletions(-)
 
-Can you drop patch 1/2 from this series, tidy the maintainer values, etc
-and resubmit?
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index 3dee267d7c75..ef3d4198014f 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -18,6 +18,7 @@
+ #include <linux/delay.h>
+ #include <linux/backlight.h>
+ #include <linux/gfp.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+@@ -61,8 +62,7 @@ struct atmel_lcdfb_info {
+ };
+ 
+ struct atmel_lcdfb_power_ctrl_gpio {
+-	int gpio;
+-	int active_low;
++	struct gpio_desc *gpiod;
+ 
+ 	struct list_head list;
+ };
+@@ -1018,7 +1018,7 @@ static void atmel_lcdfb_power_control_gpio(struct atmel_lcdfb_pdata *pdata, int
+ 	struct atmel_lcdfb_power_ctrl_gpio *og;
+ 
+ 	list_for_each_entry(og, &pdata->pwr_gpios, list)
+-		gpio_set_value(og->gpio, on);
++		gpiod_set_value(og->gpiod, on);
+ }
+ 
+ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+@@ -1031,11 +1031,11 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 	struct device_node *display_np;
+ 	struct device_node *timings_np;
+ 	struct display_timings *timings;
+-	enum of_gpio_flags flags;
+ 	struct atmel_lcdfb_power_ctrl_gpio *og;
+ 	bool is_gpio_power = false;
+ 	int ret = -ENOENT;
+-	int i, gpio;
++	int i;
++	struct gpio_desc *gpiod;
+ 
+ 	sinfo->config = (struct atmel_lcdfb_config*)
+ 		of_match_device(atmel_lcdfb_dt_ids, dev)->data;
+@@ -1072,28 +1072,22 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 
+ 	INIT_LIST_HEAD(&pdata->pwr_gpios);
+ 	ret = -ENOMEM;
+-	for (i = 0; i < of_gpio_named_count(display_np, "atmel,power-control-gpio"); i++) {
+-		gpio = of_get_named_gpio_flags(display_np, "atmel,power-control-gpio",
+-					       i, &flags);
+-		if (gpio < 0)
++	for (i = 0; i < gpiod_count(dev, "atmel,power-control"); i++) {
++		gpiod = devm_gpiod_get_index_optional(dev,
++				"atmel,power-control", i, GPIOD_ASIS);
++		if (!gpiod)
+ 			continue;
+ 
+ 		og = devm_kzalloc(dev, sizeof(*og), GFP_KERNEL);
+ 		if (!og)
+ 			goto put_display_node;
+ 
+-		og->gpio = gpio;
+-		og->active_low = flags & OF_GPIO_ACTIVE_LOW;
++		og->gpiod = gpiod;
+ 		is_gpio_power = true;
+-		ret = devm_gpio_request(dev, gpio, "lcd-power-control-gpio");
+-		if (ret) {
+-			dev_err(dev, "request gpio %d failed\n", gpio);
+-			goto put_display_node;
+-		}
+ 
+-		ret = gpio_direction_output(gpio, og->active_low);
++		ret = gpiod_direction_output(gpiod, gpiod_is_active_low(gpiod));
+ 		if (ret) {
+-			dev_err(dev, "set direction output gpio %d failed\n", gpio);
++			dev_err(dev, "set direction output gpio atmel,power-control[%d] failed\n", i);
+ 			goto put_display_node;
+ 		}
+ 		list_add(&og->list, &pdata->pwr_gpios);
+-- 
+2.12.2
 
-If you want to propose patches to remove the debug attributes from the
-TI drivers that's up to you (perhaps adding a dev_dbg() containing
-equivalent information). If you want to you are welcome to add to these:
-Suggested-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
-Daniel.

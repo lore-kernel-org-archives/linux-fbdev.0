@@ -1,82 +1,37 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 06 Feb 2018 11:07:00 +0000
-Subject: Re: [PATCH 1/2] fbdev: don't select I2C directly
-Message-Id: <CAMuHMdUdagXOG=v-xsLBoTb=rjS0HgAxZJE92NZsyqFzG=CVaQ@mail.gmail.com>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Tue, 06 Feb 2018 22:55:15 +0000
+Subject: [PATCH] spi: kconfig: Remove AVR32 dep. from SPI_ATMEL
+Message-Id: <20180206225519.20248-1-ulfalizer@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180115161439epcas3p1006f02c4e49f58c30c4aec1b0b11b0a7@epcas3p1.samsung.com>
- <20180115161431.803248-1-arnd@arndb.de> <1737876.npfVsP8Sog@amdc3058>
- <faff816c-d9d6-cb75-fe24-ba19fa92bd7e@infradead.org> <CAK8P3a2bQzn39cFSspJKP6HoUuV7cxSw4AZpVRVvD=FMAYfp5Q@mail.gmail.com>
-In-Reply-To: <CAK8P3a2bQzn39cFSspJKP6HoUuV7cxSw4AZpVRVvD=FMAYfp5Q@mail.gmail.com>
+References: <20180206120825.GF5681@sirena.org.uk>
+In-Reply-To: <20180206120825.GF5681@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Randy Dunlap <rdunlap@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Rob Clark <robdclark@gmail.com>, Jordan Crouse <jcrouse@codeaurora.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux I2C <linux-i2c@vger.kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Srinivas Kandagatla <srinivas.kandagatla@linaro.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: broonie@kernel.org, linux-kernel@vger.kernel.org
+Cc: clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, seanpaul@chromium.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Ulf Magnusson <ulfalizer@gmail.com>
 
-On Fri, Feb 2, 2018 at 12:59 PM, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Fri, Feb 2, 2018 at 1:21 AM, Randy Dunlap <rdunlap@infradead.org> wrote:
->> b. DRM configuration is a mess. You shouldn't want to follow their model. :)
->
-> Right, that should also be fixed, so DRM no longer includes I2C ;-)
->
-> At the moment, DRM is the most common cause for circular dependencies
-> because it has a number of 'select' statements for symbols that otherwise
-> are used with 'depends on'. We should probably address the 'select I2C'
-> portion in there, but also some of the others like:
->
-> drivers/gpu/drm/Kconfig:        select POWER_SUPPLY
-> drivers/gpu/drm/Kconfig:        select HWMON
-> drivers/gpu/drm/Kconfig:        select FB
-> drivers/gpu/drm/udl/Kconfig: select USB
+The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+support for AVR32 architecture").
 
-USB? Seriously?
+Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+---
+ drivers/spi/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> drivers/gpu/drm/sti/Kconfig: select OF
-> drivers/gpu/drm/sti/Kconfig: select RESET_CONTROLLER
-> drivers/gpu/drm/etnaviv/Kconfig:        select CMA if HAVE_DMA_CONTIGUOUS
-> drivers/gpu/drm/etnaviv/Kconfig:        select TMPFS
-> drivers/gpu/drm/i915/Kconfig.debug:        select DEBUG_FS
-> drivers/gpu/drm/i915/Kconfig.debug:        select PREEMPT_COUNT
-> drivers/gpu/drm/i915/Kconfig.debug:     select TRACING
-> drivers/gpu/drm/i915/Kconfig.debug:     select FAULT_INJECTION
-> drivers/gpu/drm/mediatek/Kconfig:       select MEMORY
-> drivers/gpu/drm/mediatek/Kconfig:       select GENERIC_PHY
-> drivers/gpu/drm/msm/Kconfig:    select REGULATOR
->
->> c. If I2C is not enabled in the FB menu, someone could just add something like this:
->>
->> comment "Enable I2C to see more driver choices"
->>         depends on !I2C
->
-> I don't think that would address the issue of 'defconfig' builds losing
-> I2C support when it's no longer automatically selection. On x86, this
-> is not an issue, as X86 always enables I2C. For the rest, we could
-> do a hack like this:
->
-> --- a/drivers/i2c/Kconfig
-> +++ b/drivers/i2c/Kconfig
-> @@ -8,6 +8,7 @@ config I2C
->         tristate "I2C support"
->         select RT_MUTEXES
->         select IRQ_DOMAIN
-> +       default DRM || FB
->         ---help---
->           I2C (pronounce: I-squared-C) is a slow serial bus protocol used in
->           many micro controller applications and developed by Philips.  SMBus,
->
-> which would let all 'defconfig' versions keep working. It's a bit ugly, but
-> at least wouldn't cause other circular dependencies.
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 603783976b81..c1e455d46c7f 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -72,7 +72,7 @@ config SPI_ARMADA_3700
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+ 	depends on HAS_DMA
+-	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
++	depends on (ARCH_AT91 || COMPILE_TEST)
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+ 	  many AT32 (AVR32) and AT91 (ARM) chips.
+-- 
+2.14.1
 
-And then we'll have to refresh all defconfigs for machines with FB and
-without I2C?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds

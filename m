@@ -1,61 +1,47 @@
-From: Farhan Ali <alifm@linux.vnet.ibm.com>
-Date: Thu, 01 Feb 2018 18:41:27 +0000
-Subject: [PATCH v2 0/3]Enable CONFIG_VT support for S390
-Message-Id: <cover.1517508744.git.alifm@linux.vnet.ibm.com>
+From: Aishwarya Pant <aishpant@gmail.com>
+Date: Tue, 06 Feb 2018 07:51:42 +0000
+Subject: [PATCH v2 1/3] backlight: lm3639: document sysfs attributes
+Message-Id: <aa8c36f78ba1228ac7f8d377797b2f1b11574b3b.1517902411.git.aishpant@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1517902411.git.aishpant@gmail.com>
+In-Reply-To: <cover.1517902411.git.aishpant@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: geert@linux-m68k.org, borntraeger@de.ibm.com, stefan.kristiansson@saunalahti.fi, tomi.valkeinen@ti.com, schwidefsky@de.ibm.com, alifm@linux.vnet.ibm.com
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-Hi,
+Add documentation for sysfs interfaces of Texas Instruments lm3639
+backlight + flash led driver chip by looking through git commits and
+reading code.
 
-This series of patches add support for an additional tty
-and console for a S390 KVM guest using a virtio-gpu device[1].
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+Changes in v2:
+- Update contact information
 
-Patch 1 enables the "Graphics support" menu which is
-needed to enable dummy console, since the VT layer needs it.
-It also fixes a build error for Opencore framebuffer driver. 
+ Documentation/ABI/testing/sysfs-class-backlight-lm3639 | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-lm3639
 
-Patch 2 fixes few linker issues.
-
-Patch 3 add support for enabling VT layer for S390.
-
-
-ChangeLog
----------
-v1 -> v2
-
-v1 was posted under a different subject and here is a link to it:
-https://www.spinics.net/lists/linux-s390/msg18175.html
-
-   - Combine patch 1 and 2 from v1 into one patch (patch 1).
-   - Additional patches to enable CONFIG_VT for S390.
-
-
-Thanks
-Farhan
-
-
-[1] https://lists.nongnu.org/archive/html/qemu-devel/2017-09/msg04184.html
-
-
-Farhan Ali (3):
-  Kconfig : Remove HAS_IOMEM dependency for Graphics support
-  s390/char : Rename EBCDIC keymap variables
-  s390/setup : enable display support for KVM guest
-
- arch/s390/kernel/setup.c      |  2 ++
- drivers/s390/char/defkeymap.c | 66 ++++++++++++++++++++++---------------------
- drivers/s390/char/keyboard.c  | 32 ++++++++++-----------
- drivers/s390/char/keyboard.h  | 11 ++++++++
- drivers/tty/Kconfig           |  2 +-
- drivers/video/Kconfig         |  1 -
- drivers/video/console/Kconfig |  2 +-
- drivers/video/fbdev/Kconfig   |  2 +-
- 8 files changed, 66 insertions(+), 52 deletions(-)
-
+diff --git a/Documentation/ABI/testing/sysfs-class-backlight-lm3639 b/Documentation/ABI/testing/sysfs-class-backlight-lm3639
+new file mode 100644
+index 000000000000..f7e92a82ea25
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-backlight-lm3639
+@@ -0,0 +1,11 @@
++sysfs interface for Texas Instruments lm3639 backlight + flash led driver chip
++------------------------------------------------------------------------------
++
++What:		/sys/class/backlight/<backlight>/bled_mode
++Date:		Oct, 2012
++KernelVersion:	v3.10
++Contact:	dri-devel@lists.freedesktop.org
++Description:
++		(WO) Write to the backlight mapping mode. The backlight current
++		can be mapped for either exponential (value "0") or linear
++		mapping modes (default).
 -- 
-2.7.4
+2.16.1
 

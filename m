@@ -1,53 +1,37 @@
-From: Matthias Brugger <matthias.bgg@gmail.com>
-Date: Wed, 07 Feb 2018 08:59:55 +0000
-Subject: Re: [PATCH] spi: kconfig: Remove AVR32 dep. from SPI_ATMEL
-Message-Id: <a8d2076b-6863-6ff1-5442-0587ad973766@gmail.com>
+From: Aishwarya Pant <aishpant@gmail.com>
+Date: Tue, 06 Feb 2018 07:50:41 +0000
+Subject: [PATCH v2 0/3] backlight: document sysfs interfaces
+Message-Id: <cover.1517902411.git.aishpant@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180206120825.GF5681@sirena.org.uk>
- <20180206225519.20248-1-ulfalizer@gmail.com>
- <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
-In-Reply-To: <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ulf Magnusson <ulfalizer@gmail.com>, broonie@kernel.org, linux-kernel@vger.kernel.org
-Cc: clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, seanpaul@chromium.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
+Patchset contains documentation of the sysfs interfaces for the
+following five backlight drivers-
+1) lm3639
+2) adp5520
+3) adp8860
 
+It was compiled from data sheets, reading code and git history logs. In v2 of
+the patches, documentation for lp8788 and lp855x devices was dropped as the
+attributes contained debug information.
 
-On 02/07/2018 09:58 AM, Matthias Brugger wrote:
-> 
-> 
-> On 02/06/2018 11:55 PM, Ulf Magnusson wrote:
->> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
->> support for AVR32 architecture").
->>
->> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
->> ---
-> 
-> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
-> 
+Aishwarya Pant (3):
+  backlight: lm3639: document sysfs attributes
+  backlight: adp5520: document sysfs attributes
+  backlight: adp8860: document sysfs attributes
 
-Sigh, that was too fast, see comment below.
+ .../ABI/testing/sysfs-class-backlight-adp5520      | 31 +++++++++++++
+ .../ABI/testing/sysfs-class-backlight-adp8860      | 54 ++++++++++++++++++++++
+ .../ABI/testing/sysfs-class-backlight-lm3639       | 11 +++++
+ 3 files changed, 96 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp5520
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp8860
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-lm3639
 
->>  drivers/spi/Kconfig | 2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->>
->> diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
->> index 603783976b81..c1e455d46c7f 100644
->> --- a/drivers/spi/Kconfig
->> +++ b/drivers/spi/Kconfig
->> @@ -72,7 +72,7 @@ config SPI_ARMADA_3700
->>  config SPI_ATMEL
->>  	tristate "Atmel SPI Controller"
->>  	depends on HAS_DMA
->> -	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
->> +	depends on (ARCH_AT91 || COMPILE_TEST)
->>  	help
->>  	  This selects a driver for the Atmel SPI Controller, present on
->>  	  many AT32 (AVR32) and AT91 (ARM) chips.
+-- 
+2.16.1
 
-AVR32 is no longer supported, please update the description as well.
-
-Thanks,
-Matthias

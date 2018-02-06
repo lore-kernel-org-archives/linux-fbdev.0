@@ -1,109 +1,116 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 27 Feb 2018 00:04:19 +0000
-Subject: [PATCH 2/3] console: Fill in struct consw argument names
-Message-Id: <1519689860-7421-3-git-send-email-keescook@chromium.org>
+From: Ludovic Desroches <ludovic.desroches@microchip.com>
+Date: Tue, 06 Feb 2018 07:31:22 +0000
+Subject: [PATCH V2] video: fbdev: atmel_lcdfb: convert to use GPIO descriptors
+Message-Id: <20180206073122.3618-1-ludovic.desroches@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519689860-7421-1-git-send-email-keescook@chromium.org>
-In-Reply-To: <1519689860-7421-1-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kees Cook <keescook@chromium.org>, Sami Tolvanen <samitolvanen@google.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, Thomas Winischhofer <thomas@winischhofer.net>, linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com, linux-kernel@vger.kernel.org, linus.walleij@linaro.org, b.zolnierkie@samsung.com, andy.shevchenko@gmail.com, Ludovic Desroches <ludovic.desroches@microchip.com>
 
-Reading the function declarations for the console callbacks lacks any
-hints as to what the arguments are. Instead of going and digging around in
-various implementations that may each only have a subset of the callbacks,
-name all the arguments in the declaration. This has no functional change.
+Use GPIO descriptors instead of relying on the old method.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Ludovic Desroches <ludovic.desroches@microchip.com>
+Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
 ---
- include/linux/console.h | 58 +++++++++++++++++++++++++++----------------------
- 1 file changed, 32 insertions(+), 26 deletions(-)
+Changes
+- V2:
+  - remove of_gpio.h.
+  - move gpiod declaration to preserve reversed tree style.
+  - use devm_gpiod_get_index instead of devm_gpiod_get_index_optional
+  since all errors are treated in the same way.
 
-diff --git a/include/linux/console.h b/include/linux/console.h
-index b8920a031a3e..dfd6b0e97855 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -46,46 +46,52 @@ enum con_scroll {
- struct consw {
- 	struct module *owner;
- 	const char *(*con_startup)(void);
--	void	(*con_init)(struct vc_data *, int);
--	void	(*con_deinit)(struct vc_data *);
--	void	(*con_clear)(struct vc_data *, int, int, int, int);
--	void	(*con_putc)(struct vc_data *, int, int, int);
--	void	(*con_putcs)(struct vc_data *, const unsigned short *, int, int, int);
--	void	(*con_cursor)(struct vc_data *, int);
--	bool	(*con_scroll)(struct vc_data *, unsigned int top,
-+	void	(*con_init)(struct vc_data *vc, int init);
-+	void	(*con_deinit)(struct vc_data *vc);
-+	void	(*con_clear)(struct vc_data *vc, int sy, int sx, int height,
-+			int width);
-+	void	(*con_putc)(struct vc_data *vc, int c, int ypos, int xpos);
-+	void	(*con_putcs)(struct vc_data *vc, const unsigned short *s,
-+			int count, int ypos, int xpos);
-+	void	(*con_cursor)(struct vc_data *vc, int mode);
-+	bool	(*con_scroll)(struct vc_data *vc, unsigned int top,
- 			unsigned int bottom, enum con_scroll dir,
- 			unsigned int lines);
--	int	(*con_switch)(struct vc_data *);
--	int	(*con_blank)(struct vc_data *, int, int);
--	int	(*con_font_set)(struct vc_data *, struct console_font *, unsigned);
--	int	(*con_font_get)(struct vc_data *, struct console_font *);
--	int	(*con_font_default)(struct vc_data *, struct console_font *, char *);
--	int	(*con_font_copy)(struct vc_data *, int);
--	int     (*con_resize)(struct vc_data *, unsigned int, unsigned int,
--			       unsigned int);
--	void	(*con_set_palette)(struct vc_data *,
-+	int	(*con_switch)(struct vc_data *vc);
-+	int	(*con_blank)(struct vc_data *vc, int blank, int mode_switch);
-+	int	(*con_font_set)(struct vc_data *vc, struct console_font *font,
-+			unsigned int flags);
-+	int	(*con_font_get)(struct vc_data *vc, struct console_font *font);
-+	int	(*con_font_default)(struct vc_data *vc,
-+			struct console_font *font, char *name);
-+	int	(*con_font_copy)(struct vc_data *vc, int con);
-+	int     (*con_resize)(struct vc_data *vc, unsigned int width,
-+			unsigned int height, unsigned int user);
-+	void	(*con_set_palette)(struct vc_data *vc,
- 			const unsigned char *table);
--	void	(*con_scrolldelta)(struct vc_data *, int lines);
--	int	(*con_set_origin)(struct vc_data *);
--	void	(*con_save_screen)(struct vc_data *);
--	u8	(*con_build_attr)(struct vc_data *, u8, u8, u8, u8, u8, u8);
--	void	(*con_invert_region)(struct vc_data *, u16 *, int);
--	u16    *(*con_screen_pos)(struct vc_data *, int);
--	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
-+	void	(*con_scrolldelta)(struct vc_data *vc, int lines);
-+	int	(*con_set_origin)(struct vc_data *vc);
-+	void	(*con_save_screen)(struct vc_data *vc);
-+	u8	(*con_build_attr)(struct vc_data *vc, u8 color, u8 intensity,
-+			u8 blink, u8 underline, u8 reverse, u8 italic);
-+	void	(*con_invert_region)(struct vc_data *vc, u16 *p, int count);
-+	u16    *(*con_screen_pos)(struct vc_data *vc, int offset);
-+	unsigned long (*con_getxy)(struct vc_data *vc, unsigned long position,
-+			int *px, int *py);
- 	/*
- 	 * Flush the video console driver's scrollback buffer
- 	 */
--	void	(*con_flush_scrollback)(struct vc_data *);
-+	void	(*con_flush_scrollback)(struct vc_data *vc);
- 	/*
- 	 * Prepare the console for the debugger.  This includes, but is not
- 	 * limited to, unblanking the console, loading an appropriate
- 	 * palette, and allowing debugger generated output.
- 	 */
--	int	(*con_debug_enter)(struct vc_data *);
-+	int	(*con_debug_enter)(struct vc_data *vc);
- 	/*
- 	 * Restore the console to its pre-debug state as closely as possible.
- 	 */
--	int	(*con_debug_leave)(struct vc_data *);
-+	int	(*con_debug_leave)(struct vc_data *vc);
+ drivers/video/fbdev/atmel_lcdfb.c | 31 ++++++++++++-------------------
+ 1 file changed, 12 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index 3dee267d7c75..076d24afbd72 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -18,10 +18,10 @@
+ #include <linux/delay.h>
+ #include <linux/backlight.h>
+ #include <linux/gfp.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+-#include <linux/of_gpio.h>
+ #include <video/of_display_timing.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/videomode.h>
+@@ -61,8 +61,7 @@ struct atmel_lcdfb_info {
  };
  
- extern const struct consw *conswitchp;
+ struct atmel_lcdfb_power_ctrl_gpio {
+-	int gpio;
+-	int active_low;
++	struct gpio_desc *gpiod;
+ 
+ 	struct list_head list;
+ };
+@@ -1018,7 +1017,7 @@ static void atmel_lcdfb_power_control_gpio(struct atmel_lcdfb_pdata *pdata, int
+ 	struct atmel_lcdfb_power_ctrl_gpio *og;
+ 
+ 	list_for_each_entry(og, &pdata->pwr_gpios, list)
+-		gpio_set_value(og->gpio, on);
++		gpiod_set_value(og->gpiod, on);
+ }
+ 
+ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+@@ -1031,11 +1030,11 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 	struct device_node *display_np;
+ 	struct device_node *timings_np;
+ 	struct display_timings *timings;
+-	enum of_gpio_flags flags;
+ 	struct atmel_lcdfb_power_ctrl_gpio *og;
+ 	bool is_gpio_power = false;
++	struct gpio_desc *gpiod;
+ 	int ret = -ENOENT;
+-	int i, gpio;
++	int i;
+ 
+ 	sinfo->config = (struct atmel_lcdfb_config*)
+ 		of_match_device(atmel_lcdfb_dt_ids, dev)->data;
+@@ -1072,28 +1071,22 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 
+ 	INIT_LIST_HEAD(&pdata->pwr_gpios);
+ 	ret = -ENOMEM;
+-	for (i = 0; i < of_gpio_named_count(display_np, "atmel,power-control-gpio"); i++) {
+-		gpio = of_get_named_gpio_flags(display_np, "atmel,power-control-gpio",
+-					       i, &flags);
+-		if (gpio < 0)
++	for (i = 0; i < gpiod_count(dev, "atmel,power-control"); i++) {
++		gpiod = devm_gpiod_get_index(dev, "atmel,power-control",
++					     i, GPIOD_ASIS);
++		if (IS_ERR(gpiod))
+ 			continue;
+ 
+ 		og = devm_kzalloc(dev, sizeof(*og), GFP_KERNEL);
+ 		if (!og)
+ 			goto put_display_node;
+ 
+-		og->gpio = gpio;
+-		og->active_low = flags & OF_GPIO_ACTIVE_LOW;
++		og->gpiod = gpiod;
+ 		is_gpio_power = true;
+-		ret = devm_gpio_request(dev, gpio, "lcd-power-control-gpio");
+-		if (ret) {
+-			dev_err(dev, "request gpio %d failed\n", gpio);
+-			goto put_display_node;
+-		}
+ 
+-		ret = gpio_direction_output(gpio, og->active_low);
++		ret = gpiod_direction_output(gpiod, gpiod_is_active_low(gpiod));
+ 		if (ret) {
+-			dev_err(dev, "set direction output gpio %d failed\n", gpio);
++			dev_err(dev, "set direction output gpio atmel,power-control[%d] failed\n", i);
+ 			goto put_display_node;
+ 		}
+ 		list_add(&og->list, &pdata->pwr_gpios);
 -- 
-2.7.4
+2.12.2
 

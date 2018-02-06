@@ -1,44 +1,85 @@
-From: Claudiu Beznea <claudiu.beznea@microchip.com>
-Date: Thu, 22 Feb 2018 12:01:15 +0000
-Subject: [PATCH v3 04/10] pwm: pxa: populate PWM mode in of_xlate function
-Message-Id: <1519300881-8136-5-git-send-email-claudiu.beznea@microchip.com>
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Tue, 06 Feb 2018 20:08:38 +0000
+Subject: [PATCH 1/2] video: udlfb: Fix unaligned access
+Message-Id: <20180206200838.GA10897@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
-In-Reply-To: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: thierry.reding@gmail.com, shc_work@mail.ru, kgene@kernel.org, krzk@kernel.org, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, kamil@wypas.org, b.zolnierkie@samsung.com, jdelvare@suse.com, linux@roeck-us.net, dmitry.torokhov@gmail.com, rpurdie@rpsys.net, jacek.anaszewski@gmail.com, pavel@ucw.cz, mchehab@kernel.org, sean@mess.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, milo.kim@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com
-Cc: linux-hwmon@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-leds@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Populate PWM mode in of_xlate function to avoid pwm_apply_state() failure.
+Driver generates lots of alignment trap exceptions on ARM.
+Fix that by replacing typecasting of odd addresses with
+byte shifting and remove uneccessary typecasting.
 
-Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
 ---
- drivers/pwm/pwm-pxa.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ Here's what happens on at91sam9g20 few minutes after boot:
+ $ cat /proc/cpu/alignment
+ User:           0
+ System:         10747836 (dlfb_render_hline+0x22c/0x2f0 [udlfb])
+ Skipped:        0
+ Half:           10747971
+ Word:           159
+ DWord:          0
+ Multi:          0
+ Each hline transfer causes dozens alignment exceptions and
+ few are in dlfb_parse_vendor_descriptor function.
 
-diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
-index 4143a46684d2..7a035716e054 100644
---- a/drivers/pwm/pwm-pxa.c
-+++ b/drivers/pwm/pwm-pxa.c
-@@ -155,12 +155,16 @@ static struct pwm_device *
- pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
- {
- 	struct pwm_device *pwm;
-+	struct pwm_caps caps;
+ drivers/video/fbdev/udlfb.c | 23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 452a4207ac1b..45081297efa5 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -441,9 +441,9 @@ static void dlfb_compress_hline(
  
- 	pwm = pwm_request_from_chip(pc, 0, NULL);
- 	if (IS_ERR(pwm))
- 		return pwm;
+ 		*cmd++ = 0xAF;
+ 		*cmd++ = 0x6B;
+-		*cmd++ = (uint8_t) ((dev_addr >> 16) & 0xFF);
+-		*cmd++ = (uint8_t) ((dev_addr >> 8) & 0xFF);
+-		*cmd++ = (uint8_t) ((dev_addr) & 0xFF);
++		*cmd++ = dev_addr >> 16;
++		*cmd++ = dev_addr >> 8;
++		*cmd++ = dev_addr;
  
-+	pwm_get_caps(pc, pwm, &caps);
-+
- 	pwm->args.period = args->args[0];
-+	pwm->args.mode = BIT(ffs(caps.modes) - 1);
+ 		cmd_pixels_count_byte = cmd++; /*  we'll know this later */
+ 		cmd_pixel_start = pixel;
+@@ -460,8 +460,8 @@ static void dlfb_compress_hline(
+ 		while (pixel < cmd_pixel_end) {
+ 			const uint16_t * const repeating_pixel = pixel;
  
- 	return pwm;
- }
+-			*(uint16_t *)cmd = cpu_to_be16p(pixel);
+-			cmd += 2;
++			*cmd++ = *pixel >> 8;
++			*cmd++ = *pixel;
+ 			pixel++;
+ 
+ 			if (unlikely((pixel < cmd_pixel_end) &&
+@@ -1531,15 +1531,16 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dlfb,
+ 			u8 length;
+ 			u16 key;
+ 
+-			key = le16_to_cpu(*((u16 *) desc));
+-			desc += sizeof(u16);
+-			length = *desc;
+-			desc++;
++			key = *desc++;
++			key |= (u16)*desc++ << 8;
++			length = *desc++;
+ 
+ 			switch (key) {
+ 			case 0x0200: { /* max_area */
+-				u32 max_area;
+-				max_area = le32_to_cpu(*((u32 *)desc));
++				u32 max_area = *desc++;
++				max_area |= (u32)*desc++ << 8;
++				max_area |= (u32)*desc++ << 16;
++				max_area |= (u32)*desc++ << 24;
+ 				dev_warn(&intf->dev,
+ 					 "DL chip limited to %d pixel modes\n",
+ 					 max_area);
 -- 
-2.7.4
+2.16.1
 

@@ -1,57 +1,63 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Mon, 05 Feb 2018 04:17:15 +0000
-Subject: Re: [PATCH 03/20] kconfig: Remove leftover references to AVR32 symbol
-Message-Id: <20180205040515.GC28462@vireshk-i7>
+From: Aishwarya Pant <aishpant@gmail.com>
+Date: Tue, 06 Feb 2018 07:52:26 +0000
+Subject: [PATCH v2 2/3] backlight: adp5520: document sysfs attributes
+Message-Id: <dfaf338847058807a8b897bd4e555b6a47efeece.1517902411.git.aishpant@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180205012146.23981-1-ulfalizer@gmail.com>
- <20180205012146.23981-4-ulfalizer@gmail.com>
-In-Reply-To: <20180205012146.23981-4-ulfalizer@gmail.com>
+References: <cover.1517902411.git.aishpant@gmail.com>
+In-Reply-To: <cover.1517902411.git.aishpant@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ulf Magnusson <ulfalizer@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org, tfiga@chromium.org, paul.burton@mips.com, m.szyprowski@samsung.com, egtvedt@samfundet.no, linus.walleij@linaro.org, vgupta@synopsys.com, mgorman@techsingularity.net, hch@lst.de, mina86@mina86.com, robh@kernel.org, sboyd@codeaurora.org, paulus@ozlabs.org, will.deacon@arm.com, tony@atomide.com, npiggin@gmail.com, yamada.masahiro@socionext.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>, Thierry Reding <thierry.reding@gmail.com>, Mark Brown <broonie@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sean Paul <seanpaul@chromium.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Christophe Leroy <christophe.leroy@c-s.fr>, linux-pm@vger.kernel.org, linux-pwm@vger.kernel.org, linux-spi@vger.kernel.org, dr
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Michael Hennerich <michael.hennerich@analog.com>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-On 05-02-18, 02:21, Ulf Magnusson wrote:
-> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
-> support for AVR32 architecture"). Remove the remaining references to it
-> from the Kconfig files.
-> 
-> No references remain to the removed AVR32_AT32AP_CPUFREQ symbol either,
-> so remove that one too.
-> 
-> Discovered with the
-> https://github.com/ulfalizer/Kconfiglib/blob/master/examples/list_undefined.py
-> script.
-> 
-> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
-> ---
->  drivers/cpufreq/Kconfig       | 10 ----------
->  drivers/pwm/Kconfig           |  2 +-
->  drivers/spi/Kconfig           |  2 +-
->  drivers/video/console/Kconfig |  2 +-
->  4 files changed, 3 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index d8addbce40bc..608af20a3494 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -239,16 +239,6 @@ if PPC32 || PPC64
->  source "drivers/cpufreq/Kconfig.powerpc"
->  endif
->  
-> -if AVR32
-> -config AVR32_AT32AP_CPUFREQ
-> -	bool "CPU frequency driver for AT32AP"
-> -	depends on PLATFORM_AT32AP
-> -	default n
-> -	help
-> -	  This enables the CPU frequency driver for AT32AP processors.
-> -	  If in doubt, say N.
-> -endif
-> -
+Add documentation for sysfs interface of adp5520/adp5501 analog devices
+backlight driver by reading code and looking through git commit logs.
 
-https://lkml.kernel.org/r/20180118200202.11883-1-clabbe.montjoie@gmail.com
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+---
+ .../ABI/testing/sysfs-class-backlight-adp5520      | 31 ++++++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp5520
 
+diff --git a/Documentation/ABI/testing/sysfs-class-backlight-adp5520 b/Documentation/ABI/testing/sysfs-class-backlight-adp5520
+new file mode 100644
+index 000000000000..34b6ebafa210
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-backlight-adp5520
+@@ -0,0 +1,31 @@
++sysfs interface for analog devices adp5520(01) backlight driver
++---------------------------------------------------------------
++
++The backlight brightness control operates at three different levels for the
++adp5520 and adp5501 devices: daylight (level 1), office (level 2) and dark
++(level 3). By default the brightness operates at the daylight brightness level.
++
++What:		/sys/class/backlight/<backlight>/daylight_max
++What:		/sys/class/backlight/<backlight>/office_max
++What:		/sys/class/backlight/<backlight>/dark_max
++Date:		Sep, 2009
++KernelVersion:	v2.6.32
++Contact:	Michael Hennerich <michael.hennerich@analog.com>
++Description:
++		(RW) Maximum current setting for the backlight when brightness
++		is at one of the three levels (daylight, office or dark). This
++		is an input code between 0 and 127, which is transformed to a
++		value between 0 mA and 30 mA using linear or non-linear
++		algorithms.
++
++What:		/sys/class/backlight/<backlight>/daylight_dim
++What:		/sys/class/backlight/<backlight>/office_dim
++What:		/sys/class/backlight/<backlight>/dark_dim
++Date:		Sep, 2009
++KernelVersion:	v2.6.32
++Contact:	Michael Hennerich <michael.hennerich@analog.com>
++Description:
++		(RW) Dim current setting for the backlight when brightness is at
++		one of the three levels (daylight, office or dark). This is an
++		input code between 0 and 127, which is transformed to a value
++		between 0 mA and 30 mA using linear or non-linear algorithms.
 -- 
-viresh
+2.16.1
+

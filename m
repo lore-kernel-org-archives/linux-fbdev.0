@@ -1,11 +1,12 @@
 From: Matthias Brugger <matthias.bgg@gmail.com>
-Date: Wed, 07 Feb 2018 08:58:50 +0000
+Date: Wed, 07 Feb 2018 08:59:55 +0000
 Subject: Re: [PATCH] spi: kconfig: Remove AVR32 dep. from SPI_ATMEL
-Message-Id: <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
+Message-Id: <a8d2076b-6863-6ff1-5442-0587ad973766@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180206120825.GF5681@sirena.org.uk>
  <20180206225519.20248-1-ulfalizer@gmail.com>
-In-Reply-To: <20180206225519.20248-1-ulfalizer@gmail.com>
+ <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
+In-Reply-To: <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -14,29 +15,39 @@ Cc: clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, linux-pwm@vger.kernel.or
 
 
 
-On 02/06/2018 11:55 PM, Ulf Magnusson wrote:
-> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
-> support for AVR32 architecture").
+On 02/07/2018 09:58 AM, Matthias Brugger wrote:
 > 
-> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
-> ---
+> 
+> On 02/06/2018 11:55 PM, Ulf Magnusson wrote:
+>> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+>> support for AVR32 architecture").
+>>
+>> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+>> ---
+> 
+> Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+> 
 
-Reviewed-by: Matthias Brugger <matthias.bgg@gmail.com>
+Sigh, that was too fast, see comment below.
 
->  drivers/spi/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-> index 603783976b81..c1e455d46c7f 100644
-> --- a/drivers/spi/Kconfig
-> +++ b/drivers/spi/Kconfig
-> @@ -72,7 +72,7 @@ config SPI_ARMADA_3700
->  config SPI_ATMEL
->  	tristate "Atmel SPI Controller"
->  	depends on HAS_DMA
-> -	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
-> +	depends on (ARCH_AT91 || COMPILE_TEST)
->  	help
->  	  This selects a driver for the Atmel SPI Controller, present on
->  	  many AT32 (AVR32) and AT91 (ARM) chips.
-> 
+>>  drivers/spi/Kconfig | 2 +-
+>>  1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+>> index 603783976b81..c1e455d46c7f 100644
+>> --- a/drivers/spi/Kconfig
+>> +++ b/drivers/spi/Kconfig
+>> @@ -72,7 +72,7 @@ config SPI_ARMADA_3700
+>>  config SPI_ATMEL
+>>  	tristate "Atmel SPI Controller"
+>>  	depends on HAS_DMA
+>> -	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
+>> +	depends on (ARCH_AT91 || COMPILE_TEST)
+>>  	help
+>>  	  This selects a driver for the Atmel SPI Controller, present on
+>>  	  many AT32 (AVR32) and AT91 (ARM) chips.
+
+AVR32 is no longer supported, please update the description as well.
+
+Thanks,
+Matthias

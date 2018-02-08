@@ -1,44 +1,52 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Wed, 07 Feb 2018 00:04:24 +0000
-Subject: [PATCH] video: fbdev: vermilion: use 64-bit arithmetic instead of 32-bit
-Message-Id: <20180207000424.GA32680@embeddedgus>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Thu, 08 Feb 2018 22:00:16 +0000
+Subject: [PATCH v3] spi: kconfig: Remove AVR32 dep. from SPI_ATMEL
+Message-Id: <20180208220016.w7km4f233nc3uw34@huvuddator>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180206120825.GF5681@sirena.org.uk>
+ <20180206225519.20248-1-ulfalizer@gmail.com>
+ <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
+ <a8d2076b-6863-6ff1-5442-0587ad973766@gmail.com>
+ <20180208024414.jjcxvd2q4o5rifgh@huvuddator>
+ <97250c63-cb2b-b1e8-63ac-59b9c749fd52@gmail.com>
+In-Reply-To: <97250c63-cb2b-b1e8-63ac-59b9c749fd52@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Cc: broonie@kernel.org, linux-kernel@vger.kernel.org, clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, b.zolnierkie@samsung.com, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, seanpaul@chromium.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-Cast _pitch_ to u64 in order to give the compiler complete information
-about the proper arithmetic to use. Notice that this variable is
-being used in a context that expects an expression of type u64
-(64 bits, unsigned).
+The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+support for AVR32 architecture").
 
-The expression pitch * var->yres_virtual is currently being evaluated
-using 32-bit arithmetic and the result of the operation is being stored
-into variable mem, which is a variable of type u64. Based on that,
-chances are there is a potential integer overflow as a result of the
-operation.
-
-Addresses-Coverity-ID: 200655 ("Unintentional integer overflow")
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
 ---
- drivers/video/fbdev/vermilion/vermilion.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v3:
+Add Signed-off-by tag
 
-diff --git a/drivers/video/fbdev/vermilion/vermilion.c b/drivers/video/fbdev/vermilion/vermilion.c
-index 6f8d444..5172fa5 100644
---- a/drivers/video/fbdev/vermilion/vermilion.c
-+++ b/drivers/video/fbdev/vermilion/vermilion.c
-@@ -651,7 +651,7 @@ static int vmlfb_check_var_locked(struct fb_var_screeninfo *var,
- 	}
+Changes in v2:
+Remove the AVR32 reference from the help text too.
+
+ drivers/spi/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 603783976b81..6fb0347a24f2 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -72,10 +72,10 @@ config SPI_ARMADA_3700
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+ 	depends on HAS_DMA
+-	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
++	depends on (ARCH_AT91 || COMPILE_TEST)
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+-	  many AT32 (AVR32) and AT91 (ARM) chips.
++	  many AT91 (ARM) chips.
  
- 	pitch = ALIGN((var->xres * var->bits_per_pixel) >> 3, 0x40);
--	mem = pitch * var->yres_virtual;
-+	mem = (u64)pitch * var->yres_virtual;
- 	if (mem > vinfo->vram_contig_size) {
- 		return -ENOMEM;
- 	}
+ config SPI_AU1550
+ 	tristate "Au1550/Au1200/Au1300 SPI Controller"
 -- 
-2.7.4
+2.14.1
 

@@ -1,64 +1,45 @@
-From: Aishwarya Pant <aishpant@gmail.com>
-Date: Thu, 01 Feb 2018 15:58:56 +0000
-Subject: Re: [PATCH 2/5] backlight: lp855x: document sysfs attributes
-Message-Id: <20180201154656.GB22817@mordor.localdomain>
+From: Ulf Magnusson <ulfalizer@gmail.com>
+Date: Thu, 08 Feb 2018 02:44:14 +0000
+Subject: [PATCH v2] spi: kconfig: Remove AVR32 dep. from SPI_ATMEL
+Message-Id: <20180208024414.jjcxvd2q4o5rifgh@huvuddator>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1516978005.git.aishpant@gmail.com>
- <09cd01366bf3b5c3030ad25450b46a9a3bc8a747.1516978005.git.aishpant@gmail.com>
- <20180201110642.qyjwyrdwglevlk5f@oak.lan>
-In-Reply-To: <20180201110642.qyjwyrdwglevlk5f@oak.lan>
+References: <20180206120825.GF5681@sirena.org.uk>
+ <20180206225519.20248-1-ulfalizer@gmail.com>
+ <7f2bebe1-2931-7ec9-ef9f-0d3e6dda6c0b@gmail.com>
+ <a8d2076b-6863-6ff1-5442-0587ad973766@gmail.com>
+In-Reply-To: <a8d2076b-6863-6ff1-5442-0587ad973766-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>, Milo Kim <milo.kim@ti.com>, Julia Lawall <julia.lawall@lip6.fr>
+To: Matthias Brugger <matthias.bgg-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, clabbe.montjoie-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, viresh.kumar-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org, b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org, daniel.vetter-/w4YWyX8dFk@public.gmane.org, christophe.leroy-GgN8y9CXRhA@public.gmane.org, seanpaul-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Thu, Feb 01, 2018 at 11:06:42AM +0000, Daniel Thompson wrote:
-> On Fri, Jan 26, 2018 at 08:23:00PM +0530, Aishwarya Pant wrote:
-> > Add documentation for sysfs interface of Texas Instruments lp855x
-> > backlight driver by reading code and looking through git commit logs.
-> > 
-> > Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
-> > ---
-> >  .../ABI/testing/sysfs-class-backlight-lp855x          | 19 +++++++++++++++++++
-> >  1 file changed, 19 insertions(+)
-> >  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-lp855x
-> > 
-> > diff --git a/Documentation/ABI/testing/sysfs-class-backlight-lp855x b/Documentation/ABI/testing/sysfs-class-backlight-lp855x
-> > new file mode 100644
-> > index 000000000000..5b9d38958875
-> > --- /dev/null
-> > +++ b/Documentation/ABI/testing/sysfs-class-backlight-lp855x
-> > @@ -0,0 +1,19 @@
-> > +sysfs interface for Texas Instruments lp855x backlight driver
-> > +------------------------------------------------------------
-> > +
-> > +What:		/sys/class/backlight/<backlight>/chip_id
-> > +Date:		Mar, 2012
-> > +KernelVersion:	v3.10
-> > +Contact:	Milo Kim <milo.kim@ti.com>
-> > +Description:
-> > +		(RO) Displays the lp8755x chip id. Possible values are:
-> > +		lp8550, lp8551, lp8552, lp8553, lp8555, lp8556 or lp8557.
-> > +
-> > +
-> > +What:		/sys/class/backlight/<backlight>/bl_ctl_mode
-> > +Date:		Mar, 2012
-> > +KernelVersion:	v3.10
-> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> > +Description:
-> > +		(RO) Displays whether the brightness is controlled by the pwm
-> > +		input("pwm based) or the i2c register("register based").
-> 
-> Since like the first patch in the series, these look like they are for
-> debugging. That thread is still active but whatever the outcome of that
-> thread please assume it also applies to this patch.
+The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+support for AVR32 architecture").
+---
+Changes in v2:
+Remove the AVR32 reference from the help text too.
 
-All right, I'll wait for conclusion on that thread before I re-send the patchset
-with the updates.
+ drivers/spi/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Aishwarya
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 603783976b81..6fb0347a24f2 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -72,10 +72,10 @@ config SPI_ARMADA_3700
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+ 	depends on HAS_DMA
+-	depends on (ARCH_AT91 || AVR32 || COMPILE_TEST)
++	depends on (ARCH_AT91 || COMPILE_TEST)
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+-	  many AT32 (AVR32) and AT91 (ARM) chips.
++	  many AT91 (ARM) chips.
+ 
+ config SPI_AU1550
+ 	tristate "Au1550/Au1200/Au1300 SPI Controller"
+-- 
+2.14.1
 
-> 
-> 
-> Daniel.

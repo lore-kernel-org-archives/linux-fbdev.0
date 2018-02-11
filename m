@@ -1,35 +1,123 @@
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Thu, 15 Feb 2018 11:02:18 +0000
-Subject: Re: [PATCH v2 1/3] Kconfig : Remove HAS_IOMEM dependency for Graphics support
-Message-Id: <b1a3933e-6a8f-bd24-3629-5da730398f32@de.ibm.com>
+From: Christian Luetke-Stetzkamp <christian@lkamp.de>
+Date: Sun, 11 Feb 2018 17:23:17 +0000
+Subject: [PATCH] staging: sm750fb: Remove typedefs from enums
+Message-Id: <20180211172317.1201-1-christian@lkamp.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1517508744.git.alifm@linux.vnet.ibm.com>
- <CGME20180202080007epcas5p306896fe66e4bbf4bf5f8d91306a5d016@epcas5p3.samsung.com>
- <246f92c9-15dc-223f-59d9-b2f0756cdf5e@de.ibm.com>
- <1610039.4trOurtpys@amdc3058>
- <2324e2cc-ff55-4d57-2807-c7f72f9ea0ca@de.ibm.com>
-In-Reply-To: <2324e2cc-ff55-4d57-2807-c7f72f9ea0ca@de.ibm.com>
+References: <20170619172120.GA28772@singhal-Inspiron-5558>
+In-Reply-To: <20170619172120.GA28772@singhal-Inspiron-5558>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net, Chen Liqin <liqin.linux@gmail.com>, Richard Weinberger <richard@nod.at>, Jeff Dike <jdike@addtoit.com>, Farhan Ali <alifm@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, stefan.kristiansson@saunalahti.fi, tomi.valkeinen@ti.com, geert@linux-m68k.org, schwidefsky@de.ibm.com, Lennox Wu <lennox.wu@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-An even simpler approach would be:
+Fixes checkpatch.pl warning: do not add new typedefs.
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index cbe1d978693a..35b7aba4b6a0 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -952,6 +952,10 @@ config S390_HYPFS_FS
+Signed-off-by: Christian Luetke-Stetzkamp <christian@lkamp.de>
+---
+ drivers/staging/sm750fb/ddk750_chip.c |  4 ++--
+ drivers/staging/sm750fb/ddk750_chip.h | 14 ++++++--------
+ drivers/staging/sm750fb/ddk750_mode.c |  2 +-
+ drivers/staging/sm750fb/ddk750_mode.h |  2 +-
+ drivers/staging/sm750fb/sm750_hw.c    |  2 +-
+ 5 files changed, 11 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/staging/sm750fb/ddk750_chip.c b/drivers/staging/sm750fb/ddk750_chip.c
+index 313b99104398..4c1f00f551da 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.c
++++ b/drivers/staging/sm750fb/ddk750_chip.c
+@@ -8,9 +8,9 @@
  
- source "arch/s390/kvm/Kconfig"
+ #define MHz(x) ((x) * 1000000)
  
-+config DUMMY_CONSOLE
-+       bool
-+       default y
-+
- config S390_GUEST
-        def_bool y
-        prompt "s390 support for virtio devices"
+-static logical_chip_type_t chip;
++static enum logical_chip_type chip;
+ 
+-logical_chip_type_t sm750_get_chip_type(void)
++enum logical_chip_type sm750_get_chip_type(void)
+ {
+ 	return chip;
+ }
+diff --git a/drivers/staging/sm750fb/ddk750_chip.h b/drivers/staging/sm750fb/ddk750_chip.h
+index aee82fcaf669..c72aac21b675 100644
+--- a/drivers/staging/sm750fb/ddk750_chip.h
++++ b/drivers/staging/sm750fb/ddk750_chip.h
+@@ -24,25 +24,23 @@ static inline void poke32(u32 addr, u32 data)
+ }
+ 
+ /* This is all the chips recognized by this library */
+-typedef enum _logical_chip_type_t {
++enum logical_chip_type {
+ 	SM_UNKNOWN,
+ 	SM718,
+ 	SM750,
+ 	SM750LE,
+-}
+-logical_chip_type_t;
++};
+ 
+-typedef enum _clock_type_t {
++enum clock_type {
+ 	MXCLK_PLL,
+ 	PRIMARY_PLL,
+ 	SECONDARY_PLL,
+ 	VGA0_PLL,
+ 	VGA1_PLL,
+-}
+-clock_type_t;
++};
+ 
+ struct pll_value {
+-	clock_type_t clockType;
++	enum clock_type clockType;
+ 	unsigned long inputFreq; /* Input clock frequency to the PLL */
+ 
+ 	/* Use this when clockType = PANEL_PLL */
+@@ -94,7 +92,7 @@ struct initchip_param {
+ 	/* More initialization parameter can be added if needed */
+ };
+ 
+-logical_chip_type_t sm750_get_chip_type(void);
++enum logical_chip_type sm750_get_chip_type(void);
+ void sm750_set_chip_type(unsigned short devId, u8 revId);
+ unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
+ unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
+diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
+index 2cdd87b78e58..7e22d093b091 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.c
++++ b/drivers/staging/sm750fb/ddk750_mode.c
+@@ -206,7 +206,7 @@ static int programModeRegisters(struct mode_parameter *pModeParam,
+ 	return ret;
+ }
+ 
+-int ddk750_setModeTiming(struct mode_parameter *parm, clock_type_t clock)
++int ddk750_setModeTiming(struct mode_parameter *parm, enum clock_type clock)
+ {
+ 	struct pll_value pll;
+ 	unsigned int uiActualPixelClk;
+diff --git a/drivers/staging/sm750fb/ddk750_mode.h b/drivers/staging/sm750fb/ddk750_mode.h
+index 259a9d6a4eb2..2df78a0937b2 100644
+--- a/drivers/staging/sm750fb/ddk750_mode.h
++++ b/drivers/staging/sm750fb/ddk750_mode.h
+@@ -33,5 +33,5 @@ struct mode_parameter {
+ 	enum spolarity clock_phase_polarity;
+ };
+ 
+-int ddk750_setModeTiming(struct mode_parameter *parm, clock_type_t clock);
++int ddk750_setModeTiming(struct mode_parameter *parm, enum clock_type clock);
+ #endif
+diff --git a/drivers/staging/sm750fb/sm750_hw.c b/drivers/staging/sm750fb/sm750_hw.c
+index a8c79864ee4b..f996f8460641 100644
+--- a/drivers/staging/sm750fb/sm750_hw.c
++++ b/drivers/staging/sm750fb/sm750_hw.c
+@@ -254,7 +254,7 @@ int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
+ 	int ret, fmt;
+ 	u32 reg;
+ 	struct mode_parameter modparm;
+-	clock_type_t clock;
++	enum clock_type clock;
+ 	struct sm750_dev *sm750_dev;
+ 	struct lynxfb_par *par;
+ 
+-- 
+2.13.6
 

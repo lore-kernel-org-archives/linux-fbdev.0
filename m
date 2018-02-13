@@ -1,103 +1,92 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 09 Feb 2018 14:00:47 +0000
-Subject: [GIT PULL] fbdev fix for v4.16
-Message-Id: <2724350.XWj4eWGWql@amdc3058>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 13 Feb 2018 18:07:45 +0000
+Subject: [PATCH] video: offb: Deallocate the color map
+Message-Id: <20180213180747.12666-1-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180209140049epcas1p2f634bd4306a16e4cf7ee7b411b811f0b@epcas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Tony Lindgren <tony@atomide.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Mathieu Malaterre <malat@debian.org>, Rob Herring <robh@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+The function offb_destroy did not deallocate the color map leaving some
+memory around after destruction. Call the color map deallocate function to
+remove the memory leak.
 
-Hi Linus,
+Handle another case where color map should have been deallocated during an
+error code path.
 
-Please pull fbdev fix for v4.16 (just a single fix to make
-omapfb driver build again).
+Fix memory leaks reported by kmemleak:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+# dmesg
+...
+[ 1884.719941] kmemleak: 3 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
+# cat /sys/kernel/debug/kmemleak
+unreferenced object 0xde3d9000 (size 512):
+  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 aa aa aa aa aa aa aa aa  ................
+    55 55 55 55 55 55 55 55 ff ff ff ff ff ff ff ff  UUUUUUUU........
+  backtrace:
+    [<f1433400>] fb_alloc_cmap_gfp+0x54/0x15c
+    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
+    [<b5a1c019>] offb_init+0xd0/0x164
+    [<322f82a3>] do_one_initcall+0x4c/0x178
+    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
+    [<2a17fa0e>] kernel_init+0x24/0x118
+    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
+unreferenced object 0xde3d9200 (size 512):
+  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
+  hex dump (first 32 bytes):
+    00 00 00 00 aa aa aa aa 00 00 00 00 55 55 aa aa  ............UU..
+    55 55 55 55 ff ff ff ff 55 55 55 55 ff ff ff ff  UUUU....UUUU....
+  backtrace:
+    [<4bf3594d>] fb_alloc_cmap_gfp+0x6c/0x15c
+    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
+    [<b5a1c019>] offb_init+0xd0/0x164
+    [<322f82a3>] do_one_initcall+0x4c/0x178
+    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
+    [<2a17fa0e>] kernel_init+0x24/0x118
+    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
+unreferenced object 0xde3d9600 (size 512):
+  comm "swapper", pid 1, jiffies 4294892827 (age 1906.784s)
+  hex dump (first 32 bytes):
+    00 00 aa aa 00 00 aa aa 00 00 aa aa 00 00 aa aa  ................
+    55 55 ff ff 55 55 ff ff 55 55 ff ff 55 55 ff ff  UU..UU..UU..UU..
+  backtrace:
+    [<23a3ea03>] fb_alloc_cmap_gfp+0x84/0x15c
+    [<cb6b409b>] offb_init_nodriver+0x8e8/0xa3c
+    [<b5a1c019>] offb_init+0xd0/0x164
+    [<322f82a3>] do_one_initcall+0x4c/0x178
+    [<b592db9f>] kernel_init_freeable+0x138/0x1cc
+    [<2a17fa0e>] kernel_init+0x24/0x118
+    [<4079749a>] ret_from_kernel_thread+0x5c/0x64
 
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+ drivers/video/fbdev/offb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-The following changes since commit f1517df8701c9f12dae9ce7f43a5d300a6917619:
-
-  Merge tag 'nfsd-4.16' of git://linux-nfs.org/~bfields/linux (2018-02-08 15:18:32 -0800)
-
-are available in the git repository at:
-
-  https://github.com/bzolnier/linux.git tags/fbdev-v4.16-fix
-
-for you to fetch changes up to b9058afcd6c725a8d293bb0a1b30bad68113235e:
-
-  video: omapfb: fix missing #includes (2018-02-09 14:43:49 +0100)
-
-----------------------------------------------------------------
-fbdev fix for v4.16:
-
-- fix building of the omapfb driver (Tomi Valkeinen)
-
-----------------------------------------------------------------
-Tomi Valkeinen (1):
-      video: omapfb: fix missing #includes
-
- drivers/video/fbdev/omap2/omapfb/dss/dss.c      | 1 +
- drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c | 2 ++
- drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c | 1 +
- drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c  | 2 ++
- 4 files changed, 6 insertions(+)
-
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index 39fe724..f0cac9e 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-@@ -40,6 +40,7 @@
- #include <linux/regulator/consumer.h>
- #include <linux/suspend.h>
- #include <linux/component.h>
-+#include <linux/pinctrl/consumer.h>
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 6f65d132eba1..30786445de04 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -282,6 +282,7 @@ static void offb_destroy(struct fb_info *info)
+ 	if (info->screen_base)
+ 		iounmap(info->screen_base);
+ 	release_mem_region(info->apertures->ranges[0].base, info->apertures->ranges[0].size);
++	fb_dealloc_cmap(&info->cmap);
+ 	framebuffer_release(info);
+ }
  
- #include <video/omapfb_dss.h>
+@@ -520,6 +521,7 @@ static void __init offb_init_fb(const char *name,
+ 	return;
  
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-index eee09b4b..11dbc05 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
-@@ -13,6 +13,8 @@
- #include <linux/io.h>
- #include <linux/platform_device.h>
- #include <linux/slab.h>
-+#include <linux/seq_file.h>
-+
- #include <video/omapfb_dss.h>
- 
- #include "dss.h"
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-index eac3665..bc591fc 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
-@@ -16,6 +16,7 @@
- #include <linux/io.h>
- #include <linux/platform_device.h>
- #include <linux/clk.h>
-+#include <linux/seq_file.h>
- 
- #include <video/omapfb_dss.h>
- 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c
-index 705373e..4af6ba2 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c
-@@ -14,6 +14,8 @@
- #include <linux/err.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
-+#include <linux/seq_file.h>
-+
- #include <video/omapfb_dss.h>
- 
- #include "dss.h"
+ out_err:
++	fb_dealloc_cmap(&info->cmap);
+ 	iounmap(info->screen_base);
+ out_aper:
+ 	iounmap(par->cmap_adr);
+-- 
+2.11.0
 

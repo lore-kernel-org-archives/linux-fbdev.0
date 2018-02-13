@@ -1,85 +1,90 @@
-From: Ladislav Michl <ladis@linux-mips.org>
-Date: Tue, 06 Feb 2018 20:08:38 +0000
-Subject: [PATCH 1/2] video: udlfb: Fix unaligned access
-Message-Id: <20180206200838.GA10897@lenoch>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Tue, 13 Feb 2018 18:03:16 +0000
+Subject: [PATCH v5] Fix loading of module radeonfb on PowerMac
+Message-Id: <20180213180316.11934-1-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Mathieu Malaterre <malat@debian.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Driver generates lots of alignment trap exceptions on ARM.
-Fix that by replacing typecasting of odd addresses with
-byte shifting and remove uneccessary typecasting.
+When the linux kernel is build with (typical kernel ship with Debian
+installer):
 
-Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+CONFIG_FB=y
+CONFIG_FB_OF=y
+CONFIG_VT_HW_CONSOLE_BINDING=y
+CONFIG_FB_RADEON=m
+
+The offb driver takes precedence over module radeonfb. It is then
+impossible to load the module, error reported is:
+
+[   96.551486] radeonfb 0000:00:10.0: enabling device (0006 -> 0007)
+[   96.551526] radeonfb 0000:00:10.0: BAR 0: can't reserve [mem 0x98000000-0x9fffffff pref]
+[   96.551531] radeonfb (0000:00:10.0): cannot request region 0.
+[   96.551545] radeonfb: probe of 0000:00:10.0 failed with error -16
+
+This patch reproduce the behavior of the module radeon, so as to make it
+possible to load radeonfb when offb is first loaded, see
+commit a56f7428d753 ("drm/radeon: Add early unregister of firmware fb's").
+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+Link: https://bugs.debian.org/826629#57
+Link: https://bugzilla.kernel.org/show_bug.cgi?id9741
+Suggested-by: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
 ---
- Here's what happens on at91sam9g20 few minutes after boot:
- $ cat /proc/cpu/alignment
- User:           0
- System:         10747836 (dlfb_render_hline+0x22c/0x2f0 [udlfb])
- Skipped:        0
- Half:           10747971
- Word:           159
- DWord:          0
- Multi:          0
- Each hline transfer causes dozens alignment exceptions and
- few are in dlfb_parse_vendor_descriptor function.
+v2: Only fails when CONFIG_PCC is not set
+v3: Only fails when CONFIG_FB_OF is not set, CONFIG_PCC was too broad. Since the conflicts in region is due to OFfb explicitly refers to it.
+v4: Use drm_fb_helper_remove_conflicting_framebuffers from drm_fb_helper
+v5: do not use drm_fb_helper_remove_conflicting_framebuffers from drm_fb_helper
+    remove ifdef hacks since not needed once framebuffer is properly decremented
 
- drivers/video/fbdev/udlfb.c | 23 ++++++++++++-----------
- 1 file changed, 12 insertions(+), 11 deletions(-)
+ drivers/video/fbdev/aty/radeon_base.c | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-index 452a4207ac1b..45081297efa5 100644
---- a/drivers/video/fbdev/udlfb.c
-+++ b/drivers/video/fbdev/udlfb.c
-@@ -441,9 +441,9 @@ static void dlfb_compress_hline(
+diff --git a/drivers/video/fbdev/aty/radeon_base.c b/drivers/video/fbdev/aty/radeon_base.c
+index 87608c0b2351..e8594bbaea60 100644
+--- a/drivers/video/fbdev/aty/radeon_base.c
++++ b/drivers/video/fbdev/aty/radeon_base.c
+@@ -2255,6 +2255,23 @@ static const struct bin_attribute edid2_attr = {
+ 	.read	= radeon_show_edid2,
+ };
  
- 		*cmd++ = 0xAF;
- 		*cmd++ = 0x6B;
--		*cmd++ = (uint8_t) ((dev_addr >> 16) & 0xFF);
--		*cmd++ = (uint8_t) ((dev_addr >> 8) & 0xFF);
--		*cmd++ = (uint8_t) ((dev_addr) & 0xFF);
-+		*cmd++ = dev_addr >> 16;
-+		*cmd++ = dev_addr >> 8;
-+		*cmd++ = dev_addr;
++static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return -ENOMEM;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 0);
++	ap->ranges[0].size = pci_resource_len(pdev, 0);
++
++	remove_conflicting_framebuffers(ap, KBUILD_MODNAME, false);
++
++	kfree(ap);
++
++	return 0;
++}
  
- 		cmd_pixels_count_byte = cmd++; /*  we'll know this later */
- 		cmd_pixel_start = pixel;
-@@ -460,8 +460,8 @@ static void dlfb_compress_hline(
- 		while (pixel < cmd_pixel_end) {
- 			const uint16_t * const repeating_pixel = pixel;
+ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 				 const struct pci_device_id *ent)
+@@ -2308,6 +2325,10 @@ static int radeonfb_pci_register(struct pci_dev *pdev,
+ 	rinfo->fb_base_phys = pci_resource_start (pdev, 0);
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
  
--			*(uint16_t *)cmd = cpu_to_be16p(pixel);
--			cmd += 2;
-+			*cmd++ = *pixel >> 8;
-+			*cmd++ = *pixel;
- 			pixel++;
- 
- 			if (unlikely((pixel < cmd_pixel_end) &&
-@@ -1531,15 +1531,16 @@ static int dlfb_parse_vendor_descriptor(struct dlfb_data *dlfb,
- 			u8 length;
- 			u16 key;
- 
--			key = le16_to_cpu(*((u16 *) desc));
--			desc += sizeof(u16);
--			length = *desc;
--			desc++;
-+			key = *desc++;
-+			key |= (u16)*desc++ << 8;
-+			length = *desc++;
- 
- 			switch (key) {
- 			case 0x0200: { /* max_area */
--				u32 max_area;
--				max_area = le32_to_cpu(*((u32 *)desc));
-+				u32 max_area = *desc++;
-+				max_area |= (u32)*desc++ << 8;
-+				max_area |= (u32)*desc++ << 16;
-+				max_area |= (u32)*desc++ << 24;
- 				dev_warn(&intf->dev,
- 					 "DL chip limited to %d pixel modes\n",
- 					 max_area);
++	ret = radeon_kick_out_firmware_fb(pdev);
++	if (ret)
++		return ret;
++
+ 	/* request the mem regions */
+ 	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
 -- 
-2.16.1
+2.11.0
 

@@ -1,103 +1,224 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 27 Feb 2018 11:58:57 +0000
-Subject: Re: [PATCH v4 1/3] Kconfig : Remove HAS_IOMEM dependency for Graphics support
-Message-Id: <5354569.YFYern9snq@amdc3058>
+Date: Wed, 14 Feb 2018 12:00:39 +0000
+Subject: [PATCH] video: fbdev: s3c-fb: remove dead platform code for Exynos and S5PV210 platforms
+Message-Id: <2621881.tniV7NOQqn@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
-	<CGME20180227092348epcas1p4162a6d10e05e3291e989c1e1af4a3272@epcas1p4.samsung.com>
-	<05a0da63-1d9a-875a-738c-ce453dd59505@de.ibm.com>
-In-Reply-To: <05a0da63-1d9a-875a-738c-ce453dd59505@de.ibm.com>
+References: <CGME20180214120041epcas2p37afd51e693a9cad842e59128a77d45ac@epcas2p3.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Farhan Ali <alifm@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, thuth@redhat.com, cohuck@redhat.com, tomi.valkeinen@ti.com, geert@linux-m68k.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Jingoo Han <jingoohan1@gmail.com>, linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tuesday, February 27, 2018 10:23:37 AM Christian Borntraeger wrote:
-> This one has been in linux-next for some days. I can carry this via the kvm/s390
-> tree, but I would like to get ack from at least Bartlomiej. Please also look at 
-> patch 3 which also touches  drivers/video/console/Kconfig.
-> 
-> Adding Greg, as I would like an ack from him for patch 3.
-> 
-> On 02/22/2018 05:22 PM, Farhan Ali wrote:
-> > The 'commit e25df1205f37 ("[S390] Kconfig: menus with depends on HAS_IOMEM.")'
-> > added the HAS_IOMEM dependecy for "Graphics support". This disabled the
-> > "Graphics support" menu for S390. But if we enable VT layer for S390,
-> > we would also need to enable the dummy console. So let's remove the
-> > HAS_IOMEM dependency.
-> > 
-> > Move this dependency to sub menu items and console drivers that use
-> > io memory.
-> > 
-> > Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
-> > Reviewed-by: Thomas Huth <thuth@redhat.com>
+Exynos5, Exynos4 and S5PV210 platforms have been converted to
+use Device Tree and Exynos DRM driver long time ago.  Remove
+dead platform code for these platforms and update Kconfig
+s3c-fb entry accordingly.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/Kconfig  |    3 
+ drivers/video/fbdev/s3c-fb.c |  162 -------------------------------------------
+ 2 files changed, 1 insertion(+), 164 deletions(-)
 
-> > ---
-> >  drivers/video/Kconfig         | 5 ++++-
-> >  drivers/video/console/Kconfig | 6 +++---
-> >  2 files changed, 7 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> > index 3c20af9..4f950c6 100644
-> > --- a/drivers/video/Kconfig
-> > +++ b/drivers/video/Kconfig
-> > @@ -3,7 +3,8 @@
-> >  #
-> > 
-> >  menu "Graphics support"
-> > -	depends on HAS_IOMEM
-> > +
-> > +if HAS_IOMEM
-> > 
-> >  config HAVE_FB_ATMEL
-> >  	bool
-> > @@ -36,6 +37,8 @@ config VIDEOMODE_HELPERS
-> >  config HDMI
-> >  	bool
-> > 
-> > +endif # HAS_IOMEM
-> > +
-> >  if VT
-> >  	source "drivers/video/console/Kconfig"
-> >  endif
-> > diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
-> > index 7f1f1fb..9485857 100644
-> > --- a/drivers/video/console/Kconfig
-> > +++ b/drivers/video/console/Kconfig
-> > @@ -9,7 +9,7 @@ config VGA_CONSOLE
-> >  	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
-> >  		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
-> >  		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
-> > -		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
-> > +		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && HAS_IOMEM
-> >  	default y
-> >  	help
-> >  	  Saying Y here will allow you to use Linux in text mode through a
-> > @@ -85,7 +85,7 @@ config MDA_CONSOLE
-> > 
-> >  config SGI_NEWPORT_CONSOLE
-> >          tristate "SGI Newport Console support"
-> > -        depends on SGI_IP22 
-> > +        depends on SGI_IP22 && HAS_IOMEM
-> >          select FONT_SUPPORT
-> >          help
-> >            Say Y here if you want the console on the Newport aka XL graphics
-> > @@ -153,7 +153,7 @@ config FRAMEBUFFER_CONSOLE_ROTATION
-> > 
-> >  config STI_CONSOLE
-> >          bool "STI text console"
-> > -        depends on PARISC
-> > +        depends on PARISC && HAS_IOMEM
-> >          select FONT_SUPPORT
-> >          default y
-> >          help
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig	2018-02-12 14:28:32.392677896 +0100
++++ b/drivers/video/fbdev/Kconfig	2018-02-14 12:54:06.399057592 +0100
+@@ -2020,8 +2020,7 @@ config FB_TMIO_ACCELL
+ 
+ config FB_S3C
+ 	tristate "Samsung S3C framebuffer support"
+-	depends on FB && (CPU_S3C2416 || ARCH_S3C64XX || \
+-		ARCH_S5PV210 || ARCH_EXYNOS)
++	depends on FB && (CPU_S3C2416 || ARCH_S3C64XX)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+Index: b/drivers/video/fbdev/s3c-fb.c
+=================================--- a/drivers/video/fbdev/s3c-fb.c	2017-10-18 14:35:22.063448310 +0200
++++ b/drivers/video/fbdev/s3c-fb.c	2018-02-14 12:04:00.719262463 +0100
+@@ -1716,63 +1716,6 @@ static struct s3c_fb_win_variant s3c_fb_
+ 	},
+ };
+ 
+-static struct s3c_fb_win_variant s3c_fb_data_s5p_wins[] = {
+-	[0] = {
+-		.has_osd_c	= 1,
+-		.osd_size_off	= 0x8,
+-		.palette_sz	= 256,
+-		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
+-				   VALID_BPP(15) | VALID_BPP(16) |
+-				   VALID_BPP(18) | VALID_BPP(19) |
+-				   VALID_BPP(24) | VALID_BPP(25) |
+-				   VALID_BPP(32)),
+-	},
+-	[1] = {
+-		.has_osd_c	= 1,
+-		.has_osd_d	= 1,
+-		.osd_size_off	= 0xc,
+-		.has_osd_alpha	= 1,
+-		.palette_sz	= 256,
+-		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
+-				   VALID_BPP(15) | VALID_BPP(16) |
+-				   VALID_BPP(18) | VALID_BPP(19) |
+-				   VALID_BPP(24) | VALID_BPP(25) |
+-				   VALID_BPP(32)),
+-	},
+-	[2] = {
+-		.has_osd_c	= 1,
+-		.has_osd_d	= 1,
+-		.osd_size_off	= 0xc,
+-		.has_osd_alpha	= 1,
+-		.palette_sz	= 256,
+-		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
+-				   VALID_BPP(15) | VALID_BPP(16) |
+-				   VALID_BPP(18) | VALID_BPP(19) |
+-				   VALID_BPP(24) | VALID_BPP(25) |
+-				   VALID_BPP(32)),
+-	},
+-	[3] = {
+-		.has_osd_c	= 1,
+-		.has_osd_alpha	= 1,
+-		.palette_sz	= 256,
+-		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
+-				   VALID_BPP(15) | VALID_BPP(16) |
+-				   VALID_BPP(18) | VALID_BPP(19) |
+-				   VALID_BPP(24) | VALID_BPP(25) |
+-				   VALID_BPP(32)),
+-	},
+-	[4] = {
+-		.has_osd_c	= 1,
+-		.has_osd_alpha	= 1,
+-		.palette_sz	= 256,
+-		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
+-				   VALID_BPP(15) | VALID_BPP(16) |
+-				   VALID_BPP(18) | VALID_BPP(19) |
+-				   VALID_BPP(24) | VALID_BPP(25) |
+-				   VALID_BPP(32)),
+-	},
+-};
+-
+ static struct s3c_fb_driverdata s3c_fb_data_64xx = {
+ 	.variant = {
+ 		.nr_windows	= 5,
+@@ -1804,102 +1747,6 @@ static struct s3c_fb_driverdata s3c_fb_d
+ 	.win[4]	= &s3c_fb_data_64xx_wins[4],
+ };
+ 
+-static struct s3c_fb_driverdata s3c_fb_data_s5pv210 = {
+-	.variant = {
+-		.nr_windows	= 5,
+-		.vidtcon	= VIDTCON0,
+-		.wincon		= WINCON(0),
+-		.winmap		= WINxMAP(0),
+-		.keycon		= WKEYCON,
+-		.osd		= VIDOSD_BASE,
+-		.osd_stride	= 16,
+-		.buf_start	= VIDW_BUF_START(0),
+-		.buf_size	= VIDW_BUF_SIZE(0),
+-		.buf_end	= VIDW_BUF_END(0),
+-
+-		.palette = {
+-			[0] = 0x2400,
+-			[1] = 0x2800,
+-			[2] = 0x2c00,
+-			[3] = 0x3000,
+-			[4] = 0x3400,
+-		},
+-
+-		.has_shadowcon	= 1,
+-		.has_blendcon	= 1,
+-		.has_clksel	= 1,
+-		.has_fixvclk	= 1,
+-	},
+-	.win[0]	= &s3c_fb_data_s5p_wins[0],
+-	.win[1]	= &s3c_fb_data_s5p_wins[1],
+-	.win[2]	= &s3c_fb_data_s5p_wins[2],
+-	.win[3]	= &s3c_fb_data_s5p_wins[3],
+-	.win[4]	= &s3c_fb_data_s5p_wins[4],
+-};
+-
+-static struct s3c_fb_driverdata s3c_fb_data_exynos4 = {
+-	.variant = {
+-		.nr_windows	= 5,
+-		.vidtcon	= VIDTCON0,
+-		.wincon		= WINCON(0),
+-		.winmap		= WINxMAP(0),
+-		.keycon		= WKEYCON,
+-		.osd		= VIDOSD_BASE,
+-		.osd_stride	= 16,
+-		.buf_start	= VIDW_BUF_START(0),
+-		.buf_size	= VIDW_BUF_SIZE(0),
+-		.buf_end	= VIDW_BUF_END(0),
+-
+-		.palette = {
+-			[0] = 0x2400,
+-			[1] = 0x2800,
+-			[2] = 0x2c00,
+-			[3] = 0x3000,
+-			[4] = 0x3400,
+-		},
+-
+-		.has_shadowcon	= 1,
+-		.has_blendcon	= 1,
+-		.has_fixvclk	= 1,
+-	},
+-	.win[0]	= &s3c_fb_data_s5p_wins[0],
+-	.win[1]	= &s3c_fb_data_s5p_wins[1],
+-	.win[2]	= &s3c_fb_data_s5p_wins[2],
+-	.win[3]	= &s3c_fb_data_s5p_wins[3],
+-	.win[4]	= &s3c_fb_data_s5p_wins[4],
+-};
+-
+-static struct s3c_fb_driverdata s3c_fb_data_exynos5 = {
+-	.variant = {
+-		.nr_windows	= 5,
+-		.vidtcon	= FIMD_V8_VIDTCON0,
+-		.wincon		= WINCON(0),
+-		.winmap		= WINxMAP(0),
+-		.keycon		= WKEYCON,
+-		.osd		= VIDOSD_BASE,
+-		.osd_stride	= 16,
+-		.buf_start	= VIDW_BUF_START(0),
+-		.buf_size	= VIDW_BUF_SIZE(0),
+-		.buf_end	= VIDW_BUF_END(0),
+-
+-		.palette = {
+-			[0] = 0x2400,
+-			[1] = 0x2800,
+-			[2] = 0x2c00,
+-			[3] = 0x3000,
+-			[4] = 0x3400,
+-		},
+-		.has_shadowcon	= 1,
+-		.has_blendcon	= 1,
+-		.has_fixvclk	= 1,
+-	},
+-	.win[0]	= &s3c_fb_data_s5p_wins[0],
+-	.win[1]	= &s3c_fb_data_s5p_wins[1],
+-	.win[2]	= &s3c_fb_data_s5p_wins[2],
+-	.win[3]	= &s3c_fb_data_s5p_wins[3],
+-	.win[4]	= &s3c_fb_data_s5p_wins[4],
+-};
+-
+ /* S3C2443/S3C2416 style hardware */
+ static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
+ 	.variant = {
+@@ -1942,15 +1789,6 @@ static const struct platform_device_id s
+ 		.name		= "s3c-fb",
+ 		.driver_data	= (unsigned long)&s3c_fb_data_64xx,
+ 	}, {
+-		.name		= "s5pv210-fb",
+-		.driver_data	= (unsigned long)&s3c_fb_data_s5pv210,
+-	}, {
+-		.name		= "exynos4-fb",
+-		.driver_data	= (unsigned long)&s3c_fb_data_exynos4,
+-	}, {
+-		.name		= "exynos5-fb",
+-		.driver_data	= (unsigned long)&s3c_fb_data_exynos5,
+-	}, {
+ 		.name		= "s3c2443-fb",
+ 		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
+ 	},
 

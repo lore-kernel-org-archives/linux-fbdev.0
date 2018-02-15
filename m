@@ -1,68 +1,44 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 19 Feb 2018 11:11:36 +0000
-Subject: Re: [RESEND PATCH v5 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
-Message-Id: <20180219111136.jpv4wtcm6h2hfwac@oak.lan>
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+Date: Thu, 15 Feb 2018 11:14:23 +0000
+Subject: [PATCH] s390/console: enable dummy console for vt
+Message-Id: <20180215111423.96598-1-borntraeger@de.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180216174034.15936-1-enric.balletbo@collabora.com>
- <20180216174034.15936-2-enric.balletbo@collabora.com>
-In-Reply-To: <20180216174034.15936-2-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+References: <2324e2cc-ff55-4d57-2807-c7f72f9ea0ca@de.ibm.com>
+In-Reply-To: <2324e2cc-ff55-4d57-2807-c7f72f9ea0ca@de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Farhan Ali <alifm@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, geert@linux-m68k.org, stefan.kristiansson@saunalahti.fi, tomi.valkeinen@ti.com, schwidefsky@de.ibm.com, dri-devel@lists.freedesktop.org, Chen Liqin <liqin.linux@gmail.com>, Lennox Wu <lennox.wu@gmail.com>, Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>, user-mode-linux-devel@lists.sourceforge.net, Thomas Huth <thuth@redhat.com>, Christian Borntraeger <borntraeger@de.ibm.com>
 
-On Fri, Feb 16, 2018 at 06:40:31PM +0100, Enric Balletbo i Serra wrote:
-> Hardware needs a delay between setting an initial (non-zero) PWM and
-> enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
-> this delay in milli seconds. Hardware also needs a delay between disabing
-> the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
-> is this delay in milli seconds.
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+To enable the virtual terminal layer with virtio-gpu, we need to
+provide the dummy console. This console is hidden behind CONFIG_IOMEM
+via the graphics support. Instead of fully enabling the graphic
+drivers lets just provide a Kconfig option for the dummy console.
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+---
+New version: instead of moving around the graphic and console stuff,
+let's just keep an s390 specific variant of CONFIG_DUMMY_CONSOLE
+ arch/s390/Kconfig | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-> ---
-> Based on the original Huang Lin <hl@rock-chips.com> work.
-> 
-> Changes since v4:
->  - Rebase on top of mainline.
-> Changes since v3:
->  - Replace us for ms.
->  - Add Acked-by: Pavel Machek <pavel@ucw.cz>
-> Changes since v2:
->  - Use separate properties (Rob Herring)
-> Changes since v1:
->  - As suggested by Daniel Thompson
->    - Do not assume power-on delay and power-off delay will be the same
-> 
->  Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> index 764db86d441a..310810906613 100644
-> --- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> +++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
-> @@ -17,6 +17,10 @@ Optional properties:
->                 "pwms" property (see PWM binding[0])
->    - enable-gpios: contains a single GPIO specifier for the GPIO which enables
->                    and disables the backlight (see GPIO binding[1])
-> +  - post-pwm-on-delay-ms: Delay in ms between setting an initial (non-zero) PWM
-> +                          and enabling the backlight using GPIO.
-> +  - pwm-off-delay-ms: Delay in ms between disabling the backlight using GPIO
-> +                      and setting PWM value to 0.
->  
->  [0]: Documentation/devicetree/bindings/pwm/pwm.txt
->  [1]: Documentation/devicetree/bindings/gpio/gpio.txt
-> @@ -32,4 +36,6 @@ Example:
->  
->  		power-supply = <&vdd_bl_reg>;
->  		enable-gpios = <&gpio 58 0>;
-> +		post-pwm-on-delay-ms = <10>;
-> +		pwm-off-delay-ms = <10>;
->  	};
-> -- 
-> 2.15.1
-> 
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index cbe1d978693a..a69690f616f3 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -952,6 +952,11 @@ config S390_HYPFS_FS
+ 
+ source "arch/s390/kvm/Kconfig"
+ 
++config DUMMY_CONSOLE
++       bool
++       depends on VT
++       default y
++
+ config S390_GUEST
+ 	def_bool y
+ 	prompt "s390 support for virtio devices"
+-- 
+2.14.3
+

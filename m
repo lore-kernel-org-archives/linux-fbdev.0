@@ -1,24 +1,51 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Feb 2018 15:13:56 +0000
-Subject: Re: [RESEND PATCH v2] Documentation/ABI: add sysfs interface for s6e63m0 lcd driver
-Message-Id: <20180223081356.507a4ff1@lwn.net>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 16 Feb 2018 17:40:33 +0000
+Subject: [RESEND PATCH v5 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
+Message-Id: <20180216174034.15936-4-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180223132352.GA25436@mordor.localdomain>
-In-Reply-To: <20180223132352.GA25436@mordor.localdomain>
+References: <20180216174034.15936-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180216174034.15936-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aishwarya Pant <aishpant@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>, Greg KH <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
 
-On Fri, 23 Feb 2018 18:53:52 +0530
-Aishwarya Pant <aishpant@gmail.com> wrote:
+For veyron the binding should provide both PWM timings, the delay between
+you enable the PWM and set the enable signal, and the delay between you
+disable the PWM signal and clear the enable signal. Update the binding
+accordingly, in this case the panels connected to the veyron boards have
+a symmetric power sequence, hence the same value is used.
 
-> Document sysfs attributes of s6e63m0 lcd panel driver by looking through
-> git logs and reading code.
-> 
-> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+Changes since v4:
+ - Rebased on top of mainline.
+Changes since v3:
+ - Use new -ms names for proprieties.
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch to fix current binding on veyron.
 
-Applied, thanks.
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-jon
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index be487111d025..b16d570ff029 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -95,7 +95,8 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bl_en>;
+ 		pwms = <&pwm0 0 1000000 0>;
+-		pwm-delay-us = <10000>;
++		post-pwm-on-delay-ms = <10>;
++		pwm-off-delay-ms = <10>;
+ 	};
+ 
+ 	gpio-charger {
+-- 
+2.15.1
+

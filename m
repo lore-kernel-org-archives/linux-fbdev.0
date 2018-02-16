@@ -1,43 +1,122 @@
-From: Claudiu Beznea <Claudiu.Beznea@microchip.com>
-Date: Thu, 22 Feb 2018 17:42:29 +0000
-Subject: Re: [PATCH v3 06/10] pwm: add PWM modes
-Message-Id: <e5090740-520a-34c0-6b52-09cc8ada11b1@microchip.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 16 Feb 2018 17:40:32 +0000
+Subject: [RESEND PATCH v5 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20180216174034.15936-3-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
- <1519300881-8136-7-git-send-email-claudiu.beznea@microchip.com>
- <CAHp75Ver6GuKSDooAr2DW+eqt=B3p8O+X6+rOSWNgfhHxgVqNQ@mail.gmail.com>
-In-Reply-To: <CAHp75Ver6GuKSDooAr2DW+eqt=B3p8O+X6+rOSWNgfhHxgVqNQ@mail.gmail.com>
+References: <20180216174034.15936-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180216174034.15936-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, milo.kim@ti.com, linux-fbdev@vger.kernel.org, Sean Young <sean@mess.org>, devicetree <devicetree@vger.kernel.org>, David Airlie <airlied@linux.ie>, Michael Turquette <mturquette@baylibre.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, kamil@wypas.org, dri-devel@lists.freedesktop.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Thierry Reding <thierry.reding@gmail.com>, Alexandre Belloni <alexandre.belloni@free-electrons.com>, Pavel Machek <pavel@ucw.cz>, Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org, Linux LED Subsystem <linux-leds@vger.kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, linux-samsung-soc@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>, Russell King - ARM Linux <linux@armlinux.org.>
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
 
+Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+request a delay between set the PWM signal and enable the backlight and
+between clear the PWM signal and disable the backlight. Add support for
+the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
+the timings.
 
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+---
+Changes since v4:
+ - Rebased on top of mainline.
+ - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
+Changes since v3:
+ - Use two named members instead of pwm_delay[] (Daniel and Pavel)
+ - Use msleep instead of usleep_range. (Pavel)
+Changes since v2:
+ - Move the pwm/enable sequence to another patch (Thierry Reding)
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
+ - Move the check of dt property to the parse dt function.
 
-On 22.02.2018 19:28, Andy Shevchenko wrote:
-> On Thu, Feb 22, 2018 at 2:01 PM, Claudiu Beznea
-> <claudiu.beznea@microchip.com> wrote:
->> Add PWM normal and complementary modes.
-> 
->> +- PWM_DTMODE_COMPLEMENTARY: PWM complementary working mode (for PWM
->> +channels two outputs); if not specified, the default for PWM channel will
->> +be used
-> 
-> What DT stands for?
-It stands for Device Tree. It remained this way from the previous version. In
-the previous version I had modes described in an enum, to be used by PWM core,
-as follows:
-enum pwm_mode {
-	PWM_MODE_NORMAL,
-	PWM_MODE_COMPLEMENTARY,
-};
+ drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
+ include/linux/pwm_backlight.h    |  2 ++
+ 2 files changed, 21 insertions(+)
 
-and, to avoid conflict b/w these defines and the one from
-include/dt-bindings/pwm/pwm.h I introduced this DT in the define names from
-dt-bindings. But now the DT might be removed since I've changed the way the PWM
-mode is identified in PWM core. I will remove the DT in the next version, if not
-requested otherwise.
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 698ec68bcdc9..8e3f1245f5c5 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -10,6 +10,7 @@
+  * published by the Free Software Foundation.
+  */
+ 
++#include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
+@@ -35,6 +36,8 @@ struct pwm_bl_data {
+ 	struct gpio_desc	*enable_gpio;
+ 	unsigned int		scale;
+ 	bool			legacy;
++	unsigned int		post_pwm_on_delay;
++	unsigned int		pwm_off_delay;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -56,6 +59,9 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 
+ 	pwm_enable(pb->pwm);
+ 
++	if (pb->post_pwm_on_delay)
++		msleep(pb->post_pwm_on_delay);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+@@ -70,6 +76,9 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	if (pb->pwm_off_delay)
++		msleep(pb->pwm_off_delay);
++
+ 	pwm_config(pb->pwm, 0, pb->period);
+ 	pwm_disable(pb->pwm);
+ 
+@@ -178,6 +187,14 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
++	/*
++	 * These values are optional and set as 0 by default, the out values
++	 * are modified only if a valid u32 value can be decoded.
++	 */
++	of_property_read_u32(node, "post-pwm-on-delay-ms",
++			     &data->post_pwm_on_delay);
++	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
++
+ 	data->enable_gpio = -EINVAL;
+ 	return 0;
+ }
+@@ -276,6 +293,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
++	pb->post_pwm_on_delay = data->post_pwm_on_delay;
++	pb->pwm_off_delay = data->pwm_off_delay;
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+ 						  GPIOD_ASIS);
+diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
+index e8afbd71a140..8ea265a022fd 100644
+--- a/include/linux/pwm_backlight.h
++++ b/include/linux/pwm_backlight.h
+@@ -14,6 +14,8 @@ struct platform_pwm_backlight_data {
+ 	unsigned int lth_brightness;
+ 	unsigned int pwm_period_ns;
+ 	unsigned int *levels;
++	unsigned int post_pwm_on_delay;
++	unsigned int pwm_off_delay;
+ 	/* TODO remove once all users are switched to gpiod_* API */
+ 	int enable_gpio;
+ 	int (*init)(struct device *dev);
+-- 
+2.15.1
 
-Thank you,
-Claudiu Benea

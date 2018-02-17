@@ -1,32 +1,46 @@
-From: Thomas Huth <thuth@redhat.com>
-Date: Mon, 19 Feb 2018 19:52:22 +0000
-Subject: Re: [PATCH v3 2/3] s390/char : Rename EBCDIC keymap variables
-Message-Id: <250077c8-ccef-fbbc-1d53-8a5cc3984243@redhat.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Sat, 17 Feb 2018 21:19:27 +0000
+Subject: setterm -blank force no longer works after switch to omapdrm
+Message-Id: <20180217211927.GC9640@amd>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="R+My9LyyhiUvIEro"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1519053920.git.alifm@linux.vnet.ibm.com>
- <4e0d31cf01c9fff5fe177338f14b1ca3f6871fb5.1519053920.git.alifm@linux.vnet.ibm.com>
-In-Reply-To: <4e0d31cf01c9fff5fe177338f14b1ca3f6871fb5.1519053920.git.alifm@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Farhan Ali <alifm@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: geert@linux-m68k.org, borntraeger@de.ibm.com, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
+To: tomi.valkeinen@ti.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: pali.rohar@gmail.com, sre@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Filip =?utf-8?Q?Matijevi=C4=87?= <filip.matijevic.pz@gmail.com>
 
-On 19.02.2018 16:47, Farhan Ali wrote:
-> The Linux Virtual Terminal (VT) layer provides a default keymap
-> which is compiled when VT layer is enabled. But at the same time
-> we are also compiling the EBCDIC keymap and this causes the linker
-> to complain.
-> 
-> So let's rename the EBCDIC keymap variables to prevent linker
-> conflict.
-> 
-> Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
-> Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> ---
->  drivers/s390/char/defkeymap.c | 66 ++++++++++++++++++++++---------------------
->  drivers/s390/char/keyboard.c  | 32 ++++++++++-----------
->  drivers/s390/char/keyboard.h  | 11 ++++++++
->  3 files changed, 61 insertions(+), 48 deletions(-)
 
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+--R+My9LyyhiUvIEro
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi!
+
+I used to have use omap fb driver, and blanking worked as expected. It
+no longer works with omap drm driver. (Tested on v4.16-rc1, but I
+believe it is broken in older versions, too.)
+
+Can you test it on your hw? Any ideas what could be wrong?
+
+xset dpms force on/off works as expected.
+
+Best regards,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--R+My9LyyhiUvIEro
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlqInF8ACgkQMOfwapXb+vL2dQCbBjh4ATmX6PNABemFiW5BYkDY
+OLkAoJM1ggMNjEeommMEbzvgyCUTIw/o
+=vZqS
+-----END PGP SIGNATURE-----
+
+--R+My9LyyhiUvIEro--

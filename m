@@ -1,92 +1,97 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Mon, 19 Feb 2018 09:10:43 +0000
-Subject: Re: [PATCH] drm/fb-helper: Scale back depth to supported maximum
-Message-Id: <20180219091043.GE22199@phenom.ffwll.local>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Mon, 19 Feb 2018 15:47:25 +0000
+Subject: [PATCH v3 1/3] Kconfig : Remove HAS_IOMEM dependency for Graphics support
+Message-Id: <2beec7645bac82e7bdef4f6df0b9f4fe28696575.1519053920.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180201130446.6165-1-linus.walleij@linaro.org>
- <20180201131907.GO5453@intel.com>
- <CACRpkdaFyKYxnVB-QuUiT+G9QcrpyPkzd2KXUm1sWNSgzyF9AA@mail.gmail.com>
- <20180202140343.GX5453@intel.com>
-In-Reply-To: <20180202140343.GX5453@intel.com>
+References: <cover.1519053920.git.alifm@linux.vnet.ibm.com>
+In-Reply-To: <cover.1519053920.git.alifm@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <ville.syrjala@linux.intel.com>
-Cc: linux-fbdev@vger.kernel.org, David Lechner <david@lechnology.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Dave Airlie <airlied@redhat.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: geert@linux-m68k.org, borntraeger@de.ibm.com, tomi.valkeinen@ti.com, thuth@redhat.com, b.zolnierkie@samsung.com, alifm@linux.vnet.ibm.com
 
-On Fri, Feb 02, 2018 at 04:03:43PM +0200, Ville Syrj=E4l=E4 wrote:
-> On Fri, Feb 02, 2018 at 02:56:30PM +0100, Linus Walleij wrote:
-> > On Thu, Feb 1, 2018 at 2:19 PM, Ville Syrj=E4l=E4
-> > <ville.syrjala@linux.intel.com> wrote:
-> > > [Me]
-> > >> +     /*
-> > >> +      * If we run into a situation where, for example, the primary =
-plane
-> > >> +      * supports RGBA5551 (16 bpp, depth 15) but not RGB565 (16 bpp=
-, depth
-> > >> +      * 16) we need to scale down the depth of the sizes we request.
-> > >> +      */
-> > >> +     drm_for_each_plane(plane, fb_helper->dev) {
-> > >> +             /* Only check the primary plane */
-> > >> +             if (plane->type !=3D DRM_PLANE_TYPE_PRIMARY)
-> > >> +                     continue;
-> > >
-> > > I think this should look at crtc->primary for each of the crtcs manag=
-ed
-> > > by the fb_helper.
-> > >
-> > > Also this probably shouldn't look at YUV formats at all?
-> >=20
-> > I guess I can look into doing it this way, sorry for not knowing how to
-> > properly inspect DRM objects, I'm lost sometimes...
-> >=20
-> > > I do wonder if instead we should just have the driver specify the
-> > > pixel format explicitly instead of trying to guess based on bpp?
-> >=20
-> > That makes a lot more sense to me actually. It would
-> > give a better sense of control so the driver feel it knows
-> > what is actually going on.
-> >=20
-> > So I would just update
-> > drm_fb_cma_fbdev_init() and drm_fb_helper_initial_config()
-> > to pass a reasonable pixel format instead and refactor all the
-> > way down?
->=20
-> Yeah, something along those lines would seem like the better approach
-> to me. But it's been a while since I've looked at this code so I might
-> be totally wrong :)
+The 'commit e25df1205f37 ("[S390] Kconfig: menus with depends on HAS_IOMEM.")'
+added the HAS_IOMEM dependecy for "Graphics support". This disabled the
+"Graphics support" menu for S390. But if we enable VT layer for S390,
+we would also need to enable the dummy console. So let's remove the
+HAS_IOMEM dependency.
 
-Yeah, that would definitely fit better with the new world - fbdev
-emulation hasnt ever been updated to the pixel format approach.
+Move this dependency to sub menu items and console drivers that use
+io memory.
 
-But fbdev emulation also predates the list of acceptable formats for each
-plane, so I'd go one step further and try to out-guess something if the
-driver passes a pixel format of 0. Your above loop almost does that
-already. That way only drivers which want something non-standard would
-need to set that parameter. For everyone else we could go through all
-rgb/bgr formats, from most pixels to least (well, all those that fbdev
-supports), with C8 as the ultimate fallback.
+Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
+---
+ drivers/video/Kconfig         | 21 +++++++++++----------
+ drivers/video/console/Kconfig |  4 ++--
+ 2 files changed, 13 insertions(+), 12 deletions(-)
 
-But just going to pixel formats would be a good step already for sure.
--Daniel
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3c20af9..8f10915 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -3,7 +3,6 @@
+ #
+ 
+ menu "Graphics support"
+-	depends on HAS_IOMEM
+ 
+ config HAVE_FB_ATMEL
+ 	bool
+@@ -11,20 +10,22 @@ config HAVE_FB_ATMEL
+ config SH_LCD_MIPI_DSI
+ 	bool
+ 
+-source "drivers/char/agp/Kconfig"
++if HAS_IOMEM
++	source "drivers/char/agp/Kconfig"
+ 
+-source "drivers/gpu/vga/Kconfig"
++	source "drivers/gpu/vga/Kconfig"
+ 
+-source "drivers/gpu/host1x/Kconfig"
+-source "drivers/gpu/ipu-v3/Kconfig"
++	source "drivers/gpu/host1x/Kconfig"
++	source "drivers/gpu/ipu-v3/Kconfig"
+ 
+-source "drivers/gpu/drm/Kconfig"
++	source "drivers/gpu/drm/Kconfig"
+ 
+-menu "Frame buffer Devices"
+-source "drivers/video/fbdev/Kconfig"
+-endmenu
++	menu "Frame buffer Devices"
++	source "drivers/video/fbdev/Kconfig"
++	endmenu
+ 
+-source "drivers/video/backlight/Kconfig"
++        source "drivers/video/backlight/Kconfig"
++endif
+ 
+ config VGASTATE
+        tristate
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 7f1f1fb..0023b16 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -85,7 +85,7 @@ config MDA_CONSOLE
+ 
+ config SGI_NEWPORT_CONSOLE
+         tristate "SGI Newport Console support"
+-        depends on SGI_IP22 
++        depends on SGI_IP22 && HAS_IOMEM
+         select FONT_SUPPORT
+         help
+           Say Y here if you want the console on the Newport aka XL graphics
+@@ -153,7 +153,7 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+ 
+ config STI_CONSOLE
+         bool "STI text console"
+-        depends on PARISC
++        depends on PARISC && HAS_IOMEM
+         select FONT_SUPPORT
+         default y
+         help
+-- 
+2.7.4
 
->=20
-> >=20
-> > It does hit a lot of code on the way, but if everyone thinks this
-> > is a good idea I can very well take a stab at it.
-> >=20
-> > Yours,
-> > Linus Walleij
->=20
-> --=20
-> Ville Syrj=E4l=E4
-> Intel OTC
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
-
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch

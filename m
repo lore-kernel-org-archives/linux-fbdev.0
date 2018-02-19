@@ -1,85 +1,62 @@
 From: Farhan Ali <alifm@linux.vnet.ibm.com>
-Date: Mon, 19 Feb 2018 14:01:19 +0000
-Subject: Re: [PATCH] s390/console: enable dummy console for vt
-Message-Id: <b8948d24-3351-2a8c-de2a-1c1c94685778@linux.vnet.ibm.com>
+Date: Mon, 19 Feb 2018 15:47:24 +0000
+Subject: [PATCH v3 0/3] Enable CONFIG_VT support for S390
+Message-Id: <cover.1519053920.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2324e2cc-ff55-4d57-2807-c7f72f9ea0ca@de.ibm.com>
- <20180215111423.96598-1-borntraeger@de.ibm.com>
- <CAMuHMdWCK1V3PWXHMNZUmFVMCSqi5xhs72mT_M=gE96TSzMN9w@mail.gmail.com>
- <f621e016-3811-b9c5-e044-779adc6b420c@redhat.com>
- <4116f119-b96e-a8c1-359a-dde488d61212@de.ibm.com>
- <b2615fca-2784-4f0a-2f21-7e7074c6760b@linux.vnet.ibm.com>
- <ef45a7d8-206b-3583-404e-f9078b7023b2@de.ibm.com>
-In-Reply-To: <ef45a7d8-206b-3583-404e-f9078b7023b2@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Christian Borntraeger <borntraeger@de.ibm.com>, Thomas Huth <thuth@redhat.com>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-s390 <linux-s390@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, uml-devel <user-mode-linux-devel@lists.sourceforge.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Weinberger <richard@nod.at>, Jeff Dike <jdike@addtoit.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Chen Liqin <liqin.linux@gmail.com>, Lennox Wu <lennox.wu@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: geert@linux-m68k.org, borntraeger@de.ibm.com, tomi.valkeinen@ti.com, thuth@redhat.com, b.zolnierkie@samsung.com, alifm@linux.vnet.ibm.com
+
+Hi,
+
+This series of patches add support for an additional tty
+and console for a S390 KVM guest using a virtio-gpu device[1].
+
+Patch 1 enables the "Graphics support" menu which is
+needed to enable dummy console, since the VT layer needs it.
+The dependency is moved to sub menu items and console
+drivers now.
+
+Patch 2 fixes few linker issues.
+
+Patch 3 add support for enabling VT layer for S390.
 
 
+ChangeLog
+---------
+v2 -> v3
+    - Move HAS_IOMEM dependency to sub menu items and console
+    drivers (patch 1)
 
-On 02/19/2018 08:37 AM, Christian Borntraeger wrote:
-> 
-> 
-> On 02/19/2018 02:35 PM, Farhan Ali wrote:
->>
->>
->> On 02/15/2018 07:02 AM, Christian Borntraeger wrote:
->>>
->>>
->>> On 02/15/2018 12:57 PM, Thomas Huth wrote:
->>>> On 15.02.2018 12:26, Geert Uytterhoeven wrote:
->>>>> Hi Christian,
->>>>>
->>>>> On Thu, Feb 15, 2018 at 12:14 PM, Christian Borntraeger
->>>>> <borntraeger@de.ibm.com> wrote:
->>>>>> To enable the virtual terminal layer with virtio-gpu, we need to
->>>>>> provide the dummy console. This console is hidden behind CONFIG_IOMEM
->>>>>> via the graphics support. Instead of fully enabling the graphic
->>>>>> drivers lets just provide a Kconfig option for the dummy console.
->>>>>>
->>>>>> Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
->>>>>> ---
->>>>>> New version: instead of moving around the graphic and console stuff,
->>>>>> let's just keep an s390 specific variant of CONFIG_DUMMY_CONSOLE
->>>>>>    arch/s390/Kconfig | 5 +++++
->>>>>>    1 file changed, 5 insertions(+)
->>>>>>
->>>>>> diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
->>>>>> index cbe1d978693a..a69690f616f3 100644
->>>>>> --- a/arch/s390/Kconfig
->>>>>> +++ b/arch/s390/Kconfig
->>>>>> @@ -952,6 +952,11 @@ config S390_HYPFS_FS
->>>>>>
->>>>>>    source "arch/s390/kvm/Kconfig"
->>>>>>
->>>>>> +config DUMMY_CONSOLE
->>>>>> +       bool
->>>>>> +       depends on VT
->>>>>> +       default y
->>>>>> +
->>>>>>    config S390_GUEST
->>>>>>           def_bool y
->>>>>>           prompt "s390 support for virtio devices"
->>>>>
->>>>> Really?
->>>>>
->>>>> You already have your own copy of HAS_IOMEM, which makes it hard for
->>>>> people to track which one applies where.
->>>>
->>>> I think I agree with Geert - let's better fix this in a proper way
->>>> instead of doing hacks like this. I guess there will be other
->>>> architectures in the future that might want to use the dummy console
->>>> without CONFIG_IOMEM, so fixing this in drivers/video/ instead sounds
->>>> better to me.
->>>
->>> The question is, what is the proper fix?
->>>
->>
->> How about we only fence off sub menu items such as DRM or GPU or Fbdev, which actually uses io memory, in drivers/video/Kconfig? Similar to what Thomas suggested for moving the CONFIG_IOMEM dependency for fbdevs?
-> 
-> Can you spin a patch?
-> 
-Yes, I will post it as V3.
+v1 -> v2
+
+v1 was posted under a different subject and here is a link to it:
+https://www.spinics.net/lists/linux-s390/msg18175.html
+
+   - Combine patch 1 and 2 from v1 into one patch (patch 1).
+   - Additional patches to enable CONFIG_VT for S390.
+
+
+Thanks
+Farhan
+
+
+Farhan Ali (3):
+  Kconfig : Remove HAS_IOMEM dependency for Graphics support
+  s390/char : Rename EBCDIC keymap variables
+  s390/setup : enable display support for KVM guest
+
+ arch/s390/kernel/setup.c      |  2 ++
+ drivers/s390/char/defkeymap.c | 66 ++++++++++++++++++++++---------------------
+ drivers/s390/char/keyboard.c  | 32 ++++++++++-----------
+ drivers/s390/char/keyboard.h  | 11 ++++++++
+ drivers/tty/Kconfig           |  2 +-
+ drivers/video/Kconfig         | 21 +++++++-------
+ drivers/video/console/Kconfig |  6 ++--
+ 7 files changed, 78 insertions(+), 62 deletions(-)
+
+-- 
+2.7.4
 

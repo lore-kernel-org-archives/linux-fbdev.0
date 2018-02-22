@@ -1,79 +1,79 @@
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-Date: Thu, 22 Feb 2018 07:34:13 +0000
-Subject: Re: [PATCH v3 1/3] Kconfig : Remove HAS_IOMEM dependency for Graphics support
-Message-Id: <2af46f6f-d225-9802-c6f9-98099fb2c2c8@de.ibm.com>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Thu, 22 Feb 2018 16:22:24 +0000
+Subject: [PATCH v4 3/3] s390/setup : enable display support for KVM guest
+Message-Id: <e23b61f4f599ba23881727a1e8880e9d60cc6a48.1519315352.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1519053920.git.alifm@linux.vnet.ibm.com>
- <2beec7645bac82e7bdef4f6df0b9f4fe28696575.1519053920.git.alifm@linux.vnet.ibm.com>
- <cce8b082-c780-3559-4491-c39eb09482b0@redhat.com>
- <6cae85dc-76d5-1b92-ab13-a5e441eb84a0@linux.vnet.ibm.com>
- <faffcd8e-4ef6-64bc-ab11-9b48ca488ed6@de.ibm.com>
- <f658ea9e-0153-a0e3-544a-8ce575284245@de.ibm.com>
- <20180221113217.11bb1c69.cohuck@redhat.com>
- <b742aa29-70b2-42e1-26d2-8ca0c8945863@de.ibm.com>
- <d1a89481-e5c9-b460-ea9c-f796dc28b748@redhat.com>
- <1f8907d4-c4a3-d41b-8834-679dcc85de4a@de.ibm.com>
- <5dfa9213-0e63-54d0-8700-1ced4efd4c28@redhat.com>
- <f6db4d0a-3578-4162-5de7-6e699f7a02c2@de.ibm.com>
- <20180221130755.17d15f89.cohuck@redhat.com>
- <6c1daae4-e1f6-5627-9023-f03d986c5639@de.ibm.com>
- <2170dce6-4456-3ab6-d07c-2169d99c4173@linux.vnet.ibm.com>
-In-Reply-To: <2170dce6-4456-3ab6-d07c-2169d99c4173@linux.vnet.ibm.com>
+References: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
+In-Reply-To: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Farhan Ali <alifm@linux.vnet.ibm.com>, Cornelia Huck <cohuck@redhat.com>
-Cc: Thomas Huth <thuth@redhat.com>, linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, linux-fbdev@vger.kernel.org, geert@linux-m68k.org, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: thuth@redhat.com, borntraeger@de.ibm.com, cohuck@redhat.com, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com, geert@linux-m68k.org, alifm@linux.vnet.ibm.com
 
+The S390 architecture does not support any graphics hardware,
+but with the latest support for Virtio GPU in Linux and Virtio
+GPU emulation in QEMU, it's possible to enable graphics for
+S390 using the Virtio GPU device.
 
+To enable display we need to enable the Linux Virtual Terminal (VT)
+layer for S390. But the VT subsystem initializes quite early
+at boot so we need a dummy console driver till the Virtio GPU
+driver is initialized and we can run the framebuffer console.
 
-On 02/21/2018 05:39 PM, Farhan Ali wrote:
-> 
-> 
-> On 02/21/2018 07:11 AM, Christian Borntraeger wrote:
->>
->>
->> On 02/21/2018 01:07 PM, Cornelia Huck wrote:
->> [...]
->>>>> But if you need to enable PCI to get IOMEM, I wonder why this patch here
->>>>> is needed at all? The Graphics menu / VT dummy console should be
->>>>> available in the config if IOMEM is enabled anyway?
->>>>
->>>> That is a good question. With CONFIG_PCI=y I can select virtio-gpu and dummy-console.
->>>> IIRC the issue was that with patch 3 we can have the situation where we have
->>>> CONFIG_VT = y and CONFIG_DUMMY_CONSOLE=n and this will crash early during boot as
->>>> conswitchp is NULL.
-> 
-> Yes, VT layer initializes very early in the boot process and looks for a console. If it can't find any it will crash. I believe that was the whole point of having the dummy console.
-> 
->>>
->>> So in practice, CONFIG_VT depends on "there's a console available, even
->>> if it's only the dummy one"?
->>
->> Yes. Maybe we should simple move dummy_console outside of drivers/video/console/Kconfig
->> into something that is always available.
->>
-> 
-> I agree, but where should it go? consoles are kinda tightly tied to video/Graphics Support.
-> 
->>>
->>>> This patches goal was to always enable dummy console even without
->>>> PCI, but it obviously fails to do so.
->>>
-> This patch should enable the dummy console even without PCI but we won't have DRM/Virtio GPU.
+The framebuffer console over a Virtio GPU device can be run
+in combination with the serial SCLP console (default on S390).
+The SCLP console can still be accessed by management applications
+(eg: via Libvirt's virsh console).
 
+Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
+Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+---
+ arch/s390/kernel/setup.c      | 2 ++
+ drivers/tty/Kconfig           | 2 +-
+ drivers/video/console/Kconfig | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
-All right. This patch then makes sure that VT does not crash since it guarantees
-that DUMMY_CONSOLE is available. If the user want to have virtio-gpu it needs to
-enable PCI due to the dependencies, but this is a different issue that we can fix
-later.
-So the patch is fine as long as you take care of these things
-
-- add missing HAS_IOMEM dependency to VGA_CONSOLE
-
-- extend "if HAS_IOMEM" in drivers/video/Kconfig to cover config items
-  previously covered by this dependency (it should start before config
-  HAVE_FB_ATMEL and end after config HDMI)
-
-as requested by Bartlomiej 
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index a6a91f0..f98a0f3 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -221,6 +221,8 @@ static void __init conmode_default(void)
+ 		SET_CONSOLE_SCLP;
+ #endif
+ 	}
++	if (IS_ENABLED(CONFIG_VT) && IS_ENABLED(CONFIG_DUMMY_CONSOLE))
++		conswitchp = &dummy_con;
+ }
+ 
+ #ifdef CONFIG_CRASH_DUMP
+diff --git a/drivers/tty/Kconfig b/drivers/tty/Kconfig
+index b811442..5ca53fa 100644
+--- a/drivers/tty/Kconfig
++++ b/drivers/tty/Kconfig
+@@ -11,7 +11,7 @@ if TTY
+ 
+ config VT
+ 	bool "Virtual terminal" if EXPERT
+-	depends on !S390 && !UML
++	depends on !UML
+ 	select INPUT
+ 	default y
+ 	---help---
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 9485857..b9c2c91 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -9,7 +9,7 @@ config VGA_CONSOLE
+ 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+-		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && HAS_IOMEM
++		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && HAS_IOMEM && !S390
+ 	default y
+ 	help
+ 	  Saying Y here will allow you to use Linux in text mode through a
+-- 
+2.7.4
 

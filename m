@@ -1,122 +1,67 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 16 Feb 2018 17:40:32 +0000
-Subject: [RESEND PATCH v5 3/5] pwm-backlight: add support for PWM delays proprieties.
-Message-Id: <20180216174034.15936-3-enric.balletbo@collabora.com>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Thu, 22 Feb 2018 16:22:21 +0000
+Subject: [PATCH v4 0/3] Enable CONFIG_VT support for S390
+Message-Id: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180216174034.15936-1-enric.balletbo@collabora.com>
-In-Reply-To: <20180216174034.15936-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: thuth@redhat.com, borntraeger@de.ibm.com, cohuck@redhat.com, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com, geert@linux-m68k.org, alifm@linux.vnet.ibm.com
 
-Some panels (i.e. N116BGE-L41), in their power sequence specifications,
-request a delay between set the PWM signal and enable the backlight and
-between clear the PWM signal and disable the backlight. Add support for
-the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
-the timings.
+Hi,
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
----
-Changes since v4:
- - Rebased on top of mainline.
- - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
-Changes since v3:
- - Use two named members instead of pwm_delay[] (Daniel and Pavel)
- - Use msleep instead of usleep_range. (Pavel)
-Changes since v2:
- - Move the pwm/enable sequence to another patch (Thierry Reding)
-Changes since v1:
- - As suggested by Daniel Thompson
-   - Do not assume power-on delay and power-off delay will be the same
- - Move the check of dt property to the parse dt function.
+This series of patches add support for an additional tty
+and console for a S390 KVM guest using a virtio-gpu device[1].
 
- drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
- include/linux/pwm_backlight.h    |  2 ++
- 2 files changed, 21 insertions(+)
+Patch 1 enables the "Graphics support" menu which is
+needed to enable dummy console, since the VT layer needs it.
+The dependency is moved to sub menu items and console
+drivers now.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 698ec68bcdc9..8e3f1245f5c5 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -10,6 +10,7 @@
-  * published by the Free Software Foundation.
-  */
- 
-+#include <linux/delay.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio.h>
- #include <linux/module.h>
-@@ -35,6 +36,8 @@ struct pwm_bl_data {
- 	struct gpio_desc	*enable_gpio;
- 	unsigned int		scale;
- 	bool			legacy;
-+	unsigned int		post_pwm_on_delay;
-+	unsigned int		pwm_off_delay;
- 	int			(*notify)(struct device *,
- 					  int brightness);
- 	void			(*notify_after)(struct device *,
-@@ -56,6 +59,9 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 
- 	pwm_enable(pb->pwm);
- 
-+	if (pb->post_pwm_on_delay)
-+		msleep(pb->post_pwm_on_delay);
-+
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
- 
-@@ -70,6 +76,9 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
- 
-+	if (pb->pwm_off_delay)
-+		msleep(pb->pwm_off_delay);
-+
- 	pwm_config(pb->pwm, 0, pb->period);
- 	pwm_disable(pb->pwm);
- 
-@@ -178,6 +187,14 @@ static int pwm_backlight_parse_dt(struct device *dev,
- 		data->max_brightness--;
- 	}
- 
-+	/*
-+	 * These values are optional and set as 0 by default, the out values
-+	 * are modified only if a valid u32 value can be decoded.
-+	 */
-+	of_property_read_u32(node, "post-pwm-on-delay-ms",
-+			     &data->post_pwm_on_delay);
-+	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
-+
- 	data->enable_gpio = -EINVAL;
- 	return 0;
- }
-@@ -276,6 +293,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 	pb->exit = data->exit;
- 	pb->dev = &pdev->dev;
- 	pb->enabled = false;
-+	pb->post_pwm_on_delay = data->post_pwm_on_delay;
-+	pb->pwm_off_delay = data->pwm_off_delay;
- 
- 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
- 						  GPIOD_ASIS);
-diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
-index e8afbd71a140..8ea265a022fd 100644
---- a/include/linux/pwm_backlight.h
-+++ b/include/linux/pwm_backlight.h
-@@ -14,6 +14,8 @@ struct platform_pwm_backlight_data {
- 	unsigned int lth_brightness;
- 	unsigned int pwm_period_ns;
- 	unsigned int *levels;
-+	unsigned int post_pwm_on_delay;
-+	unsigned int pwm_off_delay;
- 	/* TODO remove once all users are switched to gpiod_* API */
- 	int enable_gpio;
- 	int (*init)(struct device *dev);
+Patch 2 fixes few linker issues.
+
+Patch 3 add support for enabling VT layer for S390.
+
+
+ChangeLog
+---------
+v3 -> v4
+   - Add r-b's.
+   - Move HAS_IOMEM dependency in drivers/video/Kconfig to cover
+     from config HAVE_FB_ATMEL to config HDMI (patch 1).
+   - Add HAS_IOMEM for VGA_CONSOLE (patch 1).
+
+v2 -> v3
+    - Move HAS_IOMEM dependency to sub menu items and console
+    drivers (patch 1)
+
+v1 -> v2
+
+v1 was posted under a different subject and here is a link to it:
+https://www.spinics.net/lists/linux-s390/msg18175.html
+
+   - Combine patch 1 and 2 from v1 into one patch (patch 1).
+   - Additional patches to enable CONFIG_VT for S390.
+
+
+Thanks
+Farhan
+
+Farhan Ali (3):
+  Kconfig : Remove HAS_IOMEM dependency for Graphics support
+  s390/char : Rename EBCDIC keymap variables
+  s390/setup : enable display support for KVM guest
+
+ arch/s390/kernel/setup.c      |  2 ++
+ drivers/s390/char/defkeymap.c | 66 ++++++++++++++++++++++---------------------
+ drivers/s390/char/keyboard.c  | 32 ++++++++++-----------
+ drivers/s390/char/keyboard.h  | 11 ++++++++
+ drivers/tty/Kconfig           |  2 +-
+ drivers/video/Kconfig         |  5 +++-
+ drivers/video/console/Kconfig |  6 ++--
+ 7 files changed, 71 insertions(+), 53 deletions(-)
+
 -- 
-2.15.1
+2.7.4
 

@@ -1,78 +1,111 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Fri, 16 Feb 2018 17:40:30 +0000
-Subject: [RESEND PATCH v5 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
-Message-Id: <20180216174034.15936-1-enric.balletbo@collabora.com>
+From: Claudiu Beznea <claudiu.beznea@microchip.com>
+Date: Thu, 22 Feb 2018 12:01:21 +0000
+Subject: [PATCH v3 10/10] pwm: atmel: add push-pull mode support
+Message-Id: <1519300881-8136-11-git-send-email-claudiu.beznea@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
+To: thierry.reding@gmail.com, shc_work@mail.ru, kgene@kernel.org, krzk@kernel.org, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, kamil@wypas.org, b.zolnierkie@samsung.com, jdelvare@suse.com, linux@roeck-us.net, dmitry.torokhov@gmail.com, rpurdie@rpsys.net, jacek.anaszewski@gmail.com, pavel@ucw.cz, mchehab@kernel.org, sean@mess.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, milo.kim@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com
+Cc: linux-hwmon@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-leds@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 
-Before this patch the enable signal was set before the PWM signal and
-vice-versa on power off. This sequence is wrong, at least, it is on
-the different panels datasheets that I checked, so I inverted the sequence
-to follow the specs.
+Add support for PWM push-pull mode. This is only supported by SAMA5D2 SoCs.
 
-For reference the following panels have the mentioned sequence:
-  - N133HSE-EA1 (Innolux)
-  - N116BGE (Innolux)
-  - N156BGE-L21 (Innolux)
-  - B101EAN0 (Auo)
-  - B101AW03 (Auo)
-  - LTN101NT05 (Samsung)
-  - CLAA101WA01A (Chunghwa)
-
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
 ---
-Changes since v4:
- - Rebase on top of mainline.
- - Add the acks from Daniel Thompson and Jingoo Han.
-Changes since v3:
- - List the part numbers for the panel checked (Daniel Thompson)
-Changes since v2:
- - Add this as a separate patch (Thierry Reding)
-Changes since v1:
- - None
+ drivers/pwm/pwm-atmel.c | 40 ++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 36 insertions(+), 4 deletions(-)
 
- drivers/video/backlight/pwm_bl.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 1c2289ddd555..698ec68bcdc9 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
+diff --git a/drivers/pwm/pwm-atmel.c b/drivers/pwm/pwm-atmel.c
+index d2482fe28cfa..da4b58c1ecf2 100644
+--- a/drivers/pwm/pwm-atmel.c
++++ b/drivers/pwm/pwm-atmel.c
+@@ -33,8 +33,11 @@
  
-+	pwm_enable(pb->pwm);
+ #define PWM_CMR			0x0
+ /* Bit field in CMR */
+-#define PWM_CMR_CPOL		(1 << 9)
+-#define PWM_CMR_UPD_CDTY	(1 << 10)
++#define PWM_CMR_CPOL		BIT(9)
++#define PWM_CMR_UPD_CDTY	BIT(10)
++#define PWM_CMR_DTHI		BIT(17)
++#define PWM_CMR_DTLI		BIT(18)
++#define PWM_CMR_PPM		BIT(19)
+ #define PWM_CMR_CPRE_MSK	0xF
+ 
+ /* The following registers for PWM v1 */
+@@ -219,16 +222,19 @@ static int atmel_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ {
+ 	struct atmel_pwm_chip *atmel_pwm = to_atmel_pwm_chip(chip);
+ 	struct pwm_state cstate;
++	struct pwm_caps caps;
+ 	unsigned long cprd, cdty;
+ 	u32 pres, val;
+ 	int ret;
+ 
+ 	pwm_get_state(pwm, &cstate);
++	pwm_get_caps(chip, pwm, &caps);
+ 
+ 	if (state->enabled) {
+ 		if (cstate.enabled &&
+ 		    cstate.polarity = state->polarity &&
+-		    cstate.period = state->period) {
++		    cstate.period = state->period &&
++		    cstate.mode = state->mode) {
+ 			cprd = atmel_pwm_ch_readl(atmel_pwm, pwm->hwpwm,
+ 						  atmel_pwm->data->regs.period);
+ 			atmel_pwm_calculate_cdty(state, cprd, &cdty);
+@@ -263,6 +269,18 @@ static int atmel_pwm_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+ 			val &= ~PWM_CMR_CPOL;
+ 		else
+ 			val |= PWM_CMR_CPOL;
 +
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
- 
--	pwm_enable(pb->pwm);
- 	pb->enabled = true;
- }
- 
-@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (!pb->enabled)
- 		return;
- 
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
- 
-+	pwm_config(pb->pwm, 0, pb->period);
-+	pwm_disable(pb->pwm);
++		/* PWM mode. */
++		if (caps.modes & PWM_MODE(PUSH_PULL)) {
++			if (state->mode = PWM_MODE(PUSH_PULL)) {
++				val |= PWM_CMR_PPM | PWM_CMR_DTLI;
++				val &= ~PWM_CMR_DTHI;
++			} else {
++				val &= ~(PWM_CMR_PPM | PWM_CMR_DTLI |
++					 PWM_CMR_DTHI);
++			}
++		}
 +
- 	regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
+ 		atmel_pwm_ch_writel(atmel_pwm, pwm->hwpwm, PWM_CMR, val);
+ 		atmel_pwm_set_cprd_cdty(chip, pwm, cprd, cdty);
+ 		mutex_lock(&atmel_pwm->isr_lock);
+@@ -315,6 +333,20 @@ static const struct atmel_pwm_data atmel_pwm_data_v2 = {
+ 	},
+ };
+ 
++static const struct atmel_pwm_data atmel_pwm_data_v3 = {
++	.regs = {
++		.period		= PWMV2_CPRD,
++		.period_upd	= PWMV2_CPRDUPD,
++		.duty		= PWMV2_CDTY,
++		.duty_upd	= PWMV2_CDTYUPD,
++	},
++	.caps = {
++		.modes = PWM_MODE(NORMAL) |
++			 PWM_MODE(COMPLEMENTARY) |
++			 PWM_MODE(PUSH_PULL),
++	},
++};
++
+ static const struct platform_device_id atmel_pwm_devtypes[] = {
+ 	{
+ 		.name = "at91sam9rl-pwm",
+@@ -337,7 +369,7 @@ static const struct of_device_id atmel_pwm_dt_ids[] = {
+ 		.data = &atmel_pwm_data_v2,
+ 	}, {
+ 		.compatible = "atmel,sama5d2-pwm",
+-		.data = &atmel_pwm_data_v2,
++		.data = &atmel_pwm_data_v3,
+ 	}, {
+ 		/* sentinel */
+ 	},
 -- 
-2.15.1
+2.7.4
 

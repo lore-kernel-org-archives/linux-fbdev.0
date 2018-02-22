@@ -1,29 +1,86 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 23 Feb 2018 15:23:41 +0000
-Subject: Re: [PATCH v2 0/3] backlight: document sysfs interfaces
-Message-Id: <20180223082341.5f19f8d2@lwn.net>
+From: Farhan Ali <alifm@linux.vnet.ibm.com>
+Date: Thu, 22 Feb 2018 16:22:22 +0000
+Subject: [PATCH v4 1/3] Kconfig : Remove HAS_IOMEM dependency for Graphics support
+Message-Id: <6e8ef238162df5be4462126be155975c722e9863.1519315352.git.alifm@linux.vnet.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1517902411.git.aishpant@gmail.com>
-In-Reply-To: <cover.1517902411.git.aishpant@gmail.com>
+References: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
+In-Reply-To: <cover.1519315352.git.alifm@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aishwarya Pant <aishpant@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Julia Lawall <julia.lawall@lip6.fr>, Greg KH <gregkh@linuxfoundation.org>, Lee Jones <lee.jones@linaro.org>
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: thuth@redhat.com, borntraeger@de.ibm.com, cohuck@redhat.com, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com, geert@linux-m68k.org, alifm@linux.vnet.ibm.com
 
-On Tue, 6 Feb 2018 13:08:41 +0530
-Aishwarya Pant <aishpant@gmail.com> wrote:
+The 'commit e25df1205f37 ("[S390] Kconfig: menus with depends on HAS_IOMEM.")'
+added the HAS_IOMEM dependecy for "Graphics support". This disabled the
+"Graphics support" menu for S390. But if we enable VT layer for S390,
+we would also need to enable the dummy console. So let's remove the
+HAS_IOMEM dependency.
 
-> Patchset contains documentation of the sysfs interfaces for the
-> following five backlight drivers-
-> 1) lm3639
-> 2) adp5520
-> 3) adp8860
-> 
-> It was compiled from data sheets, reading code and git history logs. In v2 of
-> the patches, documentation for lp8788 and lp855x devices was dropped as the
-> attributes contained debug information.
+Move this dependency to sub menu items and console drivers that use
+io memory.
 
-I've applied the set to the docs tree, thanks.
+Signed-off-by: Farhan Ali <alifm@linux.vnet.ibm.com>
+Reviewed-by: Thomas Huth <thuth@redhat.com>
+---
+ drivers/video/Kconfig         | 5 ++++-
+ drivers/video/console/Kconfig | 6 +++---
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-jon
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3c20af9..4f950c6 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -3,7 +3,8 @@
+ #
+ 
+ menu "Graphics support"
+-	depends on HAS_IOMEM
++
++if HAS_IOMEM
+ 
+ config HAVE_FB_ATMEL
+ 	bool
+@@ -36,6 +37,8 @@ config VIDEOMODE_HELPERS
+ config HDMI
+ 	bool
+ 
++endif # HAS_IOMEM
++
+ if VT
+ 	source "drivers/video/console/Kconfig"
+ endif
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 7f1f1fb..9485857 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -9,7 +9,7 @@ config VGA_CONSOLE
+ 	depends on !4xx && !PPC_8xx && !SPARC && !M68K && !PARISC && !FRV && \
+ 		!SUPERH && !BLACKFIN && !AVR32 && !MN10300 && !CRIS && \
+ 		(!ARM || ARCH_FOOTBRIDGE || ARCH_INTEGRATOR || ARCH_NETWINDER) && \
+-		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC
++		!ARM64 && !ARC && !MICROBLAZE && !OPENRISC && HAS_IOMEM
+ 	default y
+ 	help
+ 	  Saying Y here will allow you to use Linux in text mode through a
+@@ -85,7 +85,7 @@ config MDA_CONSOLE
+ 
+ config SGI_NEWPORT_CONSOLE
+         tristate "SGI Newport Console support"
+-        depends on SGI_IP22 
++        depends on SGI_IP22 && HAS_IOMEM
+         select FONT_SUPPORT
+         help
+           Say Y here if you want the console on the Newport aka XL graphics
+@@ -153,7 +153,7 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+ 
+ config STI_CONSOLE
+         bool "STI text console"
+-        depends on PARISC
++        depends on PARISC && HAS_IOMEM
+         select FONT_SUPPORT
+         default y
+         help
+-- 
+2.7.4
+

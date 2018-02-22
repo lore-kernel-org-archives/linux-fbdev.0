@@ -1,160 +1,44 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Sat, 03 Feb 2018 17:42:25 +0000
-Subject: warning: "EDID_LENGTH" redefined (was Re: [PATCH v4] Fix loading of module radeonfb on PowerMac)
-Message-Id: <CA+7wUsyS=burMw_FPyX8sU99_iMk1Ee1x3iBUiFMff7J0Av6Vg@mail.gmail.com>
+From: Claudiu Beznea <claudiu.beznea@microchip.com>
+Date: Thu, 22 Feb 2018 12:01:15 +0000
+Subject: [PATCH v3 04/10] pwm: pxa: populate PWM mode in of_xlate function
+Message-Id: <1519300881-8136-5-git-send-email-claudiu.beznea@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
+In-Reply-To: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Airlie <airlied@redhat.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org
+To: thierry.reding@gmail.com, shc_work@mail.ru, kgene@kernel.org, krzk@kernel.org, linux@armlinux.org.uk, mturquette@baylibre.com, sboyd@codeaurora.org, jani.nikula@linux.intel.com, joonas.lahtinen@linux.intel.com, rodrigo.vivi@intel.com, airlied@linux.ie, kamil@wypas.org, b.zolnierkie@samsung.com, jdelvare@suse.com, linux@roeck-us.net, dmitry.torokhov@gmail.com, rpurdie@rpsys.net, jacek.anaszewski@gmail.com, pavel@ucw.cz, mchehab@kernel.org, sean@mess.org, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, milo.kim@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, corbet@lwn.net, nicolas.ferre@microchip.com, alexandre.belloni@free-electrons.com
+Cc: linux-hwmon@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, devicetree@vger.kernel.org, intel-gfx@lists.freedesktop.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Claudiu Beznea <claudiu.beznea@microchip.com>, linux-leds@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-media@vger.kernel.org
 
-Hi Dave,
+Populate PWM mode in of_xlate function to avoid pwm_apply_state() failure.
 
-Since I am not very familiar with the drm vs fbdev architecture, could
-you please suggest a patch for the following [*].
+Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+---
+ drivers/pwm/pwm-pxa.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Reference:
-f453ba0460742 (Dave Airlie         2008-11-07 14:05:41 -0800  32)
-#define EDID_LENGTH 128
+diff --git a/drivers/pwm/pwm-pxa.c b/drivers/pwm/pwm-pxa.c
+index 4143a46684d2..7a035716e054 100644
+--- a/drivers/pwm/pwm-pxa.c
++++ b/drivers/pwm/pwm-pxa.c
+@@ -155,12 +155,16 @@ static struct pwm_device *
+ pxa_pwm_of_xlate(struct pwm_chip *pc, const struct of_phandle_args *args)
+ {
+ 	struct pwm_device *pwm;
++	struct pwm_caps caps;
+ 
+ 	pwm = pwm_request_from_chip(pc, 0, NULL);
+ 	if (IS_ERR(pwm))
+ 		return pwm;
+ 
++	pwm_get_caps(pc, pwm, &caps);
++
+ 	pwm->args.period = args->args[0];
++	pwm->args.mode = BIT(ffs(caps.modes) - 1);
+ 
+ 	return pwm;
+ }
+-- 
+2.7.4
 
-
-Thanks
-
-[*]
-On Sat, Feb 3, 2018 at 3:39 AM, kbuild test robot <lkp@intel.com> wrote:
-> Hi Mathieu,
->
-> Thank you for the patch! Perhaps something to improve:
->
-> [auto build test WARNING on linus/master]
-> [also build test WARNING on v4.15 next-20180202]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
->
-> url:    https://github.com/0day-ci/linux/commits/Mathieu-Malaterre/Fix-loading-of-module-radeonfb-on-PowerMac/20180203-085907
-> config: x86_64-randconfig-x009-201804 (attached as .config)
-> compiler: gcc-7 (Debian 7.2.0-12) 7.2.1 20171025
-> reproduce:
->         # save the attached .config to linux build tree
->         make ARCH=x86_64
->
-> All warnings (new ones prefixed by >>):
->
->    In file included from drivers/video/fbdev/aty/radeon_base.c:91:0:
->>> drivers/video/fbdev/aty/../edid.h:21:0: warning: "EDID_LENGTH" redefined
->     #define EDID_LENGTH    0x80
->
->    In file included from include/drm/drm_crtc.h:44:0,
->                     from include/drm/drm_fb_helper.h:35,
->                     from drivers/video/fbdev/aty/radeon_base.c:73:
->    include/drm/drm_edid.h:32:0: note: this is the location of the previous definition
->     #define EDID_LENGTH 128
->
->    Cyclomatic Complexity 1 arch/x86/include/asm/bitops.h:fls64
->    Cyclomatic Complexity 1 include/linux/log2.h:__ilog2_u64
->    Cyclomatic Complexity 1 include/asm-generic/getorder.h:__get_order
->    Cyclomatic Complexity 1 include/linux/string.h:strnlen
->    Cyclomatic Complexity 4 include/linux/string.h:strlen
->    Cyclomatic Complexity 6 include/linux/string.h:strlcpy
->    Cyclomatic Complexity 4 include/linux/string.h:memcpy
->    Cyclomatic Complexity 1 arch/x86/include/asm/paravirt.h:arch_local_irq_disable
->    Cyclomatic Complexity 1 arch/x86/include/asm/paravirt.h:arch_local_irq_enable
->    Cyclomatic Complexity 1 include/linux/spinlock.h:spinlock_check
->    Cyclomatic Complexity 1 include/linux/spinlock.h:spin_unlock_irqrestore
->    Cyclomatic Complexity 1 include/linux/jiffies.h:_msecs_to_jiffies
->    Cyclomatic Complexity 3 include/linux/jiffies.h:msecs_to_jiffies
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readb
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readw
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:readl
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:writeb
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:writel
->    Cyclomatic Complexity 1 arch/x86/include/asm/io.h:ioremap
->    Cyclomatic Complexity 1 include/linux/kobject.h:kobject_name
->    Cyclomatic Complexity 2 include/linux/device.h:dev_name
->    Cyclomatic Complexity 1 include/linux/device.h:dev_get_drvdata
->    Cyclomatic Complexity 1 include/linux/device.h:dev_set_drvdata
->    Cyclomatic Complexity 1 include/linux/io.h:arch_phys_wc_add
->    Cyclomatic Complexity 1 include/linux/io.h:arch_phys_wc_del
->    Cyclomatic Complexity 68 include/linux/slab.h:kmalloc_large
->    Cyclomatic Complexity 3 include/linux/slab.h:kmalloc
->    Cyclomatic Complexity 1 include/linux/slab.h:kzalloc
->    Cyclomatic Complexity 1 include/linux/pci.h:pci_get_drvdata
->    Cyclomatic Complexity 1 include/linux/pci.h:pci_set_drvdata
->    Cyclomatic Complexity 1 include/linux/pci.h:pci_name
->    Cyclomatic Complexity 2 include/linux/fb.h:alloc_apertures
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeonfb.h:radeon_pll_errata_after_index
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeonfb.h:radeon_pll_errata_after_data
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:round_div
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeonfb.h:var_to_depth
->    Cyclomatic Complexity 5 drivers/video/fbdev/aty/radeonfb.h:radeon_get_dstbpp
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:radeonfb_bl_init
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeonfb.h:radeonfb_bl_exit
->    Cyclomatic Complexity 1 include/drm/drm_fb_helper.h:drm_fb_helper_remove_conflicting_framebuffers
->    Cyclomatic Complexity 21 drivers/video/fbdev/aty/radeon_base.c:radeon_calc_pll_regs
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeonfb_exit
->    Cyclomatic Complexity 6 drivers/video/fbdev/aty/radeon_base.c:radeon_find_mem_vbios
->    Cyclomatic Complexity 4 drivers/video/fbdev/aty/radeon_base.c:radeon_kick_out_firmware_fb
->    Cyclomatic Complexity 5 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pci_unregister
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_show_one_edid
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_show_edid2
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_show_edid1
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_set_fbinfo
->    Cyclomatic Complexity 18 drivers/video/fbdev/aty/radeon_base.c:radeonfb_check_var
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_unmap_ROM
->    Cyclomatic Complexity 7 drivers/video/fbdev/aty/radeon_base.c:radeon_map_ROM
->    Cyclomatic Complexity 16 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setup
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeonfb_init
->    Cyclomatic Complexity 8 drivers/video/fbdev/aty/radeon_base.c:_radeon_msleep
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_pll_errata_after_index_slow
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_pll_errata_after_data_slow
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:_OUTREGP
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__INPLL
->    Cyclomatic Complexity 20 drivers/video/fbdev/aty/radeon_base.c:radeon_probe_pll_params
->    Cyclomatic Complexity 10 drivers/video/fbdev/aty/radeon_base.c:radeon_get_pllinfo
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:radeon_save_state
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__OUTPLL
->    Cyclomatic Complexity 1 drivers/video/fbdev/aty/radeon_base.c:__OUTPLLP
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:_radeon_fifo_wait
->    Cyclomatic Complexity 17 drivers/video/fbdev/aty/radeon_base.c:radeon_write_pll_regs
->    Cyclomatic Complexity 25 drivers/video/fbdev/aty/radeon_base.c:radeon_identify_vram
->    Cyclomatic Complexity 31 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pci_register
->    Cyclomatic Complexity 10 drivers/video/fbdev/aty/radeon_base.c:radeonfb_ioctl
->    Cyclomatic Complexity 4 drivers/video/fbdev/aty/radeon_base.c:radeonfb_pan_display
->    Cyclomatic Complexity 16 drivers/video/fbdev/aty/radeon_base.c:radeon_setcolreg
->    Cyclomatic Complexity 9 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setcmap
->    Cyclomatic Complexity 6 drivers/video/fbdev/aty/radeon_base.c:radeonfb_setcolreg
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:radeon_engine_flush
->    Cyclomatic Complexity 3 drivers/video/fbdev/aty/radeon_base.c:_radeon_engine_idle
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeon_lvds_timer_func
->    Cyclomatic Complexity 17 drivers/video/fbdev/aty/radeon_base.c:radeon_screen_blank
->    Cyclomatic Complexity 2 drivers/video/fbdev/aty/radeon_base.c:radeonfb_blank
->    Cyclomatic Complexity 7 drivers/video/fbdev/aty/radeon_base.c:radeon_write_mode
->    Cyclomatic Complexity 42 drivers/video/fbdev/aty/radeon_base.c:radeonfb_set_par
->    In file included from drivers/video/fbdev/aty/radeon_base.c:91:0:
->>> drivers/video/fbdev/aty/../edid.h:21:0: warning: "EDID_LENGTH" redefined
->     #define EDID_LENGTH    0x80
->
->    In file included from include/drm/drm_crtc.h:44:0,
->                     from include/drm/drm_fb_helper.h:35,
->                     from drivers/video/fbdev/aty/radeon_base.c:73:
->    include/drm/drm_edid.h:32:0: note: this is the location of the previous definition
->     #define EDID_LENGTH 128
->
->
-> vim +/EDID_LENGTH +21 drivers/video/fbdev/aty/../edid.h
->
-> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  20
-> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16 @21  #define EDID_LENGTH                                0x80
-> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  22  #define EDID_HEADER                                0x00
-> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  23  #define EDID_HEADER_END                            0x07
-> ^1da177e drivers/video/edid.h Linus Torvalds 2005-04-16  24
->
-> :::::: The code at line 21 was first introduced by commit
-> :::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
->
-> :::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
-> :::::: CC: Linus Torvalds <torvalds@ppc970.osdl.org>
->
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation

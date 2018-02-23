@@ -1,41 +1,59 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 27 Feb 2018 00:04:18 +0000
-Subject: [PATCH 1/3] console: SisUSB2VGA: Drop dummy con_font_get()
-Message-Id: <1519689860-7421-2-git-send-email-keescook@chromium.org>
+From: Aishwarya Pant <aishpant@gmail.com>
+Date: Fri, 23 Feb 2018 13:35:52 +0000
+Subject: [RESEND PATCH v2] Documentation/ABI: add sysfs interface for s6e63m0 lcd driver
+Message-Id: <20180223132352.GA25436@mordor.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519689860-7421-1-git-send-email-keescook@chromium.org>
-In-Reply-To: <1519689860-7421-1-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kees Cook <keescook@chromium.org>, Thomas Winischhofer <thomas@winischhofer.net>, Sami Tolvanen <samitolvanen@google.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nicolas Pitre <nicolas.pitre@linaro.org>, linux-usb@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
+Cc: Julia Lawall <julia.lawall@lip6.fr>
 
-As done in commit:
+Document sysfs attributes of s6e63m0 lcd panel driver by looking through
+git logs and reading code.
 
-  724ba8b30b04 ("console/dummy: leave .con_font_get set to NULL")
-
-This drops the dummy .con_font_get(), as it could leave arguments
-uninitialized.
-
-Cc: Thomas Winischhofer <thomas@winischhofer.net>
-Signed-off-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
 ---
- drivers/usb/misc/sisusbvga/sisusb_con.c | 1 -
- 1 file changed, 1 deletion(-)
+Changes in v2:
+- Convert spaces to tabs
 
-diff --git a/drivers/usb/misc/sisusbvga/sisusb_con.c b/drivers/usb/misc/sisusbvga/sisusb_con.c
-index 73f7bde78e11..998df891bdde 100644
---- a/drivers/usb/misc/sisusbvga/sisusb_con.c
-+++ b/drivers/usb/misc/sisusbvga/sisusb_con.c
-@@ -1358,7 +1358,6 @@ static const struct consw sisusb_dummy_con = {
- 	.con_switch =		SISUSBCONDUMMY,
- 	.con_blank =		SISUSBCONDUMMY,
- 	.con_font_set =		SISUSBCONDUMMY,
--	.con_font_get =		SISUSBCONDUMMY,
- 	.con_font_default =	SISUSBCONDUMMY,
- 	.con_font_copy =	SISUSBCONDUMMY,
- };
+ Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 | 27 +++++++++++++++++++++++
+ 1 file changed, 27 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+
+diff --git a/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0 b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+new file mode 100644
+index 000000000000..ae0a2d3dcc07
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+@@ -0,0 +1,27 @@
++sysfs interface for the S6E63M0 AMOLED LCD panel driver
++-------------------------------------------------------
++
++What:		/sys/class/lcd/<lcd>/gamma_mode
++Date:		May, 2010
++KernelVersion:	v2.6.35
++Contact:	dri-devel@lists.freedesktop.org
++Description:
++		(RW) Read or write the gamma mode. Following three modes are
++		supported:
++		0 - gamma value 2.2,
++		1 - gamma value 1.9 and
++		2 - gamma value 1.7.
++
++
++What:		/sys/class/lcd/<lcd>/gamma_table
++Date:		May, 2010
++KernelVersion:	v2.6.35
++Contact:	dri-devel@lists.freedesktop.org
++Description:
++		(RO) Displays the size of the gamma table i.e. the number of
++		gamma modes available.
++
++This is a backlight lcd driver. These interfaces are an extension to the API
++documented in Documentation/ABI/testing/sysfs-class-lcd and in
++Documentation/ABI/stable/sysfs-class-backlight (under
++/sys/class/backlight/<backlight>/).
 -- 
-2.7.4
+2.16.2
 

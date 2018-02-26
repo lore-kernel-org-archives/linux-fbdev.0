@@ -1,239 +1,91 @@
-From: "Jingoo Han" <jingoohan1@gmail.com>
-Date: Wed, 14 Feb 2018 21:56:53 +0000
-Subject: Re: [PATCH] video: fbdev: s3c-fb: remove dead platform code for Exynos and S5PV210 platforms
-Message-Id: <000001d3a5de$b9d2d080$2d787180$@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Mon, 26 Feb 2018 13:00:07 +0000
+Subject: v4.16-rc0: missing includes in framebuffers break N900 compilation
+Message-Id: <20180226130007.GA5634@amd>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="YiEDa0DAkWCtVeE4"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180214120041epcas2p37afd51e693a9cad842e59128a77d45ac@epcas2p3.samsung.com> <2621881.tniV7NOQqn@amdc3058>
-In-Reply-To: <2621881.tniV7NOQqn@amdc3058>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: 'Bartlomiej Zolnierkiewicz' <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-
-On Wednesday, February 14, 2018 7:01 AM wrote:
-> 
-> Exynos5, Exynos4 and S5PV210 platforms have been converted to
-> use Device Tree and Exynos DRM driver long time ago.  Remove
-> dead platform code for these platforms and update Kconfig
-> s3c-fb entry accordingly.
-> 
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
-
-Best regards,
-Jingoo Han
-
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> ---
->  drivers/video/fbdev/Kconfig  |    3
->  drivers/video/fbdev/s3c-fb.c |  162 -------------------------------------
-> ------
->  2 files changed, 1 insertion(+), 164 deletions(-)
-> 
-> Index: b/drivers/video/fbdev/Kconfig
-> =================================> --- a/drivers/video/fbdev/Kconfig	2018-02-12 14:28:32.392677896
-> +0100
-> +++ b/drivers/video/fbdev/Kconfig	2018-02-14 12:54:06.399057592
-> +0100
-> @@ -2020,8 +2020,7 @@ config FB_TMIO_ACCELL
-> 
->  config FB_S3C
->  	tristate "Samsung S3C framebuffer support"
-> -	depends on FB && (CPU_S3C2416 || ARCH_S3C64XX || \
-> -		ARCH_S5PV210 || ARCH_EXYNOS)
-> +	depends on FB && (CPU_S3C2416 || ARCH_S3C64XX)
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> Index: b/drivers/video/fbdev/s3c-fb.c
-> =================================> --- a/drivers/video/fbdev/s3c-fb.c	2017-10-18 14:35:22.063448310
-> +0200
-> +++ b/drivers/video/fbdev/s3c-fb.c	2018-02-14 12:04:00.719262463
-> +0100
-> @@ -1716,63 +1716,6 @@ static struct s3c_fb_win_variant s3c_fb_
->  	},
->  };
-> 
-> -static struct s3c_fb_win_variant s3c_fb_data_s5p_wins[] = {
-> -	[0] = {
-> -		.has_osd_c	= 1,
-> -		.osd_size_off	= 0x8,
-> -		.palette_sz	= 256,
-> -		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
-> -				   VALID_BPP(15) | VALID_BPP(16) |
-> -				   VALID_BPP(18) | VALID_BPP(19) |
-> -				   VALID_BPP(24) | VALID_BPP(25) |
-> -				   VALID_BPP(32)),
-> -	},
-> -	[1] = {
-> -		.has_osd_c	= 1,
-> -		.has_osd_d	= 1,
-> -		.osd_size_off	= 0xc,
-> -		.has_osd_alpha	= 1,
-> -		.palette_sz	= 256,
-> -		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
-> -				   VALID_BPP(15) | VALID_BPP(16) |
-> -				   VALID_BPP(18) | VALID_BPP(19) |
-> -				   VALID_BPP(24) | VALID_BPP(25) |
-> -				   VALID_BPP(32)),
-> -	},
-> -	[2] = {
-> -		.has_osd_c	= 1,
-> -		.has_osd_d	= 1,
-> -		.osd_size_off	= 0xc,
-> -		.has_osd_alpha	= 1,
-> -		.palette_sz	= 256,
-> -		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
-> -				   VALID_BPP(15) | VALID_BPP(16) |
-> -				   VALID_BPP(18) | VALID_BPP(19) |
-> -				   VALID_BPP(24) | VALID_BPP(25) |
-> -				   VALID_BPP(32)),
-> -	},
-> -	[3] = {
-> -		.has_osd_c	= 1,
-> -		.has_osd_alpha	= 1,
-> -		.palette_sz	= 256,
-> -		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
-> -				   VALID_BPP(15) | VALID_BPP(16) |
-> -				   VALID_BPP(18) | VALID_BPP(19) |
-> -				   VALID_BPP(24) | VALID_BPP(25) |
-> -				   VALID_BPP(32)),
-> -	},
-> -	[4] = {
-> -		.has_osd_c	= 1,
-> -		.has_osd_alpha	= 1,
-> -		.palette_sz	= 256,
-> -		.valid_bpp	= (VALID_BPP1248 | VALID_BPP(13) |
-> -				   VALID_BPP(15) | VALID_BPP(16) |
-> -				   VALID_BPP(18) | VALID_BPP(19) |
-> -				   VALID_BPP(24) | VALID_BPP(25) |
-> -				   VALID_BPP(32)),
-> -	},
-> -};
-> -
->  static struct s3c_fb_driverdata s3c_fb_data_64xx = {
->  	.variant = {
->  		.nr_windows	= 5,
-> @@ -1804,102 +1747,6 @@ static struct s3c_fb_driverdata s3c_fb_d
->  	.win[4]	= &s3c_fb_data_64xx_wins[4],
->  };
-> 
-> -static struct s3c_fb_driverdata s3c_fb_data_s5pv210 = {
-> -	.variant = {
-> -		.nr_windows	= 5,
-> -		.vidtcon	= VIDTCON0,
-> -		.wincon		= WINCON(0),
-> -		.winmap		= WINxMAP(0),
-> -		.keycon		= WKEYCON,
-> -		.osd		= VIDOSD_BASE,
-> -		.osd_stride	= 16,
-> -		.buf_start	= VIDW_BUF_START(0),
-> -		.buf_size	= VIDW_BUF_SIZE(0),
-> -		.buf_end	= VIDW_BUF_END(0),
-> -
-> -		.palette = {
-> -			[0] = 0x2400,
-> -			[1] = 0x2800,
-> -			[2] = 0x2c00,
-> -			[3] = 0x3000,
-> -			[4] = 0x3400,
-> -		},
-> -
-> -		.has_shadowcon	= 1,
-> -		.has_blendcon	= 1,
-> -		.has_clksel	= 1,
-> -		.has_fixvclk	= 1,
-> -	},
-> -	.win[0]	= &s3c_fb_data_s5p_wins[0],
-> -	.win[1]	= &s3c_fb_data_s5p_wins[1],
-> -	.win[2]	= &s3c_fb_data_s5p_wins[2],
-> -	.win[3]	= &s3c_fb_data_s5p_wins[3],
-> -	.win[4]	= &s3c_fb_data_s5p_wins[4],
-> -};
-> -
-> -static struct s3c_fb_driverdata s3c_fb_data_exynos4 = {
-> -	.variant = {
-> -		.nr_windows	= 5,
-> -		.vidtcon	= VIDTCON0,
-> -		.wincon		= WINCON(0),
-> -		.winmap		= WINxMAP(0),
-> -		.keycon		= WKEYCON,
-> -		.osd		= VIDOSD_BASE,
-> -		.osd_stride	= 16,
-> -		.buf_start	= VIDW_BUF_START(0),
-> -		.buf_size	= VIDW_BUF_SIZE(0),
-> -		.buf_end	= VIDW_BUF_END(0),
-> -
-> -		.palette = {
-> -			[0] = 0x2400,
-> -			[1] = 0x2800,
-> -			[2] = 0x2c00,
-> -			[3] = 0x3000,
-> -			[4] = 0x3400,
-> -		},
-> -
-> -		.has_shadowcon	= 1,
-> -		.has_blendcon	= 1,
-> -		.has_fixvclk	= 1,
-> -	},
-> -	.win[0]	= &s3c_fb_data_s5p_wins[0],
-> -	.win[1]	= &s3c_fb_data_s5p_wins[1],
-> -	.win[2]	= &s3c_fb_data_s5p_wins[2],
-> -	.win[3]	= &s3c_fb_data_s5p_wins[3],
-> -	.win[4]	= &s3c_fb_data_s5p_wins[4],
-> -};
-> -
-> -static struct s3c_fb_driverdata s3c_fb_data_exynos5 = {
-> -	.variant = {
-> -		.nr_windows	= 5,
-> -		.vidtcon	= FIMD_V8_VIDTCON0,
-> -		.wincon		= WINCON(0),
-> -		.winmap		= WINxMAP(0),
-> -		.keycon		= WKEYCON,
-> -		.osd		= VIDOSD_BASE,
-> -		.osd_stride	= 16,
-> -		.buf_start	= VIDW_BUF_START(0),
-> -		.buf_size	= VIDW_BUF_SIZE(0),
-> -		.buf_end	= VIDW_BUF_END(0),
-> -
-> -		.palette = {
-> -			[0] = 0x2400,
-> -			[1] = 0x2800,
-> -			[2] = 0x2c00,
-> -			[3] = 0x3000,
-> -			[4] = 0x3400,
-> -		},
-> -		.has_shadowcon	= 1,
-> -		.has_blendcon	= 1,
-> -		.has_fixvclk	= 1,
-> -	},
-> -	.win[0]	= &s3c_fb_data_s5p_wins[0],
-> -	.win[1]	= &s3c_fb_data_s5p_wins[1],
-> -	.win[2]	= &s3c_fb_data_s5p_wins[2],
-> -	.win[3]	= &s3c_fb_data_s5p_wins[3],
-> -	.win[4]	= &s3c_fb_data_s5p_wins[4],
-> -};
-> -
->  /* S3C2443/S3C2416 style hardware */
->  static struct s3c_fb_driverdata s3c_fb_data_s3c2443 = {
->  	.variant = {
-> @@ -1942,15 +1789,6 @@ static const struct platform_device_id s
->  		.name		= "s3c-fb",
->  		.driver_data	= (unsigned long)&s3c_fb_data_64xx,
->  	}, {
-> -		.name		= "s5pv210-fb",
-> -		.driver_data	= (unsigned long)&s3c_fb_data_s5pv210,
-> -	}, {
-> -		.name		= "exynos4-fb",
-> -		.driver_data	= (unsigned long)&s3c_fb_data_exynos4,
-> -	}, {
-> -		.name		= "exynos5-fb",
-> -		.driver_data	= (unsigned long)&s3c_fb_data_exynos5,
-> -	}, {
->  		.name		= "s3c2443-fb",
->  		.driver_data	= (unsigned long)&s3c_fb_data_s3c2443,
->  	},
+To: pali.rohar@gmail.com, sre@kernel.org, kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, khilman@kernel.org, aaro.koskinen@iki.fi, ivo.g.dimitrov.75@gmail.com, patrikbachan@gmail.com, serge@hallyn.com, abcloriens@gmail.com, clayton@craftyguy.net, martijn@brixit.nl, sakari.ailus@linux.intel.com, Filip =?utf-8?Q?Matijevi=C4=87?= <filip.matijevic.pz@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, arvind.yadav.cs@gmail.com, b.zolnierkie@samsung.com, tomi.valkeinen@ti.com
 
 
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+I needed this to get -rc0 to compile.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbd=
+ev/omap2/omapfb/dss/dss.c
+index 48c6500..990f1c9 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -38,6 +38,7 @@
+ #include <linux/regmap.h>
+ #include <linux/of.h>
+ #include <linux/regulator/consumer.h>
++#include <linux/pinctrl/consumer.h>
+ #include <linux/suspend.h>
+ #include <linux/component.h>
+=20
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c b/drivers/vide=
+o/fbdev/omap2/omapfb/dss/hdmi_phy.c
+index 9a13c35..4862b12 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_phy.c
+@@ -12,6 +12,7 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <video/omapfb_dss.h>
+=20
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c b/drivers/vide=
+o/fbdev/omap2/omapfb/dss/hdmi_pll.c
+index eac3665..39014e2 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_pll.c
+@@ -15,6 +15,7 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
++#include <linux/seq_file.h>
+ #include <linux/clk.h>
+=20
+ #include <video/omapfb_dss.h>
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c b/drivers/video=
+/fbdev/omap2/omapfb/dss/hdmi_wp.c
+index 705373e..e93e7a7 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi_wp.c
+@@ -15,6 +15,7 @@
+ #include <linux/io.h>
+ #include <linux/platform_device.h>
+ #include <video/omapfb_dss.h>
++#include <linux/seq_file.h>
+=20
+ #include "dss.h"
+ #include "hdmi.h"
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--YiEDa0DAkWCtVeE4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlqUBNcACgkQMOfwapXb+vIfMgCeK1l9FpnfJ/39acGCV5FKdk22
+K64AoJMjw+2UKG3qufvKwqtablp84OI9
+=A5kN
+-----END PGP SIGNATURE-----
+
+--YiEDa0DAkWCtVeE4--

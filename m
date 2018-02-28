@@ -1,128 +1,75 @@
-From: Claudiu Beznea <Claudiu.Beznea@microchip.com>
-Date: Tue, 27 Feb 2018 16:15:50 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Wed, 28 Feb 2018 19:44:30 +0000
 Subject: Re: [PATCH v3 05/10] pwm: add PWM mode to pwm_config()
-Message-Id: <66059303-3a17-d534-3581-9c03cc05a909@microchip.com>
+Message-Id: <20180228194429.GD22932@mithrandir>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="YToU2i3Vx8H2dn7O"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
  <1519300881-8136-6-git-send-email-claudiu.beznea@microchip.com>
- <20180222123308.mypx2r7n6o63mj5z@oak.lan> <87po4s2hve.fsf@intel.com>
- <3a70b89c-b470-3723-760c-5294d0a75230@microchip.com>
- <20180227105444.lo4pee7vh4we3foq@oak.lan>
- <8e1d3b30-3543-56fd-7be6-7fe6edcb40d9@microchip.com>
- <20180227153812.txt2vsdygfnobo33@oak.lan>
-In-Reply-To: <20180227153812.txt2vsdygfnobo33@oak.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: mark.rutland@arm.com, milo.kim@ti.com, linux-fbdev@vger.kernel.org, sean@mess.org, devicetree@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, kamil@wypas.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, pavel@ucw.cz, lee.jones@linaro.org, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, linux-samsung-soc@vger.kernel.org, shc_work@mail.ru, corbet@lwn.net, linux-doc@vger.kernel.org, linux@armlinux.org.uk, krzk@kernel.org, kgene@kernel.org, linux-input@vger.kernel.org, linux@roeck-us.net, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, jdelvare@suse.com, b.zolnierkie@samsung.com, intel-gfx@lists.freedesktop.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, rodrigo.vivi@intel.com, mchehab@kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.org, jingoohan1@gmail.com, dm
+In-Reply-To: <1519300881-8136-6-git-send-email-claudiu.beznea@microchip.com>
+To: Claudiu Beznea <claudiu.beznea@microchip.com>
+Cc: mark.rutland@arm.com, milo.kim@ti.com, linux-fbdev@vger.kernel.org, sean@mess.org, devicetree@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, kamil@wypas.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, pavel@ucw.cz, lee.jones@linaro.org, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, daniel.thompson@linaro.org, linux-samsung-soc@vger.kernel.org, shc_work@mail.ru, corbet@lwn.net, linux-doc@vger.kernel.org, linux@armlinux.org.uk, krzk@kernel.org, kgene@kernel.org, linux-input@vger.kernel.org, linux@roeck-us.net, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, jdelvare@suse.com, b.zolnierkie@samsung.com, intel-gfx@lists.freedesktop.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, rodrigo.vivi@intel.com, mchehab@kernel.org, linux-arm-kernel@lists.infradead.org, linux-hwmon@vger.kernel.or
 
 
+--YToU2i3Vx8H2dn7O
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 27.02.2018 17:38, Daniel Thompson wrote:
-> On Tue, Feb 27, 2018 at 01:40:58PM +0200, Claudiu Beznea wrote:
->> On 27.02.2018 12:54, Daniel Thompson wrote:
->>> On Mon, Feb 26, 2018 at 04:24:15PM +0200, Claudiu Beznea wrote:
->>>> On 26.02.2018 11:57, Jani Nikula wrote:
->>>>> On Thu, 22 Feb 2018, Daniel Thompson <daniel.thompson@linaro.org> wrote:
->>>>>> On Thu, Feb 22, 2018 at 02:01:16PM +0200, Claudiu Beznea wrote:
->>>>>>> Add PWM mode to pwm_config() function. The drivers which uses pwm_config()
->>>>>>> were adapted to this change.
->>>>>>>
->>>>>>> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
->>>>>>> ---
->>>>>>>  arch/arm/mach-s3c24xx/mach-rx1950.c  | 11 +++++++++--
->>>>>>>  drivers/bus/ts-nbus.c                |  2 +-
->>>>>>>  drivers/clk/clk-pwm.c                |  3 ++-
->>>>>>>  drivers/gpu/drm/i915/intel_panel.c   | 17 ++++++++++++++---
->>>>>>>  drivers/hwmon/pwm-fan.c              |  2 +-
->>>>>>>  drivers/input/misc/max77693-haptic.c |  2 +-
->>>>>>>  drivers/input/misc/max8997_haptic.c  |  6 +++++-
->>>>>>>  drivers/leds/leds-pwm.c              |  5 ++++-
->>>>>>>  drivers/media/rc/ir-rx51.c           |  5 ++++-
->>>>>>>  drivers/media/rc/pwm-ir-tx.c         |  5 ++++-
->>>>>>>  drivers/video/backlight/lm3630a_bl.c |  4 +++-
->>>>>>>  drivers/video/backlight/lp855x_bl.c  |  4 +++-
->>>>>>>  drivers/video/backlight/lp8788_bl.c  |  5 ++++-
->>>>>>>  drivers/video/backlight/pwm_bl.c     | 11 +++++++++--
->>>>>>>  drivers/video/fbdev/ssd1307fb.c      |  3 ++-
->>>>>>>  include/linux/pwm.h                  |  6 ++++--
->>>>>>>  16 files changed, 70 insertions(+), 21 deletions(-)
->>>>>>>
->>>>>>> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
->>>>>>> index 2030a6b77a09..696fa25dafd2 100644
->>>>>>> --- a/drivers/video/backlight/lm3630a_bl.c
->>>>>>> +++ b/drivers/video/backlight/lm3630a_bl.c
->>>>>>> @@ -165,8 +165,10 @@ static void lm3630a_pwm_ctrl(struct lm3630a_chip *pchip, int br, int br_max)
->>>>>>>  {
->>>>>>>  	unsigned int period = pchip->pdata->pwm_period;
->>>>>>>  	unsigned int duty = br * period / br_max;
->>>>>>> +	struct pwm_caps caps = { };
->>>>>>>  
->>>>>>> -	pwm_config(pchip->pwmd, duty, period);
->>>>>>> +	pwm_get_caps(pchip->pwmd->chip, pchip->pwmd, &caps);
->>>>>>> +	pwm_config(pchip->pwmd, duty, period, BIT(ffs(caps.modes) - 1));
->>>>>>
->>>>>> Well... I admit I've only really looked at the patches that impact 
->>>>>> backlight but dispersing this really odd looking bit twiddling 
->>>>>> throughout the kernel doesn't strike me a great API design.
->>>>>>
->>>>>> IMHO callers should not be required to find the first set bit in
->>>>>> some specially crafted set of capability bits simply to get sane 
->>>>>> default behaviour.
->>>>>
->>>>> Agreed. IMHO the regular use case becomes rather tedious, ugly, and
->>>>> error prone.
->>>>
->>>> Using simply PWM_MODE(NORMAL) instead of BIT(ffs(caps.modes) - 1) would be OK
->>>> from your side?
->>>>
->>>> Or, what about using a function like pwm_mode_first() to get the first supported
->>>> mode by PWM channel?
->>>>
->>>> Or, would you prefer to solve this inside pwm_config() function, let's say, in
->>>> case an invalid mode is passed as argument, to let pwm_config() to choose the
->>>> first available PWM mode for PWM channel passed as argument?
->>>
->>> What is it that actually needs solving?
->>>
->>> If a driver requests normal mode and the PWM driver cannot support it
->>> why not just return an error an move on.
->> Because, simply, I wasn't aware of what these PWM client drivers needs for.
-> 
-> I'm afraid you have confused me here.
-> 
-> Didn't you just *add* the whole concept of PWM caps with your patches?
-> How could any existing call site expect anything except normal mode.
-> Until now there has been no possiblity to request anything else.
-Agree. And agree I was confusing in previous email, sorry about that. And
-agree that there was nothing before and everything should work with PWM
-normal mode.
+On Thu, Feb 22, 2018 at 02:01:16PM +0200, Claudiu Beznea wrote:
+> Add PWM mode to pwm_config() function. The drivers which uses pwm_config()
+> were adapted to this change.
+>=20
+> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+> ---
+>  arch/arm/mach-s3c24xx/mach-rx1950.c  | 11 +++++++++--
+>  drivers/bus/ts-nbus.c                |  2 +-
+>  drivers/clk/clk-pwm.c                |  3 ++-
+>  drivers/gpu/drm/i915/intel_panel.c   | 17 ++++++++++++++---
+>  drivers/hwmon/pwm-fan.c              |  2 +-
+>  drivers/input/misc/max77693-haptic.c |  2 +-
+>  drivers/input/misc/max8997_haptic.c  |  6 +++++-
+>  drivers/leds/leds-pwm.c              |  5 ++++-
+>  drivers/media/rc/ir-rx51.c           |  5 ++++-
+>  drivers/media/rc/pwm-ir-tx.c         |  5 ++++-
+>  drivers/video/backlight/lm3630a_bl.c |  4 +++-
+>  drivers/video/backlight/lp855x_bl.c  |  4 +++-
+>  drivers/video/backlight/lp8788_bl.c  |  5 ++++-
+>  drivers/video/backlight/pwm_bl.c     | 11 +++++++++--
+>  drivers/video/fbdev/ssd1307fb.c      |  3 ++-
+>  include/linux/pwm.h                  |  6 ++++--
+>  16 files changed, 70 insertions(+), 21 deletions(-)
 
-When I choose to have BIT(ffs(caps.modes)) instead of PWM_MODE(NORMAL) I
-was thinking at having these pwm_config() calls working all the time having
-in mind that in future the PWM controllers that these drivers use, might
-change in terms of PWM supported modes.
+I don't think it makes sense to leak mode support into the legacy API.
+The pwm_config() function is considered legacy and should eventually go
+away. As such it doesn't make sense to integrate a new feature such as
+PWM modes into it. All users of pwm_config() assume normal mode, and
+that's what pwm_config() should provide.
 
-Thank you,
-Claudiu Beznea
+Anyone that needs something other than normal mode should use the new
+atomic PWM API.
 
-> 
-> 
->>> Put another way, what is the use case for secretly adopting a mode the
->>> caller didn't want? Under what circumstances is this a good thing?
->> No one... But I wasn't aware of what the PWM clients needs for from their PWM
->> controllers. At this moment having BIT(ffs(caps.modes)) instead of
->> PWM_MODE(NORMAL) is mostly the same since all the driver that has not explicitly
->> registered PWM caps will use PWM normal mode.
->>
->> I will use PWM_MODE(NORMAL) instead of this in all the cases if this is OK from
->> your side.
->>
->> Thank you,
->> Claudiu Beznea
->>>
->>>
->>> Daniel.
->>>
-> 
+Thierry
+
+--YToU2i3Vx8H2dn7O
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlqXBpoACgkQ3SOs138+
+s6GLrhAAuRLaoghLArJWd7JYjdi7JlVWdIer5OiGaY3qO2G2OnJBxBWctd+VJ/t+
+uTtC29oNgm7jzgwf7JiGUm3yVMx/S2rW6+s0JbeVp0xXBO7Lhd6EMZbSzOC3BBHB
+0RyqgEGoZRfaI++4LM9L6sMvHQ5lEt0PimKAug9MsXsxWOW88slB4Ll9Z/APl/Wr
+mCWW1qN2fs2F1hQdFAhE3ujMogEfRuW0/KwFkHa223ud/i1LJNe0jkIMnEYgWsCX
+x1my31QvhyMRxYQwp1FA3eAqHGnWo3yTXZYOYGBc3nJdm0UVQL59XX0UXduCVVPo
+YDwxSRZn04DADA5nBXplNIpG7qsELxrLUXcnB84D6Jstz17m4NSDknnHh/XkHgS7
+Q0SM/+jDqLzHHlhnCWmAJ9SBbvvrUDnXlCoMzmDoTzGN7fp74wFT1flIXILA91Lh
+AF/x1TWs5HV78+fowFUWVK2Fhc0zyNGYmDd7wQ2jlKjxETDcmXH+IoRHn48bcuio
+FphZkj4Un2o5X9O7jSRi5vHuJcmlHT30NsWgMduK9dWzq0wXih6zH/TTQk8N2rHM
+2+eijd/BDQum2RuK8mg2klvye5jrXp7f+iT305hUYoz4fmmMddqFiybi1nUHkTkA
+UG05BweYZ6hjEkpavMW0zeGEvWuZWwZZNHzKaOpJ/aRseA7Jpb0=
+=zbqh
+-----END PGP SIGNATURE-----
+
+--YToU2i3Vx8H2dn7O--

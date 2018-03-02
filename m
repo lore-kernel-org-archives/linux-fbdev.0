@@ -1,46 +1,63 @@
-From: Palmer Dabbelt <palmer@sifive.com>
-Date: Tue, 20 Mar 2018 17:11:47 +0000
-Subject: Re: [PATCH 00/16] remove eight obsolete architectures
-Message-Id: <mhng-f6731cb9-8394-419d-b14b-c6fcd6c0930d@palmer-si-x1c4>
+From: Claudiu Beznea <Claudiu.Beznea@microchip.com>
+Date: Fri, 02 Mar 2018 09:19:43 +0000
+Subject: Re: [PATCH v3 05/10] pwm: add PWM mode to pwm_config()
+Message-Id: <0c3fc3ba-8640-0b2c-a9ec-ab848227c92d@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAK8P3a01pfvsdM1mR8raU9dA7p4H-jRJz2Y8-+KEY76W_Mukpg@mail.gmail.com>
-In-Reply-To: <CAK8P3a01pfvsdM1mR8raU9dA7p4H-jRJz2Y8-+KEY76W_Mukpg-JsoAwUIsXosN+BqQ9rBEUg@public.gmane.org>
+References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
+ <1519300881-8136-6-git-send-email-claudiu.beznea@microchip.com>
+ <20180228194429.GD22932@mithrandir>
+In-Reply-To: <20180228194429.GD22932@mithrandir>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: hare-l3A5Bk7waGM@public.gmane.org, dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org, linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fsdevel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: mark.rutland@arm.com, milo.kim@ti.com, linux-fbdev@vger.kernel.org, sean@mess.org, devicetree@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, joonas.lahtinen@linux.intel.com, kamil@wypas.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, pavel@ucw.cz, lee.jones@linaro.org, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, daniel.thompson@linaro.org, linux-samsung-soc@vger.kernel.org, shc_work@mail.ru, corbet@lwn.net, linux-doc@vger.kernel.org, linux@armlinux.org.uk, krzk@kernel.org, kgene@kernel.org, linux-input@vger.kernel.org, linux@roeck-us.net, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, jdelvare@suse.com, b.zolnierkie@samsung.com, intel-gfx@lists.freedesktop.org, jani.nikula@linux.intel.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, rodrigo.vivi@intel.com, mchehab@kernel.orgl
 
-On Thu, 15 Mar 2018 03:42:25 PDT (-0700), Arnd Bergmann wrote:
-> On Thu, Mar 15, 2018 at 10:59 AM, Hannes Reinecke <hare@suse.de> wrote:
->> On 03/15/2018 10:42 AM, David Howells wrote:
->>> Do we have anything left that still implements NOMMU?
->>>
->> RISC-V ?
->> (evil grin :-)
->
-> Is anyone producing a chip that includes enough of the Privileged ISA spec
-> to have things like system calls, but not the MMU parts?
->
-> I thought at least initially the kernel only supports hardware that has a rather
-> complete feature set.
 
-We currently do not have a NOMMU port.  As far as I know, everyone who's
-currently producing RISC-V hardware with enough memory to run Linux has S mode
-with paging support.  The ISA allows for S mode without paging but there's no
-hardware for that -- if you're going to put a DRAM controller on there then
-paging seems pretty cheap.  You could run a NOMMU port on a system with S-mode
-and paging, but With all the superpage stuff I don't think you'll get an
-appreciable performance win for any workload running without an MMU so there's
-nothing to justify the work (and incompatibility) of a NOMMU port there.
 
-While I think you could implement a NOMMU port on a machine with only M and U
-modes (and therefor no address translation at all), I don't know of any MU-only
-machines that have enough memory to run Linux (ours have less than 32KiB).  A
-SBI-free Linux would be a prerequisite for this, but there's some interest in
-that outside of a NOMMU port so it might materialize anyway.
+On 28.02.2018 21:44, Thierry Reding wrote:
+> On Thu, Feb 22, 2018 at 02:01:16PM +0200, Claudiu Beznea wrote:
+>> Add PWM mode to pwm_config() function. The drivers which uses pwm_config()
+>> were adapted to this change.
+>>
+>> Signed-off-by: Claudiu Beznea <claudiu.beznea@microchip.com>
+>> ---
+>>  arch/arm/mach-s3c24xx/mach-rx1950.c  | 11 +++++++++--
+>>  drivers/bus/ts-nbus.c                |  2 +-
+>>  drivers/clk/clk-pwm.c                |  3 ++-
+>>  drivers/gpu/drm/i915/intel_panel.c   | 17 ++++++++++++++---
+>>  drivers/hwmon/pwm-fan.c              |  2 +-
+>>  drivers/input/misc/max77693-haptic.c |  2 +-
+>>  drivers/input/misc/max8997_haptic.c  |  6 +++++-
+>>  drivers/leds/leds-pwm.c              |  5 ++++-
+>>  drivers/media/rc/ir-rx51.c           |  5 ++++-
+>>  drivers/media/rc/pwm-ir-tx.c         |  5 ++++-
+>>  drivers/video/backlight/lm3630a_bl.c |  4 +++-
+>>  drivers/video/backlight/lp855x_bl.c  |  4 +++-
+>>  drivers/video/backlight/lp8788_bl.c  |  5 ++++-
+>>  drivers/video/backlight/pwm_bl.c     | 11 +++++++++--
+>>  drivers/video/fbdev/ssd1307fb.c      |  3 ++-
+>>  include/linux/pwm.h                  |  6 ++++--
+>>  16 files changed, 70 insertions(+), 21 deletions(-)
+> 
+> I don't think it makes sense to leak mode support into the legacy API.
+> The pwm_config() function is considered legacy
+I missed this aspect.
 
-Of course, QEMU could probably be tricked into emulating one of these machines
-with little to no effort :)...  That said, I doubt we'll see a NOMMU port
-materialize without some real hardware as it's a lot of work for a QEMU-only
-target.
+ and should eventually go
+> away. As such it doesn't make sense to integrate a new feature such as
+> PWM modes into it. 
+Agree.
+
+All users of pwm_config() assume normal mode, and
+> that's what pwm_config() should provide.
+Agree.
+
+> 
+> Anyone that needs something other than normal mode should use the new
+> atomic PWM API.
+Agree.
+
+> 
+> Thierry
+> 

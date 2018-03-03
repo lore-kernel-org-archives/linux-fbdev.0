@@ -1,22 +1,17 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Mon, 19 Mar 2018 18:06:07 +0000
-Subject: [PATCH 4.9 102/241] printk: Correctly handle preemption in console_unlock()
-Message-Id: <20180319180755.427526044@linuxfoundation.org>
+From: Sasha Levin <Alexander.Levin@microsoft.com>
+Date: Sat, 03 Mar 2018 22:28:56 +0000
+Subject: [PATCH AUTOSEL for 4.9 105/219] printk: Correctly handle preemption in console_unlock()
+Message-Id: <20180303222716.26640-105-alexander.levin@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180319180751.172155436@linuxfoundation.org>
-In-Reply-To: <20180319180751.172155436@linuxfoundation.org>
+References: <20180303222716.26640-1-alexander.levin@microsoft.com>
+In-Reply-To: <20180303222716.26640-1-alexander.levin@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Sasha Levin <alexander.levin@microsoft.com>
-
-4.9-stable review patch.  If anyone has any objections, please let me know.
-
-------------------
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stable@vger.kernel.org" <stable@vger.kernel.org>
+Cc: Petr Mladek <pmladek@suse.com>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Sasha Levin <Alexander.Levin@microsoft.com>
 
 From: Petr Mladek <pmladek@suse.com>
-
 
 [ Upstream commit 257ab443118bffc7fdcef38f49cf59be68a3e362 ]
 
@@ -67,11 +62,12 @@ Cc: linux-kernel@vger.kernel.org
 Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Signed-off-by: Petr Mladek <pmladek@suse.com>
 Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- kernel/printk/printk.c |    8 ++++++--
+ kernel/printk/printk.c | 8 ++++++--
  1 file changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 9c5b231684d0..ab6855a4218b 100644
 --- a/kernel/printk/printk.c
 +++ b/kernel/printk/printk.c
 @@ -2342,7 +2342,7 @@ void console_unlock(void)
@@ -100,5 +96,5 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
  	/*
  	 * We released the console_sem lock, so we need to recheck if
  	 * cpu is online and (if not) is there at least one CON_ANYTIME
-
-
+-- 
+2.14.1

@@ -1,74 +1,42 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:10 +0000
-Subject: [PATCHv4 06/10] mfd: ti-lmu: add PWM support
-Message-Id: <20180330172414.26575-7-sebastian.reichel@collabora.co.uk>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 07 Mar 2018 19:47:03 +0000
+Subject: [PATCH] video: fbdev: via_aux_vt1636: remove VLA usage
+Message-Id: <20180307194703.GA3862@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-This adds support to acquire the optional PWM channel,
-that can be used by some of the LMU variants.
+In preparation to enabling -Wvla, remove VLA and replace it
+with a fixed-length array instead. Also, remove variable 'len'.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Notice that no new IDs have been added in seven years.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/mfd/ti-lmu.c       | 11 +++++++++++
- include/linux/mfd/ti-lmu.h |  3 +++
- 2 files changed, 14 insertions(+)
+ drivers/video/fbdev/via/via_aux_vt1636.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-index ce16c896879b..f43b8acc30e1 100644
---- a/drivers/mfd/ti-lmu.c
-+++ b/drivers/mfd/ti-lmu.c
-@@ -183,6 +183,17 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		return ret;
- 	}
+diff --git a/drivers/video/fbdev/via/via_aux_vt1636.c b/drivers/video/fbdev/via/via_aux_vt1636.c
+index 9e015c1..d6273a4 100644
+--- a/drivers/video/fbdev/via/via_aux_vt1636.c
++++ b/drivers/video/fbdev/via/via_aux_vt1636.c
+@@ -35,10 +35,10 @@ void via_aux_vt1636_probe(struct via_aux_bus *bus)
+ 		.addr	=	0x40,
+ 		.name	=	name};
+ 	/* check vendor id and device id */
+-	const u8 id[] = {0x06, 0x11, 0x45, 0x33}, len = ARRAY_SIZE(id);
+-	u8 tmp[len];
++	const u8 id[4] = {0x06, 0x11, 0x45, 0x33};
++	u8 tmp[4];
  
-+	lmu->pwm = devm_pwm_get(dev, "lmu-backlight");
-+	if (IS_ERR(lmu->pwm)) {
-+		ret = PTR_ERR(lmu->pwm);
-+		if (ret != -EINVAL) {
-+			dev_err(dev, "Failed to get PWM: %d\n", ret);
-+			return ret;
-+		}
-+
-+		lmu->pwm = NULL;
-+	}
-+
- 	ret = ti_lmu_enable_hw(lmu, id->driver_data);
- 	if (ret)
- 		return ret;
-diff --git a/include/linux/mfd/ti-lmu.h b/include/linux/mfd/ti-lmu.h
-index 1ef51ed36be5..246ab5145dff 100644
---- a/include/linux/mfd/ti-lmu.h
-+++ b/include/linux/mfd/ti-lmu.h
-@@ -17,6 +17,7 @@
- #include <linux/notifier.h>
- #include <linux/regmap.h>
- #include <linux/gpio/consumer.h>
-+#include <linux/pwm.h>
+-	if (!via_aux_read(&drv, 0x00, tmp, len) || memcmp(id, tmp, len))
++	if (!via_aux_read(&drv, 0x00, tmp, 4) || memcmp(id, tmp, 4))
+ 		return;
  
- /* Notifier event */
- #define LMU_EVENT_MONITOR_DONE		0x01
-@@ -77,12 +78,14 @@ enum lm363x_regulator_id {
-  * @dev:	Parent device pointer
-  * @regmap:	Used for i2c communcation on accessing registers
-  * @en_gpio:	GPIO for HWEN pin [Optional]
-+ * @pwm:	PWM for module [Optional]
-  * @notifier:	Notifier for reporting hwmon event
-  */
- struct ti_lmu {
- 	struct device *dev;
- 	struct regmap *regmap;
- 	struct gpio_desc *en_gpio;
-+	struct pwm_device *pwm;
- 	struct blocking_notifier_head notifier;
- };
- #endif
+ 	printk(KERN_INFO "viafb: Found %s\n", name);
 -- 
-2.16.2
+2.7.4
 

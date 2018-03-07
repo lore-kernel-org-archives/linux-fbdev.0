@@ -1,67 +1,102 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Sun, 25 Mar 2018 16:29:40 +0000
-Subject: Re: [PATCH V2 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <201803260023.gnm8GYCI%fengguang.wu@intel.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 07 Mar 2018 13:03:54 +0000
+Subject: Re: [PATCH v2] Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
+Message-Id: <2367982.TLCx2xJjlb@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521600894-29919-5-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1521600894-29919-5-git-send-email-aisheng.dong@nxp.com>
+References: <20180130203042.4797-1-peter.malone@gmail.com>
+        <CGME20180204141807epcas1p1039a2ae47bed656a1fd456bb868a182b@epcas1p1.samsung.com>
+        <CALGb=fQFwgn6=JLq0_5WkwkTpASCXzO_sGPR0BzT3cuF58nzBg@mail.gmail.com>
+In-Reply-To: <CALGb=fQFwgn6=JLq0_5WkwkTpASCXzO_sGPR0BzT3cuF58nzBg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Peter Malone <peter.malone@gmail.com>
+Cc: Mathieu Malaterre <malat@debian.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel@vger.kernel.org
 
-Hi Dong,
+On Sunday, February 04, 2018 09:18:03 AM Peter Malone wrote:
+> Hi folks,
 
-Thank you for the patch! Perhaps something to improve:
+Hi,
 
-[auto build test WARNING on clk/clk-next]
-[also build test WARNING on v4.16-rc6 next-20180323]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+> CVE-2018-6412 has been created for this. Is it possible for you to add
+> a note indicating the CVE number when merging the patch?
+> 
+> I received the CVE number after the patch was created and ack'd, which
+> is why I didn't include it in the commit message.
 
-url:    https://github.com/0day-ci/linux/commits/Dong-Aisheng/clk-new-APIs-to-handle-all-available-clocks/20180323-185821
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/clk/linux.git clk-next
+I queued the patch (with Mathieu's ACK and CVE number added to the patch
+description) for v4.16, thanks.
 
-smatch warnings:
-drivers/video/fbdev/simplefb.c:222 simplefb_clocks_get() warn: unsigned 'par->clk_count' is never less than zero.
+> On Wed, Jan 31, 2018 at 10:49 AM, Mathieu Malaterre <malat@debian.org> wrote:
+> > Hi Peter,
+> >
+> > On Wed, Jan 31, 2018 at 3:57 PM, Peter Malone <peter.malone@gmail.com> wrote:
+> >> Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in
+> >> sbusfb_ioctl_helper().
+> >>
+> >> 'index' is defined as an int in sbusfb_ioctl_helper().
+> >> We retrieve this from the user:
+> >> if (get_user(index, &c->index) ||
+> >>     __get_user(count, &c->count) ||
+> >>     __get_user(ured, &c->red) ||
+> >>     __get_user(ugreen, &c->green) ||
+> >>     __get_user(ublue, &c->blue))
+> >>        return -EFAULT;
+> >>
+> >> and then we use 'index' in the following way:
+> >> red = cmap->red[index + i] >> 8;
+> >> green = cmap->green[index + i] >> 8;
+> >> blue = cmap->blue[index + i] >> 8;
+> >>
+> >> This is a classic information leak vulnerability. 'index' should be
+> >> an unsigned int, given its usage above.
+> >>
+> >> This patch is straight-forward; it changes 'index' to unsigned int
+> >> in two switch-cases: FBIOGETCMAP_SPARC && FBIOPUTCMAP_SPARC.
+> >>
+> >> Signed-off-by: Peter Malone <peter.malone@gmail.com>
+> >> ---
+> >
+> > much better :)
+> >
+> >> v2: fixed formatting
+> >>
+> >>  drivers/video/fbdev/sbuslib.c | 4 ++--
+> >>  1 file changed, 2 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+> >> index af6fc97f4ba4..a436d44f1b7f 100644
+> >> --- a/drivers/video/fbdev/sbuslib.c
+> >> +++ b/drivers/video/fbdev/sbuslib.c
+> >> @@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+> >>                 unsigned char __user *ured;
+> >>                 unsigned char __user *ugreen;
+> >>                 unsigned char __user *ublue;
+> >> -               int index, count, i;
+> >> +               unsigned int index, count, i;
+> >>
+> >>                 if (get_user(index, &c->index) ||
+> >>                     __get_user(count, &c->count) ||
+> >> @@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+> >>                 unsigned char __user *ugreen;
+> >>                 unsigned char __user *ublue;
+> >>                 struct fb_cmap *cmap = &info->cmap;
+> >> -               int index, count, i;
+> >> +               unsigned int index, count, i;
+> >>                 u8 red, green, blue;
+> >>
+> >>                 if (get_user(index, &c->index) ||
+> >> --
+> >> 2.14.3
+> >>
+> >
+> > By just looking at the code and commit message:
+> >
+> > Acked-by: Mathieu Malaterre <malat@debian.org>
 
-vim +222 drivers/video/fbdev/simplefb.c
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-   193	
-   194	#if defined CONFIG_OF && defined CONFIG_COMMON_CLK
-   195	/*
-   196	 * Clock handling code.
-   197	 *
-   198	 * Here we handle the clocks property of our "simple-framebuffer" dt node.
-   199	 * This is necessary so that we can make sure that any clocks needed by
-   200	 * the display engine that the bootloader set up for us (and for which it
-   201	 * provided a simplefb dt node), stay up, for the life of the simplefb
-   202	 * driver.
-   203	 *
-   204	 * When the driver unloads, we cleanly disable, and then release the clocks.
-   205	 *
-   206	 * We only complain about errors here, no action is taken as the most likely
-   207	 * error can only happen due to a mismatch between the bootloader which set
-   208	 * up simplefb, and the clock definitions in the device tree. Chances are
-   209	 * that there are no adverse effects, and if there are, a clean teardown of
-   210	 * the fb probe will not help us much either. So just complain and carry on,
-   211	 * and hope that the user actually gets a working fb at the end of things.
-   212	 */
-   213	static int simplefb_clocks_get(struct simplefb_par *par,
-   214				       struct platform_device *pdev)
-   215	{
-   216		struct device_node *np = pdev->dev.of_node;
-   217	
-   218		if (dev_get_platdata(&pdev->dev) || !np)
-   219			return 0;
-   220	
-   221		par->clk_count = clk_bulk_get_all(&pdev->dev, &par->clks);
- > 222		if ((par->clk_count < 0) && (par->clk_count = -EPROBE_DEFER))
-   223			return -EPROBE_DEFER;
-   224	
-   225		return 0;
-   226	}
-   227	
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation

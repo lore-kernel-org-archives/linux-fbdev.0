@@ -1,88 +1,42 @@
-From: Stephen Boyd <sboyd@kernel.org>
-Date: Fri, 23 Mar 2018 16:56:57 +0000
-Subject: Re: [PATCH V2 2/4] clk: add new APIs to operate on all available clocks
-Message-Id: <152182421754.178046.7553203878044979411@swboyd.mtv.corp.google.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 07 Mar 2018 19:54:15 +0000
+Subject: [PATCH] video: fbdev: via_aux_vt1632: remove VLA usage
+Message-Id: <20180307195415.GA666@embeddedgus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
- <1521602391-30356-3-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1521602391-30356-3-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
 
-Quoting Dong Aisheng (2018-03-20 20:19:49)
-> @@ -50,6 +52,38 @@ static int __must_check of_clk_bulk_get(struct device_node *np, int num_clks,
->         return ret;
->  }
->  EXPORT_SYMBOL(of_clk_bulk_get);
-> +
-> +static int __must_check of_clk_bulk_get_all(struct device_node *np,
-> +                                           struct clk_bulk_data **clks)
-> +{
-> +       struct clk_bulk_data *clk_bulk;
-> +       int num_clks;
-> +       int ret;
-> +
-> +       num_clks = of_clk_get_parent_count(np);
-> +       if (!num_clks)
-> +               return 0;
-> +
-> +       clk_bulk = kcalloc(num_clks, sizeof(*clk_bulk), GFP_KERNEL);
+In preparation to enabling -Wvla, remove VLA and replace it
+with a fixed-length array instead. Also, remove variable 'len'.
 
-Can be kmalloc_array? of_clk_bulk_get() already clears things out
-appropriately.
+Notice that no new IDs have been added in seven years.
 
-> +       if (!clk_bulk)
-> +               return -ENOMEM;
-> +
-> +       ret = of_clk_bulk_get(np, num_clks, clk_bulk);
-> +       if (ret) {
-> +               kfree(clk_bulk);
-> +               return ret;
-> +       }
-> +
-> +       *clks = clk_bulk;
-> +
-> +       return num_clks;
-> +}
-> +#else
-> +static int __must_check of_clk_bulk_get_all(struct device_node *np,
-> +                                           struct clk_bulk_data **clks)
-> +{
-> +       return -ENOENT;
-> +}
->  #endif
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/via/via_aux_vt1632.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-This else can probably be dropped too.
+diff --git a/drivers/video/fbdev/via/via_aux_vt1632.c b/drivers/video/fbdev/via/via_aux_vt1632.c
+index d24f4cd..0cd0d2a 100644
+--- a/drivers/video/fbdev/via/via_aux_vt1632.c
++++ b/drivers/video/fbdev/via/via_aux_vt1632.c
+@@ -35,10 +35,10 @@ static void probe(struct via_aux_bus *bus, u8 addr)
+ 		.addr	=	addr,
+ 		.name	=	name};
+ 	/* check vendor id and device id */
+-	const u8 id[] = {0x06, 0x11, 0x92, 0x31}, len = ARRAY_SIZE(id);
+-	u8 tmp[len];
++	const u8 id[4] = {0x06, 0x11, 0x92, 0x31};
++	u8 tmp[4];
+ 
+-	if (!via_aux_read(&drv, 0x00, tmp, len) || memcmp(id, tmp, len))
++	if (!via_aux_read(&drv, 0x00, tmp, 4) || memcmp(id, tmp, 4))
+ 		return;
+ 
+ 	printk(KERN_INFO "viafb: Found %s at address 0x%x\n", name, addr);
+-- 
+2.7.4
 
->  
->  void clk_bulk_put(int num_clks, struct clk_bulk_data *clks)
-> @@ -90,6 +124,29 @@ int __must_check clk_bulk_get(struct device *dev, int num_clks,
->  }
->  EXPORT_SYMBOL(clk_bulk_get);
->  
-> +void clk_bulk_put_all(int num_clks, struct clk_bulk_data *clks)
-> +{
-> +       if (IS_ERR_OR_NULL(clks))
-> +               return;
-> +
-> +       clk_bulk_put(num_clks, clks);
-> +
-> +       kfree(clks);
-> +}
-> +EXPORT_SYMBOL(clk_bulk_put_all);
-> +
-> +int __must_check clk_bulk_get_all(struct device *dev,
-> +                                 struct clk_bulk_data **clks)
-> +{
-> +       struct device_node *np = dev_of_node(dev);
-> +
-> +       if (!np)
-> +               return 0;
-> +
-> +       return of_clk_bulk_get_all(np, clks);
-> +}
-> +EXPORT_SYMBOL(clk_bulk_get_all);
-
-Looks better!

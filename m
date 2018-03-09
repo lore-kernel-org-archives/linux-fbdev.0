@@ -1,75 +1,76 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:51 +0000
-Subject: [PATCH v2 18/21] serial: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-19-git-send-email-geert@linux-m68k.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 09 Mar 2018 16:26:47 +0000
+Subject: [GIT PULL] fbdev fix for v4.16-rc5
+Message-Id: <5453854.qdYKEQ567K@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <CGME20180309162650epcas1p117f2feb3b030f08733884288a17cf933@epcas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Hi Linus,
 
-This simplifies the dependencies, and allows to improve compile-testing.
+Please pull fbdev fix for v4.16-rc5 (just a single fix to close
+kernel data leak in FBIOGETCMAP_SPARC ioctl).
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/tty/serial/Kconfig | 4 ----
- 1 file changed, 4 deletions(-)
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 3682fd3e960cbd64..a0ea146a2ef5af53 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -115,7 +115,6 @@ config SERIAL_SB1250_DUART_CONSOLE
+
+The following changes since commit 661e50bc853209e41a5c14a290ca4decc43cbfd1:
+
+  Linux 4.16-rc4 (2018-03-04 14:54:11 -0800)
+
+are available in the git repository at:
+
+  https://github.com/bzolnier/linux.git tags/fbdev-v4.16-rc5
+
+for you to fetch changes up to 250c6c49e3b68756b14983c076183568636e2bde:
+
+  fbdev: Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper(). (2018-03-07 14:00:34 +0100)
+
+----------------------------------------------------------------
+fbdev fix for v4.16-rc5:
+
+- fix kernel data leak in FBIOGETCMAP_SPARC ioctl (Peter Malone)
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (1):
+      Merge tag 'v4.16-rc4' of git://git.kernel.org/.../torvalds/linux into fbdev-for-next
+
+Peter Malone (1):
+      fbdev: Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
+
+ drivers/video/fbdev/sbuslib.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index af6fc97..a436d44 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ured;
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+-		int index, count, i;
++		unsigned int index, count, i;
  
- config SERIAL_ATMEL
- 	bool "AT91 on-chip serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -586,7 +585,6 @@ config BFIN_UART3_CTSRTS
+ 		if (get_user(index, &c->index) ||
+ 		    __get_user(count, &c->count) ||
+@@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned char __user *ugreen;
+ 		unsigned char __user *ublue;
+ 		struct fb_cmap *cmap = &info->cmap;
+-		int index, count, i;
++		unsigned int index, count, i;
+ 		u8 red, green, blue;
  
- config SERIAL_IMX
- 	tristate "IMX serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_MXC || COMPILE_TEST
- 	select SERIAL_CORE
- 	select RATIONAL
-@@ -1436,7 +1434,6 @@ config SERIAL_PCH_UART_CONSOLE
- 
- config SERIAL_MXS_AUART
- 	tristate "MXS AUART support"
--	depends on HAS_DMA
- 	depends on ARCH_MXS || MACH_ASM9260 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -1656,7 +1653,6 @@ config SERIAL_SPRD_CONSOLE
- config SERIAL_STM32
- 	tristate "STMicroelectronics STM32 serial port support"
- 	select SERIAL_CORE
--	depends on HAS_DMA
- 	depends on ARCH_STM32 || COMPILE_TEST
- 	help
- 	  This driver is for the on-chip Serial Controller on
--- 
-2.7.4
+ 		if (get_user(index, &c->index) ||
+
 

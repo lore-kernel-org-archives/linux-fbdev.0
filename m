@@ -1,76 +1,29 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 09 Mar 2018 16:26:47 +0000
-Subject: [GIT PULL] fbdev fix for v4.16-rc5
-Message-Id: <5453854.qdYKEQ567K@amdc3058>
+Date: Mon, 12 Mar 2018 15:01:45 +0000
+Subject: Re: [PATCH] video: console: kconfig: Remove AVR32 dep. from VGA_CONSOLE
+Message-Id: <12268684.R5uc9OLfbC@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180309162650epcas1p117f2feb3b030f08733884288a17cf933@epcas1p1.samsung.com>
+References: <20180206120825.GF5681@sirena.org.uk>
+        <CGME20180206225334epcas4p3f1bf4f40c1fbc4bed23dd79445df1b3a@epcas4p3.samsung.com>
+        <20180206225254.20036-1-ulfalizer@gmail.com>
+In-Reply-To: <20180206225254.20036-1-ulfalizer@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Ulf Magnusson <ulfalizer@gmail.com>
+Cc: broonie@kernel.org, linux-kernel@vger.kernel.org, clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, seanpaul@chromium.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
+On Tuesday, February 06, 2018 11:52:46 PM Ulf Magnusson wrote:
+> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
+> support for AVR32 architecture").
+> 
+> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
 
-Hi Linus,
-
-Please pull fbdev fix for v4.16-rc5 (just a single fix to close
-kernel data leak in FBIOGETCMAP_SPARC ioctl).
+Patch queued for 4.17, thanks.
 
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
-
-
-The following changes since commit 661e50bc853209e41a5c14a290ca4decc43cbfd1:
-
-  Linux 4.16-rc4 (2018-03-04 14:54:11 -0800)
-
-are available in the git repository at:
-
-  https://github.com/bzolnier/linux.git tags/fbdev-v4.16-rc5
-
-for you to fetch changes up to 250c6c49e3b68756b14983c076183568636e2bde:
-
-  fbdev: Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper(). (2018-03-07 14:00:34 +0100)
-
-----------------------------------------------------------------
-fbdev fix for v4.16-rc5:
-
-- fix kernel data leak in FBIOGETCMAP_SPARC ioctl (Peter Malone)
-
-----------------------------------------------------------------
-Bartlomiej Zolnierkiewicz (1):
-      Merge tag 'v4.16-rc4' of git://git.kernel.org/.../torvalds/linux into fbdev-for-next
-
-Peter Malone (1):
-      fbdev: Fixing arbitrary kernel leak in case FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().
-
- drivers/video/fbdev/sbuslib.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index af6fc97..a436d44 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -122,7 +122,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		unsigned char __user *ured;
- 		unsigned char __user *ugreen;
- 		unsigned char __user *ublue;
--		int index, count, i;
-+		unsigned int index, count, i;
- 
- 		if (get_user(index, &c->index) ||
- 		    __get_user(count, &c->count) ||
-@@ -161,7 +161,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		unsigned char __user *ugreen;
- 		unsigned char __user *ublue;
- 		struct fb_cmap *cmap = &info->cmap;
--		int index, count, i;
-+		unsigned int index, count, i;
- 		u8 red, green, blue;
- 
- 		if (get_user(index, &c->index) ||
-
 

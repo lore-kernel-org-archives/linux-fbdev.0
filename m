@@ -1,33 +1,58 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 13:19:05 +0000
-Subject: Re: [PATCH] fbdev: aty: fix missing indentation in if statement
-Message-Id: <3386391.UTD4dglipH@amdc3058>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 14 Mar 2018 15:35:31 +0000
+Subject: [PATCH 18/47] fbdev: s1d13xxxfb: remove m32r specific hacks
+Message-Id: <20180314153603.3127932-19-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180315181633epcas2p19407707285ccc33c3fcd2c8c0d071a57@epcas2p1.samsung.com>
- <20180315181624.18684-1-colin.king@canonical.com>
-In-Reply-To: <20180315181624.18684-1-colin.king@canonical.com>
+References: <20180314153603.3127932-1-arnd@arndb.de>
+In-Reply-To: <20180314153603.3127932-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Thomas Gleixner <tglx@linutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Kristoffer Ericson <kristoffer.ericson@gmail.com>, dri-devel@lists.freedesktop.org, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Thursday, March 15, 2018 06:16:24 PM Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> There is a missing indentation following an if statement, fix this.
-> 
-> Detected by Coccinelle:
-> drivers/video/fbdev/aty/mach64_ct.c:183:2-15: code aligned with
-> following code on line 184
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+The m32r architecture is being removed, so this is no longer needed.
 
-Patch queued for 4.17, thanks.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/s1d13xxxfb.c | 10 ----------
+ 1 file changed, 10 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/s1d13xxxfb.c b/drivers/video/fbdev/s1d13xxxfb.c
+index 5d6179ef0298..e04efb567b5c 100644
+--- a/drivers/video/fbdev/s1d13xxxfb.c
++++ b/drivers/video/fbdev/s1d13xxxfb.c
+@@ -96,18 +96,12 @@ static const struct fb_fix_screeninfo s1d13xxxfb_fix = {
+ static inline u8
+ s1d13xxxfb_readreg(struct s1d13xxxfb_par *par, u16 regno)
+ {
+-#if defined(CONFIG_PLAT_M32700UT) || defined(CONFIG_PLAT_OPSPUT) || defined(CONFIG_PLAT_MAPPI3)
+-	regno=((regno & 1) ? (regno & ~1L) : (regno + 1));
+-#endif
+ 	return readb(par->regs + regno);
+ }
+ 
+ static inline void
+ s1d13xxxfb_writereg(struct s1d13xxxfb_par *par, u16 regno, u8 value)
+ {
+-#if defined(CONFIG_PLAT_M32700UT) || defined(CONFIG_PLAT_OPSPUT) || defined(CONFIG_PLAT_MAPPI3)
+-	regno=((regno & 1) ? (regno & ~1L) : (regno + 1));
+-#endif
+ 	writeb(value, par->regs + regno);
+ }
+ 
+@@ -296,11 +290,7 @@ s1d13xxxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 			dbg("s1d13xxxfb_setcolreg: pseudo %d, val %08x\n",
+ 				    regno, pseudo_val);
+ 
+-#if defined(CONFIG_PLAT_MAPPI)
+-			((u32 *)info->pseudo_palette)[regno] = cpu_to_le16(pseudo_val);
+-#else
+ 			((u32 *)info->pseudo_palette)[regno] = pseudo_val;
+-#endif
+ 
+ 			break;
+ 		case FB_VISUAL_PSEUDOCOLOR:
+-- 
+2.9.0
 

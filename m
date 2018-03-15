@@ -1,47 +1,66 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Tue, 13 Mar 2018 03:29:27 +0000
-Subject: Re: [PATCH] video: fbdev: via: remove VLA usage
-Message-Id: <8e3b270d-b615-e58c-fd6e-f677e7e892e8@embeddedor.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Thu, 15 Mar 2018 22:41:59 +0000
+Subject: [RFC 1/4] backlight: gpio_backlight: use generic device properties
+Message-Id: <20180315224202.96668-2-dmitry.torokhov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180308173949.GA19305@embeddedgus>
- <20180309105940.22hd2uy2mv7wahzb@imgtec.com>
- <CACvgo5278SmXfV0jfrMu=Ba6gf7rRXzNduNX+D270fGUFQcZdQ@mail.gmail.com>
-In-Reply-To: <CACvgo5278SmXfV0jfrMu=Ba6gf7rRXzNduNX+D270fGUFQcZdQ@mail.gmail.com>
+References: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
+In-Reply-To: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Emil Velikov <emil.l.velikov@gmail.com>, Eric Engestrom <eric.engestrom@imgtec.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, Kees Cook <keescook@chromium.org>, kernel-hardening@lists.openwall.com, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, ML dri-devel <dri-devel@lists.freedesktop.org>, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Linus Walleij <linus.walleij@linaro.org>
 
+Instead of using of_property_read_bool() switch to using
+device_property_read_bool() This will allow switching from platform data to
+device properties everywhere.
 
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 12 ++----------
+ 1 file changed, 2 insertions(+), 10 deletions(-)
 
-On 03/09/2018 05:02 AM, Emil Velikov wrote:
-> On 9 March 2018 at 10:59, Eric Engestrom <eric.engestrom@imgtec.com> wrote:
->> On Thursday, 2018-03-08 11:39:49 -0600, Gustavo A. R. Silva wrote:
->>> In preparation to enabling -Wvla, remove VLA usage.
->>>
->>> Also, fixed as part of the directive to remove all VLAs from
->>> the kernel: https://lkml.org/lkml/2018/3/7/621
->>>
->>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
->>
->> Sorry for my reply on v1, I missed that Emil already replied to another
->> post of the same patch (side note on that, making use of `-vX` and
->> `--in-reply-to` helps track the evolution of patches)
->>
-
-Yep. I know. It is just that some people prefer vX in a new thread. 
-Anyway, I will take this into account for the next time.
-
->> This looks good to me:
->> Reviewed-by: Eric Engestrom <eric.engestrom@imgtec.com>
->>
-> Same here
-> Reviewed-by: Emil Velikov <emil.velikov@collabora.com>
-> 
-> -Emil
-> 
-
-Thanks for reviewing it, guys.
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index e470da95d806f..173fc4aafb89b 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -61,11 +61,10 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
+ 				   struct gpio_backlight *gbl)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np = dev->of_node;
+ 	enum gpiod_flags flags;
+ 	int ret;
+ 
+-	gbl->def_value = of_property_read_bool(np, "default-on");
++	gbl->def_value = device_property_read_bool(dev, "default-on");
+ 	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+ 
+ 	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+@@ -89,22 +88,15 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
+-	struct device_node *np = pdev->dev.of_node;
+ 	int ret;
+ 
+-	if (!pdata && !np) {
+-		dev_err(&pdev->dev,
+-			"failed to find platform data or device tree node.\n");
+-		return -ENODEV;
+-	}
+-
+ 	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
+ 
+ 	gbl->dev = &pdev->dev;
+ 
+-	if (np) {
++	if (!pdata) {
+ 		ret = gpio_backlight_probe_dt(pdev, gbl);
+ 		if (ret)
+ 			return ret;
 -- 
-Gustavo A. R. Silva
+2.16.2.804.g6dcf76e118-goog
+

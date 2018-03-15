@@ -1,155 +1,104 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 15 Mar 2018 20:11:10 +0000
-Subject: Re: fbcon non-desktop display use
-Message-Id: <CAKMK7uEu-7MRNPrMGx2OztUCf-FhqHErcgNBdJMMFYHO4kOogw@mail.gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Thu, 15 Mar 2018 22:42:00 +0000
+Subject: [RFC 2/4] sh: ecovec24: conditionally register backlight device
+Message-Id: <20180315224202.96668-3-dmitry.torokhov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAGu26P8B-JNPnRrvgKCirE+rE2vGpgo56Hxh_tKYxY2jrwcNRQ@mail.gmail.com>
- <87zi39yyx1.fsf@keithp.com>
- <CAGu26P_+Sk=GD0SZAofu5MxWwJmBZiSg_Xz+OLRu8-A3Bu93MQ@mail.gmail.com>
-In-Reply-To: <CAGu26P_+Sk=GD0SZAofu5MxWwJmBZiSg_Xz+OLRu8-A3Bu93MQ@mail.gmail.com>
+References: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
+In-Reply-To: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Charles Lohr <lohr85@gmail.com>
-Cc: David Airlie <airlied@redhat.com>, Keith Packard <keithp@keithp.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Linus Walleij <linus.walleij@linaro.org>
 
-On Thu, Mar 15, 2018 at 9:03 PM, Charles Lohr <lohr85@gmail.com> wrote:
-> To try to address both concerns, it feels easiest to do not in-line.
->
-> 1) Just for background: The H3, and many other ARM systems use the
-> framebuffer for all video access, 3D accelerated as well as X11. If we
-> want to permit HMD (headmount display) or other non-desktop displays
-> on these devices are going to be used at all, it seems DRM must be set
-> up for them.  I don't think of this as a "feature".
+Commit fe79f919f47e ("sh: ecovec24: Use gpio-backlight") removed custom
+backlight support and switched over to generic gpio-backlight driver. The
+comment when we run with DVI states "no backlight", but setting
+gpio_backlight_data.fbdev to NULL actually makes gpio-backlight to react to
+events from any framebuffer device, not ignore them.
 
-There's no open source 3D stack using fbdev. And I really don't care
-much about the others from an upstream pov.
+We want to get rid of platform data in favor of generic device properties
+in gpio_backlight driver, so we can not have kernel pointers passed around
+to tie the framebuffer device to backlight. Assuming that the intent of the
+above referenced commit was to indeed not export backlight when using DVI,
+let's switch to conditionally registering backlight device so it is not
+present at all in DVI case.
 
-> 2) Although I "wish" there was a way to permit non-desktop use with
-> multiple displays, I am having difficulty finding a specific need to
-> be able to turn it on/off.  All applications I can imagine with the
-> HMD currently would involve the HMD being the only connected device.
-> I am still "submitting" the patch with the parameter, however, if you
-> folks decide not to accept it, I intend to re-submit with just the &&
-> strict fix (which I just tested and it's good!) -- unless you (Keith)
-> are willing to put forward the && strict as a patch.
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+---
+ arch/sh/boards/mach-ecovec24/setup.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
-I guess we can do that, but I'll defer to Keith/Dave on this since I'm
-firmly meh for trying to get HMDs to show up on fbcon. Doesn't make
-sense to me.
--Daniel
-
-> 3) I am trying "plain text mode" for my patch, so hopefully it doesn't
-> truncate the lines.  Also, I misunderstood "Signed-off-by" Thanks!
->
-> Signed-off-by: Charles Lohr <lohr85@gmail.com>
->
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-> index 035784ddd..e14624d0f 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
->                  "Overallocation of the fbdev buffer (%) [default="
->                  __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
->
-> +static bool drm_fbdev_permit_non_desktop;
-> +module_param(drm_fbdev_permit_non_desktop, bool, 0644);
-> +MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
-> +               "Allow the framebuffer to use non-desktop displays
-> [default=off]");
-> +
->  static LIST_HEAD(kernel_fb_helper_list);
->  static DEFINE_MUTEX(kernel_fb_helper_lock);
->
-> @@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct
-> drm_connector *connector, bool strict)
->  {
->         bool enable;
->
-> -       if (connector->display_info.non_desktop)
-> +       if (connector->display_info.non_desktop &&
-> !drm_fbdev_permit_non_desktop && strict)
->                 return false;
->
->         if (strict)
->
-> On Thu, Mar 15, 2018 at 2:30 PM, Keith Packard <keithp@keithp.com> wrote:
->> Charles Lohr <lohr85@gmail.com> writes:
->>
->>> Even if the vive is the only device connected, it will still not permit it
->>> to be operated.  See https://github.com/linux-sunxi/linux-sunxi/issues/291
->>> for dri with a lot of debugging turned on.
->>
->> Oh, it's not supposed to do that. I had intended to write the code so
->> that if the only device available was a non-desktop device that it would
->> go ahead and use it. The X server patches did that, but the kernel ones
->> did not. It looks like that would be an easy patch -- just skip the
->> non_desktop check in the !strict case for drm_connector_enabled.
->>
->> However, your patch is a good addition as it will allow you to also
->> enable the HMD when other monitors are connected.
->>
->>> I can understand that most users would probably prefer that the vive isn't
->>> automatically used if no other displays are available, however, the current
->>> behavior prevents use of the vive on all devices that use fbdev for their
->>> primary output.
->>
->> That was definitely not my intention, and thanks for discovering this!
->>
->>> I've never sent an email to the kernel devel list, so I'm still a little
->>> nervous.  Especially because this is against a different branch, and I'm
->>> starting to think that I should be messaging there, but this is something
->>> that really needs to go upstream.
->>
->> We'll get it sorted out; I'm not sure what Dave's preference is these
->> days anyways.
->>
->> Aside from some minor formatting issues, this patch looks good to me.
->>
->>> Signed-off-by:
->>
->> You'll need to add your name and email address here.
->>
->>> diff --git a/drivers/gpu/drm/drm_fb_helper.c
->>> b/drivers/gpu/drm/drm_fb_helper.c
->>> index 035784ddd..8bfaf79ff 100644
->>> --- a/drivers/gpu/drm/drm_fb_helper.c
->>> +++ b/drivers/gpu/drm/drm_fb_helper.c
->>> @@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
->>>                  "Overallocation of the fbdev buffer (%) [default="
->>>                  __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
->>>
->>> +static bool drm_fbdev_permit_non_desktop;
->>> +module_param(drm_fbdev_permit_non_desktop, bool, 0644);
->>> +MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
->>> +               "Allow the framebuffer to use non-desktop displays
->>> [default=off]");
->>> +
->>
->> Your email client appears to be wrapping long lines, which breaks the patch.
->>
->>
->>>  static LIST_HEAD(kernel_fb_helper_list);
->>>  static DEFINE_MUTEX(kernel_fb_helper_lock);
->>>
->>> @@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct
->>> drm_connector *connector, bool strict)
->>>  {
->>>         bool enable;
->>>
->>> -       if (connector->display_info.non_desktop)
->>> +       if (connector->display_info.non_desktop &&
->>> !drm_fbdev_permit_non_desktop)
->>
->> If you added '&& strict' here, it will use the HMD if there aren't any
->> desktop monitors connected.
->>
->> --
->> -keith
-
-
-
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 6f929abe0b50f..67633d2d42390 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -368,7 +368,6 @@ static struct platform_device lcdc_device = {
+ };
+ 
+ static struct gpio_backlight_platform_data gpio_backlight_data = {
+-	.fbdev = &lcdc_device.dev,
+ 	.gpio = GPIO_PTR1,
+ 	.def_value = 1,
+ 	.name = "backlight",
+@@ -987,7 +986,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
+ 	&usb1_common_device,
+ 	&usbhs_device,
+ 	&lcdc_device,
+-	&gpio_backlight_device,
+ 	&ceu0_device,
+ 	&ceu1_device,
+ 	&keysc_device,
+@@ -1077,6 +1075,8 @@ static int __init arch_setup(void)
+ {
+ 	struct clk *clk;
+ 	bool cn12_enabled = false;
++	bool use_backlight = false;
++	int error;
+ 
+ 	/* register board specific self-refresh code */
+ 	sh_mobile_register_self_refresh(SUSP_SH_STANDBY | SUSP_SH_SF |
+@@ -1193,9 +1193,6 @@ static int __init arch_setup(void)
+ 		lcdc_info.ch[0].lcd_modes		= ecovec_dvi_modes;
+ 		lcdc_info.ch[0].num_modes		= ARRAY_SIZE(ecovec_dvi_modes);
+ 
+-		/* No backlight */
+-		gpio_backlight_data.fbdev = NULL;
+-
+ 		gpio_set_value(GPIO_PTA2, 1);
+ 		gpio_set_value(GPIO_PTU1, 1);
+ 	} else {
+@@ -1217,6 +1214,8 @@ static int __init arch_setup(void)
+ 		/* enable TouchScreen */
+ 		i2c_register_board_info(0, &ts_i2c_clients, 1);
+ 		irq_set_irq_type(IRQ0, IRQ_TYPE_LEVEL_LOW);
++
++		use_backlight = true;
+ 	}
+ 
+ 	/* enable CEU0 */
+@@ -1431,8 +1430,19 @@ static int __init arch_setup(void)
+ 	gpio_set_value(GPIO_PTG4, 1);
+ #endif
+ 
+-	return platform_add_devices(ecovec_devices,
+-				    ARRAY_SIZE(ecovec_devices));
++	error = platform_add_devices(ecovec_devices,
++				      ARRAY_SIZE(ecovec_devices));
++	if (error)
++		return error;
++
++	if (use_backlight) {
++		error = platform_device_add(&gpio_backlight_device);
++		if (error)
++			pr_warn("%s: failed to register backlight: %d\n",
++				error);
++	}
++
++	return 0;
+ }
+ arch_initcall(arch_setup);
+ 
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+2.16.2.804.g6dcf76e118-goog
+

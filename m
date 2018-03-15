@@ -1,38 +1,29 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Thu, 15 Mar 2018 09:56:48 +0000
+From: Hannes Reinecke <hare@suse.de>
+Date: Thu, 15 Mar 2018 09:59:58 +0000
 Subject: Re: [PATCH 00/16] remove eight obsolete architectures
-Message-Id: <CAK8P3a10hBz7QYk5v5MfhVMPOwFnWYTn95WZp1HtHrd7-GQpRg@mail.gmail.com>
+Message-Id: <6c9d075c-d7a8-72a5-9b2d-af1feaa06c6c@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180314143529.1456168-1-arnd@arndb.de>
  <2929.1521106970@warthog.procyon.org.uk>
-In-Reply-To: <2929.1521106970@warthog.procyon.org.uk>
+In-Reply-To: <2929.1521106970-S6HVgzuS8uM4Awkfq6JHfwNdhmdF6hFW@public.gmane.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Howells <dhowells@redhat.com>
-Cc: linux-arch <linux-arch@vger.kernel.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Networking <netdev@vger.kernel.org>, linux-usb@vger.kernel.org, linux-wireless <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-spi <linux-spi@vger.kernel.org>, linux-block <linux-block@vger.kernel.org>, IDE-ML <linux-ide@vger.kernel.org>, "open list:HID CORE LAYER" <linux-input@vger.kernel.org>, Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>, linux-rtc@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
+Cc: linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fsdevel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org
 
-On Thu, Mar 15, 2018 at 10:42 AM, David Howells <dhowells@redhat.com> wrote:
+On 03/15/2018 10:42 AM, David Howells wrote:
 > Do we have anything left that still implements NOMMU?
+> 
+RISC-V ?
+(evil grin :-)
 
-Yes, plenty. I was wondering the same thing, but it seems that the architectures
-we remove are almost completely representative of what we support overall,
-except that they are all not licensed to 3rd parties, unlike many of the ones we
-keep.
+Cheers,
 
-I've made an overview of the remaining architectures for my own reference[1].
-The remaining NOMMU architectures are:
-
-- arch/arm has ARMv7-M (Cortex-M microcontroller), which is actually
-gaining traction
-- arch/sh has an open-source J2 core that was added not that long ago,
-it seems to
-  be the only SH compatible core that anyone is working on.
-- arch/microblaze supports both MMU/NOMMU modes (most use an MMU)
-- arch/m68k supports several NOMMU targets, both the coldfire SoCs and the
-  classic processors
-- c6x has no MMU
-
-       Arnd
-
-[1] https://docs.google.com/spreadsheets/d/1QxMvW5jpVG2jb4RM9CQQl27-wVpNYOa-_3K2RVKifb0
+Hannes
+-- 
+Dr. Hannes Reinecke		   Teamlead Storage & Networking
+hare@suse.de			               +49 911 74053 688
+SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
+HRB 21284 (AG Nürnberg)

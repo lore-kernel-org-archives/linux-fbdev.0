@@ -1,108 +1,138 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Thu, 15 Mar 2018 09:32:03 +0000
+From: Charles Lohr <lohr85@gmail.com>
+Date: Thu, 15 Mar 2018 20:03:08 +0000
 Subject: Re: fbcon non-desktop display use
-Message-Id: <CAKMK7uER_hCNqrfAkHYsece7FNc05Cwd_PTkx9Hfv2wUuPjL4A@mail.gmail.com>
+Message-Id: <CAGu26P_+Sk=GD0SZAofu5MxWwJmBZiSg_Xz+OLRu8-A3Bu93MQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CAGu26P8B-JNPnRrvgKCirE+rE2vGpgo56Hxh_tKYxY2jrwcNRQ@mail.gmail.com>
-In-Reply-To: <CAGu26P8B-JNPnRrvgKCirE+rE2vGpgo56Hxh_tKYxY2jrwcNRQ@mail.gmail.com>
+ <87zi39yyx1.fsf@keithp.com>
+In-Reply-To: <87zi39yyx1.fsf@keithp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Charles Lohr <lohr85@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: David Airlie <airlied@redhat.com>, dri-devel <dri-devel@lists.freedesktop.org>
+To: Keith Packard <keithp@keithp.com>
+Cc: David Airlie <airlied@redhat.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Thu, Mar 15, 2018 at 4:32 AM, Charles Lohr <lohr85@gmail.com> wrote:
-> There was a patch submitted by Keith Packard which prevents fbcon from using
-> non-desktop displays, but this breaks vive, and other HMD development/use on
-> embedded and other fbdev systems (
-> https://patchwork.kernel.org/patch/10053989/ ).
+To try to address both concerns, it feels easiest to do not in-line.
+
+1) Just for background: The H3, and many other ARM systems use the
+framebuffer for all video access, 3D accelerated as well as X11. If we
+want to permit HMD (headmount display) or other non-desktop displays
+on these devices are going to be used at all, it seems DRM must be set
+up for them.  I don't think of this as a "feature".
+
+2) Although I "wish" there was a way to permit non-desktop use with
+multiple displays, I am having difficulty finding a specific need to
+be able to turn it on/off.  All applications I can imagine with the
+HMD currently would involve the HMD being the only connected device.
+I am still "submitting" the patch with the parameter, however, if you
+folks decide not to accept it, I intend to re-submit with just the &&
+strict fix (which I just tested and it's good!) -- unless you (Keith)
+are willing to put forward the && strict as a patch.
+
+3) I am trying "plain text mode" for my patch, so hopefully it doesn't
+truncate the lines.  Also, I misunderstood "Signed-off-by" Thanks!
+
+Signed-off-by: Charles Lohr <lohr85@gmail.com>
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 035784ddd..e14624d0f 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
+                 "Overallocation of the fbdev buffer (%) [default="
+                 __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
+
++static bool drm_fbdev_permit_non_desktop;
++module_param(drm_fbdev_permit_non_desktop, bool, 0644);
++MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
++               "Allow the framebuffer to use non-desktop displays
+[default=off]");
++
+ static LIST_HEAD(kernel_fb_helper_list);
+ static DEFINE_MUTEX(kernel_fb_helper_lock);
+
+@@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct
+drm_connector *connector, bool strict)
+ {
+        bool enable;
+
+-       if (connector->display_info.non_desktop)
++       if (connector->display_info.non_desktop &&
+!drm_fbdev_permit_non_desktop && strict)
+                return false;
+
+        if (strict)
+
+On Thu, Mar 15, 2018 at 2:30 PM, Keith Packard <keithp@keithp.com> wrote:
+> Charles Lohr <lohr85@gmail.com> writes:
 >
-> Even if the vive is the only device connected, it will still not permit it
-> to be operated.  See https://github.com/linux-sunxi/linux-sunxi/issues/291
-> for dri with a lot of debugging turned on.
+>> Even if the vive is the only device connected, it will still not permit it
+>> to be operated.  See https://github.com/linux-sunxi/linux-sunxi/issues/291
+>> for dri with a lot of debugging turned on.
 >
-> I can understand that most users would probably prefer that the vive isn't
-> automatically used if no other displays are available, however, the current
-> behavior prevents use of the vive on all devices that use fbdev for their
-> primary output.
+> Oh, it's not supposed to do that. I had intended to write the code so
+> that if the only device available was a non-desktop device that it would
+> go ahead and use it. The X server patches did that, but the kernel ones
+> did not. It looks like that would be an easy patch -- just skip the
+> non_desktop check in the !strict case for drm_connector_enabled.
 >
-> This patch allows enabling of non-desktop devices both as a kernel command
-> line as well as by setting
-> /sys/module/drm_kms_helper/parameters/drm_fbdev_permit_non_desktop.
-
-Why exactly are you developing new userspace on top of fbdev? fbdev
-never ever supported HMDs in any meaningful fashion (those things
-didn't exist 20 years ago when fbdev was designed), and we have fbdev
-in feature freeze mode since a few years now. Please explain a bit
-more about what exactly you're trying to do here, and what's running
-in userspace that makes you require fbdev.
-
-Adding fbdev lists&maintainer.
-
-Also please note that for graphics stuff we require a fully open
-sourced userspace side of the stack when adding new support, which
-this very much feels like. See:
-
-https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#open-source-userspace-requirements>
-
-> I've never sent an email to the kernel devel list, so I'm still a little
-> nervous.  Especially because this is against a different branch, and I'm
-> starting to think that I should be messaging there, but this is something
-> that really needs to go upstream.
-
-Welcome to upstream! You're doing perfectly fine. We're trying really
-hard to be welcoming and respectful in the graphics subsystem, and
-have an enforced Code of Conduct to that effect:
-
-https://dri.freedesktop.org/docs/drm/gpu/introduction.html#code-of-conduct
--Daniel
-
-
-
+> However, your patch is a good addition as it will allow you to also
+> enable the HMD when other monitors are connected.
 >
-> Signed-off-by:
+>> I can understand that most users would probably prefer that the vive isn't
+>> automatically used if no other displays are available, however, the current
+>> behavior prevents use of the vive on all devices that use fbdev for their
+>> primary output.
 >
-> diff --git a/drivers/gpu/drm/drm_fb_helper.c
-> b/drivers/gpu/drm/drm_fb_helper.c
-> index 035784ddd..8bfaf79ff 100644
-> --- a/drivers/gpu/drm/drm_fb_helper.c
-> +++ b/drivers/gpu/drm/drm_fb_helper.c
-> @@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
->                  "Overallocation of the fbdev buffer (%) [default="
->                  __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
+> That was definitely not my intention, and thanks for discovering this!
 >
-> +static bool drm_fbdev_permit_non_desktop;
-> +module_param(drm_fbdev_permit_non_desktop, bool, 0644);
-> +MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
-> +               "Allow the framebuffer to use non-desktop displays
-> [default=off]");
-> +
->  static LIST_HEAD(kernel_fb_helper_list);
->  static DEFINE_MUTEX(kernel_fb_helper_lock);
+>> I've never sent an email to the kernel devel list, so I'm still a little
+>> nervous.  Especially because this is against a different branch, and I'm
+>> starting to think that I should be messaging there, but this is something
+>> that really needs to go upstream.
 >
-> @@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct drm_connector
-> *connector, bool strict)
->  {
->         bool enable;
+> We'll get it sorted out; I'm not sure what Dave's preference is these
+> days anyways.
 >
-> -       if (connector->display_info.non_desktop)
-> +       if (connector->display_info.non_desktop &&
-> !drm_fbdev_permit_non_desktop)
->                 return false;
+> Aside from some minor formatting issues, this patch looks good to me.
 >
->         if (strict)
+>> Signed-off-by:
+>
+> You'll need to add your name and email address here.
+>
+>> diff --git a/drivers/gpu/drm/drm_fb_helper.c
+>> b/drivers/gpu/drm/drm_fb_helper.c
+>> index 035784ddd..8bfaf79ff 100644
+>> --- a/drivers/gpu/drm/drm_fb_helper.c
+>> +++ b/drivers/gpu/drm/drm_fb_helper.c
+>> @@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
+>>                  "Overallocation of the fbdev buffer (%) [default="
+>>                  __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
+>>
+>> +static bool drm_fbdev_permit_non_desktop;
+>> +module_param(drm_fbdev_permit_non_desktop, bool, 0644);
+>> +MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
+>> +               "Allow the framebuffer to use non-desktop displays
+>> [default=off]");
+>> +
+>
+> Your email client appears to be wrapping long lines, which breaks the patch.
 >
 >
+>>  static LIST_HEAD(kernel_fb_helper_list);
+>>  static DEFINE_MUTEX(kernel_fb_helper_lock);
+>>
+>> @@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct
+>> drm_connector *connector, bool strict)
+>>  {
+>>         bool enable;
+>>
+>> -       if (connector->display_info.non_desktop)
+>> +       if (connector->display_info.non_desktop &&
+>> !drm_fbdev_permit_non_desktop)
 >
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+> If you added '&& strict' here, it will use the HMD if there aren't any
+> desktop monitors connected.
 >
-
-
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+> --
+> -keith

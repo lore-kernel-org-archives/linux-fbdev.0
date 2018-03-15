@@ -1,95 +1,60 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Fri, 16 Mar 2018 23:40:41 +0000
-Subject: Re: [RFC 3/4] sh: ecovec24: convert backlight to use device properties
-Message-Id: <20180316234041.GB32310@dtor-ws>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Thu, 15 Mar 2018 08:18:54 +0000
+Subject: Re: [PATCH v2] backlight: otm3225a: add support for ORISE OTM3225A LCD SoC
+Message-Id: <20180315081854.lsp5gmvqkgrgniln@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
- <20180315224202.96668-4-dmitry.torokhov@gmail.com>
- <CAMuHMdX9CsWmGYN20mDge7h8UjRDWQMAXD+L2uKFjO3x=R5gLw@mail.gmail.com>
-In-Reply-To: <CAMuHMdX9CsWmGYN20mDge7h8UjRDWQMAXD+L2uKFjO3x=R5gLw@mail.gmail.com>
+References: <1514388007-2248-1-git-send-email-fb@ltec.ch>
+ <caedb4f3-c508-5ebf-8873-af095fecf03e@ltec.ch>
+In-Reply-To: <caedb4f3-c508-5ebf-8873-af095fecf03e@ltec.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux-sh list <linux-sh@vger.kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Linus Walleij <linus.walleij@linaro.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Felix Brack <fb@ltec.ch>
+Cc: linux-fbdev@vger.kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org
 
-On Fri, Mar 16, 2018 at 09:50:21AM +0100, Geert Uytterhoeven wrote:
-> Hi Dmitry,
-> 
-> On Thu, Mar 15, 2018 at 11:42 PM, Dmitry Torokhov
-> <dmitry.torokhov@gmail.com> wrote:
-> > Instead of backlight legacy platform data, let's switch to using device
-> > properties and GPIO lookup tables.
-> >
-> > Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> Thanks for your patch!
-> 
-> > --- a/arch/sh/boards/mach-ecovec24/setup.c
-> > +++ b/arch/sh/boards/mach-ecovec24/setup.c
-> 
-> > @@ -367,17 +368,21 @@ static struct platform_device lcdc_device = {
-> >         },
-> >  };
-> >
-> > -static struct gpio_backlight_platform_data gpio_backlight_data = {
-> > -       .gpio = GPIO_PTR1,
-> > -       .def_value = 1,
-> > -       .name = "backlight",
-> > +static struct gpiod_lookup_table gpio_backlight_gpios_table = {
-> 
-> gpio_backlight_gpios_table is unused?
+On Wed, 14 Mar 2018, Felix Brack wrote:
+> On 27.12.2017 16:20, Felix Brack wrote:
+> > This patch adds a LCD driver supporting the OTM3225A LCD SoC
+> > from ORISE Technology. This device can drive TFT LC panels having a
+> > resolution of 240x320 pixels. After initializing the OTM3225A using
+> > it's SPI interface it switches to use 16-bib RGB as external
+> > display interface.
+> > 
+> > Signed-off-by: Felix Brack <fb@ltec.ch>
+> > 
+> > Changes in v2:
+> > - use descriptive names for registers instead of hard coding them
+> > - remove unnecessary registers in initialization sequence
+> > - make use of resource-managed functions like devm_kzalloc()
+> >   instead of kzalloc() which simplifies and shortens the code
+> > - replace mdelay() by msleep()
+> > - use module_spi_init() since we do not do anything special
+> >   in init/exit
+> > - use dev_name() instead of hard coding driver name multiple times
+> > - use static storage class for structure otm3225a_ops
+> > - sort include files alphabetically
+> > - use standardized licensing header
+> > - modify Makefile respecting alphabetical sort order
+> > ---
+> >  drivers/video/backlight/Kconfig    |   7 ++
+> >  drivers/video/backlight/Makefile   |   1 +
+> >  drivers/video/backlight/otm3225a.c | 251 +++++++++++++++++++++++++++++++++++++
+> >  3 files changed, 259 insertions(+)
+> >  create mode 100644 drivers/video/backlight/otm3225a.c
 
-There was supposed to be gpiod_add_lookup_table() that I lost as I was
-reshuffling and reshuffling the patches.
+[...]
 
-> 
-> > +       .dev_id = "gpio-backlight.0",
-> > +       .table = {
-> > +               GPIO_LOOKUP_IDX("sh7724_pfc", GPIO_PTR1, NULL, 0, GPIO_ACTIVE_HIGH);
-> > +               { }
-> > +       },
-> > +};
-> > +
-> > +static struct property_entry gpio_backlight_properties[] = {
-> 
-> const
+> Just a gentle echo request: This patch was sent and Acked more then two
+> months ago. Is there anything preventing it from being queued for a
+> future kernel release?
 
-OK.
+Please take care to snip unnecessarily long quotes when replying to
+patches.
 
-> 
-> > +       PROPERTY_ENTRY_BOOL("default-on"),
-> > +       { }
-> >  };
-> >
-> >  static struct platform_device gpio_backlight_device = {
-> >         .name = "gpio-backlight",
-> > -       .dev = {
-> > -               .platform_data = &gpio_backlight_data,
-> > -       },
-> >  };
-> >
-> >  /* CEU0 */
-> > @@ -1436,6 +1441,8 @@ static int __init arch_setup(void)
-> >                 return error;
-> >
-> >         if (use_backlight) {
-> > +               device_add_properties(&gpio_backlight_device.dev,
-> > +                                     gpio_backlight_properties);
-> >                 error = platform_device_add(&gpio_backlight_device);
-> >                 if (error)
-> >                         pr_warn("%s: failed to register backlight: %d\n",
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+This patch still needs Daniel Thompson's Acked-by/Reviewed-by. 
 
 -- 
-Dmitry
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

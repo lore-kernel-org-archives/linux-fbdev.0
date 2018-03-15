@@ -1,206 +1,88 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:13 +0000
-Subject: [PATCHv4 09/10] dt-bindings: mfd: ti-lmu: update for backlight
-Message-Id: <20180330172414.26575-10-sebastian.reichel@collabora.co.uk>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Date: Thu, 15 Mar 2018 22:42:01 +0000
+Subject: [RFC 3/4] sh: ecovec24: convert backlight to use device properties
+Message-Id: <20180315224202.96668-4-dmitry.torokhov@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+References: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
+In-Reply-To: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Linus Walleij <linus.walleij@linaro.org>
 
-Update binding to integrate the backlight feature directly into
-the main node, as suggested by Rob Herring.
+Instead of backlight legacy platform data, let's switch to using device
+properties and GPIO lookup tables.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 ---
- Documentation/devicetree/bindings/mfd/ti-lmu.txt | 119 ++++++++++++-----------
- 1 file changed, 60 insertions(+), 59 deletions(-)
+ arch/sh/boards/mach-ecovec24/setup.c | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/ti-lmu.txt b/Documentation/devicetree/bindings/mfd/ti-lmu.txt
-index c885cf89b8ce..b3433e95dfa5 100644
---- a/Documentation/devicetree/bindings/mfd/ti-lmu.txt
-+++ b/Documentation/devicetree/bindings/mfd/ti-lmu.txt
-@@ -28,10 +28,9 @@ Required properties:
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 67633d2d42390..ad3d48b3ead19 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -11,11 +11,13 @@
+ #include <linux/init.h>
+ #include <linux/device.h>
+ #include <linux/platform_device.h>
++#include <linux/property.h>
+ #include <linux/mmc/host.h>
+ #include <linux/mmc/sh_mmcif.h>
+ #include <linux/mtd/physmap.h>
+ #include <linux/mfd/tmio.h>
+ #include <linux/gpio.h>
++#include <linux/gpio/machine.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
+ #include <linux/delay.h>
+@@ -30,7 +32,6 @@
+ #include <linux/spi/mmc_spi.h>
+ #include <linux/input.h>
+ #include <linux/input/sh_keysc.h>
+-#include <linux/platform_data/gpio_backlight.h>
+ #include <linux/sh_eth.h>
+ #include <linux/sh_intc.h>
+ #include <linux/videodev2.h>
+@@ -367,17 +368,21 @@ static struct platform_device lcdc_device = {
+ 	},
+ };
  
- Optional property:
-   - enable-gpios: A GPIO specifier for hardware enable pin.
--
--Required node:
--  - backlight: All LMU devices have backlight child nodes.
--               For the properties, please refer to [1].
-+  - pwm-names: Should be either "lmu-backlight" or unset
-+  - pwm: This should be a PWM specifier following ../pwm/pwm.txt and must
-+         only be specified, if the backlight should be used in PWM mode.
- 
- Optional nodes:
-   - fault-monitor: Hardware fault monitoring driver for LM3633 and LM3697.
-@@ -42,8 +41,31 @@ Optional nodes:
-   - leds: LED properties for LM3633. Please refer to [2].
-   - regulators: Regulator properties for LM3631 and LM3632.
-                 Please refer to [3].
-+  - bank0, bank1, bank2: This contains the backlight configuration
-+                         for each backlight control bank.
+-static struct gpio_backlight_platform_data gpio_backlight_data = {
+-	.gpio = GPIO_PTR1,
+-	.def_value = 1,
+-	.name = "backlight",
++static struct gpiod_lookup_table gpio_backlight_gpios_table = {
++	.dev_id = "gpio-backlight.0",
++	.table = {
++		GPIO_LOOKUP_IDX("sh7724_pfc", GPIO_PTR1, NULL, 0, GPIO_ACTIVE_HIGH);
++		{ }
++	},
++};
 +
-+Required properties in the bank subnodes:
-+  - label: A string describing the backlight. Should contain "keyboard"
-+           for a keyboard backlight and "lcd" for LCD panel backlights.
-+  - ti,led-sources: A list of channels, that should be driven. Each channel
-+                    should only be driven by one bank.
-+
-+Optional properties in the bank subnodes:
-+  - default-brightness-level: Backlight initial brightness value.
-+                              Type is <u32>. It is set as soon as backlight
-+			      device is created.
-+			      0 ~ 2047 = LM3631, LM3632, LM3633, LM3695 and
-+					 LM3697
-+			      0 ~ 255  = LM3532
-+  - ti,ramp-up-ms, ti,ramp-down-ms: Light dimming effect properties.
-+				    Type is <u32>. Unit is millisecond.
-+					0 ~ 65 ms    = LM3532
-+					0 ~ 4000 ms  = LM3631
-+					0 ~ 16000 ms = LM3633 and LM3697
-+  - pwm-period: PWM period. Only valid in PWM brightness mode.
-+                Type is <u32>. If this property is missing, then control
-+		mode is set to I2C by default.
- 
--[1] ../leds/backlight/ti-lmu-backlight.txt
- [2] ../leds/leds-lm3633.txt
- [3] ../regulator/lm363x-regulator.txt
- 
-@@ -53,14 +75,11 @@ lm3532@38 {
- 
- 	enable-gpios = <&pioC 2 GPIO_ACTIVE_HIGH>;
- 
--	backlight {
--		compatible = "ti,lm3532-backlight";
--
--		lcd {
--			led-sources = <0 1 2>;
--			ramp-up-msec = <30>;
--			ramp-down-msec = <0>;
--		};
-+	bank0 {
-+		label = "lcd";
-+		led-sources = <0 1 2>;
-+		ramp-up-msec = <30>;
-+		ramp-down-msec = <0>;
- 	};
++static struct property_entry gpio_backlight_properties[] = {
++	PROPERTY_ENTRY_BOOL("default-on"),
++	{ }
  };
  
-@@ -105,13 +124,10 @@ lm3631@29 {
- 		};
- 	};
- 
--	backlight {
--		compatible = "ti,lm3631-backlight";
--
--		lcd_bl {
--			led-sources = <0 1>;
--			ramp-up-msec = <300>;
--		};
-+	bank0 {
-+		label = "lcd_bl";
-+		led-sources = <0 1>;
-+		ramp-up-msec = <300>;
- 	};
+ static struct platform_device gpio_backlight_device = {
+ 	.name = "gpio-backlight",
+-	.dev = {
+-		.platform_data = &gpio_backlight_data,
+-	},
  };
  
-@@ -147,16 +163,13 @@ lm3632@11 {
- 		};
- 	};
+ /* CEU0 */
+@@ -1436,6 +1441,8 @@ static int __init arch_setup(void)
+ 		return error;
  
--	backlight {
--		compatible = "ti,lm3632-backlight";
--
--		pwms = <&pwm0 0 10000 0>; /* pwm number, period, polarity */
--		pwm-names = "lmu-backlight";
-+	pwms = <&pwm0 0 10000 0>; /* pwm number, period, polarity */
-+	pwm-names = "lmu-backlight";
- 
--		lcd {
--			led-sources = <0 1>;
--			pwm-period = <10000>;
--		};
-+	bank0 {
-+		label = "lcd";
-+		led-sources = <0 1>;
-+		pwm-period = <10000>;
- 	};
- };
- 
-@@ -166,22 +179,18 @@ lm3633@36 {
- 
- 	enable-gpios = <&pioC 2 GPIO_ACTIVE_HIGH>;
- 
--	backlight {
--		compatible = "ti,lm3633-backlight";
--
--		main {
--			label = "main_lcd";
--			led-sources = <1 2>;
--			ramp-up-msec = <500>;
--			ramp-down-msec = <500>;
--		};
-+	bank0 {
-+		label = "main_lcd";
-+		led-sources = <1 2>;
-+		ramp-up-msec = <500>;
-+		ramp-down-msec = <500>;
-+	};
- 
--		front {
--			label = "front_lcd";
--			led-sources = <0>;
--			ramp-up-msec = <1000>;
--			ramp-down-msec = <0>;
--		};
-+	bank1 {
-+		label = "front_lcd";
-+		led-sources = <0>;
-+		ramp-up-msec = <1000>;
-+		ramp-down-msec = <0>;
- 	};
- 
- 	leds {
-@@ -211,13 +220,9 @@ lm3695@63 {
- 
- 	enable-gpios = <&pioC 2 GPIO_ACTIVE_HIGH>;
- 
--	backlight {
--		compatible = "ti,lm3695-backlight";
--
--		lcd {
--			label = "bl";
--			led-sources = <0 1>;
--		};
-+	bank0 {
-+		label = "lcd_bl";
-+		led-sources = <0 1>;
- 	};
- };
- 
-@@ -227,14 +232,10 @@ lm3697@36 {
- 
- 	enable-gpios = <&pioC 2 GPIO_ACTIVE_HIGH>;
- 
--	backlight {
--		compatible = "ti,lm3697-backlight";
--
--		lcd {
--			led-sources = <0 1 2>;
--			ramp-up-msec = <200>;
--			ramp-down-msec = <200>;
--		};
-+	bank0 {
-+		led-sources = <0 1 2>;
-+		ramp-up-msec = <200>;
-+		ramp-down-msec = <200>;
- 	};
- 
- 	fault-monitor {
+ 	if (use_backlight) {
++		device_add_properties(&gpio_backlight_device.dev,
++				      gpio_backlight_properties);
+ 		error = platform_device_add(&gpio_backlight_device);
+ 		if (error)
+ 			pr_warn("%s: failed to register backlight: %d\n",
 -- 
-2.16.2
+2.16.2.804.g6dcf76e118-goog
 

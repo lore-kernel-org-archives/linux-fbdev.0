@@ -1,29 +1,29 @@
-From: Hannes Reinecke <hare@suse.de>
-Date: Thu, 15 Mar 2018 09:59:58 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 15 Mar 2018 10:42:25 +0000
 Subject: Re: [PATCH 00/16] remove eight obsolete architectures
-Message-Id: <6c9d075c-d7a8-72a5-9b2d-af1feaa06c6c@suse.de>
+Message-Id: <CAK8P3a01pfvsdM1mR8raU9dA7p4H-jRJz2Y8-+KEY76W_Mukpg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180314143529.1456168-1-arnd@arndb.de>
  <2929.1521106970@warthog.procyon.org.uk>
-In-Reply-To: <2929.1521106970-S6HVgzuS8uM4Awkfq6JHfwNdhmdF6hFW@public.gmane.org>
+ <6c9d075c-d7a8-72a5-9b2d-af1feaa06c6c@suse.de>
+In-Reply-To: <6c9d075c-d7a8-72a5-9b2d-af1feaa06c6c@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: David Howells <dhowells-H+wXaHxf7aLQT0dZR+AlfA@public.gmane.org>, Arnd Bergmann <arnd-r2nGTMty4D4@public.gmane.org>
-Cc: linux-arch-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-doc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rtc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-watchdog-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fsdevel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hannes Reinecke <hare@suse.de>
+Cc: linux-arch <linux-arch@vger.kernel.org>, linux-block <linux-block@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>, Networking <netdev@vger.kernel.org>, linux-usb@vger.kernel.org, linux-wireless <linux-wireless@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-pwm@vger.kernel.org, linux-spi <linux-spi@vger.kernel.org>, David Howells <dhowells@redhat.com>, IDE-ML <linux-ide@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:HID CORE LAYER" <linux-input@vger.kernel.org>, Linux FS-devel Mailing List <linux-fsdevel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>, linux-rtc@vger.kernel.org
 
-On 03/15/2018 10:42 AM, David Howells wrote:
-> Do we have anything left that still implements NOMMU?
-> 
-RISC-V ?
-(evil grin :-)
+On Thu, Mar 15, 2018 at 10:59 AM, Hannes Reinecke <hare@suse.de> wrote:
+> On 03/15/2018 10:42 AM, David Howells wrote:
+>> Do we have anything left that still implements NOMMU?
+>>
+> RISC-V ?
+> (evil grin :-)
 
-Cheers,
+Is anyone producing a chip that includes enough of the Privileged ISA spec
+to have things like system calls, but not the MMU parts?
 
-Hannes
--- 
-Dr. Hannes Reinecke		   Teamlead Storage & Networking
-hare@suse.de			               +49 911 74053 688
-SUSE LINUX GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: F. Imendörffer, J. Smithard, J. Guild, D. Upmanyu, G. Norton
-HRB 21284 (AG Nürnberg)
+I thought at least initially the kernel only supports hardware that has a rather
+complete feature set.
+
+       Arnd

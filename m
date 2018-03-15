@@ -1,36 +1,108 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 14:00:08 +0000
-Subject: Re: [PATCH] video: fsl-diu-fb: Delete an error message for a failed memory allocation in fsl_diu_ini
-Message-Id: <4073804.qevdOuysOu@amdc3058>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Thu, 15 Mar 2018 09:32:03 +0000
+Subject: Re: fbcon non-desktop display use
+Message-Id: <CAKMK7uER_hCNqrfAkHYsece7FNc05Cwd_PTkx9Hfv2wUuPjL4A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <39d05a48-e649-fb88-0e86-4f7528fd67f8@users.sourceforge.net>
- <CGME20171127173815epcas4p35a349f9b327e25953d5eb67563f288eb@epcas4p3.samsung.com>
- <f1760f28-84f4-24d9-9cf4-ca94b0537338@tabi.org>
-In-Reply-To: <f1760f28-84f4-24d9-9cf4-ca94b0537338@tabi.org>
+References: <CAGu26P8B-JNPnRrvgKCirE+rE2vGpgo56Hxh_tKYxY2jrwcNRQ@mail.gmail.com>
+In-Reply-To: <CAGu26P8B-JNPnRrvgKCirE+rE2vGpgo56Hxh_tKYxY2jrwcNRQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@tabi.org>, SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
+To: Charles Lohr <lohr85@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: David Airlie <airlied@redhat.com>, dri-devel <dri-devel@lists.freedesktop.org>
 
-On Monday, November 27, 2017 11:31:10 AM Timur Tabi wrote:
-> On 11/27/17 3:00 AM, SF Markus Elfring wrote:
-> > From: Markus Elfring<elfring@users.sourceforge.net>
-> > Date: Mon, 27 Nov 2017 09:56:09 +0100
-> > 
-> > Omit an extra message for a memory allocation failure in this function.
-> > 
-> > This issue was detected by using the Coccinelle software.
-> > 
-> > Signed-off-by: Markus Elfring<elfring@users.sourceforge.net>
-> 
-> Acked-by: Timur Tabi <timur@tabi.org>
+On Thu, Mar 15, 2018 at 4:32 AM, Charles Lohr <lohr85@gmail.com> wrote:
+> There was a patch submitted by Keith Packard which prevents fbcon from using
+> non-desktop displays, but this breaks vive, and other HMD development/use on
+> embedded and other fbdev systems (
+> https://patchwork.kernel.org/patch/10053989/ ).
+>
+> Even if the vive is the only device connected, it will still not permit it
+> to be operated.  See https://github.com/linux-sunxi/linux-sunxi/issues/291
+> for dri with a lot of debugging turned on.
+>
+> I can understand that most users would probably prefer that the vive isn't
+> automatically used if no other displays are available, however, the current
+> behavior prevents use of the vive on all devices that use fbdev for their
+> primary output.
+>
+> This patch allows enabling of non-desktop devices both as a kernel command
+> line as well as by setting
+> /sys/module/drm_kms_helper/parameters/drm_fbdev_permit_non_desktop.
 
-Patch queued for 4.17, thanks.
+Why exactly are you developing new userspace on top of fbdev? fbdev
+never ever supported HMDs in any meaningful fashion (those things
+didn't exist 20 years ago when fbdev was designed), and we have fbdev
+in feature freeze mode since a few years now. Please explain a bit
+more about what exactly you're trying to do here, and what's running
+in userspace that makes you require fbdev.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Adding fbdev lists&maintainer.
 
+Also please note that for graphics stuff we require a fully open
+sourced userspace side of the stack when adding new support, which
+this very much feels like. See:
+
+https://dri.freedesktop.org/docs/drm/gpu/drm-uapi.html#open-source-userspace-requirements>
+
+> I've never sent an email to the kernel devel list, so I'm still a little
+> nervous.  Especially because this is against a different branch, and I'm
+> starting to think that I should be messaging there, but this is something
+> that really needs to go upstream.
+
+Welcome to upstream! You're doing perfectly fine. We're trying really
+hard to be welcoming and respectful in the graphics subsystem, and
+have an enforced Code of Conduct to that effect:
+
+https://dri.freedesktop.org/docs/drm/gpu/introduction.html#code-of-conduct
+-Daniel
+
+
+
+>
+> Signed-off-by:
+>
+> diff --git a/drivers/gpu/drm/drm_fb_helper.c
+> b/drivers/gpu/drm/drm_fb_helper.c
+> index 035784ddd..8bfaf79ff 100644
+> --- a/drivers/gpu/drm/drm_fb_helper.c
+> +++ b/drivers/gpu/drm/drm_fb_helper.c
+> @@ -55,6 +55,11 @@ MODULE_PARM_DESC(drm_fbdev_overalloc,
+>                  "Overallocation of the fbdev buffer (%) [default="
+>                  __MODULE_STRING(CONFIG_DRM_FBDEV_OVERALLOC) "]");
+>
+> +static bool drm_fbdev_permit_non_desktop;
+> +module_param(drm_fbdev_permit_non_desktop, bool, 0644);
+> +MODULE_PARM_DESC(drm_fbdev_permit_non_desktop,
+> +               "Allow the framebuffer to use non-desktop displays
+> [default=off]");
+> +
+>  static LIST_HEAD(kernel_fb_helper_list);
+>  static DEFINE_MUTEX(kernel_fb_helper_lock);
+>
+> @@ -2109,7 +2114,7 @@ static bool drm_connector_enabled(struct drm_connector
+> *connector, bool strict)
+>  {
+>         bool enable;
+>
+> -       if (connector->display_info.non_desktop)
+> +       if (connector->display_info.non_desktop &&
+> !drm_fbdev_permit_non_desktop)
+>                 return false;
+>
+>         if (strict)
+>
+>
+>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+>
+
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

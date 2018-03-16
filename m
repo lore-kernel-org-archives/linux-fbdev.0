@@ -1,64 +1,49 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:04 +0000
-Subject: [PATCHv4 00/10] backlight: Add TI LMU backlight driver
-Message-Id: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 16 Mar 2018 13:51:38 +0000
+Subject: [PATCH v2 05/21] firewire: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1521208314-4783-6-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Hi,
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-This adds backlight support for TI LMU devices. It was tested with
-an lm3532 on Motorola Droid 4, which uses one channel for display
-backlight and one channel for keyboard backlight.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Changes since PATCHv3:
- * Complete overhaul to satisfy Rob's remarks regarding to the binding
- * Implement LED subsystem support for keyboard backlights
- * Add lots of cleanup patches for the TI LMU MFD driver
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Changes since PATCHv2:
- * Drop all binding parts, that were NAK'd by Rob.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+---
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/firewire/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-Changes since PATCHv1:
- * split dt-binding documentation in its own patch
- * move include/linux/mfd/ti-lmu-backlight.h to drivers/video/backlight/ti-lmu-backlight-data.h
- * replace LMU_BL_REG() with a normal struct
- * add "const" keyword to lots of internal structures
- * improve error handling
- * use atomic pwm api
-
--- Sebastian
-
-Sebastian Reichel (10):
-  mfd: ti-lmu: constify mfd_cell tables
-  mfd: ti-lmu: switch to gpiod
-  mfd: ti-lmu: use managed resource for everything
-  mfd: ti-lmu: drop of_compatible for backlight driver
-  mfd: ti-lmu: use of_device_get_match_data() helper
-  mfd: ti-lmu: add PWM support
-  mfd: ti-lmu: register one backlight device per channel
-  backlight: add TI LMU backlight driver
-  dt-bindings: mfd: ti-lmu: update for backlight
-  ARM: dts: omap4-droid4: update backlight led-controller
-
- Documentation/devicetree/bindings/mfd/ti-lmu.txt | 119 ++--
- arch/arm/boot/dts/omap4-droid4-xt894.dts         |  20 +-
- drivers/mfd/ti-lmu.c                             | 170 +++---
- drivers/video/backlight/Kconfig                  |   7 +
- drivers/video/backlight/Makefile                 |   3 +
- drivers/video/backlight/ti-lmu-backlight-core.c  | 666 +++++++++++++++++++++++
- drivers/video/backlight/ti-lmu-backlight-data.c  | 304 +++++++++++
- drivers/video/backlight/ti-lmu-backlight-data.h  |  95 ++++
- include/linux/mfd/ti-lmu.h                       |  10 +-
- 9 files changed, 1257 insertions(+), 137 deletions(-)
- create mode 100644 drivers/video/backlight/ti-lmu-backlight-core.c
- create mode 100644 drivers/video/backlight/ti-lmu-backlight-data.c
- create mode 100644 drivers/video/backlight/ti-lmu-backlight-data.h
-
+diff --git a/drivers/firewire/Kconfig b/drivers/firewire/Kconfig
+index 145974f9662b63e6..4199849e37585181 100644
+--- a/drivers/firewire/Kconfig
++++ b/drivers/firewire/Kconfig
+@@ -1,5 +1,4 @@
+ menu "IEEE 1394 (FireWire) support"
+-	depends on HAS_DMA
+ 	depends on PCI || COMPILE_TEST
+ 	# firewire-core does not depend on PCI but is
+ 	# not useful without PCI controller driver
 -- 
-2.16.2
+2.7.4
 

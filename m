@@ -1,63 +1,127 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:14 +0000
-Subject: [PATCHv4 10/10] ARM: dts: omap4-droid4: update backlight led-controller
-Message-Id: <20180330172414.26575-11-sebastian.reichel@collabora.co.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 16 Mar 2018 13:51:36 +0000
+Subject: [PATCH v2 03/21] crypto: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1521208314-4783-4-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-From: Sebastian Reichel <sre@kernel.org>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-This updates the backlight led-controller node to follow the
-new binding instead of the legacy out-of-tree binding.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Signed-off-by: Sebastian Reichel <sre@kernel.org>
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
 ---
- arch/arm/boot/dts/omap4-droid4-xt894.dts | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/crypto/Kconfig | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/boot/dts/omap4-droid4-xt894.dts b/arch/arm/boot/dts/omap4-droid4-xt894.dts
-index 3ed090a9db6c..da1571c24039 100644
---- a/arch/arm/boot/dts/omap4-droid4-xt894.dts
-+++ b/arch/arm/boot/dts/omap4-droid4-xt894.dts
-@@ -380,20 +380,24 @@
- };
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 4b741b83e23ff4de..3d27da7a430c0bc2 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -419,7 +419,7 @@ config CRYPTO_DEV_EXYNOS_RNG
+ config CRYPTO_DEV_S5P
+ 	tristate "Support for Samsung S5PV210/Exynos crypto accelerator"
+ 	depends on ARCH_S5PV210 || ARCH_EXYNOS || COMPILE_TEST
+-	depends on HAS_IOMEM && HAS_DMA
++	depends on HAS_IOMEM
+ 	select CRYPTO_AES
+ 	select CRYPTO_BLKCIPHER
+ 	help
+@@ -473,7 +473,6 @@ config CRYPTO_DEV_BFIN_CRC
  
- &i2c1 {
--	lm3532@38 {
-+	led-controller@38 {
- 		compatible = "ti,lm3532";
- 		reg = <0x38>;
+ config CRYPTO_DEV_ATMEL_AUTHENC
+ 	tristate "Support for Atmel IPSEC/SSL hw accelerator"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	select CRYPTO_AUTHENC
+ 	select CRYPTO_DEV_ATMEL_AES
+@@ -486,7 +485,6 @@ config CRYPTO_DEV_ATMEL_AUTHENC
  
- 		enable-gpios = <&gpio6 12 GPIO_ACTIVE_HIGH>;
+ config CRYPTO_DEV_ATMEL_AES
+ 	tristate "Support for Atmel AES hw accelerator"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	select CRYPTO_AES
+ 	select CRYPTO_AEAD
+@@ -501,7 +499,6 @@ config CRYPTO_DEV_ATMEL_AES
  
--		lcd_backlight: backlight {
--			compatible = "ti,lm3532-backlight";
-+		lcd_backlight: bank0 {
-+			label = "lcd";
-+			ti,led-sources = <0>;
-+			ti,ramp-up-ms = <1>;
-+			ti,ramp-down-ms = <0>;
-+		};
+ config CRYPTO_DEV_ATMEL_TDES
+ 	tristate "Support for Atmel DES/TDES hw accelerator"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	select CRYPTO_DES
+ 	select CRYPTO_BLKCIPHER
+@@ -515,7 +512,6 @@ config CRYPTO_DEV_ATMEL_TDES
  
--			lcd {
--				led-sources = <0 1 2>;
--				ramp-up-msec = <1>;
--				ramp-down-msec = <0>;
--			};
-+		keyboard_backlight: bank1 {
-+			label = "keyboard";
-+			ti,led-sources = <1>;
-+			ti,ramp-up-msec = <1>;
-+			ti,ramp-down-msec = <0>;
- 		};
- 	};
- };
+ config CRYPTO_DEV_ATMEL_SHA
+ 	tristate "Support for Atmel SHA hw accelerator"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	select CRYPTO_HASH
+ 	help
+@@ -581,7 +577,8 @@ config CRYPTO_DEV_CAVIUM_ZIP
+ 
+ config CRYPTO_DEV_QCE
+ 	tristate "Qualcomm crypto engine accelerator"
+-	depends on (ARCH_QCOM || COMPILE_TEST) && HAS_DMA && HAS_IOMEM
++	depends on ARCH_QCOM || COMPILE_TEST
++	depends on HAS_IOMEM
+ 	select CRYPTO_AES
+ 	select CRYPTO_DES
+ 	select CRYPTO_ECB
+@@ -605,7 +602,6 @@ source "drivers/crypto/vmx/Kconfig"
+ config CRYPTO_DEV_IMGTEC_HASH
+ 	tristate "Imagination Technologies hardware hash accelerator"
+ 	depends on MIPS || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select CRYPTO_MD5
+ 	select CRYPTO_SHA1
+ 	select CRYPTO_SHA256
+@@ -657,7 +653,6 @@ config CRYPTO_DEV_ROCKCHIP
+ 
+ config CRYPTO_DEV_MEDIATEK
+ 	tristate "MediaTek's EIP97 Cryptographic Engine driver"
+-	depends on HAS_DMA
+ 	depends on (ARM && ARCH_MEDIATEK) || COMPILE_TEST
+ 	select CRYPTO_AES
+ 	select CRYPTO_AEAD
+@@ -695,7 +690,7 @@ source "drivers/crypto/stm32/Kconfig"
+ 
+ config CRYPTO_DEV_SAFEXCEL
+ 	tristate "Inside Secure's SafeXcel cryptographic engine driver"
+-	depends on HAS_DMA && OF
++	depends on OF
+ 	depends on (ARM64 && ARCH_MVEBU) || (COMPILE_TEST && 64BIT)
+ 	select CRYPTO_AES
+ 	select CRYPTO_BLKCIPHER
+@@ -713,7 +708,6 @@ config CRYPTO_DEV_SAFEXCEL
+ config CRYPTO_DEV_ARTPEC6
+ 	tristate "Support for Axis ARTPEC-6/7 hardware crypto acceleration."
+ 	depends on ARM && (ARCH_ARTPEC || COMPILE_TEST)
+-	depends on HAS_DMA
+ 	depends on OF
+ 	select CRYPTO_AEAD
+ 	select CRYPTO_AES
 -- 
-2.16.2
+2.7.4
 

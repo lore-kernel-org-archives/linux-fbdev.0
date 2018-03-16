@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:54 +0000
-Subject: [PATCH v2 21/21] usb: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-22-git-send-email-geert@linux-m68k.org>
+Date: Fri, 16 Mar 2018 13:51:37 +0000
+Subject: [PATCH v2 04/21] fbdev: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1521208314-4783-5-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
 In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
@@ -25,52 +25,29 @@ This simplifies the dependencies, and allows to improve compile-testing.
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com> [drivers/usb/gadget/]
 ---
 v2:
   - Add Reviewed-by, Acked-by,
   - Drop RFC state,
   - Split per subsystem.
 ---
- drivers/usb/gadget/udc/Kconfig | 4 ++--
- drivers/usb/mtu3/Kconfig       | 2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/udc/Kconfig b/drivers/usb/gadget/udc/Kconfig
-index 0875d38476ee9395..9c3b4f86965e80c7 100644
---- a/drivers/usb/gadget/udc/Kconfig
-+++ b/drivers/usb/gadget/udc/Kconfig
-@@ -179,7 +179,7 @@ config USB_R8A66597
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 11e699f1062b78ea..abee481f5fb778dd 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2174,7 +2174,8 @@ config FB_XILINX
  
- config USB_RENESAS_USBHS_UDC
- 	tristate 'Renesas USBHS controller'
--	depends on USB_RENESAS_USBHS && HAS_DMA
-+	depends on USB_RENESAS_USBHS
- 	help
- 	   Renesas USBHS is a discrete USB host and peripheral controller chip
- 	   that supports both full and high speed USB 2.0 data transfers.
-@@ -192,7 +192,7 @@ config USB_RENESAS_USBHS_UDC
- config USB_RENESAS_USB3
- 	tristate 'Renesas USB3.0 Peripheral controller'
- 	depends on ARCH_RENESAS || COMPILE_TEST
--	depends on EXTCON && HAS_DMA
-+	depends on EXTCON
- 	help
- 	   Renesas USB3.0 Peripheral controller is a USB peripheral controller
- 	   that supports super, high, and full speed USB 3.0 data transfers.
-diff --git a/drivers/usb/mtu3/Kconfig b/drivers/usb/mtu3/Kconfig
-index 25cd61947beea51e..c0c0eb88e5eafc74 100644
---- a/drivers/usb/mtu3/Kconfig
-+++ b/drivers/usb/mtu3/Kconfig
-@@ -2,7 +2,7 @@
- 
- config USB_MTU3
- 	tristate "MediaTek USB3 Dual Role controller"
--	depends on EXTCON && (USB || USB_GADGET) && HAS_DMA
-+	depends on EXTCON && (USB || USB_GADGET)
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
- 	select USB_XHCI_MTK if USB_SUPPORT && USB_XHCI_HCD
- 	help
+ config FB_GOLDFISH
+ 	tristate "Goldfish Framebuffer"
+-	depends on FB && HAS_DMA && (GOLDFISH || COMPILE_TEST)
++	depends on FB
++	depends on GOLDFISH || COMPILE_TEST
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
 2.7.4
 

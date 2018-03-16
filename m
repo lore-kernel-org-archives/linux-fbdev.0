@@ -1,105 +1,51 @@
-From: Claudiu Beznea <Claudiu.Beznea@microchip.com>
-Date: Fri, 02 Mar 2018 09:28:09 +0000
-Subject: Re: [PATCH v3 05/10] pwm: add PWM mode to pwm_config()
-Message-Id: <585cc4ae-3674-c119-295b-e59f4242e619@microchip.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 16 Mar 2018 13:51:50 +0000
+Subject: [PATCH v2 17/21] scsi: hisi_sas: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1521208314-4783-18-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1519300881-8136-1-git-send-email-claudiu.beznea@microchip.com>
- <1519300881-8136-6-git-send-email-claudiu.beznea@microchip.com>
- <20180228194429.GD22932@mithrandir> <87r2p4hod7.fsf@intel.com>
-In-Reply-To: <87r2p4hod7.fsf@intel.com>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@linux.intel.com>, Thierry Reding <thierry.reding@gmail.com>
-Cc: mark.rutland@arm.com, milo.kim@ti.com, linux-fbdev@vger.kernel.org, sean@mess.org, devicetree@vger.kernel.org, airlied@linux.ie, mturquette@baylibre.com, joonas.lahtinen@linux.intel.com, kamil@wypas.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, alexandre.belloni@free-electrons.com, pavel@ucw.cz, lee.jones@linaro.org, linux-clk@vger.kernel.org, linux-leds@vger.kernel.org, daniel.thompson@linaro.org, linux-samsung-soc@vger.kernel.org, shc_work@mail.ru, corbet@lwn.net, linux-doc@vger.kernel.org, linux@armlinux.org.uk, krzk@kernel.org, kgene@kernel.org, linux-input@vger.kernel.org, linux@roeck-us.net, linux-media@vger.kernel.org, linux-pwm@vger.kernel.org, jdelvare@suse.com, b.zolnierkie@samsung.com, intel-gfx@lists.freedesktop.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, rodrigo.vivi@intel.com, mchehab@kernel.org, linux-arm-kernel@lists.infrade
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joe
+Cc: iommu@lists.linux-foundation.org, linux-usb@vger.kernel.org, linux-scsi@vger.kernel.org, alsa-devel@alsa-project.org, linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org, linux-i2c@vger.kernel.org, linux-iio@vger.kernel.org, linux-block@vger.kernel.org, linux-media@vger.kernel.org, linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org, netdev@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-serial@vger.kernel.org, linux-spi@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-On 28.02.2018 22:04, Jani Nikula wrote:
-> On Wed, 28 Feb 2018, Thierry Reding <thierry.reding@gmail.com> wrote:
->> Anyone that needs something other than normal mode should use the new
->> atomic PWM API.
-> 
-> At the risk of revealing my true ignorance, what is the new atomic PWM
-> API? Where? Examples of how one would convert old code over to the new
-> API?
-As far as I know, the old PWM core code uses config(), set_polarity(),
-enable(), disable() methods of driver, registered as pwm_ops:
-struct pwm_ops {
+This simplifies the dependencies, and allows to improve compile-testing.
 
-        int (*request)(struct pwm_chip *chip, struct pwm_device *pwm);
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+---
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/scsi/hisi_sas/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-        void (*free)(struct pwm_chip *chip, struct pwm_device *pwm);
+diff --git a/drivers/scsi/hisi_sas/Kconfig b/drivers/scsi/hisi_sas/Kconfig
+index d42f29a5eb65046d..57183fce70fb6355 100644
+--- a/drivers/scsi/hisi_sas/Kconfig
++++ b/drivers/scsi/hisi_sas/Kconfig
+@@ -1,6 +1,6 @@
+ config SCSI_HISI_SAS
+ 	tristate "HiSilicon SAS"
+-	depends on HAS_DMA && HAS_IOMEM
++	depends on HAS_IOMEM
+ 	depends on ARM64 || COMPILE_TEST
+ 	select SCSI_SAS_LIBSAS
+ 	select BLK_DEV_INTEGRITY
+-- 
+2.7.4
 
-        int (*config)(struct pwm_chip *chip, struct pwm_device *pwm,
-
-                      int duty_ns, int period_ns);
-
-        int (*set_polarity)(struct pwm_chip *chip, struct pwm_device *pwm,
-
-                            enum pwm_polarity polarity);
-
-        int (*capture)(struct pwm_chip *chip, struct pwm_device *pwm,
-
-                       struct pwm_capture *result, unsigned long timeout);
-
-        int (*enable)(struct pwm_chip *chip, struct pwm_device *pwm);
-
-        void (*disable)(struct pwm_chip *chip, struct pwm_device *pwm);
-
-        int (*apply)(struct pwm_chip *chip, struct pwm_device *pwm,
-
-                     struct pwm_state *state);
-
-        void (*get_state)(struct pwm_chip *chip, struct pwm_device *pwm,
-
-                          struct pwm_state *state);
-
-#ifdef CONFIG_DEBUG_FS
-
-        void (*dbg_show)(struct pwm_chip *chip, struct seq_file *s);
-
-#endif
-
-        struct module *owner;
-
-};
-
-
-to do settings on hardware. In order to so settings on a PWM the users
-should have been follow the below steps:
-->config()
-->set_polarity()
-->enable()
-Moreover, if the PWM was previously enabled it should have been first
-disable and then to follow the above steps in order to apply a new settings
-on hardware.
-The driver should have been provide, at probe, all the above function:
-->config(), ->set_polarity(), ->disable(), ->enable(), function that were
-used by PWM core.
-
-Now, having atomic PWM, the driver should provide one function to PWM core,
-which is ->apply() function. Every PWM has a state associated, which keeps
-the period, duty cycle, polarity and enable/disable status. The driver's
-->apply() function takes as argument the state that should be applied and
-it takes care of applying this new state directly without asking user to
-call ->disable(), then ->config()/->set_polarity(), then ->enable() to
-apply new hardware settings.
-
-The PWM consumer could set a new state for PWM it uses, using
-pwm_apply_state(pwm, new_state);
-
-Regarding the models to switch on atomic PWM, on the controller side you
-can check for drivers that registers apply function at probe time.
-Regarding the PWM users, you can look for pwm_apply_state()
-(drivers/hwmon/pwm-fan.c or drivers/input/misc/pwm-beeper.c are some examples).
-
-Thierry, please correct me if I'm wrong.
-
-Thank you,
-Claudiu Beznea
-
-> 
-> BR,
-> Jani.
-> 

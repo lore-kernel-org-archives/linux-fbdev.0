@@ -1,39 +1,75 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 14:05:30 +0000
-Subject: Re: [PATCH 2/2] video: s3c-fb: Improve a size determination in s3c_fb_probe()
-Message-Id: <2206589.7tfjgjbFvn@amdc3058>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 16 Mar 2018 13:51:51 +0000
+Subject: [PATCH v2 18/21] serial: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1521208314-4783-19-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2c837da0-6b0f-12e7-4d76-960b660a8911@users.sourceforge.net>
- <CGME20171127180721epcas2p1549ab6d72f7d83ff7eb5276079037b26@epcas2p1.samsung.com>
- <000301d367aa$8efbbc40$acf334c0$@gmail.com>
-In-Reply-To: <000301d367aa$8efbbc40$acf334c0$@gmail.com>
+References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jingoohan1@gmail.com>, 'SF Markus Elfring' <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, 'LKML' <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
+To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
+Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Monday, November 27, 2017 01:07:15 PM Jingoo Han wrote:
-> On Sunday, November 26, 2017 9:18 AM, SF Markus Elfring wrote:
-> > 
-> > From: Markus Elfring <elfring@users.sourceforge.net>
-> > Date: Sun, 26 Nov 2017 15:03:03 +0100
-> > 
-> > Replace the specification of a data structure by a pointer dereference
-> > as the parameter for the operator "sizeof" to make the corresponding size
-> > determination a bit safer according to the Linux coding style convention.
-> > 
-> > This issue was detected by using the Coccinelle software.
-> > 
-> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
-> 
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Patch queued for 4.17, thanks.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+---
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/tty/serial/Kconfig | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index 3682fd3e960cbd64..a0ea146a2ef5af53 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -115,7 +115,6 @@ config SERIAL_SB1250_DUART_CONSOLE
+ 
+ config SERIAL_ATMEL
+ 	bool "AT91 on-chip serial port support"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	select SERIAL_CORE
+ 	select SERIAL_MCTRL_GPIO if GPIOLIB
+@@ -586,7 +585,6 @@ config BFIN_UART3_CTSRTS
+ 
+ config SERIAL_IMX
+ 	tristate "IMX serial port support"
+-	depends on HAS_DMA
+ 	depends on ARCH_MXC || COMPILE_TEST
+ 	select SERIAL_CORE
+ 	select RATIONAL
+@@ -1436,7 +1434,6 @@ config SERIAL_PCH_UART_CONSOLE
+ 
+ config SERIAL_MXS_AUART
+ 	tristate "MXS AUART support"
+-	depends on HAS_DMA
+ 	depends on ARCH_MXS || MACH_ASM9260 || COMPILE_TEST
+ 	select SERIAL_CORE
+ 	select SERIAL_MCTRL_GPIO if GPIOLIB
+@@ -1656,7 +1653,6 @@ config SERIAL_SPRD_CONSOLE
+ config SERIAL_STM32
+ 	tristate "STMicroelectronics STM32 serial port support"
+ 	select SERIAL_CORE
+-	depends on HAS_DMA
+ 	depends on ARCH_STM32 || COMPILE_TEST
+ 	help
+ 	  This driver is for the on-chip Serial Controller on
+-- 
+2.7.4
 

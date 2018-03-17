@@ -1,184 +1,54 @@
-From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Date: Sat, 17 Mar 2018 10:21:17 +0000
+From: Rich Felker <dalias@libc.org>
+Date: Sat, 17 Mar 2018 17:16:31 +0000
 Subject: Re: [RFC 2/4] sh: ecovec24: conditionally register backlight device
-Message-Id: <02834805-5053-4BDC-9256-DF1AFFEC8630@physik.fu-berlin.de>
+Message-Id: <20180317171631.GV1436@brightrain.aerifal.cx>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180315224202.96668-1-dmitry.torokhov@gmail.com> <20180315224202.96668-3-dmitry.torokhov@gmail.com> <20180316100748.GH16424@w540> <20180316233800.GA32310@dtor-ws> <20180317092516.g5p5ybka57abyhex@apu3b>
-In-Reply-To: <20180317092516.g5p5ybka57abyhex@apu3b>
+References: <20180315224202.96668-1-dmitry.torokhov@gmail.com>
+ <20180315224202.96668-3-dmitry.torokhov@gmail.com>
+ <20180316100748.GH16424@w540>
+ <20180316233800.GA32310@dtor-ws>
+ <20180317092516.g5p5ybka57abyhex@apu3b>
+ <02834805-5053-4BDC-9256-DF1AFFEC8630@physik.fu-berlin.de>
+In-Reply-To: <02834805-5053-4BDC-9256-DF1AFFEC8630@physik.fu-berlin.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: jacopo mondi <jacopo@jmondi.org>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Linus Walleij <linus.walleij@linaro.org>
+To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+Cc: jacopo mondi <jacopo@jmondi.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Linus Walleij <linus.walleij@linaro.org>
 
+On Sat, Mar 17, 2018 at 07:21:17PM +0900, John Paul Adrian Glaubitz wrote:
+> 
+> 
+> > On Mar 17, 2018, at 6:25 PM, jacopo mondi <jacopo@jmondi.org> wrote:
+> > 
+> > Hi Dmitry,
+> > 
+> >> On Fri, Mar 16, 2018 at 04:38:00PM -0700, Dmitry Torokhov wrote:
+> >> Hi Jacopo,
+> >> 
+> >>> On Fri, Mar 16, 2018 at 11:07:48AM +0100, jacopo mondi wrote:
+> >>> Hello Dmitry
+> >>> 
+> >>> FYI I am brushing the ecovec board these days as well
+> >>> https://www.spinics.net/lists/linux-sh/msg52536.html
+> >>> 
+> >> 
+> >> What is the ecovec board BTW? Is it some devkit or what? It seems quite
+> >> old to me.
+> > 
+> > Yes, it is a SuperH 4 based development board. It is old for sure. I'm
+> > also working on removing some stuff the ecovec board file is the only
+> > user of...
+> 
+> Umh, but I’m still using the SH7724 Evovec board. Please don’t
+> remove support for that.
+> 
+> The SuperH port of the Linux kernel is still maintained.
 
+Thanks. At some point it would be nice to remove the board file, but
+only once the conversion to device tree happens. If anyone has a list
+of boards that people are still using or have access to and who can do
+testing, it would be nice to compile that somewhere so we can figure
+out what needs to be tested and who can test it.
 
-> On Mar 17, 2018, at 6:25 PM, jacopo mondi <jacopo@jmondi.org> wrote:
-> 
-> Hi Dmitry,
-> 
->> On Fri, Mar 16, 2018 at 04:38:00PM -0700, Dmitry Torokhov wrote:
->> Hi Jacopo,
->> 
->>> On Fri, Mar 16, 2018 at 11:07:48AM +0100, jacopo mondi wrote:
->>> Hello Dmitry
->>> 
->>> FYI I am brushing the ecovec board these days as well
->>> https://www.spinics.net/lists/linux-sh/msg52536.html
->>> 
->> 
->> What is the ecovec board BTW? Is it some devkit or what? It seems quite
->> old to me.
-> 
-> Yes, it is a SuperH 4 based development board. It is old for sure. I'm
-> also working on removing some stuff the ecovec board file is the only
-> user of...
-
-Umh, but I’m still using the SH7724 Evovec board. Please don’t remove support for that.
-
-The SuperH port of the Linux kernel is still maintained.
-
-Adrian
-
-> 
->>> And I have a board to test with but without any display panel, I'm
->>> afraid.
->>> 
->>>> On Thu, Mar 15, 2018 at 03:42:00PM -0700, Dmitry Torokhov wrote:
->>>> Commit fe79f919f47e ("sh: ecovec24: Use gpio-backlight") removed custom
->>>> backlight support and switched over to generic gpio-backlight driver. The
->>>> comment when we run with DVI states "no backlight", but setting
->>>> gpio_backlight_data.fbdev to NULL actually makes gpio-backlight to react to
->>>> events from any framebuffer device, not ignore them.
->>>> 
->>>> We want to get rid of platform data in favor of generic device properties
->>>> in gpio_backlight driver, so we can not have kernel pointers passed around
->>>> to tie the framebuffer device to backlight. Assuming that the intent of the
->>>> above referenced commit was to indeed not export backlight when using DVI,
->>>> let's switch to conditionally registering backlight device so it is not
->>>> present at all in DVI case.
->>>> 
->>>> Signed-off-by: Dmitry Torokhov <dmitry.torokhov@gmail.com>
->>>> ---
->>>> arch/sh/boards/mach-ecovec24/setup.c | 24 +++++++++++++++++-------
->>>> 1 file changed, 17 insertions(+), 7 deletions(-)
->>>> 
->>>> diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
->>>> index 6f929abe0b50f..67633d2d42390 100644
->>>> --- a/arch/sh/boards/mach-ecovec24/setup.c
->>>> +++ b/arch/sh/boards/mach-ecovec24/setup.c
->>>> @@ -368,7 +368,6 @@ static struct platform_device lcdc_device = {
->>>> };
->>>> 
->>>> static struct gpio_backlight_platform_data gpio_backlight_data = {
->>>> -    .fbdev = &lcdc_device.dev,
->>>>    .gpio = GPIO_PTR1,
->>>>    .def_value = 1,
->>>>    .name = "backlight",
->>>> @@ -987,7 +986,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
->>>>    &usb1_common_device,
->>>>    &usbhs_device,
->>>>    &lcdc_device,
->>>> -    &gpio_backlight_device,
->>>>    &ceu0_device,
->>>>    &ceu1_device,
->>>>    &keysc_device,
->>>> @@ -1077,6 +1075,8 @@ static int __init arch_setup(void)
->>>> {
->>>>    struct clk *clk;
->>>>    bool cn12_enabled = false;
->>>> +    bool use_backlight = false;
->>>> +    int error;
->>>> 
->>>>    /* register board specific self-refresh code */
->>>>    sh_mobile_register_self_refresh(SUSP_SH_STANDBY | SUSP_SH_SF |
->>>> @@ -1193,9 +1193,6 @@ static int __init arch_setup(void)
->>>>        lcdc_info.ch[0].lcd_modes        = ecovec_dvi_modes;
->>>>        lcdc_info.ch[0].num_modes        = ARRAY_SIZE(ecovec_dvi_modes);
->>>> 
->>>> -        /* No backlight */
->>>> -        gpio_backlight_data.fbdev = NULL;
->>>> -
->>>>        gpio_set_value(GPIO_PTA2, 1);
->>>>        gpio_set_value(GPIO_PTU1, 1);
->>>>    } else {
->>>> @@ -1217,6 +1214,8 @@ static int __init arch_setup(void)
->>>>        /* enable TouchScreen */
->>>>        i2c_register_board_info(0, &ts_i2c_clients, 1);
->>>>        irq_set_irq_type(IRQ0, IRQ_TYPE_LEVEL_LOW);
->>>> +
->>>> +        use_backlight = true;
->>>>    }
->>>> 
->>>>    /* enable CEU0 */
->>>> @@ -1431,8 +1430,19 @@ static int __init arch_setup(void)
->>>>    gpio_set_value(GPIO_PTG4, 1);
->>>> #endif
->>>> 
->>>> -    return platform_add_devices(ecovec_devices,
->>>> -                    ARRAY_SIZE(ecovec_devices));
->>>> +    error = platform_add_devices(ecovec_devices,
->>>> +                      ARRAY_SIZE(ecovec_devices));
->>> 
->>> I would invert this.
->>> Register the backlight first, then all other devices.
->> 
->> We could do that, but why would that be better?
->> 
-> 
-> That if backlight device registration fails we do not register all
-> other devices. But yes that may be a bit too harsh, isn't it?
-> 
->>> 
->>> 
->>>> +    if (error)
->>>> +        return error;
->>>> +
->>>> +    if (use_backlight) {
->>>> +        error = platform_device_add(&gpio_backlight_device);
->>>> +        if (error)
->>>> +            pr_warn("%s: failed to register backlight: %d\n",
->>>> +                error);
->>> 
->>> Could you use dev_warn here? Also the format is wrong, I assume you
->> 
->> I would rather not, as the backlight device would be in unknown state
->> here, and using dev_warn with device that has not been fully registered
->> does not give any benefits. There is also no ambiguity as there is only
->> one backlight.
-> 
-> You are very correct, sorry for the fuss.
-> 
->> 
->>> are missing a '__func__' as second function argument.
->> 
->> I'll fix this.
->> 
->>> 
->>> Also, you may want to return error.
->> 
->> How would caller handle this error? Should we kill all successfully
->> registered devices on error adding backlight?
-> 
-> As the function returned an error code for 'platform_add_devices()' I
-> thought we may want to return one as well. That's why I proposed to
-> invert the registration order :)
-> 
-> All minor nits btw,  sorry for jumping up, I understand this is an
-> RFC and ecovec board file is not the real juice of this series ;)
-> 
-> Ping me if I can help with testing as I've the board.
-> 
-> Thanks
->   j
-> 
->> 
->> Thanks.
->> 
->> -- 
->> Dmitry
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-sh" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Rich

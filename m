@@ -1,81 +1,38 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Wed, 28 Mar 2018 17:03:23 +0000
-Subject: [RESEND PATCH v6 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
-Message-Id: <20180328170327.5395-1-enric.balletbo@collabora.com>
+From: Charles Lohr <charles@cnlohr.com>
+Date: Mon, 19 Mar 2018 06:42:16 +0000
+Subject: [PATCH] Allow non-desktop displays when not in strict mode
+Message-Id: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Keith Packard <keithp@keithp.com>
+Cc: David Airlie <airlied@redhat.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Charles Lohr <lohr85@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>
 
-Before this patch the enable signal was set before the PWM signal and
-vice-versa on power off. This sequence is wrong, at least, it is on
-the different panels datasheets that I checked, so I inverted the sequence
-to follow the specs.
+Considering the lukewarm reception of my last past request and Keith's recommendation, I've created and tested a new patch, to bring the intended functionality back, only prohibiting non-desktop devices if a regular desktop screen is present.
 
-For reference the following panels have the mentioned sequence:
-  - N133HSE-EA1 (Innolux)
-  - N116BGE (Innolux)
-  - N156BGE-L21 (Innolux)
-  - B101EAN0 (Auo)
-  - B101AW03 (Auo)
-  - LTN101NT05 (Samsung)
-  - CLAA101WA01A (Chunghwa)
+Previous email chain: https://lists.freedesktop.org/archives/dri-devel/2018-March/169558.html
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Acked-by: Jingoo Han <jingoohan1@gmail.com>
-Acked-by: Thierry Reding <thierry.reding@gmail.com>
----
-Changes since v5:
- - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
-Changes since v4:
- - Rebase on top of mainline.
- - Add the acks from Daniel Thompson and Jingoo Han.
-Changes since v3:
- - List the part numbers for the panel checked (Daniel Thompson)
-Changes since v2:
- - Add this as a separate patch (Thierry Reding)
-Changes since v1:
- - None
----
- drivers/video/backlight/pwm_bl.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+I believe I've finally found a way of sending emails with word wrap turned off.
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 1c2289ddd555..698ec68bcdc9 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
- 	if (err < 0)
- 		dev_err(pb->dev, "failed to enable power supply\n");
- 
-+	pwm_enable(pb->pwm);
-+
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
- 
--	pwm_enable(pb->pwm);
- 	pb->enabled = true;
- }
- 
-@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
- 	if (!pb->enabled)
- 		return;
- 
--	pwm_config(pb->pwm, 0, pb->period);
--	pwm_disable(pb->pwm);
--
- 	if (pb->enable_gpio)
- 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
- 
-+	pwm_config(pb->pwm, 0, pb->period);
-+	pwm_disable(pb->pwm);
-+
- 	regulator_disable(pb->power_supply);
- 	pb->enabled = false;
- }
--- 
-2.16.2
+Thank you for your time and help understanding how this submission process works.
 
+Charles
+
+
+
+Signed-off-by: Charles Lohr <lohr85@gmail.com>
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index 035784ddd..ed08153ee 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -2109,7 +2109,7 @@ static bool drm_connector_enabled(struct drm_connector *connector, bool strict)
+  {
+      bool enable;
+
+-    if (connector->display_info.non_desktop)
++    if (connector->display_info.non_desktop && strict)
+          return false;
+
+      if (strict)

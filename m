@@ -1,164 +1,63 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:11 +0000
-Subject: [PATCHv4 07/10] mfd: ti-lmu: register one backlight device per channel
-Message-Id: <20180330172414.26575-8-sebastian.reichel@collabora.co.uk>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 19 Mar 2018 18:28:55 +0000
+Subject: Re: [RESEND PATCH v5 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <a2ea8b01-1182-7c80-60a2-4b4e0d8141ab@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+References: <20180216174034.15936-1-enric.balletbo@collabora.com>
+ <20180319165829.GB22770@ulmo>
+In-Reply-To: <20180319165829.GB22770@ulmo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-All LMU devices support multiple channels, that can be controlled
-independently. This registers one backlight sub-device per channel.
+Hi Thierry,
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- drivers/mfd/ti-lmu.c       | 62 +++++++++++++++++++++++++++++++++++++---------
- include/linux/mfd/ti-lmu.h |  4 +++
- 2 files changed, 54 insertions(+), 12 deletions(-)
+Thanks for your ack.
 
-diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-index f43b8acc30e1..f4311d215dfa 100644
---- a/drivers/mfd/ti-lmu.c
-+++ b/drivers/mfd/ti-lmu.c
-@@ -56,8 +56,16 @@ static void ti_lmu_disable_hw(void *data)
- 
- static const struct mfd_cell lm3532_devices[] = {
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3532,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 2,
- 	},
- };
- 
-@@ -75,8 +83,12 @@ static const struct mfd_cell lm3631_devices[] = {
- 	LM363X_REGULATOR(LM3631_LDO_POS),
- 	LM363X_REGULATOR(LM3631_LDO_NEG),
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3631,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
- 	},
- };
- 
-@@ -85,15 +97,27 @@ static const struct mfd_cell lm3632_devices[] = {
- 	LM363X_REGULATOR(LM3632_LDO_POS),
- 	LM363X_REGULATOR(LM3632_LDO_NEG),
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3632,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
- 	},
- };
- 
- static const struct mfd_cell lm3633_devices[] = {
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3633,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 2,
- 	},
- 	{
- 		.name          = "lm3633-leds",
-@@ -109,15 +133,27 @@ static const struct mfd_cell lm3633_devices[] = {
- 
- static const struct mfd_cell lm3695_devices[] = {
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3695,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
- 	},
- };
- 
- static const struct mfd_cell lm3697_devices[] = {
- 	{
--		.name          = "ti-lmu-backlight",
--		.id            = LM3697,
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 0,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 1,
-+	},
-+	{
-+		.name          = "ti-lmu-led-backlight",
-+		.id            = 2,
- 	},
- 	/* Monitoring driver for open/short circuit detection */
- 	{
-@@ -163,6 +199,7 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 		return -ENOMEM;
- 
- 	lmu->dev = &cl->dev;
-+	lmu->id = id->driver_data;
- 
- 	/* Setup regmap */
- 	memset(&regmap_cfg, 0, sizeof(struct regmap_config));
-@@ -208,6 +245,7 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 	 * configuration. The notifier enables such kind of handling.
- 	 */
- 	BLOCKING_INIT_NOTIFIER_HEAD(&lmu->notifier);
-+	lmu->backlight_initialized = false;
- 
- 	i2c_set_clientdata(cl, lmu);
- 
-diff --git a/include/linux/mfd/ti-lmu.h b/include/linux/mfd/ti-lmu.h
-index 246ab5145dff..708c79adcabe 100644
---- a/include/linux/mfd/ti-lmu.h
-+++ b/include/linux/mfd/ti-lmu.h
-@@ -80,6 +80,8 @@ enum lm363x_regulator_id {
-  * @en_gpio:	GPIO for HWEN pin [Optional]
-  * @pwm:	PWM for module [Optional]
-  * @notifier:	Notifier for reporting hwmon event
-+ * @id:		Device ID
-+ * @backlight_initialized: Global Backlight has been initialized
-  */
- struct ti_lmu {
- 	struct device *dev;
-@@ -87,5 +89,7 @@ struct ti_lmu {
- 	struct gpio_desc *en_gpio;
- 	struct pwm_device *pwm;
- 	struct blocking_notifier_head notifier;
-+	enum ti_lmu_id id;
-+	bool backlight_initialized;
- };
- #endif
--- 
-2.16.2
+On 19/03/18 17:58, Thierry Reding wrote:
+> On Fri, Feb 16, 2018 at 06:40:30PM +0100, Enric Balletbo i Serra wrote:
+>> Before this patch the enable signal was set before the PWM signal and
+>> vice-versa on power off. This sequence is wrong, at least, it is on
+>> the different panels datasheets that I checked, so I inverted the sequence
+>> to follow the specs.
+>>
+>> For reference the following panels have the mentioned sequence:
+>>   - N133HSE-EA1 (Innolux)
+>>   - N116BGE (Innolux)
+>>   - N156BGE-L21 (Innolux)
+>>   - B101EAN0 (Auo)
+>>   - B101AW03 (Auo)
+>>   - LTN101NT05 (Samsung)
+>>   - CLAA101WA01A (Chunghwa)
+>>
+>> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+>> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+>> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+>> ---
+>> Changes since v4:
+>>  - Rebase on top of mainline.
+>>  - Add the acks from Daniel Thompson and Jingoo Han.
+>> Changes since v3:
+>>  - List the part numbers for the panel checked (Daniel Thompson)
+>> Changes since v2:
+>>  - Add this as a separate patch (Thierry Reding)
+>> Changes since v1:
+>>  - None
+>>
+>>  drivers/video/backlight/pwm_bl.c | 9 +++++----
+>>  1 file changed, 5 insertions(+), 4 deletions(-)
+> 
+> I'm surprised that panels even care about this. Do you see actual
+> breakage if these are the other way around?
+> 
 
+At least the B116XTN02 requires enable first the PWM, wait 10ms and then BL_EN
+to avoid garbage. I did not observe the issue on other panels but the datasheets
+I checked specifies this sequence as correct.
+
+> Anyway, this seems to me as legit as the other way around, so:
+> 
+> Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> 

@@ -1,51 +1,104 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:39 +0000
-Subject: [PATCH v2 06/21] fpga: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-7-git-send-email-geert@linux-m68k.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Mon, 19 Mar 2018 18:06:07 +0000
+Subject: [PATCH 4.9 102/241] printk: Correctly handle preemption in console_unlock()
+Message-Id: <20180319180755.427526044@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <20180319180751.172155436@linuxfoundation.org>
+In-Reply-To: <20180319180751.172155436@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org, Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, Steven Rostedt <rostedt@goodmis.org>, Peter Zijlstra <peterz@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, Jiri Slaby <jslaby@suse.cz>, linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Sasha Levin <alexander.levin@microsoft.com>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+4.9-stable review patch.  If anyone has any objections, please let me know.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+------------------
 
-This simplifies the dependencies, and allows to improve compile-testing.
+From: Petr Mladek <pmladek@suse.com>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
+
+[ Upstream commit 257ab443118bffc7fdcef38f49cf59be68a3e362 ]
+
+Some console drivers code calls console_conditional_schedule()
+that looks at @console_may_schedule. The value must be cleared
+when the drivers are called from console_unlock() with
+interrupts disabled. But rescheduling is fine when the same
+code is called, for example, from tty operations where the
+console semaphore is taken via console_lock().
+
+This is why @console_may_schedule is cleared before calling console
+drivers. The original value is stored to decide if we could sleep
+between lines.
+
+Now, @console_may_schedule is not cleared when we call
+console_trylock() and jump back to the "again" goto label.
+This has become a problem, since the commit 6b97a20d3a7909daa066
+("printk: set may_schedule for some of console_trylock() callers").
+@console_may_schedule might get enabled now.
+
+There is also the opposite problem. console_lock() can be called
+only from preemptive context. It can always enable scheduling in
+the console code. But console_trylock() is not able to detect it
+when CONFIG_PREEMPT_COUNT is disabled. Therefore we should use the
+original @console_may_schedule value after re-acquiring
+the console semaphore in console_unlock().
+
+This patch solves both problems by moving the "again" goto label.
+
+Alternative solution was to clear and restore the value around
+call_console_drivers(). Then console_conditional_schedule() could
+be used also inside console_unlock(). But there was a potential race
+with console_flush_on_panic() as reported by Sergey Senozhatsky.
+That function should be called only where there is only one CPU
+and with interrupts disabled. But better be on the safe side
+because stopping CPUs might fail.
+
+Fixes: 6b97a20d3a7909 ("printk: set may_schedule for some of console_trylock() callers")
+Link: http://lkml.kernel.org/r/1490372045-22288-1-git-send-email-pmladek@suse.com
+Suggested-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jiri Slaby <jslaby@suse.cz>
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Signed-off-by: Petr Mladek <pmladek@suse.com>
+Signed-off-by: Sasha Levin <alexander.levin@microsoft.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/fpga/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ kernel/printk/printk.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index f47ef848bcd056d5..fd539132542e30ee 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -53,7 +53,6 @@ config FPGA_MGR_ALTERA_CVP
- config FPGA_MGR_ZYNQ_FPGA
- 	tristate "Xilinx Zynq FPGA"
- 	depends on ARCH_ZYNQ || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  FPGA manager driver support for Xilinx Zynq FPGAs.
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2342,7 +2342,7 @@ void console_unlock(void)
+ 	}
  
--- 
-2.7.4
+ 	/*
+-	 * Console drivers are called under logbuf_lock, so
++	 * Console drivers are called with interrupts disabled, so
+ 	 * @console_may_schedule should be cleared before; however, we may
+ 	 * end up dumping a lot of lines, for example, if called from
+ 	 * console registration path, and should invoke cond_resched()
+@@ -2350,11 +2350,15 @@ void console_unlock(void)
+ 	 * scheduling stall on a slow console leading to RCU stall and
+ 	 * softlockup warnings which exacerbate the issue with more
+ 	 * messages practically incapacitating the system.
++	 *
++	 * console_trylock() is not able to detect the preemptive
++	 * context reliably. Therefore the value must be stored before
++	 * and cleared after the the "again" goto label.
+ 	 */
+ 	do_cond_resched = console_may_schedule;
++again:
+ 	console_may_schedule = 0;
+ 
+-again:
+ 	/*
+ 	 * We released the console_sem lock, so we need to recheck if
+ 	 * cpu is online and (if not) is there at least one CON_ANYTIME
+
 

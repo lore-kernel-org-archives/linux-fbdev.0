@@ -1,108 +1,216 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:47 +0000
-Subject: [PATCH v2 14/21] mtd: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-15-git-send-email-geert@linux-m68k.org>
+From: Stephen Boyd <sboyd@kernel.org>
+Date: Mon, 19 Mar 2018 16:22:17 +0000
+Subject: Re: [RFC PATCH 1/2] clk: add new APIs to operate on all available clocks
+Message-Id: <152147653725.242365.16805388526685631797@swboyd.mtv.corp.google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <1516711841-25234-1-git-send-email-aisheng.dong@nxp.com>
+ <1516711841-25234-2-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1516711841-25234-2-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: linux-arm-kernel@lists.infradead.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+Quoting Dong Aisheng (2018-01-23 04:50:40)
+> This patch introduces of_clk_bulk_get_all and clk_bulk_x_all APIs
+> to users who just want to handle all available clocks from device tree
+> without need to know the detailed clock information likes clock numbers
+> and names. This is useful in writing some generic drivers to handle clock
+> part.
+> 
+> Cc: Stephen Boyd <sboyd@codeaurora.org>
+> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+> 
+> ---
+> A few question may need discuss:
+> 1)  This patch is written based on of_clk_bulk_get.
+> [V4,1/1] clk: bulk: add of_clk_bulk_get()
+> https://patchwork.kernel.org/patch/9971527/
+> Stepen once said we may not need it, but i guess as we already
+> have clk_bulk_get, there may be guys who want of_clk_bulk_get as
+> well if they need specify the clock count information, becaues
+> of_clk_bulk_get_all will not check the count.
+> And of_clk_bulk_get is also helpful when implementing
+> of_clk_bulk_get_all.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Hmm ok. It's ok to implement it on top of of_clk_bulk_get I suppose, but
+maybe that API can be kept private until someone can prove they need it
+because they don't have a struct device pointer. Can you pick that patch
+from the list and resend in the series?
 
-This simplifies the dependencies, and allows to improve compile-testing.
+> 
+> 2) It only implements the DT type clk_get_all as i see
+> Stephen said we probably may not need to implement non-dt
+> type as there're still no users.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Drop new dependency of MTD_NAND_MARVELL on HAS_DMA,
-  - Split per subsystem.
----
- drivers/mtd/nand/Kconfig    | 8 ++------
- drivers/mtd/spi-nor/Kconfig | 2 +-
- 2 files changed, 3 insertions(+), 7 deletions(-)
+Good.
 
-diff --git a/drivers/mtd/nand/Kconfig b/drivers/mtd/nand/Kconfig
-index 736ac887303c88ba..55a2f8a2fa90cd87 100644
---- a/drivers/mtd/nand/Kconfig
-+++ b/drivers/mtd/nand/Kconfig
-@@ -46,7 +46,7 @@ config MTD_NAND_DENALI
- config MTD_NAND_DENALI_PCI
-         tristate "Support Denali NAND controller on Intel Moorestown"
- 	select MTD_NAND_DENALI
--	depends on HAS_DMA && PCI
-+	depends on PCI
-         help
-           Enable the driver for NAND flash on Intel Moorestown, using the
-           Denali NAND controller core.
-@@ -184,7 +184,6 @@ config MTD_NAND_S3C2410_CLKSTOP
- config MTD_NAND_TANGO
- 	tristate "NAND Flash support for Tango chips"
- 	depends on ARCH_TANGO || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Enables the NAND Flash controller on Tango chips.
- 
-@@ -328,7 +327,7 @@ config MTD_NAND_MARVELL
- 	tristate "NAND controller support on Marvell boards"
- 	depends on PXA3xx || ARCH_MMP || PLAT_ORION || ARCH_MVEBU || \
- 		   COMPILE_TEST
--	depends on HAS_IOMEM && HAS_DMA
-+	depends on HAS_IOMEM
- 	help
- 	  This enables the NAND flash controller driver for Marvell boards,
- 	  including:
-@@ -490,7 +489,6 @@ config MTD_NAND_SH_FLCTL
- 	tristate "Support for NAND on Renesas SuperH FLCTL"
- 	depends on SUPERH || COMPILE_TEST
- 	depends on HAS_IOMEM
--	depends on HAS_DMA
- 	help
- 	  Several Renesas SuperH CPU has FLCTL. This option enables support
- 	  for NAND Flash using FLCTL.
-@@ -558,7 +556,6 @@ config MTD_NAND_SUNXI
- config MTD_NAND_HISI504
- 	tristate "Support for NAND controller on Hisilicon SoC Hip04"
- 	depends on ARCH_HISI || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Enables support for NAND controller on Hisilicon SoC Hip04.
- 
-@@ -572,7 +569,6 @@ config MTD_NAND_QCOM
- config MTD_NAND_MTK
- 	tristate "Support for NAND controller on MTK SoCs"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Enables support for NAND controller on MTK SoCs.
- 	  This controller is found on mt27xx, mt81xx, mt65xx SoCs.
-diff --git a/drivers/mtd/spi-nor/Kconfig b/drivers/mtd/spi-nor/Kconfig
-index 89da88e591215db1..c493b8230a38c059 100644
---- a/drivers/mtd/spi-nor/Kconfig
-+++ b/drivers/mtd/spi-nor/Kconfig
-@@ -71,7 +71,7 @@ config SPI_FSL_QUADSPI
- config SPI_HISI_SFC
- 	tristate "Hisilicon SPI-NOR Flash Controller(SFC)"
- 	depends on ARCH_HISI || COMPILE_TEST
--	depends on HAS_IOMEM && HAS_DMA
-+	depends on HAS_IOMEM
- 	help
- 	  This enables support for hisilicon SPI-NOR flash controller.
- 
--- 
-2.7.4
+> 
+> If we do want to implement non-dt type as well, we could revise
+> the patch to add it too.
+> ---
+>  drivers/clk/clk-bulk.c | 64 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/clk.h    | 61 ++++++++++++++++++++++++++++++++++++++++++++++-
+>  2 files changed, 124 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/clk/clk-bulk.c b/drivers/clk/clk-bulk.c
+> index 1c1a79d..bac2aae 100644
+> --- a/drivers/clk/clk-bulk.c
+> +++ b/drivers/clk/clk-bulk.c
+> @@ -17,9 +17,11 @@
+>   */
+>  
+>  #include <linux/clk.h>
+> +#include <linux/clk-provider.h>
+>  #include <linux/device.h>
+>  #include <linux/export.h>
+>  #include <linux/of.h>
+> +#include <linux/slab.h>
+>  
+>  #if defined(CONFIG_OF) && defined(CONFIG_COMMON_CLK)
+>  int __must_check of_clk_bulk_get(struct device_node *np, int num_clks,
+> @@ -50,6 +52,45 @@ int __must_check of_clk_bulk_get(struct device_node *np, int num_clks,
+>         return ret;
+>  }
+>  EXPORT_SYMBOL(of_clk_bulk_get);
+> +
+> +struct clk_bulk __must_check *of_clk_bulk_get_all(struct device_node *np)
+> +{
+> +       struct clk_bulk *clk_bulk;
+> +       int num_clks;
+> +       int ret;
+> +
+> +       num_clks = of_clk_get_parent_count(np);
+> +       if (!num_clks)
+> +               return NULL;
+> +
+> +       clk_bulk = kzalloc(sizeof(*clk_bulk) +
+> +                          num_clks * sizeof(struct clk_bulk_data),
+> +                          GFP_KERNEL);
+> +       if (!clk_bulk)
+> +               return ERR_PTR(-ENOMEM);
+> +
+> +       clk_bulk->num_clks = num_clks;
+> +       ret = of_clk_bulk_get(np, clk_bulk->num_clks, clk_bulk->clks);
+> +       if (ret) {
+> +               kfree(clk_bulk);
+> +               return ERR_PTR(ret);
+> +       }
 
+Has this been tested? clk_bulk->clks probably points to junk?
+
+> +
+> +       return clk_bulk;
+> +}
+> +EXPORT_SYMBOL(of_clk_bulk_get_all);
+> +
+> +void of_clk_bulk_put_all(struct clk_bulk *clk_bulk)
+> +{
+> +       if (IS_ERR_OR_NULL(clk_bulk))
+> +               return;
+> +
+> +       clk_bulk_put(clk_bulk->num_clks, clk_bulk->clks);
+> +
+> +       kfree(clk_bulk->clks);
+> +       kfree(clk_bulk);
+> +}
+> +EXPORT_SYMBOL(of_clk_bulk_put_all);
+>  #endif
+
+My goal was to make device drivers pass in their struct device to
+clk_bulk_get_all() and then have that call into a private DT helper
+function like of_clk_bulk_get_all(). With your patch 2 that could still
+be done so let's go that direction?
+
+>  
+>  void clk_bulk_put(int num_clks, struct clk_bulk_data *clks)
+> @@ -107,6 +148,12 @@ void clk_bulk_unprepare(int num_clks, const struct clk_bulk_data *clks)
+>  }
+>  EXPORT_SYMBOL_GPL(clk_bulk_unprepare);
+>  
+> +void inline clk_bulk_unprepare_all(const struct clk_bulk *clk_bulk)
+> +{
+> +       clk_bulk_unprepare(clk_bulk->num_clks, clk_bulk->clks);
+> +}
+> +EXPORT_SYMBOL_GPL(clk_bulk_unprepare_all);
+
+Do we really need these _all APIs though?
+
+> +
+>  /**
+>   * clk_bulk_prepare - prepare a set of clocks
+>   * @num_clks: the number of clk_bulk_data
+> @@ -139,6 +186,11 @@ int __must_check clk_bulk_prepare(int num_clks,
+>  }
+>  EXPORT_SYMBOL_GPL(clk_bulk_prepare);
+>  
+> +int inline __must_check clk_bulk_prepare_all(const struct clk_bulk *clk_bulk)
+
+inline won't help much here. Maybe these wrappers should go into the
+header file?
+
+> +{
+> +       return clk_bulk_prepare(clk_bulk->num_clks, clk_bulk->clks);
+> +}
+> +
+>  #endif /* CONFIG_HAVE_CLK_PREPARE */
+>  
+>  /**
+> @@ -158,6 +210,12 @@ void clk_bulk_disable(int num_clks, const struct clk_bulk_data *clks)
+>  }
+>  EXPORT_SYMBOL_GPL(clk_bulk_disable);
+>  
+> +void inline clk_bulk_disable_all(const struct clk_bulk *clk_bulk)
+
+ditto
+
+> +{
+> +       return clk_bulk_disable(clk_bulk->num_clks, clk_bulk->clks);
+> +}
+> +EXPORT_SYMBOL_GPL(clk_bulk_disable_all);
+> +
+>  /**
+>   * clk_bulk_enable - ungate a set of clocks
+>   * @num_clks: the number of clk_bulk_data
+> @@ -188,3 +246,9 @@ int __must_check clk_bulk_enable(int num_clks, const struct clk_bulk_data *clks)
+>         return  ret;
+>  }
+>  EXPORT_SYMBOL_GPL(clk_bulk_enable);
+> +
+> +int inline __must_check clk_bulk_enable_all(const struct clk_bulk *clk_bulk)
+
+again
+
+> +{
+> +       return clk_bulk_enable(clk_bulk->num_clks, clk_bulk->clks);
+> +}
+> +EXPORT_SYMBOL_GPL(clk_bulk_enable_all);
+> diff --git a/include/linux/clk.h b/include/linux/clk.h
+> index 09ae760..ccafda1 100644
+> --- a/include/linux/clk.h
+> +++ b/include/linux/clk.h
+> @@ -92,6 +92,21 @@ struct clk_bulk_data {
+>         struct clk              *clk;
+>  };
+>  
+> +/**
+> + * struct clk_bulk - bulk clk structure
+> + *
+> + * @num_clks: the number of avaliable clocks in this bulk
+> + * @clks: struct clk_bulk_data * to store the associated clock
+> + *
+> + * The CLK APIs provide a series of clk_bulk_x_all() API calls as
+> + * a convenience to consumers which require multiple clks.  This
+> + * structure is used to manage data for these calls.
+> + */
+> +struct clk_bulk {
+> +       int num_clks;
+> +       struct clk_bulk_data *clks;
+> +};
+
+This could go away, and we could return the number of clks from
+clk_bulk_get_all() as a positive number, 0 if there are none, and a
+negative number if something failed. Then we don't need the _all
+variants or a wrapper struct. It would be nice to avoid the extra
+variants just because we need to tell it the number of clks to handle.

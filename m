@@ -1,90 +1,71 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:05 +0000
-Subject: [PATCHv4 01/10] mfd: ti-lmu: constify mfd_cell tables
-Message-Id: <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 19 Mar 2018 16:59:22 +0000
+Subject: Re: [RESEND PATCH v5 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20180319165922.GD22770@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="g7w8+K/95kPelPD2"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+References: <20180216174034.15936-1-enric.balletbo@collabora.com>
+ <20180216174034.15936-3-enric.balletbo@collabora.com>
+In-Reply-To: <20180216174034.15936-3-enric.balletbo@collabora.com>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
 
-Add const attribute to all mfd_cell structures.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- drivers/mfd/ti-lmu.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+--g7w8+K/95kPelPD2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-index cfb411cde51c..990437e5ed0a 100644
---- a/drivers/mfd/ti-lmu.c
-+++ b/drivers/mfd/ti-lmu.c
-@@ -25,7 +25,7 @@
- #include <linux/slab.h>
- 
- struct ti_lmu_data {
--	struct mfd_cell *cells;
-+	const struct mfd_cell *cells;
- 	int num_cells;
- 	unsigned int max_register;
- };
-@@ -63,7 +63,7 @@ static void ti_lmu_disable_hw(struct ti_lmu *lmu)
- 		gpio_set_value(lmu->en_gpio, 0);
- }
- 
--static struct mfd_cell lm3532_devices[] = {
-+static const struct mfd_cell lm3532_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3532,
-@@ -78,7 +78,7 @@ static struct mfd_cell lm3532_devices[] = {
- 	.of_compatible = "ti,lm363x-regulator",	\
- }						\
- 
--static struct mfd_cell lm3631_devices[] = {
-+static const struct mfd_cell lm3631_devices[] = {
- 	LM363X_REGULATOR(LM3631_BOOST),
- 	LM363X_REGULATOR(LM3631_LDO_CONT),
- 	LM363X_REGULATOR(LM3631_LDO_OREF),
-@@ -91,7 +91,7 @@ static struct mfd_cell lm3631_devices[] = {
- 	},
- };
- 
--static struct mfd_cell lm3632_devices[] = {
-+static const struct mfd_cell lm3632_devices[] = {
- 	LM363X_REGULATOR(LM3632_BOOST),
- 	LM363X_REGULATOR(LM3632_LDO_POS),
- 	LM363X_REGULATOR(LM3632_LDO_NEG),
-@@ -102,7 +102,7 @@ static struct mfd_cell lm3632_devices[] = {
- 	},
- };
- 
--static struct mfd_cell lm3633_devices[] = {
-+static const struct mfd_cell lm3633_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3633,
-@@ -120,7 +120,7 @@ static struct mfd_cell lm3633_devices[] = {
- 	},
- };
- 
--static struct mfd_cell lm3695_devices[] = {
-+static const struct mfd_cell lm3695_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3695,
-@@ -128,7 +128,7 @@ static struct mfd_cell lm3695_devices[] = {
- 	},
- };
- 
--static struct mfd_cell lm3697_devices[] = {
-+static const struct mfd_cell lm3697_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3697,
--- 
-2.16.2
+On Fri, Feb 16, 2018 at 06:40:32PM +0100, Enric Balletbo i Serra wrote:
+> Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+> request a delay between set the PWM signal and enable the backlight and
+> between clear the PWM signal and disable the backlight. Add support for
+> the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
+> the timings.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> ---
+> Changes since v4:
+>  - Rebased on top of mainline.
+>  - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
+> Changes since v3:
+>  - Use two named members instead of pwm_delay[] (Daniel and Pavel)
+>  - Use msleep instead of usleep_range. (Pavel)
+> Changes since v2:
+>  - Move the pwm/enable sequence to another patch (Thierry Reding)
+> Changes since v1:
+>  - As suggested by Daniel Thompson
+>    - Do not assume power-on delay and power-off delay will be the same
+>  - Move the check of dt property to the parse dt function.
+>=20
+>  drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
+>  include/linux/pwm_backlight.h    |  2 ++
+>  2 files changed, 21 insertions(+)
 
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
+
+--g7w8+K/95kPelPD2
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlqv7GoACgkQ3SOs138+
+s6F9GxAAqXp9JE/VvfuJ/zqbvGh/hLA1/RJzfV05dGFb5pk9QoKYjKgIZSaJ9VyB
+rNEnjma8Mbj89T4emlMg+3jMXXBiMGUv9vfDR+XO7GQI1bhGgp7JQUUmYg3d6a/F
+CUL3jR0RJWlqChyDgU4VkZJqlfF15t7Vdmu8zrpVaMSmNSSCnlNDYM6EZ7v7Fmct
+zWxgfovvsV+E/cCAcJQvUxPL5bZWFlTcoWAbhL+xUyCNmChBKPIgiFMbaYBlBREC
+7teXLSnQ2OVD4p0H/SpkMDD2fTAUChpSoUWVWhnxa1Z8NCY0ZikF5srsWr+W25bO
+tixRdRPR/1l/1x6/3kKvWO5/mrKxHhMcCHxfe4QY5PgtsDCiFgFwJ/nmN5HPVuYa
++clnAbDcytGfv31fLlnvd4+04CnVFyHjzaSIWjw4kKjmJd6d6rWs+4E4XlVmJtku
+s2QMW4bN5GBFqteNRR0zLDz0bbEYjiZtTwOf0bs3bViw8sNh2rw0/KUogfFumI3F
+4WYqbapezDnXiHoA7MX349f9z9TVuHvE7fioK+GQW+6wfkTuY5GAmqCxfsO254Uk
+E9gtIZ0W9qFlga2mHp0hBUwzLdAhei4x8uZ8bNF6hKSlBLRj4Agn+XOaLzJYJmiZ
+DrOaqv0lpcX/1ERM5HDsLjKdj5VaKov1lyjUo4G5JCl59TmDZLo=
+=3DKy
+-----END PGP SIGNATURE-----
+
+--g7w8+K/95kPelPD2--

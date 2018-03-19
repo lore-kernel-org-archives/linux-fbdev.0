@@ -1,59 +1,78 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:35 +0000
-Subject: [PATCH v2 02/21] ata: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-3-git-send-email-geert@linux-m68k.org>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 19 Mar 2018 16:58:29 +0000
+Subject: Re: [RESEND PATCH v5 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20180319165829.GB22770@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="JYK4vJDZwFMowpUq"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, "James E . J . Bottomley" <jejb@linux.vnet.ibm.com>, "Martin K . Petersen" <martin.petersen@oracle.com>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro
-Cc: alsa-devel@alsa-project.org, linux-iio@vger.kernel.org, linux-fpga@vger.kernel.org, linux-remoteproc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux1394-devel@lists.sourceforge.net, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-serial@vger.kernel.org, linux-media@vger.kernel.org, linux-block@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-spi@vger.kernel.org, iommu@lists.linux-foundation.org, linux-crypto@vger.kernel.org
+References: <20180216174034.15936-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180216174034.15936-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+To: Enric Balletbo i Serra <enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+--JYK4vJDZwFMowpUq
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This simplifies the dependencies, and allows to improve compile-testing.
+On Fri, Feb 16, 2018 at 06:40:30PM +0100, Enric Balletbo i Serra wrote:
+> Before this patch the enable signal was set before the PWM signal and
+> vice-versa on power off. This sequence is wrong, at least, it is on
+> the different panels datasheets that I checked, so I inverted the sequence
+> to follow the specs.
+>=20
+> For reference the following panels have the mentioned sequence:
+>   - N133HSE-EA1 (Innolux)
+>   - N116BGE (Innolux)
+>   - N156BGE-L21 (Innolux)
+>   - B101EAN0 (Auo)
+>   - B101AW03 (Auo)
+>   - LTN101NT05 (Samsung)
+>   - CLAA101WA01A (Chunghwa)
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> ---
+> Changes since v4:
+>  - Rebase on top of mainline.
+>  - Add the acks from Daniel Thompson and Jingoo Han.
+> Changes since v3:
+>  - List the part numbers for the panel checked (Daniel Thompson)
+> Changes since v2:
+>  - Add this as a separate patch (Thierry Reding)
+> Changes since v1:
+>  - None
+>=20
+>  drivers/video/backlight/pwm_bl.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/ata/Kconfig | 2 --
- 1 file changed, 2 deletions(-)
+I'm surprised that panels even care about this. Do you see actual
+breakage if these are the other way around?
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index a7120d6211546949..9eaeed1fb237fa33 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -398,7 +398,6 @@ config SATA_DWC_VDEBUG
- 
- config SATA_HIGHBANK
- 	tristate "Calxeda Highbank SATA support"
--	depends on HAS_DMA
- 	depends on ARCH_HIGHBANK || COMPILE_TEST
- 	help
- 	  This option enables support for the Calxeda Highbank SoC's
-@@ -408,7 +407,6 @@ config SATA_HIGHBANK
- 
- config SATA_MV
- 	tristate "Marvell SATA support"
--	depends on HAS_DMA
- 	depends on PCI || ARCH_DOVE || ARCH_MV78XX0 || \
- 		   ARCH_MVEBU || ARCH_ORION5X || COMPILE_TEST
- 	select GENERIC_PHY
--- 
-2.7.4
+Anyway, this seems to me as legit as the other way around, so:
 
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
+
+--JYK4vJDZwFMowpUq
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlqv7DUACgkQ3SOs138+
+s6FtSA/+J4+ctso+elhrUgaQEp71DttppYWGb10uYQS8GV16ZtVU2367zWt+9WNF
+u0VGLmrwwvqFpvxDAQ8YYE07758CbkdWb5qonRmdN4pLOi3aNw7ywHS5ysljyPfi
+Wv6tw2RaNGVCPcRH9MNwK903y8flOVLgz83CsnBtIWvM9nnSRp8IlQrzh/GIPb92
+FdrrG1cDpwzgMvD+gnXH2TBvMTM8MH4qIpYSixkim4QNZ61LDHJ9CBcc+DLpiCjX
+Qb31E6SemW+S4sdAq+dpgRH3e+/CCxyHcLkQWfBpsLd1aGA2AWgDhI2OdIVqLai7
+QFE8eiJMqra0hV7MYF2IvYjMzJcUp4+JkPXA5slo0wW+CuJ7Vs4oDF1gHzLjsMmR
+lpHUvIKoDddEaGwk7BCaiTDaDz4YPcdzcreBdwstD05faxDkPxycuEmwRpS0HvSB
+q6Vaiuh3DaCBnkQFy3dlSSrWJ/f3B2x9g4rD1f2vv887tB3IP1lBna9sr7u9WJzD
+95K0baI/rbXmRrGh/K+bT2zxmSUjlTOM407n1IG/ig8+06/J6Y4bOCvcHBqUGG8Y
+R/8xqTSKtfutsDJBn7CrN0hZladFG0b5csW3ZMW0BYuqyyYWklHI95eAgoRS3xH8
+QZADh2oGyMr4Ja12GTl8ynvGkO5k+aKDrze0CXwbkeTyL+tOvDU=
+=6Ehc
+-----END PGP SIGNATURE-----
+
+--JYK4vJDZwFMowpUq--

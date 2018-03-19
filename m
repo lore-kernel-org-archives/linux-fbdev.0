@@ -1,46 +1,69 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 12 Mar 2018 09:10:41 +0000
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Mon, 19 Mar 2018 16:58:57 +0000
 Subject: Re: [RESEND PATCH v5 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
-Message-Id: <20180312091041.5sk3t27n5tryikie@dell>
+Message-Id: <20180319165857.GC22770@ulmo>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="hYooF8G/hrfVAmum"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180216174034.15936-1-enric.balletbo@collabora.com>
  <20180216174034.15936-2-enric.balletbo@collabora.com>
- <20180219111136.jpv4wtcm6h2hfwac@oak.lan>
- <CAFqH_51EGNzMx76WrjEr9Ss7QoU8FSHAhUf2OeencUC-XXtSWQ@mail.gmail.com>
-In-Reply-To: <CAFqH_51EGNzMx76WrjEr9Ss7QoU8FSHAhUf2OeencUC-XXtSWQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Enric Balletbo Serra <eballetbo@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Linux PWM List <linux-pwm@vger.kernel.org>, linux-fbdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, Guenter Roeck <groeck@chromium.org>, "open list:ARM/Rockchip SoC..." <linux-rockchip@lists.infradead.org>, kernel@collabora.com, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Mark Rutland <mark.rutland@arm.com>
+In-Reply-To: <20180216174034.15936-2-enric.balletbo@collabora.com>
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, kernel@collabora.com
 
-FAO Thierry,
 
-> oh, devicetree mailing list is not added, sorry, so cc'ing ...
-> 
-> 2018-02-19 12:11 GMT+01:00 Daniel Thompson <daniel.thompson@linaro.org>:
-> > On Fri, Feb 16, 2018 at 06:40:31PM +0100, Enric Balletbo i Serra wrote:
-> >> Hardware needs a delay between setting an initial (non-zero) PWM and
-> >> enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
-> >> this delay in milli seconds. Hardware also needs a delay between disabing
-> >> the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
-> >> is this delay in milli seconds.
-> >>
-> >> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> >> Acked-by: Pavel Machek <pavel@ucw.cz>
-> >
-> > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> >
-> 
-> Lee, I guess that after Daniel ack the only ack missing here is one
-> from Rob Herring?
+--hYooF8G/hrfVAmum
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'd also like an ACK from the PWM Maintainer if possible.
+On Fri, Feb 16, 2018 at 06:40:31PM +0100, Enric Balletbo i Serra wrote:
+> Hardware needs a delay between setting an initial (non-zero) PWM and
+> enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
+> this delay in milli seconds. Hardware also needs a delay between disabing
+> the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
+> is this delay in milli seconds.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> ---
+> Based on the original Huang Lin <hl@rock-chips.com> work.
+>=20
+> Changes since v4:
+>  - Rebase on top of mainline.
+> Changes since v3:
+>  - Replace us for ms.
+>  - Add Acked-by: Pavel Machek <pavel@ucw.cz>
+> Changes since v2:
+>  - Use separate properties (Rob Herring)
+> Changes since v1:
+>  - As suggested by Daniel Thompson
+>    - Do not assume power-on delay and power-off delay will be the same
+>=20
+>  Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 +=
++++++
+>  1 file changed, 6 insertions(+)
 
-> Rob, if you have a chance to look at this I'd appreciate.
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+--hYooF8G/hrfVAmum
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAlqv7FEACgkQ3SOs138+
+s6EmRhAAvQoqOUtOrU9WHdPx2cIEabOUKHd8FRVlipvxdmyWbokiKCtb/Aii2Fb+
+Fzb6na2uuhixgnpdouYDA39G10Y6ol1nQFIrr4/QjEgdAuDRkLgpYOcyDTNQAAc2
+TXdbndRtdckEWoqIRt285DnKAAk9/L2ya8YUWN5Y9sHGuTwQy6sIEa0UdDmp95hn
+GlcFr4M6+zhovrk7K8wg7AwqqH1h8VFlycieoiGJbe7LI08kMh8M6IVGUV9DjVCT
+gWeukCAdvlzbf7osoEs1faKmpA+75XGYGrOhaD0/zRdNZ1rxvy5hKxDOYwcq+Rxp
+MZnO6RNYGzp8k7y4HTjInunrGx7MWCGejxk5CTf7do7zADb9ppESKDzEaJdlNs6Z
+bRA7C9LLKdazQz/EYoDVnFzmOYSjlxsmEQ1Qri3xr9ylnzRy/QJSICsKQOh+OHdo
+M4/qoHPszt9yMWJFuZ9rqSZWVwfoQ7nmfqhNgl+lGJ9c6KJNokywL5OCx+ojbZAK
+J+cp7cHS1Of4OnRFkkvITGPapN0TU8hLQt7WCL/ZPmsBkfCuEHCzqlIbyAf5UGOF
+pJNmlxHJVJwGUC0w9yspywWce5gwfN3iuTI9Dt5Klz0dlidQSzF1HtzPmgYKWCMV
+yO8+bJfNDHxDQGm71hVUmTQTsFdPIR1nk6TKnLNyJP4YecNXZ0s=
+=oc2Q
+-----END PGP SIGNATURE-----
+
+--hYooF8G/hrfVAmum--

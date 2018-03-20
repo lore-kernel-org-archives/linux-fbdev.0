@@ -1,38 +1,52 @@
-From: Charles Lohr <charles@cnlohr.com>
-Date: Mon, 19 Mar 2018 06:42:16 +0000
-Subject: [PATCH] Allow non-desktop displays when not in strict mode
-Message-Id: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
+From: "Keith Packard" <keithp@keithp.com>
+Date: Tue, 20 Mar 2018 15:07:27 +0000
+Subject: Re: [PATCH] Allow non-desktop displays when not in strict mode
+Message-Id: <871sgewztc.fsf@keithp.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Keith Packard <keithp@keithp.com>
+References: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
+In-Reply-To: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
+To: Charles Lohr <charles@cnlohr.com>
 Cc: David Airlie <airlied@redhat.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Charles Lohr <lohr85@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>
 
-Considering the lukewarm reception of my last past request and Keith's recommendation, I've created and tested a new patch, to bring the intended functionality back, only prohibiting non-desktop devices if a regular desktop screen is present.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Previous email chain: https://lists.freedesktop.org/archives/dri-devel/2018-March/169558.html
+Charles Lohr <charles@cnlohr.com> writes:
 
-I believe I've finally found a way of sending emails with word wrap turned off.
+> Considering the lukewarm reception of my last past request and Keith's
+> recommendation, I've created and tested a new patch, to bring the
+> intended functionality back, only prohibiting non-desktop devices if a
+> regular desktop screen is present.
+>
+> Signed-off-by: Charles Lohr <lohr85@gmail.com>
 
-Thank you for your time and help understanding how this submission process works.
+This seems like a reasonable idea to me.
 
-Charles
+Reviewed-by: Keith Packard <keithp@keithp.com>
 
+=2D-=20
+=2Dkeith
 
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
 
-Signed-off-by: Charles Lohr <lohr85@gmail.com>
+-----BEGIN PGP SIGNATURE-----
 
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index 035784ddd..ed08153ee 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -2109,7 +2109,7 @@ static bool drm_connector_enabled(struct drm_connector *connector, bool strict)
-  {
-      bool enable;
-
--    if (connector->display_info.non_desktop)
-+    if (connector->display_info.non_desktop && strict)
-          return false;
-
-      if (strict)
+iQIzBAEBCAAdFiEEw4O3eCVWE9/bQJ2R2yIaaQAAABEFAlqxI68ACgkQ2yIaaQAA
+ABFpXA//aisq1appqc16LCgxZWJwWNet88jOtDDHIJ7Z9vgd2CtgWWQ0LmFsRb3M
+ntNhJFLmW9xKq6bzRWk8PSZHrZHt/XsKB/cXwK+rD8PPKEO9NaOOIqtenXxz7dKg
+8Zi4zrrQf91+wJp6s/F7Rkll6II2a53mRExZNwqVpqI3VlmBgwMh1oOpuZ1RCKuQ
+xfiS7mYMdRMtFvwyP0opRwO6aspKJn6EvxLGPNfrO8Iy3egWJAyuZYoLhMREIplz
+gBMUSM8v0SZsDuUjmgNfsxV4OGV4Du9bYiqcJyl/BTB1o/gXC1xbt+xhndgxpzsu
+AfQJ9RfKqLW+xHN543ZI36LrbysG9FiYOgS4S/kFsUhOk7uSduMjiqxeytSchk6P
+WPAogwfeEMPPY3Lr6KaTCQ57DzbuTEvUXw/Cyv32Xlw6UIPv6Zgppmf0VDEjHBnZ
+cADjmvTkHb+1tjzOk8J49jbIZDXes110cjQ6CYyJeVmuyWXZYR9aoqW1cWzxnRFZ
+MzBTmh3VgDJVzgM20W2kyGZandvcllUdHRr83DKbpCJoPdY+V2SSaNywOXncGjPq
+Xy4N/mmrcN7q8IizBEvIm9x4iBaY8+1sUgAr24xfvnGwfGtc1wRaILX1B9r7aVoD
+s46vIAccV9gTIdX9PO+nZ6Brul8M8MzsrFwfPIYtt7mYDurjEL4=
+=8QSw
+-----END PGP SIGNATURE-----
+--=-=-=--

@@ -1,10 +1,10 @@
 From: Dong Aisheng <aisheng.dong@nxp.com>
-Date: Wed, 21 Mar 2018 02:54:53 +0000
+Date: Wed, 21 Mar 2018 03:19:50 +0000
 Subject: [PATCH V2 3/4] clk: add managed version of clk_bulk_get_all
-Message-Id: <1521600894-29919-4-git-send-email-aisheng.dong@nxp.com>
+Message-Id: <1521602391-30356-4-git-send-email-aisheng.dong@nxp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521600894-29919-1-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1521600894-29919-1-git-send-email-aisheng.dong@nxp.com>
+References: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

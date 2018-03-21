@@ -1,10 +1,10 @@
 From: Dong Aisheng <aisheng.dong@nxp.com>
-Date: Wed, 21 Mar 2018 02:54:54 +0000
+Date: Wed, 21 Mar 2018 03:19:51 +0000
 Subject: [PATCH V2 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <1521600894-29919-5-git-send-email-aisheng.dong@nxp.com>
+Message-Id: <1521602391-30356-5-git-send-email-aisheng.dong@nxp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521600894-29919-1-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1521600894-29919-1-git-send-email-aisheng.dong@nxp.com>
+References: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

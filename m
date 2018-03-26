@@ -1,36 +1,53 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 13:34:08 +0000
-Subject: Re: [PATCH v2 1/2] video/fbdev/stifb: Return -ENOMEM after a failed kzalloc() in stifb_init_fb()
-Message-Id: <2557729.Jl5E8iEh4q@amdc3058>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 26 Mar 2018 09:52:12 +0000
+Subject: [PATCH v6 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
+Message-Id: <20180326095213.18362-4-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
- <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
- <6341951e-df28-0b40-974e-dedd890b5228@users.sourceforge.net>
- <CGME20180328133411epcas2p442e8f8a85d6c6e72ec5a5122519fe5eb@epcas2p4.samsung.com>
-In-Reply-To: <6341951e-df28-0b40-974e-dedd890b5228@users.sourceforge.net>
+References: <20180326095213.18362-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180326095213.18362-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, kernel-janitors@vger.kernel.org, "James E. J.
- Bottomley" <jejb@parisc-linux.org>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-On Sunday, January 07, 2018 12:56:45 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 7 Jan 2018 11:33:59 +0100
-> 
-> Replace an error code for the indication of a memory allocation failure
-> in this function.
-> 
-> Fixes: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac ("Linux-2.6.12-rc2: Initial git repository build")
-> Suggested-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+For veyron the binding should provide both PWM timings, the delay between
+you enable the PWM and set the enable signal, and the delay between you
+disable the PWM signal and clear the enable signal. Update the binding
+accordingly, in this case the panels connected to the veyron boards have
+a symmetric power sequence, hence the same value is used.
 
-Patch queued for 4.17, thanks.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+Changes since v5:
+ - None.
+Changes since v4:
+ - Rebased on top of mainline.
+Changes since v3:
+ - Use new -ms names for proprieties.
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch to fix current binding on veyron.
+---
+ arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+index d752a315f884..5a8c7f3abb38 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
++++ b/arch/arm/boot/dts/rk3288-veyron-chromebook.dtsi
+@@ -96,7 +96,8 @@
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&bl_en>;
+ 		pwms = <&pwm0 0 1000000 0>;
+-		pwm-delay-us = <10000>;
++		post-pwm-on-delay-ms = <10>;
++		pwm-off-delay-ms = <10>;
+ 	};
+ 
+ 	gpio-charger {
+-- 
+2.16.2
 

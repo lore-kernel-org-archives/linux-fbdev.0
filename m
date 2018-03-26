@@ -1,88 +1,81 @@
-From: Boris Brezillon <boris.brezillon@bootlin.com>
-Date: Thu, 15 Mar 2018 05:32:38 +0000
-Subject: Re: [PATCH 00/47] arch-removal: device drivers
-Message-Id: <20180315063238.3303b8d1@bbrezillon>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 26 Mar 2018 09:52:09 +0000
+Subject: [PATCH v6 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20180326095213.18362-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180314153603.3127932-1-arnd@arndb.de>
-In-Reply-To: <20180314153603.3127932-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: ulf.hansson@linaro.org, linux-usb@vger.kernel.org, wsa@the-dreams.de, linux-iio@vger.kernel.org, viresh.kumar@linaro.org, linus.walleij@linaro.org, alexandre.belloni@bootlin.com, linux-ide@vger.kernel.org, netdev@vger.kernel.org, linux-mtd@lists.infradead.org, linux-i2c@vger.kernel.org, linux-rtc@vger.kernel.org, lars@metafoo.de, herbert@gondor.apana.org.au, corbet@lwn.net, linux-doc@vger.kernel.org, stern@rowland.harvard.edu, linux-serial@vger.kernel.org, jslaby@suse.com, linux-mmc@vger.kernel.org, shli@kernel.org, wg@grandegger.com, linux-crypto@vger.kernel.org, linux-pwm@vger.kernel.org, linux-watchdog@vger.kernel.org, alsa-devel@alsa-project.org, b.zolnierkie@samsung.com, linux-input@vger.kernel.org, linux-can@vger.kernel.org, linux-raid@vger.kernel.org, linux-gpio@vger.kernel.org, broonie@kernel.org, bp@alien8.de, linux-fbdev@vger.kernel.org, mchehab@kernel.orglin
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Hi Arnd,
+Before this patch the enable signal was set before the PWM signal and
+vice-versa on power off. This sequence is wrong, at least, it is on
+the different panels datasheets that I checked, so I inverted the sequence
+to follow the specs.
 
-On Wed, 14 Mar 2018 16:35:13 +0100
-Arnd Bergmann <arnd@arndb.de> wrote:
+For reference the following panels have the mentioned sequence:
+  - N133HSE-EA1 (Innolux)
+  - N116BGE (Innolux)
+  - N156BGE-L21 (Innolux)
+  - B101EAN0 (Auo)
+  - B101AW03 (Auo)
+  - LTN101NT05 (Samsung)
+  - CLAA101WA01A (Chunghwa)
 
-> Hi driver maintainers,
-> 
-> I just posted one series with the removal of eight architectures,
-> see https://lkml.org/lkml/2018/3/14/505 for details, or
-> https://lwn.net/Articles/748074/ for more background.
-> 
-> These are the device drivers that go along with them. I have already
-> picked up the drivers for arch/metag/ into my tree, they were reviewed
-> earlier.
-> 
-> Please let me know if you have any concerns with the patch, or if you
-> prefer to pick up the patches in your respective trees.  I created
-> the patches with 'git format-patch -D', so they will not apply without
-> manually removing those files.
-> 
-> For anything else, I'd keep the removal patches in my asm-generic tree
-> and will send a pull request for 4.17 along with the actual arch removal.
-> 
->        Arnd
-> 
-> Arnd Bergmann
->   edac: remove tile driver
->   net: tile: remove ethernet drivers
->   net: adi: remove blackfin ethernet drivers
->   net: 8390: remove m32r specific bits
->   net: remove cris etrax ethernet driver
->   net: smsc: remove m32r specific smc91x configuration
->   raid: remove tile specific raid6 implementation
->   rtc: remove tile driver
->   rtc: remove bfin driver
->   char: remove obsolete ds1302 rtc driver
->   char: remove tile-srom.c
->   char: remove blackfin OTP driver
->   pcmcia: remove m32r drivers
->   pcmcia: remove blackfin driver
->   ASoC: remove blackfin drivers
->   video/logo: remove obsolete logo files
->   fbdev: remove blackfin drivers
->   fbdev: s1d13xxxfb: remove m32r specific hacks
->   crypto: remove blackfin CRC driver
->   media: platform: remove blackfin capture driver
->   media: platform: remove m32r specific arv driver
->   cpufreq: remove blackfin driver
->   cpufreq: remove cris specific drivers
->   gpio: remove etraxfs driver
->   pinctrl: remove adi2/blackfin drivers
->   ata: remove bf54x driver
->   input: keyboard: remove bf54x driver
->   input: misc: remove blackfin rotary driver
->   mmc: remove bfin_sdh driver
->   can: remove bfin_can driver
->   watchdog: remove bfin_wdt driver
->   mtd: maps: remove bfin-async-flash driver
->   mtd: nand: remove bf5xx_nand driver
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
+---
+Changes since v5:
+ - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
+Changes since v4:
+ - Rebase on top of mainline.
+ - Add the acks from Daniel Thompson and Jingoo Han.
+Changes since v3:
+ - List the part numbers for the panel checked (Daniel Thompson)
+Changes since v2:
+ - Add this as a separate patch (Thierry Reding)
+Changes since v1:
+ - None
+---
+ drivers/video/backlight/pwm_bl.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
-If you don't mind, I'd like to take the mtd patches through the MTD
-tree. As you've probably noticed, nand code has been moved around and
-it's easier for me to carry those 2 simple changes in my tree than
-creating an immutable branch.
-
-Let me know if this is a problem.
-
-Regards,
-
-Boris
-
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1c2289ddd555..698ec68bcdc9 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
 -- 
-Boris Brezillon, Bootlin (formerly Free Electrons)
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.16.2
+

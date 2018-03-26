@@ -1,29 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 12 Mar 2018 15:01:45 +0000
-Subject: Re: [PATCH] video: console: kconfig: Remove AVR32 dep. from VGA_CONSOLE
-Message-Id: <12268684.R5uc9OLfbC@amdc3058>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Mon, 26 Mar 2018 09:52:13 +0000
+Subject: [PATCH v6 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
+Message-Id: <20180326095213.18362-5-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180206120825.GF5681@sirena.org.uk>
-        <CGME20180206225334epcas4p3f1bf4f40c1fbc4bed23dd79445df1b3a@epcas4p3.samsung.com>
-        <20180206225254.20036-1-ulfalizer@gmail.com>
-In-Reply-To: <20180206225254.20036-1-ulfalizer@gmail.com>
+References: <20180326095213.18362-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180326095213.18362-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ulf Magnusson <ulfalizer@gmail.com>
-Cc: broonie@kernel.org, linux-kernel@vger.kernel.org, clabbe.montjoie@gmail.com, viresh.kumar@linaro.org, matthias.bgg@gmail.com, linux-pwm@vger.kernel.org, thierry.reding@gmail.com, daniel.vetter@ffwll.ch, christophe.leroy@c-s.fr, seanpaul@chromium.org, linux-spi@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
+Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Tuesday, February 06, 2018 11:52:46 PM Ulf Magnusson wrote:
-> The AVR32 symbol was removed in commit 26202873bb51 ("avr32: remove
-> support for AVR32 architecture").
-> 
-> Signed-off-by: Ulf Magnusson <ulfalizer@gmail.com>
+The minnie devices comes with an AUO B101EAN01 panel which is different
+from default veyron devices, thus the power on/off timing sequence is
+slightly different. The datasheet specifies a pwm delay of 200 ms, so
+update the PMW delay proprieties accordingly.
 
-Patch queued for 4.17, thanks.
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+---
+Changes since v5:
+ - None.
+Changes since v4:
+ - Rebase on top of mainline.
+Changes since v3:
+ - Use new -ms names for proprieties.
+ - Fix the delay, should be 200ms instead of 20ms (Pavel)
+Changes since v2:
+ - Use new names for proprieties.
+Changes since v1:
+ - Add this new patch as minnie has differents timings
+---
+ arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+index 544de6027aaa..4c5307e62001 100644
+--- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
++++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
+@@ -123,6 +123,8 @@
+ 			240 241 242 243 244 245 246 247
+ 			248 249 250 251 252 253 254 255>;
+ 	power-supply = <&backlight_regulator>;
++	post-pwm-on-delay-ms = <200>;
++	pwm-off-delay-ms = <200>;
+ };
+ 
+ &emmc {
+-- 
+2.16.2
 

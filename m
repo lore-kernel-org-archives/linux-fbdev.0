@@ -1,36 +1,29 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Thu, 22 Mar 2018 20:13:32 +0000
-Subject: [PATCH] video: fbdev: aty128fb: use true and false for boolean values
-Message-Id: <20180322201332.GA28960@embeddedgus>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 13:29:23 +0000
+Subject: Re: [PATCH] video: fbdev: aty128fb: use true and false for boolean values
+Message-Id: <3978155.69BmuUMc09@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180322201504epcas5p329c931766457a81d6dbf4ed70127cf9f@epcas5p3.samsung.com>
+        <20180322201332.GA28960@embeddedgus>
+In-Reply-To: <20180322201332.GA28960@embeddedgus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Paul Mackerras <paulus@samba.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Assign true or false to boolean variables instead of an integer value.
+On Thursday, March 22, 2018 03:13:32 PM Gustavo A. R. Silva wrote:
+> Assign true or false to boolean variables instead of an integer value.
+> 
+> This issue was detected with the help of Coccinelle.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-This issue was detected with the help of Coccinelle.
+Patch queued for 4.17, thanks.
 
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
- drivers/video/fbdev/aty/aty128fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index db18474..09b0e55 100644
---- a/drivers/video/fbdev/aty/aty128fb.c
-+++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -1716,7 +1716,7 @@ static int aty128fb_setup(char *options)
- 			continue;
- 		}
- 		if(!strncmp(this_opt, "nomtrr", 6)) {
--			mtrr = 0;
-+			mtrr = false;
- 			continue;
- 		}
- #ifdef CONFIG_PPC_PMAC
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

@@ -1,67 +1,33 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:44 +0000
-Subject: [PATCH v2 11/21] mailbox: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-12-git-send-email-geert@linux-m68k.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 13:51:15 +0000
+Subject: Re: [PATCH v3 3/3] video: smscufx: Delete an error message for a failed memory allocation in ufx_rea
+Message-Id: <7890909.tn5kLXHESc@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
+ <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
+ <93bd62c9-4011-4abd-2a2a-3a65c692974f@users.sourceforge.net>
+In-Reply-To: <93bd62c9-4011-4abd-2a2a-3a65c692974f@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: Steve Glendinning <steve.glendinning@shawell.net>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Sunday, January 07, 2018 05:06:13 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 7 Jan 2018 16:12:40 +0100
+> 
+> Omit an extra message for a memory allocation failure in this function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Patch queued for 4.17, thanks.
 
-This simplifies the dependencies, and allows to improve compile-testing.
-
-Notes:
-  - FSL_FMAN keeps its dependency on HAS_DMA, as it calls set_dma_ops(),
-    which does not exist if HAS_DMA=n (Do we need a dummy? The use of
-    set_dma_ops() in this driver is questionable),
-  - SND_SOC_LPASS_IPQ806X and SND_SOC_LPASS_PLATFORM loose their
-    dependency on HAS_DMA, as they are selected from
-    SND_SOC_APQ8016_SBC.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
----
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/mailbox/Kconfig | 2 --
- 1 file changed, 2 deletions(-)
-
-diff --git a/drivers/mailbox/Kconfig b/drivers/mailbox/Kconfig
-index ba2f1525f4eef454..f3c68fe15180d035 100644
---- a/drivers/mailbox/Kconfig
-+++ b/drivers/mailbox/Kconfig
-@@ -154,7 +154,6 @@ config XGENE_SLIMPRO_MBOX
- config BCM_PDC_MBOX
- 	tristate "Broadcom FlexSparx DMA Mailbox"
- 	depends on ARCH_BCM_IPROC || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Mailbox implementation for the Broadcom FlexSparx DMA ring manager,
- 	  which provides access to various offload engines on Broadcom
-@@ -164,7 +163,6 @@ config BCM_FLEXRM_MBOX
- 	tristate "Broadcom FlexRM Mailbox"
- 	depends on ARM64
- 	depends on ARCH_BCM_IPROC || COMPILE_TEST
--	depends on HAS_DMA
- 	select GENERIC_MSI_IRQ_DOMAIN
- 	default m if ARCH_BCM_IPROC
- 	help
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

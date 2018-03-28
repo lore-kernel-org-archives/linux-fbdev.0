@@ -1,25 +1,26 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 14:19:31 +0000
-Subject: Re: [PATCH] video/console/sticore: Delete an error message for a failed memory allocation in sti_try
-Message-Id: <1899328.6kM0nNg5W5@amdc3058>
+Date: Wed, 28 Mar 2018 13:48:55 +0000
+Subject: Re: [PATCH v3 2/3] video: smscufx: Return an error code only as a constant in ufx_realloc_framebuffe
+Message-Id: <8231980.bzy6TRmRmS@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171205180033epcas4p3cb5142e079695c72736e1f27489466d3@epcas4p3.samsung.com>
- <6b8dde60-0550-5fb3-c7a5-5f6282259186@users.sourceforge.net>
-In-Reply-To: <6b8dde60-0550-5fb3-c7a5-5f6282259186@users.sourceforge.net>
+References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
+ <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
+ <31ecfef4-a193-dea0-0ff3-0d5a108a14f3@users.sourceforge.net>
+In-Reply-To: <31ecfef4-a193-dea0-0ff3-0d5a108a14f3@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, kernel-janitors@vger.kernel.org, "James E. J.
- Bottomley" <jejb@parisc-linux.org>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>
+Cc: Steve Glendinning <steve.glendinning@shawell.net>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-On Tuesday, December 05, 2017 07:00:22 PM SF Markus Elfring wrote:
+On Sunday, January 07, 2018 05:04:04 PM SF Markus Elfring wrote:
 > From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Tue, 5 Dec 2017 18:45:42 +0100
+> Date: Sun, 7 Jan 2018 16:07:11 +0100
 > 
-> Omit an extra message for a memory allocation failure in this function.
+> * Return an error code without storing it in an intermediate variable.
 > 
-> This issue was detected by using the Coccinelle software.
+> * Delete the label "error" and local variable "retval"
+>   which became unnecessary with this refactoring.
 > 
 > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 

@@ -1,76 +1,36 @@
-From: "Gustavo A. R. Silva" <garsilva@embeddedor.com>
-Date: Thu, 08 Mar 2018 17:27:25 +0000
-Subject: Re: [PATCH] video: fbdev: via_aux_vt1632: remove VLA usage
-Message-Id: <469f6c0d-186e-aaf7-469f-3d5b416b2b3f@embeddedor.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 14:00:08 +0000
+Subject: Re: [PATCH] video: fsl-diu-fb: Delete an error message for a failed memory allocation in fsl_diu_ini
+Message-Id: <4073804.qevdOuysOu@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180307195415.GA666@embeddedgus>
- <CACvgo5055A0yVCY4vFp1zN+gW0XVu+DbrmrL4dEXoR7PqDXFmA@mail.gmail.com>
-In-Reply-To: <CACvgo5055A0yVCY4vFp1zN+gW0XVu+DbrmrL4dEXoR7PqDXFmA@mail.gmail.com>
+References: <39d05a48-e649-fb88-0e86-4f7528fd67f8@users.sourceforge.net>
+ <CGME20171127173815epcas4p35a349f9b327e25953d5eb67563f288eb@epcas4p3.samsung.com>
+ <f1760f28-84f4-24d9-9cf4-ca94b0537338@tabi.org>
+In-Reply-To: <f1760f28-84f4-24d9-9cf4-ca94b0537338@tabi.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Emil Velikov <emil.l.velikov@gmail.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev <linux-fbdev@vger.kernel.org>, "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>, ML dri-devel <dri-devel@lists.freedesktop.org>
+To: Timur Tabi <timur@tabi.org>, SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-Hi Emil,
-
-On 03/08/2018 05:58 AM, Emil Velikov wrote:
-> Hi Gustavo,
+On Monday, November 27, 2017 11:31:10 AM Timur Tabi wrote:
+> On 11/27/17 3:00 AM, SF Markus Elfring wrote:
+> > From: Markus Elfring<elfring@users.sourceforge.net>
+> > Date: Mon, 27 Nov 2017 09:56:09 +0100
+> > 
+> > Omit an extra message for a memory allocation failure in this function.
+> > 
+> > This issue was detected by using the Coccinelle software.
+> > 
+> > Signed-off-by: Markus Elfring<elfring@users.sourceforge.net>
 > 
-> On 7 March 2018 at 19:54, Gustavo A. R. Silva <gustavo@embeddedor.com> wrote:
->> In preparation to enabling -Wvla, remove VLA and replace it
->> with a fixed-length array instead. Also, remove variable 'len'.
->>
-> What is the reason behind adding -Wvla? Is there a thread some that I
-> can read up on?
-> 
+> Acked-by: Timur Tabi <timur@tabi.org>
 
-Sure. This is the thread: https://lkml.org/lkml/2018/3/7/621
+Patch queued for 4.17, thanks.
 
->> Notice that no new IDs have been added in seven years.
->>
->> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
->> ---
->>   drivers/video/fbdev/via/via_aux_vt1632.c | 6 +++---
->>   1 file changed, 3 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/via/via_aux_vt1632.c b/drivers/video/fbdev/via/via_aux_vt1632.c
->> index d24f4cd..0cd0d2a 100644
->> --- a/drivers/video/fbdev/via/via_aux_vt1632.c
->> +++ b/drivers/video/fbdev/via/via_aux_vt1632.c
->> @@ -35,10 +35,10 @@ static void probe(struct via_aux_bus *bus, u8 addr)
->>                  .addr   =       addr,
->>                  .name   =       name};
->>          /* check vendor id and device id */
->> -       const u8 id[] = {0x06, 0x11, 0x92, 0x31}, len = ARRAY_SIZE(id);
->> -       u8 tmp[len];
->> +       const u8 id[4] = {0x06, 0x11, 0x92, 0x31};
->> +       u8 tmp[4];
->>
->> -       if (!via_aux_read(&drv, 0x00, tmp, len) || memcmp(id, tmp, len))
->> +       if (!via_aux_read(&drv, 0x00, tmp, 4) || memcmp(id, tmp, 4))
-> 
-> Generally, hard coding a bunch of numbers like that makes for
-> confusing and fragile code.
-> 
-
-You are correct.
-
-> A lot simpler and more obvious solution is like the following.
-> It silences the compiler warning (-Wvla - pedantic) you while keeping
-> the original clarity.
-> 
->          const u8 id[] = {0x06, 0x11, 0x92, 0x31}, len = ARRAY_SIZE(id);
-> -       u8 tmp[len];
-> +       u8 tmp[ARRAY_SIZE(id)]; // Using len causes a Wvla warning
-> 
-
-Yeah, this works just fine.
-
-There are a total of four instances of this same issue in other files 
-for the VIA component. I'll fix them and send a single patch shortly.
-
-Thanks for the feedback.
-I appreciate it.
+Best regards,
 --
-Gustavo
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

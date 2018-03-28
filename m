@@ -1,16 +1,81 @@
-From: "shane missler" <marsier@lycoming.edu>
-Date: Mon, 26 Mar 2018 15:18:54 +0000
-Subject: Spende
-Message-Id: <SN1PR0501MB18059782B81FB2CB5637BAEBC7AD0@SN1PR0501MB1805.namprd05.prod.outlook.com>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Wed, 28 Mar 2018 17:03:23 +0000
+Subject: [RESEND PATCH v6 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20180328170327.5395-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <BLUPR05MB192143D8505C3EEE222EEA53C8AF0@BLUPR05MB1921.namprd05.prod.outlook.com>
-In-Reply-To: <BLUPR05MB192143D8505C3EEE222EEA53C8AF0@BLUPR05MB1921.namprd05.prod.outlook.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-Mein Name ist SHANE MISSLER. Ich habe im Januar 2018 einen Jackpot in H=F6h=
-e von 451 Millionen Dollar gewonnen. Ich hoffe, dass Sie mein Angebot von 5=
-.000.000 honorieren. Bitte antworten Sie f=FCr weitere Informationen, um me=
-ine Spende zu erhalten
+Before this patch the enable signal was set before the PWM signal and
+vice-versa on power off. This sequence is wrong, at least, it is on
+the different panels datasheets that I checked, so I inverted the sequence
+to follow the specs.
+
+For reference the following panels have the mentioned sequence:
+  - N133HSE-EA1 (Innolux)
+  - N116BGE (Innolux)
+  - N156BGE-L21 (Innolux)
+  - B101EAN0 (Auo)
+  - B101AW03 (Auo)
+  - LTN101NT05 (Samsung)
+  - CLAA101WA01A (Chunghwa)
+
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
+---
+Changes since v5:
+ - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
+Changes since v4:
+ - Rebase on top of mainline.
+ - Add the acks from Daniel Thompson and Jingoo Han.
+Changes since v3:
+ - List the part numbers for the panel checked (Daniel Thompson)
+Changes since v2:
+ - Add this as a separate patch (Thierry Reding)
+Changes since v1:
+ - None
+---
+ drivers/video/backlight/pwm_bl.c | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 1c2289ddd555..698ec68bcdc9 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -54,10 +54,11 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
++	pwm_enable(pb->pwm);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+ 
+-	pwm_enable(pb->pwm);
+ 	pb->enabled = true;
+ }
+ 
+@@ -66,12 +67,12 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (!pb->enabled)
+ 		return;
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+ 
++	pwm_config(pb->pwm, 0, pb->period);
++	pwm_disable(pb->pwm);
++
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+ }
+-- 
+2.16.2
+

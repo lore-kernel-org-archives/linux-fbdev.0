@@ -1,127 +1,125 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 16 Mar 2018 13:51:34 +0000
-Subject: [PATCH v2 01/21] ASoC: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1521208314-4783-2-git-send-email-geert@linux-m68k.org>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Wed, 28 Mar 2018 17:03:25 +0000
+Subject: [RESEND PATCH v6 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20180328170327.5395-3-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521208314-4783-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1521208314-4783-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <20180328170327.5395-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180328170327.5395-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "James E . J . Bottomley" <jejb-23VcF4HTsmIX0ybBhKVfKdBPR1lH4CV8@public.gmane.org>, "Martin K . Petersen" <martin.petersen-QHcLZuEGTsvQT0dZR+AlfA@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro
-Cc: alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+request a delay between set the PWM signal and enable the backlight and
+between clear the PWM signal and disable the backlight. Add support for
+the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
+the timings.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
-
-This simplifies the dependencies, and allows to improve compile-testing.
-
-Note:
-  - The various SND_SOC_LPASS_* symbols had to loose their dependencies
-    on HAS_DMA, as they are selected by SND_SOC_STORM and/or
-    SND_SOC_APQ8016_SBC.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Pavel Machek <pavel@ucw.cz>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Acked-by: Thierry Reding <thierry.reding@gmail.com>
 ---
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Drop dependency of SND_SOC_LPASS_IPQ806X on HAS_DMA,
-  - Split per subsystem.
+Changes since v5:
+ - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
+Changes since v4:
+ - Rebased on top of mainline.
+ - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
+Changes since v3:
+ - Use two named members instead of pwm_delay[] (Daniel and Pavel)
+ - Use msleep instead of usleep_range. (Pavel)
+Changes since v2:
+ - Move the pwm/enable sequence to another patch (Thierry Reding)
+Changes since v1:
+ - As suggested by Daniel Thompson
+   - Do not assume power-on delay and power-off delay will be the same
+ - Move the check of dt property to the parse dt function.
 ---
- sound/soc/bcm/Kconfig      | 3 +--
- sound/soc/kirkwood/Kconfig | 1 -
- sound/soc/pxa/Kconfig      | 1 -
- sound/soc/qcom/Kconfig     | 7 ++-----
- 4 files changed, 3 insertions(+), 9 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
+ include/linux/pwm_backlight.h    |  2 ++
+ 2 files changed, 21 insertions(+)
 
-diff --git a/sound/soc/bcm/Kconfig b/sound/soc/bcm/Kconfig
-index edf367100ebd2f17..02f50b7a966ff262 100644
---- a/sound/soc/bcm/Kconfig
-+++ b/sound/soc/bcm/Kconfig
-@@ -11,9 +11,8 @@ config SND_BCM2835_SOC_I2S
- config SND_SOC_CYGNUS
- 	tristate "SoC platform audio for Broadcom Cygnus chips"
- 	depends on ARCH_BCM_CYGNUS || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Say Y if you want to add support for ASoC audio on Broadcom
- 	  Cygnus chips (bcm958300, bcm958305, bcm911360)
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 698ec68bcdc9..8e3f1245f5c5 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -10,6 +10,7 @@
+  * published by the Free Software Foundation.
+  */
  
--	  If you don't know what to do here, say N.
-\ No newline at end of file
-+	  If you don't know what to do here, say N.
-diff --git a/sound/soc/kirkwood/Kconfig b/sound/soc/kirkwood/Kconfig
-index bc3c7b5ac752e471..132bb83f8e99aff3 100644
---- a/sound/soc/kirkwood/Kconfig
-+++ b/sound/soc/kirkwood/Kconfig
-@@ -1,7 +1,6 @@
- config SND_KIRKWOOD_SOC
- 	tristate "SoC Audio for the Marvell Kirkwood and Dove chips"
- 	depends on ARCH_DOVE || ARCH_MVEBU || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  Say Y or M if you want to add support for codecs attached to
- 	  the Kirkwood I2S interface. You will also need to select the
-diff --git a/sound/soc/pxa/Kconfig b/sound/soc/pxa/Kconfig
-index 484ab3c2ad672fc8..960744e46edc0549 100644
---- a/sound/soc/pxa/Kconfig
-+++ b/sound/soc/pxa/Kconfig
-@@ -1,7 +1,6 @@
- config SND_PXA2XX_SOC
- 	tristate "SoC Audio for the Intel PXA2xx chip"
- 	depends on ARCH_PXA || COMPILE_TEST
--	depends on HAS_DMA
- 	select SND_PXA2XX_LIB
- 	help
- 	  Say Y or M if you want to add support for codecs attached to
-diff --git a/sound/soc/qcom/Kconfig b/sound/soc/qcom/Kconfig
-index 8ec9a074b38bd702..3cc252e55468eaab 100644
---- a/sound/soc/qcom/Kconfig
-+++ b/sound/soc/qcom/Kconfig
-@@ -11,24 +11,21 @@ config SND_SOC_LPASS_CPU
++#include <linux/delay.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio.h>
+ #include <linux/module.h>
+@@ -35,6 +36,8 @@ struct pwm_bl_data {
+ 	struct gpio_desc	*enable_gpio;
+ 	unsigned int		scale;
+ 	bool			legacy;
++	unsigned int		post_pwm_on_delay;
++	unsigned int		pwm_off_delay;
+ 	int			(*notify)(struct device *,
+ 					  int brightness);
+ 	void			(*notify_after)(struct device *,
+@@ -56,6 +59,9 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
  
- config SND_SOC_LPASS_PLATFORM
- 	tristate
--	depends on HAS_DMA
- 	select REGMAP_MMIO
+ 	pwm_enable(pb->pwm);
  
- config SND_SOC_LPASS_IPQ806X
- 	tristate
--	depends on HAS_DMA
- 	select SND_SOC_LPASS_CPU
- 	select SND_SOC_LPASS_PLATFORM
++	if (pb->post_pwm_on_delay)
++		msleep(pb->post_pwm_on_delay);
++
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
  
- config SND_SOC_LPASS_APQ8016
- 	tristate
--	depends on HAS_DMA
- 	select SND_SOC_LPASS_CPU
- 	select SND_SOC_LPASS_PLATFORM
+@@ -70,6 +76,9 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
  
- config SND_SOC_STORM
- 	tristate "ASoC I2S support for Storm boards"
--	depends on SND_SOC_QCOM && HAS_DMA
-+	depends on SND_SOC_QCOM
- 	select SND_SOC_LPASS_IPQ806X
- 	select SND_SOC_MAX98357A
- 	help
-@@ -37,7 +34,7 @@ config SND_SOC_STORM
++	if (pb->pwm_off_delay)
++		msleep(pb->pwm_off_delay);
++
+ 	pwm_config(pb->pwm, 0, pb->period);
+ 	pwm_disable(pb->pwm);
  
- config SND_SOC_APQ8016_SBC
- 	tristate "SoC Audio support for APQ8016 SBC platforms"
--	depends on SND_SOC_QCOM && HAS_DMA
-+	depends on SND_SOC_QCOM
- 	select SND_SOC_LPASS_APQ8016
- 	help
-           Support for Qualcomm Technologies LPASS audio block in
+@@ -178,6 +187,14 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
++	/*
++	 * These values are optional and set as 0 by default, the out values
++	 * are modified only if a valid u32 value can be decoded.
++	 */
++	of_property_read_u32(node, "post-pwm-on-delay-ms",
++			     &data->post_pwm_on_delay);
++	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
++
+ 	data->enable_gpio = -EINVAL;
+ 	return 0;
+ }
+@@ -276,6 +293,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+ 	pb->enabled = false;
++	pb->post_pwm_on_delay = data->post_pwm_on_delay;
++	pb->pwm_off_delay = data->pwm_off_delay;
+ 
+ 	pb->enable_gpio = devm_gpiod_get_optional(&pdev->dev, "enable",
+ 						  GPIOD_ASIS);
+diff --git a/include/linux/pwm_backlight.h b/include/linux/pwm_backlight.h
+index e8afbd71a140..8ea265a022fd 100644
+--- a/include/linux/pwm_backlight.h
++++ b/include/linux/pwm_backlight.h
+@@ -14,6 +14,8 @@ struct platform_pwm_backlight_data {
+ 	unsigned int lth_brightness;
+ 	unsigned int pwm_period_ns;
+ 	unsigned int *levels;
++	unsigned int post_pwm_on_delay;
++	unsigned int pwm_off_delay;
+ 	/* TODO remove once all users are switched to gpiod_* API */
+ 	int enable_gpio;
+ 	int (*init)(struct device *dev);
 -- 
-2.7.4
+2.16.2
 

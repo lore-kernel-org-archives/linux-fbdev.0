@@ -1,85 +1,35 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:07 +0000
-Subject: [PATCHv4 03/10] mfd: ti-lmu: use managed resource for everything
-Message-Id: <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 13:36:15 +0000
+Subject: Re: [PATCH v2 2/2] video/fbdev/stifb: Delete an error message for a failed memory allocation in stif
+Message-Id: <1633440.9F4sjlxLYt@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+References: <7dcd32b6-9691-14a1-29cf-3a746ef5adfc@users.sourceforge.net>
+ <889131fe-199c-3bef-0781-00761b807426@users.sourceforge.net>
+ <f92f41b1-d4fa-4ffa-8c19-af4eb0d2d8cf@users.sourceforge.net>
+ <CGME20180328133621epcas2p2865976351cf3dc28ac258d2c9530ffcd@epcas2p2.samsung.com>
+In-Reply-To: <f92f41b1-d4fa-4ffa-8c19-af4eb0d2d8cf@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, linux-parisc@vger.kernel.org, Helge Deller <deller@gmx.de>, kernel-janitors@vger.kernel.org, "James E. J.
+ Bottomley" <jejb@parisc-linux.org>, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-This replaces all remaining unmanaged resources with device
-managed ones, so that the remove function is no longer needed.
-This makes the code slightly shorter and fixes two problems:
+On Sunday, January 07, 2018 12:58:47 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 7 Jan 2018 12:34:22 +0100
+> 
+> Omit an extra message for a memory allocation failure in this function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-1. The hardware is disabled after the child devices have
-   been removed. Previously there was a potential race
-   condition.
-2. The hardware is disabled when mfd_add_devices fails
-   during probe.
+Patch queued for 4.17, thanks.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- drivers/mfd/ti-lmu.c | 21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
-
-diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-index e14cb9f41b44..2ee09d099832 100644
---- a/drivers/mfd/ti-lmu.c
-+++ b/drivers/mfd/ti-lmu.c
-@@ -47,8 +47,9 @@ static int ti_lmu_enable_hw(struct ti_lmu *lmu, enum ti_lmu_id id)
- 	return 0;
- }
- 
--static void ti_lmu_disable_hw(struct ti_lmu *lmu)
-+static void ti_lmu_disable_hw(void *data)
- {
-+	struct ti_lmu *lmu = data;
- 	if (lmu->en_gpio)
- 		gpiod_set_value(lmu->en_gpio, 0);
- }
-@@ -205,6 +206,10 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 	if (ret)
- 		return ret;
- 
-+	ret = devm_add_action_or_reset(dev, ti_lmu_disable_hw, lmu);
-+	if (ret)
-+		return ret;
-+
- 	/*
- 	 * Fault circuit(open/short) can be detected by ti-lmu-fault-monitor.
- 	 * After fault detection is done, some devices should re-initialize
-@@ -214,17 +219,8 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
- 
- 	i2c_set_clientdata(cl, lmu);
- 
--	return mfd_add_devices(lmu->dev, 0, data->cells,
--			       data->num_cells, NULL, 0, NULL);
--}
--
--static int ti_lmu_remove(struct i2c_client *cl)
--{
--	struct ti_lmu *lmu = i2c_get_clientdata(cl);
--
--	ti_lmu_disable_hw(lmu);
--	mfd_remove_devices(lmu->dev);
--	return 0;
-+	return devm_mfd_add_devices(lmu->dev, 0, data->cells,
-+				    data->num_cells, NULL, 0, NULL);
- }
- 
- static const struct i2c_device_id ti_lmu_ids[] = {
-@@ -240,7 +236,6 @@ MODULE_DEVICE_TABLE(i2c, ti_lmu_ids);
- 
- static struct i2c_driver ti_lmu_driver = {
- 	.probe = ti_lmu_probe,
--	.remove = ti_lmu_remove,
- 	.driver = {
- 		.name = "ti-lmu",
- 		.of_match_table = ti_lmu_of_match,
--- 
-2.16.2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

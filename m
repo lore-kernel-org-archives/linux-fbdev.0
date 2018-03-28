@@ -1,52 +1,41 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Mon, 26 Mar 2018 09:52:13 +0000
-Subject: [PATCH v6 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
-Message-Id: <20180326095213.18362-5-enric.balletbo@collabora.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 13:46:32 +0000
+Subject: Re: [PATCH v3 1/3] video: smscufx: Less checks in ufx_usb_probe() after error detection
+Message-Id: <1923231.ySCFlVkifY@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180326095213.18362-1-enric.balletbo@collabora.com>
-In-Reply-To: <20180326095213.18362-1-enric.balletbo-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org>
+References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
+        <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
+        <03be4276-520e-1d22-1c6e-e35c8df2b1e8@users.sourceforge.net>
+In-Reply-To: <03be4276-520e-1d22-1c6e-e35c8df2b1e8@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Daniel Thompson <daniel.thompson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, Jingoo Han <jingoohan1-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Rob Herring <robh+dt-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>, Heiko Stuebner <heiko-4mtYJXux2i+zQB+pC5nmwQ@public.gmane.org>
-Cc: linux-pwm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, devicetree-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Thierry Reding <thierry.reding-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Richard Purdie <rpurdie-Fm38FmjxZ/leoWH0uzbU5w@public.gmane.org>, Jacek Anaszewski <jacek.anaszewski-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, groeck-F7+t8E8rja9g9hUCZPvPmw@public.gmane.org, kernel-ZGY8ohtN/8qB+jHODAdFcQ@public.gmane.org, linux-leds-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Glendinning <steve.glendinning@shawell.net>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
 
-The minnie devices comes with an AUO B101EAN01 panel which is different
-from default veyron devices, thus the power on/off timing sequence is
-slightly different. The datasheet specifies a pwm delay of 200 ms, so
-update the PMW delay proprieties accordingly.
+On Sunday, January 07, 2018 05:02:21 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 7 Jan 2018 15:56:11 +0100
+> 
+> Up to four checks could be repeated by the ufx_usb_probe() function
+> during error handling even if the relevant properties can be determined
+> for the involved variables before by source code analysis.
+> 
+> * Return directly after a call of the function "kzalloc" failed
+>   at the beginning.
+> 
+> * Adjust jump targets so that extra checks can be omitted at the end.
+> 
+> * Delete initialisations for the variables "info" and "retval"
+>   which became unnecessary with this refactoring.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
-Changes since v5:
- - None.
-Changes since v4:
- - Rebase on top of mainline.
-Changes since v3:
- - Use new -ms names for proprieties.
- - Fix the delay, should be 200ms instead of 20ms (Pavel)
-Changes since v2:
- - Use new names for proprieties.
-Changes since v1:
- - Add this new patch as minnie has differents timings
----
- arch/arm/boot/dts/rk3288-veyron-minnie.dts | 2 ++
- 1 file changed, 2 insertions(+)
+Patch queued for 4.17, thanks.
 
-diff --git a/arch/arm/boot/dts/rk3288-veyron-minnie.dts b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-index 544de6027aaa..4c5307e62001 100644
---- a/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-+++ b/arch/arm/boot/dts/rk3288-veyron-minnie.dts
-@@ -123,6 +123,8 @@
- 			240 241 242 243 244 245 246 247
- 			248 249 250 251 252 253 254 255>;
- 	power-supply = <&backlight_regulator>;
-+	post-pwm-on-delay-ms = <200>;
-+	pwm-off-delay-ms = <200>;
- };
- 
- &emmc {
--- 
-2.16.2
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

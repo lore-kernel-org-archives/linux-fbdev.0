@@ -1,25 +1,23 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 13:53:38 +0000
-Subject: Re: [PATCH v2] video: ssd1307fb: Improve a size determination in ssd1307fb_probe()
-Message-Id: <3926941.Nf8LXND9kI@amdc3058>
+Date: Wed, 28 Mar 2018 14:25:15 +0000
+Subject: Re: [PATCH 1/3] video: au1100fb: Delete an error message for a failed memory allocation in au1100fb_
+Message-Id: <3174977.dCR0SWXXyp@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125160425epcas5p43b2d94fbcc74745017c4c91ff08de685@epcas5p4.samsung.com>
-        <2091464.qzRHS0Wsad@amdc3058>
-        <c2fc8e5c-e4d3-51da-451c-be70e0d3fef0@users.sourceforge.net>
-In-Reply-To: <c2fc8e5c-e4d3-51da-451c-be70e0d3fef0@users.sourceforge.net>
+References: <980dc009-429b-ad88-966b-0e75808cbacc@users.sourceforge.net>
+ <CGME20171127214358epcas1p35be7cd2052b40ab61f798701b67d25cd@epcas1p3.samsung.com>
+ <f2ad18dd-2525-d8d9-10a8-c12b345cb509@users.sourceforge.net>
+In-Reply-To: <f2ad18dd-2525-d8d9-10a8-c12b345cb509@users.sourceforge.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: Arnd Bergmann <arnd@arndb.de>, Bastian Stender <bst@pengutronix.de>, Jyri Sarha <jsarha@ti.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-On Sunday, January 07, 2018 07:34:44 PM SF Markus Elfring wrote:
+On Monday, November 27, 2017 06:58:22 PM SF Markus Elfring wrote:
 > From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 7 Jan 2018 19:27:28 +0100
+> Date: Mon, 27 Nov 2017 18:14:41 +0100
 > 
-> Replace the specification of a data structure by a pointer dereference
-> as the parameter for the operator "sizeof" to make the corresponding size
-> determination a bit safer according to the Linux coding style convention.
+> Omit an extra message for a memory allocation failure in this function.
 > 
 > This issue was detected by using the Coccinelle software.
 > 

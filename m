@@ -1,94 +1,37 @@
-From: Michael Hennerich <michael.hennerich@analog.com>
-Date: Thu, 01 Feb 2018 16:28:28 +0000
-Subject: Re: [PATCH 5/5] backlight: adp8860: document sysfs attributes
-Message-Id: <aedcd1c4-45df-b3e7-c6d1-ca4085df9b7d@analog.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 28 Mar 2018 14:02:34 +0000
+Subject: Re: [PATCH 1/2] video: s3c-fb: Delete an error message for a failed memory allocation in s3c_fb_prob
+Message-Id: <1678266.t0IYzbM4So@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1516978005.git.aishpant@gmail.com>
- <c7c9c2b13698320b590b52b7bf5796a87df49bd5.1516978005.git.aishpant@gmail.com>
-In-Reply-To: <c7c9c2b13698320b590b52b7bf5796a87df49bd5.1516978005.git.aishpant@gmail.com>
+References: <2c837da0-6b0f-12e7-4d76-960b660a8911@users.sourceforge.net>
+ <CGME20171127180636epcas1p4bc1c2fa2bc445e6ae4527782c6d2c987@epcas1p4.samsung.com>
+ <000201d367aa$74511b10$5cf35130$@gmail.com>
+In-Reply-To: <000201d367aa$74511b10$5cf35130$@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Aishwarya Pant <aishpant@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Greg KH <gregkh@linuxfoundation.org>
-Cc: Julia Lawall <julia.lawall@lip6.fr>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jingoo Han <jingoohan1@gmail.com>, 'SF Markus Elfring' <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, 'LKML' <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-On 26.01.2018 15:55, Aishwarya Pant wrote:
-> Add documentation for sysfs interface of adp8860 series backlight
-> devices by reading through code and git commits.
->=20
-> Signed-off-by: Aishwarya Pant <aishpant@gmail.com>
+On Monday, November 27, 2017 01:06:30 PM Jingoo Han wrote:
+> On Sunday, November 26, 2017 9:17 AM, SF Markus Elfring wrote:
+> > 
+> > From: Markus Elfring <elfring@users.sourceforge.net>
+> > Date: Sun, 26 Nov 2017 15:00:16 +0100
+> > 
+> > Omit an extra message for a memory allocation failure in this function.
+> > 
+> > This issue was detected by using the Coccinelle software.
+> > 
+> > Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> 
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
 
-Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+Patch queued for 4.17, thanks.
 
-> ---
->   .../ABI/testing/sysfs-class-backlight-adp8860      | 54 +++++++++++++++=
-+++++++
->   1 file changed, 54 insertions(+)
->   create mode 100644 Documentation/ABI/testing/sysfs-class-backlight-adp8=
-860
->=20
-> diff --git a/Documentation/ABI/testing/sysfs-class-backlight-adp8860 b/Do=
-cumentation/ABI/testing/sysfs-class-backlight-adp8860
-> new file mode 100644
-> index 000000000000..54d61c788b1b
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-class-backlight-adp8860
-> @@ -0,0 +1,54 @@
-> +sysfs interface for analog devices adp8860 backlight driver
-> +-----------------------------------------------------------
-> +
-> +The backlight brightness control operates at three different levels for =
-the
-> +adp8860, adp8861 and adp8863 devices: daylight (level 1), office (level =
-2) and
-> +dark (level 3). By default the brightness operates at the daylight brigh=
-tness
-> +level.
-> +
-> +What:		/sys/class/backlight/<backlight>/ambient_light_level
-> +Date:		Apr, 2010
-> +KernelVersion:	v2.6.35
-> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
-> +Description:
-> +		(RO) 13-bit conversion value for the first light sensor=E2=80=94high
-> +		byte (Bit 12 to Bit 8). The value is updated every 80 ms (when
-> +		the light sensor is enabled).
-> +
-> +
-> +What:		/sys/class/backlight/<backlight>/ambient_light_zone
-> +Date:		Apr, 2010
-> +KernelVersion:	v2.6.35
-> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
-> +Description:
-> +		(RW) Read or write the specific level at which the backlight
-> +		operates. Value "0" enables automatic ambient light sensing, and
-> +		values "1", "2" or "3" set the control to daylight, office or
-> +		dark respectively.
-> +
-> +
-> +What:		/sys/class/backlight/<backlight>/l1_daylight_max
-> +What:		/sys/class/backlight/<backlight>/l2_office_max
-> +What:		/sys/class/backlight/<backlight>/l3_dark_max
-> +Date:		Apr, 2010
-> +KernelVersion:	v2.6.35
-> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
-> +Description:
-> +		(RW) Maximum current setting for the backlight when brightness
-> +		is at one of the three levels (daylight, office or dark). This
-> +		is an input code between 0 and 127, which is transformed to a
-> +		value between 0 mA and 30 mA using linear or non-linear
-> +		algorithms.
-> +
-> +
-> +What:		/sys/class/backlight/<backlight>/l1_daylight_dim
-> +What:		/sys/class/backlight/<backlight>/l2_office_dim
-> +What:		/sys/class/backlight/<backlight>/l3_dark_dim
-> +Date:		Apr, 2010
-> +KernelVersion:	v2.6.35
-> +Contact:	Michael Hennerich <michael.hennerich@analog.com>
-> +Description:
-> +		(RW) Dim current setting for the backlight when brightness is at
-> +		one of the three levels (daylight, office or dark). This is an
-> +		input code between 0 and 127, which is transformed to a value
-> +		between 0 mA and 30 mA using linear or non-linear algorithms.
->=20
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

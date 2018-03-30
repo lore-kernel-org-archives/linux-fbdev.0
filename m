@@ -1,29 +1,85 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 12 Mar 2018 14:41:28 +0000
-Subject: Re: [PATCH 1/2] video: udlfb: Fix unaligned access
-Message-Id: <49063812.jVSPE6ElVW@amdc3058>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Date: Fri, 30 Mar 2018 17:24:07 +0000
+Subject: [PATCHv4 03/10] mfd: ti-lmu: use managed resource for everything
+Message-Id: <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180206200846epcas1p489416383baf34280bb1e7981496db76e@epcas1p4.samsung.com>
- <20180206200838.GA10897@lenoch>
-In-Reply-To: <20180206200838.GA10897@lenoch>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-fbdev@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org
+To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 
-On Tuesday, February 06, 2018 09:08:38 PM Ladislav Michl wrote:
-> Driver generates lots of alignment trap exceptions on ARM.
-> Fix that by replacing typecasting of odd addresses with
-> byte shifting and remove uneccessary typecasting.
-> 
-> Signed-off-by: Ladislav Michl <ladis@linux-mips.org>
+This replaces all remaining unmanaged resources with device
+managed ones, so that the remove function is no longer needed.
+This makes the code slightly shorter and fixes two problems:
 
-Patch queued for 4.17, thanks.
+1. The hardware is disabled after the child devices have
+   been removed. Previously there was a potential race
+   condition.
+2. The hardware is disabled when mfd_add_devices fails
+   during probe.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+---
+ drivers/mfd/ti-lmu.c | 21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
+index e14cb9f41b44..2ee09d099832 100644
+--- a/drivers/mfd/ti-lmu.c
++++ b/drivers/mfd/ti-lmu.c
+@@ -47,8 +47,9 @@ static int ti_lmu_enable_hw(struct ti_lmu *lmu, enum ti_lmu_id id)
+ 	return 0;
+ }
+ 
+-static void ti_lmu_disable_hw(struct ti_lmu *lmu)
++static void ti_lmu_disable_hw(void *data)
+ {
++	struct ti_lmu *lmu = data;
+ 	if (lmu->en_gpio)
+ 		gpiod_set_value(lmu->en_gpio, 0);
+ }
+@@ -205,6 +206,10 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 	if (ret)
+ 		return ret;
+ 
++	ret = devm_add_action_or_reset(dev, ti_lmu_disable_hw, lmu);
++	if (ret)
++		return ret;
++
+ 	/*
+ 	 * Fault circuit(open/short) can be detected by ti-lmu-fault-monitor.
+ 	 * After fault detection is done, some devices should re-initialize
+@@ -214,17 +219,8 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 
+ 	i2c_set_clientdata(cl, lmu);
+ 
+-	return mfd_add_devices(lmu->dev, 0, data->cells,
+-			       data->num_cells, NULL, 0, NULL);
+-}
+-
+-static int ti_lmu_remove(struct i2c_client *cl)
+-{
+-	struct ti_lmu *lmu = i2c_get_clientdata(cl);
+-
+-	ti_lmu_disable_hw(lmu);
+-	mfd_remove_devices(lmu->dev);
+-	return 0;
++	return devm_mfd_add_devices(lmu->dev, 0, data->cells,
++				    data->num_cells, NULL, 0, NULL);
+ }
+ 
+ static const struct i2c_device_id ti_lmu_ids[] = {
+@@ -240,7 +236,6 @@ MODULE_DEVICE_TABLE(i2c, ti_lmu_ids);
+ 
+ static struct i2c_driver ti_lmu_driver = {
+ 	.probe = ti_lmu_probe,
+-	.remove = ti_lmu_remove,
+ 	.driver = {
+ 		.name = "ti-lmu",
+ 		.of_match_table = ti_lmu_of_match,
+-- 
+2.16.2
 

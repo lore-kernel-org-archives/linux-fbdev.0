@@ -1,76 +1,21 @@
-From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Date: Fri, 30 Mar 2018 17:24:08 +0000
-Subject: [PATCHv4 04/10] mfd: ti-lmu: drop of_compatible for backlight driver
-Message-Id: <20180330172414.26575-5-sebastian.reichel@collabora.co.uk>
+From: "Cicerchi, David M" <cicerchid@cleanharbors.com>
+Date: Fri, 30 Mar 2018 10:54:48 +0000
+Subject: RE: IT Help-Desk Support
+Message-Id: <0078591A5FBB4547BE7608F799AEEB44F83030C4@CORPEXMBP12.cleanharbors.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+To: linux-fbdev@vger.kernel.org
 
-This removes the of_compatible for the backlight sub-device. There
-will be no extra sub-node for the backlight.
-
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
----
- drivers/mfd/ti-lmu.c | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-index 2ee09d099832..de76298cf3a8 100644
---- a/drivers/mfd/ti-lmu.c
-+++ b/drivers/mfd/ti-lmu.c
-@@ -58,7 +58,6 @@ static const struct mfd_cell lm3532_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3532,
--		.of_compatible = "ti,lm3532-backlight",
- 	},
- };
- 
-@@ -78,7 +77,6 @@ static const struct mfd_cell lm3631_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3631,
--		.of_compatible = "ti,lm3631-backlight",
- 	},
- };
- 
-@@ -89,7 +87,6 @@ static const struct mfd_cell lm3632_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3632,
--		.of_compatible = "ti,lm3632-backlight",
- 	},
- };
- 
-@@ -97,7 +94,6 @@ static const struct mfd_cell lm3633_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3633,
--		.of_compatible = "ti,lm3633-backlight",
- 	},
- 	{
- 		.name          = "lm3633-leds",
-@@ -115,7 +111,6 @@ static const struct mfd_cell lm3695_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3695,
--		.of_compatible = "ti,lm3695-backlight",
- 	},
- };
- 
-@@ -123,7 +118,6 @@ static const struct mfd_cell lm3697_devices[] = {
- 	{
- 		.name          = "ti-lmu-backlight",
- 		.id            = LM3697,
--		.of_compatible = "ti,lm3697-backlight",
- 	},
- 	/* Monitoring driver for open/short circuit detection */
- 	{
--- 
-2.16.2
-
+RW1wbG95ZWUvU3RhZmYgVXJnZW5jeS4NCg0KDQoNClRoaXMgaXMgdG8gTm90aWZ5IGFsbCBFbXBs
+b3llZS9TdGFmZiwgdGhlcmUgd291bGQgYmUgYW4gSW1wb3J0YW50IFVwZGF0ZSBTZWN1cmVUaWRl
+wq4gQkFSQUNVREEgMjAxOCBBbnRpLVNwYW0gZmlsdGVyIGZvciBhbGwgT3V0bG9vayBXZWJtYWls
+IHVzZXJzLiB0aGlzIGlzIHRvIFNlY3VyZSBvdXIgSW5ib3hlcyBmcm9tIFNwYW0gJiBNYWx3YXJl
+IFdvcmxkd2lkZS4gdG8gYWN0aXZhdGUsIEtpbmRseSBjbGljayBvbiBFbmNyeXB0IEVtYWlsPGh0
+dHBzOi8vYzBhY2g0NzEuY2FzcGlvLmNvbS9kcC9mMDM0NjAwMDc5ZjBmM2NjNDc5ZTRjNTI4NmRh
+PuKAi+KAi+KAi+KAiy4gWW91IGFyZSBhZHZpc2VkIHRvIExvZ291dCBhbmQgUmUtbG9naW4gaW50
+byB5b3VyIG1haWxib3ggdG8gY29tcGxldGUgVXBkYXRlLg0KDQoNCg0KTm90ZTogVXBkYXRlIGxh
+c3QgMjRIb3VycyBvZiByZWNlaXZpbmcgdGhpcyBtZXNzYWdlLiBGYWlsdXJlIHRvIGNvbXBsZXRl
+IHVwZGF0ZSwgeW91ciBPdXRsb29rIFdlYiBBY2NvdW50IHdvdWxkIGJlIGRlYWN0aXZhdGVkIGFu
+ZCBzaHV0IGRvd24uDQoNCg0KDQpSZWdhcmRzLA0KDQpJVCBIZWxwLURlc2sgU3VwcG9ydA0K

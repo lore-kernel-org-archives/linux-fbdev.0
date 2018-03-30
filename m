@@ -1,52 +1,74 @@
-From: "Keith Packard" <keithp@keithp.com>
-Date: Tue, 20 Mar 2018 15:07:27 +0000
-Subject: Re: [PATCH] Allow non-desktop displays when not in strict mode
-Message-Id: <871sgewztc.fsf@keithp.com>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-=-="
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Date: Fri, 30 Mar 2018 17:24:10 +0000
+Subject: [PATCHv4 06/10] mfd: ti-lmu: add PWM support
+Message-Id: <20180330172414.26575-7-sebastian.reichel@collabora.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
-In-Reply-To: <5a4c3dab-69ed-6804-ac62-6163754c5786@cnlohr.com>
-To: Charles Lohr <charles@cnlohr.com>
-Cc: David Airlie <airlied@redhat.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Charles Lohr <lohr85@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 
---=-=-=
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This adds support to acquire the optional PWM channel,
+that can be used by some of the LMU variants.
 
-Charles Lohr <charles@cnlohr.com> writes:
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+---
+ drivers/mfd/ti-lmu.c       | 11 +++++++++++
+ include/linux/mfd/ti-lmu.h |  3 +++
+ 2 files changed, 14 insertions(+)
 
-> Considering the lukewarm reception of my last past request and Keith's
-> recommendation, I've created and tested a new patch, to bring the
-> intended functionality back, only prohibiting non-desktop devices if a
-> regular desktop screen is present.
->
-> Signed-off-by: Charles Lohr <lohr85@gmail.com>
+diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
+index ce16c896879b..f43b8acc30e1 100644
+--- a/drivers/mfd/ti-lmu.c
++++ b/drivers/mfd/ti-lmu.c
+@@ -183,6 +183,17 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		return ret;
+ 	}
+ 
++	lmu->pwm = devm_pwm_get(dev, "lmu-backlight");
++	if (IS_ERR(lmu->pwm)) {
++		ret = PTR_ERR(lmu->pwm);
++		if (ret != -EINVAL) {
++			dev_err(dev, "Failed to get PWM: %d\n", ret);
++			return ret;
++		}
++
++		lmu->pwm = NULL;
++	}
++
+ 	ret = ti_lmu_enable_hw(lmu, id->driver_data);
+ 	if (ret)
+ 		return ret;
+diff --git a/include/linux/mfd/ti-lmu.h b/include/linux/mfd/ti-lmu.h
+index 1ef51ed36be5..246ab5145dff 100644
+--- a/include/linux/mfd/ti-lmu.h
++++ b/include/linux/mfd/ti-lmu.h
+@@ -17,6 +17,7 @@
+ #include <linux/notifier.h>
+ #include <linux/regmap.h>
+ #include <linux/gpio/consumer.h>
++#include <linux/pwm.h>
+ 
+ /* Notifier event */
+ #define LMU_EVENT_MONITOR_DONE		0x01
+@@ -77,12 +78,14 @@ enum lm363x_regulator_id {
+  * @dev:	Parent device pointer
+  * @regmap:	Used for i2c communcation on accessing registers
+  * @en_gpio:	GPIO for HWEN pin [Optional]
++ * @pwm:	PWM for module [Optional]
+  * @notifier:	Notifier for reporting hwmon event
+  */
+ struct ti_lmu {
+ 	struct device *dev;
+ 	struct regmap *regmap;
+ 	struct gpio_desc *en_gpio;
++	struct pwm_device *pwm;
+ 	struct blocking_notifier_head notifier;
+ };
+ #endif
+-- 
+2.16.2
 
-This seems like a reasonable idea to me.
-
-Reviewed-by: Keith Packard <keithp@keithp.com>
-
-=2D-=20
-=2Dkeith
-
---=-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCAAdFiEEw4O3eCVWE9/bQJ2R2yIaaQAAABEFAlqxI68ACgkQ2yIaaQAA
-ABFpXA//aisq1appqc16LCgxZWJwWNet88jOtDDHIJ7Z9vgd2CtgWWQ0LmFsRb3M
-ntNhJFLmW9xKq6bzRWk8PSZHrZHt/XsKB/cXwK+rD8PPKEO9NaOOIqtenXxz7dKg
-8Zi4zrrQf91+wJp6s/F7Rkll6II2a53mRExZNwqVpqI3VlmBgwMh1oOpuZ1RCKuQ
-xfiS7mYMdRMtFvwyP0opRwO6aspKJn6EvxLGPNfrO8Iy3egWJAyuZYoLhMREIplz
-gBMUSM8v0SZsDuUjmgNfsxV4OGV4Du9bYiqcJyl/BTB1o/gXC1xbt+xhndgxpzsu
-AfQJ9RfKqLW+xHN543ZI36LrbysG9FiYOgS4S/kFsUhOk7uSduMjiqxeytSchk6P
-WPAogwfeEMPPY3Lr6KaTCQ57DzbuTEvUXw/Cyv32Xlw6UIPv6Zgppmf0VDEjHBnZ
-cADjmvTkHb+1tjzOk8J49jbIZDXes110cjQ6CYyJeVmuyWXZYR9aoqW1cWzxnRFZ
-MzBTmh3VgDJVzgM20W2kyGZandvcllUdHRr83DKbpCJoPdY+V2SSaNywOXncGjPq
-Xy4N/mmrcN7q8IizBEvIm9x4iBaY8+1sUgAr24xfvnGwfGtc1wRaILX1B9r7aVoD
-s46vIAccV9gTIdX9PO+nZ6Brul8M8MzsrFwfPIYtt7mYDurjEL4=
-=8QSw
------END PGP SIGNATURE-----
---=-=-=--

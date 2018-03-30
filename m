@@ -1,75 +1,112 @@
-From: Eric Engestrom <eric.engestrom@imgtec.com>
-Date: Fri, 09 Mar 2018 10:11:49 +0000
-Subject: Re: [PATCH] video: fbdev: via_aux_vt1636: remove VLA usage
-Message-Id: <20180309101149.46ew4havwqa4mupu@imgtec.com>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Date: Fri, 30 Mar 2018 17:24:06 +0000
+Subject: [PATCHv4 02/10] mfd: ti-lmu: switch to gpiod
+Message-Id: <20180330172414.26575-3-sebastian.reichel@collabora.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180307194703.GA3862@embeddedgus>
-In-Reply-To: <20180307194703.GA3862@embeddedgus>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>
+To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 
-On Wednesday, 2018-03-07 13:47:03 -0600, Gustavo A. R. Silva wrote:
-> In preparation to enabling -Wvla, remove VLA and replace it
-> with a fixed-length array instead. Also, remove variable 'len'.
-> 
-> Notice that no new IDs have been added in seven years.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-> ---
->  drivers/video/fbdev/via/via_aux_vt1636.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/via/via_aux_vt1636.c b/drivers/video/fbdev/via/via_aux_vt1636.c
-> index 9e015c1..d6273a4 100644
-> --- a/drivers/video/fbdev/via/via_aux_vt1636.c
-> +++ b/drivers/video/fbdev/via/via_aux_vt1636.c
-> @@ -35,10 +35,10 @@ void via_aux_vt1636_probe(struct via_aux_bus *bus)
->  		.addr	=	0x40,
->  		.name	=	name};
->  	/* check vendor id and device id */
-> -	const u8 id[] = {0x06, 0x11, 0x45, 0x33}, len = ARRAY_SIZE(id);
-> -	u8 tmp[len];
-> +	const u8 id[4] = {0x06, 0x11, 0x45, 0x33};
-> +	u8 tmp[4];
->  
-> -	if (!via_aux_read(&drv, 0x00, tmp, len) || memcmp(id, tmp, len))
-> +	if (!via_aux_read(&drv, 0x00, tmp, 4) || memcmp(id, tmp, 4))
+Use new descriptor based API instead of the legacy one.
 
-I would recommend keeping ARRAY_SIZE(); even if nothing's been added in
-a while, it's still clearer in the code if we can see where these `4`
-come from.
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+---
+ drivers/mfd/ti-lmu.c       | 28 ++++++++++++----------------
+ include/linux/mfd/ti-lmu.h |  3 ++-
+ 2 files changed, 14 insertions(+), 17 deletions(-)
 
-Something like this instead?
-----8<----
-@@ -35,10 +35,10 @@ void via_aux_vt1636_probe(struct via_aux_bus *bus)
- 		.addr	=	0x40,
- 		.name	=	name};
- 	/* check vendor id and device id */
--	const u8 id[] = {0x06, 0x11, 0x45, 0x33}, len = ARRAY_SIZE(id);
--	u8 tmp[len];
-+	const u8 id[] = {0x06, 0x11, 0x45, 0x33};
-+	u8 tmp[ARRAY_SIZE(id)];
+diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
+index 990437e5ed0a..e14cb9f41b44 100644
+--- a/drivers/mfd/ti-lmu.c
++++ b/drivers/mfd/ti-lmu.c
+@@ -12,7 +12,7 @@
  
--	if (!via_aux_read(&drv, 0x00, tmp, len) || memcmp(id, tmp, len))
-+	if (!via_aux_read(&drv, 0x00, tmp, ARRAY_SIZE(id)) || memcmp(id, tmp, ARRAY_SIZE(id)))
- 		return;
+ #include <linux/delay.h>
+ #include <linux/err.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/i2c.h>
+ #include <linux/kernel.h>
+ #include <linux/mfd/core.h>
+@@ -21,7 +21,6 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
+-#include <linux/of_gpio.h>
+ #include <linux/slab.h>
  
- 	printk(KERN_INFO "viafb: Found %s\n", name);
----->8----
+ struct ti_lmu_data {
+@@ -32,17 +31,8 @@ struct ti_lmu_data {
+ 
+ static int ti_lmu_enable_hw(struct ti_lmu *lmu, enum ti_lmu_id id)
+ {
+-	int ret;
+-
+-	if (gpio_is_valid(lmu->en_gpio)) {
+-		ret = devm_gpio_request_one(lmu->dev, lmu->en_gpio,
+-					    GPIOF_OUT_INIT_HIGH, "lmu_hwen");
+-		if (ret) {
+-			dev_err(lmu->dev, "Can not request enable GPIO: %d\n",
+-				ret);
+-			return ret;
+-		}
+-	}
++	if (lmu->en_gpio)
++		gpiod_set_value(lmu->en_gpio, 1);
+ 
+ 	/* Delay about 1ms after HW enable pin control */
+ 	usleep_range(1000, 1500);
+@@ -59,8 +49,8 @@ static int ti_lmu_enable_hw(struct ti_lmu *lmu, enum ti_lmu_id id)
+ 
+ static void ti_lmu_disable_hw(struct ti_lmu *lmu)
+ {
+-	if (gpio_is_valid(lmu->en_gpio))
+-		gpio_set_value(lmu->en_gpio, 0);
++	if (lmu->en_gpio)
++		gpiod_set_value(lmu->en_gpio, 0);
+ }
+ 
+ static const struct mfd_cell lm3532_devices[] = {
+@@ -204,7 +194,13 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+ 		return PTR_ERR(lmu->regmap);
+ 
+ 	/* HW enable pin control and additional power up sequence if required */
+-	lmu->en_gpio = of_get_named_gpio(dev->of_node, "enable-gpios", 0);
++	lmu->en_gpio = devm_gpiod_get_optional(dev, "enable", GPIOD_OUT_HIGH);
++	if (IS_ERR(lmu->en_gpio)) {
++		ret = PTR_ERR(lmu->en_gpio);
++		dev_err(dev, "Can not request enable GPIO: %d\n", ret);
++		return ret;
++	}
++
+ 	ret = ti_lmu_enable_hw(lmu, id->driver_data);
+ 	if (ret)
+ 		return ret;
+diff --git a/include/linux/mfd/ti-lmu.h b/include/linux/mfd/ti-lmu.h
+index 09d5f30384e5..1ef51ed36be5 100644
+--- a/include/linux/mfd/ti-lmu.h
++++ b/include/linux/mfd/ti-lmu.h
+@@ -16,6 +16,7 @@
+ #include <linux/gpio.h>
+ #include <linux/notifier.h>
+ #include <linux/regmap.h>
++#include <linux/gpio/consumer.h>
+ 
+ /* Notifier event */
+ #define LMU_EVENT_MONITOR_DONE		0x01
+@@ -81,7 +82,7 @@ enum lm363x_regulator_id {
+ struct ti_lmu {
+ 	struct device *dev;
+ 	struct regmap *regmap;
+-	int en_gpio;
++	struct gpio_desc *en_gpio;
+ 	struct blocking_notifier_head notifier;
+ };
+ #endif
+-- 
+2.16.2
 
-Note that sizeof is evaluated a compile time, so `u8 tmp[ARRAY_SIZE(id)]`
-is *not* a VLA. All that's needed was to remove `len` :)
-
->  		return;
->  
->  	printk(KERN_INFO "viafb: Found %s\n", name);
-> -- 
-> 2.7.4
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel

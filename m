@@ -1,41 +1,90 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 28 Mar 2018 13:46:32 +0000
-Subject: Re: [PATCH v3 1/3] video: smscufx: Less checks in ufx_usb_probe() after error detection
-Message-Id: <1923231.ySCFlVkifY@amdc3058>
+From: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Date: Fri, 30 Mar 2018 17:24:05 +0000
+Subject: [PATCHv4 01/10] mfd: ti-lmu: constify mfd_cell tables
+Message-Id: <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20171125204312epcas2p149d6487ac83e886f95aefe0b35aef1b0@epcas2p1.samsung.com>
-        <a36fa112-40a1-703c-c2ac-ce7e88bb8609@users.sourceforge.net>
-        <03be4276-520e-1d22-1c6e-e35c8df2b1e8@users.sourceforge.net>
-In-Reply-To: <03be4276-520e-1d22-1c6e-e35c8df2b1e8@users.sourceforge.net>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Steve Glendinning <steve.glendinning@shawell.net>, LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
+To: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org, Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 
-On Sunday, January 07, 2018 05:02:21 PM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 7 Jan 2018 15:56:11 +0100
-> 
-> Up to four checks could be repeated by the ufx_usb_probe() function
-> during error handling even if the relevant properties can be determined
-> for the involved variables before by source code analysis.
-> 
-> * Return directly after a call of the function "kzalloc" failed
->   at the beginning.
-> 
-> * Adjust jump targets so that extra checks can be omitted at the end.
-> 
-> * Delete initialisations for the variables "info" and "retval"
->   which became unnecessary with this refactoring.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Add const attribute to all mfd_cell structures.
 
-Patch queued for 4.17, thanks.
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+---
+ drivers/mfd/ti-lmu.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
+index cfb411cde51c..990437e5ed0a 100644
+--- a/drivers/mfd/ti-lmu.c
++++ b/drivers/mfd/ti-lmu.c
+@@ -25,7 +25,7 @@
+ #include <linux/slab.h>
+ 
+ struct ti_lmu_data {
+-	struct mfd_cell *cells;
++	const struct mfd_cell *cells;
+ 	int num_cells;
+ 	unsigned int max_register;
+ };
+@@ -63,7 +63,7 @@ static void ti_lmu_disable_hw(struct ti_lmu *lmu)
+ 		gpio_set_value(lmu->en_gpio, 0);
+ }
+ 
+-static struct mfd_cell lm3532_devices[] = {
++static const struct mfd_cell lm3532_devices[] = {
+ 	{
+ 		.name          = "ti-lmu-backlight",
+ 		.id            = LM3532,
+@@ -78,7 +78,7 @@ static struct mfd_cell lm3532_devices[] = {
+ 	.of_compatible = "ti,lm363x-regulator",	\
+ }						\
+ 
+-static struct mfd_cell lm3631_devices[] = {
++static const struct mfd_cell lm3631_devices[] = {
+ 	LM363X_REGULATOR(LM3631_BOOST),
+ 	LM363X_REGULATOR(LM3631_LDO_CONT),
+ 	LM363X_REGULATOR(LM3631_LDO_OREF),
+@@ -91,7 +91,7 @@ static struct mfd_cell lm3631_devices[] = {
+ 	},
+ };
+ 
+-static struct mfd_cell lm3632_devices[] = {
++static const struct mfd_cell lm3632_devices[] = {
+ 	LM363X_REGULATOR(LM3632_BOOST),
+ 	LM363X_REGULATOR(LM3632_LDO_POS),
+ 	LM363X_REGULATOR(LM3632_LDO_NEG),
+@@ -102,7 +102,7 @@ static struct mfd_cell lm3632_devices[] = {
+ 	},
+ };
+ 
+-static struct mfd_cell lm3633_devices[] = {
++static const struct mfd_cell lm3633_devices[] = {
+ 	{
+ 		.name          = "ti-lmu-backlight",
+ 		.id            = LM3633,
+@@ -120,7 +120,7 @@ static struct mfd_cell lm3633_devices[] = {
+ 	},
+ };
+ 
+-static struct mfd_cell lm3695_devices[] = {
++static const struct mfd_cell lm3695_devices[] = {
+ 	{
+ 		.name          = "ti-lmu-backlight",
+ 		.id            = LM3695,
+@@ -128,7 +128,7 @@ static struct mfd_cell lm3695_devices[] = {
+ 	},
+ };
+ 
+-static struct mfd_cell lm3697_devices[] = {
++static const struct mfd_cell lm3697_devices[] = {
+ 	{
+ 		.name          = "ti-lmu-backlight",
+ 		.id            = LM3697,
+-- 
+2.16.2
 

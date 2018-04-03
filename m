@@ -1,58 +1,54 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:10 +0000
-Subject: [PATCH v3 10/20] lightnvm: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-11-git-send-email-geert@linux-m68k.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 03 Apr 2018 09:19:07 +0000
+Subject: Re: [RESEND PATCH v6 3/5] pwm-backlight: add support for PWM delays proprieties.
+Message-Id: <20180403091907.rfupwgx4ryy66ebu@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+References: <20180328170327.5395-1-enric.balletbo@collabora.com>
+ <20180328170327.5395-3-enric.balletbo@collabora.com>
+In-Reply-To: <20180328170327.5395-3-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>Br
-Cc: devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-media@vger.kernel.org, linux-iio@vger.kernel.org, netdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, linux-serial@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-remoteproc@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Wed, 28 Mar 2018, Enric Balletbo i Serra wrote:
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+> Some panels (i.e. N116BGE-L41), in their power sequence specifications,
+> request a delay between set the PWM signal and enable the backlight and
+> between clear the PWM signal and disable the backlight. Add support for
+> the new post-pwm-on-delay-ms and pwm-off-delay-ms proprieties to meet
+> the timings.
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> ---
+> Changes since v5:
+>  - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> Changes since v4:
+>  - Rebased on top of mainline.
+>  - Added the acks from Pavel Machek, Daniel thompson and Jingoo Han
+> Changes since v3:
+>  - Use two named members instead of pwm_delay[] (Daniel and Pavel)
+>  - Use msleep instead of usleep_range. (Pavel)
+> Changes since v2:
+>  - Move the pwm/enable sequence to another patch (Thierry Reding)
+> Changes since v1:
+>  - As suggested by Daniel Thompson
+>    - Do not assume power-on delay and power-off delay will be the same
+>  - Move the check of dt property to the parse dt function.
+> ---
+>  drivers/video/backlight/pwm_bl.c | 19 +++++++++++++++++++
+>  include/linux/pwm_backlight.h    |  2 ++
+>  2 files changed, 21 insertions(+)
 
-This simplifies the dependencies, and allows to improve compile-testing.
+Applied, thanks.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Reviewed-by: Matias Bj=C3=B8rling <mb@lightnvm.io>
----
-v3:
-  - Add Reviewed-by,
-  - Rebase to v4.17-rc1,
-  - Removed bogus notes,
-
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/lightnvm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/lightnvm/Kconfig b/drivers/lightnvm/Kconfig
-index 10c08982185a572f..9c03f35d9df113c6 100644
---- a/drivers/lightnvm/Kconfig
-+++ b/drivers/lightnvm/Kconfig
-@@ -4,7 +4,7 @@
-=20
- menuconfig NVM
- 	bool "Open-Channel SSD target support"
--	depends on BLOCK && HAS_DMA && PCI
-+	depends on BLOCK && PCI
- 	select BLK_DEV_NVME
- 	help
- 	  Say Y here to get to enable Open-channel SSDs.
---=20
-2.7.4
-
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

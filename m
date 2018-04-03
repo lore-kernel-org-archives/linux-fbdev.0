@@ -1,39 +1,56 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Date: Sat, 07 Apr 2018 12:44:09 +0000
-Subject: Re: [PATCH 2/2] media: omapfb: relax compilation if COMPILE_TEST
-Message-Id: <20180407094409.5fdc4672@vento.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 03 Apr 2018 09:18:40 +0000
+Subject: Re: [RESEND PATCH v6 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
+Message-Id: <20180403091840.xdx5iqe5umjr2pen@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <96572680e698fc554310e18cd6a166a0fb3bf32c.1523028795.git.mchehab@s-opensource.com>
- <c318fd1c9f79995c6c2e4e82ca99ff494b2afb7b.1523028795.git.mchehab@s-opensource.com>
- <3343566.MdR49rtcuZ@avalon>
-In-Reply-To: <3343566.MdR49rtcuZ@avalon>
+References: <20180328170327.5395-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180328170327.5395-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-Em Sat, 07 Apr 2018 14:46:56 +0300
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
+On Wed, 28 Mar 2018, Enric Balletbo i Serra wrote:
 
-> Hi Mauro,
+> Before this patch the enable signal was set before the PWM signal and
+> vice-versa on power off. This sequence is wrong, at least, it is on
+> the different panels datasheets that I checked, so I inverted the sequence
+> to follow the specs.
 > 
-> Thank you for the patch.
+> For reference the following panels have the mentioned sequence:
+>   - N133HSE-EA1 (Innolux)
+>   - N116BGE (Innolux)
+>   - N156BGE-L21 (Innolux)
+>   - B101EAN0 (Auo)
+>   - B101AW03 (Auo)
+>   - LTN101NT05 (Samsung)
+>   - CLAA101WA01A (Chunghwa)
 > 
-> On Friday, 6 April 2018 18:33:20 EEST Mauro Carvalho Chehab wrote:
-> > The dependency of DRM_OMAP = n can be relaxed for just
-> > compilation test.
-> > 
-> > This allows building the omap3isp driver with allyesconfig
-> > on ARM.  
-> 
-> omapfb has nothing to do with omap3isp. I assume you meant omap_vout.
-> 
-> There's a reason why both DRM_OMAP and FB_OMAP2 can't be compiled at the same 
-> time, they export identical symbols. I believe you will end up with link 
-> failures if you do so.
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> ---
+> Changes since v5:
+>  - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
+> Changes since v4:
+>  - Rebase on top of mainline.
+>  - Add the acks from Daniel Thompson and Jingoo Han.
+> Changes since v3:
+>  - List the part numbers for the panel checked (Daniel Thompson)
+> Changes since v2:
+>  - Add this as a separate patch (Thierry Reding)
+> Changes since v1:
+>  - None
+> ---
+>  drivers/video/backlight/pwm_bl.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
 
-Ah, OK. I'll just drop this patch.
+Applied, thanks.
 
-Thanks,
-Mauro
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

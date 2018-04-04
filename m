@@ -1,7 +1,7 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 04 Apr 2018 14:57:39 +0000
+From: Dan Murphy <dmurphy@ti.com>
+Date: Wed, 04 Apr 2018 18:30:37 +0000
 Subject: Re: [PATCHv4 08/10] backlight: add TI LMU backlight driver
-Message-Id: <20180404145739.7w56gxiebfr2me4p@holly.lan>
+Message-Id: <1c69be8b-1ba0-a596-6c54-022b1baf3812@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
  <20180330172414.26575-9-sebastian.reichel@collabora.co.uk>
@@ -9,20 +9,19 @@ In-Reply-To: <20180330172414.26575-9-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
 
-On Fri, Mar 30, 2018 at 07:24:12PM +0200, Sebastian Reichel wrote:
+Sebastian
+
+-Milo Kim email is not valid
+
+On 03/30/2018 12:24 PM, Sebastian Reichel wrote:
 > This adds backlight support for the following TI LMU
 > chips: LM3532, LM3631, LM3632, LM3633, LM3695 and LM3697.
 > 
 > Signed-off-by: Milo Kim <milo.kim@ti.com>
 > [add LED subsystem support for keyboard backlight and rework DT
-
-Milo's mail has be bouncing for a very long time now. Did they really 
-sign off this code or is this intended to be an authorship credit?
-
-
 >  binding according to Rob Herrings feedback]
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 > ---
@@ -47,6 +46,9 @@ sign off this code or is this intended to be an authorship credit?
 > +config BACKLIGHT_TI_LMU
 > +	tristate "Backlight driver for TI LMU"
 > +	depends on BACKLIGHT_CLASS_DEVICE && MFD_TI_LMU
+
+select REGMAP?
+
 > +	help
 > +	  Say Y to enable the backlight driver for TI LMU devices.
 > +	  This supports LM3532, LM3631, LM3632, LM3633, LM3695 and LM3697.
@@ -114,11 +116,17 @@ sign off this code or is this intended to be an authorship credit?
 > +};
 > +
 > +#define DEFAULT_PWM_NAME			"lmu-backlight"
+
+I don't see this used.
+
 > +#define NUM_DUAL_CHANNEL			2
 > +#define LMU_BACKLIGHT_DUAL_CHANNEL_USED		(BIT(0) | BIT(1))
 > +#define LMU_BACKLIGHT_11BIT_LSB_MASK		(BIT(0) | BIT(1) | BIT(2))
 > +#define LMU_BACKLIGHT_11BIT_MSB_SHIFT		3
 > +
+
+Struct kerneldoc?
+
 > +struct ti_lmu_bank {
 > +	struct device *dev;
 > +	int bank_id;
@@ -229,6 +237,10 @@ sign off this code or is this intended to be an authorship credit?
 > +	bool enable = brightness > 0;
 > +	int ret;
 > +
+
+Is there anyway that update_status and set_led_blocking can be called at the same time causing
+a race condition in this api?
+
 > +	ret = ti_lmu_bl_enable(lmu_bank, enable);
 > +	if (ret)
 > +		return ret;
@@ -246,26 +258,12 @@ sign off this code or is this intended to be an authorship credit?
 > +			 * to zero. So, brightness register should be updated
 > +			 * even in PWM mode.
 > +			 */
-
-This comment could do with a little expansion (I assume the bank's
-brightness register means something different when in PWM mode but the
-flow of the code is tricky to read).
-
-
 > +			if (brightness > 0)
-
-Isn't this "enable"?
-
-
 > +				brightness = MAX_BRIGHTNESS_11BIT;
 > +			else
 > +				brightness = 0;
 > +			break;
 > +		default:
-
-case UPDATE_PWM_AND_BRT_REGISTER:
-
-
 > +			break;
 > +		}
 > +	}
@@ -278,7 +276,7 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +static int ti_lmu_bl_update_status(struct backlight_device *bl_dev)
 > +{
 > +	struct ti_lmu_bank *lmu_bank = bl_get_data(bl_dev);
- > +	int brightness = bl_dev->props.brightness;
+> +	int brightness = bl_dev->props.brightness;
 > +
 > +	if (bl_dev->props.state & BL_CORE_SUSPENDED)
 > +		brightness = 0;
@@ -432,6 +430,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +}
 > +
 > +
+
+Extra new line
+
 > +static int ti_lmu_bl_set_ramp(struct ti_lmu_bank *lmu_bank)
 > +{
 > +	struct regmap *regmap = lmu_bank->lmu->regmap;
@@ -541,6 +542,11 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +}
 > +
 > +static int setup_of_node(struct platform_device *pdev)
+
+This seems a bit generic.  Maybe keep with the naming convention
+
+ti_lmu_setup_of_node
+
 > +{
 > +	struct device_node *parent_node = pdev->dev.parent->of_node;
 > +	char *name;
@@ -573,6 +579,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +		dev_err(dev, "Missing or malformed property led-sources: %d\n",
 > +			size);
 > +		return size < 0 ? size : -EINVAL;
+
+Why the additional check? Why not just return -EINVAL?
+
 > +	}
 > +
 > +	leds = kmalloc_array(size, sizeof(u32), GFP_KERNEL);
@@ -604,6 +613,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +
 > +	if (lmu_bank->lmu->backlight_initialized)
 > +		return 0;
+
+Add a new line here
+
 > +	lmu_bank->lmu->backlight_initialized = true;
 > +
 > +	for (i = 0; regdata && i < num_init; i++) {
@@ -656,6 +668,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +	lmu_bank = devm_kzalloc(&pdev->dev, sizeof(*lmu_bank), GFP_KERNEL);
 > +	if (!lmu_bank)
 > +		return -ENOMEM;
+
+Add a new line here
+
 > +	lmu_bank->dev = &pdev->dev;
 > +	dev_set_drvdata(&pdev->dev, lmu_bank);
 > +
@@ -668,6 +683,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +	if (!strcmp(lmu_bank->label, "keyboard")) {
 > +		lmu_bank->type = TI_LMU_LED;
 > +		lmu_bank->label = "kbd_backlight";
+
+What is the reason for changing the label?  Why can't the label in the DT be kbd_backlight?
+
 > +	}
 > +
 > +	lmu_bank->leds = ti_lmu_parse_led_sources(&pdev->dev);
@@ -758,9 +776,16 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +++ b/drivers/video/backlight/ti-lmu-backlight-data.c
 > @@ -0,0 +1,304 @@
 > +/*
+
+Inconsistent licensing here the core has
+// SPDX-License-Identifier: GPL-2.0
+
 > + * TI LMU (Lighting Management Unit) Backlight Device Data
 > + *
 > + * Copyright 2015 Texas Instruments
+
+Copyright?
+
 > + *
 > + * Author: Milo Kim <milo.kim@ti.com>
 > + *
@@ -1068,6 +1093,10 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +++ b/drivers/video/backlight/ti-lmu-backlight-data.h
 > @@ -0,0 +1,95 @@
 > +/*
+
+Inconsistent licensing here the core has
+// SPDX-License-Identifier: GPL-2.0
+
 > + * TI LMU (Lighting Management Unit) Backlight Device Data Definitions
 > + *
 > + * Copyright 2015 Texas Instruments
@@ -1162,6 +1191,9 @@ case UPDATE_PWM_AND_BRT_REGISTER:
 > +
 > +extern const struct ti_lmu_bl_cfg lmu_bl_cfg[LMU_MAX_ID];
 > +#endif
-> -- 
-> 2.16.2
 > 
+
+
+-- 
+------------------
+Dan Murphy

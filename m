@@ -1,48 +1,91 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Tue, 03 Apr 2018 10:48:51 +0000
+From: Dan Murphy <dmurphy@ti.com>
+Date: Wed, 04 Apr 2018 19:04:16 +0000
 Subject: Re: [PATCHv4 06/10] mfd: ti-lmu: add PWM support
-Message-Id: <20180403104851.GC6758@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="raC6veAxrt5nqIoY"
+Message-Id: <e2b6ec34-c5b8-2ff1-ee05-4c41fc255295@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
  <20180330172414.26575-7-sebastian.reichel@collabora.co.uk>
 In-Reply-To: <20180330172414.26575-7-sebastian.reichel@collabora.co.uk>
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>, Sebastian Reichel <sre@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
 
+Sebastian
 
---raC6veAxrt5nqIoY
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-Milo
 
-On Fri 2018-03-30 19:24:10, Sebastian Reichel wrote:
+On 03/30/2018 12:24 PM, Sebastian Reichel wrote:
 > This adds support to acquire the optional PWM channel,
 > that can be used by some of the LMU variants.
->=20
+> 
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+> ---
+>  drivers/mfd/ti-lmu.c       | 11 +++++++++++
+>  include/linux/mfd/ti-lmu.h |  3 +++
+>  2 files changed, 14 insertions(+)
+> 
+> diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
+> index ce16c896879b..f43b8acc30e1 100644
+> --- a/drivers/mfd/ti-lmu.c
+> +++ b/drivers/mfd/ti-lmu.c
+> @@ -183,6 +183,17 @@ static int ti_lmu_probe(struct i2c_client *cl, const struct i2c_device_id *id)
+>  		return ret;
+>  	}
+>  
+> +	lmu->pwm = devm_pwm_get(dev, "lmu-backlight");
 
-Patches 1-6:
+Patch 9 of this series, or a derivative of it, should technically be before Patch 6 so that the binding is correct.
+Otherwise the binding will not match the code
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+Dan
 
-									Pavel
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
 
---raC6veAxrt5nqIoY
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+> +	if (IS_ERR(lmu->pwm)) {
+> +		ret = PTR_ERR(lmu->pwm);
+> +		if (ret != -EINVAL) {
+> +			dev_err(dev, "Failed to get PWM: %d\n", ret);
+> +			return ret;
+> +		}
+> +
+> +		lmu->pwm = NULL;
+> +	}
+> +
+>  	ret = ti_lmu_enable_hw(lmu, id->driver_data);
+>  	if (ret)
+>  		return ret;
+> diff --git a/include/linux/mfd/ti-lmu.h b/include/linux/mfd/ti-lmu.h
+> index 1ef51ed36be5..246ab5145dff 100644
+> --- a/include/linux/mfd/ti-lmu.h
+> +++ b/include/linux/mfd/ti-lmu.h
+> @@ -17,6 +17,7 @@
+>  #include <linux/notifier.h>
+>  #include <linux/regmap.h>
+>  #include <linux/gpio/consumer.h>
+> +#include <linux/pwm.h>
+>  
+>  /* Notifier event */
+>  #define LMU_EVENT_MONITOR_DONE		0x01
+> @@ -77,12 +78,14 @@ enum lm363x_regulator_id {
+>   * @dev:	Parent device pointer
+>   * @regmap:	Used for i2c communcation on accessing registers
+>   * @en_gpio:	GPIO for HWEN pin [Optional]
+> + * @pwm:	PWM for module [Optional]
+>   * @notifier:	Notifier for reporting hwmon event
+>   */
+>  struct ti_lmu {
+>  	struct device *dev;
+>  	struct regmap *regmap;
+>  	struct gpio_desc *en_gpio;
+> +	struct pwm_device *pwm;
+>  	struct blocking_notifier_head notifier;
+>  };
+>  #endif
+> 
 
-iEYEARECAAYFAlrDXBMACgkQMOfwapXb+vI0eQCglNF+VrkOld245Pmxzn6tpTpD
-VKUAn2r/6M6FaIc7fq0mJtmPUBO5IF9G
-=g3E7
------END PGP SIGNATURE-----
 
---raC6veAxrt5nqIoY--
+-- 
+------------------
+Dan Murphy

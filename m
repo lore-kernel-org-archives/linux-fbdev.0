@@ -1,130 +1,115 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Thu, 05 Apr 2018 18:41:18 +0000
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Date: Thu, 05 Apr 2018 19:32:26 +0000
 Subject: Re: [PATCH 15/16] media: omapfb_dss.h: add stubs to build with COMPILE_TEST
-Message-Id: <1527912.68v46ENJLK@avalon>
+Message-Id: <20180405163226.0700c519@vento.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1522949748.git.mchehab@s-opensource.com>
  <d3517e25c2b37d3d5f2f61630048a184ce701c58.1522949748.git.mchehab@s-opensource.com>
-In-Reply-To: <d3517e25c2b37d3d5f2f61630048a184ce701c58.1522949748.git.mchehab@s-opensource.com>
+ <1527912.68v46ENJLK@avalon>
+In-Reply-To: <1527912.68v46ENJLK@avalon>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-Hi Mauro,
+Em Thu, 05 Apr 2018 21:41:18 +0300
+Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
 
-Thank you for the patch.
-
-On Thursday, 5 April 2018 20:54:15 EEST Mauro Carvalho Chehab wrote:
-> Add stubs for omapfb_dss.h, in the case it is included by
-> some driver when CONFIG_FB_OMAP2 is not defined.
-
-The omapfb driver doesn't include any asm/ header, so it should probably build 
-fine on non-ARM architectures. Instead of adding stubs here, you can enable 
-compilation of the driver on all platforms, in which case the omap_vout driver 
-could keep depending on FB_OMAP2 as it should.
-
-> That allows building such driver(s) with COMPILE_TEST.
+> Hi Mauro,
 > 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-> ---
->  include/video/omapfb_dss.h | 54 +++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 52 insertions(+), 2 deletions(-)
+> Thank you for the patch.
 > 
-> diff --git a/include/video/omapfb_dss.h b/include/video/omapfb_dss.h
-> index 1d38901d599d..e9775144ff3b 100644
-> --- a/include/video/omapfb_dss.h
-> +++ b/include/video/omapfb_dss.h
-> @@ -774,6 +774,12 @@ struct omap_dss_driver {
->  		const struct hdmi_avi_infoframe *avi);
->  };
+> On Thursday, 5 April 2018 20:54:15 EEST Mauro Carvalho Chehab wrote:
+> > Add stubs for omapfb_dss.h, in the case it is included by
+> > some driver when CONFIG_FB_OMAP2 is not defined.  
 > 
-> +#define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) !> NULL) +
-> +typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
-> +
-> +#ifdef CONFIG_FB_OMAP2
-> +
->  enum omapdss_version omapdss_get_version(void);
->  bool omapdss_is_initialized(void);
-> 
-> @@ -785,7 +791,6 @@ void omapdss_unregister_display(struct omap_dss_device
-> *dssdev);
-> 
->  struct omap_dss_device *omap_dss_get_device(struct omap_dss_device
-> *dssdev); void omap_dss_put_device(struct omap_dss_device *dssdev);
-> -#define for_each_dss_dev(d) while ((d = omap_dss_get_next_device(d)) !> NULL) struct omap_dss_device *omap_dss_get_next_device(struct
-> omap_dss_device *from); struct omap_dss_device *omap_dss_find_device(void
-> *data,
->  		int (*match)(struct omap_dss_device *dssdev, void *data));
-> @@ -826,7 +831,6 @@ int omapdss_default_get_recommended_bpp(struct
-> omap_dss_device *dssdev); void omapdss_default_get_timings(struct
-> omap_dss_device *dssdev,
->  		struct omap_video_timings *timings);
-> 
-> -typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
->  int omap_dispc_register_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
->  int omap_dispc_unregister_isr(omap_dispc_isr_t isr, void *arg, u32 mask);
-> 
-> @@ -856,5 +860,51 @@ omapdss_of_get_first_endpoint(const struct device_node
-> *parent);
-> 
->  struct omap_dss_device *
->  omapdss_of_find_source_for_first_ep(struct device_node *node);
-> +#else
-> +
-> +static inline enum omapdss_version omapdss_get_version(void)
-> +{ return OMAPDSS_VER_UNKNOWN; };
-> +
-> +static inline bool omapdss_is_initialized(void)
-> +{ return false; };
-> +
-> +static inline int omap_dispc_register_isr(omap_dispc_isr_t isr,
-> +					  void *arg, u32 mask)
-> +{ return 0; };
-> +
-> +static inline int omap_dispc_unregister_isr(omap_dispc_isr_t isr,
-> +					    void *arg, u32 mask)
-> +{ return 0; };
-> +
-> +static inline struct omap_dss_device
-> +*omap_dss_get_device(struct omap_dss_device *dssdev)
-> +{ return NULL; };
-> +
-> +static inline struct omap_dss_device
-> +*omap_dss_get_next_device(struct omap_dss_device *from)
-> +{return NULL; };
-> +
-> +static inline void omap_dss_put_device(struct omap_dss_device *dssdev) {};
-> +
-> +static inline int omapdss_compat_init(void)
-> +{ return 0; };
-> +
-> +static inline void omapdss_compat_uninit(void) {};
-> +
-> +static inline int omap_dss_get_num_overlay_managers(void)
-> +{ return 0; };
-> +
-> +static inline struct omap_overlay_manager *omap_dss_get_overlay_manager(int
-> num) +{ return NULL; };
-> +
-> +static inline int omap_dss_get_num_overlays(void)
-> +{ return 0; };
-> +
-> +static inline struct omap_overlay *omap_dss_get_overlay(int num)
-> +{ return NULL; };
-> +
-> +
-> +#endif /* FB_OMAP2 */
-> +
-> 
->  #endif /* __OMAPFB_DSS_H */
+> The omapfb driver doesn't include any asm/ header, so it should probably build 
+> fine on non-ARM architectures. Instead of adding stubs here, you can enable 
+> compilation of the driver on all platforms, in which case the omap_vout driver 
+> could keep depending on FB_OMAP2 as it should.
 
+True. The patch for that is simple. 
 
--- 
-Regards,
+Patch enclosed. Please notice that, now with W=1, several new warnings
+will popup. I'll let to the others to touch there, as I don't have any
+clue about what's there under omapfb.
 
-Laurent Pinchart
+Those are the new warnings:
 
+drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function ‘omapfb_setup_overlay’:
+drivers/video/fbdev/omap2/omapfb/omapfb-main.c:891:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB) {
+      ^
+drivers/video/fbdev/omap2/omapfb/omapfb-main.c:896:2: note: here
+  default:
+  ^~~~~~~
+drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c: In function ‘tpd_probe’:
+drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c:221:26: warning: variable ‘in’ set but not used [-Wunused-but-set-variable]
+  struct omap_dss_device *in, *dssdev;
+                          ^~
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c: In function ‘calc_vrfb_rotation_offset’:
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1905:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (color_mode = OMAP_DSS_COLOR_YUV2 ||
+      ^
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1908:2: note: here
+  case OMAP_DSS_ROT_90:
+  ^~~~
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1927:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (color_mode = OMAP_DSS_COLOR_YUV2 ||
+      ^
+drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1930:2: note: here
+  case OMAP_DSS_ROT_90 + 4:
+  ^~~~
+drivers/video/fbdev/omap2/omapfb/dss/venc.c:223:33: warning: ‘venc_config_pal_bdghi’ defined but not used [-Wunused-const-variable=]
+ static const struct venc_config venc_config_pal_bdghi = {
+                                 ^~~~~~~~~~~~~~~~~~~~~
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘_dsi_print_reset_status’:
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c:1189:6: warning: variable ‘l’ set but not used [-Wunused-but-set-variable]
+  u32 l;
+      ^
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘dsi_proto_timings’:
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c:3638:42: warning: variable ‘tclk_trail’ set but not used [-Wunused-but-set-variable]
+  unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
+                                          ^~~~~~~~~~
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘dsi_update’:
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c:4051:10: warning: variable ‘dh’ set but not used [-Wunused-but-set-variable]
+  u16 dw, dh;
+          ^~
+drivers/video/fbdev/omap2/omapfb/dss/dsi.c:4051:6: warning: variable ‘dw’ set but not used [-Wunused-but-set-variable]
+  u16 dw, dh;
+      ^~
+drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c: In function ‘hdmi4_audio_config’:
+drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c:693:6: warning: variable ‘err’ set but not used [-Wunused-but-set-variable]
+  int err, n, cts, channel_count;
+      ^~~
+drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c: In function ‘hdmi5_audio_config’:
+drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c:804:6: warning: variable ‘err’ set but not used [-Wunused-but-set-variable]
+  int err, n, cts, channel_count;
+      ^~~
 
+Thanks,
+Mauro
 
+---
+
+[PATCH] omap2: omapfb: allow building it with COMPILE_TEST
+
+This driver builds cleanly with COMPILE_TEST, and it is
+needed in order to allow building drivers/media omap2
+driver.
+
+So, change the logic there to allow building it.
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+
+diff --git a/drivers/video/fbdev/omap2/Kconfig b/drivers/video/fbdev/omap2/Kconfig
+index 0921c4de8407..82008699d253 100644
+--- a/drivers/video/fbdev/omap2/Kconfig
++++ b/drivers/video/fbdev/omap2/Kconfig
+@@ -1,4 +1,4 @@
+-if ARCH_OMAP2PLUS
++if ARCH_OMAP2PLUS || COMPILE_TEST
+ 
+ source "drivers/video/fbdev/omap2/omapfb/Kconfig"
+ 

@@ -1,29 +1,39 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Apr 2018 16:02:11 +0000
-Subject: Re: [PATCH 58/61] video: fbdev: omap2: omapfb: displays: simplify getting .drvdata
-Message-Id: <1726457.eauaWiscAe@amdc3058>
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Date: Fri, 06 Apr 2018 15:33:20 +0000
+Subject: [PATCH 2/2] media: omapfb: relax compilation if COMPILE_TEST
+Message-Id: <c318fd1c9f79995c6c2e4e82ca99ff494b2afb7b.1523028795.git.mchehab@s-opensource.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
- <CGME20180419140716epcas2p3dd25b3be301017affaef3908823c5ace@epcas2p3.samsung.com>
- <20180419140641.27926-59-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20180419140641.27926-59-wsa+renesas@sang-engineering.com>
+References: <96572680e698fc554310e18cd6a166a0fb3bf32c.1523028795.git.mchehab@s-opensource.com>
+In-Reply-To: <96572680e698fc554310e18cd6a166a0fb3bf32c.1523028795.git.mchehab@s-opensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Mauro Carvalho Chehab <mchehab@s-opensource.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-On Thursday, April 19, 2018 04:06:28 PM Wolfram Sang wrote:
-> We should get drvdata from struct device directly. Going via
-> platform_device is an unneeded step back and forth.
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+The dependency of DRM_OMAP = n can be relaxed for just
+compilation test.
 
-Patch queued for 4.18, thanks.
+This allows building the omap3isp driver with allyesconfig
+on ARM.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+---
+ drivers/video/fbdev/omap2/omapfb/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/Kconfig b/drivers/video/fbdev/omap2/omapfb/Kconfig
+index e6226aeed17e..e42794a5e26c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/Kconfig
++++ b/drivers/video/fbdev/omap2/omapfb/Kconfig
+@@ -4,7 +4,7 @@ config OMAP2_VRFB
+ menuconfig FB_OMAP2
+         tristate "OMAP2+ frame buffer support"
+         depends on FB
+-        depends on DRM_OMAP = n
++        depends on DRM_OMAP = n || COMPILE_TEST
+ 
+         select FB_OMAP2_DSS
+ 	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3
+-- 
+2.14.3
 

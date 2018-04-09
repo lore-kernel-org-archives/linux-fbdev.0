@@ -1,102 +1,104 @@
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Thu, 26 Apr 2018 06:36:29 +0000
-Subject: Re: [PATCH 5/7] omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP
-Message-Id: <3c2ec2ad-af4a-598d-7deb-660f259a222c@ti.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 09 Apr 2018 21:06:38 +0000
+Subject: Re: [PATCHv4 09/10] dt-bindings: mfd: ti-lmu: update for backlight
+Message-Id: <20180409210638.hugfap4ega3bwgou@rob-hp-laptop>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1524245455.git.mchehab@s-opensource.com>
- <5379683.QunLsIS18Z@amdc3058> <d155af94-539b-699a-73cc-7eae72bd9efa@ti.com>
- <CGME20180425111319eucas1p163fa4f5f7f51bc854763ba3c3c87b605@eucas1p1.samsung.com>
- <2150137.NOxbZFYopW@amdc3058>
-In-Reply-To: <2150137.NOxbZFYopW@amdc3058>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+ <20180330172414.26575-10-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-10-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Mauro Carvalho Chehab <mchehab@s-opensource.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
 
-On 25/04/18 14:13, Bartlomiej Zolnierkiewicz wrote:
+On Fri, Mar 30, 2018 at 07:24:13PM +0200, Sebastian Reichel wrote:
+> Update binding to integrate the backlight feature directly into
+> the main node, as suggested by Rob Herring.
 > 
-> On Monday, April 23, 2018 05:11:14 PM Tomi Valkeinen wrote:
->> On 23/04/18 16:56, Bartlomiej Zolnierkiewicz wrote:
->>
->>> Ideally we should be able to build both drivers in the same kernel
->>> (especially as modules).
->>>
->>> I was hoping that it could be fixed easily but then I discovered
->>> the root source of the problem:
->>>
->>> drivers/gpu/drm/omapdrm/dss/display.o: In function `omapdss_unregister_display':
->>> display.c:(.text+0x2c): multiple definition of `omapdss_unregister_display'
->>> drivers/video/fbdev/omap2/omapfb/dss/display.o:display.c:(.text+0x198): first defined here
->>
->> The main problem is that omapdrm and omapfb are two different drivers
->> for the same HW. You need to pick one, even if we would change those
->> functions and fix the link issue.
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+> ---
+>  Documentation/devicetree/bindings/mfd/ti-lmu.txt | 119 ++++++++++++-----------
+>  1 file changed, 60 insertions(+), 59 deletions(-)
 > 
-> With proper resource allocation in both drivers this shouldn't be
-> a problem - the one which allocates resources first will be used
-> (+ we can initialize omapdrm first in case it is built-in). This is
-> how similar situations are handled in other kernel subsystems.
+> diff --git a/Documentation/devicetree/bindings/mfd/ti-lmu.txt b/Documentation/devicetree/bindings/mfd/ti-lmu.txt
+> index c885cf89b8ce..b3433e95dfa5 100644
+> --- a/Documentation/devicetree/bindings/mfd/ti-lmu.txt
+> +++ b/Documentation/devicetree/bindings/mfd/ti-lmu.txt
+> @@ -28,10 +28,9 @@ Required properties:
+>  
+>  Optional property:
+>    - enable-gpios: A GPIO specifier for hardware enable pin.
+> -
+> -Required node:
+> -  - backlight: All LMU devices have backlight child nodes.
+> -               For the properties, please refer to [1].
+> +  - pwm-names: Should be either "lmu-backlight" or unset
+> +  - pwm: This should be a PWM specifier following ../pwm/pwm.txt and must
+> +         only be specified, if the backlight should be used in PWM mode.
+>  
+>  Optional nodes:
+>    - fault-monitor: Hardware fault monitoring driver for LM3633 and LM3697.
+> @@ -42,8 +41,31 @@ Optional nodes:
+>    - leds: LED properties for LM3633. Please refer to [2].
+>    - regulators: Regulator properties for LM3631 and LM3632.
+>                  Please refer to [3].
+> +  - bank0, bank1, bank2: This contains the backlight configuration
+> +                         for each backlight control bank.
+> +
+> +Required properties in the bank subnodes:
+> +  - label: A string describing the backlight. Should contain "keyboard"
+> +           for a keyboard backlight and "lcd" for LCD panel backlights.
+> +  - ti,led-sources: A list of channels, that should be driven. Each channel
+> +                    should only be driven by one bank.
+> +
+> +Optional properties in the bank subnodes:
+> +  - default-brightness-level: Backlight initial brightness value.
+> +                              Type is <u32>. It is set as soon as backlight
+> +			      device is created.
+> +			      0 ~ 2047 = LM3631, LM3632, LM3633, LM3695 and
+> +					 LM3697
+> +			      0 ~ 255  = LM3532
+> +  - ti,ramp-up-ms, ti,ramp-down-ms: Light dimming effect properties.
+> +				    Type is <u32>. Unit is millisecond.
+> +					0 ~ 65 ms    = LM3532
+> +					0 ~ 4000 ms  = LM3631
+> +					0 ~ 16000 ms = LM3633 and LM3697
+> +  - pwm-period: PWM period. Only valid in PWM brightness mode.
+> +                Type is <u32>. If this property is missing, then control
+> +		mode is set to I2C by default.
+>  
+> -[1] ../leds/backlight/ti-lmu-backlight.txt
+>  [2] ../leds/leds-lm3633.txt
+>  [3] ../regulator/lm363x-regulator.txt
+>  
+> @@ -53,14 +75,11 @@ lm3532@38 {
+>  
+>  	enable-gpios = <&pioC 2 GPIO_ACTIVE_HIGH>;
+>  
+> -	backlight {
+> -		compatible = "ti,lm3532-backlight";
+> -
+> -		lcd {
+> -			led-sources = <0 1 2>;
+> -			ramp-up-msec = <30>;
+> -			ramp-down-msec = <0>;
+> -		};
+> +	bank0 {
+> +		label = "lcd";
+> +		led-sources = <0 1 2>;
+> +		ramp-up-msec = <30>;
+> +		ramp-down-msec = <0>;
 
-We have boot time code, which is always built-in, for both drivers which
-adjusts device tree data. I imagine those could easily conflict. Maybe
-there's something else too.
+Looks like it was already wrong, but these are missing the vendor 
+prefixes.
 
-And it's not only about the main omapfb or omapdrm driver. We have
-drivers for the encoders and panels. Those would conflict too. I guess
-we could have the case where omapdrm probes, and then a panel driver
-from omapfb probes.
+>  	};
+>  };
+>  
+> @@ -105,13 +124,10 @@ lm3631@29 {
 
-Actually, many of the panel and encoder drivers probably have same
-symbols too, which would prevent linking.
+Are so many examples really needed? Examples aren't supposed to 
+enumerate all possible options...
 
-> It seems that the real root problem is commit f76ee892a99e ("omapfb:
-> copy omapdss & displays for omapfb") from Dec 2015 which resulted in
-> duplication of ~30 KLOC of code. The code in question seems to be
-> both fbdev & drm independent:
-> 
-> "
->     * omapdss, located in drivers/video/fbdev/omap2/dss/. This is a driver for the
->       display subsystem IPs used on OMAP (and related) SoCs. It offers only a
->       kernel internal API, and does not implement anything for fbdev or drm.
->     
->     * omapdss panels and encoders, located in
->       drivers/video/fbdev/omap2/displays-new/. These are panel and external encoder
->       drivers, which use APIs offered by omapdss driver. These also don't implement
->       anything for fbdev or drm.
-> "
-> 
-> While I understand some motives behind this change I'm not overall
-> happy with it..
-
-Neither was I, but I have to say it was a game-changer for omapdrm
-development. Doing anything new on omapdrm meant trying to get it to
-work on omapfb too (in the same commit, so cross-tree), and many changes
-were just too complex to even try. After that commit we were free to
-really start restructuring the code to fit the DRM world.
-
->> At some point in time we could compile both as modules (but not
->> built-in), but the only use for that was development/testing and in the
->> end made our life more difficult. So, now you must fully disable one of
->> them to enable the other. And, actually, we even have boot-time code,
->> not included in the module itself, which gets enabled when omapdrm is
->> enabled.
-> 
-> Do you mean some code in arch/arm/mach-omap2/ or something else?
-
-That and the omapdss-boot-init.c we have for both omapfb and omapdrm.
-
->> While it's of course good to support COMPILE_TEST, if using COMPILE_TEST
->> with omapfb is problematic, I'm not sure if it's worth to spend time on
->> that. We should be moving away from omapfb to omapdrm.
-> 
-> Is there some approximate schedule for omapfb removal available?
-
-Unfortunatey not. omapfb still has support for some legacy devices that
-omapdrm doesn't support.
-
- Tomi
-
--- 
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+Rob

@@ -1,56 +1,69 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 24 Apr 2018 10:07:23 +0000
-Subject: Re: [PATCH RESEND] backlight: pwm_bl: don't use GPIOF_* with gpiod_get_direction
-Message-Id: <20180424100723.hyt3vxa2wp7sruqz@dell>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Date: Tue, 10 Apr 2018 01:05:59 +0000
+Subject: [PATCH] video: fbdev: savage: Replace mdelay with usleep_range in savage_init_hw
+Message-Id: <1523322359-27598-1-git-send-email-baijiaju1990@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180410123241.25745-1-wsa+renesas@sang-engineering.com>
- <20180411073215.fzvh4ejj2kd7wam3@verge.net.au>
- <20180416091257.swbt7i6zjfbwysg2@dell>
- <20180424084124.6tpxf3ekadzefwd4@verge.net.au>
- <CAMuHMdWLya+=QeCwzszMxGPm7b3KbdsNFgc0vsk8NWC5tDO2QQ@mail.gmail.com>
-In-Reply-To: <CAMuHMdWLya+=QeCwzszMxGPm7b3KbdsNFgc0vsk8NWC5tDO2QQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux PWM List <linux-pwm@vger.kernel.org>, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Wolfram Sang <wsa+renesas@sang-engineering.com>, Simon Horman <horms@verge.net.au>, Thierry Reding <thierry.reding@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@gmail.com, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
 
-On Tue, 24 Apr 2018, Geert Uytterhoeven wrote:
+savage_init_hw() is never called in atomic context.
 
-> On Tue, Apr 24, 2018 at 10:41 AM, Simon Horman <horms@verge.net.au> wrote:
-> > On Mon, Apr 16, 2018 at 10:12:57AM +0100, Lee Jones wrote:
-> >> On Wed, 11 Apr 2018, Simon Horman wrote:
-> >> > On Tue, Apr 10, 2018 at 02:32:40PM +0200, Wolfram Sang wrote:
-> >> > > The documentation was wrong, gpiod_get_direction() returns 0/1 instead
-> >> > > of the GPIOF_* flags. The docs were fixed with commit 94fc73094abe47
-> >> > > ("gpio: correct docs about return value of gpiod_get_direction"). Now,
-> >> > > fix this user (until a better, system-wide solution is in place).
-> >> > >
-> >> > > Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> >> > > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> >> >
-> >> > Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
-> >>
-> >> Thanks for the Reviewed-by Simon.  I have applied it to the original mail.
-> >>
-> >> Do you know why you mail wasn't sent attached to the original thread?
-> >> For some reason I received this mail on it's own i.e. not in reply
-> >> to the original.
-> >
-> > No, not off hand. Perhaps I responded to the email in some unusual way
-> > but by now I don't recall. In any case I'll try to be more careful
-> > in future.
-> 
-> I see Lee is using gmail for sending, so I assume also for receiving.
+The call chains ending up at savage_init_hw() are:
+[1] savage_init_hw() <- savagefb_probe()
+[2] savage_init_hw() <- savagefb_resume()
 
-Well I'm using their servers, but my set-up is IMAP/Mutt.
+savagefb_probe() is only set as ".probe" in struct pci_driver.
+savagefb_resume) is only set as ".resume" in struct pci_driver.
+These functions are not called in atomic context.
 
-> While I did receive Simon's reply in-thread, lately I had issues with gmail
-> not always doing so, and sometimes failing to do deduplication when receiving
-> email through multiple paths (mailing lists and/or directly).
+Despite never getting called from atomic context, savage_init_hw()
+calls mdelay() to busily wait.
+This is not necessary and can be replaced with usleep_range to
+avoid busy waiting.
 
+This is found by a static analysis tool named DCNS written by myself.
+And I also manually check it.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+---
+ drivers/video/fbdev/savage/savagefb_driver.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index c204683..c09d742 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -1892,11 +1892,11 @@ static int savage_init_hw(struct savagefb_par *par)
+ 	vga_out8(0x3d4, 0x66, par);
+ 	cr66 = vga_in8(0x3d5, par);
+ 	vga_out8(0x3d5, cr66 | 0x02, par);
+-	mdelay(10);
++	usleep_range(10000, 11000);
+ 
+ 	vga_out8(0x3d4, 0x66, par);
+ 	vga_out8(0x3d5, cr66 & ~0x02, par);	/* clear reset flag */
+-	mdelay(10);
++	usleep_range(10000, 11000);
+ 
+ 
+ 	/*
+@@ -1906,11 +1906,11 @@ static int savage_init_hw(struct savagefb_par *par)
+ 	vga_out8(0x3d4, 0x3f, par);
+ 	cr3f = vga_in8(0x3d5, par);
+ 	vga_out8(0x3d5, cr3f | 0x08, par);
+-	mdelay(10);
++	usleep_range(10000, 11000);
+ 
+ 	vga_out8(0x3d4, 0x3f, par);
+ 	vga_out8(0x3d5, cr3f & ~0x08, par);	/* clear reset flags */
+-	mdelay(10);
++	usleep_range(10000, 11000);
+ 
+ 	/* Savage ramdac speeds */
+ 	par->numClocks = 4;
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+1.9.1
+

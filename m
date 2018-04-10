@@ -1,39 +1,26 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 14:38:01 +0000
-Subject: Re: [PATCHv4 03/10] mfd: ti-lmu: use managed resource for everything
-Message-Id: <20180416143801.umzbwdmmiotnblxh@dell>
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Tue, 10 Apr 2018 13:04:22 +0000
+Subject: Re: [RESEND PATCH v6 5/5] ARM: dts: rockchip: set PWM delay backlight settings for Minnie
+Message-Id: <217634691.qDbm1hq3Bz@phil>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
- <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
+References: <20180328170327.5395-1-enric.balletbo@collabora.com> <20180328170327.5395-5-enric.balletbo@collabora.com>
+In-Reply-To: <20180328170327.5395-5-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
 
-On Fri, 30 Mar 2018, Sebastian Reichel wrote:
+Am Mittwoch, 28. M=E4rz 2018, 19:03:27 CEST schrieb Enric Balletbo i Serra:
+> The minnie devices comes with an AUO B101EAN01 panel which is different
+> from default veyron devices, thus the power on/off timing sequence is
+> slightly different. The datasheet specifies a pwm delay of 200 ms, so
+> update the PMW delay proprieties accordingly.
+>=20
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+> Acked-by: Pavel Machek <pavel@ucw.cz>
 
-> This replaces all remaining unmanaged resources with device
-> managed ones, so that the remove function is no longer needed.
-> This makes the code slightly shorter and fixes two problems:
-> 
-> 1. The hardware is disabled after the child devices have
->    been removed. Previously there was a potential race
->    condition.
-> 2. The hardware is disabled when mfd_add_devices fails
->    during probe.
-> 
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> ---
->  drivers/mfd/ti-lmu.c | 21 ++++++++-------------
->  1 file changed, 8 insertions(+), 13 deletions(-)
+applied for 4.18
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Thanks
+Heiko

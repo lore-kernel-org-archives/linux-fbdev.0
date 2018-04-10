@@ -1,28 +1,58 @@
-From: Simon Horman <horms@verge.net.au>
-Date: Mon, 30 Apr 2018 07:20:45 +0000
-Subject: Re: [PATCH 0/3] fbdev/drm: sh_mobile: remove unused MERAM support
-Message-Id: <20180430072045.pveq4t63amanu6tx@verge.net.au>
+From: Jia-Ju Bai <baijiaju1990@gmail.com>
+Date: Tue, 10 Apr 2018 01:47:20 +0000
+Subject: [PATCH] video: fbdev: aty: radeon_pm: Replace mdelay with msleep in radeonfb_pci_suspend
+Message-Id: <1523324840-28830-1-git-send-email-baijiaju1990@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180427112213epcas2p3ed6890af75e679b537121f2655aa91d8@epcas2p3.samsung.com>
- <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
-In-Reply-To: <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org, linux-kernel@vger.kernel.org
+To: benh@kernel.crashing.org, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Jia-Ju Bai <baijiaju1990@gmail.com>
 
-On Fri, Apr 27, 2018 at 01:21:42PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> Hi,
-> 
-> This patchset removes unused MERAM support (last user was removed
-> 3 years ago) from shmobile fbdev & drm drivers and then removes
-> MERAM driver itself.
-> 
-> If it is okay to merge this patches I would like patch #1 to go
-> through fbdev tree and patch #2 to go through drm tree. Once they
-> are both upstream (v4.18) I will apply patch #3 to fbdev tree.
+radeonfb_pci_suspend() is never called in atomic context.
 
-Nice to see this cleanup, thanks.
+radeonfb_pci_suspend() is only set as ".suspend" in struct pci_driver.
+This function is not called in atomic context.
 
-Reviewed-by: Simon Horman <horms+renesas@verge.net.au>
+Despite never getting called from atomic context, radeonfb_pci_suspend()
+calls mdelay() to busily wait.
+This is not necessary and can be replaced with msleep() 
+and usleep_range() to avoid busy waiting.
+
+This is found by a static analysis tool named DCNS written by myself.
+And I also manually check it.
+
+Signed-off-by: Jia-Ju Bai <baijiaju1990@gmail.com>
+---
+ drivers/video/fbdev/aty/radeon_pm.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/aty/radeon_pm.c b/drivers/video/fbdev/aty/radeon_pm.c
+index 1417542..a8de909 100644
+--- a/drivers/video/fbdev/aty/radeon_pm.c
++++ b/drivers/video/fbdev/aty/radeon_pm.c
+@@ -2674,17 +2674,17 @@ int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t mesg)
+ 		 * it, we'll restore the dynamic clocks state on wakeup
+ 		 */
+ 		radeon_pm_disable_dynamic_mode(rinfo);
+-		mdelay(50);
++		msleep(50);
+ 		radeon_pm_save_regs(rinfo, 1);
+ 
+ 		if (rinfo->is_mobility && !(rinfo->pm_mode & radeon_pm_d2)) {
+ 			/* Switch off LVDS interface */
+-			mdelay(1);
++			usleep_range(1000, 2000);
+ 			OUTREG(LVDS_GEN_CNTL, INREG(LVDS_GEN_CNTL) & ~(LVDS_BL_MOD_EN));
+-			mdelay(1);
++			usleep_range(1000, 2000);
+ 			OUTREG(LVDS_GEN_CNTL, INREG(LVDS_GEN_CNTL) & ~(LVDS_EN | LVDS_ON));
+ 			OUTREG(LVDS_PLL_CNTL, (INREG(LVDS_PLL_CNTL) & ~30000) | 0x20000);
+-			mdelay(20);
++			msleep(20);
+ 			OUTREG(LVDS_GEN_CNTL, INREG(LVDS_GEN_CNTL) & ~(LVDS_DIGON));
+ 		}
+ 		pci_disable_device(pdev);
+-- 
+1.9.1
+

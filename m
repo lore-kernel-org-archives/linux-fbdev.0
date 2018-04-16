@@ -1,7 +1,7 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 03 Apr 2018 09:18:40 +0000
+Date: Mon, 16 Apr 2018 14:43:32 +0000
 Subject: Re: [RESEND PATCH v6 1/5] pwm-backlight: enable/disable the PWM before/after LCD enable toggle.
-Message-Id: <20180403091840.xdx5iqe5umjr2pen@dell>
+Message-Id: <20180416144332.caww5vttzrzjlnkt@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180328170327.5395-1-enric.balletbo@collabora.com>
 In-Reply-To: <20180328170327.5395-1-enric.balletbo@collabora.com>

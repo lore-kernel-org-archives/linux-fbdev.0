@@ -1,11 +1,11 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 14:40:46 +0000
-Subject: Re: [PATCHv4 04/10] mfd: ti-lmu: drop of_compatible for backlight driver
-Message-Id: <20180416144046.zf4iaedm7nkymstn@dell>
+Date: Mon, 16 Apr 2018 14:38:01 +0000
+Subject: Re: [PATCHv4 03/10] mfd: ti-lmu: use managed resource for everything
+Message-Id: <20180416143801.umzbwdmmiotnblxh@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
- <20180330172414.26575-5-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-5-sebastian.reichel@collabora.co.uk>
+ <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-4-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -14,68 +14,23 @@ Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Daniel Thomp
 
 On Fri, 30 Mar 2018, Sebastian Reichel wrote:
 
-> This removes the of_compatible for the backlight sub-device. There
-> will be no extra sub-node for the backlight.
-
-Won't doing this in a separate patch break bisectability?
-
+> This replaces all remaining unmanaged resources with device
+> managed ones, so that the remove function is no longer needed.
+> This makes the code slightly shorter and fixes two problems:
+> 
+> 1. The hardware is disabled after the child devices have
+>    been removed. Previously there was a potential race
+>    condition.
+> 2. The hardware is disabled when mfd_add_devices fails
+>    during probe.
+> 
 > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
 > ---
->  drivers/mfd/ti-lmu.c | 6 ------
->  1 file changed, 6 deletions(-)
-> 
-> diff --git a/drivers/mfd/ti-lmu.c b/drivers/mfd/ti-lmu.c
-> index 2ee09d099832..de76298cf3a8 100644
-> --- a/drivers/mfd/ti-lmu.c
-> +++ b/drivers/mfd/ti-lmu.c
-> @@ -58,7 +58,6 @@ static const struct mfd_cell lm3532_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3532,
-> -		.of_compatible = "ti,lm3532-backlight",
->  	},
->  };
->  
-> @@ -78,7 +77,6 @@ static const struct mfd_cell lm3631_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3631,
-> -		.of_compatible = "ti,lm3631-backlight",
->  	},
->  };
->  
-> @@ -89,7 +87,6 @@ static const struct mfd_cell lm3632_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3632,
-> -		.of_compatible = "ti,lm3632-backlight",
->  	},
->  };
->  
-> @@ -97,7 +94,6 @@ static const struct mfd_cell lm3633_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3633,
-> -		.of_compatible = "ti,lm3633-backlight",
->  	},
->  	{
->  		.name          = "lm3633-leds",
-> @@ -115,7 +111,6 @@ static const struct mfd_cell lm3695_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3695,
-> -		.of_compatible = "ti,lm3695-backlight",
->  	},
->  };
->  
-> @@ -123,7 +118,6 @@ static const struct mfd_cell lm3697_devices[] = {
->  	{
->  		.name          = "ti-lmu-backlight",
->  		.id            = LM3697,
-> -		.of_compatible = "ti,lm3697-backlight",
->  	},
->  	/* Monitoring driver for open/short circuit detection */
->  	{
+>  drivers/mfd/ti-lmu.c | 21 ++++++++-------------
+>  1 file changed, 8 insertions(+), 13 deletions(-)
+
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
 -- 
 Lee Jones [李琼斯]

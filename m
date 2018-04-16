@@ -1,132 +1,31 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:03 +0000
-Subject: [PATCH v3 03/20] crypto: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-4-git-send-email-geert@linux-m68k.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 16 Apr 2018 14:20:11 +0000
+Subject: Re: [PATCHv4 01/10] mfd: ti-lmu: constify mfd_cell tables
+Message-Id: <20180416142011.oth6qubigubdpo3i@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
+ <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
+In-Reply-To: <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>Br
-Cc: devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-media@vger.kernel.org, linux-iio@vger.kernel.org, netdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, linux-serial@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-remoteproc@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+On Fri, 30 Mar 2018, Sebastian Reichel wrote:
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+> Add const attribute to all mfd_cell structures.
+> 
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
+> ---
+>  drivers/mfd/ti-lmu.c | 14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
 
-This simplifies the dependencies, and allows to improve compile-testing.
+For my own reference:
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Herbert Xu <herbert@gondor.apana.org.au>
----
-v3:
-  - Add Acked-by,
-  - Rebase to v4.17-rc1,
-
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/crypto/Kconfig | 14 ++++----------
- 1 file changed, 4 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index d1ea1a07cecbb36c..3dbc47528667b77c 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -419,7 +419,7 @@ config CRYPTO_DEV_EXYNOS_RNG
- config CRYPTO_DEV_S5P
- 	tristate "Support for Samsung S5PV210/Exynos crypto accelerator"
- 	depends on ARCH_S5PV210 || ARCH_EXYNOS || COMPILE_TEST
--	depends on HAS_IOMEM && HAS_DMA
-+	depends on HAS_IOMEM
- 	select CRYPTO_AES
- 	select CRYPTO_BLKCIPHER
- 	help
-@@ -466,7 +466,6 @@ endif # if CRYPTO_DEV_UX500
- 
- config CRYPTO_DEV_ATMEL_AUTHENC
- 	tristate "Support for Atmel IPSEC/SSL hw accelerator"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select CRYPTO_AUTHENC
- 	select CRYPTO_DEV_ATMEL_AES
-@@ -479,7 +478,6 @@ config CRYPTO_DEV_ATMEL_AUTHENC
- 
- config CRYPTO_DEV_ATMEL_AES
- 	tristate "Support for Atmel AES hw accelerator"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select CRYPTO_AES
- 	select CRYPTO_AEAD
-@@ -494,7 +492,6 @@ config CRYPTO_DEV_ATMEL_AES
- 
- config CRYPTO_DEV_ATMEL_TDES
- 	tristate "Support for Atmel DES/TDES hw accelerator"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select CRYPTO_DES
- 	select CRYPTO_BLKCIPHER
-@@ -508,7 +505,6 @@ config CRYPTO_DEV_ATMEL_TDES
- 
- config CRYPTO_DEV_ATMEL_SHA
- 	tristate "Support for Atmel SHA hw accelerator"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select CRYPTO_HASH
- 	help
-@@ -574,7 +570,8 @@ config CRYPTO_DEV_CAVIUM_ZIP
- 
- config CRYPTO_DEV_QCE
- 	tristate "Qualcomm crypto engine accelerator"
--	depends on (ARCH_QCOM || COMPILE_TEST) && HAS_DMA && HAS_IOMEM
-+	depends on ARCH_QCOM || COMPILE_TEST
-+	depends on HAS_IOMEM
- 	select CRYPTO_AES
- 	select CRYPTO_DES
- 	select CRYPTO_ECB
-@@ -598,7 +595,6 @@ source "drivers/crypto/vmx/Kconfig"
- config CRYPTO_DEV_IMGTEC_HASH
- 	tristate "Imagination Technologies hardware hash accelerator"
- 	depends on MIPS || COMPILE_TEST
--	depends on HAS_DMA
- 	select CRYPTO_MD5
- 	select CRYPTO_SHA1
- 	select CRYPTO_SHA256
-@@ -650,7 +646,6 @@ config CRYPTO_DEV_ROCKCHIP
- 
- config CRYPTO_DEV_MEDIATEK
- 	tristate "MediaTek's EIP97 Cryptographic Engine driver"
--	depends on HAS_DMA
- 	depends on (ARM && ARCH_MEDIATEK) || COMPILE_TEST
- 	select CRYPTO_AES
- 	select CRYPTO_AEAD
-@@ -688,7 +683,7 @@ source "drivers/crypto/stm32/Kconfig"
- 
- config CRYPTO_DEV_SAFEXCEL
- 	tristate "Inside Secure's SafeXcel cryptographic engine driver"
--	depends on HAS_DMA && OF
-+	depends on OF
- 	depends on (ARM64 && ARCH_MVEBU) || (COMPILE_TEST && 64BIT)
- 	select CRYPTO_AES
- 	select CRYPTO_BLKCIPHER
-@@ -706,7 +701,6 @@ config CRYPTO_DEV_SAFEXCEL
- config CRYPTO_DEV_ARTPEC6
- 	tristate "Support for Axis ARTPEC-6/7 hardware crypto acceleration."
- 	depends on ARM && (ARCH_ARTPEC || COMPILE_TEST)
--	depends on HAS_DMA
- 	depends on OF
- 	select CRYPTO_AEAD
- 	select CRYPTO_AES
 -- 
-2.7.4
-
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

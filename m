@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:07 +0000
-Subject: [PATCH v3 07/20] i2c: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-8-git-send-email-geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:06 +0000
+Subject: [PATCH v3 06/20] fpga: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-7-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
@@ -25,8 +25,10 @@ This simplifies the dependencies, and allows to improve compile-testing.
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robin Murphy <robin.murphy@arm.com>
+Acked-by: Alan Tull <atull@kernel.org>
 ---
 v3:
+  - Add Acked-by,
   - Rebase to v4.17-rc1,
 
 v2:
@@ -34,37 +36,21 @@ v2:
   - Drop RFC state,
   - Split per subsystem.
 ---
- drivers/i2c/busses/Kconfig | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/fpga/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
-index c4865b08d7fb9e3b..8d21b9825d71764d 100644
---- a/drivers/i2c/busses/Kconfig
-+++ b/drivers/i2c/busses/Kconfig
-@@ -707,7 +707,6 @@ config I2C_MPC
- config I2C_MT65XX
- 	tristate "MediaTek I2C adapter"
- 	depends on ARCH_MEDIATEK || COMPILE_TEST
+diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
+index f47ef848bcd056d5..fd539132542e30ee 100644
+--- a/drivers/fpga/Kconfig
++++ b/drivers/fpga/Kconfig
+@@ -53,7 +53,6 @@ config FPGA_MGR_ALTERA_CVP
+ config FPGA_MGR_ZYNQ_FPGA
+ 	tristate "Xilinx Zynq FPGA"
+ 	depends on ARCH_ZYNQ || COMPILE_TEST
 -	depends on HAS_DMA
  	help
- 	  This selects the MediaTek(R) Integrated Inter Circuit bus driver
- 	  for MT65xx and MT81xx.
-@@ -885,7 +884,6 @@ config I2C_SH7760
+ 	  FPGA manager driver support for Xilinx Zynq FPGAs.
  
- config I2C_SH_MOBILE
- 	tristate "SuperH Mobile I2C Controller"
--	depends on HAS_DMA
- 	depends on ARCH_SHMOBILE || ARCH_RENESAS || COMPILE_TEST
- 	help
- 	  If you say yes to this option, support will be included for the
-@@ -1098,7 +1096,6 @@ config I2C_XLP9XX
- 
- config I2C_RCAR
- 	tristate "Renesas R-Car I2C Controller"
--	depends on HAS_DMA
- 	depends on ARCH_RENESAS || COMPILE_TEST
- 	select I2C_SLAVE
- 	help
 -- 
 2.7.4
 

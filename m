@@ -1,7 +1,7 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:17 +0000
-Subject: [PATCH v3 17/20] serial: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-18-git-send-email-geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:19 +0000
+Subject: [PATCH v3 19/20] staging: vc04_services: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-20-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
@@ -36,45 +36,20 @@ v2:
   - Drop RFC state,
   - Split per subsystem.
 ---
- drivers/tty/serial/Kconfig | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/staging/vc04_services/Kconfig | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
-index 0f058df0b0701fe2..25b8c0a8a50397d6 100644
---- a/drivers/tty/serial/Kconfig
-+++ b/drivers/tty/serial/Kconfig
-@@ -115,7 +115,6 @@ config SERIAL_SB1250_DUART_CONSOLE
- 
- config SERIAL_ATMEL
- 	bool "AT91 on-chip serial port support"
+diff --git a/drivers/staging/vc04_services/Kconfig b/drivers/staging/vc04_services/Kconfig
+index f5aaf7d629f0fae9..98064ce2c2b47c7f 100644
+--- a/drivers/staging/vc04_services/Kconfig
++++ b/drivers/staging/vc04_services/Kconfig
+@@ -1,6 +1,5 @@
+ menuconfig BCM_VIDEOCORE
+ 	tristate "Broadcom VideoCore support"
 -	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -500,7 +499,6 @@ config SERIAL_SA1100_CONSOLE
- 
- config SERIAL_IMX
- 	tristate "IMX serial port support"
--	depends on HAS_DMA
- 	depends on ARCH_MXC || COMPILE_TEST
- 	select SERIAL_CORE
- 	select RATIONAL
-@@ -1262,7 +1260,6 @@ config SERIAL_PCH_UART_CONSOLE
- 
- config SERIAL_MXS_AUART
- 	tristate "MXS AUART support"
--	depends on HAS_DMA
- 	depends on ARCH_MXS || MACH_ASM9260 || COMPILE_TEST
- 	select SERIAL_CORE
- 	select SERIAL_MCTRL_GPIO if GPIOLIB
-@@ -1473,7 +1470,6 @@ config SERIAL_SPRD_CONSOLE
- config SERIAL_STM32
- 	tristate "STMicroelectronics STM32 serial port support"
- 	select SERIAL_CORE
--	depends on HAS_DMA
- 	depends on ARCH_STM32 || COMPILE_TEST
- 	help
- 	  This driver is for the on-chip Serial Controller on
+ 	depends on OF
+ 	depends on RASPBERRYPI_FIRMWARE || (COMPILE_TEST && !RASPBERRYPI_FIRMWARE)
+ 	default y
 -- 
 2.7.4
 

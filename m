@@ -1,15 +1,15 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:06 +0000
-Subject: [PATCH v3 06/20] fpga: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-7-git-send-email-geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:20 +0000
+Subject: [PATCH v3 20/20] usb: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-21-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>Br
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>Br
+Cc: devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-media@vger.kernel.org, linux-iio@vger.kernel.org, netdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, linux-serial@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-remoteproc@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 
 Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
 symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
@@ -25,7 +25,8 @@ This simplifies the dependencies, and allows to improve compile-testing.
 Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 Reviewed-by: Mark Brown <broonie@kernel.org>
 Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Alan Tull <atull@kernel.org>
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com> [drivers/usb/gadget/]
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
 v3:
   - Add Acked-by,
@@ -36,21 +37,45 @@ v2:
   - Drop RFC state,
   - Split per subsystem.
 ---
- drivers/fpga/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/usb/gadget/udc/Kconfig | 4 ++--
+ drivers/usb/mtu3/Kconfig       | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/fpga/Kconfig b/drivers/fpga/Kconfig
-index f47ef848bcd056d5..fd539132542e30ee 100644
---- a/drivers/fpga/Kconfig
-+++ b/drivers/fpga/Kconfig
-@@ -53,7 +53,6 @@ config FPGA_MGR_ALTERA_CVP
- config FPGA_MGR_ZYNQ_FPGA
- 	tristate "Xilinx Zynq FPGA"
- 	depends on ARCH_ZYNQ || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  FPGA manager driver support for Xilinx Zynq FPGAs.
+diff --git a/drivers/usb/gadget/udc/Kconfig b/drivers/usb/gadget/udc/Kconfig
+index 0875d38476ee9395..9c3b4f86965e80c7 100644
+--- a/drivers/usb/gadget/udc/Kconfig
++++ b/drivers/usb/gadget/udc/Kconfig
+@@ -179,7 +179,7 @@ config USB_R8A66597
  
+ config USB_RENESAS_USBHS_UDC
+ 	tristate 'Renesas USBHS controller'
+-	depends on USB_RENESAS_USBHS && HAS_DMA
++	depends on USB_RENESAS_USBHS
+ 	help
+ 	   Renesas USBHS is a discrete USB host and peripheral controller chip
+ 	   that supports both full and high speed USB 2.0 data transfers.
+@@ -192,7 +192,7 @@ config USB_RENESAS_USBHS_UDC
+ config USB_RENESAS_USB3
+ 	tristate 'Renesas USB3.0 Peripheral controller'
+ 	depends on ARCH_RENESAS || COMPILE_TEST
+-	depends on EXTCON && HAS_DMA
++	depends on EXTCON
+ 	help
+ 	   Renesas USB3.0 Peripheral controller is a USB peripheral controller
+ 	   that supports super, high, and full speed USB 3.0 data transfers.
+diff --git a/drivers/usb/mtu3/Kconfig b/drivers/usb/mtu3/Kconfig
+index 25cd61947beea51e..c0c0eb88e5eafc74 100644
+--- a/drivers/usb/mtu3/Kconfig
++++ b/drivers/usb/mtu3/Kconfig
+@@ -2,7 +2,7 @@
+ 
+ config USB_MTU3
+ 	tristate "MediaTek USB3 Dual Role controller"
+-	depends on EXTCON && (USB || USB_GADGET) && HAS_DMA
++	depends on EXTCON && (USB || USB_GADGET)
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
+ 	select USB_XHCI_MTK if USB_SUPPORT && USB_XHCI_HCD
+ 	help
 -- 
 2.7.4
 

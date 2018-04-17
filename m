@@ -1,297 +1,70 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 27 Apr 2018 11:21:44 +0000
-Subject: [PATCH 2/3] drm: shmobile: remove unused MERAM support
-Message-Id: <1524828105-26585-3-git-send-email-b.zolnierkie@samsung.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:07 +0000
+Subject: [PATCH v3 07/20] i2c: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-8-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
- <CGME20180427112231epcas1p4cd63e2bf9216d7e8810f49e57bcf50c6@epcas1p4.samsung.com>
-In-Reply-To: <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org
+To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>Br
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-Since commit a521422ea4ae  ("ARM: shmobile: mackerel: Remove Legacy C
-board code") MERAM functionality is unused. Remove it.
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Cc: Simon Horman <horms+renesas@verge.net.au>
-Cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
+
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
 ---
- drivers/gpu/drm/shmobile/Kconfig           |  1 -
- drivers/gpu/drm/shmobile/shmob_drm_crtc.c  | 42 ------------------------------
- drivers/gpu/drm/shmobile/shmob_drm_crtc.h  |  1 -
- drivers/gpu/drm/shmobile/shmob_drm_drv.h   |  2 --
- drivers/gpu/drm/shmobile/shmob_drm_kms.c   | 11 --------
- drivers/gpu/drm/shmobile/shmob_drm_kms.h   |  1 -
- drivers/gpu/drm/shmobile/shmob_drm_plane.c |  2 --
- include/linux/platform_data/shmob_drm.h    |  4 ---
- 8 files changed, 64 deletions(-)
+v3:
+  - Rebase to v4.17-rc1,
 
-diff --git a/drivers/gpu/drm/shmobile/Kconfig b/drivers/gpu/drm/shmobile/Kconfig
-index c987c82..0426d66 100644
---- a/drivers/gpu/drm/shmobile/Kconfig
-+++ b/drivers/gpu/drm/shmobile/Kconfig
-@@ -2,7 +2,6 @@ config DRM_SHMOBILE
- 	tristate "DRM Support for SH Mobile"
- 	depends on DRM && ARM
- 	depends on ARCH_SHMOBILE || COMPILE_TEST
--	depends on FB_SH_MOBILE_MERAM || !FB_SH_MOBILE_MERAM
- 	select BACKLIGHT_CLASS_DEVICE
- 	select BACKLIGHT_LCD_SUPPORT
- 	select DRM_KMS_HELPER
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-index e773893..40df888 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_crtc.c
-@@ -21,8 +21,6 @@
- #include <drm/drm_gem_cma_helper.h>
- #include <drm/drm_plane_helper.h>
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/i2c/busses/Kconfig | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index c4865b08d7fb9e3b..8d21b9825d71764d 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -707,7 +707,6 @@ config I2C_MPC
+ config I2C_MT65XX
+ 	tristate "MediaTek I2C adapter"
+ 	depends on ARCH_MEDIATEK || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  This selects the MediaTek(R) Integrated Inter Circuit bus driver
+ 	  for MT65xx and MT81xx.
+@@ -885,7 +884,6 @@ config I2C_SH7760
  
--#include <video/sh_mobile_meram.h>
--
- #include "shmob_drm_backlight.h"
- #include "shmob_drm_crtc.h"
- #include "shmob_drm_drv.h"
-@@ -47,20 +45,12 @@ static int shmob_drm_clk_on(struct shmob_drm_device *sdev)
- 		if (ret < 0)
- 			return ret;
- 	}
--#if 0
--	if (sdev->meram_dev && sdev->meram_dev->pdev)
--		pm_runtime_get_sync(&sdev->meram_dev->pdev->dev);
--#endif
+ config I2C_SH_MOBILE
+ 	tristate "SuperH Mobile I2C Controller"
+-	depends on HAS_DMA
+ 	depends on ARCH_SHMOBILE || ARCH_RENESAS || COMPILE_TEST
+ 	help
+ 	  If you say yes to this option, support will be included for the
+@@ -1098,7 +1096,6 @@ config I2C_XLP9XX
  
- 	return 0;
- }
- 
- static void shmob_drm_clk_off(struct shmob_drm_device *sdev)
- {
--#if 0
--	if (sdev->meram_dev && sdev->meram_dev->pdev)
--		pm_runtime_put_sync(&sdev->meram_dev->pdev->dev);
--#endif
- 	if (sdev->clock)
- 		clk_disable_unprepare(sdev->clock);
- }
-@@ -269,12 +259,6 @@ static void shmob_drm_crtc_stop(struct shmob_drm_crtc *scrtc)
- 	if (!scrtc->started)
- 		return;
- 
--	/* Disable the MERAM cache. */
--	if (scrtc->cache) {
--		sh_mobile_meram_cache_free(sdev->meram, scrtc->cache);
--		scrtc->cache = NULL;
--	}
--
- 	/* Stop the LCDC. */
- 	shmob_drm_crtc_start_stop(scrtc, false);
- 
-@@ -305,7 +289,6 @@ static void shmob_drm_crtc_compute_base(struct shmob_drm_crtc *scrtc,
- {
- 	struct drm_crtc *crtc = &scrtc->crtc;
- 	struct drm_framebuffer *fb = crtc->primary->fb;
--	struct shmob_drm_device *sdev = crtc->dev->dev_private;
- 	struct drm_gem_cma_object *gem;
- 	unsigned int bpp;
- 
-@@ -321,11 +304,6 @@ static void shmob_drm_crtc_compute_base(struct shmob_drm_crtc *scrtc,
- 			      + y / (bpp = 4 ? 2 : 1) * fb->pitches[1]
- 			      + x * (bpp = 16 ? 2 : 1);
- 	}
--
--	if (scrtc->cache)
--		sh_mobile_meram_cache_update(sdev->meram, scrtc->cache,
--					     scrtc->dma[0], scrtc->dma[1],
--					     &scrtc->dma[0], &scrtc->dma[1]);
- }
- 
- static void shmob_drm_crtc_update_base(struct shmob_drm_crtc *scrtc)
-@@ -372,9 +350,7 @@ static int shmob_drm_crtc_mode_set(struct drm_crtc *crtc,
- {
- 	struct shmob_drm_crtc *scrtc = to_shmob_crtc(crtc);
- 	struct shmob_drm_device *sdev = crtc->dev->dev_private;
--	const struct sh_mobile_meram_cfg *mdata = sdev->pdata->meram;
- 	const struct shmob_drm_format_info *format;
--	void *cache;
- 
- 	format = shmob_drm_format_info(crtc->primary->fb->format->format);
- 	if (format = NULL) {
-@@ -386,24 +362,6 @@ static int shmob_drm_crtc_mode_set(struct drm_crtc *crtc,
- 	scrtc->format = format;
- 	scrtc->line_size = crtc->primary->fb->pitches[0];
- 
--	if (sdev->meram) {
--		/* Enable MERAM cache if configured. We need to de-init
--		 * configured ICBs before we can re-initialize them.
--		 */
--		if (scrtc->cache) {
--			sh_mobile_meram_cache_free(sdev->meram, scrtc->cache);
--			scrtc->cache = NULL;
--		}
--
--		cache = sh_mobile_meram_cache_alloc(sdev->meram, mdata,
--						    crtc->primary->fb->pitches[0],
--						    adjusted_mode->vdisplay,
--						    format->meram,
--						    &scrtc->line_size);
--		if (!IS_ERR(cache))
--			scrtc->cache = cache;
--	}
--
- 	shmob_drm_crtc_compute_base(scrtc, x, y);
- 
- 	return 0;
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_crtc.h b/drivers/gpu/drm/shmobile/shmob_drm_crtc.h
-index f152973..c11f421 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_crtc.h
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_crtc.h
-@@ -28,7 +28,6 @@ struct shmob_drm_crtc {
- 	int dpms;
- 
- 	const struct shmob_drm_format_info *format;
--	void *cache;
- 	unsigned long dma[2];
- 	unsigned int line_size;
- 	bool started;
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_drv.h b/drivers/gpu/drm/shmobile/shmob_drm_drv.h
-index 02ea315..088a6e55 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_drv.h
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_drv.h
-@@ -23,7 +23,6 @@
- struct clk;
- struct device;
- struct drm_device;
--struct sh_mobile_meram_info;
- 
- struct shmob_drm_device {
- 	struct device *dev;
-@@ -31,7 +30,6 @@ struct shmob_drm_device {
- 
- 	void __iomem *mmio;
- 	struct clk *clock;
--	struct sh_mobile_meram_info *meram;
- 	u32 lddckr;
- 	u32 ldmt1r;
- 
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_kms.c b/drivers/gpu/drm/shmobile/shmob_drm_kms.c
-index d36919b..4476385 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_kms.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_kms.c
-@@ -18,8 +18,6 @@
- #include <drm/drm_gem_cma_helper.h>
- #include <drm/drm_gem_framebuffer_helper.h>
- 
--#include <video/sh_mobile_meram.h>
--
- #include "shmob_drm_crtc.h"
- #include "shmob_drm_drv.h"
- #include "shmob_drm_kms.h"
-@@ -35,55 +33,46 @@
- 		.bpp = 16,
- 		.yuv = false,
- 		.lddfr = LDDFR_PKF_RGB16,
--		.meram = SH_MOBILE_MERAM_PF_RGB,
- 	}, {
- 		.fourcc = DRM_FORMAT_RGB888,
- 		.bpp = 24,
- 		.yuv = false,
- 		.lddfr = LDDFR_PKF_RGB24,
--		.meram = SH_MOBILE_MERAM_PF_RGB,
- 	}, {
- 		.fourcc = DRM_FORMAT_ARGB8888,
- 		.bpp = 32,
- 		.yuv = false,
- 		.lddfr = LDDFR_PKF_ARGB32,
--		.meram = SH_MOBILE_MERAM_PF_RGB,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV12,
- 		.bpp = 12,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_420,
--		.meram = SH_MOBILE_MERAM_PF_NV,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV21,
- 		.bpp = 12,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_420,
--		.meram = SH_MOBILE_MERAM_PF_NV,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV16,
- 		.bpp = 16,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_422,
--		.meram = SH_MOBILE_MERAM_PF_NV,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV61,
- 		.bpp = 16,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_422,
--		.meram = SH_MOBILE_MERAM_PF_NV,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV24,
- 		.bpp = 24,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_444,
--		.meram = SH_MOBILE_MERAM_PF_NV24,
- 	}, {
- 		.fourcc = DRM_FORMAT_NV42,
- 		.bpp = 24,
- 		.yuv = true,
- 		.lddfr = LDDFR_CC | LDDFR_YF_444,
--		.meram = SH_MOBILE_MERAM_PF_NV24,
- 	},
- };
- 
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_kms.h b/drivers/gpu/drm/shmobile/shmob_drm_kms.h
-index 06d5b7c..753e281 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_kms.h
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_kms.h
-@@ -24,7 +24,6 @@ struct shmob_drm_format_info {
- 	unsigned int bpp;
- 	bool yuv;
- 	u32 lddfr;
--	unsigned int meram;
- };
- 
- const struct shmob_drm_format_info *shmob_drm_format_info(u32 fourcc);
-diff --git a/drivers/gpu/drm/shmobile/shmob_drm_plane.c b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-index 97f6e4a..1d0359f 100644
---- a/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-+++ b/drivers/gpu/drm/shmobile/shmob_drm_plane.c
-@@ -17,8 +17,6 @@
- #include <drm/drm_fb_cma_helper.h>
- #include <drm/drm_gem_cma_helper.h>
- 
--#include <video/sh_mobile_meram.h>
--
- #include "shmob_drm_drv.h"
- #include "shmob_drm_kms.h"
- #include "shmob_drm_plane.h"
-diff --git a/include/linux/platform_data/shmob_drm.h b/include/linux/platform_data/shmob_drm.h
-index 7c686d3..ee495d7 100644
---- a/include/linux/platform_data/shmob_drm.h
-+++ b/include/linux/platform_data/shmob_drm.h
-@@ -18,9 +18,6 @@
- 
- #include <drm/drm_mode.h>
- 
--struct sh_mobile_meram_cfg;
--struct sh_mobile_meram_info;
--
- enum shmob_drm_clk_source {
- 	SHMOB_DRM_CLK_BUS,
- 	SHMOB_DRM_CLK_PERIPHERAL,
-@@ -93,7 +90,6 @@ struct shmob_drm_platform_data {
- 	struct shmob_drm_interface_data iface;
- 	struct shmob_drm_panel_data panel;
- 	struct shmob_drm_backlight_data backlight;
--	const struct sh_mobile_meram_cfg *meram;
- };
- 
- #endif /* __SHMOB_DRM_H__ */
+ config I2C_RCAR
+ 	tristate "Renesas R-Car I2C Controller"
+-	depends on HAS_DMA
+ 	depends on ARCH_RENESAS || COMPILE_TEST
+ 	select I2C_SLAVE
+ 	help
 -- 
-1.9.1
+2.7.4
 

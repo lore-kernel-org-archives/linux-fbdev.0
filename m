@@ -1,27 +1,58 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Date: Tue, 10 Apr 2018 13:04:06 +0000
-Subject: Re: [RESEND PATCH v6 4/5] ARM: dts: rockchip: set PWM delay backlight settings for Veyron.
-Message-Id: <4925136.8dMFCuW7Px@phil>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:10 +0000
+Subject: [PATCH v3 10/20] lightnvm: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-11-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180328170327.5395-1-enric.balletbo@collabora.com> <20180328170327.5395-4-enric.balletbo@collabora.com>
-In-Reply-To: <20180328170327.5395-4-enric.balletbo@collabora.com>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>Br
+Cc: devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-media@vger.kernel.org, linux-iio@vger.kernel.org, netdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, linux-serial@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-remoteproc@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 
-Am Mittwoch, 28. M=E4rz 2018, 19:03:26 CEST schrieb Enric Balletbo i Serra:
-> For veyron the binding should provide both PWM timings, the delay between
-> you enable the PWM and set the enable signal, and the delay between you
-> disable the PWM signal and clear the enable signal. Update the binding
-> accordingly, in this case the panels connected to the veyron boards have
-> a symmetric power sequence, hence the same value is used.
->=20
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-applied for 4.18
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Thanks
-Heiko
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+Reviewed-by: Matias Bj=C3=B8rling <mb@lightnvm.io>
+---
+v3:
+  - Add Reviewed-by,
+  - Rebase to v4.17-rc1,
+  - Removed bogus notes,
+
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/lightnvm/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/lightnvm/Kconfig b/drivers/lightnvm/Kconfig
+index 10c08982185a572f..9c03f35d9df113c6 100644
+--- a/drivers/lightnvm/Kconfig
++++ b/drivers/lightnvm/Kconfig
+@@ -4,7 +4,7 @@
+=20
+ menuconfig NVM
+ 	bool "Open-Channel SSD target support"
+-	depends on BLOCK && HAS_DMA && PCI
++	depends on BLOCK && PCI
+ 	select BLK_DEV_NVME
+ 	help
+ 	  Say Y here to get to enable Open-channel SSDs.
+--=20
+2.7.4
+

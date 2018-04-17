@@ -1,35 +1,123 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 26 Apr 2018 10:15:38 +0000
-Subject: Re: [PATCH 2/4] video: sm501fb: Improve a size determination in sm501fb_probe()
-Message-Id: <1859038.Xq2p7m02WJ@amdc3058>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:18 +0000
+Subject: [PATCH v3 18/20] spi: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-19-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <efb981db-e9a0-d6f7-00d4-c76e1162770c@users.sourceforge.net>
- <CGME20171126101848epcas2p3725dcc0b645cf4d4d9730f8f8edbad70@epcas2p3.samsung.com>
- <08ed1e90-5714-04b7-b3dc-067a3d9bc38b@users.sourceforge.net>
-In-Reply-To: <08ed1e90-5714-04b7-b3dc-067a3d9bc38b@users.sourceforge.net>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: SF Markus Elfring <elfring@users.sourceforge.net>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <garsilva@embeddedor.com>, Alexey Khoroshilov <khoroshilov@ispras.ru>, Colin Ian King <colin.king@canonical.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Bhumika Goyal <bhumirks@gmail.com>
+To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>Br
+Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
 
-On Sunday, November 26, 2017 11:18:26 AM SF Markus Elfring wrote:
-> From: Markus Elfring <elfring@users.sourceforge.net>
-> Date: Sun, 26 Nov 2017 10:22:37 +0100
-> 
-> Replace the specification of a data structure by a pointer dereference
-> as the parameter for the operator "sizeof" to make the corresponding size
-> determination a bit safer according to the Linux coding style convention.
-> 
-> This issue was detected by using the Coccinelle software.
-> 
-> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Hand applied and queued for 4.18, thanks.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+Acked-by: Mark Brown <broonie@kernel.org>
+---
+v3:
+  - Add Acked-by,
+  - Rebase to v4.17-rc1,
+
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/spi/Kconfig | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
+index 2d4146ce2f1be49d..5a8524a3bc13f92d 100644
+--- a/drivers/spi/Kconfig
++++ b/drivers/spi/Kconfig
+@@ -71,7 +71,6 @@ config SPI_ARMADA_3700
+ 
+ config SPI_ATMEL
+ 	tristate "Atmel SPI Controller"
+-	depends on HAS_DMA
+ 	depends on ARCH_AT91 || COMPILE_TEST
+ 	help
+ 	  This selects a driver for the Atmel SPI Controller, present on
+@@ -233,7 +232,6 @@ config SPI_EFM32
+ 
+ config SPI_EP93XX
+ 	tristate "Cirrus Logic EP93xx SPI controller"
+-	depends on HAS_DMA
+ 	depends on ARCH_EP93XX || COMPILE_TEST
+ 	help
+ 	  This enables using the Cirrus EP93xx SPI controller in master
+@@ -355,7 +353,6 @@ config SPI_FSL_SPI
+ config SPI_FSL_DSPI
+ 	tristate "Freescale DSPI controller"
+ 	select REGMAP_MMIO
+-	depends on HAS_DMA
+ 	depends on SOC_VF610 || SOC_LS1021A || ARCH_LAYERSCAPE || M5441x || COMPILE_TEST
+ 	help
+ 	  This enables support for the Freescale DSPI controller in master
+@@ -431,7 +428,6 @@ config SPI_OMAP_UWIRE
+ 
+ config SPI_OMAP24XX
+ 	tristate "McSPI driver for OMAP"
+-	depends on HAS_DMA
+ 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
+ 	select SG_SPLIT
+ 	help
+@@ -440,7 +436,6 @@ config SPI_OMAP24XX
+ 
+ config SPI_TI_QSPI
+ 	tristate "DRA7xxx QSPI controller support"
+-	depends on HAS_DMA
+ 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
+ 	help
+ 	  QSPI master controller for DRA7xxx used for flash devices.
+@@ -469,7 +464,6 @@ config SPI_PIC32
+ config SPI_PIC32_SQI
+ 	tristate "Microchip PIC32 Quad SPI driver"
+ 	depends on MACH_PIC32 || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  SPI driver for PIC32 Quad SPI controller.
+ 
+@@ -572,7 +566,7 @@ config SPI_SC18IS602
+ 
+ config SPI_SH_MSIOF
+ 	tristate "SuperH MSIOF SPI controller"
+-	depends on HAVE_CLK && HAS_DMA
++	depends on HAVE_CLK
+ 	depends on ARCH_SHMOBILE || ARCH_RENESAS || COMPILE_TEST
+ 	help
+ 	  SPI driver for SuperH and SH Mobile MSIOF blocks.
+@@ -650,7 +644,7 @@ config SPI_MXS
+ config SPI_TEGRA114
+ 	tristate "NVIDIA Tegra114 SPI Controller"
+ 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
+-	depends on RESET_CONTROLLER && HAS_DMA
++	depends on RESET_CONTROLLER
+ 	help
+ 	  SPI driver for NVIDIA Tegra114 SPI Controller interface. This controller
+ 	  is different than the older SoCs SPI controller and also register interface
+@@ -668,7 +662,7 @@ config SPI_TEGRA20_SFLASH
+ config SPI_TEGRA20_SLINK
+ 	tristate "Nvidia Tegra20/Tegra30 SLINK Controller"
+ 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
+-	depends on RESET_CONTROLLER && HAS_DMA
++	depends on RESET_CONTROLLER
+ 	help
+ 	  SPI driver for Nvidia Tegra20/Tegra30 SLINK Controller interface.
+ 
+-- 
+2.7.4
 

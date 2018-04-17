@@ -1,165 +1,132 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Date: Fri, 20 Apr 2018 17:42:53 +0000
-Subject: [PATCH 7/7] media: via-camera: allow build on non-x86 archs with COMPILE_TEST
-Message-Id: <396bfb33e763c31ead093ac1035b2ecf7311b5bc.1524245455.git.mchehab@s-opensource.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 17 Apr 2018 17:49:01 +0000
+Subject: [PATCH v3 01/20] ASoC: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <1523987360-18760-2-git-send-email-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1524245455.git.mchehab@s-opensource.com>
-In-Reply-To: <cover.1524245455.git.mchehab@s-opensource.com>
+References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
+In-Reply-To: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: @bombadil.infradead.org
-Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Hans Verkuil <hans.verkuil@cisco.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ramesh Shanmugasundaram <ramesh.shanmugasundaram@bp.renesas.com>, Jacob Chen <jacob-chen@iotwrt.com>, Bhumika Goyal <bhumirks@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>, linux-fbdev@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>, Marek Szyprowski <m.szyprowski@samsung.com>, Robin Murphy <robin.murphy@arm.com>, Felipe Balbi <balbi@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Mark Brown <broonie@kernel.org>, Liam Girdwood <lgirdwood@gmail.com>, Tejun Heo <tj@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, "David S . Miller" <davem@davemloft.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Stefan Richter <stefanr@s5r6.in-berlin.de>, Alan Tull <atull@kernel.org>, Moritz Fischer <mdf@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, Jonathan Cameron <jic23@kernel.org>, Joerg Roedel <joro@8bytes.org>, Matias Bjorling <mb@lightnvm.io>, Jassi Brar <jassisinghbrar@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Ulf Hansson <ulf.hansson@linaro.org>, David Woodhouse <dwmw2@infradead.org>Br
+Cc: devel@driverdev.osuosl.org, alsa-devel@alsa-project.org, linux-media@vger.kernel.org, linux-iio@vger.kernel.org, netdev@vger.kernel.org, linux-fpga@vger.kernel.org, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-spi@vger.kernel.org, linux-block@vger.kernel.org, linux-ide@vger.kernel.org, iommu@lists.linux-foundation.org, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, linux-serial@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-remoteproc@vger.kernel.org, linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 
-This driver depends on FB_VIA for lots of things. Provide stubs
-for the functions it needs, in order to allow building it with
-COMPILE_TEST outside x86 architecture.
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
+
+This simplifies the dependencies, and allows to improve compile-testing.
+
+Note:
+  - The various SND_SOC_LPASS_* symbols had to loose their dependencies
+    on HAS_DMA, as they are selected by SND_SOC_STORM and/or
+    SND_SOC_APQ8016_SBC.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+Acked-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/media/platform/Kconfig      |  2 +-
- drivers/media/platform/via-camera.c | 10 +++++++++-
- include/linux/via-core.h            | 17 +++++++++++++++++
- include/linux/via-gpio.h            |  4 ++++
- include/linux/via_i2c.h             |  5 +++++
- 5 files changed, 36 insertions(+), 2 deletions(-)
+v3:
+  - Add Acked-by,
+  - Rebase to v4.17-rc1,
 
-diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
-index e3229f7baed1..abaaed98a044 100644
---- a/drivers/media/platform/Kconfig
-+++ b/drivers/media/platform/Kconfig
-@@ -15,7 +15,7 @@ source "drivers/media/platform/marvell-ccic/Kconfig"
- 
- config VIDEO_VIA_CAMERA
- 	tristate "VIAFB camera controller support"
--	depends on FB_VIA
-+	depends on FB_VIA || COMPILE_TEST
- 	select VIDEOBUF_DMA_SG
- 	select VIDEO_OV7670
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Drop dependency of SND_SOC_LPASS_IPQ806X on HAS_DMA,
+  - Split per subsystem.
+---
+ sound/soc/bcm/Kconfig      | 3 +--
+ sound/soc/kirkwood/Kconfig | 1 -
+ sound/soc/pxa/Kconfig      | 1 -
+ sound/soc/qcom/Kconfig     | 7 ++-----
+ 4 files changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/sound/soc/bcm/Kconfig b/sound/soc/bcm/Kconfig
+index edf367100ebd2f17..02f50b7a966ff262 100644
+--- a/sound/soc/bcm/Kconfig
++++ b/sound/soc/bcm/Kconfig
+@@ -11,9 +11,8 @@ config SND_BCM2835_SOC_I2S
+ config SND_SOC_CYGNUS
+ 	tristate "SoC platform audio for Broadcom Cygnus chips"
+ 	depends on ARCH_BCM_CYGNUS || COMPILE_TEST
+-	depends on HAS_DMA
  	help
-diff --git a/drivers/media/platform/via-camera.c b/drivers/media/platform/via-camera.c
-index e9a02639554b..4ab1695b33af 100644
---- a/drivers/media/platform/via-camera.c
-+++ b/drivers/media/platform/via-camera.c
-@@ -27,7 +27,10 @@
- #include <linux/via-core.h>
- #include <linux/via-gpio.h>
- #include <linux/via_i2c.h>
-+
-+#ifdef CONFIG_FB_VIA
- #include <asm/olpc.h>
-+#endif
+ 	  Say Y if you want to add support for ASoC audio on Broadcom
+ 	  Cygnus chips (bcm958300, bcm958305, bcm911360)
  
- #include "via-camera.h"
+-	  If you don't know what to do here, say N.
+\ No newline at end of file
++	  If you don't know what to do here, say N.
+diff --git a/sound/soc/kirkwood/Kconfig b/sound/soc/kirkwood/Kconfig
+index bc3c7b5ac752e471..132bb83f8e99aff3 100644
+--- a/sound/soc/kirkwood/Kconfig
++++ b/sound/soc/kirkwood/Kconfig
+@@ -1,7 +1,6 @@
+ config SND_KIRKWOOD_SOC
+ 	tristate "SoC Audio for the Marvell Kirkwood and Dove chips"
+ 	depends on ARCH_DOVE || ARCH_MVEBU || COMPILE_TEST
+-	depends on HAS_DMA
+ 	help
+ 	  Say Y or M if you want to add support for codecs attached to
+ 	  the Kirkwood I2S interface. You will also need to select the
+diff --git a/sound/soc/pxa/Kconfig b/sound/soc/pxa/Kconfig
+index 484ab3c2ad672fc8..960744e46edc0549 100644
+--- a/sound/soc/pxa/Kconfig
++++ b/sound/soc/pxa/Kconfig
+@@ -1,7 +1,6 @@
+ config SND_PXA2XX_SOC
+ 	tristate "SoC Audio for the Intel PXA2xx chip"
+ 	depends on ARCH_PXA || COMPILE_TEST
+-	depends on HAS_DMA
+ 	select SND_PXA2XX_LIB
+ 	help
+ 	  Say Y or M if you want to add support for codecs attached to
+diff --git a/sound/soc/qcom/Kconfig b/sound/soc/qcom/Kconfig
+index 8ec9a074b38bd702..3cc252e55468eaab 100644
+--- a/sound/soc/qcom/Kconfig
++++ b/sound/soc/qcom/Kconfig
+@@ -11,24 +11,21 @@ config SND_SOC_LPASS_CPU
  
-@@ -1283,6 +1286,11 @@ static bool viacam_serial_is_enabled(void)
- 	struct pci_bus *pbus = pci_find_bus(0, 0);
- 	u8 cbyte;
+ config SND_SOC_LPASS_PLATFORM
+ 	tristate
+-	depends on HAS_DMA
+ 	select REGMAP_MMIO
  
-+#ifdef CONFIG_FB_VIA
-+	if (!machine_is_olpc())
-+		return false;
-+#endif
-+
- 	if (!pbus)
- 		return false;
- 	pci_bus_read_config_byte(pbus, VIACAM_SERIAL_DEVFN,
-@@ -1343,7 +1351,7 @@ static int viacam_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	}
+ config SND_SOC_LPASS_IPQ806X
+ 	tristate
+-	depends on HAS_DMA
+ 	select SND_SOC_LPASS_CPU
+ 	select SND_SOC_LPASS_PLATFORM
  
--	if (machine_is_olpc() && viacam_serial_is_enabled())
-+	if (viacam_serial_is_enabled())
- 		return -EBUSY;
+ config SND_SOC_LPASS_APQ8016
+ 	tristate
+-	depends on HAS_DMA
+ 	select SND_SOC_LPASS_CPU
+ 	select SND_SOC_LPASS_PLATFORM
  
- 	/*
-diff --git a/include/linux/via-core.h b/include/linux/via-core.h
-index 9c21cdf3e3b3..7aaee6a82392 100644
---- a/include/linux/via-core.h
-+++ b/include/linux/via-core.h
-@@ -70,8 +70,12 @@ struct viafb_pm_hooks {
- 	void *private;
- };
+ config SND_SOC_STORM
+ 	tristate "ASoC I2S support for Storm boards"
+-	depends on SND_SOC_QCOM && HAS_DMA
++	depends on SND_SOC_QCOM
+ 	select SND_SOC_LPASS_IPQ806X
+ 	select SND_SOC_MAX98357A
+ 	help
+@@ -37,7 +34,7 @@ config SND_SOC_STORM
  
-+#ifdef CONFIG_FB_VIA
- void viafb_pm_register(struct viafb_pm_hooks *hooks);
- void viafb_pm_unregister(struct viafb_pm_hooks *hooks);
-+#else
-+void viafb_pm_register(struct viafb_pm_hooks *hooks) {}
-+#endif /* CONFIG_FB_VIA */
- #endif /* CONFIG_PM */
- 
- /*
-@@ -113,8 +117,13 @@ struct viafb_dev {
-  * Interrupt management.
-  */
- 
-+#ifdef CONFIG_FB_VIA
- void viafb_irq_enable(u32 mask);
- void viafb_irq_disable(u32 mask);
-+#else
-+static inline void viafb_irq_enable(u32 mask) {}
-+static inline void viafb_irq_disable(u32 mask) {}
-+#endif
- 
- /*
-  * The global interrupt control register and its bits.
-@@ -157,10 +166,18 @@ void viafb_irq_disable(u32 mask);
- /*
-  * DMA management.
-  */
-+#ifdef CONFIG_FB_VIA
- int viafb_request_dma(void);
- void viafb_release_dma(void);
- /* void viafb_dma_copy_out(unsigned int offset, dma_addr_t paddr, int len); */
- int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg);
-+#else
-+static inline int viafb_request_dma(void) { return 0; }
-+static inline void viafb_release_dma(void) {}
-+static inline int viafb_dma_copy_out_sg(unsigned int offset,
-+					struct scatterlist *sg, int nsg)
-+{ return 0; }
-+#endif
- 
- /*
-  * DMA Controller registers.
-diff --git a/include/linux/via-gpio.h b/include/linux/via-gpio.h
-index 8281aea3dd6d..b5a96cf7a874 100644
---- a/include/linux/via-gpio.h
-+++ b/include/linux/via-gpio.h
-@@ -8,7 +8,11 @@
- #ifndef __VIA_GPIO_H__
- #define __VIA_GPIO_H__
- 
-+#ifdef CONFIG_FB_VIA
- extern int viafb_gpio_lookup(const char *name);
- extern int viafb_gpio_init(void);
- extern void viafb_gpio_exit(void);
-+#else
-+static inline int viafb_gpio_lookup(const char *name) { return 0; }
-+#endif
- #endif
-diff --git a/include/linux/via_i2c.h b/include/linux/via_i2c.h
-index 44532e468c05..61ae0e7e4576 100644
---- a/include/linux/via_i2c.h
-+++ b/include/linux/via_i2c.h
-@@ -32,6 +32,7 @@ struct via_i2c_stuff {
- };
- 
- 
-+#ifdef CONFIG_FB_VIA
- int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata);
- int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data);
- int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len);
-@@ -39,4 +40,8 @@ struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which);
- 
- extern int viafb_i2c_init(void);
- extern void viafb_i2c_exit(void);
-+#else
-+struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which)
-+{ return NULL; }
-+#endif
- #endif /* __VIA_I2C_H__ */
+ config SND_SOC_APQ8016_SBC
+ 	tristate "SoC Audio support for APQ8016 SBC platforms"
+-	depends on SND_SOC_QCOM && HAS_DMA
++	depends on SND_SOC_QCOM
+ 	select SND_SOC_LPASS_APQ8016
+ 	help
+           Support for Qualcomm Technologies LPASS audio block in
 -- 
-2.14.3
+2.7.4
 

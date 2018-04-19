@@ -1,115 +1,121 @@
-From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Date: Thu, 05 Apr 2018 19:32:26 +0000
-Subject: Re: [PATCH 15/16] media: omapfb_dss.h: add stubs to build with COMPILE_TEST
-Message-Id: <20180405163226.0700c519@vento.lan>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Thu, 19 Apr 2018 14:06:27 +0000
+Subject: [PATCH 57/61] video: fbdev: simplify getting .drvdata
+Message-Id: <20180419140641.27926-58-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1522949748.git.mchehab@s-opensource.com>
- <d3517e25c2b37d3d5f2f61630048a184ce701c58.1522949748.git.mchehab@s-opensource.com>
- <1527912.68v46ENJLK@avalon>
-In-Reply-To: <1527912.68v46ENJLK@avalon>
+References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-Em Thu, 05 Apr 2018 21:41:18 +0300
-Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
+We should get drvdata from struct device directly. Going via
+platform_device is an unneeded step back and forth.
 
-> Hi Mauro,
-> 
-> Thank you for the patch.
-> 
-> On Thursday, 5 April 2018 20:54:15 EEST Mauro Carvalho Chehab wrote:
-> > Add stubs for omapfb_dss.h, in the case it is included by
-> > some driver when CONFIG_FB_OMAP2 is not defined.  
-> 
-> The omapfb driver doesn't include any asm/ header, so it should probably build 
-> fine on non-ARM architectures. Instead of adding stubs here, you can enable 
-> compilation of the driver on all platforms, in which case the omap_vout driver 
-> could keep depending on FB_OMAP2 as it should.
-
-True. The patch for that is simple. 
-
-Patch enclosed. Please notice that, now with W=1, several new warnings
-will popup. I'll let to the others to touch there, as I don't have any
-clue about what's there under omapfb.
-
-Those are the new warnings:
-
-drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function ‘omapfb_setup_overlay’:
-drivers/video/fbdev/omap2/omapfb/omapfb-main.c:891:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-   if (ofbi->rotation_type = OMAP_DSS_ROT_VRFB) {
-      ^
-drivers/video/fbdev/omap2/omapfb/omapfb-main.c:896:2: note: here
-  default:
-  ^~~~~~~
-drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c: In function ‘tpd_probe’:
-drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c:221:26: warning: variable ‘in’ set but not used [-Wunused-but-set-variable]
-  struct omap_dss_device *in, *dssdev;
-                          ^~
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c: In function ‘calc_vrfb_rotation_offset’:
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1905:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-   if (color_mode = OMAP_DSS_COLOR_YUV2 ||
-      ^
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1908:2: note: here
-  case OMAP_DSS_ROT_90:
-  ^~~~
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1927:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-   if (color_mode = OMAP_DSS_COLOR_YUV2 ||
-      ^
-drivers/video/fbdev/omap2/omapfb/dss/dispc.c:1930:2: note: here
-  case OMAP_DSS_ROT_90 + 4:
-  ^~~~
-drivers/video/fbdev/omap2/omapfb/dss/venc.c:223:33: warning: ‘venc_config_pal_bdghi’ defined but not used [-Wunused-const-variable=]
- static const struct venc_config venc_config_pal_bdghi = {
-                                 ^~~~~~~~~~~~~~~~~~~~~
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘_dsi_print_reset_status’:
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c:1189:6: warning: variable ‘l’ set but not used [-Wunused-but-set-variable]
-  u32 l;
-      ^
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘dsi_proto_timings’:
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c:3638:42: warning: variable ‘tclk_trail’ set but not used [-Wunused-but-set-variable]
-  unsigned tlpx, tclk_zero, tclk_prepare, tclk_trail;
-                                          ^~~~~~~~~~
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c: In function ‘dsi_update’:
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c:4051:10: warning: variable ‘dh’ set but not used [-Wunused-but-set-variable]
-  u16 dw, dh;
-          ^~
-drivers/video/fbdev/omap2/omapfb/dss/dsi.c:4051:6: warning: variable ‘dw’ set but not used [-Wunused-but-set-variable]
-  u16 dw, dh;
-      ^~
-drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c: In function ‘hdmi4_audio_config’:
-drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c:693:6: warning: variable ‘err’ set but not used [-Wunused-but-set-variable]
-  int err, n, cts, channel_count;
-      ^~~
-drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c: In function ‘hdmi5_audio_config’:
-drivers/video/fbdev/omap2/omapfb/dss/hdmi5_core.c:804:6: warning: variable ‘err’ set but not used [-Wunused-but-set-variable]
-  int err, n, cts, channel_count;
-      ^~~
-
-Thanks,
-Mauro
-
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
 
-[PATCH] omap2: omapfb: allow building it with COMPILE_TEST
+Build tested only. buildbot is happy. Please apply individually.
 
-This driver builds cleanly with COMPILE_TEST, and it is
-needed in order to allow building drivers/media omap2
-driver.
+ drivers/video/fbdev/auo_k190x.c        | 12 ++++--------
+ drivers/video/fbdev/sh_mobile_lcdcfb.c |  6 ++----
+ drivers/video/fbdev/sh_mobile_meram.c  |  6 ++----
+ 3 files changed, 8 insertions(+), 16 deletions(-)
 
-So, change the logic there to allow building it.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-
-diff --git a/drivers/video/fbdev/omap2/Kconfig b/drivers/video/fbdev/omap2/Kconfig
-index 0921c4de8407..82008699d253 100644
---- a/drivers/video/fbdev/omap2/Kconfig
-+++ b/drivers/video/fbdev/omap2/Kconfig
-@@ -1,4 +1,4 @@
--if ARCH_OMAP2PLUS
-+if ARCH_OMAP2PLUS || COMPILE_TEST
+diff --git a/drivers/video/fbdev/auo_k190x.c b/drivers/video/fbdev/auo_k190x.c
+index 9d24d1b3e9ef..9bf6a6e02342 100644
+--- a/drivers/video/fbdev/auo_k190x.c
++++ b/drivers/video/fbdev/auo_k190x.c
+@@ -776,8 +776,7 @@ static void auok190x_recover(struct auok190xfb_par *par)
+  */
+ static int __maybe_unused auok190x_runtime_suspend(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fb_info *info = platform_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct auok190xfb_par *par = info->par;
+ 	struct auok190x_board *board = par->board;
+ 	u16 standby_param;
+@@ -823,8 +822,7 @@ static int __maybe_unused auok190x_runtime_suspend(struct device *dev)
  
- source "drivers/video/fbdev/omap2/omapfb/Kconfig"
+ static int __maybe_unused auok190x_runtime_resume(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fb_info *info = platform_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct auok190xfb_par *par = info->par;
+ 	struct auok190x_board *board = par->board;
  
+@@ -857,8 +855,7 @@ static int __maybe_unused auok190x_runtime_resume(struct device *dev)
+ 
+ static int __maybe_unused auok190x_suspend(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fb_info *info = platform_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct auok190xfb_par *par = info->par;
+ 	struct auok190x_board *board = par->board;
+ 	int ret;
+@@ -897,8 +894,7 @@ static int __maybe_unused auok190x_suspend(struct device *dev)
+ 
+ static int __maybe_unused auok190x_resume(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct fb_info *info = platform_get_drvdata(pdev);
++	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct auok190xfb_par *par = info->par;
+ 	struct auok190x_board *board = par->board;
+ 
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index c3a46506e47e..86bd4090b011 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -2354,8 +2354,7 @@ static int sh_mobile_lcdc_resume(struct device *dev)
+ 
+ static int sh_mobile_lcdc_runtime_suspend(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
++	struct sh_mobile_lcdc_priv *priv = dev_get_drvdata(dev);
+ 
+ 	/* turn off LCDC hardware */
+ 	lcdc_write(priv, _LDCNT1R, 0);
+@@ -2365,8 +2364,7 @@ static int sh_mobile_lcdc_runtime_suspend(struct device *dev)
+ 
+ static int sh_mobile_lcdc_runtime_resume(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
++	struct sh_mobile_lcdc_priv *priv = dev_get_drvdata(dev);
+ 
+ 	__sh_mobile_lcdc_start(priv);
+ 
+diff --git a/drivers/video/fbdev/sh_mobile_meram.c b/drivers/video/fbdev/sh_mobile_meram.c
+index baadfb207b2e..f5d8bd7ef509 100644
+--- a/drivers/video/fbdev/sh_mobile_meram.c
++++ b/drivers/video/fbdev/sh_mobile_meram.c
+@@ -572,8 +572,7 @@ EXPORT_SYMBOL_GPL(sh_mobile_meram_cache_update);
+ #ifdef CONFIG_PM
+ static int sh_mobile_meram_suspend(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
++	struct sh_mobile_meram_priv *priv = dev_get_drvdata(dev);
+ 	unsigned int i, j;
+ 
+ 	for (i = 0; i < MERAM_REGS_SIZE; i++)
+@@ -596,8 +595,7 @@ static int sh_mobile_meram_suspend(struct device *dev)
+ 
+ static int sh_mobile_meram_resume(struct device *dev)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct sh_mobile_meram_priv *priv = platform_get_drvdata(pdev);
++	struct sh_mobile_meram_priv *priv = dev_get_drvdata(dev);
+ 	unsigned int i, j;
+ 
+ 	for (i = 0; i < 32; i++) {
+-- 
+2.11.0
+

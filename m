@@ -1,56 +1,91 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 14:00:30 +0000
-Subject: Re: [PATCH v3] backlight: otm3225a: add support for ORISE OTM3225A LCD SoC
-Message-Id: <20180416140030.mojc6uy6ak65meoc@dell>
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Date: Thu, 19 Apr 2018 14:06:28 +0000
+Subject: [PATCH 58/61] video: fbdev: omap2: omapfb: displays: simplify getting .drvdata
+Message-Id: <20180419140641.27926-59-wsa+renesas@sang-engineering.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1523190765-2823-1-git-send-email-fb@ltec.ch>
-In-Reply-To: <1523190765-2823-1-git-send-email-fb@ltec.ch>
+References: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20180419140641.27926-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Felix Brack <fb@ltec.ch>
-Cc: linux-fbdev@vger.kernel.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-renesas-soc@vger.kernel.org, kernel-janitors@vger.kernel.org, Wolfram Sang <wsa+renesas@sang-engineering.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Sun, 08 Apr 2018, Felix Brack wrote:
+We should get drvdata from struct device directly. Going via
+platform_device is an unneeded step back and forth.
 
-> This patch adds a LCD driver supporting the OTM3225A LCD SoC
-> from ORISE Technology. This device can drive TFT LC panels having a
-> resolution of 240x320 pixels. After initializing the OTM3225A using
-> it's SPI interface it switches to use 16-bib RGB as external
-> display interface.
-> 
-> Signed-off-by: Felix Brack <fb@ltec.ch>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> Changes in v3:
-> - fix a type in a comment
-> - don't make useless calls to msleep() by callig it with delay 0
-> - add Daniel Thompson's Acked-by
-> 
-> Changes in v2:
-> - use descriptive names for registers instead of hard coding them
-> - remove unnecessary registers in initialization sequence
-> - make use of resource-managed functions like devm_kzalloc()
->   instead of kzalloc() which simplifies and shortens the code
-> - replace mdelay() by msleep()
-> - use module_spi_init() since we do not do anything special
->   in init/exit
-> - use dev_name() instead of hard coding driver name multiple times
-> - use static storage class for structure otm3225a_ops
-> - sort include files alphabetically
-> - use standardized licensing header
-> - modify Makefile respecting alphabetical sort order
-> ---
->  drivers/video/backlight/Kconfig    |   7 ++
->  drivers/video/backlight/Makefile   |   1 +
->  drivers/video/backlight/otm3225a.c | 252 +++++++++++++++++++++++++++++++++++++
->  3 files changed, 260 insertions(+)
->  create mode 100644 drivers/video/backlight/otm3225a.c
+Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+---
 
-Applied, thanks.
+Build tested only. buildbot is happy. Please apply individually.
 
+ .../video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c   | 18 ++++++------------
+ 1 file changed, 6 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+index bef431530090..87497a00241f 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/panel-dsi-cm.c
+@@ -387,8 +387,7 @@ static void dsicm_get_resolution(struct omap_dss_device *dssdev,
+ static ssize_t dsicm_num_errors_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	struct omap_dss_device *in = ddata->in;
+ 	u8 errors = 0;
+ 	int r;
+@@ -419,8 +418,7 @@ static ssize_t dsicm_num_errors_show(struct device *dev,
+ static ssize_t dsicm_hw_revision_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	struct omap_dss_device *in = ddata->in;
+ 	u8 id1, id2, id3;
+ 	int r;
+@@ -451,8 +449,7 @@ static ssize_t dsicm_store_ulps(struct device *dev,
+ 		struct device_attribute *attr,
+ 		const char *buf, size_t count)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	struct omap_dss_device *in = ddata->in;
+ 	unsigned long t;
+ 	int r;
+@@ -486,8 +483,7 @@ static ssize_t dsicm_show_ulps(struct device *dev,
+ 		struct device_attribute *attr,
+ 		char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	unsigned t;
+ 
+ 	mutex_lock(&ddata->lock);
+@@ -501,8 +497,7 @@ static ssize_t dsicm_store_ulps_timeout(struct device *dev,
+ 		struct device_attribute *attr,
+ 		const char *buf, size_t count)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	struct omap_dss_device *in = ddata->in;
+ 	unsigned long t;
+ 	int r;
+@@ -533,8 +528,7 @@ static ssize_t dsicm_show_ulps_timeout(struct device *dev,
+ 		struct device_attribute *attr,
+ 		char *buf)
+ {
+-	struct platform_device *pdev = to_platform_device(dev);
+-	struct panel_drv_data *ddata = platform_get_drvdata(pdev);
++	struct panel_drv_data *ddata = dev_get_drvdata(dev);
+ 	unsigned t;
+ 
+ 	mutex_lock(&ddata->lock);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.11.0
+

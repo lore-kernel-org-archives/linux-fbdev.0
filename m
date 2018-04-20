@@ -1,67 +1,55 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 06 Apr 2018 19:29:58 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 20 Apr 2018 15:13:17 +0000
 Subject: Re: [PATCH v2 15/19] omap2: omapfb: allow building it with COMPILE_TEST
-Message-Id: <201804070300.5aL1duqY%fengguang.wu@intel.com>
+Message-Id: <3329803.Cv7XkTmsQk@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <f0947227675df4a774949500b6ee4cac1485b494.1522959716.git.mchehab@s-opensource.com>
+References: <cover.1522959716.git.mchehab@s-opensource.com>
+ <CGME20180405202959epcas4p4eba19cc23d569d34223cc7d22a536753@epcas4p4.samsung.com>
+ <f0947227675df4a774949500b6ee4cac1485b494.1522959716.git.mchehab@s-opensource.com>
 In-Reply-To: <f0947227675df4a774949500b6ee4cac1485b494.1522959716.git.mchehab@s-opensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-Hi Mauro,
+On Thursday, April 05, 2018 04:29:42 PM Mauro Carvalho Chehab wrote:
+> This driver builds cleanly with COMPILE_TEST, and it is
+> needed in order to allow building drivers/media omap2
+> driver.
+> 
+> So, change the logic there to allow building it.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
 
-I love your patch! Perhaps something to improve:
+This change has broken build on OF=n && COMPILE_TEST=y configs:
 
-[auto build test WARNING on linuxtv-media/master]
-[also build test WARNING on v4.16 next-20180406]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+https://patchwork.kernel.org/patch/10352465/
 
-url:    https://github.com/0day-ci/linux/commits/Mauro-Carvalho-Chehab/Make-all-media-drivers-build-with-COMPILE_TEST/20180406-163048
-base:   git://linuxtv.org/media_tree.git master
-reproduce:
-        # apt-get install sparse
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF=-D__CHECK_ENDIAN__
+[ This is not a problem when compiling for OMAP2 because it depends
+  on ARM Multiplatform support which (indirectly) selects OF. ]
 
+Also I would really prefer that people won't merge fbdev related
+patches without my ACK and I see this patch in -next coming from
+one of your trees..
 
-sparse warnings: (new ones prefixed by >>)
+> ---
+>  drivers/video/fbdev/omap2/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/Kconfig b/drivers/video/fbdev/omap2/Kconfig
+> index 0921c4de8407..82008699d253 100644
+> --- a/drivers/video/fbdev/omap2/Kconfig
+> +++ b/drivers/video/fbdev/omap2/Kconfig
+> @@ -1,4 +1,4 @@
+> -if ARCH_OMAP2PLUS
+> +if ARCH_OMAP2PLUS || COMPILE_TEST
+>  
+>  source "drivers/video/fbdev/omap2/omapfb/Kconfig"
 
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
->> drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c:230:23: sparse: cast to restricted __be32
+Best regards,
 --
->> drivers/video/fbdev/omap2/omapfb/dss/dispc.c:289:9: sparse: context imbalance in 'mgr_fld_write' - different lock contexts for basic block
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-vim +230 drivers/video/fbdev/omap2/omapfb/displays/panel-sony-acx565akm.c
-
-f76ee892 Tomi Valkeinen 2015-12-09  222  
-f76ee892 Tomi Valkeinen 2015-12-09  223  static int panel_enabled(struct panel_drv_data *ddata)
-f76ee892 Tomi Valkeinen 2015-12-09  224  {
-f76ee892 Tomi Valkeinen 2015-12-09  225  	u32 disp_status;
-f76ee892 Tomi Valkeinen 2015-12-09  226  	int enabled;
-f76ee892 Tomi Valkeinen 2015-12-09  227  
-f76ee892 Tomi Valkeinen 2015-12-09  228  	acx565akm_read(ddata, MIPID_CMD_READ_DISP_STATUS,
-f76ee892 Tomi Valkeinen 2015-12-09  229  			(u8 *)&disp_status, 4);
-f76ee892 Tomi Valkeinen 2015-12-09 @230  	disp_status = __be32_to_cpu(disp_status);
-f76ee892 Tomi Valkeinen 2015-12-09  231  	enabled = (disp_status & (1 << 17)) && (disp_status & (1 << 10));
-f76ee892 Tomi Valkeinen 2015-12-09  232  	dev_dbg(&ddata->spi->dev,
-f76ee892 Tomi Valkeinen 2015-12-09  233  		"LCD panel %senabled by bootloader (status 0x%04x)\n",
-f76ee892 Tomi Valkeinen 2015-12-09  234  		enabled ? "" : "not ", disp_status);
-f76ee892 Tomi Valkeinen 2015-12-09  235  	return enabled;
-f76ee892 Tomi Valkeinen 2015-12-09  236  }
-f76ee892 Tomi Valkeinen 2015-12-09  237  
-
-:::::: The code at line 230 was first introduced by commit
-:::::: f76ee892a99e68b55402b8d4b8aeffcae2aff34d omapfb: copy omapdss & displays for omapfb
-
-:::::: TO: Tomi Valkeinen <tomi.valkeinen@ti.com>
-:::::: CC: Tomi Valkeinen <tomi.valkeinen@ti.com>
-
----
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation

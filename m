@@ -1,123 +1,165 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:18 +0000
-Subject: [PATCH v3 18/20] spi: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-19-git-send-email-geert@linux-m68k.org>
+From: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Date: Fri, 20 Apr 2018 17:42:53 +0000
+Subject: [PATCH 7/7] media: via-camera: allow build on non-x86 archs with COMPILE_TEST
+Message-Id: <396bfb33e763c31ead093ac1035b2ecf7311b5bc.1524245455.git.mchehab@s-opensource.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
+References: <cover.1524245455.git.mchehab@s-opensource.com>
+In-Reply-To: <cover.1524245455.git.mchehab@s-opensource.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>Br
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: @bombadil.infradead.org
+Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>, Linux Media Mailing List <linux-media@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Hans Verkuil <hans.verkuil@cisco.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ramesh Shanmugasundaram <ramesh.shanmugasundaram@bp.renesas.com>, Jacob Chen <jacob-chen@iotwrt.com>, Bhumika Goyal <bhumirks@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>, linux-fbdev@vger.kernel.org
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+This driver depends on FB_VIA for lots of things. Provide stubs
+for the functions it needs, in order to allow building it with
+COMPILE_TEST outside x86 architecture.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
-
-This simplifies the dependencies, and allows to improve compile-testing.
-
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
-Acked-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
 ---
-v3:
-  - Add Acked-by,
-  - Rebase to v4.17-rc1,
+ drivers/media/platform/Kconfig      |  2 +-
+ drivers/media/platform/via-camera.c | 10 +++++++++-
+ include/linux/via-core.h            | 17 +++++++++++++++++
+ include/linux/via-gpio.h            |  4 ++++
+ include/linux/via_i2c.h             |  5 +++++
+ 5 files changed, 36 insertions(+), 2 deletions(-)
 
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/spi/Kconfig | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/spi/Kconfig b/drivers/spi/Kconfig
-index 2d4146ce2f1be49d..5a8524a3bc13f92d 100644
---- a/drivers/spi/Kconfig
-+++ b/drivers/spi/Kconfig
-@@ -71,7 +71,6 @@ config SPI_ARMADA_3700
+diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+index e3229f7baed1..abaaed98a044 100644
+--- a/drivers/media/platform/Kconfig
++++ b/drivers/media/platform/Kconfig
+@@ -15,7 +15,7 @@ source "drivers/media/platform/marvell-ccic/Kconfig"
  
- config SPI_ATMEL
- 	tristate "Atmel SPI Controller"
--	depends on HAS_DMA
- 	depends on ARCH_AT91 || COMPILE_TEST
+ config VIDEO_VIA_CAMERA
+ 	tristate "VIAFB camera controller support"
+-	depends on FB_VIA
++	depends on FB_VIA || COMPILE_TEST
+ 	select VIDEOBUF_DMA_SG
+ 	select VIDEO_OV7670
  	help
- 	  This selects a driver for the Atmel SPI Controller, present on
-@@ -233,7 +232,6 @@ config SPI_EFM32
+diff --git a/drivers/media/platform/via-camera.c b/drivers/media/platform/via-camera.c
+index e9a02639554b..4ab1695b33af 100644
+--- a/drivers/media/platform/via-camera.c
++++ b/drivers/media/platform/via-camera.c
+@@ -27,7 +27,10 @@
+ #include <linux/via-core.h>
+ #include <linux/via-gpio.h>
+ #include <linux/via_i2c.h>
++
++#ifdef CONFIG_FB_VIA
+ #include <asm/olpc.h>
++#endif
  
- config SPI_EP93XX
- 	tristate "Cirrus Logic EP93xx SPI controller"
--	depends on HAS_DMA
- 	depends on ARCH_EP93XX || COMPILE_TEST
- 	help
- 	  This enables using the Cirrus EP93xx SPI controller in master
-@@ -355,7 +353,6 @@ config SPI_FSL_SPI
- config SPI_FSL_DSPI
- 	tristate "Freescale DSPI controller"
- 	select REGMAP_MMIO
--	depends on HAS_DMA
- 	depends on SOC_VF610 || SOC_LS1021A || ARCH_LAYERSCAPE || M5441x || COMPILE_TEST
- 	help
- 	  This enables support for the Freescale DSPI controller in master
-@@ -431,7 +428,6 @@ config SPI_OMAP_UWIRE
+ #include "via-camera.h"
  
- config SPI_OMAP24XX
- 	tristate "McSPI driver for OMAP"
--	depends on HAS_DMA
- 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
- 	select SG_SPLIT
- 	help
-@@ -440,7 +436,6 @@ config SPI_OMAP24XX
+@@ -1283,6 +1286,11 @@ static bool viacam_serial_is_enabled(void)
+ 	struct pci_bus *pbus = pci_find_bus(0, 0);
+ 	u8 cbyte;
  
- config SPI_TI_QSPI
- 	tristate "DRA7xxx QSPI controller support"
--	depends on HAS_DMA
- 	depends on ARCH_OMAP2PLUS || COMPILE_TEST
- 	help
- 	  QSPI master controller for DRA7xxx used for flash devices.
-@@ -469,7 +464,6 @@ config SPI_PIC32
- config SPI_PIC32_SQI
- 	tristate "Microchip PIC32 Quad SPI driver"
- 	depends on MACH_PIC32 || COMPILE_TEST
--	depends on HAS_DMA
- 	help
- 	  SPI driver for PIC32 Quad SPI controller.
++#ifdef CONFIG_FB_VIA
++	if (!machine_is_olpc())
++		return false;
++#endif
++
+ 	if (!pbus)
+ 		return false;
+ 	pci_bus_read_config_byte(pbus, VIACAM_SERIAL_DEVFN,
+@@ -1343,7 +1351,7 @@ static int viacam_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 	}
  
-@@ -572,7 +566,7 @@ config SPI_SC18IS602
+-	if (machine_is_olpc() && viacam_serial_is_enabled())
++	if (viacam_serial_is_enabled())
+ 		return -EBUSY;
  
- config SPI_SH_MSIOF
- 	tristate "SuperH MSIOF SPI controller"
--	depends on HAVE_CLK && HAS_DMA
-+	depends on HAVE_CLK
- 	depends on ARCH_SHMOBILE || ARCH_RENESAS || COMPILE_TEST
- 	help
- 	  SPI driver for SuperH and SH Mobile MSIOF blocks.
-@@ -650,7 +644,7 @@ config SPI_MXS
- config SPI_TEGRA114
- 	tristate "NVIDIA Tegra114 SPI Controller"
- 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
--	depends on RESET_CONTROLLER && HAS_DMA
-+	depends on RESET_CONTROLLER
- 	help
- 	  SPI driver for NVIDIA Tegra114 SPI Controller interface. This controller
- 	  is different than the older SoCs SPI controller and also register interface
-@@ -668,7 +662,7 @@ config SPI_TEGRA20_SFLASH
- config SPI_TEGRA20_SLINK
- 	tristate "Nvidia Tegra20/Tegra30 SLINK Controller"
- 	depends on (ARCH_TEGRA && TEGRA20_APB_DMA) || COMPILE_TEST
--	depends on RESET_CONTROLLER && HAS_DMA
-+	depends on RESET_CONTROLLER
- 	help
- 	  SPI driver for Nvidia Tegra20/Tegra30 SLINK Controller interface.
+ 	/*
+diff --git a/include/linux/via-core.h b/include/linux/via-core.h
+index 9c21cdf3e3b3..7aaee6a82392 100644
+--- a/include/linux/via-core.h
++++ b/include/linux/via-core.h
+@@ -70,8 +70,12 @@ struct viafb_pm_hooks {
+ 	void *private;
+ };
  
++#ifdef CONFIG_FB_VIA
+ void viafb_pm_register(struct viafb_pm_hooks *hooks);
+ void viafb_pm_unregister(struct viafb_pm_hooks *hooks);
++#else
++void viafb_pm_register(struct viafb_pm_hooks *hooks) {}
++#endif /* CONFIG_FB_VIA */
+ #endif /* CONFIG_PM */
+ 
+ /*
+@@ -113,8 +117,13 @@ struct viafb_dev {
+  * Interrupt management.
+  */
+ 
++#ifdef CONFIG_FB_VIA
+ void viafb_irq_enable(u32 mask);
+ void viafb_irq_disable(u32 mask);
++#else
++static inline void viafb_irq_enable(u32 mask) {}
++static inline void viafb_irq_disable(u32 mask) {}
++#endif
+ 
+ /*
+  * The global interrupt control register and its bits.
+@@ -157,10 +166,18 @@ void viafb_irq_disable(u32 mask);
+ /*
+  * DMA management.
+  */
++#ifdef CONFIG_FB_VIA
+ int viafb_request_dma(void);
+ void viafb_release_dma(void);
+ /* void viafb_dma_copy_out(unsigned int offset, dma_addr_t paddr, int len); */
+ int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg);
++#else
++static inline int viafb_request_dma(void) { return 0; }
++static inline void viafb_release_dma(void) {}
++static inline int viafb_dma_copy_out_sg(unsigned int offset,
++					struct scatterlist *sg, int nsg)
++{ return 0; }
++#endif
+ 
+ /*
+  * DMA Controller registers.
+diff --git a/include/linux/via-gpio.h b/include/linux/via-gpio.h
+index 8281aea3dd6d..b5a96cf7a874 100644
+--- a/include/linux/via-gpio.h
++++ b/include/linux/via-gpio.h
+@@ -8,7 +8,11 @@
+ #ifndef __VIA_GPIO_H__
+ #define __VIA_GPIO_H__
+ 
++#ifdef CONFIG_FB_VIA
+ extern int viafb_gpio_lookup(const char *name);
+ extern int viafb_gpio_init(void);
+ extern void viafb_gpio_exit(void);
++#else
++static inline int viafb_gpio_lookup(const char *name) { return 0; }
++#endif
+ #endif
+diff --git a/include/linux/via_i2c.h b/include/linux/via_i2c.h
+index 44532e468c05..61ae0e7e4576 100644
+--- a/include/linux/via_i2c.h
++++ b/include/linux/via_i2c.h
+@@ -32,6 +32,7 @@ struct via_i2c_stuff {
+ };
+ 
+ 
++#ifdef CONFIG_FB_VIA
+ int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata);
+ int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data);
+ int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len);
+@@ -39,4 +40,8 @@ struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which);
+ 
+ extern int viafb_i2c_init(void);
+ extern void viafb_i2c_exit(void);
++#else
++struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which)
++{ return NULL; }
++#endif
+ #endif /* __VIA_I2C_H__ */
 -- 
-2.7.4
+2.14.3
 

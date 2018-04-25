@@ -1,58 +1,82 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Wed, 25 Apr 2018 10:28:37 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 25 Apr 2018 10:47:34 +0000
 Subject: Re: [PATCH 5/7] omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP
-Message-Id: <4069198.SojKMEipNL@avalon>
+Message-Id: <52576986.R85hrt8lfa@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1524245455.git.mchehab@s-opensource.com>
- <10529104.rM2F4eJv5O@avalon> <7644bb92-e7b2-db27-061b-e0808c7264cd@ti.com>
-In-Reply-To: <7644bb92-e7b2-db27-061b-e0808c7264cd@ti.com>
+ <2542100.cElVns0SR0@amdc3058> <20180423105557.267c5ecf@vento.lan>
+ <CGME20180425104736eucas1p1b448ce1c188b661c5e743217511110d7@eucas1p1.samsung.com>
+In-Reply-To: <20180423105557.267c5ecf@vento.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Mauro Carvalho Chehab <mchehab@s-opensource.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-Hi Tomi,
-
-On Wednesday, 25 April 2018 13:10:43 EEST Tomi Valkeinen wrote:
-> On 25/04/18 13:02, Laurent Pinchart wrote:
-> > On Wednesday, 25 April 2018 12:33:53 EEST Tomi Valkeinen wrote:
-> >> On 25/04/18 12:03, Laurent Pinchart wrote:
-> >>> Could we trim down omapfb to remove support for the devices supported by
-> >>> omapdrm ?
-> >> 
-> >> I was thinking about just that. But, of course, it's not quite
-> >> straightforward either.
-> >> 
-> >> We've got DSI manual update functionality in OMAP3-OMAP5 SoCs, which
-> >> covers a lot of devices.
+On Monday, April 23, 2018 10:55:57 AM Mauro Carvalho Chehab wrote:
+> Em Mon, 23 Apr 2018 14:47:28 +0200
+> Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> escreveu:
+> 
+> > On Friday, April 20, 2018 01:42:51 PM Mauro Carvalho Chehab wrote:
+> > > Add stubs for omapfb_dss.h, in the case it is included by
+> > > some driver when CONFIG_FB_OMAP2 is not defined, with can
+> > > happen on ARM when DRM_OMAP is not 'n'.
+> > > 
+> > > That allows building such driver(s) with COMPILE_TEST.
+> > > 
+> > > Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>  
 > > 
-> > Sebastian is working on getting that feature in omapdrm, isn't he ?
-> 
-> Yes, and I keep pushing it forward because of the restructuring you're
-> doing =) (feel free to comment on that thread). But agreed, it's getting
-> better. When we have manual update support, I think the biggest missing
-> feature is then in omapdrm.
-> 
-> >> And VRFB on OMAP2/3.
+> > This patch should be dropped (together with patch #6/7) as it was
+> > superseded by a better solution suggested by Laurent:
 > > 
-> > And that's something I'd really like to have in omapdrm too.
+> > https://patchwork.kernel.org/patch/10325193/
+> > 
+> > ACK-ed by Tomi:
+> > 
+> > https://www.spinics.net/lists/dri-devel/msg171918.html
+> > 
+> > and already merged by you (commit 7378f1149884 "media: omap2:
+> > omapfb: allow building it with COMPILE_TEST")..
 > 
-> Considering how much headache TILER has given, I'm not exactly looking
-> forward to it ;).
+> I "ressurected" this patch due to patch 6/7.
 > 
-> If we get manual update and VRFB, I think we are more or less covered on
-> the supported HW features. It'll still break userspace apps which use
-> omapfb, though. Unless we also port the omapfb specific IOCTLs and the
-> sysfs files, which I believe we should not.
+> The problem with the solution already acked/merged is that
+> it works *only* if you don't try to build for ARM.
+> 
+> At the moment you want to build a FB_OMAP2-dependent driver
+> on ARM with allyesc onfig, DRM_OMAP will be true, and FB_OMAP2
+> will be disabled:
+> 
+> 	menuconfig FB_OMAP2
+>         	tristate "OMAP2+ frame buffer support"
+> 	        depends on FB
+>         	depends on DRM_OMAP = n
+> 
+> One solution might be to change the depends on to:
+>         	depends on (DRM_OMAP = n || COMPILE_TEST)
+> 
+> But someone pointed me that the above check was added to avoid building
+> duplicated symbols. So, the above would cause build failures.
+> 
+> So, in order to build for ARM with DRM_OMAP selected (allyesconfig,
+> allmodconfig), we have the following alternatives:
+> 
+> 	1) apply patch 5/7;
+> 	2) make sure that FB_OMAP2 and DRM_OMAP won't declare the
+> 	   same non-static symbols;
+> 	3) redesign FB_OMAP2 to work with DRM_OMAP built.
+> 
+> I suspect that (1) is easier.
 
-I agree with you, we shouldn't. We'll need a grace period before removing 
-omapfb, if we ever do so.
+I agree.
 
--- 
-Regards,
+You can merge this patch through your tree with:
 
-Laurent Pinchart
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

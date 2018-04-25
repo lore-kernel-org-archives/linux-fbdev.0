@@ -1,128 +1,44 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Mon, 23 Apr 2018 20:22:53 +0000
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 25 Apr 2018 06:24:14 +0000
 Subject: Re: [PATCH 5/7] omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP
-Message-Id: <7127377.9mMUc3FlgS@avalon>
+Message-Id: <70b5e60f-346e-4b34-8235-ce62de720a99@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1524245455.git.mchehab@s-opensource.com>
+ <5379683.QunLsIS18Z@amdc3058> <20180423112227.61fbc02b@vento.lan>
  <2458408.nymfr4Soza@avalon> <20180423170955.13421017@vento.lan>
 In-Reply-To: <20180423170955.13421017@vento.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: Mauro Carvalho Chehab <mchehab@s-opensource.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Monday, 23 April 2018 23:09:55 EEST Mauro Carvalho Chehab wrote:
-> Laurent Pinchart <laurent.pinchart@ideasonboard.com> escreveu:
-> > On Monday, 23 April 2018 17:22:27 EEST Mauro Carvalho Chehab wrote:
-> > > Em Mon, 23 Apr 2018 15:56:53 +0200 Bartlomiej Zolnierkiewicz escreveu:
-> > > > On Monday, April 23, 2018 02:47:28 PM Bartlomiej Zolnierkiewicz wrote:
-> > > >> On Friday, April 20, 2018 01:42:51 PM Mauro Carvalho Chehab wrote:
-> > > >>> Add stubs for omapfb_dss.h, in the case it is included by
-> > > >>> some driver when CONFIG_FB_OMAP2 is not defined, with can
-> > > >>> happen on ARM when DRM_OMAP is not 'n'.
-> > > >>> 
-> > > >>> That allows building such driver(s) with COMPILE_TEST.
-> > > >>> 
-> > > >>> Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
-> > > >> 
-> > > >> This patch should be dropped (together with patch #6/7) as it was
-> > > >> superseded by a better solution suggested by Laurent:
-> > > >> 
-> > > >> https://patchwork.kernel.org/patch/10325193/
-> > > >> 
-> > > >> ACK-ed by Tomi:
-> > > >> 
-> > > >> https://www.spinics.net/lists/dri-devel/msg171918.html
-> > > >> 
-> > > >> and already merged by you (commit 7378f1149884 "media: omap2:
-> > > >> omapfb: allow building it with COMPILE_TEST")..
-> > > > 
-> > > > Hmm, I see now while this patch is still included:
-> > > > 
-> > > > menuconfig FB_OMAP2
-> > > > 
-> > > >         tristate "OMAP2+ frame buffer support"
-> > > >         depends on FB
-> > > >         depends on DRM_OMAP = n
-> > > > 
-> > > > Ideally we should be able to build both drivers in the same kernel
-> > > > (especially as modules).
-> > > > 
-> > > > I was hoping that it could be fixed easily but then I discovered
-> > > > the root source of the problem:
-> > > > 
-> > > > drivers/gpu/drm/omapdrm/dss/display.o: In function
-> > > > `omapdss_unregister_display': display.c:(.text+0x2c): multiple
-> > > > definition
-> > > > of `omapdss_unregister_display'
-> > > > drivers/video/fbdev/omap2/omapfb/dss/display.o:display.c:(.text+0x198)
-> > > > :
-> > > > first defined here ...
-> > > 
-> > > Yes, and declared on two different places:
-> > > 
-> > > drivers/gpu/drm/omapdrm/dss/omapdss.h:void
-> > > omapdss_unregister_display(struct omap_dss_device *dssdev);
-> > > include/video/omapfb_dss.h:void
-> > > omapdss_unregister_display(struct omap_dss_device *dssdev);
-> > > 
-> > > one alternative would be to give different names to it, and a common
-> > > header for both.
-> > > 
-> > > At such header, it could be doing something like:
-> > > 
-> > > static inline void omapdss_unregister_display(struct omap_dss_device
-> > > *dssdev) {
-> > > #if enabled(CONFIG_DRM_OMAP)
-> > > 
-> > > 	omapdss_unregister_display_drm(struct omap_dss_device *dssdev);
-> > > 
-> > > #else
-> > > 
-> > > 	omapdss_unregister_display_fb(struct omap_dss_device *dssdev);
-> > > 
-> > > ##endif
-> > > }
-> > > 
-> > > Yet, after a very quick check, it seems that nowadays only the
-> > > media omap driver uses the symbols at FB_OMAP:
-> > > 
-> > > $ git grep omapfb_dss.h
-> > > drivers/media/platform/omap/omap_vout.c:#include <video/omapfb_dss.h>
-> > > drivers/media/platform/omap/omap_voutdef.h:#include <video/omapfb_dss.h>
-> > > drivers/media/platform/omap/omap_voutlib.c:#include <video/omapfb_dss.h>
-> > > 
-> > > So, perhaps just renaming the common symbols and changing FB_OMAP2 to:
-> > > 	menuconfig FB_OMAP2
-> > > 	
-> > > 	         tristate "OMAP2+ frame buffer support"
-> > > 	         depends on FB
-> > > 	         depends on (DRM_OMAP = n) || COMPILE_TEST
-> > > 
-> > > would be enough to allow to build both on ARM.
-> > 
-> > I don't think it's worth it renaming the common symbols. They will change
-> > over time as omapdrm is under heavy rework, and it's painful enough
-> > without having to handle cross-tree changes.
+On 23/04/18 23:09, Mauro Carvalho Chehab wrote:
+
+>> I don't think it's worth it renaming the common symbols. They will change over 
+>> time as omapdrm is under heavy rework, and it's painful enough without having 
+>> to handle cross-tree changes.
 > 
 > It could just rename the namespace-conflicting FB_OMAP2 functions,
 > keeping the DRM ones as-is.
-> 
-> > Let's just live with the fact that both drivers
-> > can't be compiled at the same time, given that omapfb is deprecated.
+
+Yes, I'm fine with renaming omapfb functions if that helps. But still,
+if omapdrm is enabled in the kernel as module or built-in, omapfb will
+not work. So even if we get them to compile and link, it'll break at
+runtime one way or another.
+
+>> Let's just live with the fact that both drivers 
+>> can't be compiled at the same time, given that omapfb is deprecated.
 > 
 > IMO, a driver that it is deprecated, being in a state where it
 > conflicts with a non-deprecated driver that is under heavy rework
 > is a very good candidate to go to drivers/staging or even to /dev/null.
 
-It's on its way, but slowly as we need to take userspace into account. Tomi 
-should have more insight on a possible schedule for removal of omapfb.
+The problem is that it supports old devices which are not supported by
+omapdrm. But both omapfb and omapdrm support many of the same devices.
+
+ Tomi
 
 -- 
-Regards,
-
-Laurent Pinchart
-
-
-
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

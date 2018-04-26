@@ -1,54 +1,36 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 03 Apr 2018 09:18:53 +0000
-Subject: Re: [RESEND PATCH v6 2/5] dt-bindings: pwm-backlight: add PWM delay proprieties.
-Message-Id: <20180403091853.4uk2ncyorczl625u@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 26 Apr 2018 10:08:12 +0000
+Subject: Re: [PATCH 1/2] video: fbdev-MMP: Delete an error message for a failed memory allocation in two func
+Message-Id: <1981428.zQfQG5i5U7@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180328170327.5395-1-enric.balletbo@collabora.com>
- <20180328170327.5395-2-enric.balletbo@collabora.com>
-In-Reply-To: <20180328170327.5395-2-enric.balletbo@collabora.com>
+References: <e2c5fe9e-8e01-7fef-a243-ff5d063787b0@users.sourceforge.net>
+ <CGME20171126204255epcas3p19d6324568d821993e2a4beb971907de6@epcas3p1.samsung.com>
+ <9aa9c376-22a3-f682-d9a4-5ee95cfd75a0@users.sourceforge.net>
+In-Reply-To: <9aa9c376-22a3-f682-d9a4-5ee95cfd75a0@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Rob Herring <robh+dt@kernel.org>, Pavel Machek <pavel@ucw.cz>, Heiko Stuebner <heiko@sntech.de>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Richard Purdie <rpurdie@rpsys.net>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, groeck@chromium.org, linux-rockchip@lists.infradead.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, kernel@collabora.com
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-On Wed, 28 Mar 2018, Enric Balletbo i Serra wrote:
-
-> Hardware needs a delay between setting an initial (non-zero) PWM and
-> enabling the backlight using GPIO. The post-pwm-on-delay-ms specifies
-> this delay in milli seconds. Hardware also needs a delay between disabing
-> the backlight using GPIO and setting PWM value to 0. The pwm-off-delay-ms
-> is this delay in milli seconds.
+On Sunday, November 26, 2017 09:42:49 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 26 Nov 2017 21:16:30 +0100
 > 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Acked-by: Pavel Machek <pavel@ucw.cz>
-> Acked-by: Thierry Reding <thierry.reding@gmail.com>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> ---
-> Based on the original Huang Lin <hl@rock-chips.com> work.
-> Changes since v5:
->  - Add Acked-by: Thierry Reding <thierry.reding@gmail.com>
->  - CC DT mainling list (for some reason dropped at some point, my
->    fault)
-> Changes since v4:
->  - Rebase on top of mainline.
-> Changes since v3:
->  - Replace us for ms.
->  - Add Acked-by: Pavel Machek <pavel@ucw.cz>
-> Changes since v2:
->  - Use separate properties (Rob Herring)
-> Changes since v1:
->  - As suggested by Daniel Thompson
->    - Do not assume power-on delay and power-off delay will be the same
-> ---
->  Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt | 6 ++++++
->  1 file changed, 6 insertions(+)
+> Omit an extra message for a memory allocation failure in these functions.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-Applied, thanks.
+I've done requested audit regarding multiple fb devices support
+myself now and it is okay to apply this patch.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Patch queued for 4.18, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

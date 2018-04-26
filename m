@@ -1,31 +1,35 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 14:20:11 +0000
-Subject: Re: [PATCHv4 01/10] mfd: ti-lmu: constify mfd_cell tables
-Message-Id: <20180416142011.oth6qubigubdpo3i@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 26 Apr 2018 09:55:21 +0000
+Subject: Re: [PATCH] video: sh_mobile_meram: Delete an error message for a failed memory allocation in sh_mob
+Message-Id: <5653552.NjqMPzOcdg@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
- <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-2-sebastian.reichel@collabora.co.uk>
+References: <CGME20171126121927epcas1p458cb7728927507525b54a47a9dfc6529@epcas1p4.samsung.com>
+ <1feb3cf8-77e6-367e-5f5c-23fdd96339ec@users.sourceforge.net>
+In-Reply-To: <1feb3cf8-77e6-367e-5f5c-23fdd96339ec@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: SF Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org
 
-On Fri, 30 Mar 2018, Sebastian Reichel wrote:
-
-> Add const attribute to all mfd_cell structures.
+On Sunday, November 26, 2017 01:19:17 PM SF Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sun, 26 Nov 2017 13:08:43 +0100
 > 
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> ---
->  drivers/mfd/ti-lmu.c | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
+> Omit an extra message for a memory allocation failure in this function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+I've done requested audit regarding multiple fb devices support
+myself now and it is okay to apply this patch.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Patch queued for 4.18, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

@@ -1,1196 +1,2034 @@
-From: Krzysztof Kozlowski <krzk@kernel.org>
-Date: Mon, 30 Apr 2018 17:29:44 +0000
-Subject: [PATCH 1/2] backlight: Remove s6e63m0 driver
-Message-Id: <20180430172945.20938-1-krzk@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 27 Apr 2018 11:04:24 +0000
+Subject: [PATCH] video: fbdev: remove unused auo_k190xfb drivers
+Message-Id: <6386409.PTMV4p8OHo@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180427110425eucas1p12aca3b573a6c3fc4b51da9d5d34b3cec@eucas1p1.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Krzysztof Kozlowski <krzk@kernel.org>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: linux-kernel@vger.kernel.org
 
-The driver for S6E63M0 AMOLED LCD panel is not used.  It does not
-support DeviceTree and respective possible users (S5Pv210 Aquila and
-Goni boards) are DeviceTree-only.
+auo_k1900fb and auo_k1901fb drivers have been introduced six
+years ago by following commits:
 
-Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Inki Dae <inki.dae@samsung.com>
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+commit 2c8304d3125b ("video: auo_k190x: add code shared by controller drive=
+rs")
+commit 96b1d500e028 ("video: auo_k190x: add driver for AUO-K1900 variant")
+commit 53027cdf2a67 ("video: auo_k190x: add driver for AUO-K1901 variant")
+
+They never had any in-kernel user so just remove them (since
+they are platform drivers they need corresponding platform
+devices to be registered by kernel and it has never happened).
+
+Cc: Heiko St=FCbner <heiko@sntech.de>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/backlight/Kconfig         |   8 -
- drivers/video/backlight/Makefile        |   1 -
- drivers/video/backlight/s6e63m0.c       | 857 --------------------------------
- drivers/video/backlight/s6e63m0_gamma.h | 266 ----------
- 4 files changed, 1132 deletions(-)
- delete mode 100644 drivers/video/backlight/s6e63m0.c
- delete mode 100644 drivers/video/backlight/s6e63m0_gamma.h
+ drivers/video/fbdev/Kconfig       |   33 -
+ drivers/video/fbdev/Makefile      |    3=20
+ drivers/video/fbdev/auo_k1900fb.c |  204 ------
+ drivers/video/fbdev/auo_k1901fb.c |  257 --------
+ drivers/video/fbdev/auo_k190x.c   | 1190 ---------------------------------=
+-----
+ drivers/video/fbdev/auo_k190x.h   |  129 ----
+ include/video/auo_k190xfb.h       |  107 ---
+ 7 files changed, 1923 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 5d2d0d7e8100..be0c130b6597 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -111,14 +111,6 @@ config LCD_HP700
- 	  If you have an HP Jornada 700 series handheld (710/720/728)
- 	  say Y to enable LCD control driver.
- 
--config LCD_S6E63M0
--	tristate "S6E63M0 AMOLED LCD Driver"
--	depends on SPI && BACKLIGHT_CLASS_DEVICE
--	default n
+Index: b/drivers/video/fbdev/Kconfig
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/Kconfig	2018-04-26 14:54:03.656207576 +0200
++++ b/drivers/video/fbdev/Kconfig	2018-04-26 15:23:47.772252506 +0200
+@@ -2253,39 +2253,6 @@ config FB_BROADSHEET
+ 	  and could also have been called by other names when coupled with
+ 	  a bridge adapter.
+=20
+-config FB_AUO_K190X
+-	tristate "AUO-K190X EPD controller support"
+-	depends on FB
+-	select FB_SYS_FILLRECT
+-	select FB_SYS_COPYAREA
+-	select FB_SYS_IMAGEBLIT
+-	select FB_SYS_FOPS
+-	select FB_DEFERRED_IO
 -	help
--	  If you have an S6E63M0 LCD Panel, say Y to enable its
--	  LCD control driver.
+-	  Provides support for epaper controllers from the K190X series
+-	  of AUO. These controllers can be used to drive epaper displays
+-	  from Sipix.
 -
- config LCD_LD9040
- 	tristate "LD9040 AMOLED LCD Driver"
- 	depends on SPI && BACKLIGHT_CLASS_DEVICE
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 19da71d518bf..8773fdd64e99 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -14,7 +14,6 @@ obj-$(CONFIG_LCD_LMS283GF05)		+= lms283gf05.o
- obj-$(CONFIG_LCD_LMS501KF03)		+= lms501kf03.o
- obj-$(CONFIG_LCD_LTV350QV)		+= ltv350qv.o
- obj-$(CONFIG_LCD_PLATFORM)		+= platform_lcd.o
--obj-$(CONFIG_LCD_S6E63M0)		+= s6e63m0.o
- obj-$(CONFIG_LCD_TDO24M)		+= tdo24m.o
- obj-$(CONFIG_LCD_TOSA)			+= tosa_lcd.o
- obj-$(CONFIG_LCD_VGG2432A4)		+= vgg2432a4.o
-diff --git a/drivers/video/backlight/s6e63m0.c b/drivers/video/backlight/s6e63m0.c
-deleted file mode 100644
-index 3c4a22a3063a..000000000000
---- a/drivers/video/backlight/s6e63m0.c
-+++ /dev/null
-@@ -1,857 +0,0 @@
+-	  This option enables the common support, shared by the individual
+-	  controller drivers. You will also have to enable the driver
+-	  for the controller type used in your device.
+-
+-config FB_AUO_K1900
+-	tristate "AUO-K1900 EPD controller support"
+-	depends on FB && FB_AUO_K190X
+-	help
+-	  This driver implements support for the AUO K1900 epd-controller.
+-	  This controller can drive Sipix epaper displays but can only do
+-	  serial updates, reducing the number of possible frames per second.
+-
+-config FB_AUO_K1901
+-	tristate "AUO-K1901 EPD controller support"
+-	depends on FB && FB_AUO_K190X
+-	help
+-	  This driver implements support for the AUO K1901 epd-controller.
+-	  This controller can drive Sipix epaper displays and supports
+-	  concurrent updates, making higher frames per second possible.
+-
+ config FB_JZ4740
+ 	tristate "JZ4740 LCD framebuffer support"
+ 	depends on FB && MACH_JZ4740
+Index: b/drivers/video/fbdev/Makefile
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/Makefile	2018-04-24 16:53:10.043083317 +0200
++++ b/drivers/video/fbdev/Makefile	2018-04-26 15:25:42.128255386 +0200
+@@ -100,9 +100,6 @@ obj-$(CONFIG_FB_PMAGB_B)	  +=3D pmagb-b-fb
+ obj-$(CONFIG_FB_MAXINE)		  +=3D maxinefb.o
+ obj-$(CONFIG_FB_METRONOME)        +=3D metronomefb.o
+ obj-$(CONFIG_FB_BROADSHEET)       +=3D broadsheetfb.o
+-obj-$(CONFIG_FB_AUO_K190X)	  +=3D auo_k190x.o
+-obj-$(CONFIG_FB_AUO_K1900)	  +=3D auo_k1900fb.o
+-obj-$(CONFIG_FB_AUO_K1901)	  +=3D auo_k1901fb.o
+ obj-$(CONFIG_FB_S1D13XXX)	  +=3D s1d13xxxfb.o
+ obj-$(CONFIG_FB_SH7760)		  +=3D sh7760fb.o
+ obj-$(CONFIG_FB_IMX)              +=3D imxfb.o
+Index: b/drivers/video/fbdev/auo_k1900fb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/auo_k1900fb.c	2017-10-18 14:35:21.947448311 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,204 +0,0 @@
 -/*
-- * S6E63M0 AMOLED LCD panel driver.
+- * auok190xfb.c -- FB driver for AUO-K1900 controllers
 - *
-- * Author: InKi Dae  <inki.dae@samsung.com>
+- * Copyright (C) 2011, 2012 Heiko Stuebner <heiko@sntech.de>
 - *
-- * Derived from drivers/video/omap/lcd-apollon.c
+- * based on broadsheetfb.c
 - *
-- * This program is free software; you can redistribute it and/or modify it
-- * under the terms of the GNU General Public License as published by the
-- * Free Software Foundation; either version 2 of the License, or (at your
-- * option) any later version.
-- */
--
--#include <linux/backlight.h>
--#include <linux/delay.h>
--#include <linux/fb.h>
--#include <linux/gpio.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--#include <linux/kernel.h>
--#include <linux/lcd.h>
--#include <linux/module.h>
--#include <linux/spi/spi.h>
--#include <linux/wait.h>
--
--#include "s6e63m0_gamma.h"
--
--#define SLEEPMSEC		0x1000
--#define ENDDEF			0x2000
--#define	DEFMASK			0xFF00
--#define COMMAND_ONLY		0xFE
--#define DATA_ONLY		0xFF
--
--#define MIN_BRIGHTNESS		0
--#define MAX_BRIGHTNESS		10
--
--struct s6e63m0 {
--	struct device			*dev;
--	struct spi_device		*spi;
--	unsigned int			power;
--	unsigned int			current_brightness;
--	unsigned int			gamma_mode;
--	unsigned int			gamma_table_count;
--	struct lcd_device		*ld;
--	struct backlight_device		*bd;
--	struct lcd_platform_data	*lcd_pd;
--};
--
--static const unsigned short seq_panel_condition_set[] = {
--	0xF8, 0x01,
--	DATA_ONLY, 0x27,
--	DATA_ONLY, 0x27,
--	DATA_ONLY, 0x07,
--	DATA_ONLY, 0x07,
--	DATA_ONLY, 0x54,
--	DATA_ONLY, 0x9f,
--	DATA_ONLY, 0x63,
--	DATA_ONLY, 0x86,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x33,
--	DATA_ONLY, 0x0d,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_display_condition_set[] = {
--	0xf2, 0x02,
--	DATA_ONLY, 0x03,
--	DATA_ONLY, 0x1c,
--	DATA_ONLY, 0x10,
--	DATA_ONLY, 0x10,
--
--	0xf7, 0x03,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_gamma_setting[] = {
--	0xfa, 0x00,
--	DATA_ONLY, 0x18,
--	DATA_ONLY, 0x08,
--	DATA_ONLY, 0x24,
--	DATA_ONLY, 0x64,
--	DATA_ONLY, 0x56,
--	DATA_ONLY, 0x33,
--	DATA_ONLY, 0xb6,
--	DATA_ONLY, 0xba,
--	DATA_ONLY, 0xa8,
--	DATA_ONLY, 0xac,
--	DATA_ONLY, 0xb1,
--	DATA_ONLY, 0x9d,
--	DATA_ONLY, 0xc1,
--	DATA_ONLY, 0xc1,
--	DATA_ONLY, 0xb7,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x9c,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x9f,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0xd6,
--
--	0xfa, 0x01,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_etc_condition_set[] = {
--	0xf6, 0x00,
--	DATA_ONLY, 0x8c,
--	DATA_ONLY, 0x07,
--
--	0xb3, 0xc,
--
--	0xb5, 0x2c,
--	DATA_ONLY, 0x12,
--	DATA_ONLY, 0x0c,
--	DATA_ONLY, 0x0a,
--	DATA_ONLY, 0x10,
--	DATA_ONLY, 0x0e,
--	DATA_ONLY, 0x17,
--	DATA_ONLY, 0x13,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x2a,
--	DATA_ONLY, 0x24,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1b,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x17,
--
--	DATA_ONLY, 0x2b,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x3a,
--	DATA_ONLY, 0x34,
--	DATA_ONLY, 0x30,
--	DATA_ONLY, 0x2c,
--	DATA_ONLY, 0x29,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x25,
--	DATA_ONLY, 0x23,
--	DATA_ONLY, 0x21,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x1e,
--	DATA_ONLY, 0x1e,
--
--	0xb6, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x11,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x33,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--
--	0xb7, 0x2c,
--	DATA_ONLY, 0x12,
--	DATA_ONLY, 0x0c,
--	DATA_ONLY, 0x0a,
--	DATA_ONLY, 0x10,
--	DATA_ONLY, 0x0e,
--	DATA_ONLY, 0x17,
--	DATA_ONLY, 0x13,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x2a,
--	DATA_ONLY, 0x24,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1b,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x17,
--
--	DATA_ONLY, 0x2b,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x3a,
--	DATA_ONLY, 0x34,
--	DATA_ONLY, 0x30,
--	DATA_ONLY, 0x2c,
--	DATA_ONLY, 0x29,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x25,
--	DATA_ONLY, 0x23,
--	DATA_ONLY, 0x21,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x1e,
--	DATA_ONLY, 0x1e,
--
--	0xb8, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x11,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x33,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--
--	0xb9, 0x2c,
--	DATA_ONLY, 0x12,
--	DATA_ONLY, 0x0c,
--	DATA_ONLY, 0x0a,
--	DATA_ONLY, 0x10,
--	DATA_ONLY, 0x0e,
--	DATA_ONLY, 0x17,
--	DATA_ONLY, 0x13,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x2a,
--	DATA_ONLY, 0x24,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x1b,
--	DATA_ONLY, 0x1a,
--	DATA_ONLY, 0x17,
--
--	DATA_ONLY, 0x2b,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x3a,
--	DATA_ONLY, 0x34,
--	DATA_ONLY, 0x30,
--	DATA_ONLY, 0x2c,
--	DATA_ONLY, 0x29,
--	DATA_ONLY, 0x26,
--	DATA_ONLY, 0x25,
--	DATA_ONLY, 0x23,
--	DATA_ONLY, 0x21,
--	DATA_ONLY, 0x20,
--	DATA_ONLY, 0x1e,
--	DATA_ONLY, 0x1e,
--
--	0xba, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x11,
--	DATA_ONLY, 0x22,
--	DATA_ONLY, 0x33,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--	DATA_ONLY, 0x44,
--
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x55,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--	DATA_ONLY, 0x66,
--
--	0xc1, 0x4d,
--	DATA_ONLY, 0x96,
--	DATA_ONLY, 0x1d,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x01,
--	DATA_ONLY, 0xdf,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x03,
--	DATA_ONLY, 0x1f,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x00,
--	DATA_ONLY, 0x03,
--	DATA_ONLY, 0x06,
--	DATA_ONLY, 0x09,
--	DATA_ONLY, 0x0d,
--	DATA_ONLY, 0x0f,
--	DATA_ONLY, 0x12,
--	DATA_ONLY, 0x15,
--	DATA_ONLY, 0x18,
--
--	0xb2, 0x10,
--	DATA_ONLY, 0x10,
--	DATA_ONLY, 0x0b,
--	DATA_ONLY, 0x05,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_acl_on[] = {
--	/* ACL on */
--	0xc0, 0x01,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_acl_off[] = {
--	/* ACL off */
--	0xc0, 0x00,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_elvss_on[] = {
--	/* ELVSS on */
--	0xb1, 0x0b,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_elvss_off[] = {
--	/* ELVSS off */
--	0xb1, 0x0a,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_stand_by_off[] = {
--	0x11, COMMAND_ONLY,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_stand_by_on[] = {
--	0x10, COMMAND_ONLY,
--
--	ENDDEF, 0x0000
--};
--
--static const unsigned short seq_display_on[] = {
--	0x29, COMMAND_ONLY,
--
--	ENDDEF, 0x0000
--};
--
--
--static int s6e63m0_spi_write_byte(struct s6e63m0 *lcd, int addr, int data)
--{
--	u16 buf[1];
--	struct spi_message msg;
--
--	struct spi_transfer xfer = {
--		.len		= 2,
--		.tx_buf		= buf,
--	};
--
--	buf[0] = (addr << 8) | data;
--
--	spi_message_init(&msg);
--	spi_message_add_tail(&xfer, &msg);
--
--	return spi_sync(lcd->spi, &msg);
--}
--
--static int s6e63m0_spi_write(struct s6e63m0 *lcd, unsigned char address,
--	unsigned char command)
--{
--	int ret = 0;
--
--	if (address != DATA_ONLY)
--		ret = s6e63m0_spi_write_byte(lcd, 0x0, address);
--	if (command != COMMAND_ONLY)
--		ret = s6e63m0_spi_write_byte(lcd, 0x1, command);
--
--	return ret;
--}
--
--static int s6e63m0_panel_send_sequence(struct s6e63m0 *lcd,
--	const unsigned short *wbuf)
--{
--	int ret = 0, i = 0;
--
--	while ((wbuf[i] & DEFMASK) != ENDDEF) {
--		if ((wbuf[i] & DEFMASK) != SLEEPMSEC) {
--			ret = s6e63m0_spi_write(lcd, wbuf[i], wbuf[i+1]);
--			if (ret)
--				break;
--		} else {
--			msleep(wbuf[i+1]);
--		}
--		i += 2;
--	}
--
--	return ret;
--}
--
--static int _s6e63m0_gamma_ctl(struct s6e63m0 *lcd, const unsigned int *gamma)
--{
--	unsigned int i = 0;
--	int ret = 0;
--
--	/* disable gamma table updating. */
--	ret = s6e63m0_spi_write(lcd, 0xfa, 0x00);
--	if (ret) {
--		dev_err(lcd->dev, "failed to disable gamma table updating.\n");
--		goto gamma_err;
--	}
--
--	for (i = 0 ; i < GAMMA_TABLE_COUNT; i++) {
--		ret = s6e63m0_spi_write(lcd, DATA_ONLY, gamma[i]);
--		if (ret) {
--			dev_err(lcd->dev, "failed to set gamma table.\n");
--			goto gamma_err;
--		}
--	}
--
--	/* update gamma table. */
--	ret = s6e63m0_spi_write(lcd, 0xfa, 0x01);
--	if (ret)
--		dev_err(lcd->dev, "failed to update gamma table.\n");
--
--gamma_err:
--	return ret;
--}
--
--static int s6e63m0_gamma_ctl(struct s6e63m0 *lcd, int gamma)
--{
--	int ret = 0;
--
--	ret = _s6e63m0_gamma_ctl(lcd, gamma_table.gamma_22_table[gamma]);
--
--	return ret;
--}
--
--
--static int s6e63m0_ldi_init(struct s6e63m0 *lcd)
--{
--	int ret, i;
--	const unsigned short *init_seq[] = {
--		seq_panel_condition_set,
--		seq_display_condition_set,
--		seq_gamma_setting,
--		seq_etc_condition_set,
--		seq_acl_on,
--		seq_elvss_on,
--	};
--
--	for (i = 0; i < ARRAY_SIZE(init_seq); i++) {
--		ret = s6e63m0_panel_send_sequence(lcd, init_seq[i]);
--		if (ret)
--			break;
--	}
--
--	return ret;
--}
--
--static int s6e63m0_ldi_enable(struct s6e63m0 *lcd)
--{
--	int ret = 0, i;
--	const unsigned short *enable_seq[] = {
--		seq_stand_by_off,
--		seq_display_on,
--	};
--
--	for (i = 0; i < ARRAY_SIZE(enable_seq); i++) {
--		ret = s6e63m0_panel_send_sequence(lcd, enable_seq[i]);
--		if (ret)
--			break;
--	}
--
--	return ret;
--}
--
--static int s6e63m0_ldi_disable(struct s6e63m0 *lcd)
--{
--	int ret;
--
--	ret = s6e63m0_panel_send_sequence(lcd, seq_stand_by_on);
--
--	return ret;
--}
--
--static int s6e63m0_power_is_on(int power)
--{
--	return power <= FB_BLANK_NORMAL;
--}
--
--static int s6e63m0_power_on(struct s6e63m0 *lcd)
--{
--	int ret = 0;
--	struct lcd_platform_data *pd;
--	struct backlight_device *bd;
--
--	pd = lcd->lcd_pd;
--	bd = lcd->bd;
--
--	if (!pd->power_on) {
--		dev_err(lcd->dev, "power_on is NULL.\n");
--		return -EINVAL;
--	}
--
--	pd->power_on(lcd->ld, 1);
--	msleep(pd->power_on_delay);
--
--	if (!pd->reset) {
--		dev_err(lcd->dev, "reset is NULL.\n");
--		return -EINVAL;
--	}
--
--	pd->reset(lcd->ld);
--	msleep(pd->reset_delay);
--
--	ret = s6e63m0_ldi_init(lcd);
--	if (ret) {
--		dev_err(lcd->dev, "failed to initialize ldi.\n");
--		return ret;
--	}
--
--	ret = s6e63m0_ldi_enable(lcd);
--	if (ret) {
--		dev_err(lcd->dev, "failed to enable ldi.\n");
--		return ret;
--	}
--
--	/* set brightness to current value after power on or resume. */
--	ret = s6e63m0_gamma_ctl(lcd, bd->props.brightness);
--	if (ret) {
--		dev_err(lcd->dev, "lcd gamma setting failed.\n");
--		return ret;
--	}
--
--	return 0;
--}
--
--static int s6e63m0_power_off(struct s6e63m0 *lcd)
--{
--	int ret;
--	struct lcd_platform_data *pd;
--
--	pd = lcd->lcd_pd;
--
--	ret = s6e63m0_ldi_disable(lcd);
--	if (ret) {
--		dev_err(lcd->dev, "lcd setting failed.\n");
--		return -EIO;
--	}
--
--	msleep(pd->power_off_delay);
--
--	pd->power_on(lcd->ld, 0);
--
--	return 0;
--}
--
--static int s6e63m0_power(struct s6e63m0 *lcd, int power)
--{
--	int ret = 0;
--
--	if (s6e63m0_power_is_on(power) && !s6e63m0_power_is_on(lcd->power))
--		ret = s6e63m0_power_on(lcd);
--	else if (!s6e63m0_power_is_on(power) && s6e63m0_power_is_on(lcd->power))
--		ret = s6e63m0_power_off(lcd);
--
--	if (!ret)
--		lcd->power = power;
--
--	return ret;
--}
--
--static int s6e63m0_set_power(struct lcd_device *ld, int power)
--{
--	struct s6e63m0 *lcd = lcd_get_data(ld);
--
--	if (power != FB_BLANK_UNBLANK && power != FB_BLANK_POWERDOWN &&
--		power != FB_BLANK_NORMAL) {
--		dev_err(lcd->dev, "power value should be 0, 1 or 4.\n");
--		return -EINVAL;
--	}
--
--	return s6e63m0_power(lcd, power);
--}
--
--static int s6e63m0_get_power(struct lcd_device *ld)
--{
--	struct s6e63m0 *lcd = lcd_get_data(ld);
--
--	return lcd->power;
--}
--
--static int s6e63m0_set_brightness(struct backlight_device *bd)
--{
--	int ret = 0, brightness = bd->props.brightness;
--	struct s6e63m0 *lcd = bl_get_data(bd);
--
--	if (brightness < MIN_BRIGHTNESS ||
--		brightness > bd->props.max_brightness) {
--		dev_err(&bd->dev, "lcd brightness should be %d to %d.\n",
--			MIN_BRIGHTNESS, MAX_BRIGHTNESS);
--		return -EINVAL;
--	}
--
--	ret = s6e63m0_gamma_ctl(lcd, bd->props.brightness);
--	if (ret) {
--		dev_err(&bd->dev, "lcd brightness setting failed.\n");
--		return -EIO;
--	}
--
--	return ret;
--}
--
--static struct lcd_ops s6e63m0_lcd_ops = {
--	.set_power = s6e63m0_set_power,
--	.get_power = s6e63m0_get_power,
--};
--
--static const struct backlight_ops s6e63m0_backlight_ops  = {
--	.update_status = s6e63m0_set_brightness,
--};
--
--static ssize_t s6e63m0_sysfs_show_gamma_mode(struct device *dev,
--				      struct device_attribute *attr, char *buf)
--{
--	struct s6e63m0 *lcd = dev_get_drvdata(dev);
--	char temp[10];
--
--	switch (lcd->gamma_mode) {
--	case 0:
--		sprintf(temp, "2.2 mode\n");
--		strcat(buf, temp);
--		break;
--	case 1:
--		sprintf(temp, "1.9 mode\n");
--		strcat(buf, temp);
--		break;
--	case 2:
--		sprintf(temp, "1.7 mode\n");
--		strcat(buf, temp);
--		break;
--	default:
--		dev_info(dev, "gamma mode could be 0:2.2, 1:1.9 or 2:1.7)n");
--		break;
--	}
--
--	return strlen(buf);
--}
--
--static ssize_t s6e63m0_sysfs_store_gamma_mode(struct device *dev,
--				       struct device_attribute *attr,
--				       const char *buf, size_t len)
--{
--	struct s6e63m0 *lcd = dev_get_drvdata(dev);
--	struct backlight_device *bd = NULL;
--	int brightness, rc;
--
--	rc = kstrtouint(buf, 0, &lcd->gamma_mode);
--	if (rc < 0)
--		return rc;
--
--	bd = lcd->bd;
--
--	brightness = bd->props.brightness;
--
--	switch (lcd->gamma_mode) {
--	case 0:
--		_s6e63m0_gamma_ctl(lcd, gamma_table.gamma_22_table[brightness]);
--		break;
--	case 1:
--		_s6e63m0_gamma_ctl(lcd, gamma_table.gamma_19_table[brightness]);
--		break;
--	case 2:
--		_s6e63m0_gamma_ctl(lcd, gamma_table.gamma_17_table[brightness]);
--		break;
--	default:
--		dev_info(dev, "gamma mode could be 0:2.2, 1:1.9 or 2:1.7\n");
--		_s6e63m0_gamma_ctl(lcd, gamma_table.gamma_22_table[brightness]);
--		break;
--	}
--	return len;
--}
--
--static DEVICE_ATTR(gamma_mode, 0644,
--		s6e63m0_sysfs_show_gamma_mode, s6e63m0_sysfs_store_gamma_mode);
--
--static ssize_t s6e63m0_sysfs_show_gamma_table(struct device *dev,
--				      struct device_attribute *attr, char *buf)
--{
--	struct s6e63m0 *lcd = dev_get_drvdata(dev);
--	char temp[3];
--
--	sprintf(temp, "%u\n", lcd->gamma_table_count);
--	strcpy(buf, temp);
--
--	return strlen(buf);
--}
--static DEVICE_ATTR(gamma_table, 0444,
--		s6e63m0_sysfs_show_gamma_table, NULL);
--
--static int s6e63m0_probe(struct spi_device *spi)
--{
--	int ret = 0;
--	struct s6e63m0 *lcd = NULL;
--	struct lcd_device *ld = NULL;
--	struct backlight_device *bd = NULL;
--	struct backlight_properties props;
--
--	lcd = devm_kzalloc(&spi->dev, sizeof(struct s6e63m0), GFP_KERNEL);
--	if (!lcd)
--		return -ENOMEM;
--
--	/* s6e63m0 lcd panel uses 3-wire 9bits SPI Mode. */
--	spi->bits_per_word = 9;
--
--	ret = spi_setup(spi);
--	if (ret < 0) {
--		dev_err(&spi->dev, "spi setup failed.\n");
--		return ret;
--	}
--
--	lcd->spi = spi;
--	lcd->dev = &spi->dev;
--
--	lcd->lcd_pd = dev_get_platdata(&spi->dev);
--	if (!lcd->lcd_pd) {
--		dev_err(&spi->dev, "platform data is NULL.\n");
--		return -EINVAL;
--	}
--
--	ld = devm_lcd_device_register(&spi->dev, "s6e63m0", &spi->dev, lcd,
--				&s6e63m0_lcd_ops);
--	if (IS_ERR(ld))
--		return PTR_ERR(ld);
--
--	lcd->ld = ld;
--
--	memset(&props, 0, sizeof(struct backlight_properties));
--	props.type = BACKLIGHT_RAW;
--	props.max_brightness = MAX_BRIGHTNESS;
--
--	bd = devm_backlight_device_register(&spi->dev, "s6e63m0bl-bl",
--					&spi->dev, lcd, &s6e63m0_backlight_ops,
--					&props);
--	if (IS_ERR(bd))
--		return PTR_ERR(bd);
--
--	bd->props.brightness = MAX_BRIGHTNESS;
--	lcd->bd = bd;
--
--	/*
--	 * it gets gamma table count available so it gets user
--	 * know that.
--	 */
--	lcd->gamma_table_count -	    sizeof(gamma_table) / (MAX_GAMMA_LEVEL * sizeof(int *));
--
--	ret = device_create_file(&(spi->dev), &dev_attr_gamma_mode);
--	if (ret < 0)
--		dev_err(&(spi->dev), "failed to add sysfs entries\n");
--
--	ret = device_create_file(&(spi->dev), &dev_attr_gamma_table);
--	if (ret < 0)
--		dev_err(&(spi->dev), "failed to add sysfs entries\n");
--
--	/*
--	 * if lcd panel was on from bootloader like u-boot then
--	 * do not lcd on.
--	 */
--	if (!lcd->lcd_pd->lcd_enabled) {
--		/*
--		 * if lcd panel was off from bootloader then
--		 * current lcd status is powerdown and then
--		 * it enables lcd panel.
--		 */
--		lcd->power = FB_BLANK_POWERDOWN;
--
--		s6e63m0_power(lcd, FB_BLANK_UNBLANK);
--	} else {
--		lcd->power = FB_BLANK_UNBLANK;
--	}
--
--	spi_set_drvdata(spi, lcd);
--
--	dev_info(&spi->dev, "s6e63m0 panel driver has been probed.\n");
--
--	return 0;
--}
--
--static int s6e63m0_remove(struct spi_device *spi)
--{
--	struct s6e63m0 *lcd = spi_get_drvdata(spi);
--
--	s6e63m0_power(lcd, FB_BLANK_POWERDOWN);
--	device_remove_file(&spi->dev, &dev_attr_gamma_table);
--	device_remove_file(&spi->dev, &dev_attr_gamma_mode);
--
--	return 0;
--}
--
--#ifdef CONFIG_PM_SLEEP
--static int s6e63m0_suspend(struct device *dev)
--{
--	struct s6e63m0 *lcd = dev_get_drvdata(dev);
--
--	dev_dbg(dev, "lcd->power = %d\n", lcd->power);
--
--	/*
--	 * when lcd panel is suspend, lcd panel becomes off
--	 * regardless of status.
--	 */
--	return s6e63m0_power(lcd, FB_BLANK_POWERDOWN);
--}
--
--static int s6e63m0_resume(struct device *dev)
--{
--	struct s6e63m0 *lcd = dev_get_drvdata(dev);
--
--	lcd->power = FB_BLANK_POWERDOWN;
--
--	return s6e63m0_power(lcd, FB_BLANK_UNBLANK);
--}
--#endif
--
--static SIMPLE_DEV_PM_OPS(s6e63m0_pm_ops, s6e63m0_suspend, s6e63m0_resume);
--
--/* Power down all displays on reboot, poweroff or halt. */
--static void s6e63m0_shutdown(struct spi_device *spi)
--{
--	struct s6e63m0 *lcd = spi_get_drvdata(spi);
--
--	s6e63m0_power(lcd, FB_BLANK_POWERDOWN);
--}
--
--static struct spi_driver s6e63m0_driver = {
--	.driver = {
--		.name	= "s6e63m0",
--		.pm	= &s6e63m0_pm_ops,
--	},
--	.probe		= s6e63m0_probe,
--	.remove		= s6e63m0_remove,
--	.shutdown	= s6e63m0_shutdown,
--};
--
--module_spi_driver(s6e63m0_driver);
--
--MODULE_AUTHOR("InKi Dae <inki.dae@samsung.com>");
--MODULE_DESCRIPTION("S6E63M0 LCD Driver");
--MODULE_LICENSE("GPL");
--
-diff --git a/drivers/video/backlight/s6e63m0_gamma.h b/drivers/video/backlight/s6e63m0_gamma.h
-deleted file mode 100644
-index 2c44bdb0696b..000000000000
---- a/drivers/video/backlight/s6e63m0_gamma.h
-+++ /dev/null
-@@ -1,266 +0,0 @@
--/* linux/drivers/video/samsung/s6e63m0_brightness.h
-- *
-- * Gamma level definitions.
-- *
-- * Copyright (c) 2009 Samsung Electronics
-- * InKi Dae <inki.dae@samsung.com>
+- * Copyright (C) 2008, Jaya Kumar
 - *
 - * This program is free software; you can redistribute it and/or modify
 - * it under the terms of the GNU General Public License version 2 as
 - * published by the Free Software Foundation.
--*/
+- *
+- * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
+- *
+- * This driver is written to be used with the AUO-K1900 display controller.
+- *
+- * It is intended to be architecture independent. A board specific driver
+- * must be used to perform all the physical IO interactions.
+- *
+- * The controller supports different update modes:
+- * mode0+1 16 step gray (4bit)
+- * mode2 4 step gray (2bit) - FIXME: add strange refresh
+- * mode3 2 step gray (1bit) - FIXME: add strange refresh
+- * mode4 handwriting mode (strange behaviour)
+- * mode5 automatic selection of update mode
+- */
 -
--#ifndef _S6E63M0_BRIGHTNESS_H
--#define _S6E63M0_BRIGHTNESS_H
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-#include <linux/list.h>
+-#include <linux/firmware.h>
+-#include <linux/gpio.h>
+-#include <linux/pm_runtime.h>
 -
--#define MAX_GAMMA_LEVEL		11
--#define GAMMA_TABLE_COUNT	21
+-#include <video/auo_k190xfb.h>
 -
--/* gamma value: 2.2 */
--static const unsigned int s6e63m0_22_300[] = {
--	0x18, 0x08, 0x24, 0x5f, 0x50, 0x2d, 0xB6,
--	0xB9, 0xA7, 0xAd, 0xB1, 0x9f, 0xbe, 0xC0,
--	0xB5, 0x00, 0xa0, 0x00, 0xa4, 0x00, 0xdb
+-#include "auo_k190x.h"
+-
+-/*
+- * AUO-K1900 specific commands
+- */
+-
+-#define AUOK1900_CMD_PARTIALDISP	0x1001
+-#define AUOK1900_CMD_ROTATION		0x1006
+-#define AUOK1900_CMD_LUT_STOP		0x1009
+-
+-#define AUOK1900_INIT_TEMP_AVERAGE	(1 << 13)
+-#define AUOK1900_INIT_ROTATE(_x)	((_x & 0x3) << 10)
+-#define AUOK1900_INIT_RESOLUTION(_res)	((_res & 0x7) << 2)
+-
+-static void auok1900_init(struct auok190xfb_par *par)
+-{
+-	struct device *dev =3D par->info->device;
+-	struct auok190x_board *board =3D par->board;
+-	u16 init_param =3D 0;
+-
+-	pm_runtime_get_sync(dev);
+-
+-	init_param |=3D AUOK1900_INIT_TEMP_AVERAGE;
+-	init_param |=3D AUOK1900_INIT_ROTATE(par->rotation);
+-	init_param |=3D AUOK190X_INIT_INVERSE_WHITE;
+-	init_param |=3D AUOK190X_INIT_FORMAT0;
+-	init_param |=3D AUOK1900_INIT_RESOLUTION(par->resolution);
+-	init_param |=3D AUOK190X_INIT_SHIFT_RIGHT;
+-
+-	auok190x_send_cmdargs(par, AUOK190X_CMD_INIT, 1, &init_param);
+-
+-	/* let the controller finish */
+-	board->wait_for_rdy(par);
+-
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
+-}
+-
+-static void auok1900_update_region(struct auok190xfb_par *par, int mode,
+-						u16 y1, u16 y2)
+-{
+-	struct device *dev =3D par->info->device;
+-	unsigned char *buf =3D (unsigned char *)par->info->screen_base;
+-	int xres =3D par->info->var.xres;
+-	int line_length =3D par->info->fix.line_length;
+-	u16 args[4];
+-
+-	pm_runtime_get_sync(dev);
+-
+-	mutex_lock(&(par->io_lock));
+-
+-	/* y1 and y2 must be a multiple of 2 so drop the lowest bit */
+-	y1 &=3D 0xfffe;
+-	y2 &=3D 0xfffe;
+-
+-	dev_dbg(dev, "update (x,y,w,h,mode)=3D(%d,%d,%d,%d,%d)\n",
+-		1, y1+1, xres, y2-y1, mode);
+-
+-	/* to FIX handle different partial update modes */
+-	args[0] =3D mode | 1;
+-	args[1] =3D y1 + 1;
+-	args[2] =3D xres;
+-	args[3] =3D y2 - y1;
+-	buf +=3D y1 * line_length;
+-	auok190x_send_cmdargs_pixels(par, AUOK1900_CMD_PARTIALDISP, 4, args,
+-				     ((y2 - y1) * line_length)/2, (u16 *) buf);
+-	auok190x_send_command(par, AUOK190X_CMD_DATA_STOP);
+-
+-	par->update_cnt++;
+-
+-	mutex_unlock(&(par->io_lock));
+-
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
+-}
+-
+-static void auok1900fb_dpy_update_pages(struct auok190xfb_par *par,
+-						u16 y1, u16 y2)
+-{
+-	int mode;
+-
+-	if (par->update_mode < 0) {
+-		mode =3D AUOK190X_UPDATE_MODE(1);
+-		par->last_mode =3D -1;
+-	} else {
+-		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
+-		par->last_mode =3D par->update_mode;
+-	}
+-
+-	if (par->flash)
+-		mode |=3D AUOK190X_UPDATE_NONFLASH;
+-
+-	auok1900_update_region(par, mode, y1, y2);
+-}
+-
+-static void auok1900fb_dpy_update(struct auok190xfb_par *par)
+-{
+-	int mode;
+-
+-	if (par->update_mode < 0) {
+-		mode =3D AUOK190X_UPDATE_MODE(0);
+-		par->last_mode =3D -1;
+-	} else {
+-		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
+-		par->last_mode =3D par->update_mode;
+-	}
+-
+-	if (par->flash)
+-		mode |=3D AUOK190X_UPDATE_NONFLASH;
+-
+-	auok1900_update_region(par, mode, 0, par->info->var.yres);
+-	par->update_cnt =3D 0;
+-}
+-
+-static bool auok1900fb_need_refresh(struct auok190xfb_par *par)
+-{
+-	return (par->update_cnt > 10);
+-}
+-
+-static int auok1900fb_probe(struct platform_device *pdev)
+-{
+-	struct auok190x_init_data init;
+-	struct auok190x_board *board;
+-
+-	/* pick up board specific routines */
+-	board =3D pdev->dev.platform_data;
+-	if (!board)
+-		return -EINVAL;
+-
+-	/* fill temporary init struct for common init */
+-	init.id =3D "auo_k1900fb";
+-	init.board =3D board;
+-	init.update_partial =3D auok1900fb_dpy_update_pages;
+-	init.update_all =3D auok1900fb_dpy_update;
+-	init.need_refresh =3D auok1900fb_need_refresh;
+-	init.init =3D auok1900_init;
+-
+-	return auok190x_common_probe(pdev, &init);
+-}
+-
+-static int auok1900fb_remove(struct platform_device *pdev)
+-{
+-	return auok190x_common_remove(pdev);
+-}
+-
+-static struct platform_driver auok1900fb_driver =3D {
+-	.probe	=3D auok1900fb_probe,
+-	.remove =3D auok1900fb_remove,
+-	.driver	=3D {
+-		.name	=3D "auo_k1900fb",
+-		.pm =3D &auok190x_pm,
+-	},
+-};
+-module_platform_driver(auok1900fb_driver);
+-
+-MODULE_DESCRIPTION("framebuffer driver for the AUO-K1900 EPD controller");
+-MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
+-MODULE_LICENSE("GPL");
+Index: b/drivers/video/fbdev/auo_k1901fb.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/auo_k1901fb.c	2017-10-18 14:35:21.947448311 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,257 +0,0 @@
+-/*
+- * auok190xfb.c -- FB driver for AUO-K1901 controllers
+- *
+- * Copyright (C) 2011, 2012 Heiko Stuebner <heiko@sntech.de>
+- *
+- * based on broadsheetfb.c
+- *
+- * Copyright (C) 2008, Jaya Kumar
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
+- *
+- * This driver is written to be used with the AUO-K1901 display controller.
+- *
+- * It is intended to be architecture independent. A board specific driver
+- * must be used to perform all the physical IO interactions.
+- *
+- * The controller supports different update modes:
+- * mode0+1 16 step gray (4bit)
+- * mode2+3 4 step gray (2bit)
+- * mode4+5 2 step gray (1bit)
+- * - mode4 is described as "without LUT"
+- * mode7 automatic selection of update mode
+- *
+- * The most interesting difference to the K1900 is the ability to do screen
+- * updates in an asynchronous fashion. Where the K1900 needs to wait for t=
+he
+- * current update to complete, the K1901 can process later updates already.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/mm.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/platform_device.h>
+-#include <linux/list.h>
+-#include <linux/firmware.h>
+-#include <linux/gpio.h>
+-#include <linux/pm_runtime.h>
+-
+-#include <video/auo_k190xfb.h>
+-
+-#include "auo_k190x.h"
+-
+-/*
+- * AUO-K1901 specific commands
+- */
+-
+-#define AUOK1901_CMD_LUT_INTERFACE	0x0005
+-#define AUOK1901_CMD_DMA_START		0x1001
+-#define AUOK1901_CMD_CURSOR_START	0x1007
+-#define AUOK1901_CMD_CURSOR_STOP	AUOK190X_CMD_DATA_STOP
+-#define AUOK1901_CMD_DDMA_START		0x1009
+-
+-#define AUOK1901_INIT_GATE_PULSE_LOW	(0 << 14)
+-#define AUOK1901_INIT_GATE_PULSE_HIGH	(1 << 14)
+-#define AUOK1901_INIT_SINGLE_GATE	(0 << 13)
+-#define AUOK1901_INIT_DOUBLE_GATE	(1 << 13)
+-
+-/* Bits to pixels
+- *   Mode	15-12	11-8	7-4	3-0
+- *   format2	2	T	1	T
+- *   format3	1	T	2	T
+- *   format4	T	2	T	1
+- *   format5	T	1	T	2
+- *
+- *   halftone modes:
+- *   format6	2	2	1	1
+- *   format7	1	1	2	2
+- */
+-#define AUOK1901_INIT_FORMAT2		(1 << 7)
+-#define AUOK1901_INIT_FORMAT3		((1 << 7) | (1 << 6))
+-#define AUOK1901_INIT_FORMAT4		(1 << 8)
+-#define AUOK1901_INIT_FORMAT5		((1 << 8) | (1 << 6))
+-#define AUOK1901_INIT_FORMAT6		((1 << 8) | (1 << 7))
+-#define AUOK1901_INIT_FORMAT7		((1 << 8) | (1 << 7) | (1 << 6))
+-
+-/* res[4] to bit 10
+- * res[3-0] to bits 5-2
+- */
+-#define AUOK1901_INIT_RESOLUTION(_res)	(((_res & (1 << 4)) << 6) \
+-					 | ((_res & 0xf) << 2))
+-
+-/*
+- * portrait / landscape orientation in AUOK1901_CMD_DMA_START
+- */
+-#define AUOK1901_DMA_ROTATE90(_rot)		((_rot & 1) << 13)
+-
+-/*
+- * equivalent to 1 << 11, needs the ~ to have same rotation like K1900
+- */
+-#define AUOK1901_DDMA_ROTATE180(_rot)		((~_rot & 2) << 10)
+-
+-static void auok1901_init(struct auok190xfb_par *par)
+-{
+-	struct device *dev =3D par->info->device;
+-	struct auok190x_board *board =3D par->board;
+-	u16 init_param =3D 0;
+-
+-	pm_runtime_get_sync(dev);
+-
+-	init_param |=3D AUOK190X_INIT_INVERSE_WHITE;
+-	init_param |=3D AUOK190X_INIT_FORMAT0;
+-	init_param |=3D AUOK1901_INIT_RESOLUTION(par->resolution);
+-	init_param |=3D AUOK190X_INIT_SHIFT_LEFT;
+-
+-	auok190x_send_cmdargs(par, AUOK190X_CMD_INIT, 1, &init_param);
+-
+-	/* let the controller finish */
+-	board->wait_for_rdy(par);
+-
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
+-}
+-
+-static void auok1901_update_region(struct auok190xfb_par *par, int mode,
+-						u16 y1, u16 y2)
+-{
+-	struct device *dev =3D par->info->device;
+-	unsigned char *buf =3D (unsigned char *)par->info->screen_base;
+-	int xres =3D par->info->var.xres;
+-	int line_length =3D par->info->fix.line_length;
+-	u16 args[5];
+-
+-	pm_runtime_get_sync(dev);
+-
+-	mutex_lock(&(par->io_lock));
+-
+-	/* y1 and y2 must be a multiple of 2 so drop the lowest bit */
+-	y1 &=3D 0xfffe;
+-	y2 &=3D 0xfffe;
+-
+-	dev_dbg(dev, "update (x,y,w,h,mode)=3D(%d,%d,%d,%d,%d)\n",
+-		1, y1+1, xres, y2-y1, mode);
+-
+-	/* K1901: first transfer the region data */
+-	args[0] =3D AUOK1901_DMA_ROTATE90(par->rotation) | 1;
+-	args[1] =3D y1 + 1;
+-	args[2] =3D xres;
+-	args[3] =3D y2 - y1;
+-	buf +=3D y1 * line_length;
+-	auok190x_send_cmdargs_pixels_nowait(par, AUOK1901_CMD_DMA_START, 4,
+-					    args, ((y2 - y1) * line_length)/2,
+-					    (u16 *) buf);
+-	auok190x_send_command_nowait(par, AUOK190X_CMD_DATA_STOP);
+-
+-	/* K1901: second tell the controller to update the region with mode */
+-	args[0] =3D mode | AUOK1901_DDMA_ROTATE180(par->rotation);
+-	args[1] =3D 1;
+-	args[2] =3D y1 + 1;
+-	args[3] =3D xres;
+-	args[4] =3D y2 - y1;
+-	auok190x_send_cmdargs_nowait(par, AUOK1901_CMD_DDMA_START, 5, args);
+-
+-	par->update_cnt++;
+-
+-	mutex_unlock(&(par->io_lock));
+-
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
+-}
+-
+-static void auok1901fb_dpy_update_pages(struct auok190xfb_par *par,
+-						u16 y1, u16 y2)
+-{
+-	int mode;
+-
+-	if (par->update_mode < 0) {
+-		mode =3D AUOK190X_UPDATE_MODE(1);
+-		par->last_mode =3D -1;
+-	} else {
+-		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
+-		par->last_mode =3D par->update_mode;
+-	}
+-
+-	if (par->flash)
+-		mode |=3D AUOK190X_UPDATE_NONFLASH;
+-
+-	auok1901_update_region(par, mode, y1, y2);
+-}
+-
+-static void auok1901fb_dpy_update(struct auok190xfb_par *par)
+-{
+-	int mode;
+-
+-	/* When doing full updates, wait for the controller to be ready
+-	 * This will hopefully catch some hangs of the K1901
+-	 */
+-	par->board->wait_for_rdy(par);
+-
+-	if (par->update_mode < 0) {
+-		mode =3D AUOK190X_UPDATE_MODE(0);
+-		par->last_mode =3D -1;
+-	} else {
+-		mode =3D AUOK190X_UPDATE_MODE(par->update_mode);
+-		par->last_mode =3D par->update_mode;
+-	}
+-
+-	if (par->flash)
+-		mode |=3D AUOK190X_UPDATE_NONFLASH;
+-
+-	auok1901_update_region(par, mode, 0, par->info->var.yres);
+-	par->update_cnt =3D 0;
+-}
+-
+-static bool auok1901fb_need_refresh(struct auok190xfb_par *par)
+-{
+-	return (par->update_cnt > 10);
+-}
+-
+-static int auok1901fb_probe(struct platform_device *pdev)
+-{
+-	struct auok190x_init_data init;
+-	struct auok190x_board *board;
+-
+-	/* pick up board specific routines */
+-	board =3D pdev->dev.platform_data;
+-	if (!board)
+-		return -EINVAL;
+-
+-	/* fill temporary init struct for common init */
+-	init.id =3D "auo_k1901fb";
+-	init.board =3D board;
+-	init.update_partial =3D auok1901fb_dpy_update_pages;
+-	init.update_all =3D auok1901fb_dpy_update;
+-	init.need_refresh =3D auok1901fb_need_refresh;
+-	init.init =3D auok1901_init;
+-
+-	return auok190x_common_probe(pdev, &init);
+-}
+-
+-static int auok1901fb_remove(struct platform_device *pdev)
+-{
+-	return auok190x_common_remove(pdev);
+-}
+-
+-static struct platform_driver auok1901fb_driver =3D {
+-	.probe	=3D auok1901fb_probe,
+-	.remove =3D auok1901fb_remove,
+-	.driver	=3D {
+-		.name	=3D "auo_k1901fb",
+-		.pm =3D &auok190x_pm,
+-	},
+-};
+-module_platform_driver(auok1901fb_driver);
+-
+-MODULE_DESCRIPTION("framebuffer driver for the AUO-K1901 EPD controller");
+-MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
+-MODULE_LICENSE("GPL");
+Index: b/drivers/video/fbdev/auo_k190x.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/auo_k190x.c	2018-04-26 14:54:03.672207576 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,1190 +0,0 @@
+-/*
+- * Common code for AUO-K190X framebuffer drivers
+- *
+- * Copyright (C) 2012 Heiko Stuebner <heiko@sntech.de>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#include <linux/module.h>
+-#include <linux/sched/mm.h>
+-#include <linux/kernel.h>
+-#include <linux/gpio.h>
+-#include <linux/platform_device.h>
+-#include <linux/pm_runtime.h>
+-#include <linux/fb.h>
+-#include <linux/delay.h>
+-#include <linux/uaccess.h>
+-#include <linux/vmalloc.h>
+-#include <linux/regulator/consumer.h>
+-
+-#include <video/auo_k190xfb.h>
+-
+-#include "auo_k190x.h"
+-
+-struct panel_info {
+-	int w;
+-	int h;
 -};
 -
--static const unsigned int s6e63m0_22_280[] = {
--	0x18, 0x08, 0x24, 0x64, 0x56, 0x33, 0xB6,
--	0xBA, 0xA8, 0xAC, 0xB1, 0x9D, 0xC1, 0xC1,
--	0xB7, 0x00, 0x9C, 0x00, 0x9F, 0x00, 0xD6
+-/* table of panel specific parameters to be indexed into by the board driv=
+ers */
+-static struct panel_info panel_table[] =3D {
+-	/* standard 6" */
+-	[AUOK190X_RESOLUTION_800_600] =3D {
+-		.w =3D 800,
+-		.h =3D 600,
+-	},
+-	/* standard 9" */
+-	[AUOK190X_RESOLUTION_1024_768] =3D {
+-		.w =3D 1024,
+-		.h =3D 768,
+-	},
+-	[AUOK190X_RESOLUTION_600_800] =3D {
+-		.w =3D 600,
+-		.h =3D 800,
+-	},
+-	[AUOK190X_RESOLUTION_768_1024] =3D {
+-		.w =3D 768,
+-		.h =3D 1024,
+-	},
 -};
 -
--static const unsigned int s6e63m0_22_260[] = {
--	0x18, 0x08, 0x24, 0x66, 0x58, 0x34, 0xB6,
--	0xBA, 0xA7, 0xAF, 0xB3, 0xA0, 0xC1, 0xC2,
--	0xB7, 0x00, 0x97, 0x00, 0x9A, 0x00, 0xD1
+-/*
+- * private I80 interface to the board driver
+- */
 -
+-static void auok190x_issue_data(struct auok190xfb_par *par, u16 data)
+-{
+-	par->board->set_ctl(par, AUOK190X_I80_WR, 0);
+-	par->board->set_hdb(par, data);
+-	par->board->set_ctl(par, AUOK190X_I80_WR, 1);
+-}
+-
+-static void auok190x_issue_cmd(struct auok190xfb_par *par, u16 data)
+-{
+-	par->board->set_ctl(par, AUOK190X_I80_DC, 0);
+-	auok190x_issue_data(par, data);
+-	par->board->set_ctl(par, AUOK190X_I80_DC, 1);
+-}
+-
+-/**
+- * Conversion of 16bit color to 4bit grayscale
+- * does roughly (0.3 * R + 0.6 G + 0.1 B) / 2
+- */
+-static inline int rgb565_to_gray4(u16 data, struct fb_var_screeninfo *var)
+-{
+-	return ((((data & 0xF800) >> var->red.offset) * 77 +
+-		 ((data & 0x07E0) >> (var->green.offset + 1)) * 151 +
+-		 ((data & 0x1F) >> var->blue.offset) * 28) >> 8 >> 1);
+-}
+-
+-static int auok190x_issue_pixels_rgb565(struct auok190xfb_par *par, int si=
+ze,
+-					u16 *data)
+-{
+-	struct fb_var_screeninfo *var =3D &par->info->var;
+-	struct device *dev =3D par->info->device;
+-	int i;
+-	u16 tmp;
+-
+-	if (size & 7) {
+-		dev_err(dev, "issue_pixels: size %d must be a multiple of 8\n",
+-			size);
+-		return -EINVAL;
+-	}
+-
+-	for (i =3D 0; i < (size >> 2); i++) {
+-		par->board->set_ctl(par, AUOK190X_I80_WR, 0);
+-
+-		tmp  =3D (rgb565_to_gray4(data[4*i], var) & 0x000F);
+-		tmp |=3D (rgb565_to_gray4(data[4*i+1], var) << 4) & 0x00F0;
+-		tmp |=3D (rgb565_to_gray4(data[4*i+2], var) << 8) & 0x0F00;
+-		tmp |=3D (rgb565_to_gray4(data[4*i+3], var) << 12) & 0xF000;
+-
+-		par->board->set_hdb(par, tmp);
+-		par->board->set_ctl(par, AUOK190X_I80_WR, 1);
+-	}
+-
+-	return 0;
+-}
+-
+-static int auok190x_issue_pixels_gray8(struct auok190xfb_par *par, int siz=
+e,
+-				       u16 *data)
+-{
+-	struct device *dev =3D par->info->device;
+-	int i;
+-	u16 tmp;
+-
+-	if (size & 3) {
+-		dev_err(dev, "issue_pixels: size %d must be a multiple of 4\n",
+-			size);
+-		return -EINVAL;
+-	}
+-
+-	for (i =3D 0; i < (size >> 1); i++) {
+-		par->board->set_ctl(par, AUOK190X_I80_WR, 0);
+-
+-		/* simple reduction of 8bit staticgray to 4bit gray
+-		 * combines 4 * 4bit pixel values into a 16bit value
+-		 */
+-		tmp  =3D (data[2*i] & 0xF0) >> 4;
+-		tmp |=3D (data[2*i] & 0xF000) >> 8;
+-		tmp |=3D (data[2*i+1] & 0xF0) << 4;
+-		tmp |=3D (data[2*i+1] & 0xF000);
+-
+-		par->board->set_hdb(par, tmp);
+-		par->board->set_ctl(par, AUOK190X_I80_WR, 1);
+-	}
+-
+-	return 0;
+-}
+-
+-static int auok190x_issue_pixels(struct auok190xfb_par *par, int size,
+-				 u16 *data)
+-{
+-	struct fb_info *info =3D par->info;
+-	struct device *dev =3D par->info->device;
+-
+-	if (info->var.bits_per_pixel =3D=3D 8 && info->var.grayscale)
+-		auok190x_issue_pixels_gray8(par, size, data);
+-	else if (info->var.bits_per_pixel =3D=3D 16)
+-		auok190x_issue_pixels_rgb565(par, size, data);
+-	else
+-		dev_err(dev, "unsupported color mode (bits: %d, gray: %d)\n",
+-			info->var.bits_per_pixel, info->var.grayscale);
+-
+-	return 0;
+-}
+-
+-static u16 auok190x_read_data(struct auok190xfb_par *par)
+-{
+-	u16 data;
+-
+-	par->board->set_ctl(par, AUOK190X_I80_OE, 0);
+-	data =3D par->board->get_hdb(par);
+-	par->board->set_ctl(par, AUOK190X_I80_OE, 1);
+-
+-	return data;
+-}
+-
+-/*
+- * Command interface for the controller drivers
+- */
+-
+-void auok190x_send_command_nowait(struct auok190xfb_par *par, u16 data)
+-{
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 0);
+-	auok190x_issue_cmd(par, data);
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 1);
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_command_nowait);
+-
+-void auok190x_send_cmdargs_nowait(struct auok190xfb_par *par, u16 cmd,
+-				  int argc, u16 *argv)
+-{
+-	int i;
+-
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 0);
+-	auok190x_issue_cmd(par, cmd);
+-
+-	for (i =3D 0; i < argc; i++)
+-		auok190x_issue_data(par, argv[i]);
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 1);
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_cmdargs_nowait);
+-
+-int auok190x_send_command(struct auok190xfb_par *par, u16 data)
+-{
+-	int ret;
+-
+-	ret =3D par->board->wait_for_rdy(par);
+-	if (ret)
+-		return ret;
+-
+-	auok190x_send_command_nowait(par, data);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_command);
+-
+-int auok190x_send_cmdargs(struct auok190xfb_par *par, u16 cmd,
+-			   int argc, u16 *argv)
+-{
+-	int ret;
+-
+-	ret =3D par->board->wait_for_rdy(par);
+-	if (ret)
+-		return ret;
+-
+-	auok190x_send_cmdargs_nowait(par, cmd, argc, argv);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_cmdargs);
+-
+-int auok190x_read_cmdargs(struct auok190xfb_par *par, u16 cmd,
+-			   int argc, u16 *argv)
+-{
+-	int i, ret;
+-
+-	ret =3D par->board->wait_for_rdy(par);
+-	if (ret)
+-		return ret;
+-
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 0);
+-	auok190x_issue_cmd(par, cmd);
+-
+-	for (i =3D 0; i < argc; i++)
+-		argv[i] =3D auok190x_read_data(par);
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 1);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_read_cmdargs);
+-
+-void auok190x_send_cmdargs_pixels_nowait(struct auok190xfb_par *par, u16 c=
+md,
+-				  int argc, u16 *argv, int size, u16 *data)
+-{
+-	int i;
+-
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 0);
+-
+-	auok190x_issue_cmd(par, cmd);
+-
+-	for (i =3D 0; i < argc; i++)
+-		auok190x_issue_data(par, argv[i]);
+-
+-	auok190x_issue_pixels(par, size, data);
+-
+-	par->board->set_ctl(par, AUOK190X_I80_CS, 1);
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_cmdargs_pixels_nowait);
+-
+-int auok190x_send_cmdargs_pixels(struct auok190xfb_par *par, u16 cmd,
+-				  int argc, u16 *argv, int size, u16 *data)
+-{
+-	int ret;
+-
+-	ret =3D par->board->wait_for_rdy(par);
+-	if (ret)
+-		return ret;
+-
+-	auok190x_send_cmdargs_pixels_nowait(par, cmd, argc, argv, size, data);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_send_cmdargs_pixels);
+-
+-/*
+- * fbdefio callbacks - common on both controllers.
+- */
+-
+-static void auok190xfb_dpy_first_io(struct fb_info *info)
+-{
+-	/* tell runtime-pm that we wish to use the device in a short time */
+-	pm_runtime_get(info->device);
+-}
+-
+-/* this is called back from the deferred io workqueue */
+-static void auok190xfb_dpy_deferred_io(struct fb_info *info,
+-				struct list_head *pagelist)
+-{
+-	struct fb_deferred_io *fbdefio =3D info->fbdefio;
+-	struct auok190xfb_par *par =3D info->par;
+-	u16 line_length =3D info->fix.line_length;
+-	u16 yres =3D info->var.yres;
+-	u16 y1 =3D 0, h =3D 0;
+-	int prev_index =3D -1;
+-	struct page *cur;
+-	int h_inc;
+-	int threshold;
+-
+-	if (!list_empty(pagelist))
+-		/* the device resume should've been requested through first_io,
+-		 * if the resume did not finish until now, wait for it.
+-		 */
+-		pm_runtime_barrier(info->device);
+-	else
+-		/* We reached this via the fsync or some other way.
+-		 * In either case the first_io function did not run,
+-		 * so we runtime_resume the device here synchronously.
+-		 */
+-		pm_runtime_get_sync(info->device);
+-
+-	/* Do a full screen update every n updates to prevent
+-	 * excessive darkening of the Sipix display.
+-	 * If we do this, there is no need to walk the pages.
+-	 */
+-	if (par->need_refresh(par)) {
+-		par->update_all(par);
+-		goto out;
+-	}
+-
+-	/* height increment is fixed per page */
+-	h_inc =3D DIV_ROUND_UP(PAGE_SIZE , line_length);
+-
+-	/* calculate number of pages from pixel height */
+-	threshold =3D par->consecutive_threshold / h_inc;
+-	if (threshold < 1)
+-		threshold =3D 1;
+-
+-	/* walk the written page list and swizzle the data */
+-	list_for_each_entry(cur, &fbdefio->pagelist, lru) {
+-		if (prev_index < 0) {
+-			/* just starting so assign first page */
+-			y1 =3D (cur->index << PAGE_SHIFT) / line_length;
+-			h =3D h_inc;
+-		} else if ((cur->index - prev_index) <=3D threshold) {
+-			/* page is within our threshold for single updates */
+-			h +=3D h_inc * (cur->index - prev_index);
+-		} else {
+-			/* page not consecutive, issue previous update first */
+-			par->update_partial(par, y1, y1 + h);
+-
+-			/* start over with our non consecutive page */
+-			y1 =3D (cur->index << PAGE_SHIFT) / line_length;
+-			h =3D h_inc;
+-		}
+-		prev_index =3D cur->index;
+-	}
+-
+-	/* if we still have any pages to update we do so now */
+-	if (h >=3D yres)
+-		/* its a full screen update, just do it */
+-		par->update_all(par);
+-	else
+-		par->update_partial(par, y1, min((u16) (y1 + h), yres));
+-
+-out:
+-	pm_runtime_mark_last_busy(info->device);
+-	pm_runtime_put_autosuspend(info->device);
+-}
+-
+-/*
+- * framebuffer operations
+- */
+-
+-/*
+- * this is the slow path from userspace. they can seek and write to
+- * the fb. it's inefficient to do anything less than a full screen draw
+- */
+-static ssize_t auok190xfb_write(struct fb_info *info, const char __user *b=
+uf,
+-				size_t count, loff_t *ppos)
+-{
+-	struct auok190xfb_par *par =3D info->par;
+-	unsigned long p =3D *ppos;
+-	void *dst;
+-	int err =3D 0;
+-	unsigned long total_size;
+-
+-	if (info->state !=3D FBINFO_STATE_RUNNING)
+-		return -EPERM;
+-
+-	total_size =3D info->fix.smem_len;
+-
+-	if (p > total_size)
+-		return -EFBIG;
+-
+-	if (count > total_size) {
+-		err =3D -EFBIG;
+-		count =3D total_size;
+-	}
+-
+-	if (count + p > total_size) {
+-		if (!err)
+-			err =3D -ENOSPC;
+-
+-		count =3D total_size - p;
+-	}
+-
+-	dst =3D (void *)(info->screen_base + p);
+-
+-	if (copy_from_user(dst, buf, count))
+-		err =3D -EFAULT;
+-
+-	if  (!err)
+-		*ppos +=3D count;
+-
+-	par->update_all(par);
+-
+-	return (err) ? err : count;
+-}
+-
+-static void auok190xfb_fillrect(struct fb_info *info,
+-				   const struct fb_fillrect *rect)
+-{
+-	struct auok190xfb_par *par =3D info->par;
+-
+-	sys_fillrect(info, rect);
+-
+-	par->update_all(par);
+-}
+-
+-static void auok190xfb_copyarea(struct fb_info *info,
+-				   const struct fb_copyarea *area)
+-{
+-	struct auok190xfb_par *par =3D info->par;
+-
+-	sys_copyarea(info, area);
+-
+-	par->update_all(par);
+-}
+-
+-static void auok190xfb_imageblit(struct fb_info *info,
+-				const struct fb_image *image)
+-{
+-	struct auok190xfb_par *par =3D info->par;
+-
+-	sys_imageblit(info, image);
+-
+-	par->update_all(par);
+-}
+-
+-static int auok190xfb_check_var(struct fb_var_screeninfo *var,
+-				   struct fb_info *info)
+-{
+-	struct device *dev =3D info->device;
+-	struct auok190xfb_par *par =3D info->par;
+-	struct panel_info *panel =3D &panel_table[par->resolution];
+-	int size;
+-
+-	/*
+-	 * Color depth
+-	 */
+-
+-	if (var->bits_per_pixel =3D=3D 8 && var->grayscale =3D=3D 1) {
+-		/*
+-		 * For 8-bit grayscale, R, G, and B offset are equal.
+-		 */
+-		var->red.length =3D 8;
+-		var->red.offset =3D 0;
+-		var->red.msb_right =3D 0;
+-
+-		var->green.length =3D 8;
+-		var->green.offset =3D 0;
+-		var->green.msb_right =3D 0;
+-
+-		var->blue.length =3D 8;
+-		var->blue.offset =3D 0;
+-		var->blue.msb_right =3D 0;
+-
+-		var->transp.length =3D 0;
+-		var->transp.offset =3D 0;
+-		var->transp.msb_right =3D 0;
+-	} else if (var->bits_per_pixel =3D=3D 16) {
+-		var->red.length =3D 5;
+-		var->red.offset =3D 11;
+-		var->red.msb_right =3D 0;
+-
+-		var->green.length =3D 6;
+-		var->green.offset =3D 5;
+-		var->green.msb_right =3D 0;
+-
+-		var->blue.length =3D 5;
+-		var->blue.offset =3D 0;
+-		var->blue.msb_right =3D 0;
+-
+-		var->transp.length =3D 0;
+-		var->transp.offset =3D 0;
+-		var->transp.msb_right =3D 0;
+-	} else {
+-		dev_warn(dev, "unsupported color mode (bits: %d, grayscale: %d)\n",
+-			info->var.bits_per_pixel, info->var.grayscale);
+-		return -EINVAL;
+-	}
+-
+-	/*
+-	 * Dimensions
+-	 */
+-
+-	switch (var->rotate) {
+-	case FB_ROTATE_UR:
+-	case FB_ROTATE_UD:
+-		var->xres =3D panel->w;
+-		var->yres =3D panel->h;
+-		break;
+-	case FB_ROTATE_CW:
+-	case FB_ROTATE_CCW:
+-		var->xres =3D panel->h;
+-		var->yres =3D panel->w;
+-		break;
+-	default:
+-		dev_dbg(dev, "Invalid rotation request\n");
+-		return -EINVAL;
+-	}
+-
+-	var->xres_virtual =3D var->xres;
+-	var->yres_virtual =3D var->yres;
+-
+-	/*
+-	 *  Memory limit
+-	 */
+-
+-	size =3D var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8;
+-	if (size > info->fix.smem_len) {
+-		dev_err(dev, "Memory limit exceeded, requested %dK\n",
+-			size >> 10);
+-		return -ENOMEM;
+-	}
+-
+-	return 0;
+-}
+-
+-static int auok190xfb_set_fix(struct fb_info *info)
+-{
+-	struct fb_fix_screeninfo *fix =3D &info->fix;
+-	struct fb_var_screeninfo *var =3D &info->var;
+-
+-	fix->line_length =3D var->xres_virtual * var->bits_per_pixel / 8;
+-
+-	fix->type =3D FB_TYPE_PACKED_PIXELS;
+-	fix->accel =3D FB_ACCEL_NONE;
+-	fix->visual =3D (var->grayscale) ? FB_VISUAL_STATIC_PSEUDOCOLOR
+-				       : FB_VISUAL_TRUECOLOR;
+-	fix->xpanstep =3D 0;
+-	fix->ypanstep =3D 0;
+-	fix->ywrapstep =3D 0;
+-
+-	return 0;
+-}
+-
+-static int auok190xfb_set_par(struct fb_info *info)
+-{
+-	struct auok190xfb_par *par =3D info->par;
+-
+-	par->rotation =3D info->var.rotate;
+-	auok190xfb_set_fix(info);
+-
+-	/* reinit the controller to honor the rotation */
+-	par->init(par);
+-
+-	/* wait for init to complete */
+-	par->board->wait_for_rdy(par);
+-
+-	return 0;
+-}
+-
+-static struct fb_ops auok190xfb_ops =3D {
+-	.owner		=3D THIS_MODULE,
+-	.fb_read	=3D fb_sys_read,
+-	.fb_write	=3D auok190xfb_write,
+-	.fb_fillrect	=3D auok190xfb_fillrect,
+-	.fb_copyarea	=3D auok190xfb_copyarea,
+-	.fb_imageblit	=3D auok190xfb_imageblit,
+-	.fb_check_var	=3D auok190xfb_check_var,
+-	.fb_set_par     =3D auok190xfb_set_par,
 -};
 -
--static const unsigned int s6e63m0_22_240[] = {
--	0x18, 0x08, 0x24, 0x62, 0x54, 0x30, 0xB9,
--	0xBB, 0xA9, 0xB0, 0xB3, 0xA1, 0xC1, 0xC3,
--	0xB7, 0x00, 0x91, 0x00, 0x95, 0x00, 0xDA
+-/*
+- * Controller-functions common to both K1900 and K1901
+- */
 -
--};
--static const unsigned int s6e63m0_22_220[] = {
--	0x18, 0x08, 0x24, 0x63, 0x53, 0x31, 0xB8,
--	0xBC, 0xA9, 0xB0, 0xB5, 0xA2, 0xC4, 0xC4,
--	0xB8, 0x00, 0x8B, 0x00, 0x8E, 0x00, 0xC2
--};
+-static int auok190x_read_temperature(struct auok190xfb_par *par)
+-{
+-	struct device *dev =3D par->info->device;
+-	u16 data[4];
+-	int temp;
 -
--static const unsigned int s6e63m0_22_200[] = {
--	0x18, 0x08, 0x24, 0x66, 0x55, 0x34, 0xBA,
--	0xBD, 0xAB, 0xB1, 0xB5, 0xA3, 0xC5, 0xC6,
--	0xB9, 0x00, 0x85, 0x00, 0x88, 0x00, 0xBA
--};
+-	pm_runtime_get_sync(dev);
 -
--static const unsigned int s6e63m0_22_170[] = {
--	0x18, 0x08, 0x24, 0x69, 0x54, 0x37, 0xBB,
--	0xBE, 0xAC, 0xB4, 0xB7, 0xA6, 0xC7, 0xC8,
--	0xBC, 0x00, 0x7B, 0x00, 0x7E, 0x00, 0xAB
--};
+-	mutex_lock(&(par->io_lock));
 -
--static const unsigned int s6e63m0_22_140[] = {
--	0x18, 0x08, 0x24, 0x6C, 0x54, 0x3A, 0xBC,
--	0xBF, 0xAC, 0xB7, 0xBB, 0xA9, 0xC9, 0xC9,
--	0xBE, 0x00, 0x71, 0x00, 0x73, 0x00, 0x9E
--};
+-	auok190x_read_cmdargs(par, AUOK190X_CMD_READ_VERSION, 4, data);
 -
--static const unsigned int s6e63m0_22_110[] = {
--	0x18, 0x08, 0x24, 0x70, 0x51, 0x3E, 0xBF,
--	0xC1, 0xAF, 0xB9, 0xBC, 0xAB, 0xCC, 0xCC,
--	0xC2, 0x00, 0x65, 0x00, 0x67, 0x00, 0x8D
--};
+-	mutex_unlock(&(par->io_lock));
 -
--static const unsigned int s6e63m0_22_90[] = {
--	0x18, 0x08, 0x24, 0x73, 0x4A, 0x3D, 0xC0,
--	0xC2, 0xB1, 0xBB, 0xBE, 0xAC, 0xCE, 0xCF,
--	0xC5, 0x00, 0x5D, 0x00, 0x5E, 0x00, 0x82
--};
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
 -
--static const unsigned int s6e63m0_22_30[] = {
--	0x18, 0x08, 0x24, 0x78, 0xEC, 0x3D, 0xC8,
--	0xC2, 0xB6, 0xC4, 0xC7, 0xB6, 0xD5, 0xD7,
--	0xCC, 0x00, 0x39, 0x00, 0x36, 0x00, 0x51
--};
+-	/* sanitize and split of half-degrees for now */
+-	temp =3D ((data[0] & AUOK190X_VERSION_TEMP_MASK) >> 1);
 -
--/* gamma value: 1.9 */
--static const unsigned int s6e63m0_19_300[] = {
--	0x18, 0x08, 0x24, 0x61, 0x5F, 0x39, 0xBA,
--	0xBD, 0xAD, 0xB1, 0xB6, 0xA5, 0xC4, 0xC5,
--	0xBC, 0x00, 0xA0, 0x00, 0xA4, 0x00, 0xDB
--};
+-	/* handle positive and negative temperatures */
+-	if (temp >=3D 201)
+-		return (255 - temp + 1) * (-1);
+-	else
+-		return temp;
+-}
 -
--static const unsigned int s6e63m0_19_280[] = {
--	0x18, 0x08, 0x24, 0x61, 0x60, 0x39, 0xBB,
--	0xBE, 0xAD, 0xB2, 0xB6, 0xA6, 0xC5, 0xC7,
--	0xBD, 0x00, 0x9B, 0x00, 0x9E, 0x00, 0xD5
--};
+-static void auok190x_identify(struct auok190xfb_par *par)
+-{
+-	struct device *dev =3D par->info->device;
+-	u16 data[4];
 -
--static const unsigned int s6e63m0_19_260[] = {
--	0x18, 0x08, 0x24, 0x63, 0x61, 0x3B, 0xBA,
--	0xBE, 0xAC, 0xB3, 0xB8, 0xA7, 0xC6, 0xC8,
--	0xBD, 0x00, 0x96, 0x00, 0x98, 0x00, 0xCF
--};
+-	pm_runtime_get_sync(dev);
 -
--static const unsigned int s6e63m0_19_240[] = {
--	0x18, 0x08, 0x24, 0x67, 0x64, 0x3F, 0xBB,
--	0xBE, 0xAD, 0xB3, 0xB9, 0xA7, 0xC8, 0xC9,
--	0xBE, 0x00, 0x90, 0x00, 0x92, 0x00, 0xC8
--};
+-	mutex_lock(&(par->io_lock));
 -
--static const unsigned int s6e63m0_19_220[] = {
--	0x18, 0x08, 0x24, 0x68, 0x64, 0x40, 0xBC,
--	0xBF, 0xAF, 0xB4, 0xBA, 0xA9, 0xC8, 0xCA,
--	0xBE, 0x00, 0x8B, 0x00, 0x8C, 0x00, 0xC0
--};
+-	auok190x_read_cmdargs(par, AUOK190X_CMD_READ_VERSION, 4, data);
 -
--static const unsigned int s6e63m0_19_200[] = {
--	0x18, 0x08, 0x24, 0x68, 0x64, 0x3F, 0xBE,
--	0xC0, 0xB0, 0xB6, 0xBB, 0xAB, 0xC8, 0xCB,
--	0xBF, 0x00, 0x85, 0x00, 0x86, 0x00, 0xB8
--};
+-	mutex_unlock(&(par->io_lock));
 -
--static const unsigned int s6e63m0_19_170[] = {
--	0x18, 0x08, 0x24, 0x69, 0x64, 0x40, 0xBF,
--	0xC1, 0xB0, 0xB9, 0xBE, 0xAD, 0xCB, 0xCD,
--	0xC2, 0x00, 0x7A, 0x00, 0x7B, 0x00, 0xAA
--};
+-	par->epd_type =3D data[1] & AUOK190X_VERSION_TEMP_MASK;
 -
--static const unsigned int s6e63m0_19_140[] = {
--	0x18, 0x08, 0x24, 0x6E, 0x65, 0x45, 0xC0,
--	0xC3, 0xB2, 0xBA, 0xBE, 0xAE, 0xCD, 0xD0,
--	0xC4, 0x00, 0x70, 0x00, 0x70, 0x00, 0x9C
--};
+-	par->panel_size_int =3D AUOK190X_VERSION_SIZE_INT(data[2]);
+-	par->panel_size_float =3D AUOK190X_VERSION_SIZE_FLOAT(data[2]);
+-	par->panel_model =3D AUOK190X_VERSION_MODEL(data[2]);
 -
--static const unsigned int s6e63m0_19_110[] = {
--	0x18, 0x08, 0x24, 0x6F, 0x65, 0x46, 0xC2,
--	0xC4, 0xB3, 0xBF, 0xC2, 0xB2, 0xCF, 0xD1,
--	0xC6, 0x00, 0x64, 0x00, 0x64, 0x00, 0x8D
--};
+-	par->tcon_version =3D AUOK190X_VERSION_TCON(data[3]);
+-	par->lut_version =3D AUOK190X_VERSION_LUT(data[3]);
 -
--static const unsigned int s6e63m0_19_90[] = {
--	0x18, 0x08, 0x24, 0x74, 0x60, 0x4A, 0xC3,
--	0xC6, 0xB5, 0xBF, 0xC3, 0xB2, 0xD2, 0xD3,
--	0xC8, 0x00, 0x5B, 0x00, 0x5B, 0x00, 0x81
--};
+-	dev_dbg(dev, "panel %d.%din, model 0x%x, EPD 0x%x TCON-rev 0x%x, LUT-rev =
+0x%x",
+-		par->panel_size_int, par->panel_size_float, par->panel_model,
+-		par->epd_type, par->tcon_version, par->lut_version);
 -
--static const unsigned int s6e63m0_19_30[] = {
--	0x18, 0x08, 0x24, 0x84, 0x45, 0x4F, 0xCA,
--	0xCB, 0xBC, 0xC9, 0xCB, 0xBC, 0xDA, 0xDA,
--	0xD0, 0x00, 0x35, 0x00, 0x34, 0x00, 0x4E
--};
+-	pm_runtime_mark_last_busy(dev);
+-	pm_runtime_put_autosuspend(dev);
+-}
 -
--/* gamma value: 1.7 */
--static const unsigned int s6e63m0_17_300[] = {
--	0x18, 0x08, 0x24, 0x70, 0x70, 0x4F, 0xBF,
--	0xC2, 0xB2, 0xB8, 0xBC, 0xAC, 0xCB, 0xCD,
--	0xC3, 0x00, 0xA0, 0x00, 0xA4, 0x00, 0xDB
--};
+-/*
+- * Sysfs functions
+- */
 -
--static const unsigned int s6e63m0_17_280[] = {
--	0x18, 0x08, 0x24, 0x71, 0x71, 0x50, 0xBF,
--	0xC2, 0xB2, 0xBA, 0xBE, 0xAE, 0xCB, 0xCD,
--	0xC3, 0x00, 0x9C, 0x00, 0x9F, 0x00, 0xD6
--};
+-static ssize_t update_mode_show(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
 -
--static const unsigned int s6e63m0_17_260[] = {
--	0x18, 0x08, 0x24, 0x72, 0x72, 0x50, 0xC0,
--	0xC3, 0xB4, 0xB9, 0xBE, 0xAE, 0xCC, 0xCF,
--	0xC4, 0x00, 0x97, 0x00, 0x9A, 0x00, 0xD1
--};
+-	return sprintf(buf, "%d\n", par->update_mode);
+-}
 -
--static const unsigned int s6e63m0_17_240[] = {
--	0x18, 0x08, 0x24, 0x71, 0x72, 0x4F, 0xC2,
--	0xC4, 0xB5, 0xBB, 0xBF, 0xB0, 0xCC, 0xCF,
--	0xC3, 0x00, 0x91, 0x00, 0x95, 0x00, 0xCA
--};
+-static ssize_t update_mode_store(struct device *dev,
+-				 struct device_attribute *attr,
+-				 const char *buf, size_t count)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	int mode, ret;
 -
--static const unsigned int s6e63m0_17_220[] = {
--	0x18, 0x08, 0x24, 0x71, 0x73, 0x4F, 0xC2,
--	0xC5, 0xB5, 0xBD, 0xC0, 0xB2, 0xCD, 0xD1,
--	0xC5, 0x00, 0x8B, 0x00, 0x8E, 0x00, 0xC2
--};
+-	ret =3D kstrtoint(buf, 10, &mode);
+-	if (ret)
+-		return ret;
 -
--static const unsigned int s6e63m0_17_200[] = {
--	0x18, 0x08, 0x24, 0x72, 0x75, 0x51, 0xC2,
--	0xC6, 0xB5, 0xBF, 0xC1, 0xB3, 0xCE, 0xD1,
--	0xC6, 0x00, 0x85, 0x00, 0x88, 0x00, 0xBA
+-	par->update_mode =3D mode;
+-
+-	/* if we enter a better mode, do a full update */
+-	if (par->last_mode > 1 && mode < par->last_mode)
+-		par->update_all(par);
+-
+-	return count;
+-}
+-
+-static ssize_t flash_show(struct device *dev, struct device_attribute *att=
+r,
+-			  char *buf)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-
+-	return sprintf(buf, "%d\n", par->flash);
+-}
+-
+-static ssize_t flash_store(struct device *dev, struct device_attribute *at=
+tr,
+-			   const char *buf, size_t count)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	int flash, ret;
+-
+-	ret =3D kstrtoint(buf, 10, &flash);
+-	if (ret)
+-		return ret;
+-
+-	if (flash > 0)
+-		par->flash =3D 1;
+-	else
+-		par->flash =3D 0;
+-
+-	return count;
+-}
+-
+-static ssize_t temp_show(struct device *dev, struct device_attribute *attr,
+-			 char *buf)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	int temp;
+-
+-	temp =3D auok190x_read_temperature(par);
+-	return sprintf(buf, "%d\n", temp);
+-}
+-
+-static DEVICE_ATTR_RW(update_mode);
+-static DEVICE_ATTR_RW(flash);
+-static DEVICE_ATTR(temp, 0644, temp_show, NULL);
+-
+-static struct attribute *auok190x_attributes[] =3D {
+-	&dev_attr_update_mode.attr,
+-	&dev_attr_flash.attr,
+-	&dev_attr_temp.attr,
+-	NULL
 -};
 -
--static const unsigned int s6e63m0_17_170[] = {
--	0x18, 0x08, 0x24, 0x75, 0x77, 0x54, 0xC3,
--	0xC7, 0xB7, 0xC0, 0xC3, 0xB4, 0xD1, 0xD3,
--	0xC9, 0x00, 0x7B, 0x00, 0x7E, 0x00, 0xAB
+-static const struct attribute_group auok190x_attr_group =3D {
+-	.attrs		=3D auok190x_attributes,
 -};
 -
--static const unsigned int s6e63m0_17_140[] = {
--	0x18, 0x08, 0x24, 0x7B, 0x77, 0x58, 0xC3,
--	0xC8, 0xB8, 0xC2, 0xC6, 0xB6, 0xD3, 0xD4,
--	0xCA, 0x00, 0x71, 0x00, 0x73, 0x00, 0x9E
+-static int auok190x_power(struct auok190xfb_par *par, bool on)
+-{
+-	struct auok190x_board *board =3D par->board;
+-	int ret;
+-
+-	if (on) {
+-		/* We should maintain POWER up for at least 80ms before set
+-		 * RST_N and SLP_N to high (TCON spec 20100803_v35 p59)
+-		 */
+-		ret =3D regulator_enable(par->regulator);
+-		if (ret)
+-			return ret;
+-
+-		msleep(200);
+-		gpio_set_value(board->gpio_nrst, 1);
+-		gpio_set_value(board->gpio_nsleep, 1);
+-		msleep(200);
+-	} else {
+-		regulator_disable(par->regulator);
+-		gpio_set_value(board->gpio_nrst, 0);
+-		gpio_set_value(board->gpio_nsleep, 0);
+-	}
+-
+-	return 0;
+-}
+-
+-/*
+- * Recovery - powercycle the controller
+- */
+-
+-static void auok190x_recover(struct auok190xfb_par *par)
+-{
+-	struct device *dev =3D par->info->device;
+-
+-	auok190x_power(par, 0);
+-	msleep(100);
+-	auok190x_power(par, 1);
+-
+-	/* after powercycling the device, it's always active */
+-	pm_runtime_set_active(dev);
+-	par->standby =3D 0;
+-
+-	par->init(par);
+-
+-	/* wait for init to complete */
+-	par->board->wait_for_rdy(par);
+-}
+-
+-/*
+- * Power-management
+- */
+-static int __maybe_unused auok190x_runtime_suspend(struct device *dev)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	struct auok190x_board *board =3D par->board;
+-	u16 standby_param;
+-
+-	/* take and keep the lock until we are resumed, as the controller
+-	 * will never reach the non-busy state when in standby mode
+-	 */
+-	mutex_lock(&(par->io_lock));
+-
+-	if (par->standby) {
+-		dev_warn(dev, "already in standby, runtime-pm pairing mismatch\n");
+-		mutex_unlock(&(par->io_lock));
+-		return 0;
+-	}
+-
+-	/* according to runtime_pm.txt runtime_suspend only means, that the
+-	 * device will not process data and will not communicate with the CPU
+-	 * As we hold the lock, this stays true even without standby
+-	 */
+-	if (board->quirks & AUOK190X_QUIRK_STANDBYBROKEN) {
+-		dev_dbg(dev, "runtime suspend without standby\n");
+-		goto finish;
+-	} else if (board->quirks & AUOK190X_QUIRK_STANDBYPARAM) {
+-		/* for some TCON versions STANDBY expects a parameter (0) but
+-		 * it seems the real tcon version has to be determined yet.
+-		 */
+-		dev_dbg(dev, "runtime suspend with additional empty param\n");
+-		standby_param =3D 0;
+-		auok190x_send_cmdargs(par, AUOK190X_CMD_STANDBY, 1,
+-				      &standby_param);
+-	} else {
+-		dev_dbg(dev, "runtime suspend without param\n");
+-		auok190x_send_command(par, AUOK190X_CMD_STANDBY);
+-	}
+-
+-	msleep(64);
+-
+-finish:
+-	par->standby =3D 1;
+-
+-	return 0;
+-}
+-
+-static int __maybe_unused auok190x_runtime_resume(struct device *dev)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	struct auok190x_board *board =3D par->board;
+-
+-	if (!par->standby) {
+-		dev_warn(dev, "not in standby, runtime-pm pairing mismatch\n");
+-		return 0;
+-	}
+-
+-	if (board->quirks & AUOK190X_QUIRK_STANDBYBROKEN) {
+-		dev_dbg(dev, "runtime resume without standby\n");
+-	} else {
+-		/* when in standby, controller is always busy
+-		 * and only accepts the wakeup command
+-		 */
+-		dev_dbg(dev, "runtime resume from standby\n");
+-		auok190x_send_command_nowait(par, AUOK190X_CMD_WAKEUP);
+-
+-		msleep(160);
+-
+-		/* wait for the controller to be ready and release the lock */
+-		board->wait_for_rdy(par);
+-	}
+-
+-	par->standby =3D 0;
+-
+-	mutex_unlock(&(par->io_lock));
+-
+-	return 0;
+-}
+-
+-static int __maybe_unused auok190x_suspend(struct device *dev)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	struct auok190x_board *board =3D par->board;
+-	int ret;
+-
+-	dev_dbg(dev, "suspend\n");
+-	if (board->quirks & AUOK190X_QUIRK_STANDBYBROKEN) {
+-		/* suspend via powering off the ic */
+-		dev_dbg(dev, "suspend with broken standby\n");
+-
+-		auok190x_power(par, 0);
+-	} else {
+-		dev_dbg(dev, "suspend using sleep\n");
+-
+-		/* the sleep state can only be entered from the standby state.
+-		 * pm_runtime_get_noresume gets called before the suspend call.
+-		 * So the devices usage count is >0 but it is not necessarily
+-		 * active.
+-		 */
+-		if (!pm_runtime_status_suspended(dev)) {
+-			ret =3D auok190x_runtime_suspend(dev);
+-			if (ret < 0) {
+-				dev_err(dev, "auok190x_runtime_suspend failed with %d\n",
+-					ret);
+-				return ret;
+-			}
+-			par->manual_standby =3D 1;
+-		}
+-
+-		gpio_direction_output(board->gpio_nsleep, 0);
+-	}
+-
+-	msleep(100);
+-
+-	return 0;
+-}
+-
+-static int __maybe_unused auok190x_resume(struct device *dev)
+-{
+-	struct fb_info *info =3D dev_get_drvdata(dev);
+-	struct auok190xfb_par *par =3D info->par;
+-	struct auok190x_board *board =3D par->board;
+-
+-	dev_dbg(dev, "resume\n");
+-	if (board->quirks & AUOK190X_QUIRK_STANDBYBROKEN) {
+-		dev_dbg(dev, "resume with broken standby\n");
+-
+-		auok190x_power(par, 1);
+-
+-		par->init(par);
+-	} else {
+-		dev_dbg(dev, "resume from sleep\n");
+-
+-		/* device should be in runtime suspend when we were suspended
+-		 * and pm_runtime_put_sync gets called after this function.
+-		 * So there is no need to touch the standby mode here at all.
+-		 */
+-		gpio_direction_output(board->gpio_nsleep, 1);
+-		msleep(100);
+-
+-		/* an additional init call seems to be necessary after sleep */
+-		auok190x_runtime_resume(dev);
+-		par->init(par);
+-
+-		/* if we were runtime-suspended before, suspend again*/
+-		if (!par->manual_standby)
+-			auok190x_runtime_suspend(dev);
+-		else
+-			par->manual_standby =3D 0;
+-	}
+-
+-	return 0;
+-}
+-
+-const struct dev_pm_ops auok190x_pm =3D {
+-	SET_RUNTIME_PM_OPS(auok190x_runtime_suspend, auok190x_runtime_resume,
+-			   NULL)
+-	SET_SYSTEM_SLEEP_PM_OPS(auok190x_suspend, auok190x_resume)
+-};
+-EXPORT_SYMBOL_GPL(auok190x_pm);
+-
+-/*
+- * Common probe and remove code
+- */
+-
+-int auok190x_common_probe(struct platform_device *pdev,
+-			  struct auok190x_init_data *init)
+-{
+-	struct auok190x_board *board =3D init->board;
+-	struct auok190xfb_par *par;
+-	struct fb_info *info;
+-	struct panel_info *panel;
+-	int videomemorysize, ret;
+-	unsigned char *videomemory;
+-
+-	/* check board contents */
+-	if (!board->init || !board->cleanup || !board->wait_for_rdy
+-	    || !board->set_ctl || !board->set_hdb || !board->get_hdb
+-	    || !board->setup_irq)
+-		return -EINVAL;
+-
+-	info =3D framebuffer_alloc(sizeof(struct auok190xfb_par), &pdev->dev);
+-	if (!info)
+-		return -ENOMEM;
+-
+-	par =3D info->par;
+-	par->info =3D info;
+-	par->board =3D board;
+-	par->recover =3D auok190x_recover;
+-	par->update_partial =3D init->update_partial;
+-	par->update_all =3D init->update_all;
+-	par->need_refresh =3D init->need_refresh;
+-	par->init =3D init->init;
+-
+-	/* init update modes */
+-	par->update_cnt =3D 0;
+-	par->update_mode =3D -1;
+-	par->last_mode =3D -1;
+-	par->flash =3D 0;
+-
+-	par->regulator =3D regulator_get(info->device, "vdd");
+-	if (IS_ERR(par->regulator)) {
+-		ret =3D PTR_ERR(par->regulator);
+-		dev_err(info->device, "Failed to get regulator: %d\n", ret);
+-		goto err_reg;
+-	}
+-
+-	ret =3D board->init(par);
+-	if (ret) {
+-		dev_err(info->device, "board init failed, %d\n", ret);
+-		goto err_board;
+-	}
+-
+-	ret =3D gpio_request(board->gpio_nsleep, "AUOK190x sleep");
+-	if (ret) {
+-		dev_err(info->device, "could not request sleep gpio, %d\n",
+-			ret);
+-		goto err_gpio1;
+-	}
+-
+-	ret =3D gpio_direction_output(board->gpio_nsleep, 0);
+-	if (ret) {
+-		dev_err(info->device, "could not set sleep gpio, %d\n", ret);
+-		goto err_gpio2;
+-	}
+-
+-	ret =3D gpio_request(board->gpio_nrst, "AUOK190x reset");
+-	if (ret) {
+-		dev_err(info->device, "could not request reset gpio, %d\n",
+-			ret);
+-		goto err_gpio2;
+-	}
+-
+-	ret =3D gpio_direction_output(board->gpio_nrst, 0);
+-	if (ret) {
+-		dev_err(info->device, "could not set reset gpio, %d\n", ret);
+-		goto err_gpio3;
+-	}
+-
+-	ret =3D auok190x_power(par, 1);
+-	if (ret) {
+-		dev_err(info->device, "could not power on the device, %d\n",
+-			ret);
+-		goto err_gpio3;
+-	}
+-
+-	mutex_init(&par->io_lock);
+-
+-	init_waitqueue_head(&par->waitq);
+-
+-	ret =3D par->board->setup_irq(par->info);
+-	if (ret) {
+-		dev_err(info->device, "could not setup ready-irq, %d\n", ret);
+-		goto err_irq;
+-	}
+-
+-	/* wait for init to complete */
+-	par->board->wait_for_rdy(par);
+-
+-	/*
+-	 * From here on the controller can talk to us
+-	 */
+-
+-	/* initialise fix, var, resolution and rotation */
+-
+-	strlcpy(info->fix.id, init->id, 16);
+-	info->var.bits_per_pixel =3D 8;
+-	info->var.grayscale =3D 1;
+-
+-	panel =3D &panel_table[board->resolution];
+-
+-	par->resolution =3D board->resolution;
+-	par->rotation =3D 0;
+-
+-	/* videomemory handling */
+-
+-	videomemorysize =3D roundup((panel->w * panel->h) * 2, PAGE_SIZE);
+-	videomemory =3D vzalloc(videomemorysize);
+-	if (!videomemory) {
+-		ret =3D -ENOMEM;
+-		goto err_irq;
+-	}
+-
+-	info->screen_base =3D (char *)videomemory;
+-	info->fix.smem_len =3D videomemorysize;
+-
+-	info->flags =3D FBINFO_FLAG_DEFAULT | FBINFO_VIRTFB;
+-	info->fbops =3D &auok190xfb_ops;
+-
+-	ret =3D auok190xfb_check_var(&info->var, info);
+-	if (ret)
+-		goto err_defio;
+-
+-	auok190xfb_set_fix(info);
+-
+-	/* deferred io init */
+-
+-	info->fbdefio =3D devm_kzalloc(info->device,
+-				     sizeof(struct fb_deferred_io),
+-				     GFP_KERNEL);
+-	if (!info->fbdefio) {
+-		ret =3D -ENOMEM;
+-		goto err_defio;
+-	}
+-
+-	dev_dbg(info->device, "targeting %d frames per second\n", board->fps);
+-	info->fbdefio->delay =3D HZ / board->fps;
+-	info->fbdefio->first_io =3D auok190xfb_dpy_first_io,
+-	info->fbdefio->deferred_io =3D auok190xfb_dpy_deferred_io,
+-	fb_deferred_io_init(info);
+-
+-	/* color map */
+-
+-	ret =3D fb_alloc_cmap(&info->cmap, 256, 0);
+-	if (ret < 0) {
+-		dev_err(info->device, "Failed to allocate colormap\n");
+-		goto err_cmap;
+-	}
+-
+-	/* controller init */
+-
+-	par->consecutive_threshold =3D 100;
+-	par->init(par);
+-	auok190x_identify(par);
+-
+-	platform_set_drvdata(pdev, info);
+-
+-	ret =3D register_framebuffer(info);
+-	if (ret < 0)
+-		goto err_regfb;
+-
+-	ret =3D sysfs_create_group(&info->device->kobj, &auok190x_attr_group);
+-	if (ret)
+-		goto err_sysfs;
+-
+-	dev_info(info->device, "fb%d: %dx%d using %dK of video memory\n",
+-		 info->node, info->var.xres, info->var.yres,
+-		 videomemorysize >> 10);
+-
+-	/* increase autosuspend_delay when we use alternative methods
+-	 * for runtime_pm
+-	 */
+-	par->autosuspend_delay =3D (board->quirks & AUOK190X_QUIRK_STANDBYBROKEN)
+-					? 1000 : 200;
+-
+-	pm_runtime_set_active(info->device);
+-	pm_runtime_enable(info->device);
+-	pm_runtime_set_autosuspend_delay(info->device, par->autosuspend_delay);
+-	pm_runtime_use_autosuspend(info->device);
+-
+-	return 0;
+-
+-err_sysfs:
+-	unregister_framebuffer(info);
+-err_regfb:
+-	fb_dealloc_cmap(&info->cmap);
+-err_cmap:
+-	fb_deferred_io_cleanup(info);
+-err_defio:
+-	vfree((void *)info->screen_base);
+-err_irq:
+-	auok190x_power(par, 0);
+-err_gpio3:
+-	gpio_free(board->gpio_nrst);
+-err_gpio2:
+-	gpio_free(board->gpio_nsleep);
+-err_gpio1:
+-	board->cleanup(par);
+-err_board:
+-	regulator_put(par->regulator);
+-err_reg:
+-	framebuffer_release(info);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_common_probe);
+-
+-int  auok190x_common_remove(struct platform_device *pdev)
+-{
+-	struct fb_info *info =3D platform_get_drvdata(pdev);
+-	struct auok190xfb_par *par =3D info->par;
+-	struct auok190x_board *board =3D par->board;
+-
+-	pm_runtime_disable(info->device);
+-
+-	sysfs_remove_group(&info->device->kobj, &auok190x_attr_group);
+-
+-	unregister_framebuffer(info);
+-
+-	fb_dealloc_cmap(&info->cmap);
+-
+-	fb_deferred_io_cleanup(info);
+-
+-	vfree((void *)info->screen_base);
+-
+-	auok190x_power(par, 0);
+-
+-	gpio_free(board->gpio_nrst);
+-	gpio_free(board->gpio_nsleep);
+-
+-	board->cleanup(par);
+-
+-	regulator_put(par->regulator);
+-
+-	framebuffer_release(info);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(auok190x_common_remove);
+-
+-MODULE_DESCRIPTION("Common code for AUO-K190X controllers");
+-MODULE_AUTHOR("Heiko Stuebner <heiko@sntech.de>");
+-MODULE_LICENSE("GPL");
+Index: b/drivers/video/fbdev/auo_k190x.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/drivers/video/fbdev/auo_k190x.h	2017-10-18 14:35:21.947448311 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,129 +0,0 @@
+-/*
+- * Private common definitions for AUO-K190X framebuffer drivers
+- *
+- * Copyright (C) 2012 Heiko Stuebner <heiko@sntech.de>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-/*
+- * I80 interface specific defines
+- */
+-
+-#define AUOK190X_I80_CS			0x01
+-#define AUOK190X_I80_DC			0x02
+-#define AUOK190X_I80_WR			0x03
+-#define AUOK190X_I80_OE			0x04
+-
+-/*
+- * AUOK190x commands, common to both controllers
+- */
+-
+-#define AUOK190X_CMD_INIT		0x0000
+-#define AUOK190X_CMD_STANDBY		0x0001
+-#define AUOK190X_CMD_WAKEUP		0x0002
+-#define AUOK190X_CMD_TCON_RESET		0x0003
+-#define AUOK190X_CMD_DATA_STOP		0x1002
+-#define AUOK190X_CMD_LUT_START		0x1003
+-#define AUOK190X_CMD_DISP_REFRESH	0x1004
+-#define AUOK190X_CMD_DISP_RESET		0x1005
+-#define AUOK190X_CMD_PRE_DISPLAY_START	0x100D
+-#define AUOK190X_CMD_PRE_DISPLAY_STOP	0x100F
+-#define AUOK190X_CMD_FLASH_W		0x2000
+-#define AUOK190X_CMD_FLASH_E		0x2001
+-#define AUOK190X_CMD_FLASH_STS		0x2002
+-#define AUOK190X_CMD_FRAMERATE		0x3000
+-#define AUOK190X_CMD_READ_VERSION	0x4000
+-#define AUOK190X_CMD_READ_STATUS	0x4001
+-#define AUOK190X_CMD_READ_LUT		0x4003
+-#define AUOK190X_CMD_DRIVERTIMING	0x5000
+-#define AUOK190X_CMD_LBALANCE		0x5001
+-#define AUOK190X_CMD_AGINGMODE		0x6000
+-#define AUOK190X_CMD_AGINGEXIT		0x6001
+-
+-/*
+- * Common settings for AUOK190X_CMD_INIT
+- */
+-
+-#define AUOK190X_INIT_DATA_FILTER	(0 << 12)
+-#define AUOK190X_INIT_DATA_BYPASS	(1 << 12)
+-#define AUOK190X_INIT_INVERSE_WHITE	(0 << 9)
+-#define AUOK190X_INIT_INVERSE_BLACK	(1 << 9)
+-#define AUOK190X_INIT_SCAN_DOWN		(0 << 1)
+-#define AUOK190X_INIT_SCAN_UP		(1 << 1)
+-#define AUOK190X_INIT_SHIFT_LEFT	(0 << 0)
+-#define AUOK190X_INIT_SHIFT_RIGHT	(1 << 0)
+-
+-/* Common bits to pixels
+- *   Mode	15-12	11-8	7-4	3-0
+- *   format0	4	3	2	1
+- *   format1	3	4	1	2
+- */
+-
+-#define AUOK190X_INIT_FORMAT0		0
+-#define AUOK190X_INIT_FORMAT1		(1 << 6)
+-
+-/*
+- * settings for AUOK190X_CMD_RESET
+- */
+-
+-#define AUOK190X_RESET_TCON		(0 << 0)
+-#define AUOK190X_RESET_NORMAL		(1 << 0)
+-#define AUOK190X_RESET_PON		(1 << 1)
+-
+-/*
+- * AUOK190X_CMD_VERSION
+- */
+-
+-#define AUOK190X_VERSION_TEMP_MASK		(0x1ff)
+-#define AUOK190X_VERSION_EPD_MASK		(0xff)
+-#define AUOK190X_VERSION_SIZE_INT(_val)		((_val & 0xfc00) >> 10)
+-#define AUOK190X_VERSION_SIZE_FLOAT(_val)	((_val & 0x3c0) >> 6)
+-#define AUOK190X_VERSION_MODEL(_val)		(_val & 0x3f)
+-#define AUOK190X_VERSION_LUT(_val)		(_val & 0xff)
+-#define AUOK190X_VERSION_TCON(_val)		((_val & 0xff00) >> 8)
+-
+-/*
+- * update modes for CMD_PARTIALDISP on K1900 and CMD_DDMA on K1901
+- */
+-
+-#define AUOK190X_UPDATE_MODE(_res)		((_res & 0x7) << 12)
+-#define AUOK190X_UPDATE_NONFLASH		(1 << 15)
+-
+-/*
+- * track panel specific parameters for common init
+- */
+-
+-struct auok190x_init_data {
+-	char *id;
+-	struct auok190x_board *board;
+-
+-	void (*update_partial)(struct auok190xfb_par *par, u16 y1, u16 y2);
+-	void (*update_all)(struct auok190xfb_par *par);
+-	bool (*need_refresh)(struct auok190xfb_par *par);
+-	void (*init)(struct auok190xfb_par *par);
 -};
 -
--static const unsigned int s6e63m0_17_110[] = {
--	0x18, 0x08, 0x24, 0x81, 0x7B, 0x5D, 0xC6,
--	0xCA, 0xBB, 0xC3, 0xC7, 0xB8, 0xD6, 0xD8,
--	0xCD, 0x00, 0x65, 0x00, 0x67, 0x00, 0x8D
+-
+-extern void auok190x_send_command_nowait(struct auok190xfb_par *par, u16 d=
+ata);
+-extern int auok190x_send_command(struct auok190xfb_par *par, u16 data);
+-extern void auok190x_send_cmdargs_nowait(struct auok190xfb_par *par, u16 c=
+md,
+-					 int argc, u16 *argv);
+-extern int auok190x_send_cmdargs(struct auok190xfb_par *par, u16 cmd,
+-				  int argc, u16 *argv);
+-extern void auok190x_send_cmdargs_pixels_nowait(struct auok190xfb_par *par,
+-						u16 cmd, int argc, u16 *argv,
+-						int size, u16 *data);
+-extern int auok190x_send_cmdargs_pixels(struct auok190xfb_par *par, u16 cm=
+d,
+-					int argc, u16 *argv, int size,
+-					u16 *data);
+-extern int auok190x_read_cmdargs(struct auok190xfb_par *par, u16 cmd,
+-				  int argc, u16 *argv);
+-
+-extern int auok190x_common_probe(struct platform_device *pdev,
+-				 struct auok190x_init_data *init);
+-extern int auok190x_common_remove(struct platform_device *pdev);
+-
+-extern const struct dev_pm_ops auok190x_pm;
+Index: b/include/video/auo_k190xfb.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- a/include/video/auo_k190xfb.h	2017-10-18 14:35:25.827448262 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,107 +0,0 @@
+-/*
+- * Definitions for AUO-K190X framebuffer drivers
+- *
+- * Copyright (C) 2012 Heiko Stuebner <heiko@sntech.de>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef _LINUX_VIDEO_AUO_K190XFB_H_
+-#define _LINUX_VIDEO_AUO_K190XFB_H_
+-
+-/* Controller standby command needs a param */
+-#define AUOK190X_QUIRK_STANDBYPARAM	(1 << 0)
+-
+-/* Controller standby is completely broken */
+-#define AUOK190X_QUIRK_STANDBYBROKEN	(1 << 1)
+-
+-/*
+- * Resolutions for the displays
+- */
+-#define AUOK190X_RESOLUTION_800_600		0
+-#define AUOK190X_RESOLUTION_1024_768		1
+-#define AUOK190X_RESOLUTION_600_800		4
+-#define AUOK190X_RESOLUTION_768_1024		5
+-
+-/*
+- * struct used by auok190x. board specific stuff comes from *board
+- */
+-struct auok190xfb_par {
+-	struct fb_info *info;
+-	struct auok190x_board *board;
+-
+-	struct regulator *regulator;
+-
+-	struct mutex io_lock;
+-	struct delayed_work work;
+-	wait_queue_head_t waitq;
+-	int resolution;
+-	int rotation;
+-	int consecutive_threshold;
+-	int update_cnt;
+-
+-	/* panel and controller informations */
+-	int epd_type;
+-	int panel_size_int;
+-	int panel_size_float;
+-	int panel_model;
+-	int tcon_version;
+-	int lut_version;
+-
+-	/* individual controller callbacks */
+-	void (*update_partial)(struct auok190xfb_par *par, u16 y1, u16 y2);
+-	void (*update_all)(struct auok190xfb_par *par);
+-	bool (*need_refresh)(struct auok190xfb_par *par);
+-	void (*init)(struct auok190xfb_par *par);
+-	void (*recover)(struct auok190xfb_par *par);
+-
+-	int update_mode; /* mode to use for updates */
+-	int last_mode; /* update mode last used */
+-	int flash;
+-
+-	/* power management */
+-	int autosuspend_delay;
+-	bool standby;
+-	bool manual_standby;
 -};
 -
--static const unsigned int s6e63m0_17_90[] = {
--	0x18, 0x08, 0x24, 0x82, 0x7A, 0x5B, 0xC8,
--	0xCB, 0xBD, 0xC5, 0xCA, 0xBA, 0xD6, 0xD8,
--	0xCE, 0x00, 0x5D, 0x00, 0x5E, 0x00, 0x82
--};
+-/**
+- * Board specific platform-data
+- * @init:		initialize the controller interface
+- * @cleanup:		cleanup the controller interface
+- * @wait_for_rdy:	wait until the controller is not busy anymore
+- * @set_ctl:		change an interface control
+- * @set_hdb:		write a value to the data register
+- * @get_hdb:		read a value from the data register
+- * @setup_irq:		method to setup the irq handling on the busy gpio
+- * @gpio_nsleep:	sleep gpio
+- * @gpio_nrst:		reset gpio
+- * @gpio_nbusy:		busy gpio
+- * @resolution:		one of the AUOK190X_RESOLUTION constants
+- * @rotation:		rotation of the framebuffer
+- * @quirks:		controller quirks to honor
+- * @fps:		frames per second for defio
+- */
+-struct auok190x_board {
+-	int (*init)(struct auok190xfb_par *);
+-	void (*cleanup)(struct auok190xfb_par *);
+-	int (*wait_for_rdy)(struct auok190xfb_par *);
 -
--static const unsigned int s6e63m0_17_30[] = {
--	0x18, 0x08, 0x24, 0x8F, 0x73, 0x63, 0xD1,
--	0xD0, 0xC5, 0xCC, 0xD1, 0xC2, 0xDE, 0xE0,
--	0xD6, 0x00, 0x39, 0x00, 0x36, 0x00, 0x51
--};
+-	void (*set_ctl)(struct auok190xfb_par *, unsigned char, u8);
+-	void (*set_hdb)(struct auok190xfb_par *, u16);
+-	u16 (*get_hdb)(struct auok190xfb_par *);
 -
--struct s6e63m0_gamma {
--	unsigned int *gamma_22_table[MAX_GAMMA_LEVEL];
--	unsigned int *gamma_19_table[MAX_GAMMA_LEVEL];
--	unsigned int *gamma_17_table[MAX_GAMMA_LEVEL];
--};
+-	int (*setup_irq)(struct fb_info *);
 -
--static struct s6e63m0_gamma gamma_table = {
--	.gamma_22_table[0] = (unsigned int *)&s6e63m0_22_30,
--	.gamma_22_table[1] = (unsigned int *)&s6e63m0_22_90,
--	.gamma_22_table[2] = (unsigned int *)&s6e63m0_22_110,
--	.gamma_22_table[3] = (unsigned int *)&s6e63m0_22_140,
--	.gamma_22_table[4] = (unsigned int *)&s6e63m0_22_170,
--	.gamma_22_table[5] = (unsigned int *)&s6e63m0_22_200,
--	.gamma_22_table[6] = (unsigned int *)&s6e63m0_22_220,
--	.gamma_22_table[7] = (unsigned int *)&s6e63m0_22_240,
--	.gamma_22_table[8] = (unsigned int *)&s6e63m0_22_260,
--	.gamma_22_table[9] = (unsigned int *)&s6e63m0_22_280,
--	.gamma_22_table[10] = (unsigned int *)&s6e63m0_22_300,
+-	int gpio_nsleep;
+-	int gpio_nrst;
+-	int gpio_nbusy;
 -
--	.gamma_19_table[0] = (unsigned int *)&s6e63m0_19_30,
--	.gamma_19_table[1] = (unsigned int *)&s6e63m0_19_90,
--	.gamma_19_table[2] = (unsigned int *)&s6e63m0_19_110,
--	.gamma_19_table[3] = (unsigned int *)&s6e63m0_19_140,
--	.gamma_19_table[4] = (unsigned int *)&s6e63m0_19_170,
--	.gamma_19_table[5] = (unsigned int *)&s6e63m0_19_200,
--	.gamma_19_table[6] = (unsigned int *)&s6e63m0_19_220,
--	.gamma_19_table[7] = (unsigned int *)&s6e63m0_19_240,
--	.gamma_19_table[8] = (unsigned int *)&s6e63m0_19_260,
--	.gamma_19_table[9] = (unsigned int *)&s6e63m0_19_280,
--	.gamma_19_table[10] = (unsigned int *)&s6e63m0_19_300,
--
--	.gamma_17_table[0] = (unsigned int *)&s6e63m0_17_30,
--	.gamma_17_table[1] = (unsigned int *)&s6e63m0_17_90,
--	.gamma_17_table[2] = (unsigned int *)&s6e63m0_17_110,
--	.gamma_17_table[3] = (unsigned int *)&s6e63m0_17_140,
--	.gamma_17_table[4] = (unsigned int *)&s6e63m0_17_170,
--	.gamma_17_table[5] = (unsigned int *)&s6e63m0_17_200,
--	.gamma_17_table[6] = (unsigned int *)&s6e63m0_17_220,
--	.gamma_17_table[7] = (unsigned int *)&s6e63m0_17_240,
--	.gamma_17_table[8] = (unsigned int *)&s6e63m0_17_260,
--	.gamma_17_table[9] = (unsigned int *)&s6e63m0_17_280,
--	.gamma_17_table[10] = (unsigned int *)&s6e63m0_17_300,
+-	int resolution;
+-	int quirks;
+-	int fps;
 -};
 -
 -#endif
--
--- 
-2.14.1
 

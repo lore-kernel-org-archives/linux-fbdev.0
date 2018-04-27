@@ -1,35 +1,55 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 09:11:06 +0000
-Subject: Re: [PATCH 3/3] backlight: pwm_bl: don't use GPIOF_* with gpiod_get_direction
-Message-Id: <20180416091106.lg7nesbqvfeehuzq@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 27 Apr 2018 11:21:42 +0000
+Subject: [PATCH 0/3] fbdev/drm: sh_mobile: remove unused MERAM support
+Message-Id: <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180114210711.13863-1-wsa+renesas@sang-engineering.com>
- <20180114210711.13863-4-wsa+renesas@sang-engineering.com>
-In-Reply-To: <20180114210711.13863-4-wsa+renesas@sang-engineering.com>
+References: <CGME20180427112213epcas2p3ed6890af75e679b537121f2655aa91d8@epcas2p3.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org, linux-gpio@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, b.zolnierkie@samsung.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-renesas-soc@vger.kernel.org
 
-On Sun, 14 Jan 2018, Wolfram Sang wrote:
+Hi,
 
-> The documentation was wrong, gpiod_get_direction() returns 0/1 instead
-> of the GPIOF_* flags. The docs were fixed with commit 94fc73094abe47
-> ("gpio: correct docs about return value of gpiod_get_direction"). Now,
-> fix this user (until a better, system-wide solution is in place).
-> 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> ---
-> Only build tested!
-> 
->  drivers/video/backlight/pwm_bl.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+This patchset removes unused MERAM support (last user was removed
+3 years ago) from shmobile fbdev & drm drivers and then removes
+MERAM driver itself.
 
-Applied with Daniel and Simon's Acks.
+If it is okay to merge this patches I would like patch #1 to go
+through fbdev tree and patch #2 to go through drm tree. Once they
+are both upstream (v4.18) I will apply patch #3 to fbdev tree.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+
+
+Bartlomiej Zolnierkiewicz (3):
+  video: fbdev: sh_mobile_lcdcfb: remove unused MERAM support
+  drm: shmobile: remove unused MERAM support
+  video: fbdev: remove unused sh_mobile_meram driver
+
+ drivers/gpu/drm/shmobile/Kconfig           |   1 -
+ drivers/gpu/drm/shmobile/shmob_drm_crtc.c  |  42 --
+ drivers/gpu/drm/shmobile/shmob_drm_crtc.h  |   1 -
+ drivers/gpu/drm/shmobile/shmob_drm_drv.h   |   2 -
+ drivers/gpu/drm/shmobile/shmob_drm_kms.c   |  11 -
+ drivers/gpu/drm/shmobile/shmob_drm_kms.h   |   1 -
+ drivers/gpu/drm/shmobile/shmob_drm_plane.c |   2 -
+ drivers/video/fbdev/Kconfig                |  13 -
+ drivers/video/fbdev/Makefile               |   1 -
+ drivers/video/fbdev/sh_mobile_lcdcfb.c     |  63 +--
+ drivers/video/fbdev/sh_mobile_lcdcfb.h     |   1 -
+ drivers/video/fbdev/sh_mobile_meram.c      | 754 -----------------------------
+ include/linux/platform_data/shmob_drm.h    |   4 -
+ include/video/sh_mobile_lcdc.h             |   3 -
+ include/video/sh_mobile_meram.h            |  95 ----
+ 15 files changed, 1 insertion(+), 993 deletions(-)
+ delete mode 100644 drivers/video/fbdev/sh_mobile_meram.c
+ delete mode 100644 include/video/sh_mobile_meram.h
 
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+1.9.1

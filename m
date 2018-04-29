@@ -1,32 +1,42 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 16 Apr 2018 14:32:32 +0000
-Subject: Re: [PATCHv4 02/10] mfd: ti-lmu: switch to gpiod
-Message-Id: <20180416143232.gz2aacazsphexexy@dell>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Sun, 29 Apr 2018 17:53:07 +0000
+Subject: [PATCH] staging: sm750fb: add drm development branch details
+Message-Id: <1525024387-8678-1-git-send-email-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180330172414.26575-1-sebastian.reichel@collabora.co.uk>
- <20180330172414.26575-3-sebastian.reichel@collabora.co.uk>
-In-Reply-To: <20180330172414.26575-3-sebastian.reichel@collabora.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-Cc: Sebastian Reichel <sre@kernel.org>, Milo Kim <Milo.Kim@ti.com>, Daniel Thompson <daniel.thompson@linaro.org>, Rob Herring <robh+dt@kernel.org>, Tony Lindgren <tony@atomide.com>, Jingoo Han <jingoohan1@gmail.com>, Mark Rutland <mark.rutland@arm.com>, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Fri, 30 Mar 2018, Sebastian Reichel wrote:
+The sm750 driver in staging has no future as new framebuffer driver
+will not be added to fbdev anymore. A drm driver is being prepared, and
+the details added to the TODO file. This sm750fb driver will be removed
+as soon as the drm driver is ready. Also, remove my old email.
 
-> Use new descriptor based API instead of the legacy one.
-> 
-> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.co.uk>
-> ---
->  drivers/mfd/ti-lmu.c       | 28 ++++++++++++----------------
->  include/linux/mfd/ti-lmu.h |  3 ++-
->  2 files changed, 14 insertions(+), 17 deletions(-)
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+---
+ drivers/staging/sm750fb/TODO | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-
+diff --git a/drivers/staging/sm750fb/TODO b/drivers/staging/sm750fb/TODO
+index f710ab1..aeb2df3 100644
+--- a/drivers/staging/sm750fb/TODO
++++ b/drivers/staging/sm750fb/TODO
+@@ -9,8 +9,11 @@ TODO:
+ - must be ported to the atomic kms framework in the drm subsystem (which will
+   give you a basic fbdev driver for free)
+ 
++Note:
++- This driver will be removed from staging after the drm driver is ready
++- The drm driver is getting ready at https://gitlab.com/sudipm/sm750/tree/sm750
++
+ Please send any patches to
+ 	Greg Kroah-Hartman <greg@kroah.com>
+ 	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+ 	Teddy Wang <teddy.wang@siliconmotion.com>
+-	Sudip Mukherjee <sudip@vectorindia.org>
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+1.9.1
+

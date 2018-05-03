@@ -1,118 +1,404 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Wed, 09 May 2018 05:53:57 +0000
-Subject: Re: [PATCH] media: include/video/omapfb_dss.h: use IS_ENABLED()
-Message-Id: <b6987d8e-560d-07e8-9119-19c95b6973b7@infradead.org>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Thu, 03 May 2018 09:59:29 +0000
+Subject: [PATCH V1 5/5] backlight: qcom-wled: Add auto string detection logic
+Message-Id: <1525341432-15818-6-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <201805050150.CmagcMOg%fengguang.wu@intel.com>
- <8d55f45b6aa36f5c758d191825f14cd31723b371.1525466956.git.mchehab+samsung@kernel.org>
- <a2d8c62a-0030-af35-5a0d-0090fccc6ed5@infradead.org>
- <20180505181447.2ba0ca3f@vento.lan>
- <0789b035-0e0f-0665-bd0b-3a7aae6fe9f7@infradead.org>
-In-Reply-To: <0789b035-0e0f-0665-bd0b-3a7aae6fe9f7@infradead.org>
+References: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, tomi.valkeinen@ti.com, linux-omap@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: bjorn.andersson@linaro.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-leds@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
 
-On 05/08/2018 03:56 PM, Randy Dunlap wrote:
-> On 05/05/2018 02:14 PM, Mauro Carvalho Chehab wrote:
->> Em Sat, 5 May 2018 10:59:23 -0700
->> Randy Dunlap <rdunlap@infradead.org> escreveu:
->>
->>> On 05/04/2018 01:49 PM, Mauro Carvalho Chehab wrote:
->>>> Just checking for ifdefs cause build issues as reported by
->>>> kernel test:
->>>>
->>>> config: openrisc-allmodconfig (attached as .config)
->>>> compiler: or1k-linux-gcc (GCC) 6.0.0 20160327 (experimental)
->>>>
->>>> All errors (new ones prefixed by >>):
->>>>
->>>>    drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function 'omapfb_init_connections':  
->>>>>> drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2396:8: error: implicit declaration of function 'omapdss_find_mgr_from_display' [-Werror=implicit-function-declaration]  
->>>>      mgr = omapdss_find_mgr_from_display(def_dssdev);
->>>>            ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>    drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2396:6: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
->>>>      mgr = omapdss_find_mgr_from_display(def_dssdev);
->>>>          ^
->>>>    drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function 'omapfb_find_default_display':  
->>>>>> drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2430:13: error: implicit declaration of function 'omapdss_get_default_display_name' [-Werror=implicit-function-declaration]  
->>>>      def_name = omapdss_get_default_display_name();
->>>>                 ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
->>>>    drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2430:11: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
->>>>      def_name = omapdss_get_default_display_name();
->>>>               ^
->>>>
->>>> So, use IS_ENABLED() instead.  
->>>
->>> Hi,
->>>
->>> I would like to test this (the change doesn't make much sense to me),
->>> but I cannot find the kernel config file nor the kernel test robot's
->>> email of this report.
->>>
->>> Please include an lkml.kernel.org/r/<message_id> reference to such emails
->>> so that interested parties can join the party.
->>
->> The message was not c/c to lkml. You can see the original here:
->>
->> https://www.mail-archive.com/linux-media@vger.kernel.org/msg130809.html
->>
->>
->>>
->>> Does this patch apply only to your media tree?  so hopefully I can see it in
->>> linux-next on Monday.
->>
->> Yes, as it is over another two patches applied there.
->>
->> If you want to test it earlier, it is in the top of the master branch:
->> 	https://git.linuxtv.org/media_tree.git
->>
->>>
->>> Thanks.
->>>
->>>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->>>> Cc: Randy Dunlap <rdunlap@infradead.org>
->>>> Cc: tomi.valkeinen@ti.com
->>>> Cc: linux-omap@vger.kernel.org
->>>> Cc: linux-fbdev@vger.kernel.org
->>>> Fixes: 771f7be87ff9 ("media: omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP")
->>>> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
->>>> ---
->>>>  include/video/omapfb_dss.h | 2 +-
->>>>  1 file changed, 1 insertion(+), 1 deletion(-)
->>>>
->>>> diff --git a/include/video/omapfb_dss.h b/include/video/omapfb_dss.h
->>>> index e9775144ff3b..12755d8d9b4f 100644
->>>> --- a/include/video/omapfb_dss.h
->>>> +++ b/include/video/omapfb_dss.h
->>>> @@ -778,7 +778,7 @@ struct omap_dss_driver {
->>>>  
->>>>  typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
->>>>  
->>>> -#ifdef CONFIG_FB_OMAP2
->>>> +#if IS_ENABLED(CONFIG_FB_OMAP2)
->>>>  
->>>>  enum omapdss_version omapdss_get_version(void);
->>>>  bool omapdss_is_initialized(void);
-> 
-> The patch doesn't make any sense to me.  I would like to see an
-> explanation of why this is needed, other than "it fixes the build." ;)
+The auto string detection algorithm checks if the current WLED
+sink configuration is valid. It tries enabling every sink and
+checks if the OVP fault is observed. Based on this information
+it detects and enables the valid sink configuration.
+Auto calibration will be triggered when the OVP fault interrupts
+are seen frequently thereby it tries to fix the sink configuration.
 
-I get it now.  Using
-#if IS_ENABLED(CONFIG_FB_OMAP2)
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+---
+ drivers/video/backlight/qcom-wled.c | 302 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 302 insertions(+)
 
-is just the "modern" way of saying
-#if defined(CONFIG_FB_OMAP2) || defined(CONFIG_FB_OMAP2_MODULE)
-
-which also builds without errors.
-
-
-
-> But it does fix the build, so:
-> Tested-by: Randy Dunlap <rdunlap@infradead.org>
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 80ae084..bacdf3f 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -33,11 +33,14 @@
+ #define  WLED4_CTRL_REG_SC_FAULT_BIT			BIT(2)
+ 
+ #define WLED3_CTRL_REG_INT_RT_STS			0x10
++#define  WLED3_CTRL_REG_OVP_FAULT_STATUS		BIT(1)
+ 
+ #define WLED3_CTRL_REG_MOD_EN				0x46
+ #define  WLED3_CTRL_REG_MOD_EN_MASK			BIT(7)
+ #define  WLED3_CTRL_REG_MOD_EN_BIT			BIT(7)
+ 
++#define WLED3_CTRL_REG_FEEDBACK_CONTROL			0x48
++
+ #define WLED3_CTRL_REG_FREQ				0x4c
+ #define  WLED3_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
+ 
+@@ -152,6 +155,7 @@ struct wled_config {
+ 	bool ext_gen;
+ 	bool cabc;
+ 	bool external_pfet;
++	bool auto_detection_enabled;
+ };
+ 
+ struct wled {
+@@ -160,8 +164,10 @@ struct wled {
+ 	struct regmap *regmap;
+ 	struct mutex lock;	/* Lock to avoid race from ISR */
+ 	ktime_t last_short_event;
++	ktime_t start_ovp_fault_time;
+ 	u16 ctrl_addr;
+ 	u16 sink_addr;
++	u16 auto_detection_ovp_count;
+ 	u32 brightness;
+ 	u32 max_brightness;
+ 	u32 short_count;
+@@ -170,6 +176,7 @@ struct wled {
+ 	int ovp_irq;
+ 	bool force_mod_disable;
+ 	bool ovp_irq_disabled;
++	bool auto_detection_done;
+ 
+ 	struct wled_config cfg;
+ 	struct delayed_work ovp_work;
+@@ -386,6 +393,292 @@ static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
+ 	return IRQ_HANDLED;
+ }
+ 
++#define AUTO_DETECT_BRIGHTNESS		200
++static int wled_auto_string_detection(struct wled *wled)
++{
++	int rc = 0, i;
++	u32 sink_config = 0, int_sts;
++	u8 sink_test = 0, sink_valid = 0, val;
++
++	if (wled->auto_detection_done)
++		return 0;
++
++	/* read configured sink configuration */
++	rc = regmap_read(wled->regmap, wled->sink_addr +
++			 WLED4_SINK_REG_CURR_SINK, &sink_config);
++	if (rc < 0) {
++		pr_err("Failed to read SINK configuration rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* disable the module before starting detection */
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_CTRL_REG_MOD_EN,
++				WLED3_CTRL_REG_MOD_EN_MASK, 0);
++	if (rc < 0) {
++		pr_err("Failed to disable WLED module rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* set low brightness across all sinks */
++	rc = wled4_set_brightness(wled, AUTO_DETECT_BRIGHTNESS);
++	if (rc < 0) {
++		pr_err("Failed to set brightness for auto detection rc=%d\n",
++		       rc);
++		goto failed_detect;
++	}
++
++	if (wled->cfg.cabc) {
++		for (i = 0; i < wled->cfg.num_strings; i++) {
++			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
++						WLED4_SINK_REG_STR_CABC(i),
++						WLED4_SINK_REG_STR_CABC_MASK,
++						0);
++			if (rc < 0)
++				goto failed_detect;
++		}
++	}
++
++	/* disable all sinks */
++	rc = regmap_write(wled->regmap,
++			  wled->sink_addr + WLED4_SINK_REG_CURR_SINK, 0);
++	if (rc < 0) {
++		pr_err("Failed to disable all sinks rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* iterate through the strings one by one */
++	for (i = 0; i < wled->cfg.num_strings; i++) {
++		sink_test = BIT((WLED4_SINK_REG_CURR_SINK_SHFT + i));
++
++		/* Enable feedback control */
++		rc = regmap_write(wled->regmap, wled->ctrl_addr +
++				  WLED3_CTRL_REG_FEEDBACK_CONTROL, i + 1);
++		if (rc < 0) {
++			pr_err("Failed to enable feedback for SINK %d rc = %d\n",
++			       i + 1, rc);
++			goto failed_detect;
++		}
++
++		/* enable the sink */
++		rc = regmap_write(wled->regmap, wled->sink_addr +
++				  WLED4_SINK_REG_CURR_SINK, sink_test);
++		if (rc < 0) {
++			pr_err("Failed to configure SINK %d rc=%d\n", i + 1,
++			       rc);
++			goto failed_detect;
++		}
++
++		/* Enable the module */
++		rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
++					WLED3_CTRL_REG_MOD_EN,
++					WLED3_CTRL_REG_MOD_EN_MASK,
++					WLED3_CTRL_REG_MOD_EN_MASK);
++		if (rc < 0) {
++			pr_err("Failed to enable WLED module rc=%d\n", rc);
++			goto failed_detect;
++		}
++
++		usleep_range(WLED_SOFT_START_DLY_US,
++			     WLED_SOFT_START_DLY_US + 1000);
++
++		rc = regmap_read(wled->regmap, wled->ctrl_addr +
++				 WLED3_CTRL_REG_INT_RT_STS, &int_sts);
++		if (rc < 0) {
++			pr_err("Error in reading WLED3_CTRL_INT_RT_STS rc=%d\n",
++			       rc);
++			goto failed_detect;
++		}
++
++		if (int_sts & WLED3_CTRL_REG_OVP_FAULT_STATUS)
++			pr_debug("WLED OVP fault detected with SINK %d\n",
++				 i + 1);
++		else
++			sink_valid |= sink_test;
++
++		/* Disable the module */
++		rc = regmap_update_bits(wled->regmap,
++					wled->ctrl_addr + WLED3_CTRL_REG_MOD_EN,
++					WLED3_CTRL_REG_MOD_EN_MASK, 0);
++		if (rc < 0) {
++			pr_err("Failed to disable WLED module rc=%d\n", rc);
++			goto failed_detect;
++		}
++	}
++
++	if (sink_valid = sink_config) {
++		pr_debug("WLED auto-detection complete, default sink-config=%x OK!\n",
++			 sink_config);
++	} else {
++		pr_warn("Invalid WLED default sink config=%x changing it to=%x\n",
++			sink_config, sink_valid);
++		sink_config = sink_valid;
++	}
++
++	if (!sink_config) {
++		pr_err("No valid WLED sinks found\n");
++		wled->force_mod_disable = true;
++		goto failed_detect;
++	}
++
++	/* write the new sink configuration */
++	rc = regmap_write(wled->regmap,
++			  wled->sink_addr + WLED4_SINK_REG_CURR_SINK,
++			  sink_config);
++	if (rc < 0) {
++		pr_err("Failed to reconfigure the default sink rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* Enable valid sinks */
++	for (i = 0; i < wled->cfg.num_strings; i++) {
++		if (wled->cfg.cabc) {
++			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
++						WLED4_SINK_REG_STR_CABC(i),
++						WLED4_SINK_REG_STR_CABC_MASK,
++						WLED4_SINK_REG_STR_CABC_MASK);
++			if (rc < 0)
++				goto failed_detect;
++		}
++
++		if (sink_config & BIT(WLED4_SINK_REG_CURR_SINK_SHFT + i))
++			val = WLED4_SINK_REG_STR_MOD_MASK;
++		else
++			val = 0x0; /* disable modulator_en for unused sink */
++
++		rc = regmap_write(wled->regmap, wled->sink_addr +
++				  WLED4_SINK_REG_STR_MOD_EN(i), val);
++		if (rc < 0) {
++			pr_err("Failed to configure MODULATOR_EN rc=%d\n", rc);
++			goto failed_detect;
++		}
++	}
++
++	/* restore the feedback setting */
++	rc = regmap_write(wled->regmap,
++			  wled->ctrl_addr + WLED3_CTRL_REG_FEEDBACK_CONTROL, 0);
++	if (rc < 0) {
++		pr_err("Failed to restore feedback setting rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* restore  brightness */
++	rc = wled4_set_brightness(wled, wled->brightness);
++	if (rc < 0) {
++		pr_err("Failed to set brightness after auto detection rc=%d\n",
++		       rc);
++		goto failed_detect;
++	}
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_CTRL_REG_MOD_EN,
++				WLED3_CTRL_REG_MOD_EN_MASK,
++				WLED3_CTRL_REG_MOD_EN_MASK);
++	if (rc < 0) {
++		pr_err("Failed to enable WLED module rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	wled->auto_detection_done = true;
++
++failed_detect:
++	return rc;
++}
++
++#define WLED_AUTO_DETECT_OVP_COUNT		5
++#define WLED_AUTO_DETECT_CNT_DLY_US		HZ /* 1 second */
++static bool wled_auto_detection_required(struct wled *wled)
++{
++	s64 elapsed_time_us;
++
++	if (*wled->version = WLED_PM8941)
++		return false;
++	/*
++	 * Check if the OVP fault was an occasional one
++	 * or if it's firing continuously, the latter qualifies
++	 * for an auto-detection check.
++	 */
++	if (!wled->auto_detection_ovp_count) {
++		wled->start_ovp_fault_time = ktime_get();
++		wled->auto_detection_ovp_count++;
++	} else {
++		elapsed_time_us = ktime_us_delta(ktime_get(),
++						 wled->start_ovp_fault_time);
++		if (elapsed_time_us > WLED_AUTO_DETECT_CNT_DLY_US)
++			wled->auto_detection_ovp_count = 0;
++		else
++			wled->auto_detection_ovp_count++;
++
++		if (wled->auto_detection_ovp_count >+				WLED_AUTO_DETECT_OVP_COUNT) {
++			wled->auto_detection_ovp_count = 0;
++			return true;
++		}
++	}
++
++	return false;
++}
++
++static int wled_auto_detection_at_init(struct wled *wled)
++{
++	int rc;
++	u32 fault_status = 0, rt_status = 0;
++
++	if (*wled->version = WLED_PM8941)
++		return 0;
++
++	if (!wled->cfg.auto_detection_enabled)
++		return 0;
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS,
++			 &rt_status);
++	if (rc < 0) {
++		pr_err("Failed to read RT status rc=%d\n", rc);
++		return rc;
++	}
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED3_CTRL_REG_FAULT_STATUS,
++			 &fault_status);
++	if (rc < 0) {
++		pr_err("Failed to read fault status rc=%d\n", rc);
++		return rc;
++	}
++
++	if ((rt_status & WLED3_CTRL_REG_OVP_FAULT_STATUS) ||
++	    (fault_status & WLED3_CTRL_REG_OVP_FAULT_BIT)) {
++		mutex_lock(&wled->lock);
++		rc = wled_auto_string_detection(wled);
++		if (!rc)
++			wled->auto_detection_done = true;
++		mutex_unlock(&wled->lock);
++	}
++
++	return rc;
++}
++
++static void handle_ovp_fault(struct wled *wled)
++{
++	if (!wled->cfg.auto_detection_enabled)
++		return;
++
++	mutex_lock(&wled->lock);
++	if (wled->ovp_irq > 0 && !wled->ovp_irq_disabled) {
++		disable_irq_nosync(wled->ovp_irq);
++		wled->ovp_irq_disabled = true;
++	}
++
++	if (wled_auto_detection_required(wled))
++		wled_auto_string_detection(wled);
++
++	if (wled->ovp_irq > 0 && wled->ovp_irq_disabled) {
++		enable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = false;
++	}
++	mutex_unlock(&wled->lock);
++}
++
+ static irqreturn_t wled_ovp_irq_handler(int irq, void *_wled)
+ {
+ 	struct wled *wled = _wled;
+@@ -413,6 +706,9 @@ static irqreturn_t wled_ovp_irq_handler(int irq, void *_wled)
+ 		dev_dbg(wled->dev, "WLED OVP fault detected, int_sts=%x fault_sts= %x\n",
+ 			int_sts, fault_sts);
+ 
++	if (fault_sts & WLED3_CTRL_REG_OVP_FAULT_BIT)
++		handle_ovp_fault(wled);
++
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -575,6 +871,10 @@ static int wled4_setup(struct wled *wled)
+ 		return rc;
+ 	}
+ 
++	rc = wled_auto_detection_at_init(wled);
++	if (rc < 0)
++		return rc;
++
+ 	if (wled->cfg.external_pfet) {
+ 		/* Unlock the secure register access */
+ 		rc = regmap_write(wled->regmap, wled->ctrl_addr +
+@@ -602,6 +902,7 @@ static int wled4_setup(struct wled *wled)
+ 	.enabled_strings = 0xf,
+ 	.cabc = false,
+ 	.external_pfet = true,
++	.auto_detection_enabled = false,
+ };
+ 
+ static const u32 wled3_boost_i_limit_values[] = {
+@@ -785,6 +1086,7 @@ static int wled_configure(struct wled *wled)
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+ 		{ "qcom,cabc", &cfg->cabc, },
+ 		{ "qcom,external-pfet", &cfg->external_pfet, },
++		{ "qcom,auto-string-detection", &cfg->auto_detection_enabled, },
+ 	};
+ 
+ 	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
 -- 
-~Randy
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+

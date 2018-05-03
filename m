@@ -1,73 +1,66 @@
-From: Rob Herring <robh+dt@kernel.org>
-Date: Fri, 18 May 2018 12:20:44 +0000
-Subject: Re: [PATCH V1 2/5] backlight: qcom-wled: Add support for WLED4 peripheral
-Message-Id: <CAL_JsqJtn9hZJuF2uHC-jDMyM2HS2McBs4fy7JoS_rYj9h0j_w@mail.gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Thu, 03 May 2018 15:48:56 +0000
+Subject: Re: [PATCH] drivers: omap2: Kconfig: make FB_OMAP2_DSS_INIT depend on OF
+Message-Id: <16e74acc-1265-faec-0c36-49681a7760e4@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
- <1525341432-15818-3-git-send-email-kgunda@codeaurora.org>
- <20180507162004.GB2259@tuxbook-pro>
- <f970143860bd64624e7fad58333df1be@codeaurora.org>
- <82fa847760309cb3382bf0a8da50162c@codeaurora.org>
- <CAL_JsqLQvSpB3CiS1sA5AXwbvC0xkd1HqEYsjY+=oripMXSwuA@mail.gmail.com>
- <7143faaec2d0b7b0fd7e0f3b512839d8@codeaurora.org>
-In-Reply-To: <7143faaec2d0b7b0fd7e0f3b512839d8@codeaurora.org>
+References: <20180420112551.27027-1-anders.roxell@linaro.org>
+In-Reply-To: <20180420112551.27027-1-anders.roxell@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bjorn Andersson <bjorn.andersson@linaro.org>, linux-fbdev@vger.kernel.org, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, linux-arm-msm <linux-arm-msm@vger.kernel.org>, Lee Jones <lee.jones@linaro.org>, linux-arm-msm-owner@vger.kernel.org, Linux LED Subsystem <linux-leds@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Anders Roxell <anders.roxell@linaro.org>, tomi.valkeinen@ti.com, b.zolnierkie@samsung.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Thu, May 17, 2018 at 10:10 AM,  <kgunda@codeaurora.org> wrote:
-> On 2018-05-17 18:01, Rob Herring wrote:
->>
->> On Thu, May 17, 2018 at 4:47 AM,  <kgunda@codeaurora.org> wrote:
->>>
->>> On 2018-05-08 15:55, kgunda@codeaurora.org wrote:
->>>>
->>>>
->>>> On 2018-05-07 21:50, Bjorn Andersson wrote:
->>>>>
->>>>>
->>>>> On Thu 03 May 02:57 PDT 2018, Kiran Gunda wrote:
->>>>>
->>>>>> WLED4 peripheral is present on some PMICs like pmi8998
->>>>>> and pm660l. It has a different register map and also
->>>>>> configurations are different. Add support for it.
+On 04/20/2018 04:25 AM, Anders Roxell wrote:
+> Commit 7378f1149884 ("media: omap2: omapfb: allow building it with
+> COMPILE_TEST") broke compilation without CONFIG_OF selected.
+>   CC      drivers/video/fbdev/core/fbmem.o
+> drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c: In function ‘omapdss_update_prop’:
+> drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c:68:2: error: implicit declaration of function ‘of_update_property’; did you mean ‘of_get_property’? [-Werror=implicit-function-declaration]
+>   of_update_property(node, prop);
+>   ^~~~~~~~~~~~~~~~~~
+>   of_get_property
+> cc1: some warnings being treated as errors
+> scripts/Makefile.build:312: recipe for target 'drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.o' failed
+> make[7]: *** [drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.o] Error 1
+> scripts/Makefile.build:559: recipe for target 'drivers/video/fbdev/omap2/omapfb/dss' failed
+> make[6]: *** [drivers/video/fbdev/omap2/omapfb/dss] Error 2
+> make[6]: *** Waiting for unfinished jobs....
+> 
+> Add OF dependency in order to make all configurations work again.
+> 
+> of_update_property() has no inline stub, and that that could be added as
+> an alternative.
+> 
+> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+> ---
+>  drivers/video/fbdev/omap2/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/fbdev/omap2/Kconfig b/drivers/video/fbdev/omap2/Kconfig
+> index 82008699d253..4de381f2452e 100644
+> --- a/drivers/video/fbdev/omap2/Kconfig
+> +++ b/drivers/video/fbdev/omap2/Kconfig
+> @@ -1,4 +1,4 @@
+> -if ARCH_OMAP2PLUS || COMPILE_TEST
+> +if OF && (ARCH_OMAP2PLUS || COMPILE_TEST)
+>  
+>  source "drivers/video/fbdev/omap2/omapfb/Kconfig"
+>  
+> 
 
-[...]
+Hi,
 
->>>>>> +                     value:
->>>>>> +                     For pm8941: from 0 to 25000 with 5000 ua step
->>>>>> +                                 Default 20000 uA
->>>>>> +                     For pmi8998: from 0 to 30000 with 5000 ua step
->>>>>> +                                  Default 25000 uA.
->>>>>
->>>>>
->>>>>
->>>>> These values could be described just as well in mA, so keep the
->>>>> original
->>>>> unit - in particular since the boot-limit is in mA...
->>>>>
->>>> Ok. Will keep the original as is in the next series.
->>>
->>>
->>> Here, I may have to go with the approach as in "qcom,ovp". Because for
->>> pm8941
->>> the current step is 1 mA (I have wrongly mentioned as 5000uA here) and
->>> for
->>> PMI8998
->>> the current step is 2.5 mA. Hence, I will add another variable
->>> "qcom,current-limit-ua"
->>> just like "qcom,ovp-mv".
->>
->>
->> Use unit suffixes defined in bindings/property-units.txt.
->
-> Thanks for pointing it ! hope I can use "qcom,current-limit-microamp" and
-> "qcom,ovp-millivolt". I am asking this because i found only "-microvolt".
-> "-millivolt" is not present in the bindings you pointed.
+This patch certainly fixes the build errors that I have been seeing in
+linux-next for several days now, so:
 
-That's by design so everyone doesn't just pick whatever random units
-they like. Does microvolts not give you enough range?
+Acked-by: Randy Dunlap <rdunlap@infradead.org>
+Tested-by: Randy Dunlap <rdunlap@infradead.org>
 
-Rob
+OTOH, I would rather see the Kconfig dependencies all expressed in
+drivers/video/fbdev/omap2/omapfb/Kconfig instead of them being split
+between 2 Kconfig files.
+
+thanks,
+-- 
+~Randy

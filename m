@@ -1,219 +1,215 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Sun, 20 May 2018 20:17:10 +0000
-Subject: Re: [PATCH 2/6] Input: ams_delta_serio: use GPIO lookup table
-Message-Id: <20180520201710.GB119427@dtor-ws>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Thu, 03 May 2018 10:24:31 +0000
+Subject: [PATCH V2 4/5] backlight: qcom-wled: Add support for OVP interrupt handling
+Message-Id: <1525342352-25072-5-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
- <20180518210954.29044-2-jmkrzyszt@gmail.com>
-In-Reply-To: <20180518210954.29044-2-jmkrzyszt@gmail.com>
+References: <1525342352-25072-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1525342352-25072-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Tony Lindgren <tony@atomide.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-input@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@ti.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Mark Brown <broonie@kernel.org>, linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org, Richard Weinberger <richard@nod.at>, linux-omap@vger.kernel.org, Jarkko Nikula <jarkko.nikula@bitmer.com>
+To: bjorn.andersson@linaro.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, linux-leds@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
 
-Hi Janusz,
+WLED peripheral has over voltage protection(OVP) circuitry and the OVP
+fault is notified through an interrupt. Though this fault condition rising
+is due to an incorrect hardware configuration is mitigated in the hardware,
+it still needs to be detected and handled. Add support for it.
 
-On Fri, May 18, 2018 at 11:09:50PM +0200, Janusz Krzysztofik wrote:
-> Now as the Amstrad Delta board provides GPIO lookup tables, switch from
-> GPIO numbers to GPIO descriptors and use the table to locate required
-> GPIO pins.
-> 
-> Declare static variables for storing GPIO descriptors and replace
-> gpio_ functions with their gpiod_ equivalents.
-> 
-> Pin naming used by the driver should be followed while respective GPIO
-> lookup table is initialized by a board init code.
-> 
-> Created and tested against linux-4.17-rc3, on top of patch 1/6 "ARM:
-> OMAP1: ams-delta: add GPIO lookup tables"
-> 
-> Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-> ---
->  drivers/input/serio/ams_delta_serio.c | 98 +++++++++++++++++++----------------
->  1 file changed, 53 insertions(+), 45 deletions(-)
-> 
-> diff --git a/drivers/input/serio/ams_delta_serio.c b/drivers/input/serio/ams_delta_serio.c
-> index 3df501c3421b..dd1f8f118c08 100644
-> --- a/drivers/input/serio/ams_delta_serio.c
-> +++ b/drivers/input/serio/ams_delta_serio.c
-> @@ -20,14 +20,13 @@
->   * However, when used with the E3 mailboard that producecs non-standard
->   * scancodes, a custom key table must be prepared and loaded from userspace.
->   */
-> -#include <linux/gpio.h>
-> +#include <linux/gpio/consumer.h>
->  #include <linux/irq.h>
->  #include <linux/serio.h>
->  #include <linux/slab.h>
->  #include <linux/module.h>
->  
->  #include <asm/mach-types.h>
-> -#include <mach/board-ams-delta.h>
->  
->  #include <mach/ams-delta-fiq.h>
->  
-> @@ -36,6 +35,10 @@ MODULE_DESCRIPTION("AMS Delta (E3) keyboard port driver");
->  MODULE_LICENSE("GPL");
->  
->  static struct serio *ams_delta_serio;
-> +static struct gpio_desc *gpiod_data;
-> +static struct gpio_desc *gpiod_clock;
-> +static struct gpio_desc *gpiod_power;
-> +static struct gpio_desc *gpiod_dataout;
+When WLED module is enabled, keep OVP fault interrupt disabled for 10 ms to
+account for soft start delay.
 
-Since you are doing the conversion: it does not appear that all these
-are necessarily GPIOs; for example should not power be gpio-regulator
-and data be simply expressed as IRQ resource? And the driver to be
-converted into a platform driver?
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+---
+ drivers/video/backlight/qcom-wled.c | 118 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 116 insertions(+), 2 deletions(-)
 
-I think this needs to be done first, because otherwise you are
-committing to a certain binding and will have hard time changing it
-later.
-
-Thanks.
-
->  
->  static int check_data(int data)
->  {
-> @@ -92,7 +95,7 @@ static irqreturn_t ams_delta_serio_interrupt(int irq, void *dev_id)
->  static int ams_delta_serio_open(struct serio *serio)
->  {
->  	/* enable keyboard */
-> -	gpio_set_value(AMS_DELTA_GPIO_PIN_KEYBRD_PWR, 1);
-> +	gpiod_set_value(gpiod_power, 1);
->  
->  	return 0;
->  }
-> @@ -100,32 +103,9 @@ static int ams_delta_serio_open(struct serio *serio)
->  static void ams_delta_serio_close(struct serio *serio)
->  {
->  	/* disable keyboard */
-> -	gpio_set_value(AMS_DELTA_GPIO_PIN_KEYBRD_PWR, 0);
-> +	gpiod_set_value(gpiod_power, 0);
->  }
->  
-> -static const struct gpio ams_delta_gpios[] __initconst_or_module = {
-> -	{
-> -		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_DATA,
-> -		.flags	= GPIOF_DIR_IN,
-> -		.label	= "serio-data",
-> -	},
-> -	{
-> -		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_CLK,
-> -		.flags	= GPIOF_DIR_IN,
-> -		.label	= "serio-clock",
-> -	},
-> -	{
-> -		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_PWR,
-> -		.flags	= GPIOF_OUT_INIT_LOW,
-> -		.label	= "serio-power",
-> -	},
-> -	{
-> -		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_DATAOUT,
-> -		.flags	= GPIOF_OUT_INIT_LOW,
-> -		.label	= "serio-dataout",
-> -	},
-> -};
-> -
->  static int __init ams_delta_serio_init(void)
->  {
->  	int err;
-> @@ -145,36 +125,62 @@ static int __init ams_delta_serio_init(void)
->  	strlcpy(ams_delta_serio->phys, "GPIO/serio0",
->  			sizeof(ams_delta_serio->phys));
->  
-> -	err = gpio_request_array(ams_delta_gpios,
-> -				ARRAY_SIZE(ams_delta_gpios));
-> -	if (err) {
-> -		pr_err("ams_delta_serio: Couldn't request gpio pins\n");
-> +	gpiod_data = gpiod_get(NULL, "data", GPIOD_IN);
-> +	if (IS_ERR(gpiod_data)) {
-> +		err = PTR_ERR(gpiod_data);
-> +		pr_err("%s: 'data' GPIO request failed (%d)\n", __func__,
-> +		       err);
->  		goto serio;
->  	}
-> +	gpiod_clock = gpiod_get(NULL, "clock", GPIOD_IN);
-> +	if (IS_ERR(gpiod_clock)) {
-> +		err = PTR_ERR(gpiod_clock);
-> +		pr_err("%s: 'clock' GPIO request failed (%d)\n", __func__,
-> +		       err);
-> +		goto gpio_data;
-> +	}
-> +	gpiod_power = gpiod_get(NULL, "power", GPIOD_OUT_LOW);
-> +	if (IS_ERR(gpiod_power)) {
-> +		err = PTR_ERR(gpiod_power);
-> +		pr_err("%s: 'power' GPIO request failed (%d)\n", __func__,
-> +		       err);
-> +		goto gpio_clock;
-> +	}
-> +	gpiod_dataout = gpiod_get(NULL, "dataout", GPIOD_OUT_LOW);
-> +	if (IS_ERR(gpiod_dataout)) {
-> +		err = PTR_ERR(gpiod_dataout);
-> +		pr_err("%s: 'dataout' GPIO request failed (%d)\n",
-> +		       __func__, err);
-> +		goto gpio_power;
-> +	}
->  
-> -	err = request_irq(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK),
-> -			ams_delta_serio_interrupt, IRQ_TYPE_EDGE_RISING,
-> -			"ams-delta-serio", 0);
-> +	err = request_irq(gpiod_to_irq(gpiod_clock),
-> +			  ams_delta_serio_interrupt, IRQ_TYPE_EDGE_RISING,
-> +			  "ams-delta-serio", 0);
->  	if (err < 0) {
-> -		pr_err("ams_delta_serio: couldn't request gpio interrupt %d\n",
-> -				gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK));
-> -		goto gpio;
-> +		pr_err("%s: 'clock' GPIO interrupt request failed (%d)\n",
-> +		       __func__, err);
-> +		goto gpio_dataout;
->  	}
->  	/*
->  	 * Since GPIO register handling for keyboard clock pin is performed
->  	 * at FIQ level, switch back from edge to simple interrupt handler
->  	 * to avoid bad interaction.
->  	 */
-> -	irq_set_handler(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK),
-> -			handle_simple_irq);
-> +	irq_set_handler(gpiod_to_irq(gpiod_clock), handle_simple_irq);
->  
->  	serio_register_port(ams_delta_serio);
->  	dev_info(&ams_delta_serio->dev, "%s\n", ams_delta_serio->name);
->  
->  	return 0;
-> -gpio:
-> -	gpio_free_array(ams_delta_gpios,
-> -			ARRAY_SIZE(ams_delta_gpios));
-> +gpio_dataout:
-> +	gpiod_put(gpiod_dataout);
-> +gpio_power:
-> +	gpiod_put(gpiod_power);
-> +gpio_clock:
-> +	gpiod_put(gpiod_clock);
-> +gpio_data:
-> +	gpiod_put(gpiod_data);
->  serio:
->  	kfree(ams_delta_serio);
->  	return err;
-> @@ -184,8 +190,10 @@ module_init(ams_delta_serio_init);
->  static void __exit ams_delta_serio_exit(void)
->  {
->  	serio_unregister_port(ams_delta_serio);
-> -	free_irq(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK), 0);
-> -	gpio_free_array(ams_delta_gpios,
-> -			ARRAY_SIZE(ams_delta_gpios));
-> +	free_irq(gpiod_to_irq(gpiod_clock), 0);
-> +	gpiod_put(gpiod_dataout);
-> +	gpiod_put(gpiod_power);
-> +	gpiod_put(gpiod_clock);
-> +	gpiod_put(gpiod_data);
->  }
->  module_exit(ams_delta_serio_exit);
-> -- 
-> 2.16.1
-> 
-
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 2cfba77..80ae084 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -23,14 +23,20 @@
+ 
+ /* From DT binding */
+ #define WLED_DEFAULT_BRIGHTNESS				2048
+-
++#define WLED_SOFT_START_DLY_US				10000
+ #define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
+ 
+ /* WLED3 Control registers */
+ #define WLED3_CTRL_REG_FAULT_STATUS			0x08
++#define  WLED3_CTRL_REG_ILIM_FAULT_BIT			BIT(0)
++#define  WLED3_CTRL_REG_OVP_FAULT_BIT			BIT(1)
++#define  WLED4_CTRL_REG_SC_FAULT_BIT			BIT(2)
++
++#define WLED3_CTRL_REG_INT_RT_STS			0x10
+ 
+ #define WLED3_CTRL_REG_MOD_EN				0x46
+ #define  WLED3_CTRL_REG_MOD_EN_MASK			BIT(7)
++#define  WLED3_CTRL_REG_MOD_EN_BIT			BIT(7)
+ 
+ #define WLED3_CTRL_REG_FREQ				0x4c
+ #define  WLED3_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
+@@ -161,9 +167,12 @@ struct wled {
+ 	u32 short_count;
+ 	const int *version;
+ 	int short_irq;
++	int ovp_irq;
+ 	bool force_mod_disable;
++	bool ovp_irq_disabled;
+ 
+ 	struct wled_config cfg;
++	struct delayed_work ovp_work;
+ 	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
+ 	int (*wled_sync_toggle)(struct wled *wled);
+ };
+@@ -209,6 +218,32 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+ 	return 0;
+ }
+ 
++static void wled_ovp_work(struct work_struct *work)
++{
++	u32 val;
++	int rc;
++
++	struct wled *wled = container_of(work,
++					 struct wled, ovp_work.work);
++
++	rc = regmap_read(wled->regmap, wled->ctrl_addr + WLED3_CTRL_REG_MOD_EN,
++			 &val);
++	if (rc < 0)
++		return;
++
++	if (val & WLED3_CTRL_REG_MOD_EN_BIT) {
++		if (wled->ovp_irq > 0 && wled->ovp_irq_disabled) {
++			enable_irq(wled->ovp_irq);
++			wled->ovp_irq_disabled = false;
++		}
++	} else {
++		if (wled->ovp_irq > 0 && !wled->ovp_irq_disabled) {
++			disable_irq(wled->ovp_irq);
++			wled->ovp_irq_disabled = true;
++		}
++	}
++}
++
+ static int wled_module_enable(struct wled *wled, int val)
+ {
+ 	int rc;
+@@ -220,7 +255,12 @@ static int wled_module_enable(struct wled *wled, int val)
+ 				WLED3_CTRL_REG_MOD_EN,
+ 				WLED3_CTRL_REG_MOD_EN_MASK,
+ 				WLED3_CTRL_REG_MOD_EN_MASK);
+-	return rc;
++	if (rc < 0)
++		return rc;
++
++	schedule_delayed_work(&wled->ovp_work, WLED_SOFT_START_DLY_US);
++
++	return 0;
+ }
+ 
+ static int wled3_sync_toggle(struct wled *wled)
+@@ -346,6 +386,36 @@ static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
+ 	return IRQ_HANDLED;
+ }
+ 
++static irqreturn_t wled_ovp_irq_handler(int irq, void *_wled)
++{
++	struct wled *wled = _wled;
++	int rc;
++	u32 int_sts, fault_sts;
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED3_CTRL_REG_INT_RT_STS, &int_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Error in reading WLED3_INT_RT_STS rc=%d\n",
++			rc);
++		return IRQ_HANDLED;
++	}
++
++	rc = regmap_read(wled->regmap, wled->ctrl_addr +
++			 WLED3_CTRL_REG_FAULT_STATUS, &fault_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Error in reading WLED_FAULT_STATUS rc=%d\n",
++			rc);
++		return IRQ_HANDLED;
++	}
++
++	if (fault_sts &
++		(WLED3_CTRL_REG_OVP_FAULT_BIT | WLED3_CTRL_REG_ILIM_FAULT_BIT))
++		dev_dbg(wled->dev, "WLED OVP fault detected, int_sts=%x fault_sts= %x\n",
++			int_sts, fault_sts);
++
++	return IRQ_HANDLED;
++}
++
+ static int wled3_setup(struct wled *wled)
+ {
+ 	u16 addr;
+@@ -821,6 +891,44 @@ static int wled_configure_short_irq(struct wled *wled,
+ 	return rc;
+ }
+ 
++static int wled_configure_ovp_irq(struct wled *wled,
++				  struct platform_device *pdev)
++{
++	int rc = 0;
++	u32 val;
++
++	if (*wled->version = WLED_PM8941)
++		return 0;
++
++	wled->ovp_irq = platform_get_irq_byname(pdev, "ovp");
++	if (wled->ovp_irq < 0) {
++		dev_dbg(&pdev->dev, "ovp irq is not used\n");
++		return 0;
++	}
++
++	rc = devm_request_threaded_irq(wled->dev, wled->ovp_irq, NULL,
++				       wled_ovp_irq_handler, IRQF_ONESHOT,
++				       "wled_ovp_irq", wled);
++	if (rc < 0) {
++		dev_err(wled->dev, "Unable to request ovp_irq (err:%d)\n",
++			rc);
++		return 0;
++	}
++
++	rc = regmap_read(wled->regmap, wled->ctrl_addr +
++			 WLED3_CTRL_REG_MOD_EN, &val);
++	if (rc < 0)
++		return rc;
++
++	/* Keep OVP irq disabled until module is enabled */
++	if (!rc && !(val & WLED3_CTRL_REG_MOD_EN_MASK)) {
++		disable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = true;
++	}
++
++	return rc;
++}
++
+ static const struct backlight_ops wled_ops = {
+ 	.update_status = wled_update_status,
+ };
+@@ -874,10 +982,16 @@ static int wled_probe(struct platform_device *pdev)
+ 		}
+ 	}
+ 
++	INIT_DELAYED_WORK(&wled->ovp_work, wled_ovp_work);
++
+ 	rc = wled_configure_short_irq(wled, pdev);
+ 	if (rc < 0)
+ 		return rc;
+ 
++	rc = wled_configure_ovp_irq(wled, pdev);
++	if (rc < 0)
++		return rc;
++
+ 	val = WLED_DEFAULT_BRIGHTNESS;
+ 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
+ 
 -- 
-Dmitry
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project
+

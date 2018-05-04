@@ -1,16 +1,17 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 04 May 2018 07:44:11 +0000
-Subject: Re: [PATCH 1/3] video: fbdev: sh_mobile_lcdcfb: remove unused MERAM support
-Message-Id: <CAMuHMdWY_rwtG2vTy5R_P=37vk59+D+7ro+MgobPnEm1nJ_YXQ@mail.gmail.com>
+Date: Fri, 04 May 2018 07:49:39 +0000
+Subject: Re: [PATCH 3/3] video: fbdev: remove unused sh_mobile_meram driver
+Message-Id: <CAMuHMdUEHosD=RyvQrBEjci1=DBH+2x9r9baX1d=0mx-sCc0qQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180427112227epcas2p4ea3a93a5680d69a62f12cac627ebafbc@epcas2p4.samsung.com>
- <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com> <1524828105-26585-2-git-send-email-b.zolnierkie@samsung.com>
-In-Reply-To: <1524828105-26585-2-git-send-email-b.zolnierkie@samsung.com>
+References: <CGME20180427112241epcas1p423b20f397d034a444ec018f39241d82b@epcas1p4.samsung.com>
+ <1524828105-26585-1-git-send-email-b.zolnierkie@samsung.com>
+ <1524828105-26585-4-git-send-email-b.zolnierkie@samsung.com>
+In-Reply-To: <1524828105-26585-4-git-send-email-b.zolnierkie@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Simon Horman <horms+renesas@verge.net.au>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux-Renesas <linux-renesas-soc@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>
 
 On Fri, Apr 27, 2018 at 1:21 PM, Bartlomiej Zolnierkiewicz
 <b.zolnierkie@samsung.com> wrote:

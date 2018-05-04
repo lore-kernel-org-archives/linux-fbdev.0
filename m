@@ -1,67 +1,385 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Date: Fri, 25 May 2018 09:49:45 +0000
-Subject: RE: [PATCH V2 2/4] clk: add new APIs to operate on all available clocks
-Message-Id: <AM0PR04MB42110066C43E037F2E0501CB80690@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Date: Fri, 04 May 2018 14:02:53 +0000
+Subject: Re: [PATCH v2 7/7] media: via-camera: allow build on non-x86 archs with COMPILE_TEST
+Message-Id: <20180504110241.7a78263d@vento.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
- <1521602391-30356-3-git-send-email-aisheng.dong@nxp.com>
- <152182421754.178046.7553203878044979411@swboyd.mtv.corp.google.com>
-In-Reply-To: <152182421754.178046.7553203878044979411@swboyd.mtv.corp.google.com>
+References: <cover.1524245455.git.mchehab@s-opensource.com>
+        <396bfb33e763c31ead093ac1035b2ecf7311b5bc.1524245455.git.mchehab@s-opensource.com>
+        <20180420160321.4ecefa00@vento.lan>
+        <CGME20180423121932eucas1p212eb6412ff8df511047c3afa782db6e0@eucas1p2.samsung.com>
+        <5323943.SkjzUNBk3k@amdc3058>
+In-Reply-To: <5323943.SkjzUNBk3k@amdc3058>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Linux Media Mailing List <linux-media@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Hans Verkuil <hans.verkuil@cisco.com>, Arnd Bergmann <arnd@arndb.de>, Sakari Ailus <sakari.ailus@linux.intel.com>, Stanimir Varbanov <stanimir.varbanov@linaro.org>, Philipp Zabel <p.zabel@pengutronix.de>, Ramesh Shanmugasundaram <ramesh.shanmugasundaram@bp.renesas.com>, Jacob Chen <jacob-chen@iotwrt.com>, Bhumika Goyal <bhumirks@gmail.com>, Al Viro <viro@zeniv.linux.org.uk>, linux-fbdev@vger.kernel.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTdGVwaGVuIEJveWQgW21haWx0
-bzpzYm95ZEBrZXJuZWwub3JnXQ0KPiBTZW50OiBTYXR1cmRheSwgTWFyY2ggMjQsIDIwMTggMTI6
-NTcgQU0NCj4gVG86IEEucy4gRG9uZyA8YWlzaGVuZy5kb25nQG54cC5jb20+OyBsaW51eC1jbGtA
-dmdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnOyBsaW51
-eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+IG10dXJxdWV0dGVAYmF5bGlicmUu
-Y29tOyBoZGVnb2VkZUByZWRoYXQuY29tOw0KPiBiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb207IGxp
-bnV4QGFybWxpbnV4Lm9yZy51azsgbGludXgtDQo+IGZiZGV2QHZnZXIua2VybmVsLm9yZzsgZGwt
-bGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT47IEEucy4gRG9uZw0KPiA8YWlzaGVuZy5kb25n
-QG54cC5jb20+OyBTdGVwaGVuIEJveWQgPHNib3lkQGNvZGVhdXJvcmEub3JnPjsNCj4gTWFzYWhp
-cm8gWWFtYWRhIDx5YW1hZGEubWFzYWhpcm9Ac29jaW9uZXh0LmNvbT4NCj4gU3ViamVjdDogUmU6
-IFtQQVRDSCBWMiAyLzRdIGNsazogYWRkIG5ldyBBUElzIHRvIG9wZXJhdGUgb24gYWxsIGF2YWls
-YWJsZQ0KPiBjbG9ja3MNCj4gDQo+IFF1b3RpbmcgRG9uZyBBaXNoZW5nICgyMDE4LTAzLTIwIDIw
-OjE5OjQ5KQ0KPiA+IEBAIC01MCw2ICs1MiwzOCBAQCBzdGF0aWMgaW50IF9fbXVzdF9jaGVjayBv
-Zl9jbGtfYnVsa19nZXQoc3RydWN0DQo+IGRldmljZV9ub2RlICpucCwgaW50IG51bV9jbGtzLA0K
-PiA+ICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiAgfQ0KPiA+ICBFWFBPUlRfU1lNQk9MKG9mX2Ns
-a19idWxrX2dldCk7DQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IF9fbXVzdF9jaGVjayBvZl9jbGtf
-YnVsa19nZXRfYWxsKHN0cnVjdCBkZXZpY2Vfbm9kZSAqbnAsDQo+ID4gKyAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJ1Y3QgY2xrX2J1bGtfZGF0YQ0KPiA+ICsq
-KmNsa3MpIHsNCj4gPiArICAgICAgIHN0cnVjdCBjbGtfYnVsa19kYXRhICpjbGtfYnVsazsNCj4g
-PiArICAgICAgIGludCBudW1fY2xrczsNCj4gPiArICAgICAgIGludCByZXQ7DQo+ID4gKw0KPiA+
-ICsgICAgICAgbnVtX2Nsa3MgPSBvZl9jbGtfZ2V0X3BhcmVudF9jb3VudChucCk7DQo+ID4gKyAg
-ICAgICBpZiAoIW51bV9jbGtzKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gMDsNCj4gPiAr
-DQo+ID4gKyAgICAgICBjbGtfYnVsayA9IGtjYWxsb2MobnVtX2Nsa3MsIHNpemVvZigqY2xrX2J1
-bGspLCBHRlBfS0VSTkVMKTsNCj4gDQo+IENhbiBiZSBrbWFsbG9jX2FycmF5PyBvZl9jbGtfYnVs
-a19nZXQoKSBhbHJlYWR5IGNsZWFycyB0aGluZ3Mgb3V0DQo+IGFwcHJvcHJpYXRlbHkuDQoNClll
-cywgaW5kZWVkLiBXaWxsIHVzZSBrbWFsbG9jX2FycmF5IGluc3RlYWQuDQoNCj4gDQo+ID4gKyAg
-ICAgICBpZiAoIWNsa19idWxrKQ0KPiA+ICsgICAgICAgICAgICAgICByZXR1cm4gLUVOT01FTTsN
-Cj4gPiArDQo+ID4gKyAgICAgICByZXQgPSBvZl9jbGtfYnVsa19nZXQobnAsIG51bV9jbGtzLCBj
-bGtfYnVsayk7DQo+ID4gKyAgICAgICBpZiAocmV0KSB7DQo+ID4gKyAgICAgICAgICAgICAgIGtm
-cmVlKGNsa19idWxrKTsNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJuIHJldDsNCj4gPiArICAg
-ICAgIH0NCj4gPiArDQo+ID4gKyAgICAgICAqY2xrcyA9IGNsa19idWxrOw0KPiA+ICsNCj4gPiAr
-ICAgICAgIHJldHVybiBudW1fY2xrczsNCj4gPiArfQ0KPiA+ICsjZWxzZQ0KPiA+ICtzdGF0aWMg
-aW50IF9fbXVzdF9jaGVjayBvZl9jbGtfYnVsa19nZXRfYWxsKHN0cnVjdCBkZXZpY2Vfbm9kZSAq
-bnAsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICBzdHJ1
-Y3QgY2xrX2J1bGtfZGF0YQ0KPiA+ICsqKmNsa3MpIHsNCj4gPiArICAgICAgIHJldHVybiAtRU5P
-RU5UOw0KPiA+ICt9DQo+ID4gICNlbmRpZg0KPiANCj4gVGhpcyBlbHNlIGNhbiBwcm9iYWJseSBi
-ZSBkcm9wcGVkIHRvby4NCj4gDQoNClJpZ2h0Lg0KDQo+ID4NCj4gPiAgdm9pZCBjbGtfYnVsa19w
-dXQoaW50IG51bV9jbGtzLCBzdHJ1Y3QgY2xrX2J1bGtfZGF0YSAqY2xrcykgQEAgLTkwLDYNCj4g
-PiArMTI0LDI5IEBAIGludCBfX211c3RfY2hlY2sgY2xrX2J1bGtfZ2V0KHN0cnVjdCBkZXZpY2Ug
-KmRldiwgaW50DQo+ID4gbnVtX2Nsa3MsICB9ICBFWFBPUlRfU1lNQk9MKGNsa19idWxrX2dldCk7
-DQo+ID4NCj4gPiArdm9pZCBjbGtfYnVsa19wdXRfYWxsKGludCBudW1fY2xrcywgc3RydWN0IGNs
-a19idWxrX2RhdGEgKmNsa3MpIHsNCj4gPiArICAgICAgIGlmIChJU19FUlJfT1JfTlVMTChjbGtz
-KSkNCj4gPiArICAgICAgICAgICAgICAgcmV0dXJuOw0KPiA+ICsNCj4gPiArICAgICAgIGNsa19i
-dWxrX3B1dChudW1fY2xrcywgY2xrcyk7DQo+ID4gKw0KPiA+ICsgICAgICAga2ZyZWUoY2xrcyk7
-DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChjbGtfYnVsa19wdXRfYWxsKTsNCj4gPiArDQo+
-ID4gK2ludCBfX211c3RfY2hlY2sgY2xrX2J1bGtfZ2V0X2FsbChzdHJ1Y3QgZGV2aWNlICpkZXYs
-DQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHN0cnVjdCBjbGtfYnVsa19k
-YXRhICoqY2xrcykgew0KPiA+ICsgICAgICAgc3RydWN0IGRldmljZV9ub2RlICpucCA9IGRldl9v
-Zl9ub2RlKGRldik7DQo+ID4gKw0KPiA+ICsgICAgICAgaWYgKCFucCkNCj4gPiArICAgICAgICAg
-ICAgICAgcmV0dXJuIDA7DQo+ID4gKw0KPiA+ICsgICAgICAgcmV0dXJuIG9mX2Nsa19idWxrX2dl
-dF9hbGwobnAsIGNsa3MpOyB9DQo+ID4gK0VYUE9SVF9TWU1CT0woY2xrX2J1bGtfZ2V0X2FsbCk7
-DQo+IA0KPiBMb29rcyBiZXR0ZXIhDQoNClRoYW5rcw0KDQpSZWdhcmRzDQpEb25nIEFpc2hlbmcN
-Cg=
+Em Mon, 23 Apr 2018 14:19:31 +0200
+Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> escreveu:
+
+> Hi Mauro,
+> 
+> On Friday, April 20, 2018 04:03:21 PM Mauro Carvalho Chehab wrote:
+> > This driver depends on FB_VIA for lots of things. Provide stubs
+> > for the functions it needs, in order to allow building it with
+> > COMPILE_TEST outside x86 architecture.  
+> 
+> Please cc: me on fbdev related patches (patch adding new FB_VIA
+> ifdefs _is_ definitely fbdev related).
+
+Ok. Btw, get maintainer script only gets the fbdev ML:
+
+$ ./scripts/get_maintainer.pl -f include/linux/via-core.h
+Florian Tobias Schandinat <FlorianSchandinat@gmx.de> (maintainer:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER)
+linux-fbdev@vger.kernel.org (open list:VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER)
+linux-kernel@vger.kernel.org (open list)
+
+It probably makes sense to add a:
+
+R: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+At the MAINTAINERS' entry for VIA UNICHROME(PRO)/CHROME9 FRAMEBUFFER DRIVER.
+
+
+> 
+> > Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+> > 
+> > diff --git a/drivers/media/platform/Kconfig b/drivers/media/platform/Kconfig
+> > index e3229f7baed1..abaaed98a044 100644
+> > --- a/drivers/media/platform/Kconfig
+> > +++ b/drivers/media/platform/Kconfig
+> > @@ -15,7 +15,7 @@ source "drivers/media/platform/marvell-ccic/Kconfig"
+> >  
+> >  config VIDEO_VIA_CAMERA
+> >  	tristate "VIAFB camera controller support"
+> > -	depends on FB_VIA
+> > +	depends on FB_VIA || COMPILE_TEST  
+> 
+> This is incorrect (too simple), please take a look at FB_VIA entry:
+> 
+> config FB_VIA
+>        tristate "VIA UniChrome (Pro) and Chrome9 display support"
+>        depends on FB && PCI && X86 && GPIOLIB && I2C
+>        select FB_CFB_FILLRECT
+>        select FB_CFB_COPYAREA
+>        select FB_CFB_IMAGEBLIT
+>        select I2C_ALGOBIT
+>        help
+> 
+> Therefore you also need to check PCI, GPIOLIB && I2C dependencies.
+
+OK. I'll add id, addressing the other issues you pointed and send
+a version 2 of the patches on this series that weren't merged.
+
+> 
+> * For PCI=n:
+> 
+> drivers/media/platform/via-camera.c: In function ‘viacam_serial_is_enabled’:
+> drivers/media/platform/via-camera.c:1286:9: error: implicit declaration of function ‘pci_find_bus’ [-Werror=implicit-function-declaration]
+> drivers/media/platform/via-camera.c:1286:25: warning: initialization makes pointer from integer without a cast [enabled by default]
+> drivers/media/platform/via-camera.c:1296:2: error: implicit declaration of function ‘pci_bus_read_config_byte’ [-Werror=implicit-function-declaration]
+> drivers/media/platform/via-camera.c:1308:2: error: implicit declaration of function ‘pci_bus_write_config_byte’ [-Werror=implicit-function-declaration]
+> cc1: some warnings being treated as errors
+> make[3]: *** [drivers/media/platform/via-camera.o] Error 1
+> 
+> * For I2C=n:
+> 
+> WARNING: unmet direct dependencies detected for VIDEO_OV7670
+>   Depends on [n]: MEDIA_SUPPORT [=y] && I2C [=n] && VIDEO_V4L2 [=y] && MEDIA_CAMERA_SUPPORT [=y]
+>   Selected by [y]:
+>   - VIDEO_VIA_CAMERA [=y] && MEDIA_SUPPORT [=y] && V4L_PLATFORM_DRIVERS [=y] && (FB_VIA [=n] || COMPILE_TEST [=y])
+> 
+> drivers/media/i2c/ov7670.c: In function ‘ov7670_read_smbus’:
+> drivers/media/i2c/ov7670.c:483:2: error: implicit declaration of function ‘i2c_smbus_read_byte_data’ [-Werror=implicit-function-declaration]
+>   ret = i2c_smbus_read_byte_data(client, reg);
+>   ^
+> drivers/media/i2c/ov7670.c: In function ‘ov7670_write_smbus’:
+> drivers/media/i2c/ov7670.c:496:2: error: implicit declaration of function ‘i2c_smbus_write_byte_data’ [-Werror=implicit-function-declaration]
+>   int ret = i2c_smbus_write_byte_data(client, reg, value);
+>   ^
+> drivers/media/i2c/ov7670.c: In function ‘ov7670_read_i2c’:
+> drivers/media/i2c/ov7670.c:521:2: error: implicit declaration of function ‘i2c_transfer’ [-Werror=implicit-function-declaration]
+>   ret = i2c_transfer(client->adapter, &msg, 1);
+>   ^
+> drivers/media/i2c/ov7670.c: In function ‘ov7670_probe’:
+> drivers/media/i2c/ov7670.c:1835:3: error: implicit declaration of function ‘i2c_adapter_id’ [-Werror=implicit-function-declaration]
+>    v4l_dbg(1, debug, client,
+>    ^
+> drivers/media/i2c/ov7670.c: At top level:
+> drivers/media/i2c/ov7670.c:1962:1: warning: data definition has no type or storage class [enabled by default]
+>  module_i2c_driver(ov7670_driver);
+>  ^
+> drivers/media/i2c/ov7670.c:1962:1: error: type defaults to ‘int’ in declaration of ‘module_i2c_driver’ [-Werror=implicit-int]
+> drivers/media/i2c/ov7670.c:1962:1: warning: parameter names (without types) in function declaration [enabled by default]
+> drivers/media/i2c/ov7670.c:1952:26: warning: ‘ov7670_driver’ defined but not used [-Wunused-variable]
+>  static struct i2c_driver ov7670_driver = {
+>                           ^
+> cc1: some warnings being treated as errors
+> make[3]: *** [drivers/media/i2c/ov7670.o] Error 1
+> 
+> * For GPIOLIB=n it builds fine.
+> 
+> >  	select VIDEOBUF_DMA_SG
+> >  	select VIDEO_OV7670
+> >  	help
+> > diff --git a/drivers/media/platform/via-camera.c b/drivers/media/platform/via-camera.c
+> > index e9a02639554b..4ab1695b33af 100644
+> > --- a/drivers/media/platform/via-camera.c
+> > +++ b/drivers/media/platform/via-camera.c
+> > @@ -27,7 +27,10 @@
+> >  #include <linux/via-core.h>
+> >  #include <linux/via-gpio.h>
+> >  #include <linux/via_i2c.h>
+> > +
+> > +#ifdef CONFIG_FB_VIA  
+> 
+> This should be CONFIG_X86.
+> 
+> >  #include <asm/olpc.h>
+> > +#endif
+> >  
+> >  #include "via-camera.h"
+> >  
+> > @@ -1283,6 +1286,11 @@ static bool viacam_serial_is_enabled(void)
+> >  	struct pci_bus *pbus = pci_find_bus(0, 0);
+> >  	u8 cbyte;
+> >  
+> > +#ifdef CONFIG_FB_VIA  
+> 
+> ditto
+> 
+> > +	if (!machine_is_olpc())
+> > +		return false;
+> > +#endif
+> > +
+> >  	if (!pbus)
+> >  		return false;
+> >  	pci_bus_read_config_byte(pbus, VIACAM_SERIAL_DEVFN,
+> > @@ -1343,7 +1351,7 @@ static int viacam_probe(struct platform_device *pdev)
+> >  		return -ENOMEM;
+> >  	}
+> >  
+> > -	if (machine_is_olpc() && viacam_serial_is_enabled())
+> > +	if (viacam_serial_is_enabled())
+> >  		return -EBUSY;
+> >  
+> >  	/*
+> > diff --git a/include/linux/via-core.h b/include/linux/via-core.h
+> > index 9c21cdf3e3b3..ced4419baef8 100644
+> > --- a/include/linux/via-core.h
+> > +++ b/include/linux/via-core.h
+> > @@ -70,8 +70,12 @@ struct viafb_pm_hooks {
+> >  	void *private;
+> >  };
+> >  
+> > +#ifdef CONFIG_FB_VIA
+> >  void viafb_pm_register(struct viafb_pm_hooks *hooks);
+> >  void viafb_pm_unregister(struct viafb_pm_hooks *hooks);
+> > +#else
+> > +static inline void viafb_pm_register(struct viafb_pm_hooks *hooks) {}
+> > +#endif /* CONFIG_FB_VIA */
+> >  #endif /* CONFIG_PM */
+> >  
+> >  /*
+> > @@ -113,8 +117,13 @@ struct viafb_dev {
+> >   * Interrupt management.
+> >   */
+> >  
+> > +#ifdef CONFIG_FB_VIA
+> >  void viafb_irq_enable(u32 mask);
+> >  void viafb_irq_disable(u32 mask);
+> > +#else
+> > +static inline void viafb_irq_enable(u32 mask) {}
+> > +static inline void viafb_irq_disable(u32 mask) {}
+> > +#endif
+> >  
+> >  /*
+> >   * The global interrupt control register and its bits.
+> > @@ -157,10 +166,18 @@ void viafb_irq_disable(u32 mask);
+> >  /*
+> >   * DMA management.
+> >   */
+> > +#ifdef CONFIG_FB_VIA
+> >  int viafb_request_dma(void);
+> >  void viafb_release_dma(void);
+> >  /* void viafb_dma_copy_out(unsigned int offset, dma_addr_t paddr, int len); */
+> >  int viafb_dma_copy_out_sg(unsigned int offset, struct scatterlist *sg, int nsg);
+> > +#else
+> > +static inline int viafb_request_dma(void) { return 0; }
+> > +static inline void viafb_release_dma(void) {}
+> > +static inline int viafb_dma_copy_out_sg(unsigned int offset,
+> > +					struct scatterlist *sg, int nsg)
+> > +{ return 0; }
+> > +#endif
+> >  
+> >  /*
+> >   * DMA Controller registers.
+> > diff --git a/include/linux/via-gpio.h b/include/linux/via-gpio.h
+> > index 8281aea3dd6d..b5a96cf7a874 100644
+> > --- a/include/linux/via-gpio.h
+> > +++ b/include/linux/via-gpio.h
+> > @@ -8,7 +8,11 @@
+> >  #ifndef __VIA_GPIO_H__
+> >  #define __VIA_GPIO_H__
+> >  
+> > +#ifdef CONFIG_FB_VIA
+> >  extern int viafb_gpio_lookup(const char *name);
+> >  extern int viafb_gpio_init(void);
+> >  extern void viafb_gpio_exit(void);
+> > +#else
+> > +static inline int viafb_gpio_lookup(const char *name) { return 0; }
+> > +#endif
+> >  #endif
+> > diff --git a/include/linux/via_i2c.h b/include/linux/via_i2c.h
+> > index 44532e468c05..209bff950e22 100644
+> > --- a/include/linux/via_i2c.h
+> > +++ b/include/linux/via_i2c.h
+> > @@ -32,6 +32,7 @@ struct via_i2c_stuff {
+> >  };
+> >  
+> >  
+> > +#ifdef CONFIG_FB_VIA
+> >  int viafb_i2c_readbyte(u8 adap, u8 slave_addr, u8 index, u8 *pdata);
+> >  int viafb_i2c_writebyte(u8 adap, u8 slave_addr, u8 index, u8 data);
+> >  int viafb_i2c_readbytes(u8 adap, u8 slave_addr, u8 index, u8 *buff, int buff_len);
+> > @@ -39,4 +40,9 @@ struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which);
+> >  
+> >  extern int viafb_i2c_init(void);
+> >  extern void viafb_i2c_exit(void);
+> > +#else
+> > +static inline
+> > +struct i2c_adapter *viafb_find_i2c_adapter(enum viafb_i2c_adap which)
+> > +{ return NULL; }
+> > +#endif
+> >  #endif /* __VIA_I2C_H__ */  
+> 
+> How's about just allowing COMPILE_TEST for FB_VIA instead of adding
+> all these stubs?
+> 
+> 
+> From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Subject: [PATCH] video: fbdev: via: allow COMPILE_TEST build
+> 
+> This patch allows viafb driver to be build on !X86 archs
+> using COMPILE_TEST config option.
+> 
+> Since via-camera driver (VIDEO_VIA_CAMERA) depends on viafb
+> it also needs a little fixup.
+> 
+> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+> Cc: Mauro Carvalho Chehab <mchehab@s-opensource.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+>  drivers/media/platform/via-camera.c |    5 +++++
+>  drivers/video/fbdev/Kconfig         |    2 +-
+>  drivers/video/fbdev/via/global.h    |    6 ++++++
+>  drivers/video/fbdev/via/hw.c        |    1 -
+>  drivers/video/fbdev/via/via-core.c  |    1 -
+>  drivers/video/fbdev/via/via_clock.c |    2 +-
+>  drivers/video/fbdev/via/viafbdev.c  |    1 -
+>  7 files changed, 13 insertions(+), 5 deletions(-)
+> 
+> Index: b/drivers/media/platform/via-camera.c
+> ===================================================================
+> --- a/drivers/media/platform/via-camera.c	2018-04-23 13:46:37.000000000 +0200
+> +++ b/drivers/media/platform/via-camera.c	2018-04-23 14:01:07.873322815 +0200
+> @@ -27,7 +27,12 @@
+>  #include <linux/via-core.h>
+>  #include <linux/via-gpio.h>
+>  #include <linux/via_i2c.h>
+> +
+> +#ifdef CONFIG_X86
+>  #include <asm/olpc.h>
+> +#else
+> +#define machine_is_olpc(x) 0
+> +#endif
+>  
+>  #include "via-camera.h"
+>  
+> Index: b/drivers/video/fbdev/Kconfig
+> ===================================================================
+> --- a/drivers/video/fbdev/Kconfig	2018-04-10 12:34:26.618867549 +0200
+> +++ b/drivers/video/fbdev/Kconfig	2018-04-23 13:55:41.389314593 +0200
+> @@ -1437,7 +1437,7 @@ config FB_SIS_315
+>  
+>  config FB_VIA
+>         tristate "VIA UniChrome (Pro) and Chrome9 display support"
+> -       depends on FB && PCI && X86 && GPIOLIB && I2C
+> +       depends on FB && PCI && GPIOLIB && I2C && (X86 || COMPILE_TEST)
+>         select FB_CFB_FILLRECT
+>         select FB_CFB_COPYAREA
+>         select FB_CFB_IMAGEBLIT
+> Index: b/drivers/video/fbdev/via/global.h
+> ===================================================================
+> --- a/drivers/video/fbdev/via/global.h	2017-10-18 14:35:22.079448310 +0200
+> +++ b/drivers/video/fbdev/via/global.h	2018-04-23 13:52:57.121310456 +0200
+> @@ -33,6 +33,12 @@
+>  #include <linux/console.h>
+>  #include <linux/timer.h>
+>  
+> +#ifdef CONFIG_X86
+> +#include <asm/olpc.h>
+> +#else
+> +#define machine_is_olpc(x) 0
+> +#endif
+> +
+>  #include "debug.h"
+>  
+>  #include "viafbdev.h"
+> Index: b/drivers/video/fbdev/via/hw.c
+> ===================================================================
+> --- a/drivers/video/fbdev/via/hw.c	2017-10-18 14:35:22.079448310 +0200
+> +++ b/drivers/video/fbdev/via/hw.c	2018-04-23 13:54:24.881312666 +0200
+> @@ -20,7 +20,6 @@
+>   */
+>  
+>  #include <linux/via-core.h>
+> -#include <asm/olpc.h>
+>  #include "global.h"
+>  #include "via_clock.h"
+>  
+> Index: b/drivers/video/fbdev/via/via-core.c
+> ===================================================================
+> --- a/drivers/video/fbdev/via/via-core.c	2017-11-22 14:11:59.852728679 +0100
+> +++ b/drivers/video/fbdev/via/via-core.c	2018-04-23 13:53:24.893311156 +0200
+> @@ -17,7 +17,6 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/list.h>
+>  #include <linux/pm.h>
+> -#include <asm/olpc.h>
+>  
+>  /*
+>   * The default port config.
+> Index: b/drivers/video/fbdev/via/via_clock.c
+> ===================================================================
+> --- a/drivers/video/fbdev/via/via_clock.c	2017-10-18 14:35:22.083448309 +0200
+> +++ b/drivers/video/fbdev/via/via_clock.c	2018-04-23 13:53:45.389311672 +0200
+> @@ -25,7 +25,7 @@
+>  
+>  #include <linux/kernel.h>
+>  #include <linux/via-core.h>
+> -#include <asm/olpc.h>
+> +
+>  #include "via_clock.h"
+>  #include "global.h"
+>  #include "debug.h"
+> Index: b/drivers/video/fbdev/via/viafbdev.c
+> ===================================================================
+> --- a/drivers/video/fbdev/via/viafbdev.c	2017-11-22 14:11:59.852728679 +0100
+> +++ b/drivers/video/fbdev/via/viafbdev.c	2018-04-23 13:53:55.325311922 +0200
+> @@ -25,7 +25,6 @@
+>  #include <linux/stat.h>
+>  #include <linux/via-core.h>
+>  #include <linux/via_i2c.h>
+> -#include <asm/olpc.h>
+>  
+>  #define _MASTER_FILE
+>  #include "global.h"
+> 
+> 
+
+
+
+Thanks,
+Mauro

@@ -1,29 +1,64 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 15 May 2018 10:40:08 +0000
-Subject: Re: [PATCH] video: fbdev: fix spelling mistake: "frambuffer" -> "framebuffer"
-Message-Id: <2254363.7hXMTGaTqE@amdc3058>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Date: Fri, 04 May 2018 20:49:32 +0000
+Subject: [PATCH] media: include/video/omapfb_dss.h: use IS_ENABLED()
+Message-Id: <8d55f45b6aa36f5c758d191825f14cd31723b371.1525466956.git.mchehab+samsung@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180501083748epcas4p15b1437f0c39447e7119c6397f624c0f5@epcas4p1.samsung.com>
- <20180501083742.22565-1-colin.king@canonical.com>
-In-Reply-To: <20180501083742.22565-1-colin.king@canonical.com>
+References: <201805050150.CmagcMOg%fengguang.wu@intel.com>
+In-Reply-To: <201805050150.CmagcMOg%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Markus Elfring <elfring@users.sourceforge.net>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, tomi.valkeinen@ti.com, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-omap@vger.kernel.org, Linux Media Mailing List <linux-media@vger.kernel.org>
 
-On Tuesday, May 01, 2018 09:37:42 AM Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Trivial fix to spelling mistake in error messages
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Just checking for ifdefs cause build issues as reported by
+kernel test:
 
-Patch queued for 4.18, thanks.
+config: openrisc-allmodconfig (attached as .config)
+compiler: or1k-linux-gcc (GCC) 6.0.0 20160327 (experimental)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+All errors (new ones prefixed by >>):
+
+   drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function 'omapfb_init_connections':
+>> drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2396:8: error: implicit declaration of function 'omapdss_find_mgr_from_display' [-Werror=implicit-function-declaration]
+     mgr = omapdss_find_mgr_from_display(def_dssdev);
+           ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2396:6: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     mgr = omapdss_find_mgr_from_display(def_dssdev);
+         ^
+   drivers/video/fbdev/omap2/omapfb/omapfb-main.c: In function 'omapfb_find_default_display':
+>> drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2430:13: error: implicit declaration of function 'omapdss_get_default_display_name' [-Werror=implicit-function-declaration]
+     def_name = omapdss_get_default_display_name();
+                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   drivers/video/fbdev/omap2/omapfb/omapfb-main.c:2430:11: warning: assignment makes pointer from integer without a cast [-Wint-conversion]
+     def_name = omapdss_get_default_display_name();
+              ^
+
+So, use IS_ENABLED() instead.
+
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Randy Dunlap <rdunlap@infradead.org>
+Cc: tomi.valkeinen@ti.com
+Cc: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Fixes: 771f7be87ff9 ("media: omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP")
+Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+---
+ include/video/omapfb_dss.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/video/omapfb_dss.h b/include/video/omapfb_dss.h
+index e9775144ff3b..12755d8d9b4f 100644
+--- a/include/video/omapfb_dss.h
++++ b/include/video/omapfb_dss.h
+@@ -778,7 +778,7 @@ struct omap_dss_driver {
+ 
+ typedef void (*omap_dispc_isr_t) (void *arg, u32 mask);
+ 
+-#ifdef CONFIG_FB_OMAP2
++#if IS_ENABLED(CONFIG_FB_OMAP2)
+ 
+ enum omapdss_version omapdss_get_version(void);
+ bool omapdss_is_initialized(void);
+-- 
+2.17.0
 

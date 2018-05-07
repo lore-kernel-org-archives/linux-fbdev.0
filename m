@@ -1,65 +1,83 @@
-From: kgunda@codeaurora.org
-Date: Tue, 15 May 2018 04:50:49 +0000
-Subject: Re: [PATCH V1 5/5] backlight: qcom-wled: Add auto string detection logic
-Message-Id: <5477037fff5d6f6ef335221220b527b6@codeaurora.org>
+From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Date: Mon, 07 May 2018 09:35:36 +0000
+Subject: [PATCH 00/18] Fix some build warnings/errors with Sphinx
+Message-Id: <cover.1525684985.git.mchehab+samsung@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
- <1525341432-15818-6-git-send-email-kgunda@codeaurora.org>
- <20180507181044.GE2259@tuxbook-pro>
- <abe98bd822f8c7bab80f9ec9afb34d9b@codeaurora.org>
- <20180514170237.GL14924@minitux>
-In-Reply-To: <20180514170237.GL14924@minitux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-leds@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
+To: Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, linux-iio@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, "Luis R. Rodriguez" <mcgrof@kernel.org>, linux-mtd@lists.infradead.org, linux-crypto@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-can@vger.kernel.org
 
-On 2018-05-14 22:32, Bjorn Andersson wrote:
-> On Wed 09 May 00:14 PDT 2018, kgunda@codeaurora.org wrote:
-> 
->> On 2018-05-07 23:40, Bjorn Andersson wrote:
->> > On Thu 03 May 02:57 PDT 2018, Kiran Gunda wrote:
->> >
->> > [..]
->> > > +
->> > > +#define WLED_AUTO_DETECT_OVP_COUNT		5
->> > > +#define WLED_AUTO_DETECT_CNT_DLY_US		HZ /* 1 second */
->> > > +static bool wled_auto_detection_required(struct wled *wled)
->> >
->> > So cfg.auto_detection_enabled is set, but we didn't have a fault during
->> > wled_auto_detection_at_init(), which I presume indicates that the boot
->> > loader configured the strings appropriately (or didn't enable the BL).
->> > Then first time we try to enable the backlight we will hit the ovp irq,
->> > which will  enter here a few times to figure out that the strings are
->> > incorrectly configured and then we will do the same thing that would
->> > have been done if we probed with a fault.
->> >
->> > This is convoluted!
->> >
->> > If auto-detection is a feature allowing the developer to omit the string
->> > configuration then just do the auto detection explicitly in probe when
->> > the developer did so and then never do it again.
->> >
->> As explained in the previous patch, the auto-detection is needed 
->> later,
->> because are also cases where one/more of the connected LED string of 
->> the
->> display-backlight is malfunctioning (because of damage) and requires 
->> the
->> damaged string to be turned off to prevent the complete panel and/or 
->> board
->> from being damaged.
-> 
-> Okay, that sounds very reasonable. Please ensure that it's clearly
-> described in the commit message, so that we have this documented if
-> someone wonders in the future.
-> 
-> Regards,
-> Bjorn
-> --
-Thanks for that ! Sure I will describe it in the commit message.
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I decided to give a try with Sphinx last stable version
+(1.17.4), and noticed several issues. The worse one was
+with the networking book: a non-standard footnote there
+with [*] instead of a number causes it to break PDF building.
+
+So, I took some spare time to address some warnings all over
+the tree, and moved a few text documents to a book. I with
+I had more time to move the other ones and to solve other
+warnings.
+
+Mauro Carvalho Chehab (18):
+  docs: can.rst: fix a footnote reference
+  docs: fix location of request_firmware & friends
+  docs: */index.rst: Add newer documents to their respective index.rst
+  docs: admin-guide: add bcache documentation
+  docs: core-api: add cachetlb documentation
+  docs: core-api: add cgroup-v2 documentation
+  docs: core-api: add circular-buffers documentation
+  docs: driver-api: add clk documentation
+  net: mac80211.h: fix a bad comment line
+  rcu: rcupdate.h: get rid of Sphinx warnings at rcu_pointer_handoff()
+  docs: crypto_engine.rst: Fix two parse warnings
+  time: timer.c: adjust a kernel-doc comment
+  wait: wait.h: Get rid of a kernel-doc/Sphinx warnings
+  fbdev: modedb.c: fix a kernel-doc markup
+  iio: iio.h: use nested struct support on kernel-doc markup
+  mtd: rawnand.h: use nested union kernel-doc markups
+  docs: uio-howto.rst: use a code block to solve a warning
+  w1: w1_io.c: fix a kernel-doc warning
+
+ Documentation/00-INDEX                        | 10 -------
+ .../{bcache.txt => admin-guide/bcache.rst}    |  0
+ .../cgroup-v2.rst}                            |  0
+ Documentation/admin-guide/index.rst           |  2 ++
+ .../admin-guide/kernel-parameters.txt         |  2 +-
+ .../{cachetlb.txt => core-api/cachetlb.rst}   |  0
+ .../circular-buffers.rst}                     |  0
+ Documentation/core-api/index.rst              |  2 ++
+ Documentation/crypto/crypto_engine.rst        |  8 +++---
+ Documentation/crypto/index.rst                |  1 +
+ Documentation/dell_rbu.txt                    |  4 +--
+ Documentation/{clk.txt => driver-api/clk.rst} |  0
+ .../firmware/fallback-mechanisms.rst          |  2 +-
+ .../driver-api/firmware/request_firmware.rst  | 17 +++++++-----
+ Documentation/driver-api/index.rst            |  2 ++
+ Documentation/driver-api/infrastructure.rst   |  2 +-
+ Documentation/driver-api/uio-howto.rst        |  3 ++-
+ Documentation/memory-barriers.txt             |  4 +--
+ Documentation/networking/can.rst              |  4 +--
+ .../power/suspend-and-cpuhotplug.txt          |  2 +-
+ Documentation/process/index.rst               |  1 +
+ Documentation/security/index.rst              |  2 ++
+ .../translations/ko_KR/memory-barriers.txt    |  4 +--
+ drivers/video/fbdev/core/modedb.c             | 22 ++++++++--------
+ drivers/w1/w1_io.c                            |  1 +
+ include/linux/iio/iio.h                       | 24 ++++++++---------
+ include/linux/mtd/rawnand.h                   | 26 +++++++++++++------
+ include/linux/rcupdate.h                      |  5 ++--
+ include/linux/wait.h                          |  2 +-
+ include/net/mac80211.h                        |  2 +-
+ kernel/time/timer.c                           | 14 +++++-----
+ 31 files changed, 93 insertions(+), 75 deletions(-)
+ rename Documentation/{bcache.txt => admin-guide/bcache.rst} (100%)
+ rename Documentation/{cgroup-v2.txt => admin-guide/cgroup-v2.rst} (100%)
+ rename Documentation/{cachetlb.txt => core-api/cachetlb.rst} (100%)
+ rename Documentation/{circular-buffers.txt => core-api/circular-buffers.rst} (100%)
+ rename Documentation/{clk.txt => driver-api/clk.rst} (100%)
+
+-- 
+2.17.0
+
+

@@ -1,135 +1,63 @@
-From: Dong Aisheng <aisheng.dong@nxp.com>
-Date: Fri, 25 May 2018 10:37:23 +0000
-Subject: [PATCH V3 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <1527244643-10736-5-git-send-email-aisheng.dong@nxp.com>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Tue, 08 May 2018 07:04:26 +0000
+Subject: [PATCH RESEND] backlight: gpio-backlight: Correct initial power state handling
+Message-Id: <20180508070426.32211-1-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1527244643-10736-1-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1527244643-10736-1-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Switching to use clk_bulk API to simplify clock operations.
+The default-on property - or the def_value via legacy pdata) should be
+handled as:
+if it is 1, the backlight must be enabled (kept enabled)
+if it is 0, the backlight must be disabled (kept disabled)
 
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Stephen Boyd <sboyd@codeaurora.org>
-Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+This only works for the case when default-on is set. If it is not set then
+the brightness of the backlight is set to 0. Now if the backlight is
+enabled by external driver (graphics) the backlight will stay disabled since
+the brightness is configured as 0. The backlight will not turn on.
+
+The correct action at probe time is to configure the props.power to
+FB_BLANK_UNBLANK if we want the backlight on by default or to
+FB_BLANK_POWERDOWN if the backlight should be off by default.
+
+The initial brightness should be set to 1.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
 ---
-v2->v3:
- * fix a build warning on x86 platform due to a wrong
-   of the prototype of simplefb_clocks_enable
-v1->v2:
- * switch to clk_bulk_get_all from of_clk_bulk_get_all
----
- drivers/video/fbdev/simplefb.c | 66 ++++++++----------------------------------
- 1 file changed, 12 insertions(+), 54 deletions(-)
+Hi,
 
-diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-index a3c44ec..db74354 100644
---- a/drivers/video/fbdev/simplefb.c
-+++ b/drivers/video/fbdev/simplefb.c
-@@ -182,7 +182,7 @@ struct simplefb_par {
- #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
- 	bool clks_enabled;
- 	unsigned int clk_count;
--	struct clk **clks;
-+	struct clk_bulk_data *clks;
- #endif
- #if defined CONFIG_OF && defined CONFIG_REGULATOR
- 	bool regulators_enabled;
-@@ -214,37 +214,13 @@ static int simplefb_clocks_get(struct simplefb_par *par,
- 			       struct platform_device *pdev)
- {
- 	struct device_node *np = pdev->dev.of_node;
--	struct clk *clock;
--	int i;
+for some reason the original patch got lost:
+https://patchwork.kernel.org/patch/9445539/
+
+But it is still valid, so I'm resending it.
+
+Regards,
+Peter
+
+ drivers/video/backlight/gpio_backlight.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index e470da95d806..904a4462cefe 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -142,7 +142,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 		return PTR_ERR(bl);
+ 	}
  
- 	if (dev_get_platdata(&pdev->dev) || !np)
- 		return 0;
- 
--	par->clk_count = of_clk_get_parent_count(np);
--	if (!par->clk_count)
--		return 0;
--
--	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
--	if (!par->clks)
--		return -ENOMEM;
--
--	for (i = 0; i < par->clk_count; i++) {
--		clock = of_clk_get(np, i);
--		if (IS_ERR(clock)) {
--			if (PTR_ERR(clock) = -EPROBE_DEFER) {
--				while (--i >= 0) {
--					if (par->clks[i])
--						clk_put(par->clks[i]);
--				}
--				kfree(par->clks);
--				return -EPROBE_DEFER;
--			}
--			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
--				__func__, i, PTR_ERR(clock));
--			continue;
--		}
--		par->clks[i] = clock;
--	}
-+	par->clk_count = clk_bulk_get_all(&pdev->dev, &par->clks);
-+	if ((par->clk_count < 0) && (par->clk_count = -EPROBE_DEFER))
-+		return -EPROBE_DEFER;
- 
- 	return 0;
- }
-@@ -252,39 +228,21 @@ static int simplefb_clocks_get(struct simplefb_par *par,
- static void simplefb_clocks_enable(struct simplefb_par *par,
- 				   struct platform_device *pdev)
- {
--	int i, ret;
-+	int ret;
+-	bl->props.brightness = gbl->def_value;
++	bl->props.power = gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
++	bl->props.brightness = 1;
 +
-+	ret = clk_bulk_prepare_enable(par->clk_count, par->clks);
-+	if (ret)
-+		dev_warn(&pdev->dev, "failed to enable clocks\n");
+ 	backlight_update_status(bl);
  
--	for (i = 0; i < par->clk_count; i++) {
--		if (par->clks[i]) {
--			ret = clk_prepare_enable(par->clks[i]);
--			if (ret) {
--				dev_err(&pdev->dev,
--					"%s: failed to enable clock %d: %d\n",
--					__func__, i, ret);
--				clk_put(par->clks[i]);
--				par->clks[i] = NULL;
--			}
--		}
--	}
- 	par->clks_enabled = true;
- }
- 
- static void simplefb_clocks_destroy(struct simplefb_par *par)
- {
--	int i;
--
--	if (!par->clks)
--		return;
--
--	for (i = 0; i < par->clk_count; i++) {
--		if (par->clks[i]) {
--			if (par->clks_enabled)
--				clk_disable_unprepare(par->clks[i]);
--			clk_put(par->clks[i]);
--		}
--	}
-+	if (par->clks_enabled)
-+		clk_bulk_disable_unprepare(par->clk_count, par->clks);
- 
--	kfree(par->clks);
-+	clk_bulk_put_all(par->clk_count, par->clks);
- }
- #else
- static int simplefb_clocks_get(struct simplefb_par *par,
+ 	platform_set_drvdata(pdev, bl);
 -- 
-2.7.4
+Peter
+
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
 

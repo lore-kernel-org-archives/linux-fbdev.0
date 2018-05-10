@@ -1,144 +1,127 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 28 May 2018 15:46:19 +0000
-Subject: [PATCH] video/omap: add module license tags
-Message-Id: <20180528154704.2568184-1-arnd@arndb.de>
+From: Joe Perches <joe@perches.com>
+Date: Thu, 10 May 2018 15:45:36 +0000
+Subject: [PATCH 10/18] efifb: Remove pr_fmt duplicate logging prefixes
+Message-Id: <b424c8d20ebdfe54adca5ceee86fd21e8a144f6e.1525964385.git.joe@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1525964381.git.joe@perches.com>
+In-Reply-To: <cover.1525964381.git.joe@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Imre Deak <imre.deak@intel.com>, Krzysztof Kozlowski <krzk@kernel.org>, Wolfram Sang <wsa@the-dreams.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Peter Jones <pjones@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-I got a bunch of warnings in a randconfig build:
+Converting pr_fmt from a simple define to use KBUILD_MODNAME added
+some duplicate logging prefixes to existing uses.
 
-WARNING: modpost: missing MODULE_LICENSE() in drivers/video/fbdev/omap/lcd_ams_delta.o
-WARNING: modpost: missing MODULE_LICENSE() in drivers/video/fbdev/omap/lcd_inn1510.o
-WARNING: modpost: missing MODULE_LICENSE() in drivers/video/fbdev/omap/lcd_palmte.o
-WARNING: modpost: missing MODULE_LICENSE() in drivers/video/fbdev/omap/lcd_palmtt.o
+Remove them.
 
-These come from an earlier patch of mine that turned all display drivers
-into separate modules. The fix is to add a MODULE_LICENSE tag. Since I'm
-doing that, adding a description and author field also makes sense. I
-went by the authors listed in the comment at the top of each file, but
-removed Imre's Nokia email address that I assume is not valid any more,
-since Imre is working at Intel these days.
-
-Fixes: 81c44c2b2ce3 ("video/omap: fix modular build")
-Cc: Imre Deak <imre.deak@intel.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/video/fbdev/omap/lcd_ams_delta.c | 3 +++
- drivers/video/fbdev/omap/lcd_h3.c        | 3 +++
- drivers/video/fbdev/omap/lcd_htcherald.c | 4 ++++
- drivers/video/fbdev/omap/lcd_inn1510.c   | 3 +++
- drivers/video/fbdev/omap/lcd_inn1610.c   | 3 +++
- drivers/video/fbdev/omap/lcd_osk.c       | 4 ++++
- drivers/video/fbdev/omap/lcd_palmte.c    | 3 +++
- drivers/video/fbdev/omap/lcd_palmtt.c    | 3 +++
- drivers/video/fbdev/omap/lcd_palmz71.c   | 3 +++
- 9 files changed, 29 insertions(+)
+ drivers/video/fbdev/efifb.c | 48 ++++++++++++++++++++++-----------------------
+ 1 file changed, 23 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
-index a4ee947006c7..488b3e9a2646 100644
---- a/drivers/video/fbdev/omap/lcd_ams_delta.c
-+++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
-@@ -197,3 +197,6 @@ static struct platform_driver ams_delta_panel_driver = {
- };
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 46a4484e3da7..3a11174f194b 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -250,13 +250,13 @@ static int efifb_probe(struct platform_device *dev)
+ 	} else {
+ 		/* We cannot make this fatal. Sometimes this comes from magic
+ 		   spaces our resource handlers simply don't know about */
+-		pr_warn("efifb: cannot reserve video memory at 0x%lx\n",
++		pr_warn("cannot reserve video memory at 0x%lx\n",
+ 			efifb_fix.smem_start);
+ 	}
  
- module_platform_driver(ams_delta_panel_driver);
-+MODULE_AUTHOR("Jonathan McDowell <noodles@earth.li>");
-+MODULE_DESCRIPTION("LCD panel support for the Amstrad E3 (Delta) videophone");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_h3.c b/drivers/video/fbdev/omap/lcd_h3.c
-index 796f4634c4c6..146dd962c69e 100644
---- a/drivers/video/fbdev/omap/lcd_h3.c
-+++ b/drivers/video/fbdev/omap/lcd_h3.c
-@@ -89,3 +89,6 @@ static struct platform_driver h3_panel_driver = {
- };
+ 	info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
+ 	if (!info) {
+-		pr_err("efifb: cannot allocate framebuffer\n");
++		pr_err("cannot allocate framebuffer\n");
+ 		err = -ENOMEM;
+ 		goto err_release_mem;
+ 	}
+@@ -277,23 +277,23 @@ static int efifb_probe(struct platform_device *dev)
+ 	else
+ 		info->screen_base = ioremap_wc(efifb_fix.smem_start, efifb_fix.smem_len);
+ 	if (!info->screen_base) {
+-		pr_err("efifb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+-			efifb_fix.smem_len, efifb_fix.smem_start);
++		pr_err("abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
++		       efifb_fix.smem_len, efifb_fix.smem_start);
+ 		err = -EIO;
+ 		goto err_release_fb;
+ 	}
  
- module_platform_driver(h3_panel_driver);
-+MODULE_AUTHOR("Imre Deak");
-+MODULE_DESCRIPTION("LCD panel support for the TI OMAP H3 board");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_htcherald.c b/drivers/video/fbdev/omap/lcd_htcherald.c
-index 9d692f5b8025..db4ff1c6add9 100644
---- a/drivers/video/fbdev/omap/lcd_htcherald.c
-+++ b/drivers/video/fbdev/omap/lcd_htcherald.c
-@@ -66,3 +66,7 @@ static struct platform_driver htcherald_panel_driver = {
- };
+-	pr_info("efifb: framebuffer at 0x%lx, using %dk, total %dk\n",
+-	       efifb_fix.smem_start, size_remap/1024, size_total/1024);
+-	pr_info("efifb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+-	       efifb_defined.xres, efifb_defined.yres,
+-	       efifb_defined.bits_per_pixel, efifb_fix.line_length,
+-	       screen_info.pages);
++	pr_info("framebuffer at 0x%lx, using %dk, total %dk\n",
++		efifb_fix.smem_start, size_remap/1024, size_total/1024);
++	pr_info("mode is %dx%dx%d, linelength=%d, pages=%d\n",
++		efifb_defined.xres, efifb_defined.yres,
++		efifb_defined.bits_per_pixel, efifb_fix.line_length,
++		screen_info.pages);
  
- module_platform_driver(htcherald_panel_driver);
-+
-+MODULE_AUTHOR("Cory Maccarrone");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("LCD panel support for the HTC Herald");
-diff --git a/drivers/video/fbdev/omap/lcd_inn1510.c b/drivers/video/fbdev/omap/lcd_inn1510.c
-index b284050f5471..8c334858f441 100644
---- a/drivers/video/fbdev/omap/lcd_inn1510.c
-+++ b/drivers/video/fbdev/omap/lcd_inn1510.c
-@@ -73,3 +73,6 @@ static struct platform_driver innovator1510_panel_driver = {
- };
+ 	efifb_defined.xres_virtual = efifb_defined.xres;
+ 	efifb_defined.yres_virtual = efifb_fix.smem_len /
+ 					efifb_fix.line_length;
+-	pr_info("efifb: scrolling: redraw\n");
++	pr_info("scrolling: redraw\n");
+ 	efifb_defined.yres_virtual = efifb_defined.yres;
  
- module_platform_driver(innovator1510_panel_driver);
-+MODULE_AUTHOR("Imre Deak");
-+MODULE_DESCRIPTION("LCD panel support for the TI OMAP1510 Innovator board");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_inn1610.c b/drivers/video/fbdev/omap/lcd_inn1610.c
-index 1841710e796f..9ca17b33d382 100644
---- a/drivers/video/fbdev/omap/lcd_inn1610.c
-+++ b/drivers/video/fbdev/omap/lcd_inn1610.c
-@@ -106,3 +106,6 @@ static struct platform_driver innovator1610_panel_driver = {
- };
+ 	/* some dummy values for timing to make fbset happy */
+@@ -311,17 +311,15 @@ static int efifb_probe(struct platform_device *dev)
+ 	efifb_defined.transp.offset = screen_info.rsvd_pos;
+ 	efifb_defined.transp.length = screen_info.rsvd_size;
  
- module_platform_driver(innovator1610_panel_driver);
-+MODULE_AUTHOR("Imre Deak");
-+MODULE_DESCRIPTION("LCD panel support for the TI OMAP1610 Innovator board");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_osk.c b/drivers/video/fbdev/omap/lcd_osk.c
-index b0be5771fe90..6545de8f6390 100644
---- a/drivers/video/fbdev/omap/lcd_osk.c
-+++ b/drivers/video/fbdev/omap/lcd_osk.c
-@@ -93,3 +93,7 @@ static struct platform_driver osk_panel_driver = {
- };
+-	pr_info("efifb: %s: "
+-	       "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
+-	       "Truecolor",
+-	       screen_info.rsvd_size,
+-	       screen_info.red_size,
+-	       screen_info.green_size,
+-	       screen_info.blue_size,
+-	       screen_info.rsvd_pos,
+-	       screen_info.red_pos,
+-	       screen_info.green_pos,
+-	       screen_info.blue_pos);
++	pr_info("Truecolor: size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
++		screen_info.rsvd_size,
++		screen_info.red_size,
++		screen_info.green_size,
++		screen_info.blue_size,
++		screen_info.rsvd_pos,
++		screen_info.red_pos,
++		screen_info.green_pos,
++		screen_info.blue_pos);
  
- module_platform_driver(osk_panel_driver);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Imre Deak");
-+MODULE_DESCRIPTION("LCD panel support for the TI OMAP OSK board");
-diff --git a/drivers/video/fbdev/omap/lcd_palmte.c b/drivers/video/fbdev/omap/lcd_palmte.c
-index cef96386cf80..1d442c19799c 100644
---- a/drivers/video/fbdev/omap/lcd_palmte.c
-+++ b/drivers/video/fbdev/omap/lcd_palmte.c
-@@ -59,3 +59,6 @@ static struct platform_driver palmte_panel_driver = {
- };
+ 	efifb_fix.ypanstep  = 0;
+ 	efifb_fix.ywrapstep = 0;
+@@ -350,17 +348,17 @@ static int efifb_probe(struct platform_device *dev)
  
- module_platform_driver(palmte_panel_driver);
-+MODULE_AUTHOR("Romain Goyet <r.goyet@gmail.com>");
-+MODULE_DESCRIPTION("LCD panel support for the Palm Tungsten E");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_palmtt.c b/drivers/video/fbdev/omap/lcd_palmtt.c
-index 627f13dae5ad..0b9f17a0fafe 100644
---- a/drivers/video/fbdev/omap/lcd_palmtt.c
-+++ b/drivers/video/fbdev/omap/lcd_palmtt.c
-@@ -72,3 +72,6 @@ static struct platform_driver palmtt_panel_driver = {
- };
- 
- module_platform_driver(palmtt_panel_driver);
-+MODULE_AUTHOR("Marek Vasut <marek.vasut@gmail.com>");
-+MODULE_DESCRIPTION("LCD panel support for Palm Tungsten|T");
-+MODULE_LICENSE("GPL");
-diff --git a/drivers/video/fbdev/omap/lcd_palmz71.c b/drivers/video/fbdev/omap/lcd_palmz71.c
-index c46d4db1f839..d7071578d70e 100644
---- a/drivers/video/fbdev/omap/lcd_palmz71.c
-+++ b/drivers/video/fbdev/omap/lcd_palmz71.c
-@@ -66,3 +66,6 @@ static struct platform_driver palmz71_panel_driver = {
- };
- 
- module_platform_driver(palmz71_panel_driver);
-+MODULE_AUTHOR("Marek Vasut");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("LCD panel support for the Palm Zire71");
+ 	err = sysfs_create_groups(&dev->dev.kobj, efifb_groups);
+ 	if (err) {
+-		pr_err("efifb: cannot add sysfs attrs\n");
++		pr_err("cannot add sysfs attrs\n");
+ 		goto err_unmap;
+ 	}
+ 	err = fb_alloc_cmap(&info->cmap, 256, 0);
+ 	if (err < 0) {
+-		pr_err("efifb: cannot allocate colormap\n");
++		pr_err("cannot allocate colormap\n");
+ 		goto err_groups;
+ 	}
+ 	err = register_framebuffer(info);
+ 	if (err < 0) {
+-		pr_err("efifb: cannot register framebuffer\n");
++		pr_err("cannot register framebuffer\n");
+ 		goto err_fb_dealoc;
+ 	}
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
 -- 
-2.9.0
+2.15.0
 

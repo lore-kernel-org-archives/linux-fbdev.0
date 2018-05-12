@@ -1,247 +1,103 @@
-From: Matthias Urlichs <matthias@urlichs.de>
-Date: Sat, 26 May 2018 08:11:32 +0000
-Subject: Please rate limit kernel output!
-Message-Id: <88e353ed-b49b-d454-8d09-4b941ff6558f@urlichs.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="9X9rdGPGbO98wjP7VeFX0e3ZoXlssb6at"
+From: Kyungtae Kim <kt0755@gmail.com>
+Date: Sat, 12 May 2018 13:45:28 +0000
+Subject: Fwd: KASAN: use-after-free Write in vgacon_scroll
+Message-Id: <CAEAjamsJnG-=TSOwgRbbb3B9Z-PA63oWmNPoKYWQ=Z=+X49akg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <CAEAjams1MkmoVwHNZ9gOKCq8m=umN5BZ+mSnnw3_kXeXn5ZgmA@mail.gmail.com>
+In-Reply-To: <CAEAjams1MkmoVwHNZ9gOKCq8m=umN5BZ+mSnnw3_kXeXn5ZgmA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---9X9rdGPGbO98wjP7VeFX0e3ZoXlssb6at
-Content-Type: multipart/mixed; boundary="dF90ErrhFqKfjrGAIJZPrw9NwB1IQx3Lh";
- protected-headers="v1"
-From: Matthias Urlichs <matthias@urlichs.de>
-To: linux-fbdev@vger.kernel.org
-Message-ID: <88e353ed-b49b-d454-8d09-4b941ff6558f@urlichs.de>
-Subject: Please rate limit kernel output!
-
---dF90ErrhFqKfjrGAIJZPrw9NwB1IQx3Lh
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-Content-Language: de-DE
-
-Hi,
-
-the below dump happens a whole lot when I work with my system.
-
-Please teach the radeonfb driver to stop spewing stack dumps. More than
-one per minute/hour/whatever is not helpful, and the machine is
-unresponsive while the kernel does this.
-
-This is current Debain testing, Gnome 3.28 on Wayland.
-
-$ uname -a
-Linux s-desk 4.16.0-1-amd64 #1 SMP Debian 4.16.5-1 (2018-04-29) x86_64 GN=
-U/Linux
-
-$ lspci -vv
-[=E2=80=A6]
-01:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI]=
- Redwood PRO [Radeon HD 5550/5570/5630/6510/6610/7570] (prog-if 00 [VGA c=
-ontroller])
-        Subsystem: PC Partner Limited / Sapphire Technology Radeon HD 557=
-0
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParEr=
-r- Stepping- SERR- FastB2B- DisINTx+
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbort- =
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 27
-        Region 0: Memory at d0000000 (64-bit, prefetchable) [size=3D256M]=
-
-        Region 2: Memory at fe620000 (64-bit, non-prefetchable) [size=3D1=
-28K]
-        Region 4: I/O ports at e000 [size=3D256]
-        Expansion ROM at 000c0000 [disabled] [size=3D128K]
-        Capabilities: [50] Power Management version 3
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D0mA PME(D0-,D1-,=
-D2-,D3hot-,D3cold-)
-                Status: D0 NoSoftRst- PME-Enable- DSel=3D0 DScale=3D0 PME=
--
-        Capabilities: [58] Express (v2) Legacy Endpoint, MSI 00
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <4=
-us, L1 unlimited
-                        ExtTag+ AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Uns=
-upported-
-                        RlxdOrd- ExtTag+ PhantFunc- AuxPwr- NoSnoop+
-                        MaxPayload 128 bytes, MaxReadReq 512 bytes
-                DevSta: CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr- =
-TransPend-
-                LnkCap: Port #0, Speed 5GT/s, Width x16, ASPM L0s L1, Exi=
-t Latency L0s <64ns, L1 <1us
-                        ClockPM- Surprise- LLActRep- BwNot- ASPMOptComp-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- CommClk+
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 5GT/s, Width x16, TrErr- Train- SlotClk+ DL=
-Active- BWMgmt- ABWMgmt-
-                DevCap2: Completion Timeout: Range ABCD, TimeoutDis+, LTR=
--, OBFF Not Supported
-                DevCtl2: Completion Timeout: 50us to 50ms, TimeoutDis-, L=
-TR-, OBFF Disabled
-                LnkCtl2: Target Link Speed: 5GT/s, EnterCompliance- Speed=
-Dis-
-                         Transmit Margin: Normal Operating Range, EnterMo=
-difiedCompliance- ComplianceSOS-
-                         Compliance De-emphasis: -6dB
-                LnkSta2: Current De-emphasis Level: -6dB, EqualizationCom=
-plete-, EqualizationPhase1-
-                         EqualizationPhase2-, EqualizationPhase3-, LinkEq=
-ualizationRequest-
-        Capabilities: [a0] MSI: Enable+ Count=3D1/1 Maskable- 64bit+
-                Address: 00000000fee02004  Data: 4025
-        Capabilities: [100 v1] Vendor Specific Information: ID=3D0001 Rev=
-=3D1 Len=3D010 <?>
-        Capabilities: [150 v1] Advanced Error Reporting
-                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt=
-- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt=
-- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
-                UESvrt: DLP+ SDES+ TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt=
-- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
-                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFat=
-alErr+
-                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFat=
-alErr+
-                AERCap: First Error Pointer: 00, GenCap+ CGenEn- ChkCap+ =
-ChkEn-
-        Kernel driver in use: radeon
-        Kernel modules: radeon
-
-# journalctl =E2=80=A6
-Mai 25 16:31:11 s-desk kernel: radeon 0000:01:00.0: swiotlb buffer is ful=
-l (sz: 2097152 bytes)
-
-Mai 25 16:31:11 s-desk kernel: radeon 0000:01:00.0: swiotlb: coherent all=
-ocation failed, size=3D209715
-
-Mai 25 16:31:11 s-desk kernel: CPU: 3 PID: 23724 Comm: gnome-shell Not ta=
-inted 4.16.0-1-amd64 #1 Deb
-
-Mai 25 16:31:11 s-desk kernel: Hardware name: Packard Bell imedia S3850/i=
-media S3850, BIOS P01-A0=C2=A0=C2=A0=20
-
-Mai 25 16:31:11 s-desk kernel: Call Trace:
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 dump_stack+0x5c/0x85
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 swiotlb_alloc_coherent+0x19b/0x1b0
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_dma_pool_get_pages+0x235/0x620 [=
-ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_dma_populate+0x25e/0x350 [ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_tt_bind+0x2c/0x60 [ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_bo_handle_move_mem+0x577/0x5b0 [=
-ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_bo_validate+0x120/0x130 [ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? drm_mm_insert_node_in_range+0x30e/=
-0x500 [drm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_bo_init_reserved+0x386/0x430 [tt=
-m]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ttm_bo_init+0x6b/0xe0 [ttm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? radeon_update_memory_usage.isra.3+=
-0x50/0x50 [radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 radeon_bo_create+0x180/0x230 [radeon=
-]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? radeon_update_memory_usage.isra.3+=
-0x50/0x50 [radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 radeon_gem_object_create+0xa7/0x1d0 =
-[radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? import_iovec+0x37/0xd0
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? radeon_gem_pwrite_ioctl+0x30/0x30 =
-[radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 radeon_gem_create_ioctl+0x66/0x100 [=
-radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? radeon_gem_pwrite_ioctl+0x30/0x30 =
-[radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 drm_ioctl_kernel+0x5b/0xb0 [drm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 drm_ioctl+0x2cb/0x380 [drm]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? radeon_gem_pwrite_ioctl+0x30/0x30 =
-[radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? ep_scan_ready_list.constprop.16+0x=
-242/0x250
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 radeon_drm_ioctl+0x49/0x80 [radeon]
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 do_vfs_ioctl+0xa4/0x630
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 ? __sys_recvmsg+0x7d/0x90
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 SyS_ioctl+0x74/0x80
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 do_syscall_64+0x6c/0x130
-
-Mai 25 16:31:11 s-desk kernel:=C2=A0 entry_SYSCALL_64_after_hwframe+0x3d/=
-0xa2
-
-Mai 25 16:31:11 s-desk kernel: RIP: 0033:0x7fa4fc87ff07
-
-Mai 25 16:31:11 s-desk kernel: RSP: 002b:00007ffd7a6bdf78 EFLAGS: 0000024=
-6 ORIG_RAX: 000000000000001
-
-Mai 25 16:31:11 s-desk kernel: RAX: ffffffffffffffda RBX: 000000000000000=
-2 RCX: 00007fa4fc87ff07
-
-Mai 25 16:31:11 s-desk kernel: RDX: 00007ffd7a6bdff0 RSI: 00000000c020645=
-d RDI: 000000000000000d
-
-Mai 25 16:31:11 s-desk kernel: RBP: 00007ffd7a6bdff0 R08: 000000000000000=
-2 R09: 0000000000000000
-
-Mai 25 16:31:11 s-desk kernel: R10: 0000000000000000 R11: 000000000000024=
-6 R12: 00000000c020645d
-
-Mai 25 16:31:11 s-desk kernel: R13: 000000000000000d R14: 00005650f6c18c0=
-0 R15: 00005650f6c18c00
+---------- Forwarded message ----------
+From: Kyungtae Kim <kt0755@gmail.com>
+Date: Sat, May 12, 2018 at 9:44 AM
+Subject: KASAN: use-after-free Write in vgacon_scroll
+To: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org,
+linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Byoungyoung Lee <lifeasageek@gmail.com>, DaeRyong Jeong
+<threeearcat@gmail.com>
 
 
---=20
--- Matthias Urlichs
+We report the crash:
+"KASAN: use-after-free Write in vgacon_scroll"
 
+This crash was found in v4.17-rc3. Specifically, memory access (write
+operation) is invalid, and it is detected by KASAN.
 
+C repro code:
+ https://kiwi.cs.purdue.edu/static/alexkkid-fuzzer/repro-bd11a.c
+kernel config:
+ https://kiwi.cs.purdue.edu/static/alexkkid-fuzzer/kernel-config-v4.17-rc3
 
---dF90ErrhFqKfjrGAIJZPrw9NwB1IQx3Lh--
+Crash log:
+===============================
+BUG: KASAN: use-after-free in memcpy include/linux/string.h:345 [inline]
+BUG: KASAN: use-after-free in scr_memcpyw include/linux/vt_buffer.h:49 [inline]
+BUG: KASAN: use-after-free in vgacon_scrollback_update
+drivers/video/console/vgacon.c:249 [inline]
+BUG: KASAN: use-after-free in vgacon_scroll+0x684/0x890
+drivers/video/console/vgacon.c:1374
+Write of size 3758 at addr ffff88011a8bf98e by task syz-executor1/3226
 
---9X9rdGPGbO98wjP7VeFX0e3ZoXlssb6at
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+CPU: 0 PID: 3226 Comm: syz-executor1 Not tainted 4.17.0-rc3 #2
+Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS Bochs 01/01/2011
+Call Trace:
+ __dump_stack lib/dump_stack.c:77 [inline]
+ dump_stack+0xc7/0x138 lib/dump_stack.c:113
+ print_address_description+0x6a/0x280 mm/kasan/report.c:256
+ kasan_report_error mm/kasan/report.c:354 [inline]
+ kasan_report+0x22f/0x350 mm/kasan/report.c:412
+ check_memory_region_inline mm/kasan/kasan.c:260 [inline]
+ check_memory_region+0x13b/0x1a0 mm/kasan/kasan.c:267
+ memcpy+0x37/0x50 mm/kasan/kasan.c:303
+ memcpy include/linux/string.h:345 [inline]
+ scr_memcpyw include/linux/vt_buffer.h:49 [inline]
+ vgacon_scrollback_update drivers/video/console/vgacon.c:249 [inline]
+ vgacon_scroll+0x684/0x890 drivers/video/console/vgacon.c:1374
+ con_scroll+0x2cc/0x330 drivers/tty/vt/vt.c:329
+ lf+0x247/0x290 drivers/tty/vt/vt.c:1122
+ do_con_trol+0x14f/0x5310 drivers/tty/vt/vt.c:1785
+ do_con_write.part.20+0x597/0x1b70 drivers/tty/vt/vt.c:2433
+ do_con_write drivers/tty/vt/vt.c:2790 [inline]
+ con_write+0xb2/0xc0 drivers/tty/vt/vt.c:2786
+ n_tty_write+0x763/0xea0 drivers/tty/n_tty.c:2331
+ do_tty_write drivers/tty/tty_io.c:958 [inline]
+ tty_write+0x48c/0x870 drivers/tty/tty_io.c:1042
+ redirected_tty_write+0xaf/0xc0 drivers/tty/tty_io.c:1063
+ __vfs_write+0x10d/0x610 fs/read_write.c:485
+ vfs_write+0x187/0x500 fs/read_write.c:549
+ ksys_write+0xd4/0x1a0 fs/read_write.c:598
+ __do_sys_write fs/read_write.c:610 [inline]
+ __se_sys_write fs/read_write.c:607 [inline]
+ __x64_sys_write+0x73/0xb0 fs/read_write.c:607
+ do_syscall_64+0xa4/0x460 arch/x86/entry/common.c:287
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+RIP: 0033:0x4497b9
+RSP: 002b:00007fc0af9acc68 EFLAGS: 00000246 ORIG_RAX: 0000000000000001
+RAX: ffffffffffffffda RBX: 00007fc0af9ad6cc RCX: 00000000004497b9
+RDX: 0000000000001000 RSI: 0000000020000080 RDI: 0000000000000013
+RBP: 000000000071bf58 R08: 0000000000000000 R09: 0000000000000000
+R10: 0000000000000000 R11: 0000000000000246 R12: 00000000ffffffff
+R13: 0000000000009ee8 R14: 00000000006f0f88 R15: 00007fc0af9ad700
 
------BEGIN PGP SIGNATURE-----
+The buggy address belongs to the page:
+page:ffffea00046a2c00 count:1 mapcount:0 mapping:0000000000000000
+index:0x0 compound_mapcount: 0
+flags: 0x200000000008000(head)
+raw: 0200000000008000 0000000000000000 0000000000000000 00000001ffffffff
+raw: dead000000000100 dead000000000200 0000000000000000 0000000000000000
+page dumped because: kasan: bad access detected
 
-iQIzBAEBCgAdFiEEr9eXgvO67AILKKGfcs+OXiW0wpMFAlsJFrYACgkQcs+OXiW0
-wpP+QBAAuqvzkE5oBlve0Mca7poHLW00eMXXQAjTejFgI4EDhdHH9OuRhU5jzyv2
-kjI/LLmZziu3X+b2x2bPjsAOD+bSezaVcAnGXzj1w+EiY3ZYLMeofKeF7GTvT9G4
-fOgkTsmlePDtQa1TY82ExuvN4OupYCHMHBP8Oq3qDVnMHYHrl+/+0nf3RNP9+vj7
-uKQ8fFxP/02+3bqh2KpV+I+F4Odb3MJ/dZVKara+tuz+O7bQ/AwRk1pjPYnvPT37
-RT7LnrzLrtqwn+Jx07OCSEplfDMus7Sb1PHAiw5poT6w8biTj4YIcva20Yo38k+7
-DILLg9Hy78ae8g0sRr81oKcN5sHGJTKdb0UWNWhQv/QrrUz9JFF+MnhKqbVW51Ty
-JJ8MgwoiQ+oFCQ1btexSL2dTz8lsOShALZ/0rbTMs0M3cagieHl1Pu6EZ+FtKYav
-JrSrIm69y4m9HrI3DOjihZjoOOhXF++dNMPG2yO5x005YL72li+DB1TBmCe7ZAtv
-ouu0R4DIsMpV7ddSFXDHgyToRQrHWK33JeayKQZZYIQGJ9jub0JcIG+i3mvud6L3
-Ewfew4G/GCqDXcdpYHPu826le2aDstMhXZItSZJXkLtv03q1qmagQ7djqh+z/t1x
-FqRdjKIPolib1U8LVlaQrSi3NVald1Wbw4LArl1CrtCQXI8CCyc=
-=osj8
------END PGP SIGNATURE-----
+Memory state around the buggy address:
+ ffff88011a8bff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ ffff88011a8bff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>ffff88011a8c0000: fb fb fb fc fc fb fb fb fc fc 00 00 00 fc fc fc
+                   ^
+ ffff88011a8c0080: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+ ffff88011a8c0100: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc
+===============================
 
---9X9rdGPGbO98wjP7VeFX0e3ZoXlssb6at--
+Thanks,
+Kyungtae Kim

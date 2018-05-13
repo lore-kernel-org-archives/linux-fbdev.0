@@ -1,8 +1,10 @@
 From: friedrich mayrhofer <ivana.sterlini@comune.agrigento.it>
-Date: Sun, 13 May 2018 22:14:02 +0000
+Date: Sun, 13 May 2018 22:19:06 +0000
 Subject: Spende von 2.800.000 Millionen Euro
-Message-Id: <1781193076.7311.1526249642029.JavaMail.zimbra@comune.agrigento.it>
+Message-Id: <1010804482.7892.1526249946576.JavaMail.zimbra@comune.agrigento.it>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1781193076.7311.1526249642029.JavaMail.zimbra@comune.agrigento.it>
+In-Reply-To: <1781193076.7311.1526249642029.JavaMail.zimbra@comune.agrigento.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

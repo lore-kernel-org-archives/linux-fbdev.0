@@ -1,59 +1,54 @@
-From: kgunda@codeaurora.org
-Date: Wed, 09 May 2018 05:27:02 +0000
+From: Pavel Machek <pavel@ucw.cz>
+Date: Mon, 14 May 2018 16:57:55 +0000
 Subject: Re: [PATCH V1 2/5] backlight: qcom-wled: Add support for WLED4 peripheral
-Message-Id: <212855c92923c0437feaefae3139cc4a@codeaurora.org>
+Message-Id: <20180514165755.GB27984@xo-6d-61-c0.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
  <1525341432-15818-3-git-send-email-kgunda@codeaurora.org>
- <20180507162004.GB2259@tuxbook-pro>
- <f970143860bd64624e7fad58333df1be@codeaurora.org>
- <20180508171736.GJ2259@tuxbook-pro>
-In-Reply-To: <20180508171736.GJ2259@tuxbook-pro>
+In-Reply-To: <1525341432-15818-3-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: Kiran Gunda <kgunda@codeaurora.org>
+Cc: bjorn.andersson@linaro.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
 
-On 2018-05-08 22:47, Bjorn Andersson wrote:
-> On Tue 08 May 03:25 PDT 2018, kgunda@codeaurora.org wrote:
+Hi!
+
+> WLED4 peripheral is present on some PMICs like pmi8998
+> and pm660l. It has a different register map and also
+> configurations are different. Add support for it.
 > 
->> On 2018-05-07 21:50, Bjorn Andersson wrote:
->> > On Thu 03 May 02:57 PDT 2018, Kiran Gunda wrote:
-> [..]
->> > > +- qcom,ovp
->> > > +	Usage:        optional
->> > > +	Value type:   <u32>
->> > > +	Definition:   mV; Over-voltage protection limit;
->> >
->> > The existing users of qcom,pm8941-wled depends on this being in V, so
->> > you can't change the unit. I suggest that you add a new "qcom,ovp-mv"
->> > property and make the driver fall back to looking for qcom,ovp if that
->> > isn't specified.
->> >
->> > PS. This is a very good example of why it is a good idea to not
->> > restructure and make changes at the same time - I almost missed this.
->> >
->> Actually I have checked the current kernel and none of the properties 
->> are
->> being configured from the device tree node. Hence, i thought it is the 
->> right
->> time modify the units to mV to support the PMI8998.
->> 
+> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+> ---
+>  .../bindings/leds/backlight/qcom-wled.txt          | 172 ++++-
+>  drivers/video/backlight/qcom-wled.c                | 749 +++++++++++++++------
+>  2 files changed, 696 insertions(+), 225 deletions(-)
 > 
-> arch/arm/boot/dts/qcom-msm8974-sony-xperia-honami.dts does.
-> 
->> You still want to have the qcom,ovp-mv, even though it is not being
->> configured from device tree ?
-> 
-> Yes, please.
-> 
-Sure.
->> > > +		      For pm8941:  one of 27000, 29000, 32000, 35000
->> > > +				  Default: 29000 mV
->> > > +		      For pmi8998: one of 18100, 19600, 29600, 31100
->> > > +				  Default: 29600 mV
->> > > +
-> 
-> Regards,
-> Bjorn
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+> index fb39e32..0ceffa1 100644
+> --- a/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+> +++ b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+> @@ -1,30 +1,129 @@
+>  Binding for Qualcomm Technologies, Inc. WLED driver
+>  
+> -Required properties:
+> -- compatible: should be "qcom,pm8941-wled"
+> -- reg: slave address
+> -
+> -Optional properties:
+> -- default-brightness: brightness value on boot, value from: 0-4095
+> -	default: 2048
+> +- compatible
+> +	Usage:        required
+> +	Value type:   <string>
+> +	Definition:   should be "qcom,pm8941-wled" or "qcom,pmi8998-wled".
+> +		      or "qcom,pm660l-wled".
+> +
+> +- reg
+> +	Usage:        required
+> +	Value type:   <prop encoded array>
+> +	Definition:   Base address of the WLED modules.
+
+I'm not sure if this change of format is good idea here...
+
+									Pavel

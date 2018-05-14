@@ -1,46 +1,49 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 10 May 2018 11:10:16 +0000
-Subject: Re: [PATCH V1 1/5] qcom: wled: Rename pm8941-wled.c to qcom-wled.c
-Message-Id: <20180510111015.GB6977@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="ftEhullJWpWg/VHq"
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 14 May 2018 13:46:25 +0000
+Subject: Re: [PATCH 0/3] fbdev/drm: sh_mobile: remove unused MERAM support
+Message-Id: <1860943.gJ4HIv7g2V@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1525341432-15818-1-git-send-email-kgunda@codeaurora.org>
- <1525341432-15818-2-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1525341432-15818-2-git-send-email-kgunda@codeaurora.org>
-To: Kiran Gunda <kgunda@codeaurora.org>
-Cc: bjorn.andersson@linaro.org, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
+References: <CGME20180427112213epcas2p3ed6890af75e679b537121f2655aa91d8@epcas2p3.samsung.com>
+ <2561366.LzYTbHeMbO@avalon>
+ <CAKMK7uEJYcxpwJbhvQBF87VOo+zFA73Ro-guGkh4FtOFtr1Ehw@mail.gmail.com>
+In-Reply-To: <CAKMK7uEJYcxpwJbhvQBF87VOo+zFA73Ro-guGkh4FtOFtr1Ehw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Geert Uytterhoeven <geert+renesas@glider.be>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:DRM DRIVERS FOR RENESAS" <linux-renesas-soc@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>
 
+On Friday, April 27, 2018 02:09:31 PM Daniel Vetter wrote:
+> On Fri, Apr 27, 2018 at 1:36 PM, Laurent Pinchart
+> <laurent.pinchart@ideasonboard.com> wrote:
+> > Hi Bartlomiej,
+> >
+> > On Friday, 27 April 2018 14:21:42 EEST Bartlomiej Zolnierkiewicz wrote:
+> >> Hi,
+> >>
+> >> This patchset removes unused MERAM support (last user was removed
+> >> 3 years ago) from shmobile fbdev & drm drivers and then removes
+> >> MERAM driver itself.
+> >>
+> >> If it is okay to merge this patches I would like patch #1 to go
+> >> through fbdev tree and patch #2 to go through drm tree. Once they
+> >> are both upstream (v4.18) I will apply patch #3 to fbdev tree.
+> >
+> > Or you could merge everything through the fbdev tree in one go, the shmobile
+> > driver hardly sees any activity these days.
+> >
+> > For the whole series,
+> >
+> > Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+> 
+> Yeah merging all through fbdev is probably simplest, shmobile is not a
+> driver that's actively changed a lot. Ack from me too.
 
---ftEhullJWpWg/VHq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thanks, I've applied all patches to fbdev-for-next.
 
-On Thu 2018-05-03 15:27:08, Kiran Gunda wrote:
-> pm8941-wled.c driver is supporting the WLED peripheral
-> on pm8941. Rename it to qcom-wled.c so that it can support
-> WLED on multiple PMICs.
->=20
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
-
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
-
---ftEhullJWpWg/VHq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iEYEARECAAYFAlr0KJcACgkQMOfwapXb+vIBCACfdU/BG35pa+jbxl1zQluwZJYV
-gl0AnA5DIMfp+UoE3Dv076pGtMJ/sJIv
-=LDbK
------END PGP SIGNATURE-----
-
---ftEhullJWpWg/VHq--

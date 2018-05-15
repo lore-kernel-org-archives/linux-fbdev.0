@@ -1,50 +1,29 @@
-From: Colin King <colin.king@canonical.com>
-Date: Tue, 01 May 2018 08:37:42 +0000
-Subject: [PATCH] video: fbdev: fix spelling mistake: "frambuffer" -> "framebuffer"
-Message-Id: <20180501083742.22565-1-colin.king@canonical.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 15 May 2018 10:40:08 +0000
+Subject: Re: [PATCH] video: fbdev: fix spelling mistake: "frambuffer" -> "framebuffer"
+Message-Id: <2254363.7hXMTGaTqE@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180501083748epcas4p15b1437f0c39447e7119c6397f624c0f5@epcas4p1.samsung.com>
+ <20180501083742.22565-1-colin.king@canonical.com>
+In-Reply-To: <20180501083742.22565-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Markus Elfring <elfring@users.sourceforge.net>, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Colin King <colin.king@canonical.com>
+Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>, Markus Elfring <elfring@users.sourceforge.net>
 
-From: Colin Ian King <colin.king@canonical.com>
+On Tuesday, May 01, 2018 09:37:42 AM Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> Trivial fix to spelling mistake in error messages
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-Trivial fix to spelling mistake in error messages
+Patch queued for 4.18, thanks.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/video/fbdev/au1100fb.c | 2 +-
- drivers/video/fbdev/au1200fb.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
-index 7c9a672e9811..5e0491861439 100644
---- a/drivers/video/fbdev/au1100fb.c
-+++ b/drivers/video/fbdev/au1100fb.c
-@@ -464,7 +464,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 					    PAGE_ALIGN(fbdev->fb_len),
- 					    &fbdev->fb_phys, GFP_KERNEL);
- 	if (!fbdev->fb_mem) {
--		print_err("fail to allocate frambuffer (size: %dK))",
-+		print_err("fail to allocate framebuffer (size: %dK))",
- 			  fbdev->fb_len / 1024);
- 		return -ENOMEM;
- 	}
-diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
-index 87d5a62bf6ca..3872ccef4cb2 100644
---- a/drivers/video/fbdev/au1200fb.c
-+++ b/drivers/video/fbdev/au1200fb.c
-@@ -1696,7 +1696,7 @@ static int au1200fb_drv_probe(struct platform_device *dev)
- 				&fbdev->fb_phys, GFP_KERNEL,
- 				DMA_ATTR_NON_CONSISTENT);
- 		if (!fbdev->fb_mem) {
--			print_err("fail to allocate frambuffer (size: %dK))",
-+			print_err("fail to allocate framebuffer (size: %dK))",
- 				  fbdev->fb_len / 1024);
- 			ret = -ENOMEM;
- 			goto failed;
--- 
-2.17.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

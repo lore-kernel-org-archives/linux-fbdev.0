@@ -1,89 +1,70 @@
-From: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Date: Fri, 04 May 2018 13:52:39 +0000
-Subject: Re: [PATCH 5/7] omapfb: omapfb_dss.h: add stubs to build with COMPILE_TEST && DRM_OMAP
-Message-Id: <20180504105227.70c756c8@vento.lan>
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Thu, 17 May 2018 13:22:23 +0000
+Subject: [PATCH] efi/fb: Convert PCI bus address to resource if translated by the bridge
+Message-Id: <1526563343-28721-1-git-send-email-okaya@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1524245455.git.mchehab@s-opensource.com>
- <2542100.cElVns0SR0@amdc3058> <20180423105557.267c5ecf@vento.lan>
- <CGME20180425104736eucas1p1b448ce1c188b661c5e743217511110d7@eucas1p1.samsung.com>
- <52576986.R85hrt8lfa@amdc3058>
-In-Reply-To: <52576986.R85hrt8lfa@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab@infradead.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <Laurent.pinchart@ideasonboard.com>, Linux Media Mailing List <linux-media@vger.kernel.org>
+To: linux-pci@vger.kernel.org, timur@codeaurora.org, ard.biesheuvel@linaro.org
+Cc: linux-arm-msm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, Sinan Kaya <okaya@codeaurora.org>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>
 
-Em Wed, 25 Apr 2018 12:47:34 +0200
-Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> escreveu:
+A host bridge is allowed to remap BAR addresses using _TRA attribute in
+_CRS windows.
 
-> On Monday, April 23, 2018 10:55:57 AM Mauro Carvalho Chehab wrote:
-> > Em Mon, 23 Apr 2018 14:47:28 +0200
-> > Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com> escreveu:
-> >   
-> > > On Friday, April 20, 2018 01:42:51 PM Mauro Carvalho Chehab wrote:  
-> > > > Add stubs for omapfb_dss.h, in the case it is included by
-> > > > some driver when CONFIG_FB_OMAP2 is not defined, with can
-> > > > happen on ARM when DRM_OMAP is not 'n'.
-> > > > 
-> > > > That allows building such driver(s) with COMPILE_TEST.
-> > > > 
-> > > > Signed-off-by: Mauro Carvalho Chehab <mchehab@s-opensource.com>    
-> > > 
-> > > This patch should be dropped (together with patch #6/7) as it was
-> > > superseded by a better solution suggested by Laurent:
-> > > 
-> > > https://patchwork.kernel.org/patch/10325193/
-> > > 
-> > > ACK-ed by Tomi:
-> > > 
-> > > https://www.spinics.net/lists/dri-devel/msg171918.html
-> > > 
-> > > and already merged by you (commit 7378f1149884 "media: omap2:
-> > > omapfb: allow building it with COMPILE_TEST")..  
-> > 
-> > I "ressurected" this patch due to patch 6/7.
-> > 
-> > The problem with the solution already acked/merged is that
-> > it works *only* if you don't try to build for ARM.
-> > 
-> > At the moment you want to build a FB_OMAP2-dependent driver
-> > on ARM with allyesc onfig, DRM_OMAP will be true, and FB_OMAP2
-> > will be disabled:
-> > 
-> > 	menuconfig FB_OMAP2
-> >         	tristate "OMAP2+ frame buffer support"
-> > 	        depends on FB
-> >         	depends on DRM_OMAP = n
-> > 
-> > One solution might be to change the depends on to:
-> >         	depends on (DRM_OMAP = n || COMPILE_TEST)
-> > 
-> > But someone pointed me that the above check was added to avoid building
-> > duplicated symbols. So, the above would cause build failures.
-> > 
-> > So, in order to build for ARM with DRM_OMAP selected (allyesconfig,
-> > allmodconfig), we have the following alternatives:
-> > 
-> > 	1) apply patch 5/7;
-> > 	2) make sure that FB_OMAP2 and DRM_OMAP won't declare the
-> > 	   same non-static symbols;
-> > 	3) redesign FB_OMAP2 to work with DRM_OMAP built.
-> > 
-> > I suspect that (1) is easier.  
-> 
-> I agree.
-> 
-> You can merge this patch through your tree with:
-> 
-> Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+pci_bus 0000:00: root bus resource [mem 0x80100100000-0x8011fffffff window] (bus address [0x00100000-0x1fffffff])
+pci 0000:02:00.0: reg 0x10: [mem 0x8011e000000-0x8011effffff]
 
-Thanks, I'll merge it. It would still be really cool if Tony
-or someone else could find a better way for omap3isp driver to
-not depend on it.
+When a VGA device is behind such a host bridge and the resource is
+translated efifb driver is trying to do ioremap against bus address
+rather than the resource address and is failing to probe.
 
-Regards,
-Maur
+efifb driver is having difficulty locating the base address from BAR
+address when
 
-Thanks,
-Mauro
+efifb: probing for efifb
+efifb: cannot reserve video memory at 0x1e000000
+efifb: framebuffer at 0x1e000000, using 1920k, total 1875k
+efifb: mode is 800x600x32, linelength200, pages=1
+efifb: scrolling: redraw
+efifb: Truecolor: size=8:8:8:8, shift$:16:8:0
+
+Use the host bridge offset information to convert bus address to
+resource address in the fixup.
+
+Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+---
+ drivers/video/fbdev/efifb.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 46a4484..ea68d5c 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -428,6 +428,8 @@ static void efifb_fixup_resources(struct pci_dev *dev)
+ {
+ 	u64 base = screen_info.lfb_base;
+ 	u64 size = screen_info.lfb_size;
++	struct pci_bus_region region;
++	struct resource res;
+ 	int i;
+ 
+ 	if (efifb_pci_dev || screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
+@@ -439,6 +441,14 @@ static void efifb_fixup_resources(struct pci_dev *dev)
+ 	if (!base)
+ 		return;
+ 
++	region.start = base;
++	region.end = base + size - 1;
++	res.start = 0;
++	res.flags = IORESOURCE_MEM;
++	pcibios_bus_to_resource(dev->bus, &res, &region);
++	if (res.start)
++		base = res.start;
++
+ 	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
+ 		struct resource *res = &dev->resource[i];
+ 
+-- 
+2.7.4
+

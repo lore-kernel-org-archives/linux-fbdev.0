@@ -1,89 +1,31 @@
-From: Robin Murphy <robin.murphy@arm.com>
-Date: Thu, 17 May 2018 10:17:25 +0000
+From: Sinan Kaya <okaya@codeaurora.org>
+Date: Thu, 17 May 2018 13:05:28 +0000
 Subject: Re: [RFC PATCH] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <74ae2347-464c-ddc1-3cb9-f928692e792f@arm.com>
+Message-Id: <6e875491-38a9-f7cf-92d7-53698299403a@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1526495029-25783-1-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1526495029-25783-1-git-send-email-okaya@codeaurora.org>
+ <74ae2347-464c-ddc1-3cb9-f928692e792f@arm.com>
+In-Reply-To: <74ae2347-464c-ddc1-3cb9-f928692e792f@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sinan Kaya <okaya@codeaurora.org>, linux-pci@vger.kernel.org, timur@codeaurora.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Robin Murphy <robin.murphy@arm.com>, linux-pci@vger.kernel.org, timur@codeaurora.org
 Cc: "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, linux-arm-kernel@lists.infradead.org
 
-On 16/05/18 19:23, Sinan Kaya wrote:
-> A host bridge is allowed to remap BAR addresses using _TRA attribute in
-> _CRS windows.
+On 5/17/2018 6:17 AM, Robin Murphy wrote:
+>> +    }
+>> +
 > 
-> pci_bus 0000:00: root bus resource [mem 0x80100100000-0x8011fffffff window] (bus address [0x00100000-0x1fffffff])
-> pci 0000:02:00.0: reg 0x10: [mem 0x8011e000000-0x8011effffff]
-> 
-> When a VGA device is behind such a host bridge and the resource is
-> translated efifb driver is trying to do ioremap against bus address
-> rather than the resource address and is failing to probe.
-> 
-> efifb driver is having difficulty locating the base address from BAR
-> address when
-> 
-> efifb: probing for efifb
-> efifb: cannot reserve video memory at 0x1e000000
-> efifb: framebuffer at 0x1e000000, using 1920k, total 1875k
-> efifb: mode is 800x600x32, linelength200, pages=1
-> efifb: scrolling: redraw
-> efifb: Truecolor: size=8:8:8:8, shift$:16:8:0
-> 
-> Use the host bridge offset information to convert bus address to
-> resource address in the fixup.
-> 
-> Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
-> ---
->   drivers/video/fbdev/efifb.c | 23 +++++++++++++++++++++++
->   1 file changed, 23 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index 46a4484..feef02b 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -428,6 +428,8 @@ static void efifb_fixup_resources(struct pci_dev *dev)
->   {
->   	u64 base = screen_info.lfb_base;
->   	u64 size = screen_info.lfb_size;
-> +	struct pci_host_bridge *bridge;
-> +	struct resource_entry *window;
->   	int i;
->   
->   	if (efifb_pci_dev || screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
-> @@ -439,6 +441,27 @@ static void efifb_fixup_resources(struct pci_dev *dev)
->   	if (!base)
->   		return;
->   
-> +	bridge = pci_find_host_bridge(dev->bus);
-> +	if (!bridge)
-> +		return;
-> +
-> +	resource_list_for_each_entry(window, &bridge->windows) {
-> +		phys_addr_t win_start;
-> +		phys_addr_t win_end;
-> +		size_t win_size;
-> +
-> +		if (resource_type(window->res) != IORESOURCE_MEM)
-> +			continue;
-> +
-> +		win_start = window->res->start - window->offset;
-> +		win_end = window->res->end - window->offset;
-> +		win_size = window->res->end - window->res->start + 1;
-> +		if (win_start <= base && win_end >= base + win_size - 1) {
-> +			base += window->offset;
-> +			break;
-> +		}
-> +	}
-> +
+> Is this not pretty much just pcibios_bus_to_resource()?
+>
 
-Is this not pretty much just pcibios_bus_to_resource()?
+Agreed, let me convert the code to use pcibios_bus_to_resource() API.
+I wasn't aware of its existence.
+ 
+> Robin.
 
-Robin.
 
->   	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
->   		struct resource *res = &dev->resource[i];
->   
-> 
+-- 
+Sinan Kaya
+Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
+Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.

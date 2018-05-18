@@ -1,49 +1,48 @@
-From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Date: Thu, 24 May 2018 20:35:04 +0000
-Subject: Re: [PATCH 3/6] ASoC: ams_delta: use GPIO lookup table
-Message-Id: <1875447.uBIO10iqcO@z50>
+From: rkir@google.com
+Date: Fri, 18 May 2018 23:31:56 +0000
+Subject: [PATCH] Fix checkpatch warnings in goldfishfb.c
+Message-Id: <20180518233156.84527-1-rkir@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
- <20180521100503.GA24638@sirena.org.uk> <20180523185244.GT98604@atomide.com>
-In-Reply-To: <20180523185244.GT98604@atomide.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Mark Brown <broonie@kernel.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@ti.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, Jarkko Nikula <jarkko.nikula@bitmer.com>
+To: linux-fbdev@vger.kernel.org
 
-On Wednesday, May 23, 2018 8:52:44 PM CEST Tony Lindgren wrote:
-> * Mark Brown <broonie@kernel.org> [180521 10:07]:
-> > On Fri, May 18, 2018 at 11:09:51PM +0200, Janusz Krzysztofik wrote:
-> > > Now as the Amstrad Delta board provides GPIO lookup tables, switch from
-> > > GPIO numbers to GPIO descriptors and use the table to locate required
-> > > GPIO pins.
-> > 
-> > Acked-by: Mark Brown <broonie@kernel.org>
-> 
+From: Roman Kiryanov <rkir@google.com>
 
-Hi Tony,
+Signed-off-by: Roman Kiryanov <rkir@google.com>
+---
+ drivers/video/fbdev/goldfishfb.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-> Thanks applying patches 1 and 3 of this series into omap-for-v4.18/soc.
-> It's kind of getting late for v4.18, but let's see if we can still make
-> it.
-
-Thank you.
-
-> Seems the others can be applied to the driver trees after no more
-> comments, then once all that is done we can apply the last patch
-> in this series.
-
-I'll be submitting v2 of 5/6 (nand) very soon. 4/6 (lcd) is still waiting for 
-Tomi to respond. I hope there will be no issues with it. Howevver, regarding 
-2/6 - serio - I have to work more on that to satisfy Dmitry's comments. So 
-let's forget about 6/6 for now and I'll resubmit it again when we are ready 
-for that. Meanwhile, I'm going to submit a few more patches against the board 
-init file to complete migration to GPIO descriptors so dynamic allocation of 
-GPIO numbers to ams-delta latches will be possible.
-
-Thanks,
-Janusz
-
-
+diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
+index 3b70044773b6..de29c4ff77e5 100644
+--- a/drivers/video/fbdev/goldfishfb.c
++++ b/drivers/video/fbdev/goldfishfb.c
+@@ -124,6 +124,7 @@ static int goldfish_fb_check_var(struct fb_var_screeninfo *var,
+ static int goldfish_fb_set_par(struct fb_info *info)
+ {
+ 	struct goldfish_fb *fb = container_of(info, struct goldfish_fb, fb);
++
+ 	if (fb->rotation != fb->fb.var.rotate) {
+ 		info->fix.line_length = info->var.xres * 2;
+ 		fb->rotation = fb->fb.var.rotate;
+@@ -148,13 +149,14 @@ static int goldfish_fb_pan_display(struct fb_var_screeninfo *var,
+ 	wait_event_timeout(fb->wait,
+ 			fb->base_update_count != base_update_count, HZ / 15);
+ 	if (fb->base_update_count = base_update_count)
+-		pr_err("goldfish_fb_pan_display: timeout waiting for base update\n");
++		pr_err("%s: timeout waiting for base update\n", __func__);
+ 	return 0;
+ }
+ 
+ static int goldfish_fb_blank(int blank, struct fb_info *info)
+ {
+ 	struct goldfish_fb *fb = container_of(info, struct goldfish_fb, fb);
++
+ 	switch (blank) {
+ 	case FB_BLANK_NORMAL:
+ 		writel(1, fb->reg_base + FB_SET_BLANK);
+-- 
+2.17.0.441.gb46fe60e1d-goog
 

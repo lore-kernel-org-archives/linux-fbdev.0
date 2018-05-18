@@ -1,25 +1,200 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 18 May 2018 14:20:29 +0000
-Subject: Re: [PATCH] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <733101d0-9051-a5a6-ef64-162d8d1e10a1@codeaurora.org>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Fri, 18 May 2018 21:09:50 +0000
+Subject: [PATCH 2/6] Input: ams_delta_serio: use GPIO lookup table
+Message-Id: <20180518210954.29044-2-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1526563343-28721-1-git-send-email-okaya@codeaurora.org>
- <36cf3f12-bfe8-1c38-4d2c-b785fc64a3f6@arm.com>
-In-Reply-To: <36cf3f12-bfe8-1c38-4d2c-b785fc64a3f6@arm.com>
+References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
+In-Reply-To: <20180518210954.29044-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Robin Murphy <robin.murphy@arm.com>, linux-pci@vger.kernel.org, timur@codeaurora.org, ard.biesheuvel@linaro.org
-Cc: "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, linux-arm-kernel@lists.infradead.org
+To: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Janusz Krzysztofik <jmkrzyszt@gmail.com>
 
-On 5/18/2018 6:42 AM, Robin Murphy wrote:
-> 
-> FWIW, now that I've actually gone and looked, it appears you could simplify the whole function quite a bit by getting rid of these and just using the new local resource directly, especially since the only actual use of size is an open-coded resource_contains().
+Now as the Amstrad Delta board provides GPIO lookup tables, switch from
+GPIO numbers to GPIO descriptors and use the table to locate required
+GPIO pins.
 
-Posted V2 a minute ago. I did the simplification on a prior patch in order not to
-mix the issues.
+Declare static variables for storing GPIO descriptors and replace
+gpio_ functions with their gpiod_ equivalents.
 
+Pin naming used by the driver should be followed while respective GPIO
+lookup table is initialized by a board init code.
+
+Created and tested against linux-4.17-rc3, on top of patch 1/6 "ARM:
+OMAP1: ams-delta: add GPIO lookup tables"
+
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+---
+ drivers/input/serio/ams_delta_serio.c | 98 +++++++++++++++++++----------------
+ 1 file changed, 53 insertions(+), 45 deletions(-)
+
+diff --git a/drivers/input/serio/ams_delta_serio.c b/drivers/input/serio/ams_delta_serio.c
+index 3df501c3421b..dd1f8f118c08 100644
+--- a/drivers/input/serio/ams_delta_serio.c
++++ b/drivers/input/serio/ams_delta_serio.c
+@@ -20,14 +20,13 @@
+  * However, when used with the E3 mailboard that producecs non-standard
+  * scancodes, a custom key table must be prepared and loaded from userspace.
+  */
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/irq.h>
+ #include <linux/serio.h>
+ #include <linux/slab.h>
+ #include <linux/module.h>
+ 
+ #include <asm/mach-types.h>
+-#include <mach/board-ams-delta.h>
+ 
+ #include <mach/ams-delta-fiq.h>
+ 
+@@ -36,6 +35,10 @@ MODULE_DESCRIPTION("AMS Delta (E3) keyboard port driver");
+ MODULE_LICENSE("GPL");
+ 
+ static struct serio *ams_delta_serio;
++static struct gpio_desc *gpiod_data;
++static struct gpio_desc *gpiod_clock;
++static struct gpio_desc *gpiod_power;
++static struct gpio_desc *gpiod_dataout;
+ 
+ static int check_data(int data)
+ {
+@@ -92,7 +95,7 @@ static irqreturn_t ams_delta_serio_interrupt(int irq, void *dev_id)
+ static int ams_delta_serio_open(struct serio *serio)
+ {
+ 	/* enable keyboard */
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_KEYBRD_PWR, 1);
++	gpiod_set_value(gpiod_power, 1);
+ 
+ 	return 0;
+ }
+@@ -100,32 +103,9 @@ static int ams_delta_serio_open(struct serio *serio)
+ static void ams_delta_serio_close(struct serio *serio)
+ {
+ 	/* disable keyboard */
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_KEYBRD_PWR, 0);
++	gpiod_set_value(gpiod_power, 0);
+ }
+ 
+-static const struct gpio ams_delta_gpios[] __initconst_or_module = {
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_DATA,
+-		.flags	= GPIOF_DIR_IN,
+-		.label	= "serio-data",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_CLK,
+-		.flags	= GPIOF_DIR_IN,
+-		.label	= "serio-clock",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_PWR,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "serio-power",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_KEYBRD_DATAOUT,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "serio-dataout",
+-	},
+-};
+-
+ static int __init ams_delta_serio_init(void)
+ {
+ 	int err;
+@@ -145,36 +125,62 @@ static int __init ams_delta_serio_init(void)
+ 	strlcpy(ams_delta_serio->phys, "GPIO/serio0",
+ 			sizeof(ams_delta_serio->phys));
+ 
+-	err = gpio_request_array(ams_delta_gpios,
+-				ARRAY_SIZE(ams_delta_gpios));
+-	if (err) {
+-		pr_err("ams_delta_serio: Couldn't request gpio pins\n");
++	gpiod_data = gpiod_get(NULL, "data", GPIOD_IN);
++	if (IS_ERR(gpiod_data)) {
++		err = PTR_ERR(gpiod_data);
++		pr_err("%s: 'data' GPIO request failed (%d)\n", __func__,
++		       err);
+ 		goto serio;
+ 	}
++	gpiod_clock = gpiod_get(NULL, "clock", GPIOD_IN);
++	if (IS_ERR(gpiod_clock)) {
++		err = PTR_ERR(gpiod_clock);
++		pr_err("%s: 'clock' GPIO request failed (%d)\n", __func__,
++		       err);
++		goto gpio_data;
++	}
++	gpiod_power = gpiod_get(NULL, "power", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_power)) {
++		err = PTR_ERR(gpiod_power);
++		pr_err("%s: 'power' GPIO request failed (%d)\n", __func__,
++		       err);
++		goto gpio_clock;
++	}
++	gpiod_dataout = gpiod_get(NULL, "dataout", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_dataout)) {
++		err = PTR_ERR(gpiod_dataout);
++		pr_err("%s: 'dataout' GPIO request failed (%d)\n",
++		       __func__, err);
++		goto gpio_power;
++	}
+ 
+-	err = request_irq(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK),
+-			ams_delta_serio_interrupt, IRQ_TYPE_EDGE_RISING,
+-			"ams-delta-serio", 0);
++	err = request_irq(gpiod_to_irq(gpiod_clock),
++			  ams_delta_serio_interrupt, IRQ_TYPE_EDGE_RISING,
++			  "ams-delta-serio", 0);
+ 	if (err < 0) {
+-		pr_err("ams_delta_serio: couldn't request gpio interrupt %d\n",
+-				gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK));
+-		goto gpio;
++		pr_err("%s: 'clock' GPIO interrupt request failed (%d)\n",
++		       __func__, err);
++		goto gpio_dataout;
+ 	}
+ 	/*
+ 	 * Since GPIO register handling for keyboard clock pin is performed
+ 	 * at FIQ level, switch back from edge to simple interrupt handler
+ 	 * to avoid bad interaction.
+ 	 */
+-	irq_set_handler(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK),
+-			handle_simple_irq);
++	irq_set_handler(gpiod_to_irq(gpiod_clock), handle_simple_irq);
+ 
+ 	serio_register_port(ams_delta_serio);
+ 	dev_info(&ams_delta_serio->dev, "%s\n", ams_delta_serio->name);
+ 
+ 	return 0;
+-gpio:
+-	gpio_free_array(ams_delta_gpios,
+-			ARRAY_SIZE(ams_delta_gpios));
++gpio_dataout:
++	gpiod_put(gpiod_dataout);
++gpio_power:
++	gpiod_put(gpiod_power);
++gpio_clock:
++	gpiod_put(gpiod_clock);
++gpio_data:
++	gpiod_put(gpiod_data);
+ serio:
+ 	kfree(ams_delta_serio);
+ 	return err;
+@@ -184,8 +190,10 @@ module_init(ams_delta_serio_init);
+ static void __exit ams_delta_serio_exit(void)
+ {
+ 	serio_unregister_port(ams_delta_serio);
+-	free_irq(gpio_to_irq(AMS_DELTA_GPIO_PIN_KEYBRD_CLK), 0);
+-	gpio_free_array(ams_delta_gpios,
+-			ARRAY_SIZE(ams_delta_gpios));
++	free_irq(gpiod_to_irq(gpiod_clock), 0);
++	gpiod_put(gpiod_dataout);
++	gpiod_put(gpiod_power);
++	gpiod_put(gpiod_clock);
++	gpiod_put(gpiod_data);
+ }
+ module_exit(ams_delta_serio_exit);
 -- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.16.1
+

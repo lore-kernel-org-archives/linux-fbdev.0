@@ -1,52 +1,211 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 17 Apr 2018 17:49:05 +0000
-Subject: [PATCH v3 05/20] firewire: Remove depends on HAS_DMA in case of platform dependency
-Message-Id: <1523987360-18760-6-git-send-email-geert@linux-m68k.org>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Fri, 18 May 2018 21:09:49 +0000
+Subject: [PATCH 1/6] ARM: OMAP1: ams-delta: add GPIO lookup tables
+Message-Id: <20180518210954.29044-1-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1523987360-18760-1-git-send-email-geert@linux-m68k.org>
-In-Reply-To: <1523987360-18760-1-git-send-email-geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch-jcswGhMUV9g@public.gmane.org>, Marek Szyprowski <m.szyprowski-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Robin Murphy <robin.murphy-5wv7dgnIgG8@public.gmane.org>, Felipe Balbi <balbi-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Greg Kroah-Hartman <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, Andrew Morton <akpm-de/tnXTf+JLsfHDXvbKv3WD2FQJk+8+b@public.gmane.org>, Mark Brown <broonie-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Liam Girdwood <lgirdwood-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Tejun Heo <tj-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Herbert Xu <herbert-lOAM2aK0SrRLBo1qDEOMRrpzq4S04n8Q@public.gmane.org>, "David S . Miller" <davem-fT/PcQaiUtIeIZ0/mPfg9Q@public.gmane.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, Stefan Richter <stefanr-MtYdepGKPcBMYopoZt5u/LNAH6kLmebB@public.gmane.org>, Alan Tull <atull-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Moritz Fischer <mdf-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Wolfram Sang <wsa-z923LK4zBo2bacvFa/9K2g@public.gmane.org>, Jonathan Cameron <jic23-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Joerg Roedel <joro-zLv9SwRftAIdnm+yROfE0A@public.gmane.org>, Matias Bjorling <mb-VR7NuqX4VJ8tq7phqP6ubQ@public.gmane.org>, Jassi Brar <jassisinghbrar-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>, Mauro Carvalho Chehab <mchehab-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, Ulf Hansson <ulf.hansson-QSEj5FYQhm4dnm+yROfE0A@public.gmane.org>, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>Br
-Cc: devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, alsa-devel-K7yf7f+aM1XWsZ/bQMPhNw@public.gmane.org, linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fpga-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-spi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-block-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-crypto-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-serial-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, Geert Uytterhoeven <geert-Td1EMuHUCqxL1ZNQvxDV9g@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-i2c-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+To: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Janusz Krzysztofik <jmkrzyszt@gmail.com>
 
-Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
-symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
-In most cases this other symbol is an architecture or platform specific
-symbol, or PCI.
+Scope of the change is limited to GPIO pins used by board specific
+device drivers which will be updated by follow-up patches of the
+series. Those are some OMAP GPIO (gpio-0-15) and most of Amstrad Delta
+latch2 GPIO bank pins. Remaining pins of those banks, as well as
+Amstrad Delta latch1 pins, will be addressed later.
 
-Generic symbols and drivers without platform dependencies keep their
-dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
-cannot work anyway.
+Assign a label ("latch2") to the bank, enumerate its pins and put that
+information, together with OMAP GPIO bank pins, in GPIO lookup tables.
+Assign lookup tables to devices as soon as those devices are registered
+and their names can be obtained.
 
-This simplifies the dependencies, and allows to improve compile-testing.
+A step froward in:
+- removal of hard-coded GPIO numbers from drivers,
+- removal of board mach includes from drivers,
+- switching to dynamically assigned GPIO numbers.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Reviewed-by: Mark Brown <broonie@kernel.org>
-Acked-by: Robin Murphy <robin.murphy@arm.com>
+Created and compile tested agains linux-4.17-rc3
+
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
 ---
-v3:
-  - Rebase to v4.17-rc1,
+ arch/arm/mach-omap1/board-ams-delta.c | 102 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 102 insertions(+)
 
-v2:
-  - Add Reviewed-by, Acked-by,
-  - Drop RFC state,
-  - Split per subsystem.
----
- drivers/firewire/Kconfig | 1 -
- 1 file changed, 1 deletion(-)
-
-diff --git a/drivers/firewire/Kconfig b/drivers/firewire/Kconfig
-index 145974f9662b63e6..4199849e37585181 100644
---- a/drivers/firewire/Kconfig
-+++ b/drivers/firewire/Kconfig
-@@ -1,5 +1,4 @@
- menu "IEEE 1394 (FireWire) support"
--	depends on HAS_DMA
- 	depends on PCI || COMPILE_TEST
- 	# firewire-core does not depend on PCI but is
- 	# not useful without PCI controller driver
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 52e8e53ca154..4b78e73f8bf7 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -12,6 +12,7 @@
+  * published by the Free Software Foundation.
+  */
+ #include <linux/gpio/driver.h>
++#include <linux/gpio/machine.h>
+ #include <linux/gpio.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+@@ -202,7 +203,10 @@ static struct resource latch2_resources[] = {
+ 	},
+ };
+ 
++#define LATCH2_LABEL	"latch2"
++
+ static struct bgpio_pdata latch2_pdata = {
++	.label	= LATCH2_LABEL,
+ 	.base	= AMS_DELTA_LATCH2_GPIO_BASE,
+ 	.ngpio	= AMS_DELTA_LATCH2_NGPIO,
+ };
+@@ -217,6 +221,23 @@ static struct platform_device latch2_gpio_device = {
+ 	},
+ };
+ 
++#define LATCH2_PIN_LCD_VBLEN		0
++#define LATCH2_PIN_LCD_NDISP		1
++#define LATCH2_PIN_NAND_NCE		2
++#define LATCH2_PIN_NAND_NRE		3
++#define LATCH2_PIN_NAND_NWP		4
++#define LATCH2_PIN_NAND_NWE		5
++#define LATCH2_PIN_NAND_ALE		6
++#define LATCH2_PIN_NAND_CLE		7
++#define LATCH2_PIN_KEYBRD_PWR		8
++#define LATCH2_PIN_KEYBRD_DATAOUT	9
++#define LATCH2_PIN_SCARD_RSTIN		10
++#define LATCH2_PIN_SCARD_CMDVCC		11
++#define LATCH2_PIN_MODEM_NRESET		12
++#define LATCH2_PIN_MODEM_CODEC		13
++#define LATCH2_PIN_HOOKFLASH1		14
++#define LATCH2_PIN_HOOKFLASH2		15
++
+ static const struct gpio latch_gpios[] __initconst = {
+ 	{
+ 		.gpio	= LATCH1_GPIO_BASE + 6,
+@@ -323,6 +344,22 @@ static struct platform_device ams_delta_nand_device = {
+ 	.resource	= ams_delta_nand_resources,
+ };
+ 
++#define OMAP_GPIO_LABEL	"gpio-0-15"
++
++static struct gpiod_lookup_table ams_delta_nand_gpio_table = {
++	.table = {
++		GPIO_LOOKUP(OMAP_GPIO_LABEL, AMS_DELTA_GPIO_PIN_NAND_RB, "rdy",
++			    0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_NCE, "nce", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_NRE, "nre", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_NWP, "nwp", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_NWE, "nwe", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_ALE, "ale", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_NAND_CLE, "cle", 0),
++		{ },
++	},
++};
++
+ static struct resource ams_delta_kp_resources[] = {
+ 	[0] = {
+ 		.start	= INT_KEYBOARD,
+@@ -358,6 +395,14 @@ static struct platform_device ams_delta_lcd_device = {
+ 	.id	= -1,
+ };
+ 
++static struct gpiod_lookup_table ams_delta_lcd_gpio_table = {
++	.table = {
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_LCD_VBLEN, "vblen", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_LCD_NDISP, "ndisp", 0),
++		{ },
++	},
++};
++
+ static const struct gpio_led gpio_leds[] __initconst = {
+ 	{
+ 		.name		 = "camera",
+@@ -449,11 +494,35 @@ static struct platform_device ams_delta_audio_device = {
+ 	.id     = -1,
+ };
+ 
++static struct gpiod_lookup_table ams_delta_audio_gpio_table = {
++	.table = {
++		GPIO_LOOKUP(OMAP_GPIO_LABEL, AMS_DELTA_GPIO_PIN_HOOK_SWITCH,
++			    "hook_switch", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_MODEM_CODEC,
++			    "modem_codec", 0),
++		{ },
++	},
++};
++
+ static struct platform_device cx20442_codec_device = {
+ 	.name   = "cx20442-codec",
+ 	.id     = -1,
+ };
+ 
++static struct gpiod_lookup_table ams_delta_serio_gpio_table = {
++	.table = {
++		GPIO_LOOKUP(OMAP_GPIO_LABEL, AMS_DELTA_GPIO_PIN_KEYBRD_DATA,
++			    "data", 0),
++		GPIO_LOOKUP(OMAP_GPIO_LABEL, AMS_DELTA_GPIO_PIN_KEYBRD_CLK,
++			    "clock", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_KEYBRD_PWR,
++			    "power", 0),
++		GPIO_LOOKUP(LATCH2_LABEL, LATCH2_PIN_KEYBRD_DATAOUT,
++			    "dataout", 0),
++		{ },
++	},
++};
++
+ static struct platform_device *ams_delta_devices[] __initdata = {
+ 	&latch1_gpio_device,
+ 	&latch2_gpio_device,
+@@ -468,6 +537,16 @@ static struct platform_device *late_devices[] __initdata = {
+ 	&cx20442_codec_device,
+ };
+ 
++static struct gpiod_lookup_table *ams_delta_gpio_tables[] __initdata = {
++	&ams_delta_audio_gpio_table,
++	&ams_delta_serio_gpio_table,
++};
++
++static struct gpiod_lookup_table *late_gpio_tables[] __initdata = {
++	&ams_delta_lcd_gpio_table,
++	&ams_delta_nand_gpio_table,
++};
++
+ static void __init ams_delta_init(void)
+ {
+ 	/* mux pins for uarts */
+@@ -500,6 +579,20 @@ static void __init ams_delta_init(void)
+ 	gpio_led_register_device(-1, &leds_pdata);
+ 	platform_add_devices(ams_delta_devices, ARRAY_SIZE(ams_delta_devices));
+ 
++	/*
++	 * As soon as devices have been registered, assign their dev_names
++	 * to respective GPIO lookup tables before they are added.
++	 */
++	ams_delta_audio_gpio_table.dev_id +			dev_name(&ams_delta_audio_device.dev);
++	/*
++	 * No device name is assigned to GPIO lookup table for serio device
++	 * as long as serio driver is not converted to platform device driver.
++	 */
++
++	gpiod_add_lookup_tables(ams_delta_gpio_tables,
++				ARRAY_SIZE(ams_delta_gpio_tables));
++
+ 	ams_delta_init_fiq();
+ 
+ 	omap_writew(omap_readw(ARM_RSTCT1) | 0x0004, ARM_RSTCT1);
+@@ -570,6 +663,15 @@ static int __init late_init(void)
+ 
+ 	platform_add_devices(late_devices, ARRAY_SIZE(late_devices));
+ 
++	/*
++	 * As soon as devices have been registered, assign their dev_names
++	 * to respective GPIO lookup tables before they are added.
++	 */
++	ams_delta_lcd_gpio_table.dev_id = dev_name(&ams_delta_lcd_device.dev);
++	ams_delta_nand_gpio_table.dev_id = dev_name(&ams_delta_nand_device.dev);
++
++	gpiod_add_lookup_tables(late_gpio_tables, ARRAY_SIZE(late_gpio_tables));
++
+ 	err = platform_device_register(&modem_nreset_device);
+ 	if (err) {
+ 		pr_err("Couldn't register the modem regulator device\n");
 -- 
-2.7.4
+2.16.1
 

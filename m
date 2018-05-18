@@ -1,58 +1,84 @@
-From: rkir@google.com
-Date: Mon, 21 May 2018 18:10:15 +0000
-Subject: [PATCH] goldfish: Enable ACPI-based enumeration for goldfish framebuffer
-Message-Id: <20180521181015.147938-1-rkir@google.com>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Fri, 18 May 2018 21:09:54 +0000
+Subject: [PATCH 6/6] ARM: OMAP1: ams-delta: make board header file local to mach-omap1
+Message-Id: <20180518210954.29044-6-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
+In-Reply-To: <20180518210954.29044-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>
+Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Janusz Krzysztofik <jmkrzyszt@gmail.com>
 
-From: Yu Ning <yu.ning@intel.com>
+Now as the AMS Delta board header file is no longer included by
+drivers, move it to the root directory of mach-omap1.
 
-Follow the same way in which ACPI was enabled for goldfish battery. See
-commit d3be10e for details.
-
-Note that this patch also depends on commit af33cac.
-
-Signed-off-by: Yu Ning <yu.ning@intel.com>
-Signed-off-by: Roman Kiryanov <rkir@google.com>
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
 ---
- drivers/video/fbdev/goldfishfb.c | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm/mach-omap1/ams-delta-fiq-handler.S              | 2 +-
+ arch/arm/mach-omap1/ams-delta-fiq.c                      | 3 +--
+ arch/arm/mach-omap1/board-ams-delta.c                    | 2 +-
+ arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h | 0
+ 4 files changed, 3 insertions(+), 4 deletions(-)
+ rename arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h (100%)
 
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index de29c4ff77e5..01732858b60d 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -26,6 +26,7 @@
- #include <linux/interrupt.h>
- #include <linux/ioport.h>
- #include <linux/platform_device.h>
-+#include <linux/acpi.h>
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq-handler.S b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+index bf608441b357..9005c00db948 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq-handler.S
++++ b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+@@ -16,9 +16,9 @@
+ #include <linux/linkage.h>
+ #include <asm/assembler.h>
  
- enum {
- 	FB_GET_WIDTH        = 0x00,
-@@ -312,12 +313,19 @@ static const struct of_device_id goldfish_fb_of_match[] = {
- };
- MODULE_DEVICE_TABLE(of, goldfish_fb_of_match);
+-#include <mach/board-ams-delta.h>
+ #include <mach/ams-delta-fiq.h>
  
-+static const struct acpi_device_id goldfish_fb_acpi_match[] = {
-+	{ "GFSH0004", 0 },
-+	{ },
-+};
-+MODULE_DEVICE_TABLE(acpi, goldfish_fb_acpi_match);
-+
- static struct platform_driver goldfish_fb_driver = {
- 	.probe		= goldfish_fb_probe,
- 	.remove		= goldfish_fb_remove,
- 	.driver = {
- 		.name = "goldfish_fb",
- 		.of_match_table = goldfish_fb_of_match,
-+		.acpi_match_table = ACPI_PTR(goldfish_fb_acpi_match),
- 	}
- };
++#include "board-ams-delta.h"
+ #include "iomap.h"
+ #include "soc.h"
  
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq.c b/arch/arm/mach-omap1/ams-delta-fiq.c
+index d7ca9e2b40d2..30aedcc3f2b3 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq.c
++++ b/arch/arm/mach-omap1/ams-delta-fiq.c
+@@ -19,11 +19,10 @@
+ #include <linux/module.h>
+ #include <linux/io.h>
+ 
+-#include <mach/board-ams-delta.h>
+-
+ #include <asm/fiq.h>
+ 
+ #include <mach/ams-delta-fiq.h>
++#include "board-ams-delta.h"
+ 
+ static struct fiq_handler fh = {
+ 	.name	= "ams-delta-fiq"
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index 80f54cb54276..17d69eb64df3 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -36,7 +36,6 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ 
+-#include <mach/board-ams-delta.h>
+ #include <linux/platform_data/keypad-omap.h>
+ #include <mach/mux.h>
+ 
+@@ -45,6 +44,7 @@
+ #include "camera.h"
+ #include <mach/usb.h>
+ 
++#include "board-ams-delta.h"
+ #include "iomap.h"
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-omap1/include/mach/board-ams-delta.h b/arch/arm/mach-omap1/board-ams-delta.h
+similarity index 100%
+rename from arch/arm/mach-omap1/include/mach/board-ams-delta.h
+rename to arch/arm/mach-omap1/board-ams-delta.h
 -- 
-2.17.0.441.gb46fe60e1d-goog
+2.16.1
 

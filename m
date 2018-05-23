@@ -1,41 +1,34 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Mon, 21 May 2018 10:05:03 +0000
+From: Tony Lindgren <tony@atomide.com>
+Date: Wed, 23 May 2018 18:52:44 +0000
 Subject: Re: [PATCH 3/6] ASoC: ams_delta: use GPIO lookup table
-Message-Id: <20180521100503.GA24638@sirena.org.uk>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="envbJBWh7q8WU6mo"
+Message-Id: <20180523185244.GT98604@atomide.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
  <20180518210954.29044-3-jmkrzyszt@gmail.com>
-In-Reply-To: <20180518210954.29044-3-jmkrzyszt@gmail.com>
-To: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+ <20180521100503.GA24638@sirena.org.uk>
+In-Reply-To: <20180521100503.GA24638@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mark Brown <broonie@kernel.org>
+Cc: Janusz Krzysztofik <jmkrzyszt@gmail.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Peter Ujfalusi <peter.ujfalusi@ti.com>, Jarkko Nikula <jarkko.nikula@bitmer.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-arm-kernel@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org, linux-mtd@lists.infradead.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
+* Mark Brown <broonie@kernel.org> [180521 10:07]:
+> On Fri, May 18, 2018 at 11:09:51PM +0200, Janusz Krzysztofik wrote:
+> > Now as the Amstrad Delta board provides GPIO lookup tables, switch from
+> > GPIO numbers to GPIO descriptors and use the table to locate required
+> > GPIO pins.
+> 
+> Acked-by: Mark Brown <broonie@kernel.org>
 
---envbJBWh7q8WU6mo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Thanks applying patches 1 and 3 of this series into omap-for-v4.18/soc.
+It's kind of getting late for v4.18, but let's see if we can still make
+it.
 
-On Fri, May 18, 2018 at 11:09:51PM +0200, Janusz Krzysztofik wrote:
-> Now as the Amstrad Delta board provides GPIO lookup tables, switch from
-> GPIO numbers to GPIO descriptors and use the table to locate required
-> GPIO pins.
+Seems the others can be applied to the driver trees after no more
+comments, then once all that is done we can apply the last patch
+in this series.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+Regards,
 
---envbJBWh7q8WU6mo
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAlsCmc4ACgkQJNaLcl1U
-h9DG0Af/UE7Z72qRF50Yg/UqUfLu60IQ6PX2zlv8XLEh1YdSXf0sIPdW4xsjUYKI
-B5eF5/fXlrjYYiIxMe9kNZT8jfPW7QP+lkpD07CIf2Io3+AGNHU+NuflzyEOqODX
-uJia7Umel8v7868BkFoyBpmEUVcHl8Gpo4k3e3T79PcBXvSmQusoupFWC/apcdT/
-xSKEmqpHYV5gdeiSIBBGVsb48oQ+GKlwEpsdPCGXkl63WuSg+QH5miaTIIiQyRZ8
-3q3PD70Jxv2QUvoZ6bRTStoZRk2D8PcnNauk4hJ/gKnw1FceWNNVtmAYVG7xOZwW
-bazFSdj285WRNlhe7N/Qw7x0JGBztg==
-=PRAh
------END PGP SIGNATURE-----
-
---envbJBWh7q8WU6mo--
+Tony

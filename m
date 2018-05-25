@@ -1,31 +1,54 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Thu, 17 May 2018 13:05:28 +0000
-Subject: Re: [RFC PATCH] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <6e875491-38a9-f7cf-92d7-53698299403a@codeaurora.org>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Date: Fri, 25 May 2018 09:48:48 +0000
+Subject: RE: [PATCH V2 1/4] clk: bulk: add of_clk_bulk_get()
+Message-Id: <AM0PR04MB421192DFF5F41078B54FCC1A80690@AM0PR04MB4211.eurprd04.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1526495029-25783-1-git-send-email-okaya@codeaurora.org>
- <74ae2347-464c-ddc1-3cb9-f928692e792f@arm.com>
-In-Reply-To: <74ae2347-464c-ddc1-3cb9-f928692e792f@arm.com>
+References: <1521602391-30356-1-git-send-email-aisheng.dong@nxp.com>
+ <1521602391-30356-2-git-send-email-aisheng.dong@nxp.com>
+ <152182399342.178046.13139513462419815903@swboyd.mtv.corp.google.com>
+In-Reply-To: <152182399342.178046.13139513462419815903@swboyd.mtv.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Robin Murphy <robin.murphy@arm.com>, linux-pci@vger.kernel.org, timur@codeaurora.org
-Cc: "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-arm-kernel@lists.infradead.org
 
-On 5/17/2018 6:17 AM, Robin Murphy wrote:
->> +    }
->> +
-> 
-> Is this not pretty much just pcibios_bus_to_resource()?
->
-
-Agreed, let me convert the code to use pcibios_bus_to_resource() API.
-I wasn't aware of its existence.
- 
-> Robin.
-
-
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+SGkgU3RlcGhlbiwNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTdGVw
+aGVuIEJveWQgW21haWx0bzpzYm95ZEBrZXJuZWwub3JnXQ0KPiBTZW50OiBTYXR1cmRheSwgTWFy
+Y2ggMjQsIDIwMTggMTI6NTMgQU0NCj4gVG86IEEucy4gRG9uZyA8YWlzaGVuZy5kb25nQG54cC5j
+b20+OyBsaW51eC1jbGtAdmdlci5rZXJuZWwub3JnDQo+IENjOiBsaW51eC1rZXJuZWxAdmdlci5r
+ZXJuZWwub3JnOyBsaW51eC1hcm0ta2VybmVsQGxpc3RzLmluZnJhZGVhZC5vcmc7DQo+IG10dXJx
+dWV0dGVAYmF5bGlicmUuY29tOyBoZGVnb2VkZUByZWRoYXQuY29tOw0KPiBiLnpvbG5pZXJraWVA
+c2Ftc3VuZy5jb207IGxpbnV4QGFybWxpbnV4Lm9yZy51azsgbGludXgtDQo+IGZiZGV2QHZnZXIu
+a2VybmVsLm9yZzsgZGwtbGludXgtaW14IDxsaW51eC1pbXhAbnhwLmNvbT47IEEucy4gRG9uZw0K
+PiA8YWlzaGVuZy5kb25nQG54cC5jb20+OyBTdGVwaGVuIEJveWQgPHNib3lkQGNvZGVhdXJvcmEu
+b3JnPjsgUnVzc2VsbA0KPiBLaW5nIDxsaW51eEBhcm0ubGludXgub3JnLnVrPg0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIIFYyIDEvNF0gY2xrOiBidWxrOiBhZGQgb2ZfY2xrX2J1bGtfZ2V0KCkNCj4g
+DQo+IFF1b3RpbmcgRG9uZyBBaXNoZW5nICgyMDE4LTAzLTIwIDIwOjE5OjQ4KQ0KPiA+IGRpZmYg
+LS1naXQgYS9kcml2ZXJzL2Nsay9jbGstYnVsay5jIGIvZHJpdmVycy9jbGsvY2xrLWJ1bGsuYyBp
+bmRleA0KPiA+IDRjMTA0NTYuLjRiMzU3YjIgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9jbGsv
+Y2xrLWJ1bGsuYw0KPiA+ICsrKyBiL2RyaXZlcnMvY2xrL2Nsay1idWxrLmMNCj4gPiBAQCAtMTks
+NiArMTksMzggQEANCj4gPiAgI2luY2x1ZGUgPGxpbnV4L2Nsay5oPg0KPiA+ICAjaW5jbHVkZSA8
+bGludXgvZGV2aWNlLmg+DQo+ID4gICNpbmNsdWRlIDxsaW51eC9leHBvcnQuaD4NCj4gPiArI2lu
+Y2x1ZGUgPGxpbnV4L29mLmg+DQo+ID4gKw0KPiA+ICsjaWYgZGVmaW5lZChDT05GSUdfT0YpICYm
+IGRlZmluZWQoQ09ORklHX0NPTU1PTl9DTEspDQo+IA0KPiBEbyB3ZSBuZWVkIHRoZXNlIGRlZmlu
+ZXM/IG9mX2Nsa19nZXQoKSBpcyBhIHN0dWIgZnVuY3Rpb24gd2hlbiB0aGVzZQ0KPiBjb25maWdz
+IGFyZSBmYWxzZS4NCj4gDQoNCllvdSdyZSByaWdodC4gV2lsbCBkcm9wIGl0Lg0KDQo+ID4gK3N0
+YXRpYyBpbnQgX19tdXN0X2NoZWNrIG9mX2Nsa19idWxrX2dldChzdHJ1Y3QgZGV2aWNlX25vZGUg
+Km5wLCBpbnQNCj4gbnVtX2Nsa3MsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHN0cnVjdCBjbGtfYnVsa19kYXRhICpjbGtzKSB7DQo+ID4gKyAgICAgICBpbnQg
+cmV0Ow0KPiA+ICsgICAgICAgaW50IGk7DQo+ID4gKw0KPiA+ICsgICAgICAgZm9yIChpID0gMDsg
+aSA8IG51bV9jbGtzOyBpKyspDQo+ID4gKyAgICAgICAgICAgICAgIGNsa3NbaV0uY2xrID0gTlVM
+TDsNCj4gPiArDQo+ID4gKyAgICAgICBmb3IgKGkgPSAwOyBpIDwgbnVtX2Nsa3M7IGkrKykgew0K
+PiA+ICsgICAgICAgICAgICAgICBjbGtzW2ldLmNsayA9IG9mX2Nsa19nZXQobnAsIGkpOw0KPiA+
+ICsgICAgICAgICAgICAgICBpZiAoSVNfRVJSKGNsa3NbaV0uY2xrKSkgew0KPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIHJldCA9IFBUUl9FUlIoY2xrc1tpXS5jbGspOw0KPiA+ICsgICAgICAg
+ICAgICAgICAgICAgICAgIHByX2VycigiJXBPRjogRmFpbGVkIHRvIGdldCBjbGsgaW5kZXg6ICVk
+IHJldDogJWRcbiIsDQo+ID4gKyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIG5wLCBpLCBy
+ZXQpOw0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIGNsa3NbaV0uY2xrID0gTlVMTDsNCj4g
+PiArICAgICAgICAgICAgICAgICAgICAgICBnb3RvIGVycjsNCj4gPiArICAgICAgICAgICAgICAg
+fQ0KPiA+ICsgICAgICAgfQ0KPiA+ICsNCj4gPiArICAgICAgIHJldHVybiAwOw0KPiA+ICsNCj4g
+PiArZXJyOg0KPiA+ICsgICAgICAgY2xrX2J1bGtfcHV0KGksIGNsa3MpOw0KPiA+ICsNCj4gPiAr
+ICAgICAgIHJldHVybiByZXQ7DQo+ID4gK30NCj4gPiArRVhQT1JUX1NZTUJPTChvZl9jbGtfYnVs
+a19nZXQpOw0KPiANCj4gSXQncyBzdGF0aWMsIHNvIGRvbid0IGV4cG9ydCBpdC4NCg0KR290IGl0
+Lg0KU29ycnkgZm9yIHN1Y2ggbWlzdGFrZS4NCg0KV2lsbCBmaXggYW5kIHNlbnQgVjMuDQoNClJl
+Z2FyZHMNCkRvbmcgQWlzaGVuZw0K

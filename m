@@ -1,64 +1,55 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Fri, 18 May 2018 14:17:51 +0000
-Subject: [PATCH V2 2/2] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <1526653072-7153-2-git-send-email-okaya@codeaurora.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 30 May 2018 21:49:22 +0000
+Subject: [PATCH] fb_omap: add gpiolib dependency
+Message-Id: <20180530214938.1073749-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1526653072-7153-1-git-send-email-okaya@codeaurora.org>
-In-Reply-To: <1526653072-7153-1-git-send-email-okaya@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, timur@codeaurora.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Sinan Kaya <okaya@codeaurora.org>, Peter Jones <pjones@redhat.com>, linux-arm-kernel@lists.infradead.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-A host bridge is allowed to remap BAR addresses using _TRA attribute in
-_CRS windows.
+Building the omap sub-drivers when CONFIG_GPIOLIB is disabled causes
+lots of build failures, either from using gpiolib interfaces, or from
+including the wrong headers:
 
-pci_bus 0000:00: root bus resource [mem 0x80100100000-0x8011fffffff window] (bus address [0x00100000-0x1fffffff])
-pci 0000:02:00.0: reg 0x10: [mem 0x8011e000000-0x8011effffff]
+drivers/video/fbdev/omap2/omapfb/displays/encoder-opa362.c: In function 'opa362_enable':
+drivers/video/fbdev/omap2/omapfb/displays/encoder-opa362.c:101:3: error: implicit declaration of function 'gpiod_set_value_cansleep'; did you mean 'gpio_set_value_cansleep'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c: In function 'panel_dpi_enable':
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c:86:2: error: implicit declaration of function 'gpiod_set_value_cansleep'; did you mean 'gpio_set_value_cansleep'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c: In function 'panel_dpi_probe_pdata':
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c:189:23: error: implicit declaration of function 'gpio_to_desc'; did you mean 'irq_to_desc'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c: In function 'panel_dpi_probe_of':
+drivers/video/fbdev/omap2/omapfb/displays/panel-dpi.c:210:9: error: implicit declaration of function 'devm_gpiod_get_optional'; did you mean 'devm_gpio_request_one'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c: In function 'sharp_ls_enable':
+drivers/video/fbdev/omap2/omapfb/displays/panel-sharp-ls037v7dw01.c:120:3: error: implicit declaration of function 'gpiod_set_value_cansleep'; did you mean 'gpio_set_value_cansleep'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c: In function 'lb035q02_enable':
+drivers/video/fbdev/omap2/omapfb/displays/panel-lgphilips-lb035q02.c:170:3: error: implicit declaration of function 'gpiod_set_value_cansleep'; did you mean 'gpio_set_value_cansleep'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c: In function 'hdmi_probe_of':
+drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c:584:2: error: implicit declaration of function 'of_node_put'; did you mean 'node_set'? [-Werror=implicit-function-declaration]
+drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c: In function 'hdmi_probe_of':
+drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:554:2: error: implicit declaration of function 'of_node_put'; did you mean 'node_set'? [-Werror=implicit-function-declaration]
 
-When a VGA device is behind such a host bridge and the resource is
-translated efifb driver is trying to do ioremap against bus address
-rather than the resource address and is failing to probe.
+Rather than fixing up each one individually, this just marks all of it
+as depending on GPIOLIB.
 
-efifb: probing for efifb
-efifb: cannot reserve video memory at 0x1e000000
-efifb: framebuffer at 0x1e000000, using 1920k, total 1875k
-efifb: mode is 800x600x32, linelength200, pages=1
-efifb: scrolling: redraw
-efifb: Truecolor: size=8:8:8:8, shift$:16:8:0
-
-Use the host bridge offset information to convert bus address to
-resource address in the fixup.
-
-Signed-off-by: Sinan Kaya <okaya@codeaurora.org>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbdev/efifb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/video/fbdev/omap2/omapfb/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 6daac8d..429cc85 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -431,6 +431,7 @@ static void efifb_fixup_resources(struct pci_dev *dev)
- 		.end = screen_info.lfb_base + screen_info.lfb_size - 1,
- 		.flags = IORESOURCE_MEM,
- 	};
-+	struct pci_bus_region region;
- 	int i;
+diff --git a/drivers/video/fbdev/omap2/omapfb/Kconfig b/drivers/video/fbdev/omap2/omapfb/Kconfig
+index e6226aeed17e..3bf154e676d1 100644
+--- a/drivers/video/fbdev/omap2/omapfb/Kconfig
++++ b/drivers/video/fbdev/omap2/omapfb/Kconfig
+@@ -5,6 +5,7 @@ menuconfig FB_OMAP2
+         tristate "OMAP2+ frame buffer support"
+         depends on FB
+         depends on DRM_OMAP = n
++	depends on GPIOLIB
  
- 	if (efifb_pci_dev || screen_info.orig_video_isVGA != VIDEO_TYPE_EFI)
-@@ -442,6 +443,10 @@ static void efifb_fixup_resources(struct pci_dev *dev)
- 	if (!screen_res.start)
- 		return;
- 
-+	region.start = screen_res.start;
-+	region.end = screen_res.end;
-+	pcibios_bus_to_resource(dev->bus, &screen_res, &region);
-+
- 	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
- 		struct resource *res = &dev->resource[i];
- 
+         select FB_OMAP2_DSS
+ 	select OMAP2_VRFB if ARCH_OMAP2 || ARCH_OMAP3
 -- 
-2.7.4
+2.9.0
 

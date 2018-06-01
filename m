@@ -1,47 +1,35 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Mon, 25 Jun 2018 17:31:29 +0000
-Subject: Re: [PATCH V2 2/2] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <d8f060ec-bc58-666d-7f2f-b3732ef2fa46@codeaurora.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 01 Jun 2018 15:10:26 +0000
+Subject: Re: [PATCH] fb_omap: add gpiolib dependency
+Message-Id: <CAK8P3a1O=pbmeNxWNmU9UHjnBVwJXUjTuxRudTZ3OHBdbiVv9A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1526653072-7153-1-git-send-email-okaya@codeaurora.org>
- <1526653072-7153-2-git-send-email-okaya@codeaurora.org>
- <20180619222921.GA90490@bhelgaas-glaptop.roam.corp.google.com>
- <CAKv+Gu_voOZ7YUL8pckww4mTt4PVcu7y69mf-z7ZZe1bJ81Shw@mail.gmail.com>
- <2a805337-c0b5-e134-7695-5a543ecaa26a@codeaurora.org>
- <CAKv+Gu9HAJRHwjYLNjf+gg=1vFoFu3BJphifKKE-aR4o_MW84A@mail.gmail.com>
- <CAKv+Gu-WXLXqHSmiS2MmAMXHLKK_kg+3EK6L2rvO0SzN-c0UMg@mail.gmail.com>
- <37289a27-eb99-6a73-4d32-4a75edd11dcd@codeaurora.org>
- <CAKv+Gu-bwCFhCKiA7P1amMLeBaSxsjk0d6aPjAr9nCvOBPJA6w@mail.gmail.com>
- <CAKv+Gu96HQf0oJ1RC+wVU34FqqcCWrnDGag48vjNP_z86HhLBQ@mail.gmail.com>
- <7777f7bfead902f2f5175d48907fccec@codeaurora.org>
- <eb16a77f-7950-7fa1-c436-0ce99a992d3b@codeaurora.org>
- <CAKv+Gu__a0yMcH6pyC0oxXZYgi=emuJA+6v1Zdmd4tbq_UR0Og@mail.gmail.com>
-In-Reply-To: <CAKv+Gu__a0yMcH6pyC0oxXZYgi=emuJA+6v1Zdmd4tbq_UR0Og@mail.gmail.com>
+References: <20180530214938.1073749-1-arnd@arndb.de>
+ <CAHp75VcP=RBpfqN1c0M4Uy639t80sCQ+YidweFmRZSt0J5i37g@mail.gmail.com>
+In-Reply-To: <CAHp75VcP=RBpfqN1c0M4Uy639t80sCQ+YidweFmRZSt0J5i37g@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Bjorn Helgaas <helgaas@kernel.org>, "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-arm-msm@vger.kernel.org, Timur Tabi <timur@codeaurora.org>, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+To: Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Linux OMAP Mailing List <linux-omap@vger.kernel.org>
 
-On 6/25/2018 1:29 PM, Ard Biesheuvel wrote:
->>> Platform has been doing mmio translation for quite a while. Because all accesses go through pci io protocol, the rest of the UEFI never needed to be aware of bar address or do direct access.
->>>
->>> This is the first time I hear of direct access. Maybe, GOP is a special case.
->>>
->>> I started copying your response to the bios vendor.
->>>
->>> They are probably missing that patch. I will pass it along.
->> I was informed that they fixed the issue in BIOS by presenting CPU physical
->> address instead of PCI bus address in FrameBufferBase of the AST GOP UEFI driver.
->>
->> We can drop this patch now.
->>
-> Excellent! Thanks for following up with the vendor ...
-> 
+On Thu, May 31, 2018 at 8:04 AM, Andy Shevchenko
+<andy.shevchenko@gmail.com> wrote:
+> On Thu, May 31, 2018 at 12:49 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+>
+>> drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c: In function 'hdmi_probe_of':
+>> drivers/video/fbdev/omap2/omapfb/dss/hdmi5.c:584:2: error: implicit declaration of function 'of_node_put'; did you mean 'node_set'? [-Werror=implicit-function-declaration]
+>> drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c: In function 'hdmi_probe_of':
+>> drivers/video/fbdev/omap2/omapfb/dss/hdmi4.c:554:2: error: implicit declaration of function 'of_node_put'; did you mean 'node_set'? [-Werror=implicit-function-declaration]
+>
+>> Rather than fixing up each one individually, this just marks all of it
+>> as depending on GPIOLIB.
+>
+> Hmm... But the OF stuff is not part of GPIOLIB.
 
-Sure, appreciate the help.
+The underlying issue is the same though: linux/gpio.h includes a
+different set of header files
+depending on CONFIG_GPIOLIB being set or not. Without it, we are missing all the
+indirect includes from asm-generic/gpio.h that include linux/of.h and
+linux/gpio/consumer.h.
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+        Arnd

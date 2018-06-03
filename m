@@ -1,7 +1,7 @@
 From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sun, 03 Jun 2018 14:41:14 +0000
-Subject: [PATCH 21/21] udlfb: use spin_lock_irq instead of spin_lock_irqsave
-Message-Id: <20180603144226.532332020@twibright.com>
+Date: Sun, 03 Jun 2018 14:40:56 +0000
+Subject: [PATCH 03/21] udl-kms: handle allocation failure
+Message-Id: <20180603144220.065709710@twibright.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
@@ -10,65 +10,83 @@ Content-Transfer-Encoding: 7bit
 To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
 Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-spin_lock_irqsave and spin_unlock_irqrestore is inteded to be called from
-a context where it is unknown if interrupts are enabled or disabled (such
-as interrupt handlers). From a process context, we should call
-spin_lock_irq and spin_unlock_irq, that avoids the costly pushf and popf
-instructions.
+Allocations larger than PAGE_ALLOC_COSTLY_ORDER are unreliable and they
+may fail anytime. This patch fixes the udl kms driver so that when a large
+alloactions fails, it tries to do multiple smaller allocations.
 
 Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
 ---
- drivers/video/fbdev/udlfb.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/udl/udl_main.c |   28 ++++++++++++++++++----------
+ 1 file changed, 18 insertions(+), 10 deletions(-)
 
-Index: linux-4.17-rc7/drivers/video/fbdev/udlfb.c
-=================================--- linux-4.17-rc7.orig/drivers/video/fbdev/udlfb.c	2018-06-03 13:17:46.000000000 +0200
-+++ linux-4.17-rc7/drivers/video/fbdev/udlfb.c	2018-06-03 13:17:46.000000000 +0200
-@@ -1855,18 +1855,17 @@ static void dlfb_free_urb_list(struct dl
- 	struct list_head *node;
- 	struct urb_node *unode;
+Index: linux-4.16.12/drivers/gpu/drm/udl/udl_main.c
+=================================--- linux-4.16.12.orig/drivers/gpu/drm/udl/udl_main.c	2018-05-31 11:16:15.000000000 +0200
++++ linux-4.16.12/drivers/gpu/drm/udl/udl_main.c	2018-05-31 11:16:15.000000000 +0200
+@@ -200,17 +200,22 @@ static void udl_free_urb_list(struct drm
+ static int udl_alloc_urb_list(struct drm_device *dev, int count, size_t size)
+ {
+ 	struct udl_device *udl = dev->dev_private;
+-	int i = 0;
  	struct urb *urb;
--	unsigned long flags;
- 
- 	/* keep waiting and freeing, until we've got 'em all */
- 	while (count--) {
- 		down(&dlfb->urbs.limit_sem);
- 
--		spin_lock_irqsave(&dlfb->urbs.lock, flags);
-+		spin_lock_irq(&dlfb->urbs.lock);
- 
- 		node = dlfb->urbs.list.next; /* have reserved one with sem */
- 		list_del_init(node);
- 
--		spin_unlock_irqrestore(&dlfb->urbs.lock, flags);
-+		spin_unlock_irq(&dlfb->urbs.lock);
- 
- 		unode = list_entry(node, struct urb_node, entry);
- 		urb = unode->urb;
-@@ -1944,7 +1943,6 @@ static struct urb *dlfb_get_urb(struct d
- 	int ret;
- 	struct list_head *entry;
  	struct urb_node *unode;
--	unsigned long flags;
+ 	char *buf;
++	size_t wanted_size = count * size;
  
- 	/* Wait for an in-flight buffer to complete and get re-queued */
- 	ret = down_timeout(&dlfb->urbs.limit_sem, GET_URB_TIMEOUT);
-@@ -1956,14 +1954,14 @@ static struct urb *dlfb_get_urb(struct d
- 		return NULL;
+ 	spin_lock_init(&udl->urbs.lock);
+ 
++retry:
+ 	udl->urbs.size = size;
+ 	INIT_LIST_HEAD(&udl->urbs.list);
+ 
+-	while (i < count) {
++	sema_init(&udl->urbs.limit_sem, 0);
++	udl->urbs.count = 0;
++	udl->urbs.available = 0;
++
++	while (udl->urbs.count * size < wanted_size) {
+ 		unode = kzalloc(sizeof(struct urb_node), GFP_KERNEL);
+ 		if (!unode)
+ 			break;
+@@ -226,11 +231,16 @@ static int udl_alloc_urb_list(struct drm
+ 		}
+ 		unode->urb = urb;
+ 
+-		buf = usb_alloc_coherent(udl->udev, MAX_TRANSFER, GFP_KERNEL,
++		buf = usb_alloc_coherent(udl->udev, size, GFP_KERNEL,
+ 					 &urb->transfer_dma);
+ 		if (!buf) {
+ 			kfree(unode);
+ 			usb_free_urb(urb);
++			if (size > PAGE_SIZE) {
++				size /= 2;
++				udl_free_urb_list(dev);
++				goto retry;
++			}
+ 			break;
+ 		}
+ 
+@@ -241,16 +251,14 @@ static int udl_alloc_urb_list(struct drm
+ 
+ 		list_add_tail(&unode->entry, &udl->urbs.list);
+ 
+-		i++;
++		up(&udl->urbs.limit_sem);
++		udl->urbs.count++;
++		udl->urbs.available++;
  	}
  
--	spin_lock_irqsave(&dlfb->urbs.lock, flags);
-+	spin_lock_irq(&dlfb->urbs.lock);
+-	sema_init(&udl->urbs.limit_sem, i);
+-	udl->urbs.count = i;
+-	udl->urbs.available = i;
+-
+-	DRM_DEBUG("allocated %d %d byte urbs\n", i, (int) size);
++	DRM_DEBUG("allocated %d %d byte urbs\n", udl->urbs.count, (int) size);
  
- 	BUG_ON(list_empty(&dlfb->urbs.list)); /* reserved one with limit_sem */
- 	entry = dlfb->urbs.list.next;
- 	list_del_init(entry);
- 	dlfb->urbs.available--;
+-	return i;
++	return udl->urbs.count;
+ }
  
--	spin_unlock_irqrestore(&dlfb->urbs.lock, flags);
-+	spin_unlock_irq(&dlfb->urbs.lock);
- 
- 	unode = list_entry(entry, struct urb_node, entry);
- 	return unode->urb;
+ struct urb *udl_get_urb(struct drm_device *dev)
 

@@ -1,85 +1,115 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 13 Jun 2018 15:11:10 +0000
-Subject: Re: [PATCH RESEND] backlight: gpio-backlight: Correct initial power state handling
-Message-Id: <cb603304-2052-2586-1673-96ab421a5547@linaro.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sun, 03 Jun 2018 14:41:05 +0000
+Subject: [PATCH 12/21] udlfb: fix display corruption of the last line
+Message-Id: <20180603144223.332517485@twibright.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180508070426.32211-1-peter.ujfalusi@ti.com>
-In-Reply-To: <20180508070426.32211-1-peter.ujfalusi@ti.com>
+References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Ujfalusi <peter.ujfalusi@ti.com>, lee.jones@linaro.org, jingoohan1@gmail.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On 08/05/18 08:04, Peter Ujfalusi wrote:
-> The default-on property - or the def_value via legacy pdata) should be
-> handled as:
-> if it is 1, the backlight must be enabled (kept enabled)
-> if it is 0, the backlight must be disabled (kept disabled)
-> 
-> This only works for the case when default-on is set. If it is not set then
-> the brightness of the backlight is set to 0. Now if the backlight is
-> enabled by external driver (graphics) the backlight will stay disabled since
-> the brightness is configured as 0. The backlight will not turn on.
-> 
-> The correct action at probe time is to configure the props.power to
-> FB_BLANK_UNBLANK if we want the backlight on by default or to
-> FB_BLANK_POWERDOWN if the backlight should be off by default.
-> 
-> The initial brightness should be set to 1.
+The displaylink hardware has such a peculiarity that it doesn't render a
+command until next command is received. This produces occasional
+corruption, such as when setting 22x11 font on the console, only the first
+line of the cursor will be blinking if the cursor is located at some
+specific columns.
 
-Hmnn... I guess this comes down to the definition of "on" for a binary
+When we end up with a repeating pixel, the driver has a bug that it leaves
+one uninitialized byte after the command (and this byte is enough to flush
+the command and render it - thus it fixes the screen corruption), however
+whe we end up with a non-repeating pixel, there is no byte appended and
+this results in temporary screen corruption.
 
-Actually I'm a little worried that backlight already has too many 
-different behaviors and that this patch introduces another way for them 
-to be different!
+This patch fixes the screen corruption by always appending a byte 0xAF at
+the end of URB. It also removes the uninitialized byte.
 
-Is there any mileage in adopting the same approach as PWM backlight for 
-blank/unblank management as a way to get a flicker free boot?
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
-For PWM the default property controls the initial brightness and the 
-initial power state is unblanked *unless* there is a phandle link to the 
-node, in which case we inherit whatever the power state the bootloader 
-had configured before the driver probed.
+---
+ drivers/video/fbdev/udlfb.c |   30 ++++++++++++++++++++----------
+ 1 file changed, 20 insertions(+), 10 deletions(-)
 
-Put another way, what happens is we implement 
-gpio_backlight_initial_power_state() to perform a similar task to 
-pwm_backlight_initial_power_state().
-
-
-Daniel.
-
-
-> 
-> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
-> ---
-> Hi,
-> 
-> for some reason the original patch got lost:
-> https://patchwork.kernel.org/patch/9445539/
-> 
-> But it is still valid, so I'm resending it.
-> 
-> Regards,
-> Peter
-> 
->   drivers/video/backlight/gpio_backlight.c | 4 +++-
->   1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-> index e470da95d806..904a4462cefe 100644
-> --- a/drivers/video/backlight/gpio_backlight.c
-> +++ b/drivers/video/backlight/gpio_backlight.c
-> @@ -142,7 +142,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
->   		return PTR_ERR(bl);
->   	}
->   
-> -	bl->props.brightness = gbl->def_value;
-> +	bl->props.power = gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
-> +	bl->props.brightness = 1;
-> +
->   	backlight_update_status(bl);
->   
->   	platform_set_drvdata(pdev, bl);
-> 
+Index: linux-4.17-rc7/drivers/video/fbdev/udlfb.c
+=================================--- linux-4.17-rc7.orig/drivers/video/fbdev/udlfb.c	2018-05-31 14:43:13.000000000 +0200
++++ linux-4.17-rc7/drivers/video/fbdev/udlfb.c	2018-05-31 14:46:03.000000000 +0200
+@@ -27,6 +27,7 @@
+ #include <linux/slab.h>
+ #include <linux/prefetch.h>
+ #include <linux/delay.h>
++#include <asm/unaligned.h>
+ #include <video/udlfb.h>
+ #include "edid.h"
+ 
+@@ -450,17 +451,17 @@ static void dlfb_compress_hline(
+ 		raw_pixels_count_byte = cmd++; /*  we'll know this later */
+ 		raw_pixel_start = pixel;
+ 
+-		cmd_pixel_end = pixel + min(MAX_CMD_PIXELS + 1,
+-			min((int)(pixel_end - pixel),
+-			    (int)(cmd_buffer_end - cmd) / BPP));
++		cmd_pixel_end = pixel + min3(MAX_CMD_PIXELS + 1UL,
++					(unsigned long)(pixel_end - pixel),
++					(unsigned long)(cmd_buffer_end - 1 - cmd) / BPP);
+ 
+-		prefetch_range((void *) pixel, (cmd_pixel_end - pixel) * BPP);
++		prefetch_range((void *) pixel, (u8 *)cmd_pixel_end - (u8 *)pixel);
+ 
+ 		while (pixel < cmd_pixel_end) {
+ 			const uint16_t * const repeating_pixel = pixel;
+ 
+-			*cmd++ = *pixel >> 8;
+-			*cmd++ = *pixel;
++			put_unaligned_be16(*pixel, cmd);
++			cmd += 2;
+ 			pixel++;
+ 
+ 			if (unlikely((pixel < cmd_pixel_end) &&
+@@ -486,13 +487,16 @@ static void dlfb_compress_hline(
+ 		if (pixel > raw_pixel_start) {
+ 			/* finalize last RAW span */
+ 			*raw_pixels_count_byte = (pixel-raw_pixel_start) & 0xFF;
++		} else {
++			/* undo unused byte */
++			cmd--;
+ 		}
+ 
+ 		*cmd_pixels_count_byte = (pixel - cmd_pixel_start) & 0xFF;
+-		dev_addr += (pixel - cmd_pixel_start) * BPP;
++		dev_addr += (u8 *)pixel - (u8 *)cmd_pixel_start;
+ 	}
+ 
+-	if (cmd_buffer_end <= MIN_RLX_CMD_BYTES + cmd) {
++	if (cmd_buffer_end - MIN_RLX_CMD_BYTES <= cmd) {
+ 		/* Fill leftover bytes with no-ops */
+ 		if (cmd_buffer_end > cmd)
+ 			memset(cmd, 0xAF, cmd_buffer_end - cmd);
+@@ -610,8 +614,11 @@ static int dlfb_handle_damage(struct dlf
+ 	}
+ 
+ 	if (cmd > (char *) urb->transfer_buffer) {
++		int len;
++		if (cmd < (char *) urb->transfer_buffer + urb->transfer_buffer_length)
++			*cmd++ = 0xAF;
+ 		/* Send partial buffer remaining before exiting */
+-		int len = cmd - (char *) urb->transfer_buffer;
++		len = cmd - (char *) urb->transfer_buffer;
+ 		ret = dlfb_submit_urb(dlfb, urb, len);
+ 		bytes_sent += len;
+ 	} else
+@@ -735,8 +742,11 @@ static void dlfb_dpy_deferred_io(struct
+ 	}
+ 
+ 	if (cmd > (char *) urb->transfer_buffer) {
++		int len;
++		if (cmd < (char *) urb->transfer_buffer + urb->transfer_buffer_length)
++			*cmd++ = 0xAF;
+ 		/* Send partial buffer remaining before exiting */
+-		int len = cmd - (char *) urb->transfer_buffer;
++		len = cmd - (char *) urb->transfer_buffer;
+ 		dlfb_submit_urb(dlfb, urb, len);
+ 		bytes_sent += len;
+ 	} else
 

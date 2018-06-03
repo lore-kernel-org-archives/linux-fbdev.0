@@ -1,35 +1,48 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Date: Fri, 15 Jun 2018 19:43:41 +0000
-Subject: [PATCH 0/3] ARM: imx: Make DRM_MXSFB and FB_MXS coexist
-Message-Id: <cover.1529091248.git.leonard.crestez@nxp.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sun, 03 Jun 2018 14:40:59 +0000
+Subject: [PATCH 06/21] udl-kms: make a local copy of fb_ops
+Message-Id: <20180603144221.252346438@twibright.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>, NXP Linux Team <linux-imx@nxp.com>, Marco Franchi <marcofrk@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Some imx boards have new drm-style bindings for lcdif devices but using
-them requires rebuilding the kernel with FB_MXS=n DRM_MXSFB=y.
+The defio subsystem overwrites the method fb_osp->mmap. That method is
+stored in module's static data - and that means that if we have multiple
+diplaylink adapters, they will over write each other's method.
 
-It is relatively easy to allow both drivers to coexist by renaming
-drm/mxsfb to "mxsfb-drm" and making the old fbdev driver return -ENODEV
-instead of -ENOENT when it fails to find the display node.
+In order to avoid interference between multiple adapters, we copy the
+fb_ops structure to a device-local memory.
 
-This makes display on imx6sx-sdb "just work" with both styles of
-bindings. In order to test the old bindings I locally reverted commit
-7caa59e0d40c ("ARM: dts: imx6sx-sdb: Convert from fbdev to drm bindings")
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
-Leonard Crestez (3):
-  drm: mxsfb: Change driver.name to mxsfb-drm
-  fbdev: mxsfb: Return ENODEV on missing display node
-  ARM: imx_v6_v7_defconfig: Enable DRM_MXSFB
+---
+ drivers/gpu/drm/udl/udl_fb.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
- arch/arm/configs/imx_v6_v7_defconfig | 2 ++
- drivers/gpu/drm/mxsfb/mxsfb_drv.c    | 2 +-
- drivers/video/fbdev/mxsfb.c          | 2 +-
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
--- 
-2.17.1
+Index: linux-4.17-rc7/drivers/gpu/drm/udl/udl_fb.c
+=================================--- linux-4.17-rc7.orig/drivers/gpu/drm/udl/udl_fb.c	2018-06-03 13:05:20.000000000 +0200
++++ linux-4.17-rc7/drivers/gpu/drm/udl/udl_fb.c	2018-06-03 13:08:03.000000000 +0200
+@@ -34,6 +34,7 @@ module_param(fb_defio, int, S_IWUSR | S_
+ struct udl_fbdev {
+ 	struct drm_fb_helper helper;
+ 	struct udl_framebuffer ufb;
++	struct fb_ops fb_ops;
+ 	int fb_count;
+ };
+ 
+@@ -405,7 +406,8 @@ static int udlfb_create(struct drm_fb_he
+ 	info->fix.smem_len = size;
+ 	info->fix.smem_start = (unsigned long)ufbdev->ufb.obj->vmapping;
+ 
+-	info->fbops = &udlfb_ops;
++	ufbdev->fb_ops = udlfb_ops;
++	info->fbops = &ufbdev->fb_ops;
+ 	drm_fb_helper_fill_fix(info, fb->pitches[0], fb->format->depth);
+ 	drm_fb_helper_fill_var(info, &ufbdev->helper, sizes->fb_width, sizes->fb_height);
+ 
 

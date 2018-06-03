@@ -1,121 +1,144 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Fri, 22 Jun 2018 07:52:49 +0000
-Subject: [PATCH v2 1/2] efi: drop type and attribute checks in efi_mem_desc_lookup()
-Message-Id: <20180622075250.14075-2-ard.biesheuvel@linaro.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sun, 03 Jun 2018 14:40:58 +0000
+Subject: [PATCH 05/21] udl-kms: fix a linked-list corruption when using fbdefio
+Message-Id: <20180603144220.849008093@twibright.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-The current implementation of efi_mem_desc_lookup() includes the
-following check on the memory descriptor it returns:
+The udl driver crashes when fbdefio is used. The crash can be reproduced
+with this sequence:
+1. echo 1 >/sys/module/udl/parameters/fb_defio
+2. run some program that maps the framebuffer, such as 'links -g' or 'fbi'
+3. allocate memory to the point where the machine starts swapping
 
-    if (!(md->attribute & EFI_MEMORY_RUNTIME) &&
-        md->type != EFI_BOOT_SERVICES_DATA &&
-        md->type != EFI_RUNTIME_SERVICES_DATA) {
-            continue;
-    }
+The reason for the crash is that udl_gem_get_pages calls drm_gem_get_pages
+and drm_gem_get_pages allocates the pages using shmem_read_mapping_page.
+The shmem pages are kept on the memory management lists using the
+page->lru entry.
 
-This means that only EfiBootServicesData or EfiRuntimeServicesData
-regions are considered, or any other region type provided that it
-has the EFI_MEMORY_RUNTIME attribute set.
+However, fbdefio reuses the page->lru entry for the list of pages that
+were modified, so the memory management lists are corrupted and the
+machine crashes when vmscan starts to scan memory.
 
-Given what the name of the function implies, and the fact that any
-physical address can be described in the UEFI memory map only a single
-time, it does not make sense to impose this condition in the body of the
-loop, but instead, should be imposed by the caller depending on the value
-that is returned to it.
+I fixed this crash by allocating pages with "alloc_page" instead. The
+pages allocated with "alloc_page" have page->lru unused, and thus the
+system doesn't crash when fbdefio uses it.
 
-Two such callers exist at the moment:
-- The BGRT code when running on x86, via efi_mem_reserve() and
-  efi_arch_mem_reserve(). In this case, the region is already known to
-  be EfiBootServicesData, and so the check is redundant.
-- The ESRT handling code which introduced this function, which calls it
-  both directly from efi_esrt_init() and again via efi_mem_reserve() and
-  efi_arch_mem_reserve() [on x86].
+Unable to handle kernel paging request at virtual address dead000000000200
+Mem abort info:
+  ESR = 0x96000044
+  Exception class = DABT (current EL), IL = 32 bits
+  SET = 0, FnV = 0
+  EA = 0, S1PTW = 0
+Data abort info:
+  ISV = 0, ISS = 0x00000044
+  CM = 0, WnR = 1
+[dead000000000200] address between user and kernel address ranges
+Internal error: Oops: 96000044 [#1] PREEMPT SMP
+Modules linked in: ip6table_filter ip6_tables iptable_filter ip_tables x_tables af_packet autofs4 udl drm_kms_helper cfbfillrect syscopyarea cfbimgblt sysfillrect sysimgblt fb_sys_fops cfbcopyarea fb font drm drm_panel_orientation_quirks mousedev hid_generic usbhid hid binfmt_misc snd_usb_audio snd_hwdep snd_usbmidi_lib snd_rawmidi snd_pcm snd_timer snd soundcore ipv6 aes_ce_blk crypto_simd cryptd aes_ce_cipher crc32_ce ghash_ce gf128mul aes_arm64 sha2_ce sha256_arm64 sha1_ce sha1_generic xhci_plat_hcd xhci_hcd sd_mod usbcore usb_common mvpp2 unix
+CPU: 0 PID: 39 Comm: kswapd0 Not tainted 4.16.12 #3
+Hardware name: Marvell 8040 MACHIATOBin (DT)
+pstate: 00000085 (nzcv daIf -PAN -UAO)
+pc : isolate_lru_pages.isra.16+0x23c/0x2b0
+lr : isolate_lru_pages.isra.16+0x104/0x2b0
+sp : ffffffc13a897ac0
+x29: ffffffc13a897ac0 x28: 0000000000000003
+x27: 0000000000000003 x26: 0000000000000004
+x25: ffffff80087e84a0 x24: ffffffc13a897b68
+x23: ffffffbf04cefc60 x22: ffffffc13a897e44
+x21: 0000000000000009 x20: ffffffc13a897c00
+x19: ffffffc13a897b40 x18: ffffffbf04d39000
+x17: 00000000fffffff8 x16: ffffffbf00000000
+x15: 0000000000000006 x14: 0000000000000000
+x13: 00000000000001aa x12: 400000000004001c
+x11: 0000000000000001 x10: 0000000000000001
+x9 : 00000000000ee3ac x8 : 00000000000004a0
+x7 : ffffff80087e84a0 x6 : 0000000000000000
+x5 : 0000000000000000 x4 : 0000000000000002
+x3 : ffffff80087e84a0 x2 : 0000000000000200
+x1 : dead000000000200 x0 : 400000000004001c
+Process kswapd0 (pid: 39, stack limit = 0x0000000097f25571)
+Call trace:
+ isolate_lru_pages.isra.16+0x23c/0x2b0
+ shrink_inactive_list+0xe4/0x3b0
+ shrink_node_memcg.constprop.19+0x374/0x630
+ shrink_node+0x64/0x1c8
+ kswapd+0x340/0x568
+ kthread+0x118/0x120
+ ret_from_fork+0x10/0x18
+Code: d2804002 f85e02e0 f85e02ec f9000461 (f9000023)
+---[ end trace f9f3ad3856cb2ef3 ]---
+note: kswapd0[39] exited with preempt_count 1
 
-So let's move this check into the callers instead. This preserves the
-current behavior both for BGRT and ESRT handling, and allows the lookup
-routine to be reused by other [upcoming] users that don't have this
-limitation.
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
-In the ESRT case, keep the entire condition, so that platforms that
-deviate from the UEFI spec and use something other than
-EfiBootServicesData for the ESRT table will keep working as before.
-
-For x86's efi_arch_mem_reserve() implementation, limit the type to
-EfiBootServicesData, since it is the only type the reservation code
-expects to operate on in the first place.
-
-While we're at it, drop the __init annotation so that drivers can use it
-as well.
-
-Cc: Peter Jones <pjones@redhat.com>
-Tested-by: Laszlo Ersek <lersek@redhat.com>
-Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 ---
- arch/x86/platform/efi/quirks.c | 3 ++-
- drivers/firmware/efi/efi.c     | 8 +-------
- drivers/firmware/efi/esrt.c    | 5 ++++-
- 3 files changed, 7 insertions(+), 9 deletions(-)
+ drivers/gpu/drm/udl/udl_gem.c |   31 +++++++++++++++++++++++++++----
+ 1 file changed, 27 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/platform/efi/quirks.c b/arch/x86/platform/efi/quirks.c
-index 36c1f8b9f7e0..4ee6f4980afe 100644
---- a/arch/x86/platform/efi/quirks.c
-+++ b/arch/x86/platform/efi/quirks.c
-@@ -249,7 +249,8 @@ void __init efi_arch_mem_reserve(phys_addr_t addr, u64 size)
- 	int num_entries;
- 	void *new;
- 
--	if (efi_mem_desc_lookup(addr, &md)) {
-+	if (efi_mem_desc_lookup(addr, &md) ||
-+	    md.type != EFI_BOOT_SERVICES_DATA) {
- 		pr_err("Failed to lookup EFI memory descriptor for %pa\n", &addr);
- 		return;
- 	}
-diff --git a/drivers/firmware/efi/efi.c b/drivers/firmware/efi/efi.c
-index 232f4915223b..cbc25d1c40bb 100644
---- a/drivers/firmware/efi/efi.c
-+++ b/drivers/firmware/efi/efi.c
-@@ -388,7 +388,7 @@ subsys_initcall(efisubsys_init);
-  * and if so, populate the supplied memory descriptor with the appropriate
-  * data.
-  */
--int __init efi_mem_desc_lookup(u64 phys_addr, efi_memory_desc_t *out_md)
-+int efi_mem_desc_lookup(u64 phys_addr, efi_memory_desc_t *out_md)
+Index: linux-4.16.12/drivers/gpu/drm/udl/udl_gem.c
+=================================--- linux-4.16.12.orig/drivers/gpu/drm/udl/udl_gem.c	2018-01-10 09:31:23.000000000 +0100
++++ linux-4.16.12/drivers/gpu/drm/udl/udl_gem.c	2018-05-29 17:46:10.000000000 +0200
+@@ -130,28 +130,51 @@ int udl_gem_fault(struct vm_fault *vmf)
+ int udl_gem_get_pages(struct udl_gem_object *obj)
  {
- 	efi_memory_desc_t *md;
+ 	struct page **pages;
++	int npages, i;
  
-@@ -406,12 +406,6 @@ int __init efi_mem_desc_lookup(u64 phys_addr, efi_memory_desc_t *out_md)
- 		u64 size;
- 		u64 end;
+ 	if (obj->pages)
+ 		return 0;
  
--		if (!(md->attribute & EFI_MEMORY_RUNTIME) &&
--		    md->type != EFI_BOOT_SERVICES_DATA &&
--		    md->type != EFI_RUNTIME_SERVICES_DATA) {
--			continue;
--		}
--
- 		size = md->num_pages << EFI_PAGE_SHIFT;
- 		end = md->phys_addr + size;
- 		if (phys_addr >= md->phys_addr && phys_addr < end) {
-diff --git a/drivers/firmware/efi/esrt.c b/drivers/firmware/efi/esrt.c
-index 1ab80e06e7c5..375a77c1c6e5 100644
---- a/drivers/firmware/efi/esrt.c
-+++ b/drivers/firmware/efi/esrt.c
-@@ -250,7 +250,10 @@ void __init efi_esrt_init(void)
- 		return;
+-	pages = drm_gem_get_pages(&obj->base);
+-	if (IS_ERR(pages))
+-		return PTR_ERR(pages);
++	npages = obj->base.size >> PAGE_SHIFT;
++
++	pages = kvmalloc_array(npages, sizeof(struct page *), GFP_KERNEL);
++	if (!pages)
++		return -ENOMEM;
++
++	for (i = 0; i < npages; i++) {
++		struct page *p = alloc_page(GFP_KERNEL | __GFP_ZERO);
++		if (!p)
++			goto fail;
++		pages[i] = p;
++	}
  
- 	rc = efi_mem_desc_lookup(efi.esrt, &md);
--	if (rc < 0) {
-+	if (rc < 0 ||
-+	    (!(md.attribute & EFI_MEMORY_RUNTIME) &&
-+	     md.type != EFI_BOOT_SERVICES_DATA &&
-+	     md.type != EFI_RUNTIME_SERVICES_DATA)) {
- 		pr_warn("ESRT header is not in the memory map.\n");
+ 	obj->pages = pages;
+ 
+ 	return 0;
++
++fail:
++	while (i--)
++		put_page(pages[i]);
++	kvfree(pages);
++	return -ENOMEM;
+ }
+ 
+ void udl_gem_put_pages(struct udl_gem_object *obj)
+ {
++	int npages, i;
++
+ 	if (obj->base.import_attach) {
+ 		kvfree(obj->pages);
+ 		obj->pages = NULL;
  		return;
  	}
--- 
-2.17.1
+ 
+-	drm_gem_put_pages(&obj->base, obj->pages, false, false);
++	npages = obj->base.size >> PAGE_SHIFT;
++
++	for (i = 0; i < npages; i++)
++		put_page(obj->pages[i]);
++
++	kvfree(obj->pages);
+ 	obj->pages = NULL;
+ }
+ 
 

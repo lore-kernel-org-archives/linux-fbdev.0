@@ -1,64 +1,103 @@
-From: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
-Date: Tue, 05 Jun 2018 10:08:02 +0000
+From: Ladislav Michl <ladis@linux-mips.org>
+Date: Tue, 05 Jun 2018 10:48:58 +0000
 Subject: Re: [PATCH 08/21] udl-kms: avoid prefetch
-Message-Id: <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
+Message-Id: <20180605104858.GA22237@lenoch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180603144053.875668929@twibright.com>
  <20180603144221.959741603@twibright.com>
-In-Reply-To: <20180603144221.959741603@twibright.com>
+ <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
+In-Reply-To: <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "mpatocka@redhat.com" <mpatocka@redhat.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "ladis@linux-mips.org" <ladis@linux-mips.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "bernie@plugable.com" <bernie@plugable.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "airlied@redhat.com" <airlied@redhat.com>
+To: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "bernie@plugable.com" <bernie@plugable.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "mpatocka@redhat.com" <mpatocka@redhat.com>, "airlied@redhat.com" <airlied@redhat.com>
 
-SGkgTWlrdWxhcywNCg0KT24gU3VuLCAyMDE4LTA2LTAzIGF0IDE2OjQxICswMjAwLCBNaWt1bGFz
-IFBhdG9ja2Egd3JvdGU6DQo+IE1vZGVybiBwcm9jZXNzb3JzIGNhbiBkZXRlY3QgbGluZWFyIG1l
-bW9yeSBhY2Nlc3NlcyBhbmQgcHJlZmV0Y2ggZGF0YQ0KPiBhdXRvbWF0aWNhbGx5LCBzbyB0aGVy
-ZSdzIG5vIG5lZWQgdG8gdXNlIHByZWZldGNoLg0KDQpOb3QgZWFjaCBhbmQgZXZlcnkgQ1BVIHRo
-YXQncyBjYXBhYmxlIG9mIHJ1bm5pbmcgTGludXggaGFzIHByZWZldGNoDQpmdW5jdGlvbmFsaXR5
-IDopDQoNClN0aWxsIHJlYWQtb24uLi4NCg0KPiBTaWduZWQtb2ZmLWJ5OiBNaWt1bGFzIFBhdG9j
-a2EgPG1wYXRvY2thQHJlZGhhdC5jb20+DQo+IA0KPiAtLS0NCj4gIGRyaXZlcnMvZ3B1L2RybS91
-ZGwvdWRsX3RyYW5zZmVyLmMgfCAgICA3IC0tLS0tLS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCA3IGRl
-bGV0aW9ucygtKQ0KPiANCj4gSW5kZXg6IGxpbnV4LTQuMTYuMTIvZHJpdmVycy9ncHUvZHJtL3Vk
-bC91ZGxfdHJhbnNmZXIuYw0KPiA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09DQo+IC0tLSBsaW51eC00LjE2LjEyLm9yaWcv
-ZHJpdmVycy9ncHUvZHJtL3VkbC91ZGxfdHJhbnNmZXIuYwkyMDE4LTA1LTMxIDE0OjQ4OjEyLjAw
-MDAwMDAwMCArMDIwMA0KPiArKysgbGludXgtNC4xNi4xMi9kcml2ZXJzL2dwdS9kcm0vdWRsL3Vk
-bF90cmFuc2Zlci5jCTIwMTgtMDUtMzEgMTQ6NDg6MTIuMDAwMDAwMDAwICswMjAwDQo+IEBAIC0x
-Myw3ICsxMyw2IEBADQo+ICAjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ICAjaW5jbHVkZSA8
-bGludXgvc2xhYi5oPg0KPiAgI2luY2x1ZGUgPGxpbnV4L2ZiLmg+DQo+IC0jaW5jbHVkZSA8bGlu
-dXgvcHJlZmV0Y2guaD4NCj4gICNpbmNsdWRlIDxhc20vdW5hbGlnbmVkLmg+DQo+ICANCj4gICNp
-bmNsdWRlIDxkcm0vZHJtUC5oPg0KPiBAQCAtNTEsOSArNTAsNiBAQCBzdGF0aWMgaW50IHVkbF90
-cmltX2hsaW5lKGNvbnN0IHU4ICpiYmFjDQo+ICAJaW50IHN0YXJ0ID0gd2lkdGg7DQo+ICAJaW50
-IGVuZCA9IHdpZHRoOw0KPiAgDQo+IC0JcHJlZmV0Y2goKHZvaWQgKikgZnJvbnQpOw0KPiAtCXBy
-ZWZldGNoKCh2b2lkICopIGJhY2spOw0KDQpBRkFJSyBwcmVmZXRjaGVyIGZldGNoZXMgbmV3IGRh
-dGEgYWNjb3JkaW5nIHRvIGEga25vd24gaGlzdG9yeS4uLiBpLmUuIGJhc2VkIG9uIHByZXZpb3Vz
-bHkNCnVzZWQgcGF0dGVybiB3ZSdsbCB0cnlpbmcgdG8gZ2V0IHRoZSBuZXh0IGJhdGNoIG9mIGRh
-dGEuDQoNCkJ1dCB0aGUgY29kZSBhYm92ZSBpcyBpbiB0aGUgdmVyeSBiZWdpbm5pbmcgb2YgdGhl
-IGRhdGEgcHJvY2Vzc2luZyByb3V0aW5lIHdoZXJlDQpwcmVmZXRjaGVyIGRvZXNuJ3QgeWV0IGhh
-dmUgYW55IGhpc3RvcnkgdG8ga25vdyB3aGF0IGFuZCB3aGVyZSB0byBwcmVmZXRjaC4NCg0KU28g
-SSdkIHNheSB0aGlzIHBhcnRpY3VsYXIgdXNhZ2UgaXMgZ29vZC4NCkF0IGxlYXN0IHRob3NlIHBy
-ZWZldGNoZXMgc2hvdWxkbid0IGh1cnQgYmVjYXVzZSB0eXBpY2FsbHkgaXQNCndvdWxkIGJlIGp1
-c3QgMSBpbnN0cnVjdGlvbiBpZiB0aG9zZSBleGlzdCBvciBub3RoaW5nIGlmIENQVS9jb21waWxl
-ciBkb2Vzbid0DQpzdXBwb3J0IGl0Lg0KDQo+ICAJZm9yIChqID0gMDsgaiA8IHdpZHRoOyBqKysp
-IHsNCj4gIAkJaWYgKGJhY2tbal0gIT0gZnJvbnRbal0pIHsNCj4gIAkJCXN0YXJ0ID0gajsNCj4g
-QEAgLTE0MCw4ICsxMzYsNiBAQCBzdGF0aWMgdm9pZCB1ZGxfY29tcHJlc3NfaGxpbmUxNigNCj4g
-IAkJY29uc3QgdTggKmNtZF9waXhlbF9zdGFydCwgKmNtZF9waXhlbF9lbmQgPSBOVUxMOw0KPiAg
-CQl1aW50MTZfdCBwaXhlbF92YWwxNjsNCj4gIA0KPiAtCQlwcmVmZXRjaHcoKHZvaWQgKikgY21k
-KTsgLyogcHVsbCBpbiBvbmUgY2FjaGUgbGluZSBhdCBsZWFzdCAqLw0KPiAtDQoNClByZXR0eSBt
-dWNoIHRoZSBzYW1lIGlzIGhlcmUuIE9idmlvdXNseSBvbiB0aGUgZmlyc3QgaXRlcmF0aW9uIHBy
-ZWZldGNoZXIgZG9zbid0DQprbm93IHdoZXJlIHRvIGdldCAiY21kIi4gT24gdGhlIG5leHQgaXRl
-cmF0aW9ucyBpdCBtaWdodCBiZSBiZXR0ZXIgYnV0IGdpdmVuIGFtb3VudA0Kb2Ygb3BlcmF0aW9u
-IGhhcHBlbnMgZnVydGhlciBpbiB0aGUgY3ljbGUgKGFuZCBpbiBpbm5lciBjeWNsZXMpIEkgd29u
-J3QgYmUgY29tcGxldGVseQ0Kc3VyZSB0aGF0IGVhY2ggYW5kIGV2ZXJ5IHByZWZldGNoZXIgd2ls
-bCBzdGlsbCBrZWVwIHRyYWNrIG9mICJjbWQiLg0KDQo+ICAJCSpjbWQrKyA9IDB4YWY7DQo+ICAJ
-CSpjbWQrKyA9IDB4NmI7DQo+ICAJCSpjbWQrKyA9ICh1aW50OF90KSAoKGRldl9hZGRyID4+IDE2
-KSAmIDB4RkYpOw0KPiBAQCAtMTU4LDcgKzE1Miw2IEBAIHN0YXRpYyB2b2lkIHVkbF9jb21wcmVz
-c19obGluZTE2KA0KPiAgCQkJCQkodW5zaWduZWQgbG9uZykocGl4ZWxfZW5kIC0gcGl4ZWwpID4+
-IGxvZ19icHAsDQo+ICAJCQkJCSh1bnNpZ25lZCBsb25nKShjbWRfYnVmZmVyX2VuZCAtIDEgLSBj
-bWQpIC8gMikgPDwgbG9nX2JwcCk7DQo+ICANCj4gLQkJcHJlZmV0Y2hfcmFuZ2UoKHZvaWQgKikg
-cGl4ZWwsIGNtZF9waXhlbF9lbmQgLSBwaXhlbCk7DQoNCkFnYWluIEknbSBub3Qgc3VyZSB3aGF0
-IHdlIGdhaW4gcmVtb3ZpbmcgdGhhdCBjb2RlIGluIGNvbXBhcmlzb24gb2YgcG9zc2libGUNCnBl
-cmZvcm1hbmNlIGRlZ3JhZGF0aW9uIG9uIHNpbXBsZXIgQ1BVcy4NCg0KQW5kIGVzc2VudGlhbGx5
-IGFsbCB0aGUgc2FtZSBpcyBhcHBsaWNhYmxlIHRvIFVETEZCIHBhdGNoLg0KDQotQWxleGV5
+On Tue, Jun 05, 2018 at 10:08:02AM +0000, Alexey Brodkin wrote:
+> Hi Mikulas,
+> 
+> On Sun, 2018-06-03 at 16:41 +0200, Mikulas Patocka wrote:
+> > Modern processors can detect linear memory accesses and prefetch data
+> > automatically, so there's no need to use prefetch.
+> 
+> Not each and every CPU that's capable of running Linux has prefetch
+> functionality :)
+> 
+> Still read-on...
+> 
+> > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> > 
+> > ---
+> >  drivers/gpu/drm/udl/udl_transfer.c |    7 -------
+> >  1 file changed, 7 deletions(-)
+> > 
+> > Index: linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c
+> > =================================> > --- linux-4.16.12.orig/drivers/gpu/drm/udl/udl_transfer.c	2018-05-31 14:48:12.000000000 +0200
+> > +++ linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c	2018-05-31 14:48:12.000000000 +0200
+> > @@ -13,7 +13,6 @@
+> >  #include <linux/module.h>
+> >  #include <linux/slab.h>
+> >  #include <linux/fb.h>
+> > -#include <linux/prefetch.h>
+> >  #include <asm/unaligned.h>
+> >  
+> >  #include <drm/drmP.h>
+> > @@ -51,9 +50,6 @@ static int udl_trim_hline(const u8 *bbac
+> >  	int start = width;
+> >  	int end = width;
+> >  
+> > -	prefetch((void *) front);
+> > -	prefetch((void *) back);
+> 
+> AFAIK prefetcher fetches new data according to a known history... i.e. based on previously
+> used pattern we'll trying to get the next batch of data.
+> 
+> But the code above is in the very beginning of the data processing routine where
+> prefetcher doesn't yet have any history to know what and where to prefetch.
+> 
+> So I'd say this particular usage is good.
+> At least those prefetches shouldn't hurt because typically it
+> would be just 1 instruction if those exist or nothing if CPU/compiler doesn't
+> support it.
+> 
+> >  	for (j = 0; j < width; j++) {
+> >  		if (back[j] != front[j]) {
+> >  			start = j;
+> > @@ -140,8 +136,6 @@ static void udl_compress_hline16(
+> >  		const u8 *cmd_pixel_start, *cmd_pixel_end = NULL;
+> >  		uint16_t pixel_val16;
+> >  
+> > -		prefetchw((void *) cmd); /* pull in one cache line at least */
+> > -
+> 
+> Pretty much the same is here. Obviously on the first iteration prefetcher dosn't
+> know where to get "cmd". On the next iterations it might be better but given amount
+> of operation happens further in the cycle (and in inner cycles) I won't be completely
+> sure that each and every prefetcher will still keep track of "cmd".
+> 
+> >  		*cmd++ = 0xaf;
+> >  		*cmd++ = 0x6b;
+> >  		*cmd++ = (uint8_t) ((dev_addr >> 16) & 0xFF);
+> > @@ -158,7 +152,6 @@ static void udl_compress_hline16(
+> >  					(unsigned long)(pixel_end - pixel) >> log_bpp,
+> >  					(unsigned long)(cmd_buffer_end - 1 - cmd) / 2) << log_bpp);
+> >  
+> > -		prefetch_range((void *) pixel, cmd_pixel_end - pixel);
+> 
+> Again I'm not sure what we gain removing that code in comparison of possible
+> performance degradation on simpler CPUs.
+> 
+> And essentially all the same is applicable to UDLFB patch.
+
+Tested this one on AT91SAM9G20 SoC, but couldn't get any measurable difference.
+Part of problem is probably that full speed USB is the bottleneck here.
+However, the same applies on OMAP3630 based board with high speed USB.
+
+As a side note, I didn't experience any problem those paches are fixing, so
+perhaps testcases could be described briefly, preferably with some numbers
+(I'm not running console on udlfb, but try to give it a try next week).
+
+Thank you,
+	ladis
+
+> -Alexey

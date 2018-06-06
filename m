@@ -1,73 +1,85 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 05 Jun 2018 15:30:22 +0000
+From: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Date: Wed, 06 Jun 2018 12:04:24 +0000
 Subject: Re: [PATCH 08/21] udl-kms: avoid prefetch
-Message-Id: <alpine.LRH.2.02.1806051123300.7248@file01.intranet.prod.int.rdu2.redhat.com>
+Message-Id: <fad12efd7a0f93e1dd6de5e7bf0c45832e6d74ea.camel@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180603144053.875668929@twibright.com>
  <20180603144221.959741603@twibright.com>
  <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
-In-Reply-To: <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
+ <alpine.LRH.2.02.1806051123300.7248@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1806051123300.7248@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+To: "mpatocka@redhat.com" <mpatocka@redhat.com>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "ladis@linux-mips.org" <ladis@linux-mips.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "bernie@plugable.com" <bernie@plugable.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "airlied@redhat.com" <airlied@redhat.com>
 
-
-
-On Tue, 5 Jun 2018, Alexey Brodkin wrote:
-
-> Hi Mikulas,
-> 
-> On Sun, 2018-06-03 at 16:41 +0200, Mikulas Patocka wrote:
-> > Modern processors can detect linear memory accesses and prefetch data
-> > automatically, so there's no need to use prefetch.
-> 
-> Not each and every CPU that's capable of running Linux has prefetch
-> functionality :)
-> 
-> Still read-on...
-> 
-> > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> > 
-> > ---
-> >  drivers/gpu/drm/udl/udl_transfer.c |    7 -------
-> >  1 file changed, 7 deletions(-)
-> > 
-> > Index: linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c
-> > =================================> > --- linux-4.16.12.orig/drivers/gpu/drm/udl/udl_transfer.c	2018-05-31 14:48:12.000000000 +0200
-> > +++ linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c	2018-05-31 14:48:12.000000000 +0200
-> > @@ -13,7 +13,6 @@
-> >  #include <linux/module.h>
-> >  #include <linux/slab.h>
-> >  #include <linux/fb.h>
-> > -#include <linux/prefetch.h>
-> >  #include <asm/unaligned.h>
-> >  
-> >  #include <drm/drmP.h>
-> > @@ -51,9 +50,6 @@ static int udl_trim_hline(const u8 *bbac
-> >  	int start = width;
-> >  	int end = width;
-> >  
-> > -	prefetch((void *) front);
-> > -	prefetch((void *) back);
-> 
-> AFAIK prefetcher fetches new data according to a known history... i.e. based on previously
-> used pattern we'll trying to get the next batch of data.
-> 
-> But the code above is in the very beginning of the data processing routine where
-> prefetcher doesn't yet have any history to know what and where to prefetch.
-> 
-> So I'd say this particular usage is good.
-> At least those prefetches shouldn't hurt because typically it
-> would be just 1 instruction if those exist or nothing if CPU/compiler doesn't
-> support it.
-
-See this post https://lwn.net/Articles/444336/ where they measured that 
-prefetch hurts performance. Prefetch shouldn't be used unless you have a 
-proof that it improves performance.
-
-The problem is that the prefetch instruction causes stalls in the pipeline 
-when it encounters TLB miss and the automatic prefetcher doesn't.
-
-Mikulas
+SGkgTWlrdWxhcywNCg0KT24gVHVlLCAyMDE4LTA2LTA1IGF0IDExOjMwIC0wNDAwLCBNaWt1bGFz
+IFBhdG9ja2Egd3JvdGU6DQo+IA0KPiBPbiBUdWUsIDUgSnVuIDIwMTgsIEFsZXhleSBCcm9ka2lu
+IHdyb3RlOg0KPiANCj4gPiBIaSBNaWt1bGFzLA0KPiA+IA0KPiA+IE9uIFN1biwgMjAxOC0wNi0w
+MyBhdCAxNjo0MSArMDIwMCwgTWlrdWxhcyBQYXRvY2thIHdyb3RlOg0KPiA+ID4gTW9kZXJuIHBy
+b2Nlc3NvcnMgY2FuIGRldGVjdCBsaW5lYXIgbWVtb3J5IGFjY2Vzc2VzIGFuZCBwcmVmZXRjaCBk
+YXRhDQo+ID4gPiBhdXRvbWF0aWNhbGx5LCBzbyB0aGVyZSdzIG5vIG5lZWQgdG8gdXNlIHByZWZl
+dGNoLg0KPiA+IA0KPiA+IE5vdCBlYWNoIGFuZCBldmVyeSBDUFUgdGhhdCdzIGNhcGFibGUgb2Yg
+cnVubmluZyBMaW51eCBoYXMgcHJlZmV0Y2gNCj4gPiBmdW5jdGlvbmFsaXR5IDopDQo+ID4gDQo+
+ID4gU3RpbGwgcmVhZC1vbi4uLg0KPiA+IA0KPiA+ID4gU2lnbmVkLW9mZi1ieTogTWlrdWxhcyBQ
+YXRvY2thIDxtcGF0b2NrYUByZWRoYXQuY29tPg0KPiA+ID4gDQo+ID4gPiAtLS0NCj4gPiA+ICBk
+cml2ZXJzL2dwdS9kcm0vdWRsL3VkbF90cmFuc2Zlci5jIHwgICAgNyAtLS0tLS0tDQo+ID4gPiAg
+MSBmaWxlIGNoYW5nZWQsIDcgZGVsZXRpb25zKC0pDQo+ID4gPiANCj4gPiA+IEluZGV4OiBsaW51
+eC00LjE2LjEyL2RyaXZlcnMvZ3B1L2RybS91ZGwvdWRsX3RyYW5zZmVyLmMNCj4gPiA+ID09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT0NCj4gPiA+IC0tLSBsaW51eC00LjE2LjEyLm9yaWcvZHJpdmVycy9ncHUvZHJtL3VkbC91
+ZGxfdHJhbnNmZXIuYwkyMDE4LTA1LTMxIDE0OjQ4OjEyLjAwMDAwMDAwMCArMDIwMA0KPiA+ID4g
+KysrIGxpbnV4LTQuMTYuMTIvZHJpdmVycy9ncHUvZHJtL3VkbC91ZGxfdHJhbnNmZXIuYwkyMDE4
+LTA1LTMxIDE0OjQ4OjEyLjAwMDAwMDAwMCArMDIwMA0KPiA+ID4gQEAgLTEzLDcgKzEzLDYgQEAN
+Cj4gPiA+ICAjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ID4gPiAgI2luY2x1ZGUgPGxpbnV4
+L3NsYWIuaD4NCj4gPiA+ICAjaW5jbHVkZSA8bGludXgvZmIuaD4NCj4gPiA+IC0jaW5jbHVkZSA8
+bGludXgvcHJlZmV0Y2guaD4NCj4gPiA+ICAjaW5jbHVkZSA8YXNtL3VuYWxpZ25lZC5oPg0KPiA+
+ID4gIA0KPiA+ID4gICNpbmNsdWRlIDxkcm0vZHJtUC5oPg0KPiA+ID4gQEAgLTUxLDkgKzUwLDYg
+QEAgc3RhdGljIGludCB1ZGxfdHJpbV9obGluZShjb25zdCB1OCAqYmJhYw0KPiA+ID4gIAlpbnQg
+c3RhcnQgPSB3aWR0aDsNCj4gPiA+ICAJaW50IGVuZCA9IHdpZHRoOw0KPiA+ID4gIA0KPiA+ID4g
+LQlwcmVmZXRjaCgodm9pZCAqKSBmcm9udCk7DQo+ID4gPiAtCXByZWZldGNoKCh2b2lkICopIGJh
+Y2spOw0KPiA+IA0KPiA+IEFGQUlLIHByZWZldGNoZXIgZmV0Y2hlcyBuZXcgZGF0YSBhY2NvcmRp
+bmcgdG8gYSBrbm93biBoaXN0b3J5Li4uIGkuZS4gYmFzZWQgb24gcHJldmlvdXNseQ0KPiA+IHVz
+ZWQgcGF0dGVybiB3ZSdsbCB0cnlpbmcgdG8gZ2V0IHRoZSBuZXh0IGJhdGNoIG9mIGRhdGEuDQo+
+ID4gDQo+ID4gQnV0IHRoZSBjb2RlIGFib3ZlIGlzIGluIHRoZSB2ZXJ5IGJlZ2lubmluZyBvZiB0
+aGUgZGF0YSBwcm9jZXNzaW5nIHJvdXRpbmUgd2hlcmUNCj4gPiBwcmVmZXRjaGVyIGRvZXNuJ3Qg
+eWV0IGhhdmUgYW55IGhpc3RvcnkgdG8ga25vdyB3aGF0IGFuZCB3aGVyZSB0byBwcmVmZXRjaC4N
+Cj4gPiANCj4gPiBTbyBJJ2Qgc2F5IHRoaXMgcGFydGljdWxhciB1c2FnZSBpcyBnb29kLg0KPiA+
+IEF0IGxlYXN0IHRob3NlIHByZWZldGNoZXMgc2hvdWxkbid0IGh1cnQgYmVjYXVzZSB0eXBpY2Fs
+bHkgaXQNCj4gPiB3b3VsZCBiZSBqdXN0IDEgaW5zdHJ1Y3Rpb24gaWYgdGhvc2UgZXhpc3Qgb3Ig
+bm90aGluZyBpZiBDUFUvY29tcGlsZXIgZG9lc24ndA0KPiA+IHN1cHBvcnQgaXQuDQo+IA0KPiBT
+ZWUgdGhpcyBwb3N0IGh0dHBzOi8vdXJsZGVmZW5zZS5wcm9vZnBvaW50LmNvbS92Mi91cmw/dT1o
+dHRwcy0zQV9fbHduLm5ldF9BcnRpY2xlc180NDQzMzZfJmQ9RHdJQkFnJmM9RFBMNl9YXzZKa1hG
+eDdBWFdxQjB0ZyZyPWxxZGVlU1NFZXMwR0ZERGw2NTZlDQo+IFZpWE83YnJlUzU1eXRXa2hwazVS
+ODFJJm09YTVSYXFKdHZhakZrTTFoTDdiT0tENWpWN2NwRmZUdkcyWTFjWUNkQlBkMCZzPXcwVzh3
+RnRBZ0VOcDhURTZSemRQR2hkS1Jhc0pjX290SW4wOFYwRWtnclkmZT0gd2hlcmUgdGhleSBtZWFz
+dXJlZCB0aGF0IA0KPiBwcmVmZXRjaCBodXJ0cyBwZXJmb3JtYW5jZS4gUHJlZmV0Y2ggc2hvdWxk
+bid0IGJlIHVzZWQgdW5sZXNzIHlvdSBoYXZlIGEgDQo+IHByb29mIHRoYXQgaXQgaW1wcm92ZXMg
+cGVyZm9ybWFuY2UuDQo+IA0KPiBUaGUgcHJvYmxlbSBpcyB0aGF0IHRoZSBwcmVmZXRjaCBpbnN0
+cnVjdGlvbiBjYXVzZXMgc3RhbGxzIGluIHRoZSBwaXBlbGluZSANCj4gd2hlbiBpdCBlbmNvdW50
+ZXJzIFRMQiBtaXNzIGFuZCB0aGUgYXV0b21hdGljIHByZWZldGNoZXIgZG9lc24ndC4NCg0KV293
+LCB0aGFua3MgZm9yIHRoZSBsaW5rLg0KSSBkaWRuJ3Qga25vdyBhYm91dCB0aGF0IHN1YnRsZSBp
+c3N1ZSB3aXRoIHByZWZldGNoIGluc3RydWN0aW9ucyBvbiBBUk0gYW5kIHg4Ni4NCg0KU28gT0sg
+aW4gY2FzZSBvZiBVREwgdGhlc2UgcHJlZmV0Y2hlcyBhbnl3YXlzIG1ha2Ugbm90IG5vdCBtdWNo
+IHNlbnNlIEkgZ3Vlc3MgYW5kIHRoZXJlJ3MNCnNvbWV0aGluZyB3b3JzZSBzdGlsbCwgc2VlIHdo
+YXQgSSd2ZSBnb3QgZnJvbSBXYW5kQm9hcmQgUXVhZCBydW5uaW5nIGttc2N1YmUgWzFdIGFwcGxp
+Y2F0aW9uDQp3aXRoIGhlbHAgb2YgcGVyZiB1dGlsaXR5Og0KLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tPjgtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQojIE92ZXJoZWFkICBDb21tYW5kICBT
+aGFyZWQgT2JqZWN0ICAgICAgICAgICAgU3ltYm9sIA0KIyAuLi4uLi4uLiAgLi4uLi4uLiAgLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4gIC4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4NCiMNCiAgICA5Mi45MyUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBb
+a10gdWRsX3JlbmRlcl9obGluZQ0KICAgICAyLjUxJSAga21zY3ViZSAgW2tlcm5lbC5rYWxsc3lt
+c10gICAgICAgIFtrXSBfX2RpdnNpMw0KICAgICAwLjMzJSAga21zY3ViZSAgW2tlcm5lbC5rYWxs
+c3ltc10gICAgICAgIFtrXSBfcmF3X3NwaW5fdW5sb2NrX2lycXJlc3RvcmUNCiAgICAgMC4yMiUg
+IGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gbG9ja19hY3F1aXJlDQogICAg
+IDAuMTklICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAgICAgW2tdIF9yYXdfc3Bpbl91
+bmxvY2tfaXJxDQogICAgIDAuMTclICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAgICAg
+W2tdIHVkbF9oYW5kbGVfZGFtYWdlDQogICAgIDAuMTIlICBrbXNjdWJlICBba2VybmVsLmthbGxz
+eW1zXSAgICAgICAgW2tdIHY3X2RtYV9jbGVhbl9yYW5nZQ0KICAgICAwLjExJSAga21zY3ViZSAg
+W2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSBsMmMyMTBfY2xlYW5fcmFuZ2UNCiAgICAgMC4w
+NiUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gX19tZW16ZXJvDQotLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCg0KVGhh
+dCBzYWlkIGl0J3Mgbm90IGV2ZW4gVVNCIDIuMCB3aGljaCBpcyBhIGJvdHRsZS1uZWNrIGJ1dA0K
+Y29tcHV0YXRpb25zIGluIHRoZSB1ZGxfcmVuZGVyX2hsaW5lKCkuDQoNCg0KWzFdIGh0dHBzOi8v
+Y2dpdC5mcmVlZGVza3RvcC5vcmcvbWVzYS9rbXNjdWJlLw0KDQotQWxleGV5

@@ -1,66 +1,40 @@
-From: Julia Cartwright <juliac@eso.teric.us>
-Date: Tue, 26 Jun 2018 18:59:00 +0000
-Subject: Re: simple-framebuffer enquire
-Message-Id: <20180626185900.GA20755@kryptos.localdomain>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 08 Jun 2018 16:23:52 +0000
+Subject: Re: [PATCH 3/3] ANDROID: goldfish_fb: Set pixclock = 0
+Message-Id: <2257447.FoZO9vJcxE@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CAOf5uwmSeugMHBBFc8ZQKY=wEsVD-YwD=YSWi=XbysU58Gp=Ww@mail.gmail.com>
- <9fb661e6-482b-76e0-2af0-a62a70e5606d@redhat.com>
- <CAOf5uwk2cf_+27nk9i9MQmbfJ8LCfPYopkcX__9M64jMYmhu1A@mail.gmail.com>
- <CAOf5uwkEuDgAJ7e8rNFyiKpUZPA3NhQGREtOGsm1EVSofW3rzQ@mail.gmail.com>
- <233d6808-4d44-9e47-7e3f-4f35cf731706@redhat.com>
- <CAOf5uwkJimhGJd_BtUuDyxaD5-ZYGe3JZtgC4pDKc_jnvaV21g@mail.gmail.com>
- <CAOf5uwnVoXw1MA=n3vphMhtto=fc+NVf11idLF8nwC6JCvf4+A@mail.gmail.com>
- <7b996681-3a94-1f93-10c0-5369fe843cbc@redhat.com>
- <CAOf5uwmxZxxKG0CnstnNaTYdt-1+=YZHr8eSac5TdwfANdobxQ@mail.gmail.com>
- <996603c6-9779-7412-d998-bd7b49194490@redhat.com>
-In-Reply-To: <996603c6-9779-7412-d998-bd7b49194490@redhat.com>
+References: <20180531220252.58679-1-rkir@google.com>
+ <CGME20180531220440epcas3p39993702c36d5cd4f97e251629d61949c@epcas3p3.samsung.com>
+ <20180531220252.58679-3-rkir@google.com>
+In-Reply-To: <20180531220252.58679-3-rkir@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Michael Nazzareno Trimarchi <michael@amarulasolutions.com>, artlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: rkir@google.com
+Cc: Peter Maydell <peter.maydell@linaro.org>, linux-fbdev@vger.kernel.org, Christoffer Dall <christoffer.dall@linaro.org>, dri-devel@lists.freedesktop.org
 
-On Tue, Jun 26, 2018 at 08:44:58PM +0200, Hans de Goede wrote:
-> Hi,
+
+[ + linux-fbdev ML ]
+
+On Thursday, May 31, 2018 03:02:52 PM rkir@google.com wrote:
+> From: Christoffer Dall <christoffer.dall@linaro.org>
 > 
-> On 26-06-18 18:35, Michael Nazzareno Trimarchi wrote:
-[..]
-> > cat memblock/reserved
-> >     0: 0x80004000..0x80007fff
-> >     1: 0x80100000..0x81e030b3
-> >     2: 0x83000000..0x83007fff
-> >     3: 0x84000000..0x85ffffff
-> >     4: 0x86fa2000..0x87021fff
-> > 
-> > +       reserved-memory {
-> > +               #address-cells = <1>;
-> > +               #size-cells = <1>;
-> > +               ranges;
-> > +
-> > +               display_reserved: framebuffer@86fa2000 {
-> > +                       reg = <0x86fa2000 0x80000>;
-> > +               };
-> > +
-> > +       };
-[..]
-> > Still have the same on ioremap.
+> User space Android code identifies pixclock = 0 as a sign for emulation
+> and will set the frame rate to 60 fps when reading this value, which is
+> the desired outcome.
 > 
-> Hmm, I guess the kernel does map the entire region its get
-> passed and simply makes sure to not touch the reserved mem,
-> where as with the changes to the passed in mem-region the
-> sunxi u-boot code does the memory does not get mapped by
-> the kernel at all ?
+> Change-Id: I759bf518bf6683446bc786bf1be3cafa02dd8d42
 
-If the intent is to reserve memory _and_ prevent it from being included
-in the kernel's linear map, then it is also necessary to include the
-'no-map' property for this reserved-mem node.
+please drop your local Change-Id from the upstream kernel submissions
 
-From Documentation/devicetree/bindings/reserved-memory/reserved-memory.txt:
+> Signed-off-by: Christoffer Dall <christoffer.dall@linaro.org>
+> Signed-off-by: Peter Maydell <peter.maydell@linaro.org>
 
-   no-map (optional) - empty property
-       - Indicates the operating system must not create a virtual mapping
-         of the region as part of its standard mapping of system memory,
-         nor permit speculative access to it under any circumstances other
-         than under the control of the device driver using the region.
+your S-o-b line is also needed
 
-    Julia
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

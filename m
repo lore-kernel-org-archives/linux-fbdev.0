@@ -1,34 +1,58 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sun, 03 Jun 2018 14:41:10 +0000
-Subject: [PATCH 17/21] udlfb: set line_length in dlfb_ops_set_par
-Message-Id: <20180603144225.065615205@twibright.com>
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+Date: Sun, 10 Jun 2018 14:24:13 +0000
+Subject: [PATCH] omapfb: encoder-tpd12s015: fix error return code
+Message-Id: <1528640655-18948-1-git-send-email-Julia.Lawall@lip6.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org
 
-Set the variable "line_length" in the function dlfb_ops_set_par. Without
-this, we get garbage if we select different videomode with fbset.
+Return an error code on failure.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
+Problem found using Coccinelle.
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
 ---
- drivers/video/fbdev/udlfb.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c |   12 +++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-Index: linux-4.17-rc7/drivers/video/fbdev/udlfb.c
-=================================--- linux-4.17-rc7.orig/drivers/video/fbdev/udlfb.c	2018-05-31 14:50:00.000000000 +0200
-+++ linux-4.17-rc7/drivers/video/fbdev/udlfb.c	2018-05-31 14:50:00.000000000 +0200
-@@ -1057,6 +1057,7 @@ static int dlfb_ops_set_par(struct fb_in
- 		return result;
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
+index 80dc473..2b58bfc 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
+@@ -240,22 +240,28 @@ static int tpd_probe(struct platform_device *pdev)
  
- 	dlfb->current_mode = fvs;
-+	info->fix.line_length = info->var.xres * (info->var.bits_per_pixel / 8);
+ 	gpio = devm_gpiod_get_index_optional(&pdev->dev, NULL, 0,
+ 		GPIOD_OUT_LOW);
+-	if (IS_ERR(gpio))
++	if (IS_ERR(gpio)) {
++		r = PTR_ERR(gpio);
+ 		goto err_gpio;
++	}
  
- 	if (dlfb->fb_count = 0) {
+ 	ddata->ct_cp_hpd_gpio = gpio;
+ 
+ 	gpio = devm_gpiod_get_index_optional(&pdev->dev, NULL, 1,
+ 		GPIOD_OUT_LOW);
+-	if (IS_ERR(gpio))
++	if (IS_ERR(gpio)) {
++		r = PTR_ERR(gpio);
+ 		goto err_gpio;
++	}
+ 
+ 	ddata->ls_oe_gpio = gpio;
+ 
+ 	gpio = devm_gpiod_get_index(&pdev->dev, NULL, 2,
+ 		GPIOD_IN);
+-	if (IS_ERR(gpio))
++	if (IS_ERR(gpio)) {
++		r = PTR_ERR(gpio);
+ 		goto err_gpio;
++	}
+ 
+ 	ddata->hpd_gpio = gpio;
  
 

@@ -1,34 +1,41 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 29 Jun 2018 10:10:34 +0000
-Subject: Re: [PATCH] console: dummycon: export dummycon_[un]register_output_notifier
-Message-Id: <1993d72a-6cec-ae80-0e9f-7c495e8f1b6c@redhat.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Date: Fri, 15 Jun 2018 19:43:42 +0000
+Subject: [PATCH 1/3] drm: mxsfb: Change driver.name to mxsfb-drm
+Message-Id: <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180629093647epcas5p4753328d494b7926e40e4a7d403f0677f@epcas5p4.samsung.com>
- <20180629093627.14620-1-hdegoede@redhat.com> <2122931.M7oWVmMZAv@amdc3058>
-In-Reply-To: <2122931.M7oWVmMZAv@amdc3058>
+References: <cover.1529091248.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1529091248.git.leonard.crestez@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>, NXP Linux Team <linux-imx@nxp.com>, Marco Franchi <marcofrk@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+The FBDEV driver uses the same name and both can't be registered at the
+same time. Fix this by renaming the drm driver to mxsfb-drm
 
-On 29-06-18 12:06, Bartlomiej Zolnierkiewicz wrote:
-> On Friday, June 29, 2018 11:36:27 AM Hans de Goede wrote:
->> Export dummycon_[un]register_output_notifier, the fbcon code needs this
->> and may be build as a module.
->>
->> Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
->> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
->> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> Applied to fbdev-for-next, thanks.
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/gpu/drm/mxsfb/mxsfb_drv.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-You're welcome. And sorry about this, I should have gotten this right
-from the start.
+diff --git a/drivers/gpu/drm/mxsfb/mxsfb_drv.c b/drivers/gpu/drm/mxsfb/mxsfb_drv.c
+index ffe5137ccaf8..dd1dd58e4956 100644
+--- a/drivers/gpu/drm/mxsfb/mxsfb_drv.c
++++ b/drivers/gpu/drm/mxsfb/mxsfb_drv.c
+@@ -417,11 +417,11 @@ static int mxsfb_remove(struct platform_device *pdev)
+ static struct platform_driver mxsfb_platform_driver = {
+ 	.probe		= mxsfb_probe,
+ 	.remove		= mxsfb_remove,
+ 	.id_table	= mxsfb_devtype,
+ 	.driver	= {
+-		.name		= "mxsfb",
++		.name		= "mxsfb-drm",
+ 		.of_match_table	= mxsfb_dt_ids,
+ 	},
+ };
+ 
+ module_platform_driver(mxsfb_platform_driver);
+-- 
+2.17.1
 
-Regards,
-
-Hans

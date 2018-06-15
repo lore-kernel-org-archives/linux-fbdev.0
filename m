@@ -1,54 +1,53 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Date: Fri, 15 Jun 2018 22:42:43 +0000
+From: Marek Vasut <marek.vasut@gmail.com>
+Date: Fri, 15 Jun 2018 23:29:31 +0000
 Subject: Re: [PATCH 1/3] drm: mxsfb: Change driver.name to mxsfb-drm
-Message-Id: <b3fa74c5110b45e5992920485749869ab1f7ebce.camel@nxp.com>
+Message-Id: <22e2aecc-3735-8ad6-3f36-75ae2b8f2498@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1529091248.git.leonard.crestez@nxp.com>
-         <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
-         <CAOMZO5B8i0gN+rCq-yPrd112NkwJWTxYCtsLVeLhD1JLRuX6EQ@mail.gmail.com>
-         <07be6d9a85b6be655fc2b084be81d8bf9715b57a.camel@nxp.com>
-         <638457fd-85da-8fec-d146-517c43f71813@denx.de>
-In-Reply-To: <638457fd-85da-8fec-d146-517c43f71813@denx.de>
+ <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
+ <CAOMZO5B8i0gN+rCq-yPrd112NkwJWTxYCtsLVeLhD1JLRuX6EQ@mail.gmail.com>
+ <07be6d9a85b6be655fc2b084be81d8bf9715b57a.camel@nxp.com>
+ <638457fd-85da-8fec-d146-517c43f71813@denx.de>
+ <CAOMZO5DJju6oBRLakkTx4np7w9nMwPm6TMkGGYjbMLUPDUugYw@mail.gmail.com>
+In-Reply-To: <CAOMZO5DJju6oBRLakkTx4np7w9nMwPm6TMkGGYjbMLUPDUugYw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "festevam@gmail.com" <festevam@gmail.com>, "stefan@agner.ch" <stefan@agner.ch>, "marex@denx.de" <marex@denx.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "marcofrk@gmail.com" <marcofrk@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>
+To: Fabio Estevam <festevam@gmail.com>, Marek Vasut <marex@denx.de>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "marcofrk@gmail.com" <marcofrk@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
 
-T24gRnJpLCAyMDE4LTA2LTE1IGF0IDIzOjM2ICswMjAwLCBNYXJlayBWYXN1dCB3cm90ZToNCj4g
-T24gMDYvMTUvMjAxOCAxMDo1OCBQTSwgTGVvbmFyZCBDcmVzdGV6IHdyb3RlOg0KPiA+IE9uIEZy
-aSwgMjAxOC0wNi0xNSBhdCAxNjo0NyAtMDMwMCwgRmFiaW8gRXN0ZXZhbSB3cm90ZToNCj4gPiA+
-IE9uIEZyaSwgSnVuIDE1LCAyMDE4IGF0IDQ6NDMgUE0sIExlb25hcmQgQ3Jlc3Rleg0KPiA+ID4g
-PGxlb25hcmQuY3Jlc3RlekBueHAuY29tPiB3cm90ZToNCg0KPiA+ID4gPiBUaGUgRkJERVYgZHJp
-dmVyIHVzZXMgdGhlIHNhbWUgbmFtZSBhbmQgYm90aCBjYW4ndCBiZSByZWdpc3RlcmVkIGF0IHRo
-ZQ0KPiA+ID4gPiBzYW1lIHRpbWUuIEZpeCB0aGlzIGJ5IHJlbmFtaW5nIHRoZSBkcm0gZHJpdmVy
-IHRvIG14c2ZiLWRybQ0KPiA+ID4gDQo+ID4gPiBTdGVmYW4gc2VudCB0aGUgc2FtZSBwYXRjaCBh
-IGZldyBkYXlzIGFnbzoNCj4gPiANCj4gPiBJbiB0aGF0IHRocmVhZCB0aGVyZSBpcyBhIHByb3Bv
-c2FsIGZvciByZW1vdmluZyB0aGUgb2xkIGZiZGV2L214c2ZiDQo+ID4gZHJpdmVyIGVudGlyZWx5
-Lg0KPiA+IA0KPiA+IFRoYXQgd291bGQgYnJlYWsgb2xkIERUQnMsIGlzbid0IHRoaXMgZ2VuZXJh
-bGx5IGNvbnNpZGVyZWQgYmFkPyBBbHNvLA0KPiA+IGFyZSB3ZSBzdXJlIHRoZSByZW1vdmFsIG9m
-IGZiZGV2L214c2ZiIHdvdWxkbid0IGxvc2UgYW55IGZlYXR1cmVzPw0KPiA+IA0KPiA+IFdoYXQg
-bXkgc2VyaWVzIGRvZXMgaXMgbWFrZSBib3RoIGRyaXZlcnMgd29yayB3aXRoIHRoZSBzYW1lIGtl
-cm5lbA0KPiA+IGltYWdlIGFuZCB0dXJucyB0aGUgY2hvaWNlIGludG8gYSBib2FyZC1sZXZlbCBk
-dGIgZGVjaXNpb24uIFN1cHBvcnRpbmcNCj4gPiBldmVyeXRoaW5nIGF0IG9uY2Ugc2VlbXMgZGVz
-aXJhYmxlIHRvIG1lIGFuZCBpdCBhbGxvd3MgZm9yIGEgdmVyeQ0KPiA+IHNtb290aCB1cGdyYWRl
-IHBhdGguDQo+IA0KPiBIYXZpbmcgdHdvIGRyaXZlcnMgaW4gdGhlIGtlcm5lbCB3aXRoIGRpZmZl
-cmVudCBzZXQgb2YgYnVncyBpcyBhbHdheXMgYmFkLg0KPiANCj4gPiBUaGUgb2xkIGRyaXZlciBj
-b3VsZCBiZSByZW1vdmVkIGxhdGVyLCBhZnRlciBhbGwgdXNlcnMgYXJlIGNvbnZlcnRlZC4NCj4g
-DQo+IEJvdGggZHJpdmVycyB3ZXJlIGluIGZvciBsb25nIGVub3VnaCBhbHJlYWR5LiBBbmQgbGV0
-J3MgYmUgcmVhbGlzdGljLA0KPiBob3cgbWFueSBNWDIzL01YMjggdXNlcnMgb2Ygb2xkIERUcyB3
-aXRoIG5ldyBrZXJuZWxzIGFyZSB0aGVyZSB3aG8NCj4gY2Fubm90IHVwZGF0ZSB0aGUgRFQgYXMg
-d2VsbCA/DQoNCkdyZXBwaW5nIGZvciAiZGlzcGxheSA9IiBpbiBhcmNoL2FybS9ib290L2R0cy9p
-bXgqIEkgc2VlIHRoYXQgb2xkDQpiaW5kaW5ncyBhcmUgYWxzbyB1c2VkIGJ5IDNyZC1wYXJ0eSBi
-b2FyZHMgZm9yIGlteDYvNzoNCiAqIGlteDZzeC1uaXRyb2dlbjZzeA0KICogaW14NnVsLWdlYW0N
-CiAqIGlteDZ1bC1pc2lvdA0KICogaW14NnVsLW9wb3M2dWxkZXYNCiAqIGlteDZ1bC1waWNvLWhv
-YmJpdA0KICogaW14NnVsLXR4NnVsDQogKiBpbXg3ZC1uaXRyb2dlbjcNCg0KQ29udmVydGluZyBl
-dmVyeXRoaW5nIG1pZ2h0IGJlIHF1aXRlIGEgYml0IG9mIHdvcmssIGFuZCBleHBsaWNpdGx5DQpz
-dXBwb3J0aW5nIG9sZCBiaW5kaW5ncyBpcyBhbHNvIHdvcmsuDQoNCkl0IGlzIHZlcnkgY29uZnVz
-aW5nIHRoYXQgdGhlcmUgaXMgYSB3aG9sZSBzZXQgb2YgZGlzcGxheXMgZm9yIGlteDYvNw0Kd2hp
-Y2ggYXJlIHN1cHBvcnRlZCBieSB1cHN0cmVhbSBidXQgb25seSB3aXRoIGEgbm9uLWRlZmF1bHQg
-Y29uZmlnLg0KV2hpbGUgaXQgaXMgZXh0cmVtZWx5IGNvbW1vbiBpbiB0aGUgZW1iZWRkZWQgZmll
-bGQgdG8gaGF2ZSBjdXN0b20NCmNvbmZpZ3MgdGhlIGRlZmF1bHQgb25lIGluIHRoZSBrZXJuZWwg
-c2hvdWxkIHRyeSB0byAianVzdCB3b3JrIi4NCg0KQ291bGRuJ3QgdGhpcyBwYXRjaCBzZXJpZXMg
-YmUgY29uc2lkZXJlZCBhIGJ1Z2ZpeD8gSXQgd2FzIGFsc28NCnN1cnByaXNpbmdseSBzbWFsbC4N
-Cg0KLS0NClJlZ2FyZHMsDQpMZW9uYXJk
+On 06/16/2018 12:22 AM, Fabio Estevam wrote:
+> On Fri, Jun 15, 2018 at 6:36 PM, Marek Vasut <marex@denx.de> wrote:
+> 
+>> Having two drivers in the kernel with different set of bugs is always bad.
+> 
+> Sure, but breaking dtb's is also bad.
+
+You picked only the first part of my argument, the less important one ;-)
+
+> Can the mxsfb driver be modified to handle the old style bindings?
+
+Maybe, but do we care ? Cfr my comment about the amount of users who
+will be affected by this.
+
+> The IPU drm driver is capable of handling both the old style where the
+> display timing is passed in dts and the new drm style.
+> 
+> For example:
+> 
+> arch/arm/boot/dts/imx6qdl-sabresd.dtsi uses the drm style binding
+> arch/arm/boot/dts/imx6qdl-sabreauto.dtsi uses the old style of passing
+> the display timings in dts
+> 
+> Both formats are accepted by the ipu drm driver.
+> 
+> Can't mxsfb drm driver support both? Then we don't need to worry about
+> breaking dtb's and could safely remove the mxs fbdev driver.
+
+This might be a way forward, but again, does it justify the effort ?
+We will be adding compatibility code which we will have to maintain for
+maybe a handful of users I think.
+
+-- 
+Best regards,
+Marek Vasut

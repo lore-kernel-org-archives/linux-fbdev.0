@@ -1,145 +1,137 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Wed, 06 Jun 2018 15:46:17 +0000
+From: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Date: Fri, 15 Jun 2018 16:30:01 +0000
 Subject: Re: [PATCH 08/21] udl-kms: avoid prefetch
-Message-Id: <alpine.LRH.2.02.1806061138080.7464@file01.intranet.prod.int.rdu2.redhat.com>
+Message-Id: <c00416da8a1fd5bb3678b5eb6148fcc631848367.camel@synopsys.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180603144053.875668929@twibright.com>
  <20180603144221.959741603@twibright.com>
  <d07eb94b8b20a7b9f57f341a51cdcdbb91a60175.camel@synopsys.com>
  <alpine.LRH.2.02.1806051123300.7248@file01.intranet.prod.int.rdu2.redhat.com>
  <fad12efd7a0f93e1dd6de5e7bf0c45832e6d74ea.camel@synopsys.com>
-In-Reply-To: <fad12efd7a0f93e1dd6de5e7bf0c45832e6d74ea.camel@synopsys.com>
+ <alpine.LRH.2.02.1806061138080.7464@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1806061138080.7464@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Alexey Brodkin <Alexey.Brodkin@synopsys.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "ladis@linux-mips.org" <ladis@linux-mips.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "bernie@plugable.com" <bernie@plugable.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "airlied@redhat.com" <airlied@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "mpatocka@redhat.com" <mpatocka@redhat.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "ladis@linux-mips.org" <ladis@linux-mips.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "bernie@plugable.com" <bernie@plugable.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Evgeniy Didin <Evgeniy.Didin@synopsys.com>, "airlied@redhat.com" <airlied@redhat.com>, "linux-snps-arc@lists.infradead.org" <linux-snps-arc@lists.infradead.org>
 
-
-
-On Wed, 6 Jun 2018, Alexey Brodkin wrote:
-
-> Hi Mikulas,
->=20
-> On Tue, 2018-06-05 at 11:30 -0400, Mikulas Patocka wrote:
-> >=20
-> > On Tue, 5 Jun 2018, Alexey Brodkin wrote:
-> >=20
-> > > Hi Mikulas,
-> > >=20
-> > > On Sun, 2018-06-03 at 16:41 +0200, Mikulas Patocka wrote:
-> > > > Modern processors can detect linear memory accesses and prefetch da=
-ta
-> > > > automatically, so there's no need to use prefetch.
-> > >=20
-> > > Not each and every CPU that's capable of running Linux has prefetch
-> > > functionality :)
-> > >=20
-> > > Still read-on...
-> > >=20
-> > > > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> > > >=20
-> > > > ---
-> > > >  drivers/gpu/drm/udl/udl_transfer.c |    7 -------
-> > > >  1 file changed, 7 deletions(-)
-> > > >=20
-> > > > Index: linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c
-> > > > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D> > > > --- linux-4.16.12.orig/drivers/gpu=
-/drm/udl/udl_transfer.c	2018-05-31 14:48:12.000000000 +0200
-> > > > +++ linux-4.16.12/drivers/gpu/drm/udl/udl_transfer.c	2018-05-31 14:=
-48:12.000000000 +0200
-> > > > @@ -13,7 +13,6 @@
-> > > >  #include <linux/module.h>
-> > > >  #include <linux/slab.h>
-> > > >  #include <linux/fb.h>
-> > > > -#include <linux/prefetch.h>
-> > > >  #include <asm/unaligned.h>
-> > > > =20
-> > > >  #include <drm/drmP.h>
-> > > > @@ -51,9 +50,6 @@ static int udl_trim_hline(const u8 *bbac
-> > > >  	int start =3D width;
-> > > >  	int end =3D width;
-> > > > =20
-> > > > -	prefetch((void *) front);
-> > > > -	prefetch((void *) back);
-> > >=20
-> > > AFAIK prefetcher fetches new data according to a known history... i.e=
-. based on previously
-> > > used pattern we'll trying to get the next batch of data.
-> > >=20
-> > > But the code above is in the very beginning of the data processing ro=
-utine where
-> > > prefetcher doesn't yet have any history to know what and where to pre=
-fetch.
-> > >=20
-> > > So I'd say this particular usage is good.
-> > > At least those prefetches shouldn't hurt because typically it
-> > > would be just 1 instruction if those exist or nothing if CPU/compiler=
- doesn't
-> > > support it.
-> >=20
-> > See this post https://urldefense.proofpoint.com/v2/url?u=3Dhttps-3A__lw=
-n.net_Articles_444336_&d=3DDwIBAg&c=3DDPL6_X_6JkXFx7AXWqB0tg&r=3DlqdeeSSEes=
-0GFDDl656e
-> > ViXO7breS55ytWkhpk5R81I&m=A5RaqJtvajFkM1hL7bOKD5jV7cpFfTvG2Y1cYCdBPd0&s=
-=3Dw0W8wFtAgENp8TE6RzdPGhdKRasJc_otIn08V0EkgrY&e=3D where they measured tha=
-t=20
-> > prefetch hurts performance. Prefetch shouldn't be used unless you have =
-a=20
-> > proof that it improves performance.
-> >=20
-> > The problem is that the prefetch instruction causes stalls in the pipel=
-ine=20
-> > when it encounters TLB miss and the automatic prefetcher doesn't.
->=20
-> Wow, thanks for the link.
-> I didn't know about that subtle issue with prefetch instructions on ARM a=
-nd x86.
->=20
-> So OK in case of UDL these prefetches anyways make not not much sense I g=
-uess and there's
-> something worse still, see what I've got from WandBoard Quad running kmsc=
-ube [1] application
-> with help of perf utility:
-> --------------------------->8-------------------------
-> # Overhead  Command  Shared Object            Symbol=20
-> # ........  .......  .......................  ...........................=
-.............
-> #
->     92.93%  kmscube  [kernel.kallsyms]        [k] udl_render_hline
->      2.51%  kmscube  [kernel.kallsyms]        [k] __divsi3
->      0.33%  kmscube  [kernel.kallsyms]        [k] _raw_spin_unlock_irqres=
-tore
->      0.22%  kmscube  [kernel.kallsyms]        [k] lock_acquire
->      0.19%  kmscube  [kernel.kallsyms]        [k] _raw_spin_unlock_irq
->      0.17%  kmscube  [kernel.kallsyms]        [k] udl_handle_damage
->      0.12%  kmscube  [kernel.kallsyms]        [k] v7_dma_clean_range
->      0.11%  kmscube  [kernel.kallsyms]        [k] l2c210_clean_range
->      0.06%  kmscube  [kernel.kallsyms]        [k] __memzero
-> --------------------------->8-------------------------
->=20
-> That said it's not even USB 2.0 which is a bottle-neck but
-> computations in the udl_render_hline().
->=20
->=20
-> [1] https://cgit.freedesktop.org/mesa/kmscube/
->=20
-> -Alexey
-
-Try this patch=20
-http://people.redhat.com/~mpatocka/patches/kernel/udl/udlkms-avoid-division=
-.patch
-
-It is doing a lot of divisions - and WandBoard has Cortex-A9, that doesn't =
-
-have division instruction.
-
-BTW. the framebuffer UDL driver (not the modesetting driver) has=20
-performance counters in sysfs. Their location depends on the system, you=20
-can find them with find /sys -name "*metrics*"
-
-The file "metrics_reset" resets the counters, so you can measure if the=20
-prefetch instructions improve performance or not.
-
-Mikulas
+SGkgTWlrdWxhcywNCg0KT24gV2VkLCAyMDE4LTA2LTA2IGF0IDExOjQ2IC0wNDAwLCBNaWt1bGFz
+IFBhdG9ja2Egd3JvdGU6DQo+IA0KPiBPbiBXZWQsIDYgSnVuIDIwMTgsIEFsZXhleSBCcm9ka2lu
+IHdyb3RlOg0KPiANCj4gPiBIaSBNaWt1bGFzLA0KPiA+IA0KPiA+IE9uIFR1ZSwgMjAxOC0wNi0w
+NSBhdCAxMTozMCAtMDQwMCwgTWlrdWxhcyBQYXRvY2thIHdyb3RlOg0KPiA+ID4gDQo+ID4gPiBP
+biBUdWUsIDUgSnVuIDIwMTgsIEFsZXhleSBCcm9ka2luIHdyb3RlOg0KPiA+ID4gDQo+ID4gPiA+
+IEhpIE1pa3VsYXMsDQo+ID4gPiA+IA0KPiA+ID4gPiBPbiBTdW4sIDIwMTgtMDYtMDMgYXQgMTY6
+NDEgKzAyMDAsIE1pa3VsYXMgUGF0b2NrYSB3cm90ZToNCj4gPiA+ID4gPiBNb2Rlcm4gcHJvY2Vz
+c29ycyBjYW4gZGV0ZWN0IGxpbmVhciBtZW1vcnkgYWNjZXNzZXMgYW5kIHByZWZldGNoIGRhdGEN
+Cj4gPiA+ID4gPiBhdXRvbWF0aWNhbGx5LCBzbyB0aGVyZSdzIG5vIG5lZWQgdG8gdXNlIHByZWZl
+dGNoLg0KPiA+ID4gPiANCj4gPiA+ID4gTm90IGVhY2ggYW5kIGV2ZXJ5IENQVSB0aGF0J3MgY2Fw
+YWJsZSBvZiBydW5uaW5nIExpbnV4IGhhcyBwcmVmZXRjaA0KPiA+ID4gPiBmdW5jdGlvbmFsaXR5
+IDopDQo+ID4gPiA+IA0KPiA+ID4gPiBTdGlsbCByZWFkLW9uLi4uDQo+ID4gPiA+IA0KPiA+ID4g
+PiA+IFNpZ25lZC1vZmYtYnk6IE1pa3VsYXMgUGF0b2NrYSA8bXBhdG9ja2FAcmVkaGF0LmNvbT4N
+Cj4gPiA+ID4gPiANCj4gPiA+ID4gPiAtLS0NCj4gPiA+ID4gPiAgZHJpdmVycy9ncHUvZHJtL3Vk
+bC91ZGxfdHJhbnNmZXIuYyB8ICAgIDcgLS0tLS0tLQ0KPiA+ID4gPiA+ICAxIGZpbGUgY2hhbmdl
+ZCwgNyBkZWxldGlvbnMoLSkNCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBJbmRleDogbGludXgtNC4x
+Ni4xMi9kcml2ZXJzL2dwdS9kcm0vdWRsL3VkbF90cmFuc2Zlci5jDQo+ID4gPiA+ID4gPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PQ0KPiA+ID4gPiA+IC0tLSBsaW51eC00LjE2LjEyLm9yaWcvZHJpdmVycy9ncHUvZHJtL3Vk
+bC91ZGxfdHJhbnNmZXIuYwkyMDE4LTA1LTMxIDE0OjQ4OjEyLjAwMDAwMDAwMCArMDIwMA0KPiA+
+ID4gPiA+ICsrKyBsaW51eC00LjE2LjEyL2RyaXZlcnMvZ3B1L2RybS91ZGwvdWRsX3RyYW5zZmVy
+LmMJMjAxOC0wNS0zMSAxNDo0ODoxMi4wMDAwMDAwMDAgKzAyMDANCj4gPiA+ID4gPiBAQCAtMTMs
+NyArMTMsNiBAQA0KPiA+ID4gPiA+ICAjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+DQo+ID4gPiA+
+ID4gICNpbmNsdWRlIDxsaW51eC9zbGFiLmg+DQo+ID4gPiA+ID4gICNpbmNsdWRlIDxsaW51eC9m
+Yi5oPg0KPiA+ID4gPiA+IC0jaW5jbHVkZSA8bGludXgvcHJlZmV0Y2guaD4NCj4gPiA+ID4gPiAg
+I2luY2x1ZGUgPGFzbS91bmFsaWduZWQuaD4NCj4gPiA+ID4gPiAgDQo+ID4gPiA+ID4gICNpbmNs
+dWRlIDxkcm0vZHJtUC5oPg0KPiA+ID4gPiA+IEBAIC01MSw5ICs1MCw2IEBAIHN0YXRpYyBpbnQg
+dWRsX3RyaW1faGxpbmUoY29uc3QgdTggKmJiYWMNCj4gPiA+ID4gPiAgCWludCBzdGFydCA9IHdp
+ZHRoOw0KPiA+ID4gPiA+ICAJaW50IGVuZCA9IHdpZHRoOw0KPiA+ID4gPiA+ICANCj4gPiA+ID4g
+PiAtCXByZWZldGNoKCh2b2lkICopIGZyb250KTsNCj4gPiA+ID4gPiAtCXByZWZldGNoKCh2b2lk
+ICopIGJhY2spOw0KPiA+ID4gPiANCj4gPiA+ID4gQUZBSUsgcHJlZmV0Y2hlciBmZXRjaGVzIG5l
+dyBkYXRhIGFjY29yZGluZyB0byBhIGtub3duIGhpc3RvcnkuLi4gaS5lLiBiYXNlZCBvbiBwcmV2
+aW91c2x5DQo+ID4gPiA+IHVzZWQgcGF0dGVybiB3ZSdsbCB0cnlpbmcgdG8gZ2V0IHRoZSBuZXh0
+IGJhdGNoIG9mIGRhdGEuDQo+ID4gPiA+IA0KPiA+ID4gPiBCdXQgdGhlIGNvZGUgYWJvdmUgaXMg
+aW4gdGhlIHZlcnkgYmVnaW5uaW5nIG9mIHRoZSBkYXRhIHByb2Nlc3Npbmcgcm91dGluZSB3aGVy
+ZQ0KPiA+ID4gPiBwcmVmZXRjaGVyIGRvZXNuJ3QgeWV0IGhhdmUgYW55IGhpc3RvcnkgdG8ga25v
+dyB3aGF0IGFuZCB3aGVyZSB0byBwcmVmZXRjaC4NCj4gPiA+ID4gDQo+ID4gPiA+IFNvIEknZCBz
+YXkgdGhpcyBwYXJ0aWN1bGFyIHVzYWdlIGlzIGdvb2QuDQo+ID4gPiA+IEF0IGxlYXN0IHRob3Nl
+IHByZWZldGNoZXMgc2hvdWxkbid0IGh1cnQgYmVjYXVzZSB0eXBpY2FsbHkgaXQNCj4gPiA+ID4g
+d291bGQgYmUganVzdCAxIGluc3RydWN0aW9uIGlmIHRob3NlIGV4aXN0IG9yIG5vdGhpbmcgaWYg
+Q1BVL2NvbXBpbGVyIGRvZXNuJ3QNCj4gPiA+ID4gc3VwcG9ydCBpdC4NCj4gPiA+IA0KPiA+ID4g
+U2VlIHRoaXMgcG9zdCBodHRwczovL3VybGRlZmVuc2UucHJvb2Zwb2ludC5jb20vdjIvdXJsP3U9
+aHR0cHMtM0FfX2x3bi5uZXRfQXJ0aWNsZXNfNDQ0MzM2XyZkPUR3SUJBZyZjPURQTDZfWF82SmtY
+Rng3QVhXcUIwdGcmcj1scWRlZVNTRWVzMEdGRERsDQo+ID4gPiA2NTZlDQo+ID4gPiBWaVhPN2Jy
+ZVM1NXl0V2tocGs1UjgxSSZtPWE1UmFxSnR2YWpGa00xaEw3Yk9LRDVqVjdjcEZmVHZHMlkxY1lD
+ZEJQZDAmcz13MFc4d0Z0QWdFTnA4VEU2UnpkUEdoZEtSYXNKY19vdEluMDhWMEVrZ3JZJmU9IHdo
+ZXJlIHRoZXkgbWVhc3VyZWQgdGhhdCANCj4gPiA+IHByZWZldGNoIGh1cnRzIHBlcmZvcm1hbmNl
+LiBQcmVmZXRjaCBzaG91bGRuJ3QgYmUgdXNlZCB1bmxlc3MgeW91IGhhdmUgYSANCj4gPiA+IHBy
+b29mIHRoYXQgaXQgaW1wcm92ZXMgcGVyZm9ybWFuY2UuDQo+ID4gPiANCj4gPiA+IFRoZSBwcm9i
+bGVtIGlzIHRoYXQgdGhlIHByZWZldGNoIGluc3RydWN0aW9uIGNhdXNlcyBzdGFsbHMgaW4gdGhl
+IHBpcGVsaW5lIA0KPiA+ID4gd2hlbiBpdCBlbmNvdW50ZXJzIFRMQiBtaXNzIGFuZCB0aGUgYXV0
+b21hdGljIHByZWZldGNoZXIgZG9lc24ndC4NCj4gPiANCj4gPiBXb3csIHRoYW5rcyBmb3IgdGhl
+IGxpbmsuDQo+ID4gSSBkaWRuJ3Qga25vdyBhYm91dCB0aGF0IHN1YnRsZSBpc3N1ZSB3aXRoIHBy
+ZWZldGNoIGluc3RydWN0aW9ucyBvbiBBUk0gYW5kIHg4Ni4NCj4gPiANCj4gPiBTbyBPSyBpbiBj
+YXNlIG9mIFVETCB0aGVzZSBwcmVmZXRjaGVzIGFueXdheXMgbWFrZSBub3Qgbm90IG11Y2ggc2Vu
+c2UgSSBndWVzcyBhbmQgdGhlcmUncw0KPiA+IHNvbWV0aGluZyB3b3JzZSBzdGlsbCwgc2VlIHdo
+YXQgSSd2ZSBnb3QgZnJvbSBXYW5kQm9hcmQgUXVhZCBydW5uaW5nIGttc2N1YmUgWzFdIGFwcGxp
+Y2F0aW9uDQo+ID4gd2l0aCBoZWxwIG9mIHBlcmYgdXRpbGl0eToNCj4gPiAtLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4gPiAjIE92ZXJoZWFk
+ICBDb21tYW5kICBTaGFyZWQgT2JqZWN0ICAgICAgICAgICAgU3ltYm9sIA0KPiA+ICMgLi4uLi4u
+Li4gIC4uLi4uLi4gIC4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uICAuLi4uLi4uLi4uLi4uLi4uLi4u
+Li4uLi4uLi4uLi4uLi4uLi4uLi4uDQo+ID4gIw0KPiA+ICAgICA5Mi45MyUgIGttc2N1YmUgIFtr
+ZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gdWRsX3JlbmRlcl9obGluZQ0KPiA+ICAgICAgMi41
+MSUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gX19kaXZzaTMNCj4gPiAg
+ICAgIDAuMzMlICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAgICAgW2tdIF9yYXdfc3Bp
+bl91bmxvY2tfaXJxcmVzdG9yZQ0KPiA+ICAgICAgMC4yMiUgIGttc2N1YmUgIFtrZXJuZWwua2Fs
+bHN5bXNdICAgICAgICBba10gbG9ja19hY3F1aXJlDQo+ID4gICAgICAwLjE5JSAga21zY3ViZSAg
+W2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSBfcmF3X3NwaW5fdW5sb2NrX2lycQ0KPiA+ICAg
+ICAgMC4xNyUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gdWRsX2hhbmRs
+ZV9kYW1hZ2UNCj4gPiAgICAgIDAuMTIlICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAg
+ICAgW2tdIHY3X2RtYV9jbGVhbl9yYW5nZQ0KPiA+ICAgICAgMC4xMSUgIGttc2N1YmUgIFtrZXJu
+ZWwua2FsbHN5bXNdICAgICAgICBba10gbDJjMjEwX2NsZWFuX3JhbmdlDQo+ID4gICAgICAwLjA2
+JSAga21zY3ViZSAgW2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSBfX21lbXplcm8NCj4gPiAt
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCj4g
+PiANCj4gPiBUaGF0IHNhaWQgaXQncyBub3QgZXZlbiBVU0IgMi4wIHdoaWNoIGlzIGEgYm90dGxl
+LW5lY2sgYnV0DQo+ID4gY29tcHV0YXRpb25zIGluIHRoZSB1ZGxfcmVuZGVyX2hsaW5lKCkuDQo+
+ID4gDQo+ID4gDQo+ID4gWzFdIGh0dHBzOi8vdXJsZGVmZW5zZS5wcm9vZnBvaW50LmNvbS92Mi91
+cmw/dT1odHRwcy0zQV9fY2dpdC5mcmVlZGVza3RvcC5vcmdfbWVzYV9rbXNjdWJlXyZkPUR3SUJB
+ZyZjPURQTDZfWF82SmtYRng3QVhXcUIwdGcmcj1scWRlZVNTRWVzMEdGRERsNjUNCj4gPiA2ZVZp
+WE83YnJlUzU1eXRXa2hwazVSODFJJm09cGo2MC0yYUxRZWVQdXpLX2xvMGxRMWo5R2Vud1Nualo2
+VW1JM3JfbmJCVSZzPUpNVWszX1lkT3BFUVRiSXlBczBoR3ZiVWdOUmhuNHl0bElhSjlpRV9MYmsm
+ZT0NCj4gPiANCj4gPiAtQWxleGV5DQo+IA0KPiBUcnkgdGhpcyBwYXRjaCANCj4gaHR0cHM6Ly91
+cmxkZWZlbnNlLnByb29mcG9pbnQuY29tL3YyL3VybD91PWh0dHAtM0FfX3Blb3BsZS5yZWRoYXQu
+Y29tXy03RW1wYXRvY2thX3BhdGNoZXNfa2VybmVsX3VkbF91ZGxrbXMtMkRhdm9pZC0yRGRpdmlz
+aW9uLnBhdGNoJmQ9RHdJQkFnJmM9RFBMNg0KPiBfWF82SmtYRng3QVhXcUIwdGcmcj1scWRlZVNT
+RWVzMEdGRERsNjU2ZVZpWE83YnJlUzU1eXRXa2hwazVSODFJJm09cGo2MC0NCj4gMmFMUWVlUHV6
+S19sbzBsUTFqOUdlbndTbmpaNlVtSTNyX25iQlUmcz1ITkptQWFEaDJ1bzl3dFlzQ2h3dV9UcGVP
+WTVQbWtVRHBpY0ZBcnpLM3dFJmU9DQo+IA0KPiBJdCBpcyBkb2luZyBhIGxvdCBvZiBkaXZpc2lv
+bnMgLSBhbmQgV2FuZEJvYXJkIGhhcyBDb3J0ZXgtQTksIHRoYXQgZG9lc24ndCANCj4gaGF2ZSBk
+aXZpc2lvbiBpbnN0cnVjdGlvbi4NCg0KTG9va3MgbGlrZSB0aGF0IHBhdGNoIG1ha2VzIG5vdCB0
+aGF0IG11Y2ggb2YgYSBkaWZmZXJlbmNlLg0KDQpCZWxvdyBhcmUgcmVzdWx0cyBvZiBwZXJmLg0K
+DQpXaXRob3V0IHBhdGNoOg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCiA5MS40NiUga21zY3ViZSAgW2tl
+cm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSB1ZGxfcmVuZGVyX2hsaW5lDQogMi4xNSUgIGttc2N1
+YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gX19kaXZzaTMNCiAxLjA5JSAga21zY3Vi
+ZSAgW2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSBtbWlvc2V0DQogMC40OCUgIGttc2N1YmUg
+IFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gX3Jhd19zcGluX3VubG9ja19pcnENCiAwLjQ4
+JSAga21zY3ViZSAgW2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSB2N19kbWFfY2xlYW5fcmFu
+Z2UNCiAwLjM0JSAga21zY3ViZSAgW2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSBfcmF3X3Nw
+aW5fdW5sb2NrX2lycXJlc3RvcmUNCiAwLjI4JSAga21zY3ViZSAgW2tlcm5lbC5rYWxsc3ltc10g
+ICAgICAgIFtrXSBsMmMyMTBfY2xlYW5fcmFuZ2UNCiAwLjI1JSAga21zY3ViZSAgW2tlcm5lbC5r
+YWxsc3ltc10gICAgICAgIFtrXSBzaG1lbV9nZXRwYWdlX2dmcC5jb25zdHByb3AuNA0KIDAuMTgl
+ICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAgICAgW2tdIGxvY2tfYWNxdWlyZQ0KDQpX
+aXRoIHBhdGNoOg0KLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0NCiA5NC44MSUga21zY3ViZSAgW2tlcm5lbC5r
+YWxsc3ltc10gICAgICAgIFtrXSB1ZGxfcmVuZGVyX2hsaW5lDQogMC44OCUgIGttc2N1YmUgIFtr
+ZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gbW1pb3NldA0KIDAuNDQlICBrbXNjdWJlICBba2Vy
+bmVsLmthbGxzeW1zXSAgICAgICAgW2tdIF9yYXdfc3Bpbl91bmxvY2tfaXJxDQogMC4zOCUgIGtt
+c2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gdjdfZG1hX2NsZWFuX3JhbmdlDQog
+MC4zMyUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAgICBba10gX3Jhd19zcGluX3Vu
+bG9ja19pcnFyZXN0b3JlDQogMC4yMiUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5bXNdICAgICAg
+ICBba10gbDJjMjEwX2NsZWFuX3JhbmdlDQogMC4xNiUgIGttc2N1YmUgIFtrZXJuZWwua2FsbHN5
+bXNdICAgICAgICBba10gc2htZW1fZ2V0cGFnZV9nZnAuY29uc3Rwcm9wLjQNCiAwLjE2JSAga21z
+Y3ViZSAgW2tlcm5lbC5rYWxsc3ltc10gICAgICAgIFtrXSB1ZGxfaGFuZGxlX2RhbWFnZQ0KIDAu
+MTYlICBrbXNjdWJlICBba2VybmVsLmthbGxzeW1zXSAgICAgICAgW2tdIGxvY2tfYWNxdWlyZQ0K
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0+OC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0NCg0KVGhlcmUgaXMgbm8gbW9kZSBfX2RpdnNpMyBmdW5jdGlvbiBp
+biBwZXJmIHJlc3VsdHMsIHNvIHBhdGNoIHdvcmtzLg0KQnV0IHRoaXMgZnVuY3Rpb24gd2FzIGp1
+c3QgfjIlIG9mIG92ZXJhbGwgb3ZlcmhlYWQuDQoNCi1BbGV4ZXk

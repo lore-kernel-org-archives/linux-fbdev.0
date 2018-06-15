@@ -1,52 +1,80 @@
 From: Marek Vasut <marek.vasut@gmail.com>
-Date: Fri, 15 Jun 2018 23:29:31 +0000
+Date: Fri, 15 Jun 2018 23:32:44 +0000
 Subject: Re: [PATCH 1/3] drm: mxsfb: Change driver.name to mxsfb-drm
-Message-Id: <22e2aecc-3735-8ad6-3f36-75ae2b8f2498@gmail.com>
+Message-Id: <6995fa4b-47a9-887b-5e4f-4284ca6a2c79@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1529091248.git.leonard.crestez@nxp.com>
  <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
  <CAOMZO5B8i0gN+rCq-yPrd112NkwJWTxYCtsLVeLhD1JLRuX6EQ@mail.gmail.com>
  <07be6d9a85b6be655fc2b084be81d8bf9715b57a.camel@nxp.com>
  <638457fd-85da-8fec-d146-517c43f71813@denx.de>
- <CAOMZO5DJju6oBRLakkTx4np7w9nMwPm6TMkGGYjbMLUPDUugYw@mail.gmail.com>
-In-Reply-To: <CAOMZO5DJju6oBRLakkTx4np7w9nMwPm6TMkGGYjbMLUPDUugYw@mail.gmail.com>
+ <b3fa74c5110b45e5992920485749869ab1f7ebce.camel@nxp.com>
+In-Reply-To: <b3fa74c5110b45e5992920485749869ab1f7ebce.camel@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Estevam <festevam@gmail.com>, Marek Vasut <marex@denx.de>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "marcofrk@gmail.com" <marcofrk@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "stefan@agner.ch" <stefan@agner.ch>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
+To: Leonard Crestez <leonard.crestez@nxp.com>, "festevam@gmail.com" <festevam@gmail.com>, "stefan@agner.ch" <stefan@agner.ch>, "marex@denx.de" <marex@denx.de>, "shawnguo@kernel.org" <shawnguo@kernel.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "marcofrk@gmail.com" <marcofrk@gmail.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, dl-linux-imx <linux-imx@nxp.com>, "kernel@pengutronix.de" <kernel@pengutronix.de>, Fabio Estevam <fabio.estevam@nxp.com>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>
 
-On 06/16/2018 12:22 AM, Fabio Estevam wrote:
-> On Fri, Jun 15, 2018 at 6:36 PM, Marek Vasut <marex@denx.de> wrote:
+On 06/16/2018 12:42 AM, Leonard Crestez wrote:
+> On Fri, 2018-06-15 at 23:36 +0200, Marek Vasut wrote:
+>> On 06/15/2018 10:58 PM, Leonard Crestez wrote:
+>>> On Fri, 2018-06-15 at 16:47 -0300, Fabio Estevam wrote:
+>>>> On Fri, Jun 15, 2018 at 4:43 PM, Leonard Crestez
+>>>> <leonard.crestez@nxp.com> wrote:
 > 
+>>>>> The FBDEV driver uses the same name and both can't be registered at the
+>>>>> same time. Fix this by renaming the drm driver to mxsfb-drm
+>>>>
+>>>> Stefan sent the same patch a few days ago:
+>>>
+>>> In that thread there is a proposal for removing the old fbdev/mxsfb
+>>> driver entirely.
+>>>
+>>> That would break old DTBs, isn't this generally considered bad? Also,
+>>> are we sure the removal of fbdev/mxsfb wouldn't lose any features?
+>>>
+>>> What my series does is make both drivers work with the same kernel
+>>> image and turns the choice into a board-level dtb decision. Supporting
+>>> everything at once seems desirable to me and it allows for a very
+>>> smooth upgrade path.
+>>
 >> Having two drivers in the kernel with different set of bugs is always bad.
+>>
+>>> The old driver could be removed later, after all users are converted.
+>>
+>> Both drivers were in for long enough already. And let's be realistic,
+>> how many MX23/MX28 users of old DTs with new kernels are there who
+>> cannot update the DT as well ?
 > 
-> Sure, but breaking dtb's is also bad.
+> Grepping for "display =" in arch/arm/boot/dts/imx* I see that old
+> bindings are also used by 3rd-party boards for imx6/7:
+>  * imx6sx-nitrogen6sx
+>  * imx6ul-geam
+>  * imx6ul-isiot
+>  * imx6ul-opos6uldev
+>  * imx6ul-pico-hobbit
+>  * imx6ul-tx6ul
+>  * imx7d-nitrogen7
 
-You picked only the first part of my argument, the less important one ;-)
+Er, yes, a handful of boards which could be updated :)
 
-> Can the mxsfb driver be modified to handle the old style bindings?
+> Converting everything might be quite a bit of work, and explicitly
+> supporting old bindings is also work.
 
-Maybe, but do we care ? Cfr my comment about the amount of users who
-will be affected by this.
+Does adding support for old bindings justify the effort invested ? I
+doubt so, it only adds more code to maintain.
 
-> The IPU drm driver is capable of handling both the old style where the
-> display timing is passed in dts and the new drm style.
+> It is very confusing that there is a whole set of displays for imx6/7
+> which are supported by upstream but only with a non-default config.
+> While it is extremely common in the embedded field to have custom
+> configs the default one in the kernel should try to "just work".
 > 
-> For example:
-> 
-> arch/arm/boot/dts/imx6qdl-sabresd.dtsi uses the drm style binding
-> arch/arm/boot/dts/imx6qdl-sabreauto.dtsi uses the old style of passing
-> the display timings in dts
-> 
-> Both formats are accepted by the ipu drm driver.
-> 
-> Can't mxsfb drm driver support both? Then we don't need to worry about
-> breaking dtb's and could safely remove the mxs fbdev driver.
+> Couldn't this patch series be considered a bugfix? It was also
+> surprisingly small.
 
-This might be a way forward, but again, does it justify the effort ?
-We will be adding compatibility code which we will have to maintain for
-maybe a handful of users I think.
+I think it's just a workaround which allows you to postpone the real
+fix, and I don't like that.
 
 -- 
 Best regards,

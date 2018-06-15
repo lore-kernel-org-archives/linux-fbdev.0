@@ -1,133 +1,35 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sun, 03 Jun 2018 14:41:04 +0000
-Subject: [PATCH 11/21] udlfb: fix semaphore value leak
-Message-Id: <20180603144222.989093650@twibright.com>
+From: Leonard Crestez <leonard.crestez@nxp.com>
+Date: Fri, 15 Jun 2018 19:43:41 +0000
+Subject: [PATCH 0/3] ARM: imx: Make DRM_MXSFB and FB_MXS coexist
+Message-Id: <cover.1529091248.git.leonard.crestez@nxp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
+Cc: Pengutronix Kernel Team <kernel@pengutronix.de>, NXP Linux Team <linux-imx@nxp.com>, Marco Franchi <marcofrk@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
 
-I observed that the performance of the udl fb driver degrades over time.
-On a freshly booted machine, it takes 6 seconds to do "ls -la /usr/bin";
-after some time of use, the same operation takes 14 seconds.
+Some imx boards have new drm-style bindings for lcdif devices but using
+them requires rebuilding the kernel with FB_MXS=n DRM_MXSFB=y.
 
-The reason is that the value of "limit_sem" decays over time.
+It is relatively easy to allow both drivers to coexist by renaming
+drm/mxsfb to "mxsfb-drm" and making the old fbdev driver return -ENODEV
+instead of -ENOENT when it fails to find the display node.
 
-The udl driver uses a semaphore "limit_set" to specify how many free urbs
-are there on dlfb->urbs.list. If the count is zero, the "down" operation
-will sleep until some urbs are added to the freelist.
+This makes display on imx6sx-sdb "just work" with both styles of
+bindings. In order to test the old bindings I locally reverted commit
+7caa59e0d40c ("ARM: dts: imx6sx-sdb: Convert from fbdev to drm bindings")
 
-In order to avoid some hypothetical deadlock, the driver will not call
-"up" immediatelly, but it will offload it to a workqueue. The problem is
-that if we call "schedule_delayed_work" on the same work item multiple
-times, the work item may only be executed once.
+Leonard Crestez (3):
+  drm: mxsfb: Change driver.name to mxsfb-drm
+  fbdev: mxsfb: Return ENODEV on missing display node
+  ARM: imx_v6_v7_defconfig: Enable DRM_MXSFB
 
-This is happening:
-* some urb completes
-* dlfb_urb_completion adds it to the free list
-* dlfb_urb_completion calls schedule_delayed_work to schedule the function
-  dlfb_release_urb_work to increase the semaphore count
-* as the urb is on the free list, some other task grabs it and submits it
-* the submitted urb completes, dlfb_urb_completion is called again
-* dlfb_urb_completion calls schedule_delayed_work, but the work is already
-  scheduled, so it does nothing
-* finally, dlfb_release_urb_work is called, it increases the semaphore
-  count by 1, although it should increase it by 2
+ arch/arm/configs/imx_v6_v7_defconfig | 2 ++
+ drivers/gpu/drm/mxsfb/mxsfb_drv.c    | 2 +-
+ drivers/video/fbdev/mxsfb.c          | 2 +-
+ 3 files changed, 4 insertions(+), 2 deletions(-)
 
-So, the semaphore count is decreasing over time, and this causes gradual
-performance degradation.
-
-Note that in the current kernel, the "up" function may be called from
-interrupt and it may race with the "down" function called by another
-thread, so we don't have to offload the call of "up" to a workqueue at
-all. This patch removes the workqueue code. The patch also changes
-"down_interruptible" to "down" in dlfb_free_urb_list, so that we will
-clean up the driver properly even if a signal arrives.
-
-With this patch, the performance of udlfb no longer degrades.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-
----
- drivers/video/fbdev/udlfb.c |   27 ++-------------------------
- include/video/udlfb.h       |    1 -
- 2 files changed, 2 insertions(+), 26 deletions(-)
-
-Index: linux-4.17-rc7/drivers/video/fbdev/udlfb.c
-=================================--- linux-4.17-rc7.orig/drivers/video/fbdev/udlfb.c	2018-05-31 12:31:04.000000000 +0200
-+++ linux-4.17-rc7/drivers/video/fbdev/udlfb.c	2018-05-31 12:31:04.000000000 +0200
-@@ -922,14 +922,6 @@ static void dlfb_free(struct kref *kref)
- 	kfree(dlfb);
- }
- 
--static void dlfb_release_urb_work(struct work_struct *work)
--{
--	struct urb_node *unode = container_of(work, struct urb_node,
--					      release_urb_work.work);
--
--	up(&unode->dlfb->urbs.limit_sem);
--}
--
- static void dlfb_free_framebuffer(struct dlfb_data *dlfb)
- {
- 	struct fb_info *info = dlfb->info;
-@@ -1789,14 +1781,7 @@ static void dlfb_urb_completion(struct u
- 	dlfb->urbs.available++;
- 	spin_unlock_irqrestore(&dlfb->urbs.lock, flags);
- 
--	/*
--	 * When using fb_defio, we deadlock if up() is called
--	 * while another is waiting. So queue to another process.
--	 */
--	if (fb_defio)
--		schedule_delayed_work(&unode->release_urb_work, 0);
--	else
--		up(&dlfb->urbs.limit_sem);
-+	up(&dlfb->urbs.limit_sem);
- }
- 
- static void dlfb_free_urb_list(struct dlfb_data *dlfb)
-@@ -1805,16 +1790,11 @@ static void dlfb_free_urb_list(struct dl
- 	struct list_head *node;
- 	struct urb_node *unode;
- 	struct urb *urb;
--	int ret;
- 	unsigned long flags;
- 
- 	/* keep waiting and freeing, until we've got 'em all */
- 	while (count--) {
--
--		/* Getting interrupted means a leak, but ok at disconnect */
--		ret = down_interruptible(&dlfb->urbs.limit_sem);
--		if (ret)
--			break;
-+		down(&dlfb->urbs.limit_sem);
- 
- 		spin_lock_irqsave(&dlfb->urbs.lock, flags);
- 
-@@ -1854,9 +1834,6 @@ static int dlfb_alloc_urb_list(struct dl
- 			break;
- 		unode->dlfb = dlfb;
- 
--		INIT_DELAYED_WORK(&unode->release_urb_work,
--			  dlfb_release_urb_work);
--
- 		urb = usb_alloc_urb(0, GFP_KERNEL);
- 		if (!urb) {
- 			kfree(unode);
-Index: linux-4.17-rc7/include/video/udlfb.h
-=================================--- linux-4.17-rc7.orig/include/video/udlfb.h	2018-05-31 12:31:04.000000000 +0200
-+++ linux-4.17-rc7/include/video/udlfb.h	2018-05-31 12:31:04.000000000 +0200
-@@ -20,7 +20,6 @@ struct dloarea {
- struct urb_node {
- 	struct list_head entry;
- 	struct dlfb_data *dlfb;
--	struct delayed_work release_urb_work;
- 	struct urb *urb;
- };
- 
+-- 
+2.17.1
 

@@ -1,146 +1,49 @@
-From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Date: Fri, 18 May 2018 21:09:52 +0000
-Subject: [PATCH 4/6] fbdev: omapfb: lcd_ams_delta: use GPIO lookup table
-Message-Id: <20180518210954.29044-4-jmkrzyszt@gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sun, 17 Jun 2018 15:32:33 +0000
+Subject: [PATCH 0/2] efifb: Copy the ACPI BGRT boot graphics to the
+Message-Id: <20180617153235.16219-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
-In-Reply-To: <20180518210954.29044-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, Boris Brezillon <boris.brezillon@bootlin.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Mark Brown <broonie@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>, linux-kernel@vger.kernel.org, Peter Ujfalusi <peter.ujfalusi@ti.com>, linux-mtd@lists.infradead.org, Jarkko Nikula <jarkko.nikula@bitmer.com>, linux-input@vger.kernel.org, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, linux-efi@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Now as the Amstrad Delta board provides GPIO lookup tables, switch from
-GPIO numbers to GPIO descriptors and use the table to locate required
-GPIO pins.
+Hi All,
 
-Declare static variables for storing GPIO descriptors and replace
-gpio_ functions with their gpiod_ equivalents. Move GPIO lookup
-to the driver probe function so device initialization can be postponed
-instead of aborted if the GPIO pin is not yet available.
+Here is a patch-set to make sure that the efifb contains the boot
+graphics from the ACPI BGRT extension when the kernel is configured
+to use the (new) deferred fbcon console takeover support.
 
-Pin naming used by the driver should be followed while respective GPIO
-lookup table is initialized by a board init code.
+Let me explain why this is desirable (same reason as for the deferred
+fbcon console takeover support itself):
 
-Created and tested against linux-4.17-rc3, on top of patch 1/6 "ARM:
-OMAP1: ams-delta: add GPIO lookup tables"
+Various (desktop oriented) Linux distributions have spend a lot of time
+to not show way too technial boot messages to end users during bootup.
+What we would really like for the boot experience is something like
+MacOS X / Windows 10 do. The (EFI) firmware boots up a logo and we
+leave that in place until the login-manager (e.g. gdm) starts and then
+the login-manager takes over the framebuffer including the current logo
+contents and fades that into the login screen.
 
-Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
----
- drivers/video/fbdev/omap/lcd_ams_delta.c | 59 ++++++++++++++------------------
- 1 file changed, 26 insertions(+), 33 deletions(-)
+The deferred fbcon console takeover (combined with shim and grub)
+patches makes the desired boot experience possible, but this assumes
+that the firmware starts shim with the framebuffer containing the
+boot graphics. This is not always the case, this patch ensures that the
+boot graphics are in place.
 
-diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
-index a4ee947006c7..19b6425b54be 100644
---- a/drivers/video/fbdev/omap/lcd_ams_delta.c
-+++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
-@@ -24,11 +24,10 @@
- #include <linux/platform_device.h>
- #include <linux/io.h>
- #include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/lcd.h>
--#include <linux/gpio.h>
- 
- #include <mach/hardware.h>
--#include <mach/board-ams-delta.h>
- 
- #include "omapfb.h"
- 
-@@ -41,6 +40,8 @@
- /* LCD class device section */
- 
- static int ams_delta_lcd;
-+static struct gpio_desc *gpiod_vblen;
-+static struct gpio_desc *gpiod_ndisp;
- 
- static int ams_delta_lcd_set_power(struct lcd_device *dev, int power)
- {
-@@ -99,41 +100,17 @@ static struct lcd_ops ams_delta_lcd_ops = {
- 
- /* omapfb panel section */
- 
--static const struct gpio _gpios[] = {
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
--		.flags	= GPIOF_OUT_INIT_LOW,
--		.label	= "lcd_vblen",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
--		.flags	= GPIOF_OUT_INIT_LOW,
--		.label	= "lcd_ndisp",
--	},
--};
--
--static int ams_delta_panel_init(struct lcd_panel *panel,
--		struct omapfb_device *fbdev)
--{
--	return gpio_request_array(_gpios, ARRAY_SIZE(_gpios));
--}
--
--static void ams_delta_panel_cleanup(struct lcd_panel *panel)
--{
--	gpio_free_array(_gpios, ARRAY_SIZE(_gpios));
--}
--
- static int ams_delta_panel_enable(struct lcd_panel *panel)
- {
--	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 1);
--	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 1);
-+	gpiod_set_value(gpiod_ndisp, 1);
-+	gpiod_set_value(gpiod_vblen, 1);
- 	return 0;
- }
- 
- static void ams_delta_panel_disable(struct lcd_panel *panel)
- {
--	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 0);
--	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 0);
-+	gpiod_set_value(gpiod_vblen, 0);
-+	gpiod_set_value(gpiod_ndisp, 0);
- }
- 
- static struct lcd_panel ams_delta_panel = {
-@@ -154,8 +131,6 @@ static struct lcd_panel ams_delta_panel = {
- 	.pcd		= 0,
- 	.acb		= 37,
- 
--	.init		= ams_delta_panel_init,
--	.cleanup	= ams_delta_panel_cleanup,
- 	.enable		= ams_delta_panel_enable,
- 	.disable	= ams_delta_panel_disable,
- };
-@@ -166,9 +141,27 @@ static struct lcd_panel ams_delta_panel = {
- static int ams_delta_panel_probe(struct platform_device *pdev)
- {
- 	struct lcd_device *lcd_device = NULL;
--#ifdef CONFIG_LCD_CLASS_DEVICE
- 	int ret;
- 
-+	gpiod_vblen = devm_gpiod_get(&pdev->dev, "vblen", GPIOD_OUT_LOW);
-+	if (IS_ERR(gpiod_vblen)) {
-+		ret = PTR_ERR(gpiod_vblen);
-+		dev_err(&pdev->dev, "VBLEN GPIO request failed (%d)\n", ret);
-+		if (ret = -ENODEV || ret = -ENOENT)
-+			ret = -EPROBE_DEFER;
-+		return ret;
-+	}
-+
-+	gpiod_ndisp = devm_gpiod_get(&pdev->dev, "ndisp", GPIOD_OUT_LOW);
-+	if (IS_ERR(gpiod_ndisp)) {
-+		ret = PTR_ERR(gpiod_ndisp);
-+		dev_err(&pdev->dev, "NDISP GPIO request failed (%d)\n", ret);
-+		if (ret = -ENODEV || ret = -ENOENT)
-+			ret = -EPROBE_DEFER;
-+		return ret;
-+	}
-+
-+#ifdef CONFIG_LCD_CLASS_DEVICE
- 	lcd_device = lcd_device_register("omapfb", &pdev->dev, NULL,
- 						&ams_delta_lcd_ops);
- 
--- 
-2.16.1
+Since the bgrt.status field is not exactly reliable, this commit simply
+always copies over the bootgraphics. If they are already there this
+effectively is a no-op.
+
+The first patch in this series makes a trivial change to
+drivers/firmware/efi/efi-bgrt.c, dropping __initdata from bgrt_image_size.
+
+Ard, since the second patch depends on the first and the change is
+really trivial, can we please have your ack for merging the efi-bgrt.c
+change through the fbdev tree?
+
+Regards,
+
+Hans
 

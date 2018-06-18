@@ -1,49 +1,32 @@
-From: Yisheng Xie <ysxie@foxmail.com>
-Date: Sat, 30 Jun 2018 07:30:48 +0000
-Subject: [PATCH v2 fbdev-for-next 2/2] fbdev: fix typo in comment
-Message-Id: <1530343848-4344-1-git-send-email-ysxie@foxmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 18 Jun 2018 14:33:03 +0000
+Subject: Re: [PATCH v2 1/3] video: fbdev: Fix checkpatch warnings in goldfishfb.c
+Message-Id: <3052858.Ws0N0Gkcsi@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180608191100.21751-1-rkir@google.com>
+ <CGME20180615234720epcas4p2e703a498ba649f273d36f1f3a2b65ab4@epcas4p2.samsung.com>
+ <CAOGAQerXzrpjYXX=mwf6e_Q2jOAAPF4M6Rg7OwLUe+upE94dOg@mail.gmail.com>
+In-Reply-To: <CAOGAQerXzrpjYXX=mwf6e_Q2jOAAPF4M6Rg7OwLUe+upE94dOg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, keescook@chromium.org, j.w.r.degoede@gmail.com, david@lechnology.com
-Cc: andriy.shevchenko@linux.intel.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yisheng Xie <ysxie@foxmail.com>
+To: Roman Kiryanov <rkir@google.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Todd Kjos <tkjos@google.com>
 
-change beeng to being and occured to occurred.
+On Friday, June 15, 2018 04:47:03 PM Roman Kiryanov wrote:
+> Hi,
+> 
+> could you please confirm you received our patches? Thank you.
 
-Signed-off-by: Yisheng Xie <ysxie@foxmail.com>
----
-v2:
- - new add one.
+Hi,
 
- include/linux/fb.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Yes, they are in my inbox waiting for their turn
+(I'll start queuing patches for v4.19 later this
+week).
 
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index fd31e6f..3e7e753 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -126,7 +126,7 @@ struct fb_cursor_user {
- 
- /*	The resolution of the passed in fb_info about to change */ 
- #define FB_EVENT_MODE_CHANGE		0x01
--/*	The display on this fb_info is beeing suspended, no access to the
-+/*	The display on this fb_info is being suspended, no access to the
-  *	framebuffer is allowed any more after that call returns
-  */
- #define FB_EVENT_SUSPEND		0x02
-@@ -159,9 +159,9 @@ struct fb_cursor_user {
- #define FB_EVENT_FB_UNBIND              0x0E
- /*      CONSOLE-SPECIFIC: remap all consoles to new fb - for vga_switcheroo */
- #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
--/*      A hardware display blank early change occured */
-+/*      A hardware display blank early change occurred */
- #define FB_EARLY_EVENT_BLANK		0x10
--/*      A hardware display blank revert early change occured */
-+/*      A hardware display blank revert early change occurred */
- #define FB_R_EARLY_EVENT_BLANK		0x11
- 
- struct fb_event {
--- 
-1.9.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

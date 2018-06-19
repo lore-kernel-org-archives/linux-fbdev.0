@@ -1,42 +1,36 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Thu, 14 Jun 2018 16:27:37 +0000
-Subject: Re: [PATCH v3 04/27] docs: fix broken references with multiple hints
-Message-Id: <20180614122737.4044a2b7@gandalf.local.home>
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+Date: Tue, 19 Jun 2018 17:22:21 +0000
+Subject: [PATCH] video: fbdev: simplefb: Stop including <linux/clk-provider.h>
+Message-Id: <20180619172221.20252-1-geert+renesas@glider.be>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1528990947.git.mchehab+samsung@kernel.org>
- <8e28c30c9d0ba8c4f37d57adac7e12e18296a385.1528990947.git.mchehab+samsung@kernel.org>
-In-Reply-To: <8e28c30c9d0ba8c4f37d57adac7e12e18296a385.1528990947.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-fbdev@vger.kernel.org, linux-usb@vger.kernel.org, Linux Doc Mailing List <linux-doc@vger.kernel.org>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Harry Wei <harryxiyou@gmail.com>, devel@driverdev.osuosl.org, Jonathan Corbet <corbet@lwn.net>, James Morris <jmorris@namei.org>, Ingo Molnar <mingo@redhat.com>, linux-input@vger.kernel.org, Roy Pledge <Roy.Pledge@nxp.com>, "Serge E. Hallyn" <serge@hallyn.com>, devicetree@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Kosina <jikos@kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-gpio@vger.kernel.org, Rob Herring <robh+dt@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org, Benjamin Tissoires <ben>
+To: Hans de Goede <hdegoede@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, linux-clk@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Thu, 14 Jun 2018 13:08:49 -0300
-Mauro Carvalho Chehab <mchehab+samsung@kernel.org> wrote:
+Simplefb is not a clock provider, but it uses of_clk_get_parent_count(),
+so it can just include <linux/of_clk.h> instead.
 
-> +++ b/Documentation/trace/events.rst
-> @@ -8,7 +8,7 @@ Event Tracing
->  1. Introduction
->  =======>  
-> -Tracepoints (see Documentation/trace/tracepoints.txt) can be used
-> +Tracepoints (see Documentation/trace/tracepoints.rst) can be used
->  without creating custom kernel modules to register probe functions
->  using the event tracing infrastructure.
->  
-> diff --git a/Documentation/trace/tracepoint-analysis.rst b/Documentation/trace/tracepoint-analysis.rst
-> index a4d3ff2e5efb..bef37abf4ad3 100644
-> --- a/Documentation/trace/tracepoint-analysis.rst
-> +++ b/Documentation/trace/tracepoint-analysis.rst
-> @@ -6,7 +6,7 @@ Notes on Analysing Behaviour Using Events and Tracepoints
->  1. Introduction
->  =======>  
-> -Tracepoints (see Documentation/trace/tracepoints.txt) can be used without
-> +Tracepoints (see Documentation/trace/tracepoints.rst) can be used without
->  creating custom kernel modules to register probe functions using the event
->  tracing infrastructure.
->  
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
+---
+ drivers/video/fbdev/simplefb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index a3c44ecf4523e8ed..9a9d748b07f2777d 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -27,8 +27,8 @@
+ #include <linux/platform_data/simplefb.h>
+ #include <linux/platform_device.h>
+ #include <linux/clk.h>
+-#include <linux/clk-provider.h>
+ #include <linux/of.h>
++#include <linux/of_clk.h>
+ #include <linux/of_platform.h>
+ #include <linux/parser.h>
+ #include <linux/regulator/consumer.h>
+-- 
+2.17.1
 
--- Steve

@@ -1,95 +1,38 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sun, 03 Jun 2018 15:46:29 +0000
-Subject: [PATCH] fb: fix lost console when the user unplugs a USB adapter
-Message-Id: <alpine.LRH.2.02.1806031143470.15248@file01.intranet.prod.int.rdu2.redhat.com>
+From: Daniel Mack <daniel@zonque.org>
+Date: Tue, 19 Jun 2018 09:56:15 +0000
+Subject: [PATCH] video: fbdev: pxafb: zero allocated memory for video modes
+Message-Id: <20180619095615.14680-1-daniel@zonque.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-I have a USB display adapter using the udlfb driver and I use it on an ARM
-board that doesn't have any graphics card. When I plug the adapter in, the
-console is properly displayed, however when I unplug and re-plug the
-adapter, the console is not displayed and I can't access it until I reboot
-the board.
+When parsing the video modes from DT properties, make sure to zero out
+memory befor using it. This is important because not all fields in the mode
+struct are explicitly initialized, even though they are used later on.
 
-The reason is this:
-When the adapter is unplugged, dlfb_usb_disconnect calls
-unlink_framebuffer, then it waits until the reference count drops to zero
-and then it deallocates the framebuffer. However, the console that is
-attached to the framebuffer device keeps the reference count non-zero, so
-the framebuffer device is never destroyed. When the USB adapter is plugged
-again, it creates a new device /dev/fb1 and the console is not attached to
-it.
-
-This patch fixes the bug by unbinding the console from unlink_framebuffer.
-The code to unbind the console is moved from do_unregister_framebuffer to
-a function unbind_console. When the console is unbound, the reference
-count drops to zero and the udlfb driver frees the framebuffer. When the
-adapter is plugged back, a new framebuffer is created and the console is
-attached to it.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-
+Fixes: 420a488278e86 (video: fbdev: pxafb: initial devicetree conversion)
+Cc: Robert Jarzmik <robert.jarzmik@free.fr>
+Signed-off-by: Daniel Mack <daniel@zonque.org>
 ---
- drivers/video/fbdev/core/fbmem.c |   21 +++++++++++++++++----
- 1 file changed, 17 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/pxafb.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: linux-4.16.12/drivers/video/fbdev/core/fbmem.c
-=================================--- linux-4.16.12.orig/drivers/video/fbdev/core/fbmem.c	2018-05-26 06:13:20.000000000 +0200
-+++ linux-4.16.12/drivers/video/fbdev/core/fbmem.c	2018-05-26 06:13:20.000000000 +0200
-@@ -1805,12 +1805,12 @@ static int do_register_framebuffer(struc
- 	return 0;
- }
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index c2c2e2790079..64926c95d06c 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2131,7 +2131,8 @@ static int of_get_pxafb_display(struct device *dev, struct device_node *disp,
  
--static int do_unregister_framebuffer(struct fb_info *fb_info)
-+static int unbind_console(struct fb_info *fb_info)
- {
- 	struct fb_event event;
--	int i, ret = 0;
-+	int ret;
-+	int i = fb_info->node;
- 
--	i = fb_info->node;
- 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
- 		return -EINVAL;
- 
-@@ -1825,6 +1825,16 @@ static int do_unregister_framebuffer(str
- 	unlock_fb_info(fb_info);
- 	console_unlock();
- 
-+	return ret;
-+}
-+
-+static int do_unregister_framebuffer(struct fb_info *fb_info)
-+{
-+	struct fb_event event;
-+	int ret;
-+
-+	ret = unbind_console(fb_info);
-+
- 	if (ret)
- 		return -EINVAL;
- 
-@@ -1835,7 +1845,7 @@ static int do_unregister_framebuffer(str
- 	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
- 		kfree(fb_info->pixmap.addr);
- 	fb_destroy_modelist(&fb_info->modelist);
--	registered_fb[i] = NULL;
-+	registered_fb[fb_info->node] = NULL;
- 	num_registered_fb--;
- 	fb_cleanup_device(fb_info);
- 	event.info = fb_info;
-@@ -1860,6 +1870,9 @@ int unlink_framebuffer(struct fb_info *f
- 		device_destroy(fb_class, MKDEV(FB_MAJOR, i));
- 		fb_info->dev = NULL;
- 	}
-+
-+	unbind_console(fb_info);
-+
- 	return 0;
- }
- EXPORT_SYMBOL(unlink_framebuffer);
+ 	ret = -ENOMEM;
+ 	info->modes = kmalloc_array(timings->num_timings,
+-				    sizeof(info->modes[0]), GFP_KERNEL);
++				    sizeof(info->modes[0]),
++				    GFP_KERNEL | __GFP_ZERO);
+ 	if (!info->modes)
+ 		goto out;
+ 	info->num_modes = timings->num_timings;
+-- 
+2.17.1
+

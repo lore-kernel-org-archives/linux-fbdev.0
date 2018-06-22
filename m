@@ -1,50 +1,59 @@
-From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Date: Fri, 22 Jun 2018 07:52:48 +0000
-Subject: [PATCH v2 0/2] efi: add support for cacheable efifb mappings
-Message-Id: <20180622075250.14075-1-ard.biesheuvel@linaro.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 22 Jun 2018 11:03:51 +0000
+Subject: [PATCH v4] fbdev: Remove depends on HAS_DMA in case of platform dependency
+Message-Id: <20180622110351.31602-1-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-KVM guests on ARM have special requirements when it comes to mapping
-framebuffers: given that the host [emulating the framebuffer] uses
-cacheable accesses to read from the framebuffer region, the guest
-should uses cacheable accesses as well, or coherency is lost, i.e.,
-the host does not see what the guest writes.
+Remove dependencies on HAS_DMA where a Kconfig symbol depends on another
+symbol that implies HAS_DMA, and, optionally, on "|| COMPILE_TEST".
+In most cases this other symbol is an architecture or platform specific
+symbol, or PCI.
 
-Modifying PCI drivers to take this into account just for KVM on ARM is
-unreasonable, given that mapping BARs cacheable and still expecting
-side effects does not make any sense. However, doing the same for
-regions of system memory does make sense, since a framebuffer in DRAM
-could be accessed via DMA by a coherent master, and so it makes sense
-to take the memory attributes described by the UEFI memory map into
-account if it covers the efifb region.
+Generic symbols and drivers without platform dependencies keep their
+dependencies on HAS_DMA, to prevent compiling subsystems or drivers that
+cannot work anyway.
 
-Patch #2 implements this. Patch #1 is a preparatory patch that makes
-efi_mem_desc_lookup() usable for us in #2.
+This simplifies the dependencies, and allows to improve compile-testing.
 
-Changes since v1:
-- fix Peter's email address in CC tag (#1)
-- add Laszlo's tested-by
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Mark Brown <broonie@kernel.org>
+Acked-by: Robin Murphy <robin.murphy@arm.com>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+v4:
+  - Rebase to v4.18-rc1 (applies to next-20180622, too),
 
-Bartlomiej, could we please take this through the EFI tree? (with your ack)
+v3:
+  - Add Acked-by,
+  - Rebase to v4.17-rc1,
 
-Cc: linux-fbdev@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Peter Jones <pjones@redhat.com>
+v2:
+  - Add Reviewed-by, Acked-by,
+  - Drop RFC state,
+  - Split per subsystem.
+---
+ drivers/video/fbdev/Kconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Ard Biesheuvel (2):
-  efi: drop type and attribute checks in efi_mem_desc_lookup()
-  fbdev/efifb: honour UEFI memory map attributes when mapping the fb
-
- arch/x86/platform/efi/quirks.c |  3 +-
- drivers/firmware/efi/efi.c     |  8 +--
- drivers/firmware/efi/esrt.c    |  5 +-
- drivers/video/fbdev/efifb.c    | 52 ++++++++++++++++----
- 4 files changed, 49 insertions(+), 19 deletions(-)
-
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 591a13a597874ec0..c6f9023aede4adbc 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -2074,7 +2074,8 @@ config FB_XILINX
+ 
+ config FB_GOLDFISH
+ 	tristate "Goldfish Framebuffer"
+-	depends on FB && HAS_DMA && (GOLDFISH || COMPILE_TEST)
++	depends on FB
++	depends on GOLDFISH || COMPILE_TEST
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 -- 
 2.17.1
 

@@ -1,45 +1,50 @@
-From: Leonard Crestez <leonard.crestez@nxp.com>
-Date: Fri, 15 Jun 2018 19:43:43 +0000
-Subject: [PATCH 2/3] fbdev: mxsfb: Return ENODEV on missing display node
-Message-Id: <31ca6156a1b36c8ca2811d60e28c6128e988d5d4.1529091248.git.leonard.crestez@nxp.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Fri, 22 Jun 2018 07:52:48 +0000
+Subject: [PATCH v2 0/2] efi: add support for cacheable efifb mappings
+Message-Id: <20180622075250.14075-1-ard.biesheuvel@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1529091248.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1529091248.git.leonard.crestez@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fabio Estevam <fabio.estevam@nxp.com>, Lucas Stach <l.stach@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>
-Cc: Pengutronix Kernel Team <kernel@pengutronix.de>, NXP Linux Team <linux-imx@nxp.com>, Marco Franchi <marcofrk@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-When this driver encounters drm-style bindings it returns -ENOENT and
-this reports a probe error. Make it return -ENODEV to signal an explicit
-rejection instead.
+KVM guests on ARM have special requirements when it comes to mapping
+framebuffers: given that the host [emulating the framebuffer] uses
+cacheable accesses to read from the framebuffer region, the guest
+should uses cacheable accesses as well, or coherency is lost, i.e.,
+the host does not see what the guest writes.
 
-This allows peaceful coexistence between the DRM_MXSFB and FB_MXS config
-options.
+Modifying PCI drivers to take this into account just for KVM on ARM is
+unreasonable, given that mapping BARs cacheable and still expecting
+side effects does not make any sense. However, doing the same for
+regions of system memory does make sense, since a framebuffer in DRAM
+could be accessed via DMA by a coherent master, and so it makes sense
+to take the memory attributes described by the UEFI memory map into
+account if it covers the efifb region.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
----
- drivers/video/fbdev/mxsfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch #2 implements this. Patch #1 is a preparatory patch that makes
+efi_mem_desc_lookup() usable for us in #2.
 
-diff --git a/drivers/video/fbdev/mxsfb.c b/drivers/video/fbdev/mxsfb.c
-index 12c8bd1d24d5..9ec8882d7b3d 100644
---- a/drivers/video/fbdev/mxsfb.c
-+++ b/drivers/video/fbdev/mxsfb.c
-@@ -736,11 +736,11 @@ static int mxsfb_init_fbinfo_dt(struct fb_info *fb_info,
- 	int ret;
- 
- 	display_np = of_parse_phandle(np, "display", 0);
- 	if (!display_np) {
- 		dev_err(dev, "failed to find display phandle\n");
--		return -ENOENT;
-+		return -ENODEV;
- 	}
- 
- 	ret = of_property_read_u32(display_np, "bus-width", &width);
- 	if (ret < 0) {
- 		dev_err(dev, "failed to get property bus-width\n");
+Changes since v1:
+- fix Peter's email address in CC tag (#1)
+- add Laszlo's tested-by
+
+Bartlomiej, could we please take this through the EFI tree? (with your ack)
+
+Cc: linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Peter Jones <pjones@redhat.com>
+
+Ard Biesheuvel (2):
+  efi: drop type and attribute checks in efi_mem_desc_lookup()
+  fbdev/efifb: honour UEFI memory map attributes when mapping the fb
+
+ arch/x86/platform/efi/quirks.c |  3 +-
+ drivers/firmware/efi/efi.c     |  8 +--
+ drivers/firmware/efi/esrt.c    |  5 +-
+ drivers/video/fbdev/efifb.c    | 52 ++++++++++++++++----
+ 4 files changed, 49 insertions(+), 19 deletions(-)
+
 -- 
 2.17.1
 

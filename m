@@ -1,49 +1,39 @@
-From: Roman Kiryanov <rkir@google.com>
-Date: Fri, 08 Jun 2018 23:40:12 +0000
-Subject: Re: [PATCH 3/3] ANDROID: goldfish_fb: Set pixclock = 0
-Message-Id: <CAOGAQeqSNpzyJ=644HH-XwW=pwwZBEuX4uVK1ekMSEoMpYMBMw@mail.gmail.com>
+From: Daniel Mack <daniel@zonque.org>
+Date: Sun, 24 Jun 2018 15:38:14 +0000
+Subject: [PATCH 1/4] video: fbdev: pxafb: clear allocated memory for video modes
+Message-Id: <20180624153817.24387-1-daniel@zonque.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180531220252.58679-1-rkir@google.com>
- <CGME20180531220440epcas3p39993702c36d5cd4f97e251629d61949c@epcas3p3.samsung.com>
- <20180531220252.58679-3-rkir@google.com> <2257447.FoZO9vJcxE@amdc3058>
-In-Reply-To: <2257447.FoZO9vJcxE@amdc3058>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-Hi,
+When parsing the video modes from DT properties, make sure to zero out
+memory before using it. This is important because not all fields in the mode
+struct are explicitly initialized, even though they are used later on.
 
-thank you for reviewing our patches. I sent "v2".
+Fixes: 420a488278e86 (video: fbdev: pxafb: initial devicetree conversion)
+Reviewed-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Signed-off-by: Daniel Mack <daniel@zonque.org>
+---
+ drivers/video/fbdev/pxafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Regards,
-Roman.
-On Fri, Jun 8, 2018 at 9:24 AM Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
->
-> [ + linux-fbdev ML ]
->
-> On Thursday, May 31, 2018 03:02:52 PM rkir@google.com wrote:
-> > From: Christoffer Dall <christoffer.dall@linaro.org>
-> >
-> > User space Android code identifies pixclock = 0 as a sign for emulation
-> > and will set the frame rate to 60 fps when reading this value, which is
-> > the desired outcome.
-> >
-> > Change-Id: I759bf518bf6683446bc786bf1be3cafa02dd8d42
->
-> please drop your local Change-Id from the upstream kernel submissions
->
-> > Signed-off-by: Christoffer Dall <christoffer.dall@linaro.org>
-> > Signed-off-by: Peter Maydell <peter.maydell@linaro.org>
->
-> your S-o-b line is also needed
->
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
->
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 76722a59f55e..dfe382e68287 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2128,8 +2128,8 @@ static int of_get_pxafb_display(struct device *dev, struct device_node *disp,
+ 		return -EINVAL;
+ 
+ 	ret = -ENOMEM;
+-	info->modes = kmalloc_array(timings->num_timings,
+-				    sizeof(info->modes[0]), GFP_KERNEL);
++	info->modes = kcalloc(timings->num_timings, sizeof(info->modes[0]),
++			      GFP_KERNEL);
+ 	if (!info->modes)
+ 		goto out;
+ 	info->num_modes = timings->num_timings;
+-- 
+2.17.1
+

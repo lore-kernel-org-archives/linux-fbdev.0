@@ -1,102 +1,294 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 12 Jun 2018 16:32:34 +0000
-Subject: Re: [PATCH 18/21] udlfb: allow reallocating the framebuffer
-Message-Id: <alpine.LRH.2.02.1806121230320.1848@file01.intranet.prod.int.rdu2.redhat.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Tue, 26 Jun 2018 10:41:03 +0000
+Subject: [PATCH v2] console/fbcon: Add support for deferred console takeover
+Message-Id: <20180626104103.12208-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180603144225.463043082@twibright.com>
- <201806040247.iosxtl0E%fengguang.wu@intel.com>
-In-Reply-To: <201806040247.iosxtl0E%fengguang.wu@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kbuild test robot <lkp@intel.com>
-Cc: linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org, kbuild-all@01.org, Dave Airlie <airlied@redhat.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+Currently fbcon claims fbdevs as soon as they are registered and takes over
+the console as soon as the first fbdev gets registered.
 
+This behavior is undesirable in cases where a smooth graphical bootup is
+desired, in such cases we typically want the contents of the framebuffer
+(typically a vendor logo) to stay in place as is.
 
-On Mon, 4 Jun 2018, kbuild test robot wrote:
+The current solution for this problem (on embedded systems) is to not
+enable fbcon.
 
-> Hi Mikulas,
-> 
-> I love your patch! Perhaps something to improve:
-> 
-> [auto build test WARNING on drm/drm-next]
-> [also build test WARNING on v4.17-rc7 next-20180601]
-> [if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Mikulas-Patocka/USB-DisplayLink-patches/20180603-233013
+This commit adds a new FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER config option,
+which when enabled defers fbcon taking over the console from the dummy
+console until the first text is displayed on the console. Together with the
+"quiet" kernel commandline option, this allows fbcon to still be used
+together with a smooth graphical bootup, having it take over the console as
+soon as e.g. an error message is logged.
 
-What is it really complaining about? That URL shows 404 Not Found and this 
-email has no warnings at all.
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+Changes in v2:
+-Check the whole string when checking for erases in putcs, instead of just
+ the first char
+-Make dummycon_blank return 1, so that a redraw gets triggered and any text
+ rendered while blanked gets output so that it can trigger a deferred
+ takeover if one is pending
+---
+ drivers/video/console/Kconfig    | 11 ++++++
+ drivers/video/console/dummycon.c | 67 ++++++++++++++++++++++++++++----
+ drivers/video/fbdev/core/fbcon.c | 65 +++++++++++++++++++++++++++++++
+ include/linux/console.h          |  5 +++
+ 4 files changed, 140 insertions(+), 8 deletions(-)
 
-> base:   git://people.freedesktop.org/~airlied/linux.git drm-next
-> reproduce:
->         # apt-get install sparse
->         make ARCH=x86_64 allmodconfig
->         make C=1 CF=-D__CHECK_ENDIAN__
-> 
-> 
-> sparse warnings: (new ones prefixed by >>)
-> 
-> 
-> vim +1198 drivers/video/fbdev/udlfb.c
-> 
->   1171	
->   1172	/*
->   1173	 * Assumes &info->lock held by caller
->   1174	 * Assumes no active clients have framebuffer open
->   1175	 */
->   1176	static int dlfb_realloc_framebuffer(struct dlfb_data *dlfb, struct fb_info *info, u32 new_len)
->   1177	{
->   1178		u32 old_len = info->fix.smem_len;
-> > 1179		unsigned char *old_fb = info->screen_base;
->   1180		unsigned char *new_fb;
->   1181		unsigned char *new_back = NULL;
->   1182	
->   1183		new_len = PAGE_ALIGN(new_len);
->   1184	
->   1185		if (new_len > old_len) {
->   1186			/*
->   1187			 * Alloc system memory for virtual framebuffer
->   1188			 */
->   1189			new_fb = vmalloc(new_len);
->   1190			if (!new_fb) {
->   1191				dev_err(info->dev, "Virtual framebuffer alloc failed\n");
->   1192				return -ENOMEM;
->   1193			}
->   1194			memset(new_fb, 0xff, new_len);
->   1195	
->   1196			if (info->screen_base) {
->   1197				memcpy(new_fb, old_fb, old_len);
-> > 1198				dlfb_deferred_vfree(dlfb, info->screen_base);
->   1199			}
->   1200	
->   1201			info->screen_base = new_fb;
->   1202			info->fix.smem_len = new_len;
->   1203			info->fix.smem_start = (unsigned long) new_fb;
->   1204			info->flags = udlfb_info_flags;
->   1205	
->   1206			/*
->   1207			 * Second framebuffer copy to mirror the framebuffer state
->   1208			 * on the physical USB device. We can function without this.
->   1209			 * But with imperfect damage info we may send pixels over USB
->   1210			 * that were, in fact, unchanged - wasting limited USB bandwidth
->   1211			 */
->   1212			if (shadow)
->   1213				new_back = vzalloc(new_len);
->   1214			if (!new_back)
->   1215				dev_info(info->dev,
->   1216					 "No shadow/backing buffer allocated\n");
->   1217			else {
->   1218				dlfb_deferred_vfree(dlfb, dlfb->backing_buffer);
->   1219				dlfb->backing_buffer = new_back;
->   1220			}
->   1221		}
->   1222		return 0;
->   1223	}
->   1224	
-> 
-> ---
-> 0-DAY kernel test infrastructure                Open Source Technology Center
-> https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
-> 
+diff --git a/drivers/video/console/Kconfig b/drivers/video/console/Kconfig
+index 4110ba7d7ca9..e91edef98633 100644
+--- a/drivers/video/console/Kconfig
++++ b/drivers/video/console/Kconfig
+@@ -150,6 +150,17 @@ config FRAMEBUFFER_CONSOLE_ROTATION
+          such that other users of the framebuffer will remain normally
+          oriented.
+ 
++config FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++	bool "Framebuffer Console Deferred Takeover"
++	depends on FRAMEBUFFER_CONSOLE=y && DUMMY_CONSOLE=y
++	help
++	  If enabled this defers the framebuffer console taking over the
++	  console from the dummy console until the first text is displayed on
++	  the console. This is useful in combination with the "quiet" kernel
++	  commandline option to keep the framebuffer contents initially put up
++	  by the firmware in place, rather then replacing the contents with a
++	  black screen as soon as fbcon loads.
++
+ config STI_CONSOLE
+         bool "STI text console"
+ 	depends on PARISC && HAS_IOMEM
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index f2eafe2ed980..45ad925ad5f8 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -26,6 +26,65 @@
+ #define DUMMY_ROWS	CONFIG_DUMMY_CONSOLE_ROWS
+ #endif
+ 
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++/* These are both protected by the console_lock */
++static RAW_NOTIFIER_HEAD(dummycon_output_nh);
++static bool dummycon_putc_called;
++
++void dummycon_register_output_notifier(struct notifier_block *nb)
++{
++	raw_notifier_chain_register(&dummycon_output_nh, nb);
++
++	if (dummycon_putc_called)
++		nb->notifier_call(nb, 0, NULL);
++}
++
++void dummycon_unregister_output_notifier(struct notifier_block *nb)
++{
++	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
++}
++
++static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
++{
++	dummycon_putc_called = true;
++	raw_notifier_call_chain(&dummycon_output_nh, 0, NULL);
++}
++
++static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
++			   int count, int ypos, int xpos)
++{
++	int i;
++
++	if (!dummycon_putc_called) {
++		/* Ignore erases */
++		for (i = 0 ; i < count; i++) {
++			if (s[i] != vc->vc_video_erase_char)
++				break;
++		}
++		if (i = count)
++			return;
++
++		dummycon_putc_called = true;
++	}
++
++	raw_notifier_call_chain(&dummycon_output_nh, 0, NULL);
++}
++
++static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
++{
++	/* Redraw, so that we get putc(s) for output done while blanked */
++	return 1;
++}
++#else
++static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
++static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
++			   int count, int ypos, int xpos) { }
++static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
++{
++	return 0;
++}
++#endif
++
+ static const char *dummycon_startup(void)
+ {
+     return "dummy device";
+@@ -44,9 +103,6 @@ static void dummycon_init(struct vc_data *vc, int init)
+ static void dummycon_deinit(struct vc_data *vc) { }
+ static void dummycon_clear(struct vc_data *vc, int sy, int sx, int height,
+ 			   int width) { }
+-static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos) { }
+-static void dummycon_putcs(struct vc_data *vc, const unsigned short *s,
+-			   int count, int ypos, int xpos) { }
+ static void dummycon_cursor(struct vc_data *vc, int mode) { }
+ 
+ static bool dummycon_scroll(struct vc_data *vc, unsigned int top,
+@@ -61,11 +117,6 @@ static int dummycon_switch(struct vc_data *vc)
+ 	return 0;
+ }
+ 
+-static int dummycon_blank(struct vc_data *vc, int blank, int mode_switch)
+-{
+-	return 0;
+-}
+-
+ static int dummycon_font_set(struct vc_data *vc, struct console_font *font,
+ 			     unsigned int flags)
+ {
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index c910e74d46ff..12d947bc0f0b 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -129,6 +129,12 @@ static inline void fbcon_map_override(void)
+ }
+ #endif /* CONFIG_FRAMEBUFFER_CONSOLE_DETECT_PRIMARY */
+ 
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++static bool deferred_takeover = true;
++#else
++#define deferred_takeover false
++#endif
++
+ /* font data */
+ static char fontname[40];
+ 
+@@ -499,6 +505,12 @@ static int __init fb_console_setup(char *this_opt)
+ 				margin_color = simple_strtoul(options, &options, 0);
+ 			continue;
+ 		}
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++		if (!strcmp(options, "nodefer")) {
++			deferred_takeover = false;
++			continue;
++		}
++#endif
+ 	}
+ 	return 1;
+ }
+@@ -3094,6 +3106,9 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ {
+ 	int i, idx;
+ 
++	if (deferred_takeover)
++		return 0;
++
+ 	idx = info->node;
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] = idx)
+@@ -3131,6 +3146,14 @@ static int fbcon_fb_unregistered(struct fb_info *info)
+ static void fbcon_remap_all(int idx)
+ {
+ 	int i;
++
++	if (deferred_takeover) {
++		for (i = first_fb_vc; i <= last_fb_vc; i++)
++			con2fb_map_boot[i] = idx;
++		fbcon_map_override();
++		return;
++	}
++
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++)
+ 		set_con2fb_map(i, idx, 0);
+ 
+@@ -3180,6 +3203,11 @@ static int fbcon_fb_registered(struct fb_info *info)
+ 	idx = info->node;
+ 	fbcon_select_primary(info);
+ 
++	if (deferred_takeover) {
++		pr_info("fbcon: Deferring console take-over\n");
++		return 0;
++	}
++
+ 	if (info_idx = -1) {
+ 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 			if (con2fb_map_boot[i] = idx) {
+@@ -3555,8 +3583,45 @@ static int fbcon_init_device(void)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
++static struct notifier_block fbcon_output_nb;
++
++/* called with console_lock held */
++static int fbcon_output_notifier(struct notifier_block *nb,
++				 unsigned long action, void *data)
++{
++	int i;
++
++	pr_info("fbcon: Taking over console\n");
++
++	dummycon_unregister_output_notifier(&fbcon_output_nb);
++	deferred_takeover = false;
++	logo_shown = FBCON_LOGO_DONTSHOW;
++
++	for (i = 0; i < FB_MAX; i++) {
++		if (registered_fb[i])
++			fbcon_fb_registered(registered_fb[i]);
++	}
++
++	return NOTIFY_OK;
++}
++
++static void fbcon_register_output_notifier(void)
++{
++	fbcon_output_nb.notifier_call = fbcon_output_notifier;
++	dummycon_register_output_notifier(&fbcon_output_nb);
++}
++#else
++static inline void fbcon_register_output_notifier(void) {}
++#endif
++
+ static void fbcon_start(void)
+ {
++	if (deferred_takeover) {
++		fbcon_register_output_notifier();
++		return;
++	}
++
+ 	if (num_registered_fb) {
+ 		int i;
+ 
+diff --git a/include/linux/console.h b/include/linux/console.h
+index dfd6b0e97855..f59f3dbca65c 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -21,6 +21,7 @@ struct console_font_op;
+ struct console_font;
+ struct module;
+ struct tty_struct;
++struct notifier_block;
+ 
+ /*
+  * this is what the terminal answers to a ESC-Z or csi0c query.
+@@ -220,4 +221,8 @@ static inline bool vgacon_text_force(void) { return false; }
+ 
+ extern void console_init(void);
+ 
++/* For deferred console takeover */
++void dummycon_register_output_notifier(struct notifier_block *nb);
++void dummycon_unregister_output_notifier(struct notifier_block *nb);
++
+ #endif /* _LINUX_CONSOLE_H */
+-- 
+2.17.1
+

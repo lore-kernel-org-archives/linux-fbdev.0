@@ -1,10 +1,10 @@
 From: Hans de Goede <hdegoede@redhat.com>
-Date: Tue, 26 Jun 2018 13:55:33 +0000
+Date: Tue, 26 Jun 2018 18:36:10 +0000
 Subject: [PATCH v3 1/3] printk: Export is_console_locked
-Message-Id: <20180626135535.2990-2-hdegoede@redhat.com>
+Message-Id: <20180626183612.321-2-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180626135535.2990-1-hdegoede@redhat.com>
-In-Reply-To: <20180626135535.2990-1-hdegoede@redhat.com>
+References: <20180626183612.321-1-hdegoede@redhat.com>
+In-Reply-To: <20180626183612.321-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,6 +15,7 @@ This is a preparation patch for adding a number of WARN_CONSOLE_UNLOCKED()
 calls to the fbcon code, which may be built as a module (event though
 usually it is not).
 
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
 Changes in v3:

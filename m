@@ -1,44 +1,57 @@
-From: Sinan Kaya <okaya@codeaurora.org>
-Date: Tue, 19 Jun 2018 22:14:55 +0000
-Subject: Re: [PATCH] efi/fb: Convert PCI bus address to resource if translated by the bridge
-Message-Id: <61384244-49f9-2020-04f0-6e188cf6a6b7@codeaurora.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 28 Jun 2018 09:03:48 +0000
+Subject: [PATCH v5 0/3] console/fbcon: Add support for deferred console takeover
+Message-Id: <20180628090351.15581-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1526563343-28721-1-git-send-email-okaya@codeaurora.org>
- <36cf3f12-bfe8-1c38-4d2c-b785fc64a3f6@arm.com>
- <733101d0-9051-a5a6-ef64-162d8d1e10a1@codeaurora.org>
- <20180619215955.GF33049@bhelgaas-glaptop.roam.corp.google.com>
-In-Reply-To: <20180619215955.GF33049@bhelgaas-glaptop.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pci@vger.kernel.org, timur@codeaurora.org, ard.biesheuvel@linaro.org, open list <linux-kernel@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, Peter Jones <pjones@redhat.com>, linux-arm-msm@vger.kernel.org, Robin Murphy <robin.murphy@arm.com>, linux-arm-kernel@lists.infradead.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Hi Bjorn,
+Hi All,
 
-On 6/19/2018 5:59 PM, Bjorn Helgaas wrote:
-> On Fri, May 18, 2018 at 10:20:29AM -0400, Sinan Kaya wrote:
->> On 5/18/2018 6:42 AM, Robin Murphy wrote:
->>>
->>> FWIW, now that I've actually gone and looked, it appears you could simplify the whole function quite a bit by getting rid of these and just using the new local resource directly, especially since the only actual use of size is an open-coded resource_contains().
->>
->> Posted V2 a minute ago. I did the simplification on a prior patch in order not to
->> mix the issues.
-> 
-> I don't see the V2 on linux-pci, but it sounds like Ard would merge this
-> anyway.  So I'll drop this and you can let me know if there's anything you
-> need from me.
-> 
+Here is v5 of my patch-set, to delay fbcon taking over the console (and
+binding to fbdev devices) until there actually is some text output to the
+console. This is intended for use with the "quiet" cmdline option, in
+combination with a bootloader which leaves the vendor's logo /
+EFI bootgraphics put up by the firmware intact on the EFI framebuffer.
 
-It is planned to go through fbdev tree for 4.19. 
+The end goal here is a boot where the firmware shows its boot graphics
+and these stay in place for a couple of seconds until the GUI loads and
+the GUI then smoothly takes over the framebuffer without any distruptions.
 
-https://patchwork.kernel.org/patch/10410895/
+Bartlomiej, I believe that this patch-set is ready for merging now and
+the first patch has Petr's ack, so can we get this merged now?
 
-Feel free to review/ACK.
+Also please create an inmutable (or topic) branch for this, so that the
+drm people can merge it into drm-tip for additional testing.
 
-Sinan
+Changelog:
 
--- 
-Sinan Kaya
-Qualcomm Datacenter Technologies, Inc. as an affiliate of Qualcomm Technologies, Inc.
-Qualcomm Technologies, Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project.
+Changes in v5:
+-Improve commit message, explain why dummy_con.c is used to detect the
+ first printout, instead of handling this entirely inside the fbcon code
+ (no code changes, only updated the commit message)
+
+Changes in v4:
+-Keep the comments about which fbcon functions need locks in place
+
+Changes in v3:
+-Export is_console_locke() for use in modules (as fbcon may be built as a .ko)
+-Use WARN_CONSOLE_UNLOCKED() in several places in the fbcon code to assert
+ proper locking (requested by Daniel)
+-Unregister the fbcon-dummycon-output-notifier on fbcon_exit() (req. by Daniel)
+-Document the fbcon=nodefer commandline option (req. by Emil)
+
+Changes in v2:
+-Check the whole string when checking for erases in putcs, instead of just
+ the first char
+-Make dummycon_blank return 1, so that a redraw gets triggered and any text
+ rendered while blanked gets output so that it can trigger a deferred
+ takeover if one is pending
+
+Regards,
+
+Hans
+

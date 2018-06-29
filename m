@@ -1,43 +1,31 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 29 Jun 2018 09:36:27 +0000
-Subject: [PATCH] console: dummycon: export dummycon_[un]register_output_notifier
-Message-Id: <20180629093627.14620-1-hdegoede@redhat.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 29 Jun 2018 10:06:11 +0000
+Subject: Re: [PATCH] console: dummycon: export dummycon_[un]register_output_notifier
+Message-Id: <2122931.M7oWVmMZAv@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180629093647epcas5p4753328d494b7926e40e4a7d403f0677f@epcas5p4.samsung.com>
+ <20180629093627.14620-1-hdegoede@redhat.com>
+In-Reply-To: <20180629093627.14620-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Stephen Rothwell <sfr@canb.auug.org.au>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Export dummycon_[un]register_output_notifier, the fbcon code needs this
-and may be build as a module.
+On Friday, June 29, 2018 11:36:27 AM Hans de Goede wrote:
+> Export dummycon_[un]register_output_notifier, the fbcon code needs this
+> and may be build as a module.
+> 
+> Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
+> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Fixes: 83d83bebf401 ("console/fbcon: Add support for deferred console takeover")
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
----
- drivers/video/console/dummycon.c | 2 ++
- 1 file changed, 2 insertions(+)
+Applied to fbdev-for-next, thanks.
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index 45ad925ad5f8..0254251fdd79 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -38,11 +38,13 @@ void dummycon_register_output_notifier(struct notifier_block *nb)
- 	if (dummycon_putc_called)
- 		nb->notifier_call(nb, 0, NULL);
- }
-+EXPORT_SYMBOL_GPL(dummycon_register_output_notifier);
- 
- void dummycon_unregister_output_notifier(struct notifier_block *nb)
- {
- 	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
- }
-+EXPORT_SYMBOL_GPL(dummycon_unregister_output_notifier);
- 
- static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
- {
--- 
-2.17.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

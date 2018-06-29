@@ -1,83 +1,95 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 28 Jun 2018 09:03:50 +0000
-Subject: [PATCH v5 2/3] fbcon: Call WARN_CONSOLE_UNLOCKED() where applicable
-Message-Id: <20180628090351.15581-3-hdegoede@redhat.com>
+From: Kees Cook <keescook@chromium.org>
+Date: Fri, 29 Jun 2018 18:46:55 +0000
+Subject: [PATCH] video: fbdev: fsl-diu-fb: Remove VLA usage
+Message-Id: <20180629184655.GA37391@beast>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180628090351.15581-1-hdegoede@redhat.com>
-In-Reply-To: <20180628090351.15581-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Petr Mladek <pmladek@suse.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Timur Tabi <timur@tabi.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Replace comments about places where the console lock should be held with
-calls to WARN_CONSOLE_UNLOCKED() to assert that it is actually held.
+In the quest to remove all stack VLA usage from the kernel[1], this moves
+the buffer off the stack (since it could be as much as 1024 bytes), and
+uses a new area in the cursor data structure. Additionally adds missed
+documentation and removes redundant assignments.
 
-Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+[1] https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
+
+Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
-Changes in v3:
--New patch in v3 of this patchset
+ drivers/video/fbdev/fsl-diu-fb.c | 23 +++++++++++++----------
+ 1 file changed, 13 insertions(+), 10 deletions(-)
 
-Changes in v4:
--Keep the comments about which fbcon functions need locks in place
----
- drivers/video/fbdev/core/fbcon.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index c910e74d46ff..cd8d52a967aa 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -828,6 +828,8 @@ static int set_con2fb_map(int unit, int newidx, int user)
- 	struct fb_info *oldinfo = NULL;
-  	int found, err = 0;
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index 1bfd13cbd4e3..bc9eb8afc313 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -360,6 +360,10 @@ struct mfb_info {
+  * @ad[]: Area Descriptors for each real AOI
+  * @gamma: gamma color table
+  * @cursor: hardware cursor data
++ * @blank_cursor: blank cursor for hiding cursor
++ * @next_cursor: scratch space to build load cursor
++ * @edid_data: EDID information buffer
++ * @has_edid: whether or not the EDID buffer is valid
+  *
+  * This data structure must be allocated with 32-byte alignment, so that the
+  * internal fields can be aligned properly.
+@@ -381,6 +385,8 @@ struct fsl_diu_data {
+ 	__le16 cursor[MAX_CURS * MAX_CURS] __aligned(32);
+ 	/* Blank cursor data -- used to hide the cursor */
+ 	__le16 blank_cursor[MAX_CURS * MAX_CURS] __aligned(32);
++	/* Scratch cursor data -- used to build new cursor */
++	__le16 next_cursor[MAX_CURS * MAX_CURS] __aligned(32);
+ 	uint8_t edid_data[EDID_LENGTH];
+ 	bool has_edid;
+ } __aligned(32);
+@@ -1056,13 +1062,17 @@ static int fsl_diu_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 	 * FB_CUR_SETSHAPE - the cursor bitmask has changed
+ 	 */
+ 	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETCMAP | FB_CUR_SETIMAGE)) {
++		/*
++		 * Determine the size of the cursor image data.  Normally,
++		 * it's 8x16.
++		 */
+ 		unsigned int image_size -			DIV_ROUND_UP(cursor->image.width, 8) * cursor->image.height;
++			DIV_ROUND_UP(cursor->image.width, 8) *
++			cursor->image.height;
+ 		unsigned int image_words  			DIV_ROUND_UP(image_size, sizeof(uint32_t));
+ 		unsigned int bg_idx = cursor->image.bg_color;
+ 		unsigned int fg_idx = cursor->image.fg_color;
+-		uint8_t buffer[image_size];
+ 		uint32_t *image, *source, *mask;
+ 		uint16_t fg, bg;
+ 		unsigned int i;
+@@ -1070,13 +1080,6 @@ static int fsl_diu_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 		if (info->state != FBINFO_STATE_RUNNING)
+ 			return 0;
  
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	if (oldidx = newidx)
- 		return 0;
+-		/*
+-		 * Determine the size of the cursor image data.  Normally,
+-		 * it's 8x16.
+-		 */
+-		image_size = DIV_ROUND_UP(cursor->image.width, 8) *
+-			cursor->image.height;
+-
+ 		bg = ((info->cmap.red[bg_idx] & 0xf8) << 7) |
+ 		     ((info->cmap.green[bg_idx] & 0xf8) << 2) |
+ 		     ((info->cmap.blue[bg_idx] & 0xf8) >> 3) |
+@@ -1088,7 +1091,7 @@ static int fsl_diu_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 		     1 << 15;
  
-@@ -3044,6 +3046,8 @@ static int fbcon_fb_unbind(int idx)
- {
- 	int i, new_idx = -1, ret = 0;
- 
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	if (!fbcon_has_console_bind)
- 		return 0;
- 
-@@ -3094,6 +3098,8 @@ static int fbcon_fb_unregistered(struct fb_info *info)
- {
- 	int i, idx;
- 
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	idx = info->node;
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		if (con2fb_map[i] = idx)
-@@ -3131,6 +3137,9 @@ static int fbcon_fb_unregistered(struct fb_info *info)
- static void fbcon_remap_all(int idx)
- {
- 	int i;
-+
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	for (i = first_fb_vc; i <= last_fb_vc; i++)
- 		set_con2fb_map(i, idx, 0);
- 
-@@ -3177,6 +3186,8 @@ static int fbcon_fb_registered(struct fb_info *info)
- {
- 	int ret = 0, i, idx;
- 
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	idx = info->node;
- 	fbcon_select_primary(info);
+ 		/* Use 32-bit operations on the data to improve performance */
+-		image = (uint32_t *)buffer;
++		image = (uint32_t *)data->next_cursor;
+ 		source = (uint32_t *)cursor->image.data;
+ 		mask = (uint32_t *)cursor->mask;
  
 -- 
 2.17.1
 
+
+-- 
+Kees Cook
+Pixel Security

@@ -1,199 +1,49 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Sun, 03 Jun 2018 14:41:00 +0000
-Subject: [PATCH 07/21] udl-kms: avoid division
-Message-Id: <20180603144221.605787225@twibright.com>
+From: Yisheng Xie <ysxie@foxmail.com>
+Date: Sat, 30 Jun 2018 07:30:48 +0000
+Subject: [PATCH v2 fbdev-for-next 2/2] fbdev: fix typo in comment
+Message-Id: <1530343848-4344-1-git-send-email-ysxie@foxmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180603144053.875668929@twibright.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: b.zolnierkie@samsung.com, keescook@chromium.org, j.w.r.degoede@gmail.com, david@lechnology.com
+Cc: andriy.shevchenko@linux.intel.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Yisheng Xie <ysxie@foxmail.com>
 
-Division is slow, so it shouldn't be done by the pixel generating code.
-The driver supports only 2 or 4 bytes per pixel, so we can replace
-division with a shift.
+change beeng to being and occured to occurred.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-
+Signed-off-by: Yisheng Xie <ysxie@foxmail.com>
 ---
- drivers/gpu/drm/udl/udl_drv.h      |    2 -
- drivers/gpu/drm/udl/udl_fb.c       |   15 ++++++++------
- drivers/gpu/drm/udl/udl_transfer.c |   39 ++++++++++++++++++-------------------
- 3 files changed, 30 insertions(+), 26 deletions(-)
+v2:
+ - new add one.
 
-Index: linux-4.17-rc7/drivers/gpu/drm/udl/udl_drv.h
-=================================--- linux-4.17-rc7.orig/drivers/gpu/drm/udl/udl_drv.h	2018-06-03 13:15:01.000000000 +0200
-+++ linux-4.17-rc7/drivers/gpu/drm/udl/udl_drv.h	2018-06-03 13:15:01.000000000 +0200
-@@ -110,7 +110,7 @@ udl_fb_user_fb_create(struct drm_device
- 		      struct drm_file *file,
- 		      const struct drm_mode_fb_cmd2 *mode_cmd);
+ include/linux/fb.h | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index fd31e6f..3e7e753 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -126,7 +126,7 @@ struct fb_cursor_user {
  
--int udl_render_hline(struct drm_device *dev, int bpp, struct urb **urb_ptr,
-+int udl_render_hline(struct drm_device *dev, int log_bpp, struct urb **urb_ptr,
- 		     const char *front, char **urb_buf_ptr,
- 		     u32 byte_offset, u32 device_byte_offset, u32 byte_width,
- 		     int *ident_ptr, int *sent_ptr);
-Index: linux-4.17-rc7/drivers/gpu/drm/udl/udl_fb.c
-=================================--- linux-4.17-rc7.orig/drivers/gpu/drm/udl/udl_fb.c	2018-06-03 13:15:01.000000000 +0200
-+++ linux-4.17-rc7/drivers/gpu/drm/udl/udl_fb.c	2018-06-03 13:15:01.000000000 +0200
-@@ -91,7 +91,10 @@ int udl_handle_damage(struct udl_framebu
- 	int bytes_identical = 0;
- 	struct urb *urb;
- 	int aligned_x;
--	int bpp = fb->base.format->cpp[0];
-+	int log_bpp;
-+
-+	BUG_ON(!is_power_of_2(fb->base.format->cpp[0]));
-+	log_bpp = __ffs(fb->base.format->cpp[0]);
- 
- 	if (!fb->active_16)
- 		return 0;
-@@ -126,12 +129,12 @@ int udl_handle_damage(struct udl_framebu
- 
- 	for (i = y; i < y + height ; i++) {
- 		const int line_offset = fb->base.pitches[0] * i;
--		const int byte_offset = line_offset + (x * bpp);
--		const int dev_byte_offset = (fb->base.width * bpp * i) + (x * bpp);
--		if (udl_render_hline(dev, bpp, &urb,
-+		const int byte_offset = line_offset + (x << log_bpp);
-+		const int dev_byte_offset = (fb->base.width * i + x) << log_bpp;
-+		if (udl_render_hline(dev, log_bpp, &urb,
- 				     (char *) fb->obj->vmapping,
- 				     &cmd, byte_offset, dev_byte_offset,
--				     width * bpp,
-+				     width << log_bpp,
- 				     &bytes_identical, &bytes_sent))
- 			goto error;
- 	}
-@@ -150,7 +153,7 @@ int udl_handle_damage(struct udl_framebu
- error:
- 	atomic_add(bytes_sent, &udl->bytes_sent);
- 	atomic_add(bytes_identical, &udl->bytes_identical);
--	atomic_add(width*height*bpp, &udl->bytes_rendered);
-+	atomic_add((width * height) << log_bpp, &udl->bytes_rendered);
- 	end_cycles = get_cycles();
- 	atomic_add(((unsigned int) ((end_cycles - start_cycles)
- 		    >> 10)), /* Kcycles */
-Index: linux-4.17-rc7/drivers/gpu/drm/udl/udl_transfer.c
-=================================--- linux-4.17-rc7.orig/drivers/gpu/drm/udl/udl_transfer.c	2018-06-03 13:15:01.000000000 +0200
-+++ linux-4.17-rc7/drivers/gpu/drm/udl/udl_transfer.c	2018-06-03 13:15:01.000000000 +0200
-@@ -83,12 +83,12 @@ static inline u16 pixel32_to_be16(const
- 		((pixel >> 8) & 0xf800));
- }
- 
--static inline u16 get_pixel_val16(const uint8_t *pixel, int bpp)
-+static inline u16 get_pixel_val16(const uint8_t *pixel, int log_bpp)
- {
--	u16 pixel_val16 = 0;
--	if (bpp = 2)
-+	u16 pixel_val16;
-+	if (log_bpp = 1)
- 		pixel_val16 = *(const uint16_t *)pixel;
--	else if (bpp = 4)
-+	else
- 		pixel_val16 = pixel32_to_be16(*(const uint32_t *)pixel);
- 	return pixel_val16;
- }
-@@ -125,8 +125,9 @@ static void udl_compress_hline16(
- 	const u8 *const pixel_end,
- 	uint32_t *device_address_ptr,
- 	uint8_t **command_buffer_ptr,
--	const uint8_t *const cmd_buffer_end, int bpp)
-+	const uint8_t *const cmd_buffer_end, int log_bpp)
- {
-+	const int bpp = 1 << log_bpp;
- 	const u8 *pixel = *pixel_start_ptr;
- 	uint32_t dev_addr  = *device_address_ptr;
- 	uint8_t *cmd = *command_buffer_ptr;
-@@ -153,12 +154,12 @@ static void udl_compress_hline16(
- 		raw_pixels_count_byte = cmd++; /*  we'll know this later */
- 		raw_pixel_start = pixel;
- 
--		cmd_pixel_end = pixel + min3(MAX_CMD_PIXELS + 1UL,
--					(unsigned long)(pixel_end - pixel) / bpp,
--					(unsigned long)(cmd_buffer_end - 1 - cmd) / 2) * bpp;
-+		cmd_pixel_end = pixel + (min3(MAX_CMD_PIXELS + 1UL,
-+					(unsigned long)(pixel_end - pixel) >> log_bpp,
-+					(unsigned long)(cmd_buffer_end - 1 - cmd) / 2) << log_bpp);
- 
- 		prefetch_range((void *) pixel, cmd_pixel_end - pixel);
--		pixel_val16 = get_pixel_val16(pixel, bpp);
-+		pixel_val16 = get_pixel_val16(pixel, log_bpp);
- 
- 		while (pixel < cmd_pixel_end) {
- 			const u8 *const start = pixel;
-@@ -170,7 +171,7 @@ static void udl_compress_hline16(
- 			pixel += bpp;
- 
- 			while (pixel < cmd_pixel_end) {
--				pixel_val16 = get_pixel_val16(pixel, bpp);
-+				pixel_val16 = get_pixel_val16(pixel, log_bpp);
- 				if (pixel_val16 != repeating_pixel_val16)
- 					break;
- 				pixel += bpp;
-@@ -179,10 +180,10 @@ static void udl_compress_hline16(
- 			if (unlikely(pixel > start + bpp)) {
- 				/* go back and fill in raw pixel count */
- 				*raw_pixels_count_byte = (((start -
--						raw_pixel_start) / bpp) + 1) & 0xFF;
-+						raw_pixel_start) >> log_bpp) + 1) & 0xFF;
- 
- 				/* immediately after raw data is repeat byte */
--				*cmd++ = (((pixel - start) / bpp) - 1) & 0xFF;
-+				*cmd++ = (((pixel - start) >> log_bpp) - 1) & 0xFF;
- 
- 				/* Then start another raw pixel span */
- 				raw_pixel_start = pixel;
-@@ -192,14 +193,14 @@ static void udl_compress_hline16(
- 
- 		if (pixel > raw_pixel_start) {
- 			/* finalize last RAW span */
--			*raw_pixels_count_byte = ((pixel-raw_pixel_start) / bpp) & 0xFF;
-+			*raw_pixels_count_byte = ((pixel - raw_pixel_start) >> log_bpp) & 0xFF;
- 		} else {
- 			/* undo unused byte */
- 			cmd--;
- 		}
- 
--		*cmd_pixels_count_byte = ((pixel - cmd_pixel_start) / bpp) & 0xFF;
--		dev_addr += ((pixel - cmd_pixel_start) / bpp) * 2;
-+		*cmd_pixels_count_byte = ((pixel - cmd_pixel_start) >> log_bpp) & 0xFF;
-+		dev_addr += ((pixel - cmd_pixel_start) >> log_bpp) * 2;
- 	}
- 
- 	if (cmd_buffer_end <= MIN_RLX_CMD_BYTES + cmd) {
-@@ -222,19 +223,19 @@ static void udl_compress_hline16(
-  * (that we can only write to, slowly, and can never read), and (optionally)
-  * our shadow copy that tracks what's been sent to that hardware buffer.
+ /*	The resolution of the passed in fb_info about to change */ 
+ #define FB_EVENT_MODE_CHANGE		0x01
+-/*	The display on this fb_info is beeing suspended, no access to the
++/*	The display on this fb_info is being suspended, no access to the
+  *	framebuffer is allowed any more after that call returns
   */
--int udl_render_hline(struct drm_device *dev, int bpp, struct urb **urb_ptr,
-+int udl_render_hline(struct drm_device *dev, int log_bpp, struct urb **urb_ptr,
- 		     const char *front, char **urb_buf_ptr,
- 		     u32 byte_offset, u32 device_byte_offset,
- 		     u32 byte_width,
- 		     int *ident_ptr, int *sent_ptr)
- {
- 	const u8 *line_start, *line_end, *next_pixel;
--	u32 base16 = 0 + (device_byte_offset / bpp) * 2;
-+	u32 base16 = 0 + (device_byte_offset >> log_bpp) * 2;
- 	struct urb *urb = *urb_ptr;
- 	u8 *cmd = *urb_buf_ptr;
- 	u8 *cmd_end = (u8 *) urb->transfer_buffer + urb->transfer_buffer_length;
+ #define FB_EVENT_SUSPEND		0x02
+@@ -159,9 +159,9 @@ struct fb_cursor_user {
+ #define FB_EVENT_FB_UNBIND              0x0E
+ /*      CONSOLE-SPECIFIC: remap all consoles to new fb - for vga_switcheroo */
+ #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
+-/*      A hardware display blank early change occured */
++/*      A hardware display blank early change occurred */
+ #define FB_EARLY_EVENT_BLANK		0x10
+-/*      A hardware display blank revert early change occured */
++/*      A hardware display blank revert early change occurred */
+ #define FB_R_EARLY_EVENT_BLANK		0x11
  
--	BUG_ON(!(bpp = 2 || bpp = 4));
-+	BUG_ON(!(log_bpp = 1 || log_bpp = 2));
- 
- 	line_start = (u8 *) (front + byte_offset);
- 	next_pixel = line_start;
-@@ -244,7 +245,7 @@ int udl_render_hline(struct drm_device *
- 
- 		udl_compress_hline16(&next_pixel,
- 			     line_end, &base16,
--			     (u8 **) &cmd, (u8 *) cmd_end, bpp);
-+			     (u8 **) &cmd, (u8 *) cmd_end, log_bpp);
- 
- 		if (cmd >= cmd_end) {
- 			int len = cmd - (u8 *) urb->transfer_buffer;
+ struct fb_event {
+-- 
+1.9.1
 

@@ -1,39 +1,52 @@
-From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Date: Fri, 20 Jul 2018 12:08:00 +0000
-Subject: Re: [PATCH v3 0/2] fbdev/core: Disable console-lock warnings when fb.lockless_register_fb is set
-Message-Id: <20180720120800.GB11590@tigerII.localdomain>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Mon, 02 Jul 2018 11:26:04 +0000
+Subject: Re: [PATCH v2 1/2] efi/bgrt: Drop __initdata from bgrt_image_size
+Message-Id: <0333a338-fc21-7f78-7785-f62a67f232a5@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180719101601.25076-1-tzimmermann@suse.de>
-In-Reply-To: <20180719101601.25076-1-tzimmermann@suse.de>
+References: <20180618151358.4830-1-hdegoede@redhat.com>
+In-Reply-To: <20180618151358.4830-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: pmladek@suse.com, linux-fbdev@vger.kernel.org, sergey.senozhatsky.work@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, sergey.senozhatsky@gmail.com, hdegoede@redhat.com, rostedt@goodmis.org, akpm@linux-foundation.org
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-efi@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On (07/19/18 12:15), Thomas Zimmermann wrote:
-> this is version 3 of the WARN_CONSOLE_UNLOCKED patch set. The
-> macro prints a warning if the console's critical sections are
-> entered without holding the console lock. This patch set allows
-> to disable the warnings while debugging the console.
-> 
-> In the original approach, WARN_CONSOLE_UNLOCKED was disabled by
-> setting ignore_console_lock_warning of type bool. As suggested by
-> Petr Mladek, the new implementation is based on atomic_t and allows
-> multiple threads to manipulate the warning state concurrently.
-> 
-> With version 3, the patch set now includes the patch for introducing
-> ignore_console_lock_warning. This patch superseds all previous patches
-> of the same purpose.
-> 
-> Best regards
-> Thomas
-> 
-> v3:
-> 	- implement ignore_console_lock_warning with atomic_t
-> v2:
-> 	- restore ignore_console_lock_warning if lock_fb_info() fails
+Bartlomiej,
 
-Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Now that the fbcon deferred console takeover patches have been
+merged I believe this series can be merged too ?
 
-	-ss
+Note the first patch has an ack from Ard for merging the
+1 line efi change through the fbdev tree.
+
+Regards,
+
+Hans
+
+
+On 18-06-18 17:13, Hans de Goede wrote:
+> bgrt_image_size is necessary to (optionally) show the boot graphics from
+> the efifb code. The efifb driver is a platform driver, using a normal
+> driver probe() driver callback. So even though it is always builtin it
+> cannot reference __initdata.
+> 
+> Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+>   drivers/firmware/efi/efi-bgrt.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/firmware/efi/efi-bgrt.c b/drivers/firmware/efi/efi-bgrt.c
+> index 50793fda7819..b22ccfb0c991 100644
+> --- a/drivers/firmware/efi/efi-bgrt.c
+> +++ b/drivers/firmware/efi/efi-bgrt.c
+> @@ -20,7 +20,7 @@
+>   #include <linux/efi-bgrt.h>
+>   
+>   struct acpi_table_bgrt bgrt_tab;
+> -size_t __initdata bgrt_image_size;
+> +size_t bgrt_image_size;
+>   
+>   struct bmp_header {
+>   	u16 id;
+> 

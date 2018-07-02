@@ -1,44 +1,39 @@
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 02 Jul 2018 10:06:38 +0000
+Date: Mon, 02 Jul 2018 10:15:09 +0000
 Subject: Re: [PATCH] fbcon: introduce for_each_registered_fb() helper
-Message-Id: <048c10a3acb3dec624d1064e84ffd4957648949b.camel@linux.intel.com>
+Message-Id: <cc1b6c9efa197d7dcf3ebec69eebdb4c3ca90eef.camel@linux.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1530202809-24105-1-git-send-email-ysxie@foxmail.com>
-         <ffe03b382ee84dbef8567b7377b929e4a8d6c23c.camel@linux.intel.com>
-         <20180702073028.GZ13978@phenom.ffwll.local>
-In-Reply-To: <20180702073028.GZ13978@phenom.ffwll.local>
+         <00590669b886b4cc54548e6101912c3d4d1752f2.camel@petrovitsch.priv.at>
+In-Reply-To: <00590669b886b4cc54548e6101912c3d4d1752f2.camel@petrovitsch.priv.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Yisheng Xie <ysxie@foxmail.com>, b.zolnierkie@samsung.com, keescook@chromium.org, j.w.r.degoede@gmail.com, david@lechnology.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bernd Petrovitsch <bernd@petrovitsch.priv.at>, Yisheng Xie <ysxie@foxmail.com>, b.zolnierkie@samsung.com, keescook@chromium.org, j.w.r.degoede@gmail.com, david@lechnology.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 2018-07-02 at 09:30 +0200, Daniel Vetter wrote:
-> On Fri, Jun 29, 2018 at 07:20:13PM +0300, Andy Shevchenko wrote:
-> > On Fri, 2018-06-29 at 00:20 +0800, Yisheng Xie wrote:
+On Mon, 2018-07-02 at 09:36 +0200, Bernd Petrovitsch wrote:
 
-> > LGTM except macro implementation. That's why I have mentioned
-> > for_each_pci_bridge() to look at.
-> > 
-> > > +#define for_each_registered_fb(i)		\
-> > > +	for (i = 0; i < FB_MAX; i++)		\
-> > > +		if (registered_fb[i])
-> > > +
-> > 
-> > This needs to be protected against nested conditionals.
-> > Otherwise compiler issues a warning and even may generate wrong
-> > code.
+
+> > +#define for_each_registered_fb(i)		\
+> > +	for (i = 0; i < FB_MAX; i++)		\
+> > +		if (registered_fb[i])
+> > +
 > 
-> See for_each_if() in include/drm/drmP.h ... we should probably lift
-> that
-> into a general header. The for_each_if() is used all over drm in
-> iterator
-> macros, exactly to avoid surprises.
+> That leaves the possibility of a dangling-else.
+> ----  snip  ----
+> #define for_each_registered_fb(i)		\
+> 	for (i = 0; i < FB_MAX; i++)		\
+> 		if (!registered_fb[i])		\
+> 			continue;		\
+> 		else
+> ----  snip  ----
+> avoids that.
 
-Wow, didn't know we have a such. It's a good idea to forelift it for
-wider use.
+Yes, you not alone :-)
 
-Yisheng, it seems you may use it in your patch directly.
+AFAIU there is a v2 which fixes that, though Daniel pointed out that DRM
+has a specific macro to make life easier.
 
 -- 
 Andy Shevchenko <andriy.shevchenko@linux.intel.com>

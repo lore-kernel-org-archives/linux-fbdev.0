@@ -1,630 +1,122 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Fri, 20 Jul 2018 13:40:40 +0000
-Subject: Re: [PATCH V4 5/8] backlight: qcom-wled: Restructure the driver for WLED3
-Message-Id: <68673142-1496-de1b-55cc-78a3dd2256bd@linaro.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 03 Jul 2018 14:52:19 +0000
+Subject: Re: [PATCH] fb: fix lost console when the user unplugs a USB adapter
+Message-Id: <5091035.TYlAUG7jeO@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1531131741-19971-1-git-send-email-kgunda@codeaurora.org>
- <1531131741-19971-6-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1531131741-19971-6-git-send-email-kgunda@codeaurora.org>
+References: <CGME20180603154636epcas2p4812a1f19c6ae236336ae580658edb167@epcas2p4.samsung.com>
+ <alpine.LRH.2.02.1806031143470.15248@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1806031143470.15248@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kiran Gunda <kgunda@codeaurora.org>, bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: linux-arm-msm@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org
 
-On 09/07/18 11:22, Kiran Gunda wrote:
-> Restructure the driver to add the support for new WLED
-> peripherals.
+
+Hi,
+
+On Sunday, June 03, 2018 11:46:29 AM Mikulas Patocka wrote:
+> I have a USB display adapter using the udlfb driver and I use it on an ARM
+> board that doesn't have any graphics card. When I plug the adapter in, the
+> console is properly displayed, however when I unplug and re-plug the
+> adapter, the console is not displayed and I can't access it until I reboot
+> the board.
 > 
-> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+> The reason is this:
+> When the adapter is unplugged, dlfb_usb_disconnect calls
+> unlink_framebuffer, then it waits until the reference count drops to zero
+> and then it deallocates the framebuffer. However, the console that is
+> attached to the framebuffer device keeps the reference count non-zero, so
+> the framebuffer device is never destroyed. When the USB adapter is plugged
+> again, it creates a new device /dev/fb1 and the console is not attached to
+> it.
+> 
+> This patch fixes the bug by unbinding the console from unlink_framebuffer.
+> The code to unbind the console is moved from do_unregister_framebuffer to
+> a function unbind_console. When the console is unbound, the reference
+> count drops to zero and the udlfb driver frees the framebuffer. When the
+> adapter is plugged back, a new framebuffer is created and the console is
+> attached to it.
+> 
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> Cc: stable@vger.kernel.org
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+After this change unbind_console() will be called twice in the standard
+framebuffer unregister path:
 
+- first time, directly by do_unregister_framebuffer()
+
+- second time, indirectly by do_unregister_framebuffer()->unlink_framebuffer()
+
+This doesn't look correctly.
+
+Also why can't udlfb just use unregister_framebuffer() like all other
+drivers (it uses unlink_framebuffer() and it is the only user of this
+helper)?
 
 > ---
-> Changes from V3:
-> 	- This is the new patch after splitting the
-> 	  "backlight: qcom-wled: Add support for WLED4 peripheral" patch
-> 	  to seperate the WLED3 specific restructure.
-> 		
->   drivers/video/backlight/qcom-wled.c | 396 ++++++++++++++++++++++--------------
->   1 file changed, 246 insertions(+), 150 deletions(-)
+>  drivers/video/fbdev/core/fbmem.c |   21 +++++++++++++++++----
+>  1 file changed, 17 insertions(+), 4 deletions(-)
 > 
-> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-> index 3cd6e75..87fc1d0 100644
-> --- a/drivers/video/backlight/qcom-wled.c
-> +++ b/drivers/video/backlight/qcom-wled.c
-> @@ -15,59 +15,71 @@
->   #include <linux/module.h>
->   #include <linux/of.h>
->   #include <linux/of_device.h>
-> +#include <linux/of_address.h>
->   #include <linux/regmap.h>
->   
->   /* From DT binding */
-> +#define WLED_MAX_STRINGS				4
-> +
->   #define WLED_DEFAULT_BRIGHTNESS				2048
->   
-> -#define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
-> -#define WLED3_CTRL_REG_VAL_BASE				0x40
-> +#define WLED_SINK_REG_BRIGHT_MAX			0xFFF
->   
-> -/* WLED3 control registers */
-> -#define WLED3_CTRL_REG_MOD_EN				0x46
-> -#define  WLED3_CTRL_REG_MOD_EN_BIT			BIT(7)
-> -#define  WLED3_CTRL_REG_MOD_EN_MASK			BIT(7)
-> +/* WLED control registers */
-> +#define WLED_CTRL_REG_MOD_EN				0x46
-> +#define  WLED_CTRL_REG_MOD_EN_MASK			BIT(7)
-> +#define  WLED_CTRL_REG_MOD_EN_SHIFT			7
->   
-> -#define WLED3_CTRL_REG_FREQ				0x4c
-> -#define  WLED3_CTRL_REG_FREQ_MASK			0x0f
-> +#define WLED_CTRL_REG_FREQ				0x4c
-> +#define  WLED_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
->   
-> -#define WLED3_CTRL_REG_OVP				0x4d
-> -#define  WLED3_CTRL_REG_OVP_MASK			0x03
-> +#define WLED_CTRL_REG_OVP				0x4d
-> +#define  WLED_CTRL_REG_OVP_MASK				GENMASK(1, 0)
->   
-> -#define WLED3_CTRL_REG_ILIMIT				0x4e
-> -#define  WLED3_CTRL_REG_ILIMIT_MASK			0x07
-> +#define WLED_CTRL_REG_ILIMIT				0x4e
-> +#define  WLED_CTRL_REG_ILIMIT_MASK			GENMASK(2, 0)
->   
-> -/* WLED3 sink registers */
-> -#define WLED3_SINK_REG_SYNC				0x47
-> -#define  WLED3_SINK_REG_SYNC_MASK			0x07
-> -#define  WLED3_SINK_REG_SYNC_LED1			BIT(0)
-> -#define  WLED3_SINK_REG_SYNC_LED2			BIT(1)
-> -#define  WLED3_SINK_REG_SYNC_LED3			BIT(2)
-> -#define  WLED3_SINK_REG_SYNC_ALL			0x07
-> -#define  WLED3_SINK_REG_SYNC_CLEAR			0x00
-> +/* WLED sink registers */
-> +#define WLED_SINK_REG_SYNC				0x47
-> +#define  WLED_SINK_REG_SYNC_CLEAR			0x00
->   
->   #define WLED3_SINK_REG_CURR_SINK			0x4f
-> -#define  WLED3_SINK_REG_CURR_SINK_MASK			0xe0
-> -#define  WLED3_SINK_REG_CURR_SINK_SHFT			0x05
-> +#define  WLED3_SINK_REG_CURR_SINK_MASK			GENMASK(7, 5)
-> +#define  WLED3_SINK_REG_CURR_SINK_SHFT			5
->   
-> -/* WLED3 per-'string' registers below */
-> -#define WLED3_SINK_REG_STR_OFFSET			0x10
-> +/* WLED3 specific per-'string' registers below */
-> +#define WLED3_SINK_REG_BRIGHT(n)			(0x40 + n)
->   
-> -#define WLED3_SINK_REG_STR_MOD_EN_BASE			0x60
-> +#define WLED3_SINK_REG_STR_MOD_EN(n)			(0x60 + (n * 0x10))
->   #define  WLED3_SINK_REG_STR_MOD_MASK			BIT(7)
-> -#define  WLED3_SINK_REG_STR_MOD_EN			BIT(7)
->   
-> -#define WLED3_SINK_REG_STR_FULL_SCALE_CURR		0x62
-> -#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	0x1f
-> +#define WLED3_SINK_REG_STR_FULL_SCALE_CURR(n)		(0x62 + (n * 0x10))
-> +#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	GENMASK(4, 0)
->   
-> -#define WLED3_SINK_REG_STR_MOD_SRC_BASE			0x63
-> -#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		0x01
-> +#define WLED3_SINK_REG_STR_MOD_SRC(n)			(0x63 + (n * 0x10))
-> +#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		BIT(0)
->   #define  WLED3_SINK_REG_STR_MOD_SRC_INT			0x00
->   #define  WLED3_SINK_REG_STR_MOD_SRC_EXT			0x01
->   
-> -#define WLED3_SINK_REG_STR_CABC_BASE			0x66
-> +#define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
->   #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
-> -#define  WLED3_SINK_REG_STR_CABC_EN			BIT(7)
-> +
-> +struct wled_var_cfg {
-> +	const u32 *values;
-> +	u32 (*fn)(u32);
-> +	int size;
-> +};
-> +
-> +struct wled_u32_opts {
-> +	const char *name;
-> +	u32 *val_ptr;
-> +	const struct wled_var_cfg *cfg;
-> +};
-> +
-> +struct wled_bool_opts {
-> +	const char *name;
-> +	bool *val_ptr;
-> +};
->   
->   struct wled_config {
->   	u32 boost_i_limit;
-> @@ -75,132 +87,179 @@ struct wled_config {
->   	u32 switch_freq;
->   	u32 num_strings;
->   	u32 string_i_limit;
-> +	u32 enabled_strings[WLED_MAX_STRINGS];
->   	bool cs_out_en;
->   	bool ext_gen;
-> -	bool cabc_en;
-> +	bool cabc;
->   };
->   
->   struct wled {
->   	const char *name;
-> +	struct device *dev;
->   	struct regmap *regmap;
-> -	u16 addr;
-> +	u16 ctrl_addr;
-> +	u16 max_string_count;
-> +	u32 brightness;
-> +	u32 max_brightness;
->   
->   	struct wled_config cfg;
-> +	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
->   };
->   
-> +static int wled3_set_brightness(struct wled *wled, u16 brightness)
-> +{
-> +	int rc, i;
-> +	u8 v[2];
-> +
-> +	v[0] = brightness & 0xff;
-> +	v[1] = (brightness >> 8) & 0xf;
-> +
-> +	for (i = 0;  i < wled->cfg.num_strings; ++i) {
-> +		rc = regmap_bulk_write(wled->regmap, wled->ctrl_addr +
-> +				       WLED3_SINK_REG_BRIGHT(i), v, 2);
-> +		if (rc < 0)
-> +			return rc;
-> +	}
-> +
-> +	return 0;
+> Index: linux-4.16.12/drivers/video/fbdev/core/fbmem.c
+> =================================> --- linux-4.16.12.orig/drivers/video/fbdev/core/fbmem.c	2018-05-26 06:13:20.000000000 +0200
+> +++ linux-4.16.12/drivers/video/fbdev/core/fbmem.c	2018-05-26 06:13:20.000000000 +0200
+> @@ -1805,12 +1805,12 @@ static int do_register_framebuffer(struc
+>  	return 0;
+>  }
+>  
+> -static int do_unregister_framebuffer(struct fb_info *fb_info)
+> +static int unbind_console(struct fb_info *fb_info)
+>  {
+>  	struct fb_event event;
+> -	int i, ret = 0;
+> +	int ret;
+> +	int i = fb_info->node;
+>  
+> -	i = fb_info->node;
+>  	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+>  		return -EINVAL;
+>  
+> @@ -1825,6 +1825,16 @@ static int do_unregister_framebuffer(str
+>  	unlock_fb_info(fb_info);
+>  	console_unlock();
+>  
+> +	return ret;
 > +}
 > +
-> +static int wled_module_enable(struct wled *wled, int val)
+> +static int do_unregister_framebuffer(struct fb_info *fb_info)
 > +{
-> +	int rc;
+> +	struct fb_event event;
+> +	int ret;
 > +
-> +	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
-> +				WLED_CTRL_REG_MOD_EN,
-> +				WLED_CTRL_REG_MOD_EN_MASK,
-> +				val << WLED_CTRL_REG_MOD_EN_SHIFT);
-> +	return rc;
-> +}
+> +	ret = unbind_console(fb_info);
 > +
-> +static int wled_sync_toggle(struct wled *wled)
-> +{
-> +	int rc;
-> +	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
+>  	if (ret)
+>  		return -EINVAL;
+>  
+> @@ -1835,7 +1845,7 @@ static int do_unregister_framebuffer(str
+>  	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
+>  		kfree(fb_info->pixmap.addr);
+>  	fb_destroy_modelist(&fb_info->modelist);
+> -	registered_fb[i] = NULL;
+> +	registered_fb[fb_info->node] = NULL;
+>  	num_registered_fb--;
+>  	fb_cleanup_device(fb_info);
+>  	event.info = fb_info;
+> @@ -1860,6 +1870,9 @@ int unlink_framebuffer(struct fb_info *f
+>  		device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+>  		fb_info->dev = NULL;
+>  	}
 > +
-> +	rc = regmap_update_bits(wled->regmap,
-> +				wled->ctrl_addr + WLED_SINK_REG_SYNC,
-> +				mask, mask);
-> +	if (rc < 0)
-> +		return rc;
+> +	unbind_console(fb_info);
 > +
-> +	rc = regmap_update_bits(wled->regmap,
-> +				wled->ctrl_addr + WLED_SINK_REG_SYNC,
-> +				mask, WLED_SINK_REG_SYNC_CLEAR);
-> +
-> +	return rc;
-> +}
-> +
->   static int wled_update_status(struct backlight_device *bl)
->   {
->   	struct wled *wled = bl_get_data(bl);
-> -	u16 val = bl->props.brightness;
-> -	u8 ctrl = 0;
-> -	int rc;
-> -	int i;
-> +	u16 brightness = bl->props.brightness;
-> +	int rc = 0;
->   
->   	if (bl->props.power != FB_BLANK_UNBLANK ||
->   	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
->   	    bl->props.state & BL_CORE_FBBLANK)
-> -		val = 0;
-> -
-> -	if (val != 0)
-> -		ctrl = WLED3_CTRL_REG_MOD_EN_BIT;
-> +		brightness = 0;
->   
-> -	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_CTRL_REG_MOD_EN,
-> -			WLED3_CTRL_REG_MOD_EN_MASK, ctrl);
-> -	if (rc)
-> -		return rc;
-> +	if (brightness) {
-> +		rc = wled->wled_set_brightness(wled, brightness);
-> +		if (rc < 0) {
-> +			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
-> +				rc);
-> +			return rc;
-> +		}
->   
-> -	for (i = 0; i < wled->cfg.num_strings; ++i) {
-> -		u8 v[2] = { val & 0xff, (val >> 8) & 0xf };
-> +		rc = wled_sync_toggle(wled);
-> +		if (rc < 0) {
-> +			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
-> +			return rc;
-> +		}
-> +	}
->   
-> -		rc = regmap_bulk_write(wled->regmap,
-> -				wled->addr + WLED3_CTRL_REG_VAL_BASE + 2 * i,
-> -				v, 2);
-> -		if (rc)
-> +	if (!!brightness != !!wled->brightness) {
-> +		rc = wled_module_enable(wled, !!brightness);
-> +		if (rc < 0) {
-> +			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
->   			return rc;
-> +		}
->   	}
->   
-> -	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_SINK_REG_SYNC,
-> -			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_ALL);
-> -	if (rc)
-> -		return rc;
-> +	wled->brightness = brightness;
->   
-> -	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_SINK_REG_SYNC,
-> -			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_CLEAR);
->   	return rc;
->   }
->   
-> -static int wled_setup(struct wled *wled)
-> +static int wled3_setup(struct wled *wled)
->   {
-> -	int rc;
-> -	int i;
-> +	u16 addr;
-> +	u8 sink_en = 0;
-> +	int rc, i, j;
->   
->   	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_CTRL_REG_OVP,
-> -			WLED3_CTRL_REG_OVP_MASK, wled->cfg.ovp);
-> +				wled->ctrl_addr + WLED_CTRL_REG_OVP,
-> +				WLED_CTRL_REG_OVP_MASK, wled->cfg.ovp);
->   	if (rc)
->   		return rc;
->   
->   	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_CTRL_REG_ILIMIT,
-> -			WLED3_CTRL_REG_ILIMIT_MASK, wled->cfg.boost_i_limit);
-> +				wled->ctrl_addr + WLED_CTRL_REG_ILIMIT,
-> +				WLED_CTRL_REG_ILIMIT_MASK,
-> +				wled->cfg.boost_i_limit);
->   	if (rc)
->   		return rc;
->   
->   	rc = regmap_update_bits(wled->regmap,
-> -			wled->addr + WLED3_CTRL_REG_FREQ,
-> -			WLED3_CTRL_REG_FREQ_MASK, wled->cfg.switch_freq);
-> +				wled->ctrl_addr + WLED_CTRL_REG_FREQ,
-> +				WLED_CTRL_REG_FREQ_MASK,
-> +				wled->cfg.switch_freq);
->   	if (rc)
->   		return rc;
->   
-> -	if (wled->cfg.cs_out_en) {
-> -		u8 all = (BIT(wled->cfg.num_strings) - 1)
-> -				<< WLED3_SINK_REG_CURR_SINK_SHFT;
-> -
-> -		rc = regmap_update_bits(wled->regmap,
-> -				wled->addr + WLED3_SINK_REG_CURR_SINK,
-> -				WLED3_SINK_REG_CURR_SINK_MASK, all);
-> -		if (rc)
-> -			return rc;
-> -	}
-> -
->   	for (i = 0; i < wled->cfg.num_strings; ++i) {
-> -		u16 addr = wled->addr + WLED3_SINK_REG_STR_OFFSET * i;
-> -
-> -		rc = regmap_update_bits(wled->regmap,
-> -				addr + WLED3_SINK_REG_STR_MOD_EN_BASE,
-> -				WLED3_SINK_REG_STR_MOD_MASK,
-> -				WLED3_SINK_REG_STR_MOD_EN);
-> +		j = wled->cfg.enabled_strings[i];
-> +		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_EN(j);
-> +		rc = regmap_update_bits(wled->regmap, addr,
-> +					WLED3_SINK_REG_STR_MOD_MASK,
-> +					WLED3_SINK_REG_STR_MOD_MASK);
->   		if (rc)
->   			return rc;
->   
->   		if (wled->cfg.ext_gen) {
-> -			rc = regmap_update_bits(wled->regmap,
-> -					addr + WLED3_SINK_REG_STR_MOD_SRC_BASE,
-> -					WLED3_SINK_REG_STR_MOD_SRC_MASK,
-> -					WLED3_SINK_REG_STR_MOD_SRC_EXT);
-> +			addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_SRC(j);
-> +			rc = regmap_update_bits(wled->regmap, addr,
-> +						WLED3_SINK_REG_STR_MOD_SRC_MASK,
-> +						WLED3_SINK_REG_STR_MOD_SRC_EXT);
->   			if (rc)
->   				return rc;
->   		}
->   
-> -		rc = regmap_update_bits(wled->regmap,
-> -				addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR,
-> -				WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
-> -				wled->cfg.string_i_limit);
-> +		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR(j);
-> +		rc = regmap_update_bits(wled->regmap, addr,
-> +					WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
-> +					wled->cfg.string_i_limit);
->   		if (rc)
->   			return rc;
->   
-> -		rc = regmap_update_bits(wled->regmap,
-> -				addr + WLED3_SINK_REG_STR_CABC_BASE,
-> -				WLED3_SINK_REG_STR_CABC_MASK,
-> -				wled->cfg.cabc_en ?
-> -					WLED3_SINK_REG_STR_CABC_EN : 0);
-> +		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_CABC(j);
-> +		rc = regmap_update_bits(wled->regmap, addr,
-> +					WLED3_SINK_REG_STR_CABC_MASK,
-> +					wled->cfg.cabc ?
-> +					WLED3_SINK_REG_STR_CABC_MASK : 0);
->   		if (rc)
->   			return rc;
-> +
-> +		sink_en |= BIT(j + WLED3_SINK_REG_CURR_SINK_SHFT);
->   	}
->   
-> +	rc = regmap_update_bits(wled->regmap,
-> +				wled->ctrl_addr + WLED3_SINK_REG_CURR_SINK,
-> +				WLED3_SINK_REG_CURR_SINK_MASK, sink_en);
-> +	if (rc)
-> +		return rc;
-> +
->   	return 0;
->   }
->   
-> @@ -208,17 +267,11 @@ static int wled_setup(struct wled *wled)
->   	.boost_i_limit = 3,
->   	.string_i_limit = 20,
->   	.ovp = 2,
-> +	.num_strings = 3,
->   	.switch_freq = 5,
-> -	.num_strings = 0,
->   	.cs_out_en = false,
->   	.ext_gen = false,
-> -	.cabc_en = false,
-> -};
-> -
-> -struct wled_var_cfg {
-> -	const u32 *values;
-> -	u32 (*fn)(u32);
-> -	int size;
-> +	.cabc = false,
->   };
->   
->   static const u32 wled3_boost_i_limit_values[] = {
-> @@ -263,7 +316,11 @@ static u32 wled3_switch_freq_values_fn(u32 idx)
->   	.size = 26,
->   };
->   
-> -static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
-> +static const struct wled_var_cfg wled3_string_cfg = {
-> +	.size = 8,
-> +};
-> +
-> +static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
->   {
->   	if (idx >= cfg->size)
->   		return UINT_MAX;
-> @@ -274,68 +331,77 @@ static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
->   	return idx;
->   }
->   
-> -static int wled_configure(struct wled *wled, struct device *dev)
-> +#define	WLED3	3
-> +
-> +static int wled_configure(struct wled *wled, int version)
->   {
->   	struct wled_config *cfg = &wled->cfg;
-> -	u32 val;
-> -	int rc;
-> -	u32 c;
-> -	int i;
-> -	int j;
-> -
-> -	const struct {
-> -		const char *name;
-> -		u32 *val_ptr;
-> -		const struct wled_var_cfg *cfg;
-> -	} u32_opts[] = {
-> +	struct device *dev = wled->dev;
-> +	const __be32 *prop_addr;
-> +	u32 size, val, c, string_len;
-> +	int rc, i, j;
-> +
-> +	const struct wled_u32_opts *u32_opts = NULL;
-> +	const struct wled_u32_opts wled3_opts[] = {
->   		{
-> -			"qcom,current-boost-limit",
-> -			&cfg->boost_i_limit,
-> +			.name = "qcom,current-boost-limit",
-> +			.val_ptr = &cfg->boost_i_limit,
->   			.cfg = &wled3_boost_i_limit_cfg,
->   		},
->   		{
-> -			"qcom,current-limit",
-> -			&cfg->string_i_limit,
-> +			.name = "qcom,current-limit",
-> +			.val_ptr = &cfg->string_i_limit,
->   			.cfg = &wled3_string_i_limit_cfg,
->   		},
->   		{
-> -			"qcom,ovp",
-> -			&cfg->ovp,
-> +			.name = "qcom,ovp",
-> +			.val_ptr = &cfg->ovp,
->   			.cfg = &wled3_ovp_cfg,
->   		},
->   		{
-> -			"qcom,switching-freq",
-> -			&cfg->switch_freq,
-> +			.name = "qcom,switching-freq",
-> +			.val_ptr = &cfg->switch_freq,
->   			.cfg = &wled3_switch_freq_cfg,
->   		},
->   		{
-> -			"qcom,num-strings",
-> -			&cfg->num_strings,
-> +			.name = "qcom,num-strings",
-> +			.val_ptr = &cfg->num_strings,
->   			.cfg = &wled3_num_strings_cfg,
->   		},
->   	};
-> -	const struct {
-> -		const char *name;
-> -		bool *val_ptr;
-> -	} bool_opts[] = {
-> +
-> +	const struct wled_bool_opts bool_opts[] = {
->   		{ "qcom,cs-out", &cfg->cs_out_en, },
->   		{ "qcom,ext-gen", &cfg->ext_gen, },
-> -		{ "qcom,cabc", &cfg->cabc_en, },
-> +		{ "qcom,cabc", &cfg->cabc, },
->   	};
->   
-> -	rc = of_property_read_u32(dev->of_node, "reg", &val);
-> -	if (rc || val > 0xffff) {
-> -		dev_err(dev, "invalid IO resources\n");
-> -		return rc ? rc : -EINVAL;
-> +	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
-> +	if (!prop_addr) {
-> +		dev_err(wled->dev, "invalid IO resources\n");
-> +		return -EINVAL;
->   	}
-> -	wled->addr = val;
-> +	wled->ctrl_addr = be32_to_cpu(*prop_addr);
->   
->   	rc = of_property_read_string(dev->of_node, "label", &wled->name);
->   	if (rc)
->   		wled->name = dev->of_node->name;
->   
-> -	*cfg = wled3_config_defaults;
-> -	for (i = 0; i < ARRAY_SIZE(u32_opts); ++i) {
-> +	switch (version) {
-> +	case WLED3:
-> +		u32_opts = wled3_opts;
-> +		size = ARRAY_SIZE(wled3_opts);
-> +		*cfg = wled3_config_defaults;
-> +		wled->wled_set_brightness = wled3_set_brightness;
-> +		wled->max_string_count = 3;
-> +		break;
-> +
-> +	default:
-> +		dev_err(wled->dev, "Invalid WLED version\n");
-> +		break;
-> +	}
-> +
-> +	for (i = 0; i < size; ++i) {
->   		rc = of_property_read_u32(dev->of_node, u32_opts[i].name, &val);
->   		if (rc = -EINVAL) {
->   			continue;
-> @@ -346,12 +412,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
->   
->   		c = UINT_MAX;
->   		for (j = 0; c != val; j++) {
-> -			c = wled3_values(u32_opts[i].cfg, j);
-> +			c = wled_values(u32_opts[i].cfg, j);
->   			if (c = UINT_MAX) {
->   				dev_err(dev, "invalid value for '%s'\n",
->   					u32_opts[i].name);
->   				return -EINVAL;
->   			}
-> +
-> +			if (c = val)
-> +				break;
->   		}
->   
->   		dev_dbg(dev, "'%s' = %u\n", u32_opts[i].name, c);
-> @@ -365,6 +434,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
->   
->   	cfg->num_strings = cfg->num_strings + 1;
->   
-> +	string_len = of_property_count_elems_of_size(dev->of_node,
-> +						     "qcom,enabled-strings",
-> +						     sizeof(u32));
-> +	if (string_len > 0)
-> +		rc = of_property_read_u32_array(dev->of_node,
-> +						"qcom,enabled-strings",
-> +						wled->cfg.enabled_strings,
-> +						sizeof(u32));
-> +
->   	return 0;
->   }
->   
-> @@ -378,6 +456,7 @@ static int wled_probe(struct platform_device *pdev)
->   	struct backlight_device *bl;
->   	struct wled *wled;
->   	struct regmap *regmap;
-> +	int version;
->   	u32 val;
->   	int rc;
->   
-> @@ -392,22 +471,39 @@ static int wled_probe(struct platform_device *pdev)
->   		return -ENOMEM;
->   
->   	wled->regmap = regmap;
-> +	wled->dev = &pdev->dev;
->   
-> -	rc = wled_configure(wled, &pdev->dev);
-> -	if (rc)
-> -		return rc;
-> +	version = (uintptr_t)of_device_get_match_data(&pdev->dev);
-> +	if (!version) {
-> +		dev_err(&pdev->dev, "Unknown device version\n");
-> +		return -ENODEV;
-> +	}
->   
-> -	rc = wled_setup(wled);
-> +	rc = wled_configure(wled, version);
->   	if (rc)
->   		return rc;
->   
-> +	switch (version) {
-> +	case WLED3:
-> +		rc = wled3_setup(wled);
-> +		if (rc) {
-> +			dev_err(&pdev->dev, "wled3_setup failed\n");
-> +			return rc;
-> +		}
-> +		break;
-> +
-> +	default:
-> +		dev_err(wled->dev, "Invalid WLED version\n");
-> +		break;
-> +	}
-> +
->   	val = WLED_DEFAULT_BRIGHTNESS;
->   	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
->   
->   	memset(&props, 0, sizeof(struct backlight_properties));
->   	props.type = BACKLIGHT_RAW;
->   	props.brightness = val;
-> -	props.max_brightness = WLED3_SINK_REG_BRIGHT_MAX;
-> +	props.max_brightness = WLED_SINK_REG_BRIGHT_MAX;
->   	bl = devm_backlight_device_register(&pdev->dev, wled->name,
->   					    &pdev->dev, wled,
->   					    &wled_ops, &props);
-> @@ -415,7 +511,7 @@ static int wled_probe(struct platform_device *pdev)
->   };
->   
->   static const struct of_device_id wled_match_table[] = {
-> -	{ .compatible = "qcom,pm8941-wled" },
-> +	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
->   	{}
->   };
->   MODULE_DEVICE_TABLE(of, wled_match_table);
-> 
+>  	return 0;
+>  }
+>  EXPORT_SYMBOL(unlink_framebuffer);
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

@@ -1,67 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 27 Jul 2018 08:06:45 +0000
-Subject: Re: [BUG] video: fbdev: broadsheetfb: Possible null function pointers
-Message-Id: <5031064.Ea5icxSZ3H@amdc3058>
+From: Daniel Mack <daniel@zonque.org>
+Date: Wed, 04 Jul 2018 19:35:02 +0000
+Subject: [PATCH v2 2/2] video: fbdev: pxa3xx_gcu: add devicetree bindings
+Message-Id: <20180704193502.3805-2-daniel@zonque.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180726141748epcas1p28f6f11fea0152ed22113351e3a0affbc@epcas1p2.samsung.com>
- <2568790.PcaMMF1rzM@amdc3058>
- <c95d4381-1278-e561-29d8-ae84be2c680e@gmail.com>
-In-Reply-To: <c95d4381-1278-e561-29d8-ae84be2c680e@gmail.com>
+References: <20180704193502.3805-1-daniel@zonque.org>
+In-Reply-To: <20180704193502.3805-1-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jia-Ju Bai <baijiaju1990@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: robh+dt@kernel.org, airlied@linux.ie, mark.rutland@arm.com, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, robert.jarzmik@free.fr, Daniel Mack <daniel@zonque.org>
 
-On Friday, July 27, 2018 09:49:41 AM Jia-Ju Bai wrote:
-> 
-> On 2018/7/26 22:34, Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday, July 26, 2018 10:17:44 PM bai wrote:
-> >> In Linux-4.16, drivers/video/fbdev/broadsheetfb.c,
-> >>
-> >> 158. static void broadsheet_mmio_send_cmdargs(...) {
-> >>               ......
-> >> 163.     par->board->mmio_write(...);
-> >>               ......
-> >> 166.     par->board->mmio_write(...);
-> >> 167. }
-> >>
-> >> For x86 kernel configuration, I find that there is no assignment of the
-> >> function pointer ".mmio_write" in the kernel code.
-> >> So calling the function pointer in lines 163 and 166 may cause a null
-> >> pointer dereference.
-> >>
-> >> In this file, there are many calls to this function pointer...
-> > This is a platform driver and it won't be used on x86 (actually it is
-> > used only by single ARM PXA board). The dependency for FB_BROADSHEET
-> > in Kconfig file could be improved to i.e.
-> >
-> > 	depends on FB && (ARCH_PXA || COMPILE_TEST)
-> >
-> > but there is no bug there.
-> 
-> Thanks for the reply :)
-> So I want to submit a patch of updating Kconfig in 
-> drivers/video/fbdev/Kconfig:
-> 
-> config FB_BROADSHEET
->      tristate "E-Ink Broadsheet/Epson S1D13521 controller support"
-> -    depends on FB
-> +   depends on FB && (ARCH_PXA || COMPILE_TEST)
->      select FB_SYS_FILLRECT
->      select FB_SYS_COPYAREA
->      select FB_SYS_IMAGEBLIT
->      select FB_SYS_FOPS
->      select FB_DEFERRED_IO
-> 
-> 
-> Do you think it is okay?
+Add a device tree match table for this hardware graphics acceleration
+driver so it can be used by pxa3xx boards booted with a devicetree.
 
-Please read Documentation/process/submitting-patches.rst.
+Signed-off-by: Daniel Mack <daniel@zonque.org>
+---
+ drivers/video/fbdev/pxa3xx-gcu.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 0955622a1227..69cfb337c857 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -44,6 +44,7 @@
+ #include <linux/clk.h>
+ #include <linux/fs.h>
+ #include <linux/io.h>
++#include <linux/of.h>
+ 
+ #include "pxa3xx-gcu.h"
+ 
+@@ -703,11 +704,20 @@ static int pxa3xx_gcu_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_OF
++static const struct of_device_id pxa3xx_gcu_of_match[] = {
++	{ .compatible = "marvell,pxa300-gcu", },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, pxa3xx_gcu_of_match);
++#endif
++
+ static struct platform_driver pxa3xx_gcu_driver = {
+ 	.probe	  = pxa3xx_gcu_probe,
+ 	.remove	 = pxa3xx_gcu_remove,
+ 	.driver	 = {
+ 		.name   = DRV_NAME,
++		.of_match_table = of_match_ptr(pxa3xx_gcu_of_match),
+ 	},
+ };
+ 
+-- 
+2.17.1
 

@@ -1,32 +1,27 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 15:11:30 +0000
-Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: Remove VLA usage
-Message-Id: <30654789.W1eWMCegYZ@amdc3058>
+Date: Wed, 04 Jul 2018 17:07:31 +0000
+Subject: Re: [PATCH] fbdev: Distinguish between interlaced and progressive modes
+Message-Id: <1828178.vF6XXv5T2I@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180629184655.GA37391@beast>
- <CGME20180630155937epcas3p391d051b484a76fb57f0c385a89e2be04@epcas3p3.samsung.com>
- <1b3f78f2-9fe9-62c5-24d2-1b6651ca2f08@kernel.org>
-In-Reply-To: <1b3f78f2-9fe9-62c5-24d2-1b6651ca2f08@kernel.org>
+References: <20180622183754.GB17701@localhost.localdomain>
+In-Reply-To: <20180622183754.GB17701@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Timur Tabi <timur@kernel.org>, Kees Cook <keescook@chromium.org>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-fbdev@vger.kernel.org
 
-On Saturday, June 30, 2018 10:59:15 AM Timur Tabi wrote:
-> On 6/29/18 1:46 PM, Kees Cook wrote:
-> > In the quest to remove all stack VLA usage from the kernel[1], this moves
-> > the buffer off the stack (since it could be as much as 1024 bytes), and
-> > uses a new area in the cursor data structure. Additionally adds missed
-> > documentation and removes redundant assignments.
-> > 
-> > [1]https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
-> > 
-> > Signed-off-by: Kees Cook<keescook@chromium.org>
+
+Hi,
+
+On Friday, June 22, 2018 08:37:54 PM Fredrik Noring wrote:
+> With this change fb_find_mode can match interlaced and progressive
+> modes equally well, and distinguish between for example 1920x1080i
+> and 1920x1080p.
 > 
-> Acked-by: Timur Tabi <timur@kernel.org>
+> Signed-off-by: Fredrik Noring <noring@nocrew.org>
 
-Patch queued for 4.19, thanks.
+Could you please give some examples of use cases that need this change
+(i.e. which fbdev drivers need it for which modes etc.)?
 
 Best regards,
 --

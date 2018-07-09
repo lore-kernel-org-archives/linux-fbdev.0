@@ -1,32 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 15:02:14 +0000
-Subject: Re: [PATCH 3/4] video: fbdev: pxafb: handle errors from pxafb_init_fbinfo() correctly
-Message-Id: <5236074.pdZxYZoplA@amdc3058>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Mon, 09 Jul 2018 21:51:56 +0000
+Subject: [PATCH] backlight: adp8860: Mark expected switch fall-through
+Message-Id: <20180709215156.GA8782@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180624153817.24387-1-daniel@zonque.org>
- <CGME20180624153830epcas4p37cb6f12227eff56e4f94722fcd240455@epcas4p3.samsung.com>
- <20180624153817.24387-3-daniel@zonque.org>
-In-Reply-To: <20180624153817.24387-3-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Mack <daniel@zonque.org>
-Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, robert.jarzmik@free.fr, dri-devel@lists.freedesktop.org
+To: Michael Hennerich <michael.hennerich@analog.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-On Sunday, June 24, 2018 05:38:16 PM Daniel Mack wrote:
-> pxafb_init_fbinfo() can not only report errors caused by failed
-> allocations but also when the clock can't be found.
-> 
-> To fix this, return an error pointer instead of NULL in case of errors,
-> and up-chain the result.
-> 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-Patch queued for 4.19, thanks.
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/backlight/adp8860_bl.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
+index 16119bd..f1dc41c 100644
+--- a/drivers/video/backlight/adp8860_bl.c
++++ b/drivers/video/backlight/adp8860_bl.c
+@@ -690,6 +690,7 @@ static int adp8860_probe(struct i2c_client *client,
+ 	switch (ADP8860_MANID(reg_val)) {
+ 	case ADP8863_MANUFID:
+ 		data->gdwn_dis = !!pdata->gdwn_dis;
++		/* fall through */
+ 	case ADP8860_MANUFID:
+ 		data->en_ambl_sens = !!pdata->en_ambl_sens;
+ 		break;
+-- 
+2.7.4
 

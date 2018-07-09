@@ -1,36 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 15:53:09 +0000
-Subject: Re: [PATCH] fbdev/via: fix defined but not used warning
-Message-Id: <3875705.fRTUPnFDWq@amdc3058>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Mon, 09 Jul 2018 21:36:08 +0000
+Subject: [PATCH] fbdev: fbmem: mark expected switch fall-through
+Message-Id: <20180709213608.GA7584@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180707152941epcas3p4becbdaddbff49c7f77803a5b50f864c2@epcas3p4.samsung.com>
- <16ceee68-cead-0bfa-755c-d3e78ba0cfe3@infradead.org>
-In-Reply-To: <16ceee68-cead-0bfa-755c-d3e78ba0cfe3@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-On Saturday, July 07, 2018 08:29:36 AM Randy Dunlap wrote:
-> From: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Fix a build warning in viafbdev.c when CONFIG_PROC_FS is not enabled
-> by marking the unused function as __maybe_unused.
-> 
-> ../drivers/video/fbdev/via/viafbdev.c:1471:12: warning: 'viafb_sup_odev_proc_show' defined but not used [-Wunused-function]
-> 
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: dri-devel@lists.freedesktop.org
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-Patch queued for 4.19, thanks.
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 609438d..5f3133b 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1347,6 +1347,7 @@ static long fb_compat_ioctl(struct file *file, unsigned int cmd,
+ 	case FBIOGET_CON2FBMAP:
+ 	case FBIOPUT_CON2FBMAP:
+ 		arg = (unsigned long) compat_ptr(arg);
++		/* fall through */
+ 	case FBIOBLANK:
+ 		ret = do_fb_ioctl(info, cmd, arg);
+ 		break;
+-- 
+2.7.4
 

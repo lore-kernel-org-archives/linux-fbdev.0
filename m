@@ -1,44 +1,146 @@
-From: Adam Borowski <kilobyte@angband.pl>
-Date: Wed, 18 Jul 2018 03:03:22 +0000
-Subject: [PATCH 1/6] vt: drop unused struct vt_struct
-Message-Id: <20180718030327.579-1-kilobyte@angband.pl>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Mon, 09 Jul 2018 19:16:01 +0000
+Subject: [PATCH v2] video: fbdev: omapfb: lcd_ams_delta: use GPIO lookup table
+Message-Id: <20180709191601.18681-1-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
-In-Reply-To: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
+References: <20180518210954.29044-4-jmkrzyszt@gmail.com>
+In-Reply-To: <20180518210954.29044-4-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Adam Borowski <kilobyte@angband.pl>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>
 
-Hasn't been ever used within historic (ie, git) times.
+Now as Amstrad Delta board - the only user of this driver - provides
+GPIO lookup tables, switch from GPIO numbers to GPIO descriptors and
+use the table to locate required GPIO pins.
 
-Signed-off-by: Adam Borowski <kilobyte@angband.pl>
+Declare static variables for storing GPIO descriptors and replace
+gpio_ function calls with their gpiod_ equivalents. Move GPIO lookup
+to the driver probe function so device initialization can be deferred
+instead of aborted if a GPIO pin is not yet available.
+
+Pin naming used by the driver should be followed while respective GPIO
+lookup table is initialized by a board init code.
+
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
 ---
- include/linux/console_struct.h | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+Changelog:
+v2: Remove problematic error code conversion, no longer needed if used
+    on top of commit d08605a64e67 ("ARM: OMAP1: ams-delta: move late
+    devices back to init_machine") already in linux-next and commit
+    8853daf3b4ac ("gpiolib: Defer on non-DT find_chip_by_name()
+    failure") just applied to linux-gpio/devel.
 
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
-index 2c8d3239899b..fea64f2692a0 100644
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -17,7 +17,6 @@
- #include <linux/vt.h>
- #include <linux/workqueue.h>
+ drivers/video/fbdev/omap/lcd_ams_delta.c | 55 +++++++++++++-------------------
+ 1 file changed, 22 insertions(+), 33 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
+index e8c748a0dfe2..cddbd00cbf9f 100644
+--- a/drivers/video/fbdev/omap/lcd_ams_delta.c
++++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
+@@ -24,11 +24,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+ #include <linux/delay.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/lcd.h>
+-#include <linux/gpio.h>
  
--struct vt_struct;
- struct uni_pagedir;
- struct uni_screen;
+ #include <mach/hardware.h>
+-#include <mach/board-ams-delta.h>
  
-@@ -150,7 +149,7 @@ struct vc {
- 	struct vc_data *d;
- 	struct work_struct SAK_work;
+ #include "omapfb.h"
  
--	/* might add  scrmem, vt_struct, kbd  at some time,
-+	/* might add  scrmem, kbd  at some time,
- 	   to have everything in one place - the disadvantage
- 	   would be that vc_cons etc can no longer be static */
+@@ -41,6 +40,8 @@
+ /* LCD class device section */
+ 
+ static int ams_delta_lcd;
++static struct gpio_desc *gpiod_vblen;
++static struct gpio_desc *gpiod_ndisp;
+ 
+ static int ams_delta_lcd_set_power(struct lcd_device *dev, int power)
+ {
+@@ -99,41 +100,17 @@ static struct lcd_ops ams_delta_lcd_ops = {
+ 
+ /* omapfb panel section */
+ 
+-static const struct gpio _gpios[] = {
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_VBLEN,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_vblen",
+-	},
+-	{
+-		.gpio	= AMS_DELTA_GPIO_PIN_LCD_NDISP,
+-		.flags	= GPIOF_OUT_INIT_LOW,
+-		.label	= "lcd_ndisp",
+-	},
+-};
+-
+-static int ams_delta_panel_init(struct lcd_panel *panel,
+-		struct omapfb_device *fbdev)
+-{
+-	return gpio_request_array(_gpios, ARRAY_SIZE(_gpios));
+-}
+-
+-static void ams_delta_panel_cleanup(struct lcd_panel *panel)
+-{
+-	gpio_free_array(_gpios, ARRAY_SIZE(_gpios));
+-}
+-
+ static int ams_delta_panel_enable(struct lcd_panel *panel)
+ {
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 1);
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 1);
++	gpiod_set_value(gpiod_ndisp, 1);
++	gpiod_set_value(gpiod_vblen, 1);
+ 	return 0;
+ }
+ 
+ static void ams_delta_panel_disable(struct lcd_panel *panel)
+ {
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_VBLEN, 0);
+-	gpio_set_value(AMS_DELTA_GPIO_PIN_LCD_NDISP, 0);
++	gpiod_set_value(gpiod_vblen, 0);
++	gpiod_set_value(gpiod_ndisp, 0);
+ }
+ 
+ static struct lcd_panel ams_delta_panel = {
+@@ -154,8 +131,6 @@ static struct lcd_panel ams_delta_panel = {
+ 	.pcd		= 0,
+ 	.acb		= 37,
+ 
+-	.init		= ams_delta_panel_init,
+-	.cleanup	= ams_delta_panel_cleanup,
+ 	.enable		= ams_delta_panel_enable,
+ 	.disable	= ams_delta_panel_disable,
  };
+@@ -166,9 +141,23 @@ static struct lcd_panel ams_delta_panel = {
+ static int ams_delta_panel_probe(struct platform_device *pdev)
+ {
+ 	struct lcd_device *lcd_device = NULL;
+-#ifdef CONFIG_LCD_CLASS_DEVICE
+ 	int ret;
+ 
++	gpiod_vblen = devm_gpiod_get(&pdev->dev, "vblen", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_vblen)) {
++		ret = PTR_ERR(gpiod_vblen);
++		dev_err(&pdev->dev, "VBLEN GPIO request failed (%d)\n", ret);
++		return ret;
++	}
++
++	gpiod_ndisp = devm_gpiod_get(&pdev->dev, "ndisp", GPIOD_OUT_LOW);
++	if (IS_ERR(gpiod_ndisp)) {
++		ret = PTR_ERR(gpiod_ndisp);
++		dev_err(&pdev->dev, "NDISP GPIO request failed (%d)\n", ret);
++		return ret;
++	}
++
++#ifdef CONFIG_LCD_CLASS_DEVICE
+ 	lcd_device = lcd_device_register("omapfb", &pdev->dev, NULL,
+ 						&ams_delta_lcd_ops);
+ 
 -- 
-2.18.0
+2.16.4
 

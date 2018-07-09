@@ -1,66 +1,76 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 31 Jul 2018 15:23:07 +0000
-Subject: Sleeping from invalid context in udlfb
-Message-Id: <alpine.LRH.2.02.1807311111520.22145@file01.intranet.prod.int.rdu2.redhat.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Mon, 09 Jul 2018 22:41:45 +0000
+Subject: [PATCH] video: fbdev: mark expected switch fall-throughs
+Message-Id: <20180709224145.GA15004@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180603154636epcas2p4812a1f19c6ae236336ae580658edb167@epcas2p4.samsung.com> <6008699.T6Yd1fn3Dk@amdc3058> <alpine.LRH.2.02.1807092148080.30863@file01.intranet.prod.int.rdu2.redhat.com> <1975707.vO8kdHz3oS@amdc3058>
- <alpine.LRH.2.02.1807300552140.2919@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1807300552140.2919@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Dave Airlie <airlied@redhat.com>, Bernie Thompson <bernie@plugable.com>, Ladislav Michl <ladis@linux-mips.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-BTW when using the udlfb driver as a console, I've got this warning. 
-vt_console_print takes a spinlock and then calls the framebuffer driver 
-that sleeps.
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-The question is - whose fault is this? Could the console code somehow be 
-told to print characters without holding a spinlock? Or does it mean that 
-framebuffer drivers can't sleep?
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/i740fb.c  | 1 +
+ drivers/video/fbdev/pm2fb.c   | 2 ++
+ drivers/video/fbdev/tdfxfb.c  | 1 +
+ drivers/video/fbdev/via/lcd.c | 1 +
+ 4 files changed, 5 insertions(+)
 
-udlfb communicates through USB, so the sleeping is inevitable.
-
-Mikulas
-
-
-BUG: sleeping function called from invalid context at mm/slab.h:421
-in_atomic(): 1, irqs_disabled(): 0, pid: 430, name: kworker/2:3
-6 locks held by kworker/2:3/430:
- #0: 000000001301127e ( (wq_completion)"events"){....} , at: process_one_work+0x17c/0x3a8
- #1: 00000000beacc951 ( (work_completion)(&(&dlfb->init_framebuffer_work)->work)){....} , at: process_one_work+0x17c/0x3a8
- #2: 00000000a402f826 ( registration_lock){....} , at: register_framebuffer+0x28/0x2c0 [fb]
- #3: 0000000021cbe902 ( console_lock){....} , at: register_framebuffer+0x258/0x2c0 [fb]
- #4: 0000000096d51735 ( console_owner){....} , at: console_unlock+0x174/0x500
- #5: 00000000faa7f206 ( printing_lock){....} , at: vt_console_print+0x60/0x3a0
-Preemption disabled at: [<ffffff8008403130>] vt_console_print+0x60/0x3a0
-CPU: 2 PID: 430 Comm: kworker/2:3 Not tainted 4.17.10-debug #3
-Hardware name: Marvell Armada 8040 MacchiatoBin/Armada 8040 MacchiatoBin, BIOS EDK II Jul 30 2018
-Workqueue: events dlfb_init_framebuffer_work [udlfb]
-Call trace:
- dump_backtrace+0x0/0x150
- show_stack+0x14/0x20
- dump_stack+0x8c/0xac
- ___might_sleep+0x140/0x170
- __might_sleep+0x50/0x88
- __kmalloc+0x1b0/0x270
- xhci_urb_enqueue+0xa8/0x460 [xhci_hcd]
- usb_hcd_submit_urb+0xc0/0x998 [usbcore]
- usb_submit_urb+0x1e0/0x518 [usbcore]
- dlfb_submit_urb+0x38/0x98 [udlfb]
- dlfb_handle_damage.isra.4+0x1e0/0x210 [udlfb]
- dlfb_ops_imageblit+0x28/0x38 [udlfb]
- soft_cursor+0x15c/0x1d8 [fb]
- bit_cursor+0x324/0x510 [fb]
- fbcon_cursor+0x144/0x1a0 [fb]
- hide_cursor+0x38/0xa0
- vt_console_print+0x334/0x3a0
- console_unlock+0x274/0x500
- register_framebuffer+0x22c/0x2c0 [fb]
- dlfb_init_framebuffer_work+0x1ec/0x2fc [udlfb]
- process_one_work+0x1e8/0x3a8
- worker_thread+0x44/0x418
- kthread+0x11c/0x120
- ret_from_fork+0x10/0x18
+diff --git a/drivers/video/fbdev/i740fb.c b/drivers/video/fbdev/i740fb.c
+index 7bc5f60..f6d7b04 100644
+--- a/drivers/video/fbdev/i740fb.c
++++ b/drivers/video/fbdev/i740fb.c
+@@ -429,6 +429,7 @@ static int i740fb_decode_var(const struct fb_var_screeninfo *var,
+ 		break;
+ 	case 9 ... 15:
+ 		bpp = 15;
++		/* fall through */
+ 	case 16:
+ 		if ((1000000 / var->pixclock) > DACSPEED16) {
+ 			dev_err(info->device, "requested pixclock %i MHz out of range (max. %i MHz at 15/16bpp)\n",
+diff --git a/drivers/video/fbdev/pm2fb.c b/drivers/video/fbdev/pm2fb.c
+index bd6c2f5..1dcf02e 100644
+--- a/drivers/video/fbdev/pm2fb.c
++++ b/drivers/video/fbdev/pm2fb.c
+@@ -233,8 +233,10 @@ static u32 to3264(u32 timing, int bpp, int is64)
+ 	switch (bpp) {
+ 	case 24:
+ 		timing *= 3;
++		/* fall through */
+ 	case 8:
+ 		timing >>= 1;
++		/* fall through */
+ 	case 16:
+ 		timing >>= 1;
+ 	case 32:
+diff --git a/drivers/video/fbdev/tdfxfb.c b/drivers/video/fbdev/tdfxfb.c
+index dec1fed..fbbf26b 100644
+--- a/drivers/video/fbdev/tdfxfb.c
++++ b/drivers/video/fbdev/tdfxfb.c
+@@ -522,6 +522,7 @@ static int tdfxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	case 32:
+ 		var->transp.offset = 24;
+ 		var->transp.length = 8;
++		/* fall through */
+ 	case 24:
+ 		var->red.offset = 16;
+ 		var->green.offset = 8;
+diff --git a/drivers/video/fbdev/via/lcd.c b/drivers/video/fbdev/via/lcd.c
+index 5d21ff4..b9305d7 100644
+--- a/drivers/video/fbdev/via/lcd.c
++++ b/drivers/video/fbdev/via/lcd.c
+@@ -758,6 +758,7 @@ static void set_lcd_output_path(int set_iga, int output_interface)
+ 		    viaparinfo->chip_info->gfx_chip_name))
+ 			viafb_write_reg_mask(CR97, VIACR, 0x84,
+ 				       BIT7 + BIT2 + BIT1 + BIT0);
++		/* fall through */
+ 	case INTERFACE_DVP0:
+ 	case INTERFACE_DVP1:
+ 	case INTERFACE_DFP_HIGH:
+-- 
+2.7.4
 

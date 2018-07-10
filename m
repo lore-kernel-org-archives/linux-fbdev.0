@@ -1,28 +1,48 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 10 Jul 2018 05:24:36 +0000
+From: Michael Hennerich <michael.hennerich@analog.com>
+Date: Tue, 10 Jul 2018 06:46:24 +0000
 Subject: Re: [PATCH] backlight: adp8860: Mark expected switch fall-through
-Message-Id: <20180710052436.GB4641@dell>
+Message-Id: <ee4acd3d-e31f-747b-d3a8-adbe0fb46d83@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180709215156.GA8782@embeddedor.com>
 In-Reply-To: <20180709215156.GA8782@embeddedor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Michael Hennerich <michael.hennerich@analog.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-T24gTW9uLCAwOSBKdWwgMjAxOCwgR3VzdGF2byBBLiBSLiBTaWx2YSB3cm90ZToKCj4gSW4gcHJl
-cGFyYXRpb24gdG8gZW5hYmxpbmcgLVdpbXBsaWNpdC1mYWxsdGhyb3VnaCwgbWFyayBzd2l0Y2gg
-Y2FzZXMKPiB3aGVyZSB3ZSBhcmUgZXhwZWN0aW5nIHRvIGZhbGwgdGhyb3VnaC4KPiAKPiBTaWdu
-ZWQtb2ZmLWJ5OiBHdXN0YXZvIEEuIFIuIFNpbHZhIDxndXN0YXZvQGVtYmVkZGVkb3IuY29tPgo+
-IC0tLQo+ICBkcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9hZHA4ODYwX2JsLmMgfCAxICsKPiAgMSBm
-aWxlIGNoYW5nZWQsIDEgaW5zZXJ0aW9uKCspCgpMb29rcyBnb29kIHRvIG1lLCBidXQgRGFuIHNo
-b3VsZCBzdGlsbCByZXZpZXcuCgogIGh0dHBzOi8vZ2NjLmdudS5vcmcvb25saW5lZG9jcy9nY2Mt
-OC4xLjAvZ2NjLnBkZiNwYWdlhgoKQWNrZWQtYnk6IExlZSBKb25lcyA8bGVlLmpvbmVzQGxpbmFy
-by5vcmc+CgotLSAKTGVlIEpvbmVzIFvmnY7nkLzmlq9dCkxpbmFybyBTZXJ2aWNlcyBUZWNobmlj
-YWwgTGVhZApMaW5hcm8ub3JnIOKUgiBPcGVuIHNvdXJjZSBzb2Z0d2FyZSBmb3IgQVJNIFNvQ3MK
-Rm9sbG93IExpbmFybzogRmFjZWJvb2sgfCBUd2l0dGVyIHwgQmxvZwotLQpUbyB1bnN1YnNjcmli
-ZSBmcm9tIHRoaXMgbGlzdDogc2VuZCB0aGUgbGluZSAidW5zdWJzY3JpYmUgbGludXgtZmJkZXYi
-IGluCnRoZSBib2R5IG9mIGEgbWVzc2FnZSB0byBtYWpvcmRvbW9Admdlci5rZXJuZWwub3JnCk1v
-cmUgbWFqb3Jkb21vIGluZm8gYXQgIGh0dHA6Ly92Z2VyLmtlcm5lbC5vcmcvbWFqb3Jkb21vLWlu
-Zm8uaHRtbA==
+On 09.07.2018 23:51, Gustavo A. R. Silva wrote:
+> In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+> where we are expecting to fall through.
+> 
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+
+Acked-by: Michael Hennerich <michael.hennerich@analog.com>
+
+> ---
+>   drivers/video/backlight/adp8860_bl.c | 1 +
+>   1 file changed, 1 insertion(+)
+> 
+> diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
+> index 16119bd..f1dc41c 100644
+> --- a/drivers/video/backlight/adp8860_bl.c
+> +++ b/drivers/video/backlight/adp8860_bl.c
+> @@ -690,6 +690,7 @@ static int adp8860_probe(struct i2c_client *client,
+>   	switch (ADP8860_MANID(reg_val)) {
+>   	case ADP8863_MANUFID:
+>   		data->gdwn_dis = !!pdata->gdwn_dis;
+> +		/* fall through */
+>   	case ADP8860_MANUFID:
+>   		data->en_ambl_sens = !!pdata->en_ambl_sens;
+>   		break;
+> 
+
+
+-- 
+Greetings,
+Michael
+
+--
+Analog Devices GmbH      Otl-Aicher Strasse 60-64      80807 München
+Sitz der Gesellschaft München, Registergericht München HRB 40368,
+Geschäftsführer: Peter Kolberg, Ali Raza Husain, Eileen Wynne

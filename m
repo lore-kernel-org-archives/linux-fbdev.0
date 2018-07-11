@@ -1,66 +1,230 @@
-From: Steven Rostedt <rostedt@goodmis.org>
-Date: Wed, 11 Jul 2018 15:41:24 +0000
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 11 Jul 2018 15:42:47 +0000
 Subject: Re: [PATCH v5 2/3] fbcon: Call WARN_CONSOLE_UNLOCKED() where applicable
-Message-Id: <20180711114124.3eb23fca@gandalf.local.home>
+Message-Id: <CAKMK7uFyPh0sHj7enAU2En4BidODAS+Tis=-UE16xOLQWm8iQA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180628090351.15581-1-hdegoede@redhat.com>
-        <20180628090351.15581-3-hdegoede@redhat.com>
-        <717e6337-e7a6-7a92-1c1b-8929a25696b5@suse.de>
-        <20180711105255.32803a3c@gandalf.local.home>
-        <7ec11c96-7dd5-ec12-548e-7c1fa9b883e8@suse.de>
-        <d528a539-255c-f019-eb6f-63f0585e0de3@redhat.com>
-        <CAKMK7uG-xiCKkxhujL=J6n9ozYfW+fsioGHEmYRxpszVX=5PDg@mail.gmail.com>
-        <892782ad-4b97-8eda-f5b0-3a893b3a5f84@redhat.com>
+ <20180628090351.15581-3-hdegoede@redhat.com>
+ <717e6337-e7a6-7a92-1c1b-8929a25696b5@suse.de>
+ <20180711105255.32803a3c@gandalf.local.home>
+ <7ec11c96-7dd5-ec12-548e-7c1fa9b883e8@suse.de>
+ <d528a539-255c-f019-eb6f-63f0585e0de3@redhat.com>
+ <CAKMK7uG-xiCKkxhujL=J6n9ozYfW+fsioGHEmYRxpszVX=5PDg@mail.gmail.com>
+ <892782ad-4b97-8eda-f5b0-3a893b3a5f84@redhat.com>
 In-Reply-To: <892782ad-4b97-8eda-f5b0-3a893b3a5f84@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Hans de Goede <hdegoede@redhat.com>
-Cc: Daniel Vetter <daniel@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>, Petr Mladek <pmladek@suse.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Petr Mladek <pmladek@suse.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>, Thomas Zimmermann <tzimmermann@suse.de>
 
-On Wed, 11 Jul 2018 17:35:10 +0200
-Hans de Goede <hdegoede@redhat.com> wrote:
-
+On Wed, Jul 11, 2018 at 5:35 PM, Hans de Goede <hdegoede@redhat.com> wrote:
+> Hi,
+>
+> On 11-07-18 17:28, Daniel Vetter wrote:
+>>
+>> On Wed, Jul 11, 2018 at 5:14 PM, Hans de Goede <hdegoede@redhat.com>
+>> wrote:
+>>>
+>>> Hi,
+>>>
+>>> On 11-07-18 17:07, Thomas Zimmermann wrote:
+>>>>
+>>>>
+>>>> Hi
+>>>>
+>>>> Am 11.07.2018 um 16:52 schrieb Steven Rostedt:
+>>>>>
+>>>>>
+>>>>>
+>>>>> What if you make lockless_register_fb visible to fbcon, and then we can
+>>>>> have a macro:
+>>>>
+>>>>
+>>>>
+>>>> There are more of these macro invocations under drivers/tty/vt, which
+>>>> also mess up the log during debugging.
+>>>
+>>>
+>>>
+>>> Hmm, so this option is already broken (in a way) then, my first reaction
+>>> to your mail was that we should just remove that option. But that seemed
+>>> a bit harsh to me so I've been working on a fix for the last 10 minutes
+>>> or so.
+>>>
+>>> But if it is already broken I'm tempted to just remove the option and
+>>> be done with it.  We really need less cruft in the fbdev/fbcon code not
+>>> more.
+>>
+>>
+>> Please don't remove it, it makes debugging kms driver issues on
+>> initial modeset (which is usually run from framebuffer_register, while
+>> hodling the console_lock) impossible.
+>
+>
 > OK, so if we don't remove it, we should probably make it so that it
 > can be used without triggering any WARN_ONs, which would require changing
-> the existing WARN_CONSOLE_UNLOCKED() so that the calls from drivers/tty/vt/vt.c
+> the existing WARN_CONSOLE_UNLOCKED() so that the calls from
+> drivers/tty/vt/vt.c
 > also do not trigger it ?
-> 
+>
 > I guess one can just ignore the oopses when debugging, but debugging surely
 > would be easier if there are just no oopses ?
 
-What about adding this patch (untested, not even compiled), and then
-set it from the fb module.
+I'd say let's only bother with the ones in fbcon.c. Avoids the trouble
+with having to expose the fb module option to vt.c somehow. The ones
+in vt.c are as old as the git history (from a quick check at least),
+and in my debugging they never have been annoying (or I somehow didn't
+ever hit them, not idea).
 
--- Steve
+Also note that none if this matters long-term because I have a really
+fancy plan to fix up this entire console_locking mess, which will also
+remove the need for the lockless_fb_register debug hack.
+-Daniel
 
-diff --git a/include/linux/console.h b/include/linux/console.h
-index dfd6b0e97855..11cd4956a57f 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -200,8 +200,10 @@ void vcs_make_sysfs(int index);
- void vcs_remove_sysfs(int index);
- 
- /* Some debug stub to catch some of the obvious races in the VT code */
-+extern bool ignore_console_lock_warning;
- #if 1
--#define WARN_CONSOLE_UNLOCKED()	WARN_ON(!is_console_locked() && !oops_in_progress)
-+#define WARN_CONSOLE_UNLOCKED()						\
-+	WARN_ON(!ignore_console_lock_warning && !is_console_locked() && !oops_in_progress)
- #else
- #define WARN_CONSOLE_UNLOCKED()
- #endif
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index 247808333ba4..fa15d7ddf0c4 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -66,6 +66,9 @@ int console_printk[4] = {
- 	CONSOLE_LOGLEVEL_DEFAULT,	/* default_console_loglevel */
- };
- 
-+bool ignore_console_lock_warning;
-+EXPORT_SYMBOL(ignore_console_lock_warning);
-+
- /*
-  * Low level drivers may need that to know if they can schedule in
-  * their unblank() callback or not. So let's export it.
+>
+> Regards,
+>
+> Hans
+>
+>
+>
+>
+>
+>> -Daniel
+>>
+>>>> WARN_CONSOLE_UNLOCKED is already protected by an '#ifdef 1 ... #else
+>>>> ...' construct [1]. I thought about turning this into a config option.
+>>>
+>>>
+>>>
+>>> Ah I noticed the #if but I did not notice that it was a "#if 1".
+>>>
+>>> If you want to fix lockless_register_fb it really should be replaced
+>>> with a runtime check, not a Kconfig option. This would require having
+>>> some lockless variable in the console code itself, which then gets
+>>> set by the fbdev code during init based on its lockless_register_fb
+>>> setting.
+>>>
+>>> But as said I think we should seriously consider just removing
+>>> lockless_register_fb.
+>>>
+>>> Regards,
+>>>
+>>> Hans
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>>>
+>>>> Best regards
+>>>> Thomas
+>>>>
+>>>> [1]
+>>>>
+>>>>
+>>>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/console.h#n203
+>>>>
+>>>>>
+>>>>> #define WARN_FB_CONSOLE_UNLOCKED()                      \
+>>>>>          do {                                            \
+>>>>>                  if (unlikely(!lockless_register_fb))    \
+>>>>>                          WARN_CONSOLE_UNLOCKED();        \
+>>>>>          } while (0)
+>>>>>
+>>>>> And use that instead?
+>>>>>
+>>>>> -- Steve
+>>>>>
+>>>>>
+>>>>>> Best regards
+>>>>>> Thomas
+>>>>>>
+>>>>>>> Acked-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+>>>>>>> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+>>>>>>> Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+>>>>>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+>>>>>>> ---
+>>>>>>> Changes in v3:
+>>>>>>> -New patch in v3 of this patchset
+>>>>>>>
+>>>>>>> Changes in v4:
+>>>>>>> -Keep the comments about which fbcon functions need locks in place
+>>>>>>> ---
+>>>>>>>    drivers/video/fbdev/core/fbcon.c | 11 +++++++++++
+>>>>>>>    1 file changed, 11 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/drivers/video/fbdev/core/fbcon.c
+>>>>>>> b/drivers/video/fbdev/core/fbcon.c
+>>>>>>> index c910e74d46ff..cd8d52a967aa 100644
+>>>>>>> --- a/drivers/video/fbdev/core/fbcon.c
+>>>>>>> +++ b/drivers/video/fbdev/core/fbcon.c
+>>>>>>> @@ -828,6 +828,8 @@ static int set_con2fb_map(int unit, int newidx,
+>>>>>>> int
+>>>>>>> user)
+>>>>>>>          struct fb_info *oldinfo = NULL;
+>>>>>>>          int found, err = 0;
+>>>>>>>    +     WARN_CONSOLE_UNLOCKED();
+>>>>>>> +
+>>>>>>>          if (oldidx = newidx)
+>>>>>>>                  return 0;
+>>>>>>>    @@ -3044,6 +3046,8 @@ static int fbcon_fb_unbind(int idx)
+>>>>>>>    {
+>>>>>>>          int i, new_idx = -1, ret = 0;
+>>>>>>>    +     WARN_CONSOLE_UNLOCKED();
+>>>>>>> +
+>>>>>>>          if (!fbcon_has_console_bind)
+>>>>>>>                  return 0;
+>>>>>>>    @@ -3094,6 +3098,8 @@ static int fbcon_fb_unregistered(struct
+>>>>>>> fb_info
+>>>>>>> *info)
+>>>>>>>    {
+>>>>>>>          int i, idx;
+>>>>>>>    +     WARN_CONSOLE_UNLOCKED();
+>>>>>>> +
+>>>>>>>          idx = info->node;
+>>>>>>>          for (i = first_fb_vc; i <= last_fb_vc; i++) {
+>>>>>>>                  if (con2fb_map[i] = idx)
+>>>>>>> @@ -3131,6 +3137,9 @@ static int fbcon_fb_unregistered(struct fb_info
+>>>>>>> *info)
+>>>>>>>    static void fbcon_remap_all(int idx)
+>>>>>>>    {
+>>>>>>>          int i;
+>>>>>>> +
+>>>>>>> +       WARN_CONSOLE_UNLOCKED();
+>>>>>>> +
+>>>>>>>          for (i = first_fb_vc; i <= last_fb_vc; i++)
+>>>>>>>                  set_con2fb_map(i, idx, 0);
+>>>>>>>    @@ -3177,6 +3186,8 @@ static int fbcon_fb_registered(struct
+>>>>>>> fb_info
+>>>>>>> *info)
+>>>>>>>    {
+>>>>>>>          int ret = 0, i, idx;
+>>>>>>>    +     WARN_CONSOLE_UNLOCKED();
+>>>>>>> +
+>>>>>>>          idx = info->node;
+>>>>>>>          fbcon_select_primary(info);
+>>>>>>>
+>>>>>>
+>>>>>>
+>>>>>
+>>>>
+>>> _______________________________________________
+>>> dri-devel mailing list
+>>> dri-devel@lists.freedesktop.org
+>>> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+>>
+>>
+>>
+>>
+>
+
+
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
++41 (0) 79 365 57 48 - http://blog.ffwll.ch

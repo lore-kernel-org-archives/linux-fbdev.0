@@ -1,7 +1,7 @@
 From: Stefan Agner <stefan@agner.ch>
-Date: Thu, 12 Jul 2018 09:21:57 +0000
+Date: Thu, 12 Jul 2018 12:15:57 +0000
 Subject: Re: [PATCH 1/3] drm: mxsfb: Change driver.name to mxsfb-drm
-Message-Id: <617c0a7e9132b929877b8cbcf116b1ea@agner.ch>
+Message-Id: <0b5e15ff6aa7dd7dcb96bd9bdcc81f4d@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1529091248.git.leonard.crestez@nxp.com>
  <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
@@ -16,8 +16,10 @@ In-Reply-To: <6fdba55b-0be6-9e28-d87a-43d876a1fd09@denx.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marek Vasut <marex@denx.de>
-Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, marcofrk@gmail.com, shawnguo@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Marek Vasut <marek.vasut@gmail.com>, dl-linux-imx <linux-imx@nxp.com>, kernel@pengutronix.de, Fabio Estevam <fabio.estevam@nxp.com>, Leonard Crestez <leonard.crestez@nxp.com>, linux-arm-kernel@lists.infradead.org
+To: Marek Vasut <marex@denx.de>, Fabio Estevam <fabio.estevam@nxp.com>, gary.bisson@boundarydevices.com, LW@KARO-electronics.de, sebastien.szymanski@armadeus.com, jagan@amarulasolutions.com
+Cc: devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, marcofrk@gmail.com, shawnguo@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Marek Vasut <marek.vasut@gmail.com>, dl-linux-imx <linux-imx@nxp.com>, kernel@pengutronix.de, Leonard Crestez <leonard.crestez@nxp.com>, linux-arm-kernel@lists.infradead.org
+
+[adding Authors of the problematic device trees]
 
 On 10.07.2018 11:11, Marek Vasut wrote:
 > On 07/10/2018 11:06 AM, Stefan Agner wrote:
@@ -98,12 +100,6 @@ On 10.07.2018 11:11, Marek Vasut wrote:
 > But this will break mesa if it depends on mxsfb name for ie. etnaviv
 > binding.
 > 
-
-Does it? grep -r -e mxsfb in libdrm and mesa master returns nothing.
-
-There is also .name in struct drm_driver, which is already set to
-mxsfb-drm... Is that the one exposed to user space?
-
 >> - Remove CONFIG_FB_MXS from imx_v6_v7_defconfig/mxs_defconfig now, and
 >> only enable CONFIG_DRM_MXSFB=y
 >> - Add (deprecated) to CONFIG_FB_MXS
@@ -119,7 +115,22 @@ mxsfb-drm... Is that the one exposed to user space?
 > 
 > Can you fix the DTs for 4.19 too ?
 
-Getting tight, but will try.
+Unfortunately updating the device trees turned out to be a non trivial
+task especially as an outsider. The display needs to be supported in
+drivers/gpu/drm/panel/panel-simple.c. Some displays might be already in
+place, but if not, the display need to be added. Since for panel
+bindings vendor and product information are needed, it is not possible
+as an outsiders to make the conversion.
+
+Jagan, Sebastien, Fabio, Lothar and Gary, could you maybe update the
+respective device trees?
+
+A conversion to the new bindings similar to commit a027d49fc193 ("ARM:
+dts: imx7-colibri: use OF graph to describe the display") is what we are
+looking for.
+
+This will make sure that the boards keep working using the new MXSFB DRM
+driver.
 
 --
 Stefan

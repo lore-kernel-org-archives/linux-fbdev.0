@@ -1,7 +1,7 @@
-From: Marek Vasut <marex@denx.de>
-Date: Thu, 12 Jul 2018 13:14:57 +0000
+From: Stefan Agner <stefan@agner.ch>
+Date: Thu, 12 Jul 2018 13:46:33 +0000
 Subject: Re: [PATCH 1/3] drm: mxsfb: Change driver.name to mxsfb-drm
-Message-Id: <039b2914-3393-5e81-82a6-7d517c5818a9@denx.de>
+Message-Id: <ce461f1f192de0648feb2db148edf60b@agner.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1529091248.git.leonard.crestez@nxp.com>
  <47ea7572011735b68a8a70f0e11bdf00cb2fd86a.1529091248.git.leonard.crestez@nxp.com>
@@ -18,28 +18,28 @@ In-Reply-To: <7f40f34a401ced78703b1a151d9f5fe4ed8c209f.camel@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Leonard Crestez <leonard.crestez@nxp.com>, "stefan@agner.ch" <stefan@agner.ch>
-Cc: dl-linux-imx <linux-imx@nxp.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "festevam@gmail.com" <festevam@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, "marcofrk@gmail.com" <marcofrk@gmail.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "l.stach@pengutronix.de" <l.stach@pengutronix.de>, "kernel@pengutronix.de" <kernel@pengutronix.de>, "marek.vasut@gmail.com" <marek.vasut@gmail.com>
+To: Leonard Crestez <leonard.crestez@nxp.com>
+Cc: marex@denx.de, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, marcofrk@gmail.com, shawnguo@kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, marek.vasut@gmail.com, dl-linux-imx <linux-imx@nxp.com>, kernel@pengutronix.de, Fabio Estevam <fabio.estevam@nxp.com>, linux-arm-kernel@lists.infradead.org
 
-On 07/12/2018 03:03 PM, Leonard Crestez wrote:
+On 12.07.2018 15:03, Leonard Crestez wrote:
 > On Thu, 2018-07-12 at 11:21 +0200, Stefan Agner wrote:
 >> On 10.07.2018 11:11, Marek Vasut wrote:
->>> On 07/10/2018 11:06 AM, Stefan Agner wrote:
->>>> This is one of the situation where states quo is kinda the worst
->>>> situation.
->>>>
->>>> Currently imx_v6_v7_defconfig and mxs_defconfig actually still uses
->>>> CONFIG_FB_MXS.
->>>>
->>>> I understand that you'd rather prefer to move forward. I suggest we do
->>>> it in steps.
->>>>
->>>> In 4.19:
->>>>
->>>> - Change DRM driver.name to mxsfb-drm so we avoid conflicts for now
->>>
->>> But this will break mesa if it depends on mxsfb name for ie. etnaviv
->>> binding.
+>> > On 07/10/2018 11:06 AM, Stefan Agner wrote:
+>> > > This is one of the situation where states quo is kinda the worst
+>> > > situation.
+>> > >
+>> > > Currently imx_v6_v7_defconfig and mxs_defconfig actually still uses
+>> > > CONFIG_FB_MXS.
+>> > >
+>> > > I understand that you'd rather prefer to move forward. I suggest we do
+>> > > it in steps.
+>> > >
+>> > > In 4.19:
+>> > >
+>> > > - Change DRM driver.name to mxsfb-drm so we avoid conflicts for now
+>> >
+>> > But this will break mesa if it depends on mxsfb name for ie. etnaviv
+>> > binding.
 >>
 >> Does it? grep -r -e mxsfb in libdrm and mesa master returns nothing.
 >>
@@ -51,6 +51,10 @@ On 07/12/2018 03:03 PM, Leonard Crestez wrote:
 > 
 > Tools like modetest already need -M mxsfb-drm, the drm_driver.name
 > seems to be what matters.
+
+Ok, almost thought so, thanks for the confirmation! So we should be
+good.
+
 > 
 >> - Remove CONFIG_FB_MXS from imx_v6_v7_defconfig/mxs_defconfig now, and
 >> only enable CONFIG_DRM_MXSFB=y
@@ -63,11 +67,14 @@ On 07/12/2018 03:03 PM, Leonard Crestez wrote:
 > This can last until somebody implements support for old bindings in the
 > drm driver and then FB_MXS can just be deleted.
 
-So why don't we just convert the DT bindings on boards supported
-upstream and zap the old driver ? What is the problem with that?
+Yeah I guess that is what Marek don't want because it promotes using
+FB_MXS for longer than needed.
 
-Realistically, how many MXS boards in the field use old DT and new kernel ?
+I don't care as much since we anyway use the MXSFB DRM driver. However,
+what I really dislike is that a kernel compiled with both drivers
+currently leads to MXSFB DRM being unusable (because fbdev gets probed
+first). I feel removing the MXS_FB is rather harsh, so I *really* would
+love to see the MXSFB DRM driver renamed.
 
--- 
-Best regards,
-Marek Vasut
+--
+Stefan

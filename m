@@ -1,8 +1,10 @@
 From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 13 Jul 2018 14:55:55 +0000
+Date: Fri, 13 Jul 2018 15:05:17 +0000
 Subject: [PATCH] fbdev: omapfb: off by one in omapfb_register_client()
-Message-Id: <20180713145555.sprrr4rl6eqspirz@kili.mountain>
+Message-Id: <20180713150235.yxksf4iw7snuerze@kili.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180713145555.sprrr4rl6eqspirz@kili.mountain>
+In-Reply-To: <20180713145555.sprrr4rl6eqspirz@kili.mountain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

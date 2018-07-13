@@ -1,40 +1,30 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 02 Jul 2018 10:15:09 +0000
-Subject: Re: [PATCH] fbcon: introduce for_each_registered_fb() helper
-Message-Id: <cc1b6c9efa197d7dcf3ebec69eebdb4c3ca90eef.camel@linux.intel.com>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 13 Jul 2018 14:55:55 +0000
+Subject: [PATCH] fbdev: omapfb: off by one in omapfb_register_client()
+Message-Id: <20180713145555.sprrr4rl6eqspirz@kili.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1530202809-24105-1-git-send-email-ysxie@foxmail.com>
-         <00590669b886b4cc54548e6101912c3d4d1752f2.camel@petrovitsch.priv.at>
-In-Reply-To: <00590669b886b4cc54548e6101912c3d4d1752f2.camel@petrovitsch.priv.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bernd Petrovitsch <bernd@petrovitsch.priv.at>, Yisheng Xie <ysxie@foxmail.com>, b.zolnierkie@samsung.com, keescook@chromium.org, j.w.r.degoede@gmail.com, david@lechnology.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Imre Deak <imre.deak@solidboot.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Mon, 2018-07-02 at 09:36 +0200, Bernd Petrovitsch wrote:
+The omapfb_register_client[] array has OMAPFB_PLANE_NUM elements so the
+> should be >= or we are one element beyond the end of the array.
 
+Fixes: 8b08cf2b64f5 ("OMAP: add TI OMAP framebuffer driver")
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
-> > +#define for_each_registered_fb(i)		\
-> > +	for (i = 0; i < FB_MAX; i++)		\
-> > +		if (registered_fb[i])
-> > +
-> 
-> That leaves the possibility of a dangling-else.
-> ----  snip  ----
-> #define for_each_registered_fb(i)		\
-> 	for (i = 0; i < FB_MAX; i++)		\
-> 		if (!registered_fb[i])		\
-> 			continue;		\
-> 		else
-> ----  snip  ----
-> avoids that.
-
-Yes, you not alone :-)
-
-AFAIU there is a v2 which fixes that, though Daniel pointed out that DRM
-has a specific macro to make life easier.
-
--- 
-Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Intel Finland Oy
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index 585f39efcff6..1c75f4806ed3 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -958,7 +958,7 @@ int omapfb_register_client(struct omapfb_notifier_block *omapfb_nb,
+ {
+ 	int r;
+ 
+-	if ((unsigned)omapfb_nb->plane_idx > OMAPFB_PLANE_NUM)
++	if ((unsigned)omapfb_nb->plane_idx >= OMAPFB_PLANE_NUM)
+ 		return -EINVAL;
+ 
+ 	if (!notifier_inited) {

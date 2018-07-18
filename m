@@ -1,62 +1,44 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 03 Jul 2018 20:14:42 +0000
-Subject: Re: [PATCH 1/2] dt-bindings: video: fbdev: add devicetree bindings for pxa3xx-gcu
-Message-Id: <20180703201442.GA9598@rob-hp-laptop>
+From: Adam Borowski <kilobyte@angband.pl>
+Date: Wed, 18 Jul 2018 03:03:22 +0000
+Subject: [PATCH 1/6] vt: drop unused struct vt_struct
+Message-Id: <20180718030327.579-1-kilobyte@angband.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180623191125.22965-1-daniel@zonque.org>
-In-Reply-To: <20180623191125.22965-1-daniel@zonque.org>
+References: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
+In-Reply-To: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Mack <daniel@zonque.org>
-Cc: airlied@linux.ie, mark.rutland@arm.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, robert.jarzmik@free.fr
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Adam Borowski <kilobyte@angband.pl>
 
-On Sat, Jun 23, 2018 at 09:11:24PM +0200, Daniel Mack wrote:
-> This patch adds the binding documentation for the pxa3xx gcu.
+Hasn't been ever used within historic (ie, git) times.
 
-The subject should match the bindings hierarchy, not what driver 
-subsystem you are currently using.
+Signed-off-by: Adam Borowski <kilobyte@angband.pl>
+---
+ include/linux/console_struct.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
-> ---
->  .../bindings/display/marvell,pxa3xx-gcu.txt    | 18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/display/marvell,pxa3xx-gcu.txt
-> 
-> diff --git a/Documentation/devicetree/bindings/display/marvell,pxa3xx-gcu.txt b/Documentation/devicetree/bindings/display/marvell,pxa3xx-gcu.txt
-> new file mode 100644
-> index 000000000000..d1b2302d0fd8
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/display/marvell,pxa3xx-gcu.txt
-> @@ -0,0 +1,18 @@
-> +PXA3xx GCU Controller
-> +---------------------
-> +
-> +Required properties:
-> + - compatible : "marvell,pxa3xx-gcu"
+diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
+index 2c8d3239899b..fea64f2692a0 100644
+--- a/include/linux/console_struct.h
++++ b/include/linux/console_struct.h
+@@ -17,7 +17,6 @@
+ #include <linux/vt.h>
+ #include <linux/workqueue.h>
+ 
+-struct vt_struct;
+ struct uni_pagedir;
+ struct uni_screen;
+ 
+@@ -150,7 +149,7 @@ struct vc {
+ 	struct vc_data *d;
+ 	struct work_struct SAK_work;
+ 
+-	/* might add  scrmem, vt_struct, kbd  at some time,
++	/* might add  scrmem, kbd  at some time,
+ 	   to have everything in one place - the disadvantage
+ 	   would be that vc_cons etc can no longer be static */
+ };
+-- 
+2.18.0
 
-Don't use wildcards in compatible strings.
-
-> + - reg : should contain the register range (address and length).
-> + - interrupts : GCU interrupt.
-> + - clocks: phandle to input clocks
-
-Be specific as to how many.
-
-> +
-> +Example for PXA3xx:
-> +
-> +	gcu@54000000 {
-
-display-controller@...
-
-> +		compatible = "marvell,pxa3xx-gcu";
-> +		reg = <0x54000000 0x1000>;
-> +		interrupts = <39>;
-> +		clocks = <&clks CLK_PXA300_GCU>;
-> +	};
-> +
-> -- 
-> 2.17.1
-> 

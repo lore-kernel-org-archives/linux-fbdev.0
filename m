@@ -1,97 +1,53 @@
-From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Date: Tue, 17 Jul 2018 23:14:48 +0000
-Subject: [PATCH v2 3/3] ARM: OMAP1: ams-delta: make board header file local to mach-omap1
-Message-Id: <20180717231448.14958-4-jmkrzyszt@gmail.com>
+From: Adam Borowski <kilobyte@angband.pl>
+Date: Wed, 18 Jul 2018 03:03:25 +0000
+Subject: [PATCH 4/6] vt: change 256-color palette to match all(?) modern terminals
+Message-Id: <20180718030327.579-4-kilobyte@angband.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180518210954.29044-1-jmkrzyszt@gmail.com>
- <20180717231448.14958-1-jmkrzyszt@gmail.com>
-In-Reply-To: <20180717231448.14958-1-jmkrzyszt@gmail.com>
+References: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
+ <20180718030327.579-1-kilobyte@angband.pl>
+In-Reply-To: <20180718030327.579-1-kilobyte@angband.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: Aaro Koskinen <aaro.koskinen@iki.fi>, Boris Brezillon <boris.brezillon@bootlin.com>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, David Woodhouse <dwmw2@infradead.org>, Brian Norris <computersforpeace@gmail.com>, Marek Vasut <marek.vasut@gmail.com>, Shreeya Patel <shreeya.patel23498@gmail.com>, Arvind Yadav <arvind.yadav.cs@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Gregory CLEMENT <gregory.clement@bootlin.com>, Krzysztof Halasa <khalasa@piap.pl>, Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org, linux-mtd@lists.infradead.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Andy Shevchenko <andy.shevchen>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Adam Borowski <kilobyte@angband.pl>
 
-Now as board header file is no longer included by drivers, move it to
-the root directory of mach-omap1.
+Turns out that osso-xterm which I based upon uses something a lot different
+from apparently any other terminal -- they all use identical shades, much
+brighter than what I copied:
 
-Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+    Old: 00 2a 55 7f aa d4
+    New: 00 5f 87 af d7 ff
+
+This did hardly matter as we immediately shoehorn the colors into only 16
+values, but recently 24-bit codes turned from an oddity to something
+widespread, thus it's better to handle 256 vs 24-bit consistently.
+
+Signed-off-by: Adam Borowski <kilobyte@angband.pl>
 ---
-Depends on patches 1/3 and 2/3 of the series.
+ drivers/tty/vt/vt.c | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
- arch/arm/mach-omap1/ams-delta-fiq-handler.S              | 2 +-
- arch/arm/mach-omap1/ams-delta-fiq.c                      | 3 +--
- arch/arm/mach-omap1/board-ams-delta.c                    | 2 +-
- arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h | 2 +-
- 4 files changed, 4 insertions(+), 5 deletions(-)
- rename arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h (98%)
-
-diff --git a/arch/arm/mach-omap1/ams-delta-fiq-handler.S b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
-index ddc27638ba2a..2e2a17364dc9 100644
---- a/arch/arm/mach-omap1/ams-delta-fiq-handler.S
-+++ b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
-@@ -17,9 +17,9 @@
- #include <linux/platform_data/ams-delta-fiq.h>
- 
- #include <asm/assembler.h>
--#include <mach/board-ams-delta.h>
- 
- #include "ams-delta-fiq.h"
-+#include "board-ams-delta.h"
- #include "iomap.h"
- #include "soc.h"
- 
-diff --git a/arch/arm/mach-omap1/ams-delta-fiq.c b/arch/arm/mach-omap1/ams-delta-fiq.c
-index b0dc7ddf5877..14c3d3f5255e 100644
---- a/arch/arm/mach-omap1/ams-delta-fiq.c
-+++ b/arch/arm/mach-omap1/ams-delta-fiq.c
-@@ -22,11 +22,10 @@
- #include <linux/platform_data/ams-delta-fiq.h>
- #include <linux/platform_device.h>
- 
--#include <mach/board-ams-delta.h>
--
- #include <asm/fiq.h>
- 
- #include "ams-delta-fiq.h"
-+#include "board-ams-delta.h"
- 
- static struct fiq_handler fh = {
- 	.name	= "ams-delta-fiq"
-diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
-index dd28d2614d7f..34cb63ff45b3 100644
---- a/arch/arm/mach-omap1/board-ams-delta.c
-+++ b/arch/arm/mach-omap1/board-ams-delta.c
-@@ -36,7 +36,6 @@
- #include <asm/mach/arch.h>
- #include <asm/mach/map.h>
- 
--#include <mach/board-ams-delta.h>
- #include <linux/platform_data/keypad-omap.h>
- #include <mach/mux.h>
- 
-@@ -45,6 +44,7 @@
- #include <mach/usb.h>
- 
- #include "ams-delta-fiq.h"
-+#include "board-ams-delta.h"
- #include "iomap.h"
- #include "common.h"
- 
-diff --git a/arch/arm/mach-omap1/include/mach/board-ams-delta.h b/arch/arm/mach-omap1/board-ams-delta.h
-similarity index 98%
-rename from arch/arm/mach-omap1/include/mach/board-ams-delta.h
-rename to arch/arm/mach-omap1/board-ams-delta.h
-index ad6f865d1f16..1fbada29431a 100644
---- a/arch/arm/mach-omap1/include/mach/board-ams-delta.h
-+++ b/arch/arm/mach-omap1/board-ams-delta.h
-@@ -1,5 +1,5 @@
- /*
-- * arch/arm/plat-omap/include/mach/board-ams-delta.h
-+ * arch/arm/mach-omap1/board-ams-delta.h
-  *
-  * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
-  *
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 4096093c8cd2..8c61caafdf3c 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -1545,9 +1545,12 @@ static void rgb_from_256(int i, struct rgb *c)
+ 		c->g = i&2 ? 0xff : 0x55;
+ 		c->b = i&4 ? 0xff : 0x55;
+ 	} else if (i < 232) {   /* 6x6x6 colour cube. */
+-		c->r = (i - 16) / 36 * 85 / 2;
+-		c->g = (i - 16) / 6 % 6 * 85 / 2;
+-		c->b = (i - 16) % 6 * 85 / 2;
++		int r = (i - 16) / 36;
++		int g = (i - 16) / 6 % 6;
++		int b = (i - 16) % 6;
++		c->r = r ? r * 0x28 + 0x37 : 0;
++		c->g = g ? g * 0x28 + 0x37 : 0;
++		c->b = b ? b * 0x28 + 0x37 : 0;
+ 	} else                  /* Grayscale ramp. */
+ 		c->r = c->g = c->b = i * 10 - 2312;
+ }
 -- 
-2.16.4
+2.18.0
 

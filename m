@@ -1,32 +1,48 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 15:02:39 +0000
-Subject: Re: [PATCH 4/4] video: fbdev: pxafb: Add support for lcd-supply regulator
-Message-Id: <4635629.SV9Pax3P7h@amdc3058>
+From: Adam Borowski <kilobyte@angband.pl>
+Date: Wed, 18 Jul 2018 03:01:52 +0000
+Subject: [PATCH 0/6] vt: no blinking on console, 256/24-bit color improvements
+Message-Id: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180624153817.24387-1-daniel@zonque.org>
- <CGME20180624153829epcas4p1effd3ba1319737e82f2a63cc1499fc85@epcas4p1.samsung.com>
- <20180624153817.24387-4-daniel@zonque.org>
-In-Reply-To: <20180624153817.24387-4-daniel@zonque.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Mack <daniel@zonque.org>, dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, robert.jarzmik@free.fr
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sunday, June 24, 2018 05:38:17 PM Daniel Mack wrote:
-> Optionally obtain a lcd-supply regulator during probe and use it in
-> __pxafb_lcd_power() to switch the power supply of LCD panels.
-> 
-> This helps boards booted from DT to control such voltages without
-> callbacks.
-> 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
+Hi!
+Here's a patchset with two entangled improvements:
 
-Patch queued for 4.19, thanks.
+* it'd be good to get rid of blinking where possible.  Even CGA (thus VGA)
+  allows disabling it, rendering such characters with a bright background
+  instead.
+* due to my error, 256-color mode uses a much darker palette for conversion,
+  resulting in behaving inconsistently with 24-bit mode.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+The new code uses bright backgrounds when possible, enabled with \e[100m or
+\e[48;m.
 
+Despite the whole idea following a VGA capability, this patchset doesn't
+change vgacon yet, just fbcon.  The reason being: ~80% of x86 users have an
+nVidia chip, which means nouveau or nvidia-proprietary.  Nouveau implies
+fbcon, nvidia-proprietary fails to properly restore text flags (as evidenced
+by 512 glyph mode turning to 256 on switch from graphics).  You don't care
+about the proprietary driver, but let's not break it pointlessly, and as
+both nVidia cards I own work only with nouveau, I don't want to touch what I
+can't test.
+
+Thus, let's enable unblinking on fbcon for now.  We can flip that bit (in
+register 0x10) later.
+
+This fixes the display of catimg and similar tools.
+
+
+Diffstat:
+ drivers/tty/vt/vt.c              | 56 +++++++++++++++++++++++++++++---------------------------
+ drivers/video/fbdev/core/fbcon.c |  1 +
+ include/linux/console_struct.h   |  4 ++--
+ 3 files changed, 32 insertions(+), 29 deletions(-)
+
+-- 
+⢀⣴⠾⠻⢶⣦⠀ 
+⣾⠁⢠⠒⠀⣿⡁ A dumb species has no way to open a tuna can.
+⢿⡄⠘⠷⠚⠋⠀ A smart species invents a can opener.
+⠈⠳⣄⠀⠀⠀⠀ A master species delegates.

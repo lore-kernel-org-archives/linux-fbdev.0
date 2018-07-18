@@ -1,170 +1,56 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 30 Jul 2018 11:12:59 +0000
-Subject: Re: [PATCH v2] backlight: pwm_bl: switch to using "atomic" PWM API
-Message-Id: <20180730111259.5qjtchfo67nquila@holly.lan>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 18 Jul 2018 08:36:33 +0000
+Subject: [PATCH 1/1] fbdev/core: Disable console-lock warnings when fb.lockless_register_fb is set
+Message-Id: <20180718083633.24182-2-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180727151121.12296-1-enric.balletbo@collabora.com>
-In-Reply-To: <20180727151121.12296-1-enric.balletbo@collabora.com>
+References: <20180718083633.24182-1-tzimmermann@suse.de>
+In-Reply-To: <20180718083633.24182-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, kernel@collabora.com, Lee Jones <lee.jones@linaro.org>, cl@rock-chips.com
+To: rostedt@goodmis.org, pmladek@suse.com, linux-fbdev@vger.kernel.org, sergey.senozhatsky@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, hdegoede@redhat.com, akpm@linux-foundation.org, sergey.senozhatsky.work@gmail.com
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
 
-On Fri, Jul 27, 2018 at 05:11:21PM +0200, Enric Balletbo i Serra wrote:
-> The "atomic" API allows us to configure PWM period and duty_cycle and
-> enable it in one call.
-> 
-> The patch also moves the pwm_init_state just before any use of the
-> pwm_state struct, this fixes a potential bug where pwm_get_state
-> can be called before pwm_init_state.
-> 
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> ---
-> 
-> Changes in v2:
-> - Do not force the PWM be off in the first call to pwm_apply_state.
-> - Delayed applying the state until we know what the period is.
-> - Removed pb->period as after the conversion is not needed.
+If the console is unlocked during registration, the console subsystem
+generates significant amounts of warnings, which obfuscate actual
+debugging messages. Setting ignore_console_lock_warning while debugging
+console registration avoid the noise.
 
-Re-reading this I have spotted a couple of things I probably could have
-mentioned against v1... sorry.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/core/fbmem.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-I think it's looking good though, I expect to be able to ack v3.
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 9e2f9d3c760e..79b489ad603d 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1627,6 +1627,7 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	int i, ret;
+ 	struct fb_event event;
+ 	struct fb_videomode mode;
++	bool saved_ignore_console_lock_warning = ignore_console_lock_warning;
+ 
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
+@@ -1691,6 +1692,8 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	event.info = fb_info;
+ 	if (!lockless_register_fb)
+ 		console_lock();
++	else
++		ignore_console_lock_warning = true;
+ 	if (!lock_fb_info(fb_info)) {
+ 		if (!lockless_register_fb)
+ 			console_unlock();
+@@ -1701,6 +1704,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	unlock_fb_info(fb_info);
+ 	if (!lockless_register_fb)
+ 		console_unlock();
++	else
++		ignore_console_lock_warning +			saved_ignore_console_lock_warning;
+ 	return 0;
+ }
+ 
+-- 
+2.18.0
 
-
->  drivers/video/backlight/pwm_bl.c | 71 ++++++++++++++++++--------------
->  1 file changed, 41 insertions(+), 30 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index bdfcc0a71db1..dd1cb29b5332 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -28,7 +28,6 @@
->  struct pwm_bl_data {
->  	struct pwm_device	*pwm;
->  	struct device		*dev;
-> -	unsigned int		period;
->  	unsigned int		lth_brightness;
->  	unsigned int		*levels;
->  	bool			enabled;
-> @@ -46,7 +45,8 @@ struct pwm_bl_data {
->  	void			(*exit)(struct device *);
->  };
->  
-> -static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
-> +static void pwm_backlight_power_on(struct pwm_bl_data *pb,
-> +				   struct pwm_state *state)
->  {
->  	int err;
->  
-> @@ -57,7 +57,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
->  	if (err < 0)
->  		dev_err(pb->dev, "failed to enable power supply\n");
->  
-> -	pwm_enable(pb->pwm);
-> +	state->enabled = true;
-> +	pwm_apply_state(pb->pwm, state);
->  
->  	if (pb->post_pwm_on_delay)
->  		msleep(pb->post_pwm_on_delay);
-> @@ -70,6 +71,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
->  
->  static void pwm_backlight_power_off(struct pwm_bl_data *pb)
->  {
-> +	struct pwm_state state;
-> +
->  	if (!pb->enabled)
->  		return;
->  
-> @@ -79,8 +82,10 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
->  	if (pb->pwm_off_delay)
->  		msleep(pb->pwm_off_delay);
->  
-> -	pwm_config(pb->pwm, 0, pb->period);
-> -	pwm_disable(pb->pwm);
-> +	pwm_get_state(pb->pwm, &state);
-> +	state.enabled = false;
-> +	state.duty_cycle = 0;
-> +	pwm_apply_state(pb->pwm, &state);
-
-This is an in exact conversion because this code ignores a failure to
-set the duty cycle to zero whilst pwm_apply_state() does not.
-
-This would only matter if pwm_config() returns an error and given that a
-PWM which does not support a duty cycle of zero is permitted to adjust
-zero to the smallest supported value there is no *need* for a driver to
-return an error here. In other words... this is a subtle change of
-behaviour and perhaps (even probably) irrelevant.
-
-However I'm still interested whether you did any work to confirm or
-deny whether drivers that reports error on zero duty cycle actually
-exist.
-
-
->  	regulator_disable(pb->power_supply);
->  	pb->enabled = false;
-> @@ -89,14 +94,17 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
->  static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
->  {
->  	unsigned int lth = pb->lth_brightness;
-> +	struct pwm_state state;
->  	u64 duty_cycle;
->  
-> +	pwm_get_state(pb->pwm, &state);
-> +
->  	if (pb->levels)
->  		duty_cycle = pb->levels[brightness];
->  	else
->  		duty_cycle = brightness;
->  
-> -	duty_cycle *= pb->period - lth;
-> +	duty_cycle *= state.period - lth;
->  	do_div(duty_cycle, pb->scale);
->  
->  	return duty_cycle + lth;
-> @@ -106,6 +114,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
->  {
->  	struct pwm_bl_data *pb = bl_get_data(bl);
->  	int brightness = bl->props.brightness;
-> +	struct pwm_state state;
->  	int duty_cycle;
->  
->  	if (bl->props.power != FB_BLANK_UNBLANK ||
-> @@ -118,8 +127,12 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
->  
->  	if (brightness > 0) {
->  		duty_cycle = compute_duty_cycle(pb, brightness);
-> -		pwm_config(pb->pwm, duty_cycle, pb->period);
-
-In principle the same subtle change applies here... but if pwm_config()
-reported an error here then the backlight probably didn't work before
-your change either so less need to worry about it!
-
-
-> -		pwm_backlight_power_on(pb, brightness);
-> +		pwm_get_state(pb->pwm, &state);
-> +		state.duty_cycle = duty_cycle;
-> +		if (!state.enabled)
-> +			pwm_backlight_power_on(pb, &state);
-
-It verges towards nit picking but I don't really like the way a half updated
-state is shared between ...update_status and ...power_on.
-
-I'd rather it looked something like:
-
-		pwm_get_state(pb->pwm, &state);
-		if (!state.enabled) {
-			pwm_backlight_power_on(pb);  <-- no sharing here,
-			                                 make on match off
-		} else {
-			pwm_backlight_update_duty_cycle(pb, &state, brightness);
-			pwm_apply_state(pb->pwm, &state);
-		}
-	
-(and have pwm_backlight_power_on() also call ...update_duty_cycle too)
-
-Thoughts?
-
-
-Daniel.

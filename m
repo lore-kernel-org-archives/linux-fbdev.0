@@ -1,116 +1,66 @@
-From: Marcel Ziswiler <marcel.ziswiler@toradex.com>
-Date: Wed, 18 Jul 2018 13:26:12 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 18 Jul 2018 13:41:03 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: Fix uninitialized variable
-Message-Id: <1531920370.16896.25.camel@toradex.com>
+Message-Id: <20180718134103.bgwpgk7l6joxtjoa@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180716210241.9457-1-daniel.thompson@linaro.org>
-         <20180718080913.GB4641@dell> <1531902119.16896.13.camel@toradex.com>
-         <20180718095335.GD4641@dell> <20180718101227.shqf54wpt4kdrsj2@holly.lan>
-         <1531918626.16896.22.camel@toradex.com> <20180718130853.GE4641@dell>
+ <20180718080913.GB4641@dell>
+ <1531902119.16896.13.camel@toradex.com>
+ <20180718095335.GD4641@dell>
+ <20180718101227.shqf54wpt4kdrsj2@holly.lan>
+ <1531918626.16896.22.camel@toradex.com>
+ <20180718130853.GE4641@dell>
 In-Reply-To: <20180718130853.GE4641@dell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "lee.jones@linaro.org" <lee.jones@linaro.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>, "daniel.thompson@linaro.org" <daniel.thompson@linaro.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "patches@linaro.org" <patches@linaro.org>
+To: Lee Jones <lee.jones@linaro.org>
+Cc: "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
 
-T24gV2VkLCAyMDE4LTA3LTE4IGF0IDE0OjA4ICswMTAwLCBMZWUgSm9uZXMgd3JvdGU6DQo+IE9u
-IFdlZCwgMTggSnVsIDIwMTgsIE1hcmNlbCBaaXN3aWxlciB3cm90ZToNCj4gDQo+ID4gT24gV2Vk
-LCAyMDE4LTA3LTE4IGF0IDExOjEyICswMTAwLCBEYW5pZWwgVGhvbXBzb24gd3JvdGU6DQo+ID4g
-PiBPbiBXZWQsIEp1bCAxOCwgMjAxOCBhdCAxMDo1MzozNUFNICswMTAwLCBMZWUgSm9uZXMgd3Jv
-dGU6DQo+ID4gPiA+IE9uIFdlZCwgMTggSnVsIDIwMTgsIE1hcmNlbCBaaXN3aWxlciB3cm90ZToN
-Cj4gPiA+ID4gDQo+ID4gPiA+ID4gT24gV2VkLCAyMDE4LTA3LTE4IGF0IDA5OjA5ICswMTAwLCBM
-ZWUgSm9uZXMgd3JvdGU6DQo+ID4gPiA+ID4gPiBPbiBNb24sIDE2IEp1bCAyMDE4LCBEYW5pZWwg
-VGhvbXBzb24gd3JvdGU6DQo+ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+ID4gQ3VycmVudGx5LCBp
-ZiB0aGUgRFQgZG9lcyBub3QgZGVmaW5lIG51bS1pbnRlcnBvbGF0ZWQtDQo+ID4gPiA+ID4gPiA+
-IHN0ZXBzDQo+ID4gPiA+ID4gPiA+IHRoZW4NCj4gPiA+ID4gPiA+ID4gbnVtX3N0ZXBzIGlzIHVu
-ZGVmaW5lZCBhbmQgdGhlIGludGVycG9sYXRpb24gY29kZSB3aWxsDQo+ID4gPiA+ID4gPiA+IGRl
-cGxveQ0KPiA+ID4gPiA+ID4gPiByYW5kb21seS4NCj4gPiA+ID4gPiA+ID4gRml4IHRoaXMuDQo+
-ID4gPiA+ID4gPiA+IA0KPiA+ID4gPiA+ID4gPiBGaXhlczogNTczZmU2ZDFjMjVjICgiYmFja2xp
-Z2h0OiBwd21fYmw6IExpbmVhcg0KPiA+ID4gPiA+ID4gPiBpbnRlcnBvbGF0aW9uDQo+ID4gPiA+
-ID4gPiA+IGJldHdlZW4NCj4gPiA+ID4gPiA+ID4gYnJpZ2h0bmVzcy1sZXZlbHMiKQ0KPiA+ID4g
-PiA+ID4gPiBSZXBvcnRlZC1ieTogTWFyY2VsIFppc3dpbGVyIDxtYXJjZWwuemlzd2lsZXJAdG9y
-YWRleC5jb20NCj4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBE
-YW5pZWwgVGhvbXBzb24gPGRhbmllbC50aG9tcHNvbkBsaW5hcm8ub3INCj4gPiA+ID4gPiA+ID4g
-Zz4NCj4gPiA+ID4gPiA+ID4gU2lnbmVkLW9mZi1ieTogTWFyY2VsIFppc3dpbGVyIDxtYXJjZWwu
-emlzd2lsZXJAdG9yYWRleC5jDQo+ID4gPiA+ID4gPiA+IG9tPg0KPiA+ID4gPiA+ID4gDQo+ID4g
-PiA+ID4gPiBUaGlzIGxpbmUgaXMgY29uZnVzaW5nLiAgRGlkIHlvdSBndXlzIGF1dGhvciB0aGlz
-IHBhdGNoDQo+ID4gPiA+ID4gPiB0b2dldGhlcj8NCj4gPiA+ID4gPiANCj4gPiA+ID4gPiBZZXMs
-IEkgcmVwb3J0ZWQgaXQgYW5kIHdlIGNhbWUgdG8gYSBjb25jbHVzaW9uIHRvZ2V0aGVyLg0KPiA+
-ID4gPiANCj4gPiA+ID4gSXQgc291bmRzIGxpa2UgeW91IG5lZWQgdG8gaGF2ZSBhbGwgb2YgdGhl
-IHRhZ3MgKGV4Y2VwdCB0aGlzDQo+ID4gPiA+IG9uZSkuDQo+ID4gPiA+IDopDQo+ID4gPiA+IA0K
-PiA+ID4gPiAgUmVwb3J0ZWQtYnk6ICBmb3IgcmVwb3J0aW5nIHRoZSBpc3N1ZQ0KPiA+ID4gPiAg
-U3VnZ2VzdGVkLWJ5OiBmb3Igc3VnZ2VzdGluZyBhIHJlc29sdXRpb24NCj4gPiA+ID4gIEFja2Vk
-LWJ5OiAgICAgZm9yIHJldmlld2luZyBpdA0KPiA+ID4gPiAgVGVzdGVkLWJ5OiAgICBmb3IgdGVz
-dGluZyBpdA0KPiA+ID4gPiANCj4gPiA+ID4gU2lnbmVkLW9mZi1ieSB1c3VhbGx5IG1lYW5zIHlv
-dSBlaXRoZXIgd3JvdGUgYSBzaWduaWZpY2FudA0KPiA+ID4gPiBhbW91bnQNCj4gPiA+ID4gb2YN
-Cj4gPiA+ID4gdGhlIGRpZmZzdGF0IG9yIHlvdSB3ZXJlIHBhcnQgb2YgdGhlIHN1Ym1pc3Npb24g
-cGF0aC4NCj4gPiA+IA0KPiA+ID4gSGUgZGlkIFtJIGRvbid0IG9iamVjdCB0byBidXQgd291bGRu
-J3QgaGF2ZSB1c2VkIHRoZSBleHRyYQ0KPiA+ID4gYnJhY2tldHMNCj4gPiA+IHlvdQ0KPiA+ID4g
-YnJvdWdodCB1cCA7LSkgXS4NCj4gPiANCj4gPiBZZXMsIEkgdGFrZSBhbGwgdGhlIGJsYW1lIGZv
-ciB0aGUgZXh0cmEgYnJhY2tldHMuIFJlZ2FyZGxlc3Mgb2YNCj4gPiBoYXZpbmcNCj4gPiBhIG1h
-c3RlcnMgaW4gQ1Mgb3Igbm90IEkgc3RpbGwgcHJlZmVyIHRvbyBtYW55IHRoZW4gdG9vIGZldyBv
-ZiB0aGVtDQo+ID4gKDstDQo+ID4gcCkuDQo+ID4gDQo+ID4gPiA+ID4gPiBNeSBndWVzcyBpcyB0
-aGF0IHRoaXMgbGluZSBzaG91bGQgYmUgZHJvcHBlZCBhbmQgdGhlIFJCIGFuZA0KPiA+ID4gPiA+
-ID4gVEINCj4gPiA+ID4gPiA+IHRhZ3MNCj4gPiA+ID4gPiA+IHNob3VsZCByZW1haW4/ICBJZiBp
-dCB3YXMgcmV2aWV3ZWQgdG9vLCBwZXJoYXBzIGFuIEFCIHRvbz8NCj4gPiA+ID4gPiANCj4gPiA+
-ID4gPiBJJ20gT0sgZWl0aGVyIHdheSBhbmQgZG8gbm90IG5lZWQgYW55IGV4cGxpY2l0IGF1dGhv
-cnNoaXAgdG8NCj4gPiA+ID4gPiBiZQ0KPiA+ID4gPiA+IGV4cHJlc3NlZCBmb3IgbWUuDQo+ID4g
-PiA+IA0KPiA+ID4gPiBJbiB0aGlzIGluc3RhbmNlIEkgc3VnZ2VzdCBrZWVwaW5nIFJlcG9ydGVk
-LWJ5IGFuZCBUZXN0ZWQtYnkuDQo+ID4gPiA+IA0KPiA+ID4gPiA+ID4gPiBUZXN0ZWQtYnk6IE1h
-cmNlbCBaaXN3aWxlciA8bWFyY2VsLnppc3dpbGVyQHRvcmFkZXguY29tPg0KPiA+ID4gPiA+ID4g
-PiAtLS0NCj4gPiA+ID4gPiA+ID4gIGRyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L3B3bV9ibC5jIHwg
-MTcgKysrKysrKystLS0tLS0tLS0NCj4gPiA+ID4gPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCA4IGlu
-c2VydGlvbnMoKyksIDkgZGVsZXRpb25zKC0pDQo+ID4gPiA+ID4gPiA+IA0KPiA+ID4gPiA+ID4g
-PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMNCj4gPiA+ID4g
-PiA+ID4gYi9kcml2ZXJzL3ZpZGVvL2JhY2tsaWdodC9wd21fYmwuYw0KPiA+ID4gPiA+ID4gPiBp
-bmRleCA5ZWU0YzFiNzM1YjIuLmUzYzIyYjc5ZmJjZCAxMDA2NDQNCj4gPiA+ID4gPiA+ID4gLS0t
-IGEvZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMNCj4gPiA+ID4gPiA+ID4gKysrIGIv
-ZHJpdmVycy92aWRlby9iYWNrbGlnaHQvcHdtX2JsLmMNCj4gPiA+ID4gPiA+ID4gQEAgLTI5OSwx
-NSArMjk5LDE0IEBAIHN0YXRpYyBpbnQNCj4gPiA+ID4gPiA+ID4gcHdtX2JhY2tsaWdodF9wYXJz
-ZV9kdChzdHJ1Y3QNCj4gPiA+ID4gPiA+ID4gZGV2aWNlICpkZXYsDQo+ID4gPiA+ID4gPiA+ICAJ
-CSAqIGludGVycG9sYXRpb24gYmV0d2VlbiBlYWNoIG9mIHRoZQ0KPiA+ID4gPiA+ID4gPiB2YWx1
-ZXMNCj4gPiA+ID4gPiA+ID4gb2YNCj4gPiA+ID4gPiA+ID4gYnJpZ2h0bmVzcyBsZXZlbHMNCj4g
-PiA+ID4gPiA+ID4gIAkJICogYW5kIGNyZWF0ZXMgYSBuZXcgcHJlLWNvbXB1dGVkIHRhYmxlLg0K
-PiA+ID4gPiA+ID4gPiAgCQkgKi8NCj4gPiA+ID4gPiA+ID4gLQkJb2ZfcHJvcGVydHlfcmVhZF91
-MzIobm9kZSwgIm51bS0NCj4gPiA+ID4gPiA+ID4gaW50ZXJwb2xhdGVkLQ0KPiA+ID4gPiA+ID4g
-PiBzdGVwcyIsDQo+ID4gPiA+ID4gPiA+IC0JCQkJICAgICAmbnVtX3N0ZXBzKTsNCj4gPiA+ID4g
-PiA+ID4gLQ0KPiA+ID4gPiA+ID4gPiAtCQkvKg0KPiA+ID4gPiA+ID4gPiAtCQkgKiBNYWtlIHN1
-cmUgdGhhdCB0aGVyZSBpcyBhdCBsZWFzdCB0d28NCj4gPiA+ID4gPiA+ID4gZW50cmllcyBpbg0K
-PiA+ID4gPiA+ID4gPiB0aGUNCj4gPiA+ID4gPiA+ID4gLQkJICogYnJpZ2h0bmVzcy1sZXZlbHMg
-dGFibGUsIG90aGVyd2lzZSB3ZQ0KPiA+ID4gPiA+ID4gPiBjYW4ndA0KPiA+ID4gPiA+ID4gPiBp
-bnRlcnBvbGF0ZQ0KPiA+ID4gPiA+ID4gPiAtCQkgKiBiZXR3ZWVuIHR3byBwb2ludHMuDQo+ID4g
-PiA+ID4gPiA+IC0JCSAqLw0KPiA+ID4gPiA+ID4gPiAtCQlpZiAobnVtX3N0ZXBzKSB7DQo+ID4g
-PiA+ID4gPiA+ICsJCWlmICgob2ZfcHJvcGVydHlfcmVhZF91MzIobm9kZSwgIm51bS0NCj4gPiA+
-ID4gPiA+ID4gaW50ZXJwb2xhdGVkLQ0KPiA+ID4gPiA+ID4gPiBzdGVwcyIsDQo+ID4gPiA+ID4g
-PiA+ICsJCQkJCSAgJm51bV9zdGVwcykgPT0NCj4gPiA+ID4gPiA+ID4gMCkNCj4gPiA+ID4gPiA+
-ID4gJiYNCj4gPiA+ID4gPiA+ID4gbnVtX3N0ZXBzKSB7DQo+ID4gPiA+ID4gPiANCj4gPiA+ID4g
-PiA+IFRoaXMgaXMgcHJldHR5IHVnbHksIGFuZCBpc24ndCBpdCBzdWZmZXJpbmcgZnJvbSBvdmVy
-LQ0KPiA+ID4gPiA+ID4gYnJhY2tldGluZz8gIE15DQo+ID4gPiA+ID4gPiBzdWdnZXN0aW9uIHdv
-dWxkIGJlIHRvIGJyZWFrIG91dCB0aGUgaW52b2NhdGlvbiBvZg0KPiA+ID4gPiA+ID4gb2ZfcHJv
-cGVydHlfcmVhZF91MzIoKSBmcm9tIHRoZSBpZiBhbmQgdGVzdCBvbmx5IHRoZQ0KPiA+ID4gPiA+
-ID4gcmVzdWx0Lg0KPiA+ID4gPiA+ID4gDQo+ID4gPiA+ID4gPiAJCW9mX3Byb3BlcnR5X3JlYWRf
-dTMyKG5vZGUsICJudW0taW50ZXJwb2xhdGVkLQ0KPiA+ID4gPiA+ID4gc3RlcHMiLCANCj4gPiA+
-ID4gPiA+ICZudW1fc3RlcHMpOw0KPiA+ID4gPiA+IA0KPiA+ID4gPiA+IHlvdSBtZWFuOg0KPiA+
-ID4gPiA+IA0KPiA+ID4gPiA+IAkJcmV0ID0gb2ZfcHJvcGVydHlfcmVhZF91MzIobm9kZSwgIm51
-bS0NCj4gPiA+ID4gPiBpbnRlcnBvbGF0ZWQtDQo+ID4gPiA+ID4gc3RlcHMiLCAmbnVtX3N0ZXBz
-KTsNCj4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IAkJaWYgKCFyZXQgJiYgbnVtX3N0ZXBzKSB7DQo+
-ID4gPiA+ID4gPiANCj4gPiA+ID4gPiA+IEkgaGF2ZW4ndCBjaGVja2VkIHRoZSB1bmRlcmxpbmcg
-Y29kZSwgYnV0IGlzIGl0IGV2ZW4NCj4gPiA+ID4gPiA+IGZlYXNpYmxlDQo+ID4gPiA+ID4gPiBm
-b3INCj4gPiA+ID4gPiA+IG9mX3Byb3BlcnR5X3JlYWRfdTMyKCkgdG8gbm90IHN1Y2NlZWQgQU5E
-IGZvciBudW1fc3RlcHMgdG8NCj4gPiA+ID4gPiA+IGJlDQo+ID4gPiA+ID4gPiBzZXQ/DQo+ID4g
-PiA+ID4gPiANCj4gPiA+ID4gPiA+IElmIG5vdCwgdGhlIGNoZWNrIGZvciAhcmV0IGlmIHN1cGVy
-Zmx1b3VzIGFuZCB5b3UgY2FuIGRyb3ANCj4gPiA+ID4gPiA+IGl0Lg0KPiA+ID4gPiA+IA0KPiA+
-ID4gPiA+IE5vLCB0aGVuIHdlIGFyZSBiYWNrIHRvIHRoZSBpbml0aWFsIGlzc3VlIG9mIG51bV9z
-dGVwcw0KPiA+ID4gPiA+IHBvdGVudGlhbGx5IG5vdA0KPiA+ID4gPiA+IGJlaW5nIGluaXRpYWxp
-c2VkLiBXZSByZWFsbHkgd2FudCBib3RoIG9mX3Byb3BlcnR5X3JlYWRfdTMyKCkNCj4gPiA+ID4g
-PiB0bw0KPiA+ID4gPiA+IHN1Y2NlZWQgQU5EIG51bV9zdGVwcyB0byBhY3R1YWxseSBiZSBzZXQu
-DQo+ID4gPiA+IA0KPiA+ID4gPiBJIGFsc28gdGhpbmsgbnVtX3N0ZXBzIHNob3VsZCBiZSBwcmUt
-aW5pdGlhbGlzZWQuDQo+ID4gDQo+ID4gWWVzLCBJIGd1ZXNzIGl0IGRlZmluaXRlbHkgZG9lcyBu
-b3QgaHVydC4NCj4gPiANCj4gPiA+ID4gVGhlbiBpdCB3aWxsIG9ubHkgYmUgc2V0IGlmIG9mX3By
-b3BlcnR5X3JlYWRfdTMyKCkgc3VjY2VlZHMuDQo+ID4gDQo+ID4gWWVzLCBidXQgd2Ugc3RpbGwg
-bmVlZCB0byBjaGVjayBmb3IgYm90aCwgdGhlIGZ1bmN0aW9uIG5vdCBmYWlsaW5nDQo+ID4gYW5k
-DQo+ID4gbnVtX3N0ZXBzIHRvIGFjdHVhbGx5IGJlIG5vbiB6ZXJvLg0KPiANCj4gV2h5PyAgWW91
-IGRvbid0IGRvIGFueXRoaW5nIGRpZmZlcmVudGx5IGlmIGl0IGZhaWxzLg0KDQpXZWxsLCBtYXli
-ZSB3ZSBzaG91bGQgYnV0IGdpdmVuIHRoaXMgYmVpbmcgYW4gb3B0aW9uYWwgcHJvcGVydHkgbm9i
-b2R5DQpjYXJlZC4
+On Wed, Jul 18, 2018 at 02:08:53PM +0100, Lee Jones wrote:
+> > > > > No, then we are back to the initial issue of num_steps
+> > > > > potentially not
+> > > > > being initialised. We really want both of_property_read_u32() to
+> > > > > succeed AND num_steps to actually be set.
+> > > > 
+> > > > I also think num_steps should be pre-initialised.
+> > 
+> > Yes, I guess it definitely does not hurt.
+> > 
+> > > > Then it will only be set if of_property_read_u32() succeeds.
+> > 
+> > Yes, but we still need to check for both, the function not failing and
+> > num_steps to actually be non zero.
+> 
+> Why?  You don't do anything differently if it fails.
+
+Only if you initialize num_steps...
+
+We should either initialize to zero and not worry about the return
+code[1] or we check the return code and not worry about
+initialization[2]. I don't think both are worthwhile.
+
+Whilst initialization can fix this specific instance we generally avoid
+overusing it since it messes up static analysis and, in this instance,
+distance from declaration to use is >25 lines, hence current patchset.
+
+
+Daniel.
+
+
+[1] https://lkml.org/lkml/2018/7/16/399
+[2] https://lkml.org/lkml/2018/7/16/1042
+
+Or...
+
+We check the return code and leave number
+
+num_steps is uninitialized and stack allocated so it only has a valid
+value if of_property_read_u32() succeeds.
+
+We can (and I originally did) fix the bug by initializing num_steps to 0
+but its quite some distance between declaration and use so I accepted
+Marcel's counter proposal to check the return code instead.
+
+
+Daniel.

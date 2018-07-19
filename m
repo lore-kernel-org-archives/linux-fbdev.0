@@ -1,48 +1,38 @@
-From: Adam Borowski <kilobyte@angband.pl>
-Date: Wed, 18 Jul 2018 03:01:52 +0000
-Subject: [PATCH 0/6] vt: no blinking on console, 256/24-bit color improvements
-Message-Id: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
+From: Alan Cox <gnomes@lxorguk.ukuu.org.uk>
+Date: Thu, 19 Jul 2018 10:47:49 +0000
+Subject: Re: [PATCH 0/6] vt: no blinking on console, 256/24-bit color improvements
+Message-Id: <20180719114749.00a7f979@alans-desktop>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
+In-Reply-To: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Adam Borowski <kilobyte@angband.pl>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi!
-Here's a patchset with two entangled improvements:
+On Wed, 18 Jul 2018 05:01:52 +0200
+Adam Borowski <kilobyte@angband.pl> wrote:
 
-* it'd be good to get rid of blinking where possible.  Even CGA (thus VGA)
-  allows disabling it, rendering such characters with a bright background
-  instead.
-* due to my error, 256-color mode uses a much darker palette for conversion,
-  resulting in behaving inconsistently with 24-bit mode.
+> Hi!
+> Here's a patchset with two entangled improvements:
+> 
+> * it'd be good to get rid of blinking where possible.  Even CGA (thus VGA)
+>   allows disabling it, rendering such characters with a bright background
+>   instead.
 
-The new code uses bright backgrounds when possible, enabled with \e[100m or
-\e[48;m.
+That's a matter of taste so needs to configurable. Changing the default
+ought I think to be its own patch as it's a separate discussion to having
+the choice there and easy to make.
 
-Despite the whole idea following a VGA capability, this patchset doesn't
-change vgacon yet, just fbcon.  The reason being: ~80% of x86 users have an
-nVidia chip, which means nouveau or nvidia-proprietary.  Nouveau implies
-fbcon, nvidia-proprietary fails to properly restore text flags (as evidenced
-by 512 glyph mode turning to 256 on switch from graphics).  You don't care
-about the proprietary driver, but let's not break it pointlessly, and as
-both nVidia cards I own work only with nouveau, I don't want to touch what I
-can't test.
+For the palette why does it needs changing and exactly what standards
+document defines 'right', especially given we don't do ICC in console
+mode ? Have you tested the values used against multiple monitor types and
+cards with a light meter ?
 
-Thus, let's enable unblinking on fbcon for now.  We can flip that bit (in
-register 0x10) later.
+BTW visibly breaking the Nvidia crud is also fine. They'll then actually
+bother to fix it and uually quite soon.
 
-This fixes the display of catimg and similar tools.
+Alan
 
 
-Diffstat:
- drivers/tty/vt/vt.c              | 56 +++++++++++++++++++++++++++++---------------------------
- drivers/video/fbdev/core/fbcon.c |  1 +
- include/linux/console_struct.h   |  4 ++--
- 3 files changed, 32 insertions(+), 29 deletions(-)
-
--- 
-⢀⣴⠾⠻⢶⣦⠀ 
-⣾⠁⢠⠒⠀⣿⡁ A dumb species has no way to open a tuna can.
-⢿⡄⠘⠷⠚⠋⠀ A smart species invents a can opener.
-⠈⠳⣄⠀⠀⠀⠀ A master species delegates.

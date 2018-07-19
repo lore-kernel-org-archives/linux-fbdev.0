@@ -1,33 +1,62 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 16:58:19 +0000
-Subject: Re: [PATCH] omapfb: encoder-tpd12s015: remove redundant pointer 'in'
-Message-Id: <7824518.4rCHaMUqme@amdc3058>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Thu, 19 Jul 2018 10:16:01 +0000
+Subject: [PATCH v3 2/2] fbdev/core: Disable console-lock warnings when fb.lockless_register_fb is set
+Message-Id: <20180719101601.25076-3-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180720185219epcas1p2542795dbad64a8343ce7e9eff8dd7cce@epcas1p2.samsung.com>
- <20180720185213.3085-1-colin.king@canonical.com>
-In-Reply-To: <20180720185213.3085-1-colin.king@canonical.com>
+References: <20180719101601.25076-1-tzimmermann@suse.de>
+In-Reply-To: <20180719101601.25076-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: rostedt@goodmis.org, pmladek@suse.com, linux-fbdev@vger.kernel.org, sergey.senozhatsky@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, hdegoede@redhat.com, akpm@linux-foundation.org, sergey.senozhatsky.work@gmail.com
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
 
-On Friday, July 20, 2018 07:52:13 PM Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Pointer 'in' is being assigned but is never used hence it is
-> redundant and can be removed.
-> 
-> Cleans up clang warning:
-> warning: variable 'in' set but not used [-Wunused-but-set-variable]
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+If the console is unlocked during registration, the console subsystem
+generates significant amounts of warnings, which obfuscate actual
+debugging messages. Setting ignore_console_lock_warning while debugging
+console registration avoid the noise.
 
-Patch queued for 4.19, thanks.
+v3:
+	- manipulate ignore_console_lock_warning with atomic_{inc,dec}
+v2:
+	- restore ignore_console_lock_warning if lock_fb_info() fails
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/core/fbmem.c | 13 +++++++++----
+ 1 file changed, 9 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 9e2f9d3c760e..cb72cd6c5892 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1691,17 +1691,22 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	event.info = fb_info;
+ 	if (!lockless_register_fb)
+ 		console_lock();
++	else
++		atomic_inc(&ignore_console_lock_warning);
+ 	if (!lock_fb_info(fb_info)) {
+-		if (!lockless_register_fb)
+-			console_unlock();
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto unlock_console;
+ 	}
++	ret = 0;
+ 
+ 	fb_notifier_call_chain(FB_EVENT_FB_REGISTERED, &event);
+ 	unlock_fb_info(fb_info);
++unlock_console:
+ 	if (!lockless_register_fb)
+ 		console_unlock();
+-	return 0;
++	else
++		atomic_dec(&ignore_console_lock_warning);
++	return ret;
+ }
+ 
+ static int do_unregister_framebuffer(struct fb_info *fb_info)
+-- 
+2.18.0
 

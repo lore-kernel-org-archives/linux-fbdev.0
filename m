@@ -1,29 +1,57 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 14:54:10 +0000
-Subject: Re: [PATCH v2 2/2] video: fbdev: pxa3xx_gcu: add devicetree bindings
-Message-Id: <3016583.4xSMVW7mao@amdc3058>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 20 Jul 2018 18:52:13 +0000
+Subject: [PATCH] omapfb: encoder-tpd12s015: remove redundant pointer 'in'
+Message-Id: <20180720185213.3085-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180704193502.3805-1-daniel@zonque.org>
- <CGME20180704193518epcas4p49358d0d9fed913167a11bdae693ddd8f@epcas4p4.samsung.com>
- <20180704193502.3805-2-daniel@zonque.org>
-In-Reply-To: <20180704193502.3805-2-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Mack <daniel@zonque.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, airlied@linux.ie, dri-devel@lists.freedesktop.org, robh+dt@kernel.org, robert.jarzmik@free.fr
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wednesday, July 04, 2018 09:35:02 PM Daniel Mack wrote:
-> Add a device tree match table for this hardware graphics acceleration
-> driver so it can be used by pxa3xx boards booted with a devicetree.
-> 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
+From: Colin Ian King <colin.king@canonical.com>
 
-Patch queued for 4.19, thanks.
+Pointer 'in' is being assigned but is never used hence it is
+redundant and can be removed.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Cleans up clang warning:
+warning: variable 'in' set but not used [-Wunused-but-set-variable]
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ .../video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c    | 5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
+index 8abf973a59db..47f0459e3551 100644
+--- a/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
++++ b/drivers/video/fbdev/omap2/omapfb/displays/encoder-tpd12s015.c
+@@ -219,7 +219,7 @@ static int tpd_probe_of(struct platform_device *pdev)
+ 
+ static int tpd_probe(struct platform_device *pdev)
+ {
+-	struct omap_dss_device *in, *dssdev;
++	struct omap_dss_device *dssdev;
+ 	struct panel_drv_data *ddata;
+ 	int r;
+ 	struct gpio_desc *gpio;
+@@ -238,7 +238,6 @@ static int tpd_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
+-
+ 	gpio = devm_gpiod_get_index_optional(&pdev->dev, NULL, 0,
+ 		GPIOD_OUT_LOW);
+ 	if (IS_ERR(gpio)) {
+@@ -274,8 +273,6 @@ static int tpd_probe(struct platform_device *pdev)
+ 	dssdev->owner = THIS_MODULE;
+ 	dssdev->port_num = 1;
+ 
+-	in = ddata->in;
+-
+ 	r = omapdss_register_output(dssdev);
+ 	if (r) {
+ 		dev_err(&pdev->dev, "Failed to register output\n");
+-- 
+2.17.1
 

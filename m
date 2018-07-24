@@ -1,38 +1,32 @@
-From: Anton Vasilyev <vasilyev@ispras.ru>
-Date: Fri, 06 Jul 2018 12:04:22 +0000
-Subject: [PATCH] video: goldfishfb: fix memory leak on driver remove
-Message-Id: <20180706120422.14628-1-vasilyev@ispras.ru>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 24 Jul 2018 15:41:17 +0000
+Subject: Re: [PATCH] video: goldfishfb: fix memory leak on driver remove
+Message-Id: <2385463.SiM69ykDI2@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180706120501epcas5p3a2db5a74c3b4b0d2c8e102fbe3943de6@epcas5p3.samsung.com>
+        <20180706120422.14628-1-vasilyev@ispras.ru>
+In-Reply-To: <20180706120422.14628-1-vasilyev@ispras.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Anton Vasilyev <vasilyev@ispras.ru>, Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
+To: Anton Vasilyev <vasilyev@ispras.ru>
+Cc: Aleksandar Markovic <aleksandar.markovic@mips.com>, Miodrag Dinic <miodrag.dinic@mips.com>, Goran Ferenc <goran.ferenc@mips.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
-goldfish_fb_probe() allocates memory for fb, but goldfish_fb_remove() does
-not have deallocation of fb, which leads to memory leak on probe/remove.
+On Friday, July 06, 2018 03:04:22 PM Anton Vasilyev wrote:
+> goldfish_fb_probe() allocates memory for fb, but goldfish_fb_remove() does
+> not have deallocation of fb, which leads to memory leak on probe/remove.
+> 
+> The patch adds deallocation into goldfish_fb_remove().
+> 
+> Found by Linux Driver Verification project (linuxtesting.org).
+> 
+> Signed-off-by: Anton Vasilyev <vasilyev@ispras.ru>
 
-The patch adds deallocation into goldfish_fb_remove().
+Patch queued for 4.19, thanks.
 
-Found by Linux Driver Verification project (linuxtesting.org).
-
-Signed-off-by: Anton Vasilyev <vasilyev@ispras.ru>
----
- drivers/video/fbdev/goldfishfb.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/drivers/video/fbdev/goldfishfb.c b/drivers/video/fbdev/goldfishfb.c
-index 3b70044773b6..9fe7edf725c6 100644
---- a/drivers/video/fbdev/goldfishfb.c
-+++ b/drivers/video/fbdev/goldfishfb.c
-@@ -301,6 +301,7 @@ static int goldfish_fb_remove(struct platform_device *pdev)
- 	dma_free_coherent(&pdev->dev, framesize, (void *)fb->fb.screen_base,
- 						fb->fb.fix.smem_start);
- 	iounmap(fb->reg_base);
-+	kfree(fb);
- 	return 0;
- }
- 
--- 
-2.18.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 

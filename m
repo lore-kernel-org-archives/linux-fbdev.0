@@ -1,7 +1,7 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 24 Jul 2018 06:48:43 +0000
+Date: Tue, 24 Jul 2018 07:01:13 +0000
 Subject: Re: [PATCH v2] backlight: pwm_bl: Fix uninitialized variable
-Message-Id: <20180724064843.GA3099@wychelm.lan>
+Message-Id: <20180724070113.GA9871@wychelm.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180716210241.9457-1-daniel.thompson@linaro.org>
  <20180719161923.21510-1-daniel.thompson@linaro.org>
@@ -11,7 +11,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: Lee Jones <lee.jones@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, patches@linaro.org
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, Jingoo Han <jingoohan1@gmail.com>, patches@linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>
 
 On Mon, Jul 23, 2018 at 08:23:43AM +0100, Lee Jones wrote:
 > On Thu, 19 Jul 2018, Daniel Thompson wrote:
@@ -65,7 +65,14 @@ On Mon, Jul 23, 2018 at 08:23:43AM +0100, Lee Jones wrote:
 > Just FYI (it didn't even make it to 'nit' status), this should really
 > be done in a separate patch since it is unrelated to the rest of the
 > patch.
-> 
+
+Did wonder which way to go on this... I figured this close I'd accept
+code either way so adopted fewest patches.
+
+However I will split this out because I'm going to go back to the orignal
+pre-v1 approach of just initializing the damn variable.
+
+
 > >  		data->dft_brightness = value;
 > > 
 > >  		/*
@@ -91,11 +98,7 @@ On Mon, Jul 23, 2018 at 08:23:43AM +0100, Lee Jones wrote:
 > Not sure if it's even possible for of_property_read_u32() to fail AND
 > still populate num_steps, however this check makes it sound like that's
 > okay.  Is that correct?
-
-No, it's bogus. Looks like when I broke the if statement into two
-clauses I ended up flipping the && to an ||.
-
-
+> 
 > I can't help but think that this all 'just goes away' if you
 > pre-initialise num_steps.  I wouldn't let the "do not initialise too
 > far away from the code using variable" affect this.  However, if

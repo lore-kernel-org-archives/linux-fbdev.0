@@ -1,40 +1,22 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 31 Jul 2018 10:50:26 +0000
-Subject: Re: [PATCH] fb: amifb: fix build warnings when not builtin
-Message-Id: <2959711.91EZXKFJ5b@amdc3058>
+Date: Tue, 24 Jul 2018 15:01:57 +0000
+Subject: Re: [PATCH 2/4] video: fbdev: pxafb: switch to devm_* API
+Message-Id: <1592269.hoTFH7LZRq@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cda83e71-7bfc-5997-a271-0362a7ac0354@infradead.org>
- <CGME20180727071658epcas1p4d24ffaddc497ceb479a5e3320b4ef0a4@epcas1p4.samsung.com>
- <CAMuHMdVL8v4Y5iEyYxSAfFnWFq5+trAr+cWHbF59Ge_5gRwpNA@mail.gmail.com>
-In-Reply-To: <CAMuHMdVL8v4Y5iEyYxSAfFnWFq5+trAr+cWHbF59Ge_5gRwpNA@mail.gmail.com>
+References: <20180624153817.24387-1-daniel@zonque.org>
+ <CGME20180624153828epcas4p43ae0bc9085756fae520e8aa8542b3ea4@epcas4p4.samsung.com>
+ <20180624153817.24387-2-daniel@zonque.org>
+In-Reply-To: <20180624153817.24387-2-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Randy Dunlap <rdunlap@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, DRI Development <dri-devel@lists.freedesktop.org>
+To: Daniel Mack <daniel@zonque.org>, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, robert.jarzmik@free.fr
 
-On Friday, July 27, 2018 09:16:42 AM Geert Uytterhoeven wrote:
-> Hi Randy,
+On Sunday, June 24, 2018 05:38:15 PM Daniel Mack wrote:
+> This helps us clean up the probe() and remove() implementations.
 > 
-> On Fri, Jul 27, 2018 at 2:00 AM Randy Dunlap <rdunlap@infradead.org> wrote:
-> > From: Randy Dunlap <rdunlap@infradead.org>
-> >
-> > Fix build warning when built as a loadable module.
-> > amifb_setup() and amifb_setup_mcap() are only needed when the driver
-> > is builtin.
-> > This matches how the functions are called (using #ifndef MODULE).
-> >
-> > ../drivers/video/fbdev/amifb.c:2344:19: warning: 'amifb_setup' defined but not used [-Wunused-function]
-> >  static int __init amifb_setup(char *options)
-> >
-> > ../drivers/video/fbdev/amifb.c:2307:20: warning: 'amifb_setup_mcap' defined but not used [-Wunused-function]
-> >  static void __init amifb_setup_mcap(char *spec)
-> 
-> Thanks for your patch!
-> 
-> > Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Daniel Mack <daniel@zonque.org>
 
 Patch queued for 4.19, thanks.
 

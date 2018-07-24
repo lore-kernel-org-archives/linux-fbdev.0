@@ -1,23 +1,26 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 16:48:52 +0000
-Subject: Re: [PATCH] fbdev: omapfb: off by one in omapfb_register_client()
-Message-Id: <8615162.0D3GuDQfVx@amdc3058>
+Date: Tue, 24 Jul 2018 15:02:39 +0000
+Subject: Re: [PATCH 4/4] video: fbdev: pxafb: Add support for lcd-supply regulator
+Message-Id: <4635629.SV9Pax3P7h@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180713145615epcas3p4e584128beb220b339552ad92fe2eb3b4@epcas3p4.samsung.com>
- <20180713145555.sprrr4rl6eqspirz@kili.mountain>
-In-Reply-To: <20180713145555.sprrr4rl6eqspirz@kili.mountain>
+References: <20180624153817.24387-1-daniel@zonque.org>
+ <CGME20180624153829epcas4p1effd3ba1319737e82f2a63cc1499fc85@epcas4p1.samsung.com>
+ <20180624153817.24387-4-daniel@zonque.org>
+In-Reply-To: <20180624153817.24387-4-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-fbdev@vger.kernel.org, Imre Deak <imre.deak@solidboot.com>, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org
+To: Daniel Mack <daniel@zonque.org>, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, robert.jarzmik@free.fr
 
-On Friday, July 13, 2018 05:55:55 PM Dan Carpenter wrote:
-> The omapfb_register_client[] array has OMAPFB_PLANE_NUM elements so the
-> > should be >= or we are one element beyond the end of the array.
+On Sunday, June 24, 2018 05:38:17 PM Daniel Mack wrote:
+> Optionally obtain a lcd-supply regulator during probe and use it in
+> __pxafb_lcd_power() to switch the power supply of LCD panels.
 > 
-> Fixes: 8b08cf2b64f5 ("OMAP: add TI OMAP framebuffer driver")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> This helps boards booted from DT to control such voltages without
+> callbacks.
+> 
+> Signed-off-by: Daniel Mack <daniel@zonque.org>
 
 Patch queued for 4.19, thanks.
 

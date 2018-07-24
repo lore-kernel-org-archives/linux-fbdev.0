@@ -1,90 +1,36 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 23 Jul 2018 07:25:34 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: Fix uninitialized variable
-Message-Id: <20180723072534.GE4213@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 24 Jul 2018 15:11:30 +0000
+Subject: Re: [PATCH] video: fbdev: fsl-diu-fb: Remove VLA usage
+Message-Id: <30654789.W1eWMCegYZ@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180716210241.9457-1-daniel.thompson@linaro.org>
- <20180718080913.GB4641@dell>
- <1531902119.16896.13.camel@toradex.com>
- <20180718095335.GD4641@dell>
- <20180718101227.shqf54wpt4kdrsj2@holly.lan>
- <1531918626.16896.22.camel@toradex.com>
- <20180718130853.GE4641@dell>
- <20180718134103.bgwpgk7l6joxtjoa@holly.lan>
- <20180718155544.GF4641@dell>
- <20180718163405.mnebf57apzvm276w@holly.lan>
-In-Reply-To: <20180718163405.mnebf57apzvm276w@holly.lan>
+References: <20180629184655.GA37391@beast>
+ <CGME20180630155937epcas3p391d051b484a76fb57f0c385a89e2be04@epcas3p3.samsung.com>
+ <1b3f78f2-9fe9-62c5-24d2-1b6651ca2f08@kernel.org>
+In-Reply-To: <1b3f78f2-9fe9-62c5-24d2-1b6651ca2f08@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, "jingoohan1@gmail.com" <jingoohan1@gmail.com>, "patches@linaro.org" <patches@linaro.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "thierry.reding@gmail.com" <thierry.reding@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Timur Tabi <timur@kernel.org>, Kees Cook <keescook@chromium.org>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Wed, 18 Jul 2018, Daniel Thompson wrote:
-
-> On Wed, Jul 18, 2018 at 04:55:44PM +0100, Lee Jones wrote:
-> > On Wed, 18 Jul 2018, Daniel Thompson wrote:
+On Saturday, June 30, 2018 10:59:15 AM Timur Tabi wrote:
+> On 6/29/18 1:46 PM, Kees Cook wrote:
+> > In the quest to remove all stack VLA usage from the kernel[1], this moves
+> > the buffer off the stack (since it could be as much as 1024 bytes), and
+> > uses a new area in the cursor data structure. Additionally adds missed
+> > documentation and removes redundant assignments.
 > > 
-> > > On Wed, Jul 18, 2018 at 02:08:53PM +0100, Lee Jones wrote:
-> > > > > > > > No, then we are back to the initial issue of num_steps
-> > > > > > > > potentially not
-> > > > > > > > being initialised. We really want both of_property_read_u32() to
-> > > > > > > > succeed AND num_steps to actually be set.
-> > > > > > > 
-> > > > > > > I also think num_steps should be pre-initialised.
-> > > > > 
-> > > > > Yes, I guess it definitely does not hurt.
-> > > > > 
-> > > > > > > Then it will only be set if of_property_read_u32() succeeds.
-> > > > > 
-> > > > > Yes, but we still need to check for both, the function not failing and
-> > > > > num_steps to actually be non zero.
-> > > > 
-> > > > Why?  You don't do anything differently if it fails.
-> > > 
-> > > Only if you initialize num_steps...
-> > > 
-> > > We should either initialize to zero and not worry about the return
-> > > code[1] or we check the return code and not worry about
-> > > initialization[2]. I don't think both are worthwhile.
-> > > 
-> > > Whilst initialization can fix this specific instance we generally avoid
-> > > overusing it since it messes up static analysis and, in this instance,
-> > > distance from declaration to use is >25 lines, hence current patchset.
-> > > 
-> > > 
-> > > Daniel.
-> > > 
-> > > 
-> > > [1] https://lkml.org/lkml/2018/7/16/399
-> > > [2] https://lkml.org/lkml/2018/7/16/1042
-> > > 
-> > > Or...
-> > > 
-> > > We check the return code and leave number
-> > > 
-> > > num_steps is uninitialized and stack allocated so it only has a valid
-> > > value if of_property_read_u32() succeeds.
-> > > 
-> > > We can (and I originally did) fix the bug by initializing num_steps to 0
-> > > but its quite some distance between declaration and use so I accepted
-> > > Marcel's counter proposal to check the return code instead.
+> > [1]https://lkml.kernel.org/r/CA+55aFzCG-zNmZwX4A2FQpadafLfEzK6CC=qPXydAacU1RqZWA@mail.gmail.com
 > > 
-> > Only checking the return value of of_property_read_u32() is also
-> > suitable.
+> > Signed-off-by: Kees Cook<keescook@chromium.org>
 > 
-> I did think about that case... I concluded that it isn't wrong for a
-> DT to set to this property to 0 (effectively meaning "no interpolated
-> steps please").
-> 
-> If we take the branch when num_steps is zero we get a bunch of pointless
-> housekeeping that amounts to no more than an extremely elaborate
-> malloc/memcpy/free.
+> Acked-by: Timur Tabi <timur@kernel.org>
 
-Yet in the latest patch, you do it anyway?  Or have I misread it?
+Patch queued for 4.19, thanks.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
+

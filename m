@@ -1,33 +1,27 @@
-From: Daniel Mack <daniel@zonque.org>
-Date: Wed, 11 Jul 2018 17:29:06 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 24 Jul 2018 14:53:38 +0000
 Subject: Re: [PATCH v2 1/2] dt-bindings: display: add devicetree bindings for pxa300-gcu
-Message-Id: <c99b892e-febd-d8ba-752f-1b811ca5fb4a@zonque.org>
+Message-Id: <12364307.7r4kmIo3kq@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180704193502.3805-1-daniel@zonque.org>
- <20180711155234.GA14605@rob-hp-laptop>
-In-Reply-To: <20180711155234.GA14605@rob-hp-laptop>
+References: <CGME20180704193518epcas2p321d91648ff62140874b35252a37635fe@epcas2p3.samsung.com>
+ <20180704193502.3805-1-daniel@zonque.org>
+In-Reply-To: <20180704193502.3805-1-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: airlied@linux.ie, mark.rutland@arm.com, b.zolnierkie@samsung.com, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, robert.jarzmik@free.fr
+To: Daniel Mack <daniel@zonque.org>
+Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, airlied@linux.ie, dri-devel@lists.freedesktop.org, robh+dt@kernel.org, robert.jarzmik@free.fr
 
-Hi Bartlomiej,
-
-On Wednesday, July 11, 2018 05:52 PM, Rob Herring wrote:
-> On Wed, Jul 04, 2018 at 09:35:01PM +0200, Daniel Mack wrote:
->> This patch adds the binding documentation for the pxa300 gcu.
->>
->> Signed-off-by: Daniel Mack <daniel@zonque.org>
->> ---
->>   .../bindings/display/marvell,pxa300-gcu.txt     | 17 +++++++++++++++++
->>   1 file changed, 17 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/display/marvell,pxa300-gcu.txt
+On Wednesday, July 04, 2018 09:35:01 PM Daniel Mack wrote:
+> This patch adds the binding documentation for the pxa300 gcu.
 > 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Daniel Mack <daniel@zonque.org>
 
-Can we take this through the pxa tree or do you want to merge it?
+Patch queued for 4.19, thanks.
 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
 
-Thanks,
-Daniel

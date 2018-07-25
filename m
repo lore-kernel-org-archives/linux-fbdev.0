@@ -1,51 +1,60 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Fri, 13 Jul 2018 09:41:30 +0000
-Subject: Re: [PATCH] video: fbdev: via: hide unused procfs helpers
-Message-Id: <8ec19785-5b1d-09e8-07b2-6ace8c45348e@huawei.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Wed, 25 Jul 2018 07:38:30 +0000
+Subject: [PATCH v4] backlight: pwm_bl: Fix uninitialized variable
+Message-Id: <20180725073830.31421-1-daniel.thompson@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180713075625.11252-1-yuehaibing@huawei.com>
-In-Reply-To: <20180713075625.11252-1-yuehaibing@huawei.com>
+References: <20180716210241.9457-1-daniel.thompson@linaro.org>
+In-Reply-To: <20180716210241.9457-1-daniel.thompson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: FlorianSchandinat@gmx.de, b.zolnierkie@samsung.com
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Marcel Ziswiler <marcel.ziswiler@toradex.com>, patches@linaro.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>
 
-Pls ignore this.there has a fix:
+Currently, if the DT does not define num-interpolated-steps then
+num_steps is undefined and the interpolation code will deploy randomly.
+Fix with a simple initialize to zero.
 
-[PATCH] fbdev/via: fix defined but not used warning
+Fixes: 573fe6d1c25c ("backlight: pwm_bl: Linear interpolation between brightness-levels")
+Reported-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Signed-off-by: Daniel Thompson <daniel.thompson@linaro.org>
+Tested-by: Marcel Ziswiler <marcel.ziswiler@toradex.com>
+Reviewed-by: Douglas Anderson <dianders@chromium.org>
+Acked-by: Lee Jones <lee.jones@linaro.org>
+---
 
-On 2018/7/13 15:56, YueHaibing wrote:
-> When CONFIG_PROC_FS isn't set, gcc warning this:
-> 
-> drivers/video/fbdev/via/viafbdev.c:1471:12: warning: ‘viafb_sup_odev_proc_show’ defined but not used [-Wunused-function]
->  static int viafb_sup_odev_proc_show(struct seq_file *m, void *v)
->             ^
-> fix this by adding #ifdef around it.
-> 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/video/fbdev/via/viafbdev.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-> index d2f7850..edca3e0 100644
-> --- a/drivers/video/fbdev/via/viafbdev.c
-> +++ b/drivers/video/fbdev/via/viafbdev.c
-> @@ -1468,12 +1468,14 @@ static const struct file_operations viafb_vt1636_proc_fops = {
->  
->  #endif /* CONFIG_FB_VIA_DIRECT_PROCFS */
->  
-> +#ifdef CONFIG_PROC_FS
->  static int viafb_sup_odev_proc_show(struct seq_file *m, void *v)
->  {
->  	via_odev_to_seq(m, supported_odev_map[
->  		viaparinfo->shared->chip_info.gfx_chip_name]);
->  	return 0;
->  }
-> +#endif
->  
->  static ssize_t odev_update(const char __user *buffer, size_t count, u32 *odev)
->  {
-> 
+Notes:
+    v4:
+     - Remove line break from Fixes: and update the *-by:s
+    
+    v3:
+     - Switch to the simplest fix and zero the uninitialized variable. git
+       grep indicates that ~25% of calls to of_property_read_u32() use this
+       pattern (pre-initialize optional properties with sane values and
+       ignore the return code).
+    
+    v2:
+     - Simplify SoB chain (with Marcel's permission)
+     - Separate complex if statement and make other similar calls use same
+       return code checking approach
+     - Tidy up comment formatting and fix pre-existing grammar error
+
+ drivers/video/backlight/pwm_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 9ee4c1b735b2..bdfcc0a71db1 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -250,7 +250,7 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 	struct device_node *node = dev->of_node;
+ 	unsigned int num_levels = 0;
+ 	unsigned int levels_count;
+-	unsigned int num_steps;
++	unsigned int num_steps = 0;
+ 	struct property *prop;
+ 	unsigned int *table;
+ 	int length;
+--
+2.17.1
 

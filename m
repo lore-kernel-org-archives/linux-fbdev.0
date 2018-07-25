@@ -1,118 +1,307 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 25 Jul 2018 10:56:14 +0000
+Date: Wed, 25 Jul 2018 11:51:42 +0000
 Subject: Re: [PATCH] fb: fix lost console when the user unplugs a USB adapter
-Message-Id: <6583210.oaMISO8Dcr@amdc3058>
+Message-Id: <1975707.vO8kdHz3oS@amdc3058>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CGME20180603154636epcas2p4812a1f19c6ae236336ae580658edb167@epcas2p4.samsung.com>
- <alpine.LRH.2.02.1807031301290.22443@file01.intranet.prod.int.rdu2.redhat.com>
- <7861c063-6494-7cd8-683d-02c61f9faa1f@tronnes.org>
-In-Reply-To: <7861c063-6494-7cd8-683d-02c61f9faa1f@tronnes.org>
+ <6008699.T6Yd1fn3Dk@amdc3058>
+ <alpine.LRH.2.02.1807092148080.30863@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1807092148080.30863@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Noralf =?ISO-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
-Cc: linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org, Mikulas Patocka <mpatocka@redhat.com>, Dave Airlie <airlied@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org
 
-On Wednesday, July 04, 2018 05:31:19 PM Noralf Tr=F8nnes wrote:
->=20
-> Den 03.07.2018 19.18, skrev Mikulas Patocka:
-> >
-> > On Tue, 3 Jul 2018, Bartlomiej Zolnierkiewicz wrote:
-> >
-> >> Hi,
-> >>
-> >> On Sunday, June 03, 2018 11:46:29 AM Mikulas Patocka wrote:
-> >>> I have a USB display adapter using the udlfb driver and I use it on a=
-n ARM
-> >>> board that doesn't have any graphics card. When I plug the adapter in=
-, the
-> >>> console is properly displayed, however when I unplug and re-plug the
-> >>> adapter, the console is not displayed and I can't access it until I r=
-eboot
-> >>> the board.
-> >>>
-> >>> The reason is this:
-> >>> When the adapter is unplugged, dlfb_usb_disconnect calls
-> >>> unlink_framebuffer, then it waits until the reference count drops to =
-zero
-> >>> and then it deallocates the framebuffer. However, the console that is
-> >>> attached to the framebuffer device keeps the reference count non-zero=
-, so
-> >>> the framebuffer device is never destroyed. When the USB adapter is pl=
-ugged
-> >>> again, it creates a new device /dev/fb1 and the console is not attach=
-ed to
-> >>> it.
-> >>>
-> >>> This patch fixes the bug by unbinding the console from unlink_framebu=
-ffer.
-> >>> The code to unbind the console is moved from do_unregister_framebuffe=
-r to
-> >>> a function unbind_console. When the console is unbound, the reference
-> >>> count drops to zero and the udlfb driver frees the framebuffer. When =
-the
-> >>> adapter is plugged back, a new framebuffer is created and the console=
- is
-> >>> attached to it.
-> >>>
-> >>> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> >>> Cc: stable@vger.kernel.org
-> >> After this change unbind_console() will be called twice in the standard
-> >> framebuffer unregister path:
-> >>
-> >> - first time, directly by do_unregister_framebuffer()
-> >>
-> >> - second time, indirectly by do_unregister_framebuffer()->unlink_frame=
-buffer()
-> >>
-> >> This doesn't look correctly.
-> > unbind_console calls the FB_EVENT_FB_UNBIND notifier, FB_EVENT_FB_UNBIND
-> > goes to the function fbcon_fb_unbind and fbcon_fb_unbind checks if the
-> > console is bound to the framebuffer for which unbind is requested. So a
-> > double call won't cause any trouble.
-> >
-> >> Also why can't udlfb just use unregister_framebuffer() like all other
-> >> drivers (it uses unlink_framebuffer() and it is the only user of this
-> >> helper)?
-> > It uses unregister_framebuffer() - but - unregister_framebuffer() may o=
-nly
-> > be called when the open count of the framebuffer is zero.
->=20
-> AFAIU calling unregister_framebuffer() with open fd's is just fine as
-> long as fb_info with buffers stay intact. All it does is to remove the
-> fbX from userspace. Cleanup can be done in fb_ops->fb_destroy.
->=20
-> I have been working on generic fbdev emulation for DRM [1] and I did a
-> test now to see what would happen if I did unbind the driver from the
-> device. It worked as expected if I didn't have another fbdev present,
-> but if there is an fb0 and I remove fb1 with a console on it, I would
-> sometimes get crashes, often with a call to cursor_timer_handler() in
-> the traceback.
->=20
-> I think there's index mixup in fbcon_fb_unbind(), at least this change
-> seems to solve the immediate problem:
->=20
-> diff --git a/drivers/video/fbdev/core/fbcon.c=20
-> b/drivers/video/fbdev/core/fbcon.c
-> index 5fb156bdcf4e..271b9b988b73 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -3066,7 +3072,7 @@ static int fbcon_fb_unbind(int idx)
->          for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
->                  if (con2fb_map[i] !=3D idx &&
->                      con2fb_map[i] !=3D -1) {
-> -                       new_idx =3D i;
-> +                       new_idx =3D con2fb_map[i];
->                          break;
->                  }
->          }
+On Monday, July 09, 2018 10:29:40 PM Mikulas Patocka wrote:
+> 
+> On Wed, 4 Jul 2018, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > On Tuesday, July 03, 2018 01:18:57 PM Mikulas Patocka wrote:
+> > > 
+> > > On Tue, 3 Jul 2018, Bartlomiej Zolnierkiewicz wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > On Sunday, June 03, 2018 11:46:29 AM Mikulas Patocka wrote:
+> > > > > I have a USB display adapter using the udlfb driver and I use it on an ARM
+> > > > > board that doesn't have any graphics card. When I plug the adapter in, the
+> > > > > console is properly displayed, however when I unplug and re-plug the
+> > > > > adapter, the console is not displayed and I can't access it until I reboot
+> > > > > the board.
+> > > > > 
+> > > > > The reason is this:
+> > > > > When the adapter is unplugged, dlfb_usb_disconnect calls
+> > > > > unlink_framebuffer, then it waits until the reference count drops to zero
+> > > > > and then it deallocates the framebuffer. However, the console that is
+> > > > > attached to the framebuffer device keeps the reference count non-zero, so
+> > > > > the framebuffer device is never destroyed. When the USB adapter is plugged
+> > > > > again, it creates a new device /dev/fb1 and the console is not attached to
+> > > > > it.
+> > > > > 
+> > > > > This patch fixes the bug by unbinding the console from unlink_framebuffer.
+> > > > > The code to unbind the console is moved from do_unregister_framebuffer to
+> > > > > a function unbind_console. When the console is unbound, the reference
+> > > > > count drops to zero and the udlfb driver frees the framebuffer. When the
+> > > > > adapter is plugged back, a new framebuffer is created and the console is
+> > > > > attached to it.
+> > > > > 
+> > > > > Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> > > > > Cc: stable@vger.kernel.org
+> > > > 
+> > > > After this change unbind_console() will be called twice in the standard
+> > > > framebuffer unregister path:
+> > > > 
+> > > > - first time, directly by do_unregister_framebuffer()
+> > > > 
+> > > > - second time, indirectly by do_unregister_framebuffer()->unlink_framebuffer()
+> > > > 
+> > > > This doesn't look correctly.
+> > > 
+> > > unbind_console calls the FB_EVENT_FB_UNBIND notifier, FB_EVENT_FB_UNBIND 
+> > > goes to the function fbcon_fb_unbind and fbcon_fb_unbind checks if the 
+> > > console is bound to the framebuffer for which unbind is requested. So a 
+> > > double call won't cause any trouble.
+> > 
+> > Even if it works okay currently it is not a best design to send duplicate
+> > events - especially since this can be easily avoided (for non-udlfb users)
+> > by:
+> > 
+> > - renaming "vanilla" unlink_framebuffer() to __unlink_framebuffer()
+> > 
+> > - converting do_unregister_framebuffer() to use __unlink_framebuffer()
+> > 
+> > - adding "new" unlink_framebuffer() that will also call unbind_console()
+> > 
+> > > > Also why can't udlfb just use unregister_framebuffer() like all other
+> > > > drivers (it uses unlink_framebuffer() and it is the only user of this
+> > > > helper)?
+> > > 
+> > > It uses unregister_framebuffer() - but - unregister_framebuffer() may only 
+> > > be called when the open count of the framebuffer is zero. So, the udlfb 
+> > > driver waits until the open count drops to zero and then calls 
+> > > unregister_framebuffer().
+> > > 
+> > > But the console subsystem keeps the framebuffer open - which means that if 
+> > > user use unplugs the USB adapter, the open count won't drop to zero 
+> > > (because the console is bound to it) - which means that 
+> > > unregister_framebuffer() will not be called.
+> > 
+> > Is it a really the console subsystem and not the user-space keeping
+> > /dev/fb0 (with console binded to fb0) opened after the USB device
+> > vanishes?
+> 
+> Yes - I unplugged the adapter without Xserver running and without any 
+> other framebuffer application running - the console keeps it open.
+> 
+> > After re-plugging the USB device /dev/fb0 stays and /dev/fb1
+> > appears, right?
+> 
+> The file /dev/fb0 is deleted (because dlfb_usb_disconnect calls 
+> unlink_framebuffer), but it is kept in the kernel. When I re-plug the 
+> adapter, /dev/fb1 is created but the console is still bound to /dev/fb0. 
+> When the adapter is re-plugged, it shows just a green screen.
+> 
+> > I also mean that unregister_framebuffer() should be called instead
+> > unlink_framebuffer(), not additionally some time later as it is done
+> > currently.
+> 
+> Can unregister_framebuffer() be called when /dev/fb0 is open as a file 
+> handle and/or mapped to some process?
 
-Looks fine, could you please submit this as a proper patch
-(with S-o-b tag and patch description)? Thanks.
+It should be OK.
 
+> > Moreover the dlfb <-> fb_info locking scheme seems to be reversed
+> > (+racy) as it is dlfb that should control lifetime of fb_info, then
+> > in dlfb_free() we should just call framebuffer_release() etc.
+> 
+> How should in your opinion framebuffer destruction work?
+> 
+> Should the driver count the number of users and call 
+> unregister_framebuffer() when it drops to zero?
+> 
+> Or should the driver call unregister_framebuffer() unconditionally when 
+> the device is unplugged and destroy the device in the "fb_destroy" 
+> callback? (fb_destroy seems to be called by the framebuffer subsystem when 
+> the open count reaches zero)
+
+The driver should call unregister_framebuffer() unconditionally in
+dlfb_usb_disconnect() (instead of calling unlink_framebuffer()).
+
+Anyway it seems that this would require major reworking of the driver and
+I think that it would be better to put efforts into fixing udl-kms driver
+instead. For now I have queued your patch (with __unregister_framebuffer()
+change to keep the old behavior for non-udlfb drivers) for v4.19 (patch
+attached at the end of this mail).
+
+> If I grep the kernel for fb_destroy, very few framebuffer drivers use it.
+> 
+> > BTW comment in dlfb_ops_release():
+> > 
+> > /* We can't free fb_info here - fbmem will touch it when we return */
+> > 
+> > seems to be wrong as fbmem keeps an extra reference on fb_info
+> > during ->fb_release().
+> > 
+> > > You must unbind the console before calling unregister_framebuffer(). The 
+> > 
+> > Hmm? The first thing that [do_]unregister_framebuffer) does seems to be
+> > unbinding the console.
+> > 
+> > > PCI framebuffer drivers don't have this problem because the user is not 
+> > > expected to just unplug the PCI card while it is being used by the 
+> > > console.
+> > 
+> > PCI framebuffer drivers currently don't use .suppress_bind_attrs driver
+> > flag so the PCI devices can be unbinded at any time by using sysfs "unbind"
+> > functionality (I guess we should be using .suppress_bind_attrs flag if it
+> > doesn't work currently).
+> 
+> I tested matrox PCI framebuffer driver on an old computer - and it suffers 
+> from the same problem as udlfb. The matrox driver keeps the open count and 
+> destroys itself when the open count reaches zero - but the console that is 
+> bound to the driver prevents the open count from reaching zero - so if I 
+> unbind the PCI device in sysfs, it does nothing and the console is still 
+> active and works.
+
+matroxfb is a not a good reference driver as it also defers the call to
+unregister_framebuffer() when the device is unplugged:
+
+static void matroxfb_remove(struct matrox_fb_info *minfo, int dummy)
+{
+...
+	minfo->dead = 1;
+	if (minfo->usecount) {
+		/* destroy it later */
+-->		return;
+	}
+	matroxfb_unregister_device(minfo);
+	unregister_framebuffer(&minfo->fbcon);
+...
+}
+ 
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
+
+
+From: Mikulas Patocka <mpatocka@redhat.com>
+Subject: [PATCH] fb: fix lost console when the user unplugs a USB adapter
+
+I have a USB display adapter using the udlfb driver and I use it on an ARM
+board that doesn't have any graphics card. When I plug the adapter in, the
+console is properly displayed, however when I unplug and re-plug the
+adapter, the console is not displayed and I can't access it until I reboot
+the board.
+
+The reason is this:
+When the adapter is unplugged, dlfb_usb_disconnect calls
+unlink_framebuffer, then it waits until the reference count drops to zero
+and then it deallocates the framebuffer. However, the console that is
+attached to the framebuffer device keeps the reference count non-zero, so
+the framebuffer device is never destroyed. When the USB adapter is plugged
+again, it creates a new device /dev/fb1 and the console is not attached to
+it.
+
+This patch fixes the bug by unbinding the console from unlink_framebuffer.
+The code to unbind the console is moved from do_unregister_framebuffer to
+a function unbind_console. When the console is unbound, the reference
+count drops to zero and the udlfb driver frees the framebuffer. When the
+adapter is plugged back, a new framebuffer is created and the console is
+attached to it.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: Bernie Thompson <bernie@plugable.com>
+Cc: Ladislav Michl <ladis@linux-mips.org>
+Cc: stable@vger.kernel.org
+[b.zolnierkie: preserve old behavior for do_unregister_framebuffer()]
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/core/fbmem.c |   38 ++++++++++++++++++++++++++++++++------
+ 1 file changed, 32 insertions(+), 6 deletions(-)
+
+Index: b/drivers/video/fbdev/core/fbmem.c
+=================================--- a/drivers/video/fbdev/core/fbmem.c	2018-07-25 12:49:21.668763429 +0200
++++ b/drivers/video/fbdev/core/fbmem.c	2018-07-25 12:51:42.824766984 +0200
+@@ -1703,12 +1703,12 @@ static int do_register_framebuffer(struc
+ 	return 0;
+ }
+ 
+-static int do_unregister_framebuffer(struct fb_info *fb_info)
++static int unbind_console(struct fb_info *fb_info)
+ {
+ 	struct fb_event event;
+-	int i, ret = 0;
++	int ret;
++	int i = fb_info->node;
+ 
+-	i = fb_info->node;
+ 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+ 		return -EINVAL;
+ 
+@@ -1723,17 +1723,29 @@ static int do_unregister_framebuffer(str
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+ 
++	return ret;
++}
++
++static int __unlink_framebuffer(struct fb_info *fb_info);
++
++static int do_unregister_framebuffer(struct fb_info *fb_info)
++{
++	struct fb_event event;
++	int ret;
++
++	ret = unbind_console(fb_info);
++
+ 	if (ret)
+ 		return -EINVAL;
+ 
+ 	pm_vt_switch_unregister(fb_info->dev);
+ 
+-	unlink_framebuffer(fb_info);
++	__unlink_framebuffer(fb_info);
+ 	if (fb_info->pixmap.addr &&
+ 	    (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
+ 		kfree(fb_info->pixmap.addr);
+ 	fb_destroy_modelist(&fb_info->modelist);
+-	registered_fb[i] = NULL;
++	registered_fb[fb_info->node] = NULL;
+ 	num_registered_fb--;
+ 	fb_cleanup_device(fb_info);
+ 	event.info = fb_info;
+@@ -1746,7 +1758,7 @@ static int do_unregister_framebuffer(str
+ 	return 0;
+ }
+ 
+-int unlink_framebuffer(struct fb_info *fb_info)
++static int __unlink_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+ 
+@@ -1758,6 +1770,20 @@ int unlink_framebuffer(struct fb_info *f
+ 		device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+ 		fb_info->dev = NULL;
+ 	}
++
++	return 0;
++}
++
++int unlink_framebuffer(struct fb_info *fb_info)
++{
++	int ret;
++
++	ret = __unlink_framebuffer(fb_info);
++	if (ret)
++		return ret;
++
++	unbind_console(fb_info);
++
+ 	return 0;
+ }
+ EXPORT_SYMBOL(unlink_framebuffer);
 

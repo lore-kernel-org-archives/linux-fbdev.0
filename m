@@ -1,28 +1,149 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 24 Jul 2018 15:01:57 +0000
-Subject: Re: [PATCH 2/4] video: fbdev: pxafb: switch to devm_* API
-Message-Id: <1592269.hoTFH7LZRq@amdc3058>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Thu, 26 Jul 2018 09:15:34 +0000
+Subject: [PATCH] backlight: pwm_bl: switch to using "atomic" PWM API
+Message-Id: <20180726091534.27521-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180624153817.24387-1-daniel@zonque.org>
- <CGME20180624153828epcas4p43ae0bc9085756fae520e8aa8542b3ea4@epcas4p4.samsung.com>
- <20180624153817.24387-2-daniel@zonque.org>
-In-Reply-To: <20180624153817.24387-2-daniel@zonque.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Mack <daniel@zonque.org>, dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, tomi.valkeinen@ti.com, robert.jarzmik@free.fr
+To: linux-kernel@vger.kernel.org
+Cc: kernel@collabora.com, cl@rock-chips.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-On Sunday, June 24, 2018 05:38:15 PM Daniel Mack wrote:
-> This helps us clean up the probe() and remove() implementations.
-> 
-> Signed-off-by: Daniel Mack <daniel@zonque.org>
+The "atomic" API allows us to configure PWM period and duty_cycle and
+enable it in one call.
 
-Patch queued for 4.19, thanks.
+The patch also moves the pwm_init_state just before any use of the
+pwm_state struct, this fixes a potential bug where pwm_get_state
+can be called before pwm_init_state.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+
+ drivers/video/backlight/pwm_bl.c | 48 ++++++++++++++++++++------------
+ 1 file changed, 30 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index bdfcc0a71db1..2c734d55d607 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -46,7 +46,8 @@ struct pwm_bl_data {
+ 	void			(*exit)(struct device *);
+ };
+ 
+-static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
++static void pwm_backlight_power_on(struct pwm_bl_data *pb,
++				   struct pwm_state *state)
+ {
+ 	int err;
+ 
+@@ -57,7 +58,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
+-	pwm_enable(pb->pwm);
++	state->enabled = true;
++	pwm_apply_state(pb->pwm, state);
+ 
+ 	if (pb->post_pwm_on_delay)
+ 		msleep(pb->post_pwm_on_delay);
+@@ -70,6 +72,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
+ 
+ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ {
++	struct pwm_state state;
++
+ 	if (!pb->enabled)
+ 		return;
+ 
+@@ -79,8 +83,11 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (pb->pwm_off_delay)
+ 		msleep(pb->pwm_off_delay);
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
++	pwm_get_state(pb->pwm, &state);
++	state.enabled = false;
++	state.period = pb->period;
++	state.duty_cycle = 0;
++	pwm_apply_state(pb->pwm, &state);
+ 
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
+@@ -106,6 +113,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = bl_get_data(bl);
+ 	int brightness = bl->props.brightness;
++	struct pwm_state state;
+ 	int duty_cycle;
+ 
+ 	if (bl->props.power != FB_BLANK_UNBLANK ||
+@@ -118,8 +126,13 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 
+ 	if (brightness > 0) {
+ 		duty_cycle = compute_duty_cycle(pb, brightness);
+-		pwm_config(pb->pwm, duty_cycle, pb->period);
+-		pwm_backlight_power_on(pb, brightness);
++		pwm_get_state(pb->pwm, &state);
++		state.duty_cycle = duty_cycle;
++		state.period = pb->period;
++		if (!state.enabled)
++			pwm_backlight_power_on(pb, &state);
++		else
++			pwm_apply_state(pb->pwm, &state);
+ 	} else
+ 		pwm_backlight_power_off(pb);
+ 
+@@ -447,7 +460,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+ 	struct pwm_state state;
+-	struct pwm_args pargs;
+ 	unsigned int i;
+ 	int ret;
+ 
+@@ -539,10 +551,17 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+ 
+-	if (!data->levels) {
+-		/* Get the PWM period (in nanoseconds) */
+-		pwm_get_state(pb->pwm, &state);
++	/* Sync up PWM state and ensure it is off. */
++	pwm_init_state(pb->pwm, &state);
++	state.enabled = false;
++	ret = pwm_apply_state(pb->pwm, &state);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to apply initial PWM state: %d\n",
++			ret);
++		goto err_alloc;
++	}
+ 
++	if (!data->levels) {
+ 		ret = pwm_backlight_brightness_default(&pdev->dev, data,
+ 						       state.period);
+ 		if (ret < 0) {
+@@ -559,20 +578,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->levels = data->levels;
+ 	}
+ 
+-	/*
+-	 * FIXME: pwm_apply_args() should be removed when switching to
+-	 * the atomic PWM API.
+-	 */
+-	pwm_apply_args(pb->pwm);
+-
+ 	/*
+ 	 * The DT case will set the pwm_period_ns field to 0 and store the
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+ 	 * set the period from platform data if it has not already been set
+ 	 * via the PWM lookup table.
+ 	 */
+-	pwm_get_args(pb->pwm, &pargs);
+-	pb->period = pargs.period;
++	pb->period = state.period;
+ 	if (!pb->period && (data->pwm_period_ns > 0))
+ 		pb->period = data->pwm_period_ns;
+ 
+-- 
+2.18.0
 

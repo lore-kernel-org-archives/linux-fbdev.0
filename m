@@ -1,64 +1,85 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 14 Aug 2018 14:41:58 +0000
-Subject: Re: [PATCH 3/7] drivers: video: backlight: Update MODULE AUTHOR email address
-Message-Id: <20180814144158.d5xucfy7kle4p44e@holly.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 01 Aug 2018 07:28:52 +0000
+Subject: Re: Sleeping from invalid context in udlfb
+Message-Id: <CAMuHMdVBurd2L1iK218QvNUorLyQs4nnTpikZGgJRZjHN8apAw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1534246100-816-1-git-send-email-michael.hennerich@analog.com>
-In-Reply-To: <1534246100-816-1-git-send-email-michael.hennerich@analog.com>
+References: <CGME20180603154636epcas2p4812a1f19c6ae236336ae580658edb167@epcas2p4.samsung.com>
+ <6008699.T6Yd1fn3Dk@amdc3058>
+ <alpine.LRH.2.02.1807092148080.30863@file01.intranet.prod.int.rdu2.redhat.com>
+ <1975707.vO8kdHz3oS@amdc3058>
+ <alpine.LRH.2.02.1807300552140.2919@file01.intranet.prod.int.rdu2.redhat.com>
+ <alpine.LRH.2.02.1807311111520.22145@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1807311111520.22145@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Ladislav Michl <ladis@linux-mips.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg KH <gregkh@linuxfoundation.org>, Bernie Thompson <bernie@plugable.com>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Jiri Slaby <jslaby@suse.com>, Dave Airlie <airlied@redhat.com>
 
-On Tue, Aug 14, 2018 at 01:28:20PM +0200, michael.hennerich@analog.com wrote:
-> From: Michael Hennerich <michael.hennerich@analog.com>
-> 
-> No functional changes
-> 
-> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Hi Mikulas,
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
->  drivers/video/backlight/adp5520_bl.c | 2 +-
->  drivers/video/backlight/adp8860_bl.c | 2 +-
->  drivers/video/backlight/adp8870_bl.c | 2 +-
->  3 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlight/adp5520_bl.c
-> index 35373e2..5e38353 100644
-> --- a/drivers/video/backlight/adp5520_bl.c
-> +++ b/drivers/video/backlight/adp5520_bl.c
-> @@ -391,7 +391,7 @@ static struct platform_driver adp5520_bl_driver = {
->  
->  module_platform_driver(adp5520_bl_driver);
->  
-> -MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-> +MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
->  MODULE_DESCRIPTION("ADP5520(01) Backlight Driver");
->  MODULE_LICENSE("GPL");
->  MODULE_ALIAS("platform:adp5520-backlight");
-> diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
-> index 16119bd..f48fafb 100644
-> --- a/drivers/video/backlight/adp8860_bl.c
-> +++ b/drivers/video/backlight/adp8860_bl.c
-> @@ -821,5 +821,5 @@ static struct i2c_driver adp8860_driver = {
->  module_i2c_driver(adp8860_driver);
->  
->  MODULE_LICENSE("GPL v2");
-> -MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-> +MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
->  MODULE_DESCRIPTION("ADP8860 Backlight driver");
-> diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
-> index 4fec9aa..8d50e02 100644
-> --- a/drivers/video/backlight/adp8870_bl.c
-> +++ b/drivers/video/backlight/adp8870_bl.c
-> @@ -992,5 +992,5 @@ static struct i2c_driver adp8870_driver = {
->  module_i2c_driver(adp8870_driver);
->  
->  MODULE_LICENSE("GPL v2");
-> -MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
-> +MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
->  MODULE_DESCRIPTION("ADP8870 Backlight driver");
-> -- 
-> 2.7.4
-> 
+On Tue, Jul 31, 2018 at 5:23 PM Mikulas Patocka <mpatocka@redhat.com> wrote:
+> BTW when using the udlfb driver as a console, I've got this warning.
+> vt_console_print takes a spinlock and then calls the framebuffer driver
+> that sleeps.
+>
+> The question is - whose fault is this? Could the console code somehow be
+> told to print characters without holding a spinlock? Or does it mean that
+> framebuffer drivers can't sleep?
+>
+> udlfb communicates through USB, so the sleeping is inevitable.
+>
+> Mikulas
+>
+>
+> BUG: sleeping function called from invalid context at mm/slab.h:421
+> in_atomic(): 1, irqs_disabled(): 0, pid: 430, name: kworker/2:3
+> 6 locks held by kworker/2:3/430:
+>  #0: 000000001301127e ( (wq_completion)"events"){....} , at: process_one_work+0x17c/0x3a8
+>  #1: 00000000beacc951 ( (work_completion)(&(&dlfb->init_framebuffer_work)->work)){....} , at: process_one_work+0x17c/0x3a8
+>  #2: 00000000a402f826 ( registration_lock){....} , at: register_framebuffer+0x28/0x2c0 [fb]
+>  #3: 0000000021cbe902 ( console_lock){....} , at: register_framebuffer+0x258/0x2c0 [fb]
+>  #4: 0000000096d51735 ( console_owner){....} , at: console_unlock+0x174/0x500
+>  #5: 00000000faa7f206 ( printing_lock){....} , at: vt_console_print+0x60/0x3a0
+> Preemption disabled at: [<ffffff8008403130>] vt_console_print+0x60/0x3a0
+> CPU: 2 PID: 430 Comm: kworker/2:3 Not tainted 4.17.10-debug #3
+> Hardware name: Marvell Armada 8040 MacchiatoBin/Armada 8040 MacchiatoBin, BIOS EDK II Jul 30 2018
+> Workqueue: events dlfb_init_framebuffer_work [udlfb]
+> Call trace:
+>  dump_backtrace+0x0/0x150
+>  show_stack+0x14/0x20
+>  dump_stack+0x8c/0xac
+>  ___might_sleep+0x140/0x170
+>  __might_sleep+0x50/0x88
+>  __kmalloc+0x1b0/0x270
+>  xhci_urb_enqueue+0xa8/0x460 [xhci_hcd]
+>  usb_hcd_submit_urb+0xc0/0x998 [usbcore]
+>  usb_submit_urb+0x1e0/0x518 [usbcore]
+>  dlfb_submit_urb+0x38/0x98 [udlfb]
+>  dlfb_handle_damage.isra.4+0x1e0/0x210 [udlfb]
+>  dlfb_ops_imageblit+0x28/0x38 [udlfb]
+>  soft_cursor+0x15c/0x1d8 [fb]
+>  bit_cursor+0x324/0x510 [fb]
+>  fbcon_cursor+0x144/0x1a0 [fb]
+>  hide_cursor+0x38/0xa0
+>  vt_console_print+0x334/0x3a0
+>  console_unlock+0x274/0x500
+>  register_framebuffer+0x22c/0x2c0 [fb]
+>  dlfb_init_framebuffer_work+0x1ec/0x2fc [udlfb]
+>  process_one_work+0x1e8/0x3a8
+>  worker_thread+0x44/0x418
+>  kthread+0x11c/0x120
+>  ret_from_fork+0x10/0x18
+
+This is sort of expected: you cannot do USB transfers from printk().
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

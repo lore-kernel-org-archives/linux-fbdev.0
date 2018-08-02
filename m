@@ -1,111 +1,42 @@
-From: Adam Borowski <kilobyte@angband.pl>
-Date: Wed, 18 Jul 2018 03:03:27 +0000
-Subject: [PATCH 6/6] vt: support bright backgrounds for \e[48m if unblinking
-Message-Id: <20180718030327.579-6-kilobyte@angband.pl>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 02 Aug 2018 11:28:38 +0000
+Subject: [PATCH fix for 4.19 0/3] fbcon: Fix VT switching being broken in combination with vgacon
+Message-Id: <20180802112841.27679-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180718030152.kdq53mwpdfusvwl5@angband.pl>
- <20180718030327.579-1-kilobyte@angband.pl>
-In-Reply-To: <20180718030327.579-1-kilobyte@angband.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-console@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Adam Borowski <kilobyte@angband.pl>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-This improves schemes used by fancy new programs.  For example, it lets
-bright powerline segments match, and fixes images shown by catimg being
-striped to the point of unreadability.
+Hi Bartlomiej,
 
-Handling of 8-color backgrounds uses stripped 16-color value instead of a
-dedicated formula; this works worse for dark and better for bright inputs.
+After backporting the deferred fbcon takeover patches to the 4.18
+kernel for the upcoming Fedora 29 release, Fedora QA found a serious
+bug caused by the fbcon takeover support.
 
-Signed-off-by: Adam Borowski <kilobyte@angband.pl>
----
- drivers/tty/vt/vt.c | 38 +++++++++++++++++---------------------
- 1 file changed, 17 insertions(+), 21 deletions(-)
+When using classic (non EFI) boot on x86 and thus using vgacon, dummycon
+is not used, so the deferred takeover never happens as that depends on
+dummycon being the vt-console driver until the takeover happens.
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index c777f4c91df0..7fcb0ff2dccf 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1555,7 +1555,7 @@ static void rgb_from_256(int i, struct rgb *c)
- 		c->r = c->g = c->b = i * 10 - 2312;
- }
- 
--static void rgb_foreground(struct vc_data *vc, const struct rgb *c)
-+static u8 rgb_to_16(const struct rgb *c)
- {
- 	u8 hue = 0, max = max3(c->r, c->g, c->b);
- 
-@@ -1566,22 +1566,12 @@ static void rgb_foreground(struct vc_data *vc, const struct rgb *c)
- 	if (c->b > max / 2 + 32)
- 		hue |= 1;
- 
--	if (hue = 7 && max <= 0x70) {
--		hue = 0;
--		vc->vc_intensity = 2;
--	} else if (max > 0xc0)
--		vc->vc_intensity = 2;
-+	if (hue = 7 && max <= 0x70)
-+		return 8;
-+	if (max > 0xc0)
-+		return hue | 8;
- 	else
--		vc->vc_intensity = 1;
--
--	vc->vc_color = (vc->vc_color & 0xf0) | hue;
--}
--
--static void rgb_background(struct vc_data *vc, const struct rgb *c)
--{
--	/* For backgrounds, err on the dark side. */
--	vc->vc_color = (vc->vc_color & 0x0f)
--		| (c->r&0x80) >> 1 | (c->g&0x80) >> 2 | (c->b&0x80) >> 3;
-+		return hue;
- }
- 
- /*
-@@ -1593,10 +1583,10 @@ static void rgb_background(struct vc_data *vc, const struct rgb *c)
-  * Subcommands 3 (CMY) and 4 (CMYK) are so insane there's no point in
-  * supporting them.
-  */
--static int vc_t416_color(struct vc_data *vc, int i,
--		void(*set_color)(struct vc_data *vc, const struct rgb *c))
-+static int vc_t416_color(struct vc_data *vc, int i, int bgshift)
- {
- 	struct rgb c;
-+	u8 v;
- 
- 	i++;
- 	if (i > vc->vc_npar)
-@@ -1615,7 +1605,13 @@ static int vc_t416_color(struct vc_data *vc, int i,
- 	} else
- 		return i;
- 
--	set_color(vc, &c);
-+	v = rgb_to_16(&c);
-+
-+	vc->vc_color = (vc->vc_color & (0xf0 >> bgshift)) | v << bgshift;
-+	if (!bgshift)
-+		vc->vc_intensity = (v & 8 >> 4) + 1;
-+	else if (vc->vc_unblinking)
-+		vc->vc_blink = v & 8 >> 4;
- 
- 	return i;
- }
-@@ -1695,10 +1691,10 @@ static void csi_m(struct vc_data *vc)
- 			vc->vc_reverse = 0;
- 			break;
- 		case 38:
--			i = vc_t416_color(vc, i, rgb_foreground);
-+			i = vc_t416_color(vc, i, 0);
- 			break;
- 		case 48:
--			i = vc_t416_color(vc, i, rgb_background);
-+			i = vc_t416_color(vc, i, 4);
- 			break;
- 		case 39:
- 			vc->vc_color = (vc->vc_def_color & 0x0f) |
--- 
-2.18.0
+This is fixed by the 2nd patch in this set, futher testing has shown that
+that breaks the build when fb.o is a module, because of the conswitchp
+symbol not being exported.  This made me realize that I never intended for
+deferred fbcon takeover to be possible when fbdev+fbcon are being build as
+a module (*), so instead of exporting yet more symbols, the first patch is
+a preparation patch which only allows deferred fbcon takeover when builtin.
 
+The third patch is a cleanup patch unexporting the dummycon_[un]register_output
+symbols since those now no longer need to be exported.
+
+At least patches 1 and 2 should be added to your tree for merging into 4.19,
+patch 3 can go in in the 4.20 cycle if you prefer delaying it till then.
+
+Regards,
+
+Hans
+
+
+*) which I should have realized when we hit the same issue with the
+   dummycon_[un]register_output symbols
+ 

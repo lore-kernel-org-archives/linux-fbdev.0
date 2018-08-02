@@ -1,121 +1,42 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 01 Aug 2018 19:12:19 +0000
-Subject: [PATCH v3 06/14] gpu: ipu-v3: Add planar support to interlaced scan
-Message-Id: <1533150747-30677-7-git-send-email-steve_longerbeam@mentor.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Thu, 02 Aug 2018 11:28:41 +0000
+Subject: [PATCH fix for 4.19 3/3] dummycon: Stop exporting dummycon_[un]register_output_notifier
+Message-Id: <20180802112841.27679-4-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1533150747-30677-1-git-send-email-steve_longerbeam@mentor.com>
-In-Reply-To: <1533150747-30677-1-git-send-email-steve_longerbeam@mentor.com>
+References: <20180802112841.27679-1-hdegoede@redhat.com>
+In-Reply-To: <20180802112841.27679-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org
-Cc: "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Steve Longerbeam <steve_longerbeam@mentor.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, open list <linux-kernel@vger.kernel.org>, "open list:DRM DRIVERS FOR FREESCALE IMX" <dri-devel@lists.freedesktop.org>, Philipp Zabel <p.zabel@pengutronix.de>, Steve Longerbeam <slongerbeam@gmail.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-To support interlaced scan with planar formats, cpmem SLUV must
-be programmed with the correct chroma line stride. For full and
-partial planar 4:2:2 (YUV422P, NV16), chroma line stride must
-be doubled. For full and partial planar 4:2:0 (YUV420, YVU420, NV12),
-chroma line stride must _not_ be doubled, since a single chroma line
-is shared by two luma lines.
+Now that we only allow FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER when
+fbdev+fbcon are builtin exporting these is no longer necessary.
 
-Signed-off-by: Steve Longerbeam <steve_longerbeam@mentor.com>
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 ---
- drivers/gpu/ipu-v3/ipu-cpmem.c              | 26 ++++++++++++++++++++++++--
- drivers/staging/media/imx/imx-ic-prpencvf.c |  3 ++-
- drivers/staging/media/imx/imx-media-csi.c   |  3 ++-
- include/video/imx-ipu-v3.h                  |  3 ++-
- 4 files changed, 30 insertions(+), 5 deletions(-)
+ drivers/video/console/dummycon.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index 8cd9e37..eae0f63 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -267,9 +267,10 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
+diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
+index 0254251fdd79..45ad925ad5f8 100644
+--- a/drivers/video/console/dummycon.c
++++ b/drivers/video/console/dummycon.c
+@@ -38,13 +38,11 @@ void dummycon_register_output_notifier(struct notifier_block *nb)
+ 	if (dummycon_putc_called)
+ 		nb->notifier_call(nb, 0, NULL);
  }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
+-EXPORT_SYMBOL_GPL(dummycon_register_output_notifier);
  
--void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
-+void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
-+			       u32 pixelformat)
+ void dummycon_unregister_output_notifier(struct notifier_block *nb)
  {
--	u32 ilo, sly;
-+	u32 ilo, sly, sluv;
+ 	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
+ }
+-EXPORT_SYMBOL_GPL(dummycon_unregister_output_notifier);
  
- 	if (stride < 0) {
- 		stride = -stride;
-@@ -280,9 +281,30 @@ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
- 
- 	sly = (stride * 2) - 1;
- 
-+	switch (pixelformat) {
-+	case V4L2_PIX_FMT_YUV420:
-+	case V4L2_PIX_FMT_YVU420:
-+		sluv = stride / 2 - 1;
-+		break;
-+	case V4L2_PIX_FMT_NV12:
-+		sluv = stride - 1;
-+		break;
-+	case V4L2_PIX_FMT_YUV422P:
-+		sluv = stride - 1;
-+		break;
-+	case V4L2_PIX_FMT_NV16:
-+		sluv = stride * 2 - 1;
-+		break;
-+	default:
-+		sluv = 0;
-+		break;
-+	}
-+
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
- 	ipu_ch_param_write_field(ch, IPU_FIELD_ILO, ilo);
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SLY, sly);
-+	if (sluv)
-+		ipu_ch_param_write_field(ch, IPU_FIELD_SLUV, sluv);
- };
- EXPORT_SYMBOL_GPL(ipu_cpmem_interlaced_scan);
- 
-diff --git a/drivers/staging/media/imx/imx-ic-prpencvf.c b/drivers/staging/media/imx/imx-ic-prpencvf.c
-index 28f41ca..af72248 100644
---- a/drivers/staging/media/imx/imx-ic-prpencvf.c
-+++ b/drivers/staging/media/imx/imx-ic-prpencvf.c
-@@ -412,7 +412,8 @@ static int prp_setup_channel(struct prp_priv *priv,
- 	if (image.pix.field = V4L2_FIELD_NONE &&
- 	    V4L2_FIELD_HAS_BOTH(infmt->field) &&
- 	    channel = priv->out_ch)
--		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline);
-+		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline,
-+					  image.pix.pixelformat);
- 
- 	ret = ipu_ic_task_idma_init(priv->ic, channel,
- 				    image.pix.width, image.pix.height,
-diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
-index 2fdd21d..1c468ec 100644
---- a/drivers/staging/media/imx/imx-media-csi.c
-+++ b/drivers/staging/media/imx/imx-media-csi.c
-@@ -509,7 +509,8 @@ static int csi_idmac_setup_channel(struct csi_priv *priv)
- 	if (image.pix.field = V4L2_FIELD_NONE &&
- 	    V4L2_FIELD_HAS_BOTH(infmt->field))
- 		ipu_cpmem_interlaced_scan(priv->idmac_ch,
--					  image.pix.bytesperline);
-+					  image.pix.bytesperline,
-+					  image.pix.pixelformat);
- 
- 	ipu_idmac_set_double_buffer(priv->idmac_ch, true);
- 
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index f44a351..e888c66 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -255,7 +255,8 @@ void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
- void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
- void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
--void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
-+void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
-+			       u32 pixelformat);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
- int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
+ static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
+ {
 -- 
-2.7.4
+2.18.0
 

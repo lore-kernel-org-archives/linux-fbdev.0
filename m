@@ -1,73 +1,66 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Date: Mon, 27 Aug 2018 12:54:52 +0000
-Subject: Re: [PATCH 1/3] mach64: fix display corruption on big endian machines
-Message-Id: <20180827125452.GD11867@sci.fi>
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
+Date: Tue, 07 Aug 2018 06:32:29 +0000
+Subject: Re: [PATCH V4 8/8] backlight: qcom-wled: Add auto string detection logic
+Message-Id: <20180807063229.GE23866@tuxbook-pro>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1808251549550.8284@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1808251549550.8284@file01.intranet.prod.int.rdu2.redhat.com>
+References: <1531131741-19971-1-git-send-email-kgunda@codeaurora.org>
+ <1531131741-19971-9-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1531131741-19971-9-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kiran Gunda <kgunda@codeaurora.org>
+Cc: jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
 
-On Sat, Aug 25, 2018 at 03:51:00PM -0400, Mikulas Patocka wrote:
-> The code for manual bit triple is not endian-clean. It builds the variable
-> "hostdword" using byte accesses, therefore we must read the variable with
-> "le32_to_cpu".
->=20
-> The patch also enables (hardware or software) bit triple only if the image
-> is monochrome (image->depth). If we want to blit full-color image, we
-> shouldn't use the triple code.
+On Mon 09 Jul 03:22 PDT 2018, Kiran Gunda wrote:
+> diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+[..]
+> @@ -189,6 +206,15 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+>  	return 0;
+>  }
+>  
+> +static void wled_ovp_work(struct work_struct *work)
+> +{
+> +	struct wled *wled = container_of(work,
+> +					 struct wled, ovp_work.work);
+> +
+> +	if (wled->ovp_irq > 0)
+> +		enable_irq(wled->ovp_irq);
+> +}
+> +
+>  static int wled_module_enable(struct wled *wled, int val)
+>  {
+>  	int rc;
+> @@ -200,7 +226,18 @@ static int wled_module_enable(struct wled *wled, int val)
+>  				WLED_CTRL_REG_MOD_EN,
+>  				WLED_CTRL_REG_MOD_EN_MASK,
+>  				val << WLED_CTRL_REG_MOD_EN_SHIFT);
+> -	return rc;
+> +	if (rc < 0)
+> +		return rc;
+> +
+> +	if (val) {
+> +		schedule_delayed_work(&wled->ovp_work, WLED_SOFT_START_DLY_US);
 
-Makes sense.
-Reviewed-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
+schedule_delayed_work() takes a delay in jiffies, not micro seconds.
 
->=20
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> Cc: stable@vger.kernel.org
->=20
-> ---
->  drivers/video/fbdev/aty/mach64_accel.c |    6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
->=20
-> Index: linux-stable/drivers/video/fbdev/aty/mach64_accel.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- linux-stable.orig/drivers/video/fbdev/aty/=
-mach64_accel.c	2018-08-24 17:31:21.000000000 +0200
-> +++ linux-stable/drivers/video/fbdev/aty/mach64_accel.c	2018-08-24 19:12:=
-40.000000000 +0200
-> @@ -345,7 +345,7 @@ void atyfb_imageblit(struct fb_info *inf
->  		 * since Rage 3D IIc we have DP_HOST_TRIPLE_EN bit
->  		 * this hwaccelerated triple has an issue with not aligned data
->  		 */
-> -		if (M64_HAS(HW_TRIPLE) && image->width % 8 =3D 0)
-> +		if (image->depth =3D 1 && M64_HAS(HW_TRIPLE) && image->width % 8 =3D 0)
->  			pix_width |=3D DP_HOST_TRIPLE_EN;
->  	}
-> =20
-> @@ -382,7 +382,7 @@ void atyfb_imageblit(struct fb_info *inf
->  	src_bytes =3D (((image->width * image->depth) + 7) / 8) * image->height;
-> =20
->  	/* manual triple each pixel */
-> -	if (info->var.bits_per_pixel =3D 24 && !(pix_width & DP_HOST_TRIPLE_EN)=
-) {
-> +	if (image->depth =3D 1 && info->var.bits_per_pixel =3D 24 && !(pix_widt=
-h & DP_HOST_TRIPLE_EN)) {
->  		int inbit, outbit, mult24, byte_id_in_dword, width;
->  		u8 *pbitmapin =3D (u8*)image->data, *pbitmapout;
->  		u32 hostdword;
-> @@ -415,7 +415,7 @@ void atyfb_imageblit(struct fb_info *inf
->  				}
->  			}
->  			wait_for_fifo(1, par);
-> -			aty_st_le32(HOST_DATA0, hostdword, par);
-> +			aty_st_le32(HOST_DATA0, le32_to_cpu(hostdword), par);
->  		}
->  	} else {
->  		u32 *pbitmap, dwords =3D (src_bytes + 3) / 4;
+> +	} else {
+> +		cancel_delayed_work_sync(&wled->ovp_work);
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+If we get here within WLED_SOFT_START_DLY_US of a module enable we have
+yet to execute the enable_irq() in the delayed worker, which should mean
+that the irq is unbalanced from then on.
+
+I believe you can check the return value of cancel_delayed_work_sync()
+being true to know if wled_ovp_work() was yet to execute.
+
+> +		if (wled->ovp_irq > 0)
+> +			disable_irq(wled->ovp_irq);
+> +	}
+> +
+> +	return 0;
+>  }
+>  
+
+Regards,
+Bjorn

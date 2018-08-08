@@ -1,32 +1,71 @@
-From: "Wilfred larry" <arlene.fernandes@unifenas.br>
-Date: Mon, 13 Aug 2018 07:55:01 +0000
-Subject: Darlehensangebot,
-Message-Id: <20180813075509.CFD7916454A6@webmail.unifenas.br>
+From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Date: Wed, 08 Aug 2018 10:40:41 +0000
+Subject: Re: [4.18 rc7] BUG: sleeping function called from invalid context at mm/slab.h:421
+Message-Id: <20180808104041.GA873@jagdpanzerIV>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CABXGCsNAjrwat-Fv6GQXq8uSC6uj=ke87RJt42syrfFi0vQUmg@mail.gmail.com>
+ <bd7f3ea4-d9a8-e437-9936-ee4513b47ac1@suse.cz>
+In-Reply-To: <bd7f3ea4-d9a8-e437-9936-ee4513b47ac1@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Vlastimil Babka <vbabka@suse.cz>, Jiri Slaby <jslaby@suse.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Mikhail Gavrilov <mikhail.v.gavrilov@gmail.com>, linux-mm@kvack.org, Petr Mladek <pmladek@suse.cz>, Steven Rostedt <rostedt@goodmis.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Peter Zijlstra <peterz@infradead.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hallo,
+Hello,
 
-Sind Sie auf der Suche nach einem Business-Darlehen, pers=F6nliche Darlehen=
-, Hypotheken, Auto
-Darlehen, Darlehen f=FCr Studenten, Schuldenkonsolidierung, unbesicherte Kr=
-edite, Risiko
-Hauptstadt, etc. ... Sie sind am richtigen Ort
-Ihre Kreditl=F6sungen! Ich bin ein privater Kreditgeber, der verleiht
-Einzelpersonen und Unternehmen zu einem niedrigen Zinssatz und erschwinglich
-Zinssatz von 2%. Kontaktieren Sie uns per E-Mail: wilfredlarry803@gmail.com
+On (08/08/18 11:01), Vlastimil Babka wrote:
+> On 08/08/2018 05:50 AM, Mikhail Gavrilov wrote:
+> > Hi guys.
+> > I am catched new bug.
+> > Can anyone look?
+> 
+> fbcon_startup() calls kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL) so
+> it tells slab it can sleep. The problem must be higher in the stack,
+> CCing printk people.
 
+Cc-ing fbcon/vt people. I'm not sure I know how exactly console
+takeover is expected to work.
 
-Dein Name:
-Land:
-Kreditbetrag ben=F6tigt:
-Dauer:
-Telefon:
-Monatliches Einkommen:
-Besetzung:
+printk must be atomic, we can't sleep in console drivers [e.g. printk
+from IRQs, etc.]
 
-Gott segne dich
-   GR=DCSSE
+> > [226995.988988] BUG: sleeping function called from invalid context at
+> > mm/slab.h:421
+> > [226995.988988] in_atomic(): 1, irqs_disabled(): 1, pid: 22658, name: gsd-rfkill
+> > [226995.988989] INFO: lockdep is turned off.
+> > [226995.988989] irq event stamp: 0
+> > [226995.988990] hardirqs last  enabled at (0): [<0000000000000000>]
+> >        (null)
+> > [226995.988991] hardirqs last disabled at (0): [<ffffffffa00b6b4a>]
+> > copy_process.part.32+0x72a/0x1e60
+> > [226995.988991] softirqs last  enabled at (0): [<ffffffffa00b6b4a>]
+> > copy_process.part.32+0x72a/0x1e60
+> > [226995.988992] softirqs last disabled at (0): [<0000000000000000>]
+> >        (null)
+> > [226995.988993] CPU: 6 PID: 22658 Comm: gsd-rfkill Tainted: G        W
+> >         4.18.0-0.rc7.git1.1.fc29.x86_64 #1
+> > [226995.988993] Hardware name: Gigabyte Technology Co., Ltd.
+> > Z87M-D3H/Z87M-D3H, BIOS F11 08/12/2014
+> > [226995.988994] Call Trace:
+> > [226995.988994]  dump_stack+0x85/0xc0
+> > [226995.988995]  ___might_sleep.cold.72+0xac/0xbc
+> > [226995.988995]  kmem_cache_alloc_trace+0x202/0x2f0
+> > [226995.988996]  ? fbcon_startup+0xae/0x300
+> > [226995.988996]  fbcon_startup+0xae/0x300
+> > [226995.988997]  do_take_over_console+0x6d/0x180
+> > [226995.988997]  do_fbcon_takeover+0x58/0xb0
+> > [226995.988997]  fbcon_output_notifier.cold.35+0x5/0x23
+> > [226995.988998]  notifier_call_chain+0x39/0x90
+> > [226995.988999]  vt_console_print+0x363/0x420
+> > [226995.988999]  console_unlock+0x422/0x610
+> > [226995.988999]  vprintk_emit+0x268/0x540
+> > [226995.989000]  printk+0x58/0x6f
+> > [226995.989000]  rfkill_fop_release.cold.16+0xc/0x11 [rfkill]
+> > [226995.989001]  __fput+0xc7/0x250
+> > [226995.989001]  task_work_run+0xa1/0xd0
+> > [226995.989002]  exit_to_usermode_loop+0xd8/0xe0
+> > [226995.989002]  do_syscall_64+0x1df/0x1f0
+> > [226995.989003]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+	-ss

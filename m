@@ -1,93 +1,221 @@
-From: kgunda@codeaurora.org
-Date: Wed, 29 Aug 2018 07:22:24 +0000
-Subject: Re: [PATCH V5 5/8] backlight: qcom-wled: Restructure the driver for WLED3
-Message-Id: <bcd99b19d4a7586ba47c05b8b5bd2bcf@codeaurora.org>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Tue, 14 Aug 2018 16:50:59 +0000
+Subject: [PATCH v3] backlight: pwm_bl: switch to using "atomic" PWM API
+Message-Id: <20180814165059.13219-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
- <1535106467-17843-6-git-send-email-kgunda@codeaurora.org>
- <20180827100939.GG31905@amd>
-In-Reply-To: <20180827100939.GG31905@amd>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: kernel@collabora.com, cl@rock-chips.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>, Lee Jones <lee.jones@linaro.org>
 
-On 2018-08-27 15:39, Pavel Machek wrote:
-> On Fri 2018-08-24 15:57:44, Kiran Gunda wrote:
->> Restructure the driver to add the support for new WLED
->> peripherals.
->> 
->> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
->> ---
->> Changes from V3:
->>     - This is the new patch after splitting the
->>       "backlight: qcom-wled: Add support for WLED4 peripheral" patch
->>       to seperate the WLED3 specific restructure.
->> 
->> Changes from V4:
->>     - Initialize wled->cfg.enabled_strings to 0,1,2,3.
->>     - Replaced the WLED3 macro with 3.
->> 
->>  drivers/video/backlight/qcom-wled.c | 395 
->> ++++++++++++++++++++++--------------
->>  1 file changed, 245 insertions(+), 150 deletions(-)
->> 
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
->> index 3cd6e75..a746bec 100644
->> --- a/drivers/video/backlight/qcom-wled.c
->> +++ b/drivers/video/backlight/qcom-wled.c
->> @@ -15,59 +15,71 @@
->>  #include <linux/module.h>
->>  #include <linux/of.h>
->>  #include <linux/of_device.h>
->> +#include <linux/of_address.h>
->>  #include <linux/regmap.h>
->> 
->>  /* From DT binding */
->> +#define WLED_MAX_STRINGS				4
->> +
->>  #define WLED_DEFAULT_BRIGHTNESS				2048
->> 
->> -#define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
->> -#define WLED3_CTRL_REG_VAL_BASE				0x40
->> +#define WLED_SINK_REG_BRIGHT_MAX			0xFFF
-> 
-> Stop this, no. In previous patch you renamed from ABC123_ to WLED3_,
-> now you are renaming back to WLED?
-> 
-> Stop messing with the names. I'd actually prefer you to stick with
-> original driver name, and just add note that this now supports more
-> hardware.
-> 
-> But yes, _one_ rename is okay. I guess. But renaming it twice in one
-> series is not acceptable.
-> 
-ok. I will stop renaming from WLED3 to WLED in this patch. I did it 
-because these registers
-are common for both WLED3 and WLED4 and Bjorn also suggested the same. 
-Anyways I will stop
-this renaming in this patch from WLED3 to WLED.
+The "atomic" API allows us to configure PWM period and duty_cycle and
+enable it in one call.
 
->> @@ -365,6 +433,15 @@ static int wled_configure(struct wled *wled, 
->> struct device *dev)
->> 
->>  	cfg->num_strings = cfg->num_strings + 1;
->> 
->> +	string_len = of_property_count_elems_of_size(dev->of_node,
->> +						     "qcom,enabled-strings",
->> +						     sizeof(u32));
->> +	if (string_len > 0)
->> +		rc = of_property_read_u32_array(dev->of_node,
->> +						"qcom,enabled-strings",
->> +						wled->cfg.enabled_strings,
->> +						sizeof(u32));
->> +
->>  	return 0;
->>  }
-> 
-> rc is assigned but never used.
-Will address it next series.
-> 									Pavel
+The patch also moves the pwm_init_state just before any use of the
+pwm_state struct, this fixes a potential bug where pwm_get_state
+can be called before pwm_init_state.
+
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+
+Changes in v3:
+- Get rid of duty_cycle variable from pwm_backlight_update_status.
+- Get rid of pb->enabled and use only the status.enabled variable.
+- Make power_on match power_off.
+- Do not share status between ...update_status and ...power_on
+
+Changes in v2:
+- Do not force the PWM be off in the first call to pwm_apply_state.
+- Delayed applying the state until we know what the period is.
+- Removed pb->period as after the conversion is not needed.
+
+ drivers/video/backlight/pwm_bl.c | 81 +++++++++++++++++---------------
+ 1 file changed, 42 insertions(+), 39 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index bdfcc0a71db1..678b27063198 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -28,10 +28,8 @@
+ struct pwm_bl_data {
+ 	struct pwm_device	*pwm;
+ 	struct device		*dev;
+-	unsigned int		period;
+ 	unsigned int		lth_brightness;
+ 	unsigned int		*levels;
+-	bool			enabled;
+ 	struct regulator	*power_supply;
+ 	struct gpio_desc	*enable_gpio;
+ 	unsigned int		scale;
+@@ -46,31 +44,35 @@ struct pwm_bl_data {
+ 	void			(*exit)(struct device *);
+ };
+ 
+-static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
++static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+ {
++	struct pwm_state state;
+ 	int err;
+ 
+-	if (pb->enabled)
++	pwm_get_state(pb->pwm, &state);
++	if (state.enabled)
+ 		return;
+ 
+ 	err = regulator_enable(pb->power_supply);
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+ 
+-	pwm_enable(pb->pwm);
++	state.enabled = true;
++	pwm_apply_state(pb->pwm, &state);
+ 
+ 	if (pb->post_pwm_on_delay)
+ 		msleep(pb->post_pwm_on_delay);
+ 
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 1);
+-
+-	pb->enabled = true;
+ }
+ 
+ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ {
+-	if (!pb->enabled)
++	struct pwm_state state;
++
++	pwm_get_state(pb->pwm, &state);
++	if (!state.enabled)
+ 		return;
+ 
+ 	if (pb->enable_gpio)
+@@ -79,24 +81,27 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ 	if (pb->pwm_off_delay)
+ 		msleep(pb->pwm_off_delay);
+ 
+-	pwm_config(pb->pwm, 0, pb->period);
+-	pwm_disable(pb->pwm);
++	state.enabled = false;
++	state.duty_cycle = 0;
++	pwm_apply_state(pb->pwm, &state);
+ 
+ 	regulator_disable(pb->power_supply);
+-	pb->enabled = false;
+ }
+ 
+ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
+ {
+ 	unsigned int lth = pb->lth_brightness;
++	struct pwm_state state;
+ 	u64 duty_cycle;
+ 
++	pwm_get_state(pb->pwm, &state);
++
+ 	if (pb->levels)
+ 		duty_cycle = pb->levels[brightness];
+ 	else
+ 		duty_cycle = brightness;
+ 
+-	duty_cycle *= pb->period - lth;
++	duty_cycle *= state.period - lth;
+ 	do_div(duty_cycle, pb->scale);
+ 
+ 	return duty_cycle + lth;
+@@ -106,7 +111,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ {
+ 	struct pwm_bl_data *pb = bl_get_data(bl);
+ 	int brightness = bl->props.brightness;
+-	int duty_cycle;
++	struct pwm_state state;
+ 
+ 	if (bl->props.power != FB_BLANK_UNBLANK ||
+ 	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
+@@ -117,9 +122,10 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		brightness = pb->notify(pb->dev, brightness);
+ 
+ 	if (brightness > 0) {
+-		duty_cycle = compute_duty_cycle(pb, brightness);
+-		pwm_config(pb->pwm, duty_cycle, pb->period);
+-		pwm_backlight_power_on(pb, brightness);
++		pwm_get_state(pb->pwm, &state);
++		state.duty_cycle = compute_duty_cycle(pb, brightness);
++		pwm_apply_state(pb->pwm, &state);
++		pwm_backlight_power_on(pb);
+ 	} else
+ 		pwm_backlight_power_off(pb);
+ 
+@@ -447,7 +453,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	struct device_node *node = pdev->dev.of_node;
+ 	struct pwm_bl_data *pb;
+ 	struct pwm_state state;
+-	struct pwm_args pargs;
+ 	unsigned int i;
+ 	int ret;
+ 
+@@ -478,7 +483,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	pb->check_fb = data->check_fb;
+ 	pb->exit = data->exit;
+ 	pb->dev = &pdev->dev;
+-	pb->enabled = false;
+ 	pb->post_pwm_on_delay = data->post_pwm_on_delay;
+ 	pb->pwm_off_delay = data->pwm_off_delay;
+ 
+@@ -539,10 +543,26 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+ 
+-	if (!data->levels) {
+-		/* Get the PWM period (in nanoseconds) */
+-		pwm_get_state(pb->pwm, &state);
++	/* Sync up PWM state. */
++	pwm_init_state(pb->pwm, &state);
+ 
++	/*
++	 * The DT case will set the pwm_period_ns field to 0 and store the
++	 * period, parsed from the DT, in the PWM device. For the non-DT case,
++	 * set the period from platform data if it has not already been set
++	 * via the PWM lookup table.
++	 */
++	if (!state.period && (data->pwm_period_ns > 0))
++		state.period = data->pwm_period_ns;
++
++	ret = pwm_apply_state(pb->pwm, &state);
++	if (ret) {
++		dev_err(&pdev->dev, "failed to apply initial PWM state: %d\n",
++			ret);
++		goto err_alloc;
++	}
++
++	if (!data->levels) {
+ 		ret = pwm_backlight_brightness_default(&pdev->dev, data,
+ 						       state.period);
+ 		if (ret < 0) {
+@@ -559,24 +579,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		pb->levels = data->levels;
+ 	}
+ 
+-	/*
+-	 * FIXME: pwm_apply_args() should be removed when switching to
+-	 * the atomic PWM API.
+-	 */
+-	pwm_apply_args(pb->pwm);
+-
+-	/*
+-	 * The DT case will set the pwm_period_ns field to 0 and store the
+-	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+-	 * set the period from platform data if it has not already been set
+-	 * via the PWM lookup table.
+-	 */
+-	pwm_get_args(pb->pwm, &pargs);
+-	pb->period = pargs.period;
+-	if (!pb->period && (data->pwm_period_ns > 0))
+-		pb->period = data->pwm_period_ns;
+-
+-	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
++	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+ 
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
+-- 
+2.18.0

@@ -1,36 +1,58 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Sat, 25 Aug 2018 14:34:25 +0000
-Subject: [PATCH RESEND 3/3] drivers/block/z2ram: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
-Message-Id: <20180825143425.5014E104912@pc16082vm.idsi0.si.c-s.fr>
+From: <michael.hennerich@analog.com>
+Date: Tue, 14 Aug 2018 11:28:20 +0000
+Subject: [PATCH 3/7] drivers: video: backlight: Update MODULE AUTHOR email address
+Message-Id: <1534246100-816-1-git-send-email-michael.hennerich@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
-In-Reply-To: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
+To: linux-fbdev@vger.kernel.org
 
-_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+No functional changes
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 ---
- drivers/block/z2ram.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/video/backlight/adp5520_bl.c | 2 +-
+ drivers/video/backlight/adp8860_bl.c | 2 +-
+ drivers/video/backlight/adp8870_bl.c | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
-index d0c5bc4e0703..cfbd70520eeb 100644
---- a/drivers/block/z2ram.c
-+++ b/drivers/block/z2ram.c
-@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
- 			vfree(vmalloc (size));
- 		}
+diff --git a/drivers/video/backlight/adp5520_bl.c b/drivers/video/backlight/adp5520_bl.c
+index 35373e2..5e38353 100644
+--- a/drivers/video/backlight/adp5520_bl.c
++++ b/drivers/video/backlight/adp5520_bl.c
+@@ -391,7 +391,7 @@ static struct platform_driver adp5520_bl_driver = {
  
--		vaddr = (unsigned long) __ioremap (paddr, size, 
--						   _PAGE_WRITETHRU);
-+		vaddr = (unsigned long)ioremap_wt(paddr, size);
+ module_platform_driver(adp5520_bl_driver);
  
- #else
- 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
+-MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
+ MODULE_DESCRIPTION("ADP5520(01) Backlight Driver");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:adp5520-backlight");
+diff --git a/drivers/video/backlight/adp8860_bl.c b/drivers/video/backlight/adp8860_bl.c
+index 16119bd..f48fafb 100644
+--- a/drivers/video/backlight/adp8860_bl.c
++++ b/drivers/video/backlight/adp8860_bl.c
+@@ -821,5 +821,5 @@ static struct i2c_driver adp8860_driver = {
+ module_i2c_driver(adp8860_driver);
+ 
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
+ MODULE_DESCRIPTION("ADP8860 Backlight driver");
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+index 4fec9aa..8d50e02 100644
+--- a/drivers/video/backlight/adp8870_bl.c
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -992,5 +992,5 @@ static struct i2c_driver adp8870_driver = {
+ module_i2c_driver(adp8870_driver);
+ 
+ MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR("Michael Hennerich <hennerich@blackfin.uclinux.org>");
++MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
+ MODULE_DESCRIPTION("ADP8870 Backlight driver");
 -- 
-2.17.1
+2.7.4

@@ -1,17 +1,17 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 15 Aug 2018 13:59:35 +0000
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Tue, 21 Aug 2018 12:48:19 +0000
 Subject: Re: [PATCH v3] backlight: pwm_bl: switch to using "atomic" PWM API
-Message-Id: <20180815135935.7fpsuzbiproqoqyb@holly.lan>
+Message-Id: <1691066.Iypvixkm4y@phil>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20180814165059.13219-1-enric.balletbo@collabora.com>
 In-Reply-To: <20180814165059.13219-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, kernel@collabora.com, Lee Jones <lee.jones@linaro.org>, cl@rock-chips.com
+To: dri-devel@lists.freedesktop.org
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel@collabora.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee.jones@linaro.org>, cl@rock-chips.com
 
-On Tue, Aug 14, 2018 at 06:50:59PM +0200, Enric Balletbo i Serra wrote:
+Am Dienstag, 14. August 2018, 18:50:59 CEST schrieb Enric Balletbo i Serra:
 > The "atomic" API allows us to configure PWM period and duty_cycle and
 > enable it in one call.
 > 
@@ -21,208 +21,58 @@ On Tue, Aug 14, 2018 at 06:50:59PM +0200, Enric Balletbo i Serra wrote:
 > 
 > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+On a Rockchip rk3399-scarlet tablet
+Tested-by: Heiko Stuebner <heiko@sntech.de>
 
-> ---
-> 
-> Changes in v3:
-> - Get rid of duty_cycle variable from pwm_backlight_update_status.
-> - Get rid of pb->enabled and use only the status.enabled variable.
-> - Make power_on match power_off.
-> - Do not share status between ...update_status and ...power_on
-> 
-> Changes in v2:
-> - Do not force the PWM be off in the first call to pwm_apply_state.
-> - Delayed applying the state until we know what the period is.
-> - Removed pb->period as after the conversion is not needed.
-> 
->  drivers/video/backlight/pwm_bl.c | 81 +++++++++++++++++---------------
->  1 file changed, 42 insertions(+), 39 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index bdfcc0a71db1..678b27063198 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -28,10 +28,8 @@
->  struct pwm_bl_data {
->  	struct pwm_device	*pwm;
->  	struct device		*dev;
-> -	unsigned int		period;
->  	unsigned int		lth_brightness;
->  	unsigned int		*levels;
-> -	bool			enabled;
->  	struct regulator	*power_supply;
->  	struct gpio_desc	*enable_gpio;
->  	unsigned int		scale;
-> @@ -46,31 +44,35 @@ struct pwm_bl_data {
->  	void			(*exit)(struct device *);
->  };
->  
-> -static void pwm_backlight_power_on(struct pwm_bl_data *pb, int brightness)
-> +static void pwm_backlight_power_on(struct pwm_bl_data *pb)
->  {
-> +	struct pwm_state state;
->  	int err;
->  
-> -	if (pb->enabled)
-> +	pwm_get_state(pb->pwm, &state);
-> +	if (state.enabled)
->  		return;
->  
->  	err = regulator_enable(pb->power_supply);
->  	if (err < 0)
->  		dev_err(pb->dev, "failed to enable power supply\n");
->  
-> -	pwm_enable(pb->pwm);
-> +	state.enabled = true;
-> +	pwm_apply_state(pb->pwm, &state);
->  
->  	if (pb->post_pwm_on_delay)
->  		msleep(pb->post_pwm_on_delay);
->  
->  	if (pb->enable_gpio)
->  		gpiod_set_value_cansleep(pb->enable_gpio, 1);
-> -
-> -	pb->enabled = true;
->  }
->  
->  static void pwm_backlight_power_off(struct pwm_bl_data *pb)
->  {
-> -	if (!pb->enabled)
-> +	struct pwm_state state;
-> +
-> +	pwm_get_state(pb->pwm, &state);
-> +	if (!state.enabled)
->  		return;
->  
->  	if (pb->enable_gpio)
-> @@ -79,24 +81,27 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
->  	if (pb->pwm_off_delay)
->  		msleep(pb->pwm_off_delay);
->  
-> -	pwm_config(pb->pwm, 0, pb->period);
-> -	pwm_disable(pb->pwm);
-> +	state.enabled = false;
-> +	state.duty_cycle = 0;
-> +	pwm_apply_state(pb->pwm, &state);
->  
->  	regulator_disable(pb->power_supply);
-> -	pb->enabled = false;
->  }
->  
->  static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
->  {
->  	unsigned int lth = pb->lth_brightness;
-> +	struct pwm_state state;
->  	u64 duty_cycle;
->  
-> +	pwm_get_state(pb->pwm, &state);
-> +
->  	if (pb->levels)
->  		duty_cycle = pb->levels[brightness];
->  	else
->  		duty_cycle = brightness;
->  
-> -	duty_cycle *= pb->period - lth;
-> +	duty_cycle *= state.period - lth;
->  	do_div(duty_cycle, pb->scale);
->  
->  	return duty_cycle + lth;
-> @@ -106,7 +111,7 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
->  {
->  	struct pwm_bl_data *pb = bl_get_data(bl);
->  	int brightness = bl->props.brightness;
-> -	int duty_cycle;
-> +	struct pwm_state state;
->  
->  	if (bl->props.power != FB_BLANK_UNBLANK ||
->  	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
-> @@ -117,9 +122,10 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
->  		brightness = pb->notify(pb->dev, brightness);
->  
->  	if (brightness > 0) {
-> -		duty_cycle = compute_duty_cycle(pb, brightness);
-> -		pwm_config(pb->pwm, duty_cycle, pb->period);
-> -		pwm_backlight_power_on(pb, brightness);
-> +		pwm_get_state(pb->pwm, &state);
-> +		state.duty_cycle = compute_duty_cycle(pb, brightness);
-> +		pwm_apply_state(pb->pwm, &state);
-> +		pwm_backlight_power_on(pb);
->  	} else
->  		pwm_backlight_power_off(pb);
->  
-> @@ -447,7 +453,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	struct device_node *node = pdev->dev.of_node;
->  	struct pwm_bl_data *pb;
->  	struct pwm_state state;
-> -	struct pwm_args pargs;
->  	unsigned int i;
->  	int ret;
->  
-> @@ -478,7 +483,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  	pb->check_fb = data->check_fb;
->  	pb->exit = data->exit;
->  	pb->dev = &pdev->dev;
-> -	pb->enabled = false;
->  	pb->post_pwm_on_delay = data->post_pwm_on_delay;
->  	pb->pwm_off_delay = data->pwm_off_delay;
->  
-> @@ -539,10 +543,26 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  
->  	dev_dbg(&pdev->dev, "got pwm for backlight\n");
->  
-> -	if (!data->levels) {
-> -		/* Get the PWM period (in nanoseconds) */
-> -		pwm_get_state(pb->pwm, &state);
-> +	/* Sync up PWM state. */
-> +	pwm_init_state(pb->pwm, &state);
->  
-> +	/*
-> +	 * The DT case will set the pwm_period_ns field to 0 and store the
-> +	 * period, parsed from the DT, in the PWM device. For the non-DT case,
-> +	 * set the period from platform data if it has not already been set
-> +	 * via the PWM lookup table.
-> +	 */
-> +	if (!state.period && (data->pwm_period_ns > 0))
-> +		state.period = data->pwm_period_ns;
-> +
-> +	ret = pwm_apply_state(pb->pwm, &state);
-> +	if (ret) {
-> +		dev_err(&pdev->dev, "failed to apply initial PWM state: %d\n",
-> +			ret);
-> +		goto err_alloc;
-> +	}
-> +
-> +	if (!data->levels) {
->  		ret = pwm_backlight_brightness_default(&pdev->dev, data,
->  						       state.period);
->  		if (ret < 0) {
-> @@ -559,24 +579,7 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->  		pb->levels = data->levels;
->  	}
->  
-> -	/*
-> -	 * FIXME: pwm_apply_args() should be removed when switching to
-> -	 * the atomic PWM API.
-> -	 */
-> -	pwm_apply_args(pb->pwm);
-> -
-> -	/*
-> -	 * The DT case will set the pwm_period_ns field to 0 and store the
-> -	 * period, parsed from the DT, in the PWM device. For the non-DT case,
-> -	 * set the period from platform data if it has not already been set
-> -	 * via the PWM lookup table.
-> -	 */
-> -	pwm_get_args(pb->pwm, &pargs);
-> -	pb->period = pargs.period;
-> -	if (!pb->period && (data->pwm_period_ns > 0))
-> -		pb->period = data->pwm_period_ns;
-> -
-> -	pb->lth_brightness = data->lth_brightness * (pb->period / pb->scale);
-> +	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
->  
->  	memset(&props, 0, sizeof(struct backlight_properties));
->  	props.type = BACKLIGHT_RAW;
-> -- 
-> 2.18.0
-> 
+This patch also _fixes_ the kernel bug below.
+
+Scarlet is not yet submitted upstream, but when I remove
+the brightness-levels and default-brightness-level properties
+in my wip devicetree files to rely on the newly introduced
+automatic level calculation, I end up with the following:
+
+[  136.723586] Internal error: ptrace BRK handler: f20003e8 [#1] PREEMPT SMP
+[  136.735920] Modules linked in: drm_panel_orientation_quirks pwm_bl(+) ip_tables x_tables ipv6 smsc95xx smsc75xx ax88179_178a asix usbnet phy_rockchip_pcie i2c_hid
+[  136.752227] CPU: 5 PID: 1547 Comm: systemd-udevd Tainted: G        W         4.18.0-12611-g04bcfe5fee2d-dirty #1033
+[  136.763916] Hardware name: Google Scarlet (DT)
+[  136.763923] pstate: 80000005 (Nzcv daif -PAN -UAO)
+[  136.763943] pc : pwm_backlight_probe+0x610/0x850 [pwm_bl]
+[  136.763958] lr : pwm_backlight_probe+0x108/0x850 [pwm_bl]
+[  136.786349] sp : ffff00000a33b930
+[  136.794421] x29: ffff00000a33b930 x28: ffff00000a33bdf0 
+[  136.800373] x27: 0000000000000100 x26: ffff000000ada110 
+[  136.806327] x25: 0000000000000000 x24: ffff000000ad9348 
+[  136.806343] x23: ffff8000f1a3e400 x22: ffff000008e29000 
+[  136.818239] x21: ffff8000f1a3e410 x20: ffff8000f097a798 
+[  136.824189] x19: ffff00000a33b9a0 x18: 0000000000000000 
+[  136.830137] x17: 0000000000000000 x16: 0000000000000000 
+[  136.836156] x15: 0000000000000400 x14: 0000000000000400 
+[  136.842104] x13: 0000000000000000 x12: 0000000000000001 
+[  136.848052] x11: 0000000000000003 x10: 0101010101010101 
+[  136.855639] x9 : fffffffffffffffd x8 : 7f7f7f7f7f7f7f7f 
+[  136.861588] x7 : 0000000000000000 x6 : 0000000000000005 
+[  136.867727] x5 : ffff8000f150c900 x4 : ffff8000f1a3e610 
+[  136.876571] x3 : ffff8000f097a880 x2 : 0000000000000000 
+[  136.882519] x1 : ffff800016393500 x0 : 0000000000000000 
+[  136.888481] Process systemd-udevd (pid: 1547, stack limit = 0x0000000095c9ae43)
+[  136.888484] Call trace:
+[  136.888498]  pwm_backlight_probe+0x610/0x850 [pwm_bl]
+[  136.888523]  platform_drv_probe+0x50/0xa0
+[  136.909550]  really_probe+0x1c8/0x2a0
+[  136.914515]  driver_probe_device+0x58/0x108
+[  136.919196]  __driver_attach+0xdc/0xe0
+[  136.930103]  driver_attach+0x20/0x28
+[  136.934286]  bus_add_driver+0x1b8/0x228
+[  136.938580]  driver_register+0x60/0x110
+[  136.942890]  __platform_driver_register+0x40/0x48
+[  136.948172]  pwm_backlight_driver_init+0x1c/0x1000 [pwm_bl]
+[  136.948187]  do_one_initcall+0x5c/0x180
+[  136.958709]  do_init_module+0x58/0x1b0
+[  136.962905]  load_module+0x1bfc/0x2200
+[  136.967104]  __se_sys_finit_module+0xc0/0xd8
+[  136.971967]  __arm64_sys_finit_module+0x14/0x20
+[  136.977038]  el0_svc_common+0x60/0xe8
+[  136.981136]  el0_svc_handler+0x24/0x88
+[  136.985333]  el0_svc+0x8/0xc
+[  136.988558] Code: 95eb49f6 17ffff25 9101c3b3 17fffe8d (d4207d00) 
+[  136.995379] ---[ end trace 0f7902d334b84f12 ]---

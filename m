@@ -1,109 +1,78 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 09 Aug 2018 11:28:25 +0000
-Subject: Re: [PATCH fix for 4.19] fbcon: Do not takeover the console from atomic context
-Message-Id: <1e8d458b-98c1-57e8-da77-4f17eecd7360@redhat.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 22 Aug 2018 08:54:04 +0000
+Subject: [PATCH 3/4] fbdev: Add FBINFO_HIDE_SMEM_START flag
+Message-Id: <20180822085405.10787-3-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180806155422epcas2p137fabf6869ce6217c0f34266f19f978c@epcas2p1.samsung.com>
- <20180806155416.15752-1-hdegoede@redhat.com> <1667652.5c9CXM81DN@amdc3058>
-In-Reply-To: <1667652.5c9CXM81DN@amdc3058>
+References: <20180822085405.10787-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20180822085405.10787-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@intel.com>
 
-Hi,
+DRM drivers really, really, really don't want random userspace to
+share buffer behind it's back, bypassing the dma-buf buffer sharing
+machanism. For that reason we've ruthlessly rejected any IOCTL
+exposing the physical address of any graphics buffer.
 
-On 09-08-18 12:03, Bartlomiej Zolnierkiewicz wrote:
-> On Monday, August 06, 2018 05:54:16 PM Hans de Goede wrote:
->> Taking over the console involves allocating mem with GFP_KERNEL, talking
->> to drm drivers, etc. So this should not be done from an atomic context.
->>
->> But the console-output trigger deferred console takeover may happen from an
->> atomic context, which leads to "BUG: sleeping function called from invalid
->> context" errors.
->>
->> This commit fixes these errors by doing the deferred takeover from a
->> workqueue when the notifier runs from an atomic context.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> checkpatch.pl complains about in_atomic use:
-> 
-> ERROR: do not use in_atomic in drivers
-> #51: FILE: drivers/video/fbdev/core/fbcon.c:3623:
-> +       if (in_atomic() || irqs_disabled()) {
-> 
-> please also see the comment in preempt.h:
-> 
-> /*
->   * Are we running in atomic context?  WARNING: this macro cannot
->   * always detect atomic context; in particular, it cannot know about
->   * held spinlocks in non-preemptible kernels.  Thus it should not be
->   * used in the general case to determine whether sleeping is possible.
->   * Do not use in_atomic() in driver code.
->   */
-> #define in_atomic()	(preempt_count() != 0)
-> 
-> Therefore please explain why it is fine to use in_atomic in fbcon's case.
+Unfortunately fbdev comes with that built-in. We could just set
+smem_start to 0, but that means we'd have to hand-roll our own fb_mmap
+implementation. For good reasons many drivers do that, but
+smem_start/length is still super convenient.
 
-Ok I will send a v2 which adds a comment why we need to use in_atomic
-here.
+Hence instead just stop the leak in the ioctl, to keep fb mmap working
+as-is. A second patch will set this flag for all drm drivers.
 
-Regards,
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 4 ++++
+ include/linux/fb.h               | 7 +++++++
+ 2 files changed, 11 insertions(+)
 
-Hans
-
-
-> 
->> ---
->>   drivers/video/fbdev/core/fbcon.c | 21 +++++++++++++++++++--
->>   1 file changed, 19 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
->> index ef8b2d0b7071..4e5997d53fc4 100644
->> --- a/drivers/video/fbdev/core/fbcon.c
->> +++ b/drivers/video/fbdev/core/fbcon.c
->> @@ -3592,7 +3592,20 @@ static int fbcon_init_device(void)
->>   }
->>   
->>   #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->> +static void fbcon_register_existing_fbs(struct work_struct *work)
->> +{
->> +	int i;
->> +
->> +	console_lock();
->> +
->> +	for_each_registered_fb(i)
->> +		fbcon_fb_registered(registered_fb[i]);
->> +
->> +	console_unlock();
->> +}
->> +
->>   static struct notifier_block fbcon_output_nb;
->> +static DECLARE_WORK(fbcon_deferred_takeover_work, fbcon_register_existing_fbs);
->>   
->>   static int fbcon_output_notifier(struct notifier_block *nb,
->>   				 unsigned long action, void *data)
->> @@ -3607,8 +3620,12 @@ static int fbcon_output_notifier(struct notifier_block *nb,
->>   	deferred_takeover = false;
->>   	logo_shown = FBCON_LOGO_DONTSHOW;
->>   
->> -	for_each_registered_fb(i)
->> -		fbcon_fb_registered(registered_fb[i]);
->> +	if (in_atomic() || irqs_disabled()) {
->> +		schedule_work(&fbcon_deferred_takeover_work);
->> +	} else {
->> +		for_each_registered_fb(i)
->> +			fbcon_fb_registered(registered_fb[i]);
->> +	}
->>   
->>   	return NOTIFY_OK;
->>   }
-> 
-> Best regards,
-> --
-> Bartlomiej Zolnierkiewicz
-> Samsung R&D Institute Poland
-> Samsung Electronics
-> 
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 609438d2465b..549d0f86fcf3 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if (!lock_fb_info(info))
+ 			return -ENODEV;
+ 		fix = info->fix;
++		if (info->flags & FBINFO_HIDE_SMEM_START)
++			fix.smem_start = 0;
+ 		unlock_fb_info(info);
+ 
+ 		ret = copy_to_user(argp, &fix, sizeof(fix)) ? -EFAULT : 0;
+@@ -1326,6 +1328,8 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
+ 	if (!lock_fb_info(info))
+ 		return -ENODEV;
+ 	fix = info->fix;
++	if (info->flags & FBINFO_HIDE_SMEM_START)
++		fix.smem_start = 0;
+ 	unlock_fb_info(info);
+ 	return do_fscreeninfo_to_user(&fix, compat_ptr(arg));
+ }
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index fa8c6f9c9c3a..f42b09ca71f8 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -456,6 +456,13 @@ struct fb_tile_ops {
+  * and host endianness. Drivers should not use this flag.
+  */
+ #define FBINFO_BE_MATH  0x100000
++/*
++ * Hide smem_start in the FBIOGET_FSCREENINFO IOCTL. This is used by modern DRM
++ * drivers to stop userspace from trying to share buffers behind the kernel's
++ * back. Instead dma-buf based buffer sharing should be used.
++ */
++#define FBINFO_HIDE_SMEM_START  0x200000
++
+ 
+ struct fb_info {
+ 	atomic_t count;
+-- 
+2.18.0

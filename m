@@ -1,42 +1,36 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Thu, 02 Aug 2018 11:28:41 +0000
-Subject: [PATCH fix for 4.19 3/3] dummycon: Stop exporting dummycon_[un]register_output_notifier
-Message-Id: <20180802112841.27679-4-hdegoede@redhat.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 24 Aug 2018 10:04:59 +0000
+Subject: [PATCH 3/3] drivers/block/z2ram: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
+Message-Id: <adb9282f01ca9ae55874639b8c26d6d1bba1fda0.1535104490.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180802112841.27679-1-hdegoede@redhat.com>
-In-Reply-To: <20180802112841.27679-1-hdegoede@redhat.com>
+References: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
+In-Reply-To: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-Now that we only allow FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER when
-fbdev+fbcon are builtin exporting these is no longer necessary.
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/video/console/dummycon.c | 2 --
- 1 file changed, 2 deletions(-)
+ drivers/block/z2ram.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index 0254251fdd79..45ad925ad5f8 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -38,13 +38,11 @@ void dummycon_register_output_notifier(struct notifier_block *nb)
- 	if (dummycon_putc_called)
- 		nb->notifier_call(nb, 0, NULL);
- }
--EXPORT_SYMBOL_GPL(dummycon_register_output_notifier);
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index d0c5bc4e0703..cfbd70520eeb 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
+ 			vfree(vmalloc (size));
+ 		}
  
- void dummycon_unregister_output_notifier(struct notifier_block *nb)
- {
- 	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
- }
--EXPORT_SYMBOL_GPL(dummycon_unregister_output_notifier);
+-		vaddr = (unsigned long) __ioremap (paddr, size, 
+-						   _PAGE_WRITETHRU);
++		vaddr = (unsigned long)ioremap_wt(paddr, size);
  
- static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
- {
+ #else
+ 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
 -- 
-2.18.0
-
+2.13.3

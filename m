@@ -1,102 +1,116 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Date: Mon, 27 Aug 2018 12:55:30 +0000
-Subject: Re: [PATCH 3/3] mach64: optimize wait_for_fifo
-Message-Id: <20180827125530.GF11867@sci.fi>
+From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Date: Fri, 24 Aug 2018 15:54:02 +0000
+Subject: [PATCH] backlight: pwm_bl: Fix brightness levels for non-DT case.
+Message-Id: <20180824155402.2822-1-enric.balletbo@collabora.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1808251551570.8284@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1808251551570.8284@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, robert.jarzmik@free.fr, daniel.thompson@linaro.org, lee.jones@linaro.org
+Cc: kernel@collabora.com, heiko@sntech.de, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>
 
-On Sat, Aug 25, 2018 at 03:54:17PM -0400, Mikulas Patocka wrote:
-> This is a simple optimization for fifo waiting that improves scrolling
-> performance by 5%. If the queue has more free entries that what we
-> consume, we can skip the costly register read next time.
->=20
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
->=20
-> ---
->  drivers/video/fbdev/aty/atyfb.h        |   12 ++++++++----
->  drivers/video/fbdev/aty/mach64_accel.c |    4 +++-
->  2 files changed, 11 insertions(+), 5 deletions(-)
->=20
-> Index: linux-stable/drivers/video/fbdev/aty/atyfb.h
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- linux-stable.orig/drivers/video/fbdev/aty/=
-atyfb.h	2018-08-25 21:49:16.000000000 +0200
-> +++ linux-stable/drivers/video/fbdev/aty/atyfb.h	2018-08-25 21:52:51.0000=
-00000 +0200
-> @@ -147,6 +147,7 @@ struct atyfb_par {
->  	u16 pci_id;
->  	u32 accel_flags;
->  	int blitter_may_be_busy;
-> +	unsigned fifo_space;
->  	int asleep;
->  	int lock_blank;
->  	unsigned long res_start;
-> @@ -346,10 +347,13 @@ extern int aty_init_cursor(struct fb_inf
->       *  Hardware acceleration
->       */
-> =20
-> -static inline void wait_for_fifo(u16 entries, const struct atyfb_par *pa=
-r)
-> +static inline void wait_for_fifo(u16 entries, struct atyfb_par *par)
->  {
-> -	while ((aty_ld_le32(FIFO_STAT, par) & 0xffff) >
-> -	       ((u32) (0x8000 >> entries)));
-> +	unsigned fifo_space =3D par->fifo_space;
-> +	while (entries > fifo_space) {
-> +		fifo_space =3D 16 - fls(aty_ld_le32(FIFO_STAT, par) & 0xffff);
+Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
+linearly to human eye")' allows the possibility to compute a default
+brightness table when there isn't the brightness-levels property in the
+DT. Unfortunately the changes made broke the pwm backlight for the
+non-DT boards.
 
-I don't recall off hand which way this register works, but based
-on the existing code this looks correct.
+Usually, the non-DT boards don't pass the brightness levels via platform
+data, instead, they set the max_brightness in their platform data and the
+driver calculates the level without a table. The ofending patch assumed
+that when there is no brightness levels table we should create one, but this
+is clearly wrong for the non-DT case.
 
-Reviewed-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
+After this patch the code handles the DT and the non-DT case taking in
+consideration also if max_brightness is set or not. The default table is
+only created when neither, brightness-levels and max_brightness, are
+set.
 
-> +	}
-> +	par->fifo_space =3D fifo_space - entries;
->  }
-> =20
->  static inline void wait_for_idle(struct atyfb_par *par)
-> @@ -359,7 +363,7 @@ static inline void wait_for_idle(struct
->  	par->blitter_may_be_busy =3D 0;
->  }
-> =20
-> -extern void aty_reset_engine(const struct atyfb_par *par);
-> +extern void aty_reset_engine(struct atyfb_par *par);
->  extern void aty_init_engine(struct atyfb_par *par, struct fb_info *info);
-> =20
->  void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area=
-);
-> Index: linux-stable/drivers/video/fbdev/aty/mach64_accel.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- linux-stable.orig/drivers/video/fbdev/aty/=
-mach64_accel.c	2018-08-25 21:49:16.000000000 +0200
-> +++ linux-stable/drivers/video/fbdev/aty/mach64_accel.c	2018-08-25 21:49:=
-16.000000000 +0200
-> @@ -37,7 +37,7 @@ static u32 rotation24bpp(u32 dx, u32 dir
->  	return ((rotation << 8) | DST_24_ROTATION_ENABLE);
->  }
-> =20
-> -void aty_reset_engine(const struct atyfb_par *par)
-> +void aty_reset_engine(struct atyfb_par *par)
->  {
->  	/* reset engine */
->  	aty_st_le32(GEN_TEST_CNTL,
-> @@ -50,6 +50,8 @@ void aty_reset_engine(const struct atyfb
->  	/* HOST errors */
->  	aty_st_le32(BUS_CNTL,
->  		aty_ld_le32(BUS_CNTL, par) | BUS_HOST_ERR_ACK | BUS_FIFO_ERR_ACK, par);
-> +
-> +	par->fifo_space =3D 0;
->  }
-> =20
->  static void reset_GTC_3D_engine(const struct atyfb_par *par)
+The patch also fixes another issue found by Robert. Before this patch
+looks like a division by 0 was possible when state.period returned 0 by
+pwm_get_state(). This is because pwm_get_state() was called before
+pwm_apply_args() so state.period was not initialized. The patch moves
+the pwm_apply_args() call before any call to pwm_get_state().
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Fixes: '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")'
+Reported-by: Robert Jarzmik <robert.jarzmik@free.fr>
+Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+---
+
+ drivers/video/backlight/pwm_bl.c | 50 ++++++++++++++++++++++++--------
+ 1 file changed, 38 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index bdfcc0a71db1..19770f7bffe4 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -539,7 +539,33 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	dev_dbg(&pdev->dev, "got pwm for backlight\n");
+ 
+-	if (!data->levels) {
++	/*
++	 * FIXME: pwm_apply_args() should be removed when switching to
++	 * the atomic PWM API.
++	 */
++	pwm_apply_args(pb->pwm);
++
++	if (data->levels) {
++		/*
++		 * For the DT case, only when brightness levels is defined
++		 * data->levels is filled. For the non-DT case, data->levels
++		 * can come from platform data, however is not usual.
++		 */
++		for (i = 0; i <= data->max_brightness; i++) {
++			if (data->levels[i] > pb->scale)
++				pb->scale = data->levels[i];
++
++			pb->levels = data->levels;
++		}
++	} else if (!data->max_brightness) {
++		/*
++		 * If no brightness levels are provided and max_brightness is
++		 * not set, use the default brightness table. For the DT case,
++		 * max_brightness is set to 0 when brightness levels is not
++		 * specified. For the non-DT case, max_brightness is usually
++		 * set to some value.
++		 */
++
+ 		/* Get the PWM period (in nanoseconds) */
+ 		pwm_get_state(pb->pwm, &state);
+ 
+@@ -550,21 +576,21 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 				"failed to setup default brightness table\n");
+ 			goto err_alloc;
+ 		}
+-	}
+ 
+-	for (i = 0; i <= data->max_brightness; i++) {
+-		if (data->levels[i] > pb->scale)
+-			pb->scale = data->levels[i];
++		for (i = 0; i <= data->max_brightness; i++) {
++			if (data->levels[i] > pb->scale)
++				pb->scale = data->levels[i];
+ 
+-		pb->levels = data->levels;
++			pb->levels = data->levels;
++		}
++	} else {
++		/*
++		 * That only happens for the non-DT case, where platform data
++		 * sets the max_brightness value.
++		 */
++		pb->scale = data->max_brightness;
+ 	}
+ 
+-	/*
+-	 * FIXME: pwm_apply_args() should be removed when switching to
+-	 * the atomic PWM API.
+-	 */
+-	pwm_apply_args(pb->pwm);
+-
+ 	/*
+ 	 * The DT case will set the pwm_period_ns field to 0 and store the
+ 	 * period, parsed from the DT, in the PWM device. For the non-DT case,
+-- 
+2.18.0

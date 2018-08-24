@@ -1,276 +1,563 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Fri, 10 Aug 2018 09:32:28 +0000
-Subject: Re: [PATCH v2] fbcon: Do not takeover the console from atomic context
-Message-Id: <20bdffeb-2c12-3a80-e480-8b2f4ff6e8c1@redhat.com>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Fri, 24 Aug 2018 10:39:47 +0000
+Subject: [PATCH V5 8/8] backlight: qcom-wled: Add auto string detection logic
+Message-Id: <1535106467-17843-9-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180809114215.22028-1-hdegoede@redhat.com>
- <CAKMK7uHNXDkeuyN+TGFqUD+3SB7QU9KJBdQtNQrGWTuY65o2ww@mail.gmail.com>
- <9ddaea15-d206-866a-9ed2-9847fd99fe3c@redhat.com>
- <CAKMK7uEOLoCEpaF=ibeXi+Mw3YNB5Dm9vZHzd4ymhfPzCya=2A@mail.gmail.com>
-In-Reply-To: <CAKMK7uEOLoCEpaF=ibeXi+Mw3YNB5Dm9vZHzd4ymhfPzCya=2A@mail.gmail.com>
+References: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
 
-HI,
+The auto string detection algorithm checks if the current WLED
+sink configuration is valid. It tries enabling every sink and
+checks if the OVP fault is observed. Based on this information
+it detects and enables the valid sink configuration.
+Auto calibration will be triggered when the OVP fault interrupts
+are seen frequently thereby it tries to fix the sink configuration.
 
-On 10-08-18 10:50, Daniel Vetter wrote:
-> On Fri, Aug 10, 2018 at 10:42 AM, Hans de Goede <hdegoede@redhat.com> wrote:
->> Hi,
->>
->>
->> On 09-08-18 15:29, Daniel Vetter wrote:
->>>
->>> On Thu, Aug 9, 2018 at 1:42 PM, Hans de Goede <hdegoede@redhat.com> wrote:
->>>>
->>>> Taking over the console involves allocating mem with GFP_KERNEL, talking
->>>> to drm drivers, etc. So this should not be done from an atomic context.
->>>>
->>>> But the console-output trigger deferred console takeover may happen from
->>>> an
->>>> atomic context, which leads to "BUG: sleeping function called from
->>>> invalid
->>>> context" errors.
->>>>
->>>> This commit fixes these errors by doing the deferred takeover from a
->>>> workqueue when the notifier runs from an atomic context.
->>>>
->>>> Note this uses in_atomic, as checkpatch points out this should not be
->>>> done from driver code. But the console subsys is not really normal driver
->>>> code, specifically it plays some tricks where it disables some locking
->>>> when logging an oops, or when logging a lockdep bug when lockdep
->>>> debugging
->>>> is turned on, so we need to make an exception here.
->>>>
->>>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
->>>> ---
->>>> Changes in v2:
->>>> -Add a comment fbcon.c and the commit message about why we need to use
->>>>    in_atomic here, no functional changes
->>>> ---
->>>>    drivers/video/fbdev/core/fbcon.c | 29 +++++++++++++++++++++++++++--
->>>>    1 file changed, 27 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/drivers/video/fbdev/core/fbcon.c
->>>> b/drivers/video/fbdev/core/fbcon.c
->>>> index ef8b2d0b7071..31f518f8dde7 100644
->>>> --- a/drivers/video/fbdev/core/fbcon.c
->>>> +++ b/drivers/video/fbdev/core/fbcon.c
->>>> @@ -3592,7 +3592,20 @@ static int fbcon_init_device(void)
->>>>    }
->>>>
->>>>    #ifdef CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER
->>>> +static void fbcon_register_existing_fbs(struct work_struct *work)
->>>> +{
->>>> +       int i;
->>>> +
->>>> +       console_lock();
->>>> +
->>>> +       for_each_registered_fb(i)
->>>> +               fbcon_fb_registered(registered_fb[i]);
->>>> +
->>>> +       console_unlock();
->>>> +}
->>>> +
->>>>    static struct notifier_block fbcon_output_nb;
->>>> +static DECLARE_WORK(fbcon_deferred_takeover_work,
->>>> fbcon_register_existing_fbs);
->>>>
->>>>    static int fbcon_output_notifier(struct notifier_block *nb,
->>>>                                    unsigned long action, void *data)
->>>> @@ -3607,8 +3620,20 @@ static int fbcon_output_notifier(struct
->>>> notifier_block *nb,
->>>>           deferred_takeover = false;
->>>>           logo_shown = FBCON_LOGO_DONTSHOW;
->>>>
->>>> -       for_each_registered_fb(i)
->>>> -               fbcon_fb_registered(registered_fb[i]);
->>>> +       /*
->>>> +        * Normally all console output happens in a sleeping context, but
->>>> +        * during oopses the kernel goes into a special mode where the
->>>> +        * console code may not sleep. We check for this using in_atomic
->>>> +        * as the note about in_atomic in preempt.h mentions, in_atomic
->>>> +        * does not detect a spinlock being held when non-preemptible, so
->>>> +        * we also check for irqs_disabled which covers this case.
->>>> +        */
->>>
->>>
->>> If this is only for oopses, then opps_in_progress is what you're
->>> looking for.
->>
->>
->> Unfortunately that is not good enough as mentioned in the v2 commit
->> message, console output may also happen in atomic context when the
->> lockdep code has found an issue (from print_circular_bug).
->>
->> I've tried replacing:
->>
->>         if (in_atomic() || irqs_disabled()) {
->>
->> With:
->>
->>         if (oops_in_progress) {
-> 
-> You can't use in_atomic() either, because it can't detect atomic
-> regions on non-preemptible kernels. Unconditionally punting to a
-> worker is the only solution here I think.
-> 
-> See e.g the entire history around how we call the ->dirty callback in
-> the drm fbdev emulation. The only generic approach that actually works
-> is drm_fb_helper_dirty unconditionally offloading everything to a
-> worker.
+The auto-detection also kicks in when the connected LED string
+of the display-backlight malfunctions (because of damage) and
+requires the damaged string to be turned off to prevent the
+complete panel and/or board from being damaged.
 
-Ok, I don't see any downsides to doing the takeover in a worker
-unconditionally, so I will prepare a v3 doing this.
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+---
+Changes from V3:
+    - Optimized the wled_ovp_work
+    - pr_err/pr_dbg to dev_err/dev_dbg
+    - removed un-necessary variable initializations
+    - Addressed few other comments from Bjorn 
 
-Regards,
+Changes from V4:
+    - Passing jiffies to schedule_delayed_work
+    - Checking the return value of the cancel_delayed_work_sync 
 
-Hans
+ drivers/video/backlight/qcom-wled.c | 402 +++++++++++++++++++++++++++++++++++-
+ 1 file changed, 397 insertions(+), 5 deletions(-)
 
-
-
-
-
-
-> -Daniel
-> 
->> On a system where I know the lockdep code will report a problem
->> wrt the bttv driver and here is what happened:
->>
->> [    7.937690] fbcon: Taking over console
->> [    7.937691] BUG: sleeping function called from invalid context at
->> mm/slab.h:421
->> [    7.937691] in_atomic(): 1, irqs_disabled(): 1, pid: 561, name:
->> systemd-udevd
->> [    7.937692] INFO: lockdep is turned off.
->> [    7.937692] irq event stamp: 196513
->> [    7.937692] hardirqs last  enabled at (196513): [<ffffffffbba4314b>]
->> _raw_spin_unlock_irqrestore+0x4b/0x60
->> [    7.937692] hardirqs last disabled at (196512): [<ffffffffbba43962>]
->> _raw_spin_lock_irqsave+0x22/0x81
->> [    7.937693] softirqs last  enabled at (196504): [<ffffffffbbe0038c>]
->> __do_softirq+0x38c/0x4f7
->> [    7.937693] softirqs last disabled at (196401): [<ffffffffbb0c19be>]
->> irq_exit+0x10e/0x120
->> [    7.937694] CPU: 1 PID: 561 Comm: systemd-udevd Not tainted
->> 4.18.0-0.rc8.git1.1.hdg1.fc29.x86_64 #1
->> [    7.937694] Hardware name: To Be Filled By O.E.M. To Be Filled By
->> O.E.M./B150M Pro4S/D3, BIOS P7.10 12/06/2016
->> [    7.937694] Call Trace:
->> [    7.937694]  dump_stack+0x85/0xc0
->> [    7.937695]  ___might_sleep.cold.72+0xac/0xbc
->> [    7.937695]  kmem_cache_alloc_trace+0x202/0x2f0
->> [    7.937695]  ? fbcon_startup+0xae/0x300
->> [    7.937695]  fbcon_startup+0xae/0x300
->> [    7.937696]  do_take_over_console+0x6d/0x180
->> [    7.937696]  do_fbcon_takeover+0x58/0xb0
->> [    7.937696]  fbcon_output_notifier.cold.35+0x18/0x44
->> [    7.937697]  notifier_call_chain+0x39/0x90
->> [    7.937697]  vt_console_print+0x363/0x420
->> [    7.937697]  console_unlock+0x422/0x610
->> [    7.937697]  vprintk_emit+0x268/0x540
->> [    7.937698]  ? kernel_text_address+0xe5/0xf0
->> [    7.937698]  printk+0x58/0x6f
->> [    7.937698]  print_circular_bug_header.cold.56+0x17/0x9c
->> [    7.937698]  print_circular_bug.isra.38+0x7c/0xb0
->> [    7.937699]  __lock_acquire+0x139a/0x16c0
->> [    7.937699]  lock_acquire+0x9e/0x1b0
->> [    7.937699]  ? find_ref_lock+0x21/0x40 [videodev]
->> [    7.937699]  ? find_ref_lock+0x21/0x40 [videodev]
->> [    7.937700]  __mutex_lock+0x88/0xa10
->> [    7.937700]  ? find_ref_lock+0x21/0x40 [videodev]
->> [    7.937700]  ? bttv_gpio_bits+0x22/0x60 [bttv]
->> [    7.937700]  ? native_sched_clock+0x3e/0xa0
->> [    7.937701]  ? mark_held_locks+0x57/0x80
->> [    7.937701]  ? _raw_spin_unlock_irqrestore+0x4b/0x60
->> [    7.937701]  ? find_ref_lock+0x21/0x40 [videodev]
->> [    7.937701]  find_ref_lock+0x21/0x40 [videodev]
->> [    7.937702]  v4l2_ctrl_find+0xa/0x20 [videodev]
->> [    7.937702]  audio_mute+0x38/0x120 [bttv]
->> [    7.937702]  bttv_s_ctrl+0x2d5/0x3b0 [bttv]
->> [    7.937702]  __v4l2_ctrl_handler_setup+0xdf/0x130 [videodev]
->> [    7.937703]  v4l2_ctrl_handler_setup+0x27/0x40 [videodev]
->> [    7.937703]  bttv_probe.cold.45+0x8f4/0xca7 [bttv]
->> [    7.937703]  local_pci_probe+0x41/0x90
->> [    7.937704]  pci_device_probe+0x118/0x1a0
->> [    7.937704]  driver_probe_device+0x2da/0x450
->> [    7.937704]  __driver_attach+0xe1/0x110
->> [    7.937704]  ? driver_probe_device+0x450/0x450
->> [    7.937705]  ? driver_probe_device+0x450/0x450
->> [    7.937705]  bus_for_each_dev+0x79/0xc0
->> [    7.937705]  ? deferred_probe_initcall+0x30/0x30
->> [    7.937705]  bus_add_driver+0x155/0x230
->> [    7.937706]  ? 0xffffffffc07a4000
->> [    7.937706]  driver_register+0x6b/0xb0
->> [    7.937706]  ? 0xffffffffc07a4000
->> [    7.937706]  bttv_init_module+0xcd/0xe3 [bttv]
->> [    7.937706]  do_one_initcall+0x5d/0x362
->> [    7.937707]  ? rcu_read_lock_sched_held+0x6b/0x80
->> [    7.937707]  ? kmem_cache_alloc_trace+0x293/0x2f0
->> [    7.937707]  ? do_init_module+0x22/0x210
->> [    7.937707]  do_init_module+0x5a/0x210
->> [    7.937708]  load_module+0x21e6/0x2610
->> [    7.937708]  ? ima_post_read_file+0x10c/0x119
->> [    7.937708]  ? __do_sys_finit_module+0xad/0x110
->> [    7.937708]  __do_sys_finit_module+0xad/0x110
->> [    7.937709]  do_syscall_64+0x60/0x1f0
->> [    7.937709]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
->>
->> Follow by a printing of the actual lockdep issue.
->>
->> This is what I wrote this patch for in the first place
->> and checking for oops_in_progress does not fix this case.
->>
->> So I believe we need to keep using the:
->>
->>         if (in_atomic() || irqs_disabled()) {
->>
->> Check, Bartlomiej can you apply v2 please, or let me know if
->> you want any other changes?
->>
->>> At least that's what we've switched to in drm_fb_helper.c
->>> instead of a cargo-culted pile of in_atimc/irq/kgdb checks. And since
->>> the box will die right afterwards, you might as well just bail out
->>> directly and not bother with scheduling the worker?
->>
->>
->> Well with a lockdep bug the box won't die, depending on the actual
->> locking issue it may be quite harmless.
->>
->> Regards,
->>
->> Hans
->>
->>
->>
->>
->>> Again, that's what
->>> we've been doing in the drm fbdev emulation code.
->>> -Daniel
->>>
->>>> +       if (in_atomic() || irqs_disabled()) {
->>>> +               schedule_work(&fbcon_deferred_takeover_work);
->>>> +       } else {
->>>> +               for_each_registered_fb(i)
->>>> +                       fbcon_fb_registered(registered_fb[i]);
->>>> +       }
->>>>
->>>>           return NOTIFY_OK;
->>>>    }
->>>> --
->>>> 2.18.0
->>>>
->>>> _______________________________________________
->>>> dri-devel mailing list
->>>> dri-devel@lists.freedesktop.org
->>>> https://lists.freedesktop.org/mailman/listinfo/dri-devel
->>>
->>>
->>>
->>>
->>
-> 
-> 
-> 
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index d891067..3778acd 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -25,10 +25,18 @@
+ #define WLED_MAX_STRINGS				4
+ 
+ #define WLED_DEFAULT_BRIGHTNESS				2048
+-
++#define WLED_SOFT_START_DLY_US				10000
+ #define WLED_SINK_REG_BRIGHT_MAX			0xFFF
+ 
+ /* WLED control registers */
++#define WLED_CTRL_REG_FAULT_STATUS			0x08
++#define  WLED_CTRL_REG_ILIM_FAULT_BIT			BIT(0)
++#define  WLED_CTRL_REG_OVP_FAULT_BIT			BIT(1)
++#define  WLED4_CTRL_REG_SC_FAULT_BIT			BIT(2)
++
++#define WLED_CTRL_REG_INT_RT_STS			0x10
++#define  WLED_CTRL_REG_OVP_FAULT_STATUS			BIT(1)
++
+ #define WLED_CTRL_REG_MOD_EN				0x46
+ #define  WLED_CTRL_REG_MOD_EN_MASK			BIT(7)
+ #define  WLED_CTRL_REG_MOD_EN_SHIFT			7
+@@ -36,6 +44,8 @@
+ #define WLED_CTRL_REG_FREQ				0x4c
+ #define  WLED_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
+ 
++#define WLED_CTRL_REG_FEEDBACK_CONTROL			0x48
++
+ #define WLED_CTRL_REG_OVP				0x4d
+ #define  WLED_CTRL_REG_OVP_MASK				GENMASK(1, 0)
+ 
+@@ -127,6 +137,7 @@ struct wled_config {
+ 	bool ext_gen;
+ 	bool cabc;
+ 	bool external_pfet;
++	bool auto_detection_enabled;
+ };
+ 
+ struct wled {
+@@ -135,16 +146,22 @@ struct wled {
+ 	struct regmap *regmap;
+ 	struct mutex lock;	/* Lock to avoid race from thread irq handler */
+ 	ktime_t last_short_event;
++	ktime_t start_ovp_fault_time;
+ 	u16 ctrl_addr;
+ 	u16 sink_addr;
+ 	u16 max_string_count;
++	u16 auto_detection_ovp_count;
+ 	u32 brightness;
+ 	u32 max_brightness;
+ 	u32 short_count;
++	u32 auto_detect_count;
+ 	bool disabled_by_short;
+ 	bool has_short_detect;
++	int ovp_irq;
++	bool ovp_irq_disabled;
+ 
+ 	struct wled_config cfg;
++	struct delayed_work ovp_work;
+ 	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
+ };
+ 
+@@ -189,6 +206,15 @@ static int wled4_set_brightness(struct wled *wled, u16 brightness)
+ 	return 0;
+ }
+ 
++static void wled_ovp_work(struct work_struct *work)
++{
++	struct wled *wled = container_of(work,
++					 struct wled, ovp_work.work);
++
++	if (wled->ovp_irq > 0)
++		enable_irq(wled->ovp_irq);
++}
++
+ static int wled_module_enable(struct wled *wled, int val)
+ {
+ 	int rc;
+@@ -200,7 +226,18 @@ static int wled_module_enable(struct wled *wled, int val)
+ 				WLED_CTRL_REG_MOD_EN,
+ 				WLED_CTRL_REG_MOD_EN_MASK,
+ 				val << WLED_CTRL_REG_MOD_EN_SHIFT);
+-	return rc;
++	if (rc < 0)
++		return rc;
++
++	if (val) {
++		schedule_delayed_work(&wled->ovp_work, HZ / 100);
++	} else {
++		if (!cancel_delayed_work_sync(&wled->ovp_work) &&
++		    wled->ovp_irq > 0)
++			disable_irq(wled->ovp_irq);
++	}
++
++	return 0;
+ }
+ 
+ static int wled_sync_toggle(struct wled *wled)
+@@ -307,6 +344,312 @@ static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
+ 	return IRQ_HANDLED;
+ }
+ 
++#define AUTO_DETECT_BRIGHTNESS		200
++
++static void wled_auto_string_detection(struct wled *wled)
++{
++	int rc = 0, i;
++	u32 sink_config = 0, int_sts;
++	u8 sink_test = 0, sink_valid = 0, val;
++
++	/* read configured sink configuration */
++	rc = regmap_read(wled->regmap, wled->sink_addr +
++			 WLED4_SINK_REG_CURR_SINK, &sink_config);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read SINK configuration rc=%d\n",
++			rc);
++		goto failed_detect;
++	}
++
++	/* disable the module before starting detection */
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED_CTRL_REG_MOD_EN,
++				WLED_CTRL_REG_MOD_EN_MASK, 0);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to disable WLED module rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* set low brightness across all sinks */
++	rc = wled4_set_brightness(wled, AUTO_DETECT_BRIGHTNESS);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to set brightness for auto detection rc=%d\n",
++			rc);
++		goto failed_detect;
++	}
++
++	if (wled->cfg.cabc) {
++		for (i = 0; i < wled->cfg.num_strings; i++) {
++			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
++						WLED4_SINK_REG_STR_CABC(i),
++						WLED4_SINK_REG_STR_CABC_MASK,
++						0);
++			if (rc < 0)
++				goto failed_detect;
++		}
++	}
++
++	/* disable all sinks */
++	rc = regmap_write(wled->regmap,
++			  wled->sink_addr + WLED4_SINK_REG_CURR_SINK, 0);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to disable all sinks rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++	/* iterate through the strings one by one */
++	for (i = 0; i < wled->cfg.num_strings; i++) {
++		sink_test = BIT((WLED4_SINK_REG_CURR_SINK_SHFT + i));
++
++		/* Enable feedback control */
++		rc = regmap_write(wled->regmap, wled->ctrl_addr +
++				  WLED_CTRL_REG_FEEDBACK_CONTROL, i + 1);
++		if (rc < 0) {
++			dev_err(wled->dev, "Failed to enable feedback for SINK %d rc = %d\n",
++				i + 1, rc);
++			goto failed_detect;
++		}
++
++		/* enable the sink */
++		rc = regmap_write(wled->regmap, wled->sink_addr +
++				  WLED4_SINK_REG_CURR_SINK, sink_test);
++		if (rc < 0) {
++			dev_err(wled->dev, "Failed to configure SINK %d rc=%d\n",
++				i + 1, rc);
++			goto failed_detect;
++		}
++
++		/* Enable the module */
++		rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
++					WLED_CTRL_REG_MOD_EN,
++					WLED_CTRL_REG_MOD_EN_MASK,
++					WLED_CTRL_REG_MOD_EN_MASK);
++		if (rc < 0) {
++			dev_err(wled->dev, "Failed to enable WLED module rc=%d\n",
++				rc);
++			goto failed_detect;
++		}
++
++		usleep_range(WLED_SOFT_START_DLY_US,
++			     WLED_SOFT_START_DLY_US + 1000);
++
++		rc = regmap_read(wled->regmap, wled->ctrl_addr +
++				 WLED_CTRL_REG_INT_RT_STS, &int_sts);
++		if (rc < 0) {
++			dev_err(wled->dev, "Error in reading WLED3_CTRL_INT_RT_STS rc=%d\n",
++				rc);
++			goto failed_detect;
++		}
++
++		if (int_sts & WLED_CTRL_REG_OVP_FAULT_STATUS)
++			dev_dbg(wled->dev, "WLED OVP fault detected with SINK %d\n",
++				i + 1);
++		else
++			sink_valid |= sink_test;
++
++		/* Disable the module */
++		rc = regmap_update_bits(wled->regmap,
++					wled->ctrl_addr + WLED_CTRL_REG_MOD_EN,
++					WLED_CTRL_REG_MOD_EN_MASK, 0);
++		if (rc < 0) {
++			dev_err(wled->dev, "Failed to disable WLED module rc=%d\n",
++				rc);
++			goto failed_detect;
++		}
++	}
++
++	if (!sink_valid) {
++		dev_err(wled->dev, "No valid WLED sinks found\n");
++		wled->disabled_by_short = true;
++		goto failed_detect;
++	}
++
++	if (sink_valid = sink_config) {
++		dev_dbg(wled->dev, "WLED auto-detection complete, sink-config=%x OK!\n",
++			sink_config);
++	} else {
++		dev_warn(wled->dev, "New WLED string configuration found %x\n",
++			 sink_valid);
++		sink_config = sink_valid;
++	}
++
++	/* write the new sink configuration */
++	rc = regmap_write(wled->regmap,
++			  wled->sink_addr + WLED4_SINK_REG_CURR_SINK,
++			  sink_config);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to reconfigure the default sink rc=%d\n",
++			rc);
++		goto failed_detect;
++	}
++
++	/* Enable valid sinks */
++	for (i = 0; i < wled->cfg.num_strings; i++) {
++		if (wled->cfg.cabc) {
++			rc = regmap_update_bits(wled->regmap, wled->sink_addr +
++						WLED4_SINK_REG_STR_CABC(i),
++						WLED4_SINK_REG_STR_CABC_MASK,
++						WLED4_SINK_REG_STR_CABC_MASK);
++			if (rc < 0)
++				goto failed_detect;
++		}
++
++		if (sink_config & BIT(WLED4_SINK_REG_CURR_SINK_SHFT + i))
++			val = WLED4_SINK_REG_STR_MOD_MASK;
++		else
++			val = 0x0; /* disable modulator_en for unused sink */
++
++		rc = regmap_write(wled->regmap, wled->sink_addr +
++				  WLED4_SINK_REG_STR_MOD_EN(i), val);
++		if (rc < 0) {
++			dev_err(wled->dev, "Failed to configure MODULATOR_EN rc=%d\n",
++				rc);
++			goto failed_detect;
++		}
++	}
++
++	/* restore the feedback setting */
++	rc = regmap_write(wled->regmap,
++			  wled->ctrl_addr + WLED_CTRL_REG_FEEDBACK_CONTROL, 0);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to restore feedback setting rc=%d\n",
++			rc);
++		goto failed_detect;
++	}
++
++	/* restore brightness */
++	rc = wled4_set_brightness(wled, wled->brightness);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to set brightness after auto detection rc=%d\n",
++			rc);
++		goto failed_detect;
++	}
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED_CTRL_REG_MOD_EN,
++				WLED_CTRL_REG_MOD_EN_MASK,
++				WLED_CTRL_REG_MOD_EN_MASK);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to enable WLED module rc=%d\n", rc);
++		goto failed_detect;
++	}
++
++failed_detect:
++	return;
++}
++
++#define WLED_AUTO_DETECT_OVP_COUNT		5
++#define WLED_AUTO_DETECT_CNT_DLY_US		USEC_PER_SEC
++static bool wled_auto_detection_required(struct wled *wled)
++{
++	s64 elapsed_time_us;
++
++	if (!wled->cfg.auto_detection_enabled)
++		return false;
++
++	/*
++	 * Check if the OVP fault was an occasional one
++	 * or if it's firing continuously, the latter qualifies
++	 * for an auto-detection check.
++	 */
++	if (!wled->auto_detection_ovp_count) {
++		wled->start_ovp_fault_time = ktime_get();
++		wled->auto_detection_ovp_count++;
++	} else {
++		elapsed_time_us = ktime_us_delta(ktime_get(),
++						 wled->start_ovp_fault_time);
++		if (elapsed_time_us > WLED_AUTO_DETECT_CNT_DLY_US)
++			wled->auto_detection_ovp_count = 0;
++		else
++			wled->auto_detection_ovp_count++;
++
++		if (wled->auto_detection_ovp_count >+				WLED_AUTO_DETECT_OVP_COUNT) {
++			wled->auto_detection_ovp_count = 0;
++			return true;
++		}
++	}
++
++	return false;
++}
++
++static int wled_auto_detection_at_init(struct wled *wled)
++{
++	int rc;
++	u32 fault_status, rt_status;
++
++	if (!wled->cfg.auto_detection_enabled)
++		return 0;
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED_CTRL_REG_INT_RT_STS,
++			 &rt_status);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read RT status rc=%d\n", rc);
++		return rc;
++	}
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED_CTRL_REG_FAULT_STATUS,
++			 &fault_status);
++	if (rc < 0) {
++		dev_err(wled->dev, "Failed to read fault status rc=%d\n", rc);
++		return rc;
++	}
++
++	if ((rt_status & WLED_CTRL_REG_OVP_FAULT_STATUS) ||
++	    (fault_status & WLED_CTRL_REG_OVP_FAULT_BIT)) {
++		mutex_lock(&wled->lock);
++		wled_auto_string_detection(wled);
++		mutex_unlock(&wled->lock);
++	}
++
++	return rc;
++}
++
++static irqreturn_t wled_ovp_irq_handler(int irq, void *_wled)
++{
++	struct wled *wled = _wled;
++	int rc;
++	u32 int_sts, fault_sts;
++
++	rc = regmap_read(wled->regmap,
++			 wled->ctrl_addr + WLED_CTRL_REG_INT_RT_STS, &int_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Error in reading WLED3_INT_RT_STS rc=%d\n",
++			rc);
++		return IRQ_HANDLED;
++	}
++
++	rc = regmap_read(wled->regmap, wled->ctrl_addr +
++			 WLED_CTRL_REG_FAULT_STATUS, &fault_sts);
++	if (rc < 0) {
++		dev_err(wled->dev, "Error in reading WLED_FAULT_STATUS rc=%d\n",
++			rc);
++		return IRQ_HANDLED;
++	}
++
++	if (fault_sts &
++		(WLED_CTRL_REG_OVP_FAULT_BIT | WLED_CTRL_REG_ILIM_FAULT_BIT))
++		dev_dbg(wled->dev, "WLED OVP fault detected, int_sts=%x fault_sts= %x\n",
++			int_sts, fault_sts);
++
++	if (fault_sts & WLED_CTRL_REG_OVP_FAULT_BIT) {
++		mutex_lock(&wled->lock);
++		disable_irq_nosync(wled->ovp_irq);
++
++		if (wled_auto_detection_required(wled))
++			wled_auto_string_detection(wled);
++
++		enable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = false;
++
++		mutex_unlock(&wled->lock);
++	}
++
++	return IRQ_HANDLED;
++}
++
+ static int wled3_setup(struct wled *wled)
+ {
+ 	u16 addr;
+@@ -443,8 +786,10 @@ static int wled4_setup(struct wled *wled)
+ 		sink_en |= 1 << temp;
+ 	}
+ 
+-	if (sink_cfg = sink_en)
+-		return 0;
++	if (sink_cfg = sink_en) {
++		rc = wled_auto_detection_at_init(wled);
++		return rc;
++	}
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+ 				wled->sink_addr + WLED4_SINK_REG_CURR_SINK,
+@@ -507,7 +852,9 @@ static int wled4_setup(struct wled *wled)
+ 		return rc;
+ 	}
+ 
+-	return 0;
++	rc = wled_auto_detection_at_init(wled);
++
++	return rc;
+ }
+ 
+ static const struct wled_config wled4_config_defaults = {
+@@ -518,6 +865,7 @@ static int wled4_setup(struct wled *wled)
+ 	.switch_freq = 11,
+ 	.cabc = false,
+ 	.external_pfet = false,
++	.auto_detection_enabled = false,
+ };
+ 
+ static const u32 wled3_boost_i_limit_values[] = {
+@@ -684,6 +1032,7 @@ static int wled_configure(struct wled *wled, int version)
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+ 		{ "qcom,cabc", &cfg->cabc, },
+ 		{ "qcom,external-pfet", &cfg->external_pfet, },
++		{ "qcom,auto-string-detection", &cfg->auto_detection_enabled, },
+ 	};
+ 
+ 	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
+@@ -804,6 +1153,42 @@ static int wled_configure_short_irq(struct wled *wled,
+ 	return rc;
+ }
+ 
++static int wled_configure_ovp_irq(struct wled *wled,
++				  struct platform_device *pdev)
++{
++	int rc;
++	u32 val;
++
++	wled->ovp_irq = platform_get_irq_byname(pdev, "ovp");
++	if (wled->ovp_irq < 0) {
++		dev_dbg(&pdev->dev, "ovp irq is not used\n");
++		return 0;
++	}
++
++	rc = devm_request_threaded_irq(wled->dev, wled->ovp_irq, NULL,
++				       wled_ovp_irq_handler, IRQF_ONESHOT,
++				       "wled_ovp_irq", wled);
++	if (rc < 0) {
++		dev_err(wled->dev, "Unable to request ovp_irq (err:%d)\n",
++			rc);
++		wled->ovp_irq = 0;
++		return 0;
++	}
++
++	rc = regmap_read(wled->regmap, wled->ctrl_addr +
++			 WLED_CTRL_REG_MOD_EN, &val);
++	if (rc < 0)
++		return rc;
++
++	/* Keep OVP irq disabled until module is enabled */
++	if (!(val & WLED_CTRL_REG_MOD_EN_MASK)) {
++		disable_irq(wled->ovp_irq);
++		wled->ovp_irq_disabled = true;
++	}
++
++	return 0;
++}
++
+ static const struct backlight_ops wled_ops = {
+ 	.update_status = wled_update_status,
+ };
+@@ -844,6 +1229,7 @@ static int wled_probe(struct platform_device *pdev)
+ 
+ 	switch (version) {
+ 	case 3:
++		wled->cfg.auto_detection_enabled = false;
+ 		rc = wled3_setup(wled);
+ 		if (rc) {
+ 			dev_err(&pdev->dev, "wled3_setup failed\n");
+@@ -865,10 +1251,16 @@ static int wled_probe(struct platform_device *pdev)
+ 		break;
+ 	}
+ 
++	INIT_DELAYED_WORK(&wled->ovp_work, wled_ovp_work);
++
+ 	rc = wled_configure_short_irq(wled, pdev);
+ 	if (rc < 0)
+ 		return rc;
+ 
++	rc = wled_configure_ovp_irq(wled, pdev);
++	if (rc < 0)
++		return rc;
++
+ 	val = WLED_DEFAULT_BRIGHTNESS;
+ 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
+ 
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

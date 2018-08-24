@@ -1,94 +1,91 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Sat, 25 Aug 2018 14:34:23 +0000
-Subject: [PATCH RESEND 2/3] drivers/video/fbdev: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
-Message-Id: <20180825143423.47255104912@pc16082vm.idsi0.si.c-s.fr>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Fri, 24 Aug 2018 10:39:40 +0000
+Subject: [PATCH V5 1/8] backlight: qcom-wled: Rename pm8941-wled.c to qcom-wled.c
+Message-Id: <1535106467-17843-2-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180825142700.6C0DD104917@pc16082vm.idsi0.si.c-s.fr>
-In-Reply-To: <20180825142700.6C0DD104917@pc16082vm.idsi0.si.c-s.fr>
+References: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
 
-_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
+pm8941-wled.c driver is supporting the WLED peripheral
+on pm8941. Rename it to qcom-wled.c so that it can support
+WLED on multiple PMICs.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- drivers/video/fbdev/controlfb.c  |  3 +--
- drivers/video/fbdev/platinumfb.c |  3 +--
- drivers/video/fbdev/valkyriefb.c | 10 ++++++----
- 3 files changed, 8 insertions(+), 8 deletions(-)
+changes from V3:
+    Added Reviewed-by and Acked-by tags.
 
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-index 8d14b29aafea..058093990218 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -715,8 +715,7 @@ static int __init control_of_init(struct device_node *dp)
- 		goto error_out;
- 	}
- 	/* map at most 8MB for the frame buffer */
--	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
--				    _PAGE_WRITETHRU);
-+	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+changes from V4:
+    None
+
+ .../bindings/leds/backlight/{pm8941-wled.txt => qcom-wled.txt}    | 2 +-
+ drivers/video/backlight/Kconfig                                   | 8 ++++----
+ drivers/video/backlight/Makefile                                  | 2 +-
+ drivers/video/backlight/{pm8941-wled.c => qcom-wled.c}            | 0
+ 4 files changed, 6 insertions(+), 6 deletions(-)
+ rename Documentation/devicetree/bindings/leds/backlight/{pm8941-wled.txt => qcom-wled.txt} (95%)
+ rename drivers/video/backlight/{pm8941-wled.c => qcom-wled.c} (100%)
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+similarity index 95%
+rename from Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt
+rename to Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+index e5b294d..fb39e32 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pm8941-wled.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/qcom-wled.txt
+@@ -1,4 +1,4 @@
+-Binding for Qualcomm PM8941 WLED driver
++Binding for Qualcomm Technologies, Inc. WLED driver
  
- 	if (!p->control_regs_phys ||
- 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-index 377d3399a3ad..df79f102fbc6 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -577,8 +577,7 @@ static int platinumfb_probe(struct platform_device* odev)
+ Required properties:
+ - compatible: should be "qcom,pm8941-wled"
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 2919e23..2c29180 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -306,12 +306,12 @@ config BACKLIGHT_TOSA
+ 	  If you have an Sharp SL-6000 Zaurus say Y to enable a driver
+ 	  for its backlight
  
- 	/* frame buffer - map only 4MB */
- 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
--	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
--					_PAGE_WRITETHRU);
-+	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
- 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+-config BACKLIGHT_PM8941_WLED
+-	tristate "Qualcomm PM8941 WLED Driver"
++config BACKLIGHT_QCOM_WLED
++	tristate "Qualcomm PMIC WLED Driver"
+ 	select REGMAP
+ 	help
+-	  If you have the Qualcomm PM8941, say Y to enable a driver for the
+-	  WLED block.
++	  If you have the Qualcomm PMIC, say Y to enable a driver for the
++	  WLED block. Currently it supports PM8941 and PMI8998.
  
- 	/* registers */
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index 275fb98236d3..0c6c1eede800 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -318,7 +318,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- int __init valkyriefb_init(void)
- {
- 	struct fb_info_valkyrie	*p;
--	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
-+	unsigned long frame_buffer_phys, cmap_regs_phys;
- 	int err;
- 	char *option = NULL;
- 
-@@ -337,7 +337,6 @@ int __init valkyriefb_init(void)
- 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
- 	frame_buffer_phys = 0xf9000000;
- 	cmap_regs_phys = 0x50f24000;
--	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
- #else /* ppc (!CONFIG_MAC) */
- 	{
- 		struct device_node *dp;
-@@ -354,7 +353,6 @@ int __init valkyriefb_init(void)
- 
- 		frame_buffer_phys = r.start;
- 		cmap_regs_phys = r.start + 0x304000;
--		flags = _PAGE_WRITETHRU;
- 	}
- #endif /* ppc (!CONFIG_MAC) */
- 
-@@ -369,7 +367,11 @@ int __init valkyriefb_init(void)
- 	}
- 	p->total_vram = 0x100000;
- 	p->frame_buffer_phys = frame_buffer_phys;
--	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
-+#ifdef CONFIG_MAC
-+	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
-+#else
-+	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
-+#endif
- 	p->cmap_regs_phys = cmap_regs_phys;
- 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
- 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
+ config BACKLIGHT_SAHARA
+ 	tristate "Tabletkiosk Sahara Touch-iT Backlight Driver"
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 0dcc2c7..741ab36 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -50,8 +50,8 @@ obj-$(CONFIG_BACKLIGHT_OMAP1)		+= omap1_bl.o
+ obj-$(CONFIG_BACKLIGHT_OT200)		+= ot200_bl.o
+ obj-$(CONFIG_BACKLIGHT_PANDORA)		+= pandora_bl.o
+ obj-$(CONFIG_BACKLIGHT_PCF50633)	+= pcf50633-backlight.o
+-obj-$(CONFIG_BACKLIGHT_PM8941_WLED)	+= pm8941-wled.o
+ obj-$(CONFIG_BACKLIGHT_PWM)		+= pwm_bl.o
++obj-$(CONFIG_BACKLIGHT_QCOM_WLED)	+= qcom-wled.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)		+= kb3886_bl.o
+ obj-$(CONFIG_BACKLIGHT_SKY81452)	+= sky81452-backlight.o
+ obj-$(CONFIG_BACKLIGHT_TOSA)		+= tosa_bl.o
+diff --git a/drivers/video/backlight/pm8941-wled.c b/drivers/video/backlight/qcom-wled.c
+similarity index 100%
+rename from drivers/video/backlight/pm8941-wled.c
+rename to drivers/video/backlight/qcom-wled.c
 -- 
-2.17.1
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

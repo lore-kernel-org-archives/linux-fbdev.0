@@ -1,35 +1,94 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Fri, 31 Aug 2018 08:09:43 +0000
-Subject: [PATCH 2/2] fbdev: sbuslib: integer overflow in sbusfb_ioctl_helper()
-Message-Id: <20180831080943.ldzpzha5suktn4ln@kili.mountain>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 24 Aug 2018 10:04:57 +0000
+Subject: [PATCH 2/3] drivers/video/fbdev: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
+Message-Id: <a2546edda470a13885cf4a5af1d9d76151307a57.1535104490.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
+In-Reply-To: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Peter Malone <peter.malone@gmail.com>
-Cc: Mathieu Malaterre <malat@debian.org>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-The "index + count" addition can overflow.  Both come directly from the
-user.  This bug leads to an information leak.
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-Btw, commit 250c6c49e3b6 ("fbdev: Fixing arbitrary kernel leak in case
-FBIOGETCMAP_SPARC in sbusfb_ioctl_helper().") doesn't do anything so
-far as I can see.  The "cmap->len" variable is type u32, so the
-comparison was already unsigned in the original code because of type
-promotion.  But the commit was also harmless and nice cleanup.
+ drivers/video/fbdev/controlfb.c  |  3 +--
+ drivers/video/fbdev/platinumfb.c |  3 +--
+ drivers/video/fbdev/valkyriefb.c | 10 ++++++----
+ 3 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
-index 90c51330969c..01a7110e61a7 100644
---- a/drivers/video/fbdev/sbuslib.c
-+++ b/drivers/video/fbdev/sbuslib.c
-@@ -171,7 +171,7 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
- 		    get_user(ublue, &c->blue))
- 			return -EFAULT;
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..058093990218 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -715,8 +715,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
  
--		if (index + count > cmap->len)
-+		if (index > cmap->len || count > cmap->len - index)
- 			return -EINVAL;
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..df79f102fbc6 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -577,8 +577,7 @@ static int platinumfb_probe(struct platform_device* odev)
  
- 		for (i = 0; i < count; i++) {
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..0c6c1eede800 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -318,7 +318,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
+ {
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
+ 
+@@ -337,7 +337,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +353,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +367,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
++#endif
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
+-- 
+2.13.3

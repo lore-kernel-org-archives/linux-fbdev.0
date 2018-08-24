@@ -1,116 +1,298 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Thu, 30 Aug 2018 21:00:06 +0000
-Subject: [PATCH v2 03/12] fbdev: add remove_conflicting_pci_framebuffers()
-Message-Id: <cab03a68df539b2f4be93a61323d3f3129c5325b.1535656077.git.mirq-linux@rere.qmqm.pl>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Fri, 24 Aug 2018 10:39:46 +0000
+Subject: [PATCH V5 7/8] backlight: qcom-wled: add support for short circuit handling
+Message-Id: <1535106467-17843-8-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
+References: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1535106467-17843-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: linux-arm-msm@vger.kernel.org, Kiran Gunda <kgunda@codeaurora.org>
 
-Almost all PCI drivers using remove_conflicting_framebuffers() wrap it
-with the same code.
+Handle the short circuit interrupt and check if the short circuit
+interrupt is valid. Re-enable the module to check if it goes
+away. Disable the module altogether if the short circuit event
+persists.
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-[for v1]
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 ---
-v2: add kerneldoc for DRM helper
----
- drivers/video/fbdev/core/fbmem.c | 22 ++++++++++++++++++++++
- include/drm/drm_fb_helper.h      | 24 ++++++++++++++++++++++++
- include/linux/fb.h               |  2 ++
- 3 files changed, 48 insertions(+)
+Changes from V3:
+    - Added Reviewed by tag.
+    - Addressed minor comments from Vinod
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 0df148eb4699..927e016487e9 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -34,6 +34,7 @@
- #include <linux/fb.h>
- #include <linux/fbcon.h>
- #include <linux/mem_encrypt.h>
-+#include <linux/pci.h>
+Changes from V4:
+    - Changed the return value from -EINVAL to -ENXIO
+    - Re-initializing the short_count from 0 to 1.
+
+ drivers/video/backlight/qcom-wled.c | 132 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 128 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index 49fdd23..d891067 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -10,6 +10,9 @@
+  * GNU General Public License for more details.
+  */
  
- #include <asm/fb.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/ktime.h>
+ #include <linux/kernel.h>
+ #include <linux/backlight.h>
+ #include <linux/module.h>
+@@ -64,6 +67,16 @@
+ #define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
+ #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
  
-@@ -1802,6 +1803,27 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
++/* WLED4 specific control registers */
++#define WLED4_CTRL_REG_SHORT_PROTECT			0x5e
++#define  WLED4_CTRL_REG_SHORT_EN_MASK			BIT(7)
++
++#define WLED4_CTRL_REG_SEC_ACCESS			0xd0
++#define  WLED4_CTRL_REG_SEC_UNLOCK			0xa5
++
++#define WLED4_CTRL_REG_TEST1				0xe2
++#define  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2		0x09
++
+ /* WLED4 specific sink registers */
+ #define WLED4_SINK_REG_CURR_SINK			0x46
+ #define  WLED4_SINK_REG_CURR_SINK_MASK			GENMASK(7, 4)
+@@ -113,17 +126,23 @@ struct wled_config {
+ 	bool cs_out_en;
+ 	bool ext_gen;
+ 	bool cabc;
++	bool external_pfet;
+ };
+ 
+ struct wled {
+ 	const char *name;
+ 	struct device *dev;
+ 	struct regmap *regmap;
++	struct mutex lock;	/* Lock to avoid race from thread irq handler */
++	ktime_t last_short_event;
+ 	u16 ctrl_addr;
+ 	u16 sink_addr;
+ 	u16 max_string_count;
+ 	u32 brightness;
+ 	u32 max_brightness;
++	u32 short_count;
++	bool disabled_by_short;
++	bool has_short_detect;
+ 
+ 	struct wled_config cfg;
+ 	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
+@@ -174,6 +193,9 @@ static int wled_module_enable(struct wled *wled, int val)
+ {
+ 	int rc;
+ 
++	if (wled->disabled_by_short)
++		return -ENXIO;
++
+ 	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
+ 				WLED_CTRL_REG_MOD_EN,
+ 				WLED_CTRL_REG_MOD_EN_MASK,
+@@ -210,18 +232,19 @@ static int wled_update_status(struct backlight_device *bl)
+ 	    bl->props.state & BL_CORE_FBBLANK)
+ 		brightness = 0;
+ 
++	mutex_lock(&wled->lock);
+ 	if (brightness) {
+ 		rc = wled->wled_set_brightness(wled, brightness);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
+ 				rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 
+ 		rc = wled_sync_toggle(wled);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 	}
+ 
+@@ -229,15 +252,61 @@ static int wled_update_status(struct backlight_device *bl)
+ 		rc = wled_module_enable(wled, !!brightness);
+ 		if (rc < 0) {
+ 			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
+-			return rc;
++			goto unlock_mutex;
+ 		}
+ 	}
+ 
+ 	wled->brightness = brightness;
+ 
++unlock_mutex:
++	mutex_unlock(&wled->lock);
++
+ 	return rc;
  }
- EXPORT_SYMBOL(remove_conflicting_framebuffers);
  
-+int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const char *name)
++#define WLED_SHORT_DLY_MS			20
++#define WLED_SHORT_CNT_MAX			5
++#define WLED_SHORT_RESET_CNT_DLY_US		USEC_PER_SEC
++
++static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
 +{
-+	struct apertures_struct *ap;
-+	bool primary = false;
++	struct wled *wled = _wled;
++	int rc;
++	s64 elapsed_time;
 +
-+	ap = alloc_apertures(1);
-+	if (!ap)
-+		return -ENOMEM;
++	wled->short_count++;
++	mutex_lock(&wled->lock);
++	rc = wled_module_enable(wled, false);
++	if (rc < 0) {
++		dev_err(wled->dev, "wled disable failed rc:%d\n", rc);
++		goto unlock_mutex;
++	}
 +
-+	ap->ranges[0].base = pci_resource_start(pdev, res_id);
-+	ap->ranges[0].size = pci_resource_len(pdev, res_id);
-+#ifdef CONFIG_X86
-+	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
-+					IORESOURCE_ROM_SHADOW;
-+#endif
-+	remove_conflicting_framebuffers(ap, name, primary);
-+	kfree(ap);
-+	return 0;
++	elapsed_time = ktime_us_delta(ktime_get(),
++				      wled->last_short_event);
++	if (elapsed_time > WLED_SHORT_RESET_CNT_DLY_US)
++		wled->short_count = 1;
++
++	if (wled->short_count > WLED_SHORT_CNT_MAX) {
++		dev_err(wled->dev, "Short trigged %d times, disabling WLED forever!\n",
++			wled->short_count);
++		wled->disabled_by_short = true;
++		goto unlock_mutex;
++	}
++
++	wled->last_short_event = ktime_get();
++
++	msleep(WLED_SHORT_DLY_MS);
++	rc = wled_module_enable(wled, true);
++	if (rc < 0)
++		dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
++
++unlock_mutex:
++	mutex_unlock(&wled->lock);
++
++	return IRQ_HANDLED;
 +}
-+EXPORT_SYMBOL(remove_conflicting_pci_framebuffers);
 +
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
-index 1c1e53abb25d..6e1fc52d1b1b 100644
---- a/include/drm/drm_fb_helper.h
-+++ b/include/drm/drm_fb_helper.h
-@@ -587,4 +587,28 @@ drm_fb_helper_remove_conflicting_framebuffers(struct apertures_struct *a,
- #endif
+ static int wled3_setup(struct wled *wled)
+ {
+ 	u16 addr;
+@@ -326,7 +395,7 @@ static int wled4_setup(struct wled *wled)
+ 	int rc, temp, i, j;
+ 	u16 addr;
+ 	u8 sink_en = 0;
+-	u32 sink_cfg = 0;
++	u32 sink_cfg;
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+ 				wled->ctrl_addr + WLED_CTRL_REG_OVP,
+@@ -348,6 +417,21 @@ static int wled4_setup(struct wled *wled)
+ 	if (rc < 0)
+ 		return rc;
+ 
++	if (wled->cfg.external_pfet) {
++		/* Unlock the secure register access */
++		rc = regmap_write(wled->regmap, wled->ctrl_addr +
++				  WLED4_CTRL_REG_SEC_ACCESS,
++				  WLED4_CTRL_REG_SEC_UNLOCK);
++		if (rc < 0)
++			return rc;
++
++		rc = regmap_write(wled->regmap,
++				  wled->ctrl_addr + WLED4_CTRL_REG_TEST1,
++				  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2);
++		if (rc < 0)
++			return rc;
++	}
++
+ 	rc = regmap_read(wled->regmap, wled->sink_addr +
+ 			 WLED4_SINK_REG_CURR_SINK, &sink_cfg);
+ 	if (rc < 0)
+@@ -433,6 +517,7 @@ static int wled4_setup(struct wled *wled)
+ 	.num_strings = 4,
+ 	.switch_freq = 11,
+ 	.cabc = false,
++	.external_pfet = false,
+ };
+ 
+ static const u32 wled3_boost_i_limit_values[] = {
+@@ -598,6 +683,7 @@ static int wled_configure(struct wled *wled, int version)
+ 		{ "qcom,cs-out", &cfg->cs_out_en, },
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+ 		{ "qcom,cabc", &cfg->cabc, },
++		{ "qcom,external-pfet", &cfg->external_pfet, },
+ 	};
+ 
+ 	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
+@@ -686,6 +772,38 @@ static int wled_configure(struct wled *wled, int version)
+ 	return 0;
  }
  
-+/**
-+ * drm_fb_helper_remove_conflicting_framebuffers - remove firmware framebuffers for PCI devices
-+ * @pdev: PCI device being driven
-+ * @resource_id: index of PCI BAR configuring framebuffer memory
-+ * @name: requesting driver name
-+ *
-+ * This function removes framebuffer devices (eg. initialized by firmware)
-+ * using memory range configured for @pdev's BAR @resource_id.
-+ *
-+ * The function assumes that PCI device with shadowed ROM is drives a primary
-+ * display and so kicks out vga16fb.
-+ */
-+static inline int
-+drm_fb_helper_remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
-+						  int resource_id,
-+						  const char *name)
++static int wled_configure_short_irq(struct wled *wled,
++				    struct platform_device *pdev)
 +{
-+#if IS_REACHABLE(CONFIG_FB)
-+	return remove_conflicting_pci_framebuffers(pdev, resource_id, name);
-+#else
-+	return 0;
-+#endif
++	int rc, short_irq;
++
++	if (!wled->has_short_detect)
++		return 0;
++
++	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
++				WLED4_CTRL_REG_SHORT_PROTECT,
++				WLED4_CTRL_REG_SHORT_EN_MASK,
++				WLED4_CTRL_REG_SHORT_EN_MASK);
++	if (rc < 0)
++		return rc;
++
++	short_irq = platform_get_irq_byname(pdev, "short");
++	if (short_irq < 0) {
++		dev_dbg(&pdev->dev, "short irq is not used\n");
++		return 0;
++	}
++
++	rc = devm_request_threaded_irq(wled->dev, short_irq,
++				       NULL, wled_short_irq_handler,
++				       IRQF_ONESHOT,
++				       "wled_short_irq", wled);
++	if (rc < 0)
++		dev_err(wled->dev, "Unable to request short_irq (err:%d)\n",
++			rc);
++
++	return rc;
 +}
 +
- #endif
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index aa74a228bb92..abeffd55b66a 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -632,6 +632,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
- extern int register_framebuffer(struct fb_info *fb_info);
- extern int unregister_framebuffer(struct fb_info *fb_info);
- extern int unlink_framebuffer(struct fb_info *fb_info);
-+extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id,
-+					       const char *name);
- extern int remove_conflicting_framebuffers(struct apertures_struct *a,
- 					   const char *name, bool primary);
- extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
+ static const struct backlight_ops wled_ops = {
+ 	.update_status = wled_update_status,
+ };
+@@ -719,6 +837,7 @@ static int wled_probe(struct platform_device *pdev)
+ 		return -ENODEV;
+ 	}
+ 
++	mutex_init(&wled->lock);
+ 	rc = wled_configure(wled, version);
+ 	if (rc)
+ 		return rc;
+@@ -733,6 +852,7 @@ static int wled_probe(struct platform_device *pdev)
+ 		break;
+ 
+ 	case 4:
++		wled->has_short_detect = true;
+ 		rc = wled4_setup(wled);
+ 		if (rc) {
+ 			dev_err(&pdev->dev, "wled4_setup failed\n");
+@@ -745,6 +865,10 @@ static int wled_probe(struct platform_device *pdev)
+ 		break;
+ 	}
+ 
++	rc = wled_configure_short_irq(wled, pdev);
++	if (rc < 0)
++		return rc;
++
+ 	val = WLED_DEFAULT_BRIGHTNESS;
+ 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
+ 
 -- 
-2.18.0
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

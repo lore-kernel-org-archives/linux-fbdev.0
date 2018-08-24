@@ -1,60 +1,73 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Thu, 30 Aug 2018 21:00:07 +0000
-Subject: [PATCH v2 06/12] drm/cirrus: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <8a330a00dad89889550ff9fb7d7309d58d64181c.1535656077.git.mirq-linux@rere.qmqm.pl>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 24 Aug 2018 10:04:55 +0000
+Subject: [PATCH 1/3] powerpc/32: Add ioremap_wt()
+Message-Id: <4f905a9d9752768c628623276f5e2fb465c947c8.1535104490.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Other arches have ioremap_wt() to map IO areas write-through.
+Implement it on PPC as well in order to avoid drivers using
+__ioremap(_PAGE_WRITETHRU)
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/gpu/drm/cirrus/cirrus_drv.c | 23 +----------------------
- 1 file changed, 1 insertion(+), 22 deletions(-)
+ arch/powerpc/include/asm/io.h | 6 ++++++
+ arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
+ 2 files changed, 14 insertions(+)
 
-diff --git a/drivers/gpu/drm/cirrus/cirrus_drv.c b/drivers/gpu/drm/cirrus/cirrus_drv.c
-index 69c4e352dd78..85ed8657c862 100644
---- a/drivers/gpu/drm/cirrus/cirrus_drv.c
-+++ b/drivers/gpu/drm/cirrus/cirrus_drv.c
-@@ -42,33 +42,12 @@ static const struct pci_device_id pciidlist[] = {
- };
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e754568..3380b5b22450 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -3,6 +3,9 @@
+ #ifdef __KERNEL__
  
+ #define ARCH_HAS_IOREMAP_WC
++#ifdef CONFIG_PPC32
++#define ARCH_HAS_IOREMAP_WT
++#endif
  
--static int cirrus_kick_out_firmware_fb(struct pci_dev *pdev)
--{
--	struct apertures_struct *ap;
--	bool primary = false;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return -ENOMEM;
--
--	ap->ranges[0].base = pci_resource_start(pdev, 0);
--	ap->ranges[0].size = pci_resource_len(pdev, 0);
--
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "cirrusdrmfb", primary);
--	kfree(ap);
--
--	return 0;
--}
--
- static int cirrus_pci_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *ent)
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -746,6 +749,8 @@ static inline void iosync(void)
+  *
+  * * ioremap_wc enables write combining
+  *
++ * * ioremap_wt enables write through
++ *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ 				  unsigned long flags);
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
+ #define ioremap_cache(addr, size) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 2bbc22384f78..b2e73e82f8fc 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -90,6 +90,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+ void __iomem *
++ioremap_wt(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_wt);
++
++void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
  {
- 	int ret;
- 
--	ret = cirrus_kick_out_firmware_fb(pdev);
-+	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "cirrusdrmfb");
- 	if (ret)
- 		return ret;
- 
+ 	pte_t pte = __pte(flags);
 -- 
-2.18.0
+2.13.3

@@ -1,79 +1,111 @@
-From: kgunda@codeaurora.org
-Date: Thu, 16 Aug 2018 05:45:18 +0000
-Subject: Re: [PATCH V4 8/8] backlight: qcom-wled: Add auto string detection logic
-Message-Id: <bfc20fc54fcb3bc91ce13b353f73039e@codeaurora.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Sat, 25 Aug 2018 19:51:52 +0000
+Subject: [PATCH 2/3] mach64: fix image corruption due to reading accelerator registers
+Message-Id: <alpine.LRH.2.02.1808251551020.8284@file01.intranet.prod.int.rdu2.redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1531131741-19971-1-git-send-email-kgunda@codeaurora.org>
- <1531131741-19971-9-git-send-email-kgunda@codeaurora.org>
- <20180807063229.GE23866@tuxbook-pro>
-In-Reply-To: <20180807063229.GE23866@tuxbook-pro>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
+To: =?ISO-8859-15?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On 2018-08-07 12:02, Bjorn Andersson wrote:
-> On Mon 09 Jul 03:22 PDT 2018, Kiran Gunda wrote:
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
-> [..]
->> @@ -189,6 +206,15 @@ static int wled4_set_brightness(struct wled 
->> *wled, u16 brightness)
->>  	return 0;
->>  }
->> 
->> +static void wled_ovp_work(struct work_struct *work)
->> +{
->> +	struct wled *wled = container_of(work,
->> +					 struct wled, ovp_work.work);
->> +
->> +	if (wled->ovp_irq > 0)
->> +		enable_irq(wled->ovp_irq);
->> +}
->> +
->>  static int wled_module_enable(struct wled *wled, int val)
->>  {
->>  	int rc;
->> @@ -200,7 +226,18 @@ static int wled_module_enable(struct wled *wled, 
->> int val)
->>  				WLED_CTRL_REG_MOD_EN,
->>  				WLED_CTRL_REG_MOD_EN_MASK,
->>  				val << WLED_CTRL_REG_MOD_EN_SHIFT);
->> -	return rc;
->> +	if (rc < 0)
->> +		return rc;
->> +
->> +	if (val) {
->> +		schedule_delayed_work(&wled->ovp_work, WLED_SOFT_START_DLY_US);
-> 
-> schedule_delayed_work() takes a delay in jiffies, not micro seconds.
-> 
-I will address it in the next series.
->> +	} else {
->> +		cancel_delayed_work_sync(&wled->ovp_work);
-> 
-> If we get here within WLED_SOFT_START_DLY_US of a module enable we have
-> yet to execute the enable_irq() in the delayed worker, which should 
-> mean
-> that the irq is unbalanced from then on.
-> 
-> I believe you can check the return value of cancel_delayed_work_sync()
-> being true to know if wled_ovp_work() was yet to execute.
-> 
-Ok. I will address it in next series.
->> +		if (wled->ovp_irq > 0)
->> +			disable_irq(wled->ovp_irq);
->> +	}
->> +
->> +	return 0;
->>  }
->> 
-> 
-> Regards,
-> Bjorn
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Reading the registers without waiting for engine idle returns
+unpredictable values. These unpredictable values result in display
+corruption - if atyfb_imageblit reads the content of DP_PIX_WIDTH with the
+bit DP_HOST_TRIPLE_EN set (from previous invocation), the driver would
+never ever clear the bit, resulting in display corruption.
+
+We don't want to wait for idle because it would degrade performance, so
+this patch modifies the driver so that it never reads accelerator
+registers.
+
+HOST_CNTL doesn't have to be read, we can just write it with
+HOST_BYTE_ALIGN because no other part of the driver cares if
+HOST_BYTE_ALIGN is set.
+
+DP_PIX_WIDTH is written in the functions atyfb_copyarea and atyfb_fillrect
+with the default value and in atyfb_imageblit with the value set according
+to the source image data.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
+
+---
+ drivers/video/fbdev/aty/mach64_accel.c |   22 +++++++++-------------
+ 1 file changed, 9 insertions(+), 13 deletions(-)
+
+Index: linux-stable/drivers/video/fbdev/aty/mach64_accel.c
+=================================--- linux-stable.orig/drivers/video/fbdev/aty/mach64_accel.c	2018-08-24 19:51:34.000000000 +0200
++++ linux-stable/drivers/video/fbdev/aty/mach64_accel.c	2018-08-24 20:28:55.000000000 +0200
+@@ -127,7 +127,7 @@ void aty_init_engine(struct atyfb_par *p
+ 
+ 	/* set host attributes */
+ 	wait_for_fifo(13, par);
+-	aty_st_le32(HOST_CNTL, 0, par);
++	aty_st_le32(HOST_CNTL, HOST_BYTE_ALIGN, par);
+ 
+ 	/* set pattern attributes */
+ 	aty_st_le32(PAT_REG0, 0, par);
+@@ -233,7 +233,8 @@ void atyfb_copyarea(struct fb_info *info
+ 		rotation = rotation24bpp(dx, direction);
+ 	}
+ 
+-	wait_for_fifo(4, par);
++	wait_for_fifo(5, par);
++	aty_st_le32(DP_PIX_WIDTH, par->crtc.dp_pix_width, par);
+ 	aty_st_le32(DP_SRC, FRGD_SRC_BLIT, par);
+ 	aty_st_le32(SRC_Y_X, (sx << 16) | sy, par);
+ 	aty_st_le32(SRC_HEIGHT1_WIDTH1, (width << 16) | area->height, par);
+@@ -269,7 +270,8 @@ void atyfb_fillrect(struct fb_info *info
+ 		rotation = rotation24bpp(dx, DST_X_LEFT_TO_RIGHT);
+ 	}
+ 
+-	wait_for_fifo(3, par);
++	wait_for_fifo(4, par);
++	aty_st_le32(DP_PIX_WIDTH, par->crtc.dp_pix_width, par);
+ 	aty_st_le32(DP_FRGD_CLR, color, par);
+ 	aty_st_le32(DP_SRC,
+ 		    BKGD_SRC_BKGD_CLR | FRGD_SRC_FRGD_CLR | MONO_SRC_ONE,
+@@ -284,7 +286,7 @@ void atyfb_imageblit(struct fb_info *inf
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u32 src_bytes, dx = image->dx, dy = image->dy, width = image->width;
+-	u32 pix_width_save, pix_width, host_cntl, rotation = 0, src, mix;
++	u32 pix_width, rotation = 0, src, mix;
+ 
+ 	if (par->asleep)
+ 		return;
+@@ -296,8 +298,7 @@ void atyfb_imageblit(struct fb_info *inf
+ 		return;
+ 	}
+ 
+-	pix_width = pix_width_save = aty_ld_le32(DP_PIX_WIDTH, par);
+-	host_cntl = aty_ld_le32(HOST_CNTL, par) | HOST_BYTE_ALIGN;
++	pix_width = par->crtc.dp_pix_width;
+ 
+ 	switch (image->depth) {
+ 	case 1:
+@@ -370,12 +371,11 @@ void atyfb_imageblit(struct fb_info *inf
+ 		mix = FRGD_MIX_D_XOR_S | BKGD_MIX_D;
+ 	}
+ 
+-	wait_for_fifo(6, par);
+-	aty_st_le32(DP_WRITE_MASK, 0xFFFFFFFF, par);
++	wait_for_fifo(5, par);
+ 	aty_st_le32(DP_PIX_WIDTH, pix_width, par);
+ 	aty_st_le32(DP_MIX, mix, par);
+ 	aty_st_le32(DP_SRC, src, par);
+-	aty_st_le32(HOST_CNTL, host_cntl, par);
++	aty_st_le32(HOST_CNTL, HOST_BYTE_ALIGN, par);
+ 	aty_st_le32(DST_CNTL, DST_Y_TOP_TO_BOTTOM | DST_X_LEFT_TO_RIGHT | rotation, par);
+ 
+ 	draw_rect(dx, dy, width, image->height, par);
+@@ -424,8 +424,4 @@ void atyfb_imageblit(struct fb_info *inf
+ 			aty_st_le32(HOST_DATA0, get_unaligned_le32(pbitmap), par);
+ 		}
+ 	}
+-
+-	/* restore pix_width */
+-	wait_for_fifo(1, par);
+-	aty_st_le32(DP_PIX_WIDTH, pix_width_save, par);
+ }

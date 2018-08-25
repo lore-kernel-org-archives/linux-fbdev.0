@@ -1,8 +1,10 @@
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Sat, 25 Aug 2018 14:27:02 +0000
+Date: Sat, 25 Aug 2018 14:34:25 +0000
 Subject: [PATCH RESEND 3/3] drivers/block/z2ram: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
-Message-Id: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
+Message-Id: <20180825143425.5014E104912@pc16082vm.idsi0.si.c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
+In-Reply-To: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

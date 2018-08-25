@@ -1,75 +1,126 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Mon, 27 Aug 2018 16:10:21 +0000
-Subject: [PATCH v2 1/3] powerpc/32: Add ioremap_wt()
-Message-Id: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Sat, 25 Aug 2018 18:23:20 +0000
+Subject: [PATCH v2 1/1] atmel_lcdfb: support native-mode display-timings
+Message-Id: <20180825182320.GA3285@ravnborg.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: linux-fbdev@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+When a device tree set a display-timing using native-mode
+then according to the bindings doc this should:
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+    native-mode:
+    The native mode for the display, in case multiple
+    modes are provided.
+    When omitted, assume the first node is the native.
+
+The atmel_lcdfb used the last timing subnode and did not
+respect the timing mode specified with native-mode.
+
+Introduce use of of_get_videomode() which allowed
+a nice simplification of the code while also
+added support for native-mode.
+
+As a nice side-effect this fixes a memory leak where the
+data used for timings and the display_np was not freed.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
 ---
- v2: no change
 
- arch/powerpc/include/asm/io.h | 6 ++++++
- arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
- 2 files changed, 14 insertions(+)
+v1 =3D> v2
+Rebased on top of v4.18, resend
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..3380b5b22450 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
- 
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
-+#endif
- 
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,8 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..528999738645 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -90,6 +90,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- EXPORT_SYMBOL(ioremap_wc);
- 
- void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
-+void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
- 	/* writeable implies dirty for kernel addresses */
--- 
-2.13.3
+ drivers/video/fbdev/atmel_lcdfb.c | 43 ++++++++---------------------------=
+----
+ 1 file changed, 9 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_=
+lcdfb.c
+index 076d24afbd72..4ed55e6bbb84 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -22,6 +22,7 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
++#include <video/of_videomode.h>
+ #include <video/of_display_timing.h>
+ #include <linux/regulator/consumer.h>
+ #include <video/videomode.h>
+@@ -1028,11 +1029,11 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_i=
+nfo *sinfo)
+ 	struct device *dev =3D &sinfo->pdev->dev;
+ 	struct device_node *np =DEv->of_node;
+ 	struct device_node *display_np;
+-	struct device_node *timings_np;
+-	struct display_timings *timings;
+ 	struct atmel_lcdfb_power_ctrl_gpio *og;
+ 	bool is_gpio_power =3D false;
++	struct fb_videomode fb_vm;
+ 	struct gpio_desc *gpiod;
++	struct videomode vm;
+ 	int ret =3D -ENOENT;
+ 	int i;
+=20
+@@ -1105,44 +1106,18 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_i=
+nfo *sinfo)
+ 	pdata->lcdcon_is_backlight =3D of_property_read_bool(display_np, "atmel,l=
+cdcon-backlight");
+ 	pdata->lcdcon_pol_negative =3D of_property_read_bool(display_np, "atmel,l=
+cdcon-backlight-inverted");
+=20
+-	timings =3D of_get_display_timings(display_np);
+-	if (!timings) {
+-		dev_err(dev, "failed to get display timings\n");
+-		ret =3D -EINVAL;
++	ret =3D of_get_videomode(display_np, &vm, OF_USE_NATIVE_MODE);
++	if (ret) {
++		dev_err(dev, "failed to get videomode from DT\n");
+ 		goto put_display_node;
+ 	}
+=20
+-	timings_np =3D of_get_child_by_name(display_np, "display-timings");
+-	if (!timings_np) {
+-		dev_err(dev, "failed to find display-timings node\n");
+-		ret =3D -ENODEV;
++	ret =3D fb_videomode_from_videomode(&vm, &fb_vm);
++	if (ret < 0)
+ 		goto put_display_node;
+-	}
+=20
+-	for (i =3D 0; i < of_get_child_count(timings_np); i++) {
+-		struct videomode vm;
+-		struct fb_videomode fb_vm;
+-
+-		ret =3D videomode_from_timings(timings, &vm, i);
+-		if (ret < 0)
+-			goto put_timings_node;
+-		ret =3D fb_videomode_from_videomode(&vm, &fb_vm);
+-		if (ret < 0)
+-			goto put_timings_node;
+-
+-		fb_add_videomode(&fb_vm, &info->modelist);
+-	}
+-
+-	/*
+-	 * FIXME: Make sure we are not referencing any fields in display_np
+-	 * and timings_np and drop our references to them before returning to
+-	 * avoid leaking the nodes on probe deferral and driver unbind.
+-	 */
+-
+-	return 0;
++	fb_add_videomode(&fb_vm, &info->modelist);
+=20
+-put_timings_node:
+-	of_node_put(timings_np);
+ put_display_node:
+ 	of_node_put(display_np);
+ 	return ret;
+--=20
+2.12.0

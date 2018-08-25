@@ -1,24 +1,34 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 31 Aug 2018 22:32:27 +0000
-Subject: Re: [PATCH] Documentation/fb/vesafb.txt: "inverse" option corrections
-Message-Id: <20180831163227.663c2c28@lwn.net>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Sat, 25 Aug 2018 14:27:02 +0000
+Subject: [PATCH RESEND 3/3] drivers/block/z2ram: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
+Message-Id: <20180825142702.77FD7104918@pc16082vm.idsi0.si.c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <b77dcfee-2cc2-adb0-645e-369fc032abd1@infradead.org>
-In-Reply-To: <b77dcfee-2cc2-adb0-645e-369fc032abd1@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
 
-On Thu, 16 Aug 2018 21:12:07 -0700
-Randy Dunlap <rdunlap@infradead.org> wrote:
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
-> From: Randy Dunlap <rdunlap@infradead.org>
-> 
-> Spell the vesafb "inverse" option correctly and tell what it does.
-> 
-Applied, thanks.  This is the first nontrivial change to this file since
-2005...
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/block/z2ram.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-jon
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index d0c5bc4e0703..cfbd70520eeb 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
+ 			vfree(vmalloc (size));
+ 		}
+ 
+-		vaddr = (unsigned long) __ioremap (paddr, size, 
+-						   _PAGE_WRITETHRU);
++		vaddr = (unsigned long)ioremap_wt(paddr, size);
+ 
+ #else
+ 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
+-- 
+2.17.1

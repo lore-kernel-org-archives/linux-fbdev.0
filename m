@@ -1,55 +1,38 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sat, 11 Aug 2018 10:28:43 +0000
-Subject: Re: [PATCH v3] fbcon: Do not takeover the console from atomic context
-Message-Id: <be1c126d-c6cf-52d5-8f10-25fee6451f56@redhat.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Mon, 27 Aug 2018 16:10:25 +0000
+Subject: [PATCH v2 3/3] drivers/block/z2ram: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
+Message-Id: <48bcbeb8e5f57c958e6e0bc7a29feae44821901d.1535385970.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180810112805epcas1p17ec5ad2f046683aad683edcae22777b2@epcas1p1.samsung.com>
- <20180810112757.3936-1-hdegoede@redhat.com> <18266775.E32RSncY74@amdc3058>
-In-Reply-To: <18266775.E32RSncY74@amdc3058>
+References: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
+In-Reply-To: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-Hi,
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
 
-On 10-08-18 17:22, Bartlomiej Zolnierkiewicz wrote:
-> On Friday, August 10, 2018 01:27:57 PM Hans de Goede wrote:
->> Taking over the console involves allocating mem with GFP_KERNEL, talking
->> to drm drivers, etc. So this should not be done from an atomic context.
->>
->> But the console-output trigger deferred console takeover may happen from an
->> atomic context, which leads to "BUG: sleeping function called from invalid
->> context" errors.
->>
->> This commit fixes these errors by doing the deferred takeover from a
->> workqueue.
->>
->> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> 
-> Patch queued for 4.19, thanks.
-> 
->> @@ -3607,8 +3620,8 @@ static int fbcon_output_notifier(struct notifier_block *nb,
->>   	deferred_takeover = false;
->>   	logo_shown = FBCON_LOGO_DONTSHOW;
->>   
->> -	for_each_registered_fb(i)
->> -		fbcon_fb_registered(registered_fb[i]);
->> +	/* We may get called in atomic context */
->> +	schedule_work(&fbcon_deferred_takeover_work);
-> 
-> After above change gcc now complains about unused variable:
-> 
-> drivers/video/fbdev/core/fbcon.c: In function ‘fbcon_output_notifier’:
-> drivers/video/fbdev/core/fbcon.c:3613:6: warning: unused variable ‘i’ [-Wunused-variable]
->    int i;
->        ^
-> 
-> I fixed this while applying the patch.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ v2: no change
 
-Ah yes, thank you for fixing this,
+ drivers/block/z2ram.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Regards,
-
-Hans
+diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
+index d0c5bc4e0703..cfbd70520eeb 100644
+--- a/drivers/block/z2ram.c
++++ b/drivers/block/z2ram.c
+@@ -190,8 +190,7 @@ static int z2_open(struct block_device *bdev, fmode_t mode)
+ 			vfree(vmalloc (size));
+ 		}
+ 
+-		vaddr = (unsigned long) __ioremap (paddr, size, 
+-						   _PAGE_WRITETHRU);
++		vaddr = (unsigned long)ioremap_wt(paddr, size);
+ 
+ #else
+ 		vaddr = (unsigned long)z_remap_nocache_nonser(paddr, size);
+-- 
+2.13.3

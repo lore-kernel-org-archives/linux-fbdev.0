@@ -1,63 +1,130 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Thu, 30 Aug 2018 21:00:09 +0000
-Subject: [PATCH v2 09/12] drm/virtio: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <4f4a5b7472a7161dc0fc7a1a9be746d18fc8a7b1.1535656077.git.mirq-linux@rere.qmqm.pl>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Mon, 27 Aug 2018 16:10:23 +0000
+Subject: [PATCH v2 2/3] drivers/video/fbdev: use ioremap_wt() instead of __ioremap(_PAGE_WRITETHRU)
+Message-Id: <ead0a7af4be483bded58977f42471607a76e880c.1535385970.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
+References: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
+In-Reply-To: <ab6b6c60d921335b44c100c5018fcc6585f05c24.1535385970.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+_PAGE_WRITETHRU is a target specific flag. Prefer generic functions.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/gpu/drm/virtio/virtgpu_drm_bus.c | 24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+ v2: removed unnecessary includes headers
 
-diff --git a/drivers/gpu/drm/virtio/virtgpu_drm_bus.c b/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-index 7df8d0c9026a..115ed546ca4e 100644
---- a/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-+++ b/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-@@ -28,26 +28,6 @@
+ drivers/video/fbdev/controlfb.c  |  5 +----
+ drivers/video/fbdev/platinumfb.c |  5 +----
+ drivers/video/fbdev/valkyriefb.c | 12 ++++++------
+ 3 files changed, 8 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..9cb0ef7ac29e 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -48,9 +48,7 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ #include <asm/btext.h>
  
- #include "virtgpu_drv.h"
+ #include "macmodes.h"
+@@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
  
--static void virtio_pci_kick_out_firmware_fb(struct pci_dev *pci_dev)
--{
--	struct apertures_struct *ap;
--	bool primary;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return;
--
--	ap->ranges[0].base = pci_resource_start(pci_dev, 0);
--	ap->ranges[0].size = pci_resource_len(pci_dev, 0);
--
--	primary = pci_dev->resource[PCI_ROM_RESOURCE].flags
--		& IORESOURCE_ROM_SHADOW;
--
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "virtiodrmfb", primary);
--
--	kfree(ap);
--}
--
- int drm_virtio_init(struct drm_driver *driver, struct virtio_device *vdev)
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..bf6b7fb83cf4 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -32,9 +32,7 @@
+ #include <linux/nvram.h>
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "platinumfb.h"
+@@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
+ 
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..d51c3a8009cb 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -54,13 +54,11 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #ifdef CONFIG_MAC
+ #include <asm/macintosh.h>
+ #else
+ #include <asm/prom.h>
+ #endif
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+@@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
  {
- 	struct drm_device *dev;
-@@ -69,7 +49,9 @@ int drm_virtio_init(struct drm_driver *driver, struct virtio_device *vdev)
- 			 pname);
- 		dev->pdev = pdev;
- 		if (vga)
--			virtio_pci_kick_out_firmware_fb(pdev);
-+			drm_fb_helper_remove_conflicting_pci_framebuffers(pdev,
-+									  0,
-+									  "virtiodrmfb");
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
  
- 		snprintf(unique, sizeof(unique), "pci:%s", pname);
- 		ret = drm_dev_set_unique(dev, unique);
+@@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
++#endif
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
 -- 
-2.18.0
+2.13.3

@@ -1,116 +1,158 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Date: Fri, 31 Aug 2018 02:09:14 +0000
-Subject: RE: [PATCH V5 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <AM0PR04MB42118FCAB7A4BE4D08C455DD800F0@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 28 Aug 2018 01:52:50 +0000
+Subject: [PATCH] fbdev: Convert to using %pOFn instead of device_node.name
+Message-Id: <20180828015252.28511-49-robh@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1535553669-30250-1-git-send-email-aisheng.dong@nxp.com>
- <1535553669-30250-5-git-send-email-aisheng.dong@nxp.com>
- <7261200d-e3df-494b-a41d-5c6d301617bb@redhat.com>
-In-Reply-To: <7261200d-e3df-494b-a41d-5c6d301617bb@redhat.com>
+References: <20180828015252.28511-1-robh@kernel.org>
+In-Reply-To: <20180828015252.28511-1-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBIYW5zIGRlIEdvZWRlIFttYWls
-dG86aGRlZ29lZGVAcmVkaGF0LmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIw
-MTggMTE6MjIgUE0NCg0KWy4uLl0NCg0KPiBPbiAyOS0wOC0xOCAxNjo0MSwgRG9uZyBBaXNoZW5n
-IHdyb3RlOg0KPiA+IFN3aXRjaGluZyB0byB1c2UgY2xrX2J1bGsgQVBJIHRvIHNpbXBsaWZ5IGNs
-b2NrIG9wZXJhdGlvbnMuDQo+ID4NCj4gPiBDYzogSGFucyBkZSBHb2VkZSA8aGRlZ29lZGVAcmVk
-aGF0LmNvbT4NCj4gPiBDYzogQmFydGxvbWllaiBab2xuaWVya2lld2ljeiA8Yi56b2xuaWVya2ll
-QHNhbXN1bmcuY29tPg0KPiA+IENjOiBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBD
-YzogTWFzYWhpcm8gWWFtYWRhIDx5YW1hZGEubWFzYWhpcm9Ac29jaW9uZXh0LmNvbT4NCj4gPiBD
-YzogU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2RlYXVyb3JhLm9yZz4NCj4gPiBUZXN0ZWQtYnk6IFRo
-b3IgVGhheWVyIDx0aG9yLnRoYXllckBsaW51eC5pbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogRG9uZyBBaXNoZW5nIDxhaXNoZW5nLmRvbmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiB2NC0+
-djU6DQo+ID4gICAqIGZpeCB3cm9uZyBzZXR0aW5nIG9mIHBhci0+Y2xrc19lbmFibGVkDQo+ID4g
-djMtPnY0Og0KPiA+ICAgKiBubyBjaGFuZ2VzDQo+ID4gdjItPnYzOg0KPiA+ICAgKiBmaXggYSBi
-dWlsZCB3YXJuaW5nIG9uIHg4NiBwbGF0Zm9ybSBkdWUgdG8gYSB3cm9uZw0KPiA+ICAgICBvZiB0
-aGUgcHJvdG90eXBlIG9mIHNpbXBsZWZiX2Nsb2Nrc19lbmFibGUNCj4gPiB2MS0+djI6DQo+ID4g
-ICAqIHN3aXRjaCB0byBjbGtfYnVsa19nZXRfYWxsIGZyb20gb2ZfY2xrX2J1bGtfZ2V0X2FsbA0K
-PiA+IC0tLQ0KPiA+ICAgZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jIHwgNjggKysrKysr
-KysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gICAxIGZpbGUgY2hhbmdl
-ZCwgMTQgaW5zZXJ0aW9ucygrKSwgNTQgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
-IGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQo+ID4gYi9kcml2ZXJzL3ZpZGVvL2Zi
-ZGV2L3NpbXBsZWZiLmMgaW5kZXggOWE5ZDc0OC4uOGQxZmJkNiAxMDA2NDQNCj4gPiAtLS0gYS9k
-cml2ZXJzL3ZpZGVvL2ZiZGV2L3NpbXBsZWZiLmMNCj4gPiArKysgYi9kcml2ZXJzL3ZpZGVvL2Zi
-ZGV2L3NpbXBsZWZiLmMNCj4gPiBAQCAtMTgyLDcgKzE4Miw3IEBAIHN0cnVjdCBzaW1wbGVmYl9w
-YXIgew0KPiA+ICAgI2lmIGRlZmluZWQgQ09ORklHX09GICYmIGRlZmluZWQgQ09ORklHX0NPTU1P
-Tl9DTEsNCj4gPiAgIAlib29sIGNsa3NfZW5hYmxlZDsNCj4gPiAgIAl1bnNpZ25lZCBpbnQgY2xr
-X2NvdW50Ow0KPiA+IC0Jc3RydWN0IGNsayAqKmNsa3M7DQo+ID4gKwlzdHJ1Y3QgY2xrX2J1bGtf
-ZGF0YSAqY2xrczsNCj4gPiAgICNlbmRpZg0KPiA+ICAgI2lmIGRlZmluZWQgQ09ORklHX09GICYm
-IGRlZmluZWQgQ09ORklHX1JFR1VMQVRPUg0KPiA+ICAgCWJvb2wgcmVndWxhdG9yc19lbmFibGVk
-Ow0KPiA+IEBAIC0yMTQsMzcgKzIxNCwxMyBAQCBzdGF0aWMgaW50IHNpbXBsZWZiX2Nsb2Nrc19n
-ZXQoc3RydWN0IHNpbXBsZWZiX3Bhcg0KPiAqcGFyLA0KPiA+ICAgCQkJICAgICAgIHN0cnVjdCBw
-bGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICB7DQo+ID4gICAJc3RydWN0IGRldmljZV9ub2Rl
-ICpucCA9IHBkZXYtPmRldi5vZl9ub2RlOw0KPiA+IC0Jc3RydWN0IGNsayAqY2xvY2s7DQo+ID4g
-LQlpbnQgaTsNCj4gPg0KPiA+ICAgCWlmIChkZXZfZ2V0X3BsYXRkYXRhKCZwZGV2LT5kZXYpIHx8
-ICFucCkNCj4gPiAgIAkJcmV0dXJuIDA7DQo+ID4NCj4gPiAtCXBhci0+Y2xrX2NvdW50ID0gb2Zf
-Y2xrX2dldF9wYXJlbnRfY291bnQobnApOw0KPiA+IC0JaWYgKCFwYXItPmNsa19jb3VudCkNCj4g
-PiAtCQlyZXR1cm4gMDsNCj4gPiAtDQo+ID4gLQlwYXItPmNsa3MgPSBrY2FsbG9jKHBhci0+Y2xr
-X2NvdW50LCBzaXplb2Yoc3RydWN0IGNsayAqKSwgR0ZQX0tFUk5FTCk7DQo+ID4gLQlpZiAoIXBh
-ci0+Y2xrcykNCj4gPiAtCQlyZXR1cm4gLUVOT01FTTsNCj4gPiAtDQo+ID4gLQlmb3IgKGkgPSAw
-OyBpIDwgcGFyLT5jbGtfY291bnQ7IGkrKykgew0KPiA+IC0JCWNsb2NrID0gb2ZfY2xrX2dldChu
-cCwgaSk7DQo+ID4gLQkJaWYgKElTX0VSUihjbG9jaykpIHsNCj4gPiAtCQkJaWYgKFBUUl9FUlIo
-Y2xvY2spID09IC1FUFJPQkVfREVGRVIpIHsNCj4gPiAtCQkJCXdoaWxlICgtLWkgPj0gMCkgew0K
-PiA+IC0JCQkJCWlmIChwYXItPmNsa3NbaV0pDQo+ID4gLQkJCQkJCWNsa19wdXQocGFyLT5jbGtz
-W2ldKTsNCj4gPiAtCQkJCX0NCj4gPiAtCQkJCWtmcmVlKHBhci0+Y2xrcyk7DQo+ID4gLQkJCQly
-ZXR1cm4gLUVQUk9CRV9ERUZFUjsNCj4gPiAtCQkJfQ0KPiA+IC0JCQlkZXZfZXJyKCZwZGV2LT5k
-ZXYsICIlczogY2xvY2sgJWQgbm90IGZvdW5kOiAlbGRcbiIsDQo+ID4gLQkJCQlfX2Z1bmNfXywg
-aSwgUFRSX0VSUihjbG9jaykpOw0KPiA+IC0JCQljb250aW51ZTsNCj4gPiAtCQl9DQo+ID4gLQkJ
-cGFyLT5jbGtzW2ldID0gY2xvY2s7DQo+ID4gLQl9DQo+ID4gKwlwYXItPmNsa19jb3VudCA9IGNs
-a19idWxrX2dldF9hbGwoJnBkZXYtPmRldiwgJnBhci0+Y2xrcyk7DQo+ID4gKwlpZiAoKHBhci0+
-Y2xrX2NvdW50IDwgMCkgJiYgKHBhci0+Y2xrX2NvdW50ID09IC1FUFJPQkVfREVGRVIpKQ0KPiA+
-ICsJCXJldHVybiAtRVBST0JFX0RFRkVSOw0KPiANCj4gSSBqdXN0IG5vdGljZWQgdGhpcyBub3cs
-IGJ1dCBjbGtfY291bnQgaXMgdW5zaWduZWQgc28gaXQgd2lsbCBuZXZlciBiZSA8IDAsIHBsZWFz
-ZQ0KPiBtYWtlIGl0IHNpZ25lZC4NCj4gDQoNCkdvb2QgZmluZGluZ3MuDQoNCj4gQWxzbyB0aGVy
-ZSBpcyBubyBuZWVkIHRvIGNoZWNrIGZvciA8IDAganVzdCAocGFyLT5jbGtfY291bnQgPT0gLUVQ
-Uk9CRV9ERUZFUikNCj4gaXMgZW5vdWdoIChpZiB0aGF0IGlzIHRydWUgPCAwIGFsc28gYWx3YXlz
-IGlzIHRydWUpLg0KPiANCg0KWWVzLCB5b3UncmUgcmlnaHQuDQoNCj4gPg0KPiA+ICAgCXJldHVy
-biAwOw0KPiA+ICAgfQ0KPiA+IEBAIC0yNTIsMzkgKzIyOCwyMyBAQCBzdGF0aWMgaW50IHNpbXBs
-ZWZiX2Nsb2Nrc19nZXQoc3RydWN0IHNpbXBsZWZiX3Bhcg0KPiAqcGFyLA0KPiA+ICAgc3RhdGlj
-IHZvaWQgc2ltcGxlZmJfY2xvY2tzX2VuYWJsZShzdHJ1Y3Qgc2ltcGxlZmJfcGFyICpwYXIsDQo+
-ID4gICAJCQkJICAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gPiAgIHsNCj4gPiAt
-CWludCBpLCByZXQ7DQo+ID4gKwlpbnQgcmV0Ow0KPiA+DQo+ID4gLQlmb3IgKGkgPSAwOyBpIDwg
-cGFyLT5jbGtfY291bnQ7IGkrKykgew0KPiA+IC0JCWlmIChwYXItPmNsa3NbaV0pIHsNCj4gPiAt
-CQkJcmV0ID0gY2xrX3ByZXBhcmVfZW5hYmxlKHBhci0+Y2xrc1tpXSk7DQo+ID4gLQkJCWlmIChy
-ZXQpIHsNCj4gPiAtCQkJCWRldl9lcnIoJnBkZXYtPmRldiwNCj4gPiAtCQkJCQkiJXM6IGZhaWxl
-ZCB0byBlbmFibGUgY2xvY2sgJWQ6ICVkXG4iLA0KPiA+IC0JCQkJCV9fZnVuY19fLCBpLCByZXQp
-Ow0KPiA+IC0JCQkJY2xrX3B1dChwYXItPmNsa3NbaV0pOw0KPiA+IC0JCQkJcGFyLT5jbGtzW2ld
-ID0gTlVMTDsNCj4gPiAtCQkJfQ0KPiA+IC0JCX0NCj4gPiArCXJldCA9IGNsa19idWxrX3ByZXBh
-cmVfZW5hYmxlKHBhci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KPiANCj4gSG1tLCB3aGF0IGhh
-cHBlbnMgaWYgcGFyLT5jbGtfY291bnQgPCAwIChhbm90aGVyIDwwIHZhbHVlIHRoZW4NCj4gLUVQ
-Uk9CRURFRkVSKSA/DQo+IA0KDQpHb29kIGNhdGNoLiBJIHdpbGwgYWRkIGEgY2hlY2tpbmcgb2Yg
-aXQuDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jIGIvZHJpdmVy
-cy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQppbmRleCA0NzdlMDA4Li44OWZiMWU3IDEwMDY0NA0K
-LS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQorKysgYi9kcml2ZXJzL3ZpZGVv
-L2ZiZGV2L3NpbXBsZWZiLmMNCkBAIC0yMzAsNiArMjMwLDkgQEAgc3RhdGljIHZvaWQgc2ltcGxl
-ZmJfY2xvY2tzX2VuYWJsZShzdHJ1Y3Qgc2ltcGxlZmJfcGFyICpwYXIsDQogew0KICAgICAgICBp
-bnQgcmV0Ow0KIA0KKyAgICAgICBpZiAocGFyLT5jbGtfY291bnQgPD0gMCkNCisgICAgICAgICAg
-ICAgICByZXR1cm47DQorDQogICAgICAgIHJldCA9IGNsa19idWxrX3ByZXBhcmVfZW5hYmxlKHBh
-ci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KICAgICAgICBpZiAocmV0KQ0KICAgICAgICAgICAg
-ICAgIGRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGNsb2Nrc1xuIik7DQpA
-QCAtMjM5LDYgKzI0Miw5IEBAIHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19lbmFibGUoc3Ry
-dWN0IHNpbXBsZWZiX3BhciAqcGFyLA0KIA0KIHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19k
-ZXN0cm95KHN0cnVjdCBzaW1wbGVmYl9wYXIgKnBhcikNCiB7DQorICAgICAgIGlmIChwYXItPmNs
-a19jb3VudCA8PSAwKQ0KKyAgICAgICAgICAgICAgIHJldHVybjsNCisNCiAgICAgICAgaWYgKHBh
-ci0+Y2xrc19lbmFibGVkKQ0KICAgICAgICAgICAgICAgIGNsa19idWxrX2Rpc2FibGVfdW5wcmVw
-YXJlKHBhci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KDQo+ID4gKwlpZiAocmV0KSB7DQo+ID4g
-KwkJcGFyLT5jbGtzX2VuYWJsZWQgPSBmYWxzZTsNCj4gDQo+IE5vIG5lZWQgdG8gc2V0IGZhbHNl
-IGhlcmUuDQo+IA0KDQpHb3QgaXQuIFRoZW4gbGV0J3MgcmVwbHkgb24gdGhlIGt6YWxsb2MNCg0K
-PiA+ICsJCWRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGNsb2Nrc1xuIik7
-DQo+ID4gKwl9IGVsc2Ugew0KPiA+ICsJCXBhci0+Y2xrc19lbmFibGVkID0gdHJ1ZTsNCj4gPiAg
-IAl9DQo+ID4gLQlwYXItPmNsa3NfZW5hYmxlZCA9IHRydWU7DQo+ID4gICB9DQo+ID4NCj4gPiAg
-IHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19kZXN0cm95KHN0cnVjdCBzaW1wbGVmYl9wYXIg
-KnBhcikNCj4gPiAgIHsNCj4gPiAtCWludCBpOw0KPiA+IC0NCj4gPiAtCWlmICghcGFyLT5jbGtz
-KQ0KPiA+IC0JCXJldHVybjsNCj4gPiAtDQo+ID4gLQlmb3IgKGkgPSAwOyBpIDwgcGFyLT5jbGtf
-Y291bnQ7IGkrKykgew0KPiA+IC0JCWlmIChwYXItPmNsa3NbaV0pIHsNCj4gPiAtCQkJaWYgKHBh
-ci0+Y2xrc19lbmFibGVkKQ0KPiA+IC0JCQkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKHBhci0+Y2xr
-c1tpXSk7DQo+ID4gLQkJCWNsa19wdXQocGFyLT5jbGtzW2ldKTsNCj4gPiAtCQl9DQo+ID4gLQl9
-DQo+ID4gKwlpZiAocGFyLT5jbGtzX2VuYWJsZWQpDQo+ID4gKwkJY2xrX2J1bGtfZGlzYWJsZV91
-bnByZXBhcmUocGFyLT5jbGtfY291bnQsIHBhci0+Y2xrcyk7DQo+ID4NCj4gPiAtCWtmcmVlKHBh
-ci0+Y2xrcyk7DQo+ID4gKwljbGtfYnVsa19wdXRfYWxsKHBhci0+Y2xrX2NvdW50LCBwYXItPmNs
-a3MpOw0KPiANCj4gQWdhaW4gd2hhdCBhYm91dCBwYXItPmNsa19jb3VudCA8IDAgPw0KPiANCj4g
-UmVnYXJkcywNCj4gDQo+IEhhbnMNCg0KV2lsbCByZXNlbmQgYSBuZXcgcGF0Y2ggc2VyaWVzLiBU
-aGFua3MgZm9yIHRoZSBjYXJlZnVsbHkgcmV2aWV3Lg0KDQpSZWdhcmRzDQpEb25nIEFpc2hlbmcN
-Cg0K
+In preparation to remove the node name pointer from struct device_node,
+convert printf users to use the %pOFn format specifier.
+
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ drivers/video/fbdev/cg14.c        |  4 +---
+ drivers/video/fbdev/cg3.c         |  2 +-
+ drivers/video/fbdev/core/fbmon.c  |  4 ++--
+ drivers/video/fbdev/imsttfb.c     |  2 +-
+ drivers/video/fbdev/leo.c         |  2 +-
+ drivers/video/fbdev/offb.c        | 12 ++++++++----
+ drivers/video/fbdev/p9100.c       |  2 +-
+ drivers/video/of_display_timing.c |  2 +-
+ 8 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/video/fbdev/cg14.c b/drivers/video/fbdev/cg14.c
+index 8de88b129b62..9af54c2368fd 100644
+--- a/drivers/video/fbdev/cg14.c
++++ b/drivers/video/fbdev/cg14.c
+@@ -355,9 +355,7 @@ static int cg14_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ static void cg14_init_fix(struct fb_info *info, int linebytes,
+ 			  struct device_node *dp)
+ {
+-	const char *name = dp->name;
+-
+-	strlcpy(info->fix.id, name, sizeof(info->fix.id));
++	snprintf(info->fix.id, sizeof(info->fix.id), "%pOFn", dp);
+ 
+ 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+diff --git a/drivers/video/fbdev/cg3.c b/drivers/video/fbdev/cg3.c
+index 6c334260cf53..1bd95b02f3aa 100644
+--- a/drivers/video/fbdev/cg3.c
++++ b/drivers/video/fbdev/cg3.c
+@@ -246,7 +246,7 @@ static int cg3_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ static void cg3_init_fix(struct fb_info *info, int linebytes,
+ 			 struct device_node *dp)
+ {
+-	strlcpy(info->fix.id, dp->name, sizeof(info->fix.id));
++	snprintf(info->fix.id, sizeof(info->fix.id), "%pOFn", dp);
+ 
+ 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+diff --git a/drivers/video/fbdev/core/fbmon.c b/drivers/video/fbdev/core/fbmon.c
+index 852d86c1c527..dd3128990776 100644
+--- a/drivers/video/fbdev/core/fbmon.c
++++ b/drivers/video/fbdev/core/fbmon.c
+@@ -1480,8 +1480,8 @@ int of_get_fb_videomode(struct device_node *np, struct fb_videomode *fb,
+ 	if (ret)
+ 		return ret;
+ 
+-	pr_debug("%pOF: got %dx%d display mode from %s\n",
+-		np, vm.hactive, vm.vactive, np->name);
++	pr_debug("%pOF: got %dx%d display mode\n",
++		np, vm.hactive, vm.vactive);
+ 	dump_fb_videomode(fb);
+ 
+ 	return 0;
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index ecdcf358ad5e..901ca4ed10e9 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -1473,7 +1473,7 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	
+ 	dp = pci_device_to_OF_node(pdev);
+ 	if(dp)
+-		printk(KERN_INFO "%s: OF name %s\n",__func__, dp->name);
++		printk(KERN_INFO "%s: OF name %pOFn\n",__func__, dp);
+ 	else if (IS_ENABLED(CONFIG_OF))
+ 		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+ 
+diff --git a/drivers/video/fbdev/leo.c b/drivers/video/fbdev/leo.c
+index 71862188f528..446ac3364bad 100644
+--- a/drivers/video/fbdev/leo.c
++++ b/drivers/video/fbdev/leo.c
+@@ -434,7 +434,7 @@ static int leo_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ static void
+ leo_init_fix(struct fb_info *info, struct device_node *dp)
+ {
+-	strlcpy(info->fix.id, dp->name, sizeof(info->fix.id));
++	snprintf(info->fix.id, sizeof(info->fix.id), "%pOFn", dp);
+ 
+ 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual = FB_VISUAL_TRUECOLOR;
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 77c0a2f45b3b..31f769d67195 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -419,9 +419,13 @@ static void __init offb_init_fb(const char *name,
+ 	var = &info->var;
+ 	info->par = par;
+ 
+-	strcpy(fix->id, "OFfb ");
+-	strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
+-	fix->id[sizeof(fix->id) - 1] = '\0';
++	if (name) {
++		strcpy(fix->id, "OFfb ");
++		strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
++		fix->id[sizeof(fix->id) - 1] = '\0';
++	} else
++		snprintf(fix->id, sizeof(fix->id), "OFfb %pOFn", dp);
++
+ 
+ 	var->xres = var->xres_virtual = width;
+ 	var->yres = var->yres_virtual = height;
+@@ -644,7 +648,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 		/* kludge for valkyrie */
+ 		if (strcmp(dp->name, "valkyrie") = 0)
+ 			address += 0x1000;
+-		offb_init_fb(no_real_node ? "bootx" : dp->name,
++		offb_init_fb(no_real_node ? "bootx" : NULL,
+ 			     width, height, depth, pitch, address,
+ 			     foreign_endian, no_real_node ? NULL : dp);
+ 	}
+diff --git a/drivers/video/fbdev/p9100.c b/drivers/video/fbdev/p9100.c
+index 64de5cda541d..c4283e9e95af 100644
+--- a/drivers/video/fbdev/p9100.c
++++ b/drivers/video/fbdev/p9100.c
+@@ -239,7 +239,7 @@ static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
+ 
+ static void p9100_init_fix(struct fb_info *info, int linebytes, struct device_node *dp)
+ {
+-	strlcpy(info->fix.id, dp->name, sizeof(info->fix.id));
++	snprintf(info->fix.id, sizeof(info->fix.id), "%pOFn", dp);
+ 
+ 	info->fix.type = FB_TYPE_PACKED_PIXELS;
+ 	info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index 5244e93ceafc..c2e7aa103fa5 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -170,7 +170,7 @@ struct display_timings *of_get_display_timings(const struct device_node *np)
+ 		goto entryfail;
+ 	}
+ 
+-	pr_debug("%pOF: using %s as default timing\n", np, entry->name);
++	pr_debug("%pOF: using %pOFn as default timing\n", np, entry);
+ 
+ 	native_mode = entry;
+ 
+-- 
+2.17.1

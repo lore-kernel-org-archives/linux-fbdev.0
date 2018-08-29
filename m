@@ -1,59 +1,141 @@
-From: kgunda@codeaurora.org
-Date: Thu, 16 Aug 2018 05:40:51 +0000
-Subject: Re: [PATCH V4 5/8] backlight: qcom-wled: Restructure the driver for WLED3
-Message-Id: <53030a892f6cd69a8e58188ff1a60f36@codeaurora.org>
+From: Dong Aisheng <aisheng.dong@nxp.com>
+Date: Wed, 29 Aug 2018 14:41:09 +0000
+Subject: [PATCH V5 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
+Message-Id: <1535553669-30250-5-git-send-email-aisheng.dong@nxp.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1531131741-19971-1-git-send-email-kgunda@codeaurora.org>
- <1531131741-19971-6-git-send-email-kgunda@codeaurora.org>
- <20180807053705.GB23866@tuxbook-pro>
-In-Reply-To: <20180807053705.GB23866@tuxbook-pro>
+References: <1535553669-30250-1-git-send-email-aisheng.dong@nxp.com>
+In-Reply-To: <1535553669-30250-1-git-send-email-aisheng.dong@nxp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-arm-msm@vger.kernel.org, linux-arm-msm-owner@vger.kernel.org
+To: linux-arm-kernel@lists.infradead.org
 
-On 2018-08-07 11:07, Bjorn Andersson wrote:
-> On Mon 09 Jul 03:22 PDT 2018, Kiran Gunda wrote:
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
-> [..]
->> @@ -365,6 +434,15 @@ static int wled_configure(struct wled *wled, 
->> struct device *dev)
->> 
->>  	cfg->num_strings = cfg->num_strings + 1;
->> 
->> +	string_len = of_property_count_elems_of_size(dev->of_node,
->> +						     "qcom,enabled-strings",
->> +						     sizeof(u32));
->> +	if (string_len > 0)
->> +		rc = of_property_read_u32_array(dev->of_node,
->> +						"qcom,enabled-strings",
->> +						wled->cfg.enabled_strings,
-> 
-> qcom,enabled-strings is listed as optional, but without it we will end
-> up with qcom,num-strings zeros in an array.  Initialize
-> wled->cfg.enabled_strings to 0,1,2,3 and the driver will be backwards
-> compatible.
-> 
-Correct. I will initialize the array in the next series.
-> I also think that if you do qcom,enabled-strings = <0, 1, 2>; there's 
-> no
-> need to also specify qcom,num-strings = <3>; and we can just use
-> string_len for num_strings.
-Correct. But I have kept this property to have the backward 
-compatibility with the
-old driver (WLED3).
-> 
->> +						sizeof(u32));
->> +
->>  	return 0;
->>  }
-> 
-> Regards,
-> Bjorn
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-arm-msm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Switching to use clk_bulk API to simplify clock operations.
+
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Stephen Boyd <sboyd@codeaurora.org>
+Tested-by: Thor Thayer <thor.thayer@linux.intel.com>
+Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
+---
+v4->v5:
+ * fix wrong setting of par->clks_enabled
+v3->v4:
+ * no changes
+v2->v3:
+ * fix a build warning on x86 platform due to a wrong
+   of the prototype of simplefb_clocks_enable
+v1->v2:
+ * switch to clk_bulk_get_all from of_clk_bulk_get_all
+---
+ drivers/video/fbdev/simplefb.c | 68 +++++++++---------------------------------
+ 1 file changed, 14 insertions(+), 54 deletions(-)
+
+diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
+index 9a9d748..8d1fbd6 100644
+--- a/drivers/video/fbdev/simplefb.c
++++ b/drivers/video/fbdev/simplefb.c
+@@ -182,7 +182,7 @@ struct simplefb_par {
+ #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
+ 	bool clks_enabled;
+ 	unsigned int clk_count;
+-	struct clk **clks;
++	struct clk_bulk_data *clks;
+ #endif
+ #if defined CONFIG_OF && defined CONFIG_REGULATOR
+ 	bool regulators_enabled;
+@@ -214,37 +214,13 @@ static int simplefb_clocks_get(struct simplefb_par *par,
+ 			       struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+-	struct clk *clock;
+-	int i;
+ 
+ 	if (dev_get_platdata(&pdev->dev) || !np)
+ 		return 0;
+ 
+-	par->clk_count = of_clk_get_parent_count(np);
+-	if (!par->clk_count)
+-		return 0;
+-
+-	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
+-	if (!par->clks)
+-		return -ENOMEM;
+-
+-	for (i = 0; i < par->clk_count; i++) {
+-		clock = of_clk_get(np, i);
+-		if (IS_ERR(clock)) {
+-			if (PTR_ERR(clock) = -EPROBE_DEFER) {
+-				while (--i >= 0) {
+-					if (par->clks[i])
+-						clk_put(par->clks[i]);
+-				}
+-				kfree(par->clks);
+-				return -EPROBE_DEFER;
+-			}
+-			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
+-				__func__, i, PTR_ERR(clock));
+-			continue;
+-		}
+-		par->clks[i] = clock;
+-	}
++	par->clk_count = clk_bulk_get_all(&pdev->dev, &par->clks);
++	if ((par->clk_count < 0) && (par->clk_count = -EPROBE_DEFER))
++		return -EPROBE_DEFER;
+ 
+ 	return 0;
+ }
+@@ -252,39 +228,23 @@ static int simplefb_clocks_get(struct simplefb_par *par,
+ static void simplefb_clocks_enable(struct simplefb_par *par,
+ 				   struct platform_device *pdev)
+ {
+-	int i, ret;
++	int ret;
+ 
+-	for (i = 0; i < par->clk_count; i++) {
+-		if (par->clks[i]) {
+-			ret = clk_prepare_enable(par->clks[i]);
+-			if (ret) {
+-				dev_err(&pdev->dev,
+-					"%s: failed to enable clock %d: %d\n",
+-					__func__, i, ret);
+-				clk_put(par->clks[i]);
+-				par->clks[i] = NULL;
+-			}
+-		}
++	ret = clk_bulk_prepare_enable(par->clk_count, par->clks);
++	if (ret) {
++		par->clks_enabled = false;
++		dev_warn(&pdev->dev, "failed to enable clocks\n");
++	} else {
++		par->clks_enabled = true;
+ 	}
+-	par->clks_enabled = true;
+ }
+ 
+ static void simplefb_clocks_destroy(struct simplefb_par *par)
+ {
+-	int i;
+-
+-	if (!par->clks)
+-		return;
+-
+-	for (i = 0; i < par->clk_count; i++) {
+-		if (par->clks[i]) {
+-			if (par->clks_enabled)
+-				clk_disable_unprepare(par->clks[i]);
+-			clk_put(par->clks[i]);
+-		}
+-	}
++	if (par->clks_enabled)
++		clk_bulk_disable_unprepare(par->clk_count, par->clks);
+ 
+-	kfree(par->clks);
++	clk_bulk_put_all(par->clk_count, par->clks);
+ }
+ #else
+ static int simplefb_clocks_get(struct simplefb_par *par,
+-- 
+2.7.4

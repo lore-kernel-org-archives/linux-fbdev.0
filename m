@@ -1,152 +1,33 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 29 Aug 2018 13:00:39 +0000
-Subject: Re: [PATCH V4 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <66eb6870-3674-0fdb-f5fb-4915a76191f6@redhat.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Date: Wed, 29 Aug 2018 13:15:50 +0000
+Subject: RE: [PATCH V4 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
+Message-Id: <AM0PR04MB4211E934272EE1A212711FAE80090@AM0PR04MB4211.eurprd04.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1535547100-25634-1-git-send-email-aisheng.dong@nxp.com>
  <1535547100-25634-5-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1535547100-25634-5-git-send-email-aisheng.dong@nxp.com>
+ <66eb6870-3674-0fdb-f5fb-4915a76191f6@redhat.com>
+In-Reply-To: <66eb6870-3674-0fdb-f5fb-4915a76191f6@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 29-08-18 14:51, Dong Aisheng wrote:
-> Switching to use clk_bulk API to simplify clock operations.
-> 
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Tested-by: Thor Thayer <thor.thayer@linux.intel.com>
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
-> v3->v4:
->   * no changes
-> v2->v3:
->   * fix a build warning on x86 platform due to a wrong
->     of the prototype of simplefb_clocks_enable
-> v1->v2:
->   * switch to clk_bulk_get_all from of_clk_bulk_get_all
-> ---
->   drivers/video/fbdev/simplefb.c | 66 ++++++++----------------------------------
->   1 file changed, 12 insertions(+), 54 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index 9a9d748..ed9a4c8 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -182,7 +182,7 @@ struct simplefb_par {
->   #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
->   	bool clks_enabled;
->   	unsigned int clk_count;
-> -	struct clk **clks;
-> +	struct clk_bulk_data *clks;
->   #endif
->   #if defined CONFIG_OF && defined CONFIG_REGULATOR
->   	bool regulators_enabled;
-> @@ -214,37 +214,13 @@ static int simplefb_clocks_get(struct simplefb_par *par,
->   			       struct platform_device *pdev)
->   {
->   	struct device_node *np = pdev->dev.of_node;
-> -	struct clk *clock;
-> -	int i;
->   
->   	if (dev_get_platdata(&pdev->dev) || !np)
->   		return 0;
->   
-> -	par->clk_count = of_clk_get_parent_count(np);
-> -	if (!par->clk_count)
-> -		return 0;
-> -
-> -	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
-> -	if (!par->clks)
-> -		return -ENOMEM;
-> -
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		clock = of_clk_get(np, i);
-> -		if (IS_ERR(clock)) {
-> -			if (PTR_ERR(clock) = -EPROBE_DEFER) {
-> -				while (--i >= 0) {
-> -					if (par->clks[i])
-> -						clk_put(par->clks[i]);
-> -				}
-> -				kfree(par->clks);
-> -				return -EPROBE_DEFER;
-> -			}
-> -			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
-> -				__func__, i, PTR_ERR(clock));
-> -			continue;
-> -		}
-> -		par->clks[i] = clock;
-> -	}
-> +	par->clk_count = clk_bulk_get_all(&pdev->dev, &par->clks);
-> +	if ((par->clk_count < 0) && (par->clk_count = -EPROBE_DEFER))
-> +		return -EPROBE_DEFER;
->   
->   	return 0;
->   }
-> @@ -252,39 +228,21 @@ static int simplefb_clocks_get(struct simplefb_par *par,
->   static void simplefb_clocks_enable(struct simplefb_par *par,
->   				   struct platform_device *pdev)
->   {
-> -	int i, ret;
-> +	int ret;
-> +
-> +	ret = clk_bulk_prepare_enable(par->clk_count, par->clks);
-> +	if (ret)
-> +		dev_warn(&pdev->dev, "failed to enable clocks\n");
-
-If clk_bulk_prepare_enable() fails, it leaves all clocks disabled,
-so you should not set par->clks_enabled = true; then.
-
-Otherwise this patch looks good.
-
-Regards,
-
-Hans
-
-
-
->   
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		if (par->clks[i]) {
-> -			ret = clk_prepare_enable(par->clks[i]);
-> -			if (ret) {
-> -				dev_err(&pdev->dev,
-> -					"%s: failed to enable clock %d: %d\n",
-> -					__func__, i, ret);
-> -				clk_put(par->clks[i]);
-> -				par->clks[i] = NULL;
-> -			}
-> -		}
-> -	}
->   	par->clks_enabled = true;
->   }
->   
->   static void simplefb_clocks_destroy(struct simplefb_par *par)
->   {
-> -	int i;
-> -
-> -	if (!par->clks)
-> -		return;
-> -
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		if (par->clks[i]) {
-> -			if (par->clks_enabled)
-> -				clk_disable_unprepare(par->clks[i]);
-> -			clk_put(par->clks[i]);
-> -		}
-> -	}
-> +	if (par->clks_enabled)
-> +		clk_bulk_disable_unprepare(par->clk_count, par->clks);
->   
-> -	kfree(par->clks);
-> +	clk_bulk_put_all(par->clk_count, par->clks);
->   }
->   #else
->   static int simplefb_clocks_get(struct simplefb_par *par,
-> 
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBIYW5zIGRlIEdvZWRlIFttYWls
+dG86aGRlZ29lZGVAcmVkaGF0LmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIw
+MTggOTowMSBQTQ0KDQpbLi4uXQ0KDQo+ID4gQEAgLTI1MiwzOSArMjI4LDIxIEBAIHN0YXRpYyBp
+bnQgc2ltcGxlZmJfY2xvY2tzX2dldChzdHJ1Y3Qgc2ltcGxlZmJfcGFyDQo+ICpwYXIsDQo+ID4g
+ICBzdGF0aWMgdm9pZCBzaW1wbGVmYl9jbG9ja3NfZW5hYmxlKHN0cnVjdCBzaW1wbGVmYl9wYXIg
+KnBhciwNCj4gPiAgIAkJCQkgICBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICAg
+ew0KPiA+IC0JaW50IGksIHJldDsNCj4gPiArCWludCByZXQ7DQo+ID4gKw0KPiA+ICsJcmV0ID0g
+Y2xrX2J1bGtfcHJlcGFyZV9lbmFibGUocGFyLT5jbGtfY291bnQsIHBhci0+Y2xrcyk7DQo+ID4g
+KwlpZiAocmV0KQ0KPiA+ICsJCWRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxl
+IGNsb2Nrc1xuIik7DQo+IA0KPiBJZiBjbGtfYnVsa19wcmVwYXJlX2VuYWJsZSgpIGZhaWxzLCBp
+dCBsZWF2ZXMgYWxsIGNsb2NrcyBkaXNhYmxlZCwgc28geW91IHNob3VsZA0KPiBub3Qgc2V0IHBh
+ci0+Y2xrc19lbmFibGVkID0gdHJ1ZTsgdGhlbi4NCj4gDQoNClRoYW5rcyBmb3Igc3BvdHRpbmcg
+dGhpcy4NClRoZSBvcmlnaW5hbCBjb2RlIHdhbnRlZCB0byBrZWVwIHRoZSBiZWhhdmlvciBhcyBi
+ZWZvcmUuDQpCdXQgYSBiaXQgbW9yZSB0aGlua2luZyB0aGF0IHVubGlrZSB0aGUgZXhpc3QgY29k
+ZSwgY2xrX2J1bGtfcHJlcGFyZV9lbmFibGUgd2lsbA0KYXV0b21hdGljYWxseSBkbyByZXZlcnNl
+IGNsZWFuIHVwIG9uY2UgaXQgZmFpbHMuDQpTbyBubyBuZWVkIHRvIHNldCBwYXItPmNsa3NfZW5h
+YmxlZCA9IHRydWUgYW55bW9yZS4NCg0KV2lsbCBmaXggaXQgYW5kIHJlc2VuZC4NCg0KUmVnYXJk
+cw0KRG9uZyBBaXNoZW5nDQoNCj4gT3RoZXJ3aXNlIHRoaXMgcGF0Y2ggbG9va3MgZ29vZC4NCj4g
+DQo+IFJlZ2FyZHMsDQo+IA0KPiBIYW5zDQo

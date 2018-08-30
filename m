@@ -1,33 +1,55 @@
-From: "A.s. Dong" <aisheng.dong@nxp.com>
-Date: Wed, 29 Aug 2018 13:15:50 +0000
-Subject: RE: [PATCH V4 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <AM0PR04MB4211E934272EE1A212711FAE80090@AM0PR04MB4211.eurprd04.prod.outlook.com>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 30 Aug 2018 21:00:01 +0000
+Subject: [PATCH v2 00/12] remove_conflicting_framebuffers() cleanup
+Message-Id: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1535547100-25634-1-git-send-email-aisheng.dong@nxp.com>
- <1535547100-25634-5-git-send-email-aisheng.dong@nxp.com>
- <66eb6870-3674-0fdb-f5fb-4915a76191f6@redhat.com>
-In-Reply-To: <66eb6870-3674-0fdb-f5fb-4915a76191f6@redhat.com>
+References: <cover.1511544782.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1511544782.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBIYW5zIGRlIEdvZWRlIFttYWls
-dG86aGRlZ29lZGVAcmVkaGF0LmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIw
-MTggOTowMSBQTQ0KDQpbLi4uXQ0KDQo+ID4gQEAgLTI1MiwzOSArMjI4LDIxIEBAIHN0YXRpYyBp
-bnQgc2ltcGxlZmJfY2xvY2tzX2dldChzdHJ1Y3Qgc2ltcGxlZmJfcGFyDQo+ICpwYXIsDQo+ID4g
-ICBzdGF0aWMgdm9pZCBzaW1wbGVmYl9jbG9ja3NfZW5hYmxlKHN0cnVjdCBzaW1wbGVmYl9wYXIg
-KnBhciwNCj4gPiAgIAkJCQkgICBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+ICAg
-ew0KPiA+IC0JaW50IGksIHJldDsNCj4gPiArCWludCByZXQ7DQo+ID4gKw0KPiA+ICsJcmV0ID0g
-Y2xrX2J1bGtfcHJlcGFyZV9lbmFibGUocGFyLT5jbGtfY291bnQsIHBhci0+Y2xrcyk7DQo+ID4g
-KwlpZiAocmV0KQ0KPiA+ICsJCWRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxl
-IGNsb2Nrc1xuIik7DQo+IA0KPiBJZiBjbGtfYnVsa19wcmVwYXJlX2VuYWJsZSgpIGZhaWxzLCBp
-dCBsZWF2ZXMgYWxsIGNsb2NrcyBkaXNhYmxlZCwgc28geW91IHNob3VsZA0KPiBub3Qgc2V0IHBh
-ci0+Y2xrc19lbmFibGVkID0gdHJ1ZTsgdGhlbi4NCj4gDQoNClRoYW5rcyBmb3Igc3BvdHRpbmcg
-dGhpcy4NClRoZSBvcmlnaW5hbCBjb2RlIHdhbnRlZCB0byBrZWVwIHRoZSBiZWhhdmlvciBhcyBi
-ZWZvcmUuDQpCdXQgYSBiaXQgbW9yZSB0aGlua2luZyB0aGF0IHVubGlrZSB0aGUgZXhpc3QgY29k
-ZSwgY2xrX2J1bGtfcHJlcGFyZV9lbmFibGUgd2lsbA0KYXV0b21hdGljYWxseSBkbyByZXZlcnNl
-IGNsZWFuIHVwIG9uY2UgaXQgZmFpbHMuDQpTbyBubyBuZWVkIHRvIHNldCBwYXItPmNsa3NfZW5h
-YmxlZCA9IHRydWUgYW55bW9yZS4NCg0KV2lsbCBmaXggaXQgYW5kIHJlc2VuZC4NCg0KUmVnYXJk
-cw0KRG9uZyBBaXNoZW5nDQoNCj4gT3RoZXJ3aXNlIHRoaXMgcGF0Y2ggbG9va3MgZ29vZC4NCj4g
-DQo+IFJlZ2FyZHMsDQo+IA0KPiBIYW5zDQo
+This series cleans up duplicated code for replacing firmware FB
+driver with proper DRI driver and adds handover support to
+Tegra driver.
+
+This is a sligtly updated version of a series sent on 24 Nov 2017.
+
+v2:
+ - rebased on current drm-next
+ - dropped staging/sm750fb changes
+ - added kernel docs for DRM helpers
+
+Michał Mirosław (12):
+  fbdev: show fbdev number for debugging
+  fbdev: allow apertures = NULL in remove_conflicting_framebuffers()
+  fbdev: add remove_conflicting_pci_framebuffers()
+  drm/amdgpu: use simpler remove_conflicting_pci_framebuffers()
+  drm/bochs: use simpler remove_conflicting_pci_framebuffers()
+  drm/cirrus: use simpler remove_conflicting_pci_framebuffers()
+  drm/mgag200: use simpler remove_conflicting_pci_framebuffers()
+  drm/radeon: use simpler remove_conflicting_pci_framebuffers()
+  drm/virtio: use simpler remove_conflicting_pci_framebuffers()
+  drm/vc4: use simpler remove_conflicting_framebuffers(NULL)
+  drm/sun4i: use simpler remove_conflicting_framebuffers(NULL)
+  drm/tegra: kick out simplefb
+
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c  | 24 +-------------
+ drivers/gpu/drm/bochs/bochs_drv.c        | 18 +----------
+ drivers/gpu/drm/cirrus/cirrus_drv.c      | 23 +-------------
+ drivers/gpu/drm/mgag200/mgag200_drv.c    | 21 +------------
+ drivers/gpu/drm/mgag200/mgag200_main.c   |  9 ------
+ drivers/gpu/drm/radeon/radeon_drv.c      | 23 +-------------
+ drivers/gpu/drm/sun4i/sun4i_drv.c        | 18 +----------
+ drivers/gpu/drm/tegra/drm.c              |  4 +++
+ drivers/gpu/drm/vc4/vc4_drv.c            | 20 +-----------
+ drivers/gpu/drm/virtio/virtgpu_drm_bus.c | 24 ++------------
+ drivers/video/fbdev/core/fbmem.c         | 40 ++++++++++++++++++++++--
+ include/drm/drm_fb_helper.h              | 34 ++++++++++++++++++++
+ include/linux/fb.h                       |  2 ++
+ 13 files changed, 88 insertions(+), 172 deletions(-)
+
+-- 
+2.18.0

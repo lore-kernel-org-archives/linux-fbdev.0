@@ -1,71 +1,60 @@
-From: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Date: Wed, 08 Aug 2018 10:40:41 +0000
-Subject: Re: [4.18 rc7] BUG: sleeping function called from invalid context at mm/slab.h:421
-Message-Id: <20180808104041.GA873@jagdpanzerIV>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 30 Aug 2018 21:00:07 +0000
+Subject: [PATCH v2 06/12] drm/cirrus: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <8a330a00dad89889550ff9fb7d7309d58d64181c.1535656077.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CABXGCsNAjrwat-Fv6GQXq8uSC6uj=ke87RJt42syrfFi0vQUmg@mail.gmail.com>
- <bd7f3ea4-d9a8-e437-9936-ee4513b47ac1@suse.cz>
-In-Reply-To: <bd7f3ea4-d9a8-e437-9936-ee4513b47ac1@suse.cz>
+References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Vlastimil Babka <vbabka@suse.cz>, Jiri Slaby <jslaby@suse.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Mikhail Gavrilov <mikhail.v.gavrilov@gmail.com>, linux-mm@kvack.org, Petr Mladek <pmladek@suse.cz>, Steven Rostedt <rostedt@goodmis.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Peter Zijlstra <peterz@infradead.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
 
-Hello,
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/cirrus/cirrus_drv.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
-On (08/08/18 11:01), Vlastimil Babka wrote:
-> On 08/08/2018 05:50 AM, Mikhail Gavrilov wrote:
-> > Hi guys.
-> > I am catched new bug.
-> > Can anyone look?
-> 
-> fbcon_startup() calls kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL) so
-> it tells slab it can sleep. The problem must be higher in the stack,
-> CCing printk people.
-
-Cc-ing fbcon/vt people. I'm not sure I know how exactly console
-takeover is expected to work.
-
-printk must be atomic, we can't sleep in console drivers [e.g. printk
-from IRQs, etc.]
-
-> > [226995.988988] BUG: sleeping function called from invalid context at
-> > mm/slab.h:421
-> > [226995.988988] in_atomic(): 1, irqs_disabled(): 1, pid: 22658, name: gsd-rfkill
-> > [226995.988989] INFO: lockdep is turned off.
-> > [226995.988989] irq event stamp: 0
-> > [226995.988990] hardirqs last  enabled at (0): [<0000000000000000>]
-> >        (null)
-> > [226995.988991] hardirqs last disabled at (0): [<ffffffffa00b6b4a>]
-> > copy_process.part.32+0x72a/0x1e60
-> > [226995.988991] softirqs last  enabled at (0): [<ffffffffa00b6b4a>]
-> > copy_process.part.32+0x72a/0x1e60
-> > [226995.988992] softirqs last disabled at (0): [<0000000000000000>]
-> >        (null)
-> > [226995.988993] CPU: 6 PID: 22658 Comm: gsd-rfkill Tainted: G        W
-> >         4.18.0-0.rc7.git1.1.fc29.x86_64 #1
-> > [226995.988993] Hardware name: Gigabyte Technology Co., Ltd.
-> > Z87M-D3H/Z87M-D3H, BIOS F11 08/12/2014
-> > [226995.988994] Call Trace:
-> > [226995.988994]  dump_stack+0x85/0xc0
-> > [226995.988995]  ___might_sleep.cold.72+0xac/0xbc
-> > [226995.988995]  kmem_cache_alloc_trace+0x202/0x2f0
-> > [226995.988996]  ? fbcon_startup+0xae/0x300
-> > [226995.988996]  fbcon_startup+0xae/0x300
-> > [226995.988997]  do_take_over_console+0x6d/0x180
-> > [226995.988997]  do_fbcon_takeover+0x58/0xb0
-> > [226995.988997]  fbcon_output_notifier.cold.35+0x5/0x23
-> > [226995.988998]  notifier_call_chain+0x39/0x90
-> > [226995.988999]  vt_console_print+0x363/0x420
-> > [226995.988999]  console_unlock+0x422/0x610
-> > [226995.988999]  vprintk_emit+0x268/0x540
-> > [226995.989000]  printk+0x58/0x6f
-> > [226995.989000]  rfkill_fop_release.cold.16+0xc/0x11 [rfkill]
-> > [226995.989001]  __fput+0xc7/0x250
-> > [226995.989001]  task_work_run+0xa1/0xd0
-> > [226995.989002]  exit_to_usermode_loop+0xd8/0xe0
-> > [226995.989002]  do_syscall_64+0x1df/0x1f0
-> > [226995.989003]  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-
-	-ss
+diff --git a/drivers/gpu/drm/cirrus/cirrus_drv.c b/drivers/gpu/drm/cirrus/cirrus_drv.c
+index 69c4e352dd78..85ed8657c862 100644
+--- a/drivers/gpu/drm/cirrus/cirrus_drv.c
++++ b/drivers/gpu/drm/cirrus/cirrus_drv.c
+@@ -42,33 +42,12 @@ static const struct pci_device_id pciidlist[] = {
+ };
+ 
+ 
+-static int cirrus_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-	bool primary = false;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return -ENOMEM;
+-
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "cirrusdrmfb", primary);
+-	kfree(ap);
+-
+-	return 0;
+-}
+-
+ static int cirrus_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
+ {
+ 	int ret;
+ 
+-	ret = cirrus_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "cirrusdrmfb");
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+2.18.0

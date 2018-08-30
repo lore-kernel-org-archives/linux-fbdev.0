@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Thu, 30 Aug 2018 21:00:10 +0000
-Subject: [PATCH v2 10/12] drm/vc4: use simpler remove_conflicting_framebuffers(NULL)
-Message-Id: <6bf2ab274713156b245e897154219055396aa017.1535656077.git.mirq-linux@rere.qmqm.pl>
+Date: Thu, 30 Aug 2018 21:00:06 +0000
+Subject: [PATCH v2 04/12] drm/amdgpu: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <e59320ab73adae4664d6e9c8b03e90d6ddf8c285.1535656077.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
@@ -11,52 +11,54 @@ Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
 
-Use remove_conflicting_framebuffers(NULL) instead of open-coding it.
-
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Eric Anholt <eric@anholt.net>
+Acked-by: Alex Deucher <alexander.deucher@amd.com>
 Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/vc4/vc4_drv.c | 20 +-------------------
- 1 file changed, 1 insertion(+), 19 deletions(-)
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c | 24 +-----------------------
+ 1 file changed, 1 insertion(+), 23 deletions(-)
 
-diff --git a/drivers/gpu/drm/vc4/vc4_drv.c b/drivers/gpu/drm/vc4/vc4_drv.c
-index 94b99c90425a..96bb90325995 100644
---- a/drivers/gpu/drm/vc4/vc4_drv.c
-+++ b/drivers/gpu/drm/vc4/vc4_drv.c
-@@ -246,24 +246,6 @@ static void vc4_match_add_drivers(struct device *dev,
- 	}
- }
+diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+index 0b19482b36b8..9b6e037719db 100644
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
+@@ -560,28 +560,6 @@ MODULE_DEVICE_TABLE(pci, pciidlist);
  
--static void vc4_kick_out_firmware_fb(void)
+ static struct drm_driver kms_driver;
+ 
+-static int amdgpu_kick_out_firmware_fb(struct pci_dev *pdev)
 -{
 -	struct apertures_struct *ap;
+-	bool primary = false;
 -
 -	ap = alloc_apertures(1);
 -	if (!ap)
--		return;
+-		return -ENOMEM;
 -
--	/* Since VC4 is a UMA device, the simplefb node may have been
--	 * located anywhere in memory.
--	 */
--	ap->ranges[0].base = 0;
--	ap->ranges[0].size = ~0;
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
 -
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "vc4drmfb", false);
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "amdgpudrmfb", primary);
 -	kfree(ap);
+-
+-	return 0;
 -}
 -
- static int vc4_drm_bind(struct device *dev)
+-
+ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
  {
- 	struct platform_device *pdev = to_platform_device(dev);
-@@ -296,7 +278,7 @@ static int vc4_drm_bind(struct device *dev)
+@@ -609,7 +587,7 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
+ 		return ret;
+ 
+ 	/* Get rid of things like offb */
+-	ret = amdgpu_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "amdgpudrmfb");
  	if (ret)
- 		goto gem_destroy;
+ 		return ret;
  
--	vc4_kick_out_firmware_fb();
-+	drm_fb_helper_remove_conflicting_framebuffers(NULL, "vc4drmfb", false);
- 
- 	ret = drm_dev_register(drm, 0);
- 	if (ret < 0)
 -- 
 2.18.0

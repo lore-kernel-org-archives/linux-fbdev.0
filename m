@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Thu, 30 Aug 2018 21:00:05 +0000
-Subject: [PATCH v2 01/12] fbdev: show fbdev number for debugging
-Message-Id: <ef584ecd8642e8b1a04f28d6d9c1864b5aa507bb.1535656077.git.mirq-linux@rere.qmqm.pl>
+Date: Thu, 30 Aug 2018 21:00:10 +0000
+Subject: [PATCH v2 10/12] drm/vc4: use simpler remove_conflicting_framebuffers(NULL)
+Message-Id: <6bf2ab274713156b245e897154219055396aa017.1535656077.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
@@ -11,27 +11,52 @@ Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
 
+Use remove_conflicting_framebuffers(NULL) instead of open-coding it.
+
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Acked-by: Eric Anholt <eric@anholt.net>
 Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/video/fbdev/core/fbmem.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/gpu/drm/vc4/vc4_drv.c | 20 +-------------------
+ 1 file changed, 1 insertion(+), 19 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index f741ba8df01b..30a18d4c9de4 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1618,8 +1618,8 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
- 			(primary && gen_aper && gen_aper->count &&
- 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
+diff --git a/drivers/gpu/drm/vc4/vc4_drv.c b/drivers/gpu/drm/vc4/vc4_drv.c
+index 94b99c90425a..96bb90325995 100644
+--- a/drivers/gpu/drm/vc4/vc4_drv.c
++++ b/drivers/gpu/drm/vc4/vc4_drv.c
+@@ -246,24 +246,6 @@ static void vc4_match_add_drivers(struct device *dev,
+ 	}
+ }
  
--			printk(KERN_INFO "fb: switching to %s from %s\n",
--			       name, registered_fb[i]->fix.id);
-+			printk(KERN_INFO "fb%d: switching to %s from %s\n",
-+			       i, name, registered_fb[i]->fix.id);
- 			ret = do_unregister_framebuffer(registered_fb[i]);
- 			if (ret)
- 				return ret;
+-static void vc4_kick_out_firmware_fb(void)
+-{
+-	struct apertures_struct *ap;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return;
+-
+-	/* Since VC4 is a UMA device, the simplefb node may have been
+-	 * located anywhere in memory.
+-	 */
+-	ap->ranges[0].base = 0;
+-	ap->ranges[0].size = ~0;
+-
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "vc4drmfb", false);
+-	kfree(ap);
+-}
+-
+ static int vc4_drm_bind(struct device *dev)
+ {
+ 	struct platform_device *pdev = to_platform_device(dev);
+@@ -296,7 +278,7 @@ static int vc4_drm_bind(struct device *dev)
+ 	if (ret)
+ 		goto gem_destroy;
+ 
+-	vc4_kick_out_firmware_fb();
++	drm_fb_helper_remove_conflicting_framebuffers(NULL, "vc4drmfb", false);
+ 
+ 	ret = drm_dev_register(drm, 0);
+ 	if (ret < 0)
 -- 
 2.18.0

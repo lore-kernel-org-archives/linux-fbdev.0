@@ -1,37 +1,57 @@
-From: KELLY ALAN <kellyalan@servicescourrier.club>
-Date: Sat, 25 Aug 2018 14:30:18 +0000
-Subject: TRADING  ACCOUNT
-Message-Id: <a5392d4731236beb0029941474b392fc@servicescourrier.club>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Thu, 30 Aug 2018 21:00:07 +0000
+Subject: [PATCH v2 05/12] drm/bochs: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <a290d295c473ebe7c9c78dd02133d8bfbb99504c.1535656077.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Maxime Ripard <maxime.ripard@bootlin.com>, linux-arm-kernel@lists.infradead.org
 
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/gpu/drm/bochs/bochs_drv.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-Dear sir ,
-
-I KELLY ALAN  purchasing and sales manager of CFM INTERNATIONAL .Our 
-Company specialised in Supplying computer hardware and Electronic .We 
-want to extend our supplier list because of concurrency in prices on the 
-international market. We are seeking a supplier with whom we can to have 
-  partnered long-term in order to have competitive prices . we are 
-interested to buy the products you sell and want to place an order with 
-you in big quantities.
-Can you give us payment facilities ( 14 , 30 or 60 days payment terms ) 
-?
-What is the procedure for our account opening  and credit line 
-application ?
-
-Cordially
-
-  KELLY ALAN
-
-CFM INTERNATIONAL
-2 BOULEVARD DU GAL MARTIAL VALIN
-75015 PARIS
-REG N° 302 527 700
-VAT N° FR90 302527700
-TEL +33171025367
-FAX +33177759149
-https://www.cfmaeroengines.com
+diff --git a/drivers/gpu/drm/bochs/bochs_drv.c b/drivers/gpu/drm/bochs/bochs_drv.c
+index 7b20318483e4..c61b40c72b62 100644
+--- a/drivers/gpu/drm/bochs/bochs_drv.c
++++ b/drivers/gpu/drm/bochs/bochs_drv.c
+@@ -143,22 +143,6 @@ static const struct dev_pm_ops bochs_pm_ops = {
+ /* ---------------------------------------------------------------------- */
+ /* pci interface                                                          */
+ 
+-static int bochs_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return -ENOMEM;
+-
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "bochsdrmfb", false);
+-	kfree(ap);
+-
+-	return 0;
+-}
+-
+ static int bochs_pci_probe(struct pci_dev *pdev,
+ 			   const struct pci_device_id *ent)
+ {
+@@ -171,7 +155,7 @@ static int bochs_pci_probe(struct pci_dev *pdev,
+ 		return -ENOMEM;
+ 	}
+ 
+-	ret = bochs_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "bochsdrmfb");
+ 	if (ret)
+ 		return ret;
+ 
+-- 
+2.18.0

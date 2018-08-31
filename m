@@ -1,160 +1,116 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 29 Aug 2018 15:22:03 +0000
-Subject: Re: [PATCH V5 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
-Message-Id: <7261200d-e3df-494b-a41d-5c6d301617bb@redhat.com>
+From: "A.s. Dong" <aisheng.dong@nxp.com>
+Date: Fri, 31 Aug 2018 02:09:14 +0000
+Subject: RE: [PATCH V5 4/4] video: simplefb: switch to use clk_bulk API to simplify clock operations
+Message-Id: <AM0PR04MB42118FCAB7A4BE4D08C455DD800F0@AM0PR04MB4211.eurprd04.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1535553669-30250-1-git-send-email-aisheng.dong@nxp.com>
  <1535553669-30250-5-git-send-email-aisheng.dong@nxp.com>
-In-Reply-To: <1535553669-30250-5-git-send-email-aisheng.dong@nxp.com>
+ <7261200d-e3df-494b-a41d-5c6d301617bb@redhat.com>
+In-Reply-To: <7261200d-e3df-494b-a41d-5c6d301617bb@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-arm-kernel@lists.infradead.org
 
-Hi,
-
-On 29-08-18 16:41, Dong Aisheng wrote:
-> Switching to use clk_bulk API to simplify clock operations.
-> 
-> Cc: Hans de Goede <hdegoede@redhat.com>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: linux-fbdev@vger.kernel.org
-> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
-> Cc: Stephen Boyd <sboyd@codeaurora.org>
-> Tested-by: Thor Thayer <thor.thayer@linux.intel.com>
-> Signed-off-by: Dong Aisheng <aisheng.dong@nxp.com>
-> ---
-> v4->v5:
->   * fix wrong setting of par->clks_enabled
-> v3->v4:
->   * no changes
-> v2->v3:
->   * fix a build warning on x86 platform due to a wrong
->     of the prototype of simplefb_clocks_enable
-> v1->v2:
->   * switch to clk_bulk_get_all from of_clk_bulk_get_all
-> ---
->   drivers/video/fbdev/simplefb.c | 68 +++++++++---------------------------------
->   1 file changed, 14 insertions(+), 54 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/simplefb.c b/drivers/video/fbdev/simplefb.c
-> index 9a9d748..8d1fbd6 100644
-> --- a/drivers/video/fbdev/simplefb.c
-> +++ b/drivers/video/fbdev/simplefb.c
-> @@ -182,7 +182,7 @@ struct simplefb_par {
->   #if defined CONFIG_OF && defined CONFIG_COMMON_CLK
->   	bool clks_enabled;
->   	unsigned int clk_count;
-> -	struct clk **clks;
-> +	struct clk_bulk_data *clks;
->   #endif
->   #if defined CONFIG_OF && defined CONFIG_REGULATOR
->   	bool regulators_enabled;
-> @@ -214,37 +214,13 @@ static int simplefb_clocks_get(struct simplefb_par *par,
->   			       struct platform_device *pdev)
->   {
->   	struct device_node *np = pdev->dev.of_node;
-> -	struct clk *clock;
-> -	int i;
->   
->   	if (dev_get_platdata(&pdev->dev) || !np)
->   		return 0;
->   
-> -	par->clk_count = of_clk_get_parent_count(np);
-> -	if (!par->clk_count)
-> -		return 0;
-> -
-> -	par->clks = kcalloc(par->clk_count, sizeof(struct clk *), GFP_KERNEL);
-> -	if (!par->clks)
-> -		return -ENOMEM;
-> -
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		clock = of_clk_get(np, i);
-> -		if (IS_ERR(clock)) {
-> -			if (PTR_ERR(clock) = -EPROBE_DEFER) {
-> -				while (--i >= 0) {
-> -					if (par->clks[i])
-> -						clk_put(par->clks[i]);
-> -				}
-> -				kfree(par->clks);
-> -				return -EPROBE_DEFER;
-> -			}
-> -			dev_err(&pdev->dev, "%s: clock %d not found: %ld\n",
-> -				__func__, i, PTR_ERR(clock));
-> -			continue;
-> -		}
-> -		par->clks[i] = clock;
-> -	}
-> +	par->clk_count = clk_bulk_get_all(&pdev->dev, &par->clks);
-> +	if ((par->clk_count < 0) && (par->clk_count = -EPROBE_DEFER))
-> +		return -EPROBE_DEFER;
-
-I just noticed this now, but clk_count is unsigned so it will never
-be < 0, please make it signed.
-
-Also there is no need to check for < 0 just (par->clk_count = -EPROBE_DEFER)
-is enough (if that is true < 0 also always is true).
-
->   
->   	return 0;
->   }
-> @@ -252,39 +228,23 @@ static int simplefb_clocks_get(struct simplefb_par *par,
->   static void simplefb_clocks_enable(struct simplefb_par *par,
->   				   struct platform_device *pdev)
->   {
-> -	int i, ret;
-> +	int ret;
->   
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		if (par->clks[i]) {
-> -			ret = clk_prepare_enable(par->clks[i]);
-> -			if (ret) {
-> -				dev_err(&pdev->dev,
-> -					"%s: failed to enable clock %d: %d\n",
-> -					__func__, i, ret);
-> -				clk_put(par->clks[i]);
-> -				par->clks[i] = NULL;
-> -			}
-> -		}
-> +	ret = clk_bulk_prepare_enable(par->clk_count, par->clks);
-
-Hmm, what happens if par->clk_count < 0 (another <0 value then
--EPROBEDEFER) ?
-
-> +	if (ret) {
-> +		par->clks_enabled = false;
-
-No need to set false here.
-
-> +		dev_warn(&pdev->dev, "failed to enable clocks\n");
-> +	} else {
-> +		par->clks_enabled = true;
->   	}
-> -	par->clks_enabled = true;
->   }
->   
->   static void simplefb_clocks_destroy(struct simplefb_par *par)
->   {
-> -	int i;
-> -
-> -	if (!par->clks)
-> -		return;
-> -
-> -	for (i = 0; i < par->clk_count; i++) {
-> -		if (par->clks[i]) {
-> -			if (par->clks_enabled)
-> -				clk_disable_unprepare(par->clks[i]);
-> -			clk_put(par->clks[i]);
-> -		}
-> -	}
-> +	if (par->clks_enabled)
-> +		clk_bulk_disable_unprepare(par->clk_count, par->clks);
->   
-> -	kfree(par->clks);
-> +	clk_bulk_put_all(par->clk_count, par->clks);
-
-Again what about par->clk_count < 0 ?
-
-Regards,
-
-Hans
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBIYW5zIGRlIEdvZWRlIFttYWls
+dG86aGRlZ29lZGVAcmVkaGF0LmNvbV0NCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMjksIDIw
+MTggMTE6MjIgUE0NCg0KWy4uLl0NCg0KPiBPbiAyOS0wOC0xOCAxNjo0MSwgRG9uZyBBaXNoZW5n
+IHdyb3RlOg0KPiA+IFN3aXRjaGluZyB0byB1c2UgY2xrX2J1bGsgQVBJIHRvIHNpbXBsaWZ5IGNs
+b2NrIG9wZXJhdGlvbnMuDQo+ID4NCj4gPiBDYzogSGFucyBkZSBHb2VkZSA8aGRlZ29lZGVAcmVk
+aGF0LmNvbT4NCj4gPiBDYzogQmFydGxvbWllaiBab2xuaWVya2lld2ljeiA8Yi56b2xuaWVya2ll
+QHNhbXN1bmcuY29tPg0KPiA+IENjOiBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBD
+YzogTWFzYWhpcm8gWWFtYWRhIDx5YW1hZGEubWFzYWhpcm9Ac29jaW9uZXh0LmNvbT4NCj4gPiBD
+YzogU3RlcGhlbiBCb3lkIDxzYm95ZEBjb2RlYXVyb3JhLm9yZz4NCj4gPiBUZXN0ZWQtYnk6IFRo
+b3IgVGhheWVyIDx0aG9yLnRoYXllckBsaW51eC5pbnRlbC5jb20+DQo+ID4gU2lnbmVkLW9mZi1i
+eTogRG9uZyBBaXNoZW5nIDxhaXNoZW5nLmRvbmdAbnhwLmNvbT4NCj4gPiAtLS0NCj4gPiB2NC0+
+djU6DQo+ID4gICAqIGZpeCB3cm9uZyBzZXR0aW5nIG9mIHBhci0+Y2xrc19lbmFibGVkDQo+ID4g
+djMtPnY0Og0KPiA+ICAgKiBubyBjaGFuZ2VzDQo+ID4gdjItPnYzOg0KPiA+ICAgKiBmaXggYSBi
+dWlsZCB3YXJuaW5nIG9uIHg4NiBwbGF0Zm9ybSBkdWUgdG8gYSB3cm9uZw0KPiA+ICAgICBvZiB0
+aGUgcHJvdG90eXBlIG9mIHNpbXBsZWZiX2Nsb2Nrc19lbmFibGUNCj4gPiB2MS0+djI6DQo+ID4g
+ICAqIHN3aXRjaCB0byBjbGtfYnVsa19nZXRfYWxsIGZyb20gb2ZfY2xrX2J1bGtfZ2V0X2FsbA0K
+PiA+IC0tLQ0KPiA+ICAgZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jIHwgNjggKysrKysr
+KysrLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ID4gICAxIGZpbGUgY2hhbmdl
+ZCwgMTQgaW5zZXJ0aW9ucygrKSwgNTQgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0
+IGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQo+ID4gYi9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L3NpbXBsZWZiLmMgaW5kZXggOWE5ZDc0OC4uOGQxZmJkNiAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL3ZpZGVvL2ZiZGV2L3NpbXBsZWZiLmMNCj4gPiArKysgYi9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L3NpbXBsZWZiLmMNCj4gPiBAQCAtMTgyLDcgKzE4Miw3IEBAIHN0cnVjdCBzaW1wbGVmYl9w
+YXIgew0KPiA+ICAgI2lmIGRlZmluZWQgQ09ORklHX09GICYmIGRlZmluZWQgQ09ORklHX0NPTU1P
+Tl9DTEsNCj4gPiAgIAlib29sIGNsa3NfZW5hYmxlZDsNCj4gPiAgIAl1bnNpZ25lZCBpbnQgY2xr
+X2NvdW50Ow0KPiA+IC0Jc3RydWN0IGNsayAqKmNsa3M7DQo+ID4gKwlzdHJ1Y3QgY2xrX2J1bGtf
+ZGF0YSAqY2xrczsNCj4gPiAgICNlbmRpZg0KPiA+ICAgI2lmIGRlZmluZWQgQ09ORklHX09GICYm
+IGRlZmluZWQgQ09ORklHX1JFR1VMQVRPUg0KPiA+ICAgCWJvb2wgcmVndWxhdG9yc19lbmFibGVk
+Ow0KPiA+IEBAIC0yMTQsMzcgKzIxNCwxMyBAQCBzdGF0aWMgaW50IHNpbXBsZWZiX2Nsb2Nrc19n
+ZXQoc3RydWN0IHNpbXBsZWZiX3Bhcg0KPiAqcGFyLA0KPiA+ICAgCQkJICAgICAgIHN0cnVjdCBw
+bGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ID4gICB7DQo+ID4gICAJc3RydWN0IGRldmljZV9ub2Rl
+ICpucCA9IHBkZXYtPmRldi5vZl9ub2RlOw0KPiA+IC0Jc3RydWN0IGNsayAqY2xvY2s7DQo+ID4g
+LQlpbnQgaTsNCj4gPg0KPiA+ICAgCWlmIChkZXZfZ2V0X3BsYXRkYXRhKCZwZGV2LT5kZXYpIHx8
+ICFucCkNCj4gPiAgIAkJcmV0dXJuIDA7DQo+ID4NCj4gPiAtCXBhci0+Y2xrX2NvdW50ID0gb2Zf
+Y2xrX2dldF9wYXJlbnRfY291bnQobnApOw0KPiA+IC0JaWYgKCFwYXItPmNsa19jb3VudCkNCj4g
+PiAtCQlyZXR1cm4gMDsNCj4gPiAtDQo+ID4gLQlwYXItPmNsa3MgPSBrY2FsbG9jKHBhci0+Y2xr
+X2NvdW50LCBzaXplb2Yoc3RydWN0IGNsayAqKSwgR0ZQX0tFUk5FTCk7DQo+ID4gLQlpZiAoIXBh
+ci0+Y2xrcykNCj4gPiAtCQlyZXR1cm4gLUVOT01FTTsNCj4gPiAtDQo+ID4gLQlmb3IgKGkgPSAw
+OyBpIDwgcGFyLT5jbGtfY291bnQ7IGkrKykgew0KPiA+IC0JCWNsb2NrID0gb2ZfY2xrX2dldChu
+cCwgaSk7DQo+ID4gLQkJaWYgKElTX0VSUihjbG9jaykpIHsNCj4gPiAtCQkJaWYgKFBUUl9FUlIo
+Y2xvY2spID09IC1FUFJPQkVfREVGRVIpIHsNCj4gPiAtCQkJCXdoaWxlICgtLWkgPj0gMCkgew0K
+PiA+IC0JCQkJCWlmIChwYXItPmNsa3NbaV0pDQo+ID4gLQkJCQkJCWNsa19wdXQocGFyLT5jbGtz
+W2ldKTsNCj4gPiAtCQkJCX0NCj4gPiAtCQkJCWtmcmVlKHBhci0+Y2xrcyk7DQo+ID4gLQkJCQly
+ZXR1cm4gLUVQUk9CRV9ERUZFUjsNCj4gPiAtCQkJfQ0KPiA+IC0JCQlkZXZfZXJyKCZwZGV2LT5k
+ZXYsICIlczogY2xvY2sgJWQgbm90IGZvdW5kOiAlbGRcbiIsDQo+ID4gLQkJCQlfX2Z1bmNfXywg
+aSwgUFRSX0VSUihjbG9jaykpOw0KPiA+IC0JCQljb250aW51ZTsNCj4gPiAtCQl9DQo+ID4gLQkJ
+cGFyLT5jbGtzW2ldID0gY2xvY2s7DQo+ID4gLQl9DQo+ID4gKwlwYXItPmNsa19jb3VudCA9IGNs
+a19idWxrX2dldF9hbGwoJnBkZXYtPmRldiwgJnBhci0+Y2xrcyk7DQo+ID4gKwlpZiAoKHBhci0+
+Y2xrX2NvdW50IDwgMCkgJiYgKHBhci0+Y2xrX2NvdW50ID09IC1FUFJPQkVfREVGRVIpKQ0KPiA+
+ICsJCXJldHVybiAtRVBST0JFX0RFRkVSOw0KPiANCj4gSSBqdXN0IG5vdGljZWQgdGhpcyBub3cs
+IGJ1dCBjbGtfY291bnQgaXMgdW5zaWduZWQgc28gaXQgd2lsbCBuZXZlciBiZSA8IDAsIHBsZWFz
+ZQ0KPiBtYWtlIGl0IHNpZ25lZC4NCj4gDQoNCkdvb2QgZmluZGluZ3MuDQoNCj4gQWxzbyB0aGVy
+ZSBpcyBubyBuZWVkIHRvIGNoZWNrIGZvciA8IDAganVzdCAocGFyLT5jbGtfY291bnQgPT0gLUVQ
+Uk9CRV9ERUZFUikNCj4gaXMgZW5vdWdoIChpZiB0aGF0IGlzIHRydWUgPCAwIGFsc28gYWx3YXlz
+IGlzIHRydWUpLg0KPiANCg0KWWVzLCB5b3UncmUgcmlnaHQuDQoNCj4gPg0KPiA+ICAgCXJldHVy
+biAwOw0KPiA+ICAgfQ0KPiA+IEBAIC0yNTIsMzkgKzIyOCwyMyBAQCBzdGF0aWMgaW50IHNpbXBs
+ZWZiX2Nsb2Nrc19nZXQoc3RydWN0IHNpbXBsZWZiX3Bhcg0KPiAqcGFyLA0KPiA+ICAgc3RhdGlj
+IHZvaWQgc2ltcGxlZmJfY2xvY2tzX2VuYWJsZShzdHJ1Y3Qgc2ltcGxlZmJfcGFyICpwYXIsDQo+
+ID4gICAJCQkJICAgc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gPiAgIHsNCj4gPiAt
+CWludCBpLCByZXQ7DQo+ID4gKwlpbnQgcmV0Ow0KPiA+DQo+ID4gLQlmb3IgKGkgPSAwOyBpIDwg
+cGFyLT5jbGtfY291bnQ7IGkrKykgew0KPiA+IC0JCWlmIChwYXItPmNsa3NbaV0pIHsNCj4gPiAt
+CQkJcmV0ID0gY2xrX3ByZXBhcmVfZW5hYmxlKHBhci0+Y2xrc1tpXSk7DQo+ID4gLQkJCWlmIChy
+ZXQpIHsNCj4gPiAtCQkJCWRldl9lcnIoJnBkZXYtPmRldiwNCj4gPiAtCQkJCQkiJXM6IGZhaWxl
+ZCB0byBlbmFibGUgY2xvY2sgJWQ6ICVkXG4iLA0KPiA+IC0JCQkJCV9fZnVuY19fLCBpLCByZXQp
+Ow0KPiA+IC0JCQkJY2xrX3B1dChwYXItPmNsa3NbaV0pOw0KPiA+IC0JCQkJcGFyLT5jbGtzW2ld
+ID0gTlVMTDsNCj4gPiAtCQkJfQ0KPiA+IC0JCX0NCj4gPiArCXJldCA9IGNsa19idWxrX3ByZXBh
+cmVfZW5hYmxlKHBhci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KPiANCj4gSG1tLCB3aGF0IGhh
+cHBlbnMgaWYgcGFyLT5jbGtfY291bnQgPCAwIChhbm90aGVyIDwwIHZhbHVlIHRoZW4NCj4gLUVQ
+Uk9CRURFRkVSKSA/DQo+IA0KDQpHb29kIGNhdGNoLiBJIHdpbGwgYWRkIGEgY2hlY2tpbmcgb2Yg
+aXQuDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jIGIvZHJpdmVy
+cy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQppbmRleCA0NzdlMDA4Li44OWZiMWU3IDEwMDY0NA0K
+LS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9zaW1wbGVmYi5jDQorKysgYi9kcml2ZXJzL3ZpZGVv
+L2ZiZGV2L3NpbXBsZWZiLmMNCkBAIC0yMzAsNiArMjMwLDkgQEAgc3RhdGljIHZvaWQgc2ltcGxl
+ZmJfY2xvY2tzX2VuYWJsZShzdHJ1Y3Qgc2ltcGxlZmJfcGFyICpwYXIsDQogew0KICAgICAgICBp
+bnQgcmV0Ow0KIA0KKyAgICAgICBpZiAocGFyLT5jbGtfY291bnQgPD0gMCkNCisgICAgICAgICAg
+ICAgICByZXR1cm47DQorDQogICAgICAgIHJldCA9IGNsa19idWxrX3ByZXBhcmVfZW5hYmxlKHBh
+ci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KICAgICAgICBpZiAocmV0KQ0KICAgICAgICAgICAg
+ICAgIGRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGNsb2Nrc1xuIik7DQpA
+QCAtMjM5LDYgKzI0Miw5IEBAIHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19lbmFibGUoc3Ry
+dWN0IHNpbXBsZWZiX3BhciAqcGFyLA0KIA0KIHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19k
+ZXN0cm95KHN0cnVjdCBzaW1wbGVmYl9wYXIgKnBhcikNCiB7DQorICAgICAgIGlmIChwYXItPmNs
+a19jb3VudCA8PSAwKQ0KKyAgICAgICAgICAgICAgIHJldHVybjsNCisNCiAgICAgICAgaWYgKHBh
+ci0+Y2xrc19lbmFibGVkKQ0KICAgICAgICAgICAgICAgIGNsa19idWxrX2Rpc2FibGVfdW5wcmVw
+YXJlKHBhci0+Y2xrX2NvdW50LCBwYXItPmNsa3MpOw0KDQo+ID4gKwlpZiAocmV0KSB7DQo+ID4g
+KwkJcGFyLT5jbGtzX2VuYWJsZWQgPSBmYWxzZTsNCj4gDQo+IE5vIG5lZWQgdG8gc2V0IGZhbHNl
+IGhlcmUuDQo+IA0KDQpHb3QgaXQuIFRoZW4gbGV0J3MgcmVwbHkgb24gdGhlIGt6YWxsb2MNCg0K
+PiA+ICsJCWRldl93YXJuKCZwZGV2LT5kZXYsICJmYWlsZWQgdG8gZW5hYmxlIGNsb2Nrc1xuIik7
+DQo+ID4gKwl9IGVsc2Ugew0KPiA+ICsJCXBhci0+Y2xrc19lbmFibGVkID0gdHJ1ZTsNCj4gPiAg
+IAl9DQo+ID4gLQlwYXItPmNsa3NfZW5hYmxlZCA9IHRydWU7DQo+ID4gICB9DQo+ID4NCj4gPiAg
+IHN0YXRpYyB2b2lkIHNpbXBsZWZiX2Nsb2Nrc19kZXN0cm95KHN0cnVjdCBzaW1wbGVmYl9wYXIg
+KnBhcikNCj4gPiAgIHsNCj4gPiAtCWludCBpOw0KPiA+IC0NCj4gPiAtCWlmICghcGFyLT5jbGtz
+KQ0KPiA+IC0JCXJldHVybjsNCj4gPiAtDQo+ID4gLQlmb3IgKGkgPSAwOyBpIDwgcGFyLT5jbGtf
+Y291bnQ7IGkrKykgew0KPiA+IC0JCWlmIChwYXItPmNsa3NbaV0pIHsNCj4gPiAtCQkJaWYgKHBh
+ci0+Y2xrc19lbmFibGVkKQ0KPiA+IC0JCQkJY2xrX2Rpc2FibGVfdW5wcmVwYXJlKHBhci0+Y2xr
+c1tpXSk7DQo+ID4gLQkJCWNsa19wdXQocGFyLT5jbGtzW2ldKTsNCj4gPiAtCQl9DQo+ID4gLQl9
+DQo+ID4gKwlpZiAocGFyLT5jbGtzX2VuYWJsZWQpDQo+ID4gKwkJY2xrX2J1bGtfZGlzYWJsZV91
+bnByZXBhcmUocGFyLT5jbGtfY291bnQsIHBhci0+Y2xrcyk7DQo+ID4NCj4gPiAtCWtmcmVlKHBh
+ci0+Y2xrcyk7DQo+ID4gKwljbGtfYnVsa19wdXRfYWxsKHBhci0+Y2xrX2NvdW50LCBwYXItPmNs
+a3MpOw0KPiANCj4gQWdhaW4gd2hhdCBhYm91dCBwYXItPmNsa19jb3VudCA8IDAgPw0KPiANCj4g
+UmVnYXJkcywNCj4gDQo+IEhhbnMNCg0KV2lsbCByZXNlbmQgYSBuZXcgcGF0Y2ggc2VyaWVzLiBU
+aGFua3MgZm9yIHRoZSBjYXJlZnVsbHkgcmV2aWV3Lg0KDQpSZWdhcmRzDQpEb25nIEFpc2hlbmcN
+Cg0K

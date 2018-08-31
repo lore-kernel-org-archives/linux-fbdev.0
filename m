@@ -1,75 +1,68 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Sat, 25 Aug 2018 14:34:21 +0000
-Subject: [PATCH RESEND 1/3] powerpc/32: Add ioremap_wt()
-Message-Id: <20180825143421.42F4F104912@pc16082vm.idsi0.si.c-s.fr>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Fri, 31 Aug 2018 08:09:21 +0000
+Subject: [PATCH 1/2] fbdev: sbuslib: use checked version of put_user()
+Message-Id: <20180831080921.jstbxdkga3w2rnnf@kili.mountain>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jens Axboe <axboe@kernel.dk>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Mathieu Malaterre <malat@debian.org>, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Peter Malone <peter.malone@gmail.com>
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+I'm not sure why the code assumes that only the first put_user() needs
+an access_ok() check.  I have made all the put_user() and get_user()
+calls checked.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- No change. First serie didn't apply because I generated it on a working branch.
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
 
- arch/powerpc/include/asm/io.h | 6 ++++++
- arch/powerpc/mm/pgtable_32.c  | 8 ++++++++
- 2 files changed, 14 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..3380b5b22450 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
+diff --git a/drivers/video/fbdev/sbuslib.c b/drivers/video/fbdev/sbuslib.c
+index a436d44f1b7f..90c51330969c 100644
+--- a/drivers/video/fbdev/sbuslib.c
++++ b/drivers/video/fbdev/sbuslib.c
+@@ -106,11 +106,11 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		struct fbtype __user *f = (struct fbtype __user *) arg;
  
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
-+#endif
+ 		if (put_user(type, &f->fb_type) ||
+-		    __put_user(info->var.yres, &f->fb_height) ||
+-		    __put_user(info->var.xres, &f->fb_width) ||
+-		    __put_user(fb_depth, &f->fb_depth) ||
+-		    __put_user(0, &f->fb_cmsize) ||
+-		    __put_user(fb_size, &f->fb_cmsize))
++		    put_user(info->var.yres, &f->fb_height) ||
++		    put_user(info->var.xres, &f->fb_width) ||
++		    put_user(fb_depth, &f->fb_depth) ||
++		    put_user(0, &f->fb_cmsize) ||
++		    put_user(fb_size, &f->fb_cmsize))
+ 			return -EFAULT;
+ 		return 0;
+ 	}
+@@ -125,10 +125,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		unsigned int index, count, i;
  
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,8 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +772,7 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..528999738645 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -89,6 +89,14 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- }
- EXPORT_SYMBOL(ioremap_wc);
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
  
-+void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
- void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
--- 
-2.17.1
+ 		cmap.len = 1;
+@@ -165,10 +165,10 @@ int sbusfb_ioctl_helper(unsigned long cmd, unsigned long arg,
+ 		u8 red, green, blue;
+ 
+ 		if (get_user(index, &c->index) ||
+-		    __get_user(count, &c->count) ||
+-		    __get_user(ured, &c->red) ||
+-		    __get_user(ugreen, &c->green) ||
+-		    __get_user(ublue, &c->blue))
++		    get_user(count, &c->count) ||
++		    get_user(ured, &c->red) ||
++		    get_user(ugreen, &c->green) ||
++		    get_user(ublue, &c->blue))
+ 			return -EFAULT;
+ 
+ 		if (index + count > cmap->len)

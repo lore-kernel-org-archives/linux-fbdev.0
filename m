@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:49 +0000
-Subject: [PATCH v3 10/13] drm/virtio: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <25f89daf6217da98a52d41c4ad62a78272bb0cf6.1535810304.git.mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:44 +0000
+Subject: [PATCH v3 02/13] fbdev: allow apertures == NULL in remove_conflicting_framebuffers()
+Message-Id: <b5fed539fe569035139c8594c23effd8c39f12ca.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
@@ -9,55 +9,51 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+
+Interpret (otherwise-invalid) NULL apertures argument to mean all-memory
+range. This will allow to remove several duplicates of this code
+from drivers in following patches.
 
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
----
- drivers/gpu/drm/virtio/virtgpu_drm_bus.c | 24 +++---------------------
- 1 file changed, 3 insertions(+), 21 deletions(-)
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-diff --git a/drivers/gpu/drm/virtio/virtgpu_drm_bus.c b/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-index 7df8d0c9026a..115ed546ca4e 100644
---- a/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-+++ b/drivers/gpu/drm/virtio/virtgpu_drm_bus.c
-@@ -28,26 +28,6 @@
- 
- #include "virtgpu_drv.h"
- 
--static void virtio_pci_kick_out_firmware_fb(struct pci_dev *pci_dev)
--{
--	struct apertures_struct *ap;
--	bool primary;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return;
--
--	ap->ranges[0].base = pci_resource_start(pci_dev, 0);
--	ap->ranges[0].size = pci_resource_len(pci_dev, 0);
--
--	primary = pci_dev->resource[PCI_ROM_RESOURCE].flags
--		& IORESOURCE_ROM_SHADOW;
--
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "virtiodrmfb", primary);
--
--	kfree(ap);
--}
--
- int drm_virtio_init(struct drm_driver *driver, struct virtio_device *vdev)
+---
+v2: added kerneldoc to corresponding DRM helper
+v3: split kerneldoc to another patch
+---
+ drivers/video/fbdev/core/fbmem.c | 14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 30a18d4c9de4..0df148eb4699 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1779,11 +1779,25 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 				    const char *name, bool primary)
  {
- 	struct drm_device *dev;
-@@ -69,7 +49,9 @@ int drm_virtio_init(struct drm_driver *driver, struct virtio_device *vdev)
- 			 pname);
- 		dev->pdev = pdev;
- 		if (vga)
--			virtio_pci_kick_out_firmware_fb(pdev);
-+			drm_fb_helper_remove_conflicting_pci_framebuffers(pdev,
-+									  0,
-+									  "virtiodrmfb");
+ 	int ret;
++	bool do_free = false;
++
++	if (!a) {
++		a = alloc_apertures(1);
++		if (!a)
++			return -ENOMEM;
++
++		a->ranges[0].base = 0;
++		a->ranges[0].size = ~0;
++		do_free = true;
++	}
  
- 		snprintf(unique, sizeof(unique), "pci:%s", pname);
- 		ret = drm_dev_set_unique(dev, unique);
+ 	mutex_lock(&registration_lock);
+ 	ret = do_remove_conflicting_framebuffers(a, name, primary);
+ 	mutex_unlock(&registration_lock);
+ 
++	if (do_free)
++		kfree(a);
++
+ 	return ret;
+ }
+ EXPORT_SYMBOL(remove_conflicting_framebuffers);
 -- 
 2.18.0

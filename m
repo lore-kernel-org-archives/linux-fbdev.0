@@ -1,132 +1,84 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:44 +0000
-Subject: [PATCH v2 15/24] powerpc/mm: move __P and __S tables in the common pgtable.h
-Message-Id: <e99eebcd2aafb379cdf8fd39f06399e6abaf3ced.1536692743.git.christophe.leroy@c-s.fr>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:48 +0000
+Subject: [PATCH v3 08/13] drm/mgag200: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <90fc954f90de44157d6cc1c782147db6252c71e4.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
+References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 
-__P and __S flags are the same for all platform and should remain
-as is in the future, so avoid duplication.
+Remove duplicated call, while at it.
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h | 20 --------------------
- arch/powerpc/include/asm/pgtable.h           | 19 +++++++++++++++++++
- arch/powerpc/include/asm/pte-common.h        | 20 --------------------
- 3 files changed, 19 insertions(+), 40 deletions(-)
+ drivers/gpu/drm/mgag200/mgag200_drv.c  | 21 +--------------------
+ drivers/gpu/drm/mgag200/mgag200_main.c |  9 ---------
+ 2 files changed, 1 insertion(+), 29 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index 8cf44faa6ff3..6799bc02cb22 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -151,8 +151,6 @@
-  * Write permissions imply read permissions for now (we could make write-only
-  * pages on BookE but we don't bother for now). Execute permission control is
-  * possible on platforms that define _PAGE_EXEC
-- *
-- * Note due to the way vm flags are laid out, the bits are XWR
-  */
- #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
- #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
-@@ -162,24 +160,6 @@
- #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
- #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
+diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
+index 74cdde2ee474..ac6af4bd9df6 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_drv.c
++++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
+@@ -42,29 +42,10 @@ static const struct pci_device_id pciidlist[] = {
  
--#define __P000	PAGE_NONE
--#define __P001	PAGE_READONLY
--#define __P010	PAGE_COPY
--#define __P011	PAGE_COPY
--#define __P100	PAGE_READONLY_X
--#define __P101	PAGE_READONLY_X
--#define __P110	PAGE_COPY_X
--#define __P111	PAGE_COPY_X
--
--#define __S000	PAGE_NONE
--#define __S001	PAGE_READONLY
--#define __S010	PAGE_SHARED
--#define __S011	PAGE_SHARED
--#define __S100	PAGE_READONLY_X
--#define __S101	PAGE_READONLY_X
--#define __S110	PAGE_SHARED_X
--#define __S111	PAGE_SHARED_X
--
- /* Permission masks used for kernel mappings */
- #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
- #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
-diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
-index 14c79a7dc855..fb4b85bba110 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -20,6 +20,25 @@ struct mm_struct;
- #include <asm/nohash/pgtable.h>
- #endif /* !CONFIG_PPC_BOOK3S */
+ MODULE_DEVICE_TABLE(pci, pciidlist);
  
-+/* Note due to the way vm flags are laid out, the bits are XWR */
-+#define __P000	PAGE_NONE
-+#define __P001	PAGE_READONLY
-+#define __P010	PAGE_COPY
-+#define __P011	PAGE_COPY
-+#define __P100	PAGE_READONLY_X
-+#define __P101	PAGE_READONLY_X
-+#define __P110	PAGE_COPY_X
-+#define __P111	PAGE_COPY_X
-+
-+#define __S000	PAGE_NONE
-+#define __S001	PAGE_READONLY
-+#define __S010	PAGE_SHARED
-+#define __S011	PAGE_SHARED
-+#define __S100	PAGE_READONLY_X
-+#define __S101	PAGE_READONLY_X
-+#define __S110	PAGE_SHARED_X
-+#define __S111	PAGE_SHARED_X
-+
- #ifndef __ASSEMBLY__
- 
- #include <asm/tlbflush.h>
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 5a5ba43bdf98..4860dae76dae 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -139,8 +139,6 @@ static inline bool pte_user(pte_t pte)
-  * Write permissions imply read permissions for now (we could make write-only
-  * pages on BookE but we don't bother for now). Execute permission control is
-  * possible on platforms that define _PAGE_EXEC
-- *
-- * Note due to the way vm flags are laid out, the bits are XWR
-  */
- #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_NA)
- #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
-@@ -153,24 +151,6 @@ static inline bool pte_user(pte_t pte)
- #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO | \
- 				 _PAGE_EXEC)
- 
--#define __P000	PAGE_NONE
--#define __P001	PAGE_READONLY
--#define __P010	PAGE_COPY
--#define __P011	PAGE_COPY
--#define __P100	PAGE_READONLY_X
--#define __P101	PAGE_READONLY_X
--#define __P110	PAGE_COPY_X
--#define __P111	PAGE_COPY_X
+-static void mgag200_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-	bool primary = false;
 -
--#define __S000	PAGE_NONE
--#define __S001	PAGE_READONLY
--#define __S010	PAGE_SHARED
--#define __S011	PAGE_SHARED
--#define __S100	PAGE_READONLY_X
--#define __S101	PAGE_READONLY_X
--#define __S110	PAGE_SHARED_X
--#define __S111	PAGE_SHARED_X
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return;
 -
- /* Permission masks used for kernel mappings */
- #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
- #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "mgag200drmfb", primary);
+-	kfree(ap);
+-}
+-
+ 
+ static int mga_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
+ {
+-	mgag200_kick_out_firmware_fb(pdev);
++	drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "mgag200drmfb");
+ 
+ 	return drm_get_pci_dev(pdev, ent, &driver);
+ }
+diff --git a/drivers/gpu/drm/mgag200/mgag200_main.c b/drivers/gpu/drm/mgag200/mgag200_main.c
+index 780f983b0294..79d54103d470 100644
+--- a/drivers/gpu/drm/mgag200/mgag200_main.c
++++ b/drivers/gpu/drm/mgag200/mgag200_main.c
+@@ -124,20 +124,11 @@ static int mga_probe_vram(struct mga_device *mdev, void __iomem *mem)
+ static int mga_vram_init(struct mga_device *mdev)
+ {
+ 	void __iomem *mem;
+-	struct apertures_struct *aper = alloc_apertures(1);
+-	if (!aper)
+-		return -ENOMEM;
+ 
+ 	/* BAR 0 is VRAM */
+ 	mdev->mc.vram_base = pci_resource_start(mdev->dev->pdev, 0);
+ 	mdev->mc.vram_window = pci_resource_len(mdev->dev->pdev, 0);
+ 
+-	aper->ranges[0].base = mdev->mc.vram_base;
+-	aper->ranges[0].size = mdev->mc.vram_window;
+-
+-	drm_fb_helper_remove_conflicting_framebuffers(aper, "mgafb", true);
+-	kfree(aper);
+-
+ 	if (!devm_request_mem_region(mdev->dev->dev, mdev->mc.vram_base, mdev->mc.vram_window,
+ 				"mgadrmfb_vram")) {
+ 		DRM_ERROR("can't reserve VRAM\n");
 -- 
-2.13.3
+2.18.0

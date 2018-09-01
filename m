@@ -1,47 +1,60 @@
-From: =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
-Date: Thu, 27 Sep 2018 09:24:40 +0000
-Subject: [RESEND PATCH v2 2/3] video: ssd1307fb: Do not hard code active-low reset sequence
-Message-Id: <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:47 +0000
+Subject: [PATCH v3 07/13] drm/cirrus: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <a9a4691b6eea789664edd6b85a85b7990953a222.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
+References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-arm-kernel@lists.infradead.org
 
-The SSD130x OLED display reset signal is active low. Now the reset
-sequence is implemented in such a way that users are forced to
-define reset-gpios as GPIO_ACTIVE_HIGH in DT to make the reset work.
-
-Do not hard code the active-low sequence into the driver but instead
-allow the user to specify the gpio as GPIO_ACTIVE_LOW to reflect
-the real world.
-
-Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
-v2 changes: Split the DT changes into separate patch.
+ drivers/gpu/drm/cirrus/cirrus_drv.c | 23 +----------------------
+ 1 file changed, 1 insertion(+), 22 deletions(-)
 
- drivers/video/fbdev/ssd1307fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index e7ae135..7b5bc42 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -728,10 +728,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
+diff --git a/drivers/gpu/drm/cirrus/cirrus_drv.c b/drivers/gpu/drm/cirrus/cirrus_drv.c
+index 69c4e352dd78..85ed8657c862 100644
+--- a/drivers/gpu/drm/cirrus/cirrus_drv.c
++++ b/drivers/gpu/drm/cirrus/cirrus_drv.c
+@@ -42,33 +42,12 @@ static const struct pci_device_id pciidlist[] = {
+ };
  
- 	if (par->reset) {
- 		/* Reset the screen */
--		gpiod_set_value_cansleep(par->reset, 0);
--		udelay(4);
- 		gpiod_set_value_cansleep(par->reset, 1);
- 		udelay(4);
-+		gpiod_set_value_cansleep(par->reset, 0);
-+		udelay(4);
- 	}
  
- 	if (par->vbat_reg) {
+-static int cirrus_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-	bool primary = false;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return -ENOMEM;
+-
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-
+-#ifdef CONFIG_X86
+-	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
+-#endif
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "cirrusdrmfb", primary);
+-	kfree(ap);
+-
+-	return 0;
+-}
+-
+ static int cirrus_pci_probe(struct pci_dev *pdev,
+ 			    const struct pci_device_id *ent)
+ {
+ 	int ret;
+ 
+-	ret = cirrus_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "cirrusdrmfb");
+ 	if (ret)
+ 		return ret;
+ 
 -- 
-2.1.4
+2.18.0

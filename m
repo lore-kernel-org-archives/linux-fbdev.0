@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:48 +0000
-Subject: [PATCH v3 08/13] drm/mgag200: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <90fc954f90de44157d6cc1c782147db6252c71e4.1535810304.git.mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:44 +0000
+Subject: [PATCH v3 01/13] fbdev: show fbdev number for debugging
+Message-Id: <ef584ecd8642e8b1a04f28d6d9c1864b5aa507bb.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
@@ -11,74 +11,27 @@ Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 
-Remove duplicated call, while at it.
-
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/mgag200/mgag200_drv.c  | 21 +--------------------
- drivers/gpu/drm/mgag200/mgag200_main.c |  9 ---------
- 2 files changed, 1 insertion(+), 29 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/mgag200/mgag200_drv.c b/drivers/gpu/drm/mgag200/mgag200_drv.c
-index 74cdde2ee474..ac6af4bd9df6 100644
---- a/drivers/gpu/drm/mgag200/mgag200_drv.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_drv.c
-@@ -42,29 +42,10 @@ static const struct pci_device_id pciidlist[] = {
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index f741ba8df01b..30a18d4c9de4 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1618,8 +1618,8 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 			(primary && gen_aper && gen_aper->count &&
+ 			 gen_aper->ranges[0].base = VGA_FB_PHYS)) {
  
- MODULE_DEVICE_TABLE(pci, pciidlist);
- 
--static void mgag200_kick_out_firmware_fb(struct pci_dev *pdev)
--{
--	struct apertures_struct *ap;
--	bool primary = false;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return;
--
--	ap->ranges[0].base = pci_resource_start(pdev, 0);
--	ap->ranges[0].size = pci_resource_len(pdev, 0);
--
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "mgag200drmfb", primary);
--	kfree(ap);
--}
--
- 
- static int mga_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
--	mgag200_kick_out_firmware_fb(pdev);
-+	drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "mgag200drmfb");
- 
- 	return drm_get_pci_dev(pdev, ent, &driver);
- }
-diff --git a/drivers/gpu/drm/mgag200/mgag200_main.c b/drivers/gpu/drm/mgag200/mgag200_main.c
-index 780f983b0294..79d54103d470 100644
---- a/drivers/gpu/drm/mgag200/mgag200_main.c
-+++ b/drivers/gpu/drm/mgag200/mgag200_main.c
-@@ -124,20 +124,11 @@ static int mga_probe_vram(struct mga_device *mdev, void __iomem *mem)
- static int mga_vram_init(struct mga_device *mdev)
- {
- 	void __iomem *mem;
--	struct apertures_struct *aper = alloc_apertures(1);
--	if (!aper)
--		return -ENOMEM;
- 
- 	/* BAR 0 is VRAM */
- 	mdev->mc.vram_base = pci_resource_start(mdev->dev->pdev, 0);
- 	mdev->mc.vram_window = pci_resource_len(mdev->dev->pdev, 0);
- 
--	aper->ranges[0].base = mdev->mc.vram_base;
--	aper->ranges[0].size = mdev->mc.vram_window;
--
--	drm_fb_helper_remove_conflicting_framebuffers(aper, "mgafb", true);
--	kfree(aper);
--
- 	if (!devm_request_mem_region(mdev->dev->dev, mdev->mc.vram_base, mdev->mc.vram_window,
- 				"mgadrmfb_vram")) {
- 		DRM_ERROR("can't reserve VRAM\n");
+-			printk(KERN_INFO "fb: switching to %s from %s\n",
+-			       name, registered_fb[i]->fix.id);
++			printk(KERN_INFO "fb%d: switching to %s from %s\n",
++			       i, name, registered_fb[i]->fix.id);
+ 			ret = do_unregister_framebuffer(registered_fb[i]);
+ 			if (ret)
+ 				return ret;
 -- 
 2.18.0

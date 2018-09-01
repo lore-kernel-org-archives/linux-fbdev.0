@@ -1,106 +1,62 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 12 Sep 2018 09:13:35 +0000
-Subject: Re: [REGRESSION] boot-screen override by "34db50e55656 efifb: Copy the ACPI BGRT"
-Message-Id: <9e9e269d-6ac7-7826-ecd5-acc164025429@redhat.com>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:41 +0000
+Subject: [PATCH v3 00/13] remove_conflicting_framebuffers() cleanup
+Message-Id: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180903132353epcas4p373e876f1b52dbed6df7bd3acc73fcdf4@epcas4p3.samsung.com>
- <CANq1E4QwNg0VuAZZtatOTXspv7Y-z_HSa-9CHzK2Y28CGK8W4Q@mail.gmail.com>
- <1982440.Fn0LzJ7a3l@amdc3058>
- <dc7f08d7-77fc-92ca-b6ec-f9d5a8f24cf3@redhat.com>
- <CANq1E4TiMSY=udGJWZoDzMhdsRjC==QCRFPO+Oja7KoyBX-6fg@mail.gmail.com>
-In-Reply-To: <CANq1E4TiMSY=udGJWZoDzMhdsRjC==QCRFPO+Oja7KoyBX-6fg@mail.gmail.com>
+References: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535656077.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: David Herrmann <dh.herrmann@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-efi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 
-Hi,
+This series cleans up duplicated code for replacing firmware FB
+driver with proper DRI driver and adds handover support to
+Tegra driver.
 
-On 03-09-18 17:11, David Herrmann wrote:
-> Hey
->=20
-> On Mon, Sep 3, 2018 at 4:47 PM Hans de Goede <hdegoede@redhat.com> wrote:
->>
->> Hi,
->>
->> On 03-09-18 16:16, Bartlomiej Zolnierkiewicz wrote:
->>>
->>> Hi,
->>>
->>> On Monday, September 03, 2018 03:23:38 PM David Herrmann wrote:
->>>> Hey
->>>>
->>>> Since this commit:
->>>>
->>>>       34db50e55656 efifb: Copy the ACPI BGRT
->>>>
->>>> the kernel will override boot-splashs unasked. This breaks the
->>>> graphical boot-process on our setups. In particular, we have a setup
->>>> where an efi-boot-entry draws the early boot-splash on-screen, then
->>>> hands-over to the linux-kernel + initrd. The boot-splash daemon in the
->>>> initrd then takes over control of possible animations.
->>>>
->>>> With the mentioned commit compiled in, the kernel will redraw the
->>>> firmware logo on screen at a random time without any way to intervene.
->>>
->>> You have CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER=3Dy (the deferred
->>> console takeover support introduced in v4,19-rc1). I assume that this
->>> is intended?
->>>
->>>> What is the intention of this commit? Why is the kernel re-drawing the
->>>> firmware logo unasked? If someone during the boot-process draws
->>>> content on the screen, I would prefer if the kernel does not clear
->>>> that on driver load.
->>>
->>> +/*
->>> + * If fbcon deffered console takeover is configured, the intent is for=
- the
->>> + * framebuffer to show the boot graphics (e.g. vendor logo) until ther=
-e is some
->>> + * (error) message to display. But the boot graphics may have been des=
-troyed by
->>> + * e.g. option ROM output, detect this and restore the boot graphics.
->>> + */
->>> +#if defined CONFIG_FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER && \
->>> +    defined CONFIG_ACPI_BGRT
->>> ...
->>> +static void efifb_show_boot_graphics(struct fb_info *info)
->>> ...
->>> +#else
->>> +static inline void efifb_show_boot_graphics(struct fb_info *info) {}
->>> +#endif
->>>
->>>> Can we either provide an option to disable this feature, or revert the=
- commit?
->>>
->>> Hans?
->>
->> We use the ACPI bgrt extension to get the logo to draw and then
->> draw it since some devices rely on the OS to draw it and otherwise we
->> just end up with a blackscreen when doing silent / flickerfree boot.
->>
->> Ideally you would be able to get your vendor to put the logo in firmware
->> in the ACPI bgrt extension, then you also do not need to play any tricks
->> with an EFI binary drawing your own logo. But I can understand if you do=
-n't
->> have control over this, so you need to do this with the EFI binary trick.
->>
->> I can also understand that you want to use deferred console takeover
->> in a setup like yours to avoid fbcon messing up what is on the display
->> during boot, that is exactly what it is for. So I think a reasonable
->> approach here is to add a kernel commandline option, say:
->>
->> video=EFifb:nobgrt
->>
->> David, would that work for you?
->=20
-> That would be perfect!
+This is a sligtly updated version of a series sent on 24 Nov 2017.
 
-Ok, I just send out a patch for this with you in the Cc.
+---
+v2:
+ - rebased on current drm-next
+ - dropped staging/sm750fb changes
+ - added kernel docs for DRM helpers
+v3:
+ - move kerneldoc to fbdev, where functions are implemented
+ - split kerneldoc for remove_conflicting_framebuffers()
+ - propagate return value in remove_conflicting_pci_framebuffers()
 
-Sorry for taking a bit long to write the patch.
+---
+Michał Mirosław (13):
+  fbdev: show fbdev number for debugging
+  fbdev: allow apertures = NULL in remove_conflicting_framebuffers()
+  fbdev: add kerneldoc do remove_conflicting_framebuffers()
+  fbdev: add remove_conflicting_pci_framebuffers()
+  drm/amdgpu: use simpler remove_conflicting_pci_framebuffers()
+  drm/bochs: use simpler remove_conflicting_pci_framebuffers()
+  drm/cirrus: use simpler remove_conflicting_pci_framebuffers()
+  drm/mgag200: use simpler remove_conflicting_pci_framebuffers()
+  drm/radeon: use simpler remove_conflicting_pci_framebuffers()
+  drm/virtio: use simpler remove_conflicting_pci_framebuffers()
+  drm/vc4: use simpler remove_conflicting_framebuffers(NULL)
+  drm/sun4i: use simpler remove_conflicting_framebuffers(NULL)
+  drm/tegra: kick out simplefb
 
-Regards,
+ drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c  | 24 +--------
+ drivers/gpu/drm/bochs/bochs_drv.c        | 18 +------
+ drivers/gpu/drm/cirrus/cirrus_drv.c      | 23 +--------
+ drivers/gpu/drm/mgag200/mgag200_drv.c    | 21 +-------
+ drivers/gpu/drm/mgag200/mgag200_main.c   |  9 ----
+ drivers/gpu/drm/radeon/radeon_drv.c      | 23 +--------
+ drivers/gpu/drm/sun4i/sun4i_drv.c        | 18 +------
+ drivers/gpu/drm/tegra/drm.c              |  4 ++
+ drivers/gpu/drm/vc4/vc4_drv.c            | 20 +-------
+ drivers/gpu/drm/virtio/virtgpu_drm_bus.c | 24 ++-------
+ drivers/video/fbdev/core/fbmem.c         | 63 +++++++++++++++++++++++-
+ include/drm/drm_fb_helper.h              | 12 +++++
+ include/linux/fb.h                       |  2 +
+ 13 files changed, 89 insertions(+), 172 deletions(-)
 
-Hans
+-- 
+2.18.0

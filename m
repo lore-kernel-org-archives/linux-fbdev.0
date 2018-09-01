@@ -1,40 +1,38 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:21 +0000
-Subject: [PATCH v2 04/24] soc/fsl/qbman: use ioremap_cache() instead of ioremap_prot(0)
-Message-Id: <34f570a52b8309984bbe500410098c85dcd28eaa.1536692743.git.christophe.leroy@c-s.fr>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:51 +0000
+Subject: [PATCH v3 13/13] drm/tegra: kick out simplefb
+Message-Id: <b5c3972e5774d0d1f8887054a993bbc54e9dbe2a.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
+References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Eric Anholt <eric@anholt.net>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Alex Deucher <alexander.deucher@amd.com>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, linux-tegra@vger.kernel.org, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
 
-ioremap_prot() with flag set to 0 relies on a hack in
-__ioremap_caller() which adds PAGE_KERNEL flags when the
-handed flags don't look like a valid set of flags
-(ie don't include _PAGE_PRESENT)
+Kick out firmware fb when loading Tegra driver.
 
-The intention being to map cached memory, use ioremap_cache() instead.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/soc/fsl/qbman/qman_ccsr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/tegra/drm.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 79cba58387a5..0fbb201346c7 100644
---- a/drivers/soc/fsl/qbman/qman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -418,7 +418,7 @@ static size_t fqd_sz, pfdr_sz;
- static int zero_priv_mem(phys_addr_t addr, size_t sz)
- {
- 	/* map as cacheable, non-guarded */
--	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
-+	void __iomem *tmpp = ioremap_cache(addr, sz);
+diff --git a/drivers/gpu/drm/tegra/drm.c b/drivers/gpu/drm/tegra/drm.c
+index 7afe2f635f74..b51ec138fed2 100644
+--- a/drivers/gpu/drm/tegra/drm.c
++++ b/drivers/gpu/drm/tegra/drm.c
+@@ -1203,6 +1203,10 @@ static int host1x_drm_probe(struct host1x_device *dev)
  
- 	if (!tmpp)
- 		return -ENOMEM;
+ 	dev_set_drvdata(&dev->dev, drm);
+ 
++	err = drm_fb_helper_remove_conflicting_framebuffers(NULL, "tegradrmfb", false);
++	if (err < 0)
++		goto unref;
++
+ 	err = drm_dev_register(drm, 0);
+ 	if (err < 0)
+ 		goto unref;
 -- 
-2.13.3
+2.18.0

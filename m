@@ -1,143 +1,57 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:52 +0000
-Subject: [PATCH v2 19/24] powerpc/nohash/64: do not include pte-common.h
-Message-Id: <1ce159e4e67106089d8ccbdae85dee20a39f201a.1536692743.git.christophe.leroy@c-s.fr>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:46 +0000
+Subject: [PATCH v3 06/13] drm/bochs: use simpler remove_conflicting_pci_framebuffers()
+Message-Id: <b5fce8eba7472e5ba8e18c2624938be6c5aa6ebb.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
+References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-arm-kernel@lists.infradead.org
 
-nohash/64 only uses book3e PTE flags, so it doesn't need pte-common.h
-
-This also allows to drop PAGE_SAO and H_PAGE_4K_PFN from pte_common.h
-as they are only used by PPC64
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- arch/powerpc/include/asm/nohash/64/pgtable.h | 16 ++++++++++++-
- arch/powerpc/include/asm/nohash/pgtable.h    | 27 +++++++++++++++++++++
- arch/powerpc/include/asm/pte-common.h        | 35 ----------------------------
- 3 files changed, 42 insertions(+), 36 deletions(-)
+ drivers/gpu/drm/bochs/bochs_drv.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index b7d65d4b61be..9ccea94b3d4e 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -89,7 +89,21 @@
-  * Include the PTE bits definitions
-  */
- #include <asm/nohash/pte-book3e.h>
--#include <asm/pte-common.h>
-+
-+#define _PAGE_HWWRITE	0
-+#define _PAGE_SAO	0
-+#define _PAGE_RO 0
-+#define _PAGE_NA 0
-+#define _PAGE_HUGE 0
-+
-+#define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
-+
-+/* _PAGE_CHG_MASK masks of bits that are to be preserved across
-+ * pgprot changes
-+ */
-+#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPECIAL)
-+
-+#define H_PAGE_4K_PFN 0
+diff --git a/drivers/gpu/drm/bochs/bochs_drv.c b/drivers/gpu/drm/bochs/bochs_drv.c
+index 7b20318483e4..c61b40c72b62 100644
+--- a/drivers/gpu/drm/bochs/bochs_drv.c
++++ b/drivers/gpu/drm/bochs/bochs_drv.c
+@@ -143,22 +143,6 @@ static const struct dev_pm_ops bochs_pm_ops = {
+ /* ---------------------------------------------------------------------- */
+ /* pci interface                                                          */
  
- #ifndef __ASSEMBLY__
- /* pte_clear moved to later in this file */
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index a4c31b829071..897f110139c2 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -8,6 +8,33 @@
- #include <asm/nohash/32/pgtable.h>
- #endif
+-static int bochs_kick_out_firmware_fb(struct pci_dev *pdev)
+-{
+-	struct apertures_struct *ap;
+-
+-	ap = alloc_apertures(1);
+-	if (!ap)
+-		return -ENOMEM;
+-
+-	ap->ranges[0].base = pci_resource_start(pdev, 0);
+-	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "bochsdrmfb", false);
+-	kfree(ap);
+-
+-	return 0;
+-}
+-
+ static int bochs_pci_probe(struct pci_dev *pdev,
+ 			   const struct pci_device_id *ent)
+ {
+@@ -171,7 +155,7 @@ static int bochs_pci_probe(struct pci_dev *pdev,
+ 		return -ENOMEM;
+ 	}
  
-+/* Permission masks used for kernel mappings */
-+#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
-+#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | _PAGE_NO_CACHE)
-+#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
-+				 _PAGE_NO_CACHE | _PAGE_GUARDED)
-+#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
-+#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
-+#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
-+
-+/* Protection used for kernel text. We want the debuggers to be able to
-+ * set breakpoints anywhere, so don't write protect the kernel text
-+ * on platforms where such control is possible.
-+ */
-+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
-+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
-+#else
-+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
-+#endif
-+
-+/* Make modules code happy. We don't set RO yet */
-+#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
-+
-+/* Advertise special mapping type for AGP */
-+#define PAGE_AGP		(PAGE_KERNEL_NC)
-+#define HAVE_PAGE_AGP
-+
- #ifndef __ASSEMBLY__
+-	ret = bochs_kick_out_firmware_fb(pdev);
++	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "bochsdrmfb");
+ 	if (ret)
+ 		return ret;
  
- /* Generic accessors to PTE bits */
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index cce60b3ba7d4..4d594039bca5 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -14,9 +14,6 @@
- #ifndef _PAGE_WRITETHRU
- #define _PAGE_WRITETHRU	0
- #endif
--#ifndef _PAGE_SAO
--#define _PAGE_SAO	0
--#endif
- /* _PAGE_RO and _PAGE_RW shall not be defined at the same time */
- #ifndef _PAGE_RO
- #define _PAGE_RO 0
-@@ -61,35 +58,3 @@
-  */
- #define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | \
-                          _PAGE_ACCESSED | _PAGE_SPECIAL)
--
--/* Permission masks used for kernel mappings */
--#define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
--#define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_NO_CACHE)
--#define PAGE_KERNEL_NCG	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
--				 _PAGE_NO_CACHE | _PAGE_GUARDED)
--#define PAGE_KERNEL_X	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RWX)
--#define PAGE_KERNEL_RO	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RO)
--#define PAGE_KERNEL_ROX	__pgprot(_PAGE_BASE | _PAGE_KERNEL_ROX)
--
--/* Protection used for kernel text. We want the debuggers to be able to
-- * set breakpoints anywhere, so don't write protect the kernel text
-- * on platforms where such control is possible.
-- */
--#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || defined(CONFIG_BDI_SWITCH) ||\
--	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
--#else
--#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
--#endif
--
--/* Make modules code happy. We don't set RO yet */
--#define PAGE_KERNEL_EXEC	PAGE_KERNEL_X
--
--/* Advertise special mapping type for AGP */
--#define PAGE_AGP		(PAGE_KERNEL_NC)
--#define HAVE_PAGE_AGP
--
--#ifndef H_PAGE_4K_PFN
--#define H_PAGE_4K_PFN 0
--#endif
 -- 
-2.13.3
+2.18.0

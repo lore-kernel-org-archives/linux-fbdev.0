@@ -1,7 +1,7 @@
 From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:48 +0000
-Subject: [PATCH v3 09/13] drm/radeon: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <b61a2e458b6a2964039693d724cc75b4fcfb3ddb.1535810304.git.mirq-linux@rere.qmqm.pl>
+Date: Sat, 01 Sep 2018 14:08:51 +0000
+Subject: [PATCH v3 12/13] drm/sun4i: use simpler remove_conflicting_framebuffers(NULL)
+Message-Id: <7d6d5bc4deac322b1351533c989cb3583e91be49.1535810304.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
@@ -9,55 +9,52 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Eric Anholt <eric@anholt.net>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, David Airlie <airlied@linux.ie>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+
+Use remove_conflicting_framebuffers(NULL) instead of duplicating it.
 
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Alex Deucher <alexander.deucher@amd.com>
+Acked-by: Maxime Ripard <maxime.ripard@free-electrons.com>
 Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/radeon/radeon_drv.c | 23 +----------------------
- 1 file changed, 1 insertion(+), 22 deletions(-)
+ drivers/gpu/drm/sun4i/sun4i_drv.c | 18 +-----------------
+ 1 file changed, 1 insertion(+), 17 deletions(-)
 
-diff --git a/drivers/gpu/drm/radeon/radeon_drv.c b/drivers/gpu/drm/radeon/radeon_drv.c
-index b28288a781ef..36c98a0ec991 100644
---- a/drivers/gpu/drm/radeon/radeon_drv.c
-+++ b/drivers/gpu/drm/radeon/radeon_drv.c
-@@ -311,27 +311,6 @@ static struct drm_driver kms_driver;
+diff --git a/drivers/gpu/drm/sun4i/sun4i_drv.c b/drivers/gpu/drm/sun4i/sun4i_drv.c
+index 50d19605c38f..555b5db8036f 100644
+--- a/drivers/gpu/drm/sun4i/sun4i_drv.c
++++ b/drivers/gpu/drm/sun4i/sun4i_drv.c
+@@ -60,22 +60,6 @@ static struct drm_driver sun4i_drv_driver = {
+ 	/* Frame Buffer Operations */
+ };
  
- bool radeon_device_is_virtual(void);
- 
--static int radeon_kick_out_firmware_fb(struct pci_dev *pdev)
+-static void sun4i_remove_framebuffers(void)
 -{
 -	struct apertures_struct *ap;
--	bool primary = false;
 -
 -	ap = alloc_apertures(1);
 -	if (!ap)
--		return -ENOMEM;
+-		return;
 -
--	ap->ranges[0].base = pci_resource_start(pdev, 0);
--	ap->ranges[0].size = pci_resource_len(pdev, 0);
+-	/* The framebuffer can be located anywhere in RAM */
+-	ap->ranges[0].base = 0;
+-	ap->ranges[0].size = ~0;
 -
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "radeondrmfb", primary);
+-	drm_fb_helper_remove_conflicting_framebuffers(ap, "sun4i-drm-fb", false);
 -	kfree(ap);
--
--	return 0;
 -}
 -
- static int radeon_pci_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *ent)
+ static int sun4i_drv_bind(struct device *dev)
  {
-@@ -341,7 +320,7 @@ static int radeon_pci_probe(struct pci_dev *pdev,
- 		return -EPROBE_DEFER;
+ 	struct drm_device *drm;
+@@ -118,7 +102,7 @@ static int sun4i_drv_bind(struct device *dev)
+ 	drm->irq_enabled = true;
  
- 	/* Get rid of things like offb */
--	ret = radeon_kick_out_firmware_fb(pdev);
-+	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "radeondrmfb");
- 	if (ret)
- 		return ret;
+ 	/* Remove early framebuffers (ie. simplefb) */
+-	sun4i_remove_framebuffers();
++	drm_fb_helper_remove_conflicting_framebuffers(NULL, "sun4i-drm-fb", false);
  
+ 	/* Create our framebuffer */
+ 	ret = sun4i_framebuffer_init(drm);
 -- 
 2.18.0

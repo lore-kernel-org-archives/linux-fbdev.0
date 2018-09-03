@@ -1,47 +1,90 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Mon, 24 Sep 2018 21:17:01 +0000
-Subject: Re: [PATCH v2 05/17] compat_ioctl: move more drivers to generic_compat_ioctl_ptrarg
-Message-Id: <CAK8P3a1Bh9NnncbcT0X4fKWC7B0FnqYyEMUwB6MvmzaNO7VhFQ@mail.gmail.com>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Mon, 03 Sep 2018 16:48:47 +0000
+Subject: Re: [PATCH 3/4] fbdev: Add FBINFO_HIDE_SMEM_START flag
+Message-Id: <20180903164847.GM21634@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180912150142.157913-1-arnd@arndb.de>
- <20180912151134.436719-1-arnd@arndb.de>
- <20180914203506.GE35251@wrath> <20180914205748.GC19965@ZenIV.linux.org.uk>
- <20180918175108.GF35251@wrath> <20180918175952.GJ11367@ziepe.ca>
- <CAK8P3a17GY89in7PeLk1F2T-0Xq=sCrwwntM+Y4BCpXheUC+qQ@mail.gmail.com>
- <20180924203505.GC6008@ziepe.ca>
-In-Reply-To: <20180924203505.GC6008-uk2M96/98Pc@public.gmane.org>
+References: <20180822085405.10787-1-daniel.vetter@ffwll.ch>
+ <20180822085405.10787-3-daniel.vetter@ffwll.ch>
+In-Reply-To: <20180822085405.10787-3-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jason Gunthorpe <jgg-uk2M96/98Pc@public.gmane.org>
-Cc: linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-iio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci <linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-remoteproc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-nvme-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, Platform Driver <platform-driver-x86-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, sparclinux <sparclinux-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, driverdevel <devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org>, linux-scsi <linux-scsi-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-nvdimm-hn68Rpc1hR1g9hUCZPvPmw@public.gmane.org, linux-rdma <linux-rdma-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, qat-linux-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org, amd-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, "open list:HID CORE LAYER" <linux-input-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Darren Hart <dvhart-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>, Linux Media Mailing List <linux-media-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linaro-mm-sig-cunTk1MwBs8s++Sfvej+rw@public.gmane.org, dri-devel <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, ceph-devel <ceph-devel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, gregkh <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, USB list <linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-wireless <linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@intel.com>
 
-On Mon, Sep 24, 2018 at 10:35 PM Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> On Mon, Sep 24, 2018 at 10:18:52PM +0200, Arnd Bergmann wrote:
-> > On Tue, Sep 18, 2018 at 7:59 PM Jason Gunthorpe <jgg@ziepe.ca> wrote:
-> > > On Tue, Sep 18, 2018 at 10:51:08AM -0700, Darren Hart wrote:
-> > > > On Fri, Sep 14, 2018 at 09:57:48PM +0100, Al Viro wrote:
-> > > > > On Fri, Sep 14, 2018 at 01:35:06PM -0700, Darren Hart wrote:
-> > We already do this inside of some subsystems, notably drivers/media/,
-> > and it simplifies the implementation of the ioctl handler function
-> > significantly. We obviously cannot do this in general, both because of
-> > traditional drivers that have 16-bit command codes (drivers/tty and others)
-> > and also because of drivers that by accident defined the commands
-> > incorrectly and use the wrong type or the wrong direction in the
-> > definition.
->
-> That could work well, but the first idea could be done globally and
-> mechanically, while this would require very careful per-driver
-> investigation.
->
-> Particularly if the core code has worse performance.. ie due to
-> kmalloc calls or something.
->
-> I think it would make more sense to start by having the core do the
-> case to __user and then add another entry point to have the core do
-> the copy_from_user, and so on.
+On Wed, Aug 22, 2018 at 10:54:04AM +0200, Daniel Vetter wrote:
+> DRM drivers really, really, really don't want random userspace to
+> share buffer behind it's back, bypassing the dma-buf buffer sharing
+> machanism. For that reason we've ruthlessly rejected any IOCTL
+> exposing the physical address of any graphics buffer.
+> 
+> Unfortunately fbdev comes with that built-in. We could just set
+> smem_start to 0, but that means we'd have to hand-roll our own fb_mmap
+> implementation. For good reasons many drivers do that, but
+> smem_start/length is still super convenient.
+> 
+> Hence instead just stop the leak in the ioctl, to keep fb mmap working
+> as-is. A second patch will set this flag for all drm drivers.
+> 
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Kees Cook <keescook@chromium.org>
+> Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 
-Having six separate callback pointers to implement a single
-system call seems a bit excessive though.
+Any comments from the fbdev side on this?
+-Daniel
 
-        Arnd
+> ---
+>  drivers/video/fbdev/core/fbmem.c | 4 ++++
+>  include/linux/fb.h               | 7 +++++++
+>  2 files changed, 11 insertions(+)
+> 
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+> index 609438d2465b..549d0f86fcf3 100644
+> --- a/drivers/video/fbdev/core/fbmem.c
+> +++ b/drivers/video/fbdev/core/fbmem.c
+> @@ -1116,6 +1116,8 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>  		if (!lock_fb_info(info))
+>  			return -ENODEV;
+>  		fix = info->fix;
+> +		if (info->flags & FBINFO_HIDE_SMEM_START)
+> +			fix.smem_start = 0;
+>  		unlock_fb_info(info);
+>  
+>  		ret = copy_to_user(argp, &fix, sizeof(fix)) ? -EFAULT : 0;
+> @@ -1326,6 +1328,8 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
+>  	if (!lock_fb_info(info))
+>  		return -ENODEV;
+>  	fix = info->fix;
+> +	if (info->flags & FBINFO_HIDE_SMEM_START)
+> +		fix.smem_start = 0;
+>  	unlock_fb_info(info);
+>  	return do_fscreeninfo_to_user(&fix, compat_ptr(arg));
+>  }
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index fa8c6f9c9c3a..f42b09ca71f8 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -456,6 +456,13 @@ struct fb_tile_ops {
+>   * and host endianness. Drivers should not use this flag.
+>   */
+>  #define FBINFO_BE_MATH  0x100000
+> +/*
+> + * Hide smem_start in the FBIOGET_FSCREENINFO IOCTL. This is used by modern DRM
+> + * drivers to stop userspace from trying to share buffers behind the kernel's
+> + * back. Instead dma-buf based buffer sharing should be used.
+> + */
+> +#define FBINFO_HIDE_SMEM_START  0x200000
+> +
+>  
+>  struct fb_info {
+>  	atomic_t count;
+> -- 
+> 2.18.0
+> 
+
+-- 
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

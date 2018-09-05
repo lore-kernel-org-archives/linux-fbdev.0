@@ -1,51 +1,74 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 20 Sep 2018 16:23:49 +0000
-Subject: Re: Re: [PATCH] backlight: pwm_bl: Fix brightness levels for non-DT case.
-Message-Id: <9cc21df6-67f2-e210-33b8-e0e14f052e7e@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Date: Wed, 05 Sep 2018 19:37:17 +0000
+Subject: [PATCH 00/21] DT cpu node iterator
+Message-Id: <20180905193738.19325-1-robh@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180824155402.2822-1-enric.balletbo@collabora.com>
- <87h8ji98jp.fsf@belgarion.home>
-In-Reply-To: <87h8ji98jp.fsf@belgarion.home>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Robert Jarzmik <robert.jarzmik@free.fr>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, kernel@collabora.com, lee.jones@linaro.org
+To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, Catalin Marinas <catalin.marinas@arm.com>, linux-sh@vger.kernel.org, Vitaly Bordug <vitb@kernel.crashing.org>, Palmer Dabbelt <palmer@sifive.com>, Will Deacon <will.deacon@arm.com>, dri-devel@lists.freedesktop.org, Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, "H. Peter Anvin" <hpa@zytor.com>, linux-riscv@lists.infradead.org, Frank Rowand <frowand.list@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Jonas Bonn <jonas@southpole.se>, linux-c6x-dev@linux-c6x.org, Yoshinori Sato <ysato@users.sourceforge.jp>, Michael Ellerman <mpe@ellerman.id.au>, Magnus Damm <magnus.damm@gmail.com>, Russell King <linux@armlinux.org.uk>, linux-clk@vger.kernel.org, Ingo Molnar <mingo@redhat.com>, Mark Salter <msalter@redhat.com>, Albert Ou <aou@eecs.berkeley.edu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Aur
 
-On 25/08/18 01:04, Robert Jarzmik wrote:
-> Enric Balletbo i Serra <enric.balletbo@collabora.com> writes:
-> 
->> Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
->> linearly to human eye")' allows the possibility to compute a default
->> brightness table when there isn't the brightness-levels property in the
->> DT. Unfortunately the changes made broke the pwm backlight for the
->> non-DT boards.
->>
->> Usually, the non-DT boards don't pass the brightness levels via platform
->> data, instead, they set the max_brightness in their platform data and the
->> driver calculates the level without a table. The ofending patch assumed
->> that when there is no brightness levels table we should create one, but this
->> is clearly wrong for the non-DT case.
->>
->> After this patch the code handles the DT and the non-DT case taking in
->> consideration also if max_brightness is set or not. The default table is
->> only created when neither, brightness-levels and max_brightness, are
->> set.
->>
->> The patch also fixes another issue found by Robert. Before this patch
->> looks like a division by 0 was possible when state.period returned 0 by
->> pwm_get_state(). This is because pwm_get_state() was called before
->> pwm_apply_args() so state.period was not initialized. The patch moves
->> the pwm_apply_args() call before any call to pwm_get_state().
->>
->> Fixes: '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")'
->> Reported-by: Robert Jarzmik <robert.jarzmik@free.fr>
->> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
+This series adds an iterator for cpu nodes and converts users over to use
+it or of_get_cpu_node in some cases. This allows us to remove the
+dependency on device_type property for cpu nodes though removing that
+from DTS files will have to wait for some time. In some cases, this makes
+the DT search more strict by only looking in /cpus child nodes rather
+than any node with the device_type = cpu. The iterator also honors the
+status property which is often forgotten.
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+I've only tested on ARM under QEMU and compiled powerpc.
 
-(and sorry for the delay)
+Rob
 
+Rob Herring (21):
+  of: Add cpu node iterator for_each_of_cpu_node()
+  of: Support matching cpu nodes with no 'reg' property
+  ARM: use for_each_of_cpu_node iterator
+  ARM: topology: remove unneeded check for /cpus node
+  ARM: shmobile: use for_each_of_cpu_node iterator
+  arm64: use for_each_of_cpu_node iterator
+  c6x: use for_each_of_cpu_node iterator
+  microblaze: get cpu node with of_get_cpu_node
+  nios2: get cpu node with of_get_cpu_node
+  openrisc: use for_each_of_cpu_node iterator
+  powerpc: use for_each_of_cpu_node iterator
+  powerpc: 4xx: get cpu node with of_get_cpu_node
+  powerpc: 8xx: get cpu node with of_get_cpu_node
+  riscv: use for_each_of_cpu_node iterator
+  SH: use for_each_of_cpu_node iterator
+  x86: DT: use for_each_of_cpu_node iterator
+  clk: mvebu: use for_each_of_cpu_node iterator
+  edac: cpc925: use for_each_of_cpu_node iterator
+  iommu: fsl_pamu: use for_each_of_cpu_node iterator
+  of: use for_each_of_cpu_node iterator
+  fbdev: fsl-diu: get cpu node with of_get_cpu_node
 
-Daniel.
+ arch/arm/kernel/devtree.c                 |  5 +--
+ arch/arm/kernel/topology.c                |  6 ---
+ arch/arm/mach-shmobile/pm-rcar-gen2.c     |  8 +---
+ arch/arm/mach-shmobile/pm-rmobile.c       |  2 +-
+ arch/arm/mach-shmobile/timer.c            | 10 +----
+ arch/arm64/kernel/smp.c                   |  2 +-
+ arch/c6x/kernel/setup.c                   | 11 ++---
+ arch/microblaze/kernel/cpu/cpuinfo.c      |  4 +-
+ arch/nios2/kernel/cpuinfo.c               |  4 +-
+ arch/openrisc/kernel/setup.c              |  3 +-
+ arch/powerpc/platforms/4xx/soc.c          |  2 +-
+ arch/powerpc/platforms/8xx/m8xx_setup.c   |  5 ++-
+ arch/powerpc/platforms/powermac/feature.c | 51 ++++++++---------------
+ arch/powerpc/platforms/powermac/setup.c   | 15 +++----
+ arch/riscv/kernel/smpboot.c               |  2 +-
+ arch/sh/boards/of-generic.c               |  2 +-
+ arch/x86/kernel/devicetree.c              |  2 +-
+ drivers/clk/mvebu/clk-cpu.c               |  4 +-
+ drivers/edac/cpc925_edac.c                | 20 +--------
+ drivers/iommu/fsl_pamu.c                  |  2 +-
+ drivers/of/base.c                         | 43 ++++++++++++++++++-
+ drivers/of/of_numa.c                      | 15 +------
+ drivers/video/fbdev/fsl-diu-fb.c          |  2 +-
+ include/linux/of.h                        | 11 +++++
+ 24 files changed, 111 insertions(+), 120 deletions(-)
+
+--
+2.17.1

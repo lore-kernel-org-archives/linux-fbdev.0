@@ -1,70 +1,51 @@
-From: Aymen Qader <qader.aymen@gmail.com>
-Date: Thu, 20 Sep 2018 22:53:21 +0000
-Subject: [PATCH] staging: sm750fb: Fix typo frambuffer->framebuffer
-Message-Id: <20180920225321.18180-1-qader.aymen@gmail.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 05 Sep 2018 15:40:09 +0000
+Subject: [PATCH] staging/fbtft: Update TODO and mailing lists
+Message-Id: <20180905154009.20295-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Aymen Qader <qader.aymen@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Shuah Khan <shuahkhan@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@intel.com>
 
-This patch corrects a typo (frambuffer->framebuffer) in the
-sm750fb_fram(e)buffer_release and sm750fb_fram(e)buffer_alloc function
-names.
+Motivated by the ksummit-discuss discussion.
 
-Signed-off-by: Aymen Qader <qader.aymen@gmail.com>
+Cc: Shuah Khan <shuahkhan@gmail.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 ---
- drivers/staging/sm750fb/sm750.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+ MAINTAINERS                | 2 ++
+ drivers/staging/fbtft/TODO | 4 ++++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 846d7d243994..e9f10c2669ea 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -1007,7 +1007,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
- 	}
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 029baa270a11..3d50315dbe90 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -5624,6 +5624,8 @@ F:	lib/fault-inject.c
  
--static void sm750fb_frambuffer_release(struct sm750_dev *sm750_dev)
-+static void sm750fb_framebuffer_release(struct sm750_dev *sm750_dev)
- {
- 	struct fb_info *fb_info;
+ FBTFT Framebuffer drivers
+ M:	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
++L:	dri-devel@lists.freedesktop.org
++L:	linux-fbdev@vger.kernel.org
+ S:	Maintained
+ F:	drivers/staging/fbtft/
  
-@@ -1019,7 +1019,7 @@ static void sm750fb_frambuffer_release(struct sm750_dev *sm750_dev)
- 	}
- }
- 
--static int sm750fb_frambuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
-+static int sm750fb_framebuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
- {
- 	struct fb_info *fb_info;
- 	struct lynxfb_par *par;
-@@ -1137,7 +1137,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 	/* allocate frame buffer info structures according to g_dualview */
- 	max_fb = g_dualview ? 2 : 1;
- 	for (fbidx = 0; fbidx < max_fb; fbidx++) {
--		err = sm750fb_frambuffer_alloc(sm750_dev, fbidx);
-+		err = sm750fb_framebuffer_alloc(sm750_dev, fbidx);
- 		if (err)
- 			goto release_fb;
- 	}
-@@ -1145,7 +1145,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
- 	return 0;
- 
- release_fb:
--	sm750fb_frambuffer_release(sm750_dev);
-+	sm750fb_framebuffer_release(sm750_dev);
- 	return err;
- }
- 
-@@ -1155,7 +1155,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
- 
- 	sm750_dev = pci_get_drvdata(pdev);
- 
--	sm750fb_frambuffer_release(sm750_dev);
-+	sm750fb_framebuffer_release(sm750_dev);
- 	arch_phys_wc_del(sm750_dev->mtrr.vram);
- 
- 	iounmap(sm750_dev->pvReg);
+diff --git a/drivers/staging/fbtft/TODO b/drivers/staging/fbtft/TODO
+index 7e64c7e438f0..a9f4802bb6be 100644
+--- a/drivers/staging/fbtft/TODO
++++ b/drivers/staging/fbtft/TODO
+@@ -2,3 +2,7 @@
+   GPIO descriptor API in <linux/gpio/consumer.h> and look up GPIO
+   lines from device tree, ACPI or board files, board files should
+   use <linux/gpio/machine.h>
++
++* convert all these over to drm_simple_display_pipe and submit for inclusion
++  into the DRM subsystem under drivers/gpu/drm - fbdev doesn't take any new
++  drivers anymore.
 -- 
-2.17.1
+2.19.0.rc1

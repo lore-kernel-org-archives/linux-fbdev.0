@@ -1,51 +1,40 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 05 Sep 2018 15:40:09 +0000
-Subject: [PATCH] staging/fbtft: Update TODO and mailing lists
-Message-Id: <20180905154009.20295-1-daniel.vetter@ffwll.ch>
+From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Date: Fri, 07 Sep 2018 17:35:15 +0000
+Subject: [PATCH] fbdev: fix kerneldoc
+Message-Id: <0172c6973edcb3827244d5fc3d0970e6f1fddfd8.1536341619.git.mirq-linux@rere.qmqm.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Shuah Khan <shuahkhan@gmail.com>, Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, Daniel Vetter <daniel.vetter@intel.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: dri-devel@lists.freedesktop.org
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Motivated by the ksummit-discuss discussion.
+As noticed by kbuild test robot <lkp@intel.com>,
+remove_conflicting_pci_framebuffers()'s second argument
+is called res_id not resource_id. Fix this.
 
-Cc: Shuah Khan <shuahkhan@gmail.com>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
- MAINTAINERS                | 2 ++
- drivers/staging/fbtft/TODO | 4 ++++
- 2 files changed, 6 insertions(+)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 029baa270a11..3d50315dbe90 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5624,6 +5624,8 @@ F:	lib/fault-inject.c
- 
- FBTFT Framebuffer drivers
- M:	Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-+L:	dri-devel@lists.freedesktop.org
-+L:	linux-fbdev@vger.kernel.org
- S:	Maintained
- F:	drivers/staging/fbtft/
- 
-diff --git a/drivers/staging/fbtft/TODO b/drivers/staging/fbtft/TODO
-index 7e64c7e438f0..a9f4802bb6be 100644
---- a/drivers/staging/fbtft/TODO
-+++ b/drivers/staging/fbtft/TODO
-@@ -2,3 +2,7 @@
-   GPIO descriptor API in <linux/gpio/consumer.h> and look up GPIO
-   lines from device tree, ACPI or board files, board files should
-   use <linux/gpio/machine.h>
-+
-+* convert all these over to drm_simple_display_pipe and submit for inclusion
-+  into the DRM subsystem under drivers/gpu/drm - fbdev doesn't take any new
-+  drivers anymore.
+* Against drm-misc-next, as this is the branch original patchset was
+applied to.
+
+---
+ drivers/video/fbdev/core/fbmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 5ffadc8e681d..4a2193fe3bc3 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1834,7 +1834,7 @@ EXPORT_SYMBOL(remove_conflicting_framebuffers);
+ /**
+  * remove_conflicting_pci_framebuffers - remove firmware-configured framebuffers for PCI devices
+  * @pdev: PCI device
+- * @resource_id: index of PCI BAR configuring framebuffer memory
++ * @res_id: index of PCI BAR configuring framebuffer memory
+  * @name: requesting driver name
+  *
+  * This function removes framebuffer devices (eg. initialized by firmware)
 -- 
-2.19.0.rc1
+2.18.0

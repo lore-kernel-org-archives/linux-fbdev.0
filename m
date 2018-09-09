@@ -1,117 +1,94 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:23 +0000
-Subject: [PATCH v2 05/24] powerpc: don't use ioremap_prot() nor __ioremap() unless really needed.
-Message-Id: <18d5b7489e75dfa504010bc8939f97cd4463d229.1536692743.git.christophe.leroy@c-s.fr>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Sun, 09 Sep 2018 22:56:05 +0000
+Subject: [PATCH v3 3/3] ARM: OMAP1: ams-delta: make board header file local to mach-omap1
+Message-Id: <20180909225605.16463-4-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
+References: <20180717231448.14958-1-jmkrzyszt@gmail.com>
+ <20180909225605.16463-1-jmkrzyszt@gmail.com>
+In-Reply-To: <20180909225605.16463-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Boris Brezillon <boris.brezillon@bootlin.com>, linux-mtd@lists.infradead.org, linux-gpio@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, Brian Norris <computersforpeace@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Marek Vasut <marek.vasut@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-In many places, ioremap_prot() and __ioremap() can be replaced with
-higher level functions like ioremap(), ioremap_coherent(),
-ioremap_cache(), ioremap_wc() ...
+Now as board header file is no longer included by drivers, move it to
+the root directory of mach-omap1.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
 ---
- arch/powerpc/kernel/btext.c               | 2 +-
- arch/powerpc/kernel/crash_dump.c          | 2 +-
- arch/powerpc/platforms/85xx/smp.c         | 4 ++--
- arch/powerpc/platforms/pasemi/dma_lib.c   | 2 +-
- arch/powerpc/platforms/ps3/spu.c          | 3 +--
- arch/powerpc/sysdev/fsl_85xx_cache_sram.c | 8 ++++----
- 6 files changed, 10 insertions(+), 11 deletions(-)
+ arch/arm/mach-omap1/ams-delta-fiq-handler.S              | 2 +-
+ arch/arm/mach-omap1/ams-delta-fiq.c                      | 3 +--
+ arch/arm/mach-omap1/board-ams-delta.c                    | 2 +-
+ arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h | 2 +-
+ 4 files changed, 4 insertions(+), 5 deletions(-)
+ rename arch/arm/mach-omap1/{include/mach => }/board-ams-delta.h (98%)
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index b2072d5bbf2b..b4241ed1456e 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -163,7 +163,7 @@ void btext_map(void)
- 	offset = ((unsigned long) dispDeviceBase) - base;
- 	size = dispDeviceRowBytes * dispDeviceRect[3] + offset
- 		+ dispDeviceRect[0];
--	vbase = __ioremap(base, size, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
-+	vbase = ioremap_wc(base, size);
- 	if (!vbase)
- 		return;
- 	logicalDisplayBase = vbase + offset;
-diff --git a/arch/powerpc/kernel/crash_dump.c b/arch/powerpc/kernel/crash_dump.c
-index d10ad258d41a..bbdc4706c159 100644
---- a/arch/powerpc/kernel/crash_dump.c
-+++ b/arch/powerpc/kernel/crash_dump.c
-@@ -110,7 +110,7 @@ ssize_t copy_oldmem_page(unsigned long pfn, char *buf,
- 		vaddr = __va(paddr);
- 		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
- 	} else {
--		vaddr = __ioremap(paddr, PAGE_SIZE, 0);
-+		vaddr = ioremap_cache(paddr, PAGE_SIZE);
- 		csize = copy_oldmem_vaddr(vaddr, buf, csize, offset, userbuf);
- 		iounmap(vaddr);
- 	}
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 7e966f4cf19a..fff72425727a 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -216,8 +216,8 @@ static int smp_85xx_start_cpu(int cpu)
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq-handler.S b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+index ddc27638ba2a..2e2a17364dc9 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq-handler.S
++++ b/arch/arm/mach-omap1/ams-delta-fiq-handler.S
+@@ -17,9 +17,9 @@
+ #include <linux/platform_data/ams-delta-fiq.h>
  
- 	/* Map the spin table */
- 	if (ioremappable)
--		spin_table = ioremap_prot(*cpu_rel_addr,
--			sizeof(struct epapr_spin_table), _PAGE_COHERENT);
-+		spin_table = ioremap_coherent(*cpu_rel_addr,
-+					      sizeof(struct epapr_spin_table));
- 	else
- 		spin_table = phys_to_virt(*cpu_rel_addr);
+ #include <asm/assembler.h>
+-#include <mach/board-ams-delta.h>
  
-diff --git a/arch/powerpc/platforms/pasemi/dma_lib.c b/arch/powerpc/platforms/pasemi/dma_lib.c
-index c80f72c370ae..53384eb42a76 100644
---- a/arch/powerpc/platforms/pasemi/dma_lib.c
-+++ b/arch/powerpc/platforms/pasemi/dma_lib.c
-@@ -576,7 +576,7 @@ int pasemi_dma_init(void)
- 		res.start = 0xfd800000;
- 		res.end = res.start + 0x1000;
- 	}
--	dma_status = __ioremap(res.start, resource_size(&res), 0);
-+	dma_status = ioremap_cache(res.start, resource_size(&res));
- 	pci_dev_put(iob_pdev);
+ #include "ams-delta-fiq.h"
++#include "board-ams-delta.h"
+ #include "iomap.h"
+ #include "soc.h"
  
- 	for (i = 0; i < MAX_TXCH; i++)
-diff --git a/arch/powerpc/platforms/ps3/spu.c b/arch/powerpc/platforms/ps3/spu.c
-index b54850845466..7746c2a3c509 100644
---- a/arch/powerpc/platforms/ps3/spu.c
-+++ b/arch/powerpc/platforms/ps3/spu.c
-@@ -215,8 +215,7 @@ static int __init setup_areas(struct spu *spu)
- 		goto fail_ioremap;
- 	}
+diff --git a/arch/arm/mach-omap1/ams-delta-fiq.c b/arch/arm/mach-omap1/ams-delta-fiq.c
+index b0dc7ddf5877..14c3d3f5255e 100644
+--- a/arch/arm/mach-omap1/ams-delta-fiq.c
++++ b/arch/arm/mach-omap1/ams-delta-fiq.c
+@@ -22,11 +22,10 @@
+ #include <linux/platform_data/ams-delta-fiq.h>
+ #include <linux/platform_device.h>
  
--	spu->local_store = (__force void *)ioremap_prot(spu->local_store_phys,
--		LS_SIZE, pgprot_val(pgprot_noncached_wc(__pgprot(0))));
-+	spu->local_store = (__force void *)ioremap_wc(spu->local_store_phys, LS_SIZE);
+-#include <mach/board-ams-delta.h>
+-
+ #include <asm/fiq.h>
  
- 	if (!spu->local_store) {
- 		pr_debug("%s:%d: ioremap local_store failed\n",
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-index 00ccf3e4fcb4..15cbdd4fde06 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_sram.c
-@@ -107,11 +107,11 @@ int __init instantiate_cache_sram(struct platform_device *dev,
- 		goto out_free;
- 	}
+ #include "ams-delta-fiq.h"
++#include "board-ams-delta.h"
  
--	cache_sram->base_virt = ioremap_prot(cache_sram->base_phys,
--				cache_sram->size, _PAGE_COHERENT | PAGE_KERNEL);
-+	cache_sram->base_virt = ioremap_coherent(cache_sram->base_phys,
-+						 cache_sram->size);
- 	if (!cache_sram->base_virt) {
--		dev_err(&dev->dev, "%pOF: ioremap_prot failed\n",
--				dev->dev.of_node);
-+		dev_err(&dev->dev, "%pOF: ioremap_coherent failed\n",
-+			dev->dev.of_node);
- 		ret = -ENOMEM;
- 		goto out_release;
- 	}
+ static struct fiq_handler fh = {
+ 	.name	= "ams-delta-fiq"
+diff --git a/arch/arm/mach-omap1/board-ams-delta.c b/arch/arm/mach-omap1/board-ams-delta.c
+index dd28d2614d7f..34cb63ff45b3 100644
+--- a/arch/arm/mach-omap1/board-ams-delta.c
++++ b/arch/arm/mach-omap1/board-ams-delta.c
+@@ -36,7 +36,6 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ 
+-#include <mach/board-ams-delta.h>
+ #include <linux/platform_data/keypad-omap.h>
+ #include <mach/mux.h>
+ 
+@@ -45,6 +44,7 @@
+ #include <mach/usb.h>
+ 
+ #include "ams-delta-fiq.h"
++#include "board-ams-delta.h"
+ #include "iomap.h"
+ #include "common.h"
+ 
+diff --git a/arch/arm/mach-omap1/include/mach/board-ams-delta.h b/arch/arm/mach-omap1/board-ams-delta.h
+similarity index 98%
+rename from arch/arm/mach-omap1/include/mach/board-ams-delta.h
+rename to arch/arm/mach-omap1/board-ams-delta.h
+index ad6f865d1f16..1fbada29431a 100644
+--- a/arch/arm/mach-omap1/include/mach/board-ams-delta.h
++++ b/arch/arm/mach-omap1/board-ams-delta.h
+@@ -1,5 +1,5 @@
+ /*
+- * arch/arm/plat-omap/include/mach/board-ams-delta.h
++ * arch/arm/mach-omap1/board-ams-delta.h
+  *
+  * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
+  *
 -- 
-2.13.3
+2.16.4

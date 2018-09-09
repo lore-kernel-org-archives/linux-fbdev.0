@@ -1,24 +1,81 @@
-From: Timur Tabi <timur@kernel.org>
-Date: Tue, 11 Sep 2018 03:34:10 +0000
-Subject: Re: [PATCH 21/21] fbdev: fsl-diu: get cpu node with of_get_cpu_node
-Message-Id: <bc758dcc-c881-ab7e-129f-8a1a1c628daa@kernel.org>
+From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
+Date: Sun, 09 Sep 2018 22:56:02 +0000
+Subject: [PATCH v3 0/3] ARM: OMAP1: ams-delta: Complete driver gpiod migration
+Message-Id: <20180909225605.16463-1-jmkrzyszt@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180905193738.19325-1-robh@kernel.org>
- <20180905193738.19325-22-robh@kernel.org>
-In-Reply-To: <20180905193738.19325-22-robh@kernel.org>
+References: <20180717231448.14958-1-jmkrzyszt@gmail.com>
+In-Reply-To: <20180717231448.14958-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Tony Lindgren <tony@atomide.com>
+Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Boris Brezillon <boris.brezillon@bootlin.com>, linux-mtd@lists.infradead.org, linux-gpio@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, Brian Norris <computersforpeace@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Marek Vasut <marek.vasut@gmail.com>, linux-arm-kernel@lists.infradead.org
 
-On 9/5/18 2:37 PM, Rob Herring wrote:
->   #ifdef CONFIG_NOT_COHERENT_CACHE
-> -	np = of_find_node_by_type(NULL, "cpu");
-> +	np = of_get_cpu_node(0, NULL);
 
-This #ifdef means that it's only compiled on an MPC5121, which is a very 
-dead platform.  of_get_cpu_node() looks okay to me, but I'm going to 
-have to assume that you know what you're doing.
+This is a follow up of initial submission of a series consisted of 
+6 changes, 3 of which have been already applied or reworkeed.
 
-Acked-by: Timur Tabi <timur@kernel.org>
+
+Janusz Krzysztofik (3):
+      video: fbdev: omapfb: lcd_ams_delta: use GPIO lookup table
+      mtd: rawnand: ams-delta: use GPIO lookup table
+      ARM: OMAP1: ams-delta: make board header file local to mach-omap1
+
+
+I'm submitting the three patches in series because the last one depends
+on the other two.
+
+Tony, please set up an immutable tag for this series to be used by MTD
+as there are more changes on Amstrad Delta NAND driver coming in.
+
+Thanks,
+Janusz
+
+
+Changelog:
+v3:
+- rebased on top of v4.19-rc1
+- added Acked-by: received from Miquel
+
+v2:
+[PATCH 1/6] ARM: OMAP1: ams-delta: add GPIO lookup tables
+	- already in mainline, commit 68e62a15a914
+[PATCH 2/6] Input: ams_delta_serio: use GPIO lookup table
+	- reworked and submitted as a series, already in linux-omap,
+	  commit 68e62a15a914 ("ARM: OMAP1: ams-delta: drop GPIO lookup
+	  table for serio device") followed by 9 more
+[PATCH 3/6] ASoC: ams_delta: use GPIO lookup table
+	- already in mainline, commit d65777d1a2cd
+[PATCH 4/6] fbdev: omapfb: lcd_ams_delta: use GPIO lookup table
+	- resubmitting as [PATCH v2 1/3 v2]
+	v2: Remove problematic error code conversion no longer
+	    needed if used on top of commit d08605a64e67 ("ARM: OMAP1:
+	    ams-delta: move late devices back to init_machine")
+	    and commit 8853daf3b4ac ("gpiolib: Defer on non-DT
+	    find_chip_by_name() failure") already in linux-next
+[PATCH 5/6] mtd: rawnand: ams-delta: use GPIO lookup table
+	- resubmitting as [PATCH v2 2/3 v4]
+	v2: Fix handling of devm_gpiod_get_optional() return values -
+	    thanks to Andy Shevchenko.
+	v3: Remove problematic error code conversion no longer needed
+	    if used on top of commit d08605a64e67 ("ARM: OMAP1:
+	    ams-delta: move late devices back to init_machine") and
+	    commit 8853daf3b4ac ("gpiolib: Defer on non-DT
+	    find_chip_by_name() failure") already in linux-next - thanks
+	    to Boris Brezillon
+	v4: fix style issue - thanks to Boris Brezillon
+[PATCH 6/6] ARM: OMAP1: ams-delta: make board header file local to
+	mach-omap1
+	- resending as [PATCH v2 3/3]
+
+All dependencies mentioned in v2 changelog are satisfied in v4.19-rc1.
+
+
+diffstat:
+ arch/arm/mach-omap1/ams-delta-fiq-handler.S |    2 
+ arch/arm/mach-omap1/ams-delta-fiq.c         |    3 
+ arch/arm/mach-omap1/board-ams-delta.c       |    2 
+ arch/arm/mach-omap1/board-ams-delta.h       |    2 
+ drivers/mtd/nand/raw/ams-delta.c            |  126 ++++++++++++++--------------
+ drivers/video/fbdev/omap/lcd_ams_delta.c    |   55 ++++--------
+ 6 files changed, 93 insertions(+), 97 deletions(-)

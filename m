@@ -1,49 +1,46 @@
-From: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>
-Date: Thu, 20 Sep 2018 07:47:33 +0000
-Subject: Re: [PATCH v2 1/3] video: ssd1307fb: Use gpiod_set_value_cansleep() for reset
-Message-Id: <9c7cbfd4-23dc-4729-a7ca-82bbc8f6c1aa@ysoft.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 10 Sep 2018 14:49:24 +0000
+Subject: Re: [PATCH v3] backlight: pwm_bl: switch to using "atomic" PWM API
+Message-Id: <20180910144924.GU28860@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
+References: <20180814165059.13219-1-enric.balletbo@collabora.com>
+In-Reply-To: <20180814165059.13219-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: linux-kernel@vger.kernel.org, kernel@collabora.com, cl@rock-chips.com, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>
 
-On 19.9.2018 15:17, Michal Vokáč wrote:
-> The reset signal can be produced by GPIO expander that can sleep.
-> In that case the probe function fails. Allow using GPIO expanders for
-> the reset signal by using the non-atomic gpiod_set_value_cansleep()
-> function.
+On Tue, 14 Aug 2018, Enric Balletbo i Serra wrote:
+
+> The "atomic" API allows us to configure PWM period and duty_cycle and
+> enable it in one call.
 > 
-> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
-
-I forgot to add R-by from Fabio from v1, sorry.
-I made the respin in a hurry and skipped my pre-submission checklist..
-
-Michal
-
+> The patch also moves the pwm_init_state just before any use of the
+> pwm_state struct, this fixes a potential bug where pwm_get_state
+> can be called before pwm_init_state.
+> 
+> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > ---
-> v2 changes: none
 > 
->   drivers/video/fbdev/ssd1307fb.c | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
+> Changes in v3:
+> - Get rid of duty_cycle variable from pwm_backlight_update_status.
+> - Get rid of pb->enabled and use only the status.enabled variable.
+> - Make power_on match power_off.
+> - Do not share status between ...update_status and ...power_on
 > 
-> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-> index ba66c02..e7ae135 100644
-> --- a/drivers/video/fbdev/ssd1307fb.c
-> +++ b/drivers/video/fbdev/ssd1307fb.c
-> @@ -728,9 +728,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
->   
->   	if (par->reset) {
->   		/* Reset the screen */
-> -		gpiod_set_value(par->reset, 0);
-> +		gpiod_set_value_cansleep(par->reset, 0);
->   		udelay(4);
-> -		gpiod_set_value(par->reset, 1);
-> +		gpiod_set_value_cansleep(par->reset, 1);
->   		udelay(4);
->   	}
->   
+> Changes in v2:
+> - Do not force the PWM be off in the first call to pwm_apply_state.
+> - Delayed applying the state until we know what the period is.
+> - Removed pb->period as after the conversion is not needed.
 > 
+>  drivers/video/backlight/pwm_bl.c | 81 +++++++++++++++++---------------
+>  1 file changed, 42 insertions(+), 39 deletions(-)
+
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

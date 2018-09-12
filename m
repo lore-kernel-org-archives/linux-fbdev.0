@@ -1,32 +1,71 @@
-From: Aymen Qader <qader.aymen@gmail.com>
-Date: Sat, 29 Sep 2018 17:38:07 +0000
-Subject: [PATCH] staging: sm750fb: Remove extra space character
-Message-Id: <20180929173807.14261-1-qader.aymen@gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:48 +0000
+Subject: [PATCH v2 17/24] powerpc/mm: Move pte_user() into nohash/pgtable.h
+Message-Id: <c7144b5c3f3da430e4e75c40e8d1a758b3f40e85.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Aymen Qader <qader.aymen@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Remove an extra space in ddk750_mode.c to fix indentation
+Now the pte-common.h is only for nohash platforms, lets
+move pte_user() helper out of pte-common.h to put it
+together with other helpers.
 
-Signed-off-by: Aymen Qader <qader.aymen@gmail.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/staging/sm750fb/ddk750_mode.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/nohash/pgtable.h | 10 ++++++++++
+ arch/powerpc/include/asm/pte-common.h     | 13 -------------
+ 2 files changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/ddk750_mode.c b/drivers/staging/sm750fb/ddk750_mode.c
-index 7e22d093b091..4dac691ad1b1 100644
---- a/drivers/staging/sm750fb/ddk750_mode.c
-+++ b/drivers/staging/sm750fb/ddk750_mode.c
-@@ -131,7 +131,7 @@ static int programModeRegisters(struct mode_parameter *pModeParam,
- 				  DISPLAY_CTRL_HSYNC_PHASE |
- 				  DISPLAY_CTRL_TIMING | DISPLAY_CTRL_PLANE);
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 92def7088054..a4c31b829071 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -47,6 +47,16 @@ static inline int pte_present(pte_t pte)
+ }
  
--			 poke32(CRT_DISPLAY_CTRL, tmp | reg);
-+			poke32(CRT_DISPLAY_CTRL, tmp | reg);
- 		}
+ /*
++ * Don't just check for any non zero bits in __PAGE_USER, since for book3e
++ * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
++ * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
++ */
++static inline bool pte_user(pte_t pte)
++{
++	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) = _PAGE_USER;
++}
++
++/*
+  * We only find page table entry in the last level
+  * Hence no need for other accessors
+  */
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 3a8ec18ffd22..556a914ff845 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -66,19 +66,6 @@
+ #define _PTE_NONE_MASK	0
+ #endif
  
- 	} else if (pll->clockType = PRIMARY_PLL) {
+-#ifndef __ASSEMBLY__
+-
+-/*
+- * Don't just check for any non zero bits in __PAGE_USER, since for book3e
+- * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
+- * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
+- */
+-static inline bool pte_user(pte_t pte)
+-{
+-	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) = _PAGE_USER;
+-}
+-#endif /* __ASSEMBLY__ */
+-
+ /* Location of the PFN in the PTE. Most 32-bit platforms use the same
+  * as _PAGE_SHIFT here (ie, naturally aligned).
+  * Platform who don't just pre-define the value so we don't override it here
 -- 
-2.17.1
+2.13.3

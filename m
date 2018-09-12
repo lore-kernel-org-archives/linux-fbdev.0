@@ -1,87 +1,271 @@
-From: Paul Moore <paul@paul-moore.com>
-Date: Wed, 05 Sep 2018 11:42:04 +0000
-Subject: Re: [PATCH] [RFC v2] Drop all 00-INDEX files from Documentation/
-Message-Id: <CAHC9VhR7Zana3xTEj2jUGXb+hBzyh69g0rBg_p_4tkbjtCUdpw@mail.gmail.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:38 +0000
+Subject: [PATCH v2 12/24] powerpc/mm: use pte helpers in generic code
+Message-Id: <13f63620e6d21a07b48c85719793f4f0e88c894f.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1536012923-16275-1-git-send-email-henrik@austad.us>
-In-Reply-To: <1536012923-16275-1-git-send-email-henrik@austad.us>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: henrik@austad.us
-Cc: linux-doc@vger.kernel.org, corbet@lwn.net, bhelgaas@google.com, paulmck@linux.vnet.ibm.com, josh@joshtriplett.org, rostedt@goodmis.org, mathieu.desnoyers@efficios.com, jiangshanlai@gmail.com, axboe@kernel.dk, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, linus.walleij@linaro.org, davem@davemloft.net, isdn@linux-pingi.de, yamada.masahiro@socionext.com, michal.lkml@markovi.net, peterz@infradead.org, mingo@redhat.com, will.deacon@arm.com, ralf@linux-mips.org, paul.burton@mips.com, jhogan@kernel.org, jejb@parisc-linux.org, deller@gmx.de, rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz, benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, gregkh@linuxfoundation.org, jslaby@suse.com, broonie@kernel.o
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-On Mon, Sep 3, 2018 at 6:15 PM Henrik Austad <henrik@austad.us> wrote:
-> This is a respin with a wider audience (all that get_maintainer returned)
-> and I know this spams a *lot* of people. Not sure what would be the correct
-> way, so my apologies for ruining your inbox.
->
-> The 00-INDEX files are supposed to give a summary of all files present
-> in a directory, but these files are horribly out of date and their
-> usefulness is brought into question. Often a simple "ls" would reveal
-> the same information as the filenames are generally quite descriptive as
-> a short introduction to what the file covers (it should not surprise
-> anyone what Documentation/sched/sched-design-CFS.txt covers)
->
-> A few years back it was mentioned that these files were no longer really
-> needed, and they have since then grown further out of date, so perhaps
-> it is time to just throw them out.
->
-> A short status yields the following _outdated_ 00-INDEX files, first
-> counter is files listed in 00-INDEX but missing in the directory, last
-> is files present but not listed in 00-INDEX.
->
-> List of outdated 00-INDEX:
-> Documentation: (4/10)
-> Documentation/sysctl: (0/1)
-> Documentation/timers: (1/0)
-> Documentation/blockdev: (3/1)
-> Documentation/w1/slaves: (0/1)
-> Documentation/locking: (0/1)
-> Documentation/devicetree: (0/5)
-> Documentation/power: (1/1)
-> Documentation/powerpc: (0/5)
-> Documentation/arm: (1/0)
-> Documentation/x86: (0/9)
-> Documentation/x86/x86_64: (1/1)
-> Documentation/scsi: (4/4)
-> Documentation/filesystems: (2/9)
-> Documentation/filesystems/nfs: (0/2)
-> Documentation/cgroup-v1: (0/2)
-> Documentation/kbuild: (0/4)
-> Documentation/spi: (1/0)
-> Documentation/virtual/kvm: (1/0)
-> Documentation/scheduler: (0/2)
-> Documentation/fb: (0/1)
-> Documentation/block: (0/1)
-> Documentation/networking: (6/37)
-> Documentation/vm: (1/3)
->
-> Then there are 364 subdirectories in Documentation/ with several files that
-> are missing 00-INDEX alltogether (and another 120 with a single file and no
-> 00-INDEX).
->
-> I don't really have an opinion to whether or not we /should/ have 00-INDEX,
-> but the above 00-INDEX should either be removed or be kept up to date. If
-> we should keep the files, I can try to keep them updated, but I rather not
-> if we just want to delete them anyway.
->
-> As a starting point, remove all index-files and references to 00-INDEX and
-> see where the discussion is going.
->
-> Again, sorry for the insanely wide distribution.
->
-> Signed-off-by: Henrik Austad <henrik@austad.us>
-...
-> Signed-off-by: Henrik Austad <haustad@cisco.com>
-> ---
->  Documentation/00-INDEX                  | 428 --------------------------------
-...
+Get rid of platform specific _PAGE_XXXX in powerpc common code and
+use helpers instead.
 
-Looks reasonable to me, you can add my ACK for the NetLabel bits.
+mm/dump_linuxpagetables.c will be handled separately
 
-Acked-by: Paul Moore <paul@paul-moore.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/book3s/32/pgtable.h |  9 +++------
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 12 ++++++++----
+ arch/powerpc/include/asm/nohash/pgtable.h    |  3 +--
+ arch/powerpc/mm/pgtable.c                    | 19 ++++++-------------
+ arch/powerpc/mm/pgtable_32.c                 | 15 ++++++++-------
+ arch/powerpc/mm/pgtable_64.c                 | 14 +++++++-------
+ arch/powerpc/xmon/xmon.c                     | 12 +++++++-----
+ 7 files changed, 40 insertions(+), 44 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 24ed0f45d92f..d4f2f396af70 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -326,17 +326,14 @@ static inline bool pte_ci(pte_t pte)
+ #define pte_access_permitted pte_access_permitted
+ static inline bool pte_access_permitted(pte_t pte, bool write)
+ {
+-	unsigned long pteval = pte_val(pte);
+ 	/*
+ 	 * A read-only access is controlled by _PAGE_USER bit.
+ 	 * We have _PAGE_READ set for WRITE and EXECUTE
+ 	 */
+-	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_USER;
+-
+-	if (write)
+-		need_pte_bits |= _PAGE_WRITE;
++	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
++		return false;
+ 
+-	if ((pteval & need_pte_bits) != need_pte_bits)
++	if (write && !pte_write(pte))
+ 		return false;
+ 
+ 	return true;
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index 6fecfd7854f5..a4156da4a7a4 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -277,7 +277,10 @@ static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr,
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pte_t *ptep)
+ {
+-	pte_update(ptep, (_PAGE_RW | _PAGE_HWWRITE), _PAGE_RO);
++	unsigned long clr = ~pte_val(pte_wrprotect(__pte(~0)));
++	unsigned long set = pte_val(pte_wrprotect(__pte(0)));
++
++	pte_update(ptep, clr, set);
+ }
+ static inline void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 					   unsigned long addr, pte_t *ptep)
+@@ -291,9 +294,10 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   unsigned long address,
+ 					   int psize)
+ {
+-	unsigned long set = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
+-	unsigned long clr = ~pte_val(entry) & (_PAGE_RO | _PAGE_NA);
++	pte_t pte_set = pte_mkyoung(pte_mkdirty(pte_mkwrite(pte_mkexec(__pte(0)))));
++	pte_t pte_clr = pte_mkyoung(pte_mkdirty(pte_mkwrite(pte_mkexec(__pte(~0)))));
++	unsigned long set = pte_val(entry) & pte_val(pte_set);
++	unsigned long clr = ~pte_val(entry) & ~pte_val(pte_clr);
+ 
+ 	pte_update(ptep, clr, set);
+ 
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index f87cf446b01d..92def7088054 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -32,8 +32,7 @@ static inline pgprot_t pte_pgprot(pte_t pte)	{ return __pgprot(pte_val(pte) & PA
+  */
+ static inline int pte_protnone(pte_t pte)
+ {
+-	return (pte_val(pte) &
+-		(_PAGE_PRESENT | _PAGE_USER)) = _PAGE_PRESENT;
++	return pte_present(pte) && !pte_user(pte);
+ }
+ 
+ static inline int pmd_protnone(pmd_t pmd)
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index 4f788f3762a9..8558f01ed5c8 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -44,20 +44,13 @@ static inline int is_exec_fault(void)
+ static inline int pte_looks_normal(pte_t pte)
+ {
+ 
+-#if defined(CONFIG_PPC_BOOK3S_64)
+-	if ((pte_val(pte) & (_PAGE_PRESENT | _PAGE_SPECIAL)) = _PAGE_PRESENT) {
++	if (pte_present(pte) && !pte_special(pte)) {
+ 		if (pte_ci(pte))
+ 			return 0;
+ 		if (pte_user(pte))
+ 			return 1;
+ 	}
+ 	return 0;
+-#else
+-	return (pte_val(pte) &
+-		(_PAGE_PRESENT | _PAGE_SPECIAL | _PAGE_NO_CACHE | _PAGE_USER |
+-		 _PAGE_PRIVILEGED)) =
+-		(_PAGE_PRESENT | _PAGE_USER);
+-#endif
+ }
+ 
+ static struct page *maybe_pte_to_page(pte_t pte)
+@@ -117,7 +110,7 @@ static pte_t set_pte_filter(pte_t pte)
+ 	struct page *pg;
+ 
+ 	/* No exec permission in the first place, move on */
+-	if (!(pte_val(pte) & _PAGE_EXEC) || !pte_looks_normal(pte))
++	if (!pte_exec(pte) || !pte_looks_normal(pte))
+ 		return pte;
+ 
+ 	/* If you set _PAGE_EXEC on weird pages you're on your own */
+@@ -137,7 +130,7 @@ static pte_t set_pte_filter(pte_t pte)
+ 	}
+ 
+ 	/* Else, we filter out _PAGE_EXEC */
+-	return __pte(pte_val(pte) & ~_PAGE_EXEC);
++	return pte_exprotect(pte);
+ }
+ 
+ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+@@ -150,7 +143,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	 * if necessary. Also if _PAGE_EXEC is already set, same deal,
+ 	 * we just bail out
+ 	 */
+-	if (dirty || (pte_val(pte) & _PAGE_EXEC) || !is_exec_fault())
++	if (dirty || pte_exec(pte) || !is_exec_fault())
+ 		return pte;
+ 
+ #ifdef CONFIG_DEBUG_VM
+@@ -176,7 +169,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	set_bit(PG_arch_1, &pg->flags);
+ 
+  bail:
+-	return __pte(pte_val(pte) | _PAGE_EXEC);
++	return pte_mkexec(pte);
+ }
+ 
+ #endif /* CONFIG_PPC_BOOK3S */
+@@ -195,7 +188,7 @@ void set_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+ 	VM_WARN_ON(pte_present(*ptep) && !pte_protnone(*ptep));
+ 
+ 	/* Add the pte bit when trying to set a pte */
+-	pte = __pte(pte_val(pte) | _PAGE_PTE);
++	pte = pte_mkpte(pte);
+ 
+ 	/* Note: mm->context.id might not yet have been assigned as
+ 	 * this context might not have been activated yet when this
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 01f348938328..5877f5aa8f5d 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -112,15 +112,17 @@ EXPORT_SYMBOL(ioremap_coherent);
+ void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
++	pte_t pte = __pte(flags);
++
+ 	/* writeable implies dirty for kernel addresses */
+-	if ((flags & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO)
+-		flags |= _PAGE_DIRTY | _PAGE_HWWRITE;
++	if (pte_write(pte))
++		pte = pte_mkdirty(pte);
+ 
+ 	/* we don't want to let _PAGE_USER and _PAGE_EXEC leak out */
+-	flags &= ~(_PAGE_USER | _PAGE_EXEC);
+-	flags |= _PAGE_PRIVILEGED;
++	pte = pte_exprotect(pte);
++	pte = pte_mkprivileged(pte);
+ 
+-	return __ioremap_caller(addr, size, __pgprot(flags), __builtin_return_address(0));
++	return __ioremap_caller(addr, size, pte_pgprot(pte), __builtin_return_address(0));
+ }
+ EXPORT_SYMBOL(ioremap_prot);
+ 
+@@ -235,8 +237,7 @@ int map_kernel_page(unsigned long va, phys_addr_t pa, pgprot_t prot)
+ 		/* The PTE should never be already set nor present in the
+ 		 * hash table
+ 		 */
+-		BUG_ON((pte_val(*pg) & (_PAGE_PRESENT | _PAGE_HASHPTE)) &&
+-		       pgprot_val(prot));
++		BUG_ON((pte_present(*pg) | pte_hashpte(*pg)) && pgprot_val(prot));
+ 		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT, prot));
+ 	}
+ 	smp_wmb();
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 5c889445bee9..a7569358522c 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -230,23 +230,23 @@ void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
+ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+ 			     unsigned long flags)
+ {
++	pte_t pte = __pte(flags);
+ 	void *caller = __builtin_return_address(0);
+ 
+ 	/* writeable implies dirty for kernel addresses */
+-	if (flags & _PAGE_WRITE)
+-		flags |= _PAGE_DIRTY;
++	if (pte_write(pte))
++		pte = pte_mkdirty(pte);
+ 
+ 	/* we don't want to let _PAGE_EXEC leak out */
+-	flags &= ~_PAGE_EXEC;
++	pte = pte_exprotect(pte);
+ 	/*
+ 	 * Force kernel mapping.
+ 	 */
+-	flags &= ~_PAGE_USER;
+-	flags |= _PAGE_PRIVILEGED;
++	pte = pte_mkprivileged(pte);
+ 
+ 	if (ppc_md.ioremap)
+-		return ppc_md.ioremap(addr, size, __pgprot(flags), caller);
+-	return __ioremap_caller(addr, size, __pgprot(flags), caller);
++		return ppc_md.ioremap(addr, size, pte_pgprot(pte), caller);
++	return __ioremap_caller(addr, size, pte_pgprot(pte), caller);
+ }
+ 
+ 
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 4264aedc7775..f65f2f38c441 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -2988,15 +2988,17 @@ static void show_task(struct task_struct *tsk)
+ #ifdef CONFIG_PPC_BOOK3S_64
+ void format_pte(void *ptep, unsigned long pte)
+ {
++	pte_t entry = __pte(pte);
++
+ 	printf("ptep @ 0x%016lx = 0x%016lx\n", (unsigned long)ptep, pte);
+ 	printf("Maps physical address = 0x%016lx\n", pte & PTE_RPN_MASK);
+ 
+ 	printf("Flags = %s%s%s%s%s\n",
+-	       (pte & _PAGE_ACCESSED) ? "Accessed " : "",
+-	       (pte & _PAGE_DIRTY)    ? "Dirty " : "",
+-	       (pte & _PAGE_READ)     ? "Read " : "",
+-	       (pte & _PAGE_WRITE)    ? "Write " : "",
+-	       (pte & _PAGE_EXEC)     ? "Exec " : "");
++	       pte_young(entry) ? "Accessed " : "",
++	       pte_dirty(entry) ? "Dirty " : "",
++	       pte_read(entry)  ? "Read " : "",
++	       pte_write(entry) ? "Write " : "",
++	       pte_exec(entry)  ? "Exec " : "");
+ }
+ 
+ static void show_pte(unsigned long addr)
 -- 
-paul moore
-www.paul-moore.com
+2.13.3

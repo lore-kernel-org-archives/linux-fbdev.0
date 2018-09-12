@@ -1,59 +1,132 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:44 +0000
-Subject: [PATCH v3 02/13] fbdev: allow apertures == NULL in remove_conflicting_framebuffers()
-Message-Id: <b5fed539fe569035139c8594c23effd8c39f12ca.1535810304.git.mirq-linux@rere.qmqm.pl>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:44 +0000
+Subject: [PATCH v2 15/24] powerpc/mm: move __P and __S tables in the common pgtable.h
+Message-Id: <e99eebcd2aafb379cdf8fd39f06399e6abaf3ced.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Interpret (otherwise-invalid) NULL apertures argument to mean all-memory
-range. This will allow to remove several duplicates of this code
-from drivers in following patches.
+__P and __S flags are the same for all platform and should remain
+as is in the future, so avoid duplication.
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2: added kerneldoc to corresponding DRM helper
-v3: split kerneldoc to another patch
----
- drivers/video/fbdev/core/fbmem.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 20 --------------------
+ arch/powerpc/include/asm/pgtable.h           | 19 +++++++++++++++++++
+ arch/powerpc/include/asm/pte-common.h        | 20 --------------------
+ 3 files changed, 19 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 30a18d4c9de4..0df148eb4699 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1779,11 +1779,25 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
- 				    const char *name, bool primary)
- {
- 	int ret;
-+	bool do_free = false;
-+
-+	if (!a) {
-+		a = alloc_apertures(1);
-+		if (!a)
-+			return -ENOMEM;
-+
-+		a->ranges[0].base = 0;
-+		a->ranges[0].size = ~0;
-+		do_free = true;
-+	}
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index 8cf44faa6ff3..6799bc02cb22 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -151,8 +151,6 @@
+  * Write permissions imply read permissions for now (we could make write-only
+  * pages on BookE but we don't bother for now). Execute permission control is
+  * possible on platforms that define _PAGE_EXEC
+- *
+- * Note due to the way vm flags are laid out, the bits are XWR
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
+@@ -162,24 +160,6 @@
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
  
- 	mutex_lock(&registration_lock);
- 	ret = do_remove_conflicting_framebuffers(a, name, primary);
- 	mutex_unlock(&registration_lock);
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_X
+-#define __P101	PAGE_READONLY_X
+-#define __P110	PAGE_COPY_X
+-#define __P111	PAGE_COPY_X
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_X
+-#define __S101	PAGE_READONLY_X
+-#define __S110	PAGE_SHARED_X
+-#define __S111	PAGE_SHARED_X
+-
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+ #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 14c79a7dc855..fb4b85bba110 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -20,6 +20,25 @@ struct mm_struct;
+ #include <asm/nohash/pgtable.h>
+ #endif /* !CONFIG_PPC_BOOK3S */
  
-+	if (do_free)
-+		kfree(a);
++/* Note due to the way vm flags are laid out, the bits are XWR */
++#define __P000	PAGE_NONE
++#define __P001	PAGE_READONLY
++#define __P010	PAGE_COPY
++#define __P011	PAGE_COPY
++#define __P100	PAGE_READONLY_X
++#define __P101	PAGE_READONLY_X
++#define __P110	PAGE_COPY_X
++#define __P111	PAGE_COPY_X
 +
- 	return ret;
- }
- EXPORT_SYMBOL(remove_conflicting_framebuffers);
++#define __S000	PAGE_NONE
++#define __S001	PAGE_READONLY
++#define __S010	PAGE_SHARED
++#define __S011	PAGE_SHARED
++#define __S100	PAGE_READONLY_X
++#define __S101	PAGE_READONLY_X
++#define __S110	PAGE_SHARED_X
++#define __S111	PAGE_SHARED_X
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <asm/tlbflush.h>
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 5a5ba43bdf98..4860dae76dae 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -139,8 +139,6 @@ static inline bool pte_user(pte_t pte)
+  * Write permissions imply read permissions for now (we could make write-only
+  * pages on BookE but we don't bother for now). Execute permission control is
+  * possible on platforms that define _PAGE_EXEC
+- *
+- * Note due to the way vm flags are laid out, the bits are XWR
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_NA)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+@@ -153,24 +151,6 @@ static inline bool pte_user(pte_t pte)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO | \
+ 				 _PAGE_EXEC)
+ 
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_X
+-#define __P101	PAGE_READONLY_X
+-#define __P110	PAGE_COPY_X
+-#define __P111	PAGE_COPY_X
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_X
+-#define __S101	PAGE_READONLY_X
+-#define __S110	PAGE_SHARED_X
+-#define __S111	PAGE_SHARED_X
+-
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+ #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
 -- 
-2.18.0
+2.13.3

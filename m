@@ -1,7 +1,7 @@
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:56 +0000
-Subject: [PATCH v2 21/24] powerpc/mm: Define platform default caches related flags
-Message-Id: <88c230e7629f287437cd7ea7fccf4c8abf090a4c.1536692743.git.christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:15 +0000
+Subject: [PATCH v2 01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
+Message-Id: <1ac1795d39315628744604df233b4cddf50535eb.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1536692743.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
@@ -11,69 +11,101 @@ Content-Transfer-Encoding: 7bit
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Cache related flags like _PAGE_COHERENT and _PAGE_WRITETHRU
-are defined on most platforms. The platforms not defining
-them don't define any alternative. So we can give them a NUL
-value directly for those platforms directly.
+Other arches have ioremap_wt() to map IO areas write-through.
+Implement it on PPC as well in order to avoid drivers using
+__ioremap(_PAGE_WRITETHRU)
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Also implement ioremap_coherent() to avoid drivers using
+__ioremap(_PAGE_COHERENT)
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/nohash/32/pte-40x.h |  3 +++
- arch/powerpc/include/asm/nohash/32/pte-8xx.h |  4 ++++
- arch/powerpc/include/asm/pte-common.h        | 11 -----------
- 3 files changed, 7 insertions(+), 11 deletions(-)
+ arch/powerpc/include/asm/io.h |  9 +++++++++
+ arch/powerpc/mm/pgtable_32.c  | 16 ++++++++++++++++
+ arch/powerpc/mm/pgtable_64.c  | 10 ++++++++++
+ 3 files changed, 35 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-index ab043b3e9b99..7a8b3c94592f 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-@@ -53,6 +53,9 @@
- /* No page size encoding in the linux PTE */
- #define _PAGE_PSIZE		0
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e754568..cdccab3938db 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -3,6 +3,9 @@
+ #ifdef __KERNEL__
  
-+/* cache related flags non existing on 40x */
-+#define _PAGE_COHERENT	0
+ #define ARCH_HAS_IOREMAP_WC
++#ifdef CONFIG_PPC32
++#define ARCH_HAS_IOREMAP_WT
++#endif
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -746,6 +749,10 @@ static inline void iosync(void)
+  *
+  * * ioremap_wc enables write combining
+  *
++ * * ioremap_wt enables write through
++ *
++ * * ioremap_coherent maps coherent cached memory
++ *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+@@ -767,6 +774,8 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ 				  unsigned long flags);
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
+ #define ioremap_cache(addr, size) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 120a49bfb9c6..4c3adde09d95 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -90,6 +90,22 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+ void __iomem *
++ioremap_wt(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_wt);
 +
- #define _PAGE_KERNEL_RO		0
- #define _PAGE_KERNEL_ROX	_PAGE_EXEC
- #define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-index b899c3c877ac..2b4669b3badb 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -46,6 +46,10 @@
- #define _PAGE_NA	0x0200	/* Supervisor NA, User no access */
- #define _PAGE_RO	0x0600	/* Supervisor RO, User no access */
- 
-+/* cache related flags non existing on 8xx */
-+#define _PAGE_COHERENT	0
-+#define _PAGE_WRITETHRU	0
++void __iomem *
++ioremap_coherent(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_COHERENT,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_coherent);
 +
- #define _PAGE_KERNEL_RO		(_PAGE_PRIVILEGED | _PAGE_RO)
- #define _PAGE_KERNEL_ROX	(_PAGE_PRIVILEGED | _PAGE_RO | _PAGE_EXEC)
- #define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_DIRTY)
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 1a2102f8b1e7..ff01368a175a 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -1,17 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- /* Included from asm/pgtable-*.h only ! */
++void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
+ 	/* writeable implies dirty for kernel addresses */
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 53e9eeecd5d4..cdccfac477e0 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -222,6 +222,16 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+ 	return __ioremap_caller(addr, size, flags, caller);
+ }
  
--/*
-- * Some bits are only used on some cpu families... Make sure that all
-- * the undefined gets a sensible default
-- */
--#ifndef _PAGE_COHERENT
--#define _PAGE_COHERENT	0
--#endif
--#ifndef _PAGE_WRITETHRU
--#define _PAGE_WRITETHRU	0
--#endif
--
- /* Location of the PFN in the PTE. Most 32-bit platforms use the same
-  * as _PAGE_SHIFT here (ie, naturally aligned).
-  * Platform who don't just pre-define the value so we don't override it here
++void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
++{
++	unsigned long flags = pgprot_val(pgprot_cached(__pgprot(0)));
++	void *caller = __builtin_return_address(0);
++
++	if (ppc_md.ioremap)
++		return ppc_md.ioremap(addr, size, flags, caller);
++	return __ioremap_caller(addr, size, flags, caller);
++}
++
+ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+ 			     unsigned long flags)
+ {
 -- 
 2.13.3

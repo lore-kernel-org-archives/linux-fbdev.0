@@ -1,99 +1,158 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 26 Sep 2018 15:27:11 +0000
-Subject: Re: [PATCH] pxa168fb: prepare the clock
-Message-Id: <20180926152712eucas1p1c5f74a24ad299f43f473c662e994a522~X-LBvedqK1624116241eucas1p1X@eucas1p1.samsung.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:17 +0000
+Subject: [PATCH v2 02/24] drivers/video/fbdev: use ioremap_wc/wt() instead of __ioremap()
+Message-Id: <2f980cf32a05415662272cf052c2b9e2a94c756f.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180910120403epcas1p25706c846d95df1e47092ebb040f70a7f@epcas1p2.samsung.com>
-        <20180910120351.164257-1-lkundrak@v3.sk>
-In-Reply-To: <20180910120351.164257-1-lkundrak@v3.sk>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
+_PAGE_NO_CACHE is a platform specific flag. In addition, this flag
+is misleading because one would think it requests a noncached page
+whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
 
-[ added dri-devel@lists.freedesktop.org to Cc: ]
+_PAGE_NO_CACHE alone means write combined noncached page, so lets
+use ioremap_wc() instead.
 
-On 09/10/2018 02:03 PM, Lubomir Rintel wrote:
+_PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
+instead.
 
-Some description (besides kernel warning itself) saying what the patch is
-actually doing would be nice so I've updated the patch with:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/video/fbdev/chipsfb.c    |  3 +--
+ drivers/video/fbdev/controlfb.c  |  5 +----
+ drivers/video/fbdev/platinumfb.c |  5 +----
+ drivers/video/fbdev/valkyriefb.c | 12 ++++++------
+ 4 files changed, 9 insertions(+), 16 deletions(-)
 
-	Add missing prepare/unprepare operations for fbi->clk,
-	this fixes following kernel warning:
-
-while merging it.
-
->   ------------[ cut here ]------------
->   WARNING: CPU: 0 PID: 1 at drivers/clk/clk.c:874 clk_core_enable+0x2c/0x1b0
->   Enabling unprepared disp0_clk
->   Modules linked in:
->   CPU: 0 PID: 1 Comm: swapper Not tainted 4.18.0-rc8-00032-g02b43ddd4f21-dirty #25
->   Hardware name: Marvell MMP2 (Device Tree Support)
->   [<c010f7cc>] (unwind_backtrace) from [<c010cc6c>] (show_stack+0x10/0x14)
->   [<c010cc6c>] (show_stack) from [<c011dab4>] (__warn+0xd8/0xf0)
->   [<c011dab4>] (__warn) from [<c011db10>] (warn_slowpath_fmt+0x44/0x6c)
->   [<c011db10>] (warn_slowpath_fmt) from [<c043898c>] (clk_core_enable+0x2c/0x1b0)
->   [<c043898c>] (clk_core_enable) from [<c0439ec8>] (clk_core_enable_lock+0x18/0x2c)
->   [<c0439ec8>] (clk_core_enable_lock) from [<c0436698>] (pxa168fb_probe+0x464/0x6ac)
->   [<c0436698>] (pxa168fb_probe) from [<c04779a0>] (platform_drv_probe+0x48/0x94)
->   [<c04779a0>] (platform_drv_probe) from [<c0475bec>] (driver_probe_device+0x328/0x470)
->   [<c0475bec>] (driver_probe_device) from [<c0475de4>] (__driver_attach+0xb0/0x124)
->   [<c0475de4>] (__driver_attach) from [<c0473c38>] (bus_for_each_dev+0x64/0xa0)
->   [<c0473c38>] (bus_for_each_dev) from [<c0474ee0>] (bus_add_driver+0x1b8/0x230)
->   [<c0474ee0>] (bus_add_driver) from [<c0476a20>] (driver_register+0xac/0xf0)
->   [<c0476a20>] (driver_register) from [<c0102dd4>] (do_one_initcall+0xb8/0x1f0)
->   [<c0102dd4>] (do_one_initcall) from [<c0b010a0>] (kernel_init_freeable+0x294/0x2e0)
->   [<c0b010a0>] (kernel_init_freeable) from [<c07e9eb8>] (kernel_init+0x8/0x10c)
->   [<c07e9eb8>] (kernel_init) from [<c01010e8>] (ret_from_fork+0x14/0x2c)
->   Exception stack(0xd008bfb0 to 0xd008bff8)
->   bfa0:                                     00000000 00000000 00000000 00000000
->   bfc0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000
->   bfe0: 00000000 00000000 00000000 00000000 00000013 00000000
->   ---[ end trace c0af40f9e2ed7cb4 ]---
-> 
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
-
-Patch queued for 4.19, thanks.
-
-> ---
->  drivers/video/fbdev/pxa168fb.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
-> index def3a501acd6..d059d04c63ac 100644
-> --- a/drivers/video/fbdev/pxa168fb.c
-> +++ b/drivers/video/fbdev/pxa168fb.c
-> @@ -712,7 +712,7 @@ static int pxa168fb_probe(struct platform_device *pdev)
->  	/*
->  	 * enable controller clock
->  	 */
-> -	clk_enable(fbi->clk);
-> +	clk_prepare_enable(fbi->clk);
->  
->  	pxa168fb_set_par(info);
->  
-> @@ -767,7 +767,7 @@ static int pxa168fb_probe(struct platform_device *pdev)
->  failed_free_cmap:
->  	fb_dealloc_cmap(&info->cmap);
->  failed_free_clk:
-> -	clk_disable(fbi->clk);
-> +	clk_disable_unprepare(fbi->clk);
->  failed_free_fbmem:
->  	dma_free_coherent(fbi->dev, info->fix.smem_len,
->  			info->screen_base, fbi->fb_start_dma);
-> @@ -807,7 +807,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
->  	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
->  		    info->screen_base, info->fix.smem_start);
->  
-> -	clk_disable(fbi->clk);
-> +	clk_disable_unprepare(fbi->clk);
->  
->  	framebuffer_release(info);
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
+index f103665cad43..40182ed85648 100644
+--- a/drivers/video/fbdev/chipsfb.c
++++ b/drivers/video/fbdev/chipsfb.c
+@@ -27,7 +27,6 @@
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/console.h>
+-#include <asm/io.h>
+ 
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ #include <asm/backlight.h>
+@@ -401,7 +400,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
+ #endif /* CONFIG_PMAC_BACKLIGHT */
+ 
+ #ifdef CONFIG_PPC
+-	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
++	p->screen_base = ioremap_wc(addr, 0x200000);
+ #else
+ 	p->screen_base = ioremap(addr, 0x200000);
+ #endif
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 8d14b29aafea..9cb0ef7ac29e 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -48,9 +48,7 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ #include <asm/btext.h>
+ 
+ #include "macmodes.h"
+@@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
+ 		goto error_out;
+ 	}
+ 	/* map at most 8MB for the frame buffer */
+-	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
+-				    _PAGE_WRITETHRU);
++	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
+ 
+ 	if (!p->control_regs_phys ||
+ 	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
+diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
+index 377d3399a3ad..bf6b7fb83cf4 100644
+--- a/drivers/video/fbdev/platinumfb.c
++++ b/drivers/video/fbdev/platinumfb.c
+@@ -32,9 +32,7 @@
+ #include <linux/nvram.h>
+ #include <linux/of_device.h>
+ #include <linux/of_platform.h>
+-#include <asm/io.h>
+ #include <asm/prom.h>
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "platinumfb.h"
+@@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
+ 
+ 	/* frame buffer - map only 4MB */
+ 	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
+-	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
+-					_PAGE_WRITETHRU);
++	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
+ 	pinfo->base_frame_buffer = pinfo->frame_buffer;
+ 
+ 	/* registers */
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index 275fb98236d3..d51c3a8009cb 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -54,13 +54,11 @@
+ #include <linux/nvram.h>
+ #include <linux/adb.h>
+ #include <linux/cuda.h>
+-#include <asm/io.h>
+ #ifdef CONFIG_MAC
+ #include <asm/macintosh.h>
+ #else
+ #include <asm/prom.h>
+ #endif
+-#include <asm/pgtable.h>
+ 
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+@@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ int __init valkyriefb_init(void)
+ {
+ 	struct fb_info_valkyrie	*p;
+-	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
++	unsigned long frame_buffer_phys, cmap_regs_phys;
+ 	int err;
+ 	char *option = NULL;
+ 
+@@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
+ 	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
+ 	frame_buffer_phys = 0xf9000000;
+ 	cmap_regs_phys = 0x50f24000;
+-	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
+ #else /* ppc (!CONFIG_MAC) */
+ 	{
+ 		struct device_node *dp;
+@@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
+ 
+ 		frame_buffer_phys = r.start;
+ 		cmap_regs_phys = r.start + 0x304000;
+-		flags = _PAGE_WRITETHRU;
+ 	}
+ #endif /* ppc (!CONFIG_MAC) */
+ 
+@@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
+ 	}
+ 	p->total_vram = 0x100000;
+ 	p->frame_buffer_phys = frame_buffer_phys;
+-	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
++#ifdef CONFIG_MAC
++	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
++#else
++	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
++#endif
+ 	p->cmap_regs_phys = cmap_regs_phys;
+ 	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
+ 	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
+-- 
+2.13.3

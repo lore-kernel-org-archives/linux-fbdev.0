@@ -1,57 +1,92 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:46 +0000
-Subject: [PATCH v3 06/13] drm/bochs: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <b5fce8eba7472e5ba8e18c2624938be6c5aa6ebb.1535810304.git.mirq-linux@rere.qmqm.pl>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:58 +0000
+Subject: [PATCH v2 22/24] powerpc/mm: Get rid of pte-common.h
+Message-Id: <697f32e902ee3f445be37cf76aa763904d90e9f2.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, virtualization@lists.linux-foundation.org, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Jonathan Hunter <jonathanh@nvidia.com>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Do not include pte-common.h in nohash/32/pgtable.h
+
+As that was the last includer, get rid of pte-common.h
+
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/gpu/drm/bochs/bochs_drv.c | 18 +-----------------
- 1 file changed, 1 insertion(+), 17 deletions(-)
+ arch/powerpc/include/asm/nohash/32/pgtable.h | 23 +++++++++++++++++++++--
+ arch/powerpc/include/asm/pte-common.h        | 25 -------------------------
+ 2 files changed, 21 insertions(+), 27 deletions(-)
+ delete mode 100644 arch/powerpc/include/asm/pte-common.h
 
-diff --git a/drivers/gpu/drm/bochs/bochs_drv.c b/drivers/gpu/drm/bochs/bochs_drv.c
-index 7b20318483e4..c61b40c72b62 100644
---- a/drivers/gpu/drm/bochs/bochs_drv.c
-+++ b/drivers/gpu/drm/bochs/bochs_drv.c
-@@ -143,22 +143,6 @@ static const struct dev_pm_ops bochs_pm_ops = {
- /* ---------------------------------------------------------------------- */
- /* pci interface                                                          */
+diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
+index ce9270a0ea42..d2908a8038e8 100644
+--- a/arch/powerpc/include/asm/nohash/32/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
+@@ -128,8 +128,27 @@ extern int icache_44x_need_flush;
+ #include <asm/nohash/32/pte-8xx.h>
+ #endif
  
--static int bochs_kick_out_firmware_fb(struct pci_dev *pdev)
--{
--	struct apertures_struct *ap;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return -ENOMEM;
--
--	ap->ranges[0].base = pci_resource_start(pdev, 0);
--	ap->ranges[0].size = pci_resource_len(pdev, 0);
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "bochsdrmfb", false);
--	kfree(ap);
--
--	return 0;
--}
--
- static int bochs_pci_probe(struct pci_dev *pdev,
- 			   const struct pci_device_id *ent)
- {
-@@ -171,7 +155,7 @@ static int bochs_pci_probe(struct pci_dev *pdev,
- 		return -ENOMEM;
- 	}
+-/* And here we include common definitions */
+-#include <asm/pte-common.h>
++/* Location of the PFN in the PTE. Most 32-bit platforms use the same
++ * as _PAGE_SHIFT here (ie, naturally aligned).
++ * Platform who don't just pre-define the value so we don't override it here
++ */
++#ifndef PTE_RPN_SHIFT
++#define PTE_RPN_SHIFT	(PAGE_SHIFT)
++#endif
++
++/* The mask covered by the RPN must be a ULL on 32-bit platforms with
++ * 64-bit PTEs
++ */
++#if defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
++#define PTE_RPN_MASK	(~((1ULL << PTE_RPN_SHIFT) - 1))
++#else
++#define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
++#endif
++
++/* _PAGE_CHG_MASK masks of bits that are to be preserved across
++ * pgprot changes
++ */
++#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_SPECIAL)
  
--	ret = bochs_kick_out_firmware_fb(pdev);
-+	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "bochsdrmfb");
- 	if (ret)
- 		return ret;
+ #ifndef __ASSEMBLY__
  
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+deleted file mode 100644
+index ff01368a175a..000000000000
+--- a/arch/powerpc/include/asm/pte-common.h
++++ /dev/null
+@@ -1,25 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-/* Included from asm/pgtable-*.h only ! */
+-
+-/* Location of the PFN in the PTE. Most 32-bit platforms use the same
+- * as _PAGE_SHIFT here (ie, naturally aligned).
+- * Platform who don't just pre-define the value so we don't override it here
+- */
+-#ifndef PTE_RPN_SHIFT
+-#define PTE_RPN_SHIFT	(PAGE_SHIFT)
+-#endif
+-
+-/* The mask covered by the RPN must be a ULL on 32-bit platforms with
+- * 64-bit PTEs
+- */
+-#if defined(CONFIG_PPC32) && defined(CONFIG_PTE_64BIT)
+-#define PTE_RPN_MASK	(~((1ULL<<PTE_RPN_SHIFT)-1))
+-#else
+-#define PTE_RPN_MASK	(~((1UL<<PTE_RPN_SHIFT)-1))
+-#endif
+-
+-/* _PAGE_CHG_MASK masks of bits that are to be preserved across
+- * pgprot changes
+- */
+-#define _PAGE_CHG_MASK	(PTE_RPN_MASK | _PAGE_DIRTY | \
+-                         _PAGE_ACCESSED | _PAGE_SPECIAL)
 -- 
-2.18.0
+2.13.3

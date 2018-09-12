@@ -1,46 +1,79 @@
-From: =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
-Date: Wed, 19 Sep 2018 13:17:29 +0000
-Subject: [PATCH v2 3/3] ARM: dts: imx28-cfa10036: Fix the reset gpio signal polarity
-Message-Id: <1537363049-48399-3-git-send-email-michal.vokac@ysoft.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 12 Sep 2018 15:58:56 +0000
+Subject: [PATCH v2 21/24] powerpc/mm: Define platform default caches related flags
+Message-Id: <88c230e7629f287437cd7ea7fccf4c8abf090a4c.1536692743.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
+References: <cover.1536692743.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-The reset signal of the SSD1306 OLED display is actually active-low.
-Adapt the DT to reflect the real world.
+Cache related flags like _PAGE_COHERENT and _PAGE_WRITETHRU
+are defined on most platforms. The platforms not defining
+them don't define any alternative. So we can give them a NUL
+value directly for those platforms directly.
 
-Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-v2 changes: New patch in the series
+ arch/powerpc/include/asm/nohash/32/pte-40x.h |  3 +++
+ arch/powerpc/include/asm/nohash/32/pte-8xx.h |  4 ++++
+ arch/powerpc/include/asm/pte-common.h        | 11 -----------
+ 3 files changed, 7 insertions(+), 11 deletions(-)
 
- arch/arm/boot/dts/imx28-cfa10036.dts | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
-index e54f5ab..be3406e 100644
---- a/arch/arm/boot/dts/imx28-cfa10036.dts
-+++ b/arch/arm/boot/dts/imx28-cfa10036.dts
-@@ -11,6 +11,7 @@
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+index ab043b3e9b99..7a8b3c94592f 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
+@@ -53,6 +53,9 @@
+ /* No page size encoding in the linux PTE */
+ #define _PAGE_PSIZE		0
  
- /dts-v1/;
- #include "imx28.dtsi"
-+#include <dt-bindings/gpio/gpio.h>
++/* cache related flags non existing on 40x */
++#define _PAGE_COHERENT	0
++
+ #define _PAGE_KERNEL_RO		0
+ #define _PAGE_KERNEL_ROX	_PAGE_EXEC
+ #define _PAGE_KERNEL_RW		(_PAGE_DIRTY | _PAGE_RW | _PAGE_HWWRITE)
+diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+index b899c3c877ac..2b4669b3badb 100644
+--- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
+@@ -46,6 +46,10 @@
+ #define _PAGE_NA	0x0200	/* Supervisor NA, User no access */
+ #define _PAGE_RO	0x0600	/* Supervisor RO, User no access */
  
- / {
- 	model = "Crystalfontz CFA-10036 Board";
-@@ -95,7 +96,7 @@
- 					pinctrl-names = "default";
- 					pinctrl-0 = <&ssd1306_cfa10036>;
- 					reg = <0x3c>;
--					reset-gpios = <&gpio2 7 0>;
-+					reset-gpios = <&gpio2 7 GPIO_ACTIVE_LOW>;
- 					solomon,height = <32>;
- 					solomon,width = <128>;
- 					solomon,page-offset = <0>;
++/* cache related flags non existing on 8xx */
++#define _PAGE_COHERENT	0
++#define _PAGE_WRITETHRU	0
++
+ #define _PAGE_KERNEL_RO		(_PAGE_PRIVILEGED | _PAGE_RO)
+ #define _PAGE_KERNEL_ROX	(_PAGE_PRIVILEGED | _PAGE_RO | _PAGE_EXEC)
+ #define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_DIRTY)
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 1a2102f8b1e7..ff01368a175a 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -1,17 +1,6 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ /* Included from asm/pgtable-*.h only ! */
+ 
+-/*
+- * Some bits are only used on some cpu families... Make sure that all
+- * the undefined gets a sensible default
+- */
+-#ifndef _PAGE_COHERENT
+-#define _PAGE_COHERENT	0
+-#endif
+-#ifndef _PAGE_WRITETHRU
+-#define _PAGE_WRITETHRU	0
+-#endif
+-
+ /* Location of the PFN in the PTE. Most 32-bit platforms use the same
+  * as _PAGE_SHIFT here (ie, naturally aligned).
+  * Platform who don't just pre-define the value so we don't override it here
 -- 
-2.1.4
+2.13.3

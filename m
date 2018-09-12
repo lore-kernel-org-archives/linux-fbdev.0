@@ -1,24 +1,59 @@
-From: Fabio Estevam <festevam@gmail.com>
-Date: Wed, 19 Sep 2018 12:11:03 +0000
-Subject: Re: [PATCH 1/2] video: ssd1307fb: Use gpiod_set_value_cansleep() for reset
-Message-Id: <CAOMZO5CEh-UQA=QiyWMadkpp=LcWbGs6zaaXXqa9cYQgrTLiDA@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Date: Wed, 12 Sep 2018 07:30:46 +0000
+Subject: [PATCH] fbdev/omapfb: fix omapfb_memory_read infoleak
+Message-Id: <20180912073046.26475-1-tomi.valkeinen@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1537348724-22976-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1537348724-22976-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>, stable@vger.kernel.org, security@kernel.org, Will Deacon <will.deacon@arm.com>, Jann Horn <jannh@google.com>, Tony Lindgren <tony@atomide.com>
 
-Hi Michal,
+OMAPFB_MEMORY_READ ioctl reads pixels from the LCD's memory and copies
+them to a userspace buffer. The code has two issues:
 
-On Wed, Sep 19, 2018 at 6:18 AM, Michal Vokáč <michal.vokac@ysoft.com> wrote:
-> The reset signal can be produced by GPIO expander that can sleep.
-> In that case the probe function fails. Allow using GPIO expanders for
-> the reset signal by using the non-atomic gpiod_set_value_cansleep()
-> function.
->
-> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+- The user provided width and height could be large enough to overflow
+  the calculations
+- The copy_to_user() can copy uninitialized memory to the userspace,
+  which might contain sensitive kernel information.
 
-Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+Fix these by limiting the width & height parameters, and only copying
+the amount of data that we actually received from the LCD.
+
+Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Reported-by: Jann Horn <jannh@google.com>
+Cc: stable@vger.kernel.org
+Cc: security@kernel.org
+Cc: Will Deacon <will.deacon@arm.com>
+Cc: Jann Horn <jannh@google.com>
+Cc: Tony Lindgren <tony@atomide.com>
+---
+ drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
+index ef69273074ba..a3edb20ea4c3 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-ioctl.c
+@@ -496,6 +496,9 @@ static int omapfb_memory_read(struct fb_info *fbi,
+ 	if (!access_ok(VERIFY_WRITE, mr->buffer, mr->buffer_size))
+ 		return -EFAULT;
+ 
++	if (mr->w > 4096 || mr->h > 4096)
++		return -EINVAL;
++
+ 	if (mr->w * mr->h * 3 > mr->buffer_size)
+ 		return -EINVAL;
+ 
+@@ -509,7 +512,7 @@ static int omapfb_memory_read(struct fb_info *fbi,
+ 			mr->x, mr->y, mr->w, mr->h);
+ 
+ 	if (r > 0) {
+-		if (copy_to_user(mr->buffer, buf, mr->buffer_size))
++		if (copy_to_user(mr->buffer, buf, r))
+ 			r = -EFAULT;
+ 	}
+ 
+-- 
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

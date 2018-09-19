@@ -1,64 +1,46 @@
-From: =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Date: Sat, 01 Sep 2018 14:08:46 +0000
-Subject: [PATCH v3 05/13] drm/amdgpu: use simpler remove_conflicting_pci_framebuffers()
-Message-Id: <fe59ab587ef4ef799b525fcc03d87800c5dc26d9.1535810304.git.mirq-linux@rere.qmqm.pl>
+From: =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
+Date: Wed, 19 Sep 2018 13:17:29 +0000
+Subject: [PATCH v2 3/3] ARM: dts: imx28-cfa10036: Fix the reset gpio signal polarity
+Message-Id: <1537363049-48399-3-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1535810304.git.mirq-linux@rere.qmqm.pl>
+References: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1537363049-48399-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, linux-tegra@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, amd-gfx@lists.freedesktop.org, Jonathan Hunter <jonathanh@nvidia.com>, Eric Anholt <eric@anholt.net>, Thierry Reding <thierry.reding@gmail.com>, Gerd Hoffmann <kraxel@redhat.com>, Alex Deucher <alexander.deucher@amd.com>, Dave Airlie <airlied@redhat.com>, Maxime Ripard <maxime.ripard@bootlin.com>, virtualization@lists.linux-foundation.org, linux-arm-kernel@lists.infradead.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
-Acked-by: Alex Deucher <alexander.deucher@amd.com>
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+The reset signal of the SSD1306 OLED display is actually active-low.
+Adapt the DT to reflect the real world.
+
+Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
 ---
- drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c | 24 +-----------------------
- 1 file changed, 1 insertion(+), 23 deletions(-)
+v2 changes: New patch in the series
 
-diff --git a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-index 0b19482b36b8..9b6e037719db 100644
---- a/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-+++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_drv.c
-@@ -560,28 +560,6 @@ MODULE_DEVICE_TABLE(pci, pciidlist);
+ arch/arm/boot/dts/imx28-cfa10036.dts | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/boot/dts/imx28-cfa10036.dts b/arch/arm/boot/dts/imx28-cfa10036.dts
+index e54f5ab..be3406e 100644
+--- a/arch/arm/boot/dts/imx28-cfa10036.dts
++++ b/arch/arm/boot/dts/imx28-cfa10036.dts
+@@ -11,6 +11,7 @@
  
- static struct drm_driver kms_driver;
+ /dts-v1/;
+ #include "imx28.dtsi"
++#include <dt-bindings/gpio/gpio.h>
  
--static int amdgpu_kick_out_firmware_fb(struct pci_dev *pdev)
--{
--	struct apertures_struct *ap;
--	bool primary = false;
--
--	ap = alloc_apertures(1);
--	if (!ap)
--		return -ENOMEM;
--
--	ap->ranges[0].base = pci_resource_start(pdev, 0);
--	ap->ranges[0].size = pci_resource_len(pdev, 0);
--
--#ifdef CONFIG_X86
--	primary = pdev->resource[PCI_ROM_RESOURCE].flags & IORESOURCE_ROM_SHADOW;
--#endif
--	drm_fb_helper_remove_conflicting_framebuffers(ap, "amdgpudrmfb", primary);
--	kfree(ap);
--
--	return 0;
--}
--
--
- static int amdgpu_pci_probe(struct pci_dev *pdev,
- 			    const struct pci_device_id *ent)
- {
-@@ -609,7 +587,7 @@ static int amdgpu_pci_probe(struct pci_dev *pdev,
- 		return ret;
- 
- 	/* Get rid of things like offb */
--	ret = amdgpu_kick_out_firmware_fb(pdev);
-+	ret = drm_fb_helper_remove_conflicting_pci_framebuffers(pdev, 0, "amdgpudrmfb");
- 	if (ret)
- 		return ret;
- 
+ / {
+ 	model = "Crystalfontz CFA-10036 Board";
+@@ -95,7 +96,7 @@
+ 					pinctrl-names = "default";
+ 					pinctrl-0 = <&ssd1306_cfa10036>;
+ 					reg = <0x3c>;
+-					reset-gpios = <&gpio2 7 0>;
++					reset-gpios = <&gpio2 7 GPIO_ACTIVE_LOW>;
+ 					solomon,height = <32>;
+ 					solomon,width = <128>;
+ 					solomon,page-offset = <0>;
 -- 
-2.18.0
+2.1.4

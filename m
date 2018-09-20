@@ -1,174 +1,70 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:59:00 +0000
-Subject: [PATCH v2 23/24] powerpc/8xx: change name of a few page flags to avoid confusion
-Message-Id: <54802e1bb2df75a6e8352539e13ab7ec96eea43b.1536692743.git.christophe.leroy@c-s.fr>
+From: Aymen Qader <qader.aymen@gmail.com>
+Date: Thu, 20 Sep 2018 22:53:21 +0000
+Subject: [PATCH] staging: sm750fb: Fix typo frambuffer->framebuffer
+Message-Id: <20180920225321.18180-1-qader.aymen@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Cc: Aymen Qader <qader.aymen@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-_PAGE_PRIVILEGED corresponds to the SH bit which doesn't protect
-against user access but only disables ASID verification on kernel
-accesses. User access is controlled with _PMD_USER flag.
+This patch corrects a typo (frambuffer->framebuffer) in the
+sm750fb_fram(e)buffer_release and sm750fb_fram(e)buffer_alloc function
+names.
 
-Name it _PAGE_SH instead of _PAGE_PRIVILEGED
-
-_PAGE_HUGE corresponds to the SPS bit which doesn't really tells
-that's it is a huge page but only that it is not a 4k page.
-
-Name it _PAGE_SPS instead of _PAGE_HUGE
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Aymen Qader <qader.aymen@gmail.com>
 ---
- arch/powerpc/include/asm/nohash/32/pte-8xx.h | 28 ++++++++++++++--------------
- arch/powerpc/kernel/head_8xx.S               |  6 +++---
- arch/powerpc/mm/8xx_mmu.c                    |  2 +-
- arch/powerpc/mm/dump_linuxpagetables-8xx.c   |  2 +-
- 4 files changed, 19 insertions(+), 19 deletions(-)
+ drivers/staging/sm750fb/sm750.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-index 2b4669b3badb..1c57efac089d 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -29,10 +29,10 @@
-  */
- 
- /* Definitions for 8xx embedded chips. */
--#define _PAGE_PRESENT	0x0001	/* Page is valid */
--#define _PAGE_NO_CACHE	0x0002	/* I: cache inhibit */
--#define _PAGE_PRIVILEGED	0x0004	/* No ASID (context) compare */
--#define _PAGE_HUGE	0x0008	/* SPS: Small Page Size (1 if 16k, 512k or 8M)*/
-+#define _PAGE_PRESENT	0x0001	/* V: Page is valid */
-+#define _PAGE_NO_CACHE	0x0002	/* CI: cache inhibit */
-+#define _PAGE_SH	0x0004	/* SH: No ASID (context) compare */
-+#define _PAGE_SPS	0x0008	/* SPS: Small Page Size (1 if 16k, 512k or 8M)*/
- #define _PAGE_DIRTY	0x0100	/* C: page changed */
- 
- /* These 4 software bits must be masked out when the L2 entry is loaded
-@@ -50,15 +50,15 @@
- #define _PAGE_COHERENT	0
- #define _PAGE_WRITETHRU	0
- 
--#define _PAGE_KERNEL_RO		(_PAGE_PRIVILEGED | _PAGE_RO)
--#define _PAGE_KERNEL_ROX	(_PAGE_PRIVILEGED | _PAGE_RO | _PAGE_EXEC)
--#define _PAGE_KERNEL_RW		(_PAGE_PRIVILEGED | _PAGE_DIRTY)
--#define _PAGE_KERNEL_RWX	(_PAGE_PRIVILEGED | _PAGE_DIRTY | _PAGE_EXEC)
-+#define _PAGE_KERNEL_RO		(_PAGE_SH | _PAGE_RO)
-+#define _PAGE_KERNEL_ROX	(_PAGE_SH | _PAGE_RO | _PAGE_EXEC)
-+#define _PAGE_KERNEL_RW		(_PAGE_SH | _PAGE_DIRTY)
-+#define _PAGE_KERNEL_RWX	(_PAGE_SH | _PAGE_DIRTY | _PAGE_EXEC)
- 
- /* Mask of bits returned by pte_pgprot() */
- #define PAGE_PROT_BITS	(_PAGE_GUARDED | _PAGE_NO_CACHE | \
- 			 _PAGE_ACCESSED | _PAGE_RO | _PAGE_NA | \
--			 _PAGE_PRIVILEGED | _PAGE_DIRTY | _PAGE_EXEC)
-+			 _PAGE_SH | _PAGE_DIRTY | _PAGE_EXEC)
- 
- #define _PMD_PRESENT	0x0001
- #define _PMD_PRESENT_MASK	_PMD_PRESENT
-@@ -74,7 +74,7 @@
- #define PTE_ATOMIC_UPDATES	1
- 
- #ifdef CONFIG_PPC_16K_PAGES
--#define _PAGE_PSIZE	_PAGE_HUGE
-+#define _PAGE_PSIZE	_PAGE_SPS
- #else
- #define _PAGE_PSIZE		0
- #endif
-@@ -115,28 +115,28 @@ static inline pte_t pte_mkwrite(pte_t pte)
- 
- static inline bool pte_user(pte_t pte)
- {
--	return !(pte_val(pte) & _PAGE_PRIVILEGED);
-+	return !(pte_val(pte) & _PAGE_SH);
+diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
+index 846d7d243994..e9f10c2669ea 100644
+--- a/drivers/staging/sm750fb/sm750.c
++++ b/drivers/staging/sm750fb/sm750.c
+@@ -1007,7 +1007,7 @@ static void sm750fb_setup(struct sm750_dev *sm750_dev, char *src)
+ 	}
  }
  
- #define pte_user pte_user
- 
- static inline pte_t pte_mkprivileged(pte_t pte)
+-static void sm750fb_frambuffer_release(struct sm750_dev *sm750_dev)
++static void sm750fb_framebuffer_release(struct sm750_dev *sm750_dev)
  {
--	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
-+	return __pte(pte_val(pte) | _PAGE_SH);
+ 	struct fb_info *fb_info;
+ 
+@@ -1019,7 +1019,7 @@ static void sm750fb_frambuffer_release(struct sm750_dev *sm750_dev)
+ 	}
  }
  
- #define pte_mkprivileged pte_mkprivileged
- 
- static inline pte_t pte_mkuser(pte_t pte)
+-static int sm750fb_frambuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
++static int sm750fb_framebuffer_alloc(struct sm750_dev *sm750_dev, int fbidx)
  {
--	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
-+	return __pte(pte_val(pte) & ~_PAGE_SH);
+ 	struct fb_info *fb_info;
+ 	struct lynxfb_par *par;
+@@ -1137,7 +1137,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	/* allocate frame buffer info structures according to g_dualview */
+ 	max_fb = g_dualview ? 2 : 1;
+ 	for (fbidx = 0; fbidx < max_fb; fbidx++) {
+-		err = sm750fb_frambuffer_alloc(sm750_dev, fbidx);
++		err = sm750fb_framebuffer_alloc(sm750_dev, fbidx);
+ 		if (err)
+ 			goto release_fb;
+ 	}
+@@ -1145,7 +1145,7 @@ static int lynxfb_pci_probe(struct pci_dev *pdev,
+ 	return 0;
+ 
+ release_fb:
+-	sm750fb_frambuffer_release(sm750_dev);
++	sm750fb_framebuffer_release(sm750_dev);
+ 	return err;
  }
  
- #define pte_mkuser pte_mkuser
+@@ -1155,7 +1155,7 @@ static void lynxfb_pci_remove(struct pci_dev *pdev)
  
- static inline pte_t pte_mkhuge(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_HUGE);
-+	return __pte(pte_val(pte) | _PAGE_SPS);
- }
+ 	sm750_dev = pci_get_drvdata(pdev);
  
- #define pte_mkhuge pte_mkhuge
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 6582f824d620..134a573a9f2d 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -642,7 +642,7 @@ DTLBMissIMMR:
- 	mtspr	SPRN_MD_TWC, r10
- 	mfspr	r10, SPRN_IMMR			/* Get current IMMR */
- 	rlwinm	r10, r10, 0, 0xfff80000		/* Get 512 kbytes boundary */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
- 			  _PAGE_PRESENT | _PAGE_NO_CACHE
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
+-	sm750fb_frambuffer_release(sm750_dev);
++	sm750fb_framebuffer_release(sm750_dev);
+ 	arch_phys_wc_del(sm750_dev->mtrr.vram);
  
-@@ -660,7 +660,7 @@ DTLBMissLinear:
- 	li	r11, MD_PS8MEG | MD_SVALID | M_APG2
- 	mtspr	SPRN_MD_TWC, r11
- 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+	ori	r10, r10, 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
- 			  _PAGE_PRESENT
- 	mtspr	SPRN_MD_RPN, r10	/* Update TLB entry */
- 
-@@ -679,7 +679,7 @@ ITLBMissLinear:
- 	li	r11, MI_PS8MEG | MI_SVALID | M_APG2
- 	mtspr	SPRN_MI_TWC, r11
- 	rlwinm	r10, r10, 0, 0x0f800000	/* 8xx supports max 256Mb RAM */
--	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY | \
-+	ori	r10, r10, 0xf0 | MI_SPS16K | _PAGE_SH | _PAGE_DIRTY | \
- 			  _PAGE_PRESENT
- 	mtspr	SPRN_MI_RPN, r10	/* Update TLB entry */
- 
-diff --git a/arch/powerpc/mm/8xx_mmu.c b/arch/powerpc/mm/8xx_mmu.c
-index 9137361d687d..36484a2ef915 100644
---- a/arch/powerpc/mm/8xx_mmu.c
-+++ b/arch/powerpc/mm/8xx_mmu.c
-@@ -67,7 +67,7 @@ void __init MMU_init_hw(void)
- 	/* PIN up to the 3 first 8Mb after IMMR in DTLB table */
- #ifdef CONFIG_PIN_TLB_DATA
- 	unsigned long ctr = mfspr(SPRN_MD_CTR) & 0xfe000000;
--	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_PRIVILEGED | _PAGE_DIRTY;
-+	unsigned long flags = 0xf0 | MD_SPS16K | _PAGE_SH | _PAGE_DIRTY;
- #ifdef CONFIG_PIN_TLB_IMMR
- 	int i = 29;
- #else
-diff --git a/arch/powerpc/mm/dump_linuxpagetables-8xx.c b/arch/powerpc/mm/dump_linuxpagetables-8xx.c
-index 33f52a97975b..ab9e3f24db2f 100644
---- a/arch/powerpc/mm/dump_linuxpagetables-8xx.c
-+++ b/arch/powerpc/mm/dump_linuxpagetables-8xx.c
-@@ -11,7 +11,7 @@
- 
- static const struct flag_info flag_array[] = {
- 	{
--		.mask	= _PAGE_PRIVILEGED,
-+		.mask	= _PAGE_SH,
- 		.val	= 0,
- 		.set	= "user",
- 		.clear	= "    ",
+ 	iounmap(sm750_dev->pvReg);
 -- 
-2.13.3
+2.17.1

@@ -1,50 +1,65 @@
-From: Heiko Stuebner <heiko@sntech.de>
-Date: Fri, 28 Sep 2018 13:21:47 +0000
-Subject: Re: [PATCH v3] backlight: pwm_bl: switch to using "atomic" PWM API
-Message-Id: <2092357.WrANtTvkTV@phil>
+From: Nathan Chancellor <natechancellor@gmail.com>
+Date: Fri, 21 Sep 2018 20:21:31 +0000
+Subject: [PATCH] backlight: lm3639: Unconditionally call led_classdev_unregister
+Message-Id: <20180921202130.12480-1-natechancellor@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180814165059.13219-1-enric.balletbo@collabora.com> <20180910144924.GU28860@dell>
-In-Reply-To: <20180910144924.GU28860@dell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org
-Cc: Lee Jones <lee.jones@linaro.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, kernel@collabora.com, cl@rock-chips.com
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nick Desaulniers <ndesaulniers@google.com>, Nathan Chancellor <natechancellor@gmail.com>
 
-Hi Lee,
+Clang warns that the address of a pointer will always evaluated as true
+in a boolean context.
 
-Am Montag, 10. September 2018, 16:49:24 CEST schrieb Lee Jones:
-> On Tue, 14 Aug 2018, Enric Balletbo i Serra wrote:
-> 
-> > The "atomic" API allows us to configure PWM period and duty_cycle and
-> > enable it in one call.
-> > 
-> > The patch also moves the pwm_init_state just before any use of the
-> > pwm_state struct, this fixes a potential bug where pwm_get_state
-> > can be called before pwm_init_state.
-> > 
-> > Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> > ---
-> > 
-> > Changes in v3:
-> > - Get rid of duty_cycle variable from pwm_backlight_update_status.
-> > - Get rid of pb->enabled and use only the status.enabled variable.
-> > - Make power_on match power_off.
-> > - Do not share status between ...update_status and ...power_on
-> > 
-> > Changes in v2:
-> > - Do not force the PWM be off in the first call to pwm_apply_state.
-> > - Delayed applying the state until we know what the period is.
-> > - Removed pb->period as after the conversion is not needed.
-> > 
-> >  drivers/video/backlight/pwm_bl.c | 81 +++++++++++++++++---------------
-> >  1 file changed, 42 insertions(+), 39 deletions(-)
-> 
-> Applied, thanks.
+drivers/video/backlight/lm3639_bl.c:403:14: warning: address of
+'pchip->cdev_torch' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_torch)
+        ~~   ~~~~~~~^~~~~~~~~~
+drivers/video/backlight/lm3639_bl.c:405:14: warning: address of
+'pchip->cdev_flash' will always evaluate to 'true'
+[-Wpointer-bool-conversion]
+        if (&pchip->cdev_flash)
+        ~~   ~~~~~~~^~~~~~~~~~
+2 warnings generated.
 
-did this miss some push or so, because looking at [0], I don't see
-any new patches for a while now?
+These statements have been present since 2012, introduced by
+commit 0f59858d5119 ("backlight: add new lm3639 backlight
+driver"). Given that they have been called unconditionally since
+then presumably without any issues, removing the always true if
+statements to fix the warnings without any real world changes.
 
-Heiko
+Link: https://github.com/ClangBuiltLinux/linux/issues/119
+Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+---
 
-[0] https://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git/
+Alternatively, it's possible the address wasn't supposed to be taken or
+the dev in these structs should be checked instead. I don't have this
+hardware to make that call so I would appreciate some review and
+opinions on what was intended here.
+
+Thanks!
+
+ drivers/video/backlight/lm3639_bl.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/lm3639_bl.c b/drivers/video/backlight/lm3639_bl.c
+index cd50df5807ea..086611c7bc03 100644
+--- a/drivers/video/backlight/lm3639_bl.c
++++ b/drivers/video/backlight/lm3639_bl.c
+@@ -400,10 +400,8 @@ static int lm3639_remove(struct i2c_client *client)
+ 
+ 	regmap_write(pchip->regmap, REG_ENABLE, 0x00);
+ 
+-	if (&pchip->cdev_torch)
+-		led_classdev_unregister(&pchip->cdev_torch);
+-	if (&pchip->cdev_flash)
+-		led_classdev_unregister(&pchip->cdev_flash);
++	led_classdev_unregister(&pchip->cdev_torch);
++	led_classdev_unregister(&pchip->cdev_flash);
+ 	if (pchip->bled)
+ 		device_remove_file(&(pchip->bled->dev), &dev_attr_bled_mode);
+ 	return 0;
+-- 
+2.19.0

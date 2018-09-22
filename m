@@ -1,247 +1,121 @@
-From: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Date: Sun, 09 Sep 2018 22:56:04 +0000
-Subject: [PATCH v3 2/3] mtd: rawnand: ams-delta: use GPIO lookup table
-Message-Id: <20180909225605.16463-3-jmkrzyszt@gmail.com>
+From: Randy Dunlap <rdunlap@infradead.org>
+Date: Sat, 22 Sep 2018 22:43:03 +0000
+Subject: [PATCH] fbdev: fix broken menu dependencies
+Message-Id: <1feb7db2-12b8-77c4-c325-cb4bdc76548e@infradead.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180717231448.14958-1-jmkrzyszt@gmail.com>
- <20180909225605.16463-1-jmkrzyszt@gmail.com>
-In-Reply-To: <20180909225605.16463-1-jmkrzyszt@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony Lindgren <tony@atomide.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, Aaro Koskinen <aaro.koskinen@iki.fi>, Richard Weinberger <richard@nod.at>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Janusz Krzysztofik <jmkrzyszt@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Boris Brezillon <boris.brezillon@bootlin.com>, linux-mtd@lists.infradead.org, linux-gpio@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, Brian Norris <computersforpeace@gmail.com>, David Woodhouse <dwmw2@infradead.org>, Marek Vasut <marek.vasut@gmail.com>, linux-arm-kernel@lists.infradead.org
+To: Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>, Daniel Vetter <daniel.vetter@ffwll.ch>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
 
-Now as Amstrad Delta board - the only user of this driver - provides
-GPIO lookup tables, switch from GPIO numbers to GPIO descriptors and
-use the table to locate required GPIO pins.
+From: Randy Dunlap <rdunlap@infradead.org>
 
-Declare static variables for storing GPIO descriptors and replace
-gpio_ function calls with their gpiod_ equivalents.
+The framebuffer options and devices menu is unintentionally split
+or broken because some items in it do not depend on FB (including
+several under omap and mmp).
+Fix this by moving FB_CMDLINE, FB_NOTIFY, and FB_CLPS711X_OLD to
+just before the FB Kconfig symbol definition and by moving the
+omap, omap2, and mmp menus to last, following FB_SM712.
 
-Pin naming used by the driver should be followed while respective GPIO
-lookup table is initialized by a board init code.
+Also, the FB_VIA dependencies are duplicated by both being inside
+an "if FB_VIA/endif" block and "depends on FB_VIA", so drop the
+"depends on FB_VIA" lines since they are redundant.
 
-Signed-off-by: Janusz Krzysztofik <jmkrzyszt@gmail.com>
-Acked-by: Boris Brezillon <boris.brezillon@bootlin.com>
-Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Fixes: ea6763c104c9 ("video/fbdev: Always built-in video= cmdline parsing")
+Fixes: 5ec9653806ba ("fbdev: Make fb-notify a no-op if CONFIG_FB=n")
+Fixes: ef74d46a4ef3 ("video: clps711x: Add new Cirrus Logic CLPS711X framebuffer driver")
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/mtd/nand/raw/ams-delta.c | 126 +++++++++++++++++++++------------------
- 1 file changed, 67 insertions(+), 59 deletions(-)
+ drivers/video/fbdev/Kconfig |   34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/mtd/nand/raw/ams-delta.c b/drivers/mtd/nand/raw/ams-delta.c
-index 37a3cc21c7bc..2a8872ebd14a 100644
---- a/drivers/mtd/nand/raw/ams-delta.c
-+++ b/drivers/mtd/nand/raw/ams-delta.c
-@@ -20,23 +20,28 @@
- #include <linux/slab.h>
- #include <linux/module.h>
- #include <linux/delay.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/mtd/mtd.h>
- #include <linux/mtd/rawnand.h>
- #include <linux/mtd/partitions.h>
--#include <linux/gpio.h>
- #include <linux/platform_data/gpio-omap.h>
+--- linux-next-20180921.orig/drivers/video/fbdev/Kconfig
++++ linux-next-20180921/drivers/video/fbdev/Kconfig
+@@ -2,6 +2,18 @@
+ # fbdev configuration
+ #
  
- #include <asm/io.h>
- #include <asm/sizes.h>
++config FB_CMDLINE
++	bool
++
++config FB_NOTIFY
++	bool
++
++config FB_CLPS711X_OLD
++	tristate
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++
+ menuconfig FB
+ 	tristate "Support for frame buffer devices"
+ 	select FB_CMDLINE
+@@ -54,12 +66,6 @@ config FIRMWARE_EDID
+ 	 combination with certain motherboards and monitors are known to
+ 	 suffer from this problem.
  
--#include <mach/board-ams-delta.h>
+-config FB_CMDLINE
+-	bool
 -
- #include <mach/hardware.h>
+-config FB_NOTIFY
+-	bool
+-
+ config FB_DDC
+        tristate
+        depends on FB
+@@ -329,12 +335,6 @@ config FB_ACORN
+ 	  hardware found in Acorn RISC PCs and other ARM-based machines.  If
+ 	  unsure, say N.
  
- /*
-  * MTD structure for E3 (Delta)
-  */
- static struct mtd_info *ams_delta_mtd = NULL;
-+static struct gpio_desc *gpiod_rdy;
-+static struct gpio_desc *gpiod_nce;
-+static struct gpio_desc *gpiod_nre;
-+static struct gpio_desc *gpiod_nwp;
-+static struct gpio_desc *gpiod_nwe;
-+static struct gpio_desc *gpiod_ale;
-+static struct gpio_desc *gpiod_cle;
+-config FB_CLPS711X_OLD
+-	tristate
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
+-
+ config FB_CLPS711X
+ 	tristate "CLPS711X LCD support"
+ 	depends on FB && (ARCH_CLPS711X || COMPILE_TEST)
+@@ -1456,7 +1456,6 @@ if FB_VIA
  
- /*
-  * Define partitions for flash devices
-@@ -70,9 +75,9 @@ static void ams_delta_write_byte(struct mtd_info *mtd, u_char byte)
+ config FB_VIA_DIRECT_PROCFS
+ 	bool "direct hardware access via procfs (DEPRECATED)(DANGEROUS)"
+-	depends on FB_VIA
+ 	default n
+ 	help
+ 	  Allow direct hardware access to some output registers via procfs.
+@@ -1466,7 +1465,6 @@ config FB_VIA_DIRECT_PROCFS
  
- 	writew(0, io_base + OMAP_MPUIO_IO_CNTL);
- 	writew(byte, this->IO_ADDR_W);
--	gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_NWE, 0);
-+	gpiod_set_value(gpiod_nwe, 0);
- 	ndelay(40);
--	gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_NWE, 1);
-+	gpiod_set_value(gpiod_nwe, 1);
- }
+ config FB_VIA_X_COMPATIBILITY
+ 	bool "X server compatibility"
+-	depends on FB_VIA
+ 	default n
+ 	help
+ 	  This option reduces the functionality (power saving, ...) of the
+@@ -2308,10 +2306,6 @@ config FB_SIMPLE
+ 	  Configuration re: surface address, size, and format must be provided
+ 	  through device tree, or plain old platform data.
  
- static u_char ams_delta_read_byte(struct mtd_info *mtd)
-@@ -81,11 +86,11 @@ static u_char ams_delta_read_byte(struct mtd_info *mtd)
- 	struct nand_chip *this = mtd_to_nand(mtd);
- 	void __iomem *io_base = (void __iomem *)nand_get_controller_data(this);
- 
--	gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_NRE, 0);
-+	gpiod_set_value(gpiod_nre, 0);
- 	ndelay(40);
- 	writew(~0, io_base + OMAP_MPUIO_IO_CNTL);
- 	res = readw(this->IO_ADDR_R);
--	gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_NRE, 1);
-+	gpiod_set_value(gpiod_nre, 1);
- 
- 	return res;
- }
-@@ -120,12 +125,9 @@ static void ams_delta_hwcontrol(struct mtd_info *mtd, int cmd,
- {
- 
- 	if (ctrl & NAND_CTRL_CHANGE) {
--		gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_NCE,
--				(ctrl & NAND_NCE) = 0);
--		gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_CLE,
--				(ctrl & NAND_CLE) != 0);
--		gpio_set_value(AMS_DELTA_GPIO_PIN_NAND_ALE,
--				(ctrl & NAND_ALE) != 0);
-+		gpiod_set_value(gpiod_nce, !(ctrl & NAND_NCE));
-+		gpiod_set_value(gpiod_cle, !!(ctrl & NAND_CLE));
-+		gpiod_set_value(gpiod_ale, !!(ctrl & NAND_ALE));
- 	}
- 
- 	if (cmd != NAND_CMD_NONE)
-@@ -134,41 +136,9 @@ static void ams_delta_hwcontrol(struct mtd_info *mtd, int cmd,
- 
- static int ams_delta_nand_ready(struct mtd_info *mtd)
- {
--	return gpio_get_value(AMS_DELTA_GPIO_PIN_NAND_RB);
-+	return gpiod_get_value(gpiod_rdy);
- }
- 
--static const struct gpio _mandatory_gpio[] = {
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_NCE,
--		.flags	= GPIOF_OUT_INIT_HIGH,
--		.label	= "nand_nce",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_NRE,
--		.flags	= GPIOF_OUT_INIT_HIGH,
--		.label	= "nand_nre",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_NWP,
--		.flags	= GPIOF_OUT_INIT_HIGH,
--		.label	= "nand_nwp",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_NWE,
--		.flags	= GPIOF_OUT_INIT_HIGH,
--		.label	= "nand_nwe",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_ALE,
--		.flags	= GPIOF_OUT_INIT_LOW,
--		.label	= "nand_ale",
--	},
--	{
--		.gpio	= AMS_DELTA_GPIO_PIN_NAND_CLE,
--		.flags	= GPIOF_OUT_INIT_LOW,
--		.label	= "nand_cle",
--	},
--};
- 
- /*
-  * Main initialization routine
-@@ -216,12 +186,17 @@ static int ams_delta_init(struct platform_device *pdev)
- 	this->write_buf = ams_delta_write_buf;
- 	this->read_buf = ams_delta_read_buf;
- 	this->cmd_ctrl = ams_delta_hwcontrol;
--	if (gpio_request(AMS_DELTA_GPIO_PIN_NAND_RB, "nand_rdy") = 0) {
--		this->dev_ready = ams_delta_nand_ready;
--	} else {
--		this->dev_ready = NULL;
--		pr_notice("Couldn't request gpio for Delta NAND ready.\n");
+-source "drivers/video/fbdev/omap/Kconfig"
+-source "drivers/video/fbdev/omap2/Kconfig"
+-source "drivers/video/fbdev/mmp/Kconfig"
+-
+ config FB_SSD1307
+ 	tristate "Solomon SSD1307 framebuffer support"
+ 	depends on FB && I2C
+@@ -2341,3 +2335,7 @@ config FB_SM712
+ 	  This driver is also available as a module. The module will be
+ 	  called sm712fb. If you want to compile it as a module, say M
+ 	  here and read <file:Documentation/kbuild/modules.txt>.
 +
-+	gpiod_rdy = devm_gpiod_get_optional(&pdev->dev, "rdy", GPIOD_IN);
-+	if (IS_ERR(gpiod_rdy)) {
-+		err = PTR_ERR(gpiod_rdy);
-+		dev_warn(&pdev->dev, "RDY GPIO request failed (%d)\n", err);
-+		goto out_mtd;
- 	}
-+
-+	if (gpiod_rdy)
-+		this->dev_ready = ams_delta_nand_ready;
-+
- 	/* 25 us command delay time */
- 	this->chip_delay = 30;
- 	this->ecc.mode = NAND_ECC_SOFT;
-@@ -230,9 +205,47 @@ static int ams_delta_init(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, io_base);
- 
- 	/* Set chip enabled, but  */
--	err = gpio_request_array(_mandatory_gpio, ARRAY_SIZE(_mandatory_gpio));
--	if (err)
--		goto out_gpio;
-+	gpiod_nwp = devm_gpiod_get(&pdev->dev, "nwp", GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpiod_nwp)) {
-+		err = PTR_ERR(gpiod_nwp);
-+		dev_err(&pdev->dev, "NWP GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
-+
-+	gpiod_nce = devm_gpiod_get(&pdev->dev, "nce", GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpiod_nce)) {
-+		err = PTR_ERR(gpiod_nce);
-+		dev_err(&pdev->dev, "NCE GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
-+
-+	gpiod_nre = devm_gpiod_get(&pdev->dev, "nre", GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpiod_nre)) {
-+		err = PTR_ERR(gpiod_nre);
-+		dev_err(&pdev->dev, "NRE GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
-+
-+	gpiod_nwe = devm_gpiod_get(&pdev->dev, "nwe", GPIOD_OUT_HIGH);
-+	if (IS_ERR(gpiod_nwe)) {
-+		err = PTR_ERR(gpiod_nwe);
-+		dev_err(&pdev->dev, "NWE GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
-+
-+	gpiod_ale = devm_gpiod_get(&pdev->dev, "ale", GPIOD_OUT_LOW);
-+	if (IS_ERR(gpiod_ale)) {
-+		err = PTR_ERR(gpiod_ale);
-+		dev_err(&pdev->dev, "ALE GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
-+
-+	gpiod_cle = devm_gpiod_get(&pdev->dev, "cle", GPIOD_OUT_LOW);
-+	if (IS_ERR(gpiod_cle)) {
-+		err = PTR_ERR(gpiod_cle);
-+		dev_err(&pdev->dev, "CLE GPIO request failed (%d)\n", err);
-+		goto out_mtd;
-+	}
- 
- 	/* Scan to find existence of the device */
- 	err = nand_scan(ams_delta_mtd, 1);
-@@ -246,9 +259,6 @@ static int ams_delta_init(struct platform_device *pdev)
- 	goto out;
- 
-  out_mtd:
--	gpio_free_array(_mandatory_gpio, ARRAY_SIZE(_mandatory_gpio));
--out_gpio:
--	gpio_free(AMS_DELTA_GPIO_PIN_NAND_RB);
- 	iounmap(io_base);
- out_free:
- 	kfree(this);
-@@ -266,8 +276,6 @@ static int ams_delta_cleanup(struct platform_device *pdev)
- 	/* Release resources, unregister device */
- 	nand_release(ams_delta_mtd);
- 
--	gpio_free_array(_mandatory_gpio, ARRAY_SIZE(_mandatory_gpio));
--	gpio_free(AMS_DELTA_GPIO_PIN_NAND_RB);
- 	iounmap(io_base);
- 
- 	/* Free the MTD device structure */
--- 
-2.16.4
++source "drivers/video/fbdev/omap/Kconfig"
++source "drivers/video/fbdev/omap2/Kconfig"
++source "drivers/video/fbdev/mmp/Kconfig"

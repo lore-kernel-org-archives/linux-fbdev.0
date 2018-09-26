@@ -1,37 +1,31 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Mon, 03 Sep 2018 20:07:28 +0000
-Subject: [PATCH] video/fbdev/stifb: Fix spelling mistake in fall-through annotation
-Message-Id: <20180903200728.GA22414@embeddedor.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 26 Sep 2018 16:52:56 +0000
+Subject: Re: [PATCH] video/fbdev/stifb: Fix spelling mistake in fall-through annotation
+Message-Id: <20180926165258eucas1p21fc564f4f9d3d33e551937f2ad44272a~YAV6Efwju0462904629eucas1p2M@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20180903200806epcas2p1171387c9a1699140856911ce283f470c@epcas2p1.samsung.com>
+        <20180903200728.GA22414@embeddedor.com>
+In-Reply-To: <20180903200728.GA22414@embeddedor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>, Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Replace "fall though" with a proper "fall through" annotation.
 
-This fix is part of the ongoing efforts to enabling
--Wimplicit-fallthrough
+On 09/03/2018 10:07 PM, Gustavo A. R. Silva wrote:
+> Replace "fall though" with a proper "fall through" annotation.
+> 
+> This fix is part of the ongoing efforts to enabling
+> -Wimplicit-fallthrough
+> 
+> Addresses-Coverity-ID: 402013 ("Missing break in switch")
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-Addresses-Coverity-ID: 402013 ("Missing break in switch")
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
- drivers/video/fbdev/stifb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch queued for 4.19, thanks.
 
-diff --git a/drivers/video/fbdev/stifb.c b/drivers/video/fbdev/stifb.c
-index 045e8af..9e88e3f 100644
---- a/drivers/video/fbdev/stifb.c
-+++ b/drivers/video/fbdev/stifb.c
-@@ -1157,7 +1157,7 @@ static int __init stifb_init_fb(struct sti_struct *sti, int bpp_pref)
- 			dev_name);
- 		   goto out_err0;
- 		}
--		/* fall though */
-+		/* fall through */
- 	case S9000_ID_ARTIST:
- 	case S9000_ID_HCRX:
- 	case S9000_ID_TIMBER:
--- 
-2.7.4
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

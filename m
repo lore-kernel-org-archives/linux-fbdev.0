@@ -1,111 +1,47 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Wed, 12 Sep 2018 15:58:15 +0000
-Subject: [PATCH v2 01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
-Message-Id: <1ac1795d39315628744604df233b4cddf50535eb.1536692743.git.christophe.leroy@c-s.fr>
+From: =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
+Date: Thu, 27 Sep 2018 09:24:40 +0000
+Subject: [RESEND PATCH v2 2/3] video: ssd1307fb: Do not hard code active-low reset sequence
+Message-Id: <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1536692743.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1536692743.git.christophe.leroy@c-s.fr>
+References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+The SSD130x OLED display reset signal is active low. Now the reset
+sequence is implemented in such a way that users are forced to
+define reset-gpios as GPIO_ACTIVE_HIGH in DT to make the reset work.
 
-Also implement ioremap_coherent() to avoid drivers using
-__ioremap(_PAGE_COHERENT)
+Do not hard code the active-low sequence into the driver but instead
+allow the user to specify the gpio as GPIO_ACTIVE_LOW to reflect
+the real world.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
 ---
- arch/powerpc/include/asm/io.h |  9 +++++++++
- arch/powerpc/mm/pgtable_32.c  | 16 ++++++++++++++++
- arch/powerpc/mm/pgtable_64.c  | 10 ++++++++++
- 3 files changed, 35 insertions(+)
+v2 changes: Split the DT changes into separate patch.
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..cdccab3938db 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
+ drivers/video/fbdev/ssd1307fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index e7ae135..7b5bc42 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -728,10 +728,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
  
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
-+#endif
+ 	if (par->reset) {
+ 		/* Reset the screen */
+-		gpiod_set_value_cansleep(par->reset, 0);
+-		udelay(4);
+ 		gpiod_set_value_cansleep(par->reset, 1);
+ 		udelay(4);
++		gpiod_set_value_cansleep(par->reset, 0);
++		udelay(4);
+ 	}
  
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,10 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-+ * * ioremap_coherent maps coherent cached memory
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +774,8 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..4c3adde09d95 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -90,6 +90,22 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- EXPORT_SYMBOL(ioremap_wc);
- 
- void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
-+void __iomem *
-+ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_COHERENT,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_coherent);
-+
-+void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
- {
- 	/* writeable implies dirty for kernel addresses */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 53e9eeecd5d4..cdccfac477e0 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -222,6 +222,16 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
- 	return __ioremap_caller(addr, size, flags, caller);
- }
- 
-+void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	unsigned long flags = pgprot_val(pgprot_cached(__pgprot(0)));
-+	void *caller = __builtin_return_address(0);
-+
-+	if (ppc_md.ioremap)
-+		return ppc_md.ioremap(addr, size, flags, caller);
-+	return __ioremap_caller(addr, size, flags, caller);
-+}
-+
- void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
- {
+ 	if (par->vbat_reg) {
 -- 
-2.13.3
+2.1.4

@@ -1,28 +1,35 @@
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 17 Oct 2018 07:22:37 +0000
-Subject: Re: [PATCH 1/8] cpufreq: tegra186: don't pass GFP_DMA32 to dma_alloc_coherent
-Message-Id: <CAJZ5v0h=niQOtdMGYWtE4P4NX=-xmgDvga7t2mTAtpbOYWQY0A@mail.gmail.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 03 Oct 2018 11:50:44 +0000
+Subject: [PATCH] video: fbdev: arcfb: mark expected switch fall-through
+Message-Id: <20181003115044.GA10786@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181013151707.32210-1-hch@lst.de> <20181013151707.32210-2-hch@lst.de>
- <CAJZ5v0ju2Y=yQn9uz6HpYGw5BZovxYh2YbYD7Ujq8kajJfvLSQ@mail.gmail.com> <20181017071942.GB23407@lst.de>
-In-Reply-To: <20181017071942.GB23407@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Linux PM <linux-pm@vger.kernel.org>, linux-tegra@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org, linux-spi <linux-spi@vger.kernel.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, "moderated list:SOUND - SOC LAYER / DYNAMIC AUDIO POWER MANAGEM..." <alsa-devel@alsa-project.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jaya Kumar <jayalk@intworks.biz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-On Wed, Oct 17, 2018 at 9:19 AM Christoph Hellwig <hch@lst.de> wrote:
->
-> On Mon, Oct 15, 2018 at 09:43:04AM +0200, Rafael J. Wysocki wrote:
-> > On Sat, Oct 13, 2018 at 5:17 PM Christoph Hellwig <hch@lst.de> wrote:
-> > >
-> > > The DMA API does its own zone decisions based on the coherent_dma_mask.
-> > >
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> >
-> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Can you pick it up through the cpufreq tree?
+In preparation to enabling -Wimplicit-fallthrough, mark switch cases
+where we are expecting to fall through.
 
-Sure, I'll do that, thanks!
+Addresses-Coverity-ID: 115017 ("Missing break in switch")
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/arcfb.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/fbdev/arcfb.c b/drivers/video/fbdev/arcfb.c
+index 7e87d0d..a48741a 100644
+--- a/drivers/video/fbdev/arcfb.c
++++ b/drivers/video/fbdev/arcfb.c
+@@ -419,6 +419,8 @@ static int arcfb_ioctl(struct fb_info *info,
+ 			schedule();
+ 			finish_wait(&arcfb_waitq, &wait);
+ 		}
++		/* fall through */
++
+ 		case FBIO_GETCONTROL2:
+ 		{
+ 			unsigned char ctl2;
+-- 
+2.7.4

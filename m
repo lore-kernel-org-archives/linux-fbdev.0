@@ -1,170 +1,281 @@
-From: Christophe LEROY <christophe.leroy@c-s.fr>
-Date: Thu, 11 Oct 2018 14:07:52 +0000
-Subject: Re: [PATCH v3 02/24] drivers/video/fbdev: use ioremap_wc/wt() instead of __ioremap()
-Message-Id: <8bd4cbe3-3c7e-1ecb-b627-1970ed7c48af@c-s.fr>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Thu, 04 Oct 2018 18:53:52 +0000
+Subject: [PATCH v4 02/11] gpu: ipu-csi: Swap fields according to input/output field types
+Message-Id: <20181004185401.15751-3-slongerbeam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
- <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
-In-Reply-To: <25348d7faf67d5e2829aad03aef8096cd5f6908d.1539092111.git.christophe.leroy@c-s.fr>
+References: <20181004185401.15751-1-slongerbeam@gmail.com>
+In-Reply-To: <20181004185401.15751-1-slongerbeam@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-media@vger.kernel.org
+Cc: Steve Longerbeam <slongerbeam@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE
+        IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
 
+The function ipu_csi_init_interface() was inverting the F-bit for
+NTSC case, in the CCIR_CODE_1/2 registers. The result being that
+for NTSC bottom-top field order, the CSI would swap fields and
+capture in top-bottom order.
 
+Instead, base field swap on the field order of the input to the CSI,
+and the field order of the requested output. If the input/output
+fields are sequential but different, swap fields, otherwise do
+not swap. This requires passing both the input and output mbus
+frame formats to ipu_csi_init_interface().
 
-Le 09/10/2018 à 15:51, Christophe Leroy a écrit :
-> _PAGE_NO_CACHE is a platform specific flag. In addition, this flag
-> is misleading because one would think it requests a noncached page
-> whereas a noncached page is _PAGE_NO_CACHE | _PAGE_GUARDED
-> 
-> _PAGE_NO_CACHE alone means write combined noncached page, so lets
-> use ioremap_wc() instead.
-> 
-> _PAGE_WRITETHRU is also platform specific flag. Use ioremap_wt()
-> instead.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Move this code to a new private function ipu_csi_set_bt_interlaced_codes()
+that programs the CCIR_CODE_1/2 registers for interlaced BT.656 (and
+possibly interlaced BT.1120 in the future).
 
-Forgot to add back the acked-by: tags.
+When detecting input video standard from the input frame width/height,
+make sure to double height if input field type is alternate, since
+in that case input height only includes lines for one field.
 
-Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
+---
+ drivers/gpu/ipu-v3/ipu-csi.c              | 132 +++++++++++++++-------
+ drivers/staging/media/imx/imx-media-csi.c |  13 +--
+ include/video/imx-ipu-v3.h                |   3 +-
+ 3 files changed, 97 insertions(+), 51 deletions(-)
 
-Thanks
-Christophe
-
-> ---
->   drivers/video/fbdev/chipsfb.c    |  3 +--
->   drivers/video/fbdev/controlfb.c  |  5 +----
->   drivers/video/fbdev/platinumfb.c |  5 +----
->   drivers/video/fbdev/valkyriefb.c | 12 ++++++------
->   4 files changed, 9 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/chipsfb.c b/drivers/video/fbdev/chipsfb.c
-> index f103665cad43..40182ed85648 100644
-> --- a/drivers/video/fbdev/chipsfb.c
-> +++ b/drivers/video/fbdev/chipsfb.c
-> @@ -27,7 +27,6 @@
->   #include <linux/init.h>
->   #include <linux/pci.h>
->   #include <linux/console.h>
-> -#include <asm/io.h>
->   
->   #ifdef CONFIG_PMAC_BACKLIGHT
->   #include <asm/backlight.h>
-> @@ -401,7 +400,7 @@ static int chipsfb_pci_init(struct pci_dev *dp, const struct pci_device_id *ent)
->   #endif /* CONFIG_PMAC_BACKLIGHT */
->   
->   #ifdef CONFIG_PPC
-> -	p->screen_base = __ioremap(addr, 0x200000, _PAGE_NO_CACHE);
-> +	p->screen_base = ioremap_wc(addr, 0x200000);
->   #else
->   	p->screen_base = ioremap(addr, 0x200000);
->   #endif
-> diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-> index 8d14b29aafea..9cb0ef7ac29e 100644
-> --- a/drivers/video/fbdev/controlfb.c
-> +++ b/drivers/video/fbdev/controlfb.c
-> @@ -48,9 +48,7 @@
->   #include <linux/nvram.h>
->   #include <linux/adb.h>
->   #include <linux/cuda.h>
-> -#include <asm/io.h>
->   #include <asm/prom.h>
-> -#include <asm/pgtable.h>
->   #include <asm/btext.h>
->   
->   #include "macmodes.h"
-> @@ -715,8 +713,7 @@ static int __init control_of_init(struct device_node *dp)
->   		goto error_out;
->   	}
->   	/* map at most 8MB for the frame buffer */
-> -	p->frame_buffer = __ioremap(p->frame_buffer_phys, 0x800000,
-> -				    _PAGE_WRITETHRU);
-> +	p->frame_buffer = ioremap_wt(p->frame_buffer_phys, 0x800000);
->   
->   	if (!p->control_regs_phys ||
->   	    !request_mem_region(p->control_regs_phys, p->control_regs_size,
-> diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinumfb.c
-> index 377d3399a3ad..bf6b7fb83cf4 100644
-> --- a/drivers/video/fbdev/platinumfb.c
-> +++ b/drivers/video/fbdev/platinumfb.c
-> @@ -32,9 +32,7 @@
->   #include <linux/nvram.h>
->   #include <linux/of_device.h>
->   #include <linux/of_platform.h>
-> -#include <asm/io.h>
->   #include <asm/prom.h>
-> -#include <asm/pgtable.h>
->   
->   #include "macmodes.h"
->   #include "platinumfb.h"
-> @@ -577,8 +575,7 @@ static int platinumfb_probe(struct platform_device* odev)
->   
->   	/* frame buffer - map only 4MB */
->   	pinfo->frame_buffer_phys = pinfo->rsrc_fb.start;
-> -	pinfo->frame_buffer = __ioremap(pinfo->rsrc_fb.start, 0x400000,
-> -					_PAGE_WRITETHRU);
-> +	pinfo->frame_buffer = ioremap_wt(pinfo->rsrc_fb.start, 0x400000);
->   	pinfo->base_frame_buffer = pinfo->frame_buffer;
->   
->   	/* registers */
-> diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-> index 275fb98236d3..d51c3a8009cb 100644
-> --- a/drivers/video/fbdev/valkyriefb.c
-> +++ b/drivers/video/fbdev/valkyriefb.c
-> @@ -54,13 +54,11 @@
->   #include <linux/nvram.h>
->   #include <linux/adb.h>
->   #include <linux/cuda.h>
-> -#include <asm/io.h>
->   #ifdef CONFIG_MAC
->   #include <asm/macintosh.h>
->   #else
->   #include <asm/prom.h>
->   #endif
-> -#include <asm/pgtable.h>
->   
->   #include "macmodes.h"
->   #include "valkyriefb.h"
-> @@ -318,7 +316,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
->   int __init valkyriefb_init(void)
->   {
->   	struct fb_info_valkyrie	*p;
-> -	unsigned long frame_buffer_phys, cmap_regs_phys, flags;
-> +	unsigned long frame_buffer_phys, cmap_regs_phys;
->   	int err;
->   	char *option = NULL;
->   
-> @@ -337,7 +335,6 @@ int __init valkyriefb_init(void)
->   	/* Hardcoded addresses... welcome to 68k Macintosh country :-) */
->   	frame_buffer_phys = 0xf9000000;
->   	cmap_regs_phys = 0x50f24000;
-> -	flags = IOMAP_NOCACHE_SER; /* IOMAP_WRITETHROUGH?? */
->   #else /* ppc (!CONFIG_MAC) */
->   	{
->   		struct device_node *dp;
-> @@ -354,7 +351,6 @@ int __init valkyriefb_init(void)
->   
->   		frame_buffer_phys = r.start;
->   		cmap_regs_phys = r.start + 0x304000;
-> -		flags = _PAGE_WRITETHRU;
->   	}
->   #endif /* ppc (!CONFIG_MAC) */
->   
-> @@ -369,7 +365,11 @@ int __init valkyriefb_init(void)
->   	}
->   	p->total_vram = 0x100000;
->   	p->frame_buffer_phys = frame_buffer_phys;
-> -	p->frame_buffer = __ioremap(frame_buffer_phys, p->total_vram, flags);
-> +#ifdef CONFIG_MAC
-> +	p->frame_buffer = ioremap_nocache(frame_buffer_phys, p->total_vram);
-> +#else
-> +	p->frame_buffer = ioremap_wt(frame_buffer_phys, p->total_vram);
-> +#endif
->   	p->cmap_regs_phys = cmap_regs_phys;
->   	p->cmap_regs = ioremap(p->cmap_regs_phys, 0x1000);
->   	p->valkyrie_regs_phys = cmap_regs_phys+0x6000;
-> 
+diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
+index 954eefe144e2..759fcd724ff9 100644
+--- a/drivers/gpu/ipu-v3/ipu-csi.c
++++ b/drivers/gpu/ipu-v3/ipu-csi.c
+@@ -325,6 +325,15 @@ static int mbus_code_to_bus_cfg(struct ipu_csi_bus_config *cfg, u32 mbus_code,
+ 	return 0;
+ }
+ 
++/* translate alternate field mode based on given standard */
++static inline enum v4l2_field
++ipu_csi_translate_field(enum v4l2_field field, v4l2_std_id std)
++{
++	return (field != V4L2_FIELD_ALTERNATE) ? field :
++		((std & V4L2_STD_525_60) ?
++		 V4L2_FIELD_SEQ_BT : V4L2_FIELD_SEQ_TB);
++}
++
+ /*
+  * Fill a CSI bus config struct from mbus_config and mbus_framefmt.
+  */
+@@ -374,22 +383,75 @@ static int fill_csi_bus_cfg(struct ipu_csi_bus_config *csicfg,
+ 	return 0;
+ }
+ 
++static int ipu_csi_set_bt_interlaced_codes(struct ipu_csi *csi,
++					   struct v4l2_mbus_framefmt *infmt,
++					   struct v4l2_mbus_framefmt *outfmt,
++					   v4l2_std_id std)
++{
++	enum v4l2_field infield, outfield;
++	bool swap_fields;
++
++	/* get translated field type of input and output */
++	infield = ipu_csi_translate_field(infmt->field, std);
++	outfield = ipu_csi_translate_field(outfmt->field, std);
++
++	/*
++	 * Write the H-V-F codes the CSI will match against the
++	 * incoming data for start/end of active and blanking
++	 * field intervals. If input and output field types are
++	 * sequential but not the same (one is SEQ_BT and the other
++	 * is SEQ_TB), swap the F-bit so that the CSI will capture
++	 * field 1 lines before field 0 lines.
++	 */
++	swap_fields = (V4L2_FIELD_IS_SEQUENTIAL(infield) &&
++		       V4L2_FIELD_IS_SEQUENTIAL(outfield) &&
++		       infield != outfield);
++
++	if (!swap_fields) {
++		/*
++		 * Field0BlankEnd  = 110, Field0BlankStart  = 010
++		 * Field0ActiveEnd = 100, Field0ActiveStart = 000
++		 * Field1BlankEnd  = 111, Field1BlankStart  = 011
++		 * Field1ActiveEnd = 101, Field1ActiveStart = 001
++		 */
++		ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
++			      CSI_CCIR_CODE_1);
++		ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
++	} else {
++		dev_dbg(csi->ipu->dev, "capture field swap\n");
++
++		/* same as above but with F-bit inverted */
++		ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
++			      CSI_CCIR_CODE_1);
++		ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
++	}
++
++	ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
++
++	return 0;
++}
++
++
+ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 			   struct v4l2_mbus_config *mbus_cfg,
+-			   struct v4l2_mbus_framefmt *mbus_fmt)
++			   struct v4l2_mbus_framefmt *infmt,
++			   struct v4l2_mbus_framefmt *outfmt)
+ {
+ 	struct ipu_csi_bus_config cfg;
+ 	unsigned long flags;
+ 	u32 width, height, data = 0;
++	v4l2_std_id std;
+ 	int ret;
+ 
+-	ret = fill_csi_bus_cfg(&cfg, mbus_cfg, mbus_fmt);
++	ret = fill_csi_bus_cfg(&cfg, mbus_cfg, infmt);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	/* set default sensor frame width and height */
+-	width = mbus_fmt->width;
+-	height = mbus_fmt->height;
++	width = infmt->width;
++	height = infmt->height;
++	if (infmt->field = V4L2_FIELD_ALTERNATE)
++		height *= 2;
+ 
+ 	/* Set the CSI_SENS_CONF register remaining fields */
+ 	data |= cfg.data_width << CSI_SENS_CONF_DATA_WIDTH_SHIFT |
+@@ -416,42 +478,33 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 		ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
+ 		break;
+ 	case IPU_CSI_CLK_MODE_CCIR656_INTERLACED:
+-		if (mbus_fmt->width = 720 && mbus_fmt->height = 576) {
+-			/*
+-			 * PAL case
+-			 *
+-			 * Field0BlankEnd = 0x6, Field0BlankStart = 0x2,
+-			 * Field0ActiveEnd = 0x4, Field0ActiveStart = 0
+-			 * Field1BlankEnd = 0x7, Field1BlankStart = 0x3,
+-			 * Field1ActiveEnd = 0x5, Field1ActiveStart = 0x1
+-			 */
+-			height = 625; /* framelines for PAL */
+-
+-			ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
+-					  CSI_CCIR_CODE_1);
+-			ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
+-			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
+-		} else if (mbus_fmt->width = 720 && mbus_fmt->height = 480) {
+-			/*
+-			 * NTSC case
+-			 *
+-			 * Field0BlankEnd = 0x7, Field0BlankStart = 0x3,
+-			 * Field0ActiveEnd = 0x5, Field0ActiveStart = 0x1
+-			 * Field1BlankEnd = 0x6, Field1BlankStart = 0x2,
+-			 * Field1ActiveEnd = 0x4, Field1ActiveStart = 0
+-			 */
+-			height = 525; /* framelines for NTSC */
+-
+-			ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
+-					  CSI_CCIR_CODE_1);
+-			ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
+-			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
+-		} else {
++		std = V4L2_STD_UNKNOWN;
++		if (width = 720) {
++			switch (height) {
++			case 480:
++				std = V4L2_STD_NTSC;
++				break;
++			case 576:
++				std = V4L2_STD_PAL;
++				break;
++			default:
++				break;
++			}
++		}
++
++		if (std = V4L2_STD_UNKNOWN) {
+ 			dev_err(csi->ipu->dev,
+-				"Unsupported CCIR656 interlaced video mode\n");
+-			spin_unlock_irqrestore(&csi->lock, flags);
+-			return -EINVAL;
++				"Unsupported interlaced video mode\n");
++			ret = -EINVAL;
++			goto out_unlock;
+ 		}
++
++		ret = ipu_csi_set_bt_interlaced_codes(csi, infmt, outfmt, std);
++		if (ret)
++			goto out_unlock;
++
++		/* framelines for NTSC / PAL */
++		height = (std & V4L2_STD_525_60) ? 525 : 625;
+ 		break;
+ 	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_DDR:
+ 	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_SDR:
+@@ -476,9 +529,10 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 	dev_dbg(csi->ipu->dev, "CSI_ACT_FRM_SIZE = 0x%08X\n",
+ 		ipu_csi_read(csi, CSI_ACT_FRM_SIZE));
+ 
++out_unlock:
+ 	spin_unlock_irqrestore(&csi->lock, flags);
+ 
+-	return 0;
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(ipu_csi_init_interface);
+ 
+diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
+index 4acdd7ae612b..ad66f007d395 100644
+--- a/drivers/staging/media/imx/imx-media-csi.c
++++ b/drivers/staging/media/imx/imx-media-csi.c
+@@ -666,7 +666,6 @@ static int csi_setup(struct csi_priv *priv)
+ 	struct v4l2_mbus_framefmt *infmt, *outfmt;
+ 	const struct imx_media_pixfmt *incc;
+ 	struct v4l2_mbus_config mbus_cfg;
+-	struct v4l2_mbus_framefmt if_fmt;
+ 	struct v4l2_rect crop;
+ 
+ 	infmt = &priv->format_mbus[CSI_SINK_PAD];
+@@ -679,22 +678,14 @@ static int csi_setup(struct csi_priv *priv)
+ 		priv->upstream_ep.bus.parallel.flags :
+ 		priv->upstream_ep.bus.mipi_csi2.flags;
+ 
+-	/*
+-	 * we need to pass input frame to CSI interface, but
+-	 * with translated field type from output format
+-	 */
+-	if_fmt = *infmt;
+-	if_fmt.field = outfmt->field;
+ 	crop = priv->crop;
+ 
+ 	/*
+ 	 * if cycles is set, we need to handle this over multiple cycles as
+ 	 * generic/bayer data
+ 	 */
+-	if (is_parallel_bus(&priv->upstream_ep) && incc->cycles) {
+-		if_fmt.width *= incc->cycles;
++	if (is_parallel_bus(&priv->upstream_ep) && incc->cycles)
+ 		crop.width *= incc->cycles;
+-	}
+ 
+ 	ipu_csi_set_window(priv->csi, &crop);
+ 
+@@ -702,7 +693,7 @@ static int csi_setup(struct csi_priv *priv)
+ 			     priv->crop.width = 2 * priv->compose.width,
+ 			     priv->crop.height = 2 * priv->compose.height);
+ 
+-	ipu_csi_init_interface(priv->csi, &mbus_cfg, &if_fmt);
++	ipu_csi_init_interface(priv->csi, &mbus_cfg, infmt, outfmt);
+ 
+ 	ipu_csi_set_dest(priv->csi, priv->dest);
+ 
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index abbad94e14a1..f44a35192313 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -352,7 +352,8 @@ int ipu_prg_channel_configure(struct ipuv3_channel *ipu_chan,
+ struct ipu_csi;
+ int ipu_csi_init_interface(struct ipu_csi *csi,
+ 			   struct v4l2_mbus_config *mbus_cfg,
+-			   struct v4l2_mbus_framefmt *mbus_fmt);
++			   struct v4l2_mbus_framefmt *infmt,
++			   struct v4l2_mbus_framefmt *outfmt);
+ bool ipu_csi_is_interlaced(struct ipu_csi *csi);
+ void ipu_csi_get_window(struct ipu_csi *csi, struct v4l2_rect *w);
+ void ipu_csi_set_window(struct ipu_csi *csi, struct v4l2_rect *w);
+-- 
+2.17.1

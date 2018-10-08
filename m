@@ -1,28 +1,37 @@
-From: Benjamin Gaignard <benjamin.gaignard@linaro.org>
-Date: Thu, 18 Oct 2018 12:00:40 +0000
-Subject: Re: [PATCH 7/8] media: sti/bdisp: don't pass GFP_DMA32 to dma_alloc_attrs
-Message-Id: <CA+M3ks5ebGDgFtMS5mSYz38AnyrTMQr8C_JkbFEzp=k+izJjUQ@mail.gmail.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Mon, 08 Oct 2018 11:45:36 +0000
+Subject: Re: [RESEND PATCH v2 3/3] ARM: dts: imx28-cfa10036: Fix the reset gpio signal polarity
+Message-Id: <68f4da21-6f0d-5bf9-b352-cdc423269080@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181013151707.32210-1-hch@lst.de> <20181013151707.32210-8-hch@lst.de>
- <CA+M3ks5KO-Yr_PEczaENhTfirthFz2gW1uv4bwZe5mjy3-jZyg@mail.gmail.com> <20181017072020.GD23407@lst.de>
-In-Reply-To: <20181017072020.GD23407@lst.de>
+References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
+ <1538040281-21319-3-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1538040281-21319-3-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, ML dri-devel <dri-devel@lists.freedesktop.org>, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, alsa-devel@alsa-project.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Hans Verkuil <hans.verkuil@cisco.com>, Mauro Carvalho Chehab <mchehab@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
+Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Le mer. 17 oct. 2018 à 09:20, Christoph Hellwig <hch@lst.de> a écrit :
->
-> On Mon, Oct 15, 2018 at 11:12:55AM +0200, Benjamin Gaignard wrote:
-> > Le sam. 13 oct. 2018 à 17:18, Christoph Hellwig <hch@lst.de> a écrit :
-> > >
-> > > The DMA API does its own zone decisions based on the coherent_dma_mask.
-> > >
-> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
-> >
-> > Reviewed-by: Benjamin Gaignard <benjamin.gaignard@linaro.org>
->
-> Can you pick it up through the media tree?
-
-No but Mauros or Hans (in CC) can add it.
+T24gMjcuOS4yMDE4IDExOjI0LCBNaWNoYWwgVm9rw6HEjSB3cm90ZToNCj4gVGhlIHJlc2V0IHNp
+Z25hbCBvZiB0aGUgU1NEMTMwNiBPTEVEIGRpc3BsYXkgaXMgYWN0dWFsbHkgYWN0aXZlLWxvdy4N
+Cj4gQWRhcHQgdGhlIERUIHRvIHJlZmxlY3QgdGhlIHJlYWwgd29ybGQuDQo+IA0KPiBTaWduZWQt
+b2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCj4gLS0tDQo+
+IHYyIGNoYW5nZXM6IE5ldyBwYXRjaCBpbiB0aGUgc2VyaWVzDQoNCkJhcnRsb21pZWoganVzdCBx
+dWV1ZWQgdGhlIGZpcnN0IHR3byBwYXRjaGVzIGZvciB2NC4yMC4NCldpbGwgc29tZWJvZHkgdGFr
+ZSB0aGlzIG9uZT8gT3RoZXJ3aXNlIHRoaXMgU29NIHdpbGwgZW5kIHVwIHdpdGgNCmJyb2tlbiBP
+TEVEIGRpc3BsYXkgcmVzZXQuDQoNClRoYW5rcywgTWljaGFsLg0KDQo+IA0KPiAgIGFyY2gvYXJt
+L2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cyB8IDMgKystDQo+ICAgMSBmaWxlIGNoYW5nZWQs
+IDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gv
+YXJtL2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
+LWNmYTEwMDM2LmR0cw0KPiBpbmRleCBlNTRmNWFiLi5iZTM0MDZlIDEwMDY0NA0KPiAtLS0gYS9h
+cmNoL2FybS9ib290L2R0cy9pbXgyOC1jZmExMDAzNi5kdHMNCj4gKysrIGIvYXJjaC9hcm0vYm9v
+dC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRzDQo+IEBAIC0xMSw2ICsxMSw3IEBADQo+ICAgDQo+ICAg
+L2R0cy12MS87DQo+ICAgI2luY2x1ZGUgImlteDI4LmR0c2kiDQo+ICsjaW5jbHVkZSA8ZHQtYmlu
+ZGluZ3MvZ3Bpby9ncGlvLmg+DQo+ICAgDQo+ICAgLyB7DQo+ICAgCW1vZGVsID0gIkNyeXN0YWxm
+b250eiBDRkEtMTAwMzYgQm9hcmQiOw0KPiBAQCAtOTUsNyArOTYsNyBAQA0KPiAgIAkJCQkJcGlu
+Y3RybC1uYW1lcyA9ICJkZWZhdWx0IjsNCj4gICAJCQkJCXBpbmN0cmwtMCA9IDwmc3NkMTMwNl9j
+ZmExMDAzNj47DQo+ICAgCQkJCQlyZWcgPSA8MHgzYz47DQo+IC0JCQkJCXJlc2V0LWdwaW9zID0g
+PCZncGlvMiA3IDA+Ow0KPiArCQkJCQlyZXNldC1ncGlvcyA9IDwmZ3BpbzIgNyBHUElPX0FDVElW
+RV9MT1c+Ow0KPiAgIAkJCQkJc29sb21vbixoZWlnaHQgPSA8MzI+Ow0KPiAgIAkJCQkJc29sb21v
+bix3aWR0aCA9IDwxMjg+Ow0KPiAgIAkJCQkJc29sb21vbixwYWdlLW9mZnNldCA9IDwwPjsNCj4g
+DQo

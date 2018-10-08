@@ -1,40 +1,46 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Tue, 09 Oct 2018 13:51:39 +0000
-Subject: [PATCH v3 04/24] soc/fsl/qbman: use ioremap_cache() instead of ioremap_prot(0)
-Message-Id: <841b980a6f1b3e9a9d3c20c5da39a88292033dbe.1539092111.git.christophe.leroy@c-s.fr>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 08 Oct 2018 10:51:54 +0000
+Subject: Re: [PATCH] video: fbdev: sis: Remove unnecessary parentheses and commented code
+Message-Id: <20181008105156eucas1p106251d3dc728ce13a4710b94ac02f1ba~bnKHB1gLf1421814218eucas1p1p@eucas1p1.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
+References: <CGME20180920202232epcas2p115e690a9ab4b8d70c2c710addb8fbb1e@epcas2p1.samsung.com>
+        <20180920202217.27304-1-natechancellor@gmail.com>
+In-Reply-To: <20180920202217.27304-1-natechancellor@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Nathan Chancellor <natechancellor@gmail.com>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-ioremap_prot() with flag set to 0 relies on a hack in
-__ioremap_caller() which adds PAGE_KERNEL flags when the
-handed flags don't look like a valid set of flags
-(ie don't include _PAGE_PRESENT)
 
-The intention being to map cached memory, use ioremap_cache() instead.
+On 09/20/2018 10:22 PM, Nathan Chancellor wrote:
+> Clang warns when multiple pairs of parentheses are used for a single
+> conditional statement.
+> 
+> drivers/video/fbdev/sis/init301.c:851:42: warning: equality comparison
+> with extraneous parentheses [-Wparentheses-equality]
+>       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
+>                  ~~~~~~~~~~~~~~~~~~~~~~~~^~~~
+> drivers/video/fbdev/sis/init301.c:851:42: note: remove extraneous
+> parentheses around the comparison to silence this warning
+>       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
+>                 ~                        ^   ~
+> drivers/video/fbdev/sis/init301.c:851:42: note: use '=' to turn this
+> equality comparison into an assignment
+>       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
+>                                          ^~
+>                                          > 1 warning generated.
+> 
+> Remove the parentheses and while we're at it, clean up the commented
+> code, which has been here since the beginning of git history.
+> 
+> Link: https://github.com/ClangBuiltLinux/linux/issues/118
+> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- drivers/soc/fsl/qbman/qman_ccsr.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch queued for 4.20, thanks.
 
-diff --git a/drivers/soc/fsl/qbman/qman_ccsr.c b/drivers/soc/fsl/qbman/qman_ccsr.c
-index 79cba58387a5..0fbb201346c7 100644
---- a/drivers/soc/fsl/qbman/qman_ccsr.c
-+++ b/drivers/soc/fsl/qbman/qman_ccsr.c
-@@ -418,7 +418,7 @@ static size_t fqd_sz, pfdr_sz;
- static int zero_priv_mem(phys_addr_t addr, size_t sz)
- {
- 	/* map as cacheable, non-guarded */
--	void __iomem *tmpp = ioremap_prot(addr, sz, 0);
-+	void __iomem *tmpp = ioremap_cache(addr, sz);
- 
- 	if (!tmpp)
- 		return -ENOMEM;
--- 
-2.13.3
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

@@ -1,35 +1,34 @@
-From: Colin King <colin.king@canonical.com>
-Date: Fri, 12 Oct 2018 22:47:10 +0000
-Subject: [PATCH] fbdev/via: fix spelling mistake "Expandsion" -> "Expansion"
-Message-Id: <20181012224710.26867-1-colin.king@canonical.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 08 Oct 2018 10:53:48 +0000
+Subject: Re: [RESEND PATCH v2 2/3] video: ssd1307fb: Do not hard code active-low reset sequence
+Message-Id: <20181008105350eucas1p2a16945864d1b9ca2bb15b9126b700f03~bnLxZUHUO1504015040eucas1p23@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
+        <CGME20180927092739epcas5p48229ea32d3382e27602660e991efca09@epcas5p4.samsung.com>
+        <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
 
-Trivial fix to spelling mistake in MODULE_PARM_DESC text
+On 09/27/2018 11:24 AM, Michal Vokáč wrote:
+> The SSD130x OLED display reset signal is active low. Now the reset
+> sequence is implemented in such a way that users are forced to
+> define reset-gpios as GPIO_ACTIVE_HIGH in DT to make the reset work.
+> 
+> Do not hard code the active-low sequence into the driver but instead
+> allow the user to specify the gpio as GPIO_ACTIVE_LOW to reflect
+> the real world.
+> 
+> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/video/fbdev/via/viafbdev.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch queued for 4.20, thanks.
 
-diff --git a/drivers/video/fbdev/via/viafbdev.c b/drivers/video/fbdev/via/viafbdev.c
-index 7bb7e90b8f00..bdf5a0ea876d 100644
---- a/drivers/video/fbdev/via/viafbdev.c
-+++ b/drivers/video/fbdev/via/viafbdev.c
-@@ -2110,7 +2110,7 @@ MODULE_PARM_DESC(viafb_lcd_panel_id,
- 
- module_param(viafb_lcd_dsp_method, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_lcd_dsp_method,
--	"Set Flat Panel display scaling method.(Default=Expandsion)");
-+	"Set Flat Panel display scaling method.(Default=Expansion)");
- 
- module_param(viafb_SAMM_ON, int, S_IRUSR);
- MODULE_PARM_DESC(viafb_SAMM_ON,
--- 
-2.17.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

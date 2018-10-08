@@ -1,54 +1,27 @@
-From: Nathan Chancellor <natechancellor@gmail.com>
-Date: Thu, 20 Sep 2018 20:22:17 +0000
-Subject: [PATCH] video: fbdev: sis: Remove unnecessary parentheses and commented code
-Message-Id: <20180920202217.27304-1-natechancellor@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 08 Oct 2018 10:36:18 +0000
+Subject: Re: [PATCH 1/3] mach64: fix display corruption on big endian machines
+Message-Id: <20181008103619eucas1p24e401b62430a69ba4b86bb17f8ec2930~bm8ex8si81331613316eucas1p2I@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <alpine.LRH.2.02.1808251549550.8284@file01.intranet.prod.int.rdu2.redhat.com>
+ <CGME20180827125506epcas4p3a11f509c60f03844f043015eeabfff21@epcas4p3.samsung.com>
+ <20180827125452.GD11867@sci.fi>
+In-Reply-To: <20180827125452.GD11867@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Nathan Chancellor <natechancellor@gmail.com>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>
+Cc: linux-fbdev@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>, dri-devel@lists.freedesktop.org
 
-Clang warns when multiple pairs of parentheses are used for a single
-conditional statement.
-
-drivers/video/fbdev/sis/init301.c:851:42: warning: equality comparison
-with extraneous parentheses [-Wparentheses-equality]
-      } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
-                 ~~~~~~~~~~~~~~~~~~~~~~~~^~~~
-drivers/video/fbdev/sis/init301.c:851:42: note: remove extraneous
-parentheses around the comparison to silence this warning
-      } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
-                ~                        ^   ~
-drivers/video/fbdev/sis/init301.c:851:42: note: use '=' to turn this
-equality comparison into an assignment
-      } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
-                                         ^~
-                                         1 warning generated.
-
-Remove the parentheses and while we're at it, clean up the commented
-code, which has been here since the beginning of git history.
-
-Link: https://github.com/ClangBuiltLinux/linux/issues/118
-Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
----
- drivers/video/fbdev/sis/init301.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/video/fbdev/sis/init301.c b/drivers/video/fbdev/sis/init301.c
-index 27a2b72e50e8..a8fb41f1a258 100644
---- a/drivers/video/fbdev/sis/init301.c
-+++ b/drivers/video/fbdev/sis/init301.c
-@@ -848,9 +848,7 @@ SiS_PanelDelay(struct SiS_Private *SiS_Pr, unsigned short DelayTime)
- 	    SiS_DDC2Delay(SiS_Pr, 0x4000);
- 	 }
- 
--      } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
--	 (SiS_Pr->SiS_CustomT = CUT_COMPAQ1280) ||
--	 (SiS_Pr->SiS_CustomT = CUT_CLEVO1400) */ ) {			/* 315 series, LVDS; Special */
-+      } else if (SiS_Pr->SiS_IF_DEF_LVDS = 1) {			/* 315 series, LVDS; Special */
- 
- 	 if(SiS_Pr->SiS_IF_DEF_CH70xx = 0) {
- 	    PanelID = SiS_GetReg(SiS_Pr->SiS_P3d4,0x36);
--- 
-2.19.0
+Ck9uIDA4LzI3LzIwMTggMDI6NTQgUE0sIFZpbGxlIFN5cmrDpGzDpCB3cm90ZToKPiBPbiBTYXQs
+IEF1ZyAyNSwgMjAxOCBhdCAwMzo1MTowMFBNIC0wNDAwLCBNaWt1bGFzIFBhdG9ja2Egd3JvdGU6
+Cj4+IFRoZSBjb2RlIGZvciBtYW51YWwgYml0IHRyaXBsZSBpcyBub3QgZW5kaWFuLWNsZWFuLiBJ
+dCBidWlsZHMgdGhlIHZhcmlhYmxlCj4+ICJob3N0ZHdvcmQiIHVzaW5nIGJ5dGUgYWNjZXNzZXMs
+IHRoZXJlZm9yZSB3ZSBtdXN0IHJlYWQgdGhlIHZhcmlhYmxlIHdpdGgKPj4gImxlMzJfdG9fY3B1
+Ii4KPj4KPj4gVGhlIHBhdGNoIGFsc28gZW5hYmxlcyAoaGFyZHdhcmUgb3Igc29mdHdhcmUpIGJp
+dCB0cmlwbGUgb25seSBpZiB0aGUgaW1hZ2UKPj4gaXMgbW9ub2Nocm9tZSAoaW1hZ2UtPmRlcHRo
+KS4gSWYgd2Ugd2FudCB0byBibGl0IGZ1bGwtY29sb3IgaW1hZ2UsIHdlCj4+IHNob3VsZG4ndCB1
+c2UgdGhlIHRyaXBsZSBjb2RlLgo+IAo+IE1ha2VzIHNlbnNlLgo+IFJldmlld2VkLWJ5OiBWaWxs
+ZSBTeXJqw6Rsw6QgPHN5cmphbGFAc2NpLmZpPgoKUGF0Y2ggcXVldWVkIGZvciA0LjIwLCB0aGFu
+a3MuCgpCZXN0IHJlZ2FyZHMsCi0tCkJhcnRsb21pZWogWm9sbmllcmtpZXdpY3oKU2Ftc3VuZyBS
+JkQgSW5zdGl0dXRlIFBvbGFuZApTYW1zdW5nIEVsZWN0cm9uaWNz

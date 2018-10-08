@@ -1,48 +1,27 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:38:48 +0000
-Subject: Re: [PATCH 3/3] mach64: optimize wait_for_fifo
-Message-Id: <20181008103849eucas1p26a01b80011fec4fd4ccf4e1f9e30a0ab~bm_qgg9zb0635206352eucas1p2N@eucas1p2.samsung.com>
+Date: Mon, 08 Oct 2018 10:40:24 +0000
+Subject: Re: [PATCH] Video: vgastate: fixed a spacing coding style
+Message-Id: <20181008104026eucas1p254120530a8d1c441deba6a548c99b002~bnAESLW6H1306713067eucas1p2N@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <alpine.LRH.2.02.1808251551570.8284@file01.intranet.prod.int.rdu2.redhat.com>
- <CGME20180827125544epcas5p4fa141fda03506aab54bb0e1f3dc53231@epcas5p4.samsung.com>
- <20180827125530.GF11867@sci.fi>
-In-Reply-To: <20180827125530.GF11867@sci.fi>
+References: <CGME20180824124948epcas3p48f943b2815163971258231dcbcbed6a4@epcas3p4.samsung.com>
+        <1535114948-18615-1-git-send-email-contact.mehdi@pm.me>
+In-Reply-To: <1535114948-18615-1-git-send-email-contact.mehdi@pm.me>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>
-Cc: linux-fbdev@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Mehdi Bounya <bounya9mehdi@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Mehdi Bounya <contact.mehdi@pm.me>, Mehdi Bounya <mehdi.bounya@gmail.com>
 
-Ck9uIDA4LzI3LzIwMTggMDI6NTUgUE0sIFZpbGxlIFN5cmrDpGzDpCB3cm90ZToKPiBPbiBTYXQs
-IEF1ZyAyNSwgMjAxOCBhdCAwMzo1NDoxN1BNIC0wNDAwLCBNaWt1bGFzIFBhdG9ja2Egd3JvdGU6
-Cj4+IFRoaXMgaXMgYSBzaW1wbGUgb3B0aW1pemF0aW9uIGZvciBmaWZvIHdhaXRpbmcgdGhhdCBp
-bXByb3ZlcyBzY3JvbGxpbmcKPj4gcGVyZm9ybWFuY2UgYnkgNSUuIElmIHRoZSBxdWV1ZSBoYXMg
-bW9yZSBmcmVlIGVudHJpZXMgdGhhdCB3aGF0IHdlCj4+IGNvbnN1bWUsIHdlIGNhbiBza2lwIHRo
-ZSBjb3N0bHkgcmVnaXN0ZXIgcmVhZCBuZXh0IHRpbWUuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE1p
-a3VsYXMgUGF0b2NrYSA8bXBhdG9ja2FAcmVkaGF0LmNvbT4KPj4KPj4gLS0tCj4+ICBkcml2ZXJz
-L3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5oICAgICAgICB8ICAgMTIgKysrKysrKystLS0tCj4+ICBk
-cml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9tYWNoNjRfYWNjZWwuYyB8ICAgIDQgKysrLQo+PiAgMiBm
-aWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQo+Pgo+PiBJbmRl
-eDogbGludXgtc3RhYmxlL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L2F0eWZiLmgKPj4gPT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09Pj4gLS0tIGxpbnV4LXN0YWJsZS5vcmlnL2RyaXZl
-cnMvdmlkZW8vZmJkZXYvYXR5L2F0eWZiLmgJMjAxOC0wOC0yNSAyMTo0OToxNi4wMDAwMDAwMDAg
-KzAyMDAKPj4gKysrIGxpbnV4LXN0YWJsZS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5o
-CTIwMTgtMDgtMjUgMjE6NTI6NTEuMDAwMDAwMDAwICswMjAwCj4+IEBAIC0xNDcsNiArMTQ3LDcg
-QEAgc3RydWN0IGF0eWZiX3BhciB7Cj4+ICAJdTE2IHBjaV9pZDsKPj4gIAl1MzIgYWNjZWxfZmxh
-Z3M7Cj4+ICAJaW50IGJsaXR0ZXJfbWF5X2JlX2J1c3k7Cj4+ICsJdW5zaWduZWQgZmlmb19zcGFj
-ZTsKPj4gIAlpbnQgYXNsZWVwOwo+PiAgCWludCBsb2NrX2JsYW5rOwo+PiAgCXVuc2lnbmVkIGxv
-bmcgcmVzX3N0YXJ0Owo+PiBAQCAtMzQ2LDEwICszNDcsMTMgQEAgZXh0ZXJuIGludCBhdHlfaW5p
-dF9jdXJzb3Ioc3RydWN0IGZiX2luZgo+PiAgICAgICAqICBIYXJkd2FyZSBhY2NlbGVyYXRpb24K
-Pj4gICAgICAgKi8KPj4gIAo+PiAtc3RhdGljIGlubGluZSB2b2lkIHdhaXRfZm9yX2ZpZm8odTE2
-IGVudHJpZXMsIGNvbnN0IHN0cnVjdCBhdHlmYl9wYXIgKnBhcikKPj4gK3N0YXRpYyBpbmxpbmUg
-dm9pZCB3YWl0X2Zvcl9maWZvKHUxNiBlbnRyaWVzLCBzdHJ1Y3QgYXR5ZmJfcGFyICpwYXIpCj4+
-ICB7Cj4+IC0Jd2hpbGUgKChhdHlfbGRfbGUzMihGSUZPX1NUQVQsIHBhcikgJiAweGZmZmYpID4K
-Pj4gLQkgICAgICAgKCh1MzIpICgweDgwMDAgPj4gZW50cmllcykpKTsKPj4gKwl1bnNpZ25lZCBm
-aWZvX3NwYWNlID0gcGFyLT5maWZvX3NwYWNlOwo+PiArCXdoaWxlIChlbnRyaWVzID4gZmlmb19z
-cGFjZSkgewo+PiArCQlmaWZvX3NwYWNlID0gMTYgLSBmbHMoYXR5X2xkX2xlMzIoRklGT19TVEFU
-LCBwYXIpICYgMHhmZmZmKTsKPiAKPiBJIGRvbid0IHJlY2FsbCBvZmYgaGFuZCB3aGljaCB3YXkg
-dGhpcyByZWdpc3RlciB3b3JrcywgYnV0IGJhc2VkCj4gb24gdGhlIGV4aXN0aW5nIGNvZGUgdGhp
-cyBsb29rcyBjb3JyZWN0Lgo+IAo+IFJldmlld2VkLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHN5cmph
-bGFAc2NpLmZpPgoKUGF0Y2ggcXVldWVkIGZvciA0LjIwLCB0aGFua3MuCgpCZXN0IHJlZ2FyZHMs
-Ci0tCkJhcnRsb21pZWogWm9sbmllcmtpZXdpY3oKU2Ftc3VuZyBSJkQgSW5zdGl0dXRlIFBvbGFu
-ZApTYW1zdW5nIEVsZWN0cm9uaWNz
+
+On 08/24/2018 02:49 PM, Mehdi Bounya wrote:
+> Removed a space between function name and open parant.
+> 
+> Signed-off-by: Mehdi Bounya <mehdi.bounya@gmail.com>
+
+Patch queued for 4.20, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

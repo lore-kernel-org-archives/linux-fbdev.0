@@ -1,35 +1,52 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Sat, 13 Oct 2018 15:17:07 +0000
-Subject: [PATCH 8/8] fsl-diu-fb: don't pass GFP_DMA32 to dmam_alloc_coherent
-Message-Id: <20181013151707.32210-9-hch@lst.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 08 Oct 2018 10:18:36 +0000
+Subject: Re: [PATCH] udlfb: handle unplug properly
+Message-Id: <20181008101837eucas1p2a5dd811a3a085324fec32b876aeb40ca~bmtBuC_V21858318583eucas1p2D@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181013151707.32210-1-hch@lst.de>
-In-Reply-To: <20181013151707.32210-1-hch@lst.de>
+References: <CGME20180730103301epcas4p3d1c8053c2a00004b72824c8928fa9dbf@epcas4p3.samsung.com>
+ <alpine.LRH.2.02.1807300630250.2919@file01.intranet.prod.int.rdu2.redhat.com>
+In-Reply-To: <alpine.LRH.2.02.1807300630250.2919@file01.intranet.prod.int.rdu2.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: linux-kernel@vger.kernel.org
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org
 
-The DMA API does its own zone decisions based on the coherent_dma_mask.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/video/fbdev/fsl-diu-fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On 07/30/2018 12:32 PM, Mikulas Patocka wrote:
+> The udlfb driver maintained an open count and cleaned up itself when the
+> count reached zero. But the console is also counted in the reference count
+> - so, if the user unplugged the device, the open count would not drop to
+> zero and the driver stayed loaded with console attached. If the user
+> re-plugged the adapter, it would create a device /dev/fb1, show green
+> screen and the access to the console would be lost.
+> 
+> The framebuffer subsystem has reference counting on its own - in order to
+> fix the unplug bug, we rely the framebuffer reference counting. When the
+> user unplugs the adapter, we call unregister_framebuffer unconditionally.
+> unregister_framebuffer will unbind the console, wait until all users stop
+> using the framebuffer and then call the fb_destroy method. The fb_destroy
+> cleans up the USB driver.
+> 
+> This patch makes the following changes:
+> * Drop dlfb->kref and rely on implicit framebuffer reference counting
+>   instead.
+> * dlfb_usb_disconnect calls unregister_framebuffer, the rest of driver
+>   cleanup is done in the function dlfb_ops_destroy. dlfb_ops_destroy will
+>   be called by the framebuffer subsystem when no processes have the
+>   framebuffer open or mapped.
+> * We don't use workqueue during initialization, but initialize directly
+>   from dlfb_usb_probe. The workqueue could race with dlfb_usb_disconnect
+>   and this racing would produce various kinds of memory corruption.
+> * We use usb_get_dev and usb_put_dev to make sure that the USB subsystem
+>   doesn't free the device under us.
+> 
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
-diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-index bc9eb8afc313..6a49fe917bdb 100644
---- a/drivers/video/fbdev/fsl-diu-fb.c
-+++ b/drivers/video/fbdev/fsl-diu-fb.c
-@@ -1697,7 +1697,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
- 	int ret;
- 
- 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
--				   &dma_addr, GFP_DMA | __GFP_ZERO);
-+				   &dma_addr, GFP_KERNEL | __GFP_ZERO);
- 	if (!data)
- 		return -ENOMEM;
- 	data->dma_addr = dma_addr;
--- 
-2.19.1
+Patch queued for 4.20, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

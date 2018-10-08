@@ -1,34 +1,48 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:53:48 +0000
-Subject: Re: [RESEND PATCH v2 2/3] video: ssd1307fb: Do not hard code active-low reset sequence
-Message-Id: <20181008105350eucas1p2a16945864d1b9ca2bb15b9126b700f03~bnLxZUHUO1504015040eucas1p23@eucas1p2.samsung.com>
+Date: Mon, 08 Oct 2018 10:38:48 +0000
+Subject: Re: [PATCH 3/3] mach64: optimize wait_for_fifo
+Message-Id: <20181008103849eucas1p26a01b80011fec4fd4ccf4e1f9e30a0ab~bm_qgg9zb0635206352eucas1p2N@eucas1p2.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
-        <CGME20180927092739epcas5p48229ea32d3382e27602660e991efca09@epcas5p4.samsung.com>
-        <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1538040281-21319-2-git-send-email-michal.vokac@ysoft.com>
+References: <alpine.LRH.2.02.1808251551570.8284@file01.intranet.prod.int.rdu2.redhat.com>
+ <CGME20180827125544epcas5p4fa141fda03506aab54bb0e1f3dc53231@epcas5p4.samsung.com>
+ <20180827125530.GF11867@sci.fi>
+In-Reply-To: <20180827125530.GF11867@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>
+Cc: linux-fbdev@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>, dri-devel@lists.freedesktop.org
 
-
-On 09/27/2018 11:24 AM, Michal Vokáč wrote:
-> The SSD130x OLED display reset signal is active low. Now the reset
-> sequence is implemented in such a way that users are forced to
-> define reset-gpios as GPIO_ACTIVE_HIGH in DT to make the reset work.
-> 
-> Do not hard code the active-low sequence into the driver but instead
-> allow the user to specify the gpio as GPIO_ACTIVE_LOW to reflect
-> the real world.
-> 
-> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
-
-Patch queued for 4.20, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Ck9uIDA4LzI3LzIwMTggMDI6NTUgUE0sIFZpbGxlIFN5cmrDpGzDpCB3cm90ZToKPiBPbiBTYXQs
+IEF1ZyAyNSwgMjAxOCBhdCAwMzo1NDoxN1BNIC0wNDAwLCBNaWt1bGFzIFBhdG9ja2Egd3JvdGU6
+Cj4+IFRoaXMgaXMgYSBzaW1wbGUgb3B0aW1pemF0aW9uIGZvciBmaWZvIHdhaXRpbmcgdGhhdCBp
+bXByb3ZlcyBzY3JvbGxpbmcKPj4gcGVyZm9ybWFuY2UgYnkgNSUuIElmIHRoZSBxdWV1ZSBoYXMg
+bW9yZSBmcmVlIGVudHJpZXMgdGhhdCB3aGF0IHdlCj4+IGNvbnN1bWUsIHdlIGNhbiBza2lwIHRo
+ZSBjb3N0bHkgcmVnaXN0ZXIgcmVhZCBuZXh0IHRpbWUuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE1p
+a3VsYXMgUGF0b2NrYSA8bXBhdG9ja2FAcmVkaGF0LmNvbT4KPj4KPj4gLS0tCj4+ICBkcml2ZXJz
+L3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5oICAgICAgICB8ICAgMTIgKysrKysrKystLS0tCj4+ICBk
+cml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9tYWNoNjRfYWNjZWwuYyB8ICAgIDQgKysrLQo+PiAgMiBm
+aWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQo+Pgo+PiBJbmRl
+eDogbGludXgtc3RhYmxlL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L2F0eWZiLmgKPj4gPT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09Pj4gLS0tIGxpbnV4LXN0YWJsZS5vcmlnL2RyaXZl
+cnMvdmlkZW8vZmJkZXYvYXR5L2F0eWZiLmgJMjAxOC0wOC0yNSAyMTo0OToxNi4wMDAwMDAwMDAg
+KzAyMDAKPj4gKysrIGxpbnV4LXN0YWJsZS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5o
+CTIwMTgtMDgtMjUgMjE6NTI6NTEuMDAwMDAwMDAwICswMjAwCj4+IEBAIC0xNDcsNiArMTQ3LDcg
+QEAgc3RydWN0IGF0eWZiX3BhciB7Cj4+ICAJdTE2IHBjaV9pZDsKPj4gIAl1MzIgYWNjZWxfZmxh
+Z3M7Cj4+ICAJaW50IGJsaXR0ZXJfbWF5X2JlX2J1c3k7Cj4+ICsJdW5zaWduZWQgZmlmb19zcGFj
+ZTsKPj4gIAlpbnQgYXNsZWVwOwo+PiAgCWludCBsb2NrX2JsYW5rOwo+PiAgCXVuc2lnbmVkIGxv
+bmcgcmVzX3N0YXJ0Owo+PiBAQCAtMzQ2LDEwICszNDcsMTMgQEAgZXh0ZXJuIGludCBhdHlfaW5p
+dF9jdXJzb3Ioc3RydWN0IGZiX2luZgo+PiAgICAgICAqICBIYXJkd2FyZSBhY2NlbGVyYXRpb24K
+Pj4gICAgICAgKi8KPj4gIAo+PiAtc3RhdGljIGlubGluZSB2b2lkIHdhaXRfZm9yX2ZpZm8odTE2
+IGVudHJpZXMsIGNvbnN0IHN0cnVjdCBhdHlmYl9wYXIgKnBhcikKPj4gK3N0YXRpYyBpbmxpbmUg
+dm9pZCB3YWl0X2Zvcl9maWZvKHUxNiBlbnRyaWVzLCBzdHJ1Y3QgYXR5ZmJfcGFyICpwYXIpCj4+
+ICB7Cj4+IC0Jd2hpbGUgKChhdHlfbGRfbGUzMihGSUZPX1NUQVQsIHBhcikgJiAweGZmZmYpID4K
+Pj4gLQkgICAgICAgKCh1MzIpICgweDgwMDAgPj4gZW50cmllcykpKTsKPj4gKwl1bnNpZ25lZCBm
+aWZvX3NwYWNlID0gcGFyLT5maWZvX3NwYWNlOwo+PiArCXdoaWxlIChlbnRyaWVzID4gZmlmb19z
+cGFjZSkgewo+PiArCQlmaWZvX3NwYWNlID0gMTYgLSBmbHMoYXR5X2xkX2xlMzIoRklGT19TVEFU
+LCBwYXIpICYgMHhmZmZmKTsKPiAKPiBJIGRvbid0IHJlY2FsbCBvZmYgaGFuZCB3aGljaCB3YXkg
+dGhpcyByZWdpc3RlciB3b3JrcywgYnV0IGJhc2VkCj4gb24gdGhlIGV4aXN0aW5nIGNvZGUgdGhp
+cyBsb29rcyBjb3JyZWN0Lgo+IAo+IFJldmlld2VkLWJ5OiBWaWxsZSBTeXJqw6Rsw6QgPHN5cmph
+bGFAc2NpLmZpPgoKUGF0Y2ggcXVldWVkIGZvciA0LjIwLCB0aGFua3MuCgpCZXN0IHJlZ2FyZHMs
+Ci0tCkJhcnRsb21pZWogWm9sbmllcmtpZXdpY3oKU2Ftc3VuZyBSJkQgSW5zdGl0dXRlIFBvbGFu
+ZApTYW1zdW5nIEVsZWN0cm9uaWNz

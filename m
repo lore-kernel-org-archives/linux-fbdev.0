@@ -1,104 +1,94 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 09 Oct 2018 13:30:34 +0000
-Subject: Re: [RESEND PATCH v2 3/3] ARM: dts: imx28-cfa10036: Fix the reset gpio signal polarity
-Message-Id: <20181009133036eucas1p1d83ef6809a5696d6e2de1f3406afeeba~b897iNlSV1315713157eucas1p1e@eucas1p1.samsung.com>
+Date: Mon, 08 Oct 2018 10:27:08 +0000
+Subject: Re: [PATCH] mach64: detect the dot clock divider correctly on sparc
+Message-Id: <20181008102710eucas1p14709ad98709a7367e2cd0222326b289e~bm0fiCXL40600006000eucas1p1j@eucas1p1.samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
-        <1538040281-21319-3-git-send-email-michal.vokac@ysoft.com>
-        <68f4da21-6f0d-5bf9-b352-cdc423269080@ysoft.com>
-        <CGME20181009002056epcas5p24207204c9e65e8f34382de6672adb993@epcas5p2.samsung.com>
-        <20181009002031.GU3587@dragon>
-        <20181009075145eucas1p2691c7d04aa8328080af7cbc4ab5e03b9~b4WFAVFkx0235802358eucas1p2c@eucas1p2.samsung.com>
-        <bfbfd490-3872-2fd9-e088-3add596b987c@ysoft.com>
-        <CAOMZO5DdV9Sm9z6wX8e4LTvbokjnOMqtgOJQOvVvysVvzaBKGw@mail.gmail.com>
-        <221a185c-19fc-cc89-49b1-aa77fb1f0e41@ysoft.com>
-In-Reply-To: <221a185c-19fc-cc89-49b1-aa77fb1f0e41@ysoft.com>
+References: <alpine.LRH.2.02.1808171515550.31883@file01.intranet.prod.int.rdu2.redhat.com>
+ <CGME20180819103713epcas3p1647de208684af49abe9f513f84876c0e@epcas3p1.samsung.com>
+ <20180819103657.GB11867@sci.fi>
+In-Reply-To: <20180819103657.GB11867@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Cc: Fabio Estevam <festevam@gmail.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>
+Cc: sparclinux@vger.kernel.org, linux-fbdev@vger.kernel.org, Mikulas Patocka <mpatocka@redhat.com>, "David S. Miller" <davem@davemloft.net>, dri-devel@lists.freedesktop.org
 
-
-On 10/09/2018 03:18 PM, Vokáč Michal wrote:
-> On 9.10.2018 14:36, Fabio Estevam wrote:
->> Hi Michal,
->>
->> On Tue, Oct 9, 2018 at 5:30 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
->>
->>> Sorry for the inconvenience :( Lesson learned..
->>>
->>> So in other words (no offense): broken drivers need to stay broken because
->>> users may already get used to the broken behavior?
->>
->> In order to keep the old dtb's working you could introduce a new
->> property (like reset-gpio-active-low, for example).
->>
->> Then the driver behavior can be made untouched for the old dtb's and
->> only new dtb's with this new property would have the correct GPIO
->> reset behavior.
-> 
-> Thank you very much Fabio!
-> I saw these xxx-active-low/high properties in many device tree
-> sources wondering why the heck people use them when they could
-> use GPIO_ACTIVE_LOW/HIGH. And this is the explanation.
-> 
-> And I feel like an idiot once again: git grep -l "reset-active-low"
-> first hit is:
-> 
->   Documentation/devicetree/bindings/display/ssd1307fb.txt
-> 
-> Oooops.
-> The weird thing is that usage of reset-active-low is documented
-> in the example but it is not implemented.
-> 
-> So the patch no.2 should be reverted and patch no.3 not applied at all.
-
-OK, I've applied the patch below to fbdev-for-next tree.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-
-From 64f83a816b27c7b5e026a74ecb5c61dbabfae997 Mon Sep 17 00:00:00 2001
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 9 Oct 2018 15:18:42 +0200
-Subject: [PATCH] Revert "video: ssd1307fb: Do not hard code active-low reset
- sequence"
-
-This reverts commit 9827f26374fb85e1811f2adbcc25c8a3992dbe7f.
-
-On 10/09/2018 02:20 AM, Shawn Guo wrote:
-
-> Well, it means the change breaks the ABI between kernel and device tree,
-> e.g. the new kernel will not work with existing/installed DTBs.
-
-Revert the change until DTB compatibility issue is resolved.
-
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/video/fbdev/ssd1307fb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 3b361bc..4061a20 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -667,10 +667,10 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 
- 	if (par->reset) {
- 		/* Reset the screen */
--		gpiod_set_value_cansleep(par->reset, 1);
--		udelay(4);
- 		gpiod_set_value_cansleep(par->reset, 0);
- 		udelay(4);
-+		gpiod_set_value_cansleep(par->reset, 1);
-+		udelay(4);
- 	}
- 
- 	if (par->vbat_reg) {
--- 
-1.9.1
+Ck9uIDA4LzE5LzIwMTggMTI6MzYgUE0sIFZpbGxlIFN5cmrDpGzDpCB3cm90ZToKPiBPbiBGcmks
+IEF1ZyAxNywgMjAxOCBhdCAwMzoxOTozN1BNIC0wNDAwLCBNaWt1bGFzIFBhdG9ja2Egd3JvdGU6
+Cj4+IE9uIFN1biBVbHRyYSA1LCBpdCBoYXBwZW5zIHRoYXQgdGhlIGRvdCBjbG9jayBpcyBub3Qg
+c2V0IHVwIHByb3Blcmx5IGZvcgo+PiBzb21lIHZpZGVvbW9kZXMuIEZvciBleGFtcGxlLCBpZiB3
+ZSBzZXQgdGhlIHZpZGVvbW9kZSAicjEwMjR4NzY4eDYwIiBpbgo+PiB0aGUgZmlybXdhcmUsIExp
+bnV4IHdvdWxkIGluY29ycmVjdGx5IHNldCBhIHZpZGVvbW9kZSB3aXRoIHJlZnJlc2ggcmF0ZQo+
+PiAxODBIeiB3aGVuIGJvb3RpbmcgKHN1cHJpc2luZ2x5LCBteSBMQ0QgbW9uaXRvciBjYW4gZGlz
+cGxheSBpdCwgYWx0aG91Z2gKPj4gZGlzcGxheSBxdWFsaXR5IGlzIHZlcnkgbG93KS4KPj4KPj4g
+VGhlIHJlYXNvbiBpcyB0aGlzOiBPbGRlciBtYWNoNjQgY2FyZHMgc2V0IHRoZSBkaXZpZGVyIGlu
+IHRoZSByZWdpc3Rlcgo+PiBWQ0xLX1BPU1RfRElWLiBUaGUgcmVnaXN0ZXIgaGFzIGZvdXIgMi1i
+aXQgZmllbGRzICh0aGUgZmllbGQgdGhhdCBpcwo+PiBhY3R1YWxseSB1c2VkIGlzIHNwZWNpZmll
+ZCBpbiB0aGUgbG93ZXN0IHR3byBiaXRzIG9mIHRoZSByZWdpc3Rlcgo+PiBDTE9DS19DTlRMKS4g
+VGhlIDIgYml0cyBzZWxlY3QgZGl2aWRlciAiMSwgMiwgNCwgOCIuIE9uIG5ld2VyIG1hY2g2NCBj
+YXJkcywKPj4gdGhlcmUncyBhbm90aGVyIGJpdCBhZGRlZCAtIHRoZSB0b3AgZm91ciBiaXRzIG9m
+IFBMTF9FWFRfQ05UTCBleHRlbmQgdGhlCj4+IGRpdmlkZXIgc2VsZWN0aW9uLCBzbyB3ZSBoYXZl
+IHBvc3NpYmxlIGRpdmlkZXJzICIxLCAyLCA0LCA4LCAzLCA1LCA2LCAxMiIuCj4+IFRoZSBMaW51
+eCBkcml2ZXIgY2xlYXJzIHRoZSB0b3AgZm91ciBiaXRzIG9mIFBMTF9FWFRfQ05UTCBhbmQgbmV2
+ZXIgc2V0cwo+PiB0aGVtLCBzbyBpdCBjYW4gd29yayByZWdhcmRsZXNzIGlmIHRoZSBjYXJkIHN1
+cHBvcnRzIHRoZW0uIEhvd2V2ZXIsIHRoZQo+PiBzcGFyYzY0IGZpcm13YXJlIG1heSBzZXQgdGhl
+c2UgZXh0ZW5kZWQgZGl2aWRlcnMgZHVyaW5nIGJvb3QgLSBhbmQgdGhlCj4+IG1hY2g2NCBkcml2
+ZXIgZGV0ZWN0cyBpbmNvcnJlY3QgZG90IGNsb2NrIGluIHRoaXMgY2FzZS4KPj4KPj4gVGhpcyBw
+YXRjaCBtYWtlcyB0aGUgZHJpdmVyIHJlYWQgdGhlIGFkZGl0aW9uYWwgZGl2aWRlciBiaXQgZnJv
+bQo+PiBQTExfRVhUX0NOVEwgYW5kIGNhbGN1bGF0ZSB0aGUgaW5pdGlhbCByZWZyZXNoIHJhdGUg
+cHJvcGVybHkuCj4+Cj4+IFNpZ25lZC1vZmYtYnk6IE1pa3VsYXMgUGF0b2NrYSA8bXBhdG9ja2FA
+cmVkaGF0LmNvbT4KPj4gQ2M6IHN0YWJsZUB2Z2VyLmtlcm5lbC5vcmcKPj4KPj4gLS0tCj4+ICBk
+cml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5oICAgICAgfCAgICAzICsrLQo+PiAgZHJpdmVy
+cy92aWRlby9mYmRldi9hdHkvYXR5ZmJfYmFzZS5jIHwgICAgNyArKysrLS0tCj4+ICBkcml2ZXJz
+L3ZpZGVvL2ZiZGV2L2F0eS9tYWNoNjRfY3QuYyAgfCAgIDEwICsrKysrLS0tLS0KPj4gIDMgZmls
+ZXMgY2hhbmdlZCwgMTEgaW5zZXJ0aW9ucygrKSwgOSBkZWxldGlvbnMoLSkKPj4KPj4gSW5kZXg6
+IGxpbnV4LXN0YWJsZS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5oCj4+ID09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT4+IC0tLSBsaW51eC1zdGFibGUub3JpZy9kcml2ZXJz
+L3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYi5oCTIwMTgtMDgtMTMgMjE6MTI6MTEuMDAwMDAwMDAwICsw
+MjAwCj4+ICsrKyBsaW51eC1zdGFibGUvZHJpdmVycy92aWRlby9mYmRldi9hdHkvYXR5ZmIuaAky
+MDE4LTA4LTEzIDIxOjE3OjE0LjAwMDAwMDAwMCArMDIwMAo+PiBAQCAtMzMzLDYgKzMzMyw4IEBA
+IGV4dGVybiBjb25zdCBzdHJ1Y3QgYXR5X3BsbF9vcHMgYXR5X3BsbF8KPj4gIGV4dGVybiB2b2lk
+IGF0eV9zZXRfcGxsX2N0KGNvbnN0IHN0cnVjdCBmYl9pbmZvICppbmZvLCBjb25zdCB1bmlvbiBh
+dHlfcGxsICpwbGwpOwo+PiAgZXh0ZXJuIHU4IGF0eV9sZF9wbGxfY3QoaW50IG9mZnNldCwgY29u
+c3Qgc3RydWN0IGF0eWZiX3BhciAqcGFyKTsKPj4gIAo+PiArZXh0ZXJuIGNvbnN0IHU4IGF0eV9w
+b3N0ZGl2aWRlcnNbOF07Cj4+ICsKPj4gIAo+PiAgICAgIC8qCj4+ICAgICAgICogIEhhcmR3YXJl
+IGN1cnNvciBzdXBwb3J0Cj4+IEBAIC0zNTksNyArMzYxLDYgQEAgc3RhdGljIGlubGluZSB2b2lk
+IHdhaXRfZm9yX2lkbGUoc3RydWN0Cj4+ICAKPj4gIGV4dGVybiB2b2lkIGF0eV9yZXNldF9lbmdp
+bmUoY29uc3Qgc3RydWN0IGF0eWZiX3BhciAqcGFyKTsKPj4gIGV4dGVybiB2b2lkIGF0eV9pbml0
+X2VuZ2luZShzdHJ1Y3QgYXR5ZmJfcGFyICpwYXIsIHN0cnVjdCBmYl9pbmZvICppbmZvKTsKPj4g
+LWV4dGVybiB1OCAgIGF0eV9sZF9wbGxfY3QoaW50IG9mZnNldCwgY29uc3Qgc3RydWN0IGF0eWZi
+X3BhciAqcGFyKTsKPj4gIAo+PiAgdm9pZCBhdHlmYl9jb3B5YXJlYShzdHJ1Y3QgZmJfaW5mbyAq
+aW5mbywgY29uc3Qgc3RydWN0IGZiX2NvcHlhcmVhICphcmVhKTsKPj4gIHZvaWQgYXR5ZmJfZmls
+bHJlY3Qoc3RydWN0IGZiX2luZm8gKmluZm8sIGNvbnN0IHN0cnVjdCBmYl9maWxscmVjdCAqcmVj
+dCk7Cj4+IEluZGV4OiBsaW51eC1zdGFibGUvZHJpdmVycy92aWRlby9mYmRldi9hdHkvYXR5ZmJf
+YmFzZS5jCj4+ID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT4+IC0tLSBsaW51eC1z
+dGFibGUub3JpZy9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0eS9hdHlmYl9iYXNlLmMJMjAxOC0wOC0x
+MyAyMToxMjoxMS4wMDAwMDAwMDAgKzAyMDAKPj4gKysrIGxpbnV4LXN0YWJsZS9kcml2ZXJzL3Zp
+ZGVvL2ZiZGV2L2F0eS9hdHlmYl9iYXNlLmMJMjAxOC0wOC0xMyAyMToyMjoyMy4wMDAwMDAwMDAg
+KzAyMDAKPj4gQEAgLTMwODcsMTcgKzMwODcsMTggQEAgc3RhdGljIGludCBhdHlmYl9zZXR1cF9z
+cGFyYyhzdHJ1Y3QgcGNpXwo+PiAgCQkvKgo+PiAgCQkgKiBQTEwgUmVmZXJlbmNlIERpdmlkZXIg
+TToKPj4gIAkJICovCj4+IC0JCU0gPSBwbGxfcmVnc1syXTsKPj4gKwkJTSA9IHBsbF9yZWdzW1BM
+TF9SRUZfRElWXTsKPj4gIAo+PiAgCQkvKgo+PiAgCQkgKiBQTEwgRmVlZGJhY2sgRGl2aWRlciBO
+IChEZXBlbmRlbnQgb24gQ0xPQ0tfQ05UTCk6Cj4+ICAJCSAqLwo+PiAtCQlOID0gcGxsX3JlZ3Nb
+NyArIChjbG9ja19jbnRsICYgMyldOwo+PiArCQlOID0gcGxsX3JlZ3NbVkNMSzBfRkJfRElWICsg
+KGNsb2NrX2NudGwgJiAzKV07Cj4+ICAKPj4gIAkJLyoKPj4gIAkJICogUExMIFBvc3QgRGl2aWRl
+ciBQIChEZXBlbmRlbnQgb24gQ0xPQ0tfQ05UTCk6Cj4+ICAJCSAqLwo+PiAtCQlQID0gMSA8PCAo
+cGxsX3JlZ3NbNl0gPj4gKChjbG9ja19jbnRsICYgMykgPDwgMSkpOwo+PiArCQlQID0gYXR5X3Bv
+c3RkaXZpZGVyc1soKHBsbF9yZWdzW1ZDTEtfUE9TVF9ESVZdID4+ICgoY2xvY2tfY250bCAmIDMp
+IDw8IDEpKSAmIDMpIHwKPj4gKwkJICAgICAgICAgICAgICAgICAgICAgKChwbGxfcmVnc1tQTExf
+RVhUX0NOVExdID4+ICgyICsgKGNsb2NrX2NudGwgJiAzKSkpICYgNCldOwo+PiAgCj4+ICAJCS8q
+Cj4+ICAJCSAqIFBMTCBEaXZpZGVyIFE6Cj4+IEluZGV4OiBsaW51eC1zdGFibGUvZHJpdmVycy92
+aWRlby9mYmRldi9hdHkvbWFjaDY0X2N0LmMKPj4gPT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09Pj4gLS0tIGxpbnV4LXN0YWJsZS5vcmlnL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXR5L21h
+Y2g2NF9jdC5jCTIwMTgtMDgtMTMgMjE6MTI6MTEuMDAwMDAwMDAwICswMjAwCj4+ICsrKyBsaW51
+eC1zdGFibGUvZHJpdmVycy92aWRlby9mYmRldi9hdHkvbWFjaDY0X2N0LmMJMjAxOC0wOC0xMyAy
+MTozNTozMi4wMDAwMDAwMDAgKzAyMDAKPj4gQEAgLTExNSw3ICsxMTUsNyBAQCBzdGF0aWMgdm9p
+ZCBhdHlfc3RfcGxsX2N0KGludCBvZmZzZXQsIHU4Cj4+ICAgKi8KPj4gIAo+PiAgI2RlZmluZSBN
+YXhpbXVtX0RTUF9QUkVDSVNJT04gNwo+PiAtc3RhdGljIHU4IHBvc3RkaXZpZGVyc1tdID0gezEs
+Miw0LDgsM307Cj4+ICtjb25zdCB1OCBhdHlfcG9zdGRpdmlkZXJzWzhdID0gezEsMiw0LDgsMyw1
+LDYsMTJ9Owo+IAo+IE5vdCBzdXJlIGFib3V0IHRoZSAnNScuIFRoYXQgc2V0dGluZyBpcyBtYXJr
+ZWQgYXMgcmVzZXJ2ZWQgaW4gbXkgZG9jcy4KPiBTbyBJIGd1ZXNzIGl0IGRvZXNuJ3QgcmVhbGx5
+IG1hdHRlciB3aGF0IG51bWJlciB3ZSBwdXQgdGhlcmUuCj4gCj4gUmV2aWV3ZWQtYnk6IFZpbGxl
+IFN5cmrDpGzDpCA8c3lyamFsYUBzY2kuZmk+CgpQYXRjaCBxdWV1ZWQgZm9yIDQuMjAsIHRoYW5r
+cy4KCkJlc3QgcmVnYXJkcywKLS0KQmFydGxvbWllaiBab2xuaWVya2lld2ljegpTYW1zdW5nIFIm
+RCBJbnN0aXR1dGUgUG9sYW5kClNhbXN1bmcgRWxlY3Ryb25pY3M=

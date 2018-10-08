@@ -1,29 +1,22 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:42:14 +0000
-Subject: Re: [PATCH 1/2] fbdev: sbuslib: use checked version of put_user()
-Message-Id: <20181008104215eucas1p24aa2afe494cfc35129b50bea1ac29ac8~bnBqSQr8g1047310473eucas1p2X@eucas1p2.samsung.com>
+From: David Miller <davem@davemloft.net>
+Date: Mon, 08 Oct 2018 05:56:50 +0000
+Subject: Re: [PATCH] mach64: detect the dot clock divider correctly on sparc
+Message-Id: <20181007.225650.255111318936186975.davem@davemloft.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180831080941epcas5p3135e290b0ce17e7a4117556715361d84@epcas5p3.samsung.com>
- <20180831080921.jstbxdkga3w2rnnf@kili.mountain>
-In-Reply-To: <20180831080921.jstbxdkga3w2rnnf@kili.mountain>
+References: <20180819103657.GB11867@sci.fi>
+ <alpine.LRH.2.02.1808231706420.13157@file01.intranet.prod.int.rdu2.redhat.com>
+ <20180824115851.GC11867@sci.fi>
+In-Reply-To: <20180824115851.GC11867@sci.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-fbdev@vger.kernel.org, Mathieu Malaterre <malat@debian.org>, kernel-janitors@vger.kernel.org, dri-devel@lists.freedesktop.org, Philippe Ombredanne <pombredanne@nexb.com>, Peter Malone <peter.malone@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: syrjala@sci.fi
+Cc: sparclinux@vger.kernel.org, linux-fbdev@vger.kernel.org, mpatocka@redhat.com, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
 
+From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
+Date: Fri, 24 Aug 2018 14:58:52 +0300
 
-On 08/31/2018 10:09 AM, Dan Carpenter wrote:
-> I'm not sure why the code assumes that only the first put_user() needs
-> an access_ok() check.  I have made all the put_user() and get_user()
-> calls checked.
-> 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+> But yeah, given the V2CLK thing /5 seems like a perfectly good=20
+> value to use here.
 
-Patch queued for 4.20, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Patch applied.

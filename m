@@ -1,104 +1,132 @@
-From: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Date: Tue, 30 Oct 2018 10:34:41 +0000
-Subject: [PATCH v2] backlight: pwm_bl: Fix brightness levels for non-DT case.
-Message-Id: <20181030103441.29145-1-enric.balletbo@collabora.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:52:02 +0000
+Subject: [PATCH v3 15/24] powerpc/mm: move __P and __S tables in the common pgtable.h
+Message-Id: <bbf9c5cc3b44c70bec26b6cfa898cd59c1c08c2c.1539092112.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, robert.jarzmik@free.fr, daniel.thompson@linaro.org, lee.jones@linaro.org
-Cc: kernel@collabora.com, heiko@sntech.de, stable@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
-linearly to human eye")' allows the possibility to compute a default
-brightness table when there isn't the brightness-levels property in the
-DT. Unfortunately the changes made broke the pwm backlight for the
-non-DT boards.
+__P and __S flags are the same for all platform and should remain
+as is in the future, so avoid duplication.
 
-Usually, the non-DT boards don't pass the brightness levels via platform
-data, instead, it sets the max_brightness in their platform data and the
-driver calculates the level without a table. The ofending patch assumed
-hat when there is no brightness levels table we should create one, but this
-is clearly wrong for the non-DT case.
-
-After this patch the code handles the DT and the non-DT case taking in
-consideration also if max_brightness is set or not.
-
-Fixes: '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")'
-Cc: <stable@vger.kernel.org>
-Reported-by: Robert Jarzmik <robert.jarzmik@free.fr>
-Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 20 --------------------
+ arch/powerpc/include/asm/pgtable.h           | 19 +++++++++++++++++++
+ arch/powerpc/include/asm/pte-common.h        | 20 --------------------
+ 3 files changed, 19 insertions(+), 40 deletions(-)
 
-Changes in v2:
-- Rebase on top of mainline
-- Add Tested-by and Acked-by tags.
-
- drivers/video/backlight/pwm_bl.c | 41 +++++++++++++++++++++++++++-----
- 1 file changed, 35 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 678b27063198..f9ef0673a083 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -562,7 +562,30 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		goto err_alloc;
- 	}
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index f80f436834a1..cf8dbd5f8f03 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -151,8 +151,6 @@
+  * Write permissions imply read permissions for now (we could make write-only
+  * pages on BookE but we don't bother for now). Execute permission control is
+  * possible on platforms that define _PAGE_EXEC
+- *
+- * Note due to the way vm flags are laid out, the bits are XWR
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_PRIVILEGED)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_RW)
+@@ -162,24 +160,6 @@
+ #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_READ)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_READ | _PAGE_EXEC)
  
--	if (!data->levels) {
-+	if (data->levels) {
-+		/*
-+		 * For the DT case, only when brightness levels is defined
-+		 * data->levels is filled. For the non-DT case, data->levels
-+		 * can come from platform data, however is not usual.
-+		 */
-+		for (i = 0; i <= data->max_brightness; i++) {
-+			if (data->levels[i] > pb->scale)
-+				pb->scale = data->levels[i];
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_X
+-#define __P101	PAGE_READONLY_X
+-#define __P110	PAGE_COPY_X
+-#define __P111	PAGE_COPY_X
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_X
+-#define __S101	PAGE_READONLY_X
+-#define __S110	PAGE_SHARED_X
+-#define __S111	PAGE_SHARED_X
+-
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+ #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
+diff --git a/arch/powerpc/include/asm/pgtable.h b/arch/powerpc/include/asm/pgtable.h
+index 14c79a7dc855..fb4b85bba110 100644
+--- a/arch/powerpc/include/asm/pgtable.h
++++ b/arch/powerpc/include/asm/pgtable.h
+@@ -20,6 +20,25 @@ struct mm_struct;
+ #include <asm/nohash/pgtable.h>
+ #endif /* !CONFIG_PPC_BOOK3S */
+ 
++/* Note due to the way vm flags are laid out, the bits are XWR */
++#define __P000	PAGE_NONE
++#define __P001	PAGE_READONLY
++#define __P010	PAGE_COPY
++#define __P011	PAGE_COPY
++#define __P100	PAGE_READONLY_X
++#define __P101	PAGE_READONLY_X
++#define __P110	PAGE_COPY_X
++#define __P111	PAGE_COPY_X
 +
-+			pb->levels = data->levels;
-+		}
-+	} else if (!data->max_brightness) {
-+		/*
-+		 * If no brightness levels are provided and max_brightness is
-+		 * not set, use the default brightness table. For the DT case,
-+		 * max_brightness is set to 0 when brightness levels is not
-+		 * specified. For the non-DT case, max_brightness is usually
-+		 * set to some value.
-+		 */
++#define __S000	PAGE_NONE
++#define __S001	PAGE_READONLY
++#define __S010	PAGE_SHARED
++#define __S011	PAGE_SHARED
++#define __S100	PAGE_READONLY_X
++#define __S101	PAGE_READONLY_X
++#define __S110	PAGE_SHARED_X
++#define __S111	PAGE_SHARED_X
 +
-+		/* Get the PWM period (in nanoseconds) */
-+		pwm_get_state(pb->pwm, &state);
-+
- 		ret = pwm_backlight_brightness_default(&pdev->dev, data,
- 						       state.period);
- 		if (ret < 0) {
-@@ -570,13 +593,19 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 				"failed to setup default brightness table\n");
- 			goto err_alloc;
- 		}
--	}
+ #ifndef __ASSEMBLY__
  
--	for (i = 0; i <= data->max_brightness; i++) {
--		if (data->levels[i] > pb->scale)
--			pb->scale = data->levels[i];
-+		for (i = 0; i <= data->max_brightness; i++) {
-+			if (data->levels[i] > pb->scale)
-+				pb->scale = data->levels[i];
+ #include <asm/tlbflush.h>
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 5a5ba43bdf98..4860dae76dae 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -139,8 +139,6 @@ static inline bool pte_user(pte_t pte)
+  * Write permissions imply read permissions for now (we could make write-only
+  * pages on BookE but we don't bother for now). Execute permission control is
+  * possible on platforms that define _PAGE_EXEC
+- *
+- * Note due to the way vm flags are laid out, the bits are XWR
+  */
+ #define PAGE_NONE	__pgprot(_PAGE_BASE | _PAGE_NA)
+ #define PAGE_SHARED	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RW)
+@@ -153,24 +151,6 @@ static inline bool pte_user(pte_t pte)
+ #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_RO | \
+ 				 _PAGE_EXEC)
  
--		pb->levels = data->levels;
-+			pb->levels = data->levels;
-+		}
-+	} else {
-+		/*
-+		 * That only happens for the non-DT case, where platform data
-+		 * sets the max_brightness value.
-+		 */
-+		pb->scale = data->max_brightness;
- 	}
- 
- 	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+-#define __P000	PAGE_NONE
+-#define __P001	PAGE_READONLY
+-#define __P010	PAGE_COPY
+-#define __P011	PAGE_COPY
+-#define __P100	PAGE_READONLY_X
+-#define __P101	PAGE_READONLY_X
+-#define __P110	PAGE_COPY_X
+-#define __P111	PAGE_COPY_X
+-
+-#define __S000	PAGE_NONE
+-#define __S001	PAGE_READONLY
+-#define __S010	PAGE_SHARED
+-#define __S011	PAGE_SHARED
+-#define __S100	PAGE_READONLY_X
+-#define __S101	PAGE_READONLY_X
+-#define __S110	PAGE_SHARED_X
+-#define __S111	PAGE_SHARED_X
+-
+ /* Permission masks used for kernel mappings */
+ #define PAGE_KERNEL	__pgprot(_PAGE_BASE | _PAGE_KERNEL_RW)
+ #define PAGE_KERNEL_NC	__pgprot(_PAGE_BASE_NC | _PAGE_KERNEL_RW | \
 -- 
-2.19.1
+2.13.3

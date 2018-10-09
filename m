@@ -1,7 +1,7 @@
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Tue, 09 Oct 2018 13:51:33 +0000
-Subject: [PATCH v3 01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
-Message-Id: <c454a5dbb215719991e3b0e6470309101d870fbb.1539092111.git.christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:51:47 +0000
+Subject: [PATCH v3 08/24] powerpc/mm: don't use _PAGE_EXEC in book3s/32
+Message-Id: <e42a7ae712905eb9b023725fe59132ba5d9ac23b.1539092112.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1539092111.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
@@ -11,101 +11,61 @@ Content-Transfer-Encoding: 7bit
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
 Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-Other arches have ioremap_wt() to map IO areas write-through.
-Implement it on PPC as well in order to avoid drivers using
-__ioremap(_PAGE_WRITETHRU)
+book3s/32 doesn't define _PAGE_EXEC, so no need to use it.
 
-Also implement ioremap_coherent() to avoid drivers using
-__ioremap(_PAGE_COHERENT)
+All other platforms define _PAGE_EXEC so no need to check
+it is not NUL when not book3s/32.
 
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/io.h |  9 +++++++++
- arch/powerpc/mm/pgtable_32.c  | 16 ++++++++++++++++
- arch/powerpc/mm/pgtable_64.c  | 10 ++++++++++
- 3 files changed, 35 insertions(+)
+ arch/powerpc/include/asm/book3s/32/pgtable.h | 2 +-
+ arch/powerpc/mm/pgtable.c                    | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-index e0331e754568..cdccab3938db 100644
---- a/arch/powerpc/include/asm/io.h
-+++ b/arch/powerpc/include/asm/io.h
-@@ -3,6 +3,9 @@
- #ifdef __KERNEL__
- 
- #define ARCH_HAS_IOREMAP_WC
-+#ifdef CONFIG_PPC32
-+#define ARCH_HAS_IOREMAP_WT
-+#endif
- 
- /*
-  * This program is free software; you can redistribute it and/or
-@@ -746,6 +749,10 @@ static inline void iosync(void)
-  *
-  * * ioremap_wc enables write combining
-  *
-+ * * ioremap_wt enables write through
-+ *
-+ * * ioremap_coherent maps coherent cached memory
-+ *
-  * * iounmap undoes such a mapping and can be hooked
-  *
-  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
-@@ -767,6 +774,8 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
- extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
- 				  unsigned long flags);
- extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
-+void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
- #define ioremap_nocache(addr, size)	ioremap((addr), (size))
- #define ioremap_uc(addr, size)		ioremap((addr), (size))
- #define ioremap_cache(addr, size) \
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 120a49bfb9c6..4c3adde09d95 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -90,6 +90,22 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
- EXPORT_SYMBOL(ioremap_wc);
- 
- void __iomem *
-+ioremap_wt(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_wt);
-+
-+void __iomem *
-+ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	return __ioremap_caller(addr, size, _PAGE_COHERENT,
-+				__builtin_return_address(0));
-+}
-+EXPORT_SYMBOL(ioremap_coherent);
-+
-+void __iomem *
- ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
+index 7a9f0ed599ff..3127cc529aa1 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
+@@ -234,7 +234,7 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
+ 					   int psize)
  {
- 	/* writeable implies dirty for kernel addresses */
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index e15e63079ba8..c0f356d9b135 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -222,6 +222,16 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
- 	return __ioremap_caller(addr, size, flags, caller);
+ 	unsigned long set = pte_val(entry) &
+-		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
++		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
+ 	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
+ 
+ 	pte_update(ptep, clr, set);
+diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+index aee04b209b51..f97d9c3760e3 100644
+--- a/arch/powerpc/mm/pgtable.c
++++ b/arch/powerpc/mm/pgtable.c
+@@ -73,7 +73,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
+ 	return page;
  }
  
-+void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
-+{
-+	unsigned long flags = pgprot_val(pgprot_cached(__pgprot(0)));
-+	void *caller = __builtin_return_address(0);
-+
-+	if (ppc_md.ioremap)
-+		return ppc_md.ioremap(addr, size, flags, caller);
-+	return __ioremap_caller(addr, size, flags, caller);
-+}
-+
- void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
- 			     unsigned long flags)
- {
+-#if defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0
++#ifdef CONFIG_PPC_BOOK3S
+ 
+ /* Server-style MMU handles coherency when hashing if HW exec permission
+  * is supposed per page (currently 64-bit only). If not, then, we always
+@@ -106,7 +106,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return pte;
+ }
+ 
+-#else /* defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0 */
++#else /* CONFIG_PPC_BOOK3S */
+ 
+ /* Embedded type MMU with HW exec support. This is a bit more complicated
+  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
+@@ -179,7 +179,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
+ 	return __pte(pte_val(pte) | _PAGE_EXEC);
+ }
+ 
+-#endif /* !(defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0) */
++#endif /* CONFIG_PPC_BOOK3S */
+ 
+ /*
+  * set_pte stores a linux PTE into the linux page table.
 -- 
 2.13.3

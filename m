@@ -1,102 +1,238 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Mon, 22 Oct 2018 08:11:09 +0000
-Subject: [PATCH v2] backlight: gpio-backlight: Correct initial power state handling
-Message-Id: <20181022081109.21456-1-peter.ujfalusi@ti.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:52:20 +0000
+Subject: [PATCH v3 24/24] powerpc/book3s64: Avoid multiple endian conversion in pte helpers
+Message-Id: <45a7925eab3cc8d1203136f99230ae9f4e5c8c20.1539092112.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, jingoohan1@gmail.com, daniel.thompson@linaro.org
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-The default-on property - or the def_value via legacy pdata) should be
-handled as:
-if it is 1, the backlight must be enabled (kept enabled)
-if it is 0, the backlight must be disabled (kept disabled)
+In the same spirit as already done in pte query helpers,
+this patch changes pte setting helpers to perform endian
+conversions on the constants rather than on the pte value.
 
-This only works for the case when default-on is set. If it is not set then
-the brightness of the backlight is set to 0. Now if the backlight is
-enabled by external driver (graphics) the backlight will stay disabled since
-the brightness is configured as 0. The backlight will not turn on.
+In the meantime, it changes pte_access_permitted() to use
+pte helpers for the same reason.
 
-In order to minimize screen flickering during device boot:
-
-The initial brightness should be set to 1.
-
-If booted in non DT mode or no phandle link to the backlight node:
-follow the def_value/default-on to select UNBLANK or POWERDOWN
-
-If in DT boot we have phandle link then leave the GPIO in a state which the
-bootloader left it and let the user of the backlight to configure it
-further.
-
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
-Hi,
+ arch/powerpc/include/asm/book3s/64/pgtable.h | 71 +++++++++++++---------------
+ 1 file changed, 32 insertions(+), 39 deletions(-)
 
-Changes since v1:
-- Implement similiar initial power state handling as pwm backlight have
-
-Regards,
-Peter
-
- drivers/video/backlight/gpio_backlight.c | 24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index e470da95d806..51c49f03ed83 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -62,13 +62,11 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
+diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
+index cf8dbd5f8f03..f0c79f370cf0 100644
+--- a/arch/powerpc/include/asm/book3s/64/pgtable.h
++++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
+@@ -506,12 +506,12 @@ static inline bool pte_soft_dirty(pte_t pte)
+ 
+ static inline pte_t pte_mksoft_dirty(pte_t pte)
  {
- 	struct device *dev = &pdev->dev;
- 	struct device_node *np = dev->of_node;
--	enum gpiod_flags flags;
- 	int ret;
- 
- 	gbl->def_value = of_property_read_bool(np, "default-on");
--	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
- 
--	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
-+	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
- 	if (IS_ERR(gbl->gpiod)) {
- 		ret = PTR_ERR(gbl->gpiod);
- 
-@@ -82,6 +80,22 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
- 	return 0;
+-	return __pte(pte_val(pte) | _PAGE_SOFT_DIRTY);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SOFT_DIRTY));
  }
  
-+static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+ static inline pte_t pte_clear_soft_dirty(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_SOFT_DIRTY);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_SOFT_DIRTY));
+ }
+ #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+ 
+@@ -532,7 +532,7 @@ static inline pte_t pte_mk_savedwrite(pte_t pte)
+ 	 */
+ 	VM_BUG_ON((pte_raw(pte) & cpu_to_be64(_PAGE_PRESENT | _PAGE_RWX | _PAGE_PRIVILEGED)) ! 		  cpu_to_be64(_PAGE_PRESENT | _PAGE_PRIVILEGED));
+-	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_PRIVILEGED));
+ }
+ 
+ #define pte_clear_savedwrite pte_clear_savedwrite
+@@ -542,14 +542,14 @@ static inline pte_t pte_clear_savedwrite(pte_t pte)
+ 	 * Used by KSM subsystem to make a protnone pte readonly.
+ 	 */
+ 	VM_BUG_ON(!pte_protnone(pte));
+-	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PRIVILEGED));
+ }
+ #else
+ #define pte_clear_savedwrite pte_clear_savedwrite
+ static inline pte_t pte_clear_savedwrite(pte_t pte)
+ {
+ 	VM_WARN_ON(1);
+-	return __pte(pte_val(pte) & ~_PAGE_WRITE);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
+ }
+ #endif /* CONFIG_NUMA_BALANCING */
+ 
+@@ -578,25 +578,22 @@ static inline bool arch_pte_access_permitted(u64 pte, bool write, bool execute)
+ }
+ #endif /* CONFIG_PPC_MEM_KEYS */
+ 
++static inline bool pte_user(pte_t pte)
 +{
-+	struct device_node *node = gbl->dev->of_node;
-+
-+	/* Not booted with device tree or no phandle link to the node */
-+	if (!node || !node->phandle)
-+		return gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
-+
-+	/* if the enable GPIO is disabled, do not enable the backlight */
-+	if (gpiod_get_value_cansleep(gbl->gpiod) = 0)
-+		return FB_BLANK_POWERDOWN;
-+
-+	return FB_BLANK_UNBLANK;
++	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
 +}
 +
-+
- static int gpio_backlight_probe(struct platform_device *pdev)
+ #define pte_access_permitted pte_access_permitted
+ static inline bool pte_access_permitted(pte_t pte, bool write)
  {
- 	struct gpio_backlight_platform_data *pdata @@ -142,7 +156,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 		return PTR_ERR(bl);
- 	}
+-	unsigned long pteval = pte_val(pte);
+-	/* Also check for pte_user */
+-	unsigned long clear_pte_bits = _PAGE_PRIVILEGED;
+ 	/*
+ 	 * _PAGE_READ is needed for any access and will be
+ 	 * cleared for PROT_NONE
+ 	 */
+-	unsigned long need_pte_bits = _PAGE_PRESENT | _PAGE_READ;
+-
+-	if (write)
+-		need_pte_bits |= _PAGE_WRITE;
+-
+-	if ((pteval & need_pte_bits) != need_pte_bits)
++	if (!pte_present(pte) || !pte_user(pte) || !pte_read(pte))
+ 		return false;
  
--	bl->props.brightness = gbl->def_value;
-+	bl->props.power = gpio_backlight_initial_power_state(gbl);
-+	bl->props.brightness = 1;
-+
- 	backlight_update_status(bl);
+-	if ((pteval & clear_pte_bits) = clear_pte_bits)
++	if (write && !pte_write(pte))
+ 		return false;
  
- 	platform_set_drvdata(pdev, bl);
+ 	return arch_pte_access_permitted(pte_val(pte), write, 0);
+@@ -625,32 +622,32 @@ static inline pte_t pte_wrprotect(pte_t pte)
+ {
+ 	if (unlikely(pte_savedwrite(pte)))
+ 		return pte_clear_savedwrite(pte);
+-	return __pte(pte_val(pte) & ~_PAGE_WRITE);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_WRITE));
+ }
+ 
+ static inline pte_t pte_exprotect(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_EXEC);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_EXEC));
+ }
+ 
+ static inline pte_t pte_mkclean(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_DIRTY));
+ }
+ 
+ static inline pte_t pte_mkold(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_ACCESSED);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_ACCESSED));
+ }
+ 
+ static inline pte_t pte_mkexec(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_EXEC);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_EXEC));
+ }
+ 
+ static inline pte_t pte_mkpte(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_PTE);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PTE));
+ }
+ 
+ static inline pte_t pte_mkwrite(pte_t pte)
+@@ -658,22 +655,22 @@ static inline pte_t pte_mkwrite(pte_t pte)
+ 	/*
+ 	 * write implies read, hence set both
+ 	 */
+-	return __pte(pte_val(pte) | _PAGE_RW);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_RW));
+ }
+ 
+ static inline pte_t pte_mkdirty(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_DIRTY | _PAGE_SOFT_DIRTY);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_DIRTY | _PAGE_SOFT_DIRTY));
+ }
+ 
+ static inline pte_t pte_mkyoung(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_ACCESSED);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_ACCESSED));
+ }
+ 
+ static inline pte_t pte_mkspecial(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_SPECIAL);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SPECIAL));
+ }
+ 
+ static inline pte_t pte_mkhuge(pte_t pte)
+@@ -683,17 +680,17 @@ static inline pte_t pte_mkhuge(pte_t pte)
+ 
+ static inline pte_t pte_mkdevmap(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_SPECIAL|_PAGE_DEVMAP);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SPECIAL | _PAGE_DEVMAP));
+ }
+ 
+ static inline pte_t pte_mkprivileged(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_PRIVILEGED));
+ }
+ 
+ static inline pte_t pte_mkuser(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_PRIVILEGED));
+ }
+ 
+ /*
+@@ -712,12 +709,8 @@ static inline int pte_devmap(pte_t pte)
+ static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+ {
+ 	/* FIXME!! check whether this need to be a conditional */
+-	return __pte((pte_val(pte) & _PAGE_CHG_MASK) | pgprot_val(newprot));
+-}
+-
+-static inline bool pte_user(pte_t pte)
+-{
+-	return !(pte_raw(pte) & cpu_to_be64(_PAGE_PRIVILEGED));
++	return __pte_raw((pte_raw(pte) & cpu_to_be64(_PAGE_CHG_MASK)) |
++			 cpu_to_be64(pgprot_val(newprot)));
+ }
+ 
+ /* Encode and de-code a swap entry */
+@@ -760,7 +753,7 @@ static inline bool pte_user(pte_t pte)
+ #ifdef CONFIG_HAVE_ARCH_SOFT_DIRTY
+ static inline pte_t pte_swp_mksoft_dirty(pte_t pte)
+ {
+-	return __pte(pte_val(pte) | _PAGE_SWP_SOFT_DIRTY);
++	return __pte_raw(pte_raw(pte) | cpu_to_be64(_PAGE_SWP_SOFT_DIRTY));
+ }
+ 
+ static inline bool pte_swp_soft_dirty(pte_t pte)
+@@ -770,7 +763,7 @@ static inline bool pte_swp_soft_dirty(pte_t pte)
+ 
+ static inline pte_t pte_swp_clear_soft_dirty(pte_t pte)
+ {
+-	return __pte(pte_val(pte) & ~_PAGE_SWP_SOFT_DIRTY);
++	return __pte_raw(pte_raw(pte) & cpu_to_be64(~_PAGE_SWP_SOFT_DIRTY));
+ }
+ #endif /* CONFIG_HAVE_ARCH_SOFT_DIRTY */
+ 
+@@ -859,10 +852,10 @@ static inline pgprot_t pgprot_writecombine(pgprot_t prot)
+  */
+ static inline bool pte_ci(pte_t pte)
+ {
+-	unsigned long pte_v = pte_val(pte);
++	__be64 pte_v = pte_raw(pte);
+ 
+-	if (((pte_v & _PAGE_CACHE_CTL) = _PAGE_TOLERANT) ||
+-	    ((pte_v & _PAGE_CACHE_CTL) = _PAGE_NON_IDEMPOTENT))
++	if (((pte_v & cpu_to_be64(_PAGE_CACHE_CTL)) = cpu_to_be64(_PAGE_TOLERANT)) ||
++	    ((pte_v & cpu_to_be64(_PAGE_CACHE_CTL)) = cpu_to_be64(_PAGE_NON_IDEMPOTENT)))
+ 		return true;
+ 	return false;
+ }
 -- 
-Peter
-
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.13.3

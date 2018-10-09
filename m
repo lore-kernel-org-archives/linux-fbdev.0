@@ -1,69 +1,127 @@
-From: Mark Brown <broonie@kernel.org>
-Date: Wed, 17 Oct 2018 11:54:54 +0000
-Subject: Applied "ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent" to the asoc tree
-Message-Id: <20181017115454.BA5D611224C4@debutante.sirena.org.uk>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:51:54 +0000
+Subject: [PATCH v3 11/24] powerpc/mm: don't use _PAGE_EXEC for calling hash_preload()
+Message-Id: <c796cfe3c0b6b008f8e215db55afef14aad0da0f.1539092112.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181013151707.32210-6-hch@lst.de>
-In-Reply-To: <20181013151707.32210-6-hch@lst.de>
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.orgalsa-devel@alsa-project.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-The patch
+The 'access' parameter of hash_preload() is either 0 or _PAGE_EXEC.
+Among the two versions of hash_preload(), only the PPC64 one is
+doing something with this 'access' parameter.
 
-   ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
+In order to remove the use of _PAGE_EXEC outside platform code,
+'access' parameter is replaced by 'is_exec' which will be either
+true of false, and the PPC64 version of hash_preload() creates
+the access flag based on 'is_exec'.
 
-has been applied to the asoc tree at
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.  
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
-
-From 3b991038498bc5011b063d6a804503c577a79434 Mon Sep 17 00:00:00 2001
-From: Christoph Hellwig <hch@lst.de>
-Date: Sat, 13 Oct 2018 17:17:04 +0200
-Subject: [PATCH] ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
-
-The DMA API does its own zone decisions based on the coherent_dma_mask.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Reviewed-by: Takashi Iwai <tiwai@suse.de>
-Signed-off-by: Mark Brown <broonie@kernel.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- sound/soc/intel/common/sst-firmware.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hash_utils_64.c | 3 ++-
+ arch/powerpc/mm/mem.c           | 9 +++++----
+ arch/powerpc/mm/mmu_decl.h      | 2 +-
+ arch/powerpc/mm/pgtable_32.c    | 2 +-
+ arch/powerpc/mm/ppc_mmu_32.c    | 2 +-
+ 5 files changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/sound/soc/intel/common/sst-firmware.c b/sound/soc/intel/common/sst-firmware.c
-index 11041aedea31..1e067504b604 100644
---- a/sound/soc/intel/common/sst-firmware.c
-+++ b/sound/soc/intel/common/sst-firmware.c
-@@ -355,7 +355,7 @@ struct sst_fw *sst_fw_new(struct sst_dsp *dsp,
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8ff03c7205a0..854edc3722e0 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1482,7 +1482,7 @@ static bool should_hash_preload(struct mm_struct *mm, unsigned long ea)
+ #endif
  
- 	/* allocate DMA buffer to store FW data */
- 	sst_fw->dma_buf = dma_alloc_coherent(dsp->dma_dev, sst_fw->size,
--				&sst_fw->dmable_fw_paddr, GFP_DMA | GFP_KERNEL);
-+				&sst_fw->dmable_fw_paddr, GFP_KERNEL);
- 	if (!sst_fw->dma_buf) {
- 		dev_err(dsp->dev, "error: DMA alloc failed\n");
- 		kfree(sst_fw);
+ void hash_preload(struct mm_struct *mm, unsigned long ea,
+-		  unsigned long access, unsigned long trap)
++		  bool is_exec, unsigned long trap)
+ {
+ 	int hugepage_shift;
+ 	unsigned long vsid;
+@@ -1490,6 +1490,7 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 	pte_t *ptep;
+ 	unsigned long flags;
+ 	int rc, ssize, update_flags = 0;
++	unsigned long access = _PAGE_PRESENT | _PAGE_READ | (is_exec ? _PAGE_EXEC : 0);
+ 
+ 	BUG_ON(REGION_ID(ea) != USER_REGION_ID);
+ 
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index cb421aeb7674..dd949d6649a2 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -509,7 +509,8 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
+ 	 * We don't need to worry about _PAGE_PRESENT here because we are
+ 	 * called with either mm->page_table_lock held or ptl lock held
+ 	 */
+-	unsigned long access, trap;
++	unsigned long trap;
++	bool is_exec;
+ 
+ 	if (radix_enabled()) {
+ 		prefetch((void *)address);
+@@ -531,16 +532,16 @@ void update_mmu_cache(struct vm_area_struct *vma, unsigned long address,
+ 	trap = current->thread.regs ? TRAP(current->thread.regs) : 0UL;
+ 	switch (trap) {
+ 	case 0x300:
+-		access = 0UL;
++		is_exec = false;
+ 		break;
+ 	case 0x400:
+-		access = _PAGE_EXEC;
++		is_exec = true;
+ 		break;
+ 	default:
+ 		return;
+ 	}
+ 
+-	hash_preload(vma->vm_mm, address, access, trap);
++	hash_preload(vma->vm_mm, address, is_exec, trap);
+ #endif /* CONFIG_PPC_STD_MMU */
+ #if (defined(CONFIG_PPC_BOOK3E_64) || defined(CONFIG_PPC_FSL_BOOK3E)) \
+ 	&& defined(CONFIG_HUGETLB_PAGE)
+diff --git a/arch/powerpc/mm/mmu_decl.h b/arch/powerpc/mm/mmu_decl.h
+index e5d779eed181..dd7f9b951d25 100644
+--- a/arch/powerpc/mm/mmu_decl.h
++++ b/arch/powerpc/mm/mmu_decl.h
+@@ -82,7 +82,7 @@ static inline void _tlbivax_bcast(unsigned long address, unsigned int pid,
+ #else /* CONFIG_PPC_MMU_NOHASH */
+ 
+ extern void hash_preload(struct mm_struct *mm, unsigned long ea,
+-			 unsigned long access, unsigned long trap);
++			 bool is_exec, unsigned long trap);
+ 
+ 
+ extern void _tlbie(unsigned long address);
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 0bbc7b7d8a05..01f348938328 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -261,7 +261,7 @@ static void __init __mapin_ram_chunk(unsigned long offset, unsigned long top)
+ 		map_kernel_page(v, p, ktext ? PAGE_KERNEL_TEXT : PAGE_KERNEL);
+ #ifdef CONFIG_PPC_STD_MMU_32
+ 		if (ktext)
+-			hash_preload(&init_mm, v, 0, 0x300);
++			hash_preload(&init_mm, v, false, 0x300);
+ #endif
+ 		v += PAGE_SIZE;
+ 		p += PAGE_SIZE;
+diff --git a/arch/powerpc/mm/ppc_mmu_32.c b/arch/powerpc/mm/ppc_mmu_32.c
+index bea6c544e38f..38a793bfca37 100644
+--- a/arch/powerpc/mm/ppc_mmu_32.c
++++ b/arch/powerpc/mm/ppc_mmu_32.c
+@@ -163,7 +163,7 @@ void __init setbat(int index, unsigned long virt, phys_addr_t phys,
+  * Preload a translation in the hash table
+  */
+ void hash_preload(struct mm_struct *mm, unsigned long ea,
+-		  unsigned long access, unsigned long trap)
++		  bool is_exec, unsigned long trap)
+ {
+ 	pmd_t *pmd;
+ 
 -- 
-2.19.0.rc2
+2.13.3

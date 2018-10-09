@@ -1,52 +1,71 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:18:36 +0000
-Subject: Re: [PATCH] udlfb: handle unplug properly
-Message-Id: <20181008101837eucas1p2a5dd811a3a085324fec32b876aeb40ca~bmtBuC_V21858318583eucas1p2D@eucas1p2.samsung.com>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:52:06 +0000
+Subject: [PATCH v3 17/24] powerpc/mm: Move pte_user() into nohash/pgtable.h
+Message-Id: <8549b86165e90d6f3a2b0423fc731048358e1aa1.1539092112.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180730103301epcas4p3d1c8053c2a00004b72824c8928fa9dbf@epcas4p3.samsung.com>
- <alpine.LRH.2.02.1807300630250.2919@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1807300630250.2919@file01.intranet.prod.int.rdu2.redhat.com>
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Dave Airlie <airlied@redhat.com>, linux-fbdev@vger.kernel.org, Ladislav Michl <ladis@linux-mips.org>, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
+Now the pte-common.h is only for nohash platforms, lets
+move pte_user() helper out of pte-common.h to put it
+together with other helpers.
 
-On 07/30/2018 12:32 PM, Mikulas Patocka wrote:
-> The udlfb driver maintained an open count and cleaned up itself when the
-> count reached zero. But the console is also counted in the reference count
-> - so, if the user unplugged the device, the open count would not drop to
-> zero and the driver stayed loaded with console attached. If the user
-> re-plugged the adapter, it would create a device /dev/fb1, show green
-> screen and the access to the console would be lost.
-> 
-> The framebuffer subsystem has reference counting on its own - in order to
-> fix the unplug bug, we rely the framebuffer reference counting. When the
-> user unplugs the adapter, we call unregister_framebuffer unconditionally.
-> unregister_framebuffer will unbind the console, wait until all users stop
-> using the framebuffer and then call the fb_destroy method. The fb_destroy
-> cleans up the USB driver.
-> 
-> This patch makes the following changes:
-> * Drop dlfb->kref and rely on implicit framebuffer reference counting
->   instead.
-> * dlfb_usb_disconnect calls unregister_framebuffer, the rest of driver
->   cleanup is done in the function dlfb_ops_destroy. dlfb_ops_destroy will
->   be called by the framebuffer subsystem when no processes have the
->   framebuffer open or mapped.
-> * We don't use workqueue during initialization, but initialize directly
->   from dlfb_usb_probe. The workqueue could race with dlfb_usb_disconnect
->   and this racing would produce various kinds of memory corruption.
-> * We use usb_get_dev and usb_put_dev to make sure that the USB subsystem
->   doesn't free the device under us.
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/nohash/pgtable.h | 10 ++++++++++
+ arch/powerpc/include/asm/pte-common.h     | 13 -------------
+ 2 files changed, 10 insertions(+), 13 deletions(-)
 
-Patch queued for 4.20, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
+index 062d96233673..8de3b7eb88b0 100644
+--- a/arch/powerpc/include/asm/nohash/pgtable.h
++++ b/arch/powerpc/include/asm/nohash/pgtable.h
+@@ -52,6 +52,16 @@ static inline bool pte_hw_valid(pte_t pte)
+ }
+ 
+ /*
++ * Don't just check for any non zero bits in __PAGE_USER, since for book3e
++ * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
++ * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
++ */
++static inline bool pte_user(pte_t pte)
++{
++	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) = _PAGE_USER;
++}
++
++/*
+  * We only find page table entry in the last level
+  * Hence no need for other accessors
+  */
+diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
+index 3a8ec18ffd22..556a914ff845 100644
+--- a/arch/powerpc/include/asm/pte-common.h
++++ b/arch/powerpc/include/asm/pte-common.h
+@@ -66,19 +66,6 @@
+ #define _PTE_NONE_MASK	0
+ #endif
+ 
+-#ifndef __ASSEMBLY__
+-
+-/*
+- * Don't just check for any non zero bits in __PAGE_USER, since for book3e
+- * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
+- * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
+- */
+-static inline bool pte_user(pte_t pte)
+-{
+-	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) = _PAGE_USER;
+-}
+-#endif /* __ASSEMBLY__ */
+-
+ /* Location of the PFN in the PTE. Most 32-bit platforms use the same
+  * as _PAGE_SHIFT here (ie, naturally aligned).
+  * Platform who don't just pre-define the value so we don't override it here
+-- 
+2.13.3

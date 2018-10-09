@@ -1,49 +1,111 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 09 Oct 2018 09:57:10 +0000
-Subject: Re: [RESEND v2 1/2] backlight: Remove s6e63m0 driver
-Message-Id: <20181009095710.GI4939@dell>
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Tue, 09 Oct 2018 13:51:33 +0000
+Subject: [PATCH v3 01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
+Message-Id: <c454a5dbb215719991e3b0e6470309101d870fbb.1539092111.git.christophe.leroy@c-s.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180927165541.11903-1-krzk@kernel.org>
-In-Reply-To: <20180927165541.11903-1-krzk@kernel.org>
+References: <cover.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jonathan Corbet <corbet@lwn.net>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Aishwarya Pant <aishpant@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
 
-On Thu, 27 Sep 2018, Krzysztof Kozlowski wrote:
+Other arches have ioremap_wt() to map IO areas write-through.
+Implement it on PPC as well in order to avoid drivers using
+__ioremap(_PAGE_WRITETHRU)
 
-> The driver for S6E63M0 AMOLED LCD panel is not used.  It does not
-> support DeviceTree and respective possible users (S5Pv210 Aquila and
-> Goni boards) are DeviceTree-only.
-> 
-> Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> ---
-> 
-> Changes since v1:
-> 1. Remove sysfs ABI documentation file.
-> 2. Add Jingoo's and Daniel's acks.
-> ---
->  .../ABI/testing/sysfs-class-lcd-s6e63m0       |  27 -
->  drivers/video/backlight/Kconfig               |   8 -
->  drivers/video/backlight/Makefile              |   1 -
->  drivers/video/backlight/s6e63m0.c             | 857 ------------------
->  drivers/video/backlight/s6e63m0_gamma.h       | 266 ------
->  5 files changed, 1159 deletions(-)
->  delete mode 100644 Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
->  delete mode 100644 drivers/video/backlight/s6e63m0.c
->  delete mode 100644 drivers/video/backlight/s6e63m0_gamma.h
+Also implement ioremap_coherent() to avoid drivers using
+__ioremap(_PAGE_COHERENT)
 
-Applied, thanks.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/include/asm/io.h |  9 +++++++++
+ arch/powerpc/mm/pgtable_32.c  | 16 ++++++++++++++++
+ arch/powerpc/mm/pgtable_64.c  | 10 ++++++++++
+ 3 files changed, 35 insertions(+)
 
+diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
+index e0331e754568..cdccab3938db 100644
+--- a/arch/powerpc/include/asm/io.h
++++ b/arch/powerpc/include/asm/io.h
+@@ -3,6 +3,9 @@
+ #ifdef __KERNEL__
+ 
+ #define ARCH_HAS_IOREMAP_WC
++#ifdef CONFIG_PPC32
++#define ARCH_HAS_IOREMAP_WT
++#endif
+ 
+ /*
+  * This program is free software; you can redistribute it and/or
+@@ -746,6 +749,10 @@ static inline void iosync(void)
+  *
+  * * ioremap_wc enables write combining
+  *
++ * * ioremap_wt enables write through
++ *
++ * * ioremap_coherent maps coherent cached memory
++ *
+  * * iounmap undoes such a mapping and can be hooked
+  *
+  * * __ioremap_at (and the pending __iounmap_at) are low level functions to
+@@ -767,6 +774,8 @@ extern void __iomem *ioremap(phys_addr_t address, unsigned long size);
+ extern void __iomem *ioremap_prot(phys_addr_t address, unsigned long size,
+ 				  unsigned long flags);
+ extern void __iomem *ioremap_wc(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_wt(phys_addr_t address, unsigned long size);
++void __iomem *ioremap_coherent(phys_addr_t address, unsigned long size);
+ #define ioremap_nocache(addr, size)	ioremap((addr), (size))
+ #define ioremap_uc(addr, size)		ioremap((addr), (size))
+ #define ioremap_cache(addr, size) \
+diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
+index 120a49bfb9c6..4c3adde09d95 100644
+--- a/arch/powerpc/mm/pgtable_32.c
++++ b/arch/powerpc/mm/pgtable_32.c
+@@ -90,6 +90,22 @@ ioremap_wc(phys_addr_t addr, unsigned long size)
+ EXPORT_SYMBOL(ioremap_wc);
+ 
+ void __iomem *
++ioremap_wt(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_WRITETHRU,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_wt);
++
++void __iomem *
++ioremap_coherent(phys_addr_t addr, unsigned long size)
++{
++	return __ioremap_caller(addr, size, _PAGE_COHERENT,
++				__builtin_return_address(0));
++}
++EXPORT_SYMBOL(ioremap_coherent);
++
++void __iomem *
+ ioremap_prot(phys_addr_t addr, unsigned long size, unsigned long flags)
+ {
+ 	/* writeable implies dirty for kernel addresses */
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index e15e63079ba8..c0f356d9b135 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -222,6 +222,16 @@ void __iomem * ioremap_wc(phys_addr_t addr, unsigned long size)
+ 	return __ioremap_caller(addr, size, flags, caller);
+ }
+ 
++void __iomem *ioremap_coherent(phys_addr_t addr, unsigned long size)
++{
++	unsigned long flags = pgprot_val(pgprot_cached(__pgprot(0)));
++	void *caller = __builtin_return_address(0);
++
++	if (ppc_md.ioremap)
++		return ppc_md.ioremap(addr, size, flags, caller);
++	return __ioremap_caller(addr, size, flags, caller);
++}
++
+ void __iomem * ioremap_prot(phys_addr_t addr, unsigned long size,
+ 			     unsigned long flags)
+ {
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.13.3

@@ -1,31 +1,49 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:53:08 +0000
-Subject: Re: [RESEND PATCH v2 1/3] video: ssd1307fb: Use gpiod_set_value_cansleep() for reset
-Message-Id: <20181008105310eucas1p1347f43171fe1e7cc8122711927a30bb0~bnLLu5wP61861618616eucas1p1i@eucas1p1.samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Tue, 09 Oct 2018 09:57:10 +0000
+Subject: Re: [RESEND v2 1/2] backlight: Remove s6e63m0 driver
+Message-Id: <20181009095710.GI4939@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180927092738epcas5p28c53516b73fe7747133914f40c84d6c4@epcas5p2.samsung.com>
-        <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
+References: <20180927165541.11903-1-krzk@kernel.org>
+In-Reply-To: <20180927165541.11903-1-krzk@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jonathan Corbet <corbet@lwn.net>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Aishwarya Pant <aishpant@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
 
+On Thu, 27 Sep 2018, Krzysztof Kozlowski wrote:
 
-On 09/27/2018 11:24 AM, Michal Vokáč wrote:
-> The reset signal can be produced by GPIO expander that can sleep.
-> In that case the probe function fails. Allow using GPIO expanders for
-> the reset signal by using the non-atomic gpiod_set_value_cansleep()
-> function.
+> The driver for S6E63M0 AMOLED LCD panel is not used.  It does not
+> support DeviceTree and respective possible users (S5Pv210 Aquila and
+> Goni boards) are DeviceTree-only.
 > 
-> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
-> Reviewed-by: Fabio Estevam <fabio.estevam@nxp.com>
+> Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
+> Cc: Inki Dae <inki.dae@samsung.com>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+> 
+> ---
+> 
+> Changes since v1:
+> 1. Remove sysfs ABI documentation file.
+> 2. Add Jingoo's and Daniel's acks.
+> ---
+>  .../ABI/testing/sysfs-class-lcd-s6e63m0       |  27 -
+>  drivers/video/backlight/Kconfig               |   8 -
+>  drivers/video/backlight/Makefile              |   1 -
+>  drivers/video/backlight/s6e63m0.c             | 857 ------------------
+>  drivers/video/backlight/s6e63m0_gamma.h       | 266 ------
+>  5 files changed, 1159 deletions(-)
+>  delete mode 100644 Documentation/ABI/testing/sysfs-class-lcd-s6e63m0
+>  delete mode 100644 drivers/video/backlight/s6e63m0.c
+>  delete mode 100644 drivers/video/backlight/s6e63m0_gamma.h
 
-Patch queued for 4.20, thanks.
+Applied, thanks.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

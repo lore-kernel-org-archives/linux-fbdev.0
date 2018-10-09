@@ -1,37 +1,32 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Mon, 08 Oct 2018 11:45:36 +0000
+From: Shawn Guo <shawnguo@kernel.org>
+Date: Tue, 09 Oct 2018 00:20:33 +0000
 Subject: Re: [RESEND PATCH v2 3/3] ARM: dts: imx28-cfa10036: Fix the reset gpio signal polarity
-Message-Id: <68f4da21-6f0d-5bf9-b352-cdc423269080@ysoft.com>
+Message-Id: <20181009002031.GU3587@dragon>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1538040281-21319-1-git-send-email-michal.vokac@ysoft.com>
  <1538040281-21319-3-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1538040281-21319-3-git-send-email-michal.vokac@ysoft.com>
+ <68f4da21-6f0d-5bf9-b352-cdc423269080@ysoft.com>
+In-Reply-To: <68f4da21-6f0d-5bf9-b352-cdc423269080@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>
-Cc: Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?utf-8?B?Vm9rw6HEjQ==?= Michal <Michal.Vokac@ysoft.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Fabio Estevam <fabio.estevam@nxp.com>, Rob Herring <robh+dt@kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-T24gMjcuOS4yMDE4IDExOjI0LCBNaWNoYWwgVm9rw6HEjSB3cm90ZToNCj4gVGhlIHJlc2V0IHNp
-Z25hbCBvZiB0aGUgU1NEMTMwNiBPTEVEIGRpc3BsYXkgaXMgYWN0dWFsbHkgYWN0aXZlLWxvdy4N
-Cj4gQWRhcHQgdGhlIERUIHRvIHJlZmxlY3QgdGhlIHJlYWwgd29ybGQuDQo+IA0KPiBTaWduZWQt
-b2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCj4gLS0tDQo+
-IHYyIGNoYW5nZXM6IE5ldyBwYXRjaCBpbiB0aGUgc2VyaWVzDQoNCkJhcnRsb21pZWoganVzdCBx
-dWV1ZWQgdGhlIGZpcnN0IHR3byBwYXRjaGVzIGZvciB2NC4yMC4NCldpbGwgc29tZWJvZHkgdGFr
-ZSB0aGlzIG9uZT8gT3RoZXJ3aXNlIHRoaXMgU29NIHdpbGwgZW5kIHVwIHdpdGgNCmJyb2tlbiBP
-TEVEIGRpc3BsYXkgcmVzZXQuDQoNClRoYW5rcywgTWljaGFsLg0KDQo+IA0KPiAgIGFyY2gvYXJt
-L2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cyB8IDMgKystDQo+ICAgMSBmaWxlIGNoYW5nZWQs
-IDIgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2FyY2gv
-YXJtL2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
-LWNmYTEwMDM2LmR0cw0KPiBpbmRleCBlNTRmNWFiLi5iZTM0MDZlIDEwMDY0NA0KPiAtLS0gYS9h
-cmNoL2FybS9ib290L2R0cy9pbXgyOC1jZmExMDAzNi5kdHMNCj4gKysrIGIvYXJjaC9hcm0vYm9v
-dC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRzDQo+IEBAIC0xMSw2ICsxMSw3IEBADQo+ICAgDQo+ICAg
-L2R0cy12MS87DQo+ICAgI2luY2x1ZGUgImlteDI4LmR0c2kiDQo+ICsjaW5jbHVkZSA8ZHQtYmlu
-ZGluZ3MvZ3Bpby9ncGlvLmg+DQo+ICAgDQo+ICAgLyB7DQo+ICAgCW1vZGVsID0gIkNyeXN0YWxm
-b250eiBDRkEtMTAwMzYgQm9hcmQiOw0KPiBAQCAtOTUsNyArOTYsNyBAQA0KPiAgIAkJCQkJcGlu
-Y3RybC1uYW1lcyA9ICJkZWZhdWx0IjsNCj4gICAJCQkJCXBpbmN0cmwtMCA9IDwmc3NkMTMwNl9j
-ZmExMDAzNj47DQo+ICAgCQkJCQlyZWcgPSA8MHgzYz47DQo+IC0JCQkJCXJlc2V0LWdwaW9zID0g
-PCZncGlvMiA3IDA+Ow0KPiArCQkJCQlyZXNldC1ncGlvcyA9IDwmZ3BpbzIgNyBHUElPX0FDVElW
-RV9MT1c+Ow0KPiAgIAkJCQkJc29sb21vbixoZWlnaHQgPSA8MzI+Ow0KPiAgIAkJCQkJc29sb21v
-bix3aWR0aCA9IDwxMjg+Ow0KPiAgIAkJCQkJc29sb21vbixwYWdlLW9mZnNldCA9IDwwPjsNCj4g
-DQo
+On Mon, Oct 08, 2018 at 11:45:36AM +0000, Vokáč Michal wrote:
+> On 27.9.2018 11:24, Michal Vokáč wrote:
+> > The reset signal of the SSD1306 OLED display is actually active-low.
+> > Adapt the DT to reflect the real world.
+> > 
+> > Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+> > ---
+> > v2 changes: New patch in the series
+> 
+> Bartlomiej just queued the first two patches for v4.20.
+> Will somebody take this one? Otherwise this SoM will end up with
+> broken OLED display reset.
+
+Well, it means the change breaks the ABI between kernel and device tree,
+e.g. the new kernel will not work with existing/installed DTBs.
+
+Shawn

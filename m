@@ -1,42 +1,105 @@
-From: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 15 Oct 2018 09:25:41 +0000
-Subject: Re: [PATCH v3 06/24] powerpc/mm: properly set PAGE_KERNEL flags in ioremap()
-Message-Id: <87zhvfzhm2.fsf@concordia.ellerman.id.au>
+From: Rob Clark <robdclark@gmail.com>
+Date: Wed, 10 Oct 2018 15:17:41 +0000
+Subject: [PATCH] fbdev: make FB_BACKLIGHT a tristate
+Message-Id: <20181010151801.21489-1-robdclark@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr> <52bd80b06bae0d854d04501e1e136575b77fa9fa.1539092111.git.christophe.leroy@c-s.fr> <87d0sd19vm.fsf@concordia.ellerman.id.au> <87a7nh104q.fsf@concordia.ellerman.id.au> <20181014115810.Horde.99_1JiRv0nxT_Jq3cbpMhw1@messagerie.si.c-s.fr>
-In-Reply-To: <20181014115810.Horde.99_1JiRv0nxT_Jq3cbpMhw1@messagerie.si.c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: dri-devel@lists.freedesktop.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-block@vger.kernel.org, linux-arm-kernel@lists.infradead.org, aneesh.kumar@linux.vnet.ibm.com, Scott Wood <oss@buserror.net>, Paul Mackerras <paulus@samba.org>, Nicholas Piggin <npiggin@gmail.com>, Li Yang <leoyang.li@nxp.com>, Kumar Gala <galak@kernel.crashing.org>, Jens Axboe <axboe@kernel.dk>, Geoff Levand <geoff@infradead.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Rob Clark <robdclark@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Randy Dunlap <rdunlap@infradead.org>, Ulf Magnusson <ulfalizer@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Hans de Goede <j.w.r.degoede@gmail.com>, linux-kernel@vger.kernel.org
 
-LEROY Christophe <christophe.leroy@c-s.fr> writes:
-> Michael Ellerman <mpe@ellerman.id.au> a écrit :
->> Michael Ellerman <mpe@ellerman.id.au> writes:
->>> Christophe Leroy <christophe.leroy@c-s.fr> writes:
->>>
->>>> Set PAGE_KERNEL directly in the caller and do not rely on a
->>>> hack adding PAGE_KERNEL flags when _PAGE_PRESENT is not set.
->>>>
->>>> As already done for PPC64, use pgprot_cache() helpers instead of
->>>> _PAGE_XXX flags in PPC32 ioremap() derived functions.
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>
->>> Something in here is breaking my p5020ds (both 32-bit and 64-bit):
->>
->> Oh duh.
->>
->> That's because I didn't take patch 4.
->>
->> It didn't have any acks, but I guess I'll just merge it rather than
->> breaking things.
->
-> Yes indeed. Maybe should I have followed it more carrefully to ensure  
-> it gets an ack.
+BACKLIGHT_CLASS_DEVICE is already tristate, but a dependency
+FB_BACKLIGHT prevents it from being built as a module.  There
+doesn't seem to be any particularly good reason for this, so
+switch FB_BACKLIGHT over to tristate.
 
-That's OK, I should have paid more attention to what it was actually
-doing, I thought it was just a cleanup.
+Signed-off-by: Rob Clark <robdclark@gmail.com>
+---
+ drivers/video/fbdev/Kconfig        | 2 +-
+ drivers/video/fbdev/core/fbsysfs.c | 8 ++++----
+ include/linux/fb.h                 | 2 +-
+ include/uapi/linux/fb.h            | 2 +-
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-cheers
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index 591a13a59787..146ab2c347f8 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -198,7 +198,7 @@ config FB_MACMODES
+        default n
+ 
+ config FB_BACKLIGHT
+-	bool
++	tristate
+ 	depends on FB
+ 	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_CLASS_DEVICE
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index e31a182b42bf..44cca39f2b51 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -60,7 +60,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+ 	info->device = dev;
+ 	info->fbcon_rotate_hint = -1;
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ 	mutex_init(&info->bl_curve_mutex);
+ #endif
+ 
+@@ -429,7 +429,7 @@ static ssize_t show_fbstate(struct device *device,
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->state);
+ }
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ static ssize_t store_bl_curve(struct device *device,
+ 			      struct device_attribute *attr,
+ 			      const char *buf, size_t count)
+@@ -510,7 +510,7 @@ static struct device_attribute device_attrs[] = {
+ 	__ATTR(stride, S_IRUGO, show_stride, NULL),
+ 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+ 	__ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ 	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
+ #endif
+ };
+@@ -551,7 +551,7 @@ void fb_cleanup_device(struct fb_info *fb_info)
+ 	}
+ }
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ /* This function generates a linear backlight curve
+  *
+  *     0: off
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index a3cab6dc9b44..7cdd31a69719 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -485,7 +485,7 @@ struct fb_info {
+ 	struct list_head modelist;      /* mode list */
+ 	struct fb_videomode *mode;	/* current mode */
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ 	/* assigned backlight device */
+ 	/* set before framebuffer registration, 
+ 	   remove after unregister */
+diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+index 6cd9b198b7c6..07f14cd6791a 100644
+--- a/include/uapi/linux/fb.h
++++ b/include/uapi/linux/fb.h
+@@ -393,7 +393,7 @@ struct fb_cursor {
+ 	struct fb_image	image;	/* Cursor image */
+ };
+ 
+-#ifdef CONFIG_FB_BACKLIGHT
++#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+ /* Settings for the generic backlight code */
+ #define FB_BACKLIGHT_LEVELS	128
+ #define FB_BACKLIGHT_MAX	0xFF
+-- 
+2.17.1

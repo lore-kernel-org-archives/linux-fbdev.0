@@ -1,105 +1,30 @@
-From: Rob Clark <robdclark@gmail.com>
-Date: Wed, 10 Oct 2018 15:17:41 +0000
-Subject: [PATCH] fbdev: make FB_BACKLIGHT a tristate
-Message-Id: <20181010151801.21489-1-robdclark@gmail.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 10 Oct 2018 15:35:29 +0000
+Subject: Re: [PATCH] fbdev: make FB_BACKLIGHT a tristate
+Message-Id: <CAK8P3a3LjB=y+3XXD_FuRpvYL5XAQP_zqCM3R0T4buRYw4tgRg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20181010151801.21489-1-robdclark@gmail.com>
+In-Reply-To: <20181010151801.21489-1-robdclark@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Rob Clark <robdclark@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Randy Dunlap <rdunlap@infradead.org>, Ulf Magnusson <ulfalizer@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Hans de Goede <j.w.r.degoede@gmail.com>, linux-kernel@vger.kernel.org
+To: Rob Clark <robdclark@gmail.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Randy Dunlap <rdunlap@infradead.org>, Ulf Magnusson <ulfalizer@gmail.com>, Hans de Goede <j.w.r.degoede@gmail.com>, linux-kernel@vger.kernel.org
 
-BACKLIGHT_CLASS_DEVICE is already tristate, but a dependency
-FB_BACKLIGHT prevents it from being built as a module.  There
-doesn't seem to be any particularly good reason for this, so
-switch FB_BACKLIGHT over to tristate.
+On 10/10/18, Rob Clark <robdclark@gmail.com> wrote:
+> BACKLIGHT_CLASS_DEVICE is already tristate, but a dependency
+> FB_BACKLIGHT prevents it from being built as a module.  There
+> doesn't seem to be any particularly good reason for this, so
+> switch FB_BACKLIGHT over to tristate.
+>
+> Signed-off-by: Rob Clark <robdclark@gmail.com>
 
-Signed-off-by: Rob Clark <robdclark@gmail.com>
----
- drivers/video/fbdev/Kconfig        | 2 +-
- drivers/video/fbdev/core/fbsysfs.c | 8 ++++----
- include/linux/fb.h                 | 2 +-
- include/uapi/linux/fb.h            | 2 +-
- 4 files changed, 7 insertions(+), 7 deletions(-)
+I don't see anything immediately wrong, but anything related to
+BACKLIGHT_CLASS_DEVICE, BACKLIGHT_LCD_SUPPORT
+and FB_BACKLIGHT is really fragile in Kconfig, because of the
+way those interact with other options.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index 591a13a59787..146ab2c347f8 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -198,7 +198,7 @@ config FB_MACMODES
-        default n
- 
- config FB_BACKLIGHT
--	bool
-+	tristate
- 	depends on FB
- 	select BACKLIGHT_LCD_SUPPORT
- 	select BACKLIGHT_CLASS_DEVICE
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index e31a182b42bf..44cca39f2b51 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -60,7 +60,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
- 	info->device = dev;
- 	info->fbcon_rotate_hint = -1;
- 
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- 	mutex_init(&info->bl_curve_mutex);
- #endif
- 
-@@ -429,7 +429,7 @@ static ssize_t show_fbstate(struct device *device,
- 	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->state);
- }
- 
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- static ssize_t store_bl_curve(struct device *device,
- 			      struct device_attribute *attr,
- 			      const char *buf, size_t count)
-@@ -510,7 +510,7 @@ static struct device_attribute device_attrs[] = {
- 	__ATTR(stride, S_IRUGO, show_stride, NULL),
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- 	__ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
- #endif
- };
-@@ -551,7 +551,7 @@ void fb_cleanup_device(struct fb_info *fb_info)
- 	}
- }
- 
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- /* This function generates a linear backlight curve
-  *
-  *     0: off
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a3cab6dc9b44..7cdd31a69719 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -485,7 +485,7 @@ struct fb_info {
- 	struct list_head modelist;      /* mode list */
- 	struct fb_videomode *mode;	/* current mode */
- 
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- 	/* assigned backlight device */
- 	/* set before framebuffer registration, 
- 	   remove after unregister */
-diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
-index 6cd9b198b7c6..07f14cd6791a 100644
---- a/include/uapi/linux/fb.h
-+++ b/include/uapi/linux/fb.h
-@@ -393,7 +393,7 @@ struct fb_cursor {
- 	struct fb_image	image;	/* Cursor image */
- };
- 
--#ifdef CONFIG_FB_BACKLIGHT
-+#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
- /* Settings for the generic backlight code */
- #define FB_BACKLIGHT_LEVELS	128
- #define FB_BACKLIGHT_MAX	0xFF
--- 
-2.17.1
+I've applied your patch to my randconfig build tree for testing,
+let's see what happens there before you apply it.
+
+      Arnd

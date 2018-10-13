@@ -1,71 +1,35 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Tue, 09 Oct 2018 13:51:47 +0000
-Subject: [PATCH v3 08/24] powerpc/mm: don't use _PAGE_EXEC in book3s/32
-Message-Id: <e42a7ae712905eb9b023725fe59132ba5d9ac23b.1539092112.git.christophe.leroy@c-s.fr>
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 13 Oct 2018 15:17:07 +0000
+Subject: [PATCH 8/8] fsl-diu-fb: don't pass GFP_DMA32 to dmam_alloc_coherent
+Message-Id: <20181013151707.32210-9-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
+References: <20181013151707.32210-1-hch@lst.de>
+In-Reply-To: <20181013151707.32210-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
-book3s/32 doesn't define _PAGE_EXEC, so no need to use it.
+The DMA API does its own zone decisions based on the coherent_dma_mask.
 
-All other platforms define _PAGE_EXEC so no need to check
-it is not NUL when not book3s/32.
-
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- arch/powerpc/include/asm/book3s/32/pgtable.h | 2 +-
- arch/powerpc/mm/pgtable.c                    | 6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/fsl-diu-fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/32/pgtable.h b/arch/powerpc/include/asm/book3s/32/pgtable.h
-index 7a9f0ed599ff..3127cc529aa1 100644
---- a/arch/powerpc/include/asm/book3s/32/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/32/pgtable.h
-@@ -234,7 +234,7 @@ static inline void __ptep_set_access_flags(struct vm_area_struct *vma,
- 					   int psize)
- {
- 	unsigned long set = pte_val(entry) &
--		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW | _PAGE_EXEC);
-+		(_PAGE_DIRTY | _PAGE_ACCESSED | _PAGE_RW);
- 	unsigned long clr = ~pte_val(entry) & _PAGE_RO;
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index bc9eb8afc313..6a49fe917bdb 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1697,7 +1697,7 @@ static int fsl_diu_probe(struct platform_device *pdev)
+ 	int ret;
  
- 	pte_update(ptep, clr, set);
-diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-index aee04b209b51..f97d9c3760e3 100644
---- a/arch/powerpc/mm/pgtable.c
-+++ b/arch/powerpc/mm/pgtable.c
-@@ -73,7 +73,7 @@ static struct page *maybe_pte_to_page(pte_t pte)
- 	return page;
- }
- 
--#if defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0
-+#ifdef CONFIG_PPC_BOOK3S
- 
- /* Server-style MMU handles coherency when hashing if HW exec permission
-  * is supposed per page (currently 64-bit only). If not, then, we always
-@@ -106,7 +106,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
- 	return pte;
- }
- 
--#else /* defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0 */
-+#else /* CONFIG_PPC_BOOK3S */
- 
- /* Embedded type MMU with HW exec support. This is a bit more complicated
-  * as we don't have two bits to spare for _PAGE_EXEC and _PAGE_HWEXEC so
-@@ -179,7 +179,7 @@ static pte_t set_access_flags_filter(pte_t pte, struct vm_area_struct *vma,
- 	return __pte(pte_val(pte) | _PAGE_EXEC);
- }
- 
--#endif /* !(defined(CONFIG_PPC_STD_MMU) || _PAGE_EXEC = 0) */
-+#endif /* CONFIG_PPC_BOOK3S */
- 
- /*
-  * set_pte stores a linux PTE into the linux page table.
+ 	data = dmam_alloc_coherent(&pdev->dev, sizeof(struct fsl_diu_data),
+-				   &dma_addr, GFP_DMA | __GFP_ZERO);
++				   &dma_addr, GFP_KERNEL | __GFP_ZERO);
+ 	if (!data)
+ 		return -ENOMEM;
+ 	data->dma_addr = dma_addr;
 -- 
-2.13.3
+2.19.1

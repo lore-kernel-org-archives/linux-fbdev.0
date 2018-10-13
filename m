@@ -1,30 +1,80 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:39:52 +0000
-Subject: Re: [PATCH] atyfb: fix debugging printks
-Message-Id: <20181008103954eucas1p1da3f7c5214c5cfadb018ea3018bb8c52~bm-nC5spE2557925579eucas1p1Q@eucas1p1.samsung.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 13 Oct 2018 15:17:01 +0000
+Subject: [PATCH 2/8] firmware: tegra: don't pass GFP_DMA32 to dma_alloc_coherent
+Message-Id: <20181013151707.32210-3-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180817192650epcas3p30700868aab84614cfcc0cea8a746f106@epcas3p3.samsung.com>
- <alpine.LRH.2.02.1808171525200.31883@file01.intranet.prod.int.rdu2.redhat.com>
-In-Reply-To: <alpine.LRH.2.02.1808171525200.31883@file01.intranet.prod.int.rdu2.redhat.com>
+References: <20181013151707.32210-1-hch@lst.de>
+In-Reply-To: <20181013151707.32210-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: linux-kernel@vger.kernel.org
 
+The DMA API does its own zone decisions based on the coherent_dma_mask.
 
-On 08/17/2018 09:26 PM, Mikulas Patocka wrote:
-> This patch fixes the debugging printks. Use pr_cont, so that the lines are
-> not broken up. Use printk when starting a new line (a long string of
-> pr_cont's without any printks causes missing characters in the console
-> output on sparc).
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/firmware/tegra/bpmp-debugfs.c | 11 +++++------
+ drivers/firmware/tegra/bpmp.c         |  2 +-
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-Patch queued for 4.20, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/firmware/tegra/bpmp-debugfs.c b/drivers/firmware/tegra/bpmp-debugfs.c
+index f7f6a0a5cb07..567160897bac 100644
+--- a/drivers/firmware/tegra/bpmp-debugfs.c
++++ b/drivers/firmware/tegra/bpmp-debugfs.c
+@@ -218,12 +218,12 @@ static int debugfs_show(struct seq_file *m, void *p)
+ 		return -ENOENT;
+ 
+ 	namevirt = dma_alloc_coherent(bpmp->dev, namesize, &namephys,
+-				      GFP_KERNEL | GFP_DMA32);
++				      GFP_KERNEL);
+ 	if (!namevirt)
+ 		return -ENOMEM;
+ 
+ 	datavirt = dma_alloc_coherent(bpmp->dev, datasize, &dataphys,
+-				      GFP_KERNEL | GFP_DMA32);
++				      GFP_KERNEL);
+ 	if (!datavirt) {
+ 		ret = -ENOMEM;
+ 		goto free_namebuf;
+@@ -269,12 +269,12 @@ static ssize_t debugfs_store(struct file *file, const char __user *buf,
+ 		return -ENOENT;
+ 
+ 	namevirt = dma_alloc_coherent(bpmp->dev, namesize, &namephys,
+-				      GFP_KERNEL | GFP_DMA32);
++				      GFP_KERNEL);
+ 	if (!namevirt)
+ 		return -ENOMEM;
+ 
+ 	datavirt = dma_alloc_coherent(bpmp->dev, datasize, &dataphys,
+-				      GFP_KERNEL | GFP_DMA32);
++				      GFP_KERNEL);
+ 	if (!datavirt) {
+ 		ret = -ENOMEM;
+ 		goto free_namebuf;
+@@ -422,8 +422,7 @@ int tegra_bpmp_init_debugfs(struct tegra_bpmp *bpmp)
+ 	if (!root)
+ 		return -ENOMEM;
+ 
+-	virt = dma_alloc_coherent(bpmp->dev, sz, &phys,
+-				  GFP_KERNEL | GFP_DMA32);
++	virt = dma_alloc_coherent(bpmp->dev, sz, &phys, GFP_KERNEL);
+ 	if (!virt) {
+ 		ret = -ENOMEM;
+ 		goto out;
+diff --git a/drivers/firmware/tegra/bpmp.c b/drivers/firmware/tegra/bpmp.c
+index 14a456afa379..e6d2356ccec3 100644
+--- a/drivers/firmware/tegra/bpmp.c
++++ b/drivers/firmware/tegra/bpmp.c
+@@ -531,7 +531,7 @@ static int tegra_bpmp_get_firmware_tag(struct tegra_bpmp *bpmp, char *tag,
+ 	int err;
+ 
+ 	virt = dma_alloc_coherent(bpmp->dev, MSG_DATA_MIN_SZ, &phys,
+-				  GFP_KERNEL | GFP_DMA32);
++				  GFP_KERNEL);
+ 	if (!virt)
+ 		return -ENOMEM;
+ 
+-- 
+2.19.1

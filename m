@@ -1,46 +1,28 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:51:54 +0000
-Subject: Re: [PATCH] video: fbdev: sis: Remove unnecessary parentheses and commented code
-Message-Id: <20181008105156eucas1p106251d3dc728ce13a4710b94ac02f1ba~bnKHB1gLf1421814218eucas1p1p@eucas1p1.samsung.com>
+From: Michael Ellerman <patch-notifications@ellerman.id.au>
+Date: Mon, 15 Oct 2018 04:01:03 +0000
+Subject: Re: [v3,01/24] powerpc/32: Add ioremap_wt() and ioremap_coherent()
+Message-Id: <42YPr02vcGz9s7W@ozlabs.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20180920202232epcas2p115e690a9ab4b8d70c2c710addb8fbb1e@epcas2p1.samsung.com>
-        <20180920202217.27304-1-natechancellor@gmail.com>
-In-Reply-To: <20180920202217.27304-1-natechancellor@gmail.com>
+References: <c454a5dbb215719991e3b0e6470309101d870fbb.1539092111.git.christophe.leroy@c-s.fr>
+In-Reply-To: <c454a5dbb215719991e3b0e6470309101d870fbb.1539092111.git.christophe.leroy@c-s.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nathan Chancellor <natechancellor@gmail.com>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Christophe Leroy <christophe.leroy@c-s.fr>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-block@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 
-
-On 09/20/2018 10:22 PM, Nathan Chancellor wrote:
-> Clang warns when multiple pairs of parentheses are used for a single
-> conditional statement.
+On Tue, 2018-10-09 at 13:51:33 UTC, Christophe Leroy wrote:
+> Other arches have ioremap_wt() to map IO areas write-through.
+> Implement it on PPC as well in order to avoid drivers using
+> __ioremap(_PAGE_WRITETHRU)
 > 
-> drivers/video/fbdev/sis/init301.c:851:42: warning: equality comparison
-> with extraneous parentheses [-Wparentheses-equality]
->       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
->                  ~~~~~~~~~~~~~~~~~~~~~~~~^~~~
-> drivers/video/fbdev/sis/init301.c:851:42: note: remove extraneous
-> parentheses around the comparison to silence this warning
->       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
->                 ~                        ^   ~
-> drivers/video/fbdev/sis/init301.c:851:42: note: use '=' to turn this
-> equality comparison into an assignment
->       } else if((SiS_Pr->SiS_IF_DEF_LVDS = 1) /* ||
->                                          ^~
->                                          > 1 warning generated.
+> Also implement ioremap_coherent() to avoid drivers using
+> __ioremap(_PAGE_COHERENT)
 > 
-> Remove the parentheses and while we're at it, clean up the commented
-> code, which has been here since the beginning of git history.
-> 
-> Link: https://github.com/ClangBuiltLinux/linux/issues/118
-> Signed-off-by: Nathan Chancellor <natechancellor@gmail.com>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Patch queued for 4.20, thanks.
+Series applied to powerpc next, thanks.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+https://git.kernel.org/powerpc/c/86c391bd5f47101acf1f3e0abd9fe0
+
+cheers

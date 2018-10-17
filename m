@@ -1,80 +1,68 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Sat, 13 Oct 2018 15:17:01 +0000
-Subject: [PATCH 2/8] firmware: tegra: don't pass GFP_DMA32 to dma_alloc_coherent
-Message-Id: <20181013151707.32210-3-hch@lst.de>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 17 Oct 2018 11:55:04 +0000
+Subject: Applied "spi: pic32-sqi: don't pass GFP_DMA32 to dma_alloc_coherent" to the spi tree
+Message-Id: <20181017115504.2A15E11224C4@debutante.sirena.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181013151707.32210-1-hch@lst.de>
-In-Reply-To: <20181013151707.32210-1-hch@lst.de>
+References: <20181013151707.32210-4-hch@lst.de>
+In-Reply-To: <20181013151707.32210-4-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: linux-kernel@vger.kernel.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, linux-spi@vger.kernel.org, Mark Brown <broonie@kernel.org>, linux-tegra@vger.kernel.org, linux-media@vger.kernel.org
+
+The patch
+
+   spi: pic32-sqi: don't pass GFP_DMA32 to dma_alloc_coherent
+
+has been applied to the spi tree at
+
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git 
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+From ec506e9246bf42795f1fa8a5cd00740e5686ba73 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 13 Oct 2018 17:17:02 +0200
+Subject: [PATCH] spi: pic32-sqi: don't pass GFP_DMA32 to dma_alloc_coherent
 
 The DMA API does its own zone decisions based on the coherent_dma_mask.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- drivers/firmware/tegra/bpmp-debugfs.c | 11 +++++------
- drivers/firmware/tegra/bpmp.c         |  2 +-
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ drivers/spi/spi-pic32-sqi.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/firmware/tegra/bpmp-debugfs.c b/drivers/firmware/tegra/bpmp-debugfs.c
-index f7f6a0a5cb07..567160897bac 100644
---- a/drivers/firmware/tegra/bpmp-debugfs.c
-+++ b/drivers/firmware/tegra/bpmp-debugfs.c
-@@ -218,12 +218,12 @@ static int debugfs_show(struct seq_file *m, void *p)
- 		return -ENOENT;
- 
- 	namevirt = dma_alloc_coherent(bpmp->dev, namesize, &namephys,
--				      GFP_KERNEL | GFP_DMA32);
-+				      GFP_KERNEL);
- 	if (!namevirt)
+diff --git a/drivers/spi/spi-pic32-sqi.c b/drivers/spi/spi-pic32-sqi.c
+index 62e6bf1f50b1..d7e4e18ec3df 100644
+--- a/drivers/spi/spi-pic32-sqi.c
++++ b/drivers/spi/spi-pic32-sqi.c
+@@ -468,7 +468,7 @@ static int ring_desc_ring_alloc(struct pic32_sqi *sqi)
+ 	/* allocate coherent DMAable memory for hardware buffer descriptors. */
+ 	sqi->bd = dma_zalloc_coherent(&sqi->master->dev,
+ 				      sizeof(*bd) * PESQI_BD_COUNT,
+-				      &sqi->bd_dma, GFP_DMA32);
++				      &sqi->bd_dma, GFP_KERNEL);
+ 	if (!sqi->bd) {
+ 		dev_err(&sqi->master->dev, "failed allocating dma buffer\n");
  		return -ENOMEM;
- 
- 	datavirt = dma_alloc_coherent(bpmp->dev, datasize, &dataphys,
--				      GFP_KERNEL | GFP_DMA32);
-+				      GFP_KERNEL);
- 	if (!datavirt) {
- 		ret = -ENOMEM;
- 		goto free_namebuf;
-@@ -269,12 +269,12 @@ static ssize_t debugfs_store(struct file *file, const char __user *buf,
- 		return -ENOENT;
- 
- 	namevirt = dma_alloc_coherent(bpmp->dev, namesize, &namephys,
--				      GFP_KERNEL | GFP_DMA32);
-+				      GFP_KERNEL);
- 	if (!namevirt)
- 		return -ENOMEM;
- 
- 	datavirt = dma_alloc_coherent(bpmp->dev, datasize, &dataphys,
--				      GFP_KERNEL | GFP_DMA32);
-+				      GFP_KERNEL);
- 	if (!datavirt) {
- 		ret = -ENOMEM;
- 		goto free_namebuf;
-@@ -422,8 +422,7 @@ int tegra_bpmp_init_debugfs(struct tegra_bpmp *bpmp)
- 	if (!root)
- 		return -ENOMEM;
- 
--	virt = dma_alloc_coherent(bpmp->dev, sz, &phys,
--				  GFP_KERNEL | GFP_DMA32);
-+	virt = dma_alloc_coherent(bpmp->dev, sz, &phys, GFP_KERNEL);
- 	if (!virt) {
- 		ret = -ENOMEM;
- 		goto out;
-diff --git a/drivers/firmware/tegra/bpmp.c b/drivers/firmware/tegra/bpmp.c
-index 14a456afa379..e6d2356ccec3 100644
---- a/drivers/firmware/tegra/bpmp.c
-+++ b/drivers/firmware/tegra/bpmp.c
-@@ -531,7 +531,7 @@ static int tegra_bpmp_get_firmware_tag(struct tegra_bpmp *bpmp, char *tag,
- 	int err;
- 
- 	virt = dma_alloc_coherent(bpmp->dev, MSG_DATA_MIN_SZ, &phys,
--				  GFP_KERNEL | GFP_DMA32);
-+				  GFP_KERNEL);
- 	if (!virt)
- 		return -ENOMEM;
- 
 -- 
-2.19.1
+2.19.0.rc2

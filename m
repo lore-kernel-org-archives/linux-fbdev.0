@@ -1,301 +1,69 @@
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Tue, 09 Oct 2018 13:52:12 +0000
-Subject: [PATCH v3 20/24] powerpc/mm: Allow platforms to redefine some helpers
-Message-Id: <bba554b1971b9c9123dd4ee81c45fc5b79d3fe28.1539092112.git.christophe.leroy@c-s.fr>
+From: Mark Brown <broonie@kernel.org>
+Date: Wed, 17 Oct 2018 11:54:54 +0000
+Subject: Applied "ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent" to the asoc tree
+Message-Id: <20181017115454.BA5D611224C4@debutante.sirena.org.uk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1539092111.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1539092111.git.christophe.leroy@c-s.fr>
+References: <20181013151707.32210-6-hch@lst.de>
+In-Reply-To: <20181013151707.32210-6-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Dominik Brodowski <linux@dominikbrodowski.net>, Geoff Levand <geoff@infradead.org>, Jens Axboe <axboe@kernel.dk>, Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoyang.li@nxp.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@samba.org>, Scott Wood <oss@buserror.net>, aneesh.kumar@linux.vnet.ibm.com
-Cc: linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-media@vger.kernel.org, linux-spi@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, linux-kernel@vger.kernel.orgalsa-devel@alsa-project.org
 
-The 40xx defines _PAGE_HWWRITE while others don't.
-The 8xx defines _PAGE_RO instead of _PAGE_RW.
-The 8xx defines _PAGE_PRIVILEGED instead of _PAGE_USER.
-The 8xx defines _PAGE_HUGE and _PAGE_NA while others don't.
+The patch
 
-Lets those platforms redefine pte_write(), pte_wrprotect() and
-pte_mkwrite() and get _PAGE_RO and _PAGE_HWWRITE off the common
-helpers.
+   ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
 
-Lets the 8xx redefine pte_user(), pte_mkprivileged() and pte_mkuser()
-and get rid of _PAGE_PRIVILEGED and _PAGE_USER default values.
+has been applied to the asoc tree at
 
-Lets the 8xx redefine pte_mkhuge() and get rid of
-_PAGE_HUGE default value.
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git 
 
-Reviewed-by: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.  
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
+
+From 3b991038498bc5011b063d6a804503c577a79434 Mon Sep 17 00:00:00 2001
+From: Christoph Hellwig <hch@lst.de>
+Date: Sat, 13 Oct 2018 17:17:04 +0200
+Subject: [PATCH] ASoC: intel: don't pass GFP_DMA32 to dma_alloc_coherent
+
+The DMA API does its own zone decisions based on the coherent_dma_mask.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Mark Brown <broonie@kernel.org>
 ---
- arch/powerpc/include/asm/nohash/32/pgtable.h | 16 ++++-----
- arch/powerpc/include/asm/nohash/32/pte-40x.h | 16 +++++++++
- arch/powerpc/include/asm/nohash/32/pte-8xx.h | 51 ++++++++++++++++++++++++++++
- arch/powerpc/include/asm/nohash/64/pgtable.h |  4 ---
- arch/powerpc/include/asm/nohash/pgtable.h    | 24 +++++++++----
- arch/powerpc/include/asm/pte-common.h        | 24 -------------
- 6 files changed, 91 insertions(+), 44 deletions(-)
+ sound/soc/intel/common/sst-firmware.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/nohash/32/pgtable.h b/arch/powerpc/include/asm/nohash/32/pgtable.h
-index a4156da4a7a4..ce9270a0ea42 100644
---- a/arch/powerpc/include/asm/nohash/32/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/32/pgtable.h
-@@ -136,14 +136,12 @@ extern int icache_44x_need_flush;
- #define pte_clear(mm, addr, ptep) \
- 	do { pte_update(ptep, ~0, 0); } while (0)
+diff --git a/sound/soc/intel/common/sst-firmware.c b/sound/soc/intel/common/sst-firmware.c
+index 11041aedea31..1e067504b604 100644
+--- a/sound/soc/intel/common/sst-firmware.c
++++ b/sound/soc/intel/common/sst-firmware.c
+@@ -355,7 +355,7 @@ struct sst_fw *sst_fw_new(struct sst_dsp *dsp,
  
-+#ifndef pte_mkwrite
- static inline pte_t pte_mkwrite(pte_t pte)
- {
--	pte_basic_t ptev;
--
--	ptev = pte_val(pte) & ~_PAGE_RO;
--	ptev |= _PAGE_RW;
--	return __pte(ptev);
-+	return __pte(pte_val(pte) | _PAGE_RW);
- }
-+#endif
- 
- static inline pte_t pte_mkdirty(pte_t pte)
- {
-@@ -155,14 +153,12 @@ static inline pte_t pte_mkyoung(pte_t pte)
- 	return __pte(pte_val(pte) | _PAGE_ACCESSED);
- }
- 
-+#ifndef pte_wrprotect
- static inline pte_t pte_wrprotect(pte_t pte)
- {
--	pte_basic_t ptev;
--
--	ptev = pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE);
--	ptev |= _PAGE_RO;
--	return __pte(ptev);
-+	return __pte(pte_val(pte) & ~_PAGE_RW);
- }
-+#endif
- 
- static inline pte_t pte_mkexec(pte_t pte)
- {
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-40x.h b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-index 2b48bc289a4d..ab043b3e9b99 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-40x.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-40x.h
-@@ -87,5 +87,21 @@
- #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_USER)
- #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_USER | _PAGE_EXEC)
- 
-+#ifndef __ASSEMBLY__
-+static inline pte_t pte_wrprotect(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~(_PAGE_RW | _PAGE_HWWRITE));
-+}
-+
-+#define pte_wrprotect pte_wrprotect
-+
-+static inline pte_t pte_mkclean(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
-+}
-+
-+#define pte_mkclean pte_mkclean
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_NOHASH_32_PTE_40x_H */
-diff --git a/arch/powerpc/include/asm/nohash/32/pte-8xx.h b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-index d06fc45bd9ac..b899c3c877ac 100644
---- a/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-+++ b/arch/powerpc/include/asm/nohash/32/pte-8xx.h
-@@ -87,5 +87,56 @@
- #define PAGE_READONLY	__pgprot(_PAGE_BASE | _PAGE_RO)
- #define PAGE_READONLY_X	__pgprot(_PAGE_BASE | _PAGE_RO | _PAGE_EXEC)
- 
-+#ifndef __ASSEMBLY__
-+static inline pte_t pte_wrprotect(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_RO);
-+}
-+
-+#define pte_wrprotect pte_wrprotect
-+
-+static inline int pte_write(pte_t pte)
-+{
-+	return !(pte_val(pte) & _PAGE_RO);
-+}
-+
-+#define pte_write pte_write
-+
-+static inline pte_t pte_mkwrite(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~_PAGE_RO);
-+}
-+
-+#define pte_mkwrite pte_mkwrite
-+
-+static inline bool pte_user(pte_t pte)
-+{
-+	return !(pte_val(pte) & _PAGE_PRIVILEGED);
-+}
-+
-+#define pte_user pte_user
-+
-+static inline pte_t pte_mkprivileged(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_PRIVILEGED);
-+}
-+
-+#define pte_mkprivileged pte_mkprivileged
-+
-+static inline pte_t pte_mkuser(pte_t pte)
-+{
-+	return __pte(pte_val(pte) & ~_PAGE_PRIVILEGED);
-+}
-+
-+#define pte_mkuser pte_mkuser
-+
-+static inline pte_t pte_mkhuge(pte_t pte)
-+{
-+	return __pte(pte_val(pte) | _PAGE_HUGE);
-+}
-+
-+#define pte_mkhuge pte_mkhuge
-+#endif
-+
- #endif /* __KERNEL__ */
- #endif /*  _ASM_POWERPC_NOHASH_32_PTE_8xx_H */
-diff --git a/arch/powerpc/include/asm/nohash/64/pgtable.h b/arch/powerpc/include/asm/nohash/64/pgtable.h
-index 9ccea94b3d4e..f272e4599803 100644
---- a/arch/powerpc/include/asm/nohash/64/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/64/pgtable.h
-@@ -90,11 +90,7 @@
-  */
- #include <asm/nohash/pte-book3e.h>
- 
--#define _PAGE_HWWRITE	0
- #define _PAGE_SAO	0
--#define _PAGE_RO 0
--#define _PAGE_NA 0
--#define _PAGE_HUGE 0
- 
- #define PTE_RPN_MASK	(~((1UL << PTE_RPN_SHIFT) - 1))
- 
-diff --git a/arch/powerpc/include/asm/nohash/pgtable.h b/arch/powerpc/include/asm/nohash/pgtable.h
-index d3feeac19467..d7bc904bd231 100644
---- a/arch/powerpc/include/asm/nohash/pgtable.h
-+++ b/arch/powerpc/include/asm/nohash/pgtable.h
-@@ -38,10 +38,12 @@
- #ifndef __ASSEMBLY__
- 
- /* Generic accessors to PTE bits */
-+#ifndef pte_write
- static inline int pte_write(pte_t pte)
- {
--	return (pte_val(pte) & (_PAGE_RW | _PAGE_RO)) != _PAGE_RO;
-+	return pte_val(pte) & _PAGE_RW;
- }
-+#endif
- static inline int pte_read(pte_t pte)		{ return 1; }
- static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) & _PAGE_DIRTY; }
- static inline int pte_special(pte_t pte)	{ return pte_val(pte) & _PAGE_SPECIAL; }
-@@ -83,10 +85,12 @@ static inline bool pte_hw_valid(pte_t pte)
-  * and PTE_64BIT, PAGE_KERNEL_X contains _PAGE_BAP_SR which is also in
-  * _PAGE_USER.  Need to explicitly match _PAGE_BAP_UR bit in that case too.
-  */
-+#ifndef pte_user
- static inline bool pte_user(pte_t pte)
- {
--	return (pte_val(pte) & (_PAGE_USER | _PAGE_PRIVILEGED)) = _PAGE_USER;
-+	return (pte_val(pte) & _PAGE_USER) = _PAGE_USER;
- }
-+#endif
- 
- /*
-  * We only find page table entry in the last level
-@@ -126,10 +130,12 @@ static inline pte_t pte_exprotect(pte_t pte)
- 	return __pte(pte_val(pte) & ~_PAGE_EXEC);
- }
- 
-+#ifndef pte_mkclean
- static inline pte_t pte_mkclean(pte_t pte)
- {
--	return __pte(pte_val(pte) & ~(_PAGE_DIRTY | _PAGE_HWWRITE));
-+	return __pte(pte_val(pte) & ~_PAGE_DIRTY);
- }
-+#endif
- 
- static inline pte_t pte_mkold(pte_t pte)
- {
-@@ -146,20 +152,26 @@ static inline pte_t pte_mkspecial(pte_t pte)
- 	return __pte(pte_val(pte) | _PAGE_SPECIAL);
- }
- 
-+#ifndef pte_mkhuge
- static inline pte_t pte_mkhuge(pte_t pte)
- {
--	return __pte(pte_val(pte) | _PAGE_HUGE);
-+	return __pte(pte_val(pte));
- }
-+#endif
- 
-+#ifndef pte_mkprivileged
- static inline pte_t pte_mkprivileged(pte_t pte)
- {
--	return __pte((pte_val(pte) & ~_PAGE_USER) | _PAGE_PRIVILEGED);
-+	return __pte(pte_val(pte) & ~_PAGE_USER);
- }
-+#endif
- 
-+#ifndef pte_mkuser
- static inline pte_t pte_mkuser(pte_t pte)
- {
--	return __pte((pte_val(pte) & ~_PAGE_PRIVILEGED) | _PAGE_USER);
-+	return __pte(pte_val(pte) | _PAGE_USER);
- }
-+#endif
- 
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
-diff --git a/arch/powerpc/include/asm/pte-common.h b/arch/powerpc/include/asm/pte-common.h
-index 4d594039bca5..1a2102f8b1e7 100644
---- a/arch/powerpc/include/asm/pte-common.h
-+++ b/arch/powerpc/include/asm/pte-common.h
-@@ -5,36 +5,12 @@
-  * Some bits are only used on some cpu families... Make sure that all
-  * the undefined gets a sensible default
-  */
--#ifndef _PAGE_HWWRITE
--#define _PAGE_HWWRITE	0
--#endif
- #ifndef _PAGE_COHERENT
- #define _PAGE_COHERENT	0
- #endif
- #ifndef _PAGE_WRITETHRU
- #define _PAGE_WRITETHRU	0
- #endif
--/* _PAGE_RO and _PAGE_RW shall not be defined at the same time */
--#ifndef _PAGE_RO
--#define _PAGE_RO 0
--#else
--#define _PAGE_RW 0
--#endif
--
--/* At least one of _PAGE_PRIVILEGED or _PAGE_USER must be defined */
--#ifndef _PAGE_PRIVILEGED
--#define _PAGE_PRIVILEGED 0
--#else
--#ifndef _PAGE_USER
--#define _PAGE_USER 0
--#endif
--#endif
--#ifndef _PAGE_NA
--#define _PAGE_NA 0
--#endif
--#ifndef _PAGE_HUGE
--#define _PAGE_HUGE 0
--#endif
- 
- /* Location of the PFN in the PTE. Most 32-bit platforms use the same
-  * as _PAGE_SHIFT here (ie, naturally aligned).
+ 	/* allocate DMA buffer to store FW data */
+ 	sst_fw->dma_buf = dma_alloc_coherent(dsp->dma_dev, sst_fw->size,
+-				&sst_fw->dmable_fw_paddr, GFP_DMA | GFP_KERNEL);
++				&sst_fw->dmable_fw_paddr, GFP_KERNEL);
+ 	if (!sst_fw->dma_buf) {
+ 		dev_err(dsp->dev, "error: DMA alloc failed\n");
+ 		kfree(sst_fw);
 -- 
-2.13.3
+2.19.0.rc2

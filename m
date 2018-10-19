@@ -1,35 +1,145 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 08 Oct 2018 10:31:41 +0000
-Subject: Re: [PATCH] mach64: detect the dot clock divider correctly on sparc
-Message-Id: <20181008103143eucas1p2e22ad6ff6a859f6a8b95bedbc49db10a~bm4dX0H4v1531615316eucas1p2M@eucas1p2.samsung.com>
+From: Wenwen Wang <wang6495@umn.edu>
+Date: Fri, 19 Oct 2018 20:39:17 +0000
+Subject: [PATCH] video: fbdev: sis: fix a missing-check bug
+Message-Id: <1539981557-13590-1-git-send-email-wang6495@umn.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180819103657.GB11867@sci.fi>
- <alpine.LRH.2.02.1808231706420.13157@file01.intranet.prod.int.rdu2.redhat.com>
- <20180824115851.GC11867@sci.fi>
- <CGME20181008060638epcas1p3e20db6229b2e0d178471ac7ff7fcffe1@epcas1p3.samsung.com>
- <20181007.225650.255111318936186975.davem@davemloft.net>
-In-Reply-To: <20181007.225650.255111318936186975.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: David Miller <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org, mpatocka@redhat.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Wenwen Wang <wang6495@umn.edu>
+Cc: Kangjie Lu <kjlu@umn.edu>, Thomas Winischhofer <thomas@winischhofer.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:FRAMEBUFFER LAYER" <dri-devel@lists.freedesktop.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
 
+In sisfb_find_rom(), the official pci ROM is checked to see whether it
+contains the expected value at specific locations. This is done by firstly
+mapping the rom into the IO memory region 'rom_base' and then invoking
+sisfb_check_rom() to perform the checks. If the checks succeed, i.e.,
+sisfb_check_rom() returns 1, the whole content of the rom is then copied to
+'myrombase' through memcpy_fromio(). The problem here is that the checks
+are conducted on the IO region 'rom_base' directly. Given that the device
+also has the permission to access the IO region, it is possible that a
+malicious device controlled by an attacker can race to modify the values in
+the region after the checks but before memcpy_fromio(). By doing so, the
+attacker can supply unexpected roms, which can cause undefined behavior of
+the kernel and introduce potential security risk. The following for loop
+also has a similar issue.
 
+To avoid the above issue, this patch firstly copies the content of the rom
+and then performs the checks on the copied version. If all the checks are
+satisfied, the copied version will then be returned.
 
-On 10/08/2018 07:56 AM, David Miller wrote:
-> From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
-> Date: Fri, 24 Aug 2018 14:58:52 +0300
->=20
->> But yeah, given the V2CLK thing /5 seems like a perfectly good=20
->> value to use here.
->=20
-> Patch applied.
+Signed-off-by: Wenwen Wang <wang6495@umn.edu>
+---
+ drivers/video/fbdev/sis/sis_main.c | 52 ++++++++++++++++----------------------
+ 1 file changed, 22 insertions(+), 30 deletions(-)
 
-Fine with me if you also need it in sparc tree.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sis/sis_main.c b/drivers/video/fbdev/sis/sis_main.c
+index 20aff90..a2d8051 100644
+--- a/drivers/video/fbdev/sis/sis_main.c
++++ b/drivers/video/fbdev/sis/sis_main.c
+@@ -4089,29 +4089,29 @@ static int __init sisfb_setup(char *options)
+ }
+ #endif
+ 
+-static int sisfb_check_rom(void __iomem *rom_base,
++static int sisfb_check_rom(unsigned char *rom_base,
+ 			   struct sis_video_info *ivideo)
+ {
+-	void __iomem *rom;
++	unsigned char *rom;
+ 	int romptr;
+ 
+-	if((readb(rom_base) != 0x55) || (readb(rom_base + 1) != 0xaa))
++	if ((*rom_base != 0x55) || (*(rom_base + 1) != 0xaa))
+ 		return 0;
+ 
+-	romptr = (readb(rom_base + 0x18) | (readb(rom_base + 0x19) << 8));
++	romptr = (*(rom_base + 0x18) | (*(rom_base + 0x19) << 8));
+ 	if(romptr > (0x10000 - 8))
+ 		return 0;
+ 
+ 	rom = rom_base + romptr;
+ 
+-	if((readb(rom)     != 'P') || (readb(rom + 1) != 'C') ||
+-	   (readb(rom + 2) != 'I') || (readb(rom + 3) != 'R'))
++	if ((*(rom)     != 'P') || (*(rom + 1) != 'C') ||
++	   (*(rom + 2) != 'I') || (*(rom + 3) != 'R'))
+ 		return 0;
+ 
+-	if((readb(rom + 4) | (readb(rom + 5) << 8)) != ivideo->chip_vendor)
++	if ((*(rom + 4) | (*(rom + 5) << 8)) != ivideo->chip_vendor)
+ 		return 0;
+ 
+-	if((readb(rom + 6) | (readb(rom + 7) << 8)) != ivideo->chip_id)
++	if ((*(rom + 6) | (*(rom + 7) << 8)) != ivideo->chip_id)
+ 		return 0;
+ 
+ 	return 1;
+@@ -4124,6 +4124,10 @@ static unsigned char *sisfb_find_rom(struct pci_dev *pdev)
+ 	unsigned char *myrombase = NULL;
+ 	size_t romsize;
+ 
++	myrombase = vmalloc(65536);
++	if (!myrombase)
++		return NULL;
++
+ 	/* First, try the official pci ROM functions (except
+ 	 * on integrated chipsets which have no ROM).
+ 	 */
+@@ -4131,20 +4135,15 @@ static unsigned char *sisfb_find_rom(struct pci_dev *pdev)
+ 	if(!ivideo->nbridge) {
+ 
+ 		if((rom_base = pci_map_rom(pdev, &romsize))) {
+-
+-			if(sisfb_check_rom(rom_base, ivideo)) {
+-
+-				if((myrombase = vmalloc(65536))) {
+-					memcpy_fromio(myrombase, rom_base,
+-							(romsize > 65536) ? 65536 : romsize);
+-				}
+-			}
++			memcpy_fromio(myrombase, rom_base,
++					(romsize > 65536) ? 65536 : romsize);
+ 			pci_unmap_rom(pdev, rom_base);
++
++			if (sisfb_check_rom(myrombase, ivideo))
++				return myrombase;
+ 		}
+ 	}
+ 
+-	if(myrombase) return myrombase;
+-
+ 	/* Otherwise do it the conventional way. */
+ 
+ #if defined(__i386__) || defined(__x86_64__)
+@@ -4156,24 +4155,17 @@ static unsigned char *sisfb_find_rom(struct pci_dev *pdev)
+ 			rom_base = ioremap(temp, 65536);
+ 			if (!rom_base)
+ 				continue;
+-
+-			if (!sisfb_check_rom(rom_base, ivideo)) {
+-				iounmap(rom_base);
+-				continue;
+-			}
+-
+-			if ((myrombase = vmalloc(65536)))
+-				memcpy_fromio(myrombase, rom_base, 65536);
+-
++			memcpy_fromio(myrombase, rom_base, 65536);
+ 			iounmap(rom_base);
+-			break;
+ 
++			if (sisfb_check_rom(myrombase, ivideo))
++				return myrombase;
+ 		}
+ 
+ 	}
+ #endif
+-
+-	return myrombase;
++	vfree(myrombase);
++	return NULL;
+ }
+ 
+ static void sisfb_post_map_vram(struct sis_video_info *ivideo,
+-- 
+2.7.4

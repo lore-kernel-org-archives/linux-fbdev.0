@@ -1,48 +1,102 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 09 Oct 2018 09:57:20 +0000
-Subject: Re: [RESEND v2 2/2] backlight: Remove ld9040 driver
-Message-Id: <20181009095720.GJ4939@dell>
+From: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Date: Mon, 22 Oct 2018 08:11:09 +0000
+Subject: [PATCH v2] backlight: gpio-backlight: Correct initial power state handling
+Message-Id: <20181022081109.21456-1-peter.ujfalusi@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20180927165541.11903-1-krzk@kernel.org>
- <20180927165541.11903-2-krzk@kernel.org>
-In-Reply-To: <20180927165541.11903-2-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jonathan Corbet <corbet@lwn.net>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Aishwarya Pant <aishpant@gmail.com>, Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: lee.jones@linaro.org, jingoohan1@gmail.com, daniel.thompson@linaro.org
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 27 Sep 2018, Krzysztof Kozlowski wrote:
+The default-on property - or the def_value via legacy pdata) should be
+handled as:
+if it is 1, the backlight must be enabled (kept enabled)
+if it is 0, the backlight must be disabled (kept disabled)
 
-> The driver for LD9040 AMOLED LCD panel was superseded with DRM driver
-> panel-samsung-ld9040.c.  It does not support DeviceTree and respective
-> possible user (Exynos4210 Universal C210) is DeviceTree-only and uses
-> DRM version of driver.
-> 
-> Suggested-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Marek Szyprowski <m.szyprowski@samsung.com>
-> Cc: Inki Dae <inki.dae@samsung.com>
-> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> ---
-> 
-> Changes since v1:
-> 1. Add Jingoo's and Daniel's acks.
-> ---
->  drivers/video/backlight/Kconfig        |   8 -
->  drivers/video/backlight/Makefile       |   1 -
->  drivers/video/backlight/ld9040.c       | 811 -------------------------
->  drivers/video/backlight/ld9040_gamma.h | 202 ------
->  4 files changed, 1022 deletions(-)
->  delete mode 100644 drivers/video/backlight/ld9040.c
->  delete mode 100644 drivers/video/backlight/ld9040_gamma.h
+This only works for the case when default-on is set. If it is not set then
+the brightness of the backlight is set to 0. Now if the backlight is
+enabled by external driver (graphics) the backlight will stay disabled since
+the brightness is configured as 0. The backlight will not turn on.
 
-Applied, thanks.
+In order to minimize screen flickering during device boot:
 
+The initial brightness should be set to 1.
+
+If booted in non DT mode or no phandle link to the backlight node:
+follow the def_value/default-on to select UNBLANK or POWERDOWN
+
+If in DT boot we have phandle link then leave the GPIO in a state which the
+bootloader left it and let the user of the backlight to configure it
+further.
+
+Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+---
+Hi,
+
+Changes since v1:
+- Implement similiar initial power state handling as pwm backlight have
+
+Regards,
+Peter
+
+ drivers/video/backlight/gpio_backlight.c | 24 ++++++++++++++++++++----
+ 1 file changed, 20 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index e470da95d806..51c49f03ed83 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -62,13 +62,11 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
+ {
+ 	struct device *dev = &pdev->dev;
+ 	struct device_node *np = dev->of_node;
+-	enum gpiod_flags flags;
+ 	int ret;
+ 
+ 	gbl->def_value = of_property_read_bool(np, "default-on");
+-	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+ 
+-	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
++	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+ 	if (IS_ERR(gbl->gpiod)) {
+ 		ret = PTR_ERR(gbl->gpiod);
+ 
+@@ -82,6 +80,22 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
+ 	return 0;
+ }
+ 
++static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
++{
++	struct device_node *node = gbl->dev->of_node;
++
++	/* Not booted with device tree or no phandle link to the node */
++	if (!node || !node->phandle)
++		return gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
++
++	/* if the enable GPIO is disabled, do not enable the backlight */
++	if (gpiod_get_value_cansleep(gbl->gpiod) = 0)
++		return FB_BLANK_POWERDOWN;
++
++	return FB_BLANK_UNBLANK;
++}
++
++
+ static int gpio_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_backlight_platform_data *pdata @@ -142,7 +156,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 		return PTR_ERR(bl);
+ 	}
+ 
+-	bl->props.brightness = gbl->def_value;
++	bl->props.power = gpio_backlight_initial_power_state(gbl);
++	bl->props.brightness = 1;
++
+ 	backlight_update_status(bl);
+ 
+ 	platform_set_drvdata(pdev, bl);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Peter
+
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
+Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki

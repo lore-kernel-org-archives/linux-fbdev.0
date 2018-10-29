@@ -1,99 +1,96 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Tue, 09 Oct 2018 00:09:24 +0000
-Subject: Re: [PATCH v4 03/11] gpu: ipu-v3: Add planar support to interlaced scan
-Message-Id: <2f5cbf7c-4a1c-96c2-971c-86a97ae6dbe1@gmail.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Date: Mon, 29 Oct 2018 15:32:58 +0000
+Subject: [PATCH v2] fbcon: Silence fbcon logo on 'quiet' boots
+Message-Id: <20181029153258.7516-1-prarit@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181004185401.15751-1-slongerbeam@gmail.com>
- <20181004185401.15751-4-slongerbeam@gmail.com>
- <1538732937.3545.8.camel@pengutronix.de>
-In-Reply-To: <1538732937.3545.8.camel@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>, linux-media@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Hans Verkuil <hverkuil@xs4all.nl>
+To: linux-fbdev@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
 
+A variant of this patch has been in Fedora since at least 2010 and
+AFAWCT there haven't been any complaints about the change in behavior.
 
+https://src.fedoraproject.org/cgit/rpms/kernel.git/tree/silence-fbcon-logo.patch
 
-On 10/05/2018 02:48 AM, Philipp Zabel wrote:
-> On Thu, 2018-10-04 at 11:53 -0700, Steve Longerbeam wrote:
->> To support interlaced scan with planar formats, cpmem SLUV must
->> be programmed with the correct chroma line stride. For full and
->> partial planar 4:2:2 (YUV422P, NV16), chroma line stride must
->> be doubled. For full and partial planar 4:2:0 (YUV420, YVU420, NV12),
->> chroma line stride must _not_ be doubled, since a single chroma line
->> is shared by two luma lines.
->>
->> Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
->> ---
->>   drivers/gpu/ipu-v3/ipu-cpmem.c              | 26 +++++++++++++++++++--
->>   drivers/staging/media/imx/imx-ic-prpencvf.c |  3 ++-
->>   drivers/staging/media/imx/imx-media-csi.c   |  3 ++-
->>   include/video/imx-ipu-v3.h                  |  3 ++-
->>   4 files changed, 30 insertions(+), 5 deletions(-)
->>
->> diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
->> index a9d2501500a1..d41df8034c5b 100644
->> --- a/drivers/gpu/ipu-v3/ipu-cpmem.c
->> +++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
->> @@ -273,9 +273,10 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
->>   }
->>   EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
->>   
->> -void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
->> +void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
->> +			       u32 pixelformat)
->>   {
->> -	u32 ilo, sly;
->> +	u32 ilo, sly, sluv;
->>   
->>   	if (stride < 0) {
->>   		stride = -stride;
->> @@ -286,9 +287,30 @@ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
->>   
->>   	sly = (stride * 2) - 1;
->>   
->> +	switch (pixelformat) {
->> +	case V4L2_PIX_FMT_YUV420:
->> +	case V4L2_PIX_FMT_YVU420:
->> +		sluv = stride / 2 - 1;
->> +		break;
->> +	case V4L2_PIX_FMT_NV12:
->> +		sluv = stride - 1;
->> +		break;
->> +	case V4L2_PIX_FMT_YUV422P:
->> +		sluv = stride - 1;
->> +		break;
->> +	case V4L2_PIX_FMT_NV16:
->> +		sluv = stride * 2 - 1;
->> +		break;
->> +	default:
->> +		sluv = 0;
->> +		break;
->> +	}
->> +
->>   	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
->>   	ipu_ch_param_write_field(ch, IPU_FIELD_ILO, ilo);
->>   	ipu_ch_param_write_field(ch, IPU_FIELD_SLY, sly);
->> +	if (sluv)
->> +		ipu_ch_param_write_field(ch, IPU_FIELD_SLUV, sluv);
->>   };
->>   EXPORT_SYMBOL_GPL(ipu_cpmem_interlaced_scan);
-> [...]
->
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
->
-> and
->
-> Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
->
-> to be merged with the rest of the series via the media tree. I'll take
-> care not to introduce nontrivial conflicts in imx-drm.
+P.
 
-Ok thanks.
+---8<---
 
-Hans, for v5 I will just include the two IPU patches as before. As Philipp
-stated, he is OK with merging them to the media tree (after his ack of
-course), along with the rest of the patches in this series.
+On text-based systems the 'quiet' boot option will show printk levels
+higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
+during boot can cause some consoles to lose display data and as a result
+confuse the end user.
 
-Steve
+Do not display the Tux logo on systems that are in 'quiet' boot.
+
+v2: It helps to commit all my changes before sending them.  Remove extra
+bracket.
+
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Marko Myllynen <myllynen@redhat.com>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/core/fbcon.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 75ebbbf0a1fb..53fc151f3f7b 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -650,11 +650,14 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		kfree(save);
+ 	}
+ 
++	if (logo_shown = FBCON_LOGO_DONTSHOW)
++		return;
++
+ 	if (logo_lines > vc->vc_bottom) {
+ 		logo_shown = FBCON_LOGO_CANSHOW;
+ 		printk(KERN_INFO
+ 		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).\n");
+-	} else if (logo_shown != FBCON_LOGO_DONTSHOW) {
++	} else {
+ 		logo_shown = FBCON_LOGO_DRAW;
+ 		vc->vc_top = logo_lines;
+ 	}
+@@ -1052,7 +1055,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	struct vc_data **default_mode = vc->vc_display_fg;
+ 	struct vc_data *svc = *default_mode;
+ 	struct display *t, *p = &fb_display[vc->vc_num];
+-	int logo = 1, new_rows, new_cols, rows, cols, charcnt = 256;
++	int new_rows, new_cols, rows, cols, charcnt = 256;
+ 	int cap, ret;
+ 
+ 	if (info_idx = -1 || info = NULL)
+@@ -1060,9 +1063,9 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 
+ 	cap = info->flags;
+ 
+-	if (vc != svc || logo_shown = FBCON_LOGO_DONTSHOW ||
++	if (vc != svc || console_loglevel <= CONSOLE_LOGLEVEL_QUIET ||
+ 	    (info->fix.type = FB_TYPE_TEXT))
+-		logo = 0;
++		logo_shown = FBCON_LOGO_DONTSHOW;
+ 
+ 	if (var_to_display(p, &info->var, info))
+ 		return;
+@@ -1178,7 +1181,7 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	} else
+ 		vc_resize(vc, new_cols, new_rows);
+ 
+-	if (logo)
++	if (logo_shown != FBCON_LOGO_DONTSHOW)
+ 		fbcon_prepare_logo(vc, info, cols, rows, new_cols, new_rows);
+ 
+ 	if (vc = svc && softback_buf)
+-- 
+2.14.5

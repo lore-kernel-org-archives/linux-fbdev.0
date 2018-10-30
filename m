@@ -1,7 +1,7 @@
 From: Steven Rostedt <rostedt@goodmis.org>
-Date: Tue, 30 Oct 2018 21:35:57 +0000
+Date: Tue, 30 Oct 2018 21:35:58 +0000
 Subject: Re: [PATCH v3] fbcon: Silence fbcon logo on 'quiet' boots
-Message-Id: <7E403552-A66C-473E-A00E-C67E5316D2DA@goodmis.org>
+Message-Id: <0589D61E-26FF-4008-8311-E4838375D8FD@goodmis.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181030154419.2889-1-prarit@redhat.com>
 In-Reply-To: <20181030154419.2889-1-prarit@redhat.com>

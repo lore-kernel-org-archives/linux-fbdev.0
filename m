@@ -1,120 +1,44 @@
-From: Enric Balletbo Serra <eballetbo@gmail.com>
-Date: Fri, 30 Nov 2018 22:22:05 +0000
-Subject: Re: [PATCH v3] backlight: pwm_bl: Fix brightness levels for non-DT case.
-Message-Id: <CAFqH_53NiYULqcc+2fCgbHETJoTc7tWD8BNxOFhPm6kFZ=e6_g@mail.gmail.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Fri, 02 Nov 2018 14:56:35 +0000
+Subject: [PATCH fbdev-for-next 2/2] video: ssd1307fb: Add support for the reset-active-low property
+Message-Id: <1541170556-75032-2-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181107085507.26126-1-enric.balletbo@collabora.com>
-In-Reply-To: <20181107085507.26126-1-enric.balletbo@collabora.com>
+References: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, robert.jarzmik@free.fr, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee.jones@linaro.org>, kernel@collabora.com, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, stable@vger.kernel.org, u.kleine-koenig@pengutronix.de, Linux PWM List <linux-pwm@vger.kernel.org>, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Jingoo Han <jingoohan1@gmail.com>
+To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-Hi,
-Missatge de Enric Balletbo i Serra <enric.balletbo@collabora.com> del
-dia dc., 7 de nov. 2018 a les 9:56:
->
-> Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
-> linearly to human eye")' allows the possibility to compute a default
-> brightness table when there isn't the brightness-levels property in the
-> DT. Unfortunately the changes made broke the pwm backlight for the
-> non-DT boards.
->
-> Usually, the non-DT boards don't pass the brightness levels via platform
-> data, instead, it sets the max_brightness in their platform data and the
-> driver calculates the level without a table. The offending patch assumed
-> that when there is no brightness levels table we should create one, but this
-> is clearly wrong for the non-DT case.
->
-> After this patch the code handles the DT and the non-DT case taking in
-> consideration also if max_brightness is set or not.
->
-> Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-> Cc: <stable@vger.kernel.org>
-> Reported-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
->
-> Changes in v3:
-> - Fixed some typos in commit message.
-> - Removed ' in Fixes tag.
->
-> Changes in v2:
-> - Rebase on top of mainline
-> - Add Tested-by and Acked-by tags.
->
->  drivers/video/backlight/pwm_bl.c | 41 +++++++++++++++++++++++++++-----
->  1 file changed, 35 insertions(+), 6 deletions(-)
->
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index 678b27063198..f9ef0673a083 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -562,7 +562,30 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->                 goto err_alloc;
->         }
->
-> -       if (!data->levels) {
-> +       if (data->levels) {
-> +               /*
-> +                * For the DT case, only when brightness levels is defined
-> +                * data->levels is filled. For the non-DT case, data->levels
-> +                * can come from platform data, however is not usual.
-> +                */
-> +               for (i = 0; i <= data->max_brightness; i++) {
-> +                       if (data->levels[i] > pb->scale)
-> +                               pb->scale = data->levels[i];
-> +
-> +                       pb->levels = data->levels;
-> +               }
-> +       } else if (!data->max_brightness) {
-> +               /*
-> +                * If no brightness levels are provided and max_brightness is
-> +                * not set, use the default brightness table. For the DT case,
-> +                * max_brightness is set to 0 when brightness levels is not
-> +                * specified. For the non-DT case, max_brightness is usually
-> +                * set to some value.
-> +                */
-> +
-> +               /* Get the PWM period (in nanoseconds) */
-> +               pwm_get_state(pb->pwm, &state);
-> +
->                 ret = pwm_backlight_brightness_default(&pdev->dev, data,
->                                                        state.period);
->                 if (ret < 0) {
-> @@ -570,13 +593,19 @@ static int pwm_backlight_probe(struct platform_device *pdev)
->                                 "failed to setup default brightness table\n");
->                         goto err_alloc;
->                 }
-> -       }
->
-> -       for (i = 0; i <= data->max_brightness; i++) {
-> -               if (data->levels[i] > pb->scale)
-> -                       pb->scale = data->levels[i];
-> +               for (i = 0; i <= data->max_brightness; i++) {
-> +                       if (data->levels[i] > pb->scale)
-> +                               pb->scale = data->levels[i];
->
-> -               pb->levels = data->levels;
-> +                       pb->levels = data->levels;
-> +               }
-> +       } else {
-> +               /*
-> +                * That only happens for the non-DT case, where platform data
-> +                * sets the max_brightness value.
-> +                */
-> +               pb->scale = data->max_brightness;
->         }
->
->         pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
-> --
-> 2.19.1
->
-
-A gentle ping on this patch.
-
-Best regards,
- Enric
+VGhlIFNTRDEzMHggT0xFRMKgZGlzcGxheSByZXNldCBzaWduYWwgaXMgYWN0aXZlIGxvdy4gTm93
+IHRoZSByZXNldA0Kc2VxdWVuY2UgaXMgaW1wbGVtZW50ZWQgaW4gc3VjaCBhIHdheSB0aGF0IERU
+UyBhdXRob3JzIGFyZSBmb3JjZWQgdG8NCmRlZmluZSB0aGUgcmVzZXQtZ3Bpb3MgcHJvcGVydHkg
+d2l0aCBHUElPX0FDVElWRV9ISUdIIHRvIG1ha2UgdGhlIHJlc2V0DQp3b3JrLg0KDQpBZGQgdGhl
+IHJlc2V0LWFjdGl2ZS1sb3cgcHJvcGVydHkgc28gdGhlIHNpZ25hbCBpcyBpbnZlcnRlZCBvbmNl
+IGFnYWluDQphbmQgdGhlIEdQSU9fQUNUSVZFX0xPVyB3b3JrIGFzIGV4cGVjdGVkLg0KDQpTaWdu
+ZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0K
+IGRyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMgfCA2ICsrKystLQ0KIDEgZmlsZSBjaGFu
+Z2VkLCA0IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2
+ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jIGIvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3
+ZmIuYw0KaW5kZXggZTdhZTEzNS4uNzkwZjFjNCAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvdmlkZW8v
+ZmJkZXYvc3NkMTMwN2ZiLmMNCisrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMN
+CkBAIC02MDgsNiArNjA4LDcgQEAgc3RhdGljIGludCBzc2QxMzA3ZmJfcHJvYmUoc3RydWN0IGky
+Y19jbGllbnQgKmNsaWVudCwNCiAJc3RydWN0IGZiX2RlZmVycmVkX2lvICpzc2QxMzA3ZmJfZGVm
+aW87DQogCXUzMiB2bWVtX3NpemU7DQogCXN0cnVjdCBzc2QxMzA3ZmJfcGFyICpwYXI7DQorCWJv
+b2wgcmVzZXRfYWN0aXZlX2xvdzsNCiAJdTggKnZtZW07DQogCWludCByZXQ7DQogDQpAQCAtNjcx
+LDYgKzY3Miw3IEBAIHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50
+ICpjbGllbnQsDQogCXBhci0+Y29tX3NlcSA9IG9mX3Byb3BlcnR5X3JlYWRfYm9vbChub2RlLCAi
+c29sb21vbixjb20tc2VxIik7DQogCXBhci0+Y29tX2xycmVtYXAgPSBvZl9wcm9wZXJ0eV9yZWFk
+X2Jvb2wobm9kZSwgInNvbG9tb24sY29tLWxycmVtYXAiKTsNCiAJcGFyLT5jb21faW52ZGlyID0g
+b2ZfcHJvcGVydHlfcmVhZF9ib29sKG5vZGUsICJzb2xvbW9uLGNvbS1pbnZkaXIiKTsNCisJcmVz
+ZXRfYWN0aXZlX2xvdyA9IG9mX3Byb3BlcnR5X3JlYWRfYm9vbChub2RlLCAicmVzZXQtYWN0aXZl
+LWxvdyIpOw0KIA0KIAlwYXItPmNvbnRyYXN0ID0gMTI3Ow0KIAlwYXItPnZjb21oID0gcGFyLT5k
+ZXZpY2VfaW5mby0+ZGVmYXVsdF92Y29taDsNCkBAIC03MjgsOSArNzMwLDkgQEAgc3RhdGljIGlu
+dCBzc2QxMzA3ZmJfcHJvYmUoc3RydWN0IGkyY19jbGllbnQgKmNsaWVudCwNCiANCiAJaWYgKHBh
+ci0+cmVzZXQpIHsNCiAJCS8qIFJlc2V0IHRoZSBzY3JlZW4gKi8NCi0JCWdwaW9kX3NldF92YWx1
+ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAwKTsNCisJCWdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChw
+YXItPnJlc2V0LCByZXNldF9hY3RpdmVfbG93KTsNCiAJCXVkZWxheSg0KTsNCi0JCWdwaW9kX3Nl
+dF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAxKTsNCisJCWdwaW9kX3NldF92YWx1ZV9jYW5z
+bGVlcChwYXItPnJlc2V0LCAhcmVzZXRfYWN0aXZlX2xvdyk7DQogCQl1ZGVsYXkoNCk7DQogCX0N
+CiANCi0tIA0KMi4xLjQNCg0K

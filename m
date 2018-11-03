@@ -1,30 +1,27 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Mon, 26 Nov 2018 21:57:36 +0000
-Subject: [PATCH 0/2] add config option to center the bootup logo
-Message-Id: <20181126215725.2548-1-peda@axentia.se>
+From: "Dr Kannan" <sale@allta.com.ua>
+Date: Sat, 03 Nov 2018 16:26:07 +0000
+Subject: Update
+Message-Id: <20181103162556.22770180384@mail.allta.com.ua>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
 
-Hi!
+Hello dear
 
-I'm using these patches to get early display output at the center of
-the screen. Maybe someone else will also find that useful?
+Greetings to you,I am Dr.Kannan, a personal account manager to Late Engr. Richard Hernandez, who died with his family in the missing Malaysian Air crash
 
-Cheers,
-Peter
+of 2014. His account with us is in intestate with no claim his fixed deposit of U$D 7 Million.
 
-Peter Rosin (2):
-  fbdev: fbmem: make fb_show_logo_line return the end instead of the
-    height
-  fbdev: fbmem: add config option to center the bootup logo
+I have been mandated by the Bank Management as his personal account officer, to present his relative or next of kin.
 
- drivers/video/fbdev/core/fbmem.c | 31 +++++++++++++++++++++++++++----
- drivers/video/logo/Kconfig       |  9 +++++++++
- 2 files changed, 36 insertions(+), 4 deletions(-)
+I have searched through notary register of his country here all to no avail, so I wish to present you to the Bank as his only relative and next of kin.
 
--- 
-2.11.0
+kindly contact me for more details, terms and condition shall be clarified upon your response. There is no risk whatsoever to this transaction as I have all papers and documents to pose of you the inheritance to this. 
+
+I wait for your prompt response.
+
+My regards,
+
+Dr. Kannan.

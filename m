@@ -1,52 +1,49 @@
-From: Konstantin Khorenko <khorenko@virtuozzo.com>
-Date: Mon, 26 Nov 2018 10:02:53 +0000
-Subject: [PATCH] fbcon: use kvmalloc() for scrollback buffer
-Message-Id: <20181126100253.3299-1-khorenko@virtuozzo.com>
+From: =?UTF-8?q?La=C3=ADs=20Pessine=20do=20Carmo?= <laispc19@gmail.com>
+Date: Wed, 07 Nov 2018 00:28:04 +0000
+Subject: [PATCH] staging: sm750fb: Add spaces around '+'
+Message-Id: <20181107002804.25345-1-laispc19@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Konstantin Khorenko <khorenko@virtuozzo.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org
 
-Scrollback frame buffer is rather big - 32K,
-so it requires 3rd order page, so let's use kvmalloc() instead of
-ordinary kmalloc() for it.
+Add spaces around '+' to correct the following checkpath.pl warnings:
 
-Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+WARNING: line over 80 characters
++                       write_dpPort(accel, *(unsigned int *)(pSrcbuf +
+(j * 4)));
+
+WARNING: line over 80 characters
++                       memcpy(ajRemain, pSrcbuf+ul4BytesPerScan,
+ulBytesRemain);
+
+Signed-off-by: La=C3=ADs Pessine do Carmo <laispc19@gmail.com>
+
 ---
- drivers/video/fbdev/core/fbcon.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 8958ccc8b1ac..2b1a34d3f5e2 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -992,7 +992,7 @@ static const char *fbcon_startup(void)
- 			if (!softback_buf) {
- 				softback_buf  				    (unsigned long)
--				    kmalloc(fbcon_softback_size,
-+				    kvmalloc(fbcon_softback_size,
- 					    GFP_KERNEL);
- 				if (!softback_buf) {
- 					fbcon_softback_size = 0;
-@@ -1001,7 +1001,7 @@ static const char *fbcon_startup(void)
- 			}
- 		} else {
- 			if (softback_buf) {
--				kfree((void *) softback_buf);
-+				kvfree((void *) softback_buf);
- 				softback_buf = 0;
- 				softback_top = 0;
- 			}
-@@ -3665,7 +3665,7 @@ static void fbcon_exit(void)
- 	}
- #endif
- 
--	kfree((void *)softback_buf);
-+	kvfree((void *)softback_buf);
- 	softback_buf = 0UL;
- 
- 	for_each_registered_fb(i) {
--- 
-2.15.1
+Hi, I am new to Linux community and I am sending this patch to learn
+about the kernel development.
+Please, let me know if there is anything I can improve.
+Thank you!
+---
+ drivers/staging/sm750fb/sm750_accel.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750f=
+b/sm750_accel.c
+index 1035e91e7cd3..eed840b251da 100644
+--- a/drivers/staging/sm750fb/sm750_accel.c
++++ b/drivers/staging/sm750fb/sm750_accel.c
+@@ -383,7 +383,8 @@ int sm750_hw_imageblit(struct lynx_accel *accel,
+ 			write_dpPort(accel, *(unsigned int *)(pSrcbuf + (j * 4)));
+=20
+ 		if (ulBytesRemain) {
+-			memcpy(ajRemain, pSrcbuf+ul4BytesPerScan, ulBytesRemain);
++			memcpy(ajRemain, pSrcbuf + ul4BytesPerScan,
++			       ulBytesRemain);
+ 			write_dpPort(accel, *(unsigned int *)ajRemain);
+ 		}
+=20
+--=20
+2.11.0

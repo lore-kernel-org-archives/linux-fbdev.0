@@ -1,77 +1,58 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Fri, 16 Nov 2018 10:39:53 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: fix devicetree parsing with auto-generated brightness tables
-Message-Id: <20181116103953.xcrsbn6gh366yxcp@holly.lan>
+From: Peter Rosin <peda@axentia.se>
+Date: Thu, 08 Nov 2018 09:54:28 +0000
+Subject: [REGRESSION PATCH] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <20181108095347.19326-1-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181112090257.7084-1-heiko@sntech.de>
-In-Reply-To: <20181112090257.7084-1-heiko@sntech.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Heiko Stuebner <heiko@sntech.de>
-Cc: linux-fbdev@vger.kernel.org, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, enric.balletbo@collabora.com, lee.jones@linaro.org, Heiko Stuebner <heiko.stuebner@bq.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabian Frederick <ffrederick@users.sourceforge.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Geoff Levand <geoff@infradead.org>, James Simmons <jsimmons@users.sf.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-On Mon, Nov 12, 2018 at 10:02:57AM +0100, Heiko Stuebner wrote:
-> From: Heiko Stuebner <heiko.stuebner@bq.com>
-> 
-> Commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly
-> to human eye") made the parse-dt function return early when using an auto-
-> generated brightness-table, but didn't take into account that some more
-> settings were handled below the brightness handling, like power-on-delays
-> and also setting the pdata enable-gpio to -EINVAL.
-> 
-> This surfaces for example in the case of a backlight without any
-> enable-gpio which then tries to use gpio-0 in error.
-> 
-> Fix this by simply moving the trailing settings above the brightness
-> handling.
-> 
-> Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-> Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
+Blitting an image with "negative" offsets is not working since there
+is no clipping. It hopefully just crashes. For the bootup logo, there
+is protection so that blitting does not happen as the image is drawn
+further and further to the right (ROTATE_UR) or further and further
+down (ROTATE_CW). There is however no protection when drawing in the
+opposite directions (ROTATE_UD and ROTATE_CCW).
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Add back this protection.
 
-> ---
->  drivers/video/backlight/pwm_bl.c | 19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index bcd08b41765d..b7b5b31f3824 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -272,6 +272,16 @@ static int pwm_backlight_parse_dt(struct device *dev,
->  
->  	memset(data, 0, sizeof(*data));
->  
-> +	/*
-> +	 * These values are optional and set as 0 by default, the out values
-> +	 * are modified only if a valid u32 value can be decoded.
-> +	 */
-> +	of_property_read_u32(node, "post-pwm-on-delay-ms",
-> +			     &data->post_pwm_on_delay);
-> +	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
-> +
-> +	data->enable_gpio = -EINVAL;
-> +
->  	/*
->  	 * Determine the number of brightness levels, if this property is not
->  	 * set a default table of brightness levels will be used.
-> @@ -384,15 +394,6 @@ static int pwm_backlight_parse_dt(struct device *dev,
->  		data->max_brightness--;
->  	}
->  
-> -	/*
-> -	 * These values are optional and set as 0 by default, the out values
-> -	 * are modified only if a valid u32 value can be decoded.
-> -	 */
-> -	of_property_read_u32(node, "post-pwm-on-delay-ms",
-> -			     &data->post_pwm_on_delay);
-> -	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
-> -
-> -	data->enable_gpio = -EINVAL;
->  	return 0;
->  }
->  
-> -- 
-> 2.18.0
-> 
+The regression is 20-odd years old but the mindless warning-killing
+mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
+positive test on unsigned values") is also to blame, methinks.
+
+Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index bb7f5f23e347..1abeb0b72455 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_UD) {
+-		for (x = 0; x < num; x++) {
++		u32 dx = image->dx;
++
++		for (x = 0; x < num && image->dx <= dx; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate == FB_ROTATE_CCW) {
+-		for (x = 0; x < num; x++) {
++		u32 dy = image->dy;
++
++		for (x = 0; x < num && image->dy <= dy; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
+-- 
+2.11.0

@@ -1,33 +1,48 @@
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Date: Mon, 26 Nov 2018 06:57:04 +0000
-Subject: Re: [PATCH] mm: Replace all open encodings for NUMA_NO_NODE
-Message-Id: <5228bcdb-b140-a86a-6c9c-488f1a723353@arm.com>
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Date: Fri, 09 Nov 2018 20:25:10 +0000
+Subject: [PATCH] udlfb: fix NULL pointer dereference in dlfb_usb_probe()
+Message-Id: <1541795110-3179-1-git-send-email-khoroshilov@ispras.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1542966856-12619-1-git-send-email-anshuman.khandual@arm.com>
-In-Reply-To: <1542966856-12619-1-git-send-email-anshuman.khandual@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Vinod Koul <vkoul@kernel.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-media@vger.kernel.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org, linux-alpha@vger.kernel.org, akpm@linux-foundation.org, jiangqi903@gmail.com, hverkuil@xs4all.nl
+To: Mikulas Patocka <mpatocka@redhat.com>, Bernie Thompson <bernie@plugable.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, ldv-project@linuxtesting.org
 
+If memory allocation for dlfb fails, error handling code
+unconditionally dereference NULL pointer.
 
+Found by Linux Driver Verification project (linuxtesting.org).
 
-On 11/24/2018 07:35 PM, Vinod Koul wrote:
-> On 23-11-18, 15:24, Anshuman Khandual wrote:
-> 
->> --- a/drivers/dma/dmaengine.c
->> +++ b/drivers/dma/dmaengine.c
->> @@ -386,7 +386,8 @@ EXPORT_SYMBOL(dma_issue_pending_all);
->>  static bool dma_chan_is_local(struct dma_chan *chan, int cpu)
->>  {
->>  	int node = dev_to_node(chan->device->dev);
->> -	return node = -1 || cpumask_test_cpu(cpu, cpumask_of_node(node));
->> +	return node = NUMA_NO_NODE ||
->> +		cpumask_test_cpu(cpu, cpumask_of_node(node));
->>  }
-> 
-> I do not see dev_to_node being updated first, that returns -1 so I would
-> prefer to check for -1 unless it return NUMA_NO_NODE
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Fixes: 68a958a915ca ("udlfb: handle unplug properly")
+---
+ drivers/video/fbdev/udlfb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Sure will update dev_to_node() to return NUMA_NO_NODE as well.
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 070026a7e55a..9643fe7c8349 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1590,7 +1590,7 @@ static int dlfb_usb_probe(struct usb_interface *intf,
+ 	int i;
+ 	const struct device_attribute *attr;
+ 	struct dlfb_data *dlfb;
+-	struct fb_info *info;
++	struct fb_info *info = NULL;
+ 	int retval = -ENOMEM;
+ 	struct usb_device *usbdev = interface_to_usbdev(intf);
+ 
+@@ -1701,8 +1701,8 @@ static int dlfb_usb_probe(struct usb_interface *intf,
+ 	return 0;
+ 
+ error:
+-	if (dlfb->info) {
+-		dlfb_ops_destroy(dlfb->info);
++	if (info) {
++		dlfb_ops_destroy(info);
+ 	} else if (dlfb) {
+ 		usb_put_dev(dlfb->udev);
+ 		kfree(dlfb);
+-- 
+2.7.4

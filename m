@@ -1,37 +1,70 @@
-From: Colin King <colin.king@canonical.com>
-Date: Wed, 28 Nov 2018 15:58:24 +0000
-Subject: [PATCH] fbdev: uvesafb: fix spelling mistake "memoery" -> "memory"
-Message-Id: <20181128155824.14576-1-colin.king@canonical.com>
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Mon, 12 Nov 2018 09:02:57 +0000
+Subject: [PATCH] backlight: pwm_bl: fix devicetree parsing with auto-generated brightness tables
+Message-Id: <20181112090257.7084-1-heiko@sntech.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181128153735.14083-1-colin.king@canonical.com>
-In-Reply-To: <20181128153735.14083-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michal Januszewski <spock@gentoo.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, enric.balletbo@collabora.com, heiko@sntech.de, Heiko Stuebner <heiko.stuebner@bq.com>
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Heiko Stuebner <heiko.stuebner@bq.com>
 
-There is a spelling mistake in the module parameter description, fix it.
+Commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly
+to human eye") made the parse-dt function return early when using an auto-
+generated brightness-table, but didn't take into account that some more
+settings were handled below the brightness handling, like power-on-delays
+and also setting the pdata enable-gpio to -EINVAL.
 
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+This surfaces for example in the case of a backlight without any
+enable-gpio which then tries to use gpio-0 in error.
+
+Fix this by simply moving the trailing settings above the brightness
+handling.
+
+Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
+Signed-off-by: Heiko Stuebner <heiko.stuebner@bq.com>
 ---
- drivers/video/fbdev/uvesafb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/pwm_bl.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/uvesafb.c b/drivers/video/fbdev/uvesafb.c
-index 440a6636d8f0..34dc8e53a1e9 100644
---- a/drivers/video/fbdev/uvesafb.c
-+++ b/drivers/video/fbdev/uvesafb.c
-@@ -1979,7 +1979,7 @@ MODULE_PARM_DESC(noedid,
- module_param(vram_remap, uint, 0);
- MODULE_PARM_DESC(vram_remap, "Set amount of video memory to be used [MiB]");
- module_param(vram_total, uint, 0);
--MODULE_PARM_DESC(vram_total, "Set total amount of video memoery [MiB]");
-+MODULE_PARM_DESC(vram_total, "Set total amount of video memory [MiB]");
- module_param(maxclk, ushort, 0);
- MODULE_PARM_DESC(maxclk, "Maximum pixelclock [MHz], overrides EDID data");
- module_param(maxhf, ushort, 0);
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index bcd08b41765d..b7b5b31f3824 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -272,6 +272,16 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 
+ 	memset(data, 0, sizeof(*data));
+ 
++	/*
++	 * These values are optional and set as 0 by default, the out values
++	 * are modified only if a valid u32 value can be decoded.
++	 */
++	of_property_read_u32(node, "post-pwm-on-delay-ms",
++			     &data->post_pwm_on_delay);
++	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
++
++	data->enable_gpio = -EINVAL;
++
+ 	/*
+ 	 * Determine the number of brightness levels, if this property is not
+ 	 * set a default table of brightness levels will be used.
+@@ -384,15 +394,6 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 		data->max_brightness--;
+ 	}
+ 
+-	/*
+-	 * These values are optional and set as 0 by default, the out values
+-	 * are modified only if a valid u32 value can be decoded.
+-	 */
+-	of_property_read_u32(node, "post-pwm-on-delay-ms",
+-			     &data->post_pwm_on_delay);
+-	of_property_read_u32(node, "pwm-off-delay-ms", &data->pwm_off_delay);
+-
+-	data->enable_gpio = -EINVAL;
+ 	return 0;
+ }
+ 
 -- 
-2.19.1
+2.18.0

@@ -1,72 +1,106 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Mon, 19 Nov 2018 15:12:46 +0000
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 19 Nov 2018 22:32:32 +0000
 Subject: Re: [PATCH fbdev-for-next 2/2] video: ssd1307fb: Add support for the reset-active-low property
-Message-Id: <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
+Message-Id: <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
  <1541170556-75032-2-git-send-email-michal.vokac@ysoft.com>
- <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com>
-In-Reply-To: <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com>
+ <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com> <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
+In-Reply-To: <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <Michal.Vokac@ysoft.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, Jyri Sarha <jsarha@ti.com>
 
-T24gMTIuMTEuMjAxOCAxNzo1NSwgUm9iIEhlcnJpbmcgd3JvdGU6DQo+IE9uIEZyaSwgTm92IDAy
-LCAyMDE4IGF0IDAyOjU2OjM1UE0gKzAwMDAsIFZva8OhxI0gTWljaGFsIHdyb3RlOg0KPj4gVGhl
-IFNTRDEzMHggT0xFRCBkaXNwbGF5IHJlc2V0IHNpZ25hbCBpcyBhY3RpdmUgbG93LiBOb3cgdGhl
-IHJlc2V0DQo+PiBzZXF1ZW5jZSBpcyBpbXBsZW1lbnRlZCBpbiBzdWNoIGEgd2F5IHRoYXQgRFRT
-IGF1dGhvcnMgYXJlIGZvcmNlZCB0bw0KPj4gZGVmaW5lIHRoZSByZXNldC1ncGlvcyBwcm9wZXJ0
-eSB3aXRoIEdQSU9fQUNUSVZFX0hJR0ggdG8gbWFrZSB0aGUgcmVzZXQNCj4+IHdvcmsuDQo+Pg0K
-Pj4gQWRkIHRoZSByZXNldC1hY3RpdmUtbG93IHByb3BlcnR5IHNvIHRoZSBzaWduYWwgaXMgaW52
-ZXJ0ZWQgb25jZSBhZ2Fpbg0KPj4gYW5kIHRoZSBHUElPX0FDVElWRV9MT1cgd29yayBhcyBleHBl
-Y3RlZC4NCj4+DQo+PiBTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2Fj
-QHlzb2Z0LmNvbT4NCj4+IC0tLQ0KPj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5j
-IHwgNiArKysrLS0NCj4+ICAgMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygrKSwgMiBkZWxl
-dGlvbnMoLSkNCj4+DQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3
-ZmIuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMNCj4+IGluZGV4IGU3YWUxMzUu
-Ljc5MGYxYzQgMTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5j
-DQo+PiArKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jDQo+PiBAQCAtNjA4LDYg
-KzYwOCw3IEBAIHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50ICpj
-bGllbnQsDQo+PiAgIAlzdHJ1Y3QgZmJfZGVmZXJyZWRfaW8gKnNzZDEzMDdmYl9kZWZpbzsNCj4+
-ICAgCXUzMiB2bWVtX3NpemU7DQo+PiAgIAlzdHJ1Y3Qgc3NkMTMwN2ZiX3BhciAqcGFyOw0KPj4g
-Kwlib29sIHJlc2V0X2FjdGl2ZV9sb3c7DQo+PiAgIAl1OCAqdm1lbTsNCj4+ICAgCWludCByZXQ7
-DQo+PiAgIA0KPj4gQEAgLTY3MSw2ICs2NzIsNyBAQCBzdGF0aWMgaW50IHNzZDEzMDdmYl9wcm9i
-ZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50LA0KPj4gICAJcGFyLT5jb21fc2VxID0gb2ZfcHJv
-cGVydHlfcmVhZF9ib29sKG5vZGUsICJzb2xvbW9uLGNvbS1zZXEiKTsNCj4+ICAgCXBhci0+Y29t
-X2xycmVtYXAgPSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2wobm9kZSwgInNvbG9tb24sY29tLWxycmVt
-YXAiKTsNCj4+ICAgCXBhci0+Y29tX2ludmRpciA9IG9mX3Byb3BlcnR5X3JlYWRfYm9vbChub2Rl
-LCAic29sb21vbixjb20taW52ZGlyIik7DQo+PiArCXJlc2V0X2FjdGl2ZV9sb3cgPSBvZl9wcm9w
-ZXJ0eV9yZWFkX2Jvb2wobm9kZSwgInJlc2V0LWFjdGl2ZS1sb3ciKTsNCj4+ICAgDQo+PiAgIAlw
-YXItPmNvbnRyYXN0ID0gMTI3Ow0KPj4gICAJcGFyLT52Y29taCA9IHBhci0+ZGV2aWNlX2luZm8t
-PmRlZmF1bHRfdmNvbWg7DQo+PiBAQCAtNzI4LDkgKzczMCw5IEBAIHN0YXRpYyBpbnQgc3NkMTMw
-N2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsDQo+PiAgIA0KPj4gICAJaWYgKHBh
-ci0+cmVzZXQpIHsNCj4+ICAgCQkvKiBSZXNldCB0aGUgc2NyZWVuICovDQo+PiAtCQlncGlvZF9z
-ZXRfdmFsdWVfY2Fuc2xlZXAocGFyLT5yZXNldCwgMCk7DQo+PiArCQlncGlvZF9zZXRfdmFsdWVf
-Y2Fuc2xlZXAocGFyLT5yZXNldCwgcmVzZXRfYWN0aXZlX2xvdyk7DQo+PiAgIAkJdWRlbGF5KDQp
-Ow0KPj4gLQkJZ3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVzZXQsIDEpOw0KPj4gKwkJ
-Z3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVzZXQsICFyZXNldF9hY3RpdmVfbG93KTsN
-Cj4gDQo+IEkgdGhpbmsgeW91IGFuZCB3aG9tZXZlciB3cm90ZSB0aGUgb3JpZ2luYWwgY29kZSBh
-cmUgbWlzaW50ZXJwcmV0dGluZw0KPiBob3cgdGhlIGdwaW9kIEFQSSB3b3Jrcy4gMSBtZWFucyBt
-YWtlIHRoZSBzaWduYWwgYWN0aXZlIGFuZCB0aGlzIGNhc2UNCj4gYWN0aXZlIGlzIGxvdy4NCg0K
-SSB0b3RhbGx5IGFncmVlIGFuZCBJIHRoaW5rIEkgdW5kZXJzdGFuZCB0aGF0IGNvcnJlY3RseS4N
-Cg0KPiBJdCBpcyBzdHJhbmdlLCBidXQgZG9lcyBtZWFuIGEgcmVzZXQgc2VxdWVuY2Ugc2hvdWxk
-IGFsd2F5cyBiZSBzZXQgdG8gYQ0KPiAxIGFuZCB0aGVuIGEgMCBhbmQgaXQgd2lsbCB3b3JrIHdp
-dGggZWl0aGVyIHBvbGFyaXR5IGluIHRoZSBEVC4NCg0KSSBhZ3JlZSB0aGUgcmVzZXQgc2hvdWxk
-IGJlIGRvbmUgYXMgYSAwIC0+IDEgLT4gMCBzZXF1ZW5jZSBhbmQgdGhhdCBzaG91bGQNCmp1c3Qg
-d29yay4gVGhlIHByb2JsZW0gaXMgaXQgaXMgaW1wbGVtZW50ZWQgdmljZSB2ZXJzYSBhbmQgc28g
-aXQgd29ya3Mgb25seQ0KaWYgeW91IGhhdmUgR1BJT19BQ1RJVkVfSElHSCBpbiBEVCBmb3IgYSBz
-aWduYWwgdGhhdCBpcyBhY3R1YWxseSBhY3RpdmUgbG93Lg0KDQpBbmQgd2hhdCBpdCBhY3R1YWxs
-eSBkb2VzIGlzIHRoYXQgaXQgaG9sZHMgdGhlIGNvbnRyb2xsZXIgaW4gcmVzZXQgc2luY2UNCnRo
-ZSBHUElPIGlzIHN1Y2Nlc3NmdWxseSBhY3F1aXJlZCAoYmVjYXVzZSBvZiBHUElPRF9PVVRfTE9X
-IGhlcmUgWzFdKSBhbmQNCmxhdGVyIG9uIGl0IG9ubHkgcmVsZWFzZXMgdGhlIHJlc2V0Lg0KDQpB
-cyBhIERUIGF1dGhvciBJIHdvdWxkIGxpa2UgdG8gc29tZWhvdyBjbGVhcmx5IHN0YXRlIHRoYXQg
-dGhlIE9MRUQgZGlzcGxheQ0KdXNlcyBhY3RpdmUgbG93IHJlc2V0IGluIG15IERULg0KDQpNeSBm
-aXJzdCBhdHRlbXB0IHRvIGZpeCB0aGlzIHdhcyB0byBjaGFuZ2UgdGhlIHJlc2V0IHNlcXVlbmNl
-IFsyXS4NCkl0IHdhcyBhcHBsaWVkIGFuZCB0aGVuIHJldmVydGVkIGFzIGl0IGlzIG5vdCBiYWNr
-d2FyZCBjb21wYXRpYmxlIHdpdGgNCmRlcGxveWVkIERUQiBmaWxlcyBbM10uDQoNClsxXSBodHRw
-czovL2VsaXhpci5ib290bGluLmNvbS9saW51eC92NC4yMC1yYzMvc291cmNlL2RyaXZlcnMvdmlk
-ZW8vZmJkZXYvc3NkMTMwN2ZiLmMjTDU3MA0KWzJdIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5v
-cmcvcGF0Y2gvMTA2MTc3MjkvDQpbM10gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRj
-aC8xMDYxNzczMS8NCg0KTWljaGFsDQo
+On Mon, Nov 19, 2018 at 9:12 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
+>
+> On 12.11.2018 17:55, Rob Herring wrote:
+> > On Fri, Nov 02, 2018 at 02:56:35PM +0000, Vokáč Michal wrote:
+> >> The SSD130x OLED display reset signal is active low. Now the reset
+> >> sequence is implemented in such a way that DTS authors are forced to
+> >> define the reset-gpios property with GPIO_ACTIVE_HIGH to make the reset
+> >> work.
+> >>
+> >> Add the reset-active-low property so the signal is inverted once again
+> >> and the GPIO_ACTIVE_LOW work as expected.
+> >>
+> >> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+> >> ---
+> >>   drivers/video/fbdev/ssd1307fb.c | 6 ++++--
+> >>   1 file changed, 4 insertions(+), 2 deletions(-)
+> >>
+> >> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+> >> index e7ae135..790f1c4 100644
+> >> --- a/drivers/video/fbdev/ssd1307fb.c
+> >> +++ b/drivers/video/fbdev/ssd1307fb.c
+> >> @@ -608,6 +608,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>      struct fb_deferred_io *ssd1307fb_defio;
+> >>      u32 vmem_size;
+> >>      struct ssd1307fb_par *par;
+> >> +    bool reset_active_low;
+> >>      u8 *vmem;
+> >>      int ret;
+> >>
+> >> @@ -671,6 +672,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>      par->com_seq = of_property_read_bool(node, "solomon,com-seq");
+> >>      par->com_lrremap = of_property_read_bool(node, "solomon,com-lrremap");
+> >>      par->com_invdir = of_property_read_bool(node, "solomon,com-invdir");
+> >> +    reset_active_low = of_property_read_bool(node, "reset-active-low");
+> >>
+> >>      par->contrast = 127;
+> >>      par->vcomh = par->device_info->default_vcomh;
+> >> @@ -728,9 +730,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>
+> >>      if (par->reset) {
+> >>              /* Reset the screen */
+> >> -            gpiod_set_value_cansleep(par->reset, 0);
+> >> +            gpiod_set_value_cansleep(par->reset, reset_active_low);
+> >>              udelay(4);
+> >> -            gpiod_set_value_cansleep(par->reset, 1);
+> >> +            gpiod_set_value_cansleep(par->reset, !reset_active_low);
+> >
+> > I think you and whomever wrote the original code are misinterpretting
+> > how the gpiod API works. 1 means make the signal active and this case
+> > active is low.
+>
+> I totally agree and I think I understand that correctly.
+>
+> > It is strange, but does mean a reset sequence should always be set to a
+> > 1 and then a 0 and it will work with either polarity in the DT.
+>
+> I agree the reset should be done as a 0 -> 1 -> 0 sequence and that should
+> just work. The problem is it is implemented vice versa and so it works only
+> if you have GPIO_ACTIVE_HIGH in DT for a signal that is actually active low.
+>
+> And what it actually does is that it holds the controller in reset since
+> the GPIO is successfully acquired (because of GPIOD_OUT_LOW here [1]) and
+> later on it only releases the reset.
+>
+> As a DT author I would like to somehow clearly state that the OLED display
+> uses active low reset in my DT.
+>
+> My first attempt to fix this was to change the reset sequence [2].
+> It was applied and then reverted as it is not backward compatible with
+> deployed DTB files [3].
+>
+> [1] https://elixir.bootlin.com/linux/v4.20-rc3/source/drivers/video/fbdev/ssd1307fb.c#L570
+> [2] https://patchwork.kernel.org/patch/10617729/
+> [3] https://patchwork.kernel.org/patch/10617731/
+
+Okay, now I understand the background. We've hit this somewhere else too.
+
+Rather than have a binding demonstrating what not to do, I'd like to
+fix this in another way. I also don't want to live with this forever
+when there's only 1 board affected (in tree at least) and there's only
+an ABI if someone notices (I'm happy though that the maintainers
+caught this). There's 2 other options. The 1st is add a fixup to the
+DT for this platform to ensure that the GPIO is configured active low
+(the Versatile platform code has an example fixup). With that, apply
+what was originally applied (or revert the revert). The fixup could be
+applied only after someone complains their display broke. The 2nd
+option is just add an of_machine_is_compatible check within this
+driver. In that case, you wouldn't fix dts file for the platform
+(unless you also want to manually check reset-gpios).
+
+Rob

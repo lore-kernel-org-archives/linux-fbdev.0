@@ -1,38 +1,52 @@
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Date: Mon, 12 Nov 2018 11:59:19 +0000
-Subject: Re: [RFC] mm: Replace all open encodings for NUMA_NO_NODE
-Message-Id: <d947edec-8c5a-78d7-4069-687ac4ad7cb8@arm.com>
+From: Brian Masney <masneyb@onstation.org>
+Date: Sat, 24 Nov 2018 14:17:03 +0000
+Subject: [PATCH 2/2] backlight: lm3630a: add backlight driver match_table
+Message-Id: <20181124141703.29232-2-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1541990515-11670-1-git-send-email-anshuman.khandual@arm.com>
-In-Reply-To: <1541990515-11670-1-git-send-email-anshuman.khandual@arm.com>
+References: <20181124141703.29232-1-masneyb@onstation.org>
+In-Reply-To: <20181124141703.29232-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Hans Verkuil <hverkuil@xs4all.nl>, linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: ocfs2-devel@oss.oracle.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-media@vger.kernel.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org, linux-alpha@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, mark.rutland@arm.com
+Cc: b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, jonathan@marek.ca, ctatlor97@gmail.com
 
+From: Jonathan Marek <jonathan@marek.ca>
 
+Add device tree support to the lm3630a driver.
 
-On 11/12/2018 02:13 PM, Hans Verkuil wrote:
-> On 11/12/2018 03:41 AM, Anshuman Khandual wrote:
->> At present there are multiple places where invalid node number is encoded
->> as -1. Even though implicitly understood it is always better to have macros
->> in there. Replace these open encodings for an invalid node number with the
->> global macro NUMA_NO_NODE. This helps remove NUMA related assumptions like
->> 'invalid node' from various places redirecting them to a common definition.
->>
->> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
->> ---
->> Build tested this with multiple cross compiler options like alpha, sparc,
->> arm64, x86, powerpc64le etc with their default config which might not have
->> compiled tested all driver related changes. I will appreciate folks giving
->> this a test in their respective build environment.
->>
->> All these places for replacement were found by running the following grep
->> patterns on the entire kernel code. Please let me know if this might have
->> missed some instances. This might also have replaced some false positives.
->> I will appreciate suggestions, inputs and review.
-> The 'node' in the drivers/media and the drivers/video sources has nothing to
-> do with numa. It's an index for a framebuffer instead (i.e. the X in /dev/fbX).
+Signed-off-by: Jonathan Marek <jonathan@marek.ca>
+[masneyb@onstation.org: checkpatch fixes; add 'a' to compatible string]
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+---
+This is part of upstreaming various components of the LG Nexus 5
+(hammerhead) phone.
 
-Thanks for the input. Will drop the changes there.
+ drivers/video/backlight/lm3630a_bl.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 2030a6b77a09..159d4013d9c2 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -470,11 +470,18 @@ static const struct i2c_device_id lm3630a_id[] = {
+ 	{}
+ };
+ 
++static const struct of_device_id lm3630a_match_table[] = {
++	{ .compatible = "ti,lm3630a", },
++	{ },
++};
++
++
+ MODULE_DEVICE_TABLE(i2c, lm3630a_id);
+ 
+ static struct i2c_driver lm3630a_i2c_driver = {
+ 	.driver = {
+ 		   .name = LM3630A_NAME,
++		   .of_match_table = lm3630a_match_table,
+ 		   },
+ 	.probe = lm3630a_probe,
+ 	.remove = lm3630a_remove,
+-- 
+2.17.2

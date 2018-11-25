@@ -1,7 +1,7 @@
 From: Nishad Kamdar <nishadkamdar@gmail.com>
-Date: Sun, 25 Nov 2018 11:37:31 +0000
-Subject: [PATCH 03/26] Staging: fbtft: fbtft-io: Switch to the gpio descriptor interface
-Message-Id: <7f743e900391226084fc4f29a2a73e0231b6fe55.1543142440.git.nishadkamdar@gmail.com>
+Date: Sun, 25 Nov 2018 11:50:23 +0000
+Subject: [PATCH 18/26] Staging: fbtft: fb_bd663474: Switch to the gpio descriptor interface
+Message-Id: <af953b8096c89f8248fabd7b728628005b5069eb.1543142441.git.nishadkamdar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <cover.1543142440.git.nishadkamdar@gmail.com>
 In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
@@ -9,102 +9,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-This switches the fbtft-io to use GPIO descriptors
+This switches the fb_bd663474.c to use GPIO descriptors
 rather than numerical gpios.
 
 Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
 ---
- drivers/staging/fbtft/fbtft-io.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+ drivers/staging/fbtft/fb_bd663474.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fbtft-io.c b/drivers/staging/fbtft/fbtft-io.c
-index b5051d3d46a6..38cdad6203ea 100644
---- a/drivers/staging/fbtft/fbtft-io.c
-+++ b/drivers/staging/fbtft/fbtft-io.c
-@@ -1,7 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <linux/export.h>
- #include <linux/errno.h>
+diff --git a/drivers/staging/fbtft/fb_bd663474.c b/drivers/staging/fbtft/fb_bd663474.c
+index a58c514f4721..b6c6d66e4eb1 100644
+--- a/drivers/staging/fbtft/fb_bd663474.c
++++ b/drivers/staging/fbtft/fb_bd663474.c
+@@ -12,7 +12,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
 -#include <linux/gpio.h>
 +#include <linux/gpio/consumer.h>
- #include <linux/spi/spi.h>
+ #include <linux/delay.h>
+ 
  #include "fbtft.h"
+@@ -24,8 +24,8 @@
  
-@@ -142,30 +142,30 @@ int fbtft_write_gpio8_wr(struct fbtft_par *par, void *buf, size_t len)
- 		data = *(u8 *)buf;
+ static int init_display(struct fbtft_par *par)
+ {
+-	if (par->gpio.cs != -1)
+-		gpio_set_value(par->gpio.cs, 0);  /* Activate chip */
++	if (!par->gpio.cs)
++		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
  
- 		/* Start writing by pulling down /WR */
--		gpio_set_value(par->gpio.wr, 0);
-+		gpiod_set_value(par->gpio.wr, 0);
+ 	par->fbtftops.reset(par);
  
- 		/* Set data */
- #ifndef DO_NOT_OPTIMIZE_FBTFT_WRITE_GPIO
- 		if (data = prev_data) {
--			gpio_set_value(par->gpio.wr, 0); /* used as delay */
-+			gpiod_set_value(par->gpio.wr, 0); /* used as delay */
- 		} else {
- 			for (i = 0; i < 8; i++) {
- 				if ((data & 1) != (prev_data & 1))
--					gpio_set_value(par->gpio.db[i],
--						       data & 1);
-+					gpiod_set_value(par->gpio.db[i],
-+							data & 1);
- 				data >>= 1;
- 				prev_data >>= 1;
- 			}
- 		}
- #else
- 		for (i = 0; i < 8; i++) {
--			gpio_set_value(par->gpio.db[i], data & 1);
-+			gpiod_set_value(par->gpio.db[i], data & 1);
- 			data >>= 1;
- 		}
- #endif
- 
- 		/* Pullup /WR */
--		gpio_set_value(par->gpio.wr, 1);
-+		gpiod_set_value(par->gpio.wr, 1);
- 
- #ifndef DO_NOT_OPTIMIZE_FBTFT_WRITE_GPIO
- 		prev_data = *(u8 *)buf;
-@@ -192,30 +192,30 @@ int fbtft_write_gpio16_wr(struct fbtft_par *par, void *buf, size_t len)
- 		data = *(u16 *)buf;
- 
- 		/* Start writing by pulling down /WR */
--		gpio_set_value(par->gpio.wr, 0);
-+		gpiod_set_value(par->gpio.wr, 0);
- 
- 		/* Set data */
- #ifndef DO_NOT_OPTIMIZE_FBTFT_WRITE_GPIO
- 		if (data = prev_data) {
--			gpio_set_value(par->gpio.wr, 0); /* used as delay */
-+			gpiod_set_value(par->gpio.wr, 0); /* used as delay */
- 		} else {
- 			for (i = 0; i < 16; i++) {
- 				if ((data & 1) != (prev_data & 1))
--					gpio_set_value(par->gpio.db[i],
--						       data & 1);
-+					gpiod_set_value(par->gpio.db[i],
-+							data & 1);
- 				data >>= 1;
- 				prev_data >>= 1;
- 			}
- 		}
- #else
- 		for (i = 0; i < 16; i++) {
--			gpio_set_value(par->gpio.db[i], data & 1);
-+			gpiod_set_value(par->gpio.db[i], data & 1);
- 			data >>= 1;
- 		}
- #endif
- 
- 		/* Pullup /WR */
--		gpio_set_value(par->gpio.wr, 1);
-+		gpiod_set_value(par->gpio.wr, 1);
- 
- #ifndef DO_NOT_OPTIMIZE_FBTFT_WRITE_GPIO
- 		prev_data = *(u16 *)buf;
 -- 
 2.17.1

@@ -1,47 +1,36 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Tue, 06 Nov 2018 20:53:09 +0000
-Subject: Re: [PATCH v2] backlight: pwm_bl: Fix brightness levels for non-DT case.
-Message-Id: <20181106205309.cyiar3rejr6ycunq@pengutronix.de>
+From: Nishad Kamdar <nishadkamdar@gmail.com>
+Date: Sun, 25 Nov 2018 11:41:01 +0000
+Subject: [PATCH 07/26] Staging: fbtft: fb_sh1106: Switch to the gpio descriptor interface
+Message-Id: <efb6414a9e3e04f766188c4e6aee8d125b1cdd2d.1543142440.git.nishadkamdar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181030103441.29145-1-enric.balletbo@collabora.com>
-In-Reply-To: <20181030103441.29145-1-enric.balletbo@collabora.com>
+References: <cover.1543142440.git.nishadkamdar@gmail.com>
+In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-kernel@vger.kernel.org, robert.jarzmik@free.fr, daniel.thompson@linaro.org, lee.jones@linaro.org, kernel@collabora.com, heiko@sntech.de, stable@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Jingoo Han <jingoohan1@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-On Tue, Oct 30, 2018 at 11:34:41AM +0100, Enric Balletbo i Serra wrote:
-> Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
-> linearly to human eye")' allows the possibility to compute a default
-> brightness table when there isn't the brightness-levels property in the
-> DT. Unfortunately the changes made broke the pwm backlight for the
-> non-DT boards.
->=20
-> Usually, the non-DT boards don't pass the brightness levels via platform
-> data, instead, it sets the max_brightness in their platform data and the
-> driver calculates the level without a table. The ofending patch assumed
+This switches the fb_sh1106.c to use GPIO descriptors
+rather than numerical gpios.
 
-s/ofending/offending/
+Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
+---
+ drivers/staging/fbtft/fb_sh1106.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> hat when there is no brightness levels table we should create one, but th=
-is
-
-s/hat/that/
-
-> is clearly wrong for the non-DT case.
->=20
-> After this patch the code handles the DT and the non-DT case taking in
-> consideration also if max_brightness is set or not.
->=20
-> Fixes: '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linea=
-rly to human eye")'
-
-These ' are unusual.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+diff --git a/drivers/staging/fbtft/fb_sh1106.c b/drivers/staging/fbtft/fb_sh1106.c
+index 00096f8d249a..6f7249493ea3 100644
+--- a/drivers/staging/fbtft/fb_sh1106.c
++++ b/drivers/staging/fbtft/fb_sh1106.c
+@@ -9,7 +9,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/delay.h>
+ 
+ #include "fbtft.h"
+-- 
+2.17.1

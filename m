@@ -1,17 +1,36 @@
-From: "Reem Al-Hashimi" <chika@cosme-review.com>
-Date: Mon, 26 Nov 2018 18:03:05 +0000
-Subject: Re: Did You Receive My Last Mail?
-Message-Id: <20181126180252.2CB8D38CCA9D8D@sv805.xserver.jp>
+From: Nishad Kamdar <nishadkamdar@gmail.com>
+Date: Sun, 25 Nov 2018 11:48:28 +0000
+Subject: [PATCH 15/26] Staging: fbtft: fb_ssd1351: Switch to the gpio descriptor interface
+Message-Id: <00e1e204b89eb507cfde8ed1c5939f8bb25a3515.1543142441.git.nishadkamdar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1543142440.git.nishadkamdar@gmail.com>
+In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-Hello,
+This switches the fb_ssd1351.c to use GPIO descriptors
+rather than numerical gpios.
 
-My name is ms. Reem Al-Hashimi. The UAE minister of state for international cooparation. I got your contact from an email database from your country. I have a financial transaction i would like to discuss with you. Please reply to reem2018@daum.net, for more details if you are interested.
+Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
+---
+ drivers/staging/fbtft/fb_ssd1351.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Regards,
-
-Ms. Reem Al-Hashimi
+diff --git a/drivers/staging/fbtft/fb_ssd1351.c b/drivers/staging/fbtft/fb_ssd1351.c
+index 3da091b4d297..a8980d9f7557 100644
+--- a/drivers/staging/fbtft/fb_ssd1351.c
++++ b/drivers/staging/fbtft/fb_ssd1351.c
+@@ -2,7 +2,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/spi/spi.h>
+ #include <linux/delay.h>
+ 
+-- 
+2.17.1

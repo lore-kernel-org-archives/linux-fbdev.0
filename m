@@ -1,51 +1,47 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Fri, 02 Nov 2018 14:56:32 +0000
-Subject: [PATCH fbdev-for-next 1/2] dt-bindings: display: ssd1307fb: Add reset-active-low property
-Message-Id: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
+From: Nishad Kamdar <nishadkamdar@gmail.com>
+Date: Sun, 25 Nov 2018 11:47:14 +0000
+Subject: [PATCH 13/26] Staging: fbtft: fb_ili9325: Switch to the gpio descriptor interface
+Message-Id: <8508af894651d71df497be698d4e08697ec86fc6.1543142441.git.nishadkamdar@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1543142440.git.nishadkamdar@gmail.com>
+In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-VGhpcyByZXZlcnRzIGNvbW1pdCA1MTliNGRiYTU4NjE5OGVlZDhmNzJiYTA3YmM3MTgwOGFmMmUw
-ZTMyLg0KSXQgaXMgdHJ1ZSB0aGF0IHRoZSBhY3R1YWwgaW1wbGVtZW50YXRpb24gaGFzIG5ldmVy
-IGJlZW4gdGhlcmUuIEJ1dA0KY29udHJhcnkgdG8gd2hhdCB0aGUgcmV2ZXJ0ZWQgY29tbWl0IG1l
-c3NhZ2Ugc2F5cyBpdCBkb2VzIG1ha2Ugc2Vuc2UNCnRvIGFkZCBpdC4NCg0KQ3VycmVudCBpbXBs
-ZW1lbnRhdGlvbiBvZiB0aGUgcmVzZXQgc2lnbmFsIGlzIGhhcmQtY29kZWQgdG8gYWN0aXZlIGxv
-dw0Kd2l0aCB0aGUgYXNzdW1wdGlvbiB0aGF0IHJlc2V0LWdwaW9zIGlzIHNwZWNpZmllZCBhcyBH
-UElPX0FDVElWRV9ISUdILg0KVGhhdCBpcyB0ZWNobmljYWxseSB3cm9uZyBhcyB0aGUgRFRTIGF1
-dGhvcnMgc2hvdWxkIGtub3cgdGhhdCBTU0QxMzB4DQpkaXNwbGF5cyBuZWVkIGFjdGl2ZSBsb3cg
-cmVzZXQgYW5kIGhlbmNlIHRoZXkgYXJlIHRlbXBlZCB0byB1c2UNCkdQSU9fQUNUSVZFX0xPVy4g
-QnV0IHdpdGggdGhhdCB0aGUgcmVzZXQgaXMgYnJva2VuLiBTbyByZXNldC1hY2l2ZS1sb3cNCnBy
-b3BlcnR5IGNhbiBiZSB1c2VkIHRvIGludmVydCB0aGUgc2lnbmFsIG9uY2UgYWdhaW4gdG8gZml4
-IHRoaXMuDQoNClNpZ25lZC1vZmYtYnk6IE1pY2hhbCBWb2vDocSNIDxtaWNoYWwudm9rYWNAeXNv
-ZnQuY29tPg0KLS0tDQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkv
-c3NkMTMwN2ZiLnR4dCB8IDYgKysrKy0tDQogMSBmaWxlIGNoYW5nZWQsIDQgaW5zZXJ0aW9ucygr
-KSwgMiBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJl
-ZS9iaW5kaW5ncy9kaXNwbGF5L3NzZDEzMDdmYi50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvZGlzcGxheS9zc2QxMzA3ZmIudHh0DQppbmRleCAyMDlkOTMxLi5hNWVhZDEw
-IDEwMDY0NA0KLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkv
-c3NkMTMwN2ZiLnR4dA0KKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rp
-c3BsYXkvc3NkMTMwN2ZiLnR4dA0KQEAgLTE2LDYgKzE2LDggQEAgUmVxdWlyZWQgcHJvcGVydGll
-czoNCiBPcHRpb25hbCBwcm9wZXJ0aWVzOg0KICAgLSByZXNldC1ncGlvczogVGhlIEdQSU8gdXNl
-ZCB0byByZXNldCB0aGUgT0xFRCBkaXNwbGF5LCBpZiBhdmFpbGFibGUuIFNlZQ0KICAgICAgICAg
-ICAgICAgICAgRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2dwaW8vZ3Bpby50eHQg
-Zm9yIGRldGFpbHMuDQorICAtIHJlc2V0LWFjdGl2ZS1sb3c6IEJvb2wgZmxhZyB0byBpbmRpY2F0
-ZSB0aGUgR1BJTyBzcGVjaWZpZWQgaW4gInJlc2V0LWdwaW9zIg0KKyAgICAgICAgICAgICAgICAg
-ICAgICBwcm9wZXJ0eSBpcyBhY3RpdmUgbG93Lg0KICAgLSB2YmF0LXN1cHBseTogVGhlIHN1cHBs
-eSBmb3IgVkJBVA0KICAgLSBzb2xvbW9uLHNlZ21lbnQtbm8tcmVtYXA6IERpc3BsYXkgbmVlZHMg
-bm9ybWFsIChub24taW52ZXJ0ZWQpIGRhdGEgY29sdW1uDQogICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgdG8gc2VnbWVudCBtYXBwaW5nDQpAQCAtMzUsNyArMzcsNyBAQCBzc2QxMzA3OiBv
-bGVkQDNjIHsNCiAgICAgICAgIGNvbXBhdGlibGUgPSAic29sb21vbixzc2QxMzA3ZmItaTJjIjsN
-CiAgICAgICAgIHJlZyA9IDwweDNjPjsNCiAgICAgICAgIHB3bXMgPSA8JnB3bSA0IDMwMDA+Ow0K
-LSAgICAgICAgcmVzZXQtZ3Bpb3MgPSA8JmdwaW8yIDc+Ow0KKyAgICAgICAgcmVzZXQtZ3Bpb3Mg
-PSA8JmdwaW8yIDcgR1BJT19BQ1RJVkVfTE9XPjsNCiAgICAgICAgIHJlc2V0LWFjdGl2ZS1sb3c7
-DQogfTsNCiANCkBAIC00Myw3ICs0NSw3IEBAIHNzZDEzMDY6IG9sZWRAM2Mgew0KICAgICAgICAg
-Y29tcGF0aWJsZSA9ICJzb2xvbW9uLHNzZDEzMDZmYi1pMmMiOw0KICAgICAgICAgcmVnID0gPDB4
-M2M+Ow0KICAgICAgICAgcHdtcyA9IDwmcHdtIDQgMzAwMD47DQotICAgICAgICByZXNldC1ncGlv
-cyA9IDwmZ3BpbzIgNz47DQorICAgICAgICByZXNldC1ncGlvcyA9IDwmZ3BpbzIgNyBHUElPX0FD
-VElWRV9MT1c+Ow0KICAgICAgICAgcmVzZXQtYWN0aXZlLWxvdzsNCiAgICAgICAgIHNvbG9tb24s
-Y29tLWxycmVtYXA7DQogICAgICAgICBzb2xvbW9uLGNvbS1pbnZkaXI7DQotLSANCjIuMS40DQoN
-Cg=
+This switches the fb_ili9325.c to use GPIO descriptors
+rather than numerical gpios.
+
+Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
+---
+ drivers/staging/fbtft/fb_ili9325.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/staging/fbtft/fb_ili9325.c b/drivers/staging/fbtft/fb_ili9325.c
+index 2cf75f2e03e2..b090e7ab6fdd 100644
+--- a/drivers/staging/fbtft/fb_ili9325.c
++++ b/drivers/staging/fbtft/fb_ili9325.c
+@@ -10,7 +10,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
+-#include <linux/gpio.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/delay.h>
+ 
+ #include "fbtft.h"
+@@ -85,8 +85,8 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (par->gpio.cs != -1)
+-		gpio_set_value(par->gpio.cs, 0);  /* Activate chip */
++	if (!par->gpio.cs)
++		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	bt &= 0x07;
+ 	vc &= 0x07;
+-- 
+2.17.1

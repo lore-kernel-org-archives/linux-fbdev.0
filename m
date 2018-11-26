@@ -1,64 +1,52 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 27 Nov 2018 10:57:33 +0000
-Subject: Re: [PATCH 2/2] backlight: lm3630a: add backlight driver match_table
-Message-Id: <20181127105733.5t275fixa3utnkaz@holly.lan>
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+Date: Mon, 26 Nov 2018 10:02:53 +0000
+Subject: [PATCH] fbcon: use kvmalloc() for scrollback buffer
+Message-Id: <20181126100253.3299-1-khorenko@virtuozzo.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181124141703.29232-1-masneyb@onstation.org>
- <20181124141703.29232-2-masneyb@onstation.org>
-In-Reply-To: <20181124141703.29232-2-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brian Masney <masneyb@onstation.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, ctatlor97@gmail.com, jonathan@marek.ca, b.zolnierkie@samsung.com, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, robh+dt@kernel.org, lee.jones@linaro.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Konstantin Khorenko <khorenko@virtuozzo.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Sat, Nov 24, 2018 at 09:17:03AM -0500, Brian Masney wrote:
-> From: Jonathan Marek <jonathan@marek.ca>
-> 
-> Add device tree support to the lm3630a driver.
-> 
-> Signed-off-by: Jonathan Marek <jonathan@marek.ca>
-> [masneyb@onstation.org: checkpatch fixes; add 'a' to compatible string]
-> Signed-off-by: Brian Masney <masneyb@onstation.org>
-> ---
-> This is part of upstreaming various components of the LG Nexus 5
-> (hammerhead) phone.
-> 
->  drivers/video/backlight/lm3630a_bl.c | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> index 2030a6b77a09..159d4013d9c2 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -470,11 +470,18 @@ static const struct i2c_device_id lm3630a_id[] = {
->  	{}
->  };
+Scrollback frame buffer is rather big - 32K,
+so it requires 3rd order page, so let's use kvmalloc() instead of
+ordinary kmalloc() for it.
 
-Similar to my reply to the DT bindings: I would have expected there
-to be code to handle DT properties here.
+Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-
-Daniel.
-
-
-
->  
-> +static const struct of_device_id lm3630a_match_table[] = {
-> +	{ .compatible = "ti,lm3630a", },
-> +	{ },
-> +};
-> +
-> +
->  MODULE_DEVICE_TABLE(i2c, lm3630a_id);
->  
->  static struct i2c_driver lm3630a_i2c_driver = {
->  	.driver = {
->  		   .name = LM3630A_NAME,
-> +		   .of_match_table = lm3630a_match_table,
->  		   },
->  	.probe = lm3630a_probe,
->  	.remove = lm3630a_remove,
-> -- 
-> 2.17.2
-> 
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 8958ccc8b1ac..2b1a34d3f5e2 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -992,7 +992,7 @@ static const char *fbcon_startup(void)
+ 			if (!softback_buf) {
+ 				softback_buf  				    (unsigned long)
+-				    kmalloc(fbcon_softback_size,
++				    kvmalloc(fbcon_softback_size,
+ 					    GFP_KERNEL);
+ 				if (!softback_buf) {
+ 					fbcon_softback_size = 0;
+@@ -1001,7 +1001,7 @@ static const char *fbcon_startup(void)
+ 			}
+ 		} else {
+ 			if (softback_buf) {
+-				kfree((void *) softback_buf);
++				kvfree((void *) softback_buf);
+ 				softback_buf = 0;
+ 				softback_top = 0;
+ 			}
+@@ -3665,7 +3665,7 @@ static void fbcon_exit(void)
+ 	}
+ #endif
+ 
+-	kfree((void *)softback_buf);
++	kvfree((void *)softback_buf);
+ 	softback_buf = 0UL;
+ 
+ 	for_each_registered_fb(i) {
+-- 
+2.15.1

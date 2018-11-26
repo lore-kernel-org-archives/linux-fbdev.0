@@ -1,54 +1,48 @@
-From: Nishad Kamdar <nishadkamdar@gmail.com>
-Date: Sun, 25 Nov 2018 11:55:01 +0000
-Subject: [PATCH 24/26] Staging: fbtft: fb_tls8204: Switch to the gpio descriptor interface
-Message-Id: <413693a296f8f890731369ccd755081466f81df7.1543142441.git.nishadkamdar@gmail.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 26 Nov 2018 21:57:39 +0000
+Subject: [PATCH 1/2] fbdev: fbmem: make fb_show_logo_line return the end instead of the height
+Message-Id: <20181126215725.2548-2-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1543142440.git.nishadkamdar@gmail.com>
-In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
+References: <20181126215725.2548-1-peda@axentia.se>
+In-Reply-To: <20181126215725.2548-1-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-This switches the fb_tls8204.c to use GPIO descriptors
-rather than numerical gpios.
+In preparation for allowing centering of the bootup logo, make
+fb_show_logo_line return where the next free framebuffer line is,
+instead of returning the height of the shown logo.
 
-Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
+Signed-off-by: Peter Rosin <peda@axentia.se>
 ---
- drivers/staging/fbtft/fb_tls8204.c | 6 +++---
+ drivers/video/fbdev/core/fbmem.c | 6 +++---
  1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_tls8204.c b/drivers/staging/fbtft/fb_tls8204.c
-index 277b6ed9c725..bec6dd0ffb01 100644
---- a/drivers/staging/fbtft/fb_tls8204.c
-+++ b/drivers/staging/fbtft/fb_tls8204.c
-@@ -12,7 +12,7 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/spi/spi.h>
- #include <linux/delay.h>
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 861bf8081619..43d4047f472a 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -521,7 +521,7 @@ static int fb_show_logo_line(struct fb_info *info, int rotate,
+ 		info->pseudo_palette = saved_pseudo_palette;
+ 	kfree(logo_new);
+ 	kfree(logo_rotate);
+-	return logo->height;
++	return image.dy + logo->height;
+ }
  
-@@ -94,7 +94,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- 		/* The display is 102x68 but the LCD is 84x48.
- 		 * Set the write pointer at the start of each row.
- 		 */
--		gpio_set_value(par->gpio.dc, 0);
-+		gpiod_set_value(par->gpio.dc, 0);
- 		write_reg(par, 0x80 | 0);
- 		write_reg(par, 0x40 | y);
  
-@@ -109,7 +109,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- 			*buf++ = ch;
- 		}
- 		/* Write the row */
--		gpio_set_value(par->gpio.dc, 1);
-+		gpiod_set_value(par->gpio.dc, 1);
- 		ret = par->fbtftops.write(par, par->txbuf.buf, WIDTH);
- 		if (ret < 0) {
- 			dev_err(par->info->device,
+@@ -573,8 +573,8 @@ static int fb_show_extra_logos(struct fb_info *info, int y, int rotate)
+ 	unsigned int i;
+ 
+ 	for (i = 0; i < fb_logo_ex_num; i++)
+-		y += fb_show_logo_line(info, rotate,
+-				       fb_logo_ex[i].logo, y, fb_logo_ex[i].n);
++		y = fb_show_logo_line(info, rotate,
++				      fb_logo_ex[i].logo, y, fb_logo_ex[i].n);
+ 
+ 	return y;
+ }
 -- 
-2.17.1
+2.11.0

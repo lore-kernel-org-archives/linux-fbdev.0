@@ -1,56 +1,57 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Mon, 26 Nov 2018 10:13:08 +0000
-Subject: Re: [PATCH 04/26] Staging: fbtft: flexfb: Switch to the gpio descriptor interface
-Message-Id: <20181126101308.GI3088@unbuntlaptop>
+From: Greg KH <gregkh@linuxfoundation.org>
+Date: Mon, 26 Nov 2018 06:56:46 +0000
+Subject: Re: [PATCH] Fonts: New Terminus large console font
+Message-Id: <20181126065646.GA9680@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1543142440.git.nishadkamdar@gmail.com>
- <0bc27a5c4f06e50f9cc2d568c6ce5f983dc84925.1543142440.git.nishadkamdar@gmail.com>
-In-Reply-To: <0bc27a5c4f06e50f9cc2d568c6ce5f983dc84925.1543142440.git.nishadkamdar@gmail.com>
+References: <20181126034734.9423-1-amanoeladawod@gmail.com>
+In-Reply-To: <20181126034734.9423-1-amanoeladawod@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nishad Kamdar <nishadkamdar@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: nimrud <amanoeladawod@gmail.com>
+Cc: akpm@linux-foundation.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sun, Nov 25, 2018 at 04:56:29PM +0530, Nishad Kamdar wrote:
-> This switches the flexfb.c to use GPIO descriptors
-> rather than numerical gpios.
+On Sun, Nov 25, 2018 at 10:47:34PM -0500, nimrud wrote:
+> This patch adds an option to compile-in a high resolution and large
+> Terminus (ter16x32) bitmap console font for use with HiDPI and Retina screens.
 > 
-> Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
+> The font was convereted from standard Terminus ter-i32b.psf (size 16x32)
+> with the help of psftools and minor hand editing deleting useless characters.
+> 
+> This patch is non-intrusive, no options are enabled by default so most
+> users won't notice a thing.
+> 
+> I am placing my changes under the GPL 2.0 just as source Terminus font.
+> 
+> Signed-off-by: Amanoel Dawod <amanoeladawod@gmail.com>
 > ---
->  drivers/staging/fbtft/flexfb.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
+>  include/linux/font.h      |    8 +-
+>  lib/fonts/Kconfig         |   10 +
+>  lib/fonts/Makefile        |    1 +
+>  lib/fonts/font_ter16x32.c | 2072 +++++++++++++++++++++++++++++++++++++
+>  lib/fonts/fonts.c         |    4 +
+>  5 files changed, 2092 insertions(+), 3 deletions(-)
+>  create mode 100644 lib/fonts/font_ter16x32.c
 > 
-> diff --git a/drivers/staging/fbtft/flexfb.c b/drivers/staging/fbtft/flexfb.c
-> index 2af474469e7d..c5fa59105a43 100644
-> --- a/drivers/staging/fbtft/flexfb.c
-> +++ b/drivers/staging/fbtft/flexfb.c
-> @@ -9,7 +9,7 @@
->  #include <linux/kernel.h>
->  #include <linux/init.h>
->  #include <linux/vmalloc.h>
-> -#include <linux/gpio.h>
-> +#include <linux/gpio/consumer.h>
->  #include <linux/spi/spi.h>
->  #include <linux/delay.h>
->  
-> @@ -521,7 +521,7 @@ static int flexfb_verify_gpios_dc(struct fbtft_par *par)
->  {
->  	fbtft_par_dbg(DEBUG_VERIFY_GPIOS, par, "%s()\n", __func__);
->  
-> -	if (par->gpio.dc < 0) {
-> +	if (!par->gpio.dc) {
->  		dev_err(par->info->device,
->  			"Missing info about 'dc' gpio. Aborting.\n");
->  		return -EINVAL;
+> diff --git a/include/linux/font.h b/include/linux/font.h
+> index d6821769dd1e..8ab5192e8a13 100644
+> --- a/include/linux/font.h
+> +++ b/include/linux/font.h
+> @@ -29,9 +29,10 @@ struct font_desc {
+>  #define	FONT10x18_IDX	5
+>  #define SUN8x16_IDX	6
+>  #define SUN12x22_IDX	7
+> -#define ACORN8x8_IDX	8
+> -#define	MINI4x6_IDX	9
+> -#define FONT6x10_IDX	10
+> +#define TER16x32_IDX	8
+> +#define ACORN8x8_IDX	9
+> +#define	MINI4x6_IDX	10
+> +#define FONT6x10_IDX	11
 
-We changed par->gpio.c from an int to a pointer in patch 1 so we have
-to update all the checks as well in the same patch.  Otherwise it breaks
-`git bisect`.
+By changing the font names, did you just break anything?  Why not just
+add your new one at the end of the list?
 
-(I don't know this code well.  But it just feels like it has to be
-breaking git bisect just from from glancing at the patches.  Perhaps I
-have misunderstood).
+thanks,
 
-regards,
-dan carpenter
+greg k-h

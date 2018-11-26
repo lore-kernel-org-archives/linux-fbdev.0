@@ -1,45 +1,30 @@
-From: Nishad Kamdar <nishadkamdar@gmail.com>
-Date: Sun, 25 Nov 2018 11:49:45 +0000
-Subject: [PATCH 17/26] Staging: fbtft: fb_ssd1306: Switch to the gpio descriptor interface
-Message-Id: <e1eff99fabe75d10908fe03cc646edb3ad0f6c45.1543142441.git.nishadkamdar@gmail.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 26 Nov 2018 21:57:36 +0000
+Subject: [PATCH 0/2] add config option to center the bootup logo
+Message-Id: <20181126215725.2548-1-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1543142440.git.nishadkamdar@gmail.com>
-In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-This switches the fb_ssd1306.c to use GPIO descriptors
-rather than numerical gpios.
+Hi!
 
-Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
----
- drivers/staging/fbtft/fb_ssd1306.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I'm using these patches to get early display output at the center of
+the screen. Maybe someone else will also find that useful?
 
-diff --git a/drivers/staging/fbtft/fb_ssd1306.c b/drivers/staging/fbtft/fb_ssd1306.c
-index 50172ddd94ae..d7c5e2e0eee9 100644
---- a/drivers/staging/fbtft/fb_ssd1306.c
-+++ b/drivers/staging/fbtft/fb_ssd1306.c
-@@ -8,7 +8,7 @@
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/init.h>
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include <linux/delay.h>
- 
- #include "fbtft.h"
-@@ -190,7 +190,7 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
- 	}
- 
- 	/* Write data */
--	gpio_set_value(par->gpio.dc, 1);
-+	gpiod_set_value(par->gpio.dc, 1);
- 	ret = par->fbtftops.write(par, par->txbuf.buf, xres * yres / 8);
- 	if (ret < 0)
- 		dev_err(par->info->device, "write failed and returned: %d\n",
+Cheers,
+Peter
+
+Peter Rosin (2):
+  fbdev: fbmem: make fb_show_logo_line return the end instead of the
+    height
+  fbdev: fbmem: add config option to center the bootup logo
+
+ drivers/video/fbdev/core/fbmem.c | 31 +++++++++++++++++++++++++++----
+ drivers/video/logo/Kconfig       |  9 +++++++++
+ 2 files changed, 36 insertions(+), 4 deletions(-)
+
 -- 
-2.17.1
+2.11.0

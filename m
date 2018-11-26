@@ -1,7 +1,7 @@
 From: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 26 Nov 2018 06:56:46 +0000
+Date: Mon, 26 Nov 2018 06:57:12 +0000
 Subject: Re: [PATCH] Fonts: New Terminus large console font
-Message-Id: <20181126065646.GA9680@kroah.com>
+Message-Id: <20181126065712.GB9680@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181126034734.9423-1-amanoeladawod@gmail.com>
 In-Reply-To: <20181126034734.9423-1-amanoeladawod@gmail.com>
@@ -24,33 +24,9 @@ On Sun, Nov 25, 2018 at 10:47:34PM -0500, nimrud wrote:
 > I am placing my changes under the GPL 2.0 just as source Terminus font.
 > 
 > Signed-off-by: Amanoel Dawod <amanoeladawod@gmail.com>
-> ---
->  include/linux/font.h      |    8 +-
->  lib/fonts/Kconfig         |   10 +
->  lib/fonts/Makefile        |    1 +
->  lib/fonts/font_ter16x32.c | 2072 +++++++++++++++++++++++++++++++++++++
->  lib/fonts/fonts.c         |    4 +
->  5 files changed, 2092 insertions(+), 3 deletions(-)
->  create mode 100644 lib/fonts/font_ter16x32.c
-> 
-> diff --git a/include/linux/font.h b/include/linux/font.h
-> index d6821769dd1e..8ab5192e8a13 100644
-> --- a/include/linux/font.h
-> +++ b/include/linux/font.h
-> @@ -29,9 +29,10 @@ struct font_desc {
->  #define	FONT10x18_IDX	5
->  #define SUN8x16_IDX	6
->  #define SUN12x22_IDX	7
-> -#define ACORN8x8_IDX	8
-> -#define	MINI4x6_IDX	9
-> -#define FONT6x10_IDX	10
-> +#define TER16x32_IDX	8
-> +#define ACORN8x8_IDX	9
-> +#define	MINI4x6_IDX	10
-> +#define FONT6x10_IDX	11
 
-By changing the font names, did you just break anything?  Why not just
-add your new one at the end of the list?
+Also, your "From:" line on your email does not match this name, so that
+needs to be fixed before we could take the patch :(
 
 thanks,
 

@@ -1,112 +1,139 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Mon, 26 Nov 2018 12:25:14 +0000
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 26 Nov 2018 13:49:36 +0000
 Subject: Re: [PATCH fbdev-for-next 2/2] video: ssd1307fb: Add support for the reset-active-low property
-Message-Id: <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
+Message-Id: <CAL_JsqKninqSUJwcoH6+797r2zt_bviraPTUR2QhEp67EcNpgg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
  <1541170556-75032-2-git-send-email-michal.vokac@ysoft.com>
- <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com>
- <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
- <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com>
-In-Reply-To: <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com>
+ <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com> <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
+ <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com> <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
+In-Reply-To: <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <Michal.Vokac@ysoft.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, Jyri Sarha <jsarha@ti.com>
 
-T24gMTkuMTEuMjAxOCAyMzozMiwgUm9iIEhlcnJpbmcgd3JvdGU6DQo+IE9uIE1vbiwgTm92IDE5
-LCAyMDE4IGF0IDk6MTIgQU0gVm9rw6HEjSBNaWNoYWwgPE1pY2hhbC5Wb2thY0B5c29mdC5jb20+
-IHdyb3RlOg0KPj4gT24gMTIuMTEuMjAxOCAxNzo1NSwgUm9iIEhlcnJpbmcgd3JvdGU6DQo+Pj4g
-T24gRnJpLCBOb3YgMDIsIDIwMTggYXQgMDI6NTY6MzVQTSArMDAwMCwgVm9rw6HEjSBNaWNoYWwg
-d3JvdGU6DQo+Pj4+IFRoZSBTU0QxMzB4IE9MRUQgZGlzcGxheSByZXNldCBzaWduYWwgaXMgYWN0
-aXZlIGxvdy4gTm93IHRoZSByZXNldA0KPj4+PiBzZXF1ZW5jZSBpcyBpbXBsZW1lbnRlZCBpbiBz
-dWNoIGEgd2F5IHRoYXQgRFRTIGF1dGhvcnMgYXJlIGZvcmNlZCB0bw0KPj4+PiBkZWZpbmUgdGhl
-IHJlc2V0LWdwaW9zIHByb3BlcnR5IHdpdGggR1BJT19BQ1RJVkVfSElHSCB0byBtYWtlIHRoZSBy
-ZXNldA0KPj4+PiB3b3JrLg0KPj4+Pg0KPj4+PiBBZGQgdGhlIHJlc2V0LWFjdGl2ZS1sb3cgcHJv
-cGVydHkgc28gdGhlIHNpZ25hbCBpcyBpbnZlcnRlZCBvbmNlIGFnYWluDQo+Pj4+IGFuZCB0aGUg
-R1BJT19BQ1RJVkVfTE9XIHdvcmsgYXMgZXhwZWN0ZWQuDQo+Pj4+DQo+Pj4+IFNpZ25lZC1vZmYt
-Ynk6IE1pY2hhbCBWb2vDocSNIDxtaWNoYWwudm9rYWNAeXNvZnQuY29tPg0KPj4+PiAtLS0NCj4+
-Pj4gICAgZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYyB8IDYgKysrKy0tDQo+Pj4+ICAg
-IDEgZmlsZSBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+Pj4+DQo+
-Pj4+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jIGIvZHJpdmVy
-cy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYw0KPj4+PiBpbmRleCBlN2FlMTM1Li43OTBmMWM0IDEw
-MDY0NA0KPj4+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jDQo+Pj4+ICsr
-KyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMNCj4+Pj4gQEAgLTYwOCw2ICs2MDgs
-NyBAQCBzdGF0aWMgaW50IHNzZDEzMDdmYl9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xpZW50
-LA0KPj4+PiAgICAgICBzdHJ1Y3QgZmJfZGVmZXJyZWRfaW8gKnNzZDEzMDdmYl9kZWZpbzsNCj4+
-Pj4gICAgICAgdTMyIHZtZW1fc2l6ZTsNCj4+Pj4gICAgICAgc3RydWN0IHNzZDEzMDdmYl9wYXIg
-KnBhcjsNCj4+Pj4gKyAgICBib29sIHJlc2V0X2FjdGl2ZV9sb3c7DQo+Pj4+ICAgICAgIHU4ICp2
-bWVtOw0KPj4+PiAgICAgICBpbnQgcmV0Ow0KPj4+Pg0KPj4+PiBAQCAtNjcxLDYgKzY3Miw3IEBA
-IHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsDQo+
-Pj4+ICAgICAgIHBhci0+Y29tX3NlcSA9IG9mX3Byb3BlcnR5X3JlYWRfYm9vbChub2RlLCAic29s
-b21vbixjb20tc2VxIik7DQo+Pj4+ICAgICAgIHBhci0+Y29tX2xycmVtYXAgPSBvZl9wcm9wZXJ0
-eV9yZWFkX2Jvb2wobm9kZSwgInNvbG9tb24sY29tLWxycmVtYXAiKTsNCj4+Pj4gICAgICAgcGFy
-LT5jb21faW52ZGlyID0gb2ZfcHJvcGVydHlfcmVhZF9ib29sKG5vZGUsICJzb2xvbW9uLGNvbS1p
-bnZkaXIiKTsNCj4+Pj4gKyAgICByZXNldF9hY3RpdmVfbG93ID0gb2ZfcHJvcGVydHlfcmVhZF9i
-b29sKG5vZGUsICJyZXNldC1hY3RpdmUtbG93Iik7DQo+Pj4+DQo+Pj4+ICAgICAgIHBhci0+Y29u
-dHJhc3QgPSAxMjc7DQo+Pj4+ICAgICAgIHBhci0+dmNvbWggPSBwYXItPmRldmljZV9pbmZvLT5k
-ZWZhdWx0X3Zjb21oOw0KPj4+PiBAQCAtNzI4LDkgKzczMCw5IEBAIHN0YXRpYyBpbnQgc3NkMTMw
-N2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsDQo+Pj4+DQo+Pj4+ICAgICAgIGlm
-IChwYXItPnJlc2V0KSB7DQo+Pj4+ICAgICAgICAgICAgICAgLyogUmVzZXQgdGhlIHNjcmVlbiAq
-Lw0KPj4+PiAtICAgICAgICAgICAgZ3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVzZXQs
-IDApOw0KPj4+PiArICAgICAgICAgICAgZ3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVz
-ZXQsIHJlc2V0X2FjdGl2ZV9sb3cpOw0KPj4+PiAgICAgICAgICAgICAgIHVkZWxheSg0KTsNCj4+
-Pj4gLSAgICAgICAgICAgIGdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAxKTsN
-Cj4+Pj4gKyAgICAgICAgICAgIGdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAh
-cmVzZXRfYWN0aXZlX2xvdyk7DQo+Pj4NCj4+PiBJIHRoaW5rIHlvdSBhbmQgd2hvbWV2ZXIgd3Jv
-dGUgdGhlIG9yaWdpbmFsIGNvZGUgYXJlIG1pc2ludGVycHJldHRpbmcNCj4+PiBob3cgdGhlIGdw
-aW9kIEFQSSB3b3Jrcy4gMSBtZWFucyBtYWtlIHRoZSBzaWduYWwgYWN0aXZlIGFuZCB0aGlzIGNh
-c2UNCj4+PiBhY3RpdmUgaXMgbG93Lg0KPj4NCj4+IEkgdG90YWxseSBhZ3JlZSBhbmQgSSB0aGlu
-ayBJIHVuZGVyc3RhbmQgdGhhdCBjb3JyZWN0bHkuDQo+Pg0KPj4+IEl0IGlzIHN0cmFuZ2UsIGJ1
-dCBkb2VzIG1lYW4gYSByZXNldCBzZXF1ZW5jZSBzaG91bGQgYWx3YXlzIGJlIHNldCB0byBhDQo+
-Pj4gMSBhbmQgdGhlbiBhIDAgYW5kIGl0IHdpbGwgd29yayB3aXRoIGVpdGhlciBwb2xhcml0eSBp
-biB0aGUgRFQuDQo+Pg0KPj4gSSBhZ3JlZSB0aGUgcmVzZXQgc2hvdWxkIGJlIGRvbmUgYXMgYSAw
-IC0+IDEgLT4gMCBzZXF1ZW5jZSBhbmQgdGhhdCBzaG91bGQNCj4+IGp1c3Qgd29yay4gVGhlIHBy
-b2JsZW0gaXMgaXQgaXMgaW1wbGVtZW50ZWQgdmljZSB2ZXJzYSBhbmQgc28gaXQgd29ya3Mgb25s
-eQ0KPj4gaWYgeW91IGhhdmUgR1BJT19BQ1RJVkVfSElHSCBpbiBEVCBmb3IgYSBzaWduYWwgdGhh
-dCBpcyBhY3R1YWxseSBhY3RpdmUgbG93Lg0KPj4NCj4+IEFuZCB3aGF0IGl0IGFjdHVhbGx5IGRv
-ZXMgaXMgdGhhdCBpdCBob2xkcyB0aGUgY29udHJvbGxlciBpbiByZXNldCBzaW5jZQ0KPj4gdGhl
-IEdQSU8gaXMgc3VjY2Vzc2Z1bGx5IGFjcXVpcmVkIChiZWNhdXNlIG9mIEdQSU9EX09VVF9MT1cg
-aGVyZSBbMV0pIGFuZA0KPj4gbGF0ZXIgb24gaXQgb25seSByZWxlYXNlcyB0aGUgcmVzZXQuDQo+
-Pg0KPj4gQXMgYSBEVCBhdXRob3IgSSB3b3VsZCBsaWtlIHRvIHNvbWVob3cgY2xlYXJseSBzdGF0
-ZSB0aGF0IHRoZSBPTEVEIGRpc3BsYXkNCj4+IHVzZXMgYWN0aXZlIGxvdyByZXNldCBpbiBteSBE
-VC4NCj4+DQo+PiBNeSBmaXJzdCBhdHRlbXB0IHRvIGZpeCB0aGlzIHdhcyB0byBjaGFuZ2UgdGhl
-IHJlc2V0IHNlcXVlbmNlIFsyXS4NCj4+IEl0IHdhcyBhcHBsaWVkIGFuZCB0aGVuIHJldmVydGVk
-IGFzIGl0IGlzIG5vdCBiYWNrd2FyZCBjb21wYXRpYmxlIHdpdGgNCj4+IGRlcGxveWVkIERUQiBm
-aWxlcyBbM10uDQo+Pg0KPj4gWzFdIGh0dHBzOi8vZWxpeGlyLmJvb3RsaW4uY29tL2xpbnV4L3Y0
-LjIwLXJjMy9zb3VyY2UvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYyNMNTcwDQo+PiBb
-Ml0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDYxNzcyOS8NCj4+IFszXSBo
-dHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNjE3NzMxLw0KPiANCj4gT2theSwg
-bm93IEkgdW5kZXJzdGFuZCB0aGUgYmFja2dyb3VuZC4gV2UndmUgaGl0IHRoaXMgc29tZXdoZXJl
-IGVsc2UgdG9vLg0KPiANCj4gUmF0aGVyIHRoYW4gaGF2ZSBhIGJpbmRpbmcgZGVtb25zdHJhdGlu
-ZyB3aGF0IG5vdCB0byBkbywgSSdkIGxpa2UgdG8NCj4gZml4IHRoaXMgaW4gYW5vdGhlciB3YXku
-IEkgYWxzbyBkb24ndCB3YW50IHRvIGxpdmUgd2l0aCB0aGlzIGZvcmV2ZXINCj4gd2hlbiB0aGVy
-ZSdzIG9ubHkgMSBib2FyZCBhZmZlY3RlZCAoaW4gdHJlZSBhdCBsZWFzdCkgYW5kIHRoZXJlJ3Mg
-b25seQ0KPiBhbiBBQkkgaWYgc29tZW9uZSBub3RpY2VzIChJJ20gaGFwcHkgdGhvdWdoIHRoYXQg
-dGhlIG1haW50YWluZXJzDQo+IGNhdWdodCB0aGlzKS4gVGhlcmUncyAyIG90aGVyIG9wdGlvbnMu
-IFRoZSAxc3QgaXMgYWRkIGEgZml4dXAgdG8gdGhlDQo+IERUIGZvciB0aGlzIHBsYXRmb3JtIHRv
-IGVuc3VyZSB0aGF0IHRoZSBHUElPIGlzIGNvbmZpZ3VyZWQgYWN0aXZlIGxvdw0KPiAodGhlIFZl
-cnNhdGlsZSBwbGF0Zm9ybSBjb2RlIGhhcyBhbiBleGFtcGxlIGZpeHVwKS4gV2l0aCB0aGF0LCBh
-cHBseQ0KPiB3aGF0IHdhcyBvcmlnaW5hbGx5IGFwcGxpZWQgKG9yIHJldmVydCB0aGUgcmV2ZXJ0
-KS4gVGhlIGZpeHVwIGNvdWxkIGJlDQo+IGFwcGxpZWQgb25seSBhZnRlciBzb21lb25lIGNvbXBs
-YWlucyB0aGVpciBkaXNwbGF5IGJyb2tlLiBUaGUgMm5kDQo+IG9wdGlvbiBpcyBqdXN0IGFkZCBh
-biBvZl9tYWNoaW5lX2lzX2NvbXBhdGlibGUgY2hlY2sgd2l0aGluIHRoaXMNCj4gZHJpdmVyLiBJ
-biB0aGF0IGNhc2UsIHlvdSB3b3VsZG4ndCBmaXggZHRzIGZpbGUgZm9yIHRoZSBwbGF0Zm9ybQ0K
-PiAodW5sZXNzIHlvdSBhbHNvIHdhbnQgdG8gbWFudWFsbHkgY2hlY2sgcmVzZXQtZ3Bpb3MpLg0K
-DQpIaSBSb2IsDQoNCkkgYW0gc3RpbGwgdHJ5aW5nIHRvIGZpZ3VyZSBvdXQgd2hhdCBleGFjdGx5
-IHlvdSBtZWFudCBieSB0aGUgMXN0IGFuZA0KMm5kIG9wdGlvbi4gQm90aCBjb25jZXB0cyBhcmUg
-bmV3IHRvIG1lLg0KDQpSZWdhcmRpbmcgdGhlIDFzdCBvcHRpb24sIHdoYXQgeW91IG1lYW50IGJ5
-ICJ0aGlzIHBsYXRmb3JtIiBoZXJlOg0KPiBBZGQgYSBmaXh1cCB0byB0aGUgRFQgZm9yIHRoaXMg
-cGxhdGZvcm0NClRoZSBvbmx5IGJvYXJkIGluIHRyZWUgdGhhdCB1c2VzIHRoZSBPTEVEIChpbXgy
-OC1jZmExMDAzNikgYW5kIGl0cw0KZHRzIGZpbGU/DQoNCkkgYW0gYWxzbyBub3Qgc3VyZSB3aGVy
-ZSB0byBsb29rIGZvciB0aGUgZXhhbXBsZS4gV2hlbiB5b3Ugc2F5DQpWZXJzYXRpbGUgcGxhdGZv
-cm0gY29kZSBJIHRlbmQgdG8gbG9vayBpbnRvIHBsYXQtdmVyc2F0aWxlIG9yDQptYWNoLXZlcnNh
-dGlsZS4gSSBjb3VsZCBub3QgZmluZCBhbnl0aGluZyBJIGNvdWxkIHVzZSBhcyBhbiBleGFtcGxl
-DQppbiB0aGVyZS4gSSB0aGluayB0aGF0IGlzIG5vdCB3aGF0IHlvdSBtZWFudC4NCg0KUmVnYXJk
-aW5nIHRoZSAybmQgb3B0aW9uLCB5b3Ugc3VnZ2VzdCB0byB1c2Ugb2ZfbWFjaGluZV9pc19jb21w
-YXRpYmxlDQp0byBkZWNpZGUgd2hhdCByZXNldCBzZXF1ZW5jZSB0byB1c2U/IEluIGNhc2Ugb2Yg
-aW14MjgtY2ZhMTAwMzYgdXNlDQp0aGUgb2xkIDAgLT4gMSwgaW4gYWxsIG90aGVyIGNhc2VzIHVz
-ZSBhIG5ldyBjb3JyZWN0IHNlcXVlbmNlIDEgLT4gMD8NClRoYXQgYWxzbyBkb2VzIG5vdCBzZWVt
-IHJpZ2h0Lg0KDQpJIHdpbGwgYXBwcmVjaWF0ZSBtb3JlIGRldGFpbHMgaG93IHRvIHByb2NlZWQu
-IFRoYW5rIHlvdSwNCk1pY2hhbA0K
+On Mon, Nov 26, 2018 at 6:25 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
+>
+> On 19.11.2018 23:32, Rob Herring wrote:
+> > On Mon, Nov 19, 2018 at 9:12 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
+> >> On 12.11.2018 17:55, Rob Herring wrote:
+> >>> On Fri, Nov 02, 2018 at 02:56:35PM +0000, Vokáč Michal wrote:
+> >>>> The SSD130x OLED display reset signal is active low. Now the reset
+> >>>> sequence is implemented in such a way that DTS authors are forced to
+> >>>> define the reset-gpios property with GPIO_ACTIVE_HIGH to make the reset
+> >>>> work.
+> >>>>
+> >>>> Add the reset-active-low property so the signal is inverted once again
+> >>>> and the GPIO_ACTIVE_LOW work as expected.
+> >>>>
+> >>>> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+> >>>> ---
+> >>>>    drivers/video/fbdev/ssd1307fb.c | 6 ++++--
+> >>>>    1 file changed, 4 insertions(+), 2 deletions(-)
+> >>>>
+> >>>> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+> >>>> index e7ae135..790f1c4 100644
+> >>>> --- a/drivers/video/fbdev/ssd1307fb.c
+> >>>> +++ b/drivers/video/fbdev/ssd1307fb.c
+> >>>> @@ -608,6 +608,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>>>       struct fb_deferred_io *ssd1307fb_defio;
+> >>>>       u32 vmem_size;
+> >>>>       struct ssd1307fb_par *par;
+> >>>> +    bool reset_active_low;
+> >>>>       u8 *vmem;
+> >>>>       int ret;
+> >>>>
+> >>>> @@ -671,6 +672,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>>>       par->com_seq = of_property_read_bool(node, "solomon,com-seq");
+> >>>>       par->com_lrremap = of_property_read_bool(node, "solomon,com-lrremap");
+> >>>>       par->com_invdir = of_property_read_bool(node, "solomon,com-invdir");
+> >>>> +    reset_active_low = of_property_read_bool(node, "reset-active-low");
+> >>>>
+> >>>>       par->contrast = 127;
+> >>>>       par->vcomh = par->device_info->default_vcomh;
+> >>>> @@ -728,9 +730,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
+> >>>>
+> >>>>       if (par->reset) {
+> >>>>               /* Reset the screen */
+> >>>> -            gpiod_set_value_cansleep(par->reset, 0);
+> >>>> +            gpiod_set_value_cansleep(par->reset, reset_active_low);
+> >>>>               udelay(4);
+> >>>> -            gpiod_set_value_cansleep(par->reset, 1);
+> >>>> +            gpiod_set_value_cansleep(par->reset, !reset_active_low);
+> >>>
+> >>> I think you and whomever wrote the original code are misinterpretting
+> >>> how the gpiod API works. 1 means make the signal active and this case
+> >>> active is low.
+> >>
+> >> I totally agree and I think I understand that correctly.
+> >>
+> >>> It is strange, but does mean a reset sequence should always be set to a
+> >>> 1 and then a 0 and it will work with either polarity in the DT.
+> >>
+> >> I agree the reset should be done as a 0 -> 1 -> 0 sequence and that should
+> >> just work. The problem is it is implemented vice versa and so it works only
+> >> if you have GPIO_ACTIVE_HIGH in DT for a signal that is actually active low.
+> >>
+> >> And what it actually does is that it holds the controller in reset since
+> >> the GPIO is successfully acquired (because of GPIOD_OUT_LOW here [1]) and
+> >> later on it only releases the reset.
+> >>
+> >> As a DT author I would like to somehow clearly state that the OLED display
+> >> uses active low reset in my DT.
+> >>
+> >> My first attempt to fix this was to change the reset sequence [2].
+> >> It was applied and then reverted as it is not backward compatible with
+> >> deployed DTB files [3].
+> >>
+> >> [1] https://elixir.bootlin.com/linux/v4.20-rc3/source/drivers/video/fbdev/ssd1307fb.c#L570
+> >> [2] https://patchwork.kernel.org/patch/10617729/
+> >> [3] https://patchwork.kernel.org/patch/10617731/
+> >
+> > Okay, now I understand the background. We've hit this somewhere else too.
+> >
+> > Rather than have a binding demonstrating what not to do, I'd like to
+> > fix this in another way. I also don't want to live with this forever
+> > when there's only 1 board affected (in tree at least) and there's only
+> > an ABI if someone notices (I'm happy though that the maintainers
+> > caught this). There's 2 other options. The 1st is add a fixup to the
+> > DT for this platform to ensure that the GPIO is configured active low
+> > (the Versatile platform code has an example fixup). With that, apply
+> > what was originally applied (or revert the revert). The fixup could be
+> > applied only after someone complains their display broke. The 2nd
+> > option is just add an of_machine_is_compatible check within this
+> > driver. In that case, you wouldn't fix dts file for the platform
+> > (unless you also want to manually check reset-gpios).
+>
+> Hi Rob,
+>
+> I am still trying to figure out what exactly you meant by the 1st and
+> 2nd option. Both concepts are new to me.
+>
+> Regarding the 1st option, what you meant by "this platform" here:
+> > Add a fixup to the DT for this platform
+> The only board in tree that uses the OLED (imx28-cfa10036) and its
+> dts file?
+
+Yes, that one.
+
+>
+> I am also not sure where to look for the example. When you say
+> Versatile platform code I tend to look into plat-versatile or
+> mach-versatile. I could not find anything I could use as an example
+> in there. I think that is not what you meant.
+
+See versatile_dt_pci_init(). Or look for other callers of of_update_property().
+
+> Regarding the 2nd option, you suggest to use of_machine_is_compatible
+> to decide what reset sequence to use? In case of imx28-cfa10036 use
+> the old 0 -> 1, in all other cases use a new correct sequence 1 -> 0?
+> That also does not seem right.
+
+Correct. Though if you fix imx28-cfa10036 dts, then you have to handle
+that case too.
+
+Why is it not right? Ugly yes, but it's not wrong.
+
+Rob

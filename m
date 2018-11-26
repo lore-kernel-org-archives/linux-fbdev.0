@@ -1,20 +1,17 @@
-From: Offer <soniajanetmohammed@gmail.com>
-Date: Tue, 27 Nov 2018 00:07:35 +0000
-Subject: 
-Message-Id: <CAMNdHWOypMAY1_tm3yGEtHPVss8TuvVj+9YNu-UgexXMdef9aA@mail.gmail.com>
+From: "Reem Al-Hashimi" <chika@cosme-review.com>
+Date: Mon, 26 Nov 2018 18:03:05 +0000
+Subject: Re: Did You Receive My Last Mail?
+Message-Id: <20181126180252.2CB8D38CCA9D8D@sv805.xserver.jp>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
 
--- 
--- 
-Guten Tag, Wir sind eine registrierte private Geldverleiher. Wir geben
-Kredite an Firmen, Einzelpersonen, die ihre finanzielle Status auf der
-ganzen Welt aktualisieren müssen, mit minimalen jährlichen Zinsen von
-2% .reply, wenn nötig.
+Hello,
 
-Good Day, We are a registered private money lender. We give out loans
-to firms, Individual who need to update their financial status all
-over the world, with Minimal annual Interest Rates of 2%reply if
-needed.
+My name is ms. Reem Al-Hashimi. The UAE minister of state for international cooparation. I got your contact from an email database from your country. I have a financial transaction i would like to discuss with you. Please reply to reem2018@daum.net, for more details if you are interested.
+
+Regards,
+
+Ms. Reem Al-Hashimi

@@ -1,139 +1,129 @@
-From: Rob Herring <robh@kernel.org>
-Date: Mon, 26 Nov 2018 13:49:36 +0000
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Mon, 26 Nov 2018 14:20:27 +0000
 Subject: Re: [PATCH fbdev-for-next 2/2] video: ssd1307fb: Add support for the reset-active-low property
-Message-Id: <CAL_JsqKninqSUJwcoH6+797r2zt_bviraPTUR2QhEp67EcNpgg@mail.gmail.com>
+Message-Id: <6636dd17-1f0f-dbad-0f9d-75e491885e91@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1541170556-75032-1-git-send-email-michal.vokac@ysoft.com>
  <1541170556-75032-2-git-send-email-michal.vokac@ysoft.com>
- <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com> <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
- <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com> <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
-In-Reply-To: <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
+ <5bea0e9c.1c69fb81.1f3c8.be5a@mx.google.com>
+ <db9537dc-2ba5-b8fc-ae3c-7d85841b0797@ysoft.com>
+ <CAL_Jsq+KOqWVdudDGZNJSJ1SZSX1FK2GOSu-4VfmRV-KZrYJZA@mail.gmail.com>
+ <f0389ca6-076b-b450-ffd5-d496627d1c58@ysoft.com>
+ <CAL_JsqKninqSUJwcoH6+797r2zt_bviraPTUR2QhEp67EcNpgg@mail.gmail.com>
+In-Reply-To: <CAL_JsqKninqSUJwcoH6+797r2zt_bviraPTUR2QhEp67EcNpgg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <Michal.Vokac@ysoft.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, devicetree@vger.kernel.org, Jyri Sarha <jsarha@ti.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh@kernel.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, Jyri Sarha <jsarha@ti.com>
 
-On Mon, Nov 26, 2018 at 6:25 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
->
-> On 19.11.2018 23:32, Rob Herring wrote:
-> > On Mon, Nov 19, 2018 at 9:12 AM Vokáč Michal <Michal.Vokac@ysoft.com> wrote:
-> >> On 12.11.2018 17:55, Rob Herring wrote:
-> >>> On Fri, Nov 02, 2018 at 02:56:35PM +0000, Vokáč Michal wrote:
-> >>>> The SSD130x OLED display reset signal is active low. Now the reset
-> >>>> sequence is implemented in such a way that DTS authors are forced to
-> >>>> define the reset-gpios property with GPIO_ACTIVE_HIGH to make the reset
-> >>>> work.
-> >>>>
-> >>>> Add the reset-active-low property so the signal is inverted once again
-> >>>> and the GPIO_ACTIVE_LOW work as expected.
-> >>>>
-> >>>> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
-> >>>> ---
-> >>>>    drivers/video/fbdev/ssd1307fb.c | 6 ++++--
-> >>>>    1 file changed, 4 insertions(+), 2 deletions(-)
-> >>>>
-> >>>> diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-> >>>> index e7ae135..790f1c4 100644
-> >>>> --- a/drivers/video/fbdev/ssd1307fb.c
-> >>>> +++ b/drivers/video/fbdev/ssd1307fb.c
-> >>>> @@ -608,6 +608,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
-> >>>>       struct fb_deferred_io *ssd1307fb_defio;
-> >>>>       u32 vmem_size;
-> >>>>       struct ssd1307fb_par *par;
-> >>>> +    bool reset_active_low;
-> >>>>       u8 *vmem;
-> >>>>       int ret;
-> >>>>
-> >>>> @@ -671,6 +672,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
-> >>>>       par->com_seq = of_property_read_bool(node, "solomon,com-seq");
-> >>>>       par->com_lrremap = of_property_read_bool(node, "solomon,com-lrremap");
-> >>>>       par->com_invdir = of_property_read_bool(node, "solomon,com-invdir");
-> >>>> +    reset_active_low = of_property_read_bool(node, "reset-active-low");
-> >>>>
-> >>>>       par->contrast = 127;
-> >>>>       par->vcomh = par->device_info->default_vcomh;
-> >>>> @@ -728,9 +730,9 @@ static int ssd1307fb_probe(struct i2c_client *client,
-> >>>>
-> >>>>       if (par->reset) {
-> >>>>               /* Reset the screen */
-> >>>> -            gpiod_set_value_cansleep(par->reset, 0);
-> >>>> +            gpiod_set_value_cansleep(par->reset, reset_active_low);
-> >>>>               udelay(4);
-> >>>> -            gpiod_set_value_cansleep(par->reset, 1);
-> >>>> +            gpiod_set_value_cansleep(par->reset, !reset_active_low);
-> >>>
-> >>> I think you and whomever wrote the original code are misinterpretting
-> >>> how the gpiod API works. 1 means make the signal active and this case
-> >>> active is low.
-> >>
-> >> I totally agree and I think I understand that correctly.
-> >>
-> >>> It is strange, but does mean a reset sequence should always be set to a
-> >>> 1 and then a 0 and it will work with either polarity in the DT.
-> >>
-> >> I agree the reset should be done as a 0 -> 1 -> 0 sequence and that should
-> >> just work. The problem is it is implemented vice versa and so it works only
-> >> if you have GPIO_ACTIVE_HIGH in DT for a signal that is actually active low.
-> >>
-> >> And what it actually does is that it holds the controller in reset since
-> >> the GPIO is successfully acquired (because of GPIOD_OUT_LOW here [1]) and
-> >> later on it only releases the reset.
-> >>
-> >> As a DT author I would like to somehow clearly state that the OLED display
-> >> uses active low reset in my DT.
-> >>
-> >> My first attempt to fix this was to change the reset sequence [2].
-> >> It was applied and then reverted as it is not backward compatible with
-> >> deployed DTB files [3].
-> >>
-> >> [1] https://elixir.bootlin.com/linux/v4.20-rc3/source/drivers/video/fbdev/ssd1307fb.c#L570
-> >> [2] https://patchwork.kernel.org/patch/10617729/
-> >> [3] https://patchwork.kernel.org/patch/10617731/
-> >
-> > Okay, now I understand the background. We've hit this somewhere else too.
-> >
-> > Rather than have a binding demonstrating what not to do, I'd like to
-> > fix this in another way. I also don't want to live with this forever
-> > when there's only 1 board affected (in tree at least) and there's only
-> > an ABI if someone notices (I'm happy though that the maintainers
-> > caught this). There's 2 other options. The 1st is add a fixup to the
-> > DT for this platform to ensure that the GPIO is configured active low
-> > (the Versatile platform code has an example fixup). With that, apply
-> > what was originally applied (or revert the revert). The fixup could be
-> > applied only after someone complains their display broke. The 2nd
-> > option is just add an of_machine_is_compatible check within this
-> > driver. In that case, you wouldn't fix dts file for the platform
-> > (unless you also want to manually check reset-gpios).
->
-> Hi Rob,
->
-> I am still trying to figure out what exactly you meant by the 1st and
-> 2nd option. Both concepts are new to me.
->
-> Regarding the 1st option, what you meant by "this platform" here:
-> > Add a fixup to the DT for this platform
-> The only board in tree that uses the OLED (imx28-cfa10036) and its
-> dts file?
-
-Yes, that one.
-
->
-> I am also not sure where to look for the example. When you say
-> Versatile platform code I tend to look into plat-versatile or
-> mach-versatile. I could not find anything I could use as an example
-> in there. I think that is not what you meant.
-
-See versatile_dt_pci_init(). Or look for other callers of of_update_property().
-
-> Regarding the 2nd option, you suggest to use of_machine_is_compatible
-> to decide what reset sequence to use? In case of imx28-cfa10036 use
-> the old 0 -> 1, in all other cases use a new correct sequence 1 -> 0?
-> That also does not seem right.
-
-Correct. Though if you fix imx28-cfa10036 dts, then you have to handle
-that case too.
-
-Why is it not right? Ugly yes, but it's not wrong.
-
-Rob
+T24gMjYuMTEuMjAxOCAxNDo0OSwgUm9iIEhlcnJpbmcgd3JvdGU6DQo+IE9uIE1vbiwgTm92IDI2
+LCAyMDE4IGF0IDY6MjUgQU0gVm9rw6HEjSBNaWNoYWwgPE1pY2hhbC5Wb2thY0B5c29mdC5jb20+
+IHdyb3RlOg0KPj4NCj4+IE9uIDE5LjExLjIwMTggMjM6MzIsIFJvYiBIZXJyaW5nIHdyb3RlOg0K
+Pj4+IE9uIE1vbiwgTm92IDE5LCAyMDE4IGF0IDk6MTIgQU0gVm9rw6HEjSBNaWNoYWwgPE1pY2hh
+bC5Wb2thY0B5c29mdC5jb20+IHdyb3RlOg0KPj4+PiBPbiAxMi4xMS4yMDE4IDE3OjU1LCBSb2Ig
+SGVycmluZyB3cm90ZToNCj4+Pj4+IE9uIEZyaSwgTm92IDAyLCAyMDE4IGF0IDAyOjU2OjM1UE0g
+KzAwMDAsIFZva8OhxI0gTWljaGFsIHdyb3RlOg0KPj4+Pj4+IFRoZSBTU0QxMzB4IE9MRUQgZGlz
+cGxheSByZXNldCBzaWduYWwgaXMgYWN0aXZlIGxvdy4gTm93IHRoZSByZXNldA0KPj4+Pj4+IHNl
+cXVlbmNlIGlzIGltcGxlbWVudGVkIGluIHN1Y2ggYSB3YXkgdGhhdCBEVFMgYXV0aG9ycyBhcmUg
+Zm9yY2VkIHRvDQo+Pj4+Pj4gZGVmaW5lIHRoZSByZXNldC1ncGlvcyBwcm9wZXJ0eSB3aXRoIEdQ
+SU9fQUNUSVZFX0hJR0ggdG8gbWFrZSB0aGUgcmVzZXQNCj4+Pj4+PiB3b3JrLg0KPj4+Pj4+DQo+
+Pj4+Pj4gQWRkIHRoZSByZXNldC1hY3RpdmUtbG93IHByb3BlcnR5IHNvIHRoZSBzaWduYWwgaXMg
+aW52ZXJ0ZWQgb25jZSBhZ2Fpbg0KPj4+Pj4+IGFuZCB0aGUgR1BJT19BQ1RJVkVfTE9XIHdvcmsg
+YXMgZXhwZWN0ZWQuDQo+Pj4+Pj4NCj4+Pj4+PiBTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HE
+jSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCj4+Pj4+PiAtLS0NCj4+Pj4+PiAgICAgZHJpdmVy
+cy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYyB8IDYgKysrKy0tDQo+Pj4+Pj4gICAgIDEgZmlsZSBj
+aGFuZ2VkLCA0IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+Pj4+Pj4NCj4+Pj4+PiBk
+aWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYyBiL2RyaXZlcnMvdmlk
+ZW8vZmJkZXYvc3NkMTMwN2ZiLmMNCj4+Pj4+PiBpbmRleCBlN2FlMTM1Li43OTBmMWM0IDEwMDY0
+NA0KPj4+Pj4+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMNCj4+Pj4+PiAr
+KysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jDQo+Pj4+Pj4gQEAgLTYwOCw2ICs2
+MDgsNyBAQCBzdGF0aWMgaW50IHNzZDEzMDdmYl9wcm9iZShzdHJ1Y3QgaTJjX2NsaWVudCAqY2xp
+ZW50LA0KPj4+Pj4+ICAgICAgICBzdHJ1Y3QgZmJfZGVmZXJyZWRfaW8gKnNzZDEzMDdmYl9kZWZp
+bzsNCj4+Pj4+PiAgICAgICAgdTMyIHZtZW1fc2l6ZTsNCj4+Pj4+PiAgICAgICAgc3RydWN0IHNz
+ZDEzMDdmYl9wYXIgKnBhcjsNCj4+Pj4+PiArICAgIGJvb2wgcmVzZXRfYWN0aXZlX2xvdzsNCj4+
+Pj4+PiAgICAgICAgdTggKnZtZW07DQo+Pj4+Pj4gICAgICAgIGludCByZXQ7DQo+Pj4+Pj4NCj4+
+Pj4+PiBAQCAtNjcxLDYgKzY3Miw3IEBAIHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0cnVj
+dCBpMmNfY2xpZW50ICpjbGllbnQsDQo+Pj4+Pj4gICAgICAgIHBhci0+Y29tX3NlcSA9IG9mX3By
+b3BlcnR5X3JlYWRfYm9vbChub2RlLCAic29sb21vbixjb20tc2VxIik7DQo+Pj4+Pj4gICAgICAg
+IHBhci0+Y29tX2xycmVtYXAgPSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2wobm9kZSwgInNvbG9tb24s
+Y29tLWxycmVtYXAiKTsNCj4+Pj4+PiAgICAgICAgcGFyLT5jb21faW52ZGlyID0gb2ZfcHJvcGVy
+dHlfcmVhZF9ib29sKG5vZGUsICJzb2xvbW9uLGNvbS1pbnZkaXIiKTsNCj4+Pj4+PiArICAgIHJl
+c2V0X2FjdGl2ZV9sb3cgPSBvZl9wcm9wZXJ0eV9yZWFkX2Jvb2wobm9kZSwgInJlc2V0LWFjdGl2
+ZS1sb3ciKTsNCj4+Pj4+Pg0KPj4+Pj4+ICAgICAgICBwYXItPmNvbnRyYXN0ID0gMTI3Ow0KPj4+
+Pj4+ICAgICAgICBwYXItPnZjb21oID0gcGFyLT5kZXZpY2VfaW5mby0+ZGVmYXVsdF92Y29taDsN
+Cj4+Pj4+PiBAQCAtNzI4LDkgKzczMCw5IEBAIHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0
+cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsDQo+Pj4+Pj4NCj4+Pj4+PiAgICAgICAgaWYgKHBhci0+
+cmVzZXQpIHsNCj4+Pj4+PiAgICAgICAgICAgICAgICAvKiBSZXNldCB0aGUgc2NyZWVuICovDQo+
+Pj4+Pj4gLSAgICAgICAgICAgIGdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAw
+KTsNCj4+Pj4+PiArICAgICAgICAgICAgZ3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVz
+ZXQsIHJlc2V0X2FjdGl2ZV9sb3cpOw0KPj4+Pj4+ICAgICAgICAgICAgICAgIHVkZWxheSg0KTsN
+Cj4+Pj4+PiAtICAgICAgICAgICAgZ3Bpb2Rfc2V0X3ZhbHVlX2NhbnNsZWVwKHBhci0+cmVzZXQs
+IDEpOw0KPj4+Pj4+ICsgICAgICAgICAgICBncGlvZF9zZXRfdmFsdWVfY2Fuc2xlZXAocGFyLT5y
+ZXNldCwgIXJlc2V0X2FjdGl2ZV9sb3cpOw0KPj4+Pj4NCj4+Pj4+IEkgdGhpbmsgeW91IGFuZCB3
+aG9tZXZlciB3cm90ZSB0aGUgb3JpZ2luYWwgY29kZSBhcmUgbWlzaW50ZXJwcmV0dGluZw0KPj4+
+Pj4gaG93IHRoZSBncGlvZCBBUEkgd29ya3MuIDEgbWVhbnMgbWFrZSB0aGUgc2lnbmFsIGFjdGl2
+ZSBhbmQgdGhpcyBjYXNlDQo+Pj4+PiBhY3RpdmUgaXMgbG93Lg0KPj4+Pg0KPj4+PiBJIHRvdGFs
+bHkgYWdyZWUgYW5kIEkgdGhpbmsgSSB1bmRlcnN0YW5kIHRoYXQgY29ycmVjdGx5Lg0KPj4+Pg0K
+Pj4+Pj4gSXQgaXMgc3RyYW5nZSwgYnV0IGRvZXMgbWVhbiBhIHJlc2V0IHNlcXVlbmNlIHNob3Vs
+ZCBhbHdheXMgYmUgc2V0IHRvIGENCj4+Pj4+IDEgYW5kIHRoZW4gYSAwIGFuZCBpdCB3aWxsIHdv
+cmsgd2l0aCBlaXRoZXIgcG9sYXJpdHkgaW4gdGhlIERULg0KPj4+Pg0KPj4+PiBJIGFncmVlIHRo
+ZSByZXNldCBzaG91bGQgYmUgZG9uZSBhcyBhIDAgLT4gMSAtPiAwIHNlcXVlbmNlIGFuZCB0aGF0
+IHNob3VsZA0KPj4+PiBqdXN0IHdvcmsuIFRoZSBwcm9ibGVtIGlzIGl0IGlzIGltcGxlbWVudGVk
+IHZpY2UgdmVyc2EgYW5kIHNvIGl0IHdvcmtzIG9ubHkNCj4+Pj4gaWYgeW91IGhhdmUgR1BJT19B
+Q1RJVkVfSElHSCBpbiBEVCBmb3IgYSBzaWduYWwgdGhhdCBpcyBhY3R1YWxseSBhY3RpdmUgbG93
+Lg0KPj4+Pg0KPj4+PiBBbmQgd2hhdCBpdCBhY3R1YWxseSBkb2VzIGlzIHRoYXQgaXQgaG9sZHMg
+dGhlIGNvbnRyb2xsZXIgaW4gcmVzZXQgc2luY2UNCj4+Pj4gdGhlIEdQSU8gaXMgc3VjY2Vzc2Z1
+bGx5IGFjcXVpcmVkIChiZWNhdXNlIG9mIEdQSU9EX09VVF9MT1cgaGVyZSBbMV0pIGFuZA0KPj4+
+PiBsYXRlciBvbiBpdCBvbmx5IHJlbGVhc2VzIHRoZSByZXNldC4NCj4+Pj4NCj4+Pj4gQXMgYSBE
+VCBhdXRob3IgSSB3b3VsZCBsaWtlIHRvIHNvbWVob3cgY2xlYXJseSBzdGF0ZSB0aGF0IHRoZSBP
+TEVEIGRpc3BsYXkNCj4+Pj4gdXNlcyBhY3RpdmUgbG93IHJlc2V0IGluIG15IERULg0KPj4+Pg0K
+Pj4+PiBNeSBmaXJzdCBhdHRlbXB0IHRvIGZpeCB0aGlzIHdhcyB0byBjaGFuZ2UgdGhlIHJlc2V0
+IHNlcXVlbmNlIFsyXS4NCj4+Pj4gSXQgd2FzIGFwcGxpZWQgYW5kIHRoZW4gcmV2ZXJ0ZWQgYXMg
+aXQgaXMgbm90IGJhY2t3YXJkIGNvbXBhdGlibGUgd2l0aA0KPj4+PiBkZXBsb3llZCBEVEIgZmls
+ZXMgWzNdLg0KPj4+Pg0KPj4+PiBbMV0gaHR0cHM6Ly9lbGl4aXIuYm9vdGxpbi5jb20vbGludXgv
+djQuMjAtcmMzL3NvdXJjZS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jI0w1NzANCj4+
+Pj4gWzJdIGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA2MTc3MjkvDQo+Pj4+
+IFszXSBodHRwczovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNjE3NzMxLw0KPj4+DQo+
+Pj4gT2theSwgbm93IEkgdW5kZXJzdGFuZCB0aGUgYmFja2dyb3VuZC4gV2UndmUgaGl0IHRoaXMg
+c29tZXdoZXJlIGVsc2UgdG9vLg0KPj4+DQo+Pj4gUmF0aGVyIHRoYW4gaGF2ZSBhIGJpbmRpbmcg
+ZGVtb25zdHJhdGluZyB3aGF0IG5vdCB0byBkbywgSSdkIGxpa2UgdG8NCj4+PiBmaXggdGhpcyBp
+biBhbm90aGVyIHdheS4gSSBhbHNvIGRvbid0IHdhbnQgdG8gbGl2ZSB3aXRoIHRoaXMgZm9yZXZl
+cg0KPj4+IHdoZW4gdGhlcmUncyBvbmx5IDEgYm9hcmQgYWZmZWN0ZWQgKGluIHRyZWUgYXQgbGVh
+c3QpIGFuZCB0aGVyZSdzIG9ubHkNCj4+PiBhbiBBQkkgaWYgc29tZW9uZSBub3RpY2VzIChJJ20g
+aGFwcHkgdGhvdWdoIHRoYXQgdGhlIG1haW50YWluZXJzDQo+Pj4gY2F1Z2h0IHRoaXMpLiBUaGVy
+ZSdzIDIgb3RoZXIgb3B0aW9ucy4gVGhlIDFzdCBpcyBhZGQgYSBmaXh1cCB0byB0aGUNCj4+PiBE
+VCBmb3IgdGhpcyBwbGF0Zm9ybSB0byBlbnN1cmUgdGhhdCB0aGUgR1BJTyBpcyBjb25maWd1cmVk
+IGFjdGl2ZSBsb3cNCj4+PiAodGhlIFZlcnNhdGlsZSBwbGF0Zm9ybSBjb2RlIGhhcyBhbiBleGFt
+cGxlIGZpeHVwKS4gV2l0aCB0aGF0LCBhcHBseQ0KPj4+IHdoYXQgd2FzIG9yaWdpbmFsbHkgYXBw
+bGllZCAob3IgcmV2ZXJ0IHRoZSByZXZlcnQpLiBUaGUgZml4dXAgY291bGQgYmUNCj4+PiBhcHBs
+aWVkIG9ubHkgYWZ0ZXIgc29tZW9uZSBjb21wbGFpbnMgdGhlaXIgZGlzcGxheSBicm9rZS4gVGhl
+IDJuZA0KPj4+IG9wdGlvbiBpcyBqdXN0IGFkZCBhbiBvZl9tYWNoaW5lX2lzX2NvbXBhdGlibGUg
+Y2hlY2sgd2l0aGluIHRoaXMNCj4+PiBkcml2ZXIuIEluIHRoYXQgY2FzZSwgeW91IHdvdWxkbid0
+IGZpeCBkdHMgZmlsZSBmb3IgdGhlIHBsYXRmb3JtDQo+Pj4gKHVubGVzcyB5b3UgYWxzbyB3YW50
+IHRvIG1hbnVhbGx5IGNoZWNrIHJlc2V0LWdwaW9zKS4NCj4+DQo+PiBIaSBSb2IsDQo+Pg0KPj4g
+SSBhbSBzdGlsbCB0cnlpbmcgdG8gZmlndXJlIG91dCB3aGF0IGV4YWN0bHkgeW91IG1lYW50IGJ5
+IHRoZSAxc3QgYW5kDQo+PiAybmQgb3B0aW9uLiBCb3RoIGNvbmNlcHRzIGFyZSBuZXcgdG8gbWUu
+DQo+Pg0KPj4gUmVnYXJkaW5nIHRoZSAxc3Qgb3B0aW9uLCB3aGF0IHlvdSBtZWFudCBieSAidGhp
+cyBwbGF0Zm9ybSIgaGVyZToNCj4+PiBBZGQgYSBmaXh1cCB0byB0aGUgRFQgZm9yIHRoaXMgcGxh
+dGZvcm0NCj4+IFRoZSBvbmx5IGJvYXJkIGluIHRyZWUgdGhhdCB1c2VzIHRoZSBPTEVEIChpbXgy
+OC1jZmExMDAzNikgYW5kIGl0cw0KPj4gZHRzIGZpbGU/DQo+IA0KPiBZZXMsIHRoYXQgb25lLg0K
+PiANCj4+IEkgYW0gYWxzbyBub3Qgc3VyZSB3aGVyZSB0byBsb29rIGZvciB0aGUgZXhhbXBsZS4g
+V2hlbiB5b3Ugc2F5DQo+PiBWZXJzYXRpbGUgcGxhdGZvcm0gY29kZSBJIHRlbmQgdG8gbG9vayBp
+bnRvIHBsYXQtdmVyc2F0aWxlIG9yDQo+PiBtYWNoLXZlcnNhdGlsZS4gSSBjb3VsZCBub3QgZmlu
+ZCBhbnl0aGluZyBJIGNvdWxkIHVzZSBhcyBhbiBleGFtcGxlDQo+PiBpbiB0aGVyZS4gSSB0aGlu
+ayB0aGF0IGlzIG5vdCB3aGF0IHlvdSBtZWFudC4NCj4gDQo+IFNlZSB2ZXJzYXRpbGVfZHRfcGNp
+X2luaXQoKS4gT3IgbG9vayBmb3Igb3RoZXIgY2FsbGVycyBvZiBvZl91cGRhdGVfcHJvcGVydHko
+KS4NCg0KRXhjZWxsZW50LCBJIHdpbGwgbG9vayBhdCB0aGF0Lg0KICANCj4+IFJlZ2FyZGluZyB0
+aGUgMm5kIG9wdGlvbiwgeW91IHN1Z2dlc3QgdG8gdXNlIG9mX21hY2hpbmVfaXNfY29tcGF0aWJs
+ZQ0KPj4gdG8gZGVjaWRlIHdoYXQgcmVzZXQgc2VxdWVuY2UgdG8gdXNlPyBJbiBjYXNlIG9mIGlt
+eDI4LWNmYTEwMDM2IHVzZQ0KPj4gdGhlIG9sZCAwIC0+IDEsIGluIGFsbCBvdGhlciBjYXNlcyB1
+c2UgYSBuZXcgY29ycmVjdCBzZXF1ZW5jZSAxIC0+IDA/DQo+PiBUaGF0IGFsc28gZG9lcyBub3Qg
+c2VlbSByaWdodC4NCj4gDQo+IENvcnJlY3QuIFRob3VnaCBpZiB5b3UgZml4IGlteDI4LWNmYTEw
+MDM2IGR0cywgdGhlbiB5b3UgaGF2ZSB0byBoYW5kbGUNCj4gdGhhdCBjYXNlIHRvby4NCj4gDQo+
+IFdoeSBpcyBpdCBub3QgcmlnaHQ/IFVnbHkgeWVzLCBidXQgaXQncyBub3Qgd3JvbmcuDQoNClVn
+bHkgaXMgd2hhdCBJIHByb2JhYmx5IG1lYW50LiBJdCBzZWVtcyBsaWtlIG90aGVyIHVzZXJzIChh
+bW9uZyBkcml2ZXJzKQ0Kb2Ygb2ZfbWFjaGluZV9pc19jb21wYXRpYmxlIGFyZSBtb3N0bHkgZHJp
+dmVycyBmb3IgSVAgYmxvY2tzIHRoYXQgbmVlZA0Kc2xpZ2h0bHkgZGlmZmVyZW50IGhhbmRsaW5n
+IG9uIGRpZmZlcmVudCBTb0MgdmFyaWFudHMuDQoNClRoYW5rIHlvdSB2ZXJ5IG11Y2gsDQpNaWNo
+YWwNCg=

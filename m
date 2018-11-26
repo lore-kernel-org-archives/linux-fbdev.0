@@ -1,58 +1,48 @@
 From: Peter Rosin <peda@axentia.se>
-Date: Thu, 08 Nov 2018 09:54:28 +0000
-Subject: [REGRESSION PATCH] fbdev: fbmem: behave better with small rotated displays and many CPUs
-Message-Id: <20181108095347.19326-1-peda@axentia.se>
+Date: Mon, 26 Nov 2018 14:16:37 +0000
+Subject: Re: [REGRESSION PATCH] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <8faae5c6-ce11-99b4-4fc7-7a8925aad3e4@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20181108095347.19326-1-peda@axentia.se>
+In-Reply-To: <20181108095347.19326-1-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabian Frederick <ffrederick@users.sourceforge.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Geoff Levand <geoff@infradead.org>, James Simmons <jsimmons@users.sf.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabian Frederick <ffrederick@users.sourceforge.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Geoff Levand <geoff@infradead.org>, James Simmons <jsimmons@users.sf.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
 
-Blitting an image with "negative" offsets is not working since there
-is no clipping. It hopefully just crashes. For the bootup logo, there
-is protection so that blitting does not happen as the image is drawn
-further and further to the right (ROTATE_UR) or further and further
-down (ROTATE_CW). There is however no protection when drawing in the
-opposite directions (ROTATE_UD and ROTATE_CCW).
-
-Add back this protection.
-
-The regression is 20-odd years old but the mindless warning-killing
-mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
-positive test on unsigned values") is also to blame, methinks.
-
-Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
-Signed-off-by: Peter Rosin <peda@axentia.se>
----
- drivers/video/fbdev/core/fbmem.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index bb7f5f23e347..1abeb0b72455 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_UD) {
--		for (x = 0; x < num; x++) {
-+		u32 dx = image->dx;
-+
-+		for (x = 0; x < num && image->dx <= dx; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate == FB_ROTATE_CCW) {
--		for (x = 0; x < num; x++) {
-+		u32 dy = image->dy;
-+
-+		for (x = 0; x < num && image->dy <= dy; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
--- 
-2.11.0
+UGluZz8hDQoNCkNoZWVycywNClBldGVyDQoNCk9uIDIwMTgtMTEtMDggMTA6NTQsIFBldGVyIFJv
+c2luIHdyb3RlOg0KPiBCbGl0dGluZyBhbiBpbWFnZSB3aXRoICJuZWdhdGl2ZSIgb2Zmc2V0cyBp
+cyBub3Qgd29ya2luZyBzaW5jZSB0aGVyZQ0KPiBpcyBubyBjbGlwcGluZy4gSXQgaG9wZWZ1bGx5
+IGp1c3QgY3Jhc2hlcy4gRm9yIHRoZSBib290dXAgbG9nbywgdGhlcmUNCj4gaXMgcHJvdGVjdGlv
+biBzbyB0aGF0IGJsaXR0aW5nIGRvZXMgbm90IGhhcHBlbiBhcyB0aGUgaW1hZ2UgaXMgZHJhd24N
+Cj4gZnVydGhlciBhbmQgZnVydGhlciB0byB0aGUgcmlnaHQgKFJPVEFURV9VUikgb3IgZnVydGhl
+ciBhbmQgZnVydGhlcg0KPiBkb3duIChST1RBVEVfQ1cpLiBUaGVyZSBpcyBob3dldmVyIG5vIHBy
+b3RlY3Rpb24gd2hlbiBkcmF3aW5nIGluIHRoZQ0KPiBvcHBvc2l0ZSBkaXJlY3Rpb25zIChST1RB
+VEVfVUQgYW5kIFJPVEFURV9DQ1cpLg0KPiANCj4gQWRkIGJhY2sgdGhpcyBwcm90ZWN0aW9uLg0K
+PiANCj4gVGhlIHJlZ3Jlc3Npb24gaXMgMjAtb2RkIHllYXJzIG9sZCBidXQgdGhlIG1pbmRsZXNz
+IHdhcm5pbmcta2lsbGluZw0KPiBtZW50YWxpdHkgZGlzcGxheWVkIGluIGNvbW1pdCAzNGJkYjY2
+NmY0YjIgKCJmYmRldjogZmJtZW06IHJlbW92ZQ0KPiBwb3NpdGl2ZSB0ZXN0IG9uIHVuc2lnbmVk
+IHZhbHVlcyIpIGlzIGFsc28gdG8gYmxhbWUsIG1ldGhpbmtzLg0KPiANCj4gRml4ZXM6IDQ0OGQ0
+Nzk3NDdiOCAoImZiZGV2OiBmYl9kb19zaG93X2xvZ28oKSB1cGRhdGVzIikNCj4gU2lnbmVkLW9m
+Zi1ieTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCj4gLS0tDQo+ICBkcml2ZXJzL3Zp
+ZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYyB8IDggKysrKysrLS0NCj4gIDEgZmlsZSBjaGFuZ2VkLCA2
+IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVy
+cy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJt
+ZW0uYw0KPiBpbmRleCBiYjdmNWYyM2UzNDcuLjFhYmViMGI3MjQ1NSAxMDA2NDQNCj4gLS0tIGEv
+ZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZibWVtLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9m
+YmRldi9jb3JlL2ZibWVtLmMNCj4gQEAgLTQzNSw3ICs0MzUsOSBAQCBzdGF0aWMgdm9pZCBmYl9k
+b19zaG93X2xvZ28oc3RydWN0IGZiX2luZm8gKmluZm8sIHN0cnVjdCBmYl9pbWFnZSAqaW1hZ2Us
+DQo+ICAJCQlpbWFnZS0+ZHggKz0gaW1hZ2UtPndpZHRoICsgODsNCj4gIAkJfQ0KPiAgCX0gZWxz
+ZSBpZiAocm90YXRlID09IEZCX1JPVEFURV9VRCkgew0KPiAtCQlmb3IgKHggPSAwOyB4IDwgbnVt
+OyB4KyspIHsNCj4gKwkJdTMyIGR4ID0gaW1hZ2UtPmR4Ow0KPiArDQo+ICsJCWZvciAoeCA9IDA7
+IHggPCBudW0gJiYgaW1hZ2UtPmR4IDw9IGR4OyB4KyspIHsNCj4gIAkJCWluZm8tPmZib3BzLT5m
+Yl9pbWFnZWJsaXQoaW5mbywgaW1hZ2UpOw0KPiAgCQkJaW1hZ2UtPmR4IC09IGltYWdlLT53aWR0
+aCArIDg7DQo+ICAJCX0NCj4gQEAgLTQ0Nyw3ICs0NDksOSBAQCBzdGF0aWMgdm9pZCBmYl9kb19z
+aG93X2xvZ28oc3RydWN0IGZiX2luZm8gKmluZm8sIHN0cnVjdCBmYl9pbWFnZSAqaW1hZ2UsDQo+
+ICAJCQlpbWFnZS0+ZHkgKz0gaW1hZ2UtPmhlaWdodCArIDg7DQo+ICAJCX0NCj4gIAl9IGVsc2Ug
+aWYgKHJvdGF0ZSA9PSBGQl9ST1RBVEVfQ0NXKSB7DQo+IC0JCWZvciAoeCA9IDA7IHggPCBudW07
+IHgrKykgew0KPiArCQl1MzIgZHkgPSBpbWFnZS0+ZHk7DQo+ICsNCj4gKwkJZm9yICh4ID0gMDsg
+eCA8IG51bSAmJiBpbWFnZS0+ZHkgPD0gZHk7IHgrKykgew0KPiAgCQkJaW5mby0+ZmJvcHMtPmZi
+X2ltYWdlYmxpdChpbmZvLCBpbWFnZSk7DQo+ICAJCQlpbWFnZS0+ZHkgLT0gaW1hZ2UtPmhlaWdo
+dCArIDg7DQo+ICAJCX0NCj4gDQoNCg=

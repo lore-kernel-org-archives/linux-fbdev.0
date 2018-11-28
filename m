@@ -1,8 +1,10 @@
 From: Colin King <colin.king@canonical.com>
-Date: Wed, 28 Nov 2018 15:37:35 +0000
+Date: Wed, 28 Nov 2018 15:58:24 +0000
 Subject: [PATCH] fbdev: uvesafb: fix spelling mistake "memoery" -> "memory"
-Message-Id: <20181128153735.14083-1-colin.king@canonical.com>
+Message-Id: <20181128155824.14576-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20181128153735.14083-1-colin.king@canonical.com>
+In-Reply-To: <20181128153735.14083-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

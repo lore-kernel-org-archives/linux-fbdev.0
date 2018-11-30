@@ -1,45 +1,23 @@
-From: Nishad Kamdar <nishadkamdar@gmail.com>
-Date: Sun, 25 Nov 2018 11:56:34 +0000
-Subject: [PATCH 26/26] Staging: fbtft: fb_ra8875: Switch to the gpio descriptor interface
-Message-Id: <d9b510e30805d4d5aea8544a552a9c1c49d9de41.1543142441.git.nishadkamdar@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 30 Nov 2018 16:54:25 +0000
+Subject: no handling of fbdev patches till 20.12
+Message-Id: <9dd863ec-4c79-e282-f64e-75832fcddf54@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1543142440.git.nishadkamdar@gmail.com>
-In-Reply-To: <cover.1543142440.git.nishadkamdar@gmail.com>
+References: <CGME20181130165427eucas1p2d2f730c2d8a2ea29a281c1addb68ac4c@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
 
-This switches the fb_ra8875.c to use GPIO descriptors
-rather than numerical gpios.
+Hi,
 
-Signed-off-by: Nishad Kamdar <nishadkamdar@gmail.com>
----
- drivers/staging/fbtft/fb_ra8875.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+I will be traveling / busy with other things / without access to my
+development setup till 20.12. When I'm back I will handle the rest of
+pending v4.21 changes, sorry for the inconvenience.
 
-diff --git a/drivers/staging/fbtft/fb_ra8875.c b/drivers/staging/fbtft/fb_ra8875.c
-index 5d3b76ca74d8..70b37fc7fb66 100644
---- a/drivers/staging/fbtft/fb_ra8875.c
-+++ b/drivers/staging/fbtft/fb_ra8875.c
-@@ -9,7 +9,7 @@
- #include <linux/init.h>
- #include <linux/delay.h>
- 
--#include <linux/gpio.h>
-+#include <linux/gpio/consumer.h>
- #include "fbtft.h"
- 
- #define DRVNAME "fb_ra8875"
-@@ -39,7 +39,7 @@ static int write_spi(struct fbtft_par *par, void *buf, size_t len)
- 
- static int init_display(struct fbtft_par *par)
- {
--	gpio_set_value(par->gpio.dc, 1);
-+	gpiod_set_value(par->gpio.dc, 1);
- 
- 	fbtft_par_dbg(DEBUG_INIT_DISPLAY, par,
- 		      "%s()\n", __func__);
--- 
-2.17.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

@@ -1,50 +1,60 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Tue, 18 Dec 2018 13:46:41 +0000
-Subject: Re: [PATCH v2 -next] staging: fbtft: use strcmp() instead of strncmp() for
-Message-Id: <139ad344-095c-c754-bd17-782e4ede958d@huawei.com>
+From: Yangtao Li <tiny.windzz@gmail.com>
+Date: Sat, 01 Dec 2018 13:01:14 +0000
+Subject: [PATCH] media: omap2: omapfb: convert to DEFINE_SHOW_ATTRIBUTE
+Message-Id: <20181201130114.7092-1-tiny.windzz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181218132508.18672-1-yuehaibing@huawei.com>
- <20181218133747.GG15451@kadam>
-In-Reply-To: <20181218133747.GG15451@kadam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: devel@driverdev.osuosl.org, gregkh@linuxfoundation.org, leobras.c@gmail.co, radek.dostal@streamunlimited.co, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: b.zolnierkie@samsung.com, fengguang.wu@intel.com, mchehab+samsung@kernel.org
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Yangtao Li <tiny.windzz@gmail.com>
 
-On 2018/12/18 21:37, Dan Carpenter wrote:
-> On Tue, Dec 18, 2018 at 09:25:08PM +0800, YueHaibing wrote:
->> strncmp() stops comparing when either the end of one of the first two 
->> arguments is reached or when 'n' characters have been compared, whichever
->> comes first.That means that strncmp(s1, s2, n) is equivalent to 
->> strcmp(s1, s2) if n exceeds the length of s1 or the length of s2.
->>
->> This patch avoids that the following warning is reported by smatch:
->>
->> drivers/staging/fbtft/fbtft_device.c:1458
->>  fbtft_device_init() error: strncmp() '"list"' too small (5 vs 32)
->>
->> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
->> ---
->> v2: fix patch title
-> 
-> v2 is worse than v1...
+Use DEFINE_SHOW_ATTRIBUTE macro to simplify the code.
 
-Yes, ...., I messed up.
+Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/core.c | 16 +++-------------
+ 1 file changed, 3 insertions(+), 13 deletions(-)
 
-I will fix it.
-
-> 
-> v1 is a little long but I wouldn't have complained about it.
-> 
-> Please assume that the subject and the commit message are separate
-> things.  Take a look how the patch description reads on marc.info:
-> 
-> https://marc.info/?l=linux-driver-devel&m4513957719226&w=2
-> 
-> regards,
-> dan carpenter
-> 
-> 
-> .
-> 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+index a5e58a829ea0..7d3d9f6fad10 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+@@ -99,24 +99,14 @@ int dss_set_min_bus_tput(struct device *dev, unsigned long tput)
+ }
+ 
+ #if defined(CONFIG_FB_OMAP2_DSS_DEBUGFS)
+-static int dss_debug_show(struct seq_file *s, void *unused)
++static int dss_show(struct seq_file *s, void *unused)
+ {
+ 	void (*func)(struct seq_file *) = s->private;
+ 	func(s);
+ 	return 0;
+ }
+ 
+-static int dss_debug_open(struct inode *inode, struct file *file)
+-{
+-	return single_open(file, dss_debug_show, inode->i_private);
+-}
+-
+-static const struct file_operations dss_debug_fops = {
+-	.open           = dss_debug_open,
+-	.read           = seq_read,
+-	.llseek         = seq_lseek,
+-	.release        = single_release,
+-};
++DEFINE_SHOW_ATTRIBUTE(dss);
+ 
+ static struct dentry *dss_debugfs_dir;
+ 
+@@ -130,7 +120,7 @@ static int dss_initialize_debugfs(void)
+ 	}
+ 
+ 	debugfs_create_file("clk", S_IRUGO, dss_debugfs_dir,
+-			&dss_debug_dump_clocks, &dss_debug_fops);
++			&dss_debug_dump_clocks, &dss_fops);
+ 
+ 	return 0;
+ }
+-- 
+2.17.0

@@ -1,57 +1,58 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Tue, 04 Dec 2018 15:03:40 +0000
-Subject: =?utf-8?B?W1BBVENIIDQvNF0gQVJNOiBteHM6IGNmYTEwMDM2OiBGaXh1cCBPTEVEwqBk?= =?utf-8?Q?isplay_reset_pola
-Message-Id: <1543935806-94880-5-git-send-email-michal.vokac@ysoft.com>
+From: Wen Yang <wen.yang99@zte.com.cn>
+Date: Mon, 03 Dec 2018 06:21:25 +0000
+Subject: [PATCH] udlfb: fix potential NULL pointer dereference in dlfb_usb_probe
+Message-Id: <20181203062125.34880-1-wen.yang99@zte.com.cn>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: Bernie Thompson <bernie@plugable.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, zhong.weidong@zte.com.cn, Wen Yang <wen.yang99@zte.com.cn>
 
-VGhlcmUgd2FzIGEgYnVnIGluIHJlc2V0IHNpZ25hbCBnZW5lcmF0aW9uIGluIHNzZDEzMDdmYiBP
-TEVEIGRyaXZlci4NClRoZSBkaXNwbGF5IG5lZWRzIGFuIGFjdGl2ZS1sb3cgcmVzZXQgc2lnbmFs
-IGJ1dCB0aGUgZHJpdmVyIHByb2R1Y2VkDQp0aGUgY29ycmVjdCBzZXF1ZW5jZSBvbmx5IGlmIHRo
-ZSBHUElPIHVzZWQgZm9yIHJlc2V0IHdhcyBzcGVjaWZpZWQgYXMNCkdQSU9fQUNUSVZFX0hJR0gu
-DQoNCk5vdyBhcyB0aGUgT0xFRCBkcml2ZXIgaXMgZml4ZWQgaXQgaXMgYWxzbyBuZWNlc3NhcnJ5
-IHRvIGltcGxlbWVudA0KYSBmaXh1cCBmb3IgYWxsIGN1cnJlbnQgdXNlcnMgb2YgdGhlIG9sZCBE
-VCBBQkkuIFRoZXJlIGlzIG9ubHkgb25lDQppbi10cmVlIHVzZXIgYW5kIHRoYXQgaXMgdGhlIENy
-eXN0YWxmb250eiBDRkEtMTAwMzYgYm9hcmQuIEluIGNhc2UNCnRoaXMgYm9hcmQgaXMgYm9vdGlu
-ZyBhbmQgR1BJT19BQ1RJVkVfSElHSCBpcyB1c2VkIGZvciByZXNldCB3ZQ0Kb3ZlcnJpZGUgaXQg
-dG8gR1BJT19BQ1RJVkVfTE9XLg0KDQpTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWlj
-aGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0KIGFyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMg
-fCA0NSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KIDEgZmls
-ZSBjaGFuZ2VkLCA0NSBpbnNlcnRpb25zKCspDQoNCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNo
-LW14cy9tYWNoLW14cy5jIGIvYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1teHMuYw0KaW5kZXggMWM2
-MDYyZC4uMjNjMjYwYyAxMDA2NDQNCi0tLSBhL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMN
-CisrKyBiL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMNCkBAIC0yMSw2ICsyMSw3IEBADQog
-I2luY2x1ZGUgPGxpbnV4L3JlYm9vdC5oPg0KICNpbmNsdWRlIDxsaW51eC9taWNyZWxfcGh5Lmg+
-DQogI2luY2x1ZGUgPGxpbnV4L29mX2FkZHJlc3MuaD4NCisjaW5jbHVkZSA8bGludXgvb2ZfZ3Bp
-by5oPg0KICNpbmNsdWRlIDxsaW51eC9vZl9wbGF0Zm9ybS5oPg0KICNpbmNsdWRlIDxsaW51eC9w
-aHkuaD4NCiAjaW5jbHVkZSA8bGludXgvcGluY3RybC9jb25zdW1lci5oPg0KQEAgLTI2OCw5ICsy
-NjksNTMgQEAgc3RhdGljIHZvaWQgX19pbml0IGFweDRkZXZraXRfaW5pdCh2b2lkKQ0KIAkJCQkJ
-ICAgYXB4NGRldmtpdF9waHlfZml4dXApOw0KIH0NCiANCisjZGVmaW5lIE9MRURfUkVTRVRfR1BJ
-T19MRU4JMw0KKyNkZWZpbmUgT0xFRF9SRVNFVF9HUElPX1NJWkUJKE9MRURfUkVTRVRfR1BJT19M
-RU4gKiBzaXplb2YodTMyKSkNCisNCitzdGF0aWMgdm9pZCBfX2luaXQgY3J5c3RhbGZvbnR6X29s
-ZWRfcmVzZXRfZml4dXAodm9pZCkNCit7DQorCXN0cnVjdCBwcm9wZXJ0eSAqbmV3Z3BpbzsNCisJ
-c3RydWN0IGRldmljZV9ub2RlICpucDsNCisJdTMyICpncGlvc3BlYzsNCisJaW50IGksIHJldDsN
-CisNCisJbnAgPSBvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAic29sb21vbixz
-c2QxMzA2ZmItaTJjIik7DQorCWlmICghbnApDQorCQlyZXR1cm47DQorDQorCW5ld2dwaW8gPSBr
-emFsbG9jKHNpemVvZigqbmV3Z3BpbykgKyBPTEVEX1JFU0VUX0dQSU9fU0laRSwgR0ZQX0tFUk5F
-TCk7DQorCWlmICghbmV3Z3BpbykNCisJCXJldHVybjsNCisNCisJbmV3Z3Bpby0+dmFsdWUgPSBu
-ZXdncGlvICsgMTsNCisJbmV3Z3Bpby0+bGVuZ3RoID0gT0xFRF9SRVNFVF9HUElPX1NJWkU7DQor
-CW5ld2dwaW8tPm5hbWUgPSBrc3RyZHVwKCJyZXNldC1ncGlvcyIsIEdGUF9LRVJORUwpOw0KKwlp
-ZiAoIW5ld2dwaW8tPm5hbWUpIHsNCisJCWtmcmVlKG5ld2dwaW8pOw0KKwkJcmV0dXJuOw0KKwl9
-DQorDQorCWdwaW9zcGVjID0gbmV3Z3Bpby0+dmFsdWU7DQorCWZvciAoaSA9IDA7IGkgPCBPTEVE
-X1JFU0VUX0dQSU9fTEVOOyBpKyspIHsNCisJCXJldCA9IG9mX3Byb3BlcnR5X3JlYWRfdTMyX2lu
-ZGV4KG5wLCAicmVzZXQtZ3Bpb3MiLCBpLA0KKwkJCQkJCSAmZ3Bpb3NwZWNbaV0pOw0KKwkJaWYg
-KHJldCkgew0KKwkJCWtmcmVlKG5ld2dwaW8pOw0KKwkJCXJldHVybjsNCisJCX0NCisJfQ0KKw0K
-KwlpZiAoIShncGlvc3BlY1syXSAmIE9GX0dQSU9fQUNUSVZFX0xPVykpIHsNCisJCWdwaW9zcGVj
-WzJdIHw9IE9GX0dQSU9fQUNUSVZFX0xPVzsNCisJCWNwdV90b19iZTMyX2FycmF5KGdwaW9zcGVj
-LCBncGlvc3BlYywgT0xFRF9SRVNFVF9HUElPX0xFTik7DQorCQlvZl91cGRhdGVfcHJvcGVydHko
-bnAsIG5ld2dwaW8pOw0KKwl9DQorfQ0KKw0KIHN0YXRpYyB2b2lkIF9faW5pdCBjcnlzdGFsZm9u
-dHpfaW5pdCh2b2lkKQ0KIHsNCiAJdXBkYXRlX2ZlY19tYWNfcHJvcChPVUlfQ1JZU1RBTEZPTlRa
-KTsNCisJY3J5c3RhbGZvbnR6X29sZWRfcmVzZXRfZml4dXAoKTsNCiB9DQogDQogc3RhdGljIHZv
-aWQgX19pbml0IGR1Y2tiaWxsX2luaXQodm9pZCkNCi0tIA0KMi4xLjQNCg0K
+This patch fixes a possible null pointer dereference in
+dlfb_usb_probe, detected by the semantic patch deref_null.cocci,
+with the following warning:
+
+drivers/video/fbdev/udlfb.c:1704:11-15: ERROR: dlfb is NULL but dereferenced.
+
+The following code has potential null pointer references:
+1597         /* usb initialization */
+1598         dlfb = kzalloc(sizeof(*dlfb), GFP_KERNEL);
+1599         if (!dlfb) {
+...
+1601             goto error;
+1602         }
+...
+1703 error:
+1704         if (dlfb->info) {
+1705                 dlfb_ops_destroy(dlfb->info);
+1706         } else if (dlfb) {
+1707                 usb_put_dev(dlfb->udev);
+1708                 kfree(dlfb);
+1709         }
+
+Signed-off-by: Wen Yang <wen.yang99@zte.com.cn>
+CC: Bernie Thompson <bernie@plugable.com>
+CC: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+CC: linux-fbdev@vger.kernel.org
+CC: dri-devel@lists.freedesktop.org
+CC: linux-kernel@vger.kernel.org
+---
+ drivers/video/fbdev/udlfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
+index 070026a7e55a..df37cfaa2362 100644
+--- a/drivers/video/fbdev/udlfb.c
++++ b/drivers/video/fbdev/udlfb.c
+@@ -1701,7 +1701,7 @@ static int dlfb_usb_probe(struct usb_interface *intf,
+ 	return 0;
+ 
+ error:
+-	if (dlfb->info) {
++	if (dlfb && dlfb->info) {
+ 		dlfb_ops_destroy(dlfb->info);
+ 	} else if (dlfb) {
+ 		usb_put_dev(dlfb->udev);
+-- 
+2.19.1

@@ -1,151 +1,57 @@
-From: Rob Herring <robh@kernel.org>
-Date: Wed, 05 Dec 2018 19:50:45 +0000
-Subject: [PATCH] fbdev: Use of_node_name_eq for node name comparisons
-Message-Id: <20181205195050.4759-29-robh@kernel.org>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Tue, 04 Dec 2018 15:03:40 +0000
+Subject: =?utf-8?B?W1BBVENIIDQvNF0gQVJNOiBteHM6IGNmYTEwMDM2OiBGaXh1cCBPTEVEwqBk?= =?utf-8?Q?isplay_reset_pola
+Message-Id: <1543935806-94880-5-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-Convert string compares of DT node names to use of_node_name_eq helper
-instead. This removes direct access to the node name pointer.
-
-For instances using of_node_cmp, this has the side effect of now using
-case sensitive comparisons. This should not matter for any FDT based
-system which omap is.
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-omap@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
----
- drivers/video/fbdev/aty/radeon_pm.c           | 6 +++---
- drivers/video/fbdev/cg14.c                    | 4 ++--
- drivers/video/fbdev/cg3.c                     | 2 +-
- drivers/video/fbdev/ffb.c                     | 2 +-
- drivers/video/fbdev/imsttfb.c                 | 4 ++--
- drivers/video/fbdev/offb.c                    | 2 +-
- drivers/video/fbdev/omap2/omapfb/dss/dss-of.c | 4 ++--
- 7 files changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/video/fbdev/aty/radeon_pm.c b/drivers/video/fbdev/aty/radeon_pm.c
-index e695adb0e573..2dc5703eac51 100644
---- a/drivers/video/fbdev/aty/radeon_pm.c
-+++ b/drivers/video/fbdev/aty/radeon_pm.c
-@@ -2844,8 +2844,8 @@ void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlis
- 		 * in some desktop G4s), Via (M9+ chip on iBook G4) and
- 		 * Snowy (M11 chip on iBook G4 manufactured after July 2005)
- 		 */
--		if (!strcmp(rinfo->of_node->name, "ATY,JasperParent") ||
--		    !strcmp(rinfo->of_node->name, "ATY,SnowyParent")) {
-+		if (of_node_name_eq(rinfo->of_node, "ATY,JasperParent") ||
-+		    of_node_name_eq(rinfo->of_node, "ATY,SnowyParent")) {
- 			rinfo->reinit_func = radeon_reinitialize_M10;
- 			rinfo->pm_mode |= radeon_pm_off;
- 		}
-@@ -2855,7 +2855,7 @@ void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk, int ignore_devlis
- 			rinfo->pm_mode |= radeon_pm_off;
- 		}
- #endif
--		if (!strcmp(rinfo->of_node->name, "ATY,ViaParent")) {
-+		if (of_node_name_eq(rinfo->of_node, "ATY,ViaParent")) {
- 			rinfo->reinit_func = radeon_reinitialize_M9P;
- 			rinfo->pm_mode |= radeon_pm_off;
- 		}
-diff --git a/drivers/video/fbdev/cg14.c b/drivers/video/fbdev/cg14.c
-index 9af54c2368fd..a6dce1a78490 100644
---- a/drivers/video/fbdev/cg14.c
-+++ b/drivers/video/fbdev/cg14.c
-@@ -486,8 +486,8 @@ static int cg14_probe(struct platform_device *op)
- 					  info->var.xres);
- 	info->fix.smem_len = PAGE_ALIGN(linebytes * info->var.yres);
- 
--	if (!strcmp(dp->parent->name, "sbus") ||
--	    !strcmp(dp->parent->name, "sbi")) {
-+	if (of_node_name_eq(dp->parent, "sbus") ||
-+	    of_node_name_eq(dp->parent, "sbi")) {
- 		info->fix.smem_start = op->resource[0].start;
- 		par->iospace = op->resource[0].flags & IORESOURCE_BITS;
- 	} else {
-diff --git a/drivers/video/fbdev/cg3.c b/drivers/video/fbdev/cg3.c
-index 1bd95b02f3aa..6d42def8436b 100644
---- a/drivers/video/fbdev/cg3.c
-+++ b/drivers/video/fbdev/cg3.c
-@@ -369,7 +369,7 @@ static int cg3_probe(struct platform_device *op)
- 	info->var.red.length = 8;
- 	info->var.green.length = 8;
- 	info->var.blue.length = 8;
--	if (!strcmp(dp->name, "cgRDI"))
-+	if (of_node_name_eq(dp, "cgRDI"))
- 		par->flags |= CG3_FLAG_RDI;
- 	if (par->flags & CG3_FLAG_RDI)
- 		cg3_rdi_maybe_fixup_var(&info->var, dp);
-diff --git a/drivers/video/fbdev/ffb.c b/drivers/video/fbdev/ffb.c
-index 6b1915872af1..b7aee0c427a8 100644
---- a/drivers/video/fbdev/ffb.c
-+++ b/drivers/video/fbdev/ffb.c
-@@ -944,7 +944,7 @@ static int ffb_probe(struct platform_device *op)
- 
- 	info->var.accel_flags = FB_ACCELF_TEXT;
- 
--	if (!strcmp(dp->name, "SUNW,afb"))
-+	if (of_node_name_eq(dp, "SUNW,afb"))
- 		par->flags |= FFB_FLAG_AFB;
- 
- 	par->board_type = of_getintprop_default(dp, "board_type", 0);
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index 901ca4ed10e9..b268570b019d 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -1498,8 +1498,8 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	switch (pdev->device) {
- 		case PCI_DEVICE_ID_IMS_TT128: /* IMS,tt128mbA */
- 			par->ramdac = IBM;
--			if (dp && ((strcmp(dp->name, "IMS,tt128mb8") = 0) ||
--				   (strcmp(dp->name, "IMS,tt128mb8A") = 0)))
-+			if (of_node_name_eq(dp, "IMS,tt128mb8") ||
-+			    of_node_name_eq(dp, "IMS,tt128mb8A"))
- 				par->ramdac = TVP;
- 			break;
- 		case PCI_DEVICE_ID_IMS_TT3D:  /* IMS,tt3d */
-diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-index 31f769d67195..7b452a520e85 100644
---- a/drivers/video/fbdev/offb.c
-+++ b/drivers/video/fbdev/offb.c
-@@ -646,7 +646,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
- 		}
- #endif
- 		/* kludge for valkyrie */
--		if (strcmp(dp->name, "valkyrie") = 0)
-+		if (of_node_name_eq(dp, "valkyrie"))
- 			address += 0x1000;
- 		offb_init_fb(no_real_node ? "bootx" : NULL,
- 			     width, height, depth, pitch, address,
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-index f1eb8b0f8a2a..5ce893c1923d 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss-of.c
-@@ -60,7 +60,7 @@ omapdss_of_get_next_port(const struct device_node *parent,
- 				return NULL;
- 			}
- 			prev = port;
--		} while (of_node_cmp(port->name, "port") != 0);
-+		} while (!of_node_name_eq(port, "port"));
- 
- 		of_node_put(ports);
- 	}
-@@ -83,7 +83,7 @@ omapdss_of_get_next_endpoint(const struct device_node *parent,
- 		if (!ep)
- 			return NULL;
- 		prev = ep;
--	} while (of_node_cmp(ep->name, "endpoint") != 0);
-+	} while (!of_node_name_eq(ep, "endpoint"));
- 
- 	return ep;
- }
--- 
-2.19.1
+VGhlcmUgd2FzIGEgYnVnIGluIHJlc2V0IHNpZ25hbCBnZW5lcmF0aW9uIGluIHNzZDEzMDdmYiBP
+TEVEIGRyaXZlci4NClRoZSBkaXNwbGF5IG5lZWRzIGFuIGFjdGl2ZS1sb3cgcmVzZXQgc2lnbmFs
+IGJ1dCB0aGUgZHJpdmVyIHByb2R1Y2VkDQp0aGUgY29ycmVjdCBzZXF1ZW5jZSBvbmx5IGlmIHRo
+ZSBHUElPIHVzZWQgZm9yIHJlc2V0IHdhcyBzcGVjaWZpZWQgYXMNCkdQSU9fQUNUSVZFX0hJR0gu
+DQoNCk5vdyBhcyB0aGUgT0xFRCBkcml2ZXIgaXMgZml4ZWQgaXQgaXMgYWxzbyBuZWNlc3NhcnJ5
+IHRvIGltcGxlbWVudA0KYSBmaXh1cCBmb3IgYWxsIGN1cnJlbnQgdXNlcnMgb2YgdGhlIG9sZCBE
+VCBBQkkuIFRoZXJlIGlzIG9ubHkgb25lDQppbi10cmVlIHVzZXIgYW5kIHRoYXQgaXMgdGhlIENy
+eXN0YWxmb250eiBDRkEtMTAwMzYgYm9hcmQuIEluIGNhc2UNCnRoaXMgYm9hcmQgaXMgYm9vdGlu
+ZyBhbmQgR1BJT19BQ1RJVkVfSElHSCBpcyB1c2VkIGZvciByZXNldCB3ZQ0Kb3ZlcnJpZGUgaXQg
+dG8gR1BJT19BQ1RJVkVfTE9XLg0KDQpTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWlj
+aGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0KIGFyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMg
+fCA0NSArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKw0KIDEgZmls
+ZSBjaGFuZ2VkLCA0NSBpbnNlcnRpb25zKCspDQoNCmRpZmYgLS1naXQgYS9hcmNoL2FybS9tYWNo
+LW14cy9tYWNoLW14cy5jIGIvYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1teHMuYw0KaW5kZXggMWM2
+MDYyZC4uMjNjMjYwYyAxMDA2NDQNCi0tLSBhL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMN
+CisrKyBiL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMNCkBAIC0yMSw2ICsyMSw3IEBADQog
+I2luY2x1ZGUgPGxpbnV4L3JlYm9vdC5oPg0KICNpbmNsdWRlIDxsaW51eC9taWNyZWxfcGh5Lmg+
+DQogI2luY2x1ZGUgPGxpbnV4L29mX2FkZHJlc3MuaD4NCisjaW5jbHVkZSA8bGludXgvb2ZfZ3Bp
+by5oPg0KICNpbmNsdWRlIDxsaW51eC9vZl9wbGF0Zm9ybS5oPg0KICNpbmNsdWRlIDxsaW51eC9w
+aHkuaD4NCiAjaW5jbHVkZSA8bGludXgvcGluY3RybC9jb25zdW1lci5oPg0KQEAgLTI2OCw5ICsy
+NjksNTMgQEAgc3RhdGljIHZvaWQgX19pbml0IGFweDRkZXZraXRfaW5pdCh2b2lkKQ0KIAkJCQkJ
+ICAgYXB4NGRldmtpdF9waHlfZml4dXApOw0KIH0NCiANCisjZGVmaW5lIE9MRURfUkVTRVRfR1BJ
+T19MRU4JMw0KKyNkZWZpbmUgT0xFRF9SRVNFVF9HUElPX1NJWkUJKE9MRURfUkVTRVRfR1BJT19M
+RU4gKiBzaXplb2YodTMyKSkNCisNCitzdGF0aWMgdm9pZCBfX2luaXQgY3J5c3RhbGZvbnR6X29s
+ZWRfcmVzZXRfZml4dXAodm9pZCkNCit7DQorCXN0cnVjdCBwcm9wZXJ0eSAqbmV3Z3BpbzsNCisJ
+c3RydWN0IGRldmljZV9ub2RlICpucDsNCisJdTMyICpncGlvc3BlYzsNCisJaW50IGksIHJldDsN
+CisNCisJbnAgPSBvZl9maW5kX2NvbXBhdGlibGVfbm9kZShOVUxMLCBOVUxMLCAic29sb21vbixz
+c2QxMzA2ZmItaTJjIik7DQorCWlmICghbnApDQorCQlyZXR1cm47DQorDQorCW5ld2dwaW8gPSBr
+emFsbG9jKHNpemVvZigqbmV3Z3BpbykgKyBPTEVEX1JFU0VUX0dQSU9fU0laRSwgR0ZQX0tFUk5F
+TCk7DQorCWlmICghbmV3Z3BpbykNCisJCXJldHVybjsNCisNCisJbmV3Z3Bpby0+dmFsdWUgPSBu
+ZXdncGlvICsgMTsNCisJbmV3Z3Bpby0+bGVuZ3RoID0gT0xFRF9SRVNFVF9HUElPX1NJWkU7DQor
+CW5ld2dwaW8tPm5hbWUgPSBrc3RyZHVwKCJyZXNldC1ncGlvcyIsIEdGUF9LRVJORUwpOw0KKwlp
+ZiAoIW5ld2dwaW8tPm5hbWUpIHsNCisJCWtmcmVlKG5ld2dwaW8pOw0KKwkJcmV0dXJuOw0KKwl9
+DQorDQorCWdwaW9zcGVjID0gbmV3Z3Bpby0+dmFsdWU7DQorCWZvciAoaSA9IDA7IGkgPCBPTEVE
+X1JFU0VUX0dQSU9fTEVOOyBpKyspIHsNCisJCXJldCA9IG9mX3Byb3BlcnR5X3JlYWRfdTMyX2lu
+ZGV4KG5wLCAicmVzZXQtZ3Bpb3MiLCBpLA0KKwkJCQkJCSAmZ3Bpb3NwZWNbaV0pOw0KKwkJaWYg
+KHJldCkgew0KKwkJCWtmcmVlKG5ld2dwaW8pOw0KKwkJCXJldHVybjsNCisJCX0NCisJfQ0KKw0K
+KwlpZiAoIShncGlvc3BlY1syXSAmIE9GX0dQSU9fQUNUSVZFX0xPVykpIHsNCisJCWdwaW9zcGVj
+WzJdIHw9IE9GX0dQSU9fQUNUSVZFX0xPVzsNCisJCWNwdV90b19iZTMyX2FycmF5KGdwaW9zcGVj
+LCBncGlvc3BlYywgT0xFRF9SRVNFVF9HUElPX0xFTik7DQorCQlvZl91cGRhdGVfcHJvcGVydHko
+bnAsIG5ld2dwaW8pOw0KKwl9DQorfQ0KKw0KIHN0YXRpYyB2b2lkIF9faW5pdCBjcnlzdGFsZm9u
+dHpfaW5pdCh2b2lkKQ0KIHsNCiAJdXBkYXRlX2ZlY19tYWNfcHJvcChPVUlfQ1JZU1RBTEZPTlRa
+KTsNCisJY3J5c3RhbGZvbnR6X29sZWRfcmVzZXRfZml4dXAoKTsNCiB9DQogDQogc3RhdGljIHZv
+aWQgX19pbml0IGR1Y2tiaWxsX2luaXQodm9pZCkNCi0tIA0KMi4xLjQNCg0K

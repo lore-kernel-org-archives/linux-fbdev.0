@@ -1,43 +1,32 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Tue, 18 Dec 2018 14:28:21 +0000
-Subject: [PATCH v3 -next] staging: fbtft: fix strncmp() size warning
-Message-Id: <20181218142821.7484-1-yuehaibing@huawei.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Tue, 04 Dec 2018 15:03:37 +0000
+Subject: [PATCH 2/4] video: ssd1307fb: Do not hard code active-low reset sequence
+Message-Id: <1543935806-94880-3-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devel@driverdev.osuosl.org, gregkh@linuxfoundation.org, leobras.c@gmail.co, radek.dostal@streamunlimited.co
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, YueHaibing <yuehaibing@huawei.com>
+To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-strncmp() stops comparing when either the end of one of the first two
-arguments is reached or when 'n' characters have been compared, whichever
-comes first.That means that strncmp(s1, s2, n) is equivalent to
-strcmp(s1, s2) if n exceeds the length of s1 or the length of s2.
-
-This patch avoids that the following warning is reported by smatch:
-
-drivers/staging/fbtft/fbtft_device.c:1458
- fbtft_device_init() error: strncmp() '"list"' too small (5 vs 32)
-
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
-v2-v3: fix messed patch title
----
- drivers/staging/fbtft/fbtft_device.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-index 50e97da..046f9d3 100644
---- a/drivers/staging/fbtft/fbtft_device.c
-+++ b/drivers/staging/fbtft/fbtft_device.c
-@@ -1455,7 +1455,7 @@ static int __init fbtft_device_init(void)
- 	}
- 
- 	/* name=list lists all supported displays */
--	if (strncmp(name, "list", FBTFT_GPIO_NAME_SIZE) = 0) {
-+	if (strcmp(name, "list") = 0) {
- 		pr_info("Supported displays:\n");
- 
- 		for (i = 0; i < ARRAY_SIZE(displays); i++)
--- 
-2.7.0
+VGhlIFNTRDEzMHggT0xFRMKgZGlzcGxheSByZXNldCBzaWduYWwgaXMgYWN0aXZlIGxvdy4gTm93
+IHRoZSByZXNldA0Kc2VxdWVuY2UgaXMgaW1wbGVtZW50ZWQgaW4gc3VjaCBhIHdheSB0aGF0IHVz
+ZXJzIGFyZSBmb3JjZWQgdG8NCmRlZmluZSByZXNldC1ncGlvcyBhcyBHUElPX0FDVElWRV9ISUdI
+IGluIERUIHRvIG1ha2UgdGhlIHJlc2V0IHdvcmsuDQoNCkRvIG5vdCBoYXJkIGNvZGUgdGhlIGFj
+dGl2ZS1sb3cgc2VxdWVuY2UgaW50byB0aGUgZHJpdmVyIGJ1dCBpbnN0ZWFkDQphbGxvdyB0aGUg
+dXNlciB0byBzcGVjaWZ5IHRoZSBncGlvIGFzIEdQSU9fQUNUSVZFX0xPVyB0byByZWZsZWN0DQp0
+aGUgcmVhbCB3b3JsZC4NCg0KU2lnbmVkLW9mZi1ieTogTWljaGFsIFZva8OhxI0gPG1pY2hhbC52
+b2thY0B5c29mdC5jb20+DQotLS0NCiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jIHwg
+NCArKy0tDQogMSBmaWxlIGNoYW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkN
+Cg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMgYi9kcml2ZXJz
+L3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jDQppbmRleCA0MDYxYTIwLi4zYjM2MWJjIDEwMDY0NA0K
+LS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYw0KKysrIGIvZHJpdmVycy92aWRl
+by9mYmRldi9zc2QxMzA3ZmIuYw0KQEAgLTY2NywxMCArNjY3LDEwIEBAIHN0YXRpYyBpbnQgc3Nk
+MTMwN2ZiX3Byb2JlKHN0cnVjdCBpMmNfY2xpZW50ICpjbGllbnQsDQogDQogCWlmIChwYXItPnJl
+c2V0KSB7DQogCQkvKiBSZXNldCB0aGUgc2NyZWVuICovDQotCQlncGlvZF9zZXRfdmFsdWVfY2Fu
+c2xlZXAocGFyLT5yZXNldCwgMCk7DQotCQl1ZGVsYXkoNCk7DQogCQlncGlvZF9zZXRfdmFsdWVf
+Y2Fuc2xlZXAocGFyLT5yZXNldCwgMSk7DQogCQl1ZGVsYXkoNCk7DQorCQlncGlvZF9zZXRfdmFs
+dWVfY2Fuc2xlZXAocGFyLT5yZXNldCwgMCk7DQorCQl1ZGVsYXkoNCk7DQogCX0NCiANCiAJaWYg
+KHBhci0+dmJhdF9yZWcpIHsNCi0tIA0KMi4xLjQNCg0K

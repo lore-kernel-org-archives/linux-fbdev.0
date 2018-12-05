@@ -1,70 +1,32 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Thu, 20 Dec 2018 11:39:12 +0000
-Subject: =?utf-8?B?UmU6IFtQQVRDSCA0LzRdIEFSTTogbXhzOiBjZmExMDAzNjogRml4dXAgT0xF?= =?utf-8?B?RMKgZGlzcGxheSByZ
-Message-Id: <7819e740-6f20-23b5-0836-2ca08d3fb386@ysoft.com>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Date: Wed, 05 Dec 2018 11:32:57 +0000
+Subject: Re: [LKP] [mm] 19717e78a0: stderr.if(target_node==NUMA_NO_NODE){
+Message-Id: <d75d097f-78a5-865e-a80a-b1e6faeff337@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
- <1543935806-94880-5-git-send-email-michal.vokac@ysoft.com>
- <20181219172949.GA7680@bogus>
-In-Reply-To: <20181219172949.GA7680@bogus>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
+To: kernel test robot <rong.a.chen@intel.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-media@vger.kernel.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org, linux-alpha@vger.kernel.org, akpm@linux-foundation.org, jiangqi903@gmail.com, hverkuil@xs4all.nl, vkoul@kernel.org, lkp@01.org
 
-T24gMTkuMTIuMjAxOCAxODoyOSwgUm9iIEhlcnJpbmcgd3JvdGU6DQo+IE9uIFR1ZSwgRGVjIDA0
-LCAyMDE4IGF0IDAzOjAzOjQwUE0gKzAwMDAsIFZva8OhxI0gTWljaGFsIHdyb3RlOg0KPj4gVGhl
-cmUgd2FzIGEgYnVnIGluIHJlc2V0IHNpZ25hbCBnZW5lcmF0aW9uIGluIHNzZDEzMDdmYiBPTEVE
-IGRyaXZlci4NCj4+IFRoZSBkaXNwbGF5IG5lZWRzIGFuIGFjdGl2ZS1sb3cgcmVzZXQgc2lnbmFs
-IGJ1dCB0aGUgZHJpdmVyIHByb2R1Y2VkDQo+PiB0aGUgY29ycmVjdCBzZXF1ZW5jZSBvbmx5IGlm
-IHRoZSBHUElPIHVzZWQgZm9yIHJlc2V0IHdhcyBzcGVjaWZpZWQgYXMNCj4+IEdQSU9fQUNUSVZF
-X0hJR0guDQo+Pg0KPj4gTm93IGFzIHRoZSBPTEVEIGRyaXZlciBpcyBmaXhlZCBpdCBpcyBhbHNv
-IG5lY2Vzc2FycnkgdG8gaW1wbGVtZW50DQo+PiBhIGZpeHVwIGZvciBhbGwgY3VycmVudCB1c2Vy
-cyBvZiB0aGUgb2xkIERUIEFCSS4gVGhlcmUgaXMgb25seSBvbmUNCj4+IGluLXRyZWUgdXNlciBh
-bmQgdGhhdCBpcyB0aGUgQ3J5c3RhbGZvbnR6IENGQS0xMDAzNiBib2FyZC4gSW4gY2FzZQ0KPj4g
-dGhpcyBib2FyZCBpcyBib290aW5nIGFuZCBHUElPX0FDVElWRV9ISUdIIGlzIHVzZWQgZm9yIHJl
-c2V0IHdlDQo+PiBvdmVycmlkZSBpdCB0byBHUElPX0FDVElWRV9MT1cuDQo+Pg0KPj4gU2lnbmVk
-LW9mZi1ieTogTWljaGFsIFZva8OhxI0gPG1pY2hhbC52b2thY0B5c29mdC5jb20+DQo+PiAtLS0N
-Cj4+ICAgYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1teHMuYyB8IDQ1ICsrKysrKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrDQo+PiAgIDEgZmlsZSBjaGFuZ2VkLCA0NSBpbnNl
-cnRpb25zKCspDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhz
-LmMgYi9hcmNoL2FybS9tYWNoLW14cy9tYWNoLW14cy5jDQo+PiBpbmRleCAxYzYwNjJkLi4yM2My
-NjBjIDEwMDY0NA0KPj4gLS0tIGEvYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1teHMuYw0KPj4gKysr
-IGIvYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1teHMuYw0KPj4gQEAgLTIxLDYgKzIxLDcgQEANCj4+
-ICAgI2luY2x1ZGUgPGxpbnV4L3JlYm9vdC5oPg0KPj4gICAjaW5jbHVkZSA8bGludXgvbWljcmVs
-X3BoeS5oPg0KPj4gICAjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPg0KPj4gKyNpbmNsdWRl
-IDxsaW51eC9vZl9ncGlvLmg+DQo+PiAgICNpbmNsdWRlIDxsaW51eC9vZl9wbGF0Zm9ybS5oPg0K
-Pj4gICAjaW5jbHVkZSA8bGludXgvcGh5Lmg+DQo+PiAgICNpbmNsdWRlIDxsaW51eC9waW5jdHJs
-L2NvbnN1bWVyLmg+DQo+PiBAQCAtMjY4LDkgKzI2OSw1MyBAQCBzdGF0aWMgdm9pZCBfX2luaXQg
-YXB4NGRldmtpdF9pbml0KHZvaWQpDQo+PiAgIAkJCQkJICAgYXB4NGRldmtpdF9waHlfZml4dXAp
-Ow0KPj4gICB9DQo+PiAgIA0KPj4gKyNkZWZpbmUgT0xFRF9SRVNFVF9HUElPX0xFTgkzDQo+PiAr
-I2RlZmluZSBPTEVEX1JFU0VUX0dQSU9fU0laRQkoT0xFRF9SRVNFVF9HUElPX0xFTiAqIHNpemVv
-Zih1MzIpKQ0KPj4gKw0KPj4gK3N0YXRpYyB2b2lkIF9faW5pdCBjcnlzdGFsZm9udHpfb2xlZF9y
-ZXNldF9maXh1cCh2b2lkKQ0KPj4gK3sNCj4+ICsJc3RydWN0IHByb3BlcnR5ICpuZXdncGlvOw0K
-Pj4gKwlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5wOw0KPj4gKwl1MzIgKmdwaW9zcGVjOw0KPj4gKwlp
-bnQgaSwgcmV0Ow0KPj4gKw0KPj4gKwlucCA9IG9mX2ZpbmRfY29tcGF0aWJsZV9ub2RlKE5VTEws
-IE5VTEwsICJzb2xvbW9uLHNzZDEzMDZmYi1pMmMiKTsNCj4+ICsJaWYgKCFucCkNCj4+ICsJCXJl
-dHVybjsNCj4+ICsNCj4+ICsJbmV3Z3BpbyA9IGt6YWxsb2Moc2l6ZW9mKCpuZXdncGlvKSArIE9M
-RURfUkVTRVRfR1BJT19TSVpFLCBHRlBfS0VSTkVMKTsNCj4+ICsJaWYgKCFuZXdncGlvKQ0KPj4g
-KwkJcmV0dXJuOw0KPj4gKw0KPj4gKwluZXdncGlvLT52YWx1ZSA9IG5ld2dwaW8gKyAxOw0KPj4g
-KwluZXdncGlvLT5sZW5ndGggPSBPTEVEX1JFU0VUX0dQSU9fU0laRTsNCj4+ICsJbmV3Z3Bpby0+
-bmFtZSA9IGtzdHJkdXAoInJlc2V0LWdwaW9zIiwgR0ZQX0tFUk5FTCk7DQo+PiArCWlmICghbmV3
-Z3Bpby0+bmFtZSkgew0KPj4gKwkJa2ZyZWUobmV3Z3Bpbyk7DQo+PiArCQlyZXR1cm47DQo+PiAr
-CX0NCj4+ICsNCj4+ICsJZ3Bpb3NwZWMgPSBuZXdncGlvLT52YWx1ZTsNCj4+ICsJZm9yIChpID0g
-MDsgaSA8IE9MRURfUkVTRVRfR1BJT19MRU47IGkrKykgew0KPj4gKwkJcmV0ID0gb2ZfcHJvcGVy
-dHlfcmVhZF91MzJfaW5kZXgobnAsICJyZXNldC1ncGlvcyIsIGksDQo+PiArCQkJCQkJICZncGlv
-c3BlY1tpXSk7DQo+IA0KPiBEb24ndCB3ZSBoYXZlIGEgaGVscGVyIHRvIHJlYWQgdGhlIHdob2xl
-IGFycmF5Pw0KDQpIaSBSb2IsDQp5ZXAsIEkgd2lsbCBmaXggdGhpcy4NClRoYW5rIHlvdSBmb3Ig
-eW91ciByZXZpZXcgYW5kIGZvciBwb2ludGluZyBtZSB0byB0aGUgcmlnaHQgc29sdXRpb24uDQoN
-Ck1pY2hhbA0KDQo+IA0KPiBPdGhlcndpc2UsIGZvciB0aGUgc2VyaWVzOg0KPiANCj4gUmV2aWV3
-ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5vcmc+DQo+IA0KPj4gKwkJaWYgKHJldCkg
-ew0KPj4gKwkJCWtmcmVlKG5ld2dwaW8pOw0KPj4gKwkJCXJldHVybjsNCj4+ICsJCX0NCj4+ICsJ
-fQ0KPj4gKw0KPj4gKwlpZiAoIShncGlvc3BlY1syXSAmIE9GX0dQSU9fQUNUSVZFX0xPVykpIHsN
-Cj4+ICsJCWdwaW9zcGVjWzJdIHw9IE9GX0dQSU9fQUNUSVZFX0xPVzsNCj4+ICsJCWNwdV90b19i
-ZTMyX2FycmF5KGdwaW9zcGVjLCBncGlvc3BlYywgT0xFRF9SRVNFVF9HUElPX0xFTik7DQo+PiAr
-CQlvZl91cGRhdGVfcHJvcGVydHkobnAsIG5ld2dwaW8pOw0KPj4gKwl9DQo+PiArfQ0KPj4gKw0K
-Pj4gICBzdGF0aWMgdm9pZCBfX2luaXQgY3J5c3RhbGZvbnR6X2luaXQodm9pZCkNCj4+ICAgew0K
-Pj4gICAJdXBkYXRlX2ZlY19tYWNfcHJvcChPVUlfQ1JZU1RBTEZPTlRaKTsNCj4+ICsJY3J5c3Rh
-bGZvbnR6X29sZWRfcmVzZXRfZml4dXAoKTsNCj4+ICAgfQ0KPj4gICANCj4+ICAgc3RhdGljIHZv
-aWQgX19pbml0IGR1Y2tiaWxsX2luaXQodm9pZCkNCj4+IC0tIA0KPj4gMi4xLjQNCj4+DQoNCg=
+On 12/05/2018 10:30 AM, kernel test robot wrote:
+> FYI, we noticed the following commit (built with gcc-7):
+> 
+> commit: 19717e78a04d51512cf0e7b9b09c61f06b2af071 ("[PATCH V2] mm: Replace all open encodings for NUMA_NO_NODE")
+> url: https://github.com/0day-ci/linux/commits/Anshuman-Khandual/mm-Replace-all-open-encodings-for-NUMA_NO_NODE/20181126-203831
+> 
+> 
+> in testcase: perf-sanity-tests
+> with following parameters:
+> 
+> 	perf_compiler: gcc
+> 	ucode: 0x7000013
+> 
+> 
+> 
+> on test machine: 16 threads Intel(R) Xeon(R) CPU D-1541 @ 2.10GHz with 8G memory
+> 
+> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
+
+The fix (in Andrew's staging tree) from Stephen Rothwell which adds <linux/numa.h>
+definitions to <tools/include/linux/numa.h> should fix this.

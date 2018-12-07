@@ -1,45 +1,40 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Fri, 14 Dec 2018 12:27:09 +0000
-Subject: Re: [PATCH] video/backlight: Use of_node_name_eq for node name comparisons
-Message-Id: <20181214122709.GX4497@dell>
+From: Mathieu Malaterre <malat@debian.org>
+Date: Fri, 07 Dec 2018 12:58:42 +0000
+Subject: [PATCH] video: offb: Pass actual name in offb_init_palette_hacks
+Message-Id: <20181207125844.18775-1-malat@debian.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181205195050.4759-28-robh@kernel.org>
- <20181206140221.rq4zp74olghzipxu@holly.lan>
-In-Reply-To: <20181206140221.rq4zp74olghzipxu@holly.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, devicetree@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rob Herring <robh@kernel.org>
+Cc: Mathieu Malaterre <malat@debian.org>, stable@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 06 Dec 2018, Daniel Thompson wrote:
+This is a partial revert of commit 5c63e407aaab ("fbdev: Convert to
+using %pOFn instead of device_node.name"). This is the minimal work to
+get a Mac Mini G4 back to a bootable state. The function
+offb_init_palette_hacks would need to handle the case where `name` has
+been set to NULL.
 
-> On Wed, Dec 05, 2018 at 01:50:44PM -0600, Rob Herring wrote:
-> > Convert string compares of DT node names to use of_node_name_eq helper
-> > instead. This removes direct access to the node name pointer.
-> > 
-> > For instances using of_node_cmp, this has the side effect of now using
-> > case sensitive comparisons. This should not matter for any FDT based
-> > system which this is.
-> > 
-> > Cc: Lee Jones <lee.jones@linaro.org>
-> > Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> > Cc: Jingoo Han <jingoohan1@gmail.com>
-> > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > Cc: dri-devel@lists.freedesktop.org
-> > Cc: linux-fbdev@vger.kernel.org
-> > Signed-off-by: Rob Herring <robh@kernel.org>
-> 
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> [this is FAO Lee J. rather than recommending you take it via you tree]
+Cc: Rob Herring <robh@kernel.org>
+Fixes: 5c63e407aaab ("fbdev: Convert to using %pOFn instead of device_node.name")
+Cc: stable@vger.kernel.org # v4.19+
+Signed-off-by: Mathieu Malaterre <malat@debian.org>
+---
+ drivers/video/fbdev/offb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Rob knows better than that. ;)
-
-Applied, thanks.
-
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 31f769d67195..6e75851f8142 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -648,7 +648,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 		/* kludge for valkyrie */
+ 		if (strcmp(dp->name, "valkyrie") = 0)
+ 			address += 0x1000;
+-		offb_init_fb(no_real_node ? "bootx" : NULL,
++		offb_init_fb(no_real_node ? "bootx" : dp->name,
+ 			     width, height, depth, pitch, address,
+ 			     foreign_endian, no_real_node ? NULL : dp);
+ 	}
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.19.2

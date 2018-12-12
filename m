@@ -1,113 +1,135 @@
-From: =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>
-Date: Mon, 10 Dec 2018 19:02:55 +0000
-Subject: [PATCH] fbdev: fbcon: Fix unregister crash when more than one framebuffer
-Message-Id: <20181210190255.5863-1-noralf@tronnes.org>
+From: Daniel Vetter <daniel@ffwll.ch>
+Date: Wed, 12 Dec 2018 11:05:41 +0000
+Subject: Re: [PATCH] fbdev: fbcon: Fix unregister crash when more than one framebuffer
+Message-Id: <20181212110541.GZ21184@phenom.ffwll.local>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20181210190255.5863-1-noralf@tronnes.org>
+In-Reply-To: <20181210190255.5863-1-noralf@tronnes.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: mpatocka@redhat.com, b.zolnierkie@samsung.com
+To: Noralf =?iso-8859-1?Q?Tr=F8nnes?= <noralf@tronnes.org>
+Cc: linux-fbdev@vger.kernel.org, mpatocka@redhat.com, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
 
-When unregistering fbdev using unregister_framebuffer(), any bound
-console will unbind automatically. This is working fine if this is the
-only framebuffer, resulting in a switch to the dummy console. However if
-there is a fb0 and I unregister fb1 having a bound console, I eventually
-get a crash. The fastest way for me to trigger the crash is to do a
-reboot, resulting in this splat:
+On Mon, Dec 10, 2018 at 08:02:55PM +0100, Noralf Tr=F8nnes wrote:
+> When unregistering fbdev using unregister_framebuffer(), any bound
+> console will unbind automatically. This is working fine if this is the
+> only framebuffer, resulting in a switch to the dummy console. However if
+> there is a fb0 and I unregister fb1 having a bound console, I eventually
+> get a crash. The fastest way for me to trigger the crash is to do a
+> reboot, resulting in this splat:
+>=20
+> [   76.478825] WARNING: CPU: 0 PID: 527 at linux/kernel/workqueue.c:1442 =
+__queue_work+0x2d4/0x41c
+> [   76.478849] Modules linked in: raspberrypi_hwmon gpio_backlight backli=
+ght bcm2835_rng rng_core [last unloaded: tinydrm]
+> [   76.478916] CPU: 0 PID: 527 Comm: systemd-udevd Not tainted 4.20.0-rc4=
++ #4
+> [   76.478933] Hardware name: BCM2835
+> [   76.478949] Backtrace:
+> [   76.478995] [<c010d388>] (dump_backtrace) from [<c010d670>] (show_stac=
+k+0x20/0x24)
+> [   76.479022]  r6:00000000 r5:c0bc73be r4:00000000 r3:6fb5bf81
+> [   76.479060] [<c010d650>] (show_stack) from [<c08e82f4>] (dump_stack+0x=
+20/0x28)
+> [   76.479102] [<c08e82d4>] (dump_stack) from [<c0120070>] (__warn+0xec/0=
+x12c)
+> [   76.479134] [<c011ff84>] (__warn) from [<c01201e4>] (warn_slowpath_nul=
+l+0x4c/0x58)
+> [   76.479165]  r9:c0eb6944 r8:00000001 r7:c0e927f8 r6:c0bc73be r5:000005=
+a2 r4:c0139e84
+> [   76.479197] [<c0120198>] (warn_slowpath_null) from [<c0139e84>] (__que=
+ue_work+0x2d4/0x41c)
+> [   76.479222]  r6:d7666a00 r5:c0e918ee r4:dbc4e700
+> [   76.479251] [<c0139bb0>] (__queue_work) from [<c013a02c>] (queue_work_=
+on+0x60/0x88)
+> [   76.479281]  r10:c0496bf8 r9:00000100 r8:c0e92ae0 r7:00000001 r6:d9403=
+700 r5:d7666a00
+> [   76.479298]  r4:20000113
+> [   76.479348] [<c0139fcc>] (queue_work_on) from [<c0496c28>] (cursor_tim=
+er_handler+0x30/0x54)
+> [   76.479374]  r7:d8a8fabc r6:c0e08088 r5:d8afdc5c r4:d8a8fabc
+> [   76.479413] [<c0496bf8>] (cursor_timer_handler) from [<c0178744>] (cal=
+l_timer_fn+0x100/0x230)
+> [   76.479435]  r4:c0e9192f r3:d758a340
+> [   76.479465] [<c0178644>] (call_timer_fn) from [<c0178980>] (expire_tim=
+ers+0x10c/0x12c)
+> [   76.479495]  r10:40000000 r9:c0e9192f r8:c0e92ae0 r7:d8afdccc r6:c0e19=
+280 r5:c0496bf8
+> [   76.479513]  r4:d8a8fabc
+> [   76.479541] [<c0178874>] (expire_timers) from [<c0179630>] (run_timer_=
+softirq+0xa8/0x184)
+> [   76.479570]  r9:00000001 r8:c0e19280 r7:00000000 r6:c0e08088 r5:c0e1a3=
+e0 r4:c0e19280
+> [   76.479603] [<c0179588>] (run_timer_softirq) from [<c0102404>] (__do_s=
+oftirq+0x1ac/0x3fc)
+> [   76.479632]  r10:c0e91680 r9:d8afc020 r8:0000000a r7:00000100 r6:00000=
+001 r5:00000002
+> [   76.479650]  r4:c0eb65ec
+> [   76.479686] [<c0102258>] (__do_softirq) from [<c0124d10>] (irq_exit+0x=
+e8/0x168)
+> [   76.479716]  r10:d8d1a9b0 r9:d8afc000 r8:00000001 r7:d949c000 r6:00000=
+000 r5:c0e8b3f0
+> [   76.479734]  r4:00000000
+> [   76.479764] [<c0124c28>] (irq_exit) from [<c016b72c>] (__handle_domain=
+_irq+0x94/0xb0)
+> [   76.479793] [<c016b698>] (__handle_domain_irq) from [<c01021dc>] (bcm2=
+835_handle_irq+0x3c/0x48)
+> [   76.479823]  r8:d8afdebc r7:d8afddfc r6:ffffffff r5:c0e089f8 r4:d8afdd=
+c8 r3:d8afddc8
+> [   76.479851] [<c01021a0>] (bcm2835_handle_irq) from [<c01019f0>] (__irq=
+_svc+0x70/0x98)
+>=20
+> The problem is in the console rebinding in fbcon_fb_unbind(). It uses the
+> virtual console index as the new framebuffer index to bind the console(s)
+> to. The correct way is to use the con2fb_map lookup table to find the
+> framebuffer index.
+>=20
+> Fixes: cfafca8067c6 ("fbdev: fbcon: console unregistration from unregiste=
+r_framebuffer")
+> Signed-off-by: Noralf Tr=F8nnes <noralf@tronnes.org>
+> Reviewed-by: Mikulas Patocka <mpatocka@redhat.com>
+> ---
+>=20
+> Mikulas,=20
+> If you have forgotten about this, here's where you gave your r-b:
+> https://lists.freedesktop.org/archives/dri-devel/2018-July/182728.html
 
-[   76.478825] WARNING: CPU: 0 PID: 527 at linux/kernel/workqueue.c:1442 __=
-queue_work+0x2d4/0x41c
-[   76.478849] Modules linked in: raspberrypi_hwmon gpio_backlight backligh=
-t bcm2835_rng rng_core [last unloaded: tinydrm]
-[   76.478916] CPU: 0 PID: 527 Comm: systemd-udevd Not tainted 4.20.0-rc4+ =
-#4
-[   76.478933] Hardware name: BCM2835
-[   76.478949] Backtrace:
-[   76.478995] [<c010d388>] (dump_backtrace) from [<c010d670>] (show_stack+=
-0x20/0x24)
-[   76.479022]  r6:00000000 r5:c0bc73be r4:00000000 r3:6fb5bf81
-[   76.479060] [<c010d650>] (show_stack) from [<c08e82f4>] (dump_stack+0x20=
-/0x28)
-[   76.479102] [<c08e82d4>] (dump_stack) from [<c0120070>] (__warn+0xec/0x1=
-2c)
-[   76.479134] [<c011ff84>] (__warn) from [<c01201e4>] (warn_slowpath_null+=
-0x4c/0x58)
-[   76.479165]  r9:c0eb6944 r8:00000001 r7:c0e927f8 r6:c0bc73be r5:000005a2=
- r4:c0139e84
-[   76.479197] [<c0120198>] (warn_slowpath_null) from [<c0139e84>] (__queue=
-_work+0x2d4/0x41c)
-[   76.479222]  r6:d7666a00 r5:c0e918ee r4:dbc4e700
-[   76.479251] [<c0139bb0>] (__queue_work) from [<c013a02c>] (queue_work_on=
-+0x60/0x88)
-[   76.479281]  r10:c0496bf8 r9:00000100 r8:c0e92ae0 r7:00000001 r6:d940370=
-0 r5:d7666a00
-[   76.479298]  r4:20000113
-[   76.479348] [<c0139fcc>] (queue_work_on) from [<c0496c28>] (cursor_timer=
-_handler+0x30/0x54)
-[   76.479374]  r7:d8a8fabc r6:c0e08088 r5:d8afdc5c r4:d8a8fabc
-[   76.479413] [<c0496bf8>] (cursor_timer_handler) from [<c0178744>] (call_=
-timer_fn+0x100/0x230)
-[   76.479435]  r4:c0e9192f r3:d758a340
-[   76.479465] [<c0178644>] (call_timer_fn) from [<c0178980>] (expire_timer=
-s+0x10c/0x12c)
-[   76.479495]  r10:40000000 r9:c0e9192f r8:c0e92ae0 r7:d8afdccc r6:c0e1928=
-0 r5:c0496bf8
-[   76.479513]  r4:d8a8fabc
-[   76.479541] [<c0178874>] (expire_timers) from [<c0179630>] (run_timer_so=
-ftirq+0xa8/0x184)
-[   76.479570]  r9:00000001 r8:c0e19280 r7:00000000 r6:c0e08088 r5:c0e1a3e0=
- r4:c0e19280
-[   76.479603] [<c0179588>] (run_timer_softirq) from [<c0102404>] (__do_sof=
-tirq+0x1ac/0x3fc)
-[   76.479632]  r10:c0e91680 r9:d8afc020 r8:0000000a r7:00000100 r6:0000000=
-1 r5:00000002
-[   76.479650]  r4:c0eb65ec
-[   76.479686] [<c0102258>] (__do_softirq) from [<c0124d10>] (irq_exit+0xe8=
-/0x168)
-[   76.479716]  r10:d8d1a9b0 r9:d8afc000 r8:00000001 r7:d949c000 r6:0000000=
-0 r5:c0e8b3f0
-[   76.479734]  r4:00000000
-[   76.479764] [<c0124c28>] (irq_exit) from [<c016b72c>] (__handle_domain_i=
-rq+0x94/0xb0)
-[   76.479793] [<c016b698>] (__handle_domain_irq) from [<c01021dc>] (bcm283=
-5_handle_irq+0x3c/0x48)
-[   76.479823]  r8:d8afdebc r7:d8afddfc r6:ffffffff r5:c0e089f8 r4:d8afddc8=
- r3:d8afddc8
-[   76.479851] [<c01021a0>] (bcm2835_handle_irq) from [<c01019f0>] (__irq_s=
-vc+0x70/0x98)
+Iirc Bart is out still, and this seems like a good fix that fell through
+cracks, so a could idea to push this through drm-misc-fixes I think. Or at
+least drm-misc-next-fixes so it hits the next merge window.
 
-The problem is in the console rebinding in fbcon_fb_unbind(). It uses the
-virtual console index as the new framebuffer index to bind the console(s)
-to. The correct way is to use the con2fb_map lookup table to find the
-framebuffer index.
+Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 
-Fixes: cfafca8067c6 ("fbdev: fbcon: console unregistration from unregister_=
-framebuffer")
-Signed-off-by: Noralf Tr=C3=B8nnes <noralf@tronnes.org>
-Reviewed-by: Mikulas Patocka <mpatocka@redhat.com>
----
+if you do that.
+-Daniel
+>=20
+>  drivers/video/fbdev/core/fbcon.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/=
+fbcon.c
+> index 8958ccc8b1ac..8976190b6c1f 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -3064,7 +3064,7 @@ static int fbcon_fb_unbind(int idx)
+>  	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
+>  		if (con2fb_map[i] !=3D idx &&
+>  		    con2fb_map[i] !=3D -1) {
+> -			new_idx =3D i;
+> +			new_idx =3D con2fb_map[i];
+>  			break;
+>  		}
+>  	}
+> --=20
+> 2.19.2
+>=20
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
 
-Mikulas,=20
-If you have forgotten about this, here's where you gave your r-b:
-https://lists.freedesktop.org/archives/dri-devel/2018-July/182728.html
-
- drivers/video/fbdev/core/fbcon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fb=
-con.c
-index 8958ccc8b1ac..8976190b6c1f 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3064,7 +3064,7 @@ static int fbcon_fb_unbind(int idx)
- 	for (i =3D first_fb_vc; i <=3D last_fb_vc; i++) {
- 		if (con2fb_map[i] !=3D idx &&
- 		    con2fb_map[i] !=3D -1) {
--			new_idx =3D i;
-+			new_idx =3D con2fb_map[i];
- 			break;
- 		}
- 	}
 --=20
-2.19.2
+Daniel Vetter
+Software Engineer, Intel Corporation
+http://blog.ffwll.ch

@@ -1,145 +1,125 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 17 Dec 2018 12:09:07 +0000
-Subject: Re: [PATCH 2/2] video: lcd: Remove useless BACKLIGHT_CLASS_DEVICE dependencies
-Message-Id: <20181217120907.wwffekinslibnzvt@holly.lan>
+From: Rob Clark <robdclark@gmail.com>
+Date: Tue, 18 Dec 2018 13:19:54 +0000
+Subject: Re: [PATCH] fbdev: make FB_BACKLIGHT a tristate
+Message-Id: <CAF6AEGuUXt-c9Bmi8yfU=d_pUvrsXwDq4CzZ9GfrhZBP+zbe-A@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181216050247.30043-1-shc_work@mail.ru>
- <20181216050247.30043-2-shc_work@mail.ru>
-In-Reply-To: <20181216050247.30043-2-shc_work@mail.ru>
+References: <20181026140931.15771-1-robdclark@gmail.com>
+In-Reply-To: <20181026140931.15771-1-robdclark@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>
+To: dri-devel <dri-devel@lists.freedesktop.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Simon Horman <horms+renesas@verge.net.au>, Geert Uytterhoeven <geert+renesas@glider.be>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Daniel Vetter <daniel@ffwll.ch>, Ulf Magnusson <ulfalizer@gmail.com>, Randy Dunlap <rdunlap@infradead.org>, Hans de Goede <j.w.r.degoede@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sun, Dec 16, 2018 at 08:02:47AM +0300, Alexander Shiyan wrote:
-> This patch removes dependencies on BACKLIGHT_CLASS_DEVICE for items
-> that are already placed under #ifdef BACKLIGHT_CLASS_DEVICE.
+On Fri, Oct 26, 2018 at 10:09 AM Rob Clark <robdclark@gmail.com> wrote:
+>
+> BACKLIGHT_CLASS_DEVICE is already tristate, but a dependency
+> FB_BACKLIGHT prevents it from being built as a module.  There
+> doesn't seem to be any particularly good reason for this, so
+> switch FB_BACKLIGHT over to tristate.
+>
+> Signed-off-by: Rob Clark <robdclark@gmail.com>
+> Tested-by: Arnd Bergmann <arnd@arndb.de>
 
-s/#ifdef/if/
+bump
 
-Once that is fixed:
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+maybe we can merge this via drm-misc?
 
-> 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+BR,
+-R
+
 > ---
->  drivers/video/backlight/Kconfig | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 3fdc18e..3ed1d90 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -193,7 +193,6 @@ config BACKLIGHT_IPAQ_MICRO
->  
->  config BACKLIGHT_LM3533
->  	tristate "Backlight Driver for LM3533"
-> -	depends on BACKLIGHT_CLASS_DEVICE
->  	depends on MFD_LM3533
->  	help
->  	  Say Y to enable the backlight driver for National Semiconductor / TI
-> @@ -317,7 +316,7 @@ config BACKLIGHT_ADP5520
->  
->  config BACKLIGHT_ADP8860
->  	tristate "Backlight Driver for ADP8860/ADP8861/ADP8863 using WLED"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
->  	help
-> @@ -329,7 +328,7 @@ config BACKLIGHT_ADP8860
->  
->  config BACKLIGHT_ADP8870
->  	tristate "Backlight Driver for ADP8870 using WLED"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
->  	help
-> @@ -347,28 +346,28 @@ config BACKLIGHT_88PM860X
->  
->  config BACKLIGHT_PCF50633
->  	tristate "Backlight driver for NXP PCF50633 MFD"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_PCF50633
-> +	depends on MFD_PCF50633
->  	help
->  	  If you have a backlight driven by a NXP PCF50633 MFD, say Y here to
->  	  enable its driver.
->  
->  config BACKLIGHT_AAT2870
->  	tristate "AnalogicTech AAT2870 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_AAT2870_CORE
-> +	depends on MFD_AAT2870_CORE
->  	help
->  	  If you have a AnalogicTech AAT2870 say Y to enable the
->  	  backlight driver.
->  
->  config BACKLIGHT_LM3630A
->  	tristate "Backlight Driver for LM3630A"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-> +	depends on I2C && PWM
->  	select REGMAP_I2C
->  	help
->  	  This supports TI LM3630A Backlight Driver
->  
->  config BACKLIGHT_LM3639
->  	tristate "Backlight Driver for LM3639"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select REGMAP_I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
-> @@ -377,20 +376,20 @@ config BACKLIGHT_LM3639
->  
->  config BACKLIGHT_LP855X
->  	tristate "Backlight driver for TI LP855X"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-> +	depends on I2C && PWM
->  	help
->  	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
->  	  LP8557 backlight driver.
->  
->  config BACKLIGHT_LP8788
->  	tristate "Backlight driver for TI LP8788 MFD"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_LP8788 && PWM
-> +	depends on MFD_LP8788 && PWM
->  	help
->  	  This supports TI LP8788 backlight driver.
->  
->  config BACKLIGHT_OT200
->  	tristate "Backlight driver for ot200 visualisation device"
-> -	depends on BACKLIGHT_CLASS_DEVICE && CS5535_MFGPT && GPIO_CS5535
-> +	depends on CS5535_MFGPT && GPIO_CS5535
->  	help
->  	  To compile this driver as a module, choose M here: the module will be
->  	  called ot200_bl.
-> @@ -404,7 +403,7 @@ config BACKLIGHT_PANDORA
->  
->  config BACKLIGHT_SKY81452
->  	tristate "Backlight driver for SKY81452"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_SKY81452
-> +	depends on MFD_SKY81452
->  	help
->  	  If you have a Skyworks SKY81452, say Y to enable the
->  	  backlight driver.
-> @@ -414,14 +413,14 @@ config BACKLIGHT_SKY81452
->  
->  config BACKLIGHT_TPS65217
->  	tristate "TPS65217 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_TPS65217
-> +	depends on MFD_TPS65217
->  	help
->  	  If you have a Texas Instruments TPS65217 say Y to enable the
->  	  backlight driver.
->  
->  config BACKLIGHT_AS3711
->  	tristate "AS3711 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_AS3711
-> +	depends on MFD_AS3711
->  	help
->  	  If you have an Austrian Microsystems AS3711 say Y to enable the
->  	  backlight driver.
-> -- 
-> 2.10.2
-> 
+> v2: remove IS_ENABLED() from UABI headers.  Userspace doesn't
+>     know the kernel config, so just remove the ifdef guard
+>
+>  drivers/video/fbdev/Kconfig        | 2 +-
+>  drivers/video/fbdev/core/fbsysfs.c | 8 ++++----
+>  include/linux/fb.h                 | 2 +-
+>  include/uapi/linux/fb.h            | 2 --
+>  4 files changed, 6 insertions(+), 8 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+> index 591a13a59787..146ab2c347f8 100644
+> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -198,7 +198,7 @@ config FB_MACMODES
+>         default n
+>
+>  config FB_BACKLIGHT
+> -       bool
+> +       tristate
+>         depends on FB
+>         select BACKLIGHT_LCD_SUPPORT
+>         select BACKLIGHT_CLASS_DEVICE
+> diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+> index e31a182b42bf..44cca39f2b51 100644
+> --- a/drivers/video/fbdev/core/fbsysfs.c
+> +++ b/drivers/video/fbdev/core/fbsysfs.c
+> @@ -60,7 +60,7 @@ struct fb_info *framebuffer_alloc(size_t size, struct device *dev)
+>         info->device = dev;
+>         info->fbcon_rotate_hint = -1;
+>
+> -#ifdef CONFIG_FB_BACKLIGHT
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+>         mutex_init(&info->bl_curve_mutex);
+>  #endif
+>
+> @@ -429,7 +429,7 @@ static ssize_t show_fbstate(struct device *device,
+>         return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->state);
+>  }
+>
+> -#ifdef CONFIG_FB_BACKLIGHT
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+>  static ssize_t store_bl_curve(struct device *device,
+>                               struct device_attribute *attr,
+>                               const char *buf, size_t count)
+> @@ -510,7 +510,7 @@ static struct device_attribute device_attrs[] = {
+>         __ATTR(stride, S_IRUGO, show_stride, NULL),
+>         __ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+>         __ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
+> -#ifdef CONFIG_FB_BACKLIGHT
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+>         __ATTR(bl_curve, S_IRUGO|S_IWUSR, show_bl_curve, store_bl_curve),
+>  #endif
+>  };
+> @@ -551,7 +551,7 @@ void fb_cleanup_device(struct fb_info *fb_info)
+>         }
+>  }
+>
+> -#ifdef CONFIG_FB_BACKLIGHT
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+>  /* This function generates a linear backlight curve
+>   *
+>   *     0: off
+> diff --git a/include/linux/fb.h b/include/linux/fb.h
+> index a3cab6dc9b44..7cdd31a69719 100644
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -485,7 +485,7 @@ struct fb_info {
+>         struct list_head modelist;      /* mode list */
+>         struct fb_videomode *mode;      /* current mode */
+>
+> -#ifdef CONFIG_FB_BACKLIGHT
+> +#if IS_ENABLED(CONFIG_FB_BACKLIGHT)
+>         /* assigned backlight device */
+>         /* set before framebuffer registration,
+>            remove after unregister */
+> diff --git a/include/uapi/linux/fb.h b/include/uapi/linux/fb.h
+> index 6cd9b198b7c6..b6aac7ee1f67 100644
+> --- a/include/uapi/linux/fb.h
+> +++ b/include/uapi/linux/fb.h
+> @@ -393,11 +393,9 @@ struct fb_cursor {
+>         struct fb_image image;  /* Cursor image */
+>  };
+>
+> -#ifdef CONFIG_FB_BACKLIGHT
+>  /* Settings for the generic backlight code */
+>  #define FB_BACKLIGHT_LEVELS    128
+>  #define FB_BACKLIGHT_MAX       0xFF
+> -#endif
+>
+>
+>  #endif /* _UAPI_LINUX_FB_H */
+> --
+> 2.17.2
+>

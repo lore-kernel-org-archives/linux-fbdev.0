@@ -1,76 +1,43 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 20 Dec 2018 15:34:16 +0000
-Subject: Re: [PATCH] udlfb: fix some inconsistent NULL checking
-Message-Id: <95febb8b-5f15-ce15-7297-b712c816e384@samsung.com>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Tue, 18 Dec 2018 14:28:21 +0000
+Subject: [PATCH v3 -next] staging: fbtft: fix strncmp() size warning
+Message-Id: <20181218142821.7484-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20181010103633epcas1p458ccb431c4dfc9e866e274639acc2c65@epcas1p4.samsung.com>
- <20181010103606.GA14563@mwanda>
-In-Reply-To: <20181010103606.GA14563@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Carpenter <dan.carpenter@oracle.com>
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, Bernie Thompson <bernie@plugable.com>, dri-devel@lists.freedesktop.org, Mikulas Patocka <mpatocka@redhat.com>, Colin Ian King <colin.king@canonical.com>, Wen Yang <wen.yang99@zte.com.cn>, Alexey Khoroshilov <khoroshilov@ispras.ru>
+To: devel@driverdev.osuosl.org, gregkh@linuxfoundation.org, leobras.c@gmail.co, radek.dostal@streamunlimited.co
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, YueHaibing <yuehaibing@huawei.com>
 
+strncmp() stops comparing when either the end of one of the first two
+arguments is reached or when 'n' characters have been compared, whichever
+comes first.That means that strncmp(s1, s2, n) is equivalent to
+strcmp(s1, s2) if n exceeds the length of s1 or the length of s2.
 
-[ added Mikulas, Alexey, Colin & Wen to Cc: ]
+This patch avoids that the following warning is reported by smatch:
 
-On 10/10/2018 12:36 PM, Dan Carpenter wrote:
-> In the current kernel, then kzalloc() can't fail for small allocations,
-> but if it did fail then we would have a NULL dereference in the error
-> handling.  Also in dlfb_usb_disconnect() if "info" were NULL then it
-> would cause an Oops inside the unregister_framebuffer() function but it
-> can't be NULL so let's remove that check.
-> 
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+drivers/staging/fbtft/fbtft_device.c:1458
+ fbtft_device_init() error: strncmp() '"list"' too small (5 vs 32)
 
-Patch queued for 4.21, thanks (also sorry for the delay).
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+v2-v3: fix messed patch title
+---
+ drivers/staging/fbtft/fbtft_device.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-[ Mikulas, Alexey, Colin & Wen: please verify that there are no known
-  issues with udlfb left with this patch applied (thanks!). ]
-
-> diff --git a/drivers/video/fbdev/udlfb.c b/drivers/video/fbdev/udlfb.c
-> index 070026a7e55a..1d034dddc556 100644
-> --- a/drivers/video/fbdev/udlfb.c
-> +++ b/drivers/video/fbdev/udlfb.c
-> @@ -1598,7 +1598,7 @@ static int dlfb_usb_probe(struct usb_interface *intf,
->  	dlfb = kzalloc(sizeof(*dlfb), GFP_KERNEL);
->  	if (!dlfb) {
->  		dev_err(&intf->dev, "%s: failed to allocate dlfb\n", __func__);
-> -		goto error;
-> +		return -ENOMEM;
->  	}
->  
->  	INIT_LIST_HEAD(&dlfb->deferred_free);
-> @@ -1703,7 +1703,7 @@ static int dlfb_usb_probe(struct usb_interface *intf,
->  error:
->  	if (dlfb->info) {
->  		dlfb_ops_destroy(dlfb->info);
-> -	} else if (dlfb) {
-> +	} else {
->  		usb_put_dev(dlfb->udev);
->  		kfree(dlfb);
->  	}
-> @@ -1730,12 +1730,10 @@ static void dlfb_usb_disconnect(struct usb_interface *intf)
->  	/* this function will wait for all in-flight urbs to complete */
->  	dlfb_free_urb_list(dlfb);
->  
-> -	if (info) {
-> -		/* remove udlfb's sysfs interfaces */
-> -		for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++)
-> -			device_remove_file(info->dev, &fb_device_attrs[i]);
-> -		device_remove_bin_file(info->dev, &edid_attr);
-> -	}
-> +	/* remove udlfb's sysfs interfaces */
-> +	for (i = 0; i < ARRAY_SIZE(fb_device_attrs); i++)
-> +		device_remove_file(info->dev, &fb_device_attrs[i]);
-> +	device_remove_bin_file(info->dev, &edid_attr);
->  
->  	unregister_framebuffer(info);
->  }
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
+index 50e97da..046f9d3 100644
+--- a/drivers/staging/fbtft/fbtft_device.c
++++ b/drivers/staging/fbtft/fbtft_device.c
+@@ -1455,7 +1455,7 @@ static int __init fbtft_device_init(void)
+ 	}
+ 
+ 	/* name=list lists all supported displays */
+-	if (strncmp(name, "list", FBTFT_GPIO_NAME_SIZE) = 0) {
++	if (strcmp(name, "list") = 0) {
+ 		pr_info("Supported displays:\n");
+ 
+ 		for (i = 0; i < ARRAY_SIZE(displays); i++)
+-- 
+2.7.0

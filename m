@@ -1,179 +1,99 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Wed, 26 Dec 2018 00:37:59 +0000
-Subject: [PATCH v8 19/25] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when CONFIG_PPC32 && CONFIG_PPC_PMAC
-Message-Id: <88b7f55b6b27aac143c364de12d01c73afce78e9.1545784679.git.fthain@telegraphics.com.au>
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+Date: Tue, 18 Dec 2018 10:24:11 +0000
+Subject: [PATCH V3 0/2] Replace all open encodings for NUMA_NO_NODE
+Message-Id: <1545127933-10711-1-git-send-email-anshuman.khandual@arm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1545784679.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: ocfs2-devel@oss.oracle.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-media@vger.kernel.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org, linux-alpha@vger.kernel.org, akpm@linux-foundation.org, jiangqi903@gmail.com, hverkuil@xs4all.nl, vkoul@kernel.org, sfr@canb.auug.org.au, dledford@redhat.com, mpe@ellerman.id.au, axboe@kernel.dk, jeffrey.t.kirsher@intel.com, david@redhat.com
 
-This patch addresses inconsistencies in Mac framebuffer drivers and their
-use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
+Changes in V3:
 
-Macintosh framebuffer drivers use default settings for color mode and
-video mode that are found in NVRAM. On PCI Macs, MacOS stores display
-settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
-there is no NR partition and MacOS stores display mode settings in PRAM**.
+- Dropped all references to NUMA_NO_NODE as per Lubomir Rinetl
+- Split the patch into two creating a new one specifically for tools
+- Folded Stephen's linux-next build fix into the second patch
 
-Early-model Macs are the ones most likely to benefit from these settings,
-since they are more likely to have a fixed-frequency monitor connected to
-the built-in framebuffer device. Moreover, a single NV_CMODE value and
-a single NV_VMODE value provide for only one display.
+Changes in V2: (https://patchwork.kernel.org/patch/10698089/)
 
-The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
-partition for Old World machines. This also suggests that these defaults
-are not useful on later models. The NR partition seems to be optional on
-New World machines. CONFIG_NVRAM cannot be enabled on PPC64 at present.
+- Added inclusion of 'numa.h' header at various places per Andrew
+- Updated 'dev_to_node' to use NUMA_NO_NODE instead per Vinod
 
-It is safe to say that NVRAM support in PowerMac fbdev drivers is only
-applicable to CONFIG_PPC32 so make this condition explicit. This means
-matroxfb driver won't crash on PPC64 when CONFIG_NVRAM becomes available
-there.
+Changes in V1: (https://lkml.org/lkml/2018/11/23/485)
 
-For imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
-since PPC64 does not implement nvram_read_byte(). Also add a missing
-machine_is(powermac) check. Change the inconsistent dependency on
-CONFIG_PPC and the matching #ifdef tests to CONFIG_PPC_PMAC.
+- Dropped OCFS2 changes per Joseph
+- Dropped media/video drivers changes per Hans
 
-For valkyriefb, to improve clarity and consistency with the other PowerMac
-fbdev drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
-bogus comment regarding PRAM.
+RFC - https://patchwork.kernel.org/patch/10678035/
 
-* See GetPreferredConfiguration and SavePreferredConfiguration in
-"Designing PCI Cards and Drivers for Power Macintosh Computers".
+Build tested this with multiple cross compiler options like alpha, sparc,
+arm64, x86, powerpc, powerpc64le etc with their default config which might
+not have compiled tested all driver related changes. I will appreciate
+folks giving this a test in their respective build environments.
 
-** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
-for the Macintosh Family".
+All these places for replacement were found by running the following grep
+patterns on the entire kernel code. Please let me know if this might have
+missed some instances. This might also have replaced some false positives.
+I will appreciate suggestions, inputs and review.
 
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
----
- drivers/video/fbdev/Kconfig                |  2 +-
- drivers/video/fbdev/imsttfb.c              | 12 +++++-------
- drivers/video/fbdev/matrox/matroxfb_base.c |  2 +-
- drivers/video/fbdev/valkyriefb.c           | 14 ++++++--------
- 4 files changed, 13 insertions(+), 17 deletions(-)
+1. git grep "nid = -1"
+2. git grep "node = -1"
+3. git grep "nid = -1"
+4. git grep "node = -1"
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index e413f54208f4..52453ce3040a 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -536,7 +536,7 @@ config FB_IMSTT
- 	bool "IMS Twin Turbo display support"
- 	depends on (FB = y) && PCI
- 	select FB_CFB_IMAGEBLIT
--	select FB_MACMODES if PPC
-+	select FB_MACMODES if PPC_PMAC
- 	help
- 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
- 	  many Macintosh and compatible computers.
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index 901ca4ed10e9..8d231591ff0e 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -30,9 +30,8 @@
- #include <asm/io.h>
- #include <linux/uaccess.h>
- 
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- #include <linux/nvram.h>
--#include <asm/prom.h>
- #include "macmodes.h"
- #endif
- 
-@@ -327,14 +326,13 @@ enum {
- 	TVP = 1
- };
- 
--#define USE_NV_MODES		1
- #define INIT_BPP		8
- #define INIT_XRES		640
- #define INIT_YRES		480
- 
- static int inverse = 0;
- static char fontname[40] __initdata = { 0 };
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- static signed char init_vmode = -1, init_cmode = -1;
- #endif
- 
-@@ -1390,8 +1388,8 @@ static void init_imstt(struct fb_info *info)
- 		}
- 	}
- 
--#if USE_NV_MODES && defined(CONFIG_PPC32)
--	{
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
-+	if (machine_is(powermac)) {
- 		int vmode = init_vmode, cmode = init_cmode;
- 
- 		if (vmode = -1) {
-@@ -1565,7 +1563,7 @@ imsttfb_setup(char *options)
- 			inverse = 1;
- 			fb_invert_cmaps();
- 		}
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- 		else if (!strncmp(this_opt, "vmode:", 6)) {
- 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <= VMODE_MAX)
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
-index 0a4e5bad33f4..cac5865d461c 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1874,7 +1874,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
- 		struct fb_var_screeninfo var;
- 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
- 			default_vmode = VMODE_640_480_60;
--#ifdef CONFIG_NVRAM
-+#if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
- 		if (default_cmode = CMODE_NVRAM)
- 			default_cmode = nvram_read_byte(NV_CMODE);
- #endif
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
-index d51c3a8009cb..8022316ee9c9 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -63,14 +63,12 @@
- #include "macmodes.h"
- #include "valkyriefb.h"
- 
--#ifdef CONFIG_MAC
--/* We don't yet have functions to read the PRAM... perhaps we can
--   adapt them from the PPC code? */
--static int default_vmode = VMODE_CHOOSE;
--static int default_cmode = CMODE_8;
--#else
-+#ifdef CONFIG_PPC_PMAC
- static int default_vmode = VMODE_NVRAM;
- static int default_cmode = CMODE_NVRAM;
-+#else
-+static int default_vmode = VMODE_CHOOSE;
-+static int default_cmode = CMODE_8;
- #endif
- 
- struct fb_par_valkyrie {
-@@ -283,7 +281,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
- 
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_vmode = VMODE_NVRAM) {
- 		default_vmode = nvram_read_byte(NV_VMODE);
- 		if (default_vmode <= 0
-@@ -296,7 +294,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
- 		default_vmode = mac_map_monitor_sense(p->sense);
- 	if (!valkyrie_reg_init[default_vmode - 1])
- 		default_vmode = VMODE_640_480_67;
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
- 	if (default_cmode = CMODE_NVRAM)
- 		default_cmode = nvram_read_byte(NV_CMODE);
- #endif
+NOTE: I can still split the first patch into multiple ones - one for each
+subsystem as suggested by Lubomir if that would be better.
+
+Anshuman Khandual (1):
+  mm: Replace all open encodings for NUMA_NO_NODE
+
+Stephen Rothwell (1):
+  Tools: Replace open encodings for NUMA_NO_NODE
+
+ arch/alpha/include/asm/topology.h             |  3 ++-
+ arch/ia64/kernel/numa.c                       |  2 +-
+ arch/ia64/mm/discontig.c                      |  6 +++---
+ arch/powerpc/include/asm/pci-bridge.h         |  3 ++-
+ arch/powerpc/kernel/paca.c                    |  3 ++-
+ arch/powerpc/kernel/pci-common.c              |  3 ++-
+ arch/powerpc/mm/numa.c                        | 14 +++++++-------
+ arch/powerpc/platforms/powernv/memtrace.c     |  5 +++--
+ arch/sparc/kernel/pci_fire.c                  |  3 ++-
+ arch/sparc/kernel/pci_schizo.c                |  3 ++-
+ arch/sparc/kernel/psycho_common.c             |  3 ++-
+ arch/sparc/kernel/sbus.c                      |  3 ++-
+ arch/sparc/mm/init_64.c                       |  6 +++---
+ arch/x86/include/asm/pci.h                    |  3 ++-
+ arch/x86/kernel/apic/x2apic_uv_x.c            |  7 ++++---
+ arch/x86/kernel/smpboot.c                     |  3 ++-
+ drivers/block/mtip32xx/mtip32xx.c             |  5 +++--
+ drivers/dma/dmaengine.c                       |  4 +++-
+ drivers/infiniband/hw/hfi1/affinity.c         |  3 ++-
+ drivers/infiniband/hw/hfi1/init.c             |  3 ++-
+ drivers/iommu/dmar.c                          |  5 +++--
+ drivers/iommu/intel-iommu.c                   |  3 ++-
+ drivers/misc/sgi-xp/xpc_uv.c                  |  3 ++-
+ drivers/net/ethernet/intel/ixgbe/ixgbe_main.c |  5 +++--
+ include/linux/device.h                        |  2 +-
+ init/init_task.c                              |  3 ++-
+ kernel/kthread.c                              |  3 ++-
+ kernel/sched/fair.c                           | 15 ++++++++-------
+ lib/cpumask.c                                 |  3 ++-
+ mm/huge_memory.c                              | 13 +++++++------
+ mm/hugetlb.c                                  |  3 ++-
+ mm/ksm.c                                      |  2 +-
+ mm/memory.c                                   |  7 ++++---
+ mm/memory_hotplug.c                           | 12 ++++++------
+ mm/mempolicy.c                                |  2 +-
+ mm/page_alloc.c                               |  4 ++--
+ mm/page_ext.c                                 |  2 +-
+ net/core/pktgen.c                             |  3 ++-
+ net/qrtr/qrtr.c                               |  3 ++-
+ tools/include/linux/numa.h                    | 16 ++++++++++++++++
+ tools/perf/bench/numa.c                       |  6 +++---
+ 41 files changed, 123 insertions(+), 77 deletions(-)
+ create mode 100644 tools/include/linux/numa.h
+
 -- 
-2.19.2
+2.7.4

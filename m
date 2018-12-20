@@ -1,45 +1,34 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Tue, 18 Dec 2018 13:15:09 +0000
-Subject: Re: [PATCH -next] staging: fbtft: use strcmp() instead of strncmp() for subsystem lookup
-Message-Id: <477c3a7a-b0dd-f3f5-223c-da4e8e19d44a@huawei.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Thu, 20 Dec 2018 12:13:55 +0000
+Subject: [PATCH v2 2/4] video: ssd1307fb: Do not hard code active-low reset sequence
+Message-Id: <1545308005-51559-3-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181218130932.17684-1-yuehaibing@huawei.com>
-In-Reply-To: <20181218130932.17684-1-yuehaibing@huawei.com>
+References: <1545308005-51559-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1545308005-51559-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: devel@driverdev.osuosl.org, gregkh@linuxfoundation.org, leobras.c@gmail.co, radek.dostal@streamunlimited.co
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-sorry, Pls ignore this.  The title need fix.
-
-On 2018/12/18 21:09, YueHaibing wrote:
-> strncmp() stops comparing when either the end of one of the first two 
-> arguments is reached or when 'n' characters have been compared, whichever
-> comes first.That means that strncmp(s1, s2, n) is equivalent to 
-> strcmp(s1, s2) if n exceeds the length of s1 or the length of s2.
-> 
-> This patch avoids that the following warning is reported by smatch:
-> 
-> drivers/staging/fbtft/fbtft_device.c:1458
->  fbtft_device_init() error: strncmp() '"list"' too small (5 vs 32)
-> 
-> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
-> ---
->  drivers/staging/fbtft/fbtft_device.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/fbtft/fbtft_device.c b/drivers/staging/fbtft/fbtft_device.c
-> index 50e97da..0e995028 100644
-> --- a/drivers/staging/fbtft/fbtft_device.c
-> +++ b/drivers/staging/fbtft/fbtft_device.c
-> @@ -1455,7 +1455,7 @@ static int __init fbtft_device_init(void)
->  	}
->  
->  	/* name=list lists all supported displays */
-> -	if (strncmp(name, "list", FBTFT_GPIO_NAME_SIZE) = 0) {
-> +	if (strcmp(name, "list") = 0) {
->  		pr_info("Supported displays:\n");
->  
->  		for (i = 0; i < ARRAY_SIZE(displays); i++)
-> 
+VGhlIFNTRDEzMHggT0xFRMKgZGlzcGxheSByZXNldCBzaWduYWwgaXMgYWN0aXZlIGxvdy4gTm93
+IHRoZSByZXNldA0Kc2VxdWVuY2UgaXMgaW1wbGVtZW50ZWQgaW4gc3VjaCBhIHdheSB0aGF0IHVz
+ZXJzIGFyZSBmb3JjZWQgdG8NCmRlZmluZSByZXNldC1ncGlvcyBhcyBHUElPX0FDVElWRV9ISUdI
+IGluIERUIHRvIG1ha2UgdGhlIHJlc2V0IHdvcmsuDQoNCkRvIG5vdCBoYXJkIGNvZGUgdGhlIGFj
+dGl2ZS1sb3cgc2VxdWVuY2UgaW50byB0aGUgZHJpdmVyIGJ1dCBpbnN0ZWFkDQphbGxvdyB0aGUg
+dXNlciB0byBzcGVjaWZ5IHRoZSBncGlvIGFzIEdQSU9fQUNUSVZFX0xPVyB0byByZWZsZWN0DQp0
+aGUgcmVhbCB3b3JsZC4NCg0KUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5v
+cmc+DQpTaWduZWQtb2ZmLWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNv
+bT4NCi0tLQ0KQ2hhbmdlcyBmcm9tIHYxOg0KIC0gQWRkIFItYnkgZnJvbSBSb2INCg0KIGRyaXZl
+cnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMgfCA0ICsrLS0NCiAxIGZpbGUgY2hhbmdlZCwgMiBp
+bnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRl
+by9mYmRldi9zc2QxMzA3ZmIuYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMNCmlu
+ZGV4IDQwNjFhMjAuLjNiMzYxYmMgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3Nz
+ZDEzMDdmYi5jDQorKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jDQpAQCAtNjY3
+LDEwICs2NjcsMTAgQEAgc3RhdGljIGludCBzc2QxMzA3ZmJfcHJvYmUoc3RydWN0IGkyY19jbGll
+bnQgKmNsaWVudCwNCiANCiAJaWYgKHBhci0+cmVzZXQpIHsNCiAJCS8qIFJlc2V0IHRoZSBzY3Jl
+ZW4gKi8NCi0JCWdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAwKTsNCi0JCXVk
+ZWxheSg0KTsNCiAJCWdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAxKTsNCiAJ
+CXVkZWxheSg0KTsNCisJCWdwaW9kX3NldF92YWx1ZV9jYW5zbGVlcChwYXItPnJlc2V0LCAwKTsN
+CisJCXVkZWxheSg0KTsNCiAJfQ0KIA0KIAlpZiAocGFyLT52YmF0X3JlZykgew0KLS0gDQoyLjEu
+NA0KDQo

@@ -1,35 +1,58 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Thu, 20 Dec 2018 12:13:54 +0000
-Subject: [PATCH v2 1/4] dt-bindings: display: ssd1307fb: Remove reset-active-low from examples
-Message-Id: <1545308005-51559-2-git-send-email-michal.vokac@ysoft.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Thu, 20 Dec 2018 12:33:41 +0000
+Subject: Re: [PATCH v2 1/4] dt-bindings: display: ssd1307fb: Remove reset-active-low from examples
+Message-Id: <20181220123341.GE2188@piout.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1545308005-51559-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1545308005-51559-1-git-send-email-michal.vokac@ysoft.com>
+ <1545308005-51559-2-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1545308005-51559-2-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: =?utf-8?B?Vm9rw6HEjQ==?= Michal <Michal.Vokac@ysoft.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>
 
-VGhlIHJlc2V0LWFjdGl2ZS1sb3cgcHJvcGVydHkgaGFzIGJlZW4gcmVtb3ZlZCBicm9tIHRoZSBi
-aW5kaW5nIGEgd2hpbGUNCmFnby4gU28gcmVtb3ZlIGl0IGZyb20gdGhlIGV4YW1wbGVzIGFzIHdl
-bGwuDQoNCkZpeGVzOiA1MTliNGRiICgiZmJkZXY6IHNzZDEzMDdmYjogUmVtb3ZlIHJlc2V0LWFj
-dGl2ZS1sb3cgZnJvbSB0aGUgRFQgYmluZGluZyBkb2N1bWVudCIpDQpSZXZpZXdlZC1ieTogUm9i
-IEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NClNpZ25lZC1vZmYtYnk6IE1pY2hhbCBWb2vDocSN
-IDxtaWNoYWwudm9rYWNAeXNvZnQuY29tPg0KLS0tDQpDaGFuZ2VzIGZyb20gdjE6DQogLSBBZGQg
-Ui1ieSBmcm9tIFJvYg0KDQogRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3Bs
-YXkvc3NkMTMwN2ZiLnR4dCB8IDIgLS0NCiAxIGZpbGUgY2hhbmdlZCwgMiBkZWxldGlvbnMoLSkN
-Cg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5
-L3NzZDEzMDdmYi50eHQgYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxh
-eS9zc2QxMzA3ZmIudHh0DQppbmRleCAyMDlkOTMxLi5iNjdmOGNhIDEwMDY0NA0KLS0tIGEvRG9j
-dW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvc3NkMTMwN2ZiLnR4dA0KKysr
-IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvc3NkMTMwN2ZiLnR4
-dA0KQEAgLTM2LDcgKzM2LDYgQEAgc3NkMTMwNzogb2xlZEAzYyB7DQogICAgICAgICByZWcgPSA8
-MHgzYz47DQogICAgICAgICBwd21zID0gPCZwd20gNCAzMDAwPjsNCiAgICAgICAgIHJlc2V0LWdw
-aW9zID0gPCZncGlvMiA3PjsNCi0gICAgICAgIHJlc2V0LWFjdGl2ZS1sb3c7DQogfTsNCiANCiBz
-c2QxMzA2OiBvbGVkQDNjIHsNCkBAIC00NCw3ICs0Myw2IEBAIHNzZDEzMDY6IG9sZWRAM2Mgew0K
-ICAgICAgICAgcmVnID0gPDB4M2M+Ow0KICAgICAgICAgcHdtcyA9IDwmcHdtIDQgMzAwMD47DQog
-ICAgICAgICByZXNldC1ncGlvcyA9IDwmZ3BpbzIgNz47DQotICAgICAgICByZXNldC1hY3RpdmUt
-bG93Ow0KICAgICAgICAgc29sb21vbixjb20tbHJyZW1hcDsNCiAgICAgICAgIHNvbG9tb24sY29t
-LWludmRpcjsNCiAgICAgICAgIHNvbG9tb24sY29tLW9mZnNldCA9IDwzMj47DQotLSANCjIuMS40
-DQoNCg=
+On 20/12/2018 12:13:54+0000, Vokáč Michal wrote:
+> The reset-active-low property has been removed brom the binding a while
+> ago. So remove it from the examples as well.
+> 
+> Fixes: 519b4db ("fbdev: ssd1307fb: Remove reset-active-low from the DT binding document")
+> Reviewed-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Michal Vokáč <michal.vokac@ysoft.com>
+Reviewed-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+
+> ---
+> Changes from v1:
+>  - Add R-by from Rob
+> 
+>  Documentation/devicetree/bindings/display/ssd1307fb.txt | 2 --
+>  1 file changed, 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/display/ssd1307fb.txt b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+> index 209d931..b67f8ca 100644
+> --- a/Documentation/devicetree/bindings/display/ssd1307fb.txt
+> +++ b/Documentation/devicetree/bindings/display/ssd1307fb.txt
+> @@ -36,7 +36,6 @@ ssd1307: oled@3c {
+>          reg = <0x3c>;
+>          pwms = <&pwm 4 3000>;
+>          reset-gpios = <&gpio2 7>;
+> -        reset-active-low;
+>  };
+>  
+>  ssd1306: oled@3c {
+> @@ -44,7 +43,6 @@ ssd1306: oled@3c {
+>          reg = <0x3c>;
+>          pwms = <&pwm 4 3000>;
+>          reset-gpios = <&gpio2 7>;
+> -        reset-active-low;
+>          solomon,com-lrremap;
+>          solomon,com-invdir;
+>          solomon,com-offset = <32>;
+> -- 
+> 2.1.4
+> 
+
+-- 
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

@@ -1,14 +1,41 @@
-From: "Mr. David Abraham" <davidkekeli04@gmail.com>
-Date: Fri, 07 Dec 2018 18:04:29 +0000
-Subject: I wait to hear from you.
-Message-Id: <CAA88Ex+bFzR4nQYs5To4JCv2TJ4xFT90tPqT+=XOJMxhDcmY4w@mail.gmail.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Thu, 20 Dec 2018 12:13:53 +0000
+Subject: [PATCH v2 0/4] Fix ssd1307fb OLED driver reset
+Message-Id: <1545308005-51559-1-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-My Greeting, How are you today?Did you receive the letter i sent to
-you. Please answer me.
-Best Regard,
-Mr.David Abraham.
+SGkgYWxsLA0KDQp0aGlzIGlzIG15IHRoaXJkIGF0dGVtcHQgdG8gZml4IHRoZSBzc2QxMzA3ZmIg
+T0xFRCBkcml2ZXIgcmVzZXQuIEluIHRoZQ0Kc2Vjb25kIGF0dGVtcHQgWzFdIFJvYiBzdWdnZXN0
+ZWQgdG8gdGFrZSBkaWZmZXJlbnQgYXByb2FjaC4gVGhhdCBpcyB0bw0KYXBwbHkgd2hhdCB3YXMg
+b3JpZ2luYWx5IHBhcnQgb2YgdGhlIGZpcnN0IHJvdW5kIGFuZCBldmVudHVhbGx5IG1lcmdlZA0K
+YnV0IHJldmVydGVkIGxhdGVyIG9uIFsyXVszXS4NCg0KTmV4dCBzdGVwIGlzIHRvIGFwcGx5IGEg
+Zml4dXAgZm9yIHRoZSBzaW5nbGUgdXNlciAoaW4tdHJlZSkgdGhhdCB1c2VzDQp0aGlzIE9MRUQu
+IEFzIFJvYiBzdWdnZXN0ZWQsIHRoZSBmaXh1cCBtYXkgYmUgYXBwbGllZCBvbmx5IGFmdGVyDQpz
+b21lb25lIGNvbXBsYWlucyB0aGVpciBkaXNwbGF5IGJyb2tlLg0KDQpJIGFtIG5vdCByZWFsbHkg
+c3VyZSB3aGF0IGlzIHRoZSBwcm9wcGVyIHdheSB0byBoYW5kbGUgdGhpcyBzbyB0aGUNCnNlcmll
+cyBjb250YWlucyB0aGUgb3JpZ2luYWwgcGF0Y2hlcyArIGEgbWlub3IgZml4IGluIHRoZSBkb2Nz
+IGFuZA0KdGhlIGZpeHVwIGFzIHRoZSBsYXN0IHBhdGNoLg0KDQpBZGRpbmcgQWxleGFuZHJlIGFu
+ZCBNYXhpbWUgZnJvbSBCb290bGluIHRvIHRoZSBDYyBsaXN0IGFzIHlvdSBzZWVtDQp0byBiZSB0
+aGUgbGFzdCBvbmVzIHdobyB0b3VjaGVkIHRoZSBDcnlzdGFsZm9udHogcGxhdGZvcm0uIFlvdXIg
+Y29tZW50DQpyZWdhcmRpbmcgdGhlIHN0YXR1cyBvZiB0aGUgcGxhdGZvcm0gYW5kIHdoZXRoZXIg
+dGhlIGZpeHVwIHNob3VsZCBiZQ0KYXBwbGllZCBzdHJhaWdodCBhd2F5IG9yIG5vdCBhdCBhbGwg
+d2lsbCBiZSBhcHByZWNpYXRlZC4NCg0KVGhhbmsgeW91LA0KTWljaGFsDQoNClsxXSBodHRwczov
+L3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNjY1NTk3LyMyMjMyNzIyNw0KWzJdIGh0dHBz
+Oi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA2MTc3MjkvDQpbM10gaHR0cHM6Ly9wYXRj
+aHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDYxNzczMS8jMjIyNTcxNzUNCg0KTWljaGFsIFZva8Oh
+xI0gKDQpOg0KICBkdC1iaW5kaW5nczogZGlzcGxheTogc3NkMTMwN2ZiOiBSZW1vdmUgcmVzZXQt
+YWN0aXZlLWxvdyBmcm9tIGV4YW1wbGVzDQogIHZpZGVvOiBzc2QxMzA3ZmI6IERvIG5vdCBoYXJk
+IGNvZGUgYWN0aXZlLWxvdyByZXNldCBzZXF1ZW5jZQ0KICBBUk06IGR0czogaW14MjgtY2ZhMTAw
+MzY6IEZpeCB0aGUgcmVzZXQgZ3BpbyBzaWduYWwgcG9sYXJpdHkNCiAgQVJNOiBteHM6IGNmYTEw
+MDM2OiBGaXh1cCBPTEVEwqBkaXNwbGF5IHJlc2V0IHBvbGFyaXR5DQoNCiAuLi4vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9kaXNwbGF5L3NzZDEzMDdmYi50eHQgICAgICB8ICAyIC0NCiBhcmNoL2FybS9i
+b290L2R0cy9pbXgyOC1jZmExMDAzNi5kdHMgICAgICAgICAgICAgICB8ICAzICstDQogYXJjaC9h
+cm0vbWFjaC1teHMvbWFjaC1teHMuYyAgICAgICAgICAgICAgICAgICAgICAgfCA0NCArKysrKysr
+KysrKysrKysrKysrKysrDQogZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYyAgICAgICAg
+ICAgICAgICAgICAgfCAgNCArLQ0KIDQgZmlsZXMgY2hhbmdlZCwgNDggaW5zZXJ0aW9ucygrKSwg
+NSBkZWxldGlvbnMoLSkNCg0KLS0gDQoyLjEuNA0KDQo

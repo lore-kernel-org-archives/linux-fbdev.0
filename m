@@ -1,33 +1,62 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 20 Dec 2018 15:42:48 +0000
-Subject: Re: [PATCH] fbdev: make FB_BACKLIGHT a tristate
-Message-Id: <c5378c0f-d2f8-720c-e633-24673af87a53@samsung.com>
+Date: Thu, 20 Dec 2018 16:21:45 +0000
+Subject: Re: [PATCH] fbcon: use kvmalloc() for scrollback buffer
+Message-Id: <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181026140931.15771-1-robdclark@gmail.com>
- <CGME20181218132030epcas4p341162d849e429c85fdd265246aee6630@epcas4p3.samsung.com>
- <CAF6AEGuUXt-c9Bmi8yfU=d_pUvrsXwDq4CzZ9GfrhZBP+zbe-A@mail.gmail.com>
-In-Reply-To: <CAF6AEGuUXt-c9Bmi8yfU=d_pUvrsXwDq4CzZ9GfrhZBP+zbe-A@mail.gmail.com>
+References: <CGME20181126100342epcas3p12a1e6505ff4b73375ac3fcf5d0355d3f@epcas3p1.samsung.com>
+        <20181126100253.3299-1-khorenko@virtuozzo.com>
+In-Reply-To: <20181126100253.3299-1-khorenko@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Clark <robdclark@gmail.com>, dri-devel <dri-devel@lists.freedesktop.org>
-Cc: Hans de Goede <j.w.r.degoede@gmail.com>, Ulf Magnusson <ulfalizer@gmail.com>, Arnd Bergmann <arnd@arndb.de>, Geert Uytterhoeven <geert+renesas@glider.be>, Randy Dunlap <rdunlap@infradead.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Simon Horman <horms+renesas@verge.net.au>
+To: Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
 
-On 12/18/2018 02:19 PM, Rob Clark wrote:
-> On Fri, Oct 26, 2018 at 10:09 AM Rob Clark <robdclark@gmail.com> wrote:
->>
->> BACKLIGHT_CLASS_DEVICE is already tristate, but a dependency
->> FB_BACKLIGHT prevents it from being built as a module.  There
->> doesn't seem to be any particularly good reason for this, so
->> switch FB_BACKLIGHT over to tristate.
->>
->> Signed-off-by: Rob Clark <robdclark@gmail.com>
->> Tested-by: Arnd Bergmann <arnd@arndb.de>
+Hi,
+
+On 11/26/2018 11:02 AM, Konstantin Khorenko wrote:
+> Scrollback frame buffer is rather big - 32K,
+> so it requires 3rd order page, so let's use kvmalloc() instead of
+> ordinary kmalloc() for it.
+
+Is it actually safe to use non-contiguous memory for softback_buf?
+
+> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
+> ---
+>  drivers/video/fbdev/core/fbcon.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
 > 
-> bump
-
-Patch queued for 4.21, thanks (also sorry for the delay).
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index 8958ccc8b1ac..2b1a34d3f5e2 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -992,7 +992,7 @@ static const char *fbcon_startup(void)
+>  			if (!softback_buf) {
+>  				softback_buf >  				    (unsigned long)
+> -				    kmalloc(fbcon_softback_size,
+> +				    kvmalloc(fbcon_softback_size,
+>  					    GFP_KERNEL);
+>  				if (!softback_buf) {
+>  					fbcon_softback_size = 0;
+> @@ -1001,7 +1001,7 @@ static const char *fbcon_startup(void)
+>  			}
+>  		} else {
+>  			if (softback_buf) {
+> -				kfree((void *) softback_buf);
+> +				kvfree((void *) softback_buf);
+>  				softback_buf = 0;
+>  				softback_top = 0;
+>  			}
+> @@ -3665,7 +3665,7 @@ static void fbcon_exit(void)
+>  	}
+>  #endif
+>  
+> -	kfree((void *)softback_buf);
+> +	kvfree((void *)softback_buf);
+>  	softback_buf = 0UL;
+>  
+>  	for_each_registered_fb(i) {
 
 Best regards,
 --

@@ -1,47 +1,30 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Thu, 20 Dec 2018 16:10:20 +0000
-Subject: Re: [PATCH] video: offb: Pass actual name in offb_init_palette_hacks
-Message-Id: <CA+7wUszBpmd2r18WZVjAXv2xq+ySrnKTqaRT7bGcHa71_M_j7g@mail.gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 20 Dec 2018 16:55:19 +0000
+Subject: Re: [PATCH -next] video: fbdev: pxafb: Fix "WARNING: invalid free of devm_ allocated data"
+Message-Id: <a24ef622-d811-dd6e-450f-a75bf4392215@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181207125844.18775-1-malat@debian.org>
-In-Reply-To: <20181207125844.18775-1-malat@debian.org>
+References: <CGME20181116110325epcas4p1a18c4e9d98ede25027bc198065d988dd@epcas4p1.samsung.com>
+        <20181116110255.19736-1-yuehaibing@huawei.com>
+In-Reply-To: <20181116110255.19736-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh@kernel.org>
-Cc: "# v4 . 11" <stable@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: YueHaibing <yuehaibing@huawei.com>
+Cc: daniel@zonque.org, robert.jarzmik@free.fr, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Rob, any comment ?
 
-On Fri, Dec 7, 2018 at 1:59 PM Mathieu Malaterre <malat@debian.org> wrote:
->
-> This is a partial revert of commit 5c63e407aaab ("fbdev: Convert to
-> using %pOFn instead of device_node.name"). This is the minimal work to
-> get a Mac Mini G4 back to a bootable state. The function
-> offb_init_palette_hacks would need to handle the case where `name` has
-> been set to NULL.
->
-> Cc: Rob Herring <robh@kernel.org>
-> Fixes: 5c63e407aaab ("fbdev: Convert to using %pOFn instead of device_node.name")
-> Cc: stable@vger.kernel.org # v4.19+
-> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> ---
->  drivers/video/fbdev/offb.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
-> index 31f769d67195..6e75851f8142 100644
-> --- a/drivers/video/fbdev/offb.c
-> +++ b/drivers/video/fbdev/offb.c
-> @@ -648,7 +648,7 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
->                 /* kludge for valkyrie */
->                 if (strcmp(dp->name, "valkyrie") = 0)
->                         address += 0x1000;
-> -               offb_init_fb(no_real_node ? "bootx" : NULL,
-> +               offb_init_fb(no_real_node ? "bootx" : dp->name,
->                              width, height, depth, pitch, address,
->                              foreign_endian, no_real_node ? NULL : dp);
->         }
-> --
-> 2.19.2
->
+On 11/16/2018 12:02 PM, YueHaibing wrote:
+> 'info->modes' got allocated with devm_kcalloc in of_get_pxafb_display.
+> 
+> This gives this error message:
+>   ./drivers/video/fbdev/pxafb.c:2238:2-7: WARNING: invalid free of devm_ allocated data
+> 
+> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+
+Patch queued for 4.21, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

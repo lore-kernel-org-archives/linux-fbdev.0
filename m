@@ -1,65 +1,56 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 20 Dec 2018 16:21:45 +0000
+From: Konstantin Khorenko <khorenko@virtuozzo.com>
+Date: Fri, 21 Dec 2018 10:58:59 +0000
 Subject: Re: [PATCH] fbcon: use kvmalloc() for scrollback buffer
-Message-Id: <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
+Message-Id: <4eba60c6-4eb8-5a82-f394-307f835f41e1@virtuozzo.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <CGME20181126100342epcas3p12a1e6505ff4b73375ac3fcf5d0355d3f@epcas3p1.samsung.com>
-        <20181126100253.3299-1-khorenko@virtuozzo.com>
-In-Reply-To: <20181126100253.3299-1-khorenko@virtuozzo.com>
+ <20181126100253.3299-1-khorenko@virtuozzo.com>
+ <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
+In-Reply-To: <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Konstantin Khorenko <khorenko@virtuozzo.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-
-Hi,
-
-On 11/26/2018 11:02 AM, Konstantin Khorenko wrote:
-> Scrollback frame buffer is rather big - 32K,
-> so it requires 3rd order page, so let's use kvmalloc() instead of
-> ordinary kmalloc() for it.
-
-Is it actually safe to use non-contiguous memory for softback_buf?
-
-> Signed-off-by: Konstantin Khorenko <khorenko@virtuozzo.com>
-> ---
->  drivers/video/fbdev/core/fbcon.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-> index 8958ccc8b1ac..2b1a34d3f5e2 100644
-> --- a/drivers/video/fbdev/core/fbcon.c
-> +++ b/drivers/video/fbdev/core/fbcon.c
-> @@ -992,7 +992,7 @@ static const char *fbcon_startup(void)
->  			if (!softback_buf) {
->  				softback_buf >  				    (unsigned long)
-> -				    kmalloc(fbcon_softback_size,
-> +				    kvmalloc(fbcon_softback_size,
->  					    GFP_KERNEL);
->  				if (!softback_buf) {
->  					fbcon_softback_size = 0;
-> @@ -1001,7 +1001,7 @@ static const char *fbcon_startup(void)
->  			}
->  		} else {
->  			if (softback_buf) {
-> -				kfree((void *) softback_buf);
-> +				kvfree((void *) softback_buf);
->  				softback_buf = 0;
->  				softback_top = 0;
->  			}
-> @@ -3665,7 +3665,7 @@ static void fbcon_exit(void)
->  	}
->  #endif
->  
-> -	kfree((void *)softback_buf);
-> +	kvfree((void *)softback_buf);
->  	softback_buf = 0UL;
->  
->  	for_each_registered_fb(i) {
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+SGkgQmFydGxvbWllaiwNCg0KT24gMTIvMjAvMjAxOCAwNzoyMSBQTSwgQmFydGxvbWllaiBab2xu
+aWVya2lld2ljeiB3cm90ZToNCj4gT24gMTEvMjYvMjAxOCAxMTowMiBBTSwgS29uc3RhbnRpbiBL
+aG9yZW5rbyB3cm90ZToNCj4+IFNjcm9sbGJhY2sgZnJhbWUgYnVmZmVyIGlzIHJhdGhlciBiaWcg
+LSAzMkssDQo+PiBzbyBpdCByZXF1aXJlcyAzcmQgb3JkZXIgcGFnZSwgc28gbGV0J3MgdXNlIGt2
+bWFsbG9jKCkgaW5zdGVhZCBvZg0KPj4gb3JkaW5hcnkga21hbGxvYygpIGZvciBpdC4NCj4NCj4g
+SXMgaXQgYWN0dWFsbHkgc2FmZSB0byB1c2Ugbm9uLWNvbnRpZ3VvdXMgbWVtb3J5IGZvciBzb2Z0
+YmFja19idWY/DQoNCldlbGwsIHRoYXQncyB3aHkgd2UgbmVlZCBhIHJldmlldy4gOikNCg0KaSd2
+ZSBhc2tlZCBteXNlbGYgc2FtZSBxdWVzdGlvbiB3aGlsZSBmaXhpbmcgdGhpcywNCmkndmUgZGln
+IHNvdXJjZXMgYSBiaXQgYW5kIGRpZCBub3QgZmluZCBwbGFjZXMgd2hlbiBzb2Z0YmFja19idWYg
+aXMgcHJvdmlkZWQgZm9yIERNQSwNCmFsbCBvdGhlciBwbGFjZXMgc2VlbXMgdG8gd29yayB3aXRo
+IHZpcnR1YWwgYWRkcmVzc2VzLCBzbyB0aGVyZSBzaG91bGQgYmUgbm8gcHJvYmxlbS4NCg0KRXZl
+biBtb3JlIGkgc2F3IGEgZnVuY3Rpb24gd2hpY2ggbWVudGlvbnMgdGhhdCBzb2Z0YmFjayBtaWdo
+dCBiZSBub24tY29udGlnaW91czoNCg0KLyogQXMgd2UgbWlnaHQgYmUgaW5zaWRlIG9mIHNvZnRi
+YWNrLCB3ZSBtYXkgd29yayB3aXRoIG5vbi1jb250aWd1b3VzIGJ1ZmZlciwNCiAgICB0aGF0J3Mg
+d2h5IHdlIGhhdmUgdG8gdXNlIGEgc2VwYXJhdGUgcm91dGluZS4gKi8NCnN0YXRpYyB2b2lkIGZi
+Y29uX2ludmVydF9yZWdpb24oc3RydWN0IHZjX2RhdGEgKnZjLCB1MTYgKiBwLCBpbnQgY250KQ0K
+DQpTbyBpIHRoaW5rIGl0J3Mgc2FmZSB0byB1c2Uga3ZtYWxsb2MoKSBoZXJlLg0KDQotLQ0KQmVz
+dCByZWdhcmRzLA0KDQpLb25zdGFudGluIEtob3JlbmtvLA0KVmlydHVvenpvIExpbnV4IEtlcm5l
+bCBUZWFtDQoNCj4+IFNpZ25lZC1vZmYtYnk6IEtvbnN0YW50aW4gS2hvcmVua28gPGtob3Jlbmtv
+QHZpcnR1b3p6by5jb20+DQo+PiAtLS0NCj4+ICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJj
+b24uYyB8IDYgKysrLS0tDQo+PiAgMSBmaWxlIGNoYW5nZWQsIDMgaW5zZXJ0aW9ucygrKSwgMyBk
+ZWxldGlvbnMoLSkNCj4+DQo+PiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3Jl
+L2ZiY29uLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYw0KPj4gaW5kZXggODk1
+OGNjYzhiMWFjLi4yYjFhMzRkM2Y1ZTIgMTAwNjQ0DQo+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L2NvcmUvZmJjb24uYw0KPj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29u
+LmMNCj4+IEBAIC05OTIsNyArOTkyLDcgQEAgc3RhdGljIGNvbnN0IGNoYXIgKmZiY29uX3N0YXJ0
+dXAodm9pZCkNCj4+ICAJCQlpZiAoIXNvZnRiYWNrX2J1Zikgew0KPj4gIAkJCQlzb2Z0YmFja19i
+dWYgPQ0KPj4gIAkJCQkgICAgKHVuc2lnbmVkIGxvbmcpDQo+PiAtCQkJCSAgICBrbWFsbG9jKGZi
+Y29uX3NvZnRiYWNrX3NpemUsDQo+PiArCQkJCSAgICBrdm1hbGxvYyhmYmNvbl9zb2Z0YmFja19z
+aXplLA0KPj4gIAkJCQkJICAgIEdGUF9LRVJORUwpOw0KPj4gIAkJCQlpZiAoIXNvZnRiYWNrX2J1
+Zikgew0KPj4gIAkJCQkJZmJjb25fc29mdGJhY2tfc2l6ZSA9IDA7DQo+PiBAQCAtMTAwMSw3ICsx
+MDAxLDcgQEAgc3RhdGljIGNvbnN0IGNoYXIgKmZiY29uX3N0YXJ0dXAodm9pZCkNCj4+ICAJCQl9
+DQo+PiAgCQl9IGVsc2Ugew0KPj4gIAkJCWlmIChzb2Z0YmFja19idWYpIHsNCj4+IC0JCQkJa2Zy
+ZWUoKHZvaWQgKikgc29mdGJhY2tfYnVmKTsNCj4+ICsJCQkJa3ZmcmVlKCh2b2lkICopIHNvZnRi
+YWNrX2J1Zik7DQo+PiAgCQkJCXNvZnRiYWNrX2J1ZiA9IDA7DQo+PiAgCQkJCXNvZnRiYWNrX3Rv
+cCA9IDA7DQo+PiAgCQkJfQ0KPj4gQEAgLTM2NjUsNyArMzY2NSw3IEBAIHN0YXRpYyB2b2lkIGZi
+Y29uX2V4aXQodm9pZCkNCj4+ICAJfQ0KPj4gICNlbmRpZg0KPj4NCj4+IC0Ja2ZyZWUoKHZvaWQg
+Kilzb2Z0YmFja19idWYpOw0KPj4gKwlrdmZyZWUoKHZvaWQgKilzb2Z0YmFja19idWYpOw0KPj4g
+IAlzb2Z0YmFja19idWYgPSAwVUw7DQo+Pg0KPj4gIAlmb3JfZWFjaF9yZWdpc3RlcmVkX2ZiKGkp
+IHsNCj4NCj4gQmVzdCByZWdhcmRzLA0KPiAtLQ0KPiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6
+DQo+IFNhbXN1bmcgUiZEIEluc3RpdHV0ZSBQb2xhbmQNCj4gU2Ftc3VuZyBFbGVjdHJvbmljcw0K

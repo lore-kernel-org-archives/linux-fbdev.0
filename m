@@ -1,56 +1,43 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 12 Dec 2018 06:14:04 +0000
-Subject: Re: [RESEND PATCH v3] backlight: pwm_bl: Fix brightness levels for non-DT case.
-Message-Id: <20181212061404.GK4497@dell>
+From: Kangjie Lu <kjlu@umn.edu>
+Date: Tue, 25 Dec 2018 06:21:09 +0000
+Subject: [PATCH] backlight: (adp8870) fix a missing check for adp8870_write
+Message-Id: <20181225062109.66943-1-kjlu@umn.edu>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181210121437.30170-1-enric.balletbo@collabora.com>
-In-Reply-To: <20181210121437.30170-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Cc: linux-pwm@vger.kernel.org, daniel.thompson@linaro.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, u.kleine-koenig@pengutronix.de, kernel@collabora.com, robert.jarzmik@free.fr
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: kjlu@umn.edu
+Cc: pakki001@umn.edu, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 10 Dec 2018, Enric Balletbo i Serra wrote:
+adp8870_write() may fail. This fix checks if adp8870_write fails, and if
+so, returns its error code.
 
-> Commit '88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
-> linearly to human eye")' allows the possibility to compute a default
-> brightness table when there isn't the brightness-levels property in the
-> DT. Unfortunately the changes made broke the pwm backlight for the
-> non-DT boards.
-> 
-> Usually, the non-DT boards don't pass the brightness levels via platform
-> data, instead, it sets the max_brightness in their platform data and the
-> driver calculates the level without a table. The offending patch assumed
-> that when there is no brightness levels table we should create one, but this
-> is clearly wrong for the non-DT case.
-> 
-> After this patch the code handles the DT and the non-DT case taking in
-> consideration also if max_brightness is set or not.
-> 
-> Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-> Cc: <stable@vger.kernel.org>
-> Reported-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Signed-off-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> Tested-by: Robert Jarzmik <robert.jarzmik@free.fr>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
-> 
-> Changes in v3:
-> - Fixed some typos in commit message.
-> - Removed ' in Fixes tag.
-> 
-> Changes in v2:
-> - Rebase on top of mainline
-> - Add Tested-by and Acked-by tags.
-> 
->  drivers/video/backlight/pwm_bl.c | 41 +++++++++++++++++++++++++++-----
->  1 file changed, 35 insertions(+), 6 deletions(-)
+Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+---
+ drivers/video/backlight/adp8870_bl.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-FYI, this patch is now in Mainline.
-
+diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+index 8d50e0299578..79901fb4fcd1 100644
+--- a/drivers/video/backlight/adp8870_bl.c
++++ b/drivers/video/backlight/adp8870_bl.c
+@@ -811,9 +811,14 @@ static ssize_t adp8870_bl_ambient_light_zone_store(struct device *dev,
+ 		if (!ret) {
+ 			reg_val &= ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
+ 			reg_val |= (val - 1) << CFGR_BLV_SHIFT;
+-			adp8870_write(data->client, ADP8870_CFGR, reg_val);
+-		}
+-		mutex_unlock(&data->lock);
++			ret = adp8870_write(data->client,
++					ADP8870_CFGR, reg_val);
++			if (ret) {
++				mutex_unlock(&data->lock);
++				return ret;
++			}
++		}	else
++			mutex_unlock(&data->lock);
+ 	}
+ 
+ 	return count;
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.2 (Apple Git-113)

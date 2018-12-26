@@ -1,33 +1,179 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Tue, 04 Dec 2018 15:03:36 +0000
-Subject: [PATCH 1/4] dt-bindings: display: ssd1307fb: Remove reset-active-low from examples
-Message-Id: <1543935806-94880-2-git-send-email-michal.vokac@ysoft.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Wed, 26 Dec 2018 00:37:59 +0000
+Subject: [PATCH v8 19/25] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when CONFIG_PPC32 && CONFIG_PPC_PMAC
+Message-Id: <88b7f55b6b27aac143c364de12d01c73afce78e9.1545784679.git.fthain@telegraphics.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1543935806-94880-1-git-send-email-michal.vokac@ysoft.com>
+References: <cover.1545784679.git.fthain@telegraphics.com.au>
+In-Reply-To: <cover.1545784679.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rob Herring <robh+dt@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-VGhlIHJlc2V0LWFjdGl2ZS1sb3cgcHJvcGVydHkgaGFzIGJlZW4gcmVtb3ZlZCBicm9tIHRoZSBi
-aW5kaW5nIGEgd2hpbGUNCmFnby4gU28gcmVtb3ZlIGl0IGZyb20gdGhlIGV4YW1wbGVzIGFzIHdl
-bGwuDQoNCkZpeGVzOiA1MTliNGRiICgiZmJkZXY6IHNzZDEzMDdmYjogUmVtb3ZlIHJlc2V0LWFj
-dGl2ZS1sb3cgZnJvbSB0aGUgRFQgYmluZGluZyBkb2N1bWVudCIpDQpTaWduZWQtb2ZmLWJ5OiBN
-aWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0KIERvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9kaXNwbGF5L3NzZDEzMDdmYi50eHQgfCAyIC0tDQogMSBm
-aWxlIGNoYW5nZWQsIDIgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9u
-L2RldmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9zc2QxMzA3ZmIudHh0IGIvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Rpc3BsYXkvc3NkMTMwN2ZiLnR4dA0KaW5kZXggMjA5ZDkz
-MS4uYjY3ZjhjYSAxMDA2NDQNCi0tLSBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5n
-cy9kaXNwbGF5L3NzZDEzMDdmYi50eHQNCisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9kaXNwbGF5L3NzZDEzMDdmYi50eHQNCkBAIC0zNiw3ICszNiw2IEBAIHNzZDEzMDc6
-IG9sZWRAM2Mgew0KICAgICAgICAgcmVnID0gPDB4M2M+Ow0KICAgICAgICAgcHdtcyA9IDwmcHdt
-IDQgMzAwMD47DQogICAgICAgICByZXNldC1ncGlvcyA9IDwmZ3BpbzIgNz47DQotICAgICAgICBy
-ZXNldC1hY3RpdmUtbG93Ow0KIH07DQogDQogc3NkMTMwNjogb2xlZEAzYyB7DQpAQCAtNDQsNyAr
-NDMsNiBAQCBzc2QxMzA2OiBvbGVkQDNjIHsNCiAgICAgICAgIHJlZyA9IDwweDNjPjsNCiAgICAg
-ICAgIHB3bXMgPSA8JnB3bSA0IDMwMDA+Ow0KICAgICAgICAgcmVzZXQtZ3Bpb3MgPSA8JmdwaW8y
-IDc+Ow0KLSAgICAgICAgcmVzZXQtYWN0aXZlLWxvdzsNCiAgICAgICAgIHNvbG9tb24sY29tLWxy
-cmVtYXA7DQogICAgICAgICBzb2xvbW9uLGNvbS1pbnZkaXI7DQogICAgICAgICBzb2xvbW9uLGNv
-bS1vZmZzZXQgPSA8MzI+Ow0KLS0gDQoyLjEuNA0KDQo
+This patch addresses inconsistencies in Mac framebuffer drivers and their
+use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
+
+Macintosh framebuffer drivers use default settings for color mode and
+video mode that are found in NVRAM. On PCI Macs, MacOS stores display
+settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
+there is no NR partition and MacOS stores display mode settings in PRAM**.
+
+Early-model Macs are the ones most likely to benefit from these settings,
+since they are more likely to have a fixed-frequency monitor connected to
+the built-in framebuffer device. Moreover, a single NV_CMODE value and
+a single NV_VMODE value provide for only one display.
+
+The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
+partition for Old World machines. This also suggests that these defaults
+are not useful on later models. The NR partition seems to be optional on
+New World machines. CONFIG_NVRAM cannot be enabled on PPC64 at present.
+
+It is safe to say that NVRAM support in PowerMac fbdev drivers is only
+applicable to CONFIG_PPC32 so make this condition explicit. This means
+matroxfb driver won't crash on PPC64 when CONFIG_NVRAM becomes available
+there.
+
+For imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
+since PPC64 does not implement nvram_read_byte(). Also add a missing
+machine_is(powermac) check. Change the inconsistent dependency on
+CONFIG_PPC and the matching #ifdef tests to CONFIG_PPC_PMAC.
+
+For valkyriefb, to improve clarity and consistency with the other PowerMac
+fbdev drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
+bogus comment regarding PRAM.
+
+* See GetPreferredConfiguration and SavePreferredConfiguration in
+"Designing PCI Cards and Drivers for Power Macintosh Computers".
+
+** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
+for the Macintosh Family".
+
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+---
+ drivers/video/fbdev/Kconfig                |  2 +-
+ drivers/video/fbdev/imsttfb.c              | 12 +++++-------
+ drivers/video/fbdev/matrox/matroxfb_base.c |  2 +-
+ drivers/video/fbdev/valkyriefb.c           | 14 ++++++--------
+ 4 files changed, 13 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index e413f54208f4..52453ce3040a 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -536,7 +536,7 @@ config FB_IMSTT
+ 	bool "IMS Twin Turbo display support"
+ 	depends on (FB = y) && PCI
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_MACMODES if PPC
++	select FB_MACMODES if PPC_PMAC
+ 	help
+ 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
+ 	  many Macintosh and compatible computers.
+diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
+index 901ca4ed10e9..8d231591ff0e 100644
+--- a/drivers/video/fbdev/imsttfb.c
++++ b/drivers/video/fbdev/imsttfb.c
+@@ -30,9 +30,8 @@
+ #include <asm/io.h>
+ #include <linux/uaccess.h>
+ 
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ #include <linux/nvram.h>
+-#include <asm/prom.h>
+ #include "macmodes.h"
+ #endif
+ 
+@@ -327,14 +326,13 @@ enum {
+ 	TVP = 1
+ };
+ 
+-#define USE_NV_MODES		1
+ #define INIT_BPP		8
+ #define INIT_XRES		640
+ #define INIT_YRES		480
+ 
+ static int inverse = 0;
+ static char fontname[40] __initdata = { 0 };
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ static signed char init_vmode = -1, init_cmode = -1;
+ #endif
+ 
+@@ -1390,8 +1388,8 @@ static void init_imstt(struct fb_info *info)
+ 		}
+ 	}
+ 
+-#if USE_NV_MODES && defined(CONFIG_PPC32)
+-	{
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
++	if (machine_is(powermac)) {
+ 		int vmode = init_vmode, cmode = init_cmode;
+ 
+ 		if (vmode = -1) {
+@@ -1565,7 +1563,7 @@ imsttfb_setup(char *options)
+ 			inverse = 1;
+ 			fb_invert_cmaps();
+ 		}
+-#if defined(CONFIG_PPC)
++#if defined(CONFIG_PPC_PMAC)
+ 		else if (!strncmp(this_opt, "vmode:", 6)) {
+ 			int vmode = simple_strtoul(this_opt+6, NULL, 0);
+ 			if (vmode > 0 && vmode <= VMODE_MAX)
+diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbdev/matrox/matroxfb_base.c
+index 0a4e5bad33f4..cac5865d461c 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_base.c
++++ b/drivers/video/fbdev/matrox/matroxfb_base.c
+@@ -1874,7 +1874,7 @@ static int initMatrox2(struct matrox_fb_info *minfo, struct board *b)
+ 		struct fb_var_screeninfo var;
+ 		if (default_vmode <= 0 || default_vmode > VMODE_MAX)
+ 			default_vmode = VMODE_640_480_60;
+-#ifdef CONFIG_NVRAM
++#if defined(CONFIG_PPC32) && defined(CONFIG_NVRAM)
+ 		if (default_cmode = CMODE_NVRAM)
+ 			default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
+diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyriefb.c
+index d51c3a8009cb..8022316ee9c9 100644
+--- a/drivers/video/fbdev/valkyriefb.c
++++ b/drivers/video/fbdev/valkyriefb.c
+@@ -63,14 +63,12 @@
+ #include "macmodes.h"
+ #include "valkyriefb.h"
+ 
+-#ifdef CONFIG_MAC
+-/* We don't yet have functions to read the PRAM... perhaps we can
+-   adapt them from the PPC code? */
+-static int default_vmode = VMODE_CHOOSE;
+-static int default_cmode = CMODE_8;
+-#else
++#ifdef CONFIG_PPC_PMAC
+ static int default_vmode = VMODE_NVRAM;
+ static int default_cmode = CMODE_NVRAM;
++#else
++static int default_vmode = VMODE_CHOOSE;
++static int default_cmode = CMODE_8;
+ #endif
+ 
+ struct fb_par_valkyrie {
+@@ -283,7 +281,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ 	printk(KERN_INFO "Monitor sense value = 0x%x\n", p->sense);
+ 
+ 	/* Try to pick a video mode out of NVRAM if we have one. */
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_vmode = VMODE_NVRAM) {
+ 		default_vmode = nvram_read_byte(NV_VMODE);
+ 		if (default_vmode <= 0
+@@ -296,7 +294,7 @@ static void __init valkyrie_choose_mode(struct fb_info_valkyrie *p)
+ 		default_vmode = mac_map_monitor_sense(p->sense);
+ 	if (!valkyrie_reg_init[default_vmode - 1])
+ 		default_vmode = VMODE_640_480_67;
+-#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
++#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_NVRAM)
+ 	if (default_cmode = CMODE_NVRAM)
+ 		default_cmode = nvram_read_byte(NV_CMODE);
+ #endif
+-- 
+2.19.2

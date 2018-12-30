@@ -1,32 +1,42 @@
-From: Anshuman Khandual <anshuman.khandual@arm.com>
-Date: Wed, 05 Dec 2018 11:32:57 +0000
-Subject: Re: [LKP] [mm] 19717e78a0: stderr.if(target_node==NUMA_NO_NODE){
-Message-Id: <d75d097f-78a5-865e-a80a-b1e6faeff337@arm.com>
+From: "FUND ALLIANCE INTERNATIONAL" <info@cent.org>
+Date: Sun, 30 Dec 2018 21:28:24 +0000
+Subject: ALLIANCE LOAN OFFER/PROJECT FUNDING
+Message-Id: <50c93b3076c932b39d207530cd2409be.squirrel@email.fatcow.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kernel test robot <rong.a.chen@intel.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, netdev@vger.kernel.org, intel-wired-lan@lists.osuosl.org, linux-media@vger.kernel.org, iommu@lists.linux-foundation.org, linux-rdma@vger.kernel.org, dmaengine@vger.kernel.org, linux-block@vger.kernel.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-ia64@vger.kernel.org, linux-alpha@vger.kernel.org, akpm@linux-foundation.org, jiangqi903@gmail.com, hverkuil@xs4all.nl, vkoul@kernel.org, lkp@01.org
 
-On 12/05/2018 10:30 AM, kernel test robot wrote:
-> FYI, we noticed the following commit (built with gcc-7):
-> 
-> commit: 19717e78a04d51512cf0e7b9b09c61f06b2af071 ("[PATCH V2] mm: Replace all open encodings for NUMA_NO_NODE")
-> url: https://github.com/0day-ci/linux/commits/Anshuman-Khandual/mm-Replace-all-open-encodings-for-NUMA_NO_NODE/20181126-203831
-> 
-> 
-> in testcase: perf-sanity-tests
-> with following parameters:
-> 
-> 	perf_compiler: gcc
-> 	ucode: 0x7000013
-> 
-> 
-> 
-> on test machine: 16 threads Intel(R) Xeon(R) CPU D-1541 @ 2.10GHz with 8G memory
-> 
-> caused below changes (please refer to attached dmesg/kmsg for entire log/backtrace):
 
-The fix (in Andrew's staging tree) from Stephen Rothwell which adds <linux/numa.h>
-definitions to <tools/include/linux/numa.h> should fix this.
+
+
+Good Day,
+
+I'm Olivia Austin a consultant from Fund Alliance International, We are
+currently offering 95% Non-Recourse Loan with our BG Leased Monetization
+Program for trade finance, constructions, credit enhancement, government
+funding, property investment and all-round range of funding, with 2%
+interest rate per annul for a period of 10-years + 1 year grace period
+with no pre-payment penalties. .
+
+    TERMS:
+
+    2 % INTEREST RATE YEARLY
+    10 YEARS DURATION
+    1M-50B USD / EUR REQUIREMENT:
+
+    1.      CLIENT MUST OWN OR REPRESENT A COMPANY.
+
+    2.      CLIENT MUST BE ABLE TO PROVIDE BUSINESS PLAN OR EXECUTIVE
+SUMMARY OR SUMMARY PURPOSE OF THE LOAN.
+
+Let us know if you are interested in our services and meet up with the
+requirements? so as to provide you with more information.
+
+Regards,
+Olivia Austin
+Fund Alliance
+Lutzowplatz 17 10785, Berlin
+Germany
+Phone: +49 (322) 2109 7890
+Email:olistin001@gmail.com

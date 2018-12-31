@@ -1,323 +1,133 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Fri, 14 Dec 2018 23:40:07 +0000
-Subject: Re: [PATCH v5 02/12] gpu: ipu-csi: Swap fields according to input/output field types
-Message-Id: <9998c91a-f8b8-9c7e-3c37-10600601f843@gmail.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Mon, 31 Dec 2018 15:58:17 +0000
+Subject: Re: Sleeping from invalid context in udlfb
+Message-Id: <alpine.LRH.2.02.1812311057180.22901@file01.intranet.prod.int.rdu2.redhat.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="185206533-541631774-1546271900=:22901"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181017000027.23696-1-slongerbeam@gmail.com>
- <20181017000027.23696-3-slongerbeam@gmail.com>
- <1544705964.5886.1.camel@pengutronix.de>
-In-Reply-To: <1544705964.5886.1.camel@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>, linux-media@vger.kernel.org
-Cc: Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+References: <CGME20180603154636epcas2p4812a1f19c6ae236336ae580658edb167@epcas2p4.samsung.com>
+ <6008699.T6Yd1fn3Dk@amdc3058>
+ <alpine.LRH.2.02.1807092148080.30863@file01.intranet.prod.int.rdu2.redhat.com>
+ <1975707.vO8kdHz3oS@amdc3058>
+ <alpine.LRH.2.02.1807300552140.2919@file01.intranet.prod.int.rdu2.redhat.com>
+ <alpine.LRH.2.02.1807311111520.22145@file01.intranet.prod.int.rdu2.redhat.com>
+ <CAMuHMdVBurd2L1iK218QvNUorLyQs4nnTpikZGgJRZjHN8apAw@mail.gmail.com>
+ <alpine.LRH.2.02.1808010657300.903@file01.intranet.prod.int.rdu2.redhat.com>
+ <CAMuHMdUGSv-_2nTcRoj1ScC2XhYr75yX4ttSvwcyW8esJas=eQ@mail.gmail.com>
+ <alpine.LRH.2.02.1808010929580.30128@file01.intranet.prod.int.rdu2.redhat.com>
+ <CAMwc25ryeLgZ+m87eeJR2Ti8330uR-dFkxP2kcETJ6ZfrLZZRQ@mail.gmail.com>
+In-Reply-To: <CAMwc25ryeLgZ+m87eeJR2Ti8330uR-dFkxP2kcETJ6ZfrLZZRQ@mail.gmail.com>
+To: David Airlie <airlied@redhat.com>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Ladislav Michl <ladis@linux-mips.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg KH <gregkh@linuxfoundation.org>, Bernie Thompson <bernie@plugable.com>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Jiri Slaby <jslaby@suse.com>
+
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+--185206533-541631774-1546271900=:22901
+Content-Type: TEXT/PLAIN; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 
 
 
-On 12/13/18 4:59 AM, Philipp Zabel wrote:
-> Hi Steve,
->
-> On Tue, 2018-10-16 at 17:00 -0700, Steve Longerbeam wrote:
->> The function ipu_csi_init_interface() was inverting the F-bit for
->> NTSC case, in the CCIR_CODE_1/2 registers. The result being that
->> for NTSC bottom-top field order, the CSI would swap fields and
->> capture in top-bottom order.
->>
->> Instead, base field swap on the field order of the input to the CSI,
->> and the field order of the requested output. If the input/output
->> fields are sequential but different, swap fields, otherwise do
->> not swap. This requires passing both the input and output mbus
->> frame formats to ipu_csi_init_interface().
->>
->> Move this code to a new private function ipu_csi_set_bt_interlaced_codes()
->> that programs the CCIR_CODE_1/2 registers for interlaced BT.656 (and
->> possibly interlaced BT.1120 in the future).
->>
->> When detecting input video standard from the input frame width/height,
->> make sure to double height if input field type is alternate, since
->> in that case input height only includes lines for one field.
->>
->> Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
->> ---
->> Changes since v4:
->> - Cleaned up some convoluted code in ipu_csi_init_interface(), suggested
->>    by Philipp Zabel.
->> - Fixed a regression in csi_setup(), caught by Philipp.
->> ---
->>   drivers/gpu/ipu-v3/ipu-csi.c              | 119 +++++++++++++++-------
->>   drivers/staging/media/imx/imx-media-csi.c |  17 +---
->>   include/video/imx-ipu-v3.h                |   3 +-
->>   3 files changed, 88 insertions(+), 51 deletions(-)
->>
->> diff --git a/drivers/gpu/ipu-v3/ipu-csi.c b/drivers/gpu/ipu-v3/ipu-csi.c
->> index aa0e30a2ba18..4a15e513fa05 100644
->> --- a/drivers/gpu/ipu-v3/ipu-csi.c
->> +++ b/drivers/gpu/ipu-v3/ipu-csi.c
->> @@ -325,6 +325,15 @@ static int mbus_code_to_bus_cfg(struct ipu_csi_bus_config *cfg, u32 mbus_code,
->>   	return 0;
->>   }
->>   
->> +/* translate alternate field mode based on given standard */
->> +static inline enum v4l2_field
->> +ipu_csi_translate_field(enum v4l2_field field, v4l2_std_id std)
->> +{
->> +	return (field != V4L2_FIELD_ALTERNATE) ? field :
->> +		((std & V4L2_STD_525_60) ?
->> +		 V4L2_FIELD_SEQ_BT : V4L2_FIELD_SEQ_TB);
->> +}
->> +
->>   /*
->>    * Fill a CSI bus config struct from mbus_config and mbus_framefmt.
->>    */
->> @@ -374,22 +383,75 @@ static int fill_csi_bus_cfg(struct ipu_csi_bus_config *csicfg,
->>   	return 0;
->>   }
->>   
->> +static int ipu_csi_set_bt_interlaced_codes(struct ipu_csi *csi,
->> +					   struct v4l2_mbus_framefmt *infmt,
->> +					   struct v4l2_mbus_framefmt *outfmt,
-> infmt and outfmt parameters could be const.
+On Thu, 2 Aug 2018, David Airlie wrote:
 
-Agreed, I will convert these pointer args to const. And since we are 
-changing the API to ipu_csi_init_interface() anyway, I went ahead and 
-converted the mbus_cfg, infmt, and outfmt pointer args to const there as 
-well.
+> 
+> I'm pretty sure udlkms handles this already.
+> 
+> Dave.
 
+But it crashes on unplug :-)
 
->> +					   v4l2_std_id std)
->> +{
->> +	enum v4l2_field infield, outfield;
->> +	bool swap_fields;
->> +
->> +	/* get translated field type of input and output */
->> +	infield = ipu_csi_translate_field(infmt->field, std);
->> +	outfield = ipu_csi_translate_field(outfmt->field, std);
->> +
->> +	/*
->> +	 * Write the H-V-F codes the CSI will match against the
->> +	 * incoming data for start/end of active and blanking
->> +	 * field intervals. If input and output field types are
->> +	 * sequential but not the same (one is SEQ_BT and the other
->> +	 * is SEQ_TB), swap the F-bit so that the CSI will capture
->> +	 * field 1 lines before field 0 lines.
->> +	 */
->> +	swap_fields = (V4L2_FIELD_IS_SEQUENTIAL(infield) &&
->> +		       V4L2_FIELD_IS_SEQUENTIAL(outfield) &&
->> +		       infield != outfield);
->> +
->> +	if (!swap_fields) {
->> +		/*
->> +		 * Field0BlankEnd  = 110, Field0BlankStart  = 010
->> +		 * Field0ActiveEnd = 100, Field0ActiveStart = 000
->> +		 * Field1BlankEnd  = 111, Field1BlankStart  = 011
->> +		 * Field1ActiveEnd = 101, Field1ActiveStart = 001
->> +		 */
->> +		ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
->> +			      CSI_CCIR_CODE_1);
->> +		ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
->> +	} else {
->> +		dev_dbg(csi->ipu->dev, "capture field swap\n");
->> +
->> +		/* same as above but with F-bit inverted */
->> +		ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
->> +			      CSI_CCIR_CODE_1);
->> +		ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
->> +	}
->> +
->> +	ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
->> +
->> +	return 0;
->> +}
->> +
->> +
->>   int ipu_csi_init_interface(struct ipu_csi *csi,
->>   			   struct v4l2_mbus_config *mbus_cfg,
->> -			   struct v4l2_mbus_framefmt *mbus_fmt)
->> +			   struct v4l2_mbus_framefmt *infmt,
->> +			   struct v4l2_mbus_framefmt *outfmt)
->>   {
->>   	struct ipu_csi_bus_config cfg;
->>   	unsigned long flags;
->>   	u32 width, height, data = 0;
->> +	v4l2_std_id std;
->>   	int ret;
->>   
->> -	ret = fill_csi_bus_cfg(&cfg, mbus_cfg, mbus_fmt);
->> +	ret = fill_csi_bus_cfg(&cfg, mbus_cfg, infmt);
->>   	if (ret < 0)
->>   		return ret;
->>   
->>   	/* set default sensor frame width and height */
->> -	width = mbus_fmt->width;
->> -	height = mbus_fmt->height;
->> +	width = infmt->width;
->> +	height = infmt->height;
->> +	if (infmt->field = V4L2_FIELD_ALTERNATE)
->> +		height *= 2;
->>   
->>   	/* Set the CSI_SENS_CONF register remaining fields */
->>   	data |= cfg.data_width << CSI_SENS_CONF_DATA_WIDTH_SHIFT |
->> @@ -416,42 +478,22 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
->>   		ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
->>   		break;
->>   	case IPU_CSI_CLK_MODE_CCIR656_INTERLACED:
->> -		if (mbus_fmt->width = 720 && mbus_fmt->height = 576) {
->> -			/*
->> -			 * PAL case
->> -			 *
->> -			 * Field0BlankEnd = 0x6, Field0BlankStart = 0x2,
->> -			 * Field0ActiveEnd = 0x4, Field0ActiveStart = 0
->> -			 * Field1BlankEnd = 0x7, Field1BlankStart = 0x3,
->> -			 * Field1ActiveEnd = 0x5, Field1ActiveStart = 0x1
->> -			 */
->> -			height = 625; /* framelines for PAL */
->> -
->> -			ipu_csi_write(csi, 0x40596 | CSI_CCIR_ERR_DET_EN,
->> -					  CSI_CCIR_CODE_1);
->> -			ipu_csi_write(csi, 0xD07DF, CSI_CCIR_CODE_2);
->> -			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
->> -		} else if (mbus_fmt->width = 720 && mbus_fmt->height = 480) {
->> -			/*
->> -			 * NTSC case
->> -			 *
->> -			 * Field0BlankEnd = 0x7, Field0BlankStart = 0x3,
->> -			 * Field0ActiveEnd = 0x5, Field0ActiveStart = 0x1
->> -			 * Field1BlankEnd = 0x6, Field1BlankStart = 0x2,
->> -			 * Field1ActiveEnd = 0x4, Field1ActiveStart = 0
->> -			 */
->> -			height = 525; /* framelines for NTSC */
->> -
->> -			ipu_csi_write(csi, 0xD07DF | CSI_CCIR_ERR_DET_EN,
->> -					  CSI_CCIR_CODE_1);
->> -			ipu_csi_write(csi, 0x40596, CSI_CCIR_CODE_2);
->> -			ipu_csi_write(csi, 0xFF0000, CSI_CCIR_CODE_3);
->> +		if (width = 720 && height = 480) {
->> +			std = V4L2_STD_NTSC;
->> +			height = 525;
->> +		} else if (width = 720 && height = 576) {
->> +			std = V4L2_STD_PAL;
->> +			height = 625;
->>   		} else {
->>   			dev_err(csi->ipu->dev,
->> -				"Unsupported CCIR656 interlaced video mode\n");
->> -			spin_unlock_irqrestore(&csi->lock, flags);
->> -			return -EINVAL;
->> +				"Unsupported interlaced video mode\n");
->> +			ret = -EINVAL;
->> +			goto out_unlock;
->>   		}
->> +
->> +		ret = ipu_csi_set_bt_interlaced_codes(csi, infmt, outfmt, std);
->> +		if (ret)
->> +			goto out_unlock;
->>   		break;
->>   	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_DDR:
->>   	case IPU_CSI_CLK_MODE_CCIR1120_PROGRESSIVE_SDR:
->> @@ -476,9 +518,10 @@ int ipu_csi_init_interface(struct ipu_csi *csi,
->>   	dev_dbg(csi->ipu->dev, "CSI_ACT_FRM_SIZE = 0x%08X\n",
->>   		ipu_csi_read(csi, CSI_ACT_FRM_SIZE));
->>   
->> +out_unlock:
->>   	spin_unlock_irqrestore(&csi->lock, flags);
->>   
->> -	return 0;
->> +	return ret;
->>   }
->>   EXPORT_SYMBOL_GPL(ipu_csi_init_interface);
->>   
->> diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
->> index 4223f8d418ae..7ecbd4d76d09 100644
->> --- a/drivers/staging/media/imx/imx-media-csi.c
->> +++ b/drivers/staging/media/imx/imx-media-csi.c
->> @@ -663,15 +663,14 @@ static void csi_idmac_stop(struct csi_priv *priv)
->>   /* Update the CSI whole sensor and active windows */
->>   static int csi_setup(struct csi_priv *priv)
->>   {
->> -	struct v4l2_mbus_framefmt *infmt, *outfmt;
->> +	struct v4l2_mbus_framefmt infmt, outfmt;
->>   	const struct imx_media_pixfmt *incc;
->>   	struct v4l2_mbus_config mbus_cfg;
->> -	struct v4l2_mbus_framefmt if_fmt;
->>   	struct v4l2_rect crop;
->>   
->> -	infmt = &priv->format_mbus[CSI_SINK_PAD];
->> +	infmt = priv->format_mbus[CSI_SINK_PAD];
-> Maybe still call this if_fmt, or maybe csi_fmt, to indicate this is not
-> just the userspace visible input format as determined by the pad, but
-> the modified format we set the interface to? Not a strong preference,
-> though.
+Mikulas
 
-Ok, I brought back if_fmt.
-
->
->>   	incc = priv->cc[CSI_SINK_PAD];
->> -	outfmt = &priv->format_mbus[priv->active_output_pad];
->> +	outfmt = priv->format_mbus[priv->active_output_pad];
-> Copying the output format onto the stack seems unnecessary to me.
-
-Yes, I did this for consistency with on-stack infmt, but it's not 
-necessary, I restored outfmt to a pointer.
-
->
->>   
->>   	/* compose mbus_config from the upstream endpoint */
->>   	mbus_cfg.type = priv->upstream_ep.bus_type;
->> @@ -679,12 +678,6 @@ static int csi_setup(struct csi_priv *priv)
->>   		priv->upstream_ep.bus.parallel.flags :
->>   		priv->upstream_ep.bus.mipi_csi2.flags;
->>   
->> -	/*
->> -	 * we need to pass input frame to CSI interface, but
->> -	 * with translated field type from output format
->> -	 */
->> -	if_fmt = *infmt;
->> -	if_fmt.field = outfmt->field;
->>   	crop = priv->crop;
->>   
->>   	/*
->> @@ -692,7 +685,7 @@ static int csi_setup(struct csi_priv *priv)
->>   	 * generic/bayer data
->>   	 */
->>   	if (is_parallel_bus(&priv->upstream_ep) && incc->cycles) {
->> -		if_fmt.width *= incc->cycles;
->> +		infmt.width *= incc->cycles;
->>   		crop.width *= incc->cycles;
->>   	}
->>   
->> @@ -702,7 +695,7 @@ static int csi_setup(struct csi_priv *priv)
->>   			     priv->crop.width = 2 * priv->compose.width,
->>   			     priv->crop.height = 2 * priv->compose.height);
->>   
->> -	ipu_csi_init_interface(priv->csi, &mbus_cfg, &if_fmt);
->> +	ipu_csi_init_interface(priv->csi, &mbus_cfg, &infmt, &outfmt);
-> We can just pass the &priv->format_mbus[priv->active_output_pad] here,
-> or keep using struct v4l2_mbus_framefmt *outfmt as a shorthand.
-
-I just kept it as a short-hand.
-
-Steve
-
->
->>   
->>   	ipu_csi_set_dest(priv->csi, priv->dest);
->>   
->> diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
->> index abbad94e14a1..f44a35192313 100644
->> --- a/include/video/imx-ipu-v3.h
->> +++ b/include/video/imx-ipu-v3.h
->> @@ -352,7 +352,8 @@ int ipu_prg_channel_configure(struct ipuv3_channel *ipu_chan,
->>   struct ipu_csi;
->>   int ipu_csi_init_interface(struct ipu_csi *csi,
->>   			   struct v4l2_mbus_config *mbus_cfg,
->> -			   struct v4l2_mbus_framefmt *mbus_fmt);
->> +			   struct v4l2_mbus_framefmt *infmt,
->> +			   struct v4l2_mbus_framefmt *outfmt);
->>   bool ipu_csi_is_interlaced(struct ipu_csi *csi);
->>   void ipu_csi_get_window(struct ipu_csi *csi, struct v4l2_rect *w);
->>   void ipu_csi_set_window(struct ipu_csi *csi, struct v4l2_rect *w);
-> Either way,
-> Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
->
-> regards
-> Philipp
+> On Wed, Aug 1, 2018 at 11:34 PM, Mikulas Patocka <mpatocka@redhat.com> wrote:
+> 
+> 
+>       On Wed, 1 Aug 2018, Geert Uytterhoeven wrote:
+> 
+>       > Hi Mikulas,
+>       >
+>       > On Wed, Aug 1, 2018 at 12:59 PM Mikulas Patocka <mpatocka@redhat.com> wrote:
+>       > > On Wed, 1 Aug 2018, Geert Uytterhoeven wrote:
+>       > > > On Tue, Jul 31, 2018 at 5:23 PM Mikulas Patocka <mpatocka@redhat.com> wrote:
+>       > > > > BTW when using the udlfb driver as a console, I've got this warning.
+>       > > > > vt_console_print takes a spinlock and then calls the framebuffer driver
+>       > > > > that sleeps.
+>       > > > >
+>       > > > > The question is - whose fault is this? Could the console code somehow be
+>       > > > > told to print characters without holding a spinlock? Or does it mean that
+>       > > > > framebuffer drivers can't sleep?
+>       > > > >
+>       > > > > udlfb communicates through USB, so the sleeping is inevitable.
+>       > > > >
+>       > > > > Mikulas
+>       > > > >
+>       > > > >
+>       > > > > BUG: sleeping function called from invalid context at mm/slab.h:421
+>       > > > > in_atomic(): 1, irqs_disabled(): 0, pid: 430, name: kworker/2:3
+>       > > > > 6 locks held by kworker/2:3/430:
+>       > > > >  #0: 000000001301127e ( (wq_completion)"events"){....} , at: process_one_work+0x17c/0x3a8
+>       > > > >  #1: 00000000beacc951 ( (work_completion)(&(&dlfb->init_framebuffer_work)->work)){....} , at: process_one_work+0x17c/0x3a8
+>       > > > >  #2: 00000000a402f826 ( registration_lock){....} , at: register_framebuffer+0x28/0x2c0 [fb]
+>       > > > >  #3: 0000000021cbe902 ( console_lock){....} , at: register_framebuffer+0x258/0x2c0 [fb]
+>       > > > >  #4: 0000000096d51735 ( console_owner){....} , at: console_unlock+0x174/0x500
+>       > > > >  #5: 00000000faa7f206 ( printing_lock){....} , at: vt_console_print+0x60/0x3a0
+>       > > > > Preemption disabled at: [<ffffff8008403130>] vt_console_print+0x60/0x3a0
+>       > > > > CPU: 2 PID: 430 Comm: kworker/2:3 Not tainted 4.17.10-debug #3
+>       > > > > Hardware name: Marvell Armada 8040 MacchiatoBin/Armada 8040 MacchiatoBin, BIOS EDK II Jul 30 2018
+>       > > > > Workqueue: events dlfb_init_framebuffer_work [udlfb]
+>       > > > > Call trace:
+>       > > > >  dump_backtrace+0x0/0x150
+>       > > > >  show_stack+0x14/0x20
+>       > > > >  dump_stack+0x8c/0xac
+>       > > > >  ___might_sleep+0x140/0x170
+>       > > > >  __might_sleep+0x50/0x88
+>       > > > >  __kmalloc+0x1b0/0x270
+>       > > > >  xhci_urb_enqueue+0xa8/0x460 [xhci_hcd]
+>       > > > >  usb_hcd_submit_urb+0xc0/0x998 [usbcore]
+>       > > > >  usb_submit_urb+0x1e0/0x518 [usbcore]
+>       > > > >  dlfb_submit_urb+0x38/0x98 [udlfb]
+>       > > > >  dlfb_handle_damage.isra.4+0x1e0/0x210 [udlfb]
+>       > > > >  dlfb_ops_imageblit+0x28/0x38 [udlfb]
+>       > > > >  soft_cursor+0x15c/0x1d8 [fb]
+>       > > > >  bit_cursor+0x324/0x510 [fb]
+>       > > > >  fbcon_cursor+0x144/0x1a0 [fb]
+>       > > > >  hide_cursor+0x38/0xa0
+>       > > > >  vt_console_print+0x334/0x3a0
+>       > > > >  console_unlock+0x274/0x500
+>       > > > >  register_framebuffer+0x22c/0x2c0 [fb]
+>       > > > >  dlfb_init_framebuffer_work+0x1ec/0x2fc [udlfb]
+>       > > > >  process_one_work+0x1e8/0x3a8
+>       > > > >  worker_thread+0x44/0x418
+>       > > > >  kthread+0x11c/0x120
+>       > > > >  ret_from_fork+0x10/0x18
+>       > > >
+>       > > > This is sort of expected: you cannot do USB transfers from printk().
+>       > > >
+>       > > > Gr{oetje,eeting}s,
+>       > > >
+>       > > >                         Geert
+>       > >
+>       > > So, should there be a framebuffer flag that prevents the console from
+>       > > binding to it?
+>       > >
+>       > > If I start the kernel with "console=ttyS0,115200", it doesn't try to bind
+>       > > to the udlfb driver, but if I start it without this flag, it does and
+>       > > crashes :-(
+>       >
+>       > Your frame buffer driver should offload tasks that may sleep to e.g. a
+>       > workqueue.
+>       >
+>       > Gr{oetje,eeting}s,
+>       >
+>       >                         Geert
+> 
+> I can try to do this - but - taking a spinlock and copying 8MB framebuffer
+> would damage scheduling latency even for PCI framebuffer drivers.
+> 
+> Mikulas
+> 
+> 
+> 
+> 
+--185206533-541631774-1546271900=:22901--

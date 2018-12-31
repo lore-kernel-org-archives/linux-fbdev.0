@@ -1,126 +1,72 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sat, 29 Dec 2018 23:43:33 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 31 Dec 2018 12:29:46 +0000
 Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvr
-Message-Id: <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+Message-Id: <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1545784679.git.fthain@telegraphics.com.au> <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au> <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
-In-Reply-To: <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
+References: <cover.1545784679.git.fthain@telegraphics.com.au>
+ <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au>
+ <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
+ <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+In-Reply-To: <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Arnd Bergmann <arnd@arndb.de>
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: LEROY Christophe <christophe.leroy@c-s.fr>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Michael Ellerman <mpe@ellerman.id.au>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 
-On Sat, 29 Dec 2018, LEROY Christophe wrote:
+On Sun, Dec 30, 2018 at 12:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
 
-> Finn Thain <fthain@telegraphics.com.au> a ?crit?:
-> 
-> > Make use of arch_nvram_ops in device drivers so that the nvram_* function
-> > exports can be removed.
-> > 
-> > Since they are no longer global symbols, rename the PPC32 nvram_* functions
-> > appropriately.
-> > 
-> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> > ---
-> > arch/powerpc/kernel/setup_32.c             | 8 ++++----
-> > drivers/char/generic_nvram.c               | 4 ++--
-> > drivers/video/fbdev/controlfb.c            | 4 ++--
-> > drivers/video/fbdev/imsttfb.c              | 4 ++--
-> > drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
-> > drivers/video/fbdev/platinumfb.c           | 4 ++--
-> > drivers/video/fbdev/valkyriefb.c           | 4 ++--
-> > 7 files changed, 15 insertions(+), 15 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> > index e0d045677472..bdbe6acbef11 100644
-> > --- a/arch/powerpc/kernel/setup_32.c
-> > +++ b/arch/powerpc/kernel/setup_32.c
-> > @@ -152,20 +152,18 @@ __setup("l3cr=", ppc_setup_l3cr);
-> > 
-> > #ifdef CONFIG_GENERIC_NVRAM
-> > 
-> > -unsigned char nvram_read_byte(int addr)
-> > +static unsigned char ppc_nvram_read_byte(int addr)
-> > {
-> > 	if (ppc_md.nvram_read_val)
-> > 		return ppc_md.nvram_read_val(addr);
-> > 	return 0xff;
-> > }
-> > -EXPORT_SYMBOL(nvram_read_byte);
-> > 
-> > -void nvram_write_byte(unsigned char val, int addr)
-> > +static void ppc_nvram_write_byte(unsigned char val, int addr)
-> > {
-> > 	if (ppc_md.nvram_write_val)
-> > 		ppc_md.nvram_write_val(addr, val);
-> > }
-> > -EXPORT_SYMBOL(nvram_write_byte);
-> > 
-> > static ssize_t ppc_nvram_get_size(void)
-> > {
-> > @@ -182,6 +180,8 @@ static long ppc_nvram_sync(void)
-> > }
-> > 
-> > const struct nvram_ops arch_nvram_ops = {
-> > +	.read_byte      = ppc_nvram_read_byte,
-> > +	.write_byte     = ppc_nvram_write_byte,
-> > 	.get_size       = ppc_nvram_get_size,
-> > 	.sync           = ppc_nvram_sync,
-> > };
-> > diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-> > index f32d5663de95..41b76bf9614e 100644
-> > --- a/drivers/char/generic_nvram.c
-> > +++ b/drivers/char/generic_nvram.c
-> > @@ -48,7 +48,7 @@ static ssize_t read_nvram(struct file *file, char __user
-> > *buf,
-> > 	if (*ppos >= nvram_len)
-> > 		return 0;
-> > 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
-> > -		if (__put_user(nvram_read_byte(i), p))
-> > +		if (__put_user(arch_nvram_ops.read_byte(i), p))
-> 
-> Instead of modifying all drivers (in this patch and previous ones related to
-> other arches), wouldn't it be better to add helpers like the following in
-> nvram.h:
-> 
-> Static inline unsigned char nvram_read_byte(int addr)
+>
+> Is there some benefit, or is that just personal taste?
+>
+> Avoiding changes to call sites avoids code review, but I think 1) the
+> thinkpad_acpi changes have already been reviewed and 2) the fbdev changes
+> need review anyway.
+>
+> Your suggesion would add several new entities and one extra layer of
+> indirection.
+>
+> I think indirection harms readability because now the reader now has to go
+> and look up the meaning of the new entities.
+>
+> It's not the case that we need to choose between definitions of
+> nvram_read_byte() at compile time, or stub them out:
+>
+> #ifdef CONFIG_FOO
+> static inline unsigned char nvram_read_byte(int addr)
 > {
->        return arch_nvram_ops.read_byte(addr);
+>         return arch_nvram_ops.read_byte(addr);
 > }
-> 
+> #else
+> static inline unsigned char nvram_read_byte(int addr) { }
+> #endif
+>
+> And I don't anticipate a need for a macro here either:
+>
+> #define nvram_read_byte(a) random_nvram_read_byte_impl(a)
+>
+> I think I've used the simplest solution.
 
-Is there some benefit, or is that just personal taste?
+Having the indirection would help if the inline function can
+encapsulate the NULL pointer check, like
 
-Avoiding changes to call sites avoids code review, but I think 1) the 
-thinkpad_acpi changes have already been reviewed and 2) the fbdev changes 
-need review anyway.
-
-Your suggesion would add several new entities and one extra layer of 
-indirection.
-
-I think indirection harms readability because now the reader now has to go 
-and look up the meaning of the new entities.
-
-It's not the case that we need to choose between definitions of 
-nvram_read_byte() at compile time, or stub them out:
-
-#ifdef CONFIG_FOO
-static inline unsigned char nvram_read_byte(int addr)
+static inline unsigned char nvram_read_byte(loff_t addr)
 {
-	return arch_nvram_ops.read_byte(addr);
+       char data;
+
+       if (!IS_ENABLED(CONFIG_NVRAM))
+                 return 0xff;
+
+       if (arch_nvram_ops.read_byte)
+                 return arch_nvram_ops.read_byte(addr);
+
+       if (arch_nvram_ops.read)
+                 return arch_nvram_ops.read(char, 1, &addr);
+
+      return 0xff;
 }
-#else
-static inline unsigned char nvram_read_byte(int addr) { }
-#endif
 
-And I don't anticipate a need for a macro here either:
+(the above assumes no #ifdef in the structure definition, if you
+keep the #ifdef there they have to be added here as well).
 
-#define nvram_read_byte(a) random_nvram_read_byte_impl(a)
-
-I think I've used the simplest solution.
-
--- 
-
-> Christophe
-> 
+      Arnd

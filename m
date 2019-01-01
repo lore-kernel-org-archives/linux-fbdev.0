@@ -1,33 +1,80 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Wed, 09 Jan 2019 08:39:45 +0000
-Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgMy80XSBBUk06IGR0czogaW14MjgtY2ZhMTAw?= =?utf-8?Q?36:_Fix_the_reset
-Message-Id: <1547023165-111798-4-git-send-email-michal.vokac@ysoft.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Tue, 01 Jan 2019 01:10:11 +0000
+Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvr
+Message-Id: <alpine.LNX.2.21.1901011154590.574@nippy.intranet>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
+References: <cover.1545784679.git.fthain@telegraphics.com.au> <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au> <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr> <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+ <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
+In-Reply-To: <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: LEROY Christophe <christophe.leroy@c-s.fr>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-VGhlIHJlc2V0IHNpZ25hbCBvZiB0aGUgU1NEMTMwNiBPTEVEIGRpc3BsYXkgaXMgYWN0dWFsbHkg
-YWN0aXZlLWxvdy4NCkFkYXB0IHRoZSBEVCB0byByZWZsZWN0IHRoZSByZWFsIHdvcmxkLg0KDQpS
-ZXZpZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NCkFja2VkLWJ5OiBBbGV4
-YW5kcmUgQmVsbG9uaSA8YWxleGFuZHJlLmJlbGxvbmlAYm9vdGxpbi5jb20+DQpTaWduZWQtb2Zm
-LWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0KQ2hhbmdl
-cyBpbiB2MiByZXNlbmQ6DQogLSBBZGQgQWNrZWQtYnkgZnJvbSBBbGV4YW5kcmUuDQoNCkNoYW5n
-ZXMgZnJvbSB2MToNCiAtIEFkZCBSLWJ5IGZyb20gUm9iDQoNCiBhcmNoL2FybS9ib290L2R0cy9p
-bXgyOC1jZmExMDAzNi5kdHMgfCAzICsrLQ0KIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMo
-KyksIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
-LWNmYTEwMDM2LmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cw0KaW5k
-ZXggZDNlMzYyMi4uZGU0OGI1OCAxMDA2NDQNCi0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
-LWNmYTEwMDM2LmR0cw0KKysrIGIvYXJjaC9hcm0vYm9vdC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRz
-DQpAQCAtMTEsNiArMTEsNyBAQA0KIA0KIC9kdHMtdjEvOw0KICNpbmNsdWRlICJpbXgyOC5kdHNp
-Ig0KKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy9ncGlvL2dwaW8uaD4NCiANCiAvIHsNCiAJbW9kZWwg
-PSAiQ3J5c3RhbGZvbnR6IENGQS0xMDAzNiBCb2FyZCI7DQpAQCAtOTYsNyArOTcsNyBAQA0KIAkJ
-CQkJcGluY3RybC1uYW1lcyA9ICJkZWZhdWx0IjsNCiAJCQkJCXBpbmN0cmwtMCA9IDwmc3NkMTMw
-Nl9jZmExMDAzNj47DQogCQkJCQlyZWcgPSA8MHgzYz47DQotCQkJCQlyZXNldC1ncGlvcyA9IDwm
-Z3BpbzIgNyAwPjsNCisJCQkJCXJlc2V0LWdwaW9zID0gPCZncGlvMiA3IEdQSU9fQUNUSVZFX0xP
-Vz47DQogCQkJCQlzb2xvbW9uLGhlaWdodCA9IDwzMj47DQogCQkJCQlzb2xvbW9uLHdpZHRoID0g
-PDEyOD47DQogCQkJCQlzb2xvbW9uLHBhZ2Utb2Zmc2V0ID0gPDA+Ow0KLS0gDQoyLjEuNA0KDQo
+On Mon, 31 Dec 2018, Arnd Bergmann wrote:
+
+> On Sun, Dec 30, 2018 at 12:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+> 
+> >
+> > Is there some benefit, or is that just personal taste?
+> >
+> > Avoiding changes to call sites avoids code review, but I think 1) the
+> > thinkpad_acpi changes have already been reviewed and 2) the fbdev changes
+> > need review anyway.
+> >
+> > Your suggesion would add several new entities and one extra layer of
+> > indirection.
+> >
+> > I think indirection harms readability because now the reader now has to go
+> > and look up the meaning of the new entities.
+> >
+> > It's not the case that we need to choose between definitions of
+> > nvram_read_byte() at compile time, or stub them out:
+> >
+> > #ifdef CONFIG_FOO
+> > static inline unsigned char nvram_read_byte(int addr)
+> > {
+> >         return arch_nvram_ops.read_byte(addr);
+> > }
+> > #else
+> > static inline unsigned char nvram_read_byte(int addr) { }
+> > #endif
+> >
+> > And I don't anticipate a need for a macro here either:
+> >
+> > #define nvram_read_byte(a) random_nvram_read_byte_impl(a)
+> >
+> > I think I've used the simplest solution.
+> 
+> Having the indirection would help if the inline function can
+> encapsulate the NULL pointer check, like
+> 
+> static inline unsigned char nvram_read_byte(loff_t addr)
+> {
+>        char data;
+> 
+>        if (!IS_ENABLED(CONFIG_NVRAM))
+>                  return 0xff;
+> 
+>        if (arch_nvram_ops.read_byte)
+>                  return arch_nvram_ops.read_byte(addr);
+> 
+>        if (arch_nvram_ops.read)
+>                  return arch_nvram_ops.read(char, 1, &addr);
+> 
+>       return 0xff;
+> }
+> 
+
+The semantics of .read_byte and .read are subtly different. For CONFIG_X86 
+and CONFIG_ATARI, .read implies checksum validation and .read_byte does 
+not.
+
+In particular, in the thinkpad_acpi case, checksum validation isn't used, 
+but in the atari_scsi case, it is.
+
+So I like to see drivers explicitly call the method they want. I didn't 
+want to obscure this distinction in a helper.
+
+-- 

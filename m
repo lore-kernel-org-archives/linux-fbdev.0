@@ -1,149 +1,74 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 17 Jan 2019 16:18:23 +0000
-Subject: Re: [PATCH v2 2/2] video: lcd: Remove useless BACKLIGHT_CLASS_DEVICE dependencies
-Message-Id: <20190117161823.o6qjod3gidmucok4@holly.lan>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 02 Jan 2019 17:52:23 +0000
+Subject: Re: [PATCH] drm/nouveau: fix incorrect FB_BACKLIGHT usage in Kconfig
+Message-Id: <a66ec947-0856-c459-da68-09639bfef22a@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190117133336.19737-1-shc_work@mail.ru>
- <20190117133336.19737-2-shc_work@mail.ru>
-In-Reply-To: <20190117133336.19737-2-shc_work@mail.ru>
+References: <CGME20181228151521eucas1p163e845ef691ac2bd78051e6fa4c068d0@eucas1p1.samsung.com>
+ <6f25a4a3-3d24-e811-7c0b-bbdd8ff8aa8b@samsung.com>
+ <66054836-bc70-900e-0171-086ef2239e62@infradead.org>
+In-Reply-To: <66054836-bc70-900e-0171-086ef2239e62@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Randy Dunlap <rdunlap@infradead.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>
 
-On Thu, Jan 17, 2019 at 04:33:36PM +0300, Alexander Shiyan wrote:
-> This patch removes dependencies on BACKLIGHT_CLASS_DEVICE for items
-> that are already placed under #if BACKLIGHT_CLASS_DEVICE.
 
-Why the # before the if (in Kconfig its just "if" right?).
-
+On 12/28/2018 07:03 PM, Randy Dunlap wrote:
+> On 12/28/18 7:15 AM, Bartlomiej Zolnierkiewicz wrote:
+>> Making FB_BACKLIGHT tristate by commit b4a1ed0cd18b ("fbdev:
+>> make FB_BACKLIGHT a tristate") caused unmet dependencies in
+>> some configurations:
+>>
+>> WARNING: unmet direct dependencies detected for FB_BACKLIGHT
+>>   Depends on [m]: HAS_IOMEM [=y] && FB [=m]
+>>   Selected by [y]:
+>>   - DRM_NOUVEAU [=y] && HAS_IOMEM [=y] && DRM [=y] && PCI [=y] && MMU [=y] && DRM_NOUVEAU_BACKLIGHT [=y]
+>>   Selected by [m]:
+>>   - FB_NVIDIA [=m] && HAS_IOMEM [=y] && FB [=m] && PCI [=y] && FB_NVIDIA_BACKLIGHT [=y]
+>>
+>> Fix it by making DRM_NOUVEAU select BACKLIGHT_CLASS_DEVICE and
+>> BACKLIGHT_LCD_SUPPORT instead of FB_BACKLIGHT.
+>>
+>> Fixes: b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate")
+>> Reported-by: Randy Dunlap <rdunlap@infradead.org>
+>> Cc: Rob Clark <robdclark@gmail.com>
+>> Cc: Arnd Bergmann <arnd@arndb.de>
+>> Cc: Ben Skeggs <bskeggs@redhat.com>
+>> Cc: David Airlie <airlied@linux.ie>
+>> Cc: Daniel Vetter <daniel@ffwll.ch>
+>> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+>> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 > 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-
-Any didn't I ack this already?
-
-
-Daniel.
-
-
-> ---
->  drivers/video/backlight/Kconfig | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
+> Works for me.  Thanks.
 > 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 3fdc18e..3ed1d90 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -193,7 +193,6 @@ config BACKLIGHT_IPAQ_MICRO
->  
->  config BACKLIGHT_LM3533
->  	tristate "Backlight Driver for LM3533"
-> -	depends on BACKLIGHT_CLASS_DEVICE
->  	depends on MFD_LM3533
->  	help
->  	  Say Y to enable the backlight driver for National Semiconductor / TI
-> @@ -317,7 +316,7 @@ config BACKLIGHT_ADP5520
->  
->  config BACKLIGHT_ADP8860
->  	tristate "Backlight Driver for ADP8860/ADP8861/ADP8863 using WLED"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
->  	help
-> @@ -329,7 +328,7 @@ config BACKLIGHT_ADP8860
->  
->  config BACKLIGHT_ADP8870
->  	tristate "Backlight Driver for ADP8870 using WLED"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
->  	help
-> @@ -347,28 +346,28 @@ config BACKLIGHT_88PM860X
->  
->  config BACKLIGHT_PCF50633
->  	tristate "Backlight driver for NXP PCF50633 MFD"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_PCF50633
-> +	depends on MFD_PCF50633
->  	help
->  	  If you have a backlight driven by a NXP PCF50633 MFD, say Y here to
->  	  enable its driver.
->  
->  config BACKLIGHT_AAT2870
->  	tristate "AnalogicTech AAT2870 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_AAT2870_CORE
-> +	depends on MFD_AAT2870_CORE
->  	help
->  	  If you have a AnalogicTech AAT2870 say Y to enable the
->  	  backlight driver.
->  
->  config BACKLIGHT_LM3630A
->  	tristate "Backlight Driver for LM3630A"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-> +	depends on I2C && PWM
->  	select REGMAP_I2C
->  	help
->  	  This supports TI LM3630A Backlight Driver
->  
->  config BACKLIGHT_LM3639
->  	tristate "Backlight Driver for LM3639"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C
-> +	depends on I2C
->  	select REGMAP_I2C
->  	select NEW_LEDS
->  	select LEDS_CLASS
-> @@ -377,20 +376,20 @@ config BACKLIGHT_LM3639
->  
->  config BACKLIGHT_LP855X
->  	tristate "Backlight driver for TI LP855X"
-> -	depends on BACKLIGHT_CLASS_DEVICE && I2C && PWM
-> +	depends on I2C && PWM
->  	help
->  	  This supports TI LP8550, LP8551, LP8552, LP8553, LP8555, LP8556 and
->  	  LP8557 backlight driver.
->  
->  config BACKLIGHT_LP8788
->  	tristate "Backlight driver for TI LP8788 MFD"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_LP8788 && PWM
-> +	depends on MFD_LP8788 && PWM
->  	help
->  	  This supports TI LP8788 backlight driver.
->  
->  config BACKLIGHT_OT200
->  	tristate "Backlight driver for ot200 visualisation device"
-> -	depends on BACKLIGHT_CLASS_DEVICE && CS5535_MFGPT && GPIO_CS5535
-> +	depends on CS5535_MFGPT && GPIO_CS5535
->  	help
->  	  To compile this driver as a module, choose M here: the module will be
->  	  called ot200_bl.
-> @@ -404,7 +403,7 @@ config BACKLIGHT_PANDORA
->  
->  config BACKLIGHT_SKY81452
->  	tristate "Backlight driver for SKY81452"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_SKY81452
-> +	depends on MFD_SKY81452
->  	help
->  	  If you have a Skyworks SKY81452, say Y to enable the
->  	  backlight driver.
-> @@ -414,14 +413,14 @@ config BACKLIGHT_SKY81452
->  
->  config BACKLIGHT_TPS65217
->  	tristate "TPS65217 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_TPS65217
-> +	depends on MFD_TPS65217
->  	help
->  	  If you have a Texas Instruments TPS65217 say Y to enable the
->  	  backlight driver.
->  
->  config BACKLIGHT_AS3711
->  	tristate "AS3711 Backlight"
-> -	depends on BACKLIGHT_CLASS_DEVICE && MFD_AS3711
-> +	depends on MFD_AS3711
->  	help
->  	  If you have an Austrian Microsystems AS3711 say Y to enable the
->  	  backlight driver.
-> -- 
-> 2.10.2
-> 
+> Acked-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
+
+Thanks, I queued the patch for 4.21.
+
+>> ---
+>> I would like to merge this patch through fbdev tree for v4.21
+>> (as it is needed to fix commit currently in fbdev tree).
+>>
+>>  drivers/gpu/drm/nouveau/Kconfig |    3 ++-
+>>  1 file changed, 2 insertions(+), 1 deletion(-)
+>>
+>> Index: b/drivers/gpu/drm/nouveau/Kconfig
+>> =================================>> --- a/drivers/gpu/drm/nouveau/Kconfig	2018-11-30 11:46:55.716464505 +0100
+>> +++ b/drivers/gpu/drm/nouveau/Kconfig	2018-12-28 14:54:51.655965845 +0100
+>> @@ -4,7 +4,8 @@ config DRM_NOUVEAU
+>>          select FW_LOADER
+>>  	select DRM_KMS_HELPER
+>>  	select DRM_TTM
+>> -	select FB_BACKLIGHT if DRM_NOUVEAU_BACKLIGHT
+>> +	select BACKLIGHT_CLASS_DEVICE if DRM_NOUVEAU_BACKLIGHT
+>> +	select BACKLIGHT_LCD_SUPPORT if DRM_NOUVEAU_BACKLIGHT
+>>  	select ACPI_VIDEO if ACPI && X86 && BACKLIGHT_CLASS_DEVICE && INPUT
+>>  	select X86_PLATFORM_DEVICES if ACPI && X86
+>>  	select ACPI_WMI if ACPI && X86
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

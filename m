@@ -1,56 +1,60 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 15:58:30 +0000
-Subject: [PATCH AUTOSEL 4.19 204/258] video: clps711x-fb: release disp device node in probe()
-Message-Id: <20190128155924.51521-204-sashal@kernel.org>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Thu, 03 Jan 2019 16:48:23 +0000
+Subject: Re: [PATCH] backlight: (adp8870) fix a missing check for adp8870_write
+Message-Id: <20190103164823.sfehxd6mkwaxiaxf@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128155924.51521-1-sashal@kernel.org>
-In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+References: <20181225062109.66943-1-kjlu@umn.edu>
+In-Reply-To: <20181225062109.66943-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Kangjie Lu <kjlu@umn.edu>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, pakki001@umn.edu, Lee Jones <lee.jones@linaro.org>
 
-From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+On Tue, Dec 25, 2018 at 12:21:09AM -0600, Kangjie Lu wrote:
+> adp8870_write() may fail. This fix checks if adp8870_write fails, and if
+> so, returns its error code.
+> 
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+> ---
+>  drivers/video/backlight/adp8870_bl.c | 11 ++++++++---
+>  1 file changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/adp8870_bl.c b/drivers/video/backlight/adp8870_bl.c
+> index 8d50e0299578..79901fb4fcd1 100644
+> --- a/drivers/video/backlight/adp8870_bl.c
+> +++ b/drivers/video/backlight/adp8870_bl.c
+> @@ -811,9 +811,14 @@ static ssize_t adp8870_bl_ambient_light_zone_store(struct device *dev,
+>  		if (!ret) {
+>  			reg_val &= ~(CFGR_BLV_MASK << CFGR_BLV_SHIFT);
+>  			reg_val |= (val - 1) << CFGR_BLV_SHIFT;
+> -			adp8870_write(data->client, ADP8870_CFGR, reg_val);
+> -		}
+> -		mutex_unlock(&data->lock);
+> +			ret = adp8870_write(data->client,
+> +					ADP8870_CFGR, reg_val);
+> +			if (ret) {
+> +				mutex_unlock(&data->lock);
+> +				return ret;
+> +			}
+> +		}	else
+> +			mutex_unlock(&data->lock);
 
-[ Upstream commit fdac751355cd76e049f628afe6acb8ff4b1399f7 ]
+Please don't unbalance the lock paths. Instead check the value of ret *after*
+the existing mutex unlock (which will also means that the failed
+adp8870_read() isn't silently ignored).
 
-clps711x_fb_probe() increments refcnt of disp device node by
-of_parse_phandle() and leaves it undecremented on both
-successful and error paths.
+Also there's not much point in fixing this site without also fixing the
+missing return checks on adp8870_set_bits() and adp8870_clr_bits() in
+the same function.
 
-Found by Linux Driver Verification project (linuxtesting.org).
 
-Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Cc: Alexander Shiyan <shc_work@mail.ru>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/clps711x-fb.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Daniel.
 
-diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-index ff561073ee4e..42f909618f04 100644
---- a/drivers/video/fbdev/clps711x-fb.c
-+++ b/drivers/video/fbdev/clps711x-fb.c
-@@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
--	if (ret)
-+	if (ret) {
-+		of_node_put(disp);
- 		goto out_fb_release;
-+	}
- 
- 	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
- 	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
- 
- 	ret = of_property_read_u32(disp, "bits-per-pixel",
- 				   &info->var.bits_per_pixel);
-+	of_node_put(disp);
- 	if (ret)
- 		goto out_fb_release;
- 
--- 
-2.19.1
+
+>  	}
+>  
+>  	return count;
+> -- 
+> 2.17.2 (Apple Git-113)
+> 

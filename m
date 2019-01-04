@@ -1,123 +1,33 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Wed, 09 Jan 2019 18:16:33 +0000
-Subject: [PATCH v7 03/11] gpu: ipu-v3: Add planar support to interlaced scan
-Message-Id: <20190109181642.19378-4-slongerbeam@gmail.com>
+From: Matteo Croce <mcroce@redhat.com>
+Date: Fri, 04 Jan 2019 21:43:45 +0000
+Subject: [PATCH] omapfb: fix typo
+Message-Id: <20190104214345.29158-1-mcroce@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190109181642.19378-1-slongerbeam@gmail.com>
-In-Reply-To: <20190109181642.19378-1-slongerbeam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-media@vger.kernel.org
-Cc: Steve Longerbeam <slongerbeam@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE
-        IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-To support interlaced scan with planar formats, cpmem SLUV must
-be programmed with the correct chroma line stride. For full and
-partial planar 4:2:2 (YUV422P, NV16), chroma line stride must
-be doubled. For full and partial planar 4:2:0 (YUV420, YVU420, NV12),
-chroma line stride must _not_ be doubled, since a single chroma line
-is shared by two luma lines.
+Fix spelling mistake: "lenght" -> "length"
 
-Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
-Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
+Signed-off-by: Matteo Croce <mcroce@redhat.com>
 ---
- drivers/gpu/ipu-v3/ipu-cpmem.c              | 26 +++++++++++++++++++--
- drivers/staging/media/imx/imx-ic-prpencvf.c |  3 ++-
- drivers/staging/media/imx/imx-media-csi.c   |  3 ++-
- include/video/imx-ipu-v3.h                  |  3 ++-
- 4 files changed, 30 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
-index 163fadb8a33a..d047a6867c59 100644
---- a/drivers/gpu/ipu-v3/ipu-cpmem.c
-+++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
-@@ -277,9 +277,10 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
- }
- EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
- 
--void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
-+void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
-+			       u32 pixelformat)
- {
--	u32 ilo, sly;
-+	u32 ilo, sly, sluv;
- 
- 	if (stride < 0) {
- 		stride = -stride;
-@@ -290,9 +291,30 @@ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
- 
- 	sly = (stride * 2) - 1;
- 
-+	switch (pixelformat) {
-+	case V4L2_PIX_FMT_YUV420:
-+	case V4L2_PIX_FMT_YVU420:
-+		sluv = stride / 2 - 1;
-+		break;
-+	case V4L2_PIX_FMT_NV12:
-+		sluv = stride - 1;
-+		break;
-+	case V4L2_PIX_FMT_YUV422P:
-+		sluv = stride - 1;
-+		break;
-+	case V4L2_PIX_FMT_NV16:
-+		sluv = stride * 2 - 1;
-+		break;
-+	default:
-+		sluv = 0;
-+		break;
-+	}
-+
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
- 	ipu_ch_param_write_field(ch, IPU_FIELD_ILO, ilo);
- 	ipu_ch_param_write_field(ch, IPU_FIELD_SLY, sly);
-+	if (sluv)
-+		ipu_ch_param_write_field(ch, IPU_FIELD_SLUV, sluv);
- };
- EXPORT_SYMBOL_GPL(ipu_cpmem_interlaced_scan);
- 
-diff --git a/drivers/staging/media/imx/imx-ic-prpencvf.c b/drivers/staging/media/imx/imx-ic-prpencvf.c
-index 28f41caba05d..af7224846bd5 100644
---- a/drivers/staging/media/imx/imx-ic-prpencvf.c
-+++ b/drivers/staging/media/imx/imx-ic-prpencvf.c
-@@ -412,7 +412,8 @@ static int prp_setup_channel(struct prp_priv *priv,
- 	if (image.pix.field = V4L2_FIELD_NONE &&
- 	    V4L2_FIELD_HAS_BOTH(infmt->field) &&
- 	    channel = priv->out_ch)
--		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline);
-+		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline,
-+					  image.pix.pixelformat);
- 
- 	ret = ipu_ic_task_idma_init(priv->ic, channel,
- 				    image.pix.width, image.pix.height,
-diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
-index c2a8d9cd31b7..da4808348845 100644
---- a/drivers/staging/media/imx/imx-media-csi.c
-+++ b/drivers/staging/media/imx/imx-media-csi.c
-@@ -512,7 +512,8 @@ static int csi_idmac_setup_channel(struct csi_priv *priv)
- 	if (image.pix.field = V4L2_FIELD_NONE &&
- 	    V4L2_FIELD_HAS_BOTH(infmt->field))
- 		ipu_cpmem_interlaced_scan(priv->idmac_ch,
--					  image.pix.bytesperline);
-+					  image.pix.bytesperline,
-+					  image.pix.pixelformat);
- 
- 	ipu_idmac_set_double_buffer(priv->idmac_ch, true);
- 
-diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
-index bbc8481f567d..c887f4bee5f8 100644
---- a/include/video/imx-ipu-v3.h
-+++ b/include/video/imx-ipu-v3.h
-@@ -258,7 +258,8 @@ void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
- void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
- void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
- void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
--void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
-+void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
-+			       u32 pixelformat);
- void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
- int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
- void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+index fa72e735dad2..d146793dd044 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/hdmi4_core.c
+@@ -712,7 +712,7 @@ int hdmi4_audio_config(struct hdmi_core_data *core, struct hdmi_wp_data *wp,
+ 	else
+ 		acore.i2s_cfg.justification = HDMI_AUDIO_JUSTIFY_RIGHT;
+ 	/*
+-	 * The I2S input word length is twice the lenght given in the IEC-60958
++	 * The I2S input word length is twice the length given in the IEC-60958
+ 	 * status word. If the word size is greater than
+ 	 * 20 bits, increment by one.
+ 	 */
 -- 
-2.17.1
+2.20.1

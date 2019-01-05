@@ -1,64 +1,123 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Fri, 18 Jan 2019 20:09:58 +0000
-Subject: Re: [PATCH] video/hdmi: Change strncpy() into memcpy() in hdmi_spd_infoframe_init
-Message-Id: <CA+7wUswhGdSdhWpAi=PZANpr4X8yKKJkZUWTtsFLs0NAVQ76oQ@mail.gmail.com>
+From: Finn Thain <fthain@telegraphics.com.au>
+Date: Sat, 05 Jan 2019 23:06:24 +0000
+Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvr
+Message-Id: <alpine.LNX.2.21.1901060931140.23@nippy.intranet>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190118193248.535-1-malat@debian.org> <d76c2a301d324239db09ccc7cd8421821ba93b87.camel@perches.com>
-In-Reply-To: <d76c2a301d324239db09ccc7cd8421821ba93b87.camel@perches.com>
+References: <cover.1545784679.git.fthain@telegraphics.com.au> <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au> <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
+ <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+In-Reply-To: <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: LEROY Christophe <christophe.leroy@c-s.fr>, Arnd Bergmann <arnd@arndb.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-On Fri, Jan 18, 2019 at 8:51 PM Joe Perches <joe@perches.com> wrote:
->
-> On Fri, 2019-01-18 at 20:32 +0100, Mathieu Malaterre wrote:
-> > Using strncpy() is less than perfect since the destination buffers do not
-> > need to be NUL terminated. Replace strncpy() with memcpy() to address a
-> > warning triggered by gcc using W=1 and optimize the code a bit.
-> >
-> > This commit removes the following warnings:
-> >
-> >   drivers/video/hdmi.c:234:2: warning: 'strncpy' specified bound 8 equals destination size [-Wstringop-truncation]
-> >   drivers/video/hdmi.c:235:2: warning: 'strncpy' specified bound 16 equals destination size [-Wstringop-truncation]
-> []
-> > diff --git a/drivers/video/hdmi.c b/drivers/video/hdmi.c
-> []
-> > @@ -231,8 +231,8 @@ int hdmi_spd_infoframe_init(struct hdmi_spd_infoframe *frame,
-> >       frame->version = 1;
-> >       frame->length = HDMI_SPD_INFOFRAME_SIZE;
-> >
-> > -     strncpy(frame->vendor, vendor, sizeof(frame->vendor));
-> > -     strncpy(frame->product, product, sizeof(frame->product));
-> > +     memcpy(frame->vendor, vendor, sizeof(frame->vendor));
-> > +     memcpy(frame->product, product, sizeof(frame->product));
->
-> This is not good.
->
-> vendor can be any location and shorter than sizeof(frame->vendor)
-> so this can copy from invalid memory locations.
+On Sun, 30 Dec 2018, I wrote:
 
-Ah right. I did not realize that and know I see the call with "Intel",
-will re-spin.
+> On Sat, 29 Dec 2018, LEROY Christophe wrote:
+> 
+> > Finn Thain <fthain@telegraphics.com.au> a ?crit?:
+> > 
+> > > Make use of arch_nvram_ops in device drivers so that the nvram_* function
+> > > exports can be removed.
+> > > 
+> > > Since they are no longer global symbols, rename the PPC32 nvram_* functions
+> > > appropriately.
+> > > 
+> > > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> > > ---
+> > > arch/powerpc/kernel/setup_32.c             | 8 ++++----
+> > > drivers/char/generic_nvram.c               | 4 ++--
+> > > drivers/video/fbdev/controlfb.c            | 4 ++--
+> > > drivers/video/fbdev/imsttfb.c              | 4 ++--
+> > > drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
+> > > drivers/video/fbdev/platinumfb.c           | 4 ++--
+> > > drivers/video/fbdev/valkyriefb.c           | 4 ++--
+> > > 7 files changed, 15 insertions(+), 15 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
+> > > index e0d045677472..bdbe6acbef11 100644
+> > > --- a/arch/powerpc/kernel/setup_32.c
+> > > +++ b/arch/powerpc/kernel/setup_32.c
+> > > @@ -152,20 +152,18 @@ __setup("l3cr=", ppc_setup_l3cr);
+> > > 
+> > > #ifdef CONFIG_GENERIC_NVRAM
+> > > 
+> > > -unsigned char nvram_read_byte(int addr)
+> > > +static unsigned char ppc_nvram_read_byte(int addr)
+> > > {
+> > > 	if (ppc_md.nvram_read_val)
+> > > 		return ppc_md.nvram_read_val(addr);
+> > > 	return 0xff;
+> > > }
+> > > -EXPORT_SYMBOL(nvram_read_byte);
+> > > 
+> > > -void nvram_write_byte(unsigned char val, int addr)
+> > > +static void ppc_nvram_write_byte(unsigned char val, int addr)
+> > > {
+> > > 	if (ppc_md.nvram_write_val)
+> > > 		ppc_md.nvram_write_val(addr, val);
+> > > }
+> > > -EXPORT_SYMBOL(nvram_write_byte);
+> > > 
+> > > static ssize_t ppc_nvram_get_size(void)
+> > > {
+> > > @@ -182,6 +180,8 @@ static long ppc_nvram_sync(void)
+> > > }
+> > > 
+> > > const struct nvram_ops arch_nvram_ops = {
+> > > +	.read_byte      = ppc_nvram_read_byte,
+> > > +	.write_byte     = ppc_nvram_write_byte,
+> > > 	.get_size       = ppc_nvram_get_size,
+> > > 	.sync           = ppc_nvram_sync,
+> > > };
+> > > diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
+> > > index f32d5663de95..41b76bf9614e 100644
+> > > --- a/drivers/char/generic_nvram.c
+> > > +++ b/drivers/char/generic_nvram.c
+> > > @@ -48,7 +48,7 @@ static ssize_t read_nvram(struct file *file, char __user
+> > > *buf,
+> > > 	if (*ppos >= nvram_len)
+> > > 		return 0;
+> > > 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
+> > > -		if (__put_user(nvram_read_byte(i), p))
+> > > +		if (__put_user(arch_nvram_ops.read_byte(i), p))
+> > 
+> > Instead of modifying all drivers (in this patch and previous ones related to
+> > other arches), wouldn't it be better to add helpers like the following in
+> > nvram.h:
+> > 
+> > Static inline unsigned char nvram_read_byte(int addr)
+> > {
+> >        return arch_nvram_ops.read_byte(addr);
+> > }
+> > 
+> 
+> Is there some benefit, or is that just personal taste?
+> 
+> Avoiding changes to call sites avoids code review, but I think 1) the 
+> thinkpad_acpi changes have already been reviewed and 2) the fbdev changes 
+> need review anyway.
+> 
+> Your suggesion would add several new entities and one extra layer of 
+> indirection.
+> 
 
-> You probably want strscpy.
+Contrary to what I said above, this kind of double indirection could be 
+useful if it allows us to avoid the kind of double indirection which Arnd 
+objected to (which arises when an arch_nvram_ops method invokes a ppc_md 
+method). For example,
 
-Right.
+static inline unsigned char nvram_read_byte(int addr)
+{
+#ifdef CONFIG_PPC
+	return ppc_md.nvram_read_byte(addr);
+#else
+	return arch_nvram_ops.read_byte(addr);
+#endif
+}
 
-> This is called with at least "mediatek" and "broadcom", so perhaps
-> it's better still to change the struct vendor size to something a
-> bit larger.  Maybe change vendor[8] to vendor[16];
+I'll try this approach for v9 if there are no objections. It may be the 
+least invasive approach. Also, arch_nvram_ops can remain const.
 
-Looks like 8 bytes is required for call like hdmi_spd_infoframe_unpack()
-
-> include/linux/hdmi.h:struct hdmi_spd_infoframe {
-> include/linux/hdmi.h-   enum hdmi_infoframe_type type;
-> include/linux/hdmi.h-   unsigned char version;
-> include/linux/hdmi.h-   unsigned char length;
-> include/linux/hdmi.h-   char vendor[8];
-> include/linux/hdmi.h-   char product[16];
-> include/linux/hdmi.h-   enum hdmi_spd_sdi sdi;
-> include/linux/hdmi.h-};
->
->
+-- 

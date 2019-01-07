@@ -1,80 +1,119 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 17 Jan 2019 16:14:57 +0000
-Subject: Re: [PATCH v2] backlight: pwm_bl: Use SIMPLE_DEV_PM_OPS()
-Message-Id: <20190117161457.34445eml4otivdjk@holly.lan>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 07 Jan 2019 08:26:18 +0000
+Subject: [PATCH] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd line, option
+Message-Id: <37be75aa-7a63-a937-6de7-777a31af741b@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190116133817.2483-1-shc_work@mail.ru>
-In-Reply-To: <20190116133817.2483-1-shc_work@mail.ru>
+References: <20181126215725.2548-1-peda@axentia.se>
+ <20181126215725.2548-3-peda@axentia.se>
+ <CAMuHMdVfoRP_yNL5HcmwwV3fn9GqnsbORtG_hOhWw3qUeMKFKQ@mail.gmail.com>
+In-Reply-To: <CAMuHMdVfoRP_yNL5HcmwwV3fn9GqnsbORtG_hOhWw3qUeMKFKQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>
 
-On Wed, Jan 16, 2019 at 04:38:17PM +0300, Alexander Shiyan wrote:
-> Use the SIMPLE_DEV_PM_OPS() macro to declare the driver's pm_ops.
-> As a side effect, removing #ifdef CONFIG_PM_SLEEP will improve
-> compilation coverage.
-
-Adopting SIMPLE_DEV_PM_OPS() results in the suspend/resume functions
-being called during a freeze/thaw. Is turning off the backlight during a
-freeze really necessary?
-
-
-> 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
-
-Summary of changes since v1 would be useful here. For single patches you
-can use git annotate and the corresponding argument to format-patch to
-handle the change log.
-
-
->  drivers/video/backlight/pwm_bl.c | 16 ++++------------
->  1 file changed, 4 insertions(+), 12 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index feb9076..eaefdb0 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -673,8 +673,7 @@ static void pwm_backlight_shutdown(struct platform_device *pdev)
->  	pwm_backlight_power_off(pb);
->  }
->  
-> -#ifdef CONFIG_PM_SLEEP
-> -static int pwm_backlight_suspend(struct device *dev)
-> +static int __maybe_unused pwm_backlight_suspend(struct device *dev)
->  {
->  	struct backlight_device *bl = dev_get_drvdata(dev);
->  	struct pwm_bl_data *pb = bl_get_data(bl);
-> @@ -690,7 +689,7 @@ static int pwm_backlight_suspend(struct device *dev)
->  	return 0;
->  }
->  
-> -static int pwm_backlight_resume(struct device *dev)
-> +static int __maybe_unused pwm_backlight_resume(struct device *dev)
->  {
->  	struct backlight_device *bl = dev_get_drvdata(dev);
->  
-> @@ -698,16 +697,9 @@ static int pwm_backlight_resume(struct device *dev)
->  
->  	return 0;
->  }
-> -#endif
->  
-> -static const struct dev_pm_ops pwm_backlight_pm_ops = {
-> -#ifdef CONFIG_PM_SLEEP
-> -	.suspend = pwm_backlight_suspend,
-> -	.resume = pwm_backlight_resume,
-> -	.poweroff = pwm_backlight_suspend,
-> -	.restore = pwm_backlight_resume,
-> -#endif
-> -};
-> +static SIMPLE_DEV_PM_OPS(pwm_backlight_pm_ops,
-> +			 pwm_backlight_suspend, pwm_backlight_resume);
->  
->  static struct platform_driver pwm_backlight_driver = {
->  	.driver		= {
-> -- 
-> 2.10.2
-> 
+T24gMjAxOS0wMS0wNiAxMDozMywgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBIaSBQZXRl
+ciwNCj4gDQo+IE9uIE1vbiwgTm92IDI2LCAyMDE4IGF0IDEwOjU5IFBNIFBldGVyIFJvc2luIDxw
+ZWRhQGF4ZW50aWEuc2U+IHdyb3RlOg0KPj4gSWYgdGhlcmUgYXJlIGV4dHJhIGxvZ29zIChDT05G
+SUdfRkJfTE9HT19FWFRSQSkgdGhlIGhlaWdodHMgb2YgdGhlc2UNCj4+IGV4dHJhIGxvZ29zIGFy
+ZSBub3QgY29uc2lkZXJlZCB3aGVuIGNlbnRlcmluZyB0aGUgZmlyc3QgbG9nbyB2ZXJ0aWNhbGx5
+Lg0KPj4NCj4+IFNpZ25lZC1vZmYtYnk6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQo+
+IA0KPj4gLS0tIGEvZHJpdmVycy92aWRlby9sb2dvL0tjb25maWcNCj4+ICsrKyBiL2RyaXZlcnMv
+dmlkZW8vbG9nby9LY29uZmlnDQo+PiBAQCAtMTAsNiArMTAsMTUgQEAgbWVudWNvbmZpZyBMT0dP
+DQo+Pg0KPj4gIGlmIExPR08NCj4+DQo+PiArY29uZmlnIEZCX0xPR09fQ0VOVEVSDQo+PiArICAg
+ICAgIGJvb2wgIkNlbnRlciB0aGUgbG9nbyINCj4+ICsgICAgICAgZGVwZW5kcyBvbiBGQj15DQo+
+PiArICAgICAgIGhlbHANCj4+ICsgICAgICAgICBXaGVuIHRoaXMgb3B0aW9uIGlzIHNlbGVjdGVk
+LCB0aGUgYm9vdHVwIGxvZ28gaXMgY2VudGVyZWQgYm90aA0KPj4gKyAgICAgICAgIGhvcml6b250
+YWxseSBhbmQgdmVydGljYWxseS4gSWYgbW9yZSB0aGFuIG9uZSBsb2dvIGlzIGRpc3BsYXllZA0K
+Pj4gKyAgICAgICAgIGR1ZSB0byBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVjdGVkIGxpbmUgb2Yg
+bG9nb3MgaXMgY2VudGVyZWQNCj4+ICsgICAgICAgICBhcyBhIHdob2xlLg0KPj4gKw0KPiANCj4g
+SXNuJ3QgYSBrZXJuZWwgY29tbWFuZCBsaW5lIG9wdGlvbiBtb3JlIHN1aXRhYmxlIHRvIGNvbmZp
+Z3VyZSB0aGUgcG9zaXRpb24NCj4gb2YgdGhlIGxvZ28/DQoNClRoYXQgZGlkbid0IG9jY3VyIHRv
+IG1lIHByZXZpb3VzbHksIGJ1dCBpdCBkb2VzIG1ha2Ugc2Vuc2Ugbm93IHRoYXQgeW91DQptZW50
+aW9uIGl0LiBUaGlzIGlzIG9uIHRvcCBvZiB2NS4wLXJjMSwgYW5kIGlmIGFwcGxpZWQgYmVmb3Jl
+IHY1LjAgd2UNCmNhbiBhdm9pZCBwb3NzaWJsZSByZWdyZXNzaW9ucyBmb3IgZm9sa3Mgd2hvIG1p
+Z2h0IHN0YXJ0IHRvIHJlbHkgb24NCkNPTkZJR19GQl9MT0dPX0NFTlRFUiBpZiB2NS4wIGlzIHJl
+bGVhc2VkIHcvbyB0aGlzLg0KDQpDaGVlcnMsDQpQZXRlcg0KDQpGcm9tIGRlNzM1M2FiNTE5YmE5
+YjVjOWVhM2Y2MmQ2MDdiYjhlOTRiNjg3Y2MgTW9uIFNlcCAxNyAwMDowMDowMCAyMDAxDQpGcm9t
+OiBQZXRlciBSb3NpbiA8cGVkYUBheGVudGlhLnNlPg0KQ2M6IEJhcnRsb21pZWogWm9sbmllcmtp
+ZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4NCkNjOiBKb25hdGhhbiBDb3JiZXQgPGNv
+cmJldEBsd24ubmV0Pg0KQ2M6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQpDYzogZHJp
+LWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KQ2M6IGxpbnV4LWZiZGV2QHZnZXIua2VybmVs
+Lm9yZw0KQ2M6IGxpbnV4LWRvY0B2Z2VyLmtlcm5lbC5vcmcNClRvOiBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnDQpEYXRlOiBNb24sIDcgSmFuIDIwMTkgMDg6MzU6MjYgKzAxMDANClN1Ympl
+Y3Q6IFtQQVRDSF0gZmJkZXY6IGZibWVtOiBjb252ZXJ0IENPTkZJR19GQl9MT0dPX0NFTlRFUiBp
+bnRvIGEgY21kIGxpbmUNCiBvcHRpb24NCg0KQSBjb21tYW5kIGxpbmUgb3B0aW9uIGlzIG11Y2gg
+bW9yZSBmbGV4aWJsZSB0aGFuIGEgY29uZmlnIG9wdGlvbiBhbmQNCnRoZSBzdXBwb3J0aW5nIGNv
+ZGUgaXMgc21hbGwuIEdldHMgcmlkIG9mICNpZmRlZnMgaW4gdGhlIGNvZGUgdG9vLi4uDQoNClN1
+Z2dlc3RlZC1ieTogR2VlcnQgVXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4NClNp
+Z25lZC1vZmYtYnk6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQotLS0NCiBEb2N1bWVu
+dGF0aW9uL2ZiL2ZiY29uLnR4dCAgICAgICB8ICA2ICsrKysrKw0KIGRyaXZlcnMvdmlkZW8vZmJk
+ZXYvY29yZS9mYmNvbi5jIHwgIDUgKysrKysNCiBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJt
+ZW0uYyB8IDE5ICsrKysrKysrKystLS0tLS0tLS0NCiBkcml2ZXJzL3ZpZGVvL2xvZ28vS2NvbmZp
+ZyAgICAgICB8ICA5IC0tLS0tLS0tLQ0KIGluY2x1ZGUvbGludXgvZmIuaCAgICAgICAgICAgICAg
+IHwgIDEgKw0KIDUgZmlsZXMgY2hhbmdlZCwgMjIgaW5zZXJ0aW9ucygrKSwgMTggZGVsZXRpb25z
+KC0pDQoNCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2ZiL2ZiY29uLnR4dCBiL0RvY3VtZW50
+YXRpb24vZmIvZmJjb24udHh0DQppbmRleCA2MmFmMzA1MTFhOTUuLmZiNWZhMGE4ZDU1MyAxMDA2
+NDQNCi0tLSBhL0RvY3VtZW50YXRpb24vZmIvZmJjb24udHh0DQorKysgYi9Eb2N1bWVudGF0aW9u
+L2ZiL2ZiY29uLnR4dA0KQEAgLTE2Myw2ICsxNjMsMTIgQEAgQy4gQm9vdCBvcHRpb25zDQogCWJl
+IHByZXNlcnZlZCB1bnRpbCB0aGVyZSBhY3R1YWxseSBpcyBzb21lIHRleHQgaXMgb3V0cHV0IHRv
+IHRoZSBjb25zb2xlLg0KIAlUaGlzIG9wdGlvbiBjYXVzZXMgZmJjb24gdG8gYmluZCBpbW1lZGlh
+dGVseSB0byB0aGUgZmJkZXYgZGV2aWNlLg0KIA0KKzcuIGZiY29uPWNlbnRlci1sb2dvDQorDQor
+CVdoZW4gdGhpcyBvcHRpb24gaXMgc2VsZWN0ZWQsIHRoZSBib290dXAgbG9nbyBpcyBjZW50ZXJl
+ZCBib3RoDQorCWhvcml6b250YWxseSBhbmQgdmVydGljYWxseS4gSWYgbW9yZSB0aGFuIG9uZSBs
+b2dvIGlzIGRpc3BsYXllZCBkdWUgdG8NCisJbXVsdGlwbGUgQ1BVcywgdGhlIGNvbGxlY3RlZCBs
+aW5lIG9mIGxvZ29zIGlzIGNlbnRlcmVkIGFzIGEgd2hvbGUuDQorDQogQy4gQXR0YWNoaW5nLCBE
+ZXRhY2hpbmcgYW5kIFVubG9hZGluZw0KIA0KIEJlZm9yZSBnb2luZyBvbiB0byBob3cgdG8gYXR0
+YWNoLCBkZXRhY2ggYW5kIHVubG9hZCB0aGUgZnJhbWVidWZmZXIgY29uc29sZSwgYW4NCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYyBiL2RyaXZlcnMvdmlkZW8v
+ZmJkZXYvY29yZS9mYmNvbi5jDQppbmRleCA4OTc2MTkwYjZjMWYuLjU1MmNmZWU2M2Q3NiAxMDA2
+NDQNCi0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jDQorKysgYi9kcml2ZXJz
+L3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYw0KQEAgLTUxMCw2ICs1MTAsMTEgQEAgc3RhdGljIGlu
+dCBfX2luaXQgZmJfY29uc29sZV9zZXR1cChjaGFyICp0aGlzX29wdCkNCiAJCQljb250aW51ZTsN
+CiAJCX0NCiAjZW5kaWYNCisNCisJCWlmICghc3RyY21wKG9wdGlvbnMsICJjZW50ZXItbG9nbyIp
+KSB7DQorCQkJZmJfY2VudGVyX2xvZ28gPSB0cnVlOw0KKwkJCWNvbnRpbnVlOw0KKwkJfQ0KIAl9
+DQogCXJldHVybiAxOw0KIH0NCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUv
+ZmJtZW0uYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jDQppbmRleCA1NThlZDJl
+ZDMxMjQuLmNiNDNhMjI1OGM1MSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29y
+ZS9mYm1lbS5jDQorKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJtZW0uYw0KQEAgLTUz
+LDYgKzUzLDkgQEAgRVhQT1JUX1NZTUJPTChyZWdpc3RlcmVkX2ZiKTsNCiBpbnQgbnVtX3JlZ2lz
+dGVyZWRfZmIgX19yZWFkX21vc3RseTsNCiBFWFBPUlRfU1lNQk9MKG51bV9yZWdpc3RlcmVkX2Zi
+KTsNCiANCitib29sIGZiX2NlbnRlcl9sb2dvIF9fcmVhZF9tb3N0bHk7DQorRVhQT1JUX1NZTUJP
+TChmYl9jZW50ZXJfbG9nbyk7DQorDQogc3RhdGljIHN0cnVjdCBmYl9pbmZvICpnZXRfZmJfaW5m
+byh1bnNpZ25lZCBpbnQgaWR4KQ0KIHsNCiAJc3RydWN0IGZiX2luZm8gKmZiX2luZm87DQpAQCAt
+NTA2LDggKzUwOSw3IEBAIHN0YXRpYyBpbnQgZmJfc2hvd19sb2dvX2xpbmUoc3RydWN0IGZiX2lu
+Zm8gKmluZm8sIGludCByb3RhdGUsDQogCQlmYl9zZXRfbG9nbyhpbmZvLCBsb2dvLCBsb2dvX25l
+dywgZmJfbG9nby5kZXB0aCk7DQogCX0NCiANCi0jaWZkZWYgQ09ORklHX0ZCX0xPR09fQ0VOVEVS
+DQotCXsNCisJaWYgKGZiX2NlbnRlcl9sb2dvKSB7DQogCQlpbnQgeHJlcyA9IGluZm8tPnZhci54
+cmVzOw0KIAkJaW50IHlyZXMgPSBpbmZvLT52YXIueXJlczsNCiANCkBAIC01MjAsMTEgKzUyMiwx
+MSBAQCBzdGF0aWMgaW50IGZiX3Nob3dfbG9nb19saW5lKHN0cnVjdCBmYl9pbmZvICppbmZvLCBp
+bnQgcm90YXRlLA0KIAkJCS0tbjsNCiAJCWltYWdlLmR4ID0gKHhyZXMgLSBuICogKGxvZ28tPndp
+ZHRoICsgOCkgLSA4KSAvIDI7DQogCQlpbWFnZS5keSA9IHkgPzogKHlyZXMgLSBsb2dvLT5oZWln
+aHQpIC8gMjsNCisJfSBlbHNlIHsNCisJCWltYWdlLmR4ID0gMDsNCisJCWltYWdlLmR5ID0geTsN
+CiAJfQ0KLSNlbHNlDQotCWltYWdlLmR4ID0gMDsNCi0JaW1hZ2UuZHkgPSB5Ow0KLSNlbmRpZg0K
+Kw0KIAlpbWFnZS53aWR0aCA9IGxvZ28tPndpZHRoOw0KIAlpbWFnZS5oZWlnaHQgPSBsb2dvLT5o
+ZWlnaHQ7DQogDQpAQCAtNjg0LDkgKzY4Niw4IEBAIGludCBmYl9wcmVwYXJlX2xvZ28oc3RydWN0
+IGZiX2luZm8gKmluZm8sIGludCByb3RhdGUpDQogIAl9DQogDQogCWhlaWdodCA9IGZiX2xvZ28u
+bG9nby0+aGVpZ2h0Ow0KLSNpZmRlZiBDT05GSUdfRkJfTE9HT19DRU5URVINCi0JaGVpZ2h0ICs9
+ICh5cmVzIC0gZmJfbG9nby5sb2dvLT5oZWlnaHQpIC8gMjsNCi0jZW5kaWYNCisJaWYgKGZiX2Nl
+bnRlcl9sb2dvKQ0KKwkJaGVpZ2h0ICs9ICh5cmVzIC0gZmJfbG9nby5sb2dvLT5oZWlnaHQpIC8g
+MjsNCiANCiAJcmV0dXJuIGZiX3ByZXBhcmVfZXh0cmFfbG9nb3MoaW5mbywgaGVpZ2h0LCB5cmVz
+KTsNCiB9DQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9sb2dvL0tjb25maWcgYi9kcml2ZXJz
+L3ZpZGVvL2xvZ28vS2NvbmZpZw0KaW5kZXggMWU5NzJjNGU4OGIxLi5kMWY2MTk2YzhiOWEgMTAw
+NjQ0DQotLS0gYS9kcml2ZXJzL3ZpZGVvL2xvZ28vS2NvbmZpZw0KKysrIGIvZHJpdmVycy92aWRl
+by9sb2dvL0tjb25maWcNCkBAIC0xMCwxNSArMTAsNiBAQCBtZW51Y29uZmlnIExPR08NCiANCiBp
+ZiBMT0dPDQogDQotY29uZmlnIEZCX0xPR09fQ0VOVEVSDQotCWJvb2wgIkNlbnRlciB0aGUgbG9n
+byINCi0JZGVwZW5kcyBvbiBGQj15DQotCWhlbHANCi0JICBXaGVuIHRoaXMgb3B0aW9uIGlzIHNl
+bGVjdGVkLCB0aGUgYm9vdHVwIGxvZ28gaXMgY2VudGVyZWQgYm90aA0KLQkgIGhvcml6b250YWxs
+eSBhbmQgdmVydGljYWxseS4gSWYgbW9yZSB0aGFuIG9uZSBsb2dvIGlzIGRpc3BsYXllZA0KLQkg
+IGR1ZSB0byBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVjdGVkIGxpbmUgb2YgbG9nb3MgaXMgY2Vu
+dGVyZWQNCi0JICBhcyBhIHdob2xlLg0KLQ0KIGNvbmZpZyBGQl9MT0dPX0VYVFJBDQogCWJvb2wN
+CiAJZGVwZW5kcyBvbiBGQj15DQpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9mYi5oIGIvaW5j
+bHVkZS9saW51eC9mYi5oDQppbmRleCA3Y2RkMzFhNjk3MTkuLmY1MmVmMGFkNjc4MSAxMDA2NDQN
+Ci0tLSBhL2luY2x1ZGUvbGludXgvZmIuaA0KKysrIGIvaW5jbHVkZS9saW51eC9mYi5oDQpAQCAt
+NjUzLDYgKzY1Myw3IEBAIGV4dGVybiBpbnQgZmJfbmV3X21vZGVsaXN0KHN0cnVjdCBmYl9pbmZv
+ICppbmZvKTsNCiANCiBleHRlcm4gc3RydWN0IGZiX2luZm8gKnJlZ2lzdGVyZWRfZmJbRkJfTUFY
+XTsNCiBleHRlcm4gaW50IG51bV9yZWdpc3RlcmVkX2ZiOw0KK2V4dGVybiBib29sIGZiX2NlbnRl
+cl9sb2dvOw0KIGV4dGVybiBzdHJ1Y3QgY2xhc3MgKmZiX2NsYXNzOw0KIA0KICNkZWZpbmUgZm9y
+X2VhY2hfcmVnaXN0ZXJlZF9mYihpKQkJXA0KLS0gDQoyLjExLjANCg0K

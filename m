@@ -1,7 +1,7 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Mon, 07 Jan 2019 09:02:53 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 07 Jan 2019 09:11:04 +0000
 Subject: Re: [PATCH] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd line, option
-Message-Id: <662db203-ae18-4a11-7b10-3d7d480f6f37@axentia.se>
+Message-Id: <CAMuHMdXMidVgtz-T8PZDUrKAwJmz9B4g1hNgw6FwrCpU-m5Gew@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181126215725.2548-1-peda@axentia.se>
  <20181126215725.2548-3-peda@axentia.se>
@@ -9,77 +9,137 @@ References: <20181126215725.2548-1-peda@axentia.se>
  <37be75aa-7a63-a937-6de7-777a31af741b@axentia.se>
  <CAMuHMdXR2iuftV26s-EnKo74vZxcW2w_R1dD_Mk+Ug8MsNwL3Q@mail.gmail.com>
  <cb772a2f-2d33-6d0e-9ea6-ba9eb49023f9@axentia.se>
-In-Reply-To: <cb772a2f-2d33-6d0e-9ea6-ba9eb49023f9@axentia.se>
+ <662db203-ae18-4a11-7b10-3d7d480f6f37@axentia.se>
+In-Reply-To: <662db203-ae18-4a11-7b10-3d7d480f6f37@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Rosin <peda@axentia.se>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-T24gMjAxOS0wMS0wNyAwOTo1OSwgUGV0ZXIgUm9zaW4gd3JvdGU6DQo+IE9uIDIwMTktMDEtMDcg
-MDk6NDAsIEdlZXJ0IFV5dHRlcmhvZXZlbiB3cm90ZToNCj4+IEhpIFBldGVyLA0KPj4NCj4+IE9u
-IE1vbiwgSmFuIDcsIDIwMTkgYXQgOToyNiBBTSBQZXRlciBSb3NpbiA8cGVkYUBheGVudGlhLnNl
-PiB3cm90ZToNCj4+PiBPbiAyMDE5LTAxLTA2IDEwOjMzLCBHZWVydCBVeXR0ZXJob2V2ZW4gd3Jv
-dGU6DQo+Pj4+IE9uIE1vbiwgTm92IDI2LCAyMDE4IGF0IDEwOjU5IFBNIFBldGVyIFJvc2luIDxw
-ZWRhQGF4ZW50aWEuc2U+IHdyb3RlOg0KPj4+Pj4gSWYgdGhlcmUgYXJlIGV4dHJhIGxvZ29zIChD
-T05GSUdfRkJfTE9HT19FWFRSQSkgdGhlIGhlaWdodHMgb2YgdGhlc2UNCj4+Pj4+IGV4dHJhIGxv
-Z29zIGFyZSBub3QgY29uc2lkZXJlZCB3aGVuIGNlbnRlcmluZyB0aGUgZmlyc3QgbG9nbyB2ZXJ0
-aWNhbGx5Lg0KPj4+Pj4NCj4+Pj4+IFNpZ25lZC1vZmYtYnk6IFBldGVyIFJvc2luIDxwZWRhQGF4
-ZW50aWEuc2U+DQo+Pj4+DQo+Pj4+PiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2xvZ28vS2NvbmZpZw0K
-Pj4+Pj4gKysrIGIvZHJpdmVycy92aWRlby9sb2dvL0tjb25maWcNCj4+Pj4+IEBAIC0xMCw2ICsx
-MCwxNSBAQCBtZW51Y29uZmlnIExPR08NCj4+Pj4+DQo+Pj4+PiAgaWYgTE9HTw0KPj4+Pj4NCj4+
-Pj4+ICtjb25maWcgRkJfTE9HT19DRU5URVINCj4+Pj4+ICsgICAgICAgYm9vbCAiQ2VudGVyIHRo
-ZSBsb2dvIg0KPj4+Pj4gKyAgICAgICBkZXBlbmRzIG9uIEZCPXkNCj4+Pj4+ICsgICAgICAgaGVs
-cA0KPj4+Pj4gKyAgICAgICAgIFdoZW4gdGhpcyBvcHRpb24gaXMgc2VsZWN0ZWQsIHRoZSBib290
-dXAgbG9nbyBpcyBjZW50ZXJlZCBib3RoDQo+Pj4+PiArICAgICAgICAgaG9yaXpvbnRhbGx5IGFu
-ZCB2ZXJ0aWNhbGx5LiBJZiBtb3JlIHRoYW4gb25lIGxvZ28gaXMgZGlzcGxheWVkDQo+Pj4+PiAr
-ICAgICAgICAgZHVlIHRvIG11bHRpcGxlIENQVXMsIHRoZSBjb2xsZWN0ZWQgbGluZSBvZiBsb2dv
-cyBpcyBjZW50ZXJlZA0KPj4+Pj4gKyAgICAgICAgIGFzIGEgd2hvbGUuDQo+Pj4+PiArDQo+Pj4+
-DQo+Pj4+IElzbid0IGEga2VybmVsIGNvbW1hbmQgbGluZSBvcHRpb24gbW9yZSBzdWl0YWJsZSB0
-byBjb25maWd1cmUgdGhlIHBvc2l0aW9uDQo+Pj4+IG9mIHRoZSBsb2dvPw0KPj4+DQo+Pj4gVGhh
-dCBkaWRuJ3Qgb2NjdXIgdG8gbWUgcHJldmlvdXNseSwgYnV0IGl0IGRvZXMgbWFrZSBzZW5zZSBu
-b3cgdGhhdCB5b3UNCj4+PiBtZW50aW9uIGl0LiBUaGlzIGlzIG9uIHRvcCBvZiB2NS4wLXJjMSwg
-YW5kIGlmIGFwcGxpZWQgYmVmb3JlIHY1LjAgd2UNCj4+PiBjYW4gYXZvaWQgcG9zc2libGUgcmVn
-cmVzc2lvbnMgZm9yIGZvbGtzIHdobyBtaWdodCBzdGFydCB0byByZWx5IG9uDQo+Pj4gQ09ORklH
-X0ZCX0xPR09fQ0VOVEVSIGlmIHY1LjAgaXMgcmVsZWFzZWQgdy9vIHRoaXMuDQo+Pj4NCj4+PiBD
-aGVlcnMsDQo+Pj4gUGV0ZXINCj4+Pg0KPj4+IEZyb20gZGU3MzUzYWI1MTliYTliNWM5ZWEzZjYy
-ZDYwN2JiOGU5NGI2ODdjYyBNb24gU2VwIDE3IDAwOjAwOjAwIDIwMDENCj4+PiBGcm9tOiBQZXRl
-ciBSb3NpbiA8cGVkYUBheGVudGlhLnNlPg0KPj4+IENjOiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3
-aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb20+DQo+Pj4gQ2M6IEpvbmF0aGFuIENvcmJldCA8
-Y29yYmV0QGx3bi5uZXQ+DQo+Pj4gQ2M6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQo+
-Pj4gQ2M6IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4+PiBDYzogbGludXgtZmJk
-ZXZAdmdlci5rZXJuZWwub3JnDQo+Pj4gQ2M6IGxpbnV4LWRvY0B2Z2VyLmtlcm5lbC5vcmcNCj4+
-PiBUbzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPj4+IERhdGU6IE1vbiwgNyBKYW4g
-MjAxOSAwODozNToyNiArMDEwMA0KPj4+IFN1YmplY3Q6IFtQQVRDSF0gZmJkZXY6IGZibWVtOiBj
-b252ZXJ0IENPTkZJR19GQl9MT0dPX0NFTlRFUiBpbnRvIGEgY21kIGxpbmUNCj4+PiAgb3B0aW9u
-DQo+Pj4NCj4+PiBBIGNvbW1hbmQgbGluZSBvcHRpb24gaXMgbXVjaCBtb3JlIGZsZXhpYmxlIHRo
-YW4gYSBjb25maWcgb3B0aW9uIGFuZA0KPj4+IHRoZSBzdXBwb3J0aW5nIGNvZGUgaXMgc21hbGwu
-IEdldHMgcmlkIG9mICNpZmRlZnMgaW4gdGhlIGNvZGUgdG9vLi4uDQo+Pj4NCj4+PiBTdWdnZXN0
-ZWQtYnk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+DQo+Pj4gU2ln
-bmVkLW9mZi1ieTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCj4+DQo+PiBUaGFua3Mg
-Zm9yIHlvdXIgcGF0Y2ghDQo+Pg0KPj4+IC0tLSBhL0RvY3VtZW50YXRpb24vZmIvZmJjb24udHh0
-DQo+Pj4gKysrIGIvRG9jdW1lbnRhdGlvbi9mYi9mYmNvbi50eHQNCj4+PiBAQCAtMTYzLDYgKzE2
-MywxMiBAQCBDLiBCb290IG9wdGlvbnMNCj4+PiAgICAgICAgIGJlIHByZXNlcnZlZCB1bnRpbCB0
-aGVyZSBhY3R1YWxseSBpcyBzb21lIHRleHQgaXMgb3V0cHV0IHRvIHRoZSBjb25zb2xlLg0KPj4+
-ICAgICAgICAgVGhpcyBvcHRpb24gY2F1c2VzIGZiY29uIHRvIGJpbmQgaW1tZWRpYXRlbHkgdG8g
-dGhlIGZiZGV2IGRldmljZS4NCj4+Pg0KPj4+ICs3LiBmYmNvbj1jZW50ZXItbG9nbw0KPj4+ICsN
-Cj4+PiArICAgICAgIFdoZW4gdGhpcyBvcHRpb24gaXMgc2VsZWN0ZWQsIHRoZSBib290dXAgbG9n
-byBpcyBjZW50ZXJlZCBib3RoDQo+Pj4gKyAgICAgICBob3Jpem9udGFsbHkgYW5kIHZlcnRpY2Fs
-bHkuIElmIG1vcmUgdGhhbiBvbmUgbG9nbyBpcyBkaXNwbGF5ZWQgZHVlIHRvDQo+Pj4gKyAgICAg
-ICBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVjdGVkIGxpbmUgb2YgbG9nb3MgaXMgY2VudGVyZWQg
-YXMgYSB3aG9sZS4NCj4+PiArDQo+Pg0KPj4gV2hhdCBhYm91dCBtYWtpbmcgdGhpcyBtb3JlIGdl
-bmVyaWMsIHRoYW4gYW4gb3B0aW9uIHNwZWNpZmljIGZvciBjZW50ZXJpbmc/DQo+PiBFbHNlIHBl
-b3BsZSB3YW50IGZiY29uPWxlZnQtbG9nbyBvciBmYmNvbj1yaWdodC1sb2dvIHNvb24/DQo+Pg0K
-Pj4gICAgIGZiY29uPWxvZ28tcG9zOjxwb3M+DQo+Pg0KPj4gV2l0aCA8cG9zPiBiZWluZyAiY2Vu
-dGVyIiwgImxlZnQiLCAidG9wIiwgInJpZ2h0IiwgImJvdHRvbSIsIGFuZCBjb21iaW5hdGlvbnMN
-Cj4+IGxpa2UgInRvcCxjZW50ZXIiPyBPciBpcyB0aGF0IGNvbXBsaWNhdGluZyBzdHVmZiB0b28g
-bXVjaD8NCj4gDQo+IEknbSBub3QgdG9vIGtlZW4gb24gaW1wbGVtZW50aW5nIGFsbCB0aGF0IHdo
-ZW4gSSBoYXZlIHplcm8gdXNlIGZvciBpdC4gSSBjYW4NCj4gaG93ZXZlciByZW5hbWUgdGhlIHRy
-aWdnZXIgZm9yIHRoZSBleGlzdGluZyBmYl9jZW50ZXJfbG9nbyBib29sIHRvDQo+IA0KPiAJZmJj
-b249bG9nby1wb3M6Y2VudGVyDQo+IA0KPiBhbmQgYWRkIGEgY2hlY2sgZm9yICJ0b3AsbGVmdCIg
-dG8gcmVzZXQgdGhlIGJvb2wgdG8gZmFsc2UuIFRoZW4gdGhlIG90aGVyDQo+IHZhcmlhbnRzIGNh
-biBiZSBhZGRlZCBsYXRlciBieSB3aG9tZXZlciBhbmQgd2hlbiBuZWVkZWQuDQo+IA0KPiBJcyB0
-aGF0IGdvb2QgZW5vdWdoPw0KDQpPdWNoLCBJIGp1c3QgcmVhbGl6ZWQgdGhhdCB1c2luZyBhIGNv
-bW1hIGlzIGEgbm8tZ28sIGFzIHRoYXQgaXMgYWxyZWFkeQ0Kc2VwYXJhdGluZyBmYmNvbiBzdWJv
-cHRpb25zLCBzbyBJIHN1Z2dlc3QgdG9wLWxlZnQgaW5zdGVhZC4NCg0KQ2hlZXJzLA0KUGV0ZXIN
-Cg=
+Hi Peter,
+
+On Mon, Jan 7, 2019 at 10:03 AM Peter Rosin <peda@axentia.se> wrote:
+> On 2019-01-07 09:59, Peter Rosin wrote:
+> > On 2019-01-07 09:40, Geert Uytterhoeven wrote:
+> >> On Mon, Jan 7, 2019 at 9:26 AM Peter Rosin <peda@axentia.se> wrote:
+> >>> On 2019-01-06 10:33, Geert Uytterhoeven wrote:
+> >>>> On Mon, Nov 26, 2018 at 10:59 PM Peter Rosin <peda@axentia.se> wrote:
+> >>>>> If there are extra logos (CONFIG_FB_LOGO_EXTRA) the heights of these
+> >>>>> extra logos are not considered when centering the first logo vertic=
+ally.
+> >>>>>
+> >>>>> Signed-off-by: Peter Rosin <peda@axentia.se>
+> >>>>
+> >>>>> --- a/drivers/video/logo/Kconfig
+> >>>>> +++ b/drivers/video/logo/Kconfig
+> >>>>> @@ -10,6 +10,15 @@ menuconfig LOGO
+> >>>>>
+> >>>>>  if LOGO
+> >>>>>
+> >>>>> +config FB_LOGO_CENTER
+> >>>>> +       bool "Center the logo"
+> >>>>> +       depends on FB=3Dy
+> >>>>> +       help
+> >>>>> +         When this option is selected, the bootup logo is centered=
+ both
+> >>>>> +         horizontally and vertically. If more than one logo is dis=
+played
+> >>>>> +         due to multiple CPUs, the collected line of logos is cent=
+ered
+> >>>>> +         as a whole.
+> >>>>> +
+> >>>>
+> >>>> Isn't a kernel command line option more suitable to configure the po=
+sition
+> >>>> of the logo?
+> >>>
+> >>> That didn't occur to me previously, but it does make sense now that y=
+ou
+> >>> mention it. This is on top of v5.0-rc1, and if applied before v5.0 we
+> >>> can avoid possible regressions for folks who might start to rely on
+> >>> CONFIG_FB_LOGO_CENTER if v5.0 is released w/o this.
+> >>>
+> >>> Cheers,
+> >>> Peter
+> >>>
+> >>> From de7353ab519ba9b5c9ea3f62d607bb8e94b687cc Mon Sep 17 00:00:00 2001
+> >>> From: Peter Rosin <peda@axentia.se>
+> >>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> >>> Cc: Jonathan Corbet <corbet@lwn.net>
+> >>> Cc: Peter Rosin <peda@axentia.se>
+> >>> Cc: dri-devel@lists.freedesktop.org
+> >>> Cc: linux-fbdev@vger.kernel.org
+> >>> Cc: linux-doc@vger.kernel.org
+> >>> To: linux-kernel@vger.kernel.org
+> >>> Date: Mon, 7 Jan 2019 08:35:26 +0100
+> >>> Subject: [PATCH] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a c=
+md line
+> >>>  option
+> >>>
+> >>> A command line option is much more flexible than a config option and
+> >>> the supporting code is small. Gets rid of #ifdefs in the code too...
+> >>>
+> >>> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> >>> Signed-off-by: Peter Rosin <peda@axentia.se>
+> >>
+> >> Thanks for your patch!
+> >>
+> >>> --- a/Documentation/fb/fbcon.txt
+> >>> +++ b/Documentation/fb/fbcon.txt
+> >>> @@ -163,6 +163,12 @@ C. Boot options
+> >>>         be preserved until there actually is some text is output to t=
+he console.
+> >>>         This option causes fbcon to bind immediately to the fbdev dev=
+ice.
+> >>>
+> >>> +7. fbcon=CEnter-logo
+> >>> +
+> >>> +       When this option is selected, the bootup logo is centered both
+> >>> +       horizontally and vertically. If more than one logo is display=
+ed due to
+> >>> +       multiple CPUs, the collected line of logos is centered as a w=
+hole.
+> >>> +
+> >>
+> >> What about making this more generic, than an option specific for cente=
+ring?
+> >> Else people want fbcon=3Dleft-logo or fbcon=3Dright-logo soon?
+> >>
+> >>     fbcon=3Dlogo-pos:<pos>
+> >>
+> >> With <pos> being "center", "left", "top", "right", "bottom", and combi=
+nations
+> >> like "top,center"? Or is that complicating stuff too much?
+> >
+> > I'm not too keen on implementing all that when I have zero use for it. =
+I can
+> > however rename the trigger for the existing fb_center_logo bool to
+> >
+> >       fbcon=3Dlogo-pos:center
+> >
+> > and add a check for "top,left" to reset the bool to false. Then the oth=
+er
+> > variants can be added later by whomever and when needed.
+> >
+> > Is that good enough?
+>
+> Ouch, I just realized that using a comma is a no-go, as that is already
+> separating fbcon suboptions, so I suggest top-left instead.
+
+Sure, sounds fine to me.  I just want to avoid having a parameter system
+that complicates future extension.
+I think you can drop the check for top-left, as the bool defaults to false.
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds

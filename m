@@ -1,72 +1,94 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Date: Tue, 29 Jan 2019 13:43:50 +0000
-Subject: [PATCH v5 2/2] fbcon: Silence fbcon logo on 'quiet' boots
-Message-Id: <20190129134350.24049-3-prarit@redhat.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 07 Jan 2019 17:31:32 +0000
+Subject: [PATCH] fbdev: offb: Fix OF node name handling
+Message-Id: <20190107173132.27316-1-robh@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190129134350.24049-1-prarit@redhat.com>
-In-Reply-To: <20190129134350.24049-1-prarit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Elimar Riesebieter <riesebie@lxtec.de>, linux-kernel@vger.kernel.org, stable@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Mathieu Malaterre <malat@debian.org>
 
-On text-based systems the 'quiet' boot option will show printk levels
-higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
-during boot can cause some consoles to lose display data and as a result
-confuse the end user.
+Commit 5c63e407aaab ("fbdev: Convert to using %pOFn instead of
+device_node.name") changed how the OF FB driver handles the OF node
+name. This missed the case where the node name is passed to
+offb_init_palette_hacks(). This results in a NULL ptr dereference
+in strncmp and breaks any system except ones using bootx with no display
+node.
 
-Do not display the Tux logo on systems that are in 'quiet' boot.
+Fix this by making offb_init_palette_hacks() use the OF node pointer and
+use of_node_name_prefix() helper function instead for node name
+comparisons. This helps in moving all OF node name accesses to helper
+functions in preparation to remove struct device_node.name pointer.
 
-v2: It helps to commit all my changes before sending them.  Remove extra
-bracket.
-v3: buildbot error fix: fbcon can be built as part of a module so export console_printk
-v4: move console_printk change to separate patch, and drop logo cleanup
-v5: Only set FBCON_LOGO_DONTSHOW for console loglevel
+Fixes: 5c63e407aaab ("fbdev: Convert to using %pOFn instead of device_node.name")
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Marko Myllynen <myllynen@redhat.com>
-Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Reported-by: Mathieu Malaterre <malat@debian.org>
+Cc: stable@vger.kernel.org # v4.19+
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Thierry Reding <treding@nvidia.com>
-Cc: Yisheng Xie <ysxie@foxmail.com>
 Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/video/fbdev/core/fbcon.c | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/offb.c | 18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index bfa1360ec750..59b626356983 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -656,11 +656,14 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
- 		kfree(save);
- 	}
+diff --git a/drivers/video/fbdev/offb.c b/drivers/video/fbdev/offb.c
+index 31f769d67195..057d3cdef92e 100644
+--- a/drivers/video/fbdev/offb.c
++++ b/drivers/video/fbdev/offb.c
+@@ -318,28 +318,28 @@ static void __iomem *offb_map_reg(struct device_node *np, int index,
+ }
  
-+	if (logo_shown = FBCON_LOGO_DONTSHOW)
-+		return;
-+
- 	if (logo_lines > vc->vc_bottom) {
- 		logo_shown = FBCON_LOGO_CANSHOW;
- 		printk(KERN_INFO
- 		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).\n");
--	} else if (logo_shown != FBCON_LOGO_DONTSHOW) {
-+	} else {
- 		logo_shown = FBCON_LOGO_DRAW;
- 		vc->vc_top = logo_lines;
- 	}
-@@ -1066,6 +1069,9 @@ static void fbcon_init(struct vc_data *vc, int init)
+ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp,
+-				    const char *name, unsigned long address)
++				    unsigned long address)
+ {
+ 	struct offb_par *par = (struct offb_par *) info->par;
  
- 	cap = info->flags;
+-	if (dp && !strncmp(name, "ATY,Rage128", 11)) {
++	if (of_node_name_prefix(dp, "ATY,Rage128")) {
+ 		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+ 		if (par->cmap_adr)
+ 			par->cmap_type = cmap_r128;
+-	} else if (dp && (!strncmp(name, "ATY,RageM3pA", 12)
+-			  || !strncmp(name, "ATY,RageM3p12A", 14))) {
++	} else if (of_node_name_prefix(dp, "ATY,RageM3pA") ||
++		   of_node_name_prefix(dp, "ATY,RageM3p12A")) {
+ 		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+ 		if (par->cmap_adr)
+ 			par->cmap_type = cmap_M3A;
+-	} else if (dp && !strncmp(name, "ATY,RageM3pB", 12)) {
++	} else if (of_node_name_prefix(dp, "ATY,RageM3pB")) {
+ 		par->cmap_adr = offb_map_reg(dp, 2, 0, 0x1fff);
+ 		if (par->cmap_adr)
+ 			par->cmap_type = cmap_M3B;
+-	} else if (dp && !strncmp(name, "ATY,Rage6", 9)) {
++	} else if (of_node_name_prefix(dp, "ATY,Rage6")) {
+ 		par->cmap_adr = offb_map_reg(dp, 1, 0, 0x1fff);
+ 		if (par->cmap_adr)
+ 			par->cmap_type = cmap_radeon;
+-	} else if (!strncmp(name, "ATY,", 4)) {
++	} else if (of_node_name_prefix(dp, "ATY,")) {
+ 		unsigned long base = address & 0xff000000UL;
+ 		par->cmap_adr  			ioremap(base + 0x7ff000, 0x1000) + 0xcc0;
+@@ -350,7 +350,7 @@ static void offb_init_palette_hacks(struct fb_info *info, struct device_node *dp
+ 		par->cmap_adr = offb_map_reg(dp, 0, 0x6000, 0x1000);
+ 		if (par->cmap_adr)
+ 			par->cmap_type = cmap_gxt2000;
+-	} else if (dp && !strncmp(name, "vga,Display-", 12)) {
++	} else if (of_node_name_prefix(dp, "vga,Display-")) {
+ 		/* Look for AVIVO initialized by SLOF */
+ 		struct device_node *pciparent = of_get_parent(dp);
+ 		const u32 *vid, *did;
+@@ -438,7 +438,7 @@ static void __init offb_init_fb(const char *name,
  
-+	if (console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
-+		logo_shown = FBCON_LOGO_DONTSHOW;
-+
- 	if (vc != svc || logo_shown = FBCON_LOGO_DONTSHOW ||
- 	    (info->fix.type = FB_TYPE_TEXT))
- 		logo = 0;
+ 	par->cmap_type = cmap_unknown;
+ 	if (depth = 8)
+-		offb_init_palette_hacks(info, dp, name, address);
++		offb_init_palette_hacks(info, dp, address);
+ 	else
+ 		fix->visual = FB_VISUAL_TRUECOLOR;
+ 
 -- 
-2.17.2
+2.19.1

@@ -1,7 +1,7 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 07 Jan 2019 11:12:14 +0000
+Date: Mon, 07 Jan 2019 11:13:21 +0000
 Subject: Re: [PATCH] v2 bakclight: fix missing checks in ambient_light_zone_store
-Message-Id: <20190107111214.hl3issz5yzs5muqc@holly.lan>
+Message-Id: <20190107111321.7d57uqvfdgz5sfb3@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190105184807.4827-1-pakki001@umn.edu>
 In-Reply-To: <20190105184807.4827-1-pakki001@umn.edu>
@@ -13,21 +13,18 @@ Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung
 
 On Sat, Jan 05, 2019 at 12:48:07PM -0600, Aditya Pakki wrote:
 > In adp8870_bl_ambient_light_zone_store, set, clear, and write
-
-I'm curious...
-
-What attracted you to this particular _store function? AFAICT the same
-ignoring of return values occurs in other _store functions in this file?
-
-
 > can return an error but are not checked. The fix adds a check for these
 > cases and returns -1 to match the return type (ssize_t).
 
-This isn't right. The caller of the store function expects -errno
-values (this is the default for almost all kernel functions).
+Sorry... missed this before but there is also a typo in the Subject:
+line.
 
 
+Daniel.
+
+> 
 > Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+
 > ---
 >  drivers/video/backlight/adp8870_bl.c | 16 +++++++++++++---
 >  1 file changed, 13 insertions(+), 3 deletions(-)
@@ -44,20 +41,12 @@ values (this is the default for almost all kernel functions).
 > +		ret = adp8870_set_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
 > +		if (ret < 0)
 > +			goto adp8870_bl_err;
-
-There's nothing *wrong* with goto for error handling but is it
-really needed here (there is no recovery code)?
-
-
 >  	} else if ((val > 0) && (val < 6)) {
 >  		/* Disable automatic ambient light sensing */
 > -		adp8870_clr_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
 > +		ret = adp8870_clr_bits(data->client, ADP8870_MDCR, CMP_AUTOEN);
 > +		if (ret < 0)
 > +			goto adp8870_bl_err;
-
-+1
-
 >  
 >  		/* Set user supplied ambient light zone */
 >  		mutex_lock(&data->lock);
@@ -72,12 +61,6 @@ really needed here (there is no recovery code)?
 >  		mutex_unlock(&data->lock);
 > +		if (ret < 0)
 > +			goto adp8870_bl_err;
-
-+1
-
-
-Daniel.
-
 >  	}
 >  
 >  	return count;

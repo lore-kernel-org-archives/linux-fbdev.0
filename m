@@ -1,35 +1,38 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Date: Tue, 29 Jan 2019 13:43:49 +0000
-Subject: [PATCH v5 1/2] printk: Export console_printk
-Message-Id: <20190129134350.24049-2-prarit@redhat.com>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Wed, 09 Jan 2019 08:39:40 +0000
+Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgMC80XSBGaXggc3NkMTMwN2ZiIE9MRUQgZHJp?= =?utf-8?Q?ver_reset?=
+Message-Id: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-The fbcon can be built as a module and requires console_printk.
-
-Export console_printk.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: Petr Mladek <pmladek@suse.com>
----
- kernel/printk/printk.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index d3d170374ceb..8201019d1fff 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -65,6 +65,7 @@ int console_printk[4] = {
- 	CONSOLE_LOGLEVEL_MIN,		/* minimum_console_loglevel */
- 	CONSOLE_LOGLEVEL_DEFAULT,	/* default_console_loglevel */
- };
-+EXPORT_SYMBOL_GPL(console_printk);
- 
- atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
- EXPORT_SYMBOL(ignore_console_lock_warning);
--- 
-2.17.2
+SGkgYWxsLA0KDQp0aGlzIGlzIG15IHRoaXJkIGF0dGVtcHQgdG8gZml4IHRoZSBzc2QxMzA3ZmIg
+T0xFRCBkcml2ZXIgcmVzZXQuIEluIHRoZQ0Kc2Vjb25kIGF0dGVtcHQgWzFdIFJvYiBzdWdnZXN0
+ZWQgdG8gdGFrZSBkaWZmZXJlbnQgYXByb2FjaC4gVGhhdCBpcyB0bw0KYXBwbHkgd2hhdCB3YXMg
+b3JpZ2luYWx5IHBhcnQgb2YgdGhlIGZpcnN0IHJvdW5kIGFuZCBldmVudHVhbGx5IG1lcmdlZA0K
+YnV0IHJldmVydGVkIGxhdGVyIG9uIFsyXVszXS4NCg0KVGhlIGxhc3QgcGF0Y2ggaW4gdGhpcyBz
+ZXJpZXMgaXMgYSBmaXh1cCBmb3IgdGhlIHNpbmdsZSB1c2VyIChpbi10cmVlKQ0KdGhhdCB1c2Vz
+IHRoaXMgT0xFRC4gUm9iIHN1Z2dlc3RlZCB0aGUgZml4dXAgbWF5IGFjdHVhbGx5IGJlIGFwcGxp
+ZWQNCm9ubHkgYWZ0ZXIgc29tZW9uZSBjb21wbGFpbnMgdGhlaXIgZGlzcGxheSBicm9rZS4NCg0K
+QW5kIGEgY29tbWVudCBmcm9tIEFsZXhhbmRyZSByZWdhcmRpbmcgdGhlIHN0YXR1cyBvZiB0aGUg
+Q3J5c3RhbGZvbnR6DQpwbGF0Zm9ybToNCg0KT24gMjAuMTIuMjAxOCAxMzozNSwgQWxleGFuZHJl
+IEJlbGxvbmkgd3JvdGU6DQo+IEhvbmVzdGx5LCB0aGUgcGxhdGZvcm0gaGFzIGJlZW4gZGlzY29u
+dGludWVkIGFuZCBJIGRvbid0IHJlYWxseSB0aGluaw0KPiBpdCBpcyB3b3J0aCBoYXZpbmcgdGhh
+dCBmaXh1cCBpbiB0aGUgdHJlZSBmb3JldmVyLg0KDQpUaGFuayB5b3UsDQpNaWNoYWwNCg0KWzFd
+IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA2NjU1OTcvIzIyMzI3MjI3DQpb
+Ml0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDYxNzcyOS8NClszXSBodHRw
+czovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNjE3NzMxLyMyMjI1NzE3NQ0KDQpNaWNo
+YWwgVm9rw6HEjSAoNCk6DQogIGR0LWJpbmRpbmdzOiBkaXNwbGF5OiBzc2QxMzA3ZmI6IFJlbW92
+ZSByZXNldC1hY3RpdmUtbG93IGZyb20gZXhhbXBsZXMNCiAgdmlkZW86IHNzZDEzMDdmYjogRG8g
+bm90IGhhcmQgY29kZSBhY3RpdmUtbG93IHJlc2V0IHNlcXVlbmNlDQogIEFSTTogZHRzOiBpbXgy
+OC1jZmExMDAzNjogRml4IHRoZSByZXNldCBncGlvIHNpZ25hbCBwb2xhcml0eQ0KICBBUk06IG14
+czogY2ZhMTAwMzY6IEZpeHVwIE9MRUQgZGlzcGxheSByZXNldCBwb2xhcml0eQ0KDQogLi4uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9zc2QxMzA3ZmIudHh0ICAgICAgfCAgMiAtDQogYXJj
+aC9hcm0vYm9vdC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRzICAgICAgICAgICAgICAgfCAgMyArLQ0K
+IGFyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMgICAgICAgICAgICAgICAgICAgICAgIHwgNDQg
+KysrKysrKysrKysrKysrKysrKysrKw0KIGRyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMg
+ICAgICAgICAgICAgICAgICAgIHwgIDQgKy0NCiA0IGZpbGVzIGNoYW5nZWQsIDQ4IGluc2VydGlv
+bnMoKyksIDUgZGVsZXRpb25zKC0pDQoNCi0tIA0KMi4xLjQNCg0K

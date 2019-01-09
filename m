@@ -1,71 +1,123 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 16:11:19 +0000
-Subject: [PATCH AUTOSEL 4.14 129/170] fbdev: fbmem: behave better with small rotated displays and many CPUs
-Message-Id: <20190128161200.55107-129-sashal@kernel.org>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Wed, 09 Jan 2019 18:16:33 +0000
+Subject: [PATCH v7 03/11] gpu: ipu-v3: Add planar support to interlaced scan
+Message-Id: <20190109181642.19378-4-slongerbeam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128161200.55107-1-sashal@kernel.org>
-In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
+References: <20190109181642.19378-1-slongerbeam@gmail.com>
+In-Reply-To: <20190109181642.19378-1-slongerbeam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, James Simmons <jsimmons@users.sf.net>, Fabian Frederick <ffrederick@users.sourceforge.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Peter Rosin <peda@axentia.se>
+To: linux-media@vger.kernel.org
+Cc: Steve Longerbeam <slongerbeam@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE
+        IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
 
-From: Peter Rosin <peda@axentia.se>
+To support interlaced scan with planar formats, cpmem SLUV must
+be programmed with the correct chroma line stride. For full and
+partial planar 4:2:2 (YUV422P, NV16), chroma line stride must
+be doubled. For full and partial planar 4:2:0 (YUV420, YVU420, NV12),
+chroma line stride must _not_ be doubled, since a single chroma line
+is shared by two luma lines.
 
-[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
-
-Blitting an image with "negative" offsets is not working since there
-is no clipping. It hopefully just crashes. For the bootup logo, there
-is protection so that blitting does not happen as the image is drawn
-further and further to the right (ROTATE_UR) or further and further
-down (ROTATE_CW). There is however no protection when drawing in the
-opposite directions (ROTATE_UD and ROTATE_CCW).
-
-Add back this protection.
-
-The regression is 20-odd years old but the mindless warning-killing
-mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
-positive test on unsigned values") is also to blame, methinks.
-
-Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
-Signed-off-by: Peter Rosin <peda@axentia.se>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-cc: Geoff Levand <geoff@infradead.org>
-Cc: James Simmons <jsimmons@users.sf.net>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
- drivers/video/fbdev/core/fbmem.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/gpu/ipu-v3/ipu-cpmem.c              | 26 +++++++++++++++++++--
+ drivers/staging/media/imx/imx-ic-prpencvf.c |  3 ++-
+ drivers/staging/media/imx/imx-media-csi.c   |  3 ++-
+ include/video/imx-ipu-v3.h                  |  3 ++-
+ 4 files changed, 30 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 11d73b5fc885..302cce7185e3 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_UD) {
--		for (x = 0; x < num; x++) {
-+		u32 dx = image->dx;
+diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
+index 163fadb8a33a..d047a6867c59 100644
+--- a/drivers/gpu/ipu-v3/ipu-cpmem.c
++++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
+@@ -277,9 +277,10 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
+ }
+ EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
+ 
+-void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
++void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
++			       u32 pixelformat)
+ {
+-	u32 ilo, sly;
++	u32 ilo, sly, sluv;
+ 
+ 	if (stride < 0) {
+ 		stride = -stride;
+@@ -290,9 +291,30 @@ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
+ 
+ 	sly = (stride * 2) - 1;
+ 
++	switch (pixelformat) {
++	case V4L2_PIX_FMT_YUV420:
++	case V4L2_PIX_FMT_YVU420:
++		sluv = stride / 2 - 1;
++		break;
++	case V4L2_PIX_FMT_NV12:
++		sluv = stride - 1;
++		break;
++	case V4L2_PIX_FMT_YUV422P:
++		sluv = stride - 1;
++		break;
++	case V4L2_PIX_FMT_NV16:
++		sluv = stride * 2 - 1;
++		break;
++	default:
++		sluv = 0;
++		break;
++	}
 +
-+		for (x = 0; x < num && image->dx <= dx; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_CCW) {
--		for (x = 0; x < num; x++) {
-+		u32 dy = image->dy;
-+
-+		for (x = 0; x < num && image->dy <= dy; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_ILO, ilo);
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_SLY, sly);
++	if (sluv)
++		ipu_ch_param_write_field(ch, IPU_FIELD_SLUV, sluv);
+ };
+ EXPORT_SYMBOL_GPL(ipu_cpmem_interlaced_scan);
+ 
+diff --git a/drivers/staging/media/imx/imx-ic-prpencvf.c b/drivers/staging/media/imx/imx-ic-prpencvf.c
+index 28f41caba05d..af7224846bd5 100644
+--- a/drivers/staging/media/imx/imx-ic-prpencvf.c
++++ b/drivers/staging/media/imx/imx-ic-prpencvf.c
+@@ -412,7 +412,8 @@ static int prp_setup_channel(struct prp_priv *priv,
+ 	if (image.pix.field = V4L2_FIELD_NONE &&
+ 	    V4L2_FIELD_HAS_BOTH(infmt->field) &&
+ 	    channel = priv->out_ch)
+-		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline);
++		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline,
++					  image.pix.pixelformat);
+ 
+ 	ret = ipu_ic_task_idma_init(priv->ic, channel,
+ 				    image.pix.width, image.pix.height,
+diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
+index c2a8d9cd31b7..da4808348845 100644
+--- a/drivers/staging/media/imx/imx-media-csi.c
++++ b/drivers/staging/media/imx/imx-media-csi.c
+@@ -512,7 +512,8 @@ static int csi_idmac_setup_channel(struct csi_priv *priv)
+ 	if (image.pix.field = V4L2_FIELD_NONE &&
+ 	    V4L2_FIELD_HAS_BOTH(infmt->field))
+ 		ipu_cpmem_interlaced_scan(priv->idmac_ch,
+-					  image.pix.bytesperline);
++					  image.pix.bytesperline,
++					  image.pix.pixelformat);
+ 
+ 	ipu_idmac_set_double_buffer(priv->idmac_ch, true);
+ 
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index bbc8481f567d..c887f4bee5f8 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -258,7 +258,8 @@ void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
+ void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
+ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
+-void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
++void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
++			       u32 pixelformat);
+ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
+ int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
 -- 
-2.19.1
+2.17.1

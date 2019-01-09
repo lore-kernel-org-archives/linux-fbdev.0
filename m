@@ -1,71 +1,33 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 16:19:16 +0000
-Subject: [PATCH AUTOSEL 4.9 076/107] fbdev: fbmem: behave better with small rotated displays and many CPUs
-Message-Id: <20190128161947.57405-76-sashal@kernel.org>
+From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+Date: Wed, 09 Jan 2019 08:39:45 +0000
+Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgMy80XSBBUk06IGR0czogaW14MjgtY2ZhMTAw?= =?utf-8?Q?36:_Fix_the_reset
+Message-Id: <1547023165-111798-4-git-send-email-michal.vokac@ysoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128161947.57405-1-sashal@kernel.org>
-In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
+References: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
+In-Reply-To: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, James Simmons <jsimmons@users.sf.net>, Fabian Frederick <ffrederick@users.sourceforge.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Peter Rosin <peda@axentia.se>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
 
-From: Peter Rosin <peda@axentia.se>
-
-[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
-
-Blitting an image with "negative" offsets is not working since there
-is no clipping. It hopefully just crashes. For the bootup logo, there
-is protection so that blitting does not happen as the image is drawn
-further and further to the right (ROTATE_UR) or further and further
-down (ROTATE_CW). There is however no protection when drawing in the
-opposite directions (ROTATE_UD and ROTATE_CCW).
-
-Add back this protection.
-
-The regression is 20-odd years old but the mindless warning-killing
-mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
-positive test on unsigned values") is also to blame, methinks.
-
-Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
-Signed-off-by: Peter Rosin <peda@axentia.se>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-cc: Geoff Levand <geoff@infradead.org>
-Cc: James Simmons <jsimmons@users.sf.net>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbmem.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 74273bc7ca9a..a1d93151c059 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -433,7 +433,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_UD) {
--		for (x = 0; x < num; x++) {
-+		u32 dx = image->dx;
-+
-+		for (x = 0; x < num && image->dx <= dx; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -445,7 +447,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_CCW) {
--		for (x = 0; x < num; x++) {
-+		u32 dy = image->dy;
-+
-+		for (x = 0; x < num && image->dy <= dy; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
--- 
-2.19.1
+VGhlIHJlc2V0IHNpZ25hbCBvZiB0aGUgU1NEMTMwNiBPTEVEIGRpc3BsYXkgaXMgYWN0dWFsbHkg
+YWN0aXZlLWxvdy4NCkFkYXB0IHRoZSBEVCB0byByZWZsZWN0IHRoZSByZWFsIHdvcmxkLg0KDQpS
+ZXZpZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2VybmVsLm9yZz4NCkFja2VkLWJ5OiBBbGV4
+YW5kcmUgQmVsbG9uaSA8YWxleGFuZHJlLmJlbGxvbmlAYm9vdGxpbi5jb20+DQpTaWduZWQtb2Zm
+LWJ5OiBNaWNoYWwgVm9rw6HEjSA8bWljaGFsLnZva2FjQHlzb2Z0LmNvbT4NCi0tLQ0KQ2hhbmdl
+cyBpbiB2MiByZXNlbmQ6DQogLSBBZGQgQWNrZWQtYnkgZnJvbSBBbGV4YW5kcmUuDQoNCkNoYW5n
+ZXMgZnJvbSB2MToNCiAtIEFkZCBSLWJ5IGZyb20gUm9iDQoNCiBhcmNoL2FybS9ib290L2R0cy9p
+bXgyOC1jZmExMDAzNi5kdHMgfCAzICsrLQ0KIDEgZmlsZSBjaGFuZ2VkLCAyIGluc2VydGlvbnMo
+KyksIDEgZGVsZXRpb24oLSkNCg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
+LWNmYTEwMDM2LmR0cyBiL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4LWNmYTEwMDM2LmR0cw0KaW5k
+ZXggZDNlMzYyMi4uZGU0OGI1OCAxMDA2NDQNCi0tLSBhL2FyY2gvYXJtL2Jvb3QvZHRzL2lteDI4
+LWNmYTEwMDM2LmR0cw0KKysrIGIvYXJjaC9hcm0vYm9vdC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRz
+DQpAQCAtMTEsNiArMTEsNyBAQA0KIA0KIC9kdHMtdjEvOw0KICNpbmNsdWRlICJpbXgyOC5kdHNp
+Ig0KKyNpbmNsdWRlIDxkdC1iaW5kaW5ncy9ncGlvL2dwaW8uaD4NCiANCiAvIHsNCiAJbW9kZWwg
+PSAiQ3J5c3RhbGZvbnR6IENGQS0xMDAzNiBCb2FyZCI7DQpAQCAtOTYsNyArOTcsNyBAQA0KIAkJ
+CQkJcGluY3RybC1uYW1lcyA9ICJkZWZhdWx0IjsNCiAJCQkJCXBpbmN0cmwtMCA9IDwmc3NkMTMw
+Nl9jZmExMDAzNj47DQogCQkJCQlyZWcgPSA8MHgzYz47DQotCQkJCQlyZXNldC1ncGlvcyA9IDwm
+Z3BpbzIgNyAwPjsNCisJCQkJCXJlc2V0LWdwaW9zID0gPCZncGlvMiA3IEdQSU9fQUNUSVZFX0xP
+Vz47DQogCQkJCQlzb2xvbW9uLGhlaWdodCA9IDwzMj47DQogCQkJCQlzb2xvbW9uLHdpZHRoID0g
+PDEyOD47DQogCQkJCQlzb2xvbW9uLHBhZ2Utb2Zmc2V0ID0gPDA+Ow0KLS0gDQoyLjEuNA0KDQo

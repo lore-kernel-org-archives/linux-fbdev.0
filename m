@@ -1,76 +1,123 @@
-From: Nicolas Pitre <nicolas.pitre@linaro.org>
-Date: Mon, 21 Jan 2019 04:22:11 +0000
-Subject: [PATCH] vgacon: unconfuse vc_origin when using soft scrollback
-Message-Id: <nycvar.YSQ.7.76.1901202317500.1525@knanqh.ubzr>
+From: Steve Longerbeam <slongerbeam@gmail.com>
+Date: Wed, 09 Jan 2019 18:30:06 +0000
+Subject: [PATCH v8 03/11] gpu: ipu-v3: Add planar support to interlaced scan
+Message-Id: <20190109183014.20466-4-slongerbeam@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190109183014.20466-1-slongerbeam@gmail.com>
+In-Reply-To: <20190109183014.20466-1-slongerbeam@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: linux-media@vger.kernel.org
+Cc: Steve Longerbeam <slongerbeam@gmail.com>, Philipp Zabel <p.zabel@pengutronix.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE
+        IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
 
-When CONFIG_VGACON_SOFT_SCROLLBACK is selected, the VGA display memory
-index and vc_visible_origin don't change when scrollback is activated.
-The actual screen content is saved away and the scrollbackdata is copied
-over it. However the vt code, and /dev/vcs devices in particular, still
-expect vc_origin to always point at the actual screen content not the
-displayed scrollback content.
+To support interlaced scan with planar formats, cpmem SLUV must
+be programmed with the correct chroma line stride. For full and
+partial planar 4:2:2 (YUV422P, NV16), chroma line stride must
+be doubled. For full and partial planar 4:2:0 (YUV420, YVU420, NV12),
+chroma line stride must _not_ be doubled, since a single chroma line
+is shared by two luma lines.
 
-So adjust vc_origin to point at the saved screen content when scrollback
-is active and set it back to vc_visible_origin when restoring the screen.
-
-This fixes /dev/vcsa<n> that return scrollback content when they
-shouldn't (onli /dev/vcsa without a number should), and also fixes
-/dev/vcsu that should return scrollback content when scrollback is
-active but currently doesn't.
-
-An unnecessary call to vga_set_mem_top() is also removed.
-
-Signed-off-by: Nicolas Pitre <nico@linaro.org>
-Cc: stable@vger.kernel.org # v4.19+
-
+Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
+Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
+Acked-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
+ drivers/gpu/ipu-v3/ipu-cpmem.c              | 26 +++++++++++++++++++--
+ drivers/staging/media/imx/imx-ic-prpencvf.c |  3 ++-
+ drivers/staging/media/imx/imx-media-csi.c   |  3 ++-
+ include/video/imx-ipu-v3.h                  |  3 ++-
+ 4 files changed, 30 insertions(+), 5 deletions(-)
 
-I tagged it for stable starting with v4.19 as this is the kernel that
-introduced /dev/vcsu* which is directly affected. Users of earlier kernels
-most likely won't care.
-
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index 09731b2f68..c6b3bdbbdb 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -271,6 +271,7 @@ static void vgacon_scrollback_update(struct vc_data *c, int t, int count)
+diff --git a/drivers/gpu/ipu-v3/ipu-cpmem.c b/drivers/gpu/ipu-v3/ipu-cpmem.c
+index 163fadb8a33a..d047a6867c59 100644
+--- a/drivers/gpu/ipu-v3/ipu-cpmem.c
++++ b/drivers/gpu/ipu-v3/ipu-cpmem.c
+@@ -277,9 +277,10 @@ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off)
+ }
+ EXPORT_SYMBOL_GPL(ipu_cpmem_set_uv_offset);
  
- static void vgacon_restore_screen(struct vc_data *c)
+-void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
++void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
++			       u32 pixelformat)
  {
-+	c->vc_origin = c->vc_visible_origin;
- 	vgacon_scrollback_cur->save = 0;
+-	u32 ilo, sly;
++	u32 ilo, sly, sluv;
  
- 	if (!vga_is_gfx && !vgacon_scrollback_cur->restore) {
-@@ -287,8 +288,7 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines)
- 	int start, end, count, soff;
+ 	if (stride < 0) {
+ 		stride = -stride;
+@@ -290,9 +291,30 @@ void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride)
  
- 	if (!lines) {
--		c->vc_visible_origin = c->vc_origin;
--		vga_set_mem_top(c);
-+		vgacon_restore_screen(c);
- 		return;
- 	}
+ 	sly = (stride * 2) - 1;
  
-@@ -298,6 +298,7 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines)
- 	if (!vgacon_scrollback_cur->save) {
- 		vgacon_cursor(c, CM_ERASE);
- 		vgacon_save_screen(c);
-+		c->vc_origin = (unsigned long)c->vc_screenbuf;
- 		vgacon_scrollback_cur->save = 1;
- 	}
++	switch (pixelformat) {
++	case V4L2_PIX_FMT_YUV420:
++	case V4L2_PIX_FMT_YVU420:
++		sluv = stride / 2 - 1;
++		break;
++	case V4L2_PIX_FMT_NV12:
++		sluv = stride - 1;
++		break;
++	case V4L2_PIX_FMT_YUV422P:
++		sluv = stride - 1;
++		break;
++	case V4L2_PIX_FMT_NV16:
++		sluv = stride * 2 - 1;
++		break;
++	default:
++		sluv = 0;
++		break;
++	}
++
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_SO, 1);
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_ILO, ilo);
+ 	ipu_ch_param_write_field(ch, IPU_FIELD_SLY, sly);
++	if (sluv)
++		ipu_ch_param_write_field(ch, IPU_FIELD_SLUV, sluv);
+ };
+ EXPORT_SYMBOL_GPL(ipu_cpmem_interlaced_scan);
  
-@@ -335,7 +336,7 @@ static void vgacon_scrolldelta(struct vc_data *c, int lines)
- 		int copysize;
+diff --git a/drivers/staging/media/imx/imx-ic-prpencvf.c b/drivers/staging/media/imx/imx-ic-prpencvf.c
+index 28f41caba05d..af7224846bd5 100644
+--- a/drivers/staging/media/imx/imx-ic-prpencvf.c
++++ b/drivers/staging/media/imx/imx-ic-prpencvf.c
+@@ -412,7 +412,8 @@ static int prp_setup_channel(struct prp_priv *priv,
+ 	if (image.pix.field = V4L2_FIELD_NONE &&
+ 	    V4L2_FIELD_HAS_BOTH(infmt->field) &&
+ 	    channel = priv->out_ch)
+-		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline);
++		ipu_cpmem_interlaced_scan(channel, image.pix.bytesperline,
++					  image.pix.pixelformat);
  
- 		int diff = c->vc_rows - count;
--		void *d = (void *) c->vc_origin;
-+		void *d = (void *) c->vc_visible_origin;
- 		void *s = (void *) c->vc_screenbuf;
+ 	ret = ipu_ic_task_idma_init(priv->ic, channel,
+ 				    image.pix.width, image.pix.height,
+diff --git a/drivers/staging/media/imx/imx-media-csi.c b/drivers/staging/media/imx/imx-media-csi.c
+index c2a8d9cd31b7..da4808348845 100644
+--- a/drivers/staging/media/imx/imx-media-csi.c
++++ b/drivers/staging/media/imx/imx-media-csi.c
+@@ -512,7 +512,8 @@ static int csi_idmac_setup_channel(struct csi_priv *priv)
+ 	if (image.pix.field = V4L2_FIELD_NONE &&
+ 	    V4L2_FIELD_HAS_BOTH(infmt->field))
+ 		ipu_cpmem_interlaced_scan(priv->idmac_ch,
+-					  image.pix.bytesperline);
++					  image.pix.bytesperline,
++					  image.pix.pixelformat);
  
- 		count *= c->vc_size_row;
+ 	ipu_idmac_set_double_buffer(priv->idmac_ch, true);
+ 
+diff --git a/include/video/imx-ipu-v3.h b/include/video/imx-ipu-v3.h
+index bbc8481f567d..c887f4bee5f8 100644
+--- a/include/video/imx-ipu-v3.h
++++ b/include/video/imx-ipu-v3.h
+@@ -258,7 +258,8 @@ void ipu_cpmem_set_stride(struct ipuv3_channel *ch, int stride);
+ void ipu_cpmem_set_high_priority(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_buffer(struct ipuv3_channel *ch, int bufnum, dma_addr_t buf);
+ void ipu_cpmem_set_uv_offset(struct ipuv3_channel *ch, u32 u_off, u32 v_off);
+-void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride);
++void ipu_cpmem_interlaced_scan(struct ipuv3_channel *ch, int stride,
++			       u32 pixelformat);
+ void ipu_cpmem_set_axi_id(struct ipuv3_channel *ch, u32 id);
+ int ipu_cpmem_get_burstsize(struct ipuv3_channel *ch);
+ void ipu_cpmem_set_burstsize(struct ipuv3_channel *ch, int burstsize);
+-- 
+2.17.1

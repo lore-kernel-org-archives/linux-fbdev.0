@@ -1,329 +1,142 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Tue, 15 Jan 2019 04:18:56 +0000
-Subject: [PATCH v9 19/22] powerpc, fbdev: Use NV_CMODE and NV_VMODE only when CONFIG_PPC32 && CONFIG_PPC_PMAC
-Message-Id: <204f2532af36aeb92b4c585d67f4c66690330acc.1547525936.git.fthain@telegraphics.com.au>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Thu, 10 Jan 2019 11:40:49 +0000
+Subject: [PATCH v4] drm/fb-helper: Scale back depth to supported maximum
+Message-Id: <20190110114049.10618-1-linus.walleij@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1547525936.git.fthain@telegraphics.com.au>
-In-Reply-To: <cover.1547525936.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eric Anholt <eric@anholt.net>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Dave Airlie <airlied@redhat.com>, David Lechner <david@lechnology.com>
+Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
 
-This patch addresses inconsistencies in Mac framebuffer drivers and their
-use of Kconfig symbols relating to NVRAM, so PPC64 can use CONFIG_NVRAM.
+The following happened when migrating an old fbdev driver to DRM:
 
-The defined(CONFIG_NVRAM) condition is replaced with the weaker
-IS_REACHABLE(CONFIG_NVRAM) condition, like atari_scsi.
+The Integrator/CP PL111 supports 16BPP but only ARGB1555/ABGR1555
+or XRGB1555/XBGR1555 i.e. the maximum depth is 15.
 
-Macintosh framebuffer drivers use default settings for color mode and
-video mode that are found in NVRAM. On PCI Macs, MacOS stores display
-settings in the Name Registry (NR) partition in NVRAM*. On NuBus Macs,
-there is no NR partition and MacOS stores display mode settings in PRAM**.
+This makes the initialization of the framebuffer fail since
+the code in drm_fb_helper_single_fb_probe() assigns the same value
+to sizes.surface_bpp and sizes.surface_depth. I.e. it simply assumes
+a 1-to-1 mapping between BPP and depth, which is true in most cases
+but not for this hardware that only support odd formats.
 
-Early-model Macs are the ones most likely to benefit from these settings,
-since they are more likely to have a fixed-frequency monitor connected to
-the built-in framebuffer device. Moreover, a single NV_CMODE value and
-a single NV_VMODE value provide for only one display.
+To support the odd case of a driver supporting 16BPP with only 15
+bits of depth, this patch will make the code loop over the formats
+supported on the primary plane on each CRTC managed by the FB
+helper and cap the depth to the maximum supported on any primary
+plane.
 
-The NV_CMODE and NV_VMODE constants are apparently offsets into the NR
-partition for Old World machines. This also suggests that these defaults
-are not useful on later models. The NR partition seems to be optional on
-New World machines. CONFIG_NVRAM cannot be enabled on PPC64 at present.
+On the PL110 Integrator, this makes drm_mode_legacy_fb_format()
+select DRM_FORMAT_XRGB1555 which is acceptable for this driver, and
+thus we get framebuffer, penguin and console on the Integrator/CP.
 
-It is safe to say that NVRAM support in PowerMac fbdev drivers is only
-applicable to CONFIG_PPC32 so make this condition explicit. This means
-matroxfb driver won't crash on PPC64 when CONFIG_NVRAM becomes available
-there.
-
-For imsttfb, add the missing CONFIG_NVRAM test to prevent a build failure,
-since PPC64 does not implement nvram_read_byte(). Also add a missing
-machine_is(powermac) check. Change the inconsistent dependency on
-CONFIG_PPC and the matching #ifdef tests to CONFIG_PPC_PMAC.
-
-For valkyriefb, to improve clarity and consistency with the other PowerMac
-fbdev drivers, test for CONFIG_PPC_PMAC instead of !CONFIG_MAC. Remove a
-bogus comment regarding PRAM.
-
-* See GetPreferredConfiguration and SavePreferredConfiguration in
-"Designing PCI Cards and Drivers for Power Macintosh Computers".
-
-** See SetDefaultMode and GetDefaultMode in "Designing Cards and Drivers
-for the Macintosh Family".
-
-Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+Cc: Noralf Trønnes <noralf@tronnes.org>
+Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
+Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 ---
-Changed since v8:
- - Replaced defined(CONFIG_NVRAM) with IS_REACHABLE(CONFIG_NVRAM) as
-suggested by James Bottomley.
- - Changed #ifdef to if as suggested by Christophe Leroy.
- - Expanded the patch to include controlfb.c and platinumfb.c due to the
-conversion from '#if defined(CONFIG_NVRAM)' to
-'if (IS_REACHABLE(CONFIG_NVRAM))'.
----
- drivers/video/fbdev/Kconfig                |  2 +-
- drivers/video/fbdev/controlfb.c            | 42 ++++++++--------------
- drivers/video/fbdev/imsttfb.c              | 23 ++++++------
- drivers/video/fbdev/matrox/matroxfb_base.c |  5 +--
- drivers/video/fbdev/platinumfb.c           | 21 +++++------
- drivers/video/fbdev/valkyriefb.c           | 30 ++++++----------
- 6 files changed, 48 insertions(+), 75 deletions(-)
+ChangeLog v3->v4:
+- Assign best_depth also when we have a perfect fit, duh.
+ChangeLog v2->v3:
+- Rebased and tested with v5.0-rc1
+- Skip any formats with fmt->depth = 0
+- Collected Daniels review tag.
+ChangeLog v1->v2:
+- Loop over the CRTCs managed by the helper and check the
+  crtc->primary on each CRTC for the applicable formats and
+  thus depths.
+- Skip over YUV formats. The framebuffer emulation cannot
+  handle these formats.
 
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ae7712c9687a..58a9590c9db6 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -536,7 +536,7 @@ config FB_IMSTT
- 	bool "IMS Twin Turbo display support"
- 	depends on (FB =3D y) && PCI
- 	select FB_CFB_IMAGEBLIT
--	select FB_MACMODES if PPC
-+	select FB_MACMODES if PPC_PMAC
- 	help
- 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
- 	  many Macintosh and compatible computers.
-diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlf=
-b.c
-index 9cb0ef7ac29e..7af8db28bb80 100644
---- a/drivers/video/fbdev/controlfb.c
-+++ b/drivers/video/fbdev/controlfb.c
-@@ -411,35 +411,23 @@ static int __init init_control(struct fb_info_control=
- *p)
- 	full =3D p->total_vram =3D 0x400000;
-=20
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--#ifdef CONFIG_NVRAM
--	if (default_cmode =3D CMODE_NVRAM) {
-+	cmode =3D default_cmode;
-+	if (IS_REACHABLE(CONFIG_NVRAM) && cmode =3D CMODE_NVRAM)
- 		cmode =3D nvram_read_byte(NV_CMODE);
--		if(cmode < CMODE_8 || cmode > CMODE_32)
--			cmode =3D CMODE_8;
--	} else
--#endif
--		cmode=DEfault_cmode;
--#ifdef CONFIG_NVRAM
--	if (default_vmode =3D VMODE_NVRAM) {
-+	if (cmode < CMODE_8 || cmode > CMODE_32)
-+		cmode =3D CMODE_8;
+The v1 was sent some while back in february and I only recently
+got back to fixing this up to support the last CLCD displays.
+It was agreed that it is probably best to augment the framebuffer
+initializer to pass a desired pixel format instead of just
+BPP as today, but that is a bit daunting, and Daniel said that
+we would probably anyways need a fallback like this.
+---
+ drivers/gpu/drm/drm_fb_helper.c | 55 ++++++++++++++++++++++++++++++++-
+ 1 file changed, 54 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
+index d3af098b0922..f7f31ad5d3ee 100644
+--- a/drivers/gpu/drm/drm_fb_helper.c
++++ b/drivers/gpu/drm/drm_fb_helper.c
+@@ -1797,6 +1797,7 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 	int i;
+ 	struct drm_fb_helper_surface_size sizes;
+ 	int gamma_size = 0;
++	int best_depth = 0;
+ 
+ 	memset(&sizes, 0, sizeof(struct drm_fb_helper_surface_size));
+ 	sizes.surface_depth = 24;
+@@ -1804,7 +1805,10 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 	sizes.fb_width = (u32)-1;
+ 	sizes.fb_height = (u32)-1;
+ 
+-	/* if driver picks 8 or 16 by default use that for both depth/bpp */
++	/*
++	 * If driver picks 8 or 16 by default use that for both depth/bpp
++	 * to begin with
++	 */
+ 	if (preferred_bpp != sizes.surface_bpp)
+ 		sizes.surface_depth = sizes.surface_bpp = preferred_bpp;
+ 
+@@ -1839,6 +1843,55 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+ 		}
+ 	}
+ 
++	/*
++	 * If we run into a situation where, for example, the primary plane
++	 * supports RGBA5551 (16 bpp, depth 15) but not RGB565 (16 bpp, depth
++	 * 16) we need to scale down the depth of the sizes we request.
++	 */
++	for (i = 0; i < fb_helper->crtc_count; i++) {
++		struct drm_mode_set *mode_set = &fb_helper->crtc_info[i].mode_set;
++		struct drm_crtc *crtc = mode_set->crtc;
++		struct drm_plane *plane = crtc->primary;
++		int j;
 +
-+	vmode =3D default_vmode;
-+	if (IS_REACHABLE(CONFIG_NVRAM) && vmode =3D VMODE_NVRAM)
- 		vmode =3D nvram_read_byte(NV_VMODE);
--		if (vmode < 1 || vmode > VMODE_MAX ||
--		    control_mac_modes[vmode - 1].m[full] < cmode) {
--			sense =3D read_control_sense(p);
--			printk("Monitor sense value =3D 0x%x, ", sense);
--			vmode =3D mac_map_monitor_sense(sense);
--			if (control_mac_modes[vmode - 1].m[full] < cmode)
--				vmode =3D VMODE_640_480_60;
--		}
--	} else
--#endif
--	{
--		vmode=DEfault_vmode;
--		if (control_mac_modes[vmode - 1].m[full] < cmode) {
--			if (cmode > CMODE_8)
--				cmode--;
--			else
--				vmode =3D VMODE_640_480_60;
--		}
-+	if (vmode < 1 || vmode > VMODE_MAX ||
-+	    control_mac_modes[vmode - 1].m[full] < cmode) {
-+		sense =3D read_control_sense(p);
-+		printk(KERN_CONT "Monitor sense value =3D 0x%x, ", sense);
-+		vmode =3D mac_map_monitor_sense(sense);
-+		if (control_mac_modes[vmode - 1].m[full] < 0)
-+			vmode =3D VMODE_640_480_60;
-+		cmode =3D min(cmode, control_mac_modes[vmode - 1].m[full]);
- 	}
-=20
- 	/* Initialize info structure */
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index 901ca4ed10e9..5d9670daf60e 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -30,9 +30,8 @@
- #include <asm/io.h>
- #include <linux/uaccess.h>
-=20
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- #include <linux/nvram.h>
--#include <asm/prom.h>
- #include "macmodes.h"
- #endif
-=20
-@@ -327,14 +326,13 @@ enum {
- 	TVP =3D 1
- };
-=20
--#define USE_NV_MODES		1
- #define INIT_BPP		8
- #define INIT_XRES		640
- #define INIT_YRES		480
-=20
- static int inverse =3D 0;
- static char fontname[40] __initdata =3D { 0 };
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- static signed char init_vmode =3D -1, init_cmode =3D -1;
- #endif
-=20
-@@ -1390,8 +1388,8 @@ static void init_imstt(struct fb_info *info)
- 		}
- 	}
-=20
--#if USE_NV_MODES && defined(CONFIG_PPC32)
--	{
-+#if defined(CONFIG_PPC_PMAC) && defined(CONFIG_PPC32)
-+	if (IS_REACHABLE(CONFIG_NVRAM) && machine_is(powermac)) {
- 		int vmode =3D init_vmode, cmode =3D init_cmode;
-=20
- 		if (vmode =3D -1) {
-@@ -1409,12 +1407,13 @@ static void init_imstt(struct fb_info *info)
- 			info->var.yres =3D info->var.yres_virtual =3D INIT_YRES;
- 			info->var.bits_per_pixel =3D INIT_BPP;
- 		}
--	}
--#else
--	info->var.xres =3D info->var.xres_virtual =3D INIT_XRES;
--	info->var.yres =3D info->var.yres_virtual =3D INIT_YRES;
--	info->var.bits_per_pixel =3D INIT_BPP;
-+	} else
- #endif
-+	{
-+		info->var.xres =3D info->var.xres_virtual =3D INIT_XRES;
-+		info->var.yres =3D info->var.yres_virtual =3D INIT_YRES;
-+		info->var.bits_per_pixel =3D INIT_BPP;
++		DRM_DEBUG("test CRTC %d primary plane\n", i);
++
++		for (j = 0; j < plane->format_count; j++) {
++			const struct drm_format_info *fmt;
++
++			fmt = drm_format_info(plane->format_types[j]);
++
++			/*
++			 * Do not consider YUV or other complicated formats
++			 * for framebuffers. This means only legacy formats
++			 * are supported (fmt->depth is a legacy field) but
++			 * the framebuffer emulation can only deal with such
++			 * formats, specifically RGB/BGA formats.
++			 */
++			if (fmt->depth = 0)
++				continue;
++
++			/* We found a perfect fit, great */
++			if (fmt->depth = sizes.surface_depth) {
++				best_depth = fmt->depth;
++				break;
++			}
++
++			/* Skip depths above what we're looking for */
++			if (fmt->depth > sizes.surface_depth)
++				continue;
++
++			/* Best depth found so far */
++			if (fmt->depth > best_depth)
++				best_depth = fmt->depth;
++		}
 +	}
-=20
- 	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> 3) >=
- info->fix.smem_len
- 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
-@@ -1565,7 +1564,7 @@ imsttfb_setup(char *options)
- 			inverse =3D 1;
- 			fb_invert_cmaps();
- 		}
--#if defined(CONFIG_PPC)
-+#if defined(CONFIG_PPC_PMAC)
- 		else if (!strncmp(this_opt, "vmode:", 6)) {
- 			int vmode =3D simple_strtoul(this_opt+6, NULL, 0);
- 			if (vmode > 0 && vmode <=3D VMODE_MAX)
-diff --git a/drivers/video/fbdev/matrox/matroxfb_base.c b/drivers/video/fbd=
-ev/matrox/matroxfb_base.c
-index 0a4e5bad33f4..d11b5e6210ed 100644
---- a/drivers/video/fbdev/matrox/matroxfb_base.c
-+++ b/drivers/video/fbdev/matrox/matroxfb_base.c
-@@ -1872,10 +1872,11 @@ static int initMatrox2(struct matrox_fb_info *minfo=
-, struct board *b)
- #ifndef MODULE
- 	if (machine_is(powermac)) {
- 		struct fb_var_screeninfo var;
-+
- 		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX)
- 			default_vmode =3D VMODE_640_480_60;
--#ifdef CONFIG_NVRAM
--		if (default_cmode =3D CMODE_NVRAM)
-+#if defined(CONFIG_PPC32)
-+		if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode =3D CMODE_NVRAM)
- 			default_cmode =3D nvram_read_byte(NV_CMODE);
- #endif
- 		if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
-diff --git a/drivers/video/fbdev/platinumfb.c b/drivers/video/fbdev/platinu=
-mfb.c
-index bf6b7fb83cf4..76f299375a00 100644
---- a/drivers/video/fbdev/platinumfb.c
-+++ b/drivers/video/fbdev/platinumfb.c
-@@ -345,23 +345,18 @@ static int platinum_init_fb(struct fb_info *info)
-=20
- 	sense =3D read_platinum_sense(pinfo);
- 	printk(KERN_INFO "platinumfb: Monitor sense value =3D 0x%x, ", sense);
--	if (default_vmode =3D VMODE_NVRAM) {
--#ifdef CONFIG_NVRAM
-+
-+	if (IS_REACHABLE(CONFIG_NVRAM) && default_vmode =3D VMODE_NVRAM)
- 		default_vmode =3D nvram_read_byte(NV_VMODE);
--		if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
--		    !platinum_reg_init[default_vmode-1])
--#endif
--			default_vmode =3D VMODE_CHOOSE;
--	}
--	if (default_vmode =3D VMODE_CHOOSE) {
-+	if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
-+	    !platinum_reg_init[default_vmode - 1]) {
- 		default_vmode =3D mac_map_monitor_sense(sense);
-+		if (!platinum_reg_init[default_vmode - 1])
-+			default_vmode =3D VMODE_640_480_60;
- 	}
--	if (default_vmode <=3D 0 || default_vmode > VMODE_MAX)
--		default_vmode =3D VMODE_640_480_60;
--#ifdef CONFIG_NVRAM
--	if (default_cmode =3D CMODE_NVRAM)
-+
-+	if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode =3D CMODE_NVRAM)
- 		default_cmode =3D nvram_read_byte(NV_CMODE);
--#endif
- 	if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 		default_cmode =3D CMODE_8;
- 	/*
-diff --git a/drivers/video/fbdev/valkyriefb.c b/drivers/video/fbdev/valkyri=
-efb.c
-index d51c3a8009cb..e04fde9c1fcd 100644
---- a/drivers/video/fbdev/valkyriefb.c
-+++ b/drivers/video/fbdev/valkyriefb.c
-@@ -63,15 +63,8 @@
- #include "macmodes.h"
- #include "valkyriefb.h"
-=20
--#ifdef CONFIG_MAC
--/* We don't yet have functions to read the PRAM... perhaps we can
--   adapt them from the PPC code? */
--static int default_vmode =3D VMODE_CHOOSE;
--static int default_cmode =3D CMODE_8;
--#else
- static int default_vmode =3D VMODE_NVRAM;
- static int default_cmode =3D CMODE_NVRAM;
--#endif
-=20
- struct fb_par_valkyrie {
- 	int	vmode, cmode;
-@@ -283,24 +276,21 @@ static void __init valkyrie_choose_mode(struct fb_inf=
-o_valkyrie *p)
- 	printk(KERN_INFO "Monitor sense value =3D 0x%x\n", p->sense);
-=20
- 	/* Try to pick a video mode out of NVRAM if we have one. */
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
--	if (default_vmode =3D VMODE_NVRAM) {
-+#ifdef CONFIG_PPC_PMAC
-+	if (IS_REACHABLE(CONFIG_NVRAM) && default_vmode =3D VMODE_NVRAM)
- 		default_vmode =3D nvram_read_byte(NV_VMODE);
--		if (default_vmode <=3D 0
--		 || default_vmode > VMODE_MAX
--		 || !valkyrie_reg_init[default_vmode - 1])
--			default_vmode =3D VMODE_CHOOSE;
--	}
- #endif
--	if (default_vmode =3D VMODE_CHOOSE)
-+	if (default_vmode <=3D 0 || default_vmode > VMODE_MAX ||
-+	    !valkyrie_reg_init[default_vmode - 1]) {
- 		default_vmode =3D mac_map_monitor_sense(p->sense);
--	if (!valkyrie_reg_init[default_vmode - 1])
--		default_vmode =3D VMODE_640_480_67;
--#if !defined(CONFIG_MAC) && defined(CONFIG_NVRAM)
--	if (default_cmode =3D CMODE_NVRAM)
-+		if (!valkyrie_reg_init[default_vmode - 1])
-+			default_vmode =3D VMODE_640_480_67;
++	if (sizes.surface_depth != best_depth) {
++		DRM_INFO("requested bpp %d, scaled depth down to %d",
++			  sizes.surface_bpp, best_depth);
++		sizes.surface_depth = best_depth;
 +	}
 +
-+#ifdef CONFIG_PPC_PMAC
-+	if (IS_REACHABLE(CONFIG_NVRAM) && default_cmode =3D CMODE_NVRAM)
- 		default_cmode =3D nvram_read_byte(NV_CMODE);
- #endif
--
- 	/*
- 	 * Reduce the pixel size if we don't have enough VRAM or bandwidth.
- 	 */
---=20
+ 	crtc_count = 0;
+ 	for (i = 0; i < fb_helper->crtc_count; i++) {
+ 		struct drm_display_mode *desired_mode;
+-- 
 2.19.2

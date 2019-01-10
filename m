@@ -1,123 +1,78 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Sat, 05 Jan 2019 23:06:24 +0000
-Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvr
-Message-Id: <alpine.LNX.2.21.1901060931140.23@nippy.intranet>
+From: Prarit Bhargava <prarit@redhat.com>
+Date: Thu, 10 Jan 2019 19:03:24 +0000
+Subject: [PATCH v4 1/2] fbcon: Silence fbcon logo on 'quiet' boots
+Message-Id: <20190110190325.15241-2-prarit@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1545784679.git.fthain@telegraphics.com.au> <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au> <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr>
- <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
-In-Reply-To: <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
+References: <20181030154419.2889-1-prarit@redhat.com>
+ <20190110190325.15241-1-prarit@redhat.com>
+In-Reply-To: <20190110190325.15241-1-prarit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LEROY Christophe <christophe.leroy@c-s.fr>, Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-m68k@lists.linux-m68k.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-fbdev@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Petr Mladek <pmladek@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
 
-On Sun, 30 Dec 2018, I wrote:
+On text-based systems the 'quiet' boot option will show printk levels
+higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
+during boot can cause some consoles to lose display data and as a result
+confuse the end user.
 
-> On Sat, 29 Dec 2018, LEROY Christophe wrote:
-> 
-> > Finn Thain <fthain@telegraphics.com.au> a ?crit?:
-> > 
-> > > Make use of arch_nvram_ops in device drivers so that the nvram_* function
-> > > exports can be removed.
-> > > 
-> > > Since they are no longer global symbols, rename the PPC32 nvram_* functions
-> > > appropriately.
-> > > 
-> > > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
-> > > ---
-> > > arch/powerpc/kernel/setup_32.c             | 8 ++++----
-> > > drivers/char/generic_nvram.c               | 4 ++--
-> > > drivers/video/fbdev/controlfb.c            | 4 ++--
-> > > drivers/video/fbdev/imsttfb.c              | 4 ++--
-> > > drivers/video/fbdev/matrox/matroxfb_base.c | 2 +-
-> > > drivers/video/fbdev/platinumfb.c           | 4 ++--
-> > > drivers/video/fbdev/valkyriefb.c           | 4 ++--
-> > > 7 files changed, 15 insertions(+), 15 deletions(-)
-> > > 
-> > > diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> > > index e0d045677472..bdbe6acbef11 100644
-> > > --- a/arch/powerpc/kernel/setup_32.c
-> > > +++ b/arch/powerpc/kernel/setup_32.c
-> > > @@ -152,20 +152,18 @@ __setup("l3cr=", ppc_setup_l3cr);
-> > > 
-> > > #ifdef CONFIG_GENERIC_NVRAM
-> > > 
-> > > -unsigned char nvram_read_byte(int addr)
-> > > +static unsigned char ppc_nvram_read_byte(int addr)
-> > > {
-> > > 	if (ppc_md.nvram_read_val)
-> > > 		return ppc_md.nvram_read_val(addr);
-> > > 	return 0xff;
-> > > }
-> > > -EXPORT_SYMBOL(nvram_read_byte);
-> > > 
-> > > -void nvram_write_byte(unsigned char val, int addr)
-> > > +static void ppc_nvram_write_byte(unsigned char val, int addr)
-> > > {
-> > > 	if (ppc_md.nvram_write_val)
-> > > 		ppc_md.nvram_write_val(addr, val);
-> > > }
-> > > -EXPORT_SYMBOL(nvram_write_byte);
-> > > 
-> > > static ssize_t ppc_nvram_get_size(void)
-> > > {
-> > > @@ -182,6 +180,8 @@ static long ppc_nvram_sync(void)
-> > > }
-> > > 
-> > > const struct nvram_ops arch_nvram_ops = {
-> > > +	.read_byte      = ppc_nvram_read_byte,
-> > > +	.write_byte     = ppc_nvram_write_byte,
-> > > 	.get_size       = ppc_nvram_get_size,
-> > > 	.sync           = ppc_nvram_sync,
-> > > };
-> > > diff --git a/drivers/char/generic_nvram.c b/drivers/char/generic_nvram.c
-> > > index f32d5663de95..41b76bf9614e 100644
-> > > --- a/drivers/char/generic_nvram.c
-> > > +++ b/drivers/char/generic_nvram.c
-> > > @@ -48,7 +48,7 @@ static ssize_t read_nvram(struct file *file, char __user
-> > > *buf,
-> > > 	if (*ppos >= nvram_len)
-> > > 		return 0;
-> > > 	for (i = *ppos; count > 0 && i < nvram_len; ++i, ++p, --count)
-> > > -		if (__put_user(nvram_read_byte(i), p))
-> > > +		if (__put_user(arch_nvram_ops.read_byte(i), p))
-> > 
-> > Instead of modifying all drivers (in this patch and previous ones related to
-> > other arches), wouldn't it be better to add helpers like the following in
-> > nvram.h:
-> > 
-> > Static inline unsigned char nvram_read_byte(int addr)
-> > {
-> >        return arch_nvram_ops.read_byte(addr);
-> > }
-> > 
-> 
-> Is there some benefit, or is that just personal taste?
-> 
-> Avoiding changes to call sites avoids code review, but I think 1) the 
-> thinkpad_acpi changes have already been reviewed and 2) the fbdev changes 
-> need review anyway.
-> 
-> Your suggesion would add several new entities and one extra layer of 
-> indirection.
-> 
+Do not display the Tux logo on systems that are in 'quiet' boot.
 
-Contrary to what I said above, this kind of double indirection could be 
-useful if it allows us to avoid the kind of double indirection which Arnd 
-objected to (which arises when an arch_nvram_ops method invokes a ppc_md 
-method). For example,
+v2: It helps to commit all my changes before sending them.  Remove extra
+bracket.
+v3: buildbot error fix: fbcon can be built as part of a module so export console_printk
+v4: move console_printk change to separate patch, and drop logo cleanup
 
-static inline unsigned char nvram_read_byte(int addr)
-{
-#ifdef CONFIG_PPC
-	return ppc_md.nvram_read_byte(addr);
-#else
-	return arch_nvram_ops.read_byte(addr);
-#endif
-}
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Marko Myllynen <myllynen@redhat.com>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/core/fbcon.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-I'll try this approach for v9 if there are no objections. It may be the 
-least invasive approach. Also, arch_nvram_ops can remain const.
-
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 8976190b6c1f..66e37bdff1d9 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -649,11 +649,14 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		kfree(save);
+ 	}
+ 
++	if (logo_shown = FBCON_LOGO_DONTSHOW)
++		return;
++
+ 	if (logo_lines > vc->vc_bottom) {
+ 		logo_shown = FBCON_LOGO_CANSHOW;
+ 		printk(KERN_INFO
+ 		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).\n");
+-	} else if (logo_shown != FBCON_LOGO_DONTSHOW) {
++	} else {
+ 		logo_shown = FBCON_LOGO_DRAW;
+ 		vc->vc_top = logo_lines;
+ 	}
+@@ -1059,9 +1062,11 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 
+ 	cap = info->flags;
+ 
+-	if (vc != svc || logo_shown = FBCON_LOGO_DONTSHOW ||
+-	    (info->fix.type = FB_TYPE_TEXT))
++	if (vc != svc || console_loglevel <= CONSOLE_LOGLEVEL_QUIET ||
++	    (info->fix.type = FB_TYPE_TEXT)) {
+ 		logo = 0;
++		logo_shown = FBCON_LOGO_DONTSHOW;
++	}
+ 
+ 	if (var_to_display(p, &info->var, info))
+ 		return;
 -- 
+2.17.2

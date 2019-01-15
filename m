@@ -1,7 +1,7 @@
 From: Nishad Kamdar <nishadkamdar@gmail.com>
-Date: Tue, 15 Jan 2019 04:57:09 +0000
+Date: Tue, 15 Jan 2019 04:59:09 +0000
 Subject: [PATCH v2] Staging: fbtft: Switch to the gpio descriptor interface
-Message-Id: <20190115044505.GA20952@nishad>
+Message-Id: <20190115044704.GA20989@nishad>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181204165105.GA16291@nishad>
 In-Reply-To: <20181204165105.GA16291@nishad>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: devel@driverdev.osuosl.org, Leonardo =?utf-8?B?QnLDoXM=?= <leobras.c@gmail.com>, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, "linux-kernel@vger.kernel.org Nishad Kamdar" <nishadkamdar@gmail.com>, Jani Nikula <jani.nikula@intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Felix Siegel <felix.siegel@stud.uni-hannover.de>, Matthias Wolf <der_wolf_@web.de>, Mamta Shukla <mamtashukla555@gmail.com>, Radek =?utf-8?Q?Dost=C3=A1l?= <radek.dostal@streamunlimited.com>, Renato Soma <renatoys08@gmail.com>, dri-devel@lists.freedesktop.org, Tim Cofala <cofala@stud.uni-hannover.de>, Lee Jones <lee.jones@linaro.org>
+Cc: Leonardo =?utf-8?B?QnLDoXM=?= <leobras.c@gmail.com>, Tim Cofala <cofala@stud.uni-hannover.de>, Felix Siegel <felix.siegel@stud.uni-hannover.de>, Matthias Wolf <der_wolf_@web.de>, Renato Soma <renatoys08@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Jani Nikula <jani.nikula@intel.com>, Lee Jones <lee.jones@linaro.org>, Mamta Shukla <mamtashukla555@gmail.com>, YueHaibing <yuehaibing@huawei.com>, Radek =?utf-8?Q?Dost=C3=A1l?= <radek.dostal@streamunlimited.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>
 
 This switches the fbtft driver to use GPIO descriptors
 rather than numerical gpios:

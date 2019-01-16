@@ -1,7 +1,7 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Mon, 07 Jan 2019 10:35:58 +0000
-Subject: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd, line option
-Message-Id: <6a9be31e-0bb4-d477-99e6-6cac3cd5087f@axentia.se>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 16 Jan 2019 16:45:52 +0000
+Subject: Re: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd, line option
+Message-Id: <96876402-8860-5c8a-a28f-81f8df58d0ce@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181126215725.2548-1-peda@axentia.se>
  <20181126215725.2548-3-peda@axentia.se>
@@ -11,174 +11,172 @@ References: <20181126215725.2548-1-peda@axentia.se>
  <cb772a2f-2d33-6d0e-9ea6-ba9eb49023f9@axentia.se>
  <662db203-ae18-4a11-7b10-3d7d480f6f37@axentia.se>
  <CAMuHMdXMidVgtz-T8PZDUrKAwJmz9B4g1hNgw6FwrCpU-m5Gew@mail.gmail.com>
-In-Reply-To: <CAMuHMdXMidVgtz-T8PZDUrKAwJmz9B4g1hNgw6FwrCpU-m5Gew@mail.gmail.com>
+ <CGME20190107103630epcas3p1939481c5a659d9dd0f11d026d7f4c4e1@epcas3p1.samsung.com>
+ <6a9be31e-0bb4-d477-99e6-6cac3cd5087f@axentia.se>
+In-Reply-To: <6a9be31e-0bb4-d477-99e6-6cac3cd5087f@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Rosin <peda@axentia.se>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Documentation List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-T24gMjAxOS0wMS0wNyAxMDoxMSwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBIaSBQZXRl
-ciwNCj4gDQo+IE9uIE1vbiwgSmFuIDcsIDIwMTkgYXQgMTA6MDMgQU0gUGV0ZXIgUm9zaW4gPHBl
-ZGFAYXhlbnRpYS5zZT4gd3JvdGU6DQo+PiBPbiAyMDE5LTAxLTA3IDA5OjU5LCBQZXRlciBSb3Np
-biB3cm90ZToNCj4+PiBPbiAyMDE5LTAxLTA3IDA5OjQwLCBHZWVydCBVeXR0ZXJob2V2ZW4gd3Jv
-dGU6DQo+Pj4+IE9uIE1vbiwgSmFuIDcsIDIwMTkgYXQgOToyNiBBTSBQZXRlciBSb3NpbiA8cGVk
-YUBheGVudGlhLnNlPiB3cm90ZToNCj4+Pj4+IE9uIDIwMTktMDEtMDYgMTA6MzMsIEdlZXJ0IFV5
-dHRlcmhvZXZlbiB3cm90ZToNCj4+Pj4+PiBPbiBNb24sIE5vdiAyNiwgMjAxOCBhdCAxMDo1OSBQ
-TSBQZXRlciBSb3NpbiA8cGVkYUBheGVudGlhLnNlPiB3cm90ZToNCj4+Pj4+Pj4gSWYgdGhlcmUg
-YXJlIGV4dHJhIGxvZ29zIChDT05GSUdfRkJfTE9HT19FWFRSQSkgdGhlIGhlaWdodHMgb2YgdGhl
-c2UNCj4+Pj4+Pj4gZXh0cmEgbG9nb3MgYXJlIG5vdCBjb25zaWRlcmVkIHdoZW4gY2VudGVyaW5n
-IHRoZSBmaXJzdCBsb2dvIHZlcnRpY2FsbHkuDQo+Pj4+Pj4+DQo+Pj4+Pj4+IFNpZ25lZC1vZmYt
-Ynk6IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQo+Pj4+Pj4NCj4+Pj4+Pj4gLS0tIGEv
-ZHJpdmVycy92aWRlby9sb2dvL0tjb25maWcNCj4+Pj4+Pj4gKysrIGIvZHJpdmVycy92aWRlby9s
-b2dvL0tjb25maWcNCj4+Pj4+Pj4gQEAgLTEwLDYgKzEwLDE1IEBAIG1lbnVjb25maWcgTE9HTw0K
-Pj4+Pj4+Pg0KPj4+Pj4+PiAgaWYgTE9HTw0KPj4+Pj4+Pg0KPj4+Pj4+PiArY29uZmlnIEZCX0xP
-R09fQ0VOVEVSDQo+Pj4+Pj4+ICsgICAgICAgYm9vbCAiQ2VudGVyIHRoZSBsb2dvIg0KPj4+Pj4+
-PiArICAgICAgIGRlcGVuZHMgb24gRkI9eQ0KPj4+Pj4+PiArICAgICAgIGhlbHANCj4+Pj4+Pj4g
-KyAgICAgICAgIFdoZW4gdGhpcyBvcHRpb24gaXMgc2VsZWN0ZWQsIHRoZSBib290dXAgbG9nbyBp
-cyBjZW50ZXJlZCBib3RoDQo+Pj4+Pj4+ICsgICAgICAgICBob3Jpem9udGFsbHkgYW5kIHZlcnRp
-Y2FsbHkuIElmIG1vcmUgdGhhbiBvbmUgbG9nbyBpcyBkaXNwbGF5ZWQNCj4+Pj4+Pj4gKyAgICAg
-ICAgIGR1ZSB0byBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVjdGVkIGxpbmUgb2YgbG9nb3MgaXMg
-Y2VudGVyZWQNCj4+Pj4+Pj4gKyAgICAgICAgIGFzIGEgd2hvbGUuDQo+Pj4+Pj4+ICsNCj4+Pj4+
-Pg0KPj4+Pj4+IElzbid0IGEga2VybmVsIGNvbW1hbmQgbGluZSBvcHRpb24gbW9yZSBzdWl0YWJs
-ZSB0byBjb25maWd1cmUgdGhlIHBvc2l0aW9uDQo+Pj4+Pj4gb2YgdGhlIGxvZ28/DQo+Pj4+Pg0K
-Pj4+Pj4gVGhhdCBkaWRuJ3Qgb2NjdXIgdG8gbWUgcHJldmlvdXNseSwgYnV0IGl0IGRvZXMgbWFr
-ZSBzZW5zZSBub3cgdGhhdCB5b3UNCj4+Pj4+IG1lbnRpb24gaXQuIFRoaXMgaXMgb24gdG9wIG9m
-IHY1LjAtcmMxLCBhbmQgaWYgYXBwbGllZCBiZWZvcmUgdjUuMCB3ZQ0KPj4+Pj4gY2FuIGF2b2lk
-IHBvc3NpYmxlIHJlZ3Jlc3Npb25zIGZvciBmb2xrcyB3aG8gbWlnaHQgc3RhcnQgdG8gcmVseSBv
-bg0KPj4+Pj4gQ09ORklHX0ZCX0xPR09fQ0VOVEVSIGlmIHY1LjAgaXMgcmVsZWFzZWQgdy9vIHRo
-aXMuDQo+Pj4+Pg0KPj4+Pj4gQ2hlZXJzLA0KPj4+Pj4gUGV0ZXINCj4+Pj4+DQo+Pj4+PiBGcm9t
-IGRlNzM1M2FiNTE5YmE5YjVjOWVhM2Y2MmQ2MDdiYjhlOTRiNjg3Y2MgTW9uIFNlcCAxNyAwMDow
-MDowMCAyMDAxDQo+Pj4+PiBGcm9tOiBQZXRlciBSb3NpbiA8cGVkYUBheGVudGlhLnNlPg0KPj4+
-Pj4gQ2M6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNv
-bT4NCj4+Pj4+IENjOiBKb25hdGhhbiBDb3JiZXQgPGNvcmJldEBsd24ubmV0Pg0KPj4+Pj4gQ2M6
-IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQo+Pj4+PiBDYzogZHJpLWRldmVsQGxpc3Rz
-LmZyZWVkZXNrdG9wLm9yZw0KPj4+Pj4gQ2M6IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZw0K
-Pj4+Pj4gQ2M6IGxpbnV4LWRvY0B2Z2VyLmtlcm5lbC5vcmcNCj4+Pj4+IFRvOiBsaW51eC1rZXJu
-ZWxAdmdlci5rZXJuZWwub3JnDQo+Pj4+PiBEYXRlOiBNb24sIDcgSmFuIDIwMTkgMDg6MzU6MjYg
-KzAxMDANCj4+Pj4+IFN1YmplY3Q6IFtQQVRDSF0gZmJkZXY6IGZibWVtOiBjb252ZXJ0IENPTkZJ
-R19GQl9MT0dPX0NFTlRFUiBpbnRvIGEgY21kIGxpbmUNCj4+Pj4+ICBvcHRpb24NCj4+Pj4+DQo+
-Pj4+PiBBIGNvbW1hbmQgbGluZSBvcHRpb24gaXMgbXVjaCBtb3JlIGZsZXhpYmxlIHRoYW4gYSBj
-b25maWcgb3B0aW9uIGFuZA0KPj4+Pj4gdGhlIHN1cHBvcnRpbmcgY29kZSBpcyBzbWFsbC4gR2V0
-cyByaWQgb2YgI2lmZGVmcyBpbiB0aGUgY29kZSB0b28uLi4NCj4+Pj4+DQo+Pj4+PiBTdWdnZXN0
-ZWQtYnk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+DQo+Pj4+PiBT
-aWduZWQtb2ZmLWJ5OiBQZXRlciBSb3NpbiA8cGVkYUBheGVudGlhLnNlPg0KPj4+Pg0KPj4+PiBU
-aGFua3MgZm9yIHlvdXIgcGF0Y2ghDQo+Pj4+DQo+Pj4+PiAtLS0gYS9Eb2N1bWVudGF0aW9uL2Zi
-L2ZiY29uLnR4dA0KPj4+Pj4gKysrIGIvRG9jdW1lbnRhdGlvbi9mYi9mYmNvbi50eHQNCj4+Pj4+
-IEBAIC0xNjMsNiArMTYzLDEyIEBAIEMuIEJvb3Qgb3B0aW9ucw0KPj4+Pj4gICAgICAgICBiZSBw
-cmVzZXJ2ZWQgdW50aWwgdGhlcmUgYWN0dWFsbHkgaXMgc29tZSB0ZXh0IGlzIG91dHB1dCB0byB0
-aGUgY29uc29sZS4NCj4+Pj4+ICAgICAgICAgVGhpcyBvcHRpb24gY2F1c2VzIGZiY29uIHRvIGJp
-bmQgaW1tZWRpYXRlbHkgdG8gdGhlIGZiZGV2IGRldmljZS4NCj4+Pj4+DQo+Pj4+PiArNy4gZmJj
-b249Y2VudGVyLWxvZ28NCj4+Pj4+ICsNCj4+Pj4+ICsgICAgICAgV2hlbiB0aGlzIG9wdGlvbiBp
-cyBzZWxlY3RlZCwgdGhlIGJvb3R1cCBsb2dvIGlzIGNlbnRlcmVkIGJvdGgNCj4+Pj4+ICsgICAg
-ICAgaG9yaXpvbnRhbGx5IGFuZCB2ZXJ0aWNhbGx5LiBJZiBtb3JlIHRoYW4gb25lIGxvZ28gaXMg
-ZGlzcGxheWVkIGR1ZSB0bw0KPj4+Pj4gKyAgICAgICBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVj
-dGVkIGxpbmUgb2YgbG9nb3MgaXMgY2VudGVyZWQgYXMgYSB3aG9sZS4NCj4+Pj4+ICsNCj4+Pj4N
-Cj4+Pj4gV2hhdCBhYm91dCBtYWtpbmcgdGhpcyBtb3JlIGdlbmVyaWMsIHRoYW4gYW4gb3B0aW9u
-IHNwZWNpZmljIGZvciBjZW50ZXJpbmc/DQo+Pj4+IEVsc2UgcGVvcGxlIHdhbnQgZmJjb249bGVm
-dC1sb2dvIG9yIGZiY29uPXJpZ2h0LWxvZ28gc29vbj8NCj4+Pj4NCj4+Pj4gICAgIGZiY29uPWxv
-Z28tcG9zOjxwb3M+DQo+Pj4+DQo+Pj4+IFdpdGggPHBvcz4gYmVpbmcgImNlbnRlciIsICJsZWZ0
-IiwgInRvcCIsICJyaWdodCIsICJib3R0b20iLCBhbmQgY29tYmluYXRpb25zDQo+Pj4+IGxpa2Ug
-InRvcCxjZW50ZXIiPyBPciBpcyB0aGF0IGNvbXBsaWNhdGluZyBzdHVmZiB0b28gbXVjaD8NCj4+
-Pg0KPj4+IEknbSBub3QgdG9vIGtlZW4gb24gaW1wbGVtZW50aW5nIGFsbCB0aGF0IHdoZW4gSSBo
-YXZlIHplcm8gdXNlIGZvciBpdC4gSSBjYW4NCj4+PiBob3dldmVyIHJlbmFtZSB0aGUgdHJpZ2dl
-ciBmb3IgdGhlIGV4aXN0aW5nIGZiX2NlbnRlcl9sb2dvIGJvb2wgdG8NCj4+Pg0KPj4+ICAgICAg
-IGZiY29uPWxvZ28tcG9zOmNlbnRlcg0KPj4+DQo+Pj4gYW5kIGFkZCBhIGNoZWNrIGZvciAidG9w
-LGxlZnQiIHRvIHJlc2V0IHRoZSBib29sIHRvIGZhbHNlLiBUaGVuIHRoZSBvdGhlcg0KPj4+IHZh
-cmlhbnRzIGNhbiBiZSBhZGRlZCBsYXRlciBieSB3aG9tZXZlciBhbmQgd2hlbiBuZWVkZWQuDQo+
-Pj4NCj4+PiBJcyB0aGF0IGdvb2QgZW5vdWdoPw0KPj4NCj4+IE91Y2gsIEkganVzdCByZWFsaXpl
-ZCB0aGF0IHVzaW5nIGEgY29tbWEgaXMgYSBuby1nbywgYXMgdGhhdCBpcyBhbHJlYWR5DQo+PiBz
-ZXBhcmF0aW5nIGZiY29uIHN1Ym9wdGlvbnMsIHNvIEkgc3VnZ2VzdCB0b3AtbGVmdCBpbnN0ZWFk
-Lg0KPiANCj4gU3VyZSwgc291bmRzIGZpbmUgdG8gbWUuICBJIGp1c3Qgd2FudCB0byBhdm9pZCBo
-YXZpbmcgYSBwYXJhbWV0ZXIgc3lzdGVtDQo+IHRoYXQgY29tcGxpY2F0ZXMgZnV0dXJlIGV4dGVu
-c2lvbi4NCj4gSSB0aGluayB5b3UgY2FuIGRyb3AgdGhlIGNoZWNrIGZvciB0b3AtbGVmdCwgYXMg
-dGhlIGJvb2wgZGVmYXVsdHMgdG8gZmFsc2UuDQoNClJpZ2h0LiBTbywgaGVyZSdzIGFuIHVwZGF0
-ZS4uLg0KDQpBZ2FpbiwgaXQgd291bGQgcHJvYmFibHkgYmUgYmVzdCBpZiB0aGlzIHdlbnQgaW4g
-YmVmb3JlIDUuMCBpcyByZWxlYXNlZC4NCg0KQ2hhbmdlcyBzaW5jZSB2MToNCi0gcmVuYW1lIGZy
-b20gZmJjb249Y2VudGVyLWxvZ28gb3B0aW9uIHRvIGZiY29uPWxvZ28tcG9zOmNlbnRlciAoYW5k
-IGFkanVzdA0KICB0aGUgaGVscCB0ZXh0IGFjY29yZGluZ2x5KS4NCg0KQ2hlZXJzLA0KUGV0ZXIN
-Cg0KRnJvbSBlYmZiMmZlYjdlYTQyOThhYzljMjIyZTZlYTZmOWM5YTkyNDUyMDg0IE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQ0KRnJvbTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCkNj
-OiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb20+DQpD
-YzogSm9uYXRoYW4gQ29yYmV0IDxjb3JiZXRAbHduLm5ldD4NCkNjOiBQZXRlciBSb3NpbiA8cGVk
-YUBheGVudGlhLnNlPg0KQ2M6IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCkNjOiBs
-aW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCkNjOiBsaW51eC1kb2NAdmdlci5rZXJuZWwub3Jn
-DQpUbzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KRGF0ZTogTW9uLCA3IEphbiAyMDE5
-IDA4OjM1OjI2ICswMTAwDQpTdWJqZWN0OiBbUEFUQ0ggdjJdIGZiZGV2OiBmYm1lbTogY29udmVy
-dCBDT05GSUdfRkJfTE9HT19DRU5URVIgaW50byBhIGNtZA0KIGxpbmUgb3B0aW9uDQoNCkEgY29t
-bWFuZCBsaW5lIG9wdGlvbiBpcyBtdWNoIG1vcmUgZmxleGlibGUgdGhhbiBhIGNvbmZpZyBvcHRp
-b24gYW5kDQp0aGUgc3VwcG9ydGluZyBjb2RlIGlzIHNtYWxsLiBHZXRzIHJpZCBvZiAjaWZkZWZz
-IGluIHRoZSBjb2RlIHRvby4uLg0KDQpTdWdnZXN0ZWQtYnk6IEdlZXJ0IFV5dHRlcmhvZXZlbiA8
-Z2VlcnRAbGludXgtbTY4ay5vcmc+DQpTaWduZWQtb2ZmLWJ5OiBQZXRlciBSb3NpbiA8cGVkYUBh
-eGVudGlhLnNlPg0KLS0tDQogRG9jdW1lbnRhdGlvbi9mYi9mYmNvbi50eHQgICAgICAgfCAgOCAr
-KysrKysrKw0KIGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYmNvbi5jIHwgIDcgKysrKysrKw0K
-IGRyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jIHwgMTkgKysrKysrKysrKy0tLS0tLS0t
-LQ0KIGRyaXZlcnMvdmlkZW8vbG9nby9LY29uZmlnICAgICAgIHwgIDkgLS0tLS0tLS0tDQogaW5j
-bHVkZS9saW51eC9mYi5oICAgICAgICAgICAgICAgfCAgMSArDQogNSBmaWxlcyBjaGFuZ2VkLCAy
-NiBpbnNlcnRpb25zKCspLCAxOCBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL0RvY3VtZW50
-YXRpb24vZmIvZmJjb24udHh0IGIvRG9jdW1lbnRhdGlvbi9mYi9mYmNvbi50eHQNCmluZGV4IDYy
-YWYzMDUxMWE5NS4uNjBhNWVjMDRlOGYwIDEwMDY0NA0KLS0tIGEvRG9jdW1lbnRhdGlvbi9mYi9m
-YmNvbi50eHQNCisrKyBiL0RvY3VtZW50YXRpb24vZmIvZmJjb24udHh0DQpAQCAtMTYzLDYgKzE2
-MywxNCBAQCBDLiBCb290IG9wdGlvbnMNCiAJYmUgcHJlc2VydmVkIHVudGlsIHRoZXJlIGFjdHVh
-bGx5IGlzIHNvbWUgdGV4dCBpcyBvdXRwdXQgdG8gdGhlIGNvbnNvbGUuDQogCVRoaXMgb3B0aW9u
-IGNhdXNlcyBmYmNvbiB0byBiaW5kIGltbWVkaWF0ZWx5IHRvIHRoZSBmYmRldiBkZXZpY2UuDQog
-DQorNy4gZmJjb249bG9nby1wb3M6PGxvY2F0aW9uPg0KKw0KKwlUaGUgb25seSBwb3NzaWJsZSAn
-bG9jYXRpb24nIGlzICdjZW50ZXInICh3aXRob3V0IHF1b3RlcyksIGFuZCB3aGVuDQorCWdpdmVu
-LCB0aGUgYm9vdHVwIGxvZ28gaXMgbW92ZWQgZnJvbSB0aGUgZGVmYXVsdCB0b3AtbGVmdCBjb3Ju
-ZXINCisJbG9jYXRpb24gdG8gdGhlIGNlbnRlciBvZiB0aGUgZnJhbWVidWZmZXIuIElmIG1vcmUg
-dGhhbiBvbmUgbG9nbyBpcw0KKwlkaXNwbGF5ZWQgZHVlIHRvIG11bHRpcGxlIENQVXMsIHRoZSBj
-b2xsZWN0ZWQgbGluZSBvZiBsb2dvcyBpcyBtb3ZlZA0KKwlhcyBhIHdob2xlLg0KKw0KIEMuIEF0
-dGFjaGluZywgRGV0YWNoaW5nIGFuZCBVbmxvYWRpbmcNCiANCiBCZWZvcmUgZ29pbmcgb24gdG8g
-aG93IHRvIGF0dGFjaCwgZGV0YWNoIGFuZCB1bmxvYWQgdGhlIGZyYW1lYnVmZmVyIGNvbnNvbGUs
-IGFuDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMgYi9kcml2
-ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYw0KaW5kZXggODk3NjE5MGI2YzFmLi5iZmExMzYw
-ZWM3NTAgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJjb24uYw0KKysr
-IGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCkBAIC01MTAsNiArNTEwLDEzIEBA
-IHN0YXRpYyBpbnQgX19pbml0IGZiX2NvbnNvbGVfc2V0dXAoY2hhciAqdGhpc19vcHQpDQogCQkJ
-Y29udGludWU7DQogCQl9DQogI2VuZGlmDQorDQorCQlpZiAoIXN0cm5jbXAob3B0aW9ucywgImxv
-Z28tcG9zOiIsIDkpKSB7DQorCQkJb3B0aW9ucyArPSA5Ow0KKwkJCWlmICghc3RyY21wKG9wdGlv
-bnMsICJjZW50ZXIiKSkNCisJCQkJZmJfY2VudGVyX2xvZ28gPSB0cnVlOw0KKwkJCWNvbnRpbnVl
-Ow0KKwkJfQ0KIAl9DQogCXJldHVybiAxOw0KIH0NCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVv
-L2ZiZGV2L2NvcmUvZmJtZW0uYyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvY29yZS9mYm1lbS5jDQpp
-bmRleCA1NThlZDJlZDMxMjQuLmNiNDNhMjI1OGM1MSAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvdmlk
-ZW8vZmJkZXYvY29yZS9mYm1lbS5jDQorKysgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L2NvcmUvZmJt
-ZW0uYw0KQEAgLTUzLDYgKzUzLDkgQEAgRVhQT1JUX1NZTUJPTChyZWdpc3RlcmVkX2ZiKTsNCiBp
-bnQgbnVtX3JlZ2lzdGVyZWRfZmIgX19yZWFkX21vc3RseTsNCiBFWFBPUlRfU1lNQk9MKG51bV9y
-ZWdpc3RlcmVkX2ZiKTsNCiANCitib29sIGZiX2NlbnRlcl9sb2dvIF9fcmVhZF9tb3N0bHk7DQor
-RVhQT1JUX1NZTUJPTChmYl9jZW50ZXJfbG9nbyk7DQorDQogc3RhdGljIHN0cnVjdCBmYl9pbmZv
-ICpnZXRfZmJfaW5mbyh1bnNpZ25lZCBpbnQgaWR4KQ0KIHsNCiAJc3RydWN0IGZiX2luZm8gKmZi
-X2luZm87DQpAQCAtNTA2LDggKzUwOSw3IEBAIHN0YXRpYyBpbnQgZmJfc2hvd19sb2dvX2xpbmUo
-c3RydWN0IGZiX2luZm8gKmluZm8sIGludCByb3RhdGUsDQogCQlmYl9zZXRfbG9nbyhpbmZvLCBs
-b2dvLCBsb2dvX25ldywgZmJfbG9nby5kZXB0aCk7DQogCX0NCiANCi0jaWZkZWYgQ09ORklHX0ZC
-X0xPR09fQ0VOVEVSDQotCXsNCisJaWYgKGZiX2NlbnRlcl9sb2dvKSB7DQogCQlpbnQgeHJlcyA9
-IGluZm8tPnZhci54cmVzOw0KIAkJaW50IHlyZXMgPSBpbmZvLT52YXIueXJlczsNCiANCkBAIC01
-MjAsMTEgKzUyMiwxMSBAQCBzdGF0aWMgaW50IGZiX3Nob3dfbG9nb19saW5lKHN0cnVjdCBmYl9p
-bmZvICppbmZvLCBpbnQgcm90YXRlLA0KIAkJCS0tbjsNCiAJCWltYWdlLmR4ID0gKHhyZXMgLSBu
-ICogKGxvZ28tPndpZHRoICsgOCkgLSA4KSAvIDI7DQogCQlpbWFnZS5keSA9IHkgPzogKHlyZXMg
-LSBsb2dvLT5oZWlnaHQpIC8gMjsNCisJfSBlbHNlIHsNCisJCWltYWdlLmR4ID0gMDsNCisJCWlt
-YWdlLmR5ID0geTsNCiAJfQ0KLSNlbHNlDQotCWltYWdlLmR4ID0gMDsNCi0JaW1hZ2UuZHkgPSB5
-Ow0KLSNlbmRpZg0KKw0KIAlpbWFnZS53aWR0aCA9IGxvZ28tPndpZHRoOw0KIAlpbWFnZS5oZWln
-aHQgPSBsb2dvLT5oZWlnaHQ7DQogDQpAQCAtNjg0LDkgKzY4Niw4IEBAIGludCBmYl9wcmVwYXJl
-X2xvZ28oc3RydWN0IGZiX2luZm8gKmluZm8sIGludCByb3RhdGUpDQogIAl9DQogDQogCWhlaWdo
-dCA9IGZiX2xvZ28ubG9nby0+aGVpZ2h0Ow0KLSNpZmRlZiBDT05GSUdfRkJfTE9HT19DRU5URVIN
-Ci0JaGVpZ2h0ICs9ICh5cmVzIC0gZmJfbG9nby5sb2dvLT5oZWlnaHQpIC8gMjsNCi0jZW5kaWYN
-CisJaWYgKGZiX2NlbnRlcl9sb2dvKQ0KKwkJaGVpZ2h0ICs9ICh5cmVzIC0gZmJfbG9nby5sb2dv
-LT5oZWlnaHQpIC8gMjsNCiANCiAJcmV0dXJuIGZiX3ByZXBhcmVfZXh0cmFfbG9nb3MoaW5mbywg
-aGVpZ2h0LCB5cmVzKTsNCiB9DQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9sb2dvL0tjb25m
-aWcgYi9kcml2ZXJzL3ZpZGVvL2xvZ28vS2NvbmZpZw0KaW5kZXggMWU5NzJjNGU4OGIxLi5kMWY2
-MTk2YzhiOWEgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL3ZpZGVvL2xvZ28vS2NvbmZpZw0KKysrIGIv
-ZHJpdmVycy92aWRlby9sb2dvL0tjb25maWcNCkBAIC0xMCwxNSArMTAsNiBAQCBtZW51Y29uZmln
-IExPR08NCiANCiBpZiBMT0dPDQogDQotY29uZmlnIEZCX0xPR09fQ0VOVEVSDQotCWJvb2wgIkNl
-bnRlciB0aGUgbG9nbyINCi0JZGVwZW5kcyBvbiBGQj15DQotCWhlbHANCi0JICBXaGVuIHRoaXMg
-b3B0aW9uIGlzIHNlbGVjdGVkLCB0aGUgYm9vdHVwIGxvZ28gaXMgY2VudGVyZWQgYm90aA0KLQkg
-IGhvcml6b250YWxseSBhbmQgdmVydGljYWxseS4gSWYgbW9yZSB0aGFuIG9uZSBsb2dvIGlzIGRp
-c3BsYXllZA0KLQkgIGR1ZSB0byBtdWx0aXBsZSBDUFVzLCB0aGUgY29sbGVjdGVkIGxpbmUgb2Yg
-bG9nb3MgaXMgY2VudGVyZWQNCi0JICBhcyBhIHdob2xlLg0KLQ0KIGNvbmZpZyBGQl9MT0dPX0VY
-VFJBDQogCWJvb2wNCiAJZGVwZW5kcyBvbiBGQj15DQpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51
-eC9mYi5oIGIvaW5jbHVkZS9saW51eC9mYi5oDQppbmRleCA3Y2RkMzFhNjk3MTkuLmY1MmVmMGFk
-Njc4MSAxMDA2NDQNCi0tLSBhL2luY2x1ZGUvbGludXgvZmIuaA0KKysrIGIvaW5jbHVkZS9saW51
-eC9mYi5oDQpAQCAtNjUzLDYgKzY1Myw3IEBAIGV4dGVybiBpbnQgZmJfbmV3X21vZGVsaXN0KHN0
-cnVjdCBmYl9pbmZvICppbmZvKTsNCiANCiBleHRlcm4gc3RydWN0IGZiX2luZm8gKnJlZ2lzdGVy
-ZWRfZmJbRkJfTUFYXTsNCiBleHRlcm4gaW50IG51bV9yZWdpc3RlcmVkX2ZiOw0KK2V4dGVybiBi
-b29sIGZiX2NlbnRlcl9sb2dvOw0KIGV4dGVybiBzdHJ1Y3QgY2xhc3MgKmZiX2NsYXNzOw0KIA0K
-ICNkZWZpbmUgZm9yX2VhY2hfcmVnaXN0ZXJlZF9mYihpKQkJXA0KLS0gDQoyLjExLjANCg0K
+
+On 01/07/2019 11:35 AM, Peter Rosin wrote:
+> On 2019-01-07 10:11, Geert Uytterhoeven wrote:
+>> Hi Peter,
+>>
+>> On Mon, Jan 7, 2019 at 10:03 AM Peter Rosin <peda@axentia.se> wrote:
+>>> On 2019-01-07 09:59, Peter Rosin wrote:
+>>>> On 2019-01-07 09:40, Geert Uytterhoeven wrote:
+>>>>> On Mon, Jan 7, 2019 at 9:26 AM Peter Rosin <peda@axentia.se> wrote:
+>>>>>> On 2019-01-06 10:33, Geert Uytterhoeven wrote:
+>>>>>>> On Mon, Nov 26, 2018 at 10:59 PM Peter Rosin <peda@axentia.se> wrot=
+e:
+>>>>>>>> If there are extra logos (CONFIG_FB_LOGO_EXTRA) the heights of the=
+se
+>>>>>>>> extra logos are not considered when centering the first logo verti=
+cally.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Peter Rosin <peda@axentia.se>
+>>>>>>>
+>>>>>>>> --- a/drivers/video/logo/Kconfig
+>>>>>>>> +++ b/drivers/video/logo/Kconfig
+>>>>>>>> @@ -10,6 +10,15 @@ menuconfig LOGO
+>>>>>>>>
+>>>>>>>>  if LOGO
+>>>>>>>>
+>>>>>>>> +config FB_LOGO_CENTER
+>>>>>>>> +       bool "Center the logo"
+>>>>>>>> +       depends on FB=3Dy
+>>>>>>>> +       help
+>>>>>>>> +         When this option is selected, the bootup logo is centere=
+d both
+>>>>>>>> +         horizontally and vertically. If more than one logo is di=
+splayed
+>>>>>>>> +         due to multiple CPUs, the collected line of logos is cen=
+tered
+>>>>>>>> +         as a whole.
+>>>>>>>> +
+>>>>>>>
+>>>>>>> Isn't a kernel command line option more suitable to configure the p=
+osition
+>>>>>>> of the logo?
+>>>>>>
+>>>>>> That didn't occur to me previously, but it does make sense now that =
+you
+>>>>>> mention it. This is on top of v5.0-rc1, and if applied before v5.0 we
+>>>>>> can avoid possible regressions for folks who might start to rely on
+>>>>>> CONFIG_FB_LOGO_CENTER if v5.0 is released w/o this.
+>>>>>>
+>>>>>> Cheers,
+>>>>>> Peter
+>>>>>>
+>>>>>> From de7353ab519ba9b5c9ea3f62d607bb8e94b687cc Mon Sep 17 00:00:00 20=
+01
+>>>>>> From: Peter Rosin <peda@axentia.se>
+>>>>>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>>>>>> Cc: Jonathan Corbet <corbet@lwn.net>
+>>>>>> Cc: Peter Rosin <peda@axentia.se>
+>>>>>> Cc: dri-devel@lists.freedesktop.org
+>>>>>> Cc: linux-fbdev@vger.kernel.org
+>>>>>> Cc: linux-doc@vger.kernel.org
+>>>>>> To: linux-kernel@vger.kernel.org
+>>>>>> Date: Mon, 7 Jan 2019 08:35:26 +0100
+>>>>>> Subject: [PATCH] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a =
+cmd line
+>>>>>>  option
+>>>>>>
+>>>>>> A command line option is much more flexible than a config option and
+>>>>>> the supporting code is small. Gets rid of #ifdefs in the code too...
+>>>>>>
+>>>>>> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>>>>>> Signed-off-by: Peter Rosin <peda@axentia.se>
+>>>>>
+>>>>> Thanks for your patch!
+>>>>>
+>>>>>> --- a/Documentation/fb/fbcon.txt
+>>>>>> +++ b/Documentation/fb/fbcon.txt
+>>>>>> @@ -163,6 +163,12 @@ C. Boot options
+>>>>>>         be preserved until there actually is some text is output to =
+the console.
+>>>>>>         This option causes fbcon to bind immediately to the fbdev de=
+vice.
+>>>>>>
+>>>>>> +7. fbcon=CEnter-logo
+>>>>>> +
+>>>>>> +       When this option is selected, the bootup logo is centered bo=
+th
+>>>>>> +       horizontally and vertically. If more than one logo is displa=
+yed due to
+>>>>>> +       multiple CPUs, the collected line of logos is centered as a =
+whole.
+>>>>>> +
+>>>>>
+>>>>> What about making this more generic, than an option specific for cent=
+ering?
+>>>>> Else people want fbcon=3Dleft-logo or fbcon=3Dright-logo soon?
+>>>>>
+>>>>>     fbcon=3Dlogo-pos:<pos>
+>>>>>
+>>>>> With <pos> being "center", "left", "top", "right", "bottom", and comb=
+inations
+>>>>> like "top,center"? Or is that complicating stuff too much?
+>>>>
+>>>> I'm not too keen on implementing all that when I have zero use for it.=
+ I can
+>>>> however rename the trigger for the existing fb_center_logo bool to
+>>>>
+>>>>       fbcon=3Dlogo-pos:center
+>>>>
+>>>> and add a check for "top,left" to reset the bool to false. Then the ot=
+her
+>>>> variants can be added later by whomever and when needed.
+>>>>
+>>>> Is that good enough?
+>>>
+>>> Ouch, I just realized that using a comma is a no-go, as that is already
+>>> separating fbcon suboptions, so I suggest top-left instead.
+>>
+>> Sure, sounds fine to me.  I just want to avoid having a parameter system
+>> that complicates future extension.
+>> I think you can drop the check for top-left, as the bool defaults to fal=
+se.
+>=20
+> Right. So, here's an update...
+>=20
+> Again, it would probably be best if this went in before 5.0 is released.
+>=20
+> Changes since v1:
+> - rename from fbcon=CEnter-logo option to fbcon=3Dlogo-pos:center (and ad=
+just
+>   the help text accordingly).
+>=20
+> Cheers,
+> Peter
+>=20
+> From ebfb2feb7ea4298ac9c222e6ea6f9c9a92452084 Mon Sep 17 00:00:00 2001
+> From: Peter Rosin <peda@axentia.se>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Jonathan Corbet <corbet@lwn.net>
+> Cc: Peter Rosin <peda@axentia.se>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Cc: linux-doc@vger.kernel.org
+> To: linux-kernel@vger.kernel.org
+> Date: Mon, 7 Jan 2019 08:35:26 +0100
+> Subject: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd
+>  line option
+>=20
+> A command line option is much more flexible than a config option and
+> the supporting code is small. Gets rid of #ifdefs in the code too...
+>=20
+> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Peter Rosin <peda@axentia.se>
+
+Patch queued for 5.0, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

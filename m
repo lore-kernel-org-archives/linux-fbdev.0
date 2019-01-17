@@ -1,7 +1,7 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Thu, 17 Jan 2019 13:40:48 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 17 Jan 2019 14:23:19 +0000
 Subject: Re: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd, line option
-Message-Id: <672688c8-1115-1cf8-cac9-82c19219ea3a@axentia.se>
+Message-Id: <91d4948b-d68c-f9d6-1ffd-e848851595ab@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20181126215725.2548-1-peda@axentia.se>
  <20181126215725.2548-3-peda@axentia.se>
@@ -14,37 +14,63 @@ References: <20181126215725.2548-1-peda@axentia.se>
  <CGME20190107103630epcas3p1939481c5a659d9dd0f11d026d7f4c4e1@epcas3p1.samsung.com>
  <6a9be31e-0bb4-d477-99e6-6cac3cd5087f@axentia.se>
  <96876402-8860-5c8a-a28f-81f8df58d0ce@samsung.com>
-In-Reply-To: <96876402-8860-5c8a-a28f-81f8df58d0ce@samsung.com>
+ <672688c8-1115-1cf8-cac9-82c19219ea3a@axentia.se>
+In-Reply-To: <672688c8-1115-1cf8-cac9-82c19219ea3a@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, Linux Documentation List <linux-doc@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Peter Rosin <peda@axentia.se>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Documentation List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-T24gMjAxOS0wMS0xNiAxNzo0NSwgQmFydGxvbWllaiBab2xuaWVya2lld2ljeiB3cm90ZToNCj4g
-T24gMDEvMDcvMjAxOSAxMTozNSBBTSwgUGV0ZXIgUm9zaW4gd3JvdGU6DQo+PiBSaWdodC4gU28s
-IGhlcmUncyBhbiB1cGRhdGUuLi4NCj4+DQo+PiBBZ2FpbiwgaXQgd291bGQgcHJvYmFibHkgYmUg
-YmVzdCBpZiB0aGlzIHdlbnQgaW4gYmVmb3JlIDUuMCBpcyByZWxlYXNlZC4NCj4+DQo+PiBDaGFu
-Z2VzIHNpbmNlIHYxOg0KPj4gLSByZW5hbWUgZnJvbSBmYmNvbj1jZW50ZXItbG9nbyBvcHRpb24g
-dG8gZmJjb249bG9nby1wb3M6Y2VudGVyIChhbmQgYWRqdXN0DQo+PiAgIHRoZSBoZWxwIHRleHQg
-YWNjb3JkaW5nbHkpLg0KPj4NCj4+IENoZWVycywNCj4+IFBldGVyDQo+Pg0KPj4gRnJvbSBlYmZi
-MmZlYjdlYTQyOThhYzljMjIyZTZlYTZmOWM5YTkyNDUyMDg0IE1vbiBTZXAgMTcgMDA6MDA6MDAg
-MjAwMQ0KPj4gRnJvbTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCj4+IENjOiBCYXJ0
-bG9taWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb20+DQo+PiBDYzog
-Sm9uYXRoYW4gQ29yYmV0IDxjb3JiZXRAbHduLm5ldD4NCj4+IENjOiBQZXRlciBSb3NpbiA8cGVk
-YUBheGVudGlhLnNlPg0KPj4gQ2M6IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4+
-IENjOiBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCj4+IENjOiBsaW51eC1kb2NAdmdlci5r
-ZXJuZWwub3JnDQo+PiBUbzogbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPj4gRGF0ZTog
-TW9uLCA3IEphbiAyMDE5IDA4OjM1OjI2ICswMTAwDQo+PiBTdWJqZWN0OiBbUEFUQ0ggdjJdIGZi
-ZGV2OiBmYm1lbTogY29udmVydCBDT05GSUdfRkJfTE9HT19DRU5URVIgaW50byBhIGNtZA0KPj4g
-IGxpbmUgb3B0aW9uDQo+Pg0KPj4gQSBjb21tYW5kIGxpbmUgb3B0aW9uIGlzIG11Y2ggbW9yZSBm
-bGV4aWJsZSB0aGFuIGEgY29uZmlnIG9wdGlvbiBhbmQNCj4+IHRoZSBzdXBwb3J0aW5nIGNvZGUg
-aXMgc21hbGwuIEdldHMgcmlkIG9mICNpZmRlZnMgaW4gdGhlIGNvZGUgdG9vLi4uDQo+Pg0KPj4g
-U3VnZ2VzdGVkLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPGdlZXJ0QGxpbnV4LW02OGsub3JnPg0K
-Pj4gU2lnbmVkLW9mZi1ieTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5zZT4NCj4gDQo+IFBh
-dGNoIHF1ZXVlZCBmb3IgNS4wLCB0aGFua3MuDQoNCkhtbSwgSSBzZWUgdGhlIHBhdGNoIG9uIHRo
-ZSBmYmRldi1mb3ItbmV4dCBicmFuY2gsIGJ1dCB0aGF0IHNvdW5kcw0KbGlrZSBzdHVmZiBkZXN0
-aW5lZCBmb3IgNS4xPyBNYXliZSB5b3Ugc2ltcGx5IGRvbid0IGhhdmUgYW55DQpmYmRldi1mb3It
-Y3VycmVudCBvciBmYmRldi1maXhlcyBicmFuY2ggb3Igc29tZXRoaW5nIGxpa2UgdGhhdD8NCg0K
-SnVzdCBjaGVja2luZyB0byBtYWtlIHN1cmUgd2UncmUgb24gdGhlIHNhbWUgcGFnZS4uLg0KDQpD
-aGVlcnMsDQpQZXRlcg0K
+
+On 01/17/2019 02:40 PM, Peter Rosin wrote:
+> On 2019-01-16 17:45, Bartlomiej Zolnierkiewicz wrote:
+>> On 01/07/2019 11:35 AM, Peter Rosin wrote:
+>>> Right. So, here's an update...
+>>>
+>>> Again, it would probably be best if this went in before 5.0 is released.
+>>>
+>>> Changes since v1:
+>>> - rename from fbcon=CEnter-logo option to fbcon=3Dlogo-pos:center (and =
+adjust
+>>>   the help text accordingly).
+>>>
+>>> Cheers,
+>>> Peter
+>>>
+>>> From ebfb2feb7ea4298ac9c222e6ea6f9c9a92452084 Mon Sep 17 00:00:00 2001
+>>> From: Peter Rosin <peda@axentia.se>
+>>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+>>> Cc: Jonathan Corbet <corbet@lwn.net>
+>>> Cc: Peter Rosin <peda@axentia.se>
+>>> Cc: dri-devel@lists.freedesktop.org
+>>> Cc: linux-fbdev@vger.kernel.org
+>>> Cc: linux-doc@vger.kernel.org
+>>> To: linux-kernel@vger.kernel.org
+>>> Date: Mon, 7 Jan 2019 08:35:26 +0100
+>>> Subject: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a =
+cmd
+>>>  line option
+>>>
+>>> A command line option is much more flexible than a config option and
+>>> the supporting code is small. Gets rid of #ifdefs in the code too...
+>>>
+>>> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
+>>> Signed-off-by: Peter Rosin <peda@axentia.se>
+>>
+>> Patch queued for 5.0, thanks.
+>=20
+> Hmm, I see the patch on the fbdev-for-next branch, but that sounds
+> like stuff destined for 5.1? Maybe you simply don't have any
+> fbdev-for-current or fbdev-fixes branch or something like that?
+
+Yes. the single public fbdev branch has been sufficient for now
+(there is no active fbdev development and patches for -rcX kernels
+are even more rare). OTOH there is no problem with adding -fixes
+branch once needed..
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

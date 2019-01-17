@@ -1,74 +1,238 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 02 Jan 2019 17:52:23 +0000
-Subject: Re: [PATCH] drm/nouveau: fix incorrect FB_BACKLIGHT usage in Kconfig
-Message-Id: <a66ec947-0856-c459-da68-09639bfef22a@samsung.com>
+From: Alexander Shiyan <shc_work@mail.ru>
+Date: Thu, 17 Jan 2019 13:33:35 +0000
+Subject: [PATCH v2 1/2] video: lcd: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol
+Message-Id: <20190117133336.19737-1-shc_work@mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20181228151521eucas1p163e845ef691ac2bd78051e6fa4c068d0@eucas1p1.samsung.com>
- <6f25a4a3-3d24-e811-7c0b-bbdd8ff8aa8b@samsung.com>
- <66054836-bc70-900e-0171-086ef2239e62@infradead.org>
-In-Reply-To: <66054836-bc70-900e-0171-086ef2239e62@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Randy Dunlap <rdunlap@infradead.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Ben Skeggs <bskeggs@redhat.com>
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee.jones@linaro.org>
 
+We have two *_CLASS_DEVICE kernel config options (LCD_CLASS_DEVICE
+and BACKLIGHT_LCD_DEVICE) that do the same job.
+The patch removes useless BACKLIGHT_LCD_SUPPORT option
+and converts LCD_CLASS_DEVICE into a menu.
 
-On 12/28/2018 07:03 PM, Randy Dunlap wrote:
-> On 12/28/18 7:15 AM, Bartlomiej Zolnierkiewicz wrote:
->> Making FB_BACKLIGHT tristate by commit b4a1ed0cd18b ("fbdev:
->> make FB_BACKLIGHT a tristate") caused unmet dependencies in
->> some configurations:
->>
->> WARNING: unmet direct dependencies detected for FB_BACKLIGHT
->>   Depends on [m]: HAS_IOMEM [=y] && FB [=m]
->>   Selected by [y]:
->>   - DRM_NOUVEAU [=y] && HAS_IOMEM [=y] && DRM [=y] && PCI [=y] && MMU [=y] && DRM_NOUVEAU_BACKLIGHT [=y]
->>   Selected by [m]:
->>   - FB_NVIDIA [=m] && HAS_IOMEM [=y] && FB [=m] && PCI [=y] && FB_NVIDIA_BACKLIGHT [=y]
->>
->> Fix it by making DRM_NOUVEAU select BACKLIGHT_CLASS_DEVICE and
->> BACKLIGHT_LCD_SUPPORT instead of FB_BACKLIGHT.
->>
->> Fixes: b4a1ed0cd18b ("fbdev: make FB_BACKLIGHT a tristate")
->> Reported-by: Randy Dunlap <rdunlap@infradead.org>
->> Cc: Rob Clark <robdclark@gmail.com>
->> Cc: Arnd Bergmann <arnd@arndb.de>
->> Cc: Ben Skeggs <bskeggs@redhat.com>
->> Cc: David Airlie <airlied@linux.ie>
->> Cc: Daniel Vetter <daniel@ffwll.ch>
->> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Works for me.  Thanks.
-> 
-> Acked-by: Randy Dunlap <rdunlap@infradead.org> # build-tested
+Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
+---
+ arch/unicore32/Kconfig            |  1 -
+ drivers/gpu/drm/Kconfig           |  2 --
+ drivers/gpu/drm/bridge/Kconfig    |  1 -
+ drivers/gpu/drm/fsl-dcu/Kconfig   |  1 -
+ drivers/gpu/drm/i915/Kconfig      |  1 -
+ drivers/gpu/drm/nouveau/Kconfig   |  2 --
+ drivers/gpu/drm/shmobile/Kconfig  |  1 -
+ drivers/gpu/drm/tilcdc/Kconfig    |  1 -
+ drivers/staging/olpc_dcon/Kconfig |  1 -
+ drivers/usb/misc/Kconfig          |  1 -
+ drivers/video/backlight/Kconfig   | 10 ++--------
+ drivers/video/fbdev/Kconfig       |  5 -----
+ 12 files changed, 2 insertions(+), 25 deletions(-)
 
-Thanks, I queued the patch for 4.21.
-
->> ---
->> I would like to merge this patch through fbdev tree for v4.21
->> (as it is needed to fix commit currently in fbdev tree).
->>
->>  drivers/gpu/drm/nouveau/Kconfig |    3 ++-
->>  1 file changed, 2 insertions(+), 1 deletion(-)
->>
->> Index: b/drivers/gpu/drm/nouveau/Kconfig
->> =================================>> --- a/drivers/gpu/drm/nouveau/Kconfig	2018-11-30 11:46:55.716464505 +0100
->> +++ b/drivers/gpu/drm/nouveau/Kconfig	2018-12-28 14:54:51.655965845 +0100
->> @@ -4,7 +4,8 @@ config DRM_NOUVEAU
->>          select FW_LOADER
->>  	select DRM_KMS_HELPER
->>  	select DRM_TTM
->> -	select FB_BACKLIGHT if DRM_NOUVEAU_BACKLIGHT
->> +	select BACKLIGHT_CLASS_DEVICE if DRM_NOUVEAU_BACKLIGHT
->> +	select BACKLIGHT_LCD_SUPPORT if DRM_NOUVEAU_BACKLIGHT
->>  	select ACPI_VIDEO if ACPI && X86 && BACKLIGHT_CLASS_DEVICE && INPUT
->>  	select X86_PLATFORM_DEVICES if ACPI && X86
->>  	select ACPI_WMI if ACPI && X86
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
+index c3a41bf..1138334 100644
+--- a/arch/unicore32/Kconfig
++++ b/arch/unicore32/Kconfig
+@@ -195,7 +195,6 @@ config I2C_EEPROM_AT24
+ 
+ config LCD_BACKLIGHT
+ 	tristate "LCD Backlight support"
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_PWM
+ 
+ endmenu
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 4385f00..ef442a7 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -198,7 +198,6 @@ config DRM_RADEON
+ 	select POWER_SUPPLY
+ 	select HWMON
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select INTERVAL_TREE
+ 	help
+ 	  Choose this option if you have an ATI Radeon graphics card.  There
+@@ -219,7 +218,6 @@ config DRM_AMDGPU
+ 	select POWER_SUPPLY
+ 	select HWMON
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select INTERVAL_TREE
+ 	select CHASH
+ 	help
+diff --git a/drivers/gpu/drm/bridge/Kconfig b/drivers/gpu/drm/bridge/Kconfig
+index 2fee47b..5b5a8e5 100644
+--- a/drivers/gpu/drm/bridge/Kconfig
++++ b/drivers/gpu/drm/bridge/Kconfig
+@@ -75,7 +75,6 @@ config DRM_PARADE_PS8622
+ 	depends on OF
+ 	select DRM_PANEL
+ 	select DRM_KMS_HELPER
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	---help---
+ 	  Parade eDP-LVDS bridge chip driver.
+diff --git a/drivers/gpu/drm/fsl-dcu/Kconfig b/drivers/gpu/drm/fsl-dcu/Kconfig
+index 14a72c4..dc82588 100644
+--- a/drivers/gpu/drm/fsl-dcu/Kconfig
++++ b/drivers/gpu/drm/fsl-dcu/Kconfig
+@@ -2,7 +2,6 @@ config DRM_FSL_DCU
+ 	tristate "DRM Support for Freescale DCU"
+ 	depends on DRM && OF && ARM && COMMON_CLK
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DRM_PANEL
+diff --git a/drivers/gpu/drm/i915/Kconfig b/drivers/gpu/drm/i915/Kconfig
+index 148be8e..3d5f1cb 100644
+--- a/drivers/gpu/drm/i915/Kconfig
++++ b/drivers/gpu/drm/i915/Kconfig
+@@ -15,7 +15,6 @@ config DRM_I915
+ 	select IRQ_WORK
+ 	# i915 depends on ACPI_VIDEO when ACPI is enabled
+ 	# but for select to work, need to select ACPI_VIDEO's dependencies, ick
+-	select BACKLIGHT_LCD_SUPPORT if ACPI
+ 	select BACKLIGHT_CLASS_DEVICE if ACPI
+ 	select INPUT if ACPI
+ 	select ACPI_VIDEO if ACPI
+diff --git a/drivers/gpu/drm/nouveau/Kconfig b/drivers/gpu/drm/nouveau/Kconfig
+index 432c440..fd7b869 100644
+--- a/drivers/gpu/drm/nouveau/Kconfig
++++ b/drivers/gpu/drm/nouveau/Kconfig
+@@ -5,14 +5,12 @@ config DRM_NOUVEAU
+ 	select DRM_KMS_HELPER
+ 	select DRM_TTM
+ 	select BACKLIGHT_CLASS_DEVICE if DRM_NOUVEAU_BACKLIGHT
+-	select BACKLIGHT_LCD_SUPPORT if DRM_NOUVEAU_BACKLIGHT
+ 	select ACPI_VIDEO if ACPI && X86 && BACKLIGHT_CLASS_DEVICE && INPUT
+ 	select X86_PLATFORM_DEVICES if ACPI && X86
+ 	select ACPI_WMI if ACPI && X86
+ 	select MXM_WMI if ACPI && X86
+ 	select POWER_SUPPLY
+ 	# Similar to i915, we need to select ACPI_VIDEO and it's dependencies
+-	select BACKLIGHT_LCD_SUPPORT if ACPI && X86
+ 	select BACKLIGHT_CLASS_DEVICE if ACPI && X86
+ 	select INPUT if ACPI && X86
+ 	select THERMAL if ACPI && X86
+diff --git a/drivers/gpu/drm/shmobile/Kconfig b/drivers/gpu/drm/shmobile/Kconfig
+index 61bbe8e..e2a6c82 100644
+--- a/drivers/gpu/drm/shmobile/Kconfig
++++ b/drivers/gpu/drm/shmobile/Kconfig
+@@ -4,7 +4,6 @@ config DRM_SHMOBILE
+ 	depends on DRM && ARM
+ 	depends on ARCH_SHMOBILE || COMPILE_TEST
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select DRM_KMS_HELPER
+ 	select DRM_KMS_CMA_HELPER
+ 	select DRM_GEM_CMA_HELPER
+diff --git a/drivers/gpu/drm/tilcdc/Kconfig b/drivers/gpu/drm/tilcdc/Kconfig
+index 5259804..cb7df20 100644
+--- a/drivers/gpu/drm/tilcdc/Kconfig
++++ b/drivers/gpu/drm/tilcdc/Kconfig
+@@ -8,7 +8,6 @@ config DRM_TILCDC
+ 	select DRM_PANEL_BRIDGE
+ 	select VIDEOMODE_HELPERS
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	help
+ 	  Choose this option if you have an TI SoC with LCDC display
+ 	  controller, for example AM33xx in beagle-bone, DA8xx, or
+diff --git a/drivers/staging/olpc_dcon/Kconfig b/drivers/staging/olpc_dcon/Kconfig
+index 192cc8d..c91a56f 100644
+--- a/drivers/staging/olpc_dcon/Kconfig
++++ b/drivers/staging/olpc_dcon/Kconfig
+@@ -2,7 +2,6 @@ config FB_OLPC_DCON
+ 	tristate "One Laptop Per Child Display CONtroller support"
+ 	depends on OLPC && FB
+ 	depends on I2C
+-	depends on BACKLIGHT_LCD_SUPPORT
+ 	depends on (GPIO_CS5535 || GPIO_CS5535=n)
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	help
+diff --git a/drivers/usb/misc/Kconfig b/drivers/usb/misc/Kconfig
+index 68d2f2c..a86a80b 100644
+--- a/drivers/usb/misc/Kconfig
++++ b/drivers/usb/misc/Kconfig
+@@ -141,7 +141,6 @@ config USB_FTDI_ELAN
+ 
+ config USB_APPLEDISPLAY
+ 	tristate "Apple Cinema Display support"
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_CLASS_DEVICE
+ 	help
+ 	  Say Y here if you want to control the backlight of Apple Cinema
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 71ee978..3fdc18e 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -2,13 +2,7 @@
+ # Backlight & LCD drivers configuration
+ #
+ 
+-menuconfig BACKLIGHT_LCD_SUPPORT
+-	bool "Backlight & LCD device support"
+-	help
+-	  Enable this to be able to choose the drivers for controlling the
+-	  backlight and the LCD panel on some platforms, for example on PDAs.
+-
+-if BACKLIGHT_LCD_SUPPORT
++menu "Backlight & LCD device support"
+ 
+ #
+ # LCD
+@@ -466,4 +460,4 @@ config BACKLIGHT_RAVE_SP
+ 
+ endif # BACKLIGHT_CLASS_DEVICE
+ 
+-endif # BACKLIGHT_LCD_SUPPORT
++endmenu
+diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
+index ae7712c..7b5c404 100644
+--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -186,7 +186,6 @@ config FB_MACMODES
+ config FB_BACKLIGHT
+ 	tristate
+ 	depends on FB
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select BACKLIGHT_CLASS_DEVICE
+ 
+ config FB_MODE_HELPERS
+@@ -281,7 +280,6 @@ config FB_ARMCLCD
+ 	select FB_CFB_IMAGEBLIT
+ 	select FB_MODE_HELPERS if OF
+ 	select VIDEOMODE_HELPERS if OF
+-	select BACKLIGHT_LCD_SUPPORT if OF
+ 	select BACKLIGHT_CLASS_DEVICE if OF
+ 	help
+ 	  This framebuffer device driver is for the ARM PrimeCell PL110
+@@ -315,7 +313,6 @@ config FB_ACORN
+ config FB_CLPS711X
+ 	tristate "CLPS711X LCD support"
+ 	depends on FB && (ARCH_CLPS711X || COMPILE_TEST)
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select FB_MODE_HELPERS
+ 	select FB_SYS_FILLRECT
+ 	select FB_SYS_COPYAREA
+@@ -343,7 +340,6 @@ config FB_SA1100
+ config FB_IMX
+ 	tristate "Freescale i.MX1/21/25/27 LCD support"
+ 	depends on FB && ARCH_MXC
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select LCD_CLASS_DEVICE
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -2192,7 +2188,6 @@ config FB_MX3
+ 	tristate "MX3 Framebuffer support"
+ 	depends on FB && MX3_IPU
+ 	select BACKLIGHT_CLASS_DEVICE
+-	select BACKLIGHT_LCD_SUPPORT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-- 
+2.10.2

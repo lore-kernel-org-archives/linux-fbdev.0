@@ -1,76 +1,117 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 17 Jan 2019 14:23:19 +0000
-Subject: Re: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a cmd, line option
-Message-Id: <91d4948b-d68c-f9d6-1ffd-e848851595ab@samsung.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Tue, 22 Jan 2019 15:21:14 +0000
+Subject: [PATCH] fbdev: omap2: no need to check return value of debugfs_create functions
+Message-Id: <20190122152151.16139-15-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181126215725.2548-1-peda@axentia.se>
- <20181126215725.2548-3-peda@axentia.se>
- <CAMuHMdVfoRP_yNL5HcmwwV3fn9GqnsbORtG_hOhWw3qUeMKFKQ@mail.gmail.com>
- <37be75aa-7a63-a937-6de7-777a31af741b@axentia.se>
- <CAMuHMdXR2iuftV26s-EnKo74vZxcW2w_R1dD_Mk+Ug8MsNwL3Q@mail.gmail.com>
- <cb772a2f-2d33-6d0e-9ea6-ba9eb49023f9@axentia.se>
- <662db203-ae18-4a11-7b10-3d7d480f6f37@axentia.se>
- <CAMuHMdXMidVgtz-T8PZDUrKAwJmz9B4g1hNgw6FwrCpU-m5Gew@mail.gmail.com>
- <CGME20190107103630epcas3p1939481c5a659d9dd0f11d026d7f4c4e1@epcas3p1.samsung.com>
- <6a9be31e-0bb4-d477-99e6-6cac3cd5087f@axentia.se>
- <96876402-8860-5c8a-a28f-81f8df58d0ce@samsung.com>
- <672688c8-1115-1cf8-cac9-82c19219ea3a@axentia.se>
-In-Reply-To: <672688c8-1115-1cf8-cac9-82c19219ea3a@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Peter Rosin <peda@axentia.se>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Linux Documentation List <linux-doc@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, linux-omap@vger.kernel.org
 
+When calling debugfs functions, there is no need to ever check the
+return value.  The function can work or not, but the code logic should
+never do something different based on this.
 
-On 01/17/2019 02:40 PM, Peter Rosin wrote:
-> On 2019-01-16 17:45, Bartlomiej Zolnierkiewicz wrote:
->> On 01/07/2019 11:35 AM, Peter Rosin wrote:
->>> Right. So, here's an update...
->>>
->>> Again, it would probably be best if this went in before 5.0 is released.
->>>
->>> Changes since v1:
->>> - rename from fbcon=CEnter-logo option to fbcon=3Dlogo-pos:center (and =
-adjust
->>>   the help text accordingly).
->>>
->>> Cheers,
->>> Peter
->>>
->>> From ebfb2feb7ea4298ac9c222e6ea6f9c9a92452084 Mon Sep 17 00:00:00 2001
->>> From: Peter Rosin <peda@axentia.se>
->>> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->>> Cc: Jonathan Corbet <corbet@lwn.net>
->>> Cc: Peter Rosin <peda@axentia.se>
->>> Cc: dri-devel@lists.freedesktop.org
->>> Cc: linux-fbdev@vger.kernel.org
->>> Cc: linux-doc@vger.kernel.org
->>> To: linux-kernel@vger.kernel.org
->>> Date: Mon, 7 Jan 2019 08:35:26 +0100
->>> Subject: [PATCH v2] fbdev: fbmem: convert CONFIG_FB_LOGO_CENTER into a =
-cmd
->>>  line option
->>>
->>> A command line option is much more flexible than a config option and
->>> the supporting code is small. Gets rid of #ifdefs in the code too...
->>>
->>> Suggested-by: Geert Uytterhoeven <geert@linux-m68k.org>
->>> Signed-off-by: Peter Rosin <peda@axentia.se>
->>
->> Patch queued for 5.0, thanks.
->=20
-> Hmm, I see the patch on the fbdev-for-next branch, but that sounds
-> like stuff destined for 5.1? Maybe you simply don't have any
-> fbdev-for-current or fbdev-fixes branch or something like that?
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: linux-omap@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/core.c | 31 ++++-----------------
+ drivers/video/fbdev/omap2/omapfb/dss/dss.h  |  2 +-
+ 2 files changed, 7 insertions(+), 26 deletions(-)
 
-Yes. the single public fbdev branch has been sufficient for now
-(there is no active fbdev development and patches for -rcX kernels
-are even more rare). OTOH there is no problem with adding -fixes
-branch once needed..
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+index b4bcf3a4a647..7e6a3eb266d0 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+@@ -110,19 +110,12 @@ DEFINE_SHOW_ATTRIBUTE(dss);
+ 
+ static struct dentry *dss_debugfs_dir;
+ 
+-static int dss_initialize_debugfs(void)
++static void dss_initialize_debugfs(void)
+ {
+ 	dss_debugfs_dir = debugfs_create_dir("omapdss", NULL);
+-	if (IS_ERR(dss_debugfs_dir)) {
+-		int err = PTR_ERR(dss_debugfs_dir);
+-		dss_debugfs_dir = NULL;
+-		return err;
+-	}
+ 
+ 	debugfs_create_file("clk", S_IRUGO, dss_debugfs_dir,
+ 			&dss_debug_dump_clocks, &dss_fops);
+-
+-	return 0;
+ }
+ 
+ static void dss_uninitialize_debugfs(void)
+@@ -130,24 +123,18 @@ static void dss_uninitialize_debugfs(void)
+ 	debugfs_remove_recursive(dss_debugfs_dir);
+ }
+ 
+-int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
++void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ {
+-	struct dentry *d;
+-
+-	d = debugfs_create_file(name, S_IRUGO, dss_debugfs_dir,
+-			write, &dss_fops);
+-
+-	return PTR_ERR_OR_ZERO(d);
++	debugfs_create_file(name, S_IRUGO, dss_debugfs_dir, write, &dss_fops);
+ }
+ #else /* CONFIG_FB_OMAP2_DSS_DEBUGFS */
+-static inline int dss_initialize_debugfs(void)
++static inline void dss_initialize_debugfs(void)
+ {
+-	return 0;
+ }
+ static inline void dss_uninitialize_debugfs(void)
+ {
+ }
+-int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
++void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ {
+ 	return 0;
+ }
+@@ -188,9 +175,7 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 
+ 	dss_features_init(omapdss_get_version());
+ 
+-	r = dss_initialize_debugfs();
+-	if (r)
+-		goto err_debugfs;
++	dss_initialize_debugfs();
+ 
+ 	if (def_disp_name)
+ 		core.default_display_name = def_disp_name;
+@@ -198,10 +183,6 @@ static int __init omap_dss_probe(struct platform_device *pdev)
+ 	register_pm_notifier(&omap_dss_pm_notif_block);
+ 
+ 	return 0;
+-
+-err_debugfs:
+-
+-	return r;
+ }
+ 
+ static int omap_dss_remove(struct platform_device *pdev)
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.h b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
+index a3cc0ca8f9d2..b1a354494144 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.h
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.h
+@@ -214,7 +214,7 @@ struct platform_device *dss_get_core_pdev(void);
+ int dss_dsi_enable_pads(int dsi_id, unsigned lane_mask);
+ void dss_dsi_disable_pads(int dsi_id, unsigned lane_mask);
+ int dss_set_min_bus_tput(struct device *dev, unsigned long tput);
+-int dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *));
++void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *));
+ 
+ /* display */
+ int dss_suspend_all_devices(void);
+-- 
+2.20.1

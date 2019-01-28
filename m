@@ -1,48 +1,71 @@
-From: Prarit Bhargava <prarit@redhat.com>
-Date: Thu, 10 Jan 2019 19:03:23 +0000
-Subject: [PATCH v4 0/2] Do not output logo on quiet boots
-Message-Id: <20190110190325.15241-1-prarit@redhat.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:11:19 +0000
+Subject: [PATCH AUTOSEL 4.14 129/170] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <20190128161200.55107-129-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20181030154419.2889-1-prarit@redhat.com>
-In-Reply-To: <20181030154419.2889-1-prarit@redhat.com>
+References: <20190128161200.55107-1-sashal@kernel.org>
+In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Petr Mladek <pmladek@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, James Simmons <jsimmons@users.sf.net>, Fabian Frederick <ffrederick@users.sourceforge.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Peter Rosin <peda@axentia.se>
 
-On text-based systems the 'quiet' boot option will show printk levels
-higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
-during boot can cause some consoles to lose display data and as a result
-confuse the end user.
+From: Peter Rosin <peda@axentia.se>
 
-Do not display the Tux logo on systems that are in 'quiet' boot.
+[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
 
-v2: It helps to commit all my changes before sending them.  Remove extra
-bracket.
-v3: buildbot error fix: fbcon can be built as part of a module so export console_printk
-v4: move console_printk change to separate patch, and drop logo cleanup
+Blitting an image with "negative" offsets is not working since there
+is no clipping. It hopefully just crashes. For the bootup logo, there
+is protection so that blitting does not happen as the image is drawn
+further and further to the right (ROTATE_UR) or further and further
+down (ROTATE_CW). There is however no protection when drawing in the
+opposite directions (ROTATE_UD and ROTATE_CCW).
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Marko Myllynen <myllynen@redhat.com>
-Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Thierry Reding <treding@nvidia.com>
-Cc: Yisheng Xie <ysxie@foxmail.com>
-Cc: Petr Mladek <pmladek@suse.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: dri-devel@lists.freedesktop.org
+Add back this protection.
 
-Prarit Bhargava (2):
-  fbcon: Silence fbcon logo on 'quiet' boots
-  printk: Export console_printk
+The regression is 20-odd years old but the mindless warning-killing
+mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
+positive test on unsigned values") is also to blame, methinks.
 
- drivers/video/fbdev/core/fbcon.c | 11 ++++++++---
- kernel/printk/printk.c           |  1 +
- 2 files changed, 9 insertions(+), 3 deletions(-)
+Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
+Signed-off-by: Peter Rosin <peda@axentia.se>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+cc: Geoff Levand <geoff@infradead.org>
+Cc: James Simmons <jsimmons@users.sf.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 11d73b5fc885..302cce7185e3 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_UD) {
+-		for (x = 0; x < num; x++) {
++		u32 dx = image->dx;
++
++		for (x = 0; x < num && image->dx <= dx; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_CCW) {
+-		for (x = 0; x < num; x++) {
++		u32 dy = image->dy;
++
++		for (x = 0; x < num && image->dy <= dy; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
 -- 
-2.17.2
+2.19.1

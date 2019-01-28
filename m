@@ -1,36 +1,56 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Wed, 09 Jan 2019 08:39:44 +0000
-Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgMi80XSB2aWRlbzogc3NkMTMwN2ZiOiBEbyBu?= =?utf-8?Q?ot_hard_code_acti
-Message-Id: <1547023165-111798-3-git-send-email-michal.vokac@ysoft.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 15:58:30 +0000
+Subject: [PATCH AUTOSEL 4.19 204/258] video: clps711x-fb: release disp device node in probe()
+Message-Id: <20190128155924.51521-204-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
+References: <20190128155924.51521-1-sashal@kernel.org>
+In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-VGhlIFNTRDEzMHggT0xFRMKgZGlzcGxheSByZXNldCBzaWduYWwgaXMgYWN0aXZlIGxvdy4gTm93
-IHRoZSByZXNldA0Kc2VxdWVuY2UgaXMgaW1wbGVtZW50ZWQgaW4gc3VjaCBhIHdheSB0aGF0IHVz
-ZXJzIGFyZSBmb3JjZWQgdG8NCmRlZmluZSByZXNldC1ncGlvcyBhcyBHUElPX0FDVElWRV9ISUdI
-IGluIERUIHRvIG1ha2UgdGhlIHJlc2V0IHdvcmsuDQoNCkRvIG5vdCBoYXJkIGNvZGUgdGhlIGFj
-dGl2ZS1sb3cgc2VxdWVuY2UgaW50byB0aGUgZHJpdmVyIGJ1dCBpbnN0ZWFkDQphbGxvdyB0aGUg
-dXNlciB0byBzcGVjaWZ5IHRoZSBncGlvIGFzIEdQSU9fQUNUSVZFX0xPVyB0byByZWZsZWN0DQp0
-aGUgcmVhbCB3b3JsZC4NCg0KUmV2aWV3ZWQtYnk6IFJvYiBIZXJyaW5nIDxyb2JoQGtlcm5lbC5v
-cmc+DQpSZXZpZXdlZC1ieTogQWxleGFuZHJlIEJlbGxvbmkgPGFsZXhhbmRyZS5iZWxsb25pQGJv
-b3RsaW4uY29tPg0KU2lnbmVkLW9mZi1ieTogTWljaGFsIFZva8OhxI0gPG1pY2hhbC52b2thY0B5
-c29mdC5jb20+DQotLS0NCkNoYW5nZXMgaW4gdjIgcmVzZW5kOg0KIC0gQWRkIFItYnkgZnJvbSBB
-bGV4YW5kcmUuDQoNCkNoYW5nZXMgZnJvbSB2MToNCiAtIEFkZCBSLWJ5IGZyb20gUm9iDQoNCiBk
-cml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5jIHwgNCArKy0tDQogMSBmaWxlIGNoYW5nZWQs
-IDIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkNCg0KZGlmZiAtLWdpdCBhL2RyaXZlcnMv
-dmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMgYi9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3NzZDEzMDdmYi5j
-DQppbmRleCA0MDYxYTIwLi4zYjM2MWJjIDEwMDY0NA0KLS0tIGEvZHJpdmVycy92aWRlby9mYmRl
-di9zc2QxMzA3ZmIuYw0KKysrIGIvZHJpdmVycy92aWRlby9mYmRldi9zc2QxMzA3ZmIuYw0KQEAg
-LTY2NywxMCArNjY3LDEwIEBAIHN0YXRpYyBpbnQgc3NkMTMwN2ZiX3Byb2JlKHN0cnVjdCBpMmNf
-Y2xpZW50ICpjbGllbnQsDQogDQogCWlmIChwYXItPnJlc2V0KSB7DQogCQkvKiBSZXNldCB0aGUg
-c2NyZWVuICovDQotCQlncGlvZF9zZXRfdmFsdWVfY2Fuc2xlZXAocGFyLT5yZXNldCwgMCk7DQot
-CQl1ZGVsYXkoNCk7DQogCQlncGlvZF9zZXRfdmFsdWVfY2Fuc2xlZXAocGFyLT5yZXNldCwgMSk7
-DQogCQl1ZGVsYXkoNCk7DQorCQlncGlvZF9zZXRfdmFsdWVfY2Fuc2xlZXAocGFyLT5yZXNldCwg
-MCk7DQorCQl1ZGVsYXkoNCk7DQogCX0NCiANCiAJaWYgKHBhci0+dmJhdF9yZWcpIHsNCi0tIA0K
-Mi4xLjQNCg0K
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+
+[ Upstream commit fdac751355cd76e049f628afe6acb8ff4b1399f7 ]
+
+clps711x_fb_probe() increments refcnt of disp device node by
+of_parse_phandle() and leaves it undecremented on both
+successful and error paths.
+
+Found by Linux Driver Verification project (linuxtesting.org).
+
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/clps711x-fb.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+index ff561073ee4e..42f909618f04 100644
+--- a/drivers/video/fbdev/clps711x-fb.c
++++ b/drivers/video/fbdev/clps711x-fb.c
+@@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
+-	if (ret)
++	if (ret) {
++		of_node_put(disp);
+ 		goto out_fb_release;
++	}
+ 
+ 	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
+ 	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
+ 
+ 	ret = of_property_read_u32(disp, "bits-per-pixel",
+ 				   &info->var.bits_per_pixel);
++	of_node_put(disp);
+ 	if (ret)
+ 		goto out_fb_release;
+ 
+-- 
+2.19.1

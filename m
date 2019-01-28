@@ -1,142 +1,71 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Thu, 10 Jan 2019 11:40:49 +0000
-Subject: [PATCH v4] drm/fb-helper: Scale back depth to supported maximum
-Message-Id: <20190110114049.10618-1-linus.walleij@linaro.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 15:58:32 +0000
+Subject: [PATCH AUTOSEL 4.19 206/258] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <20190128155924.51521-206-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190128155924.51521-1-sashal@kernel.org>
+In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Eric Anholt <eric@anholt.net>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Dave Airlie <airlied@redhat.com>, David Lechner <david@lechnology.com>
-Cc: linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Peter Rosin <peda@axentia.se>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabian Frederick <ffrederick@users.sourceforge.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Geoff Levand <geoff@infradead.org>, James Simmons <jsimmons@users.sf.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-The following happened when migrating an old fbdev driver to DRM:
+From: Peter Rosin <peda@axentia.se>
 
-The Integrator/CP PL111 supports 16BPP but only ARGB1555/ABGR1555
-or XRGB1555/XBGR1555 i.e. the maximum depth is 15.
+[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
 
-This makes the initialization of the framebuffer fail since
-the code in drm_fb_helper_single_fb_probe() assigns the same value
-to sizes.surface_bpp and sizes.surface_depth. I.e. it simply assumes
-a 1-to-1 mapping between BPP and depth, which is true in most cases
-but not for this hardware that only support odd formats.
+Blitting an image with "negative" offsets is not working since there
+is no clipping. It hopefully just crashes. For the bootup logo, there
+is protection so that blitting does not happen as the image is drawn
+further and further to the right (ROTATE_UR) or further and further
+down (ROTATE_CW). There is however no protection when drawing in the
+opposite directions (ROTATE_UD and ROTATE_CCW).
 
-To support the odd case of a driver supporting 16BPP with only 15
-bits of depth, this patch will make the code loop over the formats
-supported on the primary plane on each CRTC managed by the FB
-helper and cap the depth to the maximum supported on any primary
-plane.
+Add back this protection.
 
-On the PL110 Integrator, this makes drm_mode_legacy_fb_format()
-select DRM_FORMAT_XRGB1555 which is acceptable for this driver, and
-thus we get framebuffer, penguin and console on the Integrator/CP.
+The regression is 20-odd years old but the mindless warning-killing
+mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
+positive test on unsigned values") is also to blame, methinks.
 
-Cc: Noralf Trønnes <noralf@tronnes.org>
-Cc: Ville Syrjälä <ville.syrjala@linux.intel.com>
-Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
+Signed-off-by: Peter Rosin <peda@axentia.se>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+cc: Geoff Levand <geoff@infradead.org>
+Cc: James Simmons <jsimmons@users.sf.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
-ChangeLog v3->v4:
-- Assign best_depth also when we have a perfect fit, duh.
-ChangeLog v2->v3:
-- Rebased and tested with v5.0-rc1
-- Skip any formats with fmt->depth = 0
-- Collected Daniels review tag.
-ChangeLog v1->v2:
-- Loop over the CRTCs managed by the helper and check the
-  crtc->primary on each CRTC for the applicable formats and
-  thus depths.
-- Skip over YUV formats. The framebuffer emulation cannot
-  handle these formats.
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-The v1 was sent some while back in february and I only recently
-got back to fixing this up to support the last CLCD displays.
-It was agreed that it is probably best to augment the framebuffer
-initializer to pass a desired pixel format instead of just
-BPP as today, but that is a bit daunting, and Daniel said that
-we would probably anyways need a fallback like this.
----
- drivers/gpu/drm/drm_fb_helper.c | 55 ++++++++++++++++++++++++++++++++-
- 1 file changed, 54 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/drm_fb_helper.c b/drivers/gpu/drm/drm_fb_helper.c
-index d3af098b0922..f7f31ad5d3ee 100644
---- a/drivers/gpu/drm/drm_fb_helper.c
-+++ b/drivers/gpu/drm/drm_fb_helper.c
-@@ -1797,6 +1797,7 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
- 	int i;
- 	struct drm_fb_helper_surface_size sizes;
- 	int gamma_size = 0;
-+	int best_depth = 0;
- 
- 	memset(&sizes, 0, sizeof(struct drm_fb_helper_surface_size));
- 	sizes.surface_depth = 24;
-@@ -1804,7 +1805,10 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
- 	sizes.fb_width = (u32)-1;
- 	sizes.fb_height = (u32)-1;
- 
--	/* if driver picks 8 or 16 by default use that for both depth/bpp */
-+	/*
-+	 * If driver picks 8 or 16 by default use that for both depth/bpp
-+	 * to begin with
-+	 */
- 	if (preferred_bpp != sizes.surface_bpp)
- 		sizes.surface_depth = sizes.surface_bpp = preferred_bpp;
- 
-@@ -1839,6 +1843,55 @@ static int drm_fb_helper_single_fb_probe(struct drm_fb_helper *fb_helper,
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 20405421a5ed..77cee99fc36c 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
  		}
- 	}
- 
-+	/*
-+	 * If we run into a situation where, for example, the primary plane
-+	 * supports RGBA5551 (16 bpp, depth 15) but not RGB565 (16 bpp, depth
-+	 * 16) we need to scale down the depth of the sizes we request.
-+	 */
-+	for (i = 0; i < fb_helper->crtc_count; i++) {
-+		struct drm_mode_set *mode_set = &fb_helper->crtc_info[i].mode_set;
-+		struct drm_crtc *crtc = mode_set->crtc;
-+		struct drm_plane *plane = crtc->primary;
-+		int j;
+ 	} else if (rotate = FB_ROTATE_UD) {
+-		for (x = 0; x < num; x++) {
++		u32 dx = image->dx;
 +
-+		DRM_DEBUG("test CRTC %d primary plane\n", i);
++		for (x = 0; x < num && image->dx <= dx; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_CCW) {
+-		for (x = 0; x < num; x++) {
++		u32 dy = image->dy;
 +
-+		for (j = 0; j < plane->format_count; j++) {
-+			const struct drm_format_info *fmt;
-+
-+			fmt = drm_format_info(plane->format_types[j]);
-+
-+			/*
-+			 * Do not consider YUV or other complicated formats
-+			 * for framebuffers. This means only legacy formats
-+			 * are supported (fmt->depth is a legacy field) but
-+			 * the framebuffer emulation can only deal with such
-+			 * formats, specifically RGB/BGA formats.
-+			 */
-+			if (fmt->depth = 0)
-+				continue;
-+
-+			/* We found a perfect fit, great */
-+			if (fmt->depth = sizes.surface_depth) {
-+				best_depth = fmt->depth;
-+				break;
-+			}
-+
-+			/* Skip depths above what we're looking for */
-+			if (fmt->depth > sizes.surface_depth)
-+				continue;
-+
-+			/* Best depth found so far */
-+			if (fmt->depth > best_depth)
-+				best_depth = fmt->depth;
-+		}
-+	}
-+	if (sizes.surface_depth != best_depth) {
-+		DRM_INFO("requested bpp %d, scaled depth down to %d",
-+			  sizes.surface_bpp, best_depth);
-+		sizes.surface_depth = best_depth;
-+	}
-+
- 	crtc_count = 0;
- 	for (i = 0; i < fb_helper->crtc_count; i++) {
- 		struct drm_display_mode *desired_mode;
++		for (x = 0; x < num && image->dy <= dy; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
 -- 
-2.19.2
+2.19.1

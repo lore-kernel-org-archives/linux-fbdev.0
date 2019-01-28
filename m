@@ -1,80 +1,54 @@
-From: Finn Thain <fthain@telegraphics.com.au>
-Date: Tue, 01 Jan 2019 01:10:11 +0000
-Subject: Re: [PATCH v8 20/25] powerpc, fbdev: Use arch_nvram_ops methods instead of nvram_read_byte() and nvr
-Message-Id: <alpine.LNX.2.21.1901011154590.574@nippy.intranet>
+From: Martin Kepplinger <martink@posteo.de>
+Date: Mon, 28 Jan 2019 10:04:35 +0000
+Subject: [PATCH] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190128100435.759-1-martink@posteo.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1545784679.git.fthain@telegraphics.com.au> <7e8eb87ea829c03941c895c968df2ebd0f80512f.1545784679.git.fthain@telegraphics.com.au> <20181229180236.Horde.idY3gOIzkSWywjIrqlXJMA1@messagerie.si.c-s.fr> <alpine.LNX.2.21.1812301024400.215@nippy.intranet>
- <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
-In-Reply-To: <CAK8P3a3645im4aFDi2mNjwcCe=jvmDLkKK_ZSwG1POOLUq=+QQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: LEROY Christophe <christophe.leroy@c-s.fr>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-m68k <linux-m68k@lists.linux-m68k.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
+Cc: daniel.vetter@ffwll.ch, manfred.schlaegl@ginzinger.com, linux-kernel@vger.kernel.org, Martin Kepplinger <martin.kepplinger@ginzinger.com>
 
-On Mon, 31 Dec 2018, Arnd Bergmann wrote:
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-> On Sun, Dec 30, 2018 at 12:43 AM Finn Thain <fthain@telegraphics.com.au> wrote:
-> 
-> >
-> > Is there some benefit, or is that just personal taste?
-> >
-> > Avoiding changes to call sites avoids code review, but I think 1) the
-> > thinkpad_acpi changes have already been reviewed and 2) the fbdev changes
-> > need review anyway.
-> >
-> > Your suggesion would add several new entities and one extra layer of
-> > indirection.
-> >
-> > I think indirection harms readability because now the reader now has to go
-> > and look up the meaning of the new entities.
-> >
-> > It's not the case that we need to choose between definitions of
-> > nvram_read_byte() at compile time, or stub them out:
-> >
-> > #ifdef CONFIG_FOO
-> > static inline unsigned char nvram_read_byte(int addr)
-> > {
-> >         return arch_nvram_ops.read_byte(addr);
-> > }
-> > #else
-> > static inline unsigned char nvram_read_byte(int addr) { }
-> > #endif
-> >
-> > And I don't anticipate a need for a macro here either:
-> >
-> > #define nvram_read_byte(a) random_nvram_read_byte_impl(a)
-> >
-> > I think I've used the simplest solution.
-> 
-> Having the indirection would help if the inline function can
-> encapsulate the NULL pointer check, like
-> 
-> static inline unsigned char nvram_read_byte(loff_t addr)
-> {
->        char data;
-> 
->        if (!IS_ENABLED(CONFIG_NVRAM))
->                  return 0xff;
-> 
->        if (arch_nvram_ops.read_byte)
->                  return arch_nvram_ops.read_byte(addr);
-> 
->        if (arch_nvram_ops.read)
->                  return arch_nvram_ops.read(char, 1, &addr);
-> 
->       return 0xff;
-> }
-> 
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
 
-The semantics of .read_byte and .read are subtly different. For CONFIG_X86 
-and CONFIG_ATARI, .read implies checksum validation and .read_byte does 
-not.
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
 
-In particular, in the thinkpad_acpi case, checksum validation isn't used, 
-but in the atari_scsi case, it is.
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
 
-So I like to see drivers explicitly call the method they want. I didn't 
-want to obscure this distinction in a helper.
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+---
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index cb43a2258c51..4721491e6c8c 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -431,6 +431,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
+ 
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
++
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
 -- 
+2.20.1

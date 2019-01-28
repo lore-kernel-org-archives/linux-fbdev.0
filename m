@@ -1,54 +1,56 @@
-From: Martin Kepplinger <martink@posteo.de>
-Date: Mon, 28 Jan 2019 10:04:35 +0000
-Subject: [PATCH] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <20190128100435.759-1-martink@posteo.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:19:15 +0000
+Subject: [PATCH AUTOSEL 4.9 075/107] video: clps711x-fb: release disp device node in probe()
+Message-Id: <20190128161947.57405-75-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190128161947.57405-1-sashal@kernel.org>
+In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
-Cc: daniel.vetter@ffwll.ch, manfred.schlaegl@ginzinger.com, linux-kernel@vger.kernel.org, Martin Kepplinger <martin.kepplinger@ginzinger.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Alexey Khoroshilov <khoroshilov@ispras.ru>
 
-From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
 
-There is no clipping on the x or y axis for logos larger that the framebuffer
-size. Therefore: a logo bigger than screen size leads to invalid memory access:
+[ Upstream commit fdac751355cd76e049f628afe6acb8ff4b1399f7 ]
 
-[    1.254664] Backtrace:
-[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-[    1.254774]  r4:c6a3e800
-[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-[    1.254852]  r4:c6808c00
-[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-[    1.254928]  r4:c6808c00
-[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+clps711x_fb_probe() increments refcnt of disp device node by
+of_parse_phandle() and leaves it undecremented on both
+successful and error paths.
 
-So prevent displaying a logo bigger than screen size and avoid invalid
-memory access.
+Found by Linux Driver Verification project (linuxtesting.org).
 
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Alexander Shiyan <shc_work@mail.ru>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fbdev/clps711x-fb.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index cb43a2258c51..4721491e6c8c 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -431,6 +431,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- {
- 	unsigned int x;
+diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+index ff561073ee4e..42f909618f04 100644
+--- a/drivers/video/fbdev/clps711x-fb.c
++++ b/drivers/video/fbdev/clps711x-fb.c
+@@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)
+ 	}
  
-+	if (image->width > info->var.xres || image->height > info->var.yres)
-+		return;
-+
- 	if (rotate = FB_ROTATE_UR) {
- 		for (x = 0;
- 		     x < num && image->dx + image->width <= info->var.xres;
+ 	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
+-	if (ret)
++	if (ret) {
++		of_node_put(disp);
+ 		goto out_fb_release;
++	}
+ 
+ 	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
+ 	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
+ 
+ 	ret = of_property_read_u32(disp, "bits-per-pixel",
+ 				   &info->var.bits_per_pixel);
++	of_node_put(disp);
+ 	if (ret)
+ 		goto out_fb_release;
+ 
 -- 
-2.20.1
+2.19.1

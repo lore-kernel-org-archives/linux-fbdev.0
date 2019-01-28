@@ -1,61 +1,71 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Wed, 09 Jan 2019 08:39:46 +0000
-Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgNC80XSBBUk06IG14czogY2ZhMTAwMzY6IEZp?= =?utf-8?Q?xup_OLED_display_
-Message-Id: <1547023165-111798-5-git-send-email-michal.vokac@ysoft.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:19:16 +0000
+Subject: [PATCH AUTOSEL 4.9 076/107] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <20190128161947.57405-76-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
-In-Reply-To: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
+References: <20190128161947.57405-1-sashal@kernel.org>
+In-Reply-To: <20190128161947.57405-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, James Simmons <jsimmons@users.sf.net>, Fabian Frederick <ffrederick@users.sourceforge.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Peter Rosin <peda@axentia.se>
 
-VGhlcmUgd2FzIGEgYnVnIGluIHJlc2V0IHNpZ25hbCBnZW5lcmF0aW9uIGluIHNzZDEzMDdmYiBP
-TEVEIGRyaXZlci4NClRoZSBkaXNwbGF5IG5lZWRzIGFuIGFjdGl2ZS1sb3cgcmVzZXQgc2lnbmFs
-IGJ1dCB0aGUgZHJpdmVyIHByb2R1Y2VkDQp0aGUgY29ycmVjdCBzZXF1ZW5jZSBvbmx5IGlmIHRo
-ZSBHUElPIHVzZWQgZm9yIHJlc2V0IHdhcyBzcGVjaWZpZWQgYXMNCkdQSU9fQUNUSVZFX0hJR0gu
-DQoNCk5vdyBhcyB0aGUgT0xFRCBkcml2ZXIgaXMgZml4ZWQgaXQgaXMgYWxzbyBuZWNlc3NhcnJ5
-IHRvIGltcGxlbWVudA0KYSBmaXh1cCBmb3IgYWxsIGN1cnJlbnQgdXNlcnMgb2YgdGhlIG9sZCBE
-VCBBQkkuIFRoZXJlIGlzIG9ubHkgb25lDQppbi10cmVlIHVzZXIgYW5kIHRoYXQgaXMgdGhlIENy
-eXN0YWxmb250eiBDRkEtMTAwMzYgYm9hcmQuIEluIGNhc2UNCnRoaXMgYm9hcmQgaXMgYm9vdGlu
-ZyBhbmQgR1BJT19BQ1RJVkVfSElHSCBpcyB1c2VkIGZvciByZXNldCB3ZQ0Kb3ZlcnJpZGUgaXQg
-dG8gR1BJT19BQ1RJVkVfTE9XLg0KDQpSZXZpZXdlZC1ieTogUm9iIEhlcnJpbmcgPHJvYmhAa2Vy
-bmVsLm9yZz4NClNpZ25lZC1vZmYtYnk6IE1pY2hhbCBWb2vDocSNIDxtaWNoYWwudm9rYWNAeXNv
-ZnQuY29tPg0KLS0tDQpDaGFuZ2VzIGZyb20gdjE6DQogLSBBZGQgUi1ieSBmcm9tIFJvYg0KIC0g
-VXNlIG9mX3Byb3BlcnR5X3JlYWRfdmFyaWFibGVfdTMyX2FycmF5IHRvIHJlYWQgdGhlIEdQSU8g
-c3BlY2lmaWVyDQogICBhcnJheSBpbnN0ZWFkIG9mIHJlYWRpbmcgaXQgbWFudWFseSBpbiBmb3Ig
-Y3ljbGUuIChSb2IpDQoNCiBhcmNoL2FybS9tYWNoLW14cy9tYWNoLW14cy5jIHwgNDQgKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCiAxIGZpbGUgY2hhbmdlZCwg
-NDQgaW5zZXJ0aW9ucygrKQ0KDQpkaWZmIC0tZ2l0IGEvYXJjaC9hcm0vbWFjaC1teHMvbWFjaC1t
-eHMuYyBiL2FyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMNCmluZGV4IDFjNjA2MmQuLjUwMDM4
-ZDYgMTAwNjQ0DQotLS0gYS9hcmNoL2FybS9tYWNoLW14cy9tYWNoLW14cy5jDQorKysgYi9hcmNo
-L2FybS9tYWNoLW14cy9tYWNoLW14cy5jDQpAQCAtMjEsNiArMjEsNyBAQA0KICNpbmNsdWRlIDxs
-aW51eC9yZWJvb3QuaD4NCiAjaW5jbHVkZSA8bGludXgvbWljcmVsX3BoeS5oPg0KICNpbmNsdWRl
-IDxsaW51eC9vZl9hZGRyZXNzLmg+DQorI2luY2x1ZGUgPGxpbnV4L29mX2dwaW8uaD4NCiAjaW5j
-bHVkZSA8bGludXgvb2ZfcGxhdGZvcm0uaD4NCiAjaW5jbHVkZSA8bGludXgvcGh5Lmg+DQogI2lu
-Y2x1ZGUgPGxpbnV4L3BpbmN0cmwvY29uc3VtZXIuaD4NCkBAIC0yNjgsOSArMjY5LDUyIEBAIHN0
-YXRpYyB2b2lkIF9faW5pdCBhcHg0ZGV2a2l0X2luaXQodm9pZCkNCiAJCQkJCSAgIGFweDRkZXZr
-aXRfcGh5X2ZpeHVwKTsNCiB9DQogDQorI2RlZmluZSBPTEVEX1JFU0VUX0dQSU9fTEVOCTMNCisj
-ZGVmaW5lIE9MRURfUkVTRVRfR1BJT19TSVpFCShPTEVEX1JFU0VUX0dQSU9fTEVOICogc2l6ZW9m
-KHUzMikpDQorDQorc3RhdGljIHZvaWQgX19pbml0IGNyeXN0YWxmb250el9vbGVkX3Jlc2V0X2Zp
-eHVwKHZvaWQpDQorew0KKwlzdHJ1Y3QgcHJvcGVydHkgKm5ld2dwaW87DQorCXN0cnVjdCBkZXZp
-Y2Vfbm9kZSAqbnA7DQorCXUzMiAqZ3Bpb3NwZWM7DQorCWludCByZXQ7DQorDQorCW5wID0gb2Zf
-ZmluZF9jb21wYXRpYmxlX25vZGUoTlVMTCwgTlVMTCwgInNvbG9tb24sc3NkMTMwNmZiLWkyYyIp
-Ow0KKwlpZiAoIW5wKQ0KKwkJcmV0dXJuOw0KKw0KKwluZXdncGlvID0ga3phbGxvYyhzaXplb2Yo
-Km5ld2dwaW8pICsgT0xFRF9SRVNFVF9HUElPX1NJWkUsIEdGUF9LRVJORUwpOw0KKwlpZiAoIW5l
-d2dwaW8pDQorCQlyZXR1cm47DQorDQorCW5ld2dwaW8tPnZhbHVlID0gbmV3Z3BpbyArIDE7DQor
-CW5ld2dwaW8tPmxlbmd0aCA9IE9MRURfUkVTRVRfR1BJT19TSVpFOw0KKwluZXdncGlvLT5uYW1l
-ID0ga3N0cmR1cCgicmVzZXQtZ3Bpb3MiLCBHRlBfS0VSTkVMKTsNCisJaWYgKCFuZXdncGlvLT5u
-YW1lKSB7DQorCQlrZnJlZShuZXdncGlvKTsNCisJCXJldHVybjsNCisJfQ0KKw0KKwlncGlvc3Bl
-YyA9IG5ld2dwaW8tPnZhbHVlOw0KKwlyZXQgPSBvZl9wcm9wZXJ0eV9yZWFkX3ZhcmlhYmxlX3Uz
-Ml9hcnJheShucCwgInJlc2V0LWdwaW9zIiwgZ3Bpb3NwZWMsDQorCQkJCQkJICBPTEVEX1JFU0VU
-X0dQSU9fTEVOLCAwKTsNCisNCisJaWYgKHJldCA8IDApIHsNCisJCWtmcmVlKG5ld2dwaW8pOw0K
-KwkJcmV0dXJuOw0KKwl9DQorDQorCWlmICghKGdwaW9zcGVjWzJdICYgT0ZfR1BJT19BQ1RJVkVf
-TE9XKSkgew0KKwkJZ3Bpb3NwZWNbMl0gfD0gT0ZfR1BJT19BQ1RJVkVfTE9XOw0KKwkJY3B1X3Rv
-X2JlMzJfYXJyYXkoZ3Bpb3NwZWMsIGdwaW9zcGVjLCBPTEVEX1JFU0VUX0dQSU9fTEVOKTsNCisJ
-CW9mX3VwZGF0ZV9wcm9wZXJ0eShucCwgbmV3Z3Bpbyk7DQorCX0NCit9DQorDQogc3RhdGljIHZv
-aWQgX19pbml0IGNyeXN0YWxmb250el9pbml0KHZvaWQpDQogew0KIAl1cGRhdGVfZmVjX21hY19w
-cm9wKE9VSV9DUllTVEFMRk9OVFopOw0KKwljcnlzdGFsZm9udHpfb2xlZF9yZXNldF9maXh1cCgp
-Ow0KIH0NCiANCiBzdGF0aWMgdm9pZCBfX2luaXQgZHVja2JpbGxfaW5pdCh2b2lkKQ0KLS0gDQoy
-LjEuNA0KDQo
+From: Peter Rosin <peda@axentia.se>
+
+[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
+
+Blitting an image with "negative" offsets is not working since there
+is no clipping. It hopefully just crashes. For the bootup logo, there
+is protection so that blitting does not happen as the image is drawn
+further and further to the right (ROTATE_UR) or further and further
+down (ROTATE_CW). There is however no protection when drawing in the
+opposite directions (ROTATE_UD and ROTATE_CCW).
+
+Add back this protection.
+
+The regression is 20-odd years old but the mindless warning-killing
+mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
+positive test on unsigned values") is also to blame, methinks.
+
+Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
+Signed-off-by: Peter Rosin <peda@axentia.se>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+cc: Geoff Levand <geoff@infradead.org>
+Cc: James Simmons <jsimmons@users.sf.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 74273bc7ca9a..a1d93151c059 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -433,7 +433,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_UD) {
+-		for (x = 0; x < num; x++) {
++		u32 dx = image->dx;
++
++		for (x = 0; x < num && image->dx <= dx; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -445,7 +447,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_CCW) {
+-		for (x = 0; x < num; x++) {
++		u32 dy = image->dy;
++
++		for (x = 0; x < num && image->dy <= dy; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
+-- 
+2.19.1

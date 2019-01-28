@@ -1,38 +1,71 @@
-From: =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
-Date: Wed, 09 Jan 2019 08:39:40 +0000
-Subject: =?utf-8?B?W1JFU0VORMKgUEFUQ0ggdjIgMC80XSBGaXggc3NkMTMwN2ZiIE9MRUQgZHJp?= =?utf-8?Q?ver_reset?=
-Message-Id: <1547023165-111798-1-git-send-email-michal.vokac@ysoft.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:23:39 +0000
+Subject: [PATCH AUTOSEL 4.4 58/80] fbdev: fbmem: behave better with small rotated displays and many CPUs
+Message-Id: <20190128162401.58841-58-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190128162401.58841-1-sashal@kernel.org>
+In-Reply-To: <20190128162401.58841-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rob Herring <robh+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>, Fabio Estevam <fabio.estevam@nxp.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, =?utf-8?B?Vm9rw6HEjSBNaWNoYWw=?= <Michal.Vokac@ysoft.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Geoff Levand <geoff@infradead.org>, dri-devel@lists.freedesktop.org, James Simmons <jsimmons@users.sf.net>, Fabian Frederick <ffrederick@users.sourceforge.net>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Peter Rosin <peda@axentia.se>
 
-SGkgYWxsLA0KDQp0aGlzIGlzIG15IHRoaXJkIGF0dGVtcHQgdG8gZml4IHRoZSBzc2QxMzA3ZmIg
-T0xFRCBkcml2ZXIgcmVzZXQuIEluIHRoZQ0Kc2Vjb25kIGF0dGVtcHQgWzFdIFJvYiBzdWdnZXN0
-ZWQgdG8gdGFrZSBkaWZmZXJlbnQgYXByb2FjaC4gVGhhdCBpcyB0bw0KYXBwbHkgd2hhdCB3YXMg
-b3JpZ2luYWx5IHBhcnQgb2YgdGhlIGZpcnN0IHJvdW5kIGFuZCBldmVudHVhbGx5IG1lcmdlZA0K
-YnV0IHJldmVydGVkIGxhdGVyIG9uIFsyXVszXS4NCg0KVGhlIGxhc3QgcGF0Y2ggaW4gdGhpcyBz
-ZXJpZXMgaXMgYSBmaXh1cCBmb3IgdGhlIHNpbmdsZSB1c2VyIChpbi10cmVlKQ0KdGhhdCB1c2Vz
-IHRoaXMgT0xFRC4gUm9iIHN1Z2dlc3RlZCB0aGUgZml4dXAgbWF5IGFjdHVhbGx5IGJlIGFwcGxp
-ZWQNCm9ubHkgYWZ0ZXIgc29tZW9uZSBjb21wbGFpbnMgdGhlaXIgZGlzcGxheSBicm9rZS4NCg0K
-QW5kIGEgY29tbWVudCBmcm9tIEFsZXhhbmRyZSByZWdhcmRpbmcgdGhlIHN0YXR1cyBvZiB0aGUg
-Q3J5c3RhbGZvbnR6DQpwbGF0Zm9ybToNCg0KT24gMjAuMTIuMjAxOCAxMzozNSwgQWxleGFuZHJl
-IEJlbGxvbmkgd3JvdGU6DQo+IEhvbmVzdGx5LCB0aGUgcGxhdGZvcm0gaGFzIGJlZW4gZGlzY29u
-dGludWVkIGFuZCBJIGRvbid0IHJlYWxseSB0aGluaw0KPiBpdCBpcyB3b3J0aCBoYXZpbmcgdGhh
-dCBmaXh1cCBpbiB0aGUgdHJlZSBmb3JldmVyLg0KDQpUaGFuayB5b3UsDQpNaWNoYWwNCg0KWzFd
-IGh0dHBzOi8vcGF0Y2h3b3JrLmtlcm5lbC5vcmcvcGF0Y2gvMTA2NjU1OTcvIzIyMzI3MjI3DQpb
-Ml0gaHR0cHM6Ly9wYXRjaHdvcmsua2VybmVsLm9yZy9wYXRjaC8xMDYxNzcyOS8NClszXSBodHRw
-czovL3BhdGNod29yay5rZXJuZWwub3JnL3BhdGNoLzEwNjE3NzMxLyMyMjI1NzE3NQ0KDQpNaWNo
-YWwgVm9rw6HEjSAoNCk6DQogIGR0LWJpbmRpbmdzOiBkaXNwbGF5OiBzc2QxMzA3ZmI6IFJlbW92
-ZSByZXNldC1hY3RpdmUtbG93IGZyb20gZXhhbXBsZXMNCiAgdmlkZW86IHNzZDEzMDdmYjogRG8g
-bm90IGhhcmQgY29kZSBhY3RpdmUtbG93IHJlc2V0IHNlcXVlbmNlDQogIEFSTTogZHRzOiBpbXgy
-OC1jZmExMDAzNjogRml4IHRoZSByZXNldCBncGlvIHNpZ25hbCBwb2xhcml0eQ0KICBBUk06IG14
-czogY2ZhMTAwMzY6IEZpeHVwIE9MRUQgZGlzcGxheSByZXNldCBwb2xhcml0eQ0KDQogLi4uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvZGlzcGxheS9zc2QxMzA3ZmIudHh0ICAgICAgfCAgMiAtDQogYXJj
-aC9hcm0vYm9vdC9kdHMvaW14MjgtY2ZhMTAwMzYuZHRzICAgICAgICAgICAgICAgfCAgMyArLQ0K
-IGFyY2gvYXJtL21hY2gtbXhzL21hY2gtbXhzLmMgICAgICAgICAgICAgICAgICAgICAgIHwgNDQg
-KysrKysrKysrKysrKysrKysrKysrKw0KIGRyaXZlcnMvdmlkZW8vZmJkZXYvc3NkMTMwN2ZiLmMg
-ICAgICAgICAgICAgICAgICAgIHwgIDQgKy0NCiA0IGZpbGVzIGNoYW5nZWQsIDQ4IGluc2VydGlv
-bnMoKyksIDUgZGVsZXRpb25zKC0pDQoNCi0tIA0KMi4xLjQNCg0K
+From: Peter Rosin <peda@axentia.se>
+
+[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
+
+Blitting an image with "negative" offsets is not working since there
+is no clipping. It hopefully just crashes. For the bootup logo, there
+is protection so that blitting does not happen as the image is drawn
+further and further to the right (ROTATE_UR) or further and further
+down (ROTATE_CW). There is however no protection when drawing in the
+opposite directions (ROTATE_UD and ROTATE_CCW).
+
+Add back this protection.
+
+The regression is 20-odd years old but the mindless warning-killing
+mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
+positive test on unsigned values") is also to blame, methinks.
+
+Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
+Signed-off-by: Peter Rosin <peda@axentia.se>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+cc: Geoff Levand <geoff@infradead.org>
+Cc: James Simmons <jsimmons@users.sf.net>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 8a29ec5992fd..ea2bd6208a2f 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -433,7 +433,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dx += image->width + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_UD) {
+-		for (x = 0; x < num; x++) {
++		u32 dx = image->dx;
++
++		for (x = 0; x < num && image->dx <= dx; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dx -= image->width + 8;
+ 		}
+@@ -445,7 +447,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ 			image->dy += image->height + 8;
+ 		}
+ 	} else if (rotate = FB_ROTATE_CCW) {
+-		for (x = 0; x < num; x++) {
++		u32 dy = image->dy;
++
++		for (x = 0; x < num && image->dy <= dy; x++) {
+ 			info->fbops->fb_imageblit(info, image);
+ 			image->dy -= image->height + 8;
+ 		}
+-- 
+2.19.1

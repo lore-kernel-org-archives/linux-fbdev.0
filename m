@@ -1,71 +1,56 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 15:58:32 +0000
-Subject: [PATCH AUTOSEL 4.19 206/258] fbdev: fbmem: behave better with small rotated displays and many CPUs
-Message-Id: <20190128155924.51521-206-sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:11:17 +0000
+Subject: [PATCH AUTOSEL 4.14 127/170] video: clps711x-fb: release disp device node in probe()
+Message-Id: <20190128161200.55107-127-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128155924.51521-1-sashal@kernel.org>
-In-Reply-To: <20190128155924.51521-1-sashal@kernel.org>
+References: <20190128161200.55107-1-sashal@kernel.org>
+In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Peter Rosin <peda@axentia.se>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Fabian Frederick <ffrederick@users.sourceforge.net>, Geert Uytterhoeven <geert+renesas@glider.be>, Geoff Levand <geoff@infradead.org>, James Simmons <jsimmons@users.sf.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-From: Peter Rosin <peda@axentia.se>
+From: Alexey Khoroshilov <khoroshilov@ispras.ru>
 
-[ Upstream commit f75df8d4b4fabfad7e3cba2debfad12741c6fde7 ]
+[ Upstream commit fdac751355cd76e049f628afe6acb8ff4b1399f7 ]
 
-Blitting an image with "negative" offsets is not working since there
-is no clipping. It hopefully just crashes. For the bootup logo, there
-is protection so that blitting does not happen as the image is drawn
-further and further to the right (ROTATE_UR) or further and further
-down (ROTATE_CW). There is however no protection when drawing in the
-opposite directions (ROTATE_UD and ROTATE_CCW).
+clps711x_fb_probe() increments refcnt of disp device node by
+of_parse_phandle() and leaves it undecremented on both
+successful and error paths.
 
-Add back this protection.
+Found by Linux Driver Verification project (linuxtesting.org).
 
-The regression is 20-odd years old but the mindless warning-killing
-mentality displayed in commit 34bdb666f4b2 ("fbdev: fbmem: remove
-positive test on unsigned values") is also to blame, methinks.
-
-Fixes: 448d479747b8 ("fbdev: fb_do_show_logo() updates")
-Signed-off-by: Peter Rosin <peda@axentia.se>
-Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: Fabian Frederick <ffrederick@users.sourceforge.net>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-cc: Geoff Levand <geoff@infradead.org>
-Cc: James Simmons <jsimmons@users.sf.net>
+Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
+Cc: Alexander Shiyan <shc_work@mail.ru>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/fbmem.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/clps711x-fb.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 20405421a5ed..77cee99fc36c 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -435,7 +435,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dx += image->width + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_UD) {
--		for (x = 0; x < num; x++) {
-+		u32 dx = image->dx;
-+
-+		for (x = 0; x < num && image->dx <= dx; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dx -= image->width + 8;
- 		}
-@@ -447,7 +449,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- 			image->dy += image->height + 8;
- 		}
- 	} else if (rotate = FB_ROTATE_CCW) {
--		for (x = 0; x < num; x++) {
-+		u32 dy = image->dy;
-+
-+		for (x = 0; x < num && image->dy <= dy; x++) {
- 			info->fbops->fb_imageblit(info, image);
- 			image->dy -= image->height + 8;
- 		}
+diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
+index ff561073ee4e..42f909618f04 100644
+--- a/drivers/video/fbdev/clps711x-fb.c
++++ b/drivers/video/fbdev/clps711x-fb.c
+@@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
+-	if (ret)
++	if (ret) {
++		of_node_put(disp);
+ 		goto out_fb_release;
++	}
+ 
+ 	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
+ 	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
+ 
+ 	ret = of_property_read_u32(disp, "bits-per-pixel",
+ 				   &info->var.bits_per_pixel);
++	of_node_put(disp);
+ 	if (ret)
+ 		goto out_fb_release;
+ 
 -- 
 2.19.1

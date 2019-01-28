@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 16:26:07 +0000
-Subject: [PATCH AUTOSEL 3.18 45/61] fbdev: fbcon: Fix unregister crash when more than one framebuffer
-Message-Id: <20190128162623.59854-45-sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:11:23 +0000
+Subject: [PATCH AUTOSEL 4.14 133/170] fbdev: fbcon: Fix unregister crash when more than one framebuffer
+Message-Id: <20190128161200.55107-133-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128162623.59854-1-sashal@kernel.org>
-In-Reply-To: <20190128162623.59854-1-sashal@kernel.org>
+References: <20190128161200.55107-1-sashal@kernel.org>
+In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -70,14 +70,14 @@ Acked-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/console/fbcon.c | 2 +-
+ drivers/video/fbdev/core/fbcon.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index eb976ee3a02f..614d3209d465 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3018,7 +3018,7 @@ static int fbcon_fb_unbind(int idx)
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 04612f938bab..85787119bfbf 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -3041,7 +3041,7 @@ static int fbcon_fb_unbind(int idx)
  	for (i = first_fb_vc; i <= last_fb_vc; i++) {
  		if (con2fb_map[i] != idx &&
  		    con2fb_map[i] != -1) {

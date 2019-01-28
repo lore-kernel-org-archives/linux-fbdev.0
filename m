@@ -1,10 +1,10 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 15:42:41 +0000
-Subject: [PATCH AUTOSEL 4.20 244/304] video: clps711x-fb: release disp device node in probe()
-Message-Id: <20190128154341.47195-244-sashal@kernel.org>
+Date: Mon, 28 Jan 2019 16:23:38 +0000
+Subject: [PATCH AUTOSEL 4.4 57/80] video: clps711x-fb: release disp device node in probe()
+Message-Id: <20190128162401.58841-57-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128154341.47195-1-sashal@kernel.org>
-In-Reply-To: <20190128154341.47195-1-sashal@kernel.org>
+References: <20190128162401.58841-1-sashal@kernel.org>
+In-Reply-To: <20190128162401.58841-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -30,7 +30,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-index ff561073ee4e..42f909618f04 100644
+index 649b32f78c08..c55109524fd5 100644
 --- a/drivers/video/fbdev/clps711x-fb.c
 +++ b/drivers/video/fbdev/clps711x-fb.c
 @@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)

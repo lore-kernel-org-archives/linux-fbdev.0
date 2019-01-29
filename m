@@ -1,51 +1,72 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 11 Jan 2019 12:45:09 +0000
-Subject: Re: [PATCH] Fix stack memory disclosure
-Message-Id: <8ae8354f-a197-2ee1-d056-ccbac02028cb@samsung.com>
+From: Prarit Bhargava <prarit@redhat.com>
+Date: Tue, 29 Jan 2019 13:43:50 +0000
+Subject: [PATCH v5 2/2] fbcon: Silence fbcon logo on 'quiet' boots
+Message-Id: <20190129134350.24049-3-prarit@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190106075408.58405-1-vlad@tsyrklevich.net>
-        <CGME20190108234243epcas4p3b9ec45a771e71a0c3a3af7eeea93905d@epcas4p3.samsung.com>
-        <CAGXu5jKiKA79mnTwCxTKsXBBKAvaoaX=CH61pLXdxtWQvUhhuQ@mail.gmail.com>
-        <c0a93d03-f150-6363-2df7-b2dec8a8638a@samsung.com>
-In-Reply-To: <c0a93d03-f150-6363-2df7-b2dec8a8638a@samsung.com>
+References: <20190129134350.24049-1-prarit@redhat.com>
+In-Reply-To: <20190129134350.24049-1-prarit@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kees Cook <keescook@chromium.org>, Vlad Tsyrklevich <vlad@tsyrklevich.net>
-Cc: linux-fbdev@vger.kernel.org, Security Officers <security@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: linux-fbdev@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
 
+On text-based systems the 'quiet' boot option will show printk levels
+higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
+during boot can cause some consoles to lose display data and as a result
+confuse the end user.
 
-On 01/10/2019 04:10 PM, Bartlomiej Zolnierkiewicz wrote:
-> 
-> On 01/09/2019 12:41 AM, Kees Cook wrote:
->> On Sat, Jan 5, 2019 at 11:51 PM Vlad Tsyrklevich <vlad@tsyrklevich.net> wrote:
->>>
->>> Using [1] for static analysis I found that the OMAPFB_QUERY_PLANE,
->>> OMAPFB_GET_COLOR_KEY, OMAPFB_GET_DISPLAY_INFO, and OMAPFB_GET_VRAM_INFO
->>> cases could all leak uninitialized stack memory--either due to
->>> uninitialized padding or 'reserved' fields.
->>>
->>> Fix them by clearing the shared union used to store copied out data.
->>>
->>> [1] https://github.com/vlad902/kernel-uninitialized-memory-checker
->>>
->>> Signed-off-by: Vlad Tsyrklevich <vlad@tsyrklevich.net>
->>
->> Reviewed-by: Kees Cook <keescook@chromium.org>
->> Fixes: b39a982ddecf ("OMAP: DSS2: omapfb driver")
-> 
-> Thanks.
-> 
->> Since this driver is orphaned (according to MAINTAINERS), I think this
->> fix should go via Bart's tree. Bart, can you take this?
-> 
-> Sure, I will merge it tomorrow (I plan to send fbdev fixes pull request to
-> Linus next week).
+Do not display the Tux logo on systems that are in 'quiet' boot.
 
-Patch queued for 5.0 (with patch subject prefixed with "omap2fb: "), thanks.
+v2: It helps to commit all my changes before sending them.  Remove extra
+bracket.
+v3: buildbot error fix: fbcon can be built as part of a module so export console_printk
+v4: move console_printk change to separate patch, and drop logo cleanup
+v5: Only set FBCON_LOGO_DONTSHOW for console loglevel
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Marko Myllynen <myllynen@redhat.com>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: dri-devel@lists.freedesktop.org
+---
+ drivers/video/fbdev/core/fbcon.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index bfa1360ec750..59b626356983 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -656,11 +656,14 @@ static void fbcon_prepare_logo(struct vc_data *vc, struct fb_info *info,
+ 		kfree(save);
+ 	}
+ 
++	if (logo_shown = FBCON_LOGO_DONTSHOW)
++		return;
++
+ 	if (logo_lines > vc->vc_bottom) {
+ 		logo_shown = FBCON_LOGO_CANSHOW;
+ 		printk(KERN_INFO
+ 		       "fbcon_init: disable boot-logo (boot-logo bigger than screen).\n");
+-	} else if (logo_shown != FBCON_LOGO_DONTSHOW) {
++	} else {
+ 		logo_shown = FBCON_LOGO_DRAW;
+ 		vc->vc_top = logo_lines;
+ 	}
+@@ -1066,6 +1069,9 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 
+ 	cap = info->flags;
+ 
++	if (console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
++		logo_shown = FBCON_LOGO_DONTSHOW;
++
+ 	if (vc != svc || logo_shown = FBCON_LOGO_DONTSHOW ||
+ 	    (info->fix.type = FB_TYPE_TEXT))
+ 		logo = 0;
+-- 
+2.17.2

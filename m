@@ -1,56 +1,48 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Mon, 28 Jan 2019 16:11:17 +0000
-Subject: [PATCH AUTOSEL 4.14 127/170] video: clps711x-fb: release disp device node in probe()
-Message-Id: <20190128161200.55107-127-sashal@kernel.org>
+From: Prarit Bhargava <prarit@redhat.com>
+Date: Tue, 29 Jan 2019 13:43:48 +0000
+Subject: [PATCH v5 0/2] Do not output logo on quiet boots
+Message-Id: <20190129134350.24049-1-prarit@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190128161200.55107-1-sashal@kernel.org>
-In-Reply-To: <20190128161200.55107-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Alexey Khoroshilov <khoroshilov@ispras.ru>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
+Cc: Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Petr Mladek <pmladek@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
 
-From: Alexey Khoroshilov <khoroshilov@ispras.ru>
+On text-based systems the 'quiet' boot option will show printk levels
+higher than CONSOLE_LOGLEVEL_QUIET.  The displaying of the Tux logo
+during boot can cause some consoles to lose display data and as a result
+confuse the end user.
 
-[ Upstream commit fdac751355cd76e049f628afe6acb8ff4b1399f7 ]
+Do not display the Tux logo on systems that are in 'quiet' boot.
 
-clps711x_fb_probe() increments refcnt of disp device node by
-of_parse_phandle() and leaves it undecremented on both
-successful and error paths.
+v2: It helps to commit all my changes before sending them.  Remove extra
+bracket.
+v3: buildbot error fix: fbcon can be built as part of a module so export console_printk
+v4: move console_printk change to separate patch, and drop logo cleanup
+v5: Only set FBCON_LOGO_DONTSHOW for console loglevel
 
-Found by Linux Driver Verification project (linuxtesting.org).
 
-Signed-off-by: Alexey Khoroshilov <khoroshilov@ispras.ru>
-Cc: Alexander Shiyan <shc_work@mail.ru>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/clps711x-fb.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Marko Myllynen <myllynen@redhat.com>
+Cc: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: Petr Mladek <pmladek@suse.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
 
-diff --git a/drivers/video/fbdev/clps711x-fb.c b/drivers/video/fbdev/clps711x-fb.c
-index ff561073ee4e..42f909618f04 100644
---- a/drivers/video/fbdev/clps711x-fb.c
-+++ b/drivers/video/fbdev/clps711x-fb.c
-@@ -287,14 +287,17 @@ static int clps711x_fb_probe(struct platform_device *pdev)
- 	}
- 
- 	ret = of_get_fb_videomode(disp, &cfb->mode, OF_USE_NATIVE_MODE);
--	if (ret)
-+	if (ret) {
-+		of_node_put(disp);
- 		goto out_fb_release;
-+	}
- 
- 	of_property_read_u32(disp, "ac-prescale", &cfb->ac_prescale);
- 	cfb->cmap_invert = of_property_read_bool(disp, "cmap-invert");
- 
- 	ret = of_property_read_u32(disp, "bits-per-pixel",
- 				   &info->var.bits_per_pixel);
-+	of_node_put(disp);
- 	if (ret)
- 		goto out_fb_release;
- 
+Prarit Bhargava (2):
+  printk: Export console_printk
+  fbcon: Silence fbcon logo on 'quiet' boots
+
+ drivers/video/fbdev/core/fbcon.c | 8 +++++++-
+ kernel/printk/printk.c           | 1 +
+ 2 files changed, 8 insertions(+), 1 deletion(-)
+
 -- 
-2.19.1
+2.17.2

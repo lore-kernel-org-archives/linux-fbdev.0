@@ -1,164 +1,66 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Fri, 08 Feb 2019 19:14:58 +0000
-Subject: Re: [PATCH 2/3] gpu: ipu-v3: ipu-ic: Add support for BT.709 encoding
-Message-Id: <f276ce25-656f-253b-be23-7d18b6c347c9@gmail.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:45 +0000
+Subject: [PATCH 02/18] dmaengine: imx-sdma: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-3-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190203194744.11546-1-slongerbeam@gmail.com>
- <20190203194744.11546-3-slongerbeam@gmail.com>
- <CAJ+vNU0dP+muS7h=8SaHBk1uTEiQT4JpeHKEDG_+VJXAc20Bew@mail.gmail.com>
-In-Reply-To: <CAJ+vNU0dP+muS7h=8SaHBk1uTEiQT4JpeHKEDG_+VJXAc20Bew@mail.gmail.com>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tim Harvey <tharvey@gateworks.com>
-Cc: linux-media <linux-media@vger.kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/dma/imx-sdma.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-On 2/8/19 8:24 AM, Tim Harvey wrote:
-> On Sun, Feb 3, 2019 at 11:48 AM Steve Longerbeam <slongerbeam@gmail.com> wrote:
->> Pass v4l2 encoding enum to the ipu_ic task init functions, and add
->> support for the BT.709 encoding and inverse encoding matrices.
->>
->> Reported-by: Tim Harvey <tharvey@gateworks.com>
->> Signed-off-by: Steve Longerbeam <slongerbeam@gmail.com>
->> ---
->>   drivers/gpu/ipu-v3/ipu-ic.c                 | 67 ++++++++++++++++++---
->>   drivers/gpu/ipu-v3/ipu-image-convert.c      |  1 +
->>   drivers/staging/media/imx/imx-ic-prpencvf.c |  4 +-
->>   include/video/imx-ipu-v3.h                  |  5 +-
->>   4 files changed, 67 insertions(+), 10 deletions(-)
->>
->> diff --git a/drivers/gpu/ipu-v3/ipu-ic.c b/drivers/gpu/ipu-v3/ipu-ic.c
->> index 35ae86ff0585..63362b4fff81 100644
->> --- a/drivers/gpu/ipu-v3/ipu-ic.c
->> +++ b/drivers/gpu/ipu-v3/ipu-ic.c
->> @@ -199,6 +199,23 @@ static const struct ic_csc_params ic_csc_rgb2ycbcr_bt601 = {
->>          .scale = 1,
->>   };
->>
->> +/*
->> + * BT.709 encoding from RGB full range to YUV limited range:
->> + *
->> + * Y = R *  .2126 + G *  .7152 + B *  .0722;
->> + * U = R * -.1146 + G * -.3854 + B *  .5000 + 128.;
->> + * V = R *  .5000 + G * -.4542 + B * -.0458 + 128.;
->> + */
->> +static const struct ic_csc_params ic_csc_rgb2ycbcr_bt709 = {
->> +       .coeff = {
->> +               { 54, 183, 18 },
->> +               { 483, 413, 128 },
->> +               { 128, 396, 500 },
->> +       },
->> +       .offset = { 0, 512, 512 },
->> +       .scale = 1,
->> +};
->> +
->>   /* transparent RGB->RGB matrix for graphics combining */
->>   static const struct ic_csc_params ic_csc_rgb2rgb = {
->>          .coeff = {
->> @@ -226,12 +243,31 @@ static const struct ic_csc_params ic_csc_ycbcr2rgb_bt601 = {
->>          .scale = 2,
->>   };
->>
->> +/*
->> + * Inverse BT.709 encoding from YUV limited range to RGB full range:
->> + *
->> + * R = (1. * (Y - 16)) + (1.5748 * (Cr - 128));
->> + * G = (1. * (Y - 16)) - (0.1873 * (Cb - 128)) - (0.4681 * (Cr - 128));
->> + * B = (1. * (Y - 16)) + (1.8556 * (Cb - 128);
->> + */
->> +static const struct ic_csc_params ic_csc_ycbcr2rgb_bt709 = {
->> +       .coeff = {
->> +               { 128, 0, 202 },
->> +               { 128, 488, 452 },
->> +               { 128, 238, 0 },
->> +       },
->> +       .offset = { -435, 136, -507 },
->> +       .scale = 2,
->> +};
->> +
->>   static int init_csc(struct ipu_ic *ic,
->>                      enum ipu_color_space inf,
->>                      enum ipu_color_space outf,
->> +                   enum v4l2_ycbcr_encoding encoding,
->>                      int csc_index)
->>   {
->>          struct ipu_ic_priv *priv = ic->priv;
->> +       const struct ic_csc_params *params_rgb2yuv, *params_yuv2rgb;
->>          const struct ic_csc_params *params;
->>          u32 __iomem *base;
->>          const u16 (*c)[3];
->> @@ -241,10 +277,24 @@ static int init_csc(struct ipu_ic *ic,
->>          base = (u32 __iomem *)
->>                  (priv->tpmem_base + ic->reg->tpmem_csc[csc_index]);
->>
->> +       switch (encoding) {
->> +       case V4L2_YCBCR_ENC_601:
->> +               params_rgb2yuv =  &ic_csc_rgb2ycbcr_bt601;
->> +               params_yuv2rgb = &ic_csc_ycbcr2rgb_bt601;
->> +               break;
->> +       case V4L2_YCBCR_ENC_709:
->> +               params_rgb2yuv =  &ic_csc_rgb2ycbcr_bt709;
->> +               params_yuv2rgb = &ic_csc_ycbcr2rgb_bt709;
->> +               break;
->> +       default:
->> +               dev_err(priv->ipu->dev, "Unsupported YCbCr encoding\n");
->> +               return -EINVAL;
->> +       }
->> +
-> Steve,
->
-> This will fail for RGB to RGB with 'Unsupported YCbCr encoding. We
-> need to account for the RGB->RGB case.
->
-> How about something like:
-
-
-Thanks for reporting Tim
-
-I rather keep the check for supported encoding, and instead get rid of 
-"Unsupported color space conversion" error, because that is the YUV->YUV 
-case which can be allowed using the identity matrix.
-
-Steve
-
->
->   static int init_csc(struct ipu_ic *ic,
->                      enum ipu_color_space inf,
->                      enum ipu_color_space outf,
-> +                   enum v4l2_ycbcr_encoding encoding,
->                      int csc_index)
->   {
->          struct ipu_ic_priv *priv = ic->priv;
-> -       const struct ic_csc_params *params;
-> +       const struct ic_csc_params *params = NULL;
->          u32 __iomem *base;
->          const u16 (*c)[3];
->          const u16 *a;
-> @@ -241,13 +276,18 @@ static int init_csc(struct ipu_ic *ic,
->          base = (u32 __iomem *)
->                  (priv->tpmem_base + ic->reg->tpmem_csc[csc_index]);
->
-> -       if (inf = IPUV3_COLORSPACE_YUV && outf = IPUV3_COLORSPACE_RGB)
-> -               params = &ic_csc_ycbcr2rgb_bt601;
-> -       else if (inf = IPUV3_COLORSPACE_RGB && outf = IPUV3_COLORSPACE_YUV)
-> -               params = &ic_csc_rgb2ycbcr_bt601;
-> +       if (inf = IPUV3_COLORSPACE_YUV && outf = IPUV3_COLORSPACE_RGB) {
-> +               params = (encoding = V4L2_YCBCR_ENC_601) ?
-> +                       &ic_csc_ycbcr2rgb_bt601 : &ic_csc_ycbcr2rgb_bt709;
-> +       }
-> +       else if (inf = IPUV3_COLORSPACE_RGB && outf = IPUV3_COLORSPACE_YUV) {
-> +               params = (encoding = V4L2_YCBCR_ENC_601) ?
-> +                       &ic_csc_rgb2ycbcr_bt601 : &ic_csc_rgb2ycbcr_bt709;
-> +       }
->          else if (inf = IPUV3_COLORSPACE_RGB && outf = IPUV3_COLORSPACE_RGB)
->                  params = &ic_csc_rgb2rgb;
-> -       else {
-> +
-> +       if (!params) {
->                  dev_err(priv->ipu->dev, "Unsupported color space conversion\n");
->                  return -EINVAL;
->          }
->
-> Tim
+diff --git a/drivers/dma/imx-sdma.c b/drivers/dma/imx-sdma.c
+index 86708fb9bda1..0b6bba0b9f38 100644
+--- a/drivers/dma/imx-sdma.c
++++ b/drivers/dma/imx-sdma.c
+@@ -677,7 +677,7 @@ static int sdma_load_script(struct sdma_engine *sdma, void *buf, int size,
+ 	int ret;
+ 	unsigned long flags;
+ 
+-	buf_virt = dma_alloc_coherent(NULL, size, &buf_phys, GFP_KERNEL);
++	buf_virt = dma_alloc_coherent(sdma->dev, size, &buf_phys, GFP_KERNEL);
+ 	if (!buf_virt) {
+ 		return -ENOMEM;
+ 	}
+@@ -696,7 +696,7 @@ static int sdma_load_script(struct sdma_engine *sdma, void *buf, int size,
+ 
+ 	spin_unlock_irqrestore(&sdma->channel_0_lock, flags);
+ 
+-	dma_free_coherent(NULL, size, buf_virt, buf_phys);
++	dma_free_coherent(sdma->dev, size, buf_virt, buf_phys);
+ 
+ 	return ret;
+ }
+@@ -1182,8 +1182,8 @@ static int sdma_request_channel0(struct sdma_engine *sdma)
+ {
+ 	int ret = -EBUSY;
+ 
+-	sdma->bd0 = dma_alloc_coherent(NULL, PAGE_SIZE, &sdma->bd0_phys,
+-				       GFP_NOWAIT);
++	sdma->bd0 = dma_alloc_coherent(sdma->dev, PAGE_SIZE, &sdma->bd0_phys,
++					GFP_NOWAIT);
+ 	if (!sdma->bd0) {
+ 		ret = -ENOMEM;
+ 		goto out;
+@@ -1842,7 +1842,7 @@ static int sdma_init(struct sdma_engine *sdma)
+ 	/* Be sure SDMA has not started yet */
+ 	writel_relaxed(0, sdma->regs + SDMA_H_C0PTR);
+ 
+-	sdma->channel_control = dma_alloc_coherent(NULL,
++	sdma->channel_control = dma_alloc_coherent(sdma->dev,
+ 			MAX_DMA_CHANNELS * sizeof (struct sdma_channel_control) +
+ 			sizeof(struct sdma_context_data),
+ 			&ccb_phys, GFP_KERNEL);
+-- 
+2.20.1

@@ -1,38 +1,51 @@
-From: Richard Fearn <richardfearn@gmail.com>
-Date: Thu, 07 Feb 2019 20:47:02 +0000
-Subject: [PATCH] fbcon: add new font TER16x32 to boot options documentation
-Message-Id: <990625e7-a0b1-81f9-3371-808159c31df9@gmail.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:59 +0000
+Subject: [PATCH 16/18] pxa3xx-gcu: pass struct device to dma_mmap_coherent
+Message-Id: <20190201084801.10983-17-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, linux-doc@vger.kernel.org
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-TER16x32 was added in ac8b6f148fc9.
+Just like we do for all other DMA operations.
 
-Compare the list in fbcon.txt with the output of:
-
-   $ fgrep -h .name lib/fonts/*.c | sort
-
-Signed-off-by: Richard Fearn <richardfearn@gmail.com>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
-  Documentation/fb/fbcon.txt | 4 ++--
-  1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/pxa3xx-gcu.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/fb/fbcon.txt b/Documentation/fb/fbcon.txt
-index 60a5ec04e8f0..97bf1d19dec2 100644
---- a/Documentation/fb/fbcon.txt
-+++ b/Documentation/fb/fbcon.txt
-@@ -78,8 +78,8 @@ C. Boot options
-  1. fbcon=font:<name>
-
-          Select the initial font to use. The value 'name' can be any of the
--        compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
--        PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, VGA8x16, VGA8x8.
-+        compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6, PEARL8x8,
-+        ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
-
-  	Note, not all drivers can handle font with widths not divisible by 8,
-          such as vga16fb.
+diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
+index 69cfb337c857..047a2fa4b87e 100644
+--- a/drivers/video/fbdev/pxa3xx-gcu.c
++++ b/drivers/video/fbdev/pxa3xx-gcu.c
+@@ -96,6 +96,7 @@ struct pxa3xx_gcu_batch {
+ };
+ 
+ struct pxa3xx_gcu_priv {
++	struct device		 *dev;
+ 	void __iomem		 *mmio_base;
+ 	struct clk		 *clk;
+ 	struct pxa3xx_gcu_shared *shared;
+@@ -493,7 +494,7 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
+ 		if (size != SHARED_SIZE)
+ 			return -EINVAL;
+ 
+-		return dma_mmap_coherent(NULL, vma,
++		return dma_mmap_coherent(priv->dev, vma,
+ 			priv->shared, priv->shared_phys, size);
+ 
+ 	case SHARED_SIZE >> PAGE_SHIFT:
+@@ -670,6 +671,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, priv);
+ 	priv->resource_mem = r;
++	priv->dev = dev;
+ 	pxa3xx_gcu_reset(priv);
+ 	pxa3xx_gcu_init_debug_timer(priv);
+ 
 -- 
-2.19.1
+2.20.1

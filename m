@@ -1,49 +1,74 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Tue, 05 Feb 2019 09:02:46 +0000
-Subject: Re: [PATCH 0/8] fbdev: sm712fb: implement 2D acceleration w/ cleanups.
-Message-Id: <20190205090246.GB3271@phenom.ffwll.local>
+From: Felipe Balbi <balbi@kernel.org>
+Date: Fri, 01 Feb 2019 13:19:41 +0000
+Subject: Re: [PATCH 12/18] fotg210-udc: remove a bogus dma_sync_single_for_device call
+Message-Id: <87d0obodci.fsf@linux.intel.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="=-=-="
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190202061648.30374-1-tomli@tomli.me>
- <20190204092618.GM3271@phenom.ffwll.local>
- <20190204220650.GA24673@localhost.localdomain>
-In-Reply-To: <20190204220650.GA24673@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Tom Li <tomli@tomli.me>
-Cc: linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+References: <20190201084801.10983-1-hch@lst.de> <20190201084801.10983-13-hch@lst.de>
+In-Reply-To: <20190201084801.10983-13-hch@lst.de>
+To: Christoph Hellwig <hch@lst.de>, John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-On Tue, Feb 05, 2019 at 06:06:50AM +0800, Tom Li wrote:
-> > Since you care about this driver, considered converting it to a drm
-> > display driver? You can still have all the acceleration and stuff, the
-> > fbdev compat mode in drm is rather flexible.
-> > -Daniel
-> 
-> Yes, I know fbdev is now in maintenance-only mode, reimplementing it
-> on top of DRM is on my roadmap, including rewriting a saner version
-> of the modesetting code. The current version is beyond repair. I'll
-> start working on it once I managed to purchase the hardware for testing.
-> 
-> But currently my objectively is to have something usable during the
-> transitional period. The major user of the chipset was Yeeloong 8089D
-> laptop - a choice for many non-x86 and MIPS hobbyists for experimentation.
-> Getting the current version of the patch merged would solve the immediate
-> usability issues, and then trying to get some platform drivers merged.
-> And after completing the preliminary upstreaming process, since then,
-> can start working on a DRM version of the driver, and possibly eventually
-> remove the fbdev version of sm712fb entirely. 
-> 
-> The 2D acceleration implementation is strictly no more than 200 lines,
-> the vast majority of the code insertions are comments and documentation
-> changes ranting about the known issues of the driver/hardware, nothing
-> non-trivial is added and I think the changeset is manageable and would
-> not be a burden for the fbdev maintainers, and I can grarantee that I will
-> not add any other new features to this driver.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Awesome, and I think as a gradual plan this makes tons of sense.
+Christoph Hellwig <hch@lst.de> writes:
 
-Cheers, Daniel
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+> dma_map_single already transfers ownership to the device.
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Do you want me to take the USB bits or will you take the entire series?
+In case you're taking the entire series:
+
+Acked-by: Felipe Balbi <felipe.balbi@linux.intel.com>
+
+> ---
+>  drivers/usb/gadget/udc/fotg210-udc.c | 4 ----
+>  1 file changed, 4 deletions(-)
+>
+> diff --git a/drivers/usb/gadget/udc/fotg210-udc.c b/drivers/usb/gadget/ud=
+c/fotg210-udc.c
+> index bc6abaea907d..fe9cf415f2f1 100644
+> --- a/drivers/usb/gadget/udc/fotg210-udc.c
+> +++ b/drivers/usb/gadget/udc/fotg210-udc.c
+> @@ -356,10 +356,6 @@ static void fotg210_start_dma(struct fotg210_ep *ep,
+>  		return;
+>  	}
+>=20=20
+> -	dma_sync_single_for_device(NULL, d, length,
+> -				   ep->dir_in ? DMA_TO_DEVICE :
+> -					DMA_FROM_DEVICE);
+> -
+>  	fotg210_enable_dma(ep, d, length);
+>=20=20
+>  	/* check if dma is done */
+> --=20
+> 2.20.1
+>
+
+=2D-=20
+balbi
+
+--=-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEElLzh7wn96CXwjh2IzL64meEamQYFAlxUR24ACgkQzL64meEa
+mQahHA//UqW4f00GsiqzttL+A0YT71T+D9qtJhSfF7M0knMpZzdyOqcirQVm3TRT
+tpK0gC37IQGcT8NcrX75EtASdv/SBDJKhi5H1bCOEc5H00YxYUvujAdut+D25tJi
+SzfffbgIDcmkdit869qdzHmH565AGYZY6RG0lPoIS+7o1EGlO4AMM7RfF0y84VmY
+46M4Ch6WtjDVuFAEUhHdZi9Q4hXxT46Kz6gKyzB/aB5h1OGxeHpUl5HUkF0jZmts
+E6m3SZb/vUrfQINJ69erIJH4qqap0TbQ509i0M1cx9X1TYiI/ou4C8bSk/8895K0
+Js67kpVD/OXAyTmf/nVl4rtkhuDugyfEC+2bGUohpICCVd9ubg85B/1Yi/qQafYs
+sOt7bISdGgLiiSAxw9FWtVlezCW/8xuyC4hn0knkoAd9iIOO1LhfdNvfz0PPaVeW
+JnmCbx6syBAwlaEFem/M4uxp0Lq02WggiTNtTTUJw78N/MAl3CzDyyvRF0K1VpIR
+eGT71Gcrge3Utw8G8Tm0rzlBJntsXh7PLD63ga6nwirPxtq3ScPh3yjjdODRjc62
+T4dch1AT9BSKqqbFeQuMaeEV5ml3SJF3+DvIQ3LRz22lP65oSPHYvmdWHYOXW++W
+FGuEo7SIciykLAFxBDq4MjuIqn5uMMERmOqGGElHqdZsQE+0SVg=
+=byNX
+-----END PGP SIGNATURE-----
+--=-=-=--

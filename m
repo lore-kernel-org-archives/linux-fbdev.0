@@ -1,73 +1,115 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 14 Feb 2019 08:12:43 +0000
-Subject: Re: [PATCH v2 1/2] video: lcd: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol
-Message-Id: <20190214081243.GH1863@dell>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:46 +0000
+Subject: [PATCH 03/18] net: caif: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-4-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190117133336.19737-1-shc_work@mail.ru>
- <CGME20190117161952epcas1p39e54da4b33639ac2b807bc2743b9affa@epcas1p3.samsung.com>
- <20190117161908.4fd2lx62m5soqrff@holly.lan>
- <d75a5e8a-570a-25ca-7a46-ff4195d0ef81@samsung.com>
- <20190212084219.GW20638@dell>
- <1c721088-9bd4-bb88-d6c0-58f73c6f39cc@samsung.com>
- <CAKMK7uHaYAXW2k9Fkb4c365=GQ-y9pDm2n10=k+-xMgX0shgyw@mail.gmail.com>
-In-Reply-To: <CAKMK7uHaYAXW2k9Fkb4c365=GQ-y9pDm2n10=k+-xMgX0shgyw@mail.gmail.com>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Vetter <daniel@ffwll.ch>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-On Wed, 13 Feb 2019, Daniel Vetter wrote:
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
-> On Wed, Feb 13, 2019 at 4:04 PM Bartlomiej Zolnierkiewicz via
-> dri-devel <dri-devel@lists.freedesktop.org> wrote:
-> >
-> >
-> > On 02/12/2019 09:42 AM, Lee Jones wrote:
-> > > On Fri, 08 Feb 2019, Bartlomiej Zolnierkiewicz wrote:
-> > >
-> > >>
-> > >> On 01/17/2019 05:19 PM, Daniel Thompson wrote:
-> > >>> On Thu, Jan 17, 2019 at 04:33:35PM +0300, Alexander Shiyan wrote:
-> > >>>> We have two *_CLASS_DEVICE kernel config options (LCD_CLASS_DEVICE
-> > >>>> and BACKLIGHT_LCD_DEVICE) that do the same job.
-> > >>>> The patch removes useless BACKLIGHT_LCD_SUPPORT option
-> > >>>> and converts LCD_CLASS_DEVICE into a menu.
-> > >>>>
-> > >>>> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> > >>>
-> > >>> A cover letter with the v1 -> v2 changelog would be nice... but
-> > >>> nevertheless:
-> > >>> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> > >>
-> > >> Also:
-> > >>
-> > >> Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> > >>
-> > >> Lee, will you pick this up or do you want me to do it?
-> > >
-> > > You can take them if you want.  I will require a pull-request from an
-> > > independent immutable branch though please.
-> >
-> > OK, immutable branch will also allow other trees (drm) to sync with
-> > these changes if desired.
-> >
-> > I will do it for v5.2 if you are fine with it (too late for v5.1
-> > IMHO and I also won't have time too fix any potential issues next
-> > week).
-> 
-> Topic branch for these 2 simple patches seems like serious overkill.
-> Especially for backlight stuff, which doesn't move fast. Anyway, up to
-> you, ack for all the drm patches to go through whatever tree you
-> people can agree on. Would be good to get it into 5.1 still though,
-> just to avoid too many conflicts.
+Also use the proper Kconfig symbol to check for DMA API availability.
 
-It takes me approx 1 min to set-up an immutable branch.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/net/caif/caif_spi.c | 30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
 
-If you think it's too much work, I can set it up for you.
-
+diff --git a/drivers/net/caif/caif_spi.c b/drivers/net/caif/caif_spi.c
+index d28a1398c091..b7f3e263b57c 100644
+--- a/drivers/net/caif/caif_spi.c
++++ b/drivers/net/caif/caif_spi.c
+@@ -73,35 +73,37 @@ MODULE_PARM_DESC(spi_down_tail_align, "SPI downlink tail alignment.");
+ #define LOW_WATER_MARK   100
+ #define HIGH_WATER_MARK  (LOW_WATER_MARK*5)
+ 
+-#ifdef CONFIG_UML
++#ifdef CONFIG_HAS_DMA
+ 
+ /*
+  * We sometimes use UML for debugging, but it cannot handle
+  * dma_alloc_coherent so we have to wrap it.
+  */
+-static inline void *dma_alloc(dma_addr_t *daddr)
++static inline void *dma_alloc(struct cfspi *cfspi, dma_addr_t *daddr)
+ {
+ 	return kmalloc(SPI_DMA_BUF_LEN, GFP_KERNEL);
+ }
+ 
+-static inline void dma_free(void *cpu_addr, dma_addr_t handle)
++static inline void dma_free(struct cfspi *cfspi, void *cpu_addr,
++		dma_addr_t handle)
+ {
+ 	kfree(cpu_addr);
+ }
+ 
+ #else
+ 
+-static inline void *dma_alloc(dma_addr_t *daddr)
++static inline void *dma_alloc(struct cfspi *cfspi, dma_addr_t *daddr)
+ {
+-	return dma_alloc_coherent(NULL, SPI_DMA_BUF_LEN, daddr,
++	return dma_alloc_coherent(&cfspi->pdev->dev, SPI_DMA_BUF_LEN, daddr,
+ 				GFP_KERNEL);
+ }
+ 
+-static inline void dma_free(void *cpu_addr, dma_addr_t handle)
++static inline void dma_free(struct cfspi *cfspi, void *cpu_addr,
++		dma_addr_t handle)
+ {
+-	dma_free_coherent(NULL, SPI_DMA_BUF_LEN, cpu_addr, handle);
++	dma_free_coherent(&cfspi->pdev->dev, SPI_DMA_BUF_LEN, cpu_addr, handle);
+ }
+-#endif	/* CONFIG_UML */
++#endif	/* CONFIG_HAS_DMA */
+ 
+ #ifdef CONFIG_DEBUG_FS
+ 
+@@ -610,13 +612,13 @@ static int cfspi_init(struct net_device *dev)
+ 	}
+ 
+ 	/* Allocate DMA buffers. */
+-	cfspi->xfer.va_tx[0] = dma_alloc(&cfspi->xfer.pa_tx[0]);
++	cfspi->xfer.va_tx[0] = dma_alloc(cfspi, &cfspi->xfer.pa_tx[0]);
+ 	if (!cfspi->xfer.va_tx[0]) {
+ 		res = -ENODEV;
+ 		goto err_dma_alloc_tx_0;
+ 	}
+ 
+-	cfspi->xfer.va_rx = dma_alloc(&cfspi->xfer.pa_rx);
++	cfspi->xfer.va_rx = dma_alloc(cfspi, &cfspi->xfer.pa_rx);
+ 
+ 	if (!cfspi->xfer.va_rx) {
+ 		res = -ENODEV;
+@@ -665,9 +667,9 @@ static int cfspi_init(struct net_device *dev)
+ 	return 0;
+ 
+  err_create_wq:
+-	dma_free(cfspi->xfer.va_rx, cfspi->xfer.pa_rx);
++	dma_free(cfspi, cfspi->xfer.va_rx, cfspi->xfer.pa_rx);
+  err_dma_alloc_rx:
+-	dma_free(cfspi->xfer.va_tx[0], cfspi->xfer.pa_tx[0]);
++	dma_free(cfspi, cfspi->xfer.va_tx[0], cfspi->xfer.pa_tx[0]);
+  err_dma_alloc_tx_0:
+ 	return res;
+ }
+@@ -683,8 +685,8 @@ static void cfspi_uninit(struct net_device *dev)
+ 
+ 	cfspi->ndev = NULL;
+ 	/* Free DMA buffers. */
+-	dma_free(cfspi->xfer.va_rx, cfspi->xfer.pa_rx);
+-	dma_free(cfspi->xfer.va_tx[0], cfspi->xfer.pa_tx[0]);
++	dma_free(cfspi, cfspi->xfer.va_rx, cfspi->xfer.pa_rx);
++	dma_free(cfspi, cfspi->xfer.va_tx[0], cfspi->xfer.pa_tx[0]);
+ 	set_bit(SPI_TERMINATE, &cfspi->state);
+ 	wake_up_interruptible(&cfspi->wait);
+ 	destroy_workqueue(cfspi->wq);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.20.1

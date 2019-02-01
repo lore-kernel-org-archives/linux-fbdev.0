@@ -1,67 +1,58 @@
-From: Steve Longerbeam <slongerbeam@gmail.com>
-Date: Tue, 12 Feb 2019 17:50:17 +0000
-Subject: Re: [PATCH v4 3/4] gpu: ipu-v3: ipu-ic: Add support for BT.709 encoding
-Message-Id: <4403ed99-1949-a3fa-e567-c8a886d9366f@gmail.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:56 +0000
+Subject: [PATCH 13/18] fotg210-udc: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-14-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190209014748.10427-1-slongerbeam@gmail.com>
- <20190209014748.10427-4-slongerbeam@gmail.com>
- <1549879951.7687.6.camel@pengutronix.de>
- <440e12af-33ea-5eac-e570-8afa74e3133c@gmail.com>
- <1549971262.4800.5.camel@pengutronix.de>
-In-Reply-To: <1549971262.4800.5.camel@pengutronix.de>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Philipp Zabel <p.zabel@pengutronix.de>, linux-media@vger.kernel.org
-Cc: Tim Harvey <tharvey@gateworks.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM DRIVERS FOR FREESCALE IMX" <dri-devel@lists.freedesktop.org>, open list <linux-kernel@vger.kernel.org>, "open list:STAGING SUBSYSTEM" <devel@driverdev.osuosl.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/usb/gadget/udc/fotg210-udc.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-On 2/12/19 3:34 AM, Philipp Zabel wrote:
-> Hi Steve,
->
-> On Mon, 2019-02-11 at 17:20 -0800, Steve Longerbeam wrote:
-> [...]
->>> Should we support YUV BT.601 <-> YUV REC.709 conversions? That would
->>> require separate encodings for input and output.
->> How about if we pass the input and output encodings to the init ic task
->> functions, but for now require they be the same? We can support
->> transcoding in a later series.
-> [...]
->> Again, I think for now, just include input/output quantization but
->> require full range for RGB and limited range for YUV.
-> Yes, that is fine. I'd just like to avoid unnecessary interface changes
-> between ipu-v3 and imx-media. So if we have to change it right now, why
-> not plan ahead.
-
-Agreed!
-
->
->> But that really balloons the arguments to ipu_ic_task_init_*(). Should
->> we create an ipu_ic_task_init structure?
-> I wonder if we should just expose struct ic_csc_params
-
-I had basically the same idea. I wasn't thinking of creating a helper to 
-fill in the params but sure, I'll add that.
-
-Steve
-
-
->   and provide a
-> helper to fill it given colorspace and V4L2 encoding/quantization
-> parameters. Something like:
->
-> 	struct ipu_ic_csc_params csc;
->
-> 	imx_media_init_ic_csc_params(&csc,
-> 			in_cs, in_encoding, in_quantization,
-> 			out_cs, out_encoding, out_quantization);
->
-> 	ipu_ic_task_init(ic,
-> 			in_width, in_height,
-> 			out_width, out_height, &csc);
-> 	// or
-> 	ipu_ic_task_init_rsc(ic, rsc, &csc);
->
-> regards
-> Philipp
+diff --git a/drivers/usb/gadget/udc/fotg210-udc.c b/drivers/usb/gadget/udc/fotg210-udc.c
+index fe9cf415f2f1..cec49294bac6 100644
+--- a/drivers/usb/gadget/udc/fotg210-udc.c
++++ b/drivers/usb/gadget/udc/fotg210-udc.c
+@@ -326,6 +326,7 @@ static void fotg210_wait_dma_done(struct fotg210_ep *ep)
+ static void fotg210_start_dma(struct fotg210_ep *ep,
+ 			struct fotg210_request *req)
+ {
++	struct device *dev = &ep->fotg210->gadget.dev;
+ 	dma_addr_t d;
+ 	u8 *buffer;
+ 	u32 length;
+@@ -348,10 +349,10 @@ static void fotg210_start_dma(struct fotg210_ep *ep,
+ 			length = req->req.length;
+ 	}
+ 
+-	d = dma_map_single(NULL, buffer, length,
++	d = dma_map_single(dev, buffer, length,
+ 			ep->dir_in ? DMA_TO_DEVICE : DMA_FROM_DEVICE);
+ 
+-	if (dma_mapping_error(NULL, d)) {
++	if (dma_mapping_error(dev, d)) {
+ 		pr_err("dma_mapping_error\n");
+ 		return;
+ 	}
+@@ -366,7 +367,7 @@ static void fotg210_start_dma(struct fotg210_ep *ep,
+ 	/* update actual transfer length */
+ 	req->req.actual += length;
+ 
+-	dma_unmap_single(NULL, d, length, DMA_TO_DEVICE);
++	dma_unmap_single(dev, d, length, DMA_TO_DEVICE);
+ }
+ 
+ static void fotg210_ep0_queue(struct fotg210_ep *ep,
+-- 
+2.20.1

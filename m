@@ -1,28 +1,37 @@
-From: "Ronald Bernstein" <authentic@mypanel.biz>
-Date: Sat, 09 Feb 2019 05:49:10 +0000
-Subject: wir bieten 2% Kredite12
-Message-Id: <20190209060719.B1D9B7410314@mail.gec.cl>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:55 +0000
+Subject: [PATCH 12/18] fotg210-udc: remove a bogus dma_sync_single_for_device call
+Message-Id: <20190201084801.10983-13-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-Sehr geehrte Damen und Herren,
+dma_map_single already transfers ownership to the device.
 
-Sie brauchen Geld? Sie sind auf der suche nach einem Darlehen? Seri=F6s und
-unkompliziert?
-Dann sind Sie hier bei uns genau richtig.
-Durch unsere jahrelange Erfahrung und kompetente Beratung sind wir
-Europaweit t=E4tig.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/usb/gadget/udc/fotg210-udc.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-Wir bieten jedem ein G=DCNSTIGES Darlehen zu TOP Konditionen an.
-Darlehnen zwischen 5000 CHF/Euro bis zu 20 Millionen CHF/Euro m=F6glich.
-Wir erheben dazu 2% Zinssatz.
-
-Lassen Sie sich von unserem kompetenten Team beraten.
-
-Z=F6gern Sie nicht und kontaktieren Sie mich unter f=FCr weitere Infos &
-Anfragen unter der eingeblendeten Email Adresse.
-
-Ich freue mich von Ihnen zu h=F6ren.
+diff --git a/drivers/usb/gadget/udc/fotg210-udc.c b/drivers/usb/gadget/udc/fotg210-udc.c
+index bc6abaea907d..fe9cf415f2f1 100644
+--- a/drivers/usb/gadget/udc/fotg210-udc.c
++++ b/drivers/usb/gadget/udc/fotg210-udc.c
+@@ -356,10 +356,6 @@ static void fotg210_start_dma(struct fotg210_ep *ep,
+ 		return;
+ 	}
+ 
+-	dma_sync_single_for_device(NULL, d, length,
+-				   ep->dir_in ? DMA_TO_DEVICE :
+-					DMA_FROM_DEVICE);
+-
+ 	fotg210_enable_dma(ep, d, length);
+ 
+ 	/* check if dma is done */
+-- 
+2.20.1

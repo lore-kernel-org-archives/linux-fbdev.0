@@ -1,100 +1,73 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 26 Feb 2019 11:19:45 +0000
-Subject: [PATCH 1/3] udlfb: delete the unused parameter for dlfb_handle_damage
-Message-Id: <20190226112121.910471265@twibright.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:57 +0000
+Subject: [PATCH 14/18] da8xx-fb: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-15-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-Remove the unused parameter "data" and unused variable "ret".
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
-
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/video/fbdev/udlfb.c |   21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ drivers/video/fbdev/da8xx-fb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Index: linux-4.19.25/drivers/video/fbdev/udlfb.c
-=================================--- linux-4.19.25.orig/drivers/video/fbdev/udlfb.c	2019-02-25 15:42:57.000000000 +0100
-+++ linux-4.19.25/drivers/video/fbdev/udlfb.c	2019-02-25 15:43:16.000000000 +0100
-@@ -594,10 +594,9 @@ static int dlfb_render_hline(struct dlfb
- 	return 0;
- }
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 43f2a4816860..ec62274b914b 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1097,9 +1097,9 @@ static int fb_remove(struct platform_device *dev)
  
--static int dlfb_handle_damage(struct dlfb_data *dlfb, int x, int y,
--	       int width, int height, char *data)
-+static int dlfb_handle_damage(struct dlfb_data *dlfb, int x, int y, int width, int height)
- {
--	int i, ret;
-+	int i;
- 	char *cmd;
- 	cycles_t start_cycles, end_cycles;
- 	int bytes_sent = 0;
-@@ -641,7 +640,7 @@ static int dlfb_handle_damage(struct dlf
- 			*cmd++ = 0xAF;
- 		/* Send partial buffer remaining before exiting */
- 		len = cmd - (char *) urb->transfer_buffer;
--		ret = dlfb_submit_urb(dlfb, urb, len);
-+		dlfb_submit_urb(dlfb, urb, len);
- 		bytes_sent += len;
- 	} else
- 		dlfb_urb_completion(urb);
-@@ -679,7 +678,7 @@ static ssize_t dlfb_ops_write(struct fb_
- 				(u32)info->var.yres);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+-		dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++		dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+ 				  par->p_palette_base);
+-		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
++		dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
+ 				  par->vram_phys);
+ 		pm_runtime_put_sync(&dev->dev);
+ 		pm_runtime_disable(&dev->dev);
+@@ -1425,7 +1425,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->vram_size = roundup(par->vram_size/8, ulcm);
+ 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
  
- 		dlfb_handle_damage(dlfb, 0, start, info->var.xres,
--			lines, info->screen_base);
-+			lines);
- 	}
+-	par->vram_virt = dma_alloc_coherent(NULL,
++	par->vram_virt = dma_alloc_coherent(par->dev,
+ 					    par->vram_size,
+ 					    &par->vram_phys,
+ 					    GFP_KERNEL | GFP_DMA);
+@@ -1446,7 +1446,7 @@ static int fb_probe(struct platform_device *device)
+ 		da8xx_fb_fix.line_length - 1;
  
- 	return result;
-@@ -695,7 +694,7 @@ static void dlfb_ops_copyarea(struct fb_
- 	sys_copyarea(info, area);
+ 	/* allocate palette buffer */
+-	par->v_palette_base = dma_alloc_coherent(NULL, PALETTE_SIZE,
++	par->v_palette_base = dma_alloc_coherent(par->dev, PALETTE_SIZE,
+ 						 &par->p_palette_base,
+ 						 GFP_KERNEL | GFP_DMA);
+ 	if (!par->v_palette_base) {
+@@ -1532,11 +1532,12 @@ static int fb_probe(struct platform_device *device)
+ 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
  
- 	dlfb_handle_damage(dlfb, area->dx, area->dy,
--			area->width, area->height, info->screen_base);
-+			area->width, area->height);
- }
+ err_release_pl_mem:
+-	dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+ 			  par->p_palette_base);
  
- static void dlfb_ops_imageblit(struct fb_info *info,
-@@ -706,7 +705,7 @@ static void dlfb_ops_imageblit(struct fb
- 	sys_imageblit(info, image);
+ err_release_fb_mem:
+-	dma_free_coherent(NULL, par->vram_size, par->vram_virt, par->vram_phys);
++	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
++		          par->vram_phys);
  
- 	dlfb_handle_damage(dlfb, image->dx, image->dy,
--			image->width, image->height, info->screen_base);
-+			image->width, image->height);
- }
- 
- static void dlfb_ops_fillrect(struct fb_info *info,
-@@ -717,7 +716,7 @@ static void dlfb_ops_fillrect(struct fb_
- 	sys_fillrect(info, rect);
- 
- 	dlfb_handle_damage(dlfb, rect->dx, rect->dy, rect->width,
--			      rect->height, info->screen_base);
-+			      rect->height);
- }
- 
- /*
-@@ -859,8 +858,7 @@ static int dlfb_ops_ioctl(struct fb_info
- 		if (area.y > info->var.yres)
- 			area.y = info->var.yres;
- 
--		dlfb_handle_damage(dlfb, area.x, area.y, area.w, area.h,
--			   info->screen_base);
-+		dlfb_handle_damage(dlfb, area.x, area.y, area.w, area.h);
- 	}
- 
- 	return 0;
-@@ -1065,8 +1063,7 @@ static int dlfb_ops_set_par(struct fb_in
- 			pix_framebuffer[i] = 0x37e6;
- 	}
- 
--	dlfb_handle_damage(dlfb, 0, 0, info->var.xres, info->var.yres,
--			   info->screen_base);
-+	dlfb_handle_damage(dlfb, 0, 0, info->var.xres, info->var.yres);
- 
- 	return 0;
- }
+ err_release_fb:
+ 	framebuffer_release(da8xx_fb_info);
+-- 
+2.20.1

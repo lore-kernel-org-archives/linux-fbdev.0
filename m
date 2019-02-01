@@ -1,101 +1,55 @@
-From: Yifeng Li <tomli@tomli.me>
-Date: Sat, 02 Feb 2019 06:16:41 +0000
-Subject: [PATCH 1/8] fbdev: sm712fb: update copyright headers.
-Message-Id: <20190202061648.30374-2-tomli@tomli.me>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:47 +0000
+Subject: [PATCH 04/18] au1000_eth: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-5-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190202061648.30374-1-tomli@tomli.me>
-In-Reply-To: <20190202061648.30374-1-tomli@tomli.me>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
-My implementation of 2D acceleration used the original buggy code
-in the staging tree (which had been removed due to a critical bug
-soon after its submission), also, OpenBSD's smfb.c driver written
-by Miodrag Vallat was another important source of reference, a
-hunk of hardware register definitions are taken verbatim.
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
-This commit appends my name to the list of authors, and included
-Miodrag Vallat's name and the ISC license of the original smfb.c
-driver.
-
-Signed-off-by: Yifeng Li <tomli@tomli.me>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/video/fbdev/sm712.h   | 20 ++++++++++++++++++++
- drivers/video/fbdev/sm712fb.c | 20 ++++++++++++++++++++
- 2 files changed, 40 insertions(+)
+ drivers/net/ethernet/amd/au1000_eth.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm712.h b/drivers/video/fbdev/sm712.h
-index aad1cc4be34a..99077e91ae10 100644
---- a/drivers/video/fbdev/sm712.h
-+++ b/drivers/video/fbdev/sm712.h
-@@ -8,9 +8,29 @@
-  * Copyright (C) 2009 Lemote, Inc.
-  * Author: Wu Zhangjin, wuzhangjin@gmail.com
-  *
-+ * Copyright (C) 2014, 2019 Yifeng Li.
-+ * Author:   Yifeng Li <tomli@tomli.me>
-+ *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License. See the file COPYING in the main directory of this archive for
-  *  more details.
-+ *
-+ *  This file incorporates work covered by the following copyright and
-+ *  permission notice:
-+ *
-+ *    Copyright (c) 2009, 2010 Miodrag Vallat.
-+ *
-+ *    Permission to use, copy, modify, and distribute this software for any
-+ *    purpose with or without fee is hereby granted, provided that the above
-+ *    copyright notice and this permission notice appear in all copies.
-+ *
-+ *    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-+ *    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-+ *    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-+ *    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-+ *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-+ *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-+ *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-  */
+diff --git a/drivers/net/ethernet/amd/au1000_eth.c b/drivers/net/ethernet/amd/au1000_eth.c
+index e833d1b3fe18..e5073aeea06a 100644
+--- a/drivers/net/ethernet/amd/au1000_eth.c
++++ b/drivers/net/ethernet/amd/au1000_eth.c
+@@ -1167,7 +1167,7 @@ static int au1000_probe(struct platform_device *pdev)
+ 	/* Allocate the data buffers
+ 	 * Snooping works fine with eth on all au1xxx
+ 	 */
+-	aup->vaddr = (u32)dma_alloc_attrs(NULL, MAX_BUF_SIZE *
++	aup->vaddr = (u32)dma_alloc_attrs(&pdev->dev, MAX_BUF_SIZE *
+ 					  (NUM_TX_BUFFS + NUM_RX_BUFFS),
+ 					  &aup->dma_addr, 0,
+ 					  DMA_ATTR_NON_CONSISTENT);
+@@ -1349,7 +1349,7 @@ static int au1000_probe(struct platform_device *pdev)
+ err_remap2:
+ 	iounmap(aup->mac);
+ err_remap1:
+-	dma_free_attrs(NULL, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
++	dma_free_attrs(&pdev->dev, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
+ 			(void *)aup->vaddr, aup->dma_addr,
+ 			DMA_ATTR_NON_CONSISTENT);
+ err_vaddr:
+@@ -1383,7 +1383,7 @@ static int au1000_remove(struct platform_device *pdev)
+ 		if (aup->tx_db_inuse[i])
+ 			au1000_ReleaseDB(aup, aup->tx_db_inuse[i]);
  
- #define FB_ACCEL_SMI_LYNX 88
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 502d0de2feec..8d63bbfef9ea 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -11,11 +11,31 @@
-  * Copyright (C) 2011 Igalia, S.L.
-  * Author:   Javier M. Mellid <jmunhoz@igalia.com>
-  *
-+ * Copyright (C) 2014, 2019 Yifeng Li.
-+ * Author:   Yifeng Li <tomli@tomli.me>
-+ *
-  * This file is subject to the terms and conditions of the GNU General Public
-  * License. See the file COPYING in the main directory of this archive for
-  * more details.
-  *
-  * Framebuffer driver for Silicon Motion SM710, SM712, SM721 and SM722 chips
-+ *
-+ * This file incorporates work covered by the following copyright and
-+ * permission notice:
-+ *
-+ *    Copyright (c) 2009, 2010 Miodrag Vallat.
-+ *
-+ *    Permission to use, copy, modify, and distribute this software for any
-+ *    purpose with or without fee is hereby granted, provided that the above
-+ *    copyright notice and this permission notice appear in all copies.
-+ *
-+ *    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-+ *    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-+ *    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-+ *    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-+ *    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-+ *    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-+ *    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-  */
+-	dma_free_attrs(NULL, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
++	dma_free_attrs(&pdev->dev, MAX_BUF_SIZE * (NUM_TX_BUFFS + NUM_RX_BUFFS),
+ 			(void *)aup->vaddr, aup->dma_addr,
+ 			DMA_ATTR_NON_CONSISTENT);
  
- #include <linux/io.h>
 -- 
 2.20.1

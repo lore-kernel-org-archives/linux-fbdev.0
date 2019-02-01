@@ -1,51 +1,46 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Feb 2019 17:02:17 +0000
-Subject: Re: [PATCH] fbcon: use kvmalloc() for scrollback buffer
-Message-Id: <ed53d034-9592-76e2-3122-dc2480890527@samsung.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Fri, 01 Feb 2019 08:47:53 +0000
+Subject: [PATCH 10/18] smc911x: pass struct device to DMA API functions
+Message-Id: <20190201084801.10983-11-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20181126100342epcas3p12a1e6505ff4b73375ac3fcf5d0355d3f@epcas3p1.samsung.com>
- <20181126100253.3299-1-khorenko@virtuozzo.com>
- <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
- <4eba60c6-4eb8-5a82-f394-307f835f41e1@virtuozzo.com>
-In-Reply-To: <4eba60c6-4eb8-5a82-f394-307f835f41e1@virtuozzo.com>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Konstantin Khorenko <khorenko@virtuozzo.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
+Cc: iommu@lists.linux-foundation.org
 
+The DMA API generally relies on a struct device to work properly, and
+only barely works without one for legacy reasons.  Pass the easily
+available struct device from the platform_device to remedy this.
 
-On 12/21/2018 11:58 AM, Konstantin Khorenko wrote:
-> Hi Bartlomiej,
-> 
-> On 12/20/2018 07:21 PM, Bartlomiej Zolnierkiewicz wrote:
->> On 11/26/2018 11:02 AM, Konstantin Khorenko wrote:
->>> Scrollback frame buffer is rather big - 32K,
->>> so it requires 3rd order page, so let's use kvmalloc() instead of
->>> ordinary kmalloc() for it.
->>
->> Is it actually safe to use non-contiguous memory for softback_buf?
-> 
-> Well, that's why we need a review. :)
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/net/ethernet/smsc/smc911x.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-:)
-
-> i've asked myself same question while fixing this,
-> i've dig sources a bit and did not find places when softback_buf is provided for DMA,
-> all other places seems to work with virtual addresses, so there should be no problem.
-> 
-> Even more i saw a function which mentions that softback might be non-contigious:
-> 
-> /* As we might be inside of softback, we may work with non-contiguous buffer,
->     that's why we have to use a separate routine. */
-> static void fbcon_invert_region(struct vc_data *vc, u16 * p, int cnt)
-> 
-> So i think it's safe to use kvmalloc() here.
-
-Patch queued for v5.1, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/net/ethernet/smsc/smc911x.c b/drivers/net/ethernet/smsc/smc911x.c
+index 8355dfbb8ec3..b550e624500d 100644
+--- a/drivers/net/ethernet/smsc/smc911x.c
++++ b/drivers/net/ethernet/smsc/smc911x.c
+@@ -1188,7 +1188,7 @@ smc911x_tx_dma_irq(void *data)
+ 
+ 	DBG(SMC_DEBUG_TX | SMC_DEBUG_DMA, dev, "TX DMA irq handler\n");
+ 	BUG_ON(skb = NULL);
+-	dma_unmap_single(NULL, tx_dmabuf, tx_dmalen, DMA_TO_DEVICE);
++	dma_unmap_single(lp->dev, tx_dmabuf, tx_dmalen, DMA_TO_DEVICE);
+ 	netif_trans_update(dev);
+ 	dev_kfree_skb_irq(skb);
+ 	lp->current_tx_skb = NULL;
+@@ -1219,7 +1219,7 @@ smc911x_rx_dma_irq(void *data)
+ 
+ 	DBG(SMC_DEBUG_FUNC, dev, "--> %s\n", __func__);
+ 	DBG(SMC_DEBUG_RX | SMC_DEBUG_DMA, dev, "RX DMA irq handler\n");
+-	dma_unmap_single(NULL, rx_dmabuf, rx_dmalen, DMA_FROM_DEVICE);
++	dma_unmap_single(lp->dev, rx_dmabuf, rx_dmalen, DMA_FROM_DEVICE);
+ 	BUG_ON(skb = NULL);
+ 	lp->current_rx_skb = NULL;
+ 	PRINT_PKT(skb->data, skb->len);
+-- 
+2.20.1

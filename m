@@ -1,20 +1,240 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:43 +0000
-Subject: don't pass a NULL struct device to DMA API functions
-Message-Id: <20190201084801.10983-1-hch@lst.de>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Fri, 01 Feb 2019 13:16:08 +0000
+Subject: Re: [alsa-devel] don't pass a NULL struct device to DMA API functions
+Message-Id: <s5ho97v8x9j.wl-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190201084801.10983-1-hch@lst.de>
+In-Reply-To: <20190201084801.10983-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: Christoph Hellwig <hch@lst.de>
+Cc: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, iommu@lists.linux-foundation.org
 
-We still have a few drivers which pass a NULL struct device pointer
-to DMA API functions, which generally is a bad idea as the API
-implementations rely on the device not only for ops selection, but
-also the dma mask and various other attributes.
+On Fri, 01 Feb 2019 09:47:43 +0100,
+Christoph Hellwig wrote:
+> 
+> We still have a few drivers which pass a NULL struct device pointer
+> to DMA API functions, which generally is a bad idea as the API
+> implementations rely on the device not only for ops selection, but
+> also the dma mask and various other attributes.
+> 
+> This series contains all easy conversions to pass a struct device,
+> besides that there also is some arch code that needs separate handling,
+> a driver that should not use the DMA API at all, and one that is
+> a complete basket case to be deal with separately.
 
-This series contains all easy conversions to pass a struct device,
-besides that there also is some arch code that needs separate handling,
-a driver that should not use the DMA API at all, and one that is
-a complete basket case to be deal with separately.
+Actually there are a bunch of ISA sound drivers that still call
+allocators with NULL device.
+
+The patch below should address it, although it's only compile-tested.
+
+
+thanks,
+
+Takashi
+
+-- 8< --
+From: Takashi Iwai <tiwai@suse.de>
+Subject: [PATCH] ALSA: isa: Avoid passing NULL to memory allocators
+
+We used to pass NULL to memory allocators for ISA devices due to
+historical reasons.  But we prefer rather a proper device object to be
+assigned, so let's fix it by replacing snd_dma_isa_data() call with
+card->dev reference, and kill snd_dma_isa_data() definition.
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ Documentation/sound/kernel-api/writing-an-alsa-driver.rst | 10 +++++-----
+ include/sound/memalloc.h                                  |  1 -
+ sound/isa/ad1816a/ad1816a_lib.c                           |  2 +-
+ sound/isa/cmi8330.c                                       |  2 +-
+ sound/isa/es1688/es1688_lib.c                             |  2 +-
+ sound/isa/es18xx.c                                        |  2 +-
+ sound/isa/gus/gus_pcm.c                                   |  4 ++--
+ sound/isa/sb/sb16_main.c                                  |  2 +-
+ sound/isa/sb/sb8_main.c                                   |  2 +-
+ sound/isa/sscape.c                                        |  7 ++++---
+ sound/isa/wss/wss_lib.c                                   |  2 +-
+ 11 files changed, 18 insertions(+), 18 deletions(-)
+
+diff --git a/Documentation/sound/kernel-api/writing-an-alsa-driver.rst b/Documentation/sound/kernel-api/writing-an-alsa-driver.rst
+index 7c2f2032d30a..6b154dbb02cc 100644
+--- a/Documentation/sound/kernel-api/writing-an-alsa-driver.rst
++++ b/Documentation/sound/kernel-api/writing-an-alsa-driver.rst
+@@ -3520,14 +3520,14 @@ allocator will try to get an area as large as possible within the
+ given size.
+ 
+ The second argument (type) and the third argument (device pointer) are
+-dependent on the bus. In the case of the ISA bus, pass
+-:c:func:`snd_dma_isa_data()` as the third argument with
++dependent on the bus. For normal devices, pass the device pointer
++(typically identical as ``card->dev``) to the third argument with
+ ``SNDRV_DMA_TYPE_DEV`` type. For the continuous buffer unrelated to the
+ bus can be pre-allocated with ``SNDRV_DMA_TYPE_CONTINUOUS`` type and the
+ ``snd_dma_continuous_data(GFP_KERNEL)`` device pointer, where
+-``GFP_KERNEL`` is the kernel allocation flag to use. For the PCI
+-scatter-gather buffers, use ``SNDRV_DMA_TYPE_DEV_SG`` with
+-``snd_dma_pci_data(pci)`` (see the `Non-Contiguous Buffers`_
++``GFP_KERNEL`` is the kernel allocation flag to use. For the
++scatter-gather buffers, use ``SNDRV_DMA_TYPE_DEV_SG`` with the device
++pointer (see the `Non-Contiguous Buffers`_
+ section).
+ 
+ Once the buffer is pre-allocated, you can use the allocator in the
+diff --git a/include/sound/memalloc.h b/include/sound/memalloc.h
+index af3fa577fa06..1ac0dd82a916 100644
+--- a/include/sound/memalloc.h
++++ b/include/sound/memalloc.h
+@@ -37,7 +37,6 @@ struct snd_dma_device {
+ };
+ 
+ #define snd_dma_pci_data(pci)	(&(pci)->dev)
+-#define snd_dma_isa_data()	NULL
+ #define snd_dma_continuous_data(x)	((struct device *)(__force unsigned long)(x))
+ 
+ 
+diff --git a/sound/isa/ad1816a/ad1816a_lib.c b/sound/isa/ad1816a/ad1816a_lib.c
+index 61e8c7e524db..94b381a78e9e 100644
+--- a/sound/isa/ad1816a/ad1816a_lib.c
++++ b/sound/isa/ad1816a/ad1816a_lib.c
+@@ -693,7 +693,7 @@ int snd_ad1816a_pcm(struct snd_ad1816a *chip, int device)
+ 	snd_ad1816a_init(chip);
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      chip->card->dev,
+ 					      64*1024, chip->dma1 > 3 || chip->dma2 > 3 ? 128*1024 : 64*1024);
+ 
+ 	chip->pcm = pcm;
+diff --git a/sound/isa/cmi8330.c b/sound/isa/cmi8330.c
+index 7e5aa06414c4..1868b73aa49c 100644
+--- a/sound/isa/cmi8330.c
++++ b/sound/isa/cmi8330.c
+@@ -470,7 +470,7 @@ static int snd_cmi8330_pcm(struct snd_card *card, struct snd_cmi8330 *chip)
+ 	snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &chip->streams[SNDRV_PCM_STREAM_CAPTURE].ops);
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024, 128*1024);
+ 	chip->pcm = pcm;
+ 
+diff --git a/sound/isa/es1688/es1688_lib.c b/sound/isa/es1688/es1688_lib.c
+index 50cdce0e8946..da341969e650 100644
+--- a/sound/isa/es1688/es1688_lib.c
++++ b/sound/isa/es1688/es1688_lib.c
+@@ -746,7 +746,7 @@ int snd_es1688_pcm(struct snd_card *card, struct snd_es1688 *chip, int device)
+ 	chip->pcm = pcm;
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024, 64*1024);
+ 	return 0;
+ }
+diff --git a/sound/isa/es18xx.c b/sound/isa/es18xx.c
+index 77aa9a27fb3b..07abc7f7840c 100644
+--- a/sound/isa/es18xx.c
++++ b/sound/isa/es18xx.c
+@@ -1717,7 +1717,7 @@ static int snd_es18xx_pcm(struct snd_card *card, int device)
+         chip->pcm = pcm;
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024,
+ 					      chip->dma1 > 3 || chip->dma2 > 3 ? 128*1024 : 64*1024);
+ 	return 0;
+diff --git a/sound/isa/gus/gus_pcm.c b/sound/isa/gus/gus_pcm.c
+index 131b28997e1d..b9efc6dff45d 100644
+--- a/sound/isa/gus/gus_pcm.c
++++ b/sound/isa/gus/gus_pcm.c
+@@ -891,7 +891,7 @@ int snd_gf1_pcm_new(struct snd_gus_card *gus, int pcm_dev, int control_index)
+ 
+ 	for (substream = pcm->streams[SNDRV_PCM_STREAM_PLAYBACK].substream; substream; substream = substream->next)
+ 		snd_pcm_lib_preallocate_pages(substream, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024, gus->gf1.dma1 > 3 ? 128*1024 : 64*1024);
+ 	
+ 	pcm->info_flags = 0;
+@@ -901,7 +901,7 @@ int snd_gf1_pcm_new(struct snd_gus_card *gus, int pcm_dev, int control_index)
+ 		if (gus->gf1.dma2 = gus->gf1.dma1)
+ 			pcm->info_flags |= SNDRV_PCM_INFO_HALF_DUPLEX;
+ 		snd_pcm_lib_preallocate_pages(pcm->streams[SNDRV_PCM_STREAM_CAPTURE].substream,
+-					      SNDRV_DMA_TYPE_DEV, snd_dma_isa_data(),
++					      SNDRV_DMA_TYPE_DEV, card->dev,
+ 					      64*1024, gus->gf1.dma2 > 3 ? 128*1024 : 64*1024);
+ 	}
+ 	strcpy(pcm->name, pcm->id);
+diff --git a/sound/isa/sb/sb16_main.c b/sound/isa/sb/sb16_main.c
+index 981d65d122b6..473ec74ae48c 100644
+--- a/sound/isa/sb/sb16_main.c
++++ b/sound/isa/sb/sb16_main.c
+@@ -889,7 +889,7 @@ int snd_sb16dsp_pcm(struct snd_sb *chip, int device)
+ 	}
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024, 128*1024);
+ 	return 0;
+ }
+diff --git a/sound/isa/sb/sb8_main.c b/sound/isa/sb/sb8_main.c
+index 8288fae90085..97645a732a71 100644
+--- a/sound/isa/sb/sb8_main.c
++++ b/sound/isa/sb/sb8_main.c
+@@ -610,7 +610,7 @@ int snd_sb8dsp_pcm(struct snd_sb *chip, int device)
+ 	if (chip->dma8 > 3 || chip->dma16 >= 0)
+ 		max_prealloc = 128 * 1024;
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      card->dev,
+ 					      64*1024, max_prealloc);
+ 
+ 	return 0;
+diff --git a/sound/isa/sscape.c b/sound/isa/sscape.c
+index 733adee5afbf..8181db4db019 100644
+--- a/sound/isa/sscape.c
++++ b/sound/isa/sscape.c
+@@ -167,12 +167,13 @@ static inline struct soundscape *get_card_soundscape(struct snd_card *c)
+  * I think this means that the memory has to map to
+  * contiguous pages of physical memory.
+  */
+-static struct snd_dma_buffer *get_dmabuf(struct snd_dma_buffer *buf,
++static struct snd_dma_buffer *get_dmabuf(struct soundscape *s,
++					 struct snd_dma_buffer *buf,
+ 					 unsigned long size)
+ {
+ 	if (buf) {
+ 		if (snd_dma_alloc_pages_fallback(SNDRV_DMA_TYPE_DEV,
+-						 snd_dma_isa_data(),
++						 s->chip->card->dev,
+ 						 size, buf) < 0) {
+ 			snd_printk(KERN_ERR "sscape: Failed to allocate "
+ 					    "%lu bytes for DMA\n",
+@@ -443,7 +444,7 @@ static int upload_dma_data(struct soundscape *s, const unsigned char *data,
+ 	int ret;
+ 	unsigned char val;
+ 
+-	if (!get_dmabuf(&dma, PAGE_ALIGN(32 * 1024)))
++	if (!get_dmabuf(s, &dma, PAGE_ALIGN(32 * 1024)))
+ 		return -ENOMEM;
+ 
+ 	spin_lock_irqsave(&s->lock, flags);
+diff --git a/sound/isa/wss/wss_lib.c b/sound/isa/wss/wss_lib.c
+index b11ef97bce1b..0dfb8065b403 100644
+--- a/sound/isa/wss/wss_lib.c
++++ b/sound/isa/wss/wss_lib.c
+@@ -1942,7 +1942,7 @@ int snd_wss_pcm(struct snd_wss *chip, int device)
+ 	strcpy(pcm->name, snd_wss_chip_id(chip));
+ 
+ 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
+-					      snd_dma_isa_data(),
++					      chip->card->dev,
+ 					      64*1024, chip->dma1 > 3 || chip->dma2 > 3 ? 128*1024 : 64*1024);
+ 
+ 	chip->pcm = pcm;
+-- 
+2.16.4

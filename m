@@ -1,39 +1,69 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Feb 2019 17:06:43 +0000
-Subject: Re: [PATCH] video: offb: annotate implicit fall throughs
-Message-Id: <efc378bc-a779-7fa3-209c-a331b1055ae6@samsung.com>
+From: Yifeng Li <tomli@tomli.me>
+Date: Sat, 02 Feb 2019 06:16:42 +0000
+Subject: [PATCH 2/8] fbdev: sm712fb: use type "u8" for 8-bit I/O.
+Message-Id: <20190202061648.30374-3-tomli@tomli.me>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190114204044.20528-1-malat@debian.org>
-        <CGME20190114215109epcas3p2eb2c3b3f91cc036b9604b88520410056@epcas3p2.samsung.com>
-        <15854ad8-7bd5-ede7-6ce4-00122d6ba279@embeddedor.com>
-In-Reply-To: <15854ad8-7bd5-ede7-6ce4-00122d6ba279@embeddedor.com>
+References: <20190202061648.30374-1-tomli@tomli.me>
+In-Reply-To: <20190202061648.30374-1-tomli@tomli.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Mathieu Malaterre <malat@debian.org>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+This commit converts "unsigned int" and "int" in I/O wrappers
+to "u8". It improves readability since it's consistent with
+the prototypes of readb() and writeb(). More importantly, it
+reduces readers' confusion, since the upcoming 2D acceleration
+code will use a different wordsize.
 
-On 01/14/2019 10:50 PM, Gustavo A. R. Silva wrote:
-> 
-> 
-> On 1/14/19 2:40 PM, Mathieu Malaterre wrote:
->> There is a plan to build the kernel with -Wimplicit-fallthrough and
->> these places in the code produced warnings (W=1). Fix them up.
->>
->> This commit remove the following warnings:
->>
->>    drivers/video/fbdev/offb.c:211:5: warning: this statement may fall through [-Wimplicit-fallthrough=]
->>    drivers/video/fbdev/offb.c:142:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
->>
->> Signed-off-by: Mathieu Malaterre <malat@debian.org>
-> 
-> Acked-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Signed-off-by: Yifeng Li <tomli@tomli.me>
+---
+ drivers/video/fbdev/sm712.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-Patch queued for v5.1, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sm712.h b/drivers/video/fbdev/sm712.h
+index 99077e91ae10..942019dc816a 100644
+--- a/drivers/video/fbdev/sm712.h
++++ b/drivers/video/fbdev/sm712.h
+@@ -63,19 +63,19 @@ extern void __iomem *smtc_regbaseaddress;
+ #define SIZE_CR30_CR4D      (0x4D - 0x30 + 1)
+ #define SIZE_CR90_CRA7      (0xA7 - 0x90 + 1)
+ 
+-static inline void smtc_crtcw(int reg, int val)
++static inline void smtc_crtcw(u8 reg, u8 val)
+ {
+ 	smtc_mmiowb(reg, 0x3d4);
+ 	smtc_mmiowb(val, 0x3d5);
+ }
+ 
+-static inline void smtc_grphw(int reg, int val)
++static inline void smtc_grphw(u8 reg, u8 val)
+ {
+ 	smtc_mmiowb(reg, 0x3ce);
+ 	smtc_mmiowb(val, 0x3cf);
+ }
+ 
+-static inline void smtc_attrw(int reg, int val)
++static inline void smtc_attrw(u8 reg, u8 val)
+ {
+ 	smtc_mmiorb(0x3da);
+ 	smtc_mmiowb(reg, 0x3c0);
+@@ -83,13 +83,13 @@ static inline void smtc_attrw(int reg, int val)
+ 	smtc_mmiowb(val, 0x3c0);
+ }
+ 
+-static inline void smtc_seqw(int reg, int val)
++static inline void smtc_seqw(u8 reg, u8 val)
+ {
+ 	smtc_mmiowb(reg, 0x3c4);
+ 	smtc_mmiowb(val, 0x3c5);
+ }
+ 
+-static inline unsigned int smtc_seqr(int reg)
++static inline u8 smtc_seqr(u8 reg)
+ {
+ 	smtc_mmiowb(reg, 0x3c4);
+ 	return smtc_mmiorb(0x3c5);
+-- 
+2.20.1

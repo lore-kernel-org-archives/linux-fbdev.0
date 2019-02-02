@@ -1,59 +1,36 @@
-From: Anders Roxell <anders.roxell@linaro.org>
-Date: Wed, 13 Feb 2019 08:47:21 +0000
-Subject: [PATCH] fbdev: omap2: fix warnings in dss core
-Message-Id: <20190213084721.29624-1-anders.roxell@linaro.org>
+From: Yifeng Li <tomli@tomli.me>
+Date: Sat, 02 Feb 2019 06:16:48 +0000
+Subject: [PATCH 8/8] MAINTAINERS: sm712fb: list myself as one maintainer.
+Message-Id: <20190202061648.30374-9-tomli@tomli.me>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190202061648.30374-1-tomli@tomli.me>
+In-Reply-To: <20190202061648.30374-1-tomli@tomli.me>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: b.zolnierkie@samsung.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Andrew Morton <akpm@linux-foundation.org>, Nicolas Ferre <nicolas.ferre@microchip.com>, Arnd Bergmann <arnd@arndb.de>
 
-Commit 60d2fa0dad06 ("fbdev: omap2: no need to check return value of
-debugfs_create functions") changed the declaration of the return value
-of function dss_debugfs_create_file() and the following two warnings
-appeared:
+I have working on the sm712fb driver for a while and have some familiarity
+with this hardware, I'll be helping working on and testing problems of this
+driver, so add myself to the MAINTAINERS file.
 
-drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘dss_debugfs_create_file’:
-drivers/video/fbdev/omap2/omapfb/dss/core.c:139:9: warning: ‘return’ with a value,
- in function returning void
-  return 0;
-         ^
-drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘omap_dss_probe’:
-drivers/video/fbdev/omap2/omapfb/dss/core.c:172:6: warning: unused variable ‘r’
- [-Wunused-variable]
-  int r;
-      ^
-
-Rework so function dss_debugfs_create_file() that is declared to return
-void don't 'return 0' and remove the declaration of the unused variable
-'r'.
-
-Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+Signed-off-by: Yifeng Li <tomli@tomli.me>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/core.c | 3 ---
- 1 file changed, 3 deletions(-)
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
-index 7e6a3eb266d0..b5956a1a30d4 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
-@@ -136,7 +136,6 @@ static inline void dss_uninitialize_debugfs(void)
- }
- void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
- {
--	return 0;
- }
- #endif /* CONFIG_FB_OMAP2_DSS_DEBUGFS */
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 51029a425dbe..d62adb2caa87 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -13838,6 +13838,7 @@ F:	drivers/input/touchscreen/silead.c
+ F:	drivers/platform/x86/touchscreen_dmi.c
  
-@@ -169,8 +168,6 @@ static struct notifier_block omap_dss_pm_notif_block = {
- 
- static int __init omap_dss_probe(struct platform_device *pdev)
- {
--	int r;
--
- 	core.pdev = pdev;
- 
- 	dss_features_init(omapdss_get_version());
+ SILICON MOTION SM712 FRAME BUFFER DRIVER
++M:	Tom Li <tomli@tomli.me>
+ M:	Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+ M:	Teddy Wang <teddy.wang@siliconmotion.com>
+ M:	Sudip Mukherjee <sudip.mukherjee@codethink.co.uk>
 -- 
-2.19.2
+2.20.1

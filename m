@@ -1,147 +1,30 @@
-From: Mikulas Patocka <mpatocka@redhat.com>
-Date: Tue, 26 Feb 2019 11:19:47 +0000
-Subject: [PATCH 3/3] dlfb: introduce a rendering mutex
-Message-Id: <20190226112122.413085116@twibright.com>
+From: "Mrs. Tuna Shamma" <kevi@ono.com>
+Date: Tue, 05 Feb 2019 11:48:09 +0000
+Subject: My Dear Friend,
+Message-Id: <16032122.1842971549367289097.JavaMail.defaultUser@defaultHost>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev@vger.kernel.org
 
-Rendering calls may be done simultaneously from the workqueue,
-dlfb_ops_write, dlfb_ops_ioctl, dlfb_ops_set_par and dlfb_dpy_deferred_io.
-The code is robust enough so that it won't crash on concurrent rendering.
 
-However, concurrent rendering may cause display corruption if the same
-pixel is simultaneously being rendered. In order to avoid this corruption,
-this patch adds a mutex around the rendering calls.
+    My Dear Friend,
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-Cc: stable@vger.kernel.org
+    Am Mrs. Tuna Shamma; I work in one of the prime bank here.
+    i want the bank to transfer the money left by most of the greedy
+    African Politicians into your account,
+    they used our bank to launder money overseas through the
+    help of their Political advisers. Most of the funds which they
+    transferred out of the shores of Africa were gold and oil money 
+that
+    was supposed to have been used to develop the continent.
 
----
- drivers/video/fbdev/udlfb.c |   41 ++++++++++++++++++++++++++++++-----------
- include/video/udlfb.h       |    1 +
- 2 files changed, 31 insertions(+), 11 deletions(-)
-
-Index: linux-4.19.25/drivers/video/fbdev/udlfb.c
-=================================--- linux-4.19.25.orig/drivers/video/fbdev/udlfb.c	2019-02-25 16:24:05.000000000 +0100
-+++ linux-4.19.25/drivers/video/fbdev/udlfb.c	2019-02-25 16:27:35.000000000 +0100
-@@ -596,7 +596,7 @@ static int dlfb_render_hline(struct dlfb
- 
- static int dlfb_handle_damage(struct dlfb_data *dlfb, int x, int y, int width, int height)
- {
--	int i;
-+	int i, ret;
- 	char *cmd;
- 	cycles_t start_cycles, end_cycles;
- 	int bytes_sent = 0;
-@@ -606,21 +606,29 @@ static int dlfb_handle_damage(struct dlf
- 
- 	start_cycles = get_cycles();
- 
-+	mutex_lock(&dlfb->render_mutex);
-+
- 	aligned_x = DL_ALIGN_DOWN(x, sizeof(unsigned long));
- 	width = DL_ALIGN_UP(width + (x-aligned_x), sizeof(unsigned long));
- 	x = aligned_x;
- 
- 	if ((width <= 0) ||
- 	    (x + width > dlfb->info->var.xres) ||
--	    (y + height > dlfb->info->var.yres))
--		return -EINVAL;
-+	    (y + height > dlfb->info->var.yres)) {
-+		ret = -EINVAL;
-+		goto unlock_ret;
-+	}
- 
--	if (!atomic_read(&dlfb->usb_active))
--		return 0;
-+	if (!atomic_read(&dlfb->usb_active)) {
-+		ret = 0;
-+		goto unlock_ret;
-+	}
- 
- 	urb = dlfb_get_urb(dlfb);
--	if (!urb)
--		return 0;
-+	if (!urb) {
-+		ret = 0;
-+		goto unlock_ret;
-+	}
- 	cmd = urb->transfer_buffer;
- 
- 	for (i = y; i < y + height ; i++) {
-@@ -654,7 +662,11 @@ error:
- 		    >> 10)), /* Kcycles */
- 		   &dlfb->cpu_kcycles_used);
- 
--	return 0;
-+	ret = 0;
-+
-+unlock_ret:
-+	mutex_unlock(&dlfb->render_mutex);
-+	return ret;
- }
- 
- static void dlfb_init_damage(struct dlfb_data *dlfb)
-@@ -782,17 +794,19 @@ static void dlfb_dpy_deferred_io(struct
- 	int bytes_identical = 0;
- 	int bytes_rendered = 0;
- 
-+	mutex_lock(&dlfb->render_mutex);
-+
- 	if (!fb_defio)
--		return;
-+		goto unlock_ret;
- 
- 	if (!atomic_read(&dlfb->usb_active))
--		return;
-+		goto unlock_ret;
- 
- 	start_cycles = get_cycles();
- 
- 	urb = dlfb_get_urb(dlfb);
- 	if (!urb)
--		return;
-+		goto unlock_ret;
- 
- 	cmd = urb->transfer_buffer;
- 
-@@ -825,6 +839,8 @@ error:
- 	atomic_add(((unsigned int) ((end_cycles - start_cycles)
- 		    >> 10)), /* Kcycles */
- 		   &dlfb->cpu_kcycles_used);
-+unlock_ret:
-+	mutex_unlock(&dlfb->render_mutex);
- }
- 
- static int dlfb_get_edid(struct dlfb_data *dlfb, char *edid, int len)
-@@ -986,6 +1002,8 @@ static void dlfb_ops_destroy(struct fb_i
- 
- 	cancel_work_sync(&dlfb->damage_work);
- 
-+	mutex_destroy(&dlfb->render_mutex);
-+
- 	if (info->cmap.len != 0)
- 		fb_dealloc_cmap(&info->cmap);
- 	if (info->monspecs.modedb)
-@@ -1682,6 +1700,7 @@ static int dlfb_usb_probe(struct usb_int
- 	dlfb->ops = dlfb_ops;
- 	info->fbops = &dlfb->ops;
- 
-+	mutex_init(&dlfb->render_mutex);
- 	dlfb_init_damage(dlfb);
- 	spin_lock_init(&dlfb->damage_lock);
- 	INIT_WORK(&dlfb->damage_work, dlfb_damage_work);
-Index: linux-4.19.25/include/video/udlfb.h
-=================================--- linux-4.19.25.orig/include/video/udlfb.h	2019-02-25 16:24:05.000000000 +0100
-+++ linux-4.19.25/include/video/udlfb.h	2019-02-25 16:24:05.000000000 +0100
-@@ -48,6 +48,7 @@ struct dlfb_data {
- 	int base8;
- 	u32 pseudo_palette[256];
- 	int blank_mode; /*one of FB_BLANK_ */
-+	struct mutex render_mutex;
- 	int damage_x;
- 	int damage_y;
- 	int damage_x2;
+    can you invest this money and also help the poor ? the amount
+    value at ($6.5million Dollars), left in his account still 
+unclaimed.
+    More details will be giving to you if you are interested
+    Awaiting to hear from you,Thank with my regard.
+    Mrs. Tuna Shamma
+    Telex Manager
+    (B.O.A) Bank.

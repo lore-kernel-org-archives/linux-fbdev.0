@@ -1,51 +1,49 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Mon, 11 Feb 2019 13:28:36 +0000
-Subject: [PATCH 3/3] pxa3xx-gcu: pass struct device to dma_mmap_coherent
-Message-Id: <20190211132836.29594-4-hch@lst.de>
+From: Jin Chen <nobijinc@gmail.com>
+Date: Tue, 05 Feb 2019 11:01:13 +0000
+Subject: [PATCH] staging: sm750fb: Rename setDisplayControl to set_display_control - style
+Message-Id: <20190205110113.GA3642@jin>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190211132836.29594-1-hch@lst.de>
-In-Reply-To: <20190211132836.29594-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
 
-Just like we do for all other DMA operations.
+Fix checkpatch.pl warning:
+    CHECK: Avoid CamelCase: <setDisplayControl>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Jin Chen <nobijinc@gmail.com>
 ---
- drivers/video/fbdev/pxa3xx-gcu.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750_display.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 69cfb337c857..047a2fa4b87e 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -96,6 +96,7 @@ struct pxa3xx_gcu_batch {
- };
+diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+index 1273e7d..f38051e 100644
+--- a/drivers/staging/sm750fb/ddk750_display.c
++++ b/drivers/staging/sm750fb/ddk750_display.c
+@@ -5,7 +5,7 @@
+ #include "ddk750_power.h"
+ #include "ddk750_dvi.h"
  
- struct pxa3xx_gcu_priv {
-+	struct device		 *dev;
- 	void __iomem		 *mmio_base;
- 	struct clk		 *clk;
- 	struct pxa3xx_gcu_shared *shared;
-@@ -493,7 +494,7 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
- 		if (size != SHARED_SIZE)
- 			return -EINVAL;
+-static void setDisplayControl(int ctrl, int disp_state)
++static void set_display_control(int ctrl, int disp_state)
+ {
+ 	/* state != 0 means turn on both timing & plane en_bit */
+ 	unsigned long reg, val, reserved;
+@@ -137,12 +137,12 @@ void ddk750_setLogicalDispOut(enum disp_output output)
  
--		return dma_mmap_coherent(NULL, vma,
-+		return dma_mmap_coherent(priv->dev, vma,
- 			priv->shared, priv->shared_phys, size);
+ 	if (output & PRI_TP_USAGE) {
+ 		/* set primary timing and plane en_bit */
+-		setDisplayControl(0, (output & PRI_TP_MASK) >> PRI_TP_OFFSET);
++		set_display_control(0, (output & PRI_TP_MASK) >> PRI_TP_OFFSET);
+ 	}
  
- 	case SHARED_SIZE >> PAGE_SHIFT:
-@@ -670,6 +671,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
+ 	if (output & SEC_TP_USAGE) {
+ 		/* set secondary timing and plane en_bit*/
+-		setDisplayControl(1, (output & SEC_TP_MASK) >> SEC_TP_OFFSET);
++		set_display_control(1, (output & SEC_TP_MASK) >> SEC_TP_OFFSET);
+ 	}
  
- 	platform_set_drvdata(pdev, priv);
- 	priv->resource_mem = r;
-+	priv->dev = dev;
- 	pxa3xx_gcu_reset(priv);
- 	pxa3xx_gcu_init_debug_timer(priv);
- 
+ 	if (output & PNL_SEQ_USAGE) {
 -- 
-2.20.1
+1.9.1

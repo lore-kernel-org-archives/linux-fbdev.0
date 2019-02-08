@@ -1,37 +1,35 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 15 Feb 2019 08:58:58 +0000
-Subject: [PATCH 1/4] fbdev: atafb: Stop printing virtual screen_base
-Message-Id: <20190215085901.21479-2-geert@linux-m68k.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 08 Feb 2019 17:27:27 +0000
+Subject: Re: [PATCH] fbdev: mbx: fix up debugfs file creation
+Message-Id: <0d953f69-f112-6e1b-0ba3-02ce56e8d1c5@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190215085901.21479-1-geert@linux-m68k.org>
-In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
+References: <CGME20190122152306epcas1p4b57a2364aab23e4963f8c578ca73a197@epcas1p4.samsung.com>
+        <20190122152151.16139-16-gregkh@linuxfoundation.org>
+In-Reply-To: <20190122152151.16139-16-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Schmitz <schmitzmic@gmail.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-Printing (hashed) virtual addresses is useless.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/fbdev/atafb.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On 01/22/2019 04:21 PM, Greg Kroah-Hartman wrote:
+> There is no need to keep the dentries around for the individual debugfs
+> files, just delete the whole directory all at once at shutdown instead.
+> 
+> This also fixes a tiny memory leak where the memory for the pointers to
+> the file dentries was never freed when the device shut down, as well as
+> making the logic of the code a lot simpler.
+> 
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index fcd2dd670a658fe3..e9d31a4299ee9901 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -3175,8 +3175,8 @@ int __init atafb_init(void)
- 			kernel_set_cachemode(screen_base, screen_len,
- 					     IOMAP_WRITETHROUGH);
- 		}
--		printk("atafb: screen_base %p phys_screen_base %lx screen_len %d\n",
--			screen_base, phys_screen_base, screen_len);
-+		printk("atafb: phys_screen_base %lx screen_len %d\n",
-+		       phys_screen_base, screen_len);
- #ifdef ATAFB_EXT
- 	} else {
- 		/* Map the video memory (physical address given) to somewhere
--- 
-2.17.1
+Patch queued for v5.1, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

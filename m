@@ -1,108 +1,47 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 15 Feb 2019 08:59:01 +0000
-Subject: [PATCH 4/4] fbdev: atafb: Modernize printing of kernel messages
-Message-Id: <20190215085901.21479-5-geert@linux-m68k.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 08 Feb 2019 17:41:42 +0000
+Subject: Re: [PATCH] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <16025871-3918-e9be-e6af-de9831cdc064@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190215085901.21479-1-geert@linux-m68k.org>
-In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
+References: <CGME20190128100446epcas2p24b13ff5ae2af639b66d4bcd4d4722799@epcas2p2.samsung.com>
+        <20190128100435.759-1-martink@posteo.de>
+In-Reply-To: <20190128100435.759-1-martink@posteo.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Schmitz <schmitzmic@gmail.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Martin Kepplinger <martink@posteo.de>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, daniel.vetter@ffwll.ch, manfred.schlaegl@ginzinger.com, linux-kernel@vger.kernel.org, Martin Kepplinger <martin.kepplinger@ginzinger.com>
 
-Now the driver has been converted to a platform driver, the legacy
-printk() calls without any log level can be replaced by proper dev_*()
-calls.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/video/fbdev/atafb.c | 25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+On 01/28/2019 11:04 AM, Martin Kepplinger wrote:
+> From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+> 
+> There is no clipping on the x or y axis for logos larger that the framebuffer
+> size. Therefore: a logo bigger than screen size leads to invalid memory access:
+> 
+> [    1.254664] Backtrace:
+> [    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+> [    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+> [    1.254774]  r4:c6a3e800
+> [    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+> [    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+> [    1.254852]  r4:c6808c00
+> [    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+> [    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+> [    1.254928]  r4:c6808c00
+> [    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+> [    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+> 
+> So prevent displaying a logo bigger than screen size and avoid invalid
+> memory access.
+> 
+> Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+> Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
 
-diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
-index 4db8166d11b30409..b986af2a80428003 100644
---- a/drivers/video/fbdev/atafb.c
-+++ b/drivers/video/fbdev/atafb.c
-@@ -3083,12 +3083,12 @@ static int __init atafb_probe(struct platform_device *pdev)
- 	if (fb_get_options("atafb", &option))
- 		return -ENODEV;
- 	atafb_setup(option);
--	printk("atafb_init: start\n");
-+	dev_dbg(&pdev->dev, "%s: start\n", __func__);
- 
- 	do {
- #ifdef ATAFB_EXT
- 		if (external_addr) {
--			printk("atafb_init: initializing external hw\n");
-+			dev_dbg(&pdev->dev, "initializing external hw\n");
- 			fbhw = &ext_switch;
- 			atafb_ops.fb_setcolreg = &ext_setcolreg;
- 			defmode = DEFMODE_EXT;
-@@ -3097,7 +3097,7 @@ static int __init atafb_probe(struct platform_device *pdev)
- #endif
- #ifdef ATAFB_TT
- 		if (ATARIHW_PRESENT(TT_SHIFTER)) {
--			printk("atafb_init: initializing TT hw\n");
-+			dev_dbg(&pdev->dev, "initializing TT hw\n");
- 			fbhw = &tt_switch;
- 			atafb_ops.fb_setcolreg = &tt_setcolreg;
- 			defmode = DEFMODE_TT;
-@@ -3106,7 +3106,7 @@ static int __init atafb_probe(struct platform_device *pdev)
- #endif
- #ifdef ATAFB_FALCON
- 		if (ATARIHW_PRESENT(VIDEL_SHIFTER)) {
--			printk("atafb_init: initializing Falcon hw\n");
-+			dev_dbg(&pdev->dev, "initializing Falcon hw\n");
- 			fbhw = &falcon_switch;
- 			atafb_ops.fb_setcolreg = &falcon_setcolreg;
- 			error = request_irq(IRQ_AUTO_4, falcon_vbl_switcher, 0,
-@@ -3121,7 +3121,7 @@ static int __init atafb_probe(struct platform_device *pdev)
- #ifdef ATAFB_STE
- 		if (ATARIHW_PRESENT(STND_SHIFTER) ||
- 		    ATARIHW_PRESENT(EXTD_SHIFTER)) {
--			printk("atafb_init: initializing ST/E hw\n");
-+			dev_dbg(&pdev->dev, "initializing ST/E hw\n");
- 			fbhw = &st_switch;
- 			atafb_ops.fb_setcolreg = &stste_setcolreg;
- 			defmode = DEFMODE_STE;
-@@ -3129,7 +3129,8 @@ static int __init atafb_probe(struct platform_device *pdev)
- 		}
- 		fbhw = &st_switch;
- 		atafb_ops.fb_setcolreg = &stste_setcolreg;
--		printk("Cannot determine video hardware; defaulting to ST(e)\n");
-+		dev_warn(&pdev->dev,
-+			 "Cannot determine video hardware; defaulting to ST(e)\n");
- #else /* ATAFB_STE */
- 		/* no default driver included */
- 		/* Nobody will ever see this message :-) */
-@@ -3169,8 +3170,8 @@ static int __init atafb_probe(struct platform_device *pdev)
- 			kernel_set_cachemode(screen_base, screen_len,
- 					     IOMAP_WRITETHROUGH);
- 		}
--		printk("atafb: phys_screen_base %lx screen_len %d\n",
--		       phys_screen_base, screen_len);
-+		dev_info(&pdev->dev, "phys_screen_base %lx screen_len %d\n",
-+			 phys_screen_base, screen_len);
- #ifdef ATAFB_EXT
- 	} else {
- 		/* Map the video memory (physical address given) to somewhere
-@@ -3217,12 +3218,12 @@ static int __init atafb_probe(struct platform_device *pdev)
- 	fb_alloc_cmap(&(fb_info.cmap), 1 << fb_info.var.bits_per_pixel, 0);
- 
- 
--	printk("Determined %dx%d, depth %d\n",
--	       fb_info.var.xres, fb_info.var.yres, fb_info.var.bits_per_pixel);
-+	dev_info(&pdev->dev, "Determined %dx%d, depth %d\n", fb_info.var.xres,
-+		 fb_info.var.yres, fb_info.var.bits_per_pixel);
- 	if ((fb_info.var.xres != fb_info.var.xres_virtual) ||
- 	    (fb_info.var.yres != fb_info.var.yres_virtual))
--		printk("   virtual %dx%d\n", fb_info.var.xres_virtual,
--		       fb_info.var.yres_virtual);
-+		dev_info(&pdev->dev, "   virtual %dx%d\n",
-+			 fb_info.var.xres_virtual, fb_info.var.yres_virtual);
- 
- 	if (register_framebuffer(&fb_info) < 0) {
- #ifdef ATAFB_EXT
--- 
-2.17.1
+Patch queued for v5.1, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

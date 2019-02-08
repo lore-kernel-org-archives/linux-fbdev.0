@@ -1,46 +1,51 @@
-From: <Nicolas.Ferre@microchip.com>
-Date: Fri, 01 Feb 2019 13:34:30 +0000
-Subject: Re: [PATCH 05/18] macb_main: pass struct device to DMA API functions
-Message-Id: <e23bc61b-0c62-486b-ee85-fcfd8d86fdcf@microchip.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 08 Feb 2019 17:02:17 +0000
+Subject: Re: [PATCH] fbcon: use kvmalloc() for scrollback buffer
+Message-Id: <ed53d034-9592-76e2-3122-dc2480890527@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
- <20190201084801.10983-6-hch@lst.de>
-In-Reply-To: <20190201084801.10983-6-hch@lst.de>
+References: <CGME20181126100342epcas3p12a1e6505ff4b73375ac3fcf5d0355d3f@epcas3p1.samsung.com>
+ <20181126100253.3299-1-khorenko@virtuozzo.com>
+ <a7f6bf30-5094-b669-126d-e4751c17dcbb@samsung.com>
+ <4eba60c6-4eb8-5a82-f394-307f835f41e1@virtuozzo.com>
+In-Reply-To: <4eba60c6-4eb8-5a82-f394-307f835f41e1@virtuozzo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: hch@lst.de, john@phrozen.org, vkoul@kernel.org, dmitry.tarnyagin@lockless.no, sudipm.mukherjee@gmail.com, balbi@kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-T24gMDEvMDIvMjAxOSBhdCAwOTo0NywgQ2hyaXN0b3BoIEhlbGx3aWcgd3JvdGU6DQo+IFRoZSBE
-TUEgQVBJIGdlbmVyYWxseSByZWxpZXMgb24gYSBzdHJ1Y3QgZGV2aWNlIHRvIHdvcmsgcHJvcGVy
-bHksIGFuZA0KPiBvbmx5IGJhcmVseSB3b3JrcyB3aXRob3V0IG9uZSBmb3IgbGVnYWN5IHJlYXNv
-bnMuICBQYXNzIHRoZSBlYXNpbHkNCj4gYXZhaWxhYmxlIHN0cnVjdCBkZXZpY2UgZnJvbSB0aGUg
-cGxhdGZvcm1fZGV2aWNlIHRvIHJlbWVkeSB0aGlzLg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQ2hy
-aXN0b3BoIEhlbGx3aWcgPGhjaEBsc3QuZGU+DQoNCkFja2VkLWJ5OiBOaWNvbGFzIEZlcnJlIDxu
-aWNvbGFzLmZlcnJlQG1pY3JvY2hpcC5jb20+DQoNCj4gLS0tDQo+ICAgZHJpdmVycy9uZXQvZXRo
-ZXJuZXQvY2FkZW5jZS9tYWNiX21haW4uYyB8IDggKysrKy0tLS0NCj4gICAxIGZpbGUgY2hhbmdl
-ZCwgNCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2Ry
-aXZlcnMvbmV0L2V0aGVybmV0L2NhZGVuY2UvbWFjYl9tYWluLmMgYi9kcml2ZXJzL25ldC9ldGhl
-cm5ldC9jYWRlbmNlL21hY2JfbWFpbi5jDQo+IGluZGV4IDJiMjg4MjYxNWU4Yi4uNjFhMjc5NjNm
-MWQxIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL25ldC9ldGhlcm5ldC9jYWRlbmNlL21hY2JfbWFp
-bi5jDQo+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2NhZGVuY2UvbWFjYl9tYWluLmMNCj4g
-QEAgLTM2NzMsOSArMzY3Myw5IEBAIHN0YXRpYyBuZXRkZXZfdHhfdCBhdDkxZXRoZXJfc3RhcnRf
-eG1pdChzdHJ1Y3Qgc2tfYnVmZiAqc2tiLA0KPiAgIAkJLyogU3RvcmUgcGFja2V0IGluZm9ybWF0
-aW9uICh0byBmcmVlIHdoZW4gVHggY29tcGxldGVkKSAqLw0KPiAgIAkJbHAtPnNrYiA9IHNrYjsN
-Cj4gICAJCWxwLT5za2JfbGVuZ3RoID0gc2tiLT5sZW47DQo+IC0JCWxwLT5za2JfcGh5c2FkZHIg
-PSBkbWFfbWFwX3NpbmdsZShOVUxMLCBza2ItPmRhdGEsIHNrYi0+bGVuLA0KPiAtCQkJCQkJCURN
-QV9UT19ERVZJQ0UpOw0KPiAtCQlpZiAoZG1hX21hcHBpbmdfZXJyb3IoTlVMTCwgbHAtPnNrYl9w
-aHlzYWRkcikpIHsNCj4gKwkJbHAtPnNrYl9waHlzYWRkciA9IGRtYV9tYXBfc2luZ2xlKCZscC0+
-cGRldi0+ZGV2LCBza2ItPmRhdGEsDQo+ICsJCQkJCQkgIHNrYi0+bGVuLCBETUFfVE9fREVWSUNF
-KTsNCj4gKwkJaWYgKGRtYV9tYXBwaW5nX2Vycm9yKCZscC0+cGRldi0+ZGV2LCBscC0+c2tiX3Bo
-eXNhZGRyKSkgew0KPiAgIAkJCWRldl9rZnJlZV9za2JfYW55KHNrYik7DQo+ICAgCQkJZGV2LT5z
-dGF0cy50eF9kcm9wcGVkKys7DQo+ICAgCQkJbmV0ZGV2X2VycihkZXYsICIlczogRE1BIG1hcHBp
-bmcgZXJyb3JcbiIsIF9fZnVuY19fKTsNCj4gQEAgLTM3NjUsNyArMzc2NSw3IEBAIHN0YXRpYyBp
-cnFyZXR1cm5fdCBhdDkxZXRoZXJfaW50ZXJydXB0KGludCBpcnEsIHZvaWQgKmRldl9pZCkNCj4g
-ICAJCWlmIChscC0+c2tiKSB7DQo+ICAgCQkJZGV2X2tmcmVlX3NrYl9pcnEobHAtPnNrYik7DQo+
-ICAgCQkJbHAtPnNrYiA9IE5VTEw7DQo+IC0JCQlkbWFfdW5tYXBfc2luZ2xlKE5VTEwsIGxwLT5z
-a2JfcGh5c2FkZHIsDQo+ICsJCQlkbWFfdW5tYXBfc2luZ2xlKCZscC0+cGRldi0+ZGV2LCBscC0+
-c2tiX3BoeXNhZGRyLA0KPiAgIAkJCQkJIGxwLT5za2JfbGVuZ3RoLCBETUFfVE9fREVWSUNFKTsN
-Cj4gICAJCQlkZXYtPnN0YXRzLnR4X3BhY2tldHMrKzsNCj4gICAJCQlkZXYtPnN0YXRzLnR4X2J5
-dGVzICs9IGxwLT5za2JfbGVuZ3RoOw0KPiANCg0KDQotLSANCk5pY29sYXMgRmVycmUNCg=
+
+On 12/21/2018 11:58 AM, Konstantin Khorenko wrote:
+> Hi Bartlomiej,
+> 
+> On 12/20/2018 07:21 PM, Bartlomiej Zolnierkiewicz wrote:
+>> On 11/26/2018 11:02 AM, Konstantin Khorenko wrote:
+>>> Scrollback frame buffer is rather big - 32K,
+>>> so it requires 3rd order page, so let's use kvmalloc() instead of
+>>> ordinary kmalloc() for it.
+>>
+>> Is it actually safe to use non-contiguous memory for softback_buf?
+> 
+> Well, that's why we need a review. :)
+
+:)
+
+> i've asked myself same question while fixing this,
+> i've dig sources a bit and did not find places when softback_buf is provided for DMA,
+> all other places seems to work with virtual addresses, so there should be no problem.
+> 
+> Even more i saw a function which mentions that softback might be non-contigious:
+> 
+> /* As we might be inside of softback, we may work with non-contiguous buffer,
+>     that's why we have to use a separate routine. */
+> static void fbcon_invert_region(struct vc_data *vc, u16 * p, int cnt)
+> 
+> So i think it's safe to use kvmalloc() here.
+
+Patch queued for v5.1, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

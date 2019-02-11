@@ -1,15 +1,15 @@
 From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:51 +0000
-Subject: [PATCH 08/18] moxart_ether: pass struct device to DMA API functions
-Message-Id: <20190201084801.10983-9-hch@lst.de>
+Date: Mon, 11 Feb 2019 13:28:34 +0000
+Subject: [PATCH 1/3] da8xx-fb: pass struct device to DMA API functions
+Message-Id: <20190211132836.29594-2-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
-In-Reply-To: <20190201084801.10983-1-hch@lst.de>
+References: <20190211132836.29594-1-hch@lst.de>
+In-Reply-To: <20190211132836.29594-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 
 The DMA API generally relies on a struct device to work properly, and
 only barely works without one for legacy reasons.  Pass the easily
@@ -17,67 +17,57 @@ available struct device from the platform_device to remedy this.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/net/ethernet/moxa/moxart_ether.c | 11 +++++++----
- drivers/net/ethernet/moxa/moxart_ether.h |  1 +
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/da8xx-fb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/ethernet/moxa/moxart_ether.c b/drivers/net/ethernet/moxa/moxart_ether.c
-index b34055ac476f..00dec0ffb11b 100644
---- a/drivers/net/ethernet/moxa/moxart_ether.c
-+++ b/drivers/net/ethernet/moxa/moxart_ether.c
-@@ -81,11 +81,13 @@ static void moxart_mac_free_memory(struct net_device *ndev)
- 				 priv->rx_buf_size, DMA_FROM_DEVICE);
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 43f2a4816860..ec62274b914b 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1097,9 +1097,9 @@ static int fb_remove(struct platform_device *dev)
  
- 	if (priv->tx_desc_base)
--		dma_free_coherent(NULL, TX_REG_DESC_SIZE * TX_DESC_NUM,
-+		dma_free_coherent(&priv->pdev->dev,
-+				  TX_REG_DESC_SIZE * TX_DESC_NUM,
- 				  priv->tx_desc_base, priv->tx_base);
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+-		dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++		dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+ 				  par->p_palette_base);
+-		dma_free_coherent(NULL, par->vram_size, par->vram_virt,
++		dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
+ 				  par->vram_phys);
+ 		pm_runtime_put_sync(&dev->dev);
+ 		pm_runtime_disable(&dev->dev);
+@@ -1425,7 +1425,7 @@ static int fb_probe(struct platform_device *device)
+ 	par->vram_size = roundup(par->vram_size/8, ulcm);
+ 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
  
- 	if (priv->rx_desc_base)
--		dma_free_coherent(NULL, RX_REG_DESC_SIZE * RX_DESC_NUM,
-+		dma_free_coherent(&priv->pdev->dev,
-+				  RX_REG_DESC_SIZE * RX_DESC_NUM,
- 				  priv->rx_desc_base, priv->rx_base);
+-	par->vram_virt = dma_alloc_coherent(NULL,
++	par->vram_virt = dma_alloc_coherent(par->dev,
+ 					    par->vram_size,
+ 					    &par->vram_phys,
+ 					    GFP_KERNEL | GFP_DMA);
+@@ -1446,7 +1446,7 @@ static int fb_probe(struct platform_device *device)
+ 		da8xx_fb_fix.line_length - 1;
  
- 	kfree(priv->tx_buf_base);
-@@ -476,6 +478,7 @@ static int moxart_mac_probe(struct platform_device *pdev)
+ 	/* allocate palette buffer */
+-	par->v_palette_base = dma_alloc_coherent(NULL, PALETTE_SIZE,
++	par->v_palette_base = dma_alloc_coherent(par->dev, PALETTE_SIZE,
+ 						 &par->p_palette_base,
+ 						 GFP_KERNEL | GFP_DMA);
+ 	if (!par->v_palette_base) {
+@@ -1532,11 +1532,12 @@ static int fb_probe(struct platform_device *device)
+ 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
  
- 	priv = netdev_priv(ndev);
- 	priv->ndev = ndev;
-+	priv->pdev = pdev;
+ err_release_pl_mem:
+-	dma_free_coherent(NULL, PALETTE_SIZE, par->v_palette_base,
++	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+ 			  par->p_palette_base);
  
- 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
- 	ndev->base_addr = res->start;
-@@ -491,7 +494,7 @@ static int moxart_mac_probe(struct platform_device *pdev)
- 	priv->tx_buf_size = TX_BUF_SIZE;
- 	priv->rx_buf_size = RX_BUF_SIZE;
+ err_release_fb_mem:
+-	dma_free_coherent(NULL, par->vram_size, par->vram_virt, par->vram_phys);
++	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
++		          par->vram_phys);
  
--	priv->tx_desc_base = dma_alloc_coherent(NULL, TX_REG_DESC_SIZE *
-+	priv->tx_desc_base = dma_alloc_coherent(&pdev->dev, TX_REG_DESC_SIZE *
- 						TX_DESC_NUM, &priv->tx_base,
- 						GFP_DMA | GFP_KERNEL);
- 	if (!priv->tx_desc_base) {
-@@ -499,7 +502,7 @@ static int moxart_mac_probe(struct platform_device *pdev)
- 		goto init_fail;
- 	}
- 
--	priv->rx_desc_base = dma_alloc_coherent(NULL, RX_REG_DESC_SIZE *
-+	priv->rx_desc_base = dma_alloc_coherent(&pdev->dev, RX_REG_DESC_SIZE *
- 						RX_DESC_NUM, &priv->rx_base,
- 						GFP_DMA | GFP_KERNEL);
- 	if (!priv->rx_desc_base) {
-diff --git a/drivers/net/ethernet/moxa/moxart_ether.h b/drivers/net/ethernet/moxa/moxart_ether.h
-index bee608b547d1..bf4c3029cd0c 100644
---- a/drivers/net/ethernet/moxa/moxart_ether.h
-+++ b/drivers/net/ethernet/moxa/moxart_ether.h
-@@ -292,6 +292,7 @@
- #define LINK_STATUS		0x4
- 
- struct moxart_mac_priv_t {
-+	struct platform_device *pdev;
- 	void __iomem *base;
- 	unsigned int reg_maccr;
- 	unsigned int reg_imr;
+ err_release_fb:
+ 	framebuffer_release(da8xx_fb_info);
 -- 
 2.20.1

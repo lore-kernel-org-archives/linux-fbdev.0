@@ -1,51 +1,44 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:59 +0000
-Subject: [PATCH 16/18] pxa3xx-gcu: pass struct device to dma_mmap_coherent
-Message-Id: <20190201084801.10983-17-hch@lst.de>
+From: ira.weiny@intel.com
+Date: Wed, 13 Feb 2019 23:04:53 +0000
+Subject: [PATCH V2 5/7] IB/hfi1: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+Message-Id: <20190213230455.5605-6-ira.weiny@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
-In-Reply-To: <20190201084801.10983-1-hch@lst.de>
+References: <20190211201643.7599-1-ira.weiny@intel.com>
+ <20190213230455.5605-1-ira.weiny@intel.com>
+In-Reply-To: <20190213230455.5605-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, kvm@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-rdma@vger.kernel.org, linux-media@vger.kernel.org, linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-mm@kvack.org, ceph-devel@vger.kernel.org, rds-devel@oss.oracle.com
+Cc: Martin Brandenburg <martin@omnibond.com>, Rich Felker <dalias@libc.org>, David Hildenbrand <david@redhat.com>, David Airlie <airlied@linux.ie>, Jason Wang <jasowang@redhat.com>, =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>, Michal Hocko <mhocko@suse.com>, Ira Weiny <ira.weiny@intel.com>, Ben Chan <benchan@chromium.org>, Rob Springer <rspringer@google.com>, Todd Poynor <toddpoynor@google.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, "Michael S. Tsirkin" <mst@redhat.com>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, Matt Porter <mporter@kernel.crashing.org>, Wu Hao <hao.wu@intel.com>, Alan Tull <atull@kernel.org>, John Hubbard <jhubbard@nvidia.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Alex Williamson <alex.williamson@redhat.com>, Stefano Stabellini <sstabellini@kernel.org>, Borislav Petkov <bp@alien8.de>
 
-Just like we do for all other DMA operations.
+From: Ira Weiny <ira.weiny@intel.com>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Use the new FOLL_LONGTERM to get_user_pages_fast() to protect against
+FS DAX pages being mapped.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/video/fbdev/pxa3xx-gcu.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/infiniband/hw/hfi1/user_pages.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 69cfb337c857..047a2fa4b87e 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -96,6 +96,7 @@ struct pxa3xx_gcu_batch {
- };
+diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
+index 78ccacaf97d0..6a7f9cd5a94e 100644
+--- a/drivers/infiniband/hw/hfi1/user_pages.c
++++ b/drivers/infiniband/hw/hfi1/user_pages.c
+@@ -104,9 +104,11 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
+ 			    bool writable, struct page **pages)
+ {
+ 	int ret;
++	unsigned int gup_flags = writable ? FOLL_WRITE : 0;
  
- struct pxa3xx_gcu_priv {
-+	struct device		 *dev;
- 	void __iomem		 *mmio_base;
- 	struct clk		 *clk;
- 	struct pxa3xx_gcu_shared *shared;
-@@ -493,7 +494,7 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
- 		if (size != SHARED_SIZE)
- 			return -EINVAL;
- 
--		return dma_mmap_coherent(NULL, vma,
-+		return dma_mmap_coherent(priv->dev, vma,
- 			priv->shared, priv->shared_phys, size);
- 
- 	case SHARED_SIZE >> PAGE_SHIFT:
-@@ -670,6 +671,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 	priv->resource_mem = r;
-+	priv->dev = dev;
- 	pxa3xx_gcu_reset(priv);
- 	pxa3xx_gcu_init_debug_timer(priv);
+-	ret = get_user_pages_fast(vaddr, npages, writable ? FOLL_WRITE : 0,
+-				  pages);
++	gup_flags |= FOLL_LONGTERM;
++
++	ret = get_user_pages_fast(vaddr, npages, gup_flags, pages);
+ 	if (ret < 0)
+ 		return ret;
  
 -- 
 2.20.1

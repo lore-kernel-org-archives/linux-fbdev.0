@@ -1,47 +1,59 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Feb 2019 17:41:42 +0000
-Subject: Re: [PATCH] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <16025871-3918-e9be-e6af-de9831cdc064@samsung.com>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Wed, 13 Feb 2019 08:47:21 +0000
+Subject: [PATCH] fbdev: omap2: fix warnings in dss core
+Message-Id: <20190213084721.29624-1-anders.roxell@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190128100446epcas2p24b13ff5ae2af639b66d4bcd4d4722799@epcas2p2.samsung.com>
-        <20190128100435.759-1-martink@posteo.de>
-In-Reply-To: <20190128100435.759-1-martink@posteo.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Martin Kepplinger <martink@posteo.de>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, daniel.vetter@ffwll.ch, manfred.schlaegl@ginzinger.com, linux-kernel@vger.kernel.org, Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: b.zolnierkie@samsung.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
 
+Commit 60d2fa0dad06 ("fbdev: omap2: no need to check return value of
+debugfs_create functions") changed the declaration of the return value
+of function dss_debugfs_create_file() and the following two warnings
+appeared:
 
-On 01/28/2019 11:04 AM, Martin Kepplinger wrote:
-> From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-> 
-> There is no clipping on the x or y axis for logos larger that the framebuffer
-> size. Therefore: a logo bigger than screen size leads to invalid memory access:
-> 
-> [    1.254664] Backtrace:
-> [    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-> [    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-> [    1.254774]  r4:c6a3e800
-> [    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-> [    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-> [    1.254852]  r4:c6808c00
-> [    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-> [    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-> [    1.254928]  r4:c6808c00
-> [    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-> [    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
-> 
-> So prevent displaying a logo bigger than screen size and avoid invalid
-> memory access.
-> 
-> Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-> Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘dss_debugfs_create_file’:
+drivers/video/fbdev/omap2/omapfb/dss/core.c:139:9: warning: ‘return’ with a value,
+ in function returning void
+  return 0;
+         ^
+drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘omap_dss_probe’:
+drivers/video/fbdev/omap2/omapfb/dss/core.c:172:6: warning: unused variable ‘r’
+ [-Wunused-variable]
+  int r;
+      ^
 
-Patch queued for v5.1, thanks.
+Rework so function dss_debugfs_create_file() that is declared to return
+void don't 'return 0' and remove the declaration of the unused variable
+'r'.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/core.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+index 7e6a3eb266d0..b5956a1a30d4 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+@@ -136,7 +136,6 @@ static inline void dss_uninitialize_debugfs(void)
+ }
+ void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ {
+-	return 0;
+ }
+ #endif /* CONFIG_FB_OMAP2_DSS_DEBUGFS */
+ 
+@@ -169,8 +168,6 @@ static struct notifier_block omap_dss_pm_notif_block = {
+ 
+ static int __init omap_dss_probe(struct platform_device *pdev)
+ {
+-	int r;
+-
+ 	core.pdev = pdev;
+ 
+ 	dss_features_init(omapdss_get_version());
+-- 
+2.19.2

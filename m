@@ -1,87 +1,225 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Mon, 11 Feb 2019 13:28:35 +0000
-Subject: [PATCH 2/3] gbefb: switch to managed version of the DMA allocator
-Message-Id: <20190211132836.29594-3-hch@lst.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 15 Feb 2019 08:58:59 +0000
+Subject: [PATCH 2/4] fbdev: atafb: Remove obsolete module support
+Message-Id: <20190215085901.21479-3-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190211132836.29594-1-hch@lst.de>
-In-Reply-To: <20190211132836.29594-1-hch@lst.de>
+References: <20190215085901.21479-1-geert@linux-m68k.org>
+In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Schmitz <schmitzmic@gmail.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-gbefb uses managed resources, so it should do the same for DMA
-allocations.
+CONFIG_FB_ATARI is bool, hence the Atari frame buffer driver cannot be
+built as a module.  In addition, the module support code refers to a
+function atafb_deinit(), which never existed.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Replace module_init() by device_initcall().
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/fbdev/gbefb.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/video/fbdev/atafb.c          | 16 +---------------
+ drivers/video/fbdev/atafb_iplan2p2.c | 23 -----------------------
+ drivers/video/fbdev/atafb_iplan2p4.c | 23 -----------------------
+ drivers/video/fbdev/atafb_iplan2p8.c | 23 -----------------------
+ drivers/video/fbdev/atafb_mfb.c      | 23 -----------------------
+ 5 files changed, 1 insertion(+), 107 deletions(-)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 1a242b1338e9..3fcb33232ba3 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -1162,9 +1162,9 @@ static int gbefb_probe(struct platform_device *p_dev)
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index e9d31a4299ee9901..d82007c113e6303c 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -47,7 +47,6 @@
+ #define ATAFB_EXT
+ #define ATAFB_FALCON
+ 
+-#include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
+@@ -3078,14 +3077,11 @@ int __init atafb_init(void)
+ 	int pad, detected_mode, error;
+ 	unsigned int defmode = 0;
+ 	unsigned long mem_req;
+-
+-#ifndef MODULE
+ 	char *option = NULL;
+ 
+ 	if (fb_get_options("atafb", &option))
+ 		return -ENODEV;
+ 	atafb_setup(option);
+-#endif
+ 	printk("atafb_init: start\n");
+ 
+ 	if (!MACH_IS_ATARI)
+@@ -3251,14 +3247,4 @@ int __init atafb_init(void)
+ 	return 0;
+ }
+ 
+-module_init(atafb_init);
+-
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
+-
+-int cleanup_module(void)
+-{
+-	unregister_framebuffer(&fb_info);
+-	return atafb_deinit();
+-}
+-#endif /* MODULE */
++device_initcall(atafb_init);
+diff --git a/drivers/video/fbdev/atafb_iplan2p2.c b/drivers/video/fbdev/atafb_iplan2p2.c
+index 8cc9c50379d0f036..a1660c24bf3629a5 100644
+--- a/drivers/video/fbdev/atafb_iplan2p2.c
++++ b/drivers/video/fbdev/atafb_iplan2p2.c
+@@ -10,7 +10,6 @@
+  *  more details.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fb.h>
+ 
+@@ -269,25 +268,3 @@ void atafb_iplan2p2_linefill(struct fb_info *info, u_long next_line,
+ 	if (width)
+ 		fill8_2col((u8 *)dest, fgcolor, bgcolor, *data);
+ }
+-
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
+-
+-int init_module(void)
+-{
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-}
+-#endif /* MODULE */
+-
+-
+-    /*
+-     *  Visible symbols for modules
+-     */
+-
+-EXPORT_SYMBOL(atafb_iplan2p2_copyarea);
+-EXPORT_SYMBOL(atafb_iplan2p2_fillrect);
+-EXPORT_SYMBOL(atafb_iplan2p2_linefill);
+diff --git a/drivers/video/fbdev/atafb_iplan2p4.c b/drivers/video/fbdev/atafb_iplan2p4.c
+index bee0d89463f755a4..663d66582d791c03 100644
+--- a/drivers/video/fbdev/atafb_iplan2p4.c
++++ b/drivers/video/fbdev/atafb_iplan2p4.c
+@@ -10,7 +10,6 @@
+  *  more details.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fb.h>
+ 
+@@ -284,25 +283,3 @@ void atafb_iplan2p4_linefill(struct fb_info *info, u_long next_line,
+ 	if (width)
+ 		fill8_2col((u8 *)dest, fgcolor, bgcolor, *data);
+ }
+-
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
+-
+-int init_module(void)
+-{
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-}
+-#endif /* MODULE */
+-
+-
+-    /*
+-     *  Visible symbols for modules
+-     */
+-
+-EXPORT_SYMBOL(atafb_iplan2p4_copyarea);
+-EXPORT_SYMBOL(atafb_iplan2p4_fillrect);
+-EXPORT_SYMBOL(atafb_iplan2p4_linefill);
+diff --git a/drivers/video/fbdev/atafb_iplan2p8.c b/drivers/video/fbdev/atafb_iplan2p8.c
+index 356fb52ce4430741..39a6cbbb6ca39db0 100644
+--- a/drivers/video/fbdev/atafb_iplan2p8.c
++++ b/drivers/video/fbdev/atafb_iplan2p8.c
+@@ -10,7 +10,6 @@
+  *  more details.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fb.h>
+ 
+@@ -321,25 +320,3 @@ void atafb_iplan2p8_linefill(struct fb_info *info, u_long next_line,
+ 	if (width)
+ 		fill8_2col((u8 *)dest, fgcolor, bgcolor, *data);
+ }
+-
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
+-
+-int init_module(void)
+-{
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-}
+-#endif /* MODULE */
+-
+-
+-    /*
+-     *  Visible symbols for modules
+-     */
+-
+-EXPORT_SYMBOL(atafb_iplan2p8_copyarea);
+-EXPORT_SYMBOL(atafb_iplan2p8_fillrect);
+-EXPORT_SYMBOL(atafb_iplan2p8_linefill);
+diff --git a/drivers/video/fbdev/atafb_mfb.c b/drivers/video/fbdev/atafb_mfb.c
+index 6a352d62eecf2b73..384fd3e4d3e13935 100644
+--- a/drivers/video/fbdev/atafb_mfb.c
++++ b/drivers/video/fbdev/atafb_mfb.c
+@@ -9,7 +9,6 @@
+  *  more details.
+  */
+ 
+-#include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/fb.h>
+ 
+@@ -88,25 +87,3 @@ void atafb_mfb_linefill(struct fb_info *info, u_long next_line,
+ 		*dest++ = *data++;
  	}
- 	gbe_revision = gbe->ctrlstat & 15;
- 
--	gbe_tiles.cpu -		dma_alloc_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--				   &gbe_tiles.dma, GFP_KERNEL);
-+	gbe_tiles.cpu = dmam_alloc_coherent(&p_dev->dev,
-+				GBE_TLB_SIZE * sizeof(uint16_t),
-+				&gbe_tiles.dma, GFP_KERNEL);
- 	if (!gbe_tiles.cpu) {
- 		printk(KERN_ERR "gbefb: couldn't allocate tiles table\n");
- 		ret = -ENOMEM;
-@@ -1178,19 +1178,20 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
- 
- 		gbe_dma_addr = 0;
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_wc(NULL, gbe_mem_size, &gbe_dma_addr,
--				       GFP_KERNEL);
-+		gbe_mem = dmam_alloc_attrs(&p_dev->dev, gbe_mem_size,
-+				&gbe_dma_addr, GFP_KERNEL,
-+				DMA_ATTR_WRITE_COMBINE);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
- 
- 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
-@@ -1237,11 +1238,6 @@ static int gbefb_probe(struct platform_device *p_dev)
- 
- out_gbe_unmap:
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--out_tiles_free:
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- out_release_mem_region:
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- out_release_framebuffer:
-@@ -1258,10 +1254,6 @@ static int gbefb_remove(struct platform_device* p_dev)
- 	unregister_framebuffer(info);
- 	gbe_turn_off();
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- 	gbefb_remove_sysfs(&p_dev->dev);
- 	framebuffer_release(info);
+ }
+-
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
+-
+-int init_module(void)
+-{
+-	return 0;
+-}
+-
+-void cleanup_module(void)
+-{
+-}
+-#endif /* MODULE */
+-
+-
+-    /*
+-     *  Visible symbols for modules
+-     */
+-
+-EXPORT_SYMBOL(atafb_mfb_copyarea);
+-EXPORT_SYMBOL(atafb_mfb_fillrect);
+-EXPORT_SYMBOL(atafb_mfb_linefill);
 -- 
-2.20.1
+2.17.1

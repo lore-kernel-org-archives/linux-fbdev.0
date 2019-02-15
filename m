@@ -1,87 +1,98 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:58 +0000
-Subject: [PATCH 15/18] gbefb: switch to managed version of the DMA allocator
-Message-Id: <20190201084801.10983-16-hch@lst.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 15 Feb 2019 08:59:00 +0000
+Subject: [PATCH 3/4] fbdev: atafb: Fix broken frame buffer after kexec
+Message-Id: <20190215085901.21479-4-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
-In-Reply-To: <20190201084801.10983-1-hch@lst.de>
+References: <20190215085901.21479-1-geert@linux-m68k.org>
+In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Schmitz <schmitzmic@gmail.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-gbefb uses managed resources, so it should do the same for DMA
-allocations.
+On Falcon, Atari frame buffer initialization relies on preprogrammed
+register values.  These register values are changed to blank the
+console.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Hence when using kexec to boot into a new kernel while the console is
+blanked, the new kernel cannot determine the current video
+configuration, and the Atari frame buffer driver fails to initialize:
+
+    atafb: phys_screen_base 6ce000 screen_len 4096
+
+Fix this by doing a straight-forward conversion of the driver to a
+platform device driver, and adding a shutdown handler that unblanks the
+display.
+
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/fbdev/gbefb.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/video/fbdev/atafb.c | 34 ++++++++++++++++++++++++++++++----
+ 1 file changed, 30 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 1a242b1338e9..3fcb33232ba3 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -1162,9 +1162,9 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	}
- 	gbe_revision = gbe->ctrlstat & 15;
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index d82007c113e6303c..4db8166d11b30409 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -54,6 +54,7 @@
+ #include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
++#include <linux/platform_device.h>
  
--	gbe_tiles.cpu -		dma_alloc_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--				   &gbe_tiles.dma, GFP_KERNEL);
-+	gbe_tiles.cpu = dmam_alloc_coherent(&p_dev->dev,
-+				GBE_TLB_SIZE * sizeof(uint16_t),
-+				&gbe_tiles.dma, GFP_KERNEL);
- 	if (!gbe_tiles.cpu) {
- 		printk(KERN_ERR "gbefb: couldn't allocate tiles table\n");
- 		ret = -ENOMEM;
-@@ -1178,19 +1178,20 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
+ #include <asm/setup.h>
+ #include <linux/uaccess.h>
+@@ -3072,7 +3073,7 @@ int __init atafb_setup(char *options)
+ 	return 0;
+ }
  
- 		gbe_dma_addr = 0;
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_wc(NULL, gbe_mem_size, &gbe_dma_addr,
--				       GFP_KERNEL);
-+		gbe_mem = dmam_alloc_attrs(&p_dev->dev, gbe_mem_size,
-+				&gbe_dma_addr, GFP_KERNEL,
-+				DMA_ATTR_WRITE_COMBINE);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
+-int __init atafb_init(void)
++static int __init atafb_probe(struct platform_device *pdev)
+ {
+ 	int pad, detected_mode, error;
+ 	unsigned int defmode = 0;
+@@ -3084,9 +3085,6 @@ int __init atafb_init(void)
+ 	atafb_setup(option);
+ 	printk("atafb_init: start\n");
  
- 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
-@@ -1237,11 +1238,6 @@ static int gbefb_probe(struct platform_device *p_dev)
+-	if (!MACH_IS_ATARI)
+-		return -ENODEV;
+-
+ 	do {
+ #ifdef ATAFB_EXT
+ 		if (external_addr) {
+@@ -3247,4 +3245,32 @@ int __init atafb_init(void)
+ 	return 0;
+ }
  
- out_gbe_unmap:
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--out_tiles_free:
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- out_release_mem_region:
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- out_release_framebuffer:
-@@ -1258,10 +1254,6 @@ static int gbefb_remove(struct platform_device* p_dev)
- 	unregister_framebuffer(info);
- 	gbe_turn_off();
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- 	gbefb_remove_sysfs(&p_dev->dev);
- 	framebuffer_release(info);
++static void atafb_shutdown(struct platform_device *pdev)
++{
++	/* Unblank before kexec */
++	if (fbhw->blank)
++		fbhw->blank(0);
++}
++
++static struct platform_driver atafb_driver = {
++	.shutdown	= atafb_shutdown,
++	.driver	= {
++		.name	= "atafb",
++	},
++};
++
++static int __init atafb_init(void)
++{
++	struct platform_device *pdev;
++
++	if (!MACH_IS_ATARI)
++		return -ENODEV;
++
++	pdev = platform_device_register_simple("atafb", -1, NULL, 0);
++	if (IS_ERR(pdev))
++		return PTR_ERR(pdev);
++
++	return platform_driver_probe(&atafb_driver, atafb_probe);
++}
++
+ device_initcall(atafb_init);
 -- 
-2.20.1
+2.17.1

@@ -1,40 +1,37 @@
-From: Colin King <colin.king@canonical.com>
-Date: Tue, 12 Feb 2019 13:34:44 +0000
-Subject: [PATCH] video: fbdev: savage: fix indentation issue
-Message-Id: <20190212133444.7669-1-colin.king@canonical.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 15 Feb 2019 08:58:58 +0000
+Subject: [PATCH 1/4] fbdev: atafb: Stop printing virtual screen_base
+Message-Id: <20190215085901.21479-2-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190215085901.21479-1-geert@linux-m68k.org>
+In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Michael Schmitz <schmitzmic@gmail.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: Colin Ian King <colin.king@canonical.com>
+Printing (hashed) virtual addresses is useless.
 
-The indentation in the if statement is not indented correctly, fix
-this with extra level of indentation.
-
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
- drivers/video/fbdev/savage/savagefb_driver.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/atafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
-index c09d7426cd92..47b78f0138c3 100644
---- a/drivers/video/fbdev/savage/savagefb_driver.c
-+++ b/drivers/video/fbdev/savage/savagefb_driver.c
-@@ -2155,9 +2155,9 @@ static int savage_init_fb_info(struct fb_info *info, struct pci_dev *dev,
- 
- 		err = fb_alloc_cmap(&info->cmap, NR_PALETTE, 0);
- 		if (!err)
--		info->flags |= FBINFO_HWACCEL_COPYAREA |
--	                       FBINFO_HWACCEL_FILLRECT |
--		               FBINFO_HWACCEL_IMAGEBLIT;
-+			info->flags |= FBINFO_HWACCEL_COPYAREA |
-+				       FBINFO_HWACCEL_FILLRECT |
-+				       FBINFO_HWACCEL_IMAGEBLIT;
- 	}
- #endif
- 	return err;
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index fcd2dd670a658fe3..e9d31a4299ee9901 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -3175,8 +3175,8 @@ int __init atafb_init(void)
+ 			kernel_set_cachemode(screen_base, screen_len,
+ 					     IOMAP_WRITETHROUGH);
+ 		}
+-		printk("atafb: screen_base %p phys_screen_base %lx screen_len %d\n",
+-			screen_base, phys_screen_base, screen_len);
++		printk("atafb: phys_screen_base %lx screen_len %d\n",
++		       phys_screen_base, screen_len);
+ #ifdef ATAFB_EXT
+ 	} else {
+ 		/* Map the video memory (physical address given) to somewhere
 -- 
-2.20.1
+2.17.1

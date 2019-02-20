@@ -1,7 +1,7 @@
 From: ira.weiny@intel.com
-Date: Wed, 20 Feb 2019 05:30:40 +0000
-Subject: [RESEND PATCH 7/7] IB/mthca: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
-Message-Id: <20190220053040.10831-8-ira.weiny@intel.com>
+Date: Wed, 20 Feb 2019 05:30:39 +0000
+Subject: [RESEND PATCH 6/7] IB/qib: Use the new FOLL_LONGTERM flag to get_user_pages_fast()
+Message-Id: <20190220053040.10831-7-ira.weiny@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190220053040.10831-1-ira.weiny@intel.com>
 In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
@@ -18,22 +18,21 @@ FS DAX pages being mapped.
 
 Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/infiniband/hw/mthca/mthca_memfree.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/infiniband/hw/qib/qib_user_sdma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_memfree.c b/drivers/infiniband/hw/mthca/mthca_memfree.c
-index 112d2f38e0de..8ff0e90d7564 100644
---- a/drivers/infiniband/hw/mthca/mthca_memfree.c
-+++ b/drivers/infiniband/hw/mthca/mthca_memfree.c
-@@ -472,7 +472,8 @@ int mthca_map_user_db(struct mthca_dev *dev, struct mthca_uar *uar,
- 		goto out;
- 	}
+diff --git a/drivers/infiniband/hw/qib/qib_user_sdma.c b/drivers/infiniband/hw/qib/qib_user_sdma.c
+index 31c523b2a9f5..b53cc0240e02 100644
+--- a/drivers/infiniband/hw/qib/qib_user_sdma.c
++++ b/drivers/infiniband/hw/qib/qib_user_sdma.c
+@@ -673,7 +673,7 @@ static int qib_user_sdma_pin_pages(const struct qib_devdata *dd,
+ 		else
+ 			j = npages;
  
--	ret = get_user_pages_fast(uaddr & PAGE_MASK, 1, FOLL_WRITE, pages);
-+	ret = get_user_pages_fast(uaddr & PAGE_MASK, 1,
-+				  FOLL_WRITE | FOLL_LONGTERM, pages);
- 	if (ret < 0)
- 		goto out;
- 
+-		ret = get_user_pages_fast(addr, j, 0, pages);
++		ret = get_user_pages_fast(addr, j, FOLL_LONGTERM, pages);
+ 		if (ret != j) {
+ 			i = 0;
+ 			j = ret;
 -- 
 2.20.1

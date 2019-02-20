@@ -1,53 +1,78 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:49 +0000
-Subject: [PATCH 06/18] lantiq_etop: pass struct device to DMA API functions
-Message-Id: <20190201084801.10983-7-hch@lst.de>
+From: ira.weiny@intel.com
+Date: Wed, 20 Feb 2019 05:30:37 +0000
+Subject: [RESEND PATCH 4/7] mm/gup: Add FOLL_LONGTERM capability to GUP fast
+Message-Id: <20190220053040.10831-5-ira.weiny@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
-In-Reply-To: <20190201084801.10983-1-hch@lst.de>
+References: <20190220053040.10831-1-ira.weiny@intel.com>
+In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, kvm-ppc@vger.kernel.org, ceph-devel@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-The DMA API generally relies on a struct device to work properly, and
-only barely works without one for legacy reasons.  Pass the easily
-available struct device from the platform_device to remedy this.
+From: Ira Weiny <ira.weiny@intel.com>
 
-Note this driver seems to lack dma_unmap_* calls entirely, but fixing
-that is left for another time.
+DAX pages were previously unprotected from longterm pins when users
+called get_user_pages_fast().
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Use the new FOLL_LONGTERM flag to check for DEVMAP pages and fall
+back to regular GUP processing if a DEVMAP page is encountered.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/net/ethernet/lantiq_etop.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ mm/gup.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/lantiq_etop.c b/drivers/net/ethernet/lantiq_etop.c
-index 32ac9045cdae..f9bb890733b5 100644
---- a/drivers/net/ethernet/lantiq_etop.c
-+++ b/drivers/net/ethernet/lantiq_etop.c
-@@ -112,10 +112,12 @@ struct ltq_etop_priv {
- static int
- ltq_etop_alloc_skb(struct ltq_etop_chan *ch)
- {
-+	struct ltq_etop_priv *priv = netdev_priv(ch->netdev);
-+
- 	ch->skb[ch->dma.desc] = netdev_alloc_skb(ch->netdev, MAX_DMA_DATA_LEN);
- 	if (!ch->skb[ch->dma.desc])
- 		return -ENOMEM;
--	ch->dma.desc_base[ch->dma.desc].addr = dma_map_single(NULL,
-+	ch->dma.desc_base[ch->dma.desc].addr = dma_map_single(&priv->pdev->dev,
- 		ch->skb[ch->dma.desc]->data, MAX_DMA_DATA_LEN,
- 		DMA_FROM_DEVICE);
- 	ch->dma.desc_base[ch->dma.desc].addr @@ -487,7 +489,7 @@ ltq_etop_tx(struct sk_buff *skb, struct net_device *dev)
- 	netif_trans_update(dev);
+diff --git a/mm/gup.c b/mm/gup.c
+index 6f32d36b3c5b..f7e759c523bb 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1439,6 +1439,9 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+ 			goto pte_unmap;
  
- 	spin_lock_irqsave(&priv->lock, flags);
--	desc->addr = ((unsigned int) dma_map_single(NULL, skb->data, len,
-+	desc->addr = ((unsigned int) dma_map_single(&priv->pdev->dev, skb->data, len,
- 						DMA_TO_DEVICE)) - byte_offset;
- 	wmb();
- 	desc->ctl = LTQ_DMA_OWN | LTQ_DMA_SOP | LTQ_DMA_EOP |
+ 		if (pte_devmap(pte)) {
++			if (unlikely(flags & FOLL_LONGTERM))
++				goto pte_unmap;
++
+ 			pgmap = get_dev_pagemap(pte_pfn(pte), pgmap);
+ 			if (unlikely(!pgmap)) {
+ 				undo_dev_pagemap(nr, nr_start, pages);
+@@ -1578,8 +1581,11 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+ 	if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+-	if (pmd_devmap(orig))
++	if (pmd_devmap(orig)) {
++		if (unlikely(flags & FOLL_LONGTERM))
++			return 0;
+ 		return __gup_device_huge_pmd(orig, pmdp, addr, end, pages, nr);
++	}
+ 
+ 	refs = 0;
+ 	page = pmd_page(orig) + ((addr & ~PMD_MASK) >> PAGE_SHIFT);
+@@ -1904,8 +1910,20 @@ int get_user_pages_fast(unsigned long start, int nr_pages,
+ 		start += nr << PAGE_SHIFT;
+ 		pages += nr;
+ 
+-		ret = get_user_pages_unlocked(start, nr_pages - nr, pages,
+-					      gup_flags);
++		if (gup_flags & FOLL_LONGTERM) {
++			down_read(&current->mm->mmap_sem);
++			ret = __gup_longterm_locked(current, current->mm,
++						    start, nr_pages - nr,
++						    pages, NULL, gup_flags);
++			up_read(&current->mm->mmap_sem);
++		} else {
++			/*
++			 * retain FAULT_FOLL_ALLOW_RETRY optimization if
++			 * possible
++			 */
++			ret = get_user_pages_unlocked(start, nr_pages - nr,
++						      pages, gup_flags);
++		}
+ 
+ 		/* Have to be a bit careful with return values */
+ 		if (nr > 0) {
 -- 
 2.20.1

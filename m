@@ -1,84 +1,228 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Fri, 01 Feb 2019 08:47:50 +0000
-Subject: [PATCH 07/18] pxa168_eth: pass struct device to DMA API functions
-Message-Id: <20190201084801.10983-8-hch@lst.de>
+From: ira.weiny@intel.com
+Date: Wed, 20 Feb 2019 05:30:35 +0000
+Subject: [RESEND PATCH 2/7] mm/gup: Change write parameter to flags in fast walk
+Message-Id: <20190220053040.10831-3-ira.weiny@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190201084801.10983-1-hch@lst.de>
-In-Reply-To: <20190201084801.10983-1-hch@lst.de>
+References: <20190220053040.10831-1-ira.weiny@intel.com>
+In-Reply-To: <20190220053040.10831-1-ira.weiny@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Crispin <john@phrozen.org>, Vinod Koul <vkoul@kernel.org>, Dmitry Tarnyagin <dmitry.tarnyagin@lockless.no>, Nicolas Ferre <nicolas.ferre@microchip.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Felipe Balbi <balbi@kernel.org>, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: iommu@lists.linux-foundation.org
+To: John Hubbard <jhubbard@nvidia.com>, Andrew Morton <akpm@linux-foundation.org>, Michal Hocko <mhocko@suse.com>, "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, Peter Zijlstra <peterz@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, Martin Schwidefsky <schwidefsky@de.ibm.com>, Heiko Carstens <heiko.carstens@de.ibm.com>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>
+Cc: linux-fbdev@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, linux-fpga@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-mips@vger.kernel.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, rds-devel@oss.oracle.com, linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, kvm-ppc@vger.kernel.org, ceph-devel@vger.kernel.org, virtualization@lists.linux-foundation.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-The DMA API generally relies on a struct device to work properly, and
-only barely works without one for legacy reasons.  Pass the easily
-available struct device from the platform_device to remedy this.
+From: Ira Weiny <ira.weiny@intel.com>
 
-Note that this driver seems to entirely lack dma_map_single error
-handling, but that is left for another time.
+In order to support more options in the GUP fast walk, change
+the write parameter to flags throughout the call stack.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+This patch does not change functionality and passes FOLL_WRITE
+where write was previously used.
+
+Signed-off-by: Ira Weiny <ira.weiny@intel.com>
 ---
- drivers/net/ethernet/marvell/pxa168_eth.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ mm/gup.c | 52 ++++++++++++++++++++++++++--------------------------
+ 1 file changed, 26 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/net/ethernet/marvell/pxa168_eth.c b/drivers/net/ethernet/marvell/pxa168_eth.c
-index f8a6d6e3cb7a..35f2142aac5e 100644
---- a/drivers/net/ethernet/marvell/pxa168_eth.c
-+++ b/drivers/net/ethernet/marvell/pxa168_eth.c
-@@ -201,6 +201,7 @@ struct tx_desc {
- };
+diff --git a/mm/gup.c b/mm/gup.c
+index ee96eaff118c..681388236106 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -1417,7 +1417,7 @@ static void undo_dev_pagemap(int *nr, int nr_start, struct page **pages)
  
- struct pxa168_eth_private {
-+	struct platform_device *pdev;
- 	int port_num;		/* User Ethernet port number    */
- 	int phy_addr;
- 	int phy_speed;
-@@ -331,7 +332,7 @@ static void rxq_refill(struct net_device *dev)
- 		used_rx_desc = pep->rx_used_desc_q;
- 		p_used_rx_desc = &pep->p_rx_desc_area[used_rx_desc];
- 		size = skb_end_pointer(skb) - skb->data;
--		p_used_rx_desc->buf_ptr = dma_map_single(NULL,
-+		p_used_rx_desc->buf_ptr = dma_map_single(&pep->pdev->dev,
- 							 skb->data,
- 							 size,
- 							 DMA_FROM_DEVICE);
-@@ -743,7 +744,7 @@ static int txq_reclaim(struct net_device *dev, int force)
- 				netdev_err(dev, "Error in TX\n");
- 			dev->stats.tx_errors++;
- 		}
--		dma_unmap_single(NULL, addr, count, DMA_TO_DEVICE);
-+		dma_unmap_single(&pep->pdev->dev, addr, count, DMA_TO_DEVICE);
- 		if (skb)
- 			dev_kfree_skb_irq(skb);
- 		released++;
-@@ -805,7 +806,7 @@ static int rxq_process(struct net_device *dev, int budget)
- 		if (rx_next_curr_desc = rx_used_desc)
- 			pep->rx_resource_err = 1;
- 		pep->rx_desc_count--;
--		dma_unmap_single(NULL, rx_desc->buf_ptr,
-+		dma_unmap_single(&pep->pdev->dev, rx_desc->buf_ptr,
- 				 rx_desc->buf_size,
- 				 DMA_FROM_DEVICE);
- 		received_packets++;
-@@ -1274,7 +1275,8 @@ pxa168_eth_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 	length = skb->len;
- 	pep->tx_skb[tx_index] = skb;
- 	desc->byte_cnt = length;
--	desc->buf_ptr = dma_map_single(NULL, skb->data, length, DMA_TO_DEVICE);
-+	desc->buf_ptr = dma_map_single(&pep->pdev->dev, skb->data, length,
-+					DMA_TO_DEVICE);
+ #ifdef CONFIG_ARCH_HAS_PTE_SPECIAL
+ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct dev_pagemap *pgmap = NULL;
+ 	int nr_start = *nr, ret = 0;
+@@ -1435,7 +1435,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+ 		if (pte_protnone(pte))
+ 			goto pte_unmap;
  
- 	skb_tx_timestamp(skb);
+-		if (!pte_access_permitted(pte, write))
++		if (!pte_access_permitted(pte, flags & FOLL_WRITE))
+ 			goto pte_unmap;
  
-@@ -1528,6 +1530,7 @@ static int pxa168_eth_probe(struct platform_device *pdev)
- 	if (err)
- 		goto err_free_mdio;
+ 		if (pte_devmap(pte)) {
+@@ -1487,7 +1487,7 @@ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+  * useful to have gup_huge_pmd even if we can't operate on ptes.
+  */
+ static int gup_pte_range(pmd_t pmd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	return 0;
+ }
+@@ -1570,12 +1570,12 @@ static int __gup_device_huge_pud(pud_t pud, pud_t *pudp, unsigned long addr,
+ #endif
  
-+	pep->pdev = pdev;
- 	SET_NETDEV_DEV(dev, &pdev->dev);
- 	pxa168_init_hw(pep);
- 	err = register_netdev(dev);
+ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
++		unsigned long end, unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct page *head, *page;
+ 	int refs;
+ 
+-	if (!pmd_access_permitted(orig, write))
++	if (!pmd_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	if (pmd_devmap(orig))
+@@ -1608,12 +1608,12 @@ static int gup_huge_pmd(pmd_t orig, pmd_t *pmdp, unsigned long addr,
+ }
+ 
+ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+-		unsigned long end, int write, struct page **pages, int *nr)
++		unsigned long end, unsigned int flags, struct page **pages, int *nr)
+ {
+ 	struct page *head, *page;
+ 	int refs;
+ 
+-	if (!pud_access_permitted(orig, write))
++	if (!pud_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	if (pud_devmap(orig))
+@@ -1646,13 +1646,13 @@ static int gup_huge_pud(pud_t orig, pud_t *pudp, unsigned long addr,
+ }
+ 
+ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
+-			unsigned long end, int write,
++			unsigned long end, unsigned int flags,
+ 			struct page **pages, int *nr)
+ {
+ 	int refs;
+ 	struct page *head, *page;
+ 
+-	if (!pgd_access_permitted(orig, write))
++	if (!pgd_access_permitted(orig, flags & FOLL_WRITE))
+ 		return 0;
+ 
+ 	BUILD_BUG_ON(pgd_devmap(orig));
+@@ -1683,7 +1683,7 @@ static int gup_huge_pgd(pgd_t orig, pgd_t *pgdp, unsigned long addr,
+ }
+ 
+ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+-		int write, struct page **pages, int *nr)
++		unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pmd_t *pmdp;
+@@ -1705,7 +1705,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 			if (pmd_protnone(pmd))
+ 				return 0;
+ 
+-			if (!gup_huge_pmd(pmd, pmdp, addr, next, write,
++			if (!gup_huge_pmd(pmd, pmdp, addr, next, flags,
+ 				pages, nr))
+ 				return 0;
+ 
+@@ -1715,9 +1715,9 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ 			 * pmd format and THP pmd format
+ 			 */
+ 			if (!gup_huge_pd(__hugepd(pmd_val(pmd)), addr,
+-					 PMD_SHIFT, next, write, pages, nr))
++					 PMD_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pte_range(pmd, addr, next, write, pages, nr))
++		} else if (!gup_pte_range(pmd, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (pmdp++, addr = next, addr != end);
+ 
+@@ -1725,7 +1725,7 @@ static int gup_pmd_range(pud_t pud, unsigned long addr, unsigned long end,
+ }
+ 
+ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pud_t *pudp;
+@@ -1738,14 +1738,14 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+ 		if (pud_none(pud))
+ 			return 0;
+ 		if (unlikely(pud_huge(pud))) {
+-			if (!gup_huge_pud(pud, pudp, addr, next, write,
++			if (!gup_huge_pud(pud, pudp, addr, next, flags,
+ 					  pages, nr))
+ 				return 0;
+ 		} else if (unlikely(is_hugepd(__hugepd(pud_val(pud))))) {
+ 			if (!gup_huge_pd(__hugepd(pud_val(pud)), addr,
+-					 PUD_SHIFT, next, write, pages, nr))
++					 PUD_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pmd_range(pud, addr, next, write, pages, nr))
++		} else if (!gup_pmd_range(pud, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (pudp++, addr = next, addr != end);
+ 
+@@ -1753,7 +1753,7 @@ static int gup_pud_range(p4d_t p4d, unsigned long addr, unsigned long end,
+ }
+ 
+ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+-			 int write, struct page **pages, int *nr)
++			 unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	p4d_t *p4dp;
+@@ -1768,9 +1768,9 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ 		BUILD_BUG_ON(p4d_huge(p4d));
+ 		if (unlikely(is_hugepd(__hugepd(p4d_val(p4d))))) {
+ 			if (!gup_huge_pd(__hugepd(p4d_val(p4d)), addr,
+-					 P4D_SHIFT, next, write, pages, nr))
++					 P4D_SHIFT, next, flags, pages, nr))
+ 				return 0;
+-		} else if (!gup_pud_range(p4d, addr, next, write, pages, nr))
++		} else if (!gup_pud_range(p4d, addr, next, flags, pages, nr))
+ 			return 0;
+ 	} while (p4dp++, addr = next, addr != end);
+ 
+@@ -1778,7 +1778,7 @@ static int gup_p4d_range(pgd_t pgd, unsigned long addr, unsigned long end,
+ }
+ 
+ static void gup_pgd_range(unsigned long addr, unsigned long end,
+-		int write, struct page **pages, int *nr)
++		unsigned int flags, struct page **pages, int *nr)
+ {
+ 	unsigned long next;
+ 	pgd_t *pgdp;
+@@ -1791,14 +1791,14 @@ static void gup_pgd_range(unsigned long addr, unsigned long end,
+ 		if (pgd_none(pgd))
+ 			return;
+ 		if (unlikely(pgd_huge(pgd))) {
+-			if (!gup_huge_pgd(pgd, pgdp, addr, next, write,
++			if (!gup_huge_pgd(pgd, pgdp, addr, next, flags,
+ 					  pages, nr))
+ 				return;
+ 		} else if (unlikely(is_hugepd(__hugepd(pgd_val(pgd))))) {
+ 			if (!gup_huge_pd(__hugepd(pgd_val(pgd)), addr,
+-					 PGDIR_SHIFT, next, write, pages, nr))
++					 PGDIR_SHIFT, next, flags, pages, nr))
+ 				return;
+-		} else if (!gup_p4d_range(pgd, addr, next, write, pages, nr))
++		} else if (!gup_p4d_range(pgd, addr, next, flags, pages, nr))
+ 			return;
+ 	} while (pgdp++, addr = next, addr != end);
+ }
+@@ -1852,7 +1852,7 @@ int __get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	if (gup_fast_permitted(start, nr_pages)) {
+ 		local_irq_save(flags);
+-		gup_pgd_range(start, end, write, pages, &nr);
++		gup_pgd_range(start, end, write ? FOLL_WRITE : 0, pages, &nr);
+ 		local_irq_restore(flags);
+ 	}
+ 
+@@ -1894,7 +1894,7 @@ int get_user_pages_fast(unsigned long start, int nr_pages, int write,
+ 
+ 	if (gup_fast_permitted(start, nr_pages)) {
+ 		local_irq_disable();
+-		gup_pgd_range(addr, end, write, pages, &nr);
++		gup_pgd_range(addr, end, write ? FOLL_WRITE : 0, pages, &nr);
+ 		local_irq_enable();
+ 		ret = nr;
+ 	}
 -- 
 2.20.1

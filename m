@@ -1,237 +1,158 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Mon, 25 Feb 2019 21:25:33 +0000
-Subject: [PATCH] video: fbdev: atmel_lcdfb: drop AVR and platform_data support
-Message-Id: <20190225212533.26432-1-alexandre.belloni@bootlin.com>
+From: <Nicolas.Ferre@microchip.com>
+Date: Tue, 26 Feb 2019 15:35:03 +0000
+Subject: Re: [PATCH] video: fbdev: atmel_lcdfb: drop AVR and platform_data support
+Message-Id: <1e2f49a6-f966-16ad-e212-c785ed93df00@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190225212533.26432-1-alexandre.belloni@bootlin.com>
+In-Reply-To: <20190225212533.26432-1-alexandre.belloni@bootlin.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, Alexandre Belloni <alexandre.belloni@bootlin.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>, linux-arm-kernel@lists.infradead.org
+To: alexandre.belloni@bootlin.com, b.zolnierkie@samsung.com
+Cc: sam@ravnborg.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Make the driver OF only as since AVR32 has been removed from the kernel,
-there are only OF enabled platform using it.
-
-Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
----
- drivers/video/fbdev/Kconfig       |   6 +-
- drivers/video/fbdev/atmel_lcdfb.c | 114 ++----------------------------
- 2 files changed, 7 insertions(+), 113 deletions(-)
-
-diff --git a/drivers/video/fbdev/Kconfig b/drivers/video/fbdev/Kconfig
-index ae7712c9687a..f0f07d02af88 100644
---- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -866,8 +866,8 @@ config FB_S1D13XXX
- 	  <http://vdc.epson.com/>
- 
- config FB_ATMEL
--	tristate "AT91/AT32 LCD Controller support"
--	depends on FB && HAVE_FB_ATMEL
-+	tristate "AT91 LCD Controller support"
-+	depends on FB && OF && HAVE_FB_ATMEL
- 	select FB_BACKLIGHT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-@@ -875,7 +875,7 @@ config FB_ATMEL
- 	select FB_MODE_HELPERS
- 	select VIDEOMODE_HELPERS
- 	help
--	  This enables support for the AT91/AT32 LCD Controller.
-+	  This enables support for the AT91 LCD Controller.
- 
- config FB_NVIDIA
- 	tristate "nVidia Framebuffer Support"
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index 4ed55e6bbb84..b8786ff62b87 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -1,5 +1,5 @@
- /*
-- *  Driver for AT91/AT32 LCD Controller
-+ *  Driver for AT91 LCD Controller
-  *
-  *  Copyright (C) 2007 Atmel Corporation
-  *
-@@ -99,86 +99,6 @@ static struct atmel_lcdfb_config at91sam9rl_config = {
- 	.have_intensity_bit	= true,
- };
- 
--static struct atmel_lcdfb_config at32ap_config = {
--	.have_hozval		= true,
--};
--
--static const struct platform_device_id atmel_lcdfb_devtypes[] = {
--	{
--		.name = "at91sam9261-lcdfb",
--		.driver_data = (unsigned long)&at91sam9261_config,
--	}, {
--		.name = "at91sam9263-lcdfb",
--		.driver_data = (unsigned long)&at91sam9263_config,
--	}, {
--		.name = "at91sam9g10-lcdfb",
--		.driver_data = (unsigned long)&at91sam9g10_config,
--	}, {
--		.name = "at91sam9g45-lcdfb",
--		.driver_data = (unsigned long)&at91sam9g45_config,
--	}, {
--		.name = "at91sam9g45es-lcdfb",
--		.driver_data = (unsigned long)&at91sam9g45es_config,
--	}, {
--		.name = "at91sam9rl-lcdfb",
--		.driver_data = (unsigned long)&at91sam9rl_config,
--	}, {
--		.name = "at32ap-lcdfb",
--		.driver_data = (unsigned long)&at32ap_config,
--	}, {
--		/* terminator */
--	}
--};
--MODULE_DEVICE_TABLE(platform, atmel_lcdfb_devtypes);
--
--static struct atmel_lcdfb_config *
--atmel_lcdfb_get_config(struct platform_device *pdev)
--{
--	unsigned long data;
--
--	data = platform_get_device_id(pdev)->driver_data;
--
--	return (struct atmel_lcdfb_config *)data;
--}
--
--#if defined(CONFIG_ARCH_AT91)
--#define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
--					 | FBINFO_PARTIAL_PAN_OK \
--					 | FBINFO_HWACCEL_YPAN)
--
--static inline void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--					struct fb_var_screeninfo *var,
--					struct fb_info *info)
--{
--
--}
--#elif defined(CONFIG_AVR32)
--#define	ATMEL_LCDFB_FBINFO_DEFAULT	(FBINFO_DEFAULT \
--					| FBINFO_PARTIAL_PAN_OK \
--					| FBINFO_HWACCEL_XPAN \
--					| FBINFO_HWACCEL_YPAN)
--
--static void atmel_lcdfb_update_dma2d(struct atmel_lcdfb_info *sinfo,
--				     struct fb_var_screeninfo *var,
--				     struct fb_info *info)
--{
--	u32 dma2dcfg;
--	u32 pixeloff;
--
--	pixeloff = (var->xoffset * info->var.bits_per_pixel) & 0x1f;
--
--	dma2dcfg = (info->var.xres_virtual - info->var.xres)
--		 * info->var.bits_per_pixel / 8;
--	dma2dcfg |= pixeloff << ATMEL_LCDC_PIXELOFF_OFFSET;
--	lcdc_writel(sinfo, ATMEL_LCDC_DMA2DCFG, dma2dcfg);
--
--	/* Update configuration */
--	lcdc_writel(sinfo, ATMEL_LCDC_DMACON,
--		    lcdc_readl(sinfo, ATMEL_LCDC_DMACON)
--		    | ATMEL_LCDC_DMAUPDT);
--}
--#endif
--
- static u32 contrast_ctr = ATMEL_LCDC_PS_DIV8
- 		| ATMEL_LCDC_POL_POSITIVE
- 		| ATMEL_LCDC_ENA_PWMENABLE;
-@@ -404,8 +324,6 @@ static void atmel_lcdfb_update_dma(struct fb_info *info,
- 
- 	/* Set framebuffer DMA base address and pixel offset */
- 	lcdc_writel(sinfo, ATMEL_LCDC_DMABADDR1, dma_addr);
--
--	atmel_lcdfb_update_dma2d(sinfo, var, info);
- }
- 
- static inline void atmel_lcdfb_free_video_memory(struct atmel_lcdfb_info *sinfo)
-@@ -978,7 +896,6 @@ static void atmel_lcdfb_stop_clock(struct atmel_lcdfb_info *sinfo)
- 	clk_disable_unprepare(sinfo->lcdc_clk);
- }
- 
--#ifdef CONFIG_OF
- static const struct of_device_id atmel_lcdfb_dt_ids[] = {
- 	{ .compatible = "atmel,at91sam9261-lcdc" , .data = &at91sam9261_config, },
- 	{ .compatible = "atmel,at91sam9263-lcdc" , .data = &at91sam9263_config, },
-@@ -986,7 +903,6 @@ static const struct of_device_id atmel_lcdfb_dt_ids[] = {
- 	{ .compatible = "atmel,at91sam9g45-lcdc" , .data = &at91sam9g45_config, },
- 	{ .compatible = "atmel,at91sam9g45es-lcdc" , .data = &at91sam9g45es_config, },
- 	{ .compatible = "atmel,at91sam9rl-lcdc" , .data = &at91sam9rl_config, },
--	{ .compatible = "atmel,at32ap-lcdc" , .data = &at32ap_config, },
- 	{ /* sentinel */ }
- };
- 
-@@ -1122,19 +1038,12 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
- 	of_node_put(display_np);
- 	return ret;
- }
--#else
--static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
--{
--	return 0;
--}
--#endif
- 
- static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- {
- 	struct device *dev = &pdev->dev;
- 	struct fb_info *info;
- 	struct atmel_lcdfb_info *sinfo;
--	struct atmel_lcdfb_pdata *pdata = NULL;
- 	struct resource *regs = NULL;
- 	struct resource *map = NULL;
- 	struct fb_modelist *modelist;
-@@ -1159,21 +1068,6 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- 		ret = atmel_lcdfb_of_init(sinfo);
- 		if (ret)
- 			goto free_info;
--	} else if (dev_get_platdata(dev)) {
--		struct fb_monspecs *monspecs;
--		int i;
--
--		pdata = dev_get_platdata(dev);
--		monspecs = pdata->default_monspecs;
--		sinfo->pdata = *pdata;
--
--		for (i = 0; i < monspecs->modedb_len; i++)
--			fb_add_videomode(&monspecs->modedb[i], &info->modelist);
--
--		sinfo->config = atmel_lcdfb_get_config(pdev);
--
--		info->var.bits_per_pixel = pdata->default_bpp ? pdata->default_bpp : 16;
--		memcpy(&info->monspecs, pdata->default_monspecs, sizeof(info->monspecs));
- 	} else {
- 		dev_err(dev, "cannot get default configuration\n");
- 		goto free_info;
-@@ -1186,7 +1080,8 @@ static int __init atmel_lcdfb_probe(struct platform_device *pdev)
- 	if (IS_ERR(sinfo->reg_lcd))
- 		sinfo->reg_lcd = NULL;
- 
--	info->flags = ATMEL_LCDFB_FBINFO_DEFAULT;
-+	info->flags = FBINFO_DEFAULT | FBINFO_PARTIAL_PAN_OK |
-+		      FBINFO_HWACCEL_YPAN;
- 	info->pseudo_palette = sinfo->pseudo_palette;
- 	info->fbops = &atmel_lcdfb_ops;
- 
-@@ -1435,7 +1330,6 @@ static struct platform_driver atmel_lcdfb_driver = {
- 	.remove		= __exit_p(atmel_lcdfb_remove),
- 	.suspend	= atmel_lcdfb_suspend,
- 	.resume		= atmel_lcdfb_resume,
--	.id_table	= atmel_lcdfb_devtypes,
- 	.driver		= {
- 		.name	= "atmel_lcdfb",
- 		.of_match_table	= of_match_ptr(atmel_lcdfb_dt_ids),
-@@ -1444,6 +1338,6 @@ static struct platform_driver atmel_lcdfb_driver = {
- 
- module_platform_driver_probe(atmel_lcdfb_driver, atmel_lcdfb_probe);
- 
--MODULE_DESCRIPTION("AT91/AT32 LCD Controller framebuffer driver");
-+MODULE_DESCRIPTION("AT91 LCD Controller framebuffer driver");
- MODULE_AUTHOR("Nicolas Ferre <nicolas.ferre@atmel.com>");
- MODULE_LICENSE("GPL");
--- 
-2.20.1
+T24gMjUvMDIvMjAxOSBhdCAyMjoyNSwgQWxleGFuZHJlIEJlbGxvbmkgd3JvdGU6DQo+IE1ha2Ug
+dGhlIGRyaXZlciBPRiBvbmx5IGFzIHNpbmNlIEFWUjMyIGhhcyBiZWVuIHJlbW92ZWQgZnJvbSB0
+aGUga2VybmVsLA0KPiB0aGVyZSBhcmUgb25seSBPRiBlbmFibGVkIHBsYXRmb3JtIHVzaW5nIGl0
+Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQWxleGFuZHJlIEJlbGxvbmkgPGFsZXhhbmRyZS5iZWxs
+b25pQGJvb3RsaW4uY29tPg0KDQpJdCBsb29rcyBnb29kIHRvIG1lOg0KQWNrZWQtYnk6IE5pY29s
+YXMgRmVycmUgPG5pY29sYXMuZmVycmVAbWljcm9jaGlwLmNvbT4NCg0KVGhhbmtzIEFsZXhhbmRy
+ZS4NCkJlc3QgcmVnYXJkcywNCiAgIE5pY29sYXMNCg0KPiAtLS0NCj4gICBkcml2ZXJzL3ZpZGVv
+L2ZiZGV2L0tjb25maWcgICAgICAgfCAgIDYgKy0NCj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0
+bWVsX2xjZGZiLmMgfCAxMTQgKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tDQo+ICAgMiBm
+aWxlcyBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKyksIDExMyBkZWxldGlvbnMoLSkNCj4gDQo+IGRp
+ZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L0tjb25maWcgYi9kcml2ZXJzL3ZpZGVvL2Zi
+ZGV2L0tjb25maWcNCj4gaW5kZXggYWU3NzEyYzk2ODdhLi5mMGYwN2QwMmFmODggMTAwNjQ0DQo+
+IC0tLSBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvS2NvbmZpZw0KPiArKysgYi9kcml2ZXJzL3ZpZGVv
+L2ZiZGV2L0tjb25maWcNCj4gQEAgLTg2Niw4ICs4NjYsOCBAQCBjb25maWcgRkJfUzFEMTNYWFgN
+Cj4gICAJICA8aHR0cDovL3ZkYy5lcHNvbi5jb20vPg0KPiAgIA0KPiAgIGNvbmZpZyBGQl9BVE1F
+TA0KPiAtCXRyaXN0YXRlICJBVDkxL0FUMzIgTENEIENvbnRyb2xsZXIgc3VwcG9ydCINCj4gLQlk
+ZXBlbmRzIG9uIEZCICYmIEhBVkVfRkJfQVRNRUwNCj4gKwl0cmlzdGF0ZSAiQVQ5MSBMQ0QgQ29u
+dHJvbGxlciBzdXBwb3J0Ig0KPiArCWRlcGVuZHMgb24gRkIgJiYgT0YgJiYgSEFWRV9GQl9BVE1F
+TA0KPiAgIAlzZWxlY3QgRkJfQkFDS0xJR0hUDQo+ICAgCXNlbGVjdCBGQl9DRkJfRklMTFJFQ1QN
+Cj4gICAJc2VsZWN0IEZCX0NGQl9DT1BZQVJFQQ0KPiBAQCAtODc1LDcgKzg3NSw3IEBAIGNvbmZp
+ZyBGQl9BVE1FTA0KPiAgIAlzZWxlY3QgRkJfTU9ERV9IRUxQRVJTDQo+ICAgCXNlbGVjdCBWSURF
+T01PREVfSEVMUEVSUw0KPiAgIAloZWxwDQo+IC0JICBUaGlzIGVuYWJsZXMgc3VwcG9ydCBmb3Ig
+dGhlIEFUOTEvQVQzMiBMQ0QgQ29udHJvbGxlci4NCj4gKwkgIFRoaXMgZW5hYmxlcyBzdXBwb3J0
+IGZvciB0aGUgQVQ5MSBMQ0QgQ29udHJvbGxlci4NCj4gICANCj4gICBjb25maWcgRkJfTlZJRElB
+DQo+ICAgCXRyaXN0YXRlICJuVmlkaWEgRnJhbWVidWZmZXIgU3VwcG9ydCINCj4gZGlmZiAtLWdp
+dCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXRtZWxfbGNkZmIuYyBiL2RyaXZlcnMvdmlkZW8vZmJk
+ZXYvYXRtZWxfbGNkZmIuYw0KPiBpbmRleCA0ZWQ1NWU2YmJiODQuLmI4Nzg2ZmY2MmI4NyAxMDA2
+NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9hdG1lbF9sY2RmYi5jDQo+ICsrKyBiL2Ry
+aXZlcnMvdmlkZW8vZmJkZXYvYXRtZWxfbGNkZmIuYw0KPiBAQCAtMSw1ICsxLDUgQEANCj4gICAv
+Kg0KPiAtICogIERyaXZlciBmb3IgQVQ5MS9BVDMyIExDRCBDb250cm9sbGVyDQo+ICsgKiAgRHJp
+dmVyIGZvciBBVDkxIExDRCBDb250cm9sbGVyDQo+ICAgICoNCj4gICAgKiAgQ29weXJpZ2h0IChD
+KSAyMDA3IEF0bWVsIENvcnBvcmF0aW9uDQo+ICAgICoNCj4gQEAgLTk5LDg2ICs5OSw2IEBAIHN0
+YXRpYyBzdHJ1Y3QgYXRtZWxfbGNkZmJfY29uZmlnIGF0OTFzYW05cmxfY29uZmlnID0gew0KPiAg
+IAkuaGF2ZV9pbnRlbnNpdHlfYml0CT0gdHJ1ZSwNCj4gICB9Ow0KPiAgIA0KPiAtc3RhdGljIHN0
+cnVjdCBhdG1lbF9sY2RmYl9jb25maWcgYXQzMmFwX2NvbmZpZyA9IHsNCj4gLQkuaGF2ZV9ob3p2
+YWwJCT0gdHJ1ZSwNCj4gLX07DQo+IC0NCj4gLXN0YXRpYyBjb25zdCBzdHJ1Y3QgcGxhdGZvcm1f
+ZGV2aWNlX2lkIGF0bWVsX2xjZGZiX2RldnR5cGVzW10gPSB7DQo+IC0Jew0KPiAtCQkubmFtZSA9
+ICJhdDkxc2FtOTI2MS1sY2RmYiIsDQo+IC0JCS5kcml2ZXJfZGF0YSA9ICh1bnNpZ25lZCBsb25n
+KSZhdDkxc2FtOTI2MV9jb25maWcsDQo+IC0JfSwgew0KPiAtCQkubmFtZSA9ICJhdDkxc2FtOTI2
+My1sY2RmYiIsDQo+IC0JCS5kcml2ZXJfZGF0YSA9ICh1bnNpZ25lZCBsb25nKSZhdDkxc2FtOTI2
+M19jb25maWcsDQo+IC0JfSwgew0KPiAtCQkubmFtZSA9ICJhdDkxc2FtOWcxMC1sY2RmYiIsDQo+
+IC0JCS5kcml2ZXJfZGF0YSA9ICh1bnNpZ25lZCBsb25nKSZhdDkxc2FtOWcxMF9jb25maWcsDQo+
+IC0JfSwgew0KPiAtCQkubmFtZSA9ICJhdDkxc2FtOWc0NS1sY2RmYiIsDQo+IC0JCS5kcml2ZXJf
+ZGF0YSA9ICh1bnNpZ25lZCBsb25nKSZhdDkxc2FtOWc0NV9jb25maWcsDQo+IC0JfSwgew0KPiAt
+CQkubmFtZSA9ICJhdDkxc2FtOWc0NWVzLWxjZGZiIiwNCj4gLQkJLmRyaXZlcl9kYXRhID0gKHVu
+c2lnbmVkIGxvbmcpJmF0OTFzYW05ZzQ1ZXNfY29uZmlnLA0KPiAtCX0sIHsNCj4gLQkJLm5hbWUg
+PSAiYXQ5MXNhbTlybC1sY2RmYiIsDQo+IC0JCS5kcml2ZXJfZGF0YSA9ICh1bnNpZ25lZCBsb25n
+KSZhdDkxc2FtOXJsX2NvbmZpZywNCj4gLQl9LCB7DQo+IC0JCS5uYW1lID0gImF0MzJhcC1sY2Rm
+YiIsDQo+IC0JCS5kcml2ZXJfZGF0YSA9ICh1bnNpZ25lZCBsb25nKSZhdDMyYXBfY29uZmlnLA0K
+PiAtCX0sIHsNCj4gLQkJLyogdGVybWluYXRvciAqLw0KPiAtCX0NCj4gLX07DQo+IC1NT0RVTEVf
+REVWSUNFX1RBQkxFKHBsYXRmb3JtLCBhdG1lbF9sY2RmYl9kZXZ0eXBlcyk7DQo+IC0NCj4gLXN0
+YXRpYyBzdHJ1Y3QgYXRtZWxfbGNkZmJfY29uZmlnICoNCj4gLWF0bWVsX2xjZGZiX2dldF9jb25m
+aWcoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gLXsNCj4gLQl1bnNpZ25lZCBsb25n
+IGRhdGE7DQo+IC0NCj4gLQlkYXRhID0gcGxhdGZvcm1fZ2V0X2RldmljZV9pZChwZGV2KS0+ZHJp
+dmVyX2RhdGE7DQo+IC0NCj4gLQlyZXR1cm4gKHN0cnVjdCBhdG1lbF9sY2RmYl9jb25maWcgKilk
+YXRhOw0KPiAtfQ0KPiAtDQo+IC0jaWYgZGVmaW5lZChDT05GSUdfQVJDSF9BVDkxKQ0KPiAtI2Rl
+ZmluZQlBVE1FTF9MQ0RGQl9GQklORk9fREVGQVVMVAkoRkJJTkZPX0RFRkFVTFQgXA0KPiAtCQkJ
+CQkgfCBGQklORk9fUEFSVElBTF9QQU5fT0sgXA0KPiAtCQkJCQkgfCBGQklORk9fSFdBQ0NFTF9Z
+UEFOKQ0KPiAtDQo+IC1zdGF0aWMgaW5saW5lIHZvaWQgYXRtZWxfbGNkZmJfdXBkYXRlX2RtYTJk
+KHN0cnVjdCBhdG1lbF9sY2RmYl9pbmZvICpzaW5mbywNCj4gLQkJCQkJc3RydWN0IGZiX3Zhcl9z
+Y3JlZW5pbmZvICp2YXIsDQo+IC0JCQkJCXN0cnVjdCBmYl9pbmZvICppbmZvKQ0KPiAtew0KPiAt
+DQo+IC19DQo+IC0jZWxpZiBkZWZpbmVkKENPTkZJR19BVlIzMikNCj4gLSNkZWZpbmUJQVRNRUxf
+TENERkJfRkJJTkZPX0RFRkFVTFQJKEZCSU5GT19ERUZBVUxUIFwNCj4gLQkJCQkJfCBGQklORk9f
+UEFSVElBTF9QQU5fT0sgXA0KPiAtCQkJCQl8IEZCSU5GT19IV0FDQ0VMX1hQQU4gXA0KPiAtCQkJ
+CQl8IEZCSU5GT19IV0FDQ0VMX1lQQU4pDQo+IC0NCj4gLXN0YXRpYyB2b2lkIGF0bWVsX2xjZGZi
+X3VwZGF0ZV9kbWEyZChzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyAqc2luZm8sDQo+IC0JCQkJICAg
+ICBzdHJ1Y3QgZmJfdmFyX3NjcmVlbmluZm8gKnZhciwNCj4gLQkJCQkgICAgIHN0cnVjdCBmYl9p
+bmZvICppbmZvKQ0KPiAtew0KPiAtCXUzMiBkbWEyZGNmZzsNCj4gLQl1MzIgcGl4ZWxvZmY7DQo+
+IC0NCj4gLQlwaXhlbG9mZiA9ICh2YXItPnhvZmZzZXQgKiBpbmZvLT52YXIuYml0c19wZXJfcGl4
+ZWwpICYgMHgxZjsNCj4gLQ0KPiAtCWRtYTJkY2ZnID0gKGluZm8tPnZhci54cmVzX3ZpcnR1YWwg
+LSBpbmZvLT52YXIueHJlcykNCj4gLQkJICogaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsIC8gODsN
+Cj4gLQlkbWEyZGNmZyB8PSBwaXhlbG9mZiA8PCBBVE1FTF9MQ0RDX1BJWEVMT0ZGX09GRlNFVDsN
+Cj4gLQlsY2RjX3dyaXRlbChzaW5mbywgQVRNRUxfTENEQ19ETUEyRENGRywgZG1hMmRjZmcpOw0K
+PiAtDQo+IC0JLyogVXBkYXRlIGNvbmZpZ3VyYXRpb24gKi8NCj4gLQlsY2RjX3dyaXRlbChzaW5m
+bywgQVRNRUxfTENEQ19ETUFDT04sDQo+IC0JCSAgICBsY2RjX3JlYWRsKHNpbmZvLCBBVE1FTF9M
+Q0RDX0RNQUNPTikNCj4gLQkJICAgIHwgQVRNRUxfTENEQ19ETUFVUERUKTsNCj4gLX0NCj4gLSNl
+bmRpZg0KPiAtDQo+ICAgc3RhdGljIHUzMiBjb250cmFzdF9jdHIgPSBBVE1FTF9MQ0RDX1BTX0RJ
+VjgNCj4gICAJCXwgQVRNRUxfTENEQ19QT0xfUE9TSVRJVkUNCj4gICAJCXwgQVRNRUxfTENEQ19F
+TkFfUFdNRU5BQkxFOw0KPiBAQCAtNDA0LDggKzMyNCw2IEBAIHN0YXRpYyB2b2lkIGF0bWVsX2xj
+ZGZiX3VwZGF0ZV9kbWEoc3RydWN0IGZiX2luZm8gKmluZm8sDQo+ICAgDQo+ICAgCS8qIFNldCBm
+cmFtZWJ1ZmZlciBETUEgYmFzZSBhZGRyZXNzIGFuZCBwaXhlbCBvZmZzZXQgKi8NCj4gICAJbGNk
+Y193cml0ZWwoc2luZm8sIEFUTUVMX0xDRENfRE1BQkFERFIxLCBkbWFfYWRkcik7DQo+IC0NCj4g
+LQlhdG1lbF9sY2RmYl91cGRhdGVfZG1hMmQoc2luZm8sIHZhciwgaW5mbyk7DQo+ICAgfQ0KPiAg
+IA0KPiAgIHN0YXRpYyBpbmxpbmUgdm9pZCBhdG1lbF9sY2RmYl9mcmVlX3ZpZGVvX21lbW9yeShz
+dHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyAqc2luZm8pDQo+IEBAIC05NzgsNyArODk2LDYgQEAgc3Rh
+dGljIHZvaWQgYXRtZWxfbGNkZmJfc3RvcF9jbG9jayhzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyAq
+c2luZm8pDQo+ICAgCWNsa19kaXNhYmxlX3VucHJlcGFyZShzaW5mby0+bGNkY19jbGspOw0KPiAg
+IH0NCj4gICANCj4gLSNpZmRlZiBDT05GSUdfT0YNCj4gICBzdGF0aWMgY29uc3Qgc3RydWN0IG9m
+X2RldmljZV9pZCBhdG1lbF9sY2RmYl9kdF9pZHNbXSA9IHsNCj4gICAJeyAuY29tcGF0aWJsZSA9
+ICJhdG1lbCxhdDkxc2FtOTI2MS1sY2RjIiAsIC5kYXRhID0gJmF0OTFzYW05MjYxX2NvbmZpZywg
+fSwNCj4gICAJeyAuY29tcGF0aWJsZSA9ICJhdG1lbCxhdDkxc2FtOTI2My1sY2RjIiAsIC5kYXRh
+ID0gJmF0OTFzYW05MjYzX2NvbmZpZywgfSwNCj4gQEAgLTk4Niw3ICs5MDMsNiBAQCBzdGF0aWMg
+Y29uc3Qgc3RydWN0IG9mX2RldmljZV9pZCBhdG1lbF9sY2RmYl9kdF9pZHNbXSA9IHsNCj4gICAJ
+eyAuY29tcGF0aWJsZSA9ICJhdG1lbCxhdDkxc2FtOWc0NS1sY2RjIiAsIC5kYXRhID0gJmF0OTFz
+YW05ZzQ1X2NvbmZpZywgfSwNCj4gICAJeyAuY29tcGF0aWJsZSA9ICJhdG1lbCxhdDkxc2FtOWc0
+NWVzLWxjZGMiICwgLmRhdGEgPSAmYXQ5MXNhbTlnNDVlc19jb25maWcsIH0sDQo+ICAgCXsgLmNv
+bXBhdGlibGUgPSAiYXRtZWwsYXQ5MXNhbTlybC1sY2RjIiAsIC5kYXRhID0gJmF0OTFzYW05cmxf
+Y29uZmlnLCB9LA0KPiAtCXsgLmNvbXBhdGlibGUgPSAiYXRtZWwsYXQzMmFwLWxjZGMiICwgLmRh
+dGEgPSAmYXQzMmFwX2NvbmZpZywgfSwNCj4gICAJeyAvKiBzZW50aW5lbCAqLyB9DQo+ICAgfTsN
+Cj4gICANCj4gQEAgLTExMjIsMTkgKzEwMzgsMTIgQEAgc3RhdGljIGludCBhdG1lbF9sY2RmYl9v
+Zl9pbml0KHN0cnVjdCBhdG1lbF9sY2RmYl9pbmZvICpzaW5mbykNCj4gICAJb2Zfbm9kZV9wdXQo
+ZGlzcGxheV9ucCk7DQo+ICAgCXJldHVybiByZXQ7DQo+ICAgfQ0KPiAtI2Vsc2UNCj4gLXN0YXRp
+YyBpbnQgYXRtZWxfbGNkZmJfb2ZfaW5pdChzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5mbyAqc2luZm8p
+DQo+IC17DQo+IC0JcmV0dXJuIDA7DQo+IC19DQo+IC0jZW5kaWYNCj4gICANCj4gICBzdGF0aWMg
+aW50IF9faW5pdCBhdG1lbF9sY2RmYl9wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2
+KQ0KPiAgIHsNCj4gICAJc3RydWN0IGRldmljZSAqZGV2ID0gJnBkZXYtPmRldjsNCj4gICAJc3Ry
+dWN0IGZiX2luZm8gKmluZm87DQo+ICAgCXN0cnVjdCBhdG1lbF9sY2RmYl9pbmZvICpzaW5mbzsN
+Cj4gLQlzdHJ1Y3QgYXRtZWxfbGNkZmJfcGRhdGEgKnBkYXRhID0gTlVMTDsNCj4gICAJc3RydWN0
+IHJlc291cmNlICpyZWdzID0gTlVMTDsNCj4gICAJc3RydWN0IHJlc291cmNlICptYXAgPSBOVUxM
+Ow0KPiAgIAlzdHJ1Y3QgZmJfbW9kZWxpc3QgKm1vZGVsaXN0Ow0KPiBAQCAtMTE1OSwyMSArMTA2
+OCw2IEBAIHN0YXRpYyBpbnQgX19pbml0IGF0bWVsX2xjZGZiX3Byb2JlKHN0cnVjdCBwbGF0Zm9y
+bV9kZXZpY2UgKnBkZXYpDQo+ICAgCQlyZXQgPSBhdG1lbF9sY2RmYl9vZl9pbml0KHNpbmZvKTsN
+Cj4gICAJCWlmIChyZXQpDQo+ICAgCQkJZ290byBmcmVlX2luZm87DQo+IC0JfSBlbHNlIGlmIChk
+ZXZfZ2V0X3BsYXRkYXRhKGRldikpIHsNCj4gLQkJc3RydWN0IGZiX21vbnNwZWNzICptb25zcGVj
+czsNCj4gLQkJaW50IGk7DQo+IC0NCj4gLQkJcGRhdGEgPSBkZXZfZ2V0X3BsYXRkYXRhKGRldik7
+DQo+IC0JCW1vbnNwZWNzID0gcGRhdGEtPmRlZmF1bHRfbW9uc3BlY3M7DQo+IC0JCXNpbmZvLT5w
+ZGF0YSA9ICpwZGF0YTsNCj4gLQ0KPiAtCQlmb3IgKGkgPSAwOyBpIDwgbW9uc3BlY3MtPm1vZGVk
+Yl9sZW47IGkrKykNCj4gLQkJCWZiX2FkZF92aWRlb21vZGUoJm1vbnNwZWNzLT5tb2RlZGJbaV0s
+ICZpbmZvLT5tb2RlbGlzdCk7DQo+IC0NCj4gLQkJc2luZm8tPmNvbmZpZyA9IGF0bWVsX2xjZGZi
+X2dldF9jb25maWcocGRldik7DQo+IC0NCj4gLQkJaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsID0g
+cGRhdGEtPmRlZmF1bHRfYnBwID8gcGRhdGEtPmRlZmF1bHRfYnBwIDogMTY7DQo+IC0JCW1lbWNw
+eSgmaW5mby0+bW9uc3BlY3MsIHBkYXRhLT5kZWZhdWx0X21vbnNwZWNzLCBzaXplb2YoaW5mby0+
+bW9uc3BlY3MpKTsNCj4gICAJfSBlbHNlIHsNCj4gICAJCWRldl9lcnIoZGV2LCAiY2Fubm90IGdl
+dCBkZWZhdWx0IGNvbmZpZ3VyYXRpb25cbiIpOw0KPiAgIAkJZ290byBmcmVlX2luZm87DQo+IEBA
+IC0xMTg2LDcgKzEwODAsOCBAQCBzdGF0aWMgaW50IF9faW5pdCBhdG1lbF9sY2RmYl9wcm9iZShz
+dHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAgIAlpZiAoSVNfRVJSKHNpbmZvLT5yZWdf
+bGNkKSkNCj4gICAJCXNpbmZvLT5yZWdfbGNkID0gTlVMTDsNCj4gICANCj4gLQlpbmZvLT5mbGFn
+cyA9IEFUTUVMX0xDREZCX0ZCSU5GT19ERUZBVUxUOw0KPiArCWluZm8tPmZsYWdzID0gRkJJTkZP
+X0RFRkFVTFQgfCBGQklORk9fUEFSVElBTF9QQU5fT0sgfA0KPiArCQkgICAgICBGQklORk9fSFdB
+Q0NFTF9ZUEFOOw0KPiAgIAlpbmZvLT5wc2V1ZG9fcGFsZXR0ZSA9IHNpbmZvLT5wc2V1ZG9fcGFs
+ZXR0ZTsNCj4gICAJaW5mby0+ZmJvcHMgPSAmYXRtZWxfbGNkZmJfb3BzOw0KPiAgIA0KPiBAQCAt
+MTQzNSw3ICsxMzMwLDYgQEAgc3RhdGljIHN0cnVjdCBwbGF0Zm9ybV9kcml2ZXIgYXRtZWxfbGNk
+ZmJfZHJpdmVyID0gew0KPiAgIAkucmVtb3ZlCQk9IF9fZXhpdF9wKGF0bWVsX2xjZGZiX3JlbW92
+ZSksDQo+ICAgCS5zdXNwZW5kCT0gYXRtZWxfbGNkZmJfc3VzcGVuZCwNCj4gICAJLnJlc3VtZQkJ
+PSBhdG1lbF9sY2RmYl9yZXN1bWUsDQo+IC0JLmlkX3RhYmxlCT0gYXRtZWxfbGNkZmJfZGV2dHlw
+ZXMsDQo+ICAgCS5kcml2ZXIJCT0gew0KPiAgIAkJLm5hbWUJPSAiYXRtZWxfbGNkZmIiLA0KPiAg
+IAkJLm9mX21hdGNoX3RhYmxlCT0gb2ZfbWF0Y2hfcHRyKGF0bWVsX2xjZGZiX2R0X2lkcyksDQo+
+IEBAIC0xNDQ0LDYgKzEzMzgsNiBAQCBzdGF0aWMgc3RydWN0IHBsYXRmb3JtX2RyaXZlciBhdG1l
+bF9sY2RmYl9kcml2ZXIgPSB7DQo+ICAgDQo+ICAgbW9kdWxlX3BsYXRmb3JtX2RyaXZlcl9wcm9i
+ZShhdG1lbF9sY2RmYl9kcml2ZXIsIGF0bWVsX2xjZGZiX3Byb2JlKTsNCj4gICANCj4gLU1PRFVM
+RV9ERVNDUklQVElPTigiQVQ5MS9BVDMyIExDRCBDb250cm9sbGVyIGZyYW1lYnVmZmVyIGRyaXZl
+ciIpOw0KPiArTU9EVUxFX0RFU0NSSVBUSU9OKCJBVDkxIExDRCBDb250cm9sbGVyIGZyYW1lYnVm
+ZmVyIGRyaXZlciIpOw0KPiAgIE1PRFVMRV9BVVRIT1IoIk5pY29sYXMgRmVycmUgPG5pY29sYXMu
+ZmVycmVAYXRtZWwuY29tPiIpOw0KPiAgIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsNCj4gDQoNCg0K
+LS0gDQpOaWNvbGFzIEZlcnJlDQo

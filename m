@@ -1,29 +1,147 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Feb 2019 16:55:57 +0000
-Subject: Re: [PATCH] fbdev/via: fix spelling mistake "Expandsion" -> "Expansion"
-Message-Id: <003227d9-7b9f-6d9b-3a0d-acaa833ee179@samsung.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
+Date: Tue, 26 Feb 2019 11:19:47 +0000
+Subject: [PATCH 3/3] dlfb: introduce a rendering mutex
+Message-Id: <20190226112122.413085116@twibright.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20181012224715epcas2p199717104dd8ed929a91296bf9ee5f10b@epcas2p1.samsung.com>
-        <20181012224710.26867-1-colin.king@canonical.com>
-In-Reply-To: <20181012224710.26867-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Colin King <colin.king@canonical.com>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
+Rendering calls may be done simultaneously from the workqueue,
+dlfb_ops_write, dlfb_ops_ioctl, dlfb_ops_set_par and dlfb_dpy_deferred_io.
+The code is robust enough so that it won't crash on concurrent rendering.
 
-On 10/13/2018 12:47 AM, Colin King wrote:
-> From: Colin Ian King <colin.king@canonical.com>
-> 
-> Trivial fix to spelling mistake in MODULE_PARM_DESC text
-> 
-> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+However, concurrent rendering may cause display corruption if the same
+pixel is simultaneously being rendered. In order to avoid this corruption,
+this patch adds a mutex around the rendering calls.
 
-Patch queued for v5.1, thanks.
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Cc: stable@vger.kernel.org
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+---
+ drivers/video/fbdev/udlfb.c |   41 ++++++++++++++++++++++++++++++-----------
+ include/video/udlfb.h       |    1 +
+ 2 files changed, 31 insertions(+), 11 deletions(-)
+
+Index: linux-4.19.25/drivers/video/fbdev/udlfb.c
+=================================--- linux-4.19.25.orig/drivers/video/fbdev/udlfb.c	2019-02-25 16:24:05.000000000 +0100
++++ linux-4.19.25/drivers/video/fbdev/udlfb.c	2019-02-25 16:27:35.000000000 +0100
+@@ -596,7 +596,7 @@ static int dlfb_render_hline(struct dlfb
+ 
+ static int dlfb_handle_damage(struct dlfb_data *dlfb, int x, int y, int width, int height)
+ {
+-	int i;
++	int i, ret;
+ 	char *cmd;
+ 	cycles_t start_cycles, end_cycles;
+ 	int bytes_sent = 0;
+@@ -606,21 +606,29 @@ static int dlfb_handle_damage(struct dlf
+ 
+ 	start_cycles = get_cycles();
+ 
++	mutex_lock(&dlfb->render_mutex);
++
+ 	aligned_x = DL_ALIGN_DOWN(x, sizeof(unsigned long));
+ 	width = DL_ALIGN_UP(width + (x-aligned_x), sizeof(unsigned long));
+ 	x = aligned_x;
+ 
+ 	if ((width <= 0) ||
+ 	    (x + width > dlfb->info->var.xres) ||
+-	    (y + height > dlfb->info->var.yres))
+-		return -EINVAL;
++	    (y + height > dlfb->info->var.yres)) {
++		ret = -EINVAL;
++		goto unlock_ret;
++	}
+ 
+-	if (!atomic_read(&dlfb->usb_active))
+-		return 0;
++	if (!atomic_read(&dlfb->usb_active)) {
++		ret = 0;
++		goto unlock_ret;
++	}
+ 
+ 	urb = dlfb_get_urb(dlfb);
+-	if (!urb)
+-		return 0;
++	if (!urb) {
++		ret = 0;
++		goto unlock_ret;
++	}
+ 	cmd = urb->transfer_buffer;
+ 
+ 	for (i = y; i < y + height ; i++) {
+@@ -654,7 +662,11 @@ error:
+ 		    >> 10)), /* Kcycles */
+ 		   &dlfb->cpu_kcycles_used);
+ 
+-	return 0;
++	ret = 0;
++
++unlock_ret:
++	mutex_unlock(&dlfb->render_mutex);
++	return ret;
+ }
+ 
+ static void dlfb_init_damage(struct dlfb_data *dlfb)
+@@ -782,17 +794,19 @@ static void dlfb_dpy_deferred_io(struct
+ 	int bytes_identical = 0;
+ 	int bytes_rendered = 0;
+ 
++	mutex_lock(&dlfb->render_mutex);
++
+ 	if (!fb_defio)
+-		return;
++		goto unlock_ret;
+ 
+ 	if (!atomic_read(&dlfb->usb_active))
+-		return;
++		goto unlock_ret;
+ 
+ 	start_cycles = get_cycles();
+ 
+ 	urb = dlfb_get_urb(dlfb);
+ 	if (!urb)
+-		return;
++		goto unlock_ret;
+ 
+ 	cmd = urb->transfer_buffer;
+ 
+@@ -825,6 +839,8 @@ error:
+ 	atomic_add(((unsigned int) ((end_cycles - start_cycles)
+ 		    >> 10)), /* Kcycles */
+ 		   &dlfb->cpu_kcycles_used);
++unlock_ret:
++	mutex_unlock(&dlfb->render_mutex);
+ }
+ 
+ static int dlfb_get_edid(struct dlfb_data *dlfb, char *edid, int len)
+@@ -986,6 +1002,8 @@ static void dlfb_ops_destroy(struct fb_i
+ 
+ 	cancel_work_sync(&dlfb->damage_work);
+ 
++	mutex_destroy(&dlfb->render_mutex);
++
+ 	if (info->cmap.len != 0)
+ 		fb_dealloc_cmap(&info->cmap);
+ 	if (info->monspecs.modedb)
+@@ -1682,6 +1700,7 @@ static int dlfb_usb_probe(struct usb_int
+ 	dlfb->ops = dlfb_ops;
+ 	info->fbops = &dlfb->ops;
+ 
++	mutex_init(&dlfb->render_mutex);
+ 	dlfb_init_damage(dlfb);
+ 	spin_lock_init(&dlfb->damage_lock);
+ 	INIT_WORK(&dlfb->damage_work, dlfb_damage_work);
+Index: linux-4.19.25/include/video/udlfb.h
+=================================--- linux-4.19.25.orig/include/video/udlfb.h	2019-02-25 16:24:05.000000000 +0100
++++ linux-4.19.25/include/video/udlfb.h	2019-02-25 16:24:05.000000000 +0100
+@@ -48,6 +48,7 @@ struct dlfb_data {
+ 	int base8;
+ 	u32 pseudo_palette[256];
+ 	int blank_mode; /*one of FB_BLANK_ */
++	struct mutex render_mutex;
+ 	int damage_x;
+ 	int damage_y;
+ 	int damage_x2;

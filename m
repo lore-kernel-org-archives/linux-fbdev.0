@@ -1,44 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 08 Feb 2019 17:31:54 +0000
-Subject: Re: [PATCH] video/fbdev: refactor video= cmdline parsing
-Message-Id: <57d664cc-7125-e274-307f-d0b36e032f8e@samsung.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 27 Feb 2019 20:53:04 +0000
+Subject: [PATCH] xen, fbfront: mark expected switch fall-through
+Message-Id: <20190227205303.GA1231@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190123093817.13964-1-jani.nikula@intel.com>
- <20190123105830.GF3271@phenom.ffwll.local>
- <CGME20190123111206epcas2p286b8e3a62951d6d5f8f261501583dc50@epcas2p2.samsung.com>
- <87ef9339vo.fsf@intel.com>
-In-Reply-To: <87ef9339vo.fsf@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jani Nikula <jani.nikula@intel.com>
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Kees Cook <keescook@chromium.org>
 
+In preparation to enabling -Wimplicit-fallthrough, mark switch
+cases where we are expecting to fall through.
 
-On 01/23/2019 12:12 PM, Jani Nikula wrote:
-> On Wed, 23 Jan 2019, Daniel Vetter <daniel@ffwll.ch> wrote:
->> On Wed, Jan 23, 2019 at 11:38:17AM +0200, Jani Nikula wrote:
->>> Make the video_setup() function slightly easier to read by removing the
->>> repeated checks for !global. Remove the misleading return value comment
->>> while at it.
->>>
->>> I'm slightly hesitant to change any of this, but here goes anyway, with
->>> hopes that the next person to have to look at this has it a wee bit
->>> easier.
->>>
->>> Signed-off-by: Jani Nikula <jani.nikula@intel.com>
->>
->> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> 
-> Thanks.
-> 
-> Just to be clear, I expect Bartlomiej to queue this via the fb tree
-> (provided he agrees with the change, of course).
+This patch fixes the following warning:
 
-Patch queued for v5.1, thanks.
+drivers/video/fbdev/xen-fbfront.c: In function ‘xenfb_backend_changed’:
+drivers/video/fbdev/xen-fbfront.c:678:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   if (dev->state = XenbusStateClosed)
+      ^
+drivers/video/fbdev/xen-fbfront.c:681:2: note: here
+  case XenbusStateClosing:
+  ^~~~
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Warning level 3 was used: -Wimplicit-fallthrough=3
+
+Notice that, in this particular case, the code comment is modified
+in accordance with what GCC is expecting to find.
+
+This patch is part of the ongoing efforts to enable
+-Wimplicit-fallthrough.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/xen-fbfront.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+index 6a4bbc9e1fb0..a3d6b6db221b 100644
+--- a/drivers/video/fbdev/xen-fbfront.c
++++ b/drivers/video/fbdev/xen-fbfront.c
+@@ -677,7 +677,7 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+ 	case XenbusStateClosed:
+ 		if (dev->state = XenbusStateClosed)
+ 			break;
+-		/* Missed the backend's CLOSING state -- fallthrough */
++		/* fall through - Missed the backend's CLOSING state. */
+ 	case XenbusStateClosing:
+ 		xenbus_frontend_closed(dev);
+ 		break;
+-- 
+2.21.0

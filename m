@@ -1,34 +1,45 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 20 Mar 2019 05:13:53 +0000
-Subject: Re: [RESEND][PATCH 0/2] staging: sm750fb: trivial style fixes.
-Message-Id: <20190320051353.GB16864@kroah.com>
+From: Yue Haibing <yuehaibing@huawei.com>
+Date: Fri, 01 Mar 2019 01:53:42 +0000
+Subject: [PATCH -next] fbdev: omap2: omapfb: trivial code cleanup
+Message-Id: <20190301015342.28888-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190303165532.23727-1-tomli@tomli.me>
-In-Reply-To: <20190303165532.23727-1-tomli@tomli.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yifeng Li <tomli@tomli.me>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, trivial@kernel.org, gregkh@linuxfoundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
 
-On Mon, Mar 04, 2019 at 12:55:30AM +0800, Yifeng Li wrote:
-> Hello.
-> 
-> >From January to February, there have been two trivial sm750fb patches
-> submitted to linux-fbdev, one by me, one by Jin Chen, but both without
-> any response. Further, it seems both maintainers, Sudip Mukherjee and
-> Teddy Wang, are currently unavailable, getting an "Ack-by" would be
-> unfeasible.
-> 
-> Since they're extremely trivial. Hereby, I picked them up, reworded
-> commit message, and now resubmit them as trivial patches, and send them
-> to trivial@kernel.org. I hope it could be directly applied by either a
-> fbdev, a staging maintainer or by Jiri Kosina.
+From: YueHaibing <yuehaibing@huawei.com>
 
-staging patches need to go to me, as get_maintainers.pl says to send
-them.  I'll queue these up in a bit, but no need to bother trivial@ with
-staging stuff, otherwise that would be all it did :)
+After commit 60d2fa0dad06 ("fbdev: omap2: no need to check
+return value of debugfs_create functions"), there are corner
+code need to be cleaned.
 
-thanks,
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/core.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-greg k-h
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/core.c b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+index 7e6a3eb..b5956a1 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/core.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/core.c
+@@ -136,7 +136,6 @@ static inline void dss_uninitialize_debugfs(void)
+ }
+ void dss_debugfs_create_file(const char *name, void (*write)(struct seq_file *))
+ {
+-	return 0;
+ }
+ #endif /* CONFIG_FB_OMAP2_DSS_DEBUGFS */
+ 
+@@ -169,8 +168,6 @@ static struct notifier_block omap_dss_pm_notif_block = {
+ 
+ static int __init omap_dss_probe(struct platform_device *pdev)
+ {
+-	int r;
+-
+ 	core.pdev = pdev;
+ 
+ 	dss_features_init(omapdss_get_version());
+-- 
+2.7.4

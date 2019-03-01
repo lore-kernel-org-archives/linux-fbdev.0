@@ -1,37 +1,45 @@
-From: Kangjie Lu <kjlu@umn.edu>
-Date: Thu, 14 Mar 2019 07:33:17 +0000
-Subject: [PATCH] video: fbdev: fix potential NULL pointer dereferences
-Message-Id: <20190314073319.23209-1-kjlu@umn.edu>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 01 Mar 2019 14:45:52 +0000
+Subject: Re: [PATCH] fbdev: omap2: fix warnings in dss core
+Message-Id: <5ceb8653-055d-e4eb-a705-0bfd243e132c@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190213084828epcas3p2d7f70d63c5e267197de5513ae96b4fc2@epcas3p2.samsung.com>
+        <20190213084721.29624-1-anders.roxell@linaro.org>
+In-Reply-To: <20190213084721.29624-1-anders.roxell@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: kjlu@umn.edu
-Cc: pakki001@umn.edu, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Finn Thain <fthain@telegraphics.com.au>, Rob Herring <robh@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Anders Roxell <anders.roxell@linaro.org>
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-In case ioremap fails, the fix releases resources and returns
--ENOMEM to avoid NULL pointer dereferences.
 
-Signed-off-by: Kangjie Lu <kjlu@umn.edu>
----
- drivers/video/fbdev/imsttfb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+On 02/13/2019 09:47 AM, Anders Roxell wrote:
+> Commit 60d2fa0dad06 ("fbdev: omap2: no need to check return value of
+> debugfs_create functions") changed the declaration of the return value
+> of function dss_debugfs_create_file() and the following two warnings
+> appeared:
+> 
+> drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘dss_debugfs_create_file’:
+> drivers/video/fbdev/omap2/omapfb/dss/core.c:139:9: warning: ‘return’ with a value,
+>  in function returning void
+>   return 0;
+>          ^
+> drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘omap_dss_probe’:
+> drivers/video/fbdev/omap2/omapfb/dss/core.c:172:6: warning: unused variable ‘r’
+>  [-Wunused-variable]
+>   int r;
+>       ^
+> 
+> Rework so function dss_debugfs_create_file() that is declared to return
+> void don't 'return 0' and remove the declaration of the unused variable
+> 'r'.
+> 
+> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
 
-diff --git a/drivers/video/fbdev/imsttfb.c b/drivers/video/fbdev/imsttfb.c
-index 5d9670daf60e..2e321d73b3a5 100644
---- a/drivers/video/fbdev/imsttfb.c
-+++ b/drivers/video/fbdev/imsttfb.c
-@@ -1515,6 +1515,11 @@ static int imsttfb_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	info->fix.smem_start = addr;
- 	info->screen_base = (__u8 *)ioremap(addr, par->ramdac = IBM ?
- 					    0x400000 : 0x800000);
-+	if (!info->screen_base) {
-+		release_mem_region(addr, size);
-+		framebuffer_release(info);
-+		return -ENOMEM;
-+	}
- 	info->fix.mmio_start = addr + 0x800000;
- 	par->dc_regs = ioremap(addr + 0x800000, 0x1000);
- 	par->cmap_regs_phys = addr + 0x840000;
--- 
-2.17.1
+Patch queued for v5.1, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

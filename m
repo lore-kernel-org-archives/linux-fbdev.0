@@ -1,34 +1,46 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 31 Mar 2019 12:19:24 +0000
-Subject: Re: [PATCH 3/8] fbdev: sm712fb: fix VRAM detection, don't set SR70/71/74/75.
-Message-Id: <20190331121924.5wjhhjp2j2gom7zp@debian>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 04 Mar 2019 19:52:30 +0000
+Subject: [PATCH] fbdev: mbx: fix a misspelled variable name
+Message-Id: <20190304195249.971696-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190316222504.27170-1-tomli@tomli.me>
- <20190316222504.27170-4-tomli@tomli.me>
-In-Reply-To: <20190316222504.27170-4-tomli@tomli.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yifeng Li <tomli@tomli.me>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sun, Mar 17, 2019 at 06:24:59AM +0800, Yifeng Li wrote:
-> On a Thinkpad s30 (Pentium III / i440MX, Lynx3DM), the amount of Video
-> RAM is not detected correctly by the xf86-video-siliconmotion driver.
-> This is because sm712fb overwrites the GPR71 Scratch Pad Register, which
-> is set by BIOS on x86 and used to indicate amount of VRAM.
-> 
-> Other Scratch Pad Registers, including GPR70/74/75, don't have the same
-> side-effect, but overwriting to them is still questionable, as they are
-> not related to modesetting.
-> 
-> Stop writing to SR70/71/74/75 (a.k.a GPR70/71/74/75).
-> 
-> Signed-off-by: Yifeng Li <tomli@tomli.me>
-> Cc: stable@vger.kernel.org  # v4.4+
+A recent cleanup introduced a build failure when a variable
+was spelled incorrectly:
 
-Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+In file included from drivers/video/fbdev/mbx/mbxfb.c:881:
+drivers/video/fbdev/mbx/mbxdebugfs.c: In function 'mbxfb_debugfs_init':
+drivers/video/fbdev/mbx/mbxdebugfs.c:217:2: error: 'mbfi' undeclared (first use in this function); did you mean 'mfbi'?
+  mbfi->debugfs_dir = dir;
+  ^~~~
+  mfbi
+drivers/video/fbdev/mbx/mbxdebugfs.c:217:2: note: each undeclared identifier is reported only once for each function it appears in
+drivers/video/fbdev/mbx/mbxdebugfs.c:213:21: error: unused variable 'mfbi' [-Werror=unused-variable]
+  struct mbxfb_info *mfbi = fbi->par;
+                     ^~~~
 
---
-Regards
-Sudip
+Fixes: 72aed9e31344 ("fbdev: mbx: fix up debugfs file creation")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/mbx/mbxdebugfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/mbx/mbxdebugfs.c b/drivers/video/fbdev/mbx/mbxdebugfs.c
+index 52cfe0132b25..09af721638fb 100644
+--- a/drivers/video/fbdev/mbx/mbxdebugfs.c
++++ b/drivers/video/fbdev/mbx/mbxdebugfs.c
+@@ -214,7 +214,7 @@ static void mbxfb_debugfs_init(struct fb_info *fbi)
+ 	struct dentry *dir;
+ 
+ 	dir = debugfs_create_dir("mbxfb", NULL);
+-	mbfi->debugfs_dir = dir;
++	mfbi->debugfs_dir = dir;
+ 
+ 	debugfs_create_file("sysconf", 0444, dir, fbi, &sysconf_fops);
+ 	debugfs_create_file("clock", 0444, dir, fbi, &clock_fops);
+-- 
+2.20.0

@@ -1,115 +1,517 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Wed, 27 Mar 2019 08:31:43 +0000
-Subject: Re: [PATCH 11/11] drm/fbdevdrm: Detect and validate display modes
-Message-Id: <66e6a23f-f634-2c42-30e1-1c9716276e76@suse.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="mwCnnkQ1iUJJcAv9a1rsG7q2BSXOagB3m"
+From: Dante Paz <dante.paz@gmail.com>
+Date: Sat, 09 Mar 2019 21:48:52 +0000
+Subject: [PATCH] FBTFT: fbtft-bus: Fix code style problems
+Message-Id: <20190309214852.12233-1-dante.paz@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190326091744.11542-1-tzimmermann@suse.de>
- <20190326091744.11542-12-tzimmermann@suse.de>
- <20190326164741.GA3888@intel.com>
-In-Reply-To: <20190326164741.GA3888@intel.com>
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: airlied@linux.ie, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: gregkh@linuxfoundation.org
+Cc: devel@driverdev.osuosl.org, leobras.c@gmail.com, linux-fbdev@vger.kernel.org, nishadkamdar@gmail.com, Dante Paz <dpaz@unc.edu.ar>, dri-devel@lists.freedesktop.org, renatoys08@gmail.com
 
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---mwCnnkQ1iUJJcAv9a1rsG7q2BSXOagB3m
-Content-Type: multipart/mixed; boundary="8lYd0VrImza8sLQCMwNTanMUN2EtqJlbc";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>
-Cc: airlied@linux.ie, daniel@ffwll.ch, b.zolnierkie@samsung.com,
- linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
-Message-ID: <66e6a23f-f634-2c42-30e1-1c9716276e76@suse.de>
-Subject: Re: [PATCH 11/11] drm/fbdevdrm: Detect and validate display modes
-References: <20190326091744.11542-1-tzimmermann@suse.de>
- <20190326091744.11542-12-tzimmermann@suse.de>
- <20190326164741.GA3888@intel.com>
-In-Reply-To: <20190326164741.GA3888@intel.com>
+From: Dante Paz <dpaz@unc.edu.ar>
 
---8lYd0VrImza8sLQCMwNTanMUN2EtqJlbc
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: quoted-printable
+    Style and coding function issues were corrected, by avoiding macro functions with a conflicting coding style.
+    Signed-off-by: Dante Paz <dpaz@unc.edu.ar>
+---
+ drivers/staging/fbtft/fbtft-bus.c | 440 +++++++++++++++++-------------
+ 1 file changed, 254 insertions(+), 186 deletions(-)
 
-Hi
-
-Am 26.03.19 um 17:47 schrieb Ville Syrj=C3=A4l=C3=A4:
->> +static int connector_helper_get_modes(struct drm_connector *connector=
-)
->> +{
->> +	struct fbdevdrm_modeset *modeset;
->> +	struct list_head *pos;
->> +	int ret, num_modes =3D 0;
->> +
->> +	modeset =3D fbdevdrm_modeset_of_connector(connector);
->> +
->> +	ret =3D update_display_info(&connector->display_info, modeset->fb_in=
-fo);
->> +	if (ret)
->> +		return 0;
->> +
->> +	/* update connector properties from video modes */
->> +	connector->interlace_allowed =3D 0;
->> +	connector->doublescan_allowed =3D 0;
->> +	connector->stereo_allowed =3D 0;
->> +
->> +	if (!num_modes && modeset->fb_info->mode) {
->> +		ret =3D drm_mode_probed_add_from_fb_videomode(
->> +			connector, modeset->fb_info->mode, modeset->fb_info);
->> +		if (!ret)
->> +			++num_modes;
->> +	}
->> +
->> +	if (!num_modes) {
->> +
->> +		/* DRM backporting notes: we go through all modes in the
->> +		 * fb_info's mode list and convert each to a DRM modes. If
->> +		 * you convert an fbdev driver to DRM, replace this code
->> +		 * with an actual hardware query. This will usually involve
->> +		 * reading the monitor EDID via DDC.
->> +		 */
->> +
->> +		list_for_each(pos, &modeset->fb_info->modelist) {
->=20
-> fbdev has a modelist?
-
-Yes, and its content is surprisingly random! Some drivers fill it with
-'real' values coming from DDC probing, some drivers fill it with modes
-that have worked before, and some drivers fill it with... something.
-
-Best regards
-Thomas
-
-I guess it does. But not exposed to
-> userspace, which is probably the reason I never realized this.
->=20
-
---=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Linux GmbH, Maxfeldstrasse 5, 90409 Nuernberg, Germany
-GF: Felix Imend=C3=B6rffer, Mary Higgins, Sri Rasiah
-HRB 21284 (AG N=C3=BCrnberg)
-
-
---8lYd0VrImza8sLQCMwNTanMUN2EtqJlbc--
-
---mwCnnkQ1iUJJcAv9a1rsG7q2BSXOagB3m
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAlybNO8ACgkQaA3BHVML
-eiNyrQgAwjPm52TpWvyHGfe3939Aw5FJO2XpufMTQy6KL8ijbOP+1XcSuHTiNaUz
-dpS1y17XSwG6HuojBnpy8wdo7Xsq8P07iwlsTD7wV4mpabBCuBn69vqOfwaZ8yJg
-2EHc4gCbAIAh90fqH4CBXt5Fpk/iVBoTLCZsZ7pLNBvxnJowBHwZLqELhZX+R5Ol
-/iMSXq8TgY7Ivu4fkKCPeyX0NAccUyokuxV8mBM/roKSb6yVMdlLV2TEzpDgyyg4
-qS8dckn0DPsx97HnyO/W0sUgzccW0o+hH1yfucJPr818NSPL4+eydmv0YQtVihed
-O+ucaX4RhQvDuuapl6sHm2WjpgJqhg==
-=3pjA
------END PGP SIGNATURE-----
-
---mwCnnkQ1iUJJcAv9a1rsG7q2BSXOagB3m--
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 2ea814d0dca5..6f49306cd162 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -1,7 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ #include <linux/export.h>
+ #include <linux/errno.h>
+-#include <linux/gpio/consumer.h>
++#include <linux/gpio.h>
+ #include <linux/spi/spi.h>
+ #include "fbtft.h"
+ 
+@@ -11,103 +11,171 @@
+  *
+  *****************************************************************************/
+ 
+-#define define_fbtft_write_reg(func, buffer_type, data_type, modifier)        \
+-void func(struct fbtft_par *par, int len, ...)                                \
+-{                                                                             \
+-	va_list args;                                                         \
+-	int i, ret;                                                           \
+-	int offset = 0;                                                       \
+-	buffer_type *buf = (buffer_type *)par->buf;                           \
+-									      \
+-	if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {                    \
+-		va_start(args, len);                                          \
+-		for (i = 0; i < len; i++) {                                   \
+-			buf[i] = modifier((data_type)va_arg(args,             \
+-							    unsigned int));   \
+-		}                                                             \
+-		va_end(args);                                                 \
+-		fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,                  \
+-				  par->info->device, buffer_type, buf, len,   \
+-				  "%s: ", __func__);                          \
+-	}                                                                     \
+-									      \
+-	va_start(args, len);                                                  \
+-									      \
+-	if (par->startbyte) {                                                 \
+-		*(u8 *)par->buf = par->startbyte;                             \
+-		buf = (buffer_type *)(par->buf + 1);                          \
+-		offset = 1;                                                   \
+-	}                                                                     \
+-									      \
+-	*buf = modifier((data_type)va_arg(args, unsigned int));               \
+-	ret = fbtft_write_buf_dc(par, par->buf, sizeof(data_type) + offset,   \
+-				 0);                                          \
+-	if (ret < 0)							      \
+-		goto out;						      \
+-	len--;                                                                \
+-									      \
+-	if (par->startbyte)                                                   \
+-		*(u8 *)par->buf = par->startbyte | 0x2;                       \
+-									      \
+-	if (len) {                                                            \
+-		i = len;                                                      \
+-		while (i--)						      \
+-			*buf++ = modifier((data_type)va_arg(args,             \
+-							    unsigned int));   \
+-		fbtft_write_buf_dc(par, par->buf,			      \
+-				   len * (sizeof(data_type) + offset), 1);    \
+-	}                                                                     \
+-out:									      \
+-	va_end(args);                                                         \
+-}                                                                             \
+-EXPORT_SYMBOL(func);
+-
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
+-define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++void fbtft_write_reg8_bus8(struct fbtft_par *par, int len, ...)
++{
++        va_list args;
++        int i, ret;
++        int offset = 0;
++
++        u8 *buf = (u8 *)par->buf;
++
++        if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {
++                va_start(args, len);
++                for (i = 0; i < len; i++)
++                        buf[i] = ((u8)va_arg(args, unsigned int));
++
++                va_end(args);
++                fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par, par->info->device,
++                                u8, buf, len, "%s: ", __func__);
++        }
++        va_start(args, len);
++        if (par->startbyte) {
++                *(u8 *)par->buf = par->startbyte;
++                buf = (u8 *)(par->buf + 1);
++                offset = 1;
++        }
++        *buf = ((u8)va_arg(args, unsigned int));
++        ret = fbtft_write_buf_dc(par, par->buf, sizeof(u8) + offset, 0);
++        if (ret < 0)
++                goto out;
++        len--;
++        if (par->startbyte)
++                *(u8 *)par->buf = par->startbyte | 0x2;
++        if (len) {
++                i = len;
++                while (i--)
++                        *buf++ = ((u8)va_arg(args, unsigned int));
++                fbtft_write_buf_dc(par, par->buf,
++                                len*(sizeof(u8) + offset), 1);
++        } out:
++        va_end(args);
++}
++EXPORT_SYMBOL(fbtft_write_reg8_bus8);
++
++void fbtft_write_reg16_bus8(struct fbtft_par *par, int len, ...)
++{
++        va_list args;
++        int i, ret;
++        int offset = 0;
++
++        __be16 *buf = (__be16 *)par->buf;
++
++        if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {
++                va_start(args, len);
++                for (i = 0; i < len; i++)
++                        buf[i] = cpu_to_be16((u16)va_arg(args, unsigned int));
++
++                va_end(args);
++                fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par, par->info->device,
++                                __be16, buf, len, "%s: ", __func__);
++        }
++        va_start(args, len);
++        if (par->startbyte) {
++                *(u8 *)par->buf = par->startbyte;
++                buf = (__be16 *)(par->buf + 1);
++                offset = 1;
++        }
++        *buf = cpu_to_be16((u16)va_arg(args, unsigned int));
++        ret = fbtft_write_buf_dc(par, par->buf, sizeof(u16) + offset, 0);
++        if (ret < 0)
++                goto out;
++        len--;
++        if (par->startbyte)
++                *(u8 *)par->buf = par->startbyte | 0x2;
++        if (len) {
++                i = len;
++                while (i--)
++                        *buf++ = cpu_to_be16((u16)va_arg(args, unsigned int));
++                fbtft_write_buf_dc(par, par->buf,
++                                len*(sizeof(u16) + offset), 1);
++        } out:
++        va_end(args);
++}
++EXPORT_SYMBOL(fbtft_write_reg16_bus8);
++
++void fbtft_write_reg16_bus16(struct fbtft_par *par, int len, ...)
++{
++        va_list args;
++        int i, ret;
++        int offset = 0;
++        u16 *buf = (u16 *)par->buf;
++
++        if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {
++                va_start(args, len);
++                for (i = 0; i < len; i++)
++                        buf[i] = ((u16)va_arg(args, unsigned int));
++
++                va_end(args);
++                fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par, par->info->device,
++                                u16, buf, len, "%s: ", __func__);
++        }
++        va_start(args, len);
++
++        if (par->startbyte) {
++                *(u8 *)par->buf = par->startbyte;
++                buf = (u16 *)(par->buf + 1);
++                offset = 1;
++        }
++        *buf = ((u16)va_arg(args, unsigned int));
++        ret = fbtft_write_buf_dc(par, par->buf, sizeof(u16) + offset, 0);
++        if (ret < 0)
++                goto out;
++        len--;
++        if (par->startbyte)
++                *(u8 *)par->buf = par->startbyte | 0x2;
++        if (len) {
++                i = len;
++                while (i--)
++                        *buf++ = ((u16)va_arg(args, unsigned int));
++                fbtft_write_buf_dc(par, par->buf,
++                                len*(sizeof(u16) + offset), 1);
++        } out:
++        va_end(args);
++}
++EXPORT_SYMBOL(fbtft_write_reg16_bus16);
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
+-	va_list args;
+-	int i, ret;
+-	int pad = 0;
+-	u16 *buf = (u16 *)par->buf;
+-
+-	if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {
+-		va_start(args, len);
+-		for (i = 0; i < len; i++)
+-			*(((u8 *)buf) + i) = (u8)va_arg(args, unsigned int);
+-		va_end(args);
+-		fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,
+-				  par->info->device, u8, buf, len, "%s: ",
+-				  __func__);
+-	}
+-	if (len <= 0)
+-		return;
+-
+-	if (par->spi && (par->spi->bits_per_word = 8)) {
+-		/* we're emulating 9-bit, pad start of buffer with no-ops
+-		 * (assuming here that zero is a no-op)
+-		 */
+-		pad = (len % 4) ? 4 - (len % 4) : 0;
+-		for (i = 0; i < pad; i++)
+-			*buf++ = 0x000;
+-	}
+-
+-	va_start(args, len);
+-	*buf++ = (u8)va_arg(args, unsigned int);
+-	i = len - 1;
+-	while (i--) {
+-		*buf = (u8)va_arg(args, unsigned int);
+-		*buf++ |= 0x100; /* dc=1 */
+-	}
+-	va_end(args);
+-	ret = par->fbtftops.write(par, par->buf, (len + pad) * sizeof(u16));
+-	if (ret < 0) {
+-		dev_err(par->info->device,
+-			"write() failed and returned %d\n", ret);
+-		return;
+-	}
++        va_list args;
++        int i, ret;
++        int pad = 0;
++        u16 *buf = (u16 *)par->buf;
++
++        if (unlikely(par->debug & DEBUG_WRITE_REGISTER)) {
++                va_start(args, len);
++                for (i = 0; i < len; i++)
++                        *(((u8 *)buf) + i) = (u8)va_arg(args, unsigned int);
++                va_end(args);
++                fbtft_par_dbg_hex(DEBUG_WRITE_REGISTER, par,
++                                  par->info->device, u8, buf, len, "%s: ",
++                                  __func__);
++        }
++        if (len <= 0)
++                return;
++
++        if (par->spi && (par->spi->bits_per_word = 8)) {
++                /* we're emulating 9-bit, pad start of buffer with no-ops
++                 * (assuming here that zero is a no-op)
++                 */
++                pad = (len % 4) ? 4 - (len % 4) : 0;
++                for (i = 0; i < pad; i++)
++                        *buf++ = 0x000;
++        }
++
++        va_start(args, len);
++        *buf++ = (u8)va_arg(args, unsigned int);
++        i = len - 1;
++        while (i--) {
++                *buf = (u8)va_arg(args, unsigned int);
++                *buf++ |= 0x100; /* dc=1 */
++        }
++        va_end(args);
++        ret = par->fbtftops.write(par, par->buf, (len + pad) * sizeof(u16));
++        if (ret < 0) {
++                dev_err(par->info->device,
++                        "write() failed and returned %d\n", ret);
++                return;
++        }
+ }
+ EXPORT_SYMBOL(fbtft_write_reg8_bus9);
+ 
+@@ -120,125 +188,125 @@ EXPORT_SYMBOL(fbtft_write_reg8_bus9);
+ /* 16 bit pixel over 8-bit databus */
+ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ {
+-	u16 *vmem16;
+-	__be16 *txbuf16 = par->txbuf.buf;
+-	size_t remain;
+-	size_t to_copy;
+-	size_t tx_array_size;
+-	int i;
+-	int ret = 0;
+-	size_t startbyte_size = 0;
+-
+-	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
+-		      __func__, offset, len);
+-
+-	remain = len / 2;
+-	vmem16 = (u16 *)(par->info->screen_buffer + offset);
+-
+-	if (!par->gpio.dc)
+-		gpiod_set_value(par->gpio.dc, 1);
+-
+-	/* non buffered write */
+-	if (!par->txbuf.buf)
+-		return par->fbtftops.write(par, vmem16, len);
+-
+-	/* buffered write */
+-	tx_array_size = par->txbuf.len / 2;
+-
+-	if (par->startbyte) {
+-		txbuf16 = par->txbuf.buf + 1;
+-		tx_array_size -= 2;
+-		*(u8 *)(par->txbuf.buf) = par->startbyte | 0x2;
+-		startbyte_size = 1;
+-	}
+-
+-	while (remain) {
+-		to_copy = min(tx_array_size, remain);
+-		dev_dbg(par->info->device, "to_copy=%zu, remain=%zu\n",
+-			to_copy, remain - to_copy);
+-
+-		for (i = 0; i < to_copy; i++)
+-			txbuf16[i] = cpu_to_be16(vmem16[i]);
+-
+-		vmem16 = vmem16 + to_copy;
+-		ret = par->fbtftops.write(par, par->txbuf.buf,
+-						startbyte_size + to_copy * 2);
+-		if (ret < 0)
+-			return ret;
+-		remain -= to_copy;
+-	}
+-
+-	return ret;
++        u16 *vmem16;
++        __be16 *txbuf16 = par->txbuf.buf;
++        size_t remain;
++        size_t to_copy;
++        size_t tx_array_size;
++        int i;
++        int ret = 0;
++        size_t startbyte_size = 0;
++
++        fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
++                      __func__, offset, len);
++
++        remain = len / 2;
++        vmem16 = (u16 *)(par->info->screen_buffer + offset);
++
++        if (par->gpio.dc != -1)
++                gpio_set_value(par->gpio.dc, 1);
++
++        /* non buffered write */
++        if (!par->txbuf.buf)
++                return par->fbtftops.write(par, vmem16, len);
++
++        /* buffered write */
++        tx_array_size = par->txbuf.len / 2;
++
++        if (par->startbyte) {
++                txbuf16 = par->txbuf.buf + 1;
++                tx_array_size -= 2;
++                *(u8 *)(par->txbuf.buf) = par->startbyte | 0x2;
++                startbyte_size = 1;
++        }
++
++        while (remain) {
++                to_copy = min(tx_array_size, remain);
++                dev_dbg(par->info->device, "to_copy=%zu, remain=%zu\n",
++                        to_copy, remain - to_copy);
++
++                for (i = 0; i < to_copy; i++)
++                        txbuf16[i] = cpu_to_be16(vmem16[i]);
++
++                vmem16 = vmem16 + to_copy;
++                ret = par->fbtftops.write(par, par->txbuf.buf,
++                                                startbyte_size + to_copy * 2);
++                if (ret < 0)
++                        return ret;
++                remain -= to_copy;
++        }
++
++        return ret;
+ }
+ EXPORT_SYMBOL(fbtft_write_vmem16_bus8);
+ 
+ /* 16 bit pixel over 9-bit SPI bus: dc + high byte, dc + low byte */
+ int fbtft_write_vmem16_bus9(struct fbtft_par *par, size_t offset, size_t len)
+ {
+-	u8 *vmem8;
+-	u16 *txbuf16 = par->txbuf.buf;
+-	size_t remain;
+-	size_t to_copy;
+-	size_t tx_array_size;
+-	int i;
+-	int ret = 0;
++        u8 *vmem8;
++        u16 *txbuf16 = par->txbuf.buf;
++        size_t remain;
++        size_t to_copy;
++        size_t tx_array_size;
++        int i;
++        int ret = 0;
+ 
+-	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
+-		      __func__, offset, len);
++        fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
++                      __func__, offset, len);
+ 
+-	if (!par->txbuf.buf) {
+-		dev_err(par->info->device, "%s: txbuf.buf is NULL\n", __func__);
+-		return -1;
+-	}
++        if (!par->txbuf.buf) {
++                dev_err(par->info->device, "%s: txbuf.buf is NULL\n", __func__);
++                return -1;
++        }
+ 
+-	remain = len;
+-	vmem8 = par->info->screen_buffer + offset;
++        remain = len;
++        vmem8 = par->info->screen_buffer + offset;
+ 
+-	tx_array_size = par->txbuf.len / 2;
++        tx_array_size = par->txbuf.len / 2;
+ 
+-	while (remain) {
+-		to_copy = min(tx_array_size, remain);
+-		dev_dbg(par->info->device, "to_copy=%zu, remain=%zu\n",
+-			to_copy, remain - to_copy);
++        while (remain) {
++                to_copy = min(tx_array_size, remain);
++                dev_dbg(par->info->device, "to_copy=%zu, remain=%zu\n",
++                        to_copy, remain - to_copy);
+ 
+ #ifdef __LITTLE_ENDIAN
+-		for (i = 0; i < to_copy; i += 2) {
+-			txbuf16[i]     = 0x0100 | vmem8[i + 1];
+-			txbuf16[i + 1] = 0x0100 | vmem8[i];
+-		}
++                for (i = 0; i < to_copy; i += 2) {
++                        txbuf16[i]     = 0x0100 | vmem8[i + 1];
++                        txbuf16[i + 1] = 0x0100 | vmem8[i];
++                }
+ #else
+-		for (i = 0; i < to_copy; i++)
+-			txbuf16[i]   = 0x0100 | vmem8[i];
++                for (i = 0; i < to_copy; i++)
++                        txbuf16[i]   = 0x0100 | vmem8[i];
+ #endif
+-		vmem8 = vmem8 + to_copy;
+-		ret = par->fbtftops.write(par, par->txbuf.buf, to_copy * 2);
+-		if (ret < 0)
+-			return ret;
+-		remain -= to_copy;
+-	}
+-
+-	return ret;
++                vmem8 = vmem8 + to_copy;
++                ret = par->fbtftops.write(par, par->txbuf.buf, to_copy * 2);
++                if (ret < 0)
++                        return ret;
++                remain -= to_copy;
++        }
++
++        return ret;
+ }
+ EXPORT_SYMBOL(fbtft_write_vmem16_bus9);
+ 
+ int fbtft_write_vmem8_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ {
+-	dev_err(par->info->device, "%s: function not implemented\n", __func__);
+-	return -1;
++        dev_err(par->info->device, "%s: function not implemented\n", __func__);
++        return -1;
+ }
+ EXPORT_SYMBOL(fbtft_write_vmem8_bus8);
+ 
+ /* 16 bit pixel over 16-bit databus */
+ int fbtft_write_vmem16_bus16(struct fbtft_par *par, size_t offset, size_t len)
+ {
+-	u16 *vmem16;
++        u16 *vmem16;
+ 
+-	fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
+-		      __func__, offset, len);
++        fbtft_par_dbg(DEBUG_WRITE_VMEM, par, "%s(offset=%zu, len=%zu)\n",
++                      __func__, offset, len);
+ 
+-	vmem16 = (u16 *)(par->info->screen_buffer + offset);
++        vmem16 = (u16 *)(par->info->screen_buffer + offset);
+ 
+-	/* no need for buffered write with 16-bit bus */
+-	return fbtft_write_buf_dc(par, vmem16, len, 1);
++        /* no need for buffered write with 16-bit bus */
++        return fbtft_write_buf_dc(par, vmem16, len, 1);
+ }
+ EXPORT_SYMBOL(fbtft_write_vmem16_bus16);
+-- 
+2.17.2

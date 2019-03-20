@@ -1,7 +1,7 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 07 Mar 2019 20:22:32 +0000
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Wed, 20 Mar 2019 12:36:23 +0000
 Subject: Re: [RESEND][PATCH 2/2] staging: sm750fb: trivial Camel Case removal for setDisplayControl().
-Message-Id: <20190307202232.GA16300@kroah.com>
+Message-Id: <20190320123622.GH2202@kadam>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190303165532.23727-1-tomli@tomli.me>
  <20190303165532.23727-3-tomli@tomli.me>
@@ -10,7 +10,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Yifeng Li <tomli@tomli.me>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Jin Chen <nobijinc@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Jiri Kosina <trivial@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Jin Chen <nobijinc@gmail.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
 
 On Mon, Mar 04, 2019 at 12:55:32AM +0800, Yifeng Li wrote:
 > Rename the function setDisplayControl() to set_display_control().
@@ -22,9 +22,17 @@ On Mon, Mar 04, 2019 at 12:55:32AM +0800, Yifeng Li wrote:
 > Signed-off-by: Jin Chen <nobijinc@gmail.com>
 > [tomli@tomli.me: resent as trivial patch, reworded the commit message]
 > Signed-off-by: Yifeng Li <tomli@tomli.me>
+> ---
 
-I've already applied Jin's patch to the tree, so no need to resend this.
+Apparently Greg already applied this earlier...  I don't know why the
+original patch didn't reach me.  I'm on the devel@driverdev.osuosl.org
+list.
 
-thanks,
+Did Jin Chen write this?  If so why does it have a Suggested-by tag for
+him?  If not then you should have preserved the authorship credit by
+using the From: header in the first line on the commit message...
 
-greg k-h
+Anyway, it doesn't matter but hopefully this helps for next time.
+
+regards,
+dan carpenter

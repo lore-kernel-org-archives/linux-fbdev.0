@@ -1,34 +1,68 @@
-From: Gerd Hoffmann <kraxel@redhat.com>
-Date: Thu, 14 Mar 2019 11:30:56 +0000
-Subject: Re: [RfC PATCH] fbdev: list all memory bars as conflicting apertures
-Message-Id: <20190314113056.sa4zkunxgyxef3t5@sirius.home.kraxel.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 20 Mar 2019 20:08:06 +0000
+Subject: Re: [PATCH] xen, fbfront: mark expected switch fall-through
+Message-Id: <6675f2ed-6916-2be5-fb60-39c9436f53f7@embeddedor.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190313110741.6541-1-kraxel@redhat.com>
- <20190314103713.GQ2665@phenom.ffwll.local>
-In-Reply-To: <20190314103713.GQ2665@phenom.ffwll.local>
+References: <20190227205303.GA1231@embeddedor>
+ <f8ff03de-9d7c-233a-cd86-37269667db0c@gmail.com>
+In-Reply-To: <f8ff03de-9d7c-233a-cd86-37269667db0c@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Oleksandr Andrushchenko <andr2000@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: xen-devel <xen-devel@lists.xenproject.org>, linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Thu, Mar 14, 2019 at 11:37:13AM +0100, Daniel Vetter wrote:
-> On Wed, Mar 13, 2019 at 12:07:41PM +0100, Gerd Hoffmann wrote:
-> > Simply add all pci memory bars to struct apertures_struct in
-> > remove_conflicting_pci_framebuffers().  That allows to drop
-> > the res_id parameter.
-> > 
-> > TODO: actually remove the res_id parameter.
+Hi all,
+
+Friendly ping:
+
+Who can take this?
+
+Thanks
+--
+Gustavo
+
+On 2/28/19 5:51 AM, Oleksandr Andrushchenko wrote:
+> +Xen-devel list
 > 
-> I think best to do that in a cleanup patch afterwards.
-
-I was just lazy and didn't want update all callers for the first patch
-draft.  But doing a test run ...
-
-> Maybe if you want to be paranoid in the conversion add a check that we're
-> not skipping the pci bar requested in res_id. Then we could test this for
-> a kernel and remove the parameter later on.
-
-... that way before actually dropping the parameter surely makes sense.
-
-New version on the way,
-  Gerd
+> On 2/27/19 10:53 PM, Gustavo A. R. Silva wrote:
+>> In preparation to enabling -Wimplicit-fallthrough, mark switch
+>> cases where we are expecting to fall through.
+>>
+>> This patch fixes the following warning:
+>>
+>> drivers/video/fbdev/xen-fbfront.c: In function ‘xenfb_backend_changed’:
+>> drivers/video/fbdev/xen-fbfront.c:678:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
+>>     if (dev->state = XenbusStateClosed)
+>>        ^
+>> drivers/video/fbdev/xen-fbfront.c:681:2: note: here
+>>    case XenbusStateClosing:
+>>    ^~~~
+>>
+>> Warning level 3 was used: -Wimplicit-fallthrough=3
+>>
+>> Notice that, in this particular case, the code comment is modified
+>> in accordance with what GCC is expecting to find.
+>>
+>> This patch is part of the ongoing efforts to enable
+>> -Wimplicit-fallthrough.
+>>
+>> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+>> ---
+>>   drivers/video/fbdev/xen-fbfront.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/video/fbdev/xen-fbfront.c b/drivers/video/fbdev/xen-fbfront.c
+>> index 6a4bbc9e1fb0..a3d6b6db221b 100644
+>> --- a/drivers/video/fbdev/xen-fbfront.c
+>> +++ b/drivers/video/fbdev/xen-fbfront.c
+>> @@ -677,7 +677,7 @@ static void xenfb_backend_changed(struct xenbus_device *dev,
+>>       case XenbusStateClosed:
+>>           if (dev->state = XenbusStateClosed)
+>>               break;
+>> -        /* Missed the backend's CLOSING state -- fallthrough */
+>> +        /* fall through - Missed the backend's CLOSING state. */
+>>       case XenbusStateClosing:
+>>           xenbus_frontend_closed(dev);
+>>           break;
+> 

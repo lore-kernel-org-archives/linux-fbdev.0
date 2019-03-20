@@ -1,7 +1,7 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sun, 03 Mar 2019 17:56:49 +0000
+Date: Wed, 20 Mar 2019 05:13:53 +0000
 Subject: Re: [RESEND][PATCH 0/2] staging: sm750fb: trivial style fixes.
-Message-Id: <20190303175649.GB16636@kroah.com>
+Message-Id: <20190320051353.GB16864@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190303165532.23727-1-tomli@tomli.me>
 In-Reply-To: <20190303165532.23727-1-tomli@tomli.me>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Yifeng Li <tomli@tomli.me>
-Cc: Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: Jiri Kosina <trivial@kernel.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
 
 On Mon, Mar 04, 2019 at 12:55:30AM +0800, Yifeng Li wrote:
 > Hello.
@@ -24,21 +24,11 @@ On Mon, Mar 04, 2019 at 12:55:30AM +0800, Yifeng Li wrote:
 > commit message, and now resubmit them as trivial patches, and send them
 > to trivial@kernel.org. I hope it could be directly applied by either a
 > fbdev, a staging maintainer or by Jiri Kosina.
-> 
-> Thanks for your time!
-> 
-> Yifeng Li (2):
->   staging: sm750fb: trivial comment indention fix.
->   staging: sm750fb: trivial Camel Case removal for setDisplayControl().
-> 
->  drivers/staging/sm750fb/ddk750_display.c |  6 ++---
->  drivers/staging/sm750fb/sm750_accel.c    | 32 ++++++++++++------------
->  2 files changed, 19 insertions(+), 19 deletions(-)
 
-Always use scripts/get_maintainer.pl when sending patches in.  It would
-have saved you time...
+staging patches need to go to me, as get_maintainers.pl says to send
+them.  I'll queue these up in a bit, but no need to bother trivial@ with
+staging stuff, otherwise that would be all it did :)
 
-Anyway, my tree is closed right now, but I'll look at these once 5.1-rc1
-is out, thanks.
+thanks,
 
 greg k-h

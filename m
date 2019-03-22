@@ -1,38 +1,241 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 31 Mar 2019 12:18:51 +0000
-Subject: Re: [PATCH 1/8] fbdev: sm712fb: fix white screen of death on reboot, don't set CR3B-CR3F.
-Message-Id: <20190331121851.h3j2pud6yhelsknr@debian>
+From: Yifeng Li <tomli@tomli.me>
+Date: Fri, 22 Mar 2019 05:17:56 +0000
+Subject: [PATCH v2 4/7] fbdev: sm712fb: add 32-bit color modes, drops some other modes.
+Message-Id: <20190322051759.15007-5-tomli@tomli.me>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190316222504.27170-1-tomli@tomli.me>
- <20190316222504.27170-2-tomli@tomli.me>
-In-Reply-To: <20190316222504.27170-2-tomli@tomli.me>
+References: <20190322051759.15007-1-tomli@tomli.me>
+In-Reply-To: <20190322051759.15007-1-tomli@tomli.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yifeng Li <tomli@tomli.me>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Yifeng Li <tomli@tomli.me>
 
-On Sun, Mar 17, 2019 at 06:24:57AM +0800, Yifeng Li wrote:
-> On a Thinkpad s30 (Pentium III / i440MX, Lynx3DM), rebooting with
-> sm712fb framebuffer driver would cause a white screen of death on
-> the next POST, presumably the proper timings for the LCD panel was
-> not reprogrammed properly by the BIOS.
-> 
-> Experiments showed a few CRTC Scratch Registers, including CRT3D,
-> CRT3E and CRT3F may be used internally by BIOS as some flags. CRT3B is
-> a hardware testing register, we shouldn't mess with it. CRT3C has
-> blanking signal and line compare control, which is not needed for this
-> driver.
-> 
-> Stop writing to CR3B-CR3F (a.k.a CRT3B-CRT3F) registers. Even if these
-> registers don't have side-effect on other systems, writing to them is
-> also highly questionable.
-> 
-> Signed-off-by: Yifeng Li <tomli@tomli.me>
-> Cc: stable@vger.kernel.org  # v4.4+
+The modesetting in sm712fb is an ugly hack. First, all the registers
+are programmed by hardcoded register arrays, which makes it difficult
+to support different variations of color depths, refresh rates, CRT/LCD
+panel, etc of the same resolution. Second, it means the standard
+fb_find_mode() cannot be used and a confusing non-standard "vga="
+parameter is needed. Third, there's only minimum differences between
+some modes, yet around 70 lines of code and 100 registers are needed to
+be indepentently specified for each mode. Fourth, the register between
+some modes are inconsistent: the register configuration of different
+color depths in 640 x 480 modes are identical, but for 800 x 600 modes
+it's completely different. Also, some modes can drive the LCD panel
+properly yet some other modes will only show a white screen of death on
+the LCD panel. Fifth, some modes, such as 32-bit color modes, are
+supported but never listed, and some modes are listed, such as 1280x1024
+modes, but never supported by the register configuration arrays. And
+some modes are partially implemented but neither listed nor supported,
+i.e. the 8-bit color modes.
 
-Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Fixing these problems requires a complete rewrite of modesetting code,
+which is well-beyond my motivation. This commit only perform a minimum
+cleanup:
 
---
-Regards
-Sudip
+1. Remove the 320 x 240 register settings, since there are never listed
+and never actually being used. This resolution is not even supported by
+vesafb, so it's safe to assume that no one is using such hardware. Future
+developers who needs them can simply recover them from the git history.
+
+2. Remove 1280x1024 modes and 8-bit color modes. They are listed but never
+supported by the register array. So it doesn't work in the beginning, and
+only gives a black screen.
+
+3. Add 32-bit color modes. They are supported but never listed, and are
+useful to some users.
+
+Signed-off-by: Yifeng Li <tomli@tomli.me>
+---
+ drivers/video/fbdev/sm712fb.c | 158 +++++++---------------------------
+ 1 file changed, 31 insertions(+), 127 deletions(-)
+
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 75d60ea63883..5e887653ef5d 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -118,25 +118,48 @@ struct vesa_mode {
+ };
+ 
+ static const struct vesa_mode vesa_mode_table[] = {
+-	{"0x301", 640,  480,  8},
+-	{"0x303", 800,  600,  8},
+-	{"0x305", 1024, 768,  8},
+-	{"0x307", 1280, 1024, 8},
+-
+ 	{"0x311", 640,  480,  16},
+ 	{"0x314", 800,  600,  16},
+ 	{"0x317", 1024, 768,  16},
+-	{"0x31A", 1280, 1024, 16},
+ 
+ 	{"0x312", 640,  480,  24},
+ 	{"0x315", 800,  600,  24},
+ 	{"0x318", 1024, 768,  24},
+-	{"0x31B", 1280, 1024, 24},
++
++	{"0x329", 640,  480,  32},
++	{"0x32e", 800,  600,  32},
++	{"0x338", 1024, 768,  32},
+ };
+ 
+ /**********************************************************************
+ 			 SM712 Mode table.
+- **********************************************************************/
++
++ The modesetting in sm712fb is an ugly hack. First, all the registers
++ are programmed by hardcoded register arrays, which makes it difficult
++ to support different variations of color depths, refresh rates, CRT/LCD
++ panel, etc of the same resolution. Second, it means the standard
++ fb_find_mode() cannot be used and a confusing non-standard "vga="
++ parameter is needed. Third, there's only minimum differences between
++ some modes, yet around 70 lines of code and 100 registers are needed to
++ be indepentently specified for each mode. Fourth, the register between
++ some modes are inconsistent: the register configuration of different
++ color depths in 640 x 480 modes are identical, but for 800 x 600 modes
++ it's completely different. Also, some modes can drive the LCD panel
++ properly yet some other modes will only show a white screen of death on
++ the LCD panel. Fifth, there is a specific hack for Lemote Loongson 8089D
++ laptop, the 1024x768, 16-bit color mode was modified to drive its LCD panel
++ and changed to 1024x600, but the original mode was not preserved, so
++ 1024x768 16-bit color mode is completely unsupported. And previously,
++ some modes are listed, such as 1280x1024 modes, but never supported by
++ the register configuration arrays, so they are now removed. And some modes
++ are partially implemented but neither listed nor supported, i.e. the 8-bit
++ color modes, so they have been removed from vesa_mode_table, too.
++
++ I'm not the original author of the code, fixing these problems requires a
++ complete rewrite of modesetting code, which is well-beyond my motivation.
++
++ See Documentation/fb/sm712fb.txt for more information.
++**********************************************************************/
+ static const struct modeinit vgamode[] = {
+ 	{
+ 		/*  mode#0: 640 x 480  16Bpp  60Hz */
+@@ -732,125 +755,6 @@ static const struct modeinit vgamode[] = {
+ 			0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x15, 0x03,
+ 		},
+ 	},
+-	{	/*  mode#6: 320 x 240  16Bpp  60Hz */
+-		320, 240, 16, 60,
+-		/*  Init_MISC */
+-		0xEB,
+-		{	/*  Init_SR0_SR4 */
+-			0x03, 0x01, 0x0F, 0x03, 0x0E,
+-		},
+-		{	/*  Init_SR10_SR24 */
+-			0xF3, 0xB6, 0xC0, 0xDD, 0x00, 0x0E, 0x17, 0x2C,
+-			0x99, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+-			0xC4, 0x32, 0x02, 0x01, 0x01,
+-		},
+-		{	/*  Init_SR30_SR75 */
+-			0x38, 0x03, 0x20, 0x09, 0xC0, 0x3A, 0x3A, 0x3A,
+-			0x3A, 0x3A, 0x3A, 0x3A, 0x00, 0x00, 0x03, 0xFF,
+-			0x00, 0xFC, 0x00, 0x00, 0x20, 0x18, 0x00, 0xFC,
+-			0x20, 0x0C, 0x44, 0x20, 0x00, 0x00, 0x00, 0x3A,
+-			0x06, 0x68, 0xA7, 0x7F, 0x83, 0x24, 0xFF, 0x03,
+-			0x00, 0x60, 0x59, 0x3A, 0x3A, 0x00, 0x00, 0x3A,
+-			0x01, 0x80, 0x7E, 0x1A, 0x1A, 0x00, 0x00, 0x00,
+-			0x50, 0x03, 0x74, 0x14, 0x08, 0x43, 0x08, 0x43,
+-			0x04, 0x45, 0x30, 0x30, 0x40, 0x20,
+-		},
+-		{	/*  Init_SR80_SR93 */
+-			0xFF, 0x07, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x3A,
+-			0xF7, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x3A, 0x3A,
+-			0x00, 0x00, 0x00, 0x00,
+-		},
+-		{	/*  Init_SRA0_SRAF */
+-			0x00, 0xFB, 0x9F, 0x01, 0x00, 0xED, 0xED, 0xED,
+-			0x7B, 0xFB, 0xFF, 0xFF, 0x97, 0xEF, 0xBF, 0xDF,
+-		},
+-		{	/*  Init_GR00_GR08 */
+-			0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+-			0xFF,
+-		},
+-		{	/*  Init_AR00_AR14 */
+-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+-			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+-			0x41, 0x00, 0x0F, 0x00, 0x00,
+-		},
+-		{	/*  Init_CR00_CR18 */
+-			0xA3, 0x7F, 0x7F, 0x00, 0x85, 0x16, 0x24, 0xF5,
+-			0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+-			0x03, 0x09, 0xFF, 0x80, 0x40, 0xFF, 0x00, 0xE3,
+-			0xFF,
+-		},
+-		{	/*  Init_CR30_CR4D */
+-			0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x02, 0x20,
+-			0x00, 0x00, 0x30, 0x40, 0x00, 0xFF, 0xBF, 0xFF,
+-			0x2E, 0x27, 0x00, 0x2b, 0x0c, 0x0F, 0xEF, 0x00,
+-			0xFe, 0x0f, 0x01, 0xC0, 0x27, 0xEF,
+-		},
+-		{	/*  Init_CR90_CRA7 */
+-			0x55, 0xD9, 0x5D, 0xE1, 0x86, 0x1B, 0x8E, 0x26,
+-			0xDA, 0x8D, 0xDE, 0x94, 0x00, 0x00, 0x18, 0x00,
+-			0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x15, 0x03,
+-		},
+-	},
+-
+-	{	/*  mode#8: 320 x 240  32Bpp  60Hz */
+-		320, 240, 32, 60,
+-		/*  Init_MISC */
+-		0xEB,
+-		{	/*  Init_SR0_SR4 */
+-			0x03, 0x01, 0x0F, 0x03, 0x0E,
+-		},
+-		{	/*  Init_SR10_SR24 */
+-			0xF3, 0xB6, 0xC0, 0xDD, 0x00, 0x0E, 0x17, 0x2C,
+-			0x99, 0x02, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+-			0xC4, 0x32, 0x02, 0x01, 0x01,
+-		},
+-		{	/*  Init_SR30_SR75 */
+-			0x38, 0x03, 0x20, 0x09, 0xC0, 0x3A, 0x3A, 0x3A,
+-			0x3A, 0x3A, 0x3A, 0x3A, 0x00, 0x00, 0x03, 0xFF,
+-			0x00, 0xFC, 0x00, 0x00, 0x20, 0x18, 0x00, 0xFC,
+-			0x20, 0x0C, 0x44, 0x20, 0x00, 0x00, 0x00, 0x3A,
+-			0x06, 0x68, 0xA7, 0x7F, 0x83, 0x24, 0xFF, 0x03,
+-			0x00, 0x60, 0x59, 0x3A, 0x3A, 0x00, 0x00, 0x3A,
+-			0x01, 0x80, 0x7E, 0x1A, 0x1A, 0x00, 0x00, 0x00,
+-			0x50, 0x03, 0x74, 0x14, 0x08, 0x43, 0x08, 0x43,
+-			0x04, 0x45, 0x30, 0x30, 0x40, 0x20,
+-		},
+-		{	/*  Init_SR80_SR93 */
+-			0xFF, 0x07, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x3A,
+-			0xF7, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x3A, 0x3A,
+-			0x00, 0x00, 0x00, 0x00,
+-		},
+-		{	/*  Init_SRA0_SRAF */
+-			0x00, 0xFB, 0x9F, 0x01, 0x00, 0xED, 0xED, 0xED,
+-			0x7B, 0xFB, 0xFF, 0xFF, 0x97, 0xEF, 0xBF, 0xDF,
+-		},
+-		{	/*  Init_GR00_GR08 */
+-			0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
+-			0xFF,
+-		},
+-		{	/*  Init_AR00_AR14 */
+-			0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+-			0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+-			0x41, 0x00, 0x0F, 0x00, 0x00,
+-		},
+-		{	/*  Init_CR00_CR18 */
+-			0xA3, 0x7F, 0x7F, 0x00, 0x85, 0x16, 0x24, 0xF5,
+-			0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+-			0x03, 0x09, 0xFF, 0x80, 0x40, 0xFF, 0x00, 0xE3,
+-			0xFF,
+-		},
+-		{	/*  Init_CR30_CR4D */
+-			0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x02, 0x20,
+-			0x00, 0x00, 0x30, 0x40, 0x00, 0xFF, 0xBF, 0xFF,
+-			0x2E, 0x27, 0x00, 0x2b, 0x0c, 0x0F, 0xEF, 0x00,
+-			0xFe, 0x0f, 0x01, 0xC0, 0x27, 0xEF,
+-		},
+-		{	/*  Init_CR90_CRA7 */
+-			0x55, 0xD9, 0x5D, 0xE1, 0x86, 0x1B, 0x8E, 0x26,
+-			0xDA, 0x8D, 0xDE, 0x94, 0x00, 0x00, 0x18, 0x00,
+-			0x03, 0x03, 0x03, 0x03, 0x03, 0x03, 0x15, 0x03,
+-		},
+-	},
+ };
+ 
+ 
+-- 
+2.20.1

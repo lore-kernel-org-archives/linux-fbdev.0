@@ -1,61 +1,87 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 27 Mar 2019 18:23:02 +0000
-Subject: [PATCH AUTOSEL 4.4 42/63] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <20190327182323.18577-42-sashal@kernel.org>
+From: Yifeng Li <tomli@tomli.me>
+Date: Fri, 22 Mar 2019 05:17:52 +0000
+Subject: [PATCH v2 0/7] implement 2D acceleration, minor cleanups, doc updates.
+Message-Id: <20190322051759.15007-1-tomli@tomli.me>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190327182323.18577-1-sashal@kernel.org>
-In-Reply-To: <20190327182323.18577-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Yifeng Li <tomli@tomli.me>
 
-From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+v2:
+ - Also implement 2D acceleration for SM720.
 
-[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+ - Remove writel_relaxed() and an explicit memory barrier, on MIPS, PowerPC and
+   x86, relaxed writes do not have additional performance, and complicates the
+   code.
 
-There is no clipping on the x or y axis for logos larger that the framebuffer
-size. Therefore: a logo bigger than screen size leads to invalid memory access:
+ - Document additional issues in the driver.
 
-[    1.254664] Backtrace:
-[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-[    1.254774]  r4:c6a3e800
-[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-[    1.254852]  r4:c6808c00
-[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-[    1.254928]  r4:c6808c00
-[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+NOTE:
 
-So prevent displaying a logo bigger than screen size and avoid invalid
-memory access.
+ - This patchset should be applied after "[PATCH 0/8] fbdev: sm712fb: fix a
+   series of lockups, crashes and gliches" (*), as it contains important
+   fixes for issues in the original driver.
 
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
+ - This patchset has been tested by the author for SM712 and SM720, on MIPS
+   and x86 without problem.
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ea2bd6208a2f..9eae191728d2 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -425,6 +425,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- {
- 	unsigned int x;
- 
-+	if (image->width > info->var.xres || image->height > info->var.yres)
-+		return;
-+
- 	if (rotate = FB_ROTATE_UR) {
- 		for (x = 0;
- 		     x < num && image->dx + image->width <= info->var.xres;
+(*) https://marc.info/?l=linux-fbdev&m5277512210375&w=2
+
+Previously, in staging/sm7xxfb (now fbdev/sm712fb), 2D acceleration
+was implemented, but after its submission, a critical bug that causes
+total system hang was discovered, as a stopgap measure, 2D ops was
+completele removed in commit 3af805735a25 ("staging: sm7xx: remove the
+buggy 2D acceleration support") and never implemented again.
+
+It created a massive usability problem - on YeeLoong 8089, a notable
+MIPS platform which uses SM712 - even scrolling a single line of text
+on the console required an unaccelerated screen redraw, running "dmesg"
+typically takes 8-11 seconds, and absurdly, printf(), became a significant
+performance bottleneck that slows down GCC and "make", make the computer
+largely unusable.
+
+So I decided to take a look. Most of the my actual development was done
+in 2014 in a personal out-of-tree driver, I did not mainline it because
+2D acceleration was not working properly in 24-bit color. I discovered
+the solution in early 2019 and now it's ready to be mainlined.
+
+This commit reimplements the 2D acceleration for sm712fb. Unlike the
+original implementation, which was messy and unnecessarily complicated
+by calling a 2D acceleration wrapper file with many unneeded functions,
+this is a minimum and (relatively) clean implementation. My tests have
+shown that running "dmesg" only takes 0.9 seconds, a performance boost
+of 950%. System hangs did not occur in my tests.
+
+Currently, 2D acceleration is only supported on little-endian CPUs, it's
+disabled on Big Endian systems as a safety measure, since I code for myself
+without any monetary or hardware support from any company or OEMs, I don't
+have the hardware and it's completely untested. I should be also to
+purchase a Big Endian test platform and add proper support soon.
+
+Also, thanks to Miodrag Vallat and other OpenBSD developers, this work
+would be impossible without their code, that served as a reference
+implementation for me.
+
+Finally, during the development and testing of 2D acceleration, many
+identified existing issues in driver in general have been documented.
+
+Yifeng Li (7):
+  fbdev: sm712fb: use type "u8" for 8-bit I/O.
+  fbdev: sm712fb: add 2D-related I/O headers and functions.
+  fbdev: sm712fb: support 2D acceleration on SM712 w/ Little-Endian CPU.
+  fbdev: sm712fb: add 32-bit color modes, drops some other modes.
+  Documentation: fb: sm712fb: add information mainly about 2D.
+  fbdev: sm712fb: Kconfig: add information about docs.
+  MAINTAINERS: sm712fb: list myself as one maintainer.
+
+ Documentation/fb/sm712fb.txt  | 129 +++++++-
+ MAINTAINERS                   |   1 +
+ drivers/video/fbdev/Kconfig   |   4 +
+ drivers/video/fbdev/sm712.h   | 109 ++++++-
+ drivers/video/fbdev/sm712fb.c | 551 +++++++++++++++++++++++++---------
+ 5 files changed, 642 insertions(+), 152 deletions(-)
+
 -- 
-2.19.1
+2.20.1

@@ -1,87 +1,247 @@
-From: Yifeng Li <tomli@tomli.me>
-Date: Fri, 22 Mar 2019 05:17:52 +0000
-Subject: [PATCH v2 0/7] implement 2D acceleration, minor cleanups, doc updates.
-Message-Id: <20190322051759.15007-1-tomli@tomli.me>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Tue, 26 Mar 2019 09:17:41 +0000
+Subject: [PATCH 08/11] drm/fbdevdrm: Add mode conversion DRM <-> fbdev
+Message-Id: <20190326091744.11542-9-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190326091744.11542-1-tzimmermann@suse.de>
+In-Reply-To: <20190326091744.11542-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Yifeng Li <tomli@tomli.me>
+To: airlied@linux.ie, daniel@ffwll.ch, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
 
-v2:
- - Also implement 2D acceleration for SM720.
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/gpu/drm/fbdevdrm/Makefile         |   1 +
+ drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c | 153 ++++++++++++++++++++++
+ drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h |  46 +++++++
+ 3 files changed, 200 insertions(+)
+ create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c
+ create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h
 
- - Remove writel_relaxed() and an explicit memory barrier, on MIPS, PowerPC and
-   x86, relaxed writes do not have additional performance, and complicates the
-   code.
-
- - Document additional issues in the driver.
-
-NOTE:
-
- - This patchset should be applied after "[PATCH 0/8] fbdev: sm712fb: fix a
-   series of lockups, crashes and gliches" (*), as it contains important
-   fixes for issues in the original driver.
-
- - This patchset has been tested by the author for SM712 and SM720, on MIPS
-   and x86 without problem.
-
-(*) https://marc.info/?l=linux-fbdev&m5277512210375&w=2
-
-Previously, in staging/sm7xxfb (now fbdev/sm712fb), 2D acceleration
-was implemented, but after its submission, a critical bug that causes
-total system hang was discovered, as a stopgap measure, 2D ops was
-completele removed in commit 3af805735a25 ("staging: sm7xx: remove the
-buggy 2D acceleration support") and never implemented again.
-
-It created a massive usability problem - on YeeLoong 8089, a notable
-MIPS platform which uses SM712 - even scrolling a single line of text
-on the console required an unaccelerated screen redraw, running "dmesg"
-typically takes 8-11 seconds, and absurdly, printf(), became a significant
-performance bottleneck that slows down GCC and "make", make the computer
-largely unusable.
-
-So I decided to take a look. Most of the my actual development was done
-in 2014 in a personal out-of-tree driver, I did not mainline it because
-2D acceleration was not working properly in 24-bit color. I discovered
-the solution in early 2019 and now it's ready to be mainlined.
-
-This commit reimplements the 2D acceleration for sm712fb. Unlike the
-original implementation, which was messy and unnecessarily complicated
-by calling a 2D acceleration wrapper file with many unneeded functions,
-this is a minimum and (relatively) clean implementation. My tests have
-shown that running "dmesg" only takes 0.9 seconds, a performance boost
-of 950%. System hangs did not occur in my tests.
-
-Currently, 2D acceleration is only supported on little-endian CPUs, it's
-disabled on Big Endian systems as a safety measure, since I code for myself
-without any monetary or hardware support from any company or OEMs, I don't
-have the hardware and it's completely untested. I should be also to
-purchase a Big Endian test platform and add proper support soon.
-
-Also, thanks to Miodrag Vallat and other OpenBSD developers, this work
-would be impossible without their code, that served as a reference
-implementation for me.
-
-Finally, during the development and testing of 2D acceleration, many
-identified existing issues in driver in general have been documented.
-
-Yifeng Li (7):
-  fbdev: sm712fb: use type "u8" for 8-bit I/O.
-  fbdev: sm712fb: add 2D-related I/O headers and functions.
-  fbdev: sm712fb: support 2D acceleration on SM712 w/ Little-Endian CPU.
-  fbdev: sm712fb: add 32-bit color modes, drops some other modes.
-  Documentation: fb: sm712fb: add information mainly about 2D.
-  fbdev: sm712fb: Kconfig: add information about docs.
-  MAINTAINERS: sm712fb: list myself as one maintainer.
-
- Documentation/fb/sm712fb.txt  | 129 +++++++-
- MAINTAINERS                   |   1 +
- drivers/video/fbdev/Kconfig   |   4 +
- drivers/video/fbdev/sm712.h   | 109 ++++++-
- drivers/video/fbdev/sm712fb.c | 551 +++++++++++++++++++++++++---------
- 5 files changed, 642 insertions(+), 152 deletions(-)
-
+diff --git a/drivers/gpu/drm/fbdevdrm/Makefile b/drivers/gpu/drm/fbdevdrm/Makefile
+index aef60d0f4888..2ca906a3258b 100644
+--- a/drivers/gpu/drm/fbdevdrm/Makefile
++++ b/drivers/gpu/drm/fbdevdrm/Makefile
+@@ -3,6 +3,7 @@ fbdevdrm-y := fbdevdrm_bo.o \
+ 	      fbdevdrm_device.o \
+ 	      fbdevdrm_drv.o \
+ 	      fbdevdrm_format.o \
++	      fbdevdrm_modes.o \
+ 	      fbdevdrm_modeset.o \
+ 	      fbdevdrm_ttm.o
+ 
+diff --git a/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c b/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c
+new file mode 100644
+index 000000000000..bd3ad691e7ce
+--- /dev/null
++++ b/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c
+@@ -0,0 +1,153 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later
++ *
++ * One purpose of this driver is to allow for easy conversion of framebuffer
++ * drivers to DRM. As a special exception to the GNU GPL, you are allowed to
++ * relicense this file under the terms of a license of your choice if you're
++ * porting a framebuffer driver. In order to do so, update the SPDX license
++ * identifier to the new license and remove this exception.
++ *
++ * If you add code to this file, please ensure that it's compatible with the
++ * stated exception.
++ */
++
++#include "fbdevdrm_modes.h"
++#include <drm/drm_modes.h>
++#include <linux/fb.h>
++
++void drm_mode_update_from_fb_videomode(struct drm_display_mode *mode,
++				       const struct fb_videomode *fb_mode)
++{
++	mode->type = DRM_MODE_TYPE_DRIVER;
++
++	mode->clock = PICOS2KHZ(fb_mode->pixclock);
++
++	mode->hdisplay = fb_mode->xres;
++	mode->hsync_start = mode->hdisplay + fb_mode->right_margin;
++	mode->hsync_end = mode->hsync_start + fb_mode->hsync_len;
++	mode->htotal = mode->hsync_end + fb_mode->left_margin;
++	mode->hskew = 0;
++
++	mode->vdisplay = fb_mode->yres;
++	mode->vsync_start = mode->vdisplay + fb_mode->lower_margin;
++	mode->vsync_end = mode->vsync_start + fb_mode->vsync_len;
++	mode->vtotal = mode->vsync_end + fb_mode->upper_margin;
++	mode->vscan = 0;
++
++	mode->flags = 0;
++
++	if (fb_mode->sync & FB_SYNC_HOR_HIGH_ACT)
++		mode->flags |= DRM_MODE_FLAG_PHSYNC;
++	else
++		mode->flags |= DRM_MODE_FLAG_NHSYNC;
++
++	if (fb_mode->sync & FB_SYNC_VERT_HIGH_ACT)
++		mode->flags |= DRM_MODE_FLAG_PVSYNC;
++	else
++		mode->flags |= DRM_MODE_FLAG_NVSYNC;
++
++	if (fb_mode->sync & FB_SYNC_COMP_HIGH_ACT)
++		mode->flags |= DRM_MODE_FLAG_CSYNC | DRM_MODE_FLAG_PCSYNC;
++
++	if (fb_mode->vmode & FB_VMODE_INTERLACED)
++		mode->flags |= DRM_MODE_FLAG_INTERLACE;
++
++	if (fb_mode->vmode & FB_VMODE_DOUBLE)
++		mode->flags |= DRM_MODE_FLAG_DBLSCAN;
++
++	mode->width_mm = 0;
++	mode->height_mm = 0;
++
++	mode->vrefresh = fb_mode->refresh;
++	mode->hsync = mode->clock / mode->vtotal;
++
++	/* final step; depends on previous setup */
++	if (fb_mode->name) {
++		strncpy(mode->name, fb_mode->name, sizeof(mode->name) - 1);
++		mode->name[sizeof(mode->name) - 1] = '\0';
++	} else {
++		drm_mode_set_name(mode);
++	}
++}
++
++void drm_mode_update_from_fb_var_screeninfo(
++	struct drm_display_mode *mode, const struct fb_var_screeninfo *fb_var)
++{
++	struct fb_videomode fb_mode;
++
++	fb_var_to_videomode(&fb_mode, fb_var);
++	drm_mode_update_from_fb_videomode(mode, &fb_mode);
++}
++
++struct drm_display_mode* drm_mode_create_from_fb_videomode(
++	struct drm_device *dev, const struct fb_videomode *fb_mode)
++{
++	/* cleared to '0' */
++	struct drm_display_mode *mode = drm_mode_create(dev);
++	if (!mode)
++		return NULL;
++
++	drm_mode_update_from_fb_videomode(mode, fb_mode);
++
++	return mode;
++}
++
++void
++fbdevdrm_update_fb_videomode_from_mode(struct fb_videomode *fb_mode,
++				       const struct drm_display_mode *mode)
++{
++	fb_mode->name = NULL;
++	fb_mode->refresh = mode->vrefresh;
++	fb_mode->xres = mode->hdisplay;
++	fb_mode->yres = mode->vdisplay;
++	fb_mode->pixclock = KHZ2PICOS(mode->clock);
++	fb_mode->left_margin = mode->htotal - mode->hsync_end;
++	fb_mode->right_margin = mode->hsync_start - mode->hdisplay;
++	fb_mode->upper_margin = mode->vtotal - mode->vsync_end;
++	fb_mode->lower_margin = mode->vsync_start - mode->vdisplay;
++	fb_mode->hsync_len = mode->hsync_end - mode->hsync_start;
++	fb_mode->vsync_len = mode->vsync_end - mode->vsync_start;
++
++	fb_mode->sync = 0;
++	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
++		fb_mode->sync |= FB_SYNC_HOR_HIGH_ACT;
++	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
++		fb_mode->sync |= FB_SYNC_VERT_HIGH_ACT;
++	if (mode->flags & (DRM_MODE_FLAG_CSYNC | DRM_MODE_FLAG_PCSYNC))
++		fb_mode->sync |= FB_SYNC_COMP_HIGH_ACT;
++
++	fb_mode->vmode = 0;
++	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
++		fb_mode->vmode |= FB_VMODE_INTERLACED;
++	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
++		fb_mode->vmode |= FB_VMODE_DOUBLE;
++
++	fb_mode->flag = 0;
++}
++
++void
++fbdevdrm_init_fb_videomode_from_mode(struct fb_videomode *fb_mode,
++				     const struct drm_display_mode *mode)
++{
++	memset(fb_mode, 0, sizeof(*fb_mode));
++	fbdevdrm_update_fb_videomode_from_mode(fb_mode, mode);
++}
++
++void
++fbdevdrm_update_fb_var_screeninfo_from_mode(struct fb_var_screeninfo *fb_var,
++					    const struct drm_display_mode *mode)
++{
++	struct fb_videomode fb_mode;
++	fbdevdrm_init_fb_videomode_from_mode(&fb_mode, mode);
++	fb_videomode_to_var(fb_var, &fb_mode);
++
++	fb_var->height = mode->height_mm;
++	fb_var->width = mode->width_mm;
++}
++
++void
++fbdevdrm_init_fb_var_screeninfo_from_mode(struct fb_var_screeninfo *fb_var,
++					  const struct drm_display_mode *mode)
++{
++	memset(fb_var, 0, sizeof(*fb_var));
++	fbdevdrm_update_fb_var_screeninfo_from_mode(fb_var, mode);
++}
+diff --git a/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h b/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h
+new file mode 100644
+index 000000000000..f88a86a83858
+--- /dev/null
++++ b/drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h
+@@ -0,0 +1,46 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later
++ *
++ * One purpose of this driver is to allow for easy conversion of framebuffer
++ * drivers to DRM. As a special exception to the GNU GPL, you are allowed to
++ * relicense this file under the terms of a license of your choice if you're
++ * porting a framebuffer driver. In order to do so, update the SPDX license
++ * identifier to the new license and remove this exception.
++ *
++ * If you add code to this file, please ensure that it's compatible with the
++ * stated exception.
++ */
++
++#ifndef FBDEVDRM_MODES_H
++#define FBDEVDRM_MODES_H
++
++struct drm_device;
++struct drm_display_mode;
++struct fb_videomode;
++struct fb_var_screeninfo;
++
++void drm_mode_update_from_fb_videomode(struct drm_display_mode *mode,
++				       const struct fb_videomode *fb_mode);
++
++void drm_mode_update_from_fb_var_screeninfo(
++	struct drm_display_mode *mode, const struct fb_var_screeninfo *fb_var);
++
++struct drm_display_mode* drm_mode_create_from_fb_videomode(
++	struct drm_device *dev, const struct fb_videomode *fb_mode);
++
++void
++fbdevdrm_update_fb_videomode_from_mode(struct fb_videomode *fb_mode,
++				       const struct drm_display_mode *mode);
++
++void
++fbdevdrm_init_fb_videomode_from_mode(struct fb_videomode *fb_mode,
++				     const struct drm_display_mode *mode);
++
++void
++fbdevdrm_update_fb_var_screeninfo_from_mode(struct fb_var_screeninfo *var,
++					    const struct drm_display_mode *mode);
++
++void
++fbdevdrm_init_fb_var_screeninfo_from_mode(struct fb_var_screeninfo *var,
++					  const struct drm_display_mode *mode);
++
++#endif
 -- 
-2.20.1
+2.21.0

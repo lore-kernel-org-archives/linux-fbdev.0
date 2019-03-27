@@ -1,9 +1,9 @@
 From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 26 Mar 2019 13:57:06 +0000
+Date: Wed, 27 Mar 2019 09:37:46 +0000
 Subject: Re: [PATCH 09/11] drm/fbdevdrm: Add primary plane
-Message-Id: <bafc5cab-0185-08f8-4f68-257de2cd0297@suse.de>
+Message-Id: <ad4c06f7-d429-a453-fb95-44b96e17a1db@suse.de>
 MIME-Version: 1
-Content-Type: multipart/mixed; boundary="WeekpmmabvvF5XB8EwpH1KC3w88unXgGx"
+Content-Type: multipart/mixed; boundary="UF1siukkECKI54ONYNG6TsgDx0JxM6W4M"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190326091744.11542-1-tzimmermann@suse.de>
  <20190326091744.11542-10-tzimmermann@suse.de>
@@ -13,23 +13,23 @@ To: Mathieu Malaterre <malat@debian.org>
 Cc: David Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---WeekpmmabvvF5XB8EwpH1KC3w88unXgGx
-Content-Type: multipart/mixed; boundary="fU6aQ0OcuOvP1iCla2IFMYSJsqP2A5RPq";
+--UF1siukkECKI54ONYNG6TsgDx0JxM6W4M
+Content-Type: multipart/mixed; boundary="1fmQUIgQMC51tia2XEfnIjJMhCM5SMTCX";
  protected-headers="v1"
 From: Thomas Zimmermann <tzimmermann@suse.de>
 To: Mathieu Malaterre <malat@debian.org>
-Cc: David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>,
- Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+Cc: David Airlie <airlied@linux.ie>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
  dri-devel <dri-devel@lists.freedesktop.org>,
- Linux Fbdev development list <linux-fbdev@vger.kernel.org>
-Message-ID: <bafc5cab-0185-08f8-4f68-257de2cd0297@suse.de>
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Message-ID: <ad4c06f7-d429-a453-fb95-44b96e17a1db@suse.de>
 Subject: Re: [PATCH 09/11] drm/fbdevdrm: Add primary plane
 References: <20190326091744.11542-1-tzimmermann@suse.de>
  <20190326091744.11542-10-tzimmermann@suse.de>
  <CA+7wUsw4s3cLyqFP7-CkV38kRuwRDpmzJaKim4L-Cg2C4HP0uA@mail.gmail.com>
 In-Reply-To: <CA+7wUsw4s3cLyqFP7-CkV38kRuwRDpmzJaKim4L-Cg2C4HP0uA@mail.gmail.com>
 
---fU6aQ0OcuOvP1iCla2IFMYSJsqP2A5RPq
+--1fmQUIgQMC51tia2XEfnIjJMhCM5SMTCX
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
@@ -37,7 +37,6 @@ Content-Transfer-Encoding: quoted-printable
 Hi
 
 Am 26.03.19 um 14:33 schrieb Mathieu Malaterre:
-> A simple compile/test here leads to:
 >=20
 > ...
 > ../drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c:174:2: note: in expansion
@@ -66,11 +65,12 @@ Am 26.03.19 um 14:33 schrieb Mathieu Malaterre:
 >  extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
 > ...
 
-I used a 32-bit machine for testing, so that's probably the difference
-here. Anyway, thanks for testing. Will be fixed in the next iteration.
+I didn't see this error in 64-bit builds either. Could you send me your
+kernel config? Thanks!
 
 Best regards
 Thomas
+
 
 >=20
 >> +
@@ -785,6 +785,11 @@ ith the
 >> --
 >> 2.21.0
 >>
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+>=20
 
 --=20
 Thomas Zimmermann
@@ -794,23 +799,23 @@ GF: Felix Imend=C3=B6rffer, Mary Higgins, Sri Rasiah
 HRB 21284 (AG N=C3=BCrnberg)
 
 
---fU6aQ0OcuOvP1iCla2IFMYSJsqP2A5RPq--
+--1fmQUIgQMC51tia2XEfnIjJMhCM5SMTCX--
 
---WeekpmmabvvF5XB8EwpH1KC3w88unXgGx
+--UF1siukkECKI54ONYNG6TsgDx0JxM6W4M
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAlyaL7YACgkQaA3BHVML
-eiPdoggAnHAQYUVqJK5ZU7eaOBb/ZSO+b0N2qB5xu9EYo4gPegBVP6SoVfUzVTGk
-JohoyNW0JVb1NNYtHUXtJ3Hkz+LsFRjUJUTWIYRQykCIAFboR671apwxUCFTXFW1
-MlZYt1R7pKFM30kVOm1qbeRqPufKJssjMS7MobEAgzJ9isgZMBLnc8Y26B4sx1EZ
-DvAazEasfWJHUX7g6+Fl2TYZb+YeUJxOatkDyroCCXW0csrss0E6AlBVP2VAg+e0
-ghR1zspYyzl9N2m/9w/H9G7RXta8+/0MkO38h8zKlZK3vn4pin9VYrEguGfw7UN4
-4ufqqkKLzBJOtjppkLGkqxrOL9STTQ==
-=mWrL
+iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAlybRGoACgkQaA3BHVML
+eiPtEAf/WQKe0Jo922Aa3JLNp7hBm/xZ+SLEJvMiwCX12fPAmJaDspbyB/dFcqDp
+aMlfILWoWWD1CBututlLvE1R3nG1gATEJc3QnEgTz74WvBqVOYwOEIHoXC4Jvlsr
++7juynKAuMsT3c/481msk3MKYdjSE1BDlc/Hbz1VPckJYS0DkytgZvPDQFtvr+Ez
+f2emc80cnGuCbRuSzH6wHUE7mCgcTERFUW7Po01U1H7X8VKGCRSa/krdxkeCKDVv
+dhMa2eiugl8JcPX33VlrCRjtxzAytAZ/99qh+J4a/yQ8SpywotMF/jKFz80cbbZv
+NY+4+i7XsOgirtLHG3u1UWU95Z4F2A==
+=pOZY
 -----END PGP SIGNATURE-----
 
---WeekpmmabvvF5XB8EwpH1KC3w88unXgGx--
+--UF1siukkECKI54ONYNG6TsgDx0JxM6W4M--

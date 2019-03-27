@@ -1,35 +1,53 @@
-From: Aditya Pakki <pakki001@umn.edu>
-Date: Sat, 02 Mar 2019 20:40:04 +0000
-Subject: [PATCH] omapfb: Fix potential NULL pointer dereference in kmalloc
-Message-Id: <20190302204006.9953-1-pakki001@umn.edu>
+From: Jiufei Xue <jiufei.xue@linux.alibaba.com>
+Date: Wed, 27 Mar 2019 08:51:34 +0000
+Subject: [PATCH--suppress-cc=all] fbdev: fix WARNING in __alloc_pages_nodemask bug
+Message-Id: <20190327085134.10115-1-jiufei.xue@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pakki001@umn.edu
-Cc: kjlu@umn.edu, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-Memory allocated, using kmalloc, for new_compat may fail. This patch
-checks for such an error and prevents potential NULL pointer
-dereference.
+Syzkaller hit 'WARNING in __alloc_pages_nodemask' bug.
 
-Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+WARNING: CPU: 1 PID: 1473 at mm/page_alloc.c:4377
+__alloc_pages_nodemask+0x4da/0x2130
+Kernel panic - not syncing: panic_on_warn set ...
+
+Call Trace:
+ alloc_pages_current+0xb1/0x1e0
+ kmalloc_order+0x1f/0x60
+ kmalloc_order_trace+0x1d/0x120
+ fb_alloc_cmap_gfp+0x85/0x2b0
+ fb_set_user_cmap+0xff/0x370
+ do_fb_ioctl+0x949/0xa20
+ fb_ioctl+0xdd/0x120
+ do_vfs_ioctl+0x186/0x1070
+ ksys_ioctl+0x89/0xa0
+ __x64_sys_ioctl+0x74/0xb0
+ do_syscall_64+0xc8/0x550
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+This is a warning about order >= MAX_ORDER and the order is from
+userspace ioctl. Add flag __NOWARN to silence this warning.
+
+Signed-off-by: Jiufei Xue <jiufei.xue@linux.alibaba.com>
 ---
- drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c | 2 ++
+ drivers/video/fbdev/core/fbcmap.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c b/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
-index 136d30484d02..0592c436b2da 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/omapdss-boot-init.c
-@@ -111,6 +111,8 @@ static void __init omapdss_omapify_node(struct device_node *node)
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index 68a113594808..2811c4afde01 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -94,6 +94,8 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ 	int size = len * sizeof(u16);
+ 	int ret = -ENOMEM;
  
- 	new_len = prop->length + strlen(prefix) * num_strs;
- 	new_compat = kmalloc(new_len, GFP_KERNEL);
-+	if (!new_compat)
-+		return;
- 
- 	omapdss_prefix_strcpy(new_compat, new_len, prop->value, prop->length);
- 
++	flags |= __GFP_NOWARN;
++
+ 	if (cmap->len != len) {
+ 		fb_dealloc_cmap(cmap);
+ 		if (!len)
 -- 
-2.17.1
+2.19.1.856.g8858448bb

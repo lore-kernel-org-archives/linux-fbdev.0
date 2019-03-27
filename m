@@ -1,87 +1,61 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 21 Mar 2019 22:52:31 +0000
-Subject: [PATCH 3/7] gbefb: switch to managed version of the DMA allocator
-Message-Id: <20190321225235.30648-4-hch@lst.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:25:04 +0000
+Subject: [PATCH AUTOSEL 3.18 27/41] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190327182518.19394-27-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190321225235.30648-1-hch@lst.de>
-In-Reply-To: <20190321225235.30648-1-hch@lst.de>
+References: <20190327182518.19394-1-sashal@kernel.org>
+In-Reply-To: <20190327182518.19394-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-gbefb uses managed resources, so it should do the same for DMA
-allocations.
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
+
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
+
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/gbefb.c | 24 ++++++++----------------
- 1 file changed, 8 insertions(+), 16 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/gbefb.c b/drivers/video/fbdev/gbefb.c
-index 1a242b1338e9..3fcb33232ba3 100644
---- a/drivers/video/fbdev/gbefb.c
-+++ b/drivers/video/fbdev/gbefb.c
-@@ -1162,9 +1162,9 @@ static int gbefb_probe(struct platform_device *p_dev)
- 	}
- 	gbe_revision = gbe->ctrlstat & 15;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index ea2bd6208a2f..9eae191728d2 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -425,6 +425,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
  
--	gbe_tiles.cpu -		dma_alloc_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--				   &gbe_tiles.dma, GFP_KERNEL);
-+	gbe_tiles.cpu = dmam_alloc_coherent(&p_dev->dev,
-+				GBE_TLB_SIZE * sizeof(uint16_t),
-+				&gbe_tiles.dma, GFP_KERNEL);
- 	if (!gbe_tiles.cpu) {
- 		printk(KERN_ERR "gbefb: couldn't allocate tiles table\n");
- 		ret = -ENOMEM;
-@@ -1178,19 +1178,20 @@ static int gbefb_probe(struct platform_device *p_dev)
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't map framebuffer\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
- 
- 		gbe_dma_addr = 0;
- 	} else {
- 		/* try to allocate memory with the classical allocator
- 		 * this has high chance to fail on low memory machines */
--		gbe_mem = dma_alloc_wc(NULL, gbe_mem_size, &gbe_dma_addr,
--				       GFP_KERNEL);
-+		gbe_mem = dmam_alloc_attrs(&p_dev->dev, gbe_mem_size,
-+				&gbe_dma_addr, GFP_KERNEL,
-+				DMA_ATTR_WRITE_COMBINE);
- 		if (!gbe_mem) {
- 			printk(KERN_ERR "gbefb: couldn't allocate framebuffer memory\n");
- 			ret = -ENOMEM;
--			goto out_tiles_free;
-+			goto out_release_mem_region;
- 		}
- 
- 		gbe_mem_phys = (unsigned long) gbe_dma_addr;
-@@ -1237,11 +1238,6 @@ static int gbefb_probe(struct platform_device *p_dev)
- 
- out_gbe_unmap:
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--out_tiles_free:
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- out_release_mem_region:
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- out_release_framebuffer:
-@@ -1258,10 +1254,6 @@ static int gbefb_remove(struct platform_device* p_dev)
- 	unregister_framebuffer(info);
- 	gbe_turn_off();
- 	arch_phys_wc_del(par->wc_cookie);
--	if (gbe_dma_addr)
--		dma_free_wc(NULL, gbe_mem_size, gbe_mem, gbe_mem_phys);
--	dma_free_coherent(NULL, GBE_TLB_SIZE * sizeof(uint16_t),
--			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
- 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
- 	gbefb_remove_sysfs(&p_dev->dev);
- 	framebuffer_release(info);
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
++
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
 -- 
-2.20.1
+2.19.1

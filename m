@@ -1,99 +1,54 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 21 Mar 2019 22:52:29 +0000
-Subject: [PATCH 1/7] parport_ip32: pass struct device to DMA API functions
-Message-Id: <20190321225235.30648-2-hch@lst.de>
+From: Greg Kroah-Hartman <greg@kroah.com>
+Date: Wed, 27 Mar 2019 17:23:55 +0000
+Subject: Re: [PATCH] staging: sm750fb: Fix whitespace to conform to coding style
+Message-Id: <20190327172355.GA4346@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190321225235.30648-1-hch@lst.de>
-In-Reply-To: <20190321225235.30648-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-The DMA API generally relies on a struct device to work properly, and
-only barely works without one for legacy reasons.  Pass the easily
-available struct device from the platform_device to remedy this.
+On Sun, Mar 10, 2019 at 12:13:27AM -0500, Joe Turpin wrote:
+> Replace spaces with tabs for indentation and add where missing.
+> Reflow comments to remain within 80 chars line limit.
+> 
+> Signed-off-by: Joe Turpin <joe.turpin@gmail.com>
+> ---
+>  drivers/staging/sm750fb/sm750_accel.c | 160 ++++++++++++++------------
+>  1 file changed, 88 insertions(+), 72 deletions(-)
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- drivers/parport/parport_ip32.c | 18 ++++++++++--------
- 1 file changed, 10 insertions(+), 8 deletions(-)
+Hi,
 
-diff --git a/drivers/parport/parport_ip32.c b/drivers/parport/parport_ip32.c
-index 62873070f988..b7a892791c3e 100644
---- a/drivers/parport/parport_ip32.c
-+++ b/drivers/parport/parport_ip32.c
-@@ -568,6 +568,7 @@ static irqreturn_t parport_ip32_merr_interrupt(int irq, void *dev_id)
- 
- /**
-  * parport_ip32_dma_start - begins a DMA transfer
-+ * @p:		partport to work on
-  * @dir:	DMA direction: DMA_TO_DEVICE or DMA_FROM_DEVICE
-  * @addr:	pointer to data buffer
-  * @count:	buffer size
-@@ -575,8 +576,8 @@ static irqreturn_t parport_ip32_merr_interrupt(int irq, void *dev_id)
-  * Calls to parport_ip32_dma_start() and parport_ip32_dma_stop() must be
-  * correctly balanced.
-  */
--static int parport_ip32_dma_start(enum dma_data_direction dir,
--				  void *addr, size_t count)
-+static int parport_ip32_dma_start(struct parport *p,
-+		enum dma_data_direction dir, void *addr, size_t count)
- {
- 	unsigned int limit;
- 	u64 ctrl;
-@@ -601,7 +602,7 @@ static int parport_ip32_dma_start(enum dma_data_direction dir,
- 
- 	/* Prepare DMA pointers */
- 	parport_ip32_dma.dir = dir;
--	parport_ip32_dma.buf = dma_map_single(NULL, addr, count, dir);
-+	parport_ip32_dma.buf = dma_map_single(&p->bus_dev, addr, count, dir);
- 	parport_ip32_dma.len = count;
- 	parport_ip32_dma.next = parport_ip32_dma.buf;
- 	parport_ip32_dma.left = parport_ip32_dma.len;
-@@ -625,11 +626,12 @@ static int parport_ip32_dma_start(enum dma_data_direction dir,
- 
- /**
-  * parport_ip32_dma_stop - ends a running DMA transfer
-+ * @p:		partport to work on
-  *
-  * Calls to parport_ip32_dma_start() and parport_ip32_dma_stop() must be
-  * correctly balanced.
-  */
--static void parport_ip32_dma_stop(void)
-+static void parport_ip32_dma_stop(struct parport *p)
- {
- 	u64 ctx_a;
- 	u64 ctx_b;
-@@ -685,8 +687,8 @@ static void parport_ip32_dma_stop(void)
- 	enable_irq(MACEISA_PAR_CTXB_IRQ);
- 	parport_ip32_dma.irq_on = 1;
- 
--	dma_unmap_single(NULL, parport_ip32_dma.buf, parport_ip32_dma.len,
--			 parport_ip32_dma.dir);
-+	dma_unmap_single(&p->bus_dev, parport_ip32_dma.buf,
-+			 parport_ip32_dma.len, parport_ip32_dma.dir);
- }
- 
- /**
-@@ -1445,7 +1447,7 @@ static size_t parport_ip32_fifo_write_block_dma(struct parport *p,
- 
- 	priv->irq_mode = PARPORT_IP32_IRQ_HERE;
- 
--	parport_ip32_dma_start(DMA_TO_DEVICE, (void *)buf, len);
-+	parport_ip32_dma_start(p, DMA_TO_DEVICE, (void *)buf, len);
- 	reinit_completion(&priv->irq_complete);
- 	parport_ip32_frob_econtrol(p, ECR_DMAEN | ECR_SERVINTR, ECR_DMAEN);
- 
-@@ -1461,7 +1463,7 @@ static size_t parport_ip32_fifo_write_block_dma(struct parport *p,
- 		if (ecr & ECR_SERVINTR)
- 			break;	/* DMA transfer just finished */
- 	}
--	parport_ip32_dma_stop();
-+	parport_ip32_dma_stop(p);
- 	written = len - parport_ip32_dma_get_residue();
- 
- 	priv->irq_mode = PARPORT_IP32_IRQ_FWD;
--- 
-2.20.1
+This is the friendly patch-bot of Greg Kroah-Hartman.  You have sent him
+a patch that has triggered this response.  He used to manually respond
+to these common problems, but in order to save his sanity (he kept
+writing the same thing over and over, yet to different people), I was
+created.  Hopefully you will not take offence and will fix the problem
+in your patch and resubmit it so that it can be accepted into the Linux
+kernel tree.
+
+You are receiving this message because of the following common error(s)
+as indicated below:
+
+- Your patch did many different things all at once, making it difficult
+  to review.  All Linux kernel patches need to only do one thing at a
+  time.  If you need to do multiple things (such as clean up all coding
+  style issues in a file/driver), do it in a sequence of patches, each
+  one doing only one thing.  This will make it easier to review the
+  patches to ensure that they are correct, and to help alleviate any
+  merge issues that larger patches can cause.
+
+- You did not write a descriptive Subject: for the patch, allowing Greg,
+  and everyone else, to know what this patch is all about.  Please read
+  the section entitled "The canonical patch format" in the kernel file,
+  Documentation/SubmittingPatches for what a proper Subject: line should
+  look like.
+
+If you wish to discuss this problem further, or you have questions about
+how to resolve this issue, please feel free to respond to this email and
+Greg will reply once he has dug out from the pending patches received
+from other developers.
+
+thanks,
+
+greg k-h's patch email bot

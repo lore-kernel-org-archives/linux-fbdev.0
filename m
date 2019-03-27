@@ -1,80 +1,61 @@
-From: Yifeng Li <tomli@tomli.me>
-Date: Sun, 03 Mar 2019 16:55:31 +0000
-Subject: [RESEND][PATCH 1/2] staging: sm750fb: trivial comment indention fix.
-Message-Id: <20190303165532.23727-2-tomli@tomli.me>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:09:13 +0000
+Subject: [PATCH AUTOSEL 4.19 121/192] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190327181025.13507-121-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190303165532.23727-1-tomli@tomli.me>
-In-Reply-To: <20190303165532.23727-1-tomli@tomli.me>
+References: <20190327181025.13507-1-sashal@kernel.org>
+In-Reply-To: <20190327181025.13507-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jiri Kosina <trivial@kernel.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org
-Cc: Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
 
-In function sm750_hw_copyarea() of sm750_accel.c, there are
-some comments in ASCII graphs, describing 4 possible scenarios
-of overlapping areas when copying an area. However, the graphs
-have broken indention.
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-The entire SiliconMotion series video controllers, including
-SM501, SM712 and SM750 have similar 2D engines, yet, I have
-not seen a single version of it with ASCII graphs properly
-formatted...
+[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
 
-Fix the the misleading ASCII graphs. It would eliminate the
-confusions and improve code readability.
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
 
-Signed-off-by: Yifeng Li <tomli@tomli.me>
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
+
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 32 +++++++++++++--------------
- 1 file changed, 16 insertions(+), 16 deletions(-)
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index eed840b251da..dbcbbd1055da 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -155,26 +155,26 @@ unsigned int rop2)   /* ROP value */
- 	if (sBase = dBase && sPitch = dPitch) {
- 		/* Determine direction of operation */
- 		if (sy < dy) {
--			/* +----------+
--			 * |S         |
--			 * |   +----------+
--			 * |   |      |   |
--			 * |   |      |   |
--			 * +---|------+   |
--			 * |         D|
--			 * +----------+
-+			/*  +----------+
-+			 *  |S         |
-+			 *  |   +----------+
-+			 *  |   |      |   |
-+			 *  |   |      |   |
-+			 *  +---|------+   |
-+			 *	|         D|
-+			 *	+----------+
- 			 */
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 77cee99fc36c..c48f083d522a 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -427,6 +427,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
  
- 			nDirection = BOTTOM_TO_TOP;
- 		} else if (sy > dy) {
--			/* +----------+
--			 * |D         |
--			 * |   +----------+
--			 * |   |      |   |
--			 * |   |      |   |
--			 * +---|------+   |
--			 * |         S|
--			 * +----------+
-+			/*  +----------+
-+			 *  |D         |
-+			 *  |   +----------+
-+			 *  |   |      |   |
-+			 *  |   |      |   |
-+			 *  +---|------+   |
-+			 *	|         S|
-+			 *	+----------+
- 			 */
- 
- 			nDirection = TOP_TO_BOTTOM;
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
++
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
 -- 
-2.20.1
+2.19.1

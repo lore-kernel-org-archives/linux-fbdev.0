@@ -1,123 +1,61 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 26 Mar 2019 09:17:38 +0000
-Subject: [PATCH 05/11] drm/fbdevdrm: Add GEM and dumb interfaces
-Message-Id: <20190326091744.11542-6-tzimmermann@suse.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:23:02 +0000
+Subject: [PATCH AUTOSEL 4.4 42/63] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190327182323.18577-42-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190326091744.11542-1-tzimmermann@suse.de>
-In-Reply-To: <20190326091744.11542-1-tzimmermann@suse.de>
+References: <20190327182323.18577-1-sashal@kernel.org>
+In-Reply-To: <20190327182323.18577-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@linux.ie, daniel@ffwll.ch, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+
+[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
+
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
+
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c | 77 +++++++++++++++++++++++++
- 1 file changed, 77 insertions(+)
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c b/drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c
-index 4a6ba6c85c5c..4724e3df6ace 100644
---- a/drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c
-+++ b/drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c
-@@ -18,6 +18,7 @@
- #include <linux/fb.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
-+#include "fbdevdrm_bo.h"
- #include "fbdevdrm_device.h"
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index ea2bd6208a2f..9eae191728d2 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -425,6 +425,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
  
- /* DRM porting note: Here are some general information about the driver,
-@@ -64,7 +65,82 @@ static const struct file_operations driver_fops = {
- 	.read = drm_read
- };
- 
-+static void driver_gem_free_object(struct drm_gem_object *gobj)
-+{
-+	struct fbdevdrm_bo *fbo = fbdevdrm_bo_of_gem(gobj);
-+	fbdevdrm_bo_put(fbo);
-+}
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
 +
-+static int driver_dumb_create(struct drm_file *file_priv,
-+			      struct drm_device *dev,
-+			      struct drm_mode_create_dumb *args)
-+{
-+	int ret;
-+	struct fbdevdrm_bo *fbo;
-+	u32 size, handle;
-+
-+	args->pitch = args->width * ((args->bpp + 7) / 8);
-+	args->size = args->pitch * args->height;
-+
-+	size = roundup(args->size, PAGE_SIZE);
-+	if (!size)
-+		return -EINVAL;
-+
-+	/* DRM porting note: FBdev aligns scanout buffers to multiples
-+	 * of the scanline size in bytes. TTM aligns buffers to page
-+	 * boundaries. To maintain FBdev buffers with TTM, we align BOs
-+	 * at both, the scanline offsets and the page offsets. Depending
-+	 * on resolution and color depth, this may result in some memory
-+	 * overhead. After porting an FBdev driver to DRM, you can remove
-+	 * this constrain and simply align to page boundaries.
-+	 */
-+	fbo = fbdevdrm_bo_create_with_pitch(dev, size, args->pitch, 0);
-+	if (IS_ERR(fbo)) {
-+		ret = PTR_ERR(fbo);
-+		if (ret != -ERESTARTSYS)
-+			DRM_ERROR("fbdevdrm: fbdevdrm_bo_create_with_pitch() "
-+				  "failed, error %d\n", -ret);
-+		return ret;
-+	}
-+
-+	ret = drm_gem_handle_create(file_priv, &fbo->gem, &handle);
-+	drm_gem_object_put_unlocked(&fbo->gem); /* TODO: verify ref-count */
-+	if (ret < 0)
-+		goto err_fbdevdrm_bo_put;
-+
-+	args->handle = handle;
-+
-+	return 0;
-+
-+err_fbdevdrm_bo_put:
-+	fbdevdrm_bo_put(fbo);
-+	return ret;
-+}
-+
-+static int driver_dumb_mmap_offset(struct drm_file *file_priv,
-+				   struct drm_device *dev, uint32_t handle,
-+				   uint64_t *offset)
-+{
-+	struct drm_gem_object *obj;
-+	struct fbdevdrm_bo *fbo;
-+
-+	obj = drm_gem_object_lookup(file_priv, handle);
-+	if (obj = NULL)
-+		return -ENOENT;
-+
-+	fbo = fbdevdrm_bo_of_gem(obj);
-+	*offset = fbdevdrm_bo_mmap_offset(fbo);
-+
-+	drm_gem_object_put_unlocked(obj);
-+	return 0;
-+}
-+
- static struct drm_driver fbdevdrm_drv = {
-+	/* GEM interfaces */
-+	.gem_free_object = driver_gem_free_object,
-+	/* Dumb interfaces */
-+	.dumb_create = driver_dumb_create,
-+	.dumb_map_offset = driver_dumb_mmap_offset,
- 	/* data fields */
- 	.major = DRIVER_MAJOR,
- 	.minor = DRIVER_MINOR,
-@@ -72,6 +148,7 @@ static struct drm_driver fbdevdrm_drv = {
- 	.name = DRIVER_NAME,
- 	.desc = DRIVER_DESCRIPTION,
- 	.date = DRIVER_DATE,
-+	.driver_features = DRIVER_GEM,
- 	.fops = &driver_fops
- };
- 
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
 -- 
-2.21.0
+2.19.1

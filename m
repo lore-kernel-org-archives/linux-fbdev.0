@@ -1,15 +1,75 @@
-From: Eden Zuwa <edenzuwa@gmail.com>
-Date: Sat, 23 Mar 2019 09:58:37 +0000
-Subject: Hi
-Message-Id: <1842660343.9072915.1553335117300@mail.yahoo.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:16:00 +0000
+Subject: [PATCH AUTOSEL 4.14 096/123] backlight: pwm_bl: Use gpiod_get_value_cansleep() to get initial state
+Message-Id: <20190327181628.15899-96-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190327181628.15899-1-sashal@kernel.org>
+In-Reply-To: <20190327181628.15899-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Chen-Yu Tsai <wens@csie.org>, Lee Jones <lee.jones@linaro.org>
 
+From: Chen-Yu Tsai <wens@csie.org>
 
+[ Upstream commit cec2b18832e26bc866bef2be22eff4e25bbc4034 ]
 
-Hello,
-My name is Miss Eden,i saw your profile and i love it,i think we can make it together,please i will like you to email me back through my email thus;so that i will send you my picture.so that we will discuss more about my interest,I will be waiting to receive your lovely reply soon
-Miss Eden
+gpiod_get_value() gives out a warning if access to the underlying gpiochip
+requires sleeping, which is common for I2C based chips:
+
+    WARNING: CPU: 0 PID: 77 at drivers/gpio/gpiolib.c:2500 gpiod_get_value+0xd0/0x100
+    Modules linked in:
+    CPU: 0 PID: 77 Comm: kworker/0:2 Not tainted 4.14.0-rc3-00589-gf32897915d48-dirty #90
+    Hardware name: Allwinner sun4i/sun5i Families
+    Workqueue: events deferred_probe_work_func
+    [<c010ec50>] (unwind_backtrace) from [<c010b784>] (show_stack+0x10/0x14)
+    [<c010b784>] (show_stack) from [<c0797224>] (dump_stack+0x88/0x9c)
+    [<c0797224>] (dump_stack) from [<c0125b08>] (__warn+0xe8/0x100)
+    [<c0125b08>] (__warn) from [<c0125bd0>] (warn_slowpath_null+0x20/0x28)
+    [<c0125bd0>] (warn_slowpath_null) from [<c037069c>] (gpiod_get_value+0xd0/0x100)
+    [<c037069c>] (gpiod_get_value) from [<c03778d0>] (pwm_backlight_probe+0x238/0x508)
+    [<c03778d0>] (pwm_backlight_probe) from [<c0411a2c>] (platform_drv_probe+0x50/0xac)
+    [<c0411a2c>] (platform_drv_probe) from [<c0410224>] (driver_probe_device+0x238/0x2e8)
+    [<c0410224>] (driver_probe_device) from [<c040e820>] (bus_for_each_drv+0x44/0x94)
+    [<c040e820>] (bus_for_each_drv) from [<c040ff0c>] (__device_attach+0xb0/0x114)
+    [<c040ff0c>] (__device_attach) from [<c040f4f8>] (bus_probe_device+0x84/0x8c)
+    [<c040f4f8>] (bus_probe_device) from [<c040f944>] (deferred_probe_work_func+0x50/0x14c)
+    [<c040f944>] (deferred_probe_work_func) from [<c013be84>] (process_one_work+0x1ec/0x414)
+    [<c013be84>] (process_one_work) from [<c013ce5c>] (worker_thread+0x2b0/0x5a0)
+    [<c013ce5c>] (worker_thread) from [<c0141908>] (kthread+0x14c/0x154)
+    [<c0141908>] (kthread) from [<c0107ab0>] (ret_from_fork+0x14/0x24)
+
+This was missed in commit 0c9501f823a4 ("backlight: pwm_bl: Handle gpio
+that can sleep"). The code was then moved to a separate function in
+commit 7613c922315e ("backlight: pwm_bl: Move the checks for initial power
+state to a separate function").
+
+The only usage of gpiod_get_value() is during the probe stage, which is
+safe to sleep in. Switch to gpiod_get_value_cansleep().
+
+Fixes: 0c9501f823a4 ("backlight: pwm_bl: Handle gpio that can sleep")
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/backlight/pwm_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 0fa7d2bd0e48..aef3c1c29564 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -211,7 +211,7 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
+ 	 */
+ 
+ 	/* if the enable GPIO is disabled, do not enable the backlight */
+-	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
++	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) = 0)
+ 		return FB_BLANK_POWERDOWN;
+ 
+ 	/* The regulator is disabled, do not enable the backlight */
+-- 
+2.19.1

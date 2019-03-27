@@ -1,103 +1,221 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 27 Mar 2019 10:58:34 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Wed, 27 Mar 2019 14:46:08 +0000
 Subject: Re: [RFC][PATCH 00/11] DRM driver for fbdev devices
-Message-Id: <CAKMK7uHndG4FHMQhgEZ9EHW+dtAKvtYiu7Nn1p1Kaxoa4FznvA@mail.gmail.com>
+Message-Id: <c86b8c56-0635-9ff9-3677-5c6446328816@suse.de>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="YVt7IcvoerG6hDvK0diM2fCH6ut9g55TV"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190326091744.11542-1-tzimmermann@suse.de>
  <20190326145320.GJ2665@phenom.ffwll.local>
  <0611651c-7fec-284b-d990-6fdbcf1f1b2a@suse.de>
  <CAKMK7uGOhAP0EjoKwLf+HUyoNX0Li5NL6dBw4+ir9Ae704pHkA@mail.gmail.com>
- <6c6f22ff-b643-ee02-aacc-6c86f20fe0ea@daenzer.net>
-In-Reply-To: <6c6f22ff-b643-ee02-aacc-6c86f20fe0ea@daenzer.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+In-Reply-To: <CAKMK7uGOhAP0EjoKwLf+HUyoNX0Li5NL6dBw4+ir9Ae704pHkA@mail.gmail.com>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Dave Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--YVt7IcvoerG6hDvK0diM2fCH6ut9g55TV
+Content-Type: multipart/mixed; boundary="Sg1GBnU7XInAOU8ILALUtitF7395syf8p";
+ protected-headers="v1"
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: Dave Airlie <airlied@linux.ie>,
+ Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
+ dri-devel <dri-devel@lists.freedesktop.org>,
+ Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Message-ID: <c86b8c56-0635-9ff9-3677-5c6446328816@suse.de>
+Subject: Re: [RFC][PATCH 00/11] DRM driver for fbdev devices
+References: <20190326091744.11542-1-tzimmermann@suse.de>
+ <20190326145320.GJ2665@phenom.ffwll.local>
+ <0611651c-7fec-284b-d990-6fdbcf1f1b2a@suse.de>
+ <CAKMK7uGOhAP0EjoKwLf+HUyoNX0Li5NL6dBw4+ir9Ae704pHkA@mail.gmail.com>
+In-Reply-To: <CAKMK7uGOhAP0EjoKwLf+HUyoNX0Li5NL6dBw4+ir9Ae704pHkA@mail.gmail.com>
+
+--Sg1GBnU7XInAOU8ILALUtitF7395syf8p
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: quoted-printable
-To: =?UTF-8?Q?Michel_D=C3=A4nzer?= <michel@daenzer.net>
-Cc: Dave Airlie <airlied@linux.ie>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Thomas Zimmermann <tzimmermann@suse.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On Wed, Mar 27, 2019 at 10:55 AM Michel D=C3=A4nzer <michel@daenzer.net> wr=
-ote:
->
-> On 2019-03-27 10:41 a.m., Daniel Vetter wrote:
-> > On Wed, Mar 27, 2019 at 10:10 AM Thomas Zimmermann <tzimmermann@suse.de=
-> wrote:
-> >> Am 26.03.19 um 15:53 schrieb Daniel Vetter:
-> >>>
-> >>> Looks surprisingly clean, at least from a quick read. Only big thing I
-> >>> noticed on the implementation side is that you probably want to use t=
-he
-> >>> simple display helpers. At least that's a much better fit for simple
-> >>> display hw supported by these fbdev drivers.
-> >>
-> >> I thought about using the simple-DRM helpers, but found that a full DRM
-> >> driver would be more helpful for porting over fbdev drivers. Unless
-> >> simple DRM is a hard requirement, I'd prefer to leave it this way.
-> >>
-> >> For those devices that only support a single pipeline, the conversion =
-to
-> >> simple DRM should then be mandatory during the porting process.
-> >
-> > fbdev only supports a single output, all multi-head extensions are
-> > driver specific ioctl hacks. Given that all you can do is switch it on
-> > or off (with a given mode), simple pipe helpers are the perfect fit
-> > for fbdev.
-> >
-> > Some drivers might support more (like multiple heads, or at least
-> > different outputs), and those we should convert over. But at least for
-> > step 1 in converting fbdev drivers over, simple pipe is the right
-> > starting point I think.
->
-> Converting an fbdev driver to a KMS one loses some features:
->
-> 1) Dynamically switching modes / colour formats via fbdev.
+Hi
 
-Possible to add that to drm_fb_helper.c, it's just after 10+ years
-still no one cares, so it didn't happen. We have added a bunch of
-fbdev emulation features for stuff people wanted, so patches are
-welcome. And will be merged, if they exist.
+Am 27.03.19 um 10:41 schrieb Daniel Vetter:
+>> I use the current approach because it does not require modifications t=
+o
+>> DRM or fbdev. Not copying the fbdev driver code has the advantage that=
 
-Ofc will be rather limited since fbdev only has one output. But should
-be possible to at least faithfully map for the simple case of only 1
-connected output. Ofc we still can't reallocate the fbdev bo, because
-fbdev really doesn't like when the aperture moves around. Fixing that
-is possible, if you fix the fbdev vs. fbcon locking, which is probably
-a few man-years of engineering (I looked at it recently for reasons,
-it's totally broken and full of ABBA issues, solved by simply not
-taking the other lock).
+>> any fix that goes into fbdev is also used by fbdevdrm.
+>>
+>> OTOH, that has some problems. At least the event-reporting hooks appea=
+r
+>> to be fragile. You mentioned that you have patches for replacing it. I=
+'d
+>> be happy to use something else. Filtering out generic and DRM-based
+>> drivers is also not optimal.
+>>
+>> Instead of adding the porting helpers to the DRM core, I'd suggest to
+>> add them to fbdevdrm. Fbdevdrm would have to duplicate some of the fbd=
+ev
+>> functionality and provide a replacement for register_framebuffer.
+>>
+>> Porting would then mean to
+>>
+>>  1) create a new DRM driver by copying fbdevdrm, and
+>>  2) copy the fbdev driver code to the new DRM driver and rename the
+>> function calls accordingly. At this point the new driver should alread=
+y
+>> work to some extend.
+>>  3) Finally, do the refactoring and get it out of staging.
+>=20
+> Maybe the idea behind helpers isn't fully clear:
+>=20
+> https://blog.ffwll.ch/2016/12/midlayers-once-more-with-feeling.html
+>=20
+> The idea with helpers is essentially to have all the flexibility of
+> copypasting (you can refactor as you see fit), without having to
+> actually copypaste a lot of the code. That's why I think an fbdevdrm
+> helper suits, at least as long as we're actively transitioning. Worked
+> fairly well for the atomic transition at least.
 
-> 2) fbcon acceleration (or maybe this can be preserved?).
+That's not really a problem from my side, but maybe we misunderstood
+each other.
 
-gma500 has fbcon accel. i915 had patches, but wasn't worth it. It's
-possible, but demand for this seems approximately nil. We do support
-fbdev page flipping, through the overallocate parameter.
+Modeling fbdevdrm after CMA helpers or simple drm would put it next to
+central DRM core and helper modules. That seems like an odd place for
+transitional helper functions that are supposed to be replaced by the
+actual DRM helpers.
 
-> In turn, it allows exposing additional functionality:
->
-> 3) Multiple outputs via KMS.
-4) multi-master and multi-client (at least if we properly manage the
-vram with ttm for discrete, socs should use the cma helpers). I think
-that's the big one, and why compositors might want to have kms even
-for dumb display hw.
-5) on socs: prime buffer sharing, that seems to be the main reason we
-gained a few fbdev conversion in kms recently
+I don't want some kind of abstraction layer. I'm proposing a design like
+tinydrm, where a separate module offers helpers for fbdev drivers that
+are about to be converted.
 
-> Is there any benefit in converting a driver without adding 3)? If not,
-> is simple pipe still a good starting point?
+The difference might not be that significant, but just a question of
+were the code is located.
 
-simple pipe still allows multiple outputs if they're entirely
-separate. Only thing it limits is:
-1) only 1 fixed plane per crtc
-2) fixed crtc->output routing (but with the option to plug in
-drm_bridge transcoders into that fixed pipeline for code sharing).
 
-I still think simple_pipe is a good starting point for most fbdev
-drivers left. All the fancy ones that support multiple outputs and
-output switching do have at least a basic kms driver already. Since
-atomic helpers are fairly modular (and simple pipe builds on top of
-atomic helpers) it should be easy to extend from simple pipe to full
-atomic once necessary.
--Daniel
+>>> - Improve the other helpers we have as needed - there's probably room=
+ for
+>>>   a simple ttm version, inspired by all these simple display chips (e=
+=2Eg.
+>>>   ast/cirrus/bochs/mga all solve similar problems like this).
+>>
+>> Makes sense, but appears to be unrelated.
+>=20
+> It's the main reason to have drivers in upstream - sharing code and
+> infrastructure.
+
+I meant that creating 'simple TTM' is unrelated to fbdevdrm. It would
+make sense in any case.
+
+Best regards
+Thomas
+
+At least for me the main benefit in porting a bunch
+> more fbdev drivers over isn't the old hw support (that hw is quietly
+> dying anyway, we just have to wait). But improving support for new hw
+> that fills similar niches, and making it easier for everyone else. Ofc
+> I'm not going to stop anyone who's going to do all the porting work,
+> but we can't realistically require it (e.g. legacy kms drivers also
+> don't support atomic, since simply not possible without rewriting the
+> driver).
+>=20
+> Cheers, Daniel
+>>
+>> Best regards
+>> Thomas
+>>
+>>> - Treat any such drivers as CONFIG_STAGING until they've become fully=
+
+>>>   native, i.e. if no one bothers to convert them, we'll drop them aga=
+in.
+>>>
+>>> The above is kinda similar in spirit to the transitional helpers we'v=
+e
+>>> used to upgrade the big drivers from legacy kms to atomic.
+>>>
+>>> Thoughts?
+>>>
+>>> Cheers, Daniel
+>>>
+>>>>
+>>>>  drivers/gpu/drm/Kconfig                     |   2 +
+>>>>  drivers/gpu/drm/Makefile                    |   1 +
+>>>>  drivers/gpu/drm/fbdevdrm/Kconfig            |  13 +
+>>>>  drivers/gpu/drm/fbdevdrm/Makefile           |  11 +
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_bo.c      | 276 ++++++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_bo.h      |  58 ++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_device.c  |  96 +++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_device.h  |  55 ++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c     | 347 +++++++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_format.c  | 441 ++++++++++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_format.h  |  26 +
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c   | 195 +++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h   |  53 ++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_modeset.c | 746 +++++++++++++++++=
++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_modeset.h |  38 +
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_primary.c | 498 +++++++++++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_primary.h |  27 +
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_ttm.c     | 202 ++++++
+>>>>  drivers/gpu/drm/fbdevdrm/fbdevdrm_ttm.h     |  35 +
+>>>>  19 files changed, 3120 insertions(+)
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/Kconfig
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/Makefile
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_bo.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_bo.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_device.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_device.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_drv.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_format.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_format.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modes.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modeset.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_modeset.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_primary.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_primary.h
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_ttm.c
+>>>>  create mode 100644 drivers/gpu/drm/fbdevdrm/fbdevdrm_ttm.h
+>>>>
+>>>> --
+>>>> 2.21.0
+>>>>
+>>>
+>>
+>> --
+>> Thomas Zimmermann
+>> Graphics Driver Developer
+>> SUSE Linux GmbH, Maxfeldstrasse 5, 90409 Nuernberg, Germany
+>> GF: Felix Imend=C3=B6rffer, Mary Higgins, Sri Rasiah
+>> HRB 21284 (AG N=C3=BCrnberg)
+>>
+>=20
+>=20
+
 --=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+Thomas Zimmermann
+Graphics Driver Developer
+SUSE Linux GmbH, Maxfeldstrasse 5, 90409 Nuernberg, Germany
+GF: Felix Imend=C3=B6rffer, Mary Higgins, Sri Rasiah
+HRB 21284 (AG N=C3=BCrnberg)
+
+
+--Sg1GBnU7XInAOU8ILALUtitF7395syf8p--
+
+--YVt7IcvoerG6hDvK0diM2fCH6ut9g55TV
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAlybjLAACgkQaA3BHVML
+eiM/ZwgAlSDwnxg8J2jAoGL7fCUONEkD7iFM7Awt/o9fHq71Xzn4J+r0sRwmUyG6
+0pWuLRja7iKWmOCSw5z3Y9ydVrqdFEEwR8WLLRVycGVjZJw0JUosGvgFGhUArZKa
+oZP9OMYhFDdjUkzt3l+eolzC5MIDrM/xa+z+/NCUp0/YpgCDjxB59IbAOHumQNKB
+oShi3MjeMM9En6yNQcHWjkWWtSnI314yMJchQnmISkFVPh/pCtNgeucgP4dh8XsP
+whWMbwK0JsQYpOSdnkxispuUUP7ChsJXzQpE1o42BHiMhTVrKYBXrHwTknozr9rV
+kfqE2RafV0XDStvQH30nDr0h6N6kMw==
+=2NZj
+-----END PGP SIGNATURE-----
+
+--YVt7IcvoerG6hDvK0diM2fCH6ut9g55TV--

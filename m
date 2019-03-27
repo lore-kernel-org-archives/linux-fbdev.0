@@ -1,45 +1,61 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 01 Mar 2019 14:45:52 +0000
-Subject: Re: [PATCH] fbdev: omap2: fix warnings in dss core
-Message-Id: <5ceb8653-055d-e4eb-a705-0bfd243e132c@samsung.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:20:10 +0000
+Subject: [PATCH AUTOSEL 4.9 57/87] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190327182040.17444-57-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190213084828epcas3p2d7f70d63c5e267197de5513ae96b4fc2@epcas3p2.samsung.com>
-        <20190213084721.29624-1-anders.roxell@linaro.org>
-In-Reply-To: <20190213084721.29624-1-anders.roxell@linaro.org>
+References: <20190327182040.17444-1-sashal@kernel.org>
+In-Reply-To: <20190327182040.17444-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Anders Roxell <anders.roxell@linaro.org>
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
 
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-On 02/13/2019 09:47 AM, Anders Roxell wrote:
-> Commit 60d2fa0dad06 ("fbdev: omap2: no need to check return value of
-> debugfs_create functions") changed the declaration of the return value
-> of function dss_debugfs_create_file() and the following two warnings
-> appeared:
-> 
-> drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘dss_debugfs_create_file’:
-> drivers/video/fbdev/omap2/omapfb/dss/core.c:139:9: warning: ‘return’ with a value,
->  in function returning void
->   return 0;
->          ^
-> drivers/video/fbdev/omap2/omapfb/dss/core.c: In function ‘omap_dss_probe’:
-> drivers/video/fbdev/omap2/omapfb/dss/core.c:172:6: warning: unused variable ‘r’
->  [-Wunused-variable]
->   int r;
->       ^
-> 
-> Rework so function dss_debugfs_create_file() that is declared to return
-> void don't 'return 0' and remove the declaration of the unused variable
-> 'r'.
-> 
-> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
 
-Patch queued for v5.1, thanks.
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
+
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index a1d93151c059..c928190666ac 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -425,6 +425,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
+ 
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
++
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
+-- 
+2.19.1

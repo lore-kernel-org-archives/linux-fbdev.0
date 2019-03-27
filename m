@@ -1,51 +1,61 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Thu, 21 Mar 2019 22:52:32 +0000
-Subject: [PATCH 4/7] pxa3xx-gcu: pass struct device to dma_mmap_coherent
-Message-Id: <20190321225235.30648-5-hch@lst.de>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:00:23 +0000
+Subject: [PATCH AUTOSEL 5.0 168/262] fbdev: fbmem: fix memory access if logo is bigger than the screen
+Message-Id: <20190327180158.10245-168-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190321225235.30648-1-hch@lst.de>
-In-Reply-To: <20190321225235.30648-1-hch@lst.de>
+References: <20190327180158.10245-1-sashal@kernel.org>
+In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
 
-Just like we do for all other DMA operations.
+From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+
+There is no clipping on the x or y axis for logos larger that the framebuffer
+size. Therefore: a logo bigger than screen size leads to invalid memory access:
+
+[    1.254664] Backtrace:
+[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
+[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
+[    1.254774]  r4:c6a3e800
+[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
+[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
+[    1.254852]  r4:c6808c00
+[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
+[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
+[    1.254928]  r4:c6808c00
+[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
+[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+
+So prevent displaying a logo bigger than screen size and avoid invalid
+memory access.
+
+Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/pxa3xx-gcu.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbmem.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/video/fbdev/pxa3xx-gcu.c b/drivers/video/fbdev/pxa3xx-gcu.c
-index 69cfb337c857..047a2fa4b87e 100644
---- a/drivers/video/fbdev/pxa3xx-gcu.c
-+++ b/drivers/video/fbdev/pxa3xx-gcu.c
-@@ -96,6 +96,7 @@ struct pxa3xx_gcu_batch {
- };
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index cb43a2258c51..4721491e6c8c 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -431,6 +431,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+ {
+ 	unsigned int x;
  
- struct pxa3xx_gcu_priv {
-+	struct device		 *dev;
- 	void __iomem		 *mmio_base;
- 	struct clk		 *clk;
- 	struct pxa3xx_gcu_shared *shared;
-@@ -493,7 +494,7 @@ pxa3xx_gcu_mmap(struct file *file, struct vm_area_struct *vma)
- 		if (size != SHARED_SIZE)
- 			return -EINVAL;
- 
--		return dma_mmap_coherent(NULL, vma,
-+		return dma_mmap_coherent(priv->dev, vma,
- 			priv->shared, priv->shared_phys, size);
- 
- 	case SHARED_SIZE >> PAGE_SHIFT:
-@@ -670,6 +671,7 @@ static int pxa3xx_gcu_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, priv);
- 	priv->resource_mem = r;
-+	priv->dev = dev;
- 	pxa3xx_gcu_reset(priv);
- 	pxa3xx_gcu_init_debug_timer(priv);
- 
++	if (image->width > info->var.xres || image->height > info->var.yres)
++		return;
++
+ 	if (rotate = FB_ROTATE_UR) {
+ 		for (x = 0;
+ 		     x < num && image->dx + image->width <= info->var.xres;
 -- 
-2.20.1
+2.19.1

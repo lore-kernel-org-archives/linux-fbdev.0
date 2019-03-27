@@ -1,61 +1,75 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 27 Mar 2019 18:00:23 +0000
-Subject: [PATCH AUTOSEL 5.0 168/262] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <20190327180158.10245-168-sashal@kernel.org>
+Date: Wed, 27 Mar 2019 18:09:42 +0000
+Subject: [PATCH AUTOSEL 4.19 150/192] backlight: pwm_bl: Use gpiod_get_value_cansleep() to get initial state
+Message-Id: <20190327181025.13507-150-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190327180158.10245-1-sashal@kernel.org>
-In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
+References: <20190327181025.13507-1-sashal@kernel.org>
+In-Reply-To: <20190327181025.13507-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
+Cc: Chen-Yu Tsai <wens@csie.org>, Lee Jones <lee.jones@linaro.org>, Sasha Levin <sashal@kernel.org>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+From: Chen-Yu Tsai <wens@csie.org>
 
-[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+[ Upstream commit cec2b18832e26bc866bef2be22eff4e25bbc4034 ]
 
-There is no clipping on the x or y axis for logos larger that the framebuffer
-size. Therefore: a logo bigger than screen size leads to invalid memory access:
+gpiod_get_value() gives out a warning if access to the underlying gpiochip
+requires sleeping, which is common for I2C based chips:
 
-[    1.254664] Backtrace:
-[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-[    1.254774]  r4:c6a3e800
-[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-[    1.254852]  r4:c6808c00
-[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-[    1.254928]  r4:c6808c00
-[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
+    WARNING: CPU: 0 PID: 77 at drivers/gpio/gpiolib.c:2500 gpiod_get_value+0xd0/0x100
+    Modules linked in:
+    CPU: 0 PID: 77 Comm: kworker/0:2 Not tainted 4.14.0-rc3-00589-gf32897915d48-dirty #90
+    Hardware name: Allwinner sun4i/sun5i Families
+    Workqueue: events deferred_probe_work_func
+    [<c010ec50>] (unwind_backtrace) from [<c010b784>] (show_stack+0x10/0x14)
+    [<c010b784>] (show_stack) from [<c0797224>] (dump_stack+0x88/0x9c)
+    [<c0797224>] (dump_stack) from [<c0125b08>] (__warn+0xe8/0x100)
+    [<c0125b08>] (__warn) from [<c0125bd0>] (warn_slowpath_null+0x20/0x28)
+    [<c0125bd0>] (warn_slowpath_null) from [<c037069c>] (gpiod_get_value+0xd0/0x100)
+    [<c037069c>] (gpiod_get_value) from [<c03778d0>] (pwm_backlight_probe+0x238/0x508)
+    [<c03778d0>] (pwm_backlight_probe) from [<c0411a2c>] (platform_drv_probe+0x50/0xac)
+    [<c0411a2c>] (platform_drv_probe) from [<c0410224>] (driver_probe_device+0x238/0x2e8)
+    [<c0410224>] (driver_probe_device) from [<c040e820>] (bus_for_each_drv+0x44/0x94)
+    [<c040e820>] (bus_for_each_drv) from [<c040ff0c>] (__device_attach+0xb0/0x114)
+    [<c040ff0c>] (__device_attach) from [<c040f4f8>] (bus_probe_device+0x84/0x8c)
+    [<c040f4f8>] (bus_probe_device) from [<c040f944>] (deferred_probe_work_func+0x50/0x14c)
+    [<c040f944>] (deferred_probe_work_func) from [<c013be84>] (process_one_work+0x1ec/0x414)
+    [<c013be84>] (process_one_work) from [<c013ce5c>] (worker_thread+0x2b0/0x5a0)
+    [<c013ce5c>] (worker_thread) from [<c0141908>] (kthread+0x14c/0x154)
+    [<c0141908>] (kthread) from [<c0107ab0>] (ret_from_fork+0x14/0x24)
 
-So prevent displaying a logo bigger than screen size and avoid invalid
-memory access.
+This was missed in commit 0c9501f823a4 ("backlight: pwm_bl: Handle gpio
+that can sleep"). The code was then moved to a separate function in
+commit 7613c922315e ("backlight: pwm_bl: Move the checks for initial power
+state to a separate function").
 
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+The only usage of gpiod_get_value() is during the probe stage, which is
+safe to sleep in. Switch to gpiod_get_value_cansleep().
+
+Fixes: 0c9501f823a4 ("backlight: pwm_bl: Handle gpio that can sleep")
+Signed-off-by: Chen-Yu Tsai <wens@csie.org>
+Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Lee Jones <lee.jones@linaro.org>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/backlight/pwm_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index cb43a2258c51..4721491e6c8c 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -431,6 +431,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- {
- 	unsigned int x;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 6bde543452f2..7ddc0930e98c 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -425,7 +425,7 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
+ 	 */
  
-+	if (image->width > info->var.xres || image->height > info->var.yres)
-+		return;
-+
- 	if (rotate = FB_ROTATE_UR) {
- 		for (x = 0;
- 		     x < num && image->dx + image->width <= info->var.xres;
+ 	/* if the enable GPIO is disabled, do not enable the backlight */
+-	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
++	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) = 0)
+ 		return FB_BLANK_POWERDOWN;
+ 
+ 	/* The regulator is disabled, do not enable the backlight */
 -- 
 2.19.1

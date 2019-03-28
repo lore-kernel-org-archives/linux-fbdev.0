@@ -1,34 +1,53 @@
-From: Kangjie Lu <kjlu@umn.edu>
-Date: Thu, 14 Mar 2019 07:30:27 +0000
-Subject: [PATCH] video: hgafb: fix a NULL pointer dereference
-Message-Id: <20190314073027.22337-1-kjlu@umn.edu>
+From: Jiufei Xue <jiufei.xue@linux.alibaba.com>
+Date: Thu, 28 Mar 2019 09:38:33 +0000
+Subject: [PATCH v2] fbdev: fix WARNING in __alloc_pages_nodemask bug
+Message-Id: <20190328093833.55100-1-jiufei.xue@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: kjlu@umn.edu
-Cc: pakki001@umn.edu, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
-When ioremap fails, hga_vram should not be dereferenced. The fix
-check the failure to avoid NULL pointer dereference.
+Syzkaller hit 'WARNING in __alloc_pages_nodemask' bug.
 
-Signed-off-by: Kangjie Lu <kjlu@umn.edu>
+WARNING: CPU: 1 PID: 1473 at mm/page_alloc.c:4377
+__alloc_pages_nodemask+0x4da/0x2130
+Kernel panic - not syncing: panic_on_warn set ...
+
+Call Trace:
+ alloc_pages_current+0xb1/0x1e0
+ kmalloc_order+0x1f/0x60
+ kmalloc_order_trace+0x1d/0x120
+ fb_alloc_cmap_gfp+0x85/0x2b0
+ fb_set_user_cmap+0xff/0x370
+ do_fb_ioctl+0x949/0xa20
+ fb_ioctl+0xdd/0x120
+ do_vfs_ioctl+0x186/0x1070
+ ksys_ioctl+0x89/0xa0
+ __x64_sys_ioctl+0x74/0xb0
+ do_syscall_64+0xc8/0x550
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+This is a warning about order >= MAX_ORDER and the order is from
+userspace ioctl. Add flag __NOWARN to silence this warning.
+
+Signed-off-by: Jiufei Xue <jiufei.xue@linux.alibaba.com>
 ---
- drivers/video/fbdev/hgafb.c | 2 ++
+ drivers/video/fbdev/core/fbcmap.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-index 463028543173..59e1cae57948 100644
---- a/drivers/video/fbdev/hgafb.c
-+++ b/drivers/video/fbdev/hgafb.c
-@@ -285,6 +285,8 @@ static int hga_card_detect(void)
- 	hga_vram_len  = 0x08000;
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index 68a113594808..2811c4afde01 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -94,6 +94,8 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ 	int size = len * sizeof(u16);
+ 	int ret = -ENOMEM;
  
- 	hga_vram = ioremap(0xb0000, hga_vram_len);
-+	if (!hga_vram)
-+		goto error;
- 
- 	if (request_region(0x3b0, 12, "hgafb"))
- 		release_io_ports = 1;
++	flags |= __GFP_NOWARN;
++
+ 	if (cmap->len != len) {
+ 		fb_dealloc_cmap(cmap);
+ 		if (!len)
 -- 
-2.17.1
+2.19.1.856.g8858448bb

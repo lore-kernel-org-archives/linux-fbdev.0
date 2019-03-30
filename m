@@ -1,61 +1,44 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 27 Mar 2019 18:15:44 +0000
-Subject: [PATCH AUTOSEL 4.14 080/123] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <20190327181628.15899-80-sashal@kernel.org>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Sat, 30 Mar 2019 02:26:26 +0000
+Subject: [PATCH -next] video: fbdev: remove set but not used variable 'size'
+Message-Id: <20190330022626.97340-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190327181628.15899-1-sashal@kernel.org>
-In-Reply-To: <20190327181628.15899-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrew Morton <akpm@linux-foundation.org>, Stephen Rothwell <sfr@canb.auug.org.au>, Kees Cook <keescook@chromium.org>, Ira Weiny <ira.weiny@intel.com>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, dri-devel@lists.freedesktop.org
 
-From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+drivers/video/fbdev/pvr2fb.c: In function 'pvr2fb_init':
+drivers/video/fbdev/pvr2fb.c:1074:6: warning:
+ variable 'size' set but not used [-Wunused-but-set-variable]
 
-There is no clipping on the x or y axis for logos larger that the framebuffer
-size. Therefore: a logo bigger than screen size leads to invalid memory access:
+It's not used since commit 9cd1c6743454 ("pvr2fb: Fix oops when
+pseudo_palette is written")
 
-[    1.254664] Backtrace:
-[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-[    1.254774]  r4:c6a3e800
-[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-[    1.254852]  r4:c6808c00
-[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-[    1.254928]  r4:c6808c00
-[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
-
-So prevent displaying a logo bigger than screen size and avoid invalid
-memory access.
-
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/video/fbdev/pvr2fb.c | 2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 302cce7185e3..83961a22bef1 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -427,6 +427,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 41390c8e0f67..4e4d6a0df978 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -1071,7 +1071,6 @@ static struct pvr2_board {
+ static int __init pvr2fb_init(void)
  {
- 	unsigned int x;
+ 	int i, ret = -ENODEV;
+-	int size;
  
-+	if (image->width > info->var.xres || image->height > info->var.yres)
-+		return;
-+
- 	if (rotate = FB_ROTATE_UR) {
- 		for (x = 0;
- 		     x < num && image->dx + image->width <= info->var.xres;
--- 
-2.19.1
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -1080,7 +1079,6 @@ static int __init pvr2fb_init(void)
+ 		return -ENODEV;
+ 	pvr2fb_setup(option);
+ #endif
+-	size = sizeof(struct fb_info) + sizeof(struct pvr2fb_par) + 16 * sizeof(u32);
+ 
+ 	fb_info = framebuffer_alloc(sizeof(struct pvr2fb_par), NULL);

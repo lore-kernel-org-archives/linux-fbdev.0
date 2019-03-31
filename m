@@ -1,61 +1,16 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 27 Mar 2019 18:25:04 +0000
-Subject: [PATCH AUTOSEL 3.18 27/41] fbdev: fbmem: fix memory access if logo is bigger than the screen
-Message-Id: <20190327182518.19394-27-sashal@kernel.org>
+From: Wesley <dineyribeiro@engefoto.com.br>
+Date: Sun, 31 Mar 2019 18:48:45 +0000
+Subject: Hello Lovely!!!
+Message-Id: <399468227.353741.1554058125952.JavaMail.zimbra@engefoto.com.br>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190327182518.19394-1-sashal@kernel.org>
-In-Reply-To: <20190327182518.19394-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Martin Kepplinger <martin.kepplinger@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-From: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Good day dear, i hope this letter meets you well, Am Wesley i wish to get to know you better, if I may be so bold. I consider myself an easy-going man, adventurous, honest and fun loving person, Please forgive my manners am not good when it comes to Internet because that is not really my field Here in the base we are not allowed to go out that makes it very bored for me so I just think I need a friend to talk to outside to keep me going..........
 
-[ Upstream commit a5399db139cb3ad9b8502d8b1bd02da9ce0b9df0 ]
+Hoping to read from you soon.
 
-There is no clipping on the x or y axis for logos larger that the framebuffer
-size. Therefore: a logo bigger than screen size leads to invalid memory access:
+With love.
 
-[    1.254664] Backtrace:
-[    1.254728] [<c02714e0>] (cfb_imageblit) from [<c026184c>] (fb_show_logo+0x620/0x684)
-[    1.254763]  r10:00000003 r9:00027fd8 r8:c6a40000 r7:c6a36e50 r6:00000000 r5:c06b81e4
-[    1.254774]  r4:c6a3e800
-[    1.254810] [<c026122c>] (fb_show_logo) from [<c026c1e4>] (fbcon_switch+0x3fc/0x46c)
-[    1.254842]  r10:c6a3e824 r9:c6a3e800 r8:00000000 r7:c6a0c000 r6:c070b014 r5:c6a3e800
-[    1.254852]  r4:c6808c00
-[    1.254889] [<c026bde8>] (fbcon_switch) from [<c029c8f8>] (redraw_screen+0xf0/0x1e8)
-[    1.254918]  r10:00000000 r9:00000000 r8:00000000 r7:00000000 r6:c070d5a0 r5:00000080
-[    1.254928]  r4:c6808c00
-[    1.254961] [<c029c808>] (redraw_screen) from [<c029d264>] (do_bind_con_driver+0x194/0x2e4)
-[    1.254991]  r9:00000000 r8:00000000 r7:00000014 r6:c070d5a0 r5:c070d5a0 r4:c070d5a0
-
-So prevent displaying a logo bigger than screen size and avoid invalid
-memory access.
-
-Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
-Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbmem.c | 3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ea2bd6208a2f..9eae191728d2 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -425,6 +425,9 @@ static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
- {
- 	unsigned int x;
- 
-+	if (image->width > info->var.xres || image->height > info->var.yres)
-+		return;
-+
- 	if (rotate = FB_ROTATE_UR) {
- 		for (x = 0;
- 		     x < num && image->dx + image->width <= info->var.xres;
--- 
-2.19.1
+Wesley.

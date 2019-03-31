@@ -1,7 +1,7 @@
 From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Sun, 24 Mar 2019 21:39:16 +0000
+Date: Sun, 31 Mar 2019 12:20:08 +0000
 Subject: Re: [PATCH 5/8] fbdev: sm712fb: fix crashes during framebuffer writes by correctly mapping VRAM.
-Message-Id: <20190324213916.7xfxb7itj5ooydse@debian>
+Message-Id: <20190331122008.3ohmdjp54nts42kh@debian>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190316222504.27170-1-tomli@tomli.me>
  <20190316222504.27170-6-tomli@tomli.me>
@@ -9,10 +9,8 @@ In-Reply-To: <20190316222504.27170-6-tomli@tomli.me>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org, Yifeng Li <tomli@tomli.me>
-
-Hi Teddy,
+To: Yifeng Li <tomli@tomli.me>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, stable@vger.kernel.org
 
 On Sun, Mar 17, 2019 at 06:25:01AM +0800, Yifeng Li wrote:
 > On a Thinkpad s30 (Pentium III / i440MX, Lynx3DM), running fbtest or X
@@ -38,10 +36,11 @@ On Sun, Mar 17, 2019 at 06:25:01AM +0800, Yifeng Li wrote:
 > in earlier laptops, such as IBM Thinkpad 240X, the driver would probably
 > crash on them. I've never seen one of those machines and cannot fix it, but
 > I have documented these problems in the comments.
+> 
+> Signed-off-by: Yifeng Li <tomli@tomli.me>
+> Cc: stable@vger.kernel.org  # v4.4+
 
-I only have access to SM712 and I am testing this series on it. Can you please
-test them on SM710, SM720 and also on big-endian machine, specially the patches
-from 5 to 8.
+Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
 --
 Regards

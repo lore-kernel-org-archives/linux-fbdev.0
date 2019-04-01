@@ -1,31 +1,55 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Thu, 18 Apr 2019 15:11:40 +0000
-Subject: [PATCH v5 0/3] backlight: lm3630a: bug fix and fwnode support
-Message-Id: <20190418151143.26068-1-masneyb@onstation.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 12:07:17 +0000
+Subject: Re: [PATCH 06/12] omapfb: add missing of_node_put after of_device_is_available
+Message-Id: <f06e8d3a-a98d-239b-d5e1-e5fad2bc4bb9@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1550928043-14889-1-git-send-email-Julia.Lawall@lip6.fr>
+        <CGME20190223135900epcas2p27cce442a6e691905bd290e89d4c17dbb@epcas2p2.samsung.com>
+        <1550928043-14889-7-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1550928043-14889-7-git-send-email-Julia.Lawall@lip6.fr>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
-Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
+To: Julia Lawall <Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Here is a patch series that fixes a single bug and adds fwnode support
-to the lm3630a driver. This work was tested on a LG Nexus 5 (hammerhead)
-phone. My status page at https://masneyb.github.io/nexus-5-upstream/
-describes what is working so far with the upstream kernel.
 
-See the individual patches for the changelog.
+On 02/23/2019 02:20 PM, Julia Lawall wrote:
+> Add an of_node_put when a tested device node is not available.
+> 
+> The semantic patch that fixes this problem is as follows
+> (http://coccinelle.lip6.fr):
+> 
+> // <smpl>
+> @@
+> identifier f;
+> local idexpression e;
+> expression x;
+> @@
+> 
+> e = f(...);
+> ... when != of_node_put(e)
+>     when != x = e
+>     when != e = x
+>     when any
+> if (<+...of_device_is_available(e)...+>) {
+>   ... when != of_node_put(e)
+> (
+>   return e;
+> |
+> + of_node_put(e);
+>   return ...;
+> )
+> }
+> // </smpl>
+> 
+> Fixes: f76ee892a99e6 ("omapfb: copy omapdss & displays for omapfb")
+> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Brian Masney (3):
-  backlight: lm3630a: return 0 on success in update_status functions
-  dt-bindings: backlight: add lm3630a bindings
-  backlight: lm3630a: add firmware node support
+Patch queued for v5.2, thanks.
 
- .../leds/backlight/lm3630a-backlight.yaml     | 129 +++++++++++++++
- drivers/video/backlight/lm3630a_bl.c          | 153 +++++++++++++++++-
- include/linux/platform_data/lm3630a_bl.h      |   4 +
- 3 files changed, 279 insertions(+), 7 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
-
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

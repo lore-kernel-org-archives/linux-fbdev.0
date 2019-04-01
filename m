@@ -1,80 +1,40 @@
-From: Dan Murphy <dmurphy@ti.com>
-Date: Tue, 23 Apr 2019 19:02:51 +0000
-Subject: Re: [PATCH v5 3/3] backlight: lm3630a: add firmware node support
-Message-Id: <f8499848-1490-cee5-c943-fa7fb77236ce@ti.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 11:52:50 +0000
+Subject: Re: [PATCH] video/macfb: Remove redundant code
+Message-Id: <6fa80c4d-1f20-deb0-e254-74f0147f4a81@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190418151143.26068-1-masneyb@onstation.org>
- <20190418151143.26068-4-masneyb@onstation.org>
- <dc20ab5d-8c44-78a8-3ebc-7fefe8aaf2d5@ti.com>
- <20190423140150.GA10071@basecamp>
- <dfd59e3f-b60b-da09-bf23-a05de5f4575a@ti.com>
- <20190423160019.GA10501@basecamp>
-In-Reply-To: <20190423160019.GA10501@basecamp>
+References: <86a3eca8946cbeb648ddbe3ff67b983ece7498d8.1550182390.git.fthain@telegraphics.com.au>
+        <CGME20190215082549epcas4p1d0901964a98383cefc42cab0dfeee178@epcas4p1.samsung.com>
+        <CAMuHMdUN1SGHd-BbEWY9xwc5jkybLQ_xbLaE0-jzskorso6brw@mail.gmail.com>
+In-Reply-To: <CAMuHMdUN1SGHd-BbEWY9xwc5jkybLQ_xbLaE0-jzskorso6brw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brian Masney <masneyb@onstation.org>
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, jonathan@marek.ca
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Finn Thain <fthain@telegraphics.com.au>
+Cc: linux-m68k <linux-m68k@lists.linux-m68k.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Brian
 
-On 4/23/19 11:00 AM, Brian Masney wrote:
-> On Tue, Apr 23, 2019 at 10:31:41AM -0500, Dan Murphy wrote:
->> On 4/23/19 9:01 AM, Brian Masney wrote:
->>> On Tue, Apr 23, 2019 at 08:49:20AM -0500, Dan Murphy wrote:
->>>>> +static int lm3630a_parse_led_sources(struct fwnode_handle *node,
->>>>> +				     int default_led_sources)
->>>>> +{
->>>>> +	u32 sources[LM3630A_NUM_SINKS];
->>>>> +	int ret, num_sources, i;
->>>>> +
->>>>> +	num_sources = fwnode_property_read_u32_array(node, "led-sources", NULL,
->>>>> +						     0);
->>>>> +	if (num_sources < 0)
->>>>> +		return default_led_sources;
->>>>> +	else if (num_sources > ARRAY_SIZE(sources))
->>>>> +		return -EINVAL;
->>>>> +
->>>>> +	ret = fwnode_property_read_u32_array(node, "led-sources", sources,
->>>>> +					     num_sources);
->>>>> +	if (ret)
->>>>> +		return ret;
->>>>> +
->>>>> +	for (i = 0; i < num_sources; i++) {
->>>>> +		if (sources[i] < LM3630A_SINK_0 || sources[i] > LM3630A_SINK_1)
->>>>> +			return -EINVAL;
->>>>> +
->>>>> +		ret |= BIT(sources[i]);
->>>>> +	}
->>>>> +
->>>>> +	return ret;
->>>>> +}
->>>>> +
->>>>> +static int lm3630a_parse_bank(struct lm3630a_platform_data *pdata,
->>>>> +			      struct fwnode_handle *node, int *seen_led_sources)
->>>>
->>>> Why is seen_led_sources passed in here?
->>>> It is initialized on the stack in lm3630a_parse_node but the variable is never referenced in that API.
->>>
->>> It's to see all of the led-sources that are configured across all of the
->>> banks. If it is just in lm3630a_parse_bank(), then it won't catch the
->>> following invalid configuration:
->>>
+On 02/15/2019 09:25 AM, Geert Uytterhoeven wrote:
+> On Fri, Feb 15, 2019 at 3:19 AM Finn Thain <fthain@telegraphics.com.au> wrote:
+>> The value of info->var.bits_per_pixel get checked in macfb_setcolreg().
+>> Remove additional checks as they are redundant.
 >>
->> Ok I see what it is for now.
+>> macfb_defined.activate gets initialized to FB_ACTIVATE_NOW by the struct
+>> initializer. Remove redundant assignments.
 >>
->> Not sure why it is declared as a pointer though.
+>> macfb_defined.bits_per_pixel, .width and .height all get assigned
+>> unconditionally. Remove redundant initializers.
+>>
+>> Cc: linux-m68k@lists.linux-m68k.org
+>> Tested-by: Stan Johnson <userm57@yahoo.com>
+>> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 > 
-> It's so that lm3630a_parse_bank() can update that value with the
-> led-sources that have been seen. Otherwise, the changes wouldn't make
-> their way back out to the outer function.
-> 
+> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-OK.  Thats another way to do it.  I may have just done a return with the value.
+Patch queued for v5.2, thanks.
 
-Otherwise
-
-Reviewed-by: Dan Murphy <dmurphy@ti.com>
-
-> Brian
-> 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

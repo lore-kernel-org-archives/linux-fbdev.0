@@ -1,26 +1,23 @@
-From: MARK CASADY <suyatiyati2000@gmail.com>
-Date: Fri, 19 Apr 2019 17:29:13 +0000
-Subject: Dear
-Message-Id: <CALdqnck8XPCyK3B6dsM+hTZsuii87LBE8YPAUCBFfZvkCCvEYQ@mail.gmail.com>
+From: ''michael weirsky'' <taleigao@mx.bestprofit-futures.co.id>
+Date: Mon, 01 Apr 2019 20:12:40 +0000
+Subject: =?utf-8?q?wohlt=C3=A4tige_Spende_von_2=2E000=2E000_euro?=
+Message-Id: <20190401201249.B075E525AD9@mx.bestprofit-futures.co.id>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: linux-fbdev@vger.kernel.org
 
-Dear,
+Lieber Freund,
 
-I am Mr.Marck Csady a solicitor at law, i need your assistance to
-represent my late client fund valued at $2.5 million dollars that his
-bank wants to comfiscate, You bear the same last name with my late
-client and he is also a national of your country.
+Ich bin Herr Mike Weirsky, New Jersey, Vereinigte Staaten von Amerika, der Mega-Gewinner von $ 273million In Mega Millions Jackpot, spende ich an 5 zufällige Personen, wenn Sie diese E-Mail erhalten, dann wurde Ihre E-Mail nach einem Spinball ausgewählt.Ich habe den größten Teil meines Vermögens auf eine Reihe von Wohltätigkeitsorganisationen und Organisationen verteilt.Ich habe mich freiwillig dazu entschieden, die Summe von € 2.000.000,00 an Sie als eine der ausgewählten 5 zu spenden, um meine Gewinne zu überprüfen.
+Das ist dein Spendencode: [MW530342019]
 
-Please if you are interested to assist me then get back to me through
-my private email bellow.
+www.youtube.com/watch?v=un8yRTmrYMY
 
-i will make all necessary informations known to you,including the name
-of the bank and modes to the repartriation of this fund.
+Antworten Sie mit dem SPENDE-CODE an diese E-Mail:mikeweirskyspende@gmail.com
 
-PLEASE REPLY THROUGH MY PRIVATE EMAIL ADDRESS
-Thanks for your understanding
-Marck Csady Esq.
+Ich hoffe, Sie und Ihre Familie glücklich zu machen.
+
+Grüße
+Herr Mike Weirsky

@@ -1,38 +1,47 @@
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Date: Tue, 02 Apr 2019 21:03:21 +0000
-Subject: Re: [PATCH v2 5/7] Documentation: fb: sm712fb: add information mainly about 2D.
-Message-Id: <CADVatmMgZJ-SFBzA5g7wXPRwgcWS0HqkHYbQNJDDTCj5zhy93w@mail.gmail.com>
+From: Tom Li <tomli@tomli.me>
+Date: Mon, 01 Apr 2019 17:33:14 +0000
+Subject: Re: [PATCH v2 6/7] fbdev: sm712fb: Kconfig: add information about docs.
+Message-Id: <20190401173314.GE15736@localhost.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190322051759.15007-1-tomli@tomli.me>
- <20190322051759.15007-6-tomli@tomli.me>
- <20190331185428.mpqbaq32cmm7izfv@debian>
- <20190401172959.GD15736@localhost.localdomain>
-In-Reply-To: <20190401172959.GD15736@localhost.localdomain>
+ <20190322051759.15007-7-tomli@tomli.me>
+ <20190331190118.3kaf7erdbk25yd5n@debian>
+In-Reply-To: <20190331190118.3kaf7erdbk25yd5n@debian>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tom Li <tomli@tomli.me>
-Cc: LFBDEV <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Teddy Wang <teddy.wang@siliconmotion.com>, dri-devel <dri-devel@lists.freedesktop.org>, linux-kernel <linux-kernel@vger.kernel.org>
+To: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Mon, Apr 1, 2019 at 6:30 PM Tom Li <tomli@tomli.me> wrote:
->
-> On Sun, Mar 31, 2019 at 07:54:28PM +0100, Sudip Mukherjee wrote:
-> > On Fri, Mar 22, 2019 at 01:17:57PM +0800, Yifeng Li wrote:
-> > > +video controllers. This series of video controller is a legacy from ~1998,
-> > > +and was used on many classic, "prehistoric" laptops from 1998-2004, such as
-> > > +IBM Thinkpad S30 and 240X. It was also used on some servers, industrial
-> > > +computers, x86 and non-x86 embedded devices where only basic graphics was
-> > > +needed.
-<snip>
->
-> BTW, most Loongson 3A notebooks don't use SM712. I don't know that there are
-> Loongson 3A notebooks that are still using SM712 graphics chip, do you have one?
-> Could you tell me its model number?
+On Sun, Mar 31, 2019 at 08:01:18PM +0100, Sudip Mukherjee wrote:
+> On Fri, Mar 22, 2019 at 01:17:58PM +0800, Yifeng Li wrote:
+> > @@ -18,9 +18,10 @@ and it was also an inexpensive platform for non-x86 hobbyists to explore.
+> >  How to use it?
+> >  =======
+> >  
+> > -You should not compile-in vesafb, since SM7xx can be used in a VGA
+> > -compatible mode, resulting conflicts with this driver. In addition,
+> > -the VGA compatible mode was never tested by the maintainers.
+> > +SM7xx can be used in a VGA compatible mode and a native framebuffer mode,
+> > +this driver is a native driver. By default, it has no problem taking over
+> > +the VGA driver automatically, but you should not attempt to use both at
+> > +the same time.
+> 
+> You added this in the documentation with just the previous patch.
 
-No, I donot have them. I only have SM712 based PCI card which I
-purchased from Silicon Motion.
+Oops, this mistake was introduced during "git rebase", it should have been
+squashed into the previous patch, not this one. Thanks for spotting it.
 
+> > -	* 2D acceleration on SM720 and Big-Endian CPUs.
+> > +	* 2D acceleration on Big-Endian CPUs.
+> >  	* More VGA modes.
+> >  	* dual-head support
+> >  	* hardware cursor support
+> 
+> You might want to squash the two patches for documentation instead of
+> having a separate patch to fix what you added in a previous patch.
 
--- 
-Regards
-Sudip
+Same as above, it will be fixed in PATCH v3.
+
+Thanks,
+Tom Li

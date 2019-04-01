@@ -1,21 +1,141 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 30 Apr 2019 21:15:54 +0000
-Subject: Re: [PATCH 5/7] MIPS: use the generic uncached segment support in dma-direct
-Message-Id: <20190430211553.GA31109@lst.de>
+From: Brian Masney <masneyb@onstation.org>
+Date: Mon, 01 Apr 2019 10:30:33 +0000
+Subject: [PATCH v2 2/3] dt-bindings: backlight: add lm3630a bindings
+Message-Id: <20190401103034.21062-3-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190430110032.25301-1-hch@lst.de> <20190430110032.25301-6-hch@lst.de> <20190430201041.536amvinrcvd2wua@pburton-laptop> <20190430202947.GA30262@lst.de> <20190430211105.ielntedm46uqamca@pburton-laptop>
-In-Reply-To: <20190430211105.ielntedm46uqamca@pburton-laptop>
+References: <20190401103034.21062-1-masneyb@onstation.org>
+In-Reply-To: <20190401103034.21062-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Burton <paul.burton@mips.com>
-Cc: Christoph Hellwig <hch@lst.de>, Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
-On Tue, Apr 30, 2019 at 09:11:07PM +0000, Paul Burton wrote:
-> Right but dma_direct_alloc_pages() already checks for the PageHighMem
-> case & returns before ever calling arch_dma_prep_coherent(), no?
+Add new backlight bindings for the TI LM3630A dual-string white LED.
 
-True.  And of course it can't be remapped into the uncached segment
-anyway.  So yes, we should drop it.  Eventually I want to add generic
-support for DMA_ATTR_NO_KERNEL_MAPPING, but that'll involved auditing
-all instances anyway.
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+---
+ .../leds/backlight/lm3630a-backlight.yaml     | 112 ++++++++++++++++++
+ 1 file changed, 112 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+new file mode 100644
+index 000000000000..42a8c59d237a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+@@ -0,0 +1,112 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/lm3630a-backlight.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TI LM3630A High-Efficiency Dual-String White LED
++
++maintainers:
++  - Lee Jones <lee.jones@linaro.org>
++  - Daniel Thompson <daniel.thompson@linaro.org>
++  - Jingoo Han <jingoohan1@gmail.com>
++
++description: |
++  The LM3630A is a current-mode boost converter which supplies the power and
++  controls the current in up to two strings of 10 LEDs per string.
++  https://www.ti.com/product/LM3630A
++
++properties:
++  compatible:
++    const: ti,lm3630a
++
++  reg:
++    maxItems: 1
++
++  ti,linear-mapping-mode:
++    description: |
++      Enable linear mapping mode. If disabled, then it will use exponential
++      mapping mode in which the ramp up/down appears to have a more uniform
++      tranisiton to the human eye.
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++patternProperties:
++  "^led*$":
++    type: object
++    description: |
++      Properties for a string of connected LEDs.
++
++    properties:
++      label:
++        description: |
++          The label for this LED. If omitted, the label is taken from the node
++          name (excluding the unit address). It has to uniquely identify a
++          device, i.e. no other LED class device can be assigned the same label.
++
++      led-sources:
++        description: |
++          List of device current outputs the LED is connected to.
++        allOf:
++          - $ref: /schemas/types.yaml#/definitions/uint32-array
++          - minItems: 1
++            maxItems: 2
++            items:
++              minimum: 0
++              maximum: 1
++
++      default-brightness:
++        description: Default brightness level on boot.
++        minimum: 0
++        maximum: 255
++
++      max-brightness:
++        description: Maximum brightness level on boot.
++        minimum: 0
++        maximum: 255
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                led {
++                        label = "main-lcd";
++                        led-sources = <0 1>;
++                        default-brightness = <200>;
++                        max-brightness = <255>;
++                };
++        };
++    };
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                led-bank-a {
++                        led-sources = <0>;
++                        default-brightness = <150>;
++                        ti,linear-mapping-mode;
++                };
++
++                led-bank-b {
++                        led-sources = <1>;
++                        default-brightness = <225>;
++                        ti,linear-mapping-mode;
++                };
++        };
++    };
+-- 
+2.20.1

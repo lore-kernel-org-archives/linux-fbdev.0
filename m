@@ -1,31 +1,29 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Wed, 24 Apr 2019 09:25:02 +0000
-Subject: [PATCH v6 0/3] backlight: lm3630a: bug fix and fwnode support
-Message-Id: <20190424092505.6578-1-masneyb@onstation.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 15:38:40 +0000
+Subject: Re: [PATCH 3/7] gbefb: switch to managed version of the DMA allocator
+Message-Id: <a61e5aa5-53ed-168c-9b75-cb0509e0c065@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190321225235.30648-1-hch@lst.de>
+        <CGME20190321225318epcas1p2a3b1fc89a14c4ab1241d8b48293fb9e0@epcas1p2.samsung.com>
+        <20190321225235.30648-4-hch@lst.de>
+In-Reply-To: <20190321225235.30648-4-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
-Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
+To: Christoph Hellwig <hch@lst.de>
+Cc: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 
-Here is a patch series that fixes a single bug and adds fwnode support
-to the lm3630a driver. This work was tested on a LG Nexus 5 (hammerhead)
-phone. My status page at https://masneyb.github.io/nexus-5-upstream/
-describes what is working so far with the upstream kernel.
 
-See the individual patches for the changelog.
+On 03/21/2019 11:52 PM, Christoph Hellwig wrote:
+> gbefb uses managed resources, so it should do the same for DMA
+> allocations.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Brian Masney (3):
-  backlight: lm3630a: return 0 on success in update_status functions
-  dt-bindings: backlight: add lm3630a bindings
-  backlight: lm3630a: add firmware node support
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
- .../leds/backlight/lm3630a-backlight.yaml     | 129 +++++++++++++++
- drivers/video/backlight/lm3630a_bl.c          | 153 +++++++++++++++++-
- include/linux/platform_data/lm3630a_bl.h      |   4 +
- 3 files changed, 279 insertions(+), 7 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
-
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

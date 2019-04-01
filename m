@@ -1,27 +1,38 @@
-From: Al Viro <viro@zeniv.linux.org.uk>
-Date: Wed, 17 Apr 2019 21:28:08 +0000
-Subject: Re: [PATCH v3 14/26] compat_ioctl: move ATYFB_CLK handling to atyfb driver
-Message-Id: <20190417212808.GA2217@ZenIV.linux.org.uk>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 12:54:51 +0000
+Subject: Re: [PATCH] xen, fbfront: mark expected switch fall-through
+Message-Id: <7bda7932-6af9-3422-c56d-983b565b3290@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190416202013.4034148-1-arnd@arndb.de>
- <20190416202701.127745-1-arnd@arndb.de>
- <20190416202701.127745-3-arnd@arndb.de>
- <20190417212700.GZ2217@ZenIV.linux.org.uk>
-In-Reply-To: <20190417212700.GZ2217@ZenIV.linux.org.uk>
+References: <20190227205303.GA1231@embeddedor>
+        <f8ff03de-9d7c-233a-cd86-37269667db0c@gmail.com>
+        <CGME20190320200813epcas3p20887ed1e3e3f1542f67f0b664f777a8c@epcas3p2.samsung.com>
+        <6675f2ed-6916-2be5-fb60-39c9436f53f7@embeddedor.com>
+        <ca45f983-9a42-6326-3c9a-5e239ddc4e46@samsung.com>
+In-Reply-To: <ca45f983-9a42-6326-3c9a-5e239ddc4e46@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fsdevel@vger.kernel.org, y2038@lists.linaro.org, linux-kernel@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mikulas Patocka <mpatocka@redhat.com>, "David S. Miller" <davem@davemloft.net>, Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Oleksandr Andrushchenko <andr2000@gmail.com>, Kees Cook <keescook@chromium.org>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, xen-devel <xen-devel@lists.xenproject.org>
 
-On Wed, Apr 17, 2019 at 10:27:00PM +0100, Al Viro wrote:
-> On Tue, Apr 16, 2019 at 10:25:35PM +0200, Arnd Bergmann wrote:
-> > +static int atyfb_compat_ioctl(struct fb_info *info, u_int cmd, u_long arg)
-> > +{
-> > +	return atyfb_ioctl(info, cmd, (u_long)compat_ptr(arg));
-> > +}
-> > +#endif
+
+On 03/21/2019 12:03 PM, Bartlomiej Zolnierkiewicz wrote:
 > 
-> Huh?  Why isn't that using compat_ioctl_ptr()?
+> Hi,
+> 
+> On 03/20/2019 09:08 PM, Gustavo A. R. Silva wrote:
+>> Hi all,
+>>
+>> Friendly ping:
+>>
+>> Who can take this?
+> 
+> I'll take this for v5.2.
 
-Oh, I see...  Nevermind, then.
+Patch queued for v5.2, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

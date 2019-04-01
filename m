@@ -1,42 +1,32 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 11:59:32 +0000
-Subject: Re: [PATCH 0/4] fbdev: atafb: Fix after kexec, misc. cleanups
-Message-Id: <819fd7b8-20d0-1adf-ce8c-8104994901ff@samsung.com>
+Date: Mon, 01 Apr 2019 11:44:15 +0000
+Subject: Re: [PATCH] fbdev: mxsfb: implement FB_PRE_INIT_FB option
+Message-Id: <b2cae305-77e8-9209-d144-5db7b19be3d6@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190215085951epcas3p184e61f75bec825fb68681a36867da7f1@epcas3p1.samsung.com>
- <20190215085901.21479-1-geert@linux-m68k.org>
-In-Reply-To: <20190215085901.21479-1-geert@linux-m68k.org>
+References: <CGME20190206101522epcas5p34bb82638cabf533f54e4b64cbbfc286e@epcas5p3.samsung.com>
+        <20190206101444.26594-1-martin.kepplinger@ginzinger.com>
+In-Reply-To: <20190206101444.26594-1-martin.kepplinger@ginzinger.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Michael Schmitz <schmitzmic@gmail.com>, Paul Gortmaker <paul.gortmaker@windriver.com>, linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+Cc: shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com, linux-imx@nxp.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, Melchior Franz <melchior.franz@ginzinger.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
 
-On 02/15/2019 09:58 AM, Geert Uytterhoeven wrote:
-> 	Hi all,
+On 02/06/2019 11:14 AM, Martin Kepplinger wrote:
+> From: Melchior Franz <melchior.franz@ginzinger.com>
 > 
-> This patch series fixes the frame buffer on Atari Falcon when using
-> kexec while blanked, and does some miscellaneous cleanups.
+> The FB_PRE_INIT_FB option keeps the kernel from reinitializing the display
+> and prevents flickering during the transition from a bootloader splash
+> screen to the kernel logo screen.
 > 
-> This has been tested on ARAnyM.
+> Make this option available for the mxsfb driver.
 > 
-> Thanks!
-> 
-> Geert Uytterhoeven (4):
->   fbdev: atafb: Stop printing virtual screen_base
->   fbdev: atafb: Remove obsolete module support
->   fbdev: atafb: Fix broken frame buffer after kexec
->   fbdev: atafb: Modernize printing of kernel messages
-> 
->  drivers/video/fbdev/atafb.c          | 67 +++++++++++++++++-----------
->  drivers/video/fbdev/atafb_iplan2p2.c | 23 ----------
->  drivers/video/fbdev/atafb_iplan2p4.c | 23 ----------
->  drivers/video/fbdev/atafb_iplan2p8.c | 23 ----------
->  drivers/video/fbdev/atafb_mfb.c      | 23 ----------
->  5 files changed, 40 insertions(+), 119 deletions(-)
+> Signed-off-by: Melchior Franz <melchior.franz@ginzinger.com>
+> Signed-off-by: Martin Kepplinger <martin.kepplinger@ginzinger.com>
+> Signed-off-by: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
 
-Patches #1-4 queued for v5.2, thanks.
+Patch queued for v5.2, thanks.
 
 Best regards,
 --

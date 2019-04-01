@@ -1,31 +1,29 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Tue, 16 Apr 2019 23:53:47 +0000
-Subject: [PATCH v4 0/3] backlight: lm3630a: bug fix and fwnode support
-Message-Id: <20190416235350.13742-1-masneyb@onstation.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 14:41:20 +0000
+Subject: Re: [PATCH] video: hgafb: fix a NULL pointer dereference
+Message-Id: <f239940f-d67c-ee8d-7d53-1df5543c9710@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190314073039epcas3p29225f2fcf1102266ce8265811f7f244e@epcas3p2.samsung.com>
+        <20190314073027.22337-1-kjlu@umn.edu>
+In-Reply-To: <20190314073027.22337-1-kjlu@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
-Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
+To: Kangjie Lu <kjlu@umn.edu>
+Cc: pakki001@umn.edu, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Here is a patch series that fixes a single bug and adds fwnode support
-to the lm3630a driver. This work was tested on a LG Nexus 5 (hammerhead)
-phone. My status page at https://masneyb.github.io/nexus-5-upstream/
-describes what is working so far with the upstream kernel.
 
-See the individual patches for the changelog.
+On 03/14/2019 08:30 AM, Kangjie Lu wrote:
+> When ioremap fails, hga_vram should not be dereferenced. The fix
+> check the failure to avoid NULL pointer dereference.
+> 
+> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
 
-Brian Masney (3):
-  backlight: lm3630a: return 0 on success in update_status functions
-  dt-bindings: backlight: add lm3630a bindings
-  backlight: lm3630a: add firmware node support
+Patch queued for v5.2 with minor change in the patch summary
+("video: hgafb: fix potential NULL pointer dereference"), thanks.
 
- .../leds/backlight/lm3630a-backlight.yaml     | 128 +++++++++++++++
- drivers/video/backlight/lm3630a_bl.c          | 151 +++++++++++++++++-
- include/linux/platform_data/lm3630a_bl.h      |   4 +
- 3 files changed, 276 insertions(+), 7 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
-
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

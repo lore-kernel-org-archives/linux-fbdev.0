@@ -1,34 +1,27 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 11 Apr 2019 15:12:51 +0000
-Subject: Re: [PATCH] video: amba-clcd: Decomission Versatile and Nomadik
-Message-Id: <ac93f762-f70a-3556-f70f-fcfd258aab70@samsung.com>
+Date: Mon, 01 Apr 2019 13:16:31 +0000
+Subject: Re: [PATCH] drivers: video: fbdev: Kconfig: pedantic cleanups
+Message-Id: <c5378abe-a2e5-720b-e8de-f90547210d78@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190320093355epcas4p2806447a1e70035d07b92b245f7278c34@epcas4p2.samsung.com>
- <20190320093331.11251-1-linus.walleij@linaro.org>
-In-Reply-To: <20190320093331.11251-1-linus.walleij@linaro.org>
+References: <CGME20190306190156epcas2p30a9d639eb71d0a5c72b17193c41c98e7@epcas2p3.samsung.com>
+        <1551898908-24695-1-git-send-email-info@metux.net>
+In-Reply-To: <1551898908-24695-1-git-send-email-info@metux.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
+To: "Enrico Weigelt, metux IT consult" <info@metux.net>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org
 
 
-On 03/20/2019 10:33 AM, Linus Walleij wrote:
-> These board families are now handled in the DRM subsystem
-> where we can have reusable panel drivers and some other
-> stuff. The PL111 there is now the driver used in the
-> defconfig for Versatile and Nomadik so no need to keep
-> this code around.
-> 
-> There are a few minor machines in arch/arm/ such as
-> mach-netx still using the old driver, so we need to keep
-> the core fbdev driver around for some time.
-> 
-> Cc: Russell King <linux@armlinux.org.uk>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
+On 03/06/2019 08:01 PM, Enrico Weigelt, metux IT consult wrote:
+> Signed-off-by: Enrico Weigelt, metux IT consult <info@metux.net>
 
-Patch queued for v5.2, thanks.
+Patch queued for v5.2 with
+
+"Formatting of Kconfig files doesn't look so pretty, so let the
+Great White Handkerchief come around and clean it up."
+
+added as a patch description, thanks.
 
 Best regards,
 --

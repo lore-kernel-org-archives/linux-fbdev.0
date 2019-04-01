@@ -1,36 +1,29 @@
-From: Kelsey Skunberg <skunberg.kelsey@gmail.com>
-Date: Sat, 27 Apr 2019 16:33:34 +0000
-Subject: [PATCH] Staging: sm750fb: Change *array into *const array
-Message-Id: <20190427163334.7109-1-skunberg.kelsey@gmail.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 12:04:06 +0000
+Subject: Re: [PATCH] video/macfb: Call fb_invert_cmaps()
+Message-Id: <eaaa9e82-8194-17c3-6106-16a34a36a194@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190217233037epcas5p1f527f485e504ee424a1a26f47dc1ea51@epcas5p1.samsung.com>
+        <80cf1394f099ced17bd5075be88cf33c1232086a.1550445927.git.fthain@telegraphics.com.au>
+In-Reply-To: <80cf1394f099ced17bd5075be88cf33c1232086a.1550445927.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: linux-m68k@lists.linux-m68k.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Resolve checkpatch warning for static const char * array by using const
-pointers.
 
-Checkpatch Warning in sm750.c:
-static const char * array should probably be static const char * const
+On 02/18/2019 12:25 AM, Finn Thain wrote:
+> The 'inverse' parameter has no effect otherwise. Remove set-but-unused
+> variable.
+> 
+> Cc: linux-m68k@lists.linux-m68k.org
+> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
-Signed-off-by: Kelsey Skunberg <skunberg.kelsey@gmail.com>
----
- drivers/staging/sm750fb/sm750.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch queued for v5.2, thanks.
 
-diff --git a/drivers/staging/sm750fb/sm750.c b/drivers/staging/sm750fb/sm750.c
-index 105089b97bf5..59568d18ce23 100644
---- a/drivers/staging/sm750fb/sm750.c
-+++ b/drivers/staging/sm750fb/sm750.c
-@@ -748,7 +748,7 @@ static int lynxfb_set_fbinfo(struct fb_info *info, int index)
- 		lynx750_ext, NULL, vesa_modes,
- 	};
- 	int cdb[] = {ARRAY_SIZE(lynx750_ext), 0, VESA_MODEDB_SIZE};
--	static const char *mdb_desc[] = {
-+	static const char * const mdb_desc[] = {
- 		"driver prepared modes",
- 		"kernel prepared default modedb",
- 		"kernel HELPERS prepared vesa_modes",
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

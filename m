@@ -1,28 +1,49 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 12:12:35 +0000
-Subject: Re: [PATCH] video: fbdev: atmel_lcdfb: drop AVR and platform_data support
-Message-Id: <d0c51868-dc4a-9494-a7f6-287a4ff605e1@samsung.com>
+From: Brian Masney <masneyb@onstation.org>
+Date: Mon, 01 Apr 2019 10:30:32 +0000
+Subject: [PATCH v2 1/3] backlight: lm3630a: return 0 on success in update_status functions
+Message-Id: <20190401103034.21062-2-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190225212603epcas3p42bd9d7e113c48af1fcb229ecccde2ebc@epcas3p4.samsung.com>
-        <20190225212533.26432-1-alexandre.belloni@bootlin.com>
-In-Reply-To: <20190225212533.26432-1-alexandre.belloni@bootlin.com>
+References: <20190401103034.21062-1-masneyb@onstation.org>
+In-Reply-To: <20190401103034.21062-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Nicolas Ferre <nicolas.ferre@microchip.com>, Sam Ravnborg <sam@ravnborg.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
+lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
+both return the brightness value if the brightness was successfully
+updated. Writing to these attributes via sysfs would cause a 'Bad
+address' error to be returned. These functions should return 0 on
+success, so let's change it to correct that error.
 
-On 02/25/2019 10:25 PM, Alexandre Belloni wrote:
-> Make the driver OF only as since AVR32 has been removed from the kernel,
-> there are only OF enabled platform using it.
-> 
-> Signed-off-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
+---
+ drivers/video/backlight/lm3630a_bl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Patch queued for v5.2, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 2030a6b77a09..ef2553f452ca 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -201,7 +201,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
+ 				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
+ 	if (ret < 0)
+ 		goto out_i2c_err;
+-	return bl->props.brightness;
++	return 0;
+ 
+ out_i2c_err:
+ 	dev_err(pchip->dev, "i2c failed to access\n");
+@@ -278,7 +278,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
+ 				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
+ 	if (ret < 0)
+ 		goto out_i2c_err;
+-	return bl->props.brightness;
++	return 0;
+ 
+ out_i2c_err:
+ 	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
+-- 
+2.20.1

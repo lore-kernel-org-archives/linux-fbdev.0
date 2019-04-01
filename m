@@ -1,50 +1,31 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Thu, 18 Apr 2019 15:11:41 +0000
-Subject: [PATCH v5 1/3] backlight: lm3630a: return 0 on success in update_status functions
-Message-Id: <20190418151143.26068-2-masneyb@onstation.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 01 Apr 2019 11:48:57 +0000
+Subject: Re: [PATCH] video: fbdev: vesafb: fix indentation issue
+Message-Id: <bc50205e-34f0-baee-a50f-7bb302327d21@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190418151143.26068-1-masneyb@onstation.org>
-In-Reply-To: <20190418151143.26068-1-masneyb@onstation.org>
+References: <CGME20190212132918epcas1p4211cd6eb2d090c8ccd2996ee0d13ca78@epcas1p4.samsung.com>
+        <20190212132905.7307-1-colin.king@canonical.com>
+In-Reply-To: <20190212132905.7307-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
-Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
+To: Colin King <colin.king@canonical.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
-both return the brightness value if the brightness was successfully
-updated. Writing to these attributes via sysfs would cause a 'Bad
-address' error to be returned. These functions should return 0 on
-success, so let's change it to correct that error.
 
-Signed-off-by: Brian Masney <masneyb@onstation.org>
-Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- drivers/video/backlight/lm3630a_bl.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On 02/12/2019 02:29 PM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> There are a couple of statements that are indented too deeply, fix
+> this by removing tabs. Also add a space after a comma to clean up
+> a cppcheck warning.
+> 
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
 
-diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-index 2030a6b77a09..ef2553f452ca 100644
---- a/drivers/video/backlight/lm3630a_bl.c
-+++ b/drivers/video/backlight/lm3630a_bl.c
-@@ -201,7 +201,7 @@ static int lm3630a_bank_a_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
- 
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access\n");
-@@ -278,7 +278,7 @@ static int lm3630a_bank_b_update_status(struct backlight_device *bl)
- 				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
- 	if (ret < 0)
- 		goto out_i2c_err;
--	return bl->props.brightness;
-+	return 0;
- 
- out_i2c_err:
- 	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
--- 
-2.20.1
+Patch queued for v5.2, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

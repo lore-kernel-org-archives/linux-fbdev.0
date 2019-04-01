@@ -1,35 +1,132 @@
-From: "Alastair D'Silva" <alastair@d-silva.org>
-Date: Mon, 15 Apr 2019 10:59:36 +0000
-Subject: RE: [PATCH 1/4] lib/hexdump.c: Allow 64 bytes per line
-Message-Id: <0dc901d4f37a$52733a70$f759af50$@d-silva.org>
+From: Brian Masney <masneyb@onstation.org>
+Date: Mon, 01 Apr 2019 10:30:34 +0000
+Subject: [PATCH v2 3/3] backlight: lm3630a: add device tree supprt
+Message-Id: <20190401103034.21062-4-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190410031720.11067-1-alastair@au1.ibm.com> <20190410031720.11067-2-alastair@au1.ibm.com> <20190412134802.kprel2c2iqijd4ai@pathway.suse.cz> <092f01d4f186$8e9e7cd0$abdb7670$@d-silva.org> <20190415090232.3ualhrt5ssrb2ixq@pathway.suse.cz> <0dad01d4f376$113df2b0$33b9d810$@d-silva.org> <6912ef2d83d34c9299d5a5ad120c276f@AcuMS.aculab.com>
-In-Reply-To: <6912ef2d83d34c9299d5a5ad120c276f@AcuMS.aculab.com>
+References: <20190401103034.21062-1-masneyb@onstation.org>
+In-Reply-To: <20190401103034.21062-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'David Laight' <David.Laight@ACULAB.COM>, 'Petr Mladek' <pmladek@suse.com>
-Cc: 'Jani Nikula' <jani.nikula@linux.intel.com>, 'Joonas Lahtinen' <joonas.lahtinen@linux.intel.com>, 'Rodrigo Vivi' <rodrigo.vivi@intel.com>, 'David Airlie' <airlied@linux.ie>, 'Daniel Vetter' <daniel@ffwll.ch>, 'Karsten Keil' <isdn@linux-pingi.de>, 'Jassi Brar' <jassisinghbrar@gmail.com>, 'Tom Lendacky' <thomas.lendacky@amd.com>, "'David S. Miller'" <davem@davemloft.net>, 'Jose Abreu' <Jose.Abreu@synopsys.com>, 'Kalle Valo' <kvalo@codeaurora.org>, 'Stanislaw Gruszka' <sgruszka@redhat.com>, 'Benson Leung' <bleung@chromium.org>, 'Enric Balletbo i Serra' <enric.balletbo@collabora.com>, "'James E.J. Bottomley'" <jejb@linux.ibm.com>, "'Martin K. Petersen'" <martin.petersen@oracle.com>, 'Greg Kroah-Hartman' <gregkh@linuxfoundation.org>
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
-> From: Alastair D'Silva
-> > Sent: 15 April 2019 11:29
-> ...
-> > I do, and I believe the choice of the output length should be in the
-> > hands of the caller.
-> >
-> > On further thought, it would make more sense to remove the hardcoded
-> > list of sizes and just enforce a power of 2. The function shouldn't
-> > dictate what the caller can and can't do beyond the technical limits of it's
-> implementation.
-> 
-> Why powers of two?
-> You may want the length to match sizeof (struct foo).
-> You might even want the address increment to be larger that the number of
-> lines dumped.
+Add device tree support to the lm3630a driver and allow configuring
+independently on both banks the mapping mode (linear or exponential),
+initial and maximum LED brightness.
 
-Good point, the base requirement is that it should be a multiple of groupsize.
+Driver was tested on a LG Nexus 5 (hammerhead) phone.
 
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+---
+ drivers/video/backlight/lm3630a_bl.c | 69 ++++++++++++++++++++++++++++
+ 1 file changed, 69 insertions(+)
+
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index ef2553f452ca..96fbc1273dda 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -35,6 +35,9 @@
+ #define REG_MAX		0x50
+ 
+ #define INT_DEBOUNCE_MSEC	10
++
++#define LM3630A_MAX_SOURCES	2
++
+ struct lm3630a_chip {
+ 	struct device *dev;
+ 	struct delayed_work work;
+@@ -364,6 +367,64 @@ static const struct regmap_config lm3630a_regmap = {
+ 	.max_register = REG_MAX,
+ };
+ 
++static void lm3630a_parse_dt(struct lm3630a_chip *pchip)
++{
++	u32 sources[LM3630A_MAX_SOURCES], val;
++	struct device_node *child_node;
++	int num_sources, ret, i;
++	bool linear;
++
++	for_each_available_child_of_node(pchip->dev->of_node, child_node) {
++		num_sources = of_property_count_u32_elems(child_node,
++							  "led-sources");
++		if (num_sources < 0)
++			continue;
++
++		if (num_sources > LM3630A_MAX_SOURCES)
++			num_sources = LM3630A_MAX_SOURCES;
++
++		ret = of_property_read_u32_array(child_node, "led-sources",
++						 sources, num_sources);
++		if (ret) {
++			dev_err(pchip->dev,
++				"Error parsing led-sources node: %d\n", ret);
++			return;
++		}
++
++		linear = of_property_read_bool(child_node,
++					       "ti,linear-mapping-mode");
++
++		for (i = 0; i < num_sources; i++) {
++			if (sources[i] = 0)
++				pchip->pdata->leda_ctrl = linear ?
++					LM3630A_LEDA_ENABLE_LINEAR :
++					LM3630A_LEDA_ENABLE;
++			else if (sources[i] = 1)
++				pchip->pdata->ledb_ctrl = linear ?
++					LM3630A_LEDB_ENABLE_LINEAR :
++					LM3630A_LEDB_ENABLE;
++
++			ret = of_property_read_u32(child_node,
++						   "default-brightness", &val);
++			if (!ret) {
++				if (sources[i] = 0)
++					pchip->pdata->leda_init_brt = val;
++				else if (sources[i] = 1)
++					pchip->pdata->ledb_init_brt = val;
++			}
++
++			ret = of_property_read_u32(child_node, "max-brightness",
++						   &val);
++			if (!ret) {
++				if (sources[i] = 0)
++					pchip->pdata->leda_max_brt = val;
++				else if (sources[i] = 1)
++					pchip->pdata->ledb_max_brt = val;
++			}
++		}
++	};
++}
++
+ static int lm3630a_probe(struct i2c_client *client,
+ 			 const struct i2c_device_id *id)
+ {
+@@ -405,6 +466,7 @@ static int lm3630a_probe(struct i2c_client *client,
+ 		pdata->ledb_init_brt = LM3630A_MAX_BRIGHTNESS;
+ 	}
+ 	pchip->pdata = pdata;
++	lm3630a_parse_dt(pchip);
+ 
+ 	/* chip initialize */
+ 	rval = lm3630a_chip_init(pchip);
+@@ -470,11 +532,18 @@ static const struct i2c_device_id lm3630a_id[] = {
+ 	{}
+ };
+ 
++static const struct of_device_id lm3630a_match_table[] = {
++	{ .compatible = "ti,lm3630a", },
++	{ },
++};
++
++
+ MODULE_DEVICE_TABLE(i2c, lm3630a_id);
+ 
+ static struct i2c_driver lm3630a_i2c_driver = {
+ 	.driver = {
+ 		   .name = LM3630A_NAME,
++		   .of_match_table = lm3630a_match_table,
+ 		   },
+ 	.probe = lm3630a_probe,
+ 	.remove = lm3630a_remove,
 -- 
-Alastair D'Silva           mob: 0423 762 819
-skype: alastair_dsilva     msn: alastair@d-silva.org
-blog: http://alastair.d-silva.org    Twitter: @EvilDeece
+2.20.1

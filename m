@@ -1,25 +1,42 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Mon, 15 Apr 2019 12:42:36 +0000
-Subject: Re: [PATCH v3 2/3] dt-bindings: backlight: add lm3630a bindings
-Message-Id: <20190415124236.GA1910@basecamp>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 03 Apr 2019 07:24:45 +0000
+Subject: [PATCH -next] video: fbdev: atmel_lcdfb: remove set but not used variable 'pdata'
+Message-Id: <20190403072445.42983-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190415072905.2861-1-masneyb@onstation.org>
- <20190415072905.2861-3-masneyb@onstation.org>
- <051b5306-9dab-6249-9e41-b815dce1f2e2@ti.com>
-In-Reply-To: <051b5306-9dab-6249-9e41-b815dce1f2e2@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Murphy <dmurphy@ti.com>
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, jonathan@marek.ca
+To: Nicolas Ferre <nicolas.ferre@microchip.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>
+Cc: kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
 
-On Mon, Apr 15, 2019 at 07:10:04AM -0500, Dan Murphy wrote:
-> I noticed we are missing "label".  It is defined as optional and it is hard coded in the driver
-> but wondering if there is a need to add it.
+Fixes gcc '-Wunused-but-set-variable' warning:
 
-OK, I'll make it optional and have it fall back to the hardcoded values
-if it is missing.
+drivers/video/fbdev/atmel_lcdfb.c: In function 'atmel_lcdfb_remove':
+drivers/video/fbdev/atmel_lcdfb.c:1255:28: warning:
+ variable 'pdata' set but not used [-Wunused-but-set-variable]
 
-Thanks for the quick feedback on this patch and the other one.
+It's not used since commit 42110e91de7f ("video: atmel_lcdfb: introduce
+atmel_lcdfb_power_control")
 
-Brian
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index b8786ff62b87..e67dfd94bf1d 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -1252,12 +1252,10 @@ static int __exit atmel_lcdfb_remove(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct atmel_lcdfb_info *sinfo;
+-	struct atmel_lcdfb_pdata *pdata;
+ 
+ 	if (!info || !info->par)
+ 		return 0;
+ 	sinfo = info->par;
+-	pdata = &sinfo->pdata;
+ 
+ 	cancel_work_sync(&sinfo->task);
+ 	exit_backlight(sinfo);

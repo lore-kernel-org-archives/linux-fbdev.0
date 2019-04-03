@@ -1,12 +1,12 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 15:38:40 +0000
-Subject: Re: [PATCH 3/7] gbefb: switch to managed version of the DMA allocator
-Message-Id: <a61e5aa5-53ed-168c-9b75-cb0509e0c065@samsung.com>
+Date: Wed, 03 Apr 2019 15:43:05 +0000
+Subject: Re: [PATCH 4/7] pxa3xx-gcu: pass struct device to dma_mmap_coherent
+Message-Id: <728de1c2-0408-9a12-ca00-87e9dd09bcfe@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190321225235.30648-1-hch@lst.de>
-        <CGME20190321225318epcas1p2a3b1fc89a14c4ab1241d8b48293fb9e0@epcas1p2.samsung.com>
-        <20190321225235.30648-4-hch@lst.de>
-In-Reply-To: <20190321225235.30648-4-hch@lst.de>
+        <CGME20190321225324epcas4p19c9de95eddcbd41dd65d665387a74007@epcas4p1.samsung.com>
+        <20190321225235.30648-5-hch@lst.de>
+In-Reply-To: <20190321225235.30648-5-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -15,8 +15,7 @@ Cc: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudip
 
 
 On 03/21/2019 11:52 PM, Christoph Hellwig wrote:
-> gbefb uses managed resources, so it should do the same for DMA
-> allocations.
+> Just like we do for all other DMA operations.
 > 
 > Signed-off-by: Christoph Hellwig <hch@lst.de>
 

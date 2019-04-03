@@ -1,79 +1,55 @@
-From: Pavel Machek <pavel@ucw.cz>
-Date: Mon, 01 Apr 2019 21:34:07 +0000
-Subject: Re: [PATCH v2 1/3] backlight: lm3630a: return 0 on success in update_status functions
-Message-Id: <20190401213407.GC14681@amd>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="1ccMZA6j1vT5UqiK"
+From: Lee Jones <lee.jones@linaro.org>
+Date: Wed, 03 Apr 2019 10:19:52 +0000
+Subject: [GIT PULL] Immutable branch between MFD and DRM due for the v5.2 merge window
+Message-Id: <20190403101952.GO11301@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190401103034.21062-1-masneyb@onstation.org>
- <20190401103034.21062-2-masneyb@onstation.org>
-In-Reply-To: <20190401103034.21062-2-masneyb@onstation.org>
-To: Brian Masney <masneyb@onstation.org>
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
+References: <20190117133336.19737-1-shc_work@mail.ru>
+In-Reply-To: <20190117133336.19737-1-shc_work@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Alexander Shiyan <shc_work@mail.ru>
+Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+To whom it may concern,
 
---1ccMZA6j1vT5UqiK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Enjoy!
 
-On Mon 2019-04-01 06:30:32, Brian Masney wrote:
-> lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
-> both return the brightness value if the brightness was successfully
-> updated. Writing to these attributes via sysfs would cause a 'Bad
-> address' error to be returned. These functions should return 0 on
-> success, so let's change it to correct that error.
->=20
-> Signed-off-by: Brian Masney <masneyb@onstation.org>
-> Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
+The following changes since commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
+  Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
 
-> ---
->  drivers/video/backlight/lm3630a_bl.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->=20
-> diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlig=
-ht/lm3630a_bl.c
-> index 2030a6b77a09..ef2553f452ca 100644
-> --- a/drivers/video/backlight/lm3630a_bl.c
-> +++ b/drivers/video/backlight/lm3630a_bl.c
-> @@ -201,7 +201,7 @@ static int lm3630a_bank_a_update_status(struct backli=
-ght_device *bl)
->  				      LM3630A_LEDA_ENABLE, LM3630A_LEDA_ENABLE);
->  	if (ret < 0)
->  		goto out_i2c_err;
-> -	return bl->props.brightness;
-> +	return 0;
-> =20
->  out_i2c_err:
->  	dev_err(pchip->dev, "i2c failed to access\n");
-> @@ -278,7 +278,7 @@ static int lm3630a_bank_b_update_status(struct backli=
-ght_device *bl)
->  				      LM3630A_LEDB_ENABLE, LM3630A_LEDB_ENABLE);
->  	if (ret < 0)
->  		goto out_i2c_err;
-> -	return bl->props.brightness;
-> +	return 0;
-> =20
->  out_i2c_err:
->  	dev_err(pchip->dev, "i2c failed to access REG_CTRL\n");
+are available in the Git repository at:
 
---=20
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
-g.html
+  git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-drm-v5.2
 
---1ccMZA6j1vT5UqiK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+for you to fetch changes up to 8c5dc8d9f19c7992b5ed557b865127a80149041b:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+  video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol (2019-04-03 11:15:57 +0100)
 
-iEYEARECAAYFAlyig88ACgkQMOfwapXb+vITaACdF82J0YVRKNAu08dGT2c58KU7
-iYAAnA5BrWUDZ425s2tdrFOD+Ls7mNhx
-=xORY
------END PGP SIGNATURE-----
+----------------------------------------------------------------
+Immutable branch between MFD and DRM due for the v5.2 merge window
 
---1ccMZA6j1vT5UqiK--
+----------------------------------------------------------------
+Alexander Shiyan (1):
+      video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol
+
+ arch/unicore32/Kconfig            |  1 -
+ drivers/gpu/drm/Kconfig           |  2 --
+ drivers/gpu/drm/bridge/Kconfig    |  1 -
+ drivers/gpu/drm/fsl-dcu/Kconfig   |  1 -
+ drivers/gpu/drm/i915/Kconfig      |  1 -
+ drivers/gpu/drm/nouveau/Kconfig   |  2 --
+ drivers/gpu/drm/shmobile/Kconfig  |  1 -
+ drivers/gpu/drm/tilcdc/Kconfig    |  1 -
+ drivers/staging/olpc_dcon/Kconfig |  1 -
+ drivers/usb/misc/Kconfig          |  1 -
+ drivers/video/backlight/Kconfig   | 10 ++--------
+ drivers/video/fbdev/Kconfig       |  5 -----
+ 12 files changed, 2 insertions(+), 25 deletions(-)
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

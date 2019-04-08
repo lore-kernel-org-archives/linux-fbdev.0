@@ -1,52 +1,19 @@
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-Date: Wed, 10 Apr 2019 03:17:16 +0000
-Subject: [PATCH 0/4] Hexdump enhancements
-Message-Id: <20190410031720.11067-1-alastair@au1.ibm.com>
+From: "China National Chemicals" <contact@sax.publicvm.com>
+Date: Mon, 08 Apr 2019 19:56:27 +0000
+Subject: Re: 4/8/201912:57:27 PM
+Message-Id: <038cdce4-43563-06845399055671@win-rrk766hod7j>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alastair@d-silva.org
-Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-wireless@vger.kernel
+To: linux-fbdev@vger.kernel.org
 
-From: Alastair D'Silva <alastair@d-silva.org>
+Dear linux-fbdev@vger.kernel.org
 
-Apologies for the large CC list, it's a heads up for those responsible
-for subsystems where a prototype change in generic code causes a change
-in those subsystems.
+Greetings to you from China. Our company is currentlylooking for a sales representative in the USA. You could become our principal sales agent and earn big. It wouldn't disturb your present job, you could work from home as well. No upfront deposit. It is 100% legal and risk free. Contact me via my personal email at ceo.kaling12@protonamail.ch for more understanding only if interested please.
 
-This series enhances hexdump.
+Regards,
 
-These improve the readability of the dumped data in certain situations
-(eg. wide terminals are available, many lines of empty bytes exist, etc).
+Ka Ling.
 
-The default behaviour of hexdump is unchanged, however, the prototype
-for hex_dump_to_buffer() has changed, and print_hex_dump() has been
-renamed to print_hex_dump_ext(), with a wrapper replacing it for
-compatibility with existing code, which would have been too invasive to
-change.
-
-Alastair D'Silva (4):
-  lib/hexdump.c: Allow 64 bytes per line
-  lib/hexdump.c: Optionally suppress lines of filler bytes
-  lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
-  lib/hexdump.c: Allow multiple groups to be separated by lines '|'
-
- drivers/gpu/drm/i915/intel_engine_cs.c        |   2 +-
- drivers/isdn/hardware/mISDN/mISDNisar.c       |   6 +-
- drivers/mailbox/mailbox-test.c                |   2 +-
- drivers/net/ethernet/amd/xgbe/xgbe-drv.c      |   2 +-
- .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
- drivers/net/wireless/ath/ath10k/debug.c       |   3 +-
- .../net/wireless/intel/iwlegacy/3945-mac.c    |   2 +-
- drivers/platform/chrome/wilco_ec/debugfs.c    |   3 +-
- drivers/scsi/scsi_logging.c                   |   8 +-
- drivers/staging/fbtft/fbtft-core.c            |   2 +-
- fs/seq_file.c                                 |   3 +-
- include/linux/printk.h                        |  38 ++++-
- lib/hexdump.c                                 | 143 ++++++++++++++----
- lib/test_hexdump.c                            |   5 +-
- 14 files changed, 168 insertions(+), 53 deletions(-)
-
--- 
-2.20.1
+CEO, CHEMCHINA.

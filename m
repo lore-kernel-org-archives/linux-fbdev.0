@@ -1,29 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 13:01:46 +0000
-Subject: Re: [PATCH] omapfb: Fix potential NULL pointer dereference in kmalloc
-Message-Id: <d9416512-1daf-252d-409c-5826445510b0@samsung.com>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 10 Apr 2019 03:17:16 +0000
+Subject: [PATCH 0/4] Hexdump enhancements
+Message-Id: <20190410031720.11067-1-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190302204019epcas2p39a9b9bc29383567d5442fcb3a7efaeed@epcas2p3.samsung.com>
- <20190302204006.9953-1-pakki001@umn.edu>
-In-Reply-To: <20190302204006.9953-1-pakki001@umn.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Aditya Pakki <pakki001@umn.edu>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, kjlu@umn.edu, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-wireless@vger.kernel
 
+From: Alastair D'Silva <alastair@d-silva.org>
 
-On 03/02/2019 09:40 PM, Aditya Pakki wrote:
-> Memory allocated, using kmalloc, for new_compat may fail. This patch
-> checks for such an error and prevents potential NULL pointer
-> dereference.
-> 
-> Signed-off-by: Aditya Pakki <pakki001@umn.edu>
+Apologies for the large CC list, it's a heads up for those responsible
+for subsystems where a prototype change in generic code causes a change
+in those subsystems.
 
-Patch queued for v5.2, thanks.
+This series enhances hexdump.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+These improve the readability of the dumped data in certain situations
+(eg. wide terminals are available, many lines of empty bytes exist, etc).
+
+The default behaviour of hexdump is unchanged, however, the prototype
+for hex_dump_to_buffer() has changed, and print_hex_dump() has been
+renamed to print_hex_dump_ext(), with a wrapper replacing it for
+compatibility with existing code, which would have been too invasive to
+change.
+
+Alastair D'Silva (4):
+  lib/hexdump.c: Allow 64 bytes per line
+  lib/hexdump.c: Optionally suppress lines of filler bytes
+  lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
+  lib/hexdump.c: Allow multiple groups to be separated by lines '|'
+
+ drivers/gpu/drm/i915/intel_engine_cs.c        |   2 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c       |   6 +-
+ drivers/mailbox/mailbox-test.c                |   2 +-
+ drivers/net/ethernet/amd/xgbe/xgbe-drv.c      |   2 +-
+ .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
+ drivers/net/wireless/ath/ath10k/debug.c       |   3 +-
+ .../net/wireless/intel/iwlegacy/3945-mac.c    |   2 +-
+ drivers/platform/chrome/wilco_ec/debugfs.c    |   3 +-
+ drivers/scsi/scsi_logging.c                   |   8 +-
+ drivers/staging/fbtft/fbtft-core.c            |   2 +-
+ fs/seq_file.c                                 |   3 +-
+ include/linux/printk.h                        |  38 ++++-
+ lib/hexdump.c                                 | 143 ++++++++++++++----
+ lib/test_hexdump.c                            |   5 +-
+ 14 files changed, 168 insertions(+), 53 deletions(-)
+
+-- 
+2.20.1

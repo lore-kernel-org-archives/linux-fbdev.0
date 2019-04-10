@@ -1,83 +1,176 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 15:25:30 +0000
-Subject: Re: [PATCH] fbdev: fix divide error in fb_var_to_videomode
-Message-Id: <1c83bcd9-11e5-660e-d9d6-93f50c33d194@samsung.com>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 10 Apr 2019 03:17:20 +0000
+Subject: [PATCH 4/4] lib/hexdump.c: Allow multiple groups to be separated by lines '|'
+Message-Id: <20190410031720.11067-5-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1552998003-237288-1-git-send-email-shile.zhang@linux.alibaba.com>
- <CGME20190329204639epcas4p4baaa2d4b9fd90c911a4aba6c10a200bb@epcas4p4.samsung.com>
- <a3eedb3a-bd70-a33c-a0d1-d111ed11d7de@codeaurora.org>
-In-Reply-To: <a3eedb3a-bd70-a33c-a0d1-d111ed11d7de@codeaurora.org>
+References: <20190410031720.11067-1-alastair@au1.ibm.com>
+In-Reply-To: <20190410031720.11067-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mukesh Ojha <mojha@codeaurora.org>, shile.zhang@linux.alibaba.com
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Fredrik Noring <noring@nocrew.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Petr
 
+From: Alastair D'Silva <alastair@d-silva.org>
 
-On 03/29/2019 09:46 PM, Mukesh Ojha wrote:
-> 
-> On 3/19/2019 5:50 PM, shile.zhang@linux.alibaba.com wrote:
->> From: Shile Zhang <shile.zhang@linux.alibaba.com>
->>
->> To fix following divide-by-zero error found by Syzkaller:
->>
->>    divide error: 0000 [#1] SMP PTI
->>    CPU: 7 PID: 8447 Comm: test Kdump: loaded Not tainted 4.19.24-8.al7.x86_64 #1
->>    Hardware name: Alibaba Cloud Alibaba Cloud ECS, BIOS rel-1.12.0-0-ga698c8995f-prebuilt.qemu.org 04/01/2014
->>    RIP: 0010:fb_var_to_videomode+0xae/0xc0
->>    Code: 04 44 03 46 78 03 4e 7c 44 03 46 68 03 4e 70 89 ce d1 ee 69 c0 e8 03 00 00 f6 c2 01 0f 45 ce 83 e2 02 8d 34 09 0f 45 ce 31 d2 <41> f7 f0 31 d2 f7 f1 89 47 08 f3 c3 66 0f 1f 44 00 00 0f 1f 44 00
->>    RSP: 0018:ffffb7e189347bf0 EFLAGS: 00010246
->>    RAX: 00000000e1692410 RBX: ffffb7e189347d60 RCX: 0000000000000000
->>    RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffb7e189347c10
->>    RBP: ffff99972a091c00 R08: 0000000000000000 R09: 0000000000000000
->>    R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000100
->>    R13: 0000000000010000 R14: 00007ffd66baf6d0 R15: 0000000000000000
->>    FS:  00007f2054d11740(0000) GS:ffff99972fbc0000(0000) knlGS:0000000000000000
->>    CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
->>    CR2: 00007f205481fd20 CR3: 00000004288a0001 CR4: 00000000001606a0
->>    Call Trace:
->>     fb_set_var+0x257/0x390
->>     ? lookup_fast+0xbb/0x2b0
->>     ? fb_open+0xc0/0x140
->>     ? chrdev_open+0xa6/0x1a0
->>     do_fb_ioctl+0x445/0x5a0
->>     do_vfs_ioctl+0x92/0x5f0
->>     ? __alloc_fd+0x3d/0x160
->>     ksys_ioctl+0x60/0x90
->>     __x64_sys_ioctl+0x16/0x20
->>     do_syscall_64+0x5b/0x190
->>     entry_SYSCALL_64_after_hwframe+0x44/0xa9
->>    RIP: 0033:0x7f20548258d7
->>    Code: 44 00 00 48 8b 05 b9 15 2d 00 64 c7 00 26 00 00 00 48 c7 c0 ff ff ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 b8 10 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 89 15 2d 00 f7 d8 64 89 01 48
->>
->> It can be triggered easily with following test code:
->>
->>    #include <linux/fb.h>
->>    #include <fcntl.h>
->>    #include <sys/ioctl.h>
->>    int main(void)
->>    {
->>            struct fb_var_screeninfo var = {.activate = 0x100, .pixclock = 60};
->>            int fd = open("/dev/fb0", O_RDWR);
->>            if (fd < 0)
->>                    return 1;
->>
->>            if (ioctl(fd, FBIOPUT_VSCREENINFO, &var))
->>                    return 1;
->>
->>            return 0;
->>    }
->>
->> Signed-off-by: Shile Zhang <shile.zhang@linux.alibaba.com>
-> 
-> To avoid any exception we should include the check.
-> Looks fine to me.
-> Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
+With the wider display format, it can become hard to identify how many
+bytes into the line you are looking at.
 
-Patch queued for v5.2, thanks.
+The patch adds new flags to hex_dump_to_buffer() and print_hex_dump() to
+print vertical lines to separate every N groups of bytes.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+eg.
+buf:00000000: 454d414e 43415053|4e495f45 00584544  NAMESPAC|E_INDEX.
+buf:00000010: 00000000 00000002|00000000 00000000  ........|........
+
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ include/linux/printk.h |  3 +++
+ lib/hexdump.c          | 50 +++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 48 insertions(+), 5 deletions(-)
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 82975853c400..d9e407e59059 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -485,6 +485,9 @@ enum {
+ #define HEXDUMP_SUPPRESS_0XFF	(1 << 2)
+ #define HEXDUMP_SUPPRESS_FIRST	(1 << 3)
+ #define HEXDUMP_SUPPRESS_LAST	(1 << 4)
++#define HEXDUMP_2_GRP_LINES	(1 << 5)
++#define HEXDUMP_4_GRP_LINES	(1 << 6)
++#define HEXDUMP_8_GRP_LINES	(1 << 7)
+ 
+ #define HEXDUMP_QUIET		(HEXDUMP_SUPPRESS_0X00 | \
+ 				HEXDUMP_SUPPRESS_0XFF | \
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 79db784577e7..d42f34b93b2c 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -76,6 +76,20 @@ char *bin2hex(char *dst, const void *src, size_t count)
+ }
+ EXPORT_SYMBOL(bin2hex);
+ 
++static const char *group_separator(int group, u64 flags)
++{
++	if ((flags & HEXDUMP_8_GRP_LINES) && ((group - 1) % 8))
++		return "|";
++
++	if ((flags & HEXDUMP_4_GRP_LINES) && ((group - 1) % 4))
++		return "|";
++
++	if ((flags & HEXDUMP_2_GRP_LINES) && ((group - 1) % 2))
++		return "|";
++
++	return " ";
++}
++
+ /**
+  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
+  * @buf: data blob to dump
+@@ -86,6 +100,9 @@ EXPORT_SYMBOL(bin2hex);
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @flags: A bitwise OR of the following flags:
+  *	HEXDUMP_ASCII:		include ASCII after the hex output
++ *	HEXDUMP_2_GRP_LINES:	insert a '|' after every 2 groups
++ *	HEXDUMP_4_GRP_LINES:	insert a '|' after every 4 groups
++ *	HEXDUMP_8_GRP_LINES:	insert a '|' after every 8 groups
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, i.e.,
+  * 16, 32 or 64 bytes of input data converted to hex + ASCII output.
+@@ -116,6 +133,7 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int j, lx = 0;
+ 	int ascii_column;
+ 	int ret;
++	int line_chars = 0;
+ 
+ 	if (rowsize != 16 && rowsize != 32 && rowsize != 64)
+ 		rowsize = 16;
+@@ -141,7 +159,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%16.16llx", j ? " " : "",
++				       "%s%16.16llx",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr8 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -152,7 +171,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%8.8x", j ? " " : "",
++				       "%s%8.8x",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr4 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -163,7 +183,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%4.4x", j ? " " : "",
++				       "%s%4.4x",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr2 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -193,11 +214,26 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 			goto overflow2;
+ 		linebuf[lx++] = ' ';
+ 	}
++
++	if (flags & HEXDUMP_2_GRP_LINES)
++		line_chars = groupsize * 2;
++	if (flags & HEXDUMP_4_GRP_LINES)
++		line_chars = groupsize * 4;
++	if (flags & HEXDUMP_8_GRP_LINES)
++		line_chars = groupsize * 8;
++
+ 	for (j = 0; j < len; j++) {
+ 		if (linebuflen < lx + 2)
+ 			goto overflow2;
+ 		ch = ptr[j];
+ 		linebuf[lx++] = (isascii(ch) && isprint(ch)) ? ch : '.';
++
++		if (line_chars && ((j + 1) < len) &&
++				((j + 1) % line_chars = 0)) {
++			if (linebuflen < lx + 2)
++				goto overflow2;
++			linebuf[lx++] = '|';
++		}
+ 	}
+ nil:
+ 	linebuf[lx] = '\0';
+@@ -205,7 +241,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ overflow2:
+ 	linebuf[lx++] = '\0';
+ overflow1:
+-	return (flags & HEXDUMP_ASCII) ? ascii_column + len :
++	return (flags & HEXDUMP_ASCII) ? ascii_column + len +
++					(len - 1) / line_chars :
+ 					 (groupsize * 2 + 1) * ngroups - 1;
+ }
+ EXPORT_SYMBOL(hex_dump_to_buffer);
+@@ -246,6 +283,9 @@ static bool buf_is_all(const u8 *buf, size_t len, u8 val)
+  *	HEXDUMP_SUPPRESS_LAST:	allows the last line to be suppressed
+  *				If the first and last line may be suppressed,
+  *				an empty buffer will not produce any output
++ *	HEXDUMP_2_GRP_LINES:	insert a '|' after every 2 groups
++ *	HEXDUMP_4_GRP_LINES:	insert a '|' after every 4 groups
++ *	HEXDUMP_8_GRP_LINES:	insert a '|' after every 8 groups
+  *
+  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
+  * to the kernel log at the specified kernel log level, with an optional
+@@ -271,7 +311,7 @@ void print_hex_dump_ext(const char *level, const char *prefix_str,
+ {
+ 	const u8 *ptr = buf;
+ 	int i, remaining = len;
+-	unsigned char linebuf[64 * 3 + 2 + 64 + 1];
++	unsigned char linebuf[64 * 3 + 2 + 64 + 31 + 1];
+ 	bool first_line = true;
+ 
+ 	if (rowsize != 16 && rowsize != 32 && rowsize != 64)
+-- 
+2.20.1

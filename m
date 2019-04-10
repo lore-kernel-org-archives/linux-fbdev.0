@@ -1,52 +1,87 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 03 Apr 2019 19:42:20 +0000
-Subject: Re: remove NULL struct device support in the DMA API
-Message-Id: <20190403194220.GA30376@lst.de>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 10 Apr 2019 03:17:17 +0000
+Subject: [PATCH 1/4] lib/hexdump.c: Allow 64 bytes per line
+Message-Id: <20190410031720.11067-2-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190321225235.30648-1-hch@lst.de> <20190403182640.2ca6w2hngjqp35mt@shell.armlinux.org.uk>
-In-Reply-To: <20190403182640.2ca6w2hngjqp35mt@shell.armlinux.org.uk>
+References: <20190410031720.11067-1-alastair@au1.ibm.com>
+In-Reply-To: <20190410031720.11067-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King - ARM Linux admin <linux@armlinux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-wireless@vger.kernel
 
-On Wed, Apr 03, 2019 at 07:26:40PM +0100, Russell King - ARM Linux admin wrote:
-> On Thu, Mar 21, 2019 at 03:52:28PM -0700, Christoph Hellwig wrote:
-> > We still have a few drivers which pass a NULL struct device pointer
-> > to DMA API functions, which generally is a bad idea as the API
-> > implementations rely on the device not only for ops selection, but
-> > also the dma mask and various other attributes, and many implementations
-> > have been broken for NULL device support for a while.
-> 
-> I think I must be missing something, but...
-> 
-> My understanding is that ISA DMA is normally limited to 24 bits of
-> address
+From: Alastair D'Silva <alastair@d-silva.org>
 
-Yes.
+With modern high resolution screens, we can display more data, which makes
+life a bit easier when debugging.
 
-> - indeed, the x86 version only programs 24 bits of DMA address.
-> Looking through this series, it appears that the conversions mean that
-> the DMA mask for ISA becomes the full all-ones DMA mask, which would
-> of course lead to memory corruption if only 24 bits of the address end
-> up being programmed into the hardware.
+Allow 64 bytes to be dumped per line.
 
-In the generic dma mapping code no struct device has always meant a
-32-bit DMA mask - take a look at the dma_get_mask() function.
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ lib/hexdump.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-> Maybe you could say why you think this series is safe in regard to ISA
-> DMA?
-
-ISA DMA has always been rather painful in a myriad of ways, and the
-DMA API so far hasn't helped, given that we don't do bounce buffering
-for the 24-bit limit, but just the higher limits.  So far even if you
-do use the DMA API and pass a device ISA DMA so far always meant
-that the higher layers had to assure things are addressable, either
-by using GFP_DMA allocation in the drivers, or mid-layer hacks like
-the unchecked_isa_dma flag in SCSI and/or BLK_BOUNCE_ISA in the
-block layer.
-
-This series doesn't change those facts at all.  I have some half
-started series to clean some of this up but it isn't high up on
-the priority list.
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 81b70ed37209..b8a164814744 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -80,14 +80,14 @@ EXPORT_SYMBOL(bin2hex);
+  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+- * @rowsize: number of bytes to print per line; must be 16 or 32
++ * @rowsize: number of bytes to print per line; must be 16, 32 or 64
+  * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
+  * @linebuf: where to put the converted data
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @ascii: include ASCII after the hex output
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, i.e.,
+- * 16 or 32 bytes of input data converted to hex + ASCII output.
++ * 16, 32 or 64 bytes of input data converted to hex + ASCII output.
+  *
+  * Given a buffer of u8 data, hex_dump_to_buffer() converts the input data
+  * to a hex + ASCII dump at the supplied memory location.
+@@ -116,7 +116,7 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int ascii_column;
+ 	int ret;
+ 
+-	if (rowsize != 16 && rowsize != 32)
++	if (rowsize != 16 && rowsize != 32 && rowsize != 64)
+ 		rowsize = 16;
+ 
+ 	if (len > rowsize)		/* limit to one line at a time */
+@@ -216,7 +216,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  *  caller supplies trailing spaces for alignment if desired
+  * @prefix_type: controls whether prefix of an offset, address, or none
+  *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
+- * @rowsize: number of bytes to print per line; must be 16 or 32
++ * @rowsize: number of bytes to print per line; must be 16, 32 or 64
+  * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+@@ -227,7 +227,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  * leading prefix.
+  *
+  * print_hex_dump() works on one "line" of output at a time, i.e.,
+- * 16 or 32 bytes of input data converted to hex + ASCII output.
++ * 16, 32 or 64 bytes of input data converted to hex + ASCII output.
+  * print_hex_dump() iterates over the entire input @buf, breaking it into
+  * "line size" chunks to format and print.
+  *
+@@ -246,9 +246,9 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ {
+ 	const u8 *ptr = buf;
+ 	int i, linelen, remaining = len;
+-	unsigned char linebuf[32 * 3 + 2 + 32 + 1];
++	unsigned char linebuf[64 * 3 + 2 + 64 + 1];
+ 
+-	if (rowsize != 16 && rowsize != 32)
++	if (rowsize != 16 && rowsize != 32 && rowsize != 64)
+ 		rowsize = 16;
+ 
+ 	for (i = 0; i < len; i += rowsize) {
+-- 
+2.20.1

@@ -1,30 +1,32 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 03 Apr 2019 15:42:03 +0000
-Subject: Re: [PATCH 2/7] da8xx-fb: pass struct device to DMA API functions
-Message-Id: <a4201146-6260-03a8-554f-4d4f0a5dd2b9@samsung.com>
+From: "Mrs. Floxy Joseph" <mrs.floxyjoseph49@gmail.com>
+Date: Thu, 11 Apr 2019 12:19:27 +0000
+Subject: Good Day
+Message-Id: <CANd9nFsDuorzUt9yEiCtjEuZEcdoAbh8WLTy_pQTG24zO1iknQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190321225235.30648-1-hch@lst.de>
-        <CGME20190321225309epcas1p311c1b22b7f1a15815765ffa12217f740@epcas1p3.samsung.com>
-        <20190321225235.30648-3-hch@lst.de>
-In-Reply-To: <20190321225235.30648-3-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Russell King <linux@armlinux.org.uk>, x86@kernel.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+To: linux-fbdev@vger.kernel.org
 
+Good Day,
 
-On 03/21/2019 11:52 PM, Christoph Hellwig wrote:
-> The DMA API generally relies on a struct device to work properly, and
-> only barely works without one for legacy reasons.  Pass the easily
-> available struct device from the platform_device to remedy this.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+My name is  Mrs. Floxy Mathias  Rust , I am 72 yrs old .I am a,
+nationality HOLLAND.I'm married to Deutsch (a GERMANY) Mr.Mathias
+ Joseph  Rust   who worked with the national Oil company in Mexico,and
+Qatar before he died in aplane crash in 2013 with other passengers
+aboard.immediately after the death of my husband i took ill now my
+husband has left me with everything he worked for and now the doctors
+told me I will not live longer than some months because of my health,
+I decided to WILL / donate the sum of (twenty one million, Nine
+hundred thousand dollars) to you for the good work of humanity, and
+also to help the motherless andless privilege in some some part of War
+zones in the World and also for the assistance of the widows.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+I wish you all the best and may the good Lord bless you abundantly,and
+please use the funds well and always extend the good work toothers. I
+will appreciate your utmost confidentiality in this matter until the
+task is accomplished as I do not want anything that willjeopardize my
+last wish Pls :.kindly get back to me so that we can discuss
+more.Contact through this email: mrs.floxyjoseph49@gmail.com
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Mrs. Floxy Mathias Rust

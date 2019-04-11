@@ -1,37 +1,42 @@
-From: <Nicolas.Ferre@microchip.com>
-Date: Wed, 03 Apr 2019 08:20:57 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 11 Apr 2019 17:23:36 +0000
 Subject: Re: [PATCH -next] video: fbdev: atmel_lcdfb: remove set but not used variable 'pdata'
-Message-Id: <961c397f-1c3c-5f96-5281-3233b34088c3@microchip.com>
+Message-Id: <eb732f69-5f7e-899e-21f8-8dab1056c7ef@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190403072445.42983-1-yuehaibing@huawei.com>
-In-Reply-To: <20190403072445.42983-1-yuehaibing@huawei.com>
+ <CGME20190403082107epcas2p2b26003b0a03a107f4c19abb6f4876f41@epcas2p2.samsung.com>
+ <961c397f-1c3c-5f96-5281-3233b34088c3@microchip.com>
+In-Reply-To: <961c397f-1c3c-5f96-5281-3233b34088c3@microchip.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: yuehaibing@huawei.com, b.zolnierkie@samsung.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com
-Cc: linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org
+To: Nicolas.Ferre@microchip.com, yuehaibing@huawei.com
+Cc: alexandre.belloni@bootlin.com, kernel-janitors@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Ludovic.Desroches@microchip.com, linux-arm-kernel@lists.infradead.org
 
-T24gMDMvMDQvMjAxOSBhdCAwOToyNCwgWXVlSGFpYmluZyB3cm90ZToNCj4gRXh0ZXJuYWwgRS1N
-YWlsDQo+IA0KPiANCj4gRml4ZXMgZ2NjICctV3VudXNlZC1idXQtc2V0LXZhcmlhYmxlJyB3YXJu
-aW5nOg0KPiANCj4gZHJpdmVycy92aWRlby9mYmRldi9hdG1lbF9sY2RmYi5jOiBJbiBmdW5jdGlv
-biAnYXRtZWxfbGNkZmJfcmVtb3ZlJzoNCj4gZHJpdmVycy92aWRlby9mYmRldi9hdG1lbF9sY2Rm
-Yi5jOjEyNTU6Mjg6IHdhcm5pbmc6DQo+ICAgdmFyaWFibGUgJ3BkYXRhJyBzZXQgYnV0IG5vdCB1
-c2VkIFstV3VudXNlZC1idXQtc2V0LXZhcmlhYmxlXQ0KPiANCj4gSXQncyBub3QgdXNlZCBzaW5j
-ZSBjb21taXQgNDIxMTBlOTFkZTdmICgidmlkZW86IGF0bWVsX2xjZGZiOiBpbnRyb2R1Y2UNCj4g
-YXRtZWxfbGNkZmJfcG93ZXJfY29udHJvbCIpDQo+IA0KPiBTaWduZWQtb2ZmLWJ5OiBZdWVIYWli
-aW5nIDx5dWVoYWliaW5nQGh1YXdlaS5jb20+DQoNCkluZGVlZDoNCkFja2VkLWJ5OiBOaWNvbGFz
-IEZlcnJlIDxuaWNvbGFzLmZlcnJlQG1pY3JvY2hpcC5jb20+DQoNClRoYW5rcyENCg0KPiAtLS0N
-Cj4gICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2F0bWVsX2xjZGZiLmMgfCAyIC0tDQo+ICAgMSBmaWxl
-IGNoYW5nZWQsIDIgZGVsZXRpb25zKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRl
-by9mYmRldi9hdG1lbF9sY2RmYi5jIGIvZHJpdmVycy92aWRlby9mYmRldi9hdG1lbF9sY2RmYi5j
-DQo+IGluZGV4IGI4Nzg2ZmY2MmI4Ny4uZTY3ZGZkOTRiZjFkIDEwMDY0NA0KPiAtLS0gYS9kcml2
-ZXJzL3ZpZGVvL2ZiZGV2L2F0bWVsX2xjZGZiLmMNCj4gKysrIGIvZHJpdmVycy92aWRlby9mYmRl
-di9hdG1lbF9sY2RmYi5jDQo+IEBAIC0xMjUyLDEyICsxMjUyLDEwIEBAIHN0YXRpYyBpbnQgX19l
-eGl0IGF0bWVsX2xjZGZiX3JlbW92ZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQ0KPiAg
-IAlzdHJ1Y3QgZGV2aWNlICpkZXYgPSAmcGRldi0+ZGV2Ow0KPiAgIAlzdHJ1Y3QgZmJfaW5mbyAq
-aW5mbyA9IGRldl9nZXRfZHJ2ZGF0YShkZXYpOw0KPiAgIAlzdHJ1Y3QgYXRtZWxfbGNkZmJfaW5m
-byAqc2luZm87DQo+IC0Jc3RydWN0IGF0bWVsX2xjZGZiX3BkYXRhICpwZGF0YTsNCj4gICANCj4g
-ICAJaWYgKCFpbmZvIHx8ICFpbmZvLT5wYXIpDQo+ICAgCQlyZXR1cm4gMDsNCj4gICAJc2luZm8g
-PSBpbmZvLT5wYXI7DQo+IC0JcGRhdGEgPSAmc2luZm8tPnBkYXRhOw0KPiAgIA0KPiAgIAljYW5j
-ZWxfd29ya19zeW5jKCZzaW5mby0+dGFzayk7DQo+ICAgCWV4aXRfYmFja2xpZ2h0KHNpbmZvKTsN
-Cj4gDQo+IA0KPiANCj4gDQo+IA0KDQoNCi0tIA0KTmljb2xhcyBGZXJyZQ0K
+
+On 04/03/2019 10:20 AM, Nicolas.Ferre@microchip.com wrote:
+> On 03/04/2019 at 09:24, YueHaibing wrote:
+>> External E-Mail
+>>
+>>
+>> Fixes gcc '-Wunused-but-set-variable' warning:
+>>
+>> drivers/video/fbdev/atmel_lcdfb.c: In function 'atmel_lcdfb_remove':
+>> drivers/video/fbdev/atmel_lcdfb.c:1255:28: warning:
+>>   variable 'pdata' set but not used [-Wunused-but-set-variable]
+>>
+>> It's not used since commit 42110e91de7f ("video: atmel_lcdfb: introduce
+>> atmel_lcdfb_power_control")
+>>
+>> Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+> 
+> Indeed:
+> Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+
+Patch queued for v5.2, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

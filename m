@@ -1,39 +1,32 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 11 Apr 2019 15:44:20 +0000
-Subject: Re: [PATCH v2] fbdev: fix WARNING in __alloc_pages_nodemask bug
-Message-Id: <22269220-5e37-7ccb-f4cb-c776d7a964e2@samsung.com>
+Date: Thu, 11 Apr 2019 15:12:51 +0000
+Subject: Re: [PATCH] video: amba-clcd: Decomission Versatile and Nomadik
+Message-Id: <ac93f762-f70a-3556-f70f-fcfd258aab70@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190320093355epcas4p2806447a1e70035d07b92b245f7278c34@epcas4p2.samsung.com>
+ <20190320093331.11251-1-linus.walleij@linaro.org>
+In-Reply-To: <20190320093331.11251-1-linus.walleij@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org
 
 
-On 03/28/2019 10:38 AM, Jiufei Xue wrote:
-> Syzkaller hit 'WARNING in __alloc_pages_nodemask' bug.
+On 03/20/2019 10:33 AM, Linus Walleij wrote:
+> These board families are now handled in the DRM subsystem
+> where we can have reusable panel drivers and some other
+> stuff. The PL111 there is now the driver used in the
+> defconfig for Versatile and Nomadik so no need to keep
+> this code around.
 > 
-> WARNING: CPU: 1 PID: 1473 at mm/page_alloc.c:4377
-> __alloc_pages_nodemask+0x4da/0x2130
-> Kernel panic - not syncing: panic_on_warn set ...
+> There are a few minor machines in arch/arm/ such as
+> mach-netx still using the old driver, so we need to keep
+> the core fbdev driver around for some time.
 > 
-> Call Trace:
->  alloc_pages_current+0xb1/0x1e0
->  kmalloc_order+0x1f/0x60
->  kmalloc_order_trace+0x1d/0x120
->  fb_alloc_cmap_gfp+0x85/0x2b0
->  fb_set_user_cmap+0xff/0x370
->  do_fb_ioctl+0x949/0xa20
->  fb_ioctl+0xdd/0x120
->  do_vfs_ioctl+0x186/0x1070
->  ksys_ioctl+0x89/0xa0
->  __x64_sys_ioctl+0x74/0xb0
->  do_syscall_64+0xc8/0x550
->  entry_SYSCALL_64_after_hwframe+0x49/0xbe
-> 
-> This is a warning about order >= MAX_ORDER and the order is from
-> userspace ioctl. Add flag __NOWARN to silence this warning.
-> 
-> Signed-off-by: Jiufei Xue <jiufei.xue@linux.alibaba.com>
+> Cc: Russell King <linux@armlinux.org.uk>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Signed-off-by: Linus Walleij <linus.walleij@linaro.org>
 
 Patch queued for v5.2, thanks.
 

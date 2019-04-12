@@ -1,33 +1,31 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 03 Apr 2019 10:10:18 +0000
-Subject: Re: [PATCH v2 2/2] video: lcd: Remove useless BACKLIGHT_CLASS_DEVICE dependencies
-Message-Id: <20190403101018.GN11301@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 12 Apr 2019 11:58:54 +0000
+Subject: [PATCH] video: fbdev: da8xx-fb: add COMPILE_TEST support
+Message-Id: <5eba3c36-bc65-74ae-cc7c-cc45ee06ccfe@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190117133336.19737-1-shc_work@mail.ru>
- <20190117133336.19737-2-shc_work@mail.ru>
-In-Reply-To: <20190117133336.19737-2-shc_work@mail.ru>
+References: <CGME20190412115855eucas1p13b364b5e815ccd338ceb74577d116b14@eucas1p1.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Alexander Shiyan <shc_work@mail.ru>
-Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Thu, 17 Jan 2019, Alexander Shiyan wrote:
+Add COMPILE_TEST support to da8xx-fb driver for better compile
+testing coverage.
 
-> This patch removes dependencies on BACKLIGHT_CLASS_DEVICE for items
-> that are already placed under #if BACKLIGHT_CLASS_DEVICE.
-> 
-> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
-> ---
->  drivers/video/backlight/Kconfig | 25 ++++++++++++-------------
->  1 file changed, 12 insertions(+), 13 deletions(-)
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Will fix up Daniel's nit about the #if.
-
-Applied, thanks.
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig	2019-04-12 13:40:48.246274115 +0200
++++ b/drivers/video/fbdev/Kconfig	2019-04-12 13:55:50.694296842 +0200
+@@ -2058,7 +2058,7 @@ config FB_SH7760
+ 
+ config FB_DA8XX
+ 	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
+-	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
++	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX || COMPILE_TEST)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT

@@ -1,99 +1,31 @@
-From: Grzegorz Halat <ghalat@redhat.com>
-Date: Fri, 26 Apr 2019 14:59:46 +0000
-Subject: [PATCH] vt/fbcon: deinitialize resources in visual_init() after failed memory allocation
-Message-Id: <20190426145946.26537-1-ghalat@redhat.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 12 Apr 2019 11:02:28 +0000
+Subject: [PATCH] video: fbdev: pxa168fb: add COMPILE_TEST support
+Message-Id: <8512f2b0-48c3-6a73-7002-966292f66985@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190412110229eucas1p198d9c4ac3ecd5e41b11aa39f7ec44523@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-fbdev@vger.kernel.org, Oleksandr Natalenko <oleksandr@redhat.com>, Grzegorz Halat <ghalat@redhat.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-After memory allocation failure vc_allocate() doesn't clean up data
-which has been initialized in visual_init(). In case of fbcon this
-leads to divide-by-0 in fbcon_init() on next open of the same tty.
+Add COMPILE_TEST support to pxa168fb driver for better compile
+testing coverage.
 
-memory allocation in vc_allocate() may fail here:
-1097:     vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
-
-on next open() fbcon_init() skips vc_font.data initialization:
-1088:     if (!p->fontdata) {
-
-division by zero in fbcon_init() happens here:
-1149:     new_cols /= vc->vc_font.width;
-
-Additional check is needed in fbcon_deinit() to prevent
-usage of uninitialized vc_screenbuf:
-
-1251:        if (vc->vc_hi_font_mask && vc->vc_screenbuf)
-1252:                set_vc_hi_font(vc, false);
-
-Crash:
-
- #6 [ffffc90001eafa60] divide_error at ffffffff81a00be4
-    [exception RIP: fbcon_init+463]
-    RIP: ffffffff814b860f  RSP: ffffc90001eafb18  RFLAGS: 00010246
-...
- #7 [ffffc90001eafb60] visual_init at ffffffff8154c36e
- #8 [ffffc90001eafb80] vc_allocate at ffffffff8154f53c
- #9 [ffffc90001eafbc8] con_install at ffffffff8154f624
-...
-
-Signed-off-by: Grzegorz Halat <ghalat@redhat.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/tty/vt/vt.c              | 11 +++++++++--
- drivers/video/fbdev/core/fbcon.c |  2 +-
- 2 files changed, 10 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
-index 650c66886c80..ec85d195678f 100644
---- a/drivers/tty/vt/vt.c
-+++ b/drivers/tty/vt/vt.c
-@@ -1056,6 +1056,13 @@ static void visual_init(struct vc_data *vc, int num, int init)
- 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
- }
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig	2019-04-12 12:35:09.038174913 +0200
++++ b/drivers/video/fbdev/Kconfig	2019-04-12 12:35:09.034174912 +0200
+@@ -1732,7 +1732,7 @@ config FB_68328
  
-+
-+static void visual_deinit(struct vc_data *vc)
-+{
-+	vc->vc_sw->con_deinit(vc);
-+	module_put(vc->vc_sw->owner);
-+}
-+
- int vc_allocate(unsigned int currcons)	/* return 0 on success */
- {
- 	struct vt_notifier_param param;
-@@ -1103,6 +1110,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 
- 	return 0;
- err_free:
-+	visual_deinit(vc);
- 	kfree(vc);
- 	vc_cons[currcons].d = NULL;
- 	return -ENOMEM;
-@@ -1331,9 +1339,8 @@ struct vc_data *vc_deallocate(unsigned int currcons)
- 		param.vc = vc = vc_cons[currcons].d;
- 		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
- 		vcs_remove_sysfs(currcons);
--		vc->vc_sw->con_deinit(vc);
-+		visual_deinit(vc);
- 		put_pid(vc->vt_pid);
--		module_put(vc->vc_sw->owner);
- 		vc_uniscr_set(vc, NULL);
- 		kfree(vc->vc_screenbuf);
- 		vc_cons[currcons].d = NULL;
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index cd059a801662..c59b23f6e9ba 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -1248,7 +1248,7 @@ static void fbcon_deinit(struct vc_data *vc)
- 	if (free_font)
- 		vc->vc_font.data = NULL;
- 
--	if (vc->vc_hi_font_mask)
-+	if (vc->vc_hi_font_mask && vc->vc_screenbuf)
- 		set_vc_hi_font(vc, false);
- 
- 	if (!con_is_bound(&fb_con))
--- 
-2.20.1
+ config FB_PXA168
+ 	tristate "PXA168/910 LCD framebuffer support"
+-	depends on FB && (CPU_PXA168 || CPU_PXA910)
++	depends on FB && (CPU_PXA168 || CPU_PXA910 || COMPILE_TEST)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT

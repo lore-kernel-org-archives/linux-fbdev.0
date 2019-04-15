@@ -1,10 +1,10 @@
 From: Brian Masney <masneyb@onstation.org>
-Date: Tue, 16 Apr 2019 23:53:48 +0000
-Subject: [PATCH v4 1/3] backlight: lm3630a: return 0 on success in update_status functions
-Message-Id: <20190416235350.13742-2-masneyb@onstation.org>
+Date: Mon, 15 Apr 2019 07:29:03 +0000
+Subject: [PATCH v3 1/3] backlight: lm3630a: return 0 on success in update_status functions
+Message-Id: <20190415072905.2861-2-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190416235350.13742-1-masneyb@onstation.org>
-In-Reply-To: <20190416235350.13742-1-masneyb@onstation.org>
+References: <20190415072905.2861-1-masneyb@onstation.org>
+In-Reply-To: <20190415072905.2861-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,9 +21,6 @@ Signed-off-by: Brian Masney <masneyb@onstation.org>
 Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
 Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
-Changes since v3:
-- None
-
 Changes since v2:
 - None
 

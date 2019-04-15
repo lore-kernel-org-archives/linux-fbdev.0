@@ -1,42 +1,168 @@
-From: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Date: Mon, 15 Apr 2019 15:28:02 +0000
-Subject: Re: [PATCH] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
-Message-Id: <20190415152802.GH3578@piout.net>
+From: Brian Masney <masneyb@onstation.org>
+Date: Mon, 15 Apr 2019 07:29:04 +0000
+Subject: [PATCH v3 2/3] dt-bindings: backlight: add lm3630a bindings
+Message-Id: <20190415072905.2861-3-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190412112917eucas1p14e01f99bc74e37b061b08d6341e21d50@eucas1p1.samsung.com>
- <fd1ff7c2-f020-8252-c312-df57137ae79e@samsung.com>
-In-Reply-To: <fd1ff7c2-f020-8252-c312-df57137ae79e@samsung.com>
+References: <20190415072905.2861-1-masneyb@onstation.org>
+In-Reply-To: <20190415072905.2861-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
-On 12/04/2019 13:29:11+0200, Bartlomiej Zolnierkiewicz wrote:
-> Add COMPILE_TEST support to atmel_lcdfb driver for better compile
-> testing coverage.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Add new backlight bindings for the TI LM3630A dual-string white LED.
 
-> ---
->  drivers/video/fbdev/Kconfig |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: b/drivers/video/fbdev/Kconfig
-> =================================> --- a/drivers/video/fbdev/Kconfig	2019-04-12 13:12:24.000000000 +0200
-> +++ b/drivers/video/fbdev/Kconfig	2019-04-12 13:15:03.986235226 +0200
-> @@ -859,7 +859,7 @@ config FB_S1D13XXX
->  
->  config FB_ATMEL
->  	tristate "AT91 LCD Controller support"
-> -	depends on FB && OF && HAVE_FB_ATMEL
-> +	depends on FB && OF && (HAVE_FB_ATMEL || COMPILE_TEST)
->  	select FB_BACKLIGHT
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
+Signed-off-by: Brian Masney <masneyb@onstation.org>
+---
+Rob: Since the common bindings aren't converted to the new JSON schema
+yet, I'm not sure how to do led-sources here. I would expect that we'd
+have the uint32-array on the common binding once it exists. I had to
+add it here to keep 'make dt_binding_check' happy. I left the
+description off though for that property since that'll come from common
+once its converted.
 
+Changes since v2:
+- Update description of max-brightness
+- Add description for reg
+- Correct typo: s/tranisiton/transition
+- Remove label from bindings since this isn't on backlight_properties
+- add reg to control banks
+- add additionalProperties
+
+ .../leds/backlight/lm3630a-backlight.yaml     | 124 ++++++++++++++++++
+ 1 file changed, 124 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+new file mode 100644
+index 000000000000..cccd43c02732
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+@@ -0,0 +1,124 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/lm3630a-backlight.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TI LM3630A High-Efficiency Dual-String White LED
++
++maintainers:
++  - Lee Jones <lee.jones@linaro.org>
++  - Daniel Thompson <daniel.thompson@linaro.org>
++  - Jingoo Han <jingoohan1@gmail.com>
++
++description: |
++  The LM3630A is a current-mode boost converter which supplies the power and
++  controls the current in up to two strings of 10 LEDs per string.
++  https://www.ti.com/product/LM3630A
++
++properties:
++  compatible:
++    const: ti,lm3630a
++
++  reg:
++    description: The I2C address of the device
++    maxItems: 1
++
++  ti,linear-mapping-mode:
++    description: |
++      Enable linear mapping mode. If disabled, then it will use exponential
++      mapping mode in which the ramp up/down appears to have a more uniform
++      transition to the human eye.
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++patternProperties:
++  "^led@[01]$":
++    type: object
++    description: |
++      Properties for a string of connected LEDs.
++
++    properties:
++      reg:
++        description: Control Bank
++        maxItems: 1
++        minimum: 0
++        maximum: 1
++
++      led-sources:
++        allOf:
++          - $ref: /schemas/types.yaml#/definitions/uint32-array
++          - minItems: 1
++            maxItems: 2
++            items:
++              minimum: 0
++              maximum: 1
++
++      default-brightness:
++        description: Default brightness level on boot.
++        minimum: 0
++        maximum: 255
++
++      max-brightness:
++        description: Maximum brightness that is allowed during runtime.
++        minimum: 0
++        maximum: 255
++
++    required:
++      - reg
++
++    additionalProperties: false
++
++additionalProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                led@0 {
++                        reg = <0>;
++                        led-sources = <0 1>;
++                        default-brightness = <200>;
++                        max-brightness = <255>;
++                };
++        };
++    };
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                led@0 {
++                        reg = <0>;
++                        default-brightness = <150>;
++                        ti,linear-mapping-mode;
++                };
++
++                led@1 {
++                        reg = <1>;
++                        default-brightness = <225>;
++                        ti,linear-mapping-mode;
++                };
++        };
++    };
 -- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.20.1

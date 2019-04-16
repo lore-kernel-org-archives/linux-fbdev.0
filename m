@@ -1,29 +1,31 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 12:04:06 +0000
-Subject: Re: [PATCH] video/macfb: Call fb_invert_cmaps()
-Message-Id: <eaaa9e82-8194-17c3-6106-16a34a36a194@samsung.com>
+From: Brian Masney <masneyb@onstation.org>
+Date: Tue, 16 Apr 2019 23:53:47 +0000
+Subject: [PATCH v4 0/3] backlight: lm3630a: bug fix and fwnode support
+Message-Id: <20190416235350.13742-1-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190217233037epcas5p1f527f485e504ee424a1a26f47dc1ea51@epcas5p1.samsung.com>
-        <80cf1394f099ced17bd5075be88cf33c1232086a.1550445927.git.fthain@telegraphics.com.au>
-In-Reply-To: <80cf1394f099ced17bd5075be88cf33c1232086a.1550445927.git.fthain@telegraphics.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: linux-m68k@lists.linux-m68k.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
+Here is a patch series that fixes a single bug and adds fwnode support
+to the lm3630a driver. This work was tested on a LG Nexus 5 (hammerhead)
+phone. My status page at https://masneyb.github.io/nexus-5-upstream/
+describes what is working so far with the upstream kernel.
 
-On 02/18/2019 12:25 AM, Finn Thain wrote:
-> The 'inverse' parameter has no effect otherwise. Remove set-but-unused
-> variable.
-> 
-> Cc: linux-m68k@lists.linux-m68k.org
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+See the individual patches for the changelog.
 
-Patch queued for v5.2, thanks.
+Brian Masney (3):
+  backlight: lm3630a: return 0 on success in update_status functions
+  dt-bindings: backlight: add lm3630a bindings
+  backlight: lm3630a: add firmware node support
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ .../leds/backlight/lm3630a-backlight.yaml     | 128 +++++++++++++++
+ drivers/video/backlight/lm3630a_bl.c          | 151 +++++++++++++++++-
+ include/linux/platform_data/lm3630a_bl.h      |   4 +
+ 3 files changed, 276 insertions(+), 7 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+
+-- 
+2.20.1

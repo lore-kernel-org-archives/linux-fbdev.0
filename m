@@ -1,29 +1,37 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 01 Apr 2019 14:41:20 +0000
-Subject: Re: [PATCH] video: hgafb: fix a NULL pointer dereference
-Message-Id: <f239940f-d67c-ee8d-7d53-1df5543c9710@samsung.com>
+From: "Christopher Biemeck" <cbiemeck@hfifluidpowerproducts.com>
+Date: Tue, 16 Apr 2019 14:55:16 +0000
+Subject: Not read: 09690355367827220RE:?????????,???????18???~???*?ds6969002????821217669??604951 C 0 M
+Message-Id: <3F55E9CD4393F34B9E2562D5C6711AC7019A9B43@hfi-server-f.hfirocks.com>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01D4F464.CA9C87F0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190314073039epcas3p29225f2fcf1102266ce8265811f7f244e@epcas3p2.samsung.com>
-        <20190314073027.22337-1-kjlu@umn.edu>
-In-Reply-To: <20190314073027.22337-1-kjlu@umn.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev@vger.kernel.org
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01D4F464.CA9C87F0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Your message
+
+  To:      Christopher Biemeck
+  Cc:     =20
+  Subject:
+09690355367827220RE:?????????,???????18???~???*?ds6969002????821217669??
+604951 C 0 M           =20
+  Sent:    Tue, 25 Dec 2018 13:02:17 -0500
+
+was deleted without being read on Tue, 16 Apr 2019 09:55:16 -0500
+
+------_=_NextPart_001_01D4F464.CA9C87F0
+Content-Type: message/disposition-notification
 Content-Transfer-Encoding: 7bit
-To: Kangjie Lu <kjlu@umn.edu>
-Cc: pakki001@umn.edu, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, linux-nvidia@lists.surfsouth.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+
+Final-Recipient: RFC822; cbiemeck@hfifluidpowerproducts.com
+Disposition: automatic-action/MDN-sent-automatically; deleted
+X-MSExch-Correlation-Key: dXw0iJuHj0iJ/1akucAL+Q==
 
 
-On 03/14/2019 08:30 AM, Kangjie Lu wrote:
-> When ioremap fails, hga_vram should not be dereferenced. The fix
-> check the failure to avoid NULL pointer dereference.
-> 
-> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-
-Patch queued for v5.2 with minor change in the patch summary
-("video: hgafb: fix potential NULL pointer dereference"), thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+------_=_NextPart_001_01D4F464.CA9C87F0--

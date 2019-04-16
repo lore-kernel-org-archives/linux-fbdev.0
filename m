@@ -1,95 +1,175 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Tue, 30 Apr 2019 11:00:27 +0000
-Subject: [PATCH 2/7] au1100fb: fix DMA API abuse
-Message-Id: <20190430110032.25301-3-hch@lst.de>
+From: Brian Masney <masneyb@onstation.org>
+Date: Tue, 16 Apr 2019 23:53:49 +0000
+Subject: [PATCH v4 2/3] dt-bindings: backlight: add lm3630a bindings
+Message-Id: <20190416235350.13742-3-masneyb@onstation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190430110032.25301-1-hch@lst.de>
-In-Reply-To: <20190430110032.25301-1-hch@lst.de>
+References: <20190416235350.13742-1-masneyb@onstation.org>
+In-Reply-To: <20190416235350.13742-1-masneyb@onstation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org
+Cc: jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca
 
-Virtual addresses return from dma(m)_alloc_coherent are opaque in what
-backs then, and drivers must not poke into them.  Switch the driver
-to use the generic DMA API mmap helper to avoid these games.
+Add new backlight bindings for the TI LM3630A dual-string white LED.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Brian Masney <masneyb@onstation.org>
 ---
- drivers/video/fbdev/au1100fb.c | 24 ++++--------------------
- drivers/video/fbdev/au1100fb.h |  1 +
- 2 files changed, 5 insertions(+), 20 deletions(-)
+Rob: Since the common bindings aren't converted to the new JSON schema
+yet, I'm not sure how to do led-sources here. I would expect that we'd
+have the uint32-array on the common binding once it exists. I had to
+add it here to keep 'make dt_binding_check' happy. I left the
+description off though for that property since that'll come from common
+once its converted.
 
-diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
-index 0adf0683cf08..99941ae1f3a1 100644
---- a/drivers/video/fbdev/au1100fb.c
-+++ b/drivers/video/fbdev/au1100fb.c
-@@ -340,14 +340,12 @@ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
-  */
- int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
- {
--	struct au1100fb_device *fbdev;
--
--	fbdev = to_au1100fb_device(fbi);
-+	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
- 
--	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
- 
--	return vm_iomap_memory(vma, fbdev->fb_phys, fbdev->fb_len);
-+	return dma_mmap_coherent(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
-+			fbdev->fb_len);
- }
- 
- static struct fb_ops au1100fb_ops @@ -412,7 +410,6 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- {
- 	struct au1100fb_device *fbdev;
- 	struct resource *regs_res;
--	unsigned long page;
- 	struct clk *c;
- 
- 	/* Allocate new device private */
-@@ -424,6 +421,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 		goto failed;
- 
- 	platform_set_drvdata(dev, (void *)fbdev);
-+	fbdev->dev = &dev->dev;
- 
- 	/* Allocate region for our registers and map them */
- 	regs_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
-@@ -472,20 +470,6 @@ static int au1100fb_drv_probe(struct platform_device *dev)
- 	au1100fb_fix.smem_start = fbdev->fb_phys;
- 	au1100fb_fix.smem_len = fbdev->fb_len;
- 
--	/*
--	 * Set page reserved so that mmap will work. This is necessary
--	 * since we'll be remapping normal memory.
--	 */
--	for (page = (unsigned long)fbdev->fb_mem;
--	     page < PAGE_ALIGN((unsigned long)fbdev->fb_mem + fbdev->fb_len);
--	     page += PAGE_SIZE) {
--#ifdef CONFIG_DMA_NONCOHERENT
--		SetPageReserved(virt_to_page(CAC_ADDR((void *)page)));
--#else
--		SetPageReserved(virt_to_page(page));
--#endif
--	}
--
- 	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
- 	print_dbg("phys=0x%08x, size=%dK", fbdev->fb_phys, fbdev->fb_len / 1024);
- 
-diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
-index 9af19939a9c6..e7239bceefd3 100644
---- a/drivers/video/fbdev/au1100fb.h
-+++ b/drivers/video/fbdev/au1100fb.h
-@@ -110,6 +110,7 @@ struct au1100fb_device {
- 	dma_addr_t    		fb_phys;
- 	int			panel_idx;
- 	struct clk		*lcdclk;
-+	struct device		*dev;
- };
- 
- /********************************************************************/
+Changes since v3:
+- Add label. I didn't add a description for it since that'll come from
+  the common properties once its converted.
+
+Changes since v2:
+- Update description of max-brightness
+- Add description for reg
+- Correct typo: s/tranisiton/transition
+- add reg to control banks
+- add additionalProperties
+
+ .../leds/backlight/lm3630a-backlight.yaml     | 128 ++++++++++++++++++
+ 1 file changed, 128 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+new file mode 100644
+index 000000000000..5067038ca637
+--- /dev/null
++++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+@@ -0,0 +1,128 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/leds/backlight/lm3630a-backlight.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: TI LM3630A High-Efficiency Dual-String White LED
++
++maintainers:
++  - Lee Jones <lee.jones@linaro.org>
++  - Daniel Thompson <daniel.thompson@linaro.org>
++  - Jingoo Han <jingoohan1@gmail.com>
++
++description: |
++  The LM3630A is a current-mode boost converter which supplies the power and
++  controls the current in up to two strings of 10 LEDs per string.
++  https://www.ti.com/product/LM3630A
++
++properties:
++  compatible:
++    const: ti,lm3630a
++
++  reg:
++    description: The I2C address of the device
++    maxItems: 1
++
++  ti,linear-mapping-mode:
++    description: |
++      Enable linear mapping mode. If disabled, then it will use exponential
++      mapping mode in which the ramp up/down appears to have a more uniform
++      transition to the human eye.
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++patternProperties:
++  "^led@[01]$":
++    type: object
++    description: |
++      Properties for a string of connected LEDs.
++
++    properties:
++      reg:
++        description: Control Bank
++        maxItems: 1
++        minimum: 0
++        maximum: 1
++
++      label:
++        maxItems: 1
++
++      led-sources:
++        allOf:
++          - $ref: /schemas/types.yaml#/definitions/uint32-array
++          - minItems: 1
++            maxItems: 2
++            items:
++              minimum: 0
++              maximum: 1
++
++      default-brightness:
++        description: Default brightness level on boot.
++        minimum: 0
++        maximum: 255
++
++      max-brightness:
++        description: Maximum brightness that is allowed during runtime.
++        minimum: 0
++        maximum: 255
++
++    required:
++      - reg
++
++    additionalProperties: false
++
++additionalProperties: false
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                led@0 {
++                        reg = <0>;
++                        led-sources = <0 1>;
++                        label = "lcd-backlight";
++                        default-brightness = <200>;
++                        max-brightness = <255>;
++                };
++        };
++    };
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        lm3630a_bl@38 {
++                compatible = "ti,lm3630a";
++                status = "ok";
++                reg = <0x38>;
++
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                led@0 {
++                        reg = <0>;
++                        default-brightness = <150>;
++                        ti,linear-mapping-mode;
++                };
++
++                led@1 {
++                        reg = <1>;
++                        default-brightness = <225>;
++                        ti,linear-mapping-mode;
++                };
++        };
++    };
 -- 
 2.20.1

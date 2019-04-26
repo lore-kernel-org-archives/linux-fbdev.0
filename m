@@ -1,72 +1,99 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Wed, 03 Apr 2019 13:29:57 +0000
-Subject: Re: [GIT PULL] Immutable branch between MFD and DRM due for the v5.2 merge window
-Message-Id: <20190403132957.GE2665@phenom.ffwll.local>
+From: Grzegorz Halat <ghalat@redhat.com>
+Date: Fri, 26 Apr 2019 14:59:46 +0000
+Subject: [PATCH] vt/fbcon: deinitialize resources in visual_init() after failed memory allocation
+Message-Id: <20190426145946.26537-1-ghalat@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190117133336.19737-1-shc_work@mail.ru>
- <20190403101952.GO11301@dell>
-In-Reply-To: <20190403101952.GO11301@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Alexander Shiyan <shc_work@mail.ru>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-fbdev@vger.kernel.org, Oleksandr Natalenko <oleksandr@redhat.com>, Grzegorz Halat <ghalat@redhat.com>
 
-On Wed, Apr 03, 2019 at 11:19:52AM +0100, Lee Jones wrote:
-> To whom it may concern,
-> 
-> Enjoy!
-> 
-> The following changes since commit 9e98c678c2d6ae3a17cb2de55d17f69dddaa231b:
-> 
->   Linux 5.1-rc1 (2019-03-17 14:22:26 -0700)
-> 
-> are available in the Git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/lee/backlight.git ib-backlight-drm-v5.2
-> 
-> for you to fetch changes up to 8c5dc8d9f19c7992b5ed557b865127a80149041b:
-> 
->   video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol (2019-04-03 11:15:57 +0100)
-> 
-> ----------------------------------------------------------------
-> Immutable branch between MFD and DRM due for the v5.2 merge window
+After memory allocation failure vc_allocate() doesn't clean up data
+which has been initialized in visual_init(). In case of fbcon this
+leads to divide-by-0 in fbcon_init() on next open of the same tty.
 
-I pinged Jani (who's been looking at backlight dependencies in the past in
-drm), seems like no need to pull this into drm.
+memory allocation in vc_allocate() may fail here:
+1097:     vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_KERNEL);
 
-Thanks, Daniel
+on next open() fbcon_init() skips vc_font.data initialization:
+1088:     if (!p->fontdata) {
 
-> 
-> ----------------------------------------------------------------
-> Alexander Shiyan (1):
->       video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol
-> 
->  arch/unicore32/Kconfig            |  1 -
->  drivers/gpu/drm/Kconfig           |  2 --
->  drivers/gpu/drm/bridge/Kconfig    |  1 -
->  drivers/gpu/drm/fsl-dcu/Kconfig   |  1 -
->  drivers/gpu/drm/i915/Kconfig      |  1 -
->  drivers/gpu/drm/nouveau/Kconfig   |  2 --
->  drivers/gpu/drm/shmobile/Kconfig  |  1 -
->  drivers/gpu/drm/tilcdc/Kconfig    |  1 -
->  drivers/staging/olpc_dcon/Kconfig |  1 -
->  drivers/usb/misc/Kconfig          |  1 -
->  drivers/video/backlight/Kconfig   | 10 ++--------
->  drivers/video/fbdev/Kconfig       |  5 -----
->  12 files changed, 2 insertions(+), 25 deletions(-)
-> 
-> -- 
-> Lee Jones [李琼斯]
-> Linaro Services Technical Lead
-> Linaro.org │ Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+division by zero in fbcon_init() happens here:
+1149:     new_cols /= vc->vc_font.width;
 
+Additional check is needed in fbcon_deinit() to prevent
+usage of uninitialized vc_screenbuf:
+
+1251:        if (vc->vc_hi_font_mask && vc->vc_screenbuf)
+1252:                set_vc_hi_font(vc, false);
+
+Crash:
+
+ #6 [ffffc90001eafa60] divide_error at ffffffff81a00be4
+    [exception RIP: fbcon_init+463]
+    RIP: ffffffff814b860f  RSP: ffffc90001eafb18  RFLAGS: 00010246
+...
+ #7 [ffffc90001eafb60] visual_init at ffffffff8154c36e
+ #8 [ffffc90001eafb80] vc_allocate at ffffffff8154f53c
+ #9 [ffffc90001eafbc8] con_install at ffffffff8154f624
+...
+
+Signed-off-by: Grzegorz Halat <ghalat@redhat.com>
+---
+ drivers/tty/vt/vt.c              | 11 +++++++++--
+ drivers/video/fbdev/core/fbcon.c |  2 +-
+ 2 files changed, 10 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index 650c66886c80..ec85d195678f 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -1056,6 +1056,13 @@ static void visual_init(struct vc_data *vc, int num, int init)
+ 	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
+ }
+ 
++
++static void visual_deinit(struct vc_data *vc)
++{
++	vc->vc_sw->con_deinit(vc);
++	module_put(vc->vc_sw->owner);
++}
++
+ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ {
+ 	struct vt_notifier_param param;
+@@ -1103,6 +1110,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 
+ 	return 0;
+ err_free:
++	visual_deinit(vc);
+ 	kfree(vc);
+ 	vc_cons[currcons].d = NULL;
+ 	return -ENOMEM;
+@@ -1331,9 +1339,8 @@ struct vc_data *vc_deallocate(unsigned int currcons)
+ 		param.vc = vc = vc_cons[currcons].d;
+ 		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
+ 		vcs_remove_sysfs(currcons);
+-		vc->vc_sw->con_deinit(vc);
++		visual_deinit(vc);
+ 		put_pid(vc->vt_pid);
+-		module_put(vc->vc_sw->owner);
+ 		vc_uniscr_set(vc, NULL);
+ 		kfree(vc->vc_screenbuf);
+ 		vc_cons[currcons].d = NULL;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index cd059a801662..c59b23f6e9ba 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1248,7 +1248,7 @@ static void fbcon_deinit(struct vc_data *vc)
+ 	if (free_font)
+ 		vc->vc_font.data = NULL;
+ 
+-	if (vc->vc_hi_font_mask)
++	if (vc->vc_hi_font_mask && vc->vc_screenbuf)
+ 		set_vc_hi_font(vc, false);
+ 
+ 	if (!con_is_bound(&fb_con))
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.20.1

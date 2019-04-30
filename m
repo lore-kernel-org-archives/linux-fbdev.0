@@ -1,75 +1,95 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Wed, 27 Mar 2019 18:00:59 +0000
-Subject: [PATCH AUTOSEL 5.0 204/262] backlight: pwm_bl: Use gpiod_get_value_cansleep() to get initial state
-Message-Id: <20190327180158.10245-204-sashal@kernel.org>
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 30 Apr 2019 11:00:27 +0000
+Subject: [PATCH 2/7] au1100fb: fix DMA API abuse
+Message-Id: <20190430110032.25301-3-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190327180158.10245-1-sashal@kernel.org>
-In-Reply-To: <20190327180158.10245-1-sashal@kernel.org>
+References: <20190430110032.25301-1-hch@lst.de>
+In-Reply-To: <20190430110032.25301-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Chen-Yu Tsai <wens@csie.org>, Lee Jones <lee.jones@linaro.org>
+To: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Chen-Yu Tsai <wens@csie.org>
+Virtual addresses return from dma(m)_alloc_coherent are opaque in what
+backs then, and drivers must not poke into them.  Switch the driver
+to use the generic DMA API mmap helper to avoid these games.
 
-[ Upstream commit cec2b18832e26bc866bef2be22eff4e25bbc4034 ]
-
-gpiod_get_value() gives out a warning if access to the underlying gpiochip
-requires sleeping, which is common for I2C based chips:
-
-    WARNING: CPU: 0 PID: 77 at drivers/gpio/gpiolib.c:2500 gpiod_get_value+0xd0/0x100
-    Modules linked in:
-    CPU: 0 PID: 77 Comm: kworker/0:2 Not tainted 4.14.0-rc3-00589-gf32897915d48-dirty #90
-    Hardware name: Allwinner sun4i/sun5i Families
-    Workqueue: events deferred_probe_work_func
-    [<c010ec50>] (unwind_backtrace) from [<c010b784>] (show_stack+0x10/0x14)
-    [<c010b784>] (show_stack) from [<c0797224>] (dump_stack+0x88/0x9c)
-    [<c0797224>] (dump_stack) from [<c0125b08>] (__warn+0xe8/0x100)
-    [<c0125b08>] (__warn) from [<c0125bd0>] (warn_slowpath_null+0x20/0x28)
-    [<c0125bd0>] (warn_slowpath_null) from [<c037069c>] (gpiod_get_value+0xd0/0x100)
-    [<c037069c>] (gpiod_get_value) from [<c03778d0>] (pwm_backlight_probe+0x238/0x508)
-    [<c03778d0>] (pwm_backlight_probe) from [<c0411a2c>] (platform_drv_probe+0x50/0xac)
-    [<c0411a2c>] (platform_drv_probe) from [<c0410224>] (driver_probe_device+0x238/0x2e8)
-    [<c0410224>] (driver_probe_device) from [<c040e820>] (bus_for_each_drv+0x44/0x94)
-    [<c040e820>] (bus_for_each_drv) from [<c040ff0c>] (__device_attach+0xb0/0x114)
-    [<c040ff0c>] (__device_attach) from [<c040f4f8>] (bus_probe_device+0x84/0x8c)
-    [<c040f4f8>] (bus_probe_device) from [<c040f944>] (deferred_probe_work_func+0x50/0x14c)
-    [<c040f944>] (deferred_probe_work_func) from [<c013be84>] (process_one_work+0x1ec/0x414)
-    [<c013be84>] (process_one_work) from [<c013ce5c>] (worker_thread+0x2b0/0x5a0)
-    [<c013ce5c>] (worker_thread) from [<c0141908>] (kthread+0x14c/0x154)
-    [<c0141908>] (kthread) from [<c0107ab0>] (ret_from_fork+0x14/0x24)
-
-This was missed in commit 0c9501f823a4 ("backlight: pwm_bl: Handle gpio
-that can sleep"). The code was then moved to a separate function in
-commit 7613c922315e ("backlight: pwm_bl: Move the checks for initial power
-state to a separate function").
-
-The only usage of gpiod_get_value() is during the probe stage, which is
-safe to sleep in. Switch to gpiod_get_value_cansleep().
-
-Fixes: 0c9501f823a4 ("backlight: pwm_bl: Handle gpio that can sleep")
-Signed-off-by: Chen-Yu Tsai <wens@csie.org>
-Acked-by: Maxime Ripard <maxime.ripard@bootlin.com>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/video/backlight/pwm_bl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/au1100fb.c | 24 ++++--------------------
+ drivers/video/fbdev/au1100fb.h |  1 +
+ 2 files changed, 5 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index feb90764a811..53b8ceea9bde 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -435,7 +435,7 @@ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
- 	 */
+diff --git a/drivers/video/fbdev/au1100fb.c b/drivers/video/fbdev/au1100fb.c
+index 0adf0683cf08..99941ae1f3a1 100644
+--- a/drivers/video/fbdev/au1100fb.c
++++ b/drivers/video/fbdev/au1100fb.c
+@@ -340,14 +340,12 @@ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
+  */
+ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ {
+-	struct au1100fb_device *fbdev;
+-
+-	fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
  
- 	/* if the enable GPIO is disabled, do not enable the backlight */
--	if (pb->enable_gpio && gpiod_get_value(pb->enable_gpio) = 0)
-+	if (pb->enable_gpio && gpiod_get_value_cansleep(pb->enable_gpio) = 0)
- 		return FB_BLANK_POWERDOWN;
+-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	pgprot_val(vma->vm_page_prot) |= (6 << 9); //CCA=6
  
- 	/* The regulator is disabled, do not enable the backlight */
+-	return vm_iomap_memory(vma, fbdev->fb_phys, fbdev->fb_len);
++	return dma_mmap_coherent(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
++			fbdev->fb_len);
+ }
+ 
+ static struct fb_ops au1100fb_ops @@ -412,7 +410,6 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ {
+ 	struct au1100fb_device *fbdev;
+ 	struct resource *regs_res;
+-	unsigned long page;
+ 	struct clk *c;
+ 
+ 	/* Allocate new device private */
+@@ -424,6 +421,7 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 		goto failed;
+ 
+ 	platform_set_drvdata(dev, (void *)fbdev);
++	fbdev->dev = &dev->dev;
+ 
+ 	/* Allocate region for our registers and map them */
+ 	regs_res = platform_get_resource(dev, IORESOURCE_MEM, 0);
+@@ -472,20 +470,6 @@ static int au1100fb_drv_probe(struct platform_device *dev)
+ 	au1100fb_fix.smem_start = fbdev->fb_phys;
+ 	au1100fb_fix.smem_len = fbdev->fb_len;
+ 
+-	/*
+-	 * Set page reserved so that mmap will work. This is necessary
+-	 * since we'll be remapping normal memory.
+-	 */
+-	for (page = (unsigned long)fbdev->fb_mem;
+-	     page < PAGE_ALIGN((unsigned long)fbdev->fb_mem + fbdev->fb_len);
+-	     page += PAGE_SIZE) {
+-#ifdef CONFIG_DMA_NONCOHERENT
+-		SetPageReserved(virt_to_page(CAC_ADDR((void *)page)));
+-#else
+-		SetPageReserved(virt_to_page(page));
+-#endif
+-	}
+-
+ 	print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
+ 	print_dbg("phys=0x%08x, size=%dK", fbdev->fb_phys, fbdev->fb_len / 1024);
+ 
+diff --git a/drivers/video/fbdev/au1100fb.h b/drivers/video/fbdev/au1100fb.h
+index 9af19939a9c6..e7239bceefd3 100644
+--- a/drivers/video/fbdev/au1100fb.h
++++ b/drivers/video/fbdev/au1100fb.h
+@@ -110,6 +110,7 @@ struct au1100fb_device {
+ 	dma_addr_t    		fb_phys;
+ 	int			panel_idx;
+ 	struct clk		*lcdclk;
++	struct device		*dev;
+ };
+ 
+ /********************************************************************/
 -- 
-2.19.1
+2.20.1

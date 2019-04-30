@@ -1,61 +1,114 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Wed, 03 Apr 2019 07:25:35 +0000
-Subject: Re: [PATCH] fbdev: list all pci memory bars as conflicting apertures
-Message-Id: <CAKMK7uFGv_oFWHqnWLNz56BkTGk8mXwsEmAXy52Yo9tbMQu+qg@mail.gmail.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 30 Apr 2019 11:00:29 +0000
+Subject: [PATCH 4/7] dma-direct: provide generic support for uncached kernel segments
+Message-Id: <20190430110032.25301-5-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190314114511epcas2p2a9669714177b00989bd3195300f7d3a6@epcas2p2.samsung.com>
- <20190314114500.8336-1-kraxel@redhat.com> <33cf37dc-8456-0316-0b48-fca7c92caa28@samsung.com>
- <CAKMK7uEs+OaoiEmd9Dp6K_v5Pz4pf197DP8KFkvhNMYXv9tYxA@mail.gmail.com>
- <20190402204325.cqu7fobzekd3ccls@sirius.home.kraxel.org> <CAKMK7uHLY1RKUGbqDeHTNnx98y-FLhGWKGcG-o9KDH54=BObAg@mail.gmail.com>
- <20190403072238.76gwp6rfumgqiely@sirius.home.kraxel.org>
-In-Reply-To: <20190403072238.76gwp6rfumgqiely@sirius.home.kraxel.org>
+References: <20190430110032.25301-1-hch@lst.de>
+In-Reply-To: <20190430110032.25301-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Gerd Hoffmann <kraxel@redhat.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>
+To: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-On Wed, Apr 3, 2019 at 9:22 AM Gerd Hoffmann <kraxel@redhat.com> wrote:
->
-> On Wed, Apr 03, 2019 at 08:48:16AM +0200, Daniel Vetter wrote:
-> > On Tue, Apr 2, 2019 at 10:43 PM Gerd Hoffmann <kraxel@redhat.com> wrote:
-> > >
-> > > On Tue, Apr 02, 2019 at 02:09:45PM +0200, Daniel Vetter wrote:
-> > > > On Mon, Apr 1, 2019 at 4:00 PM Bartlomiej Zolnierkiewicz
-> > > > <b.zolnierkie@samsung.com> wrote:
-> > > > >
-> > > > >
-> > > > > On 03/14/2019 12:45 PM, Gerd Hoffmann wrote:
-> > > > > > Simply add all pci memory bars to struct apertures_struct in
-> > > > > > remove_conflicting_pci_framebuffers(), without depending on the
-> > > > > > res_id parameter.
-> > > > > >
-> > > > > > The plan is to drop the res_id parameter later on.  For now keep the
-> > > > > > parameter, use it for sanity-checking and warn on inconsistencies.
-> > > > > >
-> > > > > > Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
-> > > > > > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> > > > >
-> > > > > Patch queued for v5.2, thanks.
-> > > >
-> > > > Might be good to also stuff this into drm (double merge or topic
-> > > > branch, whatever you prefer), since that's where all the users are.
-> > > > Gerd also has some follow-up patches to apply on top of this one iirc.
-> > >
-> > > No follow-up patches yet.  Plan is to wait a bit, see if the
-> > > sanity-checks trigger, and if all goes well go drop the res_id
-> > > parameter in 5.3 ...
-> >
-> > Hm I thought you had a patch to convert i915 over. Or did that land already?
->
-> Ah, *that* one.  Yep, that is still sitting in a branch here.  Didn't
-> rebase it yet.  But I suspect it will be easier to first drop res_id
-> and then rebase the i915 patch on top of *that*, so I don't have to
-> figure which i915 revision needs which res_id ...
+A few architectures support uncached kernel segments.  In that case we get
+an uncached mapping for a given physica address by using an offset in the
+uncached segement.  Implement support for this scheme in the generic
+dma-direct code instead of duplicating it in arch hooks.
 
-Ok, sounds like a plan for 5.3 somewhen.
--Daniel
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ arch/Kconfig                    |  8 ++++++++
+ include/linux/dma-noncoherent.h |  3 +++
+ kernel/dma/direct.c             | 18 ++++++++++++++++--
+ 3 files changed, 27 insertions(+), 2 deletions(-)
+
+diff --git a/arch/Kconfig b/arch/Kconfig
+index 33687dddd86a..ea22a8c894ec 100644
+--- a/arch/Kconfig
++++ b/arch/Kconfig
+@@ -249,6 +249,14 @@ config ARCH_HAS_FORTIFY_SOURCE
+ config ARCH_HAS_SET_MEMORY
+ 	bool
+ 
++#
++# Select if arch has an uncached kernel segment and provides the
++# uncached_kernel_address / cached_kernel_address symbols to use it
++#
++config ARCH_HAS_UNCACHED_SEGMENT
++	select ARCH_HAS_DMA_PREP_COHERENT
++	bool
++
+ # Select if arch init_task must go in the __init_task_data section
+ config ARCH_TASK_STRUCT_ON_STACK
+        bool
+diff --git a/include/linux/dma-noncoherent.h b/include/linux/dma-noncoherent.h
+index 9741767e400f..7e0126a04e02 100644
+--- a/include/linux/dma-noncoherent.h
++++ b/include/linux/dma-noncoherent.h
+@@ -80,4 +80,7 @@ static inline void arch_dma_prep_coherent(struct page *page, size_t size)
+ }
+ #endif /* CONFIG_ARCH_HAS_DMA_PREP_COHERENT */
+ 
++void *uncached_kernel_address(void *addr);
++void *cached_kernel_address(void *addr);
++
+ #endif /* _LINUX_DMA_NONCOHERENT_H */
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 2c2772e9702a..d15a535c3e67 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -164,6 +164,13 @@ void *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 	}
+ 
+ 	ret = page_address(page);
++
++	if (IS_ENABLED(CONFIG_ARCH_HAS_UNCACHED_SEGMENT) &&
++	    !dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_NON_CONSISTENT)) {
++		arch_dma_prep_coherent(page, size);
++		ret = uncached_kernel_address(ret);
++	}
++
+ 	if (force_dma_unencrypted()) {
+ 		set_memory_decrypted((unsigned long)ret, 1 << get_order(size));
+ 		*dma_handle = __phys_to_dma(dev, page_to_phys(page));
+@@ -171,6 +178,7 @@ void *dma_direct_alloc_pages(struct device *dev, size_t size,
+ 		*dma_handle = phys_to_dma(dev, page_to_phys(page));
+ 	}
+ 	memset(ret, 0, size);
++
+ 	return ret;
+ }
+ 
+@@ -189,13 +197,18 @@ void dma_direct_free_pages(struct device *dev, size_t size, void *cpu_addr,
+ 
+ 	if (force_dma_unencrypted())
+ 		set_memory_encrypted((unsigned long)cpu_addr, 1 << page_order);
++
++	if (IS_ENABLED(CONFIG_ARCH_HAS_UNCACHED_SEGMENT) &&
++	    !dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_NON_CONSISTENT))
++		cpu_addr = cached_kernel_address(cpu_addr);
+ 	__dma_direct_free_pages(dev, size, virt_to_page(cpu_addr));
+ }
+ 
+ void *dma_direct_alloc(struct device *dev, size_t size,
+ 		dma_addr_t *dma_handle, gfp_t gfp, unsigned long attrs)
+ {
+-	if (!dev_is_dma_coherent(dev))
++	if (!IS_ENABLED(CONFIG_ARCH_HAS_UNCACHED_SEGMENT) &&
++	    !dev_is_dma_coherent(dev))
+ 		return arch_dma_alloc(dev, size, dma_handle, gfp, attrs);
+ 	return dma_direct_alloc_pages(dev, size, dma_handle, gfp, attrs);
+ }
+@@ -203,7 +216,8 @@ void *dma_direct_alloc(struct device *dev, size_t size,
+ void dma_direct_free(struct device *dev, size_t size,
+ 		void *cpu_addr, dma_addr_t dma_addr, unsigned long attrs)
+ {
+-	if (!dev_is_dma_coherent(dev))
++	if (!IS_ENABLED(CONFIG_ARCH_HAS_UNCACHED_SEGMENT) &&
++	    !dev_is_dma_coherent(dev))
+ 		arch_dma_free(dev, size, cpu_addr, dma_addr, attrs);
+ 	else
+ 		dma_direct_free_pages(dev, size, cpu_addr, dma_addr, attrs);
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch
+2.20.1

@@ -1,38 +1,58 @@
-From: Paul Burton <paul.burton@mips.com>
-Date: Wed, 01 May 2019 17:13:57 +0000
-Subject: Re: [PATCH 5/7 v2] MIPS: use the generic uncached segment support in dma-direct
-Message-Id: <20190501171355.7wnrutfnax5djkpx@pburton-laptop>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Wed, 01 May 2019 08:26:27 +0000
+Subject: Re: [PATCH v3 3/3] backlight: lm3630a: add firmware node support
+Message-Id: <20190501082627.GA2971@amd>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="6TrnltStXW4iwmi0"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190430110032.25301-1-hch@lst.de>
- <20190430110032.25301-6-hch@lst.de>
- <20190430201041.536amvinrcvd2wua@pburton-laptop>
- <20190430202947.GA30262@lst.de>
- <20190430211105.ielntedm46uqamca@pburton-laptop>
- <20190501131339.GA890@lst.de>
-In-Reply-To: <20190501131339.GA890@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Ralf Baechle <ralf@linux-mips.org>, James Hogan <jhogan@kernel.org>, Ley Foon Tan <lftan@altera.com>, Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>
+References: <20190415072905.2861-1-masneyb@onstation.org>
+ <20190415072905.2861-4-masneyb@onstation.org>
+ <0e5e26ba-cf98-913e-8e76-e988a86dc0d1@ti.com>
+In-Reply-To: <0e5e26ba-cf98-913e-8e76-e988a86dc0d1@ti.com>
+To: Dan Murphy <dmurphy@ti.com>
+Cc: Brian Masney <masneyb@onstation.org>, lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, jonathan@marek.ca
 
-Hi Christoph,
 
-On Wed, May 01, 2019 at 03:13:39PM +0200, Christoph Hellwig wrote:
-> Stop providing our arch alloc/free hooks and just expose the segment
-> offset instead.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> ---
->  arch/mips/Kconfig              |  1 +
->  arch/mips/include/asm/page.h   |  3 ---
->  arch/mips/jazz/jazzdma.c       |  6 ------
->  arch/mips/mm/dma-noncoherent.c | 26 +++++++++-----------------
->  4 files changed, 10 insertions(+), 26 deletions(-)
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This one looks good to me now, for patches 1 & 5:
+Hi!
 
-  Acked-by: Paul Burton <paul.burton@mips.com>
+> > @@ -396,13 +506,20 @@ static int lm3630a_probe(struct i2c_client *clien=
+t,
+> >  				     GFP_KERNEL);
+> >  		if (pdata =3D=3D NULL)
+> >  			return -ENOMEM;
+> > +
+> >  		/* default values */
+> > -		pdata->leda_ctrl =3D LM3630A_LEDA_ENABLE;
+> > -		pdata->ledb_ctrl =3D LM3630A_LEDB_ENABLE;
+> > +		pdata->leda_ctrl =3D LM3630A_LEDA_DISABLE;
+> > +		pdata->ledb_ctrl =3D LM3630A_LEDB_DISABLE;
+>=20
+> This is not needed since default is disabled and kzalloc will set these t=
+o 0
 
-Thanks,
-    Paul
+Let compiler do this kind of optimalizations. Code makes sense as-is.
+
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAlzJWDMACgkQMOfwapXb+vK/6QCguYAgoaGIpYPAGtybTC9vIfZi
+p4UAn2Haq8zwV7EpVgAkDZlkZ4x+gZWb
+=7kTY
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--

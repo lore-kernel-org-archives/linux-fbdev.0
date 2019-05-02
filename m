@@ -1,36 +1,55 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Fri, 24 May 2019 15:08:33 +0000
-Subject: Re: [PATCH] vt/fbcon: deinitialize resources in visual_init() after failed memory allocation
-Message-Id: <20190524150833.GA10297@kroah.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Thu, 02 May 2019 10:33:57 +0000
+Subject: Re: [PATCH] backlight: rave-sp: don't touch initial state and register with correct device
+Message-Id: <c23ecabd-c2ee-8c23-9ee3-13290bc4da35@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190426145946.26537-1-ghalat@redhat.com>
- <CAKbGCscqbvOaXPTdmxatNLBygdu=WC0hVUKx0_WnqUR4+dj_zQ@mail.gmail.com>
- <20190524080602.GA19514@kroah.com>
- <CAKbGCscp6gLFEuu+xn24KM6Gy=x=pW9bnJGF_2CY3jzbnyV5_g@mail.gmail.com>
-In-Reply-To: <CAKbGCscp6gLFEuu+xn24KM6Gy=x=pW9bnJGF_2CY3jzbnyV5_g@mail.gmail.com>
+References: <20190429152919.27277-1-l.stach@pengutronix.de>
+In-Reply-To: <20190429152919.27277-1-l.stach@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Grzegorz Halat <ghalat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jiri Slaby <jslaby@suse.com>, Oleksandr Natalenko <oleksandr@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lucas Stach <l.stach@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, kernel@pengutronix.de, dri-devel@lists.freedesktop.org, patchwork-lst@pengutronix.de
 
-On Fri, May 24, 2019 at 03:52:31PM +0200, Grzegorz Halat wrote:
-> On Fri, 24 May 2019 at 10:06, Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> > How?  How are you triggering a memory allocation failure in a "normal"
-> > system?
-> > Anyway, I'll queue this up, but it really does not seem like anything
-> > anyone would see "in the wild"
->=20
-> I've seen this crash twice in ours customer environment under low
-> memory conditions.
-> There is a report in Debian bug tracker:
-> https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804443
-> and LKML bug report:
-> https://lkml.org/lkml/2017/12/18/591
+On 29/04/2019 16:29, Lucas Stach wrote:
+> This way the backlight can be referenced through its device node and
+> enabling/disabling can be managed through the panel driver.
 
-Ok, now queued up to go to Linus for 5.2-final.
+Is it possible to implement something similar to 
+pwm_backlight_initial_power_state() to handle this?
 
-thanks,
+backlight drivers already suffer from too much diversity so I prefer 
+things like this to align behaviour with the (fairly heavilyly used) PWM 
+driver if possible.
 
-greg k-h
+
+Daniel.
+
+
+> Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
+> ---
+>   drivers/video/backlight/rave-sp-backlight.c | 4 +---
+>   1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/rave-sp-backlight.c b/drivers/video/backlight/rave-sp-backlight.c
+> index 462f14a1b19d..d296bfcf4396 100644
+> --- a/drivers/video/backlight/rave-sp-backlight.c
+> +++ b/drivers/video/backlight/rave-sp-backlight.c
+> @@ -48,15 +48,13 @@ static int rave_sp_backlight_probe(struct platform_device *pdev)
+>   	struct device *dev = &pdev->dev;
+>   	struct backlight_device *bd;
+>   
+> -	bd = devm_backlight_device_register(dev, pdev->name, dev->parent,
+> +	bd = devm_backlight_device_register(dev, pdev->name, dev,
+>   					    dev_get_drvdata(dev->parent),
+>   					    &rave_sp_backlight_ops,
+>   					    &rave_sp_backlight_props);
+>   	if (IS_ERR(bd))
+>   		return PTR_ERR(bd);
+>   
+> -	backlight_update_status(bd);
+> -
+>   	return 0;
+>   }
+>   
+> 

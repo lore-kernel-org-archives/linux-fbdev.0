@@ -1,48 +1,30 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Tue, 28 May 2019 07:39:32 +0000
-Subject: [PATCH 3/3][V2] lib: re-introduce new match_string() helper/macro
-Message-Id: <20190528073932.25365-3-alexandru.ardelean@analog.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 06 May 2019 13:36:44 +0000
+Subject: Re: [PATCH 13/57] docs: fb: convert documentation to ReST format
+Message-Id: <ff3ed615-ba13-37d7-7c5f-583161e91adc@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
- <20190528073932.25365-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190528073932.25365-1-alexandru.ardelean@analog.com>
+References: <cover.1555382110.git.mchehab+samsung@kernel.org>
+        <CGME20190416025636epcas4p2b3bd395b2673bffb3cc0cbdd211aa841@epcas4p2.samsung.com>
+        <f282cbd57dcee9d598c13d8b1e4ea4cc1459b8ad.1555382110.git.mchehab+samsung@kernel.org>
+In-Reply-To: <f282cbd57dcee9d598c13d8b1e4ea4cc1459b8ad.1555382110.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-This change re-introduces `match_string()` as a macro that uses
-ARRAY_SIZE() to compute the size of the array.
 
-After this change, work can start on migrating subsystems to use this new
-helper. Since the original helper is pretty used, migrating to this new one
-will take a while, and will be reviewed by each subsystem.
+On 04/16/2019 04:55 AM, Mauro Carvalho Chehab wrote:
+> Convert all documents here from plain txt to ReST format, in
+> order to allow parsing them with the documentation build
+> system.
+> 
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- include/linux/string.h | 9 +++++++++
- 1 file changed, 9 insertions(+)
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-diff --git a/include/linux/string.h b/include/linux/string.h
-index 7149fcdf62df..34491b075449 100644
---- a/include/linux/string.h
-+++ b/include/linux/string.h
-@@ -198,6 +198,15 @@ static inline int strtobool(const char *s, bool *res)
- int __match_string(const char * const *array, size_t n, const char *string);
- int __sysfs_match_string(const char * const *array, size_t n, const char *s);
- 
-+/**
-+ * match_string - matches given string in an array
-+ * @_a: array of strings
-+ * @_s: string to match with
-+ *
-+ * Helper for __match_string(). Calculates the size of @a automatically.
-+ */
-+#define match_string(_a, _s) __match_string(_a, ARRAY_SIZE(_a), _s)
-+
- /**
-  * sysfs_match_string - matches given string in an array
-  * @_a: array of strings
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

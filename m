@@ -1,113 +1,35 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:25 +0000
-Subject: [PATCH 00/16] treewide: fix match_string() helper when array size
-Message-Id: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 06 May 2019 13:48:26 +0000
+Subject: Re: [PATCH next 25/25] video: fbdev: Use dev_get_drvdata()
+Message-Id: <9a9ec193-912e-393b-53b9-bc01e342f7c5@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
+ <CGME20190423074034epcas4p1f2aeab4d4e304358f2c8917af6ce23ca@epcas4p1.samsung.com>
+ <20190423075020.173734-26-wangkefeng.wang@huawei.com>
+In-Reply-To: <20190423075020.173734-26-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+To: Kefeng Wang <wangkefeng.wang@huawei.com>
+Cc: linux-fbdev@vger.kernel.org, Wan ZongShun <mcuos.com@gmail.com>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Michal Januszewski <spock@gentoo.org>, Kukjin Kim <kgene@kernel.org>, dri-devel@lists.freedesktop.org
 
-The intent of this patch series is to make a case for fixing the
-match_string() string helper.
 
-The doc-string of the `__sysfs_match_string()` helper mentions that `n`
-(the size of the given array) should be:
- * @n: number of strings in the array or -1 for NULL terminated arrays
+On 04/23/2019 09:50 AM, Kefeng Wang wrote:
+> Using dev_get_drvdata directly.
+> 
+> Cc: Wan ZongShun <mcuos.com@gmail.com>
+> Cc: Kukjin Kim <kgene@kernel.org>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: Krzysztof Kozlowski <krzk@kernel.org>
+> Cc: Michal Januszewski <spock@gentoo.org>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 
-However, this is not the case.
-The helper stops on the first NULL in the array, regardless of whether -1
-is provided or not.
+Patch queued for v5.2, thanks.
 
-There are some advantages to allowing this behavior (NULL elements within
-in the array). One example, is to allow reserved registers as NULL in an
-array.
-One example in the series is patch:
-   x86/mtrr: use new match_string() helper + add gaps = minor fix
-which uses a "?" string for values that are reserved/don't care.
-
-Since the change is a bit big, the change was coupled with renaming
-match_string() -> __match_string().
-The new match_string() helper (resulted here) does an ARRAY_SIZE() over the
-array, which is useful when the array is static. 
-
-Also, this way of doing things is a way to go through all the users of this
-helpers and check that nothing goes wrong, and notify them about the change
-to match_string().
-It's a way of grouping changes in a manage-able way.
-
-The first patch is important, the others can be dropped.
-
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
-
-Alexandru Ardelean (16):
-  lib: fix match_string() helper when array size is positive
-  treewide: rename match_string() -> __match_string()
-  lib,treewide: add new match_string() helper/macro
-  powerpc/xmon: use new match_string() helper/macro
-  ALSA: oxygen: use new match_string() helper/macro
-  x86/mtrr: use new match_string() helper + add gaps = minor fix
-  device connection: use new match_string() helper/macro
-  cpufreq/intel_pstate: remove NULL entry + use match_string()
-  mmc: sdhci-xenon: use new match_string() helper/macro
-  pinctrl: armada-37xx: use new match_string() helper/macro
-  mm/vmpressure.c: use new match_string() helper/macro
-  rdmacg: use new match_string() helper/macro
-  drm/edid: use new match_string() helper/macro
-  staging: gdm724x: use new match_string() helper/macro
-  video: fbdev: pxafb: use new match_string() helper/macro
-  sched: debug: use new match_string() helper/macro
-
- arch/powerpc/xmon/xmon.c                         |  2 +-
- arch/x86/kernel/cpu/mtrr/if.c                    | 10 ++++++----
- drivers/ata/pata_hpt366.c                        |  2 +-
- drivers/ata/pata_hpt37x.c                        |  2 +-
- drivers/base/devcon.c                            |  2 +-
- drivers/base/property.c                          |  2 +-
- drivers/clk/bcm/clk-bcm2835.c                    |  4 +---
- drivers/clk/clk.c                                |  4 ++--
- drivers/clk/rockchip/clk.c                       |  4 ++--
- drivers/cpufreq/intel_pstate.c                   |  9 ++++-----
- drivers/gpio/gpiolib-of.c                        |  2 +-
- drivers/gpu/drm/drm_edid_load.c                  |  2 +-
- drivers/gpu/drm/drm_panel_orientation_quirks.c   |  2 +-
- drivers/gpu/drm/i915/intel_pipe_crc.c            |  2 +-
- drivers/ide/hpt366.c                             |  2 +-
- drivers/mfd/omap-usb-host.c                      |  2 +-
- drivers/mmc/host/sdhci-xenon-phy.c               | 12 ++++++------
- drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c |  2 +-
- drivers/pci/pcie/aer.c                           |  2 +-
- drivers/phy/tegra/xusb.c                         |  2 +-
- drivers/pinctrl/mvebu/pinctrl-armada-37xx.c      |  4 ++--
- drivers/pinctrl/pinmux.c                         |  2 +-
- drivers/power/supply/ab8500_btemp.c              |  2 +-
- drivers/power/supply/ab8500_charger.c            |  2 +-
- drivers/power/supply/ab8500_fg.c                 |  2 +-
- drivers/power/supply/abx500_chargalg.c           |  2 +-
- drivers/power/supply/charger-manager.c           |  4 ++--
- drivers/staging/gdm724x/gdm_tty.c                |  3 +--
- drivers/usb/common/common.c                      |  4 ++--
- drivers/usb/typec/class.c                        |  8 +++-----
- drivers/usb/typec/tps6598x.c                     |  2 +-
- drivers/vfio/vfio.c                              |  4 +---
- drivers/video/fbdev/pxafb.c                      |  4 ++--
- fs/ubifs/auth.c                                  |  4 ++--
- include/linux/string.h                           | 11 ++++++++++-
- kernel/cgroup/rdma.c                             |  2 +-
- kernel/sched/debug.c                             |  2 +-
- kernel/trace/trace.c                             |  2 +-
- lib/string.c                                     | 13 ++++++++-----
- mm/mempolicy.c                                   |  2 +-
- mm/vmpressure.c                                  |  4 ++--
- security/apparmor/lsm.c                          |  4 ++--
- security/integrity/ima/ima_main.c                |  2 +-
- sound/firewire/oxfw/oxfw.c                       |  2 +-
- sound/pci/oxygen/oxygen_mixer.c                  |  2 +-
- sound/soc/codecs/max98088.c                      |  2 +-
- sound/soc/codecs/max98095.c                      |  2 +-
- sound/soc/soc-dapm.c                             |  2 +-
- 48 files changed, 88 insertions(+), 82 deletions(-)
-
--- 
-2.17.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

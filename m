@@ -1,60 +1,49 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:32 +0000
-Subject: [PATCH 01/33] dummycon: Sprinkle locking checks
-Message-Id: <20190528090304.9388-2-daniel.vetter@ffwll.ch>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:41 +0000
+Subject: [PATCH 15/16] video: fbdev: pxafb: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-17-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kees Cook <keescook@chromium.org>, Nicolas Pitre <nicolas.pitre@linaro.org>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-As part of trying to understand the locking (or lack thereof) in the
-fbcon/vt/fbdev maze, annotate everything.
+The `lcd_types` array is a static array of strings.
+Using match_string() (which computes the array size via ARRAY_SIZE())
+is possible.
 
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
+This reduces the array by 1 element, since the NULL (at the end of the
+array) is no longer needed.
+
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/video/console/dummycon.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/video/fbdev/pxafb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/console/dummycon.c b/drivers/video/console/dummycon.c
-index ff886e99104b..2a0d0bda7faa 100644
---- a/drivers/video/console/dummycon.c
-+++ b/drivers/video/console/dummycon.c
-@@ -34,6 +34,8 @@ static bool dummycon_putc_called;
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 0025781e6e1e..e657a04f5b1d 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2114,7 +2114,7 @@ static void pxafb_check_options(struct device *dev, struct pxafb_mach_info *inf)
+ #if defined(CONFIG_OF)
+ static const char * const lcd_types[] = {
+ 	"unknown", "mono-stn", "mono-dstn", "color-stn", "color-dstn",
+-	"color-tft", "smart-panel", NULL
++	"color-tft", "smart-panel"
+ };
  
- void dummycon_register_output_notifier(struct notifier_block *nb)
- {
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	raw_notifier_chain_register(&dummycon_output_nh, nb);
+ static int of_get_pxafb_display(struct device *dev, struct device_node *disp,
+@@ -2129,7 +2129,7 @@ static int of_get_pxafb_display(struct device *dev, struct device_node *disp,
+ 	if (ret)
+ 		s = "color-tft";
  
- 	if (dummycon_putc_called)
-@@ -42,11 +44,15 @@ void dummycon_register_output_notifier(struct notifier_block *nb)
- 
- void dummycon_unregister_output_notifier(struct notifier_block *nb)
- {
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	raw_notifier_chain_unregister(&dummycon_output_nh, nb);
- }
- 
- static void dummycon_putc(struct vc_data *vc, int c, int ypos, int xpos)
- {
-+	WARN_CONSOLE_UNLOCKED();
-+
- 	dummycon_putc_called = true;
- 	raw_notifier_call_chain(&dummycon_output_nh, 0, NULL);
- }
+-	i = __match_string(lcd_types, -1, s);
++	i = match_string(lcd_types, s);
+ 	if (i < 0) {
+ 		dev_err(dev, "lcd-type %s is unknown\n", s);
+ 		return i;
 -- 
-2.20.1
+2.17.1

@@ -1,122 +1,71 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:51 +0000
-Subject: [PATCH 20/33] fbdev/sh_mob: Remove fb notifier callback
-Message-Id: <20190528090304.9388-21-daniel.vetter@ffwll.ch>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 08 May 2019 07:01:40 +0000
+Subject: [PATCH v2 0/7] Hexdump Enhancements
+Message-Id: <20190508070148.23130-1-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Markus Elfring <elfring@users.sourceforge.net>, Wolfram Sang <wsa+renesas@sang-engineering.com>
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-This seems to be entirely defunct:
+From: Alastair D'Silva <alastair@d-silva.org>
 
-- The FB_EVEN_SUSPEND/RESUME events are only sent out by
-  fb_set_suspend. Which is supposed to be called by drivers in their
-  suspend/resume hooks, and not itself call into drivers. Luckily
-  sh_mob doesn't call fb_set_suspend, so this seems to do nothing
-  useful.
+Apologies for the large CC list, it's a heads up for those responsible
+for subsystems where a prototype change in generic code causes a change
+in those subsystems.
 
-- The notify hook calls sh_mobile_fb_reconfig() which in turn can
-  call into the fb notifier. Or attempt too, since that would
-  deadlock.
+This series enhances hexdump.
 
-So looks like leftover hacks from when this was originally introduced
-in
+These improve the readability of the dumped data in certain situations
+(eg. wide terminals are available, many lines of empty bytes exist, etc).
 
-commit 6011bdeaa6089d49c02de69f05980da7bad314ab
-Author: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Date:   Wed Jul 21 10:13:21 2010 +0000
+The default behaviour of hexdump is unchanged, however, the prototype
+for hex_dump_to_buffer() has changed, and print_hex_dump() has been
+renamed to print_hex_dump_ext(), with a wrapper replacing it for
+compatibility with existing code, which would have been too invasive to
+change.
 
-    fbdev: sh-mobile: HDMI support for SH-Mobile SoCs
+Hexdump selftests have be run & confirmed passed.
 
-So let's just remove it.
+Changelog:
+ - Fix failing selftests
+ - Fix precedence bug in 'Replace ascii bool in hex_dump_to_buffer...'
+ - Remove hardcoded new lengths & instead relax the checks in
+   hex_dump_to_buffer, allocating the buffer from the heap instead of the
+   stack.
+ - Replace the skipping of lines of 0x00/0xff with skipping lines of
+   repeated characters, announcing what has been skipped.
+ - Add spaces as an optional N-group separator
+ - Allow byte ordering to be maintained when HEXDUMP_RETAIN_BYTE_ORDERING
+   is set.
+ - Updated selftests to cover 'Relax rowsize checks' &
+   'Optionally retain byte ordering'
 
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Markus Elfring <elfring@users.sourceforge.net>
-Cc: Geert Uytterhoeven <geert+renesas@glider.be>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 38 --------------------------
- 1 file changed, 38 deletions(-)
+Alastair D'Silva (7):
+  lib/hexdump.c: Fix selftests
+  lib/hexdump.c: Relax rowsize checks in hex_dump_to_buffer
+  lib/hexdump.c: Optionally suppress lines of repeated bytes
+  lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
+  lib/hexdump.c: Allow multiple groups to be separated by lines '|'
+  lib/hexdump.c: Allow multiple groups to be separated by spaces
+  lib/hexdump.c: Optionally retain byte ordering
 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 1437695415c9..015a02a29d37 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -213,7 +213,6 @@ struct sh_mobile_lcdc_priv {
- 	struct sh_mobile_lcdc_chan ch[2];
- 	struct sh_mobile_lcdc_overlay overlays[4];
- 
--	struct notifier_block notifier;
- 	int started;
- 	int forced_fourcc; /* 2 channel LCDC must share fourcc setting */
- };
-@@ -2239,37 +2238,6 @@ static const struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
-  * Framebuffer notifier
-  */
- 
--/* locking: called with info->lock held */
--static int sh_mobile_lcdc_notify(struct notifier_block *nb,
--				 unsigned long action, void *data)
--{
--	struct fb_event *event = data;
--	struct fb_info *info = event->info;
--	struct sh_mobile_lcdc_chan *ch = info->par;
--
--	if (&ch->lcdc->notifier != nb)
--		return NOTIFY_DONE;
--
--	dev_dbg(info->dev, "%s(): action = %lu, data = %p\n",
--		__func__, action, event->data);
--
--	switch(action) {
--	case FB_EVENT_SUSPEND:
--		sh_mobile_lcdc_display_off(ch);
--		sh_mobile_lcdc_stop(ch->lcdc);
--		break;
--	case FB_EVENT_RESUME:
--		mutex_lock(&ch->open_lock);
--		sh_mobile_fb_reconfig(info);
--		mutex_unlock(&ch->open_lock);
--
--		sh_mobile_lcdc_display_on(ch);
--		sh_mobile_lcdc_start(ch->lcdc);
--	}
--
--	return NOTIFY_OK;
--}
--
- /* -----------------------------------------------------------------------------
-  * Probe/remove and driver init/exit
-  */
-@@ -2297,8 +2265,6 @@ static int sh_mobile_lcdc_remove(struct platform_device *pdev)
- 	struct sh_mobile_lcdc_priv *priv = platform_get_drvdata(pdev);
- 	unsigned int i;
- 
--	fb_unregister_client(&priv->notifier);
--
- 	for (i = 0; i < ARRAY_SIZE(priv->overlays); i++)
- 		sh_mobile_lcdc_overlay_fb_unregister(&priv->overlays[i]);
- 	for (i = 0; i < ARRAY_SIZE(priv->ch); i++)
-@@ -2688,10 +2654,6 @@ static int sh_mobile_lcdc_probe(struct platform_device *pdev)
- 			goto err1;
- 	}
- 
--	/* Failure ignored */
--	priv->notifier.notifier_call = sh_mobile_lcdc_notify;
--	fb_register_client(&priv->notifier);
--
- 	return 0;
- err1:
- 	sh_mobile_lcdc_remove(pdev);
+ drivers/gpu/drm/i915/intel_engine_cs.c        |   2 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c       |   6 +-
+ drivers/mailbox/mailbox-test.c                |   2 +-
+ drivers/net/ethernet/amd/xgbe/xgbe-drv.c      |   2 +-
+ .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
+ drivers/net/wireless/ath/ath10k/debug.c       |   3 +-
+ .../net/wireless/intel/iwlegacy/3945-mac.c    |   2 +-
+ drivers/platform/chrome/wilco_ec/debugfs.c    |   2 +-
+ drivers/scsi/scsi_logging.c                   |   8 +-
+ drivers/staging/fbtft/fbtft-core.c            |   2 +-
+ fs/seq_file.c                                 |   3 +-
+ include/linux/printk.h                        |  34 ++-
+ lib/hexdump.c                                 | 260 +++++++++++++++---
+ lib/test_hexdump.c                            | 146 +++++++---
+ 14 files changed, 372 insertions(+), 102 deletions(-)
+
 -- 
-2.20.1
+2.21.0

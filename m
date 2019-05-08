@@ -1,58 +1,40 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:03:02 +0000
-Subject: [PATCH 31/33] fbcon: Document what I learned about fbcon locking
-Message-Id: <20190528090304.9388-32-daniel.vetter@ffwll.ch>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:42 +0000
+Subject: [PATCH 16/16] sched: debug: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-18-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>
+To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, intel-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Alexandru Ardelean <alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 
-It's not pretty.
+The `sched_feat_names` array is a static array of strings.
+Using match_string() (which computes the array size via ARRAY_SIZE())
+is possible.
 
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Yisheng Xie <ysxie@foxmail.com>
+The change is mostly cosmetic.
+No functionality change.
+
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/video/fbdev/core/fbcon.c | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ kernel/sched/debug.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index fbd28aeff307..d6ba3610ee83 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -88,6 +88,25 @@
- #  define DPRINTK(fmt, args...)
- #endif
+diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
+index b0efc5fe641e..6d5f370bdfde 100644
+--- a/kernel/sched/debug.c
++++ b/kernel/sched/debug.c
+@@ -111,7 +111,7 @@ static int sched_feat_set(char *cmp)
+ 		cmp += 3;
+ 	}
  
-+/*
-+ * FIXME: Locking
-+ *
-+ * - fbcon state itself is protected by the console_lock, and the code does a
-+ *   pretty good job at making sure that lock is held everywhere it's needed.
-+ *
-+ * - access to the registered_fb array is entirely unprotected. This should use
-+ *   proper object lifetime handling, i.e. get/put_fb_info. This also means
-+ *   switching from indices to proper pointers for fb_info everywhere.
-+ *
-+ * - fbcon doesn't bother with fb_lock/unlock at all. This is buggy, since it
-+ *   means concurrent access to the same fbdev from both fbcon and userspace
-+ *   will blow up. To fix this all fbcon calls from fbmem.c need to be moved out
-+ *   of fb_lock/unlock protected sections, since otherwise we'll recurse and
-+ *   deadlock eventually. Aside: Due to these deadlock issues the fbdev code in
-+ *   fbmem.c cannot use locking asserts, and there's lots of callers which get
-+ *   the rules wrong, e.g. fbsysfs.c entirely missed fb_lock/unlock calls too.
-+ */
-+
- enum {
- 	FBCON_LOGO_CANSHOW	= -1,	/* the logo can be shown */
- 	FBCON_LOGO_DRAW		= -2,	/* draw the logo to a console */
+-	i = __match_string(sched_feat_names, __SCHED_FEAT_NR, cmp);
++	i = match_string(sched_feat_names, cmp);
+ 	if (i < 0)
+ 		return i;
+ 
 -- 
-2.20.1
+2.17.1

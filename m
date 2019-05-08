@@ -1,110 +1,307 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:56 +0000
-Subject: [PATCH 25/33] fbmem: pull fbcon_fb_blanked out of fb_blank
-Message-Id: <20190528090304.9388-26-daniel.vetter@ffwll.ch>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 08 May 2019 07:01:47 +0000
+Subject: [PATCH v2 7/7] lib/hexdump.c: Optionally retain byte ordering
+Message-Id: <20190508070148.23130-8-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508070148.23130-1-alastair@au1.ibm.com>
+In-Reply-To: <20190508070148.23130-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, Rob Clark <robdclark@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-There's a callchain of:
+From: Alastair D'Silva <alastair@d-silva.org>
 
-fbcon_fb_blanked -> do_(un)blank_screen -> consw->con_blank
-	-> fbcon_blank -> fb_blank
+The behaviour of hexdump groups is to print the data out as if
+it was a native-endian number.
 
-Things don't go horribly wrong because the BKL console_lock safes the
-day, but that's about it. And the seeming recursion is broken in 2
-ways:
-- Starting from the fbdev ioctl we set FBINFO_MISC_USEREVENT, which
-  tells the fbcon_blank code to not call fb_blank. This was required
-  to not deadlock when recursing on the fb_notifier_chain mutex.
-- Starting from the con_blank hook we're getting saved by the
-  console_blanked checks in do_blank/unblank_screen. Or at least
-  that's my theory.
+This patch tweaks the documentation to make this clear, and also
+adds the HEXDUMP_RETAIN_BYTE_ORDER flag to allow groups of
+multiple bytes to be printed without affecting the ordering
+of the printed bytes.
 
-Anyway, recursion isn't awesome, so let's stop it. Breaking the
-recursion avoids the need to be in the FBINFO_MISC_USEREVENT critical
-section, so lets move it out of that too.
-
-The astute reader will notice that fb_blank seems to require
-lock_fb_info(), which the fbcon code seems to ignore. I have no idea
-how to fix that problem, so let's keep ignoring it.
-
-v2: I forgot the sysfs blanking code.
-
-v3: Fix typo in callchain in the commmit message (Sam).
-
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Rob Clark <robdclark@gmail.com>
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/video/fbdev/core/fbmem.c   | 4 +++-
- drivers/video/fbdev/core/fbsysfs.c | 8 ++++++--
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ include/linux/printk.h |  1 +
+ lib/hexdump.c          | 30 +++++++++++++++++----
+ lib/test_hexdump.c     | 60 +++++++++++++++++++++++++++++-------------
+ 3 files changed, 68 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 9366fbe99a58..d6713dce9e31 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1068,7 +1068,6 @@ fb_blank(struct fb_info *info, int blank)
- 	event.data = &blank;
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 5231a14e4593..15277d50159c 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -488,6 +488,7 @@ enum {
+ #define HEXDUMP_2_GRP_SPACES		(1 << 5)
+ #define HEXDUMP_4_GRP_SPACES		(1 << 6)
+ #define HEXDUMP_8_GRP_SPACES		(1 << 7)
++#define HEXDUMP_RETAIN_BYTE_ORDER	(1 << 8)
  
- 	early_ret = fb_notifier_call_chain(FB_EARLY_EVENT_BLANK, &event);
--	fbcon_fb_blanked(info, blank);
+ extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 			      int groupsize, char *linebuf, size_t linebuflen,
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index febd614406d1..bfc9800630ae 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -127,7 +127,8 @@ static void separator_parameters(u64 flags, int groupsize, int *sep_chars,
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+  * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+- * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
++ * @groupsize: number of bytes to convert to a native endian number and print:
++ * 	       1, 2, 4, 8; default = 1
+  * @linebuf: where to put the converted data
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @flags: A bitwise OR of the following flags:
+@@ -138,6 +139,9 @@ static void separator_parameters(u64 flags, int groupsize, int *sep_chars,
+  *	HEXDUMP_2_GRP_SPACES:		insert a ' ' after every 2 groups
+  *	HEXDUMP_4_GRP_SPACES:		insert a ' ' after every 4 groups
+  *	HEXDUMP_8_GRP_SPACES:		insert a ' ' after every 8 groups
++ *	HEXDUMP_RETAIN_BYTE_ORDER:	Retain the byte ordering of groups
++ *					instead of treating each group as a
++ *					native-endian number
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, converting
+  * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
+@@ -171,6 +175,7 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int ret;
+ 	int sep_chars = 0;
+ 	char sep = 0;
++	bool big_endian = (flags & HEXDUMP_RETAIN_BYTE_ORDER) ? 1 : 0;
  
- 	if (info->fbops->fb_blank)
-  		ret = info->fbops->fb_blank(blank, info);
-@@ -1198,6 +1197,9 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_blank(info, arg);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
+ 	if (!is_power_of_2(groupsize) || groupsize > 8)
+ 		groupsize = 1;
+@@ -202,10 +207,13 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u64 *ptr8 = buf;
+ 
+ 		for (j = 0; j < ngroups; j++) {
++			u64 val = big_endian ?
++					be64_to_cpu(get_unaligned(ptr8 + j)) :
++					get_unaligned(ptr8 + j);
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%16.16llx",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr8 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -214,10 +222,14 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u32 *ptr4 = buf;
+ 
+ 		for (j = 0; j < ngroups; j++) {
++			u32 val = big_endian ?
++					be32_to_cpu(get_unaligned(ptr4 + j)) :
++					get_unaligned(ptr4 + j);
 +
-+		/* might again call into fb_blank */
-+		fbcon_fb_blanked(info, arg);
- 		unlock_fb_info(info);
- 		console_unlock();
- 		break;
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 5f329278e55f..252d4f52d2a5 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -18,6 +18,7 @@
- #include <linux/kernel.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
-+#include <linux/fbcon.h>
- #include <linux/console.h>
- #include <linux/module.h>
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%8.8x",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr4 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -226,10 +238,14 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u16 *ptr2 = buf;
  
-@@ -305,12 +306,15 @@ static ssize_t store_blank(struct device *device,
+ 		for (j = 0; j < ngroups; j++) {
++			u16 val = big_endian ?
++					be16_to_cpu(get_unaligned(ptr2 + j)) :
++					get_unaligned(ptr2 + j);
++
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%4.4x",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr2 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -331,7 +347,8 @@ static void announce_skipped(const char *level, const char *prefix_str,
+  * @prefix_type: controls whether prefix of an offset, address, or none
+  *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
+  * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+- * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
++ * @groupsize: number of bytes to convert to a native endian number and print:
++ * 	       1, 2, 4, 8; default = 1
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+  * @ascii: include ASCII after the hex output
+@@ -342,6 +359,9 @@ static void announce_skipped(const char *level, const char *prefix_str,
+  *	HEXDUMP_2_GRP_LINES:		insert a '|' after every 2 groups
+  *	HEXDUMP_4_GRP_LINES:		insert a '|' after every 4 groups
+  *	HEXDUMP_8_GRP_LINES:		insert a '|' after every 8 groups
++ *	HEXDUMP_RETAIN_BYTE_ORDER:	Retain the byte ordering of groups
++ *					instead of treating each group as a
++ *					native-endian number
+  *
+  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
+  * to the kernel log at the specified kernel log level, with an optional
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index ae340c5c1c6f..1e510e934568 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -98,14 +98,15 @@ static unsigned failed_tests __initdata;
+ 
+ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 					     int groupsize, char *test,
+-					     size_t testlen, bool ascii)
++					     size_t testlen, u64 flags)
  {
- 	struct fb_info *fb_info = dev_get_drvdata(device);
- 	char *last = NULL;
--	int err;
-+	int err, arg;
+ 	char *p;
+ 	const char * const *result;
+ 	size_t l = len;
+ 	int gs = groupsize, rs = rowsize;
+ 	unsigned int i;
+-	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN);
++	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN) ||
++			(flags & HEXDUMP_RETAIN_BYTE_ORDER);
  
-+	arg = simple_strtoul(buf, &last, 0);
- 	console_lock();
- 	fb_info->flags |= FBINFO_MISC_USEREVENT;
--	err = fb_blank(fb_info, simple_strtoul(buf, &last, 0));
-+	err = fb_blank(fb_info, arg);
- 	fb_info->flags &= ~FBINFO_MISC_USEREVENT;
-+	/* might again call into fb_blank */
-+	fbcon_fb_blanked(fb_info, arg);
- 	console_unlock();
- 	if (err < 0)
- 		return err;
+ 	if (l > rs)
+ 		l = rs;
+@@ -142,7 +143,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 		p--;
+ 
+ 	/* ASCII part */
+-	if (ascii) {
++	if (flags & HEXDUMP_ASCII) {
+ 		do {
+ 			*p++ = ' ';
+ 		} while (p < test + rs * 2 + rs / gs + 1);
+@@ -157,7 +158,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ #define TEST_HEXDUMP_BUF_SIZE		(64 * 3 + 2 + 64 + 1)
+ 
+ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
+-				bool ascii)
++				u64 flags)
+ {
+ 	char test[TEST_HEXDUMP_BUF_SIZE];
+ 	char real[TEST_HEXDUMP_BUF_SIZE];
+@@ -166,11 +167,11 @@ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
+ 
+ 	memset(real, FILL_CHAR, sizeof(real));
+ 	hex_dump_to_buffer(data_b, len, rowsize, groupsize, real, sizeof(real),
+-			   ascii ? HEXDUMP_ASCII : 0);
++			   flags);
+ 
+ 	memset(test, FILL_CHAR, sizeof(test));
+ 	test_hexdump_prepare_test(len, rowsize, groupsize, test, sizeof(test),
+-				  ascii);
++				  flags);
+ 
+ 	if (memcmp(test, real, TEST_HEXDUMP_BUF_SIZE)) {
+ 		pr_err("Len: %zu row: %d group: %d\n", len, rowsize, groupsize);
+@@ -193,7 +194,7 @@ static void __init test_hexdump_set(int rowsize, bool ascii)
+ 
+ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 					 int rowsize, int groupsize,
+-					 bool ascii)
++					 u64 flags)
+ {
+ 	char test[TEST_HEXDUMP_BUF_SIZE];
+ 	char buf[TEST_HEXDUMP_BUF_SIZE];
+@@ -205,7 +206,7 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	memset(buf, FILL_CHAR, sizeof(buf));
+ 
+ 	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen,
+-				ascii ? HEXDUMP_ASCII : 0);
++				flags);
+ 
+ 	/*
+ 	 * Caller must provide the data length multiple of groupsize. The
+@@ -222,12 +223,12 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 		  - 1 /* no trailing space */;
+ 	}
+ 
+-	expected_len = (ascii) ? ascii_len : hex_len;
++	expected_len = (flags & HEXDUMP_ASCII) ? ascii_len : hex_len;
+ 
+ 	fill_point = min_t(int, expected_len + 1, buflen);
+ 	if (buflen) {
+ 		test_hexdump_prepare_test(len, rowsize, groupsize, test,
+-					  sizeof(test), ascii);
++					  sizeof(test), flags);
+ 		test[fill_point - 1] = '\0';
+ 	}
+ 	memset(test + fill_point, FILL_CHAR, sizeof(test) - fill_point);
+@@ -237,8 +238,8 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	buf[sizeof(buf) - 1] = '\0';
+ 
+ 	if (!match) {
+-		pr_err("rowsize: %u groupsize: %u ascii: %d Len: %zu buflen: %zu strlen: %zu\n",
+-			rowsize, groupsize, ascii, len, buflen,
++		pr_err("rowsize: %u groupsize: %u flags: %llx Len: %zu buflen: %zu strlen: %zu\n",
++			rowsize, groupsize, flags, len, buflen,
+ 			strnlen(buf, sizeof(buf)));
+ 		pr_err("Result: %d '%-.*s'\n", rc, (int)buflen, buf);
+ 		pr_err("Expect: %d '%-.*s'\n", expected_len, (int)buflen, test);
+@@ -247,7 +248,7 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	}
+ }
+ 
+-static void __init test_hexdump_overflow_set(size_t buflen, bool ascii)
++static void __init test_hexdump_overflow_set(size_t buflen, u64 flags)
+ {
+ 	unsigned int i = 0;
+ 	int rs = (get_random_int() % 4 + 1) * 16;
+@@ -256,7 +257,7 @@ static void __init test_hexdump_overflow_set(size_t buflen, bool ascii)
+ 		int gs = 1 << i;
+ 		size_t len = get_random_int() % rs + gs;
+ 
+-		test_hexdump_overflow(buflen, rounddown(len, gs), rs, gs, ascii);
++		test_hexdump_overflow(buflen, rounddown(len, gs), rs, gs, flags);
+ 	} while (i++ < 3);
+ }
+ 
+@@ -264,20 +265,43 @@ static int __init test_hexdump_init(void)
+ {
+ 	unsigned int i;
+ 	int rowsize;
++	u64 flags;
+ 
++	flags = 0;
+ 	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+-		test_hexdump_set(rowsize, false);
++		test_hexdump_set(rowsize, flags);
+ 
++	flags = HEXDUMP_ASCII;
+ 	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+-		test_hexdump_set(rowsize, true);
++		test_hexdump_set(rowsize, flags);
+ 
++	flags = HEXDUMP_RETAIN_BYTE_ORDER;
++	rowsize = (get_random_int() % 2 + 1) * 16;
++	for (i = 0; i < 16; i++)
++		test_hexdump_set(rowsize, flags);
++
++	flags = HEXDUMP_ASCII | HEXDUMP_RETAIN_BYTE_ORDER;
++	rowsize = (get_random_int() % 2 + 1) * 16;
++	for (i = 0; i < 16; i++)
++		test_hexdump_set(rowsize, flags);
++
++	flags = 0;
++	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
++		test_hexdump_overflow_set(i, flags);
++
++	flags = HEXDUMP_ASCII;
++	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
++		test_hexdump_overflow_set(i, flags);
++
++	flags = HEXDUMP_RETAIN_BYTE_ORDER;
+ 	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
+-		test_hexdump_overflow_set(i, false);
++		test_hexdump_overflow_set(i, flags);
+ 
++	flags = HEXDUMP_ASCII | HEXDUMP_RETAIN_BYTE_ORDER;
+ 	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
+-		test_hexdump_overflow_set(i, true);
++		test_hexdump_overflow_set(i, flags);
+ 
+ 	if (failed_tests = 0)
+ 		pr_info("all %u tests passed\n", total_tests);
 -- 
-2.20.1
+2.21.0

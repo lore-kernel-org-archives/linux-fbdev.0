@@ -1,42 +1,107 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:30 +0000
-Subject: [PATCH 04/16] powerpc/xmon: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-6-alexandru.ardelean@analog.com>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 08 May 2019 07:01:41 +0000
+Subject: [PATCH v2 1/7] lib/hexdump.c: Fix selftests
+Message-Id: <20190508070148.23130-2-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+References: <20190508070148.23130-1-alastair@au1.ibm.com>
+In-Reply-To: <20190508070148.23130-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: gregkh@linuxfoundation.org, Alexandru Ardelean <alexandru.ardelean@analog.com>, andriy.shevchenko@linux.intel.com
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxf>
 
-The change is purely cosmetic at this point in time, but it does highlight
-the change done in lib/string.c for match_string().
+From: Alastair D'Silva <alastair@d-silva.org>
 
-Particularly for this change, if a regname is removed (replaced with NULL)
-in the list, the match_string() helper will continue until the end of the
-array and ignore the NULL.
-This would technically allow for "reserved" regs, though here it's not the
-case.
+The overflow tests did not account for the situation where no
+overflow occurs and len < rowsize.
 
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+This patch renames the cryptic variables and accounts for the
+above case.
+
+The selftests now pass.
+
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/powerpc/xmon/xmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ lib/test_hexdump.c | 47 ++++++++++++++++++++++++++--------------------
+ 1 file changed, 27 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index efca104ac0cb..b84a7fc1112b 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -3231,7 +3231,7 @@ scanhex(unsigned long *vp)
- 			regname[i] = c;
- 		}
- 		regname[i] = 0;
--		i = __match_string(regnames, N_PTREGS, regname);
-+		i = match_string(regnames, regname);
- 		if (i < 0) {
- 			printf("invalid register name '%%%s'\n", regname);
- 			return 0;
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index 5144899d3c6b..d78ddd62ffd0 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -163,45 +163,52 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ {
+ 	char test[TEST_HEXDUMP_BUF_SIZE];
+ 	char buf[TEST_HEXDUMP_BUF_SIZE];
+-	int rs = rowsize, gs = groupsize;
+-	int ae, he, e, f, r;
+-	bool a;
++	int ascii_len, hex_len, expected_len, fill_point, ngroups, rc;
++	bool match;
+ 
+ 	total_tests++;
+ 
+ 	memset(buf, FILL_CHAR, sizeof(buf));
+ 
+-	r = hex_dump_to_buffer(data_b, len, rs, gs, buf, buflen, ascii);
++	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen, ascii);
+ 
+ 	/*
+ 	 * Caller must provide the data length multiple of groupsize. The
+ 	 * calculations below are made with that assumption in mind.
+ 	 */
+-	ae = rs * 2 /* hex */ + rs / gs /* spaces */ + 1 /* space */ + len /* ascii */;
+-	he = (gs * 2 /* hex */ + 1 /* space */) * len / gs - 1 /* no trailing space */;
++	ngroups = rowsize / groupsize;
++	hex_len = (groupsize * 2 /* hex */ + 1 /* spaces */) * ngroups
++		  - 1 /* no trailing space */;
++	ascii_len = hex_len + 2 /* space */ + len /* ascii */;
++
++	if (len < rowsize) {
++		ngroups = len / groupsize;
++		hex_len = (groupsize * 2 /* hex */ + 1 /* spaces */) * ngroups
++		  - 1 /* no trailing space */;
++	}
+ 
+-	if (ascii)
+-		e = ae;
+-	else
+-		e = he;
++	expected_len = (ascii) ? ascii_len : hex_len;
+ 
+-	f = min_t(int, e + 1, buflen);
++	fill_point = min_t(int, expected_len + 1, buflen);
+ 	if (buflen) {
+-		test_hexdump_prepare_test(len, rs, gs, test, sizeof(test), ascii);
+-		test[f - 1] = '\0';
++		test_hexdump_prepare_test(len, rowsize, groupsize, test,
++					  sizeof(test), ascii);
++		test[fill_point - 1] = '\0';
+ 	}
+-	memset(test + f, FILL_CHAR, sizeof(test) - f);
++	memset(test + fill_point, FILL_CHAR, sizeof(test) - fill_point);
+ 
+-	a = r = e && !memcmp(test, buf, TEST_HEXDUMP_BUF_SIZE);
++	match = rc = expected_len && !memcmp(test, buf, TEST_HEXDUMP_BUF_SIZE);
+ 
+ 	buf[sizeof(buf) - 1] = '\0';
+ 
+-	if (!a) {
+-		pr_err("Len: %zu buflen: %zu strlen: %zu\n",
+-			len, buflen, strnlen(buf, sizeof(buf)));
+-		pr_err("Result: %d '%s'\n", r, buf);
+-		pr_err("Expect: %d '%s'\n", e, test);
++	if (!match) {
++		pr_err("rowsize: %u groupsize: %u ascii: %d Len: %zu buflen: %zu strlen: %zu\n",
++			rowsize, groupsize, ascii, len, buflen,
++			strnlen(buf, sizeof(buf)));
++		pr_err("Result: %d '%-.*s'\n", rc, (int)buflen, buf);
++		pr_err("Expect: %d '%-.*s'\n", expected_len, (int)buflen, test);
+ 		failed_tests++;
++
+ 	}
+ }
+ 
 -- 
-2.17.1
+2.21.0

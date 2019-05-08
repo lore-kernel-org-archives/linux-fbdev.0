@@ -1,322 +1,320 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:47 +0000
-Subject: [PATCH 16/33] fbdev: lock_fb_info cannot fail
-Message-Id: <20190528090304.9388-17-daniel.vetter@ffwll.ch>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Wed, 08 May 2019 07:01:44 +0000
+Subject: [PATCH v2 4/7] lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
+Message-Id: <20190508070148.23130-5-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508070148.23130-1-alastair@au1.ibm.com>
+In-Reply-To: <20190508070148.23130-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Peter Rosin <peda@axentia.se>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.c>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxf>
 
-Ever since
+From: Alastair D'Silva <alastair@d-silva.org>
 
-commit c47747fde931c02455683bd00ea43eaa62f35b0e
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Wed May 11 14:58:34 2011 -0700
+In order to support additional features in hex_dump_to_buffer, replace
+the ascii bool parameter with flags.
 
-    fbmem: make read/write/ioctl use the frame buffer at open time
-
-fbdev has gained proper refcounting for the fbinfo attached to any
-open files, which means that the backing driver (stored in
-fb_info->fbops) cannot untimely disappear anymore.
-
-The only thing that can happen is that the entire device just outright
-disappears and gets unregistered, but file_fb_info does check for
-that. Except that it's racy - it only checks once at the start of a
-file_ops, there's no guarantee that the underlying fbdev won't
-untimely disappear. Aside: A proper way to fix that race is probably
-to replicate the srcu trickery we've rolled out in drm.
-
-But given that this race has existed since forever it's probably not
-one we need to fix right away. do_unregister_framebuffer also nowhere
-clears fb_info->fbops, hence the check in lock_fb_info can't possible
-catch a disappearing fbdev later on.
-
-Long story short: Ever since the above commit the fb_info->fbops
-checks have essentially become dead code. Remove this all.
-
-Aside from the file_ops callbacks, and stuff called from there
-there's only register/unregister code left. If that goes wrong a driver
-managed to register/unregister a device instance twice or in the wrong
-order.  That's just a driver bug.
-
-v2:
-- fb_mmap had an open-coded version of the fbinfo->fops check, because
-  it doesn't need the fbinfo->lock. Delete that too.
-- Use the wrapper function in fb_open/release now, since no difference
-  anymore.
-
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Yisheng Xie <ysxie@foxmail.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Cc: "Noralf Trønnes" <noralf@tronnes.org>
-Cc: Peter Rosin <peda@axentia.se>
-Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
-Cc: Mikulas Patocka <mpatocka@redhat.com>
-Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/video/fbdev/core/fbcmap.c |  6 +--
- drivers/video/fbdev/core/fbcon.c  |  3 +-
- drivers/video/fbdev/core/fbmem.c  | 73 +++++++------------------------
- include/linux/fb.h                |  5 ++-
- 4 files changed, 23 insertions(+), 64 deletions(-)
+ drivers/gpu/drm/i915/intel_engine_cs.c            |  2 +-
+ drivers/isdn/hardware/mISDN/mISDNisar.c           |  6 ++++--
+ drivers/mailbox/mailbox-test.c                    |  2 +-
+ drivers/net/ethernet/amd/xgbe/xgbe-drv.c          |  2 +-
+ drivers/net/ethernet/synopsys/dwc-xlgmac-common.c |  2 +-
+ drivers/net/wireless/ath/ath10k/debug.c           |  3 ++-
+ drivers/net/wireless/intel/iwlegacy/3945-mac.c    |  2 +-
+ drivers/platform/chrome/wilco_ec/debugfs.c        |  2 +-
+ drivers/scsi/scsi_logging.c                       |  8 +++-----
+ drivers/staging/fbtft/fbtft-core.c                |  2 +-
+ fs/seq_file.c                                     |  3 ++-
+ include/linux/printk.h                            |  8 ++++----
+ lib/hexdump.c                                     | 15 ++++++++-------
+ lib/test_hexdump.c                                |  5 +++--
+ 14 files changed, 33 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-index 2811c4afde01..e5ae33c1a8e8 100644
---- a/drivers/video/fbdev/core/fbcmap.c
-+++ b/drivers/video/fbdev/core/fbcmap.c
-@@ -285,11 +285,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 		goto out;
+diff --git a/drivers/gpu/drm/i915/intel_engine_cs.c b/drivers/gpu/drm/i915/intel_engine_cs.c
+index 49fa43ff02ba..fb133e729f9a 100644
+--- a/drivers/gpu/drm/i915/intel_engine_cs.c
++++ b/drivers/gpu/drm/i915/intel_engine_cs.c
+@@ -1318,7 +1318,7 @@ static void hexdump(struct drm_printer *m, const void *buf, size_t len)
+ 		WARN_ON_ONCE(hex_dump_to_buffer(buf + pos, len - pos,
+ 						rowsize, sizeof(u32),
+ 						line, sizeof(line),
+-						false) >= sizeof(line));
++						0) >= sizeof(line));
+ 		drm_printf(m, "[%04zx] %s\n", pos, line);
+ 
+ 		prev = buf + pos;
+diff --git a/drivers/isdn/hardware/mISDN/mISDNisar.c b/drivers/isdn/hardware/mISDN/mISDNisar.c
+index 386731ec2489..f13f34db6c17 100644
+--- a/drivers/isdn/hardware/mISDN/mISDNisar.c
++++ b/drivers/isdn/hardware/mISDN/mISDNisar.c
+@@ -84,7 +84,8 @@ send_mbox(struct isar_hw *isar, u8 his, u8 creg, u8 len, u8 *msg)
+ 
+ 			while (l < (int)len) {
+ 				hex_dump_to_buffer(msg + l, len - l, 32, 1,
+-						   isar->log, 256, 1);
++						   isar->log, 256,
++						   HEXDUMP_ASCII);
+ 				pr_debug("%s: %s %02x: %s\n", isar->name,
+ 					 __func__, l, isar->log);
+ 				l += 32;
+@@ -113,7 +114,8 @@ rcv_mbox(struct isar_hw *isar, u8 *msg)
+ 
+ 			while (l < (int)isar->clsb) {
+ 				hex_dump_to_buffer(msg + l, isar->clsb - l, 32,
+-						   1, isar->log, 256, 1);
++						   1, isar->log, 256,
++						   HEXDUMP_ASCII);
+ 				pr_debug("%s: %s %02x: %s\n", isar->name,
+ 					 __func__, l, isar->log);
+ 				l += 32;
+diff --git a/drivers/mailbox/mailbox-test.c b/drivers/mailbox/mailbox-test.c
+index 4e4ac4be6423..2f9a094d0259 100644
+--- a/drivers/mailbox/mailbox-test.c
++++ b/drivers/mailbox/mailbox-test.c
+@@ -213,7 +213,7 @@ static ssize_t mbox_test_message_read(struct file *filp, char __user *userbuf,
+ 		hex_dump_to_buffer(ptr,
+ 				   MBOX_BYTES_PER_LINE,
+ 				   MBOX_BYTES_PER_LINE, 1, touser + l,
+-				   MBOX_HEXDUMP_LINE_LEN, true);
++				   MBOX_HEXDUMP_LINE_LEN, HEXDUMP_ASCII);
+ 
+ 		ptr += MBOX_BYTES_PER_LINE;
+ 		l += MBOX_HEXDUMP_LINE_LEN;
+diff --git a/drivers/net/ethernet/amd/xgbe/xgbe-drv.c b/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
+index 0cc911f928b1..e954a31cee0c 100644
+--- a/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
++++ b/drivers/net/ethernet/amd/xgbe/xgbe-drv.c
+@@ -2992,7 +2992,7 @@ void xgbe_print_pkt(struct net_device *netdev, struct sk_buff *skb, bool tx_rx)
+ 		unsigned int len = min(skb->len - i, 32U);
+ 
+ 		hex_dump_to_buffer(&skb->data[i], len, 32, 1,
+-				   buffer, sizeof(buffer), false);
++				   buffer, sizeof(buffer), 0);
+ 		netdev_dbg(netdev, "  %#06x: %s\n", i, buffer);
  	}
- 	umap.start = cmap->start;
--	if (!lock_fb_info(info)) {
--		rc = -ENODEV;
--		goto out;
--	}
--
-+	lock_fb_info(info);
- 	rc = fb_set_cmap(&umap, info);
- 	unlock_fb_info(info);
- out:
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 5a9fe0c0dd3c..a7e2d5b88914 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2364,8 +2364,7 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
+ 
+diff --git a/drivers/net/ethernet/synopsys/dwc-xlgmac-common.c b/drivers/net/ethernet/synopsys/dwc-xlgmac-common.c
+index eb1c6b03c329..b80adfa1f890 100644
+--- a/drivers/net/ethernet/synopsys/dwc-xlgmac-common.c
++++ b/drivers/net/ethernet/synopsys/dwc-xlgmac-common.c
+@@ -349,7 +349,7 @@ void xlgmac_print_pkt(struct net_device *netdev,
+ 		unsigned int len = min(skb->len - i, 32U);
+ 
+ 		hex_dump_to_buffer(&skb->data[i], len, 32, 1,
+-				   buffer, sizeof(buffer), false);
++				   buffer, sizeof(buffer), 0);
+ 		netdev_dbg(netdev, "  %#06x: %s\n", i, buffer);
  	}
  
- 
--	if (!lock_fb_info(info))
--		return;
-+	lock_fb_info(info);
- 	event.info = info;
- 	event.data = &blank;
- 	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index bed7698ad18a..d73762324ca2 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -80,17 +80,6 @@ static void put_fb_info(struct fb_info *fb_info)
- 		fb_info->fbops->fb_destroy(fb_info);
- }
- 
--int lock_fb_info(struct fb_info *info)
--{
--	mutex_lock(&info->lock);
--	if (!info->fbops) {
--		mutex_unlock(&info->lock);
--		return 0;
--	}
--	return 1;
--}
--EXPORT_SYMBOL(lock_fb_info);
--
- /*
-  * Helpers
-  */
-@@ -1121,8 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 
- 	switch (cmd) {
- 	case FBIOGET_VSCREENINFO:
--		if (!lock_fb_info(info))
--			return -ENODEV;
-+		lock_fb_info(info);
- 		var = info->var;
- 		unlock_fb_info(info);
- 
-@@ -1132,10 +1120,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		if (copy_from_user(&var, argp, sizeof(var)))
- 			return -EFAULT;
- 		console_lock();
--		if (!lock_fb_info(info)) {
--			console_unlock();
--			return -ENODEV;
--		}
-+		lock_fb_info(info);
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_set_var(info, &var);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
-@@ -1145,8 +1130,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			ret = -EFAULT;
- 		break;
- 	case FBIOGET_FSCREENINFO:
--		if (!lock_fb_info(info))
--			return -ENODEV;
-+		lock_fb_info(info);
- 		fix = info->fix;
- 		if (info->flags & FBINFO_HIDE_SMEM_START)
- 			fix.smem_start = 0;
-@@ -1162,8 +1146,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 	case FBIOGETCMAP:
- 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
- 			return -EFAULT;
--		if (!lock_fb_info(info))
--			return -ENODEV;
-+		lock_fb_info(info);
- 		cmap_from = info->cmap;
- 		unlock_fb_info(info);
- 		ret = fb_cmap_to_user(&cmap_from, &cmap);
-@@ -1172,10 +1155,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		if (copy_from_user(&var, argp, sizeof(var)))
- 			return -EFAULT;
- 		console_lock();
--		if (!lock_fb_info(info)) {
--			console_unlock();
--			return -ENODEV;
--		}
-+		lock_fb_info(info);
- 		ret = fb_pan_display(info, &var);
- 		unlock_fb_info(info);
- 		console_unlock();
-@@ -1192,8 +1172,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			return -EINVAL;
- 		con2fb.framebuffer = -1;
- 		event.data = &con2fb;
--		if (!lock_fb_info(info))
--			return -ENODEV;
-+		lock_fb_info(info);
- 		event.info = info;
- 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
- 		unlock_fb_info(info);
-@@ -1214,10 +1193,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+diff --git a/drivers/net/wireless/ath/ath10k/debug.c b/drivers/net/wireless/ath/ath10k/debug.c
+index 32d967a31c65..4c99ea03226d 100644
+--- a/drivers/net/wireless/ath/ath10k/debug.c
++++ b/drivers/net/wireless/ath/ath10k/debug.c
+@@ -2662,7 +2662,8 @@ void ath10k_dbg_dump(struct ath10k *ar,
+ 						(unsigned int)(ptr - buf));
+ 			hex_dump_to_buffer(ptr, len - (ptr - buf), 16, 1,
+ 					   linebuf + linebuflen,
+-					   sizeof(linebuf) - linebuflen, true);
++					   sizeof(linebuf) - linebuflen,
++					   HEXDUMP_ASCII);
+ 			dev_printk(KERN_DEBUG, ar->dev, "%s\n", linebuf);
  		}
- 		event.data = &con2fb;
- 		console_lock();
--		if (!lock_fb_info(info)) {
--			console_unlock();
--			return -ENODEV;
--		}
-+		lock_fb_info(info);
- 		event.info = info;
- 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
- 		unlock_fb_info(info);
-@@ -1225,10 +1201,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		break;
- 	case FBIOBLANK:
- 		console_lock();
--		if (!lock_fb_info(info)) {
--			console_unlock();
--			return -ENODEV;
--		}
-+		lock_fb_info(info);
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_blank(info, arg);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
-@@ -1236,8 +1209,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 		console_unlock();
- 		break;
- 	default:
--		if (!lock_fb_info(info))
--			return -ENODEV;
-+		lock_fb_info(info);
- 		fb = info->fbops;
- 		if (fb->fb_ioctl)
- 			ret = fb->fb_ioctl(info, cmd, arg);
-@@ -1357,8 +1329,7 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
- {
- 	struct fb_fix_screeninfo fix;
+ 	}
+diff --git a/drivers/net/wireless/intel/iwlegacy/3945-mac.c b/drivers/net/wireless/intel/iwlegacy/3945-mac.c
+index 271977f7fbb0..acbe26d22c34 100644
+--- a/drivers/net/wireless/intel/iwlegacy/3945-mac.c
++++ b/drivers/net/wireless/intel/iwlegacy/3945-mac.c
+@@ -3247,7 +3247,7 @@ il3945_show_measurement(struct device *d, struct device_attribute *attr,
  
--	if (!lock_fb_info(info))
--		return -ENODEV;
-+	lock_fb_info(info);
- 	fix = info->fix;
- 	if (info->flags & FBINFO_HIDE_SMEM_START)
- 		fix.smem_start = 0;
-@@ -1418,8 +1389,6 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
- 	if (!info)
- 		return -ENODEV;
- 	fb = info->fbops;
--	if (!fb)
--		return -ENODEV;
- 	mutex_lock(&info->mm_lock);
- 	if (fb->fb_mmap) {
- 		int res;
-@@ -1483,7 +1452,7 @@ __releases(&info->lock)
- 	if (IS_ERR(info))
- 		return PTR_ERR(info);
+ 	while (size && PAGE_SIZE - len) {
+ 		hex_dump_to_buffer(data + ofs, size, 16, 1, buf + len,
+-				   PAGE_SIZE - len, true);
++				   PAGE_SIZE - len, HEXDUMP_ASCII);
+ 		len = strlen(buf);
+ 		if (PAGE_SIZE - len)
+ 			buf[len++] = '\n';
+diff --git a/drivers/platform/chrome/wilco_ec/debugfs.c b/drivers/platform/chrome/wilco_ec/debugfs.c
+index c090db2cd5be..26d9ae5c2dc2 100644
+--- a/drivers/platform/chrome/wilco_ec/debugfs.c
++++ b/drivers/platform/chrome/wilco_ec/debugfs.c
+@@ -174,7 +174,7 @@ static ssize_t raw_read(struct file *file, char __user *user_buf, size_t count,
+ 		fmt_len = hex_dump_to_buffer(debug_info->raw_data,
+ 					     debug_info->response_size,
+ 					     16, 1, debug_info->formatted_data,
+-					     FORMATTED_BUFFER_SIZE, true);
++					     FORMATTED_BUFFER_SIZE, HEXDUMP_ASCII);
+ 		/* Only return response the first time it is read */
+ 		debug_info->response_size = 0;
+ 	}
+diff --git a/drivers/scsi/scsi_logging.c b/drivers/scsi/scsi_logging.c
+index bd70339c1242..fce542bb40e6 100644
+--- a/drivers/scsi/scsi_logging.c
++++ b/drivers/scsi/scsi_logging.c
+@@ -263,7 +263,7 @@ void scsi_print_command(struct scsi_cmnd *cmd)
+ 						 "CDB[%02x]: ", k);
+ 				hex_dump_to_buffer(&cmd->cmnd[k], linelen,
+ 						   16, 1, logbuf + off,
+-						   logbuf_len - off, false);
++						   logbuf_len - off, 0);
+ 			}
+ 			dev_printk(KERN_INFO, &cmd->device->sdev_gendev, "%s",
+ 				   logbuf);
+@@ -274,8 +274,7 @@ void scsi_print_command(struct scsi_cmnd *cmd)
+ 	if (!WARN_ON(off > logbuf_len - 49)) {
+ 		off += scnprintf(logbuf + off, logbuf_len - off, " ");
+ 		hex_dump_to_buffer(cmd->cmnd, cmd->cmd_len, 16, 1,
+-				   logbuf + off, logbuf_len - off,
+-				   false);
++				   logbuf + off, logbuf_len - off, 0);
+ 	}
+ out_printk:
+ 	dev_printk(KERN_INFO, &cmd->device->sdev_gendev, "%s", logbuf);
+@@ -354,8 +353,7 @@ scsi_log_dump_sense(const struct scsi_device *sdev, const char *name, int tag,
+ 		off = sdev_format_header(logbuf, logbuf_len,
+ 					 name, tag);
+ 		hex_dump_to_buffer(&sense_buffer[i], len, 16, 1,
+-				   logbuf + off, logbuf_len - off,
+-				   false);
++				   logbuf + off, logbuf_len - off, 0);
+ 		dev_printk(KERN_INFO, &sdev->sdev_gendev, "%s", logbuf);
+ 	}
+ 	scsi_log_release_buffer(logbuf);
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 9b07badf4c6c..2e5df5cc9d61 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -61,7 +61,7 @@ void fbtft_dbg_hex(const struct device *dev, int groupsize,
+ 	va_end(args);
  
--	mutex_lock(&info->lock);
-+	lock_fb_info(info);
- 	if (!try_module_get(info->fbops->owner)) {
- 		res = -ENODEV;
- 		goto out;
-@@ -1499,7 +1468,7 @@ __releases(&info->lock)
- 		fb_deferred_io_open(info, inode, file);
- #endif
- out:
--	mutex_unlock(&info->lock);
-+	unlock_fb_info(info);
- 	if (res)
- 		put_fb_info(info);
- 	return res;
-@@ -1512,11 +1481,11 @@ __releases(&info->lock)
- {
- 	struct fb_info * const info = file->private_data;
+ 	hex_dump_to_buffer(buf, len, 32, groupsize, text + text_len,
+-			   512 - text_len, false);
++			   512 - text_len, 0);
  
--	mutex_lock(&info->lock);
-+	lock_fb_info(info);
- 	if (info->fbops->fb_release)
- 		info->fbops->fb_release(info,1);
- 	module_put(info->fbops->owner);
--	mutex_unlock(&info->lock);
-+	unlock_fb_info(info);
- 	put_fb_info(info);
- 	return 0;
- }
-@@ -1734,14 +1703,10 @@ static int do_register_framebuffer(struct fb_info *fb_info)
- 		console_lock();
- 	else
- 		atomic_inc(&ignore_console_lock_warning);
--	if (!lock_fb_info(fb_info)) {
--		ret = -ENODEV;
--		goto unlock_console;
--	}
+ 	if (len > 32)
+ 		dev_info(dev, "%s ...\n", text);
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index 1dea7a8a5255..a0213637af3e 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -873,7 +873,8 @@ void seq_hex_dump(struct seq_file *m, const char *prefix_str, int prefix_type,
+ 
+ 		size = seq_get_buf(m, &buffer);
+ 		ret = hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
+-					 buffer, size, ascii);
++					 buffer, size,
++					 ascii ? HEXDUMP_ASCII : 0);
+ 		seq_commit(m, ret < size ? ret : -1);
+ 
+ 		seq_putc(m, '\n');
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 938a67580d78..00a82e468643 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -480,13 +480,13 @@ enum {
+ 	DUMP_PREFIX_OFFSET
+ };
+ 
+-extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+-			      int groupsize, char *linebuf, size_t linebuflen,
+-			      bool ascii);
 -
-+	lock_fb_info(fb_info);
- 	ret = fbcon_fb_registered(fb_info);
- 	unlock_fb_info(fb_info);
--unlock_console:
+ #define HEXDUMP_ASCII			(1 << 0)
+ #define HEXDUMP_SUPPRESS_REPEATED	(1 << 1)
+ 
++extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
++			      int groupsize, char *linebuf, size_t linebuflen,
++			      u64 flags);
 +
- 	if (!lockless_register_fb)
- 		console_unlock();
- 	else
-@@ -1759,11 +1724,7 @@ static int unbind_console(struct fb_info *fb_info)
- 		return -EINVAL;
- 
- 	console_lock();
--	if (!lock_fb_info(fb_info)) {
--		console_unlock();
--		return -ENODEV;
--	}
--
-+	lock_fb_info(fb_info);
- 	event.info = fb_info;
- 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
- 	unlock_fb_info(fb_info);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 288175fafaf6..aa8f18163151 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -663,7 +663,10 @@ extern struct class *fb_class;
- 	for (i = 0; i < FB_MAX; i++)		\
- 		if (!registered_fb[i]) {} else
- 
--extern int lock_fb_info(struct fb_info *info);
-+static inline void lock_fb_info(struct fb_info *info)
-+{
-+	mutex_lock(&info->lock);
-+}
- 
- static inline void unlock_fb_info(struct fb_info *info)
+ #ifdef CONFIG_PRINTK
+ extern void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 			   int prefix_type, int rowsize, int groupsize,
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index d61a1e4f19fa..ddd1697e5f9b 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -85,7 +85,8 @@ EXPORT_SYMBOL(bin2hex);
+  * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
+  * @linebuf: where to put the converted data
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+- * @ascii: include ASCII after the hex output
++ * @flags: A bitwise OR of the following flags:
++ *	HEXDUMP_ASCII:			include ASCII after the hex output
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, converting
+  * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
+@@ -97,7 +98,7 @@ EXPORT_SYMBOL(bin2hex);
+  *
+  * E.g.:
+  *   hex_dump_to_buffer(frame->data, frame->len, 16, 1,
+- *			linebuf, sizeof(linebuf), true);
++ *			linebuf, sizeof(linebuf), HEXDUMP_ASCII);
+  *
+  * example output buffer:
+  * 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f  @ABCDEFGHIJKLMNO
+@@ -109,7 +110,7 @@ EXPORT_SYMBOL(bin2hex);
+  * string if enough space had been available.
+  */
+ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+-		       char *linebuf, size_t linebuflen, bool ascii)
++		       char *linebuf, size_t linebuflen, u64 flags)
  {
+ 	const u8 *ptr = buf;
+ 	int ngroups;
+@@ -187,7 +188,7 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		if (j)
+ 			lx--;
+ 	}
+-	if (!ascii)
++	if (!(flags & HEXDUMP_ASCII))
+ 		goto nil;
+ 
+ 	while (lx < ascii_column) {
+@@ -207,7 +208,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ overflow2:
+ 	linebuf[lx++] = '\0';
+ overflow1:
+-	return ascii ? ascii_column + len : (groupsize * 2 + 1) * ngroups - 1;
++	return (flags & HEXDUMP_ASCII) ? ascii_column + len :
++					 (groupsize * 2 + 1) * ngroups - 1;
+ }
+ EXPORT_SYMBOL(hex_dump_to_buffer);
+ 
+@@ -336,8 +338,7 @@ void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 		}
+ 
+ 		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
+-				   linebuf, linebuf_len,
+-				   flags & HEXDUMP_ASCII);
++				   linebuf, linebuf_len, flags);
+ 
+ 		switch (prefix_type) {
+ 		case DUMP_PREFIX_ADDRESS:
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index 6ab75a209b43..ae340c5c1c6f 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -166,7 +166,7 @@ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
+ 
+ 	memset(real, FILL_CHAR, sizeof(real));
+ 	hex_dump_to_buffer(data_b, len, rowsize, groupsize, real, sizeof(real),
+-			   ascii);
++			   ascii ? HEXDUMP_ASCII : 0);
+ 
+ 	memset(test, FILL_CHAR, sizeof(test));
+ 	test_hexdump_prepare_test(len, rowsize, groupsize, test, sizeof(test),
+@@ -204,7 +204,8 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 
+ 	memset(buf, FILL_CHAR, sizeof(buf));
+ 
+-	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen, ascii);
++	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen,
++				ascii ? HEXDUMP_ASCII : 0);
+ 
+ 	/*
+ 	 * Caller must provide the data length multiple of groupsize. The
 -- 
-2.20.1
+2.21.0

@@ -1,48 +1,61 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:45 +0000
-Subject: [PATCH 14/33] staging/olpc: lock_fb_info can't fail
-Message-Id: <20190528090304.9388-15-daniel.vetter@ffwll.ch>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:36 +0000
+Subject: [PATCH 10/16] pinctrl: armada-37xx: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-12-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Daniel Drake <dsd@laptop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Jens Frederich <jfrederich@gmail.com>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sam Ravnborg <sam@ravnborg.org>, Jon Nettleton <jon.nettleton@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-Simply because olpc never unregisters the damn thing. It also
-registers the framebuffer directly by poking around in fbdev
-core internals, so it's all around rather broken.
+The change is mostly cosmetic.
 
-Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jens Frederich <jfrederich@gmail.com>
-Cc: Daniel Drake <dsd@laptop.org>
-Cc: Jon Nettleton <jon.nettleton@gmail.com>
+The `armada_37xx_pin_group` struct is defined as.
+struct armada_37xx_pin_group {
+        const char      *name;
+        unsigned int    start_pin;
+        unsigned int    npins;
+        u32             reg_mask;
+        u32             val[NB_FUNCS];
+        unsigned int    extra_pin;
+        unsigned int    extra_npins;
+        const char      *funcs[NB_FUNCS];
+        unsigned int    *pins;
+};
+
+The `funcs` field is a static array of strings, so using the
+new `match_string()` helper (which does an implicit ARRAY_SIZE(gp->funcs))
+should be fine.
+
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/staging/olpc_dcon/olpc_dcon.c | 6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/pinctrl/mvebu/pinctrl-armada-37xx.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/olpc_dcon/olpc_dcon.c b/drivers/staging/olpc_dcon/olpc_dcon.c
-index 6b714f740ac3..a254238be181 100644
---- a/drivers/staging/olpc_dcon/olpc_dcon.c
-+++ b/drivers/staging/olpc_dcon/olpc_dcon.c
-@@ -250,11 +250,7 @@ static bool dcon_blank_fb(struct dcon_priv *dcon, bool blank)
- 	int err;
+diff --git a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
+index 07a5bcaa0067..68b0db5ef5e9 100644
+--- a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
++++ b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
+@@ -348,7 +348,7 @@ static int armada_37xx_pmx_set_by_name(struct pinctrl_dev *pctldev,
+ 	dev_dbg(info->dev, "enable function %s group %s\n",
+ 		name, grp->name);
  
- 	console_lock();
--	if (!lock_fb_info(dcon->fbinfo)) {
--		console_unlock();
--		dev_err(&dcon->client->dev, "unable to lock framebuffer\n");
--		return false;
--	}
-+	lock_fb_info(dcon->fbinfo);
+-	func = __match_string(grp->funcs, NB_FUNCS, name);
++	func = match_string(grp->funcs, name);
+ 	if (func < 0)
+ 		return -ENOTSUPP;
  
- 	dcon->ignore_fb_events = true;
- 	err = fb_blank(dcon->fbinfo,
+@@ -938,7 +938,7 @@ static int armada_37xx_fill_func(struct armada_37xx_pinctrl *info)
+ 			struct armada_37xx_pin_group *gp = &info->groups[g];
+ 			int f;
+ 
+-			f = __match_string(gp->funcs, NB_FUNCS, name);
++			f = match_string(gp->funcs, name);
+ 			if (f < 0)
+ 				continue;
+ 
 -- 
-2.20.1
+2.17.1

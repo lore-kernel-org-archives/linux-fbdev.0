@@ -1,53 +1,41 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:03:04 +0000
-Subject: [PATCH 33/33] backlight: simplify lcd notifier
-Message-Id: <20190528090304.9388-34-daniel.vetter@ffwll.ch>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:40 +0000
+Subject: [PATCH 14/16] staging: gdm724x: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-16-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-With all the work I've done on replacing fb notifier calls with direct
-calls into fbcon the backlight/lcd notifier is the only user left.
+The `DRIVER_STRING` array is a static array of strings.
+Using match_string() (which computes the array size via ARRAY_SIZE())
+is possible.
 
-It will only receive events now that it cares about, hence we can
-remove this check.
+The change is mostly cosmetic.
+No functionality change.
 
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- drivers/video/backlight/lcd.c | 11 -----------
- 1 file changed, 11 deletions(-)
+ drivers/staging/gdm724x/gdm_tty.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index ecdda06989d0..d6b653aa4ee9 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -30,17 +30,6 @@ static int fb_notifier_callback(struct notifier_block *self,
- 	struct lcd_device *ld;
- 	struct fb_event *evdata = data;
+diff --git a/drivers/staging/gdm724x/gdm_tty.c b/drivers/staging/gdm724x/gdm_tty.c
+index 6e147a324652..81dd6795599f 100644
+--- a/drivers/staging/gdm724x/gdm_tty.c
++++ b/drivers/staging/gdm724x/gdm_tty.c
+@@ -56,8 +56,7 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	struct gdm *gdm = NULL;
+ 	int ret;
  
--	/* If we aren't interested in this event, skip it immediately ... */
--	switch (event) {
--	case FB_EVENT_BLANK:
--	case FB_EVENT_MODE_CHANGE:
--	case FB_EARLY_EVENT_BLANK:
--	case FB_R_EARLY_EVENT_BLANK:
--		break;
--	default:
--		return 0;
--	}
--
- 	ld = container_of(self, struct lcd_device, fb_notif);
- 	if (!ld->ops)
- 		return 0;
+-	ret = __match_string(DRIVER_STRING, TTY_MAX_COUNT,
+-			     tty->driver->driver_name);
++	ret = match_string(DRIVER_STRING, tty->driver->driver_name);
+ 	if (ret < 0)
+ 		return -ENODEV;
+ 
 -- 
-2.20.1
+2.17.1

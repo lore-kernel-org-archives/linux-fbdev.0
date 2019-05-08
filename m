@@ -1,7 +1,7 @@
 From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Tue, 28 May 2019 07:39:30 +0000
-Subject: [PATCH 1/3][V2] lib: fix match_string() helper on -1 array size
-Message-Id: <20190528073932.25365-1-alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:37 +0000
+Subject: [PATCH 11/16] mm/vmpressure.c: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-13-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
@@ -9,52 +9,42 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-The documentation the `_match_string()` helper mentions that `n`
-should be:
- * @n: number of strings in the array or -1 for NULL terminated arrays
+__match_string() is called on 2 static array of strings in this file. For
+this reason, the conversion to the new match_string() macro/helper, was
+done in this separate commit.
 
-The behavior of the function is different, in the sense that it exits on
-the first NULL element in the array, regardless of whether `n` is -1 or a
-positive number.
-
-This patch changes the behavior, to exit the loop when a NULL element is
-found and n = -1. Essentially, this aligns the behavior with the
-doc-string.
-
-There are currently many users of `match_string()`, and so, in order to go
-through them, the next patches in the series will focus on doing some
-cosmetic changes, which are aimed at grouping the users of
-`match_string()`.
+Using the new match_string() helper is mostly a cosmetic change (at this
+point in time). The sizes of the arrays will be computed automatically,
+which would only help if they ever get expanded.
 
 Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
+ mm/vmpressure.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Changelog v1 -> v2:
-* split the initial series into just 3 patches that fix the
-  `match_string()` helper and start introducing a new version of this
-  helper, which computes array-size of static arrays
-
- lib/string.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/lib/string.c b/lib/string.c
-index 6016eb3ac73d..e2cf5acc83bd 100644
---- a/lib/string.c
-+++ b/lib/string.c
-@@ -681,8 +681,11 @@ int match_string(const char * const *array, size_t n, const char *string)
+diff --git a/mm/vmpressure.c b/mm/vmpressure.c
+index d43f33139568..b8149924f078 100644
+--- a/mm/vmpressure.c
++++ b/mm/vmpressure.c
+@@ -378,7 +378,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
  
- 	for (index = 0; index < n; index++) {
- 		item = array[index];
--		if (!item)
-+		if (!item) {
-+			if (n != (size_t)-1)
-+				continue;
- 			break;
-+		}
- 		if (!strcmp(item, string))
- 			return index;
- 	}
+ 	/* Find required level */
+ 	token = strsep(&spec, ",");
+-	level = __match_string(vmpressure_str_levels, VMPRESSURE_NUM_LEVELS, token);
++	level = match_string(vmpressure_str_levels, token);
+ 	if (level < 0) {
+ 		ret = level;
+ 		goto out;
+@@ -387,7 +387,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
+ 	/* Find optional mode */
+ 	token = strsep(&spec, ",");
+ 	if (token) {
+-		mode = __match_string(vmpressure_str_modes, VMPRESSURE_NUM_MODES, token);
++		mode = match_string(vmpressure_str_modes, token);
+ 		if (mode < 0) {
+ 			ret = mode;
+ 			goto out;
 -- 
-2.20.1
+2.17.1

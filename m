@@ -1,196 +1,807 @@
-From: aishatu@mahatta.net
-Date: Tue, 28 May 2019 14:48:06 +0000
-Subject: Purchase_rfq
-Message-Id: <20190528164806.BD6C9F192E12656F@mahatta.net>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="----=_NextPart_000_0012_F2C73A14.A2FF6859"
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:28 +0000
+Subject: [PATCH 02/16] treewide: rename match_string() -> __match_string()
+Message-Id: <20190508112842.11654-4-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-To: linux-fbdev@vger.kernel.org
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-This is a multi-part message in MIME format.
+This change does a rename of match_string() -> __match_string().
 
-------=_NextPart_000_0012_F2C73A14.A2FF6859
+There are a few parts to the intention here (with this change):
+1. Align with sysfs_match_string()/__sysfs_match_string()
+2. This helps to group users of `match_string()` into simple users:
+   a. those that use ARRAY_SIZE(_a) to specify the number of elements
+   b. those that use -1 to pass a NULL terminated array of strings
+   c. special users, which (after eliminating 1 & 2) are not that many
+3. The final intent is to fix match_string()/__match_string() which is
+   slightly broken, in the sense that passing -1 or a positive value does
+   not make any difference: the iteration will stop at the first NULL
+   element.
 
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+---
+ arch/powerpc/xmon/xmon.c                         |  2 +-
+ arch/x86/kernel/cpu/mtrr/if.c                    |  2 +-
+ drivers/ata/pata_hpt366.c                        |  2 +-
+ drivers/ata/pata_hpt37x.c                        |  2 +-
+ drivers/base/devcon.c                            |  2 +-
+ drivers/base/property.c                          |  2 +-
+ drivers/clk/bcm/clk-bcm2835.c                    |  6 +++---
+ drivers/clk/clk.c                                |  4 ++--
+ drivers/clk/rockchip/clk.c                       |  4 ++--
+ drivers/cpufreq/intel_pstate.c                   |  2 +-
+ drivers/gpio/gpiolib-of.c                        |  2 +-
+ drivers/gpu/drm/drm_edid_load.c                  |  2 +-
+ drivers/gpu/drm/drm_panel_orientation_quirks.c   |  2 +-
+ drivers/gpu/drm/i915/intel_pipe_crc.c            |  2 +-
+ drivers/ide/hpt366.c                             |  2 +-
+ drivers/mfd/omap-usb-host.c                      |  2 +-
+ drivers/mmc/host/sdhci-xenon-phy.c               |  2 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c |  2 +-
+ drivers/pci/pcie/aer.c                           |  2 +-
+ drivers/phy/tegra/xusb.c                         |  2 +-
+ drivers/pinctrl/mvebu/pinctrl-armada-37xx.c      |  4 ++--
+ drivers/pinctrl/pinmux.c                         |  2 +-
+ drivers/power/supply/ab8500_btemp.c              |  2 +-
+ drivers/power/supply/ab8500_charger.c            |  2 +-
+ drivers/power/supply/ab8500_fg.c                 |  2 +-
+ drivers/power/supply/abx500_chargalg.c           |  2 +-
+ drivers/power/supply/charger-manager.c           |  4 ++--
+ drivers/staging/gdm724x/gdm_tty.c                |  4 ++--
+ drivers/usb/common/common.c                      |  4 ++--
+ drivers/usb/typec/class.c                        | 10 +++++-----
+ drivers/usb/typec/tps6598x.c                     |  2 +-
+ drivers/vfio/vfio.c                              |  6 +++---
+ drivers/video/fbdev/pxafb.c                      |  2 +-
+ fs/ubifs/auth.c                                  |  4 ++--
+ include/linux/string.h                           |  2 +-
+ kernel/cgroup/rdma.c                             |  2 +-
+ kernel/sched/debug.c                             |  2 +-
+ kernel/trace/trace.c                             |  2 +-
+ lib/string.c                                     |  8 ++++----
+ mm/mempolicy.c                                   |  2 +-
+ mm/vmpressure.c                                  |  4 ++--
+ security/apparmor/lsm.c                          |  4 ++--
+ security/integrity/ima/ima_main.c                |  2 +-
+ sound/firewire/oxfw/oxfw.c                       |  2 +-
+ sound/pci/oxygen/oxygen_mixer.c                  |  2 +-
+ sound/soc/codecs/max98088.c                      |  2 +-
+ sound/soc/codecs/max98095.c                      |  2 +-
+ sound/soc/soc-dapm.c                             |  2 +-
+ 48 files changed, 68 insertions(+), 68 deletions(-)
 
-------=_NextPart_000_0012_F2C73A14.A2FF6859
-Content-Type: application/octet-stream; name="INQUIRY_4178916..xlsx"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="INQUIRY_4178916..xlsx"
-
-UEsDBBQAAgAIAHRbvE6YNylSfQEAAGkGAAATABEAW0NvbnRlbnRfVHlwZXNdLnhtbFVUDQAH
-PhvtXD4b7Vw+G+1czVVbS8MwFH4X/A8lr9JmmyAi6/bg9NENnD8gS07XuDQJSXb79560bqKw
-4uhAXxpK8l3Od3IZjneVSjbgvDQ6J/2sRxLQ3Aiplzl5mz+n9yTxgWnBlNGQkz14Mh5dXw3n
-ews+QbT2OSlDsA+Uel5CxXxmLGicKYyrWMBft6SW8RVbAh30eneUGx1AhzREDjIaTtGAkwKS
-GXPhhVWoQ3eKBmSD5tvPkI8kjw0waueEWaskZwGd040WP1RTUxSSgzB8XSEkq2luIgs9KejD
-XoHvLOWtAyZ8CRAqlTWkB+UJFGytQvK0Q/YmdAfKn6f3GWaGyHqNL6VtU2gvqD2TrXGrhTGr
-S6cSx6xiUrf1BMEzZ6ynKNXZAMRABIjUIiW4IL+60lJ7bdTTehhcOIQj/5k+bv+Jj/5f+Dju
-CW4cnG/gcHYi+vc7AaoFiHgpemoUTBfvwLH6hdSdqj9SnTi3Xfm/p2udRCb3CiHEQk5objp2
-FPETx7aoEAVo/Uzge/EBUEsDBBQAAgAIAHRbvE61VTAj6wAAAEwCAAALABEAX3JlbHMvLnJl
-bHNVVA0ABz4b7Vw+G+1cPhvtXK2SzWrDMAyA74O9g9G9UdrBGKNOL2PQ2xjZA2i28kMSy9hu
-l779vMPYAl3pYUfL0qdPQtvdPI3qyCH24jSsixIUOyO2d62Gt/p59QAqJnKWRnGs4cQRdtXt
-zfaVR0q5KHa9jypTXNTQpeQfEaPpeKJYiGeXfxoJE6X8DC16MgO1jJuyvMfwmwHVgqn2VkPY
-2ztQ9cnzNWxpmt7wk5jDxC6daYE8J3aW7cqHXB9Sn6dRNYWWkwYr5iWHI5L3RUYDnjfaXG/0
-97Q4cSJLidBI4Ms+XxmXhNb/uaJlxo/NPOKHhOFdZPh2wcUNVJ9QSwMEFAACAAgAdFu8TruB
-RNrnAAAARwMAABoAEQB4bC9fcmVscy93b3JrYm9vay54bWwucmVsc1VUDQAHPhvtXD4b7Vw+
-G+1cvZJNa8MwDIbvg/0Ho/uiJN3GGHV6GYNeR/cDjKN80MQ2lvaRfz/TQrZCCTuUnoxk9LwP
-QuvN9zioT4rce6ehyHJQ5Kyve9dqeN+93j2BYjGuNoN3pGEihk11e7N+o8FIGuKuD6wSxbGG
-TiQ8I7LtaDSc+UAu/TQ+jkZSGVsMxu5NS1jm+SPGvwyoTphqW2uI23oFajcF+g/bN01v6cXb
-j5GcnInALx/33BFJgprYkmiYW4yHZ5UlKuB5mfLKMuWSTHFlmWJJ5uGSMizTkO5sNjnWS/H3
-l4yXNEu/6Yfy2JxXgCfnX/0AUEsDBBQAAgAIAHRbvE6SNakrUgEAAHACAAAPABEAeGwvd29y
-a2Jvb2sueG1sVVQNAAc+G+1cPhvtXD4b7VyNUUFOwzAQvCPxB8t3msRNClRNKiFA9IKQKO3Z
-xJvGqmNHtkva37NOFQiCA6fd2R2PZseL5bFR5AOsk0bnNJnElIAujZB6l9O39ePVDSXOcy24
-MhpyegJHl8XlxaIzdv9uzJ6ggHY5rb1v51Hkyhoa7iamBY2bytiGe4R2F7nWAheuBvCNilgc
-z6KGS03PCnP7Hw1TVbKEe1MeGtD+LGJBcY/2XS1bR4tFJRVszhcR3rbPvEHfR0WJ4s4/COlB
-5DRFaDr4MbCH9u4gVQBZnNGo+DryxRIBFT8ov0ZrgzrmxVLGZoEZWBsJnft+FCA5bqUWpssp
-SzHa04BmCLq+30rha1zHcZYNsyeQu9rn9Po2i4N4NFLv8xsq0f1xr6FP8KNCXaF/7O1cYmNX
-IgkKv9hsxGYjNvuTPR2xpyP2tHc3WCq5KjGpUHoTLM2S254xRFJ8AlBLAwQUAAIACAB0W7xO
-6aYluKoFAABTGwAAEwARAHhsL3RoZW1lL3RoZW1lMS54bWxVVA0ABz4b7Vw+G+1cPhvtXO1Z
-TY/bRBi+I/EfRr63jhM7za6arTbZpIXttqvdtKjHiT2xpxl7rJnJbnND7REJCVEQFyRuHBBQ
-qZW4lF+zUARF6l/g9UeS8WbSZtutALU5JJ7x835/+B3n8pV7MUNHREjKk7blXKxZiCQ+D2gS
-tq1bg/6FloWkwkmAGU9I25oSaV3Z+vCDy3hTRSQmCOgTuYnbVqRUumnb0odtLC/ylCRwb8RF
-jBUsRWgHAh8D35jZ9VqtaceYJhZKcAxsb45G1CdokLG0tmbMewy+EiWzDZ+JQz+XqFPk2GDs
-ZD9yKrtMoCPM2hbICfjxgNxTFmJYKrjRtmr5x7K3LttzIqZW0Gp0/fxT0pUEwbie04lwOCd0
-+u7GpZ05/3rBfxnX6/W6PWfOLwdg3wdLnSWs2285nRlPDVRcLvPu1ryaW8Vr/BtL+I1Op+Nt
-VPCNBd5dwrdqTXe7XsG7C7y3rH9nu9ttVvDeAt9cwvcvbTTdKj4HRYwm4yV0Fs95ZOaQEWfX
-jPAWwFuzBFigbC27CvpErcq1GN/log+APLhY0QSpaUpG2AdcF8dDQXEmAG8SrN0ptny5tJXJ
-QtIXNFVt6+MUQ0UsIC+e/vji6WP04umjk/tPTu7/cvLgwcn9nw2E13AS6oTPv//i728/RX89
-/u75w6/MeKnjf//ps99+/dIMVDrw2deP/njy6Nk3n//5w0MDfFvgoQ4f0JhIdIMcowMeg20G
-AWQozkYxiDCtUOAIkAZgT0UV4I0pZiZch1Sdd1tAAzABr07uVnQ9jMREUQNwN4orwD3OWYcL
-ozm7mSzdnEkSmoWLiY47wPjIJLt7KrS9SQqZTE0suxGpqLnPINo4JAlRKLvHx4QYyO5QWvHr
-HvUFl3yk0B2KOpgaXTKgQ2UmukZjiMsUm0Nd8c3ebdThzMR+hxxVkVAQmJlYElZx41U8UTg2
-aoxjpiOvYxWZlDycCr/icKkg0iFhHPUCIqWJ5qaYVtTdxdCJjGHfY9O4ihSKjk3I65hzHbnD
-x90Ix6lRZ5pEOvYjOYYUxWifK6MSvFoh2RrigJOV4b5NiTpbWd+iYWROkOzORJRdu9J/Y5q8
-rBkzCt34fTOewbfh0cTWaMGrcP/DxruDJ8k+gVx/33ff9913se+uquV1u+2iwdr6XJzzi1cO
-ySPK2KGaMnJd5q1ZgtJBHzbzRU40n8nTCC5LcRVcKHB+jQRXn1AVHUY4BTFOLiGUJetQopRL
-OAlYK3nnx0kKxud73uwMCGis9nhQbDf0s+GcTb4KpS6okTFYV1jj0psJcwrgmtIczyzNe6k0
-W/MmVAPC2cnfadYL0ZAxmJEg83vBYBaWcw+RjHBAyhg5RkOcxppua73aa5q0jcabSVsnSLo4
-d4U47xyiVFuKkr1cjiyprtAxaOXVPQv5OG1bI5ik4DJOgZ/MGhBmYdK2fFWa8spiPm2wOS2d
-2kqDKyJSIdUOllFBld+avTpJFvrXPTfzw/kYYL+uFo2W8y9qYZ8OLRmNiK9W7CyW5T0+UUQc
-RsExGrKJOMCgt1tkV0AlPDPqs4WACnXLxKtWflkFp1/RlNWBWRrhsie1tNgX8Px6rkO+0tSz
-V+j+mqY0ztEU7901JctcGFsbQX6ggjFAYJTlaNviQkUculAaUb8vYHDIZYFeCMoiUwmx7IVz
-pis5WvStgkfR5MJIHdAQCQqdTkWCkH1V2vkKZk5df77OGJV9Zq6uTIvfITkibJBVbzOz30LR
-rJuUjshxp4Nmm6prGPb/w5OPW3ud8WAhyD3LLOJqTV97FGy8mQpnfNTWzRbXvbUftSkcPlD2
-BY2bCp8t5tsBP4Doo/lEiSARL7TK8ptvDkHnlmZcxurtjlGLELRqb3/41JzdWOHsWu3tONsz
-+Np7uavt5RK1tYNMvlr644kP74LsHTgoTZiSxduke3DU7M7+MgA+9oJ06x9QSwMEFAACAAgA
-dFu8TqCDxK6RAQAAZAMAAA0AEQB4bC9zdHlsZXMueG1sVVQNAAc+G+1cPhvtXD4b7Vylk1Fr
-3DAMx98H/Q7G72vuDla2kaQPg4NCOwq9wV59sZIz2HKwleOyT185TpM7GOxhT5b/kn6SLbt8
-vDgrzhCi8VjJ7f1GCsDGa4NdJX8d9p+/ShFJoVbWI1RyhCgf67tPZaTRwtsJgAQjMFbyRNR/
-L4rYnMCpeO97QPa0PjhFvA1dEfsASseU5Gyx22weCqcMyrpsPVIUjR+QuItZqMv4R5yVZWUr
-i7psvPVBEOMhBbGCykGO+KGsOQaTxFY5Y8cs75IwdTTHOYM+JLHIFaYlcpKxdmlgJ7NQl70i
-goB73ojZPow9l0e+jYyZ4v4R3QU1bndfrhKmhesefdB8+9dHz1JdWmiJE4LpTmkl3xfJSeQd
-G9qozqOyCfmRMRuMbcDatzSh3+0N+9IKHNze0ZOuJM86nf7D5IZmM2PyJvGvaZn931hxaW/5
-C3oqdENfVJHmXcmf6UnZFSGOg7Fk8C8NM1Nf1l4nL6kjv9ybKszQ0KrB0mFxVnK1X0CbwX1b
-ol7N2dMctdrPaVLbh6mD9XvU71BLAwQUAAIACAB0W7xOuEpLLQsBAAC3AQAAGAARAHhsL3dv
-cmtzaGVldHMvc2hlZXQzLnhtbFVUDQAHPhvtXD4b7Vw+G+1cjVDBSsQwEL0L/kOYu01XWZWl
-7SIsix4EEfWebSdt2CYTkllX/96kZRfBi7f3mDdv3rxq/WVH8YkhGnI1LIoSBLqWOuP6Gt7f
-tlf3ICIr16mRHNbwjRHWzeVFdaSwjwMii+TgYg0Ds19JGdsBrYoFeXRpoilYxYmGXkYfUHXT
-kh3ldVneSquMg9lhFf7jQVqbFjfUHiw6nk0CjopT/jgYH6GpOpNm+SERUNfwsADZVNPZD4PH
-+AuL/MWOaJ/JU1dDmaXyj3Y7JXgJokOtDiO/0vERTT9wqmx5dt8oVgl71eOzCr1xUYyok6Ys
-7kCEWT9hJj+hJYgdMZM9sSEVhCGzGxCaiE8kxzpX3vwAUEsDBBQAAgAIAHRbvE64SkstCwEA
-ALcBAAAYABEAeGwvd29ya3NoZWV0cy9zaGVldDIueG1sVVQNAAc+G+1cPhvtXD4b7VyNUMFK
-xDAQvQv+Q5i7TVdZlaXtIiyLHgQR9Z5tJ23YJhOSWVf/3qRlF8GLt/eYN2/evGr9ZUfxiSEa
-cjUsihIEupY64/oa3t+2V/cgIivXqZEc1vCNEdbN5UV1pLCPAyKL5OBiDQOzX0kZ2wGtigV5
-dGmiKVjFiYZeRh9QddOSHeV1Wd5Kq4yD2WEV/uNBWpsWN9QeLDqeTQKOilP+OBgfoak6k2b5
-IRFQ1/CwANlU09kPg8f4C4v8xY5on8lTV0OZpfKPdjsleAmiQ60OI7/S8RFNP3CqbHl23yhW
-CXvV47MKvXFRjKiTpizuQIRZP2EmP6EliB0xkz2xIRWEIbMbEJqITyTHOlfe/ABQSwMEFAAC
-AAgAdFu8To/73RlvAQAAVwIAABgAEQB4bC93b3Jrc2hlZXRzL3NoZWV0MS54bWxVVA0ABz4b
-7Vw+G+1cPhvtXI1SUU/bQAx+R9p/ON37mrQbY1RN0aYKgTYEDDZtj27iJLdeziefQym/HicV
-UGkve/u+s/3Zn32Ls8fOmwfk5CgUdjrJrcFQUuVCU9if9+fvP1uTBEIFngIWdofJni3fHS22
-xJvUIopRhZAK24rEeZalssUO0oQiBo3UxB2IUm6yFBmhGos6n83y/FPWgQt2rzDn/9GgunYl
-rqjsOwyyF2H0IDp/al1MdrmonMYGQ4axLuyXqc2Wi7HtL4fbdICNwPoOPZaClbq3ZnC1JtoM
-wUt9yofS7J/a83GiGzYV1tB7+UHbC3RNKypy/NptBQKKIzR4Bdy4kIzHWnPyyYk1vM8fsVAc
-0bE1axKh7oW1ujDkgX2wpiaSF6K6HhsodyuGrR7L8NzpvHxZzYYYebxe/1Vf6QCbyNQMrh5c
-vP39jS7C7debp+u+Pvmze5y6042euoWIQ8r042xm30R1NdALfSdQLtzjuJfDLtnrh9Df8QxQ
-SwMEFAACAAgAdFu8TmbOT6Q3AQAAZQIAABEAEQBkb2NQcm9wcy9jb3JlLnhtbFVUDQAHPhvt
-XD4b7Vw+G+1clZJdT8IwFIbvTfwPS++3biOgNNuI8uGNJEYhGu+a9gCL60fa6uDf2w0YELnx
-sn2f8/Sck2ajraiCHzC2VDJHSRSjACRTvJTrHC0Xs/AeBdZRyWmlJORoBxaNitubjGnClIEX
-ozQYV4INvElawnSONs5pgrFlGxDURp6QPlwpI6jzR7PGmrIvugacxvEAC3CUU0dxIwx1Z0QH
-JWedUn+bqhVwhqECAdJZnEQJPrEOjLBXC9rkjBSl22m4ih7Djt7asgPruo7qXov6/hP8MX9+
-a0cNS9nsigEqMs4IM0CdMsXT68N4GkyWk2mGz66bFVbUurnf9qoE/ri7IP+m2WG4vQF44Jsi
-+xGOyXtvPFnMUJHGyTCM+2F6t4iHJI1JMvhsHr+oPwnF4ZH/GPvDM+NRULR9X36M4hdQSwME
-FAACAAgAdFu8Tpw8u1h5AQAANAMAABAAEQBkb2NQcm9wcy9hcHAueG1sVVQNAAc+G+1cPhvt
-XD4b7Vydk0FPwzAMhe9I/Icq9y3dhhCa0iDEQDuAmLQB55C6a0SWVLGpNn49aaeVjsGFnhy/
-p6cvjiuutxub1BDQeJex0TBlCTjtc+PWGXte3Q+uWIKkXK6sd5CxHSC7ludnYhF8BYEMYBIj
-HGasJKqmnKMuYaNwGGUXlcKHjaJ4DGvui8JomHn9sQFHfJymlxy2BC6HfFB1gWyfOK3pv6G5
-1w0fvqx2VcyT4qaqrNGK4i3lo9HBoy8oudtqsIL3RRGDlqA/gqGdTAXvH8VSKwu3MVgWyiII
-/t0Qc1DN0BbKBJSipmkNmnxI0HzGsY1Z8qYQGpyM1SoY5YjtbftDW9sKKchXH96xBCAUvGu2
-Zd/br82FnLSGWBwbeQcS62PElSEL+FQsVKBfiCd94paB9RiXDd+oz3csjf+WJie3OvD9IHow
-7h2fq5WfKYLDxI+bYlmqAHl8pO5FuoaYR/RgG/9tqdwa8oPnVGj242X/E8jReJjGr12LQ0/w
-73WXX1BLAwQUAAIACAB0W7xOsPIuVawBAADaAwAAGwARAHhsL2RyYXdpbmdzL3ZtbERyYXdp
-bmcxLnZtbFVUDQAHPhvtXD4b7Vw+G+1cjVM9c9wgEE3tGf8HhhRu4hxSfD4Hn25UpEiRPqVH
-kVYWOWAJIFnOr88KyR9xzs5JoxWwb9++gcd2NJrRZ4McCt57K0PdganCuVG1x4BtPK/RyMFo
-fnqyIPEtJLatqmH5PdWMR9TAWIPmu9OT7SBDVzmI9w6Yagp+Mwp6bmK22aw5qxF9E9RvKHie
-XQrxIcWpF0rnoQXvQVdRDQSInLkqdgU35UW51hSyrPw8h/UInLVKa6AWLWchetzPYxLBJhVp
-hf1EZUO818RnVATPV0u+RW96XYWHKYNftuCqZVpZ+OKrO8ucGkF/o+l31cSOiafaGRx6w0rB
-ssMZQW+Zvcw4jw0rcyrKD6c+sbQlc/PU+AjcV1C3XXxFHyk8THH5uorNf1Uk8qsFJo5geUNj
-Jl7wrP45n8kJ5BEYo++DQov7dO63vmoU2Jg8N62RaVDWaC3UcfJgwT2NFlqUGus9GyaagkOj
-CF0FRwBPnsOp+rH/o4t3D5Z+bueQXeQ5Z3OH9397fLbbmcOgiNTK6kdA3Ue4vpv2Ua6vNh+F
-cPG6Sxsic5Gl+dlqt13Rjdu9+wNQSwMEFAACAAgAdFu8ThdxQpwnCAAAABAAABwAEQB4bC9l
-bWJlZGRpbmdzL29sZU9iamVjdDEuYmluVVQNAAc+G+1cPhvtXD4b7VztVWdUU9kWvgmkSBEU
-QjXIACKgCBIcQFEpilJGShZSggSpgoSqyMiAREWFUCwjBiH0CFgiAhpRUIqAYEFQmkoRGfXm
-AqKgiAPJO5fRtVzv17z35se8WX5Z3z777H3P3ueefc/Oo/ZFQwVXVF5A/4YNkBgkFC2A8N/Y
-MF84D1kIwn6ZC0Ui0Vez6Dv+rzAHKPxCcVA/HCD+S02/458PFygc/PZA6tBmKAyMUdDP0H8C
-BfDFfI2F9gLsQ+y8ve4Pt823z/qoeeIsSF0YMaAnEr72FEcoFAqAVkOG0DZoJ9hBMBQD5n8W
-KhAW8+37/Nl1uwnQX4b/Jv9fif8l/3zNANGafHv/0eMhAi4AlACUBJQClAZcCCjzx18AtAhw
-MaAcoDwgaf6bgCBFQCVA5fkaQZAq4BJA8vfe8rdCECi02B7MRjEJDHFfwo1Gqxui6U6WCkuy
-lmD5ksH8YKvNZbDifZ1FPbg7mc4TOLsQnoxoiDL1gGbVYgW1R/tLSZfMVddcfFs0ard8fUaq
-y0eDsR+Sfj8XJXM3h/BUd+XBis5WxapBcYJDulrdRBsvRmpEaPO279jQpHzky9lTbRrkNpqG
-GHnK4OnEBIl16dV7nSiV5jJd/9KhDFxxkp3/y+d0zcTgJxzSzcrXakKXeJJera/nYEivvy17
-0ROW0yHHXz9xfkxZoWL5KmrwMyvXTFW0lrI9z2/6zBrpVO24XcvuiUnFTbhhJs+PPhgOa6ru
-UTXyPGlqybZZVu2YN05Sul0aw9KYOSl2QXsy5OqASnKCkhvcA+6Ex4wwquouO3+T1s77TrhA
-PXPTOKT77L6IdJ9I1g0nydYOPJd72bC44/Hja1HcQ0TfsivJYQ+7KZlFbRbOnHeMZuqxdQqN
-A0YZrEzytNFr22bv560MtTMVKWrH6JTpa7zVO0RW1hHODR6j46Seny9f7BnccD14i1dkW5Ky
-Y6X9Dy7JkYJ1PGPio/J9NLXTn73KFUpcnw63ct/1UjEntilc7nZceL+461TSC/kyb345hdGF
-MSm44K41VUmRuFV4tH+kBqrSEJlJbokWx+/xLeH6n1VZXMCz771r7KnXgR9UXc9UH2bco5Ef
-4MQl1Tlz7fUHh6q6fc2Dij49Muav66Sal61QWXmk2iZLOd10GFlljJHoLKjbWuoAxS0qmbw9
-LEav4D4bvtq1QG/VchnT1hrn0orI7UMDcpL+lnlYMVLGRZ0lElypxwYjwkYHmWK+zjnK7EbX
-Ku6Mln3LbEtwrUc7KWDg4wpfa4+zngn8YpN3VzWDrqveWjJAMksv3sP9sQ4pkc11uT2c+WZ/
-5Ibk6hb23Mdo+sqEpo308wrKKcaizYk+nDYT2yfchWSWhLi/4KzQMO8KLnIp55DG0PMUNjtQ
-uiZlRGsLf3IbYZlfmRY5zswpjKKjcj5WtDQEpoDawrVo/6+D4E4wwk2oaAAC0YAlUW8SahhD
-xSxqtYJPowMOLgTO4LoTJK53DtXFKY2tDdoZs+FNOJCCx0YQ5O5J4yBFuMnjbBd4MRroACrU
-UFGJRgsGWo6TmxuzpQ80W30O6IhpidKGIDaRod8U/UKqh0anu3MQ8hu0L3sjFvB9dFkMuKRI
-LaIJ62Lm98hHd5MF16C+QlTfjKyBMahvxKwb0UPq4SnU2oDoM5sdgDkt8yjo77AUCAOjkRFd
-eDEash8OQAd5ZAL2AsqhZnH4A2jM8DU0sDzqej1/ULAeunIXaniGEArTW9z9EhB4FDyaQ2Ui
-vM3g9RHlpUA2Wkej+tBekDPbwRG1yFMhCBzKbqTgOFKBRK3Gw9vQYJfRPHGotgwVkWBKpSFi
-LlppyHM4FM1EpOIJzXfbqDQXzxxnKrOeCsKlZb2loAlI5kDWZ4GDY8KOBqh+wBSk8eDAbiAQ
-IgVPosMJeCUYZA7aARn1S5VzZhbDDX7O6hgtXaKY9wI2xGYtW0GqjGvsTdeXt08OP30kpjnO
-8n5Aa35zzpEkL9nptNFuy7RsP6LZBnxjEWOwVTPeL+DjqLrhJ4xnmXlvo1LMCYeXDn1BY8eu
-r99x6CfTU/vx4Sbs2K2I8lgucUqves3IUa9KshViRCyR6aLuix8R7s+wt30/QXfgCAUiTtCA
-78xvyXsViWtN+3s0L3Qun33YePZDgbrrAi2qD9PtUWi08WEtBttkovSXOevyUBMby3OfVjUs
-UhSozWa7v0IUgpUS+HXSkdgOrcML4/Mlt/boJByzmsXJ2waZP56SJvSOkAVFcoHxxt7cOt38
-7kq3lODtRM3XZUWzxy9+lHOlX/H/vWHC8FVX7Cifnf9btqTcGeaqjrIZDO/c6sN3dozzU6ZC
-7CjVPvqnIYI816gJW3HBz74/KMIwNj/ATJAd03dF0BLF39yWtH/dqtDJm303C983UEm01JcH
-9GqN87Njwutzcsmv7q/j8uLh6K5h3OLESx4nk9a60gpFnhD0LPAzsiAjKkuQ5/S5i36Bnui/
-WxC4UPA+cGyn7IH11+rGWap9uWblDRO8mczwnmfWZ6xsWk+GjLnGusatuKxuktzvPVLqzOyX
-vTTpc1Sp/6FuWIxRKrmWLmcoPGltgGenTlOODPl06wrxSwwNXE/n747QJ1Tt+DBHJZcfrGHt
-DbuumCFb9PSdxQkes33PbZJk4KyVxdrlGQE37HuSFLWvbaquG5q9p3IRK2AO9DsW3d10gxek
-k+u23TFZaZxR387v0nlraSrlM/Mr7YAMWRixSzRoJ0MvtMjX9SoaXm3ehA299UFDewrrnjx3
-J+IJ46abOiX/dapl3+eq8Vjo74h/AVBLAwQUAAIACAB0W7xOq2nw8NoAAADHAQAAIwARAHhs
-L3dvcmtzaGVldHMvX3JlbHMvc2hlZXQxLnhtbC5yZWxzVVQNAAc+G+1cPhvtXD4b7Vytkb1O
-AzEMgHck3iHyTnzXASHUtEuF1AkJlQfwJb67QP6UhELfngAS6kkdGNgcO/n8xV5vP7wTR87F
-xqCglx0IDjoaGyYFz4eHmzsQpVIw5GJgBScusN1cX62f2FFtj8psUxGNEoqCudZ0j1j0zJ6K
-jIlDq4wxe6rtmCdMpF9pYlx13S3mcwZsFkyxNwry3qxAHE6J/8KO42g176J+8xzqhRZ49G6X
-6b19rlEpT1wVSInmJ3de72WLAS879f/pFB0/Di+s60KJ/cDGfEv9XujlYMOXEy6G37bxCVBL
-AQIXCxQAAgAIAHRbvE6YNylSfQEAAGkGAAATAAkAAAAAAAAAAAAAgAAAAABbQ29udGVudF9U
-eXBlc10ueG1sVVQFAAc+G+1cUEsBAhcLFAACAAgAdFu8TrVVMCPrAAAATAIAAAsACQAAAAAA
-AAAAAACAvwEAAF9yZWxzLy5yZWxzVVQFAAc+G+1cUEsBAhcLFAACAAgAdFu8TruBRNrnAAAA
-RwMAABoACQAAAAAAAAAAAACA5AIAAHhsL19yZWxzL3dvcmtib29rLnhtbC5yZWxzVVQFAAc+
-G+1cUEsBAhcLFAACAAgAdFu8TpI1qStSAQAAcAIAAA8ACQAAAAAAAAAAAACAFAQAAHhsL3dv
-cmtib29rLnhtbFVUBQAHPhvtXFBLAQIXCxQAAgAIAHRbvE7ppiW4qgUAAFMbAAATAAkAAAAA
-AAAAAAAAgKQFAAB4bC90aGVtZS90aGVtZTEueG1sVVQFAAc+G+1cUEsBAhcLFAACAAgAdFu8
-TqCDxK6RAQAAZAMAAA0ACQAAAAAAAAAAAACAkAsAAHhsL3N0eWxlcy54bWxVVAUABz4b7VxQ
-SwECFwsUAAIACAB0W7xOuEpLLQsBAAC3AQAAGAAJAAAAAAAAAAAAAIBdDQAAeGwvd29ya3No
-ZWV0cy9zaGVldDMueG1sVVQFAAc+G+1cUEsBAhcLFAACAAgAdFu8TrhKSy0LAQAAtwEAABgA
-CQAAAAAAAAAAAACArw4AAHhsL3dvcmtzaGVldHMvc2hlZXQyLnhtbFVUBQAHPhvtXFBLAQIX
-CxQAAgAIAHRbvE6P+90ZbwEAAFcCAAAYAAkAAAAAAAAAAAAAgAEQAAB4bC93b3Jrc2hlZXRz
-L3NoZWV0MS54bWxVVAUABz4b7VxQSwECFwsUAAIACAB0W7xOZs5PpDcBAABlAgAAEQAJAAAA
-AAAAAAAAAIC3EQAAZG9jUHJvcHMvY29yZS54bWxVVAUABz4b7VxQSwECFwsUAAIACAB0W7xO
-nDy7WHkBAAA0AwAAEAAJAAAAAAAAAAAAAIAuEwAAZG9jUHJvcHMvYXBwLnhtbFVUBQAHPhvt
-XFBLAQIXCxQAAgAIAHRbvE6w8i5VrAEAANoDAAAbAAkAAAAAAAAAAAAAgOYUAAB4bC9kcmF3
-aW5ncy92bWxEcmF3aW5nMS52bWxVVAUABz4b7VxQSwECFwsUAAIACAB0W7xOF3FCnCcIAAAA
-EAAAHAAJAAAAAAAAAAAAAIDcFgAAeGwvZW1iZWRkaW5ncy9vbGVPYmplY3QxLmJpblVUBQAH
-PhvtXFBLAQIXCxQAAgAIAHRbvE6rafDw2gAAAMcBAAAjAAkAAAAAAAAAAAAAgE4fAAB4bC93
-b3Jrc2hlZXRzL19yZWxzL3NoZWV0MS54bWwucmVsc1VUBQAHPhvtXFBLBQYAAAAADgAOACwE
-AAB6IAAAAAA=
-
-------=_NextPart_000_0012_F2C73A14.A2FF6859--
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index a0f44f992360..efca104ac0cb 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -3231,7 +3231,7 @@ scanhex(unsigned long *vp)
+ 			regname[i] = c;
+ 		}
+ 		regname[i] = 0;
+-		i = match_string(regnames, N_PTREGS, regname);
++		i = __match_string(regnames, N_PTREGS, regname);
+ 		if (i < 0) {
+ 			printf("invalid register name '%%%s'\n", regname);
+ 			return 0;
+diff --git a/arch/x86/kernel/cpu/mtrr/if.c b/arch/x86/kernel/cpu/mtrr/if.c
+index 4d36dcc1cf87..4ec7a5f7b94c 100644
+--- a/arch/x86/kernel/cpu/mtrr/if.c
++++ b/arch/x86/kernel/cpu/mtrr/if.c
+@@ -142,7 +142,7 @@ mtrr_write(struct file *file, const char __user *buf, size_t len, loff_t * ppos)
+ 		return -EINVAL;
+ 	ptr = skip_spaces(ptr + 5);
+ 
+-	i = match_string(mtrr_strings, MTRR_NUM_TYPES, ptr);
++	i = __match_string(mtrr_strings, MTRR_NUM_TYPES, ptr);
+ 	if (i < 0)
+ 		return i;
+ 
+diff --git a/drivers/ata/pata_hpt366.c b/drivers/ata/pata_hpt366.c
+index a219a503c229..4ba5fc9d20be 100644
+--- a/drivers/ata/pata_hpt366.c
++++ b/drivers/ata/pata_hpt366.c
+@@ -180,7 +180,7 @@ static int hpt_dma_blacklisted(const struct ata_device *dev, char *modestr,
+ 
+ 	ata_id_c_string(dev->id, model_num, ATA_ID_PROD, sizeof(model_num));
+ 
+-	i = match_string(list, -1, model_num);
++	i = __match_string(list, -1, model_num);
+ 	if (i >= 0) {
+ 		pr_warn("%s is not supported for %s\n", modestr, list[i]);
+ 		return 1;
+diff --git a/drivers/ata/pata_hpt37x.c b/drivers/ata/pata_hpt37x.c
+index ef8aaeb0c575..ce21f01dad04 100644
+--- a/drivers/ata/pata_hpt37x.c
++++ b/drivers/ata/pata_hpt37x.c
+@@ -228,7 +228,7 @@ static int hpt_dma_blacklisted(const struct ata_device *dev, char *modestr,
+ 
+ 	ata_id_c_string(dev->id, model_num, ATA_ID_PROD, sizeof(model_num));
+ 
+-	i = match_string(list, -1, model_num);
++	i = __match_string(list, -1, model_num);
+ 	if (i >= 0) {
+ 		pr_warn("%s is not supported for %s\n", modestr, list[i]);
+ 		return 1;
+diff --git a/drivers/base/devcon.c b/drivers/base/devcon.c
+index 04db9ae235e4..7bc1c619b721 100644
+--- a/drivers/base/devcon.c
++++ b/drivers/base/devcon.c
+@@ -70,7 +70,7 @@ void *device_connection_find_match(struct device *dev, const char *con_id,
+ 	mutex_lock(&devcon_lock);
+ 
+ 	list_for_each_entry(con, &devcon_list, list) {
+-		ep = match_string(con->endpoint, 2, devname);
++		ep = __match_string(con->endpoint, 2, devname);
+ 		if (ep < 0)
+ 			continue;
+ 
+diff --git a/drivers/base/property.c b/drivers/base/property.c
+index 8b91ab380d14..4639275f55fe 100644
+--- a/drivers/base/property.c
++++ b/drivers/base/property.c
+@@ -443,7 +443,7 @@ int fwnode_property_match_string(const struct fwnode_handle *fwnode,
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	ret = match_string(values, nval, string);
++	ret = __match_string(values, nval, string);
+ 	if (ret < 0)
+ 		ret = -ENODATA;
+ out:
+diff --git a/drivers/clk/bcm/clk-bcm2835.c b/drivers/clk/bcm/clk-bcm2835.c
+index 9fcae932e082..a775f6a1f717 100644
+--- a/drivers/clk/bcm/clk-bcm2835.c
++++ b/drivers/clk/bcm/clk-bcm2835.c
+@@ -1390,9 +1390,9 @@ static struct clk_hw *bcm2835_register_clock(struct bcm2835_cprman *cprman,
+ 	for (i = 0; i < data->num_mux_parents; i++) {
+ 		parents[i] = data->parents[i];
+ 
+-		ret = match_string(cprman_parent_names,
+-				   ARRAY_SIZE(cprman_parent_names),
+-				   parents[i]);
++		ret = __match_string(cprman_parent_names,
++				     ARRAY_SIZE(cprman_parent_names),
++				     parents[i]);
+ 		if (ret >= 0)
+ 			parents[i] = cprman->real_parent_names[ret];
+ 	}
+diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
+index 96053a96fe2f..0b6c3d300411 100644
+--- a/drivers/clk/clk.c
++++ b/drivers/clk/clk.c
+@@ -2305,8 +2305,8 @@ bool clk_has_parent(struct clk *clk, struct clk *parent)
+ 	if (core->parent = parent_core)
+ 		return true;
+ 
+-	return match_string(core->parent_names, core->num_parents,
+-			    parent_core->name) >= 0;
++	return __match_string(core->parent_names, core->num_parents,
++			      parent_core->name) >= 0;
+ }
+ EXPORT_SYMBOL_GPL(clk_has_parent);
+ 
+diff --git a/drivers/clk/rockchip/clk.c b/drivers/clk/rockchip/clk.c
+index c3ad92965823..373f13e9cd83 100644
+--- a/drivers/clk/rockchip/clk.c
++++ b/drivers/clk/rockchip/clk.c
+@@ -276,8 +276,8 @@ static struct clk *rockchip_clk_register_frac_branch(
+ 		struct clk *mux_clk;
+ 		int ret;
+ 
+-		frac->mux_frac_idx = match_string(child->parent_names,
+-						  child->num_parents, name);
++		frac->mux_frac_idx = __match_string(child->parent_names,
++						    child->num_parents, name);
+ 		frac->mux_ops = &clk_mux_ops;
+ 		frac->clk_nb.notifier_call = rockchip_clk_frac_notifier_cb;
+ 
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 2986119dd31f..6ed1e705bc05 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -701,7 +701,7 @@ static ssize_t store_energy_performance_preference(
+ 	if (ret != 1)
+ 		return -EINVAL;
+ 
+-	ret = match_string(energy_perf_strings, -1, str_preference);
++	ret = __match_string(energy_perf_strings, -1, str_preference);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/drivers/gpio/gpiolib-of.c b/drivers/gpio/gpiolib-of.c
+index 6a3ec575a404..27d6f04ab58e 100644
+--- a/drivers/gpio/gpiolib-of.c
++++ b/drivers/gpio/gpiolib-of.c
+@@ -279,7 +279,7 @@ static struct gpio_desc *of_find_regulator_gpio(struct device *dev, const char *
+ 	if (!con_id)
+ 		return ERR_PTR(-ENOENT);
+ 
+-	i = match_string(whitelist, ARRAY_SIZE(whitelist), con_id);
++	i = __match_string(whitelist, ARRAY_SIZE(whitelist), con_id);
+ 	if (i < 0)
+ 		return ERR_PTR(-ENOENT);
+ 
+diff --git a/drivers/gpu/drm/drm_edid_load.c b/drivers/gpu/drm/drm_edid_load.c
+index a4915099aaa9..1450051972ea 100644
+--- a/drivers/gpu/drm/drm_edid_load.c
++++ b/drivers/gpu/drm/drm_edid_load.c
+@@ -186,7 +186,7 @@ static void *edid_load(struct drm_connector *connector, const char *name,
+ 	int i, valid_extensions = 0;
+ 	bool print_bad_edid = !connector->bad_edid_counter || (drm_debug & DRM_UT_KMS);
+ 
+-	builtin = match_string(generic_edid_name, GENERIC_EDIDS, name);
++	builtin = __match_string(generic_edid_name, GENERIC_EDIDS, name);
+ 	if (builtin >= 0) {
+ 		fwdata = generic_edid[builtin];
+ 		fwsize = sizeof(generic_edid[builtin]);
+diff --git a/drivers/gpu/drm/drm_panel_orientation_quirks.c b/drivers/gpu/drm/drm_panel_orientation_quirks.c
+index 52e445bb1aa5..8f7f31a1248c 100644
+--- a/drivers/gpu/drm/drm_panel_orientation_quirks.c
++++ b/drivers/gpu/drm/drm_panel_orientation_quirks.c
+@@ -200,7 +200,7 @@ int drm_get_panel_orientation_quirk(int width, int height)
+ 		if (!bios_date)
+ 			continue;
+ 
+-		i = match_string(data->bios_dates, -1, bios_date);
++		i = __match_string(data->bios_dates, -1, bios_date);
+ 		if (i >= 0)
+ 			return data->orientation;
+ 	}
+diff --git a/drivers/gpu/drm/i915/intel_pipe_crc.c b/drivers/gpu/drm/i915/intel_pipe_crc.c
+index a8554dc4f196..286fad1f0e08 100644
+--- a/drivers/gpu/drm/i915/intel_pipe_crc.c
++++ b/drivers/gpu/drm/i915/intel_pipe_crc.c
+@@ -449,7 +449,7 @@ display_crc_ctl_parse_source(const char *buf, enum intel_pipe_crc_source *s)
+ 		return 0;
+ 	}
+ 
+-	i = match_string(pipe_crc_sources, ARRAY_SIZE(pipe_crc_sources), buf);
++	i = __match_string(pipe_crc_sources, ARRAY_SIZE(pipe_crc_sources), buf);
+ 	if (i < 0)
+ 		return i;
+ 
+diff --git a/drivers/ide/hpt366.c b/drivers/ide/hpt366.c
+index 0a3f9bcc8b04..1c4052fd02ab 100644
+--- a/drivers/ide/hpt366.c
++++ b/drivers/ide/hpt366.c
+@@ -533,7 +533,7 @@ static const struct hpt_info hpt371n = {
+ 
+ static bool check_in_drive_list(ide_drive_t *drive, const char **list)
+ {
+-	return match_string(list, -1, (char *)&drive->id[ATA_ID_PROD]) >= 0;
++	return __match_string(list, -1, (char *)&drive->id[ATA_ID_PROD]) >= 0;
+ }
+ 
+ static struct hpt_info *hpt3xx_get_info(struct device *dev)
+diff --git a/drivers/mfd/omap-usb-host.c b/drivers/mfd/omap-usb-host.c
+index 800986a79704..9aaacb5bdb26 100644
+--- a/drivers/mfd/omap-usb-host.c
++++ b/drivers/mfd/omap-usb-host.c
+@@ -509,7 +509,7 @@ static int usbhs_omap_get_dt_pdata(struct device *dev,
+ 			continue;
+ 
+ 		/* get 'enum usbhs_omap_port_mode' from port mode string */
+-		ret = match_string(port_modes, ARRAY_SIZE(port_modes), mode);
++		ret = __match_string(port_modes, ARRAY_SIZE(port_modes), mode);
+ 		if (ret < 0) {
+ 			dev_warn(dev, "Invalid port%d-mode \"%s\" in device tree\n",
+ 					i, mode);
+diff --git a/drivers/mmc/host/sdhci-xenon-phy.c b/drivers/mmc/host/sdhci-xenon-phy.c
+index 8d07ee1b8f08..59b7a6cac995 100644
+--- a/drivers/mmc/host/sdhci-xenon-phy.c
++++ b/drivers/mmc/host/sdhci-xenon-phy.c
+@@ -821,7 +821,7 @@ static int xenon_add_phy(struct device_node *np, struct sdhci_host *host,
+ 	struct xenon_priv *priv = sdhci_pltfm_priv(pltfm_host);
+ 	int ret;
+ 
+-	priv->phy_type = match_string(phy_types, NR_PHY_TYPES, phy_name);
++	priv->phy_type = __match_string(phy_types, NR_PHY_TYPES, phy_name);
+ 	if (priv->phy_type < 0) {
+ 		dev_err(mmc_dev(host->mmc),
+ 			"Unable to determine PHY name %s. Use default eMMC 5.1 PHY\n",
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
+index 776b24f54200..59ce3ff35553 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
+@@ -667,7 +667,7 @@ iwl_dbgfs_bt_force_ant_write(struct iwl_mvm *mvm, char *buf,
+ 	};
+ 	int ret, bt_force_ant_mode;
+ 
+-	ret = match_string(modes_str, ARRAY_SIZE(modes_str), buf);
++	ret = __match_string(modes_str, ARRAY_SIZE(modes_str), buf);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index f8fc2114ad39..41a0773a1cbc 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -203,7 +203,7 @@ void pcie_ecrc_get_policy(char *str)
+ {
+ 	int i;
+ 
+-	i = match_string(ecrc_policy_str, ARRAY_SIZE(ecrc_policy_str), str);
++	i = __match_string(ecrc_policy_str, ARRAY_SIZE(ecrc_policy_str), str);
+ 	if (i < 0)
+ 		return;
+ 
+diff --git a/drivers/phy/tegra/xusb.c b/drivers/phy/tegra/xusb.c
+index 5b3b8863363e..d5686b5db107 100644
+--- a/drivers/phy/tegra/xusb.c
++++ b/drivers/phy/tegra/xusb.c
+@@ -113,7 +113,7 @@ int tegra_xusb_lane_parse_dt(struct tegra_xusb_lane *lane,
+ 	if (err < 0)
+ 		return err;
+ 
+-	err = match_string(lane->soc->funcs, lane->soc->num_funcs, function);
++	err = __match_string(lane->soc->funcs, lane->soc->num_funcs, function);
+ 	if (err < 0) {
+ 		dev_err(dev, "invalid function \"%s\" for lane \"%pOFn\"\n",
+ 			function, np);
+diff --git a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
+index 6462d3ca7ceb..07a5bcaa0067 100644
+--- a/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
++++ b/drivers/pinctrl/mvebu/pinctrl-armada-37xx.c
+@@ -348,7 +348,7 @@ static int armada_37xx_pmx_set_by_name(struct pinctrl_dev *pctldev,
+ 	dev_dbg(info->dev, "enable function %s group %s\n",
+ 		name, grp->name);
+ 
+-	func = match_string(grp->funcs, NB_FUNCS, name);
++	func = __match_string(grp->funcs, NB_FUNCS, name);
+ 	if (func < 0)
+ 		return -ENOTSUPP;
+ 
+@@ -938,7 +938,7 @@ static int armada_37xx_fill_func(struct armada_37xx_pinctrl *info)
+ 			struct armada_37xx_pin_group *gp = &info->groups[g];
+ 			int f;
+ 
+-			f = match_string(gp->funcs, NB_FUNCS, name);
++			f = __match_string(gp->funcs, NB_FUNCS, name);
+ 			if (f < 0)
+ 				continue;
+ 
+diff --git a/drivers/pinctrl/pinmux.c b/drivers/pinctrl/pinmux.c
+index 4d0cc1889dd9..041326d0ab7b 100644
+--- a/drivers/pinctrl/pinmux.c
++++ b/drivers/pinctrl/pinmux.c
+@@ -348,7 +348,7 @@ int pinmux_map_to_setting(const struct pinctrl_map *map,
+ 	}
+ 	if (map->data.mux.group) {
+ 		group = map->data.mux.group;
+-		ret = match_string(groups, num_groups, group);
++		ret = __match_string(groups, num_groups, group);
+ 		if (ret < 0) {
+ 			dev_err(pctldev->dev,
+ 				"invalid group \"%s\" for function \"%s\"\n",
+diff --git a/drivers/power/supply/ab8500_btemp.c b/drivers/power/supply/ab8500_btemp.c
+index 708fd58cd62b..1cf3b43a41e4 100644
+--- a/drivers/power/supply/ab8500_btemp.c
++++ b/drivers/power/supply/ab8500_btemp.c
+@@ -858,7 +858,7 @@ static int ab8500_btemp_get_ext_psy_data(struct device *dev, void *data)
+ 	 * For all psy where the name of your driver
+ 	 * appears in any supplied_to
+ 	 */
+-	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
++	j = __match_string(supplicants, ext->num_supplicants, psy->desc->name);
+ 	if (j < 0)
+ 		return 0;
+ 
+diff --git a/drivers/power/supply/ab8500_charger.c b/drivers/power/supply/ab8500_charger.c
+index 98b335042ba6..8094f38e4085 100644
+--- a/drivers/power/supply/ab8500_charger.c
++++ b/drivers/power/supply/ab8500_charger.c
+@@ -1876,7 +1876,7 @@ static int ab8500_charger_get_ext_psy_data(struct device *dev, void *data)
+ 	di = to_ab8500_charger_usb_device_info(usb_chg);
+ 
+ 	/* For all psy where the driver name appears in any supplied_to */
+-	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
++	j = __match_string(supplicants, ext->num_supplicants, psy->desc->name);
+ 	if (j < 0)
+ 		return 0;
+ 
+diff --git a/drivers/power/supply/ab8500_fg.c b/drivers/power/supply/ab8500_fg.c
+index 776102c31305..408339c5a4a8 100644
+--- a/drivers/power/supply/ab8500_fg.c
++++ b/drivers/power/supply/ab8500_fg.c
+@@ -2174,7 +2174,7 @@ static int ab8500_fg_get_ext_psy_data(struct device *dev, void *data)
+ 	 * For all psy where the name of your driver
+ 	 * appears in any supplied_to
+ 	 */
+-	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
++	j = __match_string(supplicants, ext->num_supplicants, psy->desc->name);
+ 	if (j < 0)
+ 		return 0;
+ 
+diff --git a/drivers/power/supply/abx500_chargalg.c b/drivers/power/supply/abx500_chargalg.c
+index 947709cdd14e..b2fcd0ba379d 100644
+--- a/drivers/power/supply/abx500_chargalg.c
++++ b/drivers/power/supply/abx500_chargalg.c
+@@ -946,7 +946,7 @@ static int abx500_chargalg_get_ext_psy_data(struct device *dev, void *data)
+ 	psy = (struct power_supply *)data;
+ 	di = power_supply_get_drvdata(psy);
+ 	/* For all psy where the driver name appears in any supplied_to */
+-	j = match_string(supplicants, ext->num_supplicants, psy->desc->name);
++	j = __match_string(supplicants, ext->num_supplicants, psy->desc->name);
+ 	if (j < 0)
+ 		return 0;
+ 
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 2e8db5e6de0b..27a8ba63563e 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -2019,8 +2019,8 @@ void cm_notify_event(struct power_supply *psy, enum cm_event_types type,
+ 
+ 	mutex_lock(&cm_list_mtx);
+ 	list_for_each_entry(cm, &cm_list, entry) {
+-		if (match_string(cm->desc->psy_charger_stat, -1,
+-				 psy->desc->name) >= 0) {
++		if (__match_string(cm->desc->psy_charger_stat, -1,
++				   psy->desc->name) >= 0) {
+ 			found_power_supply = true;
+ 			break;
+ 		}
+diff --git a/drivers/staging/gdm724x/gdm_tty.c b/drivers/staging/gdm724x/gdm_tty.c
+index 6e813693a766..6e147a324652 100644
+--- a/drivers/staging/gdm724x/gdm_tty.c
++++ b/drivers/staging/gdm724x/gdm_tty.c
+@@ -56,8 +56,8 @@ static int gdm_tty_install(struct tty_driver *driver, struct tty_struct *tty)
+ 	struct gdm *gdm = NULL;
+ 	int ret;
+ 
+-	ret = match_string(DRIVER_STRING, TTY_MAX_COUNT,
+-			   tty->driver->driver_name);
++	ret = __match_string(DRIVER_STRING, TTY_MAX_COUNT,
++			     tty->driver->driver_name);
+ 	if (ret < 0)
+ 		return -ENODEV;
+ 
+diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+index 73c8e6591746..bca0c404c6ca 100644
+--- a/drivers/usb/common/common.c
++++ b/drivers/usb/common/common.c
+@@ -68,7 +68,7 @@ enum usb_device_speed usb_get_maximum_speed(struct device *dev)
+ 	if (ret < 0)
+ 		return USB_SPEED_UNKNOWN;
+ 
+-	ret = match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
++	ret = __match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
+ 
+ 	return (ret < 0) ? USB_SPEED_UNKNOWN : ret;
+ }
+@@ -106,7 +106,7 @@ static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
+ {
+ 	int ret;
+ 
+-	ret = match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
++	ret = __match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
+ 	return (ret < 0) ? USB_DR_MODE_UNKNOWN : ret;
+ }
+ 
+diff --git a/drivers/usb/typec/class.c b/drivers/usb/typec/class.c
+index 2eb623841847..4abc5a76ec51 100644
+--- a/drivers/usb/typec/class.c
++++ b/drivers/usb/typec/class.c
+@@ -1409,8 +1409,8 @@ EXPORT_SYMBOL_GPL(typec_set_pwr_opmode);
+  */
+ int typec_find_port_power_role(const char *name)
+ {
+-	return match_string(typec_port_power_roles,
+-			    ARRAY_SIZE(typec_port_power_roles), name);
++	return __match_string(typec_port_power_roles,
++			      ARRAY_SIZE(typec_port_power_roles), name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_port_power_role);
+ 
+@@ -1424,7 +1424,7 @@ EXPORT_SYMBOL_GPL(typec_find_port_power_role);
+  */
+ int typec_find_power_role(const char *name)
+ {
+-	return match_string(typec_roles, ARRAY_SIZE(typec_roles), name);
++	return __match_string(typec_roles, ARRAY_SIZE(typec_roles), name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_power_role);
+ 
+@@ -1438,8 +1438,8 @@ EXPORT_SYMBOL_GPL(typec_find_power_role);
+  */
+ int typec_find_port_data_role(const char *name)
+ {
+-	return match_string(typec_port_data_roles,
+-			    ARRAY_SIZE(typec_port_data_roles), name);
++	return __match_string(typec_port_data_roles,
++			      ARRAY_SIZE(typec_port_data_roles), name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_port_data_role);
+ 
+diff --git a/drivers/usb/typec/tps6598x.c b/drivers/usb/typec/tps6598x.c
+index c674abe3cf99..0389e4391faf 100644
+--- a/drivers/usb/typec/tps6598x.c
++++ b/drivers/usb/typec/tps6598x.c
+@@ -423,7 +423,7 @@ static int tps6598x_check_mode(struct tps6598x *tps)
+ 	if (ret)
+ 		return ret;
+ 
+-	switch (match_string(modes, ARRAY_SIZE(modes), mode)) {
++	switch (__match_string(modes, ARRAY_SIZE(modes), mode)) {
+ 	case TPS_MODE_APP:
+ 		return 0;
+ 	case TPS_MODE_BOOT:
+diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+index a3030cdf3c18..b31585ecf48f 100644
+--- a/drivers/vfio/vfio.c
++++ b/drivers/vfio/vfio.c
+@@ -637,9 +637,9 @@ static bool vfio_dev_whitelisted(struct device *dev, struct device_driver *drv)
+ 			return true;
+ 	}
+ 
+-	return match_string(vfio_driver_whitelist,
+-			    ARRAY_SIZE(vfio_driver_whitelist),
+-			    drv->name) >= 0;
++	return __match_string(vfio_driver_whitelist,
++			      ARRAY_SIZE(vfio_driver_whitelist),
++			      drv->name) >= 0;
+ }
+ 
+ /*
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index d59c8a59f582..0025781e6e1e 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2129,7 +2129,7 @@ static int of_get_pxafb_display(struct device *dev, struct device_node *disp,
+ 	if (ret)
+ 		s = "color-tft";
+ 
+-	i = match_string(lcd_types, -1, s);
++	i = __match_string(lcd_types, -1, s);
+ 	if (i < 0) {
+ 		dev_err(dev, "lcd-type %s is unknown\n", s);
+ 		return i;
+diff --git a/fs/ubifs/auth.c b/fs/ubifs/auth.c
+index 5bf5fd08879e..43742d76b203 100644
+--- a/fs/ubifs/auth.c
++++ b/fs/ubifs/auth.c
+@@ -235,8 +235,8 @@ int ubifs_init_authentication(struct ubifs_info *c)
+ 		return -EINVAL;
+ 	}
+ 
+-	c->auth_hash_algo = match_string(hash_algo_name, HASH_ALGO__LAST,
+-					 c->auth_hash_name);
++	c->auth_hash_algo = __match_string(hash_algo_name, HASH_ALGO__LAST,
++					   c->auth_hash_name);
+ 	if ((int)c->auth_hash_algo < 0) {
+ 		ubifs_err(c, "Unknown hash algo %s specified",
+ 			  c->auth_hash_name);
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 6ab0a6fa512e..531d04308ff9 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -191,7 +191,7 @@ static inline int strtobool(const char *s, bool *res)
+ 	return kstrtobool(s, res);
+ }
+ 
+-int match_string(const char * const *array, size_t n, const char *string);
++int __match_string(const char * const *array, size_t n, const char *string);
+ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
+ 
+ /**
+diff --git a/kernel/cgroup/rdma.c b/kernel/cgroup/rdma.c
+index 1d75ae7f1cb7..65d4df148603 100644
+--- a/kernel/cgroup/rdma.c
++++ b/kernel/cgroup/rdma.c
+@@ -367,7 +367,7 @@ static int parse_resource(char *c, int *intval)
+ 	if (!name || !value)
+ 		return -EINVAL;
+ 
+-	i = match_string(rdmacg_resource_names, RDMACG_RESOURCE_MAX, name);
++	i = __match_string(rdmacg_resource_names, RDMACG_RESOURCE_MAX, name);
+ 	if (i < 0)
+ 		return i;
+ 
+diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
+index 8039d62ae36e..b0efc5fe641e 100644
+--- a/kernel/sched/debug.c
++++ b/kernel/sched/debug.c
+@@ -111,7 +111,7 @@ static int sched_feat_set(char *cmp)
+ 		cmp += 3;
+ 	}
+ 
+-	i = match_string(sched_feat_names, __SCHED_FEAT_NR, cmp);
++	i = __match_string(sched_feat_names, __SCHED_FEAT_NR, cmp);
+ 	if (i < 0)
+ 		return i;
+ 
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index ca1ee656d6d8..d9146141d9d8 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -4602,7 +4602,7 @@ static int trace_set_options(struct trace_array *tr, char *option)
+ 
+ 	mutex_lock(&trace_types_lock);
+ 
+-	ret = match_string(trace_options, -1, cmp);
++	ret = __match_string(trace_options, -1, cmp);
+ 	/* If no option could be set, test the specific tracer options */
+ 	if (ret < 0)
+ 		ret = set_tracer_option(tr, cmp, neg);
+diff --git a/lib/string.c b/lib/string.c
+index 76edb7bf76cb..2d5f0afef1f2 100644
+--- a/lib/string.c
++++ b/lib/string.c
+@@ -633,7 +633,7 @@ bool sysfs_streq(const char *s1, const char *s2)
+ EXPORT_SYMBOL(sysfs_streq);
+ 
+ /**
+- * match_string - matches given string in an array
++ * __match_string - matches given string in an array
+  * @array:	array of strings
+  * @n:		number of strings in the array or -1 for NULL terminated arrays
+  * @string:	string to match with
+@@ -641,7 +641,7 @@ EXPORT_SYMBOL(sysfs_streq);
+  * Return:
+  * index of a @string in the @array if matches, or %-EINVAL otherwise.
+  */
+-int match_string(const char * const *array, size_t n, const char *string)
++int __match_string(const char * const *array, size_t n, const char *string)
+ {
+ 	int index;
+ 	const char *item;
+@@ -659,7 +659,7 @@ int match_string(const char * const *array, size_t n, const char *string)
+ 
+ 	return -EINVAL;
+ }
+-EXPORT_SYMBOL(match_string);
++EXPORT_SYMBOL(__match_string);
+ 
+ /**
+  * __sysfs_match_string - matches given string in an array
+@@ -667,7 +667,7 @@ EXPORT_SYMBOL(match_string);
+  * @n: number of strings in the array or -1 for NULL terminated arrays
+  * @str: string to match with
+  *
+- * Returns index of @str in the @array or -EINVAL, just like match_string().
++ * Returns index of @str in the @array or -EINVAL, just like __match_string().
+  * Uses sysfs_streq instead of strcmp for matching.
+  */
+ int __sysfs_match_string(const char * const *array, size_t n, const char *str)
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 2219e747df49..97bcf4658317 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -2755,7 +2755,7 @@ int mpol_parse_str(char *str, struct mempolicy **mpol)
+ 	if (flags)
+ 		*flags++ = '\0';	/* terminate mode string */
+ 
+-	mode = match_string(policy_modes, MPOL_MAX, str);
++	mode = __match_string(policy_modes, MPOL_MAX, str);
+ 	if (mode < 0)
+ 		goto out;
+ 
+diff --git a/mm/vmpressure.c b/mm/vmpressure.c
+index 4854584ec436..d43f33139568 100644
+--- a/mm/vmpressure.c
++++ b/mm/vmpressure.c
+@@ -378,7 +378,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
+ 
+ 	/* Find required level */
+ 	token = strsep(&spec, ",");
+-	level = match_string(vmpressure_str_levels, VMPRESSURE_NUM_LEVELS, token);
++	level = __match_string(vmpressure_str_levels, VMPRESSURE_NUM_LEVELS, token);
+ 	if (level < 0) {
+ 		ret = level;
+ 		goto out;
+@@ -387,7 +387,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
+ 	/* Find optional mode */
+ 	token = strsep(&spec, ",");
+ 	if (token) {
+-		mode = match_string(vmpressure_str_modes, VMPRESSURE_NUM_MODES, token);
++		mode = __match_string(vmpressure_str_modes, VMPRESSURE_NUM_MODES, token);
+ 		if (mode < 0) {
+ 			ret = mode;
+ 			goto out;
+diff --git a/security/apparmor/lsm.c b/security/apparmor/lsm.c
+index 87500bde5a92..45d28db85e5a 100644
+--- a/security/apparmor/lsm.c
++++ b/security/apparmor/lsm.c
+@@ -1480,7 +1480,7 @@ static int param_set_audit(const char *val, const struct kernel_param *kp)
+ 	if (apparmor_initialized && !policy_admin_capable(NULL))
+ 		return -EPERM;
+ 
+-	i = match_string(audit_mode_names, AUDIT_MAX_INDEX, val);
++	i = __match_string(audit_mode_names, AUDIT_MAX_INDEX, val);
+ 	if (i < 0)
+ 		return -EINVAL;
+ 
+@@ -1509,7 +1509,7 @@ static int param_set_mode(const char *val, const struct kernel_param *kp)
+ 	if (apparmor_initialized && !policy_admin_capable(NULL))
+ 		return -EPERM;
+ 
+-	i = match_string(aa_profile_mode_names, APPARMOR_MODE_NAMES_MAX_INDEX,
++	i = __match_string(aa_profile_mode_names, APPARMOR_MODE_NAMES_MAX_INDEX,
+ 			 val);
+ 	if (i < 0)
+ 		return -EINVAL;
+diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
+index 357edd140c09..618842f85f2d 100644
+--- a/security/integrity/ima/ima_main.c
++++ b/security/integrity/ima/ima_main.c
+@@ -61,7 +61,7 @@ static int __init hash_setup(char *str)
+ 		goto out;
+ 	}
+ 
+-	i = match_string(hash_algo_name, HASH_ALGO__LAST, str);
++	i = __match_string(hash_algo_name, HASH_ALGO__LAST, str);
+ 	if (i < 0)
+ 		return 1;
+ 
+diff --git a/sound/firewire/oxfw/oxfw.c b/sound/firewire/oxfw/oxfw.c
+index 3d27f3378d5d..9ec5316f3bb5 100644
+--- a/sound/firewire/oxfw/oxfw.c
++++ b/sound/firewire/oxfw/oxfw.c
+@@ -57,7 +57,7 @@ static bool detect_loud_models(struct fw_unit *unit)
+ 	if (err < 0)
+ 		return false;
+ 
+-	return match_string(models, ARRAY_SIZE(models), model) >= 0;
++	return __match_string(models, ARRAY_SIZE(models), model) >= 0;
+ }
+ 
+ static int name_card(struct snd_oxfw *oxfw)
+diff --git a/sound/pci/oxygen/oxygen_mixer.c b/sound/pci/oxygen/oxygen_mixer.c
+index 81af21ac1439..13c2fb75fd71 100644
+--- a/sound/pci/oxygen/oxygen_mixer.c
++++ b/sound/pci/oxygen/oxygen_mixer.c
+@@ -1086,7 +1086,7 @@ static int add_controls(struct oxygen *chip,
+ 		err = snd_ctl_add(chip->card, ctl);
+ 		if (err < 0)
+ 			return err;
+-		j = match_string(known_ctl_names, CONTROL_COUNT, ctl->id.name);
++		j = __match_string(known_ctl_names, CONTROL_COUNT, ctl->id.name);
+ 		if (j >= 0) {
+ 			chip->controls[j] = ctl;
+ 			ctl->private_free = oxygen_any_ctl_free;
+diff --git a/sound/soc/codecs/max98088.c b/sound/soc/codecs/max98088.c
+index ca172a4b6849..3ef743075bda 100644
+--- a/sound/soc/codecs/max98088.c
++++ b/sound/soc/codecs/max98088.c
+@@ -1405,7 +1405,7 @@ static int max98088_get_channel(struct snd_soc_component *component, const char
+ {
+ 	int ret;
+ 
+-	ret = match_string(eq_mode_name, ARRAY_SIZE(eq_mode_name), name);
++	ret = __match_string(eq_mode_name, ARRAY_SIZE(eq_mode_name), name);
+ 	if (ret < 0)
+ 		dev_err(component->dev, "Bad EQ channel name '%s'\n", name);
+ 	return ret;
+diff --git a/sound/soc/codecs/max98095.c b/sound/soc/codecs/max98095.c
+index 3b3a10da7f40..cd69916d5dcb 100644
+--- a/sound/soc/codecs/max98095.c
++++ b/sound/soc/codecs/max98095.c
+@@ -1636,7 +1636,7 @@ static int max98095_get_bq_channel(struct snd_soc_component *component,
+ {
+ 	int ret;
+ 
+-	ret = match_string(bq_mode_name, ARRAY_SIZE(bq_mode_name), name);
++	ret = __match_string(bq_mode_name, ARRAY_SIZE(bq_mode_name), name);
+ 	if (ret < 0)
+ 		dev_err(component->dev, "Bad biquad channel name '%s'\n", name);
+ 	return ret;
+diff --git a/sound/soc/soc-dapm.c b/sound/soc/soc-dapm.c
+index 0382a47b30bd..c9a1e27e5839 100644
+--- a/sound/soc/soc-dapm.c
++++ b/sound/soc/soc-dapm.c
+@@ -753,7 +753,7 @@ static int dapm_connect_mux(struct snd_soc_dapm_context *dapm,
+ 		item = 0;
+ 	}
+ 
+-	i = match_string(e->texts, e->items, control_name);
++	i = __match_string(e->texts, e->items, control_name);
+ 	if (i < 0)
+ 		return -ENODEV;
+ 
+-- 
+2.17.1

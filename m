@@ -1,107 +1,62 @@
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-Date: Wed, 08 May 2019 07:01:41 +0000
-Subject: [PATCH v2 1/7] lib/hexdump.c: Fix selftests
-Message-Id: <20190508070148.23130-2-alastair@au1.ibm.com>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:34 +0000
+Subject: [PATCH 08/16] cpufreq/intel_pstate: remove NULL entry + use match_string()
+Message-Id: <20190508112842.11654-10-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508070148.23130-1-alastair@au1.ibm.com>
-In-Reply-To: <20190508070148.23130-1-alastair@au1.ibm.com>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alastair@d-silva.org
-Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxf>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-From: Alastair D'Silva <alastair@d-silva.org>
+The change is mostly cosmetic.
 
-The overflow tests did not account for the situation where no
-overflow occurs and len < rowsize.
+The `energy_perf_strings` array is static, so match_string() can be used
+(which will implicitly do a ARRAY_SIZE(energy_perf_strings)).
 
-This patch renames the cryptic variables and accounts for the
-above case.
+The only small benefit here, is the reduction of the array size by 1
+element.
 
-The selftests now pass.
-
-Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- lib/test_hexdump.c | 47 ++++++++++++++++++++++++++--------------------
- 1 file changed, 27 insertions(+), 20 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
-index 5144899d3c6b..d78ddd62ffd0 100644
---- a/lib/test_hexdump.c
-+++ b/lib/test_hexdump.c
-@@ -163,45 +163,52 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
- {
- 	char test[TEST_HEXDUMP_BUF_SIZE];
- 	char buf[TEST_HEXDUMP_BUF_SIZE];
--	int rs = rowsize, gs = groupsize;
--	int ae, he, e, f, r;
--	bool a;
-+	int ascii_len, hex_len, expected_len, fill_point, ngroups, rc;
-+	bool match;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 6ed1e705bc05..ab9a0b34b900 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -593,8 +593,7 @@ static const char * const energy_perf_strings[] = {
+ 	"performance",
+ 	"balance_performance",
+ 	"balance_power",
+-	"power",
+-	NULL
++	"power"
+ };
+ static const unsigned int epp_values[] = {
+ 	HWP_EPP_PERFORMANCE,
+@@ -680,8 +679,8 @@ static ssize_t show_energy_performance_available_preferences(
+ 	int i = 0;
+ 	int ret = 0;
  
- 	total_tests++;
+-	while (energy_perf_strings[i] != NULL)
+-		ret += sprintf(&buf[ret], "%s ", energy_perf_strings[i++]);
++	for (; i < ARRAY_SIZE(energy_perf_strings); i++)
++		ret += sprintf(&buf[ret], "%s ", energy_perf_strings[i]);
  
- 	memset(buf, FILL_CHAR, sizeof(buf));
+ 	ret += sprintf(&buf[ret], "\n");
  
--	r = hex_dump_to_buffer(data_b, len, rs, gs, buf, buflen, ascii);
-+	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen, ascii);
+@@ -701,7 +700,7 @@ static ssize_t store_energy_performance_preference(
+ 	if (ret != 1)
+ 		return -EINVAL;
  
- 	/*
- 	 * Caller must provide the data length multiple of groupsize. The
- 	 * calculations below are made with that assumption in mind.
- 	 */
--	ae = rs * 2 /* hex */ + rs / gs /* spaces */ + 1 /* space */ + len /* ascii */;
--	he = (gs * 2 /* hex */ + 1 /* space */) * len / gs - 1 /* no trailing space */;
-+	ngroups = rowsize / groupsize;
-+	hex_len = (groupsize * 2 /* hex */ + 1 /* spaces */) * ngroups
-+		  - 1 /* no trailing space */;
-+	ascii_len = hex_len + 2 /* space */ + len /* ascii */;
-+
-+	if (len < rowsize) {
-+		ngroups = len / groupsize;
-+		hex_len = (groupsize * 2 /* hex */ + 1 /* spaces */) * ngroups
-+		  - 1 /* no trailing space */;
-+	}
- 
--	if (ascii)
--		e = ae;
--	else
--		e = he;
-+	expected_len = (ascii) ? ascii_len : hex_len;
- 
--	f = min_t(int, e + 1, buflen);
-+	fill_point = min_t(int, expected_len + 1, buflen);
- 	if (buflen) {
--		test_hexdump_prepare_test(len, rs, gs, test, sizeof(test), ascii);
--		test[f - 1] = '\0';
-+		test_hexdump_prepare_test(len, rowsize, groupsize, test,
-+					  sizeof(test), ascii);
-+		test[fill_point - 1] = '\0';
- 	}
--	memset(test + f, FILL_CHAR, sizeof(test) - f);
-+	memset(test + fill_point, FILL_CHAR, sizeof(test) - fill_point);
- 
--	a = r = e && !memcmp(test, buf, TEST_HEXDUMP_BUF_SIZE);
-+	match = rc = expected_len && !memcmp(test, buf, TEST_HEXDUMP_BUF_SIZE);
- 
- 	buf[sizeof(buf) - 1] = '\0';
- 
--	if (!a) {
--		pr_err("Len: %zu buflen: %zu strlen: %zu\n",
--			len, buflen, strnlen(buf, sizeof(buf)));
--		pr_err("Result: %d '%s'\n", r, buf);
--		pr_err("Expect: %d '%s'\n", e, test);
-+	if (!match) {
-+		pr_err("rowsize: %u groupsize: %u ascii: %d Len: %zu buflen: %zu strlen: %zu\n",
-+			rowsize, groupsize, ascii, len, buflen,
-+			strnlen(buf, sizeof(buf)));
-+		pr_err("Result: %d '%-.*s'\n", rc, (int)buflen, buf);
-+		pr_err("Expect: %d '%-.*s'\n", expected_len, (int)buflen, test);
- 		failed_tests++;
-+
- 	}
- }
+-	ret = __match_string(energy_perf_strings, -1, str_preference);
++	ret = match_string(energy_perf_strings, str_preference);
+ 	if (ret < 0)
+ 		return ret;
  
 -- 
-2.21.0
+2.17.1

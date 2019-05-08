@@ -1,148 +1,261 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Mon, 27 May 2019 04:13:39 +0000
-Subject: Re: [PATCH 2/2] video: fbdev: pvr2fb: add COMPILE_TEST support
-Message-Id: <201905271244.WaVc5BQS%lkp@intel.com>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:29 +0000
+Subject: [PATCH 03/16] lib,treewide: add new match_string() helper/macro
+Message-Id: <20190508112842.11654-5-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
-In-Reply-To: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, kbuild-all@01.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, intel-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
+Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Alexandru Ardelean <alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 
-Hi Bartlomiej,
+This change re-introduces `match_string()` as a macro that uses
+ARRAY_SIZE() to compute the size of the array.
+The macro is added in all the places that do
+`match_string(_a, ARRAY_SIZE(_a), s)`, since the change is pretty
+straightforward.
 
-I love your patch! Perhaps something to improve:
-
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.2-rc2 next-20190524]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Bartlomiej-Zolnierkiewicz/video-fbdev-pvr2fb-remove-function-prototypes/20190524-145925
-
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
-
-smatch warnings:
-drivers/video/fbdev/pvr2fb.c:467 pvr2fb_check_var() warn: unsigned 'var->xoffset' is never less than zero.
-drivers/video/fbdev/pvr2fb.c:467 pvr2fb_check_var() warn: unsigned 'var->yoffset' is never less than zero.
-
-vim +467 drivers/video/fbdev/pvr2fb.c
-
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  430  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  431  static int pvr2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  432  {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  433  	struct pvr2fb_par *par = (struct pvr2fb_par *)info->par;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  434  	unsigned int vtotal, hsync_total;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  435  	unsigned long line_length;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  436  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  437  	if (var->pixclock != TV_CLK && var->pixclock != VGA_CLK) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  438  		pr_debug("Invalid pixclock value %d\n", var->pixclock);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  439  		return -EINVAL;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  440  	}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  441  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  442  	if (var->xres < 320)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  443  		var->xres = 320;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  444  	if (var->yres < 240)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  445  		var->yres = 240;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  446  	if (var->xres_virtual < var->xres)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  447  		var->xres_virtual = var->xres;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  448  	if (var->yres_virtual < var->yres)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  449  		var->yres_virtual = var->yres;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  450  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  451  	if (var->bits_per_pixel <= 16)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  452  		var->bits_per_pixel = 16;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  453  	else if (var->bits_per_pixel <= 24)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  454  		var->bits_per_pixel = 24;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  455  	else if (var->bits_per_pixel <= 32)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  456  		var->bits_per_pixel = 32;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  457  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  458  	set_color_bitfields(var);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  459  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  460  	if (var->vmode & FB_VMODE_YWRAP) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  461  		if (var->xoffset || var->yoffset < 0 ||
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  462  		    var->yoffset >= var->yres_virtual) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  463  			var->xoffset = var->yoffset = 0;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  464  		} else {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  465  			if (var->xoffset > var->xres_virtual - var->xres ||
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  466  			    var->yoffset > var->yres_virtual - var->yres ||
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16 @467  			    var->xoffset < 0 || var->yoffset < 0)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  468  				var->xoffset = var->yoffset = 0;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  469  		}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  470  	} else {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  471  		var->xoffset = var->yoffset = 0;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  472  	}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  473  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  474  	/*
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  475  	 * XXX: Need to be more creative with this (i.e. allow doublecan for
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  476  	 * PAL/NTSC output).
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  477  	 */
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  478  	if (var->yres < 480 && video_output = VO_VGA)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  479  		var->vmode |= FB_VMODE_DOUBLE;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  480  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  481  	if (video_output != VO_VGA) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  482  		var->sync |= FB_SYNC_BROADCAST;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  483  		var->vmode |= FB_VMODE_INTERLACED;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  484  	} else {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  485  		var->sync &= ~FB_SYNC_BROADCAST;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  486  		var->vmode &= ~FB_VMODE_INTERLACED;
-fcb1fec7 drivers/video/pvr2fb.c Paul Mundt     2008-03-06  487  		var->vmode |= FB_VMODE_NONINTERLACED;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  488  	}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  489  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  490  	if ((var->activate & FB_ACTIVATE_MASK) != FB_ACTIVATE_TEST) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  491  		var->right_margin = par->borderstop_h -
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  492  				   (par->diwstart_h + var->xres);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  493  		var->left_margin  = par->diwstart_h - par->borderstart_h;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  494  		var->hsync_len    = par->borderstart_h +
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  495  		                   (par->hsync_total - par->borderstop_h);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  496  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  497  		var->upper_margin = par->diwstart_v - par->borderstart_v;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  498  		var->lower_margin = par->borderstop_v -
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  499  				   (par->diwstart_v + var->yres);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  500  		var->vsync_len    = par->borderstop_v +
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  501  				   (par->vsync_total - par->borderstop_v);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  502  	}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  503  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  504  	hsync_total = var->left_margin + var->xres + var->right_margin +
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  505  		      var->hsync_len;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  506  	vtotal = var->upper_margin + var->yres + var->lower_margin +
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  507  		 var->vsync_len;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  508  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  509  	if (var->sync & FB_SYNC_BROADCAST) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  510  		if (var->vmode & FB_VMODE_INTERLACED)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  511  			vtotal /= 2;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  512  		if (vtotal > (PAL_VTOTAL + NTSC_VTOTAL)/2) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  513  			/* PAL video output */
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  514  			/* XXX: Should be using a range here ... ? */
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  515  			if (hsync_total != PAL_HTOTAL) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  516  				pr_debug("invalid hsync total for PAL\n");
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  517  				return -EINVAL;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  518  			}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  519  		} else {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  520  			/* NTSC video output */
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  521  			if (hsync_total != NTSC_HTOTAL) {
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  522  				pr_debug("invalid hsync total for NTSC\n");
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  523  				return -EINVAL;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  524  			}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  525  		}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  526  	}
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  527  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  528  	/* Check memory sizes */
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  529  	line_length = get_line_length(var->xres_virtual, var->bits_per_pixel);
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  530  	if (line_length * var->yres_virtual > info->fix.smem_len)
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  531  		return -ENOMEM;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  532  
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  533  	return 0;
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  534  }
-^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  535  
-
-:::::: The code at line 467 was first introduced by commit
-:::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
-
-:::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
-:::::: CC: Linus Torvalds <torvalds@ppc970.osdl.org>
-
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/clk/bcm/clk-bcm2835.c                    | 4 +---
+ drivers/gpio/gpiolib-of.c                        | 2 +-
+ drivers/gpu/drm/i915/intel_pipe_crc.c            | 2 +-
+ drivers/mfd/omap-usb-host.c                      | 2 +-
+ drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c | 2 +-
+ drivers/pci/pcie/aer.c                           | 2 +-
+ drivers/usb/common/common.c                      | 4 ++--
+ drivers/usb/typec/class.c                        | 8 +++-----
+ drivers/usb/typec/tps6598x.c                     | 2 +-
+ drivers/vfio/vfio.c                              | 4 +---
+ include/linux/string.h                           | 9 +++++++++
+ sound/firewire/oxfw/oxfw.c                       | 2 +-
+ sound/soc/codecs/max98088.c                      | 2 +-
+ sound/soc/codecs/max98095.c                      | 2 +-
+ 14 files changed, 25 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/clk/bcm/clk-bcm2835.c b/drivers/clk/bcm/clk-bcm2835.c
+index a775f6a1f717..1ab388590ead 100644
+--- a/drivers/clk/bcm/clk-bcm2835.c
++++ b/drivers/clk/bcm/clk-bcm2835.c
+@@ -1390,9 +1390,7 @@ static struct clk_hw *bcm2835_register_clock(struct bcm2835_cprman *cprman,
+ 	for (i = 0; i < data->num_mux_parents; i++) {
+ 		parents[i] = data->parents[i];
+ 
+-		ret = __match_string(cprman_parent_names,
+-				     ARRAY_SIZE(cprman_parent_names),
+-				     parents[i]);
++		ret = match_string(cprman_parent_names, parents[i]);
+ 		if (ret >= 0)
+ 			parents[i] = cprman->real_parent_names[ret];
+ 	}
+diff --git a/drivers/gpio/gpiolib-of.c b/drivers/gpio/gpiolib-of.c
+index 27d6f04ab58e..71e886869d78 100644
+--- a/drivers/gpio/gpiolib-of.c
++++ b/drivers/gpio/gpiolib-of.c
+@@ -279,7 +279,7 @@ static struct gpio_desc *of_find_regulator_gpio(struct device *dev, const char *
+ 	if (!con_id)
+ 		return ERR_PTR(-ENOENT);
+ 
+-	i = __match_string(whitelist, ARRAY_SIZE(whitelist), con_id);
++	i = match_string(whitelist, con_id);
+ 	if (i < 0)
+ 		return ERR_PTR(-ENOENT);
+ 
+diff --git a/drivers/gpu/drm/i915/intel_pipe_crc.c b/drivers/gpu/drm/i915/intel_pipe_crc.c
+index 286fad1f0e08..6fc4f3d3d1f6 100644
+--- a/drivers/gpu/drm/i915/intel_pipe_crc.c
++++ b/drivers/gpu/drm/i915/intel_pipe_crc.c
+@@ -449,7 +449,7 @@ display_crc_ctl_parse_source(const char *buf, enum intel_pipe_crc_source *s)
+ 		return 0;
+ 	}
+ 
+-	i = __match_string(pipe_crc_sources, ARRAY_SIZE(pipe_crc_sources), buf);
++	i = match_string(pipe_crc_sources, buf);
+ 	if (i < 0)
+ 		return i;
+ 
+diff --git a/drivers/mfd/omap-usb-host.c b/drivers/mfd/omap-usb-host.c
+index 9aaacb5bdb26..53dff34c0afc 100644
+--- a/drivers/mfd/omap-usb-host.c
++++ b/drivers/mfd/omap-usb-host.c
+@@ -509,7 +509,7 @@ static int usbhs_omap_get_dt_pdata(struct device *dev,
+ 			continue;
+ 
+ 		/* get 'enum usbhs_omap_port_mode' from port mode string */
+-		ret = __match_string(port_modes, ARRAY_SIZE(port_modes), mode);
++		ret = match_string(port_modes, mode);
+ 		if (ret < 0) {
+ 			dev_warn(dev, "Invalid port%d-mode \"%s\" in device tree\n",
+ 					i, mode);
+diff --git a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
+index 59ce3ff35553..778b4dfd8b75 100644
+--- a/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
++++ b/drivers/net/wireless/intel/iwlwifi/mvm/debugfs.c
+@@ -667,7 +667,7 @@ iwl_dbgfs_bt_force_ant_write(struct iwl_mvm *mvm, char *buf,
+ 	};
+ 	int ret, bt_force_ant_mode;
+ 
+-	ret = __match_string(modes_str, ARRAY_SIZE(modes_str), buf);
++	ret = match_string(modes_str, buf);
+ 	if (ret < 0)
+ 		return ret;
+ 
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index 41a0773a1cbc..2278caba109c 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -203,7 +203,7 @@ void pcie_ecrc_get_policy(char *str)
+ {
+ 	int i;
+ 
+-	i = __match_string(ecrc_policy_str, ARRAY_SIZE(ecrc_policy_str), str);
++	i = match_string(ecrc_policy_str, str);
+ 	if (i < 0)
+ 		return;
+ 
+diff --git a/drivers/usb/common/common.c b/drivers/usb/common/common.c
+index bca0c404c6ca..5a651d311d38 100644
+--- a/drivers/usb/common/common.c
++++ b/drivers/usb/common/common.c
+@@ -68,7 +68,7 @@ enum usb_device_speed usb_get_maximum_speed(struct device *dev)
+ 	if (ret < 0)
+ 		return USB_SPEED_UNKNOWN;
+ 
+-	ret = __match_string(speed_names, ARRAY_SIZE(speed_names), maximum_speed);
++	ret = match_string(speed_names, maximum_speed);
+ 
+ 	return (ret < 0) ? USB_SPEED_UNKNOWN : ret;
+ }
+@@ -106,7 +106,7 @@ static enum usb_dr_mode usb_get_dr_mode_from_string(const char *str)
+ {
+ 	int ret;
+ 
+-	ret = __match_string(usb_dr_modes, ARRAY_SIZE(usb_dr_modes), str);
++	ret = match_string(usb_dr_modes, str);
+ 	return (ret < 0) ? USB_DR_MODE_UNKNOWN : ret;
+ }
+ 
+diff --git a/drivers/usb/typec/class.c b/drivers/usb/typec/class.c
+index 4abc5a76ec51..38ac776cba8a 100644
+--- a/drivers/usb/typec/class.c
++++ b/drivers/usb/typec/class.c
+@@ -1409,8 +1409,7 @@ EXPORT_SYMBOL_GPL(typec_set_pwr_opmode);
+  */
+ int typec_find_port_power_role(const char *name)
+ {
+-	return __match_string(typec_port_power_roles,
+-			      ARRAY_SIZE(typec_port_power_roles), name);
++	return match_string(typec_port_power_roles, name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_port_power_role);
+ 
+@@ -1424,7 +1423,7 @@ EXPORT_SYMBOL_GPL(typec_find_port_power_role);
+  */
+ int typec_find_power_role(const char *name)
+ {
+-	return __match_string(typec_roles, ARRAY_SIZE(typec_roles), name);
++	return match_string(typec_roles, name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_power_role);
+ 
+@@ -1438,8 +1437,7 @@ EXPORT_SYMBOL_GPL(typec_find_power_role);
+  */
+ int typec_find_port_data_role(const char *name)
+ {
+-	return __match_string(typec_port_data_roles,
+-			      ARRAY_SIZE(typec_port_data_roles), name);
++	return match_string(typec_port_data_roles, name);
+ }
+ EXPORT_SYMBOL_GPL(typec_find_port_data_role);
+ 
+diff --git a/drivers/usb/typec/tps6598x.c b/drivers/usb/typec/tps6598x.c
+index 0389e4391faf..0c4e47868590 100644
+--- a/drivers/usb/typec/tps6598x.c
++++ b/drivers/usb/typec/tps6598x.c
+@@ -423,7 +423,7 @@ static int tps6598x_check_mode(struct tps6598x *tps)
+ 	if (ret)
+ 		return ret;
+ 
+-	switch (__match_string(modes, ARRAY_SIZE(modes), mode)) {
++	switch (match_string(modes, mode)) {
+ 	case TPS_MODE_APP:
+ 		return 0;
+ 	case TPS_MODE_BOOT:
+diff --git a/drivers/vfio/vfio.c b/drivers/vfio/vfio.c
+index b31585ecf48f..fe8283d3781b 100644
+--- a/drivers/vfio/vfio.c
++++ b/drivers/vfio/vfio.c
+@@ -637,9 +637,7 @@ static bool vfio_dev_whitelisted(struct device *dev, struct device_driver *drv)
+ 			return true;
+ 	}
+ 
+-	return __match_string(vfio_driver_whitelist,
+-			      ARRAY_SIZE(vfio_driver_whitelist),
+-			      drv->name) >= 0;
++	return match_string(vfio_driver_whitelist, drv->name) >= 0;
+ }
+ 
+ /*
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 531d04308ff9..07e9f89088df 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -194,6 +194,15 @@ static inline int strtobool(const char *s, bool *res)
+ int __match_string(const char * const *array, size_t n, const char *string);
+ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
+ 
++/**
++ * match_string - matches given string in an array
++ * @_a: array of strings
++ * @_s: string to match with
++ *
++ * Helper for __match_string(). Calculates the size of @a automatically.
++ */
++#define match_string(_a, _s) __match_string(_a, ARRAY_SIZE(_a), _s)
++
+ /**
+  * sysfs_match_string - matches given string in an array
+  * @_a: array of strings
+diff --git a/sound/firewire/oxfw/oxfw.c b/sound/firewire/oxfw/oxfw.c
+index 9ec5316f3bb5..433fc84c4f90 100644
+--- a/sound/firewire/oxfw/oxfw.c
++++ b/sound/firewire/oxfw/oxfw.c
+@@ -57,7 +57,7 @@ static bool detect_loud_models(struct fw_unit *unit)
+ 	if (err < 0)
+ 		return false;
+ 
+-	return __match_string(models, ARRAY_SIZE(models), model) >= 0;
++	return match_string(models, model) >= 0;
+ }
+ 
+ static int name_card(struct snd_oxfw *oxfw)
+diff --git a/sound/soc/codecs/max98088.c b/sound/soc/codecs/max98088.c
+index 3ef743075bda..911ffe84c37e 100644
+--- a/sound/soc/codecs/max98088.c
++++ b/sound/soc/codecs/max98088.c
+@@ -1405,7 +1405,7 @@ static int max98088_get_channel(struct snd_soc_component *component, const char
+ {
+ 	int ret;
+ 
+-	ret = __match_string(eq_mode_name, ARRAY_SIZE(eq_mode_name), name);
++	ret = match_string(eq_mode_name, name);
+ 	if (ret < 0)
+ 		dev_err(component->dev, "Bad EQ channel name '%s'\n", name);
+ 	return ret;
+diff --git a/sound/soc/codecs/max98095.c b/sound/soc/codecs/max98095.c
+index cd69916d5dcb..d182d45d0c83 100644
+--- a/sound/soc/codecs/max98095.c
++++ b/sound/soc/codecs/max98095.c
+@@ -1636,7 +1636,7 @@ static int max98095_get_bq_channel(struct snd_soc_component *component,
+ {
+ 	int ret;
+ 
+-	ret = __match_string(bq_mode_name, ARRAY_SIZE(bq_mode_name), name);
++	ret = match_string(bq_mode_name, name);
+ 	if (ret < 0)
+ 		dev_err(component->dev, "Bad biquad channel name '%s'\n", name);
+ 	return ret;
+-- 
+2.17.1

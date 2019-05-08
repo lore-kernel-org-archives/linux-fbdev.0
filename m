@@ -1,34 +1,40 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 21 May 2019 10:49:59 +0000
-Subject: [PATCH v2] video: fbdev: pxa168fb: add COMPILE_TEST support
-Message-Id: <1059f924-7bbb-37b1-42ee-52cad878f572@samsung.com>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Wed, 08 May 2019 11:28:38 +0000
+Subject: [PATCH 12/16] rdmacg: use new match_string() helper/macro
+Message-Id: <20190508112842.11654-14-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190521104959eucas1p14de9d183967e7f50bfede732d3fd8764@eucas1p1.samsung.com>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-Add COMPILE_TEST support to pxa168fb driver for better compile
-testing coverage.
+The `rdmacg_resource_names` array is a static array of strings.
+Using match_string() (which computes the array size via ARRAY_SIZE())
+is possible.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+The change is mostly cosmetic.
+No functionality change.
+
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
-v2: add missing HAVE_CLK && HAS IOMEM dependencies
+ kernel/cgroup/rdma.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbdev/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: b/drivers/video/fbdev/Kconfig
-=================================--- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -1729,7 +1729,8 @@ config FB_68328
+diff --git a/kernel/cgroup/rdma.c b/kernel/cgroup/rdma.c
+index 65d4df148603..71c3d305bd1f 100644
+--- a/kernel/cgroup/rdma.c
++++ b/kernel/cgroup/rdma.c
+@@ -367,7 +367,7 @@ static int parse_resource(char *c, int *intval)
+ 	if (!name || !value)
+ 		return -EINVAL;
  
- config FB_PXA168
- 	tristate "PXA168/910 LCD framebuffer support"
--	depends on FB && (CPU_PXA168 || CPU_PXA910)
-+	depends on FB && HAVE_CLK && HAS_IOMEM
-+	depends on CPU_PXA168 || CPU_PXA910 || COMPILE_TEST
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
+-	i = __match_string(rdmacg_resource_names, RDMACG_RESOURCE_MAX, name);
++	i = match_string(rdmacg_resource_names, name);
+ 	if (i < 0)
+ 		return i;
+ 
+-- 
+2.17.1

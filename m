@@ -1,155 +1,83 @@
-From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:55 +0000
-Subject: [PATCH 24/33] Revert "backlight/fbcon: Add FB_EVENT_CONBLANK"
-Message-Id: <20190528090304.9388-25-daniel.vetter@ffwll.ch>
+From: Christoph Hellwig <hch@lst.de>
+Date: Thu, 09 May 2019 17:38:48 +0000
+Subject: [PATCH 2/3] au1200fb: fix DMA API abuse
+Message-Id: <20190509173849.11825-3-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190509173849.11825-1-hch@lst.de>
+In-Reply-To: <20190509173849.11825-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Richard Purdie <rpurdie@rpsys.net>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manuel Lauss <manuel.lauss@gmail.com>
+Cc: linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-This reverts commit 994efacdf9a087b52f71e620b58dfa526b0cf928.
+Virtual addresses return from dma(m)_alloc_attrs are opaque in what
+backs then, and drivers must not poke into them.  Similarly caching
+modes are not supposed to be directly set by the driver.  Switch the
+driver to use the generic DMA API mmap helper to avoid these problems.
 
-The justification is that if hw blanking fails (i.e. fbops->fb_blank)
-fails, then we still want to shut down the backlight. Which is exactly
-_not_ what fb_blank() does and so rather inconsistent if we end up
-with different behaviour between fbcon and direct fbdev usage. Given
-that the entire notifier maze is getting in the way anyway I figured
-it's simplest to revert this not well justified commit.
-
-v2: Add static inline to the dummy version.
-
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: Hans de Goede <hdegoede@redhat.com>
-Cc: Yisheng Xie <ysxie@foxmail.com>
-Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- drivers/video/backlight/backlight.c |  2 +-
- drivers/video/fbdev/core/fbcon.c    | 14 +-------------
- drivers/video/fbdev/core/fbmem.c    |  1 +
- include/linux/fb.h                  |  4 +---
- include/linux/fbcon.h               |  2 ++
- 5 files changed, 6 insertions(+), 17 deletions(-)
+ drivers/video/fbdev/au1200fb.c | 19 ++++---------------
+ 1 file changed, 4 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 1ef8b6fd62ac..5dc07106a59e 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -47,7 +47,7 @@ static int fb_notifier_callback(struct notifier_block *self,
- 	int fb_blank = 0;
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 3872ccef4cb2..26caffb02b7e 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -147,6 +147,7 @@ struct au1200_lcd_iodata_t {
+ struct au1200fb_device {
+ 	struct fb_info *fb_info;		/* FB driver info record */
+ 	struct au1200fb_platdata *pd;
++	struct device *dev;
  
- 	/* If we aren't interested in this event, skip it immediately ... */
--	if (event != FB_EVENT_BLANK && event != FB_EVENT_CONBLANK)
-+	if (event != FB_EVENT_BLANK)
- 		return 0;
- 
- 	bd = container_of(self, struct backlight_device, fb_notif);
-diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index ef69bd4ad343..a4617067ff24 100644
---- a/drivers/video/fbdev/core/fbcon.c
-+++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2350,8 +2350,6 @@ static int fbcon_switch(struct vc_data *vc)
- static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
- 				int blank)
+ 	int					plane;
+ 	unsigned char* 		fb_mem;		/* FrameBuffer memory map */
+@@ -1232,10 +1233,8 @@ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
--	struct fb_event event;
+ 	struct au1200fb_device *fbdev = info->par;
+ 
+-	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-	pgprot_val(vma->vm_page_prot) |= _CACHE_MASK; /* CCA=7 */
 -
- 	if (blank) {
- 		unsigned short charmask = vc->vc_hi_font_mask ?
- 			0x1ff : 0xff;
-@@ -2362,13 +2360,6 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
- 		fbcon_clear(vc, 0, 0, vc->vc_rows, vc->vc_cols);
- 		vc->vc_video_erase_char = oldc;
- 	}
--
--
--	lock_fb_info(info);
--	event.info = info;
--	event.data = &blank;
--	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
--	unlock_fb_info(info);
+-	return vm_iomap_memory(vma, fbdev->fb_phys, fbdev->fb_len);
++	return dma_mmap_attrs(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
++			fbdev->fb_len, DMA_ATTR_NON_CONSISTENT);
  }
  
- static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
-@@ -3240,7 +3231,7 @@ int fbcon_fb_registered(struct fb_info *info)
- 	return ret;
- }
+ static void set_global(u_int cmd, struct au1200_lcd_global_regs_t *pdata)
+@@ -1647,7 +1646,6 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 	struct au1200fb_device *fbdev;
+ 	struct au1200fb_platdata *pd;
+ 	struct fb_info *fbi = NULL;
+-	unsigned long page;
+ 	int bpp, plane, ret, irq;
  
--static void fbcon_fb_blanked(struct fb_info *info, int blank)
-+void fbcon_fb_blanked(struct fb_info *info, int blank)
- {
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	struct vc_data *vc;
-@@ -3344,9 +3335,6 @@ static int fbcon_event_notify(struct notifier_block *self,
- 		con2fb = event->data;
- 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
- 		break;
--	case FB_EVENT_BLANK:
--		fbcon_fb_blanked(info, *(int *)event->data);
--		break;
- 	case FB_EVENT_REMAP_ALL_CONSOLE:
- 		idx = info->node;
- 		fbcon_remap_all(idx);
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ddc0c16b8bbf..9366fbe99a58 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1068,6 +1068,7 @@ fb_blank(struct fb_info *info, int blank)
- 	event.data = &blank;
+ 	print_info("" DRIVER_DESC "");
+@@ -1685,6 +1683,7 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 		fbdev = fbi->par;
+ 		fbdev->fb_info = fbi;
+ 		fbdev->pd = pd;
++		fbdev->dev = &dev->dev;
  
- 	early_ret = fb_notifier_call_chain(FB_EARLY_EVENT_BLANK, &event);
-+	fbcon_fb_blanked(info, blank);
+ 		fbdev->plane = plane;
  
- 	if (info->fbops->fb_blank)
-  		ret = info->fbops->fb_blank(blank, info);
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 0d86aa31bf8d..1e66fac3124f 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -137,12 +137,10 @@ struct fb_cursor_user {
- #define FB_EVENT_GET_CONSOLE_MAP        0x07
- /*      CONSOLE-SPECIFIC: set console to framebuffer mapping */
- #define FB_EVENT_SET_CONSOLE_MAP        0x08
--/*      A hardware display blank change occurred */
-+/*      A display blank is requested       */
- #define FB_EVENT_BLANK                  0x09
- /*      Private modelist is to be replaced */
- #define FB_EVENT_MODE_CHANGE_ALL	0x0B
--/*	A software display blank change occurred */
--#define FB_EVENT_CONBLANK               0x0C
- /*      CONSOLE-SPECIFIC: remap all consoles to new fb - for vga_switcheroo */
- #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
- /*      A hardware display blank early change occurred */
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index 305e4f2eddac..d67d7ec51ef9 100644
---- a/include/linux/fbcon.h
-+++ b/include/linux/fbcon.h
-@@ -14,6 +14,7 @@ int fbcon_mode_deleted(struct fb_info *info,
- void fbcon_new_modelist(struct fb_info *info);
- void fbcon_get_requirement(struct fb_info *info,
- 			   struct fb_blit_caps *caps);
-+void fbcon_fb_blanked(struct fb_info *info, int blank);
- #else
- static inline void fb_console_init(void) {}
- static inline void fb_console_exit(void) {}
-@@ -27,6 +28,7 @@ static inline int fbcon_mode_deleted(struct fb_info *info,
- static inline void fbcon_new_modelist(struct fb_info *info) {}
- static inline void fbcon_get_requirement(struct fb_info *info,
- 					 struct fb_blit_caps *caps) {}
-+static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
- #endif
+@@ -1702,16 +1701,6 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 			goto failed;
+ 		}
  
- #endif /* _LINUX_FBCON_H */
+-		/*
+-		 * Set page reserved so that mmap will work. This is necessary
+-		 * since we'll be remapping normal memory.
+-		 */
+-		for (page = (unsigned long)fbdev->fb_phys;
+-		     page < PAGE_ALIGN((unsigned long)fbdev->fb_phys +
+-			     fbdev->fb_len);
+-		     page += PAGE_SIZE) {
+-			SetPageReserved(pfn_to_page(page >> PAGE_SHIFT)); /* LCD DMA is NOT coherent on Au1200 */
+-		}
+ 		print_dbg("Framebuffer memory map at %p", fbdev->fb_mem);
+ 		print_dbg("phys=0x%08x, size=%dK", fbdev->fb_phys, fbdev->fb_len / 1024);
+ 
 -- 
 2.20.1

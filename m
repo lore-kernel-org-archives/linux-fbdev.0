@@ -1,38 +1,51 @@
-From: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
-Date: Fri, 10 May 2019 09:15:27 +0000
+From: "andriy.shevchenko@linux.intel.com"  <andriy.shevchenko@linux.intel.com>
+Date: Fri, 10 May 2019 14:34:07 +0000
 Subject: Re: [PATCH 03/16] lib,treewide: add new match_string() helper/macro
-Message-Id: <4df165bc4247e60aa4952fd55cb0c77e60712767.camel@analog.com>
+Message-Id: <20190510143407.GA9224@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-         <20190508112842.11654-5-alexandru.ardelean@analog.com>
-         <20190508131128.GL9224@smile.fi.intel.com>
-         <20190508131856.GB10138@kroah.com>
-         <b2440bc9485456a7a90a488c528997587b22088b.camel@analog.com>
-In-Reply-To: <b2440bc9485456a7a90a488c528997587b22088b.camel@analog.com>
+ <20190508112842.11654-5-alexandru.ardelean@analog.com>
+ <20190508131128.GL9224@smile.fi.intel.com>
+ <20190508131856.GB10138@kroah.com>
+ <b2440bc9485456a7a90a488c528997587b22088b.camel@analog.com>
+ <4df165bc4247e60aa4952fd55cb0c77e60712767.camel@analog.com>
+In-Reply-To: <4df165bc4247e60aa4952fd55cb0c77e60712767.camel@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "andriy.shevchenko@linux.intel.com" <andriy.shevchenko@linux.intel.com>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>, "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>, "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "cgroups@vger.kernel.org" <cgroups@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>, "linux-security-module@vger.kernel.org" <linux-security-module@vger.kernel.org>, devel@driverdev.osu
+To: "Ardelean, Alexandru" <alexandru.Ardelean@analog.com>
+Cc: "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>, "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>, "linux-clk@vger.kernel.org" <linux-clk@vger.kernel.org>, "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, "linux-rockchip@lists.infradead.org" <linux-rockchip@lists.infradead.org>, "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>
 
-T24gV2VkLCAyMDE5LTA1LTA4IGF0IDE2OjIyICswMzAwLCBBbGV4YW5kcnUgQXJkZWxlYW4gd3Jv
-dGU6DQo+IE9uIFdlZCwgMjAxOS0wNS0wOCBhdCAxNToxOCArMDIwMCwgR3JlZyBLSCB3cm90ZToN
-Cj4gPiANCj4gPiANCj4gPiBPbiBXZWQsIE1heSAwOCwgMjAxOSBhdCAwNDoxMToyOFBNICswMzAw
-LCBBbmR5IFNoZXZjaGVua28gd3JvdGU6DQo+ID4gPiBPbiBXZWQsIE1heSAwOCwgMjAxOSBhdCAw
-MjoyODoyOVBNICswMzAwLCBBbGV4YW5kcnUgQXJkZWxlYW4gd3JvdGU6DQo+ID4gPiA+IFRoaXMg
-Y2hhbmdlIHJlLWludHJvZHVjZXMgYG1hdGNoX3N0cmluZygpYCBhcyBhIG1hY3JvIHRoYXQgdXNl
-cw0KPiA+ID4gPiBBUlJBWV9TSVpFKCkgdG8gY29tcHV0ZSB0aGUgc2l6ZSBvZiB0aGUgYXJyYXku
-DQo+ID4gPiA+IFRoZSBtYWNybyBpcyBhZGRlZCBpbiBhbGwgdGhlIHBsYWNlcyB0aGF0IGRvDQo+
-ID4gPiA+IGBtYXRjaF9zdHJpbmcoX2EsIEFSUkFZX1NJWkUoX2EpLCBzKWAsIHNpbmNlIHRoZSBj
-aGFuZ2UgaXMgcHJldHR5DQo+ID4gPiA+IHN0cmFpZ2h0Zm9yd2FyZC4NCj4gPiA+IA0KPiA+ID4g
-Q2FuIHlvdSBzcGxpdCBpbmNsdWRlL2xpbnV4LyBjaGFuZ2UgZnJvbSB0aGUgcmVzdD8NCj4gPiAN
-Cj4gPiBUaGF0IHdvdWxkIGJyZWFrIHRoZSBidWlsZCwgd2h5IGRvIHlvdSB3YW50IGl0IHNwbGl0
-IG91dD8gIFRoaXMgbWFrZXMNCj4gPiBzZW5zZSBhbGwgYXMgYSBzaW5nbGUgcGF0Y2ggdG8gbWUu
-DQo+ID4gDQo+IA0KPiBOb3QgcmVhbGx5Lg0KPiBJdCB3b3VsZCBiZSBqdXN0IGJlIHRoZSBuZXcg
-bWF0Y2hfc3RyaW5nKCkgaGVscGVyL21hY3JvIGluIGEgbmV3IGNvbW1pdC4NCj4gQW5kIHRoZSBj
-b252ZXJzaW9ucyBvZiB0aGUgc2ltcGxlIHVzZXJzIG9mIG1hdGNoX3N0cmluZygpICh0aGUgb25l
-cyB1c2luZw0KPiBBUlJBWV9TSVpFKCkpIGluIGFub3RoZXIgY29tbWl0Lg0KPiANCg0KSSBzaG91
-bGQgaGF2ZSBhc2tlZCBpbiBteSBwcmV2aW91cyByZXBseS4NCkxlYXZlIHRoaXMgYXMtaXMgb3Ig
-cmUtZm9ybXVsYXRlIGluIDIgcGF0Y2hlcyA/DQoNCk5vIHN0cm9uZyBwcmVmZXJlbmNlIGZyb20g
-bXkgc2lkZS4NCg0KVGhhbmtzDQpBbGV4DQoNCj4gVGhhbmtzDQo+IEFsZXgNCj4gDQo+ID4gdGhh
-bmtzLA0KPiA+IA0KPiA+IGdyZWcgay1oDQo
+On Fri, May 10, 2019 at 09:15:27AM +0000, Ardelean, Alexandru wrote:
+> On Wed, 2019-05-08 at 16:22 +0300, Alexandru Ardelean wrote:
+> > On Wed, 2019-05-08 at 15:18 +0200, Greg KH wrote:
+> > > On Wed, May 08, 2019 at 04:11:28PM +0300, Andy Shevchenko wrote:
+> > > > On Wed, May 08, 2019 at 02:28:29PM +0300, Alexandru Ardelean wrote:
+
+> > > > Can you split include/linux/ change from the rest?
+> > > 
+> > > That would break the build, why do you want it split out?  This makes
+> > > sense all as a single patch to me.
+> > > 
+> > 
+> > Not really.
+> > It would be just be the new match_string() helper/macro in a new commit.
+> > And the conversions of the simple users of match_string() (the ones using
+> > ARRAY_SIZE()) in another commit.
+> > 
+> 
+> I should have asked in my previous reply.
+> Leave this as-is or re-formulate in 2 patches ?
+
+Depends on on what you would like to spend your time: collecting Acks for all
+pieces in treewide patch or send new API first followed up by per driver /
+module update in next cycle.
+
+I also have no strong preference.
+And I think it's good to add Heikki Krogerus to Cc list for both patch series,
+since he is the author of sysfs variant and may have something to comment on
+the rest.
+
+-- 
+With Best Regards,
+Andy Shevchenko

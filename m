@@ -1,33 +1,55 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 06 May 2019 13:32:52 +0000
-Subject: Re: [PATCH] fbcon: Don't reset logo_shown when logo is currently shown
-Message-Id: <4a5fe468-c153-910a-098e-3d6cff3432c8@samsung.com>
+From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
+Date: Wed, 15 May 2019 10:33:57 +0000
+Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MiAxLzJdIHZpZGVvOiBsY2Q6IFJlbW92ZSB1c2VsZXNz?= =?UTF-8?B?IEJBQ0tMSUdIVF9MQ
+Message-Id: <1557916437.354393786@f383.i.mail.ru>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190129134350.24049-1-prarit@redhat.com>
- <20190129134350.24049-3-prarit@redhat.com> <87ftr1ed4h.fsf@igel.home>
- <8590ff59-a4fb-5a02-fda4-086476efcbe6@redhat.com>
- <CGME20190402180939epcas4p15a2bd8dc16a3e56a5f62cdcf396a2404@epcas4p1.samsung.com>
- <87imvwp9d4.fsf_-_@igel.home>
-In-Reply-To: <87imvwp9d4.fsf_-_@igel.home>
+References: <20190117133336.19737-1-shc_work@mail.ru>
+ <CAMuHMdXrAaZoqsnY_adE=jn-hmTrgmsvJ2tDo+5ByxZ4sz_S7Q@mail.gmail.com>
+In-Reply-To: <CAMuHMdXrAaZoqsnY_adE=jn-hmTrgmsvJ2tDo+5ByxZ4sz_S7Q@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andreas Schwab <schwab@linux-m68k.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, Marko Myllynen <myllynen@redhat.com>, linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Yisheng Xie <ysxie@foxmail.com>, Hans de Goede <hdegoede@redhat.com>, dri-devel@lists.freedesktop.org, Thierry Reding <treding@nvidia.com>
+To: =?UTF-8?B?R2VlcnQgVXl0dGVyaG9ldmVu?= <geert@linux-m68k.org>
+Cc: =?UTF-8?B?TGludXggRmJkZXYgZGV2ZWxvcG1lbnQgbGlzdA==?= <linux-fbdev@vger.kernel.org>, =?UTF-8?B?QmFydGxvbWllaiBab2xuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, =?UTF-8?B?SmluZ29vIEhhbg==?= <jingoohan1@gmail.com>, =?UTF-8?B?RGFuaWVsIFRob21wc29u?= <daniel.thompson@linaro.org>, =?UTF-8?B?RFJJIERldmVsb3BtZW50?= <dri-devel@lists.freedesktop.org>, =?UTF-8?B?TGVlIEpvbmVz?= <lee.jones@linaro.org>
 
-
-On 04/02/2019 08:09 PM, Andreas Schwab wrote:
-> When the logo is currently drawn on a virtual console, and the console
-> loglevel is reduced to quiet, logo_shown must be left alone, so that it
-> the scrolling region on that virtual console is properly reset.
-> 
-> Fixes: 10993504d647 ("fbcon: Silence fbcon logo on 'quiet' boots")
-> Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
-
-Patch queued for v5.2, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+SGVsbG8uCgpMb29rcyBsaWtlIHlvdSdyZSByaWdodC4KQ2FuIHlvdSBjcmVhdGUgYSBwYXRjaCB0
+byBmaXggdGhpcz8KClRoYW5rcy4KCgo+0KHRgNC10LTQsCwgMTUg0LzQsNGPIDIwMTksIDExOjU3
+ICswMzowMCDQvtGCIEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+Ogo+
+Cj5IaSBBbGV4YW5kZXIsCj4KPk9uIFRodSwgSmFuIDE3LCAyMDE5IGF0IDI6MzkgUE0gQWxleGFu
+ZGVyIFNoaXlhbiA8IHNoY193b3JrQG1haWwucnUgPiB3cm90ZToKPj4gV2UgaGF2ZSB0d28gKl9D
+TEFTU19ERVZJQ0Uga2VybmVsIGNvbmZpZyBvcHRpb25zIChMQ0RfQ0xBU1NfREVWSUNFCj4+IGFu
+ZCBCQUNLTElHSFRfTENEX0RFVklDRSkgdGhhdCBkbyB0aGUgc2FtZSBqb2IuCj4+IFRoZSBwYXRj
+aCByZW1vdmVzIHVzZWxlc3MgQkFDS0xJR0hUX0xDRF9TVVBQT1JUIG9wdGlvbgo+PiBhbmQgY29u
+dmVydHMgTENEX0NMQVNTX0RFVklDRSBpbnRvIGEgbWVudS4KPj4KPj4gU2lnbmVkLW9mZi1ieTog
+QWxleGFuZGVyIFNoaXlhbiA8IHNoY193b3JrQG1haWwucnUgPgo+VGhpcyBpcyBub3cgY29tbWl0
+IDhjNWRjOGQ5ZjE5Yzc5OTIgKCJ2aWRlbzogYmFja2xpZ2h0OiBSZW1vdmUgdXNlbGVzcwo+QkFD
+S0xJR0hUX0xDRF9TVVBQT1JUIGtlcm5lbCBzeW1ib2wiKS4KPgo+PiAtLS0gYS9kcml2ZXJzL3Zp
+ZGVvL2JhY2tsaWdodC9LY29uZmlnCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L0tj
+b25maWcKPj4gQEAgLTIsMTMgKzIsNyBAQAo+PiAgIyBCYWNrbGlnaHQgJiBMQ0QgZHJpdmVycyBj
+b25maWd1cmF0aW9uCj4+ICAjCj4+Cj4+IC1tZW51Y29uZmlnIEJBQ0tMSUdIVF9MQ0RfU1VQUE9S
+VAo+PiAtICAgICAgIGJvb2wgIkJhY2tsaWdodCAmIExDRCBkZXZpY2Ugc3VwcG9ydCIKPj4gLSAg
+ICAgICBoZWxwCj4+IC0gICAgICAgICBFbmFibGUgdGhpcyB0byBiZSBhYmxlIHRvIGNob29zZSB0
+aGUgZHJpdmVycyBmb3IgY29udHJvbGxpbmcgdGhlCj4+IC0gICAgICAgICBiYWNrbGlnaHQgYW5k
+IHRoZSBMQ0QgcGFuZWwgb24gc29tZSBwbGF0Zm9ybXMsIGZvciBleGFtcGxlIG9uIFBEQXMuCj4+
+IC0KPj4gLWlmIEJBQ0tMSUdIVF9MQ0RfU1VQUE9SVAo+PiArbWVudSAiQmFja2xpZ2h0ICYgTENE
+IGRldmljZSBzdXBwb3J0Igo+Pgo+PiAgIwo+PiAgIyBMQ0QKPgo+QmVsb3csIHdlIGhhdmU6Cj4K
+PsKgwqDCoMKgY29uZmlnIExDRF9DTEFTU19ERVZJQ0UKPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oHRyaXN0YXRlICJMb3dsZXZlbCBMQ0QgY29udHJvbHMiCj7CoMKgwqDCoMKgwqDCoMKgwqDCoMKg
+wqBkZWZhdWx0IG0KPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGhlbHAKPsKgwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqBUaGlzIGZyYW1ld29yayBhZGRzIHN1cHBvcnQgZm9yIGxvdy1sZXZlbCBj
+b250cm9sIG9mIExDRC4KPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBTb21lIGZyYW1lYnVm
+ZmVyIGRldmljZXMgY29ubmVjdCB0byBwbGF0Zm9ybS1zcGVjaWZpYyBMQ0QgbW9kdWxlcwo+wqDC
+oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGluIG9yZGVyIHRvIGhhdmUgYSBwbGF0Zm9ybS1zcGVj
+aWZpYyB3YXkgdG8gY29udHJvbCB0aGUgZmxhdCBwYW5lbAo+wqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoChjb250cmFzdCBhbmQgYXBwbHlpbmcgcG93ZXIgdG8gdGhlIExDRCAobm90IHRvIHRo
+ZSBiYWNrbGlnaHQhKSkuCj4KPmFuZDoKPgo+wqDCoMKgwqBjb25maWcgQkFDS0xJR0hUX0NMQVNT
+X0RFVklDRQo+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdHJpc3RhdGUgIkxvd2xldmVsIEJhY2ts
+aWdodCBjb250cm9scyIKPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGRlZmF1bHQgbQo+wqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgaGVscAo+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoFRoaXMg
+ZnJhbWV3b3JrIGFkZHMgc3VwcG9ydCBmb3IgbG93LWxldmVsIGNvbnRyb2wgb2YgdGhlIExDRAo+
+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGJhY2tsaWdodC4gVGhpcyBpbmNsdWRlcyBzdXBw
+b3J0IGZvciBicmlnaHRuZXNzIGFuZCBwb3dlci4KPgo+SGVuY2UgcnVubmluZyAibWFrZSBvbGRj
+b25maWciIG9uIGEgLmNvbmZpZyB3aGVyZQo+Q09ORklHX0JBQ0tMSUdIVF9MQ0RfU1VQUE9SVCB3
+YXMgbm90IHNldCBsZWFkcyB0d28gdG8gbmV3Cj5xdWVzdGlvbnMsIHdoZXJlIHRoZSBhbnN3ZXJz
+IGRlZmF1bHQgdG8gIm0iLgo+Cj5QZXJoYXBzIHRoZSAiZGVmYXVsdCBtIiBzdGF0ZW1lbnRzIHNo
+b3VsZCBiZSByZW1vdmVkPwoKLS0tCg=

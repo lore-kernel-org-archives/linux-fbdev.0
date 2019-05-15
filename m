@@ -1,34 +1,80 @@
-From: Brian Masney <masneyb@onstation.org>
-Date: Thu, 02 May 2019 10:46:12 +0000
-Subject: Re: [PATCH v6 3/3] backlight: lm3630a: add firmware node support
-Message-Id: <20190502104612.GB24563@basecamp>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Wed, 15 May 2019 08:56:51 +0000
+Subject: Re: [PATCH v2 1/2] video: lcd: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol
+Message-Id: <CAMuHMdXrAaZoqsnY_adE=jn-hmTrgmsvJ2tDo+5ByxZ4sz_S7Q@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190424092505.6578-1-masneyb@onstation.org>
- <20190424092505.6578-4-masneyb@onstation.org>
- <3d8a2f9e-bd41-7713-5ad4-05a0d71e8fb1@linaro.org>
-In-Reply-To: <3d8a2f9e-bd41-7713-5ad4-05a0d71e8fb1@linaro.org>
+References: <20190117133336.19737-1-shc_work@mail.ru>
+In-Reply-To: <20190117133336.19737-1-shc_work@mail.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: lee.jones@linaro.org, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca, Daniel Thompson <daniel@redfelineninja.org.uk>
+To: Alexander Shiyan <shc_work@mail.ru>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, DRI Development <dri-devel@lists.freedesktop.org>, Lee Jones <lee.jones@linaro.org>
 
-On Thu, May 02, 2019 at 11:19:50AM +0100, Daniel Thompson wrote:
-> On 24/04/2019 10:25, Brian Masney wrote:
-> > Add fwnode support to the lm3630a driver and optionally allow
-> > configuring the label, default brightness level, and maximum brightness
-> > level. The two outputs can be controlled by bank A and B independently
-> > or bank A can control both outputs.
-> > 
-> > If the platform data was not configured, then the driver defaults to
-> > enabling both banks. This patch changes the default value to disable
-> > both banks before parsing the firmware node so that just a single bank
-> > can be enabled if desired. There are no in-tree users of this driver.
-> 
-> In that case given I'd certainly entertain patches that move the config
-> structures out of include/linux/platform_data and say the driver requires a
-> proper entry in the hardware description! Not a requirement though.
+Hi Alexander,
 
-OK, I'll submit patches for that after this series is merged.
+On Thu, Jan 17, 2019 at 2:39 PM Alexander Shiyan <shc_work@mail.ru> wrote:
+> We have two *_CLASS_DEVICE kernel config options (LCD_CLASS_DEVICE
+> and BACKLIGHT_LCD_DEVICE) that do the same job.
+> The patch removes useless BACKLIGHT_LCD_SUPPORT option
+> and converts LCD_CLASS_DEVICE into a menu.
+>
+> Signed-off-by: Alexander Shiyan <shc_work@mail.ru>
 
-Brian
+This is now commit 8c5dc8d9f19c7992 ("video: backlight: Remove useless
+BACKLIGHT_LCD_SUPPORT kernel symbol").
+
+> --- a/drivers/video/backlight/Kconfig
+> +++ b/drivers/video/backlight/Kconfig
+> @@ -2,13 +2,7 @@
+>  # Backlight & LCD drivers configuration
+>  #
+>
+> -menuconfig BACKLIGHT_LCD_SUPPORT
+> -       bool "Backlight & LCD device support"
+> -       help
+> -         Enable this to be able to choose the drivers for controlling the
+> -         backlight and the LCD panel on some platforms, for example on PDAs.
+> -
+> -if BACKLIGHT_LCD_SUPPORT
+> +menu "Backlight & LCD device support"
+>
+>  #
+>  # LCD
+
+Below, we have:
+
+    config LCD_CLASS_DEVICE
+            tristate "Lowlevel LCD controls"
+            default m
+            help
+              This framework adds support for low-level control of LCD.
+              Some framebuffer devices connect to platform-specific LCD modules
+              in order to have a platform-specific way to control the flat panel
+              (contrast and applying power to the LCD (not to the backlight!)).
+
+and:
+
+    config BACKLIGHT_CLASS_DEVICE
+            tristate "Lowlevel Backlight controls"
+            default m
+            help
+              This framework adds support for low-level control of the LCD
+              backlight. This includes support for brightness and power.
+
+Hence running "make oldconfig" on a .config where
+CONFIG_BACKLIGHT_LCD_SUPPORT was not set leads two to new
+questions, where the answers default to "m".
+
+Perhaps the "default m" statements should be removed?
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+-- 
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

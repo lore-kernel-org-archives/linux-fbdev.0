@@ -1,61 +1,25 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 07 May 2019 09:53:07 +0000
-Subject: Re: [PATCH v6 1/3] backlight: lm3630a: return 0 on success in update_status functions
-Message-Id: <20190507095307.GE4529@dell>
+From: Grzegorz Halat <ghalat@redhat.com>
+Date: Thu, 16 May 2019 14:33:40 +0000
+Subject: Re: [PATCH] vt/fbcon: deinitialize resources in visual_init() after failed memory allocation
+Message-Id: <CAKbGCscqbvOaXPTdmxatNLBygdu=WC0hVUKx0_WnqUR4+dj_zQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190424092505.6578-1-masneyb@onstation.org>
- <20190424092505.6578-2-masneyb@onstation.org>
- <864c1ddc-1008-0041-1559-e491ca0186ef@linaro.org>
- <20190502104239.GA24563@basecamp>
- <20190502104644.e3eth2cdebuz2mpk@holly.lan>
-In-Reply-To: <20190502104644.e3eth2cdebuz2mpk@holly.lan>
+References: <20190426145946.26537-1-ghalat@redhat.com>
+In-Reply-To: <20190426145946.26537-1-ghalat@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Brian Masney <masneyb@onstation.org>, jingoohan1@gmail.com, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, dmurphy@ti.com, jonathan@marek.ca, Daniel Thompson <daniel@redfelineninja.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, Oleksandr Natalenko <oleksandr@redhat.com>
 
-On Thu, 02 May 2019, Daniel Thompson wrote:
+On Fri, 26 Apr 2019 at 16:59, Grzegorz Halat <ghalat@redhat.com> wrote:
+>
+> After memory allocation failure vc_allocate() doesn't clean up data
+> which has been initialized in visual_init(). In case of fbcon this
+> leads to divide-by-0 in fbcon_init() on next open of the same tty.
 
-> On Thu, May 02, 2019 at 06:42:39AM -0400, Brian Masney wrote:
-> > On Thu, May 02, 2019 at 11:07:51AM +0100, Daniel Thompson wrote:
-> > > On 24/04/2019 10:25, Brian Masney wrote:
-> > > > lm3630a_bank_a_update_status() and lm3630a_bank_b_update_status()
-> > > > both return the brightness value if the brightness was successfully
-> > > > updated. Writing to these attributes via sysfs would cause a 'Bad
-> > > > address' error to be returned. These functions should return 0 on
-> > > > success, so let's change it to correct that error.
-> > > > 
-> > > > Signed-off-by: Brian Masney <masneyb@onstation.org>
-> > > > Fixes: 28e64a68a2ef ("backlight: lm3630: apply chip revision")
-> > > > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > > 
-> > > Hi Brian, sorry for the delay. For some reason your mails are being dumped
-> > > before they reach me so I only discovered these patches when I paid proper
-> > > attention to the replies and fetched them from patchwork.
-> > > 
-> > > Hi Lee, is the same thing happening for you? ;-)
-> > 
-> > Huh, that's odd. I haven't ran into that issue when working with people
-> > from Linaro in other subsystems.
-> > 
-> > As a sanity check, I used 'git send-email' to send this patch to
-> > check-auth@verifier.port25.com and it verified that I still have SPF,
-> > DKIM, reverse DNS, etc. all setup properly on this domain.
-> > 
-> > hotmail.com addresses are the only ones I've had issues with in the
-> > past, but I doubt you're forwarding your email there. :)
-> 
-> No... and strangely enough your recent e-mail sailed through just fine.
-> Let's wait and see what is happening for Lee (which I suspect may not be
-> until well into next week).
+Hi,
+A gentle reminder. Could you please review my patch? I've seen two
+crashes caused by this bug.
 
-Just catching up now.  On first pass - only ~800 mails to go!
-
-Looks like I do have Brian's mails though.
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+--
+Grzegorz Halat

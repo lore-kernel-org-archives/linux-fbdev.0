@@ -1,31 +1,173 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 06 May 2019 13:37:19 +0000
-Subject: Re: [PATCH v3 14/26] compat_ioctl: move ATYFB_CLK handling to atyfb driver
-Message-Id: <28b28937-cd5c-61f4-6f84-c6108c006e21@samsung.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Mon, 20 May 2019 08:22:00 +0000
+Subject: [PATCH 17/33] fbcon: call fbcon_fb_bind directly
+Message-Id: <20190520082216.26273-18-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190416202013.4034148-1-arnd@arndb.de>
- <20190416202701.127745-1-arnd@arndb.de>
- <CGME20190416202751epcas3p3655845bd23c19d035b72d9b178427e28@epcas3p3.samsung.com>
- <20190416202701.127745-3-arnd@arndb.de>
-In-Reply-To: <20190416202701.127745-3-arnd@arndb.de>
+References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev@vger.kernel.org, y2038@lists.linaro.org, =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mikulas Patocka <mpatocka@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>, Konstantin Khorenko <khorenko@virtuozzo.com>
 
+Also remove the error return value. That's all errors for either
+driver bugs (trying to unbind something that isn't bound), or errors
+of the new driver that will take over.
 
-On 04/16/2019 10:25 PM, Arnd Bergmann wrote:
-> These are two obscure ioctl commands, in a driver that only
-> has compatible commands, so just let the driver handle this
-> itself.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+There's nothing the outgoing driver can do about this anyway, so
+switch over to void.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: linux-fbdev@vger.kernel.org
+---
+ drivers/video/fbdev/core/fbcon.c | 24 +++++++-----------------
+ drivers/video/fbdev/core/fbmem.c |  7 ++-----
+ include/linux/fb.h               |  2 --
+ include/linux/fbcon.h            |  2 ++
+ 4 files changed, 11 insertions(+), 24 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index 35443add7f7e..a8d12914b559 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -3042,7 +3042,7 @@ static int fbcon_mode_deleted(struct fb_info *info,
+ }
+ 
+ #ifdef CONFIG_VT_HW_CONSOLE_BINDING
+-static int fbcon_unbind(void)
++static void fbcon_unbind(void)
+ {
+ 	int ret;
+ 
+@@ -3051,25 +3051,21 @@ static int fbcon_unbind(void)
+ 
+ 	if (!ret)
+ 		fbcon_has_console_bind = 0;
+-
+-	return ret;
+ }
+ #else
+-static inline int fbcon_unbind(void)
+-{
+-	return -EINVAL;
+-}
++static inline void fbcon_unbind(void) {}
+ #endif /* CONFIG_VT_HW_CONSOLE_BINDING */
+ 
+ /* called with console_lock held */
+-static int fbcon_fb_unbind(int idx)
++void fbcon_fb_unbind(struct fb_info *info)
+ {
+ 	int i, new_idx = -1, ret = 0;
++	int idx = info->node;
+ 
+ 	WARN_CONSOLE_UNLOCKED();
+ 
+ 	if (!fbcon_has_console_bind)
+-		return 0;
++		return;
+ 
+ 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
+ 		if (con2fb_map[i] != idx &&
+@@ -3102,15 +3098,13 @@ static int fbcon_fb_unbind(int idx)
+ 								     idx, 0);
+ 					if (ret) {
+ 						con2fb_map[i] = idx;
+-						return ret;
++						return;
+ 					}
+ 				}
+ 			}
+ 		}
+-		ret = fbcon_unbind();
++		fbcon_unbind();
+ 	}
+-
+-	return ret;
+ }
+ 
+ /* called with console_lock held */
+@@ -3348,10 +3342,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+ 		mode = event->data;
+ 		ret = fbcon_mode_deleted(info, mode);
+ 		break;
+-	case FB_EVENT_FB_UNBIND:
+-		idx = info->node;
+-		ret = fbcon_fb_unbind(idx);
+-		break;
+ 	case FB_EVENT_SET_CONSOLE_MAP:
+ 		/* called with console lock held */
+ 		con2fb = event->data;
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 1987aba4f5a2..156523cc48bf 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1708,8 +1708,6 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 
+ static int unbind_console(struct fb_info *fb_info)
+ {
+-	struct fb_event event;
+-	int ret;
+ 	int i = fb_info->node;
+ 
+ 	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+@@ -1717,12 +1715,11 @@ static int unbind_console(struct fb_info *fb_info)
+ 
+ 	console_lock();
+ 	lock_fb_info(fb_info);
+-	event.info = fb_info;
+-	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
++	fbcon_fb_unbind(fb_info);
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+ 
+-	return ret;
++	return 0;
+ }
+ 
+ static int __unlink_framebuffer(struct fb_info *fb_info);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index fd60207c0685..38fae1678939 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -151,8 +151,6 @@ struct fb_cursor_user {
+ #define FB_EVENT_CONBLANK               0x0C
+ /*      Get drawing requirements        */
+ #define FB_EVENT_GET_REQ                0x0D
+-/*      Unbind from the console if possible */
+-#define FB_EVENT_FB_UNBIND              0x0E
+ /*      CONSOLE-SPECIFIC: remap all consoles to new fb - for vga_switcheroo */
+ #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
+ /*      A hardware display blank early change occurred */
+diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
+index 94a71e9e1257..38d44fdb6d14 100644
+--- a/include/linux/fbcon.h
++++ b/include/linux/fbcon.h
+@@ -6,11 +6,13 @@ void __init fb_console_init(void);
+ void __exit fb_console_exit(void);
+ int fbcon_fb_registered(struct fb_info *info);
+ void fbcon_fb_unregistered(struct fb_info *info);
++void fbcon_fb_unbind(struct fb_info *info);
+ #else
+ static inline void fb_console_init(void) {}
+ static inline void fb_console_exit(void) {}
+ static inline int fbcon_fb_registered(struct fb_info *info) { return 0; }
+ static inline void fbcon_fb_unregistered(struct fb_info *info) {}
++static inline void fbcon_fb_unbind(struct fb_info *info) {}
+ #endif
+ 
+ #endif /* _LINUX_FBCON_H */
+-- 
+2.20.1

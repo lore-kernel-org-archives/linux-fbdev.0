@@ -1,98 +1,224 @@
-From: kbuild test robot <lkp@intel.com>
-Date: Fri, 24 May 2019 13:59:48 +0000
-Subject: Re: [PATCH v2] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
-Message-Id: <201905242155.D1bXuUk9%lkp@intel.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Mon, 20 May 2019 08:22:01 +0000
+Subject: [PATCH 18/33] fbdev: make unregister/unlink functions not fail
+Message-Id: <20190520082216.26273-19-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <f9d56fc1-3e02-9716-b764-82e9600e5919@samsung.com>
-In-Reply-To: <f9d56fc1-3e02-9716-b764-82e9600e5919@samsung.com>
+References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: kbuild-all@01.org, Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
 
-Hi Bartlomiej,
+Except for driver bugs (which we'll catch with a WARN_ON) this is only
+to report failures of the new driver taking over the console. There's
+nothing the outgoing driver can do about that, and no one ever
+bothered to actually look at these return values. So remove them all.
 
-I love your patch! Perhaps something to improve:
-
-[auto build test WARNING on linus/master]
-[also build test WARNING on v5.2-rc1 next-20190524]
-[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
-
-url:    https://github.com/0day-ci/linux/commits/Bartlomiej-Zolnierkiewicz/video-fbdev-atmel_lcdfb-add-COMPILE_TEST-support/20190524-184331
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-rc1-7-g2b96cd8-dirty
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
-
-If you fix the issue, kindly add following tag
-Reported-by: kbuild test robot <lkp@intel.com>
-
-
-sparse warnings: (new ones prefixed by >>)
-
->> drivers/video/fbdev/atmel_lcdfb.c:354:27: sparse: sparse: incorrect type in assignment (different address spaces) @@    expected char [noderef] <asn:2> *screen_base @@    got n:2> *screen_base @@
->> drivers/video/fbdev/atmel_lcdfb.c:354:27: sparse:    expected char [noderef] <asn:2> *screen_base
->> drivers/video/fbdev/atmel_lcdfb.c:354:27: sparse:    got void *
->> drivers/video/fbdev/atmel_lcdfb.c:362:9: sparse: sparse: incorrect type in argument 1 (different address spaces) @@    expected void *s @@    got char [noderef] <asvoid *s @@
->> drivers/video/fbdev/atmel_lcdfb.c:362:9: sparse:    expected void *s
->> drivers/video/fbdev/atmel_lcdfb.c:362:9: sparse:    got char [noderef] <asn:2> *screen_base
->> drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse: sparse: incorrect type in argument 3 (different address spaces) @@    expected void *cpu_addr @@    got char [noderef] <asvoid *cpu_addr @@
->> drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse:    expected void *cpu_addr
-   drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse:    got char [noderef] <asn:2> *screen_base
->> drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse: sparse: incorrect type in argument 3 (different address spaces) @@    expected void *cpu_addr @@    got char [noderef] <asvoid *cpu_addr @@
->> drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse:    expected void *cpu_addr
-   drivers/video/fbdev/atmel_lcdfb.c:333:59: sparse:    got char [noderef] <asn:2> *screen_base
-
-vim +354 drivers/video/fbdev/atmel_lcdfb.c
-
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  328  
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  329  static inline void atmel_lcdfb_free_video_memory(struct atmel_lcdfb_info *sinfo)
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  330  {
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  331  	struct fb_info *info = sinfo->info;
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  332  
-f6e45661 drivers/video/fbdev/atmel_lcdfb.c Luis R. Rodriguez  2016-01-22 @333  	dma_free_wc(info->device, info->fix.smem_len, info->screen_base,
-f6e45661 drivers/video/fbdev/atmel_lcdfb.c Luis R. Rodriguez  2016-01-22  334  		    info->fix.smem_start);
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  335  }
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  336  
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  337  /**
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  338   *	atmel_lcdfb_alloc_video_memory - Allocate framebuffer memory
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  339   *	@sinfo: the frame buffer to allocate memory for
-1d01e835 drivers/video/atmel_lcdfb.c       Krzysztof Helt     2009-07-08  340   * 	
-1d01e835 drivers/video/atmel_lcdfb.c       Krzysztof Helt     2009-07-08  341   * 	This function is called only from the atmel_lcdfb_probe()
-1d01e835 drivers/video/atmel_lcdfb.c       Krzysztof Helt     2009-07-08  342   * 	so no locking by fb_info->mm_lock around smem_len setting is needed.
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  343   */
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  344  static int atmel_lcdfb_alloc_video_memory(struct atmel_lcdfb_info *sinfo)
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  345  {
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  346  	struct fb_info *info = sinfo->info;
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  347  	struct fb_var_screeninfo *var = &info->var;
-ea757aca drivers/video/atmel_lcdfb.c       Haavard Skinnemoen 2008-08-12  348  	unsigned int smem_len;
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  349  
-ea757aca drivers/video/atmel_lcdfb.c       Haavard Skinnemoen 2008-08-12  350  	smem_len = (var->xres_virtual * var->yres_virtual
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  351  		    * ((var->bits_per_pixel + 7) / 8));
-ea757aca drivers/video/atmel_lcdfb.c       Haavard Skinnemoen 2008-08-12  352  	info->fix.smem_len = max(smem_len, sinfo->smem_len);
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  353  
-f6e45661 drivers/video/fbdev/atmel_lcdfb.c Luis R. Rodriguez  2016-01-22 @354  	info->screen_base = dma_alloc_wc(info->device, info->fix.smem_len,
-f6e45661 drivers/video/fbdev/atmel_lcdfb.c Luis R. Rodriguez  2016-01-22  355  					 (dma_addr_t *)&info->fix.smem_start,
-f6e45661 drivers/video/fbdev/atmel_lcdfb.c Luis R. Rodriguez  2016-01-22  356  					 GFP_KERNEL);
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  357  
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  358  	if (!info->screen_base) {
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  359  		return -ENOMEM;
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  360  	}
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  361  
-01d3a5e7 drivers/video/atmel_lcdfb.c       Haavard Skinnemoen 2008-04-28 @362  	memset(info->screen_base, 0, info->fix.smem_len);
-01d3a5e7 drivers/video/atmel_lcdfb.c       Haavard Skinnemoen 2008-04-28  363  
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  364  	return 0;
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  365  }
-14340586 drivers/video/atmel_lcdfb.c       Nicolas Ferre      2007-05-10  366  
-
-:::::: The code at line 354 was first introduced by commit
-:::::: f6e45661f9be546811b62b2b01f32f4bf0c436c0 dma, mm/pat: Rename dma_*_writecombine() to dma_*_wc()
-
-:::::: TO: Luis R. Rodriguez <mcgrof@suse.com>
-:::::: CC: Ingo Molnar <mingo@kernel.org>
-
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
 ---
-0-DAY kernel test infrastructure                Open Source Technology Center
-https://lists.01.org/pipermail/kbuild-all                   Intel Corporation
+ drivers/video/fbdev/core/fbmem.c | 73 ++++++++++----------------------
+ include/linux/fb.h               |  4 +-
+ 2 files changed, 25 insertions(+), 52 deletions(-)
+
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 156523cc48bf..032506576aa0 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1590,13 +1590,13 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
+ 	return false;
+ }
+ 
+-static int do_unregister_framebuffer(struct fb_info *fb_info);
++static void do_unregister_framebuffer(struct fb_info *fb_info);
+ 
+ #define VGA_FB_PHYS 0xA0000
+-static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+-					      const char *name, bool primary)
++static void do_remove_conflicting_framebuffers(struct apertures_struct *a,
++					       const char *name, bool primary)
+ {
+-	int i, ret;
++	int i;
+ 
+ 	/* check all firmware fbs and kick off if the base addr overlaps */
+ 	for_each_registered_fb(i) {
+@@ -1612,13 +1612,9 @@ static int do_remove_conflicting_framebuffers(struct apertures_struct *a,
+ 
+ 			printk(KERN_INFO "fb%d: switching to %s from %s\n",
+ 			       i, name, registered_fb[i]->fix.id);
+-			ret = do_unregister_framebuffer(registered_fb[i]);
+-			if (ret)
+-				return ret;
++			do_unregister_framebuffer(registered_fb[i]);
+ 		}
+ 	}
+-
+-	return 0;
+ }
+ 
+ static bool lockless_register_fb;
+@@ -1634,11 +1630,9 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	if (fb_check_foreignness(fb_info))
+ 		return -ENOSYS;
+ 
+-	ret = do_remove_conflicting_framebuffers(fb_info->apertures,
+-						 fb_info->fix.id,
+-						 fb_is_primary_device(fb_info));
+-	if (ret)
+-		return ret;
++	do_remove_conflicting_framebuffers(fb_info->apertures,
++					   fb_info->fix.id,
++					   fb_is_primary_device(fb_info));
+ 
+ 	if (num_registered_fb = FB_MAX)
+ 		return -ENXIO;
+@@ -1706,32 +1700,25 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 	return ret;
+ }
+ 
+-static int unbind_console(struct fb_info *fb_info)
++static void unbind_console(struct fb_info *fb_info)
+ {
+ 	int i = fb_info->node;
+ 
+-	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+-		return -EINVAL;
++	if (WARN_ON(i < 0 || i >= FB_MAX || registered_fb[i] != fb_info))
++		return;
+ 
+ 	console_lock();
+ 	lock_fb_info(fb_info);
+ 	fbcon_fb_unbind(fb_info);
+ 	unlock_fb_info(fb_info);
+ 	console_unlock();
+-
+-	return 0;
+ }
+ 
+-static int __unlink_framebuffer(struct fb_info *fb_info);
++static void __unlink_framebuffer(struct fb_info *fb_info);
+ 
+-static int do_unregister_framebuffer(struct fb_info *fb_info)
++static void do_unregister_framebuffer(struct fb_info *fb_info)
+ {
+-	int ret;
+-
+-	ret = unbind_console(fb_info);
+-
+-	if (ret)
+-		return -EINVAL;
++	unbind_console(fb_info);
+ 
+ 	pm_vt_switch_unregister(fb_info->dev);
+ 
+@@ -1749,36 +1736,27 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+ 
+ 	/* this may free fb info */
+ 	put_fb_info(fb_info);
+-	return 0;
+ }
+ 
+-static int __unlink_framebuffer(struct fb_info *fb_info)
++static void __unlink_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+ 
+ 	i = fb_info->node;
+-	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
+-		return -EINVAL;
++	if (WARN_ON(i < 0 || i >= FB_MAX || registered_fb[i] != fb_info))
++		return;
+ 
+ 	if (fb_info->dev) {
+ 		device_destroy(fb_class, MKDEV(FB_MAJOR, i));
+ 		fb_info->dev = NULL;
+ 	}
+-
+-	return 0;
+ }
+ 
+-int unlink_framebuffer(struct fb_info *fb_info)
++void unlink_framebuffer(struct fb_info *fb_info)
+ {
+-	int ret;
+-
+-	ret = __unlink_framebuffer(fb_info);
+-	if (ret)
+-		return ret;
++	__unlink_framebuffer(fb_info);
+ 
+ 	unbind_console(fb_info);
+-
+-	return 0;
+ }
+ EXPORT_SYMBOL(unlink_framebuffer);
+ 
+@@ -1795,7 +1773,6 @@ EXPORT_SYMBOL(unlink_framebuffer);
+ int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 				    const char *name, bool primary)
+ {
+-	int ret;
+ 	bool do_free = false;
+ 
+ 	if (!a) {
+@@ -1809,13 +1786,13 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 	}
+ 
+ 	mutex_lock(&registration_lock);
+-	ret = do_remove_conflicting_framebuffers(a, name, primary);
++	do_remove_conflicting_framebuffers(a, name, primary);
+ 	mutex_unlock(&registration_lock);
+ 
+ 	if (do_free)
+ 		kfree(a);
+ 
+-	return ret;
++	return 0;
+ }
+ EXPORT_SYMBOL(remove_conflicting_framebuffers);
+ 
+@@ -1891,16 +1868,12 @@ EXPORT_SYMBOL(register_framebuffer);
+  *      that the driver implements fb_open() and fb_release() to
+  *      check that no processes are using the device.
+  */
+-int
++void
+ unregister_framebuffer(struct fb_info *fb_info)
+ {
+-	int ret;
+-
+ 	mutex_lock(&registration_lock);
+-	ret = do_unregister_framebuffer(fb_info);
++	do_unregister_framebuffer(fb_info);
+ 	mutex_unlock(&registration_lock);
+-
+-	return ret;
+ }
+ EXPORT_SYMBOL(unregister_framebuffer);
+ 
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 38fae1678939..44021e55b15c 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -627,8 +627,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ 
+ /* drivers/video/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+-extern int unregister_framebuffer(struct fb_info *fb_info);
+-extern int unlink_framebuffer(struct fb_info *fb_info);
++extern void unregister_framebuffer(struct fb_info *fb_info);
++extern void unlink_framebuffer(struct fb_info *fb_info);
+ extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id,
+ 					       const char *name);
+ extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+-- 
+2.20.1

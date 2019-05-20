@@ -1,40 +1,20 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:42 +0000
-Subject: [PATCH 16/16] sched: debug: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-18-alexandru.ardelean@analog.com>
+From: Daniel Murray <sinara-group@bk.ru>
+Date: Mon, 20 May 2019 13:31:09 +0000
+Subject: Inquiry 20/May/2019
+Message-Id: <20190520143625.6B47C58AA50@mail.boombf2am.ga>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev-uLR06cmDAlY/bJ5BZ2RsiQ@public.gmane.org, linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-ide-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-clk-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-rpi-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-arm-kernel-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-rockchip-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, linux-pm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-gpio-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, intel-gfx-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org, linux-omap-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mmc-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-wireless-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, netdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-pci-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-tegra-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, devel-gWbeCf7V1WCQmaza687I9mD2FQJk+8+b@public.gmane.org, linux-usb-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, kvm-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mtd-IAPFreCvJWM7uuMidbF8XUB+6BGkLq7r@public.gmane.org, cgroups-u79uwXL29TY76Z2rM5mHXA@public.gmane.org, linux-mm-Bw31MaZKKs3YtjvyW6yDsg@public.gmane.org, linux-security-module-u79uwXL29TY76Z2rM5mHXA@public.gmane.org
-Cc: gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org, andriy.shevchenko-VuQAYsv1563Yd54FQh9/CA@public.gmane.org, Alexandru Ardelean <alexandru.ardelean-OyLXuOCK7orQT0dZR+AlfA@public.gmane.org>
+To: linux-fbdev@vger.kernel.org
 
-The `sched_feat_names` array is a static array of strings.
-Using match_string() (which computes the array size via ARRAY_SIZE())
-is possible.
+Hi,friend,
 
-The change is mostly cosmetic.
-No functionality change.
+This is Daniel Murray and i am from Sinara Group Co.Ltd in Russia.
+We are glad to know about your company from the web and we are interested in your products.
+Could you kindly send us your Latest catalog and price list for our trial order.
 
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
----
- kernel/sched/debug.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Best Regards,
 
-diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index b0efc5fe641e..6d5f370bdfde 100644
---- a/kernel/sched/debug.c
-+++ b/kernel/sched/debug.c
-@@ -111,7 +111,7 @@ static int sched_feat_set(char *cmp)
- 		cmp += 3;
- 	}
- 
--	i = __match_string(sched_feat_names, __SCHED_FEAT_NR, cmp);
-+	i = match_string(sched_feat_names, cmp);
- 	if (i < 0)
- 		return i;
- 
--- 
-2.17.1
+Daniel Murray
+Purchasing Manager

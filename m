@@ -1,212 +1,320 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:59 +0000
-Subject: [PATCH 28/33] fbcon: replace FB_EVENT_MODE_CHANGE/_ALL with direct calls
-Message-Id: <20190528090304.9388-29-daniel.vetter@ffwll.ch>
+Date: Mon, 20 May 2019 08:21:59 +0000
+Subject: [PATCH 16/33] fbdev: lock_fb_info cannot fail
+Message-Id: <20190520082216.26273-17-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sam Ravnborg <sam@ravnborg.org>, Daniel Vetter <daniel.vetter@intel.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>
+To: DRI Development <dri-devel@lists.freedesktop.org>
+Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Peter Rosin <peda@axentia.se>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-fbdev@vger.kernel.org
 
-Create a new wrapper function for this, feels like there's some
-refactoring room here between the two modes.
+Ever since
 
-v2: backlight notifier is also interested in the mode change event,
-it calls lcd->set_mode, of which there are 3 implementations. Thanks
-to Maarten for spotting this. So we keep that. We can ditch the differentiation
-between mode change and all mode changes (because backlight notifier
-doesn't care), and we can drop the FBINFO_MISC_USEREVENT stuff too,
-because that's just to prevent recursion between fbmem.c and fbcon.c.
+commit c47747fde931c02455683bd00ea43eaa62f35b0e
+Author: Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Wed May 11 14:58:34 2011 -0700
 
-While at it flatten the control flow a bit.
+    fbmem: make read/write/ioctl use the frame buffer at open time
 
-v3: Need to add a static inline to the dummy function.
+fbdev has gained proper refcounting for the fbinfo attached to any
+open files, which means that the backing driver (stored in
+fb_info->fbops) cannot untimely disappear anymore.
 
-v4: Add missing #include <fbcon.h> to sh_mob (Sam).
+The only thing that can happen is that the entire device just outright
+disappears and gets unregistered, but file_fb_info does check for
+that. Except that it's racy - it only checks once at the start of a
+file_ops, there's no guarantee that the underlying fbdev won't
+untimely disappear. Aside: A proper way to fix that race is probably
+to replicate the srcu trickery we've rolled out in drm.
 
-Cc: Sam Ravnborg <sam@ravnborg.org>
+But given that this race has existed since forever it's probably not
+one we need to fix right away. do_unregister_framebuffer also nowhere
+clears fb_info->fbops, hence the check in lock_fb_info can't possible
+catch a disappearing fbdev later on.
+
+Long story short: Ever since the above commit the fb_info->fbops
+checks have essentially become dead code. Remove this all.
+
+Aside from the file_ops callbacks, and stuff called from there
+there's only register/unregister code left. If that goes wrong a driver
+managed to register/unregister a device instance twice or in the wrong
+order.  That's just a driver bug.
+
+v2:
+- fb_mmap had an open-coded version of the fbinfo->fops check, because
+  it doesn't need the fbinfo->lock. Delete that too.
+- Use the wrapper function in fb_open/release now, since no difference
+  anymore.
+
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Jingoo Han <jingoohan1@gmail.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Hans de Goede <hdegoede@redhat.com>
 Cc: Yisheng Xie <ysxie@foxmail.com>
-Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+Cc: "Noralf Trønnes" <noralf@tronnes.org>
 Cc: Peter Rosin <peda@axentia.se>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
 Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/backlight/lcd.c          |  1 -
- drivers/video/fbdev/core/fbcon.c       | 15 +++++++++------
- drivers/video/fbdev/core/fbmem.c       | 21 ++++++++++-----------
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 12 ++----------
- include/linux/fb.h                     |  2 --
- include/linux/fbcon.h                  |  2 ++
- 6 files changed, 23 insertions(+), 30 deletions(-)
+ drivers/video/fbdev/core/fbcmap.c |  6 +--
+ drivers/video/fbdev/core/fbcon.c  |  3 +-
+ drivers/video/fbdev/core/fbmem.c  | 73 +++++++------------------------
+ include/linux/fb.h                |  5 ++-
+ 4 files changed, 23 insertions(+), 64 deletions(-)
 
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index 151b18776add..ecdda06989d0 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -34,7 +34,6 @@ static int fb_notifier_callback(struct notifier_block *self,
- 	switch (event) {
- 	case FB_EVENT_BLANK:
- 	case FB_EVENT_MODE_CHANGE:
--	case FB_EVENT_MODE_CHANGE_ALL:
- 	case FB_EARLY_EVENT_BLANK:
- 	case FB_R_EARLY_EVENT_BLANK:
- 		break;
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index 68a113594808..aac710b2f95f 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -283,11 +283,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+ 		goto out;
+ 	}
+ 	umap.start = cmap->start;
+-	if (!lock_fb_info(info)) {
+-		rc = -ENODEV;
+-		goto out;
+-	}
+-
++	lock_fb_info(info);
+ 	rc = fb_set_cmap(&umap, info);
+ 	unlock_fb_info(info);
+ out:
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index b5ee89f16d6c..e98551f96138 100644
+index 95af6bd783e8..35443add7f7e 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3009,6 +3009,15 @@ static void fbcon_set_all_vcs(struct fb_info *info)
- 		fbcon_modechanged(info);
- }
+@@ -2360,8 +2360,7 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
+ 	}
  
-+
-+void fbcon_update_vcs(struct fb_info *info, bool all)
-+{
-+	if (all)
-+		fbcon_set_all_vcs(info);
-+	else
-+		fbcon_modechanged(info);
-+}
-+
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode)
- {
-@@ -3318,12 +3327,6 @@ static int fbcon_event_notify(struct notifier_block *self,
- 	int idx, ret = 0;
  
- 	switch(action) {
--	case FB_EVENT_MODE_CHANGE:
--		fbcon_modechanged(info);
--		break;
--	case FB_EVENT_MODE_CHANGE_ALL:
--		fbcon_set_all_vcs(info);
--		break;
- 	case FB_EVENT_SET_CONSOLE_MAP:
- 		/* called with console lock held */
- 		con2fb = event->data;
+-	if (!lock_fb_info(info))
+-		return;
++	lock_fb_info(info);
+ 	event.info = info;
+ 	event.data = &blank;
+ 	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 96805fe85332..dd1a708df1a7 100644
+index ae2db31eeba7..1987aba4f5a2 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -957,6 +957,7 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 	u32 activate;
- 	struct fb_var_screeninfo old_var;
- 	struct fb_videomode mode;
-+	struct fb_event event;
+@@ -80,17 +80,6 @@ static void put_fb_info(struct fb_info *fb_info)
+ 		fb_info->fbops->fb_destroy(fb_info);
+ }
  
- 	if (var->activate & FB_ACTIVATE_INV_MODE) {
- 		struct fb_videomode mode1, mode2;
-@@ -1039,19 +1040,17 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
- 	    !list_empty(&info->modelist))
- 		ret = fb_add_videomode(&mode, &info->modelist);
- 
--	if (!ret && (flags & FBINFO_MISC_USEREVENT)) {
--		struct fb_event event;
--		int evnt = (activate & FB_ACTIVATE_ALL) ?
--			FB_EVENT_MODE_CHANGE_ALL :
--			FB_EVENT_MODE_CHANGE;
-+	if (ret)
-+		return ret;
- 
--		info->flags &= ~FBINFO_MISC_USEREVENT;
--		event.info = info;
--		event.data = &mode;
--		fb_notifier_call_chain(evnt, &event);
+-int lock_fb_info(struct fb_info *info)
+-{
+-	mutex_lock(&info->lock);
+-	if (!info->fbops) {
+-		mutex_unlock(&info->lock);
+-		return 0;
 -	}
-+	event.info = info;
-+	event.data = &mode;
-+	fb_notifier_call_chain(FB_EVENT_MODE_CHANGE, &event);
- 
--	return ret;
-+	if (flags & FBINFO_MISC_USEREVENT)
-+		fbcon_update_vcs(info, activate & FB_ACTIVATE_ALL);
-+
-+	return 0;
- }
- EXPORT_SYMBOL(fb_set_var);
- 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 015a02a29d37..b8454424910d 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -15,6 +15,7 @@
- #include <linux/ctype.h>
- #include <linux/dma-mapping.h>
- #include <linux/delay.h>
-+#include <linux/fbcon.h>
- #include <linux/gpio.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-@@ -1757,8 +1758,6 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
- 	struct sh_mobile_lcdc_chan *ch = info->par;
- 	struct fb_var_screeninfo var;
- 	struct fb_videomode mode;
--	struct fb_event event;
--	int evnt = FB_EVENT_MODE_CHANGE_ALL;
- 
- 	if (ch->use_count > 1 || (ch->use_count = 1 && !info->fbcon_par))
- 		/* More framebuffer users are active */
-@@ -1780,14 +1779,7 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
- 		/* Couldn't reconfigure, hopefully, can continue as before */
- 		return;
- 
--	/*
--	 * fb_set_var() calls the notifier change internally, only if
--	 * FBINFO_MISC_USEREVENT flag is set. Since we do not want to fake a
--	 * user event, we have to call the chain ourselves.
--	 */
--	event.info = info;
--	event.data = &ch->display.mode;
--	fb_notifier_call_chain(evnt, &event);
-+	fbcon_update_vcs(info, true);
- }
- 
+-	return 1;
+-}
+-EXPORT_SYMBOL(lock_fb_info);
+-
  /*
+  * Helpers
+  */
+@@ -1121,8 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 
+ 	switch (cmd) {
+ 	case FBIOGET_VSCREENINFO:
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
++		lock_fb_info(info);
+ 		var = info->var;
+ 		unlock_fb_info(info);
+ 
+@@ -1132,10 +1120,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+ 		console_lock();
+-		if (!lock_fb_info(info)) {
+-			console_unlock();
+-			return -ENODEV;
+-		}
++		lock_fb_info(info);
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_set_var(info, &var);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+@@ -1145,8 +1130,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			ret = -EFAULT;
+ 		break;
+ 	case FBIOGET_FSCREENINFO:
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
++		lock_fb_info(info);
+ 		fix = info->fix;
+ 		if (info->flags & FBINFO_HIDE_SMEM_START)
+ 			fix.smem_start = 0;
+@@ -1162,8 +1146,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOGETCMAP:
+ 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
+ 			return -EFAULT;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
++		lock_fb_info(info);
+ 		cmap_from = info->cmap;
+ 		unlock_fb_info(info);
+ 		ret = fb_cmap_to_user(&cmap_from, &cmap);
+@@ -1172,10 +1155,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+ 		console_lock();
+-		if (!lock_fb_info(info)) {
+-			console_unlock();
+-			return -ENODEV;
+-		}
++		lock_fb_info(info);
+ 		ret = fb_pan_display(info, &var);
+ 		unlock_fb_info(info);
+ 		console_unlock();
+@@ -1192,8 +1172,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 			return -EINVAL;
+ 		con2fb.framebuffer = -1;
+ 		event.data = &con2fb;
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
++		lock_fb_info(info);
+ 		event.info = info;
+ 		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
+ 		unlock_fb_info(info);
+@@ -1214,10 +1193,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		}
+ 		event.data = &con2fb;
+ 		console_lock();
+-		if (!lock_fb_info(info)) {
+-			console_unlock();
+-			return -ENODEV;
+-		}
++		lock_fb_info(info);
+ 		event.info = info;
+ 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
+ 		unlock_fb_info(info);
+@@ -1225,10 +1201,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		break;
+ 	case FBIOBLANK:
+ 		console_lock();
+-		if (!lock_fb_info(info)) {
+-			console_unlock();
+-			return -ENODEV;
+-		}
++		lock_fb_info(info);
+ 		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_blank(info, arg);
+ 		info->flags &= ~FBINFO_MISC_USEREVENT;
+@@ -1236,8 +1209,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 		console_unlock();
+ 		break;
+ 	default:
+-		if (!lock_fb_info(info))
+-			return -ENODEV;
++		lock_fb_info(info);
+ 		fb = info->fbops;
+ 		if (fb->fb_ioctl)
+ 			ret = fb->fb_ioctl(info, cmd, arg);
+@@ -1357,8 +1329,7 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
+ {
+ 	struct fb_fix_screeninfo fix;
+ 
+-	if (!lock_fb_info(info))
+-		return -ENODEV;
++	lock_fb_info(info);
+ 	fix = info->fix;
+ 	if (info->flags & FBINFO_HIDE_SMEM_START)
+ 		fix.smem_start = 0;
+@@ -1418,8 +1389,6 @@ fb_mmap(struct file *file, struct vm_area_struct * vma)
+ 	if (!info)
+ 		return -ENODEV;
+ 	fb = info->fbops;
+-	if (!fb)
+-		return -ENODEV;
+ 	mutex_lock(&info->mm_lock);
+ 	if (fb->fb_mmap) {
+ 		int res;
+@@ -1483,7 +1452,7 @@ __releases(&info->lock)
+ 	if (IS_ERR(info))
+ 		return PTR_ERR(info);
+ 
+-	mutex_lock(&info->lock);
++	lock_fb_info(info);
+ 	if (!try_module_get(info->fbops->owner)) {
+ 		res = -ENODEV;
+ 		goto out;
+@@ -1499,7 +1468,7 @@ __releases(&info->lock)
+ 		fb_deferred_io_open(info, inode, file);
+ #endif
+ out:
+-	mutex_unlock(&info->lock);
++	unlock_fb_info(info);
+ 	if (res)
+ 		put_fb_info(info);
+ 	return res;
+@@ -1512,11 +1481,11 @@ __releases(&info->lock)
+ {
+ 	struct fb_info * const info = file->private_data;
+ 
+-	mutex_lock(&info->lock);
++	lock_fb_info(info);
+ 	if (info->fbops->fb_release)
+ 		info->fbops->fb_release(info,1);
+ 	module_put(info->fbops->owner);
+-	mutex_unlock(&info->lock);
++	unlock_fb_info(info);
+ 	put_fb_info(info);
+ 	return 0;
+ }
+@@ -1726,14 +1695,10 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+ 		console_lock();
+ 	else
+ 		atomic_inc(&ignore_console_lock_warning);
+-	if (!lock_fb_info(fb_info)) {
+-		ret = -ENODEV;
+-		goto unlock_console;
+-	}
+-
++	lock_fb_info(fb_info);
+ 	ret = fbcon_fb_registered(fb_info);
+ 	unlock_fb_info(fb_info);
+-unlock_console:
++
+ 	if (!lockless_register_fb)
+ 		console_unlock();
+ 	else
+@@ -1751,11 +1716,7 @@ static int unbind_console(struct fb_info *fb_info)
+ 		return -EINVAL;
+ 
+ 	console_lock();
+-	if (!lock_fb_info(fb_info)) {
+-		console_unlock();
+-		return -ENODEV;
+-	}
+-
++	lock_fb_info(fb_info);
+ 	event.info = fb_info;
+ 	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
+ 	unlock_fb_info(fb_info);
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 1e66fac3124f..f9c212f9b661 100644
+index 701abaf79c87..fd60207c0685 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -139,8 +139,6 @@ struct fb_cursor_user {
- #define FB_EVENT_SET_CONSOLE_MAP        0x08
- /*      A display blank is requested       */
- #define FB_EVENT_BLANK                  0x09
--/*      Private modelist is to be replaced */
--#define FB_EVENT_MODE_CHANGE_ALL	0x0B
- /*      CONSOLE-SPECIFIC: remap all consoles to new fb - for vga_switcheroo */
- #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
- /*      A hardware display blank early change occurred */
-diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index d67d7ec51ef9..de31eeb22c97 100644
---- a/include/linux/fbcon.h
-+++ b/include/linux/fbcon.h
-@@ -15,6 +15,7 @@ void fbcon_new_modelist(struct fb_info *info);
- void fbcon_get_requirement(struct fb_info *info,
- 			   struct fb_blit_caps *caps);
- void fbcon_fb_blanked(struct fb_info *info, int blank);
-+void fbcon_update_vcs(struct fb_info *info, bool all);
- #else
- static inline void fb_console_init(void) {}
- static inline void fb_console_exit(void) {}
-@@ -29,6 +30,7 @@ static inline void fbcon_new_modelist(struct fb_info *info) {}
- static inline void fbcon_get_requirement(struct fb_info *info,
- 					 struct fb_blit_caps *caps) {}
- static inline void fbcon_fb_blanked(struct fb_info *info, int blank) {}
-+static inline void fbcon_update_vcs(struct fb_info *info, bool all) {}
- #endif
+@@ -656,7 +656,10 @@ extern struct class *fb_class;
+ 	for (i = 0; i < FB_MAX; i++)		\
+ 		if (!registered_fb[i]) {} else
  
- #endif /* _LINUX_FBCON_H */
+-extern int lock_fb_info(struct fb_info *info);
++static inline void lock_fb_info(struct fb_info *info)
++{
++	mutex_lock(&info->lock);
++}
+ 
+ static inline void unlock_fb_info(struct fb_info *info)
+ {
 -- 
 2.20.1

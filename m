@@ -1,44 +1,35 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Wed, 29 May 2019 15:46:35 +0000
-Subject: [PATCH] efifb: BGRT: Add check for new BGRT status field rotation bits
-Message-Id: <20190529154635.2659-1-hdegoede@redhat.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 21 May 2019 10:52:17 +0000
+Subject: [PATCH v2] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
+Message-Id: <f9d56fc1-3e02-9716-b764-82e9600e5919@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190521105217eucas1p19796d2969c1a568fecb0750818226241@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-efi@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>, dri-devel@lists.freedesktop.org
+To: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Starting with ACPI 6.2 bits 1 and 2 of the BGRT status field are no longer
-reserved. These bits are now used to indicate if the image needs to be
-rotated before being displayed.
+Add COMPILE_TEST support to atmel_lcdfb driver for better compile
+testing coverage.
 
-The efifb code does not support rotating the image before copying it to
-the screen.
-
-This commit adds a check for these new bits and if they are set leaves the
-fb contents as is instead of trying to use the un-rotated BGRT image.
-
-Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/fbdev/efifb.c | 5 +++++
- 1 file changed, 5 insertions(+)
+v2: add missing HAVE_CLK && HAS IOMEM dependencies
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 9f39f0c360e0..dfa8dd47d19d 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -169,6 +169,11 @@ static void efifb_show_boot_graphics(struct fb_info *info)
- 		return;
- 	}
+ drivers/video/fbdev/Kconfig |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -856,7 +856,8 @@ config FB_S1D13XXX
  
-+	if (bgrt_tab.status & 0x06) {
-+		pr_info("efifb: BGRT rotation bits set, not showing boot graphics\n");
-+		return;
-+	}
-+
- 	/* Avoid flashing the logo if we're going to print std probe messages */
- 	if (console_loglevel > CONSOLE_LOGLEVEL_QUIET)
- 		return;
--- 
-2.21.0
+ config FB_ATMEL
+ 	tristate "AT91 LCD Controller support"
+-	depends on FB && OF && HAVE_FB_ATMEL
++	depends on FB && OF && HAVE_CLK && HAS_IOMEM
++	depends on HAVE_FB_ATMEL || COMPILE_TEST
+ 	select FB_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA

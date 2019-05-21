@@ -1,19 +1,19 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 17 May 2019 11:24:49 +0000
+From: Oleksandr Natalenko <oleksandr@redhat.com>
+Date: Tue, 21 May 2019 06:27:51 +0000
 Subject: Re: [PATCH] vt/fbcon: deinitialize resources in visual_init() after failed memory allocation
-Message-Id: <782f3255-3a25-4620-e97c-2f742e733f32@samsung.com>
+Message-Id: <20190521062751.vi6hlaod2gfth7ea@butterfly.localdomain>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190426145959epcas3p452b4b80025c58916331820abbb0060ed@epcas3p4.samsung.com>
-        <20190426145946.26537-1-ghalat@redhat.com>
-In-Reply-To: <20190426145946.26537-1-ghalat@redhat.com>
+References: <20190426144357.25826-1-ghalat@redhat.com>
+In-Reply-To: <20190426144357.25826-1-ghalat@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Grzegorz Halat <ghalat@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-fbdev@vger.kernel.org, Oleksandr Natalenko <oleksandr@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.com>, linux-fbdev@vger.kernel.org
 
+Hi.
 
-On 4/26/19 4:59 PM, Grzegorz Halat wrote:
+On Fri, Apr 26, 2019 at 04:43:57PM +0200, Grzegorz Halat wrote:
 > After memory allocation failure vc_allocate() doesn't clean up data
 > which has been initialized in visual_init(). In case of fbcon this
 > leads to divide-by-0 in fbcon_init() on next open of the same tty.
@@ -45,11 +45,70 @@ On 4/26/19 4:59 PM, Grzegorz Halat wrote:
 > ...
 > 
 > Signed-off-by: Grzegorz Halat <ghalat@redhat.com>
+> ---
+>  drivers/tty/vt/vt.c              | 11 +++++++++--
+>  drivers/video/fbdev/core/fbcon.c |  2 +-
+>  2 files changed, 10 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+> index 650c66886c80..ec85d195678f 100644
+> --- a/drivers/tty/vt/vt.c
+> +++ b/drivers/tty/vt/vt.c
+> @@ -1056,6 +1056,13 @@ static void visual_init(struct vc_data *vc, int num, int init)
+>  	vc->vc_screenbuf_size = vc->vc_rows * vc->vc_size_row;
+>  }
+>  
+> +
+> +static void visual_deinit(struct vc_data *vc)
+> +{
+> +	vc->vc_sw->con_deinit(vc);
+> +	module_put(vc->vc_sw->owner);
+> +}
+> +
+>  int vc_allocate(unsigned int currcons)	/* return 0 on success */
+>  {
+>  	struct vt_notifier_param param;
+> @@ -1103,6 +1110,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+>  
+>  	return 0;
+>  err_free:
+> +	visual_deinit(vc);
+>  	kfree(vc);
+>  	vc_cons[currcons].d = NULL;
+>  	return -ENOMEM;
+> @@ -1331,9 +1339,8 @@ struct vc_data *vc_deallocate(unsigned int currcons)
+>  		param.vc = vc = vc_cons[currcons].d;
+>  		atomic_notifier_call_chain(&vt_notifier_list, VT_DEALLOCATE, &param);
+>  		vcs_remove_sysfs(currcons);
+> -		vc->vc_sw->con_deinit(vc);
+> +		visual_deinit(vc);
+>  		put_pid(vc->vt_pid);
+> -		module_put(vc->vc_sw->owner);
+>  		vc_uniscr_set(vc, NULL);
+>  		kfree(vc->vc_screenbuf);
+>  		vc_cons[currcons].d = NULL;
+> diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+> index cd059a801662..c59b23f6e9ba 100644
+> --- a/drivers/video/fbdev/core/fbcon.c
+> +++ b/drivers/video/fbdev/core/fbcon.c
+> @@ -1248,7 +1248,7 @@ static void fbcon_deinit(struct vc_data *vc)
+>  	if (free_font)
+>  		vc->vc_font.data = NULL;
+>  
+> -	if (vc->vc_hi_font_mask)
+> +	if (vc->vc_hi_font_mask && vc->vc_screenbuf)
+>  		set_vc_hi_font(vc, false);
+>  
+>  	if (!con_is_bound(&fb_con))
+> -- 
+> 2.20.1
+> 
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+LGTM.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Reviewed-by: Oleksandr Natalenko <oleksandr@redhat.com>
+
+-- 
+  Best regards,
+    Oleksandr Natalenko (post-factum)
+    Senior Software Maintenance Engineer

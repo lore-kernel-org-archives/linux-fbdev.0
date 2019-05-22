@@ -1,71 +1,198 @@
-From: "Alastair D'Silva" <alastair@au1.ibm.com>
-Date: Wed, 08 May 2019 07:01:40 +0000
-Subject: [PATCH v2 0/7] Hexdump Enhancements
-Message-Id: <20190508070148.23130-1-alastair@au1.ibm.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 22 May 2019 10:15:34 +0000
+Subject: [PATCH 1/2] video: fbdev: pvr2fb: remove function prototypes
+Message-Id: <2a32648a-69c8-47a6-109a-6c2f764b2534@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190522101536eucas1p12e71e836b8d5983f26ec50324156b926@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: alastair@d-silva.org
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-From: Alastair D'Silva <alastair@d-silva.org>
+Reorder code a bit and then remove no longer needed function
+prototypes.
 
-Apologies for the large CC list, it's a heads up for those responsible
-for subsystems where a prototype change in generic code causes a change
-in those subsystems.
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/pvr2fb.c |  141 ++++++++++++++++++-------------------------
+ 1 file changed, 61 insertions(+), 80 deletions(-)
 
-This series enhances hexdump.
-
-These improve the readability of the dumped data in certain situations
-(eg. wide terminals are available, many lines of empty bytes exist, etc).
-
-The default behaviour of hexdump is unchanged, however, the prototype
-for hex_dump_to_buffer() has changed, and print_hex_dump() has been
-renamed to print_hex_dump_ext(), with a wrapper replacing it for
-compatibility with existing code, which would have been too invasive to
-change.
-
-Hexdump selftests have be run & confirmed passed.
-
-Changelog:
- - Fix failing selftests
- - Fix precedence bug in 'Replace ascii bool in hex_dump_to_buffer...'
- - Remove hardcoded new lengths & instead relax the checks in
-   hex_dump_to_buffer, allocating the buffer from the heap instead of the
-   stack.
- - Replace the skipping of lines of 0x00/0xff with skipping lines of
-   repeated characters, announcing what has been skipped.
- - Add spaces as an optional N-group separator
- - Allow byte ordering to be maintained when HEXDUMP_RETAIN_BYTE_ORDERING
-   is set.
- - Updated selftests to cover 'Relax rowsize checks' &
-   'Optionally retain byte ordering'
-
-Alastair D'Silva (7):
-  lib/hexdump.c: Fix selftests
-  lib/hexdump.c: Relax rowsize checks in hex_dump_to_buffer
-  lib/hexdump.c: Optionally suppress lines of repeated bytes
-  lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
-  lib/hexdump.c: Allow multiple groups to be separated by lines '|'
-  lib/hexdump.c: Allow multiple groups to be separated by spaces
-  lib/hexdump.c: Optionally retain byte ordering
-
- drivers/gpu/drm/i915/intel_engine_cs.c        |   2 +-
- drivers/isdn/hardware/mISDN/mISDNisar.c       |   6 +-
- drivers/mailbox/mailbox-test.c                |   2 +-
- drivers/net/ethernet/amd/xgbe/xgbe-drv.c      |   2 +-
- .../net/ethernet/synopsys/dwc-xlgmac-common.c |   2 +-
- drivers/net/wireless/ath/ath10k/debug.c       |   3 +-
- .../net/wireless/intel/iwlegacy/3945-mac.c    |   2 +-
- drivers/platform/chrome/wilco_ec/debugfs.c    |   2 +-
- drivers/scsi/scsi_logging.c                   |   8 +-
- drivers/staging/fbtft/fbtft-core.c            |   2 +-
- fs/seq_file.c                                 |   3 +-
- include/linux/printk.h                        |  34 ++-
- lib/hexdump.c                                 | 260 +++++++++++++++---
- lib/test_hexdump.c                            | 146 +++++++---
- 14 files changed, 372 insertions(+), 102 deletions(-)
-
--- 
-2.21.0
+Index: b/drivers/video/fbdev/pvr2fb.c
+=================================--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -193,39 +193,6 @@ static unsigned int shdma = PVR2_CASCADE
+ static unsigned int pvr2dma = ONCHIP_NR_DMA_CHANNELS;
+ #endif
+ 
+-static int pvr2fb_setcolreg(unsigned int regno, unsigned int red, unsigned int green, unsigned int blue,
+-                            unsigned int transp, struct fb_info *info);
+-static int pvr2fb_blank(int blank, struct fb_info *info);
+-static unsigned long get_line_length(int xres_virtual, int bpp);
+-static void set_color_bitfields(struct fb_var_screeninfo *var);
+-static int pvr2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info);
+-static int pvr2fb_set_par(struct fb_info *info);
+-static void pvr2_update_display(struct fb_info *info);
+-static void pvr2_init_display(struct fb_info *info);
+-static void pvr2_do_blank(void);
+-static irqreturn_t pvr2fb_interrupt(int irq, void *dev_id);
+-static int pvr2_init_cable(void);
+-static int pvr2_get_param(const struct pvr2_params *p, const char *s,
+-                            int val, int size);
+-#ifdef CONFIG_PVR2_DMA
+-static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+-			    size_t count, loff_t *ppos);
+-#endif
+-
+-static struct fb_ops pvr2fb_ops = {
+-	.owner		= THIS_MODULE,
+-	.fb_setcolreg	= pvr2fb_setcolreg,
+-	.fb_blank	= pvr2fb_blank,
+-	.fb_check_var	= pvr2fb_check_var,
+-	.fb_set_par	= pvr2fb_set_par,
+-#ifdef CONFIG_PVR2_DMA
+-	.fb_write	= pvr2fb_write,
+-#endif
+-	.fb_fillrect	= cfb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,
+-};
+-
+ static struct fb_videomode pvr2_modedb[] = {
+     /*
+      * Broadcast video modes (PAL and NTSC).  I'm unfamiliar with
+@@ -353,6 +320,36 @@ static int pvr2fb_setcolreg(unsigned int
+ 	return 0;
+ }
+ 
++/*
++ * Determine the cable type and initialize the cable output format.  Don't do
++ * anything if the cable type has been overidden (via "cable:XX").
++ */
++
++#define PCTRA 0xff80002c
++#define PDTRA 0xff800030
++#define VOUTC 0xa0702c00
++
++static int pvr2_init_cable(void)
++{
++	if (cable_type < 0) {
++		fb_writel((fb_readl(PCTRA) & 0xfff0ffff) | 0x000a0000,
++	                  PCTRA);
++		cable_type = (fb_readw(PDTRA) >> 8) & 3;
++	}
++
++	/* Now select the output format (either composite or other) */
++	/* XXX: Save the previous val first, as this reg is also AICA
++	  related */
++	if (cable_type = CT_COMPOSITE)
++		fb_writel(3 << 8, VOUTC);
++	else if (cable_type = CT_RGB)
++		fb_writel(1 << 9, VOUTC);
++	else
++		fb_writel(0, VOUTC);
++
++	return cable_type;
++}
++
+ static int pvr2fb_set_par(struct fb_info *info)
+ {
+ 	struct pvr2fb_par *par = (struct pvr2fb_par *)info->par;
+@@ -641,36 +638,6 @@ static irqreturn_t pvr2fb_interrupt(int
+ 	return IRQ_HANDLED;
+ }
+ 
+-/*
+- * Determine the cable type and initialize the cable output format.  Don't do
+- * anything if the cable type has been overidden (via "cable:XX").
+- */
+-
+-#define PCTRA 0xff80002c
+-#define PDTRA 0xff800030
+-#define VOUTC 0xa0702c00
+-
+-static int pvr2_init_cable(void)
+-{
+-	if (cable_type < 0) {
+-		fb_writel((fb_readl(PCTRA) & 0xfff0ffff) | 0x000a0000,
+-	                  PCTRA);
+-		cable_type = (fb_readw(PDTRA) >> 8) & 3;
+-	}
+-
+-	/* Now select the output format (either composite or other) */
+-	/* XXX: Save the previous val first, as this reg is also AICA
+-	  related */
+-	if (cable_type = CT_COMPOSITE)
+-		fb_writel(3 << 8, VOUTC);
+-	else if (cable_type = CT_RGB)
+-		fb_writel(1 << 9, VOUTC);
+-	else
+-		fb_writel(0, VOUTC);
+-
+-	return cable_type;
+-}
+-
+ #ifdef CONFIG_PVR2_DMA
+ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
+ 			    size_t count, loff_t *ppos)
+@@ -741,6 +708,37 @@ out_unmap:
+ }
+ #endif /* CONFIG_PVR2_DMA */
+ 
++static struct fb_ops pvr2fb_ops = {
++	.owner		= THIS_MODULE,
++	.fb_setcolreg	= pvr2fb_setcolreg,
++	.fb_blank	= pvr2fb_blank,
++	.fb_check_var	= pvr2fb_check_var,
++	.fb_set_par	= pvr2fb_set_par,
++#ifdef CONFIG_PVR2_DMA
++	.fb_write	= pvr2fb_write,
++#endif
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
++};
++
++static int pvr2_get_param(const struct pvr2_params *p, const char *s, int val,
++			  int size)
++{
++	int i;
++
++	for (i = 0 ; i < size ; i++ ) {
++		if (s != NULL) {
++			if (!strncasecmp(p[i].name, s, strlen(s)))
++				return p[i].val;
++		} else {
++			if (p[i].val = val)
++				return (int)p[i].name;
++		}
++	}
++	return -1;
++}
++
+ /**
+  * pvr2fb_common_init
+  *
+@@ -990,23 +988,6 @@ static void __exit pvr2fb_pci_exit(void)
+ }
+ #endif /* CONFIG_PCI */
+ 
+-static int pvr2_get_param(const struct pvr2_params *p, const char *s, int val,
+-			  int size)
+-{
+-	int i;
+-
+-	for (i = 0 ; i < size ; i++ ) {
+-		if (s != NULL) {
+-			if (!strncasecmp(p[i].name, s, strlen(s)))
+-				return p[i].val;
+-		} else {
+-			if (p[i].val = val)
+-				return (int)p[i].name;
+-		}
+-	}
+-	return -1;
+-}
+-
+ /*
+  * Parse command arguments.  Supported arguments are:
+  *    inverse                             Use inverse color maps

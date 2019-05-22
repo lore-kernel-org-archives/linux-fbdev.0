@@ -1,64 +1,71 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 30 May 2019 12:30:19 +0000
-Subject: [PATCH v3] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
-Message-Id: <69cd6b8b-1fd1-86fa-2070-99d0ce15a868@samsung.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Wed, 22 May 2019 16:34:28 +0000
+Subject: [PATCH] backlight: pwm_bl: Set pin to sleep state when powered down
+Message-Id: <20190522163428.7078-1-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190530123016eucas1p2e18747b8ac1d156657232eab52876a61@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Ferre <nicolas.ferre@microchip.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: od@zcrc.me, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>
 
-Add COMPILE_TEST support to atmel_lcdfb driver for better compile
-testing coverage.
+When the driver probes, the PWM pin is automatically configured to its
+default state, which should be the "pwm" function. However, at this
+point we don't know the actual level of the pin, which may be active or
+inactive. As a result, if the driver probes without enabling the
+backlight, the PWM pin might be active, and the backlight would be
+lit way before being officially enabled.
 
-While at it fix improper use of UL (to silence build warnings on
-x86_64).
+To work around this, if the probe function doesn't enable the backlight,
+the pin is set to its sleep state instead of the default one, until the
+backlight is enabled. When the backlight is disabled, the pin is reset
+to its sleep state.
 
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 ---
-v3: fix build warnings on x86_64
+ drivers/video/backlight/pwm_bl.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-v2: add missing HAVE_CLK && HAS IOMEM dependencies
-
- drivers/video/fbdev/Kconfig       |    3 ++-
- drivers/video/fbdev/atmel_lcdfb.c |    4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-Index: b/drivers/video/fbdev/Kconfig
-=================================--- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -855,7 +855,8 @@ config FB_S1D13XXX
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index fb45f866b923..422f7903b382 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -16,6 +16,7 @@
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/pinctrl/consumer.h>
+ #include <linux/platform_device.h>
+ #include <linux/fb.h>
+ #include <linux/backlight.h>
+@@ -50,6 +51,8 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+ 	struct pwm_state state;
+ 	int err;
  
- config FB_ATMEL
- 	tristate "AT91 LCD Controller support"
--	depends on FB && OF && HAVE_FB_ATMEL
-+	depends on FB && OF && HAVE_CLK && HAS_IOMEM
-+	depends on HAVE_FB_ATMEL || COMPILE_TEST
- 	select FB_BACKLIGHT
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-Index: b/drivers/video/fbdev/atmel_lcdfb.c
-=================================--- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -673,7 +673,7 @@ static int atmel_lcdfb_set_par(struct fb
- 	lcdc_writel(sinfo, ATMEL_LCDC_MVAL, 0);
++	pinctrl_pm_select_default_state(pb->dev);
++
+ 	pwm_get_state(pb->pwm, &state);
+ 	if (pb->enabled)
+ 		return;
+@@ -90,6 +93,8 @@ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
  
- 	/* Disable all interrupts */
--	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
-+	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
- 	/* Enable FIFO & DMA errors */
- 	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI | ATMEL_LCDC_OWRI | ATMEL_LCDC_MERI);
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled = false;
++
++	pinctrl_pm_select_sleep_state(pb->dev);
+ }
  
-@@ -1291,7 +1291,7 @@ static int atmel_lcdfb_suspend(struct pl
- 	 * We don't want to handle interrupts while the clock is
- 	 * stopped. It may take forever.
- 	 */
--	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
-+	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
+ static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
+@@ -626,6 +631,10 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	backlight_update_status(bl);
  
- 	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
- 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+ 	platform_set_drvdata(pdev, bl);
++
++	if (bl->props.power = FB_BLANK_POWERDOWN)
++		pinctrl_pm_select_sleep_state(&pdev->dev);
++
+ 	return 0;
+ 
+ err_alloc:
+-- 
+2.21.0.593.g511ec345e18

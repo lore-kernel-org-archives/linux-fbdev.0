@@ -1,92 +1,124 @@
-From: Sean Paul <sean@poorly.run>
-Date: Thu, 23 May 2019 17:12:37 +0000
-Subject: Re: [PATCH] drm/edid: Fix docbook in drm_hdmi_infoframe_set_hdr_metadata()
-Message-Id: <20190523171237.GD17077@art_vandelay>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Wed, 22 May 2019 10:16:49 +0000
+Subject: [PATCH 2/2] video: fbdev: pvr2fb: add COMPILE_TEST support
+Message-Id: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190523135504.184354-1-sean@poorly.run>
- <E7C9878FBA1C6D42A1CA3F62AEB6945F8203029D@BGSMSX104.gar.corp.intel.com>
-In-Reply-To: <E7C9878FBA1C6D42A1CA3F62AEB6945F8203029D@BGSMSX104.gar.corp.intel.com>
+References: <CGME20190522101651eucas1p18b5ce16f065cc83125b4bd97e141bdcd@eucas1p1.samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: "Shankar, Uma" <uma.shankar@intel.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Sean Paul <seanpaul@chromium.org>, Sean Paul <sean@poorly.run>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Thu, May 23, 2019 at 02:38:37PM +0000, Shankar, Uma wrote:
->=20
->=20
-> >-----Original Message-----
-> >From: Sean Paul [mailto:sean@poorly.run]
-> >Sent: Thursday, May 23, 2019 7:25 PM
-> >To: dri-devel@lists.freedesktop.org
-> >Cc: Sean Paul <seanpaul@chromium.org>; Shankar, Uma <uma.shankar@intel.c=
-om>;
-> >Sharma, Shashank <shashank.sharma@intel.com>; Ville Syrj=E4l=E4
-> ><ville.syrjala@linux.intel.com>; Maarten Lankhorst
-> ><maarten.lankhorst@linux.intel.com>; Maxime Ripard
-> ><maxime.ripard@bootlin.com>; Sean Paul <sean@poorly.run>; David Airlie
-> ><airlied@linux.ie>; Daniel Vetter <daniel@ffwll.ch>; Bartlomiej Zolnierk=
-iewicz
-> ><b.zolnierkie@samsung.com>; Hans Verkuil <hansverk@cisco.com>; linux-
-> >fbdev@vger.kernel.org
-> >Subject: [PATCH] drm/edid: Fix docbook in drm_hdmi_infoframe_set_hdr_met=
-adata()
-> >
-> >From: Sean Paul <seanpaul@chromium.org>
-> >
-> >Fixes the following warnings:
-> >../drivers/gpu/drm/drm_edid.c:4925: warning: Function parameter or member
-> >'conn_state' not described in 'drm_hdmi_infoframe_set_hdr_metadata'
-> >../drivers/gpu/drm/drm_edid.c:4925: warning: Excess function parameter
-> >'hdr_metadata' description in 'drm_hdmi_infoframe_set_hdr_metadata'
->=20
-> Thanks Sean Paul for fixing this.
-> Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+Add COMPILE_TEST support to pvr2fb driver for better compile
+testing coverage.
 
-Pushed to -misc-next, thank you for the review!
+While at it mark pvr2fb_interrupt() and pvr2fb_common_init()
+with __maybe_unused tag (to silence build warnings when
+!SH_DREAMCAST), also convert mmio_base in struct pvr2fb_par to
+'void __iomem *' from 'unsigned long' (needed to silence
+build warnings on ARM).
 
-Sean
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/Kconfig  |    3 ++-
+ drivers/video/fbdev/pvr2fb.c |   26 +++++++++++++-------------
+ 2 files changed, 15 insertions(+), 14 deletions(-)
 
->=20
-> >Fixes: 2cdbfd66a829 ("drm: Enable HDR infoframe support")
-> >Cc: Uma Shankar <uma.shankar@intel.com>
-> >Cc: Shashank Sharma <shashank.sharma@intel.com>
-> >Cc: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
-> >Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> >Cc: Maxime Ripard <maxime.ripard@bootlin.com>
-> >Cc: Sean Paul <sean@poorly.run>
-> >Cc: David Airlie <airlied@linux.ie>
-> >Cc: Daniel Vetter <daniel@ffwll.ch>
-> >Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> >Cc: "Ville Syrj=E4l=E4" <ville.syrjala@linux.intel.com>
-> >Cc: Hans Verkuil <hansverk@cisco.com>
-> >Cc: dri-devel@lists.freedesktop.org
-> >Cc: linux-fbdev@vger.kernel.org
-> >Signed-off-by: Sean Paul <seanpaul@chromium.org>
-> >---
-> > drivers/gpu/drm/drm_edid.c | 2 +-
-> > 1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> >diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c ind=
-ex
-> >262510c2a670..d87f574feeca 100644
-> >--- a/drivers/gpu/drm/drm_edid.c
-> >+++ b/drivers/gpu/drm/drm_edid.c
-> >@@ -4914,7 +4914,7 @@ static inline bool is_eotf_supported(u8 output_eot=
-f, u8
-> >sink_eotf)
-> >  * drm_hdmi_infoframe_set_hdr_metadata() - fill an HDMI DRM infoframe w=
-ith
-> >  *                                         HDR metadata from userspace
-> >  * @frame: HDMI DRM infoframe
-> >- * @hdr_metadata: hdr_source_metadata info from userspace
-> >+ * @conn_state: Connector state containing HDR metadata
-> >  *
-> >  * Return: 0 on success or a negative error code on failure.
-> >  */
-> >--
-> >Sean Paul, Software Engineer, Google / Chromium OS
->=20
-
---=20
-Sean Paul, Software Engineer, Google / Chromium OS
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -807,7 +807,8 @@ config FB_XVR1000
+ 
+ config FB_PVR2
+ 	tristate "NEC PowerVR 2 display support"
+-	depends on FB && SH_DREAMCAST
++	depends on FB && HAS_IOMEM
++	depends on SH_DREAMCAST || COMPILE_TEST
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+Index: b/drivers/video/fbdev/pvr2fb.c
+=================================--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -139,7 +139,7 @@ static struct pvr2fb_par {
+ 	unsigned char is_doublescan;	/* Are scanlines output twice? (doublescan) */
+ 	unsigned char is_lowres;	/* Is horizontal pixel-doubling enabled? */
+ 
+-	unsigned long mmio_base;	/* MMIO base */
++	void __iomem *mmio_base;	/* MMIO base */
+ 	u32 palette[16];
+ } *currentpar;
+ 
+@@ -325,9 +325,9 @@ static int pvr2fb_setcolreg(unsigned int
+  * anything if the cable type has been overidden (via "cable:XX").
+  */
+ 
+-#define PCTRA 0xff80002c
+-#define PDTRA 0xff800030
+-#define VOUTC 0xa0702c00
++#define PCTRA ((void __iomem *)0xff80002c)
++#define PDTRA ((void __iomem *)0xff800030)
++#define VOUTC ((void __iomem *)0xa0702c00)
+ 
+ static int pvr2_init_cable(void)
+ {
+@@ -619,7 +619,7 @@ static void pvr2_do_blank(void)
+ 	is_blanked = do_blank > 0 ? do_blank : 0;
+ }
+ 
+-static irqreturn_t pvr2fb_interrupt(int irq, void *dev_id)
++static irqreturn_t __maybe_unused pvr2fb_interrupt(int irq, void *dev_id)
+ {
+ 	struct fb_info *info = dev_id;
+ 
+@@ -757,7 +757,7 @@ static int pvr2_get_param(const struct p
+  * in for flexibility anyways. Who knows, maybe someone has tv-out on a
+  * PCI-based version of these things ;-)
+  */
+-static int pvr2fb_common_init(void)
++static int __maybe_unused pvr2fb_common_init(void)
+ {
+ 	struct pvr2fb_par *par = currentpar;
+ 	unsigned long modememused, rev;
+@@ -770,8 +770,8 @@ static int pvr2fb_common_init(void)
+ 		goto out_err;
+ 	}
+ 
+-	par->mmio_base = (unsigned long)ioremap_nocache(pvr2_fix.mmio_start,
+-							pvr2_fix.mmio_len);
++	par->mmio_base = ioremap_nocache(pvr2_fix.mmio_start,
++					 pvr2_fix.mmio_len);
+ 	if (!par->mmio_base) {
+ 		printk(KERN_ERR "pvr2fb: Failed to remap mmio space\n");
+ 		goto out_err;
+@@ -838,7 +838,7 @@ out_err:
+ 	if (fb_info->screen_base)
+ 		iounmap(fb_info->screen_base);
+ 	if (par->mmio_base)
+-		iounmap((void *)par->mmio_base);
++		iounmap(par->mmio_base);
+ 
+ 	return -ENXIO;
+ }
+@@ -905,8 +905,8 @@ static void __exit pvr2fb_dc_exit(void)
+ 		fb_info->screen_base = NULL;
+ 	}
+ 	if (currentpar->mmio_base) {
+-		iounmap((void *)currentpar->mmio_base);
+-		currentpar->mmio_base = 0;
++		iounmap(currentpar->mmio_base);
++		currentpar->mmio_base = NULL;
+ 	}
+ 
+ 	free_irq(HW_EVENT_VSYNC, fb_info);
+@@ -955,8 +955,8 @@ static void pvr2fb_pci_remove(struct pci
+ 		fb_info->screen_base = NULL;
+ 	}
+ 	if (currentpar->mmio_base) {
+-		iounmap((void *)currentpar->mmio_base);
+-		currentpar->mmio_base = 0;
++		iounmap(currentpar->mmio_base);
++		currentpar->mmio_base = NULL;
+ 	}
+ 
+ 	pci_release_regions(pdev);

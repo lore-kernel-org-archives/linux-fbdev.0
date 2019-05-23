@@ -1,61 +1,92 @@
-From: "Shankar, Uma" <uma.shankar@intel.com>
-Date: Thu, 23 May 2019 14:38:37 +0000
-Subject: RE: [PATCH] drm/edid: Fix docbook in drm_hdmi_infoframe_set_hdr_metadata()
-Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F8203029D@BGSMSX104.gar.corp.intel.com>
+From: Sean Paul <sean@poorly.run>
+Date: Thu, 23 May 2019 17:12:37 +0000
+Subject: Re: [PATCH] drm/edid: Fix docbook in drm_hdmi_infoframe_set_hdr_metadata()
+Message-Id: <20190523171237.GD17077@art_vandelay>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190523135504.184354-1-sean@poorly.run>
-In-Reply-To: <20190523135504.184354-1-sean@poorly.run>
+ <E7C9878FBA1C6D42A1CA3F62AEB6945F8203029D@BGSMSX104.gar.corp.intel.com>
+In-Reply-To: <E7C9878FBA1C6D42A1CA3F62AEB6945F8203029D@BGSMSX104.gar.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sean Paul <sean@poorly.run>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Sean Paul <seanpaul@chromium.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: "Shankar, Uma" <uma.shankar@intel.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Sean Paul <seanpaul@chromium.org>, Sean Paul <sean@poorly.run>
 
-DQoNCj4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IFNlYW4gUGF1bCBbbWFpbHRv
-OnNlYW5AcG9vcmx5LnJ1bl0NCj5TZW50OiBUaHVyc2RheSwgTWF5IDIzLCAyMDE5IDc6MjUgUE0N
-Cj5UbzogZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPkNjOiBTZWFuIFBhdWwgPHNl
-YW5wYXVsQGNocm9taXVtLm9yZz47IFNoYW5rYXIsIFVtYSA8dW1hLnNoYW5rYXJAaW50ZWwuY29t
-PjsNCj5TaGFybWEsIFNoYXNoYW5rIDxzaGFzaGFuay5zaGFybWFAaW50ZWwuY29tPjsgVmlsbGUg
-U3lyasOkbMOkDQo+PHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPjsgTWFhcnRlbiBMYW5r
-aG9yc3QNCj48bWFhcnRlbi5sYW5raG9yc3RAbGludXguaW50ZWwuY29tPjsgTWF4aW1lIFJpcGFy
-ZA0KPjxtYXhpbWUucmlwYXJkQGJvb3RsaW4uY29tPjsgU2VhbiBQYXVsIDxzZWFuQHBvb3JseS5y
-dW4+OyBEYXZpZCBBaXJsaWUNCj48YWlybGllZEBsaW51eC5pZT47IERhbmllbCBWZXR0ZXIgPGRh
-bmllbEBmZndsbC5jaD47IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3oNCj48Yi56b2xuaWVya2ll
-QHNhbXN1bmcuY29tPjsgSGFucyBWZXJrdWlsIDxoYW5zdmVya0BjaXNjby5jb20+OyBsaW51eC0N
-Cj5mYmRldkB2Z2VyLmtlcm5lbC5vcmcNCj5TdWJqZWN0OiBbUEFUQ0hdIGRybS9lZGlkOiBGaXgg
-ZG9jYm9vayBpbiBkcm1faGRtaV9pbmZvZnJhbWVfc2V0X2hkcl9tZXRhZGF0YSgpDQo+DQo+RnJv
-bTogU2VhbiBQYXVsIDxzZWFucGF1bEBjaHJvbWl1bS5vcmc+DQo+DQo+Rml4ZXMgdGhlIGZvbGxv
-d2luZyB3YXJuaW5nczoNCj4uLi9kcml2ZXJzL2dwdS9kcm0vZHJtX2VkaWQuYzo0OTI1OiB3YXJu
-aW5nOiBGdW5jdGlvbiBwYXJhbWV0ZXIgb3IgbWVtYmVyDQo+J2Nvbm5fc3RhdGUnIG5vdCBkZXNj
-cmliZWQgaW4gJ2RybV9oZG1pX2luZm9mcmFtZV9zZXRfaGRyX21ldGFkYXRhJw0KPi4uL2RyaXZl
-cnMvZ3B1L2RybS9kcm1fZWRpZC5jOjQ5MjU6IHdhcm5pbmc6IEV4Y2VzcyBmdW5jdGlvbiBwYXJh
-bWV0ZXINCj4naGRyX21ldGFkYXRhJyBkZXNjcmlwdGlvbiBpbiAnZHJtX2hkbWlfaW5mb2ZyYW1l
-X3NldF9oZHJfbWV0YWRhdGEnDQoNClRoYW5rcyBTZWFuIFBhdWwgZm9yIGZpeGluZyB0aGlzLg0K
-UmV2aWV3ZWQtYnk6IFVtYSBTaGFua2FyIDx1bWEuc2hhbmthckBpbnRlbC5jb20+DQoNCj5GaXhl
-czogMmNkYmZkNjZhODI5ICgiZHJtOiBFbmFibGUgSERSIGluZm9mcmFtZSBzdXBwb3J0IikNCj5D
-YzogVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNvbT4NCj5DYzogU2hhc2hhbmsgU2hh
-cm1hIDxzaGFzaGFuay5zaGFybWFAaW50ZWwuY29tPg0KPkNjOiBWaWxsZSBTeXJqw6Rsw6QgPHZp
-bGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPg0KPkNjOiBNYWFydGVuIExhbmtob3JzdCA8bWFh
-cnRlbi5sYW5raG9yc3RAbGludXguaW50ZWwuY29tPg0KPkNjOiBNYXhpbWUgUmlwYXJkIDxtYXhp
-bWUucmlwYXJkQGJvb3RsaW4uY29tPg0KPkNjOiBTZWFuIFBhdWwgPHNlYW5AcG9vcmx5LnJ1bj4N
-Cj5DYzogRGF2aWQgQWlybGllIDxhaXJsaWVkQGxpbnV4LmllPg0KPkNjOiBEYW5pZWwgVmV0dGVy
-IDxkYW5pZWxAZmZ3bGwuY2g+DQo+Q2M6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9s
-bmllcmtpZUBzYW1zdW5nLmNvbT4NCj5DYzogIlZpbGxlIFN5cmrDpGzDpCIgPHZpbGxlLnN5cmph
-bGFAbGludXguaW50ZWwuY29tPg0KPkNjOiBIYW5zIFZlcmt1aWwgPGhhbnN2ZXJrQGNpc2NvLmNv
-bT4NCj5DYzogZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPkNjOiBsaW51eC1mYmRl
-dkB2Z2VyLmtlcm5lbC5vcmcNCj5TaWduZWQtb2ZmLWJ5OiBTZWFuIFBhdWwgPHNlYW5wYXVsQGNo
-cm9taXVtLm9yZz4NCj4tLS0NCj4gZHJpdmVycy9ncHUvZHJtL2RybV9lZGlkLmMgfCAyICstDQo+
-IDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlvbigtKQ0KPg0KPmRpZmYg
-LS1naXQgYS9kcml2ZXJzL2dwdS9kcm0vZHJtX2VkaWQuYyBiL2RyaXZlcnMvZ3B1L2RybS9kcm1f
-ZWRpZC5jIGluZGV4DQo+MjYyNTEwYzJhNjcwLi5kODdmNTc0ZmVlY2EgMTAwNjQ0DQo+LS0tIGEv
-ZHJpdmVycy9ncHUvZHJtL2RybV9lZGlkLmMNCj4rKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Vk
-aWQuYw0KPkBAIC00OTE0LDcgKzQ5MTQsNyBAQCBzdGF0aWMgaW5saW5lIGJvb2wgaXNfZW90Zl9z
-dXBwb3J0ZWQodTggb3V0cHV0X2VvdGYsIHU4DQo+c2lua19lb3RmKQ0KPiAgKiBkcm1faGRtaV9p
-bmZvZnJhbWVfc2V0X2hkcl9tZXRhZGF0YSgpIC0gZmlsbCBhbiBIRE1JIERSTSBpbmZvZnJhbWUg
-d2l0aA0KPiAgKiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgSERSIG1l
-dGFkYXRhIGZyb20gdXNlcnNwYWNlDQo+ICAqIEBmcmFtZTogSERNSSBEUk0gaW5mb2ZyYW1lDQo+
-LSAqIEBoZHJfbWV0YWRhdGE6IGhkcl9zb3VyY2VfbWV0YWRhdGEgaW5mbyBmcm9tIHVzZXJzcGFj
-ZQ0KPisgKiBAY29ubl9zdGF0ZTogQ29ubmVjdG9yIHN0YXRlIGNvbnRhaW5pbmcgSERSIG1ldGFk
-YXRhDQo+ICAqDQo+ICAqIFJldHVybjogMCBvbiBzdWNjZXNzIG9yIGEgbmVnYXRpdmUgZXJyb3Ig
-Y29kZSBvbiBmYWlsdXJlLg0KPiAgKi8NCj4tLQ0KPlNlYW4gUGF1bCwgU29mdHdhcmUgRW5naW5l
-ZXIsIEdvb2dsZSAvIENocm9taXVtIE9TDQoNCg=
+On Thu, May 23, 2019 at 02:38:37PM +0000, Shankar, Uma wrote:
+>=20
+>=20
+> >-----Original Message-----
+> >From: Sean Paul [mailto:sean@poorly.run]
+> >Sent: Thursday, May 23, 2019 7:25 PM
+> >To: dri-devel@lists.freedesktop.org
+> >Cc: Sean Paul <seanpaul@chromium.org>; Shankar, Uma <uma.shankar@intel.c=
+om>;
+> >Sharma, Shashank <shashank.sharma@intel.com>; Ville Syrj=E4l=E4
+> ><ville.syrjala@linux.intel.com>; Maarten Lankhorst
+> ><maarten.lankhorst@linux.intel.com>; Maxime Ripard
+> ><maxime.ripard@bootlin.com>; Sean Paul <sean@poorly.run>; David Airlie
+> ><airlied@linux.ie>; Daniel Vetter <daniel@ffwll.ch>; Bartlomiej Zolnierk=
+iewicz
+> ><b.zolnierkie@samsung.com>; Hans Verkuil <hansverk@cisco.com>; linux-
+> >fbdev@vger.kernel.org
+> >Subject: [PATCH] drm/edid: Fix docbook in drm_hdmi_infoframe_set_hdr_met=
+adata()
+> >
+> >From: Sean Paul <seanpaul@chromium.org>
+> >
+> >Fixes the following warnings:
+> >../drivers/gpu/drm/drm_edid.c:4925: warning: Function parameter or member
+> >'conn_state' not described in 'drm_hdmi_infoframe_set_hdr_metadata'
+> >../drivers/gpu/drm/drm_edid.c:4925: warning: Excess function parameter
+> >'hdr_metadata' description in 'drm_hdmi_infoframe_set_hdr_metadata'
+>=20
+> Thanks Sean Paul for fixing this.
+> Reviewed-by: Uma Shankar <uma.shankar@intel.com>
+
+Pushed to -misc-next, thank you for the review!
+
+Sean
+
+>=20
+> >Fixes: 2cdbfd66a829 ("drm: Enable HDR infoframe support")
+> >Cc: Uma Shankar <uma.shankar@intel.com>
+> >Cc: Shashank Sharma <shashank.sharma@intel.com>
+> >Cc: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
+> >Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> >Cc: Maxime Ripard <maxime.ripard@bootlin.com>
+> >Cc: Sean Paul <sean@poorly.run>
+> >Cc: David Airlie <airlied@linux.ie>
+> >Cc: Daniel Vetter <daniel@ffwll.ch>
+> >Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> >Cc: "Ville Syrj=E4l=E4" <ville.syrjala@linux.intel.com>
+> >Cc: Hans Verkuil <hansverk@cisco.com>
+> >Cc: dri-devel@lists.freedesktop.org
+> >Cc: linux-fbdev@vger.kernel.org
+> >Signed-off-by: Sean Paul <seanpaul@chromium.org>
+> >---
+> > drivers/gpu/drm/drm_edid.c | 2 +-
+> > 1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> >diff --git a/drivers/gpu/drm/drm_edid.c b/drivers/gpu/drm/drm_edid.c ind=
+ex
+> >262510c2a670..d87f574feeca 100644
+> >--- a/drivers/gpu/drm/drm_edid.c
+> >+++ b/drivers/gpu/drm/drm_edid.c
+> >@@ -4914,7 +4914,7 @@ static inline bool is_eotf_supported(u8 output_eot=
+f, u8
+> >sink_eotf)
+> >  * drm_hdmi_infoframe_set_hdr_metadata() - fill an HDMI DRM infoframe w=
+ith
+> >  *                                         HDR metadata from userspace
+> >  * @frame: HDMI DRM infoframe
+> >- * @hdr_metadata: hdr_source_metadata info from userspace
+> >+ * @conn_state: Connector state containing HDR metadata
+> >  *
+> >  * Return: 0 on success or a negative error code on failure.
+> >  */
+> >--
+> >Sean Paul, Software Engineer, Google / Chromium OS
+>=20
+
+--=20
+Sean Paul, Software Engineer, Google / Chromium OS

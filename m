@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Mon, 20 May 2019 08:21:59 +0000
+Date: Fri, 24 May 2019 08:53:37 +0000
 Subject: [PATCH 16/33] fbdev: lock_fb_info cannot fail
-Message-Id: <20190520082216.26273-17-daniel.vetter@ffwll.ch>
+Message-Id: <20190524085354.27411-17-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Peter Rosin <peda@axentia.se>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-fbdev@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Noralf=20Tr=C3=B8nnes?= <noralf@tronnes.org>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
 
 Ever since
 
@@ -69,10 +69,10 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 23 insertions(+), 64 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-index 68a113594808..aac710b2f95f 100644
+index 2811c4afde01..e5ae33c1a8e8 100644
 --- a/drivers/video/fbdev/core/fbcmap.c
 +++ b/drivers/video/fbdev/core/fbcmap.c
-@@ -283,11 +283,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
+@@ -285,11 +285,7 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
  		goto out;
  	}
  	umap.start = cmap->start;
@@ -86,10 +86,10 @@ index 68a113594808..aac710b2f95f 100644
  	unlock_fb_info(info);
  out:
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 95af6bd783e8..35443add7f7e 100644
+index 54d01f7284cb..c3353db35adc 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -2360,8 +2360,7 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
+@@ -2364,8 +2364,7 @@ static void fbcon_generic_blank(struct vc_data *vc, struct fb_info *info,
  	}
  
  
@@ -100,7 +100,7 @@ index 95af6bd783e8..35443add7f7e 100644
  	event.data = &blank;
  	fb_notifier_call_chain(FB_EVENT_CONBLANK, &event);
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index ae2db31eeba7..1987aba4f5a2 100644
+index bed7698ad18a..d73762324ca2 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
 @@ -80,17 +80,6 @@ static void put_fb_info(struct fb_info *fb_info)
@@ -270,7 +270,7 @@ index ae2db31eeba7..1987aba4f5a2 100644
  	put_fb_info(info);
  	return 0;
  }
-@@ -1726,14 +1695,10 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+@@ -1734,14 +1703,10 @@ static int do_register_framebuffer(struct fb_info *fb_info)
  		console_lock();
  	else
  		atomic_inc(&ignore_console_lock_warning);
@@ -287,7 +287,7 @@ index ae2db31eeba7..1987aba4f5a2 100644
  	if (!lockless_register_fb)
  		console_unlock();
  	else
-@@ -1751,11 +1716,7 @@ static int unbind_console(struct fb_info *fb_info)
+@@ -1759,11 +1724,7 @@ static int unbind_console(struct fb_info *fb_info)
  		return -EINVAL;
  
  	console_lock();
@@ -301,10 +301,10 @@ index ae2db31eeba7..1987aba4f5a2 100644
  	ret = fb_notifier_call_chain(FB_EVENT_FB_UNBIND, &event);
  	unlock_fb_info(fb_info);
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 701abaf79c87..fd60207c0685 100644
+index 288175fafaf6..aa8f18163151 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -656,7 +656,10 @@ extern struct class *fb_class;
+@@ -663,7 +663,10 @@ extern struct class *fb_class;
  	for (i = 0; i < FB_MAX; i++)		\
  		if (!registered_fb[i]) {} else
  

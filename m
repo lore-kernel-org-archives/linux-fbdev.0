@@ -1,20 +1,23 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Mon, 20 May 2019 08:22:01 +0000
+Date: Fri, 24 May 2019 08:53:39 +0000
 Subject: [PATCH 18/33] fbdev: make unregister/unlink functions not fail
-Message-Id: <20190520082216.26273-19-daniel.vetter@ffwll.ch>
+Message-Id: <20190524085354.27411-19-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, linux-fbdev@vger.kernel.org
 
 Except for driver bugs (which we'll catch with a WARN_ON) this is only
 to report failures of the new driver taking over the console. There's
 nothing the outgoing driver can do about that, and no one ever
 bothered to actually look at these return values. So remove them all.
+
+v2: fixup unregister_framebuffer in savagefb, fbtft, ivtvfb, and neofb
+drivers, reported by kbuild.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
@@ -25,12 +28,48 @@ Cc: Hans de Goede <hdegoede@redhat.com>
 Cc: Mikulas Patocka <mpatocka@redhat.com>
 Cc: linux-fbdev@vger.kernel.org
 ---
- drivers/video/fbdev/core/fbmem.c | 73 ++++++++++----------------------
- include/linux/fb.h               |  4 +-
- 2 files changed, 25 insertions(+), 52 deletions(-)
+ drivers/media/pci/ivtv/ivtvfb.c              |  6 +-
+ drivers/staging/fbtft/fbtft-core.c           |  4 +-
+ drivers/video/fbdev/core/fbmem.c             | 73 ++++++--------------
+ drivers/video/fbdev/neofb.c                  |  9 +--
+ drivers/video/fbdev/savage/savagefb_driver.c |  9 +--
+ include/linux/fb.h                           |  4 +-
+ 6 files changed, 31 insertions(+), 74 deletions(-)
 
+diff --git a/drivers/media/pci/ivtv/ivtvfb.c b/drivers/media/pci/ivtv/ivtvfb.c
+index cfd21040d0e3..6435c72ff58e 100644
+--- a/drivers/media/pci/ivtv/ivtvfb.c
++++ b/drivers/media/pci/ivtv/ivtvfb.c
+@@ -1258,11 +1258,7 @@ static int ivtvfb_callback_cleanup(struct device *dev, void *p)
+ 	struct osd_info *oi = itv->osd_info;
+ 
+ 	if (itv->v4l2_cap & V4L2_CAP_VIDEO_OUTPUT) {
+-		if (unregister_framebuffer(&itv->osd_info->ivtvfb_info)) {
+-			IVTVFB_WARN("Framebuffer %d is in use, cannot unload\n",
+-				       itv->instance);
+-			return 0;
+-		}
++		unregister_framebuffer(&itv->osd_info->ivtvfb_info);
+ 		IVTVFB_INFO("Unregister framebuffer %d\n", itv->instance);
+ 		itv->ivtvfb_restore = NULL;
+ 		ivtvfb_blank(FB_BLANK_VSYNC_SUSPEND, &oi->ivtvfb_info);
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 9b07badf4c6c..7cbc1bdd2d8a 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -891,7 +891,9 @@ int fbtft_unregister_framebuffer(struct fb_info *fb_info)
+ 	if (par->fbtftops.unregister_backlight)
+ 		par->fbtftops.unregister_backlight(par);
+ 	fbtft_sysfs_exit(par);
+-	return unregister_framebuffer(fb_info);
++	unregister_framebuffer(fb_info);
++
++	return 0;
+ }
+ EXPORT_SYMBOL(fbtft_unregister_framebuffer);
+ 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 156523cc48bf..032506576aa0 100644
+index f3fc2e5b193c..f3bcad30d3ba 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
 @@ -1590,13 +1590,13 @@ static bool fb_do_apertures_overlap(struct apertures_struct *gena,
@@ -81,7 +120,7 @@ index 156523cc48bf..032506576aa0 100644
  
  	if (num_registered_fb = FB_MAX)
  		return -ENXIO;
-@@ -1706,32 +1700,25 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+@@ -1714,32 +1708,25 @@ static int do_register_framebuffer(struct fb_info *fb_info)
  	return ret;
  }
  
@@ -120,7 +159,7 @@ index 156523cc48bf..032506576aa0 100644
  
  	pm_vt_switch_unregister(fb_info->dev);
  
-@@ -1749,36 +1736,27 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
+@@ -1764,36 +1751,27 @@ static int do_unregister_framebuffer(struct fb_info *fb_info)
  
  	/* this may free fb info */
  	put_fb_info(fb_info);
@@ -162,7 +201,7 @@ index 156523cc48bf..032506576aa0 100644
  }
  EXPORT_SYMBOL(unlink_framebuffer);
  
-@@ -1795,7 +1773,6 @@ EXPORT_SYMBOL(unlink_framebuffer);
+@@ -1810,7 +1788,6 @@ EXPORT_SYMBOL(unlink_framebuffer);
  int remove_conflicting_framebuffers(struct apertures_struct *a,
  				    const char *name, bool primary)
  {
@@ -170,7 +209,7 @@ index 156523cc48bf..032506576aa0 100644
  	bool do_free = false;
  
  	if (!a) {
-@@ -1809,13 +1786,13 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
+@@ -1824,13 +1801,13 @@ int remove_conflicting_framebuffers(struct apertures_struct *a,
  	}
  
  	mutex_lock(&registration_lock);
@@ -186,7 +225,7 @@ index 156523cc48bf..032506576aa0 100644
  }
  EXPORT_SYMBOL(remove_conflicting_framebuffers);
  
-@@ -1891,16 +1868,12 @@ EXPORT_SYMBOL(register_framebuffer);
+@@ -1927,16 +1904,12 @@ EXPORT_SYMBOL(register_framebuffer);
   *      that the driver implements fb_open() and fb_release() to
   *      check that no processes are using the device.
   */
@@ -205,11 +244,51 @@ index 156523cc48bf..032506576aa0 100644
  }
  EXPORT_SYMBOL(unregister_framebuffer);
  
+diff --git a/drivers/video/fbdev/neofb.c b/drivers/video/fbdev/neofb.c
+index 5d3a444083f7..b770946a0920 100644
+--- a/drivers/video/fbdev/neofb.c
++++ b/drivers/video/fbdev/neofb.c
+@@ -2122,14 +2122,7 @@ static void neofb_remove(struct pci_dev *dev)
+ 	DBG("neofb_remove");
+ 
+ 	if (info) {
+-		/*
+-		 * If unregister_framebuffer fails, then
+-		 * we will be leaving hooks that could cause
+-		 * oopsen laying around.
+-		 */
+-		if (unregister_framebuffer(info))
+-			printk(KERN_WARNING
+-			       "neofb: danger danger!  Oopsen imminent!\n");
++		unregister_framebuffer(info);
+ 
+ 		neo_unmap_video(info);
+ 		fb_destroy_modedb(info->monspecs.modedb);
+diff --git a/drivers/video/fbdev/savage/savagefb_driver.c b/drivers/video/fbdev/savage/savagefb_driver.c
+index 47b78f0138c3..512789f5f884 100644
+--- a/drivers/video/fbdev/savage/savagefb_driver.c
++++ b/drivers/video/fbdev/savage/savagefb_driver.c
+@@ -2333,14 +2333,7 @@ static void savagefb_remove(struct pci_dev *dev)
+ 	DBG("savagefb_remove");
+ 
+ 	if (info) {
+-		/*
+-		 * If unregister_framebuffer fails, then
+-		 * we will be leaving hooks that could cause
+-		 * oopsen laying around.
+-		 */
+-		if (unregister_framebuffer(info))
+-			printk(KERN_WARNING "savagefb: danger danger! "
+-			       "Oopsen imminent!\n");
++		unregister_framebuffer(info);
+ 
+ #ifdef CONFIG_FB_SAVAGE_I2C
+ 		savagefb_delete_i2c_busses(info);
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 38fae1678939..44021e55b15c 100644
+index b6ce041d9e13..b90cf7d56bd8 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -627,8 +627,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+@@ -634,8 +634,8 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
  
  /* drivers/video/fbmem.c */
  extern int register_framebuffer(struct fb_info *fb_info);

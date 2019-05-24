@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Mon, 20 May 2019 08:22:05 +0000
+Date: Fri, 24 May 2019 08:53:43 +0000
 Subject: [PATCH 22/33] fbcon: Call fbcon_mode_deleted/new_modelist directly
-Message-Id: <20190520082216.26273-23-daniel.vetter@ffwll.ch>
+Message-Id: <20190524085354.27411-23-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Peter Rosin <peda@axentia.se>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, linux-fbdev@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
 
 I'm not entirely clear on what new_modelist actually does, it seems
 exclusively for a sysfs interface. Which in the end does amount to a
@@ -19,6 +19,8 @@ in both fbmem.c and fbcon.c.
 I have no idea why these 2 paths are different, but then I also don't
 really want to find out. So just do the simple conversion to a direct
 function call.
+
+v2: static inline for the dummy versions, I forgot.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
@@ -39,10 +41,10 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 16 insertions(+), 31 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index b056d1190788..5635acb4b11c 100644
+index 24ea6e4fbee0..35ecd25b385c 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3015,8 +3015,8 @@ static void fbcon_set_all_vcs(struct fb_info *info)
+@@ -3019,8 +3019,8 @@ static void fbcon_set_all_vcs(struct fb_info *info)
  		fbcon_modechanged(info);
  }
  
@@ -53,7 +55,7 @@ index b056d1190788..5635acb4b11c 100644
  {
  	struct fb_info *fb_info;
  	struct fbcon_display *p;
-@@ -3258,7 +3258,7 @@ static void fbcon_fb_blanked(struct fb_info *info, int blank)
+@@ -3262,7 +3262,7 @@ static void fbcon_fb_blanked(struct fb_info *info, int blank)
  	ops->blank_state = blank;
  }
  
@@ -62,7 +64,7 @@ index b056d1190788..5635acb4b11c 100644
  {
  	int i;
  	struct vc_data *vc;
-@@ -3320,7 +3320,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3324,7 +3324,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  {
  	struct fb_event *event = data;
  	struct fb_info *info = event->info;
@@ -70,7 +72,7 @@ index b056d1190788..5635acb4b11c 100644
  	struct fb_con2fbmap *con2fb;
  	struct fb_blit_caps *caps;
  	int idx, ret = 0;
-@@ -3332,10 +3331,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3336,10 +3335,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  	case FB_EVENT_MODE_CHANGE_ALL:
  		fbcon_set_all_vcs(info);
  		break;
@@ -81,7 +83,7 @@ index b056d1190788..5635acb4b11c 100644
  	case FB_EVENT_SET_CONSOLE_MAP:
  		/* called with console lock held */
  		con2fb = event->data;
-@@ -3349,9 +3344,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3353,9 +3348,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  	case FB_EVENT_BLANK:
  		fbcon_fb_blanked(info, *(int *)event->data);
  		break;
@@ -92,7 +94,7 @@ index b056d1190788..5635acb4b11c 100644
  		caps = event->data;
  		fbcon_get_requirement(info, caps);
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 7c55846ee5fc..96d280228746 100644
+index 73269dedcd45..cbdd141e7695 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
 @@ -966,16 +966,11 @@ fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
@@ -115,7 +117,7 @@ index 7c55846ee5fc..96d280228746 100644
  
  
  		ret = (ret) ? -EINVAL : 0;
-@@ -1956,7 +1951,6 @@ subsys_initcall(fbmem_init);
+@@ -1992,7 +1987,6 @@ subsys_initcall(fbmem_init);
  
  int fb_new_modelist(struct fb_info *info)
  {
@@ -123,7 +125,7 @@ index 7c55846ee5fc..96d280228746 100644
  	struct fb_var_screeninfo var = info->var;
  	struct list_head *pos, *n;
  	struct fb_modelist *modelist;
-@@ -1976,14 +1970,12 @@ int fb_new_modelist(struct fb_info *info)
+@@ -2012,14 +2006,12 @@ int fb_new_modelist(struct fb_info *info)
  		}
  	}
  
@@ -143,7 +145,7 @@ index 7c55846ee5fc..96d280228746 100644
  
  MODULE_LICENSE("GPL");
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a78bbd372cfd..e6595a381792 100644
+index 794b386415b7..7a788ed8c7b5 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
 @@ -126,8 +126,6 @@ struct fb_cursor_user {
@@ -152,10 +154,10 @@ index a78bbd372cfd..e6595a381792 100644
  #define FB_EVENT_MODE_CHANGE		0x01
 -/*      An entry from the modelist was removed */
 -#define FB_EVENT_MODE_DELETE            0x04
- /*      CONSOLE-SPECIFIC: get console to framebuffer mapping */
- #define FB_EVENT_GET_CONSOLE_MAP        0x07
- /*      CONSOLE-SPECIFIC: set console to framebuffer mapping */
-@@ -135,9 +133,6 @@ struct fb_cursor_user {
+ 
+ #ifdef CONFIG_GUMSTIX_AM200EPD
+ /* only used by mach-pxa/am200epd.c */
+@@ -142,9 +140,6 @@ struct fb_cursor_user {
  /*      A hardware display blank change occurred */
  #define FB_EVENT_BLANK                  0x09
  /*      Private modelist is to be replaced */
@@ -166,7 +168,7 @@ index a78bbd372cfd..e6595a381792 100644
  /*	A software display blank change occurred */
  #define FB_EVENT_CONBLANK               0x0C
 diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index 61a22e6c0c64..42b06848b459 100644
+index 790c42ec7b5d..c139834342f5 100644
 --- a/include/linux/fbcon.h
 +++ b/include/linux/fbcon.h
 @@ -9,6 +9,9 @@ void fbcon_fb_unregistered(struct fb_info *info);
@@ -181,11 +183,11 @@ index 61a22e6c0c64..42b06848b459 100644
  static inline void fb_console_exit(void) {}
 @@ -17,6 +20,9 @@ static inline void fbcon_fb_unregistered(struct fb_info *info) {}
  static inline void fbcon_fb_unbind(struct fb_info *info) {}
- static inline void fbcon_suspended(void) {}
- static inline void fbcon_resumed(void) {}
-+int fbcon_mode_deleted(struct fb_info *info,
-+		       struct fb_videomode *mode) { return 0; }
-+void fbcon_new_modelist(struct fb_info *info) {}
+ static inline void fbcon_suspended(struct fb_info *info) {}
+ static inline void fbcon_resumed(struct fb_info *info) {}
++static inline int fbcon_mode_deleted(struct fb_info *info,
++				     struct fb_videomode *mode) { return 0; }
++static inline void fbcon_new_modelist(struct fb_info *info) {}
  #endif
  
  #endif /* _LINUX_FBCON_H */

@@ -1,19 +1,21 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Mon, 20 May 2019 08:22:06 +0000
+Date: Fri, 24 May 2019 08:53:44 +0000
 Subject: [PATCH 23/33] fbdev: Call fbcon_get_requirement directly
-Message-Id: <20190520082216.26273-24-daniel.vetter@ffwll.ch>
+Message-Id: <20190524085354.27411-24-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, "Steven Rostedt (VMware)" <rostedt@goodmis.org>, Prarit Bhargava <prarit@redhat.com>, Kees Cook <keescook@chromium.org>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>, linux-fbdev@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Prarit Bhargava <prarit@redhat.com>, linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, "Steven Rostedt (VMware)" <rostedt@goodmis.org>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
 
 Pretty simple case really.
 
 v2: Forgot to remove a break;
+
+v3: Add static inline to the dummy versions.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
@@ -35,10 +37,10 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 7 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 5635acb4b11c..58b876718d81 100644
+index 35ecd25b385c..259cdd118475 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3279,8 +3279,8 @@ void fbcon_new_modelist(struct fb_info *info)
+@@ -3283,8 +3283,8 @@ void fbcon_new_modelist(struct fb_info *info)
  	}
  }
  
@@ -49,7 +51,7 @@ index 5635acb4b11c..58b876718d81 100644
  {
  	struct vc_data *vc;
  	struct fbcon_display *p;
-@@ -3321,7 +3321,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3325,7 +3325,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  	struct fb_event *event = data;
  	struct fb_info *info = event->info;
  	struct fb_con2fbmap *con2fb;
@@ -57,7 +59,7 @@ index 5635acb4b11c..58b876718d81 100644
  	int idx, ret = 0;
  
  	switch(action) {
-@@ -3344,10 +3343,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3348,10 +3347,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  	case FB_EVENT_BLANK:
  		fbcon_fb_blanked(info, *(int *)event->data);
  		break;
@@ -69,7 +71,7 @@ index 5635acb4b11c..58b876718d81 100644
  		idx = info->node;
  		fbcon_remap_all(idx);
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 96d280228746..d428d08c358a 100644
+index cbdd141e7695..ddc0c16b8bbf 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
 @@ -932,16 +932,13 @@ EXPORT_SYMBOL(fb_pan_display);
@@ -91,10 +93,10 @@ index 96d280228746..d428d08c358a 100644
  
  	if (((fbcaps.x ^ caps.x) & caps.x) ||
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index e6595a381792..e76185244593 100644
+index 7a788ed8c7b5..0d86aa31bf8d 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -136,8 +136,6 @@ struct fb_cursor_user {
+@@ -143,8 +143,6 @@ struct fb_cursor_user {
  #define FB_EVENT_MODE_CHANGE_ALL	0x0B
  /*	A software display blank change occurred */
  #define FB_EVENT_CONBLANK               0x0C
@@ -104,7 +106,7 @@ index e6595a381792..e76185244593 100644
  #define FB_EVENT_REMAP_ALL_CONSOLE      0x0F
  /*      A hardware display blank early change occurred */
 diff --git a/include/linux/fbcon.h b/include/linux/fbcon.h
-index 42b06848b459..7f0a530a913c 100644
+index c139834342f5..305e4f2eddac 100644
 --- a/include/linux/fbcon.h
 +++ b/include/linux/fbcon.h
 @@ -12,6 +12,8 @@ void fbcon_resumed(struct fb_info *info);
@@ -116,12 +118,12 @@ index 42b06848b459..7f0a530a913c 100644
  #else
  static inline void fb_console_init(void) {}
  static inline void fb_console_exit(void) {}
-@@ -23,6 +25,8 @@ static inline void fbcon_resumed(void) {}
- int fbcon_mode_deleted(struct fb_info *info,
- 		       struct fb_videomode *mode) { return 0; }
- void fbcon_new_modelist(struct fb_info *info) {}
-+void fbcon_get_requirement(struct fb_info *info,
-+			   struct fb_blit_caps *caps) {}
+@@ -23,6 +25,8 @@ static inline void fbcon_resumed(struct fb_info *info) {}
+ static inline int fbcon_mode_deleted(struct fb_info *info,
+ 				     struct fb_videomode *mode) { return 0; }
+ static inline void fbcon_new_modelist(struct fb_info *info) {}
++static inline void fbcon_get_requirement(struct fb_info *info,
++					 struct fb_blit_caps *caps) {}
  #endif
  
  #endif /* _LINUX_FBCON_H */

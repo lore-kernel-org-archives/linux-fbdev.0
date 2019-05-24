@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Mon, 20 May 2019 08:22:00 +0000
+Date: Fri, 24 May 2019 08:53:38 +0000
 Subject: [PATCH 17/33] fbcon: call fbcon_fb_bind directly
-Message-Id: <20190520082216.26273-18-daniel.vetter@ffwll.ch>
+Message-Id: <20190524085354.27411-18-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190520082216.26273-1-daniel.vetter@ffwll.ch>
+References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: DRI Development <dri-devel@lists.freedesktop.org>
-Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>, Konstantin Khorenko <khorenko@virtuozzo.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>, Konstantin Khorenko <khorenko@virtuozzo.com>
 
 Also remove the error return value. That's all errors for either
 driver bugs (trying to unbind something that isn't bound), or errors
@@ -39,10 +39,10 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 11 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 35443add7f7e..a8d12914b559 100644
+index c3353db35adc..f114b4c88796 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
-@@ -3042,7 +3042,7 @@ static int fbcon_mode_deleted(struct fb_info *info,
+@@ -3046,7 +3046,7 @@ static int fbcon_mode_deleted(struct fb_info *info,
  }
  
  #ifdef CONFIG_VT_HW_CONSOLE_BINDING
@@ -51,7 +51,7 @@ index 35443add7f7e..a8d12914b559 100644
  {
  	int ret;
  
-@@ -3051,25 +3051,21 @@ static int fbcon_unbind(void)
+@@ -3055,25 +3055,21 @@ static int fbcon_unbind(void)
  
  	if (!ret)
  		fbcon_has_console_bind = 0;
@@ -81,7 +81,7 @@ index 35443add7f7e..a8d12914b559 100644
  
  	for (i = first_fb_vc; i <= last_fb_vc; i++) {
  		if (con2fb_map[i] != idx &&
-@@ -3102,15 +3098,13 @@ static int fbcon_fb_unbind(int idx)
+@@ -3106,15 +3102,13 @@ static int fbcon_fb_unbind(int idx)
  								     idx, 0);
  					if (ret) {
  						con2fb_map[i] = idx;
@@ -99,7 +99,7 @@ index 35443add7f7e..a8d12914b559 100644
  }
  
  /* called with console_lock held */
-@@ -3348,10 +3342,6 @@ static int fbcon_event_notify(struct notifier_block *self,
+@@ -3352,10 +3346,6 @@ static int fbcon_event_notify(struct notifier_block *self,
  		mode = event->data;
  		ret = fbcon_mode_deleted(info, mode);
  		break;
@@ -111,10 +111,10 @@ index 35443add7f7e..a8d12914b559 100644
  		/* called with console lock held */
  		con2fb = event->data;
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 1987aba4f5a2..156523cc48bf 100644
+index d73762324ca2..f3fc2e5b193c 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1708,8 +1708,6 @@ static int do_register_framebuffer(struct fb_info *fb_info)
+@@ -1716,8 +1716,6 @@ static int do_register_framebuffer(struct fb_info *fb_info)
  
  static int unbind_console(struct fb_info *fb_info)
  {
@@ -123,7 +123,7 @@ index 1987aba4f5a2..156523cc48bf 100644
  	int i = fb_info->node;
  
  	if (i < 0 || i >= FB_MAX || registered_fb[i] != fb_info)
-@@ -1717,12 +1715,11 @@ static int unbind_console(struct fb_info *fb_info)
+@@ -1725,12 +1723,11 @@ static int unbind_console(struct fb_info *fb_info)
  
  	console_lock();
  	lock_fb_info(fb_info);
@@ -139,10 +139,10 @@ index 1987aba4f5a2..156523cc48bf 100644
  
  static int __unlink_framebuffer(struct fb_info *fb_info);
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index fd60207c0685..38fae1678939 100644
+index aa8f18163151..b6ce041d9e13 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -151,8 +151,6 @@ struct fb_cursor_user {
+@@ -158,8 +158,6 @@ struct fb_cursor_user {
  #define FB_EVENT_CONBLANK               0x0C
  /*      Get drawing requirements        */
  #define FB_EVENT_GET_REQ                0x0D

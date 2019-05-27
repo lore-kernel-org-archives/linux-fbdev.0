@@ -1,124 +1,148 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Wed, 22 May 2019 10:16:49 +0000
-Subject: [PATCH 2/2] video: fbdev: pvr2fb: add COMPILE_TEST support
-Message-Id: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
+From: kbuild test robot <lkp@intel.com>
+Date: Mon, 27 May 2019 04:13:39 +0000
+Subject: Re: [PATCH 2/2] video: fbdev: pvr2fb: add COMPILE_TEST support
+Message-Id: <201905271244.WaVc5BQS%lkp@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190522101651eucas1p18b5ce16f065cc83125b4bd97e141bdcd@eucas1p1.samsung.com>
+References: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
+In-Reply-To: <2d2b283e-a5c5-3c94-423c-8cb085492921@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, kbuild-all@01.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Add COMPILE_TEST support to pvr2fb driver for better compile
-testing coverage.
+Hi Bartlomiej,
 
-While at it mark pvr2fb_interrupt() and pvr2fb_common_init()
-with __maybe_unused tag (to silence build warnings when
-!SH_DREAMCAST), also convert mmio_base in struct pvr2fb_par to
-'void __iomem *' from 'unsigned long' (needed to silence
-build warnings on ARM).
+I love your patch! Perhaps something to improve:
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+[auto build test WARNING on linus/master]
+[also build test WARNING on v5.2-rc2 next-20190524]
+[if your patch is applied to the wrong git tree, please drop us a note to help improve the system]
+
+url:    https://github.com/0day-ci/linux/commits/Bartlomiej-Zolnierkiewicz/video-fbdev-pvr2fb-remove-function-prototypes/20190524-145925
+
+If you fix the issue, kindly add following tag
+Reported-by: kbuild test robot <lkp@intel.com>
+
+smatch warnings:
+drivers/video/fbdev/pvr2fb.c:467 pvr2fb_check_var() warn: unsigned 'var->xoffset' is never less than zero.
+drivers/video/fbdev/pvr2fb.c:467 pvr2fb_check_var() warn: unsigned 'var->yoffset' is never less than zero.
+
+vim +467 drivers/video/fbdev/pvr2fb.c
+
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  430  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  431  static int pvr2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  432  {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  433  	struct pvr2fb_par *par = (struct pvr2fb_par *)info->par;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  434  	unsigned int vtotal, hsync_total;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  435  	unsigned long line_length;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  436  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  437  	if (var->pixclock != TV_CLK && var->pixclock != VGA_CLK) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  438  		pr_debug("Invalid pixclock value %d\n", var->pixclock);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  439  		return -EINVAL;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  440  	}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  441  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  442  	if (var->xres < 320)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  443  		var->xres = 320;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  444  	if (var->yres < 240)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  445  		var->yres = 240;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  446  	if (var->xres_virtual < var->xres)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  447  		var->xres_virtual = var->xres;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  448  	if (var->yres_virtual < var->yres)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  449  		var->yres_virtual = var->yres;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  450  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  451  	if (var->bits_per_pixel <= 16)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  452  		var->bits_per_pixel = 16;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  453  	else if (var->bits_per_pixel <= 24)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  454  		var->bits_per_pixel = 24;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  455  	else if (var->bits_per_pixel <= 32)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  456  		var->bits_per_pixel = 32;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  457  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  458  	set_color_bitfields(var);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  459  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  460  	if (var->vmode & FB_VMODE_YWRAP) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  461  		if (var->xoffset || var->yoffset < 0 ||
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  462  		    var->yoffset >= var->yres_virtual) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  463  			var->xoffset = var->yoffset = 0;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  464  		} else {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  465  			if (var->xoffset > var->xres_virtual - var->xres ||
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  466  			    var->yoffset > var->yres_virtual - var->yres ||
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16 @467  			    var->xoffset < 0 || var->yoffset < 0)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  468  				var->xoffset = var->yoffset = 0;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  469  		}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  470  	} else {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  471  		var->xoffset = var->yoffset = 0;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  472  	}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  473  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  474  	/*
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  475  	 * XXX: Need to be more creative with this (i.e. allow doublecan for
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  476  	 * PAL/NTSC output).
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  477  	 */
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  478  	if (var->yres < 480 && video_output = VO_VGA)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  479  		var->vmode |= FB_VMODE_DOUBLE;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  480  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  481  	if (video_output != VO_VGA) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  482  		var->sync |= FB_SYNC_BROADCAST;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  483  		var->vmode |= FB_VMODE_INTERLACED;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  484  	} else {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  485  		var->sync &= ~FB_SYNC_BROADCAST;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  486  		var->vmode &= ~FB_VMODE_INTERLACED;
+fcb1fec7 drivers/video/pvr2fb.c Paul Mundt     2008-03-06  487  		var->vmode |= FB_VMODE_NONINTERLACED;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  488  	}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  489  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  490  	if ((var->activate & FB_ACTIVATE_MASK) != FB_ACTIVATE_TEST) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  491  		var->right_margin = par->borderstop_h -
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  492  				   (par->diwstart_h + var->xres);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  493  		var->left_margin  = par->diwstart_h - par->borderstart_h;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  494  		var->hsync_len    = par->borderstart_h +
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  495  		                   (par->hsync_total - par->borderstop_h);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  496  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  497  		var->upper_margin = par->diwstart_v - par->borderstart_v;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  498  		var->lower_margin = par->borderstop_v -
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  499  				   (par->diwstart_v + var->yres);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  500  		var->vsync_len    = par->borderstop_v +
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  501  				   (par->vsync_total - par->borderstop_v);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  502  	}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  503  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  504  	hsync_total = var->left_margin + var->xres + var->right_margin +
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  505  		      var->hsync_len;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  506  	vtotal = var->upper_margin + var->yres + var->lower_margin +
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  507  		 var->vsync_len;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  508  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  509  	if (var->sync & FB_SYNC_BROADCAST) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  510  		if (var->vmode & FB_VMODE_INTERLACED)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  511  			vtotal /= 2;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  512  		if (vtotal > (PAL_VTOTAL + NTSC_VTOTAL)/2) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  513  			/* PAL video output */
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  514  			/* XXX: Should be using a range here ... ? */
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  515  			if (hsync_total != PAL_HTOTAL) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  516  				pr_debug("invalid hsync total for PAL\n");
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  517  				return -EINVAL;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  518  			}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  519  		} else {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  520  			/* NTSC video output */
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  521  			if (hsync_total != NTSC_HTOTAL) {
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  522  				pr_debug("invalid hsync total for NTSC\n");
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  523  				return -EINVAL;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  524  			}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  525  		}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  526  	}
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  527  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  528  	/* Check memory sizes */
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  529  	line_length = get_line_length(var->xres_virtual, var->bits_per_pixel);
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  530  	if (line_length * var->yres_virtual > info->fix.smem_len)
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  531  		return -ENOMEM;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  532  
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  533  	return 0;
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  534  }
+^1da177e drivers/video/pvr2fb.c Linus Torvalds 2005-04-16  535  
+
+:::::: The code at line 467 was first introduced by commit
+:::::: 1da177e4c3f41524e886b7f1b8a0c1fc7321cac2 Linux-2.6.12-rc2
+
+:::::: TO: Linus Torvalds <torvalds@ppc970.osdl.org>
+:::::: CC: Linus Torvalds <torvalds@ppc970.osdl.org>
+
 ---
- drivers/video/fbdev/Kconfig  |    3 ++-
- drivers/video/fbdev/pvr2fb.c |   26 +++++++++++++-------------
- 2 files changed, 15 insertions(+), 14 deletions(-)
-
-Index: b/drivers/video/fbdev/Kconfig
-=================================--- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -807,7 +807,8 @@ config FB_XVR1000
- 
- config FB_PVR2
- 	tristate "NEC PowerVR 2 display support"
--	depends on FB && SH_DREAMCAST
-+	depends on FB && HAS_IOMEM
-+	depends on SH_DREAMCAST || COMPILE_TEST
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-Index: b/drivers/video/fbdev/pvr2fb.c
-=================================--- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -139,7 +139,7 @@ static struct pvr2fb_par {
- 	unsigned char is_doublescan;	/* Are scanlines output twice? (doublescan) */
- 	unsigned char is_lowres;	/* Is horizontal pixel-doubling enabled? */
- 
--	unsigned long mmio_base;	/* MMIO base */
-+	void __iomem *mmio_base;	/* MMIO base */
- 	u32 palette[16];
- } *currentpar;
- 
-@@ -325,9 +325,9 @@ static int pvr2fb_setcolreg(unsigned int
-  * anything if the cable type has been overidden (via "cable:XX").
-  */
- 
--#define PCTRA 0xff80002c
--#define PDTRA 0xff800030
--#define VOUTC 0xa0702c00
-+#define PCTRA ((void __iomem *)0xff80002c)
-+#define PDTRA ((void __iomem *)0xff800030)
-+#define VOUTC ((void __iomem *)0xa0702c00)
- 
- static int pvr2_init_cable(void)
- {
-@@ -619,7 +619,7 @@ static void pvr2_do_blank(void)
- 	is_blanked = do_blank > 0 ? do_blank : 0;
- }
- 
--static irqreturn_t pvr2fb_interrupt(int irq, void *dev_id)
-+static irqreturn_t __maybe_unused pvr2fb_interrupt(int irq, void *dev_id)
- {
- 	struct fb_info *info = dev_id;
- 
-@@ -757,7 +757,7 @@ static int pvr2_get_param(const struct p
-  * in for flexibility anyways. Who knows, maybe someone has tv-out on a
-  * PCI-based version of these things ;-)
-  */
--static int pvr2fb_common_init(void)
-+static int __maybe_unused pvr2fb_common_init(void)
- {
- 	struct pvr2fb_par *par = currentpar;
- 	unsigned long modememused, rev;
-@@ -770,8 +770,8 @@ static int pvr2fb_common_init(void)
- 		goto out_err;
- 	}
- 
--	par->mmio_base = (unsigned long)ioremap_nocache(pvr2_fix.mmio_start,
--							pvr2_fix.mmio_len);
-+	par->mmio_base = ioremap_nocache(pvr2_fix.mmio_start,
-+					 pvr2_fix.mmio_len);
- 	if (!par->mmio_base) {
- 		printk(KERN_ERR "pvr2fb: Failed to remap mmio space\n");
- 		goto out_err;
-@@ -838,7 +838,7 @@ out_err:
- 	if (fb_info->screen_base)
- 		iounmap(fb_info->screen_base);
- 	if (par->mmio_base)
--		iounmap((void *)par->mmio_base);
-+		iounmap(par->mmio_base);
- 
- 	return -ENXIO;
- }
-@@ -905,8 +905,8 @@ static void __exit pvr2fb_dc_exit(void)
- 		fb_info->screen_base = NULL;
- 	}
- 	if (currentpar->mmio_base) {
--		iounmap((void *)currentpar->mmio_base);
--		currentpar->mmio_base = 0;
-+		iounmap(currentpar->mmio_base);
-+		currentpar->mmio_base = NULL;
- 	}
- 
- 	free_irq(HW_EVENT_VSYNC, fb_info);
-@@ -955,8 +955,8 @@ static void pvr2fb_pci_remove(struct pci
- 		fb_info->screen_base = NULL;
- 	}
- 	if (currentpar->mmio_base) {
--		iounmap((void *)currentpar->mmio_base);
--		currentpar->mmio_base = 0;
-+		iounmap(currentpar->mmio_base);
-+		currentpar->mmio_base = NULL;
- 	}
- 
- 	pci_release_regions(pdev);
+0-DAY kernel test infrastructure                Open Source Technology Center
+https://lists.01.org/pipermail/kbuild-all                   Intel Corporation

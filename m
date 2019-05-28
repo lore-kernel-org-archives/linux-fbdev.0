@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:50 +0000
+Date: Tue, 28 May 2019 09:03:00 +0000
 Subject: [PATCH 29/33] vgaswitcheroo: call fbcon_remap_all directly
-Message-Id: <20190524085354.27411-30-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-30-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Daniel Vetter <daniel.vetter@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Sean Paul <sean@poorly.run>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, linux-fbdev@vger.kernel.org
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Lukas Wunner <lukas@wunner.de>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Maxime Ripard <maxime.ripard@bootlin.com>, Sean Paul <sean@poorly.run>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>
 
 While at it, clean up the interface a bit and push the console locking
 into fbcon.c.
@@ -20,6 +20,8 @@ v3: Forgot to add static inline to the dummy function.
 
 Acked-by: Lukas Wunner <lukas@wunner.de>
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Lukas Wunner <lukas@wunner.de>
 Cc: David Airlie <airlied@linux.ie>
 Cc: Daniel Vetter <daniel@ffwll.ch>
@@ -67,7 +69,7 @@ index a132c37d7334..65d7541c413a 100644
  	mutex_lock(&vgasr_priv.mux_hw_lock);
  	ret = vgasr_priv.handler->switchto(new_client->id);
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index a07c261da53a..e08e984e2511 100644
+index e98551f96138..158b9d5233e1 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
 @@ -3149,17 +3149,16 @@ void fbcon_fb_unregistered(struct fb_info *info)

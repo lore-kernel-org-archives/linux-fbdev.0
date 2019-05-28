@@ -1,40 +1,55 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:31 +0000
-Subject: [PATCH 05/16] ALSA: oxygen: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-7-alexandru.ardelean@analog.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:03:03 +0000
+Subject: [PATCH 32/33] staging/olpc_dcon: Add drm conversion to TODO
+Message-Id: <20190528090304.9388-33-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org, linux-integrity@vger.kernel.org, alsa-devel@alsa-project.org
-Cc: gregkh@linuxfoundation.org, Alexandru Ardelean <alexandru.ardelean@analog.com>, andriy.shevchenko@linux.intel.com
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Jens Frederich <jfrederich@gmail.com>, Daniel Drake <dsd@laptop.org>, Jon Nettleton <jon.nettleton@gmail.com>
 
-The change is purely cosmetic at this point in time, but it does highlight
-the change done in lib/string.c for match_string().
+this driver is pretty horrible from a design pov, and needs a complete
+overhaul. Concrete thing that annoys me is that it looks at
+registered_fb, which is an internal thing to fbmem.c and fbcon.c. And
+ofc it gets the lifetime rules all wrong (it should at least use
+get/put_fb_info).
 
-Particularly for this change, a control mode can be removed/added at a
-different index/enum-value, and the match_string() helper will continue
-until the end of the array and ignore the NULL.
+Looking at the history, there's been an attempt at dropping this from
+staging in 2016, but that had to be reverted. Since then not real
+effort except the usual stream of trivial patches, and fbdev has been
+formally closed for any new hw support. Time to try again and drop
+this?
 
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jens Frederich <jfrederich@gmail.com>
+Cc: Daniel Drake <dsd@laptop.org>
+Cc: Jon Nettleton <jon.nettleton@gmail.com>
 ---
- sound/pci/oxygen/oxygen_mixer.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/olpc_dcon/TODO | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/sound/pci/oxygen/oxygen_mixer.c b/sound/pci/oxygen/oxygen_mixer.c
-index 13c2fb75fd71..961fd1cbc712 100644
---- a/sound/pci/oxygen/oxygen_mixer.c
-+++ b/sound/pci/oxygen/oxygen_mixer.c
-@@ -1086,7 +1086,7 @@ static int add_controls(struct oxygen *chip,
- 		err = snd_ctl_add(chip->card, ctl);
- 		if (err < 0)
- 			return err;
--		j = __match_string(known_ctl_names, CONTROL_COUNT, ctl->id.name);
-+		j = match_string(known_ctl_names, ctl->id.name);
- 		if (j >= 0) {
- 			chip->controls[j] = ctl;
- 			ctl->private_free = oxygen_any_ctl_free;
+diff --git a/drivers/staging/olpc_dcon/TODO b/drivers/staging/olpc_dcon/TODO
+index 665a0b061719..fe09efbc7f77 100644
+--- a/drivers/staging/olpc_dcon/TODO
++++ b/drivers/staging/olpc_dcon/TODO
+@@ -1,4 +1,11 @@
+ TODO:
++	- complete rewrite:
++	  1. The underlying fbdev drivers need to be converted into drm kernel
++	     modesetting drivers.
++	  2. The dcon low-power display mode can then be integrated using the
++	     drm damage tracking and self-refresh helpers.
++	  This bolted-on self-refresh support that digs around in fbdev
++	  internals, but isn't properly integrated, is not the correct solution.
+ 	- see if vx855 gpio API can be made similar enough to cs5535 so we can
+ 	  share more code
+ 	- convert all uses of the old GPIO API from <linux/gpio.h> to the
 -- 
-2.17.1
+2.20.1

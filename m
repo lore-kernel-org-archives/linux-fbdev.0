@@ -1,40 +1,99 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:39 +0000
-Subject: [PATCH 13/16] drm/edid: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-15-alexandru.ardelean@analog.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:43 +0000
+Subject: [PATCH 12/33] fbdev/omap: sysfs files can't disappear before the device is gone
+Message-Id: <20190528090304.9388-13-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, Sam Ravnborg <sam@ravnborg.org>
 
-The `generic_edid_name` is a static array of strings.
-Using match_string() (which computes the array size via ARRAY_SIZE())
-is possible.
+Which means lock_fb_info can never fail. Remove the error handling.
 
-The change is mostly cosmetic.
-No functionality change.
-
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/gpu/drm/drm_edid_load.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../video/fbdev/omap2/omapfb/omapfb-sysfs.c   | 21 +++++++------------
+ 1 file changed, 7 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_edid_load.c b/drivers/gpu/drm/drm_edid_load.c
-index 1450051972ea..66e1e325ff37 100644
---- a/drivers/gpu/drm/drm_edid_load.c
-+++ b/drivers/gpu/drm/drm_edid_load.c
-@@ -186,7 +186,7 @@ static void *edid_load(struct drm_connector *connector, const char *name,
- 	int i, valid_extensions = 0;
- 	bool print_bad_edid = !connector->bad_edid_counter || (drm_debug & DRM_UT_KMS);
+diff --git a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+index 8087a009c54f..bd0d20283372 100644
+--- a/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
++++ b/drivers/video/fbdev/omap2/omapfb/omapfb-sysfs.c
+@@ -60,8 +60,7 @@ static ssize_t store_rotate_type(struct device *dev,
+ 	if (rot_type != OMAP_DSS_ROT_DMA && rot_type != OMAP_DSS_ROT_VRFB)
+ 		return -EINVAL;
  
--	builtin = __match_string(generic_edid_name, GENERIC_EDIDS, name);
-+	builtin = match_string(generic_edid_name, name);
- 	if (builtin >= 0) {
- 		fwdata = generic_edid[builtin];
- 		fwsize = sizeof(generic_edid[builtin]);
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 
+ 	r = 0;
+ 	if (rot_type = ofbi->rotation_type)
+@@ -112,8 +111,7 @@ static ssize_t store_mirror(struct device *dev,
+ 	if (r)
+ 		return r;
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 
+ 	ofbi->mirror = mirror;
+ 
+@@ -149,8 +147,7 @@ static ssize_t show_overlays(struct device *dev,
+ 	ssize_t l = 0;
+ 	int t;
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 	omapfb_lock(fbdev);
+ 
+ 	for (t = 0; t < ofbi->num_overlays; t++) {
+@@ -208,8 +205,7 @@ static ssize_t store_overlays(struct device *dev, struct device_attribute *attr,
+ 	if (buf[len - 1] = '\n')
+ 		len = len - 1;
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 	omapfb_lock(fbdev);
+ 
+ 	if (len > 0) {
+@@ -340,8 +336,7 @@ static ssize_t show_overlays_rotate(struct device *dev,
+ 	ssize_t l = 0;
+ 	int t;
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 
+ 	for (t = 0; t < ofbi->num_overlays; t++) {
+ 		l += snprintf(buf + l, PAGE_SIZE - l, "%s%d",
+@@ -369,8 +364,7 @@ static ssize_t store_overlays_rotate(struct device *dev,
+ 	if (buf[len - 1] = '\n')
+ 		len = len - 1;
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 
+ 	if (len > 0) {
+ 		char *p = (char *)buf;
+@@ -453,8 +447,7 @@ static ssize_t store_size(struct device *dev, struct device_attribute *attr,
+ 
+ 	size = PAGE_ALIGN(size);
+ 
+-	if (!lock_fb_info(fbi))
+-		return -ENODEV;
++	lock_fb_info(fbi);
+ 
+ 	if (display && display->driver->sync)
+ 		display->driver->sync(display);
 -- 
-2.17.1
+2.20.1

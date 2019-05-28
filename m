@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:44 +0000
+Date: Tue, 28 May 2019 09:02:54 +0000
 Subject: [PATCH 23/33] fbdev: Call fbcon_get_requirement directly
-Message-Id: <20190524085354.27411-24-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-24-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Prarit Bhargava <prarit@redhat.com>, linux-fbdev@vger.kernel.org, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, "Steven Rostedt (VMware)" <rostedt@goodmis.org>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, "Steven Rostedt (VMware)" <rostedt@goodmis.org>, Prarit Bhargava <prarit@redhat.com>, Kees Cook <keescook@chromium.org>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>
 
 Pretty simple case really.
 
@@ -18,6 +18,8 @@ v2: Forgot to remove a break;
 v3: Add static inline to the dummy versions.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Hans de Goede <hdegoede@redhat.com>
@@ -37,7 +39,7 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 7 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 35ecd25b385c..259cdd118475 100644
+index 515366308537..ef69bd4ad343 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
 @@ -3283,8 +3283,8 @@ void fbcon_new_modelist(struct fb_info *info)

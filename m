@@ -1,55 +1,38 @@
-From: =?UTF-8?B?QWxleGFuZGVyIFNoaXlhbg==?= <shc_work@mail.ru>
-Date: Wed, 15 May 2019 10:33:57 +0000
-Subject: =?UTF-8?B?UmU6IFtQQVRDSCB2MiAxLzJdIHZpZGVvOiBsY2Q6IFJlbW92ZSB1c2VsZXNz?= =?UTF-8?B?IEJBQ0tMSUdIVF9MQ
-Message-Id: <1557916437.354393786@f383.i.mail.ru>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:37 +0000
+Subject: [PATCH 06/33] fbdev/cyber2000: Remove struct display
+Message-Id: <20190528090304.9388-7-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190117133336.19737-1-shc_work@mail.ru>
- <CAMuHMdXrAaZoqsnY_adE=jn-hmTrgmsvJ2tDo+5ByxZ4sz_S7Q@mail.gmail.com>
-In-Reply-To: <CAMuHMdXrAaZoqsnY_adE=jn-hmTrgmsvJ2tDo+5ByxZ4sz_S7Q@mail.gmail.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: =?UTF-8?B?R2VlcnQgVXl0dGVyaG9ldmVu?= <geert@linux-m68k.org>
-Cc: =?UTF-8?B?TGludXggRmJkZXYgZGV2ZWxvcG1lbnQgbGlzdA==?= <linux-fbdev@vger.kernel.org>, =?UTF-8?B?QmFydGxvbWllaiBab2xuaWVya2lld2ljeg==?= <b.zolnierkie@samsung.com>, =?UTF-8?B?SmluZ29vIEhhbg==?= <jingoohan1@gmail.com>, =?UTF-8?B?RGFuaWVsIFRob21wc29u?= <daniel.thompson@linaro.org>, =?UTF-8?B?RFJJIERldmVsb3BtZW50?= <dri-devel@lists.freedesktop.org>, =?UTF-8?B?TGVlIEpvbmVz?= <lee.jones@linaro.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, Russell King <linux@armlinux.org.uk>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, linux-arm-kernel@lists.infradead.org
 
-SGVsbG8uCgpMb29rcyBsaWtlIHlvdSdyZSByaWdodC4KQ2FuIHlvdSBjcmVhdGUgYSBwYXRjaCB0
-byBmaXggdGhpcz8KClRoYW5rcy4KCgo+0KHRgNC10LTQsCwgMTUg0LzQsNGPIDIwMTksIDExOjU3
-ICswMzowMCDQvtGCIEdlZXJ0IFV5dHRlcmhvZXZlbiA8Z2VlcnRAbGludXgtbTY4ay5vcmc+Ogo+
-Cj5IaSBBbGV4YW5kZXIsCj4KPk9uIFRodSwgSmFuIDE3LCAyMDE5IGF0IDI6MzkgUE0gQWxleGFu
-ZGVyIFNoaXlhbiA8IHNoY193b3JrQG1haWwucnUgPiB3cm90ZToKPj4gV2UgaGF2ZSB0d28gKl9D
-TEFTU19ERVZJQ0Uga2VybmVsIGNvbmZpZyBvcHRpb25zIChMQ0RfQ0xBU1NfREVWSUNFCj4+IGFu
-ZCBCQUNLTElHSFRfTENEX0RFVklDRSkgdGhhdCBkbyB0aGUgc2FtZSBqb2IuCj4+IFRoZSBwYXRj
-aCByZW1vdmVzIHVzZWxlc3MgQkFDS0xJR0hUX0xDRF9TVVBQT1JUIG9wdGlvbgo+PiBhbmQgY29u
-dmVydHMgTENEX0NMQVNTX0RFVklDRSBpbnRvIGEgbWVudS4KPj4KPj4gU2lnbmVkLW9mZi1ieTog
-QWxleGFuZGVyIFNoaXlhbiA8IHNoY193b3JrQG1haWwucnUgPgo+VGhpcyBpcyBub3cgY29tbWl0
-IDhjNWRjOGQ5ZjE5Yzc5OTIgKCJ2aWRlbzogYmFja2xpZ2h0OiBSZW1vdmUgdXNlbGVzcwo+QkFD
-S0xJR0hUX0xDRF9TVVBQT1JUIGtlcm5lbCBzeW1ib2wiKS4KPgo+PiAtLS0gYS9kcml2ZXJzL3Zp
-ZGVvL2JhY2tsaWdodC9LY29uZmlnCj4+ICsrKyBiL2RyaXZlcnMvdmlkZW8vYmFja2xpZ2h0L0tj
-b25maWcKPj4gQEAgLTIsMTMgKzIsNyBAQAo+PiAgIyBCYWNrbGlnaHQgJiBMQ0QgZHJpdmVycyBj
-b25maWd1cmF0aW9uCj4+ICAjCj4+Cj4+IC1tZW51Y29uZmlnIEJBQ0tMSUdIVF9MQ0RfU1VQUE9S
-VAo+PiAtICAgICAgIGJvb2wgIkJhY2tsaWdodCAmIExDRCBkZXZpY2Ugc3VwcG9ydCIKPj4gLSAg
-ICAgICBoZWxwCj4+IC0gICAgICAgICBFbmFibGUgdGhpcyB0byBiZSBhYmxlIHRvIGNob29zZSB0
-aGUgZHJpdmVycyBmb3IgY29udHJvbGxpbmcgdGhlCj4+IC0gICAgICAgICBiYWNrbGlnaHQgYW5k
-IHRoZSBMQ0QgcGFuZWwgb24gc29tZSBwbGF0Zm9ybXMsIGZvciBleGFtcGxlIG9uIFBEQXMuCj4+
-IC0KPj4gLWlmIEJBQ0tMSUdIVF9MQ0RfU1VQUE9SVAo+PiArbWVudSAiQmFja2xpZ2h0ICYgTENE
-IGRldmljZSBzdXBwb3J0Igo+Pgo+PiAgIwo+PiAgIyBMQ0QKPgo+QmVsb3csIHdlIGhhdmU6Cj4K
-PsKgwqDCoMKgY29uZmlnIExDRF9DTEFTU19ERVZJQ0UKPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oHRyaXN0YXRlICJMb3dsZXZlbCBMQ0QgY29udHJvbHMiCj7CoMKgwqDCoMKgwqDCoMKgwqDCoMKg
-wqBkZWZhdWx0IG0KPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGhlbHAKPsKgwqDCoMKgwqDCoMKg
-wqDCoMKgwqDCoMKgwqBUaGlzIGZyYW1ld29yayBhZGRzIHN1cHBvcnQgZm9yIGxvdy1sZXZlbCBj
-b250cm9sIG9mIExDRC4KPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqBTb21lIGZyYW1lYnVm
-ZmVyIGRldmljZXMgY29ubmVjdCB0byBwbGF0Zm9ybS1zcGVjaWZpYyBMQ0QgbW9kdWxlcwo+wqDC
-oMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGluIG9yZGVyIHRvIGhhdmUgYSBwbGF0Zm9ybS1zcGVj
-aWZpYyB3YXkgdG8gY29udHJvbCB0aGUgZmxhdCBwYW5lbAo+wqDCoMKgwqDCoMKgwqDCoMKgwqDC
-oMKgwqDCoChjb250cmFzdCBhbmQgYXBwbHlpbmcgcG93ZXIgdG8gdGhlIExDRCAobm90IHRvIHRo
-ZSBiYWNrbGlnaHQhKSkuCj4KPmFuZDoKPgo+wqDCoMKgwqBjb25maWcgQkFDS0xJR0hUX0NMQVNT
-X0RFVklDRQo+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgdHJpc3RhdGUgIkxvd2xldmVsIEJhY2ts
-aWdodCBjb250cm9scyIKPsKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGRlZmF1bHQgbQo+wqDCoMKg
-wqDCoMKgwqDCoMKgwqDCoMKgaGVscAo+wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoFRoaXMg
-ZnJhbWV3b3JrIGFkZHMgc3VwcG9ydCBmb3IgbG93LWxldmVsIGNvbnRyb2wgb2YgdGhlIExDRAo+
-wqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoGJhY2tsaWdodC4gVGhpcyBpbmNsdWRlcyBzdXBw
-b3J0IGZvciBicmlnaHRuZXNzIGFuZCBwb3dlci4KPgo+SGVuY2UgcnVubmluZyAibWFrZSBvbGRj
-b25maWciIG9uIGEgLmNvbmZpZyB3aGVyZQo+Q09ORklHX0JBQ0tMSUdIVF9MQ0RfU1VQUE9SVCB3
-YXMgbm90IHNldCBsZWFkcyB0d28gdG8gbmV3Cj5xdWVzdGlvbnMsIHdoZXJlIHRoZSBhbnN3ZXJz
-IGRlZmF1bHQgdG8gIm0iLgo+Cj5QZXJoYXBzIHRoZSAiZGVmYXVsdCBtIiBzdGF0ZW1lbnRzIHNo
-b3VsZCBiZSByZW1vdmVkPwoKLS0tCg=
+Entirely unused.
+
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Russell King <linux@armlinux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org
+---
+ drivers/video/fbdev/cyber2000fb.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/cyber2000fb.c b/drivers/video/fbdev/cyber2000fb.c
+index 9a5751cb4e16..452ef07b3a06 100644
+--- a/drivers/video/fbdev/cyber2000fb.c
++++ b/drivers/video/fbdev/cyber2000fb.c
+@@ -61,7 +61,6 @@
+ struct cfb_info {
+ 	struct fb_info		fb;
+ 	struct display_switch	*dispsw;
+-	struct display		*display;
+ 	unsigned char		__iomem *region;
+ 	unsigned char		__iomem *regs;
+ 	u_int			id;
+-- 
+2.20.1

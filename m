@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:39 +0000
+Date: Tue, 28 May 2019 09:02:49 +0000
 Subject: [PATCH 18/33] fbdev: make unregister/unlink functions not fail
-Message-Id: <20190524085354.27411-19-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-19-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, linux-fbdev@vger.kernel.org
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>
 
 Except for driver bugs (which we'll catch with a WARN_ON) this is only
 to report failures of the new driver taking over the console. There's
@@ -20,6 +20,8 @@ v2: fixup unregister_framebuffer in savagefb, fbtft, ivtvfb, and neofb
 drivers, reported by kbuild.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>

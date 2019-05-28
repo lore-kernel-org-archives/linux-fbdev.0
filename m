@@ -1,89 +1,106 @@
-From: "Alastair D'Silva" <alastair@d-silva.org>
-Date: Wed, 08 May 2019 11:41:15 +0000
-Subject: RE: [PATCH v2 4/7] lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
-Message-Id: <0a1c01d50592$f90f6f00$eb2e4d00$@d-silva.org>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:31 +0000
+Subject: [PATCH 00/33] fbcon notifier begone v3!
+Message-Id: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508070148.23130-1-alastair@au1.ibm.com> <20190508070148.23130-5-alastair@au1.ibm.com> <c98a499a4e824bcd824d5ad53d037c67@AcuMS.aculab.com>
-In-Reply-To: <c98a499a4e824bcd824d5ad53d037c67@AcuMS.aculab.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'David Laight' <David.Laight@ACULAB.COM>, 'Alastair D'Silva' <alastair@au1.ibm.com>
-Cc: 'Jani Nikula' <jani.nikula@linux.intel.com>, 'Joonas Lahtinen' <joonas.lahtinen@linux.intel.com>, 'Rodrigo Vivi' <rodrigo.vivi@intel.com>, 'David Airlie' <airlied@linux.ie>, 'Daniel Vetter' <daniel@ffwll.ch>, 'Dan Carpenter' <dan.carpenter@oracle.com>, 'Karsten Keil' <isdn@linux-pingi.de>, 'Jassi Brar' <jassisinghbrar@gmail.com>, 'Tom Lendacky' <thomas.lendacky@amd.com>, "'David S. Miller'" <davem@davemloft.net>, 'Jose Abreu' <Jose.Abreu@synopsys.com>, 'Kalle Valo' <kvalo@codeaurora.org>, 'Stanislaw Gruszka' <sgruszka@redhat.com>, 'Benson Leung' <bleung@chromium.org>, 'Enric Balletbo i Serra' <enric.balletbo@collabora.com>, "'James E.J. Bottomley'" <jejb@linux.ibm.com>, "'Martin K. Petersen'" <martin.petersen@oracle.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>
 
-> -----Original Message-----
-> From: David Laight <David.Laight@ACULAB.COM>
-> Sent: Wednesday, 8 May 2019 7:20 PM
-> To: 'Alastair D'Silva' <alastair@au1.ibm.com>; alastair@d-silva.org
-> Cc: Jani Nikula <jani.nikula@linux.intel.com>; Joonas Lahtinen
-> <joonas.lahtinen@linux.intel.com>; Rodrigo Vivi <rodrigo.vivi@intel.com>;
-> David Airlie <airlied@linux.ie>; Daniel Vetter <daniel@ffwll.ch>; Dan
-> Carpenter <dan.carpenter@oracle.com>; Karsten Keil <isdn@linux-
-> pingi.de>; Jassi Brar <jassisinghbrar@gmail.com>; Tom Lendacky
-> <thomas.lendacky@amd.com>; David S. Miller <davem@davemloft.net>;
-> Jose Abreu <Jose.Abreu@synopsys.com>; Kalle Valo
-> <kvalo@codeaurora.org>; Stanislaw Gruszka <sgruszka@redhat.com>;
-> Benson Leung <bleung@chromium.org>; Enric Balletbo i Serra
-> <enric.balletbo@collabora.com>; James E.J. Bottomley
-> <jejb@linux.ibm.com>; Martin K. Petersen <martin.petersen@oracle.com>;
-> Greg Kroah-Hartman <gregkh@linuxfoundation.org>; Alexander Viro
-> <viro@zeniv.linux.org.uk>; Petr Mladek <pmladek@suse.com>; Sergey
-> Senozhatsky <sergey.senozhatsky@gmail.com>; Steven Rostedt
-> <rostedt@goodmis.org>; Andrew Morton <akpm@linux-foundation.org>;
-> intel-gfx@lists.freedesktop.org; dri-devel@lists.freedesktop.org; linux-
-> kernel@vger.kernel.org; netdev@vger.kernel.org;
-> ath10k@lists.infradead.org; linux-wireless@vger.kernel.org; linux-
-> scsi@vger.kernel.org; linux-fbdev@vger.kernel.org;
-> devel@driverdev.osuosl.org; linux-fsdevel@vger.kernel.org
-> Subject: RE: [PATCH v2 4/7] lib/hexdump.c: Replace ascii bool in
-> hex_dump_to_buffer with flags
-> 
-> From: Alastair D'Silva
-> > Sent: 08 May 2019 08:02
-> > To: alastair@d-silva.org
-> ...
-> > --- a/include/linux/printk.h
-> > +++ b/include/linux/printk.h
-> > @@ -480,13 +480,13 @@ enum {
-> >  	DUMP_PREFIX_OFFSET
-> >  };
-> >
-> > -extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
-> > -			      int groupsize, char *linebuf, size_t linebuflen,
-> > -			      bool ascii);
-> > -
-> >  #define HEXDUMP_ASCII			(1 << 0)
-> >  #define HEXDUMP_SUPPRESS_REPEATED	(1 << 1)
-> 
-> These ought to be BIT(0) and BIT(1)
+Hi all,
 
-Thanks, I'll address that.
+I think we're slowly getting there. Previous cover letters with more
+context:
 
-> 
-> > +extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
-> > +			      int groupsize, char *linebuf, size_t linebuflen,
-> > +			      u64 flags);
-> 
-> Why 'u64 flags' ?
-> How many flags do you envisage ??
-> Your HEXDUMP_ASCII (etc) flags are currently signed values and might get
-> sign extended causing grief.
-> 'unsigned int flags' is probably sufficient.
+https://lists.freedesktop.org/archives/dri-devel/2019-May/218362.html
 
-I was trying to avoid having to change the prototype again in the future, but it's not a big deal, if enough work goes in to require more than 32 bits, it can be updated at that point.
+tldr; I have a multi-year plan to improve fbcon locking, because the
+current thing is a bit a mess.
 
-> 
-> I've not really looked at the code, it seems OTT in places though.
+Cover letter of this version, where I detail a bit more the details
+fixed in this one here:
 
-I'll wait for more concrete criticisms here, this it a bit too vague to take any action on.
+https://lists.freedesktop.org/archives/dri-devel/2019-May/218984.html
 
-> If someone copies it somewhere where the performance matters (I've user
-> space code which is dominated by its tracing!) then you don't want all the
-> function calls and conditionals even if you want some of the functionality.
+Note that the locking plan in this one is already outdated, I overlooked a
+few fun issues around any printk() going back to console_lock.
 
-Calling hexdump (even in it's unaltered form) in performance critical code is always going to suck. As you mentioned before, it's all based around printf. A performance conscious user would be better off building their code around hex_asc_hi/lo instead (see lib/vsprintf.c:hex_string).
+I think remaining bits:
+
+- Ack from Daniel Thompson for the backlight bits, he wanted to check the
+  big picture.
+
+- Hash out actual merge plan.
+
+I'm also cc'ing the entire pile to a lot more people on request.
+
+Thanks, Daniel
+
+Daniel Vetter (33):
+  dummycon: Sprinkle locking checks
+  fbdev: locking check for fb_set_suspend
+  vt: might_sleep() annotation for do_blank_screen
+  vt: More locking checks
+  fbdev/sa1100fb: Remove dead code
+  fbdev/cyber2000: Remove struct display
+  fbdev/aty128fb: Remove dead code
+  fbcon: s/struct display/struct fbcon_display/
+  fbcon: Remove fbcon_has_exited
+  fbcon: call fbcon_fb_(un)registered directly
+  fbdev/sh_mobile: remove sh_mobile_lcdc_display_notify
+  fbdev/omap: sysfs files can't disappear before the device is gone
+  fbdev: sysfs files can't disappear before the device is gone
+  staging/olpc: lock_fb_info can't fail
+  fbdev/atyfb: lock_fb_info can't fail
+  fbdev: lock_fb_info cannot fail
+  fbcon: call fbcon_fb_bind directly
+  fbdev: make unregister/unlink functions not fail
+  fbdev: unify unlink_framebuffer paths
+  fbdev/sh_mob: Remove fb notifier callback
+  fbdev: directly call fbcon_suspended/resumed
+  fbcon: Call fbcon_mode_deleted/new_modelist directly
+  fbdev: Call fbcon_get_requirement directly
+  Revert "backlight/fbcon: Add FB_EVENT_CONBLANK"
+  fbmem: pull fbcon_fb_blanked out of fb_blank
+  fbdev: remove FBINFO_MISC_USEREVENT around fb_blank
+  fb: Flatten control flow in fb_set_var
+  fbcon: replace FB_EVENT_MODE_CHANGE/_ALL with direct calls
+  vgaswitcheroo: call fbcon_remap_all directly
+  fbcon: Call con2fb_map functions directly
+  fbcon: Document what I learned about fbcon locking
+  staging/olpc_dcon: Add drm conversion to TODO
+  backlight: simplify lcd notifier
+
+ arch/arm/mach-pxa/am200epd.c                  |  13 +-
+ drivers/gpu/vga/vga_switcheroo.c              |  11 +-
+ drivers/media/pci/ivtv/ivtvfb.c               |   6 +-
+ drivers/staging/fbtft/fbtft-core.c            |   4 +-
+ drivers/staging/olpc_dcon/TODO                |   7 +
+ drivers/staging/olpc_dcon/olpc_dcon.c         |   6 +-
+ drivers/tty/vt/vt.c                           |  18 +
+ drivers/video/backlight/backlight.c           |   2 +-
+ drivers/video/backlight/lcd.c                 |  12 -
+ drivers/video/console/dummycon.c              |   6 +
+ drivers/video/fbdev/aty/aty128fb.c            |  64 ---
+ drivers/video/fbdev/aty/atyfb_base.c          |   3 +-
+ drivers/video/fbdev/core/fbcmap.c             |   6 +-
+ drivers/video/fbdev/core/fbcon.c              | 313 ++++++--------
+ drivers/video/fbdev/core/fbcon.h              |   6 +-
+ drivers/video/fbdev/core/fbmem.c              | 399 +++++++-----------
+ drivers/video/fbdev/core/fbsysfs.c            |  20 +-
+ drivers/video/fbdev/cyber2000fb.c             |   1 -
+ drivers/video/fbdev/neofb.c                   |   9 +-
+ .../video/fbdev/omap2/omapfb/omapfb-sysfs.c   |  21 +-
+ drivers/video/fbdev/sa1100fb.c                |  25 --
+ drivers/video/fbdev/savage/savagefb_driver.c  |   9 +-
+ drivers/video/fbdev/sh_mobile_lcdcfb.c        | 132 +-----
+ drivers/video/fbdev/sh_mobile_lcdcfb.h        |   5 -
+ include/linux/console_struct.h                |   5 +-
+ include/linux/fb.h                            |  45 +-
+ include/linux/fbcon.h                         |  30 ++
+ 27 files changed, 396 insertions(+), 782 deletions(-)
 
 -- 
-Alastair D'Silva           mob: 0423 762 819
-skype: alastair_dsilva     msn: alastair@d-silva.org
-blog: http://alastair.d-silva.org    Twitter: @EvilDeece
+2.20.1

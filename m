@@ -1,55 +1,43 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Tue, 28 May 2019 09:02:44 +0000
-Subject: [PATCH 13/33] fbdev: sysfs files can't disappear before the device is gone
-Message-Id: <20190528090304.9388-14-daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:46 +0000
+Subject: [PATCH 15/33] fbdev/atyfb: lock_fb_info can't fail
+Message-Id: <20190528090304.9388-16-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Rob Clark <robdclark@gmail.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, Mikulas Patocka <mpatocka@redhat.com>, =?UTF-8?q?Ville=20Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>, Sam Ravnborg <sam@ravnborg.org>, "David S. Miller" <davem@davemloft.net>
 
-Which means lock_fb_info can never fail. Remove the error handling.
+It's properly protected by reboot_lock.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@ffwll.ch>
 Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
 Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: "Ville Syrjälä" <syrjala@sci.fi>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rob Clark <robdclark@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 ---
- drivers/video/fbdev/core/fbsysfs.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ drivers/video/fbdev/aty/atyfb_base.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
-index 44cca39f2b51..5f329278e55f 100644
---- a/drivers/video/fbdev/core/fbsysfs.c
-+++ b/drivers/video/fbdev/core/fbsysfs.c
-@@ -179,10 +179,7 @@ static ssize_t store_modes(struct device *device,
- 		return -EINVAL;
+diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
+index b6fe103df145..eebb62d82a23 100644
+--- a/drivers/video/fbdev/aty/atyfb_base.c
++++ b/drivers/video/fbdev/aty/atyfb_base.c
+@@ -3916,8 +3916,7 @@ static int atyfb_reboot_notify(struct notifier_block *nb,
+ 	if (!reboot_info)
+ 		goto out;
  
- 	console_lock();
--	if (!lock_fb_info(fb_info)) {
--		console_unlock();
--		return -ENODEV;
--	}
-+	lock_fb_info(fb_info);
+-	if (!lock_fb_info(reboot_info))
+-		goto out;
++	lock_fb_info(reboot_info);
  
- 	list_splice(&fb_info->modelist, &old_list);
- 	fb_videomode_to_modelist((const struct fb_videomode *)buf, i,
-@@ -409,10 +406,7 @@ static ssize_t store_fbstate(struct device *device,
- 	state = simple_strtoul(buf, &last, 0);
- 
- 	console_lock();
--	if (!lock_fb_info(fb_info)) {
--		console_unlock();
--		return -ENODEV;
--	}
-+	lock_fb_info(fb_info);
- 
- 	fb_set_suspend(fb_info, (int)state);
+ 	par = reboot_info->par;
  
 -- 
 2.20.1

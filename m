@@ -1,34 +1,48 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 21 May 2019 10:53:25 +0000
-Subject: [PATCH v2] video: fbdev: da8xx-fb: add COMPILE_TEST support
-Message-Id: <fe534641-82b7-c3f7-4296-db4ba4ff30e6@samsung.com>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Tue, 28 May 2019 07:39:32 +0000
+Subject: [PATCH 3/3][V2] lib: re-introduce new match_string() helper/macro
+Message-Id: <20190528073932.25365-3-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190521105325eucas1p2df66ee0fd67d652cc26200701e4275da@eucas1p2.samsung.com>
+References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+ <20190528073932.25365-1-alexandru.ardelean@analog.com>
+In-Reply-To: <20190528073932.25365-1-alexandru.ardelean@analog.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
+Cc: heikki.krogerus@linux.intel.com, gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
 
-Add COMPILE_TEST support to da8xx-fb driver for better compile
-testing coverage.
+This change re-introduces `match_string()` as a macro that uses
+ARRAY_SIZE() to compute the size of the array.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+After this change, work can start on migrating subsystems to use this new
+helper. Since the original helper is pretty used, migrating to this new one
+will take a while, and will be reviewed by each subsystem.
+
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
-v2: add missing HAVE_CLK && HAS IOMEM dependencies
+ include/linux/string.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
- drivers/video/fbdev/Kconfig |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: b/drivers/video/fbdev/Kconfig
-=================================--- a/drivers/video/fbdev/Kconfig
-+++ b/drivers/video/fbdev/Kconfig
-@@ -2057,7 +2057,8 @@ config FB_SH7760
+diff --git a/include/linux/string.h b/include/linux/string.h
+index 7149fcdf62df..34491b075449 100644
+--- a/include/linux/string.h
++++ b/include/linux/string.h
+@@ -198,6 +198,15 @@ static inline int strtobool(const char *s, bool *res)
+ int __match_string(const char * const *array, size_t n, const char *string);
+ int __sysfs_match_string(const char * const *array, size_t n, const char *s);
  
- config FB_DA8XX
- 	tristate "DA8xx/OMAP-L1xx/AM335x Framebuffer support"
--	depends on FB && (ARCH_DAVINCI_DA8XX || SOC_AM33XX)
-+	depends on FB && HAVE_CLK && HAS_IOMEM
-+	depends on ARCH_DAVINCI_DA8XX || SOC_AM33XX || COMPILE_TEST
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
++/**
++ * match_string - matches given string in an array
++ * @_a: array of strings
++ * @_s: string to match with
++ *
++ * Helper for __match_string(). Calculates the size of @a automatically.
++ */
++#define match_string(_a, _s) __match_string(_a, ARRAY_SIZE(_a), _s)
++
+ /**
+  * sysfs_match_string - matches given string in an array
+  * @_a: array of strings
+-- 
+2.20.1

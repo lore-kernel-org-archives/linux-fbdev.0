@@ -1,35 +1,46 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 06 May 2019 13:48:26 +0000
-Subject: Re: [PATCH next 25/25] video: fbdev: Use dev_get_drvdata()
-Message-Id: <9a9ec193-912e-393b-53b9-bc01e342f7c5@samsung.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:33 +0000
+Subject: [PATCH 02/33] fbdev: locking check for fb_set_suspend
+Message-Id: <20190528090304.9388-3-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190423075020.173734-1-wangkefeng.wang@huawei.com>
- <CGME20190423074034epcas4p1f2aeab4d4e304358f2c8917af6ce23ca@epcas4p1.samsung.com>
- <20190423075020.173734-26-wangkefeng.wang@huawei.com>
-In-Reply-To: <20190423075020.173734-26-wangkefeng.wang@huawei.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kefeng Wang <wangkefeng.wang@huawei.com>
-Cc: linux-fbdev@vger.kernel.org, Wan ZongShun <mcuos.com@gmail.com>, linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Michal Januszewski <spock@gentoo.org>, Kukjin Kim <kgene@kernel.org>, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Manfred Schlaegl <manfred.schlaegl@ginzinger.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>
 
+Just drive-by, nothing systematic yet.
 
-On 04/23/2019 09:50 AM, Kefeng Wang wrote:
-> Using dev_get_drvdata directly.
-> 
-> Cc: Wan ZongShun <mcuos.com@gmail.com>
-> Cc: Kukjin Kim <kgene@kernel.org>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: Krzysztof Kozlowski <krzk@kernel.org>
-> Cc: Michal Januszewski <spock@gentoo.org>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Manfred Schlaegl <manfred.schlaegl@ginzinger.com>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Kees Cook <keescook@chromium.org>
+---
+ drivers/video/fbdev/core/fbmem.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Patch queued for v5.2, thanks.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index d1949c92be98..8ba674ffb3c9 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1985,6 +1985,8 @@ void fb_set_suspend(struct fb_info *info, int state)
+ {
+ 	struct fb_event event;
+ 
++	WARN_CONSOLE_UNLOCKED();
++
+ 	event.info = info;
+ 	if (state) {
+ 		fb_notifier_call_chain(FB_EVENT_SUSPEND, &event);
+-- 
+2.20.1

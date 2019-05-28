@@ -1,21 +1,23 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:28 +0000
+Date: Tue, 28 May 2019 09:02:38 +0000
 Subject: [PATCH 07/33] fbdev/aty128fb: Remove dead code
-Message-Id: <20190524085354.27411-8-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-8-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Paul Mackerras <paulus@samba.org>, linux-fbdev@vger.kernel.org
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Paul Mackerras <paulus@samba.org>
 
 Motivated because it contains a struct display, which is a fbcon
 internal data structure that I want to rename. It seems to have been
 formerly used in drivers, but that's very long time ago.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linux-fbdev@vger.kernel.org
 ---
@@ -23,10 +25,10 @@ Cc: linux-fbdev@vger.kernel.org
  1 file changed, 64 deletions(-)
 
 diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
-index 6cc46867ff57..c022ad7a49c2 100644
+index 794434891291..b02e67528a99 100644
 --- a/drivers/video/fbdev/aty/aty128fb.c
 +++ b/drivers/video/fbdev/aty/aty128fb.c
-@@ -2349,70 +2349,6 @@ static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+@@ -2350,70 +2350,6 @@ static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
  	return -EINVAL;
  }
  

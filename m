@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:38 +0000
+Date: Tue, 28 May 2019 09:02:48 +0000
 Subject: [PATCH 17/33] fbcon: call fbcon_fb_bind directly
-Message-Id: <20190524085354.27411-18-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-18-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Peter Rosin <peda@axentia.se>, Konstantin Khorenko <khorenko@virtuozzo.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Yisheng Xie <ysxie@foxmail.com>, Hans de Goede <hdegoede@redhat.com>, Mikulas Patocka <mpatocka@redhat.com>, Thomas Zimmermann <tzimmermann@suse.de>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>, Konstantin Khorenko <khorenko@virtuozzo.com>
 
 Also remove the error return value. That's all errors for either
 driver bugs (trying to unbind something that isn't bound), or errors
@@ -19,6 +19,8 @@ There's nothing the outgoing driver can do about this anyway, so
 switch over to void.
 
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
 Cc: Hans de Goede <hdegoede@redhat.com>
@@ -39,7 +41,7 @@ Cc: linux-fbdev@vger.kernel.org
  4 files changed, 11 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index c3353db35adc..f114b4c88796 100644
+index a7e2d5b88914..142686953b71 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
 @@ -3046,7 +3046,7 @@ static int fbcon_mode_deleted(struct fb_info *info,

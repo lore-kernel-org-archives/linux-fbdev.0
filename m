@@ -1,50 +1,58 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:37 +0000
-Subject: [PATCH 11/16] mm/vmpressure.c: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-13-alexandru.ardelean@analog.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:03:02 +0000
+Subject: [PATCH 31/33] fbcon: Document what I learned about fbcon locking
+Message-Id: <20190528090304.9388-32-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>
 
-__match_string() is called on 2 static array of strings in this file. For
-this reason, the conversion to the new match_string() macro/helper, was
-done in this separate commit.
+It's not pretty.
 
-Using the new match_string() helper is mostly a cosmetic change (at this
-point in time). The sizes of the arrays will be computed automatically,
-which would only help if they ever get expanded.
-
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
 ---
- mm/vmpressure.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/core/fbcon.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/mm/vmpressure.c b/mm/vmpressure.c
-index d43f33139568..b8149924f078 100644
---- a/mm/vmpressure.c
-+++ b/mm/vmpressure.c
-@@ -378,7 +378,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index fbd28aeff307..d6ba3610ee83 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -88,6 +88,25 @@
+ #  define DPRINTK(fmt, args...)
+ #endif
  
- 	/* Find required level */
- 	token = strsep(&spec, ",");
--	level = __match_string(vmpressure_str_levels, VMPRESSURE_NUM_LEVELS, token);
-+	level = match_string(vmpressure_str_levels, token);
- 	if (level < 0) {
- 		ret = level;
- 		goto out;
-@@ -387,7 +387,7 @@ int vmpressure_register_event(struct mem_cgroup *memcg,
- 	/* Find optional mode */
- 	token = strsep(&spec, ",");
- 	if (token) {
--		mode = __match_string(vmpressure_str_modes, VMPRESSURE_NUM_MODES, token);
-+		mode = match_string(vmpressure_str_modes, token);
- 		if (mode < 0) {
- 			ret = mode;
- 			goto out;
++/*
++ * FIXME: Locking
++ *
++ * - fbcon state itself is protected by the console_lock, and the code does a
++ *   pretty good job at making sure that lock is held everywhere it's needed.
++ *
++ * - access to the registered_fb array is entirely unprotected. This should use
++ *   proper object lifetime handling, i.e. get/put_fb_info. This also means
++ *   switching from indices to proper pointers for fb_info everywhere.
++ *
++ * - fbcon doesn't bother with fb_lock/unlock at all. This is buggy, since it
++ *   means concurrent access to the same fbdev from both fbcon and userspace
++ *   will blow up. To fix this all fbcon calls from fbmem.c need to be moved out
++ *   of fb_lock/unlock protected sections, since otherwise we'll recurse and
++ *   deadlock eventually. Aside: Due to these deadlock issues the fbdev code in
++ *   fbmem.c cannot use locking asserts, and there's lots of callers which get
++ *   the rules wrong, e.g. fbsysfs.c entirely missed fb_lock/unlock calls too.
++ */
++
+ enum {
+ 	FBCON_LOGO_CANSHOW	= -1,	/* the logo can be shown */
+ 	FBCON_LOGO_DRAW		= -2,	/* draw the logo to a console */
 -- 
-2.17.1
+2.20.1

@@ -1,30 +1,67 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 06 May 2019 13:36:44 +0000
-Subject: Re: [PATCH 13/57] docs: fb: convert documentation to ReST format
-Message-Id: <ff3ed615-ba13-37d7-7c5f-583161e91adc@samsung.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:36 +0000
+Subject: [PATCH 05/33] fbdev/sa1100fb: Remove dead code
+Message-Id: <20190528090304.9388-6-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1555382110.git.mchehab+samsung@kernel.org>
-        <CGME20190416025636epcas4p2b3bd395b2673bffb3cc0cbdd211aa841@epcas4p2.samsung.com>
-        <f282cbd57dcee9d598c13d8b1e4ea4cc1459b8ad.1555382110.git.mchehab+samsung@kernel.org>
-In-Reply-To: <f282cbd57dcee9d598c13d8b1e4ea4cc1459b8ad.1555382110.git.mchehab+samsung@kernel.org>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>
 
+Motivated because it contains a struct display, which is a fbcon
+internal data structure that I want to rename. It seems to have been
+formerly used in drivers, but that's very long time ago.
 
-On 04/16/2019 04:55 AM, Mauro Carvalho Chehab wrote:
-> Convert all documents here from plain txt to ReST format, in
-> order to allow parsing them with the documentation build
-> system.
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+---
+ drivers/video/fbdev/sa1100fb.c | 25 -------------------------
+ 1 file changed, 25 deletions(-)
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index 15ae50063296..f7f8dee044b1 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -974,35 +974,10 @@ static void sa1100fb_task(struct work_struct *w)
+  */
+ static unsigned int sa1100fb_min_dma_period(struct sa1100fb_info *fbi)
+ {
+-#if 0
+-	unsigned int min_period = (unsigned int)-1;
+-	int i;
+-
+-	for (i = 0; i < MAX_NR_CONSOLES; i++) {
+-		struct display *disp = &fb_display[i];
+-		unsigned int period;
+-
+-		/*
+-		 * Do we own this display?
+-		 */
+-		if (disp->fb_info != &fbi->fb)
+-			continue;
+-
+-		/*
+-		 * Ok, calculate its DMA period
+-		 */
+-		period = sa1100fb_display_dma_period(&disp->var);
+-		if (period < min_period)
+-			min_period = period;
+-	}
+-
+-	return min_period;
+-#else
+ 	/*
+ 	 * FIXME: we need to verify _all_ consoles.
+ 	 */
+ 	return sa1100fb_display_dma_period(&fbi->fb.var);
+-#endif
+ }
+ 
+ /*
+-- 
+2.20.1

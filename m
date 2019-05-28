@@ -1,40 +1,81 @@
-From: Alexandru Ardelean <alexandru.ardelean@analog.com>
-Date: Wed, 08 May 2019 11:28:38 +0000
-Subject: [PATCH 12/16] rdmacg: use new match_string() helper/macro
-Message-Id: <20190508112842.11654-14-alexandru.ardelean@analog.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Tue, 28 May 2019 09:02:57 +0000
+Subject: [PATCH 26/33] fbdev: remove FBINFO_MISC_USEREVENT around fb_blank
+Message-Id: <20190528090304.9388-27-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190508112842.11654-1-alexandru.ardelean@analog.com>
-In-Reply-To: <20190508112842.11654-1-alexandru.ardelean@analog.com>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-clk@vger.kernel.org, linux-rpi-kernel@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org, linux-pm@vger.kernel.org, linux-gpio@vger.kernel.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, linux-omap@vger.kernel.org, linux-mmc@vger.kernel.org, linux-wireless@vger.kernel.org, netdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-tegra@vger.kernel.org, devel@driverdev.osuosl.org, linux-usb@vger.kernel.org, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-mtd@lists.infradead.org, cgroups@vger.kernel.org, linux-mm@kvack.org, linux-security-module@vger.kernel.org
-Cc: gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com, Alexandru Ardelean <alexandru.ardelean@analog.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>, Rob Clark <robdclark@gmail.com>
 
-The `rdmacg_resource_names` array is a static array of strings.
-Using match_string() (which computes the array size via ARRAY_SIZE())
-is possible.
+With the recursion broken in the previous patch we can drop the
+FBINFO_MISC_USEREVENT flag around calls to fb_blank - recursion
+prevention was it's only job.
 
-The change is mostly cosmetic.
-No functionality change.
-
-Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Rob Clark <robdclark@gmail.com>
 ---
- kernel/cgroup/rdma.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbcon.c   | 5 ++---
+ drivers/video/fbdev/core/fbmem.c   | 3 ---
+ drivers/video/fbdev/core/fbsysfs.c | 2 --
+ 3 files changed, 2 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/cgroup/rdma.c b/kernel/cgroup/rdma.c
-index 65d4df148603..71c3d305bd1f 100644
---- a/kernel/cgroup/rdma.c
-+++ b/kernel/cgroup/rdma.c
-@@ -367,7 +367,7 @@ static int parse_resource(char *c, int *intval)
- 	if (!name || !value)
- 		return -EINVAL;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index a4617067ff24..b5ee89f16d6c 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -2386,9 +2386,8 @@ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+ 			fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
+ 			ops->cursor_flash = (!blank);
  
--	i = __match_string(rdmacg_resource_names, RDMACG_RESOURCE_MAX, name);
-+	i = match_string(rdmacg_resource_names, name);
- 	if (i < 0)
- 		return i;
+-			if (!(info->flags & FBINFO_MISC_USEREVENT))
+-				if (fb_blank(info, blank))
+-					fbcon_generic_blank(vc, info, blank);
++			if (fb_blank(info, blank))
++				fbcon_generic_blank(vc, info, blank);
+ 		}
  
+ 		if (!blank)
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index d6713dce9e31..25ae466ba593 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1194,10 +1194,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+ 	case FBIOBLANK:
+ 		console_lock();
+ 		lock_fb_info(info);
+-		info->flags |= FBINFO_MISC_USEREVENT;
+ 		ret = fb_blank(info, arg);
+-		info->flags &= ~FBINFO_MISC_USEREVENT;
+-
+ 		/* might again call into fb_blank */
+ 		fbcon_fb_blanked(info, arg);
+ 		unlock_fb_info(info);
+diff --git a/drivers/video/fbdev/core/fbsysfs.c b/drivers/video/fbdev/core/fbsysfs.c
+index 252d4f52d2a5..882b471d619e 100644
+--- a/drivers/video/fbdev/core/fbsysfs.c
++++ b/drivers/video/fbdev/core/fbsysfs.c
+@@ -310,9 +310,7 @@ static ssize_t store_blank(struct device *device,
+ 
+ 	arg = simple_strtoul(buf, &last, 0);
+ 	console_lock();
+-	fb_info->flags |= FBINFO_MISC_USEREVENT;
+ 	err = fb_blank(fb_info, arg);
+-	fb_info->flags &= ~FBINFO_MISC_USEREVENT;
+ 	/* might again call into fb_blank */
+ 	fbcon_fb_blanked(fb_info, arg);
+ 	console_unlock();
 -- 
-2.17.1
+2.20.1

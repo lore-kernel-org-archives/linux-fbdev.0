@@ -1,15 +1,15 @@
 From: Daniel Vetter <daniel.vetter@ffwll.ch>
-Date: Fri, 24 May 2019 08:53:49 +0000
+Date: Tue, 28 May 2019 09:02:59 +0000
 Subject: [PATCH 28/33] fbcon: replace FB_EVENT_MODE_CHANGE/_ALL with direct calls
-Message-Id: <20190524085354.27411-29-daniel.vetter@ffwll.ch>
+Message-Id: <20190528090304.9388-29-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190524085354.27411-1-daniel.vetter@ffwll.ch>
+References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
+In-Reply-To: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, DRI Development <dri-devel@lists.freedesktop.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Daniel Vetter <daniel.vetter@intel.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>, linux-fbdev@vger.kernel.org
+Cc: DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sam Ravnborg <sam@ravnborg.org>, Daniel Vetter <daniel.vetter@intel.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>
 
 Create a new wrapper function for this, feels like there's some
 refactoring room here between the two modes.
@@ -25,7 +25,12 @@ While at it flatten the control flow a bit.
 
 v3: Need to add a static inline to the dummy function.
 
+v4: Add missing #include <fbcon.h> to sh_mob (Sam).
+
+Cc: Sam Ravnborg <sam@ravnborg.org>
 Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
 Cc: Lee Jones <lee.jones@linaro.org>
 Cc: Daniel Thompson <daniel.thompson@linaro.org>
@@ -42,16 +47,16 @@ Cc: linux-fbdev@vger.kernel.org
  drivers/video/backlight/lcd.c          |  1 -
  drivers/video/fbdev/core/fbcon.c       | 15 +++++++++------
  drivers/video/fbdev/core/fbmem.c       | 21 ++++++++++-----------
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 11 +----------
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 12 ++----------
  include/linux/fb.h                     |  2 --
  include/linux/fbcon.h                  |  2 ++
- 6 files changed, 22 insertions(+), 30 deletions(-)
+ 6 files changed, 23 insertions(+), 30 deletions(-)
 
 diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index 4b40c6a4d441..a758039475d0 100644
+index 151b18776add..ecdda06989d0 100644
 --- a/drivers/video/backlight/lcd.c
 +++ b/drivers/video/backlight/lcd.c
-@@ -33,7 +33,6 @@ static int fb_notifier_callback(struct notifier_block *self,
+@@ -34,7 +34,6 @@ static int fb_notifier_callback(struct notifier_block *self,
  	switch (event) {
  	case FB_EVENT_BLANK:
  	case FB_EVENT_MODE_CHANGE:
@@ -60,7 +65,7 @@ index 4b40c6a4d441..a758039475d0 100644
  	case FB_R_EARLY_EVENT_BLANK:
  		break;
 diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
-index 8a67505167ae..a07c261da53a 100644
+index b5ee89f16d6c..e98551f96138 100644
 --- a/drivers/video/fbdev/core/fbcon.c
 +++ b/drivers/video/fbdev/core/fbcon.c
 @@ -3009,6 +3009,15 @@ static void fbcon_set_all_vcs(struct fb_info *info)
@@ -134,10 +139,18 @@ index 96805fe85332..dd1a708df1a7 100644
  EXPORT_SYMBOL(fb_set_var);
  
 diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index 0d7a044852d7..bb1a610d0363 100644
+index 015a02a29d37..b8454424910d 100644
 --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
 +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1776,8 +1776,6 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+@@ -15,6 +15,7 @@
+ #include <linux/ctype.h>
+ #include <linux/dma-mapping.h>
+ #include <linux/delay.h>
++#include <linux/fbcon.h>
+ #include <linux/gpio.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+@@ -1757,8 +1758,6 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
  	struct sh_mobile_lcdc_chan *ch = info->par;
  	struct fb_var_screeninfo var;
  	struct fb_videomode mode;
@@ -146,7 +159,7 @@ index 0d7a044852d7..bb1a610d0363 100644
  
  	if (ch->use_count > 1 || (ch->use_count = 1 && !info->fbcon_par))
  		/* More framebuffer users are active */
-@@ -1799,14 +1797,7 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
+@@ -1780,14 +1779,7 @@ static void sh_mobile_fb_reconfig(struct fb_info *info)
  		/* Couldn't reconfigure, hopefully, can continue as before */
  		return;
  

@@ -1,83 +1,83 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Fri, 03 May 2019 13:29:32 +0000
-Subject: Re: [PATCH] backlight: rave-sp: don't touch initial state and register with correct device
-Message-Id: <20190503132932.2e3vrvlykofpexkf@holly.lan>
+From: Uma Shankar <uma.shankar@intel.com>
+Date: Wed, 29 May 2019 14:17:00 +0000
+Subject: [PATCH] drm: Fix docbook warnings in hdr metadata helper structures
+Message-Id: <1559141030-4386-1-git-send-email-uma.shankar@intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190429152919.27277-1-l.stach@pengutronix.de>
- <c23ecabd-c2ee-8c23-9ee3-13290bc4da35@linaro.org>
- <1556798505.2590.7.camel@pengutronix.de>
-In-Reply-To: <1556798505.2590.7.camel@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Lucas Stach <l.stach@pengutronix.de>
-Cc: linux-fbdev@vger.kernel.org, Jingoo Han <jingoohan1@gmail.com>, dri-devel@lists.freedesktop.org, patchwork-lst@pengutronix.de, kernel@pengutronix.de, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Uma Shankar <uma.shankar@intel.com>, Sean Paul <sean@poorly.run>
 
-On Thu, May 02, 2019 at 02:01:45PM +0200, Lucas Stach wrote:
-> Hi Daniel,
->=20
-> Am Donnerstag, den 02.05.2019, 11:33 +0100 schrieb Daniel Thompson:
-> > On 29/04/2019 16:29, Lucas Stach wrote:
-> > > This way the backlight can be referenced through its device node and
-> > > enabling/disabling can be managed through the panel driver.
-> >=20
-> > Is it possible to implement something similar to=A0
-> > pwm_backlight_initial_power_state() to handle this?
->=20
-> I'm not aware of any protocol to the RAVE-SP that would allow to read
-> back the backlight state. AFAICS the backlight is implemented as a
-> unidirectional protocol.
-
-That function does two things... one is read the current power state to
-ensure meta-data is correctly up to date which cannot be replicated.
-The other is to choose different behaviour depending on whether the
-backlight is standalone or has a phandle link to another device.
-
-Does the second part apply to the rave-sp?
-
-
-Daniel.
-
-
-
-> > backlight drivers already suffer from too much diversity so I prefer=A0
-> > things like this to align behaviour with the (fairly heavilyly used) PW=
-M=A0
-> > driver if possible.
-> >=20
-> >=20
-> > Daniel.
-> >=20
-> >=20
-> > > > > Signed-off-by: Lucas Stach <l.stach@pengutronix.de>
-> > > ---
-> > > =A0 drivers/video/backlight/rave-sp-backlight.c | 4 +---
-> > > =A0 1 file changed, 1 insertion(+), 3 deletions(-)
-> > >=20
-> > > diff --git a/drivers/video/backlight/rave-sp-backlight.c b/drivers/vi=
-deo/backlight/rave-sp-backlight.c
-> > > index 462f14a1b19d..d296bfcf4396 100644
-> > > --- a/drivers/video/backlight/rave-sp-backlight.c
-> > > +++ b/drivers/video/backlight/rave-sp-backlight.c
-> > > @@ -48,15 +48,13 @@ static int rave_sp_backlight_probe(struct platfor=
-m_device *pdev)
-> > > > > =A0=A0	struct device *dev =3D &pdev->dev;
-> > > > > =A0=A0	struct backlight_device *bd;
-> > > =A0=A0
-> > > > > -	bd =3D devm_backlight_device_register(dev, pdev->name, dev->par=
-ent,
-> > > > > +	bd =3D devm_backlight_device_register(dev, pdev->name, dev,
-> > > > > =A0=A0					=A0=A0=A0=A0dev_get_drvdata(dev->parent),
-> > > > > =A0=A0					=A0=A0=A0=A0&rave_sp_backlight_ops,
-> > > > > =A0=A0					=A0=A0=A0=A0&rave_sp_backlight_props);
-> > > > > =A0=A0	if (IS_ERR(bd))
-> > > > > =A0=A0		return PTR_ERR(bd);
-> > > =A0=A0
-> > > > > -	backlight_update_status(bd);
-> > > -
-> > > > > =A0=A0	return 0;
-> > > =A0 }
-> > > =A0=A0
-> > >=20
-> >=20
-> >=20
+Rml4ZXMgdGhlIGZvbGxvd2luZyB3YXJuaW5nczoKLi9pbmNsdWRlL2RybS9kcm1fbW9kZV9jb25m
+aWcuaDo4NDE6IHdhcm5pbmc6IEluY29ycmVjdCB1c2Ugb2YKa2VybmVsLWRvYyBmb3JtYXQ6ICAg
+ICAgICAgICogaGRyX291dHB1dF9tZXRhZGF0YV9wcm9wZXJ0eTogQ29ubmVjdG9yCnByb3BlcnR5
+IGNvbnRhaW5pbmcgaGRyCi4vaW5jbHVkZS9kcm0vZHJtX21vZGVfY29uZmlnLmg6OTE4OiB3YXJu
+aW5nOiBGdW5jdGlvbiBwYXJhbWV0ZXIgb3IgbWVtYmVyICdoZHJfb3V0cHV0X21ldGFkYXRhX3By
+b3BlcnR5JyBub3QgZGVzY3JpYmVkIGluICdkcm1fbW9kZV9jb25maWcnCi4vaW5jbHVkZS9kcm0v
+ZHJtX2Nvbm5lY3Rvci5oOjEyNTE6IHdhcm5pbmc6IEZ1bmN0aW9uIHBhcmFtZXRlciBvciBtZW1i
+ZXIgJ2hkcl9vdXRwdXRfbWV0YWRhdGEnIG5vdCBkZXNjcmliZWQgaW4gJ2RybV9jb25uZWN0b3In
+Ci4vaW5jbHVkZS9kcm0vZHJtX2Nvbm5lY3Rvci5oOjEyNTE6IHdhcm5pbmc6IEZ1bmN0aW9uIHBh
+cmFtZXRlciBvciBtZW1iZXIgJ2hkcl9zaW5rX21ldGFkYXRhJyBub3QgZGVzY3JpYmVkIGluICdk
+cm1fY29ubmVjdG9yJwoKQWxzbyBhZGRzIHNvbWUgcHJvcGVydHkgZG9jdW1lbnRhdGlvbiBmb3Ig
+SERSIE1ldGFkYXRhIENvbm5lY3RvcgpQcm9wZXJ0eSBpbiBjb25uZWN0b3IgcHJvcGVydHkgY3Jl
+YXRlIGZ1bmN0aW9uLgoKQ2M6IFNoYXNoYW5rIFNoYXJtYSA8c2hhc2hhbmsuc2hhcm1hQGludGVs
+LmNvbT4KQ2M6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBsaW51eC5pbnRlbC5jb20+
+CkNjOiBNYWFydGVuIExhbmtob3JzdCA8bWFhcnRlbi5sYW5raG9yc3RAbGludXguaW50ZWwuY29t
+PgpDYzogTWF4aW1lIFJpcGFyZCA8bWF4aW1lLnJpcGFyZEBib290bGluLmNvbT4KQ2M6IFNlYW4g
+UGF1bCA8c2VhbkBwb29ybHkucnVuPgpDYzogRGF2aWQgQWlybGllIDxhaXJsaWVkQGxpbnV4Lmll
+PgpDYzogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPgpDYzogQmFydGxvbWllaiBab2xu
+aWVya2lld2ljeiA8Yi56b2xuaWVya2llQHNhbXN1bmcuY29tPgpDYzogIlZpbGxlIFN5cmrDpGzD
+pCIgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPgpDYzogSGFucyBWZXJrdWlsIDxoYW5z
+dmVya0BjaXNjby5jb20+CkNjOiBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCkNjOiBs
+aW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcKU2lnbmVkLW9mZi1ieTogVW1hIFNoYW5rYXIgPHVt
+YS5zaGFua2FyQGludGVsLmNvbT4KLS0tCiBkcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5j
+IHwgOCArKysrKysrKwogaW5jbHVkZS9kcm0vZHJtX2Nvbm5lY3Rvci5oICAgICB8IDMgKystCiBp
+bmNsdWRlL2RybS9kcm1fbW9kZV9jb25maWcuaCAgIHwgMiArLQogaW5jbHVkZS9saW51eC9oZG1p
+LmggICAgICAgICAgICB8IDEgKwogNCBmaWxlcyBjaGFuZ2VkLCAxMiBpbnNlcnRpb25zKCspLCAy
+IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9y
+LmMgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5jCmluZGV4IGM5YWM4YjkuLjcwMjMw
+N2MgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmMKKysrIGIvZHJp
+dmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYwpAQCAtMTAwMyw2ICsxMDAzLDE0IEBAIGludCBk
+cm1fZGlzcGxheV9pbmZvX3NldF9idXNfZm9ybWF0cyhzdHJ1Y3QgZHJtX2Rpc3BsYXlfaW5mbyAq
+aW5mbywKICAqCWNhbiBhbHNvIGV4cG9zZSB0aGlzIHByb3BlcnR5IHRvIGV4dGVybmFsIG91dHB1
+dHMsIGluIHdoaWNoIGNhc2UgdGhleQogICoJbXVzdCBzdXBwb3J0ICJOb25lIiwgd2hpY2ggc2hv
+dWxkIGJlIHRoZSBkZWZhdWx0IChzaW5jZSBleHRlcm5hbCBzY3JlZW5zCiAgKgloYXZlIGEgYnVp
+bHQtaW4gc2NhbGVyKS4KKyAqCisgKiBIRFJfT1VUUFVUX01FVEFEQVRBOgorICoJQ29ubmVjdG9y
+IHByb3BlcnR5IHRvIGVuYWJsZSB1c2Vyc3BhY2UgdG8gc2VuZCBIRFIgTWV0YWRhdGEgdG8gZHJp
+dmVyLgorICoJVGhpcyBtZXRhZGF0YSBpcyBiYXNlZCBvbiB0aGUgY29tcG9zaXRpb24gYW5kIGJs
+ZW5kaW5nIHBvbGljaWVzIGRlY2lkZWQKKyAqCWJ5IHVzZXIsIHRha2luZyBpbnRvIGFjY291bnQg
+dGhlIGhhcmR3YXJlIGFuZCBzaW5rIGNhcGFiaWx0aWVzLgorICoJVGhlIGRyaXZlciBnZXRzIHRo
+aXMgbWV0YWRhdGEgYW5kIGNyZWF0ZXMgYSBEeW5hbWljIFJhbmdlIGFuZCBNYXN0ZXJpbmcKKyAq
+CUluZm9mcmFtZSAoRFJNKSB3aGljaCBpcyB0aGVuIHNlbnQgdG8gc2luay4gVGhpcyBub3RpZmll
+cyB0aGUgc2luayBvZgorICoJdGhlIHVwY29taW5nIGZyYW1lJ3MgQ29sb3IgRW5jb2RpbmcgYW5k
+IEx1bWluYW5jZSBwYXJhbWV0ZXJzLgogICovCiAKIGludCBkcm1fY29ubmVjdG9yX2NyZWF0ZV9z
+dGFuZGFyZF9wcm9wZXJ0aWVzKHN0cnVjdCBkcm1fZGV2aWNlICpkZXYpCmRpZmYgLS1naXQgYS9p
+bmNsdWRlL2RybS9kcm1fY29ubmVjdG9yLmggYi9pbmNsdWRlL2RybS9kcm1fY29ubmVjdG9yLmgK
+aW5kZXggZjhmNDAwMy4uZjIyNmVmMCAxMDA2NDQKLS0tIGEvaW5jbHVkZS9kcm0vZHJtX2Nvbm5l
+Y3Rvci5oCisrKyBiL2luY2x1ZGUvZHJtL2RybV9jb25uZWN0b3IuaApAQCAtMTI0NCw4ICsxMjQ0
+LDkgQEAgc3RydWN0IGRybV9jb25uZWN0b3IgewogCSAqLwogCXN0cnVjdCBsbGlzdF9ub2RlIGZy
+ZWVfbm9kZTsKIAotCS8qIEhEUiBtZXRkYXRhICovCisJLyoqIEBoZHJfb3V0cHV0X21ldGFkYXRh
+OiBIRFIgTWV0YWRhdGEgdG8gYmUgc2VudCB0byBzaW5rICovCiAJc3RydWN0IGhkcl9vdXRwdXRf
+bWV0YWRhdGEgaGRyX291dHB1dF9tZXRhZGF0YTsKKwkvKiogQGhkcl9zaW5rX21ldGFkYXRhOiBI
+RFIgTWV0YWRhdGEgSW5mb3JtYXRpb24gcmVhZCBmcm9tIHNpbmsgKi8KIAlzdHJ1Y3QgaGRyX3Np
+bmtfbWV0YWRhdGEgaGRyX3NpbmtfbWV0YWRhdGE7CiB9OwogCmRpZmYgLS1naXQgYS9pbmNsdWRl
+L2RybS9kcm1fbW9kZV9jb25maWcuaCBiL2luY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oCmlu
+ZGV4IDRmODhjYzkuLjBiMTgwZTAgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvZHJtL2RybV9tb2RlX2Nv
+bmZpZy5oCisrKyBiL2luY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oCkBAIC04MzcsNyArODM3
+LDcgQEAgc3RydWN0IGRybV9tb2RlX2NvbmZpZyB7CiAJc3RydWN0IGRybV9wcm9wZXJ0eSAqd3Jp
+dGViYWNrX291dF9mZW5jZV9wdHJfcHJvcGVydHk7CiAKIAkvKioKLQkgKiBoZHJfb3V0cHV0X21l
+dGFkYXRhX3Byb3BlcnR5OiBDb25uZWN0b3IgcHJvcGVydHkgY29udGFpbmluZyBoZHIKKwkgKiBA
+aGRyX291dHB1dF9tZXRhZGF0YV9wcm9wZXJ0eTogQ29ubmVjdG9yIHByb3BlcnR5IGNvbnRhaW5p
+bmcgaGRyCiAJICogbWV0YXRkYS4gVGhpcyB3aWxsIGJlIHByb3ZpZGVkIGJ5IHVzZXJzcGFjZSBj
+b21wb3NpdG9ycyBiYXNlZAogCSAqIG9uIEhEUiBjb250ZW50CiAJICovCmRpZmYgLS1naXQgYS9p
+bmNsdWRlL2xpbnV4L2hkbWkuaCBiL2luY2x1ZGUvbGludXgvaGRtaS5oCmluZGV4IGVlNTViYTUu
+LmVhNTg1OGUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvaGRtaS5oCisrKyBiL2luY2x1ZGUv
+bGludXgvaGRtaS5oCkBAIC0zOTgsNiArMzk4LDcgQEAgc3NpemVfdCBoZG1pX3ZlbmRvcl9pbmZv
+ZnJhbWVfcGFja19vbmx5KGNvbnN0IHN0cnVjdCBoZG1pX3ZlbmRvcl9pbmZvZnJhbWUgKmZyYW0K
+ICAqIEBzcGQ6IHNwZCBpbmZvZnJhbWUKICAqIEB2ZW5kb3I6IHVuaW9uIG9mIGFsbCB2ZW5kb3Ig
+aW5mb2ZyYW1lcwogICogQGF1ZGlvOiBhdWRpbyBpbmZvZnJhbWUKKyAqIEBkcm06IERSTSBpbmZv
+ZnJhbWUKICAqCiAgKiBUaGlzIGlzIHVzZWQgYnkgdGhlIGdlbmVyaWMgcGFjayBmdW5jdGlvbi4g
+VGhpcyB3b3JrcyBzaW5jZSBhbGwgaW5mb2ZyYW1lcwogICogaGF2ZSB0aGUgc2FtZSBoZWFkZXIg
+d2hpY2ggYWxzbyBpbmRpY2F0ZXMgd2hpY2ggdHlwZSBvZiBpbmZvZnJhbWUgc2hvdWxkIGJlCi0t
+IAoxLjkuMQo=

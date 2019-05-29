@@ -1,32 +1,44 @@
-From: "Mrs. Floxy Joseph" <mrs.floxyjoseph49@gmail.com>
-Date: Thu, 11 Apr 2019 12:19:27 +0000
-Subject: Good Day
-Message-Id: <CANd9nFsDuorzUt9yEiCtjEuZEcdoAbh8WLTy_pQTG24zO1iknQ@mail.gmail.com>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Wed, 29 May 2019 15:46:35 +0000
+Subject: [PATCH] efifb: BGRT: Add check for new BGRT status field rotation bits
+Message-Id: <20190529154635.2659-1-hdegoede@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-efi@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>, linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>, dri-devel@lists.freedesktop.org
 
-Good Day,
+Starting with ACPI 6.2 bits 1 and 2 of the BGRT status field are no longer
+reserved. These bits are now used to indicate if the image needs to be
+rotated before being displayed.
 
-My name is  Mrs. Floxy Mathias  Rust , I am 72 yrs old .I am a,
-nationality HOLLAND.I'm married to Deutsch (a GERMANY) Mr.Mathias
- Joseph  Rust   who worked with the national Oil company in Mexico,and
-Qatar before he died in aplane crash in 2013 with other passengers
-aboard.immediately after the death of my husband i took ill now my
-husband has left me with everything he worked for and now the doctors
-told me I will not live longer than some months because of my health,
-I decided to WILL / donate the sum of (twenty one million, Nine
-hundred thousand dollars) to you for the good work of humanity, and
-also to help the motherless andless privilege in some some part of War
-zones in the World and also for the assistance of the widows.
+The efifb code does not support rotating the image before copying it to
+the screen.
 
-I wish you all the best and may the good Lord bless you abundantly,and
-please use the funds well and always extend the good work toothers. I
-will appreciate your utmost confidentiality in this matter until the
-task is accomplished as I do not want anything that willjeopardize my
-last wish Pls :.kindly get back to me so that we can discuss
-more.Contact through this email: mrs.floxyjoseph49@gmail.com
+This commit adds a check for these new bits and if they are set leaves the
+fb contents as is instead of trying to use the un-rotated BGRT image.
 
-Mrs. Floxy Mathias Rust
+Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+---
+ drivers/video/fbdev/efifb.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 9f39f0c360e0..dfa8dd47d19d 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -169,6 +169,11 @@ static void efifb_show_boot_graphics(struct fb_info *info)
+ 		return;
+ 	}
+ 
++	if (bgrt_tab.status & 0x06) {
++		pr_info("efifb: BGRT rotation bits set, not showing boot graphics\n");
++		return;
++	}
++
+ 	/* Avoid flashing the logo if we're going to print std probe messages */
+ 	if (console_loglevel > CONSOLE_LOGLEVEL_QUIET)
+ 		return;
+-- 
+2.21.0

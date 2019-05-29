@@ -1,83 +1,136 @@
-From: Uma Shankar <uma.shankar@intel.com>
-Date: Wed, 29 May 2019 14:17:00 +0000
-Subject: [PATCH] drm: Fix docbook warnings in hdr metadata helper structures
-Message-Id: <1559141030-4386-1-git-send-email-uma.shankar@intel.com>
+From: Sean Paul <sean@poorly.run>
+Date: Wed, 29 May 2019 14:35:37 +0000
+Subject: Re: [PATCH] drm: Fix docbook warnings in hdr metadata helper structures
+Message-Id: <20190529143537.GF17077@art_vandelay>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <1559141030-4386-1-git-send-email-uma.shankar@intel.com>
+In-Reply-To: <1559141030-4386-1-git-send-email-uma.shankar@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Uma Shankar <uma.shankar@intel.com>, Sean Paul <sean@poorly.run>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Uma Shankar <uma.shankar@intel.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>
 
-Rml4ZXMgdGhlIGZvbGxvd2luZyB3YXJuaW5nczoKLi9pbmNsdWRlL2RybS9kcm1fbW9kZV9jb25m
-aWcuaDo4NDE6IHdhcm5pbmc6IEluY29ycmVjdCB1c2Ugb2YKa2VybmVsLWRvYyBmb3JtYXQ6ICAg
-ICAgICAgICogaGRyX291dHB1dF9tZXRhZGF0YV9wcm9wZXJ0eTogQ29ubmVjdG9yCnByb3BlcnR5
-IGNvbnRhaW5pbmcgaGRyCi4vaW5jbHVkZS9kcm0vZHJtX21vZGVfY29uZmlnLmg6OTE4OiB3YXJu
-aW5nOiBGdW5jdGlvbiBwYXJhbWV0ZXIgb3IgbWVtYmVyICdoZHJfb3V0cHV0X21ldGFkYXRhX3By
-b3BlcnR5JyBub3QgZGVzY3JpYmVkIGluICdkcm1fbW9kZV9jb25maWcnCi4vaW5jbHVkZS9kcm0v
-ZHJtX2Nvbm5lY3Rvci5oOjEyNTE6IHdhcm5pbmc6IEZ1bmN0aW9uIHBhcmFtZXRlciBvciBtZW1i
-ZXIgJ2hkcl9vdXRwdXRfbWV0YWRhdGEnIG5vdCBkZXNjcmliZWQgaW4gJ2RybV9jb25uZWN0b3In
-Ci4vaW5jbHVkZS9kcm0vZHJtX2Nvbm5lY3Rvci5oOjEyNTE6IHdhcm5pbmc6IEZ1bmN0aW9uIHBh
-cmFtZXRlciBvciBtZW1iZXIgJ2hkcl9zaW5rX21ldGFkYXRhJyBub3QgZGVzY3JpYmVkIGluICdk
-cm1fY29ubmVjdG9yJwoKQWxzbyBhZGRzIHNvbWUgcHJvcGVydHkgZG9jdW1lbnRhdGlvbiBmb3Ig
-SERSIE1ldGFkYXRhIENvbm5lY3RvcgpQcm9wZXJ0eSBpbiBjb25uZWN0b3IgcHJvcGVydHkgY3Jl
-YXRlIGZ1bmN0aW9uLgoKQ2M6IFNoYXNoYW5rIFNoYXJtYSA8c2hhc2hhbmsuc2hhcm1hQGludGVs
-LmNvbT4KQ2M6IFZpbGxlIFN5cmrDpGzDpCA8dmlsbGUuc3lyamFsYUBsaW51eC5pbnRlbC5jb20+
-CkNjOiBNYWFydGVuIExhbmtob3JzdCA8bWFhcnRlbi5sYW5raG9yc3RAbGludXguaW50ZWwuY29t
-PgpDYzogTWF4aW1lIFJpcGFyZCA8bWF4aW1lLnJpcGFyZEBib290bGluLmNvbT4KQ2M6IFNlYW4g
-UGF1bCA8c2VhbkBwb29ybHkucnVuPgpDYzogRGF2aWQgQWlybGllIDxhaXJsaWVkQGxpbnV4Lmll
-PgpDYzogRGFuaWVsIFZldHRlciA8ZGFuaWVsQGZmd2xsLmNoPgpDYzogQmFydGxvbWllaiBab2xu
-aWVya2lld2ljeiA8Yi56b2xuaWVya2llQHNhbXN1bmcuY29tPgpDYzogIlZpbGxlIFN5cmrDpGzD
-pCIgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPgpDYzogSGFucyBWZXJrdWlsIDxoYW5z
-dmVya0BjaXNjby5jb20+CkNjOiBkcmktZGV2ZWxAbGlzdHMuZnJlZWRlc2t0b3Aub3JnCkNjOiBs
-aW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcKU2lnbmVkLW9mZi1ieTogVW1hIFNoYW5rYXIgPHVt
-YS5zaGFua2FyQGludGVsLmNvbT4KLS0tCiBkcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5j
-IHwgOCArKysrKysrKwogaW5jbHVkZS9kcm0vZHJtX2Nvbm5lY3Rvci5oICAgICB8IDMgKystCiBp
-bmNsdWRlL2RybS9kcm1fbW9kZV9jb25maWcuaCAgIHwgMiArLQogaW5jbHVkZS9saW51eC9oZG1p
-LmggICAgICAgICAgICB8IDEgKwogNCBmaWxlcyBjaGFuZ2VkLCAxMiBpbnNlcnRpb25zKCspLCAy
-IGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9y
-LmMgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5jCmluZGV4IGM5YWM4YjkuLjcwMjMw
-N2MgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmMKKysrIGIvZHJp
-dmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYwpAQCAtMTAwMyw2ICsxMDAzLDE0IEBAIGludCBk
-cm1fZGlzcGxheV9pbmZvX3NldF9idXNfZm9ybWF0cyhzdHJ1Y3QgZHJtX2Rpc3BsYXlfaW5mbyAq
-aW5mbywKICAqCWNhbiBhbHNvIGV4cG9zZSB0aGlzIHByb3BlcnR5IHRvIGV4dGVybmFsIG91dHB1
-dHMsIGluIHdoaWNoIGNhc2UgdGhleQogICoJbXVzdCBzdXBwb3J0ICJOb25lIiwgd2hpY2ggc2hv
-dWxkIGJlIHRoZSBkZWZhdWx0IChzaW5jZSBleHRlcm5hbCBzY3JlZW5zCiAgKgloYXZlIGEgYnVp
-bHQtaW4gc2NhbGVyKS4KKyAqCisgKiBIRFJfT1VUUFVUX01FVEFEQVRBOgorICoJQ29ubmVjdG9y
-IHByb3BlcnR5IHRvIGVuYWJsZSB1c2Vyc3BhY2UgdG8gc2VuZCBIRFIgTWV0YWRhdGEgdG8gZHJp
-dmVyLgorICoJVGhpcyBtZXRhZGF0YSBpcyBiYXNlZCBvbiB0aGUgY29tcG9zaXRpb24gYW5kIGJs
-ZW5kaW5nIHBvbGljaWVzIGRlY2lkZWQKKyAqCWJ5IHVzZXIsIHRha2luZyBpbnRvIGFjY291bnQg
-dGhlIGhhcmR3YXJlIGFuZCBzaW5rIGNhcGFiaWx0aWVzLgorICoJVGhlIGRyaXZlciBnZXRzIHRo
-aXMgbWV0YWRhdGEgYW5kIGNyZWF0ZXMgYSBEeW5hbWljIFJhbmdlIGFuZCBNYXN0ZXJpbmcKKyAq
-CUluZm9mcmFtZSAoRFJNKSB3aGljaCBpcyB0aGVuIHNlbnQgdG8gc2luay4gVGhpcyBub3RpZmll
-cyB0aGUgc2luayBvZgorICoJdGhlIHVwY29taW5nIGZyYW1lJ3MgQ29sb3IgRW5jb2RpbmcgYW5k
-IEx1bWluYW5jZSBwYXJhbWV0ZXJzLgogICovCiAKIGludCBkcm1fY29ubmVjdG9yX2NyZWF0ZV9z
-dGFuZGFyZF9wcm9wZXJ0aWVzKHN0cnVjdCBkcm1fZGV2aWNlICpkZXYpCmRpZmYgLS1naXQgYS9p
-bmNsdWRlL2RybS9kcm1fY29ubmVjdG9yLmggYi9pbmNsdWRlL2RybS9kcm1fY29ubmVjdG9yLmgK
-aW5kZXggZjhmNDAwMy4uZjIyNmVmMCAxMDA2NDQKLS0tIGEvaW5jbHVkZS9kcm0vZHJtX2Nvbm5l
-Y3Rvci5oCisrKyBiL2luY2x1ZGUvZHJtL2RybV9jb25uZWN0b3IuaApAQCAtMTI0NCw4ICsxMjQ0
-LDkgQEAgc3RydWN0IGRybV9jb25uZWN0b3IgewogCSAqLwogCXN0cnVjdCBsbGlzdF9ub2RlIGZy
-ZWVfbm9kZTsKIAotCS8qIEhEUiBtZXRkYXRhICovCisJLyoqIEBoZHJfb3V0cHV0X21ldGFkYXRh
-OiBIRFIgTWV0YWRhdGEgdG8gYmUgc2VudCB0byBzaW5rICovCiAJc3RydWN0IGhkcl9vdXRwdXRf
-bWV0YWRhdGEgaGRyX291dHB1dF9tZXRhZGF0YTsKKwkvKiogQGhkcl9zaW5rX21ldGFkYXRhOiBI
-RFIgTWV0YWRhdGEgSW5mb3JtYXRpb24gcmVhZCBmcm9tIHNpbmsgKi8KIAlzdHJ1Y3QgaGRyX3Np
-bmtfbWV0YWRhdGEgaGRyX3NpbmtfbWV0YWRhdGE7CiB9OwogCmRpZmYgLS1naXQgYS9pbmNsdWRl
-L2RybS9kcm1fbW9kZV9jb25maWcuaCBiL2luY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oCmlu
-ZGV4IDRmODhjYzkuLjBiMTgwZTAgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvZHJtL2RybV9tb2RlX2Nv
-bmZpZy5oCisrKyBiL2luY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oCkBAIC04MzcsNyArODM3
-LDcgQEAgc3RydWN0IGRybV9tb2RlX2NvbmZpZyB7CiAJc3RydWN0IGRybV9wcm9wZXJ0eSAqd3Jp
-dGViYWNrX291dF9mZW5jZV9wdHJfcHJvcGVydHk7CiAKIAkvKioKLQkgKiBoZHJfb3V0cHV0X21l
-dGFkYXRhX3Byb3BlcnR5OiBDb25uZWN0b3IgcHJvcGVydHkgY29udGFpbmluZyBoZHIKKwkgKiBA
-aGRyX291dHB1dF9tZXRhZGF0YV9wcm9wZXJ0eTogQ29ubmVjdG9yIHByb3BlcnR5IGNvbnRhaW5p
-bmcgaGRyCiAJICogbWV0YXRkYS4gVGhpcyB3aWxsIGJlIHByb3ZpZGVkIGJ5IHVzZXJzcGFjZSBj
-b21wb3NpdG9ycyBiYXNlZAogCSAqIG9uIEhEUiBjb250ZW50CiAJICovCmRpZmYgLS1naXQgYS9p
-bmNsdWRlL2xpbnV4L2hkbWkuaCBiL2luY2x1ZGUvbGludXgvaGRtaS5oCmluZGV4IGVlNTViYTUu
-LmVhNTg1OGUgMTAwNjQ0Ci0tLSBhL2luY2x1ZGUvbGludXgvaGRtaS5oCisrKyBiL2luY2x1ZGUv
-bGludXgvaGRtaS5oCkBAIC0zOTgsNiArMzk4LDcgQEAgc3NpemVfdCBoZG1pX3ZlbmRvcl9pbmZv
-ZnJhbWVfcGFja19vbmx5KGNvbnN0IHN0cnVjdCBoZG1pX3ZlbmRvcl9pbmZvZnJhbWUgKmZyYW0K
-ICAqIEBzcGQ6IHNwZCBpbmZvZnJhbWUKICAqIEB2ZW5kb3I6IHVuaW9uIG9mIGFsbCB2ZW5kb3Ig
-aW5mb2ZyYW1lcwogICogQGF1ZGlvOiBhdWRpbyBpbmZvZnJhbWUKKyAqIEBkcm06IERSTSBpbmZv
-ZnJhbWUKICAqCiAgKiBUaGlzIGlzIHVzZWQgYnkgdGhlIGdlbmVyaWMgcGFjayBmdW5jdGlvbi4g
-VGhpcyB3b3JrcyBzaW5jZSBhbGwgaW5mb2ZyYW1lcwogICogaGF2ZSB0aGUgc2FtZSBoZWFkZXIg
-d2hpY2ggYWxzbyBpbmRpY2F0ZXMgd2hpY2ggdHlwZSBvZiBpbmZvZnJhbWUgc2hvdWxkIGJlCi0t
-IAoxLjkuMQo=
+On Wed, May 29, 2019 at 08:13:50PM +0530, Uma Shankar wrote:
+> Fixes the following warnings:
+> ./include/drm/drm_mode_config.h:841: warning: Incorrect use of
+> kernel-doc format:          * hdr_output_metadata_property: Connector
+> property containing hdr
+> ./include/drm/drm_mode_config.h:918: warning: Function parameter or membe=
+r 'hdr_output_metadata_property' not described in 'drm_mode_config'
+> ./include/drm/drm_connector.h:1251: warning: Function parameter or member=
+ 'hdr_output_metadata' not described in 'drm_connector'
+> ./include/drm/drm_connector.h:1251: warning: Function parameter or member=
+ 'hdr_sink_metadata' not described in 'drm_connector'
+>=20
+> Also adds some property documentation for HDR Metadata Connector
+> Property in connector property create function.
+>=20
+> Cc: Shashank Sharma <shashank.sharma@intel.com>
+> Cc: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
+> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> Cc: Maxime Ripard <maxime.ripard@bootlin.com>
+> Cc: Sean Paul <sean@poorly.run>
+> Cc: David Airlie <airlied@linux.ie>
+> Cc: Daniel Vetter <daniel@ffwll.ch>
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: "Ville Syrj=E4l=E4" <ville.syrjala@linux.intel.com>
+> Cc: Hans Verkuil <hansverk@cisco.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Uma Shankar <uma.shankar@intel.com>
+> ---
+>  drivers/gpu/drm/drm_connector.c | 8 ++++++++
+>  include/drm/drm_connector.h     | 3 ++-
+>  include/drm/drm_mode_config.h   | 2 +-
+>  include/linux/hdmi.h            | 1 +
+>  4 files changed, 12 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connec=
+tor.c
+> index c9ac8b9..702307c 100644
+> --- a/drivers/gpu/drm/drm_connector.c
+> +++ b/drivers/gpu/drm/drm_connector.c
+> @@ -1003,6 +1003,14 @@ int drm_display_info_set_bus_formats(struct drm_di=
+splay_info *info,
+>   *	can also expose this property to external outputs, in which case they
+>   *	must support "None", which should be the default (since external scre=
+ens
+>   *	have a built-in scaler).
+> + *
+> + * HDR_OUTPUT_METADATA:
+> + *	Connector property to enable userspace to send HDR Metadata to driver.
+> + *	This metadata is based on the composition and blending policies decid=
+ed
+> + *	by user, taking into account the hardware and sink capabilties.
+
+capabilities
+
+> + *	The driver gets this metadata and creates a Dynamic Range and Masteri=
+ng
+> + *	Infoframe (DRM) which is then sent to sink. This notifies the sink of
+> + *	the upcoming frame's Color Encoding and Luminance parameters.
+>   */
+> =20
+>  int drm_connector_create_standard_properties(struct drm_device *dev)
+> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
+> index f8f4003..f226ef0 100644
+> --- a/include/drm/drm_connector.h
+> +++ b/include/drm/drm_connector.h
+> @@ -1244,8 +1244,9 @@ struct drm_connector {
+>  	 */
+>  	struct llist_node free_node;
+> =20
+> -	/* HDR metdata */
+> +	/** @hdr_output_metadata: HDR Metadata to be sent to sink */
+>  	struct hdr_output_metadata hdr_output_metadata;
+> +	/** @hdr_sink_metadata: HDR Metadata Information read from sink */
+>  	struct hdr_sink_metadata hdr_sink_metadata;
+>  };
+> =20
+> diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
+> index 4f88cc9..0b180e0 100644
+> --- a/include/drm/drm_mode_config.h
+> +++ b/include/drm/drm_mode_config.h
+> @@ -837,7 +837,7 @@ struct drm_mode_config {
+>  	struct drm_property *writeback_out_fence_ptr_property;
+> =20
+>  	/**
+> -	 * hdr_output_metadata_property: Connector property containing hdr
+> +	 * @hdr_output_metadata_property: Connector property containing hdr
+>  	 * metatda. This will be provided by userspace compositors based
+
+May as well fix the spelling of "metadata" while you're here.
+
+>  	 * on HDR content
+>  	 */
+> diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
+> index ee55ba5..ea5858e 100644
+> --- a/include/linux/hdmi.h
+> +++ b/include/linux/hdmi.h
+> @@ -398,6 +398,7 @@ ssize_t hdmi_vendor_infoframe_pack_only(const struct =
+hdmi_vendor_infoframe *fram
+>   * @spd: spd infoframe
+>   * @vendor: union of all vendor infoframes
+>   * @audio: audio infoframe
+> + * @drm: DRM infoframe
+
+Can you spell this out here so it's unambiguous which DRM you're talking ab=
+out?
+
+With the nits fixed,
+
+Reviewed-by: Sean Paul <sean@poorly.run>
+
+
+>   *
+>   * This is used by the generic pack function. This works since all infof=
+rames
+>   * have the same header which also indicates which type of infoframe sho=
+uld be
+> --=20
+> 1.9.1
+>=20
+
+--=20
+Sean Paul, Software Engineer, Google / Chromium OS

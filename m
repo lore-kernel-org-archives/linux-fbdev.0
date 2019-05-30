@@ -1,71 +1,64 @@
-From: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
-Date: Fri, 17 May 2019 15:05:46 +0000
-Subject: [PATCH] backlight: gpio-backlight: Set power state instead of brightness at probe
-Message-Id: <20190517150546.4508-1-paul.kocialkowski@bootlin.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 30 May 2019 12:30:19 +0000
+Subject: [PATCH v3] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
+Message-Id: <69cd6b8b-1fd1-86fa-2070-99d0ce15a868@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <CGME20190530123016eucas1p2e18747b8ac1d156657232eab52876a61@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thomas Petazzoni <thomas.petazzoni@bootlin.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Paul Kocialkowski <paul.kocialkowski@bootlin.com>
+To: Nicolas Ferre <nicolas.ferre@microchip.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-On a trivial gpio-backlight setup with a panel using the backlight but
-no boot software to enable it beforehand, we fall in a case where the
-backlight is disabled (not just blanked) and thus remains disabled when
-the panel gets enabled.
+Add COMPILE_TEST support to atmel_lcdfb driver for better compile
+testing coverage.
 
-Setting gbl->def_value via the device-tree prop allows enabling the
-backlight in this situation, but it will be unblanked straight away,
-in compliance with the binding. This does not work well when there was no
-boot software to display something before, since we really need to unblank
-by the time the panel is enabled, not before.
+While at it fix improper use of UL (to silence build warnings on
+x86_64).
 
-Resolve the situation by setting the brightness to 1 at probe and
-managing the power state accordingly, a bit like it's done in
-pwm-backlight.
-
-Fixes: 8b770e3c9824 ("backlight: Add GPIO-based backlight driver")
-Signed-off-by: Paul Kocialkowski <paul.kocialkowski@bootlin.com>
+Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/backlight/gpio_backlight.c | 19 ++++++++++++++++++-
- 1 file changed, 18 insertions(+), 1 deletion(-)
+v3: fix build warnings on x86_64
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index e470da95d806..c9cb97fa13d0 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -57,6 +57,21 @@ static const struct backlight_ops gpio_backlight_ops = {
- 	.check_fb	= gpio_backlight_check_fb,
- };
+v2: add missing HAVE_CLK && HAS IOMEM dependencies
+
+ drivers/video/fbdev/Kconfig       |    3 ++-
+ drivers/video/fbdev/atmel_lcdfb.c |    4 ++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+Index: b/drivers/video/fbdev/Kconfig
+=================================--- a/drivers/video/fbdev/Kconfig
++++ b/drivers/video/fbdev/Kconfig
+@@ -855,7 +855,8 @@ config FB_S1D13XXX
  
-+static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
-+{
-+	struct device_node *node = gbl->dev->of_node;
-+
-+	/* If we absolutely want the backlight enabled at boot. */
-+	if (gbl->def_value)
-+		return FB_BLANK_UNBLANK;
-+
-+	/* If there's no panel to unblank the backlight later. */
-+	if (!node || !node->phandle)
-+		return FB_BLANK_UNBLANK;
-+
-+	return FB_BLANK_POWERDOWN;
-+}
-+
- static int gpio_backlight_probe_dt(struct platform_device *pdev,
- 				   struct gpio_backlight *gbl)
- {
-@@ -142,7 +157,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 		return PTR_ERR(bl);
- 	}
+ config FB_ATMEL
+ 	tristate "AT91 LCD Controller support"
+-	depends on FB && OF && HAVE_FB_ATMEL
++	depends on FB && OF && HAVE_CLK && HAS_IOMEM
++	depends on HAVE_FB_ATMEL || COMPILE_TEST
+ 	select FB_BACKLIGHT
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+Index: b/drivers/video/fbdev/atmel_lcdfb.c
+=================================--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -673,7 +673,7 @@ static int atmel_lcdfb_set_par(struct fb
+ 	lcdc_writel(sinfo, ATMEL_LCDC_MVAL, 0);
  
--	bl->props.brightness = gbl->def_value;
-+	bl->props.brightness = 1;
-+	bl->props.power = gpio_backlight_initial_power_state(gbl);
-+
- 	backlight_update_status(bl);
+ 	/* Disable all interrupts */
+-	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
++	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
+ 	/* Enable FIFO & DMA errors */
+ 	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI | ATMEL_LCDC_OWRI | ATMEL_LCDC_MERI);
  
- 	platform_set_drvdata(pdev, bl);
--- 
-2.21.0
+@@ -1291,7 +1291,7 @@ static int atmel_lcdfb_suspend(struct pl
+ 	 * We don't want to handle interrupts while the clock is
+ 	 * stopped. It may take forever.
+ 	 */
+-	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
++	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
+ 
+ 	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
+ 	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);

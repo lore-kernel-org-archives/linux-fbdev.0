@@ -1,42 +1,52 @@
-From: Anders Roxell <anders.roxell@linaro.org>
-Date: Thu, 06 Jun 2019 09:47:07 +0000
-Subject: [PATCH 1/8] drivers: net: dsa: realtek: fix warning same module names
-Message-Id: <20190606094707.23664-1-anders.roxell@linaro.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sat, 01 Jun 2019 13:25:46 +0000
+Subject: [PATCH AUTOSEL 4.4 42/56] fbdev: sm712fb: fix boot screen glitch when sm712fb replaces VGA
+Message-Id: <20190601132600.27427-42-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190601132600.27427-1-sashal@kernel.org>
+In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: andrew@lunn.ch, vivien.didelot@gmail.com, f.fainelli@gmail.com, davem@davemloft.net
-Cc: marex@denx.de, stefan@agner.ch, airlied@linux.ie, daniel@ffwll.ch, shawnguo@kernel.org, s.hauer@pengutronix.de, b.zolnierkie@samsung.com, a.hajda@samsung.com, mchehab@kernel.org, p.zabel@pengutronix.de, hkallweit1@gmail.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-When building with CONFIG_NET_DSA_REALTEK_SMI and CONFIG_REALTEK_PHY
-enabled as loadable modules, we see the following warning:
+From: Yifeng Li <tomli@tomli.me>
 
-warning: same module names found:
-  drivers/net/phy/realtek.ko
-  drivers/net/dsa/realtek.ko
+[ Upstream commit ec1587d5073f29820e358f3a383850d61601d981 ]
 
-Rework so the names matches the config fragment.
+When the machine is booted in VGA mode, loading sm712fb would cause
+a glitch of random pixels shown on the screen. To prevent it from
+happening, we first clear the entire framebuffer, and we also need
+to stop calling smtcfb_setmode() during initialization, the fbdev
+layer will call it for us later when it's ready.
 
-Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+Signed-off-by: Yifeng Li <tomli@tomli.me>
+Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: <stable@vger.kernel.org>  # v4.4+
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/net/dsa/Makefile | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/fbdev/sm712fb.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/net/dsa/Makefile b/drivers/net/dsa/Makefile
-index fefb6aaa82ba..dbe8352cf8a4 100644
---- a/drivers/net/dsa/Makefile
-+++ b/drivers/net/dsa/Makefile
-@@ -9,8 +9,8 @@ obj-$(CONFIG_NET_DSA_LANTIQ_GSWIP) += lantiq_gswip.o
- obj-$(CONFIG_NET_DSA_MT7530)	+= mt7530.o
- obj-$(CONFIG_NET_DSA_MV88E6060) += mv88e6060.o
- obj-$(CONFIG_NET_DSA_QCA8K)	+= qca8k.o
--obj-$(CONFIG_NET_DSA_REALTEK_SMI) += realtek.o
--realtek-objs			:= realtek-smi.o rtl8366.o rtl8366rb.o
-+obj-$(CONFIG_NET_DSA_REALTEK_SMI) += dsa-realtek-smi.o
-+dsa-realtek-smi-objs			:= realtek-smi.o rtl8366.o rtl8366rb.o
- obj-$(CONFIG_NET_DSA_SMSC_LAN9303) += lan9303-core.o
- obj-$(CONFIG_NET_DSA_SMSC_LAN9303_I2C) += lan9303_i2c.o
- obj-$(CONFIG_NET_DSA_SMSC_LAN9303_MDIO) += lan9303_mdio.o
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 2539c1e6facb4..6a30714a18632 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1498,7 +1498,11 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
+ 	if (err)
+ 		goto failed;
+ 
+-	smtcfb_setmode(sfb);
++	/*
++	 * The screen would be temporarily garbled when sm712fb takes over
++	 * vesafb or VGA text mode. Zero the framebuffer.
++	 */
++	memset_io(sfb->lfb, 0, sfb->fb->fix.smem_len);
+ 
+ 	err = register_framebuffer(info);
+ 	if (err < 0)
 -- 
 2.20.1

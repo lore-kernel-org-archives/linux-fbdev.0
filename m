@@ -1,60 +1,92 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 11 Jun 2019 14:11:25 +0000
-Subject: Re: [PATCH 33/33] backlight: simplify lcd notifier
-Message-Id: <20190611141125.w6vhytsue7toif3g@holly.lan>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sat, 01 Jun 2019 13:25:50 +0000
+Subject: [PATCH AUTOSEL 4.4 46/56] fbdev: fix divide error in fb_var_to_videomode
+Message-Id: <20190601132600.27427-46-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
- <20190528090304.9388-34-daniel.vetter@ffwll.ch>
-In-Reply-To: <20190528090304.9388-34-daniel.vetter@ffwll.ch>
+References: <20190601132600.27427-1-sashal@kernel.org>
+In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@ffwll.ch>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Lee Jones <lee.jones@linaro.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Jingoo Han <jingoohan1@gmail.com>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, Fredrik Noring <noring@nocrew.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Mukesh Ojha <mojha@codeaurora.org>, Shile Zhang <shile.zhang@linux.alibaba.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Tue, May 28, 2019 at 11:03:04AM +0200, Daniel Vetter wrote:
-> With all the work I've done on replacing fb notifier calls with direct
-> calls into fbcon the backlight/lcd notifier is the only user left.
-> 
-> It will only receive events now that it cares about, hence we can
-> remove this check.
-> 
-> Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
-> Reviewed-by: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
+From: Shile Zhang <shile.zhang@linux.alibaba.com>
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+[ Upstream commit cf84807f6dd0be5214378e66460cfc9187f532f9 ]
 
+To fix following divide-by-zero error found by Syzkaller:
 
-> ---
->  drivers/video/backlight/lcd.c | 11 -----------
->  1 file changed, 11 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-> index ecdda06989d0..d6b653aa4ee9 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -30,17 +30,6 @@ static int fb_notifier_callback(struct notifier_block *self,
->  	struct lcd_device *ld;
->  	struct fb_event *evdata = data;
->  
-> -	/* If we aren't interested in this event, skip it immediately ... */
-> -	switch (event) {
-> -	case FB_EVENT_BLANK:
-> -	case FB_EVENT_MODE_CHANGE:
-> -	case FB_EARLY_EVENT_BLANK:
-> -	case FB_R_EARLY_EVENT_BLANK:
-> -		break;
-> -	default:
-> -		return 0;
-> -	}
-> -
->  	ld = container_of(self, struct lcd_device, fb_notif);
->  	if (!ld->ops)
->  		return 0;
-> -- 
-> 2.20.1
-> 
+  divide error: 0000 [#1] SMP PTI
+  CPU: 7 PID: 8447 Comm: test Kdump: loaded Not tainted 4.19.24-8.al7.x86_64 #1
+  Hardware name: Alibaba Cloud Alibaba Cloud ECS, BIOS rel-1.12.0-0-ga698c8995f-prebuilt.qemu.org 04/01/2014
+  RIP: 0010:fb_var_to_videomode+0xae/0xc0
+  Code: 04 44 03 46 78 03 4e 7c 44 03 46 68 03 4e 70 89 ce d1 ee 69 c0 e8 03 00 00 f6 c2 01 0f 45 ce 83 e2 02 8d 34 09 0f 45 ce 31 d2 <41> f7 f0 31 d2 f7 f1 89 47 08 f3 c3 66 0f 1f 44 00 00 0f 1f 44 00
+  RSP: 0018:ffffb7e189347bf0 EFLAGS: 00010246
+  RAX: 00000000e1692410 RBX: ffffb7e189347d60 RCX: 0000000000000000
+  RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffffb7e189347c10
+  RBP: ffff99972a091c00 R08: 0000000000000000 R09: 0000000000000000
+  R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000100
+  R13: 0000000000010000 R14: 00007ffd66baf6d0 R15: 0000000000000000
+  FS:  00007f2054d11740(0000) GS:ffff99972fbc0000(0000) knlGS:0000000000000000
+  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+  CR2: 00007f205481fd20 CR3: 00000004288a0001 CR4: 00000000001606a0
+  Call Trace:
+   fb_set_var+0x257/0x390
+   ? lookup_fast+0xbb/0x2b0
+   ? fb_open+0xc0/0x140
+   ? chrdev_open+0xa6/0x1a0
+   do_fb_ioctl+0x445/0x5a0
+   do_vfs_ioctl+0x92/0x5f0
+   ? __alloc_fd+0x3d/0x160
+   ksys_ioctl+0x60/0x90
+   __x64_sys_ioctl+0x16/0x20
+   do_syscall_64+0x5b/0x190
+   entry_SYSCALL_64_after_hwframe+0x44/0xa9
+  RIP: 0033:0x7f20548258d7
+  Code: 44 00 00 48 8b 05 b9 15 2d 00 64 c7 00 26 00 00 00 48 c7 c0 ff ff ff ff c3 66 2e 0f 1f 84 00 00 00 00 00 b8 10 00 00 00 0f 05 <48> 3d 01 f0 ff ff 73 01 c3 48 8b 0d 89 15 2d 00 f7 d8 64 89 01 48
+
+It can be triggered easily with following test code:
+
+  #include <linux/fb.h>
+  #include <fcntl.h>
+  #include <sys/ioctl.h>
+  int main(void)
+  {
+          struct fb_var_screeninfo var = {.activate = 0x100, .pixclock = 60};
+          int fd = open("/dev/fb0", O_RDWR);
+          if (fd < 0)
+                  return 1;
+
+          if (ioctl(fd, FBIOPUT_VSCREENINFO, &var))
+                  return 1;
+
+          return 0;
+  }
+
+Signed-off-by: Shile Zhang <shile.zhang@linux.alibaba.com>
+Cc: Fredrik Noring <noring@nocrew.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Reviewed-by: Mukesh Ojha <mojha@codeaurora.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/modedb.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/modedb.c b/drivers/video/fbdev/core/modedb.c
+index de119f11b78f9..455a15f701720 100644
+--- a/drivers/video/fbdev/core/modedb.c
++++ b/drivers/video/fbdev/core/modedb.c
+@@ -933,6 +933,9 @@ void fb_var_to_videomode(struct fb_videomode *mode,
+ 	if (var->vmode & FB_VMODE_DOUBLE)
+ 		vtotal *= 2;
+ 
++	if (!htotal || !vtotal)
++		return;
++
+ 	hfreq = pixclock/htotal;
+ 	mode->refresh = hfreq/vtotal;
+ }
+-- 
+2.20.1

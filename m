@@ -1,45 +1,52 @@
 From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 01 Jun 2019 13:25:47 +0000
-Subject: [PATCH AUTOSEL 4.4 43/56] video: hgafb: fix potential NULL pointer dereference
-Message-Id: <20190601132600.27427-43-sashal@kernel.org>
+Date: Sat, 01 Jun 2019 13:14:41 +0000
+Subject: [PATCH AUTOSEL 5.1 065/186] fbcon: Don't reset logo_shown when logo is currently shown
+Message-Id: <20190601131653.24205-65-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190601132600.27427-1-sashal@kernel.org>
-In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
+References: <20190601131653.24205-1-sashal@kernel.org>
+In-Reply-To: <20190601131653.24205-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Kangjie Lu <kjlu@umn.edu>, dri-devel@lists.freedesktop.org, Ferenc Bakonyi <fero@drama.obuda.kando.hu>, Aditya Pakki <pakki001@umn.edu>, linux-nvidia@lists.surfsouth.com
+Cc: Andreas Schwab <schwab@linux-m68k.org>, Prarit Bhargava <prarit@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, Kees Cook <keescook@chromium.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Steven Rostedt <rostedt@goodmis.org>, Marko Myllynen <myllynen@redhat.com>, Hans de Goede <hdegoede@redhat.com>, Thierry Reding <treding@nvidia.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sasha Levin <sashal@kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-From: Kangjie Lu <kjlu@umn.edu>
+From: Andreas Schwab <schwab@linux-m68k.org>
 
-[ Upstream commit ec7f6aad57ad29e4e66cc2e18e1e1599ddb02542 ]
+[ Upstream commit 3c5a1b111373e669c8220803464c3a508a87e254 ]
 
-When ioremap fails, hga_vram should not be dereferenced. The fix
-check the failure to avoid NULL pointer dereference.
+When the logo is currently drawn on a virtual console, and the console
+loglevel is reduced to quiet, logo_shown must be left alone, so that it
+the scrolling region on that virtual console is properly reset.
 
-Signed-off-by: Kangjie Lu <kjlu@umn.edu>
-Cc: Aditya Pakki <pakki001@umn.edu>
-Cc: Ferenc Bakonyi <fero@drama.obuda.kando.hu>
-[b.zolnierkie: minor patch summary fixup]
+Fixes: 10993504d647 ("fbcon: Silence fbcon logo on 'quiet' boots")
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+Cc: Prarit Bhargava <prarit@redhat.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: Kees Cook <keescook@chromium.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Marko Myllynen <myllynen@redhat.com>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Thierry Reding <treding@nvidia.com>
 Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/fbdev/hgafb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/core/fbcon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/hgafb.c b/drivers/video/fbdev/hgafb.c
-index 15d3ccff29654..4a397c7c1b560 100644
---- a/drivers/video/fbdev/hgafb.c
-+++ b/drivers/video/fbdev/hgafb.c
-@@ -285,6 +285,8 @@ static int hga_card_detect(void)
- 	hga_vram_len  = 0x08000;
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index cd059a801662e..786f9aab55df6 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -1069,7 +1069,7 @@ static void fbcon_init(struct vc_data *vc, int init)
  
- 	hga_vram = ioremap(0xb0000, hga_vram_len);
-+	if (!hga_vram)
-+		goto error;
+ 	cap = info->flags;
  
- 	if (request_region(0x3b0, 12, "hgafb"))
- 		release_io_ports = 1;
+-	if (console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
++	if (logo_shown < 0 && console_loglevel <= CONSOLE_LOGLEVEL_QUIET)
+ 		logo_shown = FBCON_LOGO_DONTSHOW;
+ 
+ 	if (vc != svc || logo_shown = FBCON_LOGO_DONTSHOW ||
 -- 
 2.20.1

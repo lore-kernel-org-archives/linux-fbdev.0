@@ -1,44 +1,77 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 21 Jun 2019 12:06:28 +0000
-Subject: Re: [PATCH][next] video: fbdev: atmel_lcdfb: remove redundant initialization to variable ret
-Message-Id: <fae5c288-cf9b-5b54-1aeb-06126f140b84@samsung.com>
+From: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Date: Sat, 01 Jun 2019 21:06:51 +0000
+Subject: Re: [PATCH v3] video: fbdev: atmel_lcdfb: add COMPILE_TEST support
+Message-Id: <20190601210651.GB3558@piout.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190611170913.20913-1-colin.king@canonical.com>
-        <37ac8530-6601-a1a0-37e0-8c6d5d1702cd@microchip.com>
-        <CGME20190612141513epcas2p32873b9574f918732b4cf8a6838cdd54d@epcas2p3.samsung.com>
-        <20190612141356.riiesqub4zvxafh3@M43218.corp.atmel.com>
-In-Reply-To: <20190612141356.riiesqub4zvxafh3@M43218.corp.atmel.com>
+References: <CGME20190530123016eucas1p2e18747b8ac1d156657232eab52876a61@eucas1p2.samsung.com>
+ <69cd6b8b-1fd1-86fa-2070-99d0ce15a868@samsung.com>
+In-Reply-To: <69cd6b8b-1fd1-86fa-2070-99d0ce15a868@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ludovic Desroches <ludovic.desroches@microchip.com>, Nicolas Ferre <Nicolas.Ferre@microchip.com>, Colin King <colin.king@canonical.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Nicolas Ferre <nicolas.ferre@microchip.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-
-On 6/12/19 4:13 PM, Ludovic Desroches wrote:
-> On Wed, Jun 12, 2019 at 09:55:30AM +0200, Nicolas Ferre - M43238 wrote:
->> On 11/06/2019 at 19:09, Colin King wrote:
->>> External E-Mail
->>>
->>>
->>> From: Colin Ian King <colin.king@canonical.com>
->>>
->>> Currently variable ret is being initialized with -ENOENT however that
->>> value is never read and ret is being re-assigned later on. Hence this
->>> assignment is redundant and can be removed.
->>>
->>> Addresses-Coverity: ("Unused value")
->>> Signed-off-by: Colin Ian King <colin.king@canonical.com>
->>
->> Indeed:
->> Acked-by: Nicolas Ferre <nicolas.ferre@microchip.com>
+On 30/05/2019 14:30:19+0200, Bartlomiej Zolnierkiewicz wrote:
+> Add COMPILE_TEST support to atmel_lcdfb driver for better compile
+> testing coverage.
 > 
-> Acked-by: Ludovic Desroches <ludovic.desroches@microchip.com> 
+> While at it fix improper use of UL (to silence build warnings on
+> x86_64).
+> 
+> Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>
+Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
-Patch queued for v5.3, thanks.
+> Cc: Ludovic Desroches <ludovic.desroches@microchip.com>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> ---
+> v3: fix build warnings on x86_64
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Hopefully, no building errors anymore ;)
+
+> 
+> v2: add missing HAVE_CLK && HAS IOMEM dependencies
+> 
+>  drivers/video/fbdev/Kconfig       |    3 ++-
+>  drivers/video/fbdev/atmel_lcdfb.c |    4 ++--
+>  2 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> Index: b/drivers/video/fbdev/Kconfig
+> =================================> --- a/drivers/video/fbdev/Kconfig
+> +++ b/drivers/video/fbdev/Kconfig
+> @@ -855,7 +855,8 @@ config FB_S1D13XXX
+>  
+>  config FB_ATMEL
+>  	tristate "AT91 LCD Controller support"
+> -	depends on FB && OF && HAVE_FB_ATMEL
+> +	depends on FB && OF && HAVE_CLK && HAS_IOMEM
+> +	depends on HAVE_FB_ATMEL || COMPILE_TEST
+>  	select FB_BACKLIGHT
+>  	select FB_CFB_FILLRECT
+>  	select FB_CFB_COPYAREA
+> Index: b/drivers/video/fbdev/atmel_lcdfb.c
+> =================================> --- a/drivers/video/fbdev/atmel_lcdfb.c
+> +++ b/drivers/video/fbdev/atmel_lcdfb.c
+> @@ -673,7 +673,7 @@ static int atmel_lcdfb_set_par(struct fb
+>  	lcdc_writel(sinfo, ATMEL_LCDC_MVAL, 0);
+>  
+>  	/* Disable all interrupts */
+> -	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+> +	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
+>  	/* Enable FIFO & DMA errors */
+>  	lcdc_writel(sinfo, ATMEL_LCDC_IER, ATMEL_LCDC_UFLWI | ATMEL_LCDC_OWRI | ATMEL_LCDC_MERI);
+>  
+> @@ -1291,7 +1291,7 @@ static int atmel_lcdfb_suspend(struct pl
+>  	 * We don't want to handle interrupts while the clock is
+>  	 * stopped. It may take forever.
+>  	 */
+> -	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0UL);
+> +	lcdc_writel(sinfo, ATMEL_LCDC_IDR, ~0U);
+>  
+>  	sinfo->saved_lcdcon = lcdc_readl(sinfo, ATMEL_LCDC_CONTRAST_CTR);
+>  	lcdc_writel(sinfo, ATMEL_LCDC_CONTRAST_CTR, 0);
+
+-- 
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com

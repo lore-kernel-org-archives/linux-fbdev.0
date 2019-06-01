@@ -1,40 +1,62 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Thu, 13 Jun 2019 19:43:22 +0000
-Subject: [PATCH 0/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190613194326.180889-1-mka@chromium.org>
+From: Sasha Levin <sashal@kernel.org>
+Date: Sat, 01 Jun 2019 13:25:37 +0000
+Subject: [PATCH AUTOSEL 4.4 33/56] fbdev: fix WARNING in __alloc_pages_nodemask bug
+Message-Id: <20190601132600.27427-33-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190601132600.27427-1-sashal@kernel.org>
+In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Jiufei Xue <jiufei.xue@linux.alibaba.com>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Backlight brightness curves can have different shapes. The two main
-types are linear and non-linear curves. The human eye doesn't
-perceive linearly increasing/decreasing brightness as linear (see
-also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
-linearly to human eye"), hence many backlights use non-linear (often
-logarithmic) brightness curves. The type of curve is currently opaque
-to userspace, so userspace often relies on more or less reliable
-heuristics (like the number of brightness levels) to decide whether
-to treat a backlight device as linear or non-linear.
+From: Jiufei Xue <jiufei.xue@linux.alibaba.com>
 
-Export the type of the brightness curve via a new sysfs attribute.
+[ Upstream commit 8c40292be9169a9cbe19aadd1a6fc60cbd1af82f ]
 
-Matthias Kaehlcke (4):
-  MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
-  backlight: Expose brightness curve type through sysfs
-  backlight: pwm_bl: Set scale type for CIE 1931 curves
-  backlight: pwm_bl: Set scale type for brightness curves specified in
-    the DT
+Syzkaller hit 'WARNING in __alloc_pages_nodemask' bug.
 
- .../ABI/testing/sysfs-class-backlight         | 32 +++++++++++++++++++
- MAINTAINERS                                   |  2 ++
- drivers/video/backlight/backlight.c           | 22 +++++++++++++
- drivers/video/backlight/pwm_bl.c              | 30 ++++++++++++++++-
- include/linux/backlight.h                     | 10 ++++++
- 5 files changed, 95 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
+WARNING: CPU: 1 PID: 1473 at mm/page_alloc.c:4377
+__alloc_pages_nodemask+0x4da/0x2130
+Kernel panic - not syncing: panic_on_warn set ...
 
+Call Trace:
+ alloc_pages_current+0xb1/0x1e0
+ kmalloc_order+0x1f/0x60
+ kmalloc_order_trace+0x1d/0x120
+ fb_alloc_cmap_gfp+0x85/0x2b0
+ fb_set_user_cmap+0xff/0x370
+ do_fb_ioctl+0x949/0xa20
+ fb_ioctl+0xdd/0x120
+ do_vfs_ioctl+0x186/0x1070
+ ksys_ioctl+0x89/0xa0
+ __x64_sys_ioctl+0x74/0xb0
+ do_syscall_64+0xc8/0x550
+ entry_SYSCALL_64_after_hwframe+0x49/0xbe
+
+This is a warning about order >= MAX_ORDER and the order is from
+userspace ioctl. Add flag __NOWARN to silence this warning.
+
+Signed-off-by: Jiufei Xue <jiufei.xue@linux.alibaba.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/video/fbdev/core/fbcmap.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
+index 68a113594808f..2811c4afde01c 100644
+--- a/drivers/video/fbdev/core/fbcmap.c
++++ b/drivers/video/fbdev/core/fbcmap.c
+@@ -94,6 +94,8 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
+ 	int size = len * sizeof(u16);
+ 	int ret = -ENOMEM;
+ 
++	flags |= __GFP_NOWARN;
++
+ 	if (cmap->len != len) {
+ 		fb_dealloc_cmap(cmap);
+ 		if (!len)
 -- 
-2.22.0.rc2.383.gf4fbbf30c2-goog
+2.20.1

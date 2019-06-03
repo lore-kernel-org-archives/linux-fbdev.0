@@ -1,41 +1,65 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Tue, 25 Jun 2019 20:18:22 +0000
-Subject: Re: [PATCH] video: fbdev: s3c-fb: Mark expected switch fall-throughs
-Message-Id: <201906251312.5059C51334@keescook>
+From: shobhitkukreti@gmail.com
+Date: Mon, 03 Jun 2019 11:19:12 +0000
+Subject: [PATCH v2] video: fbdev: Fix Warning comparing pointer to 0 reported by coccicheck
+Message-Id: <1559560752-12314-1-git-send-email-shobhitkukreti@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625160103.GA13133@embeddedor>
- <2bdbbd7909c5c4ad96d32c0c5be4690292132a34.camel@perches.com>
- <201906251029.08B862130@keescook>
- <9c0d4ed622d6b8e47e040d398f764d52a9ac396d.camel@perches.com>
-In-Reply-To: <9c0d4ed622d6b8e47e040d398f764d52a9ac396d.camel@perches.com>
+References: <CA+7wUswLsZ7PF6Pi8Oz=9287UYZQeKCFJHP7FDtPf1Cq8PO7ag@mail.gmail.com>
+In-Reply-To: <CA+7wUswLsZ7PF6Pi8Oz=9287UYZQeKCFJHP7FDtPf1Cq8PO7ag@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: linux-fbdev@vger.kernel.org, Michal Marek <michal.lkml@markovi.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kbuild <linux-kbuild@vger.kernel.org>
+To: malat@debian.org
+Cc: Shobhit Kukreti <shobhitkukreti@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, b.zolnierkie@samsung.com
 
-On Tue, Jun 25, 2019 at 10:49:01AM -0700, Joe Perches wrote:
-> On Tue, 2019-06-25 at 10:31 -0700, Kees Cook wrote:
-> > On Tue, Jun 25, 2019 at 09:52:23AM -0700, Joe Perches wrote:
-> > > On Tue, 2019-06-25 at 11:01 -0500, Gustavo A. R. Silva wrote:
-> > > > In preparation to enabling -Wimplicit-fallthrough, mark switch
-> > > > cases where we are expecting to fall through.
-> > > []
-> > > > This patch is part of the ongoing efforts to enable
-> > > > -Wimplicit-fallthrough.
-> > > 
-> > > Just enable the thing already.
-> > 
-> > Linus has been pretty clear about not wanting warning options enabled
-> > without first fixing all the cases it warns about first.
-> 
-> Hey Kees.
-> 
-> I don't recall that particular tidbit.  Got a link?  
+From: Shobhit Kukreti <shobhitkukreti@gmail.com>
 
-It was spread out over the discussion around removing __deprecated,
-about enabling -Wvla, and in person at the kernel summit when asking
-what approach to take for -Wimplicit-fallthrough.
+Fixed Warning Comparing Pointer to 0. Changed return value to -ENOMEM to
+report kzalloc failure
 
+drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
+drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
+drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
+
+Signed-off-by: Shobhit Kukreti <shobhitkukreti@gmail.com>
+---
+Changes in v2:
+ - Modified commit message to report change in return type
+
+ drivers/video/fbdev/controlfb.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
+index 7af8db2..07907c5 100644
+--- a/drivers/video/fbdev/controlfb.c
++++ b/drivers/video/fbdev/controlfb.c
+@@ -182,7 +182,7 @@ int init_module(void)
+ 	int ret = -ENXIO;
+ 
+ 	dp = of_find_node_by_name(NULL, "control");
+-	if (dp != 0 && !control_of_init(dp))
++	if (dp != NULL && !control_of_init(dp))
+ 		ret = 0;
+ 	of_node_put(dp);
+ 
+@@ -580,7 +580,7 @@ static int __init control_init(void)
+ 	control_setup(option);
+ 
+ 	dp = of_find_node_by_name(NULL, "control");
+-	if (dp != 0 && !control_of_init(dp))
++	if (dp != NULL && !control_of_init(dp))
+ 		ret = 0;
+ 	of_node_put(dp);
+ 
+@@ -683,8 +683,8 @@ static int __init control_of_init(struct device_node *dp)
+ 		return -ENXIO;
+ 	}
+ 	p = kzalloc(sizeof(*p), GFP_KERNEL);
+-	if (p = 0)
+-		return -ENXIO;
++	if (p = NULL)
++		return -ENOMEM;
+ 	control_fb = p;	/* save it for cleanups */
+ 
+ 	/* Map in frame buffer and registers */
 -- 
-Kees Cook
+2.7.4

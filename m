@@ -1,274 +1,224 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Mon, 03 Jun 2019 08:23:16 +0000
-Subject: Re: [PATCH 2/4] drm: Fix docbook warnings in hdr metadata helper structures
-Message-Id: <20190603082316.GI21222@phenom.ffwll.local>
+From: "Shankar, Uma" <uma.shankar@intel.com>
+Date: Mon, 03 Jun 2019 12:01:21 +0000
+Subject: RE: [PATCH 2/4] drm: Fix docbook warnings in hdr metadata helper structures
+Message-Id: <E7C9878FBA1C6D42A1CA3F62AEB6945F82035B11@BGSMSX104.gar.corp.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <1559159944-21103-1-git-send-email-uma.shankar@intel.com>
  <1559159944-21103-3-git-send-email-uma.shankar@intel.com>
-In-Reply-To: <1559159944-21103-3-git-send-email-uma.shankar@intel.com>
+ <20190603082316.GI21222@phenom.ffwll.local>
+In-Reply-To: <20190603082316.GI21222@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Uma Shankar <uma.shankar@intel.com>
-Cc: Sean Paul <sean@poorly.run>, linux-fbdev@vger.kernel.org, dcastagna@chromium.org, jonas@kwiboo.se, Maxime Ripard <maxime.ripard@bootlin.com>, intel-gfx@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, emil.l.velikov@gmail.com, dri-devel@lists.freedesktop.org, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, seanpaul@chromium.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Daniel Vetter <daniel@ffwll.ch>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dcastagna@chromium.org" <dcastagna@chromium.org>, "jonas@kwiboo.se" <jonas@kwiboo.se>, Maxime Ripard <maxime.ripard@bootlin.com>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, "seanpaul@chromium.org" <seanpaul@chromium.org>
 
-On Thu, May 30, 2019 at 01:29:02AM +0530, Uma Shankar wrote:
-> Fixes the following warnings:
-> ./include/drm/drm_mode_config.h:841: warning: Incorrect use of
-> kernel-doc format:          * hdr_output_metadata_property: Connector
-> property containing hdr
-> ./include/drm/drm_mode_config.h:918: warning: Function parameter or membe=
-r 'hdr_output_metadata_property' not described in 'drm_mode_config'
-> ./include/drm/drm_connector.h:1251: warning: Function parameter or member=
- 'hdr_output_metadata' not described in 'drm_connector'
-> ./include/drm/drm_connector.h:1251: warning: Function parameter or member=
- 'hdr_sink_metadata' not described in 'drm_connector'
->=20
-> Also adds some property documentation for HDR Metadata Connector
-> Property in connector property create function.
->=20
-> v2: Fixed Sean Paul's review comments.
->=20
-> v3: Fixed Daniel Vetter's review comments, added the UAPI structure
-> definition section in kernel docs.
->=20
-> Cc: Shashank Sharma <shashank.sharma@intel.com>
-> Cc: Ville Syrj=E4l=E4 <ville.syrjala@linux.intel.com>
-> Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-> Cc: Maxime Ripard <maxime.ripard@bootlin.com>
-> Cc: Sean Paul <sean@poorly.run>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: Daniel Vetter <daniel@ffwll.ch>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: "Ville Syrj=E4l=E4" <ville.syrjala@linux.intel.com>
-> Cc: Hans Verkuil <hansverk@cisco.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Reviewed-by: Sean Paul <sean@poorly.run>
-> Signed-off-by: Uma Shankar <uma.shankar@intel.com>
-> ---
->  Documentation/gpu/drm-uapi.rst  |  9 +++++++++
->  drivers/gpu/drm/drm_connector.c | 31 +++++++++++++++++++++++++++++++
->  include/drm/drm_connector.h     |  1 +
->  include/drm/drm_mode_config.h   |  4 ++--
->  include/linux/hdmi.h            |  1 +
->  include/uapi/drm/drm_mode.h     | 37 +++++++++++++++++++++++++++++++++++=
-+-
->  6 files changed, 80 insertions(+), 3 deletions(-)
->=20
-> diff --git a/Documentation/gpu/drm-uapi.rst b/Documentation/gpu/drm-uapi.=
-rst
-> index 05874d0..6b39e2c 100644
-> --- a/Documentation/gpu/drm-uapi.rst
-> +++ b/Documentation/gpu/drm-uapi.rst
-> @@ -329,3 +329,12 @@ DRM_IOCTL_MODESET_CTL
->      mode setting, since on many devices the vertical blank counter is
->      reset to 0 at some point during modeset. Modern drivers should not
->      call this any more since with kernel mode setting it is a no-op.
-> +
-> +Userspace API Structures
-> +=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> +
-> +.. kernel-doc:: include/uapi/drm/drm_mode.h
-> +   :doc: overview
-> +
-> +.. kernel-doc:: include/uapi/drm/drm_mode.h
-> +   :internal:
-> diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_connec=
-tor.c
-> index c9ac8b9..6a93527 100644
-> --- a/drivers/gpu/drm/drm_connector.c
-> +++ b/drivers/gpu/drm/drm_connector.c
-> @@ -956,6 +956,37 @@ int drm_display_info_set_bus_formats(struct drm_disp=
-lay_info *info,
->   *	  is no longer protected and userspace should take appropriate action
->   *	  (whatever that might be).
->   *
-> + * HDR_OUTPUT_METADATA:
-> + *	Connector property to enable userspace to send HDR Metadata to
-> + *	driver. This metadata is based on the composition and blending
-> + *	policies decided by user, taking into account the hardware and
-> + *	sink capabilities. The driver gets this metadata and creates a
-> + *	Dynamic Range and Mastering Infoframe (DRM) in case of HDMI,
-> + *	SDP packet (Non-audio INFOFRAME SDP v1.3) for DP. This is then
-> + *	sent to sink. This notifies the sink of the upcoming frame's Color
-> + *	Encoding and Luminance parameters.
-> + *
-> + *	Userspace first need to detect the HDR capabilities of sink by
-> + *	reading and parsing the EDID. Details of HDR metadata for HDMI
-> + *	are added in CTA 861.G spec. For DP , its defined in VESA DP
-> + *	Standard v1.4. It needs to then get the metadata information
-> + *	of the video/game/app content which are encoded in HDR (basically
-> + *	using HDR transfer functions). With this information it needs to
-> + *	decide on a blending policy and compose the relevant
-> + *	layers/overlays into a common format. Once this blending is done,
-> + *	userspace will be aware of the metadata of the composed frame to
-> + *	be send to sink. It then uses this property to communicate this
-> + *	metadata to driver which then make a Infoframe packet and sends
-> + *	to sink based on the type of encoder connected.
-> + *
-> + *	Userspace will be responsible to do Tone mapping operation in case:
-> + *		- Some layers are HDR and others are SDR
-> + *		- HDR layers luminance is not same as sink
-> + *	It will even need to do colorspace conversion and get all layers
-> + *	to one common colorspace for blending. It can use either GL, Media
-> + *	or display engine to get this done based on the capabilties of the
-> + *	associated hardware.
-
-I think it'd be good to add 1-2 sentences here about what this looks like
-for the driver side. E.g. which function drivers need to call to set up
-hdr, how to get at the metadata and whether there's any helpers for these.
-
-Here I'd point at hdr_output_metadata, hdr_sink_metadata, and
-drm_add_display_info() for filling in the former.
-
-I think with that this is a solid doc patch.
-
-> + *
->   * max bpc:
->   *	This range property is used by userspace to limit the bit depth. When
->   *	used the driver would limit the bpc in accordance with the valid range
-> diff --git a/include/drm/drm_connector.h b/include/drm/drm_connector.h
-> index 5476561..47e749b 100644
-> --- a/include/drm/drm_connector.h
-> +++ b/include/drm/drm_connector.h
-> @@ -1244,6 +1244,7 @@ struct drm_connector {
->  	 */
->  	struct llist_node free_node;
-> =20
-> +	/** @hdr_sink_metadata: HDR Metadata Information read from sink */
->  	struct hdr_sink_metadata hdr_sink_metadata;
-
-Something I realized while reading the code: This should probably be put
-into the drm_display_info struct, like all the other things we parse out
-of the edid. I think that would be a lot more consistent with the code -
-the driver interface function which calls this code is called
-drm_add_display_info() after all.
-
-Can you pls change that in a follow-up patch?
-
->  };
-> =20
-> diff --git a/include/drm/drm_mode_config.h b/include/drm/drm_mode_config.h
-> index 4f88cc9..759d462 100644
-> --- a/include/drm/drm_mode_config.h
-> +++ b/include/drm/drm_mode_config.h
-> @@ -837,8 +837,8 @@ struct drm_mode_config {
->  	struct drm_property *writeback_out_fence_ptr_property;
-> =20
->  	/**
-> -	 * hdr_output_metadata_property: Connector property containing hdr
-> -	 * metatda. This will be provided by userspace compositors based
-> +	 * @hdr_output_metadata_property: Connector property containing hdr
-> +	 * metatada. This will be provided by userspace compositors based
->  	 * on HDR content
->  	 */
->  	struct drm_property *hdr_output_metadata_property;
-> diff --git a/include/linux/hdmi.h b/include/linux/hdmi.h
-> index ee55ba5..55c6db5 100644
-> --- a/include/linux/hdmi.h
-> +++ b/include/linux/hdmi.h
-> @@ -398,6 +398,7 @@ ssize_t hdmi_vendor_infoframe_pack_only(const struct =
-hdmi_vendor_infoframe *fram
->   * @spd: spd infoframe
->   * @vendor: union of all vendor infoframes
->   * @audio: audio infoframe
-> + * @drm: Dynamic Range and Mastering infoframe
->   *
->   * This is used by the generic pack function. This works since all infof=
-rames
->   * have the same header which also indicates which type of infoframe sho=
-uld be
-> diff --git a/include/uapi/drm/drm_mode.h b/include/uapi/drm/drm_mode.h
-> index 997a7e0..5d3964f 100644
-> --- a/include/uapi/drm/drm_mode.h
-> +++ b/include/uapi/drm/drm_mode.h
-> @@ -33,6 +33,15 @@
->  extern "C" {
->  #endif
-> =20
-> +/**
-> + * DOC: overview
-> + *
-> + * DRM exposes many UAPI and structure definition to have a consistent
-> + * and standardized interface with user.
-> + * Userspace can refer to these structure definitions and UAPI formats
-> + * to communicate to driver
-> + */
-> +
->  #define DRM_CONNECTOR_NAME_LEN	32
->  #define DRM_DISPLAY_MODE_LEN	32
->  #define DRM_PROP_NAME_LEN	32
-> @@ -630,7 +639,26 @@ struct drm_color_lut {
->  	__u16 reserved;
->  };
-> =20
-> -/* HDR Metadata Infoframe as per 861.G spec */
-
-Keep the spec reference imo, maybe even add a note that this is supposed
-to perfectly match it.
-
-> +/**
-> + * struct hdr_metadata_infoframe - HDR Metadata Infoframe Data.
-> + * @eotf: Electro-Optical Transfer Function (EOTF) used in the stream.
-> + * @metadata_type: Static_Metadata_Descriptor_ID.
-> + * @display_primaries: Color Primaries of the Data.
-> + * @display_primaries.x: X cordinate of color primary.
-
-Would be good to spend a few more words about "in which standard/format"
-this color number is. I.e. fixed point or whatever, and color space.
-
-> + * @display_primaries.y: Y cordinate of color primary.
-> + * @white_point: White Point of Colorspace Data.
-> + * @white_point.x: X cordinate of whitepoint of color primary.
-> + * @white_point.y: Y cordinate of whitepoint of color primary.
-> + * @max_display_mastering_luminance: Max Mastering Display Luminance.
-> + * @min_display_mastering_luminance: Min Mastering Display Luminance.
-> + * @max_cll: Max Content Light Level.
-> + * @max_fall: Max Frame Average Light Level.
-
-btw for long structs I prefer the inline kerneldoc style. This one is just
-at the edge imo.
-
-> + *
-> + * With drm subsystem using struct drm_rect to manage rectangular area t=
-his
-
-struct &drm_rect to make it a hyperlink. Once we have drm_rect documented
-:-)
-
-> + * export it to user-space.
-> + *
-> + * Currently used by drm_mode_atomic blob property FB_DAMAGE_CLIPS.
-> + */
->  struct hdr_metadata_infoframe {
->  	__u8 eotf;
->  	__u8 metadata_type;
-> @@ -646,6 +674,13 @@ struct hdr_metadata_infoframe {
->  	__u16 max_fall;
->  };
-> =20
-> +/**
-> + * struct hdr_output_metadata - HDR output metadata
-> + *
-> + * Metadata Information to be passed from userspace
-> + * @metadata_type: Static_Metadata_Descriptor_ID.
-> + * @hdmi_metadata_type1: HDR Metadata Infoframe.
-
-If you want to move the member docs closer to their definition, go with
-the inline style.
-
-Thanks, Daniel
-
-> + */
->  struct hdr_output_metadata {
->  	__u32 metadata_type;
->  	union {
-> --=20
-> 1.9.1
->=20
-
---=20
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+DQoNCj4tLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPkZyb206IGRyaS1kZXZlbCBbbWFpbHRv
+OmRyaS1kZXZlbC1ib3VuY2VzQGxpc3RzLmZyZWVkZXNrdG9wLm9yZ10gT24gQmVoYWxmIE9mIERh
+bmllbA0KPlZldHRlcg0KPlNlbnQ6IE1vbmRheSwgSnVuZSAzLCAyMDE5IDE6NTMgUE0NCj5Ubzog
+U2hhbmthciwgVW1hIDx1bWEuc2hhbmthckBpbnRlbC5jb20+DQo+Q2M6IFNlYW4gUGF1bCA8c2Vh
+bkBwb29ybHkucnVuPjsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOw0KPmRjYXN0YWduYUBj
+aHJvbWl1bS5vcmc7IGpvbmFzQGt3aWJvby5zZTsgTWF4aW1lIFJpcGFyZA0KPjxtYXhpbWUucmlw
+YXJkQGJvb3RsaW4uY29tPjsgaW50ZWwtZ2Z4QGxpc3RzLmZyZWVkZXNrdG9wLm9yZzsgQmFydGxv
+bWllag0KPlpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb20+OyBlbWlsLmwu
+dmVsaWtvdkBnbWFpbC5jb207IGRyaS0NCj5kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmc7IEhh
+bnMgVmVya3VpbCA8aGFuc3ZlcmtAY2lzY28uY29tPjsgRGF2aWQgQWlybGllDQo+PGFpcmxpZWRA
+bGludXguaWU+OyBzZWFucGF1bEBjaHJvbWl1bS5vcmcNCj5TdWJqZWN0OiBSZTogW1BBVENIIDIv
+NF0gZHJtOiBGaXggZG9jYm9vayB3YXJuaW5ncyBpbiBoZHIgbWV0YWRhdGEgaGVscGVyIHN0cnVj
+dHVyZXMNCj4NCj5PbiBUaHUsIE1heSAzMCwgMjAxOSBhdCAwMToyOTowMkFNICswNTMwLCBVbWEg
+U2hhbmthciB3cm90ZToNCj4+IEZpeGVzIHRoZSBmb2xsb3dpbmcgd2FybmluZ3M6DQo+PiAuL2lu
+Y2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oOjg0MTogd2FybmluZzogSW5jb3JyZWN0IHVzZSBv
+Zg0KPj4ga2VybmVsLWRvYyBmb3JtYXQ6ICAgICAgICAgICogaGRyX291dHB1dF9tZXRhZGF0YV9w
+cm9wZXJ0eTogQ29ubmVjdG9yDQo+PiBwcm9wZXJ0eSBjb250YWluaW5nIGhkcg0KPj4gLi9pbmNs
+dWRlL2RybS9kcm1fbW9kZV9jb25maWcuaDo5MTg6IHdhcm5pbmc6IEZ1bmN0aW9uIHBhcmFtZXRl
+ciBvciBtZW1iZXINCj4naGRyX291dHB1dF9tZXRhZGF0YV9wcm9wZXJ0eScgbm90IGRlc2NyaWJl
+ZCBpbiAnZHJtX21vZGVfY29uZmlnJw0KPj4gLi9pbmNsdWRlL2RybS9kcm1fY29ubmVjdG9yLmg6
+MTI1MTogd2FybmluZzogRnVuY3Rpb24gcGFyYW1ldGVyIG9yIG1lbWJlcg0KPidoZHJfb3V0cHV0
+X21ldGFkYXRhJyBub3QgZGVzY3JpYmVkIGluICdkcm1fY29ubmVjdG9yJw0KPj4gLi9pbmNsdWRl
+L2RybS9kcm1fY29ubmVjdG9yLmg6MTI1MTogd2FybmluZzogRnVuY3Rpb24gcGFyYW1ldGVyIG9y
+IG1lbWJlcg0KPidoZHJfc2lua19tZXRhZGF0YScgbm90IGRlc2NyaWJlZCBpbiAnZHJtX2Nvbm5l
+Y3RvcicNCj4+DQo+PiBBbHNvIGFkZHMgc29tZSBwcm9wZXJ0eSBkb2N1bWVudGF0aW9uIGZvciBI
+RFIgTWV0YWRhdGEgQ29ubmVjdG9yDQo+PiBQcm9wZXJ0eSBpbiBjb25uZWN0b3IgcHJvcGVydHkg
+Y3JlYXRlIGZ1bmN0aW9uLg0KPj4NCj4+IHYyOiBGaXhlZCBTZWFuIFBhdWwncyByZXZpZXcgY29t
+bWVudHMuDQo+Pg0KPj4gdjM6IEZpeGVkIERhbmllbCBWZXR0ZXIncyByZXZpZXcgY29tbWVudHMs
+IGFkZGVkIHRoZSBVQVBJIHN0cnVjdHVyZQ0KPj4gZGVmaW5pdGlvbiBzZWN0aW9uIGluIGtlcm5l
+bCBkb2NzLg0KPj4NCj4+IENjOiBTaGFzaGFuayBTaGFybWEgPHNoYXNoYW5rLnNoYXJtYUBpbnRl
+bC5jb20+DQo+PiBDYzogVmlsbGUgU3lyasOkbMOkIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVs
+LmNvbT4NCj4+IENjOiBNYWFydGVuIExhbmtob3JzdCA8bWFhcnRlbi5sYW5raG9yc3RAbGludXgu
+aW50ZWwuY29tPg0KPj4gQ2M6IE1heGltZSBSaXBhcmQgPG1heGltZS5yaXBhcmRAYm9vdGxpbi5j
+b20+DQo+PiBDYzogU2VhbiBQYXVsIDxzZWFuQHBvb3JseS5ydW4+DQo+PiBDYzogRGF2aWQgQWly
+bGllIDxhaXJsaWVkQGxpbnV4LmllPg0KPj4gQ2M6IERhbmllbCBWZXR0ZXIgPGRhbmllbEBmZnds
+bC5jaD4NCj4+IENjOiBCYXJ0bG9taWVqIFpvbG5pZXJraWV3aWN6IDxiLnpvbG5pZXJraWVAc2Ft
+c3VuZy5jb20+DQo+PiBDYzogIlZpbGxlIFN5cmrDpGzDpCIgPHZpbGxlLnN5cmphbGFAbGludXgu
+aW50ZWwuY29tPg0KPj4gQ2M6IEhhbnMgVmVya3VpbCA8aGFuc3ZlcmtAY2lzY28uY29tPg0KPj4g
+Q2M6IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcNCj4+IENjOiBsaW51eC1mYmRldkB2
+Z2VyLmtlcm5lbC5vcmcNCj4+IFJldmlld2VkLWJ5OiBTZWFuIFBhdWwgPHNlYW5AcG9vcmx5LnJ1
+bj4NCj4+IFNpZ25lZC1vZmYtYnk6IFVtYSBTaGFua2FyIDx1bWEuc2hhbmthckBpbnRlbC5jb20+
+DQo+PiAtLS0NCj4+ICBEb2N1bWVudGF0aW9uL2dwdS9kcm0tdWFwaS5yc3QgIHwgIDkgKysrKysr
+KysrDQo+PiBkcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5jIHwgMzEgKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKysrKw0KPj4gIGluY2x1ZGUvZHJtL2RybV9jb25uZWN0b3IuaCAgICAg
+fCAgMSArDQo+PiAgaW5jbHVkZS9kcm0vZHJtX21vZGVfY29uZmlnLmggICB8ICA0ICsrLS0NCj4+
+ICBpbmNsdWRlL2xpbnV4L2hkbWkuaCAgICAgICAgICAgIHwgIDEgKw0KPj4gIGluY2x1ZGUvdWFw
+aS9kcm0vZHJtX21vZGUuaCAgICAgfCAzNw0KPisrKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKysrKy0NCj4+ICA2IGZpbGVzIGNoYW5nZWQsIDgwIGluc2VydGlvbnMoKyksIDMgZGVsZXRp
+b25zKC0pDQo+Pg0KPj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZ3B1L2RybS11YXBpLnJz
+dA0KPj4gYi9Eb2N1bWVudGF0aW9uL2dwdS9kcm0tdWFwaS5yc3QgaW5kZXggMDU4NzRkMC4uNmIz
+OWUyYyAxMDA2NDQNCj4+IC0tLSBhL0RvY3VtZW50YXRpb24vZ3B1L2RybS11YXBpLnJzdA0KPj4g
+KysrIGIvRG9jdW1lbnRhdGlvbi9ncHUvZHJtLXVhcGkucnN0DQo+PiBAQCAtMzI5LDMgKzMyOSwx
+MiBAQCBEUk1fSU9DVExfTU9ERVNFVF9DVEwNCj4+ICAgICAgbW9kZSBzZXR0aW5nLCBzaW5jZSBv
+biBtYW55IGRldmljZXMgdGhlIHZlcnRpY2FsIGJsYW5rIGNvdW50ZXIgaXMNCj4+ICAgICAgcmVz
+ZXQgdG8gMCBhdCBzb21lIHBvaW50IGR1cmluZyBtb2Rlc2V0LiBNb2Rlcm4gZHJpdmVycyBzaG91
+bGQgbm90DQo+PiAgICAgIGNhbGwgdGhpcyBhbnkgbW9yZSBzaW5jZSB3aXRoIGtlcm5lbCBtb2Rl
+IHNldHRpbmcgaXQgaXMgYSBuby1vcC4NCj4+ICsNCj4+ICtVc2Vyc3BhY2UgQVBJIFN0cnVjdHVy
+ZXMNCj4+ICs9PT09PT09PT09PT09PT09PT09PT09PT0NCj4+ICsNCj4+ICsuLiBrZXJuZWwtZG9j
+OjogaW5jbHVkZS91YXBpL2RybS9kcm1fbW9kZS5oDQo+PiArICAgOmRvYzogb3ZlcnZpZXcNCj4+
+ICsNCj4+ICsuLiBrZXJuZWwtZG9jOjogaW5jbHVkZS91YXBpL2RybS9kcm1fbW9kZS5oDQo+PiAr
+ICAgOmludGVybmFsOg0KPj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVj
+dG9yLmMNCj4+IGIvZHJpdmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYyBpbmRleCBjOWFjOGI5
+Li42YTkzNTI3IDEwMDY0NA0KPj4gLS0tIGEvZHJpdmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3Iu
+Yw0KPj4gKysrIGIvZHJpdmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYw0KPj4gQEAgLTk1Niw2
+ICs5NTYsMzcgQEAgaW50IGRybV9kaXNwbGF5X2luZm9fc2V0X2J1c19mb3JtYXRzKHN0cnVjdA0K
+PmRybV9kaXNwbGF5X2luZm8gKmluZm8sDQo+PiAgICoJICBpcyBubyBsb25nZXIgcHJvdGVjdGVk
+IGFuZCB1c2Vyc3BhY2Ugc2hvdWxkIHRha2UgYXBwcm9wcmlhdGUgYWN0aW9uDQo+PiAgICoJICAo
+d2hhdGV2ZXIgdGhhdCBtaWdodCBiZSkuDQo+PiAgICoNCj4+ICsgKiBIRFJfT1VUUFVUX01FVEFE
+QVRBOg0KPj4gKyAqCUNvbm5lY3RvciBwcm9wZXJ0eSB0byBlbmFibGUgdXNlcnNwYWNlIHRvIHNl
+bmQgSERSIE1ldGFkYXRhIHRvDQo+PiArICoJZHJpdmVyLiBUaGlzIG1ldGFkYXRhIGlzIGJhc2Vk
+IG9uIHRoZSBjb21wb3NpdGlvbiBhbmQgYmxlbmRpbmcNCj4+ICsgKglwb2xpY2llcyBkZWNpZGVk
+IGJ5IHVzZXIsIHRha2luZyBpbnRvIGFjY291bnQgdGhlIGhhcmR3YXJlIGFuZA0KPj4gKyAqCXNp
+bmsgY2FwYWJpbGl0aWVzLiBUaGUgZHJpdmVyIGdldHMgdGhpcyBtZXRhZGF0YSBhbmQgY3JlYXRl
+cyBhDQo+PiArICoJRHluYW1pYyBSYW5nZSBhbmQgTWFzdGVyaW5nIEluZm9mcmFtZSAoRFJNKSBp
+biBjYXNlIG9mIEhETUksDQo+PiArICoJU0RQIHBhY2tldCAoTm9uLWF1ZGlvIElORk9GUkFNRSBT
+RFAgdjEuMykgZm9yIERQLiBUaGlzIGlzIHRoZW4NCj4+ICsgKglzZW50IHRvIHNpbmsuIFRoaXMg
+bm90aWZpZXMgdGhlIHNpbmsgb2YgdGhlIHVwY29taW5nIGZyYW1lJ3MgQ29sb3INCj4+ICsgKglF
+bmNvZGluZyBhbmQgTHVtaW5hbmNlIHBhcmFtZXRlcnMuDQo+PiArICoNCj4+ICsgKglVc2Vyc3Bh
+Y2UgZmlyc3QgbmVlZCB0byBkZXRlY3QgdGhlIEhEUiBjYXBhYmlsaXRpZXMgb2Ygc2luayBieQ0K
+Pj4gKyAqCXJlYWRpbmcgYW5kIHBhcnNpbmcgdGhlIEVESUQuIERldGFpbHMgb2YgSERSIG1ldGFk
+YXRhIGZvciBIRE1JDQo+PiArICoJYXJlIGFkZGVkIGluIENUQSA4NjEuRyBzcGVjLiBGb3IgRFAg
+LCBpdHMgZGVmaW5lZCBpbiBWRVNBIERQDQo+PiArICoJU3RhbmRhcmQgdjEuNC4gSXQgbmVlZHMg
+dG8gdGhlbiBnZXQgdGhlIG1ldGFkYXRhIGluZm9ybWF0aW9uDQo+PiArICoJb2YgdGhlIHZpZGVv
+L2dhbWUvYXBwIGNvbnRlbnQgd2hpY2ggYXJlIGVuY29kZWQgaW4gSERSIChiYXNpY2FsbHkNCj4+
+ICsgKgl1c2luZyBIRFIgdHJhbnNmZXIgZnVuY3Rpb25zKS4gV2l0aCB0aGlzIGluZm9ybWF0aW9u
+IGl0IG5lZWRzIHRvDQo+PiArICoJZGVjaWRlIG9uIGEgYmxlbmRpbmcgcG9saWN5IGFuZCBjb21w
+b3NlIHRoZSByZWxldmFudA0KPj4gKyAqCWxheWVycy9vdmVybGF5cyBpbnRvIGEgY29tbW9uIGZv
+cm1hdC4gT25jZSB0aGlzIGJsZW5kaW5nIGlzIGRvbmUsDQo+PiArICoJdXNlcnNwYWNlIHdpbGwg
+YmUgYXdhcmUgb2YgdGhlIG1ldGFkYXRhIG9mIHRoZSBjb21wb3NlZCBmcmFtZSB0bw0KPj4gKyAq
+CWJlIHNlbmQgdG8gc2luay4gSXQgdGhlbiB1c2VzIHRoaXMgcHJvcGVydHkgdG8gY29tbXVuaWNh
+dGUgdGhpcw0KPj4gKyAqCW1ldGFkYXRhIHRvIGRyaXZlciB3aGljaCB0aGVuIG1ha2UgYSBJbmZv
+ZnJhbWUgcGFja2V0IGFuZCBzZW5kcw0KPj4gKyAqCXRvIHNpbmsgYmFzZWQgb24gdGhlIHR5cGUg
+b2YgZW5jb2RlciBjb25uZWN0ZWQuDQo+PiArICoNCj4+ICsgKglVc2Vyc3BhY2Ugd2lsbCBiZSBy
+ZXNwb25zaWJsZSB0byBkbyBUb25lIG1hcHBpbmcgb3BlcmF0aW9uIGluIGNhc2U6DQo+PiArICoJ
+CS0gU29tZSBsYXllcnMgYXJlIEhEUiBhbmQgb3RoZXJzIGFyZSBTRFINCj4+ICsgKgkJLSBIRFIg
+bGF5ZXJzIGx1bWluYW5jZSBpcyBub3Qgc2FtZSBhcyBzaW5rDQo+PiArICoJSXQgd2lsbCBldmVu
+IG5lZWQgdG8gZG8gY29sb3JzcGFjZSBjb252ZXJzaW9uIGFuZCBnZXQgYWxsIGxheWVycw0KPj4g
+KyAqCXRvIG9uZSBjb21tb24gY29sb3JzcGFjZSBmb3IgYmxlbmRpbmcuIEl0IGNhbiB1c2UgZWl0
+aGVyIEdMLCBNZWRpYQ0KPj4gKyAqCW9yIGRpc3BsYXkgZW5naW5lIHRvIGdldCB0aGlzIGRvbmUg
+YmFzZWQgb24gdGhlIGNhcGFiaWx0aWVzIG9mIHRoZQ0KPj4gKyAqCWFzc29jaWF0ZWQgaGFyZHdh
+cmUuDQo+DQo+SSB0aGluayBpdCdkIGJlIGdvb2QgdG8gYWRkIDEtMiBzZW50ZW5jZXMgaGVyZSBh
+Ym91dCB3aGF0IHRoaXMgbG9va3MgbGlrZSBmb3IgdGhlIGRyaXZlcg0KPnNpZGUuIEUuZy4gd2hp
+Y2ggZnVuY3Rpb24gZHJpdmVycyBuZWVkIHRvIGNhbGwgdG8gc2V0IHVwIGhkciwgaG93IHRvIGdl
+dCBhdCB0aGUgbWV0YWRhdGENCj5hbmQgd2hldGhlciB0aGVyZSdzIGFueSBoZWxwZXJzIGZvciB0
+aGVzZS4NCj4NCj5IZXJlIEknZCBwb2ludCBhdCBoZHJfb3V0cHV0X21ldGFkYXRhLCBoZHJfc2lu
+a19tZXRhZGF0YSwgYW5kDQo+ZHJtX2FkZF9kaXNwbGF5X2luZm8oKSBmb3IgZmlsbGluZyBpbiB0
+aGUgZm9ybWVyLg0KDQpTdXJlLCB3aWxsIGRvIHRoZSBzYW1lLg0KDQo+SSB0aGluayB3aXRoIHRo
+YXQgdGhpcyBpcyBhIHNvbGlkIGRvYyBwYXRjaC4NCj4NCj4+ICsgKg0KPj4gICAqIG1heCBicGM6
+DQo+PiAgICoJVGhpcyByYW5nZSBwcm9wZXJ0eSBpcyB1c2VkIGJ5IHVzZXJzcGFjZSB0byBsaW1p
+dCB0aGUgYml0IGRlcHRoLiBXaGVuDQo+PiAgICoJdXNlZCB0aGUgZHJpdmVyIHdvdWxkIGxpbWl0
+IHRoZSBicGMgaW4gYWNjb3JkYW5jZSB3aXRoIHRoZSB2YWxpZCByYW5nZQ0KPj4gZGlmZiAtLWdp
+dCBhL2luY2x1ZGUvZHJtL2RybV9jb25uZWN0b3IuaCBiL2luY2x1ZGUvZHJtL2RybV9jb25uZWN0
+b3IuaA0KPj4gaW5kZXggNTQ3NjU2MS4uNDdlNzQ5YiAxMDA2NDQNCj4+IC0tLSBhL2luY2x1ZGUv
+ZHJtL2RybV9jb25uZWN0b3IuaA0KPj4gKysrIGIvaW5jbHVkZS9kcm0vZHJtX2Nvbm5lY3Rvci5o
+DQo+PiBAQCAtMTI0NCw2ICsxMjQ0LDcgQEAgc3RydWN0IGRybV9jb25uZWN0b3Igew0KPj4gIAkg
+Ki8NCj4+ICAJc3RydWN0IGxsaXN0X25vZGUgZnJlZV9ub2RlOw0KPj4NCj4+ICsJLyoqIEBoZHJf
+c2lua19tZXRhZGF0YTogSERSIE1ldGFkYXRhIEluZm9ybWF0aW9uIHJlYWQgZnJvbSBzaW5rICov
+DQo+PiAgCXN0cnVjdCBoZHJfc2lua19tZXRhZGF0YSBoZHJfc2lua19tZXRhZGF0YTsNCj4NCj5T
+b21ldGhpbmcgSSByZWFsaXplZCB3aGlsZSByZWFkaW5nIHRoZSBjb2RlOiBUaGlzIHNob3VsZCBw
+cm9iYWJseSBiZSBwdXQgaW50byB0aGUNCj5kcm1fZGlzcGxheV9pbmZvIHN0cnVjdCwgbGlrZSBh
+bGwgdGhlIG90aGVyIHRoaW5ncyB3ZSBwYXJzZSBvdXQgb2YgdGhlIGVkaWQuIEkgdGhpbmsgdGhh
+dA0KPndvdWxkIGJlIGEgbG90IG1vcmUgY29uc2lzdGVudCB3aXRoIHRoZSBjb2RlIC0gdGhlIGRy
+aXZlciBpbnRlcmZhY2UgZnVuY3Rpb24gd2hpY2gNCj5jYWxscyB0aGlzIGNvZGUgaXMgY2FsbGVk
+DQo+ZHJtX2FkZF9kaXNwbGF5X2luZm8oKSBhZnRlciBhbGwuDQo+DQo+Q2FuIHlvdSBwbHMgY2hh
+bmdlIHRoYXQgaW4gYSBmb2xsb3ctdXAgcGF0Y2g/DQoNCk9rLCBJIHdpbGwgZG8gdGhhdCBhcyBh
+IGZvbGxvdy11cC4NCg0KPj4gIH07DQo+Pg0KPj4gZGlmZiAtLWdpdCBhL2luY2x1ZGUvZHJtL2Ry
+bV9tb2RlX2NvbmZpZy5oDQo+PiBiL2luY2x1ZGUvZHJtL2RybV9tb2RlX2NvbmZpZy5oIGluZGV4
+IDRmODhjYzkuLjc1OWQ0NjIgMTAwNjQ0DQo+PiAtLS0gYS9pbmNsdWRlL2RybS9kcm1fbW9kZV9j
+b25maWcuaA0KPj4gKysrIGIvaW5jbHVkZS9kcm0vZHJtX21vZGVfY29uZmlnLmgNCj4+IEBAIC04
+MzcsOCArODM3LDggQEAgc3RydWN0IGRybV9tb2RlX2NvbmZpZyB7DQo+PiAgCXN0cnVjdCBkcm1f
+cHJvcGVydHkgKndyaXRlYmFja19vdXRfZmVuY2VfcHRyX3Byb3BlcnR5Ow0KPj4NCj4+ICAJLyoq
+DQo+PiAtCSAqIGhkcl9vdXRwdXRfbWV0YWRhdGFfcHJvcGVydHk6IENvbm5lY3RvciBwcm9wZXJ0
+eSBjb250YWluaW5nIGhkcg0KPj4gLQkgKiBtZXRhdGRhLiBUaGlzIHdpbGwgYmUgcHJvdmlkZWQg
+YnkgdXNlcnNwYWNlIGNvbXBvc2l0b3JzIGJhc2VkDQo+PiArCSAqIEBoZHJfb3V0cHV0X21ldGFk
+YXRhX3Byb3BlcnR5OiBDb25uZWN0b3IgcHJvcGVydHkgY29udGFpbmluZyBoZHINCj4+ICsJICog
+bWV0YXRhZGEuIFRoaXMgd2lsbCBiZSBwcm92aWRlZCBieSB1c2Vyc3BhY2UgY29tcG9zaXRvcnMg
+YmFzZWQNCj4+ICAJICogb24gSERSIGNvbnRlbnQNCj4+ICAJICovDQo+PiAgCXN0cnVjdCBkcm1f
+cHJvcGVydHkgKmhkcl9vdXRwdXRfbWV0YWRhdGFfcHJvcGVydHk7IGRpZmYgLS1naXQNCj4+IGEv
+aW5jbHVkZS9saW51eC9oZG1pLmggYi9pbmNsdWRlL2xpbnV4L2hkbWkuaCBpbmRleCBlZTU1YmE1
+Li41NWM2ZGI1DQo+PiAxMDA2NDQNCj4+IC0tLSBhL2luY2x1ZGUvbGludXgvaGRtaS5oDQo+PiAr
+KysgYi9pbmNsdWRlL2xpbnV4L2hkbWkuaA0KPj4gQEAgLTM5OCw2ICszOTgsNyBAQCBzc2l6ZV90
+IGhkbWlfdmVuZG9yX2luZm9mcmFtZV9wYWNrX29ubHkoY29uc3Qgc3RydWN0DQo+aGRtaV92ZW5k
+b3JfaW5mb2ZyYW1lICpmcmFtDQo+PiAgICogQHNwZDogc3BkIGluZm9mcmFtZQ0KPj4gICAqIEB2
+ZW5kb3I6IHVuaW9uIG9mIGFsbCB2ZW5kb3IgaW5mb2ZyYW1lcw0KPj4gICAqIEBhdWRpbzogYXVk
+aW8gaW5mb2ZyYW1lDQo+PiArICogQGRybTogRHluYW1pYyBSYW5nZSBhbmQgTWFzdGVyaW5nIGlu
+Zm9mcmFtZQ0KPj4gICAqDQo+PiAgICogVGhpcyBpcyB1c2VkIGJ5IHRoZSBnZW5lcmljIHBhY2sg
+ZnVuY3Rpb24uIFRoaXMgd29ya3Mgc2luY2UgYWxsIGluZm9mcmFtZXMNCj4+ICAgKiBoYXZlIHRo
+ZSBzYW1lIGhlYWRlciB3aGljaCBhbHNvIGluZGljYXRlcyB3aGljaCB0eXBlIG9mIGluZm9mcmFt
+ZQ0KPj4gc2hvdWxkIGJlIGRpZmYgLS1naXQgYS9pbmNsdWRlL3VhcGkvZHJtL2RybV9tb2RlLmgN
+Cj4+IGIvaW5jbHVkZS91YXBpL2RybS9kcm1fbW9kZS5oIGluZGV4IDk5N2E3ZTAuLjVkMzk2NGYg
+MTAwNjQ0DQo+PiAtLS0gYS9pbmNsdWRlL3VhcGkvZHJtL2RybV9tb2RlLmgNCj4+ICsrKyBiL2lu
+Y2x1ZGUvdWFwaS9kcm0vZHJtX21vZGUuaA0KPj4gQEAgLTMzLDYgKzMzLDE1IEBADQo+PiAgZXh0
+ZXJuICJDIiB7DQo+PiAgI2VuZGlmDQo+Pg0KPj4gKy8qKg0KPj4gKyAqIERPQzogb3ZlcnZpZXcN
+Cj4+ICsgKg0KPj4gKyAqIERSTSBleHBvc2VzIG1hbnkgVUFQSSBhbmQgc3RydWN0dXJlIGRlZmlu
+aXRpb24gdG8gaGF2ZSBhDQo+PiArY29uc2lzdGVudA0KPj4gKyAqIGFuZCBzdGFuZGFyZGl6ZWQg
+aW50ZXJmYWNlIHdpdGggdXNlci4NCj4+ICsgKiBVc2Vyc3BhY2UgY2FuIHJlZmVyIHRvIHRoZXNl
+IHN0cnVjdHVyZSBkZWZpbml0aW9ucyBhbmQgVUFQSQ0KPj4gK2Zvcm1hdHMNCj4+ICsgKiB0byBj
+b21tdW5pY2F0ZSB0byBkcml2ZXINCj4+ICsgKi8NCj4+ICsNCj4+ICAjZGVmaW5lIERSTV9DT05O
+RUNUT1JfTkFNRV9MRU4JMzINCj4+ICAjZGVmaW5lIERSTV9ESVNQTEFZX01PREVfTEVOCTMyDQo+
+PiAgI2RlZmluZSBEUk1fUFJPUF9OQU1FX0xFTgkzMg0KPj4gQEAgLTYzMCw3ICs2MzksMjYgQEAg
+c3RydWN0IGRybV9jb2xvcl9sdXQgew0KPj4gIAlfX3UxNiByZXNlcnZlZDsNCj4+ICB9Ow0KPj4N
+Cj4+IC0vKiBIRFIgTWV0YWRhdGEgSW5mb2ZyYW1lIGFzIHBlciA4NjEuRyBzcGVjICovDQo+DQo+
+S2VlcCB0aGUgc3BlYyByZWZlcmVuY2UgaW1vLCBtYXliZSBldmVuIGFkZCBhIG5vdGUgdGhhdCB0
+aGlzIGlzIHN1cHBvc2VkIHRvDQo+cGVyZmVjdGx5IG1hdGNoIGl0Lg0KDQpPaywgd2lsbCBhZGQg
+dGhpcy4NCg0KPj4gKy8qKg0KPj4gKyAqIHN0cnVjdCBoZHJfbWV0YWRhdGFfaW5mb2ZyYW1lIC0g
+SERSIE1ldGFkYXRhIEluZm9mcmFtZSBEYXRhLg0KPj4gKyAqIEBlb3RmOiBFbGVjdHJvLU9wdGlj
+YWwgVHJhbnNmZXIgRnVuY3Rpb24gKEVPVEYpIHVzZWQgaW4gdGhlIHN0cmVhbS4NCj4+ICsgKiBA
+bWV0YWRhdGFfdHlwZTogU3RhdGljX01ldGFkYXRhX0Rlc2NyaXB0b3JfSUQuDQo+PiArICogQGRp
+c3BsYXlfcHJpbWFyaWVzOiBDb2xvciBQcmltYXJpZXMgb2YgdGhlIERhdGEuDQo+PiArICogQGRp
+c3BsYXlfcHJpbWFyaWVzLng6IFggY29yZGluYXRlIG9mIGNvbG9yIHByaW1hcnkuDQo+DQo+V291
+bGQgYmUgZ29vZCB0byBzcGVuZCBhIGZldyBtb3JlIHdvcmRzIGFib3V0ICJpbiB3aGljaCBzdGFu
+ZGFyZC9mb3JtYXQiDQo+dGhpcyBjb2xvciBudW1iZXIgaXMuIEkuZS4gZml4ZWQgcG9pbnQgb3Ig
+d2hhdGV2ZXIsIGFuZCBjb2xvciBzcGFjZS4NCg0KU3VyZSwgd2lsbCBhZGQgbW9yZSBkZXRhaWxz
+IG9uIHRoZXNlIHZhbHVlcy4NCg0KPj4gKyAqIEBkaXNwbGF5X3ByaW1hcmllcy55OiBZIGNvcmRp
+bmF0ZSBvZiBjb2xvciBwcmltYXJ5Lg0KPj4gKyAqIEB3aGl0ZV9wb2ludDogV2hpdGUgUG9pbnQg
+b2YgQ29sb3JzcGFjZSBEYXRhLg0KPj4gKyAqIEB3aGl0ZV9wb2ludC54OiBYIGNvcmRpbmF0ZSBv
+ZiB3aGl0ZXBvaW50IG9mIGNvbG9yIHByaW1hcnkuDQo+PiArICogQHdoaXRlX3BvaW50Lnk6IFkg
+Y29yZGluYXRlIG9mIHdoaXRlcG9pbnQgb2YgY29sb3IgcHJpbWFyeS4NCj4+ICsgKiBAbWF4X2Rp
+c3BsYXlfbWFzdGVyaW5nX2x1bWluYW5jZTogTWF4IE1hc3RlcmluZyBEaXNwbGF5IEx1bWluYW5j
+ZS4NCj4+ICsgKiBAbWluX2Rpc3BsYXlfbWFzdGVyaW5nX2x1bWluYW5jZTogTWluIE1hc3Rlcmlu
+ZyBEaXNwbGF5IEx1bWluYW5jZS4NCj4+ICsgKiBAbWF4X2NsbDogTWF4IENvbnRlbnQgTGlnaHQg
+TGV2ZWwuDQo+PiArICogQG1heF9mYWxsOiBNYXggRnJhbWUgQXZlcmFnZSBMaWdodCBMZXZlbC4N
+Cj4NCj5idHcgZm9yIGxvbmcgc3RydWN0cyBJIHByZWZlciB0aGUgaW5saW5lIGtlcm5lbGRvYyBz
+dHlsZS4gVGhpcyBvbmUgaXMganVzdCBhdCB0aGUgZWRnZSBpbW8uDQoNCk9rLCB3aWxsIGRvIHRo
+YXQuDQoNCj4+ICsgKg0KPj4gKyAqIFdpdGggZHJtIHN1YnN5c3RlbSB1c2luZyBzdHJ1Y3QgZHJt
+X3JlY3QgdG8gbWFuYWdlIHJlY3Rhbmd1bGFyDQo+PiArIGFyZWEgdGhpcw0KPg0KPnN0cnVjdCAm
+ZHJtX3JlY3QgdG8gbWFrZSBpdCBhIGh5cGVybGluay4gT25jZSB3ZSBoYXZlIGRybV9yZWN0IGRv
+Y3VtZW50ZWQNCj46LSkNCg0KVGhpcyBpcyBub3QgcmVxdWlyZWQgaGVyZSwgd2lsbCBkcm9wIHRo
+ZXNlIGNvbW1lbnRzLg0KDQo+PiArICogZXhwb3J0IGl0IHRvIHVzZXItc3BhY2UuDQo+PiArICoN
+Cj4+ICsgKiBDdXJyZW50bHkgdXNlZCBieSBkcm1fbW9kZV9hdG9taWMgYmxvYiBwcm9wZXJ0eSBG
+Ql9EQU1BR0VfQ0xJUFMuDQo+PiArICovDQo+PiAgc3RydWN0IGhkcl9tZXRhZGF0YV9pbmZvZnJh
+bWUgew0KPj4gIAlfX3U4IGVvdGY7DQo+PiAgCV9fdTggbWV0YWRhdGFfdHlwZTsNCj4+IEBAIC02
+NDYsNiArNjc0LDEzIEBAIHN0cnVjdCBoZHJfbWV0YWRhdGFfaW5mb2ZyYW1lIHsNCj4+ICAJX191
+MTYgbWF4X2ZhbGw7DQo+PiAgfTsNCj4+DQo+PiArLyoqDQo+PiArICogc3RydWN0IGhkcl9vdXRw
+dXRfbWV0YWRhdGEgLSBIRFIgb3V0cHV0IG1ldGFkYXRhDQo+PiArICoNCj4+ICsgKiBNZXRhZGF0
+YSBJbmZvcm1hdGlvbiB0byBiZSBwYXNzZWQgZnJvbSB1c2Vyc3BhY2UNCj4+ICsgKiBAbWV0YWRh
+dGFfdHlwZTogU3RhdGljX01ldGFkYXRhX0Rlc2NyaXB0b3JfSUQuDQo+PiArICogQGhkbWlfbWV0
+YWRhdGFfdHlwZTE6IEhEUiBNZXRhZGF0YSBJbmZvZnJhbWUuDQo+DQo+SWYgeW91IHdhbnQgdG8g
+bW92ZSB0aGUgbWVtYmVyIGRvY3MgY2xvc2VyIHRvIHRoZWlyIGRlZmluaXRpb24sIGdvIHdpdGgg
+dGhlIGlubGluZQ0KPnN0eWxlLg0KDQpPaywgd2lsbCB1cGRhdGUgdGhpcy4NCg0KVGhhbmtzIERh
+bmllbCBmb3IgdGhlIHJldmlldyBjb21tZW50cyBhbmQgc3VnZ2VzdGlvbnMuDQpXaWxsIHNlbmQg
+b3V0IHRoZSBuZXh0IHZlcnNpb24gc29vbi4NCg0KUmVnYXJkcywNClVtYSBTaGFua2FyDQoNCj5U
+aGFua3MsIERhbmllbA0KPg0KPj4gKyAqLw0KPj4gIHN0cnVjdCBoZHJfb3V0cHV0X21ldGFkYXRh
+IHsNCj4+ICAJX191MzIgbWV0YWRhdGFfdHlwZTsNCj4+ICAJdW5pb24gew0KPj4gLS0NCj4+IDEu
+OS4xDQo+Pg0KPg0KPi0tDQo+RGFuaWVsIFZldHRlcg0KPlNvZnR3YXJlIEVuZ2luZWVyLCBJbnRl
+bCBDb3Jwb3JhdGlvbg0KPmh0dHA6Ly9ibG9nLmZmd2xsLmNoDQo+X19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCj5kcmktZGV2ZWwgbWFpbGluZyBsaXN0DQo+
+ZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9yZw0KPmh0dHBzOi8vbGlzdHMuZnJlZWRlc2t0
+b3Aub3JnL21haWxtYW4vbGlzdGluZm8vZHJpLWRldmVsDQo

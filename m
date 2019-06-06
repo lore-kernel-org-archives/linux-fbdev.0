@@ -1,46 +1,41 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 19 Jun 2019 11:05:53 +0000
-Subject: Re: [PATCH 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
-Message-Id: <20190619110553.zyz3jqshscqxqtum@holly.lan>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Thu, 06 Jun 2019 09:47:22 +0000
+Subject: [PATCH 5/8] drivers: media: coda: fix warning same module names
+Message-Id: <20190606094722.23816-1-anders.roxell@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190613194326.180889-1-mka@chromium.org>
- <20190613194326.180889-2-mka@chromium.org>
-In-Reply-To: <20190613194326.180889-2-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+To: mchehab@kernel.org, p.zabel@pengutronix.de
+Cc: andrew@lunn.ch, vivien.didelot@gmail.com, f.fainelli@gmail.com, marex@denx.de, stefan@agner.ch, airlied@linux.ie, daniel@ffwll.ch, shawnguo@kernel.org, s.hauer@pengutronix.de, b.zolnierkie@samsung.com, a.hajda@samsung.com, hkallweit1@gmail.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
 
-On Thu, Jun 13, 2019 at 12:43:23PM -0700, Matthias Kaehlcke wrote:
-> Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
-> file.
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+When building with CONFIG_VIDEO_CODA and CONFIG_CODA_FS enabled as
+loadable modules, we see the following warning:
 
-Well spotted. Thanks!
+warning: same module names found:
+  fs/coda/coda.ko
+  drivers/media/platform/coda/coda.ko
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Rework so media coda matches the config fragment. Leaving CODA_FS as is
+since thats a well known module.
 
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+---
+ drivers/media/platform/coda/Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Daniel.
-
-> ---
->  MAINTAINERS | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/MAINTAINERS b/MAINTAINERS
-> index 57f496cff999..d51e74340870 100644
-> --- a/MAINTAINERS
-> +++ b/MAINTAINERS
-> @@ -2857,6 +2857,7 @@ F:	drivers/video/backlight/
->  F:	include/linux/backlight.h
->  F:	include/linux/pwm_backlight.h
->  F:	Documentation/devicetree/bindings/leds/backlight
-> +F:	Documentation/ABI/stable/sysfs-class-backlight
->  
->  BATMAN ADVANCED
->  M:	Marek Lindner <mareklindner@neomailbox.ch>
-> -- 
-> 2.22.0.rc2.383.gf4fbbf30c2-goog
-> 
+diff --git a/drivers/media/platform/coda/Makefile b/drivers/media/platform/coda/Makefile
+index 54e9a73a92ab..588e6bf7c190 100644
+--- a/drivers/media/platform/coda/Makefile
++++ b/drivers/media/platform/coda/Makefile
+@@ -1,6 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
+-coda-objs := coda-common.o coda-bit.o coda-gdi.o coda-h264.o coda-mpeg2.o coda-mpeg4.o coda-jpeg.o
++video-coda-objs := coda-common.o coda-bit.o coda-gdi.o coda-h264.o coda-mpeg2.o coda-mpeg4.o coda-jpeg.o
+ 
+-obj-$(CONFIG_VIDEO_CODA) += coda.o
++obj-$(CONFIG_VIDEO_CODA) += video-coda.o
+ obj-$(CONFIG_VIDEO_IMX_VDOA) += imx-vdoa.o
+-- 
+2.20.1

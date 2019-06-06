@@ -1,38 +1,41 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Fri, 28 Jun 2019 10:15:10 +0000
-Subject: Re: [PATCH RFT 0/4] backlight: gpio: simplify the driver
-Message-Id: <CACRpkdZqsgXoZcHv9z+7oVrf=i9WPSHG=93qhfA=0SkR0Mdfxg@mail.gmail.com>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Thu, 06 Jun 2019 09:47:36 +0000
+Subject: [PATCH 8/8] drivers: regulator: 88pm800: fix warning same module names
+Message-Id: <20190606094736.23970-1-anders.roxell@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190628100253.8385-1-brgl@bgdev.pl>
-In-Reply-To: <20190628100253.8385-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-sh@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: lgirdwood@gmail.com, broonie@kernel.org
+Cc: andrew@lunn.ch, vivien.didelot@gmail.com, f.fainelli@gmail.com, marex@denx.de, stefan@agner.ch, airlied@linux.ie, daniel@ffwll.ch, shawnguo@kernel.org, s.hauer@pengutronix.de, b.zolnierkie@samsung.com, a.hajda@samsung.com, mchehab@kernel.org, p.zabel@pengutronix.de, hkallweit1@gmail.com, lee.jones@linaro.org, davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
 
-On Fri, Jun 28, 2019 at 11:03 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+When building with CONFIG_MFD_88PM800 and CONFIG_REGULATOR_88PM800
+enabled as loadable modules, we see the following warning:
 
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->
-> While working on my other series related to gpio-backlight[1] I noticed
-> that we could simplify the driver if we made the only user of platform
-> data use GPIO lookups and device properties. This series tries to do
-> that.
->
-> The first patch sets up all the required structures in the board file,
-> the second modifies the backlight driver, the third and fourth remove
-> the leftovers.
->
-> This series depends on the three first patches from [1].
->
-> I don't have access to this HW but hopefully this works. Only compile
-> tested.
+warning: same module names found:
+  drivers/regulator/88pm800.ko
+  drivers/mfd/88pm800.ko
 
-This series:
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Rework to rename the name.
 
-Excellent work!
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+---
+ drivers/regulator/Makefile | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Yours,
-Linus Walleij
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 76e78fa449a2..6906938071f5 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -11,7 +11,8 @@ obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
+ obj-$(CONFIG_REGULATOR_USERSPACE_CONSUMER) += userspace-consumer.o
+ 
+ obj-$(CONFIG_REGULATOR_88PG86X) += 88pg86x.o
+-obj-$(CONFIG_REGULATOR_88PM800) += 88pm800.o
++obj-$(CONFIG_REGULATOR_88PM800) += 88pm800-regulator.o
++88pm800-regulator-objs		:= 88pm800.o
+ obj-$(CONFIG_REGULATOR_88PM8607) += 88pm8607.o
+ obj-$(CONFIG_REGULATOR_CPCAP) += cpcap-regulator.o
+ obj-$(CONFIG_REGULATOR_AAT2870) += aat2870-regulator.o
+-- 
+2.20.1

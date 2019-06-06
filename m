@@ -1,81 +1,95 @@
-From: Greg KH <greg@kroah.com>
-Date: Thu, 27 Jun 2019 16:44:05 +0000
-Subject: Re: [PATCH] fbtft: Cleanup line over 80 character warnings
-Message-Id: <20190627164405.GB9692@kroah.com>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Thu, 06 Jun 2019 09:46:57 +0000
+Subject: [PATCH 0/8] fix warnings for same module names
+Message-Id: <20190606094657.23612-1-anders.roxell@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190627121240.31584-1-lukas.s.schneider@fau.de>
-In-Reply-To: <20190627121240.31584-1-lukas.s.schneider@fau.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lukas Schneider <lukas.s.schneider@fau.de>
-Cc: leobras.c@gmail.com, digholebhagyashri@gmail.com, bhanusreemahesh@gmail.com, daniel.vetter@ffwll.ch, der_wolf_@web.de, payal.s.kshirsagar.98@gmail.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, Jannik Moritz <jannik.moritz@fau.de>, linux-kernel@i4.cs.fau.de
+To: andrew@lunn.ch, vivien.didelot@gmail.com, f.fainelli@gmail.com, marex@denx.de, stefan@agner.ch, airlied@linux.ie, daniel@ffwll.ch, shawnguo@kernel.org, s.hauer@pengutronix.de, b.zolnierkie@samsung.com, a.hajda@samsung.com, mchehab@kernel.org, p.zabel@pengutronix.de, hkallweit1@gmail.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, davem@davemloft.net
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org, Anders Roxell <anders.roxell@linaro.org>
 
-On Thu, Jun 27, 2019 at 02:12:40PM +0200, Lukas Schneider wrote:
-> Cleanup the line over 80 character warnings, reported by checkpatch
-> 
-> Signed-off-by: Lukas Schneider <lukas.s.schneider@fau.de>
-> Signed-off-by: Jannik Moritz <jannik.moritz@fau.de>
-> Cc: <linux-kernel@i4.cs.fau.de>
-> ---
->  drivers/staging/fbtft/fbtft-sysfs.c |  3 ++-
->  drivers/staging/fbtft/fbtft.h       | 26 ++++++++++++++++++++++----
->  2 files changed, 24 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/staging/fbtft/fbtft-sysfs.c b/drivers/staging/fbtft/fbtft-sysfs.c
-> index 2a5c630dab87..78d2b81ea2e7 100644
-> --- a/drivers/staging/fbtft/fbtft-sysfs.c
-> +++ b/drivers/staging/fbtft/fbtft-sysfs.c
-> @@ -68,7 +68,8 @@ int fbtft_gamma_parse_str(struct fbtft_par *par, u32 *curves,
->  			ret = get_next_ulong(&curve_p, &val, " ", 16);
->  			if (ret)
->  				goto out;
-> -			curves[curve_counter * par->gamma.num_values + value_counter] = val;
-> +			curves[curve_counter * par->gamma.num_values
-> +				+ value_counter] = val;
+Hi,
 
-Ick, that's horrible to read now, right?
+This patch set addresses warnings that module names are named the
+same, this may lead to a problem that wrong module gets loaded or if one
+of the two same-name modules exports a symbol, this can confuse the
+dependency resolution. and the build may fail.
 
->  			value_counter++;
->  		}
->  		if (value_counter != par->gamma.num_values) {
-> diff --git a/drivers/staging/fbtft/fbtft.h b/drivers/staging/fbtft/fbtft.h
-> index 9b6bdb62093d..cddbfd4ffa10 100644
-> --- a/drivers/staging/fbtft/fbtft.h
-> +++ b/drivers/staging/fbtft/fbtft.h
-> @@ -348,9 +348,25 @@ module_exit(fbtft_driver_module_exit);
->  
->  /* shorthand debug levels */
->  #define DEBUG_LEVEL_1	DEBUG_REQUEST_GPIOS
-> -#define DEBUG_LEVEL_2	(DEBUG_LEVEL_1 | DEBUG_DRIVER_INIT_FUNCTIONS | DEBUG_TIME_FIRST_UPDATE)
-> -#define DEBUG_LEVEL_3	(DEBUG_LEVEL_2 | DEBUG_RESET | DEBUG_INIT_DISPLAY | DEBUG_BLANK | DEBUG_REQUEST_GPIOS | DEBUG_FREE_GPIOS | DEBUG_VERIFY_GPIOS | DEBUG_BACKLIGHT | DEBUG_SYSFS)
-> -#define DEBUG_LEVEL_4	(DEBUG_LEVEL_2 | DEBUG_FB_READ | DEBUG_FB_WRITE | DEBUG_FB_FILLRECT | DEBUG_FB_COPYAREA | DEBUG_FB_IMAGEBLIT | DEBUG_FB_BLANK)
-> +#define DEBUG_LEVEL_2	(DEBUG_LEVEL_1 |		\
-> +			 DEBUG_DRIVER_INIT_FUNCTIONS |	\
-> +			 DEBUG_TIME_FIRST_UPDATE)
-> +#define DEBUG_LEVEL_3	(DEBUG_LEVEL_2 |		\
-> +			 DEBUG_RESET |			\
-> +			 DEBUG_INIT_DISPLAY |		\
-> +			 DEBUG_BLANK |			\
-> +			 DEBUG_REQUEST_GPIOS |		\
-> +			 DEBUG_FREE_GPIOS |		\
-> +			 DEBUG_VERIFY_GPIOS |		\
-> +			 DEBUG_BACKLIGHT |		\
-> +			 DEBUG_SYSFS)
-> +#define DEBUG_LEVEL_4	(DEBUG_LEVEL_2 |		\
-> +			 DEBUG_FB_READ |		\
-> +			 DEBUG_FB_WRITE |		\
-> +			 DEBUG_FB_FILLRECT |		\
-> +			 DEBUG_FB_COPYAREA |		\
-> +			 DEBUG_FB_IMAGEBLIT |		\
-> +			 DEBUG_FB_BLANK)
->  #define DEBUG_LEVEL_5	(DEBUG_LEVEL_3 | DEBUG_UPDATE_DISPLAY)
->  #define DEBUG_LEVEL_6	(DEBUG_LEVEL_4 | DEBUG_LEVEL_5)
->  #define DEBUG_LEVEL_7	0xFFFFFFFF
 
-All of these special debug "levels" need to go away now that the drivers
-are working, and just use the in-kernel debugging macros instead.
+Patch "drivers: net: dsa: realtek: fix warning same module names" and
+"drivers: net: phy: realtek: fix warning same module names" resolves the
+name clatch realtek.ko.
 
-thanks,
+warning: same module names found:
+  drivers/net/phy/realtek.ko
+  drivers/net/dsa/realtek.ko
 
-greg k-h
+
+Patch  "drivers: (video|gpu): fix warning same module names" resolves
+the name clatch mxsfb.ko.
+
+warning: same module names found:
+  drivers/video/fbdev/mxsfb.ko
+  drivers/gpu/drm/mxsfb/mxsfb.ko
+
+Patch "drivers: media: i2c: fix warning same module names" resolves the
+name clatch adv7511.ko however, it seams to refer to the same device
+name in i2c_device_id, does anyone have any guidance how that should be
+solved?
+
+warning: same module names found:
+  drivers/gpu/drm/bridge/adv7511/adv7511.ko
+  drivers/media/i2c/adv7511.ko
+
+
+Patch "drivers: media: coda: fix warning same module names" resolves the
+name clatch coda.ko.
+
+warning: same module names found:
+  fs/coda/coda.ko
+  drivers/media/platform/coda/coda.ko
+
+
+Patch "drivers: net: phy: fix warning same module names" resolves the
+name clatch asix.ko.
+
+warning: same module names found:
+  drivers/net/phy/asix.ko
+  drivers/net/usb/asix.ko
+
+Patch "drivers: mfd: 88pm800: fix warning same module names" and
+"drivers: regulator: 88pm800: fix warning same module names" resolves
+the name clatch 88pm800.ko.
+
+warning: same module names found:
+  drivers/regulator/88pm800.ko
+  drivers/mfd/88pm800.ko
+
+
+Cheers,
+Anders
+
+Anders Roxell (8):
+  drivers: net: dsa: realtek: fix warning same module names
+  drivers: net: phy: realtek: fix warning same module names
+  drivers: (video|gpu): fix warning same module names
+  drivers: media: i2c: fix warning same module names
+  drivers: media: coda: fix warning same module names
+  drivers: net: phy: fix warning same module names
+  drivers: mfd: 88pm800: fix warning same module names
+  drivers: regulator: 88pm800: fix warning same module names
+
+ drivers/gpu/drm/bridge/adv7511/Makefile | 10 +++++-----
+ drivers/gpu/drm/mxsfb/Makefile          |  4 ++--
+ drivers/media/i2c/Makefile              |  3 ++-
+ drivers/media/platform/coda/Makefile    |  4 ++--
+ drivers/mfd/Makefile                    |  7 +++++--
+ drivers/net/dsa/Makefile                |  4 ++--
+ drivers/net/phy/Makefile                |  6 ++++--
+ drivers/regulator/Makefile              |  3 ++-
+ drivers/video/fbdev/Makefile            |  3 ++-
+ 9 files changed, 26 insertions(+), 18 deletions(-)
+
+-- 
+2.20.1

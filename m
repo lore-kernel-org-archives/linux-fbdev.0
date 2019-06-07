@@ -1,36 +1,29 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 25 Jun 2019 16:34:27 +0000
-Subject: [PATCH 05/12] ARM: davinci_all_defconfig: enable GPIO backlight
-Message-Id: <20190625163434.13620-6-brgl@bgdev.pl>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 07 Jun 2019 12:33:12 +0000
+Subject: Re: [PATCH] video: fbdev: cyber2000fb: remove superfluous CONFIG_PCI ifdef
+Message-Id: <2bacb06a-eb78-50fa-3e11-76ce20d89d6b@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
+References: <214f05e0-a448-b1cf-7475-4fa7eeaa9949@samsung.com>
+        <CGME20190607123310eucas1p17702bc47693555b2e3d4354c2d997d03@eucas1p1.samsung.com>
+In-Reply-To: <214f05e0-a448-b1cf-7475-4fa7eeaa9949@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Russell King <linux@armlinux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Enable the GPIO backlight module in davinci_all_defconfig.
+On 5/21/19 3:44 PM, Bartlomiej Zolnierkiewicz wrote:
+> This is a PCI driver and FB_CYBER2000 depends on PCI in Kconfig so
+> there is no need to check for PCI inside the driver code.
+> 
+> Cc: Russell King <linux@armlinux.org.uk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- arch/arm/configs/davinci_all_defconfig | 1 +
- 1 file changed, 1 insertion(+)
+I queued the patch for v5.3.
 
-diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
-index 13d7846c613d..06855b2bce7e 100644
---- a/arch/arm/configs/davinci_all_defconfig
-+++ b/arch/arm/configs/davinci_all_defconfig
-@@ -158,6 +158,7 @@ CONFIG_FB=y
- CONFIG_FIRMWARE_EDID=y
- CONFIG_FB_DA8XX=y
- CONFIG_BACKLIGHT_PWM=m
-+CONFIG_BACKLIGHT_GPIO=m
- CONFIG_FRAMEBUFFER_CONSOLE=y
- CONFIG_LOGO=y
- CONFIG_SOUND=m
--- 
-2.21.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

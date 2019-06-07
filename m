@@ -1,52 +1,28 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 01 Jun 2019 13:25:46 +0000
-Subject: [PATCH AUTOSEL 4.4 42/56] fbdev: sm712fb: fix boot screen glitch when sm712fb replaces VGA
-Message-Id: <20190601132600.27427-42-sashal@kernel.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 07 Jun 2019 12:28:10 +0000
+Subject: Re: [PATCH v2] video: fbdev: imxfb: add COMPILE_TEST support
+Message-Id: <73094ead-2fbc-ba3e-3760-01918673ba30@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190601132600.27427-1-sashal@kernel.org>
-In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
+References: <33fc4837-599d-0d5c-c530-58b283c4c095@samsung.com>
+        <CGME20190607122809eucas1p1d770153cc51e01ee04c531d35d22e32b@eucas1p1.samsung.com>
+In-Reply-To: <33fc4837-599d-0d5c-c530-58b283c4c095@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Yifeng Li <tomli@tomli.me>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Shawn Guo <shawnguo@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, Fabio Estevam <festevam@gmail.com>, =?UTF-8?Q?Uwe_Kleine-K=c3=b6nig?= <u.kleine-koenig@pengutronix.de>, NXP Linux Team <linux-imx@nxp.com>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 
-From: Yifeng Li <tomli@tomli.me>
 
-[ Upstream commit ec1587d5073f29820e358f3a383850d61601d981 ]
+On 5/21/19 12:47 PM, Bartlomiej Zolnierkiewicz wrote:
+> Add COMPILE_TEST support to imxfb driver for better compile
+> testing coverage.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-When the machine is booted in VGA mode, loading sm712fb would cause
-a glitch of random pixels shown on the screen. To prevent it from
-happening, we first clear the entire framebuffer, and we also need
-to stop calling smtcfb_setmode() during initialization, the fbdev
-layer will call it for us later when it's ready.
+I queued the patch for v5.3.
 
-Signed-off-by: Yifeng Li <tomli@tomli.me>
-Tested-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc: Teddy Wang <teddy.wang@siliconmotion.com>
-Cc: <stable@vger.kernel.org>  # v4.4+
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/sm712fb.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 2539c1e6facb4..6a30714a18632 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -1498,7 +1498,11 @@ static int smtcfb_pci_probe(struct pci_dev *pdev,
- 	if (err)
- 		goto failed;
- 
--	smtcfb_setmode(sfb);
-+	/*
-+	 * The screen would be temporarily garbled when sm712fb takes over
-+	 * vesafb or VGA text mode. Zero the framebuffer.
-+	 */
-+	memset_io(sfb->lfb, 0, sfb->fb->fix.smem_len);
- 
- 	err = register_framebuffer(info);
- 	if (err < 0)
--- 
-2.20.1
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

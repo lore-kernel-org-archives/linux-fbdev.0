@@ -1,39 +1,27 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Mon, 24 Jun 2019 20:31:10 +0000
-Subject: [PATCH v2 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
-Message-Id: <20190624203114.93277-2-mka@chromium.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 07 Jun 2019 12:29:42 +0000
+Subject: Re: [PATCH v2] video: fbdev: pxa168fb: add COMPILE_TEST support
+Message-Id: <ce42e607-0a55-0f25-adb7-b110d704d9e8@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190624203114.93277-1-mka@chromium.org>
-In-Reply-To: <20190624203114.93277-1-mka@chromium.org>
+References: <1059f924-7bbb-37b1-42ee-52cad878f572@samsung.com>
+ <CGME20190607122940eucas1p21f149e3c1a9936bc8ce1fcaf8a5d7a12@eucas1p2.samsung.com>
+In-Reply-To: <1059f924-7bbb-37b1-42ee-52cad878f572@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
-file.
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
----
-Changes in v2:
-- added Daniel's 'Acked-by' tag
----
- MAINTAINERS | 1 +
- 1 file changed, 1 insertion(+)
+On 5/21/19 12:49 PM, Bartlomiej Zolnierkiewicz wrote:
+> Add COMPILE_TEST support to pxa168fb driver for better compile
+> testing coverage.
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 57f496cff999..d51e74340870 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2857,6 +2857,7 @@ F:	drivers/video/backlight/
- F:	include/linux/backlight.h
- F:	include/linux/pwm_backlight.h
- F:	Documentation/devicetree/bindings/leds/backlight
-+F:	Documentation/ABI/stable/sysfs-class-backlight
- 
- BATMAN ADVANCED
- M:	Marek Lindner <mareklindner@neomailbox.ch>
--- 
-2.22.0.410.gd8fdbe21b5-goog
+I queued the patch for v5.3.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

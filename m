@@ -1,41 +1,59 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 12 Jun 2019 06:09:29 +0000
-Subject: Re: [PATCH 00/33] fbcon notifier begone v3!
-Message-Id: <20190612060929.GR4797@dell>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 07 Jun 2019 12:21:05 +0000
+Subject: Re: [PATCH 3/3] jz4740_fb: fix DMA API abuse
+Message-Id: <8a149d05-047b-6df1-28fc-184dae9c32df@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
- <CGME20190606073852epcas2p27b586b93869a30e4658581c290960fee@epcas2p2.samsung.com>
- <CAKMK7uHneUFYPiRr10X9xfWTkGtaoQBB=niDMGkAgJ-fgo5=mA@mail.gmail.com>
- <f848b4de-abab-116f-ad68-23348f1a4b76@samsung.com>
- <20190611141635.rowolr37vhalophr@holly.lan>
-In-Reply-To: <20190611141635.rowolr37vhalophr@holly.lan>
+References: <20190509173849.11825-1-hch@lst.de>
+        <CGME20190509173943epcas2p27a7106894d5a235a405a94e84340b416@epcas2p2.samsung.com>
+        <20190509173849.11825-4-hch@lst.de>
+In-Reply-To: <20190509173849.11825-4-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel@ffwll.ch>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Christoph Hellwig <hch@lst.de>
+Cc: Manuel Lauss <manuel.lauss@gmail.com>, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 11 Jun 2019, Daniel Thompson wrote:
-> On Fri, Jun 07, 2019 at 12:07:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > On 6/6/19 9:38 AM, Daniel Vetter wrote:
-> > 
-> > >> - Hash out actual merge plan.
-> > > 
-> > > I'd like to stuff this into drm.git somehow, I guess topic branch works
-> > > too.
-> > 
-> > I would like to have topic branch for this patchset.
-> 
-> From a backlight perspective its Lee Jones who hoovers up the patches
-> and worries about hiding merge conflicts from Linus.
-> 
-> I'll let him follow up if needed but I suspect he'd like an immutable
-> branch to work from also.
 
-Yes please.  Happy to either create one, or receive one.
+On 5/9/19 7:38 PM, Christoph Hellwig wrote:
+> Virtual addresses return from dma(m)_alloc_coherent are opaque in what
+> backs then, and drivers must not poke into them.  Switch the driver
+> to use the generic DMA API mmap helper to avoid these problems.
+Change itself looks fine but the patch description doesn't match what
+the patch is actually doing (there is no conversion to DMA API helper
+because the driver is already using it). Please correct it. Thank you.
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  drivers/video/fbdev/jz4740_fb.c | 7 -------
+>  1 file changed, 7 deletions(-)
+> diff --git a/drivers/video/fbdev/jz4740_fb.c b/drivers/video/fbdev/jz4740_fb.c
+> index b57df83fdbd3..b95cdfa9e0a1 100644
+> --- a/drivers/video/fbdev/jz4740_fb.c
+> +++ b/drivers/video/fbdev/jz4740_fb.c
+> @@ -466,7 +466,6 @@ static int jzfb_alloc_devmem(struct jzfb *jzfb)
+>  {
+>  	int max_videosize = 0;
+>  	struct fb_videomode *mode = jzfb->pdata->modes;
+> -	void *page;
+>  	int i;
+>  
+>  	for (i = 0; i < jzfb->pdata->num_modes; ++mode, ++i) {
+> @@ -491,12 +490,6 @@ static int jzfb_alloc_devmem(struct jzfb *jzfb)
+>  	if (!jzfb->vidmem)
+>  		goto err_free_framedesc;
+>  
+> -	for (page = jzfb->vidmem;
+> -		 page < jzfb->vidmem + PAGE_ALIGN(jzfb->vidmem_size);
+> -		 page += PAGE_SIZE) {
+> -		SetPageReserved(virt_to_page(page));
+> -	}
+> -
+>  	jzfb->framedesc->next = jzfb->framedesc_phys;
+>  	jzfb->framedesc->addr = jzfb->vidmem_phys;
+>  	jzfb->framedesc->id = 0xdeafbead;
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

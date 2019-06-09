@@ -1,62 +1,56 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sat, 01 Jun 2019 13:25:37 +0000
-Subject: [PATCH AUTOSEL 4.4 33/56] fbdev: fix WARNING in __alloc_pages_nodemask bug
-Message-Id: <20190601132600.27427-33-sashal@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Sun, 09 Jun 2019 07:54:29 +0000
+Subject: Re: [PATCH v3 10/33] docs: fb: convert docs to ReST and rename to *.rst
+Message-Id: <CAMuHMdUyvZ89=P4GOY-BkyS45cj66STgZe9gN3q0L+sj-Wc+wg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190601132600.27427-1-sashal@kernel.org>
-In-Reply-To: <20190601132600.27427-1-sashal@kernel.org>
+References: <cover.1560045490.git.mchehab+samsung@kernel.org>
+ <f7f9c692a870f836e5657b8a763d751b6ac0e86e.1560045490.git.mchehab+samsung@kernel.org>
+In-Reply-To: <f7f9c692a870f836e5657b8a763d751b6ac0e86e.1560045490.git.mchehab+samsung@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, Jiufei Xue <jiufei.xue@linux.alibaba.com>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Bernie Thompson <bernie@plugable.com>, Jonathan Corbet <corbet@lwn.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maik Broemme <mbroemme@libmpq.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Mauro Carvalho Chehab <mchehab@infradead.org>, Michal Januszewski <spock@gentoo.org>, Jiri Slaby <jslaby@suse.com>, Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>
 
-From: Jiufei Xue <jiufei.xue@linux.alibaba.com>
+Hi Mauro,
 
-[ Upstream commit 8c40292be9169a9cbe19aadd1a6fc60cbd1af82f ]
+On Sun, Jun 9, 2019 at 4:29 AM Mauro Carvalho Chehab
+<mchehab+samsung@kernel.org> wrote:
+> The conversion is actually:
+>   - add blank lines and identation in order to identify paragraphs;
+>   - fix tables markups;
+>   - add some lists markups;
+>   - mark literal blocks;
+>   - adjust title markups.
+>
+> At its new index.rst, let's add a :orphan: while this is not linked to
+> the main index.rst file, in order to avoid build warnings.
+>
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 
-Syzkaller hit 'WARNING in __alloc_pages_nodemask' bug.
+Thanks!
 
-WARNING: CPU: 1 PID: 1473 at mm/page_alloc.c:4377
-__alloc_pages_nodemask+0x4da/0x2130
-Kernel panic - not syncing: panic_on_warn set ...
+> --- a/Documentation/fb/framebuffer.txt
+> +++ b/Documentation/fb/framebuffer.rst
+> @@ -1,5 +1,6 @@
+> -                       The Frame Buffer Device
+> -                       -----------------------
+> +===========> +The Frame Buffer Device
+> +===========>
+>  Maintained by Geert Uytterhoeven <geert@linux-m68k.org>
 
-Call Trace:
- alloc_pages_current+0xb1/0x1e0
- kmalloc_order+0x1f/0x60
- kmalloc_order_trace+0x1d/0x120
- fb_alloc_cmap_gfp+0x85/0x2b0
- fb_set_user_cmap+0xff/0x370
- do_fb_ioctl+0x949/0xa20
- fb_ioctl+0xdd/0x120
- do_vfs_ioctl+0x186/0x1070
- ksys_ioctl+0x89/0xa0
- __x64_sys_ioctl+0x74/0xb0
- do_syscall_64+0xc8/0x550
- entry_SYSCALL_64_after_hwframe+0x49/0xbe
+I'm happy to see this line dropped ;-)
 
-This is a warning about order >= MAX_ORDER and the order is from
-userspace ioctl. Add flag __NOWARN to silence this warning.
+>  Last revised: May 10, 2001
 
-Signed-off-by: Jiufei Xue <jiufei.xue@linux.alibaba.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/core/fbcmap.c | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/core/fbcmap.c b/drivers/video/fbdev/core/fbcmap.c
-index 68a113594808f..2811c4afde01c 100644
---- a/drivers/video/fbdev/core/fbcmap.c
-+++ b/drivers/video/fbdev/core/fbcmap.c
-@@ -94,6 +94,8 @@ int fb_alloc_cmap_gfp(struct fb_cmap *cmap, int len, int transp, gfp_t flags)
- 	int size = len * sizeof(u16);
- 	int ret = -ENOMEM;
- 
-+	flags |= __GFP_NOWARN;
-+
- 	if (cmap->len != len) {
- 		fb_dealloc_cmap(cmap);
- 		if (!len)
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.20.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds

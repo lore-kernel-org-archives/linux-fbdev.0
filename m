@@ -1,37 +1,38 @@
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Thu, 20 Jun 2019 19:55:44 +0000
-Subject: Re: [PATCH] docs: fb: Add TER16x32 to the available font names
-Message-Id: <20190620135544.4a56b62a@lwn.net>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 10 Jun 2019 23:37:38 +0000
+Subject: [PATCH 1/2] dt-bindings: pwm-backlight: Add 'max-brightness' property
+Message-Id: <20190610233739.29477-1-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190619053943.6320-1-tiwai@suse.de>
-In-Reply-To: <20190619053943.6320-1-tiwai@suse.de>
+References: <20170628111632.22582-1-enric.balletbo@collabora.com>
+In-Reply-To: <20170628111632.22582-1-enric.balletbo@collabora.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 
-On Wed, 19 Jun 2019 07:39:43 +0200
-Takashi Iwai <tiwai@suse.de> wrote:
+Add an optional 'max-brightness' property, which is used to specify
+the number of brightness levels (max-brightness + 1) when the node
+has no 'brightness-levels' table.
 
-> The new font is available since recently.
-> 
-> Signed-off-by: Takashi Iwai <tiwai@suse.de>
-> ---
->  Documentation/fb/fbcon.rst | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
-> index cfb9f7c38f18..1da65b9000de 100644
-> --- a/Documentation/fb/fbcon.rst
-> +++ b/Documentation/fb/fbcon.rst
-> @@ -82,7 +82,7 @@ C. Boot options
->  
->  	Select the initial font to use. The value 'name' can be any of the
->  	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
-> -	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, VGA8x16, VGA8x8.
-> +	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ .../devicetree/bindings/leds/backlight/pwm-backlight.txt       | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Applied, thanks.
-
-jon
+diff --git a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+index 64fa2fbd98c9..98f4ba626054 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
++++ b/Documentation/devicetree/bindings/leds/backlight/pwm-backlight.txt
+@@ -27,6 +27,9 @@ Optional properties:
+                             resolution pwm duty cycle can be used without
+                             having to list out every possible value in the
+                             brightness-level array.
++  - max-brightness: Maximum brightness value. Used to specify the number of
++                    brightness levels (max-brightness + 1) when the node
++                    has no 'brightness-levels' table.
+ 
+ [0]: Documentation/devicetree/bindings/pwm/pwm.txt
+ [1]: Documentation/devicetree/bindings/gpio/gpio.txt
+-- 
+2.22.0.rc2.383.gf4fbbf30c2-goog

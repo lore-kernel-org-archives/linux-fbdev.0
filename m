@@ -1,113 +1,140 @@
-From: Anders Roxell <anders.roxell@linaro.org>
-Date: Tue, 11 Jun 2019 16:28:37 +0000
-Subject: Re: [PATCH 5/8] drivers: media: coda: fix warning same module names
-Message-Id: <CADYN=9L36CadXu2csbQhvey=20NTte-a+a8i08w=pP-+VdTuLA@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 10 Jun 2019 23:37:39 +0000
+Subject: [PATCH 2/2] backlight: pwm_bl: Get number of brightness levels for CIE 1931 from the device tree
+Message-Id: <20190610233739.29477-2-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190606094722.23816-1-anders.roxell@linaro.org>
- <d6b79ee0-07c6-ad81-16b0-8cf929cc214d@xs4all.nl> <CADYN=9KY5=FzrkC7MKj9QnG-eM1NVuL00w8Xv4yU2r05rhr7WQ@mail.gmail.com>
- <c2ff2c77-5c14-4bc4-f59c-7012d272ec76@thinci.com> <1560240943.13886.1.camel@pengutronix.de>
- <221c8ef8-7adc-4383-93c9-9031dca590f0@xs4all.nl> <CADYN=9K7GwPGM_Eh5q-OZ9rcEPAjXw4BXy-m3a=QxmGuVruCUw@mail.gmail.com>
- <CAAEAJfC9vja5WwsNc5+MTVHLFg_P3zG=OZt_CuRR5eG-3iWD9Q@mail.gmail.com>
-In-Reply-To: <CAAEAJfC9vja5WwsNc5+MTVHLFg_P3zG=OZt_CuRR5eG-3iWD9Q@mail.gmail.com>
+References: <20190610233739.29477-1-mka@chromium.org>
+In-Reply-To: <20190610233739.29477-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, Philipp Zabel <p.zabel@pengutronix.de>, Matt Redfearn <matt.redfearn@thinci.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, "andrew@lunn.ch" <andrew@lunn.ch>, "vivien.didelot@gmail.com" <vivien.didelot@gmail.com>, "f.fainelli@gmail.com" <f.fainelli@gmail.com>, "marex@denx.de" <marex@denx.de>, "stefan@agner.ch" <stefan@agner.ch>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, "shawnguo@kernel.org" <shawnguo@kernel.org>, "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "a.hajda@samsung.com" <a.hajda@samsung.com>, "hkallweit1@gmail.com" <hkallweit1@gmail.com>, Lee Jones <lee.jones@linaro.org>, Liam Girdwood <lgirdwood@gmail.com>, Mark
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Cc: dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Matthias Kaehlcke <mka@chromium.org>
 
-On Tue, 11 Jun 2019 at 18:18, Ezequiel Garcia
-<ezequiel@vanguardiasur.com.ar> wrote:
->
->
->
-> On Tue, Jun 11, 2019, 1:01 PM Anders Roxell <anders.roxell@linaro.org> wrote:
->>
->> On Tue, 11 Jun 2019 at 10:21, Hans Verkuil <hverkuil@xs4all.nl> wrote:
->> >
->> > On 6/11/19 10:15 AM, Philipp Zabel wrote:
->> > > Hi,
->> > >
->> > > On Mon, 2019-06-10 at 13:14 +0000, Matt Redfearn wrote:
->> > >>
->> > >> On 10/06/2019 14:03, Anders Roxell wrote:
->> > >>> On Thu, 6 Jun 2019 at 12:13, Hans Verkuil <hverkuil@xs4all.nl> wrote:
->> > >>>>
->> > >>>> On 6/6/19 11:47 AM, Anders Roxell wrote:
->> > >>>>> When building with CONFIG_VIDEO_CODA and CONFIG_CODA_FS enabled as
->> > >>>>> loadable modules, we see the following warning:
->> > >>>>>
->> > >>>>> warning: same module names found:
->> > >>>>>    fs/coda/coda.ko
->> > >>>>>    drivers/media/platform/coda/coda.ko
->> > >>>>>
->> > >>>>> Rework so media coda matches the config fragment. Leaving CODA_FS as is
->> > >>>>> since thats a well known module.
->> > >>>>>
->> > >>>>> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
->> > >>>>> ---
->> > >>>>>   drivers/media/platform/coda/Makefile | 4 ++--
->> > >>>>>   1 file changed, 2 insertions(+), 2 deletions(-)
->> > >>>>>
->> > >>>>> diff --git a/drivers/media/platform/coda/Makefile b/drivers/media/platform/coda/Makefile
->> > >>>>> index 54e9a73a92ab..588e6bf7c190 100644
->> > >>>>> --- a/drivers/media/platform/coda/Makefile
->> > >>>>> +++ b/drivers/media/platform/coda/Makefile
->> > >>>>> @@ -1,6 +1,6 @@
->> > >>>>>   # SPDX-License-Identifier: GPL-2.0-only
->> > >>>>>
->> > >>>>> -coda-objs := coda-common.o coda-bit.o coda-gdi.o coda-h264.o coda-mpeg2.o coda-mpeg4.o coda-jpeg.o
->> > >>>>> +video-coda-objs := coda-common.o coda-bit.o coda-gdi.o coda-h264.o coda-mpeg2.o coda-mpeg4.o coda-jpeg.o
->> > >>>>>
->> > >>>>> -obj-$(CONFIG_VIDEO_CODA) += coda.o
->> > >>>>> +obj-$(CONFIG_VIDEO_CODA) += video-coda.o
->> > >>>>
->> > >>>> How about imx-coda? video-coda suggests it is part of the video subsystem,
->> > >>>> which it isn't.
->> > >>>
->> > >>> I'll resend a v2 shortly with imx-coda instead.
->> > >
->> > > I'd be in favor of calling it "coda-vpu" instead.
->> >
->> > Fine by me!
->> >
->> > >
->> > >> What about other vendor SoCs implementing the Coda IP block which are
->> > >> not an imx? I'd prefer a more generic name - maybe media-coda.
->> > >
->> > > Right, this driver can be used on other SoCs [1].
->> >
->> > Good point.
->>
->> OK, so I'll change it to 'media-coda'.
->>
->>
->>
->
-> As suggested by Philipp, coda-vpu seems the most accurate name.
+Commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
+linearly to human eye") uses pwm_period / hweight32(pwm_period) as
+as heuristic to determine the number of brightness levels when the DT
+doesn't provide a brightness level table. This heuristic is broken
+and can result in excessively large brightness tables.
 
-urgh, that correct.
+Instead of using the heuristic try to retrieve the number of
+brightness levels from the device tree (property 'max-brightness'
++ 1). If the value is not specified use a default of 256 levels.
 
-Thanks,
-Anders
+Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ drivers/video/backlight/pwm_bl.c | 59 ++++++++++++--------------------
+ 1 file changed, 21 insertions(+), 38 deletions(-)
 
->
-> Thanks,
-> Ezequiel
->
->
->
->> Cheers,
->> Anders
->>
->> >
->> > Regards,
->> >
->> >         Hans
->> >
->> > >
->> > > [1] https://www.mail-archive.com/linux-media@vger.kernel.org/msg146498.html
->> > >
->> > > regards
->> > > Philipp
->> > >
->> >
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index fb45f866b923..2913cbe9cfcb 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -194,38 +194,19 @@ int pwm_backlight_brightness_default(struct device *dev,
+ 				     struct platform_pwm_backlight_data *data,
+ 				     unsigned int period)
+ {
+-	unsigned int counter = 0;
+-	unsigned int i, n;
++	unsigned int i;
++	unsigned int nlevels = data->max_brightness + 1;
+ 	u64 retval;
+ 
+-	/*
+-	 * Count the number of bits needed to represent the period number. The
+-	 * number of bits is used to calculate the number of levels used for the
+-	 * brightness-levels table, the purpose of this calculation is have a
+-	 * pre-computed table with enough levels to get linear brightness
+-	 * perception. The period is divided by the number of bits so for a
+-	 * 8-bit PWM we have 255 / 8 = 32 brightness levels or for a 16-bit PWM
+-	 * we have 65535 / 16 = 4096 brightness levels.
+-	 *
+-	 * Note that this method is based on empirical testing on different
+-	 * devices with PWM of 8 and 16 bits of resolution.
+-	 */
+-	n = period;
+-	while (n) {
+-		counter += n % 2;
+-		n >>= 1;
+-	}
+-
+-	data->max_brightness = DIV_ROUND_UP(period, counter);
+-	data->levels = devm_kcalloc(dev, data->max_brightness,
++	data->levels = devm_kcalloc(dev, nlevels,
+ 				    sizeof(*data->levels), GFP_KERNEL);
+ 	if (!data->levels)
+ 		return -ENOMEM;
+ 
+ 	/* Fill the table using the cie1931 algorithm */
+-	for (i = 0; i < data->max_brightness; i++) {
++	for (i = 0; i < nlevels; i++) {
+ 		retval = cie1931((i * PWM_LUMINANCE_SCALE) /
+-				 data->max_brightness, PWM_LUMINANCE_SCALE) *
++				 nlevels, PWM_LUMINANCE_SCALE) *
+ 				 period;
+ 		retval = DIV_ROUND_CLOSEST_ULL(retval, PWM_LUMINANCE_SCALE);
+ 		if (retval > UINT_MAX)
+@@ -233,8 +214,7 @@ int pwm_backlight_brightness_default(struct device *dev,
+ 		data->levels[i] = (unsigned int)retval;
+ 	}
+ 
+-	data->dft_brightness = data->max_brightness / 2;
+-	data->max_brightness--;
++	data->dft_brightness = nlevels / 2;
+ 
+ 	return 0;
+ }
+@@ -272,8 +252,13 @@ static int pwm_backlight_parse_dt(struct device *dev,
+ 	 * set a default table of brightness levels will be used.
+ 	 */
+ 	prop = of_find_property(node, "brightness-levels", &length);
+-	if (!prop)
++	if (!prop) {
++		if (of_property_read_u32(node, "max-brightness",
++					 &data->max_brightness))
++			data->max_brightness = 255;
++
+ 		return 0;
++	}
+ 
+ 	data->max_brightness = length / sizeof(u32);
+ 
+@@ -565,13 +550,10 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 			pb->levels = data->levels;
+ 		}
+-	} else if (!data->max_brightness) {
++	} else if (node) {
+ 		/*
+-		 * If no brightness levels are provided and max_brightness is
+-		 * not set, use the default brightness table. For the DT case,
+-		 * max_brightness is set to 0 when brightness levels is not
+-		 * specified. For the non-DT case, max_brightness is usually
+-		 * set to some value.
++		 * If no brightness levels are provided use the default
++		 * brightness table.
+ 		 */
+ 
+ 		/* Get the PWM period (in nanoseconds) */
+@@ -591,12 +573,13 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 			pb->levels = data->levels;
+ 		}
+-	} else {
+-		/*
+-		 * That only happens for the non-DT case, where platform data
+-		 * sets the max_brightness value.
+-		 */
++	} else if (data->max_brightness) {
++		/* non-DT case, max_brightness value set in platform data. */
+ 		pb->scale = data->max_brightness;
++	} else {
++		dev_err(&pdev->dev, "max brightness is not specified\n");
++		ret = -EINVAL;
++		goto err_alloc;
+ 	}
+ 
+ 	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+-- 
+2.22.0.rc2.383.gf4fbbf30c2-goog

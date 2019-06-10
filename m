@@ -1,33 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 10:27:51 +0000
-Subject: Re: [PATCH 3/3] video: fbdev: don't print error message on framebuffer_alloc() failure
-Message-Id: <4a534d3e-0ce6-9dfd-b3f2-e69aa0a1fcd8@samsung.com>
+From: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Date: Mon, 10 Jun 2019 15:12:37 +0000
+Subject: Re: [PATCH] efifb: BGRT: Add check for new BGRT status field rotation bits
+Message-Id: <CAKv+Gu8bLcDROFNFfqHaN1Z+EK5bnXMNDSJbBK-pCmq5XP_kBw@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <3da197ed-a701-2aa7-d775-2bdbe9deab4a@samsung.com>
-        <CGME20190628102754eucas1p283e1ad580a242323137a4b6c7024028c@eucas1p2.samsung.com>
-In-Reply-To: <3da197ed-a701-2aa7-d775-2bdbe9deab4a@samsung.com>
+References: <20190529154635.2659-1-hdegoede@redhat.com>
+In-Reply-To: <20190529154635.2659-1-hdegoede@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Cc: =?UTF-8?Q?Bruno_Pr=c3=a9mont?= <bonbons@linux-vserver.org>, Jiri Kosina <jikos@kernel.org>, Benjamin Tissoires <benjamin.tissoires@redhat.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: linux-efi <linux-efi@vger.kernel.org>, "open list:EFIFB FRAMEBUFFER DRIVER" <linux-fbdev@vger.kernel.org>, Peter Jones <pjones@redhat.com>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
+On Wed, 29 May 2019 at 17:46, Hans de Goede <hdegoede@redhat.com> wrote:
+>
+> Starting with ACPI 6.2 bits 1 and 2 of the BGRT status field are no longer
+> reserved. These bits are now used to indicate if the image needs to be
+> rotated before being displayed.
+>
+> The efifb code does not support rotating the image before copying it to
+> the screen.
+>
+> This commit adds a check for these new bits and if they are set leaves the
+> fb contents as is instead of trying to use the un-rotated BGRT image.
+>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-On 6/14/19 4:51 PM, Bartlomiej Zolnierkiewicz wrote:
-> framebuffer_alloc() can fail only on kzalloc() memory allocation
-> failure and since kzalloc() will print error message in such case
-> we can omit printing extra error message in drivers (which BTW is
-> what the majority of framebuffer_alloc() users is doing already).
->=20
-> Cc: "Bruno Pr=C3=A9mont" <bonbons@linux-vserver.org>
-> Cc: Jiri Kosina <jikos@kernel.org>
-> Cc: Benjamin Tissoires <benjamin.tissoires@redhat.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Acked-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 
-I queued the patch for v5.3.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+> ---
+>  drivers/video/fbdev/efifb.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+>
+> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+> index 9f39f0c360e0..dfa8dd47d19d 100644
+> --- a/drivers/video/fbdev/efifb.c
+> +++ b/drivers/video/fbdev/efifb.c
+> @@ -169,6 +169,11 @@ static void efifb_show_boot_graphics(struct fb_info *info)
+>                 return;
+>         }
+>
+> +       if (bgrt_tab.status & 0x06) {
+> +               pr_info("efifb: BGRT rotation bits set, not showing boot graphics\n");
+> +               return;
+> +       }
+> +
+>         /* Avoid flashing the logo if we're going to print std probe messages */
+>         if (console_loglevel > CONSOLE_LOGLEVEL_QUIET)
+>                 return;
+> --
+> 2.21.0
+>

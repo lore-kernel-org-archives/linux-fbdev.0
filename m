@@ -1,45 +1,38 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Sun, 02 Jun 2019 14:11:35 +0000
-Subject: Re: [PATCH AUTOSEL 4.4 44/56] video: imsttfb: fix potential NULL pointer dereferences
-Message-Id: <20190602141135.GP12898@sasha-vm>
+From: Colin King <colin.king@canonical.com>
+Date: Tue, 11 Jun 2019 17:09:13 +0000
+Subject: [PATCH][next] video: fbdev: atmel_lcdfb: remove redundant initialization to variable ret
+Message-Id: <20190611170913.20913-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190601132600.27427-1-sashal@kernel.org>
- <20190601132600.27427-44-sashal@kernel.org>
- <20190601161929.GA5028@kroah.com>
-In-Reply-To: <20190601161929.GA5028@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, Kangjie Lu <kjlu@umn.edu>, linux-kernel@vger.kernel.org, Finn Thain <fthain@telegraphics.com.au>, stable@vger.kernel.org, Aditya Pakki <pakki001@umn.edu>
+To: Nicolas Ferre <nicolas.ferre@microchip.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Jun 01, 2019 at 09:19:29AM -0700, Greg Kroah-Hartman wrote:
->On Sat, Jun 01, 2019 at 09:25:48AM -0400, Sasha Levin wrote:
->> From: Kangjie Lu <kjlu@umn.edu>
->>
->> [ Upstream commit 1d84353d205a953e2381044953b7fa31c8c9702d ]
->>
->> In case ioremap fails, the fix releases resources and returns
->> -ENOMEM to avoid NULL pointer dereferences.
->>
->> Signed-off-by: Kangjie Lu <kjlu@umn.edu>
->> Cc: Aditya Pakki <pakki001@umn.edu>
->> Cc: Finn Thain <fthain@telegraphics.com.au>
->> Cc: Rob Herring <robh@kernel.org>
->> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
->> [b.zolnierkie: minor patch summary fixup]
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
->> Signed-off-by: Sasha Levin <sashal@kernel.org>
->> ---
->>  drivers/video/fbdev/imsttfb.c | 5 +++++
->>  1 file changed, 5 insertions(+)
->
->Why only 4.4.y?  Shouldn't this be queued up for everything or none?
+From: Colin Ian King <colin.king@canonical.com>
 
-It's on all branches. Something weird happened with git-send-email and
-mail.kernel.org, and apparently the rest of the branches didn't get all
-their mails sent out. Sadly I don't have the logs for that :(
+Currently variable ret is being initialized with -ENOENT however that
+value is never read and ret is being re-assigned later on. Hence this
+assignment is redundant and can be removed.
 
---
-Thanks,
-Sasha
+Addresses-Coverity: ("Unused value")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/atmel_lcdfb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
+index fb117ccbeab3..930cc3f92e01 100644
+--- a/drivers/video/fbdev/atmel_lcdfb.c
++++ b/drivers/video/fbdev/atmel_lcdfb.c
+@@ -950,7 +950,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
+ 	struct fb_videomode fb_vm;
+ 	struct gpio_desc *gpiod;
+ 	struct videomode vm;
+-	int ret = -ENOENT;
++	int ret;
+ 	int i;
+ 
+ 	sinfo->config = (struct atmel_lcdfb_config*)
+-- 
+2.20.1

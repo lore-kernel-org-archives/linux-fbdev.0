@@ -1,7 +1,7 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 07 Jun 2019 14:43:54 +0000
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Tue, 11 Jun 2019 14:16:35 +0000
 Subject: Re: [PATCH 00/33] fbcon notifier begone v3!
-Message-Id: <CAKMK7uFpOVGm1TEJfbPM14joPRqgYha5c_xDng+MOOusMc1Hdw@mail.gmail.com>
+Message-Id: <20190611141635.rowolr37vhalophr@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190528090304.9388-1-daniel.vetter@ffwll.ch>
  <CGME20190606073852epcas2p27b586b93869a30e4658581c290960fee@epcas2p2.samsung.com>
@@ -12,17 +12,15 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Daniel Thompson <daniel.thompson@linaro.org>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Daniel Vetter <daniel.vetter@ffwll.ch>, Intel Graphics Development <intel-gfx@lists.freedesktop.org>, LKML <linux-kernel@vger.kernel.org>, DRI Development <dri-devel@lists.freedesktop.org>, lee.jones@linaro.org
 
-On Fri, Jun 7, 2019 at 12:07 PM Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
->
+On Fri, Jun 07, 2019 at 12:07:55PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> 
 > On 6/6/19 9:38 AM, Daniel Vetter wrote:
 > > Hi Bart,
->
+> 
 > Hi Daniel,
->
+> 
 > > On Tue, May 28, 2019 at 11:02:31AM +0200, Daniel Vetter wrote:
 > >> Hi all,
 > >>
@@ -46,21 +44,33 @@ On Fri, Jun 7, 2019 at 12:07 PM Bartlomiej Zolnierkiewicz
 > >>
 > >> - Ack from Daniel Thompson for the backlight bits, he wanted to check the
 > >>   big picture.
-> >
+> > 
 > > I think Daniel is still on vacation until next week or so.
-> >
+
+Thanks for spotting that. As it happens the e-mail asking for extra detail
+was just about the last thing I sent before going on holiday (exactly to
+try and avoid round trips this wee ;-) ).
+
+
+> > 
 > >> - Hash out actual merge plan.
-> >
+> > 
 > > I'd like to stuff this into drm.git somehow, I guess topic branch works
 > > too.
->
+> 
 > I would like to have topic branch for this patchset.
 
-Do you plan to prep that, or should I? Doesn't really matter to me,
-and assuming Daniel Thompson doesn't have any last minute concerns
-should still be enough time to get it all sorted and have a few weeks
-of testing left before the merge window.
+From a backlight perspective its Lee Jones who hoovers up the patches
+and worries about hiding merge conflicts from Linus.
 
+I'll let him follow up if needed but I suspect he'd like an immutable
+branch to work from also.
+
+
+Daniel.
+
+
+> 
 > > Long term I think we need to reconsider how we handle fbdev, at least the
 > > core/fbcon pieces. Since a few years all the work in that area has been
 > > motivated by drm, and pushed by drm contributors. Having that maintained
@@ -68,7 +78,7 @@ of testing left before the merge window.
 > > sense, and we ended up merging almost everything through some drm tree.
 > > That one time we didn't (for some panel rotation stuff) it resulted in
 > > some good suprises.
-> >
+> > 
 > > I think best solution is if we put the core and fbcon bits into drm-misc,
 > > as group maintained infrastructure piece. All the other gfx infra pieces
 > > are maintained in there already too. You'd obviously get commit rights.
@@ -76,47 +86,29 @@ of testing left before the merge window.
 > > - drivers/video/fbdev
 > > - drivers/video/*c
 > > - drivers/video/console
->
+> 
 > Sounds fine to me.
->
+> 
 > > I don't really care about what happens with the actual fbdev drivers
 > > (aside from the drm one in drm_fb_helper.c, but that's already maintained
 > > as part of drm). I guess we could also put those into drm-misc, or as a
 > > separate tree, depending what you want.
-> >
+> > 
 > > Thoughts?
->
+> 
 > I would like to handle fbdev changes for v5.3 merge window using fbdev
 > tree but after that everything (including changes to fbdev drivers) can go
 > through drm-misc tree.
-
-Fully agreed, no need to rush anything here. For the drm-misc account
-you need to request an SSH legacy account here by filing a issue:
-
-https://gitlab.freedesktop.org/freedesktop/freedesktop/issues/new
-
-Select the "New SSH account" template, it has instructions with
-everything that's needed.
-
-For the getting started howto, see
-https://drm.pages.freedesktop.org/maintainer-tools/getting-started.html
-
-If that all looks good and you're set up I think best to test-drive
-the entire process with the MAINTAINERS patch to change the git repo
-for 5.4.
-
-Cheers, Daniel
-
-
+> 
 > Best regards,
 > --
 > Bartlomiej Zolnierkiewicz
 > Samsung R&D Institute Poland
 > Samsung Electronics
->
+> 
 > > Cheers, Daniel
-> >
-> >
+> > 
+> > 
 > >>
 > >> I'm also cc'ing the entire pile to a lot more people on request.
 > >>
@@ -189,15 +181,8 @@ Cheers, Daniel
 > >> --
 > >> 2.20.1
 > >>
-> >
+> > 
 > > --
 > > Daniel Vetter
 > > Software Engineer, Intel Corporation
 > > http://blog.ffwll.ch
-
-
-
--- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-+41 (0) 79 365 57 48 - http://blog.ffwll.ch

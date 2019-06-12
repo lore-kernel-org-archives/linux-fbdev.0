@@ -1,31 +1,43 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 12:59:07 +0000
-Subject: Re: [PATCH 02/12] backlight: gpio: use a helper variable for &pdev->dev
-Message-Id: <f6095658-8d23-c30e-7d50-b1555e9dd3e5@samsung.com>
+From: Marc Gonzalez <marc.w.gonzalez@free.fr>
+Date: Wed, 12 Jun 2019 13:27:01 +0000
+Subject: [PATCH v1] backlight: Don't build support by default
+Message-Id: <70bd61f9-8fc5-75b1-9f32-7a5826ce6b48@free.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
- <CGME20190625163459epcas1p39631966dbd7acbbbb1f905b18e41a2d7@epcas1p3.samsung.com>
- <20190625163434.13620-3-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-3-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, David Lechner <david@lechnology.com>, Kevin Hilman <khilman@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Sekhar Nori <nsekhar@ti.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+To: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: DRI <dri-devel@lists.freedesktop.org>, fbdev <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, Antonino Daplas <adaplas@gmail.com>
 
+b20c5249aa6a ("backlight: Fix compile error if CONFIG_FB is unset")
+added 'default m' for BACKLIGHT_CLASS_DEVICE and LCD_CLASS_DEVICE.
 
-On 6/25/19 6:34 PM, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> 
-> Instead of dereferencing pdev each time, use a helper variable for
-> the associated device pointer.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Let's go back to not building support by default.
 
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Marc Gonzalez <marc.w.gonzalez@free.fr>
+---
+ drivers/video/backlight/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 8b081d61773e..40676be2e46a 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -10,7 +10,6 @@ menu "Backlight & LCD device support"
+ #
+ config LCD_CLASS_DEVICE
+         tristate "Lowlevel LCD controls"
+-	default m
+ 	help
+ 	  This framework adds support for low-level control of LCD.
+ 	  Some framebuffer devices connect to platform-specific LCD modules
+@@ -143,7 +142,6 @@ endif # LCD_CLASS_DEVICE
+ #
+ config BACKLIGHT_CLASS_DEVICE
+         tristate "Lowlevel Backlight controls"
+-	default m
+ 	help
+ 	  This framework adds support for low-level control of the LCD
+           backlight. This includes support for brightness and power.
+-- 
+2.17.1

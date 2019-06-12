@@ -1,38 +1,34 @@
-From: Colin King <colin.king@canonical.com>
-Date: Tue, 11 Jun 2019 17:09:13 +0000
-Subject: [PATCH][next] video: fbdev: atmel_lcdfb: remove redundant initialization to variable ret
-Message-Id: <20190611170913.20913-1-colin.king@canonical.com>
+From: <Nicolas.Ferre@microchip.com>
+Date: Wed, 12 Jun 2019 07:55:30 +0000
+Subject: Re: [PATCH][next] video: fbdev: atmel_lcdfb: remove redundant initialization to variable ret
+Message-Id: <37ac8530-6601-a1a0-37e0-8c6d5d1702cd@microchip.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190611170913.20913-1-colin.king@canonical.com>
+In-Reply-To: <20190611170913.20913-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Ferre <nicolas.ferre@microchip.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, Ludovic Desroches <ludovic.desroches@microchip.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
+To: colin.king@canonical.com, b.zolnierkie@samsung.com, alexandre.belloni@bootlin.com, Ludovic.Desroches@microchip.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org
 Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
-
-Currently variable ret is being initialized with -ENOENT however that
-value is never read and ret is being re-assigned later on. Hence this
-assignment is redundant and can be removed.
-
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/video/fbdev/atmel_lcdfb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/atmel_lcdfb.c b/drivers/video/fbdev/atmel_lcdfb.c
-index fb117ccbeab3..930cc3f92e01 100644
---- a/drivers/video/fbdev/atmel_lcdfb.c
-+++ b/drivers/video/fbdev/atmel_lcdfb.c
-@@ -950,7 +950,7 @@ static int atmel_lcdfb_of_init(struct atmel_lcdfb_info *sinfo)
- 	struct fb_videomode fb_vm;
- 	struct gpio_desc *gpiod;
- 	struct videomode vm;
--	int ret = -ENOENT;
-+	int ret;
- 	int i;
- 
- 	sinfo->config = (struct atmel_lcdfb_config*)
--- 
-2.20.1
+T24gMTEvMDYvMjAxOSBhdCAxOTowOSwgQ29saW4gS2luZyB3cm90ZToNCj4gRXh0ZXJuYWwgRS1N
+YWlsDQo+IA0KPiANCj4gRnJvbTogQ29saW4gSWFuIEtpbmcgPGNvbGluLmtpbmdAY2Fub25pY2Fs
+LmNvbT4NCj4gDQo+IEN1cnJlbnRseSB2YXJpYWJsZSByZXQgaXMgYmVpbmcgaW5pdGlhbGl6ZWQg
+d2l0aCAtRU5PRU5UIGhvd2V2ZXIgdGhhdA0KPiB2YWx1ZSBpcyBuZXZlciByZWFkIGFuZCByZXQg
+aXMgYmVpbmcgcmUtYXNzaWduZWQgbGF0ZXIgb24uIEhlbmNlIHRoaXMNCj4gYXNzaWdubWVudCBp
+cyByZWR1bmRhbnQgYW5kIGNhbiBiZSByZW1vdmVkLg0KPiANCj4gQWRkcmVzc2VzLUNvdmVyaXR5
+OiAoIlVudXNlZCB2YWx1ZSIpDQo+IFNpZ25lZC1vZmYtYnk6IENvbGluIElhbiBLaW5nIDxjb2xp
+bi5raW5nQGNhbm9uaWNhbC5jb20+DQoNCkluZGVlZDoNCkFja2VkLWJ5OiBOaWNvbGFzIEZlcnJl
+IDxuaWNvbGFzLmZlcnJlQG1pY3JvY2hpcC5jb20+DQoNClRoYW5rcywgYmVzdCByZWdhcmRzLA0K
+ICAgTmljb2xhcw0KDQoNCj4gLS0tDQo+ICAgZHJpdmVycy92aWRlby9mYmRldi9hdG1lbF9sY2Rm
+Yi5jIHwgMiArLQ0KPiAgIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigrKSwgMSBkZWxldGlv
+bigtKQ0KPiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXRtZWxfbGNkZmIu
+YyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXRtZWxfbGNkZmIuYw0KPiBpbmRleCBmYjExN2NjYmVh
+YjMuLjkzMGNjM2Y5MmUwMSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy92aWRlby9mYmRldi9hdG1l
+bF9sY2RmYi5jDQo+ICsrKyBiL2RyaXZlcnMvdmlkZW8vZmJkZXYvYXRtZWxfbGNkZmIuYw0KPiBA
+QCAtOTUwLDcgKzk1MCw3IEBAIHN0YXRpYyBpbnQgYXRtZWxfbGNkZmJfb2ZfaW5pdChzdHJ1Y3Qg
+YXRtZWxfbGNkZmJfaW5mbyAqc2luZm8pDQo+ICAgCXN0cnVjdCBmYl92aWRlb21vZGUgZmJfdm07
+DQo+ICAgCXN0cnVjdCBncGlvX2Rlc2MgKmdwaW9kOw0KPiAgIAlzdHJ1Y3QgdmlkZW9tb2RlIHZt
+Ow0KPiAtCWludCByZXQgPSAtRU5PRU5UOw0KPiArCWludCByZXQ7DQo+ICAgCWludCBpOw0KPiAg
+IA0KPiAgIAlzaW5mby0+Y29uZmlnID0gKHN0cnVjdCBhdG1lbF9sY2RmYl9jb25maWcqKQ0KPiAN
+Cg0KDQotLSANCk5pY29sYXMgRmVycmUNCg=

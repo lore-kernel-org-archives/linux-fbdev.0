@@ -1,39 +1,35 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Fri, 21 Jun 2019 14:22:07 +0000
-Subject: Re: [PATCH] video: fbdev: pvr2fb: fix compile-testing as module
-Message-Id: <CAK8P3a3=5iMx4UEi6pX6AGGsZWHzyiMQRNnUHuA4peZbGQRQZw@mail.gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Thu, 13 Jun 2019 19:43:23 +0000
+Subject: [PATCH 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
+Message-Id: <20190613194326.180889-2-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190617124822epcas2p2c93d6cec3b60d08d85f228945d5c7623@epcas2p2.samsung.com>
- <20190617124758.1252449-1-arnd@arndb.de> <3ee91294-044d-9bcd-0c4c-3365c0c97604@samsung.com>
-In-Reply-To: <3ee91294-044d-9bcd-0c4c-3365c0c97604@samsung.com>
+References: <20190613194326.180889-1-mka@chromium.org>
+In-Reply-To: <20190613194326.180889-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Mike Marshall <hubcap@omnibond.com>, YueHaibing <yuehaibing@huawei.com>, Ira Weiny <ira.weiny@intel.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-On Fri, Jun 21, 2019 at 1:15 PM Bartlomiej Zolnierkiewicz
-<b.zolnierkie@samsung.com> wrote:
->
->
-> On 6/17/19 2:47 PM, Arnd Bergmann wrote:
-> > Building an allmodconfig kernel now produces a harmless warning:
-> >
-> > drivers/video/fbdev/pvr2fb.c:726:12: error: unused function 'pvr2_get_param_val' [-Werror,-Wunused-function]
-> >
-> > Shut this up the same way as we do for other unused functions
-> > in the same file, using the __maybe_unused attribute.
-> >
-> > Fixes: 0f5a5712ad1e ("video: fbdev: pvr2fb: add COMPILE_TEST support")
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->
-> Thanks but I've fixed it already by adding #ifndef MODULE (since other
-> functions in the same file using __maybe_unused depend on either PCI or
-> SH_DREAMCAST I've preferred not to use this attribute):
->
-> https://marc.info/?l=linux-fbdev&m6050904010778&w=2
+Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
+file.
 
-Ok, dropping my patch from the local queue, your version is obviously
-correct as well.
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-      Arnd
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 57f496cff999..d51e74340870 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2857,6 +2857,7 @@ F:	drivers/video/backlight/
+ F:	include/linux/backlight.h
+ F:	include/linux/pwm_backlight.h
+ F:	Documentation/devicetree/bindings/leds/backlight
++F:	Documentation/ABI/stable/sysfs-class-backlight
+ 
+ BATMAN ADVANCED
+ M:	Marek Lindner <mareklindner@neomailbox.ch>
+-- 
+2.22.0.rc2.383.gf4fbbf30c2-goog

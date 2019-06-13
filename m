@@ -1,52 +1,79 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Thu, 13 Jun 2019 16:57:29 +0000
+From: Sean Paul <sean@poorly.run>
+Date: Thu, 13 Jun 2019 19:06:31 +0000
 Subject: Re: [PATCH] drm/connector: Fix kerneldoc warning in HDR_OUTPUT_METADATA description
-Message-Id: <CADnq5_NFNtcgM2HaxEnZi_VcKB=FhxTH7pg0wrWzJcw4YaPzOw@mail.gmail.com>
+Message-Id: <20190613190631.GH179831@art_vandelay>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190613151727.133696-1-sean@poorly.run>
-In-Reply-To: <20190613151727.133696-1-sean@poorly.run>
+ <CADnq5_NFNtcgM2HaxEnZi_VcKB=FhxTH7pg0wrWzJcw4YaPzOw@mail.gmail.com>
+In-Reply-To: <CADnq5_NFNtcgM2HaxEnZi_VcKB=FhxTH7pg0wrWzJcw4YaPzOw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="euc-kr"
-Content-Transfer-Encoding: base64
-To: Sean Paul <sean@poorly.run>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Uma Shankar <uma.shankar@intel.com>, Sean Paul <seanpaul@chromium.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Maling list - DRI developers <dri-devel@lists.freedesktop.org>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Uma Shankar <uma.shankar@intel.com>, Sean Paul <seanpaul@chromium.org>, Sean Paul <sean@poorly.run>
 
-T24gVGh1LCBKdW4gMTMsIDIwMTkgYXQgMTE6MTcgQU0gU2VhbiBQYXVsIDxzZWFuQHBvb3JseS5y
-dW4+IHdyb3RlOgo+Cj4gRnJvbTogU2VhbiBQYXVsIDxzZWFucGF1bEBjaHJvbWl1bS5vcmc+Cj4K
-PiBGaXhlcyB0aGUgZm9sbG93aW5nIHdhcm5pbmc6Cj4gLi4vZHJpdmVycy9ncHUvZHJtL2RybV9j
-b25uZWN0b3IuYzo5ODE6IFdBUk5JTkc6IERlZmluaXRpb24gbGlzdCBlbmRzIHdpdGhvdXQgYSBi
-bGFuayBsaW5lOyB1bmV4cGVjdGVkIHVuaW5kZW50Lgo+Cj4gRml4ZXM6IGEwOWRiODgzZTVkOSAo
-ImRybTogRml4IGRvY2Jvb2sgd2FybmluZ3MgaW4gaGRyIG1ldGFkYXRhIGhlbHBlciBzdHJ1Y3R1
-cmVzIikKPiBDYzogU2hhc2hhbmsgU2hhcm1hIDxzaGFzaGFuay5zaGFybWFAaW50ZWwuY29tPgo+
-IENjOiBWaWxsZSBTeXJqw6QgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPgo+IENjOiBN
-YWFydGVuIExhbmtob3JzdCA8bWFhcnRlbi5sYW5raG9yc3RAbGludXguaW50ZWwuY29tPgo+IENj
-OiBNYXhpbWUgUmlwYXJkIDxtYXhpbWUucmlwYXJkQGJvb3RsaW4uY29tPgo+IENjOiBTZWFuIFBh
-dWwgPHNlYW5AcG9vcmx5LnJ1bj4KPiBDYzogRGF2aWQgQWlybGllIDxhaXJsaWVkQGxpbnV4Lmll
-Pgo+IENjOiBEYW5pZWwgVmV0dGVyIDxkYW5pZWxAZmZ3bGwuY2g+Cj4gQ2M6IEJhcnRsb21pZWog
-Wm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbT4KPiBDYzogIlZpbGxlIFN5
-cmrDpCIgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPgo+IENjOiBIYW5zIFZlcmt1aWwg
-PGhhbnN2ZXJrQGNpc2NvLmNvbT4KPiBDYzogZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9wLm9y
-Zwo+IENjOiBsaW51eC1mYmRldkB2Z2VyLmtlcm5lbC5vcmcKPiBDYzogU2VhbiBQYXVsIDxzZWFu
-QHBvb3JseS5ydW4+ICh2MSkKPiBDYzogVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGludGVsLmNv
-bT4KPiBDYzogRGFuaWVsIFZldHRlciA8ZGFuaWVsLnZldHRlckBmZndsbC5jaD4KPiBDYzogIlZp
-bGxlIFN5cmrDpGzDpCIgPHZpbGxlLnN5cmphbGFAbGludXguaW50ZWwuY29tPgo+IFNpZ25lZC1v
-ZmYtYnk6IFNlYW4gUGF1bCA8c2VhbnBhdWxAY2hyb21pdW0ub3JnPgoKUmV2aWV3ZWQtYnk6IEFs
-ZXggRGV1Y2hlciA8YWxleGFuZGVyLmRldWNoZXJAYW1kLmNvbT4KCj4gLS0tCj4gIGRyaXZlcnMv
-Z3B1L2RybS9kcm1fY29ubmVjdG9yLmMgfCAxICsKPiAgMSBmaWxlIGNoYW5nZWQsIDEgaW5zZXJ0
-aW9uKCspCj4KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYyBi
-L2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmMKPiBpbmRleCBhNTk4YTVlYjQ4ZDIxLi4z
-Y2NkY2YzZGZjZGUyIDEwMDY0NAo+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9y
-LmMKPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5jCj4gQEAgLTk3OCw2ICs5
-NzgsNyBAQCBzdGF0aWMgY29uc3Qgc3RydWN0IGRybV9wcm9wX2VudW1fbGlzdCBoZG1pX2NvbG9y
-c3BhY2VzW10gPSB7Cj4gICAqICAgICBVc2Vyc3BhY2Ugd2lsbCBiZSByZXNwb25zaWJsZSB0byBk
-byBUb25lIG1hcHBpbmcgb3BlcmF0aW9uIGluIGNhc2U6Cj4gICAqICAgICAgICAgICAgIC0gU29t
-ZSBsYXllcnMgYXJlIEhEUiBhbmQgb3RoZXJzIGFyZSBTRFIKPiAgICogICAgICAgICAgICAgLSBI
-RFIgbGF5ZXJzIGx1bWluYW5jZSBpcyBub3Qgc2FtZSBhcyBzaW5rCj4gKyAqCj4gICAqICAgICBJ
-dCB3aWxsIGV2ZW4gbmVlZCB0byBkbyBjb2xvcnNwYWNlIGNvbnZlcnNpb24gYW5kIGdldCBhbGwg
-bGF5ZXJzCj4gICAqICAgICB0byBvbmUgY29tbW9uIGNvbG9yc3BhY2UgZm9yIGJsZW5kaW5nLiBJ
-dCBjYW4gdXNlIGVpdGhlciBHTCwgTWVkaWEKPiAgICogICAgIG9yIGRpc3BsYXkgZW5naW5lIHRv
-IGdldCB0aGlzIGRvbmUgYmFzZWQgb24gdGhlIGNhcGFiaWx0aWVzIG9mIHRoZQo+IC0tCj4gU2Vh
-biBQYXVsLCBTb2Z0d2FyZSBFbmdpbmVlciwgR29vZ2xlIC8gQ2hyb21pdW0gT1MKPgo+IF9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fCj4gZHJpLWRldmVsIG1h
-aWxpbmcgbGlzdAo+IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmcKPiBodHRwczovL2xp
-c3RzLmZyZWVkZXNrdG9wLm9yZy9tYWlsbWFuL2xpc3RpbmZvL2RyaS1kZXZlbA==
+On Thu, Jun 13, 2019 at 12:57:29PM -0400, Alex Deucher wrote:
+> On Thu, Jun 13, 2019 at 11:17 AM Sean Paul <sean@poorly.run> wrote:
+> >
+> > From: Sean Paul <seanpaul@chromium.org>
+> >
+> > Fixes the following warning:
+> > ../drivers/gpu/drm/drm_connector.c:981: WARNING: Definition list ends w=
+ithout a blank line; unexpected unindent.
+> >
+> > Fixes: a09db883e5d9 ("drm: Fix docbook warnings in hdr metadata helper =
+structures")
+> > Cc: Shashank Sharma <shashank.sharma@intel.com>
+> > Cc: Ville Syrj=E4 <ville.syrjala@linux.intel.com>
+> > Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> > Cc: Maxime Ripard <maxime.ripard@bootlin.com>
+> > Cc: Sean Paul <sean@poorly.run>
+> > Cc: David Airlie <airlied@linux.ie>
+> > Cc: Daniel Vetter <daniel@ffwll.ch>
+> > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > Cc: "Ville Syrj=E4" <ville.syrjala@linux.intel.com>
+> > Cc: Hans Verkuil <hansverk@cisco.com>
+> > Cc: dri-devel@lists.freedesktop.org
+> > Cc: linux-fbdev@vger.kernel.org
+> > Cc: Sean Paul <sean@poorly.run> (v1)
+> > Cc: Uma Shankar <uma.shankar@intel.com>
+> > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > Cc: "Ville Syrj=E4l=E4" <ville.syrjala@linux.intel.com>
+> > Signed-off-by: Sean Paul <seanpaul@chromium.org>
+>=20
+> Reviewed-by: Alex Deucher <alexander.deucher@amd.com>
+
+Thanks Alex, I've applied this to -misc-next
+
+>=20
+> > ---
+> >  drivers/gpu/drm/drm_connector.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/gpu/drm/drm_connector.c b/drivers/gpu/drm/drm_conn=
+ector.c
+> > index a598a5eb48d21..3ccdcf3dfcde2 100644
+> > --- a/drivers/gpu/drm/drm_connector.c
+> > +++ b/drivers/gpu/drm/drm_connector.c
+> > @@ -978,6 +978,7 @@ static const struct drm_prop_enum_list hdmi_colorsp=
+aces[] =3D {
+> >   *     Userspace will be responsible to do Tone mapping operation in c=
+ase:
+> >   *             - Some layers are HDR and others are SDR
+> >   *             - HDR layers luminance is not same as sink
+> > + *
+> >   *     It will even need to do colorspace conversion and get all layers
+> >   *     to one common colorspace for blending. It can use either GL, Me=
+dia
+> >   *     or display engine to get this done based on the capabilties of =
+the
+> > --
+> > Sean Paul, Software Engineer, Google / Chromium OS
+> >
+> > _______________________________________________
+> > dri-devel mailing list
+> > dri-devel@lists.freedesktop.org
+> > https://lists.freedesktop.org/mailman/listinfo/dri-devel
+
+--=20
+Sean Paul, Software Engineer, Google / Chromium OS

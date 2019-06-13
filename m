@@ -1,76 +1,43 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 07 Jun 2019 12:05:29 +0000
-Subject: Re: [PATCH 3/8] drivers: (video|gpu): fix warning same module names
-Message-Id: <4c9681c0-5ead-3e4c-584b-c4e98cd94480@samsung.com>
+From: Sean Paul <sean@poorly.run>
+Date: Thu, 13 Jun 2019 15:17:23 +0000
+Subject: [PATCH] drm/connector: Fix kerneldoc warning in HDR_OUTPUT_METADATA description
+Message-Id: <20190613151727.133696-1-sean@poorly.run>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190606094712.23715-1-anders.roxell@linaro.org>
-        <CGME20190607075735epcas3p17dfbe45a2079b12f4e2268ee1b6086fe@epcas3p1.samsung.com>
-        <20190607075728.GE21222@phenom.ffwll.local>
-In-Reply-To: <20190607075728.GE21222@phenom.ffwll.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Vetter <daniel.vetter@ffwll.ch>, Anders Roxell <anders.roxell@linaro.org>
-Cc: marex@denx.de, stefan@agner.ch, airlied@linux.ie, shawnguo@kernel.org, s.hauer@pengutronix.de, andrew@lunn.ch, vivien.didelot@gmail.com, f.fainelli@gmail.com, a.hajda@samsung.com, mchehab@kernel.org, p.zabel@pengutronix.de, hkallweit1@gmail.com, lee.jones@linaro.org, lgirdwood@gmail.com, broonie@kernel.org, davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-media@vger.kernel.org
+Content-Type: text/plain; charset="euc-kr"
+Content-Transfer-Encoding: base64
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Hans Verkuil <hansverk@cisco.com>, David Airlie <airlied@linux.ie>, Uma Shankar <uma.shankar@intel.com>, Sean Paul <seanpaul@chromium.org>, Sean Paul <sean@poorly.run>
 
-
-On 6/7/19 9:57 AM, Daniel Vetter wrote:
-> On Thu, Jun 06, 2019 at 11:47:12AM +0200, Anders Roxell wrote:
->> When building with CONFIG_DRM_MXSFB and CONFIG_FB_MXS enabled as
->> loadable modules, we see the following warning:
->>
->> warning: same module names found:
->>   drivers/video/fbdev/mxsfb.ko
->>   drivers/gpu/drm/mxsfb/mxsfb.ko
->>
->> Rework so the names matches the config fragment.
->>
->> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
-> 
-> Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
-> 
-> I'm assuming Bart will pick this one up for fbdev.
-
-The DRM mxsfb has been a default for almost a year (since July
-2018) and I've just applied "[PATCH] video: fbdev: mxsfb: Remove
-driver" (https://marc.info/?l=dri-devel&m5835758115686&w=2)
-so it seems that this patch is not needed any longer (sorry!).
-
-> -Daniel
-> 
->> ---
->>  drivers/gpu/drm/mxsfb/Makefile | 4 ++--
->>  drivers/video/fbdev/Makefile   | 3 ++-
->>  2 files changed, 4 insertions(+), 3 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/mxsfb/Makefile b/drivers/gpu/drm/mxsfb/Makefile
->> index ff6e358088fa..5d49d7548e66 100644
->> --- a/drivers/gpu/drm/mxsfb/Makefile
->> +++ b/drivers/gpu/drm/mxsfb/Makefile
->> @@ -1,3 +1,3 @@
->>  # SPDX-License-Identifier: GPL-2.0-only
->> -mxsfb-y := mxsfb_drv.o mxsfb_crtc.o mxsfb_out.o
->> -obj-$(CONFIG_DRM_MXSFB)	+= mxsfb.o
->> +drm-mxsfb-y := mxsfb_drv.o mxsfb_crtc.o mxsfb_out.o
->> +obj-$(CONFIG_DRM_MXSFB)	+= drm-mxsfb.o
->> diff --git a/drivers/video/fbdev/Makefile b/drivers/video/fbdev/Makefile
->> index 655f2537cac1..7ee967525af2 100644
->> --- a/drivers/video/fbdev/Makefile
->> +++ b/drivers/video/fbdev/Makefile
->> @@ -131,7 +131,8 @@ obj-$(CONFIG_FB_VGA16)            += vga16fb.o
->>  obj-$(CONFIG_FB_OF)               += offb.o
->>  obj-$(CONFIG_FB_MX3)		  += mx3fb.o
->>  obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
->> -obj-$(CONFIG_FB_MXS)		  += mxsfb.o
->> +obj-$(CONFIG_FB_MXS)		  += fb-mxs.o
->> +fb-mxs-objs			  := mxsfb.o
->>  obj-$(CONFIG_FB_SSD1307)	  += ssd1307fb.o
->>  obj-$(CONFIG_FB_SIMPLE)           += simplefb.o
->>  
->> -- 
->> 2.20.1
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+RnJvbTogU2VhbiBQYXVsIDxzZWFucGF1bEBjaHJvbWl1bS5vcmc+CgpGaXhlcyB0aGUgZm9sbG93
+aW5nIHdhcm5pbmc6Ci4uL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmM6OTgxOiBXQVJO
+SU5HOiBEZWZpbml0aW9uIGxpc3QgZW5kcyB3aXRob3V0IGEgYmxhbmsgbGluZTsgdW5leHBlY3Rl
+ZCB1bmluZGVudC4KCkZpeGVzOiBhMDlkYjg4M2U1ZDkgKCJkcm06IEZpeCBkb2Nib29rIHdhcm5p
+bmdzIGluIGhkciBtZXRhZGF0YSBoZWxwZXIgc3RydWN0dXJlcyIpCkNjOiBTaGFzaGFuayBTaGFy
+bWEgPHNoYXNoYW5rLnNoYXJtYUBpbnRlbC5jb20+CkNjOiBWaWxsZSBTeXJqw6QgPHZpbGxlLnN5
+cmphbGFAbGludXguaW50ZWwuY29tPgpDYzogTWFhcnRlbiBMYW5raG9yc3QgPG1hYXJ0ZW4ubGFu
+a2hvcnN0QGxpbnV4LmludGVsLmNvbT4KQ2M6IE1heGltZSBSaXBhcmQgPG1heGltZS5yaXBhcmRA
+Ym9vdGxpbi5jb20+CkNjOiBTZWFuIFBhdWwgPHNlYW5AcG9vcmx5LnJ1bj4KQ2M6IERhdmlkIEFp
+cmxpZSA8YWlybGllZEBsaW51eC5pZT4KQ2M6IERhbmllbCBWZXR0ZXIgPGRhbmllbEBmZndsbC5j
+aD4KQ2M6IEJhcnRsb21pZWogWm9sbmllcmtpZXdpY3ogPGIuem9sbmllcmtpZUBzYW1zdW5nLmNv
+bT4KQ2M6ICJWaWxsZSBTeXJqw6QiIDx2aWxsZS5zeXJqYWxhQGxpbnV4LmludGVsLmNvbT4KQ2M6
+IEhhbnMgVmVya3VpbCA8aGFuc3ZlcmtAY2lzY28uY29tPgpDYzogZHJpLWRldmVsQGxpc3RzLmZy
+ZWVkZXNrdG9wLm9yZwpDYzogbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnCkNjOiBTZWFuIFBh
+dWwgPHNlYW5AcG9vcmx5LnJ1bj4gKHYxKQpDYzogVW1hIFNoYW5rYXIgPHVtYS5zaGFua2FyQGlu
+dGVsLmNvbT4KQ2M6IERhbmllbCBWZXR0ZXIgPGRhbmllbC52ZXR0ZXJAZmZ3bGwuY2g+CkNjOiAi
+VmlsbGUgU3lyasOkbMOkIiA8dmlsbGUuc3lyamFsYUBsaW51eC5pbnRlbC5jb20+ClNpZ25lZC1v
+ZmYtYnk6IFNlYW4gUGF1bCA8c2VhbnBhdWxAY2hyb21pdW0ub3JnPgotLS0KIGRyaXZlcnMvZ3B1
+L2RybS9kcm1fY29ubmVjdG9yLmMgfCAxICsKIDEgZmlsZSBjaGFuZ2VkLCAxIGluc2VydGlvbigr
+KQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmMgYi9kcml2ZXJz
+L2dwdS9kcm0vZHJtX2Nvbm5lY3Rvci5jCmluZGV4IGE1OThhNWViNDhkMjEuLjNjY2RjZjNkZmNk
+ZTIgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvZ3B1L2RybS9kcm1fY29ubmVjdG9yLmMKKysrIGIvZHJp
+dmVycy9ncHUvZHJtL2RybV9jb25uZWN0b3IuYwpAQCAtOTc4LDYgKzk3OCw3IEBAIHN0YXRpYyBj
+b25zdCBzdHJ1Y3QgZHJtX3Byb3BfZW51bV9saXN0IGhkbWlfY29sb3JzcGFjZXNbXSA9IHsKICAq
+CVVzZXJzcGFjZSB3aWxsIGJlIHJlc3BvbnNpYmxlIHRvIGRvIFRvbmUgbWFwcGluZyBvcGVyYXRp
+b24gaW4gY2FzZToKICAqCQktIFNvbWUgbGF5ZXJzIGFyZSBIRFIgYW5kIG90aGVycyBhcmUgU0RS
+CiAgKgkJLSBIRFIgbGF5ZXJzIGx1bWluYW5jZSBpcyBub3Qgc2FtZSBhcyBzaW5rCisgKgogICoJ
+SXQgd2lsbCBldmVuIG5lZWQgdG8gZG8gY29sb3JzcGFjZSBjb252ZXJzaW9uIGFuZCBnZXQgYWxs
+IGxheWVycwogICoJdG8gb25lIGNvbW1vbiBjb2xvcnNwYWNlIGZvciBibGVuZGluZy4gSXQgY2Fu
+IHVzZSBlaXRoZXIgR0wsIE1lZGlhCiAgKglvciBkaXNwbGF5IGVuZ2luZSB0byBnZXQgdGhpcyBk
+b25lIGJhc2VkIG9uIHRoZSBjYXBhYmlsdGllcyBvZiB0aGUKLS0gClNlYW4gUGF1bCwgU29mdHdh
+cmUgRW5naW5lZXIsIEdvb2dsZSAvIENocm9taXVtIE9TCg==

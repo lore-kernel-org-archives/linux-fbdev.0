@@ -1,34 +1,40 @@
-From: Fuqian Huang <huangfq.daxian@gmail.com>
-Date: Thu, 27 Jun 2019 17:41:09 +0000
-Subject: [PATCH 45/87] fbdev: mmp: remove memset after dma_alloc_coherent in mmpfb.c
-Message-Id: <20190627174110.4345-1-huangfq.daxian@gmail.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Thu, 13 Jun 2019 19:43:22 +0000
+Subject: [PATCH 0/4] backlight: Expose brightness curve type through sysfs
+Message-Id: <20190613194326.180889-1-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Fuqian Huang <huangfq.daxian@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Kate Stewart <kstewart@linuxfoundation.org>, Jilayne Lovejoy <opensource@jilayne.com>, Allison Randal <allison@lohutok.net>, Thomas Gleixner <tglx@linutronix.de>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
 
-In commit af7ddd8a627c
-("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
-dma_alloc_coherent has already zeroed the memory.
-So memset is not needed.
+Backlight brightness curves can have different shapes. The two main
+types are linear and non-linear curves. The human eye doesn't
+perceive linearly increasing/decreasing brightness as linear (see
+also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+linearly to human eye"), hence many backlights use non-linear (often
+logarithmic) brightness curves. The type of curve is currently opaque
+to userspace, so userspace often relies on more or less reliable
+heuristics (like the number of brightness levels) to decide whether
+to treat a backlight device as linear or non-linear.
 
-Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
----
- drivers/video/fbdev/mmp/fb/mmpfb.c | 1 -
- 1 file changed, 1 deletion(-)
+Export the type of the brightness curve via a new sysfs attribute.
 
-diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
-index e5b56f2199df..47bc7c59bbd8 100644
---- a/drivers/video/fbdev/mmp/fb/mmpfb.c
-+++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
-@@ -612,7 +612,6 @@ static int mmpfb_probe(struct platform_device *pdev)
- 		ret = -ENOMEM;
- 		goto failed_destroy_mutex;
- 	}
--	memset(fbi->fb_start, 0, fbi->fb_size);
- 	dev_info(fbi->dev, "fb %dk allocated\n", fbi->fb_size/1024);
- 
- 	/* fb power on */
+Matthias Kaehlcke (4):
+  MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
+  backlight: Expose brightness curve type through sysfs
+  backlight: pwm_bl: Set scale type for CIE 1931 curves
+  backlight: pwm_bl: Set scale type for brightness curves specified in
+    the DT
+
+ .../ABI/testing/sysfs-class-backlight         | 32 +++++++++++++++++++
+ MAINTAINERS                                   |  2 ++
+ drivers/video/backlight/backlight.c           | 22 +++++++++++++
+ drivers/video/backlight/pwm_bl.c              | 30 ++++++++++++++++-
+ include/linux/backlight.h                     | 10 ++++++
+ 5 files changed, 95 insertions(+), 1 deletion(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
+
 -- 
-2.11.0
+2.22.0.rc2.383.gf4fbbf30c2-goog

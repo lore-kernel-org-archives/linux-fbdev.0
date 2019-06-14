@@ -1,42 +1,40 @@
-From: Rob Herring <robh@kernel.org>
-Date: Fri, 28 Jun 2019 19:22:38 +0000
-Subject: Re: [PATCH] dt-bindings: backlight: lm3630a: correct schema validation
-Message-Id: <20190628192238.GA8617@bogus>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 14 Jun 2019 10:43:56 +0000
+Subject: [PATCH] video: fbdev: pvr2fb: fix build warning when compiling as module
+Message-Id: <2376f0a7-2511-b52d-c0d1-9162382f8693@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520085846.22320-1-masneyb@onstation.org>
-In-Reply-To: <20190520085846.22320-1-masneyb@onstation.org>
+References: <CGME20190614104355eucas1p236ecb70b6d48f37508f3837cee49b19f@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brian Masney <masneyb@onstation.org>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, daniel.thompson@linaro.org, jonathan@marek.ca, b.zolnierkie@samsung.com, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, lee.jones@linaro.org, linux-leds@vger.kernel.org, dmurphy@ti.com
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Mon, 20 May 2019 04:58:46 -0400, Brian Masney wrote:
-> The '#address-cells' and '#size-cells' properties were not defined in
-> the lm3630a bindings and would cause the following error when
-> attempting to validate the examples against the schema:
-> 
-> Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.example.dt.yaml:
-> '#address-cells', '#size-cells' do not match any of the regexes:
-> '^led@[01]$', 'pinctrl-[0-9]+'
-> 
-> Correct this by adding those two properties.
-> 
-> While we're here, move the ti,linear-mapping-mode property to the
-> led@[01] child nodes to correct the following validation error:
-> 
-> Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.example.dt.yaml:
-> led@0: 'ti,linear-mapping-mode' does not match any of the regexes:
-> 'pinctrl-[0-9]+'
-> 
-> Fixes: 32fcb75c66a0 ("dt-bindings: backlight: Add lm3630a bindings")
-> Signed-off-by: Brian Masney <masneyb@onstation.org>
-> Reported-by: Rob Herring <robh+dt@kernel.org>
-> ---
->  .../leds/backlight/lm3630a-backlight.yaml     | 20 +++++++++++++------
->  1 file changed, 14 insertions(+), 6 deletions(-)
-> 
+Add missing #ifndef MODULE around pvr2_get_param_val().
 
-Applied, thanks.
+Fixes: 0f5a5712ad1e ("video: fbdev: pvr2fb: add COMPILE_TEST support")
+Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/pvr2fb.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Rob
+Index: b/drivers/video/fbdev/pvr2fb.c
+=================================--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -722,6 +722,7 @@ static struct fb_ops pvr2fb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
++#ifndef MODULE
+ static int pvr2_get_param_val(const struct pvr2_params *p, const char *s,
+ 			      int size)
+ {
+@@ -733,6 +734,7 @@ static int pvr2_get_param_val(const stru
+ 	}
+ 	return -1;
+ }
++#endif
+ 
+ static char *pvr2_get_param_name(const struct pvr2_params *p, int val,
+ 			  int size)

@@ -1,33 +1,40 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 21 Jun 2019 11:08:38 +0000
-Subject: Re: [PATCH] video: fbdev: s3c-fb: add COMPILE_TEST support
-Message-Id: <421308e1-a4b0-f294-e581-79fb4ef811b3@samsung.com>
+From: Shobhit Kukreti <shobhitkukreti@gmail.com>
+Date: Fri, 14 Jun 2019 02:32:28 +0000
+Subject: [PATCH] staging: fbtft: Fix checkpatch ERROR: space prohibited before that close parenthesis ')'
+Message-Id: <20190614023225.GA27938@t-1000>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190614144634eucas1p1b04dcfcc040c3c886d2b33592c501d3b@eucas1p1.samsung.com>
-        <e771b89b-0e38-a712-b635-8d53cbf95a8e@samsung.com>
-        <PSXP216MB0662B10864E4DDEC1EC1823CAAEA0@PSXP216MB0662.KORP216.PROD.OUTLOOK.COM>
-In-Reply-To: <PSXP216MB0662B10864E4DDEC1EC1823CAAEA0@PSXP216MB0662.KORP216.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jingoohan1@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: shobhitkukreti@gmail.com
 
+Cleaned up code to resolve  the checkpatch error
+ERROR: space prohibited before that close parenthesis ')'
+from the file:
 
-On 6/18/19 8:12 AM, Jingoo Han wrote:
-> On 6/14/19, 11:46 PM, Bartlomiej Zolnierkiewicz wrote:
->>
->> Add COMPILE_TEST support to s3c-fb driver for better compile
->> testing coverage.
->>
->> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+fbtft/fbtft-bus.c
 
-Thanks, I queued the patch for v5.3.
+Signed-off-by: Shobhit Kukreti <shobhitkukreti@gmail.com>
+---
+ drivers/staging/fbtft/fbtft-bus.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 2ea814d..2b43bc2 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -62,9 +62,9 @@ out:									      \
+ }                                                                             \
+ EXPORT_SYMBOL(func);
+ 
+-define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8, )
++define_fbtft_write_reg(fbtft_write_reg8_bus8, u8, u8,)
+ define_fbtft_write_reg(fbtft_write_reg16_bus8, __be16, u16, cpu_to_be16)
+-define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16, )
++define_fbtft_write_reg(fbtft_write_reg16_bus16, u16, u16,)
+ 
+ void fbtft_write_reg8_bus9(struct fbtft_par *par, int len, ...)
+ {
+-- 
+2.7.4

@@ -1,27 +1,41 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 10:27:17 +0000
-Subject: Re: [PATCH 2/3] video: fbdev: intelfb: return -ENOMEM on framebuffer_alloc() failure
-Message-Id: <ff1c6cab-ecc0-10e2-b1ad-69d73368a754@samsung.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 17 Jun 2019 12:47:36 +0000
+Subject: [PATCH] video: fbdev: pvr2fb: fix compile-testing as module
+Message-Id: <20190617124758.1252449-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <a659cb04-b16c-a3a0-30f4-b2f90b0d7196@samsung.com>
- <CGME20190628102719eucas1p2c601b723f6cefca76a9e9246d7f9447a@eucas1p2.samsung.com>
-In-Reply-To: <a659cb04-b16c-a3a0-30f4-b2f90b0d7196@samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
-Cc: Maik Broemme <mbroemme@libmpq.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Mike Marshall <hubcap@omnibond.com>, YueHaibing <yuehaibing@huawei.com>, Ira Weiny <ira.weiny@intel.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+Building an allmodconfig kernel now produces a harmless warning:
 
-On 6/14/19 4:48 PM, Bartlomiej Zolnierkiewicz wrote:
-> Fix error code from -ENODEV to -ENOMEM.
-> 
-> Cc: Maik Broemme <mbroemme@libmpq.org>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-I queued the patch for v5.3.
+drivers/video/fbdev/pvr2fb.c:726:12: error: unused function 'pvr2_get_param_val' [-Werror,-Wunused-function]
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Shut this up the same way as we do for other unused functions
+in the same file, using the __maybe_unused attribute.
+
+Fixes: 0f5a5712ad1e ("video: fbdev: pvr2fb: add COMPILE_TEST support")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/pvr2fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 59c59b3a67cb..cf9cfdc5e685 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -723,8 +723,8 @@ static struct fb_ops pvr2fb_ops = {
+ 	.fb_imageblit	= cfb_imageblit,
+ };
+ 
+-static int pvr2_get_param_val(const struct pvr2_params *p, const char *s,
+-			      int size)
++static int __maybe_unused pvr2_get_param_val(const struct pvr2_params *p,
++					     const char *s, int size)
+ {
+ 	int i;
+ 
+-- 
+2.20.0

@@ -1,119 +1,176 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 25 Jun 2019 16:34:26 +0000
-Subject: [PATCH 04/12] ARM: davinci: refresh davinci_all_defconfig
-Message-Id: <20190625163434.13620-5-brgl@bgdev.pl>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Mon, 17 Jun 2019 02:04:29 +0000
+Subject: [PATCH v3 6/7] lib/hexdump.c: Allow multiple groups to be separated by spaces
+Message-Id: <20190617020430.8708-7-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
+References: <20190617020430.8708-1-alastair@au1.ibm.com>
+In-Reply-To: <20190617020430.8708-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+From: Alastair D'Silva <alastair@d-silva.org>
 
-Refresh davinci_all_defconfig with current master.
+Similar to the previous patch, this patch separates groups by 2 spaces for
+the hex fields, and 1 space for the ASCII field.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+eg.
+buf:00000000: 454d414e 43415053  4e495f45 00584544  NAMESPAC E_INDEX.
+buf:00000010: 00000000 00000002  00000000 00000000  ........ ........
+
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- arch/arm/configs/davinci_all_defconfig | 27 ++++++++++----------------
- 1 file changed, 10 insertions(+), 17 deletions(-)
+ include/linux/printk.h |  3 ++
+ lib/hexdump.c          | 65 +++++++++++++++++++++++++++++++-----------
+ 2 files changed, 52 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
-index 4a8cad4d3707..13d7846c613d 100644
---- a/arch/arm/configs/davinci_all_defconfig
-+++ b/arch/arm/configs/davinci_all_defconfig
-@@ -3,6 +3,7 @@ CONFIG_SYSVIPC=y
- CONFIG_POSIX_MQUEUE=y
- CONFIG_NO_HZ=y
- CONFIG_HIGH_RES_TIMERS=y
-+CONFIG_PREEMPT=y
- CONFIG_IKCONFIG=y
- CONFIG_IKCONFIG_PROC=y
- CONFIG_LOG_BUF_SHIFT
-@@ -10,13 +11,6 @@ CONFIG_CGROUPS=y
- CONFIG_CHECKPOINT_RESTORE=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--CONFIG_PARTITION_ADVANCED=y
--# CONFIG_IOSCHED_DEADLINE is not set
--# CONFIG_IOSCHED_CFQ is not set
- CONFIG_ARCH_DAVINCI=y
- CONFIG_ARCH_DAVINCI_DM644x=y
- CONFIG_ARCH_DAVINCI_DM355=y
-@@ -31,9 +25,7 @@ CONFIG_MACH_MITYOMAPL138=y
- CONFIG_MACH_OMAPL138_HAWKBOARD=y
- CONFIG_DAVINCI_MUX_DEBUG=y
- CONFIG_DAVINCI_MUX_WARNINGS=y
--CONFIG_PREEMPT=y
- CONFIG_AEABI=y
--CONFIG_CMA=y
- CONFIG_SECCOMP=y
- CONFIG_ZBOOT_ROM_TEXT=0x0
- CONFIG_ZBOOT_ROM_BSS=0x0
-@@ -46,6 +38,12 @@ CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
- CONFIG_CPU_FREQ_GOV_POWERSAVE=m
- CONFIG_CPU_FREQ_GOV_ONDEMAND=m
- CONFIG_CPU_IDLE=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+CONFIG_MODVERSIONS=y
-+CONFIG_PARTITION_ADVANCED=y
-+CONFIG_CMA=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
-@@ -63,7 +61,6 @@ CONFIG_BT_HCIUART_LL=y
- CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_FW_LOADER=m
--CONFIG_DMA_CMA=y
- CONFIG_DA8XX_MSTPRI=y
- CONFIG_MTD=m
- CONFIG_MTD_TESTS=m
-@@ -167,8 +164,6 @@ CONFIG_SOUND=m
- CONFIG_SND=m
- CONFIG_SND_USB_AUDIO=m
- CONFIG_SND_SOC=m
--CONFIG_SND_SOC_TLV320AIC3X=m
--CONFIG_SND_SOC_DAVINCI_MCASP=m
- CONFIG_SND_SOC_DAVINCI_EVM=m
- CONFIG_SND_SIMPLE_CARD=m
- CONFIG_HID=m
-@@ -213,14 +208,12 @@ CONFIG_MMC_DAVINCI=y
- CONFIG_NEW_LEDS=y
- CONFIG_LEDS_CLASS=m
- CONFIG_LEDS_GPIO=m
--CONFIG_LEDS_TRIGGERS=y
- CONFIG_LEDS_TRIGGER_TIMER=m
- CONFIG_LEDS_TRIGGER_HEARTBEAT=m
- CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_OMAP=m
- CONFIG_DMADEVICES=y
--CONFIG_TI_EDMA=y
- CONFIG_COMMON_CLK_PWM=m
- CONFIG_REMOTEPROC=m
- CONFIG_DA8XX_REMOTEPROC=m
-@@ -258,10 +251,10 @@ CONFIG_NLS_CODEPAGE_437=y
- CONFIG_NLS_ASCII=m
- CONFIG_NLS_ISO8859_1=y
- CONFIG_NLS_UTF8=m
-+# CONFIG_CRYPTO_HW is not set
-+CONFIG_CRC_T10DIF=m
-+CONFIG_DMA_CMA=y
- CONFIG_DEBUG_FS=y
- CONFIG_DEBUG_RT_MUTEXES=y
- CONFIG_DEBUG_MUTEXES=y
--# CONFIG_ARM_UNWIND is not set
- CONFIG_DEBUG_USER=y
--# CONFIG_CRYPTO_HW is not set
--CONFIG_CRC_T10DIF=m
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index c6b748f66a82..04416e788802 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -487,6 +487,9 @@ enum {
+ #define HEXDUMP_2_GRP_LINES		BIT(2)
+ #define HEXDUMP_4_GRP_LINES		BIT(3)
+ #define HEXDUMP_8_GRP_LINES		BIT(4)
++#define HEXDUMP_2_GRP_SPACES		BIT(5)
++#define HEXDUMP_4_GRP_SPACES		BIT(6)
++#define HEXDUMP_8_GRP_SPACES		BIT(7)
+ 
+ extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 			      int groupsize, char *linebuf, size_t linebuflen,
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 4da7d24826fb..dc85ef0dbb0a 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -91,9 +91,37 @@ static const char *group_separator(int group, u64 flags)
+ 	if ((flags & HEXDUMP_2_GRP_LINES) && !((group) % 2))
+ 		return "|";
+ 
++	if ((flags & HEXDUMP_8_GRP_SPACES) && !((group) % 8))
++		return "  ";
++
++	if ((flags & HEXDUMP_4_GRP_SPACES) && !((group) % 4))
++		return "  ";
++
++	if ((flags & HEXDUMP_2_GRP_SPACES) && !((group) % 2))
++		return "  ";
++
+ 	return " ";
+ }
+ 
++static void separator_parameters(u64 flags, int groupsize, int *sep_chars,
++				 char *sep)
++{
++	if (flags & (HEXDUMP_2_GRP_LINES | HEXDUMP_2_GRP_SPACES))
++		*sep_chars = groupsize * 2;
++	if (flags & (HEXDUMP_4_GRP_LINES | HEXDUMP_4_GRP_SPACES))
++		*sep_chars = groupsize * 4;
++	if (flags & (HEXDUMP_8_GRP_LINES | HEXDUMP_8_GRP_SPACES))
++		*sep_chars = groupsize * 8;
++
++	if (flags & (HEXDUMP_2_GRP_LINES | HEXDUMP_4_GRP_LINES |
++					   HEXDUMP_8_GRP_LINES))
++		*sep = '|';
++
++	if (flags & (HEXDUMP_2_GRP_SPACES | HEXDUMP_4_GRP_SPACES |
++					   HEXDUMP_8_GRP_SPACES))
++		*sep = ' ';
++}
++
+ /**
+  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
+  * @buf: data blob to dump
+@@ -107,6 +135,9 @@ static const char *group_separator(int group, u64 flags)
+  *	HEXDUMP_2_GRP_LINES:		insert a '|' after every 2 groups
+  *	HEXDUMP_4_GRP_LINES:		insert a '|' after every 4 groups
+  *	HEXDUMP_8_GRP_LINES:		insert a '|' after every 8 groups
++ *	HEXDUMP_2_GRP_SPACES:		insert a ' ' after every 2 groups
++ *	HEXDUMP_4_GRP_SPACES:		insert a ' ' after every 4 groups
++ *	HEXDUMP_8_GRP_SPACES:		insert a ' ' after every 8 groups
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, converting
+  * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
+@@ -138,7 +169,8 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int j, lx = 0;
+ 	int ascii_column;
+ 	int ret;
+-	int line_chars = 0;
++	int sep_chars = 0;
++	char sep = 0;
+ 
+ 	if (!is_power_of_2(groupsize) || groupsize > 8)
+ 		groupsize = 1;
+@@ -152,8 +184,14 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		len = rowsize;
+ 
+ 	ngroups = len / groupsize;
++
+ 	ascii_column = rowsize * 2 + rowsize / groupsize + 1;
+ 
++	// space separators use 2 spaces in the hex output
++	separator_parameters(flags, groupsize, &sep_chars, &sep);
++	if (sep = ' ')
++		ascii_column += rowsize / sep_chars;
++
+ 	if (!linebuflen)
+ 		goto overflow1;
+ 
+@@ -221,24 +259,17 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		linebuf[lx++] = ' ';
+ 	}
+ 
+-	if (flags & HEXDUMP_2_GRP_LINES)
+-		line_chars = groupsize * 2;
+-	if (flags & HEXDUMP_4_GRP_LINES)
+-		line_chars = groupsize * 4;
+-	if (flags & HEXDUMP_8_GRP_LINES)
+-		line_chars = groupsize * 8;
+-
+ 	for (j = 0; j < len; j++) {
+ 		if (linebuflen < lx + 2)
+ 			goto overflow2;
+ 		ch = ptr[j];
+ 		linebuf[lx++] = (isascii(ch) && isprint(ch)) ? ch : '.';
+ 
+-		if (line_chars && ((j + 1) < len) &&
+-				((j + 1) % line_chars = 0)) {
++		if (sep_chars && ((j + 1) < len) &&
++				((j + 1) % sep_chars = 0)) {
+ 			if (linebuflen < lx + 2)
+ 				goto overflow2;
+-			linebuf[lx++] = '|';
++			linebuf[lx++] = sep;
+ 		}
+ 	}
+ nil:
+@@ -247,9 +278,11 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ overflow2:
+ 	linebuf[lx++] = '\0';
+ overflow1:
+-	return (flags & HEXDUMP_ASCII) ? ascii_column + len +
+-					(len - 1) / line_chars :
+-					 (groupsize * 2 + 1) * ngroups - 1;
++	if (flags & HEXDUMP_ASCII)
++		return ascii_column + len + (len - 1) / sep_chars;
++
++	return groupsize * 2 * ngroups +
++		((sep = ' ') ? 2 : 1) * (ngroups - 1);
+ }
+ EXPORT_SYMBOL(hex_dump_to_buffer);
+ 
+@@ -343,9 +376,9 @@ void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 
+ 	/* Worst case line length:
+ 	 * 2 hex chars + space per byte in, 2 spaces, 1 char per byte in,
+-	 * 1 char per N groups, NULL
++	 * 2 char per N groups, NULL
+ 	 */
+-	linebuf_len = rowsize * 3 + 2 + rowsize + rowsize / groupsize + 1;
++	linebuf_len = rowsize * 3 + 2 + rowsize + 2 * rowsize / groupsize + 1;
+ 	linebuf = kzalloc(linebuf_len, GFP_KERNEL);
+ 	if (!linebuf) {
+ 		printk("%s%shexdump: Could not alloc %u bytes for buffer\n",
 -- 
 2.21.0

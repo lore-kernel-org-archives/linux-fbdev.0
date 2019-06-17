@@ -1,205 +1,307 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 27 Jun 2019 14:08:43 +0000
-Subject: [PATCH 3/3] video: fbdev: mmp: fix sparse warnings about using incorrect types
-Message-Id: <ee796b43-f200-d41a-b18c-ae3d6bcaaa67@samsung.com>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Mon, 17 Jun 2019 02:04:30 +0000
+Subject: [PATCH v3 7/7] lib/hexdump.c: Optionally retain byte ordering
+Message-Id: <20190617020430.8708-8-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627140844eucas1p1fac4e639a3445c6ae1a51b0743289f1c@eucas1p1.samsung.com>
+References: <20190617020430.8708-1-alastair@au1.ibm.com>
+In-Reply-To: <20190617020430.8708-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-Use ->screen_buffer instead of ->screen_base in mmpfb driver.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-[ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
-  pointer") for details. ]
+The behaviour of hexdump groups is to print the data out as if
+it was a native-endian number.
 
-Also fix all other sparse warnings about using incorrect types in
-mmp display subsystem.
+This patch tweaks the documentation to make this clear, and also
+adds the HEXDUMP_RETAIN_BYTE_ORDER flag to allow groups of
+multiple bytes to be printed without affecting the ordering
+of the printed bytes.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/video/fbdev/mmp/fb/mmpfb.c    |    2 -
- drivers/video/fbdev/mmp/hw/mmp_ctrl.c |   55 +++++++++++++++++++---------------
- drivers/video/fbdev/mmp/hw/mmp_ctrl.h |   10 +++---
- drivers/video/fbdev/mmp/hw/mmp_spi.c  |    6 +--
- 4 files changed, 41 insertions(+), 32 deletions(-)
+ include/linux/printk.h |  1 +
+ lib/hexdump.c          | 30 +++++++++++++++++----
+ lib/test_hexdump.c     | 60 +++++++++++++++++++++++++++++-------------
+ 3 files changed, 68 insertions(+), 23 deletions(-)
 
-Index: b/drivers/video/fbdev/mmp/fb/mmpfb.c
-=================================--- a/drivers/video/fbdev/mmp/fb/mmpfb.c
-+++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
-@@ -522,7 +522,7 @@ static int fb_info_setup(struct fb_info
- 		info->var.bits_per_pixel / 8;
- 	info->fbops = &mmpfb_ops;
- 	info->pseudo_palette = fbi->pseudo_palette;
--	info->screen_base = fbi->fb_start;
-+	info->screen_buffer = fbi->fb_start;
- 	info->screen_size = fbi->fb_size;
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index 04416e788802..ffc94bedd737 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -490,6 +490,7 @@ enum {
+ #define HEXDUMP_2_GRP_SPACES		BIT(5)
+ #define HEXDUMP_4_GRP_SPACES		BIT(6)
+ #define HEXDUMP_8_GRP_SPACES		BIT(7)
++#define HEXDUMP_RETAIN_BYTE_ORDER	BIT(8)
  
- 	/* For FB framework: Allocate color map and Register framebuffer*/
-Index: b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-=================================--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.c
-@@ -136,19 +136,26 @@ static void overlay_set_win(struct mmp_o
- 	mutex_lock(&overlay->access_ok);
+ extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 			      int groupsize, char *linebuf, size_t linebuflen,
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index dc85ef0dbb0a..ce14abc7701f 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -127,7 +127,8 @@ static void separator_parameters(u64 flags, int groupsize, int *sep_chars,
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+  * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+- * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
++ * @groupsize: number of bytes to convert to a native endian number and print:
++ * 	       1, 2, 4, 8; default = 1
+  * @linebuf: where to put the converted data
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @flags: A bitwise OR of the following flags:
+@@ -138,6 +139,9 @@ static void separator_parameters(u64 flags, int groupsize, int *sep_chars,
+  *	HEXDUMP_2_GRP_SPACES:		insert a ' ' after every 2 groups
+  *	HEXDUMP_4_GRP_SPACES:		insert a ' ' after every 4 groups
+  *	HEXDUMP_8_GRP_SPACES:		insert a ' ' after every 8 groups
++ *	HEXDUMP_RETAIN_BYTE_ORDER:	Retain the byte ordering of groups
++ *					instead of treating each group as a
++ *					native-endian number
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, converting
+  * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
+@@ -171,6 +175,7 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int ret;
+ 	int sep_chars = 0;
+ 	char sep = 0;
++	bool big_endian = (flags & HEXDUMP_RETAIN_BYTE_ORDER) ? 1 : 0;
  
- 	if (overlay_is_vid(overlay)) {
--		writel_relaxed(win->pitch[0], &regs->v_pitch_yc);
--		writel_relaxed(win->pitch[2] << 16 |
--				win->pitch[1], &regs->v_pitch_uv);
--
--		writel_relaxed((win->ysrc << 16) | win->xsrc, &regs->v_size);
--		writel_relaxed((win->ydst << 16) | win->xdst, &regs->v_size_z);
--		writel_relaxed(win->ypos << 16 | win->xpos, &regs->v_start);
-+		writel_relaxed(win->pitch[0],
-+				(void __iomem *)&regs->v_pitch_yc);
-+		writel_relaxed(win->pitch[2] << 16 | win->pitch[1],
-+				(void __iomem *)&regs->v_pitch_uv);
+ 	if (!is_power_of_2(groupsize) || groupsize > 8)
+ 		groupsize = 1;
+@@ -202,10 +207,13 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u64 *ptr8 = buf;
+ 
+ 		for (j = 0; j < ngroups; j++) {
++			u64 val = big_endian ?
++					be64_to_cpu(get_unaligned(ptr8 + j)) :
++					get_unaligned(ptr8 + j);
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%16.16llx",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr8 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -214,10 +222,14 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u32 *ptr4 = buf;
+ 
+ 		for (j = 0; j < ngroups; j++) {
++			u32 val = big_endian ?
++					be32_to_cpu(get_unaligned(ptr4 + j)) :
++					get_unaligned(ptr4 + j);
 +
-+		writel_relaxed((win->ysrc << 16) | win->xsrc,
-+				(void __iomem *)&regs->v_size);
-+		writel_relaxed((win->ydst << 16) | win->xdst,
-+				(void __iomem *)&regs->v_size_z);
-+		writel_relaxed(win->ypos << 16 | win->xpos,
-+				(void __iomem *)&regs->v_start);
- 	} else {
--		writel_relaxed(win->pitch[0], &regs->g_pitch);
-+		writel_relaxed(win->pitch[0], (void __iomem *)&regs->g_pitch);
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%8.8x",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr4 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -226,10 +238,14 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 		const u16 *ptr2 = buf;
  
--		writel_relaxed((win->ysrc << 16) | win->xsrc, &regs->g_size);
--		writel_relaxed((win->ydst << 16) | win->xdst, &regs->g_size_z);
--		writel_relaxed(win->ypos << 16 | win->xpos, &regs->g_start);
-+		writel_relaxed((win->ysrc << 16) | win->xsrc,
-+				(void __iomem *)&regs->g_size);
-+		writel_relaxed((win->ydst << 16) | win->xdst,
-+				(void __iomem *)&regs->g_size_z);
-+		writel_relaxed(win->ypos << 16 | win->xpos,
-+				(void __iomem *)&regs->g_start);
- 	}
+ 		for (j = 0; j < ngroups; j++) {
++			u16 val = big_endian ?
++					be16_to_cpu(get_unaligned(ptr2 + j)) :
++					get_unaligned(ptr2 + j);
++
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+ 				       "%s%4.4x",
+ 				       j ? group_separator(j, flags) : "",
+-				       get_unaligned(ptr2 + j));
++				       val);
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+ 			lx += ret;
+@@ -331,7 +347,8 @@ static void announce_skipped(const char *level, const char *prefix_str,
+  * @prefix_type: controls whether prefix of an offset, address, or none
+  *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
+  * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+- * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
++ * @groupsize: number of bytes to convert to a native endian number and print:
++ * 	       1, 2, 4, 8; default = 1
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+  * @ascii: include ASCII after the hex output
+@@ -342,6 +359,9 @@ static void announce_skipped(const char *level, const char *prefix_str,
+  *	HEXDUMP_2_GRP_LINES:		insert a '|' after every 2 groups
+  *	HEXDUMP_4_GRP_LINES:		insert a '|' after every 4 groups
+  *	HEXDUMP_8_GRP_LINES:		insert a '|' after every 8 groups
++ *	HEXDUMP_RETAIN_BYTE_ORDER:	Retain the byte ordering of groups
++ *					instead of treating each group as a
++ *					native-endian number
+  *
+  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
+  * to the kernel log at the specified kernel log level, with an optional
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index ae340c5c1c6f..1e510e934568 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -98,14 +98,15 @@ static unsigned failed_tests __initdata;
  
- 	dmafetch_set_fmt(overlay);
-@@ -233,11 +240,11 @@ static int overlay_set_addr(struct mmp_o
- 	memcpy(&overlay->addr, addr, sizeof(struct mmp_addr));
+ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 					     int groupsize, char *test,
+-					     size_t testlen, bool ascii)
++					     size_t testlen, u64 flags)
+ {
+ 	char *p;
+ 	const char * const *result;
+ 	size_t l = len;
+ 	int gs = groupsize, rs = rowsize;
+ 	unsigned int i;
+-	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN);
++	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN) ||
++			(flags & HEXDUMP_RETAIN_BYTE_ORDER);
  
- 	if (overlay_is_vid(overlay)) {
--		writel_relaxed(addr->phys[0], &regs->v_y0);
--		writel_relaxed(addr->phys[1], &regs->v_u0);
--		writel_relaxed(addr->phys[2], &regs->v_v0);
-+		writel_relaxed(addr->phys[0], (void __iomem *)&regs->v_y0);
-+		writel_relaxed(addr->phys[1], (void __iomem *)&regs->v_u0);
-+		writel_relaxed(addr->phys[2], (void __iomem *)&regs->v_v0);
- 	} else
--		writel_relaxed(addr->phys[0], &regs->g_0);
-+		writel_relaxed(addr->phys[0], (void __iomem *)&regs->g_0);
+ 	if (l > rs)
+ 		l = rs;
+@@ -142,7 +143,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 		p--;
  
- 	return overlay->addr.phys[0];
- }
-@@ -268,16 +275,18 @@ static void path_set_mode(struct mmp_pat
- 	tmp |= dsi_rbswap & CFG_INTFRBSWAP_MASK;
- 	writel_relaxed(tmp, ctrl_regs(path) + intf_rbswap_ctrl(path->id));
+ 	/* ASCII part */
+-	if (ascii) {
++	if (flags & HEXDUMP_ASCII) {
+ 		do {
+ 			*p++ = ' ';
+ 		} while (p < test + rs * 2 + rs / gs + 1);
+@@ -157,7 +158,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ #define TEST_HEXDUMP_BUF_SIZE		(64 * 3 + 2 + 64 + 1)
  
--	writel_relaxed((mode->yres << 16) | mode->xres, &regs->screen_active);
-+	writel_relaxed((mode->yres << 16) | mode->xres,
-+		(void __iomem *)&regs->screen_active);
- 	writel_relaxed((mode->left_margin << 16) | mode->right_margin,
--		&regs->screen_h_porch);
-+		(void __iomem *)&regs->screen_h_porch);
- 	writel_relaxed((mode->upper_margin << 16) | mode->lower_margin,
--		&regs->screen_v_porch);
-+		(void __iomem *)&regs->screen_v_porch);
- 	total_x = mode->xres + mode->left_margin + mode->right_margin +
- 		mode->hsync_len;
- 	total_y = mode->yres + mode->upper_margin + mode->lower_margin +
- 		mode->vsync_len;
--	writel_relaxed((total_y << 16) | total_x, &regs->screen_size);
-+	writel_relaxed((total_y << 16) | total_x,
-+		(void __iomem *)&regs->screen_size);
+ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
+-				bool ascii)
++				u64 flags)
+ {
+ 	char test[TEST_HEXDUMP_BUF_SIZE];
+ 	char real[TEST_HEXDUMP_BUF_SIZE];
+@@ -166,11 +167,11 @@ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
  
- 	/* vsync ctrl */
- 	if (path->output_type = PATH_OUT_DSI)
-@@ -285,7 +294,7 @@ static void path_set_mode(struct mmp_pat
- 	else
- 		vsync_ctrl = ((mode->xres + mode->right_margin) << 16)
- 					| (mode->xres + mode->right_margin);
--	writel_relaxed(vsync_ctrl, &regs->vsync_ctrl);
-+	writel_relaxed(vsync_ctrl, (void __iomem *)&regs->vsync_ctrl);
+ 	memset(real, FILL_CHAR, sizeof(real));
+ 	hex_dump_to_buffer(data_b, len, rowsize, groupsize, real, sizeof(real),
+-			   ascii ? HEXDUMP_ASCII : 0);
++			   flags);
  
- 	/* set pixclock div */
- 	sclk_src = clk_get_rate(path_to_ctrl(path)->clk);
-@@ -366,9 +375,9 @@ static void path_set_default(struct mmp_
- 	writel_relaxed(dma_ctrl1, ctrl_regs(path) + dma_ctrl(1, path->id));
+ 	memset(test, FILL_CHAR, sizeof(test));
+ 	test_hexdump_prepare_test(len, rowsize, groupsize, test, sizeof(test),
+-				  ascii);
++				  flags);
  
- 	/* Configure default register values */
--	writel_relaxed(0x00000000, &regs->blank_color);
--	writel_relaxed(0x00000000, &regs->g_1);
--	writel_relaxed(0x00000000, &regs->g_start);
-+	writel_relaxed(0x00000000, (void __iomem *)&regs->blank_color);
-+	writel_relaxed(0x00000000, (void __iomem *)&regs->g_1);
-+	writel_relaxed(0x00000000, (void __iomem *)&regs->g_start);
+ 	if (memcmp(test, real, TEST_HEXDUMP_BUF_SIZE)) {
+ 		pr_err("Len: %zu row: %d group: %d\n", len, rowsize, groupsize);
+@@ -193,7 +194,7 @@ static void __init test_hexdump_set(int rowsize, bool ascii)
+ 
+ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 					 int rowsize, int groupsize,
+-					 bool ascii)
++					 u64 flags)
+ {
+ 	char test[TEST_HEXDUMP_BUF_SIZE];
+ 	char buf[TEST_HEXDUMP_BUF_SIZE];
+@@ -205,7 +206,7 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	memset(buf, FILL_CHAR, sizeof(buf));
+ 
+ 	rc = hex_dump_to_buffer(data_b, len, rowsize, groupsize, buf, buflen,
+-				ascii ? HEXDUMP_ASCII : 0);
++				flags);
  
  	/*
- 	 * 1.enable multiple burst request in DMA AXI
-Index: b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-=================================--- a/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-+++ b/drivers/video/fbdev/mmp/hw/mmp_ctrl.h
-@@ -1393,7 +1393,7 @@ struct mmphw_ctrl {
- 	/* platform related, get from config */
- 	const char *name;
- 	int irq;
--	void *reg_base;
-+	void __iomem *reg_base;
- 	struct clk *clk;
- 
- 	/* sys info */
-@@ -1429,7 +1429,7 @@ static inline struct mmphw_ctrl *overlay
- 	return path_to_ctrl(overlay->path);
- }
- 
--static inline void *ctrl_regs(struct mmp_path *path)
-+static inline void __iomem *ctrl_regs(struct mmp_path *path)
- {
- 	return path_to_ctrl(path)->reg_base;
- }
-@@ -1438,11 +1438,11 @@ static inline void *ctrl_regs(struct mmp
- static inline struct lcd_regs *path_regs(struct mmp_path *path)
- {
- 	if (path->id = PATH_PN)
--		return (struct lcd_regs *)(ctrl_regs(path) + 0xc0);
-+		return (struct lcd_regs __force *)(ctrl_regs(path) + 0xc0);
- 	else if (path->id = PATH_TV)
--		return (struct lcd_regs *)ctrl_regs(path);
-+		return (struct lcd_regs __force  *)ctrl_regs(path);
- 	else if (path->id = PATH_P2)
--		return (struct lcd_regs *)(ctrl_regs(path) + 0x200);
-+		return (struct lcd_regs __force *)(ctrl_regs(path) + 0x200);
- 	else {
- 		dev_err(path->dev, "path id %d invalid\n", path->id);
- 		BUG_ON(1);
-Index: b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-=================================--- a/drivers/video/fbdev/mmp/hw/mmp_spi.c
-+++ b/drivers/video/fbdev/mmp/hw/mmp_spi.c
-@@ -31,7 +31,7 @@ static inline int lcd_spi_write(struct s
- {
- 	int timeout = 100000, isr, ret = 0;
- 	u32 tmp;
--	void *reg_base +	void __iomem *reg_base = (void __iomem *)
- 		*(void **)spi_master_get_devdata(spi->master);
- 
- 	/* clear ISR */
-@@ -80,7 +80,7 @@ static inline int lcd_spi_write(struct s
- 
- static int lcd_spi_setup(struct spi_device *spi)
- {
--	void *reg_base +	void __iomem *reg_base = (void __iomem *)
- 		*(void **)spi_master_get_devdata(spi->master);
- 	u32 tmp;
- 
-@@ -146,7 +146,7 @@ int lcd_spi_register(struct mmphw_ctrl *
- 		return -ENOMEM;
+ 	 * Caller must provide the data length multiple of groupsize. The
+@@ -222,12 +223,12 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 		  - 1 /* no trailing space */;
  	}
- 	p_regbase = spi_master_get_devdata(master);
--	*p_regbase = ctrl->reg_base;
-+	*p_regbase = (void __force *)ctrl->reg_base;
  
- 	/* set bus num to 5 to avoid conflict with other spi hosts */
- 	master->bus_num = 5;
+-	expected_len = (ascii) ? ascii_len : hex_len;
++	expected_len = (flags & HEXDUMP_ASCII) ? ascii_len : hex_len;
+ 
+ 	fill_point = min_t(int, expected_len + 1, buflen);
+ 	if (buflen) {
+ 		test_hexdump_prepare_test(len, rowsize, groupsize, test,
+-					  sizeof(test), ascii);
++					  sizeof(test), flags);
+ 		test[fill_point - 1] = '\0';
+ 	}
+ 	memset(test + fill_point, FILL_CHAR, sizeof(test) - fill_point);
+@@ -237,8 +238,8 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	buf[sizeof(buf) - 1] = '\0';
+ 
+ 	if (!match) {
+-		pr_err("rowsize: %u groupsize: %u ascii: %d Len: %zu buflen: %zu strlen: %zu\n",
+-			rowsize, groupsize, ascii, len, buflen,
++		pr_err("rowsize: %u groupsize: %u flags: %llx Len: %zu buflen: %zu strlen: %zu\n",
++			rowsize, groupsize, flags, len, buflen,
+ 			strnlen(buf, sizeof(buf)));
+ 		pr_err("Result: %d '%-.*s'\n", rc, (int)buflen, buf);
+ 		pr_err("Expect: %d '%-.*s'\n", expected_len, (int)buflen, test);
+@@ -247,7 +248,7 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ 	}
+ }
+ 
+-static void __init test_hexdump_overflow_set(size_t buflen, bool ascii)
++static void __init test_hexdump_overflow_set(size_t buflen, u64 flags)
+ {
+ 	unsigned int i = 0;
+ 	int rs = (get_random_int() % 4 + 1) * 16;
+@@ -256,7 +257,7 @@ static void __init test_hexdump_overflow_set(size_t buflen, bool ascii)
+ 		int gs = 1 << i;
+ 		size_t len = get_random_int() % rs + gs;
+ 
+-		test_hexdump_overflow(buflen, rounddown(len, gs), rs, gs, ascii);
++		test_hexdump_overflow(buflen, rounddown(len, gs), rs, gs, flags);
+ 	} while (i++ < 3);
+ }
+ 
+@@ -264,20 +265,43 @@ static int __init test_hexdump_init(void)
+ {
+ 	unsigned int i;
+ 	int rowsize;
++	u64 flags;
+ 
++	flags = 0;
+ 	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+-		test_hexdump_set(rowsize, false);
++		test_hexdump_set(rowsize, flags);
+ 
++	flags = HEXDUMP_ASCII;
+ 	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+-		test_hexdump_set(rowsize, true);
++		test_hexdump_set(rowsize, flags);
+ 
++	flags = HEXDUMP_RETAIN_BYTE_ORDER;
++	rowsize = (get_random_int() % 2 + 1) * 16;
++	for (i = 0; i < 16; i++)
++		test_hexdump_set(rowsize, flags);
++
++	flags = HEXDUMP_ASCII | HEXDUMP_RETAIN_BYTE_ORDER;
++	rowsize = (get_random_int() % 2 + 1) * 16;
++	for (i = 0; i < 16; i++)
++		test_hexdump_set(rowsize, flags);
++
++	flags = 0;
++	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
++		test_hexdump_overflow_set(i, flags);
++
++	flags = HEXDUMP_ASCII;
++	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
++		test_hexdump_overflow_set(i, flags);
++
++	flags = HEXDUMP_RETAIN_BYTE_ORDER;
+ 	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
+-		test_hexdump_overflow_set(i, false);
++		test_hexdump_overflow_set(i, flags);
+ 
++	flags = HEXDUMP_ASCII | HEXDUMP_RETAIN_BYTE_ORDER;
+ 	for (i = 0; i <= TEST_HEXDUMP_BUF_SIZE; i++)
+-		test_hexdump_overflow_set(i, true);
++		test_hexdump_overflow_set(i, flags);
+ 
+ 	if (failed_tests = 0)
+ 		pr_info("all %u tests passed\n", total_tests);
+-- 
+2.21.0

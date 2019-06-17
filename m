@@ -1,37 +1,39 @@
-From: "Alastair D'Silva" <alastair@d-silva.org>
-Date: Wed, 26 Jun 2019 01:27:53 +0000
-Subject: Re: [PATCH v4 4/7] lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
-Message-Id: <e1b3d172f07f681fed9c311dec67cfb695408f5c.camel@d-silva.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Mon, 17 Jun 2019 13:16:12 +0000
+Subject: [PATCH] video: fbdev: pvr2fb: fix link error for pvr2fb_pci_exit
+Message-Id: <20190617131624.2382303-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625031726.12173-1-alastair@au1.ibm.com>
-         <20190625031726.12173-5-alastair@au1.ibm.com>
-         <3340b520a57e00a483eae170be97316c8d18c22c.camel@perches.com>
-         <746098160c4ff6527d573d2af23c403b6d4e5b80.camel@d-silva.org>
-         <4ba3b835fb3675ea685390903a082bf8b7f9e955.camel@perches.com>
-In-Reply-To: <4ba3b835fb3675ea685390903a082bf8b7f9e955.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, YueHaibing <yuehaibing@huawei.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Andrew Morton <akpm@linux-foundation.org>, Ira Weiny <ira.weiny@intel.com>
 
-On Mon, 2019-06-24 at 22:19 -0700, Joe Perches wrote:
-> On Tue, 2019-06-25 at 15:06 +1000, Alastair D'Silva wrote:
-> > The change actions Jani's suggestion:
-> > https://lkml.org/lkml/2019/6/20/343
-> 
-> I suggest not changing any of the existing uses of
-> hex_dump_to_buffer and only use hex_dump_to_buffer_ext
-> when necessary for your extended use cases.
-> 
-> 
+When the driver is built-in for PCI, we reference the exit function
+after discarding it:
 
-I disagree, adding a wrapper for the benefit of avoiding touching a
-handful of call sites that are easily amended would be adding technical
-debt.
+`pvr2fb_pci_exit' referenced in section `.ref.data' of drivers/video/fbdev/pvr2fb.o: defined in discarded section `.exit.text' of drivers/video/fbdev/pvr2fb.o
 
+Just remove the __exit annotation as the easiest workaround.
+
+Fixes: 0f5a5712ad1e ("video: fbdev: pvr2fb: add COMPILE_TEST support")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ drivers/video/fbdev/pvr2fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
+index 299ea7db9220..cf9cfdc5e685 100644
+--- a/drivers/video/fbdev/pvr2fb.c
++++ b/drivers/video/fbdev/pvr2fb.c
+@@ -990,7 +990,7 @@ static int __init pvr2fb_pci_init(void)
+ 	return pci_register_driver(&pvr2fb_pci_driver);
+ }
+ 
+-static void __exit pvr2fb_pci_exit(void)
++static void pvr2fb_pci_exit(void)
+ {
+ 	pci_unregister_driver(&pvr2fb_pci_driver);
+ }
 -- 
-Alastair D'Silva           mob: 0423 762 819
-skype: alastair_dsilva    
-Twitter: @EvilDeece
-blog: http://alastair.d-silva.org
+2.20.0

@@ -1,30 +1,52 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 13:06:03 +0000
-Subject: Re: [PATCH 12/12] fbdev: da8xx: use resource management for dma
-Message-Id: <84ef4c04-430d-0545-ff81-567f366fe035@samsung.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Wed, 19 Jun 2019 08:11:15 +0000
+Subject: [PATCH] fbcon: Export fbcon_update_vcs
+Message-Id: <20190619081115.27921-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
-        <CGME20190625163514epcas3p3b094a54f96c59c38b94ce56b6fc08f63@epcas3p3.samsung.com>
-        <20190625163434.13620-13-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-13-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, kbuild test robot <lkp@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Daniel Vetter <daniel.vetter@intel.com>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Hans de Goede <hdegoede@redhat.com>, Yisheng Xie <ysxie@foxmail.com>, =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>, Peter Rosin <peda@axentia.se>, Mikulas Patocka <mpatocka@redhat.com>, linux-fbdev@vger.kernel.org, Gerd Hoffmann <kraxel@redhat.com>, Geert Uytterhoeven <geert+renesas@glider.be>, Lukas Wunner <lukas@wunner.de>, dri-devel@lists.freedesktop.org
 
+I failed to spot this while compile-testing. Oops.
 
-On 6/25/19 6:34 PM, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> 
-> Use managed variants of dma alloc functions in the da8xx fbdev driver.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reported-by: kbuild test robot <lkp@intel.com>
+Fixes: 9e1467002630 ("fbcon: replace FB_EVENT_MODE_CHANGE/_ALL with direct calls")
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Lee Jones <lee.jones@linaro.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Cc: Yisheng Xie <ysxie@foxmail.com>
+Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+Cc: Peter Rosin <peda@axentia.se>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Geert Uytterhoeven <geert+renesas@glider.be>
+Cc: Lukas Wunner <lukas@wunner.de>
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+---
+ drivers/video/fbdev/core/fbcon.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index b8067e07f8a8..c9235a2f42f8 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -3037,6 +3037,7 @@ void fbcon_update_vcs(struct fb_info *info, bool all)
+ 	else
+ 		fbcon_modechanged(info);
+ }
++EXPORT_SYMBOL(fbcon_update_vcs);
+ 
+ int fbcon_mode_deleted(struct fb_info *info,
+ 		       struct fb_videomode *mode)
+-- 
+2.20.1

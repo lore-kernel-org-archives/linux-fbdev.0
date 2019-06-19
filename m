@@ -1,63 +1,33 @@
-From: Mathieu Malaterre <malat@debian.org>
-Date: Mon, 03 Jun 2019 07:20:14 +0000
-Subject: Re: [PATCH] video: fbdev: Fix Warning comparing pointer to 0 reported by coccicheck
-Message-Id: <CA+7wUswLsZ7PF6Pi8Oz=9287UYZQeKCFJHP7FDtPf1Cq8PO7ag@mail.gmail.com>
+From: Takashi Iwai <tiwai@suse.de>
+Date: Wed, 19 Jun 2019 05:39:43 +0000
+Subject: [PATCH] docs: fb: Add TER16x32 to the available font names
+Message-Id: <20190619053943.6320-1-tiwai@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190601153917.GA20765@t-1000>
-In-Reply-To: <20190601153917.GA20765@t-1000>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Shobhit Kukreti <shobhitkukreti@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, dri-devel <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Sat, Jun 1, 2019 at 5:39 PM Shobhit Kukreti <shobhitkukreti@gmail.com> wrote:
->
-> drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
-> drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
-> drivers/video/fbdev/controlfb.c: WARNING comparing pointer to 0
->
-> Signed-off-by: Shobhit Kukreti <shobhitkukreti@gmail.com>
-> ---
->  drivers/video/fbdev/controlfb.c | 8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/video/fbdev/controlfb.c b/drivers/video/fbdev/controlfb.c
-> index 7af8db2..07907c5 100644
-> --- a/drivers/video/fbdev/controlfb.c
-> +++ b/drivers/video/fbdev/controlfb.c
-> @@ -182,7 +182,7 @@ int init_module(void)
->         int ret = -ENXIO;
->
->         dp = of_find_node_by_name(NULL, "control");
-> -       if (dp != 0 && !control_of_init(dp))
-> +       if (dp != NULL && !control_of_init(dp))
->                 ret = 0;
->         of_node_put(dp);
->
-> @@ -580,7 +580,7 @@ static int __init control_init(void)
->         control_setup(option);
->
->         dp = of_find_node_by_name(NULL, "control");
-> -       if (dp != 0 && !control_of_init(dp))
-> +       if (dp != NULL && !control_of_init(dp))
->                 ret = 0;
->         of_node_put(dp);
->
-> @@ -683,8 +683,8 @@ static int __init control_of_init(struct device_node *dp)
->                 return -ENXIO;
->         }
->         p = kzalloc(sizeof(*p), GFP_KERNEL);
-> -       if (p = 0)
-> -               return -ENXIO;
-> +       if (p = NULL)
-> +               return -ENOMEM;
+The new font is available since recently.
 
-IMHO the above should be described in the commit message.
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+---
+ Documentation/fb/fbcon.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->         control_fb = p; /* save it for cleanups */
->
->         /* Map in frame buffer and registers */
-> --
-> 2.7.4
->
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index cfb9f7c38f18..1da65b9000de 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -82,7 +82,7 @@ C. Boot options
+ 
+ 	Select the initial font to use. The value 'name' can be any of the
+ 	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
+-	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, VGA8x16, VGA8x8.
++	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
+ 
+ 	Note, not all drivers can handle font with widths not divisible by 8,
+ 	such as vga16fb.
+-- 
+2.16.4

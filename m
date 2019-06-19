@@ -1,39 +1,54 @@
-From: Joe Perches <joe@perches.com>
-Date: Wed, 19 Jun 2019 16:31:24 +0000
+From: "Alastair D'Silva" <alastair@d-silva.org>
+Date: Wed, 19 Jun 2019 23:15:58 +0000
 Subject: Re: [PATCH v3 0/7] Hexdump Enhancements
-Message-Id: <9a000734375c0801fc16b71f4be1235f9b857772.camel@perches.com>
+Message-Id: <c68cb819257f251cbb66f8998a95c31cebe2d72e.camel@d-silva.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190617020430.8708-1-alastair@au1.ibm.com>
-In-Reply-To: <20190617020430.8708-1-alastair@au1.ibm.com>
+         <9a000734375c0801fc16b71f4be1235f9b857772.camel@perches.com>
+In-Reply-To: <9a000734375c0801fc16b71f4be1235f9b857772.camel@perches.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
+To: Joe Perches <joe@perches.com>
 Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-On Mon, 2019-06-17 at 12:04 +1000, Alastair D'Silva wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
+On Wed, 2019-06-19 at 09:31 -0700, Joe Perches wrote:
+> On Mon, 2019-06-17 at 12:04 +1000, Alastair D'Silva wrote:
+> > From: Alastair D'Silva <alastair@d-silva.org>
+> > 
+> > Apologies for the large CC list, it's a heads up for those
+> > responsible
+> > for subsystems where a prototype change in generic code causes a
+> > change
+> > in those subsystems.
+> > 
+> > This series enhances hexdump.
 > 
-> Apologies for the large CC list, it's a heads up for those responsible
-> for subsystems where a prototype change in generic code causes a change
-> in those subsystems.
+> Still not a fan of these patches.
+
+I'm afraid there's not too much action I can take on that, I'm happy to
+address specific issues though.
+
 > 
-> This series enhances hexdump.
-
-Still not a fan of these patches.
-
-> These improve the readability of the dumped data in certain situations
-> (eg. wide terminals are available, many lines of empty bytes exist, etc).
-
-Changing hexdump's last argument from bool to int is odd.
-
-Perhaps a new function should be added instead of changing
-the existing hexdump.
-
-> The default behaviour of hexdump is unchanged, however, the prototype
-> for hex_dump_to_buffer() has changed, and print_hex_dump() has been
-> renamed to print_hex_dump_ext(), with a wrapper replacing it for
-> compatibility with existing code, which would have been too invasive to
-> change.
+> > These improve the readability of the dumped data in certain
+> > situations
+> > (eg. wide terminals are available, many lines of empty bytes exist,
+> > etc).
 > 
-> Hexdump selftests have be run & confirmed passed.
+> Changing hexdump's last argument from bool to int is odd.
+> 
+
+Think of it as replacing a single boolean with many booleans.
+
+> Perhaps a new function should be added instead of changing
+> the existing hexdump.
+> 
+
+There's only a handful of consumers, I don't think there is a value-add 
+in creating more wrappers vs updating the existing callers.
+
+-- 
+Alastair D'Silva           mob: 0423 762 819
+skype: alastair_dsilva    
+Twitter: @EvilDeece
+blog: http://alastair.d-silva.org

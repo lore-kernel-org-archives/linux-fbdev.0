@@ -1,25 +1,22 @@
-From: Randy Dunlap <rdunlap@infradead.org>
-Date: Wed, 19 Jun 2019 15:25:48 +0000
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 20 Jun 2019 19:55:44 +0000
 Subject: Re: [PATCH] docs: fb: Add TER16x32 to the available font names
-Message-Id: <0bfb2789-158c-5e78-1621-2aaefea08d80@infradead.org>
+Message-Id: <20190620135544.4a56b62a@lwn.net>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190619053943.6320-1-tiwai@suse.de>
 In-Reply-To: <20190619053943.6320-1-tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Takashi Iwai <tiwai@suse.de>, Jonathan Corbet <corbet@lwn.net>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Randy Dunlap <rdunlap@infradead.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On 6/18/19 10:39 PM, Takashi Iwai wrote:
+On Wed, 19 Jun 2019 07:39:43 +0200
+Takashi Iwai <tiwai@suse.de> wrote:
+
 > The new font is available since recently.
 > 
 > Signed-off-by: Takashi Iwai <tiwai@suse.de>
-
-Acked-by: Randy Dunlap <rdunlap@infradead.org>
-
-Thanks.
-
 > ---
 >  Documentation/fb/fbcon.rst | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
@@ -34,11 +31,7 @@ Thanks.
 >  	compiled-in fonts: 10x18, 6x10, 7x14, Acorn8x8, MINI4x6,
 > -	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, VGA8x16, VGA8x8.
 > +	PEARL8x8, ProFont6x11, SUN12x22, SUN8x16, TER16x32, VGA8x16, VGA8x8.
->  
->  	Note, not all drivers can handle font with widths not divisible by 8,
->  	such as vga16fb.
-> 
 
+Applied, thanks.
 
--- 
-~Randy
+jon

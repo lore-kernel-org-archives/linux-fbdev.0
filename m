@@ -1,7 +1,7 @@
 From: =?utf-8?B?QsO2bMO8bQ==?= Sekreteri <fatihyilmaz@erbakan.edu.tr>
-Date: Sat, 22 Jun 2019 09:44:54 +0000
+Date: Sat, 22 Jun 2019 09:45:51 +0000
 Subject: SPENDE
-Message-Id: <1472742262.8530112.1561196694388.JavaMail.zimbra@erbakan.edu.tr>
+Message-Id: <1137039133.8530219.1561196751518.JavaMail.zimbra@erbakan.edu.tr>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <BLUPR05MB192143D8505C3EEE222EEA53C8AF0@BLUPR05MB1921.namprd05.prod.outlook.com>
 In-Reply-To: <BLUPR05MB192143D8505C3EEE222EEA53C8AF0@BLUPR05MB1921.namprd05.prod.outlook.com>

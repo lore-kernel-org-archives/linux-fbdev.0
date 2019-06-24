@@ -1,38 +1,60 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Fri, 28 Jun 2019 10:02:53 +0000
-Subject: [PATCH RFT 4/4] backlight: gpio: remove unused fields from platform data
-Message-Id: <20190628100253.8385-5-brgl@bgdev.pl>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 24 Jun 2019 20:31:12 +0000
+Subject: [PATCH v2 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
+Message-Id: <20190624203114.93277-4-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190628100253.8385-1-brgl@bgdev.pl>
-In-Reply-To: <20190628100253.8385-1-brgl@bgdev.pl>
+References: <20190624203114.93277-1-mka@chromium.org>
+In-Reply-To: <20190624203114.93277-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+For backlight curves calculated with the CIE 1931 algorithm set
+the brightness scale type property accordingly. This makes the
+scale type available to userspace via the 'scale' sysfs attribute.
 
-Remove the platform data fields that nobody uses.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- include/linux/platform_data/gpio_backlight.h | 3 ---
- 1 file changed, 3 deletions(-)
+Changes in v2:
+- added Enric's 'Tested-by' tag
+- added Daniel's 'Acked-by' tag
+---
+ drivers/video/backlight/pwm_bl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
-index 34179d600360..1a8b5b1946fe 100644
---- a/include/linux/platform_data/gpio_backlight.h
-+++ b/include/linux/platform_data/gpio_backlight.h
-@@ -9,9 +9,6 @@ struct device;
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index fb45f866b923..f067fe7aa35d 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -553,6 +553,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		goto err_alloc;
+ 	}
  
- struct gpio_backlight_platform_data {
- 	struct device *fbdev;
--	int gpio;
--	int def_value;
--	const char *name;
- };
++	memset(&props, 0, sizeof(struct backlight_properties));
++
+ 	if (data->levels) {
+ 		/*
+ 		 * For the DT case, only when brightness levels is defined
+@@ -591,6 +593,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
  
- #endif
+ 			pb->levels = data->levels;
+ 		}
++
++		props.scale = BACKLIGHT_SCALE_CIE1931;
+ 	} else {
+ 		/*
+ 		 * That only happens for the non-DT case, where platform data
+@@ -601,7 +605,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+ 
+-	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = data->max_brightness;
+ 	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, pb,
 -- 
-2.21.0
+2.22.0.410.gd8fdbe21b5-goog

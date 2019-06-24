@@ -1,26 +1,39 @@
-From: DR ALBERT ZONGO <rjpd@ono.com>
-Date: Fri, 14 Jun 2019 17:48:17 +0000
-Subject: 
-Message-Id: <33296203.262531560534497614.JavaMail.defaultUser@defaultHost>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 24 Jun 2019 20:31:10 +0000
+Subject: [PATCH v2 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
+Message-Id: <20190624203114.93277-2-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190624203114.93277-1-mka@chromium.org>
+In-Reply-To: <20190624203114.93277-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
+Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
+file.
 
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+Changes in v2:
+- added Daniel's 'Acked-by' tag
+---
+ MAINTAINERS | 1 +
+ 1 file changed, 1 insertion(+)
 
-
---
-Greetings,
-
-I have an intending proposal for you please i need you to contact my 
-private
-
- E-mail (dralbertddzongo@gmail.com) for more updates,
-
-Best Wishes.
-
-DR ALBERT ZONGO
-
---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 57f496cff999..d51e74340870 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2857,6 +2857,7 @@ F:	drivers/video/backlight/
+ F:	include/linux/backlight.h
+ F:	include/linux/pwm_backlight.h
+ F:	Documentation/devicetree/bindings/leds/backlight
++F:	Documentation/ABI/stable/sysfs-class-backlight
+ 
+ BATMAN ADVANCED
+ M:	Marek Lindner <mareklindner@neomailbox.ch>
+-- 
+2.22.0.410.gd8fdbe21b5-goog

@@ -1,30 +1,28 @@
-From: Manuel Lauss <manuel.lauss@gmail.com>
-Date: Wed, 26 Jun 2019 07:16:46 +0000
-Subject: Re: [PATCH] au1200fb: don't use DMA_ATTR_NON_CONSISTENT
-Message-Id: <CAOLZvyF0NsB6_e0=Vat48Mq1r-Qy45z509jAgQczG7RoaOqjBA@mail.gmail.com>
+From: =?UTF-8?Q?Ricardo_B=C3=A1nffy?= <rbanffy@gmail.com>
+Date: Mon, 24 Jun 2019 14:33:47 +0000
+Subject: Character attributes in fb console
+Message-Id: <CA+NZatLi=KdC+BnNz8egzDinGv+g9zYMPfn2yyKkFC40fnP5qQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625121321.10197-1-hch@lst.de>
-In-Reply-To: <20190625121321.10197-1-hch@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christoph Hellwig <hch@lst.de>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linux-MIPS <linux-mips@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-On Tue, Jun 25, 2019 at 2:13 PM Christoph Hellwig <hch@lst.de> wrote:
->
-> au1200fb allocates DMA memory using DMA_ATTR_NON_CONSISTENT, but never
-> calls dma_cache_sync to synchronize the memory between the CPU and the
-> device.  If it was use on a not cache coherent bus that would be fatal,
-> but as far as I can tell from the naming and the mips platform
-> implementation it always is used in cache coherent systems.  Remove
-> the DMA_ATTR_NON_CONSISTENT flag, which is a no-op in that case.
+Hi foilks,
 
-Very early au1200 chips, on which this driver apparently was developed on,
-had issues with cache coherency, but this was fixed in a later step,
-none of the 3 steppings I have access to exhibit any problems
-with this patch applied.
+I'm starting to look into the fb console code and I have a couple questions:
 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
+- Is this the right list to ask questions about architecture and features?
+- Do we have a roadmap of things we want to add/remove/refactor?
+- Is there a comprehensive set of documents about the API,
+architecture and expected behavior?
 
-Acked-By: Manuel Lauss <manuel.lauss@gmail.com>
+I guess I am looking for a developer getting started path.
+
+Cheers,
+
+Ricardo
+
+--
+Ricardo B=C3=A1nffy
+http://about.me/rbanffy

@@ -1,45 +1,119 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 27 Jun 2019 14:07:43 +0000
-Subject: [PATCH 2/3] video: fbdev: mmp: add COMPILE_TEST support
-Message-Id: <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:26 +0000
+Subject: [PATCH 04/12] ARM: davinci: refresh davinci_all_defconfig
+Message-Id: <20190625163434.13620-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627140744eucas1p1eb91c6c21ae36105f38dbf5e42259a7c@eucas1p1.samsung.com>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Add COMPILE_TEST support to mmp display subsystem for better compile
-testing coverage.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Refresh davinci_all_defconfig with current master.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/video/fbdev/mmp/Kconfig    |    2 +-
- drivers/video/fbdev/mmp/hw/Kconfig |    3 ++-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ arch/arm/configs/davinci_all_defconfig | 27 ++++++++++----------------
+ 1 file changed, 10 insertions(+), 17 deletions(-)
 
-Index: b/drivers/video/fbdev/mmp/Kconfig
-=================================--- a/drivers/video/fbdev/mmp/Kconfig
-+++ b/drivers/video/fbdev/mmp/Kconfig
-@@ -1,7 +1,7 @@
- # SPDX-License-Identifier: GPL-2.0-only
- menuconfig MMP_DISP
- 	tristate "Marvell MMP Display Subsystem support"
--	depends on CPU_PXA910 || CPU_MMP2
-+	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
- 	help
- 	  Marvell Display Subsystem support.
- 
-Index: b/drivers/video/fbdev/mmp/hw/Kconfig
-=================================--- a/drivers/video/fbdev/mmp/hw/Kconfig
-+++ b/drivers/video/fbdev/mmp/hw/Kconfig
-@@ -1,7 +1,8 @@
- # SPDX-License-Identifier: GPL-2.0-only
- config MMP_DISP_CONTROLLER
- 	bool "mmp display controller hw support"
--	depends on CPU_PXA910 || CPU_MMP2
-+	depends on HAVE_CLK && HAS_IOMEM
-+	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
- 	help
- 		Marvell MMP display hw controller support
- 		this controller is used on Marvell PXA910 and
+diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
+index 4a8cad4d3707..13d7846c613d 100644
+--- a/arch/arm/configs/davinci_all_defconfig
++++ b/arch/arm/configs/davinci_all_defconfig
+@@ -3,6 +3,7 @@ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_NO_HZ=y
+ CONFIG_HIGH_RES_TIMERS=y
++CONFIG_PREEMPT=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT
+@@ -10,13 +11,6 @@ CONFIG_CGROUPS=y
+ CONFIG_CHECKPOINT_RESTORE=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_EXPERT=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_IOSCHED_DEADLINE is not set
+-# CONFIG_IOSCHED_CFQ is not set
+ CONFIG_ARCH_DAVINCI=y
+ CONFIG_ARCH_DAVINCI_DM644x=y
+ CONFIG_ARCH_DAVINCI_DM355=y
+@@ -31,9 +25,7 @@ CONFIG_MACH_MITYOMAPL138=y
+ CONFIG_MACH_OMAPL138_HAWKBOARD=y
+ CONFIG_DAVINCI_MUX_DEBUG=y
+ CONFIG_DAVINCI_MUX_WARNINGS=y
+-CONFIG_PREEMPT=y
+ CONFIG_AEABI=y
+-CONFIG_CMA=y
+ CONFIG_SECCOMP=y
+ CONFIG_ZBOOT_ROM_TEXT=0x0
+ CONFIG_ZBOOT_ROM_BSS=0x0
+@@ -46,6 +38,12 @@ CONFIG_CPU_FREQ_GOV_PERFORMANCE=m
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+ CONFIG_CPU_IDLE=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_MODVERSIONS=y
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_CMA=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+@@ -63,7 +61,6 @@ CONFIG_BT_HCIUART_LL=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_FW_LOADER=m
+-CONFIG_DMA_CMA=y
+ CONFIG_DA8XX_MSTPRI=y
+ CONFIG_MTD=m
+ CONFIG_MTD_TESTS=m
+@@ -167,8 +164,6 @@ CONFIG_SOUND=m
+ CONFIG_SND=m
+ CONFIG_SND_USB_AUDIO=m
+ CONFIG_SND_SOC=m
+-CONFIG_SND_SOC_TLV320AIC3X=m
+-CONFIG_SND_SOC_DAVINCI_MCASP=m
+ CONFIG_SND_SOC_DAVINCI_EVM=m
+ CONFIG_SND_SIMPLE_CARD=m
+ CONFIG_HID=m
+@@ -213,14 +208,12 @@ CONFIG_MMC_DAVINCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=m
+ CONFIG_LEDS_GPIO=m
+-CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_OMAP=m
+ CONFIG_DMADEVICES=y
+-CONFIG_TI_EDMA=y
+ CONFIG_COMMON_CLK_PWM=m
+ CONFIG_REMOTEPROC=m
+ CONFIG_DA8XX_REMOTEPROC=m
+@@ -258,10 +251,10 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=m
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
++# CONFIG_CRYPTO_HW is not set
++CONFIG_CRC_T10DIF=m
++CONFIG_DMA_CMA=y
+ CONFIG_DEBUG_FS=y
+ CONFIG_DEBUG_RT_MUTEXES=y
+ CONFIG_DEBUG_MUTEXES=y
+-# CONFIG_ARM_UNWIND is not set
+ CONFIG_DEBUG_USER=y
+-# CONFIG_CRYPTO_HW is not set
+-CONFIG_CRC_T10DIF=m
+-- 
+2.21.0

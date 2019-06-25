@@ -1,95 +1,85 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Fri, 21 Jun 2019 12:49:32 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: Fix heuristic to determine number of brightness levels
-Message-Id: <bf229b34-2b76-90f7-3e48-102f473b3b52@linaro.org>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Tue, 25 Jun 2019 16:01:03 +0000
+Subject: [PATCH] video: fbdev: s3c-fb: Mark expected switch fall-throughs
+Message-Id: <20190625160103.GA13133@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190612180003.161966-1-mka@chromium.org>
-In-Reply-To: <20190612180003.161966-1-mka@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Matthias Kaehlcke <mka@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Kees Cook <keescook@chromium.org>
 
-On 12/06/2019 19:00, Matthias Kaehlcke wrote:
-> With commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of
-> LED linearly to human eye") the number of set bits (aka hweight())
-> in the PWM period is used in the heuristic to determine the number
-> of brightness levels, when the brightness table isn't specified in
-> the DT. The number of set bits doesn't provide a reliable clue about
-> the length of the period, instead change the heuristic to:
-> 
->   nlevels = period / fls(period)
-> 
-> Also limit the maximum number of brightness levels to 4096 to avoid
-> excessively large tables.
-> 
-> With this the number of levels increases monotonically with the PWM
-> period, until the maximum of 4096 levels is reached:
-> 
-> period (ns)    # levels
-> 
-> 100    	       16
-> 500	       62
-> 1000	       111
-> 5000	       416
-> 10000	       769
-> 50000	       3333
-> 100000	       4096
-> 
-> Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+In preparation to enabling -Wimplicit-fallthrough, mark switch
+cases where we are expecting to fall through.
 
-As I understand it we can't determine the PWM quantization without 
-actually programming it so the table could still be oversized after this 
-patch (e.g. multiple entries end up with same physical brightness) but 
-since it should always be monotonic and the table size will cap out at a 
-sane value then:
+This patch fixes the following warnings:
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+drivers/video/fbdev/s3c-fb.c: In function ‘s3c_fb_blank’:
+drivers/video/fbdev/s3c-fb.c:811:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   sfb->enabled &= ~(1 << index);
+   ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
+drivers/video/fbdev/s3c-fb.c:814:2: note: here
+  case FB_BLANK_NORMAL:
+  ^~~~
+  LD [M]  drivers/staging/greybus/gb-light.o
+  CC [M]  drivers/gpu/drm/nouveau/nvkm/subdev/secboot/gp10b.o
+drivers/video/fbdev/s3c-fb.c: In function ‘s3c_fb_check_var’:
+drivers/video/fbdev/s3c-fb.c:286:22: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   var->transp.length = 1;
+   ~~~~~~~~~~~~~~~~~~~^~~
+drivers/video/fbdev/s3c-fb.c:288:2: note: here
+  case 18:
+  ^~~~
+drivers/video/fbdev/s3c-fb.c:314:22: warning: this statement may fall through [-Wimplicit-fallthrough=]
+   var->transp.offset = 24;
+   ~~~~~~~~~~~~~~~~~~~^~~~
+drivers/video/fbdev/s3c-fb.c:316:2: note: here
+  case 24:
+  ^~~~
 
+Warning level 3 was used: -Wimplicit-fallthrough=3
 
-> ---
->   drivers/video/backlight/pwm_bl.c | 24 ++++++------------------
->   1 file changed, 6 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index fb45f866b923..0b7152fa24f7 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -194,29 +194,17 @@ int pwm_backlight_brightness_default(struct device *dev,
->   				     struct platform_pwm_backlight_data *data,
->   				     unsigned int period)
->   {
-> -	unsigned int counter = 0;
-> -	unsigned int i, n;
-> +	unsigned int i;
->   	u64 retval;
->   
->   	/*
-> -	 * Count the number of bits needed to represent the period number. The
-> -	 * number of bits is used to calculate the number of levels used for the
-> -	 * brightness-levels table, the purpose of this calculation is have a
-> -	 * pre-computed table with enough levels to get linear brightness
-> -	 * perception. The period is divided by the number of bits so for a
-> -	 * 8-bit PWM we have 255 / 8 = 32 brightness levels or for a 16-bit PWM
-> -	 * we have 65535 / 16 = 4096 brightness levels.
-> -	 *
-> -	 * Note that this method is based on empirical testing on different
-> -	 * devices with PWM of 8 and 16 bits of resolution.
-> +	 * Once we have 4096 levels there's little point going much higher...
-> +	 * neither interactive sliders nor animation benefits from having
-> +	 * more values in the table.
->   	 */
-> -	n = period;
-> -	while (n) {
-> -		counter += n % 2;
-> -		n >>= 1;
-> -	}
-> +	data->max_brightness > +		min((int)DIV_ROUND_UP(period, fls(period)), 4096);
->   
-> -	data->max_brightness = DIV_ROUND_UP(period, counter);
->   	data->levels = devm_kcalloc(dev, data->max_brightness,
->   				    sizeof(*data->levels), GFP_KERNEL);
->   	if (!data->levels)
-> 
+Notice that, in this particular case, the code comments are modified
+in accordance with what GCC is expecting to find.
+
+This patch is part of the ongoing efforts to enable
+-Wimplicit-fallthrough.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/s3c-fb.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index 288300035164..f0b0643ab195 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -284,7 +284,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 		/* 666 with one bit alpha/transparency */
+ 		var->transp.offset	= 18;
+ 		var->transp.length	= 1;
+-		/* drop through */
++		/* fall through */
+ 	case 18:
+ 		var->bits_per_pixel	= 32;
+ 
+@@ -312,7 +312,7 @@ static int s3c_fb_check_var(struct fb_var_screeninfo *var,
+ 	case 25:
+ 		var->transp.length	= var->bits_per_pixel - 24;
+ 		var->transp.offset	= 24;
+-		/* drop through */
++		/* fall through */
+ 	case 24:
+ 		/* our 24bpp is unpacked, so 32bpp */
+ 		var->bits_per_pixel	= 32;
+@@ -809,7 +809,7 @@ static int s3c_fb_blank(int blank_mode, struct fb_info *info)
+ 	case FB_BLANK_POWERDOWN:
+ 		wincon &= ~WINCONx_ENWIN;
+ 		sfb->enabled &= ~(1 << index);
+-		/* fall through to FB_BLANK_NORMAL */
++		/* fall through - to FB_BLANK_NORMAL */
+ 
+ 	case FB_BLANK_NORMAL:
+ 		/* disable the DMA and display 0x0 (black) */
+-- 
+2.21.0

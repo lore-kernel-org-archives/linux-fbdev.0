@@ -1,35 +1,71 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 07 Jun 2019 11:52:00 +0000
-Subject: Re: [PATCH] video: fbdev: mxsfb: Remove driver
-Message-Id: <80891dd1-370b-6070-011b-b7ac822e17de@samsung.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:24 +0000
+Subject: [PATCH 02/12] backlight: gpio: use a helper variable for &pdev->dev
+Message-Id: <20190625163434.13620-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190520130612.2214-1-festevam@gmail.com>
- <CGME20190520134337epcas3p369f0aaf00906512fa716324896822679@epcas3p3.samsung.com>
- <1bb6a117-dcf4-8842-0c3a-c3e015b2f0a9@denx.de>
-In-Reply-To: <1bb6a117-dcf4-8842-0c3a-c3e015b2f0a9@denx.de>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marek Vasut <marex@denx.de>, Fabio Estevam <festevam@gmail.com>
-Cc: dri-devel@lists.freedesktop.org, shawnguo@kernel.org, linux-imx@nxp.com, kernel@pengutronix.de, linux-fbdev@vger.kernel.org
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On 5/20/19 3:43 PM, Marek Vasut wrote:
-> On 5/20/19 3:06 PM, Fabio Estevam wrote:
->> There is a DRM version of the mxsfb driver for quite some time
->> at drivers/gpu/drm/mxsfb/, so there is no need to keep maintaining
->> the fbdev version any longer.
->>
->> Remove the fbdev mxsfb driver in favour of the DRM version.
->>
->> Signed-off-by: Fabio Estevam <festevam@gmail.com>
-> 
-> Acked-by: Marek Vasut <marex@denx.de>
+Instead of dereferencing pdev each time, use a helper variable for
+the associated device pointer.
 
-Patch queued for v5.3, thanks.
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 654c19d3a81d..8adbc8d75097 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -83,15 +83,16 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct gpio_backlight_platform_data *pdata  		dev_get_platdata(&pdev->dev);
+ 	struct backlight_properties props;
++	struct device *dev = &pdev->dev;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
+ 	int ret;
+ 
+-	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
++	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
+ 
+-	gbl->dev = &pdev->dev;
++	gbl->dev = dev;
+ 
+ 	if (pdata) {
+ 		/*
+@@ -108,7 +109,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+ 					    pdata ? pdata->name : "backlight");
+ 		if (ret < 0) {
+-			dev_err(&pdev->dev, "unable to request GPIO\n");
++			dev_err(dev, "unable to request GPIO\n");
+ 			return ret;
+ 		}
+ 		gbl->gpiod = gpio_to_desc(pdata->gpio);
+@@ -123,11 +124,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	memset(&props, 0, sizeof(props));
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = 1;
+-	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
+-					&pdev->dev, gbl, &gpio_backlight_ops,
+-					&props);
++	bl = devm_backlight_device_register(dev, dev_name(dev), dev, gbl,
++					    &gpio_backlight_ops, &props);
+ 	if (IS_ERR(bl)) {
+-		dev_err(&pdev->dev, "failed to register backlight\n");
++		dev_err(dev, "failed to register backlight\n");
+ 		return PTR_ERR(bl);
+ 	}
+ 
+-- 
+2.21.0

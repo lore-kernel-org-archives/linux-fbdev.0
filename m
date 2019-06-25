@@ -1,207 +1,296 @@
-From: Marko Kohtala <marko.kohtala@okoko.fi>
-Date: Tue, 18 Jun 2019 07:41:11 +0000
-Subject: [PATCH 6/6] video: ssd1307fb: Add devicetree configuration of display setup
-Message-Id: <20190618074111.9309-7-marko.kohtala@okoko.fi>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Tue, 25 Jun 2019 03:17:21 +0000
+Subject: [PATCH v4 2/7] lib/hexdump.c: Relax rowsize checks in hex_dump_to_buffer
+Message-Id: <20190625031726.12173-3-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190618074111.9309-1-marko.kohtala@okoko.fi>
-In-Reply-To: <20190618074111.9309-1-marko.kohtala@okoko.fi>
+References: <20190625031726.12173-1-alastair@au1.ibm.com>
+In-Reply-To: <20190625031726.12173-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxf>
 
-Various displays have differences that only mean initializing the display
-driver IC with different fixed register values. Defining these in
-devicetree offers easier way to adapt the driver to new displays than
-requiring a patch to the kernel.
+From: Alastair D'Silva <alastair@d-silva.org>
 
-This adds devicetree properties needed to make the initialization match
-the example setup as offered by Densitron for their 128x36 display.
+This patch removes the hardcoded row limits and allows for
+other lengths. These lengths must still be a multiple of
+groupsize.
 
-It also makes some old one bit parameter handling a little cleaner.
+This allows structs that are not 16/32 bytes to display on
+a single line.
 
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
+This patch also expands the self-tests to test row sizes
+up to 64 bytes (though they can now be arbitrarily long).
+
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
 ---
- drivers/video/fbdev/ssd1307fb.c | 80 ++++++++++++++++++++++++++-------
- 1 file changed, 64 insertions(+), 16 deletions(-)
+ lib/hexdump.c      | 49 +++++++++++++++++++++++++++++--------------
+ lib/test_hexdump.c | 52 ++++++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 76 insertions(+), 25 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 4f4a1b99d17d..fca1e91d03d9 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -29,6 +29,7 @@
- #define SSD1307FB_SET_COL_RANGE		0x21
- #define SSD1307FB_SET_PAGE_RANGE	0x22
- #define SSD1307FB_CONTRAST		0x81
-+#define SSD1307FB_SET_LOOKUP_TABLE	0x91
- #define	SSD1307FB_CHARGE_PUMP		0x8d
- #define SSD1307FB_SEG_REMAP_ON		0xa1
- #define SSD1307FB_DISPLAY_OFF		0xae
-@@ -37,6 +38,7 @@
- #define SSD1307FB_START_PAGE_ADDRESS	0xb0
- #define SSD1307FB_SET_DISPLAY_OFFSET	0xd3
- #define	SSD1307FB_SET_CLOCK_FREQ	0xd5
-+#define	SSD1307FB_SET_AREA_COLOR_MODE	0xd8
- #define	SSD1307FB_SET_PRECHARGE_PERIOD	0xd9
- #define	SSD1307FB_SET_COM_PINS_CONFIG	0xda
- #define	SSD1307FB_SET_VCOMH		0xdb
-@@ -59,10 +61,14 @@ struct ssd1307fb_deviceinfo {
- };
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 81b70ed37209..870c8cbff1e1 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -12,6 +12,7 @@
+ #include <linux/errno.h>
+ #include <linux/kernel.h>
+ #include <linux/export.h>
++#include <linux/slab.h>
+ #include <asm/unaligned.h>
  
- struct ssd1307fb_par {
--	u32 com_invdir;
--	u32 com_lrremap;
-+	unsigned area_color_enable : 1;
-+	unsigned com_invdir : 1;
-+	unsigned com_lrremap : 1;
-+	unsigned com_seq : 1;
-+	unsigned lookup_table_set : 1;
-+	unsigned low_power : 1;
-+	unsigned seg_remap : 1;
- 	u32 com_offset;
--	u32 com_seq;
- 	u32 contrast;
- 	u32 dclk_div;
- 	u32 dclk_frq;
-@@ -70,6 +76,7 @@ struct ssd1307fb_par {
- 	struct i2c_client *client;
- 	u32 height;
- 	struct fb_info *info;
-+	u8 lookup_table[4];
- 	u32 page_offset;
- 	u32 prechargep1;
- 	u32 prechargep2;
-@@ -77,7 +84,6 @@ struct ssd1307fb_par {
- 	u32 pwm_period;
- 	struct gpio_desc *reset;
- 	struct regulator *vbat_reg;
--	u32 seg_remap;
- 	u32 vcomh;
- 	u32 width;
- };
-@@ -99,6 +105,9 @@ static const struct fb_fix_screeninfo ssd1307fb_fix = {
+ const char hex_asc[] = "0123456789abcdef";
+@@ -80,14 +81,15 @@ EXPORT_SYMBOL(bin2hex);
+  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+- * @rowsize: number of bytes to print per line; must be 16 or 32
++ * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+  * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
+  * @linebuf: where to put the converted data
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @ascii: include ASCII after the hex output
+  *
+- * hex_dump_to_buffer() works on one "line" of output at a time, i.e.,
+- * 16 or 32 bytes of input data converted to hex + ASCII output.
++ * hex_dump_to_buffer() works on one "line" of output at a time, converting
++ * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
++ * until <rowsize> bytes have been emitted.
+  *
+  * Given a buffer of u8 data, hex_dump_to_buffer() converts the input data
+  * to a hex + ASCII dump at the supplied memory location.
+@@ -116,16 +118,17 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ 	int ascii_column;
+ 	int ret;
  
- static const struct fb_var_screeninfo ssd1307fb_var = {
- 	.bits_per_pixel	= 1,
-+	.red = { .length = 1 },
-+	.green = { .length = 1 },
-+	.blue = { .length = 1 },
- };
- 
- static struct ssd1307fb_array *ssd1307fb_alloc_array(u32 len, u8 type)
-@@ -335,7 +344,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	}
- 
- 	/* Set COM direction */
--	com_invdir = 0xc0 | (par->com_invdir & 0x1) << 3;
-+	com_invdir = 0xc0 | par->com_invdir << 3;
- 	ret = ssd1307fb_write_cmd(par->client,  com_invdir);
- 	if (ret < 0)
- 		return ret;
-@@ -368,6 +377,22 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
-+	/* Set Set Area Color Mode ON/OFF & Low Power Display Mode */
-+	if (par->area_color_enable || par->low_power) {
-+		u32 mode;
-+
-+		ret = ssd1307fb_write_cmd(par->client,
-+					  SSD1307FB_SET_AREA_COLOR_MODE);
-+		if (ret < 0)
-+			return ret;
-+
-+		mode = (par->area_color_enable ? 0x30 : 0) |
-+			(par->low_power ? 5 : 0);
-+		ret = ssd1307fb_write_cmd(par->client, mode);
-+		if (ret < 0)
-+			return ret;
-+	}
-+
- 	/* Set precharge period in number of ticks from the internal clock */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_PRECHARGE_PERIOD);
- 	if (ret < 0)
-@@ -383,8 +408,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
--	compins = 0x02 | !(par->com_seq & 0x1) << 4
--				   | (par->com_lrremap & 0x1) << 5;
-+	compins = 0x02 | !par->com_seq << 4 | par->com_lrremap << 5;
- 	ret = ssd1307fb_write_cmd(par->client, compins);
- 	if (ret < 0)
- 		return ret;
-@@ -408,6 +432,28 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
-+	/* Set lookup table */
-+	if (par->lookup_table_set) {
-+		int i;
-+
-+		ret = ssd1307fb_write_cmd(par->client,
-+					  SSD1307FB_SET_LOOKUP_TABLE);
-+		if (ret < 0)
-+			return ret;
-+
-+		for (i = 0; i < ARRAY_SIZE(par->lookup_table); ++i) {
-+			u8 val = par->lookup_table[i];
-+
-+			if (val < 31 || val > 63)
-+				dev_warn(&par->client->dev,
-+					"lookup table index %d value out of range 31 <= %d <= 63\n",
-+					i, val);
-+			ret = ssd1307fb_write_cmd(par->client, val);
-+			if (ret < 0)
-+				return ret;
-+		}
-+	}
-+
- 	/* Switch to horizontal addressing mode */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SET_ADDRESS_MODE);
- 	if (ret < 0)
-@@ -610,17 +656,26 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	if (of_property_read_u32(node, "solomon,prechargep2", &par->prechargep2))
- 		par->prechargep2 = 2;
- 
-+	if (!of_property_read_u8_array(node, "solomon,lookup-table",
-+		par->lookup_table, ARRAY_SIZE(par->lookup_table)))
-+		par->lookup_table_set = 1;
-+
- 	par->seg_remap = !of_property_read_bool(node, "solomon,segment-no-remap");
- 	par->com_seq = of_property_read_bool(node, "solomon,com-seq");
- 	par->com_lrremap = of_property_read_bool(node, "solomon,com-lrremap");
- 	par->com_invdir = of_property_read_bool(node, "solomon,com-invdir");
-+	par->area_color_enable +		of_property_read_bool(node, "solomon,area-color-enable");
-+	par->low_power = of_property_read_bool(node, "solomon,low-power");
- 
- 	par->contrast = 127;
- 	par->vcomh = par->device_info->default_vcomh;
- 
- 	/* Setup display timing */
--	par->dclk_div = par->device_info->default_dclk_div;
--	par->dclk_frq = par->device_info->default_dclk_frq;
-+	if (of_property_read_u32(node, "solomon,dclk-div", &par->dclk_div))
-+		par->dclk_div = par->device_info->default_dclk_div;
-+	if (of_property_read_u32(node, "solomon,dclk-frq", &par->dclk_frq))
-+		par->dclk_frq = par->device_info->default_dclk_frq;
- 
- 	vmem_size = DIV_ROUND_UP(par->width, 8) * par->height;
- 
-@@ -654,13 +709,6 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	info->var.yres = par->height;
- 	info->var.yres_virtual = par->height;
- 
--	info->var.red.length = 1;
--	info->var.red.offset = 0;
--	info->var.green.length = 1;
--	info->var.green.offset = 0;
--	info->var.blue.length = 1;
--	info->var.blue.offset = 0;
+-	if (rowsize != 16 && rowsize != 32)
+-		rowsize = 16;
 -
- 	info->screen_buffer = vmem;
- 	info->fix.smem_start = __pa(vmem);
- 	info->fix.smem_len = vmem_size;
+-	if (len > rowsize)		/* limit to one line at a time */
+-		len = rowsize;
+ 	if (!is_power_of_2(groupsize) || groupsize > 8)
+ 		groupsize = 1;
+ 	if ((len % groupsize) != 0)	/* no mixed size output */
+ 		groupsize = 1;
+ 
++	if (rowsize % groupsize)
++		rowsize -= rowsize % groupsize;
++
++	if (len > rowsize)		/* limit to one line at a time */
++		len = rowsize;
++
+ 	ngroups = len / groupsize;
+ 	ascii_column = rowsize * 2 + rowsize / groupsize + 1;
+ 
+@@ -216,7 +219,7 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  *  caller supplies trailing spaces for alignment if desired
+  * @prefix_type: controls whether prefix of an offset, address, or none
+  *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
+- * @rowsize: number of bytes to print per line; must be 16 or 32
++ * @rowsize: number of bytes to print per line; must be a multiple of groupsize
+  * @groupsize: number of bytes to print at a time (1, 2, 4, 8; default = 1)
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+@@ -226,10 +229,9 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  * to the kernel log at the specified kernel log level, with an optional
+  * leading prefix.
+  *
+- * print_hex_dump() works on one "line" of output at a time, i.e.,
+- * 16 or 32 bytes of input data converted to hex + ASCII output.
+  * print_hex_dump() iterates over the entire input @buf, breaking it into
+- * "line size" chunks to format and print.
++ * lines of rowsize/groupsize groups of input data converted to hex +
++ * (optionally) ASCII output.
+  *
+  * E.g.:
+  *   print_hex_dump(KERN_DEBUG, "raw data: ", DUMP_PREFIX_ADDRESS,
+@@ -246,17 +248,30 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ {
+ 	const u8 *ptr = buf;
+ 	int i, linelen, remaining = len;
+-	unsigned char linebuf[32 * 3 + 2 + 32 + 1];
++	unsigned char *linebuf;
++	unsigned int linebuf_len;
+ 
+-	if (rowsize != 16 && rowsize != 32)
+-		rowsize = 16;
++	if (rowsize % groupsize)
++		rowsize -= rowsize % groupsize;
++
++	/*
++	 * Worst case line length:
++	 * 2 hex chars + space per byte in, 2 spaces, 1 char per byte in, NULL
++	 */
++	linebuf_len = rowsize * 3 + 2 + rowsize + 1;
++	linebuf = kzalloc(linebuf_len, GFP_KERNEL);
++	if (!linebuf) {
++		printk("%s%shexdump: Could not alloc %u bytes for buffer\n",
++			level, prefix_str, linebuf_len);
++		return;
++	}
+ 
+ 	for (i = 0; i < len; i += rowsize) {
+ 		linelen = min(remaining, rowsize);
+ 		remaining -= rowsize;
+ 
+ 		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
+-				   linebuf, sizeof(linebuf), ascii);
++				   linebuf, linebuf_len, ascii);
+ 
+ 		switch (prefix_type) {
+ 		case DUMP_PREFIX_ADDRESS:
+@@ -271,6 +286,8 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 			break;
+ 		}
+ 	}
++
++	kfree(linebuf);
+ }
+ EXPORT_SYMBOL(print_hex_dump);
+ 
+diff --git a/lib/test_hexdump.c b/lib/test_hexdump.c
+index bef97a964582..5e54525a937c 100644
+--- a/lib/test_hexdump.c
++++ b/lib/test_hexdump.c
+@@ -14,15 +14,25 @@ static const unsigned char data_b[] = {
+ 	'\x70', '\xba', '\xc4', '\x24', '\x7d', '\x83', '\x34', '\x9b',	/* 08 - 0f */
+ 	'\xa6', '\x9c', '\x31', '\xad', '\x9c', '\x0f', '\xac', '\xe9',	/* 10 - 17 */
+ 	'\x4c', '\xd1', '\x19', '\x99', '\x43', '\xb1', '\xaf', '\x0c',	/* 18 - 1f */
++	'\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', /* 20 - 27 */
++	'\x0f', '\x0e', '\x0d', '\x0c', '\x0b', '\x0a', '\x09', '\x08', /* 28 - 2f */
++	'\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', /* 30 - 37 */
++	'\x1f', '\x1e', '\x1d', '\x1c', '\x1b', '\x1a', '\x19', '\x18', /* 38 - 3f */
+ };
+ 
+-static const unsigned char data_a[] = ".2.{....p..$}.4...1.....L...C...";
++static const unsigned char data_a[] = ".2.{....p..$}.4...1.....L...C..."
++				      "................................";
+ 
+ static const char * const test_data_1[] __initconst = {
+ 	"be", "32", "db", "7b", "0a", "18", "93", "b2",
+ 	"70", "ba", "c4", "24", "7d", "83", "34", "9b",
+ 	"a6", "9c", "31", "ad", "9c", "0f", "ac", "e9",
+ 	"4c", "d1", "19", "99", "43", "b1", "af", "0c",
++	"00", "01", "02", "03", "04", "05", "06", "07",
++	"0f", "0e", "0d", "0c", "0b", "0a", "09", "08",
++	"10", "11", "12", "13", "14", "15", "16", "17",
++	"1f", "1e", "1d", "1c", "1b", "1a", "19", "18",
++	NULL
+ };
+ 
+ static const char * const test_data_2_le[] __initconst = {
+@@ -30,6 +40,11 @@ static const char * const test_data_2_le[] __initconst = {
+ 	"ba70", "24c4", "837d", "9b34",
+ 	"9ca6", "ad31", "0f9c", "e9ac",
+ 	"d14c", "9919", "b143", "0caf",
++	"0100", "0302", "0504", "0706",
++	"0e0f", "0c0d", "0a0b", "0809",
++	"1110", "1312", "1514", "1716",
++	"1e1f", "1c1d", "1a1b", "1819",
++	NULL
+ };
+ 
+ static const char * const test_data_2_be[] __initconst = {
+@@ -37,26 +52,43 @@ static const char * const test_data_2_be[] __initconst = {
+ 	"70ba", "c424", "7d83", "349b",
+ 	"a69c", "31ad", "9c0f", "ace9",
+ 	"4cd1", "1999", "43b1", "af0c",
++	"0001", "0203", "0405", "0607",
++	"0f0e", "0d0c", "0b0a", "0908",
++	"1011", "1213", "1415", "1617",
++	"1f1e", "1d1c", "1b1a", "1918",
++	NULL
+ };
+ 
+ static const char * const test_data_4_le[] __initconst = {
+ 	"7bdb32be", "b293180a", "24c4ba70", "9b34837d",
+ 	"ad319ca6", "e9ac0f9c", "9919d14c", "0cafb143",
++	"03020100", "07060504", "0c0d0e0f", "08090a0b",
++	"13121110", "17161514", "1c1d1e1f", "18191a1b",
++	NULL
+ };
+ 
+ static const char * const test_data_4_be[] __initconst = {
+ 	"be32db7b", "0a1893b2", "70bac424", "7d83349b",
+ 	"a69c31ad", "9c0face9", "4cd11999", "43b1af0c",
++	"00010203", "04050607",	"0f0e0d0c", "0b0a0908",
++	"10111213", "14151617",	"1f1e1d1c", "1b1a1918",
++	NULL
+ };
+ 
+ static const char * const test_data_8_le[] __initconst = {
+ 	"b293180a7bdb32be", "9b34837d24c4ba70",
+ 	"e9ac0f9cad319ca6", "0cafb1439919d14c",
++	"0706050403020100", "08090a0b0c0d0e0f",
++	"1716151413121110", "18191a1b1c1d1e1f",
++	NULL
+ };
+ 
+ static const char * const test_data_8_be[] __initconst = {
+ 	"be32db7b0a1893b2", "70bac4247d83349b",
+ 	"a69c31ad9c0face9", "4cd1199943b1af0c",
++	"0001020304050607", "0f0e0d0c0b0a0908",
++	"1011121314151617", "1f1e1d1c1b1a1918",
++	NULL
+ };
+ 
+ #define FILL_CHAR	'#'
+@@ -75,9 +107,6 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 	unsigned int i;
+ 	const bool is_be = IS_ENABLED(CONFIG_CPU_BIG_ENDIAN);
+ 
+-	if (rs != 16 && rs != 32)
+-		rs = 16;
+-
+ 	if (l > rs)
+ 		l = rs;
+ 
+@@ -97,7 +126,12 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 	p = test;
+ 	for (i = 0; i < l / gs; i++) {
+ 		const char *q = *result++;
+-		size_t amount = strlen(q);
++		size_t amount;
++
++		if (!q)
++			break;
++
++		amount = strlen(q);
+ 
+ 		memcpy(p, q, amount);
+ 		p += amount;
+@@ -120,7 +154,7 @@ static void __init test_hexdump_prepare_test(size_t len, int rowsize,
+ 	*p = '\0';
+ }
+ 
+-#define TEST_HEXDUMP_BUF_SIZE		(32 * 3 + 2 + 32 + 1)
++#define TEST_HEXDUMP_BUF_SIZE		(64 * 3 + 2 + 64 + 1)
+ 
+ static void __init test_hexdump(size_t len, int rowsize, int groupsize,
+ 				bool ascii)
+@@ -216,7 +250,7 @@ static void __init test_hexdump_overflow(size_t buflen, size_t len,
+ static void __init test_hexdump_overflow_set(size_t buflen, bool ascii)
+ {
+ 	unsigned int i = 0;
+-	int rs = (get_random_int() % 2 + 1) * 16;
++	int rs = (get_random_int() % 4 + 1) * 16;
+ 
+ 	do {
+ 		int gs = 1 << i;
+@@ -231,11 +265,11 @@ static int __init test_hexdump_init(void)
+ 	unsigned int i;
+ 	int rowsize;
+ 
+-	rowsize = (get_random_int() % 2 + 1) * 16;
++	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+ 		test_hexdump_set(rowsize, false);
+ 
+-	rowsize = (get_random_int() % 2 + 1) * 16;
++	rowsize = (get_random_int() % 4 + 1) * 16;
+ 	for (i = 0; i < 16; i++)
+ 		test_hexdump_set(rowsize, true);
+ 
 -- 
-2.17.1
+2.21.0

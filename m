@@ -1,33 +1,48 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 07 Jun 2019 12:23:14 +0000
-Subject: Re: [PATCH] video: fbdev: atafb: remove superfluous function prototypes
-Message-Id: <b1b4d156-ca2a-2c2f-fce1-097a1eb270dc@samsung.com>
+From: Christoph Hellwig <hch@lst.de>
+Date: Tue, 25 Jun 2019 12:13:21 +0000
+Subject: [PATCH] au1200fb: don't use DMA_ATTR_NON_CONSISTENT
+Message-Id: <20190625121321.10197-1-hch@lst.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190521140244eucas1p244e5e1306a52021a4a0c3910098c4f7c@eucas1p2.samsung.com>
-        <50411fd1-9da0-aab6-709e-749d5e0ce509@samsung.com>
-        <CAMuHMdVbFaY583xJMd9kkW=-dQDY_yPAeToQT854kWFvokECLw@mail.gmail.com>
-In-Reply-To: <CAMuHMdVbFaY583xJMd9kkW=-dQDY_yPAeToQT854kWFvokECLw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: DRI Development <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Manuel Lauss <manuel.lauss@gmail.com>, linux-mips@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
+au1200fb allocates DMA memory using DMA_ATTR_NON_CONSISTENT, but never
+calls dma_cache_sync to synchronize the memory between the CPU and the
+device.  If it was use on a not cache coherent bus that would be fatal,
+but as far as I can tell from the naming and the mips platform
+implementation it always is used in cache coherent systems.  Remove
+the DMA_ATTR_NON_CONSISTENT flag, which is a no-op in that case.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ drivers/video/fbdev/au1200fb.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-On 5/21/19 4:12 PM, Geert Uytterhoeven wrote:
-> On Tue, May 21, 2019 at 4:02 PM Bartlomiej Zolnierkiewicz
-> <b.zolnierkie@samsung.com> wrote:
->> No need for them.
->>
->> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
->> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> 
-> Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Thanks, I queued the patch for v5.3.
-
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/au1200fb.c b/drivers/video/fbdev/au1200fb.c
+index 26caffb02b7e..265d3b45efd0 100644
+--- a/drivers/video/fbdev/au1200fb.c
++++ b/drivers/video/fbdev/au1200fb.c
+@@ -1234,7 +1234,7 @@ static int au1200fb_fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ 	struct au1200fb_device *fbdev = info->par;
+ 
+ 	return dma_mmap_attrs(fbdev->dev, vma, fbdev->fb_mem, fbdev->fb_phys,
+-			fbdev->fb_len, DMA_ATTR_NON_CONSISTENT);
++			fbdev->fb_len, 0);
+ }
+ 
+ static void set_global(u_int cmd, struct au1200_lcd_global_regs_t *pdata)
+@@ -1692,8 +1692,7 @@ static int au1200fb_drv_probe(struct platform_device *dev)
+ 
+ 		fbdev->fb_mem = dmam_alloc_attrs(&dev->dev,
+ 				PAGE_ALIGN(fbdev->fb_len),
+-				&fbdev->fb_phys, GFP_KERNEL,
+-				DMA_ATTR_NON_CONSISTENT);
++				&fbdev->fb_phys, GFP_KERNEL, 0);
+ 		if (!fbdev->fb_mem) {
+ 			print_err("fail to allocate framebuffer (size: %dK))",
+ 				  fbdev->fb_len / 1024);
+-- 
+2.20.1

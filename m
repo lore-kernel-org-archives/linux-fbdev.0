@@ -1,59 +1,103 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 12:55:10 +0000
-Subject: Re: [PATCH 37/39] docs: adds some directories to the main documentation index
-Message-Id: <a89ef0db-211c-1880-e60c-dc599b36feb7@samsung.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:34 +0000
+Subject: [PATCH 12/12] fbdev: da8xx: use resource management for dma
+Message-Id: <20190625163434.13620-13-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1561724493.git.mchehab+samsung@kernel.org>
- <CGME20190628123051epcas3p35e0cb4a5a1159dac19bde504ae21b0f3@epcas3p3.samsung.com>
- <b26fc645cb2c81fe88ab13616c65664d2c3cead5.1561724493.git.mchehab+samsung@kernel.org>
-In-Reply-To: <b26fc645cb2c81fe88ab13616c65664d2c3cead5.1561724493.git.mchehab+samsung@kernel.org>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: linux-fbdev@vger.kernel.org, Len Brown <len.brown@intel.com>, linux-fpga@vger.kernel.org, Dominik Brodowski <linux@dominikbrodowski.net>, Masahiro Yamada <yamada.masahiro@socionext.com>, target-devel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>, live-patching@vger.kernel.org, Miroslav Benes <mbenes@suse.cz>, Joe Lawrence <joe.lawrence@redhat.com>, Paul Moore <paul@paul-moore.com>, linux-scsi@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>, Linux Doc Mailing List <linux-doc@vger.kernel.org>, Guenter Roeck <linux@roeck-us.net>, Petr Mladek <pmladek@suse.com>, linux-watchdog@vger.kernel.org, linux-kbuild@vger.kernel.org, Jiri Kosina <jikos@kernel.org>, Akinobu Mita <akinobu.mita@gmail.com>, Mauro Carvalho Chehab <mchehab@infradead.org>, Moritz Fischer <mdf@kernel.org>, dri-devel@lists.freedesktop.org, Josh Poimboeuf <jpoimboe@redhat.com>, Thomas Gleixner <tglx@linutronix.>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On 6/28/19 2:30 PM, Mauro Carvalho Chehab wrote:
-> The contents of those directories were orphaned at the documentation
-> body.
-> 
-> While those directories could likely be moved to be inside some guide,
-> I'm opting to just adding their indexes to the main one, removing the
-> :orphan: and adding the SPDX header.
-> 
-> For the drivers, the rationale is that the documentation contains
-> a mix of Kernelspace, uAPI and admin-guide. So, better to keep them on
-> separate directories, as we've be doing with similar subsystem-specific
-> docs that were not split yet.
-> 
-> For the others, well... I'm too lazy to do the move. Also, it
-> seems to make sense to keep at least some of those at the main
-> dir (like kbuild, for example). In any case, a latter patch
-> could do the move.
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Use managed variants of dma alloc functions in the da8xx fbdev driver.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/fbdev/da8xx-fb.c | 32 ++++++++++----------------------
+ 1 file changed, 10 insertions(+), 22 deletions(-)
 
-> ---
->  Documentation/cdrom/index.rst           |  2 +-
->  Documentation/fault-injection/index.rst |  2 +-
->  Documentation/fb/index.rst              |  2 +-
->  Documentation/fpga/index.rst            |  2 +-
->  Documentation/ide/index.rst             |  2 +-
->  Documentation/index.rst                 | 14 ++++++++++++++
->  Documentation/kbuild/index.rst          |  2 +-
->  Documentation/livepatch/index.rst       |  2 +-
->  Documentation/netlabel/index.rst        |  2 +-
->  Documentation/pcmcia/index.rst          |  2 +-
->  Documentation/power/index.rst           |  2 +-
->  Documentation/target/index.rst          |  2 +-
->  Documentation/timers/index.rst          |  2 +-
->  Documentation/watchdog/index.rst        |  2 +-
->  14 files changed, 27 insertions(+), 13 deletions(-)
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 6b11a8108108..22f79b3c2326 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1087,10 +1087,6 @@ static int fb_remove(struct platform_device *dev)
+ 
+ 	unregister_framebuffer(info);
+ 	fb_dealloc_cmap(&info->cmap);
+-	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+-			  par->p_palette_base);
+-	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
+-			  par->vram_phys);
+ 	pm_runtime_put_sync(&dev->dev);
+ 	pm_runtime_disable(&dev->dev);
+ 	framebuffer_release(info);
+@@ -1428,10 +1424,10 @@ static int fb_probe(struct platform_device *device)
+ 	par->vram_size = roundup(par->vram_size/8, ulcm);
+ 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
+ 
+-	par->vram_virt = dma_alloc_coherent(par->dev,
+-					    par->vram_size,
+-					    &par->vram_phys,
+-					    GFP_KERNEL | GFP_DMA);
++	par->vram_virt = dmam_alloc_coherent(par->dev,
++					     par->vram_size,
++					     &par->vram_phys,
++					     GFP_KERNEL | GFP_DMA);
+ 	if (!par->vram_virt) {
+ 		dev_err(&device->dev,
+ 			"GLCD: kmalloc for frame buffer failed\n");
+@@ -1449,20 +1445,20 @@ static int fb_probe(struct platform_device *device)
+ 		da8xx_fb_fix.line_length - 1;
+ 
+ 	/* allocate palette buffer */
+-	par->v_palette_base = dma_alloc_coherent(par->dev, PALETTE_SIZE,
+-						 &par->p_palette_base,
+-						 GFP_KERNEL | GFP_DMA);
++	par->v_palette_base = dmam_alloc_coherent(par->dev, PALETTE_SIZE,
++						  &par->p_palette_base,
++						  GFP_KERNEL | GFP_DMA);
+ 	if (!par->v_palette_base) {
+ 		dev_err(&device->dev,
+ 			"GLCD: kmalloc for palette buffer failed\n");
+ 		ret = -EINVAL;
+-		goto err_release_fb_mem;
++		goto err_release_fb;
+ 	}
+ 
+ 	par->irq = platform_get_irq(device, 0);
+ 	if (par->irq < 0) {
+ 		ret = -ENOENT;
+-		goto err_release_pl_mem;
++		goto err_release_fb;
+ 	}
+ 
+ 	da8xx_fb_var.grayscale @@ -1480,7 +1476,7 @@ static int fb_probe(struct platform_device *device)
+ 
+ 	ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
+ 	if (ret)
+-		goto err_release_pl_mem;
++		goto err_release_fb;
+ 	da8xx_fb_info->cmap.len = par->palette_sz;
+ 
+ 	/* initialize var_screeninfo */
+@@ -1534,14 +1530,6 @@ static int fb_probe(struct platform_device *device)
+ err_dealloc_cmap:
+ 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
+ 
+-err_release_pl_mem:
+-	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
+-			  par->p_palette_base);
+-
+-err_release_fb_mem:
+-	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
+-		          par->vram_phys);
+-
+ err_release_fb:
+ 	framebuffer_release(da8xx_fb_info);
+ 
+-- 
+2.21.0

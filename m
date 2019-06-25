@@ -1,42 +1,90 @@
-From: =?UTF-8?Q?Ricardo_B=C3=A1nffy?= <rbanffy@gmail.com>
-Date: Sat, 29 Jun 2019 11:59:27 +0000
-Subject: Re: Character attributes in fb console
-Message-Id: <CA+NZat+HpxvY198+8anEO=8mrrKH-9jJ3RdzG-QGKy76rHqUKg@mail.gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:25 +0000
+Subject: [PATCH 03/12] backlight: gpio: pull the non-pdata device probing code into probe()
+Message-Id: <20190625163434.13620-4-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CA+NZatLi=KdC+BnNz8egzDinGv+g9zYMPfn2yyKkFC40fnP5qQ@mail.gmail.com>
-In-Reply-To: <CA+NZatLi=KdC+BnNz8egzDinGv+g9zYMPfn2yyKkFC40fnP5qQ@mail.gmail.com>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Is this the right list for this kind of question? Is there a list for
-questions and developer onboarding?
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
+There's no good reason to have the generic probing code in a separate
+routine. This function is short and is inlined by the compiler anyway.
+Move it into probe under the pdata-specific part.
 
-On Mon, Jun 24, 2019 at 3:33 PM Ricardo Bánffy <rbanffy@gmail.com> wrote:
->
-> Hi foilks,
->
-> I'm starting to look into the fb console code and I have a couple questions:
->
-> - Is this the right list to ask questions about architecture and features?
-> - Do we have a roadmap of things we want to add/remove/refactor?
-> - Is there a comprehensive set of documents about the API,
-> architecture and expected behavior?
->
-> I guess I am looking for a developer getting started path.
->
-> Cheers,
->
-> Ricardo
->
-> --
-> Ricardo Bánffy
-> http://about.me/rbanffy
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 39 ++++++++----------------
+ 1 file changed, 13 insertions(+), 26 deletions(-)
 
-
-
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 8adbc8d75097..89e10bccfd3c 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -54,30 +54,6 @@ static const struct backlight_ops gpio_backlight_ops = {
+ 	.check_fb	= gpio_backlight_check_fb,
+ };
+ 
+-static int gpio_backlight_probe_prop(struct platform_device *pdev,
+-				     struct gpio_backlight *gbl)
+-{
+-	struct device *dev = &pdev->dev;
+-	enum gpiod_flags flags;
+-	int ret;
+-
+-	gbl->def_value = device_property_read_bool(dev, "default-on");
+-	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+-
+-	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+-	if (IS_ERR(gbl->gpiod)) {
+-		ret = PTR_ERR(gbl->gpiod);
+-
+-		if (ret != -EPROBE_DEFER) {
+-			dev_err(dev,
+-				"Error: The gpios parameter is missing or invalid.\n");
+-		}
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+ static int gpio_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_backlight_platform_data *pdata @@ -86,6 +62,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct device *dev = &pdev->dev;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
++	enum gpiod_flags flags;
+ 	int ret;
+ 
+ 	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+@@ -116,9 +93,19 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 		if (!gbl->gpiod)
+ 			return -EINVAL;
+ 	} else {
+-		ret = gpio_backlight_probe_prop(pdev, gbl);
+-		if (ret)
++		gbl->def_value = device_property_read_bool(dev, "default-on");
++		flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
++
++		gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
++		if (IS_ERR(gbl->gpiod)) {
++			ret = PTR_ERR(gbl->gpiod);
++
++			if (ret != -EPROBE_DEFER) {
++				dev_err(dev,
++					"Error: The gpios parameter is missing or invalid.\n");
++			}
+ 			return ret;
++		}
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
 -- 
-Ricardo Bánffy
-http://about.me/rbanffy
+2.21.0

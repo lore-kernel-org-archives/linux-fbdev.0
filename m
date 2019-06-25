@@ -1,78 +1,198 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 27 Jun 2019 15:49:20 +0000
-Subject: Re: [PATCH 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
-Message-Id: <20190627154920.aucjtaguatd5yd4m@holly.lan>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Tue, 25 Jun 2019 03:17:24 +0000
+Subject: [PATCH v4 5/7] lib/hexdump.c: Allow multiple groups to be separated by lines '|'
+Message-Id: <20190625031726.12173-6-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190613194326.180889-1-mka@chromium.org>
- <20190613194326.180889-4-mka@chromium.org>
- <61ed137c-31bb-c695-4174-0484fe667d6c@linaro.org>
- <20190627092453.GB2000@dell>
-In-Reply-To: <20190627092453.GB2000@dell>
+References: <20190625031726.12173-1-alastair@au1.ibm.com>
+In-Reply-To: <20190625031726.12173-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: alastair@d-silva.org
+Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
 
-On Thu, Jun 27, 2019 at 10:24:53AM +0100, Lee Jones wrote:
-> On Fri, 21 Jun 2019, Daniel Thompson wrote:
-> 
-> > On 13/06/2019 20:43, Matthias Kaehlcke wrote:
-> > > For backlight curves calculated with the CIE 1931 algorithm set
-> > > the brightness scale type property accordingly. This makes the
-> > > scale type available to userspace via the 'scale' sysfs attribute.
-> > > 
-> > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > 
-> > I'd like to keep discussion on patch 2 open a bit longer (it's not part of
-> > the thread below patch 2 but Pavel had concerns about the sysfs interface)
-> > so this ack won't really push things forward but FWIW:
-> > 
-> > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-> Does this depend on patch 2, or is it orthogonal?
+From: Alastair D'Silva <alastair@d-silva.org>
 
-IIRC it depends on patch 2 (since that't what introduces props.scale ).
+With the wider display format, it can become hard to identify how many
+bytes into the line you are looking at.
 
+The patch adds new flags to hex_dump_to_buffer() and print_hex_dump() to
+print vertical lines to separate every N groups of bytes.
 
-Daniel.
+eg.
+buf:00000000: 454d414e 43415053|4e495f45 00584544  NAMESPAC|E_INDEX.
+buf:00000010: 00000000 00000002|00000000 00000000  ........|........
 
-> 
-> > > ---
-> > >   drivers/video/backlight/pwm_bl.c | 5 ++++-
-> > >   1 file changed, 4 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> > > index fb45f866b923..f067fe7aa35d 100644
-> > > --- a/drivers/video/backlight/pwm_bl.c
-> > > +++ b/drivers/video/backlight/pwm_bl.c
-> > > @@ -553,6 +553,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> > >   		goto err_alloc;
-> > >   	}
-> > > +	memset(&props, 0, sizeof(struct backlight_properties));
-> > > +
-> > >   	if (data->levels) {
-> > >   		/*
-> > >   		 * For the DT case, only when brightness levels is defined
-> > > @@ -591,6 +593,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> > >   			pb->levels = data->levels;
-> > >   		}
-> > > +
-> > > +		props.scale = BACKLIGHT_SCALE_CIE1931;
-> > >   	} else {
-> > >   		/*
-> > >   		 * That only happens for the non-DT case, where platform data
-> > > @@ -601,7 +605,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
-> > >   	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
-> > > -	memset(&props, 0, sizeof(struct backlight_properties));
-> > >   	props.type = BACKLIGHT_RAW;
-> > >   	props.max_brightness = data->max_brightness;
-> > >   	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, pb,
-> > > 
-> > 
-> 
-> -- 
-> Lee Jones [李琼斯]
-> Linaro Services Technical Lead
-> Linaro.org │ Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ include/linux/printk.h |  3 +++
+ lib/hexdump.c          | 59 ++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 54 insertions(+), 8 deletions(-)
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index f0761b3a2d5d..ae80d7af82ab 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -485,6 +485,9 @@ enum {
+ 
+ #define HEXDUMP_ASCII			BIT(0)
+ #define HEXDUMP_SUPPRESS_REPEATED	BIT(1)
++#define HEXDUMP_2_GRP_LINES		BIT(2)
++#define HEXDUMP_4_GRP_LINES		BIT(3)
++#define HEXDUMP_8_GRP_LINES		BIT(4)
+ 
+ extern int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 			      int groupsize, char *linebuf, size_t linebuflen,
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 1bf838c1a568..4dcf759fe048 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -77,6 +77,23 @@ char *bin2hex(char *dst, const void *src, size_t count)
+ }
+ EXPORT_SYMBOL(bin2hex);
+ 
++static const char *group_separator(int group, u64 flags)
++{
++	if (group = 0)
++		return " ";
++
++	if ((flags & HEXDUMP_8_GRP_LINES) && !((group) % 8))
++		return "|";
++
++	if ((flags & HEXDUMP_4_GRP_LINES) && !((group) % 4))
++		return "|";
++
++	if ((flags & HEXDUMP_2_GRP_LINES) && !((group) % 2))
++		return "|";
++
++	return " ";
++}
++
+ /**
+  * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
+  * @buf: data blob to dump
+@@ -87,6 +104,9 @@ EXPORT_SYMBOL(bin2hex);
+  * @linebuflen: total size of @linebuf, including space for terminating NUL
+  * @flags: A bitwise OR of the following flags:
+  *	HEXDUMP_ASCII:			include ASCII after the hex output
++ *	HEXDUMP_2_GRP_LINES:		insert a '|' after every 2 groups
++ *	HEXDUMP_4_GRP_LINES:		insert a '|' after every 4 groups
++ *	HEXDUMP_8_GRP_LINES:		insert a '|' after every 8 groups
+  *
+  * hex_dump_to_buffer() works on one "line" of output at a time, converting
+  * <groupsize> bytes of input to hexadecimal (and optionally printable ASCII)
+@@ -119,6 +139,7 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 	int j, lx = 0;
+ 	int ascii_column;
+ 	int ret;
++	int line_chars = 0;
+ 
+ 	if (!is_power_of_2(groupsize) || groupsize > 8)
+ 		groupsize = 1;
+@@ -145,7 +166,8 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%16.16llx", j ? " " : "",
++				       "%s%16.16llx",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr8 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -156,7 +178,8 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%8.8x", j ? " " : "",
++				       "%s%8.8x",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr4 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -167,7 +190,8 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 
+ 		for (j = 0; j < ngroups; j++) {
+ 			ret = snprintf(linebuf + lx, linebuflen - lx,
+-				       "%s%4.4x", j ? " " : "",
++				       "%s%4.4x",
++				       j ? group_separator(j, flags) : "",
+ 				       get_unaligned(ptr2 + j));
+ 			if (ret >= linebuflen - lx)
+ 				goto overflow1;
+@@ -197,11 +221,26 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ 			goto overflow2;
+ 		linebuf[lx++] = ' ';
+ 	}
++
++	if (flags & HEXDUMP_2_GRP_LINES)
++		line_chars = groupsize * 2;
++	if (flags & HEXDUMP_4_GRP_LINES)
++		line_chars = groupsize * 4;
++	if (flags & HEXDUMP_8_GRP_LINES)
++		line_chars = groupsize * 8;
++
+ 	for (j = 0; j < len; j++) {
+ 		if (linebuflen < lx + 2)
+ 			goto overflow2;
+ 		ch = ptr[j];
+ 		linebuf[lx++] = (isascii(ch) && isprint(ch)) ? ch : '.';
++
++		if (line_chars && ((j + 1) < len) &&
++				((j + 1) % line_chars = 0)) {
++			if (linebuflen < lx + 2)
++				goto overflow2;
++			linebuf[lx++] = '|';
++		}
+ 	}
+ nil:
+ 	linebuf[lx] = '\0';
+@@ -209,7 +248,8 @@ int hex_dump_to_buffer_ext(const void *buf, size_t len, int rowsize,
+ overflow2:
+ 	linebuf[lx++] = '\0';
+ overflow1:
+-	return (flags & HEXDUMP_ASCII) ? ascii_column + len :
++	return (flags & HEXDUMP_ASCII) ? ascii_column + len +
++					(len - 1) / line_chars :
+ 					 (groupsize * 2 + 1) * ngroups - 1;
+ }
+ EXPORT_SYMBOL(hex_dump_to_buffer_ext);
+@@ -247,7 +287,7 @@ static void announce_skipped(const char *level, const char *prefix_str,
+ 	if (count = 0)
+ 		return;
+ 
+-	printk("%s%s ** Skipped %lu bytes of value 0x%x **\n",
++	printk("%s%s ** Skipped %lu bytes of value 0x%02x **\n",
+ 	       level, prefix_str, count, val);
+ }
+ 
+@@ -267,6 +307,9 @@ static void announce_skipped(const char *level, const char *prefix_str,
+  *	HEXDUMP_ASCII:			include ASCII after the hex output
+  *	HEXDUMP_SUPPRESS_REPEATED:	suppress repeated lines of identical
+  *					bytes
++ *	HEXDUMP_2_GRP_LINES:		insert a '|' after every 2 groups
++ *	HEXDUMP_4_GRP_LINES:		insert a '|' after every 4 groups
++ *	HEXDUMP_8_GRP_LINES:		insert a '|' after every 8 groups
+  *
+  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
+  * to the kernel log at the specified kernel log level, with an optional
+@@ -296,15 +339,15 @@ void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 	u8 skipped_val = 0;
+ 	size_t skipped = 0;
+ 
+-
+ 	if (rowsize % groupsize)
+ 		rowsize -= rowsize % groupsize;
+ 
+ 	/*
+ 	 * Worst case line length:
+-	 * 2 hex chars + space per byte in, 2 spaces, 1 char per byte in, NULL
++	 * 2 hex chars + space per byte in, 2 spaces, 1 char per byte in,
++	 * 1 char per N groups, NULL
+ 	 */
+-	linebuf_len = rowsize * 3 + 2 + rowsize + 1;
++	linebuf_len = rowsize * 3 + 2 + rowsize + rowsize / groupsize + 1;
+ 	linebuf = kzalloc(linebuf_len, GFP_KERNEL);
+ 	if (!linebuf) {
+ 		printk("%s%shexdump: Could not alloc %u bytes for buffer\n",
+-- 
+2.21.0

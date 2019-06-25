@@ -1,50 +1,123 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Tue, 11 Jun 2019 21:58:59 +0000
-Subject: Re: [PATCH 2/2] backlight: pwm_bl: Get number of brightness levels for CIE 1931 from the device tree
-Message-Id: <20190611215859.GF137143@google.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:30 +0000
+Subject: [PATCH 08/12] ARM: davinci: da850-evm: switch to using a fixed regulator for lcdc
+Message-Id: <20190625163434.13620-9-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190610233739.29477-1-mka@chromium.org>
- <20190610233739.29477-2-mka@chromium.org>
- <20190611101843.GD7526@amd>
-In-Reply-To: <20190611101843.GD7526@amd>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Thierry Reding <thierry.reding@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Hi Pavel,
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Tue, Jun 11, 2019 at 12:18:43PM +0200, Pavel Machek wrote:
-> On Mon 2019-06-10 16:37:39, Matthias Kaehlcke wrote:
-> > Commit 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED
-> > linearly to human eye") uses pwm_period / hweight32(pwm_period) as
-> > as heuristic to determine the number of brightness levels when the DT
-> > doesn't provide a brightness level table. This heuristic is broken
-> > and can result in excessively large brightness tables.
-> > 
-> > Instead of using the heuristic try to retrieve the number of
-> > brightness levels from the device tree (property 'max-brightness'
-> > + 1). If the value is not specified use a default of 256 levels.
-> > 
-> > Fixes: 88ba95bedb79 ("backlight: pwm_bl: Compute brightness of LED linearly to human eye")
-> 
-> I don't think this one is suitable for stable. I'm pretty sure the
-> heuristics works well for many boards, and you just replaced it with
-> another heuristics ("256").
+Now that the da8xx fbdev driver supports power control with an actual
+regulator, switch to using a fixed power supply for da850-evm.
 
-whether the patch is suitable for stable/upstream is certainly
-debatable, in any case I'd argue the current heuristic is bogus and
-works by accident or at a cost:
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ arch/arm/mach-davinci/board-da850-evm.c | 62 ++++++++++++++++++-------
+ 1 file changed, 44 insertions(+), 18 deletions(-)
 
-nlevels = period / hweight(period)
-
-w/ period = 131071 ns  (0x1FFFF)
-
-  nlevels = 131071 / 17 = 7710
-
-w/ period = 131072 ns (0x20000)
-
-  nlevels = 131072 / 1 = 131072
-
-and some PWMs use significantly higher periods like 1 ms or 10 ms.
+diff --git a/arch/arm/mach-davinci/board-da850-evm.c b/arch/arm/mach-davinci/board-da850-evm.c
+index ffda623bb543..d26950f605f4 100644
+--- a/arch/arm/mach-davinci/board-da850-evm.c
++++ b/arch/arm/mach-davinci/board-da850-evm.c
+@@ -802,12 +802,6 @@ static const short da850_evm_mmcsd0_pins[] __initconst = {
+ 	-1
+ };
+ 
+-static void da850_panel_power_ctrl(int val)
+-{
+-	/* lcd power */
+-	gpio_set_value(DA850_LCD_PWR_PIN, val);
+-}
+-
+ static struct property_entry da850_lcd_backlight_props[] = {
+ 	PROPERTY_ENTRY_BOOL("default-on"),
+ 	{ }
+@@ -827,28 +821,61 @@ static const struct platform_device_info da850_lcd_backlight_info = {
+ 	.properties	= da850_lcd_backlight_props,
+ };
+ 
++static struct regulator_consumer_supply da850_lcd_supplies[] = {
++	REGULATOR_SUPPLY("lcd", NULL),
++};
++
++static struct regulator_init_data da850_lcd_supply_data = {
++	.consumer_supplies	= da850_lcd_supplies,
++	.num_consumer_supplies	= ARRAY_SIZE(da850_lcd_supplies),
++	.constraints    = {
++		.valid_ops_mask = REGULATOR_CHANGE_STATUS,
++	},
++};
++
++static struct fixed_voltage_config da850_lcd_supply = {
++	.supply_name		= "lcd",
++	.microvolts		= 33000000,
++	.init_data		= &da850_lcd_supply_data,
++};
++
++static struct platform_device da850_lcd_supply_device = {
++	.name			= "reg-fixed-voltage",
++	.id			= 1, /* Dummy fixed regulator is 0 */
++	.dev			= {
++		.platform_data = &da850_lcd_supply,
++	},
++};
++
++static struct gpiod_lookup_table da850_lcd_supply_gpio_table = {
++	.dev_id			= "reg-fixed-voltage.1",
++	.table = {
++		GPIO_LOOKUP("davinci_gpio", DA850_LCD_PWR_PIN, NULL, 0),
++		{ }
++	},
++};
++
++static struct gpiod_lookup_table *da850_lcd_gpio_lookups[] = {
++	&da850_lcd_backlight_gpio_table,
++	&da850_lcd_supply_gpio_table,
++};
++
+ static int da850_lcd_hw_init(void)
+ {
+ 	struct platform_device *backlight;
+ 	int status;
+ 
+-	gpiod_add_lookup_table(&da850_lcd_backlight_gpio_table);
++	gpiod_add_lookup_tables(da850_lcd_gpio_lookups,
++				ARRAY_SIZE(da850_lcd_gpio_lookups));
++
+ 	backlight = platform_device_register_full(&da850_lcd_backlight_info);
+ 	if (IS_ERR(backlight))
+ 		return PTR_ERR(backlight);
+ 
+-	status = gpio_request(DA850_LCD_PWR_PIN, "lcd pwr");
+-	if (status < 0)
++	status = platform_device_register(&da850_lcd_supply_device);
++	if (status)
+ 		return status;
+ 
+-	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
+-
+-	/* Switch off panel power */
+-	da850_panel_power_ctrl(0);
+-
+-	/* Switch on panel power */
+-	da850_panel_power_ctrl(1);
+-
+ 	return 0;
+ }
+ 
+@@ -1458,7 +1485,6 @@ static __init void da850_evm_init(void)
+ 	if (ret)
+ 		pr_warn("%s: LCD initialization failed: %d\n", __func__, ret);
+ 
+-	sharp_lk043t1dg01_pdata.panel_power_ctrl = da850_panel_power_ctrl,
+ 	ret = da8xx_register_lcdc(&sharp_lk043t1dg01_pdata);
+ 	if (ret)
+ 		pr_warn("%s: LCDC registration failed: %d\n", __func__, ret);
+-- 
+2.21.0

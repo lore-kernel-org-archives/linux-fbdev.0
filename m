@@ -1,121 +1,91 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Wed, 26 Jun 2019 10:16:17 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: Set pin to sleep state when powered down
-Message-Id: <20190626101617.u7d3zgs7d4utdpk5@pengutronix.de>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:23 +0000
+Subject: [PATCH 01/12] backlight: gpio: allow to probe non-pdata devices from board files
+Message-Id: <20190625163434.13620-2-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190522163428.7078-1-paul@crapouillou.net>
- <5b0f8bb3-e7b0-52c1-1f2f-9709992b76fc@linaro.org>
- <20190621135608.GB11839@ulmo>
- <20190624112844.fmwbfpdxjkst3u7r@holly.lan>
- <20190625093839.GB1516@ulmo>
- <20190626085827.fija4kfzb5uhwosi@pengutronix.de>
- <20190626095844.GA6362@ulmo>
-In-Reply-To: <20190626095844.GA6362@ulmo>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Paul Cercueil <paul@crapouillou.net>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, od@zcrc.me, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Wed, Jun 26, 2019 at 11:58:44AM +0200, Thierry Reding wrote:
-> On Wed, Jun 26, 2019 at 10:58:27AM +0200, Uwe Kleine-K=F6nig wrote:
-> > On Tue, Jun 25, 2019 at 11:38:39AM +0200, Thierry Reding wrote:
-> > > On Mon, Jun 24, 2019 at 12:28:44PM +0100, Daniel Thompson wrote:
-> > > > [...] although given pwm-backlight is essentially a wrapper driver
-> > > > round a PWM I wondered why the pinctrl was on the backlight node
-> > > > (rather than the PWM node).
-> > >=20
-> > > I agree with this. We're defining the pin control state for the PWM p=
-in,
-> > > so in my opinion it should be the PWM driver that controls it.
-> > >=20
-> > > One reason why I think this is important is if we ever end up with a
-> > > device that requires pins from two different controllers to be
-> > > configured at runtime, then how would we model that? Since pin control
-> > > states cannot be aggregated, so you'd have to have multiple "default"
-> > > states, each for the pins that they control.
-> >=20
-> > I thought you can do:
-> >=20
-> > 	pinctrl-names =3D "default";
-> > 	pinctrl-0 =3D <&pinctrl_in_first_pincontroller>, <&pinctrl_in_another_=
-controller>;
-> >=20
-> > if two (or more) controllers are involved.
->=20
-> You're right. Both the bindings say that this can be done and the code
-> is also there to parse multiple states per pinctrl-* entry.
->=20
-> > > On the other hand if we associate the pin control states with each of
-> > > the resources that need those states, then when those resources are
-> > > controlled, they will automatically know how to deal with the states.
-> > > The top-level device (i.e. backlight) doesn't need to concern itself
-> > > with those details.
-> >=20
-> > So the options are:
-> >=20
-> >  a) put "active" and "inactive" pinctrls into the pwm-node, and nothing
-> >     related to the involved PWM pins in the consumer
-> >=20
-> >  b) put the PWM pin config in the consumer's "default" pinctrl (and
-> >     maybe leave it out int "init" if you want smooth taking over).
->=20
-> You can't put it into the "default" state because that state is applied
-> before the consumer driver's ->probe().
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-If you do:
+Currently we can only probe devices that either use device tree or pass
+platform data to probe(). Rename gpio_backlight_probe_dt() to
+gpio_backlight_probe_prop() and use generic device properties instead
+of OF specific helpers. Reverse the logic checking the presence of
+platform data in probe(). This way we can probe devices() registered
+from machine code that neither have a DT node nor use platform data.
 
-	mybacklight {
-		pinctrl-names =3D "init", "default";
-		pinctrl-0 =3D <&pinctrl_without_pwm>
-		pinctrl-1 =3D <&pinctrl_with_pwm>;
-		...
-	};
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 24 ++++++++----------------
+ 1 file changed, 8 insertions(+), 16 deletions(-)
 
-Then nothing is done before probing of the backlight and only when the
-probing is done and the pwm is taken over, the PWM-pinctrl is applied.
-
-The only ugly thing here I can identify is that probe() might exit with
-the PWM running and then enabling the pinmux for the PWM pin results in
-an incomplete period at the beginning. But this happens only in some
-corner cases that might not matter. (i.e. if the bootloader enabled the
-PWM but didn't setup the pinmux; and if .probe enabled the PWM which we
-agreed it probably shouldn't on it's own.)
-=20
-> > (Or maybe use "enabled" and "disabled" in a) to match the pwm_states
-> > .enabled?)
->=20
-> Yeah, I think this is what we'll need to do in order to implement the
-> explicit behaviour that we need here.
->=20
-> > The advantages I see in b) over a) are:
-> >=20
-> >  - "default" and "init" are a known pinctrl concept that most people
-> >    should have understood.
->=20
-> The problem is that they won't work in this case. The "init" state will
-> be applied before the consumer driver's ->probe() if it exists. If it
-> doesn't then "default" will be applied instead. Both cases are not
-> something that we want if we want to take over the existing
-> configuration.
->=20
-> >  - You have all pinctrl config for the backlight in a single place.
->=20
-> Depending on your point of view this could be considered a disadvantage.
-
-Yeah, right, this is subjective.
-
-> [...]
-> Like I pointed out above, I don't think that's the case. But I don't
-> want to overcomplicate things, so if you can prove that it can be done
-> with the existing pinctrl helpers, I'd be happy to be proven wrong.
-
-I tried, see above :-)
-
-Best regards
-Uwe
-
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index b9300f3e1ee6..654c19d3a81d 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -54,15 +54,14 @@ static const struct backlight_ops gpio_backlight_ops = {
+ 	.check_fb	= gpio_backlight_check_fb,
+ };
+ 
+-static int gpio_backlight_probe_dt(struct platform_device *pdev,
+-				   struct gpio_backlight *gbl)
++static int gpio_backlight_probe_prop(struct platform_device *pdev,
++				     struct gpio_backlight *gbl)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct device_node *np = dev->of_node;
+ 	enum gpiod_flags flags;
+ 	int ret;
+ 
+-	gbl->def_value = of_property_read_bool(np, "default-on");
++	gbl->def_value = device_property_read_bool(dev, "default-on");
+ 	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+ 
+ 	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+@@ -86,26 +85,15 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
+-	struct device_node *np = pdev->dev.of_node;
+ 	int ret;
+ 
+-	if (!pdata && !np) {
+-		dev_err(&pdev->dev,
+-			"failed to find platform data or device tree node.\n");
+-		return -ENODEV;
+-	}
+-
+ 	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
+ 
+ 	gbl->dev = &pdev->dev;
+ 
+-	if (np) {
+-		ret = gpio_backlight_probe_dt(pdev, gbl);
+-		if (ret)
+-			return ret;
+-	} else {
++	if (pdata) {
+ 		/*
+ 		 * Legacy platform data GPIO retrieveal. Do not expand
+ 		 * the use of this code path, currently only used by one
+@@ -126,6 +114,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 		gbl->gpiod = gpio_to_desc(pdata->gpio);
+ 		if (!gbl->gpiod)
+ 			return -EINVAL;
++	} else {
++		ret = gpio_backlight_probe_prop(pdev, gbl);
++		if (ret)
++			return ret;
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
+-- 
+2.21.0

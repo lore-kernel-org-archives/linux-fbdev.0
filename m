@@ -1,36 +1,248 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 28 Jun 2019 10:37:14 +0000
-Subject: Re: [PATCH] video: fbdev: s3c-fb: fix sparse warnings about using incorrect types
-Message-Id: <0c1c0ba0-a37b-2018-ab0a-ea89b99587d1@samsung.com>
+From: "Alastair D'Silva" <alastair@au1.ibm.com>
+Date: Tue, 25 Jun 2019 03:17:22 +0000
+Subject: [PATCH v4 3/7] lib/hexdump.c: Optionally suppress lines of repeated bytes
+Message-Id: <20190625031726.12173-4-alastair@au1.ibm.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627125803eucas1p1eb6a37f5fa96fd732e41ab1501367de5@eucas1p1.samsung.com>
-        <908fc26e-3bfa-c204-6c32-7d814fdcb37b@samsung.com>
-        <PSXP216MB0662D369EFFABF260394F179AAFC0@PSXP216MB0662.KORP216.PROD.OUTLOOK.COM>
-In-Reply-To: <PSXP216MB0662D369EFFABF260394F179AAFC0@PSXP216MB0662.KORP216.PROD.OUTLOOK.COM>
+References: <20190625031726.12173-1-alastair@au1.ibm.com>
+In-Reply-To: <20190625031726.12173-1-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jingoo Han <jingoohan1@gmail.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: alastair@d-silva.org
+Cc: linux-fbdev@vger.kernel.org, Stanislaw Gruszka <sgruszka@redhat.com>, Petr Mladek <pmladek@suse.com>, David Airlie <airlied@linux.ie>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, dri-devel@lists.freedesktop.org, devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org, Jassi Brar <jassisinghbrar@gmail.com>, ath10k@lists.infradead.org, intel-gfx@lists.freedesktop.org, Dan Carpenter <dan.carpenter@oracle.com>, Jose Abreu <Jose.Abreu@synopsys.com>, Tom Lendacky <thomas.lendacky@amd.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, Jani Nikula <jani.nikula@linux.intel.com>, linux-fsdevel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>, Rodrigo Vivi <rodrigo.vivi@intel.com>, Benson Leung <bleung@chromium.org>, Kalle Valo <kvalo@codeaurora.org>, Karsten Keil <isdn@linux-pingi.de>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxf>
 
+From: Alastair D'Silva <alastair@d-silva.org>
 
-On 6/28/19 7:50 AM, Jingoo Han wrote:
-> On 6/27/19, 9:58 PM, Bartlomiej Zolnierkiewicz wrote:
->>
->> Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
->>
->> [ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
->>   pointer") for details. ]
->>
->> Reported-by: kbuild test robot <lkp@intel.com>
->> Cc: Jingoo Han <jingoohan1@gmail.com>
-> 
-> Acked-by: Jingoo Han <jingoohan1@gmail.com>
+Some buffers may only be partially filled with useful data, while the rest
+is padded (typically with 0x00 or 0xff).
 
-Thanks, I queued the patch for v5.3.
+This patch introduces a flag to allow the supression of lines of repeated
+bytes, which are replaced with '** Skipped %u bytes of value 0x%x **'
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+An inline wrapper function is provided for backwards compatibility with
+existing code, which maintains the original behaviour.
+
+Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
+---
+ include/linux/printk.h | 26 +++++++++---
+ lib/hexdump.c          | 91 ++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 100 insertions(+), 17 deletions(-)
+
+diff --git a/include/linux/printk.h b/include/linux/printk.h
+index cefd374c47b1..c0416d0eb9e2 100644
+--- a/include/linux/printk.h
++++ b/include/linux/printk.h
+@@ -7,6 +7,7 @@
+ #include <linux/kern_levels.h>
+ #include <linux/linkage.h>
+ #include <linux/cache.h>
++#include <linux/bits.h>
+ 
+ extern const char linux_banner[];
+ extern const char linux_proc_banner[];
+@@ -481,13 +482,18 @@ enum {
+ 	DUMP_PREFIX_ADDRESS,
+ 	DUMP_PREFIX_OFFSET
+ };
++
+ extern int hex_dump_to_buffer(const void *buf, size_t len, int rowsize,
+ 			      int groupsize, char *linebuf, size_t linebuflen,
+ 			      bool ascii);
++
++#define HEXDUMP_ASCII			BIT(0)
++#define HEXDUMP_SUPPRESS_REPEATED	BIT(1)
++
+ #ifdef CONFIG_PRINTK
+-extern void print_hex_dump(const char *level, const char *prefix_str,
++extern void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 			   int prefix_type, int rowsize, int groupsize,
+-			   const void *buf, size_t len, bool ascii);
++			   const void *buf, size_t len, u32 flags);
+ #if defined(CONFIG_DYNAMIC_DEBUG)
+ #define print_hex_dump_bytes(prefix_str, prefix_type, buf, len)	\
+ 	dynamic_hex_dump(prefix_str, prefix_type, 16, 1, buf, len, true)
+@@ -496,18 +502,28 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ 				 const void *buf, size_t len);
+ #endif /* defined(CONFIG_DYNAMIC_DEBUG) */
+ #else
+-static inline void print_hex_dump(const char *level, const char *prefix_str,
++static inline void print_hex_dump_ext(const char *level, const char *prefix_str,
+ 				  int prefix_type, int rowsize, int groupsize,
+-				  const void *buf, size_t len, bool ascii)
++				  const void *buf, size_t len, u32 flags)
+ {
+ }
+ static inline void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ 					const void *buf, size_t len)
+ {
+ }
+-
+ #endif
+ 
++static __always_inline void print_hex_dump(const char *level,
++					   const char *prefix_str,
++					   int prefix_type, int rowsize,
++					   int groupsize, const void *buf,
++					   size_t len, bool ascii)
++{
++	print_hex_dump_ext(level, prefix_str, prefix_type, rowsize, groupsize,
++			buf, len, ascii ? HEXDUMP_ASCII : 0);
++}
++
++
+ #if defined(CONFIG_DYNAMIC_DEBUG)
+ #define print_hex_dump_debug(prefix_str, prefix_type, rowsize,	\
+ 			     groupsize, buf, len, ascii)	\
+diff --git a/lib/hexdump.c b/lib/hexdump.c
+index 870c8cbff1e1..61dc625c32f5 100644
+--- a/lib/hexdump.c
++++ b/lib/hexdump.c
+@@ -212,8 +212,44 @@ int hex_dump_to_buffer(const void *buf, size_t len, int rowsize, int groupsize,
+ EXPORT_SYMBOL(hex_dump_to_buffer);
+ 
+ #ifdef CONFIG_PRINTK
++
++/**
++ * buf_is_all - Check if a buffer contains only a single byte value
++ * @buf: pointer to the buffer
++ * @len: the size of the buffer in bytes
++ * @val: outputs the value if if the bytes are identical
++ */
++static bool buf_is_all(const u8 *buf, size_t len, u8 *val_out)
++{
++	size_t i;
++	u8 val;
++
++	if (len <= 1)
++		return false;
++
++	val = buf[0];
++
++	for (i = 1; i < len; i++) {
++		if (buf[i] != val)
++			return false;
++	}
++
++	*val_out = val;
++	return true;
++}
++
++static void announce_skipped(const char *level, const char *prefix_str,
++				   u8 val, size_t count)
++{
++	if (count = 0)
++		return;
++
++	printk("%s%s ** Skipped %lu bytes of value 0x%x **\n",
++	       level, prefix_str, count, val);
++}
++
+ /**
+- * print_hex_dump - print a text hex dump to syslog for a binary blob of data
++ * print_hex_dump_ext - dump a binary blob of data to syslog in hexadecimal
+  * @level: kernel log level (e.g. KERN_DEBUG)
+  * @prefix_str: string to prefix each line with;
+  *  caller supplies trailing spaces for alignment if desired
+@@ -224,6 +260,10 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  * @buf: data blob to dump
+  * @len: number of bytes in the @buf
+  * @ascii: include ASCII after the hex output
++ * @flags: A bitwise OR of the following flags:
++ *	HEXDUMP_ASCII:			include ASCII after the hex output
++ *	HEXDUMP_SUPPRESS_REPEATED:	suppress repeated lines of identical
++ *					bytes
+  *
+  * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
+  * to the kernel log at the specified kernel log level, with an optional
+@@ -234,22 +274,25 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  * (optionally) ASCII output.
+  *
+  * E.g.:
+- *   print_hex_dump(KERN_DEBUG, "raw data: ", DUMP_PREFIX_ADDRESS,
+- *		    16, 1, frame->data, frame->len, true);
++ *   print_hex_dump_ext(KERN_DEBUG, "raw data: ", DUMP_PREFIX_ADDRESS,
++ *		    16, 1, frame->data, frame->len, HEXDUMP_ASCII);
+  *
+  * Example output using %DUMP_PREFIX_OFFSET and 1-byte mode:
+  * 0009ab42: 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f  @ABCDEFGHIJKLMNO
+  * Example output using %DUMP_PREFIX_ADDRESS and 4-byte mode:
+  * ffffffff88089af0: 73727170 77767574 7b7a7978 7f7e7d7c  pqrstuvwxyz{|}~.
+  */
+-void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+-		    int rowsize, int groupsize,
+-		    const void *buf, size_t len, bool ascii)
++void print_hex_dump_ext(const char *level, const char *prefix_str,
++			int prefix_type, int rowsize, int groupsize,
++			const void *buf, size_t len, u32 flags)
+ {
+ 	const u8 *ptr = buf;
+-	int i, linelen, remaining = len;
++	int i, remaining = len;
+ 	unsigned char *linebuf;
+ 	unsigned int linebuf_len;
++	u8 skipped_val = 0;
++	size_t skipped = 0;
++
+ 
+ 	if (rowsize % groupsize)
+ 		rowsize -= rowsize % groupsize;
+@@ -267,11 +310,35 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 	}
+ 
+ 	for (i = 0; i < len; i += rowsize) {
+-		linelen = min(remaining, rowsize);
++		int linelen = min(remaining, rowsize);
+ 		remaining -= rowsize;
+ 
++		if (flags & HEXDUMP_SUPPRESS_REPEATED) {
++			u8 new_val;
++
++			if (buf_is_all(ptr + i, linelen, &new_val)) {
++				if (new_val = skipped_val) {
++					skipped += linelen;
++					continue;
++				} else {
++					announce_skipped(level, prefix_str,
++							 skipped_val, skipped);
++					skipped_val = new_val;
++					skipped = linelen;
++					continue;
++				}
++			}
++		}
++
++		if (skipped) {
++			announce_skipped(level, prefix_str, skipped_val,
++					 skipped);
++			skipped = 0;
++		}
++
+ 		hex_dump_to_buffer(ptr + i, linelen, rowsize, groupsize,
+-				   linebuf, linebuf_len, ascii);
++				   linebuf, linebuf_len,
++				   flags & HEXDUMP_ASCII);
+ 
+ 		switch (prefix_type) {
+ 		case DUMP_PREFIX_ADDRESS:
+@@ -289,7 +356,7 @@ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 
+ 	kfree(linebuf);
+ }
+-EXPORT_SYMBOL(print_hex_dump);
++EXPORT_SYMBOL(print_hex_dump_ext);
+ 
+ #if !defined(CONFIG_DYNAMIC_DEBUG)
+ /**
+@@ -307,8 +374,8 @@ EXPORT_SYMBOL(print_hex_dump);
+ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ 			  const void *buf, size_t len)
+ {
+-	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
+-		       buf, len, true);
++	print_hex_dump_ext(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
++		       buf, len, HEXDUMP_ASCII);
+ }
+ EXPORT_SYMBOL(print_hex_dump_bytes);
+ #endif /* !defined(CONFIG_DYNAMIC_DEBUG) */
+-- 
+2.21.0

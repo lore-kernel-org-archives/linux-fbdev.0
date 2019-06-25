@@ -1,58 +1,58 @@
-From: Jani Nikula <jani.nikula@linux.intel.com>
-Date: Mon, 17 Jun 2019 07:39:53 +0000
-Subject: Re: [PATCH v3 4/7] lib/hexdump.c: Replace ascii bool in hex_dump_to_buffer with flags
-Message-Id: <87imt4vewm.fsf@intel.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:22 +0000
+Subject: [PATCH 00/12] ARM: davinci: da850-evm: remove more legacy GPIO calls
+Message-Id: <20190625163434.13620-1-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190617020430.8708-1-alastair@au1.ibm.com> <20190617020430.8708-5-alastair@au1.ibm.com>
-In-Reply-To: <20190617020430.8708-5-alastair@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alastair D'Silva <alastair@au1.ibm.com>, alastair@d-silva.org
-Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexander Viro <viro@zeniv.linux.org.uk>, Petr
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Mon, 17 Jun 2019, "Alastair D'Silva" <alastair@au1.ibm.com> wrote:
-> From: Alastair D'Silva <alastair@d-silva.org>
->
-> In order to support additional features in hex_dump_to_buffer, replace
-> the ascii bool parameter with flags.
->
-> Signed-off-by: Alastair D'Silva <alastair@d-silva.org>
-> ---
->  drivers/gpu/drm/i915/intel_engine_cs.c            |  2 +-
->  drivers/isdn/hardware/mISDN/mISDNisar.c           |  6 ++++--
->  drivers/mailbox/mailbox-test.c                    |  2 +-
->  drivers/net/ethernet/amd/xgbe/xgbe-drv.c          |  2 +-
->  drivers/net/ethernet/synopsys/dwc-xlgmac-common.c |  2 +-
->  drivers/net/wireless/ath/ath10k/debug.c           |  3 ++-
->  drivers/net/wireless/intel/iwlegacy/3945-mac.c    |  2 +-
->  drivers/platform/chrome/wilco_ec/debugfs.c        |  2 +-
->  drivers/scsi/scsi_logging.c                       |  8 +++-----
->  drivers/staging/fbtft/fbtft-core.c                |  2 +-
->  fs/seq_file.c                                     |  3 ++-
->  include/linux/printk.h                            |  8 ++++----
->  lib/hexdump.c                                     | 15 ++++++++-------
->  lib/test_hexdump.c                                |  5 +++--
->  14 files changed, 33 insertions(+), 29 deletions(-)
->
-> diff --git a/drivers/gpu/drm/i915/intel_engine_cs.c b/drivers/gpu/drm/i915/intel_engine_cs.c
-> index eea9bec04f1b..5df5fffdb848 100644
-> --- a/drivers/gpu/drm/i915/intel_engine_cs.c
-> +++ b/drivers/gpu/drm/i915/intel_engine_cs.c
-> @@ -1340,7 +1340,7 @@ static void hexdump(struct drm_printer *m, const void *buf, size_t len)
->  		WARN_ON_ONCE(hex_dump_to_buffer(buf + pos, len - pos,
->  						rowsize, sizeof(u32),
->  						line, sizeof(line),
-> -						false) >= sizeof(line));
-> +						0) >= sizeof(line));
->  		drm_printf(m, "[%04zx] %s\n", pos, line);
->  
->  		prev = buf + pos;
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On i915,
+This is another small step on the path to liberating davinci from legacy
+GPIO API calls and shrinking the davinci GPIO driver by not having to
+support the base GPIO number anymore.
 
-Acked-by: Jani Nikula <jani.nikula@intel.com>
+This time we're removing the legacy calls used indirectly by the LCDC
+fbdev driver.
 
+The first three patches modify the GPIO backlight driver. The first
+of them adds the necessary functionality, the other two are just
+tweaks and cleanups.
+
+Next two patches enable the GPIO backlight driver in
+davinci_all_defconfig.
+
+Patch 6/12 models the backlight GPIO as an actual GPIO backlight device.
+
+Patches 7-9 extend the fbdev driver with regulator support and convert
+the da850-evm board file to using it.
+
+Last three patches are improvements to the da8xx fbdev driver since
+we're already touching it in this series.
+
+Bartosz Golaszewski (12):
+  backlight: gpio: allow to probe non-pdata devices from board files
+  backlight: gpio: use a helper variable for &pdev->dev
+  backlight: gpio: pull the non-pdata device probing code into probe()
+  ARM: davinci: refresh davinci_all_defconfig
+  ARM: davinci_all_defconfig: enable GPIO backlight
+  ARM: davinci: da850-evm: model the backlight GPIO as an actual device
+  fbdev: da8xx: add support for a regulator
+  ARM: davinci: da850-evm: switch to using a fixed regulator for lcdc
+  fbdev: da8xx: remove panel_power_ctrl() callback from platform data
+  fbdev: da8xx-fb: use devm_platform_ioremap_resource()
+  fbdev: da8xx-fb: drop a redundant if
+  fbdev: da8xx: use resource management for dma
+
+ arch/arm/configs/davinci_all_defconfig   |  28 +++---
+ arch/arm/mach-davinci/board-da850-evm.c  |  90 ++++++++++++-----
+ drivers/video/backlight/gpio_backlight.c |  67 +++++--------
+ drivers/video/fbdev/da8xx-fb.c           | 118 +++++++++++++----------
+ include/video/da8xx-fb.h                 |   1 -
+ 5 files changed, 165 insertions(+), 139 deletions(-)
 
 -- 
-Jani Nikula, Intel Open Source Graphics Center
+2.21.0

@@ -1,50 +1,100 @@
-From: "Alastair D'Silva" <alastair@d-silva.org>
-Date: Wed, 26 Jun 2019 01:02:29 +0000
-Subject: Re: [PATCH v4 0/7] Hexdump Enhancements
-Message-Id: <e16caf5b98aafea4033bfc0e49845ef987c02678.camel@d-silva.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 25 Jun 2019 16:34:28 +0000
+Subject: [PATCH 06/12] ARM: davinci: da850-evm: model the backlight GPIO as an actual device
+Message-Id: <20190625163434.13620-7-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625031726.12173-1-alastair@au1.ibm.com>
-         <3ae4c1a4a72f8ee6b75c45adfbe543fc0a7b5da1.camel@perches.com>
-In-Reply-To: <3ae4c1a4a72f8ee6b75c45adfbe543fc0a7b5da1.camel@perches.com>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Jani Nikula <jani.nikula@linux.intel.com>, Joonas Lahtinen <joonas.lahtinen@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, David Airlie <airlied@linux.ie>, Daniel Vetter <daniel@ffwll.ch>, Dan Carpenter <dan.carpenter@oracle.com>, Karsten Keil <isdn@linux-pingi.de>, Jassi Brar <jassisinghbrar@gmail.com>, Tom Lendacky <thomas.lendacky@amd.com>, "David S. Miller" <davem@davemloft.net>, Jose Abreu <Jose.Abreu@synopsys.com>, Kalle Valo <kvalo@codeaurora.org>, Stanislaw Gruszka <sgruszka@redhat.com>, Benson Leung <bleung@chromium.org>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, "James E.J. Bottomley" <jejb@linux.ibm.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Alexa
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Mon, 2019-06-24 at 22:01 -0700, Joe Perches wrote:
-> On Tue, 2019-06-25 at 13:17 +1000, Alastair D'Silva wrote:
-> > From: Alastair D'Silva <alastair@d-silva.org>
-> > 
-> > Apologies for the large CC list, it's a heads up for those
-> > responsible
-> > for subsystems where a prototype change in generic code causes a
-> > change
-> > in those subsystems.
-> []
-> > The default behaviour of hexdump is unchanged, however, the
-> > prototype
-> > for hex_dump_to_buffer() has changed, and print_hex_dump() has been
-> > renamed to print_hex_dump_ext(), with a wrapper replacing it for
-> > compatibility with existing code, which would have been too
-> > invasive to
-> > change.
-> 
-> I believe this cover letter is misleading.
-> 
-> The point of the wrapper is to avoid unnecessary changes
-> in existing
-> code.
-> 
-> 
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-The wrapper is for print_hex_dump(), which has many callers.
+Instead of enabling the panel backlight in a callback defined in board
+file using deprecated legacy GPIO API calls, model the line as a GPIO
+backlight device.
 
-The changes to existing code are for hex_dump_to_buffer(), which is
-called in relatively few places.
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ arch/arm/mach-davinci/board-da850-evm.c | 40 +++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 12 deletions(-)
 
+diff --git a/arch/arm/mach-davinci/board-da850-evm.c b/arch/arm/mach-davinci/board-da850-evm.c
+index 31ae3be5741d..ffda623bb543 100644
+--- a/arch/arm/mach-davinci/board-da850-evm.c
++++ b/arch/arm/mach-davinci/board-da850-evm.c
+@@ -36,6 +36,7 @@
+ #include <linux/platform_data/ti-aemif.h>
+ #include <linux/platform_data/spi-davinci.h>
+ #include <linux/platform_data/uio_pruss.h>
++#include <linux/property.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/regulator/tps6507x.h>
+ #include <linux/regulator/fixed.h>
+@@ -803,34 +804,49 @@ static const short da850_evm_mmcsd0_pins[] __initconst = {
+ 
+ static void da850_panel_power_ctrl(int val)
+ {
+-	/* lcd backlight */
+-	gpio_set_value(DA850_LCD_BL_PIN, val);
+-
+ 	/* lcd power */
+ 	gpio_set_value(DA850_LCD_PWR_PIN, val);
+ }
+ 
++static struct property_entry da850_lcd_backlight_props[] = {
++	PROPERTY_ENTRY_BOOL("default-on"),
++	{ }
++};
++
++static struct gpiod_lookup_table da850_lcd_backlight_gpio_table = {
++	.dev_id		= "gpio-backlight",
++	.table = {
++		GPIO_LOOKUP("davinci_gpio", DA850_LCD_BL_PIN, NULL, 0),
++		{ }
++	},
++};
++
++static const struct platform_device_info da850_lcd_backlight_info = {
++	.name		= "gpio-backlight",
++	.id		= PLATFORM_DEVID_NONE,
++	.properties	= da850_lcd_backlight_props,
++};
++
+ static int da850_lcd_hw_init(void)
+ {
++	struct platform_device *backlight;
+ 	int status;
+ 
+-	status = gpio_request(DA850_LCD_BL_PIN, "lcd bl");
+-	if (status < 0)
+-		return status;
++	gpiod_add_lookup_table(&da850_lcd_backlight_gpio_table);
++	backlight = platform_device_register_full(&da850_lcd_backlight_info);
++	if (IS_ERR(backlight))
++		return PTR_ERR(backlight);
+ 
+ 	status = gpio_request(DA850_LCD_PWR_PIN, "lcd pwr");
+-	if (status < 0) {
+-		gpio_free(DA850_LCD_BL_PIN);
++	if (status < 0)
+ 		return status;
+-	}
+ 
+-	gpio_direction_output(DA850_LCD_BL_PIN, 0);
+ 	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
+ 
+-	/* Switch off panel power and backlight */
++	/* Switch off panel power */
+ 	da850_panel_power_ctrl(0);
+ 
+-	/* Switch on panel power and backlight */
++	/* Switch on panel power */
+ 	da850_panel_power_ctrl(1);
+ 
+ 	return 0;
 -- 
-Alastair D'Silva           mob: 0423 762 819
-skype: alastair_dsilva    
-Twitter: @EvilDeece
-blog: http://alastair.d-silva.org
+2.21.0

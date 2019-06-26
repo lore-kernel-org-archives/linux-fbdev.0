@@ -1,107 +1,73 @@
 From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Tue, 25 Jun 2019 19:19:50 +0000
+Date: Wed, 26 Jun 2019 08:58:27 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: Set pin to sleep state when powered down
-Message-Id: <20190625191950.2rvvputus4uavyjn@pengutronix.de>
+Message-Id: <20190626085827.fija4kfzb5uhwosi@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190522163428.7078-1-paul@crapouillou.net>
- <20190625074220.ckj7e7gwbszwknaa@pengutronix.de>
- <20190625095821.GD1516@ulmo>
-In-Reply-To: <20190625095821.GD1516@ulmo>
+ <5b0f8bb3-e7b0-52c1-1f2f-9709992b76fc@linaro.org>
+ <20190621135608.GB11839@ulmo>
+ <20190624112844.fmwbfpdxjkst3u7r@holly.lan>
+ <20190625093839.GB1516@ulmo>
+In-Reply-To: <20190625093839.GB1516@ulmo>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 To: Thierry Reding <thierry.reding@gmail.com>
 Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Paul Cercueil <paul@crapouillou.net>, od@zcrc.me, kernel@pengutronix.de, Lee Jones <lee.jones@linaro.org>
 
-On Tue, Jun 25, 2019 at 11:58:21AM +0200, Thierry Reding wrote:
-> On Tue, Jun 25, 2019 at 09:42:20AM +0200, Uwe Kleine-K=F6nig wrote:
-> > On Wed, May 22, 2019 at 06:34:28PM +0200, Paul Cercueil wrote:
-> > > When the driver probes, the PWM pin is automatically configured to its
-> > > default state, which should be the "pwm" function. However, at this
-> > > point we don't know the actual level of the pin, which may be active =
-or
-> > > inactive. As a result, if the driver probes without enabling the
-> > > backlight, the PWM pin might be active, and the backlight would be
-> > > lit way before being officially enabled.
-> >=20
-> > I'm not sure I understand the problem completely here. Let me try to
-> > summarize the problem you solve here:
-> >=20
-> > The backlight device's default pinctrl contains the PWM function of the
-> > PWM pin. As the PWM is (or at least might be) in an undefined state the
-> > default pinctrl should only be switched to when it's clear if the
-> > backlight should be on or off.
-> >=20
-> > So you use the "init"-pinctrl to keep the PWM pin in some (undriven?)
-> > state and by switching to "sleep" you prevent "default" getting active.
-> >=20
-> > Did I get this right? If not, please correct me.
-> >=20
-> > What is the PWM pin configured to in "init" in your case? Is the pinctrl
-> > just empty? Or is it a gpio-mode (together with a gpio-hog)?
-> >=20
-> > My thoughts to this is are:
-> >=20
-> >  a) This is a general problem that applies (I think) to most if not all
-> >     PWM consumers. If the PWM drives a motor, or makes your mobile
-> >     vibrate, or drives an LED, or a clk, the PWM shouldn't start
-> >     to do something before its consumer is ready.
+On Tue, Jun 25, 2019 at 11:38:39AM +0200, Thierry Reding wrote:
+> On Mon, Jun 24, 2019 at 12:28:44PM +0100, Daniel Thompson wrote:
+> > [...] although given pwm-backlight is essentially a wrapper driver
+> > round a PWM I wondered why the pinctrl was on the backlight node
+> > (rather than the PWM node).
 >=20
-> Yes, it shouldn't start before it is explicitly told to do so by the
-> consumer. One exception is if the PWM was already set up by firmware
-> to run. So I think in general terms we always want the PWM to remain
-> in the current state upon probe.
-
-In the end this means that also pinmuxing should not be touched when the
-PWM device probes.
-
-> The atomic PWM API was designed with that in mind. The original use-
-> case was to allow seamlessly taking over from a PWM regulator. In order
-> to do so, the driver needs to be able to read back the hardware state
-> and *not* initialize the PWM to some default state.
+> I agree with this. We're defining the pin control state for the PWM pin,
+> so in my opinion it should be the PWM driver that controls it.
 >=20
-> I think that same approach can be extended to backlights. The driver's
-> probe needs to determine what the current state of the backlight is and
-> preferable not touch it. And that basically propagates all the way to
-> the display driver, which ultimately needs to determine whether or not
-> the display configuration (including the backlight) is enabled.
+> One reason why I think this is important is if we ever end up with a
+> device that requires pins from two different controllers to be
+> configured at runtime, then how would we model that? Since pin control
+> states cannot be aggregated, so you'd have to have multiple "default"
+> states, each for the pins that they control.
 
-Are you ambitious enough to handle cases like: PWM is running (maybe
-because it cannot be disabled), but the pin is muxed to an "unconnected"
-configuration such that the pin doesn't oscillate? In this case you'd
-need an inspection function for pinmuxing.
+I thought you can do:
 
-> >  b) Thierry made it quite clear[1] that the PWM pin should be configured
-> >     in a pinctrl of the pwm device, not the backlight (or more general:
-> >     the consumer) device.
-> >=20
-> > While I don't entirely agree with b) I think that even a) alone
-> > justifies to think a bit more about the problem and preferably come up
-> > with a solution that helps other consumers, too. Ideally if the
-> > bootloader sets up the PWM to do something sensible, probing the
-> > lowlevel PWM driver and the consumer driver should not interfere with
-> > the bootloader's intention until the situation reaches a controlled
-> > state. (I.e. if the backlight was left on by the bootloader to show a
-> > nice logo, it should not flicker until a userspace program takes over
-> > the display device.)
->=20
-> Yes, exactly that.
->=20
-> > A PWM is special in contrast to other devices as its intended behaviour
-> > is only fixed once a consumer is present. Without a consumer it is
-> > unknown if the PWM is inverted or not. And so the common approach that
-> > pinctrl is setup by the device core only doesn't work without drawbacks
-> > for PWMs.
->=20
-> Actually I don't think PWMs are special in this regard. A GPIO, for
-> example, can also be active-low or active-high, and without a consumer
-> there's not enough context to determine which one it should be.
+	pinctrl-names =3D "default";
+	pinctrl-0 =3D <&pinctrl_in_first_pincontroller>, <&pinctrl_in_another_cont=
+roller>;
 
-Right, PWMs are more similar to GPIOs than to (say) backlight devices.
-With your request to configure the pinmux for a PWM pin with the PWM
-device instead of its consumer you're making some things more difficult.
-For GPIOs it's quite common that they are muxed from their consumer
-because there the same problems are present.
+if two (or more) controllers are involved.
+=20
+> On the other hand if we associate the pin control states with each of
+> the resources that need those states, then when those resources are
+> controlled, they will automatically know how to deal with the states.
+> The top-level device (i.e. backlight) doesn't need to concern itself
+> with those details.
+
+So the options are:
+
+ a) put "active" and "inactive" pinctrls into the pwm-node, and nothing
+    related to the involved PWM pins in the consumer
+
+ b) put the PWM pin config in the consumer's "default" pinctrl (and
+    maybe leave it out int "init" if you want smooth taking over).
+
+(Or maybe use "enabled" and "disabled" in a) to match the pwm_states
+.enabled?)
+
+The advantages I see in b) over a) are:
+
+ - "default" and "init" are a known pinctrl concept that most people
+   should have understood.
+
+ - You have all pinctrl config for the backlight in a single place.
+
+ - none of the involved driver must explicitly handle pinctrl stuff
+
+You presume that b) being commonly done is a sign of "our device trees
+and kernel subsystems still maturing". But maybe it's only that the
+capabilities provided by pinctrl subsystem without extra effort is good
+enough?
 
 Best regards
 Uwe

@@ -1,66 +1,58 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Mon, 24 Jun 2019 18:54:08 +0000
-Subject: Re: [PATCH 4/4] backlight: pwm_bl: Set scale type for brightness curves specified in the DT
-Message-Id: <20190624185408.GB137143@google.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Thu, 27 Jun 2019 12:58:01 +0000
+Subject: [PATCH] video: fbdev: s3c-fb: fix sparse warnings about using incorrect types
+Message-Id: <908fc26e-3bfa-c204-6c32-7d814fdcb37b@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190613194326.180889-1-mka@chromium.org>
- <20190613194326.180889-5-mka@chromium.org>
- <9ea1bb40-95a6-7a67-a8a6-ecc77a70e547@linaro.org>
-In-Reply-To: <9ea1bb40-95a6-7a67-a8a6-ecc77a70e547@linaro.org>
+References: <CGME20190627125803eucas1p1eb6a37f5fa96fd732e41ab1501367de5@eucas1p1.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Cc: Jingoo Han <jingoohan1@gmail.com>
 
-Hi Daniel,
+Use ->screen_buffer instead of ->screen_base to fix sparse warnings.
 
-On Fri, Jun 21, 2019 at 02:10:19PM +0100, Daniel Thompson wrote:
-> On 13/06/2019 20:43, Matthias Kaehlcke wrote:
-> > Check if a brightness curve specified in the device tree is linear or
-> > not and set the corresponding property accordingly. This makes the
-> > scale type available to userspace via the 'scale' sysfs attribute.
-> > 
-> > To determine if a curve is linear it is compared to a interpolated linear
-> > curve between min and max brightness. The curve is considered linear if
-> > no value deviates more than +/-5% of ${brightness_range} from their
-> > interpolated value.
-> > 
-> > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > ---
-> >   drivers/video/backlight/pwm_bl.c | 25 +++++++++++++++++++++++++
-> >   1 file changed, 25 insertions(+)
-> > 
-> > diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> > index f067fe7aa35d..912407b6d67f 100644
-> > --- a/drivers/video/backlight/pwm_bl.c
-> > +++ b/drivers/video/backlight/pwm_bl.c
-> > @@ -404,6 +404,26 @@ int pwm_backlight_brightness_default(struct device *dev,
-> >   }
-> >   #endif
-> > +static bool pwm_backlight_is_linear(struct platform_pwm_backlight_data *data)
-> > +{
-> > +	unsigned int nlevels = data->max_brightness + 1;
-> > +	unsigned int min_val = data->levels[0];
-> > +	unsigned int max_val = data->levels[nlevels - 1];
-> > +	unsigned int slope = (100 * (max_val - min_val)) / nlevels;
-> 
-> Why 100 (rather than a power of 2)?
+[ Please see commit 17a7b0b4d974 ("fb.h: Provide alternate screen_base
+  pointer") for details. ]
 
-I guess it came from the decimal part of my brain, I can change it to
-128 ;-)
+Reported-by: kbuild test robot <lkp@intel.com>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/video/fbdev/s3c-fb.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-> It would also be good to have a comment here saying what the maximum
-> quantization error is. Doesn't have to be over complex just mentioning
-> something like the following (assuming you agree that its true ;-) ):
-> 
->   Multiplying by XXX means that even in pathalogical cases such as
->   (max_val - min_val) = nlevels then the error at max_val is less than
->   1%.
-
-Sounds good, thanks for the suggestion!
-
-> With a suitable comment in the fixed point code:
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-Thanks
+Index: b/drivers/video/fbdev/s3c-fb.c
+=================================--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1105,14 +1105,14 @@ static int s3c_fb_alloc_memory(struct s3
+ 
+ 	dev_dbg(sfb->dev, "want %u bytes for window\n", size);
+ 
+-	fbi->screen_base = dma_alloc_wc(sfb->dev, size, &map_dma, GFP_KERNEL);
+-	if (!fbi->screen_base)
++	fbi->screen_buffer = dma_alloc_wc(sfb->dev, size, &map_dma, GFP_KERNEL);
++	if (!fbi->screen_buffer)
+ 		return -ENOMEM;
+ 
+ 	dev_dbg(sfb->dev, "mapped %x to %p\n",
+-		(unsigned int)map_dma, fbi->screen_base);
++		(unsigned int)map_dma, fbi->screen_buffer);
+ 
+-	memset(fbi->screen_base, 0x0, size);
++	memset(fbi->screen_buffer, 0x0, size);
+ 	fbi->fix.smem_start = map_dma;
+ 
+ 	return 0;
+@@ -1129,9 +1129,9 @@ static void s3c_fb_free_memory(struct s3
+ {
+ 	struct fb_info *fbi = win->fbinfo;
+ 
+-	if (fbi->screen_base)
++	if (fbi->screen_buffer)
+ 		dma_free_wc(sfb->dev, PAGE_ALIGN(fbi->fix.smem_len),
+-		            fbi->screen_base, fbi->fix.smem_start);
++			    fbi->screen_buffer, fbi->fix.smem_start);
+ }
+ 
+ /**

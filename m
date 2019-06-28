@@ -1,39 +1,34 @@
-From: Marko Kohtala <marko.kohtala@okoko.fi>
-Date: Tue, 18 Jun 2019 07:41:08 +0000
-Subject: [PATCH 3/6] video: ssd1307fb: Start page range at page_offset
-Message-Id: <20190618074111.9309-4-marko.kohtala@okoko.fi>
+From: Fuqian Huang <huangfq.daxian@gmail.com>
+Date: Fri, 28 Jun 2019 02:50:17 +0000
+Subject: [PATCH v2 23/27] video: fbdev: remove unneeded memset after dma_alloc_coherent
+Message-Id: <20190628025019.16026-1-huangfq.daxian@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190618074111.9309-1-marko.kohtala@okoko.fi>
-In-Reply-To: <20190618074111.9309-1-marko.kohtala@okoko.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+Cc: Fuqian Huang <huangfq.daxian@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Thomas Gleixner <tglx@linutronix.de>, Allison Randal <allison@lohutok.net>, Jilayne Lovejoy <opensource@jilayne.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The page_offset was only applied to the end of the page range. This caused
-the display updates to cause a scrolling effect on the display because the
-amount of data written to the display did not match the range display
-expected.
+In commit af7ddd8a627c
+("Merge tag 'dma-mapping-4.21' of git://git.infradead.org/users/hch/dma-mapping"),
+dma_alloc_coherent has already zeroed the memory.
+So memset is not needed.
 
-Fixes: 301bc0675b67 ("video: ssd1307fb: Make use of horizontal addressing mode")
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
+Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/mmp/fb/mmpfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 9ab00e0dadc7..86f2b79f3ed5 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -433,7 +433,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
+diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
+index e5b56f2199df..47bc7c59bbd8 100644
+--- a/drivers/video/fbdev/mmp/fb/mmpfb.c
++++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
+@@ -612,7 +612,6 @@ static int mmpfb_probe(struct platform_device *pdev)
+ 		ret = -ENOMEM;
+ 		goto failed_destroy_mutex;
+ 	}
+-	memset(fbi->fb_start, 0, fbi->fb_size);
+ 	dev_info(fbi->dev, "fb %dk allocated\n", fbi->fb_size/1024);
  
--	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ssd1307fb_write_cmd(par->client, par->page_offset);
- 	if (ret < 0)
- 		return ret;
- 
+ 	/* fb power on */
 -- 
-2.17.1
+2.11.0

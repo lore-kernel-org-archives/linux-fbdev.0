@@ -1,62 +1,39 @@
-From: Marko Kohtala <marko.kohtala@okoko.fi>
-Date: Tue, 18 Jun 2019 07:41:07 +0000
-Subject: [PATCH 2/6] video: ssd1307fb: Remove unneeded semicolons
-Message-Id: <20190618074111.9309-3-marko.kohtala@okoko.fi>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Fri, 28 Jun 2019 10:02:52 +0000
+Subject: [PATCH RFT 3/4] sh: ecovec24: don't set unused fields in platform data
+Message-Id: <20190628100253.8385-4-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190618074111.9309-1-marko.kohtala@okoko.fi>
-In-Reply-To: <20190618074111.9309-1-marko.kohtala@okoko.fi>
+References: <20190628100253.8385-1-brgl@bgdev.pl>
+In-Reply-To: <20190628100253.8385-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org, devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org
-Cc: Mark Rutland <mark.rutland@arm.com>, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-coccicheck reported unneeded semicolons. Remove them.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
+Platform data fields other than fbdev are no longer used by the
+backlight driver. Remove them.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/sh/boards/mach-ecovec24/setup.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 6c2980331ffd..9ab00e0dadc7 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -313,7 +313,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index 6926bb3865b9..64a5a1662b6d 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -386,9 +386,6 @@ static struct property_entry gpio_backlight_props[] = {
  
- 		dev_dbg(&par->client->dev, "Using PWM%d with a %dns period.\n",
- 			par->pwm->pwm, par->pwm_period);
--	};
-+	}
+ static struct gpio_backlight_platform_data gpio_backlight_data = {
+ 	.fbdev = &lcdc_device.dev,
+-	.gpio = GPIO_PTR1,
+-	.def_value = 1,
+-	.name = "backlight",
+ };
  
- 	/* Set initial contrast */
- 	ret = ssd1307fb_write_cmd(par->client, SSD1307FB_CONTRAST);
-@@ -329,7 +329,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 		ret = ssd1307fb_write_cmd(par->client, SSD1307FB_SEG_REMAP_ON);
- 		if (ret < 0)
- 			return ret;
--	};
-+	}
- 
- 	/* Set COM direction */
- 	com_invdir = 0xc0 | (par->com_invdir & 0x1) << 3;
-@@ -716,7 +716,7 @@ static int ssd1307fb_probe(struct i2c_client *client,
- 	if (par->device_info->need_pwm) {
- 		pwm_disable(par->pwm);
- 		pwm_put(par->pwm);
--	};
-+	}
- regulator_enable_error:
- 	if (par->vbat_reg)
- 		regulator_disable(par->vbat_reg);
-@@ -740,7 +740,7 @@ static int ssd1307fb_remove(struct i2c_client *client)
- 	if (par->device_info->need_pwm) {
- 		pwm_disable(par->pwm);
- 		pwm_put(par->pwm);
--	};
-+	}
- 	fb_deferred_io_cleanup(info);
- 	__free_pages(__va(info->fix.smem_start), get_order(info->fix.smem_len));
- 	framebuffer_release(info);
+ static const struct platform_device_info gpio_backlight_device_info = {
 -- 
-2.17.1
+2.21.0

@@ -1,88 +1,32 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 25 Jun 2019 16:34:33 +0000
-Subject: [PATCH 11/12] fbdev: da8xx-fb: drop a redundant if
-Message-Id: <20190625163434.13620-12-brgl@bgdev.pl>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 28 Jun 2019 13:05:25 +0000
+Subject: Re: [PATCH 11/12] fbdev: da8xx-fb: drop a redundant if
+Message-Id: <9ee5e4f8-8f26-1f3e-cc16-8d10f17431e9@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190625163434.13620-1-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
+        <CGME20190625163508epcas2p1cb472d2ebee0023d5efd777feced0991@epcas2p1.samsung.com>
+        <20190625163434.13620-12-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-12-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-The driver data is always set in probe. The remove() callback won't be
-called if probe failed which is the only way for it to be NULL. Remove
-the redundant if.
+On 6/25/19 6:34 PM, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> The driver data is always set in probe. The remove() callback won't be
+> called if probe failed which is the only way for it to be NULL. Remove
+> the redundant if.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
----
- drivers/video/fbdev/da8xx-fb.c | 43 ++++++++++++++++------------------
- 1 file changed, 20 insertions(+), 23 deletions(-)
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index 4dda194d6b8f..6b11a8108108 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1067,37 +1067,34 @@ static void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
- static int fb_remove(struct platform_device *dev)
- {
- 	struct fb_info *info = dev_get_drvdata(&dev->dev);
-+	struct da8xx_fb_par *par = info->par;
- 	int ret;
- 
--	if (info) {
--		struct da8xx_fb_par *par = info->par;
--
- #ifdef CONFIG_CPU_FREQ
--		lcd_da8xx_cpufreq_deregister(par);
-+	lcd_da8xx_cpufreq_deregister(par);
- #endif
--		if (par->lcd_supply) {
--			ret = regulator_disable(par->lcd_supply);
--			if (ret)
--				return ret;
--		}
-+	if (par->lcd_supply) {
-+		ret = regulator_disable(par->lcd_supply);
-+		if (ret)
-+			return ret;
-+	}
- 
--		lcd_disable_raster(DA8XX_FRAME_WAIT);
--		lcdc_write(0, LCD_RASTER_CTRL_REG);
-+	lcd_disable_raster(DA8XX_FRAME_WAIT);
-+	lcdc_write(0, LCD_RASTER_CTRL_REG);
- 
--		/* disable DMA  */
--		lcdc_write(0, LCD_DMA_CTRL_REG);
-+	/* disable DMA  */
-+	lcdc_write(0, LCD_DMA_CTRL_REG);
- 
--		unregister_framebuffer(info);
--		fb_dealloc_cmap(&info->cmap);
--		dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
--				  par->p_palette_base);
--		dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
--				  par->vram_phys);
--		pm_runtime_put_sync(&dev->dev);
--		pm_runtime_disable(&dev->dev);
--		framebuffer_release(info);
-+	unregister_framebuffer(info);
-+	fb_dealloc_cmap(&info->cmap);
-+	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
-+			  par->p_palette_base);
-+	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
-+			  par->vram_phys);
-+	pm_runtime_put_sync(&dev->dev);
-+	pm_runtime_disable(&dev->dev);
-+	framebuffer_release(info);
- 
--	}
- 	return 0;
- }
- 
--- 
-2.21.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

@@ -1,40 +1,87 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Mon, 24 Jun 2019 20:31:09 +0000
-Subject: [PATCH v2 0/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190624203114.93277-1-mka@chromium.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Fri, 28 Jun 2019 10:02:51 +0000
+Subject: [PATCH RFT 2/4] backlight: gpio: simplify the platform data handling
+Message-Id: <20190628100253.8385-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190628100253.8385-1-brgl@bgdev.pl>
+In-Reply-To: <20190628100253.8385-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Backlight brightness curves can have different shapes. The two main
-types are linear and non-linear curves. The human eye doesn't
-perceive linearly increasing/decreasing brightness as linear (see
-also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
-linearly to human eye"), hence many backlights use non-linear (often
-logarithmic) brightness curves. The type of curve is currently opaque
-to userspace, so userspace often relies on more or less reliable
-heuristics (like the number of brightness levels) to decide whether
-to treat a backlight device as linear or non-linear.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Export the type of the brightness curve via a new sysfs attribute.
+Now that the last user of platform data (sh ecovec24) defines a proper
+GPIO lookup and sets the 'default-on' device property, we can drop the
+platform_data-specific GPIO handling and unify a big chunk of code.
 
-Matthias Kaehlcke (4):
-  MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
-  backlight: Expose brightness curve type through sysfs
-  backlight: pwm_bl: Set scale type for CIE 1931 curves
-  backlight: pwm_bl: Set scale type for brightness curves specified in
-    the DT
+The only field used from the platform data is now the fbdev pointer.
 
- .../ABI/testing/sysfs-class-backlight         | 32 +++++++++++++++++
- MAINTAINERS                                   |  2 ++
- drivers/video/backlight/backlight.c           | 21 +++++++++++
- drivers/video/backlight/pwm_bl.c              | 35 ++++++++++++++++++-
- include/linux/backlight.h                     | 10 ++++++
- 5 files changed, 99 insertions(+), 1 deletion(-)
- create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 46 +++++++-----------------
+ 1 file changed, 13 insertions(+), 33 deletions(-)
 
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 89e10bccfd3c..b20d2d5d5190 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -71,41 +71,21 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 
+ 	gbl->dev = dev;
+ 
+-	if (pdata) {
+-		/*
+-		 * Legacy platform data GPIO retrieveal. Do not expand
+-		 * the use of this code path, currently only used by one
+-		 * SH board.
+-		 */
+-		unsigned long flags = GPIOF_DIR_OUT;
+-
++	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+-		gbl->def_value = pdata->def_value;
+-		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+-
+-		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+-					    pdata ? pdata->name : "backlight");
+-		if (ret < 0) {
+-			dev_err(dev, "unable to request GPIO\n");
+-			return ret;
+-		}
+-		gbl->gpiod = gpio_to_desc(pdata->gpio);
+-		if (!gbl->gpiod)
+-			return -EINVAL;
+-	} else {
+-		gbl->def_value = device_property_read_bool(dev, "default-on");
+-		flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+-
+-		gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+-		if (IS_ERR(gbl->gpiod)) {
+-			ret = PTR_ERR(gbl->gpiod);
+-
+-			if (ret != -EPROBE_DEFER) {
+-				dev_err(dev,
+-					"Error: The gpios parameter is missing or invalid.\n");
+-			}
+-			return ret;
++
++	gbl->def_value = device_property_read_bool(dev, "default-on");
++	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
++
++	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
++	if (IS_ERR(gbl->gpiod)) {
++		ret = PTR_ERR(gbl->gpiod);
++
++		if (ret != -EPROBE_DEFER) {
++			dev_err(dev,
++				"Error: The gpios parameter is missing or invalid.\n");
+ 		}
++		return ret;
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
 -- 
-2.22.0.410.gd8fdbe21b5-goog
+2.21.0

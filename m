@@ -1,61 +1,47 @@
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Date: Mon, 22 Jul 2019 16:09:50 +0000
-Subject: Re: [PATCH v2 0/7] backlight: gpio: simplify the driver
-Message-Id: <20190722160950.GA9224@smile.fi.intel.com>
+From: Sekhar Nori <nsekhar@ti.com>
+Date: Mon, 01 Jul 2019 14:52:41 +0000
+Subject: Re: [PATCH 00/12] ARM: davinci: da850-evm: remove more legacy GPIO calls
+Message-Id: <fe42c0e1-2bfb-2b1c-2c38-0e176e88ec6e@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722150302.29526-1-brgl@bgdev.pl>
-In-Reply-To: <20190722150302.29526-1-brgl@bgdev.pl>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Mon, Jul 22, 2019 at 05:02:55PM +0200, Bartosz Golaszewski wrote:
+Hi Lee, Daniel, Jingoo,
+
+On 25/06/19 10:04 PM, Bartosz Golaszewski wrote:
 > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 > 
-> While working on my other series related to gpio-backlight[1] I noticed
-> that we could simplify the driver if we made the only user of platform
-> data use GPIO lookups and device properties. This series tries to do
-> that.
+> This is another small step on the path to liberating davinci from legacy
+> GPIO API calls and shrinking the davinci GPIO driver by not having to
+> support the base GPIO number anymore.
 > 
-> The first patch adds all necessary data structures to ecovec24. Patch
-> 2/7 unifies much of the code for both pdata and non-pdata cases. Patches
-> 3-4/7 remove unused platform data fields. Last three patches contain
-> additional improvements for the GPIO backlight driver while we're already
-> modifying it.
+> This time we're removing the legacy calls used indirectly by the LCDC
+> fbdev driver.
 > 
-> I don't have access to this HW but hopefully this works. Only compile
-> tested.
-> 
-> [1] https://lkml.org/lkml/2019/6/25/900
+> The first three patches modify the GPIO backlight driver. The first
+> of them adds the necessary functionality, the other two are just
+> tweaks and cleanups.
 
-For uncommented ones
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Can you take the first three patches for v5.3 - if its not too late? I
+think that will make it easy for rest of patches to make into subsequent
+kernel releases.
 
 > 
-> v1 -> v2:
-> - rebased on top of v5.3-rc1 and adjusted to the recent changes from Andy
-> - added additional two patches with minor improvements
+> Next two patches enable the GPIO backlight driver in
+> davinci_all_defconfig.
 > 
-> Bartosz Golaszewski (7):
->   sh: ecovec24: add additional properties to the backlight device
->   backlight: gpio: simplify the platform data handling
->   sh: ecovec24: don't set unused fields in platform data
->   backlight: gpio: remove unused fields from platform data
->   backlight: gpio: remove dev from struct gpio_backlight
->   backlight: gpio: remove def_value from struct gpio_backlight
->   backlight: gpio: use a helper variable for &pdev->dev
+> Patch 6/12 models the backlight GPIO as an actual GPIO backlight device.
 > 
->  arch/sh/boards/mach-ecovec24/setup.c         | 33 ++++++--
->  drivers/video/backlight/gpio_backlight.c     | 87 ++++++--------------
->  include/linux/platform_data/gpio_backlight.h |  3 -
->  3 files changed, 48 insertions(+), 75 deletions(-)
+> Patches 7-9 extend the fbdev driver with regulator support and convert
+> the da850-evm board file to using it.
 > 
-> -- 
-> 2.21.0
-> 
+> Last three patches are improvements to the da8xx fbdev driver since
+> we're already touching it in this series.
 
--- 
-With Best Regards,
-Andy Shevchenko
+Thanks,
+Sekhar

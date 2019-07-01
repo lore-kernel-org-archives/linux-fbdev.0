@@ -1,62 +1,132 @@
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Date: Sat, 27 Jul 2019 02:51:51 +0000
-Subject: Re: [PATCH 1/4] video: of: display_timing: Add of_node_put() in of_get_display_timing()
-Message-Id: <20190727025151.GE4902@pendragon.ideasonboard.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 01 Jul 2019 16:55:23 +0000
+Subject: Re: [PATCH v2 2/4] backlight: Expose brightness curve type through sysfs
+Message-Id: <20190701165523.GD137143@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722182439.44844-1-dianders@chromium.org>
- <20190722182439.44844-2-dianders@chromium.org>
-In-Reply-To: <20190722182439.44844-2-dianders@chromium.org>
+References: <20190624203114.93277-1-mka@chromium.org>
+ <20190624203114.93277-3-mka@chromium.org>
+ <20190626145611.GA22348@xo-6d-61-c0.localdomain>
+ <20190628083452.tlgcylwo34lxi4s6@holly.lan>
+In-Reply-To: <20190628083452.tlgcylwo34lxi4s6@holly.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Douglas Anderson <dianders@chromium.org>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
 
-Hi Douglas,
+Hi,
 
-Thank you for the patch.
-
-On Mon, Jul 22, 2019 at 11:24:36AM -0700, Douglas Anderson wrote:
-> From code inspection it can be seen that of_get_display_timing() is
-> lacking an of_node_put().  Add it.
+On Fri, Jun 28, 2019 at 09:34:52AM +0100, Daniel Thompson wrote:
+> On Wed, Jun 26, 2019 at 04:56:11PM +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Export the type of the brightness curve via the new sysfs attribute
+> > > 'scale'. The value of the attribute may be a simple string like
+> > > 'linear' or 'non-linear', or a composite string similar to
+> > > 'compatible' strings of the device tree. A composite string consists
+> > > of different elements separated by commas, starting with the
+> > > most-detailed description and ending with the least-detailed one. An
+> > > example for a composite string is "cie-1931,perceptual,non-linear"
+> > > This brightness curve was generated with the CIE 1931 algorithm, it
+> > > is perceptually linear, but not actually linear in terms of the
+> > > emitted light. If userspace doesn't know about 'cie-1931' or
+> > > 'perceptual' it should at least be able to interpret the 'non-linear'
+> > > part.
+> > 
+> > I'm not sure the comma-separated thing is a good idea. If it is, it should 
+> > go to the Documentation, not to changelog.
 > 
-> Fixes: ffa3fd21de8a ("videomode: implement public of_get_display_timing()")
-> Signed-off-by: Douglas Anderson <dianders@chromium.org>
-
-Reviewed-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-
-> ---
+> So I viewed the comma-separated thing as allow us to describe facts about
+> the scale used.
 > 
->  drivers/video/of_display_timing.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> In particular I suspect that some controllers will be non-linear *and*
+> non-perceptual and that some userspaces, particularly those that animate
+> backlight changes, may care enough about the difference to ask us to add
+> another fact to the set that describes that scale.
 > 
-> diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-> index f5c1c469c0af..5eedae0799f0 100644
-> --- a/drivers/video/of_display_timing.c
-> +++ b/drivers/video/of_display_timing.c
-> @@ -119,6 +119,7 @@ int of_get_display_timing(const struct device_node *np, const char *name,
->  		struct display_timing *dt)
->  {
->  	struct device_node *timing_np;
-> +	int ret;
->  
->  	if (!np)
->  		return -EINVAL;
-> @@ -129,7 +130,11 @@ int of_get_display_timing(const struct device_node *np, const char *name,
->  		return -ENOENT;
->  	}
->  
-> -	return of_parse_display_timing(timing_np, dt);
-> +	ret = of_parse_display_timing(timing_np, dt);
-> +
-> +	of_node_put(timing_np);
-> +
-> +	return ret;
->  }
->  EXPORT_SYMBOL_GPL(of_get_display_timing);
->  
+> Having said that I do share your concern that the comma-separated list
+> is overengineered and that all userspaces will end up implementing
+> something like:
+> 
+> if (strstr("non-linear", scale) {
+>   mode = PERCEPTUAL;
+> } else if (strstr("unknown", scale) {
+>   mode = use_existing_hueristic();
+> } else {
+>   mode = LINEAR;
+> }
 
--- 
-Regards,
+I agree that this is not unlikely ...
 
-Laurent Pinchart
+So let's just make it 'linear', 'non-linear' and 'unknown'?
+
+> > > +What:		/sys/class/backlight/<backlight>/scale
+> > > +Date:		June 2019
+> > > +KernelVersion:	5.4
+> > > +Contact:	Daniel Thompson <daniel.thompson@linaro.org>
+> > > +Description:
+> > > +		Description of the scale of the brightness curve. The
+> > > +		description consists of one or more elements separated by
+> > > +		commas, from the most detailed to the least detailed
+> > > +		description.
+> > > +
+> > > +		Possible values are:
+> > > +
+> > > +		unknown
+> > > +		  The scale of the brightness curve is unknown.
+> > > +
+> > > +		linear
+> > > +		  The brightness changes linearly in terms of the emitted
+> > > +		  light, changes are perceived as non-linear by the human eye.
+> > > +
+> > > +		non-linear
+> > > +		  The brightness changes non-linearly in terms of the emitted
+> > > +		  light, changes might be perceived as linear by the human eye.
+> > 
+> > non-linear is not too useful as described.
+> 
+> Agree.
+> 
+> The idea is that allows a userspace with simple backlight needs to
+> simple map the brightness property directly to a slider using the
+> approach above without worrying about perceptual or (possible future)
+> logarithmic scales. Such an approach won't be perfect but it
+> probably won't feel horrible for the user either.
+> 
+> Arguably the descriptions should move away from the raw factual
+> approach and describe what advise the kernel of offering the
+> userspace.
+
+ok, I'll change it in the next revision
+
+> > > +		perceptual,non-linear
+> > > +		  The brightness changes non-linearly in terms of the emitted
+> > > +		  light, changes should be perceived as linear by the human eye.
+> > > +
+> > > +		cie-1931,perceptual,non-linear
+> > > +		  The brightness curve was calculated with the CIE 1931
+> > > +		  algorithm. Brightness changes non-linearly in terms of the
+> > > +		  emitted light, changes should be perceived as linear by the
+> > > +		  human eye.
+> > 
+> > Is it useful to know difference between perceptual, and cie-1931?
+> 
+> Depends how assertive the userspaces are!
+> 
+> If they follow the "fix kernel bugs in the kernel" mantra rather than
+> implement workarounds and heuristics then I suspect it would not be used
+> much.
+> 
+> 
+> > Would it be useful to export absolute values in some well-known units?
+> > 
+> > If I'm in dark room, I may want 100mW/m^2 of backlight... And it would
+> > be nice if I could set same backlight intensity on all my devices
+> > easily.
+> 
+> I'm a little sceptical that we could calibrate an absolute scale on
+> enough devices for such a property to be useful. I think it would be
+> "unknown" on almost every system.
+
+I share your scepticism and would expect most devices to remain
+"unknown"

@@ -1,132 +1,83 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Mon, 01 Jul 2019 16:55:23 +0000
-Subject: Re: [PATCH v2 2/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190701165523.GD137143@google.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Tue, 02 Jul 2019 09:05:41 +0000
+Subject: Re: [PATCH 02/12] backlight: gpio: use a helper variable for &pdev->dev
+Message-Id: <ada53c47-c768-8390-928a-caf7cb72bcac@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190624203114.93277-1-mka@chromium.org>
- <20190624203114.93277-3-mka@chromium.org>
- <20190626145611.GA22348@xo-6d-61-c0.localdomain>
- <20190628083452.tlgcylwo34lxi4s6@holly.lan>
-In-Reply-To: <20190628083452.tlgcylwo34lxi4s6@holly.lan>
+References: <20190625163434.13620-1-brgl@bgdev.pl>
+ <20190625163434.13620-3-brgl@bgdev.pl>
+In-Reply-To: <20190625163434.13620-3-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Pavel Machek <pavel@ucw.cz>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+To: Bartosz Golaszewski <brgl@bgdev.pl>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Hi,
+On 25/06/2019 17:34, Bartosz Golaszewski wrote:
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> 
+> Instead of dereferencing pdev each time, use a helper variable for
+> the associated device pointer.
+> 
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Fri, Jun 28, 2019 at 09:34:52AM +0100, Daniel Thompson wrote:
-> On Wed, Jun 26, 2019 at 04:56:11PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Export the type of the brightness curve via the new sysfs attribute
-> > > 'scale'. The value of the attribute may be a simple string like
-> > > 'linear' or 'non-linear', or a composite string similar to
-> > > 'compatible' strings of the device tree. A composite string consists
-> > > of different elements separated by commas, starting with the
-> > > most-detailed description and ending with the least-detailed one. An
-> > > example for a composite string is "cie-1931,perceptual,non-linear"
-> > > This brightness curve was generated with the CIE 1931 algorithm, it
-> > > is perceptually linear, but not actually linear in terms of the
-> > > emitted light. If userspace doesn't know about 'cie-1931' or
-> > > 'perceptual' it should at least be able to interpret the 'non-linear'
-> > > part.
-> > 
-> > I'm not sure the comma-separated thing is a good idea. If it is, it should 
-> > go to the Documentation, not to changelog.
-> 
-> So I viewed the comma-separated thing as allow us to describe facts about
-> the scale used.
-> 
-> In particular I suspect that some controllers will be non-linear *and*
-> non-perceptual and that some userspaces, particularly those that animate
-> backlight changes, may care enough about the difference to ask us to add
-> another fact to the set that describes that scale.
-> 
-> Having said that I do share your concern that the comma-separated list
-> is overengineered and that all userspaces will end up implementing
-> something like:
-> 
-> if (strstr("non-linear", scale) {
->   mode = PERCEPTUAL;
-> } else if (strstr("unknown", scale) {
->   mode = use_existing_hueristic();
-> } else {
->   mode = LINEAR;
-> }
+No objections but I think this will need to be respun against 
+backlight-next (or v5.3).
 
-I agree that this is not unlikely ...
+> ---
+>   drivers/video/backlight/gpio_backlight.c | 14 +++++++-------
+>   1 file changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+> index 654c19d3a81d..8adbc8d75097 100644
+> --- a/drivers/video/backlight/gpio_backlight.c
+> +++ b/drivers/video/backlight/gpio_backlight.c
+> @@ -83,15 +83,16 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+>   	struct gpio_backlight_platform_data *pdata >   		dev_get_platdata(&pdev->dev);
 
-So let's just make it 'linear', 'non-linear' and 'unknown'?
+Why leave this one out?
 
-> > > +What:		/sys/class/backlight/<backlight>/scale
-> > > +Date:		June 2019
-> > > +KernelVersion:	5.4
-> > > +Contact:	Daniel Thompson <daniel.thompson@linaro.org>
-> > > +Description:
-> > > +		Description of the scale of the brightness curve. The
-> > > +		description consists of one or more elements separated by
-> > > +		commas, from the most detailed to the least detailed
-> > > +		description.
-> > > +
-> > > +		Possible values are:
-> > > +
-> > > +		unknown
-> > > +		  The scale of the brightness curve is unknown.
-> > > +
-> > > +		linear
-> > > +		  The brightness changes linearly in terms of the emitted
-> > > +		  light, changes are perceived as non-linear by the human eye.
-> > > +
-> > > +		non-linear
-> > > +		  The brightness changes non-linearly in terms of the emitted
-> > > +		  light, changes might be perceived as linear by the human eye.
-> > 
-> > non-linear is not too useful as described.
-> 
-> Agree.
-> 
-> The idea is that allows a userspace with simple backlight needs to
-> simple map the brightness property directly to a slider using the
-> approach above without worrying about perceptual or (possible future)
-> logarithmic scales. Such an approach won't be perfect but it
-> probably won't feel horrible for the user either.
-> 
-> Arguably the descriptions should move away from the raw factual
-> approach and describe what advise the kernel of offering the
-> userspace.
 
-ok, I'll change it in the next revision
+Daniel.
 
-> > > +		perceptual,non-linear
-> > > +		  The brightness changes non-linearly in terms of the emitted
-> > > +		  light, changes should be perceived as linear by the human eye.
-> > > +
-> > > +		cie-1931,perceptual,non-linear
-> > > +		  The brightness curve was calculated with the CIE 1931
-> > > +		  algorithm. Brightness changes non-linearly in terms of the
-> > > +		  emitted light, changes should be perceived as linear by the
-> > > +		  human eye.
-> > 
-> > Is it useful to know difference between perceptual, and cie-1931?
-> 
-> Depends how assertive the userspaces are!
-> 
-> If they follow the "fix kernel bugs in the kernel" mantra rather than
-> implement workarounds and heuristics then I suspect it would not be used
-> much.
-> 
-> 
-> > Would it be useful to export absolute values in some well-known units?
-> > 
-> > If I'm in dark room, I may want 100mW/m^2 of backlight... And it would
-> > be nice if I could set same backlight intensity on all my devices
-> > easily.
-> 
-> I'm a little sceptical that we could calibrate an absolute scale on
-> enough devices for such a property to be useful. I think it would be
-> "unknown" on almost every system.
 
-I share your scepticism and would expect most devices to remain
-"unknown"
+>   	struct backlight_properties props;
+> +	struct device *dev = &pdev->dev;
+>   	struct backlight_device *bl;
+>   	struct gpio_backlight *gbl;
+>   	int ret;
+>   
+> -	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
+> +	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+>   	if (gbl = NULL)
+>   		return -ENOMEM;
+>   
+> -	gbl->dev = &pdev->dev;
+> +	gbl->dev = dev;
+>   
+>   	if (pdata) {
+>   		/*
+> @@ -108,7 +109,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+>   		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+>   					    pdata ? pdata->name : "backlight");
+>   		if (ret < 0) {
+> -			dev_err(&pdev->dev, "unable to request GPIO\n");
+> +			dev_err(dev, "unable to request GPIO\n");
+>   			return ret;
+>   		}
+>   		gbl->gpiod = gpio_to_desc(pdata->gpio);
+> @@ -123,11 +124,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+>   	memset(&props, 0, sizeof(props));
+>   	props.type = BACKLIGHT_RAW;
+>   	props.max_brightness = 1;
+> -	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
+> -					&pdev->dev, gbl, &gpio_backlight_ops,
+> -					&props);
+> +	bl = devm_backlight_device_register(dev, dev_name(dev), dev, gbl,
+> +					    &gpio_backlight_ops, &props);
+>   	if (IS_ERR(bl)) {
+> -		dev_err(&pdev->dev, "failed to register backlight\n");
+> +		dev_err(dev, "failed to register backlight\n");
+>   		return PTR_ERR(bl);
+>   	}
+>   
+> 

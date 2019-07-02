@@ -1,54 +1,44 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 02 Jul 2019 10:06:46 +0000
-Subject: Re: [PATCH 00/12] ARM: davinci: da850-evm: remove more legacy GPIO calls
-Message-Id: <20190702100646.q3wgzgacvp67m6xv@holly.lan>
+Date: Tue, 02 Jul 2019 09:14:11 +0000
+Subject: Re: [PATCH RFT 0/4] backlight: gpio: simplify the driver
+Message-Id: <20190702091411.vk3q5zhqh6xh7uyd@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
- <fe42c0e1-2bfb-2b1c-2c38-0e176e88ec6e@ti.com>
- <20190702063653.GC4652@dell>
-In-Reply-To: <20190702063653.GC4652@dell>
+References: <20190628100253.8385-1-brgl@bgdev.pl>
+ <CACRpkdZqsgXoZcHv9z+7oVrf=i9WPSHG=93qhfA=0SkR0Mdfxg@mail.gmail.com>
+In-Reply-To: <CACRpkdZqsgXoZcHv9z+7oVrf=i9WPSHG=93qhfA=0SkR0Mdfxg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Sekhar Nori <nsekhar@ti.com>, Bartosz Golaszewski <brgl@bgdev.pl>, Kevin Hilman <khilman@kernel.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, linux-sh@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Lee Jones <lee.jones@linaro.org>
 
-T24gVHVlLCBKdWwgMDIsIDIwMTkgYXQgMDc6MzY6NTNBTSArMDEwMCwgTGVlIEpvbmVzIHdyb3Rl
-Ogo+IE9uIE1vbiwgMDEgSnVsIDIwMTksIFNla2hhciBOb3JpIHdyb3RlOgo+IAo+ID4gSGkgTGVl
-LCBEYW5pZWwsIEppbmdvbywKPiA+IAo+ID4gT24gMjUvMDYvMTkgMTA6MDQgUE0sIEJhcnRvc3og
-R29sYXN6ZXdza2kgd3JvdGU6Cj4gPiA+IEZyb206IEJhcnRvc3ogR29sYXN6ZXdza2kgPGJnb2xh
-c3pld3NraUBiYXlsaWJyZS5jb20+Cj4gPiA+IAo+ID4gPiBUaGlzIGlzIGFub3RoZXIgc21hbGwg
-c3RlcCBvbiB0aGUgcGF0aCB0byBsaWJlcmF0aW5nIGRhdmluY2kgZnJvbSBsZWdhY3kKPiA+ID4g
-R1BJTyBBUEkgY2FsbHMgYW5kIHNocmlua2luZyB0aGUgZGF2aW5jaSBHUElPIGRyaXZlciBieSBu
-b3QgaGF2aW5nIHRvCj4gPiA+IHN1cHBvcnQgdGhlIGJhc2UgR1BJTyBudW1iZXIgYW55bW9yZS4K
-PiA+ID4gCj4gPiA+IFRoaXMgdGltZSB3ZSdyZSByZW1vdmluZyB0aGUgbGVnYWN5IGNhbGxzIHVz
-ZWQgaW5kaXJlY3RseSBieSB0aGUgTENEQwo+ID4gPiBmYmRldiBkcml2ZXIuCj4gPiA+IAo+ID4g
-PiBUaGUgZmlyc3QgdGhyZWUgcGF0Y2hlcyBtb2RpZnkgdGhlIEdQSU8gYmFja2xpZ2h0IGRyaXZl
-ci4gVGhlIGZpcnN0Cj4gPiA+IG9mIHRoZW0gYWRkcyB0aGUgbmVjZXNzYXJ5IGZ1bmN0aW9uYWxp
-dHksIHRoZSBvdGhlciB0d28gYXJlIGp1c3QKPiA+ID4gdHdlYWtzIGFuZCBjbGVhbnVwcy4KPiA+
-IAo+ID4gQ2FuIHlvdSB0YWtlIHRoZSBmaXJzdCB0aHJlZSBwYXRjaGVzIGZvciB2NS4zIC0gaWYg
-aXRzIG5vdCB0b28gbGF0ZT8gSQo+ID4gdGhpbmsgdGhhdCB3aWxsIG1ha2UgaXQgZWFzeSBmb3Ig
-cmVzdCBvZiBwYXRjaGVzIHRvIG1ha2UgaW50byBzdWJzZXF1ZW50Cj4gPiBrZXJuZWwgcmVsZWFz
-ZXMuCj4gCj4gSXQncyBhbHJlYWR5IHRvbyBsYXRlIGluIHRoZSBjeWNsZSAoLXJjNykgZm9yIHRo
-YXQuICBJIHJlcXVpcmUgcGF0Y2hlcwo+IG9mIHRoaXMgbmF0dXJlIHRvIGhhdmUgYSBnb29kIHNv
-YWsgaW4gLW5leHQgYmVmb3JlIGJlaW5nIG1lcmdlZC4gVGhlcmUKPiBzaG91bGRuJ3QgYmUgYW4g
-aXNzdWUgd2l0aCBnZXR0aW5nIHRoZW0gaW50byB2NS40IHRob3VnaC4KCk9uIHRoZSBvdGhlciBo
-YW5kIEkgdGhpbmsgd2UgZGlkIHRha2UgYSBwYXRjaCB0aGF0IGRpZCBtdWNoIHRoZSBzYW1lIAp0
-aGluZyBhcyBwYXRjaCAxLzEyIGluIHRoaXMgc2VyaWVzOgpodHRwczovL2dpdC5rZXJuZWwub3Jn
-L3B1Yi9zY20vbGludXgva2VybmVsL2dpdC9sZWUvYmFja2xpZ2h0LmdpdC9jb21taXQvP2g9Zm9y
-LWJhY2tsaWdodC1uZXh0JmlkmGI3NDA0ZWI3ZDY0ZTU1ZjhmZGQ0MTljYjM5NjVhOGFiZjBlMjE3
-CgpJJ20gbm90IDEwMCUgc3VyZSBidXQgSSB0aGluayB0aGF0IG1pZ2h0IGFsbG93IHRoZSBwYXRj
-aHNldCB0byBiZSBzcGxpdAppbnRvIHR3byB0aGF0IGFyZSBpbmRlcGVuZGVudCAob25lIGZvciBE
-YXZpbmNpIGFuZCBvbmUgZm9yIGdwaW8KYmFja2xpZ2h0IGltcHJvdmVtZW50cykuCgoKRGFuaWVs
-LgoKPiAKPiA+ID4gTmV4dCB0d28gcGF0Y2hlcyBlbmFibGUgdGhlIEdQSU8gYmFja2xpZ2h0IGRy
-aXZlciBpbgo+ID4gPiBkYXZpbmNpX2FsbF9kZWZjb25maWcuCj4gPiA+IAo+ID4gPiBQYXRjaCA2
-LzEyIG1vZGVscyB0aGUgYmFja2xpZ2h0IEdQSU8gYXMgYW4gYWN0dWFsIEdQSU8gYmFja2xpZ2h0
-IGRldmljZS4KPiA+ID4gCj4gPiA+IFBhdGNoZXMgNy05IGV4dGVuZCB0aGUgZmJkZXYgZHJpdmVy
-IHdpdGggcmVndWxhdG9yIHN1cHBvcnQgYW5kIGNvbnZlcnQKPiA+ID4gdGhlIGRhODUwLWV2bSBi
-b2FyZCBmaWxlIHRvIHVzaW5nIGl0Lgo+ID4gPiAKPiA+ID4gTGFzdCB0aHJlZSBwYXRjaGVzIGFy
-ZSBpbXByb3ZlbWVudHMgdG8gdGhlIGRhOHh4IGZiZGV2IGRyaXZlciBzaW5jZQo+ID4gPiB3ZSdy
-ZSBhbHJlYWR5IHRvdWNoaW5nIGl0IGluIHRoaXMgc2VyaWVzLgo+ID4gCj4gPiBUaGFua3MsCj4g
-PiBTZWtoYXIKPiA+IAo+IAo+IC0tIAo+IExlZSBKb25lcyBb5p2O55C85pavXQo+IExpbmFybyBT
-ZXJ2aWNlcyBUZWNobmljYWwgTGVhZAo+IExpbmFyby5vcmcg4pSCIE9wZW4gc291cmNlIHNvZnR3
-YXJlIGZvciBBUk0gU29Dcwo+IEZvbGxvdyBMaW5hcm86IEZhY2Vib29rIHwgVHdpdHRlciB8IEJs
-b2c=
+On Fri, Jun 28, 2019 at 11:15:10AM +0100, Linus Walleij wrote:
+> On Fri, Jun 28, 2019 at 11:03 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+> 
+> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> >
+> > While working on my other series related to gpio-backlight[1] I noticed
+> > that we could simplify the driver if we made the only user of platform
+> > data use GPIO lookups and device properties. This series tries to do
+> > that.
+> >
+> > The first patch sets up all the required structures in the board file,
+> > the second modifies the backlight driver, the third and fourth remove
+> > the leftovers.
+> >
+> > This series depends on the three first patches from [1].
+> >
+> > I don't have access to this HW but hopefully this works. Only compile
+> > tested.
+> 
+> This series:
+> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+> 
+> Excellent work!
+
+Ditto!
+
+Hope to see this come around again alongside the other GPIO clean ups.
+
+
+Daniel.

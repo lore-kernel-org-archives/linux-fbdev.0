@@ -1,46 +1,68 @@
-From: =?UTF-8?Q?Jan_Sebastian_G=c3=b6tte?= <linux@jaseg.net>
-Date: Mon, 15 Jul 2019 14:58:01 +0000
-Subject: Re: [PATCH] Staging: fbtft: Fix wrong check in,fbtft_write_wmem16_bus8()
-Message-Id: <5a77c18f-7338-888f-2379-12171b6a545e@jaseg.net>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Wed, 03 Jul 2019 08:54:05 +0000
+Subject: Re: [PATCH 5/7 v2] MIPS: use the generic uncached segment support in dma-direct
+Message-Id: <CAK8P3a0+mmc_DsHZZeM85xGUUB8zc50ROUu3=i3UN1XwD8UGeQ@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190715143003.12819-1-nsaenzjulienne@suse.de>
- <7b8242ab-cc0c-d90b-60af-ff1c53789e44@opensynergy.com>
-In-Reply-To: <7b8242ab-cc0c-d90b-60af-ff1c53789e44@opensynergy.com>
+References: <20190430110032.25301-1-hch@lst.de>
+	<20190430110032.25301-6-hch@lst.de>
+	<20190430201041.536amvinrcvd2wua@pburton-laptop>
+	<20190430202947.GA30262@lst.de>
+	<20190430211105.ielntedm46uqamca@pburton-laptop>
+	<20190501131339.GA890@lst.de>
+	<20190501171355.7wnrutfnax5djkpx@pburton-laptop>
+	<20190603064855.GA22023@lst.de>
+In-Reply-To: <20190603064855.GA22023@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Cc: =?UTF-8?Q?Jan_Sebastian_G=c3=b6tte?= <linux@jaseg.net>, leobras.c@gmail.com, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, nishadkamdar@gmail.com, gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org, bhanusreemahesh@gmail.com, Phil Reid <preid@electromag.com.au>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Christoph Hellwig <hch@lst.de>
+Cc: Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, James Hogan <jhogan@kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Paul Burton <paul.burton@mips.com>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Ley Foon Tan <lftan@altera.com>
 
-Coincidentially, I've worked on the exact same issue this weekend. I can confirm this change is necessary, and with this and the other two patches from Phil Reid the driver works again. The same mistake occurred in several other locations, though. I'll send a patch fixing all of them.
+On Mon, Jun 3, 2019 at 8:50 AM Christoph Hellwig <hch@lst.de> wrote:
+>
+> On Wed, May 01, 2019 at 05:13:57PM +0000, Paul Burton wrote:
+> > Hi Christoph,
+> >
+> > On Wed, May 01, 2019 at 03:13:39PM +0200, Christoph Hellwig wrote:
+> > > Stop providing our arch alloc/free hooks and just expose the segment
+> > > offset instead.
+> > >
+> > > Signed-off-by: Christoph Hellwig <hch@lst.de>
+> > > ---
+> > >  arch/mips/Kconfig              |  1 +
+> > >  arch/mips/include/asm/page.h   |  3 ---
+> > >  arch/mips/jazz/jazzdma.c       |  6 ------
+> > >  arch/mips/mm/dma-noncoherent.c | 26 +++++++++-----------------
+> > >  4 files changed, 10 insertions(+), 26 deletions(-)
+> >
+> > This one looks good to me now, for patches 1 & 5:
+> >
+> >   Acked-by: Paul Burton <paul.burton@mips.com>
+>
+> Thanks, I've merged thos into the dma-mapping tree.
 
-I've tested this on a ili9486-based display connected to a raspberry pi 3b+.
+I think this is the cause of some kernelci failures in current
+linux-next builds:
 
-Regards, Jan
+https://kernelci.org/build/next/branch/master/kernel/next-20190702/
 
-On Mon, 15 Jul 2019 Nicolas Saenz Julienne wrote:
-> We actually want to set the gpio pin if it's avilable, not the other way
-> around.
-> 
-> Fixes: c440eee1a7a1 ("Staging: fbtft: Switch to the gpio descriptor
-> interface")
-> Signed-off-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-> ---
->  drivers/staging/fbtft/fbtft-bus.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/staging/fbtft/fbtft-bus.c
-> b/drivers/staging/fbtft/fbtft-bus.c
-> index 2ea814d0dca5..63c65dd67b17 100644
-> --- a/drivers/staging/fbtft/fbtft-bus.c
-> +++ b/drivers/staging/fbtft/fbtft-bus.c
-> @@ -135,7 +135,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par,
-> size_t offset, size_t len)
->         remain = len / 2;
->         vmem16 = (u16 *)(par->info->screen_buffer + offset);
->  -      if (!par->gpio.dc)
-> +       if (par->gpio.dc)
->                 gpiod_set_value(par->gpio.dc, 1);
->         /* non buffered write */
-> --
-> 2.22.0
+bigsur_defconfig ‐ mips3 warnings — 1 error
+cavium_octeon_defconfig ‐ mips3 warnings — 1 error
+ip27_defconfig ‐ mips3 warnings — 1 error
+loongson3_defconfig ‐ mips3 warnings — 1 error
+mips_paravirt_defconfig ‐ mips3 warnings — 1 error
+nlm_xlp_defconfig ‐ mips3 warnings — 1 error
+nlm_xlr_defconfig ‐ mips1 warning — 1 error
+
+/home/buildslave/workspace/workspace/kernel-build@8/linux/build/../kernel/dma/direct.c:144:
+undefined reference to `arch_dma_prep_coherent'
+2/home/buildslave/workspace/kernel-build/linux/build/../kernel/dma/direct.c:144:
+undefined reference to `arch_dma_prep_coherent'
+2(.text+0xafc): undefined reference to `arch_dma_prep_coherent'
+1direct.c:(.text+0x934): undefined reference to `arch_dma_prep_coherent'
+1(.text+0xb84): undefined reference to `arch_dma_prep_coherent'
+
+I haven't looked into the details, but I suspect all machines
+with cache-coherent DMA are broken.
+
+       Arnd

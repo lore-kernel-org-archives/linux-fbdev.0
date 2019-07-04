@@ -1,29 +1,74 @@
-From: Paul Burton <paul.burton@mips.com>
-Date: Tue, 30 Jul 2019 17:43:39 +0000
-Subject: Re: [PATCH 01/11] MIPS: DTS: jz4740: Add missing nodes
-Message-Id: <MWHPR2201MB127769D32FAA4944F9A791CDC1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 04 Jul 2019 14:26:02 +0000
+Subject: [PATCH 07/11] video: fbdev: wm8505fb: convert platform driver to use dev_groups
+Message-Id: <20190704142602.GB6281@kroah.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-2-paul@crapouillou.net>
-In-Reply-To: <20190725220215.460-2-paul@crapouillou.net>
+References: <20190704084617.3602-1-gregkh@linuxfoundation.org>
+In-Reply-To: <20190704084617.3602-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <pburton@wavecomp.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, Tony Prisk <linux@prisktech.co.nz>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, platform-driver-x86@vger.kernel.org
 
-Hello,
+Platform drivers now have the option to have the platform core create
+and remove any needed sysfs attribute files.  So take advantage of that
+and do not register "by hand" a sysfs file.
 
-Paul Cercueil wrote:
-> Add nodes for the MMC, AIC, ADC, CODEC, MUSB, LCD, memory,
-> and BCH controllers.
-> 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> Tested-by: Artur Rojek <contact@artur-rojek.eu>
+Cc: Tony Prisk <linux@prisktech.co.nz>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/video/fbdev/wm8505fb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Applied to mips-next.
-
-Thanks,
-    Paul
-
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paul.burton@mips.com to report it. ]
+diff --git a/drivers/video/fbdev/wm8505fb.c b/drivers/video/fbdev/wm8505fb.c
+index 8f0d5379861d..3b826da97035 100644
+--- a/drivers/video/fbdev/wm8505fb.c
++++ b/drivers/video/fbdev/wm8505fb.c
+@@ -184,6 +184,12 @@ static ssize_t contrast_store(struct device *dev,
+ 
+ static DEVICE_ATTR_RW(contrast);
+ 
++static struct attribute *wm8505fb_attrs[] = {
++	&dev_attr_contrast.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(wm8505fb);
++
+ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+ {
+ 	chan &= 0xffff;
+@@ -369,10 +375,6 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
+-	if (ret < 0)
+-		fb_warn(&fbi->fb, "failed to register attributes (%d)\n", ret);
+-
+ 	fb_info(&fbi->fb, "%s frame buffer at 0x%lx-0x%lx\n",
+ 		fbi->fb.fix.id, fbi->fb.fix.smem_start,
+ 		fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
+@@ -384,8 +386,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+ 
+-	device_remove_file(&pdev->dev, &dev_attr_contrast);
+-
+ 	unregister_framebuffer(&fbi->fb);
+ 
+ 	writel(0, fbi->regbase);
+@@ -402,6 +402,7 @@ static const struct of_device_id wmt_dt_ids[] = {
+ };
+ 
+ static struct platform_driver wm8505fb_driver = {
++	.dev_groups	= wm8505fb_groups,
+ 	.probe		= wm8505fb_probe,
+ 	.remove		= wm8505fb_remove,
+ 	.driver		= {
+-- 
+2.22.0

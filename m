@@ -1,90 +1,55 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 23 Jul 2019 06:26:07 +0000
-Subject: [PATCH V2 07/10] video: sa1100fb: Remove cpufreq policy notifier
-Message-Id: <b8ed154787c6930c9d098fe549fcfe52c82ad762.1563862014.git.viresh.kumar@linaro.org>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 04 Jul 2019 08:46:06 +0000
+Subject: [PATCH 00/11] Platform drivers, provide a way to add sysfs groups easily
+Message-Id: <20190704084617.3602-1-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1563862014.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1563862014.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rafael Wysocki <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, Mans Rullgard <mans@mansr.com>, "H. Peter Anvin" <hpa@zytor.com>, Romain Izard <romain.izard.pro@gmail.com>, Richard Gong <richard.gong@linux.intel.com>, Florian Fainelli <f.fainelli@gmail.com>, x86@kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Ingo Molnar <mingo@redhat.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-input@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitr>
 
-The cpufreq policy notifier's CPUFREQ_ADJUST notification is going to
-get removed soon.
+If a platform driver wants to add a sysfs group, it has to do so in a
+racy way, adding it after the driver is bound.  To resolve this issue,
+have the platform driver core do this for the driver, making the
+individual drivers logic smaller and simpler, and solving the race at
+the same time.
 
-The notifier callback sa1100fb_freq_policy() isn't doing anything apart
-from printing a debug message on CPUFREQ_ADJUST notification. There is
-no point in keeping an otherwise empty callback and registering the
-notifier.
+All of these patches depend on the first patch.  I'll take the first one
+through my driver-core tree, and any subsystem maintainer can either ack
+their individul patch and I will be glad to also merge it, or they can
+wait until after 5.3-rc1 when the core patch hits Linus's tree and then
+take it, it's up to them.
 
-Remove it.
+Thank to Richard Gong for the idea and the testing of the platform
+driver patch.
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/video/fbdev/sa1100fb.c | 27 ---------------------------
- drivers/video/fbdev/sa1100fb.h |  1 -
- 2 files changed, 28 deletions(-)
+Greg Kroah-Hartman (11):
+  Platform: add a dev_groups pointer to struct platform_driver
+  uio: uio_fsl_elbc_gpcm: convert platform driver to use dev_groups
+  serial: sh-sci: use driver core functions, not sysfs ones.
+  firmware: arm_scpi: convert platform driver to use dev_groups
+  olpc: x01: convert platform driver to use dev_groups
+  platform: x86: hp-wmi: convert platform driver to use dev_groups
+  video: fbdev: wm8505fb: convert platform driver to use dev_groups
+  video: fbdev: w100fb: convert platform driver to use dev_groups
+  video: fbdev: sm501fb: convert platform driver to use dev_groups
+  input: keyboard: gpio_keys: convert platform driver to use dev_groups
+  input: axp20x-pek: convert platform driver to use dev_groups
 
-diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-index f7f8dee044b1..ae2bcfee338a 100644
---- a/drivers/video/fbdev/sa1100fb.c
-+++ b/drivers/video/fbdev/sa1100fb.c
-@@ -1005,31 +1005,6 @@ sa1100fb_freq_transition(struct notifier_block *nb, unsigned long val,
- 	}
- 	return 0;
- }
--
--static int
--sa1100fb_freq_policy(struct notifier_block *nb, unsigned long val,
--		     void *data)
--{
--	struct sa1100fb_info *fbi = TO_INF(nb, freq_policy);
--	struct cpufreq_policy *policy = data;
--
--	switch (val) {
--	case CPUFREQ_ADJUST:
--		dev_dbg(fbi->dev, "min dma period: %d ps, "
--			"new clock %d kHz\n", sa1100fb_min_dma_period(fbi),
--			policy->max);
--		/* todo: fill in min/max values */
--		break;
--	case CPUFREQ_NOTIFY:
--		do {} while(0);
--		/* todo: panic if min/max values aren't fulfilled 
--		 * [can't really happen unless there's a bug in the
--		 * CPU policy verififcation process *
--		 */
--		break;
--	}
--	return 0;
--}
- #endif
- 
- #ifdef CONFIG_PM
-@@ -1242,9 +1217,7 @@ static int sa1100fb_probe(struct platform_device *pdev)
- 
- #ifdef CONFIG_CPU_FREQ
- 	fbi->freq_transition.notifier_call = sa1100fb_freq_transition;
--	fbi->freq_policy.notifier_call = sa1100fb_freq_policy;
- 	cpufreq_register_notifier(&fbi->freq_transition, CPUFREQ_TRANSITION_NOTIFIER);
--	cpufreq_register_notifier(&fbi->freq_policy, CPUFREQ_POLICY_NOTIFIER);
- #endif
- 
- 	/* This driver cannot be unloaded at the moment */
-diff --git a/drivers/video/fbdev/sa1100fb.h b/drivers/video/fbdev/sa1100fb.h
-index 7a1a9ca33cec..d0aa33b0b88a 100644
---- a/drivers/video/fbdev/sa1100fb.h
-+++ b/drivers/video/fbdev/sa1100fb.h
-@@ -64,7 +64,6 @@ struct sa1100fb_info {
- 
- #ifdef CONFIG_CPU_FREQ
- 	struct notifier_block	freq_transition;
--	struct notifier_block	freq_policy;
- #endif
- 
- 	const struct sa1100fb_mach_info *inf;
+ arch/x86/platform/olpc/olpc-xo1-sci.c | 17 ++++------
+ drivers/base/platform.c               | 40 +++++++++++++++--------
+ drivers/firmware/arm_scpi.c           |  5 +--
+ drivers/input/keyboard/gpio_keys.c    | 13 ++------
+ drivers/input/misc/axp20x-pek.c       | 15 ++-------
+ drivers/platform/x86/hp-wmi.c         | 47 +++++++--------------------
+ drivers/tty/serial/sh-sci.c           | 22 +++++--------
+ drivers/uio/uio_fsl_elbc_gpcm.c       | 23 +++++--------
+ drivers/video/fbdev/sm501fb.c         | 37 +++++----------------
+ drivers/video/fbdev/w100fb.c          | 23 ++++++-------
+ drivers/video/fbdev/wm8505fb.c        | 13 ++++----
+ include/linux/platform_device.h       |  1 +
+ 12 files changed, 94 insertions(+), 162 deletions(-)
+
 -- 
-2.21.0.rc0.269.g1a574e7a288b
+2.22.0

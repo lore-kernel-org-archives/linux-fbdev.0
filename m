@@ -1,47 +1,65 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 23 Jul 2019 15:38:13 +0000
-Subject: Re: [PATCH 0/6] video: ssd1307fb: Support more displays
-Message-Id: <f0d8be30-4980-7e7c-dcbb-3bd7621cff08@samsung.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 04 Jul 2019 08:46:16 +0000
+Subject: [PATCH 10/11] input: keyboard: gpio_keys: convert platform driver to use dev_groups
+Message-Id: <20190704084617.3602-11-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190618074155epcas1p3fcfe7cf1058162c11e4b1780987ca394@epcas1p3.samsung.com>
- <20190618074111.9309-1-marko.kohtala@okoko.fi>
-In-Reply-To: <20190618074111.9309-1-marko.kohtala@okoko.fi>
+References: <20190704084617.3602-1-gregkh@linuxfoundation.org>
+In-Reply-To: <20190704084617.3602-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Marko Kohtala <marko.kohtala@okoko.fi>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Rob Herring <robh+dt@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
+Platform drivers now have the option to have the platform core create
+and remove any needed sysfs attribute files.  So take advantage of that
+and do not register "by hand" a bunch of sysfs files.
 
-On 6/18/19 9:41 AM, Marko Kohtala wrote:
-> The kernel driver for ssd1307fb did not allow for all proper
-> initialization for a Densitron 128x36 display. The trend in the driver
-> has been to add devicetree properties for the controller initialization
-> and these patches continue on that trend.
-> 
-> There also were some sparse and Coccinelle errors.
-> 
-> A small bug causing scrolling on display updates with nonzero page_offset
-> was a bit surprising. It would seem the driver has only been used with
-> page_offset set to zero. Bug has been there since commit
-> 301bc0675b677a98475187050d56cd2b39ff0acf ("video: ssd1307fb: Make use of
-> horizontal addressing mode").
-> 
-> Marko Kohtala (6):
->   video: ssd1307fb: Use screen_buffer instead of screen_base
->   video: ssd1307fb: Remove unneeded semicolons
->   video: ssd1307fb: Start page range at page_offset
->   video: ssd1307fb: Handle width and height that are not multiple of 8
->   dt-bindings: display: ssd1307fb: Add initialization properties
->   video: ssd1307fb: Add devicetree configuration of display setup
-> 
->  .../devicetree/bindings/display/ssd1307fb.txt |  10 ++
->  drivers/video/fbdev/ssd1307fb.c               | 130 ++++++++++++------
->  2 files changed, 101 insertions(+), 39 deletions(-)
-Patch series queued for v5.4, thanks.
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/input/keyboard/gpio_keys.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+index 6cd199e8a370..1f6547440edb 100644
+--- a/drivers/input/keyboard/gpio_keys.c
++++ b/drivers/input/keyboard/gpio_keys.c
+@@ -354,10 +354,7 @@ static struct attribute *gpio_keys_attrs[] = {
+ 	&dev_attr_disabled_switches.attr,
+ 	NULL,
+ };
+-
+-static const struct attribute_group gpio_keys_attr_group = {
+-	.attrs = gpio_keys_attrs,
+-};
++ATTRIBUTE_GROUPS(gpio_keys);
+ 
+ static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
+ {
+@@ -856,13 +853,6 @@ static int gpio_keys_probe(struct platform_device *pdev)
+ 
+ 	fwnode_handle_put(child);
+ 
+-	error = devm_device_add_group(dev, &gpio_keys_attr_group);
+-	if (error) {
+-		dev_err(dev, "Unable to export keys/switches, error: %d\n",
+-			error);
+-		return error;
+-	}
+-
+ 	error = input_register_device(input);
+ 	if (error) {
+ 		dev_err(dev, "Unable to register input device, error: %d\n",
+@@ -1025,6 +1015,7 @@ static void gpio_keys_shutdown(struct platform_device *pdev)
+ }
+ 
+ static struct platform_driver gpio_keys_device_driver = {
++	.dev_groups	= gpio_keys_groups,
+ 	.probe		= gpio_keys_probe,
+ 	.shutdown	= gpio_keys_shutdown,
+ 	.driver		= {
+-- 
+2.22.0

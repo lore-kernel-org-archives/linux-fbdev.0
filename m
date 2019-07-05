@@ -1,99 +1,33 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 04 Jul 2019 08:46:15 +0000
-Subject: [PATCH 09/11] video: fbdev: sm501fb: convert platform driver to use dev_groups
-Message-Id: <20190704084617.3602-10-gregkh@linuxfoundation.org>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Fri, 05 Jul 2019 15:01:41 +0000
+Subject: Re: [PATCH 09/11] video: fbdev: sm501fb: convert platform driver to use dev_groups
+Message-Id: <bf91b478-7b70-1464-fd43-65ae251fa79a@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190704084617.3602-1-gregkh@linuxfoundation.org>
-In-Reply-To: <20190704084617.3602-1-gregkh@linuxfoundation.org>
+        <CGME20190704084710epcas1p2416255911d43174fc5bbfc9353431648@epcas1p2.samsung.com>
+        <20190704084617.3602-10-gregkh@linuxfoundation.org>
+In-Reply-To: <20190704084617.3602-10-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
-Platform drivers now have the option to have the platform core create
-and remove any needed sysfs attribute files.  So take advantage of that
-and do not register "by hand" a bunch of sysfs files.
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/fbdev/sm501fb.c | 37 +++++++++--------------------------
- 1 file changed, 9 insertions(+), 28 deletions(-)
+On 7/4/19 10:46 AM, Greg Kroah-Hartman wrote:
+> Platform drivers now have the option to have the platform core create
+> and remove any needed sysfs attribute files.  So take advantage of that
+> and do not register "by hand" a bunch of sysfs files.
+> 
+> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-fbdev@vger.kernel.org
+> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index dde52d027416..c633ee76a73d 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1274,6 +1274,14 @@ static ssize_t sm501fb_debug_show_pnl(struct device *dev,
- 
- static DEVICE_ATTR(fbregs_pnl, 0444, sm501fb_debug_show_pnl, NULL);
- 
-+static struct attribute *sm501fb_attrs[] = {
-+	&dev_attr_crt_src.attr,
-+	&dev_attr_fbregs_pnl.attr,
-+	&dev_attr_fbregs_crt.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(sm501fb);
-+
- /* acceleration operations */
- static int sm501fb_sync(struct fb_info *info)
- {
-@@ -2016,33 +2024,9 @@ static int sm501fb_probe(struct platform_device *pdev)
- 		goto err_started_crt;
- 	}
- 
--	/* create device files */
--
--	ret = device_create_file(dev, &dev_attr_crt_src);
--	if (ret)
--		goto err_started_panel;
--
--	ret = device_create_file(dev, &dev_attr_fbregs_pnl);
--	if (ret)
--		goto err_attached_crtsrc_file;
--
--	ret = device_create_file(dev, &dev_attr_fbregs_crt);
--	if (ret)
--		goto err_attached_pnlregs_file;
--
- 	/* we registered, return ok */
- 	return 0;
- 
--err_attached_pnlregs_file:
--	device_remove_file(dev, &dev_attr_fbregs_pnl);
--
--err_attached_crtsrc_file:
--	device_remove_file(dev, &dev_attr_crt_src);
--
--err_started_panel:
--	unregister_framebuffer(info->fb[HEAD_PANEL]);
--	sm501_free_init_fb(info, HEAD_PANEL);
--
- err_started_crt:
- 	unregister_framebuffer(info->fb[HEAD_CRT]);
- 	sm501_free_init_fb(info, HEAD_CRT);
-@@ -2072,10 +2056,6 @@ static int sm501fb_remove(struct platform_device *pdev)
- 	struct fb_info	   *fbinfo_crt = info->fb[0];
- 	struct fb_info	   *fbinfo_pnl = info->fb[1];
- 
--	device_remove_file(&pdev->dev, &dev_attr_fbregs_crt);
--	device_remove_file(&pdev->dev, &dev_attr_fbregs_pnl);
--	device_remove_file(&pdev->dev, &dev_attr_crt_src);
--
- 	sm501_free_init_fb(info, HEAD_CRT);
- 	sm501_free_init_fb(info, HEAD_PANEL);
- 
-@@ -2233,6 +2213,7 @@ static int sm501fb_resume(struct platform_device *pdev)
- #endif
- 
- static struct platform_driver sm501fb_driver = {
-+	.dev_groups	= sm501fb_groups,
- 	.probe		= sm501fb_probe,
- 	.remove		= sm501fb_remove,
- 	.suspend	= sm501fb_suspend,
--- 
-2.22.0
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

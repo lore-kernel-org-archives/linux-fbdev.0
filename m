@@ -1,48 +1,23 @@
-From: Douglas Anderson <dianders@chromium.org>
-Date: Mon, 22 Jul 2019 18:24:38 +0000
-Subject: [PATCH 3/4] drm: panel-lvds: Spout an error if of_get_display_timing() gives an error
-Message-Id: <20190722182439.44844-4-dianders@chromium.org>
+From: Rob Herring <robh@kernel.org>
+Date: Tue, 09 Jul 2019 16:58:09 +0000
+Subject: Re: [PATCH 5/6] dt-bindings: display: ssd1307fb: Add initialization properties
+Message-Id: <20190709165809.GA5401@bogus>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722182439.44844-1-dianders@chromium.org>
-In-Reply-To: <20190722182439.44844-1-dianders@chromium.org>
+References: <20190618074111.9309-1-marko.kohtala@okoko.fi>
+ <20190618074111.9309-6-marko.kohtala@okoko.fi>
+In-Reply-To: <20190618074111.9309-6-marko.kohtala@okoko.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Russell King <linux@armlinux.org.uk>, Daniel Vetter <daniel@ffwll.ch>, Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, Michal =?utf-8?B?Vm9rw6HEjQ==?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Marko Kohtala <marko.kohtala@okoko.fi>
 
-In the patch ("video: of: display_timing: Don't yell if no timing node
-is present") we'll stop spouting an error directly in
-of_get_display_timing() if no node is present.  Presumably panel-lvds
-should take charge of spouting its own error now.
+On Tue, 18 Jun 2019 10:41:10 +0300, Marko Kohtala wrote:
+> Document new bindings for adapting ssd1307fb driver to new displays.
+> 
+> Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
+> ---
+>  .../devicetree/bindings/display/ssd1307fb.txt          | 10 ++++++++++
+>  1 file changed, 10 insertions(+)
+> 
 
-NOTE: we'll print two errors if the node was present but there were
-problems parsing the timing node (one in of_parse_display_timing() and
-this new one).  Since this is a fatal error for the driver's probe
-(and presumably someone will be debugging), this should be OK.
-
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
----
-
- drivers/gpu/drm/panel/panel-lvds.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/gpu/drm/panel/panel-lvds.c b/drivers/gpu/drm/panel/panel-lvds.c
-index 1ec57d0806a8..ad47cc95459e 100644
---- a/drivers/gpu/drm/panel/panel-lvds.c
-+++ b/drivers/gpu/drm/panel/panel-lvds.c
-@@ -147,8 +147,11 @@ static int panel_lvds_parse_dt(struct panel_lvds *lvds)
- 	int ret;
- 
- 	ret = of_get_display_timing(np, "panel-timing", &timing);
--	if (ret < 0)
-+	if (ret < 0) {
-+		dev_err(lvds->dev, "%pOF: problems parsing panel-timing (%d)\n",
-+			np, ret);
- 		return ret;
-+	}
- 
- 	videomode_from_timing(&timing, &lvds->video_mode);
- 
--- 
-2.22.0.657.g960e92d24f-goog
+Reviewed-by: Rob Herring <robh@kernel.org>

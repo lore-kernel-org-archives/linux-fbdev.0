@@ -1,40 +1,86 @@
-From: Alex Shi <alex.shi@linux.alibaba.com>
-Date: Fri, 12 Jul 2019 02:20:16 +0000
-Subject: [PATCH 10/12] Documentation/sparc: repointer docs to Documentation/arch/
-Message-Id: <20190712022018.27989-10-alex.shi@linux.alibaba.com>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Tue, 09 Jul 2019 19:00:07 +0000
+Subject: [PATCH v3 4/4] backlight: pwm_bl: Set scale type for brightness curves specified in the DT
+Message-Id: <20190709190007.91260-5-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
-In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+References: <20190709190007.91260-1-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, sparclinux@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
 
-Since we move Documentation/sparc docs to Documentation/arch/sparc
-dir, redirect the doc pointer to them.
+Check if a brightness curve specified in the device tree is linear or
+not and set the corresponding property accordingly. This makes the
+scale type available to userspace via the 'scale' sysfs attribute.
 
-Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+To determine if a curve is linear it is compared to a interpolated linear
+curve between min and max brightness. The curve is considered linear if
+no value deviates more than +/-5% of ${brightness_range} from their
+interpolated value.
+
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- drivers/sbus/char/oradax.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Changes in v3:
+- none
 
-diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
-index 8af216287a84..c7db146a1dd5 100644
---- a/drivers/sbus/char/oradax.c
-+++ b/drivers/sbus/char/oradax.c
-@@ -18,7 +18,7 @@
-  * the recommended way for applications to use the coprocessor, and
-  * the driver interface is not intended for general use.
-  *
-- * See Documentation/sparc/oradax/oracle-dax.rst for more details.
-+ * See Documentation/arch/sparc/oradax/oracle-dax.rst for more details.
-  */
+Changes in v2:
+- use 128 (power of two) instead of 100 as factor for the slope
+- add comment about max quantization error
+- added Daniel's 'Acked-by' tag
+---
+ drivers/video/backlight/pwm_bl.c | 30 ++++++++++++++++++++++++++++++
+ 1 file changed, 30 insertions(+)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 7c6dfc4a601d..fef98beb8b7e 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -404,6 +404,31 @@ int pwm_backlight_brightness_default(struct device *dev,
+ }
+ #endif
  
- #include <linux/uaccess.h>
++static bool pwm_backlight_is_linear(struct platform_pwm_backlight_data *data)
++{
++	unsigned int nlevels = data->max_brightness + 1;
++	unsigned int min_val = data->levels[0];
++	unsigned int max_val = data->levels[nlevels - 1];
++	/*
++	 * Multiplying by 128 means that even in pathological cases such
++	 * as (max_val - min_val) = nlevels the error at max_val is less
++	 * than 1%.
++	 */
++	unsigned int slope = (128 * (max_val - min_val)) / nlevels;
++	unsigned int margin = (max_val - min_val) / 20; /* 5% */
++	int i;
++
++	for (i = 1; i < nlevels; i++) {
++		unsigned int linear_value = min_val + ((i * slope) / 128);
++		unsigned int delta = abs(linear_value - data->levels[i]);
++
++		if (delta > margin)
++			return false;
++	}
++
++	return true;
++}
++
+ static int pwm_backlight_initial_power_state(const struct pwm_bl_data *pb)
+ {
+ 	struct device_node *node = pb->dev->of_node;
+@@ -567,6 +592,11 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 			pb->levels = data->levels;
+ 		}
++
++		if (pwm_backlight_is_linear(data))
++			props.scale = BACKLIGHT_SCALE_LINEAR;
++		else
++			props.scale = BACKLIGHT_SCALE_NON_LINEAR;
+ 	} else if (!data->max_brightness) {
+ 		/*
+ 		 * If no brightness levels are provided and max_brightness is
 -- 
-2.19.1.856.g8858448bb
+2.22.0.410.gd8fdbe21b5-goog

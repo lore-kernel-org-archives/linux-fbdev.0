@@ -1,106 +1,167 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 02 Jul 2019 09:02:03 +0000
-Subject: Re: [PATCH 01/12] backlight: gpio: allow to probe non-pdata devices from board files
-Message-Id: <57229b83-c876-1042-2866-1a63e6654bd4@linaro.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Tue, 09 Jul 2019 19:00:05 +0000
+Subject: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
+Message-Id: <20190709190007.91260-3-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625163434.13620-1-brgl@bgdev.pl>
- <20190625163434.13620-2-brgl@bgdev.pl>
-In-Reply-To: <20190625163434.13620-2-brgl@bgdev.pl>
+References: <20190709190007.91260-1-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>, Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-On 25/06/2019 17:34, Bartosz Golaszewski wrote:
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> 
-> Currently we can only probe devices that either use device tree or pass
-> platform data to probe(). Rename gpio_backlight_probe_dt() to
-> gpio_backlight_probe_prop() and use generic device properties instead
-> of OF specific helpers.
+Backlight brightness curves can have different shapes. The two main
+types are linear and non-linear curves. The human eye doesn't
+perceive linearly increasing/decreasing brightness as linear (see
+also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+linearly to human eye"), hence many backlights use non-linear (often
+logarithmic) brightness curves. The type of curve currently is opaque
+to userspace, so userspace often uses more or less reliable heuristics
+(like the number of brightness levels) to decide whether to treat a
+backlight device as linear or non-linear.
 
-This has already been done in (which IIRC did get queued for the next 
-release):
-https://www.spinics.net/lists/dri-devel/msg215050.html
+Export the type of the brightness curve via the new sysfs attribute
+'scale'. The value of the attribute can be 'linear', 'non-linear' or
+'unknown'. For devices that don't provide information about the scale
+of their brightness curve the value of the 'scale' attribute is 'unknown'.
 
-> Reverse the logic checking the presence of
-> platform data in probe(). This way we can probe devices() registered
-> from machine code that neither have a DT node nor use platform data.
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+Feel free to suggest improvements in the documentation :)
 
-Andy's patch did not reverse this logic... but it does check 
-pdev->dev.fwnode rather than of_node .
+Changes in v3:
+- removed composite strings, only keep 'linear', 'non-linear' and
+  'unknown'
+- updated sysfs attribute documentation
+- updated commit message
 
+Changes in v2:
+- changed order of brightness scale enums, explicitly make 'unknown' zero
+- minor update of commit message
+- deleted excess blank line after 'backlight_scale_types'
+- s/curves/curve/ in sysfs doc
+---
+ .../ABI/testing/sysfs-class-backlight         | 26 +++++++++++++++++++
+ MAINTAINERS                                   |  1 +
+ drivers/video/backlight/backlight.c           | 19 ++++++++++++++
+ include/linux/backlight.h                     |  8 ++++++
+ 4 files changed, 54 insertions(+)
+ create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
 
-Daniel.
-
-
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> ---
->   drivers/video/backlight/gpio_backlight.c | 24 ++++++++----------------
->   1 file changed, 8 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-> index b9300f3e1ee6..654c19d3a81d 100644
-> --- a/drivers/video/backlight/gpio_backlight.c
-> +++ b/drivers/video/backlight/gpio_backlight.c
-> @@ -54,15 +54,14 @@ static const struct backlight_ops gpio_backlight_ops = {
->   	.check_fb	= gpio_backlight_check_fb,
->   };
->   
-> -static int gpio_backlight_probe_dt(struct platform_device *pdev,
-> -				   struct gpio_backlight *gbl)
-> +static int gpio_backlight_probe_prop(struct platform_device *pdev,
-> +				     struct gpio_backlight *gbl)
->   {
->   	struct device *dev = &pdev->dev;
-> -	struct device_node *np = dev->of_node;
->   	enum gpiod_flags flags;
->   	int ret;
->   
-> -	gbl->def_value = of_property_read_bool(np, "default-on");
-> +	gbl->def_value = device_property_read_bool(dev, "default-on");
->   	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
->   
->   	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
-> @@ -86,26 +85,15 @@ static int gpio_backlight_probe(struct platform_device *pdev)
->   	struct backlight_properties props;
->   	struct backlight_device *bl;
->   	struct gpio_backlight *gbl;
-> -	struct device_node *np = pdev->dev.of_node;
->   	int ret;
->   
-> -	if (!pdata && !np) {
-> -		dev_err(&pdev->dev,
-> -			"failed to find platform data or device tree node.\n");
-> -		return -ENODEV;
-> -	}
-> -
->   	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
->   	if (gbl = NULL)
->   		return -ENOMEM;
->   
->   	gbl->dev = &pdev->dev;
->   
-> -	if (np) {
-> -		ret = gpio_backlight_probe_dt(pdev, gbl);
-> -		if (ret)
-> -			return ret;
-> -	} else {
-> +	if (pdata) {
->   		/*
->   		 * Legacy platform data GPIO retrieveal. Do not expand
->   		 * the use of this code path, currently only used by one
-> @@ -126,6 +114,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
->   		gbl->gpiod = gpio_to_desc(pdata->gpio);
->   		if (!gbl->gpiod)
->   			return -EINVAL;
-> +	} else {
-> +		ret = gpio_backlight_probe_prop(pdev, gbl);
-> +		if (ret)
-> +			return ret;
->   	}
->   
->   	memset(&props, 0, sizeof(props));
-> 
+diff --git a/Documentation/ABI/testing/sysfs-class-backlight b/Documentation/ABI/testing/sysfs-class-backlight
+new file mode 100644
+index 000000000000..3ab175a3f5cb
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-class-backlight
+@@ -0,0 +1,26 @@
++What:		/sys/class/backlight/<backlight>/scale
++Date:		July 2019
++KernelVersion:	5.4
++Contact:	Daniel Thompson <daniel.thompson@linaro.org>
++Description:
++		Description of the scale of the brightness curve.
++
++		The human eye senses brightness approximately logarithmically,
++		hence linear changes in brightness are perceived as being
++		non-linear. To achieve a linear perception of brightness changes
++		controls like sliders need to apply a logarithmic mapping for
++		backlights with a linear brightness curve.
++
++		Possible values of the attribute are:
++
++		unknown
++		  The scale of the brightness curve is unknown.
++
++		linear
++		  The brightness changes linearly with each step. Brightness
++		  controls should apply a logarithmic mapping for a linear
++		  perception.
++
++		non-linear
++		  The brightness changes non-linearly with each step. Brightness
++		  controls should use a linear mapping for a linear perception.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d51e74340870..c46812510ba5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2858,6 +2858,7 @@ F:	include/linux/backlight.h
+ F:	include/linux/pwm_backlight.h
+ F:	Documentation/devicetree/bindings/leds/backlight
+ F:	Documentation/ABI/stable/sysfs-class-backlight
++F:	Documentation/ABI/testing/sysfs-class-backlight
+ 
+ BATMAN ADVANCED
+ M:	Marek Lindner <mareklindner@neomailbox.ch>
+diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+index 1ef8b6fd62ac..277abc76c83a 100644
+--- a/drivers/video/backlight/backlight.c
++++ b/drivers/video/backlight/backlight.c
+@@ -32,6 +32,12 @@ static const char *const backlight_types[] = {
+ 	[BACKLIGHT_FIRMWARE] = "firmware",
+ };
+ 
++static const char *const backlight_scale_types[] = {
++	[BACKLIGHT_SCALE_UNKNOWN]	= "unknown",
++	[BACKLIGHT_SCALE_LINEAR]	= "linear",
++	[BACKLIGHT_SCALE_NON_LINEAR]	= "non-linear",
++};
++
+ #if defined(CONFIG_FB) || (defined(CONFIG_FB_MODULE) && \
+ 			   defined(CONFIG_BACKLIGHT_CLASS_DEVICE_MODULE))
+ /* This callback gets called when something important happens inside a
+@@ -246,6 +252,18 @@ static ssize_t actual_brightness_show(struct device *dev,
+ }
+ static DEVICE_ATTR_RO(actual_brightness);
+ 
++static ssize_t scale_show(struct device *dev,
++		struct device_attribute *attr, char *buf)
++{
++	struct backlight_device *bd = to_backlight_device(dev);
++
++	if (WARN_ON(bd->props.scale > BACKLIGHT_SCALE_NON_LINEAR))
++		return sprintf(buf, "unknown\n");
++
++	return sprintf(buf, "%s\n", backlight_scale_types[bd->props.scale]);
++}
++static DEVICE_ATTR_RO(scale);
++
+ static struct class *backlight_class;
+ 
+ #ifdef CONFIG_PM_SLEEP
+@@ -292,6 +310,7 @@ static struct attribute *bl_device_attrs[] = {
+ 	&dev_attr_brightness.attr,
+ 	&dev_attr_actual_brightness.attr,
+ 	&dev_attr_max_brightness.attr,
++	&dev_attr_scale.attr,
+ 	&dev_attr_type.attr,
+ 	NULL,
+ };
+diff --git a/include/linux/backlight.h b/include/linux/backlight.h
+index 0b5897446dca..c7d6b2e8c3b5 100644
+--- a/include/linux/backlight.h
++++ b/include/linux/backlight.h
+@@ -46,6 +46,12 @@ enum backlight_notification {
+ 	BACKLIGHT_UNREGISTERED,
+ };
+ 
++enum backlight_scale {
++	BACKLIGHT_SCALE_UNKNOWN = 0,
++	BACKLIGHT_SCALE_LINEAR,
++	BACKLIGHT_SCALE_NON_LINEAR,
++};
++
+ struct backlight_device;
+ struct fb_info;
+ 
+@@ -80,6 +86,8 @@ struct backlight_properties {
+ 	enum backlight_type type;
+ 	/* Flags used to signal drivers of state changes */
+ 	unsigned int state;
++	/* Type of the brightness scale (linear, non-linear, ...) */
++	enum backlight_scale scale;
+ 
+ #define BL_CORE_SUSPENDED	(1 << 0)	/* backlight is suspended */
+ #define BL_CORE_FBBLANK		(1 << 1)	/* backlight is under an fb blank event */
+-- 
+2.22.0.410.gd8fdbe21b5-goog

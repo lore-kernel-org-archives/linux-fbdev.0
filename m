@@ -1,65 +1,65 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 31 Jul 2019 12:43:42 +0000
-Subject: [PATCH v2 03/10] input: keyboard: gpio_keys: convert platform driver to use dev_groups
-Message-Id: <20190731124349.4474-4-gregkh@linuxfoundation.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Tue, 09 Jul 2019 19:00:06 +0000
+Subject: [PATCH v3 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
+Message-Id: <20190709190007.91260-4-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
-In-Reply-To: <20190731124349.4474-1-gregkh@linuxfoundation.org>
+References: <20190709190007.91260-1-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-1-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
 
-Platform drivers now have the option to have the platform core create
-and remove any needed sysfs attribute files.  So take advantage of that
-and do not register "by hand" a bunch of sysfs files.
+For backlight curves calculated with the CIE 1931 algorithm set
+the brightness scale type to non-linear. This makes the scale type
+available to userspace via the 'scale' sysfs attribute.
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- drivers/input/keyboard/gpio_keys.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+Changes in v3:
+- mark scale as non-linear instead of using the CIE1931 type which
+  has been removed
+- updated commit message
 
-diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
-index 03f4d152f6b7..1373dc5b0765 100644
---- a/drivers/input/keyboard/gpio_keys.c
-+++ b/drivers/input/keyboard/gpio_keys.c
-@@ -351,10 +351,7 @@ static struct attribute *gpio_keys_attrs[] = {
- 	&dev_attr_disabled_switches.attr,
- 	NULL,
- };
--
--static const struct attribute_group gpio_keys_attr_group = {
--	.attrs = gpio_keys_attrs,
--};
-+ATTRIBUTE_GROUPS(gpio_keys);
- 
- static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
- {
-@@ -851,13 +848,6 @@ static int gpio_keys_probe(struct platform_device *pdev)
- 
- 	fwnode_handle_put(child);
- 
--	error = devm_device_add_group(dev, &gpio_keys_attr_group);
--	if (error) {
--		dev_err(dev, "Unable to export keys/switches, error: %d\n",
--			error);
--		return error;
--	}
--
- 	error = input_register_device(input);
- 	if (error) {
- 		dev_err(dev, "Unable to register input device, error: %d\n",
-@@ -1026,6 +1016,7 @@ static struct platform_driver gpio_keys_device_driver = {
- 		.name	= "gpio-keys",
- 		.pm	= &gpio_keys_pm_ops,
- 		.of_match_table = gpio_keys_of_match,
-+		.dev_groups	= gpio_keys_groups,
+Changes in v2:
+- added Enric's 'Tested-by' tag
+- added Daniel's 'Acked-by' tag
+---
+ drivers/video/backlight/pwm_bl.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index fb45f866b923..7c6dfc4a601d 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -553,6 +553,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 		goto err_alloc;
  	}
- };
  
++	memset(&props, 0, sizeof(struct backlight_properties));
++
+ 	if (data->levels) {
+ 		/*
+ 		 * For the DT case, only when brightness levels is defined
+@@ -591,6 +593,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 			pb->levels = data->levels;
+ 		}
++
++		props.scale = BACKLIGHT_SCALE_NON_LINEAR;
+ 	} else {
+ 		/*
+ 		 * That only happens for the non-DT case, where platform data
+@@ -601,7 +605,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 
+ 	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
+ 
+-	memset(&props, 0, sizeof(struct backlight_properties));
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = data->max_brightness;
+ 	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, pb,
 -- 
-2.22.0
+2.22.0.410.gd8fdbe21b5-goog

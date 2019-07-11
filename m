@@ -1,29 +1,24 @@
-From: Paul Burton <paul.burton@mips.com>
-Date: Tue, 30 Jul 2019 17:43:51 +0000
-Subject: Re: [PATCH 04/11] ASoC: jz4740: Drop lb60 board code
-Message-Id: <MWHPR2201MB12774249834C09DBDE719902C1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
+From: Phil Reid <preid@electromag.com.au>
+Date: Thu, 11 Jul 2019 08:31:51 +0000
+Subject: [PATCH 0/2] Staging: fbtft: Fix probing of gpio descriptor
+Message-Id: <1562833913-10510-1-git-send-email-preid@electromag.com.au>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-5-paul@crapouillou.net>
-In-Reply-To: <20190725220215.460-5-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <pburton@wavecomp.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: gregkh@linuxfoundation.org, bhanusreemahesh@gmail.com, leobras.c@gmail.com, nishadkamdar@gmail.com, preid@electromag.com.au, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, nsaenzjulienne@suse.de
 
-Hello,
+GPIO probing and reset polarity are broken.
+Fix them.
 
-Paul Cercueil wrote:
-> The board now uses the simple-audio-card driver.
-> 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> Tested-by: Artur Rojek <contact@artur-rojek.eu>
-> Acked-by: Mark Brown <broonie@kernel.org>
+Fixes: c440eee1a7a1 ("Staging: fbtft: Switch to the gpio descriptor interface")
 
-Applied to mips-next.
+Phil Reid (2):
+  Staging: fbtft: Fix probing of gpio descriptor
+  Staging: fbtft: Fix reset assertion when using gpio descriptor
 
-Thanks,
-    Paul
+ drivers/staging/fbtft/fbtft-core.c | 43 ++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 23 deletions(-)
 
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paul.burton@mips.com to report it. ]
+-- 
+1.8.3.1

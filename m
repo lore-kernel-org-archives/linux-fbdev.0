@@ -1,7 +1,7 @@
 From: Alex Shi <alex.shi@linux.alibaba.com>
-Date: Fri, 12 Jul 2019 02:20:09 +0000
-Subject: [PATCH 03/12] Documentation/ia64: repointer docs to Documentation/arch/ia64
-Message-Id: <20190712022018.27989-3-alex.shi@linux.alibaba.com>
+Date: Fri, 12 Jul 2019 02:20:12 +0000
+Subject: [PATCH 06/12] Documentation/mips: repointer docs to Documentation/arch/
+Message-Id: <20190712022018.27989-6-alex.shi@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
@@ -9,89 +9,31 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Ard Biesheuvel <ard.biesheuvel@linaro.org>, Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
+Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "David S. Miller" <davem@davemloft.net>
 
-Since we move 'ia64' docs to Documentation/arch/ia64 dir,
-redirect the doc pointer to them.
+Since we move Documentation/mips docs to Documentation/arch/mips
+dir, redirect the doc pointer to them.
 
 Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: "David S. Miller" <davem@davemloft.net>
 Cc: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org
 ---
- MAINTAINERS             | 2 +-
- arch/ia64/kernel/efi.c  | 2 +-
- arch/ia64/kernel/fsys.S | 2 +-
- arch/ia64/mm/ioremap.c  | 2 +-
- arch/ia64/pci/pci.c     | 2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/MAINTAINERS b/MAINTAINERS
-index c21d5464c86f..583c35cba7bc 100644
+index 2c1e65c236db..03a8c687f87f 100644
 --- a/MAINTAINERS
 +++ b/MAINTAINERS
-@@ -14286,7 +14286,7 @@ SGI SN-IA64 (Altix) SERIAL CONSOLE DRIVER
- M:	Pat Gefre <pfg@sgi.com>
- L:	linux-ia64@vger.kernel.org
+@@ -10554,7 +10554,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/mips/linux.git
+ Q:	http://patchwork.linux-mips.org/project/linux-mips/list/
  S:	Supported
--F:	Documentation/ia64/serial.txt
-+F:	Documentation/arch/ia64/serial.txt
- F:	drivers/tty/serial/ioc?_serial.c
- F:	include/linux/ioc?.h
+ F:	Documentation/devicetree/bindings/mips/
+-F:	Documentation/mips/
++F:	Documentation/arch/mips/
+ F:	arch/mips/
+ F:	drivers/platform/mips/
  
-diff --git a/arch/ia64/kernel/efi.c b/arch/ia64/kernel/efi.c
-index 8f106638913c..02cdc38d15e8 100644
---- a/arch/ia64/kernel/efi.c
-+++ b/arch/ia64/kernel/efi.c
-@@ -852,7 +852,7 @@ valid_phys_addr_range (phys_addr_t phys_addr, unsigned long size)
- 	 * /dev/mem reads and writes use copy_to_user(), which implicitly
- 	 * uses a granule-sized kernel identity mapping.  It's really
- 	 * only safe to do this for regions in kern_memmap.  For more
--	 * details, see Documentation/ia64/aliasing.txt.
-+	 * details, see Documentation/arch/ia64/aliasing.txt.
- 	 */
- 	attr = kern_mem_attribute(phys_addr, size);
- 	if (attr & EFI_MEMORY_WB || attr & EFI_MEMORY_UC)
-diff --git a/arch/ia64/kernel/fsys.S b/arch/ia64/kernel/fsys.S
-index d80c99a5f55d..b493ca74890a 100644
---- a/arch/ia64/kernel/fsys.S
-+++ b/arch/ia64/kernel/fsys.S
-@@ -28,7 +28,7 @@
- #include <asm/native/inst.h>
- 
- /*
-- * See Documentation/ia64/fsys.txt for details on fsyscalls.
-+ * See Documentation/arch/ia64/fsys.txt for details on fsyscalls.
-  *
-  * On entry to an fsyscall handler:
-  *   r10	= 0 (i.e., defaults to "successful syscall return")
-diff --git a/arch/ia64/mm/ioremap.c b/arch/ia64/mm/ioremap.c
-index 5e3e7b1fdac5..989cc4df9087 100644
---- a/arch/ia64/mm/ioremap.c
-+++ b/arch/ia64/mm/ioremap.c
-@@ -42,7 +42,7 @@ ioremap (unsigned long phys_addr, unsigned long size)
- 	/*
- 	 * For things in kern_memmap, we must use the same attribute
- 	 * as the rest of the kernel.  For more details, see
--	 * Documentation/ia64/aliasing.txt.
-+	 * Documentation/arch/ia64/aliasing.txt.
- 	 */
- 	attr = kern_mem_attribute(phys_addr, size);
- 	if (attr & EFI_MEMORY_WB)
-diff --git a/arch/ia64/pci/pci.c b/arch/ia64/pci/pci.c
-index e308196c2229..6ba87b70e30c 100644
---- a/arch/ia64/pci/pci.c
-+++ b/arch/ia64/pci/pci.c
-@@ -450,7 +450,7 @@ pci_mmap_legacy_page_range(struct pci_bus *bus, struct vm_area_struct *vma,
- 		return -ENOSYS;
- 
- 	/*
--	 * Avoid attribute aliasing.  See Documentation/ia64/aliasing.txt
-+	 * Avoid attribute aliasing.  See Documentation/arch/ia64/aliasing.txt
- 	 * for more details.
- 	 */
- 	if (!valid_mmap_phys_addr_range(vma->vm_pgoff, size))
 -- 
 2.19.1.856.g8858448bb

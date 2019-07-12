@@ -1,44 +1,155 @@
-From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Date: Thu, 25 Jul 2019 18:38:56 +0000
-Subject: [PATCH] Staging: fbtft: Fix some typo. pdc8544 --> pcd8544
-Message-Id: <20190725183856.17616-1-christophe.jaillet@wanadoo.fr>
+From: Alex Shi <alex.shi@linux.alibaba.com>
+Date: Fri, 12 Jul 2019 02:20:14 +0000
+Subject: [PATCH 08/12] Dcumentation/powerpc: repointer docs to Documentation/arch/
+Message-Id: <20190712022018.27989-8-alex.shi@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org, nishadkamdar@gmail.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
+Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Sam Bobroff <sbobroff@linux.ibm.com>, "Manoj N. Kumar" <manoj@linux.ibm.com>, "Matthew R. Ochs" <mrochs@linux.ibm.com>, Uma Krishnan <ukrishn@linux.ibm.com>
 
-The driver is related to 'pcd8544'.
-However, 2 strings are about pdc8544 (c and d switched)
-Fix it.
+Since we move Documentation/powerpc docs to Documentation/arch/powerpc
+dir, redirect the doc pointer to them.
 
-Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
+Cc: Sam Bobroff <sbobroff@linux.ibm.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: "Manoj N. Kumar" <manoj@linux.ibm.com>
+Cc: "Matthew R. Ochs" <mrochs@linux.ibm.com>
+Cc: Uma Krishnan <ukrishn@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-doc@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 ---
-This patch is only theorical. It is based on the fact that a part of the
-filename (i.e. pcd8544) looks misspelled in the file itself.
-I don't know the implication of FBTFT_REGISTER_DRIVER and MODULE_ALIAS and
-if additional adjustments are needed.
----
- drivers/staging/fbtft/fb_pcd8544.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/PCI/pci-error-recovery.txt | 2 +-
+ Documentation/arch/powerpc/cxlflash.txt  | 2 +-
+ MAINTAINERS                              | 8 ++++----
+ arch/powerpc/kernel/exceptions-64s.S     | 2 +-
+ drivers/soc/fsl/qe/qe.c                  | 2 +-
+ drivers/tty/hvc/hvcs.c                   | 2 +-
+ include/soc/fsl/qe/qe.h                  | 2 +-
+ 7 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/staging/fbtft/fb_pcd8544.c b/drivers/staging/fbtft/fb_pcd8544.c
-index ad49973ad594..08f8a4bb8772 100644
---- a/drivers/staging/fbtft/fb_pcd8544.c
-+++ b/drivers/staging/fbtft/fb_pcd8544.c
-@@ -157,10 +157,10 @@ static struct fbtft_display display = {
- 	.backlight = 1,
- };
+diff --git a/Documentation/PCI/pci-error-recovery.txt b/Documentation/PCI/pci-error-recovery.txt
+index 0b6bb3ef449e..339e7394ef1d 100644
+--- a/Documentation/PCI/pci-error-recovery.txt
++++ b/Documentation/PCI/pci-error-recovery.txt
+@@ -389,7 +389,7 @@ platforms aren't supposed to share interrupts between many devices
+ anyway :)
  
--FBTFT_REGISTER_DRIVER(DRVNAME, "philips,pdc8544", &display);
-+FBTFT_REGISTER_DRIVER(DRVNAME, "philips,pcd8544", &display);
+ >>> Implementation details for the powerpc platform are discussed in
+->>> the file Documentation/powerpc/eeh-pci-error-recovery.txt
++>>> the file Documentation/arch/powerpc/eeh-pci-error-recovery.txt
  
- MODULE_ALIAS("spi:" DRVNAME);
--MODULE_ALIAS("spi:pdc8544");
-+MODULE_ALIAS("spi:pcd8544");
+ >>> As of this writing, there is a growing list of device drivers with
+ >>> patches implementing error recovery. Not all of these patches are in
+diff --git a/Documentation/arch/powerpc/cxlflash.txt b/Documentation/arch/powerpc/cxlflash.txt
+index a64bdaa0a1cf..479cdb9a44f4 100644
+--- a/Documentation/arch/powerpc/cxlflash.txt
++++ b/Documentation/arch/powerpc/cxlflash.txt
+@@ -28,7 +28,7 @@ Introduction
+     responsible for the initialization of the adapter, setting up the
+     special path for user space access, and performing error recovery. It
+     communicates directly the Flash Accelerator Functional Unit (AFU)
+-    as described in Documentation/powerpc/cxl.txt.
++    as described in Documentation/arch/powerpc/cxl.txt.
  
- MODULE_DESCRIPTION("FB driver for the PCD8544 LCD Controller");
- MODULE_AUTHOR("Noralf Tronnes");
+     The cxlflash driver supports two, mutually exclusive, modes of
+     operation at the device (LUN) level:
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e1aad1b8224c..7a245d3f02fd 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4420,7 +4420,7 @@ F:	arch/powerpc/platforms/powernv/pci-cxl.c
+ F:	drivers/misc/cxl/
+ F:	include/misc/cxl*
+ F:	include/uapi/misc/cxl.h
+-F:	Documentation/powerpc/cxl.txt
++F:	Documentation/arch/powerpc/cxl.txt
+ F:	Documentation/ABI/testing/sysfs-class-cxl
+ 
+ CXLFLASH (IBM Coherent Accelerator Processor Interface CAPI Flash) SCSI DRIVER
+@@ -4431,7 +4431,7 @@ L:	linux-scsi@vger.kernel.org
+ S:	Supported
+ F:	drivers/scsi/cxlflash/
+ F:	include/uapi/scsi/cxlflash_ioctl.h
+-F:	Documentation/powerpc/cxlflash.txt
++F:	Documentation/arch/powerpc/cxlflash.txt
+ 
+ CYBERPRO FB DRIVER
+ M:	Russell King <linux@armlinux.org.uk>
+@@ -9101,7 +9101,7 @@ F:	Documentation/ABI/stable/sysfs-firmware-opal-*
+ F:	Documentation/devicetree/bindings/powerpc/
+ F:	Documentation/devicetree/bindings/rtc/rtc-opal.txt
+ F:	Documentation/devicetree/bindings/i2c/i2c-opal.txt
+-F:	Documentation/powerpc/
++F:	Documentation/arch/powerpc/
+ F:	arch/powerpc/
+ F:	drivers/char/tpm/tpm_ibmvtpm*
+ F:	drivers/crypto/nx/
+@@ -12235,7 +12235,7 @@ F:	Documentation/PCI/pci-error-recovery.txt
+ F:	drivers/pci/pcie/aer.c
+ F:	drivers/pci/pcie/dpc.c
+ F:	drivers/pci/pcie/err.c
+-F:	Documentation/powerpc/eeh-pci-error-recovery.txt
++F:	Documentation/arch/powerpc/eeh-pci-error-recovery.txt
+ F:	arch/powerpc/kernel/eeh*.c
+ F:	arch/powerpc/platforms/*/eeh*.c
+ F:	arch/powerpc/include/*/eeh*.h
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 73ba246ca11d..5fa2a348a28e 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -910,7 +910,7 @@ EXC_COMMON(trap_0b_common, 0xb00, unknown_exception)
+  *
+  * Call convention:
+  *
+- * syscall register convention is in Documentation/powerpc/syscall64-abi.txt
++ * syscall register convention is in Documentation/arch/powerpc/syscall64-abi.txt
+  *
+  * For hypercalls, the register convention is as follows:
+  * r0 volatile
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 62c6ba17991a..c83467942b70 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -419,7 +419,7 @@ static void qe_upload_microcode(const void *base,
+ /*
+  * Upload a microcode to the I-RAM at a specific address.
+  *
+- * See Documentation/powerpc/qe_firmware.txt for information on QE microcode
++ * See Documentation/arch/powerpc/qe_firmware.txt for information on QE microcode
+  * uploading.
+  *
+  * Currently, only version 1 is supported, so the 'version' field must be
+diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
+index cb4db1b3ca3c..5a1c76055117 100644
+--- a/drivers/tty/hvc/hvcs.c
++++ b/drivers/tty/hvc/hvcs.c
+@@ -47,7 +47,7 @@
+  * using the 2.6 Linux kernel kref construct.
+  *
+  * For direction on installation and usage of this driver please reference
+- * Documentation/powerpc/hvcs.txt.
++ * Documentation/arch/powerpc/hvcs.txt.
+  */
+ 
+ #include <linux/device.h>
+diff --git a/include/soc/fsl/qe/qe.h b/include/soc/fsl/qe/qe.h
+index 3f9d6b6a5691..c07872582b30 100644
+--- a/include/soc/fsl/qe/qe.h
++++ b/include/soc/fsl/qe/qe.h
+@@ -259,7 +259,7 @@ static inline int qe_alive_during_sleep(void)
+ 
+ /* Structure that defines QE firmware binary files.
+  *
+- * See Documentation/powerpc/qe_firmware.txt for a description of these
++ * See Documentation/arch/powerpc/qe_firmware.txt for a description of these
+  * fields.
+  */
+ struct qe_firmware {
 -- 
-2.20.1
+2.19.1.856.g8858448bb

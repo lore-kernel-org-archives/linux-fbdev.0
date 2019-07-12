@@ -1,111 +1,42 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jul 2019 13:44:15 +0000
-Subject: [PATCH v2 1/9] ARM: davinci: refresh davinci_all_defconfig
-Message-Id: <20190722134423.26555-2-brgl@bgdev.pl>
+From: Alex Shi <alex.shi@linux.alibaba.com>
+Date: Fri, 12 Jul 2019 02:20:18 +0000
+Subject: [PATCH 12/12] Documentation/xtensa: repointer docs to Documentation/arch/
+Message-Id: <20190712022018.27989-12-alex.shi@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722134423.26555-1-brgl@bgdev.pl>
-In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
+References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
+Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Since we move Documentation/xtensa docs to Documentation/arch/xtensa
+dir, redirect the doc pointer to them.
 
-Refresh davinci_all_defconfig with current master.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-doc@vger.kernel.org
+Cc: Chris Zankel <chris@zankel.net>
+Cc: Max Filippov <jcmvbkbc@gmail.com>
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/arm/configs/davinci_all_defconfig | 26 +++++++++-----------------
- 1 file changed, 9 insertions(+), 17 deletions(-)
+ arch/xtensa/include/asm/initialize_mmu.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
-index 9a32a8c0f873..7c2a39305f2b 100644
---- a/arch/arm/configs/davinci_all_defconfig
-+++ b/arch/arm/configs/davinci_all_defconfig
-@@ -10,13 +10,6 @@ CONFIG_CGROUPS=y
- CONFIG_CHECKPOINT_RESTORE=y
- CONFIG_BLK_DEV_INITRD=y
- CONFIG_EXPERT=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--CONFIG_PARTITION_ADVANCED=y
--# CONFIG_IOSCHED_DEADLINE is not set
--# CONFIG_IOSCHED_CFQ is not set
- CONFIG_ARCH_DAVINCI=y
- CONFIG_ARCH_DAVINCI_DM644x=y
- CONFIG_ARCH_DAVINCI_DM355=y
-@@ -31,9 +24,7 @@ CONFIG_MACH_MITYOMAPL138=y
- CONFIG_MACH_OMAPL138_HAWKBOARD=y
- CONFIG_DAVINCI_MUX_DEBUG=y
- CONFIG_DAVINCI_MUX_WARNINGS=y
--CONFIG_PREEMPT=y
- CONFIG_AEABI=y
--CONFIG_CMA=y
- CONFIG_SECCOMP=y
- CONFIG_ZBOOT_ROM_TEXT=0x0
- CONFIG_ZBOOT_ROM_BSS=0x0
-@@ -47,6 +38,12 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
- CONFIG_CPU_FREQ_GOV_ONDEMAND=m
- CONFIG_CPUFREQ_DT=m
- CONFIG_CPU_IDLE=y
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+CONFIG_MODULE_FORCE_UNLOAD=y
-+CONFIG_MODVERSIONS=y
-+CONFIG_PARTITION_ADVANCED=y
-+CONFIG_CMA=y
- CONFIG_NET=y
- CONFIG_PACKET=y
- CONFIG_UNIX=y
-@@ -64,7 +61,6 @@ CONFIG_BT_HCIUART_LL=y
- CONFIG_DEVTMPFS=y
- CONFIG_DEVTMPFS_MOUNT=y
- CONFIG_FW_LOADER=m
--CONFIG_DMA_CMA=y
- CONFIG_DA8XX_MSTPRI=y
- CONFIG_MTD=m
- CONFIG_MTD_TESTS=m
-@@ -168,8 +164,6 @@ CONFIG_SOUND=m
- CONFIG_SND=m
- CONFIG_SND_USB_AUDIO=m
- CONFIG_SND_SOC=m
--CONFIG_SND_SOC_TLV320AIC3X=m
--CONFIG_SND_SOC_DAVINCI_MCASP=m
- CONFIG_SND_SOC_DAVINCI_EVM=m
- CONFIG_SND_SIMPLE_CARD=m
- CONFIG_HID=m
-@@ -214,14 +208,12 @@ CONFIG_MMC_DAVINCI=y
- CONFIG_NEW_LEDS=y
- CONFIG_LEDS_CLASS=m
- CONFIG_LEDS_GPIO=m
--CONFIG_LEDS_TRIGGERS=y
- CONFIG_LEDS_TRIGGER_TIMER=m
- CONFIG_LEDS_TRIGGER_HEARTBEAT=m
- CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
- CONFIG_RTC_CLASS=y
- CONFIG_RTC_DRV_OMAP=m
- CONFIG_DMADEVICES=y
--CONFIG_TI_EDMA=y
- CONFIG_COMMON_CLK_PWM=m
- CONFIG_REMOTEPROC=m
- CONFIG_DA8XX_REMOTEPROC=m
-@@ -259,10 +251,10 @@ CONFIG_NLS_CODEPAGE_437=y
- CONFIG_NLS_ASCII=m
- CONFIG_NLS_ISO8859_1=y
- CONFIG_NLS_UTF8=m
-+# CONFIG_CRYPTO_HW is not set
-+CONFIG_CRC_T10DIF=m
-+CONFIG_DMA_CMA=y
- CONFIG_DEBUG_FS=y
- CONFIG_DEBUG_RT_MUTEXES=y
- CONFIG_DEBUG_MUTEXES=y
--# CONFIG_ARM_UNWIND is not set
- CONFIG_DEBUG_USER=y
--# CONFIG_CRYPTO_HW is not set
--CONFIG_CRC_T10DIF=m
+diff --git a/arch/xtensa/include/asm/initialize_mmu.h b/arch/xtensa/include/asm/initialize_mmu.h
+index 323d05789159..499fe4847490 100644
+--- a/arch/xtensa/include/asm/initialize_mmu.h
++++ b/arch/xtensa/include/asm/initialize_mmu.h
+@@ -42,7 +42,7 @@
+ #if XCHAL_HAVE_S32C1I && (XCHAL_HW_MIN_VERSION >= XTENSA_HWVERSION_RC_2009_0)
+ /*
+  * We Have Atomic Operation Control (ATOMCTL) Register; Initialize it.
+- * For details see Documentation/xtensa/atomctl.txt
++ * For details see Documentation/arch/xtensa/atomctl.txt
+  */
+ #if XCHAL_DCACHE_IS_COHERENT
+ 	movi	a3, 0x25	/* For SMP/MX -- internal for writeback,
 -- 
-2.21.0
+2.19.1.856.g8858448bb

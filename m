@@ -1,94 +1,38 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 24 Jul 2019 08:25:02 +0000
-Subject: [PATCH v3 1/7] sh: ecovec24: add additional properties to the backlight device
-Message-Id: <20190724082508.27617-2-brgl@bgdev.pl>
+From: Alex Shi <alex.shi@linux.alibaba.com>
+Date: Fri, 12 Jul 2019 02:20:13 +0000
+Subject: [PATCH 07/12] Documentation/parisc: repointer docs to Documentation/arch/
+Message-Id: <20190712022018.27989-7-alex.shi@linux.alibaba.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190724082508.27617-1-brgl@bgdev.pl>
-In-Reply-To: <20190724082508.27617-1-brgl@bgdev.pl>
+References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
+Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Since we move Documentation/parisc docs to Documentation/arch/parisc
+dir, redirect the doc pointer to them.
 
-Add a GPIO lookup entry and a device property for GPIO backlight to the
-board file. Tie them to the platform device which is now registered using
-platform_device_register_full() because of the properties. These changes
-are inactive now but will be used once the gpio backlight driver is
-modified.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
+Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+Cc: linux-kernel@vger.kernel.org
 ---
- arch/sh/boards/mach-ecovec24/setup.c | 30 +++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index f402aa741bf3..6926bb3865b9 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -371,6 +371,19 @@ static struct platform_device lcdc_device = {
- 	},
- };
- 
-+static struct gpiod_lookup_table gpio_backlight_lookup = {
-+	.dev_id		= "gpio-backlight.0",
-+	.table = {
-+		GPIO_LOOKUP("sh7724_pfc", GPIO_PTR1, NULL, GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
-+
-+static struct property_entry gpio_backlight_props[] = {
-+	PROPERTY_ENTRY_BOOL("default-on"),
-+	{ }
-+};
-+
- static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.fbdev = &lcdc_device.dev,
- 	.gpio = GPIO_PTR1,
-@@ -378,13 +391,15 @@ static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.name = "backlight",
- };
- 
--static struct platform_device gpio_backlight_device = {
-+static const struct platform_device_info gpio_backlight_device_info = {
- 	.name = "gpio-backlight",
--	.dev = {
--		.platform_data = &gpio_backlight_data,
--	},
-+	.data = &gpio_backlight_data,
-+	.size_data = sizeof(gpio_backlight_data),
-+	.properties = gpio_backlight_props,
- };
- 
-+static struct platform_device *gpio_backlight_device;
-+
- /* CEU0 */
- static struct ceu_platform_data ceu0_pdata = {
- 	.num_subdevs			= 2,
-@@ -1006,7 +1021,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
- 	&usb1_common_device,
- 	&usbhs_device,
- 	&lcdc_device,
--	&gpio_backlight_device,
- 	&keysc_device,
- 	&cn12_power,
- #if defined(CONFIG_MMC_SDHI) || defined(CONFIG_MMC_SDHI_MODULE)
-@@ -1464,6 +1478,12 @@ static int __init arch_setup(void)
- #endif
- #endif
- 
-+	gpiod_add_lookup_table(&gpio_backlight_lookup);
-+	gpio_backlight_device = platform_device_register_full(
-+					&gpio_backlight_device_info);
-+	if (IS_ERR(gpio_backlight_device))
-+		return PTR_ERR(gpio_backlight_device);
-+
- 	return platform_add_devices(ecovec_devices,
- 				    ARRAY_SIZE(ecovec_devices));
- }
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 03a8c687f87f..e1aad1b8224c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -12000,7 +12000,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/parisc-2.6.git
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux.git
+ S:	Maintained
+ F:	arch/parisc/
+-F:	Documentation/parisc/
++F:	Documentation/arch/parisc/
+ F:	drivers/parisc/
+ F:	drivers/char/agp/parisc-agp.c
+ F:	drivers/input/serio/gscps2.c
 -- 
-2.21.0
+2.19.1.856.g8858448bb

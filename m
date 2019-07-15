@@ -1,56 +1,37 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jul 2019 13:44:14 +0000
-Subject: [PATCH v2 0/9] ARM: davinci: da850-evm: remove more legacy GPIO calls
-Message-Id: <20190722134423.26555-1-brgl@bgdev.pl>
+From: Fuqian Huang <huangfq.daxian@gmail.com>
+Date: Mon, 15 Jul 2019 03:20:17 +0000
+Subject: [PATCH v3 24/24] video: fbdev-MMP: Remove call to memset after dma_alloc_coherent
+Message-Id: <20190715032017.7311-1-huangfq.daxian@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
-Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Fuqian Huang <huangfq.daxian@gmail.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+In commit 518a2f1925c3
+("dma-mapping: zero memory returned from dma_alloc_*"),
+dma_alloc_coherent has already zeroed the memory.
+So memset is not needed.
 
-This is another small step on the path to liberating davinci from legacy
-GPIO API calls and shrinking the davinci GPIO driver by not having to
-support the base GPIO number anymore.
+Signed-off-by: Fuqian Huang <huangfq.daxian@gmail.com>
+---
+Changes in v3:
+  - Use actual commit rather than the merge commit in the commit message
 
-This time we're removing the legacy calls used indirectly by the LCDC
-fbdev driver.
+ drivers/video/fbdev/mmp/fb/mmpfb.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-First two patches enable the GPIO backlight driver in
-davinci_all_defconfig.
-
-Patch 3/12 models the backlight GPIO as an actual GPIO backlight device.
-
-Patches 4-6 extend the fbdev driver with regulator support and convert
-the da850-evm board file to using it.
-
-Last three patches are improvements to the da8xx fbdev driver since
-we're already touching it in this series.
-
-v1 -> v2:
-- dopped the gpio-backlight patches from this series as since v5.3-rc1 we
-  can probe the module with neither the OF node nor platform data
-- collected review and ack tags
-- rebased on top of v5.3-rc1
-
-Bartosz Golaszewski (9):
-  ARM: davinci: refresh davinci_all_defconfig
-  ARM: davinci_all_defconfig: enable GPIO backlight
-  ARM: davinci: da850-evm: model the backlight GPIO as an actual device
-  fbdev: da8xx: add support for a regulator
-  ARM: davinci: da850-evm: switch to using a fixed regulator for lcdc
-  fbdev: da8xx: remove panel_power_ctrl() callback from platform data
-  fbdev: da8xx-fb: use devm_platform_ioremap_resource()
-  fbdev: da8xx-fb: drop a redundant if
-  fbdev: da8xx: use resource management for dma
-
- arch/arm/configs/davinci_all_defconfig  |  27 ++----
- arch/arm/mach-davinci/board-da850-evm.c |  90 +++++++++++++-----
- drivers/video/fbdev/da8xx-fb.c          | 118 +++++++++++++-----------
- include/video/da8xx-fb.h                |   1 -
- 4 files changed, 141 insertions(+), 95 deletions(-)
-
+diff --git a/drivers/video/fbdev/mmp/fb/mmpfb.c b/drivers/video/fbdev/mmp/fb/mmpfb.c
+index e5b56f2199df..47bc7c59bbd8 100644
+--- a/drivers/video/fbdev/mmp/fb/mmpfb.c
++++ b/drivers/video/fbdev/mmp/fb/mmpfb.c
+@@ -612,7 +612,6 @@ static int mmpfb_probe(struct platform_device *pdev)
+ 		ret = -ENOMEM;
+ 		goto failed_destroy_mutex;
+ 	}
+-	memset(fbi->fb_start, 0, fbi->fb_size);
+ 	dev_info(fbi->dev, "fb %dk allocated\n", fbi->fb_size/1024);
+ 
+ 	/* fb power on */
 -- 
-2.21.0
+2.11.0

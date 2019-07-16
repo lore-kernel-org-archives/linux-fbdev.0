@@ -1,42 +1,65 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 23 Jul 2019 15:35:37 +0000
-Subject: Re: [PATCH] au1200fb: don't use DMA_ATTR_NON_CONSISTENT
-Message-Id: <3fb07ff6-fd89-a42a-607a-1bce6a300805@samsung.com>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 16 Jul 2019 10:00:56 +0000
+Subject: [PATCH 00/10] cpufreq: Migrate users of policy notifiers to QoS requests
+Message-Id: <cover.1563269894.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190625121321.10197-1-hch@lst.de>
-        <CGME20190626071727epcas1p137bdd191d49ab127eb92458848a06efb@epcas1p1.samsung.com>
-        <CAOLZvyF0NsB6_e0=Vat48Mq1r-Qy45z509jAgQczG7RoaOqjBA@mail.gmail.com>
-In-Reply-To: <CAOLZvyF0NsB6_e0=Vat48Mq1r-Qy45z509jAgQczG7RoaOqjBA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Manuel Lauss <manuel.lauss@gmail.com>, Christoph Hellwig <hch@lst.de>
-Cc: Linux-MIPS <linux-mips@vger.kernel.org>, linux-fbdev <linux-fbdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Erik Schmauss <erik.schmauss@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Javi Merino <javi.merino@kernel.org>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Robert Moore <robert.moore@intel.com>, Zhang Rui <rui.zhang@intel.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, devel@acpica.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
+Hello,
 
-On 6/26/19 9:16 AM, Manuel Lauss wrote:
-> On Tue, Jun 25, 2019 at 2:13 PM Christoph Hellwig <hch@lst.de> wrote:
->>
->> au1200fb allocates DMA memory using DMA_ATTR_NON_CONSISTENT, but never
->> calls dma_cache_sync to synchronize the memory between the CPU and the
->> device.  If it was use on a not cache coherent bus that would be fatal,
->> but as far as I can tell from the naming and the mips platform
->> implementation it always is used in cache coherent systems.  Remove
->> the DMA_ATTR_NON_CONSISTENT flag, which is a no-op in that case.
-> 
-> Very early au1200 chips, on which this driver apparently was developed on,
-> had issues with cache coherency, but this was fixed in a later step,
-> none of the 3 steppings I have access to exhibit any problems
-> with this patch applied.
-> 
->> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> Acked-By: Manuel Lauss <manuel.lauss@gmail.com>
+Now that cpufreq core supports taking QoS requests for min/max cpu
+frequencies, lets migrate rest of the users to using them instead of the
+policy notifiers.
 
-Patch queued for v5.4, thanks.
+The CPUFREQ_NOTIFY and CPUFREQ_ADJUST events of the policy notifiers are
+removed as a result, but we have to add CPUFREQ_CREATE_POLICY and
+CPUFREQ_REMOVE_POLICY events to it for the acpi stuff specifically. So
+the policy notifiers aren't completely removed.
 
-Best regards,
+Boot tested on my x86 PC and ARM hikey board. Nothing looked broken :)
+
+This has already gone through build bot for a few days now.
+
 --
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+viresh
+
+Viresh Kumar (10):
+  cpufreq: Add policy create/remove notifiers
+  video: sa1100fb: Remove cpufreq policy notifier
+  video: pxafb: Remove cpufreq policy notifier
+  arch_topology: Use CPUFREQ_CREATE_POLICY instead of CPUFREQ_NOTIFY
+  thermal: cpu_cooling: Switch to QoS requests instead of cpufreq
+    notifier
+  powerpc: macintosh: Switch to QoS requests instead of cpufreq notifier
+  cpufreq: powerpc_cbe: Switch to QoS requests instead of cpufreq
+    notifier
+  ACPI: cpufreq: Switch to QoS requests instead of cpufreq notifier
+  cpufreq: Remove CPUFREQ_ADJUST and CPUFREQ_NOTIFY policy notifier
+    events
+  Documentation: cpufreq: Update policy notifier documentation
+
+ Documentation/cpu-freq/core.txt            |  16 +--
+ drivers/acpi/processor_driver.c            |  44 ++++++++-
+ drivers/acpi/processor_perflib.c           | 106 +++++++++-----------
+ drivers/acpi/processor_thermal.c           |  81 ++++++++-------
+ drivers/base/arch_topology.c               |   2 +-
+ drivers/cpufreq/cpufreq.c                  |  51 ++++------
+ drivers/cpufreq/ppc_cbe_cpufreq.c          |  19 +++-
+ drivers/cpufreq/ppc_cbe_cpufreq.h          |   8 ++
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c      |  96 +++++++++++-------
+ drivers/macintosh/windfarm_cpufreq_clamp.c |  77 ++++++++++-----
+ drivers/thermal/cpu_cooling.c              | 110 +++++----------------
+ drivers/video/fbdev/pxafb.c                |  21 ----
+ drivers/video/fbdev/pxafb.h                |   1 -
+ drivers/video/fbdev/sa1100fb.c             |  27 -----
+ drivers/video/fbdev/sa1100fb.h             |   1 -
+ include/acpi/processor.h                   |  22 +++--
+ include/linux/cpufreq.h                    |   4 +-
+ 17 files changed, 327 insertions(+), 359 deletions(-)
+
+-- 
+2.21.0.rc0.269.g1a574e7a288b

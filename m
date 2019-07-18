@@ -1,34 +1,63 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 05 Jul 2019 15:00:54 +0000
-Subject: Re: [PATCH 07/11] video: fbdev: wm8505fb: convert platform driver to use dev_groups
-Message-Id: <3331c596-8150-3113-fc92-ffc72d7565c1@samsung.com>
+From: Pavel Machek <pavel@ucw.cz>
+Date: Thu, 18 Jul 2019 19:08:49 +0000
+Subject: [PATCH] Enable backlight when trigger is activated
+Message-Id: <20190718190849.GA11409@amd>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190704084617.3602-1-gregkh@linuxfoundation.org>
-        <CGME20190704142610epcas2p1f2dcbf38ea660bc26d306f2c0e1c71ca@epcas2p1.samsung.com>
-        <20190704142602.GB6281@kroah.com>
-In-Reply-To: <20190704142602.GB6281@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Darren Hart <dvhart@infradead.org>, Andy Shevchenko <andy@infradead.org>, platform-driver-x86@vger.kernel.org
+To: kernel list <linux-kernel@vger.kernel.org>, linux-arm-kernel <linux-arm-kernel@lists.infradead.org>, linux-omap@vger.kernel.org, tony@atomide.com, sre@kernel.org, nekit1000@gmail.com, mpartap@gmx.net, merlijn@wizzup.org, jacek.anaszewski@gmail.com, linux-leds@vger.kernel.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
 
 
-On 7/4/19 4:26 PM, Greg Kroah-Hartman wrote:
-> Platform drivers now have the option to have the platform core create
-> and remove any needed sysfs attribute files.  So take advantage of that
-> and do not register "by hand" a sysfs file.
-> 
-> Cc: Tony Prisk <linux@prisktech.co.nz>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+--fUYQa+Pmc3FrFX/N
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Configuring backlight trigger from dts results in backlight off during
+boot. Machine looks dead upon boot, which is not good.
+
+Fix that by enabling LED on trigger activation.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/drivers/leds/trigger/ledtrig-backlight.c b/drivers/leds/trigge=
+r/ledtrig-backlight.c
+index 487577d..6e6bc78 100644
+--- a/drivers/leds/trigger/ledtrig-backlight.c
++++ b/drivers/leds/trigger/ledtrig-backlight.c
+@@ -114,6 +114,8 @@ static int bl_trig_activate(struct led_classdev *led)
+ 	n->old_status =3D UNBLANK;
+ 	n->notifier.notifier_call =3D fb_notifier_callback;
+=20
++	led_set_brightness(led, LED_ON);
++
+ 	ret =3D fb_register_client(&n->notifier);
+ 	if (ret)
+ 		dev_err(led->dev, "unable to register backlight trigger\n");
+@@ -126,6 +128,7 @@ static void bl_trig_deactivate(struct led_classdev *led)
+ 	struct bl_trig_notifier *n =3D led_get_trigger_data(led);
+=20
+ 	fb_unregister_client(&n->notifier);
++	led_set_brightness(led, LED_OFF);
+ 	kfree(n);
+ }
+=20
+
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--fUYQa+Pmc3FrFX/N
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iEYEARECAAYFAl0ww8EACgkQMOfwapXb+vI/hQCeO9FNCL2TmO9oZ8A7L2jg1y1R
+jvQAn1C6VabsEY2RJJWCWLOK9CshUbyu
+=aKee
+-----END PGP SIGNATURE-----
+
+--fUYQa+Pmc3FrFX/N--

@@ -1,29 +1,51 @@
-From: Paul Burton <paul.burton@mips.com>
-Date: Tue, 30 Jul 2019 17:43:55 +0000
-Subject: Re: [PATCH 05/11] video/fbdev: Drop JZ4740 driver
-Message-Id: <MWHPR2201MB1277CBFBCC5B2A7DCE8CF2E6C1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
+From: Daniel Vetter <daniel.vetter@ffwll.ch>
+Date: Thu, 18 Jul 2019 08:09:03 +0000
+Subject: [PATCH] vt: Grab console_lock around con_is_bound in show_bind
+Message-Id: <20190718080903.22622-1-daniel.vetter@ffwll.ch>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-6-paul@crapouillou.net>
-In-Reply-To: <20190725220215.460-6-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <pburton@wavecomp.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Intel Graphics Development <intel-gfx@lists.freedesktop.org>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Jens Remus <jremus@linux.ibm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Nicolas Pitre <nicolas.pitre@linaro.org>, Martin Hostettler <textshell@uchuujin.de>, Adam Borowski <kilobyte@angband.pl>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>
 
-Hello,
+Not really harmful not to, but also not harm in grabbing the lock. And
+this shuts up a new WARNING I introduced in commit ddde3c18b700 ("vt:
+More locking checks").
 
-Paul Cercueil wrote:
-> The JZ4740 fbdev driver has been replaced with the ingenic-drm driver.
-> 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> Tested-by: Artur Rojek <contact@artur-rojek.eu>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
+Reported-by: Jens Remus <jremus@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Cc: linux-s390@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Nicolas Pitre <nicolas.pitre@linaro.org>
+Cc: Martin Hostettler <textshell@uchuujin.de>
+Cc: Adam Borowski <kilobyte@angband.pl>
+Cc: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Daniel Vetter <daniel.vetter@intel.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ drivers/tty/vt/vt.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-Applied to mips-next.
-
-Thanks,
-    Paul
-
-[ This message was auto-generated; if you believe anything is incorrect
-  then please email paul.burton@mips.com to report it. ]
+diff --git a/drivers/tty/vt/vt.c b/drivers/tty/vt/vt.c
+index ec92f36ab5c4..34aa39d1aed9 100644
+--- a/drivers/tty/vt/vt.c
++++ b/drivers/tty/vt/vt.c
+@@ -3771,7 +3771,11 @@ static ssize_t show_bind(struct device *dev, struct device_attribute *attr,
+ 			 char *buf)
+ {
+ 	struct con_driver *con = dev_get_drvdata(dev);
+-	int bind = con_is_bound(con->con);
++	int bind;
++
++	console_lock();
++	bind = con_is_bound(con->con);
++	console_unlock();
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%i\n", bind);
+ }
+-- 
+2.20.1

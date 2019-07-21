@@ -1,42 +1,60 @@
-From: Alex Shi <alex.shi@linux.alibaba.com>
-Date: Fri, 12 Jul 2019 02:20:18 +0000
-Subject: [PATCH 12/12] Documentation/xtensa: repointer docs to Documentation/arch/
-Message-Id: <20190712022018.27989-12-alex.shi@linux.alibaba.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Sun, 21 Jul 2019 07:39:40 +0000
+Subject: [PATCH] backlight: add include guards to platform_lcd.h and ili9320.h
+Message-Id: <20190721073940.11422-1-yamada.masahiro@socionext.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
-In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, linux-xtensa@linux-xtensa.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
 
-Since we move Documentation/xtensa docs to Documentation/arch/xtensa
-dir, redirect the doc pointer to them.
+Add header include guards just in case.
 
-Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-doc@vger.kernel.org
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Max Filippov <jcmvbkbc@gmail.com>
-Cc: linux-xtensa@linux-xtensa.org
-Cc: linux-kernel@vger.kernel.org
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
- arch/xtensa/include/asm/initialize_mmu.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/xtensa/include/asm/initialize_mmu.h b/arch/xtensa/include/asm/initialize_mmu.h
-index 323d05789159..499fe4847490 100644
---- a/arch/xtensa/include/asm/initialize_mmu.h
-+++ b/arch/xtensa/include/asm/initialize_mmu.h
-@@ -42,7 +42,7 @@
- #if XCHAL_HAVE_S32C1I && (XCHAL_HW_MIN_VERSION >= XTENSA_HWVERSION_RC_2009_0)
- /*
-  * We Have Atomic Operation Control (ATOMCTL) Register; Initialize it.
-- * For details see Documentation/xtensa/atomctl.txt
-+ * For details see Documentation/arch/xtensa/atomctl.txt
-  */
- #if XCHAL_DCACHE_IS_COHERENT
- 	movi	a3, 0x25	/* For SMP/MX -- internal for writeback,
+ include/video/ili9320.h      | 4 ++++
+ include/video/platform_lcd.h | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/include/video/ili9320.h b/include/video/ili9320.h
+index 62f424f0bc52..b76a0b8f16fc 100644
+--- a/include/video/ili9320.h
++++ b/include/video/ili9320.h
+@@ -9,6 +9,9 @@
+  * http://armlinux.simtec.co.uk/
+ */
+ 
++#ifndef _VIDEO_ILI9320_H
++#define _VIDEO_ILI9320_H
++
+ #define ILI9320_REG(x)	(x)
+ 
+ #define ILI9320_INDEX			ILI9320_REG(0x00)
+@@ -196,3 +199,4 @@ struct ili9320_platdata {
+ 	unsigned short	interface6;
+ };
+ 
++#endif /* _VIDEO_ILI9320_H */
+diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
+index 6a95184a28c1..c68f3f45b5c1 100644
+--- a/include/video/platform_lcd.h
++++ b/include/video/platform_lcd.h
+@@ -7,6 +7,9 @@
+  * Generic platform-device LCD power control interface.
+ */
+ 
++#ifndef _VIDEO_PLATFORM_LCD_H
++#define _VIDEO_PLATFORM_LCD_H
++
+ struct plat_lcd_data;
+ struct fb_info;
+ 
+@@ -16,3 +19,4 @@ struct plat_lcd_data {
+ 	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
+ };
+ 
++#endif /* _VIDEO_PLATFORM_LCD_H */
 -- 
-2.19.1.856.g8858448bb
+2.17.1

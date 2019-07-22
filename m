@@ -1,61 +1,56 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Fri, 05 Jul 2019 15:16:22 +0000
-Subject: Re: [PATCH] video: fbdev: s3c-fb: Mark expected switch fall-throughs
-Message-Id: <4771baff-b157-2416-d43b-bf6d8980fbb3@samsung.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:14 +0000
+Subject: [PATCH v2 0/9] ARM: davinci: da850-evm: remove more legacy GPIO calls
+Message-Id: <20190722134423.26555-1-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190625160111epcas3p162f3d789c6219e679d9fd30c6a6b3d51@epcas3p1.samsung.com>
-        <20190625160103.GA13133@embeddedor>
-In-Reply-To: <20190625160103.GA13133@embeddedor>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Kees Cook <keescook@chromium.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On 6/25/19 6:01 PM, Gustavo A. R. Silva wrote:
-> In preparation to enabling -Wimplicit-fallthrough, mark switch
-> cases where we are expecting to fall through.
-> 
-> This patch fixes the following warnings:
-> 
-> drivers/video/fbdev/s3c-fb.c: In function ‘s3c_fb_blank’:
-> drivers/video/fbdev/s3c-fb.c:811:16: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    sfb->enabled &= ~(1 << index);
->    ~~~~~~~~~~~~~^~~~~~~~~~~~~~~~
-> drivers/video/fbdev/s3c-fb.c:814:2: note: here
->   case FB_BLANK_NORMAL:
->   ^~~~
->   LD [M]  drivers/staging/greybus/gb-light.o
->   CC [M]  drivers/gpu/drm/nouveau/nvkm/subdev/secboot/gp10b.o
-> drivers/video/fbdev/s3c-fb.c: In function ‘s3c_fb_check_var’:
-> drivers/video/fbdev/s3c-fb.c:286:22: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    var->transp.length = 1;
->    ~~~~~~~~~~~~~~~~~~~^~~
-> drivers/video/fbdev/s3c-fb.c:288:2: note: here
->   case 18:
->   ^~~~
-> drivers/video/fbdev/s3c-fb.c:314:22: warning: this statement may fall through [-Wimplicit-fallthrough=]
->    var->transp.offset = 24;
->    ~~~~~~~~~~~~~~~~~~~^~~~
-> drivers/video/fbdev/s3c-fb.c:316:2: note: here
->   case 24:
->   ^~~~
-> 
-> Warning level 3 was used: -Wimplicit-fallthrough=3
-> 
-> Notice that, in this particular case, the code comments are modified
-> in accordance with what GCC is expecting to find.
-> 
-> This patch is part of the ongoing efforts to enable
-> -Wimplicit-fallthrough.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+This is another small step on the path to liberating davinci from legacy
+GPIO API calls and shrinking the davinci GPIO driver by not having to
+support the base GPIO number anymore.
 
-Patch queued for v5.3, thanks.
+This time we're removing the legacy calls used indirectly by the LCDC
+fbdev driver.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+First two patches enable the GPIO backlight driver in
+davinci_all_defconfig.
+
+Patch 3/12 models the backlight GPIO as an actual GPIO backlight device.
+
+Patches 4-6 extend the fbdev driver with regulator support and convert
+the da850-evm board file to using it.
+
+Last three patches are improvements to the da8xx fbdev driver since
+we're already touching it in this series.
+
+v1 -> v2:
+- dopped the gpio-backlight patches from this series as since v5.3-rc1 we
+  can probe the module with neither the OF node nor platform data
+- collected review and ack tags
+- rebased on top of v5.3-rc1
+
+Bartosz Golaszewski (9):
+  ARM: davinci: refresh davinci_all_defconfig
+  ARM: davinci_all_defconfig: enable GPIO backlight
+  ARM: davinci: da850-evm: model the backlight GPIO as an actual device
+  fbdev: da8xx: add support for a regulator
+  ARM: davinci: da850-evm: switch to using a fixed regulator for lcdc
+  fbdev: da8xx: remove panel_power_ctrl() callback from platform data
+  fbdev: da8xx-fb: use devm_platform_ioremap_resource()
+  fbdev: da8xx-fb: drop a redundant if
+  fbdev: da8xx: use resource management for dma
+
+ arch/arm/configs/davinci_all_defconfig  |  27 ++----
+ arch/arm/mach-davinci/board-da850-evm.c |  90 +++++++++++++-----
+ drivers/video/fbdev/da8xx-fb.c          | 118 +++++++++++++-----------
+ include/video/da8xx-fb.h                |   1 -
+ 4 files changed, 141 insertions(+), 95 deletions(-)
+
+-- 
+2.21.0

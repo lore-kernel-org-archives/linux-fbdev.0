@@ -1,40 +1,117 @@
-From: Alex Shi <alex.shi@linux.alibaba.com>
-Date: Fri, 12 Jul 2019 02:20:10 +0000
-Subject: [PATCH 04/12] Documentation/m68k: repointer docs to Documentation/arch/
-Message-Id: <20190712022018.27989-4-alex.shi@linux.alibaba.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:20 +0000
+Subject: [PATCH v2 6/9] fbdev: da8xx: remove panel_power_ctrl() callback from platform data
+Message-Id: <20190722134423.26555-7-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
-In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Will Deacon <will@kernel.org>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-Since we move Documentation/m68k docs to Documentation/arch/m68k
-dir, redirect the doc pointer to them.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Will Deacon <will@kernel.org>
-Cc: linux-doc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
+There are no more users of panel_power_ctrl(). Remove it from the
+driver.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- Documentation/admin-guide/kernel-parameters.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/da8xx-fb.c | 25 +++++--------------------
+ include/video/da8xx-fb.h       |  1 -
+ 2 files changed, 5 insertions(+), 21 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.rst b/Documentation/admin-guide/kernel-parameters.rst
-index 5d29ba5ad88c..dc283dcffae8 100644
---- a/Documentation/admin-guide/kernel-parameters.rst
-+++ b/Documentation/admin-guide/kernel-parameters.rst
-@@ -118,7 +118,7 @@ parameter is applicable::
- 	LOOP	Loopback device support is enabled.
- 	M68k	M68k architecture is enabled.
- 			These options have more detailed description inside of
--			Documentation/m68k/kernel-options.txt.
-+			Documentation/arch/m68k/kernel-options.txt.
- 	MDA	MDA console support is enabled.
- 	MIPS	MIPS architecture is enabled.
- 	MOUSE	Appropriate mouse support is enabled.
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 02dfe9e32eed..19ed9889c8f8 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -165,7 +165,6 @@ struct da8xx_fb_par {
+ 	struct notifier_block	freq_transition;
+ #endif
+ 	unsigned int		lcdc_clk_rate;
+-	void (*panel_power_ctrl)(int);
+ 	struct regulator	*lcd_supply;
+ 	u32 pseudo_palette[16];
+ 	struct fb_videomode	mode;
+@@ -1076,9 +1075,7 @@ static int fb_remove(struct platform_device *dev)
+ #ifdef CONFIG_CPU_FREQ
+ 		lcd_da8xx_cpufreq_deregister(par);
+ #endif
+-		if (par->panel_power_ctrl) {
+-			par->panel_power_ctrl(0);
+-		} else if (par->lcd_supply) {
++		if (par->lcd_supply) {
+ 			ret = regulator_disable(par->lcd_supply);
+ 			if (ret)
+ 				return ret;
+@@ -1187,9 +1184,7 @@ static int cfb_blank(int blank, struct fb_info *info)
+ 	case FB_BLANK_UNBLANK:
+ 		lcd_enable_raster();
+ 
+-		if (par->panel_power_ctrl) {
+-			par->panel_power_ctrl(1);
+-		} else if (par->lcd_supply) {
++		if (par->lcd_supply) {
+ 			ret = regulator_enable(par->lcd_supply);
+ 			if (ret)
+ 				return ret;
+@@ -1199,9 +1194,7 @@ static int cfb_blank(int blank, struct fb_info *info)
+ 	case FB_BLANK_VSYNC_SUSPEND:
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_POWERDOWN:
+-		if (par->panel_power_ctrl) {
+-			par->panel_power_ctrl(0);
+-		} else if (par->lcd_supply) {
++		if (par->lcd_supply) {
+ 			ret = regulator_disable(par->lcd_supply);
+ 			if (ret)
+ 				return ret;
+@@ -1413,10 +1406,6 @@ static int fb_probe(struct platform_device *device)
+ 	par->dev = &device->dev;
+ 	par->lcdc_clk = tmp_lcdc_clk;
+ 	par->lcdc_clk_rate = clk_get_rate(par->lcdc_clk);
+-	if (fb_pdata->panel_power_ctrl) {
+-		par->panel_power_ctrl = fb_pdata->panel_power_ctrl;
+-		par->panel_power_ctrl(1);
+-	}
+ 
+ 	par->lcd_supply = devm_regulator_get_optional(&device->dev, "lcd");
+ 	if (IS_ERR(par->lcd_supply)) {
+@@ -1638,9 +1627,7 @@ static int fb_suspend(struct device *dev)
+ 	int ret;
+ 
+ 	console_lock();
+-	if (par->panel_power_ctrl) {
+-		par->panel_power_ctrl(0);
+-	} else if (par->lcd_supply) {
++	if (par->lcd_supply) {
+ 		ret = regulator_disable(par->lcd_supply);
+ 		if (ret)
+ 			return ret;
+@@ -1666,9 +1653,7 @@ static int fb_resume(struct device *dev)
+ 	if (par->blank = FB_BLANK_UNBLANK) {
+ 		lcd_enable_raster();
+ 
+-		if (par->panel_power_ctrl) {
+-			par->panel_power_ctrl(1);
+-		} else if (par->lcd_supply) {
++		if (par->lcd_supply) {
+ 			ret = regulator_enable(par->lcd_supply);
+ 			if (ret)
+ 				return ret;
+diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
+index efed3c3383d6..1d19ae62b844 100644
+--- a/include/video/da8xx-fb.h
++++ b/include/video/da8xx-fb.h
+@@ -32,7 +32,6 @@ struct da8xx_lcdc_platform_data {
+ 	const char manu_name[10];
+ 	void *controller_data;
+ 	const char type[25];
+-	void (*panel_power_ctrl)(int);
+ };
+ 
+ struct lcd_ctrl_config {
 -- 
-2.19.1.856.g8858448bb
+2.21.0

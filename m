@@ -1,7 +1,7 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jul 2019 13:44:23 +0000
-Subject: [PATCH v2 9/9] fbdev: da8xx: use resource management for dma
-Message-Id: <20190722134423.26555-10-brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:15 +0000
+Subject: [PATCH v2 1/9] ARM: davinci: refresh davinci_all_defconfig
+Message-Id: <20190722134423.26555-2-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190722134423.26555-1-brgl@bgdev.pl>
 In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
@@ -13,92 +13,99 @@ Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Use managed variants of dma alloc functions in the da8xx fbdev driver.
+Refresh davinci_all_defconfig with current master.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/video/fbdev/da8xx-fb.c | 32 ++++++++++----------------------
- 1 file changed, 10 insertions(+), 22 deletions(-)
+ arch/arm/configs/davinci_all_defconfig | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
-index d14ea6f91371..2d3dcc52fcf3 100644
---- a/drivers/video/fbdev/da8xx-fb.c
-+++ b/drivers/video/fbdev/da8xx-fb.c
-@@ -1087,10 +1087,6 @@ static int fb_remove(struct platform_device *dev)
- 
- 	unregister_framebuffer(info);
- 	fb_dealloc_cmap(&info->cmap);
--	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
--			  par->p_palette_base);
--	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
--			  par->vram_phys);
- 	pm_runtime_put_sync(&dev->dev);
- 	pm_runtime_disable(&dev->dev);
- 	framebuffer_release(info);
-@@ -1427,10 +1423,10 @@ static int fb_probe(struct platform_device *device)
- 	par->vram_size = roundup(par->vram_size/8, ulcm);
- 	par->vram_size = par->vram_size * LCD_NUM_BUFFERS;
- 
--	par->vram_virt = dma_alloc_coherent(par->dev,
--					    par->vram_size,
--					    &par->vram_phys,
--					    GFP_KERNEL | GFP_DMA);
-+	par->vram_virt = dmam_alloc_coherent(par->dev,
-+					     par->vram_size,
-+					     &par->vram_phys,
-+					     GFP_KERNEL | GFP_DMA);
- 	if (!par->vram_virt) {
- 		dev_err(&device->dev,
- 			"GLCD: kmalloc for frame buffer failed\n");
-@@ -1448,20 +1444,20 @@ static int fb_probe(struct platform_device *device)
- 		da8xx_fb_fix.line_length - 1;
- 
- 	/* allocate palette buffer */
--	par->v_palette_base = dma_alloc_coherent(par->dev, PALETTE_SIZE,
--						 &par->p_palette_base,
--						 GFP_KERNEL | GFP_DMA);
-+	par->v_palette_base = dmam_alloc_coherent(par->dev, PALETTE_SIZE,
-+						  &par->p_palette_base,
-+						  GFP_KERNEL | GFP_DMA);
- 	if (!par->v_palette_base) {
- 		dev_err(&device->dev,
- 			"GLCD: kmalloc for palette buffer failed\n");
- 		ret = -EINVAL;
--		goto err_release_fb_mem;
-+		goto err_release_fb;
- 	}
- 
- 	par->irq = platform_get_irq(device, 0);
- 	if (par->irq < 0) {
- 		ret = -ENOENT;
--		goto err_release_pl_mem;
-+		goto err_release_fb;
- 	}
- 
- 	da8xx_fb_var.grayscale @@ -1479,7 +1475,7 @@ static int fb_probe(struct platform_device *device)
- 
- 	ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
- 	if (ret)
--		goto err_release_pl_mem;
-+		goto err_release_fb;
- 	da8xx_fb_info->cmap.len = par->palette_sz;
- 
- 	/* initialize var_screeninfo */
-@@ -1533,14 +1529,6 @@ static int fb_probe(struct platform_device *device)
- err_dealloc_cmap:
- 	fb_dealloc_cmap(&da8xx_fb_info->cmap);
- 
--err_release_pl_mem:
--	dma_free_coherent(par->dev, PALETTE_SIZE, par->v_palette_base,
--			  par->p_palette_base);
--
--err_release_fb_mem:
--	dma_free_coherent(par->dev, par->vram_size, par->vram_virt,
--		          par->vram_phys);
--
- err_release_fb:
- 	framebuffer_release(da8xx_fb_info);
- 
+diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
+index 9a32a8c0f873..7c2a39305f2b 100644
+--- a/arch/arm/configs/davinci_all_defconfig
++++ b/arch/arm/configs/davinci_all_defconfig
+@@ -10,13 +10,6 @@ CONFIG_CGROUPS=y
+ CONFIG_CHECKPOINT_RESTORE=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_EXPERT=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_IOSCHED_DEADLINE is not set
+-# CONFIG_IOSCHED_CFQ is not set
+ CONFIG_ARCH_DAVINCI=y
+ CONFIG_ARCH_DAVINCI_DM644x=y
+ CONFIG_ARCH_DAVINCI_DM355=y
+@@ -31,9 +24,7 @@ CONFIG_MACH_MITYOMAPL138=y
+ CONFIG_MACH_OMAPL138_HAWKBOARD=y
+ CONFIG_DAVINCI_MUX_DEBUG=y
+ CONFIG_DAVINCI_MUX_WARNINGS=y
+-CONFIG_PREEMPT=y
+ CONFIG_AEABI=y
+-CONFIG_CMA=y
+ CONFIG_SECCOMP=y
+ CONFIG_ZBOOT_ROM_TEXT=0x0
+ CONFIG_ZBOOT_ROM_BSS=0x0
+@@ -47,6 +38,12 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_ONDEMAND=m
+ CONFIG_CPUFREQ_DT=m
+ CONFIG_CPU_IDLE=y
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++CONFIG_MODULE_FORCE_UNLOAD=y
++CONFIG_MODVERSIONS=y
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_CMA=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+ CONFIG_UNIX=y
+@@ -64,7 +61,6 @@ CONFIG_BT_HCIUART_LL=y
+ CONFIG_DEVTMPFS=y
+ CONFIG_DEVTMPFS_MOUNT=y
+ CONFIG_FW_LOADER=m
+-CONFIG_DMA_CMA=y
+ CONFIG_DA8XX_MSTPRI=y
+ CONFIG_MTD=m
+ CONFIG_MTD_TESTS=m
+@@ -168,8 +164,6 @@ CONFIG_SOUND=m
+ CONFIG_SND=m
+ CONFIG_SND_USB_AUDIO=m
+ CONFIG_SND_SOC=m
+-CONFIG_SND_SOC_TLV320AIC3X=m
+-CONFIG_SND_SOC_DAVINCI_MCASP=m
+ CONFIG_SND_SOC_DAVINCI_EVM=m
+ CONFIG_SND_SIMPLE_CARD=m
+ CONFIG_HID=m
+@@ -214,14 +208,12 @@ CONFIG_MMC_DAVINCI=y
+ CONFIG_NEW_LEDS=y
+ CONFIG_LEDS_CLASS=m
+ CONFIG_LEDS_GPIO=m
+-CONFIG_LEDS_TRIGGERS=y
+ CONFIG_LEDS_TRIGGER_TIMER=m
+ CONFIG_LEDS_TRIGGER_HEARTBEAT=m
+ CONFIG_LEDS_TRIGGER_DEFAULT_ON=m
+ CONFIG_RTC_CLASS=y
+ CONFIG_RTC_DRV_OMAP=m
+ CONFIG_DMADEVICES=y
+-CONFIG_TI_EDMA=y
+ CONFIG_COMMON_CLK_PWM=m
+ CONFIG_REMOTEPROC=m
+ CONFIG_DA8XX_REMOTEPROC=m
+@@ -259,10 +251,10 @@ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ASCII=m
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
++# CONFIG_CRYPTO_HW is not set
++CONFIG_CRC_T10DIF=m
++CONFIG_DMA_CMA=y
+ CONFIG_DEBUG_FS=y
+ CONFIG_DEBUG_RT_MUTEXES=y
+ CONFIG_DEBUG_MUTEXES=y
+-# CONFIG_ARM_UNWIND is not set
+ CONFIG_DEBUG_USER=y
+-# CONFIG_CRYPTO_HW is not set
+-CONFIG_CRC_T10DIF=m
 -- 
 2.21.0

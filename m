@@ -1,33 +1,50 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Tue, 23 Jul 2019 15:36:26 +0000
-Subject: Re: [PATCH] video: fbdev: nvidia: Remove extra return
-Message-Id: <92c45f9b-015a-d6f0-bb27-558580fb4d35@samsung.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Mon, 22 Jul 2019 18:24:36 +0000
+Subject: [PATCH 1/4] video: of: display_timing: Add of_node_put() in of_get_display_timing()
+Message-Id: <20190722182439.44844-2-dianders@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1562781795-3494-1-git-send-email-jrdr.linux@gmail.com>
-        <CGME20190722082644epcas3p40d41c7bc15b725e25a882e9209bd25c6@epcas3p4.samsung.com>
-        <CAFqt6zb-LmG4PrWCXfmDqor2bgxyFJRt5Yg0vmNgE9zvaw+S3Q@mail.gmail.com>
-In-Reply-To: <CAFqt6zb-LmG4PrWCXfmDqor2bgxyFJRt5Yg0vmNgE9zvaw+S3Q@mail.gmail.com>
+References: <20190722182439.44844-1-dianders@chromium.org>
+In-Reply-To: <20190722182439.44844-1-dianders@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Souptick Joarder <jrdr.linux@gmail.com>
-Cc: adaplas@gmail.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Sabyasachi Gupta <sabyasachi.linux@gmail.com>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Cc: David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Russell King <linux@armlinux.org.uk>, Daniel Vetter <daniel@ffwll.ch>, Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org
 
+From code inspection it can be seen that of_get_display_timing() is
+lacking an of_node_put().  Add it.
 
-On 7/22/19 10:26 AM, Souptick Joarder wrote:
-> On Wed, Jul 10, 2019 at 11:28 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>
->> Minor cleanup to remove extra return statement.
->>
-> 
-> Any comment on this patch ?
-> 
->> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Fixes: ffa3fd21de8a ("videomode: implement public of_get_display_timing()")
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
+---
 
-Patch queued for v5.4, thanks.
+ drivers/video/of_display_timing.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index f5c1c469c0af..5eedae0799f0 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -119,6 +119,7 @@ int of_get_display_timing(const struct device_node *np, const char *name,
+ 		struct display_timing *dt)
+ {
+ 	struct device_node *timing_np;
++	int ret;
+ 
+ 	if (!np)
+ 		return -EINVAL;
+@@ -129,7 +130,11 @@ int of_get_display_timing(const struct device_node *np, const char *name,
+ 		return -ENOENT;
+ 	}
+ 
+-	return of_parse_display_timing(timing_np, dt);
++	ret = of_parse_display_timing(timing_np, dt);
++
++	of_node_put(timing_np);
++
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(of_get_display_timing);
+ 
+-- 
+2.22.0.657.g960e92d24f-goog

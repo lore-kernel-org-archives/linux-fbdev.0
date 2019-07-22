@@ -1,77 +1,47 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Mon, 29 Jul 2019 10:42:06 +0000
-Subject: Re: [PATCH] video: fbdev: Mark expected switch fall-through
-Message-Id: <6689420e-2383-b7d1-fccc-5d0a149975be@embeddedor.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 15:03:00 +0000
+Subject: [PATCH v2 5/7] backlight: gpio: remove dev from struct gpio_backlight
+Message-Id: <20190722150302.29526-6-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190726112835.19928-1-anders.roxell@linaro.org>
-In-Reply-To: <20190726112835.19928-1-anders.roxell@linaro.org>
+References: <20190722150302.29526-1-brgl@bgdev.pl>
+In-Reply-To: <20190722150302.29526-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Anders Roxell <anders.roxell@linaro.org>, b.zolnierkie@samsung.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Hi Anders,
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On 7/26/19 6:28 AM, Anders Roxell wrote:
-> When fall-through warnings was enabled by default the following warnings
-> was starting to show up:
-> 
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_channel_fb_init’:
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c:2086:22: warning: this statement may fall
->  through [-Wimplicit-fallthrough=]
->    info->fix.ypanstep = 2;
->    ~~~~~~~~~~~~~~~~~~~^~~
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c:2087:2: note: here
->   case V4L2_PIX_FMT_NV16:
->   ^~~~
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_overlay_fb_init’:
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c:1596:22: warning: this statement may fall
->  through [-Wimplicit-fallthrough=]
->    info->fix.ypanstep = 2;
->    ~~~~~~~~~~~~~~~~~~~^~~
-> ../drivers/video/fbdev/sh_mobile_lcdcfb.c:1597:2: note: here
->   case V4L2_PIX_FMT_NV16:
->   ^~~~
-> 
-> Rework so that the compiler doesn't warn about fall-through.
-> 
-> Fixes: d93512ef0f0e ("Makefile: Globally enable fall-through warning")
+This field is unused. Remove it.
 
-This is a misuse of the 'Fixes' tag. You are not fixing that commit. You are
-addressing a warning due to the enablement of -Wimplicit-fallthrough in
-that commit.
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-I think that saying that you are addressing a warning due to the enablement
-of -Wimplicit-fallthrough is the right way to justify this change.
-
-Thanks
---
-Gustavo
-
-> Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
-> ---
->  drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> index ac0bcac9a865..c249763dbf0b 100644
-> --- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> +++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-> @@ -1594,6 +1594,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_overlay *ovl)
->  	case V4L2_PIX_FMT_NV12:
->  	case V4L2_PIX_FMT_NV21:
->  		info->fix.ypanstep = 2;
-> +		/* Fall through */
->  	case V4L2_PIX_FMT_NV16:
->  	case V4L2_PIX_FMT_NV61:
->  		info->fix.xpanstep = 2;
-> @@ -2084,6 +2085,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
->  	case V4L2_PIX_FMT_NV12:
->  	case V4L2_PIX_FMT_NV21:
->  		info->fix.ypanstep = 2;
-> +		/* Fall through */
->  	case V4L2_PIX_FMT_NV16:
->  	case V4L2_PIX_FMT_NV61:
->  		info->fix.xpanstep = 2;
-> 
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 01262186fa1e..70882556f047 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -19,9 +19,7 @@
+ #include <linux/slab.h>
+ 
+ struct gpio_backlight {
+-	struct device *dev;
+ 	struct device *fbdev;
+-
+ 	struct gpio_desc *gpiod;
+ 	int def_value;
+ };
+@@ -69,8 +67,6 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
+ 
+-	gbl->dev = &pdev->dev;
+-
+ 	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+ 
+-- 
+2.21.0

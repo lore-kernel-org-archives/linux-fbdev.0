@@ -1,59 +1,48 @@
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Mon, 15 Jul 2019 15:14:27 +0000
-Subject: Re: [PATCH] Staging: fbtft: Fix GPIO handling
-Message-Id: <ba7c763b5c2a2d5edc4c0f700dabe08c47970600.camel@suse.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-QmBqWije45AXLJOH4tKP"
+From: Douglas Anderson <dianders@chromium.org>
+Date: Mon, 22 Jul 2019 18:24:35 +0000
+Subject: [PATCH 0/4] video: of: display_timing: Adjust err printing of of_get_display_timing()
+Message-Id: <20190722182439.44844-1-dianders@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190715143003.12819-1-nsaenzjulienne@suse.de>
- <7b8242ab-cc0c-d90b-60af-ff1c53789e44@opensynergy.com>
- <5a77c18f-7338-888f-2379-12171b6a545e@jaseg.net>
- <294c94d2-d2c1-514d-ba6d-c62e98017bc0@jaseg.net>
-In-Reply-To: <294c94d2-d2c1-514d-ba6d-c62e98017bc0@jaseg.net>
-To: Jan Sebastian =?ISO-8859-1?Q?G=F6tte?= <linux@jaseg.net>
-Cc: devel@driverdev.osuosl.org, leobras.c@gmail.com, linux-fbdev@vger.kernel.org, nishadkamdar@gmail.com, gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org, bhanusreemahesh@gmail.com, Phil Reid <preid@electromag.com.au>
-
-
---=-QmBqWije45AXLJOH4tKP
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2019-07-16 at 00:04 +0900, Jan Sebastian G=C3=B6tte wrote:
-> Commit c440eee1a7a1 ("Staging: fbtft: Switch to the gpio descriptor
-> interface") breaks GPIO handling. In several places, checks to only set
-> a GPIO if it was configured ended up backwards.
-> I have tested this fix. The fixed driver works with a ili9486
-> display connected to a raspberry pi via SPI.
->=20
-> Fixes: commit c440eee1a7a1d ("Staging: fbtft: Switch to the gpio descript=
-or
-> interface")
-> Tested-by: Jan Sebastian G=C3=B6tte <linux@jaseg.net>
-> Signed-off-by: Jan Sebastian G=C3=B6tte <linux@jaseg.net>
-
-Thanks Jan, this version is indeed more complete.
-
-Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-
-Regards,
-Nicolas
-
-
---=-QmBqWije45AXLJOH4tKP
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Cc: David Airlie <airlied@linux.ie>, linux-fbdev@vger.kernel.org, Philipp Zabel <p.zabel@pengutronix.de>, Tomi Valkeinen <tomi.valkeinen@ti.com>, dri-devel@lists.freedesktop.org, Laurent Pinchart <laurent.pinchart@ideasonboard.com>, Russell King <linux@armlinux.org.uk>, Daniel Vetter <daniel@ffwll.ch>, Douglas Anderson <dianders@chromium.org>, linux-kernel@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>
 
------BEGIN PGP SIGNATURE-----
+As reported by Sam Ravnborg [1], after commit b8a2948fa2b3
+("drm/panel: simple: Add ability to override typical timing") we now
+see a pointless error message printed on every boot for many systems.
+Let's fix that by adjusting who is responsible for printing error
+messages when of_get_display_timing() is used.
 
-iQEzBAABCAAdFiEErOkkGDHCg2EbPcGjlfZmHno8x/4FAl0smFMACgkQlfZmHno8
-x/7xwQf9FFwqX1/6VPgDb4yvg7MXgCePh5zi7ffVRp75KpkfnNhAaKVX2v80j1XF
-363ZZxrH2l67NyEorRbbFcqVRQh5vrIPExE/yAOTtnD1JTiZ3BnaBsKMmRfNVFgq
-dQN2uxi7hW0xeSRGOb3PrtgVLB58UvOcSfTRX9++C+fy9W+BBqacK3qB5Ib5IRAJ
-iRDVyyz45WTo7D6DgDiU/A/7vZnCTrNvu8Mw8R4FWdUbrfEzu1HUR/bem1KTAzIe
-NEeAE9oe60C4dz3xd4Hfa5R7L0DCivs/PlzBtOGLTXu59L4DT7X/RdD3yKzbnH4X
-dgfIdTNtBQv4XOgazxOdnbgFIzfLlw==
-=7p4W
------END PGP SIGNATURE-----
+Most certainly we can bikeshed the topic about whether this is the
+right fix or we should instead add logic to panel_simple_probe() to
+avoid calling of_get_display_timing() in the case where there is no
+"panel-timing" sub-node.  If there is consensus that I should move the
+fix to panel_simple_probe() I'm happy to spin this series.  In that
+case we probably should _remove_ the extra prints that were already
+present in the other two callers of of_get_display_timing().
 
---=-QmBqWije45AXLJOH4tKP--
+While at it, fix a missing of_node_put() found by code inspection.
+
+NOTE: amba-clcd and panel-lvds were only compile-tested.
+
+[1] https://lkml.kernel.org/r/20190721093815.GA4375@ravnborg.org
+
+
+Douglas Anderson (4):
+  video: of: display_timing: Add of_node_put() in
+    of_get_display_timing()
+  video: of: display_timing: Don't yell if no timing node is present
+  drm: panel-lvds: Spout an error if of_get_display_timing() gives an
+    error
+  video: amba-clcd: Spout an error if of_get_display_timing() gives an
+    error
+
+ drivers/gpu/drm/panel/panel-lvds.c |  5 ++++-
+ drivers/video/fbdev/amba-clcd.c    |  4 +++-
+ drivers/video/of_display_timing.c  | 11 +++++++----
+ 3 files changed, 14 insertions(+), 6 deletions(-)
+
+-- 
+2.22.0.657.g960e92d24f-goog

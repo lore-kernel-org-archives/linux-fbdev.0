@@ -1,65 +1,47 @@
-From: Matthias Kaehlcke <mka@chromium.org>
-Date: Tue, 09 Jul 2019 19:00:06 +0000
-Subject: [PATCH v3 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
-Message-Id: <20190709190007.91260-4-mka@chromium.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:21 +0000
+Subject: [PATCH v2 7/9] fbdev: da8xx-fb: use devm_platform_ioremap_resource()
+Message-Id: <20190722134423.26555-8-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190709190007.91260-1-mka@chromium.org>
-In-Reply-To: <20190709190007.91260-1-mka@chromium.org>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Matthias Kaehlcke <mka@chromium.org>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-For backlight curves calculated with the CIE 1931 algorithm set
-the brightness scale type to non-linear. This makes the scale type
-available to userspace via the 'scale' sysfs attribute.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+Shrink the code a bit by using the new helper wrapping the calls to
+platform_get_resource() and devm_ioremap_resource() together.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
-Changes in v3:
-- mark scale as non-linear instead of using the CIE1931 type which
-  has been removed
-- updated commit message
+ drivers/video/fbdev/da8xx-fb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Changes in v2:
-- added Enric's 'Tested-by' tag
-- added Daniel's 'Acked-by' tag
----
- drivers/video/backlight/pwm_bl.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index fb45f866b923..7c6dfc4a601d 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -553,6 +553,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 		goto err_alloc;
- 	}
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index 19ed9889c8f8..f2f66605e8fb 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1339,7 +1339,6 @@ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata  						dev_get_platdata(&device->dev);
+-	struct resource *lcdc_regs;
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+@@ -1357,8 +1356,7 @@ static int fb_probe(struct platform_device *device)
+ 	if (lcdc_info = NULL)
+ 		return -ENODEV;
  
-+	memset(&props, 0, sizeof(struct backlight_properties));
-+
- 	if (data->levels) {
- 		/*
- 		 * For the DT case, only when brightness levels is defined
-@@ -591,6 +593,8 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+-	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+-	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
++	da8xx_fb_reg_base = devm_platform_ioremap_resource(device, 0);
+ 	if (IS_ERR(da8xx_fb_reg_base))
+ 		return PTR_ERR(da8xx_fb_reg_base);
  
- 			pb->levels = data->levels;
- 		}
-+
-+		props.scale = BACKLIGHT_SCALE_NON_LINEAR;
- 	} else {
- 		/*
- 		 * That only happens for the non-DT case, where platform data
-@@ -601,7 +605,6 @@ static int pwm_backlight_probe(struct platform_device *pdev)
- 
- 	pb->lth_brightness = data->lth_brightness * (state.period / pb->scale);
- 
--	memset(&props, 0, sizeof(struct backlight_properties));
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = data->max_brightness;
- 	bl = backlight_device_register(dev_name(&pdev->dev), &pdev->dev, pb,
 -- 
-2.22.0.410.gd8fdbe21b5-goog
+2.21.0

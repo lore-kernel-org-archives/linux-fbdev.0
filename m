@@ -1,38 +1,47 @@
-From: Alex Shi <alex.shi@linux.alibaba.com>
-Date: Fri, 12 Jul 2019 02:20:13 +0000
-Subject: [PATCH 07/12] Documentation/parisc: repointer docs to Documentation/arch/
-Message-Id: <20190712022018.27989-7-alex.shi@linux.alibaba.com>
+From: Douglas Anderson <dianders@chromium.org>
+Date: Mon, 22 Jul 2019 18:24:37 +0000
+Subject: [PATCH 2/4] video: of: display_timing: Don't yell if no timing node is present
+Message-Id: <20190722182439.44844-3-dianders@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
-In-Reply-To: <20190712022018.27989-1-alex.shi@linux.alibaba.com>
+References: <20190722182439.44844-1-dianders@chromium.org>
+In-Reply-To: <20190722182439.44844-1-dianders@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-doc@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Cc: Alex Shi <alex.shi@linux.alibaba.com>, linux-kernel@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, linux-ia64@vger.kernel.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, linux-scsi@vger.kernel.org, linux-s390@vger.kernel.org, kvm@vger.kernel.org, linux-sh@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-Since we move Documentation/parisc docs to Documentation/arch/parisc
-dir, redirect the doc pointer to them.
+There may be cases (like in panel-simple.c) where we have a sane
+fallback if no timings are specified in the device tree.  Let's get
+rid of the unconditional pr_err().  We can add error messages in
+individual drivers if it makes sense.
 
-Signed-off-by: Alex Shi <alex.shi@linux.alibaba.com>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: linux-kernel@vger.kernel.org
+NOTE: we'll still print errors if the node is present but there are
+problems parsing the timings.
+
+Fixes: b8a2948fa2b3 ("drm/panel: simple: Add ability to override typical timing")
+Reported-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Douglas Anderson <dianders@chromium.org>
 ---
- MAINTAINERS | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 03a8c687f87f..e1aad1b8224c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -12000,7 +12000,7 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/parisc-2.6.git
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-linux.git
- S:	Maintained
- F:	arch/parisc/
--F:	Documentation/parisc/
-+F:	Documentation/arch/parisc/
- F:	drivers/parisc/
- F:	drivers/char/agp/parisc-agp.c
- F:	drivers/input/serio/gscps2.c
+ drivers/video/of_display_timing.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index 5eedae0799f0..abc9ada798ee 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -125,10 +125,8 @@ int of_get_display_timing(const struct device_node *np, const char *name,
+ 		return -EINVAL;
+ 
+ 	timing_np = of_get_child_by_name(np, name);
+-	if (!timing_np) {
+-		pr_err("%pOF: could not find node '%s'\n", np, name);
++	if (!timing_np)
+ 		return -ENOENT;
+-	}
+ 
+ 	ret = of_parse_display_timing(timing_np, dt);
+ 
 -- 
-2.19.1.856.g8858448bb
+2.22.0.657.g960e92d24f-goog

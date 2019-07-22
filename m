@@ -1,85 +1,101 @@
-From: Viresh Kumar <viresh.kumar@linaro.org>
-Date: Tue, 23 Jul 2019 06:26:08 +0000
-Subject: [PATCH V2 08/10] video: pxafb: Remove cpufreq policy notifier
-Message-Id: <56ea0fb68b99d343b093bc517024356a18f780e7.1563862014.git.viresh.kumar@linaro.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:17 +0000
+Subject: [PATCH v2 3/9] ARM: davinci: da850-evm: model the backlight GPIO as an actual device
+Message-Id: <20190722134423.26555-4-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <cover.1563862014.git.viresh.kumar@linaro.org>
-In-Reply-To: <cover.1563862014.git.viresh.kumar@linaro.org>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rafael Wysocki <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-The cpufreq policy notifier's CPUFREQ_ADJUST notification is going to
-get removed soon.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-The notifier callback pxafb_freq_policy() isn't doing anything apart
-from printing a debug message on CPUFREQ_ADJUST notification. There is
-no point in keeping an otherwise empty callback and registering the
-notifier.
+Instead of enabling the panel backlight in a callback defined in board
+file using deprecated legacy GPIO API calls, model the line as a GPIO
+backlight device.
 
-Remove it.
-
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/video/fbdev/pxafb.c | 21 ---------------------
- drivers/video/fbdev/pxafb.h |  1 -
- 2 files changed, 22 deletions(-)
+ arch/arm/mach-davinci/board-da850-evm.c | 40 +++++++++++++++++--------
+ 1 file changed, 28 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
-index 4282cb117b92..f70c9f79622e 100644
---- a/drivers/video/fbdev/pxafb.c
-+++ b/drivers/video/fbdev/pxafb.c
-@@ -1678,24 +1678,6 @@ pxafb_freq_transition(struct notifier_block *nb, unsigned long val, void *data)
- 	}
- 	return 0;
+diff --git a/arch/arm/mach-davinci/board-da850-evm.c b/arch/arm/mach-davinci/board-da850-evm.c
+index 0628e7d7dcf3..ac05d4838f1e 100644
+--- a/arch/arm/mach-davinci/board-da850-evm.c
++++ b/arch/arm/mach-davinci/board-da850-evm.c
+@@ -36,6 +36,7 @@
+ #include <linux/platform_data/ti-aemif.h>
+ #include <linux/platform_data/spi-davinci.h>
+ #include <linux/platform_data/uio_pruss.h>
++#include <linux/property.h>
+ #include <linux/regulator/machine.h>
+ #include <linux/regulator/tps6507x.h>
+ #include <linux/regulator/fixed.h>
+@@ -804,34 +805,49 @@ static const short da850_evm_mmcsd0_pins[] __initconst = {
+ 
+ static void da850_panel_power_ctrl(int val)
+ {
+-	/* lcd backlight */
+-	gpio_set_value(DA850_LCD_BL_PIN, val);
+-
+ 	/* lcd power */
+ 	gpio_set_value(DA850_LCD_PWR_PIN, val);
  }
--
--static int
--pxafb_freq_policy(struct notifier_block *nb, unsigned long val, void *data)
--{
--	struct pxafb_info *fbi = TO_INF(nb, freq_policy);
--	struct fb_var_screeninfo *var = &fbi->fb.var;
--	struct cpufreq_policy *policy = data;
--
--	switch (val) {
--	case CPUFREQ_ADJUST:
--		pr_debug("min dma period: %d ps, "
--			"new clock %d kHz\n", pxafb_display_dma_period(var),
--			policy->max);
--		/* TODO: fill in min/max values */
--		break;
+ 
++static struct property_entry da850_lcd_backlight_props[] = {
++	PROPERTY_ENTRY_BOOL("default-on"),
++	{ }
++};
++
++static struct gpiod_lookup_table da850_lcd_backlight_gpio_table = {
++	.dev_id		= "gpio-backlight",
++	.table = {
++		GPIO_LOOKUP("davinci_gpio", DA850_LCD_BL_PIN, NULL, 0),
++		{ }
++	},
++};
++
++static const struct platform_device_info da850_lcd_backlight_info = {
++	.name		= "gpio-backlight",
++	.id		= PLATFORM_DEVID_NONE,
++	.properties	= da850_lcd_backlight_props,
++};
++
+ static int da850_lcd_hw_init(void)
+ {
++	struct platform_device *backlight;
+ 	int status;
+ 
+-	status = gpio_request(DA850_LCD_BL_PIN, "lcd bl");
+-	if (status < 0)
+-		return status;
++	gpiod_add_lookup_table(&da850_lcd_backlight_gpio_table);
++	backlight = platform_device_register_full(&da850_lcd_backlight_info);
++	if (IS_ERR(backlight))
++		return PTR_ERR(backlight);
+ 
+ 	status = gpio_request(DA850_LCD_PWR_PIN, "lcd pwr");
+-	if (status < 0) {
+-		gpio_free(DA850_LCD_BL_PIN);
++	if (status < 0)
+ 		return status;
 -	}
--	return 0;
--}
- #endif
  
- #ifdef CONFIG_PM
-@@ -2400,11 +2382,8 @@ static int pxafb_probe(struct platform_device *dev)
+-	gpio_direction_output(DA850_LCD_BL_PIN, 0);
+ 	gpio_direction_output(DA850_LCD_PWR_PIN, 0);
  
- #ifdef CONFIG_CPU_FREQ
- 	fbi->freq_transition.notifier_call = pxafb_freq_transition;
--	fbi->freq_policy.notifier_call = pxafb_freq_policy;
- 	cpufreq_register_notifier(&fbi->freq_transition,
- 				CPUFREQ_TRANSITION_NOTIFIER);
--	cpufreq_register_notifier(&fbi->freq_policy,
--				CPUFREQ_POLICY_NOTIFIER);
- #endif
+-	/* Switch off panel power and backlight */
++	/* Switch off panel power */
+ 	da850_panel_power_ctrl(0);
  
- 	/*
-diff --git a/drivers/video/fbdev/pxafb.h b/drivers/video/fbdev/pxafb.h
-index b641289c8a99..86b1e9ab1a38 100644
---- a/drivers/video/fbdev/pxafb.h
-+++ b/drivers/video/fbdev/pxafb.h
-@@ -162,7 +162,6 @@ struct pxafb_info {
+-	/* Switch on panel power and backlight */
++	/* Switch on panel power */
+ 	da850_panel_power_ctrl(1);
  
- #ifdef CONFIG_CPU_FREQ
- 	struct notifier_block	freq_transition;
--	struct notifier_block	freq_policy;
- #endif
- 
- 	struct regulator *lcd_supply;
+ 	return 0;
 -- 
-2.21.0.rc0.269.g1a574e7a288b
+2.21.0

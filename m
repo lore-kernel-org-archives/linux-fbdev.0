@@ -1,63 +1,118 @@
-From: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-Date: Thu, 25 Jul 2019 07:23:32 +0000
-Subject: Re: [PATCH v2] Staging: fbtft: Fix GPIO handling
-Message-Id: <25a729cd1aa40fe5fc53760be48721d3f56b67e6.camel@suse.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="=-dJ2ncZl/Tq5SUWotdfEp"
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 15:02:57 +0000
+Subject: [PATCH v2 2/7] backlight: gpio: simplify the platform data handling
+Message-Id: <20190722150302.29526-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190715143003.12819-1-nsaenzjulienne@suse.de>
- <7b8242ab-cc0c-d90b-60af-ff1c53789e44@opensynergy.com>
- <5a77c18f-7338-888f-2379-12171b6a545e@jaseg.net>
- <75ada52f-afa1-08bc-d0ce-966fc1110e70@jaseg.net>
- <20190725072132.GA18714@kroah.com>
-In-Reply-To: <20190725072132.GA18714@kroah.com>
-To: Greg KH <gregkh@linuxfoundation.org>, Jan Sebastian =?ISO-8859-1?Q?G=F6tte?= <linux@jaseg.net>
-Cc: devel@driverdev.osuosl.org, leobras.c@gmail.com, linux-fbdev@vger.kernel.org, nishadkamdar@gmail.com, dri-devel@lists.freedesktop.org, bhanusreemahesh@gmail.com, Phil Reid <preid@electromag.com.au>
-
-
---=-dJ2ncZl/Tq5SUWotdfEp
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2019-07-25 at 09:21 +0200, Greg KH wrote:
-> On Wed, Jul 17, 2019 at 11:41:37PM +0900, Jan Sebastian G=C3=B6tte wrote:
-> > Commit c440eee1a7a1 ("Staging: fbtft: Switch to the gpio descriptor
-> > interface") breaks GPIO handling. In several places, checks to only set
-> > a GPIO if it was configured ended up backwards.
-> > I have tested this fix. The fixed driver works with a ili9486
-> > display connected to a raspberry pi via SPI.
-> >=20
-> > Fixes: commit c440eee1a7a1d ("Staging: fbtft: Switch to the gpio descri=
-ptor
-> > interface")
-> > Tested-by: Jan Sebastian G=C3=B6tte <linux@jaseg.net>
-> > Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-> > Signed-off-by: Jan Sebastian G=C3=B6tte <linux@jaseg.net>
-> > ---
->=20
-> Can this go on top of Phil's patches?  Or does it replace it?
-
-This is needed on top of Phil patches.
-
-Regards,
-Nicolas
-
-
---=-dJ2ncZl/Tq5SUWotdfEp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+References: <20190722150302.29526-1-brgl@bgdev.pl>
+In-Reply-To: <20190722150302.29526-1-brgl@bgdev.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
------BEGIN PGP SIGNATURE-----
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-iQEzBAABCAAdFiEErOkkGDHCg2EbPcGjlfZmHno8x/4FAl05WPUACgkQlfZmHno8
-x/5gTAf/fIsoLKSE7JnAbBPihq8kbe1iDC8qQWHchEqQDL+A1r6QA0n+ujgSQfRY
-Le/xoufXOHO29UeoJ4AUh05o8kaL7lDc8ip88dtd+4Kgl4p9LyQ1AbuKYi/ifGeW
-u/AEbQhgsRu9gQMeUo1qjZQqzgbnNqSeRoimKNwelFruH0uIKwcgECcjiR6FHtvq
-W7XoMzZ44YLGnS67QcbO0xtEqgWRetpXc2Li8xoWi1JT/vqYwT/My9udmNb1vvBE
-SvfyGCry9zYS/7NL638P0qfTLm7WznpqHn41UV3Ptq7RaD6Idcm+Ai6OyczdviaF
-wNVcIaFhx73LXuCdrESnpqF6CdhaHA==
-=OcqC
------END PGP SIGNATURE-----
+Now that the last user of platform data (sh ecovec24) defines a proper
+GPIO lookup and sets the 'default-on' device property, we can drop the
+platform_data-specific GPIO handling and unify a big chunk of code.
 
---=-dJ2ncZl/Tq5SUWotdfEp--
+The only field used from the platform data is now the fbdev pointer.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ drivers/video/backlight/gpio_backlight.c | 64 +++++-------------------
+ 1 file changed, 13 insertions(+), 51 deletions(-)
+
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index e84f3087e29f..01262186fa1e 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -55,30 +55,6 @@ static const struct backlight_ops gpio_backlight_ops = {
+ 	.check_fb	= gpio_backlight_check_fb,
+ };
+ 
+-static int gpio_backlight_probe_dt(struct platform_device *pdev,
+-				   struct gpio_backlight *gbl)
+-{
+-	struct device *dev = &pdev->dev;
+-	enum gpiod_flags flags;
+-	int ret;
+-
+-	gbl->def_value = device_property_read_bool(dev, "default-on");
+-	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+-
+-	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+-	if (IS_ERR(gbl->gpiod)) {
+-		ret = PTR_ERR(gbl->gpiod);
+-
+-		if (ret != -EPROBE_DEFER) {
+-			dev_err(dev,
+-				"Error: The gpios parameter is missing or invalid.\n");
+-		}
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+ static int gpio_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_backlight_platform_data *pdata @@ -86,6 +62,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
++	enum gpiod_flags flags;
+ 	int ret;
+ 
+ 	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
+@@ -94,35 +71,20 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 
+ 	gbl->dev = &pdev->dev;
+ 
+-	if (pdev->dev.fwnode) {
+-		ret = gpio_backlight_probe_dt(pdev, gbl);
+-		if (ret)
+-			return ret;
+-	} else if (pdata) {
+-		/*
+-		 * Legacy platform data GPIO retrieveal. Do not expand
+-		 * the use of this code path, currently only used by one
+-		 * SH board.
+-		 */
+-		unsigned long flags = GPIOF_DIR_OUT;
+-
++	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+-		gbl->def_value = pdata->def_value;
+-		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+-
+-		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+-					    pdata ? pdata->name : "backlight");
+-		if (ret < 0) {
+-			dev_err(&pdev->dev, "unable to request GPIO\n");
+-			return ret;
++
++	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
++	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
++
++	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, flags);
++	if (IS_ERR(gbl->gpiod)) {
++		ret = PTR_ERR(gbl->gpiod);
++		if (ret != -EPROBE_DEFER) {
++			dev_err(&pdev->dev,
++				"Error: The gpios parameter is missing or invalid.\n");
+ 		}
+-		gbl->gpiod = gpio_to_desc(pdata->gpio);
+-		if (!gbl->gpiod)
+-			return -EINVAL;
+-	} else {
+-		dev_err(&pdev->dev,
+-			"failed to find platform data or device tree node.\n");
+-		return -ENODEV;
++		return ret;
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
+-- 
+2.21.0

@@ -1,47 +1,36 @@
-From: Douglas Anderson <dianders@chromium.org>
-Date: Mon, 22 Jul 2019 18:24:37 +0000
-Subject: [PATCH 2/4] video: of: display_timing: Don't yell if no timing node is present
-Message-Id: <20190722182439.44844-3-dianders@chromium.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:16 +0000
+Subject: [PATCH v2 2/9] ARM: davinci_all_defconfig: enable GPIO backlight
+Message-Id: <20190722134423.26555-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722182439.44844-1-dianders@chromium.org>
-In-Reply-To: <20190722182439.44844-1-dianders@chromium.org>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-fbdev@vger.kernel.org, David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org, Russell King <linux@armlinux.org.uk>, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>, Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-There may be cases (like in panel-simple.c) where we have a sane
-fallback if no timings are specified in the device tree.  Let's get
-rid of the unconditional pr_err().  We can add error messages in
-individual drivers if it makes sense.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-NOTE: we'll still print errors if the node is present but there are
-problems parsing the timings.
+Enable the GPIO backlight module in davinci_all_defconfig.
 
-Fixes: b8a2948fa2b3 ("drm/panel: simple: Add ability to override typical timing")
-Reported-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: Douglas Anderson <dianders@chromium.org>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 ---
+ arch/arm/configs/davinci_all_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
- drivers/video/of_display_timing.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
-index 5eedae0799f0..abc9ada798ee 100644
---- a/drivers/video/of_display_timing.c
-+++ b/drivers/video/of_display_timing.c
-@@ -125,10 +125,8 @@ int of_get_display_timing(const struct device_node *np, const char *name,
- 		return -EINVAL;
- 
- 	timing_np = of_get_child_by_name(np, name);
--	if (!timing_np) {
--		pr_err("%pOF: could not find node '%s'\n", np, name);
-+	if (!timing_np)
- 		return -ENOENT;
--	}
- 
- 	ret = of_parse_display_timing(timing_np, dt);
- 
+diff --git a/arch/arm/configs/davinci_all_defconfig b/arch/arm/configs/davinci_all_defconfig
+index 7c2a39305f2b..56c23f8d9f26 100644
+--- a/arch/arm/configs/davinci_all_defconfig
++++ b/arch/arm/configs/davinci_all_defconfig
+@@ -158,6 +158,7 @@ CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_DA8XX=y
+ CONFIG_BACKLIGHT_PWM=m
++CONFIG_BACKLIGHT_GPIO=m
+ CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_LOGO=y
+ CONFIG_SOUND=m
 -- 
-2.22.0.657.g960e92d24f-goog
+2.21.0

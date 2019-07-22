@@ -1,7 +1,7 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 22 Jul 2019 15:17:23 +0000
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Mon, 22 Jul 2019 16:06:03 +0000
 Subject: Re: [PATCH v2 2/7] backlight: gpio: simplify the platform data handling
-Message-Id: <20190722151723.cfvlphcw2dtwsa7z@holly.lan>
+Message-Id: <20190722160603.GY9224@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190722150302.29526-1-brgl@bgdev.pl>
  <20190722150302.29526-3-brgl@bgdev.pl>
@@ -10,7 +10,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
 On Mon, Jul 22, 2019 at 05:02:57PM +0200, Bartosz Golaszewski wrote:
 > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
@@ -20,24 +20,7 @@ On Mon, Jul 22, 2019 at 05:02:57PM +0200, Bartosz Golaszewski wrote:
 > platform_data-specific GPIO handling and unify a big chunk of code.
 > 
 > The only field used from the platform data is now the fbdev pointer.
-> 
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
-
-> ---
->  drivers/video/backlight/gpio_backlight.c | 64 +++++-------------------
->  1 file changed, 13 insertions(+), 51 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-> index e84f3087e29f..01262186fa1e 100644
-> --- a/drivers/video/backlight/gpio_backlight.c
-> +++ b/drivers/video/backlight/gpio_backlight.c
-> @@ -55,30 +55,6 @@ static const struct backlight_ops gpio_backlight_ops = {
->  	.check_fb	= gpio_backlight_check_fb,
->  };
->  
 > -static int gpio_backlight_probe_dt(struct platform_device *pdev,
 > -				   struct gpio_backlight *gbl)
 > -{
@@ -61,65 +44,9 @@ Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 > -
 > -	return 0;
 > -}
-> -
->  static int gpio_backlight_probe(struct platform_device *pdev)
->  {
->  	struct gpio_backlight_platform_data *pdata > @@ -86,6 +62,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
->  	struct backlight_properties props;
->  	struct backlight_device *bl;
->  	struct gpio_backlight *gbl;
-> +	enum gpiod_flags flags;
->  	int ret;
->  
->  	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
-> @@ -94,35 +71,20 @@ static int gpio_backlight_probe(struct platform_device *pdev)
->  
->  	gbl->dev = &pdev->dev;
->  
-> -	if (pdev->dev.fwnode) {
-> -		ret = gpio_backlight_probe_dt(pdev, gbl);
-> -		if (ret)
-> -			return ret;
-> -	} else if (pdata) {
-> -		/*
-> -		 * Legacy platform data GPIO retrieveal. Do not expand
-> -		 * the use of this code path, currently only used by one
-> -		 * SH board.
-> -		 */
-> -		unsigned long flags = GPIOF_DIR_OUT;
-> -
-> +	if (pdata)
->  		gbl->fbdev = pdata->fbdev;
-> -		gbl->def_value = pdata->def_value;
-> -		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
-> -
-> -		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
-> -					    pdata ? pdata->name : "backlight");
-> -		if (ret < 0) {
-> -			dev_err(&pdev->dev, "unable to request GPIO\n");
-> -			return ret;
-> +
-> +	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
-> +	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
-> +
-> +	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, flags);
-> +	if (IS_ERR(gbl->gpiod)) {
-> +		ret = PTR_ERR(gbl->gpiod);
-> +		if (ret != -EPROBE_DEFER) {
-> +			dev_err(&pdev->dev,
-> +				"Error: The gpios parameter is missing or invalid.\n");
->  		}
-> -		gbl->gpiod = gpio_to_desc(pdata->gpio);
-> -		if (!gbl->gpiod)
-> -			return -EINVAL;
-> -	} else {
-> -		dev_err(&pdev->dev,
-> -			"failed to find platform data or device tree node.\n");
-> -		return -ENODEV;
-> +		return ret;
->  	}
->  
->  	memset(&props, 0, sizeof(props));
-> -- 
-> 2.21.0
-> 
+
+Why not leave this function (perhaps with different name)?
+
+-- 
+With Best Regards,
+Andy Shevchenko

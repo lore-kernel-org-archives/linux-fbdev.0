@@ -1,44 +1,38 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 02 Jul 2019 09:14:11 +0000
-Subject: Re: [PATCH RFT 0/4] backlight: gpio: simplify the driver
-Message-Id: <20190702091411.vk3q5zhqh6xh7uyd@holly.lan>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 15:02:59 +0000
+Subject: [PATCH v2 4/7] backlight: gpio: remove unused fields from platform data
+Message-Id: <20190722150302.29526-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190628100253.8385-1-brgl@bgdev.pl>
- <CACRpkdZqsgXoZcHv9z+7oVrf=i9WPSHG=93qhfA=0SkR0Mdfxg@mail.gmail.com>
-In-Reply-To: <CACRpkdZqsgXoZcHv9z+7oVrf=i9WPSHG=93qhfA=0SkR0Mdfxg@mail.gmail.com>
+References: <20190722150302.29526-1-brgl@bgdev.pl>
+In-Reply-To: <20190722150302.29526-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Bartosz Golaszewski <brgl@bgdev.pl>, linux-sh@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Lee Jones <lee.jones@linaro.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Fri, Jun 28, 2019 at 11:15:10AM +0100, Linus Walleij wrote:
-> On Fri, Jun 28, 2019 at 11:03 AM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
-> 
-> > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> >
-> > While working on my other series related to gpio-backlight[1] I noticed
-> > that we could simplify the driver if we made the only user of platform
-> > data use GPIO lookups and device properties. This series tries to do
-> > that.
-> >
-> > The first patch sets up all the required structures in the board file,
-> > the second modifies the backlight driver, the third and fourth remove
-> > the leftovers.
-> >
-> > This series depends on the three first patches from [1].
-> >
-> > I don't have access to this HW but hopefully this works. Only compile
-> > tested.
-> 
-> This series:
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-> 
-> Excellent work!
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Ditto!
+Remove the platform data fields that nobody uses.
 
-Hope to see this come around again alongside the other GPIO clean ups.
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+---
+ include/linux/platform_data/gpio_backlight.h | 3 ---
+ 1 file changed, 3 deletions(-)
 
-
-Daniel.
+diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
+index 34179d600360..1a8b5b1946fe 100644
+--- a/include/linux/platform_data/gpio_backlight.h
++++ b/include/linux/platform_data/gpio_backlight.h
+@@ -9,9 +9,6 @@ struct device;
+ 
+ struct gpio_backlight_platform_data {
+ 	struct device *fbdev;
+-	int gpio;
+-	int def_value;
+-	const char *name;
+ };
+ 
+ #endif
+-- 
+2.21.0

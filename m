@@ -1,77 +1,161 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 30 Jul 2019 19:55:32 +0000
-Subject: [PATCH v5 16/29] compat_ioctl: move ATYFB_CLK handling to atyfb driver
-Message-Id: <20190730195819.901457-4-arnd@arndb.de>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 22 Jul 2019 13:44:18 +0000
+Subject: [PATCH v2 4/9] fbdev: da8xx: add support for a regulator
+Message-Id: <20190722134423.26555-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190730192552.4014288-1-arnd@arndb.de>
- <20190730195819.901457-1-arnd@arndb.de>
-In-Reply-To: <20190730195819.901457-1-arnd@arndb.de>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Mikulas Patocka <mpatocka@redhat.com>, linux-fsdevel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-These are two obscure ioctl commands, in a driver that only
-has compatible commands, so just let the driver handle this
-itself.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
+We want to remove the hacky platform data callback for power control.
+Add a regulator to the driver data and enable/disable it next to
+the current panel_power_ctrl() calls. We will use it in subsequent
+patch on da850-evm.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/fbdev/aty/atyfb_base.c | 12 +++++++++++-
- fs/compat_ioctl.c                    |  2 --
- 2 files changed, 11 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/da8xx-fb.c | 54 ++++++++++++++++++++++++++++++----
+ 1 file changed, 49 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/aty/atyfb_base.c b/drivers/video/fbdev/aty/atyfb_base.c
-index 72bcfbe42e49..63bc76a1b2f9 100644
---- a/drivers/video/fbdev/aty/atyfb_base.c
-+++ b/drivers/video/fbdev/aty/atyfb_base.c
-@@ -48,7 +48,7 @@
- 
- ******************************************************************************/
- 
--
-+#include <linux/compat.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/kernel.h>
-@@ -235,6 +235,13 @@ static int atyfb_pan_display(struct fb_var_screeninfo *var,
- 			     struct fb_info *info);
- static int atyfb_blank(int blank, struct fb_info *info);
- static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
-+#ifdef CONFIG_COMPAT
-+static int atyfb_compat_ioctl(struct fb_info *info, u_int cmd, u_long arg)
-+{
-+	return atyfb_ioctl(info, cmd, (u_long)compat_ptr(arg));
-+}
-+#endif
-+
- #ifdef __sparc__
- static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index b1cf248f3291..02dfe9e32eed 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -19,6 +19,7 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/console.h>
++#include <linux/regulator/consumer.h>
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+@@ -165,6 +166,7 @@ struct da8xx_fb_par {
  #endif
-@@ -290,6 +297,9 @@ static struct fb_ops atyfb_ops = {
- 	.fb_pan_display	= atyfb_pan_display,
- 	.fb_blank	= atyfb_blank,
- 	.fb_ioctl	= atyfb_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.fb_compat_ioctl = atyfb_compat_ioctl,
-+#endif
- 	.fb_fillrect	= atyfb_fillrect,
- 	.fb_copyarea	= atyfb_copyarea,
- 	.fb_imageblit	= atyfb_imageblit,
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index b65eef3d4787..a4e8fb7da968 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -696,8 +696,6 @@ COMPATIBLE_IOCTL(CAPI_CLR_FLAGS)
- COMPATIBLE_IOCTL(CAPI_NCCI_OPENCOUNT)
- COMPATIBLE_IOCTL(CAPI_NCCI_GETUNIT)
- /* Misc. */
--COMPATIBLE_IOCTL(0x41545900)		/* ATYIO_CLKR */
--COMPATIBLE_IOCTL(0x41545901)		/* ATYIO_CLKW */
- COMPATIBLE_IOCTL(PCIIOC_CONTROLLER)
- COMPATIBLE_IOCTL(PCIIOC_MMAP_IS_IO)
- COMPATIBLE_IOCTL(PCIIOC_MMAP_IS_MEM)
+ 	unsigned int		lcdc_clk_rate;
+ 	void (*panel_power_ctrl)(int);
++	struct regulator	*lcd_supply;
+ 	u32 pseudo_palette[16];
+ 	struct fb_videomode	mode;
+ 	struct lcd_ctrl_config	cfg;
+@@ -1066,6 +1068,7 @@ static void lcd_da8xx_cpufreq_deregister(struct da8xx_fb_par *par)
+ static int fb_remove(struct platform_device *dev)
+ {
+ 	struct fb_info *info = dev_get_drvdata(&dev->dev);
++	int ret;
+ 
+ 	if (info) {
+ 		struct da8xx_fb_par *par = info->par;
+@@ -1073,8 +1076,13 @@ static int fb_remove(struct platform_device *dev)
+ #ifdef CONFIG_CPU_FREQ
+ 		lcd_da8xx_cpufreq_deregister(par);
+ #endif
+-		if (par->panel_power_ctrl)
++		if (par->panel_power_ctrl) {
+ 			par->panel_power_ctrl(0);
++		} else if (par->lcd_supply) {
++			ret = regulator_disable(par->lcd_supply);
++			if (ret)
++				return ret;
++		}
+ 
+ 		lcd_disable_raster(DA8XX_FRAME_WAIT);
+ 		lcdc_write(0, LCD_RASTER_CTRL_REG);
+@@ -1179,15 +1187,25 @@ static int cfb_blank(int blank, struct fb_info *info)
+ 	case FB_BLANK_UNBLANK:
+ 		lcd_enable_raster();
+ 
+-		if (par->panel_power_ctrl)
++		if (par->panel_power_ctrl) {
+ 			par->panel_power_ctrl(1);
++		} else if (par->lcd_supply) {
++			ret = regulator_enable(par->lcd_supply);
++			if (ret)
++				return ret;
++		}
+ 		break;
+ 	case FB_BLANK_NORMAL:
+ 	case FB_BLANK_VSYNC_SUSPEND:
+ 	case FB_BLANK_HSYNC_SUSPEND:
+ 	case FB_BLANK_POWERDOWN:
+-		if (par->panel_power_ctrl)
++		if (par->panel_power_ctrl) {
+ 			par->panel_power_ctrl(0);
++		} else if (par->lcd_supply) {
++			ret = regulator_disable(par->lcd_supply);
++			if (ret)
++				return ret;
++		}
+ 
+ 		lcd_disable_raster(DA8XX_FRAME_WAIT);
+ 		break;
+@@ -1400,6 +1418,20 @@ static int fb_probe(struct platform_device *device)
+ 		par->panel_power_ctrl(1);
+ 	}
+ 
++	par->lcd_supply = devm_regulator_get_optional(&device->dev, "lcd");
++	if (IS_ERR(par->lcd_supply)) {
++		if (PTR_ERR(par->lcd_supply) = -EPROBE_DEFER) {
++			ret = -EPROBE_DEFER;
++			goto err_pm_runtime_disable;
++		}
++
++		par->lcd_supply = NULL;
++	} else {
++		ret = regulator_enable(par->lcd_supply);
++		if (ret)
++			goto err_pm_runtime_disable;
++	}
++
+ 	fb_videomode_to_var(&da8xx_fb_var, lcdc_info);
+ 	par->cfg = *lcd_cfg;
+ 
+@@ -1603,10 +1635,16 @@ static int fb_suspend(struct device *dev)
+ {
+ 	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct da8xx_fb_par *par = info->par;
++	int ret;
+ 
+ 	console_lock();
+-	if (par->panel_power_ctrl)
++	if (par->panel_power_ctrl) {
+ 		par->panel_power_ctrl(0);
++	} else if (par->lcd_supply) {
++		ret = regulator_disable(par->lcd_supply);
++		if (ret)
++			return ret;
++	}
+ 
+ 	fb_set_suspend(info, 1);
+ 	lcd_disable_raster(DA8XX_FRAME_WAIT);
+@@ -1620,6 +1658,7 @@ static int fb_resume(struct device *dev)
+ {
+ 	struct fb_info *info = dev_get_drvdata(dev);
+ 	struct da8xx_fb_par *par = info->par;
++	int ret;
+ 
+ 	console_lock();
+ 	pm_runtime_get_sync(dev);
+@@ -1627,8 +1666,13 @@ static int fb_resume(struct device *dev)
+ 	if (par->blank = FB_BLANK_UNBLANK) {
+ 		lcd_enable_raster();
+ 
+-		if (par->panel_power_ctrl)
++		if (par->panel_power_ctrl) {
+ 			par->panel_power_ctrl(1);
++		} else if (par->lcd_supply) {
++			ret = regulator_enable(par->lcd_supply);
++			if (ret)
++				return ret;
++		}
+ 	}
+ 
+ 	fb_set_suspend(info, 0);
 -- 
-2.20.0
+2.21.0

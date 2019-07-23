@@ -1,28 +1,32 @@
-From: Christoph Hellwig <hch@lst.de>
-Date: Wed, 03 Jul 2019 12:13:47 +0000
-Subject: Re: [PATCH 5/7 v2] MIPS: use the generic uncached segment support in dma-direct
-Message-Id: <20190703121347.GB7671@lst.de>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Tue, 23 Jul 2019 15:35:04 +0000
+Subject: Re: [PATCH] fbmem: remove redundant assignment to err
+Message-Id: <72586381-9cf1-a401-b9bd-5705ebbaf937@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190430110032.25301-1-hch@lst.de>
-	<20190430110032.25301-6-hch@lst.de>
-	<20190430201041.536amvinrcvd2wua@pburton-laptop>
-	<20190430202947.GA30262@lst.de>
-	<20190430211105.ielntedm46uqamca@pburton-laptop>
-	<20190501131339.GA890@lst.de>
-	<20190501171355.7wnrutfnax5djkpx@pburton-laptop>
-	<20190603064855.GA22023@lst.de>
-	<CAK8P3a0+mmc_DsHZZeM85xGUUB8zc50ROUu3=i3UN1XwD8UGeQ@mail.gmail.com>
-In-Reply-To: <CAK8P3a0+mmc_DsHZZeM85xGUUB8zc50ROUu3=i3UN1XwD8UGeQ@mail.gmail.com>
+References: <CGME20190624223730epcas2p4d2b1ad1200c11a472ba327ee39ede08b@epcas2p4.samsung.com>
+ <20190624223724.13629-1-colin.king@canonical.com>
+In-Reply-To: <20190624223724.13629-1-colin.king@canonical.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Michal Simek <monstr@monstr.eu>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, James Hogan <jhogan@kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Paul Burton <paul.burton@mips.com>, "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Ley Foon Tan <lftan@altera.com>, Christoph Hellwig <hch@lst.de>
+To: Colin King <colin.king@canonical.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-On Wed, Jul 03, 2019 at 10:54:05AM +0200, Arnd Bergmann wrote:
-> I think this is the cause of some kernelci failures in current
-> linux-next builds:
 
-Yes, Guenther reported this already and I sent a fix.  I've been waiting
-for an ACK from the mips maintaines, but given the breakage I
-might as well just pull it in without an ACK.
+On 6/25/19 12:37 AM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+> 
+> Variable err is initialized to a value that is never read and it
+> is re-assigned later.  The initialization is redundant and can
+> be removed.
+> 
+> Addresses-Coverity: ("Unused value")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+
+Patch queued for v5.4, thanks.
+
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

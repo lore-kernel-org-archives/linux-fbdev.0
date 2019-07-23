@@ -1,99 +1,71 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 31 Jul 2019 12:43:49 +0000
-Subject: [PATCH v2 10/10] video: fbdev: sm501fb: convert platform driver to use dev_groups
-Message-Id: <20190731124349.4474-11-gregkh@linuxfoundation.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 23 Jul 2019 06:26:00 +0000
+Subject: [PATCH V2 00/10] cpufreq: Migrate users of policy notifiers to QoS requests
+Message-Id: <cover.1563862014.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
-In-Reply-To: <20190731124349.4474-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Rafael Wysocki <rjw@rjwysocki.net>, Amit Daniel Kachhap <amit.kachhap@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Daniel Lezcano <daniel.lezcano@linaro.org>, Eduardo Valentin <edubezval@gmail.com>, Erik Schmauss <erik.schmauss@intel.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Javi Merino <javi.merino@kernel.org>, Jonathan Corbet <corbet@lwn.net>, Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rafael@kernel.org>, Robert Moore <robert.moore@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, Zhang Rui <rui.zhang@intel.com>
+Cc: linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, devel@acpica.org, dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org, linux-doc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 
-Platform drivers now have the option to have the platform core create
-and remove any needed sysfs attribute files.  So take advantage of that
-and do not register "by hand" a bunch of sysfs files.
+Hello,
 
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
----
- drivers/video/fbdev/sm501fb.c | 37 +++++++++--------------------------
- 1 file changed, 9 insertions(+), 28 deletions(-)
+Now that cpufreq core supports taking QoS requests for min/max cpu
+frequencies, lets migrate rest of the users to using them instead of the
+policy notifiers.
 
-diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
-index 6edb4492e675..3dd1b1d76e98 100644
---- a/drivers/video/fbdev/sm501fb.c
-+++ b/drivers/video/fbdev/sm501fb.c
-@@ -1271,6 +1271,14 @@ static ssize_t sm501fb_debug_show_pnl(struct device *dev,
- 
- static DEVICE_ATTR(fbregs_pnl, 0444, sm501fb_debug_show_pnl, NULL);
- 
-+static struct attribute *sm501fb_attrs[] = {
-+	&dev_attr_crt_src.attr,
-+	&dev_attr_fbregs_pnl.attr,
-+	&dev_attr_fbregs_crt.attr,
-+	NULL,
-+};
-+ATTRIBUTE_GROUPS(sm501fb);
-+
- /* acceleration operations */
- static int sm501fb_sync(struct fb_info *info)
- {
-@@ -2011,33 +2019,9 @@ static int sm501fb_probe(struct platform_device *pdev)
- 		goto err_started_crt;
- 	}
- 
--	/* create device files */
--
--	ret = device_create_file(dev, &dev_attr_crt_src);
--	if (ret)
--		goto err_started_panel;
--
--	ret = device_create_file(dev, &dev_attr_fbregs_pnl);
--	if (ret)
--		goto err_attached_crtsrc_file;
--
--	ret = device_create_file(dev, &dev_attr_fbregs_crt);
--	if (ret)
--		goto err_attached_pnlregs_file;
--
- 	/* we registered, return ok */
- 	return 0;
- 
--err_attached_pnlregs_file:
--	device_remove_file(dev, &dev_attr_fbregs_pnl);
--
--err_attached_crtsrc_file:
--	device_remove_file(dev, &dev_attr_crt_src);
--
--err_started_panel:
--	unregister_framebuffer(info->fb[HEAD_PANEL]);
--	sm501_free_init_fb(info, HEAD_PANEL);
--
- err_started_crt:
- 	unregister_framebuffer(info->fb[HEAD_CRT]);
- 	sm501_free_init_fb(info, HEAD_CRT);
-@@ -2067,10 +2051,6 @@ static int sm501fb_remove(struct platform_device *pdev)
- 	struct fb_info	   *fbinfo_crt = info->fb[0];
- 	struct fb_info	   *fbinfo_pnl = info->fb[1];
- 
--	device_remove_file(&pdev->dev, &dev_attr_fbregs_crt);
--	device_remove_file(&pdev->dev, &dev_attr_fbregs_pnl);
--	device_remove_file(&pdev->dev, &dev_attr_crt_src);
--
- 	sm501_free_init_fb(info, HEAD_CRT);
- 	sm501_free_init_fb(info, HEAD_PANEL);
- 
-@@ -2234,6 +2214,7 @@ static struct platform_driver sm501fb_driver = {
- 	.resume		= sm501fb_resume,
- 	.driver		= {
- 		.name	= "sm501-fb",
-+		.dev_groups	= sm501fb_groups,
- 	},
- };
- 
+The CPUFREQ_NOTIFY and CPUFREQ_ADJUST events of the policy notifiers are
+removed as a result, but we have to add CPUFREQ_CREATE_POLICY and
+CPUFREQ_REMOVE_POLICY events to it for the acpi stuff specifically,
+though they are also used by arch_topology stuff now. So the policy
+notifiers aren't completely removed.
+
+Boot tested on my x86 PC and ARM hikey board.
+
+This has already gone through build bot for a few days now.
+
+V1->V2:
+- Added Acked-by tags
+- Reordered to keep cleanups at the bottom
+- Rebased over 5.3-rc1
+
+--
+viresh
+
+Viresh Kumar (10):
+  cpufreq: Add policy create/remove notifiers
+  thermal: cpu_cooling: Switch to QoS requests instead of cpufreq
+    notifier
+  powerpc: macintosh: Switch to QoS requests instead of cpufreq notifier
+  cpufreq: powerpc_cbe: Switch to QoS requests instead of cpufreq
+    notifier
+  ACPI: cpufreq: Switch to QoS requests instead of cpufreq notifier
+  arch_topology: Use CPUFREQ_CREATE_POLICY instead of CPUFREQ_NOTIFY
+  video: sa1100fb: Remove cpufreq policy notifier
+  video: pxafb: Remove cpufreq policy notifier
+  cpufreq: Remove CPUFREQ_ADJUST and CPUFREQ_NOTIFY policy notifier
+    events
+  Documentation: cpufreq: Update policy notifier documentation
+
+ Documentation/cpu-freq/core.txt            |  16 +--
+ drivers/acpi/processor_driver.c            |  44 ++++++++-
+ drivers/acpi/processor_perflib.c           | 106 +++++++++-----------
+ drivers/acpi/processor_thermal.c           |  81 ++++++++-------
+ drivers/base/arch_topology.c               |   2 +-
+ drivers/cpufreq/cpufreq.c                  |  51 ++++------
+ drivers/cpufreq/ppc_cbe_cpufreq.c          |  19 +++-
+ drivers/cpufreq/ppc_cbe_cpufreq.h          |   8 ++
+ drivers/cpufreq/ppc_cbe_cpufreq_pmi.c      |  96 +++++++++++-------
+ drivers/macintosh/windfarm_cpufreq_clamp.c |  77 ++++++++++-----
+ drivers/thermal/cpu_cooling.c              | 110 +++++----------------
+ drivers/video/fbdev/pxafb.c                |  21 ----
+ drivers/video/fbdev/pxafb.h                |   1 -
+ drivers/video/fbdev/sa1100fb.c             |  27 -----
+ drivers/video/fbdev/sa1100fb.h             |   1 -
+ include/acpi/processor.h                   |  22 +++--
+ include/linux/cpufreq.h                    |   4 +-
+ 17 files changed, 327 insertions(+), 359 deletions(-)
+
 -- 
-2.22.0
+2.21.0.rc0.269.g1a574e7a288b

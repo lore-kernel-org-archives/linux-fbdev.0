@@ -1,61 +1,85 @@
-From: Anders Roxell <anders.roxell@linaro.org>
-Date: Tue, 30 Jul 2019 15:25:30 +0000
-Subject: [PATCH v2] video: fbdev: Mark expected switch fall-through
-Message-Id: <20190730152530.3055-1-anders.roxell@linaro.org>
+From: Viresh Kumar <viresh.kumar@linaro.org>
+Date: Tue, 23 Jul 2019 06:26:08 +0000
+Subject: [PATCH V2 08/10] video: pxafb: Remove cpufreq policy notifier
+Message-Id: <56ea0fb68b99d343b093bc517024356a18f780e7.1563862014.git.viresh.kumar@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <cover.1563862014.git.viresh.kumar@linaro.org>
+In-Reply-To: <cover.1563862014.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: b.zolnierkie@samsung.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, gustavo@embeddedor.com, Anders Roxell <anders.roxell@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rafael Wysocki <rjw@rjwysocki.net>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org, Vincent Guittot <vincent.guittot@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Now that -Wimplicit-fallthrough is passed to GCC by default, the
-following warnings shows up:
+The cpufreq policy notifier's CPUFREQ_ADJUST notification is going to
+get removed soon.
 
-../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_channel_fb_init’:
-../drivers/video/fbdev/sh_mobile_lcdcfb.c:2086:22: warning: this statement may fall
- through [-Wimplicit-fallthrough=]
-   info->fix.ypanstep = 2;
-   ~~~~~~~~~~~~~~~~~~~^~~
-../drivers/video/fbdev/sh_mobile_lcdcfb.c:2087:2: note: here
-  case V4L2_PIX_FMT_NV16:
-  ^~~~
-../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_overlay_fb_init’:
-../drivers/video/fbdev/sh_mobile_lcdcfb.c:1596:22: warning: this statement may fall
- through [-Wimplicit-fallthrough=]
-   info->fix.ypanstep = 2;
-   ~~~~~~~~~~~~~~~~~~~^~~
-../drivers/video/fbdev/sh_mobile_lcdcfb.c:1597:2: note: here
-  case V4L2_PIX_FMT_NV16:
-  ^~~~
+The notifier callback pxafb_freq_policy() isn't doing anything apart
+from printing a debug message on CPUFREQ_ADJUST notification. There is
+no point in keeping an otherwise empty callback and registering the
+notifier.
 
-Rework to address a warnings due to the enablement of
--Wimplicit-fallthrough.
+Remove it.
 
-Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ drivers/video/fbdev/pxafb.c | 21 ---------------------
+ drivers/video/fbdev/pxafb.h |  1 -
+ 2 files changed, 22 deletions(-)
 
-diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-index ac0bcac9a865..c249763dbf0b 100644
---- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
-+++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
-@@ -1594,6 +1594,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_overlay *ovl)
- 	case V4L2_PIX_FMT_NV12:
- 	case V4L2_PIX_FMT_NV21:
- 		info->fix.ypanstep = 2;
-+		/* Fall through */
- 	case V4L2_PIX_FMT_NV16:
- 	case V4L2_PIX_FMT_NV61:
- 		info->fix.xpanstep = 2;
-@@ -2084,6 +2085,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
- 	case V4L2_PIX_FMT_NV12:
- 	case V4L2_PIX_FMT_NV21:
- 		info->fix.ypanstep = 2;
-+		/* Fall through */
- 	case V4L2_PIX_FMT_NV16:
- 	case V4L2_PIX_FMT_NV61:
- 		info->fix.xpanstep = 2;
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index 4282cb117b92..f70c9f79622e 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -1678,24 +1678,6 @@ pxafb_freq_transition(struct notifier_block *nb, unsigned long val, void *data)
+ 	}
+ 	return 0;
+ }
+-
+-static int
+-pxafb_freq_policy(struct notifier_block *nb, unsigned long val, void *data)
+-{
+-	struct pxafb_info *fbi = TO_INF(nb, freq_policy);
+-	struct fb_var_screeninfo *var = &fbi->fb.var;
+-	struct cpufreq_policy *policy = data;
+-
+-	switch (val) {
+-	case CPUFREQ_ADJUST:
+-		pr_debug("min dma period: %d ps, "
+-			"new clock %d kHz\n", pxafb_display_dma_period(var),
+-			policy->max);
+-		/* TODO: fill in min/max values */
+-		break;
+-	}
+-	return 0;
+-}
+ #endif
+ 
+ #ifdef CONFIG_PM
+@@ -2400,11 +2382,8 @@ static int pxafb_probe(struct platform_device *dev)
+ 
+ #ifdef CONFIG_CPU_FREQ
+ 	fbi->freq_transition.notifier_call = pxafb_freq_transition;
+-	fbi->freq_policy.notifier_call = pxafb_freq_policy;
+ 	cpufreq_register_notifier(&fbi->freq_transition,
+ 				CPUFREQ_TRANSITION_NOTIFIER);
+-	cpufreq_register_notifier(&fbi->freq_policy,
+-				CPUFREQ_POLICY_NOTIFIER);
+ #endif
+ 
+ 	/*
+diff --git a/drivers/video/fbdev/pxafb.h b/drivers/video/fbdev/pxafb.h
+index b641289c8a99..86b1e9ab1a38 100644
+--- a/drivers/video/fbdev/pxafb.h
++++ b/drivers/video/fbdev/pxafb.h
+@@ -162,7 +162,6 @@ struct pxafb_info {
+ 
+ #ifdef CONFIG_CPU_FREQ
+ 	struct notifier_block	freq_transition;
+-	struct notifier_block	freq_policy;
+ #endif
+ 
+ 	struct regulator *lcd_supply;
 -- 
-2.20.1
+2.21.0.rc0.269.g1a574e7a288b

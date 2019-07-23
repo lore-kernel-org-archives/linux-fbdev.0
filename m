@@ -1,7 +1,7 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 23 Jul 2019 13:40:22 +0000
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Tue, 23 Jul 2019 15:34:26 +0000
 Subject: Re: [PATCH v2 7/7] backlight: gpio: use a helper variable for &pdev->dev
-Message-Id: <20190723134022.s74giqi3aq7v3djz@holly.lan>
+Message-Id: <20190723153426.GL9224@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190722150302.29526-1-brgl@bgdev.pl>
  <20190722150302.29526-8-brgl@bgdev.pl>
@@ -12,7 +12,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="windows-1252"
 Content-Transfer-Encoding: quoted-printable
 To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
 On Tue, Jul 23, 2019 at 08:29:52AM +0200, Bartosz Golaszewski wrote:
 > pon., 22 lip 2019 o 18:09 Andy Shevchenko
@@ -46,13 +46,9 @@ dev_get_platdata(&pdev->dev);
 >=20
 > IMO it's more readable like that with the reverse christmas tree layout.
 
-There is no requirement for reverse christmas tree layout for this area
-of the kernel (and especially not where RCTL is used as a justification
-to avoid initializers).
+It makes more churn in the original code and for initializers the order is
+defined by its nature.
 
-I have a weak personal preference for initializers although it is
-sufficiently weak I was happy to put a reviewed by on the original
-patch without comment.
-
-
-Daniel.
+--=20
+With Best Regards,
+Andy Shevchenko

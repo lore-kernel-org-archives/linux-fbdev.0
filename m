@@ -1,60 +1,48 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Sun, 21 Jul 2019 07:39:40 +0000
-Subject: [PATCH] backlight: add include guards to platform_lcd.h and ili9320.h
-Message-Id: <20190721073940.11422-1-yamada.masahiro@socionext.com>
+From: Chuhong Yuan <hslester96@gmail.com>
+Date: Wed, 24 Jul 2019 13:17:44 +0000
+Subject: [PATCH] fbdev: sm712fb: Use dev_get_drvdata
+Message-Id: <20190724131744.1709-1-hslester96@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
 
-Add header include guards just in case.
+Instead of using to_pci_dev + pci_get_drvdata,
+use dev_get_drvdata to make code simpler.
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
 ---
+ drivers/video/fbdev/sm712fb.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
- include/video/ili9320.h      | 4 ++++
- include/video/platform_lcd.h | 4 ++++
- 2 files changed, 8 insertions(+)
-
-diff --git a/include/video/ili9320.h b/include/video/ili9320.h
-index 62f424f0bc52..b76a0b8f16fc 100644
---- a/include/video/ili9320.h
-+++ b/include/video/ili9320.h
-@@ -9,6 +9,9 @@
-  * http://armlinux.simtec.co.uk/
- */
+diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
+index 7b1b0d8d27a7..207d0add684b 100644
+--- a/drivers/video/fbdev/sm712fb.c
++++ b/drivers/video/fbdev/sm712fb.c
+@@ -1694,10 +1694,8 @@ static void smtcfb_pci_remove(struct pci_dev *pdev)
  
-+#ifndef _VIDEO_ILI9320_H
-+#define _VIDEO_ILI9320_H
-+
- #define ILI9320_REG(x)	(x)
+ static int __maybe_unused smtcfb_pci_suspend(struct device *device)
+ {
+-	struct pci_dev *pdev = to_pci_dev(device);
+-	struct smtcfb_info *sfb;
++	struct smtcfb_info *sfb = dev_get_drvdata(device);
  
- #define ILI9320_INDEX			ILI9320_REG(0x00)
-@@ -196,3 +199,4 @@ struct ili9320_platdata {
- 	unsigned short	interface6;
- };
+-	sfb = pci_get_drvdata(pdev);
  
-+#endif /* _VIDEO_ILI9320_H */
-diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
-index 6a95184a28c1..c68f3f45b5c1 100644
---- a/include/video/platform_lcd.h
-+++ b/include/video/platform_lcd.h
-@@ -7,6 +7,9 @@
-  * Generic platform-device LCD power control interface.
- */
+ 	/* set the hw in sleep mode use external clock and self memory refresh
+ 	 * so that we can turn off internal PLLs later on
+@@ -1717,10 +1715,8 @@ static int __maybe_unused smtcfb_pci_suspend(struct device *device)
  
-+#ifndef _VIDEO_PLATFORM_LCD_H
-+#define _VIDEO_PLATFORM_LCD_H
-+
- struct plat_lcd_data;
- struct fb_info;
+ static int __maybe_unused smtcfb_pci_resume(struct device *device)
+ {
+-	struct pci_dev *pdev = to_pci_dev(device);
+-	struct smtcfb_info *sfb;
++	struct smtcfb_info *sfb = dev_get_drvdata(device);
  
-@@ -16,3 +19,4 @@ struct plat_lcd_data {
- 	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
- };
+-	sfb = pci_get_drvdata(pdev);
  
-+#endif /* _VIDEO_PLATFORM_LCD_H */
+ 	/* reinit hardware */
+ 	sm7xx_init_hw();
 -- 
-2.17.1
+2.20.1

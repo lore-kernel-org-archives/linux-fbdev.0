@@ -1,7 +1,7 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 24 Jul 2019 11:12:22 +0000
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 24 Jul 2019 11:44:10 +0000
 Subject: Re: [PATCH v3 2/7] backlight: gpio: simplify the platform data handling
-Message-Id: <20190724111222.6wcq72btthz4l3r7@holly.lan>
+Message-Id: <20190724114410.GX9224@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190724082508.27617-1-brgl@bgdev.pl>
  <20190724082508.27617-3-brgl@bgdev.pl>
@@ -10,7 +10,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-fbdev@vger.kernel.org, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
 On Wed, Jul 24, 2019 at 10:25:03AM +0200, Bartosz Golaszewski wrote:
 > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
@@ -20,11 +20,11 @@ On Wed, Jul 24, 2019 at 10:25:03AM +0200, Bartosz Golaszewski wrote:
 > platform_data-specific GPIO handling and unify a big chunk of code.
 > 
 > The only field used from the platform data is now the fbdev pointer.
+
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+
 > 
 > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-
 > ---
 >  drivers/video/backlight/gpio_backlight.c | 64 +++++-------------------
 >  1 file changed, 13 insertions(+), 51 deletions(-)
@@ -122,3 +122,7 @@ Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 > -- 
 > 2.21.0
 > 
+
+-- 
+With Best Regards,
+Andy Shevchenko

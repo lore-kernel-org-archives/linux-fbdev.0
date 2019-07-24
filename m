@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 22 Jul 2019 15:02:56 +0000
-Subject: [PATCH v2 1/7] sh: ecovec24: add additional properties to the backlight device
-Message-Id: <20190722150302.29526-2-brgl@bgdev.pl>
+Date: Wed, 24 Jul 2019 08:25:02 +0000
+Subject: [PATCH v3 1/7] sh: ecovec24: add additional properties to the backlight device
+Message-Id: <20190724082508.27617-2-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722150302.29526-1-brgl@bgdev.pl>
-In-Reply-To: <20190722150302.29526-1-brgl@bgdev.pl>
+References: <20190724082508.27617-1-brgl@bgdev.pl>
+In-Reply-To: <20190724082508.27617-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -20,6 +20,7 @@ are inactive now but will be used once the gpio backlight driver is
 modified.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
  arch/sh/boards/mach-ecovec24/setup.c | 30 +++++++++++++++++++++++-----
  1 file changed, 25 insertions(+), 5 deletions(-)

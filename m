@@ -1,108 +1,44 @@
-From: Peter Ujfalusi <peter.ujfalusi@ti.com>
-Date: Wed, 31 Jul 2019 08:40:18 +0000
-Subject: [PATCH v3] backlight: gpio-backlight: Correct initial power state handling
-Message-Id: <20190731084018.5318-1-peter.ujfalusi@ti.com>
+From: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Date: Thu, 25 Jul 2019 18:38:56 +0000
+Subject: [PATCH] Staging: fbtft: Fix some typo. pdc8544 --> pcd8544
+Message-Id: <20190725183856.17616-1-christophe.jaillet@wanadoo.fr>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, jingoohan1@gmail.com, daniel.thompson@linaro.org
-Cc: paul.kocialkowski@bootlin.com, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: gregkh@linuxfoundation.org, nishadkamdar@gmail.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-The default-on property - or the def_value via legacy pdata) should be
-handled as:
-if it is 1, the backlight must be enabled (kept enabled)
-if it is 0, the backlight must be disabled (kept disabled)
+The driver is related to 'pcd8544'.
+However, 2 strings are about pdc8544 (c and d switched)
+Fix it.
 
-This only works for the case when default-on is set. If it is not set then
-the brightness of the backlight is set to 0. Now if the backlight is
-enabled by external driver (graphics) the backlight will stay disabled since
-the brightness is configured as 0. The backlight will not turn on.
-
-In order to minimize screen flickering during device boot:
-
-The initial brightness should be set to 1.
-
-If booted in non DT mode or no phandle link to the backlight node:
-follow the def_value/default-on to select UNBLANK or POWERDOWN
-
-If in DT boot we have phandle link then leave the GPIO in a state which the
-bootloader left it and let the user of the backlight to configure it
-further.
-
-Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 ---
-Hi,
+This patch is only theorical. It is based on the fact that a part of the
+filename (i.e. pcd8544) looks misspelled in the file itself.
+I don't know the implication of FBTFT_REGISTER_DRIVER and MODULE_ALIAS and
+if additional adjustments are needed.
+---
+ drivers/staging/fbtft/fb_pcd8544.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-sorry for the delay, but got distracted a bit with the resend of this...
-Let's try again ;)
-
-Changes since v2 (https://lore.kernel.org/patchwork/patch/1002359/):
-- Rebased on drm-next
-
-Changes since v1:
-- Implement similiar initial power state handling as pwm backlight have
-
-Regards,
-Peter
-
- drivers/video/backlight/gpio_backlight.c | 24 ++++++++++++++++++++----
- 1 file changed, 20 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index e84f3087e29f..18e053e4716c 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -59,13 +59,11 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
- 				   struct gpio_backlight *gbl)
- {
- 	struct device *dev = &pdev->dev;
--	enum gpiod_flags flags;
- 	int ret;
+diff --git a/drivers/staging/fbtft/fb_pcd8544.c b/drivers/staging/fbtft/fb_pcd8544.c
+index ad49973ad594..08f8a4bb8772 100644
+--- a/drivers/staging/fbtft/fb_pcd8544.c
++++ b/drivers/staging/fbtft/fb_pcd8544.c
+@@ -157,10 +157,10 @@ static struct fbtft_display display = {
+ 	.backlight = 1,
+ };
  
- 	gbl->def_value = device_property_read_bool(dev, "default-on");
--	flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+-FBTFT_REGISTER_DRIVER(DRVNAME, "philips,pdc8544", &display);
++FBTFT_REGISTER_DRIVER(DRVNAME, "philips,pcd8544", &display);
  
--	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
-+	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
- 	if (IS_ERR(gbl->gpiod)) {
- 		ret = PTR_ERR(gbl->gpiod);
+ MODULE_ALIAS("spi:" DRVNAME);
+-MODULE_ALIAS("spi:pdc8544");
++MODULE_ALIAS("spi:pcd8544");
  
-@@ -79,6 +77,22 @@ static int gpio_backlight_probe_dt(struct platform_device *pdev,
- 	return 0;
- }
- 
-+static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
-+{
-+	struct device_node *node = gbl->dev->of_node;
-+
-+	/* Not booted with device tree or no phandle link to the node */
-+	if (!node || !node->phandle)
-+		return gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
-+
-+	/* if the enable GPIO is disabled, do not enable the backlight */
-+	if (gpiod_get_value_cansleep(gbl->gpiod) = 0)
-+		return FB_BLANK_POWERDOWN;
-+
-+	return FB_BLANK_UNBLANK;
-+}
-+
-+
- static int gpio_backlight_probe(struct platform_device *pdev)
- {
- 	struct gpio_backlight_platform_data *pdata @@ -136,7 +150,9 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 		return PTR_ERR(bl);
- 	}
- 
--	bl->props.brightness = gbl->def_value;
-+	bl->props.power = gpio_backlight_initial_power_state(gbl);
-+	bl->props.brightness = 1;
-+
- 	backlight_update_status(bl);
- 
- 	platform_set_drvdata(pdev, bl);
+ MODULE_DESCRIPTION("FB driver for the PCD8544 LCD Controller");
+ MODULE_AUTHOR("Noralf Tronnes");
 -- 
-Peter
-
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki.
-Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+2.20.1

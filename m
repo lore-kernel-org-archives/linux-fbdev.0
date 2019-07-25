@@ -1,67 +1,188 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Wed, 24 Jul 2019 08:26:45 +0000
-Subject: Re: [PATCH v2 2/7] backlight: gpio: simplify the platform data handling
-Message-Id: <CAMRc=Mf9MZRkvK5bvqsQuqwcUe5Wmsk+D7jwg2wMEK_cYVfe+Q@mail.gmail.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Thu, 25 Jul 2019 22:02:08 +0000
+Subject: [PATCH 04/11] ASoC: jz4740: Drop lb60 board code
+Message-Id: <20190725220215.460-5-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722150302.29526-1-brgl@bgdev.pl> <20190722150302.29526-3-brgl@bgdev.pl>
- <20190722160603.GY9224@smile.fi.intel.com> <CAMRc=Mfuvh6byfPhPdB51dy_YbAS5scJQT3n3pL_5VZLCjB3Hw@mail.gmail.com>
- <20190723153250.GK9224@smile.fi.intel.com>
-In-Reply-To: <20190723153250.GK9224@smile.fi.intel.com>
+References: <20190725220215.460-1-paul@crapouillou.net>
+In-Reply-To: <20190725220215.460-1-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, linux-sh@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: od@zcrc.me, devicetree@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org, Paul Cercueil <paul@crapouillou.net>, Artur Rojek <contact@artur-rojek.eu>
 
-wt., 23 lip 2019 o 17:32 Andy Shevchenko
-<andriy.shevchenko@linux.intel.com> napisał(a):
->
-> On Tue, Jul 23, 2019 at 08:28:00AM +0200, Bartosz Golaszewski wrote:
-> > pon., 22 lip 2019 o 18:06 Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> napisał(a):
-> > >
-> > > On Mon, Jul 22, 2019 at 05:02:57PM +0200, Bartosz Golaszewski wrote:
-> > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > >
-> > > > Now that the last user of platform data (sh ecovec24) defines a proper
-> > > > GPIO lookup and sets the 'default-on' device property, we can drop the
-> > > > platform_data-specific GPIO handling and unify a big chunk of code.
-> > > >
-> > > > The only field used from the platform data is now the fbdev pointer.
-> > >
-> > > > -static int gpio_backlight_probe_dt(struct platform_device *pdev,
-> > > > -                                struct gpio_backlight *gbl)
-> > > > -{
-> > > > -     struct device *dev = &pdev->dev;
-> > > > -     enum gpiod_flags flags;
-> > > > -     int ret;
-> > > > -
-> > > > -     gbl->def_value = device_property_read_bool(dev, "default-on");
-> > > > -     flags = gbl->def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
-> > > > -
-> > > > -     gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
-> > > > -     if (IS_ERR(gbl->gpiod)) {
-> > > > -             ret = PTR_ERR(gbl->gpiod);
-> > > > -
-> > > > -             if (ret != -EPROBE_DEFER) {
-> > > > -                     dev_err(dev,
-> > > > -                             "Error: The gpios parameter is missing or invalid.\n");
-> > > > -             }
-> > > > -             return ret;
-> > > > -     }
-> > > > -
-> > > > -     return 0;
-> > > > -}
-> > >
-> > > Why not leave this function (perhaps with different name)?
-> >
-> > Why would we do that if the entire probe() function is now less than
-> > 50 lines long? Also: it gets inlined by the compiler anyway. It
-> > doesn't make sense IMO.
->
-> I'm not against this, perhaps, dropping and moving can be split to two changes.
->
+The board now uses the simple-audio-card driver.
 
-This really is unnecessary - we can do it in a single patch alright.
+Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+Tested-by: Artur Rojek <contact@artur-rojek.eu>
+---
+ sound/soc/jz4740/Kconfig   |  25 +--------
+ sound/soc/jz4740/Makefile  |   5 --
+ sound/soc/jz4740/qi_lb60.c | 106 -------------------------------------
+ 3 files changed, 2 insertions(+), 134 deletions(-)
+ delete mode 100644 sound/soc/jz4740/qi_lb60.c
 
-Bart
+diff --git a/sound/soc/jz4740/Kconfig b/sound/soc/jz4740/Kconfig
+index 6b757168693e..e72f826062e9 100644
+--- a/sound/soc/jz4740/Kconfig
++++ b/sound/soc/jz4740/Kconfig
+@@ -1,30 +1,9 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-config SND_JZ4740_SOC
+-	tristate "SoC Audio for Ingenic JZ4740 SoC"
+-	depends on MIPS || COMPILE_TEST
+-	select SND_SOC_GENERIC_DMAENGINE_PCM
+-	help
+-	  Say Y or M if you want to add support for codecs attached to
+-	  the JZ4740 I2S interface. You will also need to select the audio
+-	  interfaces to support below.
+-
+-if SND_JZ4740_SOC
+-
+ config SND_JZ4740_SOC_I2S
+ 	tristate "SoC Audio (I2S protocol) for Ingenic JZ4740 SoC"
++	depends on MIPS || COMPILE_TEST
+ 	depends on HAS_IOMEM
++	select SND_SOC_GENERIC_DMAENGINE_PCM
+ 	help
+ 	  Say Y if you want to use I2S protocol and I2S codec on Ingenic JZ4740
+ 	  based boards.
+-
+-config SND_JZ4740_SOC_QI_LB60
+-	tristate "SoC Audio support for Qi LB60"
+-	depends on HAS_IOMEM
+-	depends on JZ4740_QI_LB60 || COMPILE_TEST
+-	select SND_JZ4740_SOC_I2S
+-    select SND_SOC_JZ4740_CODEC
+-	help
+-	  Say Y if you want to add support for ASoC audio on the Qi LB60 board
+-	  a.k.a Qi Ben NanoNote.
+-
+-endif
+diff --git a/sound/soc/jz4740/Makefile b/sound/soc/jz4740/Makefile
+index fb10e9ad9ff7..f8701c9b09fe 100644
+--- a/sound/soc/jz4740/Makefile
++++ b/sound/soc/jz4740/Makefile
+@@ -5,8 +5,3 @@
+ snd-soc-jz4740-i2s-objs := jz4740-i2s.o
+ 
+ obj-$(CONFIG_SND_JZ4740_SOC_I2S) += snd-soc-jz4740-i2s.o
+-
+-# Jz4740 Machine Support
+-snd-soc-qi-lb60-objs := qi_lb60.o
+-
+-obj-$(CONFIG_SND_JZ4740_SOC_QI_LB60) += snd-soc-qi-lb60.o
+diff --git a/sound/soc/jz4740/qi_lb60.c b/sound/soc/jz4740/qi_lb60.c
+deleted file mode 100644
+index 8ef6f41dcfbe..000000000000
+--- a/sound/soc/jz4740/qi_lb60.c
++++ /dev/null
+@@ -1,106 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright (C) 2009, Lars-Peter Clausen <lars@metafoo.de>
+- */
+-
+-#include <linux/module.h>
+-#include <linux/moduleparam.h>
+-#include <linux/timer.h>
+-#include <linux/interrupt.h>
+-#include <linux/platform_device.h>
+-#include <sound/core.h>
+-#include <sound/pcm.h>
+-#include <sound/soc.h>
+-#include <linux/gpio/consumer.h>
+-
+-struct qi_lb60 {
+-	struct gpio_desc *snd_gpio;
+-	struct gpio_desc *amp_gpio;
+-};
+-
+-static int qi_lb60_spk_event(struct snd_soc_dapm_widget *widget,
+-			     struct snd_kcontrol *ctrl, int event)
+-{
+-	struct qi_lb60 *qi_lb60 = snd_soc_card_get_drvdata(widget->dapm->card);
+-	int on = !SND_SOC_DAPM_EVENT_OFF(event);
+-
+-	gpiod_set_value_cansleep(qi_lb60->snd_gpio, on);
+-	gpiod_set_value_cansleep(qi_lb60->amp_gpio, on);
+-
+-	return 0;
+-}
+-
+-static const struct snd_soc_dapm_widget qi_lb60_widgets[] = {
+-	SND_SOC_DAPM_SPK("Speaker", qi_lb60_spk_event),
+-	SND_SOC_DAPM_MIC("Mic", NULL),
+-};
+-
+-static const struct snd_soc_dapm_route qi_lb60_routes[] = {
+-	{"Mic", NULL, "MIC"},
+-	{"Speaker", NULL, "LOUT"},
+-	{"Speaker", NULL, "ROUT"},
+-};
+-
+-SND_SOC_DAILINK_DEFS(hifi,
+-	DAILINK_COMP_ARRAY(COMP_CPU("jz4740-i2s")),
+-	DAILINK_COMP_ARRAY(COMP_CODEC("jz4740-codec", "jz4740-hifi")),
+-	DAILINK_COMP_ARRAY(COMP_PLATFORM("jz4740-i2s")));
+-
+-static struct snd_soc_dai_link qi_lb60_dai = {
+-	.name = "jz4740",
+-	.stream_name = "jz4740",
+-	.dai_fmt = SND_SOC_DAIFMT_I2S | SND_SOC_DAIFMT_NB_NF |
+-		SND_SOC_DAIFMT_CBM_CFM,
+-	SND_SOC_DAILINK_REG(hifi),
+-};
+-
+-static struct snd_soc_card qi_lb60_card = {
+-	.name = "QI LB60",
+-	.owner = THIS_MODULE,
+-	.dai_link = &qi_lb60_dai,
+-	.num_links = 1,
+-
+-	.dapm_widgets = qi_lb60_widgets,
+-	.num_dapm_widgets = ARRAY_SIZE(qi_lb60_widgets),
+-	.dapm_routes = qi_lb60_routes,
+-	.num_dapm_routes = ARRAY_SIZE(qi_lb60_routes),
+-	.fully_routed = true,
+-};
+-
+-static int qi_lb60_probe(struct platform_device *pdev)
+-{
+-	struct qi_lb60 *qi_lb60;
+-	struct snd_soc_card *card = &qi_lb60_card;
+-
+-	qi_lb60 = devm_kzalloc(&pdev->dev, sizeof(*qi_lb60), GFP_KERNEL);
+-	if (!qi_lb60)
+-		return -ENOMEM;
+-
+-	qi_lb60->snd_gpio = devm_gpiod_get(&pdev->dev, "snd", GPIOD_OUT_LOW);
+-	if (IS_ERR(qi_lb60->snd_gpio))
+-		return PTR_ERR(qi_lb60->snd_gpio);
+-
+-	qi_lb60->amp_gpio = devm_gpiod_get(&pdev->dev, "amp", GPIOD_OUT_LOW);
+-	if (IS_ERR(qi_lb60->amp_gpio))
+-		return PTR_ERR(qi_lb60->amp_gpio);
+-
+-	card->dev = &pdev->dev;
+-
+-	snd_soc_card_set_drvdata(card, qi_lb60);
+-
+-	return devm_snd_soc_register_card(&pdev->dev, card);
+-}
+-
+-static struct platform_driver qi_lb60_driver = {
+-	.driver		= {
+-		.name	= "qi-lb60-audio",
+-	},
+-	.probe		= qi_lb60_probe,
+-};
+-
+-module_platform_driver(qi_lb60_driver);
+-
+-MODULE_AUTHOR("Lars-Peter Clausen <lars@metafoo.de>");
+-MODULE_DESCRIPTION("ALSA SoC QI LB60 Audio support");
+-MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS("platform:qi-lb60-audio");
+-- 
+2.21.0.593.g511ec345e18

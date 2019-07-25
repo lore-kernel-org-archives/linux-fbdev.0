@@ -1,23 +1,34 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Tue, 23 Jul 2019 07:55:00 +0000
-Subject: Re: [PATCH] vt: Grab console_lock around con_is_bound in show_bind
-Message-Id: <20190723075500.GA27243@kroah.com>
+From: Paul Cercueil <paul@crapouillou.net>
+Date: Thu, 25 Jul 2019 22:02:04 +0000
+Subject: [PATCH 00/11] JZ4740 SoC cleanup
+Message-Id: <20190725220215.460-1-paul@crapouillou.net>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190718080903.22622-1-daniel.vetter@ffwll.ch>
- <20190723073820.GU15868@phenom.ffwll.local>
-In-Reply-To: <20190723073820.GU15868@phenom.ffwll.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Intel Graphics Development <intel-gfx@lists.freedesktop.org>, Jens Remus <jremus@linux.ibm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-s390@vger.kernel.org, Nicolas Pitre <nicolas.pitre@linaro.org>, Martin Hostettler <textshell@uchuujin.de>, Adam Borowski <kilobyte@angband.pl>, Mikulas Patocka <mpatocka@redhat.com>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>
+To: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>
+Cc: od@zcrc.me, devicetree@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, alsa-devel@alsa-project.org
 
-On Tue, Jul 23, 2019 at 09:38:20AM +0200, Daniel Vetter wrote:
-> Hi Greg,
-> 
-> Do you plan to pick this up in your console/vt/whatever-fixes branch?
+Hi,
 
-Yes, now that the merge window is closed, I will be picking this up.
+This patchset converts the Qi LB60 MIPS board to devicetree and makes it
+use all the shiny new drivers that have been developed or updated
+recently.
 
-thanks,
+All the crappy old drivers and custom code can be dropped since they
+have been replaced by better alternatives.
 
-greg k-h
+Some of these alternatives are not yet in 5.3-rc1 but have already been
+accepted by their respective maintainer for inclusion in 5.4-rc1.
+
+To upstream this patchset, I think that as soon as MIPS maintainers
+agree to take patches 01-03/11 and 11/11, the other patches can go
+through their respective maintainer's tree.
+
+Note for MIPS maintainers:
+Patch 11/11 may conflict with the TCU patchset v15, should this one be
+accepted upstream, but the conflict is tiny and easy to fix. Should this
+case appear, don't hesitate to bother me about it.
+
+Thanks,
+-Paul

@@ -1,30 +1,72 @@
-From: Richard Weinberger <richard@nod.at>
-Date: Mon, 29 Jul 2019 18:08:37 +0000
-Subject: Re: [PATCH 00/11] JZ4740 SoC cleanup
-Message-Id: <339409106.53616.1564423717793.JavaMail.zimbra@nod.at>
+From: Thierry Reding <thierry.reding@gmail.com>
+Date: Fri, 26 Jul 2019 10:18:49 +0000
+Subject: [PATCH] video: Demote panel timing not found error message
+Message-Id: <20190726101849.27322-1-thierry.reding@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-1-paul@crapouillou.net> <CAFLxGvyi0+0E3M12A7cRoHfEKd8-7Yr8EMG9J=2XcjCxPWY5pA@mail.gmail.com> <1564419921.1759.1@crapouillou.net>
-In-Reply-To: <1564419921.1759.1@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Richard Weinberger <richard.weinberger@gmail.com>, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, linux-hwmon@vger.kernel.org, devicetree@vger.kernel.org, linux-fbdev@vger.kernel.org, alsa-devel <alsa-devel@alsa-project.org>, linux-pm@vger.kernel.org, linux-mips@vger.kernel.org, DRI
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
------ Urspr=C3=BCngliche Mail -----
->> Was this series tested with the Ben Nanonote device?
->> I have one of these and from time to time I upgrade the kernel on it.
->=20
-> Yes! Artur (Cc'd) tested it.
->=20
-> You can test it yourself, after merging this patchset with:
-> https://git.kernel.org/pub/scm/linux/kernel/git/vkoul/slave-dma.git
-> branch next,
-> git://git.freedesktop.org/git/drm-misc branch drm-misc-next.
->=20
-> These will be in 5.4-rc1.
+From: Thierry Reding <treding@nvidia.com>
 
-Awesome! Thanks a lot for cleaning this up.
+Failing to find a panel-timing node is not an error in all cases, so do
+not output an error message in that case. Instead turn it into a debug
+message and make the drivers that care about it output an error message
+of their own.
 
-Thanks,
-//richard
+Signed-off-by: Thierry Reding <treding@nvidia.com>
+---
+ drivers/gpu/drm/panel/panel-lvds.c | 4 +++-
+ drivers/video/fbdev/amba-clcd.c    | 4 +++-
+ drivers/video/of_display_timing.c  | 2 +-
+ 3 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/gpu/drm/panel/panel-lvds.c b/drivers/gpu/drm/panel/panel-lvds.c
+index 1ec57d0806a8..7fcb3527c788 100644
+--- a/drivers/gpu/drm/panel/panel-lvds.c
++++ b/drivers/gpu/drm/panel/panel-lvds.c
+@@ -147,8 +147,10 @@ static int panel_lvds_parse_dt(struct panel_lvds *lvds)
+ 	int ret;
+ 
+ 	ret = of_get_display_timing(np, "panel-timing", &timing);
+-	if (ret < 0)
++	if (ret < 0) {
++		dev_err(lvds->dev, "%pOF: could not find panel timing\n", np);
+ 		return ret;
++	}
+ 
+ 	videomode_from_timing(&timing, &lvds->video_mode);
+ 
+diff --git a/drivers/video/fbdev/amba-clcd.c b/drivers/video/fbdev/amba-clcd.c
+index 89324e42a033..13df898a3481 100644
+--- a/drivers/video/fbdev/amba-clcd.c
++++ b/drivers/video/fbdev/amba-clcd.c
+@@ -561,8 +561,10 @@ static int clcdfb_of_get_dpi_panel_mode(struct device_node *node,
+ 	struct videomode video;
+ 
+ 	err = of_get_display_timing(node, "panel-timing", &timing);
+-	if (err)
++	if (err) {
++		pr_err("%pOF: could not find panel timing\n", node);
+ 		return err;
++	}
+ 
+ 	videomode_from_timing(&timing, &video);
+ 
+diff --git a/drivers/video/of_display_timing.c b/drivers/video/of_display_timing.c
+index f5c1c469c0af..9385b518349f 100644
+--- a/drivers/video/of_display_timing.c
++++ b/drivers/video/of_display_timing.c
+@@ -125,7 +125,7 @@ int of_get_display_timing(const struct device_node *np, const char *name,
+ 
+ 	timing_np = of_get_child_by_name(np, name);
+ 	if (!timing_np) {
+-		pr_err("%pOF: could not find node '%s'\n", np, name);
++		pr_debug("%pOF: could not find node '%s'\n", np, name);
+ 		return -ENOENT;
+ 	}
+ 
+-- 
+2.22.0

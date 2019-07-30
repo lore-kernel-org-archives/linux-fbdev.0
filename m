@@ -1,29 +1,29 @@
-From: Miquel Raynal <miquel.raynal@bootlin.com>
-Date: Fri, 26 Jul 2019 18:57:42 +0000
+From: Paul Burton <paul.burton@mips.com>
+Date: Tue, 30 Jul 2019 17:44:04 +0000
 Subject: Re: [PATCH 07/11] mtd: rawnand: Drop obsolete JZ4740 NAND driver
-Message-Id: <20190726205742.71210c24@xps13>
+Message-Id: <MWHPR2201MB1277E2D645C30C7CEA5A846EC1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-1-paul@crapouillou.net>
-        <20190725220215.460-8-paul@crapouillou.net>
+References: <20190725220215.460-8-paul@crapouillou.net>
 In-Reply-To: <20190725220215.460-8-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Paul Cercueil <paul@crapouillou.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, od@zcrc.me, devicetree@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <pburton@wavecomp.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-Hi Paul,
+Hello,
 
-Paul Cercueil <paul@crapouillou.net> wrote on Thu, 25 Jul 2019 18:02:11
--0400:
-
+Paul Cercueil wrote:
 > It has been replaced with the newer Ingenic NAND driver.
->=20
+> 
 > Signed-off-by: Paul Cercueil <paul@crapouillou.net>
 > Tested-by: Artur Rojek <contact@artur-rojek.eu>
-> ---
+> Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
 
-Acked-by: Miquel Raynal <miquel.raynal@bootlin.com>
+Applied to mips-next.
 
 Thanks,
-Miqu=C3=A8l
+    Paul
+
+[ This message was auto-generated; if you believe anything is incorrect
+  then please email paul.burton@mips.com to report it. ]

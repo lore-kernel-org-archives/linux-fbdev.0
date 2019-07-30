@@ -1,26 +1,30 @@
-From: Vinod Koul <vkoul@kernel.org>
-Date: Mon, 29 Jul 2019 06:56:02 +0000
+From: Paul Burton <paul.burton@mips.com>
+Date: Tue, 30 Jul 2019 17:44:00 +0000
 Subject: Re: [PATCH 06/11] dma: Drop JZ4740 driver
-Message-Id: <20190729064402.GG12733@vkoul-mobl.Dlink>
+Message-Id: <MWHPR2201MB127716344973CCF7640D0B16C1DC0@MWHPR2201MB1277.namprd22.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-1-paul@crapouillou.net>
- <20190725220215.460-7-paul@crapouillou.net>
+References: <20190725220215.460-7-paul@crapouillou.net>
 In-Reply-To: <20190725220215.460-7-paul@crapouillou.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Paul Cercueil <paul@crapouillou.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-fbdev@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, James Hogan <jhogan@kernel.org>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Sebastian Reichel <sre@kernel.org>, od@zcrc.me, linux-mtd@lists.infradead.org, Miquel Raynal <miquel.raynal@bootlin.com>, Lee Jones <lee.jones@linaro.org>, Artur Rojek <contact@artur-rojek.eu>, Richard Weinberger <richard@nod.at>, linux-pm@vger.kernel.org, linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, Rob Herring <robh+dt@kernel.org>, dmaengine@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <pburton@wavecomp.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Lee Jones <lee.jones@linaro.org>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, "od@zcrc.me" <od@zcrc.me>, "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, "linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 
-On 25-07-19, 18:02, Paul Cercueil wrote:
+Hello,
+
+Paul Cercueil wrote:
 > The newer and better JZ4780 driver is now used to provide DMA
 > functionality on the JZ4740.
+> 
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> Tested-by: Artur Rojek <contact@artur-rojek.eu>
+> Acked-by: Vinod Koul <vkoul@kernel.org>
 
-Please change subjetc to dmaengine: xxx
+Applied to mips-next.
 
-After that
+Thanks,
+    Paul
 
-Acked-by: Vinod Koul <vkoul@kernel.org>
-
--- 
-~Vinod
+[ This message was auto-generated; if you believe anything is incorrect
+  then please email paul.burton@mips.com to report it. ]

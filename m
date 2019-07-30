@@ -1,45 +1,61 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Mon, 22 Jul 2019 20:33:58 +0000
-Subject: [PATCH] video: fbdev: pvr2fb: remove unnecessary comparison of unsigned integer with < 0
-Message-Id: <20190722203358.GA29111@embeddedor>
+From: Anders Roxell <anders.roxell@linaro.org>
+Date: Tue, 30 Jul 2019 15:25:30 +0000
+Subject: [PATCH v2] video: fbdev: Mark expected switch fall-through
+Message-Id: <20190730152530.3055-1-anders.roxell@linaro.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: b.zolnierkie@samsung.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, gustavo@embeddedor.com, Anders Roxell <anders.roxell@linaro.org>
 
-There is no need to compare *var->xoffset* or *var->yoffset* with < 0
-because such variables are of type unsigned, making it impossible to
-hold a negative value.
+Now that -Wimplicit-fallthrough is passed to GCC by default, the
+following warnings shows up:
 
-Fix this by removing such comparisons.
+../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_channel_fb_init’:
+../drivers/video/fbdev/sh_mobile_lcdcfb.c:2086:22: warning: this statement may fall
+ through [-Wimplicit-fallthrough=]
+   info->fix.ypanstep = 2;
+   ~~~~~~~~~~~~~~~~~~~^~~
+../drivers/video/fbdev/sh_mobile_lcdcfb.c:2087:2: note: here
+  case V4L2_PIX_FMT_NV16:
+  ^~~~
+../drivers/video/fbdev/sh_mobile_lcdcfb.c: In function ‘sh_mobile_lcdc_overlay_fb_init’:
+../drivers/video/fbdev/sh_mobile_lcdcfb.c:1596:22: warning: this statement may fall
+ through [-Wimplicit-fallthrough=]
+   info->fix.ypanstep = 2;
+   ~~~~~~~~~~~~~~~~~~~^~~
+../drivers/video/fbdev/sh_mobile_lcdcfb.c:1597:2: note: here
+  case V4L2_PIX_FMT_NV16:
+  ^~~~
 
-Addresses-Coverity-ID: 1451964 ("Unsigned compared against 0")
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Rework to address a warnings due to the enablement of
+-Wimplicit-fallthrough.
+
+Signed-off-by: Anders Roxell <anders.roxell@linaro.org>
 ---
- drivers/video/fbdev/pvr2fb.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/video/fbdev/sh_mobile_lcdcfb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 7ff4b6b84282..0a3b2b7c7891 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -458,13 +458,11 @@ static int pvr2fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	set_color_bitfields(var);
- 
- 	if (var->vmode & FB_VMODE_YWRAP) {
--		if (var->xoffset || var->yoffset < 0 ||
--		    var->yoffset >= var->yres_virtual) {
-+		if (var->xoffset || var->yoffset >= var->yres_virtual) {
- 			var->xoffset = var->yoffset = 0;
- 		} else {
- 			if (var->xoffset > var->xres_virtual - var->xres ||
--			    var->yoffset > var->yres_virtual - var->yres ||
--			    var->xoffset < 0 || var->yoffset < 0)
-+			    var->yoffset > var->yres_virtual - var->yres)
- 				var->xoffset = var->yoffset = 0;
- 		}
- 	} else {
+diff --git a/drivers/video/fbdev/sh_mobile_lcdcfb.c b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+index ac0bcac9a865..c249763dbf0b 100644
+--- a/drivers/video/fbdev/sh_mobile_lcdcfb.c
++++ b/drivers/video/fbdev/sh_mobile_lcdcfb.c
+@@ -1594,6 +1594,7 @@ sh_mobile_lcdc_overlay_fb_init(struct sh_mobile_lcdc_overlay *ovl)
+ 	case V4L2_PIX_FMT_NV12:
+ 	case V4L2_PIX_FMT_NV21:
+ 		info->fix.ypanstep = 2;
++		/* Fall through */
+ 	case V4L2_PIX_FMT_NV16:
+ 	case V4L2_PIX_FMT_NV61:
+ 		info->fix.xpanstep = 2;
+@@ -2084,6 +2085,7 @@ sh_mobile_lcdc_channel_fb_init(struct sh_mobile_lcdc_chan *ch,
+ 	case V4L2_PIX_FMT_NV12:
+ 	case V4L2_PIX_FMT_NV21:
+ 		info->fix.ypanstep = 2;
++		/* Fall through */
+ 	case V4L2_PIX_FMT_NV16:
+ 	case V4L2_PIX_FMT_NV61:
+ 		info->fix.xpanstep = 2;
 -- 
-2.22.0
+2.20.1

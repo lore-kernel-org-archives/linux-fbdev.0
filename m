@@ -1,55 +1,75 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Thu, 04 Jul 2019 08:46:06 +0000
-Subject: [PATCH 00/11] Platform drivers, provide a way to add sysfs groups easily
-Message-Id: <20190704084617.3602-1-gregkh@linuxfoundation.org>
+Date: Wed, 31 Jul 2019 12:43:47 +0000
+Subject: [PATCH v2 08/10] video: fbdev: wm8505fb: convert platform driver to use dev_groups
+Message-Id: <20190731124349.4474-9-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
+In-Reply-To: <20190731124349.4474-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev@vger.kernel.org, Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rafael@kernel.org>, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, Mans Rullgard <mans@mansr.com>, "H. Peter Anvin" <hpa@zytor.com>, Romain Izard <romain.izard.pro@gmail.com>, Richard Gong <richard.gong@linux.intel.com>, Florian Fainelli <f.fainelli@gmail.com>, x86@kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Ingo Molnar <mingo@redhat.com>, linux-serial@vger.kernel.org, Jiri Slaby <jslaby@suse.com>, Darren Hart <dvhart@infradead.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-input@vger.kernel.org, Borislav Petkov <bp@alien8.de>, Thomas Gleixner <tglx@linutronix.de>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-arm-kernel@lists.infradead.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Dmitry Torokhov <dmitr>
+To: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org
 
-If a platform driver wants to add a sysfs group, it has to do so in a
-racy way, adding it after the driver is bound.  To resolve this issue,
-have the platform driver core do this for the driver, making the
-individual drivers logic smaller and simpler, and solving the race at
-the same time.
+Platform drivers now have the option to have the platform core create
+and remove any needed sysfs attribute files.  So take advantage of that
+and do not register "by hand" a sysfs file.
 
-All of these patches depend on the first patch.  I'll take the first one
-through my driver-core tree, and any subsystem maintainer can either ack
-their individul patch and I will be glad to also merge it, or they can
-wait until after 5.3-rc1 when the core patch hits Linus's tree and then
-take it, it's up to them.
+Cc: Tony Prisk <linux@prisktech.co.nz>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ drivers/video/fbdev/wm8505fb.c | 13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
-Thank to Richard Gong for the idea and the testing of the platform
-driver patch.
-
-Greg Kroah-Hartman (11):
-  Platform: add a dev_groups pointer to struct platform_driver
-  uio: uio_fsl_elbc_gpcm: convert platform driver to use dev_groups
-  serial: sh-sci: use driver core functions, not sysfs ones.
-  firmware: arm_scpi: convert platform driver to use dev_groups
-  olpc: x01: convert platform driver to use dev_groups
-  platform: x86: hp-wmi: convert platform driver to use dev_groups
-  video: fbdev: wm8505fb: convert platform driver to use dev_groups
-  video: fbdev: w100fb: convert platform driver to use dev_groups
-  video: fbdev: sm501fb: convert platform driver to use dev_groups
-  input: keyboard: gpio_keys: convert platform driver to use dev_groups
-  input: axp20x-pek: convert platform driver to use dev_groups
-
- arch/x86/platform/olpc/olpc-xo1-sci.c | 17 ++++------
- drivers/base/platform.c               | 40 +++++++++++++++--------
- drivers/firmware/arm_scpi.c           |  5 +--
- drivers/input/keyboard/gpio_keys.c    | 13 ++------
- drivers/input/misc/axp20x-pek.c       | 15 ++-------
- drivers/platform/x86/hp-wmi.c         | 47 +++++++--------------------
- drivers/tty/serial/sh-sci.c           | 22 +++++--------
- drivers/uio/uio_fsl_elbc_gpcm.c       | 23 +++++--------
- drivers/video/fbdev/sm501fb.c         | 37 +++++----------------
- drivers/video/fbdev/w100fb.c          | 23 ++++++-------
- drivers/video/fbdev/wm8505fb.c        | 13 ++++----
- include/linux/platform_device.h       |  1 +
- 12 files changed, 94 insertions(+), 162 deletions(-)
-
+diff --git a/drivers/video/fbdev/wm8505fb.c b/drivers/video/fbdev/wm8505fb.c
+index ff752635a31c..17c780315ca5 100644
+--- a/drivers/video/fbdev/wm8505fb.c
++++ b/drivers/video/fbdev/wm8505fb.c
+@@ -176,6 +176,12 @@ static ssize_t contrast_store(struct device *dev,
+ 
+ static DEVICE_ATTR_RW(contrast);
+ 
++static struct attribute *wm8505fb_attrs[] = {
++	&dev_attr_contrast.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(wm8505fb);
++
+ static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
+ {
+ 	chan &= 0xffff;
+@@ -361,10 +367,6 @@ static int wm8505fb_probe(struct platform_device *pdev)
+ 		return ret;
+ 	}
+ 
+-	ret = device_create_file(&pdev->dev, &dev_attr_contrast);
+-	if (ret < 0)
+-		fb_warn(&fbi->fb, "failed to register attributes (%d)\n", ret);
+-
+ 	fb_info(&fbi->fb, "%s frame buffer at 0x%lx-0x%lx\n",
+ 		fbi->fb.fix.id, fbi->fb.fix.smem_start,
+ 		fbi->fb.fix.smem_start + fbi->fb.fix.smem_len - 1);
+@@ -376,8 +378,6 @@ static int wm8505fb_remove(struct platform_device *pdev)
+ {
+ 	struct wm8505fb_info *fbi = platform_get_drvdata(pdev);
+ 
+-	device_remove_file(&pdev->dev, &dev_attr_contrast);
+-
+ 	unregister_framebuffer(&fbi->fb);
+ 
+ 	writel(0, fbi->regbase);
+@@ -399,6 +399,7 @@ static struct platform_driver wm8505fb_driver = {
+ 	.driver		= {
+ 		.name	= DRIVER_NAME,
+ 		.of_match_table = wmt_dt_ids,
++		.dev_groups	= wm8505fb_groups,
+ 	},
+ };
+ 
 -- 
 2.22.0

@@ -1,48 +1,84 @@
-From: Chuhong Yuan <hslester96@gmail.com>
-Date: Wed, 24 Jul 2019 13:17:44 +0000
-Subject: [PATCH] fbdev: sm712fb: Use dev_get_drvdata
-Message-Id: <20190724131744.1709-1-hslester96@gmail.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Wed, 31 Jul 2019 12:43:48 +0000
+Subject: [PATCH v2 09/10] video: fbdev: w100fb: convert platform driver to use dev_groups
+Message-Id: <20190731124349.4474-10-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
+In-Reply-To: <20190731124349.4474-1-gregkh@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>, Teddy Wang <teddy.wang@siliconmotion.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Chuhong Yuan <hslester96@gmail.com>
+To: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org
 
-Instead of using to_pci_dev + pci_get_drvdata,
-use dev_get_drvdata to make code simpler.
+Platform drivers now have the option to have the platform core create
+and remove any needed sysfs attribute files.  So take advantage of that
+and do not register "by hand" a bunch of sysfs files.
 
-Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+Cc: Tony Prisk <linux@prisktech.co.nz>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: dri-devel@lists.freedesktop.org
+Cc: linux-fbdev@vger.kernel.org
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/video/fbdev/sm712fb.c | 8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/video/fbdev/w100fb.c | 23 ++++++++++-------------
+ 1 file changed, 10 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/video/fbdev/sm712fb.c b/drivers/video/fbdev/sm712fb.c
-index 7b1b0d8d27a7..207d0add684b 100644
---- a/drivers/video/fbdev/sm712fb.c
-+++ b/drivers/video/fbdev/sm712fb.c
-@@ -1694,10 +1694,8 @@ static void smtcfb_pci_remove(struct pci_dev *pdev)
+diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
+index 597ffaa13cd2..3be07807edcd 100644
+--- a/drivers/video/fbdev/w100fb.c
++++ b/drivers/video/fbdev/w100fb.c
+@@ -164,6 +164,15 @@ static ssize_t fastpllclk_store(struct device *dev, struct device_attribute *att
  
- static int __maybe_unused smtcfb_pci_suspend(struct device *device)
- {
--	struct pci_dev *pdev = to_pci_dev(device);
--	struct smtcfb_info *sfb;
-+	struct smtcfb_info *sfb = dev_get_drvdata(device);
+ static DEVICE_ATTR_RW(fastpllclk);
  
--	sfb = pci_get_drvdata(pdev);
++static struct attribute *w100fb_attrs[] = {
++	&dev_attr_fastpllclk.attr,
++	&dev_attr_reg_read.attr,
++	&dev_attr_reg_write.attr,
++	&dev_attr_flip.attr,
++	NULL,
++};
++ATTRIBUTE_GROUPS(w100fb);
++
+ /*
+  * Some touchscreens need hsync information from the video driver to
+  * function correctly. We export it here.
+@@ -752,14 +761,6 @@ int w100fb_probe(struct platform_device *pdev)
+ 		goto out;
+ 	}
  
- 	/* set the hw in sleep mode use external clock and self memory refresh
- 	 * so that we can turn off internal PLLs later on
-@@ -1717,10 +1715,8 @@ static int __maybe_unused smtcfb_pci_suspend(struct device *device)
+-	err = device_create_file(&pdev->dev, &dev_attr_fastpllclk);
+-	err |= device_create_file(&pdev->dev, &dev_attr_reg_read);
+-	err |= device_create_file(&pdev->dev, &dev_attr_reg_write);
+-	err |= device_create_file(&pdev->dev, &dev_attr_flip);
+-
+-	if (err != 0)
+-		fb_warn(info, "failed to register attributes (%d)\n", err);
+-
+ 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+ 	return 0;
+ out:
+@@ -784,11 +785,6 @@ static int w100fb_remove(struct platform_device *pdev)
+ 	struct fb_info *info = platform_get_drvdata(pdev);
+ 	struct w100fb_par *par=info->par;
  
- static int __maybe_unused smtcfb_pci_resume(struct device *device)
- {
--	struct pci_dev *pdev = to_pci_dev(device);
--	struct smtcfb_info *sfb;
-+	struct smtcfb_info *sfb = dev_get_drvdata(device);
+-	device_remove_file(&pdev->dev, &dev_attr_fastpllclk);
+-	device_remove_file(&pdev->dev, &dev_attr_reg_read);
+-	device_remove_file(&pdev->dev, &dev_attr_reg_write);
+-	device_remove_file(&pdev->dev, &dev_attr_flip);
+-
+ 	unregister_framebuffer(info);
  
--	sfb = pci_get_drvdata(pdev);
+ 	vfree(par->saved_intmem);
+@@ -1625,6 +1621,7 @@ static struct platform_driver w100fb_driver = {
+ 	.resume		= w100fb_resume,
+ 	.driver		= {
+ 		.name	= "w100fb",
++		.dev_groups	= w100fb_groups,
+ 	},
+ };
  
- 	/* reinit hardware */
- 	sm7xx_init_hw();
 -- 
-2.20.1
+2.22.0

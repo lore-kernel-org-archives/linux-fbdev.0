@@ -1,7 +1,7 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 31 Jul 2019 13:22:27 +0000
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date: Wed, 31 Jul 2019 13:38:40 +0000
 Subject: Re: [PATCH v2 00/10] drivers, provide a way to add sysfs groups easily
-Message-Id: <20190731132227.GC12603@kroah.com>
+Message-Id: <20190731133840.GN23480@smile.fi.intel.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
  <20190731131045.GB147138@dtor-ws>
@@ -10,7 +10,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: x86@kernel.org, linux-input@vger.kernel.org, linux-fbdev@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, platform-driver-x86@vger.kernel.org, Tony Prisk <linux@prisktech.co.nz>, Andy Shevchenko <andy.shevchenko@gmail.com>, Florian Fainelli <f.fainelli@gmail.com>, Borislav Petkov <bp@alien8.de>, "H. Peter Anvin" <hpa@zytor.com>, Darren Hart <dvhart@infradead.org>, Thomas Gleixner <tglx@linutronix.de>, Richard Gong <richard.gong@linux.intel.com>, Ingo Molnar <mingo@redhat.com>, linux-arm-kernel@lists.infradead.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Borislav Petkov <bp@alien8.de>, Darren Hart <dvhart@infradead.org>, Florian Fainelli <f.fainelli@gmail.com>, Ingo Molnar <mingo@redhat.com>, Sudeep Holla <sudeep.holla@arm.com>, Thomas Gleixner <tglx@linutronix.de>, Tony Prisk <linux@prisktech.co.nz>, dri-devel@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org, linux-fbdev@vger.kernel.org, linux-input@vger.kernel.org, platform-driver-x86@vger.kernel.org, x86@kernel.org
 
 On Wed, Jul 31, 2019 at 06:10:45AM -0700, Dmitry Torokhov wrote:
 > On Wed, Jul 31, 2019 at 02:43:39PM +0200, Greg Kroah-Hartman wrote:
@@ -43,9 +43,8 @@ On Wed, Jul 31, 2019 at 06:10:45AM -0700, Dmitry Torokhov wrote:
 > leisure into their "*-next" branches and did not have to wait till 5.4
 > or risk merge clashes?
 
-Good idea, I will do that when I apply it after a few days to give
-people a chance to review it.
+Isn't cherry-pick enough for one patch?
 
-thanks,
-
-greg k-h
+-- 
+With Best Regards,
+Andy Shevchenko

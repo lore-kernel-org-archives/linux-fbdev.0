@@ -1,7 +1,7 @@
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Wed, 31 Jul 2019 12:43:48 +0000
-Subject: [PATCH v2 09/10] video: fbdev: w100fb: convert platform driver to use dev_groups
-Message-Id: <20190731124349.4474-10-gregkh@linuxfoundation.org>
+Date: Wed, 31 Jul 2019 12:43:49 +0000
+Subject: [PATCH v2 10/10] video: fbdev: sm501fb: convert platform driver to use dev_groups
+Message-Id: <20190731124349.4474-11-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
 In-Reply-To: <20190731124349.4474-1-gregkh@linuxfoundation.org>
@@ -9,74 +9,89 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Tony Prisk <linux@prisktech.co.nz>, linux-arm-kernel@lists.infradead.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 Platform drivers now have the option to have the platform core create
 and remove any needed sysfs attribute files.  So take advantage of that
 and do not register "by hand" a bunch of sysfs files.
 
-Cc: Tony Prisk <linux@prisktech.co.nz>
-Cc: linux-arm-kernel@lists.infradead.org
 Cc: dri-devel@lists.freedesktop.org
 Cc: linux-fbdev@vger.kernel.org
 Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/video/fbdev/w100fb.c | 23 ++++++++++-------------
- 1 file changed, 10 insertions(+), 13 deletions(-)
+ drivers/video/fbdev/sm501fb.c | 37 +++++++++--------------------------
+ 1 file changed, 9 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/video/fbdev/w100fb.c b/drivers/video/fbdev/w100fb.c
-index 597ffaa13cd2..3be07807edcd 100644
---- a/drivers/video/fbdev/w100fb.c
-+++ b/drivers/video/fbdev/w100fb.c
-@@ -164,6 +164,15 @@ static ssize_t fastpllclk_store(struct device *dev, struct device_attribute *att
+diff --git a/drivers/video/fbdev/sm501fb.c b/drivers/video/fbdev/sm501fb.c
+index 6edb4492e675..3dd1b1d76e98 100644
+--- a/drivers/video/fbdev/sm501fb.c
++++ b/drivers/video/fbdev/sm501fb.c
+@@ -1271,6 +1271,14 @@ static ssize_t sm501fb_debug_show_pnl(struct device *dev,
  
- static DEVICE_ATTR_RW(fastpllclk);
+ static DEVICE_ATTR(fbregs_pnl, 0444, sm501fb_debug_show_pnl, NULL);
  
-+static struct attribute *w100fb_attrs[] = {
-+	&dev_attr_fastpllclk.attr,
-+	&dev_attr_reg_read.attr,
-+	&dev_attr_reg_write.attr,
-+	&dev_attr_flip.attr,
++static struct attribute *sm501fb_attrs[] = {
++	&dev_attr_crt_src.attr,
++	&dev_attr_fbregs_pnl.attr,
++	&dev_attr_fbregs_crt.attr,
 +	NULL,
 +};
-+ATTRIBUTE_GROUPS(w100fb);
++ATTRIBUTE_GROUPS(sm501fb);
 +
- /*
-  * Some touchscreens need hsync information from the video driver to
-  * function correctly. We export it here.
-@@ -752,14 +761,6 @@ int w100fb_probe(struct platform_device *pdev)
- 		goto out;
+ /* acceleration operations */
+ static int sm501fb_sync(struct fb_info *info)
+ {
+@@ -2011,33 +2019,9 @@ static int sm501fb_probe(struct platform_device *pdev)
+ 		goto err_started_crt;
  	}
  
--	err = device_create_file(&pdev->dev, &dev_attr_fastpllclk);
--	err |= device_create_file(&pdev->dev, &dev_attr_reg_read);
--	err |= device_create_file(&pdev->dev, &dev_attr_reg_write);
--	err |= device_create_file(&pdev->dev, &dev_attr_flip);
+-	/* create device files */
 -
--	if (err != 0)
--		fb_warn(info, "failed to register attributes (%d)\n", err);
+-	ret = device_create_file(dev, &dev_attr_crt_src);
+-	if (ret)
+-		goto err_started_panel;
 -
- 	fb_info(info, "%s frame buffer device\n", info->fix.id);
+-	ret = device_create_file(dev, &dev_attr_fbregs_pnl);
+-	if (ret)
+-		goto err_attached_crtsrc_file;
+-
+-	ret = device_create_file(dev, &dev_attr_fbregs_crt);
+-	if (ret)
+-		goto err_attached_pnlregs_file;
+-
+ 	/* we registered, return ok */
  	return 0;
- out:
-@@ -784,11 +785,6 @@ static int w100fb_remove(struct platform_device *pdev)
- 	struct fb_info *info = platform_get_drvdata(pdev);
- 	struct w100fb_par *par=info->par;
  
--	device_remove_file(&pdev->dev, &dev_attr_fastpllclk);
--	device_remove_file(&pdev->dev, &dev_attr_reg_read);
--	device_remove_file(&pdev->dev, &dev_attr_reg_write);
--	device_remove_file(&pdev->dev, &dev_attr_flip);
+-err_attached_pnlregs_file:
+-	device_remove_file(dev, &dev_attr_fbregs_pnl);
 -
- 	unregister_framebuffer(info);
+-err_attached_crtsrc_file:
+-	device_remove_file(dev, &dev_attr_crt_src);
+-
+-err_started_panel:
+-	unregister_framebuffer(info->fb[HEAD_PANEL]);
+-	sm501_free_init_fb(info, HEAD_PANEL);
+-
+ err_started_crt:
+ 	unregister_framebuffer(info->fb[HEAD_CRT]);
+ 	sm501_free_init_fb(info, HEAD_CRT);
+@@ -2067,10 +2051,6 @@ static int sm501fb_remove(struct platform_device *pdev)
+ 	struct fb_info	   *fbinfo_crt = info->fb[0];
+ 	struct fb_info	   *fbinfo_pnl = info->fb[1];
  
- 	vfree(par->saved_intmem);
-@@ -1625,6 +1621,7 @@ static struct platform_driver w100fb_driver = {
- 	.resume		= w100fb_resume,
+-	device_remove_file(&pdev->dev, &dev_attr_fbregs_crt);
+-	device_remove_file(&pdev->dev, &dev_attr_fbregs_pnl);
+-	device_remove_file(&pdev->dev, &dev_attr_crt_src);
+-
+ 	sm501_free_init_fb(info, HEAD_CRT);
+ 	sm501_free_init_fb(info, HEAD_PANEL);
+ 
+@@ -2234,6 +2214,7 @@ static struct platform_driver sm501fb_driver = {
+ 	.resume		= sm501fb_resume,
  	.driver		= {
- 		.name	= "w100fb",
-+		.dev_groups	= w100fb_groups,
+ 		.name	= "sm501-fb",
++		.dev_groups	= sm501fb_groups,
  	},
  };
  

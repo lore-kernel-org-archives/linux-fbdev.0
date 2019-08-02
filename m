@@ -1,66 +1,79 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Aug 2019 04:12:35 +0000
-Subject: [PATCH v2 2/4] video/logo: do not generate unneeded logo C files
-Message-Id: <20190821041237.23197-3-yamada.masahiro@socionext.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:43 +0000
+Subject: [PATCH 12/34] vmci: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-13-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190821041237.23197-1-yamada.masahiro@socionext.com>
-In-Reply-To: <20190821041237.23197-1-yamada.masahiro@socionext.com>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.wil>
 
-Currently, all the logo C files are generated irrespective of the
-CONFIG options. Adding them to extra-y is wrong. What we need to do
-here is to add them to 'targets' so that if_changed works properly.
+From: John Hubbard <jhubbard@nvidia.com>
 
-Files listed in 'targets' are cleaned, so clean-files is unneeded.
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Note that this effectively changes the code's behavior in
+qp_release_pages(): it now ultimately calls set_page_dirty_lock(),
+instead of set_page_dirty(). This is probably more accurate.
+
+As Christophe Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
+
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
+ drivers/misc/vmw_vmci/vmci_context.c    |  2 +-
+ drivers/misc/vmw_vmci/vmci_queue_pair.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 10 deletions(-)
 
-Changes in v2:
-  - Fix commit log
-
- drivers/video/logo/Makefile | 21 ++-------------------
- 1 file changed, 2 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index 10b75ce3ce09..16f60c1e1766 100644
---- a/drivers/video/logo/Makefile
-+++ b/drivers/video/logo/Makefile
-@@ -18,23 +18,6 @@ obj-$(CONFIG_SPU_BASE)			+= logo_spe_clut224.o
+diff --git a/drivers/misc/vmw_vmci/vmci_context.c b/drivers/misc/vmw_vmci/vmci_context.c
+index 16695366ec92..9daa52ee63b7 100644
+--- a/drivers/misc/vmw_vmci/vmci_context.c
++++ b/drivers/misc/vmw_vmci/vmci_context.c
+@@ -587,7 +587,7 @@ void vmci_ctx_unset_notify(struct vmci_ctx *context)
  
- # How to generate logo's
+ 	if (notify_page) {
+ 		kunmap(notify_page);
+-		put_page(notify_page);
++		put_user_page(notify_page);
+ 	}
+ }
  
--# Use logo-cfiles to retrieve list of .c files to be built
--logo-cfiles = $(notdir $(patsubst %.$(2), %.c, \
--              $(wildcard $(srctree)/$(src)/*$(1).$(2))))
+diff --git a/drivers/misc/vmw_vmci/vmci_queue_pair.c b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+index 8531ae781195..e5434551d0ef 100644
+--- a/drivers/misc/vmw_vmci/vmci_queue_pair.c
++++ b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+@@ -626,15 +626,8 @@ static void qp_release_queue_mutex(struct vmci_queue *queue)
+ static void qp_release_pages(struct page **pages,
+ 			     u64 num_pages, bool dirty)
+ {
+-	int i;
 -
+-	for (i = 0; i < num_pages; i++) {
+-		if (dirty)
+-			set_page_dirty(pages[i]);
 -
--# Mono logos
--extra-y += $(call logo-cfiles,_mono,pbm)
--
--# VGA16 logos
--extra-y += $(call logo-cfiles,_vga16,ppm)
--
--# 224 Logos
--extra-y += $(call logo-cfiles,_clut224,ppm)
--
--# Gray 256
--extra-y += $(call logo-cfiles,_gray256,pgm)
--
- pnmtologo := scripts/pnmtologo
+-		put_page(pages[i]);
+-		pages[i] = NULL;
+-	}
++	put_user_pages_dirty_lock(pages, num_pages, dirty);
++	memset(pages, 0, num_pages * sizeof(struct page *));
+ }
  
- # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
-@@ -55,5 +38,5 @@ $(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtologo) FORCE
- $(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
- 	$(call if_changed,logo)
- 
--# Files generated that shall be removed upon make clean
--clean-files := *_mono.c *_vga16.c *_clut224.c *_gray256.c
-+# generated C files
-+targets += *_mono.c *_vga16.c *_clut224.c *_gray256.c
+ /*
 -- 
-2.17.1
+2.22.0

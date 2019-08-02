@@ -1,30 +1,68 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Sun, 25 Aug 2019 09:35:52 +0000
-Subject: Re: [PATCH 2/2] fbdev: fbmem: allow overriding the number of bootup logos
-Message-Id: <4194b690-027f-be16-dc4e-299643e75b83@axentia.se>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:46 +0000
+Subject: [PATCH 15/34] staging/vc04_services: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-16-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190823084725.4271-1-peda@axentia.se>
- <20190823084725.4271-3-peda@axentia.se>
- <20190824153446.GB28002@bombadil.infradead.org>
-In-Reply-To: <20190824153446.GB28002@bombadil.infradead.org>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Matthew Wilcox <willy@infradead.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-T24gMjAxOS0wOC0yNCAxNzozNCwgTWF0dGhldyBXaWxjb3ggd3JvdGU6DQo+IE9uIEZyaSwgQXVn
-IDIzLCAyMDE5IGF0IDA4OjQ3OjQ3QU0gKzAwMDAsIFBldGVyIFJvc2luIHdyb3RlOg0KPj4gKysr
-IGIvZHJpdmVycy92aWRlby9mYmRldi9jb3JlL2ZiY29uLmMNCj4+ICsrKyBiL2RyaXZlcnMvdmlk
-ZW8vZmJkZXYvY29yZS9mYm1lbS5jDQo+PiBAQCAtNTYsNiArNTYsOSBAQCBFWFBPUlRfU1lNQk9M
-KG51bV9yZWdpc3RlcmVkX2ZiKTsNCj4+ICBib29sIGZiX2NlbnRlcl9sb2dvIF9fcmVhZF9tb3N0
-bHk7DQo+PiAgRVhQT1JUX1NZTUJPTChmYl9jZW50ZXJfbG9nbyk7DQo+PiAgDQo+PiArdW5zaWdu
-ZWQgaW50IGZiX2xvZ29fY291bnQgX19yZWFkX21vc3RseTsNCj4+ICtFWFBPUlRfU1lNQk9MKGZi
-X2xvZ29fY291bnQpOw0KPiANCj4gV2h5IGRvZXMgdGhpcyBzeW1ib2wgbmVlZCB0byBiZSBleHBv
-cnRlZD8gIEFzIEkgcmVhZCB0aGUgTWFrZWZpbGUsIGZiY29uDQo+IGFuZCBmYm1lbSBhcmUgY29t
-YmluZWQgaW50byB0aGUgc2FtZSBtb2R1bGUsIHNvIHdoaWxlIHRoZSBzeW1ib2wgbmVlZHMNCj4g
-dG8gYmUgbm9uLXN0YXRpYywgaXQgZG9lc24ndCBuZWVkIHRvIGJlIGV4cG9ydGVkIHRvIG90aGVy
-IG1vZHVsZXMuDQoNCkkgZ3Vlc3MgeW91IGFyZSByaWdodC4gSSdsbCBzZW5kIGEgdjIgdG9tb3Jy
-b3cgd2l0aCBhbiBhZGRlZCBwYXRjaCB0bw0KdW5leHBvcnQgdGhlIGZiX2NlbnRlcl9sb2dvIHZh
-cmlhYmxlIHdoaWxlIGF0IGl0Li4uDQoNClRoYW5rcyBmb3IgdGhlIGZlZWRiYWNrLg0KDQpDaGVl
-cnMsDQpQZXRlcg0K
+From: John Hubbard <jhubbard@nvidia.com>
+
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
+
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Cc: Eric Anholt <eric@anholt.net>
+Cc: Stefan Wahren <stefan.wahren@i2se.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Mihaela Muraru <mihaela.muraru21@gmail.com>
+Cc: Suniel Mahesh <sunil.m@techveda.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Sidong Yang <realwakka@gmail.com>
+Cc: Kishore KP <kishore.p@techveda.org>
+Cc: linux-rpi-kernel@lists.infradead.org
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: devel@driverdev.osuosl.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ .../vc04_services/interface/vchiq_arm/vchiq_2835_arm.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_2835_arm.c b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_2835_arm.c
+index 61c69f353cdb..ec92b4c50e95 100644
+--- a/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_2835_arm.c
++++ b/drivers/staging/vc04_services/interface/vchiq_arm/vchiq_2835_arm.c
+@@ -336,10 +336,7 @@ cleanup_pagelistinfo(struct vchiq_pagelist_info *pagelistinfo)
+ 	}
+ 
+ 	if (pagelistinfo->pages_need_release) {
+-		unsigned int i;
+-
+-		for (i = 0; i < pagelistinfo->num_pages; i++)
+-			put_page(pagelistinfo->pages[i]);
++		put_user_pages(pagelistinfo->pages, pagelistinfo->num_pages);
+ 	}
+ 
+ 	dma_free_coherent(g_dev, pagelistinfo->pagelist_buffer_size,
+@@ -454,10 +451,7 @@ create_pagelist(char __user *buf, size_t count, unsigned short type)
+ 				       __func__, actual_pages, num_pages);
+ 
+ 			/* This is probably due to the process being killed */
+-			while (actual_pages > 0) {
+-				actual_pages--;
+-				put_page(pages[actual_pages]);
+-			}
++			put_user_pages(pages, actual_pages);
+ 			cleanup_pagelistinfo(pagelistinfo);
+ 			return NULL;
+ 		}
+-- 
+2.22.0

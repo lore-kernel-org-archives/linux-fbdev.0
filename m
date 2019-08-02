@@ -1,27 +1,49 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 19 Aug 2019 14:02:51 +0000
-Subject: Re: [PATCH] video: fbdev: aty: Use dev_get_drvdata
-Message-Id: <e9d8fe12-e415-19b3-5c84-2927e26de1ec@samsung.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:38 +0000
+Subject: [PATCH 07/34] drm/radeon: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-8-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190724131908epcas2p473bd151e9c12b90d6dc9c4a39b522e3a@epcas2p4.samsung.com>
- <20190724131900.2039-1-hslester96@gmail.com>
-In-Reply-To: <20190724131900.2039-1-hslester96@gmail.com>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Chuhong Yuan <hslester96@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, David Airlie <airlied@linux.ie>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, David Zhou <David1.Zhou@amd.com>, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, Alex Deucher <alexander.deucher@amd.com>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@>
 
+From: John Hubbard <jhubbard@nvidia.com>
 
-On 7/24/19 3:19 PM, Chuhong Yuan wrote:
-> Instead of using to_pci_dev + pci_get_drvdata,
-> use dev_get_drvdata to make code simpler.
-> 
-> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
-Patch queued for v5.4, thanks.
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Cc: Alex Deucher <alexander.deucher@amd.com>
+Cc: Christian K=C3=B6nig <christian.koenig@amd.com>
+Cc: David (ChunMing) Zhou <David1.Zhou@amd.com>
+Cc: David Airlie <airlied@linux.ie>
+Cc: amd-gfx@lists.freedesktop.org
+Cc: dri-devel@lists.freedesktop.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/gpu/drm/radeon/radeon_ttm.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/r=
+adeon_ttm.c
+index fb3696bc616d..4c9943fa10df 100644
+--- a/drivers/gpu/drm/radeon/radeon_ttm.c
++++ b/drivers/gpu/drm/radeon/radeon_ttm.c
+@@ -540,7 +540,7 @@ static int radeon_ttm_tt_pin_userptr(struct ttm_tt *ttm)
+ 	kfree(ttm->sg);
+=20
+ release_pages:
+-	release_pages(ttm->pages, pinned);
++	put_user_pages(ttm->pages, pinned);
+ 	return r;
+ }
+=20
+--=20
+2.22.0

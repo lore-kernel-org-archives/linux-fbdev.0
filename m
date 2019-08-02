@@ -1,55 +1,47 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 13 Aug 2019 13:19:58 +0000
-Subject: Re: [PATCH resend] video: backlight: Drop default m for {LCD,BACKLIGHT_CLASS_DEVICE}
-Message-Id: <20190813131958.y3fgzeeuzhsfddbh@holly.lan>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:20:02 +0000
+Subject: [PATCH 31/34] nfs: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-32-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190813115853.30329-1-geert@linux-m68k.org>
-In-Reply-To: <20190813115853.30329-1-geert@linux-m68k.org>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Alexander Shiyan <shc_work@mail.ru>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, Trond Myklebust <trond.myklebust@hammerspace.com>, linux-arm-kernel@lists.infradead.org, linux-n
 
-On Tue, Aug 13, 2019 at 01:58:53PM +0200, Geert Uytterhoeven wrote:
-> When running "make oldconfig" on a .config where
-> CONFIG_BACKLIGHT_LCD_SUPPORT is not set, two new config options
-> ("Lowlevel LCD controls" and "Lowlevel Backlight controls") appear, both
-> defaulting to "m".
-> 
-> Drop the "default m", as options should default to disabled, and because
-> several driver config options already select LCD_CLASS_DEVICE or
-> BACKLIGHT_CLASS_DEVICE when needed.
-> 
-> Fixes: 8c5dc8d9f19c7992 ("video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol")
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+From: John Hubbard <jhubbard@nvidia.com>
 
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-> ---
->  drivers/video/backlight/Kconfig | 2 --
->  1 file changed, 2 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-> index 8b081d61773e21eb..40676be2e46aae61 100644
-> --- a/drivers/video/backlight/Kconfig
-> +++ b/drivers/video/backlight/Kconfig
-> @@ -10,7 +10,6 @@ menu "Backlight & LCD device support"
->  #
->  config LCD_CLASS_DEVICE
->          tristate "Lowlevel LCD controls"
-> -	default m
->  	help
->  	  This framework adds support for low-level control of LCD.
->  	  Some framebuffer devices connect to platform-specific LCD modules
-> @@ -143,7 +142,6 @@ endif # LCD_CLASS_DEVICE
->  #
->  config BACKLIGHT_CLASS_DEVICE
->          tristate "Lowlevel Backlight controls"
-> -	default m
->  	help
->  	  This framework adds support for low-level control of the LCD
->            backlight. This includes support for brightness and power.
-> -- 
-> 2.17.1
-> 
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Anna Schumaker <anna.schumaker@netapp.com>
+Cc: linux-nfs@vger.kernel.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ fs/nfs/direct.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index 0cb442406168..b00b89dda3c5 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -278,9 +278,7 @@ ssize_t nfs_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
+ 
+ static void nfs_direct_release_pages(struct page **pages, unsigned int npages)
+ {
+-	unsigned int i;
+-	for (i = 0; i < npages; i++)
+-		put_page(pages[i]);
++	put_user_pages(pages, npages);
+ }
+ 
+ void nfs_init_cinfo_from_dreq(struct nfs_commit_info *cinfo,
+-- 
+2.22.0

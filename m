@@ -1,35 +1,48 @@
-From: Peter Rosin <peda@axentia.se>
-Date: Fri, 23 Aug 2019 08:47:33 +0000
-Subject: [PATCH 0/2] Add possibility to specify the number of displayed logos
-Message-Id: <20190823084725.4271-1-peda@axentia.se>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:20:04 +0000
+Subject: [PATCH 33/34] kernel/events/core.c: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-34-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-Hi!
+From: John Hubbard <jhubbard@nvidia.com>
 
-The first patch fixes the fact that there are two items numbered "4" in
-the list of fbcon options. This bug is a teenager...
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-The second patch extends that list with a new option that allows the
-user to display any number of logos (that fits on the screen). I need it
-to limit the display to only one logo instead of one for each CPU core.
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-Cheers,
-Peter
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ kernel/events/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Peter Rosin (2):
-  fbdev: fix numbering of fbcon options
-  fbdev: fbmem: allow overriding the number of bootup logos
-
- Documentation/fb/fbcon.rst       | 13 +++++++++----
- drivers/video/fbdev/core/fbcon.c |  7 +++++++
- drivers/video/fbdev/core/fbmem.c |  5 ++++-
- include/linux/fb.h               |  1 +
- 4 files changed, 21 insertions(+), 5 deletions(-)
-
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index 0463c1151bae..7be52bbbfe87 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -6426,7 +6426,7 @@ static u64 perf_virt_to_phys(u64 virt)
+ 			phys_addr = page_to_phys(p) + virt % PAGE_SIZE;
+ 
+ 		if (p)
+-			put_page(p);
++			put_user_page(p);
+ 	}
+ 
+ 	return phys_addr;
 -- 
-2.11.0
+2.22.0

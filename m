@@ -1,31 +1,70 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Aug 2019 11:25:29 +0000
-Subject: Re: [PATCH v3 2/3] fbdev: fbmem: allow overriding the number of bootup logos
-Message-Id: <CAMuHMdU1PEyqh8e5n3_xp1NT8YdPYXEyHDiaVQYOYKYKCm8y1A@mail.gmail.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:51 +0000
+Subject: [PATCH 20/34] xen: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-21-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190827110854.12574-1-peda@axentia.se> <20190827110854.12574-3-peda@axentia.se>
-In-Reply-To: <20190827110854.12574-3-peda@axentia.se>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Rosin <peda@axentia.se>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Boris Ostrovsky <boris.ostrovsky@oracle.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, Juergen
 
-On Tue, Aug 27, 2019 at 1:09 PM Peter Rosin <peda@axentia.se> wrote:
-> Probably most useful if you want no logo at all, or if you only want one
-> logo regardless of how many CPU cores you have.
->
-> Signed-off-by: Peter Rosin <peda@axentia.se>
+From: John Hubbard <jhubbard@nvidia.com>
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Gr{oetje,eeting}s,
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-                        Geert
+Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Cc: Juergen Gross <jgross@suse.com>
+Cc: xen-devel@lists.xenproject.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/xen/gntdev.c  | 5 +----
+ drivers/xen/privcmd.c | 7 +------
+ 2 files changed, 2 insertions(+), 10 deletions(-)
 
+diff --git a/drivers/xen/gntdev.c b/drivers/xen/gntdev.c
+index 4c339c7e66e5..2586b3df2bb6 100644
+--- a/drivers/xen/gntdev.c
++++ b/drivers/xen/gntdev.c
+@@ -864,10 +864,7 @@ static int gntdev_get_page(struct gntdev_copy_batch *batch, void __user *virt,
+ 
+ static void gntdev_put_pages(struct gntdev_copy_batch *batch)
+ {
+-	unsigned int i;
+-
+-	for (i = 0; i < batch->nr_pages; i++)
+-		put_page(batch->pages[i]);
++	put_user_pages(batch->pages, batch->nr_pages);
+ 	batch->nr_pages = 0;
+ }
+ 
+diff --git a/drivers/xen/privcmd.c b/drivers/xen/privcmd.c
+index 2f5ce7230a43..29e461dbee2d 100644
+--- a/drivers/xen/privcmd.c
++++ b/drivers/xen/privcmd.c
+@@ -611,15 +611,10 @@ static int lock_pages(
+ 
+ static void unlock_pages(struct page *pages[], unsigned int nr_pages)
+ {
+-	unsigned int i;
+-
+ 	if (!pages)
+ 		return;
+ 
+-	for (i = 0; i < nr_pages; i++) {
+-		if (pages[i])
+-			put_page(pages[i]);
+-	}
++	put_user_pages(pages, nr_pages);
+ }
+ 
+ static long privcmd_ioctl_dm_op(struct file *file, void __user *udata)
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+2.22.0

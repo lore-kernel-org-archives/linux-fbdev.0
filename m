@@ -1,30 +1,70 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 12 Aug 2019 08:05:06 +0000
-Subject: Re: [PATCH] backlight: lms283gf05: Fix a typo in the description passed to 'devm_gpio_request_one()'
-Message-Id: <20190812080506.GH4594@dell>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:41 +0000
+Subject: [PATCH 10/34] genwqe: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-11-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190724213828.16916-1-christophe.jaillet@wanadoo.fr>
-In-Reply-To: <20190724213828.16916-1-christophe.jaillet@wanadoo.fr>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: daniel.thompson@linaro.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-
 
-On Wed, 24 Jul 2019, Christophe JAILLET wrote:
+From: John Hubbard <jhubbard@nvidia.com>
 
-> The description passed to 'devm_gpio_request_one()' should be related to
-> LMS283GF05, not LMS285GF05.
-> 
-> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-> ---
->  drivers/video/backlight/lms283gf05.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Applied, thanks.
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
+This changes the release code slightly, because each page slot in the
+page_list[] array is no longer checked for NULL. However, that check
+was wrong anyway, because the get_user_pages() pattern of usage here
+never allowed for NULL entries within a range of pinned pages.
+
+Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
+Cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/misc/genwqe/card_utils.c | 17 +++--------------
+ 1 file changed, 3 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/misc/genwqe/card_utils.c b/drivers/misc/genwqe/card_utils.c
+index 2e1c4d2905e8..2a888f31d2c5 100644
+--- a/drivers/misc/genwqe/card_utils.c
++++ b/drivers/misc/genwqe/card_utils.c
+@@ -517,24 +517,13 @@ int genwqe_free_sync_sgl(struct genwqe_dev *cd, struct genwqe_sgl *sgl)
+ /**
+  * genwqe_free_user_pages() - Give pinned pages back
+  *
+- * Documentation of get_user_pages is in mm/gup.c:
+- *
+- * If the page is written to, set_page_dirty (or set_page_dirty_lock,
+- * as appropriate) must be called after the page is finished with, and
+- * before put_page is called.
++ * The pages may have been written to, so we call put_user_pages_dirty_lock(),
++ * rather than put_user_pages().
+  */
+ static int genwqe_free_user_pages(struct page **page_list,
+ 			unsigned int nr_pages, int dirty)
+ {
+-	unsigned int i;
+-
+-	for (i = 0; i < nr_pages; i++) {
+-		if (page_list[i] != NULL) {
+-			if (dirty)
+-				set_page_dirty_lock(page_list[i]);
+-			put_page(page_list[i]);
+-		}
+-	}
++	put_user_pages_dirty_lock(page_list, nr_pages, dirty);
+ 	return 0;
+ }
+ 
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.22.0

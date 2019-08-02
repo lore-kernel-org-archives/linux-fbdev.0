@@ -1,13 +1,13 @@
 From: john.hubbard@gmail.com
-Date: Fri, 02 Aug 2019 02:19:44 +0000
-Subject: [PATCH 13/34] rapidio: convert put_page() to put_user_page*()
-Message-Id: <20190802022005.5117-14-jhubbard@nvidia.com>
+Date: Fri, 02 Aug 2019 02:19:36 +0000
+Subject: [PATCH 05/34] drm/etnaviv: convert release_pages() to put_user_pages()
+Message-Id: <20190802022005.5117-6-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190802022005.5117-1-jhubbard@nvidia.com>
 In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
@@ -20,57 +20,41 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Alexandre Bounine <alex.bou9@gmail.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
-Cc: Ioan Nicu <ioan.nicu.ext@nokia.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@intel.com>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: "Radim Krčmář" <rkrcmar@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: kvm@vger.kernel.org
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/rapidio/devices/rio_mport_cdev.c | 9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/etnaviv/etnaviv_gem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/rapidio/devices/rio_mport_cdev.c b/drivers/rapidio/devices/rio_mport_cdev.c
-index 8155f59ece38..0e8ea0e5a89e 100644
---- a/drivers/rapidio/devices/rio_mport_cdev.c
-+++ b/drivers/rapidio/devices/rio_mport_cdev.c
-@@ -572,14 +572,12 @@ static void dma_req_free(struct kref *ref)
- 	struct mport_dma_req *req = container_of(ref, struct mport_dma_req,
- 			refcount);
- 	struct mport_cdev_priv *priv = req->priv;
--	unsigned int i;
+diff --git a/drivers/gpu/drm/etnaviv/etnaviv_gem.c b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+index e8778ebb72e6..a0144a5ee325 100644
+--- a/drivers/gpu/drm/etnaviv/etnaviv_gem.c
++++ b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+@@ -686,7 +686,7 @@ static int etnaviv_gem_userptr_get_pages(struct etnaviv_gem_object *etnaviv_obj)
+ 		ret = get_user_pages_fast(ptr, num_pages,
+ 					  !userptr->ro ? FOLL_WRITE : 0, pages);
+ 		if (ret < 0) {
+-			release_pages(pvec, pinned);
++			put_user_pages(pvec, pinned);
+ 			kvfree(pvec);
+ 			return ret;
+ 		}
+@@ -710,7 +710,7 @@ static void etnaviv_gem_userptr_release(struct etnaviv_gem_object *etnaviv_obj)
+ 	if (etnaviv_obj->pages) {
+ 		int npages = etnaviv_obj->base.size >> PAGE_SHIFT;
  
- 	dma_unmap_sg(req->dmach->device->dev,
- 		     req->sgt.sgl, req->sgt.nents, req->dir);
- 	sg_free_table(&req->sgt);
- 	if (req->page_list) {
--		for (i = 0; i < req->nr_pages; i++)
--			put_page(req->page_list[i]);
-+		put_user_pages(req->page_list, req->nr_pages);
- 		kfree(req->page_list);
+-		release_pages(etnaviv_obj->pages, npages);
++		put_user_pages(etnaviv_obj->pages, npages);
+ 		kvfree(etnaviv_obj->pages);
  	}
- 
-@@ -815,7 +813,7 @@ rio_dma_transfer(struct file *filp, u32 transfer_mode,
- 	struct mport_dma_req *req;
- 	struct mport_dev *md = priv->md;
- 	struct dma_chan *chan;
--	int i, ret;
-+	int ret;
- 	int nents;
- 
- 	if (xfer->length = 0)
-@@ -946,8 +944,7 @@ rio_dma_transfer(struct file *filp, u32 transfer_mode,
- 
- err_pg:
- 	if (!req->page_list) {
--		for (i = 0; i < nr_pages; i++)
--			put_page(page_list[i]);
-+		put_user_pages(page_list, nr_pages);
- 		kfree(page_list);
- 	}
- err_req:
+ }
 -- 
 2.22.0

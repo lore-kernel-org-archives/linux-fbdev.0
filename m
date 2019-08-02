@@ -1,197 +1,295 @@
-From: Michael Kelley <mikelley@microsoft.com>
-Date: Sat, 24 Aug 2019 18:11:11 +0000
-Subject: RE: [PATCH] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
-Message-Id: <DM5PR21MB0137A956360B52118AF164EAD7A70@DM5PR21MB0137.namprd21.prod.outlook.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:16:20 +0000
+Subject: [PATCH 01/34] mm/gup: add make_dirty arg to put_user_pages_dirty_lock()
+Message-Id: <20190802021653.4882-2-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190813103548.2008-1-weh@microsoft.com>
- <DM5PR21MB0137E0BB19D8A0E6385BB316D7A90@DM5PR21MB0137.namprd21.prod.outlook.com>
- <KL1P15301MB026487D86E439FA67B25C42CBBAA0@KL1P15301MB0264.APCP153.PROD.OUTLOOK.COM>
-In-Reply-To: <KL1P15301MB026487D86E439FA67B25C42CBBAA0@KL1P15301MB0264.APCP153.PROD.OUTLOOK.COM>
+References: <20190802021653.4882-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802021653.4882-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wei Hu <weh@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "fthain@telegraphics.com.au" <fthain@telegraphics.com.au>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Hai
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@lst.de>, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.inf
 
-From: Wei Hu <weh@microsoft.com> Sent: Wednesday, August 21, 2019 4:59 AM
->
-> > From: Michael Kelley <mikelley@microsoft.com>
-> > Sent: Monday, August 19, 2019 6:41 AM
-> > To: Wei Hu <weh@microsoft.com>; rdunlap@infradead.org; shc_work@mail.ru;
-> 
-> > > -	msg.dirt.rect[0].x1 = 0;
-> > > -	msg.dirt.rect[0].y1 = 0;
-> > > -	msg.dirt.rect[0].x2 = info->var.xres;
-> > > -	msg.dirt.rect[0].y2 = info->var.yres;
-> > > +	msg.dirt.rect[0].x1 = (x1 < 0 || x1 > x2) ? 0 : x1;
-> > > +	msg.dirt.rect[0].y1 = (y2 < 0 || y1 > y2) ? 0 : y1;
-> >
-> > This should be:
-> >
-> > 	msg.dirt.rect[0].y1 = (y1 < 0 || y1 > y2) ? 0 : y1;
-> >
-> > Also, throughout the code, I don't think there are any places where
-> > x or y coordinate values are ever negative.  INT_MAX or 0 is used as the
-> > sentinel value indicating "not set".  So can all the tests for less than 0
-> > now be eliminated, both in this function and in other functions?
-> >
-> > > +	msg.dirt.rect[0].x2 =
-> > > +		(x2 < x1 || x2 > info->var.xres) ? info->var.xres : x2;
-> > > +	msg.dirt.rect[0].y2 =
-> > > +		(y2 < y1 || y2 > info->var.yres) ? info->var.yres : y2;
-> >
-> > How exactly is the dirty rectangle specified to Hyper-V?  Suppose the frame
-> > buffer resolution is 100x200.  If you want to specify the entire rectangle, the
-> > first coordinate is (0, 0).  But what is the second coordinate?  Should it be
-> > (99, 199) or (100, 200)?  The above code (and original code) implies it
-> > should specified as (100, 200), which is actually a point outside the
-> > maximum resolution, which is counter-intuitive and makes me wonder
-> > if the code is correct.
-> >
-> [Wei Hu]
-> The current code treat the entire framebuffer rectangle as (0,0) -> (var.xres, var.yres).
-> Every time it sends refresh request, these are two points sent to host and host
-> seems accept it. See the above (x1, y1) and (x2, y2)  in the deleted lines.
-> 
-> So in your example the second coordinate is (100, 200).
+From: John Hubbard <jhubbard@nvidia.com>
 
-OK, agreed.  I ran some experiments and confirmed that this is indeed the
-Hyper-V behavior.
+Provide more capable variation of put_user_pages_dirty_lock(),
+and delete put_user_pages_dirty(). This is based on the
+following:
 
-> 
-> 
-> > > +/* Deferred IO callback */
-> > > +static void synthvid_deferred_io(struct fb_info *p,
-> > > +				 struct list_head *pagelist)
-> > > +{
-> > > +	struct hvfb_par *par = p->par;
-> > > +	struct page *page;
-> > > +	unsigned long start, end;
-> > > +	int y1, y2, miny, maxy;
-> > > +	unsigned long flags;
-> > > +
-> > > +	miny = INT_MAX;
-> > > +	maxy = 0;
-> > > +
-> > > +	list_for_each_entry(page, pagelist, lru) {
-> > > +		start = page->index << PAGE_SHIFT;
-> > > +		end = start + PAGE_SIZE - 1;
-> > > +		y1 = start / p->fix.line_length;
-> > > +		y2 = end / p->fix.line_length;
-> >
-> > The above division rounds down because any remainder is discarded.  I
-> > wondered whether rounding down is correct, which got me to thinking
-> > about how the dirty rectangle is specified.  Is y2 the index of the last
-> > dirty row?  If so, that's not consistent with the code in synthvid_update(),
-> > which might choose var.yres as y2, and that's the index of a row outside
-> > of the frame buffer.
-> >
-> [Wei Hu]
-> In this place we try to figure out and merge all the faulted pages into one
-> big dirty rectangle. A page in memory represents one or multiple lines in
-> frame buffer. For example, one faulted page could represent all the linear
-> pixels from (x, y) to (x-1, y+1). In this case we just form the dirty rectangle
-> as (0, y) -> (var.xres, y+1). Also keep in mind we need to merge multiple
-> pages. That's why in the end the dirty rectangle is (0, miny) -> (var.xres, maxy).
+1. Lots of call sites become simpler if a bool is passed
+into put_user_page*(), instead of making the call site
+choose which put_user_page*() variant to call.
 
-Let me give an example of where I think the new code doesn't work.  Suppose
-the frame buffer resolution is 1024x768.  With 4 bytes per pixel, each row
-is 4096 bytes, or exactly one page.  So each page contains exactly one row of
-pixels. For simplicity in my example, let's look at the case when this function
-is called with only one dirty page.   The calculation of y1 will identify the row
-that is dirty.   The calculation of y2 will identify the same row.  So y1 will
-equal y2, and miny will equal maxy.  Then when synthvid_update() is called,
-Hyper-V will interpret the parameters as no rows needing to be updated.  In
-a more complex case where the pagelist contains multiple dirty pages, maxy
-also ends up one less than it needs to be.
+2. Christoph Hellwig's observation that set_page_dirty_lock()
+is usually correct, and set_page_dirty() is usually a
+bug, or at least questionable, within a put_user_page*()
+calling chain.
 
-I think passing 'maxy + 1' instead of 'maxy' to synthvid_update() will solve
-the problem.  It certainly warrants a comment that the calculation of maxy
-is "inclusive", while synthvid_update() expects its parameters to be "exclusive"
-per Hyper-V's expectations.
+This leads to the following API choices:
 
-There's also another interesting situation.  Suppose the resolution and page size
-is such that a page contains multiple rows.  If the last page of the frame buffer
-is dirty, this routine could calculate a y2 value identifying a "phantom" row
-that is off the end of the frame buffer -- i.e., that is bigger than yres.  You
-have synthvid_send() handling that case by clamping the y2 value to yres, but
-it might be worth a comment here acknowledging the situation and how it is
-handled.  I did a test, and it appears that Hyper-V does its own clamping of
-the values passed in, but we should not take a dependency on how Hyper-V
-handles incorrect inputs.
+    * put_user_pages_dirty_lock(page, npages, make_dirty)
 
-> 
-> 
-> > > +		if (y2 > p->var.yres)
-> > > +			y2 = p->var.yres;
-> > > +		miny = min_t(int, miny, y1);
-> > > +		maxy = max_t(int, maxy, y2);
-> > > +
-> > > +		/* Copy from dio space to mmio address */
-> > > +		if (par->fb_ready) {
-> > > +			spin_lock_irqsave(&par->docopy_lock, flags);
-> > > +			hvfb_docopy(par, start, PAGE_SIZE);
-> > > +			spin_unlock_irqrestore(&par->docopy_lock, flags);
-> > > +		}
-> > > +	}
-> > > +
-> > > +	if (par->fb_ready)
-> > > +		synthvid_update(p, 0, miny, p->var.xres, maxy);
-> > > +}
-> 
-> 
-> 
-> 
-> > > +
-> > > +	/* Copy the dirty rectangle to frame buffer memory */
-> > > +	spin_lock_irqsave(&par->docopy_lock, flags);
-> > > +	for (j = y1; j <= y2 && x1 < x2; j++) {
-> > > +		if (j == info->var.yres)
-> > > +			break;
-> > > +		hvfb_docopy(par,
-> > > +			    j * info->fix.line_length +
-> > > +			    (x1 * screen_depth / 8),
-> > > +			    (x2 - x1 + 1) * screen_depth / 8);
-> >
-> > Whether the +1 is needed above gets back to the question I
-> > raised earlier about how to interpret the coordinates -- whether
-> > the (x2, y2) coordinate is just outside the dirty rectangle or
-> > just inside the dirty rectangle.  Most of the code seems to treat
-> > it as being just outside the dirty rectangle, in which case the +1
-> > should not be used.
-> >
-> [Wei Hu]
-> This dirty rectangle is not from page fault, but rather from frame buffer
-> framework when the screen is in text mode. I am not 100% sure if the dirty
-> rectangle given from kernel includes on extra line outside or not.  Here I
-> just play it safe by copying one extra line in the worst case.
+    * There is no put_user_pages_dirty(). You have to
+      hand code that, in the rare case that it's
+      required.
 
-Got it.  I was incorrectly conflating the two ways the frame buffer can get
-updated.
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/infiniband/core/umem.c             |   5 +-
+ drivers/infiniband/hw/hfi1/user_pages.c    |   5 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c |   5 +-
+ drivers/infiniband/hw/usnic/usnic_uiom.c   |   5 +-
+ drivers/infiniband/sw/siw/siw_mem.c        |  10 +-
+ include/linux/mm.h                         |   5 +-
+ mm/gup.c                                   | 115 +++++++++------------
+ 7 files changed, 58 insertions(+), 92 deletions(-)
 
-I looked at the how x2 and y2 of the dirty rectangle get set in this case.  It
-looks to me like it's always calculated as x1 + width, and y1 + height in
-hvfb_ondemand_refresh_throttle().  If that's correct, then the dirty
-rectangle coordinates are "exclusive", which is what Hyper-V wants.   And
-indeed the call to synthvid_update() later in this function assumes the
-"exclusive" format.  Also, the "j == info->var.yres" test is correct only
-if the y2 value is in the "exclusive" format.
-
-With that being the case, the "for" loop control above should have j < y2
-instead of j <= y2, as we don't need to copy the y2 row.  And the +1
-isn't needed in the arguments to hvfb_docopy().
-
-I really don't like the idea of copying an extra row, or an extra byte in a
-row, "just in case".
-
-Michael
-
-> 
-> Suppose dirty rectangle only contain one pixel, for example (0,0) is the only
-> pixel changed in the entire frame buffer. If kernel sends me dirty rectangle as
-> (0, 0) -> (0, 0), the above function works correctly. If the kernel sends
->  (0, 0) -> (1, 1), then the above function just copies one extra row and one extra
-> column, which should also be fine. The hvfb_docopy() takes care of the
-> edge cases.
-> 
-> Thanks,
-> Wei
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index 08da840ed7ee..965cf9dea71a 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -54,10 +54,7 @@ static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int d
+ 
+ 	for_each_sg_page(umem->sg_head.sgl, &sg_iter, umem->sg_nents, 0) {
+ 		page = sg_page_iter_page(&sg_iter);
+-		if (umem->writable && dirty)
+-			put_user_pages_dirty_lock(&page, 1);
+-		else
+-			put_user_page(page);
++		put_user_pages_dirty_lock(&page, 1, umem->writable && dirty);
+ 	}
+ 
+ 	sg_free_table(&umem->sg_head);
+diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
+index b89a9b9aef7a..469acb961fbd 100644
+--- a/drivers/infiniband/hw/hfi1/user_pages.c
++++ b/drivers/infiniband/hw/hfi1/user_pages.c
+@@ -118,10 +118,7 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
+ void hfi1_release_user_pages(struct mm_struct *mm, struct page **p,
+ 			     size_t npages, bool dirty)
+ {
+-	if (dirty)
+-		put_user_pages_dirty_lock(p, npages);
+-	else
+-		put_user_pages(p, npages);
++	put_user_pages_dirty_lock(p, npages, dirty);
+ 
+ 	if (mm) { /* during close after signal, mm can be NULL */
+ 		atomic64_sub(npages, &mm->pinned_vm);
+diff --git a/drivers/infiniband/hw/qib/qib_user_pages.c b/drivers/infiniband/hw/qib/qib_user_pages.c
+index bfbfbb7e0ff4..6bf764e41891 100644
+--- a/drivers/infiniband/hw/qib/qib_user_pages.c
++++ b/drivers/infiniband/hw/qib/qib_user_pages.c
+@@ -40,10 +40,7 @@
+ static void __qib_release_user_pages(struct page **p, size_t num_pages,
+ 				     int dirty)
+ {
+-	if (dirty)
+-		put_user_pages_dirty_lock(p, num_pages);
+-	else
+-		put_user_pages(p, num_pages);
++	put_user_pages_dirty_lock(p, num_pages, dirty);
+ }
+ 
+ /**
+diff --git a/drivers/infiniband/hw/usnic/usnic_uiom.c b/drivers/infiniband/hw/usnic/usnic_uiom.c
+index 0b0237d41613..62e6ffa9ad78 100644
+--- a/drivers/infiniband/hw/usnic/usnic_uiom.c
++++ b/drivers/infiniband/hw/usnic/usnic_uiom.c
+@@ -75,10 +75,7 @@ static void usnic_uiom_put_pages(struct list_head *chunk_list, int dirty)
+ 		for_each_sg(chunk->page_list, sg, chunk->nents, i) {
+ 			page = sg_page(sg);
+ 			pa = sg_phys(sg);
+-			if (dirty)
+-				put_user_pages_dirty_lock(&page, 1);
+-			else
+-				put_user_page(page);
++			put_user_pages_dirty_lock(&page, 1, dirty);
+ 			usnic_dbg("pa: %pa\n", &pa);
+ 		}
+ 		kfree(chunk);
+diff --git a/drivers/infiniband/sw/siw/siw_mem.c b/drivers/infiniband/sw/siw/siw_mem.c
+index 67171c82b0c4..ab83a9cec562 100644
+--- a/drivers/infiniband/sw/siw/siw_mem.c
++++ b/drivers/infiniband/sw/siw/siw_mem.c
+@@ -63,15 +63,7 @@ struct siw_mem *siw_mem_id2obj(struct siw_device *sdev, int stag_index)
+ static void siw_free_plist(struct siw_page_chunk *chunk, int num_pages,
+ 			   bool dirty)
+ {
+-	struct page **p = chunk->plist;
+-
+-	while (num_pages--) {
+-		if (!PageDirty(*p) && dirty)
+-			put_user_pages_dirty_lock(p, 1);
+-		else
+-			put_user_page(*p);
+-		p++;
+-	}
++	put_user_pages_dirty_lock(chunk->plist, num_pages, dirty);
+ }
+ 
+ void siw_umem_release(struct siw_umem *umem, bool dirty)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0334ca97c584..9759b6a24420 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1057,8 +1057,9 @@ static inline void put_user_page(struct page *page)
+ 	put_page(page);
+ }
+ 
+-void put_user_pages_dirty(struct page **pages, unsigned long npages);
+-void put_user_pages_dirty_lock(struct page **pages, unsigned long npages);
++void put_user_pages_dirty_lock(struct page **pages, unsigned long npages,
++			       bool make_dirty);
++
+ void put_user_pages(struct page **pages, unsigned long npages);
+ 
+ #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+diff --git a/mm/gup.c b/mm/gup.c
+index 98f13ab37bac..7fefd7ab02c4 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -29,85 +29,70 @@ struct follow_page_context {
+ 	unsigned int page_mask;
+ };
+ 
+-typedef int (*set_dirty_func_t)(struct page *page);
+-
+-static void __put_user_pages_dirty(struct page **pages,
+-				   unsigned long npages,
+-				   set_dirty_func_t sdf)
+-{
+-	unsigned long index;
+-
+-	for (index = 0; index < npages; index++) {
+-		struct page *page = compound_head(pages[index]);
+-
+-		/*
+-		 * Checking PageDirty at this point may race with
+-		 * clear_page_dirty_for_io(), but that's OK. Two key cases:
+-		 *
+-		 * 1) This code sees the page as already dirty, so it skips
+-		 * the call to sdf(). That could happen because
+-		 * clear_page_dirty_for_io() called page_mkclean(),
+-		 * followed by set_page_dirty(). However, now the page is
+-		 * going to get written back, which meets the original
+-		 * intention of setting it dirty, so all is well:
+-		 * clear_page_dirty_for_io() goes on to call
+-		 * TestClearPageDirty(), and write the page back.
+-		 *
+-		 * 2) This code sees the page as clean, so it calls sdf().
+-		 * The page stays dirty, despite being written back, so it
+-		 * gets written back again in the next writeback cycle.
+-		 * This is harmless.
+-		 */
+-		if (!PageDirty(page))
+-			sdf(page);
+-
+-		put_user_page(page);
+-	}
+-}
+-
+ /**
+- * put_user_pages_dirty() - release and dirty an array of gup-pinned pages
+- * @pages:  array of pages to be marked dirty and released.
++ * put_user_pages_dirty_lock() - release and optionally dirty gup-pinned pages
++ * @pages:  array of pages to be maybe marked dirty, and definitely released.
+  * @npages: number of pages in the @pages array.
++ * @make_dirty: whether to mark the pages dirty
+  *
+  * "gup-pinned page" refers to a page that has had one of the get_user_pages()
+  * variants called on that page.
+  *
+  * For each page in the @pages array, make that page (or its head page, if a
+- * compound page) dirty, if it was previously listed as clean. Then, release
+- * the page using put_user_page().
++ * compound page) dirty, if @make_dirty is true, and if the page was previously
++ * listed as clean. In any case, releases all pages using put_user_page(),
++ * possibly via put_user_pages(), for the non-dirty case.
+  *
+  * Please see the put_user_page() documentation for details.
+  *
+- * set_page_dirty(), which does not lock the page, is used here.
+- * Therefore, it is the caller's responsibility to ensure that this is
+- * safe. If not, then put_user_pages_dirty_lock() should be called instead.
++ * set_page_dirty_lock() is used internally. If instead, set_page_dirty() is
++ * required, then the caller should a) verify that this is really correct,
++ * because _lock() is usually required, and b) hand code it:
++ * set_page_dirty_lock(), put_user_page().
+  *
+  */
+-void put_user_pages_dirty(struct page **pages, unsigned long npages)
++void put_user_pages_dirty_lock(struct page **pages, unsigned long npages,
++			       bool make_dirty)
+ {
+-	__put_user_pages_dirty(pages, npages, set_page_dirty);
+-}
+-EXPORT_SYMBOL(put_user_pages_dirty);
++	unsigned long index;
+ 
+-/**
+- * put_user_pages_dirty_lock() - release and dirty an array of gup-pinned pages
+- * @pages:  array of pages to be marked dirty and released.
+- * @npages: number of pages in the @pages array.
+- *
+- * For each page in the @pages array, make that page (or its head page, if a
+- * compound page) dirty, if it was previously listed as clean. Then, release
+- * the page using put_user_page().
+- *
+- * Please see the put_user_page() documentation for details.
+- *
+- * This is just like put_user_pages_dirty(), except that it invokes
+- * set_page_dirty_lock(), instead of set_page_dirty().
+- *
+- */
+-void put_user_pages_dirty_lock(struct page **pages, unsigned long npages)
+-{
+-	__put_user_pages_dirty(pages, npages, set_page_dirty_lock);
++	/*
++	 * TODO: this can be optimized for huge pages: if a series of pages is
++	 * physically contiguous and part of the same compound page, then a
++	 * single operation to the head page should suffice.
++	 */
++
++	if (!make_dirty) {
++		put_user_pages(pages, npages);
++		return;
++	}
++
++	for (index = 0; index < npages; index++) {
++		struct page *page = compound_head(pages[index]);
++		/*
++		 * Checking PageDirty at this point may race with
++		 * clear_page_dirty_for_io(), but that's OK. Two key
++		 * cases:
++		 *
++		 * 1) This code sees the page as already dirty, so it
++		 * skips the call to set_page_dirty(). That could happen
++		 * because clear_page_dirty_for_io() called
++		 * page_mkclean(), followed by set_page_dirty().
++		 * However, now the page is going to get written back,
++		 * which meets the original intention of setting it
++		 * dirty, so all is well: clear_page_dirty_for_io() goes
++		 * on to call TestClearPageDirty(), and write the page
++		 * back.
++		 *
++		 * 2) This code sees the page as clean, so it calls
++		 * set_page_dirty(). The page stays dirty, despite being
++		 * written back, so it gets written back again in the
++		 * next writeback cycle. This is harmless.
++		 */
++		if (!PageDirty(page))
++			set_page_dirty_lock(page);
++		put_user_page(page);
++	}
+ }
+ EXPORT_SYMBOL(put_user_pages_dirty_lock);
+ 
+-- 
+2.22.0

@@ -1,57 +1,70 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Mon, 19 Aug 2019 11:27:41 +0000
-Subject: Re: [PATCH] m68k: atari: Rename shifter to shifter_st to avoid conflict
-Message-Id: <CAMuHMdVv=i5nffbN2vZjvHfeV_w74PvZD7ZLuf623H9pnyK14A@mail.gmail.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:47 +0000
+Subject: [PATCH 16/34] drivers/tee: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-17-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190812073020.19109-1-geert@linux-m68k.org> <CACRpkdZAA8N6igrNaXcT5m62Fz2irRL-tyRZnjWgsxfacB2aow@mail.gmail.com>
-In-Reply-To: <CACRpkdZAA8N6igrNaXcT5m62Fz2irRL-tyRZnjWgsxfacB2aow@mail.gmail.com>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Walleij <linus.walleij@linaro.org>
-Cc: linux-m68k <linux-m68k@lists.linux-m68k.org>, kbuild test robot <lkp@intel.com>, Stefan Wahren <wahrenst@gmx.net>, Michael Schmitz <schmitzmic@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.orgLKML
 
-On Wed, Aug 14, 2019 at 10:28 AM Linus Walleij <linus.walleij@linaro.org> wrote:
-> On Mon, Aug 12, 2019 at 9:30 AM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > When test-compiling the BCM2835 pin control driver on m68k:
-> >
-> >     In file included from arch/m68k/include/asm/io_mm.h:32:0,
-> >                      from arch/m68k/include/asm/io.h:8,
-> >                      from include/linux/io.h:13,
-> >                      from include/linux/irq.h:20,
-> >                      from include/linux/gpio/driver.h:7,
-> >                      from drivers/pinctrl/bcm/pinctrl-bcm2835.c:17:
-> >     drivers/pinctrl/bcm/pinctrl-bcm2835.c: In function 'bcm2711_pull_config_set':
-> >     arch/m68k/include/asm/atarihw.h:190:22: error: expected identifier or '(' before 'volatile'
-> >      # define shifter ((*(volatile struct SHIFTER *)SHF_BAS))
-> >
-> > "shifter" is a too generic name for a global definition.
-> >
-> > As the corresponding definition for Atari TT is already called
-> > "shifter_tt", fix this by renaming the definition for Atari ST to
-> > "shifter_st".
-> >
-> > Reported-by: kbuild test robot <lkp@intel.com>
-> > Suggested-by: Michael Schmitz <schmitzmic@gmail.com>
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->
-> Finally we can use the sh pfc pin controller on our m68k Atari.
->
-> Now if I can only resolder the capacitors on my Atari TT ST
-> before the board self-destructs I will one day test this.
->
-> Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+From: John Hubbard <jhubbard@nvidia.com>
 
-Thanks, applied and queued for v5.4.
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Gr{oetje,eeting}s,
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-                        Geert
+Cc: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/tee/tee_shm.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 2da026fd12c9..c967d0420b67 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -31,16 +31,13 @@ static void tee_shm_release(struct tee_shm *shm)
+ 
+ 		poolm->ops->free(poolm, shm);
+ 	} else if (shm->flags & TEE_SHM_REGISTER) {
+-		size_t n;
+ 		int rc = teedev->desc->ops->shm_unregister(shm->ctx, shm);
+ 
+ 		if (rc)
+ 			dev_err(teedev->dev.parent,
+ 				"unregister shm %p failed: %d", shm, rc);
+ 
+-		for (n = 0; n < shm->num_pages; n++)
+-			put_page(shm->pages[n]);
+-
++		put_user_pages(shm->pages, shm->num_pages);
+ 		kfree(shm->pages);
+ 	}
+ 
+@@ -313,16 +310,13 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
+ 	return shm;
+ err:
+ 	if (shm) {
+-		size_t n;
+-
+ 		if (shm->id >= 0) {
+ 			mutex_lock(&teedev->mutex);
+ 			idr_remove(&teedev->idr, shm->id);
+ 			mutex_unlock(&teedev->mutex);
+ 		}
+ 		if (shm->pages) {
+-			for (n = 0; n < shm->num_pages; n++)
+-				put_page(shm->pages[n]);
++			put_user_pages(shm->pages, shm->num_pages);
+ 			kfree(shm->pages);
+ 		}
+ 	}
+-- 
+2.22.0

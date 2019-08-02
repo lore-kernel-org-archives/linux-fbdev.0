@@ -1,88 +1,48 @@
-From: Jan Kara <jack@suse.cz>
-Date: Fri, 09 Aug 2019 08:34:35 +0000
-Subject: Re: [PATCH 00/34] put_user_pages(): miscellaneous call sites
-Message-Id: <20190809083435.GA17568@quack2.suse.cz>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:57 +0000
+Subject: [PATCH 26/34] mm/gup_benchmark.c: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-27-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802091244.GD6461@dhcp22.suse.cz>
- <20190802124146.GL25064@quack2.suse.cz>
- <20190802142443.GB5597@bombadil.infradead.org>
- <20190802145227.GQ25064@quack2.suse.cz>
- <076e7826-67a5-4829-aae2-2b90f302cebd@nvidia.com>
- <20190807083726.GA14658@quack2.suse.cz>
- <20190807084649.GQ11812@dhcp22.suse.cz>
- <20190808023637.GA1508@iweiny-DESK2.sc.intel.com>
-In-Reply-To: <20190808023637.GA1508@iweiny-DESK2.sc.intel.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ira Weiny <ira.weiny@intel.com>
-Cc: Michal Hocko <mhocko@kernel.org>, Jan Kara <jack@suse.cz>, John Hubbard <jhubbard@nvidia.com>, Matthew Wilcox <willy@infradead.org>, john.hubbard@gmail.com, Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Jason Gunthorpe <jgg@ziepe.ca>, =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.o
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, YueHaibing <yuehaibing@huawei.com>, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@li
 
-On Wed 07-08-19 19:36:37, Ira Weiny wrote:
-> On Wed, Aug 07, 2019 at 10:46:49AM +0200, Michal Hocko wrote:
-> > > So I think your debug option and my suggested renaming serve a bit
-> > > different purposes (and thus both make sense). If you do the renaming, you
-> > > can just grep to see unconverted sites. Also when someone merges new GUP
-> > > user (unaware of the new rules) while you switch GUP to use pins instead of
-> > > ordinary references, you'll get compilation error in case of renaming
-> > > instead of hard to debug refcount leak without the renaming. And such
-> > > conflict is almost bound to happen given the size of GUP patch set... Also
-> > > the renaming serves against the "coding inertia" - i.e., GUP is around for
-> > > ages so people just use it without checking any documentation or comments.
-> > > After switching how GUP works, what used to be correct isn't anymore so
-> > > renaming the function serves as a warning that something has really
-> > > changed.
-> > 
-> > Fully agreed!
-> 
-> Ok Prior to this I've been basing all my work for the RDMA/FS DAX stuff in
-> Johns put_user_pages()...  (Including when I proposed failing truncate with a
-> lease in June [1])
-> 
-> However, based on the suggestions in that thread it became clear that a new
-> interface was going to need to be added to pass in the "RDMA file" information
-> to GUP to associate file pins with the correct processes...
-> 
-> I have many drawings on my white board with "a whole lot of lines" on them to
-> make sure that if a process opens a file, mmaps it, pins it with RDMA, _closes_
-> it, and ummaps it; that the resulting file pin can still be traced back to the
-> RDMA context and all the processes which may have access to it....  No matter
-> where the original context may have come from.  I believe I have accomplished
-> that.
-> 
-> Before I go on, I would like to say that the "imbalance" of get_user_pages()
-> and put_page() bothers me from a purist standpoint...  However, since this
-> discussion cropped up I went ahead and ported my work to Linus' current master
-> (5.3-rc3+) and in doing so I only had to steal a bit of Johns code...  Sorry
-> John...  :-(
-> 
-> I don't have the commit messages all cleaned up and I know there may be some
-> discussion on these new interfaces but I wanted to throw this series out there
-> because I think it may be what Jan and Michal are driving at (or at least in
-> that direction.
-> 
-> Right now only RDMA and DAX FS's are supported.  Other users of GUP will still
-> fail on a DAX file and regular files will still be at risk.[2]
-> 
-> I've pushed this work (based 5.3-rc3+ (33920f1ec5bf)) here[3]:
-> 
-> https://github.com/weiny2/linux-kernel/tree/linus-rdmafsdax-b0-v3
-> 
-> I think the most relevant patch to this conversation is:
-> 
-> https://github.com/weiny2/linux-kernel/commit/5d377653ba5cf11c3b716f904b057bee6641aaf6
-> 
-> I stole Jans suggestion for a name as the name I used while prototyping was
-> pretty bad...  So Thanks Jan...  ;-)
+From: John Hubbard <jhubbard@nvidia.com>
 
-For your function, I'd choose a name like vaddr_pin_leased_pages() so that
-association with a lease is clear from the name :) Also I'd choose the
-counterpart to be vaddr_unpin_leased_page[s](). Especially having put_page in
-the name looks confusing to me...
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-								Honza
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Keith Busch <keith.busch@intel.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: YueHaibing <yuehaibing@huawei.com>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ mm/gup_benchmark.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
+index 7dd602d7f8db..515ac8eeb6ee 100644
+--- a/mm/gup_benchmark.c
++++ b/mm/gup_benchmark.c
+@@ -79,7 +79,7 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
+ 	for (i = 0; i < nr_pages; i++) {
+ 		if (!pages[i])
+ 			break;
+-		put_page(pages[i]);
++		put_user_page(pages[i]);
+ 	}
+ 	end_time = ktime_get();
+ 	gup->put_delta_usec = ktime_us_delta(end_time, start_time);
 -- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+2.22.0

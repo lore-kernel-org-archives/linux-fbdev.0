@@ -1,68 +1,55 @@
-From: Denis Efremov <efremov@linux.com>
-Date: Sun, 11 Aug 2019 15:07:56 +0000
-Subject: [PATCH 1/7] PCI: Add define for the number of standard PCI BARs
-Message-Id: <20190811150802.2418-2-efremov@linux.com>
+From: john.hubbard@gmail.com
+Date: Fri, 02 Aug 2019 02:19:56 +0000
+Subject: [PATCH 25/34] mm/frame_vector.c: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-26-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190811150802.2418-1-efremov@linux.com>
-In-Reply-To: <20190811150802.2418-1-efremov@linux.com>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Denis Efremov <efremov@linux.com>, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-Code that iterates over all standard PCI BARs typically uses
-PCI_STD_RESOURCE_END. However, it requires the "unusual" loop condition
-"i <= PCI_STD_RESOURCE_END" rather than something more standard like
-"i < PCI_STD_NUM_BARS".
+From: John Hubbard <jhubbard@nvidia.com>
 
-This patch adds the definition PCI_STD_NUM_BARS which is equivalent to
-"PCI_STD_RESOURCE_END + 1" and updates loop conditions to use it.
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Signed-off-by: Denis Efremov <efremov@linux.com>
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Mel Gorman <mgorman@suse.de>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/pci/quirks.c          | 2 +-
- include/linux/pci.h           | 2 +-
- include/uapi/linux/pci_regs.h | 1 +
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ mm/frame_vector.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 208aacf39329..02bdf3a0231e 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -475,7 +475,7 @@ static void quirk_extend_bar_to_page(struct pci_dev *dev)
- {
- 	int i;
- 
--	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
-+	for (i = 0; i < PCI_STD_NUM_BARS; i++) {
- 		struct resource *r = &dev->resource[i];
- 
- 		if (r->flags & IORESOURCE_MEM && resource_size(r) < PAGE_SIZE) {
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 9e700d9f9f28..7b9590d5dc2d 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -76,7 +76,7 @@ enum pci_mmap_state {
- enum {
- 	/* #0-5: standard PCI resources */
- 	PCI_STD_RESOURCES,
--	PCI_STD_RESOURCE_END = 5,
-+	PCI_STD_RESOURCE_END = PCI_STD_RESOURCES + PCI_STD_NUM_BARS - 1,
- 
- 	/* #6: expansion ROM resource */
- 	PCI_ROM_RESOURCE,
-diff --git a/include/uapi/linux/pci_regs.h b/include/uapi/linux/pci_regs.h
-index f28e562d7ca8..68b571d491eb 100644
---- a/include/uapi/linux/pci_regs.h
-+++ b/include/uapi/linux/pci_regs.h
-@@ -34,6 +34,7 @@
-  * of which the first 64 bytes are standardized as follows:
+diff --git a/mm/frame_vector.c b/mm/frame_vector.c
+index c64dca6e27c2..f590badac776 100644
+--- a/mm/frame_vector.c
++++ b/mm/frame_vector.c
+@@ -120,7 +120,6 @@ EXPORT_SYMBOL(get_vaddr_frames);
   */
- #define PCI_STD_HEADER_SIZEOF	64
-+#define PCI_STD_NUM_BARS	6	/* Number of standard BARs */
- #define PCI_VENDOR_ID		0x00	/* 16 bits */
- #define PCI_DEVICE_ID		0x02	/* 16 bits */
- #define PCI_COMMAND		0x04	/* 16 bits */
+ void put_vaddr_frames(struct frame_vector *vec)
+ {
+-	int i;
+ 	struct page **pages;
+ 
+ 	if (!vec->got_ref)
+@@ -133,8 +132,7 @@ void put_vaddr_frames(struct frame_vector *vec)
+ 	 */
+ 	if (WARN_ON(IS_ERR(pages)))
+ 		goto out;
+-	for (i = 0; i < vec->nr_frames; i++)
+-		put_page(pages[i]);
++	put_user_pages(pages, vec->nr_frames);
+ 	vec->got_ref = false;
+ out:
+ 	vec->nr_frames = 0;
 -- 
-2.21.0
+2.22.0

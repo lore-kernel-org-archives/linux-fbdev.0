@@ -1,15 +1,15 @@
 From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:17 +0000
-Subject: [PATCH v3 18/41] drivers/tee: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-19-jhubbard@nvidia.com>
+Date: Fri, 02 Aug 2019 02:19:54 +0000
+Subject: [PATCH 23/34] uprobes: convert put_page() to put_user_page*()
+Message-Id: <20190802022005.5117-24-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
+References: <20190802022005.5117-1-jhubbard@nvidia.com>
+In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.orgLKML
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infrad
 
 From: John Hubbard <jhubbard@nvidia.com>
 
@@ -20,51 +20,47 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/tee/tee_shm.c | 10 ++--------
- 1 file changed, 2 insertions(+), 8 deletions(-)
+ kernel/events/uprobes.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
-index 2da026fd12c9..c967d0420b67 100644
---- a/drivers/tee/tee_shm.c
-+++ b/drivers/tee/tee_shm.c
-@@ -31,16 +31,13 @@ static void tee_shm_release(struct tee_shm *shm)
+diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
+index 84fa00497c49..4a575de8cec8 100644
+--- a/kernel/events/uprobes.c
++++ b/kernel/events/uprobes.c
+@@ -397,7 +397,7 @@ __update_ref_ctr(struct mm_struct *mm, unsigned long vaddr, short d)
+ 	ret = 0;
+ out:
+ 	kunmap_atomic(kaddr);
+-	put_page(page);
++	put_user_page(page);
+ 	return ret;
+ }
  
- 		poolm->ops->free(poolm, shm);
- 	} else if (shm->flags & TEE_SHM_REGISTER) {
--		size_t n;
- 		int rc = teedev->desc->ops->shm_unregister(shm->ctx, shm);
+@@ -504,7 +504,7 @@ int uprobe_write_opcode(struct arch_uprobe *auprobe, struct mm_struct *mm,
+ 	ret = __replace_page(vma, vaddr, old_page, new_page);
+ 	put_page(new_page);
+ put_old:
+-	put_page(old_page);
++	put_user_page(old_page);
  
- 		if (rc)
- 			dev_err(teedev->dev.parent,
- 				"unregister shm %p failed: %d", shm, rc);
+ 	if (unlikely(ret = -EAGAIN))
+ 		goto retry;
+@@ -1981,7 +1981,7 @@ static int is_trap_at_addr(struct mm_struct *mm, unsigned long vaddr)
+ 		return result;
  
--		for (n = 0; n < shm->num_pages; n++)
--			put_page(shm->pages[n]);
--
-+		put_user_pages(shm->pages, shm->num_pages);
- 		kfree(shm->pages);
- 	}
- 
-@@ -313,16 +310,13 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
- 	return shm;
- err:
- 	if (shm) {
--		size_t n;
--
- 		if (shm->id >= 0) {
- 			mutex_lock(&teedev->mutex);
- 			idr_remove(&teedev->idr, shm->id);
- 			mutex_unlock(&teedev->mutex);
- 		}
- 		if (shm->pages) {
--			for (n = 0; n < shm->num_pages; n++)
--				put_page(shm->pages[n]);
-+			put_user_pages(shm->pages, shm->num_pages);
- 			kfree(shm->pages);
- 		}
- 	}
+ 	copy_from_page(page, vaddr, &opcode, UPROBE_SWBP_INSN_SIZE);
+-	put_page(page);
++	put_user_page(page);
+  out:
+ 	/* This needs to return true for any variant of the trap insn */
+ 	return is_trap_insn(&opcode);
 -- 
 2.22.0

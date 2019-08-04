@@ -1,104 +1,333 @@
-From: Wei Hu <weh@microsoft.com>
-Date: Wed, 28 Aug 2019 09:12:30 +0000
-Subject: RE: [PATHC v2] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
-Message-Id: <KL1P15301MB026463D9F94CE517E7A63216BBA30@KL1P15301MB0264.APCP153.PROD.OUTLOOK.COM>
+From: john.hubbard@gmail.com
+Date: Sun, 04 Aug 2019 22:48:42 +0000
+Subject: [PATCH v2 01/34] mm/gup: add make_dirty arg to put_user_pages_dirty_lock()
+Message-Id: <20190804224915.28669-2-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190827112421.2770-1-weh@microsoft.com>
- <DM5PR21MB0137969B8EB3146160C86A2DD7A30@DM5PR21MB0137.namprd21.prod.outlook.com>
-In-Reply-To: <DM5PR21MB0137969B8EB3146160C86A2DD7A30@DM5PR21MB0137.namprd21.prod.outlook.com>
+References: <20190804224915.28669-1-jhubbard@nvidia.com>
+In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Kelley <mikelley@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "fthain@telegraphics.com.au" <fthain@telegraphics.com.au>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
+From: John Hubbard <jhubbard@nvidia.com>
 
+Provide a more capable variation of put_user_pages_dirty_lock(),
+and delete put_user_pages_dirty(). This is based on the
+following:
 
-> -----Original Message-----
-> From: Michael Kelley <mikelley@microsoft.com>
-> 
-> From: Wei Hu <weh@microsoft.com>  Sent: Tuesday, August 27, 2019 4:25 AM
-> >
-> > Without deferred IO support, hyperv_fb driver informs the host to refresh
-> > the entire guest frame buffer at fixed rate, e.g. at 20Hz, no matter there
-> > is screen update or not. This patch supports deferred IO for screens in
-> > graphics mode and also enables the frame buffer on-demand refresh. The
-> > highest refresh rate is still set at 20Hz.
-> >
-> > Currently Hyper-V only takes a physical address from guest as the starting
-> > address of frame buffer. This implies the guest must allocate contiguous
-> > physical memory for frame buffer. In addition, Hyper-V Gen 2 VMs only
-> > accept address from MMIO region as frame buffer address. Due to these
-> > limitations on Hyper-V host, we keep a shadow copy of frame buffer
-> > in the guest. This means one more copy of the dirty rectangle inside
-> > guest when doing the on-demand refresh. This can be optimized in the
-> > future with help from host. For now the host performance gain from deferred
-> > IO outweighs the shadow copy impact in the guest.
-> >
-> > v2: Incorporated review comments from Michael Kelley
-> > - Increased dirty rectangle by one row in deferred IO case when sending
-> > to Hyper-V.
-> > - Corrected the dirty rectangle size in the text mode.
-> > - Added more comments.
-> > - Other minor code cleanups.
-> 
-> Version history should go after the "---" below so it is not included in
-> the commit message.
-> 
-[Wei Hu] 
-I saw version history in the commit logs. 
+1. Lots of call sites become simpler if a bool is passed
+into put_user_page*(), instead of making the call site
+choose which put_user_page*() variant to call.
 
-> >
-> > Signed-off-by: Wei Hu <weh@microsoft.com>
-> > ---
-> >  drivers/video/fbdev/Kconfig     |   1 +
-> >  drivers/video/fbdev/hyperv_fb.c | 221 +++++++++++++++++++++++++++++---
-> >  2 files changed, 202 insertions(+), 20 deletions(-)
-> >
-> > +/* Deferred IO callback */
-> > +static void synthvid_deferred_io(struct fb_info *p,
-> > +				 struct list_head *pagelist)
-> > +{
-> > +	struct hvfb_par *par = p->par;
-> > +	struct page *page;
-> > +	unsigned long start, end;
-> > +	int y1, y2, miny, maxy;
-> > +	unsigned long flags;
-> > +
-> > +	miny = INT_MAX;
-> > +	maxy = 0;
-> > +
-> > +	/*
-> > +	 * Merge dirty pages. It is possible that last page cross
-> > +	 * over the end of frame buffer row yres. This is taken care of
-> > +	 * in synthvid_update function by clamping the y2
-> > +	 * value to yres.
-> > +	 */
-> > +	list_for_each_entry(page, pagelist, lru) {
-> > +		start = page->index << PAGE_SHIFT;
-> > +		end = start + PAGE_SIZE - 1;
-> > +		y1 = start / p->fix.line_length;
-> > +		y2 = end / p->fix.line_length;
-> > +		if (y2 > p->var.yres)
-> > +			y2 = p->var.yres;
-> 
-> The above test seems contradictory to the comment that
-> says the clamping is done in synthvid_update().  Also, since
-> the above calculation of y2 is "inclusive", the clamping should
-> be done to yres - 1 in order to continue to be inclusive.  Then
-> when maxy + 1 is passed to synthvid_update() everything works
-> out correctly.
->
-[Wei Hu] 
-Actually the original code I sent out just works correctly.  It always get
-the inclusive rectangle in the above loop, and only send one more extra
-line (if y2 == yres) to sythvid_update() and it is clamped inside that 
-function. Changing it to yres -1 and sending maxy + 1 to sytnvid_update()
-makes it the same as the original code in this case, and would end up 
-always copy and refresh one extra row when y2 < yres.
+2. Christoph Hellwig's observation that set_page_dirty_lock()
+is usually correct, and set_page_dirty() is usually a
+bug, or at least questionable, within a put_user_page*()
+calling chain.
 
-The comment I added was according to your last review comment asking
-to add some comments explaining it. Maybe I mis-understood. I thought
-since you wanted me to change to maxy + 1, the code could reach yres + 1
-so it will be clamped in synthvid_update() to yres.
+This leads to the following API choices:
 
- Wei
+    * put_user_pages_dirty_lock(page, npages, make_dirty)
+
+    * There is no put_user_pages_dirty(). You have to
+      hand code that, in the rare case that it's
+      required.
+
+Reviewed-by: Christoph Hellwig <hch@lst.de>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Jan Kara <jack@suse.cz>
+Cc: Ira Weiny <ira.weiny@intel.com>
+Cc: Jason Gunthorpe <jgg@ziepe.ca>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/infiniband/core/umem.c             |   5 +-
+ drivers/infiniband/hw/hfi1/user_pages.c    |   5 +-
+ drivers/infiniband/hw/qib/qib_user_pages.c |  13 +--
+ drivers/infiniband/hw/usnic/usnic_uiom.c   |   5 +-
+ drivers/infiniband/sw/siw/siw_mem.c        |  19 +---
+ include/linux/mm.h                         |   5 +-
+ mm/gup.c                                   | 115 +++++++++------------
+ 7 files changed, 61 insertions(+), 106 deletions(-)
+
+diff --git a/drivers/infiniband/core/umem.c b/drivers/infiniband/core/umem.c
+index 08da840ed7ee..965cf9dea71a 100644
+--- a/drivers/infiniband/core/umem.c
++++ b/drivers/infiniband/core/umem.c
+@@ -54,10 +54,7 @@ static void __ib_umem_release(struct ib_device *dev, struct ib_umem *umem, int d
+ 
+ 	for_each_sg_page(umem->sg_head.sgl, &sg_iter, umem->sg_nents, 0) {
+ 		page = sg_page_iter_page(&sg_iter);
+-		if (umem->writable && dirty)
+-			put_user_pages_dirty_lock(&page, 1);
+-		else
+-			put_user_page(page);
++		put_user_pages_dirty_lock(&page, 1, umem->writable && dirty);
+ 	}
+ 
+ 	sg_free_table(&umem->sg_head);
+diff --git a/drivers/infiniband/hw/hfi1/user_pages.c b/drivers/infiniband/hw/hfi1/user_pages.c
+index b89a9b9aef7a..469acb961fbd 100644
+--- a/drivers/infiniband/hw/hfi1/user_pages.c
++++ b/drivers/infiniband/hw/hfi1/user_pages.c
+@@ -118,10 +118,7 @@ int hfi1_acquire_user_pages(struct mm_struct *mm, unsigned long vaddr, size_t np
+ void hfi1_release_user_pages(struct mm_struct *mm, struct page **p,
+ 			     size_t npages, bool dirty)
+ {
+-	if (dirty)
+-		put_user_pages_dirty_lock(p, npages);
+-	else
+-		put_user_pages(p, npages);
++	put_user_pages_dirty_lock(p, npages, dirty);
+ 
+ 	if (mm) { /* during close after signal, mm can be NULL */
+ 		atomic64_sub(npages, &mm->pinned_vm);
+diff --git a/drivers/infiniband/hw/qib/qib_user_pages.c b/drivers/infiniband/hw/qib/qib_user_pages.c
+index bfbfbb7e0ff4..26c1fb8d45cc 100644
+--- a/drivers/infiniband/hw/qib/qib_user_pages.c
++++ b/drivers/infiniband/hw/qib/qib_user_pages.c
+@@ -37,15 +37,6 @@
+ 
+ #include "qib.h"
+ 
+-static void __qib_release_user_pages(struct page **p, size_t num_pages,
+-				     int dirty)
+-{
+-	if (dirty)
+-		put_user_pages_dirty_lock(p, num_pages);
+-	else
+-		put_user_pages(p, num_pages);
+-}
+-
+ /**
+  * qib_map_page - a safety wrapper around pci_map_page()
+  *
+@@ -124,7 +115,7 @@ int qib_get_user_pages(unsigned long start_page, size_t num_pages,
+ 
+ 	return 0;
+ bail_release:
+-	__qib_release_user_pages(p, got, 0);
++	put_user_pages_dirty_lock(p, got, false);
+ bail:
+ 	atomic64_sub(num_pages, &current->mm->pinned_vm);
+ 	return ret;
+@@ -132,7 +123,7 @@ int qib_get_user_pages(unsigned long start_page, size_t num_pages,
+ 
+ void qib_release_user_pages(struct page **p, size_t num_pages)
+ {
+-	__qib_release_user_pages(p, num_pages, 1);
++	put_user_pages_dirty_lock(p, num_pages, true);
+ 
+ 	/* during close after signal, mm can be NULL */
+ 	if (current->mm)
+diff --git a/drivers/infiniband/hw/usnic/usnic_uiom.c b/drivers/infiniband/hw/usnic/usnic_uiom.c
+index 0b0237d41613..62e6ffa9ad78 100644
+--- a/drivers/infiniband/hw/usnic/usnic_uiom.c
++++ b/drivers/infiniband/hw/usnic/usnic_uiom.c
+@@ -75,10 +75,7 @@ static void usnic_uiom_put_pages(struct list_head *chunk_list, int dirty)
+ 		for_each_sg(chunk->page_list, sg, chunk->nents, i) {
+ 			page = sg_page(sg);
+ 			pa = sg_phys(sg);
+-			if (dirty)
+-				put_user_pages_dirty_lock(&page, 1);
+-			else
+-				put_user_page(page);
++			put_user_pages_dirty_lock(&page, 1, dirty);
+ 			usnic_dbg("pa: %pa\n", &pa);
+ 		}
+ 		kfree(chunk);
+diff --git a/drivers/infiniband/sw/siw/siw_mem.c b/drivers/infiniband/sw/siw/siw_mem.c
+index 67171c82b0c4..1e197753bf2f 100644
+--- a/drivers/infiniband/sw/siw/siw_mem.c
++++ b/drivers/infiniband/sw/siw/siw_mem.c
+@@ -60,20 +60,6 @@ struct siw_mem *siw_mem_id2obj(struct siw_device *sdev, int stag_index)
+ 	return NULL;
+ }
+ 
+-static void siw_free_plist(struct siw_page_chunk *chunk, int num_pages,
+-			   bool dirty)
+-{
+-	struct page **p = chunk->plist;
+-
+-	while (num_pages--) {
+-		if (!PageDirty(*p) && dirty)
+-			put_user_pages_dirty_lock(p, 1);
+-		else
+-			put_user_page(*p);
+-		p++;
+-	}
+-}
+-
+ void siw_umem_release(struct siw_umem *umem, bool dirty)
+ {
+ 	struct mm_struct *mm_s = umem->owning_mm;
+@@ -82,8 +68,9 @@ void siw_umem_release(struct siw_umem *umem, bool dirty)
+ 	for (i = 0; num_pages; i++) {
+ 		int to_free = min_t(int, PAGES_PER_CHUNK, num_pages);
+ 
+-		siw_free_plist(&umem->page_chunk[i], to_free,
+-			       umem->writable && dirty);
++		put_user_pages_dirty_lock(umem->page_chunk[i].plist,
++					  to_free,
++					  umem->writable && dirty);
+ 		kfree(umem->page_chunk[i].plist);
+ 		num_pages -= to_free;
+ 	}
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0334ca97c584..9759b6a24420 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1057,8 +1057,9 @@ static inline void put_user_page(struct page *page)
+ 	put_page(page);
+ }
+ 
+-void put_user_pages_dirty(struct page **pages, unsigned long npages);
+-void put_user_pages_dirty_lock(struct page **pages, unsigned long npages);
++void put_user_pages_dirty_lock(struct page **pages, unsigned long npages,
++			       bool make_dirty);
++
+ void put_user_pages(struct page **pages, unsigned long npages);
+ 
+ #if defined(CONFIG_SPARSEMEM) && !defined(CONFIG_SPARSEMEM_VMEMMAP)
+diff --git a/mm/gup.c b/mm/gup.c
+index 98f13ab37bac..7fefd7ab02c4 100644
+--- a/mm/gup.c
++++ b/mm/gup.c
+@@ -29,85 +29,70 @@ struct follow_page_context {
+ 	unsigned int page_mask;
+ };
+ 
+-typedef int (*set_dirty_func_t)(struct page *page);
+-
+-static void __put_user_pages_dirty(struct page **pages,
+-				   unsigned long npages,
+-				   set_dirty_func_t sdf)
+-{
+-	unsigned long index;
+-
+-	for (index = 0; index < npages; index++) {
+-		struct page *page = compound_head(pages[index]);
+-
+-		/*
+-		 * Checking PageDirty at this point may race with
+-		 * clear_page_dirty_for_io(), but that's OK. Two key cases:
+-		 *
+-		 * 1) This code sees the page as already dirty, so it skips
+-		 * the call to sdf(). That could happen because
+-		 * clear_page_dirty_for_io() called page_mkclean(),
+-		 * followed by set_page_dirty(). However, now the page is
+-		 * going to get written back, which meets the original
+-		 * intention of setting it dirty, so all is well:
+-		 * clear_page_dirty_for_io() goes on to call
+-		 * TestClearPageDirty(), and write the page back.
+-		 *
+-		 * 2) This code sees the page as clean, so it calls sdf().
+-		 * The page stays dirty, despite being written back, so it
+-		 * gets written back again in the next writeback cycle.
+-		 * This is harmless.
+-		 */
+-		if (!PageDirty(page))
+-			sdf(page);
+-
+-		put_user_page(page);
+-	}
+-}
+-
+ /**
+- * put_user_pages_dirty() - release and dirty an array of gup-pinned pages
+- * @pages:  array of pages to be marked dirty and released.
++ * put_user_pages_dirty_lock() - release and optionally dirty gup-pinned pages
++ * @pages:  array of pages to be maybe marked dirty, and definitely released.
+  * @npages: number of pages in the @pages array.
++ * @make_dirty: whether to mark the pages dirty
+  *
+  * "gup-pinned page" refers to a page that has had one of the get_user_pages()
+  * variants called on that page.
+  *
+  * For each page in the @pages array, make that page (or its head page, if a
+- * compound page) dirty, if it was previously listed as clean. Then, release
+- * the page using put_user_page().
++ * compound page) dirty, if @make_dirty is true, and if the page was previously
++ * listed as clean. In any case, releases all pages using put_user_page(),
++ * possibly via put_user_pages(), for the non-dirty case.
+  *
+  * Please see the put_user_page() documentation for details.
+  *
+- * set_page_dirty(), which does not lock the page, is used here.
+- * Therefore, it is the caller's responsibility to ensure that this is
+- * safe. If not, then put_user_pages_dirty_lock() should be called instead.
++ * set_page_dirty_lock() is used internally. If instead, set_page_dirty() is
++ * required, then the caller should a) verify that this is really correct,
++ * because _lock() is usually required, and b) hand code it:
++ * set_page_dirty_lock(), put_user_page().
+  *
+  */
+-void put_user_pages_dirty(struct page **pages, unsigned long npages)
++void put_user_pages_dirty_lock(struct page **pages, unsigned long npages,
++			       bool make_dirty)
+ {
+-	__put_user_pages_dirty(pages, npages, set_page_dirty);
+-}
+-EXPORT_SYMBOL(put_user_pages_dirty);
++	unsigned long index;
+ 
+-/**
+- * put_user_pages_dirty_lock() - release and dirty an array of gup-pinned pages
+- * @pages:  array of pages to be marked dirty and released.
+- * @npages: number of pages in the @pages array.
+- *
+- * For each page in the @pages array, make that page (or its head page, if a
+- * compound page) dirty, if it was previously listed as clean. Then, release
+- * the page using put_user_page().
+- *
+- * Please see the put_user_page() documentation for details.
+- *
+- * This is just like put_user_pages_dirty(), except that it invokes
+- * set_page_dirty_lock(), instead of set_page_dirty().
+- *
+- */
+-void put_user_pages_dirty_lock(struct page **pages, unsigned long npages)
+-{
+-	__put_user_pages_dirty(pages, npages, set_page_dirty_lock);
++	/*
++	 * TODO: this can be optimized for huge pages: if a series of pages is
++	 * physically contiguous and part of the same compound page, then a
++	 * single operation to the head page should suffice.
++	 */
++
++	if (!make_dirty) {
++		put_user_pages(pages, npages);
++		return;
++	}
++
++	for (index = 0; index < npages; index++) {
++		struct page *page = compound_head(pages[index]);
++		/*
++		 * Checking PageDirty at this point may race with
++		 * clear_page_dirty_for_io(), but that's OK. Two key
++		 * cases:
++		 *
++		 * 1) This code sees the page as already dirty, so it
++		 * skips the call to set_page_dirty(). That could happen
++		 * because clear_page_dirty_for_io() called
++		 * page_mkclean(), followed by set_page_dirty().
++		 * However, now the page is going to get written back,
++		 * which meets the original intention of setting it
++		 * dirty, so all is well: clear_page_dirty_for_io() goes
++		 * on to call TestClearPageDirty(), and write the page
++		 * back.
++		 *
++		 * 2) This code sees the page as clean, so it calls
++		 * set_page_dirty(). The page stays dirty, despite being
++		 * written back, so it gets written back again in the
++		 * next writeback cycle. This is harmless.
++		 */
++		if (!PageDirty(page))
++			set_page_dirty_lock(page);
++		put_user_page(page);
++	}
+ }
+ EXPORT_SYMBOL(put_user_pages_dirty_lock);
+ 
+-- 
+2.22.0

@@ -1,7 +1,7 @@
 From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:49:02 +0000
-Subject: [PATCH v2 21/34] fs/exec.c: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-22-jhubbard@nvidia.com>
+Date: Sun, 04 Aug 2019 22:48:44 +0000
+Subject: [PATCH v2 03/34] net/ceph: convert put_page() to put_user_page*()
+Message-Id: <20190804224915.28669-4-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190804224915.28669-1-jhubbard@nvidia.com>
 In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.orgLKML
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
 From: John Hubbard <jhubbard@nvidia.com>
 
@@ -20,25 +20,36 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org
+Acked-by: Jeff Layton <jlayton@kernel.org>
+
+Cc: Ilya Dryomov <idryomov@gmail.com>
+Cc: Sage Weil <sage@redhat.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: ceph-devel@vger.kernel.org
+Cc: netdev@vger.kernel.org
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- fs/exec.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/ceph/pagevec.c | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/fs/exec.c b/fs/exec.c
-index f7f6a140856a..ee442151582f 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -227,7 +227,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+diff --git a/net/ceph/pagevec.c b/net/ceph/pagevec.c
+index 64305e7056a1..c88fff2ab9bd 100644
+--- a/net/ceph/pagevec.c
++++ b/net/ceph/pagevec.c
+@@ -12,13 +12,7 @@
  
- static void put_arg_page(struct page *page)
+ void ceph_put_page_vector(struct page **pages, int num_pages, bool dirty)
  {
--	put_page(page);
-+	put_user_page(page);
+-	int i;
+-
+-	for (i = 0; i < num_pages; i++) {
+-		if (dirty)
+-			set_page_dirty_lock(pages[i]);
+-		put_page(pages[i]);
+-	}
++	put_user_pages_dirty_lock(pages, num_pages, dirty);
+ 	kvfree(pages);
  }
- 
- static void free_arg_pages(struct linux_binprm *bprm)
+ EXPORT_SYMBOL(ceph_put_page_vector);
 -- 
 2.22.0

@@ -1,7 +1,7 @@
 From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:48:59 +0000
-Subject: [PATCH v2 18/34] fbdev/pvr2fb: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-19-jhubbard@nvidia.com>
+Date: Sun, 04 Aug 2019 22:49:07 +0000
+Subject: [PATCH v2 26/34] mm/gup_benchmark.c: convert put_page() to put_user_page*()
+Message-Id: <20190804224915.28669-27-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190804224915.28669-1-jhubbard@nvidia.com>
 In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
@@ -9,7 +9,7 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, Keith Busch <keith.busch@intel.com>, linux-mm@kvack.org, sparclinux@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, YueHaibing <yuehaibing@huawei.com>, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@>
 
 From: John Hubbard <jhubbard@nvidia.com>
 
@@ -20,31 +20,31 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Reviewed-by: Keith Busch <keith.busch@intel.com>
+
+Cc: Dan Carpenter <dan.carpenter@oracle.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Keith Busch <keith.busch@intel.com>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Michael S. Tsirkin <mst@redhat.com>
+Cc: YueHaibing <yuehaibing@huawei.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/video/fbdev/pvr2fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ mm/gup_benchmark.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 7ff4b6b84282..0e4f9aa6444d 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -700,8 +700,7 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
- 	ret = count;
- 
- out_unmap:
--	for (i = 0; i < nr_pages; i++)
+diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
+index 7dd602d7f8db..515ac8eeb6ee 100644
+--- a/mm/gup_benchmark.c
++++ b/mm/gup_benchmark.c
+@@ -79,7 +79,7 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
+ 	for (i = 0; i < nr_pages; i++) {
+ 		if (!pages[i])
+ 			break;
 -		put_page(pages[i]);
-+	put_user_pages(pages, nr_pages);
- 
- 	kfree(pages);
- 
++		put_user_page(pages[i]);
+ 	}
+ 	end_time = ktime_get();
+ 	gup->put_delta_usec = ktime_us_delta(end_time, start_time);
 -- 
 2.22.0

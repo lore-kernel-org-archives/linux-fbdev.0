@@ -1,13 +1,13 @@
 From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:36 +0000
-Subject: [PATCH v3 37/41] security/tomoyo: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-38-jhubbard@nvidia.com>
+Date: Sun, 04 Aug 2019 22:48:46 +0000
+Subject: [PATCH v2 05/34] drm/etnaviv: convert release_pages() to put_user_pages()
+Message-Id: <20190804224915.28669-6-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
+References: <20190804224915.28669-1-jhubbard@nvidia.com>
+In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
@@ -20,27 +20,41 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Acked-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-
-Cc: Kentaro Takeda <takedakn@nttdata.co.jp>
-Cc: linux-security-module@vger.kernel.org
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: Paolo Bonzini <pbonzini@redhat.com>
+Cc: Radim Krčmář <rkrcmar@redhat.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: x86@kernel.org
+Cc: kvm@vger.kernel.org
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- security/tomoyo/domain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/etnaviv/etnaviv_gem.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/security/tomoyo/domain.c b/security/tomoyo/domain.c
-index 8526a0a74023..6887beecfb6e 100644
---- a/security/tomoyo/domain.c
-+++ b/security/tomoyo/domain.c
-@@ -931,7 +931,7 @@ bool tomoyo_dump_page(struct linux_binprm *bprm, unsigned long pos,
+diff --git a/drivers/gpu/drm/etnaviv/etnaviv_gem.c b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+index e8778ebb72e6..a0144a5ee325 100644
+--- a/drivers/gpu/drm/etnaviv/etnaviv_gem.c
++++ b/drivers/gpu/drm/etnaviv/etnaviv_gem.c
+@@ -686,7 +686,7 @@ static int etnaviv_gem_userptr_get_pages(struct etnaviv_gem_object *etnaviv_obj)
+ 		ret = get_user_pages_fast(ptr, num_pages,
+ 					  !userptr->ro ? FOLL_WRITE : 0, pages);
+ 		if (ret < 0) {
+-			release_pages(pvec, pinned);
++			put_user_pages(pvec, pinned);
+ 			kvfree(pvec);
+ 			return ret;
+ 		}
+@@ -710,7 +710,7 @@ static void etnaviv_gem_userptr_release(struct etnaviv_gem_object *etnaviv_obj)
+ 	if (etnaviv_obj->pages) {
+ 		int npages = etnaviv_obj->base.size >> PAGE_SHIFT;
+ 
+-		release_pages(etnaviv_obj->pages, npages);
++		put_user_pages(etnaviv_obj->pages, npages);
+ 		kvfree(etnaviv_obj->pages);
  	}
- 	/* Same with put_arg_page(page) in fs/exec.c */
- #ifdef CONFIG_MMU
--	put_page(page);
-+	put_user_page(page);
- #endif
- 	return true;
  }
 -- 
 2.22.0

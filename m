@@ -1,63 +1,48 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Date: Tue, 20 Aug 2019 09:56:15 +0000
-Subject: Re: [PATCH 2/3] video: fbdev: mmp: add COMPILE_TEST support
-Message-Id: <28d91688-6df2-9207-7d88-34d024baf727@samsung.com>
+From: john.hubbard@gmail.com
+Date: Sun, 04 Aug 2019 22:49:14 +0000
+Subject: [PATCH v2 33/34] kernel/events/core.c: convert put_page() to put_user_page*()
+Message-Id: <20190804224915.28669-34-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627140744eucas1p1eb91c6c21ae36105f38dbf5e42259a7c@eucas1p1.samsung.com>
-        <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
-In-Reply-To: <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
+References: <20190804224915.28669-1-jhubbard@nvidia.com>
+In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
-> Add COMPILE_TEST support to mmp display subsystem for better compile
-> testing coverage.
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: John Hubbard <jhubbard@nvidia.com>
 
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-=C2=A0--
-Regards
-Andrzej
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ kernel/events/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-> ---
->  drivers/video/fbdev/mmp/Kconfig    |    2 +-
->  drivers/video/fbdev/mmp/hw/Kconfig |    3 ++-
->  2 files changed, 3 insertions(+), 2 deletions(-)
->
-> Index: b/drivers/video/fbdev/mmp/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/Kconfig
-> +++ b/drivers/video/fbdev/mmp/Kconfig
-> @@ -1,7 +1,7 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  menuconfig MMP_DISP
->  	tristate "Marvell MMP Display Subsystem support"
-> -	depends on CPU_PXA910 || CPU_MMP2
-> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
->  	help
->  	  Marvell Display Subsystem support.
-> =20
-> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/hw/Kconfig
-> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
-> @@ -1,7 +1,8 @@
->  # SPDX-License-Identifier: GPL-2.0-only
->  config MMP_DISP_CONTROLLER
->  	bool "mmp display controller hw support"
-> -	depends on CPU_PXA910 || CPU_MMP2
-> +	depends on HAVE_CLK && HAS_IOMEM
-> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
->  	help
->  		Marvell MMP display hw controller support
->  		this controller is used on Marvell PXA910 and
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index 0463c1151bae..7be52bbbfe87 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -6426,7 +6426,7 @@ static u64 perf_virt_to_phys(u64 virt)
+ 			phys_addr = page_to_phys(p) + virt % PAGE_SIZE;
+ 
+ 		if (p)
+-			put_page(p);
++			put_user_page(p);
+ 	}
+ 
+ 	return phys_addr;
+-- 
+2.22.0

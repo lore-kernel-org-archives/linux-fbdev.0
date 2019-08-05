@@ -1,45 +1,65 @@
-From: John Hubbard <jhubbard@nvidia.com>
-Date: Fri, 02 Aug 2019 19:25:01 +0000
-Subject: Re: [PATCH 20/34] xen: convert put_page() to put_user_page*()
-Message-Id: <746b2412-f48a-9722-2763-253a1b9c899d@nvidia.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 05 Aug 2019 10:37:50 +0000
+Subject: Re: [PATCH v3 0/4] backlight: Expose brightness curve type through sysfs
+Message-Id: <20190805103750.GG4739@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802022005.5117-21-jhubbard@nvidia.com>
- <4471e9dc-a315-42c1-0c3c-55ba4eeeb106@suse.com>
- <d5140833-e9ee-beb5-ff0a-2d13a4fe819f@nvidia.com>
- <d4931311-db01-e8c3-0f8c-d64685dc2143@suse.com>
- <2807E5FD2F6FDA4886F6618EAC48510E79E66216@CRSMSX101.amr.corp.intel.com>
-In-Reply-To: <2807E5FD2F6FDA4886F6618EAC48510E79E66216@CRSMSX101.amr.corp.intel.com>
+References: <20190709190007.91260-1-mka@chromium.org>
+ <20190722235926.GA250418@google.com>
+ <20190725111541.GA23883@dell>
+ <20190725171726.GD250418@google.com>
+In-Reply-To: <20190725171726.GD250418@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Weiny, Ira" <ira.weiny@intel.com>, Juergen Gross <jgross@suse.com>, "john.hubbard@gmail.com" <john.hubbard@gmail.com>, Andrew Morton <akpm@linux-foundation.org>
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>, Dave Chinner <david@fromorbit.com>, Christoph Hellwig <hch@infradead.org>, "Williams, Dan J" <dan.j.williams@intel.com>, "x86@kernel.org" <x86@kernel.org>, "linux-mm@kvack.org" <linux-mm@kvack.org>, Dave Hansen <dave.hansen@linux.intel.com>, "amd-gfx@lists.freedesktop.org" <amd-gfx@lists.freedesktop.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>, "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, "linux-rpi-kernel@lists.infradead.org" <linux-rpi-kernel@lists.infradead.org>, "devel@lists.orangefs.org" <devel@lists.orangefs.org>, "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproj>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
 
-On 8/2/19 9:09 AM, Weiny, Ira wrote:
->>
->> On 02.08.19 07:48, John Hubbard wrote:
->>> On 8/1/19 9:36 PM, Juergen Gross wrote:
->>>> On 02.08.19 04:19, john.hubbard@gmail.com wrote:
->>>>> From: John Hubbard <jhubbard@nvidia.com>
->>> ...
->>> If that's not the case (both here, and in 3 or 4 other patches in this
->>> series, then as you said, I should add NULL checks to put_user_pages()
->>> and put_user_pages_dirty_lock().
->>
->> In this case it is not correct, but can easily be handled. The NULL case can
->> occur only in an error case with the pages array filled partially or not at all.
->>
->> I'd prefer something like the attached patch here.
+On Thu, 25 Jul 2019, Matthias Kaehlcke wrote:
+
+> On Thu, Jul 25, 2019 at 12:15:41PM +0100, Lee Jones wrote:
+> > On Mon, 22 Jul 2019, Matthias Kaehlcke wrote:
+> > 
+> > > On Tue, Jul 09, 2019 at 12:00:03PM -0700, Matthias Kaehlcke wrote:
+> > > > Backlight brightness curves can have different shapes. The two main
+> > > > types are linear and non-linear curves. The human eye doesn't
+> > > > perceive linearly increasing/decreasing brightness as linear (see
+> > > > also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+> > > > linearly to human eye"), hence many backlights use non-linear (often
+> > > > logarithmic) brightness curves. The type of curve is currently opaque
+> > > > to userspace, so userspace often relies on more or less reliable
+> > > > heuristics (like the number of brightness levels) to decide whether
+> > > > to treat a backlight device as linear or non-linear.
+> > > > 
+> > > > Export the type of the brightness curve via a new sysfs attribute.
+> > > > 
+> > > > Matthias Kaehlcke (4):
+> > > >   MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
+> > > >   backlight: Expose brightness curve type through sysfs
+> > > >   backlight: pwm_bl: Set scale type for CIE 1931 curves
+> > > >   backlight: pwm_bl: Set scale type for brightness curves specified in
+> > > >     the DT
+> > > > 
+> > > >  .../ABI/testing/sysfs-class-backlight         | 26 ++++++++++++++
+> > > >  MAINTAINERS                                   |  2 ++
+> > > >  drivers/video/backlight/backlight.c           | 19 ++++++++++
+> > > >  drivers/video/backlight/pwm_bl.c              | 35 ++++++++++++++++++-
+> > > >  include/linux/backlight.h                     |  8 +++++
+> > > >  5 files changed, 89 insertions(+), 1 deletion(-)
+> > > >  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
+> > > 
+> > > ping, any comments on v3?
+> > 
+> > Looks like PATCH 2/4 still needs seeing to.
 > 
-> I'm not an expert in this code and have not looked at it carefully but that patch does seem to be the better fix than forcing NULL checks on everyone.
+> The patch currently doesn't have any comments.
 > 
+> Do you see any specific things that need improvement? If so, could you
+> comment on the patch?
 
-OK, I'll use Juergen's approach, and also check for that pattern in the
-other patches.
+It needs Daniel T's Ack.
 
-
-thanks,
 -- 
-John Hubbard
-NVIDIA
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

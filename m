@@ -1,41 +1,84 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 03 Aug 2019 07:06:21 +0000
-Subject: Re: [PATCH 15/34] staging/vc04_services: convert put_page() to put_user_page*()
-Message-Id: <20190803070621.GA2508@kroah.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 05 Aug 2019 10:35:04 +0000
+Subject: Re: [PATCH v1 1/1] backlight: drop EARLY_EVENT_BLANK support
+Message-Id: <20190805103504.GE4739@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802022005.5117-16-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-16-jhubbard@nvidia.com>
+References: <20190725143224.GB31803@ravnborg.org>
+ <20190725143934.GH15868@phenom.ffwll.local>
+ <20190725150629.GN23883@dell> <20190726160953.GA25708@ravnborg.org>
+In-Reply-To: <20190726160953.GA25708@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: john.hubbard@gmail.com
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Suniel Mahesh <sunil.m@techveda.org>, Dan Williams <dan.j.williams@intel.com>, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Stefan Wahren <stefan.wahren@i2se.com>, Mihaela Muraru <mihaela.muraru21@gmail.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, ceph-d
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, Gerd Hoffmann <kraxel@redhat.com>, Jingoo Han <jingoohan1@gmail.com>, Peter Rosin <peda@axentia.se>
 
-On Thu, Aug 01, 2019 at 07:19:46PM -0700, john.hubbard@gmail.com wrote:
-> From: John Hubbard <jhubbard@nvidia.com>
-> 
-> For pages that were retained via get_user_pages*(), release those pages
-> via the new put_user_page*() routines, instead of via put_page() or
-> release_pages().
-> 
-> This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-> ("mm: introduce put_user_page*(), placeholder versions").
-> 
-> Cc: Eric Anholt <eric@anholt.net>
-> Cc: Stefan Wahren <stefan.wahren@i2se.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Mihaela Muraru <mihaela.muraru21@gmail.com>
-> Cc: Suniel Mahesh <sunil.m@techveda.org>
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Sidong Yang <realwakka@gmail.com>
-> Cc: Kishore KP <kishore.p@techveda.org>
-> Cc: linux-rpi-kernel@lists.infradead.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: devel@driverdev.osuosl.org
-> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
-> ---
->  .../vc04_services/interface/vchiq_arm/vchiq_2835_arm.c | 10 ++--------
->  1 file changed, 2 insertions(+), 8 deletions(-)
+On Fri, 26 Jul 2019, Sam Ravnborg wrote:
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Hi Lee.
+> 
+> On Thu, Jul 25, 2019 at 04:06:29PM +0100, Lee Jones wrote:
+> > On Thu, 25 Jul 2019, Daniel Vetter wrote:
+> > 
+> > > On Thu, Jul 25, 2019 at 04:32:24PM +0200, Sam Ravnborg wrote:
+> > > > There was no users left - so drop the code to support EARLY_FB_BLANK.
+> > > > This patch removes the support in backlight,
+> > > > and drop the notifier in fbmem.
+> > > > 
+> > > > That EARLY_FB_BLANK is not used can be verified that no driver set any of:
+> > > > 
+> > > >     lcd_ops.early_set_power()
+> > > >     lcd_ops.r_early_set_power()
+> > > > 
+> > > > Noticed while browsing backlight code for other reasons.
+> > > 
+> > > Ah I didn't grep hard enough, I didn't realize that no one sets the
+> > > lcd_ops->(r_)early_set_power hooks. Nice find!
+> > > 
+> > > Reviewed-by: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > > 
+> > > > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> > > > Cc: Lee Jones <lee.jones@linaro.org>
+> > > > Cc: Daniel Thompson <daniel.thompson@linaro.org>
+> > > > Cc: Jingoo Han <jingoohan1@gmail.com>
+> > > > Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> > > > Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
+> > > > Cc: Sam Ravnborg <sam@ravnborg.org>
+> > > > Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+> > > > Cc: "Michał Mirosław" <mirq-linux@rere.qmqm.pl>
+> > > > Cc: Peter Rosin <peda@axentia.se>
+> > > > Cc: Gerd Hoffmann <kraxel@redhat.com>
+> > > > Cc: dri-devel@lists.freedesktop.org
+> > > > Cc: linux-fbdev@vger.kernel.org
+> > > > ---
+> > > > 
+> > > > Build tested with various architectures, configs.
+> > > > 
+> > > > Lee, Daniel - OK to commit to drm-misc-next where fbdev stuff is
+> > > > maintained today?
+> > > 
+> > > backlight is separate from fbdev in Lee's own tree, not in drm-misc. I
+> > > think at least.
+> > 
+> > That's correct.  We'll sort that once we have all the Acks.
+> 
+> We have acks all around now.
+
+I am still missing Daniel T's Ack.
+
+> OK that I commit this to drm-misc-next?
+> 
+> This is where we maintain fbdev these days. Or you could apply it to
+> your backlight tree.
+> 
+> Both solutins would be fine as the risk of introducing merge conflicts
+> in these code paths are minimal.
+
+If that's the case, then I'd be happy to apply it to the Backlight
+tree.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

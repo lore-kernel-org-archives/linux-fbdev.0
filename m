@@ -1,47 +1,69 @@
-From: John Hubbard <jhubbard@nvidia.com>
-Date: Fri, 02 Aug 2019 18:51:14 +0000
-Subject: Re: [PATCH 16/34] drivers/tee: convert put_page() to put_user_page*()
-Message-Id: <23cc9ac3-4b03-9187-aae6-d64ba8cfca00@nvidia.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 05 Aug 2019 08:30:26 +0000
+Subject: Re: [PATCH v2 0/9] ARM: davinci: da850-evm: remove more legacy GPIO calls
+Message-Id: <CAMRc=Me51RgQu8VK70dy=1OhmHeKo40HLxfsvp2nD5UC+Mzb=w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802022005.5117-17-jhubbard@nvidia.com>
- <CAHUa44G++iiwU62jj7QH=V3sr4z26sf007xrwWLPw6AAeMLAEw@mail.gmail.com>
-In-Reply-To: <CAHUa44G++iiwU62jj7QH=V3sr4z26sf007xrwWLPw6AAeMLAEw@mail.gmail.com>
+References: <20190722134423.26555-1-brgl@bgdev.pl>
+In-Reply-To: <20190722134423.26555-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jens Wiklander <jens.wiklander@linaro.org>, john.hubbard@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-block@vger.kernel.org, "open list:HARDWARE RANDOM NUMBER GENERATOR CORE" <linux-crypto@vger.kernel.org>linux
+Content-Type: text/plain; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Sekhar Nori <nsekhar@ti.com>, Kevin Hilman <khilman@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Lechner <david@lechnology.com>, Linus Walleij <linus.walleij@linaro.org>
+Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 8/1/19 11:29 PM, Jens Wiklander wrote:
-> On Fri, Aug 2, 2019 at 4:20 AM <john.hubbard@gmail.com> wrote:
->>
->> From: John Hubbard <jhubbard@nvidia.com>
->>
->> For pages that were retained via get_user_pages*(), release those pages
->> via the new put_user_page*() routines, instead of via put_page() or
->> release_pages().
->>
->> This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
->> ("mm: introduce put_user_page*(), placeholder versions").
->>
->> Cc: Jens Wiklander <jens.wiklander@linaro.org>
->> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
->> ---
->>   drivers/tee/tee_shm.c | 10 ++--------
->>   1 file changed, 2 insertions(+), 8 deletions(-)
-> 
-> Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
-> 
-> I suppose you're taking this via your own tree or such.
-> 
+pon., 22 lip 2019 o 15:44 Bartosz Golaszewski <brgl@bgdev.pl> napisa=C5=82(=
+a):
+>
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> This is another small step on the path to liberating davinci from legacy
+> GPIO API calls and shrinking the davinci GPIO driver by not having to
+> support the base GPIO number anymore.
+>
+> This time we're removing the legacy calls used indirectly by the LCDC
+> fbdev driver.
+>
+> First two patches enable the GPIO backlight driver in
+> davinci_all_defconfig.
+>
+> Patch 3/12 models the backlight GPIO as an actual GPIO backlight device.
+>
+> Patches 4-6 extend the fbdev driver with regulator support and convert
+> the da850-evm board file to using it.
+>
+> Last three patches are improvements to the da8xx fbdev driver since
+> we're already touching it in this series.
+>
+> v1 -> v2:
+> - dopped the gpio-backlight patches from this series as since v5.3-rc1 we
+>   can probe the module with neither the OF node nor platform data
+> - collected review and ack tags
+> - rebased on top of v5.3-rc1
+>
+> Bartosz Golaszewski (9):
+>   ARM: davinci: refresh davinci_all_defconfig
+>   ARM: davinci_all_defconfig: enable GPIO backlight
+>   ARM: davinci: da850-evm: model the backlight GPIO as an actual device
+>   fbdev: da8xx: add support for a regulator
+>   ARM: davinci: da850-evm: switch to using a fixed regulator for lcdc
+>   fbdev: da8xx: remove panel_power_ctrl() callback from platform data
+>   fbdev: da8xx-fb: use devm_platform_ioremap_resource()
+>   fbdev: da8xx-fb: drop a redundant if
+>   fbdev: da8xx: use resource management for dma
+>
+>  arch/arm/configs/davinci_all_defconfig  |  27 ++----
+>  arch/arm/mach-davinci/board-da850-evm.c |  90 +++++++++++++-----
+>  drivers/video/fbdev/da8xx-fb.c          | 118 +++++++++++++-----------
+>  include/video/da8xx-fb.h                |   1 -
+>  4 files changed, 141 insertions(+), 95 deletions(-)
+>
+> --
+> 2.21.0
+>
 
-Hi Jens,
+Hi Sekhar,
 
-Thanks for the ACK! I'm expecting that Andrew will take this through his
--mm tree, unless he pops up and says otherwise.
+the fbdev patches have been acked by Bartlomiej. I think the entire
+series can go through the ARM-SoC tree.
 
-thanks,
--- 
-John Hubbard
-NVIDIA
+Bart

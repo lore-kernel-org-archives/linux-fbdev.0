@@ -1,50 +1,31 @@
-From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:39 +0000
-Subject: [PATCH v3 40/41] mm/mempolicy.c: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-41-jhubbard@nvidia.com>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Mon, 05 Aug 2019 09:53:04 +0000
+Subject: Re: [PATCH v2 1/7] sh: ecovec24: add additional properties to the backlight device
+Message-Id: <CACRpkdYexsXR=n+t1iVb1QMZc9U1FeKdyHy3w4VnfPy4B=xeiA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
+References: <20190722150302.29526-1-brgl@bgdev.pl> <20190722150302.29526-2-brgl@bgdev.pl>
+In-Reply-To: <20190722150302.29526-2-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>, Anshuman Khandual <anshuman.khandual@arm.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, Dominik Brodowski <linux@dominikbrodows>
+To: Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-sh@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-From: John Hubbard <jhubbard@nvidia.com>
+On Mon, Jul 22, 2019 at 5:03 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
+> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+>
+> Add a GPIO lookup entry and a device property for GPIO backlight to the
+> board file. Tie them to the platform device which is now registered using
+> platform_device_register_full() because of the properties. These changes
+> are inactive now but will be used once the gpio backlight driver is
+> modified.
+>
+> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
+Clever! I must also use these dynamic properties now.
 
-Cc: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Anshuman Khandual <anshuman.khandual@arm.com>
-Cc: David Rientjes <rientjes@google.com>
-Cc: Dominik Brodowski <linux@dominikbrodowski.net>
-Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: zhong jiang <zhongjiang@huawei.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
----
- mm/mempolicy.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index f48693f75b37..76a8e935e2e6 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -832,7 +832,7 @@ static int lookup_node(struct mm_struct *mm, unsigned long addr)
- 	err = get_user_pages_locked(addr & PAGE_MASK, 1, 0, &p, &locked);
- 	if (err >= 0) {
- 		err = page_to_nid(p);
--		put_page(p);
-+		put_user_page(p);
- 	}
- 	if (locked)
- 		up_read(&mm->mmap_sem);
--- 
-2.22.0
+Yours,
+Linus Walleij

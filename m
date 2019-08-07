@@ -1,31 +1,70 @@
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Mon, 05 Aug 2019 09:53:04 +0000
-Subject: Re: [PATCH v2 1/7] sh: ecovec24: add additional properties to the backlight device
-Message-Id: <CACRpkdYexsXR=n+t1iVb1QMZc9U1FeKdyHy3w4VnfPy4B=xeiA@mail.gmail.com>
+From: john.hubbard@gmail.com
+Date: Wed, 07 Aug 2019 01:33:17 +0000
+Subject: [PATCH v3 18/41] drivers/tee: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-19-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190722150302.29526-1-brgl@bgdev.pl> <20190722150302.29526-2-brgl@bgdev.pl>
-In-Reply-To: <20190722150302.29526-2-brgl@bgdev.pl>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, linux-sh@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.orgLKML
 
-On Mon, Jul 22, 2019 at 5:03 PM Bartosz Golaszewski <brgl@bgdev.pl> wrote:
+From: John Hubbard <jhubbard@nvidia.com>
 
-> From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
->
-> Add a GPIO lookup entry and a device property for GPIO backlight to the
-> board file. Tie them to the platform device which is now registered using
-> platform_device_register_full() because of the properties. These changes
-> are inactive now but will be used once the gpio backlight driver is
-> modified.
->
-> Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Clever! I must also use these dynamic properties now.
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Acked-by: Jens Wiklander <jens.wiklander@linaro.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/tee/tee_shm.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
 
-Yours,
-Linus Walleij
+diff --git a/drivers/tee/tee_shm.c b/drivers/tee/tee_shm.c
+index 2da026fd12c9..c967d0420b67 100644
+--- a/drivers/tee/tee_shm.c
++++ b/drivers/tee/tee_shm.c
+@@ -31,16 +31,13 @@ static void tee_shm_release(struct tee_shm *shm)
+ 
+ 		poolm->ops->free(poolm, shm);
+ 	} else if (shm->flags & TEE_SHM_REGISTER) {
+-		size_t n;
+ 		int rc = teedev->desc->ops->shm_unregister(shm->ctx, shm);
+ 
+ 		if (rc)
+ 			dev_err(teedev->dev.parent,
+ 				"unregister shm %p failed: %d", shm, rc);
+ 
+-		for (n = 0; n < shm->num_pages; n++)
+-			put_page(shm->pages[n]);
+-
++		put_user_pages(shm->pages, shm->num_pages);
+ 		kfree(shm->pages);
+ 	}
+ 
+@@ -313,16 +310,13 @@ struct tee_shm *tee_shm_register(struct tee_context *ctx, unsigned long addr,
+ 	return shm;
+ err:
+ 	if (shm) {
+-		size_t n;
+-
+ 		if (shm->id >= 0) {
+ 			mutex_lock(&teedev->mutex);
+ 			idr_remove(&teedev->idr, shm->id);
+ 			mutex_unlock(&teedev->mutex);
+ 		}
+ 		if (shm->pages) {
+-			for (n = 0; n < shm->num_pages; n++)
+-				put_page(shm->pages[n]);
++			put_user_pages(shm->pages, shm->num_pages);
+ 			kfree(shm->pages);
+ 		}
+ 	}
+-- 
+2.22.0

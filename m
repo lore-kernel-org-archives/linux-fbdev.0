@@ -1,17 +1,17 @@
 From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:49:15 +0000
-Subject: [PATCH v2 34/34] fs/binfmt_elf: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-35-jhubbard@nvidia.com>
+Date: Wed, 07 Aug 2019 01:33:28 +0000
+Subject: [PATCH v3 29/41] mm/memory.c: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-30-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
-In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org, netdev@vger.kernel.orgLKML
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-From: Ira Weiny <ira.weiny@intel.com>
+From: John Hubbard <jhubbard@nvidia.com>
 
 For pages that were retained via get_user_pages*(), release those pages
 via the new put_user_page*() routines, instead of via put_page() or
@@ -20,41 +20,32 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-get_dump_page calls get_user_page so put_user_page must be used
-to match.
-
-Signed-off-by: Ira Weiny <ira.weiny@intel.com>
+Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
+Cc: Huang Ying <ying.huang@intel.com>
+Cc: Jérôme Glisse <jglisse@redhat.com>
+Cc: Matthew Wilcox <willy@infradead.org>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Rik van Riel <riel@surriel.com>
+Cc: Souptick Joarder <jrdr.linux@gmail.com>
+Cc: Will Deacon <will.deacon@arm.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- fs/binfmt_elf.c       | 2 +-
- fs/binfmt_elf_fdpic.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ mm/memory.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index d4e11b2e04f6..92e4a5ca99d8 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -2377,7 +2377,7 @@ static int elf_core_dump(struct coredump_params *cprm)
- 				void *kaddr = kmap(page);
- 				stop = !dump_emit(cprm, kaddr, PAGE_SIZE);
- 				kunmap(page);
--				put_page(page);
-+				put_user_page(page);
- 			} else
- 				stop = !dump_skip(cprm, PAGE_SIZE);
- 			if (stop)
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index d86ebd0dcc3d..321724b3be22 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -1511,7 +1511,7 @@ static bool elf_fdpic_dump_segments(struct coredump_params *cprm)
- 				void *kaddr = kmap(page);
- 				res = dump_emit(cprm, kaddr, PAGE_SIZE);
- 				kunmap(page);
--				put_page(page);
-+				put_user_page(page);
- 			} else {
- 				res = dump_skip(cprm, PAGE_SIZE);
+diff --git a/mm/memory.c b/mm/memory.c
+index e2bb51b6242e..8870968496ea 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -4337,7 +4337,7 @@ int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
+ 						    buf, maddr + offset, bytes);
  			}
+ 			kunmap(page);
+-			put_page(page);
++			put_user_page(page);
+ 		}
+ 		len -= bytes;
+ 		buf += bytes;
 -- 
 2.22.0

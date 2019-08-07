@@ -1,15 +1,15 @@
 From: john.hubbard@gmail.com
-Date: Fri, 02 Aug 2019 02:19:49 +0000
-Subject: [PATCH 18/34] fbdev/pvr2fb: convert put_page() to put_user_page*()
-Message-Id: <20190802022005.5117-19-jhubbard@nvidia.com>
+Date: Wed, 07 Aug 2019 01:33:39 +0000
+Subject: [PATCH v3 40/41] mm/mempolicy.c: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-41-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Arvind Yadav <arvind.yadav.cs@gmail.com>, Dan
+Cc: linux-fbdev@vger.kernel.org, Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Vlastimil Babka <vbabka@suse.cz>, David Rientjes <rientjes@google.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>, Anshuman Khandual <anshuman.khandual@arm.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, Dominik Brodowski <linux@dominikbrodows>
 
 From: John Hubbard <jhubbard@nvidia.com>
 
@@ -20,31 +20,31 @@ release_pages().
 This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
 ("mm: introduce put_user_page*(), placeholder versions").
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Kees Cook <keescook@chromium.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Bhumika Goyal <bhumirks@gmail.com>
-Cc: Arvind Yadav <arvind.yadav.cs@gmail.com>
-Cc: dri-devel@lists.freedesktop.org
-Cc: linux-fbdev@vger.kernel.org
+Cc: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Anshuman Khandual <anshuman.khandual@arm.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Dominik Brodowski <linux@dominikbrodowski.net>
+Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Cc: Michal Hocko <mhocko@suse.com>
+Cc: Vlastimil Babka <vbabka@suse.cz>
+Cc: zhong jiang <zhongjiang@huawei.com>
 Signed-off-by: John Hubbard <jhubbard@nvidia.com>
 ---
- drivers/video/fbdev/pvr2fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ mm/mempolicy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/pvr2fb.c b/drivers/video/fbdev/pvr2fb.c
-index 7ff4b6b84282..0e4f9aa6444d 100644
---- a/drivers/video/fbdev/pvr2fb.c
-+++ b/drivers/video/fbdev/pvr2fb.c
-@@ -700,8 +700,7 @@ static ssize_t pvr2fb_write(struct fb_info *info, const char *buf,
- 	ret = count;
- 
- out_unmap:
--	for (i = 0; i < nr_pages; i++)
--		put_page(pages[i]);
-+	put_user_pages(pages, nr_pages);
- 
- 	kfree(pages);
- 
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index f48693f75b37..76a8e935e2e6 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -832,7 +832,7 @@ static int lookup_node(struct mm_struct *mm, unsigned long addr)
+ 	err = get_user_pages_locked(addr & PAGE_MASK, 1, 0, &p, &locked);
+ 	if (err >= 0) {
+ 		err = page_to_nid(p);
+-		put_page(p);
++		put_user_page(p);
+ 	}
+ 	if (locked)
+ 		up_read(&mm->mmap_sem);
 -- 
 2.22.0

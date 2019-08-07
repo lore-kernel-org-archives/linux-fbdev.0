@@ -1,70 +1,79 @@
-From: Andrzej Hajda <a.hajda@samsung.com>
-Date: Tue, 20 Aug 2019 09:55:41 +0000
-Subject: Re: [PATCH 1/3] video: fbdev: mmp: remove duplicated MMP_DISP dependency
-Message-Id: <0534f6bf-cd94-5416-2d4a-5fc9721aa7ed@samsung.com>
+From: john.hubbard@gmail.com
+Date: Wed, 07 Aug 2019 01:33:13 +0000
+Subject: [PATCH v3 14/41] vmci: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-15-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190627140704eucas1p10f9aca669beb24f5359a0e86f2b6d0ba@eucas1p1.samsung.com>
-        <eb28587c-4f8f-f044-1b8b-317a8d7967aa@samsung.com>
-In-Reply-To: <eb28587c-4f8f-f044-1b8b-317a8d7967aa@samsung.com>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, "Gustavo A . R . Silva" <gustavo@embeddedor.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.w>
 
-On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
-> This dependency is already present in higher level Kconfig file
-> (drivers/video/fbdev/mmp/Kconfig).
->
-> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+From: John Hubbard <jhubbard@nvidia.com>
 
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
-=C2=A0--
-Regards
-Andrzej
+Note that this effectively changes the code's behavior in
+qp_release_pages(): it now ultimately calls set_page_dirty_lock(),
+instead of set_page_dirty(). This is probably more accurate.
 
+As Christoph Hellwig put it, "set_page_dirty() is only safe if we are
+dealing with a file backed page where we have reference on the inode it
+hangs off." [1]
 
-> ---
->  drivers/video/fbdev/mmp/fb/Kconfig |    4 ----
->  drivers/video/fbdev/mmp/hw/Kconfig |    4 ----
->  2 files changed, 8 deletions(-)
->
-> Index: b/drivers/video/fbdev/mmp/fb/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/fb/Kconfig
-> +++ b/drivers/video/fbdev/mmp/fb/Kconfig
-> @@ -1,6 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0-only
-> -if MMP_DISP
-> -
->  config MMP_FB
->  	tristate "fb driver for Marvell MMP Display Subsystem"
->  	depends on FB
-> @@ -10,5 +8,3 @@ config MMP_FB
->  	default y
->  	help
->  		fb driver for Marvell MMP Display Subsystem
-> -
-> -endif
-> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/hw/Kconfig
-> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
-> @@ -1,6 +1,4 @@
->  # SPDX-License-Identifier: GPL-2.0-only
-> -if MMP_DISP
-> -
->  config MMP_DISP_CONTROLLER
->  	bool "mmp display controller hw support"
->  	depends on CPU_PXA910 || CPU_MMP2
-> @@ -16,5 +14,3 @@ config MMP_DISP_SPI
->  	help
->  		Marvell MMP display hw controller spi port support
->  		will register as a spi master for panel usage
-> -
-> -endif
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+[1] https://lore.kernel.org/r/20190723153640.GB720@lst.de
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Gustavo A. R. Silva <gustavo@embeddedor.com>
+Cc: Kees Cook <keescook@chromium.org>
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ drivers/misc/vmw_vmci/vmci_context.c    |  2 +-
+ drivers/misc/vmw_vmci/vmci_queue_pair.c | 11 ++---------
+ 2 files changed, 3 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/misc/vmw_vmci/vmci_context.c b/drivers/misc/vmw_vmci/vmci_context.c
+index 16695366ec92..9daa52ee63b7 100644
+--- a/drivers/misc/vmw_vmci/vmci_context.c
++++ b/drivers/misc/vmw_vmci/vmci_context.c
+@@ -587,7 +587,7 @@ void vmci_ctx_unset_notify(struct vmci_ctx *context)
+ 
+ 	if (notify_page) {
+ 		kunmap(notify_page);
+-		put_page(notify_page);
++		put_user_page(notify_page);
+ 	}
+ }
+ 
+diff --git a/drivers/misc/vmw_vmci/vmci_queue_pair.c b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+index 8531ae781195..e5434551d0ef 100644
+--- a/drivers/misc/vmw_vmci/vmci_queue_pair.c
++++ b/drivers/misc/vmw_vmci/vmci_queue_pair.c
+@@ -626,15 +626,8 @@ static void qp_release_queue_mutex(struct vmci_queue *queue)
+ static void qp_release_pages(struct page **pages,
+ 			     u64 num_pages, bool dirty)
+ {
+-	int i;
+-
+-	for (i = 0; i < num_pages; i++) {
+-		if (dirty)
+-			set_page_dirty(pages[i]);
+-
+-		put_page(pages[i]);
+-		pages[i] = NULL;
+-	}
++	put_user_pages_dirty_lock(pages, num_pages, dirty);
++	memset(pages, 0, num_pages * sizeof(struct page *));
+ }
+ 
+ /*
+-- 
+2.22.0

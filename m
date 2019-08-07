@@ -1,77 +1,60 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Aug 2019 04:05:45 +0000
-Subject: Re: [PATCH 2/4] video/logo: fix unneeded generation of font C files
-Message-Id: <CAK7LNAROtaGR4fqrCcocmv8eO1GcAS4FKCLiS_wQqrjEjMMBBg@mail.gmail.com>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 07 Aug 2019 16:13:12 +0000
+Subject: [PATCH] video: fbdev/mmp/core: Use struct_size() in kzalloc()
+Message-Id: <20190807161312.GA26835@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190821035517.21671-1-yamada.masahiro@socionext.com> <20190821035517.21671-3-yamada.masahiro@socionext.com>
-In-Reply-To: <20190821035517.21671-3-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, linux-fbdev@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-On Wed, Aug 21, 2019 at 12:56 PM Masahiro Yamada
-<yamada.masahiro@socionext.com> wrote:
+One of the more common cases of allocation size calculations is finding
+the size of a structure that has a zero-sized array at the end, along
+with memory for some number of elements for that array. For example:
 
-I will replace 'font' -> 'logo'.
-(My brain was corrupted.)
+struct mmp_path {
+	...
+        struct mmp_overlay overlays[0];
+};
 
+size = sizeof(struct mmp_path) + count * sizeof(struct mmp_overlay);
+instance = kzalloc(size, GFP_KERNEL)
 
+Instead of leaving these open-coded and prone to type mistakes, we can
+now use the new struct_size() helper:
 
-> Currently, all the font C files are generated irrespective of CONFIG
-> options. Adding them to extra-y is wrong. What we need to do here is
-> to add them to 'targets' so that if_changed works properly.
->
-> All files listed in 'targets' are cleaned, so clean-files is unneeded.
->
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
-> ---
->
->  drivers/video/logo/Makefile | 21 ++-------------------
->  1 file changed, 2 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-> index 10b75ce3ce09..16f60c1e1766 100644
-> --- a/drivers/video/logo/Makefile
-> +++ b/drivers/video/logo/Makefile
-> @@ -18,23 +18,6 @@ obj-$(CONFIG_SPU_BASE)                       += logo_spe_clut224.o
->
->  # How to generate logo's
->
-> -# Use logo-cfiles to retrieve list of .c files to be built
-> -logo-cfiles = $(notdir $(patsubst %.$(2), %.c, \
-> -              $(wildcard $(srctree)/$(src)/*$(1).$(2))))
-> -
-> -
-> -# Mono logos
-> -extra-y += $(call logo-cfiles,_mono,pbm)
-> -
-> -# VGA16 logos
-> -extra-y += $(call logo-cfiles,_vga16,ppm)
-> -
-> -# 224 Logos
-> -extra-y += $(call logo-cfiles,_clut224,ppm)
-> -
-> -# Gray 256
-> -extra-y += $(call logo-cfiles,_gray256,pgm)
-> -
->  pnmtologo := scripts/pnmtologo
->
->  # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
-> @@ -55,5 +38,5 @@ $(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtologo) FORCE
->  $(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
->         $(call if_changed,logo)
->
-> -# Files generated that shall be removed upon make clean
-> -clean-files := *_mono.c *_vga16.c *_clut224.c *_gray256.c
-> +# generated C files
-> +targets += *_mono.c *_vga16.c *_clut224.c *_gray256.c
-> --
-> 2.17.1
->
+instance = kzalloc(struct_size(instance, overlays, count), GFP_KERNEL)
 
+Notice that, in this case, variable size is not necessary, hence it
+is removed.
 
+This code was detected with the help of Coccinelle.
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+---
+ drivers/video/fbdev/mmp/core.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/mmp/core.c b/drivers/video/fbdev/mmp/core.c
+index 0ffc1b7b7052..154127256a2c 100644
+--- a/drivers/video/fbdev/mmp/core.c
++++ b/drivers/video/fbdev/mmp/core.c
+@@ -153,13 +153,11 @@ EXPORT_SYMBOL_GPL(mmp_get_path);
+ struct mmp_path *mmp_register_path(struct mmp_path_info *info)
+ {
+ 	int i;
+-	size_t size;
+ 	struct mmp_path *path = NULL;
+ 	struct mmp_panel *panel;
+ 
+-	size = sizeof(struct mmp_path)
+-		+ sizeof(struct mmp_overlay) * info->overlay_num;
+-	path = kzalloc(size, GFP_KERNEL);
++	path = kzalloc(struct_size(path, overlays, info->overlay_num),
++		       GFP_KERNEL);
+ 	if (!path)
+ 		return NULL;
+ 
 -- 
-Best Regards
-Masahiro Yamada
+2.22.0

@@ -1,84 +1,83 @@
-From: John Hubbard <jhubbard@nvidia.com>
-Date: Tue, 06 Aug 2019 20:39:16 +0000
-Subject: Re: [PATCH v2 01/34] mm/gup: add make_dirty arg to put_user_pages_dirty_lock()
-Message-Id: <0e232d84-e6ea-159e-91d4-77e938377161@nvidia.com>
+From: Souptick Joarder <jrdr.linux@gmail.com>
+Date: Wed, 07 Aug 2019 08:53:27 +0000
+Subject: Re: [PATCH] video: fbdev:via: Remove dead code
+Message-Id: <CAFqt6zb5ySDbkHVpPkOKHTrF8jFuNh=dXtnwPKO6TuEHBCkYgg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
- <20190804224915.28669-2-jhubbard@nvidia.com>
- <20190806173945.GA4748@iweiny-DESK2.sc.intel.com>
-In-Reply-To: <20190806173945.GA4748@iweiny-DESK2.sc.intel.com>
+References: <1564515200-5020-1-git-send-email-jrdr.linux@gmail.com>
+In-Reply-To: <1564515200-5020-1-git-send-email-jrdr.linux@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ira Weiny <ira.weiny@intel.com>, john.hubbard@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?B?SsOpcsO0bWUgR2xpc3Nl?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kva
+To: FlorianSchandinat@gmx.de, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On 8/6/19 10:39 AM, Ira Weiny wrote:
-> On Sun, Aug 04, 2019 at 03:48:42PM -0700, john.hubbard@gmail.com wrote:
->> From: John Hubbard <jhubbard@nvidia.com>
-...
->> -
->>  /**
->> - * put_user_pages_dirty() - release and dirty an array of gup-pinned pages
->> - * @pages:  array of pages to be marked dirty and released.
->> + * put_user_pages_dirty_lock() - release and optionally dirty gup-pinned pages
->> + * @pages:  array of pages to be maybe marked dirty, and definitely released.
-> 
-> Better would be.
-> 
-> @pages:  array of pages to be put
+On Wed, Jul 31, 2019 at 12:59 AM Souptick Joarder <jrdr.linux@gmail.com> wrote:
+>
+> This is dead code since 3.15. If there is no plan to use
+> it further, this can be removed forever.
+>
 
-OK, I'll change to that wording.
+Any comment on this patch ?
 
-> 
->>   * @npages: number of pages in the @pages array.
->> + * @make_dirty: whether to mark the pages dirty
->>   *
->>   * "gup-pinned page" refers to a page that has had one of the get_user_pages()
->>   * variants called on that page.
->>   *
->>   * For each page in the @pages array, make that page (or its head page, if a
->> - * compound page) dirty, if it was previously listed as clean. Then, release
->> - * the page using put_user_page().
->> + * compound page) dirty, if @make_dirty is true, and if the page was previously
->> + * listed as clean. In any case, releases all pages using put_user_page(),
->> + * possibly via put_user_pages(), for the non-dirty case.
-> 
-> I don't think users of this interface need this level of detail.  I think
-> something like.
-> 
->  * For each page in the @pages array, release the page.  If @make_dirty is
->  * true, mark the page dirty prior to release.
-
-Yes, it is too wordy, I'll change to that.
-
-> 
-...
->> -void put_user_pages_dirty_lock(struct page **pages, unsigned long npages)
->> -{
->> -	__put_user_pages_dirty(pages, npages, set_page_dirty_lock);
->> +	/*
->> +	 * TODO: this can be optimized for huge pages: if a series of pages is
->> +	 * physically contiguous and part of the same compound page, then a
->> +	 * single operation to the head page should suffice.
->> +	 */
-> 
-> I think this comment belongs to the for loop below...  or just something about
-> how to make this and put_user_pages() more efficient.  It is odd, that this is
-> the same comment as in put_user_pages()...
-
-Actually I think I'll just delete the comment entirely, it's just noise really.
-
-> 
-> The code is good.  So... Other than the comments.
-> 
-> Reviewed-by: Ira Weiny <ira.weiny@intel.com>
-
-
-Thanks for the review!
-
-
-thanks,
--- 
-John Hubbard
-NVIDIA
+> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+> ---
+>  drivers/video/fbdev/via/via-core.c | 43 --------------------------------------
+>  1 file changed, 43 deletions(-)
+>
+> diff --git a/drivers/video/fbdev/via/via-core.c b/drivers/video/fbdev/via/via-core.c
+> index e2b2062..ffa2ca2 100644
+> --- a/drivers/video/fbdev/via/via-core.c
+> +++ b/drivers/video/fbdev/via/via-core.c
+> @@ -221,49 +221,6 @@ void viafb_release_dma(void)
+>  }
+>  EXPORT_SYMBOL_GPL(viafb_release_dma);
+>
+> -
+> -#if 0
+> -/*
+> - * Copy a single buffer from FB memory, synchronously.  This code works
+> - * but is not currently used.
+> - */
+> -void viafb_dma_copy_out(unsigned int offset, dma_addr_t paddr, int len)
+> -{
+> -       unsigned long flags;
+> -       int csr;
+> -
+> -       mutex_lock(&viafb_dma_lock);
+> -       init_completion(&viafb_dma_completion);
+> -       /*
+> -        * Program the controller.
+> -        */
+> -       spin_lock_irqsave(&global_dev.reg_lock, flags);
+> -       viafb_mmio_write(VDMA_CSR0, VDMA_C_ENABLE|VDMA_C_DONE);
+> -       /* Enable ints; must happen after CSR0 write! */
+> -       viafb_mmio_write(VDMA_MR0, VDMA_MR_TDIE);
+> -       viafb_mmio_write(VDMA_MARL0, (int) (paddr & 0xfffffff0));
+> -       viafb_mmio_write(VDMA_MARH0, (int) ((paddr >> 28) & 0xfff));
+> -       /* Data sheet suggests DAR0 should be <<4, but it lies */
+> -       viafb_mmio_write(VDMA_DAR0, offset);
+> -       viafb_mmio_write(VDMA_DQWCR0, len >> 4);
+> -       viafb_mmio_write(VDMA_TMR0, 0);
+> -       viafb_mmio_write(VDMA_DPRL0, 0);
+> -       viafb_mmio_write(VDMA_DPRH0, 0);
+> -       viafb_mmio_write(VDMA_PMR0, 0);
+> -       csr = viafb_mmio_read(VDMA_CSR0);
+> -       viafb_mmio_write(VDMA_CSR0, VDMA_C_ENABLE|VDMA_C_START);
+> -       spin_unlock_irqrestore(&global_dev.reg_lock, flags);
+> -       /*
+> -        * Now we just wait until the interrupt handler says
+> -        * we're done.
+> -        */
+> -       wait_for_completion_interruptible(&viafb_dma_completion);
+> -       viafb_mmio_write(VDMA_MR0, 0); /* Reset int enable */
+> -       mutex_unlock(&viafb_dma_lock);
+> -}
+> -EXPORT_SYMBOL_GPL(viafb_dma_copy_out);
+> -#endif
+> -
+>  /*
+>   * Do a scatter/gather DMA copy from FB memory.  You must have done
+>   * a successful call to viafb_request_dma() first.
+> --
+> 1.9.1
+>

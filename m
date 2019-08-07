@@ -1,74 +1,70 @@
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Date: Mon, 12 Aug 2019 06:59:15 +0000
-Subject: Re: [PATCH v2 03/10] input: keyboard: gpio_keys: convert platform driver to use dev_groups
-Message-Id: <20190812065915.GU178933@dtor-ws>
+From: john.hubbard@gmail.com
+Date: Wed, 07 Aug 2019 01:33:32 +0000
+Subject: [PATCH v3 33/41] fs/nfs: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-34-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190731124349.4474-1-gregkh@linuxfoundation.org>
- <20190731124349.4474-4-gregkh@linuxfoundation.org>
-In-Reply-To: <20190731124349.4474-4-gregkh@linuxfoundation.org>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-kernel@vger.kernel.org, Richard Gong <richard.gong@linux.intel.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
 
-On Wed, Jul 31, 2019 at 02:43:42PM +0200, Greg Kroah-Hartman wrote:
-> Platform drivers now have the option to have the platform core create
-> and remove any needed sysfs attribute files.  So take advantage of that
-> and do not register "by hand" a bunch of sysfs files.
-> 
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+From: John Hubbard <jhubbard@nvidia.com>
 
-Applied, thank you.
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-> ---
->  drivers/input/keyboard/gpio_keys.c | 13 ++-----------
->  1 file changed, 2 insertions(+), 11 deletions(-)
-> 
-> diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
-> index 03f4d152f6b7..1373dc5b0765 100644
-> --- a/drivers/input/keyboard/gpio_keys.c
-> +++ b/drivers/input/keyboard/gpio_keys.c
-> @@ -351,10 +351,7 @@ static struct attribute *gpio_keys_attrs[] = {
->  	&dev_attr_disabled_switches.attr,
->  	NULL,
->  };
-> -
-> -static const struct attribute_group gpio_keys_attr_group = {
-> -	.attrs = gpio_keys_attrs,
-> -};
-> +ATTRIBUTE_GROUPS(gpio_keys);
->  
->  static void gpio_keys_gpio_report_event(struct gpio_button_data *bdata)
->  {
-> @@ -851,13 +848,6 @@ static int gpio_keys_probe(struct platform_device *pdev)
->  
->  	fwnode_handle_put(child);
->  
-> -	error = devm_device_add_group(dev, &gpio_keys_attr_group);
-> -	if (error) {
-> -		dev_err(dev, "Unable to export keys/switches, error: %d\n",
-> -			error);
-> -		return error;
-> -	}
-> -
->  	error = input_register_device(input);
->  	if (error) {
->  		dev_err(dev, "Unable to register input device, error: %d\n",
-> @@ -1026,6 +1016,7 @@ static struct platform_driver gpio_keys_device_driver = {
->  		.name	= "gpio-keys",
->  		.pm	= &gpio_keys_pm_ops,
->  		.of_match_table = gpio_keys_of_match,
-> +		.dev_groups	= gpio_keys_groups,
->  	}
->  };
->  
-> -- 
-> 2.22.0
-> 
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
 
+Reviewed-by: Calum Mackay <calum.mackay@oracle.com>
+
+Cc: Trond Myklebust <trond.myklebust@hammerspace.com>
+Cc: Anna Schumaker <anna.schumaker@netapp.com>
+Cc: linux-nfs@vger.kernel.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ fs/nfs/direct.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
+
+diff --git a/fs/nfs/direct.c b/fs/nfs/direct.c
+index 0cb442406168..c0c1b9f2c069 100644
+--- a/fs/nfs/direct.c
++++ b/fs/nfs/direct.c
+@@ -276,13 +276,6 @@ ssize_t nfs_direct_IO(struct kiocb *iocb, struct iov_iter *iter)
+ 	return nfs_file_direct_write(iocb, iter);
+ }
+ 
+-static void nfs_direct_release_pages(struct page **pages, unsigned int npages)
+-{
+-	unsigned int i;
+-	for (i = 0; i < npages; i++)
+-		put_page(pages[i]);
+-}
+-
+ void nfs_init_cinfo_from_dreq(struct nfs_commit_info *cinfo,
+ 			      struct nfs_direct_req *dreq)
+ {
+@@ -512,7 +505,7 @@ static ssize_t nfs_direct_read_schedule_iovec(struct nfs_direct_req *dreq,
+ 			pos += req_len;
+ 			dreq->bytes_left -= req_len;
+ 		}
+-		nfs_direct_release_pages(pagevec, npages);
++		put_user_pages(pagevec, npages);
+ 		kvfree(pagevec);
+ 		if (result < 0)
+ 			break;
+@@ -935,7 +928,7 @@ static ssize_t nfs_direct_write_schedule_iovec(struct nfs_direct_req *dreq,
+ 			pos += req_len;
+ 			dreq->bytes_left -= req_len;
+ 		}
+-		nfs_direct_release_pages(pagevec, npages);
++		put_user_pages(pagevec, npages);
+ 		kvfree(pagevec);
+ 		if (result < 0)
+ 			break;
 -- 
-Dmitry
+2.22.0

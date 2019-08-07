@@ -1,66 +1,44 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 20 Aug 2019 19:11:43 +0000
-Subject: Re: [PATCH] backlight: add include guards to platform_lcd.h and ili9320.h
-Message-Id: <20190820191143.hzl5je4wrbkhcyyz@holly.lan>
+From: john.hubbard@gmail.com
+Date: Wed, 07 Aug 2019 01:33:22 +0000
+Subject: [PATCH v3 23/41] fs/exec.c: convert put_page() to put_user_page*()
+Message-Id: <20190807013340.9706-24-jhubbard@nvidia.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190721073940.11422-1-yamada.masahiro@socionext.com>
-In-Reply-To: <20190721073940.11422-1-yamada.masahiro@socionext.com>
+References: <20190807013340.9706-1-jhubbard@nvidia.com>
+In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org
 
-On Sun, Jul 21, 2019 at 04:39:40PM +0900, Masahiro Yamada wrote:
-> Add header include guards just in case.
-> 
-> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+From: John Hubbard <jhubbard@nvidia.com>
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+For pages that were retained via get_user_pages*(), release those pages
+via the new put_user_page*() routines, instead of via put_page() or
+release_pages().
 
-> ---
-> 
->  include/video/ili9320.h      | 4 ++++
->  include/video/platform_lcd.h | 4 ++++
->  2 files changed, 8 insertions(+)
-> 
-> diff --git a/include/video/ili9320.h b/include/video/ili9320.h
-> index 62f424f0bc52..b76a0b8f16fc 100644
-> --- a/include/video/ili9320.h
-> +++ b/include/video/ili9320.h
-> @@ -9,6 +9,9 @@
->   * http://armlinux.simtec.co.uk/
->  */
->  
-> +#ifndef _VIDEO_ILI9320_H
-> +#define _VIDEO_ILI9320_H
-> +
->  #define ILI9320_REG(x)	(x)
->  
->  #define ILI9320_INDEX			ILI9320_REG(0x00)
-> @@ -196,3 +199,4 @@ struct ili9320_platdata {
->  	unsigned short	interface6;
->  };
->  
-> +#endif /* _VIDEO_ILI9320_H */
-> diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
-> index 6a95184a28c1..c68f3f45b5c1 100644
-> --- a/include/video/platform_lcd.h
-> +++ b/include/video/platform_lcd.h
-> @@ -7,6 +7,9 @@
->   * Generic platform-device LCD power control interface.
->  */
->  
-> +#ifndef _VIDEO_PLATFORM_LCD_H
-> +#define _VIDEO_PLATFORM_LCD_H
-> +
->  struct plat_lcd_data;
->  struct fb_info;
->  
-> @@ -16,3 +19,4 @@ struct plat_lcd_data {
->  	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
->  };
->  
-> +#endif /* _VIDEO_PLATFORM_LCD_H */
-> -- 
-> 2.17.1
+This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
+("mm: introduce put_user_page*(), placeholder versions").
+
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org
+Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+---
+ fs/exec.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fs/exec.c b/fs/exec.c
+index f7f6a140856a..ee442151582f 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -227,7 +227,7 @@ static struct page *get_arg_page(struct linux_binprm *bprm, unsigned long pos,
+ 
+ static void put_arg_page(struct page *page)
+ {
+-	put_page(page);
++	put_user_page(page);
+ }
+ 
+ static void free_arg_pages(struct linux_binprm *bprm)
+-- 
+2.22.0

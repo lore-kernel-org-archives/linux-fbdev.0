@@ -1,127 +1,179 @@
-From: john.hubbard@gmail.com
-Date: Fri, 02 Aug 2019 02:19:33 +0000
-Subject: [PATCH 02/34] net/rds: convert put_page() to put_user_page*()
-Message-Id: <20190802022005.5117-3-jhubbard@nvidia.com>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 08 Aug 2019 21:22:18 +0000
+Subject: [PATCH 09/22] fbdev: omap: avoid using mach/*.h files
+Message-Id: <20190808212234.2213262-10-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
+References: <20190808212234.2213262-1-arnd@arndb.de>
+In-Reply-To: <20190808212234.2213262-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, Santosh Shilimkar <santosh.shilimkar@oracle.com>, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead.org, linux-nf
+To: Tony Lindgren <tony@atomide.com>, Aaro Koskinen <aaro.koskinen@iki.fi>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Tomi Valkeinen <tomi.valkeinen@ti.com>, linux-omap@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-From: John Hubbard <jhubbard@nvidia.com>
+All the headers we actually need are now in include/linux/soc,
+so use those versions instead and allow compile-testing on
+other architectures.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Santosh Shilimkar <santosh.shilimkar@oracle.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org
-Cc: linux-rdma@vger.kernel.org
-Cc: rds-devel@oss.oracle.com
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- net/rds/info.c    |  5 ++---
- net/rds/message.c |  2 +-
- net/rds/rdma.c    | 15 +++++++--------
- 3 files changed, 10 insertions(+), 12 deletions(-)
+ drivers/video/backlight/Kconfig          | 4 ++--
+ drivers/video/backlight/omap1_bl.c       | 4 ++--
+ drivers/video/fbdev/omap/Kconfig         | 4 ++--
+ drivers/video/fbdev/omap/lcd_ams_delta.c | 2 +-
+ drivers/video/fbdev/omap/lcd_dma.c       | 3 ++-
+ drivers/video/fbdev/omap/lcd_inn1510.c   | 2 +-
+ drivers/video/fbdev/omap/lcd_osk.c       | 4 ++--
+ drivers/video/fbdev/omap/lcdc.c          | 2 ++
+ drivers/video/fbdev/omap/omapfb_main.c   | 3 +--
+ drivers/video/fbdev/omap/sossi.c         | 1 +
+ 10 files changed, 16 insertions(+), 13 deletions(-)
 
-diff --git a/net/rds/info.c b/net/rds/info.c
-index 03f6fd56d237..ca6af2889adf 100644
---- a/net/rds/info.c
-+++ b/net/rds/info.c
-@@ -162,7 +162,6 @@ int rds_info_getsockopt(struct socket *sock, int optname, char __user *optval,
- 	struct rds_info_lengths lens;
- 	unsigned long nr_pages = 0;
- 	unsigned long start;
--	unsigned long i;
- 	rds_info_func func;
- 	struct page **pages = NULL;
- 	int ret;
-@@ -235,8 +234,8 @@ int rds_info_getsockopt(struct socket *sock, int optname, char __user *optval,
- 		ret = -EFAULT;
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 8b081d61773e..195c71130827 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -213,8 +213,8 @@ config BACKLIGHT_LOCOMO
  
- out:
--	for (i = 0; pages && i < nr_pages; i++)
--		put_page(pages[i]);
-+	if (pages)
-+		put_user_pages(pages, nr_pages);
- 	kfree(pages);
+ config BACKLIGHT_OMAP1
+ 	tristate "OMAP1 PWL-based LCD Backlight"
+-	depends on ARCH_OMAP1
+-	default y
++	depends on ARCH_OMAP1 || COMPILE_TEST
++	default ARCH_OMAP1
+ 	help
+ 	  This driver controls the LCD backlight level and power for
+ 	  the PWL module of OMAP1 processors.  Say Y if your board
+diff --git a/drivers/video/backlight/omap1_bl.c b/drivers/video/backlight/omap1_bl.c
+index 74263021b1b3..69a49384b3de 100644
+--- a/drivers/video/backlight/omap1_bl.c
++++ b/drivers/video/backlight/omap1_bl.c
+@@ -14,8 +14,8 @@
+ #include <linux/slab.h>
+ #include <linux/platform_data/omap1_bl.h>
  
- 	return ret;
-diff --git a/net/rds/message.c b/net/rds/message.c
-index 50f13f1d4ae0..d7b0d266c437 100644
---- a/net/rds/message.c
-+++ b/net/rds/message.c
-@@ -404,7 +404,7 @@ static int rds_message_zcopy_from_user(struct rds_message *rm, struct iov_iter *
- 			int i;
+-#include <mach/hardware.h>
+-#include <mach/mux.h>
++#include <linux/soc/ti/omap1-io.h>
++#include <linux/soc/ti/omap1-mux.h>
  
- 			for (i = 0; i < rm->data.op_nents; i++)
--				put_page(sg_page(&rm->data.op_sg[i]));
-+				put_user_page(sg_page(&rm->data.op_sg[i]));
- 			mmp = &rm->data.op_mmp_znotifier->z_mmp;
- 			mm_unaccount_pinned_pages(mmp);
- 			ret = -EFAULT;
-diff --git a/net/rds/rdma.c b/net/rds/rdma.c
-index 916f5ec373d8..6762e8696b99 100644
---- a/net/rds/rdma.c
-+++ b/net/rds/rdma.c
-@@ -162,8 +162,7 @@ static int rds_pin_pages(unsigned long user_addr, unsigned int nr_pages,
- 				  pages);
+ #define OMAPBL_MAX_INTENSITY		0xff
  
- 	if (ret >= 0 && ret < nr_pages) {
--		while (ret--)
--			put_page(pages[ret]);
-+		put_user_pages(pages, ret);
- 		ret = -EFAULT;
- 	}
+diff --git a/drivers/video/fbdev/omap/Kconfig b/drivers/video/fbdev/omap/Kconfig
+index df2a5d0d4aa2..b1786cf1b486 100644
+--- a/drivers/video/fbdev/omap/Kconfig
++++ b/drivers/video/fbdev/omap/Kconfig
+@@ -2,7 +2,7 @@
+ config FB_OMAP
+ 	tristate "OMAP frame buffer support"
+ 	depends on FB
+-	depends on ARCH_OMAP1
++	depends on ARCH_OMAP1 || (ARM && COMPILE_TEST)
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -42,7 +42,7 @@ config FB_OMAP_LCD_MIPID
  
-@@ -276,7 +275,7 @@ static int __rds_rdma_map(struct rds_sock *rs, struct rds_get_mr_args *args,
+ config FB_OMAP_LCD_H3
+ 	bool "TPS65010 LCD controller on OMAP-H3"
+-	depends on MACH_OMAP_H3
++	depends on MACH_OMAP_H3 || COMPILE_TEST
+ 	depends on TPS65010=y
+ 	default y
+ 	help
+diff --git a/drivers/video/fbdev/omap/lcd_ams_delta.c b/drivers/video/fbdev/omap/lcd_ams_delta.c
+index 8e54aae544a0..da2e32615abe 100644
+--- a/drivers/video/fbdev/omap/lcd_ams_delta.c
++++ b/drivers/video/fbdev/omap/lcd_ams_delta.c
+@@ -14,7 +14,7 @@
+ #include <linux/gpio/consumer.h>
+ #include <linux/lcd.h>
  
- 	if (IS_ERR(trans_private)) {
- 		for (i = 0 ; i < nents; i++)
--			put_page(sg_page(&sg[i]));
-+			put_user_page(sg_page(&sg[i]));
- 		kfree(sg);
- 		ret = PTR_ERR(trans_private);
- 		goto out;
-@@ -464,9 +463,10 @@ void rds_rdma_free_op(struct rm_rdma_op *ro)
- 		 * to local memory */
- 		if (!ro->op_write) {
- 			WARN_ON(!page->mapping && irqs_disabled());
--			set_page_dirty(page);
-+			put_user_pages_dirty_lock(&page, 1, true);
-+		} else {
-+			put_user_page(page);
- 		}
--		put_page(page);
- 	}
+-#include <mach/hardware.h>
++#include <linux/soc/ti/omap1-io.h>
  
- 	kfree(ro->op_notifier);
-@@ -481,8 +481,7 @@ void rds_atomic_free_op(struct rm_atomic_op *ao)
- 	/* Mark page dirty if it was possibly modified, which
- 	 * is the case for a RDMA_READ which copies from remote
- 	 * to local memory */
--	set_page_dirty(page);
--	put_page(page);
-+	put_user_pages_dirty_lock(&page, 1, true);
+ #include "omapfb.h"
  
- 	kfree(ao->op_notifier);
- 	ao->op_notifier = NULL;
-@@ -867,7 +866,7 @@ int rds_cmsg_atomic(struct rds_sock *rs, struct rds_message *rm,
- 	return ret;
- err:
- 	if (page)
--		put_page(page);
-+		put_user_page(page);
- 	rm->atomic.op_active = 0;
- 	kfree(rm->atomic.op_notifier);
+diff --git a/drivers/video/fbdev/omap/lcd_dma.c b/drivers/video/fbdev/omap/lcd_dma.c
+index 867a63c06f42..f85817635a8c 100644
+--- a/drivers/video/fbdev/omap/lcd_dma.c
++++ b/drivers/video/fbdev/omap/lcd_dma.c
+@@ -25,7 +25,8 @@
  
+ #include <linux/omap-dma.h>
+ 
+-#include <mach/hardware.h>
++#include <linux/soc/ti/omap1-soc.h>
++#include <linux/soc/ti/omap1-io.h>
+ 
+ #include "lcdc.h"
+ #include "lcd_dma.h"
+diff --git a/drivers/video/fbdev/omap/lcd_inn1510.c b/drivers/video/fbdev/omap/lcd_inn1510.c
+index 37ed0c14aa5a..bb915637e9b6 100644
+--- a/drivers/video/fbdev/omap/lcd_inn1510.c
++++ b/drivers/video/fbdev/omap/lcd_inn1510.c
+@@ -10,7 +10,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/io.h>
+ 
+-#include <mach/hardware.h>
++#include <linux/soc/ti/omap1-soc.h>
+ 
+ #include "omapfb.h"
+ 
+diff --git a/drivers/video/fbdev/omap/lcd_osk.c b/drivers/video/fbdev/omap/lcd_osk.c
+index 5d5762128c8d..8168ba0d47fd 100644
+--- a/drivers/video/fbdev/omap/lcd_osk.c
++++ b/drivers/video/fbdev/omap/lcd_osk.c
+@@ -11,8 +11,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/gpio.h>
+ 
+-#include <mach/hardware.h>
+-#include <mach/mux.h>
++#include <linux/soc/ti/omap1-io.h>
++#include <linux/soc/ti/omap1-mux.h>
+ 
+ #include "omapfb.h"
+ 
+diff --git a/drivers/video/fbdev/omap/lcdc.c b/drivers/video/fbdev/omap/lcdc.c
+index 65953b7fbdb9..3af758f12afd 100644
+--- a/drivers/video/fbdev/omap/lcdc.c
++++ b/drivers/video/fbdev/omap/lcdc.c
+@@ -17,6 +17,8 @@
+ #include <linux/clk.h>
+ #include <linux/gfp.h>
+ 
++#include <linux/soc/ti/omap1-io.h>
++#include <linux/soc/ti/omap1-soc.h>
+ #include <linux/omap-dma.h>
+ 
+ #include <asm/mach-types.h>
+diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
+index dc06057de91d..af73a3f9ac53 100644
+--- a/drivers/video/fbdev/omap/omapfb_main.c
++++ b/drivers/video/fbdev/omap/omapfb_main.c
+@@ -19,8 +19,7 @@
+ 
+ #include <linux/omap-dma.h>
+ 
+-#include <mach/hardware.h>
+-
++#include <linux/soc/ti/omap1-soc.h>
+ #include "omapfb.h"
+ #include "lcdc.h"
+ 
+diff --git a/drivers/video/fbdev/omap/sossi.c b/drivers/video/fbdev/omap/sossi.c
+index ade9d452254c..6b99d89fbe6e 100644
+--- a/drivers/video/fbdev/omap/sossi.c
++++ b/drivers/video/fbdev/omap/sossi.c
+@@ -13,6 +13,7 @@
+ #include <linux/interrupt.h>
+ 
+ #include <linux/omap-dma.h>
++#include <linux/soc/ti/omap1-io.h>
+ 
+ #include "omapfb.h"
+ #include "lcd_dma.h"
 -- 
-2.22.0
+2.20.0

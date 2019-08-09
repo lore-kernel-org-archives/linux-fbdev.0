@@ -1,46 +1,49 @@
 From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 19 Aug 2019 14:05:55 +0000
-Subject: Re: [PATCH] video: fbdev:via: Remove dead code
-Message-Id: <0a2fd868-322a-d0cd-ac24-97a36c5af54e@samsung.com>
+Date: Fri, 09 Aug 2019 14:07:35 +0000
+Subject: [GIT PULL] fbdev fix for v5.3-rc4
+Message-Id: <22bfe177-272e-afe8-31d1-75bc0cf852c7@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1564515200-5020-1-git-send-email-jrdr.linux@gmail.com>
-        <CAFqt6zb5ySDbkHVpPkOKHTrF8jFuNh=dXtnwPKO6TuEHBCkYgg@mail.gmail.com>
-        <CAFqt6zYsA_0YpZcZ8+LrMEjeWDJ5mwUDJNvqOW1H4ewgKbp+aQ@mail.gmail.com>
-        <CGME20190818165955epcas2p4d3c25b533b9ca5419c3a6e397be56139@epcas2p4.samsung.com>
-        <CAFqt6zYrX-5d8yYVwesYBPWQZK4iXPPv=2w7dqBtHvF9c1WJHA@mail.gmail.com>
-In-Reply-To: <CAFqt6zYrX-5d8yYVwesYBPWQZK4iXPPv=2w7dqBtHvF9c1WJHA@mail.gmail.com>
+References: <CGME20190809140736eucas1p2b14d3205aa7268cd1a6bba15ebd81066@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Souptick Joarder <jrdr.linux@gmail.com>
-Cc: FlorianSchandinat@gmx.de, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
 
-On 8/18/19 6:59 PM, Souptick Joarder wrote:
-> On Mon, Aug 12, 2019 at 5:37 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>
->> On Wed, Aug 7, 2019 at 2:11 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>>
->>> On Wed, Jul 31, 2019 at 12:59 AM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>>>
->>>> This is dead code since 3.15. If there is no plan to use
->>>> it further, this can be removed forever.
->>>>
->>>
->>> Any comment on this patch ?
->>
->> Any comment on this patch ?
-> 
-> If no comment can we get this in queue for 5.4 ?
-> 
->>
->>>
->>>> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
+Hi Linus,
 
-Patch queued for v5.4, thanks.
+Please pull fbdev fix for v5.3-rc4 (fbdev patches will now go to
+upstream through drm-misc tree for improved maintainership and
+better integration testing so update MAINTAINERS file accordingly).
 
 Best regards,
 --
 Bartlomiej Zolnierkiewicz
 Samsung R&D Institute Poland
 Samsung Electronics
+
+
+The following changes since commit e21a712a9685488f5ce80495b37b9fdbe96c230d:
+
+  Linux 5.3-rc3 (2019-08-04 18:40:12 -0700)
+
+are available in the git repository at:
+
+  https://github.com/bzolnier/linux.git tags/fbdev-v5.3-rc4
+
+for you to fetch changes up to 6a7553e8d84d5322d883cb83bb9888c49a0f04e0:
+
+  MAINTAINERS: handle fbdev changes through drm-misc tree (2019-08-09 15:46:40 +0200)
+
+----------------------------------------------------------------
+fbdev fix for v5.3-rc4:
+
+- update fbdev git tree in MAINTAINERS file
+
+----------------------------------------------------------------
+Bartlomiej Zolnierkiewicz (1):
+      MAINTAINERS: handle fbdev changes through drm-misc tree
+
+ MAINTAINERS | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)

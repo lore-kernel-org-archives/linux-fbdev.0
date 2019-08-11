@@ -1,83 +1,36 @@
-From: Kees Cook <keescook@chromium.org>
-Date: Sat, 03 Aug 2019 02:12:22 +0000
-Subject: Re: [PATCH] video: fbdev: omapfb_main: Mark expected switch fall-throughs
-Message-Id: <201908021912.0D14906FF9@keescook>
+From: Denis Efremov <efremov@linux.com>
+Date: Sun, 11 Aug 2019 15:08:02 +0000
+Subject: [PATCH 6/7] efifb: Use PCI_STD_NUM_BARS in loops instead of PCI_STD_RESOURCE_END
+Message-Id: <20190811150802.2418-7-efremov@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802191542.GA32751@embeddedor>
-In-Reply-To: <20190802191542.GA32751@embeddedor>
+References: <20190811150802.2418-1-efremov@linux.com>
+In-Reply-To: <20190811150802.2418-1-efremov@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: linux-fbdev@vger.kernel.org, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Denis Efremov <efremov@linux.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Aug 02, 2019 at 02:15:42PM -0500, Gustavo A. R. Silva wrote:
-> Mark switch cases where we are expecting to fall through.
-> 
-> This patch fixes the following warning (Building: omap1_defconfig arm):
-> 
-> drivers/video/fbdev/omap/omapfb_main.c:449:23: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1549:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1547:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1545:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1543:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1540:6: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1538:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> drivers/video/fbdev/omap/omapfb_main.c:1535:3: warning: this statement may fall through [-Wimplicit-fallthrough=]
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
+This patch refactors the loop condition scheme from
+'i <= PCI_STD_RESOURCE_END' to 'i < PCI_STD_NUM_BARS'.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+Signed-off-by: Denis Efremov <efremov@linux.com>
+---
+ drivers/video/fbdev/efifb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
--Kees
-
-> ---
->  drivers/video/fbdev/omap/omapfb_main.c | 8 ++++++++
->  1 file changed, 8 insertions(+)
-> 
-> diff --git a/drivers/video/fbdev/omap/omapfb_main.c b/drivers/video/fbdev/omap/omapfb_main.c
-> index 90eca64e3144..702cca59bda1 100644
-> --- a/drivers/video/fbdev/omap/omapfb_main.c
-> +++ b/drivers/video/fbdev/omap/omapfb_main.c
-> @@ -447,6 +447,7 @@ static int set_color_mode(struct omapfb_plane_struct *plane,
->  		return 0;
->  	case 12:
->  		var->bits_per_pixel = 16;
-> +		/* fall through */
->  	case 16:
->  		if (plane->fbdev->panel->bpp = 12)
->  			plane->color_mode = OMAPFB_COLOR_RGB444;
-> @@ -1534,20 +1535,27 @@ static void omapfb_free_resources(struct omapfb_device *fbdev, int state)
->  	case OMAPFB_ACTIVE:
->  		for (i = 0; i < fbdev->mem_desc.region_cnt; i++)
->  			unregister_framebuffer(fbdev->fb_info[i]);
-> +		/* fall through */
->  	case 7:
->  		omapfb_unregister_sysfs(fbdev);
-> +		/* fall through */
->  	case 6:
->  		if (fbdev->panel->disable)
->  			fbdev->panel->disable(fbdev->panel);
-> +		/* fall through */
->  	case 5:
->  		omapfb_set_update_mode(fbdev, OMAPFB_UPDATE_DISABLED);
-> +		/* fall through */
->  	case 4:
->  		planes_cleanup(fbdev);
-> +		/* fall through */
->  	case 3:
->  		ctrl_cleanup(fbdev);
-> +		/* fall through */
->  	case 2:
->  		if (fbdev->panel->cleanup)
->  			fbdev->panel->cleanup(fbdev->panel);
-> +		/* fall through */
->  	case 1:
->  		dev_set_drvdata(fbdev->dev, NULL);
->  		kfree(fbdev);
-> -- 
-> 2.22.0
-> 
-
+diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+index 04a22663b4fb..6c72b825e92a 100644
+--- a/drivers/video/fbdev/efifb.c
++++ b/drivers/video/fbdev/efifb.c
+@@ -668,7 +668,7 @@ static void efifb_fixup_resources(struct pci_dev *dev)
+ 	if (!base)
+ 		return;
+ 
+-	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
++	for (i = 0; i < PCI_STD_NUM_BARS; i++) {
+ 		struct resource *res = &dev->resource[i];
+ 
+ 		if (!(res->flags & IORESOURCE_MEM))
 -- 
-Kees Cook
+2.21.0

@@ -1,39 +1,32 @@
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Mon, 12 Aug 2019 20:11:14 +0000
+From: Denis Efremov <efremov@linux.com>
+Date: Mon, 12 Aug 2019 21:00:34 +0000
 Subject: Re: [PATCH 0/7] Add definition for the number of standard PCI BARs
-Message-Id: <alpine.DEB.2.21.1908122210300.7324@nanos.tec.linutronix.de>
+Message-Id: <4a8e0b95-192b-335e-653a-5a973f18ba2e@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190811150802.2418-1-efremov@linux.com> <20190812200134.GB11785@google.com>
-In-Reply-To: <20190812200134.GB11785@google.com>
+References: <20190811150802.2418-1-efremov@linux.com>
+ <20190812090639.GX56241@e119886-lin.cambridge.arm.com>
+In-Reply-To: <20190812090639.GX56241@e119886-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Denis Efremov <efremov@linux.com>, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Andrew Murray <andrew.murray@arm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Mon, 12 Aug 2019, Bjorn Helgaas wrote:
-
-> On Sun, Aug 11, 2019 at 06:07:55PM +0300, Denis Efremov wrote:
-> > Code that iterates over all standard PCI BARs typically uses
-> > PCI_STD_RESOURCE_END, but this is error-prone because it requires
-> > "i <= PCI_STD_RESOURCE_END" rather than something like
-> > "i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
-> > way PCI_SRIOV_NUM_BARS is used. There is already the definition
-> > PCI_BAR_COUNT for s390 only. Thus, this patchset introduces it globally.
-> > 
-> > The patch is splitted into 7 parts for different drivers/subsystems for
-> > easy readability.
+On 12.08.2019 12:06, Andrew Murray wrote:
 > 
-> This looks good.  I can take all these together, since they all depend
-> on the first patch.  I have a few comments on the individual patches.
+> Hi Denis,
+
+Hi!
+
 > 
-> > Denis Efremov (7):
-> >   PCI: Add define for the number of standard PCI BARs
-> >   s390/pci: Replace PCI_BAR_COUNT with PCI_STD_NUM_BARS
-> >   x86/PCI: Use PCI_STD_NUM_BARS in loops instead of PCI_STD_RESOURCE_END
+> You could also fix up a few cases where the number of BARs is hard coded in
+> loops, e.g.
+> 
+> drivers/pci/controller/pci-hyperv.c - look for uses of probed_bar in loops
+> drivers/pci/pci.c - pci_release_selected_regions and __pci_request_selected_regions
+> drivers/pci/quirks.c - quirk_alder_ioapic
+> 
 
-Fine with me for the x86 part. That's your turf anyway :)
+Thanks for pointing me on that. I will take this into account in v2.
 
-Thanks,
-
-	tglx
+Denis

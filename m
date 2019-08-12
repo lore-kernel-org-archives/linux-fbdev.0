@@ -1,46 +1,34 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 19 Aug 2019 14:10:01 +0000
-Subject: Re: [PATCH] video: fbdev/mmp/core: Use struct_size() in kzalloc()
-Message-Id: <d2b32f0f-307d-b286-22b5-2316c9de1d93@samsung.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 12 Aug 2019 08:16:40 +0000
+Subject: Re: [PATCH 10/11] mfd: Drop obsolete JZ4740 driver
+Message-Id: <20190812081640.GA26727@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190807161320epcas2p1457bd16d94c3f746543130153a472696@epcas2p1.samsung.com>
-        <20190807161312.GA26835@embeddedor>
-In-Reply-To: <20190807161312.GA26835@embeddedor>
+References: <20190725220215.460-1-paul@crapouillou.net>
+ <20190725220215.460-11-paul@crapouillou.net>
+In-Reply-To: <20190725220215.460-11-paul@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Paul Cercueil <paul@crapouillou.net>
+Cc: Ralf Baechle <ralf@linux-mips.org>, Paul Burton <paul.burton@mips.com>, James Hogan <jhogan@kernel.org>, Rob Herring <robh+dt@kernel.org>, Mark Rutland <mark.rutland@arm.com>, Vinod Koul <vkoul@kernel.org>, Jean Delvare <jdelvare@suse.com>, Guenter Roeck <linux@roeck-us.net>, Miquel Raynal <miquel.raynal@bootlin.com>, Richard Weinberger <richard@nod.at>, Sebastian Reichel <sre@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, od@zcrc.me, devicetree@vger.kernel.org, linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org, dmaengine@vger.kernel.org, linux-hwmon@vger.kernel.org, linux-mtd@lists.infradead.org, linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
 
+On Thu, 25 Jul 2019, Paul Cercueil wrote:
 
-On 8/7/19 6:13 PM, Gustavo A. R. Silva wrote:
-> One of the more common cases of allocation size calculations is finding
-> the size of a structure that has a zero-sized array at the end, along
-> with memory for some number of elements for that array. For example:
+> It has been replaced with the ingenic-iio driver for the ADC.
 > 
-> struct mmp_path {
-> 	...
->         struct mmp_overlay overlays[0];
-> };
-> 
-> size = sizeof(struct mmp_path) + count * sizeof(struct mmp_overlay);
-> instance = kzalloc(size, GFP_KERNEL)
-> 
-> Instead of leaving these open-coded and prone to type mistakes, we can
-> now use the new struct_size() helper:
-> 
-> instance = kzalloc(struct_size(instance, overlays, count), GFP_KERNEL)
-> 
-> Notice that, in this case, variable size is not necessary, hence it
-> is removed.
-> 
-> This code was detected with the help of Coccinelle.
-> 
-> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
-Patch queued for v5.4, thanks.
+> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
+> Tested-by: Artur Rojek <contact@artur-rojek.eu>
+> ---
+>  drivers/mfd/Kconfig      |   9 --
+>  drivers/mfd/Makefile     |   1 -
+>  drivers/mfd/jz4740-adc.c | 324 ---------------------------------------
+>  3 files changed, 334 deletions(-)
+>  delete mode 100644 drivers/mfd/jz4740-adc.c
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

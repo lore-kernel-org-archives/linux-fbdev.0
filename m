@@ -1,55 +1,190 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 29 Aug 2019 14:09:05 +0000
-Subject: Re: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190829140905.wkv2pwzmhhfyzan4@holly.lan>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 12 Aug 2019 07:30:20 +0000
+Subject: [PATCH] m68k: atari: Rename shifter to shifter_st to avoid conflict
+Message-Id: <20190812073020.19109-1-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190709190007.91260-1-mka@chromium.org>
- <20190709190007.91260-3-mka@chromium.org>
- <20190807201528.GO250418@google.com>
- <510f6d8a-71a0-fa6e-33ea-c4a4bfa96607@linaro.org>
- <20190816175317.GU250418@google.com>
- <20190819100241.5pctjxmsq6crlale@holly.lan>
- <20190819185049.GZ250418@google.com>
- <20190820135617.64urowbu2kwdynib@holly.lan>
- <20190827094459.GB4804@dell>
-In-Reply-To: <20190827094459.GB4804@dell>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-m68k@lists.linux-m68k.org
+Cc: kbuild test robot <lkp@intel.com>, Stefan Wahren <wahrenst@gmx.net>, Michael Schmitz <schmitzmic@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Tue, Aug 27, 2019 at 10:44:59AM +0100, Lee Jones wrote:
-> [...]
-> 
-> > > IIUC the conclusion is that there is no need for a string attribute
-> > > because we only need to distinguish between 'perceptual' and
-> > > 'non-perceptual'. If that is correct, do you have any preference for
-> > > the attribute name ('perceptual_scale', 'perceptual', ...)?
-> > 
-> > More a summary than a conclusion! There is a reason I have left a bit or
-> > space for others to comment on this over the last month (and a bit).
-> > 
-> > To be clear my Reviewed-by: means that I believe that the kernel is better
-> > with "non-linear/linear/unknown" than without it and that I am comfortable
-> > the API isn't likely to be a millstone for us.
-> > 
-> > Lee, Jingoo: Either of you care to offer $0.02
-> 
-> No, not really.  Happy to leave it to your good judgement.
+When test-compiling the BCM2835 pin control driver on m68k:
 
-In that case... the patch has my reviewed-by and although the concerns
-raised in the associated threads have merit I don't think they are
-enough to stop the patch.
+    In file included from arch/m68k/include/asm/io_mm.h:32:0,
+                     from arch/m68k/include/asm/io.h:8,
+                     from include/linux/io.h:13,
+                     from include/linux/irq.h:20,
+                     from include/linux/gpio/driver.h:7,
+                     from drivers/pinctrl/bcm/pinctrl-bcm2835.c:17:
+    drivers/pinctrl/bcm/pinctrl-bcm2835.c: In function 'bcm2711_pull_config_set':
+    arch/m68k/include/asm/atarihw.h:190:22: error: expected identifier or '(' before 'volatile'
+     # define shifter ((*(volatile struct SHIFTER *)SHF_BAS))
 
-Please merge.
+"shifter" is a too generic name for a global definition.
 
+As the corresponding definition for Atari TT is already called
+"shifter_tt", fix this by renaming the definition for Atari ST to
+"shifter_st".
 
-Daniel.
+Reported-by: kbuild test robot <lkp@intel.com>
+Suggested-by: Michael Schmitz <schmitzmic@gmail.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+To be queued in the m68k tree for v5.4.
 
-> 
-> -- 
-> Lee Jones [李琼斯]
-> Linaro Services Technical Lead
-> Linaro.org │ Open source software for ARM SoCs
-> Follow Linaro: Facebook | Twitter | Blog
+ arch/m68k/atari/config.c        |  6 ++---
+ arch/m68k/include/asm/atarihw.h |  4 ++--
+ drivers/video/fbdev/atafb.c     | 42 ++++++++++++++++-----------------
+ 3 files changed, 26 insertions(+), 26 deletions(-)
+
+diff --git a/arch/m68k/atari/config.c b/arch/m68k/atari/config.c
+index 902255e7b5b2ad56..73bf5ea9ee1bf1cf 100644
+--- a/arch/m68k/atari/config.c
++++ b/arch/m68k/atari/config.c
+@@ -246,9 +246,9 @@ void __init config_atari(void)
+ 	} else if (hwreg_present(tt_palette)) {
+ 		ATARIHW_SET(TT_SHIFTER);
+ 		pr_cont(" TT_SHIFTER");
+-	} else if (hwreg_present(&shifter.bas_hi)) {
+-		if (hwreg_present(&shifter.bas_lo) &&
+-		    (shifter.bas_lo = 0x0aau, shifter.bas_lo = 0x0aau)) {
++	} else if (hwreg_present(&shifter_st.bas_hi)) {
++		if (hwreg_present(&shifter_st.bas_lo) &&
++		    (shifter_st.bas_lo = 0x0aau, shifter_st.bas_lo = 0x0aau)) {
+ 			ATARIHW_SET(EXTD_SHIFTER);
+ 			pr_cont(" EXTD_SHIFTER");
+ 		} else {
+diff --git a/arch/m68k/include/asm/atarihw.h b/arch/m68k/include/asm/atarihw.h
+index 533008262b691ad9..13828dcc45ff79ac 100644
+--- a/arch/m68k/include/asm/atarihw.h
++++ b/arch/m68k/include/asm/atarihw.h
+@@ -170,7 +170,7 @@ static inline void dma_cache_maintenance( unsigned long paddr,
+ #define TT_HIGH 6
+ 
+ #define SHF_BAS (0xffff8200)
+-struct SHIFTER
++struct SHIFTER_ST
+  {
+ 	u_char pad1;
+ 	u_char bas_hi;
+@@ -187,7 +187,7 @@ struct SHIFTER
+ 	u_char pad7;
+ 	u_char bas_lo;
+  };
+-# define shifter ((*(volatile struct SHIFTER *)SHF_BAS))
++# define shifter_st ((*(volatile struct SHIFTER_ST *)SHF_BAS))
+ 
+ #define SHF_FBAS (0xffff820e)
+ struct SHIFTER_F030
+diff --git a/drivers/video/fbdev/atafb.c b/drivers/video/fbdev/atafb.c
+index fc9dfb0a95afc03e..51f5d1c56fd9c675 100644
+--- a/drivers/video/fbdev/atafb.c
++++ b/drivers/video/fbdev/atafb.c
+@@ -763,17 +763,17 @@ static void tt_get_par(struct atafb_par *par)
+ {
+ 	unsigned long addr;
+ 	par->hw.tt.mode = shifter_tt.tt_shiftmode;
+-	par->hw.tt.sync = shifter.syncmode;
+-	addr = ((shifter.bas_hi & 0xff) << 16) |
+-	       ((shifter.bas_md & 0xff) << 8)  |
+-	       ((shifter.bas_lo & 0xff));
++	par->hw.tt.sync = shifter_st.syncmode;
++	addr = ((shifter_st.bas_hi & 0xff) << 16) |
++	       ((shifter_st.bas_md & 0xff) << 8)  |
++	       ((shifter_st.bas_lo & 0xff));
+ 	par->screen_base = atari_stram_to_virt(addr);
+ }
+ 
+ static void tt_set_par(struct atafb_par *par)
+ {
+ 	shifter_tt.tt_shiftmode = par->hw.tt.mode;
+-	shifter.syncmode = par->hw.tt.sync;
++	shifter_st.syncmode = par->hw.tt.sync;
+ 	/* only set screen_base if really necessary */
+ 	if (current_par.screen_base != par->screen_base)
+ 		fbhw->set_screen_base(par->screen_base);
+@@ -1543,7 +1543,7 @@ static void falcon_get_par(struct atafb_par *par)
+ 	hw->f_shift = videl.f_shift;
+ 	hw->vid_control = videl.control;
+ 	hw->vid_mode = videl.mode;
+-	hw->sync = shifter.syncmode & 0x1;
++	hw->sync = shifter_st.syncmode & 0x1;
+ 	hw->xoffset = videl.xoffset & 0xf;
+ 	hw->hht = videl.hht;
+ 	hw->hbb = videl.hbb;
+@@ -1558,9 +1558,9 @@ static void falcon_get_par(struct atafb_par *par)
+ 	hw->vde = videl.vde;
+ 	hw->vss = videl.vss;
+ 
+-	addr = (shifter.bas_hi & 0xff) << 16 |
+-	       (shifter.bas_md & 0xff) << 8  |
+-	       (shifter.bas_lo & 0xff);
++	addr = (shifter_st.bas_hi & 0xff) << 16 |
++	       (shifter_st.bas_md & 0xff) << 8  |
++	       (shifter_st.bas_lo & 0xff);
+ 	par->screen_base = atari_stram_to_virt(addr);
+ 
+ 	/* derived parameters */
+@@ -1605,7 +1605,7 @@ static irqreturn_t falcon_vbl_switcher(int irq, void *dummy)
+ 			/* Turn off external clocks. Read sets all output bits to 1. */
+ 			*(volatile unsigned short *)0xffff9202;
+ 		}
+-		shifter.syncmode = hw->sync;
++		shifter_st.syncmode = hw->sync;
+ 
+ 		videl.hht = hw->hht;
+ 		videl.hbb = hw->hbb;
+@@ -1952,18 +1952,18 @@ static void stste_get_par(struct atafb_par *par)
+ {
+ 	unsigned long addr;
+ 	par->hw.st.mode = shifter_tt.st_shiftmode;
+-	par->hw.st.sync = shifter.syncmode;
+-	addr = ((shifter.bas_hi & 0xff) << 16) |
+-	       ((shifter.bas_md & 0xff) << 8);
++	par->hw.st.sync = shifter_st.syncmode;
++	addr = ((shifter_st.bas_hi & 0xff) << 16) |
++	       ((shifter_st.bas_md & 0xff) << 8);
+ 	if (ATARIHW_PRESENT(EXTD_SHIFTER))
+-		addr |= (shifter.bas_lo & 0xff);
++		addr |= (shifter_st.bas_lo & 0xff);
+ 	par->screen_base = atari_stram_to_virt(addr);
+ }
+ 
+ static void stste_set_par(struct atafb_par *par)
+ {
+ 	shifter_tt.st_shiftmode = par->hw.st.mode;
+-	shifter.syncmode = par->hw.st.sync;
++	shifter_st.syncmode = par->hw.st.sync;
+ 	/* only set screen_base if really necessary */
+ 	if (current_par.screen_base != par->screen_base)
+ 		fbhw->set_screen_base(par->screen_base);
+@@ -2018,10 +2018,10 @@ static void stste_set_screen_base(void *s_base)
+ 	unsigned long addr;
+ 	addr = atari_stram_to_phys(s_base);
+ 	/* Setup Screen Memory */
+-	shifter.bas_hi = (unsigned char)((addr & 0xff0000) >> 16);
+-	shifter.bas_md = (unsigned char)((addr & 0x00ff00) >> 8);
++	shifter_st.bas_hi = (unsigned char)((addr & 0xff0000) >> 16);
++	shifter_st.bas_md = (unsigned char)((addr & 0x00ff00) >> 8);
+ 	if (ATARIHW_PRESENT(EXTD_SHIFTER))
+-		shifter.bas_lo = (unsigned char)(addr & 0x0000ff);
++		shifter_st.bas_lo = (unsigned char)(addr & 0x0000ff);
+ }
+ 
+ #endif /* ATAFB_STE */
+@@ -2265,9 +2265,9 @@ static void set_screen_base(void *s_base)
+ 
+ 	addr = atari_stram_to_phys(s_base);
+ 	/* Setup Screen Memory */
+-	shifter.bas_hi = (unsigned char)((addr & 0xff0000) >> 16);
+-	shifter.bas_md = (unsigned char)((addr & 0x00ff00) >> 8);
+-	shifter.bas_lo = (unsigned char)(addr & 0x0000ff);
++	shifter_st.bas_hi = (unsigned char)((addr & 0xff0000) >> 16);
++	shifter_st.bas_md = (unsigned char)((addr & 0x00ff00) >> 8);
++	shifter_st.bas_lo = (unsigned char)(addr & 0x0000ff);
+ }
+ 
+ static int pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+-- 
+2.17.1

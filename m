@@ -1,90 +1,271 @@
-From: Bjorn Helgaas <helgaas@kernel.org>
-Date: Fri, 16 Aug 2019 13:35:07 +0000
-Subject: Re: [PATCH v2 00/10] Add definition for the number of standard PCI BARs
-Message-Id: <20190816133507.GN253360@google.com>
+From: Wei Hu <weh@microsoft.com>
+Date: Tue, 13 Aug 2019 09:54:42 +0000
+Subject: [PATCH] video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V host
+Message-Id: <20190813095351.1780-1-weh@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190816092437.31846-1-efremov@linux.com>
- <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
-In-Reply-To: <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Murray <andrew.murray@arm.com>
-Cc: Denis Efremov <efremov@linux.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, Jose Abreu <Jose.Abreu@synopsys.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org
+To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, KY Srinivasan <kys@microsoft.com>, Dexuan Cui <decui@microsoft.com>, Iouri Tarassov <iourit@microsoft.com>, Michael Kelley <mikelley@microsoft.com>, Wei Hu <weh@microsoft.com>
 
-On Fri, Aug 16, 2019 at 11:51:28AM +0100, Andrew Murray wrote:
-> On Fri, Aug 16, 2019 at 12:24:27PM +0300, Denis Efremov wrote:
-> > Code that iterates over all standard PCI BARs typically uses
-> > PCI_STD_RESOURCE_END, but this is error-prone because it requires
-> > "i <= PCI_STD_RESOURCE_END" rather than something like
-> > "i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
-> > way PCI_SRIOV_NUM_BARS is used. There is already the definition
-> > PCI_BAR_COUNT for s390 only. Thus, this patchset introduces it globally.
-> > 
-> > Changes in v2:
-> >   - Reverse checks in pci_iomap_range,pci_iomap_wc_range.
-> >   - Refactor loops in vfio_pci to keep PCI_STD_RESOURCES.
-> >   - Add 2 new patches to replace the magic constant with new define.
-> >   - Split net patch in v1 to separate stmmac and dwc-xlgmac patches.
-> > 
-> > Denis Efremov (10):
-> >   PCI: Add define for the number of standard PCI BARs
-> >   s390/pci: Loop using PCI_STD_NUM_BARS
-> >   x86/PCI: Loop using PCI_STD_NUM_BARS
-> >   stmmac: pci: Loop using PCI_STD_NUM_BARS
-> >   net: dwc-xlgmac: Loop using PCI_STD_NUM_BARS
-> >   rapidio/tsi721: Loop using PCI_STD_NUM_BARS
-> >   efifb: Loop using PCI_STD_NUM_BARS
-> >   vfio_pci: Loop using PCI_STD_NUM_BARS
-> >   PCI: hv: Use PCI_STD_NUM_BARS
-> >   PCI: Use PCI_STD_NUM_BARS
-> > 
-> >  arch/s390/include/asm/pci.h                      |  5 +----
-> >  arch/s390/include/asm/pci_clp.h                  |  6 +++---
-> >  arch/s390/pci/pci.c                              | 16 ++++++++--------
-> >  arch/s390/pci/pci_clp.c                          |  6 +++---
-> >  arch/x86/pci/common.c                            |  2 +-
-> >  drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c |  4 ++--
-> >  drivers/net/ethernet/synopsys/dwc-xlgmac-pci.c   |  2 +-
-> >  drivers/pci/controller/pci-hyperv.c              | 10 +++++-----
-> >  drivers/pci/pci.c                                | 11 ++++++-----
-> >  drivers/pci/quirks.c                             |  4 ++--
-> >  drivers/rapidio/devices/tsi721.c                 |  2 +-
-> >  drivers/vfio/pci/vfio_pci.c                      | 11 +++++++----
-> >  drivers/vfio/pci/vfio_pci_config.c               | 10 ++++++----
-> >  drivers/vfio/pci/vfio_pci_private.h              |  4 ++--
-> >  drivers/video/fbdev/efifb.c                      |  2 +-
-> >  include/linux/pci.h                              |  2 +-
-> >  include/uapi/linux/pci_regs.h                    |  1 +
-> >  17 files changed, 51 insertions(+), 47 deletions(-)
-> 
-> I've come across a few more places where this change can be made. There
-> may be multiple instances in the same file, but only the first is shown
-> below:
-> 
-> drivers/misc/pci_endpoint_test.c:       for (bar = BAR_0; bar <= BAR_5; bar++) {
-> drivers/net/ethernet/intel/e1000/e1000_main.c:          for (i = BAR_1; i <= BAR_5; i++) {
-> drivers/net/ethernet/intel/ixgb/ixgb_main.c:    for (i = BAR_1; i <= BAR_5; i++) {
-> drivers/pci/controller/dwc/pci-dra7xx.c:        for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pci-layerscape-ep.c: for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pcie-artpec6.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pcie-designware-plat.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/endpoint/functions/pci-epf-test.c:  for (bar = BAR_0; bar <= BAR_5; bar++) {
-> include/linux/pci-epc.h:        u64     bar_fixed_size[BAR_5 + 1];
-> drivers/scsi/pm8001/pm8001_hwi.c:       for (bar = 0; bar < 6; bar++) {
-> drivers/scsi/pm8001/pm8001_init.c:      for (bar = 0; bar < 6; bar++) {
-> drivers/ata/sata_nv.c:  for (bar = 0; bar < 6; bar++)
-> drivers/video/fbdev/core/fbmem.c:       for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
-> drivers/staging/gasket/gasket_core.c:   for (i = 0; i < GASKET_NUM_BARS; i++) {
-> drivers/tty/serial/8250/8250_pci.c:     for (i = 0; i < PCI_NUM_BAR_RESOURCES; i++) { <-----------
+Beginning from Windows 10 RS5+, VM screen resolution is obtained from host.
+The "video=hyperv_fb" boot time option is not needed, but still can be
+used to overwrite the VM resolution. The VM resolution on the host could be
+set by executing the powershell "set-vmvideo" command.
 
-Thanks, I agree, these look like good candidates as well.
+Signed-off-by: Iouri Tarassov <iourit@microsoft.com>
+Signed-off-by: Wei Hu <weh@microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 136 +++++++++++++++++++++++++++++---
+ 1 file changed, 125 insertions(+), 11 deletions(-)
 
-> It looks like BARs are often iterated with PCI_NUM_BAR_RESOURCES, there
-> are a load of these too found with:
-> 
-> git grep PCI_ROM_RESOURCE | grep "< "
-
-Good point, those are slightly questionable and I'd change those too.
-
-Bjorn
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 00f5bdcc6c6f..1042f3311fa2 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -23,6 +23,14 @@
+  *
+  * Portrait orientation is also supported:
+  *     For example: video=hyperv_fb:864x1152
++ *
++ * When a Windows 10 RS5+ host is used, the virtual machine screen
++ * resolution is obtained from the host. The "video=hyperv_fb" option is
++ * not needed, but still can be used to overwrite the VM resolution. The
++ * VM resolution on the host could be set by executing the powershell
++ * "set-vmvideo" command. For example
++ *     set-vmvideo -vmname name -horizontalresolution:1920 \
++ * -verticalresolution:1200 -resolutiontype single
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+@@ -44,6 +52,7 @@
+ #define SYNTHVID_VERSION(major, minor) ((minor) << 16 | (major))
+ #define SYNTHVID_VERSION_WIN7 SYNTHVID_VERSION(3, 0)
+ #define SYNTHVID_VERSION_WIN8 SYNTHVID_VERSION(3, 2)
++#define SYNTHVID_VERSION_WIN10 SYNTHVID_VERSION(3, 5)
+ 
+ #define SYNTHVID_DEPTH_WIN7 16
+ #define SYNTHVID_DEPTH_WIN8 32
+@@ -82,16 +91,25 @@ enum synthvid_msg_type {
+ 	SYNTHVID_POINTER_SHAPE		= 8,
+ 	SYNTHVID_FEATURE_CHANGE		= 9,
+ 	SYNTHVID_DIRT			= 10,
++	SYNTHVID_RESOLUTION_REQUEST	= 13,
++	SYNTHVID_RESOLUTION_RESPONSE	= 14,
+ 
+-	SYNTHVID_MAX			= 11
++	SYNTHVID_MAX			= 15
+ };
+ 
++#define		SYNTHVID_EDID_BLOCK_SIZE	128
++#define		SYNTHVID_MAX_RESOLUTION_COUNT	64
++
++struct hvd_screen_info {
++	u16 width;
++	u16 height;
++} __packed;
++
+ struct synthvid_msg_hdr {
+ 	u32 type;
+ 	u32 size;  /* size of this header + payload after this field*/
+ } __packed;
+ 
+-
+ struct synthvid_version_req {
+ 	u32 version;
+ } __packed;
+@@ -102,6 +120,18 @@ struct synthvid_version_resp {
+ 	u8 max_video_outputs;
+ } __packed;
+ 
++struct synthvid_supported_resolution_req {
++	u8 maximum_resolution_count;
++} __packed;
++
++struct synthvid_supported_resolution_resp {
++	u8 edid_block[SYNTHVID_EDID_BLOCK_SIZE];
++	u8 resolution_count;
++	u8 default_resolution_index;
++	u8 is_standard;
++	struct hvd_screen_info supported_resolution[1];
++} __packed;
++
+ struct synthvid_vram_location {
+ 	u64 user_ctx;
+ 	u8 is_vram_gpa_specified;
+@@ -187,6 +217,8 @@ struct synthvid_msg {
+ 		struct synthvid_pointer_shape ptr_shape;
+ 		struct synthvid_feature_change feature_chg;
+ 		struct synthvid_dirt dirt;
++		struct synthvid_supported_resolution_req resolution_req;
++		struct synthvid_supported_resolution_resp resolution_resp;
+ 	};
+ } __packed;
+ 
+@@ -224,6 +256,8 @@ struct hvfb_par {
+ 
+ static uint screen_width = HVFB_WIDTH;
+ static uint screen_height = HVFB_HEIGHT;
++static uint screen_width_max = HVFB_WIDTH;
++static uint screen_height_max = HVFB_HEIGHT;
+ static uint screen_depth;
+ static uint screen_fb_size;
+ 
+@@ -354,6 +388,7 @@ static void synthvid_recv_sub(struct hv_device *hdev)
+ 
+ 	/* Complete the wait event */
+ 	if (msg->vid_hdr.type == SYNTHVID_VERSION_RESPONSE ||
++	    msg->vid_hdr.type == SYNTHVID_RESOLUTION_RESPONSE ||
+ 	    msg->vid_hdr.type == SYNTHVID_VRAM_LOCATION_ACK) {
+ 		memcpy(par->init_buf, msg, MAX_VMBUS_PKT_SIZE);
+ 		complete(&par->wait);
+@@ -428,6 +463,64 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ 	}
+ 
+ 	par->synthvid_version = ver;
++	pr_info("Synthvid Version major %d, minor %d\n",
++		ver & 0x0000ffff, (ver & 0xffff0000) >> 16);
++
++out:
++	return ret;
++}
++
++/* Get current resolution from the host */
++static int synthvid_get_supported_resolution(struct hv_device *hdev)
++{
++	struct fb_info *info = hv_get_drvdata(hdev);
++	struct hvfb_par *par = info->par;
++	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
++	int ret = 0;
++	unsigned long t;
++	u8 index;
++	int i;
++
++	memset(msg, 0, sizeof(struct synthvid_msg));
++	msg->vid_hdr.type = SYNTHVID_RESOLUTION_REQUEST;
++	msg->vid_hdr.size = sizeof(struct synthvid_msg_hdr) +
++		sizeof(struct synthvid_supported_resolution_req);
++
++	msg->resolution_req.maximum_resolution_count =
++		SYNTHVID_MAX_RESOLUTION_COUNT;
++	synthvid_send(hdev, msg);
++
++	t = wait_for_completion_timeout(&par->wait, VSP_TIMEOUT);
++	if (!t) {
++		pr_err("Time out on waiting resolution response\n");
++			ret = -ETIMEDOUT;
++			goto out;
++	}
++
++	if (msg->resolution_resp.resolution_count == 0) {
++		pr_err("No supported resolutions\n");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	index = msg->resolution_resp.default_resolution_index;
++	if (index >= msg->resolution_resp.resolution_count) {
++		pr_err("Invalid resolution index: %d\n", index);
++		ret = -ENODEV;
++		goto out;
++	}
++
++	for (i = 0; i < msg->resolution_resp.resolution_count; i++) {
++		screen_width_max = max_t(unsigned int, screen_width_max,
++		    msg->resolution_resp.supported_resolution[i].width);
++		screen_height_max = max_t(unsigned int, screen_height_max,
++		    msg->resolution_resp.supported_resolution[i].height);
++	}
++
++	screen_width =
++		msg->resolution_resp.supported_resolution[index].width;
++	screen_height =
++		msg->resolution_resp.supported_resolution[index].height;
+ 
+ out:
+ 	return ret;
+@@ -448,11 +541,21 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 	}
+ 
+ 	/* Negotiate the protocol version with host */
+-	if (vmbus_proto_version == VERSION_WS2008 ||
+-	    vmbus_proto_version == VERSION_WIN7)
++	switch (vmbus_proto_version) {
++	case VERSION_WS2008:
++	case VERSION_WIN7:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN7);
+-	else
++		break;
++	case VERSION_WIN8:
++	case VERSION_WIN8_1:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN8);
++		break;
++	case VERSION_WIN10:
++	case VERSION_WIN10_V5:
++	default:
++		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN10);
++		break;
++	}
+ 
+ 	if (ret) {
+ 		pr_err("Synthetic video device version not accepted\n");
+@@ -464,6 +567,12 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+ 
++	if (par->synthvid_version >= SYNTHVID_VERSION_WIN10) {
++		ret = synthvid_get_supported_resolution(hdev);
++		if (ret)
++			pr_info("Failed to get supported resolution from host, use default\n");
++	}
++
+ 	screen_fb_size = hdev->channel->offermsg.offer.
+ 				mmio_megabytes * 1024 * 1024;
+ 
+@@ -653,6 +762,8 @@ static void hvfb_get_option(struct fb_info *info)
+ 	}
+ 
+ 	if (x < HVFB_WIDTH_MIN || y < HVFB_HEIGHT_MIN ||
++	    (par->synthvid_version >= SYNTHVID_VERSION_WIN10 &&
++	    (x > screen_width_max || y > screen_height_max)) ||
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN8 &&
+ 	     x * y * screen_depth / 8 > SYNTHVID_FB_SIZE_WIN8) ||
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN7 &&
+@@ -689,8 +800,12 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 		}
+ 
+ 		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-		    pci_resource_len(pdev, 0) < screen_fb_size)
++		    pci_resource_len(pdev, 0) < screen_fb_size) {
++			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
++			       (unsigned long) pci_resource_len(pdev, 0),
++			       (unsigned long) screen_fb_size);
+ 			goto err1;
++		}
+ 
+ 		pot_end = pci_resource_end(pdev, 0);
+ 		pot_start = pot_end - screen_fb_size + 1;
+@@ -781,17 +896,16 @@ static int hvfb_probe(struct hv_device *hdev,
+ 		goto error1;
+ 	}
+ 
++	hvfb_get_option(info);
++	pr_info("Screen resolution: %dx%d, Color depth: %d\n",
++		screen_width, screen_height, screen_depth);
++
+ 	ret = hvfb_getmem(hdev, info);
+ 	if (ret) {
+ 		pr_err("No memory for framebuffer\n");
+ 		goto error2;
+ 	}
+ 
+-	hvfb_get_option(info);
+-	pr_info("Screen resolution: %dx%d, Color depth: %d\n",
+-		screen_width, screen_height, screen_depth);
+-
+-
+ 	/* Set up fb_info */
+ 	info->flags = FBINFO_DEFAULT;
+ 
+-- 
+2.20.1

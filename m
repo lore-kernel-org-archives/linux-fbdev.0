@@ -1,53 +1,48 @@
-From: Keith Busch <keith.busch@intel.com>
-Date: Fri, 02 Aug 2019 14:19:52 +0000
-Subject: Re: [PATCH 26/34] mm/gup_benchmark.c: convert put_page() to put_user_page*()
-Message-Id: <20190802141952.GA18214@localhost.localdomain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 13 Aug 2019 11:58:53 +0000
+Subject: [PATCH resend] video: backlight: Drop default m for {LCD,BACKLIGHT_CLASS_DEVICE}
+Message-Id: <20190813115853.30329-1-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802022005.5117-27-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-27-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: john.hubbard@gmail.com
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, "Michael S . Tsirkin" <mst@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Dan Carpenter <dan.carpenter@oracle.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams <dan.j.williams@intel.com>, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, YueHaibing <yuehaibing@huawei.com>, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>, linux-rpi-kerne
+To: Alexander Shiyan <shc_work@mail.ru>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Thu, Aug 01, 2019 at 07:19:57PM -0700, john.hubbard@gmail.com wrote:
-> From: John Hubbard <jhubbard@nvidia.com>
-> 
-> For pages that were retained via get_user_pages*(), release those pages
-> via the new put_user_page*() routines, instead of via put_page() or
-> release_pages().
-> 
-> This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-> ("mm: introduce put_user_page*(), placeholder versions").
-> 
-> Cc: Dan Carpenter <dan.carpenter@oracle.com>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Keith Busch <keith.busch@intel.com>
-> Cc: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> Cc: Michael S. Tsirkin <mst@redhat.com>
-> Cc: YueHaibing <yuehaibing@huawei.com>
-> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+When running "make oldconfig" on a .config where
+CONFIG_BACKLIGHT_LCD_SUPPORT is not set, two new config options
+("Lowlevel LCD controls" and "Lowlevel Backlight controls") appear, both
+defaulting to "m".
 
-Looks fine.
+Drop the "default m", as options should default to disabled, and because
+several driver config options already select LCD_CLASS_DEVICE or
+BACKLIGHT_CLASS_DEVICE when needed.
 
-Reviewed-by: Keith Busch <keith.busch@intel.com>
+Fixes: 8c5dc8d9f19c7992 ("video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol")
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/video/backlight/Kconfig | 2 --
+ 1 file changed, 2 deletions(-)
 
->  mm/gup_benchmark.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/mm/gup_benchmark.c b/mm/gup_benchmark.c
-> index 7dd602d7f8db..515ac8eeb6ee 100644
-> --- a/mm/gup_benchmark.c
-> +++ b/mm/gup_benchmark.c
-> @@ -79,7 +79,7 @@ static int __gup_benchmark_ioctl(unsigned int cmd,
->  	for (i = 0; i < nr_pages; i++) {
->  		if (!pages[i])
->  			break;
-> -		put_page(pages[i]);
-> +		put_user_page(pages[i]);
->  	}
->  	end_time = ktime_get();
->  	gup->put_delta_usec = ktime_us_delta(end_time, start_time);
-> -- 
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 8b081d61773e21eb..40676be2e46aae61 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -10,7 +10,6 @@ menu "Backlight & LCD device support"
+ #
+ config LCD_CLASS_DEVICE
+         tristate "Lowlevel LCD controls"
+-	default m
+ 	help
+ 	  This framework adds support for low-level control of LCD.
+ 	  Some framebuffer devices connect to platform-specific LCD modules
+@@ -143,7 +142,6 @@ endif # LCD_CLASS_DEVICE
+ #
+ config BACKLIGHT_CLASS_DEVICE
+         tristate "Lowlevel Backlight controls"
+-	default m
+ 	help
+ 	  This framework adds support for low-level control of the LCD
+           backlight. This includes support for brightness and power.
+-- 
+2.17.1

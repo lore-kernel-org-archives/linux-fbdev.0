@@ -1,39 +1,38 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Mon, 19 Aug 2019 14:06:35 +0000
-Subject: Re: [PATCH] video/fbdev/aty128fb: Remove dead code
-Message-Id: <8902838a-5e71-3d1f-0372-e9b400f9b033@samsung.com>
+From: Nishka Dasgupta <nishkadg.linux@gmail.com>
+Date: Tue, 13 Aug 2019 08:59:22 +0000
+Subject: [PATCH] backlight: ipaq_micro: Make structure micro_bl_props constant
+Message-Id: <20190813085855.8302-1-nishkadg.linux@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1564514053-4571-1-git-send-email-jrdr.linux@gmail.com>
-        <CAFqt6zZMgowAd-UvdEjydF=9HPY7bvXpWuzCqBLS7+3j_Dkgig@mail.gmail.com>
-        <CGME20190814122400epcas1p2c2d538ff700b5ac71008973d5ba743f4@epcas1p2.samsung.com>
-        <CAFqt6zaQEX60_KL-m+K7VYQU=z144u=yfeVjPtGVaiAj5NbBaQ@mail.gmail.com>
-In-Reply-To: <CAFqt6zaQEX60_KL-m+K7VYQU=z144u=yfeVjPtGVaiAj5NbBaQ@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Souptick Joarder <jrdr.linux@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, "David S. Miller" <davem@davemloft.net>, mpatocka@redhat.com, syrjala@sci.fi, sam@ravnborg.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Nishka Dasgupta <nishkadg.linux@gmail.com>
 
+Static structure micro_bl_props, having type backlight_properties, is
+used only once, when it is passed as the last argument to function
+devm_backlight_device_register(). devm_backlight_device_register() is
+defined with its last parameter being declared constant. Hence make
+micro_bl_props itself constant as well.
+Issue found with Coccinelle.
 
-On 8/14/19 2:23 PM, Souptick Joarder wrote:
-> On Wed, Aug 7, 2019 at 2:12 PM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>
->> On Wed, Jul 31, 2019 at 12:38 AM Souptick Joarder <jrdr.linux@gmail.com> wrote:
->>>
->>> This is dead code since 3.15. If there is no plan to use it
->>> further, this can be removed forever.
->>
->> Any comment on this patch ?
-> 
-> Any comment on this patch ?
-> 
->>
->>>
->>> Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
-Patch queued for v5.4, thanks.
+Signed-off-by: Nishka Dasgupta <nishkadg.linux@gmail.com>
+---
+ drivers/video/backlight/ipaq_micro_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+diff --git a/drivers/video/backlight/ipaq_micro_bl.c b/drivers/video/backlight/ipaq_micro_bl.c
+index 1123f67c12b3..85b16cc82878 100644
+--- a/drivers/video/backlight/ipaq_micro_bl.c
++++ b/drivers/video/backlight/ipaq_micro_bl.c
+@@ -44,7 +44,7 @@ static const struct backlight_ops micro_bl_ops = {
+ 	.update_status  = micro_bl_update_status,
+ };
+ 
+-static struct backlight_properties micro_bl_props = {
++static const struct backlight_properties micro_bl_props = {
+ 	.type = BACKLIGHT_RAW,
+ 	.max_brightness = 255,
+ 	.power = FB_BLANK_UNBLANK,
+-- 
+2.19.1

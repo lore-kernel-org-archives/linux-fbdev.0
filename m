@@ -1,51 +1,179 @@
-From: john.hubbard@gmail.com
-Date: Fri, 02 Aug 2019 02:19:58 +0000
-Subject: [PATCH 27/34] mm/memory.c: convert put_page() to put_user_page*()
-Message-Id: <20190802022005.5117-28-jhubbard@nvidia.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Wed, 14 Aug 2019 02:09:25 +0000
+Subject: [PATCH AUTOSEL 5.2 041/123] Staging: fbtft: Fix GPIO handling
+Message-Id: <20190814021047.14828-41-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
+References: <20190814021047.14828-1-sashal@kernel.org>
+In-Reply-To: <20190814021047.14828-1-sashal@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Michal Hocko <mhocko@suse.com>, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, "Aneesh Kumar K . V" <aneesh.kumar@linux.ibm.com>, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Huang Ying <ying.huang@intel.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Rik van Riel <riel@surriel.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: =?UTF-8?q?Jan=20Sebastian=20G=C3=B6tte?= <linux@jaseg.net>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, dri-devel@lists.freedesktop.org, Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
 
-From: John Hubbard <jhubbard@nvidia.com>
+From: Jan Sebastian Götte <linux@jaseg.net>
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
+[ Upstream commit 92e3e884887c0d278042fbbb6f6c9b41d6addb71 ]
 
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
+Commit c440eee1a7a1 ("Staging: fbtft: Switch to the gpio descriptor
+interface") breaks GPIO handling. In several places, checks to only set
+a GPIO if it was configured ended up backwards.
+I have tested this fix. The fixed driver works with a ili9486
+display connected to a raspberry pi via SPI.
 
-Cc: Aneesh Kumar K.V <aneesh.kumar@linux.ibm.com>
-Cc: Huang Ying <ying.huang@intel.com>
-Cc: Jérôme Glisse <jglisse@redhat.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rik van Riel <riel@surriel.com>
-Cc: Souptick Joarder <jrdr.linux@gmail.com>
-Cc: Will Deacon <will.deacon@arm.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Fixes: c440eee1a7a1d ("Staging: fbtft: Switch to the gpio descriptor interface")
+Tested-by: Jan Sebastian Götte <linux@jaseg.net>
+Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+Signed-off-by: Jan Sebastian Götte <linux@jaseg.net>
+Link: https://lore.kernel.org/r/75ada52f-afa1-08bc-d0ce-966fc1110e70@jaseg.net
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- mm/memory.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/fbtft/fb_bd663474.c  | 2 +-
+ drivers/staging/fbtft/fb_ili9163.c   | 2 +-
+ drivers/staging/fbtft/fb_ili9325.c   | 2 +-
+ drivers/staging/fbtft/fb_s6d1121.c   | 2 +-
+ drivers/staging/fbtft/fb_ssd1289.c   | 2 +-
+ drivers/staging/fbtft/fb_ssd1331.c   | 4 ++--
+ drivers/staging/fbtft/fb_upd161704.c | 2 +-
+ drivers/staging/fbtft/fbtft-bus.c    | 2 +-
+ drivers/staging/fbtft/fbtft-core.c   | 4 ++--
+ 9 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index e2bb51b6242e..8870968496ea 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -4337,7 +4337,7 @@ int __access_remote_vm(struct task_struct *tsk, struct mm_struct *mm,
- 						    buf, maddr + offset, bytes);
- 			}
- 			kunmap(page);
--			put_page(page);
-+			put_user_page(page);
+diff --git a/drivers/staging/fbtft/fb_bd663474.c b/drivers/staging/fbtft/fb_bd663474.c
+index b6c6d66e4eb1b..e2c7646588f8c 100644
+--- a/drivers/staging/fbtft/fb_bd663474.c
++++ b/drivers/staging/fbtft/fb_bd663474.c
+@@ -24,7 +24,7 @@
+ 
+ static int init_display(struct fbtft_par *par)
+ {
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	par->fbtftops.reset(par);
+diff --git a/drivers/staging/fbtft/fb_ili9163.c b/drivers/staging/fbtft/fb_ili9163.c
+index d609a2b67db9b..fd32376700e28 100644
+--- a/drivers/staging/fbtft/fb_ili9163.c
++++ b/drivers/staging/fbtft/fb_ili9163.c
+@@ -77,7 +77,7 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	write_reg(par, MIPI_DCS_SOFT_RESET); /* software reset */
+diff --git a/drivers/staging/fbtft/fb_ili9325.c b/drivers/staging/fbtft/fb_ili9325.c
+index b090e7ab6fdd6..85e54a10ed72c 100644
+--- a/drivers/staging/fbtft/fb_ili9325.c
++++ b/drivers/staging/fbtft/fb_ili9325.c
+@@ -85,7 +85,7 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	bt &= 0x07;
+diff --git a/drivers/staging/fbtft/fb_s6d1121.c b/drivers/staging/fbtft/fb_s6d1121.c
+index b3d0701880fe3..5a129b1352cc8 100644
+--- a/drivers/staging/fbtft/fb_s6d1121.c
++++ b/drivers/staging/fbtft/fb_s6d1121.c
+@@ -29,7 +29,7 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	/* Initialization sequence from Lib_UTFT */
+diff --git a/drivers/staging/fbtft/fb_ssd1289.c b/drivers/staging/fbtft/fb_ssd1289.c
+index bbf75f795234b..88a5b6925901d 100644
+--- a/drivers/staging/fbtft/fb_ssd1289.c
++++ b/drivers/staging/fbtft/fb_ssd1289.c
+@@ -28,7 +28,7 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	write_reg(par, 0x00, 0x0001);
+diff --git a/drivers/staging/fbtft/fb_ssd1331.c b/drivers/staging/fbtft/fb_ssd1331.c
+index 4cfe9f8535d0f..37622c9462aa7 100644
+--- a/drivers/staging/fbtft/fb_ssd1331.c
++++ b/drivers/staging/fbtft/fb_ssd1331.c
+@@ -81,7 +81,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+ 	va_start(args, len);
+ 
+ 	*buf = (u8)va_arg(args, unsigned int);
+-	if (!par->gpio.dc)
++	if (par->gpio.dc)
+ 		gpiod_set_value(par->gpio.dc, 0);
+ 	ret = par->fbtftops.write(par, par->buf, sizeof(u8));
+ 	if (ret < 0) {
+@@ -104,7 +104,7 @@ static void write_reg8_bus8(struct fbtft_par *par, int len, ...)
+ 			return;
  		}
- 		len -= bytes;
- 		buf += bytes;
+ 	}
+-	if (!par->gpio.dc)
++	if (par->gpio.dc)
+ 		gpiod_set_value(par->gpio.dc, 1);
+ 	va_end(args);
+ }
+diff --git a/drivers/staging/fbtft/fb_upd161704.c b/drivers/staging/fbtft/fb_upd161704.c
+index 564a38e344406..c77832ae5e5ba 100644
+--- a/drivers/staging/fbtft/fb_upd161704.c
++++ b/drivers/staging/fbtft/fb_upd161704.c
+@@ -26,7 +26,7 @@ static int init_display(struct fbtft_par *par)
+ {
+ 	par->fbtftops.reset(par);
+ 
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	/* Initialization sequence from Lib_UTFT */
+diff --git a/drivers/staging/fbtft/fbtft-bus.c b/drivers/staging/fbtft/fbtft-bus.c
+index 2ea814d0dca5d..63c65dd67b175 100644
+--- a/drivers/staging/fbtft/fbtft-bus.c
++++ b/drivers/staging/fbtft/fbtft-bus.c
+@@ -135,7 +135,7 @@ int fbtft_write_vmem16_bus8(struct fbtft_par *par, size_t offset, size_t len)
+ 	remain = len / 2;
+ 	vmem16 = (u16 *)(par->info->screen_buffer + offset);
+ 
+-	if (!par->gpio.dc)
++	if (par->gpio.dc)
+ 		gpiod_set_value(par->gpio.dc, 1);
+ 
+ 	/* non buffered write */
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index 9b07badf4c6ca..8fe2232442492 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -919,7 +919,7 @@ static int fbtft_init_display_dt(struct fbtft_par *par)
+ 		return -EINVAL;
+ 
+ 	par->fbtftops.reset(par);
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	while (p) {
+@@ -1010,7 +1010,7 @@ int fbtft_init_display(struct fbtft_par *par)
+ 	}
+ 
+ 	par->fbtftops.reset(par);
+-	if (!par->gpio.cs)
++	if (par->gpio.cs)
+ 		gpiod_set_value(par->gpio.cs, 0);  /* Activate chip */
+ 
+ 	i = 0;
 -- 
-2.22.0
+2.20.1

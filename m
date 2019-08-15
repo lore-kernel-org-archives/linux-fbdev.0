@@ -1,50 +1,70 @@
-From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:15 +0000
-Subject: [PATCH v3 16/41] oradax: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-17-jhubbard@nvidia.com>
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Date: Thu, 15 Aug 2019 12:30:09 +0000
+Subject: [PATCH] staging: sm750fb: fix odd license text
+Message-Id: <20190815123009.16499-1-gregkh@linuxfoundation.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
+To: linux-fbdev@vger.kernel.org
 
-From: John Hubbard <jhubbard@nvidia.com>
+There is some "confusing" license text in some of the sm750fb driver
+files.  After discussing it with the company, it turns out to have been
+a mistake and these lines can be safely removed.  The files are all to
+be licensed under the GPLv2 license.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Jonathan Helman <jonathan.helman@oracle.com>
-Cc: Rob Gardner <rob.gardner@oracle.com>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: sparclinux@vger.kernel.org
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Cc: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Cc: Teddy Wang <teddy.wang@siliconmotion.com>
+Cc: linux-fbdev@vger.kernel.org
+Cc: devel@driverdev.osuosl.org
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 ---
- drivers/sbus/char/oradax.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/staging/sm750fb/ddk750.h       | 3 ---
+ drivers/staging/sm750fb/ddk750_swi2c.c | 3 ---
+ drivers/staging/sm750fb/ddk750_swi2c.h | 3 ---
+ 3 files changed, 9 deletions(-)
 
-diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
-index 8af216287a84..029e619992fc 100644
---- a/drivers/sbus/char/oradax.c
-+++ b/drivers/sbus/char/oradax.c
-@@ -412,7 +412,7 @@ static void dax_unlock_pages(struct dax_ctx *ctx, int ccb_index, int nelem)
- 				dax_dbg("freeing page %p", p);
- 				if (j = OUT)
- 					set_page_dirty(p);
--				put_page(p);
-+				put_user_page(p);
- 				ctx->pages[i][j] = NULL;
- 			}
- 		}
+diff --git a/drivers/staging/sm750fb/ddk750.h b/drivers/staging/sm750fb/ddk750.h
+index 482c1c6ba422..64ef4d258a91 100644
+--- a/drivers/staging/sm750fb/ddk750.h
++++ b/drivers/staging/sm750fb/ddk750.h
+@@ -2,9 +2,6 @@
+ /*
+  *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+  *
+- *  All rights are reserved. Reproduction or in part is prohibited
+- *  without the written consent of the copyright owner.
+- *
+  *  RegSC.h --- SM718 SDK
+  *  This file contains the definitions for the System Configuration registers.
+  */
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.c b/drivers/staging/sm750fb/ddk750_swi2c.c
+index 5c0ac747ea2b..0ef8d4ff2ef9 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.c
++++ b/drivers/staging/sm750fb/ddk750_swi2c.c
+@@ -2,9 +2,6 @@
+ /*
+  *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+  *
+- *  All rights are reserved. Reproduction or in part is prohibited
+- *  without the written consent of the copyright owner.
+- *
+  *  swi2c.c --- SM750/SM718 DDK
+  *  This file contains the source code for I2C using software
+  *  implementation.
+diff --git a/drivers/staging/sm750fb/ddk750_swi2c.h b/drivers/staging/sm750fb/ddk750_swi2c.h
+index 5868feea791b..dfa166060da7 100644
+--- a/drivers/staging/sm750fb/ddk750_swi2c.h
++++ b/drivers/staging/sm750fb/ddk750_swi2c.h
+@@ -2,9 +2,6 @@
+ /*
+  *         Copyright (c) 2007 by Silicon Motion, Inc. (SMI)
+  *
+- *  All rights are reserved. Reproduction or in part is prohibited
+- *  without the written consent of the copyright owner.
+- *
+  *  swi2c.h --- SM750/SM718 DDK
+  *  This file contains the definitions for i2c using software
+  *  implementation.
 -- 
-2.22.0
+2.22.1

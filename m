@@ -1,84 +1,57 @@
-From: Rodrigo Vivi <rodrigo.vivi@intel.com>
-Date: Mon, 05 Aug 2019 16:53:46 +0000
-Subject: Re: [PATCH v2 06/34] drm/i915: convert put_page() to put_user_page*()
-Message-Id: <20190805165346.GB25953@intel.com>
+From: Denis Efremov <efremov@linux.com>
+Date: Fri, 16 Aug 2019 09:24:27 +0000
+Subject: [PATCH v2 00/10] Add definition for the number of standard PCI BARs
+Message-Id: <20190816092437.31846-1-efremov@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
- <20190804224915.28669-7-jhubbard@nvidia.com>
-In-Reply-To: <20190804224915.28669-7-jhubbard@nvidia.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: john.hubbard@gmail.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, David Airlie <airlied@linux.ie>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?iso-8859-1?B?Suly
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: Denis Efremov <efremov@linux.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, Andrew Murray <andrew.murray@arm.com>, Jose Abreu <Jose.Abreu@synopsys.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org
 
-On Sun, Aug 04, 2019 at 03:48:47PM -0700, john.hubbard@gmail.com wrote:
-> From: John Hubbard <jhubbard@nvidia.com>
-> 
-> For pages that were retained via get_user_pages*(), release those pages
-> via the new put_user_page*() routines, instead of via put_page() or
-> release_pages().
-> 
-> This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-> ("mm: introduce put_user_page*(), placeholder versions").
-> 
-> This is a merge-able version of the fix, because it restricts
-> itself to put_user_page() and put_user_pages(), both of which
-> have not changed their APIs. Later, i915_gem_userptr_put_pages()
-> can be simplified to use put_user_pages_dirty_lock().
+Code that iterates over all standard PCI BARs typically uses
+PCI_STD_RESOURCE_END, but this is error-prone because it requires
+"i <= PCI_STD_RESOURCE_END" rather than something like
+"i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
+way PCI_SRIOV_NUM_BARS is used. There is already the definition
+PCI_BAR_COUNT for s390 only. Thus, this patchset introduces it globally.
 
-Thanks for that.
-with this version we won't have any conflict.
+Changes in v2:
+  - Reverse checks in pci_iomap_range,pci_iomap_wc_range.
+  - Refactor loops in vfio_pci to keep PCI_STD_RESOURCES.
+  - Add 2 new patches to replace the magic constant with new define.
+  - Split net patch in v1 to separate stmmac and dwc-xlgmac patches.
 
-Ack for going through mm tree.
+Denis Efremov (10):
+  PCI: Add define for the number of standard PCI BARs
+  s390/pci: Loop using PCI_STD_NUM_BARS
+  x86/PCI: Loop using PCI_STD_NUM_BARS
+  stmmac: pci: Loop using PCI_STD_NUM_BARS
+  net: dwc-xlgmac: Loop using PCI_STD_NUM_BARS
+  rapidio/tsi721: Loop using PCI_STD_NUM_BARS
+  efifb: Loop using PCI_STD_NUM_BARS
+  vfio_pci: Loop using PCI_STD_NUM_BARS
+  PCI: hv: Use PCI_STD_NUM_BARS
+  PCI: Use PCI_STD_NUM_BARS
 
-> 
-> Cc: Jani Nikula <jani.nikula@linux.intel.com>
-> Cc: Joonas Lahtinen <joonas.lahtinen@linux.intel.com>
-> Cc: Rodrigo Vivi <rodrigo.vivi@intel.com>
-> Cc: David Airlie <airlied@linux.ie>
-> Cc: intel-gfx@lists.freedesktop.org
-> Cc: dri-devel@lists.freedesktop.org
-> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
-> ---
->  drivers/gpu/drm/i915/gem/i915_gem_userptr.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/i915/gem/i915_gem_userptr.c b/drivers/gpu/drm/i915/gem/i915_gem_userptr.c
-> index 2caa594322bc..76dda2923cf1 100644
-> --- a/drivers/gpu/drm/i915/gem/i915_gem_userptr.c
-> +++ b/drivers/gpu/drm/i915/gem/i915_gem_userptr.c
-> @@ -527,7 +527,7 @@ __i915_gem_userptr_get_pages_worker(struct work_struct *_work)
->  	}
->  	mutex_unlock(&obj->mm.lock);
->  
-> -	release_pages(pvec, pinned);
-> +	put_user_pages(pvec, pinned);
->  	kvfree(pvec);
->  
->  	i915_gem_object_put(obj);
-> @@ -640,7 +640,7 @@ static int i915_gem_userptr_get_pages(struct drm_i915_gem_object *obj)
->  		__i915_gem_userptr_set_active(obj, true);
->  
->  	if (IS_ERR(pages))
-> -		release_pages(pvec, pinned);
-> +		put_user_pages(pvec, pinned);
->  	kvfree(pvec);
->  
->  	return PTR_ERR_OR_ZERO(pages);
-> @@ -675,7 +675,7 @@ i915_gem_userptr_put_pages(struct drm_i915_gem_object *obj,
->  			set_page_dirty_lock(page);
->  
->  		mark_page_accessed(page);
-> -		put_page(page);
-> +		put_user_page(page);
->  	}
->  	obj->mm.dirty = false;
->  
-> -- 
-> 2.22.0
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+ arch/s390/include/asm/pci.h                      |  5 +----
+ arch/s390/include/asm/pci_clp.h                  |  6 +++---
+ arch/s390/pci/pci.c                              | 16 ++++++++--------
+ arch/s390/pci/pci_clp.c                          |  6 +++---
+ arch/x86/pci/common.c                            |  2 +-
+ drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c |  4 ++--
+ drivers/net/ethernet/synopsys/dwc-xlgmac-pci.c   |  2 +-
+ drivers/pci/controller/pci-hyperv.c              | 10 +++++-----
+ drivers/pci/pci.c                                | 11 ++++++-----
+ drivers/pci/quirks.c                             |  4 ++--
+ drivers/rapidio/devices/tsi721.c                 |  2 +-
+ drivers/vfio/pci/vfio_pci.c                      | 11 +++++++----
+ drivers/vfio/pci/vfio_pci_config.c               | 10 ++++++----
+ drivers/vfio/pci/vfio_pci_private.h              |  4 ++--
+ drivers/video/fbdev/efifb.c                      |  2 +-
+ include/linux/pci.h                              |  2 +-
+ include/uapi/linux/pci_regs.h                    |  1 +
+ 17 files changed, 51 insertions(+), 47 deletions(-)
+
+-- 
+2.21.0

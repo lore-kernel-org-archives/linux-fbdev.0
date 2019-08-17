@@ -1,38 +1,87 @@
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Mon, 05 Aug 2019 20:29:51 +0000
-Subject: Re: [PATCH v1 1/1] backlight: drop EARLY_EVENT_BLANK support
-Message-Id: <20190805202951.GA18148@ravnborg.org>
+From: Hans de Goede <hdegoede@redhat.com>
+Date: Sat, 17 Aug 2019 08:40:53 +0000
+Subject: Re: [PATCH] efifb: BGRT: Improve efifb_bgrt_sanity_check
+Message-Id: <a94c96de-16a5-7b52-a964-f8974e867a65@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725143224.GB31803@ravnborg.org>
- <20190726095016.wsj7jnni5zdh37dl@holly.lan>
- <20190726112724.GB20065@ravnborg.org> <20190805103600.GF4739@dell>
-In-Reply-To: <20190805103600.GF4739@dell>
+References: <20190721131918.10115-1-hdegoede@redhat.com>
+In-Reply-To: <20190721131918.10115-1-hdegoede@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Lee Jones <lee.jones@linaro.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>, Gerd Hoffmann <kraxel@redhat.com>, Jingoo Han <jingoohan1@gmail.com>, Peter Rosin <peda@axentia.se>
+To: Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, stable@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hi Lee.
+Hi,
 
-On Mon, Aug 05, 2019 at 11:36:00AM +0100, Lee Jones wrote:
-> On Fri, 26 Jul 2019, Sam Ravnborg wrote:
+On 21-07-19 15:19, Hans de Goede wrote:
+> For various reasons, at least with x86 EFI firmwares, the xoffset and
+> yoffset in the BGRT info are not always reliable.
 > 
-> > Hi Daniel.
-> > 
-> > On Fri, Jul 26, 2019 at 10:50:16AM +0100, Daniel Thompson wrote:
-> > > On Thu, Jul 25, 2019 at 04:32:24PM +0200, Sam Ravnborg wrote:
-> > > > There was no users left - so drop the code to support EARLY_FB_BLANK.
-> > > 
-> > > Why are we using a different noun for the subject and description?
-> > I fat-fingered the description.
+> Extensive testing has shown that when the info is correct, the
+> BGRT image is always exactly centered horizontally (the yoffset variable
+> is more variable and not always predictable).
 > 
-> > Will fix when I apply - or send out a v2 if requested.
+> This commit simplifies / improves the bgrt_sanity_check to simply
+> check that the BGRT image is exactly centered horizontally and skips
+> (re)drawing it when it is not.
 > 
-> Okay, just apply it then:
+> This fixes the BGRT image sometimes being drawn in the wrong place.
 > 
-> Acked-by: Lee Jones <lee.jones@linaro.org>
+> Cc: stable@vger.kernel.org
+> Fixes: 88fe4ceb2447 ("efifb: BGRT: Do not copy the boot graphics for non native resolutions")
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 
-Fixed changelog and applied to drm-misc-next.
+ping? I do not see this one in -next yet, what is the status of this
+patch?
 
-	Sam
+Regards,
+
+Hans
+
+
+
+
+> ---
+>   drivers/video/fbdev/efifb.c | 27 ++++++---------------------
+>   1 file changed, 6 insertions(+), 21 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
+> index dfa8dd47d19d..5b3cef9bf794 100644
+> --- a/drivers/video/fbdev/efifb.c
+> +++ b/drivers/video/fbdev/efifb.c
+> @@ -122,28 +122,13 @@ static void efifb_copy_bmp(u8 *src, u32 *dst, int width, struct screen_info *si)
+>    */
+>   static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
+>   {
+> -	static const int default_resolutions[][2] = {
+> -		{  800,  600 },
+> -		{ 1024,  768 },
+> -		{ 1280, 1024 },
+> -	};
+> -	u32 i, right_margin;
+> -
+> -	for (i = 0; i < ARRAY_SIZE(default_resolutions); i++) {
+> -		if (default_resolutions[i][0] = si->lfb_width &&
+> -		    default_resolutions[i][1] = si->lfb_height)
+> -			break;
+> -	}
+> -	/* If not a default resolution used for textmode, this should be fine */
+> -	if (i >= ARRAY_SIZE(default_resolutions))
+> -		return true;
+> -
+> -	/* If the right margin is 5 times smaller then the left one, reject */
+> -	right_margin = si->lfb_width - (bgrt_tab.image_offset_x + bmp_width);
+> -	if (right_margin < (bgrt_tab.image_offset_x / 5))
+> -		return false;
+> +	/*
+> +	 * All x86 firmwares horizontally center the image (the yoffset
+> +	 * calculations differ between boards, but xoffset is predictable).
+> +	 */
+> +	u32 expected_xoffset = (si->lfb_width - bmp_width) / 2;
+>   
+> -	return true;
+> +	return bgrt_tab.image_offset_x = expected_xoffset;
+>   }
+>   #else
+>   static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
+> 

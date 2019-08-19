@@ -1,87 +1,48 @@
-From: Hans de Goede <hdegoede@redhat.com>
-Date: Sat, 17 Aug 2019 08:40:53 +0000
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 19 Aug 2019 14:01:22 +0000
 Subject: Re: [PATCH] efifb: BGRT: Improve efifb_bgrt_sanity_check
-Message-Id: <a94c96de-16a5-7b52-a964-f8974e867a65@redhat.com>
+Message-Id: <9da1b656-4640-fe16-9def-fe6c069ed39e@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190721131918.10115-1-hdegoede@redhat.com>
-In-Reply-To: <20190721131918.10115-1-hdegoede@redhat.com>
+ <CGME20190817084100epcas3p15bc1b42c02d8d86969a4a403896d6fee@epcas3p1.samsung.com>
+ <a94c96de-16a5-7b52-a964-f8974e867a65@redhat.com>
+In-Reply-To: <a94c96de-16a5-7b52-a964-f8974e867a65@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, stable@vger.kernel.org, dri-devel@lists.freedesktop.org
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: linux-fbdev@vger.kernel.org, Peter Jones <pjones@redhat.com>, stable@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-Hi,
 
-On 21-07-19 15:19, Hans de Goede wrote:
-> For various reasons, at least with x86 EFI firmwares, the xoffset and
-> yoffset in the BGRT info are not always reliable.
+On 8/17/19 10:40 AM, Hans de Goede wrote:
+> Hi,
+
+Hi Hans,
+
+> On 21-07-19 15:19, Hans de Goede wrote:
+>> For various reasons, at least with x86 EFI firmwares, the xoffset and
+>> yoffset in the BGRT info are not always reliable.
+>>
+>> Extensive testing has shown that when the info is correct, the
+>> BGRT image is always exactly centered horizontally (the yoffset variable
+>> is more variable and not always predictable).
+>>
+>> This commit simplifies / improves the bgrt_sanity_check to simply
+>> check that the BGRT image is exactly centered horizontally and skips
+>> (re)drawing it when it is not.
+>>
+>> This fixes the BGRT image sometimes being drawn in the wrong place.
+>>
+>> Cc: stable@vger.kernel.org
+>> Fixes: 88fe4ceb2447 ("efifb: BGRT: Do not copy the boot graphics for non native resolutions")
+>> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
 > 
-> Extensive testing has shown that when the info is correct, the
-> BGRT image is always exactly centered horizontally (the yoffset variable
-> is more variable and not always predictable).
-> 
-> This commit simplifies / improves the bgrt_sanity_check to simply
-> check that the BGRT image is exactly centered horizontally and skips
-> (re)drawing it when it is not.
-> 
-> This fixes the BGRT image sometimes being drawn in the wrong place.
-> 
-> Cc: stable@vger.kernel.org
-> Fixes: 88fe4ceb2447 ("efifb: BGRT: Do not copy the boot graphics for non native resolutions")
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ping? I do not see this one in -next yet, what is the status of this
+> patch?
+Patch queued for v5.4, thanks and sorry for the delay.
 
-ping? I do not see this one in -next yet, what is the status of this
-patch?
-
-Regards,
-
-Hans
-
-
-
-
-> ---
->   drivers/video/fbdev/efifb.c | 27 ++++++---------------------
->   1 file changed, 6 insertions(+), 21 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-> index dfa8dd47d19d..5b3cef9bf794 100644
-> --- a/drivers/video/fbdev/efifb.c
-> +++ b/drivers/video/fbdev/efifb.c
-> @@ -122,28 +122,13 @@ static void efifb_copy_bmp(u8 *src, u32 *dst, int width, struct screen_info *si)
->    */
->   static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
->   {
-> -	static const int default_resolutions[][2] = {
-> -		{  800,  600 },
-> -		{ 1024,  768 },
-> -		{ 1280, 1024 },
-> -	};
-> -	u32 i, right_margin;
-> -
-> -	for (i = 0; i < ARRAY_SIZE(default_resolutions); i++) {
-> -		if (default_resolutions[i][0] = si->lfb_width &&
-> -		    default_resolutions[i][1] = si->lfb_height)
-> -			break;
-> -	}
-> -	/* If not a default resolution used for textmode, this should be fine */
-> -	if (i >= ARRAY_SIZE(default_resolutions))
-> -		return true;
-> -
-> -	/* If the right margin is 5 times smaller then the left one, reject */
-> -	right_margin = si->lfb_width - (bgrt_tab.image_offset_x + bmp_width);
-> -	if (right_margin < (bgrt_tab.image_offset_x / 5))
-> -		return false;
-> +	/*
-> +	 * All x86 firmwares horizontally center the image (the yoffset
-> +	 * calculations differ between boards, but xoffset is predictable).
-> +	 */
-> +	u32 expected_xoffset = (si->lfb_width - bmp_width) / 2;
->   
-> -	return true;
-> +	return bgrt_tab.image_offset_x = expected_xoffset;
->   }
->   #else
->   static bool efifb_bgrt_sanity_check(struct screen_info *si, u32 bmp_width)
-> 
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

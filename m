@@ -1,95 +1,81 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Mon, 19 Aug 2019 12:29:15 +0000
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Mon, 19 Aug 2019 18:50:49 +0000
 Subject: Re: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190819122915.icjszuvnwyjpa75n@pengutronix.de>
+Message-Id: <20190819185049.GZ250418@google.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190709190007.91260-1-mka@chromium.org>
  <20190709190007.91260-3-mka@chromium.org>
- <20190816165148.7keg45fmlndr22fl@pengutronix.de>
- <20190816175157.GT250418@google.com>
- <20190816194754.ldzjqy2yjonfvaat@pengutronix.de>
- <20190816211051.GV250418@google.com>
- <20190819054628.asw3cxp46w3rpml7@pengutronix.de>
- <20190819095037.h3gig3quyhnzshm7@holly.lan>
- <20190819102127.wqudnbngottjakf5@pengutronix.de>
- <20190819111613.2kkn25tmjgyjhbip@holly.lan>
-In-Reply-To: <20190819111613.2kkn25tmjgyjhbip@holly.lan>
+ <20190807201528.GO250418@google.com>
+ <510f6d8a-71a0-fa6e-33ea-c4a4bfa96607@linaro.org>
+ <20190816175317.GU250418@google.com>
+ <20190819100241.5pctjxmsq6crlale@holly.lan>
+In-Reply-To: <20190819100241.5pctjxmsq6crlale@holly.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Matthias Kaehlcke <mka@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, kernel@pengutronix.de
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
 
-On Mon, Aug 19, 2019 at 12:16:13PM +0100, Daniel Thompson wrote:
-> On Mon, Aug 19, 2019 at 12:21:27PM +0200, Uwe Kleine-K=F6nig wrote:
-> > > > > In an ideal world the backlight interface would be consistent as =
-you
-> > > > > suggest, however there are plenty of existing devices which use t=
-he
-> > > > > 'other' scaling (regardless of which is chosen as the 'correct'
-> > > > > one). Userspace still has to deal with these. And changing previo=
-usly
-> > > > > 'logarithmic' drivers to linear (or viceversa) may 'break' usersp=
-ace,
-> > > > > when it keeps using its 'old' scaling, which now isn't correct an=
-ymore.
-> > > >=20
-> > > > It might be subjective, or maybe I'm just too optimistic, but I thi=
-nk if
-> > > > there was no policy before about the meaning of
-> > > >=20
-> > > > 	echo 17 > brightness
-> > > >=20
-> > > > other than "brighter than lower values and darker than higher ones"
-> > > > introducing (say) the scale is intended to represent a linear brigh=
-tness
-> > > > curve is ok.
-> > > >=20
-> > > > Unless userspace jumps through hoops and tries to identify the actu=
-al
-> > > > device it is running on it is wrong on some machines anyhow and we'=
-re
-> > > > only shifting the set of affected machines with a tighter policy (u=
-ntil
-> > > > that userspace application is fixed).
-> > >=20
-> > > I believe that there are two common approaches by userspace at presen=
-t:
-> > >=20
-> > > 1. Assume the scale is perceptual and we can directly map a slider
-> > >    to the backlight value. This is common simply because most ACPI
-> > >    backlights are perceptual and therefore when tested in a laptop
-> > >    it works OK.
-> > >=20
-> > > 2. Assume that is max brightness is small (e.g. ACPI) then the
-> > >    scale is perceptual and if the max brightness is large (e.g.
-> > >    a PWM) then the scale is linear and apply a correction
-> > >    function between the slider and the control.
-> > >=20
-> > > That historic baggage makes is diffcult to "just define a standardized
-> > > scale"... especially given that if we selected a standardized scale we
-> > > would probably want a perceptual scale with lots of steps (e.g. break
-> > > the heuristic).
-> >=20
-> > With "perceptual" you mean that logarithmic stuff, right?
->=20
-> Human perception is fairly complex so it depends how strict you want to
-> get. At the end of the day what it means is you can map a slider UI
-> component directly to the backlight range and it will feel right. Thus
-> a userspace that maps directly to a slider *is* assuming the scale
-> is perceptual.
+Hi Daniel,
 
-I have problems to declare something as "the right thing to do" that
-depends on feeling of users. I much prefer to make a technical device
-authoritative here (in this case a device that measures emitted light).
+On Mon, Aug 19, 2019 at 11:02:41AM +0100, Daniel Thompson wrote:
+> On Fri, Aug 16, 2019 at 10:53:17AM -0700, Matthias Kaehlcke wrote:
+> > On Fri, Aug 16, 2019 at 04:54:18PM +0100, Daniel Thompson wrote:
+> > > On 07/08/2019 21:15, Matthias Kaehlcke wrote:
+> > > > On Tue, Jul 09, 2019 at 12:00:05PM -0700, Matthias Kaehlcke wrote:
+> > > > > Backlight brightness curves can have different shapes. The two main
+> > > > > types are linear and non-linear curves. The human eye doesn't
+> > > > > perceive linearly increasing/decreasing brightness as linear (see
+> > > > > also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+> > > > > linearly to human eye"), hence many backlights use non-linear (often
+> > > > > logarithmic) brightness curves. The type of curve currently is opaque
+> > > > > to userspace, so userspace often uses more or less reliable heuristics
+> > > > > (like the number of brightness levels) to decide whether to treat a
+> > > > > backlight device as linear or non-linear.
+> > > > > 
+> > > > > Export the type of the brightness curve via the new sysfs attribute
+> > > > > 'scale'. The value of the attribute can be 'linear', 'non-linear' or
+> > > > > 'unknown'. For devices that don't provide information about the scale
+> > > > > of their brightness curve the value of the 'scale' attribute is 'unknown'.
+> > > > > 
+> > > > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > > > 
+> > > > Daniel (et al): do you have any more comments on this patch/series or
+> > > > is it ready to land?
+> > > 
+> > > I decided to leave it for a long while for others to review since I'm still
+> > > a tiny bit uneasy about the linear/non-linear terminology.
+> > > 
+> > > However that's my only concern, its fairly minor and I've dragged by feet
+> > > for more then long enough, so:
+> > > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> > 
+> > Thanks!
+> > 
+> > If you or someone else has another suggestion for the terminology that
+> > we can all agree on I'm happy to change it.
+> 
+> As you will see in my reply to Uwe. The term I tend to adopt when I want
+> to be precise about userspace behaviour is "perceptual" (e.g. that a
+> backlight can be mapped directly to a slider and it will feel right).
+> 
+> However that raises its own concerns: mostly about what is perceptual
+> enough.
+> 
+> Clear the automatic brightness curve support in the PWM driver is
+> perceptual.
+> 
+> To be honest I suspect that in most cases a true logarithmic curve (given a
+> sane exponent) would be perceptual enough. In other words it will feel
+> comfortable with a direct mapped slider and using it for animation
+> won't be too bad.
+> 
+> However when we get right down to it *that* is the information that is
+> actually most useful to userspace: explicit confirmation that the scale
+> can be mapped directly to a slider. I think it also aligned better with
+> Uwe's feedback (e.g. to start working towards having a preferred scale).
 
-Other than that I don't have enough experience with backlights to judge
-the decisions that have to be done and so will stop my participation in
-this thread now.
-
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+IIUC the conclusion is that there is no need for a string attribute
+because we only need to distinguish between 'perceptual' and
+'non-perceptual'. If that is correct, do you have any preference for
+the attribute name ('perceptual_scale', 'perceptual', ...)?

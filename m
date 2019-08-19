@@ -1,153 +1,75 @@
 From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 19 Aug 2019 09:50:37 +0000
+Date: Mon, 19 Aug 2019 10:02:41 +0000
 Subject: Re: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190819095037.h3gig3quyhnzshm7@holly.lan>
+Message-Id: <20190819100241.5pctjxmsq6crlale@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190709190007.91260-1-mka@chromium.org>
  <20190709190007.91260-3-mka@chromium.org>
- <20190816165148.7keg45fmlndr22fl@pengutronix.de>
- <20190816175157.GT250418@google.com>
- <20190816194754.ldzjqy2yjonfvaat@pengutronix.de>
- <20190816211051.GV250418@google.com>
- <20190819054628.asw3cxp46w3rpml7@pengutronix.de>
-In-Reply-To: <20190819054628.asw3cxp46w3rpml7@pengutronix.de>
+ <20190807201528.GO250418@google.com>
+ <510f6d8a-71a0-fa6e-33ea-c4a4bfa96607@linaro.org>
+ <20190816175317.GU250418@google.com>
+In-Reply-To: <20190816175317.GU250418@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, kernel@pengutronix.de, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Douglas Anderson <dianders@chromium.org>, Matthias Kaehlcke <mka@chromium.org>, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
 
-On Mon, Aug 19, 2019 at 07:46:28AM +0200, Uwe Kleine-K=F6nig wrote:
-> Hello Matthias,
->=20
-> On Fri, Aug 16, 2019 at 02:10:51PM -0700, Matthias Kaehlcke wrote:
-> > On Fri, Aug 16, 2019 at 09:47:54PM +0200, Uwe Kleine-K=F6nig wrote:
-> > > On Fri, Aug 16, 2019 at 10:51:57AM -0700, Matthias Kaehlcke wrote:
-> > > > Hi Uwe,
-> > > >=20
-> > > > On Fri, Aug 16, 2019 at 06:51:48PM +0200, Uwe Kleine-K=F6nig wrote:
-> > > > > On Tue, Jul 09, 2019 at 12:00:05PM -0700, Matthias Kaehlcke wrote:
-> > > > > > Backlight brightness curves can have different shapes. The two =
-main
-> > > > > > types are linear and non-linear curves. The human eye doesn't
-> > > > > > perceive linearly increasing/decreasing brightness as linear (s=
-ee
-> > > > > > also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
-> > > > > > linearly to human eye"), hence many backlights use non-linear (=
-often
-> > > > > > logarithmic) brightness curves. The type of curve currently is =
-opaque
-> > > > > > to userspace, so userspace often uses more or less reliable heu=
-ristics
-> > > > > > (like the number of brightness levels) to decide whether to tre=
-at a
-> > > > > > backlight device as linear or non-linear.
-> > > > > >=20
-> > > > > > Export the type of the brightness curve via the new sysfs attri=
-bute
-> > > > > > 'scale'. The value of the attribute can be 'linear', 'non-linea=
-r' or
-> > > > > > 'unknown'. For devices that don't provide information about the=
- scale
-> > > > > > of their brightness curve the value of the 'scale' attribute is=
- 'unknown'.
-> > > > > >=20
-> > > > > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> > > > >=20
-> > > > > I wonder what kind of problem you are solving here. Can you descr=
-ibe
-> > > > > that in a few words?
-> > > >=20
-> > > > The human eye perceives brightness in a logarithmic manner. For
-> > > > backlights with a linear brightness curve brightness controls like
-> > > > sliders need to use a mapping to achieve a behavior that is perceiv=
-ed
-> > > > as linear-ish (more details: http://www.pathwaylighting.com/product=
-s/downloads/brochure/technical_materials_1466797044_Linear+vs+Logarithmic+D=
-imming+White+Paper.pdf)
-> > > >=20
-> > > > As of now userspace doesn't have information about the type of the
-> > > > brightness curve, and often uses heuristics to make a guess, which =
-may
-> > > > be right most of the time, but not always. The new attribute elimin=
-ates
-> > > > the need to guess.
-> > >=20
-> > > This is about backlights right? So the kernel provides to userspace an
-> > > interval [0, x] for some x and depending on the physics of the the
-> > > backlight configuring x/2 (probably?) either means 50% measured light=
- or
-> > > 50% perceived light, right?
-> >=20
-> > correct
-> >=20
-> > > I wonder if it would be possible instead of giving different backlight
-> > > implementations the freedom to use either linear or logarithmic (or
-> > > quadratic?) scaling and tell userspace which of the options were pick=
-ed
-> > > require the drivers to provide a (say) linear scaling and then usersp=
-ace
-> > > wouldn't need to care about the exact physics.
-> >=20
-> > In an ideal world the backlight interface would be consistent as you
-> > suggest, however there are plenty of existing devices which use the
-> > 'other' scaling (regardless of which is chosen as the 'correct'
-> > one). Userspace still has to deal with these. And changing previously
-> > 'logarithmic' drivers to linear (or viceversa) may 'break' userspace,
-> > when it keeps using its 'old' scaling, which now isn't correct anymore.
->=20
-> It might be subjective, or maybe I'm just too optimistic, but I think if
-> there was no policy before about the meaning of
->=20
-> 	echo 17 > brightness
->=20
-> other than "brighter than lower values and darker than higher ones"
-> introducing (say) the scale is intended to represent a linear brightness
-> curve is ok.
->=20
-> Unless userspace jumps through hoops and tries to identify the actual
-> device it is running on it is wrong on some machines anyhow and we're
-> only shifting the set of affected machines with a tighter policy (until
-> that userspace application is fixed).
+On Fri, Aug 16, 2019 at 10:53:17AM -0700, Matthias Kaehlcke wrote:
+> On Fri, Aug 16, 2019 at 04:54:18PM +0100, Daniel Thompson wrote:
+> > On 07/08/2019 21:15, Matthias Kaehlcke wrote:
+> > > On Tue, Jul 09, 2019 at 12:00:05PM -0700, Matthias Kaehlcke wrote:
+> > > > Backlight brightness curves can have different shapes. The two main
+> > > > types are linear and non-linear curves. The human eye doesn't
+> > > > perceive linearly increasing/decreasing brightness as linear (see
+> > > > also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+> > > > linearly to human eye"), hence many backlights use non-linear (often
+> > > > logarithmic) brightness curves. The type of curve currently is opaque
+> > > > to userspace, so userspace often uses more or less reliable heuristics
+> > > > (like the number of brightness levels) to decide whether to treat a
+> > > > backlight device as linear or non-linear.
+> > > > 
+> > > > Export the type of the brightness curve via the new sysfs attribute
+> > > > 'scale'. The value of the attribute can be 'linear', 'non-linear' or
+> > > > 'unknown'. For devices that don't provide information about the scale
+> > > > of their brightness curve the value of the 'scale' attribute is 'unknown'.
+> > > > 
+> > > > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> > > 
+> > > Daniel (et al): do you have any more comments on this patch/series or
+> > > is it ready to land?
+> > 
+> > I decided to leave it for a long while for others to review since I'm still
+> > a tiny bit uneasy about the linear/non-linear terminology.
+> > 
+> > However that's my only concern, its fairly minor and I've dragged by feet
+> > for more then long enough, so:
+> > Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> 
+> Thanks!
+> 
+> If you or someone else has another suggestion for the terminology that
+> we can all agree on I'm happy to change it.
 
-I believe that there are two common approaches by userspace at present:
+As you will see in my reply to Uwe. The term I tend to adopt when I want
+to be precise about userspace behaviour is "perceptual" (e.g. that a
+backlight can be mapped directly to a slider and it will feel right).
 
-1. Assume the scale is perceptual and we can directly map a slider
-   to the backlight value. This is common simply because most ACPI
-   backlights are perceptual and therefore when tested in a laptop
-   it works OK.
+However that raises its own concerns: mostly about what is perceptual
+enough.
 
-2. Assume that is max brightness is small (e.g. ACPI) then the
-   scale is perceptual and if the max brightness is large (e.g.
-   a PWM) then the scale is linear and apply a correction
-   function between the slider and the control.
+Clear the automatic brightness curve support in the PWM driver is
+perceptual.
 
-That historic baggage makes is diffcult to "just define a standardized
-scale"... especially given that if we selected a standardized scale we
-would probably want a perceptual scale with lots of steps (e.g. break
-the heuristic).
+To be honest I suspect that in most cases a true logarithmic curve (given a
+sane exponent) would be perceptual enough. In other words it will feel
+comfortable with a direct mapped slider and using it for animation
+won't be too bad.
 
-
-> And the big upside is that in the end (i.e. when all kernel drivers and
-> userspace applications are adapted to provide/consume the "correct"
-> curve) the result is simpler.
-
-My view is that this convergence will eventually be achieved but it will
-happen through the obsolescence of the backlight sysfs interface. The
-sysfs interface has other flaws, in particular no integration with the
-DRM connector API.
-
-Thus I would expect an alternative interface to emerge, most likely as
-part of the DRM connector API. I'd expect such a new API to a
-perceptual scale and to have a fixed max brightness with enough
-steps to support animated backlight effects (IIRC 0..100 has been
-proposed in the past)=20
-
-In the mean time getting the existing collection of backlight drivers
-marked up as linear/logarithmic/etc will ease the introduction of that
-API because, within the kernel, we might have gathered enough knowledge
-to have some hope of correctly mapping each backlight onto a
-standardized scale.
+However when we get right down to it *that* is the information that is
+actually most useful to userspace: explicit confirmation that the scale
+can be mapped directly to a slider. I think it also aligned better with
+Uwe's feedback (e.g. to start working towards having a preferred scale).
 
 
 Daniel.

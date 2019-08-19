@@ -1,48 +1,27 @@
-From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:49:09 +0000
-Subject: [PATCH v2 28/34] mm/madvise.c: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-29-jhubbard@nvidia.com>
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Date: Mon, 19 Aug 2019 14:02:51 +0000
+Subject: Re: [PATCH] video: fbdev: aty: Use dev_get_drvdata
+Message-Id: <e9d8fe12-e415-19b3-5c84-2927e26de1ec@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
-In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
+References: <CGME20190724131908epcas2p473bd151e9c12b90d6dc9c4a39b522e3a@epcas2p4.samsung.com>
+ <20190724131900.2039-1-hslester96@gmail.com>
+In-Reply-To: <20190724131900.2039-1-hslester96@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Matthew Wilcox <willy@infradead.org>, sparclinux@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Daniel Black <daniel@linux.ibm.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Chuhong Yuan <hslester96@gmail.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
 
-From: John Hubbard <jhubbard@nvidia.com>
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
+On 7/24/19 3:19 PM, Chuhong Yuan wrote:
+> Instead of using to_pci_dev + pci_get_drvdata,
+> use dev_get_drvdata to make code simpler.
+> 
+> Signed-off-by: Chuhong Yuan <hslester96@gmail.com>
+Patch queued for v5.4, thanks.
 
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Daniel Black <daniel@linux.ibm.com>
-Cc: Jan Kara <jack@suse.cz>
-Cc: Jérôme Glisse <jglisse@redhat.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Mike Kravetz <mike.kravetz@oracle.com>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
----
- mm/madvise.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/mm/madvise.c b/mm/madvise.c
-index 968df3aa069f..1c6881a761a5 100644
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -672,7 +672,7 @@ static int madvise_inject_error(int behavior,
- 		 * routine is responsible for pinning the page to prevent it
- 		 * from being released back to the page allocator.
- 		 */
--		put_page(page);
-+		put_user_page(page);
- 		ret = memory_failure(pfn, 0);
- 		if (ret)
- 			return ret;
--- 
-2.22.0
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics

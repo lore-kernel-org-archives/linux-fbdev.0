@@ -1,37 +1,63 @@
-From: Denis Efremov <efremov@linux.com>
-Date: Fri, 16 Aug 2019 09:24:34 +0000
-Subject: [PATCH v2 07/10] efifb: Loop using PCI_STD_NUM_BARS
-Message-Id: <20190816092437.31846-8-efremov@linux.com>
+From: Andrzej Hajda <a.hajda@samsung.com>
+Date: Tue, 20 Aug 2019 09:56:15 +0000
+Subject: Re: [PATCH 2/3] video: fbdev: mmp: add COMPILE_TEST support
+Message-Id: <28d91688-6df2-9207-7d88-34d024baf727@samsung.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190816092437.31846-1-efremov@linux.com>
-In-Reply-To: <20190816092437.31846-1-efremov@linux.com>
+References: <CGME20190627140744eucas1p1eb91c6c21ae36105f38dbf5e42259a7c@eucas1p1.samsung.com>
+        <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
+In-Reply-To: <d21a19ea-8c18-80df-ae79-76de7c5ee67c@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Denis Efremov <efremov@linux.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-Refactor loops to use 'i < PCI_STD_NUM_BARS' instead of
-'i <= PCI_STD_RESOURCE_END'.
+On 27.06.2019 16:07, Bartlomiej Zolnierkiewicz wrote:
+> Add COMPILE_TEST support to mmp display subsystem for better compile
+> testing coverage.
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Signed-off-by: Denis Efremov <efremov@linux.com>
----
- drivers/video/fbdev/efifb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/fbdev/efifb.c b/drivers/video/fbdev/efifb.c
-index 04a22663b4fb..6c72b825e92a 100644
---- a/drivers/video/fbdev/efifb.c
-+++ b/drivers/video/fbdev/efifb.c
-@@ -668,7 +668,7 @@ static void efifb_fixup_resources(struct pci_dev *dev)
- 	if (!base)
- 		return;
- 
--	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
-+	for (i = 0; i < PCI_STD_NUM_BARS; i++) {
- 		struct resource *res = &dev->resource[i];
- 
- 		if (!(res->flags & IORESOURCE_MEM))
--- 
-2.21.0
+Reviewed-by: Andrzej Hajda <a.hajda@samsung.com>
+
+=C2=A0--
+Regards
+Andrzej
+
+
+> ---
+>  drivers/video/fbdev/mmp/Kconfig    |    2 +-
+>  drivers/video/fbdev/mmp/hw/Kconfig |    3 ++-
+>  2 files changed, 3 insertions(+), 2 deletions(-)
+>
+> Index: b/drivers/video/fbdev/mmp/Kconfig
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/Kconfig
+> +++ b/drivers/video/fbdev/mmp/Kconfig
+> @@ -1,7 +1,7 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+>  menuconfig MMP_DISP
+>  	tristate "Marvell MMP Display Subsystem support"
+> -	depends on CPU_PXA910 || CPU_MMP2
+> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
+>  	help
+>  	  Marvell Display Subsystem support.
+> =20
+> Index: b/drivers/video/fbdev/mmp/hw/Kconfig
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D> --- a/drivers/video/fbdev/mmp/hw/Kconfig
+> +++ b/drivers/video/fbdev/mmp/hw/Kconfig
+> @@ -1,7 +1,8 @@
+>  # SPDX-License-Identifier: GPL-2.0-only
+>  config MMP_DISP_CONTROLLER
+>  	bool "mmp display controller hw support"
+> -	depends on CPU_PXA910 || CPU_MMP2
+> +	depends on HAVE_CLK && HAS_IOMEM
+> +	depends on CPU_PXA910 || CPU_MMP2 || COMPILE_TEST
+>  	help
+>  		Marvell MMP display hw controller support
+>  		this controller is used on Marvell PXA910 and
+> _______________________________________________
+> dri-devel mailing list
+> dri-devel@lists.freedesktop.org
+> https://lists.freedesktop.org/mailman/listinfo/dri-devel

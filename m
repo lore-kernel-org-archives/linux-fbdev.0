@@ -1,54 +1,66 @@
-From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Wed, 21 Aug 2019 04:12:36 +0000
-Subject: [PATCH v2 3/4] video/logo: simplify cmd_logo
-Message-Id: <20190821041237.23197-4-yamada.masahiro@socionext.com>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Tue, 20 Aug 2019 19:11:43 +0000
+Subject: Re: [PATCH] backlight: add include guards to platform_lcd.h and ili9320.h
+Message-Id: <20190820191143.hzl5je4wrbkhcyyz@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190821041237.23197-1-yamada.masahiro@socionext.com>
-In-Reply-To: <20190821041237.23197-1-yamada.masahiro@socionext.com>
+References: <20190721073940.11422-1-yamada.masahiro@socionext.com>
+In-Reply-To: <20190721073940.11422-1-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
+To: Masahiro Yamada <yamada.masahiro@socionext.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Shorten the code. It still works in the same way.
+On Sun, Jul 21, 2019 at 04:39:40PM +0900, Masahiro Yamada wrote:
+> Add header include guards just in case.
+> 
+> Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 
-Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
----
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Changes in v2: None
-
- drivers/video/logo/Makefile | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
-index 16f60c1e1766..7d672d40bf01 100644
---- a/drivers/video/logo/Makefile
-+++ b/drivers/video/logo/Makefile
-@@ -22,20 +22,15 @@ pnmtologo := scripts/pnmtologo
- 
- # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
- quiet_cmd_logo = LOGO    $@
--	cmd_logo = $(pnmtologo) \
--			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
--			-n $(notdir $(basename $<)) -o $@ $<
-+      cmd_logo = $(pnmtologo) -t $(lastword $(subst _, ,$*)) -n $* -o $@ $<
- 
--$(obj)/%_mono.c: $(src)/%_mono.pbm $(pnmtologo) FORCE
-+$(obj)/%.c: $(src)/%.pbm $(pnmtologo) FORCE
- 	$(call if_changed,logo)
- 
--$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(pnmtologo) FORCE
-+$(obj)/%.c: $(src)/%.ppm $(pnmtologo) FORCE
- 	$(call if_changed,logo)
- 
--$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtologo) FORCE
--	$(call if_changed,logo)
--
--$(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
-+$(obj)/%.c: $(src)/%.pgm $(pnmtologo) FORCE
- 	$(call if_changed,logo)
- 
- # generated C files
--- 
-2.17.1
+> ---
+> 
+>  include/video/ili9320.h      | 4 ++++
+>  include/video/platform_lcd.h | 4 ++++
+>  2 files changed, 8 insertions(+)
+> 
+> diff --git a/include/video/ili9320.h b/include/video/ili9320.h
+> index 62f424f0bc52..b76a0b8f16fc 100644
+> --- a/include/video/ili9320.h
+> +++ b/include/video/ili9320.h
+> @@ -9,6 +9,9 @@
+>   * http://armlinux.simtec.co.uk/
+>  */
+>  
+> +#ifndef _VIDEO_ILI9320_H
+> +#define _VIDEO_ILI9320_H
+> +
+>  #define ILI9320_REG(x)	(x)
+>  
+>  #define ILI9320_INDEX			ILI9320_REG(0x00)
+> @@ -196,3 +199,4 @@ struct ili9320_platdata {
+>  	unsigned short	interface6;
+>  };
+>  
+> +#endif /* _VIDEO_ILI9320_H */
+> diff --git a/include/video/platform_lcd.h b/include/video/platform_lcd.h
+> index 6a95184a28c1..c68f3f45b5c1 100644
+> --- a/include/video/platform_lcd.h
+> +++ b/include/video/platform_lcd.h
+> @@ -7,6 +7,9 @@
+>   * Generic platform-device LCD power control interface.
+>  */
+>  
+> +#ifndef _VIDEO_PLATFORM_LCD_H
+> +#define _VIDEO_PLATFORM_LCD_H
+> +
+>  struct plat_lcd_data;
+>  struct fb_info;
+>  
+> @@ -16,3 +19,4 @@ struct plat_lcd_data {
+>  	int	(*match_fb)(struct plat_lcd_data *, struct fb_info *);
+>  };
+>  
+> +#endif /* _VIDEO_PLATFORM_LCD_H */
+> -- 
+> 2.17.1

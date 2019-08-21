@@ -1,50 +1,33 @@
-From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:48:55 +0000
-Subject: [PATCH v2 14/34] oradax: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-15-jhubbard@nvidia.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 21 Aug 2019 03:55:13 +0000
+Subject: [PATCH 1/4] video/logo: remove unneeded *.o pattern from clean-files
+Message-Id: <20190821035517.21671-2-yamada.masahiro@socionext.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
-In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
+References: <20190821035517.21671-1-yamada.masahiro@socionext.com>
+In-Reply-To: <20190821035517.21671-1-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Rob Gardner <rob.gardner@oracle.com>, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, Wei Yongjun <weiyongjun1@huawei.com>, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, Jonathan Corbet <corbet@lwn.net>, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Andy Shevchenko <andy.shevchenko@gmail.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Jonathan Helman <jonathan.helman@oracle.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-bloc
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
 
-From: John Hubbard <jhubbard@nvidia.com>
+The pattern *.o is cleaned up globally by the top Makefile.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Jonathan Helman <jonathan.helman@oracle.com>
-Cc: Rob Gardner <rob.gardner@oracle.com>
-Cc: Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Wei Yongjun <weiyongjun1@huawei.com>
-Cc: Mauro Carvalho Chehab <mchehab+samsung@kernel.org>
-Cc: sparclinux@vger.kernel.org
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
- drivers/sbus/char/oradax.c | 2 +-
+
+ drivers/video/logo/Makefile | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/sbus/char/oradax.c b/drivers/sbus/char/oradax.c
-index 8af216287a84..029e619992fc 100644
---- a/drivers/sbus/char/oradax.c
-+++ b/drivers/sbus/char/oradax.c
-@@ -412,7 +412,7 @@ static void dax_unlock_pages(struct dax_ctx *ctx, int ccb_index, int nelem)
- 				dax_dbg("freeing page %p", p);
- 				if (j = OUT)
- 					set_page_dirty(p);
--				put_page(p);
-+				put_user_page(p);
- 				ctx->pages[i][j] = NULL;
- 			}
- 		}
+diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+index 228a89b9bdd1..10b75ce3ce09 100644
+--- a/drivers/video/logo/Makefile
++++ b/drivers/video/logo/Makefile
+@@ -56,4 +56,4 @@ $(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+ # Files generated that shall be removed upon make clean
+-clean-files := *.o *_mono.c *_vga16.c *_clut224.c *_gray256.c
++clean-files := *_mono.c *_vga16.c *_clut224.c *_gray256.c
 -- 
-2.22.0
+2.17.1

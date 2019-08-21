@@ -1,66 +1,54 @@
-From: john.hubbard@gmail.com
-Date: Sun, 04 Aug 2019 22:49:04 +0000
-Subject: [PATCH v2 23/34] uprobes: convert put_page() to put_user_page*()
-Message-Id: <20190804224915.28669-24-jhubbard@nvidia.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 21 Aug 2019 04:12:36 +0000
+Subject: [PATCH v2 3/4] video/logo: simplify cmd_logo
+Message-Id: <20190821041237.23197-4-yamada.masahiro@socionext.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190804224915.28669-1-jhubbard@nvidia.com>
-In-Reply-To: <20190804224915.28669-1-jhubbard@nvidia.com>
+References: <20190821041237.23197-1-yamada.masahiro@socionext.com>
+In-Reply-To: <20190821041237.23197-1-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, Jiri Olsa <jolsa@redhat.com>, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Ingo Molnar <mingo@redhat.com>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, Arnaldo Carvalho de Melo <acme@kernel.org>, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infrad
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
 
-From: John Hubbard <jhubbard@nvidia.com>
+Shorten the code. It still works in the same way.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Jiri Olsa <jolsa@redhat.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
- kernel/events/uprobes.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/events/uprobes.c b/kernel/events/uprobes.c
-index 84fa00497c49..4a575de8cec8 100644
---- a/kernel/events/uprobes.c
-+++ b/kernel/events/uprobes.c
-@@ -397,7 +397,7 @@ __update_ref_ctr(struct mm_struct *mm, unsigned long vaddr, short d)
- 	ret = 0;
- out:
- 	kunmap_atomic(kaddr);
--	put_page(page);
-+	put_user_page(page);
- 	return ret;
- }
+Changes in v2: None
+
+ drivers/video/logo/Makefile | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+index 16f60c1e1766..7d672d40bf01 100644
+--- a/drivers/video/logo/Makefile
++++ b/drivers/video/logo/Makefile
+@@ -22,20 +22,15 @@ pnmtologo := scripts/pnmtologo
  
-@@ -504,7 +504,7 @@ int uprobe_write_opcode(struct arch_uprobe *auprobe, struct mm_struct *mm,
- 	ret = __replace_page(vma, vaddr, old_page, new_page);
- 	put_page(new_page);
- put_old:
--	put_page(old_page);
-+	put_user_page(old_page);
+ # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
+ quiet_cmd_logo = LOGO    $@
+-	cmd_logo = $(pnmtologo) \
+-			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
+-			-n $(notdir $(basename $<)) -o $@ $<
++      cmd_logo = $(pnmtologo) -t $(lastword $(subst _, ,$*)) -n $* -o $@ $<
  
- 	if (unlikely(ret = -EAGAIN))
- 		goto retry;
-@@ -1981,7 +1981,7 @@ static int is_trap_at_addr(struct mm_struct *mm, unsigned long vaddr)
- 		return result;
+-$(obj)/%_mono.c: $(src)/%_mono.pbm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.pbm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
  
- 	copy_from_page(page, vaddr, &opcode, UPROBE_SWBP_INSN_SIZE);
--	put_page(page);
-+	put_user_page(page);
-  out:
- 	/* This needs to return true for any variant of the trap insn */
- 	return is_trap_insn(&opcode);
+-$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.ppm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+-$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtologo) FORCE
+-	$(call if_changed,logo)
+-
+-$(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.pgm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+ # generated C files
 -- 
-2.22.0
+2.17.1

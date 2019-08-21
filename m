@@ -1,55 +1,52 @@
-From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:26 +0000
-Subject: [PATCH v3 27/41] mm/frame_vector.c: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-28-jhubbard@nvidia.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 21 Aug 2019 03:55:15 +0000
+Subject: [PATCH 3/4] video/logo: simplify cmd_logo
+Message-Id: <20190821035517.21671-4-yamada.masahiro@socionext.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
+References: <20190821035517.21671-1-yamada.masahiro@socionext.com>
+In-Reply-To: <20190821035517.21671-1-yamada.masahiro@socionext.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, Mel Gorman <mgorman@suse.de>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Vlastimil Babka <vbabka@suse.cz>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, Dan Williams <dan.j.williams@intel.com>, linux-arm-kernel@lists.infradead
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, linux-kernel@vger.kernel.org
 
-From: John Hubbard <jhubbard@nvidia.com>
+Shorten the code. It still works in the same way.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Jan Kara <jack@suse.cz>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Masahiro Yamada <yamada.masahiro@socionext.com>
 ---
- mm/frame_vector.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/mm/frame_vector.c b/mm/frame_vector.c
-index c64dca6e27c2..f590badac776 100644
---- a/mm/frame_vector.c
-+++ b/mm/frame_vector.c
-@@ -120,7 +120,6 @@ EXPORT_SYMBOL(get_vaddr_frames);
-  */
- void put_vaddr_frames(struct frame_vector *vec)
- {
--	int i;
- 	struct page **pages;
+ drivers/video/logo/Makefile | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/video/logo/Makefile b/drivers/video/logo/Makefile
+index 16f60c1e1766..7d672d40bf01 100644
+--- a/drivers/video/logo/Makefile
++++ b/drivers/video/logo/Makefile
+@@ -22,20 +22,15 @@ pnmtologo := scripts/pnmtologo
  
- 	if (!vec->got_ref)
-@@ -133,8 +132,7 @@ void put_vaddr_frames(struct frame_vector *vec)
- 	 */
- 	if (WARN_ON(IS_ERR(pages)))
- 		goto out;
--	for (i = 0; i < vec->nr_frames; i++)
--		put_page(pages[i]);
-+	put_user_pages(pages, vec->nr_frames);
- 	vec->got_ref = false;
- out:
- 	vec->nr_frames = 0;
+ # Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
+ quiet_cmd_logo = LOGO    $@
+-	cmd_logo = $(pnmtologo) \
+-			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
+-			-n $(notdir $(basename $<)) -o $@ $<
++      cmd_logo = $(pnmtologo) -t $(lastword $(subst _, ,$*)) -n $* -o $@ $<
+ 
+-$(obj)/%_mono.c: $(src)/%_mono.pbm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.pbm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+-$(obj)/%_vga16.c: $(src)/%_vga16.ppm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.ppm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+-$(obj)/%_clut224.c: $(src)/%_clut224.ppm $(pnmtologo) FORCE
+-	$(call if_changed,logo)
+-
+-$(obj)/%_gray256.c: $(src)/%_gray256.pgm $(pnmtologo) FORCE
++$(obj)/%.c: $(src)/%.pgm $(pnmtologo) FORCE
+ 	$(call if_changed,logo)
+ 
+ # generated C files
 -- 
-2.22.0
+2.17.1

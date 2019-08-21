@@ -1,22 +1,30 @@
-From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Date: Thu, 29 Aug 2019 13:43:08 +0000
-Subject: no handling of fbdev patches by me till 23.09
-Message-Id: <e40392d0-c0d4-0875-018e-3dd0b9716979@samsung.com>
+From: Masahiro Yamada <yamada.masahiro@socionext.com>
+Date: Wed, 21 Aug 2019 04:12:33 +0000
+Subject: [PATCH v2 0/4] video/logo: various fix and cleanups of drivers/video/logo/Makefile
+Message-Id: <20190821041237.23197-1-yamada.masahiro@socionext.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CGME20190829134309eucas1p236b628cd1e268d93c0cb40eef577366b@eucas1p2.samsung.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Masahiro Yamada <yamada.masahiro@socionext.com>, Michal Marek <michal.lkml@markovi.net>, linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Hi,
+Changes in v2:
+  - Fix commit log
 
-I will be traveling / busy with other things / without access to my
-development setup till 23.09. Sorry for the inconvenience.
+Masahiro Yamada (4):
+  video/logo: remove unneeded *.o pattern from clean-files
+  video/logo: do not generate unneeded logo C files
+  video/logo: simplify cmd_logo
+  video/logo: move pnmtologo tool to drivers/video/logo/ from scripts/
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
+ drivers/video/logo/.gitignore               |  1 +
+ drivers/video/logo/Makefile                 | 36 ++++-----------------
+ {scripts => drivers/video/logo}/pnmtologo.c |  0
+ scripts/.gitignore                          |  1 -
+ scripts/Makefile                            |  2 --
+ 5 files changed, 8 insertions(+), 32 deletions(-)
+ rename {scripts => drivers/video/logo}/pnmtologo.c (100%)
+
+-- 
+2.17.1

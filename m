@@ -1,39 +1,105 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 03 Aug 2019 07:06:40 +0000
-Subject: Re: [PATCH 10/34] genwqe: convert put_page() to put_user_page*()
-Message-Id: <20190803070640.GB2508@kroah.com>
+From: Gerd Hoffmann <kraxel@redhat.com>
+Date: Thu, 22 Aug 2019 09:06:43 +0000
+Subject: [PATCH 1/3] fbdev: drop res_id parameter from remove_conflicting_pci_framebuffers
+Message-Id: <20190822090645.25410-2-kraxel@redhat.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
- <20190802022005.5117-11-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-11-jhubbard@nvidia.com>
+References: <20190822090645.25410-1-kraxel@redhat.com>
+In-Reply-To: <20190822090645.25410-1-kraxel@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: john.hubbard@gmail.com
-Cc: linux-fbdev@vger.kernel.org, Jan Kara <jack@suse.cz>, kvm@vger.kernel.org, Dave Hansen <dave.hansen@linux.intel.com>, Dave Chinner <david@fromorbit.com>, dri-devel@lists.freedesktop.org, linux-mm@kvack.org, sparclinux@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>, devel@driverdev.osuosl.org, rds-devel@oss.oracle.com, linux-rdma@vger.kernel.org, x86@kernel.org, amd-gfx@lists.freedesktop.org, Christoph Hellwig <hch@infradead.org>, Jason Gunthorpe <jgg@ziepe.ca>, xen-devel@lists.xenproject.org, devel@lists.orangefs.org, linux-media@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>, John Hubbard <jhubbard@nvidia.com>, intel-gfx@lists.freedesktop.org, linux-block@vger.kernel.org, =?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>, linux-rpi-kernel@lists.infradead.org, ceph-devel@vger.kernel.org, linux-arm-kerne
+To: dri-devel@lists.freedesktop.org
+Cc: "open list:FRAMEBUFFER LAYER" <linux-fbdev@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Maxime Ripard <maxime.ripard@bootlin.com>, open list <linux-kernel@vger.kernel.org>, David Airlie <airlied@linux.ie>, Gerd Hoffmann <kraxel@redhat.com>, Sean Paul <sean@poorly.run>
 
-On Thu, Aug 01, 2019 at 07:19:41PM -0700, john.hubbard@gmail.com wrote:
-> From: John Hubbard <jhubbard@nvidia.com>
-> 
-> For pages that were retained via get_user_pages*(), release those pages
-> via the new put_user_page*() routines, instead of via put_page() or
-> release_pages().
-> 
-> This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-> ("mm: introduce put_user_page*(), placeholder versions").
-> 
-> This changes the release code slightly, because each page slot in the
-> page_list[] array is no longer checked for NULL. However, that check
-> was wrong anyway, because the get_user_pages() pattern of usage here
-> never allowed for NULL entries within a range of pinned pages.
-> 
-> Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
-> Cc: "Guilherme G. Piccoli" <gpiccoli@linux.vnet.ibm.com>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Signed-off-by: John Hubbard <jhubbard@nvidia.com>
-> ---
->  drivers/misc/genwqe/card_utils.c | 17 +++--------------
->  1 file changed, 3 insertions(+), 14 deletions(-)
+Since commit b0e999c95581 ("fbdev: list all pci memory bars as
+conflicting apertures") the parameter was used for some sanity checks
+only, to make sure we detect any issues with the new approach to just
+list all memory bars as apertures.
 
-Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+No issues turned up so far, so continue to cleanup:  Drop the res_id
+parameter, drop the sanity checks.  Also downgrade the logging from
+"info" level to "debug" level and update documentation.
+
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+---
+ include/drm/drm_fb_helper.h      |  2 +-
+ include/linux/fb.h               |  2 +-
+ drivers/video/fbdev/core/fbmem.c | 17 +++++------------
+ 3 files changed, 7 insertions(+), 14 deletions(-)
+
+diff --git a/include/drm/drm_fb_helper.h b/include/drm/drm_fb_helper.h
+index c8a8ae2a678a..5a5f4b1d8241 100644
+--- a/include/drm/drm_fb_helper.h
++++ b/include/drm/drm_fb_helper.h
+@@ -560,7 +560,7 @@ drm_fb_helper_remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
+ 	 * otherwise the vga fbdev driver falls over.
+ 	 */
+ #if IS_REACHABLE(CONFIG_FB)
+-	ret = remove_conflicting_pci_framebuffers(pdev, resource_id, name);
++	ret = remove_conflicting_pci_framebuffers(pdev, name);
+ #endif
+ 	if (ret = 0)
+ 		ret = vga_remove_vgacon(pdev);
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 756706b666a1..41e0069eca0a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -607,7 +607,7 @@ extern ssize_t fb_sys_write(struct fb_info *info, const char __user *buf,
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern void unregister_framebuffer(struct fb_info *fb_info);
+ extern void unlink_framebuffer(struct fb_info *fb_info);
+-extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id,
++extern int remove_conflicting_pci_framebuffers(struct pci_dev *pdev,
+ 					       const char *name);
+ extern int remove_conflicting_framebuffers(struct apertures_struct *a,
+ 					   const char *name, bool primary);
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index e6a1c805064f..95c32952fa8a 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1758,21 +1758,19 @@ EXPORT_SYMBOL(remove_conflicting_framebuffers);
+ /**
+  * remove_conflicting_pci_framebuffers - remove firmware-configured framebuffers for PCI devices
+  * @pdev: PCI device
+- * @res_id: index of PCI BAR configuring framebuffer memory
+  * @name: requesting driver name
+  *
+  * This function removes framebuffer devices (eg. initialized by firmware)
+- * using memory range configured for @pdev's BAR @res_id.
++ * using memory range configured for any of @pdev's memory bars.
+  *
+  * The function assumes that PCI device with shadowed ROM drives a primary
+  * display and so kicks out vga16fb.
+  */
+-int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const char *name)
++int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, const char *name)
+ {
+ 	struct apertures_struct *ap;
+ 	bool primary = false;
+ 	int err, idx, bar;
+-	bool res_id_found = false;
+ 
+ 	for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
+ 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
+@@ -1789,16 +1787,11 @@ int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const
+ 			continue;
+ 		ap->ranges[idx].base = pci_resource_start(pdev, bar);
+ 		ap->ranges[idx].size = pci_resource_len(pdev, bar);
+-		pci_info(pdev, "%s: bar %d: 0x%lx -> 0x%lx\n", __func__, bar,
+-			 (unsigned long)pci_resource_start(pdev, bar),
+-			 (unsigned long)pci_resource_end(pdev, bar));
++		pci_dbg(pdev, "%s: bar %d: 0x%lx -> 0x%lx\n", __func__, bar,
++			(unsigned long)pci_resource_start(pdev, bar),
++			(unsigned long)pci_resource_end(pdev, bar));
+ 		idx++;
+-		if (res_id = bar)
+-			res_id_found = true;
+ 	}
+-	if (!res_id_found)
+-		pci_warn(pdev, "%s: passed res_id (%d) is not a memory bar\n",
+-			 __func__, res_id);
+ 
+ #ifdef CONFIG_X86
+ 	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
+-- 
+2.18.1

@@ -1,64 +1,95 @@
-From: Wei Hu <weh@microsoft.com>
-Date: Wed, 28 Aug 2019 08:45:13 +0000
-Subject: RE: [PATCH v3] video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V host
-Message-Id: <KL1P15301MB026421E7481BBC5B28E3E468BBA30@KL1P15301MB0264.APCP153.PROD.OUTLOOK.COM>
+From: Peter Rosin <peda@axentia.se>
+Date: Fri, 23 Aug 2019 08:47:47 +0000
+Subject: [PATCH 2/2] fbdev: fbmem: allow overriding the number of bootup logos
+Message-Id: <20190823084725.4271-3-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190827110755.2707-1-weh@microsoft.com>
- <DM5PR21MB013709ADC5CB4B48CE752048D7A00@DM5PR21MB0137.namprd21.prod.outlook.com>
-In-Reply-To: <DM5PR21MB013709ADC5CB4B48CE752048D7A00@DM5PR21MB0137.namprd21.prod.outlook.com>
+References: <20190823084725.4271-1-peda@axentia.se>
+In-Reply-To: <20190823084725.4271-1-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Kelley <mikelley@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, KY Srinivasan <kys@microsoft.com>, Dexuan Cui <decui@microsoft.com>
-Cc: Iouri Tarassov <iourit@microsoft.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
 
+Probably most useful if you only want one logo regardless of how many
+CPU cores you have.
 
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ Documentation/fb/fbcon.rst       | 5 +++++
+ drivers/video/fbdev/core/fbcon.c | 7 +++++++
+ drivers/video/fbdev/core/fbmem.c | 5 ++++-
+ include/linux/fb.h               | 1 +
+ 4 files changed, 17 insertions(+), 1 deletion(-)
 
-> -----Original Message-----
-> From: Michael Kelley <mikelley@microsoft.com>
-> >
-> > Beginning from Windows 10 RS5+, VM screen resolution is obtained from host.
-> > The "video=hyperv_fb" boot time option is not needed, but still can be
-> > used to overwrite what the host specifies. The VM resolution on the host
-> > could be set by executing the powershell "set-vmvideo" command.
-> >
-> > v2:
-> > - Implemented fallback when version negotiation failed.
-> > - Defined full size for supported_resolution array.
-> >
-> > v3:
-> > - Corrected the synthvid major and minor version comparison problem.
-> 
-> The changelog for v2 and v3 should actually go after the "---" below so
-> that the changelog does not end up as part of the commit message.  Take
-> a look at other postings to LKML for an example.
-> 
-[Wei Hu] 
-I saw people putting v2 and vN in commit message. The git log of this file also 
-contains similar lines like v2. But if you prefer I can move it after ---. 
-
-
-> >
-> > Signed-off-by: Iouri Tarassov <iourit@microsoft.com>
-> > Signed-off-by: Wei Hu <weh@microsoft.com>
-> > ---
-> >  drivers/video/fbdev/hyperv_fb.c | 159 +++++++++++++++++++++++++++++---
-> >  1 file changed, 147 insertions(+), 12 deletions(-)
-> >
-> >
-> > +/* Check if the ver1 version is equal or greater than ver2 */
-> > +static inline bool synthvid_ver_eg(u32 ver1, u32 ver2)
-> 
-> I'm being picky here, but I would call this synthvid_ver_ge().   In my
-> experience "ge" is the shorthand for "greater than or equal", rather
-> than the "eg" you have used.
-> 
-[Wei Hu] 
-Okay.
-
-Thanks,
-Wei
-
-
-> Michael
-> 
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index 65ba40255137..9f0b399d8d4e 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -174,6 +174,11 @@ C. Boot options
+ 	displayed due to multiple CPUs, the collected line of logos is moved
+ 	as a whole.
+ 
++9. fbcon=logo-count:<n>
++
++	The value 'n' overrides the number of bootup logos. Zero gives the
++	default, which is the number of online cpus.
++
+ C. Attaching, Detaching and Unloading
+ 
+ Before going on to how to attach, detach and unload the framebuffer console, an
+diff --git a/drivers/video/fbdev/core/fbcon.c b/drivers/video/fbdev/core/fbcon.c
+index c9235a2f42f8..be4bc5540aad 100644
+--- a/drivers/video/fbdev/core/fbcon.c
++++ b/drivers/video/fbdev/core/fbcon.c
+@@ -536,6 +536,13 @@ static int __init fb_console_setup(char *this_opt)
+ 				fb_center_logo = true;
+ 			continue;
+ 		}
++
++		if (!strncmp(options, "logo-count:", 11)) {
++			options += 11;
++			if (*options)
++				fb_logo_count = simple_strtoul(options, &options, 0);
++			continue;
++		}
+ 	}
+ 	return 1;
+ }
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 64dd732021d8..4c57d522b72e 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -56,6 +56,9 @@ EXPORT_SYMBOL(num_registered_fb);
+ bool fb_center_logo __read_mostly;
+ EXPORT_SYMBOL(fb_center_logo);
+ 
++unsigned int fb_logo_count __read_mostly;
++EXPORT_SYMBOL(fb_logo_count);
++
+ static struct fb_info *get_fb_info(unsigned int idx)
+ {
+ 	struct fb_info *fb_info;
+@@ -689,7 +692,7 @@ int fb_show_logo(struct fb_info *info, int rotate)
+ 	int y;
+ 
+ 	y = fb_show_logo_line(info, rotate, fb_logo.logo, 0,
+-			      num_online_cpus());
++			      fb_logo_count ?: num_online_cpus());
+ 	y = fb_show_extra_logos(info, y, rotate);
+ 
+ 	return y;
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 303771264644..5f2b05406262 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -630,6 +630,7 @@ extern int fb_new_modelist(struct fb_info *info);
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ extern bool fb_center_logo;
++extern unsigned int fb_logo_count;
+ extern struct class *fb_class;
+ 
+ #define for_each_registered_fb(i)		\
+-- 
+2.11.0

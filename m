@@ -1,49 +1,35 @@
-From: john.hubbard@gmail.com
-Date: Wed, 07 Aug 2019 01:33:08 +0000
-Subject: [PATCH v3 09/41] drm/radeon: convert put_page() to put_user_page*()
-Message-Id: <20190807013340.9706-10-jhubbard@nvidia.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 26 Aug 2019 19:59:02 +0000
+Subject: [PATCH v2 3/3] fbdev: fbmem: avoid exporting fb_center_logo
+Message-Id: <20190826195740.29415-4-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190807013340.9706-1-jhubbard@nvidia.com>
-In-Reply-To: <20190807013340.9706-1-jhubbard@nvidia.com>
+References: <20190826195740.29415-1-peda@axentia.se>
+In-Reply-To: <20190826195740.29415-1-peda@axentia.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>
 
-From: John Hubbard <jhubbard@nvidia.com>
+The variable is only ever used from fbcon.c which is linked into the
+same module. Therefore, the export is not needed.
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
-
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: Christian K=C3=B6nig <christian.koenig@amd.com>
-Cc: David (ChunMing) Zhou <David1.Zhou@amd.com>
-Cc: David Airlie <airlied@linux.ie>
-Cc: amd-gfx@lists.freedesktop.org
-Cc: dri-devel@lists.freedesktop.org
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Signed-off-by: Peter Rosin <peda@axentia.se>
 ---
- drivers/gpu/drm/radeon/radeon_ttm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/core/fbmem.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/radeon/radeon_ttm.c b/drivers/gpu/drm/radeon/r=
-adeon_ttm.c
-index fb3696bc616d..4c9943fa10df 100644
---- a/drivers/gpu/drm/radeon/radeon_ttm.c
-+++ b/drivers/gpu/drm/radeon/radeon_ttm.c
-@@ -540,7 +540,7 @@ static int radeon_ttm_tt_pin_userptr(struct ttm_tt *ttm)
- 	kfree(ttm->sg);
-=20
- release_pages:
--	release_pages(ttm->pages, pinned);
-+	put_user_pages(ttm->pages, pinned);
- 	return r;
- }
-=20
---=20
-2.22.0
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index a7d8022db516..17e250a515b0 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -54,7 +54,6 @@ int num_registered_fb __read_mostly;
+ EXPORT_SYMBOL(num_registered_fb);
+ 
+ bool fb_center_logo __read_mostly;
+-EXPORT_SYMBOL(fb_center_logo);
+ 
+ unsigned int fb_logo_count __read_mostly;
+ 
+-- 
+2.11.0

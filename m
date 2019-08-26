@@ -1,55 +1,64 @@
-From: john.hubbard@gmail.com
-Date: Fri, 02 Aug 2019 02:19:56 +0000
-Subject: [PATCH 25/34] mm/frame_vector.c: convert put_page() to put_user_page*()
-Message-Id: <20190802022005.5117-26-jhubbard@nvidia.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Mon, 26 Aug 2019 19:58:54 +0000
+Subject: [PATCH v2 1/3] fbdev: fix numbering of fbcon options
+Message-Id: <20190826195740.29415-2-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190802022005.5117-1-jhubbard@nvidia.com>
-In-Reply-To: <20190802022005.5117-1-jhubbard@nvidia.com>
+References: <20190826195740.29415-1-peda@axentia.se>
+In-Reply-To: <20190826195740.29415-1-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Dan Williams <dan.j.williams@intel.com>, Dave Chinner <david@fromorbit.com>, Dave Hansen <dave.hansen@linux.intel.com>, Ira Weiny <ira.weiny@intel.com>, Jan Kara <jack@suse.cz>, Jason Gunthorpe <jgg@ziepe.ca>, =?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>, LKML <linux-kernel@vger.kernel.org>, amd-gfx@lists.freedesktop.org, ceph-devel@vger.kernel.org, devel@driverdev.osuosl.org, devel@lists.orangefs.org, dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, linux-crypto@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-fsdevel@vger.kernel.org, linux-media@vger.kernel.org, linux-mm@kvack.org, linux-nfs@vger.kernel.or
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>
 
-From: John Hubbard <jhubbard@nvidia.com>
+Three shall be the number thou shalt count, and the number of the
+counting shall be three. Four shalt thou not count...
 
-For pages that were retained via get_user_pages*(), release those pages
-via the new put_user_page*() routines, instead of via put_page() or
-release_pages().
+One! Two! Five!
 
-This is part a tree-wide conversion, as described in commit fc1d8e7cca2d
-("mm: introduce put_user_page*(), placeholder versions").
-
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Jan Kara <jack@suse.cz>
-Cc: Mel Gorman <mgorman@suse.de>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Signed-off-by: John Hubbard <jhubbard@nvidia.com>
+Fixes: efb985f6b265 ("[PATCH] fbcon: Console Rotation - Add framebuffer console documentation")
+Signed-off-by: Peter Rosin <peda@axentia.se>
 ---
- mm/frame_vector.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ Documentation/fb/fbcon.rst | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/mm/frame_vector.c b/mm/frame_vector.c
-index c64dca6e27c2..f590badac776 100644
---- a/mm/frame_vector.c
-+++ b/mm/frame_vector.c
-@@ -120,7 +120,6 @@ EXPORT_SYMBOL(get_vaddr_frames);
-  */
- void put_vaddr_frames(struct frame_vector *vec)
- {
--	int i;
- 	struct page **pages;
+diff --git a/Documentation/fb/fbcon.rst b/Documentation/fb/fbcon.rst
+index ebca41785abe..65ba40255137 100644
+--- a/Documentation/fb/fbcon.rst
++++ b/Documentation/fb/fbcon.rst
+@@ -127,7 +127,7 @@ C. Boot options
+ 	is typically located on the same video card.  Thus, the consoles that
+ 	are controlled by the VGA console will be garbled.
  
- 	if (!vec->got_ref)
-@@ -133,8 +132,7 @@ void put_vaddr_frames(struct frame_vector *vec)
- 	 */
- 	if (WARN_ON(IS_ERR(pages)))
- 		goto out;
--	for (i = 0; i < vec->nr_frames; i++)
--		put_page(pages[i]);
-+	put_user_pages(pages, vec->nr_frames);
- 	vec->got_ref = false;
- out:
- 	vec->nr_frames = 0;
+-4. fbcon=rotate:<n>
++5. fbcon=rotate:<n>
+ 
+ 	This option changes the orientation angle of the console display. The
+ 	value 'n' accepts the following:
+@@ -152,21 +152,21 @@ C. Boot options
+ 	Actually, the underlying fb driver is totally ignorant of console
+ 	rotation.
+ 
+-5. fbcon=margin:<color>
++6. fbcon=margin:<color>
+ 
+ 	This option specifies the color of the margins. The margins are the
+ 	leftover area at the right and the bottom of the screen that are not
+ 	used by text. By default, this area will be black. The 'color' value
+ 	is an integer number that depends on the framebuffer driver being used.
+ 
+-6. fbcon=nodefer
++7. fbcon=nodefer
+ 
+ 	If the kernel is compiled with deferred fbcon takeover support, normally
+ 	the framebuffer contents, left in place by the firmware/bootloader, will
+ 	be preserved until there actually is some text is output to the console.
+ 	This option causes fbcon to bind immediately to the fbdev device.
+ 
+-7. fbcon=logo-pos:<location>
++8. fbcon=logo-pos:<location>
+ 
+ 	The only possible 'location' is 'center' (without quotes), and when
+ 	given, the bootup logo is moved from the default top-left corner
 -- 
-2.22.0
+2.11.0

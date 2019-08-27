@@ -1,47 +1,33 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Aug 2019 08:36:38 +0000
+From: Peter Rosin <peda@axentia.se>
+Date: Tue, 27 Aug 2019 08:54:06 +0000
 Subject: Re: [PATCH v2 2/3] fbdev: fbmem: allow overriding the number of bootup logos
-Message-Id: <CAMuHMdVx77aOyUVhZ2_N76VAP+AJ3X8w-gdHLjnjUEeRKcZmOA@mail.gmail.com>
+Message-Id: <a31ff144-f037-3580-08b5-aa368572c69d@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190826195740.29415-1-peda@axentia.se> <20190826195740.29415-3-peda@axentia.se>
-In-Reply-To: <20190826195740.29415-3-peda@axentia.se>
+References: <20190826195740.29415-1-peda@axentia.se>
+ <20190826195740.29415-3-peda@axentia.se>
+ <CAMuHMdVx77aOyUVhZ2_N76VAP+AJ3X8w-gdHLjnjUEeRKcZmOA@mail.gmail.com>
+In-Reply-To: <CAMuHMdVx77aOyUVhZ2_N76VAP+AJ3X8w-gdHLjnjUEeRKcZmOA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Rosin <peda@axentia.se>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>
 
-Hi Peter,
-
-On Mon, Aug 26, 2019 at 10:46 PM Peter Rosin <peda@axentia.se> wrote:
-> Probably most useful if you only want one logo regardless of how many
-> CPU cores you have.
->
-> Signed-off-by: Peter Rosin <peda@axentia.se>
-
-Thanks for your patch!
-
-> --- a/Documentation/fb/fbcon.rst
-> +++ b/Documentation/fb/fbcon.rst
-> @@ -174,6 +174,11 @@ C. Boot options
->         displayed due to multiple CPUs, the collected line of logos is moved
->         as a whole.
->
-> +9. fbcon=logo-count:<n>
-> +
-> +       The value 'n' overrides the number of bootup logos. Zero gives the
-> +       default, which is the number of online cpus.
-
-Isn't that a bit unexpected for the user?
-What about making -1 the default (auto), and zero meaning no logos?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+T24gMjAxOS0wOC0yNyAxMDozNiwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBIaSBQZXRl
+ciwNCj4gDQo+IE9uIE1vbiwgQXVnIDI2LCAyMDE5IGF0IDEwOjQ2IFBNIFBldGVyIFJvc2luIDxw
+ZWRhQGF4ZW50aWEuc2U+IHdyb3RlOg0KPj4gUHJvYmFibHkgbW9zdCB1c2VmdWwgaWYgeW91IG9u
+bHkgd2FudCBvbmUgbG9nbyByZWdhcmRsZXNzIG9mIGhvdyBtYW55DQo+PiBDUFUgY29yZXMgeW91
+IGhhdmUuDQo+Pg0KPj4gU2lnbmVkLW9mZi1ieTogUGV0ZXIgUm9zaW4gPHBlZGFAYXhlbnRpYS5z
+ZT4NCj4gDQo+IFRoYW5rcyBmb3IgeW91ciBwYXRjaCENCj4gDQo+PiAtLS0gYS9Eb2N1bWVudGF0
+aW9uL2ZiL2ZiY29uLnJzdA0KPj4gKysrIGIvRG9jdW1lbnRhdGlvbi9mYi9mYmNvbi5yc3QNCj4+
+IEBAIC0xNzQsNiArMTc0LDExIEBAIEMuIEJvb3Qgb3B0aW9ucw0KPj4gICAgICAgICBkaXNwbGF5
+ZWQgZHVlIHRvIG11bHRpcGxlIENQVXMsIHRoZSBjb2xsZWN0ZWQgbGluZSBvZiBsb2dvcyBpcyBt
+b3ZlZA0KPj4gICAgICAgICBhcyBhIHdob2xlLg0KPj4NCj4+ICs5LiBmYmNvbj1sb2dvLWNvdW50
+OjxuPg0KPj4gKw0KPj4gKyAgICAgICBUaGUgdmFsdWUgJ24nIG92ZXJyaWRlcyB0aGUgbnVtYmVy
+IG9mIGJvb3R1cCBsb2dvcy4gWmVybyBnaXZlcyB0aGUNCj4+ICsgICAgICAgZGVmYXVsdCwgd2hp
+Y2ggaXMgdGhlIG51bWJlciBvZiBvbmxpbmUgY3B1cy4NCj4gDQo+IElzbid0IHRoYXQgYSBiaXQg
+dW5leHBlY3RlZCBmb3IgdGhlIHVzZXI/DQo+IFdoYXQgYWJvdXQgbWFraW5nIC0xIHRoZSBkZWZh
+dWx0IChhdXRvKSwgYW5kIHplcm8gbWVhbmluZyBubyBsb2dvcz8NCg0KSSBqdXN0IG5haXZlbHkg
+YXNzdW1lZCB0aGVyZSB3YXMgc29tZSBvdGhlciBtZWNoYW5pc20gdG8gZGlzYWJsZSBpdC4NCg0K
+U2lnaCwgSSdsbCB0YWtlIGEgbG9vay4gdjMgY29taW5nIHVwLi4uDQoNCkNoZWVycywNClBldGVy
+DQo

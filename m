@@ -1,25 +1,35 @@
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Date: Sat, 10 Aug 2019 07:29:00 +0000
-Subject: Re: [PATCH 00/16] ARM: remove ks8695 and w90x900 platforms
-Message-Id: <20190810072900.GA16359@kroah.com>
+From: Peter Rosin <peda@axentia.se>
+Date: Tue, 27 Aug 2019 11:09:26 +0000
+Subject: [PATCH v3 3/3] fbdev: fbmem: avoid exporting fb_center_logo
+Message-Id: <20190827110854.12574-4-peda@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190809202749.742267-1-arnd@arndb.de>
-In-Reply-To: <20190809202749.742267-1-arnd@arndb.de>
+References: <20190827110854.12574-1-peda@axentia.se>
+In-Reply-To: <20190827110854.12574-1-peda@axentia.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: soc@kernel.org, "Wanzongshun (Vincent)" <wanzongshun@huawei.com>, Greg Ungerer <gerg@kernel.org>, linux-serial@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-gpio@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>, alsa-devel@alsa-project.org, linux-spi@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, Miquel Raynal <miquel.raynal@bootlin.com>, linux-mtd@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Peter Rosin <peda@axentia.se>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jonathan Corbet <corbet@lwn.net>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, Matthew Wilcox <willy@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Fri, Aug 09, 2019 at 10:27:28PM +0200, Arnd Bergmann wrote:
-> As discussed previously, these two ARM platforms have no
-> known remaining users, let's remove them completely.
-> 
-> Subsystem maintainers: feel free to take the driver removals
-> through your respective trees, they are all independent of
-> one another. We can merge any remaining patches through the
-> soc tree.
+The variable is only ever used from fbcon.c which is linked into the
+same module. Therefore, the export is not needed.
 
-Serial and USB host controller driver patches applied, thanks!
+Signed-off-by: Peter Rosin <peda@axentia.se>
+---
+ drivers/video/fbdev/core/fbmem.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-greg k-h
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index c7ddcb72025b..d45e59ac351b 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -54,7 +54,6 @@ int num_registered_fb __read_mostly;
+ EXPORT_SYMBOL(num_registered_fb);
+ 
+ bool fb_center_logo __read_mostly;
+-EXPORT_SYMBOL(fb_center_logo);
+ 
+ int fb_logo_count __read_mostly = -1;
+ 
+-- 
+2.11.0

@@ -1,38 +1,308 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Tue, 13 Aug 2019 10:30:22 +0000
-Subject: Re: [PATCH 10/11] mfd: Drop obsolete JZ4740 driver
-Message-Id: <20190813103022.GB26727@dell>
+From: Wei Hu <weh@microsoft.com>
+Date: Tue, 27 Aug 2019 11:08:36 +0000
+Subject: [PATCH v3] video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V host
+Message-Id: <20190827110755.2707-1-weh@microsoft.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190725220215.460-1-paul@crapouillou.net>
- <20190725220215.460-11-paul@crapouillou.net>
- <20190812081640.GA26727@dell>
- <4b48e597-951e-45fd-dfb2-4a1292a8b067@amsat.org>
- <1565690508.1856.0@crapouillou.net>
-In-Reply-To: <1565690508.1856.0@crapouillou.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1254"
-Content-Transfer-Encoding: base64
-To: Paul Cercueil <paul@crapouillou.net>
-Cc: Mark Rutland <mark.rutland@arm.com>, linux-fbdev@vger.kernel.org, Liam Girdwood <lgirdwood@gmail.com>, James Hogan <jhogan@kernel.org>, alsa-devel@alsa-project.org, dri-devel@lists.freedesktop.org, Philippe =?iso-8859-1?Q?Mathieu-Daud=E9?= <f4bug@amsat.org>, od@zcrc.me, linux-mtd@lists.infradead.org, Miquel Raynal <miquel.raynal@bootlin.com>, Artur Rojek <contact@artur-rojek.eu>, Richard Weinberger <richard@nod.at>, linux-pm@vger.kernel.org, Paul Burton <paul.burton@mips.com>, linux-mips@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>, devicetree@vger.kernel.org, Jean Delvare <jdelvare@suse.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Mark Brown <broonie@kernel.org>, linux-hwmon@vger.kernel.org, linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>, Vinod Koul <vkoul@kernel.org>, Rob Herring <robh+dt@kernel.org>, Sebastian Reichel <sre@kerne>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, KY Srinivasan <kys@microsoft.com>, Dexuan Cui <decui@microsoft.com>, Michael Kelley <mikelley@microsoft.com>
+Cc: Wei Hu <weh@microsoft.com>, Iouri Tarassov <iourit@microsoft.com>
 
-T24gVHVlLCAxMyBBdWcgMjAxOSwgUGF1bCBDZXJjdWVpbCB3cm90ZToKCj4gSGkgUGhpbGlwcGUs
-Cj4gCj4gCj4gTGUgbWFyLiAxMyBhb8O7dCAyMDE5IMOgIDEwOjQ0LCBQaGlsaXBwZSA9P2lzby04
-ODU5LTE/cT9NYXRoaWV1LURhdWTpPz4gPGY0YnVnQGFtc2F0Lm9yZz4gYSDDqWNyaXQgOgo+ID4g
-SGkgTGVlLAo+ID4gCj4gPiBPbiA4LzEyLzE5IDEwOjE2IEFNLCBMZWUgSm9uZXMgd3JvdGU6Cj4g
-PiA+ICBPbiBUaHUsIDI1IEp1bCAyMDE5LCBQYXVsIENlcmN1ZWlsIHdyb3RlOgo+ID4gPiAKPiA+
-ID4gPiAgSXQgaGFzIGJlZW4gcmVwbGFjZWQgd2l0aCB0aGUgaW5nZW5pYy1paW8gZHJpdmVyIGZv
-ciB0aGUgQURDLgo+ID4gPiA+IAo+ID4gPiA+ICBTaWduZWQtb2ZmLWJ5OiBQYXVsIENlcmN1ZWls
-IDxwYXVsQGNyYXBvdWlsbG91Lm5ldD4KPiA+ID4gPiAgVGVzdGVkLWJ5OiBBcnR1ciBSb2playA8
-Y29udGFjdEBhcnR1ci1yb2play5ldT4KPiA+ID4gPiAgLS0tCj4gPiA+ID4gICBkcml2ZXJzL21m
-ZC9LY29uZmlnICAgICAgfCAgIDkgLS0KPiA+ID4gPiAgIGRyaXZlcnMvbWZkL01ha2VmaWxlICAg
-ICB8ICAgMSAtCj4gPiA+ID4gICBkcml2ZXJzL21mZC9qejQ3NDAtYWRjLmMgfCAzMjQKPiA+ID4g
-PiAtLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KPiA+ID4gPiAgIDMgZmls
-ZXMgY2hhbmdlZCwgMzM0IGRlbGV0aW9ucygtKQo+ID4gPiA+ICAgZGVsZXRlIG1vZGUgMTAwNjQ0
-IGRyaXZlcnMvbWZkL2p6NDc0MC1hZGMuYwo+ID4gPiAKPiA+ID4gIEFwcGxpZWQsIHRoYW5rcy4K
-PiA+IAo+ID4gSXQgc2VlbXMgdGhlIHJlcGxhY2VtZW50IGlzIGRvbmUgaW4gIk1JUFM6IHFpX2xi
-NjA6IE1pZ3JhdGUgdG8KPiA+IGRldmljZXRyZWUiIHdoaWNoIGlzIG5vdCB5ZXQgbWVyZ2VkLgo+
-IAo+IEl0J3MgbWVyZ2VkIGluIHRoZSBNSVBTIHRyZWUsIHRob3VnaCwgc28gaXQnbGwgYmxlbmQg
-dG9nZXRoZXIganVzdAo+IGZpbmUgaW4gbGludXgtbmV4dC4KCldvbmRlcmZ1bC4gIFRoYW5rcyBQ
-YXVsLgoKLS0gCkxlZSBKb25lcyBb5p2O55C85pavXQpMaW5hcm8gU2VydmljZXMgVGVjaG5pY2Fs
-IExlYWQKTGluYXJvLm9yZyDilIIgT3BlbiBzb3VyY2Ugc29mdHdhcmUgZm9yIEFSTSBTb0NzCkZv
-bGxvdyBMaW5hcm86IEZhY2Vib29rIHwgVHdpdHRlciB8IEJsb2c=
+Beginning from Windows 10 RS5+, VM screen resolution is obtained from host.
+The "video=hyperv_fb" boot time option is not needed, but still can be
+used to overwrite what the host specifies. The VM resolution on the host
+could be set by executing the powershell "set-vmvideo" command.
+
+v2:
+- Implemented fallback when version negotiation failed.
+- Defined full size for supported_resolution array.
+
+v3:
+- Corrected the synthvid major and minor version comparison problem.
+
+Signed-off-by: Iouri Tarassov <iourit@microsoft.com>
+Signed-off-by: Wei Hu <weh@microsoft.com>
+---
+ drivers/video/fbdev/hyperv_fb.c | 159 +++++++++++++++++++++++++++++---
+ 1 file changed, 147 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
+index 00f5bdcc6c6f..1464c6f14687 100644
+--- a/drivers/video/fbdev/hyperv_fb.c
++++ b/drivers/video/fbdev/hyperv_fb.c
+@@ -23,6 +23,14 @@
+  *
+  * Portrait orientation is also supported:
+  *     For example: video=hyperv_fb:864x1152
++ *
++ * When a Windows 10 RS5+ host is used, the virtual machine screen
++ * resolution is obtained from the host. The "video=hyperv_fb" option is
++ * not needed, but still can be used to overwrite what the host specifies.
++ * The VM resolution on the host could be set by executing the powershell
++ * "set-vmvideo" command. For example
++ *     set-vmvideo -vmname name -horizontalresolution:1920 \
++ * -verticalresolution:1200 -resolutiontype single
+  */
+ 
+ #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+@@ -44,6 +52,10 @@
+ #define SYNTHVID_VERSION(major, minor) ((minor) << 16 | (major))
+ #define SYNTHVID_VERSION_WIN7 SYNTHVID_VERSION(3, 0)
+ #define SYNTHVID_VERSION_WIN8 SYNTHVID_VERSION(3, 2)
++#define SYNTHVID_VERSION_WIN10 SYNTHVID_VERSION(3, 5)
++
++#define SYNTHVID_VER_GET_MAJOR(ver) (ver & 0x0000ffff)
++#define SYNTHVID_VER_GET_MINOR(ver) ((ver & 0xffff0000) >> 16)
+ 
+ #define SYNTHVID_DEPTH_WIN7 16
+ #define SYNTHVID_DEPTH_WIN8 32
+@@ -82,16 +94,25 @@ enum synthvid_msg_type {
+ 	SYNTHVID_POINTER_SHAPE		= 8,
+ 	SYNTHVID_FEATURE_CHANGE		= 9,
+ 	SYNTHVID_DIRT			= 10,
++	SYNTHVID_RESOLUTION_REQUEST	= 13,
++	SYNTHVID_RESOLUTION_RESPONSE	= 14,
+ 
+-	SYNTHVID_MAX			= 11
++	SYNTHVID_MAX			= 15
+ };
+ 
++#define		SYNTHVID_EDID_BLOCK_SIZE	128
++#define		SYNTHVID_MAX_RESOLUTION_COUNT	64
++
++struct hvd_screen_info {
++	u16 width;
++	u16 height;
++} __packed;
++
+ struct synthvid_msg_hdr {
+ 	u32 type;
+ 	u32 size;  /* size of this header + payload after this field*/
+ } __packed;
+ 
+-
+ struct synthvid_version_req {
+ 	u32 version;
+ } __packed;
+@@ -102,6 +123,19 @@ struct synthvid_version_resp {
+ 	u8 max_video_outputs;
+ } __packed;
+ 
++struct synthvid_supported_resolution_req {
++	u8 maximum_resolution_count;
++} __packed;
++
++struct synthvid_supported_resolution_resp {
++	u8 edid_block[SYNTHVID_EDID_BLOCK_SIZE];
++	u8 resolution_count;
++	u8 default_resolution_index;
++	u8 is_standard;
++	struct hvd_screen_info
++		supported_resolution[SYNTHVID_MAX_RESOLUTION_COUNT];
++} __packed;
++
+ struct synthvid_vram_location {
+ 	u64 user_ctx;
+ 	u8 is_vram_gpa_specified;
+@@ -187,6 +221,8 @@ struct synthvid_msg {
+ 		struct synthvid_pointer_shape ptr_shape;
+ 		struct synthvid_feature_change feature_chg;
+ 		struct synthvid_dirt dirt;
++		struct synthvid_supported_resolution_req resolution_req;
++		struct synthvid_supported_resolution_resp resolution_resp;
+ 	};
+ } __packed;
+ 
+@@ -224,6 +260,8 @@ struct hvfb_par {
+ 
+ static uint screen_width = HVFB_WIDTH;
+ static uint screen_height = HVFB_HEIGHT;
++static uint screen_width_max = HVFB_WIDTH;
++static uint screen_height_max = HVFB_HEIGHT;
+ static uint screen_depth;
+ static uint screen_fb_size;
+ 
+@@ -354,6 +392,7 @@ static void synthvid_recv_sub(struct hv_device *hdev)
+ 
+ 	/* Complete the wait event */
+ 	if (msg->vid_hdr.type == SYNTHVID_VERSION_RESPONSE ||
++	    msg->vid_hdr.type == SYNTHVID_RESOLUTION_RESPONSE ||
+ 	    msg->vid_hdr.type == SYNTHVID_VRAM_LOCATION_ACK) {
+ 		memcpy(par->init_buf, msg, MAX_VMBUS_PKT_SIZE);
+ 		complete(&par->wait);
+@@ -400,6 +439,17 @@ static void synthvid_receive(void *ctx)
+ 	} while (bytes_recvd > 0 && ret == 0);
+ }
+ 
++/* Check if the ver1 version is equal or greater than ver2 */
++static inline bool synthvid_ver_eg(u32 ver1, u32 ver2)
++{
++	if (SYNTHVID_VER_GET_MAJOR(ver1) > SYNTHVID_VER_GET_MAJOR(ver2) ||
++	    (SYNTHVID_VER_GET_MAJOR(ver1) == SYNTHVID_VER_GET_MAJOR(ver2) &&
++	     SYNTHVID_VER_GET_MINOR(ver1) >= SYNTHVID_VER_GET_MINOR(ver2)))
++		return true;
++
++	return false;
++}
++
+ /* Check synthetic video protocol version with the host */
+ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ {
+@@ -428,6 +478,64 @@ static int synthvid_negotiate_ver(struct hv_device *hdev, u32 ver)
+ 	}
+ 
+ 	par->synthvid_version = ver;
++	pr_info("Synthvid Version major %d, minor %d\n",
++		SYNTHVID_VER_GET_MAJOR(ver), SYNTHVID_VER_GET_MINOR(ver));
++
++out:
++	return ret;
++}
++
++/* Get current resolution from the host */
++static int synthvid_get_supported_resolution(struct hv_device *hdev)
++{
++	struct fb_info *info = hv_get_drvdata(hdev);
++	struct hvfb_par *par = info->par;
++	struct synthvid_msg *msg = (struct synthvid_msg *)par->init_buf;
++	int ret = 0;
++	unsigned long t;
++	u8 index;
++	int i;
++
++	memset(msg, 0, sizeof(struct synthvid_msg));
++	msg->vid_hdr.type = SYNTHVID_RESOLUTION_REQUEST;
++	msg->vid_hdr.size = sizeof(struct synthvid_msg_hdr) +
++		sizeof(struct synthvid_supported_resolution_req);
++
++	msg->resolution_req.maximum_resolution_count =
++		SYNTHVID_MAX_RESOLUTION_COUNT;
++	synthvid_send(hdev, msg);
++
++	t = wait_for_completion_timeout(&par->wait, VSP_TIMEOUT);
++	if (!t) {
++		pr_err("Time out on waiting resolution response\n");
++			ret = -ETIMEDOUT;
++			goto out;
++	}
++
++	if (msg->resolution_resp.resolution_count == 0) {
++		pr_err("No supported resolutions\n");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	index = msg->resolution_resp.default_resolution_index;
++	if (index >= msg->resolution_resp.resolution_count) {
++		pr_err("Invalid resolution index: %d\n", index);
++		ret = -ENODEV;
++		goto out;
++	}
++
++	for (i = 0; i < msg->resolution_resp.resolution_count; i++) {
++		screen_width_max = max_t(unsigned int, screen_width_max,
++		    msg->resolution_resp.supported_resolution[i].width);
++		screen_height_max = max_t(unsigned int, screen_height_max,
++		    msg->resolution_resp.supported_resolution[i].height);
++	}
++
++	screen_width =
++		msg->resolution_resp.supported_resolution[index].width;
++	screen_height =
++		msg->resolution_resp.supported_resolution[index].height;
+ 
+ out:
+ 	return ret;
+@@ -448,11 +556,27 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 	}
+ 
+ 	/* Negotiate the protocol version with host */
+-	if (vmbus_proto_version == VERSION_WS2008 ||
+-	    vmbus_proto_version == VERSION_WIN7)
+-		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN7);
+-	else
++	switch (vmbus_proto_version) {
++	case VERSION_WIN10:
++	case VERSION_WIN10_V5:
++		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN10);
++		if (!ret)
++			break;
++		/* Fallthrough */
++	case VERSION_WIN8:
++	case VERSION_WIN8_1:
+ 		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN8);
++		if (!ret)
++			break;
++		/* Fallthrough */
++	case VERSION_WS2008:
++	case VERSION_WIN7:
++		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN7);
++		break;
++	default:
++		ret = synthvid_negotiate_ver(hdev, SYNTHVID_VERSION_WIN10);
++		break;
++	}
+ 
+ 	if (ret) {
+ 		pr_err("Synthetic video device version not accepted\n");
+@@ -464,6 +588,12 @@ static int synthvid_connect_vsp(struct hv_device *hdev)
+ 	else
+ 		screen_depth = SYNTHVID_DEPTH_WIN8;
+ 
++	if (synthvid_ver_eg(par->synthvid_version, SYNTHVID_VERSION_WIN10)) {
++		ret = synthvid_get_supported_resolution(hdev);
++		if (ret)
++			pr_info("Failed to get supported resolution from host, use default\n");
++	}
++
+ 	screen_fb_size = hdev->channel->offermsg.offer.
+ 				mmio_megabytes * 1024 * 1024;
+ 
+@@ -653,6 +783,8 @@ static void hvfb_get_option(struct fb_info *info)
+ 	}
+ 
+ 	if (x < HVFB_WIDTH_MIN || y < HVFB_HEIGHT_MIN ||
++	    (synthvid_ver_eg(par->synthvid_version, SYNTHVID_VERSION_WIN10) &&
++	    (x > screen_width_max || y > screen_height_max)) ||
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN8 &&
+ 	     x * y * screen_depth / 8 > SYNTHVID_FB_SIZE_WIN8) ||
+ 	    (par->synthvid_version == SYNTHVID_VERSION_WIN7 &&
+@@ -689,8 +821,12 @@ static int hvfb_getmem(struct hv_device *hdev, struct fb_info *info)
+ 		}
+ 
+ 		if (!(pci_resource_flags(pdev, 0) & IORESOURCE_MEM) ||
+-		    pci_resource_len(pdev, 0) < screen_fb_size)
++		    pci_resource_len(pdev, 0) < screen_fb_size) {
++			pr_err("Resource not available or (0x%lx < 0x%lx)\n",
++			       (unsigned long) pci_resource_len(pdev, 0),
++			       (unsigned long) screen_fb_size);
+ 			goto err1;
++		}
+ 
+ 		pot_end = pci_resource_end(pdev, 0);
+ 		pot_start = pot_end - screen_fb_size + 1;
+@@ -781,17 +917,16 @@ static int hvfb_probe(struct hv_device *hdev,
+ 		goto error1;
+ 	}
+ 
++	hvfb_get_option(info);
++	pr_info("Screen resolution: %dx%d, Color depth: %d\n",
++		screen_width, screen_height, screen_depth);
++
+ 	ret = hvfb_getmem(hdev, info);
+ 	if (ret) {
+ 		pr_err("No memory for framebuffer\n");
+ 		goto error2;
+ 	}
+ 
+-	hvfb_get_option(info);
+-	pr_info("Screen resolution: %dx%d, Color depth: %d\n",
+-		screen_width, screen_height, screen_depth);
+-
+-
+ 	/* Set up fb_info */
+ 	info->flags = FBINFO_DEFAULT;
+ 
+-- 
+2.20.1

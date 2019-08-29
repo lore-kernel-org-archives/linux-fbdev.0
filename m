@@ -1,44 +1,35 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 27 Aug 2019 11:35:19 +0000
+From: Peter Rosin <peda@axentia.se>
+Date: Thu, 29 Aug 2019 07:08:26 +0000
 Subject: Re: [PATCH v3 3/3] fbdev: fbmem: avoid exporting fb_center_logo
-Message-Id: <CAMuHMdVkqX7x_D5nf01s-kE=o+y5OLM-5fd3q=2RDKGTcpCfHg@mail.gmail.com>
+Message-Id: <6cb5ec1b-ae60-5ca4-f0d9-1414f52fed73@axentia.se>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190827110854.12574-1-peda@axentia.se>
  <20190827110854.12574-4-peda@axentia.se>
-In-Reply-To: <20190827110854.12574-4-peda@axentia.se>
+ <CAMuHMdVkqX7x_D5nf01s-kE=o+y5OLM-5fd3q=2RDKGTcpCfHg@mail.gmail.com>
+In-Reply-To: <CAMuHMdVkqX7x_D5nf01s-kE=o+y5OLM-5fd3q=2RDKGTcpCfHg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Rosin <peda@axentia.se>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>, "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Matthew Wilcox <willy@infradead.org>
 
-Hi Peter,
-
-On Tue, Aug 27, 2019 at 1:09 PM Peter Rosin <peda@axentia.se> wrote:
-> The variable is only ever used from fbcon.c which is linked into the
-> same module. Therefore, the export is not needed.
->
-> Signed-off-by: Peter Rosin <peda@axentia.se>
-
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-But note that the same is true for fb_class, so perhaps it can be added
-(or better, removed ;-)?
-
-Once drivers/staging/olpc_dcon/olpc_dcon.c stops abusing registered_fb[]
-and num_registered_fb, those can go, too.
-
-Does anyone remembe why au1200fb calls fb_prepare_logo() and fb_show_logo()
-itself?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+T24gMjAxOS0wOC0yNyAxMzozNSwgR2VlcnQgVXl0dGVyaG9ldmVuIHdyb3RlOg0KPiBIaSBQZXRl
+ciwNCj4gDQo+IE9uIFR1ZSwgQXVnIDI3LCAyMDE5IGF0IDE6MDkgUE0gUGV0ZXIgUm9zaW4gPHBl
+ZGFAYXhlbnRpYS5zZT4gd3JvdGU6DQo+PiBUaGUgdmFyaWFibGUgaXMgb25seSBldmVyIHVzZWQg
+ZnJvbSBmYmNvbi5jIHdoaWNoIGlzIGxpbmtlZCBpbnRvIHRoZQ0KPj4gc2FtZSBtb2R1bGUuIFRo
+ZXJlZm9yZSwgdGhlIGV4cG9ydCBpcyBub3QgbmVlZGVkLg0KPj4NCj4+IFNpZ25lZC1vZmYtYnk6
+IFBldGVyIFJvc2luIDxwZWRhQGF4ZW50aWEuc2U+DQo+IA0KPiBSZXZpZXdlZC1ieTogR2VlcnQg
+VXl0dGVyaG9ldmVuIDxnZWVydEBsaW51eC1tNjhrLm9yZz4NCj4gDQo+IEJ1dCBub3RlIHRoYXQg
+dGhlIHNhbWUgaXMgdHJ1ZSBmb3IgZmJfY2xhc3MsIHNvIHBlcmhhcHMgaXQgY2FuIGJlIGFkZGVk
+DQo+IChvciBiZXR0ZXIsIHJlbW92ZWQgOy0pPw0KDQpSaWdodC4gU29tZW9uZSBwbGVhc2UgbGV0
+IG1lIGtub3cgaWYgMy8zIG5lZWRzIHRvIGJlIGV4dGVuZGVkLiBJJ20gYWxzbw0KaGFwcHkgdG8g
+anVzdCBkcm9wIGl0Li4uDQoNCj4gT25jZSBkcml2ZXJzL3N0YWdpbmcvb2xwY19kY29uL29scGNf
+ZGNvbi5jIHN0b3BzIGFidXNpbmcgcmVnaXN0ZXJlZF9mYltdDQo+IGFuZCBudW1fcmVnaXN0ZXJl
+ZF9mYiwgdGhvc2UgY2FuIGdvLCB0b28uDQo+IA0KPiBEb2VzIGFueW9uZSByZW1lbWJlIHdoeSBh
+dTEyMDBmYiBjYWxscyBmYl9wcmVwYXJlX2xvZ28oKSBhbmQgZmJfc2hvd19sb2dvKCkNCj4gaXRz
+ZWxmPw0KDQpNYXliZSB0aGVyZSBzaG91bGQgYmUgYSBzbWFsbCBkcml2ZXJzL3ZpZGVvL2ZiZGV2
+L2NvcmUvZmJtZW0uaCBmaWxlIChvcg0Kc29tZXRoaW5nKSB3aXRoIHRoZXNlICJpbnRlcm5hbCIg
+ZGVjbGFyYXRpb25zLCB0byBoaWRlIHNvbWUgY2x1dHRlciBjdXJyZW50bHkNCmluIGluY2x1ZGUv
+bGludXgvZmIuaD8NCg0KRmVlbHMgbGlrZSB0aGF0IGNvdWxkIGJlIGRvbmUgbGF0ZXIsIGFmdGVy
+IHRoZXNlIG90aGVyIGNsZWFudXBzIHlvdSBtZW50aW9uLA0Kc28gdGhhdCB0aGUgbmV3IGZpbGUg
+aGFzIGEgZmV3IG1vcmUgdGhpbmdzIHRvIGRlY2xhcmUuDQoNCkNoZWVycywNClBldGVyDQo

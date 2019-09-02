@@ -1,51 +1,82 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 24 Sep 2019 16:44:47 +0000
-Subject: [PATCH AUTOSEL 5.2 08/70] video: ssd1307fb: Start page range at page_offset
-Message-Id: <20190924164549.27058-8-sashal@kernel.org>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 02 Sep 2019 12:34:44 +0000
+Subject: [RESEND PATCH v3 7/7] backlight: gpio: use a helper variable for &pdev->dev
+Message-Id: <20190902123444.19924-8-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190924164549.27058-1-sashal@kernel.org>
-In-Reply-To: <20190924164549.27058-1-sashal@kernel.org>
+References: <20190902123444.19924-1-brgl@bgdev.pl>
+In-Reply-To: <20190902123444.19924-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-From: Marko Kohtala <marko.kohtala@okoko.fi>
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-[ Upstream commit dd9782834dd9dde3624ff1acea8859f3d3e792d4 ]
+Instead of dereferencing pdev each time, use a helper variable for
+the associated device pointer.
 
-The page_offset was only applied to the end of the page range. This caused
-the display updates to cause a scrolling effect on the display because the
-amount of data written to the display did not match the range display
-expected.
-
-Fixes: 301bc0675b67 ("video: ssd1307fb: Make use of horizontal addressing mode")
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Michal Vokáč <michal.vokac@ysoft.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190618074111.9309-4-marko.kohtala@okoko.fi
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/backlight/gpio_backlight.c | 19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 021b727e8b5c4..6afd0d3ae5690 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -432,7 +432,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index cd6a75bca9cc..7dc4f90d926b 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -54,29 +54,29 @@ static const struct backlight_ops gpio_backlight_ops = {
  
--	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ssd1307fb_write_cmd(par->client, par->page_offset);
- 	if (ret < 0)
+ static int gpio_backlight_probe(struct platform_device *pdev)
+ {
+-	struct gpio_backlight_platform_data *pdata -		dev_get_platdata(&pdev->dev);
++	struct device *dev = &pdev->dev;
++	struct gpio_backlight_platform_data *pdata = dev_get_platdata(dev);
+ 	struct backlight_properties props;
+ 	struct backlight_device *bl;
+ 	struct gpio_backlight *gbl;
+ 	enum gpiod_flags flags;
+ 	int ret, def_value;
+ 
+-	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
++	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
+ 
+ 	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+ 
+-	def_value = device_property_read_bool(&pdev->dev, "default-on");
++	def_value = device_property_read_bool(dev, "default-on");
+ 	flags = def_value ? GPIOD_OUT_HIGH : GPIOD_OUT_LOW;
+ 
+-	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, flags);
++	gbl->gpiod = devm_gpiod_get(dev, NULL, flags);
+ 	if (IS_ERR(gbl->gpiod)) {
+ 		ret = PTR_ERR(gbl->gpiod);
+ 		if (ret != -EPROBE_DEFER) {
+-			dev_err(&pdev->dev,
++			dev_err(dev,
+ 				"Error: The gpios parameter is missing or invalid.\n");
+ 		}
  		return ret;
+@@ -85,11 +85,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	memset(&props, 0, sizeof(props));
+ 	props.type = BACKLIGHT_RAW;
+ 	props.max_brightness = 1;
+-	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
+-					&pdev->dev, gbl, &gpio_backlight_ops,
+-					&props);
++	bl = devm_backlight_device_register(dev, dev_name(dev), dev, gbl,
++					    &gpio_backlight_ops, &props);
+ 	if (IS_ERR(bl)) {
+-		dev_err(&pdev->dev, "failed to register backlight\n");
++		dev_err(dev, "failed to register backlight\n");
+ 		return PTR_ERR(bl);
+ 	}
  
 -- 
-2.20.1
+2.21.0

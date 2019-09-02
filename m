@@ -1,11 +1,11 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 02 Sep 2019 09:42:11 +0000
-Subject: Re: [PATCH v3 4/4] backlight: pwm_bl: Set scale type for brightness curves specified in the DT
-Message-Id: <20190902094211.GO32232@dell>
+Date: Mon, 02 Sep 2019 09:41:50 +0000
+Subject: Re: [PATCH v3 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
+Message-Id: <20190902094150.GN32232@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190709190007.91260-1-mka@chromium.org>
- <20190709190007.91260-5-mka@chromium.org>
-In-Reply-To: <20190709190007.91260-5-mka@chromium.org>
+ <20190709190007.91260-4-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-4-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
@@ -14,28 +14,25 @@ Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@
 
 On Tue, 09 Jul 2019, Matthias Kaehlcke wrote:
 
-> Check if a brightness curve specified in the device tree is linear or
-> not and set the corresponding property accordingly. This makes the
-> scale type available to userspace via the 'scale' sysfs attribute.
-> 
-> To determine if a curve is linear it is compared to a interpolated linear
-> curve between min and max brightness. The curve is considered linear if
-> no value deviates more than +/-5% of ${brightness_range} from their
-> interpolated value.
+> For backlight curves calculated with the CIE 1931 algorithm set
+> the brightness scale type to non-linear. This makes the scale type
+> available to userspace via the 'scale' sysfs attribute.
 > 
 > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 > ---
 > Changes in v3:
-> - none
+> - mark scale as non-linear instead of using the CIE1931 type which
+>   has been removed
+> - updated commit message
 > 
 > Changes in v2:
-> - use 128 (power of two) instead of 100 as factor for the slope
-> - add comment about max quantization error
+> - added Enric's 'Tested-by' tag
 > - added Daniel's 'Acked-by' tag
 > ---
->  drivers/video/backlight/pwm_bl.c | 30 ++++++++++++++++++++++++++++++
->  1 file changed, 30 insertions(+)
+>  drivers/video/backlight/pwm_bl.c | 5 ++++-
+>  1 file changed, 4 insertions(+), 1 deletion(-)
 
 Applied, thanks.
 

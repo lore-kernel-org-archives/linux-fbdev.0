@@ -1,7 +1,7 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 02 Sep 2019 12:34:40 +0000
-Subject: [RESEND PATCH v3 3/7] sh: ecovec24: don't set unused fields in platform data
-Message-Id: <20190902123444.19924-4-brgl@bgdev.pl>
+Date: Mon, 02 Sep 2019 12:34:41 +0000
+Subject: [RESEND PATCH v3 4/7] backlight: gpio: remove unused fields from platform data
+Message-Id: <20190902123444.19924-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190902123444.19924-1-brgl@bgdev.pl>
 In-Reply-To: <20190902123444.19924-1-brgl@bgdev.pl>
@@ -13,29 +13,29 @@ Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.free
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Platform data fields other than fbdev are no longer used by the
-backlight driver. Remove them.
+Remove the platform data fields that nobody uses.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- arch/sh/boards/mach-ecovec24/setup.c | 3 ---
+ include/linux/platform_data/gpio_backlight.h | 3 ---
  1 file changed, 3 deletions(-)
 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index 6926bb3865b9..64a5a1662b6d 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -386,9 +386,6 @@ static struct property_entry gpio_backlight_props[] = {
+diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
+index 34179d600360..1a8b5b1946fe 100644
+--- a/include/linux/platform_data/gpio_backlight.h
++++ b/include/linux/platform_data/gpio_backlight.h
+@@ -9,9 +9,6 @@ struct device;
  
- static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.fbdev = &lcdc_device.dev,
--	.gpio = GPIO_PTR1,
--	.def_value = 1,
--	.name = "backlight",
+ struct gpio_backlight_platform_data {
+ 	struct device *fbdev;
+-	int gpio;
+-	int def_value;
+-	const char *name;
  };
  
- static const struct platform_device_info gpio_backlight_device_info = {
+ #endif
 -- 
 2.21.0

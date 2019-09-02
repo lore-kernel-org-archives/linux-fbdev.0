@@ -1,122 +1,50 @@
-From: Dexuan Cui <decui@microsoft.com>
-Date: Wed, 11 Sep 2019 23:34:10 +0000
-Subject: [PATCH] video: hyperv_fb: Add the support of hibernation
-Message-Id: <1568244833-66476-1-git-send-email-decui@microsoft.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Mon, 02 Sep 2019 12:34:42 +0000
+Subject: [RESEND PATCH v3 5/7] backlight: gpio: remove dev from struct gpio_backlight
+Message-Id: <20190902123444.19924-6-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190902123444.19924-1-brgl@bgdev.pl>
+In-Reply-To: <20190902123444.19924-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: KY Srinivasan <kys@microsoft.com>, Haiyang Zhang <haiyangz@microsoft.com>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Michael Kelley <mikelley@microsoft.com>
-Cc: Dexuan Cui <decui@microsoft.com>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-This patch depends on the vmbus side change of the definition of
-struct hv_driver.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Dexuan Cui <decui@microsoft.com>
+This field is unused. Remove it.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
+ drivers/video/backlight/gpio_backlight.c | 4 ----
+ 1 file changed, 4 deletions(-)
 
-This patch is basically a pure Hyper-V specific change and it has a
-build dependency on the commit 271b2224d42f ("Drivers: hv: vmbus: Implement
-suspend/resume for VSC drivers for hibernation"), which is on Sasha Levin's
-Hyper-V tree's hyperv-next branch:
-https://git.kernel.org/pub/scm/linux/kernel/git/hyperv/linux.git/log/?h=hyperv-next
-
-I request this patch should go through Sasha's tree rather than the
-fbdev tree.
-
- drivers/video/fbdev/hyperv_fb.c | 59 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
-
-diff --git a/drivers/video/fbdev/hyperv_fb.c b/drivers/video/fbdev/hyperv_fb.c
-index 2dcb7c5..fe4731f 100644
---- a/drivers/video/fbdev/hyperv_fb.c
-+++ b/drivers/video/fbdev/hyperv_fb.c
-@@ -34,6 +34,7 @@
- #include <linux/fb.h>
- #include <linux/pci.h>
- #include <linux/efi.h>
-+#include <linux/console.h>
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 01262186fa1e..70882556f047 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -19,9 +19,7 @@
+ #include <linux/slab.h>
  
- #include <linux/hyperv.h>
+ struct gpio_backlight {
+-	struct device *dev;
+ 	struct device *fbdev;
+-
+ 	struct gpio_desc *gpiod;
+ 	int def_value;
+ };
+@@ -69,8 +67,6 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 	if (gbl = NULL)
+ 		return -ENOMEM;
  
-@@ -211,6 +212,7 @@ struct hvfb_par {
+-	gbl->dev = &pdev->dev;
+-
+ 	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
  
- 	struct delayed_work dwork;
- 	bool update;
-+	bool update_saved; /* The value of 'update' before hibernation */
- 
- 	u32 pseudo_palette[16];
- 	u8 init_buf[MAX_VMBUS_PKT_SIZE];
-@@ -878,6 +880,61 @@ static int hvfb_remove(struct hv_device *hdev)
- 	return 0;
- }
- 
-+static int hvfb_suspend(struct hv_device *hdev)
-+{
-+	struct fb_info *info = hv_get_drvdata(hdev);
-+	struct hvfb_par *par = info->par;
-+
-+	console_lock();
-+
-+	/* 1 means do suspend */
-+	fb_set_suspend(info, 1);
-+
-+	cancel_delayed_work_sync(&par->dwork);
-+
-+	par->update_saved = par->update;
-+	par->update = false;
-+	par->fb_ready = false;
-+
-+	vmbus_close(hdev->channel);
-+
-+	console_unlock();
-+
-+	return 0;
-+}
-+
-+static int hvfb_resume(struct hv_device *hdev)
-+{
-+	struct fb_info *info = hv_get_drvdata(hdev);
-+	struct hvfb_par *par = info->par;
-+	int ret;
-+
-+	console_lock();
-+
-+	ret = synthvid_connect_vsp(hdev);
-+	if (ret != 0)
-+		goto out;
-+
-+	ret = synthvid_send_config(hdev);
-+	if (ret != 0) {
-+		vmbus_close(hdev->channel);
-+		goto out;
-+	}
-+
-+	par->fb_ready = true;
-+	par->update = par->update_saved;
-+
-+	schedule_delayed_work(&par->dwork, HVFB_UPDATE_DELAY);
-+
-+	/* 0 means do resume */
-+	fb_set_suspend(info, 0);
-+
-+out:
-+	console_unlock();
-+
-+	return ret;
-+}
-+
- 
- static const struct pci_device_id pci_stub_id_table[] = {
- 	{
-@@ -901,6 +958,8 @@ static int hvfb_remove(struct hv_device *hdev)
- 	.id_table = id_table,
- 	.probe = hvfb_probe,
- 	.remove = hvfb_remove,
-+	.suspend = hvfb_suspend,
-+	.resume = hvfb_resume,
- 	.driver = {
- 		.probe_type = PROBE_PREFER_ASYNCHRONOUS,
- 	},
 -- 
-1.8.3.1
+2.21.0

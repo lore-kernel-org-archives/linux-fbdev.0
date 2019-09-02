@@ -1,31 +1,34 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Fri, 20 Sep 2019 10:36:50 +0000
-Subject: Re: [PATCH 1/5] backlight: pwm_bl: fix cie1913 comments and constant
-Message-Id: <fe846ffb-857e-fda2-1277-3ca49ffc0d7a@rasmusvillemoes.dk>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 02 Sep 2019 09:06:46 +0000
+Subject: Re: [PATCH] video: backlight: tosa_lcd: drop check because i2c_unregister_device() is NULL safe
+Message-Id: <20190902090646.GE32232@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
- <20190920101405.yuu4bymublj45kd4@holly.lan>
-In-Reply-To: <20190920101405.yuu4bymublj45kd4@holly.lan>
+References: <20190820153439.7638-1-wsa+renesas@sang-engineering.com>
+In-Reply-To: <20190820153439.7638-1-wsa+renesas@sang-engineering.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Wolfram Sang <wsa+renesas@sang-engineering.com>
+Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
 
-On 20/09/2019 12.14, Daniel Thompson wrote:
-> Hi Rasmus
+On Tue, 20 Aug 2019, Wolfram Sang wrote:
+
+> No need to check the argument of i2c_unregister_device() because the
+> function itself does it.
 > 
-> Has something gone wrong with the mail out for this patch set. I didn't
-> get a covering letter or patch 5/5?
+> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> ---
+> Build tested only, buildbot is happy, too.
+> 
+> Please apply to your tree.
+> 
+>  drivers/video/backlight/tosa_lcd.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
 
-Sorry about that. I should have included a cover letter so you'd know
-that patch 5 wasn't directly related to the other patches.
+Applied, thanks.
 
-https://lore.kernel.org/lkml/20190919140620.32407-5-linux@rasmusvillemoes.dk/
-
-I was removing the now unused int_pow() function, but Andy has told me
-there are new users in -next, so it's moot. Only the first four patches
-are relevant.
-
-Thanks,
-Rasmus
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

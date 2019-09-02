@@ -1,38 +1,33 @@
 From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 02 Sep 2019 09:41:50 +0000
-Subject: Re: [PATCH v3 3/4] backlight: pwm_bl: Set scale type for CIE 1931 curves
-Message-Id: <20190902094150.GN32232@dell>
+Date: Mon, 02 Sep 2019 09:41:25 +0000
+Subject: Re: [PATCH v3 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
+Message-Id: <20190902094125.GL32232@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190709190007.91260-1-mka@chromium.org>
- <20190709190007.91260-4-mka@chromium.org>
-In-Reply-To: <20190709190007.91260-4-mka@chromium.org>
+ <20190709190007.91260-2-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-2-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Douglas Anderson <dianders@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
 On Tue, 09 Jul 2019, Matthias Kaehlcke wrote:
 
-> For backlight curves calculated with the CIE 1931 algorithm set
-> the brightness scale type to non-linear. This makes the scale type
-> available to userspace via the 'scale' sysfs attribute.
+> Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
+> file.
 > 
 > Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Tested-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 > ---
 > Changes in v3:
-> - mark scale as non-linear instead of using the CIE1931 type which
->   has been removed
-> - updated commit message
+> - none
 > 
 > Changes in v2:
-> - added Enric's 'Tested-by' tag
 > - added Daniel's 'Acked-by' tag
 > ---
->  drivers/video/backlight/pwm_bl.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+>  MAINTAINERS | 1 +
+>  1 file changed, 1 insertion(+)
 
 Applied, thanks.
 

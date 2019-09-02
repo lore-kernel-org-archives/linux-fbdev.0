@@ -1,48 +1,37 @@
-From: Michael Kelley <mikelley@microsoft.com>
-Date: Thu, 05 Sep 2019 14:10:10 +0000
-Subject: RE: [PATCH v3] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
-Message-Id: <DM5PR21MB0137437661B0B2DDAC94DD5FD7BB0@DM5PR21MB0137.namprd21.prod.outlook.com>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 02 Sep 2019 08:40:24 +0000
+Subject: Re: [PATCH resend] video: backlight: Drop default m for {LCD,BACKLIGHT_CLASS_DEVICE}
+Message-Id: <20190902084024.GR4804@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190905082816.3612-1-weh@microsoft.com>
-In-Reply-To: <20190905082816.3612-1-weh@microsoft.com>
+References: <20190813115853.30329-1-geert@linux-m68k.org>
+In-Reply-To: <20190813115853.30329-1-geert@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Wei Hu <weh@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "fthain@telegraphics.com.au" <fthain@telegraphics.com.au>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Hai
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Alexander Shiyan <shc_work@mail.ru>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-From: Wei Hu <weh@microsoft.com> Sent: Thursday, September 5, 2019 1:29 AM
+On Tue, 13 Aug 2019, Geert Uytterhoeven wrote:
+
+> When running "make oldconfig" on a .config where
+> CONFIG_BACKLIGHT_LCD_SUPPORT is not set, two new config options
+> ("Lowlevel LCD controls" and "Lowlevel Backlight controls") appear, both
+> defaulting to "m".
 > 
-> Without deferred IO support, hyperv_fb driver informs the host to refresh
-> the entire guest frame buffer at fixed rate, e.g. at 20Hz, no matter there
-> is screen update or not. This patch supports deferred IO for screens in
-> graphics mode and also enables the frame buffer on-demand refresh. The
-> highest refresh rate is still set at 20Hz.
+> Drop the "default m", as options should default to disabled, and because
+> several driver config options already select LCD_CLASS_DEVICE or
+> BACKLIGHT_CLASS_DEVICE when needed.
 > 
-> Currently Hyper-V only takes a physical address from guest as the starting
-> address of frame buffer. This implies the guest must allocate contiguous
-> physical memory for frame buffer. In addition, Hyper-V Gen 2 VMs only
-> accept address from MMIO region as frame buffer address. Due to these
-> limitations on Hyper-V host, we keep a shadow copy of frame buffer
-> in the guest. This means one more copy of the dirty rectangle inside
-> guest when doing the on-demand refresh. This can be optimized in the
-> future with help from host. For now the host performance gain from deferred
-> IO outweighs the shadow copy impact in the guest.
-> 
-> Signed-off-by: Wei Hu <weh@microsoft.com>
+> Fixes: 8c5dc8d9f19c7992 ("video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol")
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 > ---
->     v2: Incorporated review comments from Michael Kelley
->     - Increased dirty rectangle by one row in deferred IO case when sending
->     to Hyper-V.
->     - Corrected the dirty rectangle size in the text mode.
->     - Added more comments.
->     - Other minor code cleanups.
-> 
->     v3: Incorporated more review comments
->     - Removed a few unnecessary variable tests
-> 
->  drivers/video/fbdev/Kconfig     |   1 +
->  drivers/video/fbdev/hyperv_fb.c | 216 +++++++++++++++++++++++++++++---
->  2 files changed, 197 insertions(+), 20 deletions(-)
-> 
+>  drivers/video/backlight/Kconfig | 2 --
+>  1 file changed, 2 deletions(-)
 
-Reviewed-by: Michael Kelley <mikelley@microsoft.com>
+Applied, thanks.
+
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

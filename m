@@ -1,89 +1,61 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Thu, 12 Sep 2019 09:18:11 +0000
-Subject: Re: [PATCH v2 2/2] backlight: lm3630a: add an enable gpio for the HWEN pin
-Message-Id: <20190912091811.evlmeeuoai6phy3l@holly.lan>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 02 Sep 2019 09:41:37 +0000
+Subject: Re: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
+Message-Id: <20190902094137.GM32232@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190910212909.18095-1-andreas@kemnade.info>
- <20190910212909.18095-3-andreas@kemnade.info>
- <20190911102533.not4ta3xwgm6bhjo@holly.lan>
- <a3f10318-11f4-3b78-47e5-d9add8a46791@ti.com>
-In-Reply-To: <a3f10318-11f4-3b78-47e5-d9add8a46791@ti.com>
+References: <20190709190007.91260-1-mka@chromium.org>
+ <20190709190007.91260-3-mka@chromium.org>
+In-Reply-To: <20190709190007.91260-3-mka@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Murphy <dmurphy@ti.com>
-Cc: Andreas Kemnade <andreas@kemnade.info>, lee.jones@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Matthias Kaehlcke <mka@chromium.org>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
 
-On Wed, Sep 11, 2019 at 01:48:36PM -0500, Dan Murphy wrote:
+On Tue, 09 Jul 2019, Matthias Kaehlcke wrote:
+
+> Backlight brightness curves can have different shapes. The two main
+> types are linear and non-linear curves. The human eye doesn't
+> perceive linearly increasing/decreasing brightness as linear (see
+> also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
+> linearly to human eye"), hence many backlights use non-linear (often
+> logarithmic) brightness curves. The type of curve currently is opaque
+> to userspace, so userspace often uses more or less reliable heuristics
+> (like the number of brightness levels) to decide whether to treat a
+> backlight device as linear or non-linear.
 > 
-> On 9/11/19 5:25 AM, Daniel Thompson wrote:
-> > On Tue, Sep 10, 2019 at 11:29:09PM +0200, Andreas Kemnade wrote:
-> > > For now just enable it in the probe function to allow i2c
-> > > access. Disabling also means resetting the register values
-> > > to default and according to the datasheet does not give
-> > > power savings
-> > > 
-> > > Tested on Kobo Clara HD.
-> > > 
-> > > Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> > > ---
-> > > changes in v2:
-> > > - simplification
-> > > - correct gpio direction initialisation
-> > > 
-> > >   drivers/video/backlight/lm3630a_bl.c | 10 ++++++++++
-> > >   1 file changed, 10 insertions(+)
-> > > 
-> > > diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> > > index 8f84f3684f04..9d0639d4202d 100644
-> > > --- a/drivers/video/backlight/lm3630a_bl.c
-> > > +++ b/drivers/video/backlight/lm3630a_bl.c
-> > > @@ -12,6 +12,8 @@
-> > >   #include <linux/uaccess.h>
-> > >   #include <linux/interrupt.h>
-> > >   #include <linux/regmap.h>
-> > > +#include <linux/gpio/consumer.h>
-> > > +#include <linux/gpio.h>
-> > Nitpicking... but I don't think linux/gpio.h is used anymore.
-> > 
-> > 
-> > >   #include <linux/pwm.h>
-> > >   #include <linux/platform_data/lm3630a_bl.h>
-> > > @@ -48,6 +50,7 @@ struct lm3630a_chip {
-> > >   	struct lm3630a_platform_data *pdata;
-> > >   	struct backlight_device *bleda;
-> > >   	struct backlight_device *bledb;
-> > > +	struct gpio_desc *enable_gpio;
-> > >   	struct regmap *regmap;
-> > >   	struct pwm_device *pwmd;
-> > >   };
-> > > @@ -535,6 +538,13 @@ static int lm3630a_probe(struct i2c_client *client,
-> > >   	}
-> > >   	pchip->pdata = pdata;
-> > > +	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
-> > > +						GPIOD_OUT_HIGH);
-> > > +	if (IS_ERR(pchip->enable_gpio)) {
-> > > +		rval = PTR_ERR(pchip->enable_gpio);
-> > > +		return rval;
+> Export the type of the brightness curve via the new sysfs attribute
+> 'scale'. The value of the attribute can be 'linear', 'non-linear' or
+> 'unknown'. For devices that don't provide information about the scale
+> of their brightness curve the value of the 'scale' attribute is 'unknown'.
 > 
-> the enable gpio is optional so if it fails you log the error and move on
+> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+> ---
+> Feel free to suggest improvements in the documentation :)
+> 
+> Changes in v3:
+> - removed composite strings, only keep 'linear', 'non-linear' and
+>   'unknown'
+> - updated sysfs attribute documentation
+> - updated commit message
+> 
+> Changes in v2:
+> - changed order of brightness scale enums, explicitly make 'unknown' zero
+> - minor update of commit message
+> - deleted excess blank line after 'backlight_scale_types'
+> - s/curves/curve/ in sysfs doc
+> ---
+>  .../ABI/testing/sysfs-class-backlight         | 26 +++++++++++++++++++
+>  MAINTAINERS                                   |  1 +
+>  drivers/video/backlight/backlight.c           | 19 ++++++++++++++
+>  include/linux/backlight.h                     |  8 ++++++
+>  4 files changed, 54 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
 
-Isn't the effect of this to cope gracefully if enable-gpios is absent
-but to fail with an error if enable-gpios exists and is broken. I
-thought this code pattern is fairly common.
+Applied, thanks.
 
-
-> Also on driver removal did you want to set the GPIO to low to disable the
-> device to save power?
-
-As it happens I offered to opposite feedback for v1:
-https://lists.freedesktop.org/archives/dri-devel/2019-September/234918.html
-
-Basically if the power matters then we should take care of things in the
-PM code path (which for this driver means reacting properly to
-suspended flag when updating the brightness). If the power doesn't matter
-then, given unallocated GPIO pins are in an unknown state anyway, there
-is no point in tidying up because we don't know what value to restore.
-
-
-Daniel.
+-- 
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

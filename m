@@ -1,51 +1,62 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 24 Sep 2019 16:48:02 +0000
-Subject: [PATCH AUTOSEL 4.19 05/50] video: ssd1307fb: Start page range at page_offset
-Message-Id: <20190924164847.27780-5-sashal@kernel.org>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Mon, 02 Sep 2019 09:11:30 +0000
+Subject: Re: [PATCH v3] backlight: gpio-backlight: Correct initial power state handling
+Message-Id: <20190902091130.GG32232@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190924164847.27780-1-sashal@kernel.org>
-In-Reply-To: <20190924164847.27780-1-sashal@kernel.org>
+References: <20190731084018.5318-1-peter.ujfalusi@ti.com>
+In-Reply-To: <20190731084018.5318-1-peter.ujfalusi@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+To: Peter Ujfalusi <peter.ujfalusi@ti.com>
+Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, paul.kocialkowski@bootlin.com
 
-From: Marko Kohtala <marko.kohtala@okoko.fi>
+On Wed, 31 Jul 2019, Peter Ujfalusi wrote:
 
-[ Upstream commit dd9782834dd9dde3624ff1acea8859f3d3e792d4 ]
+> The default-on property - or the def_value via legacy pdata) should be
+> handled as:
+> if it is 1, the backlight must be enabled (kept enabled)
+> if it is 0, the backlight must be disabled (kept disabled)
+> 
+> This only works for the case when default-on is set. If it is not set then
+> the brightness of the backlight is set to 0. Now if the backlight is
+> enabled by external driver (graphics) the backlight will stay disabled since
+> the brightness is configured as 0. The backlight will not turn on.
+> 
+> In order to minimize screen flickering during device boot:
+> 
+> The initial brightness should be set to 1.
+> 
+> If booted in non DT mode or no phandle link to the backlight node:
+> follow the def_value/default-on to select UNBLANK or POWERDOWN
+> 
+> If in DT boot we have phandle link then leave the GPIO in a state which the
+> bootloader left it and let the user of the backlight to configure it
+> further.
+> 
+> Signed-off-by: Peter Ujfalusi <peter.ujfalusi@ti.com>
+> ---
+> Hi,
+> 
+> sorry for the delay, but got distracted a bit with the resend of this...
+> Let's try again ;)
+> 
+> Changes since v2 (https://lore.kernel.org/patchwork/patch/1002359/):
+> - Rebased on drm-next
+> 
+> Changes since v1:
+> - Implement similiar initial power state handling as pwm backlight have
+> 
+> Regards,
+> Peter
+> 
+>  drivers/video/backlight/gpio_backlight.c | 24 ++++++++++++++++++++----
+>  1 file changed, 20 insertions(+), 4 deletions(-)
 
-The page_offset was only applied to the end of the page range. This caused
-the display updates to cause a scrolling effect on the display because the
-amount of data written to the display did not match the range display
-expected.
+Applied, thanks.
 
-Fixes: 301bc0675b67 ("video: ssd1307fb: Make use of horizontal addressing mode")
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Michal Vokáč <michal.vokac@ysoft.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190618074111.9309-4-marko.kohtala@okoko.fi
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 6439231f2db22..da565f39c9b06 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -433,7 +433,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
--	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ssd1307fb_write_cmd(par->client, par->page_offset);
- 	if (ret < 0)
- 		return ret;
- 
 -- 
-2.20.1
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

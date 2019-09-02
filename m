@@ -1,51 +1,65 @@
-From: Sasha Levin <sashal@kernel.org>
-Date: Tue, 24 Sep 2019 16:51:13 +0000
-Subject: [PATCH AUTOSEL 4.9 02/19] video: ssd1307fb: Start page range at page_offset
-Message-Id: <20190924165130.28625-2-sashal@kernel.org>
+From: Lubomir Rintel <lkundrak@v3.sk>
+Date: Mon, 02 Sep 2019 09:10:46 +0000
+Subject: Re: [PATCH] pxa168fb: Fix the function used to release some memory in an error handling path
+Message-Id: <ca0213fd439a2b569e0d3bdb000712ee62ff4836.camel@v3.sk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190924165130.28625-1-sashal@kernel.org>
-In-Reply-To: <20190924165130.28625-1-sashal@kernel.org>
+References: <20190831100024.3248-1-christophe.jaillet@wanadoo.fr>
+In-Reply-To: <20190831100024.3248-1-christophe.jaillet@wanadoo.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc: Mark Rutland <mark.rutland@arm.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Christophe JAILLET <christophe.jaillet@wanadoo.fr>, b.zolnierkie@samsung.com, yuehaibing@huawei.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
 
-From: Marko Kohtala <marko.kohtala@okoko.fi>
+On Sat, 2019-08-31 at 12:00 +0200, Christophe JAILLET wrote:
+> In the probe function, some resources are allocated using 'dma_alloc_wc()',
+> they should be released with 'dma_free_wc()', not 'dma_free_coherent()'.
+> 
+> We already use 'dma_free_wc()' in the remove function, but not in the
+> error handling path of the probe function.
+> 
+> Also, remove a useless 'PAGE_ALIGN()'. 'info->fix.smem_len' is already
+> PAGE_ALIGNed.
+> 
+> Fixes: 638772c7553f ("fb: add support of LCD display controller on pxa168/910 (base layer)")
+> Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
 
-[ Upstream commit dd9782834dd9dde3624ff1acea8859f3d3e792d4 ]
+Reviewed-by: Lubomir Rintel <lkundrak@v3.sk>
 
-The page_offset was only applied to the end of the page range. This caused
-the display updates to cause a scrolling effect on the display because the
-amount of data written to the display did not match the range display
-expected.
+Thanks,
+Lubo
 
-Fixes: 301bc0675b67 ("video: ssd1307fb: Make use of horizontal addressing mode")
-Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: Daniel Vetter <daniel@ffwll.ch>
-Cc: David Airlie <airlied@linux.ie>
-Cc: Michal Vokáč <michal.vokac@ysoft.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Link: https://patchwork.freedesktop.org/patch/msgid/20190618074111.9309-4-marko.kohtala@okoko.fi
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/video/fbdev/ssd1307fb.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
-index 2925d5ce8d3e5..1267b93c03bd0 100644
---- a/drivers/video/fbdev/ssd1307fb.c
-+++ b/drivers/video/fbdev/ssd1307fb.c
-@@ -430,7 +430,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
- 	if (ret < 0)
- 		return ret;
- 
--	ret = ssd1307fb_write_cmd(par->client, 0x0);
-+	ret = ssd1307fb_write_cmd(par->client, par->page_offset);
- 	if (ret < 0)
- 		return ret;
- 
--- 
-2.20.1
+> ---
+> The change about PAGE_ALIGN should probably be part of a separate commit.
+> However, git history for this driver is really quiet. If you think it
+> REALLY deserves a separate patch, either split it by yourself or axe this
+> part of the patch. I won't bother resubmitting for this lonely cleanup.
+> Hoping for your understanding.
+> ---
+>  drivers/video/fbdev/pxa168fb.c | 6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/video/fbdev/pxa168fb.c b/drivers/video/fbdev/pxa168fb.c
+> index 1410f476e135..1fc50fc0694b 100644
+> --- a/drivers/video/fbdev/pxa168fb.c
+> +++ b/drivers/video/fbdev/pxa168fb.c
+> @@ -766,8 +766,8 @@ static int pxa168fb_probe(struct platform_device *pdev)
+>  failed_free_clk:
+>  	clk_disable_unprepare(fbi->clk);
+>  failed_free_fbmem:
+> -	dma_free_coherent(fbi->dev, info->fix.smem_len,
+> -			info->screen_base, fbi->fb_start_dma);
+> +	dma_free_wc(fbi->dev, info->fix.smem_len,
+> +		    info->screen_base, fbi->fb_start_dma);
+>  failed_free_info:
+>  	kfree(info);
+>  
+> @@ -801,7 +801,7 @@ static int pxa168fb_remove(struct platform_device *pdev)
+>  
+>  	irq = platform_get_irq(pdev, 0);
+>  
+> -	dma_free_wc(fbi->dev, PAGE_ALIGN(info->fix.smem_len),
+> +	dma_free_wc(fbi->dev, info->fix.smem_len,
+>  		    info->screen_base, info->fix.smem_start);
+>  
+>  	clk_disable_unprepare(fbi->clk);

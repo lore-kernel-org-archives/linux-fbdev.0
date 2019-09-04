@@ -1,38 +1,37 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 02 Sep 2019 09:41:25 +0000
-Subject: Re: [PATCH v3 1/4] MAINTAINERS: Add entry for stable backlight sysfs ABI documentation
-Message-Id: <20190902094125.GL32232@dell>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 04 Sep 2019 11:54:06 +0000
+Subject: [PATCH -next] fbdev: omapfb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <20190904115406.23880-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190709190007.91260-1-mka@chromium.org>
- <20190709190007.91260-2-mka@chromium.org>
-In-Reply-To: <20190709190007.91260-2-mka@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Douglas Anderson <dianders@chromium.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Brian Norris <briannorris@chromium.org>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: b.zolnierkie@samsung.com, tglx@linutronix.de, alexios.zavras@intel.com, gregkh@linuxfoundation.org, allison@lohutok.net, yuehaibing@huawei.com
+Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Tue, 09 Jul 2019, Matthias Kaehlcke wrote:
+Use devm_platform_ioremap_resource() to simplify the code a bit.
+This is detected by coccinelle.
 
-> Add an entry for the stable backlight sysfs ABI to the MAINTAINERS
-> file.
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
-> Changes in v3:
-> - none
-> 
-> Changes in v2:
-> - added Daniel's 'Acked-by' tag
-> ---
->  MAINTAINERS | 1 +
->  1 file changed, 1 insertion(+)
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/video/fbdev/omap2/omapfb/vrfb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Applied, thanks.
-
+diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+index 819e0bc..ee0dd4c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
++++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
+@@ -339,9 +339,7 @@ static int __init vrfb_probe(struct platform_device *pdev)
+ 	int i;
+ 
+ 	/* first resource is the register res, the rest are vrfb contexts */
+-
+-	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
++	vrfb_base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(vrfb_base))
+ 		return PTR_ERR(vrfb_base);
+ 
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.7.4

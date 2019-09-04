@@ -1,29 +1,44 @@
-From: Andreas Kemnade <andreas@kemnade.info>
-Date: Tue, 10 Sep 2019 21:29:07 +0000
-Subject: [PATCH v2 0/2] backlight_lm3630a: add enable_gpios property
-Message-Id: <20190910212909.18095-1-andreas@kemnade.info>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 04 Sep 2019 11:57:54 +0000
+Subject: [PATCH -next] fbdev/sa1100fb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <20190904115754.21612-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
-Cc: Andreas Kemnade <andreas@kemnade.info>
+To: b.zolnierkie@samsung.com, maarten.lankhorst@linux.intel.com, daniel.vetter@ffwll.ch, viresh.kumar@linaro.org, rafael.j.wysocki@intel.com, yuehaibing@huawei.com
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-To be able to handle the HWEN pin of the lm3630a, add
-an enable gpio to the driver and a property.
+Use devm_platform_ioremap_resource() to simplify the code a bit.
+This is detected by coccinelle.
 
-Tested on Kobo Clara HD.
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/video/fbdev/sa1100fb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-Changes in v2:
-simplification and reordering
-
-Andreas Kemnade (2):
-  dt-bindings: backlight: lm3630a: add enable_gpios
-  backlight: lm3630a: add an enable gpio for the HWEN pin
-
- .../bindings/leds/backlight/lm3630a-backlight.yaml     |  5 +++++
- drivers/video/backlight/lm3630a_bl.c                   | 10 ++++++++++
- 2 files changed, 15 insertions(+)
-
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index ae2bcfe..4428cef 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -1156,7 +1156,6 @@ static struct sa1100fb_info *sa1100fb_init_fbinfo(struct device *dev)
+ static int sa1100fb_probe(struct platform_device *pdev)
+ {
+ 	struct sa1100fb_info *fbi;
+-	struct resource *res;
+ 	int ret, irq;
+ 
+ 	if (!dev_get_platdata(&pdev->dev)) {
+@@ -1172,8 +1171,7 @@ static int sa1100fb_probe(struct platform_device *pdev)
+ 	if (!fbi)
+ 		return -ENOMEM;
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	fbi->base = devm_ioremap_resource(&pdev->dev, res);
++	fbi->base = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(fbi->base))
+ 		return PTR_ERR(fbi->base);
+ 
 -- 
-2.20.1
+2.7.4

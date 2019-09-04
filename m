@@ -1,37 +1,43 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Thu, 19 Sep 2019 14:06:17 +0000
-Subject: [PATCH 2/5] backlight: pwm_bl: eliminate a 64/32 division
-Message-Id: <20190919140620.32407-2-linux@rasmusvillemoes.dk>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 04 Sep 2019 11:50:28 +0000
+Subject: [PATCH -next] fbdev: da8xx-fb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <20190904115028.25392-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: b.zolnierkie@samsung.com, allison@lohutok.net, mcgrof@kernel.org, yuehaibing@huawei.com, rfontana@redhat.com, tglx@linutronix.de
+Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-lightness*1000 is nowhere near overflowing 32 bits, so we can just use
-an ordinary 32/32 division, which is much cheaper than the 64/32 done
-via do_div().
+Use devm_platform_ioremap_resource() to simplify the code a bit.
+This is detected by coccinelle.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
 ---
- drivers/video/backlight/pwm_bl.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/fbdev/da8xx-fb.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index be36be1cacb7..9252d51f31b9 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -177,7 +177,7 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
- 	 */
- 	lightness *= 100;
- 	if (lightness <= (8 * scale)) {
--		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9033);
-+		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
- 	} else {
- 		retval = int_pow((lightness + (16 * scale)) / 116, 3);
- 		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
+diff --git a/drivers/video/fbdev/da8xx-fb.c b/drivers/video/fbdev/da8xx-fb.c
+index b1cf248..57518d7 100644
+--- a/drivers/video/fbdev/da8xx-fb.c
++++ b/drivers/video/fbdev/da8xx-fb.c
+@@ -1328,7 +1328,6 @@ static int fb_probe(struct platform_device *device)
+ {
+ 	struct da8xx_lcdc_platform_data *fb_pdata  						dev_get_platdata(&device->dev);
+-	struct resource *lcdc_regs;
+ 	struct lcd_ctrl_config *lcd_cfg;
+ 	struct fb_videomode *lcdc_info;
+ 	struct fb_info *da8xx_fb_info;
+@@ -1346,8 +1345,7 @@ static int fb_probe(struct platform_device *device)
+ 	if (lcdc_info = NULL)
+ 		return -ENODEV;
+ 
+-	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
+-	da8xx_fb_reg_base = devm_ioremap_resource(&device->dev, lcdc_regs);
++	da8xx_fb_reg_base = devm_platform_ioremap_resource(device, 0);
+ 	if (IS_ERR(da8xx_fb_reg_base))
+ 		return PTR_ERR(da8xx_fb_reg_base);
+ 
 -- 
-2.20.1
+2.7.4

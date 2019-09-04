@@ -1,37 +1,36 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 02 Sep 2019 08:40:24 +0000
-Subject: Re: [PATCH resend] video: backlight: Drop default m for {LCD,BACKLIGHT_CLASS_DEVICE}
-Message-Id: <20190902084024.GR4804@dell>
+From: YueHaibing <yuehaibing@huawei.com>
+Date: Wed, 04 Sep 2019 11:55:23 +0000
+Subject: [PATCH -next] fbdev: s3c-fb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <20190904115523.25068-1-yuehaibing@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190813115853.30329-1-geert@linux-m68k.org>
-In-Reply-To: <20190813115853.30329-1-geert@linux-m68k.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Alexander Shiyan <shc_work@mail.ru>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: jingoohan1@gmail.com, b.zolnierkie@samsung.com
+Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
 
-On Tue, 13 Aug 2019, Geert Uytterhoeven wrote:
+Use devm_platform_ioremap_resource() to simplify the code a bit.
+This is detected by coccinelle.
 
-> When running "make oldconfig" on a .config where
-> CONFIG_BACKLIGHT_LCD_SUPPORT is not set, two new config options
-> ("Lowlevel LCD controls" and "Lowlevel Backlight controls") appear, both
-> defaulting to "m".
-> 
-> Drop the "default m", as options should default to disabled, and because
-> several driver config options already select LCD_CLASS_DEVICE or
-> BACKLIGHT_CLASS_DEVICE when needed.
-> 
-> Fixes: 8c5dc8d9f19c7992 ("video: backlight: Remove useless BACKLIGHT_LCD_SUPPORT kernel symbol")
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> ---
->  drivers/video/backlight/Kconfig | 2 --
->  1 file changed, 2 deletions(-)
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+---
+ drivers/video/fbdev/s3c-fb.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Applied, thanks.
-
+diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
+index ba04d7a..43ac8d7 100644
+--- a/drivers/video/fbdev/s3c-fb.c
++++ b/drivers/video/fbdev/s3c-fb.c
+@@ -1411,8 +1411,7 @@ static int s3c_fb_probe(struct platform_device *pdev)
+ 
+ 	pm_runtime_enable(sfb->dev);
+ 
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	sfb->regs = devm_ioremap_resource(dev, res);
++	sfb->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(sfb->regs)) {
+ 		ret = PTR_ERR(sfb->regs);
+ 		goto err_lcd_clk;
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.7.4

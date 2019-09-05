@@ -1,68 +1,103 @@
-From: Dan Murphy <dmurphy@ti.com>
-Date: Wed, 11 Sep 2019 18:44:01 +0000
-Subject: Re: [PATCH v2 1/2] dt-bindings: backlight: lm3630a: add enable_gpios
-Message-Id: <3d8237d0-4e36-3787-6050-b0e75f2fa8c3@ti.com>
+From: Denis Efremov <efremov@linux.com>
+Date: Thu, 05 Sep 2019 19:02:13 +0000
+Subject: Re: [PATCH v2 00/10] Add definition for the number of standard PCI BARs
+Message-Id: <5d8cdc6b-f8c9-c3f1-e11d-13b3a7eb5b26@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190910212909.18095-1-andreas@kemnade.info>
- <20190910212909.18095-2-andreas@kemnade.info>
- <20190911100851.f4rnldghtmly26oo@holly.lan>
-In-Reply-To: <20190911100851.f4rnldghtmly26oo@holly.lan>
+References: <20190816092437.31846-1-efremov@linux.com>
+ <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
+In-Reply-To: <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Daniel Thompson <daniel.thompson@linaro.org>, Andreas Kemnade <andreas@kemnade.info>
-Cc: lee.jones@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Murray <andrew.murray@arm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, Jose Abreu <Jose.Abreu@synopsys.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org
 
-Andreas
 
-On 9/11/19 5:08 AM, Daniel Thompson wrote:
-> On Tue, Sep 10, 2019 at 11:29:08PM +0200, Andreas Kemnade wrote:
->> add enable-gpios to describe HWEN pin
+
+On 16.08.2019 13:51, Andrew Murray wrote:
+> On Fri, Aug 16, 2019 at 12:24:27PM +0300, Denis Efremov wrote:
+>> Code that iterates over all standard PCI BARs typically uses
+>> PCI_STD_RESOURCE_END, but this is error-prone because it requires
+>> "i <= PCI_STD_RESOURCE_END" rather than something like
+>> "i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
+>> way PCI_SRIOV_NUM_BARS is used. There is already the definition
+>> PCI_BAR_COUNT for s390 only. Thus, this patchset introduces it globally.
 >>
->> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
->
->> ---
->> changes in v2: add example
->>   .../bindings/leds/backlight/lm3630a-backlight.yaml           | 5 +++++
->>   1 file changed, 5 insertions(+)
+>> Changes in v2:
+>>   - Reverse checks in pci_iomap_range,pci_iomap_wc_range.
+>>   - Refactor loops in vfio_pci to keep PCI_STD_RESOURCES.
+>>   - Add 2 new patches to replace the magic constant with new define.
+>>   - Split net patch in v1 to separate stmmac and dwc-xlgmac patches.
 >>
->> diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-ba=
-cklight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-bac=
-klight.yaml
->> index dc129d9a329e..1fa83feffe16 100644
->> --- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight=
-.yaml
->> +++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight=
-.yaml
->> @@ -29,6 +29,10 @@ properties:
->>     '#size-cells':
->>       const: 0
->>  =20
->> +  enable-gpios:
->> +    description: GPIO to use to enable/disable the backlight (HWEN pin).
->> +    maxItems: 1
->> +
->>   required:
->>     - compatible
->>     - reg
->> @@ -92,6 +96,7 @@ examples:
->>       i2c {
->>           #address-cells =3D <1>;
->>           #size-cells =3D <0>;
->> +        enable-gpios =3D <&gpio2 5 GPIO_ACTIVE_HIGH>;
-
-This is in the wrong place.=C2=A0 This is implying that the gpio is for the=
-=20
-i2c parent
-
-This needs to go under the led-controller node below
-
-Dan
-
->>  =20
->>           led-controller@38 {
->>                   compatible =3D "ti,lm3630a";
->> --=20
->> 2.20.1
+>> Denis Efremov (10):
+>>   PCI: Add define for the number of standard PCI BARs
+>>   s390/pci: Loop using PCI_STD_NUM_BARS
+>>   x86/PCI: Loop using PCI_STD_NUM_BARS
+>>   stmmac: pci: Loop using PCI_STD_NUM_BARS
+>>   net: dwc-xlgmac: Loop using PCI_STD_NUM_BARS
+>>   rapidio/tsi721: Loop using PCI_STD_NUM_BARS
+>>   efifb: Loop using PCI_STD_NUM_BARS
+>>   vfio_pci: Loop using PCI_STD_NUM_BARS
+>>   PCI: hv: Use PCI_STD_NUM_BARS
+>>   PCI: Use PCI_STD_NUM_BARS
 >>
+>>  arch/s390/include/asm/pci.h                      |  5 +----
+>>  arch/s390/include/asm/pci_clp.h                  |  6 +++---
+>>  arch/s390/pci/pci.c                              | 16 ++++++++--------
+>>  arch/s390/pci/pci_clp.c                          |  6 +++---
+>>  arch/x86/pci/common.c                            |  2 +-
+>>  drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c |  4 ++--
+>>  drivers/net/ethernet/synopsys/dwc-xlgmac-pci.c   |  2 +-
+>>  drivers/pci/controller/pci-hyperv.c              | 10 +++++-----
+>>  drivers/pci/pci.c                                | 11 ++++++-----
+>>  drivers/pci/quirks.c                             |  4 ++--
+>>  drivers/rapidio/devices/tsi721.c                 |  2 +-
+>>  drivers/vfio/pci/vfio_pci.c                      | 11 +++++++----
+>>  drivers/vfio/pci/vfio_pci_config.c               | 10 ++++++----
+>>  drivers/vfio/pci/vfio_pci_private.h              |  4 ++--
+>>  drivers/video/fbdev/efifb.c                      |  2 +-
+>>  include/linux/pci.h                              |  2 +-
+>>  include/uapi/linux/pci_regs.h                    |  1 +
+>>  17 files changed, 51 insertions(+), 47 deletions(-)
+> 
+> I've come across a few more places where this change can be made. There
+> may be multiple instances in the same file, but only the first is shown
+> below:
+> 
+> drivers/misc/pci_endpoint_test.c:       for (bar = BAR_0; bar <= BAR_5; bar++) {
+> drivers/net/ethernet/intel/e1000/e1000_main.c:          for (i = BAR_1; i <= BAR_5; i++) {
+> drivers/net/ethernet/intel/ixgb/ixgb_main.c:    for (i = BAR_1; i <= BAR_5; i++) {
+> drivers/pci/controller/dwc/pci-dra7xx.c:        for (bar = BAR_0; bar <= BAR_5; bar++)
+> drivers/pci/controller/dwc/pci-layerscape-ep.c: for (bar = BAR_0; bar <= BAR_5; bar++)
+> drivers/pci/controller/dwc/pcie-artpec6.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
+> drivers/pci/controller/dwc/pcie-designware-plat.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
+> drivers/pci/endpoint/functions/pci-epf-test.c:  for (bar = BAR_0; bar <= BAR_5; bar++) {
+> include/linux/pci-epc.h:        u64     bar_fixed_size[BAR_5 + 1];
+> drivers/scsi/pm8001/pm8001_hwi.c:       for (bar = 0; bar < 6; bar++) {
+> drivers/scsi/pm8001/pm8001_init.c:      for (bar = 0; bar < 6; bar++) {
+> drivers/ata/sata_nv.c:  for (bar = 0; bar < 6; bar++)
+> drivers/video/fbdev/core/fbmem.c:       for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
+> drivers/staging/gasket/gasket_core.c:   for (i = 0; i < GASKET_NUM_BARS; i++) {
+> drivers/tty/serial/8250/8250_pci.c:     for (i = 0; i < PCI_NUM_BAR_RESOURCES; i++) { <-----------
+> 
+> It looks like BARs are often iterated with PCI_NUM_BAR_RESOURCES, there
+> are a load of these too found with:
+> 
+> git grep PCI_ROM_RESOURCE | grep "< "
+> 
+> I'm happy to share patches if preferred.
+> 
+
+I'm not sure about lib/devres.c
+265:#define PCIM_IOMAP_MAX      PCI_ROM_RESOURCE
+268:    void __iomem *table[PCIM_IOMAP_MAX];
+277:    for (i = 0; i < PCIM_IOMAP_MAX; i++)
+324:    BUG_ON(bar >= PCIM_IOMAP_MAX);
+352:    for (i = 0; i < PCIM_IOMAP_MAX; i++)
+455:    for (i = 0; i < PCIM_IOMAP_MAX; i++) {
+
+Is it worth changing?
+#define PCIM_IOMAP_MAX  PCI_STD_NUM_BARS
+
+Thanks,
+Denis

@@ -1,61 +1,49 @@
-From: Daniel Vetter <daniel@ffwll.ch>
-Date: Fri, 06 Sep 2019 18:36:15 +0000
-Subject: Re: [PATCH] fbdev/sa1100fb: Remove even more dead code
-Message-Id: <20190906183615.GH3958@phenom.ffwll.local>
+From: Colin King <colin.king@canonical.com>
+Date: Fri, 06 Sep 2019 18:11:14 +0000
+Subject: [PATCH] fbdev: matrox: make array wtst_xlat static const, makes object smaller
+Message-Id: <20190906181114.31414-1-colin.king@canonical.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190906151307.1127187-1-arnd@arndb.de>
-In-Reply-To: <20190906151307.1127187-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Viresh Kumar <viresh.kumar@linaro.org>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Fri, Sep 06, 2019 at 05:13:00PM +0200, Arnd Bergmann wrote:
-> This function lost its only call site as part of
-> earlier dead code removal, so remove it as well:
-> 
-> drivers/video/fbdev/sa1100fb.c:975:21: error: unused function 'sa1100fb_min_dma_period' [-Werror,-Wunused-function]
-> 
-> Fixes: 390e5de11284 ("fbdev/sa1100fb: Remove dead code")
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+From: Colin Ian King <colin.king@canonical.com>
 
-Queud for 5.5 in drm-misc-next since Bart is away from merge duties until
-end of this month.
--Daniel
-> ---
->  drivers/video/fbdev/sa1100fb.c | 13 -------------
->  1 file changed, 13 deletions(-)
-> 
-> diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
-> index ae2bcfee338a..81ad3aa1ca06 100644
-> --- a/drivers/video/fbdev/sa1100fb.c
-> +++ b/drivers/video/fbdev/sa1100fb.c
-> @@ -967,19 +967,6 @@ static void sa1100fb_task(struct work_struct *w)
->  }
->  
->  #ifdef CONFIG_CPU_FREQ
-> -/*
-> - * Calculate the minimum DMA period over all displays that we own.
-> - * This, together with the SDRAM bandwidth defines the slowest CPU
-> - * frequency that can be selected.
-> - */
-> -static unsigned int sa1100fb_min_dma_period(struct sa1100fb_info *fbi)
-> -{
-> -	/*
-> -	 * FIXME: we need to verify _all_ consoles.
-> -	 */
-> -	return sa1100fb_display_dma_period(&fbi->fb.var);
-> -}
-> -
->  /*
->   * CPU clock speed change handler.  We need to adjust the LCD timing
->   * parameters when the CPU clock is adjusted by the power management
-> -- 
-> 2.20.0
-> 
+Don't populate the array wtst_xlat on the stack but instead make it
+static const. Makes the object code smaller by 89 bytes.
 
+Before:
+   text	   data	    bss	    dec	    hex	filename
+  14347	    840	      0	  15187	   3b53	fbdev/matrox/matroxfb_misc.o
+
+After:
+   text	   data	    bss	    dec	    hex	filename
+  14162	    936	      0	  15098	   3afa	fbdev/matrox/matroxfb_misc.o
+
+(gcc version 9.2.1, amd64)
+
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/video/fbdev/matrox/matroxfb_misc.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/matrox/matroxfb_misc.c b/drivers/video/fbdev/matrox/matroxfb_misc.c
+index c7aaca12805e..feb0977c82eb 100644
+--- a/drivers/video/fbdev/matrox/matroxfb_misc.c
++++ b/drivers/video/fbdev/matrox/matroxfb_misc.c
+@@ -673,7 +673,10 @@ static int parse_pins5(struct matrox_fb_info *minfo,
+ 	if (bd->pins[115] & 4) {
+ 		minfo->values.reg.mctlwtst_core = minfo->values.reg.mctlwtst;
+ 	} else {
+-		u_int32_t wtst_xlat[] = { 0, 1, 5, 6, 7, 5, 2, 3 };
++		static const u_int32_t wtst_xlat[] = {
++			0, 1, 5, 6, 7, 5, 2, 3
++		};
++
+ 		minfo->values.reg.mctlwtst_core = (minfo->values.reg.mctlwtst & ~7) |
+ 						  wtst_xlat[minfo->values.reg.mctlwtst & 7];
+ 	}
 -- 
-Daniel Vetter
-Software Engineer, Intel Corporation
-http://blog.ffwll.ch
+2.20.1

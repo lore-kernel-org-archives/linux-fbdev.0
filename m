@@ -1,43 +1,48 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Thu, 19 Sep 2019 14:06:18 +0000
-Subject: [PATCH 3/5] backlight: pwm_bl: drop use of int_pow()
-Message-Id: <20190919140620.32407-3-linux@rasmusvillemoes.dk>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Fri, 06 Sep 2019 15:13:00 +0000
+Subject: [PATCH] fbdev/sa1100fb: Remove even more dead code
+Message-Id: <20190906151307.1127187-1-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Daniel Vetter <daniel.vetter@intel.com>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Viresh Kumar <viresh.kumar@linaro.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-The scheduler uses a (currently private) fixed_power_int() in its load
-average computation for computing powers of numbers 0 < x < 1
-expressed as fixed-point numbers, which is also what we want here. But
-that requires the scale to be a power-of-2.
+This function lost its only call site as part of
+earlier dead code removal, so remove it as well:
 
-We could (and a following patch will) change to use a power-of-2 scale,
-but for a fixed small exponent of 3, there's no advantage in using
-repeated squaring.
+drivers/video/fbdev/sa1100fb.c:975:21: error: unused function 'sa1100fb_min_dma_period' [-Werror,-Wunused-function]
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Fixes: 390e5de11284 ("fbdev/sa1100fb: Remove dead code")
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- drivers/video/backlight/pwm_bl.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/video/fbdev/sa1100fb.c | 13 -------------
+ 1 file changed, 13 deletions(-)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index 9252d51f31b9..aee6839e024a 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -179,7 +179,8 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
- 	if (lightness <= (8 * scale)) {
- 		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
- 	} else {
--		retval = int_pow((lightness + (16 * scale)) / 116, 3);
-+		retval = (lightness + (16 * scale)) / 116;
-+		retval *= retval * retval;
- 		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
- 	}
+diff --git a/drivers/video/fbdev/sa1100fb.c b/drivers/video/fbdev/sa1100fb.c
+index ae2bcfee338a..81ad3aa1ca06 100644
+--- a/drivers/video/fbdev/sa1100fb.c
++++ b/drivers/video/fbdev/sa1100fb.c
+@@ -967,19 +967,6 @@ static void sa1100fb_task(struct work_struct *w)
+ }
  
+ #ifdef CONFIG_CPU_FREQ
+-/*
+- * Calculate the minimum DMA period over all displays that we own.
+- * This, together with the SDRAM bandwidth defines the slowest CPU
+- * frequency that can be selected.
+- */
+-static unsigned int sa1100fb_min_dma_period(struct sa1100fb_info *fbi)
+-{
+-	/*
+-	 * FIXME: we need to verify _all_ consoles.
+-	 */
+-	return sa1100fb_display_dma_period(&fbi->fb.var);
+-}
+-
+ /*
+  * CPU clock speed change handler.  We need to adjust the LCD timing
+  * parameters when the CPU clock is adjusted by the power management
 -- 
-2.20.1
+2.20.0

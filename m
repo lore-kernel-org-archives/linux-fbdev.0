@@ -1,103 +1,83 @@
-From: Denis Efremov <efremov@linux.com>
-Date: Thu, 05 Sep 2019 19:02:13 +0000
-Subject: Re: [PATCH v2 00/10] Add definition for the number of standard PCI BARs
-Message-Id: <5d8cdc6b-f8c9-c3f1-e11d-13b3a7eb5b26@linux.com>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Sun, 08 Sep 2019 20:37:03 +0000
+Subject: [PATCH 1/2] backlight: lm3630a: add an enable gpio for the HWEN pin
+Message-Id: <20190908203704.30147-2-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190816092437.31846-1-efremov@linux.com>
- <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
-In-Reply-To: <20190816105128.GD14111@e119886-lin.cambridge.arm.com>
+References: <20190908203704.30147-1-andreas@kemnade.info>
+In-Reply-To: <20190908203704.30147-1-andreas@kemnade.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Murray <andrew.murray@arm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, Sebastian Ott <sebott@linux.ibm.com>, Gerald Schaefer <gerald.schaefer@de.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>, Giuseppe Cavallaro <peppe.cavallaro@st.com>, Alexandre Torgue <alexandre.torgue@st.com>, Matt Porter <mporter@kernel.crashing.org>, Alexandre Bounine <alex.bou9@gmail.com>, Peter Jones <pjones@redhat.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Cornelia Huck <cohuck@redhat.com>, Alex Williamson <alex.williamson@redhat.com>, Jose Abreu <Jose.Abreu@synopsys.com>, kvm@vger.kernel.org, linux-fbdev@vger.kernel.org, netdev@vger.kernel.org, x86@kernel.org, linux-s390@vger.kernel.org
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
+For now just enable it in the probe function to allow i2c
+access and disable it on remove. Disabling also means resetting
+the register values to default.
 
+Tested on Kobo Clara HD.
 
-On 16.08.2019 13:51, Andrew Murray wrote:
-> On Fri, Aug 16, 2019 at 12:24:27PM +0300, Denis Efremov wrote:
->> Code that iterates over all standard PCI BARs typically uses
->> PCI_STD_RESOURCE_END, but this is error-prone because it requires
->> "i <= PCI_STD_RESOURCE_END" rather than something like
->> "i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
->> way PCI_SRIOV_NUM_BARS is used. There is already the definition
->> PCI_BAR_COUNT for s390 only. Thus, this patchset introduces it globally.
->>
->> Changes in v2:
->>   - Reverse checks in pci_iomap_range,pci_iomap_wc_range.
->>   - Refactor loops in vfio_pci to keep PCI_STD_RESOURCES.
->>   - Add 2 new patches to replace the magic constant with new define.
->>   - Split net patch in v1 to separate stmmac and dwc-xlgmac patches.
->>
->> Denis Efremov (10):
->>   PCI: Add define for the number of standard PCI BARs
->>   s390/pci: Loop using PCI_STD_NUM_BARS
->>   x86/PCI: Loop using PCI_STD_NUM_BARS
->>   stmmac: pci: Loop using PCI_STD_NUM_BARS
->>   net: dwc-xlgmac: Loop using PCI_STD_NUM_BARS
->>   rapidio/tsi721: Loop using PCI_STD_NUM_BARS
->>   efifb: Loop using PCI_STD_NUM_BARS
->>   vfio_pci: Loop using PCI_STD_NUM_BARS
->>   PCI: hv: Use PCI_STD_NUM_BARS
->>   PCI: Use PCI_STD_NUM_BARS
->>
->>  arch/s390/include/asm/pci.h                      |  5 +----
->>  arch/s390/include/asm/pci_clp.h                  |  6 +++---
->>  arch/s390/pci/pci.c                              | 16 ++++++++--------
->>  arch/s390/pci/pci_clp.c                          |  6 +++---
->>  arch/x86/pci/common.c                            |  2 +-
->>  drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c |  4 ++--
->>  drivers/net/ethernet/synopsys/dwc-xlgmac-pci.c   |  2 +-
->>  drivers/pci/controller/pci-hyperv.c              | 10 +++++-----
->>  drivers/pci/pci.c                                | 11 ++++++-----
->>  drivers/pci/quirks.c                             |  4 ++--
->>  drivers/rapidio/devices/tsi721.c                 |  2 +-
->>  drivers/vfio/pci/vfio_pci.c                      | 11 +++++++----
->>  drivers/vfio/pci/vfio_pci_config.c               | 10 ++++++----
->>  drivers/vfio/pci/vfio_pci_private.h              |  4 ++--
->>  drivers/video/fbdev/efifb.c                      |  2 +-
->>  include/linux/pci.h                              |  2 +-
->>  include/uapi/linux/pci_regs.h                    |  1 +
->>  17 files changed, 51 insertions(+), 47 deletions(-)
-> 
-> I've come across a few more places where this change can be made. There
-> may be multiple instances in the same file, but only the first is shown
-> below:
-> 
-> drivers/misc/pci_endpoint_test.c:       for (bar = BAR_0; bar <= BAR_5; bar++) {
-> drivers/net/ethernet/intel/e1000/e1000_main.c:          for (i = BAR_1; i <= BAR_5; i++) {
-> drivers/net/ethernet/intel/ixgb/ixgb_main.c:    for (i = BAR_1; i <= BAR_5; i++) {
-> drivers/pci/controller/dwc/pci-dra7xx.c:        for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pci-layerscape-ep.c: for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pcie-artpec6.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/controller/dwc/pcie-designware-plat.c:      for (bar = BAR_0; bar <= BAR_5; bar++)
-> drivers/pci/endpoint/functions/pci-epf-test.c:  for (bar = BAR_0; bar <= BAR_5; bar++) {
-> include/linux/pci-epc.h:        u64     bar_fixed_size[BAR_5 + 1];
-> drivers/scsi/pm8001/pm8001_hwi.c:       for (bar = 0; bar < 6; bar++) {
-> drivers/scsi/pm8001/pm8001_init.c:      for (bar = 0; bar < 6; bar++) {
-> drivers/ata/sata_nv.c:  for (bar = 0; bar < 6; bar++)
-> drivers/video/fbdev/core/fbmem.c:       for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
-> drivers/staging/gasket/gasket_core.c:   for (i = 0; i < GASKET_NUM_BARS; i++) {
-> drivers/tty/serial/8250/8250_pci.c:     for (i = 0; i < PCI_NUM_BAR_RESOURCES; i++) { <-----------
-> 
-> It looks like BARs are often iterated with PCI_NUM_BAR_RESOURCES, there
-> are a load of these too found with:
-> 
-> git grep PCI_ROM_RESOURCE | grep "< "
-> 
-> I'm happy to share patches if preferred.
-> 
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+---
+ drivers/video/backlight/lm3630a_bl.c | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-I'm not sure about lib/devres.c
-265:#define PCIM_IOMAP_MAX      PCI_ROM_RESOURCE
-268:    void __iomem *table[PCIM_IOMAP_MAX];
-277:    for (i = 0; i < PCIM_IOMAP_MAX; i++)
-324:    BUG_ON(bar >= PCIM_IOMAP_MAX);
-352:    for (i = 0; i < PCIM_IOMAP_MAX; i++)
-455:    for (i = 0; i < PCIM_IOMAP_MAX; i++) {
-
-Is it worth changing?
-#define PCIM_IOMAP_MAX  PCI_STD_NUM_BARS
-
-Thanks,
-Denis
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index b04b35d007a2..3b45a1733198 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -12,6 +12,8 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
++#include <linux/gpio/consumer.h>
++#include <linux/gpio.h>
+ #include <linux/pwm.h>
+ #include <linux/platform_data/lm3630a_bl.h>
+ 
+@@ -48,6 +50,7 @@ struct lm3630a_chip {
+ 	struct lm3630a_platform_data *pdata;
+ 	struct backlight_device *bleda;
+ 	struct backlight_device *bledb;
++	struct gpio_desc *enable_gpio;
+ 	struct regmap *regmap;
+ 	struct pwm_device *pwmd;
+ };
+@@ -506,6 +509,14 @@ static int lm3630a_probe(struct i2c_client *client,
+ 		return -ENOMEM;
+ 	pchip->dev = &client->dev;
+ 
++	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
++						GPIOD_ASIS);
++	if (IS_ERR(pchip->enable_gpio)) {
++		rval = PTR_ERR(pchip->enable_gpio);
++		return rval;
++	}
++
++
+ 	pchip->regmap = devm_regmap_init_i2c(client, &lm3630a_regmap);
+ 	if (IS_ERR(pchip->regmap)) {
+ 		rval = PTR_ERR(pchip->regmap);
+@@ -535,6 +546,10 @@ static int lm3630a_probe(struct i2c_client *client,
+ 	}
+ 	pchip->pdata = pdata;
+ 
++	if (pchip->enable_gpio) {
++		gpiod_set_value_cansleep(pchip->enable_gpio, 1);
++		usleep_range(1000, 2000);
++	}
+ 	/* chip initialize */
+ 	rval = lm3630a_chip_init(pchip);
+ 	if (rval < 0) {
+@@ -586,6 +601,9 @@ static int lm3630a_remove(struct i2c_client *client)
+ 	if (rval < 0)
+ 		dev_err(pchip->dev, "i2c failed to access register\n");
+ 
++	if (pchip->enable_gpio)
++		gpiod_set_value_cansleep(pchip->enable_gpio, 0);
++
+ 	if (pchip->irq) {
+ 		free_irq(pchip->irq, pchip);
+ 		flush_workqueue(pchip->irqthread);
+-- 
+2.20.1

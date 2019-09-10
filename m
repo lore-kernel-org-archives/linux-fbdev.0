@@ -1,129 +1,76 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Tue, 10 Sep 2019 10:21:56 +0000
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Tue, 10 Sep 2019 19:06:48 +0000
 Subject: Re: [PATCH 1/2] backlight: lm3630a: add an enable gpio for the HWEN pin
-Message-Id: <20190910102156.vmprsjebmlphkv34@holly.lan>
+Message-Id: <20190910210648.3594912d@kemnade.info>
+MIME-Version: 1
+Content-Type: multipart/mixed; boundary="Sig_/d51yUFk84RybqHzz4cluJyL"
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190908203704.30147-1-andreas@kemnade.info>
- <20190908203704.30147-2-andreas@kemnade.info>
- <20190909105729.w5552rtop7rhghy2@holly.lan>
- <20190909221349.46ca5a1f@aktux>
-In-Reply-To: <20190909221349.46ca5a1f@aktux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andreas Kemnade <andreas@kemnade.info>
+        <20190908203704.30147-2-andreas@kemnade.info>
+        <20190909105729.w5552rtop7rhghy2@holly.lan>
+        <20190909221349.46ca5a1f@aktux>
+        <20190910102156.vmprsjebmlphkv34@holly.lan>
+In-Reply-To: <20190910102156.vmprsjebmlphkv34@holly.lan>
+To: Daniel Thompson <daniel.thompson@linaro.org>
 Cc: lee.jones@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
 
-On Mon, Sep 09, 2019 at 10:13:49PM +0200, Andreas Kemnade wrote:
-> On Mon, 9 Sep 2019 11:57:29 +0100
-> Daniel Thompson <daniel.thompson@linaro.org> wrote:
-> 
-> > On Sun, Sep 08, 2019 at 10:37:03PM +0200, Andreas Kemnade wrote:
-> > > For now just enable it in the probe function to allow i2c
-> > > access and disable it on remove. Disabling also means resetting
-> > > the register values to default.
-> > > 
-> > > Tested on Kobo Clara HD.
-> > > 
-> > > Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> > > ---
-> > >  drivers/video/backlight/lm3630a_bl.c | 18 ++++++++++++++++++
-> > >  1 file changed, 18 insertions(+)
-> > > 
-> > > diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
-> > > index b04b35d007a2..3b45a1733198 100644
-> > > --- a/drivers/video/backlight/lm3630a_bl.c
-> > > +++ b/drivers/video/backlight/lm3630a_bl.c
-> > > @@ -12,6 +12,8 @@
-> > >  #include <linux/uaccess.h>
-> > >  #include <linux/interrupt.h>
-> > >  #include <linux/regmap.h>
-> > > +#include <linux/gpio/consumer.h>
-> > > +#include <linux/gpio.h>
-> > >  #include <linux/pwm.h>
-> > >  #include <linux/platform_data/lm3630a_bl.h>
-> > >  
-> > > @@ -48,6 +50,7 @@ struct lm3630a_chip {
-> > >  	struct lm3630a_platform_data *pdata;
-> > >  	struct backlight_device *bleda;
-> > >  	struct backlight_device *bledb;
-> > > +	struct gpio_desc *enable_gpio;
-> > >  	struct regmap *regmap;
-> > >  	struct pwm_device *pwmd;
-> > >  };
-> > > @@ -506,6 +509,14 @@ static int lm3630a_probe(struct i2c_client *client,
-> > >  		return -ENOMEM;
-> > >  	pchip->dev = &client->dev;
-> > >  
-> > > +	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
-> > > +						GPIOD_ASIS);  
-> > 
-> > Initializing GPIOD_ASIS doesn't look right to me.
-> > 
-> > If you initialize ASIS then the driver must configure the pin as an
-> > output... far easier just to set GPIOD_OUT_HIGH during the get.
-> > 
-> > Note also that the call to this function should also be moved *below*
-> > the calls parse the DT.
-> > 
-> oops, must have forgotten that, and had good luck here.
-> > 
-> > > +	if (IS_ERR(pchip->enable_gpio)) {
-> > > +		rval = PTR_ERR(pchip->enable_gpio);
-> > > +		return rval;
-> > > +	}
-> > > +
-> > > +
-> > >  	pchip->regmap = devm_regmap_init_i2c(client, &lm3630a_regmap);
-> > >  	if (IS_ERR(pchip->regmap)) {
-> > >  		rval = PTR_ERR(pchip->regmap);
-> > > @@ -535,6 +546,10 @@ static int lm3630a_probe(struct i2c_client *client,
-> > >  	}
-> > >  	pchip->pdata = pdata;
-> > >  
-> > > +	if (pchip->enable_gpio) {
-> > > +		gpiod_set_value_cansleep(pchip->enable_gpio, 1);  
-> > 
-> > Not needed, use GPIOD_OUT_HIGH instead.
-> > 
-> > 
-> > > +		usleep_range(1000, 2000);  
-> > 
-> > Not needed, this sleep is already part of lm3630a_chip_init().
-> > 
-> you are right.
-> > 
-> > > +	}
-> > >  	/* chip initialize */
-> > >  	rval = lm3630a_chip_init(pchip);
-> > >  	if (rval < 0) {
-> > > @@ -586,6 +601,9 @@ static int lm3630a_remove(struct i2c_client *client)
-> > >  	if (rval < 0)
-> > >  		dev_err(pchip->dev, "i2c failed to access register\n");
-> > >  
-> > > +	if (pchip->enable_gpio)
-> > > +		gpiod_set_value_cansleep(pchip->enable_gpio, 0);
-> > > +  
-> > 
-> > Is this needed?
-> > 
-> > This is a remove path, not a power management path, and we have no idea
-> > what the original status of the pin was anyway?
-> > 
-> 
-> Looking at Ishdn on page 5 of the datasheet, switching it off everytime
-> possible seems not needed. We would need to call chip_init() everytime
-> we enable the gpio or live with default values.
-> Therefore I did decide to not put it into any power management path.
-> But switching it on and not switching it off feels so unbalanced. 
+--Sig_/d51yUFk84RybqHzz4cluJyL
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Either the power consumed by the controller when strings aren't lit up
-matters, in which case the driver should implement proper power
-management or it doesn't matter and changing the pin state isn't needed.
+On Tue, 10 Sep 2019 11:21:56 +0100
+Daniel Thompson <daniel.thompson@linaro.org> wrote:
 
-I'm happy with either of the above but this looks like a third way,
-where eager users could hack in a bit of extra power management by
-forcing drivers to unbind. 
+[...]
+> > > Is this needed?
+> > >=20
+> > > This is a remove path, not a power management path, and we have no id=
+ea
+> > > what the original status of the pin was anyway?
+> > >  =20
+> >=20
+> > Looking at Ishdn on page 5 of the datasheet, switching it off everytime
+> > possible seems not needed. We would need to call chip_init() everytime
+> > we enable the gpio or live with default values.
+> > Therefore I did decide to not put it into any power management path.
+> > But switching it on and not switching it off feels so unbalanced.  =20
+>=20
+> Either the power consumed by the controller when strings aren't lit up
+> matters, in which case the driver should implement proper power
+> management or it doesn't matter and changing the pin state isn't needed.
+>=20
+> I'm happy with either of the above but this looks like a third way,
+> where eager users could hack in a bit of extra power management by
+> forcing drivers to unbind.=20
+>=20
+I think I will take the simple way. I am quite sure that the power
+consumption with HWEN on and leds off does not matter. If someone
+later comes up and finds out that I misread the datasheet, things
+are prepared to be improved.
+At least the hardware can be properly described in the devicetree.
 
+Regards,
+Andreas
 
-Daniel.
+--Sig_/d51yUFk84RybqHzz4cluJyL
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCAAdFiEEPIWxmAFyOaBcwCpFl4jFM1s/ye8FAl139EoACgkQl4jFM1s/
+ye+ZZA//WKkB+xioM4V6ShKpqapJ3LzkVD0RhoEhoiY/5NgLwkF1m/w/6Z0LmHB/
+8nvWJXJpxmTtIUzFqn265zYZWJwsYCV5EmlEHKy/Bv/XKENCeqGubixw4POqkbgw
+APKbSabSXoGtlhuhQjFXOc6FbBBB5ynt6f7nliuY9xYbN+rUTBWEgRrdJ4ktdQn8
+4sGtQv7jy41ogrZho1aUgpe7HAfuixlEUJlW9v2/i3a2n25uWCKMAt49nTns0xXv
+r4psgXQZs9pommPsaR799afcnFnWoHP7qW7kKsm9rSI5tq4hvJjEwbYCagpA9Rf8
+fXOn2PIGMAg0L2Grxmggp6HC5qaKMnntUBiIj26yljvce0F8bH4xyb5rRTrOEasP
+PSR1Y/FxzC6AyD8ZbeEIZEjqRcpz7Y5+c5cnrgROBpfxHv3rjOXYR9bZkkKQ7unV
+HnHdPFHESb/p0jvj2cOFyoUFQkeTtbpIfeCoX11T2rPBmIq1RJUD6UsLTe2DRlC6
+ex4vqW3RvQqTv5XIcUezPHUMVvmlUMyrx0XQyAVUGcnGYwxVBSLm1hMElaivuAM8
+gzbfNAwuTgl1xNseaGH7nu/UoUAKk4vEYEncT4YHWLoFJ9HjlyKmZNuM/4j1z+sd
+R2t/co/S1lpJCYvEOChmcwtxSa8pVn14iysG+32Pk++AX7CoqCM=
+=SLZS
+-----END PGP SIGNATURE-----
+
+--Sig_/d51yUFk84RybqHzz4cluJyL--

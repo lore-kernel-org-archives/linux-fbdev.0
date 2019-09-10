@@ -1,77 +1,66 @@
-From: Dan Murphy <dmurphy@ti.com>
-Date: Thu, 12 Sep 2019 15:03:12 +0000
-Subject: Re: [PATCH v3 1/2] dt-bindings: backlight: lm3630a: add enable_gpios
-Message-Id: <5c8d25ab-e780-4e60-9723-cd65553f4db3@ti.com>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Tue, 10 Sep 2019 21:29:09 +0000
+Subject: [PATCH v2 2/2] backlight: lm3630a: add an enable gpio for the HWEN pin
+Message-Id: <20190910212909.18095-3-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190911172106.12843-1-andreas@kemnade.info>
- <20190911172106.12843-2-andreas@kemnade.info>
- <ff410d6c-e1e8-7c96-e8f7-0a0deb816f6a@ti.com>
- <20190912165808.3c38b7a2@kemnade.info>
-In-Reply-To: <20190912165808.3c38b7a2@kemnade.info>
+References: <20190910212909.18095-1-andreas@kemnade.info>
+In-Reply-To: <20190910212909.18095-1-andreas@kemnade.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Andreas Kemnade <andreas@kemnade.info>
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
-Andreas
+For now just enable it in the probe function to allow i2c
+access. Disabling also means resetting the register values
+to default and according to the datasheet does not give
+power savings
 
-On 9/12/19 9:58 AM, Andreas Kemnade wrote:
-> On Thu, 12 Sep 2019 06:39:50 -0500
-> Dan Murphy <dmurphy@ti.com> wrote:
->
->> Andreas
->>
->> On 9/11/19 12:21 PM, Andreas Kemnade wrote:
->>> add enable-gpios to describe HWEN pin
->>>
->>> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
->>> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
->>> ---
->>> changes in v2: added example
->>> changes in v3: added Acked-by
->>>    .../bindings/leds/backlight/lm3630a-backlight.yaml           | 5 +++=
-++
->>>    1 file changed, 5 insertions(+)
->>>
->>> diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-b=
-acklight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-ba=
-cklight.yaml
->>> index dc129d9a329e..1fa83feffe16 100644
->>> --- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backligh=
-t.yaml
->>> +++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backligh=
-t.yaml
->>> @@ -29,6 +29,10 @@ properties:
->>>      '#size-cells':
->>>        const: 0
->>>   =20
->>> +  enable-gpios:
->>> +    description: GPIO to use to enable/disable the backlight (HWEN pin=
-).
->>> +    maxItems: 1
->>> +
->>>    required:
->>>      - compatible
->>>      - reg
->>> @@ -92,6 +96,7 @@ examples:
->>>        i2c {
->>>            #address-cells =3D <1>;
->>>            #size-cells =3D <0>;
->>> +        enable-gpios =3D <&gpio2 5 GPIO_ACTIVE_HIGH>;
->>>   =20
->>>            led-controller@38 {
->>>                    compatible =3D "ti,lm3630a";
->> Looks good to me
->>
-> well, the enable-gpios is still at the same place as in v2. This was sent
-> before your comments to v2 have been arrived.
+Tested on Kobo Clara HD.
 
-Ah I overlooked that.=A0 Yeah that still needs to move I assumed you moved =
-it.
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+---
+changes in v2:
+- simplification
+- correct gpio direction initialisation
 
-Dan
+ drivers/video/backlight/lm3630a_bl.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-
-> Regards,
-> Andreas
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 8f84f3684f04..9d0639d4202d 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -12,6 +12,8 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
++#include <linux/gpio/consumer.h>
++#include <linux/gpio.h>
+ #include <linux/pwm.h>
+ #include <linux/platform_data/lm3630a_bl.h>
+ 
+@@ -48,6 +50,7 @@ struct lm3630a_chip {
+ 	struct lm3630a_platform_data *pdata;
+ 	struct backlight_device *bleda;
+ 	struct backlight_device *bledb;
++	struct gpio_desc *enable_gpio;
+ 	struct regmap *regmap;
+ 	struct pwm_device *pwmd;
+ };
+@@ -535,6 +538,13 @@ static int lm3630a_probe(struct i2c_client *client,
+ 	}
+ 	pchip->pdata = pdata;
+ 
++	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
++						GPIOD_OUT_HIGH);
++	if (IS_ERR(pchip->enable_gpio)) {
++		rval = PTR_ERR(pchip->enable_gpio);
++		return rval;
++	}
++
+ 	/* chip initialize */
+ 	rval = lm3630a_chip_init(pchip);
+ 	if (rval < 0) {
+-- 
+2.20.1

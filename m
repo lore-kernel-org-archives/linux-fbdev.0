@@ -1,46 +1,48 @@
-From: joe akaba <barrimurphy1965@gmail.com>
-Date: Thu, 12 Sep 2019 14:16:38 +0000
-Subject: hello
-Message-Id: <CAGZA+7oiYa-zOGePcqwdX=RGx+EwS89drq28Oh85tW7UiFeM1g@mail.gmail.com>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Wed, 11 Sep 2019 17:21:05 +0000
+Subject: [PATCH v3 1/2] dt-bindings: backlight: lm3630a: add enable_gpios
+Message-Id: <20190911172106.12843-2-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
-In-Reply-To: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
+References: <20190911172106.12843-1-andreas@kemnade.info>
+In-Reply-To: <20190911172106.12843-1-andreas@kemnade.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
-Hallo
+add enable-gpios to describe HWEN pin
 
-Mein Name ist Joe Akaba. Ich bin von Beruf Rechtsanwalt. Ich möchte
-Ihnen anbieten
-die nächsten Verwandten zu meinem Klienten. Sie erben die Summe von
-(8,5 Millionen US-Dollar)
-Dollar, die mein Kunde vor seinem Tod in der Bank gelassen hat.
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+changes in v2: added example
+changes in v3: added Acked-by
+ .../bindings/leds/backlight/lm3630a-backlight.yaml           | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-Mein Mandant ist ein Staatsbürger Ihres Landes, der mit seiner Frau
-bei einem Autounfall ums Leben gekommen ist
-und nur Sohn. Ich werde mit 50% des Gesamtfonds berechtigt sein, während 50%
-sein für dich.
-Bitte kontaktieren Sie meine private E-Mail hier für weitere
-Informationen: joeakaba00@gmail.com
-
-Vielen Dank im Voraus,
-Mr.Joe Akaba
-
-
-
-
-Hello
-
-My name is Joe Akaba I am a lawyer by profession. I wish to offer you
-the next of kin to my client. You will inherit the sum of ($8.5 Million)
-dollars my client left in the bank before his death.
-
-My client is a citizen of your country who died in auto crash with his wife
-and only son. I will be entitled with 50% of the total fund while 50% will
-be for you.
-Please contact my private email here for more details:joeakaba00@gmail.com
-
-Many thanks in advance,
-Mr.Joe Akaba
+diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+index dc129d9a329e..1fa83feffe16 100644
+--- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
++++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+@@ -29,6 +29,10 @@ properties:
+   '#size-cells':
+     const: 0
+ 
++  enable-gpios:
++    description: GPIO to use to enable/disable the backlight (HWEN pin).
++    maxItems: 1
++
+ required:
+   - compatible
+   - reg
+@@ -92,6 +96,7 @@ examples:
+     i2c {
+         #address-cells = <1>;
+         #size-cells = <0>;
++        enable-gpios = <&gpio2 5 GPIO_ACTIVE_HIGH>;
+ 
+         led-controller@38 {
+                 compatible = "ti,lm3630a";
+-- 
+2.20.1

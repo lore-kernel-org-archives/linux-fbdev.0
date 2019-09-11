@@ -1,83 +1,68 @@
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Date: Thu, 19 Sep 2019 14:06:19 +0000
-Subject: [PATCH 4/5] backlight: pwm_bl: switch to power-of-2 base for fixed-point math
-Message-Id: <20190919140620.32407-4-linux@rasmusvillemoes.dk>
+From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Date: Wed, 11 Sep 2019 05:58:26 +0000
+Subject: [PATCH] video: fbdev: fsl-diu-fb: mark expected switch fall-throughs
+Message-Id: <20190911113604.GA31512@embeddedor>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Timur Tabi <timur@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
 
-Using a power-of-2 instead of power-of-10 base makes the computations
-much cheaper. 2^16 is safe; retval never becomes more than 2^48 +
-2^16/2. On a 32 bit platform, the very expensive 64/32 division at the
-end of cie1931() instead becomes essentially free (a shift by 32 is
-just a register rename).
+Mark switch cases where we are expecting to fall through.
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Fix the following warnings (Building: mpc512x_defconfig powerpc):
+
+drivers/video/fbdev/fsl-diu-fb.c: In function ‘fsl_diu_ioctl’:
+./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/video/fbdev/fsl-diu-fb.c:1287:3: note: in expansion of macro ‘dev_warn’
+   dev_warn(info->dev,
+   ^~~~~~~~
+drivers/video/fbdev/fsl-diu-fb.c:1290:2: note: here
+  case MFB_SET_PIXFMT:
+  ^~~~
+In file included from ./include/linux/acpi.h:15:0,
+                 from ./include/linux/i2c.h:13,
+                 from ./include/uapi/linux/fb.h:6,
+                 from ./include/linux/fb.h:6,
+                 from drivers/video/fbdev/fsl-diu-fb.c:20:
+./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
+  _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
+  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+drivers/video/fbdev/fsl-diu-fb.c:1296:3: note: in expansion of macro ‘dev_warn’
+   dev_warn(info->dev,
+   ^~~~~~~~
+drivers/video/fbdev/fsl-diu-fb.c:1299:2: note: here
+  case MFB_GET_PIXFMT:
+  ^~~~
+
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/video/backlight/pwm_bl.c | 22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
+ drivers/video/fbdev/fsl-diu-fb.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-index aee6839e024a..102bc191310f 100644
---- a/drivers/video/backlight/pwm_bl.c
-+++ b/drivers/video/backlight/pwm_bl.c
-@@ -148,7 +148,8 @@ static const struct backlight_ops pwm_backlight_ops = {
- };
- 
- #ifdef CONFIG_OF
--#define PWM_LUMINANCE_SCALE	10000 /* luminance scale */
-+#define PWM_LUMINANCE_SHIFT	16
-+#define PWM_LUMINANCE_SCALE	(1 << PWM_LUMINANCE_SHIFT) /* luminance scale */
- 
- /*
-  * CIE lightness to PWM conversion.
-@@ -165,23 +166,25 @@ static const struct backlight_ops pwm_backlight_ops = {
-  * The following function does the fixed point maths needed to implement the
-  * above formula.
-  */
--static u64 cie1931(unsigned int lightness, unsigned int scale)
-+static u64 cie1931(unsigned int lightness)
- {
- 	u64 retval;
- 
- 	/*
- 	 * @lightness is given as a number between 0 and 1, expressed
--	 * as a fixed-point number in scale @scale. Convert to a
--	 * percentage, still expressed as a fixed-point number, so the
--	 * above formulas can be applied.
-+	 * as a fixed-point number in scale
-+	 * PWM_LUMINANCE_SCALE. Convert to a percentage, still
-+	 * expressed as a fixed-point number, so the above formulas
-+	 * can be applied.
- 	 */
- 	lightness *= 100;
--	if (lightness <= (8 * scale)) {
-+	if (lightness <= (8 * PWM_LUMINANCE_SCALE)) {
- 		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
- 	} else {
--		retval = (lightness + (16 * scale)) / 116;
-+		retval = (lightness + (16 * PWM_LUMINANCE_SCALE)) / 116;
- 		retval *= retval * retval;
--		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
-+		retval += PWM_LUMINANCE_SCALE/2;
-+		retval >>= 2*PWM_LUMINANCE_SHIFT;
- 	}
- 
- 	return retval;
-@@ -215,8 +218,7 @@ int pwm_backlight_brightness_default(struct device *dev,
- 	/* Fill the table using the cie1931 algorithm */
- 	for (i = 0; i < data->max_brightness; i++) {
- 		retval = cie1931((i * PWM_LUMINANCE_SCALE) /
--				 data->max_brightness, PWM_LUMINANCE_SCALE) *
--				 period;
-+				 data->max_brightness) * period;
- 		retval = DIV_ROUND_CLOSEST_ULL(retval, PWM_LUMINANCE_SCALE);
- 		if (retval > UINT_MAX)
- 			return -EINVAL;
+diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
+index d19f58263b4e..3e410b9eb272 100644
+--- a/drivers/video/fbdev/fsl-diu-fb.c
++++ b/drivers/video/fbdev/fsl-diu-fb.c
+@@ -1287,6 +1287,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 		dev_warn(info->dev,
+ 			 "MFB_SET_PIXFMT value of 0x%08x is deprecated.\n",
+ 			 MFB_SET_PIXFMT_OLD);
++		/* fall through */
+ 	case MFB_SET_PIXFMT:
+ 		if (copy_from_user(&pix_fmt, buf, sizeof(pix_fmt)))
+ 			return -EFAULT;
+@@ -1296,6 +1297,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
+ 		dev_warn(info->dev,
+ 			 "MFB_GET_PIXFMT value of 0x%08x is deprecated.\n",
+ 			 MFB_GET_PIXFMT_OLD);
++		/* fall through */
+ 	case MFB_GET_PIXFMT:
+ 		pix_fmt = ad->pix_fmt;
+ 		if (copy_to_user(buf, &pix_fmt, sizeof(pix_fmt)))
 -- 
-2.20.1
+2.23.0

@@ -1,74 +1,68 @@
-From: Dexuan Cui <decui@microsoft.com>
-Date: Mon, 16 Sep 2019 21:48:51 +0000
-Subject: RE: [PATCH v4] video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V host
-Message-Id: <PU1P153MB016944F69C36D4199C12F117BF8C0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Wed, 11 Sep 2019 17:21:06 +0000
+Subject: [PATCH v3 2/2] backlight: lm3630a: add an enable gpio for the HWEN pin
+Message-Id: <20190911172106.12843-3-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190905091120.16761-1-weh@microsoft.com>
- <DM5PR21MB0137D40DF705CDB372497266D7BB0@DM5PR21MB0137.namprd21.prod.outlook.com>
- <PU1P153MB0169656B3EC48BFCF4D8C134BFB30@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
- <PU1P153MB0169E5FA3D359C6BDD50EC34BF8C0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
-In-Reply-To: <PU1P153MB0169E5FA3D359C6BDD50EC34BF8C0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+References: <20190911172106.12843-1-andreas@kemnade.info>
+In-Reply-To: <20190911172106.12843-1-andreas@kemnade.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Kelley <mikelley@microsoft.com>, Wei Hu <weh@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, Haiyang Zhang <haiyangz@microsoft.com>, KY Srinivasan <kys@microsoft.com>
-Cc: Iouri Tarassov <iourit@microsoft.com>
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, "H. Nikolaus Schaller" <hns@goldelico.com>
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
-PiBGcm9tOiBEZXh1YW4gQ3VpDQo+IFNlbnQ6IE1vbmRheSwgU2VwdGVtYmVyIDE2LCAyMDE5IDI6
-NDYgUE0NCj4gVG86IE1pY2hhZWwgS2VsbGV5IDxtaWtlbGxleUBtaWNyb3NvZnQuY29tPjsgV2Vp
-IEh1IDx3ZWhAbWljcm9zb2Z0LmNvbT47DQo+IGIuem9sbmllcmtpZUBzYW1zdW5nLmNvbTsgbGlu
-dXgtaHlwZXJ2QHZnZXIua2VybmVsLm9yZzsNCj4gZHJpLWRldmVsQGxpc3RzLmZyZWVkZXNrdG9w
-Lm9yZzsgbGludXgtZmJkZXZAdmdlci5rZXJuZWwub3JnOw0KPiBsaW51eC1rZXJuZWxAdmdlci5r
-ZXJuZWwub3JnOyBTdGVwaGVuIEhlbW1pbmdlcg0KPiA8c3RoZW1taW5AbWljcm9zb2Z0LmNvbT47
-IHNhc2hhbEBrZXJuZWwub3JnOyBIYWl5YW5nIFpoYW5nDQo+IDxoYWl5YW5nekBtaWNyb3NvZnQu
-Y29tPjsgS1kgU3Jpbml2YXNhbiA8a3lzQG1pY3Jvc29mdC5jb20+DQo+IENjOiBJb3VyaSBUYXJh
-c3NvdiA8aW91cml0QG1pY3Jvc29mdC5jb20+DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggdjRdIHZp
-ZGVvOiBoeXBlcnY6IGh5cGVydl9mYjogT2J0YWluIHNjcmVlbiByZXNvbHV0aW9uDQo+IGZyb20g
-SHlwZXItViBob3N0DQo+IA0KPiA+IEZyb206IGxpbnV4LWh5cGVydi1vd25lckB2Z2VyLmtlcm5l
-bC5vcmcNCj4gPiA8bGludXgtaHlwZXJ2LW93bmVyQHZnZXIua2VybmVsLm9yZz4gT24gQmVoYWxm
-IE9mIERleHVhbiBDdWkNCj4gPiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEyLCAyMDE5IDEx
-OjM5IFBNDQo+ID4gVG86IE1pY2hhZWwgS2VsbGV5IDxtaWtlbGxleUBtaWNyb3NvZnQuY29tPjsg
-V2VpIEh1DQo+IDx3ZWhAbWljcm9zb2Z0LmNvbT47DQo+ID4gYi56b2xuaWVya2llQHNhbXN1bmcu
-Y29tOyBsaW51eC1oeXBlcnZAdmdlci5rZXJuZWwub3JnOw0KPiA+IGRyaS1kZXZlbEBsaXN0cy5m
-cmVlZGVza3RvcC5vcmc7IGxpbnV4LWZiZGV2QHZnZXIua2VybmVsLm9yZzsNCj4gPiBsaW51eC1r
-ZXJuZWxAdmdlci5rZXJuZWwub3JnOyBTdGVwaGVuIEhlbW1pbmdlcg0KPiA+IDxzdGhlbW1pbkBt
-aWNyb3NvZnQuY29tPjsgc2FzaGFsQGtlcm5lbC5vcmc7IEhhaXlhbmcgWmhhbmcNCj4gPiA8aGFp
-eWFuZ3pAbWljcm9zb2Z0LmNvbT47IEtZIFNyaW5pdmFzYW4gPGt5c0BtaWNyb3NvZnQuY29tPg0K
-PiA+IENjOiBJb3VyaSBUYXJhc3NvdiA8aW91cml0QG1pY3Jvc29mdC5jb20+DQo+ID4gU3ViamVj
-dDogUkU6IFtQQVRDSCB2NF0gdmlkZW86IGh5cGVydjogaHlwZXJ2X2ZiOiBPYnRhaW4gc2NyZWVu
-IHJlc29sdXRpb24NCj4gPiBmcm9tIEh5cGVyLVYgaG9zdA0KPiA+DQo+ID4gPiBGcm9tOiBNaWNo
-YWVsIEtlbGxleSA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT4NCj4gPiA+IFNlbnQ6IFRodXJzZGF5
-LCBTZXB0ZW1iZXIgNSwgMjAxOSA3OjA2IEFNDQo+ID4gPg0KPiA+ID4gRnJvbTogV2VpIEh1IDx3
-ZWhAbWljcm9zb2Z0LmNvbT4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciA1LCAyMDE5DQo+ID4g
-MjoxMg0KPiA+ID4gQU0NCj4gPiA+ID4NCj4gPiA+ID4gQmVnaW5uaW5nIGZyb20gV2luZG93cyAx
-MCBSUzUrLCBWTSBzY3JlZW4gcmVzb2x1dGlvbiBpcyBvYnRhaW5lZCBmcm9tDQo+ID4gPiBob3N0
-Lg0KPiA+ID4gPiBUaGUgInZpZGVvPWh5cGVydl9mYiIgYm9vdCB0aW1lIG9wdGlvbiBpcyBub3Qg
-bmVlZGVkLCBidXQgc3RpbGwgY2FuIGJlDQo+ID4gPiA+IHVzZWQgdG8gb3ZlcndyaXRlIHdoYXQg
-dGhlIGhvc3Qgc3BlY2lmaWVzLiBUaGUgVk0gcmVzb2x1dGlvbiBvbiB0aGUgaG9zdA0KPiA+ID4g
-PiBjb3VsZCBiZSBzZXQgYnkgZXhlY3V0aW5nIHRoZSBwb3dlcnNoZWxsICJzZXQtdm12aWRlbyIg
-Y29tbWFuZC4NCj4gPiA+ID4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogSW91cmkgVGFyYXNzb3Yg
-PGlvdXJpdEBtaWNyb3NvZnQuY29tPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBXZWkgSHUgPHdl
-aEBtaWNyb3NvZnQuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gICAgIHYyOg0KPiA+ID4gPiAg
-ICAgLSBJbXBsZW1lbnRlZCBmYWxsYmFjayB3aGVuIHZlcnNpb24gbmVnb3RpYXRpb24gZmFpbGVk
-Lg0KPiA+ID4gPiAgICAgLSBEZWZpbmVkIGZ1bGwgc2l6ZSBmb3Igc3VwcG9ydGVkX3Jlc29sdXRp
-b24gYXJyYXkuDQo+ID4gPiA+DQo+ID4gPiA+ICAgICB2MzoNCj4gPiA+ID4gICAgIC0gQ29ycmVj
-dGVkIHRoZSBzeW50aHZpZCBtYWpvciBhbmQgbWlub3IgdmVyc2lvbiBjb21wYXJpc29uDQo+ID4g
-cHJvYmxlbS4NCj4gPiA+ID4NCj4gPiA+ID4gICAgIHY0Og0KPiA+ID4gPiAgICAgLSBDaGFuZ2Vk
-IGZ1bmN0aW9uIG5hbWUgdG8gc3ludGh2aWRfdmVyX2dlKCkuDQo+ID4gPiA+DQo+ID4gPiA+ICBk
-cml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jIHwgMTU5DQo+ID4gPiArKysrKysrKysrKysr
-KysrKysrKysrKysrKysrKy0tLQ0KPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDE0NyBpbnNlcnRp
-b25zKCspLCAxMiBkZWxldGlvbnMoLSkNCj4gPiA+ID4NCj4gPiA+DQo+ID4gPiBSZXZpZXdlZC1i
-eTogTWljaGFlbCBLZWxsZXkgPG1pa2VsbGV5QG1pY3Jvc29mdC5jb20+DQo+ID4NCj4gPiBMb29r
-cyBnb29kIHRvIG1lLg0KPiA+DQo+ID4gUmV2aWV3ZWQtYnk6IERleHVhbiBDdWkgPGRlY3VpQG1p
-Y3Jvc29mdC5jb20+DQo+IA0KPiBIaSBXZWksDQo+IEl0IHR1cm5zIG91dCB3ZSBuZWVkIHRvIG1h
-a2UgYSBmdXJ0aGVyIGZpeC4gOi0pDQo+IA0KPiBUaGUgcGF0Y2ggZm9yZ2V0cyB0byB0YWtlIHBh
-ci0+dXBkYXRlIGludG8gY29uc2lkZXJhdGlvbi4NCj4gDQo+IFdoZW4gdGhlIFZNIENvbm5lY3Rp
-b24gd2luZG93IGlzIGNsb3NlZCAob3IgbWluaW1pemVkPyksDQo+IHRoZSBob3N0IHNlbmRzIGEg
-bWVzc2FnZSB0byB0aGUgZ3Vlc3QsIGFuZCB0aGUgZ3Vlc3Qgc2V0cw0KPiBwYXItPnVwZGF0ZSB0
-byBmYWxzZSBpbiBzeW50aHZpZF9yZWN2X3N1YigpLg0KPiANCj4gSWYgcGFyLT51cGRhdGUgaXMg
-ZmFsc2UsIHRoZSBndWVzdCBkb2Vzbid0IG5lZWQgdG8gY2FsbA0KPiBzeW50aHZpZF91cGRhdGUo
-KS4NCj4gDQo+IFRoYW5rcywNCj4gLS0gRGV4dWFuDQoNClBsZWFzZSBpZ25vcmUgdGhlIGxhc3Qg
-cmVwbHkgZnJvbSBtZS4gDQoNCkl0IHdhcyBtZWFudCB0byByZXBseSBhbm90aGVyIG1haWw6DQpS
-RTogW1BBVENIIHY1XSB2aWRlbzogaHlwZXJ2OiBoeXBlcnZfZmI6IFN1cHBvcnQgZGVmZXJyZWQg
-SU8gZm9yIEh5cGVyLVYgZnJhbWUgYnVmZmVyIGRyaXZlcg0KDQpTb3JyeSBmb3IgdGhlIGNvbmZ1
-c2lvbi4NCg0KVGhhbmtzLA0KLS0gRGV4dWFuDQo
+For now just enable it in the probe function to allow i2c
+access. Disabling also means resetting the register values
+to default and according to the datasheet does not give
+power savings.
+
+Tested on Kobo Clara HD.
+
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+---
+changes in v2:
+- simplification
+- correct gpio direction initialisation
+
+changes in v3:
+- removed legacy include
+
+ drivers/video/backlight/lm3630a_bl.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 8f84f3684f04..d9e67b9b2571 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -12,6 +12,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/pwm.h>
+ #include <linux/platform_data/lm3630a_bl.h>
+ 
+@@ -48,6 +49,7 @@ struct lm3630a_chip {
+ 	struct lm3630a_platform_data *pdata;
+ 	struct backlight_device *bleda;
+ 	struct backlight_device *bledb;
++	struct gpio_desc *enable_gpio;
+ 	struct regmap *regmap;
+ 	struct pwm_device *pwmd;
+ };
+@@ -535,6 +537,13 @@ static int lm3630a_probe(struct i2c_client *client,
+ 	}
+ 	pchip->pdata = pdata;
+ 
++	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
++						GPIOD_OUT_HIGH);
++	if (IS_ERR(pchip->enable_gpio)) {
++		rval = PTR_ERR(pchip->enable_gpio);
++		return rval;
++	}
++
+ 	/* chip initialize */
+ 	rval = lm3630a_chip_init(pchip);
+ 	if (rval < 0) {
+-- 
+2.20.1

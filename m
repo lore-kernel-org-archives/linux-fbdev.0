@@ -1,46 +1,21 @@
-From: Souptick Joarder <jrdr.linux@gmail.com>
-Date: Mon, 02 Sep 2019 12:43:16 +0000
-Subject: [PATCH] video/fbdev/68328fb: Remove dead code
-Message-Id: <1567428544-8620-1-git-send-email-jrdr.linux@gmail.com>
+From: Julian Smith <juliansmith2015@mail.ru>
+Date: Wed, 11 Sep 2019 12:07:51 +0000
+Subject: Inquiry 11/Sept/2019
+Message-Id: <20190911121020.2DA65E62C8@mail.qeaudio.ga>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com
-Cc: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, sabyasachi.linux@gmail.com, Souptick Joarder <jrdr.linux@gmail.com>
+To: linux-fbdev@vger.kernel.org
 
-This is dead code since 3.15. If their is no plan to
-use it further, these can be removed forever.
+Hi,friend,
 
-Signed-off-by: Souptick Joarder <jrdr.linux@gmail.com>
----
- drivers/video/fbdev/68328fb.c | 12 ------------
- 1 file changed, 12 deletions(-)
+This is Julian Smith and i am purchasing manager from E-cloth Co.,LTD in the UK.
+We are glad to know about your company from the web and we are interested in your products.
+Could you kindly send us your Latest catalog and price list for our trial order.
 
-diff --git a/drivers/video/fbdev/68328fb.c b/drivers/video/fbdev/68328fb.c
-index d48e960..02d22b7 100644
---- a/drivers/video/fbdev/68328fb.c
-+++ b/drivers/video/fbdev/68328fb.c
-@@ -405,20 +405,8 @@ static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
- 
- int __init mc68x328fb_setup(char *options)
- {
--#if 0
--	char *this_opt;
--#endif
--
- 	if (!options || !*options)
- 		return 1;
--#if 0
--	while ((this_opt = strsep(&options, ",")) != NULL) {
--		if (!*this_opt)
--			continue;
--		if (!strncmp(this_opt, "disable", 7))
--			mc68x328fb_enable = 0;
--	}
--#endif
- 	return 1;
- }
- 
--- 
-1.9.1
+Thanks and Best Regards,
+
+Ms Julian Smith
+Purchasing Manager
+E-cloth Co.,LTD

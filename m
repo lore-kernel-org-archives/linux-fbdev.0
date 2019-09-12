@@ -1,31 +1,70 @@
-From: Jingoo Han <jingoohan1@gmail.com>
-Date: Tue, 17 Sep 2019 19:21:21 +0000
-Subject: Re: [PATCH -next] fbdev: s3c-fb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <SL2P216MB0105ADD044BE3CA7B33CB6ECAA8F0@SL2P216MB0105.KORP216.PROD.OUTLOOK.COM>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Thu, 12 Sep 2019 21:32:57 +0000
+Subject: [PATCH v4 2/2] backlight: lm3630a: add an enable gpio for the HWEN pin
+Message-Id: <20190912213257.24147-3-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190904115523.25068-1-yuehaibing@huawei.com>
-In-Reply-To: <20190904115523.25068-1-yuehaibing@huawei.com>
+References: <20190912213257.24147-1-andreas@kemnade.info>
+In-Reply-To: <20190912213257.24147-1-andreas@kemnade.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: YueHaibing <yuehaibing@huawei.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
-Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
-DQoNCu+7v09uIDkvNC8xOSwgNzo1NyBBTSwgWXVlSGFpYmluZyB3cm90ZToNCg0KPiBVc2UgZGV2
-bV9wbGF0Zm9ybV9pb3JlbWFwX3Jlc291cmNlKCkgdG8gc2ltcGxpZnkgdGhlIGNvZGUgYSBiaXQu
-DQo+IFRoaXMgaXMgZGV0ZWN0ZWQgYnkgY29jY2luZWxsZS4NCj4NCj4gUmVwb3J0ZWQtYnk6IEh1
-bGsgUm9ib3QgPGh1bGtjaUBodWF3ZWkuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBZdWVIYWliaW5n
-IDx5dWVoYWliaW5nQGh1YXdlaS5jb20+DQo+DQpBY2tlZC1ieTogSmluZ29vIEhhbiA8amluZ29v
-aGFuMUBnbWFpbC5jb20+DQo+DQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9mYmRldi9zM2MtZmIu
-YyB8IDMgKy0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDIgZGVsZXRpb25z
-KC0pDQo+DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3MzYy1mYi5jIGIvZHJp
-dmVycy92aWRlby9mYmRldi9zM2MtZmIuYw0KPiBpbmRleCBiYTA0ZDdhLi40M2FjOGQ3IDEwMDY0
-NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3MzYy1mYi5jDQo+ICsrKyBiL2RyaXZlcnMv
-dmlkZW8vZmJkZXYvczNjLWZiLmMNCj4gQEAgLTE0MTEsOCArMTQxMSw3IEBAIHN0YXRpYyBpbnQg
-czNjX2ZiX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICANCj4gIAlwbV9y
-dW50aW1lX2VuYWJsZShzZmItPmRldik7DQo+ICANCj4gLQlyZXMgPSBwbGF0Zm9ybV9nZXRfcmVz
-b3VyY2UocGRldiwgSU9SRVNPVVJDRV9NRU0sIDApOw0KPiAtCXNmYi0+cmVncyA9IGRldm1faW9y
-ZW1hcF9yZXNvdXJjZShkZXYsIHJlcyk7DQo+ICsJc2ZiLT5yZWdzID0gZGV2bV9wbGF0Zm9ybV9p
-b3JlbWFwX3Jlc291cmNlKHBkZXYsIDApOw0KPiAgCWlmIChJU19FUlIoc2ZiLT5yZWdzKSkgew0K
-PiAgCQlyZXQgPSBQVFJfRVJSKHNmYi0+cmVncyk7DQo+ICAJCWdvdG8gZXJyX2xjZF9jbGs7DQo+
-IC0tIA0KPiAyLjcuNA0KDQoNCg=
+For now just enable it in the probe function to allow i2c
+access. Disabling also means resetting the register values
+to default and according to the datasheet does not give
+power savings.
+
+Tested on Kobo Clara HD.
+
+Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+Reviewed-by: Dan Murphy <dmurphy@ti.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+changes in v2:
+- simplification
+- correct gpio direction initialisation
+
+changes in v3:
+- removed legacy include
+
+ drivers/video/backlight/lm3630a_bl.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+index 8f84f3684f04..d9e67b9b2571 100644
+--- a/drivers/video/backlight/lm3630a_bl.c
++++ b/drivers/video/backlight/lm3630a_bl.c
+@@ -12,6 +12,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/interrupt.h>
+ #include <linux/regmap.h>
++#include <linux/gpio/consumer.h>
+ #include <linux/pwm.h>
+ #include <linux/platform_data/lm3630a_bl.h>
+ 
+@@ -48,6 +49,7 @@ struct lm3630a_chip {
+ 	struct lm3630a_platform_data *pdata;
+ 	struct backlight_device *bleda;
+ 	struct backlight_device *bledb;
++	struct gpio_desc *enable_gpio;
+ 	struct regmap *regmap;
+ 	struct pwm_device *pwmd;
+ };
+@@ -535,6 +537,13 @@ static int lm3630a_probe(struct i2c_client *client,
+ 	}
+ 	pchip->pdata = pdata;
+ 
++	pchip->enable_gpio = devm_gpiod_get_optional(&client->dev, "enable",
++						GPIOD_OUT_HIGH);
++	if (IS_ERR(pchip->enable_gpio)) {
++		rval = PTR_ERR(pchip->enable_gpio);
++		return rval;
++	}
++
+ 	/* chip initialize */
+ 	rval = lm3630a_chip_init(pchip);
+ 	if (rval < 0) {
+-- 
+2.20.1

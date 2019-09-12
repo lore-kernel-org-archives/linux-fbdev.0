@@ -1,47 +1,37 @@
-From: Denis Efremov <efremov@linux.com>
-Date: Mon, 16 Sep 2019 20:41:48 +0000
-Subject: [PATCH v3 16/26] fbmem: use PCI_STD_NUM_BARS
-Message-Id: <20190916204158.6889-17-efremov@linux.com>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Thu, 12 Sep 2019 21:32:55 +0000
+Subject: [PATCH v4 0/2] backlight_lm3630a: add enable_gpios property
+Message-Id: <20190912213257.24147-1-andreas@kemnade.info>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190916204158.6889-1-efremov@linux.com>
-In-Reply-To: <20190916204158.6889-1-efremov@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Denis Efremov <efremov@linux.com>, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, Andrew Murray <andrew.murray@arm.com>, linux-fbdev@vger.kernel.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>
+To: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Andreas Kemnade <andreas@kemnade.info>
 
-Use define PCI_STD_NUM_BARS instead of PCI_ROM_RESOURCE for the number of
-PCI BARs.
+To be able to handle the HWEN pin of the lm3630a, add
+an enable gpio to the driver and a property.
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: Daniel Vetter <daniel.vetter@ffwll.ch>
-Signed-off-by: Denis Efremov <efremov@linux.com>
----
- drivers/video/fbdev/core/fbmem.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Tested on Kobo Clara HD.
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 64dd732021d8..485e798cd404 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1784,7 +1784,7 @@ int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const
- 	int err, idx, bar;
- 	bool res_id_found = false;
- 
--	for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
-+	for (idx = 0, bar = 0; bar < PCI_STD_NUM_BARS; bar++) {
- 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
- 			continue;
- 		idx++;
-@@ -1794,7 +1794,7 @@ int remove_conflicting_pci_framebuffers(struct pci_dev *pdev, int res_id, const
- 	if (!ap)
- 		return -ENOMEM;
- 
--	for (idx = 0, bar = 0; bar < PCI_ROM_RESOURCE; bar++) {
-+	for (idx = 0, bar = 0; bar < PCI_STD_NUM_BARS; bar++) {
- 		if (!(pci_resource_flags(pdev, bar) & IORESOURCE_MEM))
- 			continue;
- 		ap->ranges[idx].base = pci_resource_start(pdev, bar);
+Changes in v2:
+simplification and reordering
+
+Changes in v3:
+added acked-by
+removed legacy include
+
+Changes in v4:
+added reviewed-by
+moved gpio to the right position in the bindings example
+
+Andreas Kemnade (2):
+  dt-bindings: backlight: lm3630a: add enable_gpios
+  backlight: lm3630a: add an enable gpio for the HWEN pin
+
+ .../bindings/leds/backlight/lm3630a-backlight.yaml       | 5 +++++
+ drivers/video/backlight/lm3630a_bl.c                     | 9 +++++++++
+ 2 files changed, 14 insertions(+)
+
 -- 
-2.21.0
+2.20.1

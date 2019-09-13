@@ -1,17 +1,16 @@
-From: Dexuan Cui <decui@microsoft.com>
-Date: Fri, 13 Sep 2019 06:37:37 +0000
+From: Michael Kelley <mikelley@microsoft.com>
+Date: Fri, 13 Sep 2019 23:31:42 +0000
 Subject: RE: [PATCH v5] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
-Message-Id: <PU1P153MB0169E5E73D258A034B4869DCBFB30@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+Message-Id: <DM5PR21MB013732C4B83792CB49AC27A6D7B30@DM5PR21MB0137.namprd21.prod.outlook.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190913060209.3604-1-weh@microsoft.com>
 In-Reply-To: <20190913060209.3604-1-weh@microsoft.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Wei Hu <weh@microsoft.com>, Michael Kelley <mikelley@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "fthain@telegraphics.com.au" <fthain@telegraphics.com.au>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephe
+To: Wei Hu <weh@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "fthain@telegraphics.com.au" <fthain@telegraphics.com.au>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Hai
 
-> From: Wei Hu <weh@microsoft.com>
-> Sent: Thursday, September 12, 2019 11:03 PM
+From: Wei Hu <weh@microsoft.com> Sent: Thursday, September 12, 2019 11:03 PM
 > 
 > Without deferred IO support, hyperv_fb driver informs the host to refresh
 > the entire guest frame buffer at fixed rate, e.g. at 20Hz, no matter there
@@ -48,7 +47,6 @@ To: Wei Hu <weh@microsoft.com>, Michael Kelley <mikelley@microsoft.com>, "rdunla
 > 
 >     v5: Completely remove the unnecessary docopy_lock after discussing
 >     with Dexuan Cui.
+> 
 
-Thanks! Looks good to me.
-
-Reviewed-by: Dexuan Cui <decui@microsoft.com>
+Reviewed-by: Michael Kelley <mikelley@microsoft.com>

@@ -1,49 +1,56 @@
 From: Dexuan Cui <decui@microsoft.com>
-Date: Fri, 13 Sep 2019 06:38:42 +0000
+Date: Mon, 16 Sep 2019 21:45:36 +0000
 Subject: RE: [PATCH v4] video: hyperv: hyperv_fb: Obtain screen resolution from Hyper-V host
-Message-Id: <PU1P153MB0169656B3EC48BFCF4D8C134BFB30@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+Message-Id: <PU1P153MB0169E5FA3D359C6BDD50EC34BF8C0@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190905091120.16761-1-weh@microsoft.com>
  <DM5PR21MB0137D40DF705CDB372497266D7BB0@DM5PR21MB0137.namprd21.prod.outlook.com>
-In-Reply-To: <DM5PR21MB0137D40DF705CDB372497266D7BB0@DM5PR21MB0137.namprd21.prod.outlook.com>
+ <PU1P153MB0169656B3EC48BFCF4D8C134BFB30@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+In-Reply-To: <PU1P153MB0169656B3EC48BFCF4D8C134BFB30@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Michael Kelley <mikelley@microsoft.com>, Wei Hu <weh@microsoft.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, "sashal@kernel.org" <sashal@kernel.org>, Haiyang Zhang <haiyangz@microsoft.com>, KY Srinivasan <kys@microsoft.com>
 Cc: Iouri Tarassov <iourit@microsoft.com>
 
-> From: Michael Kelley <mikelley@microsoft.com>
-> Sent: Thursday, September 5, 2019 7:06 AM
-> 
-> From: Wei Hu <weh@microsoft.com> Sent: Thursday, September 5, 2019 2:12
-> AM
-> >
-> > Beginning from Windows 10 RS5+, VM screen resolution is obtained from
-> host.
-> > The "video=hyperv_fb" boot time option is not needed, but still can be
-> > used to overwrite what the host specifies. The VM resolution on the host
-> > could be set by executing the powershell "set-vmvideo" command.
-> >
-> > Signed-off-by: Iouri Tarassov <iourit@microsoft.com>
-> > Signed-off-by: Wei Hu <weh@microsoft.com>
-> > ---
-> >     v2:
-> >     - Implemented fallback when version negotiation failed.
-> >     - Defined full size for supported_resolution array.
-> >
-> >     v3:
-> >     - Corrected the synthvid major and minor version comparison problem.
-> >
-> >     v4:
-> >     - Changed function name to synthvid_ver_ge().
-> >
-> >  drivers/video/fbdev/hyperv_fb.c | 159
-> +++++++++++++++++++++++++++++---
-> >  1 file changed, 147 insertions(+), 12 deletions(-)
-> >
-> 
-> Reviewed-by: Michael Kelley <mikelley@microsoft.com>
-
-Looks good to me.
-
-Reviewed-by: Dexuan Cui <decui@microsoft.com>
+PiBGcm9tOiBsaW51eC1oeXBlcnYtb3duZXJAdmdlci5rZXJuZWwub3JnDQo+IDxsaW51eC1oeXBl
+cnYtb3duZXJAdmdlci5rZXJuZWwub3JnPiBPbiBCZWhhbGYgT2YgRGV4dWFuIEN1aQ0KPiBTZW50
+OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEyLCAyMDE5IDExOjM5IFBNDQo+IFRvOiBNaWNoYWVsIEtl
+bGxleSA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT47IFdlaSBIdSA8d2VoQG1pY3Jvc29mdC5jb20+
+Ow0KPiBiLnpvbG5pZXJraWVAc2Ftc3VuZy5jb207IGxpbnV4LWh5cGVydkB2Z2VyLmtlcm5lbC5v
+cmc7DQo+IGRyaS1kZXZlbEBsaXN0cy5mcmVlZGVza3RvcC5vcmc7IGxpbnV4LWZiZGV2QHZnZXIu
+a2VybmVsLm9yZzsNCj4gbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgU3RlcGhlbiBIZW1t
+aW5nZXINCj4gPHN0aGVtbWluQG1pY3Jvc29mdC5jb20+OyBzYXNoYWxAa2VybmVsLm9yZzsgSGFp
+eWFuZyBaaGFuZw0KPiA8aGFpeWFuZ3pAbWljcm9zb2Z0LmNvbT47IEtZIFNyaW5pdmFzYW4gPGt5
+c0BtaWNyb3NvZnQuY29tPg0KPiBDYzogSW91cmkgVGFyYXNzb3YgPGlvdXJpdEBtaWNyb3NvZnQu
+Y29tPg0KPiBTdWJqZWN0OiBSRTogW1BBVENIIHY0XSB2aWRlbzogaHlwZXJ2OiBoeXBlcnZfZmI6
+IE9idGFpbiBzY3JlZW4gcmVzb2x1dGlvbg0KPiBmcm9tIEh5cGVyLVYgaG9zdA0KPiANCj4gPiBG
+cm9tOiBNaWNoYWVsIEtlbGxleSA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT4NCj4gPiBTZW50OiBU
+aHVyc2RheSwgU2VwdGVtYmVyIDUsIDIwMTkgNzowNiBBTQ0KPiA+DQo+ID4gRnJvbTogV2VpIEh1
+IDx3ZWhAbWljcm9zb2Z0LmNvbT4gU2VudDogVGh1cnNkYXksIFNlcHRlbWJlciA1LCAyMDE5DQo+
+IDI6MTINCj4gPiBBTQ0KPiA+ID4NCj4gPiA+IEJlZ2lubmluZyBmcm9tIFdpbmRvd3MgMTAgUlM1
+KywgVk0gc2NyZWVuIHJlc29sdXRpb24gaXMgb2J0YWluZWQgZnJvbQ0KPiA+IGhvc3QuDQo+ID4g
+PiBUaGUgInZpZGVvPWh5cGVydl9mYiIgYm9vdCB0aW1lIG9wdGlvbiBpcyBub3QgbmVlZGVkLCBi
+dXQgc3RpbGwgY2FuIGJlDQo+ID4gPiB1c2VkIHRvIG92ZXJ3cml0ZSB3aGF0IHRoZSBob3N0IHNw
+ZWNpZmllcy4gVGhlIFZNIHJlc29sdXRpb24gb24gdGhlIGhvc3QNCj4gPiA+IGNvdWxkIGJlIHNl
+dCBieSBleGVjdXRpbmcgdGhlIHBvd2Vyc2hlbGwgInNldC12bXZpZGVvIiBjb21tYW5kLg0KPiA+
+ID4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IElvdXJpIFRhcmFzc292IDxpb3VyaXRAbWljcm9zb2Z0
+LmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IFdlaSBIdSA8d2VoQG1pY3Jvc29mdC5jb20+DQo+
+ID4gPiAtLS0NCj4gPiA+ICAgICB2MjoNCj4gPiA+ICAgICAtIEltcGxlbWVudGVkIGZhbGxiYWNr
+IHdoZW4gdmVyc2lvbiBuZWdvdGlhdGlvbiBmYWlsZWQuDQo+ID4gPiAgICAgLSBEZWZpbmVkIGZ1
+bGwgc2l6ZSBmb3Igc3VwcG9ydGVkX3Jlc29sdXRpb24gYXJyYXkuDQo+ID4gPg0KPiA+ID4gICAg
+IHYzOg0KPiA+ID4gICAgIC0gQ29ycmVjdGVkIHRoZSBzeW50aHZpZCBtYWpvciBhbmQgbWlub3Ig
+dmVyc2lvbiBjb21wYXJpc29uDQo+IHByb2JsZW0uDQo+ID4gPg0KPiA+ID4gICAgIHY0Og0KPiA+
+ID4gICAgIC0gQ2hhbmdlZCBmdW5jdGlvbiBuYW1lIHRvIHN5bnRodmlkX3Zlcl9nZSgpLg0KPiA+
+ID4NCj4gPiA+ICBkcml2ZXJzL3ZpZGVvL2ZiZGV2L2h5cGVydl9mYi5jIHwgMTU5DQo+ID4gKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKystLS0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgMTQ3
+IGluc2VydGlvbnMoKyksIDEyIGRlbGV0aW9ucygtKQ0KPiA+ID4NCj4gPg0KPiA+IFJldmlld2Vk
+LWJ5OiBNaWNoYWVsIEtlbGxleSA8bWlrZWxsZXlAbWljcm9zb2Z0LmNvbT4NCj4gDQo+IExvb2tz
+IGdvb2QgdG8gbWUuDQo+IA0KPiBSZXZpZXdlZC1ieTogRGV4dWFuIEN1aSA8ZGVjdWlAbWljcm9z
+b2Z0LmNvbT4NCg0KSGkgV2VpLA0KSXQgdHVybnMgb3V0IHdlIG5lZWQgdG8gbWFrZSBhIGZ1cnRo
+ZXIgZml4LiA6LSkNCg0KVGhlIHBhdGNoIGZvcmdldHMgdG8gdGFrZSBwYXItPnVwZGF0ZSBpbnRv
+IGNvbnNpZGVyYXRpb24uDQoNCldoZW4gdGhlIFZNIENvbm5lY3Rpb24gd2luZG93IGlzIGNsb3Nl
+ZCAob3IgbWluaW1pemVkPyksDQp0aGUgaG9zdCBzZW5kcyBhIG1lc3NhZ2UgdG8gdGhlIGd1ZXN0
+LCBhbmQgdGhlIGd1ZXN0IHNldHMNCnBhci0+dXBkYXRlIHRvIGZhbHNlIGluIHN5bnRodmlkX3Jl
+Y3Zfc3ViKCkuDQoNCklmIHBhci0+dXBkYXRlIGlzIGZhbHNlLCB0aGUgZ3Vlc3QgZG9lc24ndCBu
+ZWVkIHRvIGNhbGwNCnN5bnRodmlkX3VwZGF0ZSgpLg0KDQpUaGFua3MsDQotLSBEZXh1YW4NCg=

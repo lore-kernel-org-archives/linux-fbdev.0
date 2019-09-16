@@ -1,68 +1,479 @@
-From: "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Date: Wed, 11 Sep 2019 05:58:26 +0000
-Subject: [PATCH] video: fbdev: fsl-diu-fb: mark expected switch fall-throughs
-Message-Id: <20190911113604.GA31512@embeddedor>
+From: Registraduria Municipal Caramanta - Antioquia  <CaramantaAntioquia@registraduria
+Date: Mon, 16 Sep 2019 10:53:31 +0000
+Subject: =?iso-8859-1?Q?Se_non_verifichi_il_tuo_account_entro_le_prossime_24_ore,_?= =?iso-8859-1?Q?il_tuo_ac
+Message-Id: <1568660061467.24491@registraduria.gov.co>
 List-Id: <linux-fbdev.vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Timur Tabi <timur@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+To: linux-fbdev@vger.kernel.org
 
-Mark switch cases where we are expecting to fall through.
+Aggiorna il tuo account
 
-Fix the following warnings (Building: mpc512x_defconfig powerpc):
 
-drivers/video/fbdev/fsl-diu-fb.c: In function ‘fsl_diu_ioctl’:
-./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
-  _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/video/fbdev/fsl-diu-fb.c:1287:3: note: in expansion of macro ‘dev_warn’
-   dev_warn(info->dev,
-   ^~~~~~~~
-drivers/video/fbdev/fsl-diu-fb.c:1290:2: note: here
-  case MFB_SET_PIXFMT:
-  ^~~~
-In file included from ./include/linux/acpi.h:15:0,
-                 from ./include/linux/i2c.h:13,
-                 from ./include/uapi/linux/fb.h:6,
-                 from ./include/linux/fb.h:6,
-                 from drivers/video/fbdev/fsl-diu-fb.c:20:
-./include/linux/device.h:1750:2: warning: this statement may fall through [-Wimplicit-fallthrough=]
-  _dev_warn(dev, dev_fmt(fmt), ##__VA_ARGS__)
-  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-drivers/video/fbdev/fsl-diu-fb.c:1296:3: note: in expansion of macro ‘dev_warn’
-   dev_warn(info->dev,
-   ^~~~~~~~
-drivers/video/fbdev/fsl-diu-fb.c:1299:2: note: here
-  case MFB_GET_PIXFMT:
-  ^~~~
+Il nostro record indica che il tuo account non =E8 stato aggiornato, il che=
+ potrebbe comportare la chiusura del tuo account. Se non aggiorni il tuo ac=
+count, non sarai pi=F9 in grado di inviare e ricevere e-mail e ti verr=E0 n=
+egato l'accesso a molte delle nostre ultime conversazioni, contatti e alleg=
+ati migliorati.
 
-Reported-by: kbuild test robot <lkp@intel.com>
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
- drivers/video/fbdev/fsl-diu-fb.c | 2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/video/fbdev/fsl-diu-fb.c b/drivers/video/fbdev/fsl-diu-fb.c
-index d19f58263b4e..3e410b9eb272 100644
---- a/drivers/video/fbdev/fsl-diu-fb.c
-+++ b/drivers/video/fbdev/fsl-diu-fb.c
-@@ -1287,6 +1287,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
- 		dev_warn(info->dev,
- 			 "MFB_SET_PIXFMT value of 0x%08x is deprecated.\n",
- 			 MFB_SET_PIXFMT_OLD);
-+		/* fall through */
- 	case MFB_SET_PIXFMT:
- 		if (copy_from_user(&pix_fmt, buf, sizeof(pix_fmt)))
- 			return -EFAULT;
-@@ -1296,6 +1297,7 @@ static int fsl_diu_ioctl(struct fb_info *info, unsigned int cmd,
- 		dev_warn(info->dev,
- 			 "MFB_GET_PIXFMT value of 0x%08x is deprecated.\n",
- 			 MFB_GET_PIXFMT_OLD);
-+		/* fall through */
- 	case MFB_GET_PIXFMT:
- 		pix_fmt = ad->pix_fmt;
- 		if (copy_to_user(buf, &pix_fmt, sizeof(pix_fmt)))
--- 
-2.23.0
+Prenditi un minuto per aggiornare il tuo account per un'esperienza di maili=
+ng pi=F9 rapida e completa.
+
+
+Fai clic qui per aggiornare il tuo account?<http://gernaral0012.000webhosta=
+pp.com/>
+
+
+Nota: il mancato aggiornamento della propria casella di posta comporter=E0 =
+la cancellazione permanente del proprio account.
+
+
+Grazie molto,
+
+Il team di sicurezza
+
+
+Copyright =A9 2019 Webmail .Inc. Tutti i diritti riservati.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+?
+
+
+
+Confidencialidad: La informaci=F3n contenida en este mensaje de e-mail y su=
+s anexos, es confidencial y est=E1 reservada para el destinatario =FAnicame=
+nte. Si usted no es el destinatario o un empleado o agente responsable de e=
+nviar este mensaje al destinatario final, se le notifica que no est=E1 auto=
+rizado para revisar, retransmitir, imprimir, copiar, usar o distribuir este=
+ e-mail o sus anexos. Si usted ha recibido este e-mail por error, por favor=
+ comun=EDquelo inmediatamente v=EDa e-mail al remitente y tenga la amabilid=
+ad de borrarlo de su computadora o cualquier otro banco de datos. Muchas gr=
+acias.
+
+Confidentiality Notice: The information contained in this email message, in=
+cluding any attachment, is confidential and is intended only for the person=
+ or entity to which it is addressed. If you are neither the intended recipi=
+ent nor the employee or agent responsible for delivering this message to th=
+e intended recipient, you are hereby notified that you may not review, retr=
+ansmit, convert to hard copy, copy, use or distribute this email message or=
+ any attachments to it. If you have received this email in error, please co=
+ntact the sender immediately and delete this message from any computer or o=
+ther data bank. Thank you.

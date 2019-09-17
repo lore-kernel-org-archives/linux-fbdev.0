@@ -1,36 +1,31 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Wed, 04 Sep 2019 11:55:23 +0000
-Subject: [PATCH -next] fbdev: s3c-fb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <20190904115523.25068-1-yuehaibing@huawei.com>
+From: Jingoo Han <jingoohan1@gmail.com>
+Date: Tue, 17 Sep 2019 19:21:21 +0000
+Subject: Re: [PATCH -next] fbdev: s3c-fb: use devm_platform_ioremap_resource() to simplify code
+Message-Id: <SL2P216MB0105ADD044BE3CA7B33CB6ECAA8F0@SL2P216MB0105.KORP216.PROD.OUTLOOK.COM>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190904115523.25068-1-yuehaibing@huawei.com>
+In-Reply-To: <20190904115523.25068-1-yuehaibing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jingoohan1@gmail.com, b.zolnierkie@samsung.com
-Cc: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org, YueHaibing <yuehaibing@huawei.com>
+To: YueHaibing <yuehaibing@huawei.com>, "b.zolnierkie@samsung.com" <b.zolnierkie@samsung.com>
+Cc: "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>
 
-Use devm_platform_ioremap_resource() to simplify the code a bit.
-This is detected by coccinelle.
-
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
----
- drivers/video/fbdev/s3c-fb.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
-diff --git a/drivers/video/fbdev/s3c-fb.c b/drivers/video/fbdev/s3c-fb.c
-index ba04d7a..43ac8d7 100644
---- a/drivers/video/fbdev/s3c-fb.c
-+++ b/drivers/video/fbdev/s3c-fb.c
-@@ -1411,8 +1411,7 @@ static int s3c_fb_probe(struct platform_device *pdev)
- 
- 	pm_runtime_enable(sfb->dev);
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	sfb->regs = devm_ioremap_resource(dev, res);
-+	sfb->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(sfb->regs)) {
- 		ret = PTR_ERR(sfb->regs);
- 		goto err_lcd_clk;
--- 
-2.7.4
+DQoNCu+7v09uIDkvNC8xOSwgNzo1NyBBTSwgWXVlSGFpYmluZyB3cm90ZToNCg0KPiBVc2UgZGV2
+bV9wbGF0Zm9ybV9pb3JlbWFwX3Jlc291cmNlKCkgdG8gc2ltcGxpZnkgdGhlIGNvZGUgYSBiaXQu
+DQo+IFRoaXMgaXMgZGV0ZWN0ZWQgYnkgY29jY2luZWxsZS4NCj4NCj4gUmVwb3J0ZWQtYnk6IEh1
+bGsgUm9ib3QgPGh1bGtjaUBodWF3ZWkuY29tPg0KPiBTaWduZWQtb2ZmLWJ5OiBZdWVIYWliaW5n
+IDx5dWVoYWliaW5nQGh1YXdlaS5jb20+DQo+DQpBY2tlZC1ieTogSmluZ29vIEhhbiA8amluZ29v
+aGFuMUBnbWFpbC5jb20+DQo+DQo+IC0tLQ0KPiAgZHJpdmVycy92aWRlby9mYmRldi9zM2MtZmIu
+YyB8IDMgKy0tDQo+ICAxIGZpbGUgY2hhbmdlZCwgMSBpbnNlcnRpb24oKyksIDIgZGVsZXRpb25z
+KC0pDQo+DQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3MzYy1mYi5jIGIvZHJp
+dmVycy92aWRlby9mYmRldi9zM2MtZmIuYw0KPiBpbmRleCBiYTA0ZDdhLi40M2FjOGQ3IDEwMDY0
+NA0KPiAtLS0gYS9kcml2ZXJzL3ZpZGVvL2ZiZGV2L3MzYy1mYi5jDQo+ICsrKyBiL2RyaXZlcnMv
+dmlkZW8vZmJkZXYvczNjLWZiLmMNCj4gQEAgLTE0MTEsOCArMTQxMSw3IEBAIHN0YXRpYyBpbnQg
+czNjX2ZiX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICANCj4gIAlwbV9y
+dW50aW1lX2VuYWJsZShzZmItPmRldik7DQo+ICANCj4gLQlyZXMgPSBwbGF0Zm9ybV9nZXRfcmVz
+b3VyY2UocGRldiwgSU9SRVNPVVJDRV9NRU0sIDApOw0KPiAtCXNmYi0+cmVncyA9IGRldm1faW9y
+ZW1hcF9yZXNvdXJjZShkZXYsIHJlcyk7DQo+ICsJc2ZiLT5yZWdzID0gZGV2bV9wbGF0Zm9ybV9p
+b3JlbWFwX3Jlc291cmNlKHBkZXYsIDApOw0KPiAgCWlmIChJU19FUlIoc2ZiLT5yZWdzKSkgew0K
+PiAgCQlyZXQgPSBQVFJfRVJSKHNmYi0+cmVncyk7DQo+ICAJCWdvdG8gZXJyX2xjZF9jbGs7DQo+
+IC0tIA0KPiAyLjcuNA0KDQoNCg=

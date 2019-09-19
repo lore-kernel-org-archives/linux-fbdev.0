@@ -1,61 +1,58 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 02 Sep 2019 09:41:37 +0000
-Subject: Re: [PATCH v3 2/4] backlight: Expose brightness curve type through sysfs
-Message-Id: <20190902094137.GM32232@dell>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Thu, 19 Sep 2019 14:06:16 +0000
+Subject: [PATCH 1/5] backlight: pwm_bl: fix cie1913 comments and constant
+Message-Id: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190709190007.91260-1-mka@chromium.org>
- <20190709190007.91260-3-mka@chromium.org>
-In-Reply-To: <20190709190007.91260-3-mka@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Matthias Kaehlcke <mka@chromium.org>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Douglas Anderson <dianders@chromium.org>, Brian Norris <briannorris@chromium.org>, Pavel Machek <pavel@ucw.cz>, Jacek Anaszewski <jacek.anaszewski@gmail.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Tue, 09 Jul 2019, Matthias Kaehlcke wrote:
+The "break-even" point for the two formulas is L=8, which is also
+what the code actually implements. [Incidentally, at that point one
+has Y=0.008856, not 0.08856].
 
-> Backlight brightness curves can have different shapes. The two main
-> types are linear and non-linear curves. The human eye doesn't
-> perceive linearly increasing/decreasing brightness as linear (see
-> also 88ba95bedb79 "backlight: pwm_bl: Compute brightness of LED
-> linearly to human eye"), hence many backlights use non-linear (often
-> logarithmic) brightness curves. The type of curve currently is opaque
-> to userspace, so userspace often uses more or less reliable heuristics
-> (like the number of brightness levels) to decide whether to treat a
-> backlight device as linear or non-linear.
-> 
-> Export the type of the brightness curve via the new sysfs attribute
-> 'scale'. The value of the attribute can be 'linear', 'non-linear' or
-> 'unknown'. For devices that don't provide information about the scale
-> of their brightness curve the value of the 'scale' attribute is 'unknown'.
-> 
-> Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
-> ---
-> Feel free to suggest improvements in the documentation :)
-> 
-> Changes in v3:
-> - removed composite strings, only keep 'linear', 'non-linear' and
->   'unknown'
-> - updated sysfs attribute documentation
-> - updated commit message
-> 
-> Changes in v2:
-> - changed order of brightness scale enums, explicitly make 'unknown' zero
-> - minor update of commit message
-> - deleted excess blank line after 'backlight_scale_types'
-> - s/curves/curve/ in sysfs doc
-> ---
->  .../ABI/testing/sysfs-class-backlight         | 26 +++++++++++++++++++
->  MAINTAINERS                                   |  1 +
->  drivers/video/backlight/backlight.c           | 19 ++++++++++++++
->  include/linux/backlight.h                     |  8 ++++++
->  4 files changed, 54 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-class-backlight
+Moreover, all the sources I can find say the linear factor is 903.3
+rather than 902.3, which makes sense since then the formulas agree at
+L=8, both yielding the 0.008856 figure to four significant digits.
 
-Applied, thanks.
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+---
+ drivers/video/backlight/pwm_bl.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 2201b8c78641..be36be1cacb7 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -155,8 +155,8 @@ static const struct backlight_ops pwm_backlight_ops = {
+  *
+  * The CIE 1931 lightness formula is what actually describes how we perceive
+  * light:
+- *          Y = (L* / 902.3)           if L* ≤ 0.08856
+- *          Y = ((L* + 16) / 116)^3    if L* > 0.08856
++ *          Y = (L* / 903.3)           if L* ≤ 8
++ *          Y = ((L* + 16) / 116)^3    if L* > 8
+  *
+  * Where Y is the luminance, the amount of light coming out of the screen, and
+  * is a number between 0.0 and 1.0; and L* is the lightness, how bright a human
+@@ -169,9 +169,15 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
+ {
+ 	u64 retval;
+ 
++	/*
++	 * @lightness is given as a number between 0 and 1, expressed
++	 * as a fixed-point number in scale @scale. Convert to a
++	 * percentage, still expressed as a fixed-point number, so the
++	 * above formulas can be applied.
++	 */
+ 	lightness *= 100;
+ 	if (lightness <= (8 * scale)) {
+-		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9023);
++		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9033);
+ 	} else {
+ 		retval = int_pow((lightness + (16 * scale)) / 116, 3);
+ 		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.20.1

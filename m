@@ -1,41 +1,52 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 02 Sep 2019 12:34:41 +0000
-Subject: [RESEND PATCH v3 4/7] backlight: gpio: remove unused fields from platform data
-Message-Id: <20190902123444.19924-5-brgl@bgdev.pl>
+From: Markus Elfring <Markus.Elfring@web.de>
+Date: Thu, 19 Sep 2019 14:33:25 +0000
+Subject: [PATCH] video: ocfb: Use devm_platform_ioremap_resource() in ocfb_probe()
+Message-Id: <61b75aa6-ff92-e0ed-53f2-50a95d93d1f6@web.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190902123444.19924-1-brgl@bgdev.pl>
-In-Reply-To: <20190902123444.19924-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Himanshu Jha <himanshujha199640@gmail.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 19 Sep 2019 16:26:56 +0200
 
-Remove the platform data fields that nobody uses.
+Simplify this function implementation by using a known wrapper function.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- include/linux/platform_data/gpio_backlight.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/video/fbdev/ocfb.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
-index 34179d600360..1a8b5b1946fe 100644
---- a/include/linux/platform_data/gpio_backlight.h
-+++ b/include/linux/platform_data/gpio_backlight.h
-@@ -9,9 +9,6 @@ struct device;
- 
- struct gpio_backlight_platform_data {
- 	struct device *fbdev;
--	int gpio;
--	int def_value;
--	const char *name;
- };
- 
- #endif
--- 
-2.21.0
+diff --git a/drivers/video/fbdev/ocfb.c b/drivers/video/fbdev/ocfb.c
+index a970edc2a6f8..be308b4dc91d 100644
+--- a/drivers/video/fbdev/ocfb.c
++++ b/drivers/video/fbdev/ocfb.c
+@@ -297,7 +297,6 @@ static int ocfb_probe(struct platform_device *pdev)
+ {
+ 	int ret = 0;
+ 	struct ocfb_dev *fbdev;
+-	struct resource *res;
+ 	int fbsize;
+
+ 	fbdev = devm_kzalloc(&pdev->dev, sizeof(*fbdev), GFP_KERNEL);
+@@ -319,13 +318,7 @@ static int ocfb_probe(struct platform_device *pdev)
+ 	ocfb_init_var(fbdev);
+ 	ocfb_init_fix(fbdev);
+
+-	/* Request I/O resource */
+-	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (!res) {
+-		dev_err(&pdev->dev, "I/O resource request failed\n");
+-		return -ENXIO;
+-	}
+-	fbdev->regs = devm_ioremap_resource(&pdev->dev, res);
++	fbdev->regs = devm_platform_ioremap_resource(pdev, 0);
+ 	if (IS_ERR(fbdev->regs))
+ 		return PTR_ERR(fbdev->regs);
+
+--
+2.23.0

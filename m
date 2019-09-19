@@ -1,50 +1,53 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 02 Sep 2019 12:34:42 +0000
-Subject: [RESEND PATCH v3 5/7] backlight: gpio: remove dev from struct gpio_backlight
-Message-Id: <20190902123444.19924-6-brgl@bgdev.pl>
+From: Markus Elfring <Markus.Elfring@web.de>
+Date: Thu, 19 Sep 2019 15:01:06 +0000
+Subject: [PATCH] video: pxafb: Use devm_platform_ioremap_resource() in pxafb_probe()
+Message-Id: <a1b804b1-43c2-327a-d6d1-df49aebec680@web.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190902123444.19924-1-brgl@bgdev.pl>
-In-Reply-To: <20190902123444.19924-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Mack <daniel@zonque.org>, Mauro Carvalho Chehab <mchehab+samsung@kernel.org>, "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>, Viresh Kumar <viresh.kumar@linaro.org>, YueHaibing <yuehaibing@huawei.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Himanshu Jha <himanshujha199640@gmail.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Thu, 19 Sep 2019 16:51:38 +0200
 
-This field is unused. Remove it.
+Simplify this function implementation by using a known wrapper function.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- drivers/video/backlight/gpio_backlight.c | 4 ----
- 1 file changed, 4 deletions(-)
+ drivers/video/fbdev/pxafb.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 01262186fa1e..70882556f047 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -19,9 +19,7 @@
- #include <linux/slab.h>
- 
- struct gpio_backlight {
--	struct device *dev;
- 	struct device *fbdev;
+diff --git a/drivers/video/fbdev/pxafb.c b/drivers/video/fbdev/pxafb.c
+index f70c9f79622e..237f8f436fdb 100644
+--- a/drivers/video/fbdev/pxafb.c
++++ b/drivers/video/fbdev/pxafb.c
+@@ -2237,7 +2237,6 @@ static int pxafb_probe(struct platform_device *dev)
+ {
+ 	struct pxafb_info *fbi;
+ 	struct pxafb_mach_info *inf, *pdata;
+-	struct resource *r;
+ 	int i, irq, ret;
+
+ 	dev_dbg(&dev->dev, "pxafb_probe\n");
+@@ -2303,14 +2302,7 @@ static int pxafb_probe(struct platform_device *dev)
+ 		fbi->lcd_supply = NULL;
+ 	}
+
+-	r = platform_get_resource(dev, IORESOURCE_MEM, 0);
+-	if (r == NULL) {
+-		dev_err(&dev->dev, "no I/O memory resource defined\n");
+-		ret = -ENODEV;
+-		goto failed;
+-	}
 -
- 	struct gpio_desc *gpiod;
- 	int def_value;
- };
-@@ -69,8 +67,6 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 	if (gbl = NULL)
- 		return -ENOMEM;
- 
--	gbl->dev = &pdev->dev;
--
- 	if (pdata)
- 		gbl->fbdev = pdata->fbdev;
- 
--- 
-2.21.0
+-	fbi->mmio_base = devm_ioremap_resource(&dev->dev, r);
++	fbi->mmio_base = devm_platform_ioremap_resource(dev, 0);
+ 	if (IS_ERR(fbi->mmio_base)) {
+ 		dev_err(&dev->dev, "failed to get I/O memory\n");
+ 		ret = -EBUSY;
+--
+2.23.0

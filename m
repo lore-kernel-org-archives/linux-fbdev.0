@@ -1,55 +1,37 @@
-From: Navid Emamdoost <navid.emamdoost@gmail.com>
-Date: Mon, 30 Sep 2019 03:09:45 +0000
-Subject: [PATCH] Staging: fbtft: fix memory leak in fbtft_framebuffer_alloc
-Message-Id: <20190930030949.28615-1-navid.emamdoost@gmail.com>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Thu, 19 Sep 2019 14:06:17 +0000
+Subject: [PATCH 2/5] backlight: pwm_bl: eliminate a 64/32 division
+Message-Id: <20190919140620.32407-2-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: =?UTF-8?q?Jan=20Sebastian=20G=C3=B6tte?= <linux@jaseg.net>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, kjlu@umn.edu, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Daniel Vetter <daniel.vetter@ffwll.ch>, emamd001@umn.edu, Bhanusree Pola <bhanusreemahesh@gmail.com>, smccaman@umn.edu, Phil Reid <preid@electromag.com.au>, Sam Ravnborg <sam@ravnborg.org>, Navid Emamdoost <navid.emamdoost@gmail.com>
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-In fbtft_framebuffer_alloc the error handling path should take care of
-releasing frame buffer after it is allocated via framebuffer_alloc, too.
-Therefore, in two failure cases the goto destination is changed to
-address this issue.
+lightness*1000 is nowhere near overflowing 32 bits, so we can just use
+an ordinary 32/32 division, which is much cheaper than the 64/32 done
+via do_div().
 
-Fixes: c296d5f9957c ("staging: fbtft: core support")
-Signed-off-by: Navid Emamdoost <navid.emamdoost@gmail.com>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
- drivers/staging/fbtft/fbtft-core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/video/backlight/pwm_bl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
-index cf5700a2ea66..a0a67aa517f0 100644
---- a/drivers/staging/fbtft/fbtft-core.c
-+++ b/drivers/staging/fbtft/fbtft-core.c
-@@ -714,7 +714,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	if (par->gamma.curves && gamma) {
- 		if (fbtft_gamma_parse_str(par, par->gamma.curves, gamma,
- 					  strlen(gamma)))
--			goto alloc_fail;
-+			goto release_framebuf;
- 	}
- 
- 	/* Transmit buffer */
-@@ -731,7 +731,7 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 	if (txbuflen > 0) {
- 		txbuf = devm_kzalloc(par->info->device, txbuflen, GFP_KERNEL);
- 		if (!txbuf)
--			goto alloc_fail;
-+			goto release_framebuf;
- 		par->txbuf.buf = txbuf;
- 		par->txbuf.len = txbuflen;
- 	}
-@@ -753,6 +753,9 @@ struct fb_info *fbtft_framebuffer_alloc(struct fbtft_display *display,
- 
- 	return info;
- 
-+release_framebuf:
-+	framebuffer_release(info);
-+
- alloc_fail:
- 	vfree(vmem);
- 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index be36be1cacb7..9252d51f31b9 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -177,7 +177,7 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
+ 	 */
+ 	lightness *= 100;
+ 	if (lightness <= (8 * scale)) {
+-		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9033);
++		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
+ 	} else {
+ 		retval = int_pow((lightness + (16 * scale)) / 116, 3);
+ 		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
 -- 
-2.17.1
+2.20.1

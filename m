@@ -1,37 +1,43 @@
-From: YueHaibing <yuehaibing@huawei.com>
-Date: Wed, 04 Sep 2019 11:54:06 +0000
-Subject: [PATCH -next] fbdev: omapfb: use devm_platform_ioremap_resource() to simplify code
-Message-Id: <20190904115406.23880-1-yuehaibing@huawei.com>
+From: Kefeng Wang <wangkefeng.wang@huawei.com>
+Date: Fri, 20 Sep 2019 06:25:35 +0000
+Subject: [PATCH 23/32] vgacon: Use pr_warn instead of pr_warning
+Message-Id: <20190920062544.180997-24-wangkefeng.wang@huawei.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20190920062544.180997-1-wangkefeng.wang@huawei.com>
+In-Reply-To: <20190920062544.180997-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: b.zolnierkie@samsung.com, tglx@linutronix.de, alexios.zavras@intel.com, gregkh@linuxfoundation.org, allison@lohutok.net, yuehaibing@huawei.com
-Cc: linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
+To: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>, Arnaldo Carvalho de Melo <acme@redhat.com>, Andy Whitcroft <apw@canonical.com>, Peter Zijlstra <peterz@infradead.org>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
+Cc: wangkefeng.wang@huawei.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
 
-Use devm_platform_ioremap_resource() to simplify the code a bit.
-This is detected by coccinelle.
+As said in commit f2c2cbcc35d4 ("powerpc: Use pr_warn instead of
+pr_warning"), removing pr_warning so all logging messages use a
+consistent <prefix>_warn style. Let's do it.
 
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: YueHaibing <yuehaibing@huawei.com>
+Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org
+Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
 ---
- drivers/video/fbdev/omap2/omapfb/vrfb.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/video/console/vgacon.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/vrfb.c b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-index 819e0bc..ee0dd4c 100644
---- a/drivers/video/fbdev/omap2/omapfb/vrfb.c
-+++ b/drivers/video/fbdev/omap2/omapfb/vrfb.c
-@@ -339,9 +339,7 @@ static int __init vrfb_probe(struct platform_device *pdev)
- 	int i;
+diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
+index c6b3bdbbdbc9..de7b8382aba9 100644
+--- a/drivers/video/console/vgacon.c
++++ b/drivers/video/console/vgacon.c
+@@ -113,9 +113,9 @@ static int __init text_mode(char *str)
+ {
+ 	vgacon_text_mode_force = true;
  
- 	/* first resource is the register res, the rest are vrfb contexts */
--
--	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	vrfb_base = devm_ioremap_resource(&pdev->dev, mem);
-+	vrfb_base = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(vrfb_base))
- 		return PTR_ERR(vrfb_base);
+-	pr_warning("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
+-	pr_warning("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
+-	pr_warning("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
++	pr_warn("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
++	pr_warn("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
++	pr_warn("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
  
+ 	return 1;
+ }
 -- 
-2.7.4
+2.20.1

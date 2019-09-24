@@ -1,43 +1,49 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Date: Fri, 20 Sep 2019 06:25:35 +0000
-Subject: [PATCH 23/32] vgacon: Use pr_warn instead of pr_warning
-Message-Id: <20190920062544.180997-24-wangkefeng.wang@huawei.com>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 24 Sep 2019 16:51:59 +0000
+Subject: [PATCH AUTOSEL 4.4 01/14] video: ssd1307fb: Start page range at page_offset
+Message-Id: <20190924165214.28857-1-sashal@kernel.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190920062544.180997-1-wangkefeng.wang@huawei.com>
-In-Reply-To: <20190920062544.180997-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>, "David S. Miller" <davem@davemloft.net>, Arnaldo Carvalho de Melo <acme@redhat.com>, Andy Whitcroft <apw@canonical.com>, Peter Zijlstra <peterz@infradead.org>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>, Petr Mladek <pmladek@suse.com>, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
-Cc: wangkefeng.wang@huawei.com, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc: Mark Rutland <mark.rutland@arm.com>, Sasha Levin <sashal@kernel.org>, linux-fbdev@vger.kernel.org, =?UTF-8?q?Michal=20Vok=C3=A1=C4=8D?= <michal.vokac@ysoft.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, David Airlie <airlied@linux.ie>, dri-devel@lists.freedesktop.org, Marko Kohtala <marko.kohtala@okoko.fi>, Rob Herring <robh+dt@kernel.org>
 
-As said in commit f2c2cbcc35d4 ("powerpc: Use pr_warn instead of
-pr_warning"), removing pr_warning so all logging messages use a
-consistent <prefix>_warn style. Let's do it.
+From: Marko Kohtala <marko.kohtala@okoko.fi>
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
+[ Upstream commit dd9782834dd9dde3624ff1acea8859f3d3e792d4 ]
+
+The page_offset was only applied to the end of the page range. This caused
+the display updates to cause a scrolling effect on the display because the
+amount of data written to the display did not match the range display
+expected.
+
+Fixes: 301bc0675b67 ("video: ssd1307fb: Make use of horizontal addressing mode")
+Signed-off-by: Marko Kohtala <marko.kohtala@okoko.fi>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Rob Herring <robh+dt@kernel.org>
+Cc: Daniel Vetter <daniel@ffwll.ch>
+Cc: David Airlie <airlied@linux.ie>
+Cc: Michal Vokáč <michal.vokac@ysoft.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Link: https://patchwork.freedesktop.org/patch/msgid/20190618074111.9309-4-marko.kohtala@okoko.fi
+Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/video/console/vgacon.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/video/fbdev/ssd1307fb.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c6b3bdbbdbc9..de7b8382aba9 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -113,9 +113,9 @@ static int __init text_mode(char *str)
- {
- 	vgacon_text_mode_force = true;
+diff --git a/drivers/video/fbdev/ssd1307fb.c b/drivers/video/fbdev/ssd1307fb.c
+index fa3480815cdb6..88e0763edcc72 100644
+--- a/drivers/video/fbdev/ssd1307fb.c
++++ b/drivers/video/fbdev/ssd1307fb.c
+@@ -421,7 +421,7 @@ static int ssd1307fb_init(struct ssd1307fb_par *par)
+ 	if (ret < 0)
+ 		return ret;
  
--	pr_warning("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
--	pr_warning("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
--	pr_warning("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
-+	pr_warn("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
-+	pr_warn("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
-+	pr_warn("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
+-	ret = ssd1307fb_write_cmd(par->client, 0x0);
++	ret = ssd1307fb_write_cmd(par->client, par->page_offset);
+ 	if (ret < 0)
+ 		return ret;
  
- 	return 1;
- }
 -- 
 2.20.1

@@ -1,7 +1,7 @@
 From: Masahiro Yamada <yamada.masahiro@socionext.com>
-Date: Thu, 26 Sep 2019 10:25:07 +0000
+Date: Thu, 26 Sep 2019 10:45:06 +0000
 Subject: Re: [PATCH -next] fbdev: c2p: Fix link failure on non-inlining
-Message-Id: <CAK7LNARTk5yE1=WsxdYpEw6EYXMmq8cW5QBEse2WWhTJ0y=iMA@mail.gmail.com>
+Message-Id: <CAK7LNATN5QyC+-_VRZm_ZysYd8Z8aWU0Ys0cTpU2GUdEdrXvPg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20190926101312.32218-1-geert@linux-m68k.org>
 In-Reply-To: <20190926101312.32218-1-geert@linux-m68k.org>
@@ -25,11 +25,37 @@ On Thu, Sep 26, 2019 at 7:13 PM Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
 > Reported-by: noreply@ellerman.id.au
 > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> ---
+> Fixes: 025f072e5823947c ("compiler: enable CONFIG_OPTIMIZE_INLINING forcibly")
+>
+> As this is a patch in akpm's tree, the commit ID in the Fixes tag is not
+> stable.
+
+BTW, that Fixes tag is incorrect.
+
+Irrespective of 025f072e5823947c, you could manually enable
+CONFIG_OPTIMIZE_INLINING from menuconfig etc.
+
+So, this build error would have been found much earlier
+if somebody had been running randconfig tests on m68k.
+
+It is impossible to detect this error on other architectures
+because the driver config options are guarded by
+'depends on ATARI' or 'depends on AMIGA'.
 
 
-Reviewed-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+The correct tag is:
+
+Fixes: 9012d011660e ("compiler: allow all arches to enable
+CONFIG_OPTIMIZE_INLINING")
+
+The commit id is stable.
 
 
+
+As an additional work,
+depends on (AMIGA || COMPILE_TEST)
+would be nice unless this driver contains m68k-specific code.
 
 
 -- 

@@ -1,38 +1,113 @@
-From: Michael Kelley <mikelley@microsoft.com>
-Date: Fri, 20 Sep 2019 17:26:34 +0000
-Subject: RE: [PATHC v6] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
-Message-Id: <DM5PR21MB01375E8543451D4550D622CDD7880@DM5PR21MB0137.namprd21.prod.outlook.com>
+From: Denis Efremov <efremov@linux.com>
+Date: Fri, 27 Sep 2019 23:40:26 +0000
+Subject: [PATCH RESEND v3 00/26] Add definition for the number of standard PCI BARs
+Message-Id: <20190927234026.23342-1-efremov@linux.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190918060227.6834-1-weh@microsoft.com>
- <DM5PR21MB0137DA408FE59E8C1171CFFCD78E0@DM5PR21MB0137.namprd21.prod.outlook.com>
-In-Reply-To: <DM5PR21MB0137DA408FE59E8C1171CFFCD78E0@DM5PR21MB0137.namprd21.prod.outlook.com>
+References: <20190916204158.6889-3-efremov@linux.com>
+In-Reply-To: <20190916204158.6889-3-efremov@linux.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michael Kelley <mikelley@microsoft.com>, Wei Hu <weh@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, "lee.jones@linaro.org" <lee.jones@linaro.org>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "info@metux.net" <info@metux.net>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "sashal@kernel.org" <sashal@kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, Haiyang Zhang <haiyan>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Cc: devel@driverdev.osuosl.org, linux-s390@vger.kernel.org, linux-hyperv@vger.kernel.org, linux-usb@vger.kernel.org, linux-ia64@vger.kernel.org, linux-scsi@vger.kernel.org, kvm@vger.kernel.org, linux-serial@vger.kernel.org, linux-pci@vger.kernel.org, x86@kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, Denis Efremov <efremov@linux.com>, linux-ide@vger.kernel.org, netdev@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 
-From: Michael Kelley <mikelley@microsoft.com>  Sent: Wednesday, September 18, 2019 2:48 PM
-> >
-> > Without deferred IO support, hyperv_fb driver informs the host to refresh
-> > the entire guest frame buffer at fixed rate, e.g. at 20Hz, no matter there
-> > is screen update or not. This patch supports deferred IO for screens in
-> > graphics mode and also enables the frame buffer on-demand refresh. The
-> > highest refresh rate is still set at 20Hz.
-> >
-> > Currently Hyper-V only takes a physical address from guest as the starting
-> > address of frame buffer. This implies the guest must allocate contiguous
-> > physical memory for frame buffer. In addition, Hyper-V Gen 2 VMs only
-> > accept address from MMIO region as frame buffer address. Due to these
-> > limitations on Hyper-V host, we keep a shadow copy of frame buffer
-> > in the guest. This means one more copy of the dirty rectangle inside
-> > guest when doing the on-demand refresh. This can be optimized in the
-> > future with help from host. For now the host performance gain from deferred
-> > IO outweighs the shadow copy impact in the guest.
-> >
-> > Signed-off-by: Wei Hu <weh@microsoft.com>
+Code that iterates over all standard PCI BARs typically uses
+PCI_STD_RESOURCE_END, but this is error-prone because it requires
+"i <= PCI_STD_RESOURCE_END" rather than something like
+"i < PCI_STD_NUM_BARS". We could add such a definition and use it the same
+way PCI_SRIOV_NUM_BARS is used. The patchset also replaces constant (6)
+with new define PCI_STD_NUM_BARS where appropriate and removes local
+declarations for the number of PCI BARs.
 
-Sasha -- this patch and one other from Wei Hu for the Hyper-V frame buffer
-driver should be ready.  Both patches affect only the Hyper-V frame buffer
-driver so can go through the Hyper-V tree.  Can you pick these up?  Thx.
+Changes in v3:
+  - Updated commits description.
+  - Refactored "< PCI_ROM_RESOURCE" with "< PCI_STD_NUM_BARS" in loops.
+  - Refactored "<= BAR_5" with "< PCI_STD_NUM_BARS" in loops.
+  - Removed local define GASKET_NUM_BARS.
+  - Removed local define PCI_NUM_BAR_RESOURCES.
 
-Michael
+Changes in v2:
+  - Reversed checks in pci_iomap_range,pci_iomap_wc_range.
+  - Refactored loops in vfio_pci to keep PCI_STD_RESOURCES.
+  - Added 2 new patches to replace the magic constant with new define.
+  - Splitted net patch in v1 to separate stmmac and dwc-xlgmac patches.
+
+Denis Efremov (26):
+  PCI: Add define for the number of standard PCI BARs
+  PCI: hv: Use PCI_STD_NUM_BARS
+  PCI: dwc: Use PCI_STD_NUM_BARS
+  PCI: endpoint: Use PCI_STD_NUM_BARS
+  misc: pci_endpoint_test: Use PCI_STD_NUM_BARS
+  s390/pci: Use PCI_STD_NUM_BARS
+  x86/PCI: Loop using PCI_STD_NUM_BARS
+  alpha/PCI: Use PCI_STD_NUM_BARS
+  ia64: Use PCI_STD_NUM_BARS
+  stmmac: pci: Loop using PCI_STD_NUM_BARS
+  net: dwc-xlgmac: Loop using PCI_STD_NUM_BARS
+  ixgb: use PCI_STD_NUM_BARS
+  e1000: Use PCI_STD_NUM_BARS
+  rapidio/tsi721: Loop using PCI_STD_NUM_BARS
+  efifb: Loop using PCI_STD_NUM_BARS
+  fbmem: use PCI_STD_NUM_BARS
+  vfio_pci: Loop using PCI_STD_NUM_BARS
+  scsi: pm80xx: Use PCI_STD_NUM_BARS
+  ata: sata_nv: Use PCI_STD_NUM_BARS
+  staging: gasket: Use PCI_STD_NUM_BARS
+  serial: 8250_pci: Use PCI_STD_NUM_BARS
+  pata_atp867x: Use PCI_STD_NUM_BARS
+  memstick: use PCI_STD_NUM_BARS
+  USB: core: Use PCI_STD_NUM_BARS
+  usb: pci-quirks: Use PCI_STD_NUM_BARS
+  devres: use PCI_STD_NUM_BARS
+
+ arch/alpha/kernel/pci-sysfs.c                 |  8 ++---
+ arch/ia64/sn/pci/pcibr/pcibr_dma.c            |  4 +--
+ arch/s390/include/asm/pci.h                   |  5 +--
+ arch/s390/include/asm/pci_clp.h               |  6 ++--
+ arch/s390/pci/pci.c                           | 16 +++++-----
+ arch/s390/pci/pci_clp.c                       |  6 ++--
+ arch/x86/pci/common.c                         |  2 +-
+ arch/x86/pci/intel_mid_pci.c                  |  2 +-
+ drivers/ata/pata_atp867x.c                    |  2 +-
+ drivers/ata/sata_nv.c                         |  2 +-
+ drivers/memstick/host/jmb38x_ms.c             |  2 +-
+ drivers/misc/pci_endpoint_test.c              |  8 ++---
+ drivers/net/ethernet/intel/e1000/e1000.h      |  1 -
+ drivers/net/ethernet/intel/e1000/e1000_main.c |  2 +-
+ drivers/net/ethernet/intel/ixgb/ixgb.h        |  1 -
+ drivers/net/ethernet/intel/ixgb/ixgb_main.c   |  2 +-
+ .../net/ethernet/stmicro/stmmac/stmmac_pci.c  |  4 +--
+ .../net/ethernet/synopsys/dwc-xlgmac-pci.c    |  2 +-
+ drivers/pci/controller/dwc/pci-dra7xx.c       |  2 +-
+ .../pci/controller/dwc/pci-layerscape-ep.c    |  2 +-
+ drivers/pci/controller/dwc/pcie-artpec6.c     |  2 +-
+ .../pci/controller/dwc/pcie-designware-plat.c |  2 +-
+ drivers/pci/controller/dwc/pcie-designware.h  |  2 +-
+ drivers/pci/controller/pci-hyperv.c           | 10 +++---
+ drivers/pci/endpoint/functions/pci-epf-test.c | 10 +++---
+ drivers/pci/pci-sysfs.c                       |  4 +--
+ drivers/pci/pci.c                             | 13 ++++----
+ drivers/pci/proc.c                            |  4 +--
+ drivers/pci/quirks.c                          |  4 +--
+ drivers/rapidio/devices/tsi721.c              |  2 +-
+ drivers/scsi/pm8001/pm8001_hwi.c              |  2 +-
+ drivers/scsi/pm8001/pm8001_init.c             |  2 +-
+ drivers/staging/gasket/gasket_constants.h     |  3 --
+ drivers/staging/gasket/gasket_core.c          | 12 +++----
+ drivers/staging/gasket/gasket_core.h          |  4 +--
+ drivers/tty/serial/8250/8250_pci.c            |  8 ++---
+ drivers/usb/core/hcd-pci.c                    |  2 +-
+ drivers/usb/host/pci-quirks.c                 |  2 +-
+ drivers/vfio/pci/vfio_pci.c                   | 11 ++++---
+ drivers/vfio/pci/vfio_pci_config.c            | 32 ++++++++++---------
+ drivers/vfio/pci/vfio_pci_private.h           |  4 +--
+ drivers/video/fbdev/core/fbmem.c              |  4 +--
+ drivers/video/fbdev/efifb.c                   |  2 +-
+ include/linux/pci-epc.h                       |  2 +-
+ include/linux/pci.h                           |  2 +-
+ include/uapi/linux/pci_regs.h                 |  1 +
+ lib/devres.c                                  |  2 +-
+ 47 files changed, 112 insertions(+), 115 deletions(-)
+
+-- 
+2.21.0

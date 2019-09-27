@@ -1,28 +1,83 @@
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 17 Sep 2019 18:14:45 +0000
-Subject: Re: [PATCH v4 1/2] dt-bindings: backlight: lm3630a: add enable_gpios
-Message-Id: <20190917181445.GA2875@bogus>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 27 Sep 2019 09:47:08 +0000
+Subject: [PATCH v2] fbdev: c2p: Fix link failure on non-inlining
+Message-Id: <20190927094708.11563-1-geert@linux-m68k.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190912213257.24147-1-andreas@kemnade.info>
- <20190912213257.24147-2-andreas@kemnade.info>
-In-Reply-To: <20190912213257.24147-2-andreas@kemnade.info>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Cc: lee.jones@linaro.org, daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org, Andreas Kemnade <andreas@kemnade.info>
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Masahiro Yamada <yamada.masahiro@socionext.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Nick Desaulniers <ndesaulniers@google.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-m68k@vger.kernel.org, linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Thu, 12 Sep 2019 23:32:56 +0200, Andreas Kemnade wrote:
-> add enable-gpios to describe HWEN pin
-> 
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
-> changes in v2: added example
-> changes in v3: added Acked-by
-> changes in v4: moved enable-gpios to the right position
->   in the example
->  .../bindings/leds/backlight/lm3630a-backlight.yaml           | 5 +++++
->  1 file changed, 5 insertions(+)
-> 
+When the compiler decides not to inline the Chunky-to-Planar core
+functions, the build fails with:
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+    c2p_planar.c:(.text+0xd6): undefined reference to `c2p_unsupported'
+    c2p_planar.c:(.text+0x1dc): undefined reference to `c2p_unsupported'
+    c2p_iplan2.c:(.text+0xc4): undefined reference to `c2p_unsupported'
+    c2p_iplan2.c:(.text+0x150): undefined reference to `c2p_unsupported'
+
+Fix this by marking the functions __always_inline.
+
+While this could be triggered before by manually enabling both
+CONFIG_OPTIMIZE_INLINING and CONFIG_CC_OPTIMIZE_FOR_SIZE, it was exposed
+in the m68k defconfig by commit ac7c3e4ff401b304 ("compiler: enable
+CONFIG_OPTIMIZE_INLINING forcibly").
+
+Fixes: 9012d011660ea5cf ("compiler: allow all arches to enable CONFIG_OPTIMIZE_INLINING")
+Reported-by: noreply@ellerman.id.au
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Reviewed-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+---
+This is a fix for v5.4-rc1.
+
+v2:
+  - Add Reviewed-by,
+  - Fix Fixes,
+  - Add more explanation.
+---
+ drivers/video/fbdev/c2p_core.h | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/fbdev/c2p_core.h b/drivers/video/fbdev/c2p_core.h
+index e1035a865fb945f0..45a6d895a7d7208e 100644
+--- a/drivers/video/fbdev/c2p_core.h
++++ b/drivers/video/fbdev/c2p_core.h
+@@ -29,7 +29,7 @@ static inline void _transp(u32 d[], unsigned int i1, unsigned int i2,
+ 
+ extern void c2p_unsupported(void);
+ 
+-static inline u32 get_mask(unsigned int n)
++static __always_inline u32 get_mask(unsigned int n)
+ {
+ 	switch (n) {
+ 	case 1:
+@@ -57,7 +57,7 @@ static inline u32 get_mask(unsigned int n)
+      *  Transpose operations on 8 32-bit words
+      */
+ 
+-static inline void transp8(u32 d[], unsigned int n, unsigned int m)
++static __always_inline void transp8(u32 d[], unsigned int n, unsigned int m)
+ {
+ 	u32 mask = get_mask(n);
+ 
+@@ -99,7 +99,7 @@ static inline void transp8(u32 d[], unsigned int n, unsigned int m)
+      *  Transpose operations on 4 32-bit words
+      */
+ 
+-static inline void transp4(u32 d[], unsigned int n, unsigned int m)
++static __always_inline void transp4(u32 d[], unsigned int n, unsigned int m)
+ {
+ 	u32 mask = get_mask(n);
+ 
+@@ -126,7 +126,7 @@ static inline void transp4(u32 d[], unsigned int n, unsigned int m)
+      *  Transpose operations on 4 32-bit words (reverse order)
+      */
+ 
+-static inline void transp4x(u32 d[], unsigned int n, unsigned int m)
++static __always_inline void transp4x(u32 d[], unsigned int n, unsigned int m)
+ {
+ 	u32 mask = get_mask(n);
+ 
+-- 
+2.17.1

@@ -1,59 +1,119 @@
-From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
-Date: Tue, 29 Oct 2019 23:22:07 +0000
-Subject: [PATCH 2/2] staging: sm750fb: Replace multiple spaces with tabs when it suits
-Message-Id: <20191029232207.4113-3-gabrielabittencourt00@gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 01 Oct 2019 12:58:33 +0000
+Subject: [PATCH v4 3/7] backlight: gpio: simplify the platform data handling
+Message-Id: <20191001125837.4472-4-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191029232207.4113-1-gabrielabittencourt00@gmail.com>
-In-Reply-To: <20191029232207.4113-1-gabrielabittencourt00@gmail.com>
+References: <20191001125837.4472-1-brgl@bgdev.pl>
+In-Reply-To: <20191001125837.4472-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org, trivial@kernel.org
-Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Replace multiple spaces before some comments with one tab. Aligning the
-comment with the function below it.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Now that the last user of platform data (sh ecovec24) defines a proper
+GPIO lookup and sets the 'default-on' device property, we can drop the
+platform_data-specific GPIO handling and unify a big chunk of code.
+
+The only field used from the platform data is now the fbdev pointer.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- drivers/staging/sm750fb/sm750_accel.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
+ drivers/video/backlight/gpio_backlight.c | 62 +++++-------------------
+ 1 file changed, 11 insertions(+), 51 deletions(-)
 
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index 5925d7c7d464..8faa601c700b 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -243,21 +243,21 @@ int sm750_hw_copyarea(struct lynx_accel *accel,
- 	 */
- 	write_dpr(accel, DE_WINDOW_DESTINATION_BASE, dBase); /* dpr44 */
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 7e1990199fae..20c5311c7ed2 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -6,7 +6,6 @@
+ #include <linux/backlight.h>
+ #include <linux/err.h>
+ #include <linux/fb.h>
+-#include <linux/gpio.h> /* Only for legacy support */
+ #include <linux/gpio/consumer.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -54,28 +53,6 @@ static const struct backlight_ops gpio_backlight_ops = {
+ 	.check_fb	= gpio_backlight_check_fb,
+ };
  
--    /*
--     * Program pitch (distance between the 1st points of two adjacent lines).
--     * Note that input pitch is BYTE value, but the 2D Pitch register uses
--     * pixel values. Need Byte to pixel conversion.
--     */
-+	/*
-+	 * Program pitch (distance between the 1st points of two adjacent lines).
-+	 * Note that input pitch is BYTE value, but the 2D Pitch register uses
-+	 * pixel values. Need Byte to pixel conversion.
-+	 */
- 	write_dpr(accel, DE_PITCH,
- 		  ((dPitch / Bpp << DE_PITCH_DESTINATION_SHIFT) &
- 		   DE_PITCH_DESTINATION_MASK) |
- 		  (sPitch / Bpp & DE_PITCH_SOURCE_MASK)); /* dpr10 */
+-static int gpio_backlight_probe_dt(struct platform_device *pdev,
+-				   struct gpio_backlight *gbl)
+-{
+-	struct device *dev = &pdev->dev;
+-	int ret;
+-
+-	gbl->def_value = device_property_read_bool(dev, "default-on");
+-
+-	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+-	if (IS_ERR(gbl->gpiod)) {
+-		ret = PTR_ERR(gbl->gpiod);
+-
+-		if (ret != -EPROBE_DEFER) {
+-			dev_err(dev,
+-				"Error: The gpios parameter is missing or invalid.\n");
+-		}
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+ static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+ {
+ 	struct device_node *node = gbl->dev->of_node;
+@@ -107,35 +84,18 @@ static int gpio_backlight_probe(struct platform_device *pdev)
  
--    /*
--     * Screen Window width in Pixels.
--     * 2D engine uses this value to calculate the linear address in frame buffer
--     * for a given point.
--     */
-+	/*
-+	 * Screen Window width in Pixels.
-+	 * 2D engine uses this value to calculate the linear address in frame buffer
-+	 * for a given point.
-+	 */
- 	write_dpr(accel, DE_WINDOW_WIDTH,
- 		  ((dPitch / Bpp << DE_WINDOW_WIDTH_DST_SHIFT) &
- 		   DE_WINDOW_WIDTH_DST_MASK) |
+ 	gbl->dev = &pdev->dev;
+ 
+-	if (pdev->dev.fwnode) {
+-		ret = gpio_backlight_probe_dt(pdev, gbl);
+-		if (ret)
+-			return ret;
+-	} else if (pdata) {
+-		/*
+-		 * Legacy platform data GPIO retrieveal. Do not expand
+-		 * the use of this code path, currently only used by one
+-		 * SH board.
+-		 */
+-		unsigned long flags = GPIOF_DIR_OUT;
+-
++	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+-		gbl->def_value = pdata->def_value;
+-		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+-
+-		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+-					    pdata ? pdata->name : "backlight");
+-		if (ret < 0) {
+-			dev_err(&pdev->dev, "unable to request GPIO\n");
+-			return ret;
+-		}
+-		gbl->gpiod = gpio_to_desc(pdata->gpio);
+-		if (!gbl->gpiod)
+-			return -EINVAL;
+-	} else {
+-		dev_err(&pdev->dev,
+-			"failed to find platform data or device tree node.\n");
+-		return -ENODEV;
++
++	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
++
++	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_ASIS);
++	if (IS_ERR(gbl->gpiod)) {
++		ret = PTR_ERR(gbl->gpiod);
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev,
++				"Error: The gpios parameter is missing or invalid.\n");
++		return ret;
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
 -- 
-2.20.1
+2.23.0

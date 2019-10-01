@@ -1,38 +1,45 @@
-From: Wei Hu <weh@microsoft.com>
-Date: Fri, 25 Oct 2019 08:09:34 +0000
-Subject: RE: [PATCH] video: hyperv: hyperv_fb: Use physical memory for fb on HyperV Gen 1 VMs.
-Message-Id: <PU1P153MB0169EA21993B5893EA7569FABB650@PU1P153MB0169.APCP153.PROD.OUTLOOK.COM>
+From: Sasha Levin <sashal@kernel.org>
+Date: Tue, 01 Oct 2019 18:48:28 +0000
+Subject: Re: [PATHC v6] video: hyperv: hyperv_fb: Support deferred IO for Hyper-V frame buffer driver
+Message-Id: <20191001184828.GF8171@sasha-vm>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191022110905.4032-1-weh@microsoft.com>
-	<20191023091037.GB21910@lst.de>
-In-Reply-To: <20191023091037.GB21910-jcswGhMUV9g@public.gmane.org>
+References: <20190918060227.6834-1-weh@microsoft.com>
+ <DM5PR21MB0137DA408FE59E8C1171CFFCD78E0@DM5PR21MB0137.namprd21.prod.outlook.com>
+ <DM5PR21MB01375E8543451D4550D622CDD7880@DM5PR21MB0137.namprd21.prod.outlook.com>
+In-Reply-To: <DM5PR21MB01375E8543451D4550D622CDD7880@DM5PR21MB0137.namprd21.prod.outlook.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "hch-jcswGhMUV9g@public.gmane.org" <hch-jcswGhMUV9g@public.gmane.org>
-Cc: "sashal-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <sashal-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, "info-EcKl7qYKIbxeoWH0uzbU5w@public.gmane.org" <info-EcKl7qYKIbxeoWH0uzbU5w@public.gmane.org>, "alexandre.belloni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org" <alexandre.belloni-LDxbnhwyfcJBDgjK7y7TUQ@public.gmane.org>, Stephen Hemminger <sthemmin-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, "arnd-r2nGTMty4D4@public.gmane.org" <arnd-r2nGTMty4D4@public.gmane.org>, "b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org" <b.zolnierkie-Sze3O3UU22JBDgjK7y7TUQ@public.gmane.org>, "sam-uyr5N9Q2VtJg9hUCZPvPmw@public.gmane.org" <sam-uyr5N9Q2VtJg9hUCZPvPmw@public.gmane.org>, Haiyang Zhang <haiyangz-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, Dexuan Cui <decui-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, "linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-fbdev-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org" <dri-devel-PD4FTy7X32lNgt0PjOBp9y5qC8QIuHrW@public.gmane.org>, "linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, "iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org" <iommu-cunTk1MwBs9QetFLy7KEm3xJsTq8ys+cHZ5vskTnxNA@public.gmane.org>, "linux-hyperv-u79uwXL29TY76Z2rM5mHXA@public.gmane.org" <linux-hyperv-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, Michael Kelley <mikelley-0li6OtcxBFHby3iVrkZq2A@public.gmane.org>, "gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org" <gregkh-hQyY1W1yCW8ekmWlsbkhG0B+6BGkLq7r@public.gmane.org>, "mchehab+samsung-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org" <mchehab+samsung-DgEjT+Ai2ygdnm+yROfE0A@public.gmane.org>, KY
+To: Michael Kelley <mikelley@microsoft.com>
+Cc: "info@metux.net" <info@metux.net>, "alexandre.belloni@bootlin.com" <alexandre.belloni@bootlin.com>, Wei Hu <weh@microsoft.com>, "shc_work@mail.ru" <shc_work@mail.ru>, "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>, Haiyang Zhang <haiyangz@microsoft.com>, "rdunlap@infradead.org" <rdunlap@infradead.org>, Dexuan Cui <decui@microsoft.com>, "linux-hyperv@vger.kernel.org" <linux-hyperv@vger.kernel.org>, "dri-devel@lists.freedesktop.org" <dri-devel@lists.freedesktop.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "baijiaju1990@gmail.com" <baijiaju1990@gmail.com>, "linux-fbdev@vger.kernel.org" <linux-fbdev@vger.kernel.org>, Stephen Hemminger <sthemmin@microsoft.com>, KY Srinivasan <kys@microsoft.com>, "lee.jones@linaro.org" <lee.jones@linaro.org>
 
-VGhhbmtzIGZvciB0aGUgcmV2aWV3LiBQbGVhc2Ugc2VlIG15IHJlc3BvbnNlIGlubGluZS4NCg0K
-PiA+ICsJc2VsZWN0IERNQV9DTUENCj4gDQo+IFRo0ZZzIG5lZWRzIHRvIGJlDQo+IA0KPiAJc2Vs
-ZWN0IERNQV9DTUEgaWYgSEFWRV9ETUFfQ09OVElHVU9VUw0KPiANCj4gPiArI2luY2x1ZGUgPGxp
-bnV4L2RtYS1jb250aWd1b3VzLmg+DQo+IA0KPiA+ICsJLyogQWxsb2NhdGUgZnJvbSBDTUEgKi8N
-Cj4gPiArCS8vIHJlcXVlc3RfcGFnZXMgPSAocmVxdWVzdF9zaXplID4+IFBBR0VfU0hJRlQpICsg
-MTsNCj4gPiArCXJlcXVlc3RfcGFnZXMgPSAocm91bmRfdXAocmVxdWVzdF9zaXplLCBQQUdFX1NJ
-WkUpID4+IFBBR0VfU0hJRlQpOw0KPiA+ICsJcGFnZSA9IGRtYV9hbGxvY19mcm9tX2NvbnRpZ3Vv
-dXMoTlVMTCwgcmVxdWVzdF9wYWdlcywgMCwgZmFsc2UpOw0KPiANCj4gZG1hX2FsbG9jX2Zyb21f
-Y29udGlndW91cyBpcyBhbiBpbnRlcm5hbCBoZWxwZXIsIHlvdSBtdXN0IHVzZSBpdA0KPiB0aHJv
-dWdoIGRtYV9hbGxvY19jb2hlcmVudCBhbmQgcGFzcyBhIHN0cnVjdCBkZXZpY2UgdG8gdGhhdCBm
-dW5jdGlvbi4NCj4gDQoNCkNhbiBJIGRpcmVjdGx5IHVzZSBjbWFfYWxsb2MoKSBhbmQgY21hX3Jl
-bGVhc2UoKSBpbiB0aGlzIGNhc2U/IFRoZSBjb250aWd1b3VzDQptZW1vcnkgYWxsb2NhdGVkIGlz
-IGp1c3QgZm9yIHZpcnR1YWwgZnJhbWVidWZmZXIgZGV2aWNlLCBub3QgZm9yIGFueSBETUENCm9w
-ZXJhdGlvbi4gSSB0aGluayB1c2luZyBkbWFfYWxsb2NfY29oZXJlbnQoKSBtaWdodCBiZSBhIGJp
-dCBvZiBvdmVya2lsbC4NCg0KPiA+ICsJaWYgKCFnZW4ydm0pIHsNCj4gPiArCQlwZGV2ID0gcGNp
-X2dldF9kZXZpY2UoUENJX1ZFTkRPUl9JRF9NSUNST1NPRlQsDQo+ID4gKwkJCVBDSV9ERVZJQ0Vf
-SURfSFlQRVJWX1ZJREVPLCBOVUxMKTsNCj4gPiArCQlpZiAoIXBkZXYpIHsNCj4gPiArCQkJcHJf
-ZXJyKCJVbmFibGUgdG8gZmluZCBQQ0kgSHlwZXItViB2aWRlb1xuIik7DQo+ID4gKwkJCXJldHVy
-biAtRU5PREVWOw0KPiA+ICsJCX0NCj4gPiArCX0NCj4gDQo+IFBsZWFzZSBhY3R1YWxseSBpbXBs
-ZW1lbnQgYSBwY2lfZHJpdmVyIGluc3RlYWQgb2YgaGFja3MgbGlrZSB0aGlzLg0KPiANCg0KSSBk
-b24ndCBxdWl0ZSBmb2xsb3cgdGhpcy4gV2hhdCBkbyB5b3UgbWVhbiBpbXBsZW1lbnRpbmcgYSBw
-Y2lfZHJpdmVyDQppbiB0aGlzIGNhc2U/DQoNCj4gPiArCQkJcGFyLT5uZWVkX2RvY29weSA9IGZh
-bHNlOw0KPiA+ICsJCQlnb3RvIGdldG1lbTE7DQo+ID4gKwkJfSBlbHNlIHsNCj4gDQo+IE5vIG5l
-ZWQgZm9yIGFuIGVsc2UgYWZ0ZXIgYSBnb3RvLg0KVGhhbmtzLiBXaWxsIGRvLg0KDQpXZWkNCg=
+On Fri, Sep 20, 2019 at 05:26:34PM +0000, Michael Kelley wrote:
+>From: Michael Kelley <mikelley@microsoft.com>  Sent: Wednesday, September 18, 2019 2:48 PM
+>> >
+>> > Without deferred IO support, hyperv_fb driver informs the host to refresh
+>> > the entire guest frame buffer at fixed rate, e.g. at 20Hz, no matter there
+>> > is screen update or not. This patch supports deferred IO for screens in
+>> > graphics mode and also enables the frame buffer on-demand refresh. The
+>> > highest refresh rate is still set at 20Hz.
+>> >
+>> > Currently Hyper-V only takes a physical address from guest as the starting
+>> > address of frame buffer. This implies the guest must allocate contiguous
+>> > physical memory for frame buffer. In addition, Hyper-V Gen 2 VMs only
+>> > accept address from MMIO region as frame buffer address. Due to these
+>> > limitations on Hyper-V host, we keep a shadow copy of frame buffer
+>> > in the guest. This means one more copy of the dirty rectangle inside
+>> > guest when doing the on-demand refresh. This can be optimized in the
+>> > future with help from host. For now the host performance gain from deferred
+>> > IO outweighs the shadow copy impact in the guest.
+>> >
+>> > Signed-off-by: Wei Hu <weh@microsoft.com>
+>
+>Sasha -- this patch and one other from Wei Hu for the Hyper-V frame buffer
+>driver should be ready.  Both patches affect only the Hyper-V frame buffer
+>driver so can go through the Hyper-V tree.  Can you pick these up?  Thx.
+
+I can't get this to apply anywhere, what tree is it based on?
+
+--
+Thanks,
+Sasha

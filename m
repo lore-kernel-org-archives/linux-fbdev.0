@@ -1,39 +1,28 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 07 Oct 2019 03:31:54 +0000
-Subject: [PATCH v5 1/7] backlight: gpio: remove unneeded include
-Message-Id: <20191007033200.13443-2-brgl@bgdev.pl>
+From: Dan Carpenter <dan.carpenter@oracle.com>
+Date: Tue, 01 Oct 2019 13:34:43 +0000
+Subject: Re: [PATCH] Staging: fbtft: fix memory leak in fbtft_framebuffer_alloc
+Message-Id: <20191001133408.GG22609@kadam>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191007033200.13443-1-brgl@bgdev.pl>
-In-Reply-To: <20191007033200.13443-1-brgl@bgdev.pl>
+References: <20190930030949.28615-1-navid.emamdoost@gmail.com>
+In-Reply-To: <20190930030949.28615-1-navid.emamdoost@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Navid Emamdoost <navid.emamdoost@gmail.com>
+Cc: Jan Sebastian =?iso-8859-1?Q?G=F6tte?= <linux@jaseg.net>, devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Nishad Kamdar <nishadkamdar@gmail.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, smccaman@umn.edu, kjlu@umn.edu, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, emamd001@umn.edu, Bhanusree Pola <bhanusreemahesh@gmail.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Phil Reid <preid@electromag.com.au>, Sam Ravnborg <sam@ravnborg.org>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Sun, Sep 29, 2019 at 10:09:45PM -0500, Navid Emamdoost wrote:
+> In fbtft_framebuffer_alloc the error handling path should take care of
+> releasing frame buffer after it is allocated via framebuffer_alloc, too.
+> Therefore, in two failure cases the goto destination is changed to
+> address this issue.
+> 
+> Fixes: c296d5f9957c ("staging: fbtft: core support")
+> Signed-off-by: Navid Emamdoost <navid.emamdoost@gmail.com>
 
-We no longer use any symbols from of_gpio.h. Remove this include.
+Looks good.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/backlight/gpio_backlight.c | 1 -
- 1 file changed, 1 deletion(-)
+Reviewed-by: Dan Carpenter <dan.carpenter@gmail.com>
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 18e053e4716c..7e1990199fae 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -12,7 +12,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <linux/platform_data/gpio_backlight.h>
- #include <linux/platform_device.h>
- #include <linux/property.h>
--- 
-2.23.0
+regards,
+dan carpenter

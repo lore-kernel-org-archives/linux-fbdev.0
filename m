@@ -1,43 +1,44 @@
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Wed, 30 Oct 2019 21:10:48 +0000
-Subject: Re: [PATCH 38/46] video: backlight: tosa: use gpio lookup table
-Message-Id: <87h83qlz1j.fsf@belgarion.home>
+From: eddy william <fiacregnansa@gmail.com>
+Date: Tue, 01 Oct 2019 12:37:13 +0000
+Subject: hello
+Message-Id: <CANUG1183HOE=oenTwgay65fKYQmT+dy0dQBy7UY1zPueVmvUgg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191018154052.1276506-1-arnd@arndb.de>
- <20191018154201.1276638-38-arnd@arndb.de>
-In-Reply-To: <20191018154201.1276638-38-arnd@arndb.de> (Arnd Bergmann's
- message of "Fri, 18 Oct 2019 17:41:53 +0200")
+References: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
+In-Reply-To: <CACemp=4mAaepgGr1XuueXxXwf2P0M-7DMC57uKMRYGhWCvzMbQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, dri-devel@lists.freedesktop.org, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@zonque.org>, linux-fbdev@vger.kernel.org, Lee Jones <lee.jones@linaro.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: linux-fbdev@vger.kernel.org
 
-Arnd Bergmann <arnd@arndb.de> writes:
+Hello
 
-> The driver should not require a machine specific header. Change
-> it to pass the gpio line through a lookup table, and move the
-> timing generator definitions into the drivers itself.
->
-> Cc: Lee Jones <lee.jones@linaro.org>
-> Cc: Daniel Thompson <daniel.thompson@linaro.org>
-> Cc: Jingoo Han <jingoohan1@gmail.com>
-> Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: linux-fbdev@vger.kernel.org
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
->
-> ---
-> I'm not overly confident that I got the correct device names
-> for the lookup table, it would be good if someone could
-> double-check.
-Ah the I2C and SPI devices querrying GPIOs ... unless someone does an actual
-test, this will probably be very regression prone ...
+My name is Eddy William I am a lawyer by profession. I wish to offer you
+the next of kin to my client. You will inherit the sum of ($14.2 Million)
+dollars my client left in the bank before his death.
 
-Anyway :
-Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
+My client is a citizen of your country who died in auto crash with his wife
+and only son. I will be entitled with 50% of the total fund while 50% will
+be for you.
+Please contact my private email here for more details:eddywilliam0003@gmail.com
 
-Cheers.
+Many thanks in advance,
+Mr.Eddy William
 
---
-Robert
+
+Hallo
+
+Mein Name ist Eddy William . Ich bin von Beruf Rechtsanwalt. Ich möchte
+Ihnen anbieten
+die nächsten Verwandten zu meinem Klienten. Sie erben die Summe von
+($14.2 Millionen US-Dollar)
+Dollar, die mein Kunde vor seinem Tod in der Bank gelassen hat.
+
+Mein Mandant ist ein Staatsbürger Ihres Landes, der mit seiner Frau
+bei einem Autounfall ums Leben gekommen ist
+und nur Sohn. Ich werde mit 50% des Gesamtfonds berechtigt sein, während 50%
+sein für dich.
+Bitte kontaktieren Sie meine private E-Mail hier für weitere
+Informationen: eddywilliam0003@gmail.com
+
+Vielen Dank im Voraus,
+Mr.Eddy William

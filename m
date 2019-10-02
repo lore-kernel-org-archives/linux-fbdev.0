@@ -1,57 +1,53 @@
-From: kgunda@codeaurora.org
-Date: Fri, 04 Oct 2019 11:52:55 +0000
-Subject: Re: [PATCH V6 5/8] backlight: qcom-wled: Restructure the driver for WLED3
-Message-Id: <7300c740873439b341d05ee40e071c3f@codeaurora.org>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Wed, 02 Oct 2019 16:56:01 +0000
+Subject: [PATCH v2] backlight: pwm_bl: Don't assign levels table repeatedly
+Message-Id: <20191002095541.v2.1.I4f2ede1f55ddd1c72b0303b7fd7f73a782fa33e5@changeid>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1569825553-26039-1-git-send-email-kgunda@codeaurora.org>
- <1569825553-26039-6-git-send-email-kgunda@codeaurora.org>
- <6f50ea19-f320-b4e6-f269-4d1e2189fa77@ti.com>
-In-Reply-To: <6f50ea19-f320-b4e6-f269-4d1e2189fa77@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dan Murphy <dmurphy@ti.com>
-Cc: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Matthias Kaehlcke <mka@chromium.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On 2019-10-01 20:47, Dan Murphy wrote:
-> Kiran
-> 
-> On 9/30/19 1:39 AM, Kiran Gunda wrote:
->> Restructure the driver to add the support for new WLED
->> peripherals.
->> 
->> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
->> ---
->>   drivers/video/backlight/qcom-wled.c | 395 
->> ++++++++++++++++++++++--------------
->>   1 file changed, 245 insertions(+), 150 deletions(-)
->> 
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
->> index f191242..740f1b6 100644
->> --- a/drivers/video/backlight/qcom-wled.c
->> +++ b/drivers/video/backlight/qcom-wled.c
->> @@ -7,59 +7,71 @@
->>   #include <linux/module.h>
->>   #include <linux/of.h>
->>   #include <linux/of_device.h>
->> +#include <linux/of_address.h>
->>   #include <linux/regmap.h>
->>     /* From DT binding */
->> +#define WLED_MAX_STRINGS				4
->> +
->>   #define WLED_DEFAULT_BRIGHTNESS				2048
->>   -#define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
->> -#define WLED3_CTRL_REG_VAL_BASE				0x40
->> +#define WLED_SINK_REG_BRIGHT_MAX			0xFFF
-> 
-> Why did you change some of these again?
-> 
-> Can you just change it to the final #define in patch 4/8?
-> 
-> Dan
-> 
-> <snip>
-Ok.. Looks like some thing went wrong with this series. I will re-upload 
-it again.
+pwm_backlight_probe() re-assigns pb->levels for every brightness
+level. This is not needed and was likely not intended, since
+neither side of the assignment changes during the loop. Assign
+the field only once.
+
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
+
+Changes in v2:
+- removed curly braces from for loop
+
+ drivers/video/backlight/pwm_bl.c | 7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 746eebc411df..05d3b3802658 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -564,18 +564,17 @@ static int pwm_backlight_probe(struct platform_device *pdev)
+ 	memset(&props, 0, sizeof(struct backlight_properties));
+ 
+ 	if (data->levels) {
++		pb->levels = data->levels;
++
+ 		/*
+ 		 * For the DT case, only when brightness levels is defined
+ 		 * data->levels is filled. For the non-DT case, data->levels
+ 		 * can come from platform data, however is not usual.
+ 		 */
+-		for (i = 0; i <= data->max_brightness; i++) {
++		for (i = 0; i <= data->max_brightness; i++)
+ 			if (data->levels[i] > pb->scale)
+ 				pb->scale = data->levels[i];
+ 
+-			pb->levels = data->levels;
+-		}
+-
+ 		if (pwm_backlight_is_linear(data))
+ 			props.scale = BACKLIGHT_SCALE_LINEAR;
+ 		else
+-- 
+2.23.0.444.g18eeb5a265-goog

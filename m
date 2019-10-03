@@ -1,141 +1,150 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Wed, 02 Oct 2019 14:40:28 +0000
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Thu, 03 Oct 2019 08:42:21 +0000
 Subject: Re: [PATCH v4 7/7] backlight: gpio: pull gpio_backlight_initial_power_state() into probe
-Message-Id: <20191002144028.6lljre76zxd52oui@holly.lan>
+Message-Id: <CAMRc=MeKFG=gyogSn+WdUXwhHZE74-FwVfxgKrHNpScbFZFZrg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191001125837.4472-1-brgl@bgdev.pl>
- <20191001125837.4472-8-brgl@bgdev.pl>
- <20191002103318.6owxberhml6mbtxm@holly.lan>
- <CAMRc=Me8RmYLh9WKYma7XE1H7tEZ8Jd-wsFyKVv_etO0T92zwg@mail.gmail.com>
-In-Reply-To: <CAMRc=Me8RmYLh9WKYma7XE1H7tEZ8Jd-wsFyKVv_etO0T92zwg@mail.gmail.com>
+References: <20191001125837.4472-1-brgl@bgdev.pl> <20191001125837.4472-8-brgl@bgdev.pl>
+ <20191002103318.6owxberhml6mbtxm@holly.lan> <CAMRc=Me8RmYLh9WKYma7XE1H7tEZ8Jd-wsFyKVv_etO0T92zwg@mail.gmail.com>
+ <20191002144028.6lljre76zxd52oui@holly.lan>
+In-Reply-To: <20191002144028.6lljre76zxd52oui@holly.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Jacopo Mondi <jacopo@jmondi.org>, Rich Felker <dalias@libc.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Jingoo Han <jingoohan1@gmail.com>, linux-sh@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, linux-fbdev@vger.kernel.org, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Lee Jones <lee.jones@linaro.org>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>, linux-sh@vger.kernel.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-On Wed, Oct 02, 2019 at 01:46:17PM +0200, Bartosz Golaszewski wrote:
-> śr., 2 paź 2019 o 12:33 Daniel Thompson <daniel.thompson@linaro.org> napisał(a):
+śr., 2 paź 2019 o 16:40 Daniel Thompson <daniel.thompson@linaro.org> napisał(a):
+>
+> On Wed, Oct 02, 2019 at 01:46:17PM +0200, Bartosz Golaszewski wrote:
+> > śr., 2 paź 2019 o 12:33 Daniel Thompson <daniel.thompson@linaro.org> napisał(a):
+> > >
+> > > On Tue, Oct 01, 2019 at 02:58:37PM +0200, Bartosz Golaszewski wrote:
+> > > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > >
+> > > > The probe function in the gpio-backlight driver is quite short. If we
+> > > > pull gpio_backlight_initial_power_state() into probe we can drop two
+> > > > more fields from struct gpio_backlight and shrink the driver code.
+> > > >
+> > > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> > > > ---
+> > > >  drivers/video/backlight/gpio_backlight.c | 36 ++++++++----------------
+> > > >  1 file changed, 12 insertions(+), 24 deletions(-)
+> > > >
+> > > > diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+> > > > index 6247687b6330..37ec184f0c5c 100644
+> > > > --- a/drivers/video/backlight/gpio_backlight.c
+> > > > +++ b/drivers/video/backlight/gpio_backlight.c
+> > > > @@ -17,11 +17,8 @@
+> > > >  #include <linux/slab.h>
+> > > >
+> > > >  struct gpio_backlight {
+> > > > -     struct device *dev;
+> > > >       struct device *fbdev;
+> > > > -
+> > > >       struct gpio_desc *gpiod;
+> > > > -     int def_value;
+> > > >  };
+> > > >
+> > > >  static int gpio_backlight_update_status(struct backlight_device *bl)
+> > > > @@ -53,41 +50,24 @@ static const struct backlight_ops gpio_backlight_ops = {
+> > > >       .check_fb       = gpio_backlight_check_fb,
+> > > >  };
+> > > >
+> > > > -static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+> > >
+> > > I'm inclined to view deleting this function as removing a comment (e.g.
+> > > the function name helps us to read the code)!
+> > >
 > >
-> > On Tue, Oct 01, 2019 at 02:58:37PM +0200, Bartosz Golaszewski wrote:
-> > > From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > >
-> > > The probe function in the gpio-backlight driver is quite short. If we
-> > > pull gpio_backlight_initial_power_state() into probe we can drop two
-> > > more fields from struct gpio_backlight and shrink the driver code.
-> > >
-> > > Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-> > > ---
-> > >  drivers/video/backlight/gpio_backlight.c | 36 ++++++++----------------
-> > >  1 file changed, 12 insertions(+), 24 deletions(-)
-> > >
-> > > diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-> > > index 6247687b6330..37ec184f0c5c 100644
-> > > --- a/drivers/video/backlight/gpio_backlight.c
-> > > +++ b/drivers/video/backlight/gpio_backlight.c
-> > > @@ -17,11 +17,8 @@
-> > >  #include <linux/slab.h>
-> > >
-> > >  struct gpio_backlight {
-> > > -     struct device *dev;
-> > >       struct device *fbdev;
-> > > -
-> > >       struct gpio_desc *gpiod;
-> > > -     int def_value;
-> > >  };
-> > >
-> > >  static int gpio_backlight_update_status(struct backlight_device *bl)
-> > > @@ -53,41 +50,24 @@ static const struct backlight_ops gpio_backlight_ops = {
-> > >       .check_fb       = gpio_backlight_check_fb,
-> > >  };
-> > >
-> > > -static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
-> >
-> > I'm inclined to view deleting this function as removing a comment (e.g.
-> > the function name helps us to read the code)!
-> >
-> 
-> Right, but why not just add a comment then?
+> > Right, but why not just add a comment then?
+>
+> I guess you could add a comment but keeping it pulled out in a function
+> makes it easier to compare against equivalent code in other drivers
+> (such as pwm_bl).
+>
 
-I guess you could add a comment but keeping it pulled out in a function
-makes it easier to compare against equivalent code in other drivers
-(such as pwm_bl).
+The pwm driver seems to be the only one that has this function and
+it's also much more complicated. Unless it's a hard NACK, I think that
+pulling all initialization into probe looks better and shrinks the
+driver visually.
 
+Bart
 
-Daniel.
-
-
-> The probe function is 50
-> lines long, there's really no need to split it. This will get inlined
-> anyway too.
-> 
-> Bart
-> 
-> > Removing the variables from the context structure is good but why not
-> > just pass them to the function and let the compiler decided whether or
-> > not to inline.
+>
+> Daniel.
+>
+>
+> > The probe function is 50
+> > lines long, there's really no need to split it. This will get inlined
+> > anyway too.
 > >
+> > Bart
 > >
-> > Daniel.
-> >
-> >
-> > > -{
-> > > -     struct device_node *node = gbl->dev->of_node;
-> > > -
-> > > -     /* Not booted with device tree or no phandle link to the node */
-> > > -     if (!node || !node->phandle)
-> > > -             return gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
-> > > -
-> > > -     /* if the enable GPIO is disabled, do not enable the backlight */
-> > > -     if (gpiod_get_value_cansleep(gbl->gpiod) = 0)
-> > > -             return FB_BLANK_POWERDOWN;
-> > > -
-> > > -     return FB_BLANK_UNBLANK;
-> > > -}
-> > > -
-> > > -
-> > >  static int gpio_backlight_probe(struct platform_device *pdev)
-> > >  {
-> > >       struct device *dev = &pdev->dev;
-> > >       struct gpio_backlight_platform_data *pdata = dev_get_platdata(dev);
-> > > +     struct device_node *of_node = dev->of_node;
-> > >       struct backlight_properties props;
-> > >       struct backlight_device *bl;
-> > >       struct gpio_backlight *gbl;
-> > > -     int ret;
-> > > +     int ret, def_value;
+> > > Removing the variables from the context structure is good but why not
+> > > just pass them to the function and let the compiler decided whether or
+> > > not to inline.
 > > >
-> > >       gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
-> > >       if (gbl = NULL)
-> > >               return -ENOMEM;
 > > >
-> > > -     gbl->dev = dev;
-> > > -
-> > >       if (pdata)
-> > >               gbl->fbdev = pdata->fbdev;
+> > > Daniel.
 > > >
-> > > -     gbl->def_value = device_property_read_bool(dev, "default-on");
-> > > +     def_value = device_property_read_bool(dev, "default-on");
 > > >
-> > >       gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
-> > >       if (IS_ERR(gbl->gpiod)) {
-> > > @@ -109,7 +89,15 @@ static int gpio_backlight_probe(struct platform_device *pdev)
-> > >               return PTR_ERR(bl);
-> > >       }
-> > >
-> > > -     bl->props.power = gpio_backlight_initial_power_state(gbl);
-> > > +     /* Not booted with device tree or no phandle link to the node */
-> > > +     if (!of_node || !of_node->phandle)
-> > > +             bl->props.power = def_value ? FB_BLANK_UNBLANK
-> > > +                                         : FB_BLANK_POWERDOWN;
-> > > +     else if (gpiod_get_value_cansleep(gbl->gpiod) = 0)
-> > > +             bl->props.power = FB_BLANK_POWERDOWN;
-> > > +     else
-> > > +             bl->props.power = FB_BLANK_UNBLANK;
-> > > +
-> > >       bl->props.brightness = 1;
-> > >
-> > >       backlight_update_status(bl);
-> > > --
-> > > 2.23.0
-> > >
+> > > > -{
+> > > > -     struct device_node *node = gbl->dev->of_node;
+> > > > -
+> > > > -     /* Not booted with device tree or no phandle link to the node */
+> > > > -     if (!node || !node->phandle)
+> > > > -             return gbl->def_value ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN;
+> > > > -
+> > > > -     /* if the enable GPIO is disabled, do not enable the backlight */
+> > > > -     if (gpiod_get_value_cansleep(gbl->gpiod) == 0)
+> > > > -             return FB_BLANK_POWERDOWN;
+> > > > -
+> > > > -     return FB_BLANK_UNBLANK;
+> > > > -}
+> > > > -
+> > > > -
+> > > >  static int gpio_backlight_probe(struct platform_device *pdev)
+> > > >  {
+> > > >       struct device *dev = &pdev->dev;
+> > > >       struct gpio_backlight_platform_data *pdata = dev_get_platdata(dev);
+> > > > +     struct device_node *of_node = dev->of_node;
+> > > >       struct backlight_properties props;
+> > > >       struct backlight_device *bl;
+> > > >       struct gpio_backlight *gbl;
+> > > > -     int ret;
+> > > > +     int ret, def_value;
+> > > >
+> > > >       gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
+> > > >       if (gbl == NULL)
+> > > >               return -ENOMEM;
+> > > >
+> > > > -     gbl->dev = dev;
+> > > > -
+> > > >       if (pdata)
+> > > >               gbl->fbdev = pdata->fbdev;
+> > > >
+> > > > -     gbl->def_value = device_property_read_bool(dev, "default-on");
+> > > > +     def_value = device_property_read_bool(dev, "default-on");
+> > > >
+> > > >       gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+> > > >       if (IS_ERR(gbl->gpiod)) {
+> > > > @@ -109,7 +89,15 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+> > > >               return PTR_ERR(bl);
+> > > >       }
+> > > >
+> > > > -     bl->props.power = gpio_backlight_initial_power_state(gbl);
+> > > > +     /* Not booted with device tree or no phandle link to the node */
+> > > > +     if (!of_node || !of_node->phandle)
+> > > > +             bl->props.power = def_value ? FB_BLANK_UNBLANK
+> > > > +                                         : FB_BLANK_POWERDOWN;
+> > > > +     else if (gpiod_get_value_cansleep(gbl->gpiod) == 0)
+> > > > +             bl->props.power = FB_BLANK_POWERDOWN;
+> > > > +     else
+> > > > +             bl->props.power = FB_BLANK_UNBLANK;
+> > > > +
+> > > >       bl->props.brightness = 1;
+> > > >
+> > > >       backlight_update_status(bl);
+> > > > --
+> > > > 2.23.0
+> > > >

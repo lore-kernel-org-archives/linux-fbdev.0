@@ -1,39 +1,44 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Sat, 19 Oct 2019 08:35:48 +0000
-Subject: [PATCH v6 1/9] backlight: gpio: remove unneeded include
-Message-Id: <20191019083556.19466-2-brgl@bgdev.pl>
+From: Lee Jones <lee.jones@linaro.org>
+Date: Thu, 03 Oct 2019 11:42:42 +0000
+Subject: Re: [PATCH v4 2/2] backlight: lm3630a: Add an enable gpio for the HWEN pin
+Message-Id: <20191003114242.GE21172@dell>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191019083556.19466-1-brgl@bgdev.pl>
-In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
+References: <20190912213257.24147-1-andreas@kemnade.info>
+ <20190912213257.24147-3-andreas@kemnade.info>
+In-Reply-To: <20190912213257.24147-3-andreas@kemnade.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Andreas Kemnade <andreas@kemnade.info>
+Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+On Thu, 12 Sep 2019, Andreas Kemnade wrote:
 
-We no longer use any symbols from of_gpio.h. Remove this include.
+> For now just enable it in the probe function to allow I2C
+> access. Disabling also means resetting the register values
+> to default and according to the datasheet does not give
+> power savings.
+> 
+> Tested on Kobo Clara HD.
+> 
+> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
+> Reviewed-by: Dan Murphy <dmurphy@ti.com>
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> ---
+> changes in v2:
+> - simplification
+> - correct gpio direction initialisation
+> 
+> changes in v3:
+> - removed legacy include
+> 
+>  drivers/video/backlight/lm3630a_bl.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/backlight/gpio_backlight.c | 1 -
- 1 file changed, 1 deletion(-)
+Applied, thanks.
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 18e053e4716c..7e1990199fae 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -12,7 +12,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <linux/platform_data/gpio_backlight.h>
- #include <linux/platform_device.h>
- #include <linux/property.h>
 -- 
-2.23.0
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog

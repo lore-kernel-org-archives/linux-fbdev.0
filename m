@@ -1,35 +1,37 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Mon, 14 Oct 2019 07:27:34 +0000
-Subject: Re: [PATCH v2 3/4] backlight: pwm_bl: drop use of int_pow()
-Message-Id: <20191014072734.GG4545@dell>
+From: Matthias Kaehlcke <mka@chromium.org>
+Date: Thu, 03 Oct 2019 21:35:02 +0000
+Subject: [PATCH] backlight: pwm_bl: Add missing curly branches in else branch
+Message-Id: <20191003213502.102110-1-mka@chromium.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191008120327.24208-1-linux@rasmusvillemoes.dk>
- <20191008120327.24208-4-linux@rasmusvillemoes.dk>
-In-Reply-To: <20191008120327.24208-4-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Matthias Kaehlcke <mka@chromium.org>, linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org
 
-On Tue, 08 Oct 2019, Rasmus Villemoes wrote:
+Add curly braces to an 'else' branch in pwm_backlight_update_status()
+to match the corresponding 'if' branch.
 
-> For a fixed small exponent of 3, it is more efficient to simply use
-> two explicit multiplications rather than calling the int_pow() library
-> function: Aside from the function call overhead, its implementation
-> using repeated squaring means it ends up doing four 64x64
-> multiplications.
-> 
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-> ---
->  drivers/video/backlight/pwm_bl.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
 
-Applied, thanks.
+ drivers/video/backlight/pwm_bl.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 746eebc411df..130abff2705f 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -125,8 +125,9 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+ 		state.duty_cycle = compute_duty_cycle(pb, brightness);
+ 		pwm_apply_state(pb->pwm, &state);
+ 		pwm_backlight_power_on(pb);
+-	} else
++	} else {
+ 		pwm_backlight_power_off(pb);
++	}
+ 
+ 	if (pb->notify_after)
+ 		pb->notify_after(pb->dev, brightness);
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.23.0.444.g18eeb5a265-goog

@@ -1,35 +1,63 @@
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 31 Oct 2019 22:12:10 +0000
-Subject: Re: [PATCH] fbdev: potential information leak in do_fb_ioctl()
-Message-Id: <87ftj8k1j9.fsf@x220.int.ebiederm.org>
+From: Andreas Kemnade <andreas@kemnade.info>
+Date: Sat, 05 Oct 2019 18:19:19 +0000
+Subject: Re: [PATCH] backlight: lm3630a: fix module aliases
+Message-Id: <20191005201919.013524da@aktux>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191029182320.GA17569@mwanda>
-        <87zhhjjryk.fsf@x220.int.ebiederm.org> <20191030074321.GD2656@xps-13>
-        <87r22ujaqq.fsf@x220.int.ebiederm.org> <20191030201201.GA3209@xps-13>
-        <734ef2833e4e4e7bded92e9d964bc2415aadf3c4.camel@perches.com>
-In-Reply-To: <734ef2833e4e4e7bded92e9d964bc2415aadf3c4.camel@perches.com> (Joe
-        Perches's message of "Thu, 31 Oct 2019 11:16:39 -0700")
+References: <20190910152359.7448-1-andreas@kemnade.info>
+        <20190911105148.4prmcr2f2r36sgrf@holly.lan>
+In-Reply-To: <20190911105148.4prmcr2f2r36sgrf@holly.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Joe Perches <joe@perches.com>
-Cc: Andrea Righi <andrea.righi@canonical.com>, Dan Carpenter <dan.carpenter@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Daniel Vetter <daniel.vetter@ffwll.ch>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Peter Rosin <peda@axentia.se>, Gerd Hoffmann <kraxel@redhat.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, security@kernel.org, Kees Cook <keescook@chromium.org>, Julia Lawall <Julia.Lawall@lip6.fr>
+To: Daniel Thompson <daniel.thompson@linaro.org>
+Cc: lee.jones@linaro.org, jingoohan1@gmail.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, hns@goldelico.com
 
-Joe Perches <joe@perches.com> writes:
+Hi,
 
-> On Wed, 2019-10-30 at 21:12 +0100, Andrea Righi wrote:
->> Then memset() + memcpy() is probably the best option,
->> since copying all those fields one by one looks quite ugly to me...
->
-> A memset of an automatic before a memcpy to the same
-> automatic is unnecessary.
+hmm, this bugfix has not arrived in -next or any -fixes branch I am
+aware of yet. I hope it is not forgotten...
+so a friendly ping.
 
-You still need to guarantee that all of the holes in the
-structure you are copying are initialized before you copy it.
+Regards,
+Andreas
 
-Otherwise you are just changing which unitialized memory that
-is being copied to userspace.
+On Wed, 11 Sep 2019 11:51:48 +0100
+Daniel Thompson <daniel.thompson@linaro.org> wrote:
 
-Which is my concern with your very simple suggestion.
-
-Eric
+> On Tue, Sep 10, 2019 at 05:23:59PM +0200, Andreas Kemnade wrote:
+> > Devicetree aliases are missing, so that module autoloading
+> > does not work properly.
+> > 
+> > Signed-off-by: Andreas Kemnade <andreas@kemnade.info>  
+> 
+> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+> 
+> 
+> > ---
+> >  drivers/video/backlight/lm3630a_bl.c | 4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/video/backlight/lm3630a_bl.c b/drivers/video/backlight/lm3630a_bl.c
+> > index 3b45a1733198..9d67c07db2f2 100644
+> > --- a/drivers/video/backlight/lm3630a_bl.c
+> > +++ b/drivers/video/backlight/lm3630a_bl.c
+> > @@ -617,12 +617,14 @@ static const struct i2c_device_id lm3630a_id[] = {
+> >  	{}
+> >  };
+> >  
+> > +MODULE_DEVICE_TABLE(i2c, lm3630a_id);
+> > +
+> >  static const struct of_device_id lm3630a_match_table[] = {
+> >  	{ .compatible = "ti,lm3630a", },
+> >  	{ },
+> >  };
+> >  
+> > -MODULE_DEVICE_TABLE(i2c, lm3630a_id);
+> > +MODULE_DEVICE_TABLE(of, lm3630a_match_table);
+> >  
+> >  static struct i2c_driver lm3630a_i2c_driver = {
+> >  	.driver = {
+> > -- 
+> > 2.11.0
+> >   
+> 

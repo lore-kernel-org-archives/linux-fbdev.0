@@ -1,8 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 07 Oct 2019 03:30:54 +0000
+Date: Mon, 07 Oct 2019 03:31:53 +0000
 Subject: [PATCH v5 0/7] backlight: gpio: simplify the driver
-Message-Id: <20191007033101.13343-1-brgl@bgdev.pl>
+Message-Id: <20191007033200.13443-1-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191007033101.13343-1-brgl@bgdev.pl>
+In-Reply-To: <20191007033101.13343-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

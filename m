@@ -1,44 +1,55 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 24 Oct 2019 12:10:47 +0000
-Subject: Re: [PATCH v7 0/9] backlight: gpio: simplify the driver
-Message-Id: <20191024121047.GM15843@dell>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Mon, 07 Oct 2019 15:28:00 +0000
+Subject: Re: [PATCH 3/5] backlight: pwm_bl: drop use of int_pow()
+Message-Id: <20191007152800.3nhbf7h7knumriz4@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191022083630.28175-1-brgl@bgdev.pl>
- <CAMRc=MeyrDZgmHJ+2SMipP7y9NggxiVfkAh4kCLePFWvUku9aQ@mail.gmail.com>
- <20191023155941.q563d3cfizre4zvt@holly.lan>
- <20191024064726.GB15843@dell>
- <20191024071703.6keoebzlfnn2qmyd@uno.localdomain>
-In-Reply-To: <20191024071703.6keoebzlfnn2qmyd@uno.localdomain>
+References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
+ <20190919140620.32407-3-linux@rasmusvillemoes.dk>
+In-Reply-To: <20190919140620.32407-3-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Jacopo Mondi <jacopo@jmondi.org>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>, Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Linux-sh list <linux-sh@vger.kernel.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, "open list:DRM PANEL DRIVERS" <dri-devel@lists.freedesktop.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Thu, 24 Oct 2019, Jacopo Mondi wrote:
-> On Thu, Oct 24, 2019 at 07:47:26AM +0100, Lee Jones wrote:
-> > On Wed, 23 Oct 2019, Daniel Thompson wrote:
+On Thu, Sep 19, 2019 at 04:06:18PM +0200, Rasmus Villemoes wrote:
+> The scheduler uses a (currently private) fixed_power_int() in its load
+> average computation for computing powers of numbers 0 < x < 1
+> expressed as fixed-point numbers, which is also what we want here. But
+> that requires the scale to be a power-of-2.
 
-[...]
+It feels like there is some rationale missing in the description here.
 
-> > > > Jacopo is travelling until November 1st and won't be able to test this
-> > > > again before this date. Do you think you can pick it up and in case
-> > > > anything's broken on SH, we can fix it after v5.5-rc1, so that it
-> > > > doesn't miss another merge window?
-> >
-> > November 1st (-rc6) will be fine.
-> >
-> > I'd rather apply it late-tested than early-non-tested.
-> >
-> > Hopefully Jacopo can prioritise testing this on Thursday or Friday,
-> > since Monday will be -rc7 which is really cutting it fine.
+What is the benefit of replacing the explicit int_pow() with the
+implicit multiplications?
+
+
+Daniel.
+
+
 > 
-> I'll do my best, I'll get home Friday late afternoon :)
-
-Thanks. We'd all really appreciate it.
-
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+> We could (and a following patch will) change to use a power-of-2 scale,
+> but for a fixed small exponent of 3, there's no advantage in using
+> repeated squaring.
+> 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+> ---
+>  drivers/video/backlight/pwm_bl.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index 9252d51f31b9..aee6839e024a 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -179,7 +179,8 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
+>  	if (lightness <= (8 * scale)) {
+>  		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
+>  	} else {
+> -		retval = int_pow((lightness + (16 * scale)) / 116, 3);
+> +		retval = (lightness + (16 * scale)) / 116;
+> +		retval *= retval * retval;
+>  		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
+>  	}
+>  
+> -- 
+> 2.20.1

@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Sat, 19 Oct 2019 08:35:54 +0000
-Subject: [PATCH v6 7/9] backlight: gpio: remove unused fields from platform data
-Message-Id: <20191019083556.19466-8-brgl@bgdev.pl>
+Date: Mon, 07 Oct 2019 03:31:55 +0000
+Subject: [PATCH v5 2/7] sh: ecovec24: add additional properties to the backlight device
+Message-Id: <20191007033200.13443-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191019083556.19466-1-brgl@bgdev.pl>
-In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
+References: <20191007033200.13443-1-brgl@bgdev.pl>
+In-Reply-To: <20191007033200.13443-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,29 +13,83 @@ Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.free
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Remove the platform data fields that nobody uses.
+Add a GPIO lookup entry and a device property for GPIO backlight to the
+board file. Tie them to the platform device which is now registered using
+platform_device_register_full() because of the properties. These changes
+are inactive now but will be used once the gpio backlight driver is
+modified.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- include/linux/platform_data/gpio_backlight.h | 3 ---
- 1 file changed, 3 deletions(-)
+ arch/sh/boards/mach-ecovec24/setup.c | 30 +++++++++++++++++++++++-----
+ 1 file changed, 25 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
-index 34179d600360..1a8b5b1946fe 100644
---- a/include/linux/platform_data/gpio_backlight.h
-+++ b/include/linux/platform_data/gpio_backlight.h
-@@ -9,9 +9,6 @@ struct device;
- 
- struct gpio_backlight_platform_data {
- 	struct device *fbdev;
--	int gpio;
--	int def_value;
--	const char *name;
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index acaa97459531..aaa8ea62636f 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -371,6 +371,19 @@ static struct platform_device lcdc_device = {
+ 	},
  };
  
++static struct gpiod_lookup_table gpio_backlight_lookup = {
++	.dev_id		= "gpio-backlight.0",
++	.table = {
++		GPIO_LOOKUP("sh7724_pfc", GPIO_PTR1, NULL, GPIO_ACTIVE_HIGH),
++		{ }
++	},
++};
++
++static struct property_entry gpio_backlight_props[] = {
++	PROPERTY_ENTRY_BOOL("default-on"),
++	{ }
++};
++
+ static struct gpio_backlight_platform_data gpio_backlight_data = {
+ 	.fbdev = &lcdc_device.dev,
+ 	.gpio = GPIO_PTR1,
+@@ -378,13 +391,15 @@ static struct gpio_backlight_platform_data gpio_backlight_data = {
+ 	.name = "backlight",
+ };
+ 
+-static struct platform_device gpio_backlight_device = {
++static const struct platform_device_info gpio_backlight_device_info = {
+ 	.name = "gpio-backlight",
+-	.dev = {
+-		.platform_data = &gpio_backlight_data,
+-	},
++	.data = &gpio_backlight_data,
++	.size_data = sizeof(gpio_backlight_data),
++	.properties = gpio_backlight_props,
+ };
+ 
++static struct platform_device *gpio_backlight_device;
++
+ /* CEU0 */
+ static struct ceu_platform_data ceu0_pdata = {
+ 	.num_subdevs			= 2,
+@@ -1006,7 +1021,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
+ 	&usb1_common_device,
+ 	&usbhs_device,
+ 	&lcdc_device,
+-	&gpio_backlight_device,
+ 	&keysc_device,
+ 	&cn12_power,
+ #if defined(CONFIG_MMC_SDHI) || defined(CONFIG_MMC_SDHI_MODULE)
+@@ -1462,6 +1476,12 @@ static int __init arch_setup(void)
  #endif
+ #endif
+ 
++	gpiod_add_lookup_table(&gpio_backlight_lookup);
++	gpio_backlight_device = platform_device_register_full(
++					&gpio_backlight_device_info);
++	if (IS_ERR(gpio_backlight_device))
++		return PTR_ERR(gpio_backlight_device);
++
+ 	return platform_add_devices(ecovec_devices,
+ 				    ARRAY_SIZE(ecovec_devices));
+ }
 -- 
 2.23.0

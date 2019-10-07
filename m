@@ -1,42 +1,42 @@
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?=  <u.kleine-koenig@pengutronix.de>
-Date: Wed, 23 Oct 2019 15:05:17 +0000
-Subject: Re: [PATCH] backlight: pwm_bl: configure pwm only once per backlight toggle
-Message-Id: <20191023150517.u4hmnd6m4qyshu6q@pengutronix.de>
+From: Daniel Thompson <daniel.thompson@linaro.org>
+Date: Mon, 07 Oct 2019 15:13:19 +0000
+Subject: Re: [PATCH 2/5] backlight: pwm_bl: eliminate a 64/32 division
+Message-Id: <20191007151319.de6ko7n5dypqgyce@holly.lan>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191017120917.fcb7x4fq4tbl2iat@pengutronix.de>
- <20191017125932.GB3768303@ulmo>
- <aa73b430-527c-8066-ad9c-edab62a05fc9@ysoft.com>
- <20191017151437.GA85210@ulmo>
- <CAHCN7xJduG9yxAhuW6D1_kpd5=p7LhO_YCWjVxcCoW5bmSEJGQ@mail.gmail.com>
- <20191017171326.GA531411@ulmo>
- <CAHCN7xJWco5gTdjmJZRbNqi1aO+ytor5XMJWQX8a38tfGbz+xg@mail.gmail.com>
- <f6d2427d-21fe-e89c-0bfe-572bc1d00863@ysoft.com>
- <CAHCN7xJJH12sdeLb97OutJqThv+TzMaNj-Y50_C9G7UgEQCbxg@mail.gmail.com>
- <CAOMZO5AgUjA8eSNVM_rKi-7NAX8hj039STcJ4Ov4w-0m4WTf8w@mail.gmail.com>
-In-Reply-To: <CAOMZO5AgUjA8eSNVM_rKi-7NAX8hj039STcJ4Ov4w-0m4WTf8w@mail.gmail.com>
+References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
+ <20190919140620.32407-2-linux@rasmusvillemoes.dk>
+In-Reply-To: <20190919140620.32407-2-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-To: Fabio Estevam <festevam@gmail.com>
-Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Michal =?utf-8?B?Vm9rw6HEjQ==?= <michal.vokac@ysoft.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>, Adam Ford <aford173@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-On Wed, Oct 23, 2019 at 11:23:11AM -0300, Fabio Estevam wrote:
-> On Wed, Oct 23, 2019 at 11:16 AM Adam Ford <aford173@gmail.com> wrote:
->=20
-> > What is the plan to address the regression for 5.4?  I wasn't sure if
-> > we're going to apply the i.mx fixes or temporarily revert the
-> > offending patch, or something else. (or maybe nothing at all)
->=20
-> Yes, I do see the regression on a imx53 board with 5.4-rc too and also
-> interested on a fix.
+On Thu, Sep 19, 2019 at 04:06:17PM +0200, Rasmus Villemoes wrote:
+> lightness*1000 is nowhere near overflowing 32 bits, so we can just use
+> an ordinary 32/32 division, which is much cheaper than the 64/32 done
+> via do_div().
+> 
+> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 
-Thierry already sent a revert of my change to the list. We only
-discussed the wording shortly and I expect that this revert will make it
-into 5.4.
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
 
-Best regards
-Uwe
-
---=20
-Pengutronix e.K.                           | Uwe Kleine-K=F6nig            |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+> ---
+>  drivers/video/backlight/pwm_bl.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index be36be1cacb7..9252d51f31b9 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -177,7 +177,7 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
+>  	 */
+>  	lightness *= 100;
+>  	if (lightness <= (8 * scale)) {
+> -		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9033);
+> +		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
+>  	} else {
+>  		retval = int_pow((lightness + (16 * scale)) / 116, 3);
+>  		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
+> -- 
+> 2.20.1

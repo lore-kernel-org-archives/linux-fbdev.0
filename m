@@ -1,7 +1,7 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 07 Oct 2019 03:31:57 +0000
-Subject: [PATCH v5 4/7] sh: ecovec24: don't set unused fields in platform data
-Message-Id: <20191007033200.13443-5-brgl@bgdev.pl>
+Date: Mon, 07 Oct 2019 03:31:54 +0000
+Subject: [PATCH v5 1/7] backlight: gpio: remove unneeded include
+Message-Id: <20191007033200.13443-2-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20191007033200.13443-1-brgl@bgdev.pl>
 In-Reply-To: <20191007033200.13443-1-brgl@bgdev.pl>
@@ -13,29 +13,27 @@ Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.free
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Platform data fields other than fbdev are no longer used by the
-backlight driver. Remove them.
+We no longer use any symbols from of_gpio.h. Remove this include.
 
 Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
- arch/sh/boards/mach-ecovec24/setup.c | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/video/backlight/gpio_backlight.c | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index aaa8ea62636f..dd427bac5cde 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -386,9 +386,6 @@ static struct property_entry gpio_backlight_props[] = {
- 
- static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.fbdev = &lcdc_device.dev,
--	.gpio = GPIO_PTR1,
--	.def_value = 1,
--	.name = "backlight",
- };
- 
- static const struct platform_device_info gpio_backlight_device_info = {
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 18e053e4716c..7e1990199fae 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -12,7 +12,6 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
+-#include <linux/of_gpio.h>
+ #include <linux/platform_data/gpio_backlight.h>
+ #include <linux/platform_device.h>
+ #include <linux/property.h>
 -- 
 2.23.0

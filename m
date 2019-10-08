@@ -1,144 +1,84 @@
-From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
-Date: Wed, 23 Oct 2019 13:12:53 +0000
-Subject: [PATCH v2] staging: sm750fb: Format description of parameters the to kernel doc format
-Message-Id: <20191023131253.20819-2-gabrielabittencourt00@gmail.com>
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Date: Tue, 08 Oct 2019 12:03:27 +0000
+Subject: [PATCH v2 4/4] backlight: pwm_bl: switch to power-of-2 base for fixed-point math
+Message-Id: <20191008120327.24208-5-linux@rasmusvillemoes.dk>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191023131253.20819-1-gabrielabittencourt00@gmail.com>
-In-Reply-To: <20191023131253.20819-1-gabrielabittencourt00@gmail.com>
+References: <20191008120327.24208-1-linux@rasmusvillemoes.dk>
+In-Reply-To: <20191008120327.24208-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org
-Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+To: Thierry Reding <thierry.reding@gmail.com>, =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
 
-Cluster comments that describes parameters of functions and create one
-single comment before the function in kernel doc format.
+Using a power-of-2 instead of power-of-10 base makes the computations
+much cheaper. 2^16 is safe; retval never becomes more than 2^48 +
+2^32/2. On a 32 bit platform, the very expensive 64/32 division at the
+end of cie1931() instead becomes essentially free (a shift by 32 is
+just a register rename).
 
-Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
-
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
 ---
+ drivers/video/backlight/pwm_bl.c | 22 ++++++++++++----------
+ 1 file changed, 12 insertions(+), 10 deletions(-)
 
-Changes v2:
- - Add name of function at the begining of comment
- - Separate each parameter in individuals lines
-
-Here are the commands that I used to test my documentation and the
-respective outputs:
-
-$ kdoc_function sm750_acc.c sm750_hw_imageblit man
-In NAME:
- there is the name of the function, but it's without a brief description
-In ARGUMENTS:
- argument 'accel' is presented as '-- undescribed --'
-
-$ kdoc_function sm750_acc.c sm750_hw_copyarea man
-In NAME:
- there is the name of the function, but it's without a brief description
-In ARGUMENTS:
- argument 'accel' is presented as '-- undescribed --'
-
-$ kernel-doc -none sm750_accel.c
-2 Warnings:
-sm750_accel.c:155: warning: Function parameter or member 'accel'
-			    not described in 'sm750_hw_copyarea'
-sm750_accel.c:321: warning: Function parameter or member 'accel'
-			    not described in 'sm750_hw_imageblit'
-
-I appreciate Randy's explanation about how to test documentation.
-Thank you very much.
----
- drivers/staging/sm750fb/sm750_accel.c | 72 ++++++++++++++++-----------
- 1 file changed, 44 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
-index dbcbbd1055da..645813a87490 100644
---- a/drivers/staging/sm750fb/sm750_accel.c
-+++ b/drivers/staging/sm750fb/sm750_accel.c
-@@ -130,20 +130,28 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- 	return 0;
- }
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+index 273d3fb628a0..a99c2210c935 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -148,7 +148,8 @@ static const struct backlight_ops pwm_backlight_ops = {
+ };
  
--int sm750_hw_copyarea(
--struct lynx_accel *accel,
--unsigned int sBase,  /* Address of source: offset in frame buffer */
--unsigned int sPitch, /* Pitch value of source surface in BYTE */
--unsigned int sx,
--unsigned int sy,     /* Starting coordinate of source surface */
--unsigned int dBase,  /* Address of destination: offset in frame buffer */
--unsigned int dPitch, /* Pitch value of destination surface in BYTE */
--unsigned int Bpp,    /* Color depth of destination surface */
--unsigned int dx,
--unsigned int dy,     /* Starting coordinate of destination surface */
--unsigned int width,
--unsigned int height, /* width and height of rectangle in pixel value */
--unsigned int rop2)   /* ROP value */
-+/**
-+ * sm750_hm_copyarea
-+ * @sBase: Address of source: offset in frame buffer
-+ * @sPitch: Pitch value of source surface in BYTE
-+ * @sx: Starting x coordinate of source surface
-+ * @sy: Starting y coordinate of source surface
-+ * @dBase: Address of destination: offset in frame buffer
-+ * @dPitch: Pitch value of destination surface in BYTE
-+ * @Bpp: Color depth of destination surface
-+ * @dx: Starting x coordinate of destination surface
-+ * @dy: Starting y coordinate of destination surface
-+ * @width: width of rectangle in pixel value
-+ * @height: height of rectangle in pixel value
-+ * @rop2: ROP value
-+ */
-+int sm750_hw_copyarea(struct lynx_accel *accel,
-+		      unsigned int sBase, unsigned int sPitch,
-+		      unsigned int sx, unsigned int sy,
-+		      unsigned int dBase, unsigned int dPitch,
-+		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-+		      unsigned int width, unsigned int height,
-+		      unsigned int rop2)
+ #ifdef CONFIG_OF
+-#define PWM_LUMINANCE_SCALE	10000 /* luminance scale */
++#define PWM_LUMINANCE_SHIFT	16
++#define PWM_LUMINANCE_SCALE	(1 << PWM_LUMINANCE_SHIFT) /* luminance scale */
+ 
+ /*
+  * CIE lightness to PWM conversion.
+@@ -165,23 +166,25 @@ static const struct backlight_ops pwm_backlight_ops = {
+  * The following function does the fixed point maths needed to implement the
+  * above formula.
+  */
+-static u64 cie1931(unsigned int lightness, unsigned int scale)
++static u64 cie1931(unsigned int lightness)
  {
- 	unsigned int nDirection, de_ctrl;
+ 	u64 retval;
  
-@@ -288,20 +296,28 @@ static unsigned int deGetTransparency(struct lynx_accel *accel)
- 	return de_ctrl;
- }
+ 	/*
+ 	 * @lightness is given as a number between 0 and 1, expressed
+-	 * as a fixed-point number in scale @scale. Convert to a
+-	 * percentage, still expressed as a fixed-point number, so the
+-	 * above formulas can be applied.
++	 * as a fixed-point number in scale
++	 * PWM_LUMINANCE_SCALE. Convert to a percentage, still
++	 * expressed as a fixed-point number, so the above formulas
++	 * can be applied.
+ 	 */
+ 	lightness *= 100;
+-	if (lightness <= (8 * scale)) {
++	if (lightness <= (8 * PWM_LUMINANCE_SCALE)) {
+ 		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
+ 	} else {
+-		retval = (lightness + (16 * scale)) / 116;
++		retval = (lightness + (16 * PWM_LUMINANCE_SCALE)) / 116;
+ 		retval *= retval * retval;
+-		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
++		retval += 1ULL << (2*PWM_LUMINANCE_SHIFT - 1);
++		retval >>= 2*PWM_LUMINANCE_SHIFT;
+ 	}
  
--int sm750_hw_imageblit(struct lynx_accel *accel,
--		 const char *pSrcbuf, /* pointer to start of source buffer in system memory */
--		 u32 srcDelta,          /* Pitch value (in bytes) of the source buffer, +ive means top down and -ive mean button up */
--		 u32 startBit, /* Mono data can start at any bit in a byte, this value should be 0 to 7 */
--		 u32 dBase,    /* Address of destination: offset in frame buffer */
--		 u32 dPitch,   /* Pitch value of destination surface in BYTE */
--		 u32 bytePerPixel,      /* Color depth of destination surface */
--		 u32 dx,
--		 u32 dy,       /* Starting coordinate of destination surface */
--		 u32 width,
--		 u32 height,   /* width and height of rectangle in pixel value */
--		 u32 fColor,   /* Foreground color (corresponding to a 1 in the monochrome data */
--		 u32 bColor,   /* Background color (corresponding to a 0 in the monochrome data */
--		 u32 rop2)     /* ROP value */
-+/**
-+ * sm750_hw_imageblit
-+ * @pSrcbuf: pointer to start of source buffer in system memory
-+ * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
-+ *	      and -ive mean button up
-+ * @startBit: Mono data can start at any bit in a byte, this value should be
-+ *	      0 to 7
-+ * @dBase: Address of destination: offset in frame buffer
-+ * @dPitch: Pitch value of destination surface in BYTE
-+ * @bytePerPixel: Color depth of destination surface
-+ * @dx: Starting x coordinate of destination surface
-+ * @dy: Starting y coordinate of destination surface
-+ * @width: width of rectangle in pixel value
-+ * @height: height of rectangle in pixel value
-+ * @fColor: Foreground color (corresponding to a 1 in the monochrome data
-+ * @bColor: Background color (corresponding to a 0 in the monochrome data
-+ * @rop2: ROP value
-+ */
-+int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
-+		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
-+		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
-+		       u32 height, u32 fColor, u32 bColor, u32 rop2)
- {
- 	unsigned int ulBytesPerScan;
- 	unsigned int ul4BytesPerScan;
+ 	return retval;
+@@ -215,8 +218,7 @@ int pwm_backlight_brightness_default(struct device *dev,
+ 	/* Fill the table using the cie1931 algorithm */
+ 	for (i = 0; i < data->max_brightness; i++) {
+ 		retval = cie1931((i * PWM_LUMINANCE_SCALE) /
+-				 data->max_brightness, PWM_LUMINANCE_SCALE) *
+-				 period;
++				 data->max_brightness) * period;
+ 		retval = DIV_ROUND_CLOSEST_ULL(retval, PWM_LUMINANCE_SCALE);
+ 		if (retval > UINT_MAX)
+ 			return -EINVAL;
 -- 
 2.20.1

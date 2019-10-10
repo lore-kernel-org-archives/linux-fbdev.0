@@ -1,311 +1,674 @@
-From: kgunda@codeaurora.org
-Date: Thu, 17 Oct 2019 12:42:01 +0000
-Subject: Re: [PATCH V7 5/6] backlight: qcom-wled: add support for short circuit handling.
-Message-Id: <4218f677260d90ee763fe0cf02b3ba5d@codeaurora.org>
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Thu, 10 Oct 2019 20:30:12 +0000
+Subject: [PATCH 28/36] fbdev: s3c2410fb: remove mach header dependency
+Message-Id: <20191010203043.1241612-28-arnd@arndb.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1571220826-7740-1-git-send-email-kgunda@codeaurora.org>
- <1571220826-7740-6-git-send-email-kgunda@codeaurora.org>
- <20191017110945.6dbldlrykumvlpqm@holly.lan>
-In-Reply-To: <20191017110945.6dbldlrykumvlpqm@holly.lan>
+References: <20191010202802.1132272-1-arnd@arndb.de>
+ <20191010203043.1241612-1-arnd@arndb.de>
+In-Reply-To: <20191010203043.1241612-1-arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Daniel Thompson <daniel.thompson@linaro.org>
-Cc: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+To: Kukjin Kim <kgene@kernel.org>, Krzysztof Kozlowski <krzk@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-samsung-soc@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-stm32@st-md-mailman.stormreply.com, linux-arm-kernel@lists.infradead.org
 
-On 2019-10-17 16:39, Daniel Thompson wrote:
-> On Wed, Oct 16, 2019 at 03:43:45PM +0530, Kiran Gunda wrote:
->> Handle the short circuit interrupt and check if the short circuit
->> interrupt is valid. Re-enable the module to check if it goes
->> away. Disable the module altogether if the short circuit event
->> persists.
->> 
->> Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
->> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-> 
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> 
-Thanks for that !
->> ---
->>  drivers/video/backlight/qcom-wled.c | 132 
->> ++++++++++++++++++++++++++++++++++--
->>  1 file changed, 128 insertions(+), 4 deletions(-)
->> 
->> diff --git a/drivers/video/backlight/qcom-wled.c 
->> b/drivers/video/backlight/qcom-wled.c
->> index 2807b4b..b5b125c 100644
->> --- a/drivers/video/backlight/qcom-wled.c
->> +++ b/drivers/video/backlight/qcom-wled.c
->> @@ -2,6 +2,9 @@
->>  /* Copyright (c) 2015, Sony Mobile Communications, AB.
->>   */
->> 
->> +#include <linux/delay.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/ktime.h>
->>  #include <linux/kernel.h>
->>  #include <linux/backlight.h>
->>  #include <linux/module.h>
->> @@ -56,6 +59,16 @@
->>  #define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
->>  #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
->> 
->> +/* WLED4 specific control registers */
->> +#define WLED4_CTRL_REG_SHORT_PROTECT			0x5e
->> +#define  WLED4_CTRL_REG_SHORT_EN_MASK			BIT(7)
->> +
->> +#define WLED4_CTRL_REG_SEC_ACCESS			0xd0
->> +#define  WLED4_CTRL_REG_SEC_UNLOCK			0xa5
->> +
->> +#define WLED4_CTRL_REG_TEST1				0xe2
->> +#define  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2		0x09
->> +
->>  /* WLED4 specific sink registers */
->>  #define WLED4_SINK_REG_CURR_SINK			0x46
->>  #define  WLED4_SINK_REG_CURR_SINK_MASK			GENMASK(7, 4)
->> @@ -105,17 +118,23 @@ struct wled_config {
->>  	bool cs_out_en;
->>  	bool ext_gen;
->>  	bool cabc;
->> +	bool external_pfet;
->>  };
->> 
->>  struct wled {
->>  	const char *name;
->>  	struct device *dev;
->>  	struct regmap *regmap;
->> +	struct mutex lock;	/* Lock to avoid race from thread irq handler */
->> +	ktime_t last_short_event;
->>  	u16 ctrl_addr;
->>  	u16 sink_addr;
->>  	u16 max_string_count;
->>  	u32 brightness;
->>  	u32 max_brightness;
->> +	u32 short_count;
->> +	bool disabled_by_short;
->> +	bool has_short_detect;
->> 
->>  	struct wled_config cfg;
->>  	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
->> @@ -166,6 +185,9 @@ static int wled_module_enable(struct wled *wled, 
->> int val)
->>  {
->>  	int rc;
->> 
->> +	if (wled->disabled_by_short)
->> +		return -ENXIO;
->> +
->>  	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
->>  				WLED3_CTRL_REG_MOD_EN,
->>  				WLED3_CTRL_REG_MOD_EN_MASK,
->> @@ -202,18 +224,19 @@ static int wled_update_status(struct 
->> backlight_device *bl)
->>  	    bl->props.state & BL_CORE_FBBLANK)
->>  		brightness = 0;
->> 
->> +	mutex_lock(&wled->lock);
->>  	if (brightness) {
->>  		rc = wled->wled_set_brightness(wled, brightness);
->>  		if (rc < 0) {
->>  			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
->>  				rc);
->> -			return rc;
->> +			goto unlock_mutex;
->>  		}
->> 
->>  		rc = wled_sync_toggle(wled);
->>  		if (rc < 0) {
->>  			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
->> -			return rc;
->> +			goto unlock_mutex;
->>  		}
->>  	}
->> 
->> @@ -221,15 +244,61 @@ static int wled_update_status(struct 
->> backlight_device *bl)
->>  		rc = wled_module_enable(wled, !!brightness);
->>  		if (rc < 0) {
->>  			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
->> -			return rc;
->> +			goto unlock_mutex;
->>  		}
->>  	}
->> 
->>  	wled->brightness = brightness;
->> 
->> +unlock_mutex:
->> +	mutex_unlock(&wled->lock);
->> +
->>  	return rc;
->>  }
->> 
->> +#define WLED_SHORT_DLY_MS			20
->> +#define WLED_SHORT_CNT_MAX			5
->> +#define WLED_SHORT_RESET_CNT_DLY_US		USEC_PER_SEC
->> +
->> +static irqreturn_t wled_short_irq_handler(int irq, void *_wled)
->> +{
->> +	struct wled *wled = _wled;
->> +	int rc;
->> +	s64 elapsed_time;
->> +
->> +	wled->short_count++;
->> +	mutex_lock(&wled->lock);
->> +	rc = wled_module_enable(wled, false);
->> +	if (rc < 0) {
->> +		dev_err(wled->dev, "wled disable failed rc:%d\n", rc);
->> +		goto unlock_mutex;
->> +	}
->> +
->> +	elapsed_time = ktime_us_delta(ktime_get(),
->> +				      wled->last_short_event);
->> +	if (elapsed_time > WLED_SHORT_RESET_CNT_DLY_US)
->> +		wled->short_count = 1;
->> +
->> +	if (wled->short_count > WLED_SHORT_CNT_MAX) {
->> +		dev_err(wled->dev, "Short trigged %d times, disabling WLED 
->> forever!\n",
->> +			wled->short_count);
->> +		wled->disabled_by_short = true;
->> +		goto unlock_mutex;
->> +	}
->> +
->> +	wled->last_short_event = ktime_get();
->> +
->> +	msleep(WLED_SHORT_DLY_MS);
->> +	rc = wled_module_enable(wled, true);
->> +	if (rc < 0)
->> +		dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
->> +
->> +unlock_mutex:
->> +	mutex_unlock(&wled->lock);
->> +
->> +	return IRQ_HANDLED;
->> +}
->> +
->>  static int wled3_setup(struct wled *wled)
->>  {
->>  	u16 addr;
->> @@ -318,7 +387,7 @@ static int wled4_setup(struct wled *wled)
->>  	int rc, temp, i, j;
->>  	u16 addr;
->>  	u8 sink_en = 0;
->> -	u32 sink_cfg = 0;
->> +	u32 sink_cfg;
->> 
->>  	rc = regmap_update_bits(wled->regmap,
->>  				wled->ctrl_addr + WLED3_CTRL_REG_OVP,
->> @@ -340,6 +409,21 @@ static int wled4_setup(struct wled *wled)
->>  	if (rc < 0)
->>  		return rc;
->> 
->> +	if (wled->cfg.external_pfet) {
->> +		/* Unlock the secure register access */
->> +		rc = regmap_write(wled->regmap, wled->ctrl_addr +
->> +				  WLED4_CTRL_REG_SEC_ACCESS,
->> +				  WLED4_CTRL_REG_SEC_UNLOCK);
->> +		if (rc < 0)
->> +			return rc;
->> +
->> +		rc = regmap_write(wled->regmap,
->> +				  wled->ctrl_addr + WLED4_CTRL_REG_TEST1,
->> +				  WLED4_CTRL_REG_TEST1_EXT_FET_DTEST2);
->> +		if (rc < 0)
->> +			return rc;
->> +	}
->> +
->>  	rc = regmap_read(wled->regmap, wled->sink_addr +
->>  			 WLED4_SINK_REG_CURR_SINK, &sink_cfg);
->>  	if (rc < 0)
->> @@ -425,6 +509,7 @@ static int wled4_setup(struct wled *wled)
->>  	.num_strings = 4,
->>  	.switch_freq = 11,
->>  	.cabc = false,
->> +	.external_pfet = false,
->>  };
->> 
->>  static const u32 wled3_boost_i_limit_values[] = {
->> @@ -590,6 +675,7 @@ static int wled_configure(struct wled *wled, int 
->> version)
->>  		{ "qcom,cs-out", &cfg->cs_out_en, },
->>  		{ "qcom,ext-gen", &cfg->ext_gen, },
->>  		{ "qcom,cabc", &cfg->cabc, },
->> +		{ "qcom,external-pfet", &cfg->external_pfet, },
->>  	};
->> 
->>  	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
->> @@ -678,6 +764,38 @@ static int wled_configure(struct wled *wled, int 
->> version)
->>  	return 0;
->>  }
->> 
->> +static int wled_configure_short_irq(struct wled *wled,
->> +				    struct platform_device *pdev)
->> +{
->> +	int rc, short_irq;
->> +
->> +	if (!wled->has_short_detect)
->> +		return 0;
->> +
->> +	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
->> +				WLED4_CTRL_REG_SHORT_PROTECT,
->> +				WLED4_CTRL_REG_SHORT_EN_MASK,
->> +				WLED4_CTRL_REG_SHORT_EN_MASK);
->> +	if (rc < 0)
->> +		return rc;
->> +
->> +	short_irq = platform_get_irq_byname(pdev, "short");
->> +	if (short_irq < 0) {
->> +		dev_dbg(&pdev->dev, "short irq is not used\n");
->> +		return 0;
->> +	}
->> +
->> +	rc = devm_request_threaded_irq(wled->dev, short_irq,
->> +				       NULL, wled_short_irq_handler,
->> +				       IRQF_ONESHOT,
->> +				       "wled_short_irq", wled);
->> +	if (rc < 0)
->> +		dev_err(wled->dev, "Unable to request short_irq (err:%d)\n",
->> +			rc);
->> +
->> +	return rc;
->> +}
->> +
->>  static const struct backlight_ops wled_ops = {
->>  	.update_status = wled_update_status,
->>  };
->> @@ -711,6 +829,7 @@ static int wled_probe(struct platform_device 
->> *pdev)
->>  		return -ENODEV;
->>  	}
->> 
->> +	mutex_init(&wled->lock);
->>  	rc = wled_configure(wled, version);
->>  	if (rc)
->>  		return rc;
->> @@ -725,6 +844,7 @@ static int wled_probe(struct platform_device 
->> *pdev)
->>  		break;
->> 
->>  	case 4:
->> +		wled->has_short_detect = true;
->>  		rc = wled4_setup(wled);
->>  		if (rc) {
->>  			dev_err(&pdev->dev, "wled4_setup failed\n");
->> @@ -737,6 +857,10 @@ static int wled_probe(struct platform_device 
->> *pdev)
->>  		break;
->>  	}
->> 
->> +	rc = wled_configure_short_irq(wled, pdev);
->> +	if (rc < 0)
->> +		return rc;
->> +
->>  	val = WLED_DEFAULT_BRIGHTNESS;
->>  	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
->> 
->> --
->> The Qualcomm Innovation Center, Inc. is a member of the Code Aurora 
->> Forum,
->>  a Linux Foundation Collaborative Project
->> 
+The s3c2410fb driver is too deeply intertwined with the s3c24xx
+platform code. Change it in a way that avoids the use of platform
+header files but having all interface data in a platform_data
+header, and the private register definitions next to the driver
+itself.
+
+One ugly bit here is that the driver pokes directly into gpio
+registers, which are owned by another driver. Passing the
+mapped addresses in platform_data is somewhat suboptimal, but
+it is a small improvement over the previous version.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/arm/mach-s3c24xx/include/mach/fb.h       |  2 --
+ arch/arm/mach-s3c24xx/mach-amlm5900.c         |  7 ++--
+ arch/arm/mach-s3c24xx/mach-anubis.c           |  1 -
+ arch/arm/mach-s3c24xx/mach-at2440evb.c        |  3 +-
+ arch/arm/mach-s3c24xx/mach-bast.c             |  3 +-
+ arch/arm/mach-s3c24xx/mach-gta02.c            |  2 +-
+ arch/arm/mach-s3c24xx/mach-h1940.c            |  7 ++--
+ arch/arm/mach-s3c24xx/mach-jive.c             | 10 ++++--
+ arch/arm/mach-s3c24xx/mach-mini2440.c         |  9 +++--
+ arch/arm/mach-s3c24xx/mach-n30.c              |  3 +-
+ arch/arm/mach-s3c24xx/mach-osiris.c           |  1 -
+ arch/arm/mach-s3c24xx/mach-qt2410.c           |  3 +-
+ arch/arm/mach-s3c24xx/mach-rx1950.c           |  8 +++--
+ arch/arm/mach-s3c24xx/mach-rx3715.c           |  7 ++--
+ arch/arm/mach-s3c24xx/mach-smdk2413.c         |  3 +-
+ arch/arm/mach-s3c24xx/mach-smdk2416.c         |  1 -
+ arch/arm/mach-s3c24xx/mach-smdk2440.c         |  8 +++--
+ arch/arm/mach-s3c24xx/mach-smdk2443.c         |  3 +-
+ arch/arm/mach-s3c24xx/mach-vstms.c            |  3 +-
+ arch/arm/plat-samsung/devs.c                  |  2 +-
+ .../video/fbdev/s3c2410fb-regs-lcd.h          | 28 ++++------------
+ drivers/video/fbdev/s3c2410fb.c               | 16 +++++----
+ .../linux/platform_data}/fb-s3c2410.h         | 33 ++++++++++++++++++-
+ 23 files changed, 98 insertions(+), 65 deletions(-)
+ delete mode 100644 arch/arm/mach-s3c24xx/include/mach/fb.h
+ rename arch/arm/mach-s3c24xx/include/mach/regs-lcd.h => drivers/video/fbdev/s3c2410fb-regs-lcd.h (84%)
+ rename {arch/arm/plat-samsung/include/plat => include/linux/platform_data}/fb-s3c2410.h (57%)
+
+diff --git a/arch/arm/mach-s3c24xx/include/mach/fb.h b/arch/arm/mach-s3c24xx/include/mach/fb.h
+deleted file mode 100644
+index 4e539cb8b884..000000000000
+--- a/arch/arm/mach-s3c24xx/include/mach/fb.h
++++ /dev/null
+@@ -1,2 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0 */
+-#include <plat/fb-s3c2410.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-amlm5900.c b/arch/arm/mach-s3c24xx/mach-amlm5900.c
+index 40ad23b52bc0..ef6de1b1d0c6 100644
+--- a/arch/arm/mach-s3c24xx/mach-amlm5900.c
++++ b/arch/arm/mach-s3c24xx/mach-amlm5900.c
+@@ -30,9 +30,8 @@
+ #include <mach/hardware.h>
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+-#include <mach/regs-lcd.h>
+ #include <mach/regs-gpio.h>
+ #include <mach/gpio-samsung.h>
+ 
+@@ -194,13 +193,17 @@ static struct s3c2410fb_mach_info __initdata amlm5900_fb_info = {
+ 
+ 	.gpccon =	0xaaaaaaaa,
+ 	.gpccon_mask =	0xffffffff,
++	.gpccon_reg =	S3C2410_GPCCON,
+ 	.gpcup =	0x0000ffff,
+ 	.gpcup_mask =	0xffffffff,
++	.gpcup_reg =	S3C2410_GPCUP,
+ 
+ 	.gpdcon =	0xaaaaaaaa,
+ 	.gpdcon_mask =	0xffffffff,
++	.gpdcon_reg =	S3C2410_GPDCON,
+ 	.gpdup =	0x0000ffff,
+ 	.gpdup_mask =	0xffffffff,
++	.gpdup_reg =	S3C2410_GPDUP,
+ };
+ #endif
+ 
+diff --git a/arch/arm/mach-s3c24xx/mach-anubis.c b/arch/arm/mach-s3c24xx/mach-anubis.c
+index 072966dcad78..e1a73274e90b 100644
+--- a/arch/arm/mach-s3c24xx/mach-anubis.c
++++ b/arch/arm/mach-s3c24xx/mach-anubis.c
+@@ -29,7 +29,6 @@
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-at2440evb.c b/arch/arm/mach-s3c24xx/mach-at2440evb.c
+index b2199906e678..bfda6dd2a9d5 100644
+--- a/arch/arm/mach-s3c24xx/mach-at2440evb.c
++++ b/arch/arm/mach-s3c24xx/mach-at2440evb.c
+@@ -25,12 +25,11 @@
+ #include <asm/mach/irq.h>
+ 
+ #include <mach/hardware.h>
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-bast.c b/arch/arm/mach-s3c24xx/mach-bast.c
+index a7c3955ae8f6..cc941b5030ea 100644
+--- a/arch/arm/mach-s3c24xx/mach-bast.c
++++ b/arch/arm/mach-s3c24xx/mach-bast.c
+@@ -40,10 +40,9 @@
+ #include <asm/mach/irq.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/fb.h>
+ #include <mach/hardware.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ 
+ #include <plat/cpu.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-gta02.c b/arch/arm/mach-s3c24xx/mach-gta02.c
+index 61b8c6badeb8..1e42782dbd30 100644
+--- a/arch/arm/mach-s3c24xx/mach-gta02.c
++++ b/arch/arm/mach-s3c24xx/mach-gta02.c
+@@ -57,8 +57,8 @@
+ #include <linux/platform_data/touchscreen-s3c2410.h>
+ #include <linux/platform_data/usb-ohci-s3c2410.h>
+ #include <linux/platform_data/usb-s3c2410_udc.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+-#include <mach/fb.h>
+ #include <mach/hardware.h>
+ #include <mach/regs-gpio.h>
+ #include <mach/regs-irq.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-h1940.c b/arch/arm/mach-s3c24xx/mach-h1940.c
+index 446891e23511..d56e3befa459 100644
+--- a/arch/arm/mach-s3c24xx/mach-h1940.c
++++ b/arch/arm/mach-s3c24xx/mach-h1940.c
+@@ -47,11 +47,10 @@
+ 
+ #include <sound/uda1380.h>
+ 
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <mach/hardware.h>
+ #include <mach/regs-clock.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ 
+ #include <plat/cpu.h>
+@@ -211,12 +210,16 @@ static struct s3c2410fb_mach_info h1940_fb_info __initdata = {
+ 	.lpcsel =	0x02,
+ 	.gpccon =	0xaa940659,
+ 	.gpccon_mask =	0xffffc0f0,
++	.gpccon_reg =	S3C2410_GPCCON,
+ 	.gpcup =	0x0000ffff,
+ 	.gpcup_mask =	0xffffffff,
++	.gpcup_reg =	S3C2410_GPCUP,
+ 	.gpdcon =	0xaa84aaa0,
+ 	.gpdcon_mask =	0xffffffff,
++	.gpdcon_reg =	S3C2410_GPDCON,
+ 	.gpdup =	0x0000faff,
+ 	.gpdup_mask =	0xffffffff,
++	.gpdup_reg =	S3C2410_GPDUP,
+ };
+ 
+ static int power_supply_init(struct device *dev)
+diff --git a/arch/arm/mach-s3c24xx/mach-jive.c b/arch/arm/mach-s3c24xx/mach-jive.c
+index 885e8f12e4b9..3b33132b2334 100644
+--- a/arch/arm/mach-s3c24xx/mach-jive.c
++++ b/arch/arm/mach-s3c24xx/mach-jive.c
+@@ -32,8 +32,7 @@
+ #include <linux/platform_data/i2c-s3c2410.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <mach/gpio-samsung.h>
+ 
+ #include <asm/mach-types.h>
+@@ -321,6 +320,7 @@ static struct s3c2410fb_mach_info jive_lcd_config = {
+ 	 * data. */
+ 
+ 	.gpcup		= (0xf << 1) | (0x3f << 10),
++	.gpcup_reg =	S3C2410_GPCUP,
+ 
+ 	.gpccon		= (S3C2410_GPC1_VCLK   | S3C2410_GPC2_VLINE |
+ 			   S3C2410_GPC3_VFRAME | S3C2410_GPC4_VM |
+@@ -334,8 +334,12 @@ static struct s3c2410fb_mach_info jive_lcd_config = {
+ 			   S3C2410_GPCCON_MASK(12) | S3C2410_GPCCON_MASK(13) |
+ 			   S3C2410_GPCCON_MASK(14) | S3C2410_GPCCON_MASK(15)),
+ 
++	.gpccon_reg =	S3C2410_GPCCON,
++
+ 	.gpdup		= (0x3f << 2) | (0x3f << 10),
+ 
++	.gpdup_reg =	S3C2410_GPDUP,
++
+ 	.gpdcon		= (S3C2410_GPD2_VD10  | S3C2410_GPD3_VD11 |
+ 			   S3C2410_GPD4_VD12  | S3C2410_GPD5_VD13 |
+ 			   S3C2410_GPD6_VD14  | S3C2410_GPD7_VD15 |
+@@ -349,6 +353,8 @@ static struct s3c2410fb_mach_info jive_lcd_config = {
+ 			   S3C2410_GPDCON_MASK(10) | S3C2410_GPDCON_MASK(11)|
+ 			   S3C2410_GPDCON_MASK(12) | S3C2410_GPDCON_MASK(13)|
+ 			   S3C2410_GPDCON_MASK(14) | S3C2410_GPDCON_MASK(15)),
++
++	.gpdcon_reg =	S3C2410_GPDCON,
+ };
+ 
+ /* ILI9320 support. */
+diff --git a/arch/arm/mach-s3c24xx/mach-mini2440.c b/arch/arm/mach-s3c24xx/mach-mini2440.c
+index d73167f615b8..2301e07c7d64 100644
+--- a/arch/arm/mach-s3c24xx/mach-mini2440.c
++++ b/arch/arm/mach-s3c24xx/mach-mini2440.c
+@@ -30,13 +30,12 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ 
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <mach/hardware.h>
+-#include <mach/fb.h>
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+ #include <linux/platform_data/leds-s3c24xx.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/irqs.h>
+ #include <mach/gpio-samsung.h>
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+@@ -215,6 +214,9 @@ static struct s3c2410fb_mach_info mini2440_fb_info __initdata = {
+ 			   S3C2410_GPCCON_MASK(12) | S3C2410_GPCCON_MASK(13) |
+ 			   S3C2410_GPCCON_MASK(14) | S3C2410_GPCCON_MASK(15)),
+ 
++	.gpccon_reg =	S3C2410_GPCCON,
++	.gpcup_reg =	S3C2410_GPCUP,
++
+ 	.gpdup		= (0x3f << 2) | (0x3f << 10),
+ 
+ 	.gpdcon		= (S3C2410_GPD2_VD10  | S3C2410_GPD3_VD11 |
+@@ -230,6 +232,9 @@ static struct s3c2410fb_mach_info mini2440_fb_info __initdata = {
+ 			   S3C2410_GPDCON_MASK(10) | S3C2410_GPDCON_MASK(11)|
+ 			   S3C2410_GPDCON_MASK(12) | S3C2410_GPDCON_MASK(13)|
+ 			   S3C2410_GPDCON_MASK(14) | S3C2410_GPDCON_MASK(15)),
++
++	.gpdcon_reg =	S3C2410_GPDCON,
++	.gpdup_reg =	S3C2410_GPDUP,
+ };
+ 
+ /* MMC/SD  */
+diff --git a/arch/arm/mach-s3c24xx/mach-n30.c b/arch/arm/mach-s3c24xx/mach-n30.c
+index f283abab0761..6b8ee5ba00ca 100644
+--- a/arch/arm/mach-s3c24xx/mach-n30.c
++++ b/arch/arm/mach-s3c24xx/mach-n30.c
+@@ -31,10 +31,9 @@
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <linux/platform_data/leds-s3c24xx.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <plat/gpio-cfg.h>
+ 
+diff --git a/arch/arm/mach-s3c24xx/mach-osiris.c b/arch/arm/mach-s3c24xx/mach-osiris.c
+index ee3630cb236a..262e77bd48de 100644
+--- a/arch/arm/mach-s3c24xx/mach-osiris.c
++++ b/arch/arm/mach-s3c24xx/mach-osiris.c
+@@ -44,7 +44,6 @@
+ 
+ #include <mach/hardware.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ 
+ #include "common.h"
+diff --git a/arch/arm/mach-s3c24xx/mach-qt2410.c b/arch/arm/mach-s3c24xx/mach-qt2410.c
+index 9b47b8434f10..1d0f5d65e7e5 100644
+--- a/arch/arm/mach-s3c24xx/mach-qt2410.c
++++ b/arch/arm/mach-s3c24xx/mach-qt2410.c
+@@ -33,8 +33,7 @@
+ #include <asm/mach-types.h>
+ 
+ #include <linux/platform_data/leds-s3c24xx.h>
+-#include <mach/regs-lcd.h>
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+ #include <linux/platform_data/usb-s3c2410_udc.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-rx1950.c b/arch/arm/mach-s3c24xx/mach-rx1950.c
+index 7752203fd9cd..ee4a0992339f 100644
+--- a/arch/arm/mach-s3c24xx/mach-rx1950.c
++++ b/arch/arm/mach-s3c24xx/mach-rx1950.c
+@@ -42,12 +42,11 @@
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+ #include <linux/platform_data/touchscreen-s3c2410.h>
+ #include <linux/platform_data/usb-s3c2410_udc.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+ #include <sound/uda1380.h>
+ 
+-#include <mach/fb.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ 
+ #include <plat/cpu.h>
+@@ -361,14 +360,17 @@ static struct s3c2410fb_mach_info rx1950_lcd_cfg = {
+ 	.lpcsel = 0x02,
+ 	.gpccon = 0xaa9556a9,
+ 	.gpccon_mask = 0xffc003fc,
++	.gpccon_reg =	S3C2410_GPCCON,
+ 	.gpcup = 0x0000ffff,
+ 	.gpcup_mask = 0xffffffff,
++	.gpcup_reg =	S3C2410_GPCUP,
+ 
+ 	.gpdcon = 0xaa90aaa1,
+ 	.gpdcon_mask = 0xffc0fff0,
++	.gpdcon_reg =	S3C2410_GPDCON,
+ 	.gpdup = 0x0000fcfd,
+ 	.gpdup_mask = 0xffffffff,
+-
++	.gpdup_reg =	S3C2410_GPDUP,
+ };
+ 
+ static struct pwm_lookup rx1950_pwm_lookup[] = {
+diff --git a/arch/arm/mach-s3c24xx/mach-rx3715.c b/arch/arm/mach-s3c24xx/mach-rx3715.c
+index 2542c523ad46..87f3274241b2 100644
+--- a/arch/arm/mach-s3c24xx/mach-rx3715.c
++++ b/arch/arm/mach-s3c24xx/mach-rx3715.c
+@@ -30,14 +30,13 @@
+ #include <asm/mach/map.h>
+ 
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/mach-types.h>
+ 
+-#include <mach/fb.h>
+ #include <mach/hardware.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <plat/gpio-cfg.h>
+ 
+@@ -126,13 +125,17 @@ static struct s3c2410fb_mach_info rx3715_fb_info __initdata = {
+ 
+ 	.gpccon =	0xaa955699,
+ 	.gpccon_mask =	0xffc003cc,
++	.gpccon_reg =	S3C2410_GPCCON,
+ 	.gpcup =	0x0000ffff,
+ 	.gpcup_mask =	0xffffffff,
++	.gpcup_reg =	S3C2410_GPCUP,
+ 
+ 	.gpdcon =	0xaa95aaa1,
+ 	.gpdcon_mask =	0xffc0fff0,
++	.gpdcon_reg =	S3C2410_GPDCON,
+ 	.gpdup =	0x0000faff,
+ 	.gpdup_mask =	0xffffffff,
++	.gpdup_reg =	S3C2410_GPDUP,
+ };
+ 
+ static struct mtd_partition __initdata rx3715_nand_part[] = {
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2413.c b/arch/arm/mach-s3c24xx/mach-smdk2413.c
+index 2bba4f1fa7ee..eec0d3dc4bb1 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2413.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2413.c
+@@ -31,12 +31,11 @@
+ 
+ //#include <asm/debug-ll.h>
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ 
+ #include <linux/platform_data/usb-s3c2410_udc.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <mach/gpio-samsung.h>
+-#include <mach/fb.h>
+ #include <plat/gpio-cfg.h>
+ 
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2416.c b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+index 61c3e45898d3..fbd3a8d96f94 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2416.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2416.c
+@@ -30,7 +30,6 @@
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/regs-s3c2443-clock.h>
+ #include <mach/gpio-samsung.h>
+ 
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2440.c b/arch/arm/mach-s3c24xx/mach-smdk2440.c
+index f0fceda3e8e6..b9b0f2a8c904 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2440.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2440.c
+@@ -28,11 +28,10 @@
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <plat/gpio-cfg.h>
+ 
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+ 
+ #include <plat/devs.h>
+@@ -139,6 +138,11 @@ static struct s3c2410fb_mach_info smdk2440_fb_info __initdata = {
+ 	.gpdcon_mask	= 0xffffffff,
+ 	.gpdup		= 0x0000faff,
+ 	.gpdup_mask	= 0xffffffff,
++
++	.gpccon_reg =	S3C2410_GPCCON,
++	.gpcup_reg =	S3C2410_GPCUP,
++	.gpdcon_reg =	S3C2410_GPDCON,
++	.gpdup_reg =	S3C2410_GPDUP,
+ #endif
+ 
+ 	.lpcsel		= ((0xCE6) & ~7) | 1<<4,
+diff --git a/arch/arm/mach-s3c24xx/mach-smdk2443.c b/arch/arm/mach-s3c24xx/mach-smdk2443.c
+index 2358ed5ed7be..a4c1022678a9 100644
+--- a/arch/arm/mach-s3c24xx/mach-smdk2443.c
++++ b/arch/arm/mach-s3c24xx/mach-smdk2443.c
+@@ -27,9 +27,8 @@
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ 
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+ 
+ #include <plat/devs.h>
+diff --git a/arch/arm/mach-s3c24xx/mach-vstms.c b/arch/arm/mach-s3c24xx/mach-vstms.c
+index f333ca05de68..08acc556879b 100644
+--- a/arch/arm/mach-s3c24xx/mach-vstms.c
++++ b/arch/arm/mach-s3c24xx/mach-vstms.c
+@@ -30,11 +30,10 @@
+ #include <asm/mach-types.h>
+ 
+ #include <mach/regs-gpio.h>
+-#include <mach/regs-lcd.h>
+ #include <mach/gpio-samsung.h>
+ #include <plat/gpio-cfg.h>
+ 
+-#include <mach/fb.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+ #include <linux/platform_data/i2c-s3c2410.h>
+ #include <linux/platform_data/mtd-nand-s3c2410.h>
+diff --git a/arch/arm/plat-samsung/devs.c b/arch/arm/plat-samsung/devs.c
+index c0739bda060b..92b36bc71a06 100644
+--- a/arch/arm/plat-samsung/devs.c
++++ b/arch/arm/plat-samsung/devs.c
+@@ -50,7 +50,7 @@
+ #include <linux/soc/samsung/s3c-adc.h>
+ #include <linux/platform_data/ata-samsung_cf.h>
+ #include <plat/fb.h>
+-#include <plat/fb-s3c2410.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ #include <linux/platform_data/hwmon-s3c.h>
+ #include <linux/platform_data/i2c-s3c2410.h>
+ #include <plat/keypad.h>
+diff --git a/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h b/drivers/video/fbdev/s3c2410fb-regs-lcd.h
+similarity index 84%
+rename from arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
+rename to drivers/video/fbdev/s3c2410fb-regs-lcd.h
+index 4c3434f261bb..1e46f7a788e5 100644
+--- a/arch/arm/mach-s3c24xx/include/mach/regs-lcd.h
++++ b/drivers/video/fbdev/s3c2410fb-regs-lcd.h
+@@ -7,6 +7,13 @@
+ #ifndef ___ASM_ARCH_REGS_LCD_H
+ #define ___ASM_ARCH_REGS_LCD_H
+ 
++/*
++ * a couple of values are used as platform data in
++ * include/linux/platform_data/fb-s3c2410.h and not
++ * duplicated here.
++ */
++#include <linux/platform_data/fb-s3c2410.h>
++
+ #define S3C2410_LCDREG(x)	(x)
+ 
+ /* LCD control registers */
+@@ -29,13 +36,6 @@
+ #define S3C2410_LCDCON1_STN8BPP	   (3<<1)
+ #define S3C2410_LCDCON1_STN12BPP   (4<<1)
+ 
+-#define S3C2410_LCDCON1_TFT1BPP	   (8<<1)
+-#define S3C2410_LCDCON1_TFT2BPP	   (9<<1)
+-#define S3C2410_LCDCON1_TFT4BPP	   (10<<1)
+-#define S3C2410_LCDCON1_TFT8BPP	   (11<<1)
+-#define S3C2410_LCDCON1_TFT16BPP   (12<<1)
+-#define S3C2410_LCDCON1_TFT24BPP   (13<<1)
+-
+ #define S3C2410_LCDCON1_ENVID	   (1)
+ 
+ #define S3C2410_LCDCON1_MODEMASK    0x1E
+@@ -66,20 +66,6 @@
+ 
+ #define S3C2410_LCDCON4_GET_HSPW(x) ( ((x) >>  0) & 0xFF)
+ 
+-#define S3C2410_LCDCON5_BPP24BL	    (1<<12)
+-#define S3C2410_LCDCON5_FRM565	    (1<<11)
+-#define S3C2410_LCDCON5_INVVCLK	    (1<<10)
+-#define S3C2410_LCDCON5_INVVLINE    (1<<9)
+-#define S3C2410_LCDCON5_INVVFRAME   (1<<8)
+-#define S3C2410_LCDCON5_INVVD	    (1<<7)
+-#define S3C2410_LCDCON5_INVVDEN	    (1<<6)
+-#define S3C2410_LCDCON5_INVPWREN    (1<<5)
+-#define S3C2410_LCDCON5_INVLEND	    (1<<4)
+-#define S3C2410_LCDCON5_PWREN	    (1<<3)
+-#define S3C2410_LCDCON5_ENLEND	    (1<<2)
+-#define S3C2410_LCDCON5_BSWP	    (1<<1)
+-#define S3C2410_LCDCON5_HWSWP	    (1<<0)
+-
+ /* framebuffer start addressed */
+ #define S3C2410_LCDSADDR1   S3C2410_LCDREG(0x14)
+ #define S3C2410_LCDSADDR2   S3C2410_LCDREG(0x18)
+diff --git a/drivers/video/fbdev/s3c2410fb.c b/drivers/video/fbdev/s3c2410fb.c
+index a702da89910b..3e5b91c72f5b 100644
+--- a/drivers/video/fbdev/s3c2410fb.c
++++ b/drivers/video/fbdev/s3c2410fb.c
+@@ -29,19 +29,18 @@
+ #include <linux/clk.h>
+ #include <linux/cpufreq.h>
+ #include <linux/io.h>
++#include <linux/platform_data/fb-s3c2410.h>
+ 
+ #include <asm/div64.h>
+ 
+ #include <asm/mach/map.h>
+-#include <mach/regs-lcd.h>
+-#include <mach/regs-gpio.h>
+-#include <mach/fb.h>
+ 
+ #ifdef CONFIG_PM
+ #include <linux/pm.h>
+ #endif
+ 
+ #include "s3c2410fb.h"
++#include "s3c2410fb-regs-lcd.h"
+ 
+ /* Debugging stuff */
+ #ifdef CONFIG_FB_S3C2410_DEBUG
+@@ -676,6 +675,9 @@ static inline void modify_gpio(void __iomem *reg,
+ {
+ 	unsigned long tmp;
+ 
++	if (!reg)
++		return;
++
+ 	tmp = readl(reg) & ~mask;
+ 	writel(tmp | set, reg);
+ }
+@@ -706,10 +708,10 @@ static int s3c2410fb_init_registers(struct fb_info *info)
+ 
+ 	/* modify the gpio(s) with interrupts set (bjd) */
+ 
+-	modify_gpio(S3C2410_GPCUP,  mach_info->gpcup,  mach_info->gpcup_mask);
+-	modify_gpio(S3C2410_GPCCON, mach_info->gpccon, mach_info->gpccon_mask);
+-	modify_gpio(S3C2410_GPDUP,  mach_info->gpdup,  mach_info->gpdup_mask);
+-	modify_gpio(S3C2410_GPDCON, mach_info->gpdcon, mach_info->gpdcon_mask);
++	modify_gpio(mach_info->gpcup_reg,  mach_info->gpcup,  mach_info->gpcup_mask);
++	modify_gpio(mach_info->gpccon_reg, mach_info->gpccon, mach_info->gpccon_mask);
++	modify_gpio(mach_info->gpdup_reg,  mach_info->gpdup,  mach_info->gpdup_mask);
++	modify_gpio(mach_info->gpdcon_reg, mach_info->gpdcon, mach_info->gpdcon_mask);
+ 
+ 	local_irq_restore(flags);
+ 
+diff --git a/arch/arm/plat-samsung/include/plat/fb-s3c2410.h b/include/linux/platform_data/fb-s3c2410.h
+similarity index 57%
+rename from arch/arm/plat-samsung/include/plat/fb-s3c2410.h
+rename to include/linux/platform_data/fb-s3c2410.h
+index 614240d768b4..10c11e6316d6 100644
+--- a/arch/arm/plat-samsung/include/plat/fb-s3c2410.h
++++ b/include/linux/platform_data/fb-s3c2410.h
+@@ -8,6 +8,8 @@
+ #ifndef __ASM_PLAT_FB_S3C2410_H
+ #define __ASM_PLAT_FB_S3C2410_H __FILE__
+ 
++#include <linux/compiler_types.h>
++
+ struct s3c2410fb_hw {
+ 	unsigned long	lcdcon1;
+ 	unsigned long	lcdcon2;
+@@ -20,6 +22,17 @@ struct s3c2410fb_hw {
+ struct s3c2410fb_display {
+ 	/* LCD type */
+ 	unsigned type;
++#define S3C2410_LCDCON1_DSCAN4	   (0<<5)
++#define S3C2410_LCDCON1_STN4	   (1<<5)
++#define S3C2410_LCDCON1_STN8	   (2<<5)
++#define S3C2410_LCDCON1_TFT	   (3<<5)
++
++#define S3C2410_LCDCON1_TFT1BPP	   (8<<1)
++#define S3C2410_LCDCON1_TFT2BPP	   (9<<1)
++#define S3C2410_LCDCON1_TFT4BPP	   (10<<1)
++#define S3C2410_LCDCON1_TFT8BPP	   (11<<1)
++#define S3C2410_LCDCON1_TFT16BPP   (12<<1)
++#define S3C2410_LCDCON1_TFT24BPP   (13<<1)
+ 
+ 	/* Screen size */
+ 	unsigned short width;
+@@ -40,6 +53,19 @@ struct s3c2410fb_display {
+ 
+ 	/* lcd configuration registers */
+ 	unsigned long	lcdcon5;
++#define S3C2410_LCDCON5_BPP24BL	    (1<<12)
++#define S3C2410_LCDCON5_FRM565	    (1<<11)
++#define S3C2410_LCDCON5_INVVCLK	    (1<<10)
++#define S3C2410_LCDCON5_INVVLINE    (1<<9)
++#define S3C2410_LCDCON5_INVVFRAME   (1<<8)
++#define S3C2410_LCDCON5_INVVD	    (1<<7)
++#define S3C2410_LCDCON5_INVVDEN	    (1<<6)
++#define S3C2410_LCDCON5_INVPWREN    (1<<5)
++#define S3C2410_LCDCON5_INVLEND	    (1<<4)
++#define S3C2410_LCDCON5_PWREN	    (1<<3)
++#define S3C2410_LCDCON5_ENLEND	    (1<<2)
++#define S3C2410_LCDCON5_BSWP	    (1<<1)
++#define S3C2410_LCDCON5_HWSWP	    (1<<0)
+ };
+ 
+ struct s3c2410fb_mach_info {
+@@ -59,10 +85,15 @@ struct s3c2410fb_mach_info {
+ 	unsigned long	gpdcon;
+ 	unsigned long	gpdcon_mask;
+ 
++	void __iomem *  gpccon_reg;
++	void __iomem *  gpcup_reg;
++	void __iomem *  gpdcon_reg;
++	void __iomem *  gpdup_reg;
++
+ 	/* lpc3600 control register */
+ 	unsigned long	lpcsel;
+ };
+ 
+-extern void __init s3c24xx_fb_set_platdata(struct s3c2410fb_mach_info *);
++extern void s3c24xx_fb_set_platdata(struct s3c2410fb_mach_info *);
+ 
+ #endif /* __ASM_PLAT_FB_S3C2410_H */
+-- 
+2.20.0

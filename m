@@ -1,41 +1,39 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 01 Oct 2019 12:58:35 +0000
-Subject: [PATCH v4 5/7] backlight: gpio: remove unused fields from platform data
-Message-Id: <20191001125837.4472-6-brgl@bgdev.pl>
+From: Alexandru Ardelean <alexandru.ardelean@analog.com>
+Date: Fri, 11 Oct 2019 11:24:41 +0000
+Subject: [PATCH] staging: fbtft: fbtft-core: Fix last line displayed on fbcon
+Message-Id: <20191011112441.31003-1-alexandru.ardelean@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191001125837.4472-1-brgl@bgdev.pl>
-In-Reply-To: <20191001125837.4472-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
+Cc: nishadkamdar@gmail.com, Michael Hennerich <michael.hennerich@analog.com>, gregkh@linuxfoundation.org, bhanusreemahesh@gmail.com, daniel.vetter@ffwll.ch, Alexandru Ardelean <alexandru.ardelean@analog.com>, preid@electromag.com.au
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Remove the platform data fields that nobody uses.
+For the special case when fbtft_mkdirty() is called with with -1 for the y
+coordinate, the height is truncated by 1.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+This isn't required, and causes the last line to not update.
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Alexandru Ardelean <alexandru.ardelean@analog.com>
 ---
- include/linux/platform_data/gpio_backlight.h | 3 ---
- 1 file changed, 3 deletions(-)
+ drivers/staging/fbtft/fbtft-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/platform_data/gpio_backlight.h b/include/linux/platform_data/gpio_backlight.h
-index 34179d600360..1a8b5b1946fe 100644
---- a/include/linux/platform_data/gpio_backlight.h
-+++ b/include/linux/platform_data/gpio_backlight.h
-@@ -9,9 +9,6 @@ struct device;
+diff --git a/drivers/staging/fbtft/fbtft-core.c b/drivers/staging/fbtft/fbtft-core.c
+index cf5700a2ea66..90eec45d11fc 100644
+--- a/drivers/staging/fbtft/fbtft-core.c
++++ b/drivers/staging/fbtft/fbtft-core.c
+@@ -317,7 +317,7 @@ static void fbtft_mkdirty(struct fb_info *info, int y, int height)
+ 	/* special case, needed ? */
+ 	if (y = -1) {
+ 		y = 0;
+-		height = info->var.yres - 1;
++		height = info->var.yres;
+ 	}
  
- struct gpio_backlight_platform_data {
- 	struct device *fbdev;
--	int gpio;
--	int def_value;
--	const char *name;
- };
- 
- #endif
+ 	/* Mark display lines/area as dirty */
 -- 
-2.23.0
+2.20.1

@@ -1,92 +1,128 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 22 Oct 2019 08:36:29 +0000
-Subject: [PATCH v7 8/9] backlight: gpio: use a helper variable for &pdev->dev
-Message-Id: <20191022083630.28175-9-brgl@bgdev.pl>
+From: Julia Lawall <julia.lawall@lip6.fr>
+Date: Sat, 12 Oct 2019 05:41:37 +0000
+Subject: Re: [Outreachy kernel] [PATCH] staging: sm750fb: align arguments with open parenthesis
+Message-Id: <alpine.DEB.2.21.1910120738540.2637@hadrien>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191022083630.28175-1-brgl@bgdev.pl>
-In-Reply-To: <20191022083630.28175-1-brgl@bgdev.pl>
+References: <20191012011956.9452-1-gabrielabittencourt00@gmail.com>
+In-Reply-To: <20191012011956.9452-1-gabrielabittencourt00@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, trivial@kernel.org, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, outreachy-kernel@googlegroups.com, lkcamp@lists.libreplanetbr.org, sudipm.mukherjee@gmail.com
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Instead of dereferencing pdev each time, use a helper variable for
-the associated device pointer.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/backlight/gpio_backlight.c | 23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+On Fri, 11 Oct 2019, Gabriela Bittencourt wrote:
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index ddc7d3b288b7..d6969fae25cd 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -78,29 +78,29 @@ static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
- 
- static int gpio_backlight_probe(struct platform_device *pdev)
- {
--	struct gpio_backlight_platform_data *pdata -		dev_get_platdata(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct gpio_backlight_platform_data *pdata = dev_get_platdata(dev);
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct gpio_backlight *gbl;
- 	int ret, init_brightness;
- 
--	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
-+	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
- 	if (gbl = NULL)
- 		return -ENOMEM;
- 
--	gbl->dev = &pdev->dev;
-+	gbl->dev = dev;
- 
- 	if (pdata)
- 		gbl->fbdev = pdata->fbdev;
- 
--	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
-+	gbl->def_value = device_property_read_bool(dev, "default-on");
- 
--	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_ASIS);
-+	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
- 	if (IS_ERR(gbl->gpiod)) {
- 		ret = PTR_ERR(gbl->gpiod);
- 		if (ret != -EPROBE_DEFER)
--			dev_err(&pdev->dev,
-+			dev_err(dev,
- 				"Error: The gpios parameter is missing or invalid.\n");
- 		return ret;
- 	}
-@@ -108,11 +108,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 	memset(&props, 0, sizeof(props));
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = 1;
--	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
--					&pdev->dev, gbl, &gpio_backlight_ops,
--					&props);
-+	bl = devm_backlight_device_register(dev, dev_name(dev), dev, gbl,
-+					    &gpio_backlight_ops, &props);
- 	if (IS_ERR(bl)) {
--		dev_err(&pdev->dev, "failed to register backlight\n");
-+		dev_err(dev, "failed to register backlight\n");
- 		return PTR_ERR(bl);
- 	}
- 
-@@ -122,7 +121,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 	init_brightness = gpio_backlight_get_next_brightness(bl);
- 	ret = gpiod_direction_output(gbl->gpiod, init_brightness);
- 	if (ret) {
--		dev_err(&pdev->dev, "failed to set initial brightness\n");
-+		dev_err(dev, "failed to set initial brightness\n");
- 		return ret;
- 	}
- 
--- 
-2.23.0
+> Cleans up checks of "Alignment should match open parenthesis" in tree sm750fb
+>
+> Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+> ---
+>  drivers/staging/sm750fb/ddk750_display.c |  2 +-
+>  drivers/staging/sm750fb/sm750_accel.c    |  2 +-
+>  drivers/staging/sm750fb/sm750_accel.h    |  8 ++++----
+>  drivers/staging/sm750fb/sm750_cursor.h   | 10 +++++-----
+>  4 files changed, 11 insertions(+), 11 deletions(-)
+>
+> diff --git a/drivers/staging/sm750fb/ddk750_display.c b/drivers/staging/sm750fb/ddk750_display.c
+> index 887ea8aef43f..8be98a1058d6 100644
+> --- a/drivers/staging/sm750fb/ddk750_display.c
+> +++ b/drivers/staging/sm750fb/ddk750_display.c
+> @@ -148,7 +148,7 @@ void ddk750_set_logical_disp_out(enum disp_output output)
+>  	if (output & PNL_SEQ_USAGE) {
+>  		/* set  panel sequence */
+>  		sw_panel_power_sequence((output & PNL_SEQ_MASK) >> PNL_SEQ_OFFSET,
+> -		4);
+> +					4);
+>  	}
+>
+>  	if (output & DAC_USAGE)
+> diff --git a/drivers/staging/sm750fb/sm750_accel.c b/drivers/staging/sm750fb/sm750_accel.c
+> index dbcbbd1055da..1a9555bb9edd 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.c
+> +++ b/drivers/staging/sm750fb/sm750_accel.c
+> @@ -289,7 +289,7 @@ static unsigned int deGetTransparency(struct lynx_accel *accel)
+>  }
+>
+>  int sm750_hw_imageblit(struct lynx_accel *accel,
+> -		 const char *pSrcbuf, /* pointer to start of source buffer in system memory */
+> +		       const char *pSrcbuf, /* pointer to start of source buffer in system memory */
+>  		 u32 srcDelta,          /* Pitch value (in bytes) of the source buffer, +ive means top down and -ive mean button up */
+>  		 u32 startBit, /* Mono data can start at any bit in a byte, this value should be 0 to 7 */
+>  		 u32 dBase,    /* Address of destination: offset in frame buffer */
+
+It is strange that the change is only does for the firsr parameter, and
+not for all of them.
+
+The kernel also uses a doc format for describing function patameters in a
+single comment before the function.  Look around in other files to see the
+format.  That would look much nicer than these comments going over 80
+columns.
+
+
+> diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
+> index c4f42002a50f..8fb79b09fdd0 100644
+> --- a/drivers/staging/sm750fb/sm750_accel.h
+> +++ b/drivers/staging/sm750fb/sm750_accel.h
+> @@ -190,9 +190,9 @@ void sm750_hw_set2dformat(struct lynx_accel *accel, int fmt);
+>  void sm750_hw_de_init(struct lynx_accel *accel);
+>
+>  int sm750_hw_fillrect(struct lynx_accel *accel,
+> -				u32 base, u32 pitch, u32 Bpp,
+> -				u32 x, u32 y, u32 width, u32 height,
+> -				u32 color, u32 rop);
+> +		      u32 base, u32 pitch, u32 Bpp,
+> +		      u32 x, u32 y, u32 width, u32 height,
+> +		      u32 color, u32 rop);
+>
+>  int sm750_hw_copyarea(
+>  struct lynx_accel *accel,
+> @@ -210,7 +210,7 @@ unsigned int height, /* width and height of rectangle in pixel value */
+>  unsigned int rop2);
+>
+>  int sm750_hw_imageblit(struct lynx_accel *accel,
+> -		 const char *pSrcbuf, /* pointer to start of source buffer in system memory */
+> +		       const char *pSrcbuf, /* pointer to start of source buffer in system memory */
+>  		 u32 srcDelta,          /* Pitch value (in bytes) of the source buffer, +ive means top down and -ive mean button up */
+>  		 u32 startBit, /* Mono data can start at any bit in a byte, this value should be 0 to 7 */
+>  		 u32 dBase,    /* Address of destination: offset in frame buffer */
+
+Same here.
+
+> diff --git a/drivers/staging/sm750fb/sm750_cursor.h b/drivers/staging/sm750fb/sm750_cursor.h
+> index 16ac07eb58d6..039ebfdf0bd9 100644
+> --- a/drivers/staging/sm750fb/sm750_cursor.h
+> +++ b/drivers/staging/sm750fb/sm750_cursor.h
+> @@ -6,13 +6,13 @@
+>  void sm750_hw_cursor_enable(struct lynx_cursor *cursor);
+>  void sm750_hw_cursor_disable(struct lynx_cursor *cursor);
+>  void sm750_hw_cursor_setSize(struct lynx_cursor *cursor,
+> -						int w, int h);
+> +			     int w, int h);
+>  void sm750_hw_cursor_setPos(struct lynx_cursor *cursor,
+> -						int x, int y);
+> +			    int x, int y);
+
+Perhaps these could just be all on one line?
+
+julia
+
+>  void sm750_hw_cursor_setColor(struct lynx_cursor *cursor,
+> -						u32 fg, u32 bg);
+> +			      u32 fg, u32 bg);
+>  void sm750_hw_cursor_setData(struct lynx_cursor *cursor,
+> -			u16 rop, const u8 *data, const u8 *mask);
+> +			     u16 rop, const u8 *data, const u8 *mask);
+>  void sm750_hw_cursor_setData2(struct lynx_cursor *cursor,
+> -			u16 rop, const u8 *data, const u8 *mask);
+> +			      u16 rop, const u8 *data, const u8 *mask);
+>  #endif
+> --
+> 2.20.1
+>
+> --
+> You received this message because you are subscribed to the Google Groups "outreachy-kernel" group.
+> To unsubscribe from this group and stop receiving emails from it, send an email to outreachy-kernel+unsubscribe@googlegroups.com.
+> To view this discussion on the web visit https://groups.google.com/d/msgid/outreachy-kernel/20191012011956.9452-1-gabrielabittencourt00%40gmail.com.
+>

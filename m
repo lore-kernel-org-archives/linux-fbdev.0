@@ -1,88 +1,57 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 07 Oct 2019 15:32:07 +0000
-Subject: Re: [PATCH 4/5] backlight: pwm_bl: switch to power-of-2 base for fixed-point math
-Message-Id: <20191007153207.t5kehxs2znu5z6yx@holly.lan>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Mon, 14 Oct 2019 14:04:02 +0000
+Subject: [PATCH v2 01/15] fbdev: Export fb_check_foreignness()
+Message-Id: <20191014140416.28517-2-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
- <20190919140620.32407-4-linux@rasmusvillemoes.dk>
-In-Reply-To: <20190919140620.32407-4-linux@rasmusvillemoes.dk>
+References: <20191014140416.28517-1-tzimmermann@suse.de>
+In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
 
-On Thu, Sep 19, 2019 at 04:06:19PM +0200, Rasmus Villemoes wrote:
-> Using a power-of-2 instead of power-of-10 base makes the computations
-> much cheaper. 2^16 is safe; retval never becomes more than 2^48 +
-> 2^16/2. On a 32 bit platform, the very expensive 64/32 division at the
-> end of cie1931() instead becomes essentially free (a shift by 32 is
-> just a register rename).
-> 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+This function is required by DRM's fbdev conversion helpers. Export it
+from the module.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+---
+ drivers/video/fbdev/core/fbmem.c | 3 ++-
+ include/linux/fb.h               | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
-> ---
->  drivers/video/backlight/pwm_bl.c | 22 ++++++++++++----------
->  1 file changed, 12 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index aee6839e024a..102bc191310f 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -148,7 +148,8 @@ static const struct backlight_ops pwm_backlight_ops = {
->  };
->  
->  #ifdef CONFIG_OF
-> -#define PWM_LUMINANCE_SCALE	10000 /* luminance scale */
-> +#define PWM_LUMINANCE_SHIFT	16
-> +#define PWM_LUMINANCE_SCALE	(1 << PWM_LUMINANCE_SHIFT) /* luminance scale */
->  
->  /*
->   * CIE lightness to PWM conversion.
-> @@ -165,23 +166,25 @@ static const struct backlight_ops pwm_backlight_ops = {
->   * The following function does the fixed point maths needed to implement the
->   * above formula.
->   */
-> -static u64 cie1931(unsigned int lightness, unsigned int scale)
-> +static u64 cie1931(unsigned int lightness)
->  {
->  	u64 retval;
->  
->  	/*
->  	 * @lightness is given as a number between 0 and 1, expressed
-> -	 * as a fixed-point number in scale @scale. Convert to a
-> -	 * percentage, still expressed as a fixed-point number, so the
-> -	 * above formulas can be applied.
-> +	 * as a fixed-point number in scale
-> +	 * PWM_LUMINANCE_SCALE. Convert to a percentage, still
-> +	 * expressed as a fixed-point number, so the above formulas
-> +	 * can be applied.
->  	 */
->  	lightness *= 100;
-> -	if (lightness <= (8 * scale)) {
-> +	if (lightness <= (8 * PWM_LUMINANCE_SCALE)) {
->  		retval = DIV_ROUND_CLOSEST(lightness * 10, 9033);
->  	} else {
-> -		retval = (lightness + (16 * scale)) / 116;
-> +		retval = (lightness + (16 * PWM_LUMINANCE_SCALE)) / 116;
->  		retval *= retval * retval;
-> -		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
-> +		retval += PWM_LUMINANCE_SCALE/2;
-> +		retval >>= 2*PWM_LUMINANCE_SHIFT;
->  	}
->  
->  	return retval;
-> @@ -215,8 +218,7 @@ int pwm_backlight_brightness_default(struct device *dev,
->  	/* Fill the table using the cie1931 algorithm */
->  	for (i = 0; i < data->max_brightness; i++) {
->  		retval = cie1931((i * PWM_LUMINANCE_SCALE) /
-> -				 data->max_brightness, PWM_LUMINANCE_SCALE) *
-> -				 period;
-> +				 data->max_brightness) * period;
->  		retval = DIV_ROUND_CLOSEST_ULL(retval, PWM_LUMINANCE_SCALE);
->  		if (retval > UINT_MAX)
->  			return -EINVAL;
-> -- 
-> 2.20.1
+diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+index 95c32952fa8a..e828fcccce40 100644
+--- a/drivers/video/fbdev/core/fbmem.c
++++ b/drivers/video/fbdev/core/fbmem.c
+@@ -1481,7 +1481,7 @@ static const struct file_operations fb_fops = {
+ struct class *fb_class;
+ EXPORT_SYMBOL(fb_class);
+ 
+-static int fb_check_foreignness(struct fb_info *fi)
++int fb_check_foreignness(struct fb_info *fi)
+ {
+ 	const bool foreign_endian = fi->flags & FBINFO_FOREIGN_ENDIAN;
+ 
+@@ -1505,6 +1505,7 @@ static int fb_check_foreignness(struct fb_info *fi)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(fb_check_foreignness);
+ 
+ static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
+ {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 41e0069eca0a..372f1f6ae42e 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -622,6 +622,7 @@ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
+ 			      struct fb_fix_screeninfo *fix);
+ extern int fb_get_options(const char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
++extern int fb_check_foreignness(struct fb_info *fi);
+ 
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+-- 
+2.23.0

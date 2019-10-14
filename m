@@ -1,70 +1,135 @@
-From: Daniel Thompson <daniel.thompson@linaro.org>
-Date: Mon, 07 Oct 2019 15:08:38 +0000
-Subject: Re: [PATCH 1/5] backlight: pwm_bl: fix cie1913 comments and constant
-Message-Id: <20191007150838.3qbrten34ln6ufo4@holly.lan>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Mon, 14 Oct 2019 14:04:01 +0000
+Subject: [PATCH v2 00/15] DRM fbconv helpers for converting fbdev drivers
+Message-Id: <20191014140416.28517-1-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
-In-Reply-To: <20190919140620.32407-1-linux@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Cc: Thierry Reding <thierry.reding@gmail.com>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-pwm@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
 
-On Thu, Sep 19, 2019 at 04:06:16PM +0200, Rasmus Villemoes wrote:
-> The "break-even" point for the two formulas is L=8, which is also
-> what the code actually implements. [Incidentally, at that point one
-> has Y=0.008856, not 0.08856].
-> 
-> Moreover, all the sources I can find say the linear factor is 903.3
-> rather than 902.3, which makes sense since then the formulas agree at
-> L=8, both yielding the 0.008856 figure to four significant digits.
+(was: DRM driver for fbdev devices)
 
-Indeed. Interestingly the following doc (with a high search rank in
-Google) has exactly this inconsistency and uses different values at
-different times:
-http://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+This is version 2 of the fbdev conversion helpers. It's more or less a
+rewrite of the original patchset.
 
-> 
-> Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+The fbdev subsystem is considered legacy and will probably be removed at
+some point. This would mean the loss of a signifanct number of drivers.
+Some of the affected hardware is not in use any longer, but some hardware
+is still around and provides good(-enough) framebuffers.
 
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+The fbconv helpers allow for running the current DRM stack on top of fbdev
+drivers. It's a set of functions that convert between fbdev interfaces and
+DRM interfaces. Based on SHMEM and simple KMS helpers, it only offers the
+basic functionality of a framebuffer, but should be compatible with most
+existing fbdev drivers.
 
-> ---
->  drivers/video/backlight/pwm_bl.c | 12 +++++++++---
->  1 file changed, 9 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
-> index 2201b8c78641..be36be1cacb7 100644
-> --- a/drivers/video/backlight/pwm_bl.c
-> +++ b/drivers/video/backlight/pwm_bl.c
-> @@ -155,8 +155,8 @@ static const struct backlight_ops pwm_backlight_ops = {
->   *
->   * The CIE 1931 lightness formula is what actually describes how we perceive
->   * light:
-> - *          Y = (L* / 902.3)           if L* ≤ 0.08856
-> - *          Y = ((L* + 16) / 116)^3    if L* > 0.08856
-> + *          Y = (L* / 903.3)           if L* ≤ 8
-> + *          Y = ((L* + 16) / 116)^3    if L* > 8
->   *
->   * Where Y is the luminance, the amount of light coming out of the screen, and
->   * is a number between 0.0 and 1.0; and L* is the lightness, how bright a human
-> @@ -169,9 +169,15 @@ static u64 cie1931(unsigned int lightness, unsigned int scale)
->  {
->  	u64 retval;
->  
-> +	/*
-> +	 * @lightness is given as a number between 0 and 1, expressed
-> +	 * as a fixed-point number in scale @scale. Convert to a
-> +	 * percentage, still expressed as a fixed-point number, so the
-> +	 * above formulas can be applied.
-> +	 */
->  	lightness *= 100;
->  	if (lightness <= (8 * scale)) {
-> -		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9023);
-> +		retval = DIV_ROUND_CLOSEST_ULL(lightness * 10, 9033);
->  	} else {
->  		retval = int_pow((lightness + (16 * scale)) / 116, 3);
->  		retval = DIV_ROUND_CLOSEST_ULL(retval, (scale * scale));
-> -- 
-> 2.20.1
+A DRM driver using fbconv helpers consists of
+
+  * DRM stub code that calls into fbconv helpers, and
+  * the original fbdev driver code.
+
+The fbdev driver code has to be modified to register itself with the
+stub driver instead of the fbdev core framework. A tutorial on how to use
+the helpers is part of this patchset. The resulting driver hybrid can be
+refactored into a first-class DRM driver. The fbconv helpers contain a
+number of comments, labeled 'DRM porting note', which explain the required
+steps.
+
+I tested the current patchset with the following drivers: atyfb, aty128fb,
+matroxfb, pm2fb, pm3fb, rivafb, s3fb, savagefb, sisfb, tdfxfb and tridentfb.
+With each, I was able to successfully start with fbcon enabled, run weston and
+X11. The drivers are available at [1]. For reference, the patchset includes
+the Matrox stub driver.
+
+v2:
+	* rename to fbconv helpers
+	* rewrite as helper library
+	* switch over to simple KMS helpers
+	* switch over to SHMEM
+	* add documentation
+
+[1] https://gitlab.freedesktop.org/tzimmermann/linux/commits/fbconv-plus-drivers
+
+Thomas Zimmermann (15):
+  fbdev: Export fb_check_foreignness()
+  fbdev: Export FBPIXMAPSIZE
+  drm/simple-kms-helper: Add mode_fixup() to simple display pipe
+  drm: Add fbconv helper module
+  drm/fbconv: Add DRM <-> fbdev pixel-format conversion
+  drm/fbconv: Add mode conversion DRM <-> fbdev
+  drm/fbconv: Add modesetting infrastructure
+  drm/fbconv: Add plane-state check and update
+  drm/fbconv: Mode-setting pipeline enable / disable
+  drm/fbconv: Reimplement several fbdev interfaces
+  drm/fbconv: Add helpers for init and cleanup of fb_info structures
+  drm/fbconv: Add helper documentation
+  staging: Add mgakms driver
+  staging/mgakms: Import matroxfb driver source code
+  staging/mgakms: Update matroxfb driver code for DRM
+
+ Documentation/gpu/drm-kms-helpers.rst     |   12 +
+ Documentation/gpu/todo.rst                |   15 +
+ drivers/gpu/drm/Kconfig                   |   11 +
+ drivers/gpu/drm/Makefile                  |    1 +
+ drivers/gpu/drm/drm_fbconv_helper.c       | 2126 +++++++++++++++++
+ drivers/gpu/drm/drm_simple_kms_helper.c   |   15 +
+ drivers/staging/Kconfig                   |    2 +
+ drivers/staging/Makefile                  |    1 +
+ drivers/staging/mgakms/Kconfig            |   18 +
+ drivers/staging/mgakms/Makefile           |   17 +
+ drivers/staging/mgakms/g450_pll.c         |  539 +++++
+ drivers/staging/mgakms/g450_pll.h         |   13 +
+ drivers/staging/mgakms/i2c-matroxfb.c     |  238 ++
+ drivers/staging/mgakms/matroxfb_DAC1064.c | 1082 +++++++++
+ drivers/staging/mgakms/matroxfb_DAC1064.h |  174 ++
+ drivers/staging/mgakms/matroxfb_Ti3026.c  |  746 ++++++
+ drivers/staging/mgakms/matroxfb_Ti3026.h  |   10 +
+ drivers/staging/mgakms/matroxfb_accel.c   |  519 +++++
+ drivers/staging/mgakms/matroxfb_accel.h   |    9 +
+ drivers/staging/mgakms/matroxfb_base.c    | 2592 +++++++++++++++++++++
+ drivers/staging/mgakms/matroxfb_base.h    |  700 ++++++
+ drivers/staging/mgakms/matroxfb_crtc2.h   |   35 +
+ drivers/staging/mgakms/matroxfb_g450.c    |  640 +++++
+ drivers/staging/mgakms/matroxfb_g450.h    |   10 +
+ drivers/staging/mgakms/matroxfb_maven.h   |   21 +
+ drivers/staging/mgakms/matroxfb_misc.c    |  815 +++++++
+ drivers/staging/mgakms/matroxfb_misc.h    |   22 +
+ drivers/staging/mgakms/mga_device.c       |   68 +
+ drivers/staging/mgakms/mga_device.h       |   30 +
+ drivers/staging/mgakms/mga_drv.c          |  129 +
+ drivers/staging/mgakms/mga_drv.h          |   14 +
+ drivers/video/fbdev/core/fbmem.c          |    5 +-
+ include/drm/drm_fbconv_helper.h           |  150 ++
+ include/drm/drm_simple_kms_helper.h       |   43 +
+ include/linux/fb.h                        |    3 +
+ 35 files changed, 10822 insertions(+), 3 deletions(-)
+ create mode 100644 drivers/gpu/drm/drm_fbconv_helper.c
+ create mode 100644 drivers/staging/mgakms/Kconfig
+ create mode 100644 drivers/staging/mgakms/Makefile
+ create mode 100644 drivers/staging/mgakms/g450_pll.c
+ create mode 100644 drivers/staging/mgakms/g450_pll.h
+ create mode 100644 drivers/staging/mgakms/i2c-matroxfb.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_DAC1064.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_DAC1064.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_Ti3026.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_Ti3026.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_accel.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_accel.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_base.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_base.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_crtc2.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_g450.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_g450.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_maven.h
+ create mode 100644 drivers/staging/mgakms/matroxfb_misc.c
+ create mode 100644 drivers/staging/mgakms/matroxfb_misc.h
+ create mode 100644 drivers/staging/mgakms/mga_device.c
+ create mode 100644 drivers/staging/mgakms/mga_device.h
+ create mode 100644 drivers/staging/mgakms/mga_drv.c
+ create mode 100644 drivers/staging/mgakms/mga_drv.h
+ create mode 100644 include/drm/drm_fbconv_helper.h
+
+--
+2.23.0

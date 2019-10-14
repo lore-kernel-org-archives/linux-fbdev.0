@@ -1,303 +1,353 @@
-From: Beniamin Bia <beniamin.bia@analog.com>
-Date: Thu, 17 Oct 2019 14:02:46 +0000
-Subject: [PATCH] drivers/staging/fbtft/fb_seps525: New driver for SEPS525 (Syncoam) LCD Controllers
-Message-Id: <20191017170203.11999-1-beniamin.bia@analog.com>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Mon, 14 Oct 2019 14:04:14 +0000
+Subject: [PATCH v2 13/15] staging: Add mgakms driver
+Message-Id: <20191014140416.28517-14-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191014140416.28517-1-tzimmermann@suse.de>
+In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gregkh@linuxfoundation.org
-Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Michael Hennerich <michael.hennerich@analog.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, michal.simek@xilinx.com, Beniamin Bia <beniamin.bia@analog.com>, Jonathan.Cameron@huawei.com, mchehab+samsung@kernel.org, paulmck@linux.ibm.com, davem@davemloft.net
+To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+The mgakms driver uses DRM's fbconv helpers to provide a DRM driver
+for Matrox chipsets. This will allow matroxfb to be refactored into
+a first-class DRM driver.
 
-The SEPS525 is a 160 RGB x 128 Dots, 262K Colors PM-OLED Display Driver and
-Controller.
-
-The controller can be found on the NHD-1.69-160128UGC3
-(Newhaven Display International, Inc.).
-
-Datasheets:
-Link: https://www.newhavendisplay.com/appnotes/datasheets/OLEDs/SEPS525.pdf
-
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Co-developed-by: Beniamin Bia <beniamin.bia@analog.com>
-Signed-off-by: Beniamin Bia <beniamin.bia@analog.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- MAINTAINERS                        |   8 ++
- drivers/staging/fbtft/Kconfig      |   7 +
- drivers/staging/fbtft/Makefile     |   1 +
- drivers/staging/fbtft/fb_seps525.c | 213 +++++++++++++++++++++++++++++
- 4 files changed, 229 insertions(+)
- create mode 100644 drivers/staging/fbtft/fb_seps525.c
+ drivers/staging/Kconfig             |   2 +
+ drivers/staging/Makefile            |   1 +
+ drivers/staging/mgakms/Kconfig      |  13 +++
+ drivers/staging/mgakms/Makefile     |   6 ++
+ drivers/staging/mgakms/mga_device.c |  68 +++++++++++++++
+ drivers/staging/mgakms/mga_device.h |  30 +++++++
+ drivers/staging/mgakms/mga_drv.c    | 129 ++++++++++++++++++++++++++++
+ drivers/staging/mgakms/mga_drv.h    |  14 +++
+ 8 files changed, 263 insertions(+)
+ create mode 100644 drivers/staging/mgakms/Kconfig
+ create mode 100644 drivers/staging/mgakms/Makefile
+ create mode 100644 drivers/staging/mgakms/mga_device.c
+ create mode 100644 drivers/staging/mgakms/mga_device.h
+ create mode 100644 drivers/staging/mgakms/mga_drv.c
+ create mode 100644 drivers/staging/mgakms/mga_drv.h
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ef00d6210cff..d077d04f9bc5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -15389,6 +15389,14 @@ L:	linux-wireless@vger.kernel.org
- S:	Supported
- F:	drivers/staging/wilc1000/
+diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+index 6f1fa4c849a1..fd25596813c5 100644
+--- a/drivers/staging/Kconfig
++++ b/drivers/staging/Kconfig
+@@ -125,4 +125,6 @@ source "drivers/staging/exfat/Kconfig"
  
-+STAGING - SEPS525 LCD CONTROLLER DRIVERS
-+M:	Michael Hennerich <michael.hennerich@analog.com>
-+M:	Beniamin Bia <beniamin.bia@analog.com>
-+L:	linux-fbdev@vger.kernel.org
-+S:	Supported
-+F:	drivers/staging/fbtft/fb_seps525.c
-+F:	Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
-+
- STAGING SUBSYSTEM
- M:	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
- T:	git git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
-diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
-index 8ec524a95ec8..55af11ee2f5b 100644
---- a/drivers/staging/fbtft/Kconfig
-+++ b/drivers/staging/fbtft/Kconfig
-@@ -112,6 +112,13 @@ config FB_TFT_S6D1121
- 	help
- 	  Generic Framebuffer support for S6D1121
+ source "drivers/staging/qlge/Kconfig"
  
-+config FB_TFT_SEPS525
-+	tristate "FB driver for the SEPS525 LCD Controller"
-+	depends on FB_TFT
-+	help
-+	  Generic Framebuffer support for SEPS525
-+	  Say Y if you have such a display that utilizes this controller.
++source "drivers/staging/mgakms/Kconfig"
 +
- config FB_TFT_SH1106
- 	tristate "FB driver for the SH1106 OLED Controller"
- 	depends on FB_TFT
-diff --git a/drivers/staging/fbtft/Makefile b/drivers/staging/fbtft/Makefile
-index 6bc03311c9c7..e7a0cd9166e9 100644
---- a/drivers/staging/fbtft/Makefile
-+++ b/drivers/staging/fbtft/Makefile
-@@ -21,6 +21,7 @@ obj-$(CONFIG_FB_TFT_PCD8544)     += fb_pcd8544.o
- obj-$(CONFIG_FB_TFT_RA8875)      += fb_ra8875.o
- obj-$(CONFIG_FB_TFT_S6D02A1)     += fb_s6d02a1.o
- obj-$(CONFIG_FB_TFT_S6D1121)     += fb_s6d1121.o
-+obj-$(CONFIG_FB_TFT_SEPS525)     += fb_seps525.o
- obj-$(CONFIG_FB_TFT_SH1106)      += fb_sh1106.o
- obj-$(CONFIG_FB_TFT_SSD1289)     += fb_ssd1289.o
- obj-$(CONFIG_FB_TFT_SSD1305)     += fb_ssd1305.o
-diff --git a/drivers/staging/fbtft/fb_seps525.c b/drivers/staging/fbtft/fb_seps525.c
+ endif # STAGING
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index a90f9b308c8d..4c98b028ee99 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -53,3 +53,4 @@ obj-$(CONFIG_UWB)		+= uwb/
+ obj-$(CONFIG_USB_WUSB)		+= wusbcore/
+ obj-$(CONFIG_EXFAT_FS)		+= exfat/
+ obj-$(CONFIG_QLGE)		+= qlge/
++obj-$(CONFIG_DRM_MGAKMS)	+= mgakms/
+diff --git a/drivers/staging/mgakms/Kconfig b/drivers/staging/mgakms/Kconfig
 new file mode 100644
-index 000000000000..05882e2cde7f
+index 000000000000..de23e76317bd
 --- /dev/null
-+++ b/drivers/staging/fbtft/fb_seps525.c
-@@ -0,0 +1,213 @@
++++ b/drivers/staging/mgakms/Kconfig
+@@ -0,0 +1,13 @@
++config DRM_MGAKMS
++	tristate "Matrox g200/g400"
++	depends on DRM && PCI
++	select DRM_FBCONV_HELPER
++	select DRM_GEM_SHMEM_HELPER
++	select DRM_KMS_HELPER
++	help
++	  Choose this option if you have a Matrox Millennium,
++	  Matrox Millennium II, Matrox Mystique, Matrox Mystique 220,
++	  Matrox Productiva G100, Matrox Mystique G200,
++	  Matrox Millennium G200, Matrox Marvel G200 video, Matrox G400,
++	  G450 or G550 card. If M is selected, the module will be called mga.
++	  AGP support is required for this driver to work.
+diff --git a/drivers/staging/mgakms/Makefile b/drivers/staging/mgakms/Makefile
+new file mode 100644
+index 000000000000..65695f04eb7f
+--- /dev/null
++++ b/drivers/staging/mgakms/Makefile
+@@ -0,0 +1,6 @@
++# SPDX-License-Identifier: GPL-2.0
++
++mgakms-y	:= mga_device.o \
++		   mga_drv.o
++
++obj-$(CONFIG_DRM_MGAKMS)	+= mgakms.o
+diff --git a/drivers/staging/mgakms/mga_device.c b/drivers/staging/mgakms/mga_device.c
+new file mode 100644
+index 000000000000..34b3bb1ed8a5
+--- /dev/null
++++ b/drivers/staging/mgakms/mga_device.c
+@@ -0,0 +1,68 @@
 +// SPDX-License-Identifier: GPL-2.0
++
++#include <linux/fb.h>
++#include <linux/pci.h>
++
++#include <drm/drm_drv.h>
++#include <drm/drm_fb_helper.h>
++#include <drm/drm_modeset_helper.h>
++
++#include "mga_device.h"
++
 +/*
-+ * FB driver for the NHD-1.69-160128UGC3 (Newhaven Display International, Inc.)
-+ * using the SEPS525 (Syncoam) LCD Controller
-+ *
-+ * Copyright (C) 2016 Analog Devices Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ * struct mga_device
 + */
 +
-+#include <linux/module.h>
++int mga_device_init(struct mga_device *mdev, struct drm_driver *drv,
++		    struct fb_info *fb_info)
++{
++	static const uint32_t formats[] = {
++		DRM_FORMAT_XRGB8888,
++		DRM_FORMAT_RGB565
++	};
++	static unsigned int max_width = 2048;
++	static unsigned int max_height = 2048;
++	static unsigned int preferred_depth = 32;
++
++	int ret;
++
++	ret = drm_dev_init(&mdev->dev, drv, fb_info->device);
++	if (ret)
++		return ret;
++	mdev->dev.dev_private = mdev;
++	mdev->dev.pdev = container_of(fb_info->device, struct pci_dev, dev);
++	mdev->fb_info = fb_info;
++
++	ret = drm_fbconv_modeset_init(&mdev->modeset, &mdev->dev, fb_info,
++				      max_width, max_height, preferred_depth);
++	if (ret)
++		goto err_drm_dev_fini;
++
++	ret = drm_fbconv_modeset_setup_pipe(&mdev->modeset, NULL, formats,
++					    ARRAY_SIZE(formats), NULL, NULL);
++	if (ret)
++		goto err_drm_fbconv_modeset_cleanup;
++
++	ret = drm_fbdev_generic_setup(&mdev->dev, 0);
++	if (ret)
++		goto err_drm_fbconv_modeset_cleanup;
++
++	return 0;
++
++err_drm_fbconv_modeset_cleanup:
++	/* cleans up all mode-setting structures */
++	drm_fbconv_modeset_cleanup(&mdev->modeset);
++err_drm_dev_fini:
++	drm_dev_fini(&mdev->dev);
++	return ret;
++}
++
++void mga_device_cleanup(struct mga_device *mdev)
++{
++	struct drm_device *dev = &mdev->dev;
++
++	drm_fbconv_modeset_cleanup(&mdev->modeset);
++
++	drm_dev_fini(dev);
++	dev->dev_private = NULL;
++}
+diff --git a/drivers/staging/mgakms/mga_device.h b/drivers/staging/mgakms/mga_device.h
+new file mode 100644
+index 000000000000..442effbf37bc
+--- /dev/null
++++ b/drivers/staging/mgakms/mga_device.h
+@@ -0,0 +1,30 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef MGA_DEVICE_H
++#define MGA_DEVICE_H
++
 +#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/gpio.h>
-+#include <linux/delay.h>
 +
-+#include "fbtft.h"
++#include <drm/drm_device.h>
++#include <drm/drm_fbconv_helper.h>
 +
-+#define DRVNAME		"fb_seps525"
-+#define WIDTH		160
-+#define HEIGHT		128
++struct drm_driver;
++struct fb_info;
 +
-+#define SEPS525_INDEX 0x00
-+#define SEPS525_STATUS_RD 0x01
-+#define SEPS525_OSC_CTL 0x02
-+#define SEPS525_IREF 0x80
-+#define SEPS525_CLOCK_DIV 0x03
-+#define SEPS525_REDUCE_CURRENT 0x04
-+#define SEPS525_SOFT_RST 0x05
-+#define SEPS525_DISP_ONOFF 0x06
-+#define SEPS525_PRECHARGE_TIME_R 0x08
-+#define SEPS525_PRECHARGE_TIME_G 0x09
-+#define SEPS525_PRECHARGE_TIME_B 0x0A
-+#define SEPS525_PRECHARGE_CURRENT_R 0x0B
-+#define SEPS525_PRECHARGE_CURRENT_G 0x0C
-+#define SEPS525_PRECHARGE_CURRENT_B 0x0D
-+#define SEPS525_DRIVING_CURRENT_R 0x10
-+#define SEPS525_DRIVING_CURRENT_G 0x11
-+#define SEPS525_DRIVING_CURRENT_B 0x12
-+#define SEPS525_DISPLAYMODE_SET 0x13
-+#define SEPS525_RGBIF 0x14
-+#define SEPS525_RGB_POL 0x15
-+#define SEPS525_MEMORY_WRITEMODE 0x16
-+#define SEPS525_MX1_ADDR 0x17
-+#define SEPS525_MX2_ADDR 0x18
-+#define SEPS525_MY1_ADDR 0x19
-+#define SEPS525_MY2_ADDR 0x1A
-+#define SEPS525_MEMORY_ACCESS_POINTER_X 0x20
-+#define SEPS525_MEMORY_ACCESS_POINTER_Y 0x21
-+#define SEPS525_DDRAM_DATA_ACCESS_PORT 0x22
-+#define SEPS525_GRAY_SCALE_TABLE_INDEX 0x50
-+#define SEPS525_GRAY_SCALE_TABLE_DATA 0x51
-+#define SEPS525_DUTY 0x28
-+#define SEPS525_DSL 0x29
-+#define SEPS525_D1_DDRAM_FAC 0x2E
-+#define SEPS525_D1_DDRAM_FAR 0x2F
-+#define SEPS525_D2_DDRAM_SAC 0x31
-+#define SEPS525_D2_DDRAM_SAR 0x32
-+#define SEPS525_SCR1_FX1 0x33
-+#define SEPS525_SCR1_FX2 0x34
-+#define SEPS525_SCR1_FY1 0x35
-+#define SEPS525_SCR1_FY2 0x36
-+#define SEPS525_SCR2_SX1 0x37
-+#define SEPS525_SCR2_SX2 0x38
-+#define SEPS525_SCR2_SY1 0x39
-+#define SEPS525_SCR2_SY2 0x3A
-+#define SEPS525_SCREEN_SAVER_CONTEROL 0x3B
-+#define SEPS525_SS_SLEEP_TIMER 0x3C
-+#define SEPS525_SCREEN_SAVER_MODE 0x3D
-+#define SEPS525_SS_SCR1_FU 0x3E
-+#define SEPS525_SS_SCR1_MXY 0x3F
-+#define SEPS525_SS_SCR2_FU 0x40
-+#define SEPS525_SS_SCR2_MXY 0x41
-+#define SEPS525_MOVING_DIRECTION 0x42
-+#define SEPS525_SS_SCR2_SX1 0x47
-+#define SEPS525_SS_SCR2_SX2 0x48
-+#define SEPS525_SS_SCR2_SY1 0x49
-+#define SEPS525_SS_SCR2_SY2 0x4A
++struct mga_device {
++	struct drm_device dev;
++	struct fb_info *fb_info;
 +
-+/* SEPS525_DISPLAYMODE_SET */
-+#define MODE_SWAP_BGR	BIT(7)
-+#define MODE_SM		BIT(6)
-+#define MODE_RD		BIT(5)
-+#define MODE_CD		BIT(4)
-+
-+#define seps525_use_window	0 /* FBTFT doesn't really use it today */
-+
-+/* Init sequence taken from: Arduino Library for the Adafruit 2.2" display */
-+static int init_display(struct fbtft_par *par)
-+{
-+	par->fbtftops.reset(par);
-+
-+	usleep_range(1000, 5000);
-+
-+	/* Disable Oscillator Power Down */
-+	write_reg(par, SEPS525_REDUCE_CURRENT, 0x03);
-+	usleep_range(1000, 5000);
-+	/* Set Normal Driving Current */
-+	write_reg(par, SEPS525_REDUCE_CURRENT, 0x00);
-+	usleep_range(1000, 5000);
-+
-+	write_reg(par, SEPS525_SCREEN_SAVER_CONTEROL, 0x00);
-+	/* Set EXPORT1 Pin at Internal Clock */
-+	write_reg(par, SEPS525_OSC_CTL, 0x01);
-+	/* Set Clock as 120 Frames/Sec */
-+	write_reg(par, SEPS525_CLOCK_DIV, 0x90);
-+	/* Set Reference Voltage Controlled by External Resister */
-+	write_reg(par, SEPS525_IREF, 0x01);
-+
-+	/* precharge time R G B */
-+	write_reg(par, SEPS525_PRECHARGE_TIME_R, 0x04);
-+	write_reg(par, SEPS525_PRECHARGE_TIME_G, 0x05);
-+	write_reg(par, SEPS525_PRECHARGE_TIME_B, 0x05);
-+
-+	/* precharge current R G B (uA) */
-+	write_reg(par, SEPS525_PRECHARGE_CURRENT_R, 0x9D);
-+	write_reg(par, SEPS525_PRECHARGE_CURRENT_G, 0x8C);
-+	write_reg(par, SEPS525_PRECHARGE_CURRENT_B, 0x57);
-+
-+	/* driving current R G B (uA) */
-+	write_reg(par, SEPS525_DRIVING_CURRENT_R, 0x56);
-+	write_reg(par, SEPS525_DRIVING_CURRENT_G, 0x4D);
-+	write_reg(par, SEPS525_DRIVING_CURRENT_B, 0x46);
-+	/* Set Color Sequence */
-+	write_reg(par, SEPS525_DISPLAYMODE_SET, 0xA0);
-+	write_reg(par, SEPS525_RGBIF, 0x01); /* Set MCU Interface Mode */
-+	/* Set Memory Write Mode */
-+	write_reg(par, SEPS525_MEMORY_WRITEMODE, 0x66);
-+	write_reg(par, SEPS525_DUTY, 0x7F); /* 1/128 Duty (0x0F~0x7F) */
-+	/* Set Mapping RAM Display Start Line (0x00~0x7F) */
-+	write_reg(par, SEPS525_DSL, 0x00);
-+	write_reg(par, SEPS525_DISP_ONOFF, 0x01); /* Display On (0x00/0x01) */
-+	/* Set All Internal Register Value as Normal Mode */
-+	write_reg(par, SEPS525_SOFT_RST, 0x00);
-+	/* Set RGB Interface Polarity as Active Low */
-+	write_reg(par, SEPS525_RGB_POL, 0x00);
-+
-+	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
-+
-+	return 0;
-+}
-+
-+static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
-+{
-+	if (seps525_use_window) {
-+		/* Set Window Xs,Ys Xe,Ye*/
-+		write_reg(par, SEPS525_MX1_ADDR, xs);
-+		write_reg(par, SEPS525_MX2_ADDR, xe);
-+		write_reg(par, SEPS525_MY1_ADDR, ys);
-+		write_reg(par, SEPS525_MY2_ADDR, ye);
-+	}
-+	/* start position X,Y */
-+	write_reg(par, SEPS525_MEMORY_ACCESS_POINTER_X, xs);
-+	write_reg(par, SEPS525_MEMORY_ACCESS_POINTER_Y, ys);
-+
-+	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
-+}
-+
-+static int set_var(struct fbtft_par *par)
-+{
-+	u8 val;
-+
-+	switch (par->info->var.rotate) {
-+	case 0:
-+		val = 0;
-+		break;
-+	case 180:
-+		val = MODE_RD | MODE_CD;
-+		break;
-+	case 90:
-+	case 270:
-+
-+	default:
-+		return -EINVAL;
-+	}
-+	/* Memory Access Control  */
-+	write_reg(par, SEPS525_DISPLAYMODE_SET, val |
-+		       (par->bgr ? MODE_SWAP_BGR : 0));
-+
-+	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
-+
-+	return 0;
-+}
-+
-+static struct fbtft_display display = {
-+	.regwidth = 8,
-+	.width = WIDTH,
-+	.height = HEIGHT,
-+	.fbtftops = {
-+		.init_display = init_display,
-+		.set_addr_win = set_addr_win,
-+		.set_var = set_var,
-+	},
++	struct drm_fbconv_modeset modeset;
 +};
 +
-+FBTFT_REGISTER_DRIVER(DRVNAME, "syncoam,seps525", &display);
++static inline struct mga_device *mga_device_of_dev(struct drm_device *dev)
++{
++	return container_of(dev, struct mga_device, dev);
++}
 +
-+MODULE_ALIAS("spi:" DRVNAME);
-+MODULE_ALIAS("platform:" DRVNAME);
-+MODULE_ALIAS("spi:seps525");
-+MODULE_ALIAS("platform:seps525");
++int mga_device_init(struct mga_device *mdev, struct drm_driver *drv,
++		    struct fb_info *fb_info);
++void mga_device_cleanup(struct mga_device *mdev);
 +
-+MODULE_DESCRIPTION("FB driver for the SEPS525 LCD Controller");
-+MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
-+MODULE_LICENSE("GPL");
++#endif
+diff --git a/drivers/staging/mgakms/mga_drv.c b/drivers/staging/mgakms/mga_drv.c
+new file mode 100644
+index 000000000000..75e26d3046f3
+--- /dev/null
++++ b/drivers/staging/mgakms/mga_drv.c
+@@ -0,0 +1,129 @@
++// SPDX-License-Identifier: GPL-2.0
++
++#include <linux/fb.h>
++#include <linux/pci.h>
++
++#include <drm/drm_drv.h>
++#include <drm/drm_fbconv_helper.h>
++#include <drm/drm_fb_helper.h>
++#include <drm/drm_file.h>
++#include <drm/drm_gem_shmem_helper.h>
++#include <drm/drm_ioctl.h>
++
++#include "mga_device.h"
++#include "mga_drv.h"
++
++#define DRIVER_AUTHOR		"Thomas Zimmermann <tzimmermann@suse.de>"
++#define DRIVER_NAME		"mgakms"
++#define DRIVER_DESCRIPTION	"DRM driver for Matrox graphics chipsets"
++#define DRIVER_LICENSE		"GPL"
++#define DRIVER_DATE		"20190301"
++#define DRIVER_MAJOR		0
++#define DRIVER_MINOR		0
++#define DRIVER_PATCHLEVEL	1
++
++/*
++ * DRM driver
++ */
++
++DEFINE_DRM_GEM_SHMEM_FOPS(mga_file_operations);
++
++static struct drm_driver mga_driver = {
++	.major = DRIVER_MAJOR,
++	.minor = DRIVER_MINOR,
++	.patchlevel = DRIVER_PATCHLEVEL,
++	.name = DRIVER_NAME,
++	.desc = DRIVER_DESCRIPTION,
++	.date = DRIVER_DATE,
++	.driver_features = DRIVER_ATOMIC |
++			   DRIVER_GEM |
++			   DRIVER_MODESET,
++	.fops = &mga_file_operations,
++	DRM_GEM_SHMEM_DRIVER_OPS,
++};
++
++static void mga_remove_conflicting_framebuffers(struct pci_dev *pdev)
++{
++	struct apertures_struct *ap;
++	bool primary = false;
++
++	ap = alloc_apertures(1);
++	if (!ap)
++		return;
++
++	ap->ranges[0].base = pci_resource_start(pdev, 1);
++	ap->ranges[0].size = pci_resource_len(pdev, 1);
++
++#ifdef CONFIG_X86
++	primary = pdev->resource[PCI_ROM_RESOURCE].flags &
++		IORESOURCE_ROM_SHADOW;
++#endif
++	drm_fb_helper_remove_conflicting_framebuffers(ap, DRIVER_NAME,
++						      primary);
++	kfree(ap);
++}
++
++static struct mga_device *mga_create_device(struct fb_info *fb_info)
++{
++	struct mga_device *mdev;
++	int ret;
++
++	mdev = devm_kzalloc(fb_info->device, sizeof(*mdev), GFP_KERNEL);
++	if (!mdev)
++		return ERR_PTR(-ENOMEM);
++	ret = mga_device_init(mdev, &mga_driver, fb_info);
++	if (ret)
++		goto err_devm_kfree;
++	return mdev;
++
++err_devm_kfree:
++	devm_kfree(fb_info->device, mdev);
++	return ERR_PTR(ret);
++}
++
++static void mga_destroy_device(struct mga_device *mdev)
++{
++	struct device *dev = mdev->fb_info->device;
++
++	mga_device_cleanup(mdev);
++	devm_kfree(dev, mdev);
++}
++
++struct mga_device *mga_register_framebuffer(struct fb_info *fb_info,
++					    struct pci_dev *pdev)
++{
++	int ret;
++	struct mga_device *mdev;
++
++	mga_remove_conflicting_framebuffers(pdev);
++
++	ret = drm_fbconv_fill_fb_info(fb_info);
++	if (ret)
++		return ERR_PTR(ret);
++
++	mdev = mga_create_device(fb_info);
++	if (IS_ERR(mdev)) {
++		ret = PTR_ERR(mdev);
++		goto err_drm_fbconv_cleanup_fb_info;
++	}
++
++	ret = drm_dev_register(&mdev->dev, 0);
++	if (ret)
++		goto err_mga_destroy_device;
++
++	return mdev;
++
++err_mga_destroy_device:
++	mga_destroy_device(mdev);
++err_drm_fbconv_cleanup_fb_info:
++	drm_fbconv_cleanup_fb_info(fb_info);
++	return ERR_PTR(ret);
++}
++
++void mga_unregister_framebuffer(struct mga_device *mdev)
++{
++	struct fb_info *fb_info = mdev->fb_info;
++
++	mga_destroy_device(mdev);
++	drm_fbconv_cleanup_fb_info(fb_info);
++}
+diff --git a/drivers/staging/mgakms/mga_drv.h b/drivers/staging/mgakms/mga_drv.h
+new file mode 100644
+index 000000000000..d214719516c0
+--- /dev/null
++++ b/drivers/staging/mgakms/mga_drv.h
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: GPL-2.0 */
++
++#ifndef MGA_DRV_H
++#define MGA_DRV_H
++
++struct fb_info;
++struct mga_device;
++struct pci_dev;
++
++struct mga_device *mga_register_framebuffer(struct fb_info *fb_info,
++					    struct pci_dev *pdev);
++void mga_unregister_framebuffer(struct mga_device *mdev);
++
++#endif
 -- 
-2.17.1
+2.23.0

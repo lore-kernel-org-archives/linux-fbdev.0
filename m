@@ -1,92 +1,113 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Sat, 19 Oct 2019 08:35:55 +0000
-Subject: [PATCH v6 8/9] backlight: gpio: use a helper variable for &pdev->dev
-Message-Id: <20191019083556.19466-9-brgl@bgdev.pl>
+From: Thomas Zimmermann <tzimmermann@suse.de>
+Date: Mon, 14 Oct 2019 14:04:04 +0000
+Subject: [PATCH v2 03/15] drm/simple-kms-helper: Add mode_fixup() to simple display pipe
+Message-Id: <20191014140416.28517-4-tzimmermann@suse.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191019083556.19466-1-brgl@bgdev.pl>
-In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
+References: <20191014140416.28517-1-tzimmermann@suse.de>
+In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
+Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+The mode fix-up function for simple display helpers is equivalent to the
+regular pipeline's CRTC mode fix-up function. It's called to adjust the
+CRTC's display mode for the encoder. Add this function for DRM fbconv
+helpers.
 
-Instead of dereferencing pdev each time, use a helper variable for
-the associated device pointer.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
 ---
- drivers/video/backlight/gpio_backlight.c | 23 +++++++++++------------
- 1 file changed, 11 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/drm_simple_kms_helper.c | 15 +++++++++
+ include/drm/drm_simple_kms_helper.h     | 43 +++++++++++++++++++++++++
+ 2 files changed, 58 insertions(+)
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index c829b82f5372..7b411f6ee15a 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -78,29 +78,29 @@ static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+diff --git a/drivers/gpu/drm/drm_simple_kms_helper.c b/drivers/gpu/drm/drm_simple_kms_helper.c
+index 046055719245..acd9b79bf92a 100644
+--- a/drivers/gpu/drm/drm_simple_kms_helper.c
++++ b/drivers/gpu/drm/drm_simple_kms_helper.c
+@@ -46,6 +46,20 @@ drm_simple_kms_crtc_mode_valid(struct drm_crtc *crtc,
+ 	return pipe->funcs->mode_valid(crtc, mode);
+ }
  
- static int gpio_backlight_probe(struct platform_device *pdev)
++static bool
++drm_simple_kms_crtc_mode_fixup(struct drm_crtc *crtc,
++			       const struct drm_display_mode *mode,
++			       struct drm_display_mode *adjusted_mode)
++{
++	struct drm_simple_display_pipe *pipe;
++
++	pipe = container_of(crtc, struct drm_simple_display_pipe, crtc);
++	if (!pipe->funcs || !pipe->funcs->mode_fixup)
++		return true;
++
++	return pipe->funcs->mode_fixup(crtc, mode, adjusted_mode);
++}
++
+ static int drm_simple_kms_crtc_check(struct drm_crtc *crtc,
+ 				     struct drm_crtc_state *state)
  {
--	struct gpio_backlight_platform_data *pdata -		dev_get_platdata(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct gpio_backlight_platform_data *pdata = dev_get_platdata(dev);
- 	struct backlight_properties props;
- 	struct backlight_device *bl;
- 	struct gpio_backlight *gbl;
- 	int ret, init_brightness;
+@@ -87,6 +101,7 @@ static void drm_simple_kms_crtc_disable(struct drm_crtc *crtc,
  
--	gbl = devm_kzalloc(&pdev->dev, sizeof(*gbl), GFP_KERNEL);
-+	gbl = devm_kzalloc(dev, sizeof(*gbl), GFP_KERNEL);
- 	if (gbl = NULL)
- 		return -ENOMEM;
+ static const struct drm_crtc_helper_funcs drm_simple_kms_crtc_helper_funcs = {
+ 	.mode_valid = drm_simple_kms_crtc_mode_valid,
++	.mode_fixup = drm_simple_kms_crtc_mode_fixup,
+ 	.atomic_check = drm_simple_kms_crtc_check,
+ 	.atomic_enable = drm_simple_kms_crtc_enable,
+ 	.atomic_disable = drm_simple_kms_crtc_disable,
+diff --git a/include/drm/drm_simple_kms_helper.h b/include/drm/drm_simple_kms_helper.h
+index 4d89cd0a60db..1b975ab67144 100644
+--- a/include/drm/drm_simple_kms_helper.h
++++ b/include/drm/drm_simple_kms_helper.h
+@@ -52,6 +52,49 @@ struct drm_simple_display_pipe_funcs {
+ 	enum drm_mode_status (*mode_valid)(struct drm_crtc *crtc,
+ 					   const struct drm_display_mode *mode);
  
--	gbl->dev = &pdev->dev;
-+	gbl->dev = dev;
- 
- 	if (pdata)
- 		gbl->fbdev = pdata->fbdev;
- 
--	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
-+	gbl->def_value = device_property_read_bool(dev, "default-on");
- 
--	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_ASIS);
-+	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
- 	if (IS_ERR(gbl->gpiod)) {
- 		ret = PTR_ERR(gbl->gpiod);
- 		if (ret != -EPROBE_DEFER)
--			dev_err(&pdev->dev,
-+			dev_err(dev,
- 				"Error: The gpios parameter is missing or invalid.\n");
- 		return ret;
- 	}
-@@ -108,11 +108,10 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 	memset(&props, 0, sizeof(props));
- 	props.type = BACKLIGHT_RAW;
- 	props.max_brightness = 1;
--	bl = devm_backlight_device_register(&pdev->dev, dev_name(&pdev->dev),
--					&pdev->dev, gbl, &gpio_backlight_ops,
--					&props);
-+	bl = devm_backlight_device_register(dev, dev_name(dev), dev, gbl,
-+					    &gpio_backlight_ops, &props);
- 	if (IS_ERR(bl)) {
--		dev_err(&pdev->dev, "failed to register backlight\n");
-+		dev_err(dev, "failed to register backlight\n");
- 		return PTR_ERR(bl);
- 	}
- 
-@@ -122,7 +121,7 @@ static int gpio_backlight_probe(struct platform_device *pdev)
- 	init_brightness = gpio_backlight_get_curr_brightness(bl);
- 	ret = gpiod_direction_output(gbl->gpiod, init_brightness);
- 	if (ret) {
--		dev_err(&pdev->dev, "failed to set initial brightness\n");
-+		dev_err(dev, "failed to set initial brightness\n");
- 		return ret;
- 	}
- 
++	/**
++	 * @mode_fixup:
++	 *
++	 * This callback is used to validate a mode. The parameter mode is the
++	 * display mode that userspace requested, adjusted_mode is the mode the
++	 * encoders need to be fed with. Note that this is the inverse semantics
++	 * of the meaning for the &drm_encoder and &drm_bridge_funcs.mode_fixup
++	 * vfunc. If the CRTC of the simple display pipe cannot support the
++	 * requested conversion from mode to adjusted_mode it should reject the
++	 * modeset.
++	 *
++	 * This function is optional.
++	 *
++	 * NOTE:
++	 *
++	 * This function is called in the check phase of atomic modesets, which
++	 * can be aborted for any reason (including on userspace's request to
++	 * just check whether a configuration would be possible). Atomic drivers
++	 * MUST NOT touch any persistent state (hardware or software) or data
++	 * structures except the passed in adjusted_mode parameter.
++	 *
++	 * Atomic drivers which need to inspect and adjust more state should
++	 * instead use the @atomic_check callback, but note that they're not
++	 * perfectly equivalent: @mode_valid is called from
++	 * drm_atomic_helper_check_modeset(), but @atomic_check is called from
++	 * drm_atomic_helper_check_planes(), because originally it was meant for
++	 * plane update checks only.
++	 *
++	 * Also beware that userspace can request its own custom modes, neither
++	 * core nor helpers filter modes to the list of probe modes reported by
++	 * the GETCONNECTOR IOCTL and stored in &drm_connector.modes. To ensure
++	 * that modes are filtered consistently put any CRTC constraints and
++	 * limits checks into @mode_valid.
++	 *
++	 * RETURNS:
++	 *
++	 * True if an acceptable configuration is possible, false if the modeset
++	 * operation should be rejected.
++	 */
++	bool (*mode_fixup)(struct drm_crtc *crtc,
++			   const struct drm_display_mode *mode,
++			   struct drm_display_mode *adjusted_mode);
++
+ 	/**
+ 	 * @enable:
+ 	 *
 -- 
 2.23.0

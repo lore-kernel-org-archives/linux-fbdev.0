@@ -1,95 +1,45 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Mon, 07 Oct 2019 03:31:55 +0000
-Subject: [PATCH v5 2/7] sh: ecovec24: add additional properties to the backlight device
-Message-Id: <20191007033200.13443-3-brgl@bgdev.pl>
+From: "Andrew F. Davis" <afd@ti.com>
+Date: Wed, 16 Oct 2019 18:04:24 +0000
+Subject: [PATCH] omapfb/dss: remove unneeded conversions to bool
+Message-Id: <20191016180424.23907-1-afd@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191007033200.13443-1-brgl@bgdev.pl>
-In-Reply-To: <20191007033200.13443-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: Jiri Kosina <trivial@kernel.org>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, "Andrew F . Davis" <afd@ti.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Found with scripts/coccinelle/misc/boolconv.cocci.
 
-Add a GPIO lookup entry and a device property for GPIO backlight to the
-board file. Tie them to the platform device which is now registered using
-platform_device_register_full() because of the properties. These changes
-are inactive now but will be used once the gpio backlight driver is
-modified.
-
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Signed-off-by: Andrew F. Davis <afd@ti.com>
 ---
- arch/sh/boards/mach-ecovec24/setup.c | 30 +++++++++++++++++++++++-----
- 1 file changed, 25 insertions(+), 5 deletions(-)
+ drivers/video/fbdev/omap2/omapfb/dss/dispc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index acaa97459531..aaa8ea62636f 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -371,6 +371,19 @@ static struct platform_device lcdc_device = {
- 	},
- };
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+index 376ee5bc3ddc..ce37da85cc45 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dispc.c
+@@ -1635,7 +1635,7 @@ static void dispc_ovl_set_scaling_uv(enum omap_plane plane,
+ {
+ 	int scale_x = out_width != orig_width;
+ 	int scale_y = out_height != orig_height;
+-	bool chroma_upscale = plane != OMAP_DSS_WB ? true : false;
++	bool chroma_upscale = plane != OMAP_DSS_WB;
  
-+static struct gpiod_lookup_table gpio_backlight_lookup = {
-+	.dev_id		= "gpio-backlight.0",
-+	.table = {
-+		GPIO_LOOKUP("sh7724_pfc", GPIO_PTR1, NULL, GPIO_ACTIVE_HIGH),
-+		{ }
-+	},
-+};
-+
-+static struct property_entry gpio_backlight_props[] = {
-+	PROPERTY_ENTRY_BOOL("default-on"),
-+	{ }
-+};
-+
- static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.fbdev = &lcdc_device.dev,
- 	.gpio = GPIO_PTR1,
-@@ -378,13 +391,15 @@ static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.name = "backlight",
- };
- 
--static struct platform_device gpio_backlight_device = {
-+static const struct platform_device_info gpio_backlight_device_info = {
- 	.name = "gpio-backlight",
--	.dev = {
--		.platform_data = &gpio_backlight_data,
--	},
-+	.data = &gpio_backlight_data,
-+	.size_data = sizeof(gpio_backlight_data),
-+	.properties = gpio_backlight_props,
- };
- 
-+static struct platform_device *gpio_backlight_device;
-+
- /* CEU0 */
- static struct ceu_platform_data ceu0_pdata = {
- 	.num_subdevs			= 2,
-@@ -1006,7 +1021,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
- 	&usb1_common_device,
- 	&usbhs_device,
- 	&lcdc_device,
--	&gpio_backlight_device,
- 	&keysc_device,
- 	&cn12_power,
- #if defined(CONFIG_MMC_SDHI) || defined(CONFIG_MMC_SDHI_MODULE)
-@@ -1462,6 +1476,12 @@ static int __init arch_setup(void)
- #endif
- #endif
- 
-+	gpiod_add_lookup_table(&gpio_backlight_lookup);
-+	gpio_backlight_device = platform_device_register_full(
-+					&gpio_backlight_device_info);
-+	if (IS_ERR(gpio_backlight_device))
-+		return PTR_ERR(gpio_backlight_device);
-+
- 	return platform_add_devices(ecovec_devices,
- 				    ARRAY_SIZE(ecovec_devices));
+ 	if (!dss_has_feature(FEAT_HANDLE_UV_SEPARATE))
+ 		return;
+@@ -3100,9 +3100,9 @@ static bool _dispc_mgr_pclk_ok(enum omap_channel channel,
+ 		unsigned long pclk)
+ {
+ 	if (dss_mgr_is_lcd(channel))
+-		return pclk <= dispc.feat->max_lcd_pclk ? true : false;
++		return pclk <= dispc.feat->max_lcd_pclk;
+ 	else
+-		return pclk <= dispc.feat->max_tv_pclk ? true : false;
++		return pclk <= dispc.feat->max_tv_pclk;
  }
+ 
+ bool dispc_mgr_timings_ok(enum omap_channel channel,
 -- 
-2.23.0
+2.17.1

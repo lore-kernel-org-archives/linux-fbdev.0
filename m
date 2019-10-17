@@ -1,108 +1,141 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Tue, 15 Oct 2019 12:46:39 +0000
-Subject: Re: [PATCH v2 14/15] staging/mgakms: Import matroxfb driver source code
-Message-Id: <a1e6a1a8-c6b3-26fb-7d96-480a5a7caf65@suse.de>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="DxI2wuFLtAZwXF1Npl9I8uthO5WLEGxjr"
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?=  <u.kleine-koenig@pengutronix.de>
+Date: Thu, 17 Oct 2019 08:10:59 +0000
+Subject: [PATCH] backlight: pwm_bl: configure pwm only once per backlight toggle
+Message-Id: <20191017081059.31761-1-u.kleine-koenig@pengutronix.de>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191014140416.28517-1-tzimmermann@suse.de>
- <20191014140416.28517-15-tzimmermann@suse.de> <20191015114843.GB4104@sci.fi>
-In-Reply-To: <20191015114843.GB4104@sci.fi>
-To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net, corbet@lwn.net, gregkh@linuxfoundation.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-
-This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
---DxI2wuFLtAZwXF1Npl9I8uthO5WLEGxjr
-Content-Type: multipart/mixed; boundary="or6SuiZEUMjCLZSYl83jywjClSUgfMvcX";
- protected-headers="v1"
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com,
- mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com,
- ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org,
- michel@daenzer.net, corbet@lwn.net, gregkh@linuxfoundation.org,
- dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org
-Message-ID: <a1e6a1a8-c6b3-26fb-7d96-480a5a7caf65@suse.de>
-Subject: Re: [PATCH v2 14/15] staging/mgakms: Import matroxfb driver source
- code
-References: <20191014140416.28517-1-tzimmermann@suse.de>
- <20191014140416.28517-15-tzimmermann@suse.de> <20191015114843.GB4104@sci.fi>
-In-Reply-To: <20191015114843.GB4104@sci.fi>
-
---or6SuiZEUMjCLZSYl83jywjClSUgfMvcX
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
+To: Adam Ford <aford173@gmail.com>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Daniel Thompson <daniel.thompson@linaro.org>, Lee Jones <lee.jones@linaro.org>, Jingoo Han <jingoohan1@gmail.com>
+Cc: linux-pwm@vger.kernel.org, linux-fbdev@vger.kernel.org, Thierry Reding <thierry.reding@gmail.com>, kernel@pengutronix.de, dri-devel@lists.freedesktop.org
 
-Hi
+A previous change in the pwm core (namely 01ccf903edd6 ("pwm: Let
+pwm_get_state() return the last implemented state")) changed the
+semantic of pwm_get_state() and disclosed an (as it seems) common
+problem in lowlevel PWM drivers. By not relying on the period and duty
+cycle being retrievable from a disabled PWM this type of problem is
+worked around.
 
-Am 15.10.19 um 13:48 schrieb Ville Syrj=C3=A4l=C3=A4:
-> On Mon, Oct 14, 2019 at 04:04:15PM +0200, Thomas Zimmermann wrote:
->> Only code is being copied, no functional changes are made.
->>
->> Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
->> ---
->>  drivers/staging/mgakms/g450_pll.c         |  539 +++++a
->=20
-> ...
->=20
-> Personally I would start from scratch. In fact some years (*cough*
-> decade) ago I did just that and started writing a new driver for
-> matrox stuff. Unfortunately I ran out of steam after figuring out
-> most of the interesting hardware quirks and whatnot, so I never
-> finished it. The end result is that it still runs in userspace
-> but kinda looks like a kernel driver if you squint a bit.
->=20
-> Anyways, I just slapped a MIT license on it  dumped the whole
-> thing here:
-> https://gitlab.com/syrjala/mga
-> The development history was, shall we say, not really useful
-> so I just squashed it.
->=20
-> You, or someone else, might find it interesting. I think in
-> terms of hardware support it's a superset of any other driver,
-> apart from the blob.
->=20
+Apart from this issue only calling the pwm_get_state/pwm_apply_state
+combo once is also more effective.
 
-Just to make this clear: I do not intend to port every single fbdev
-driver to DRM. :)
+Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pengutronix.de>
+---
+Hello,
 
-I did, however, began to convert that Matrox driver. First, to see if
-the approach does work in general; and because matroxfb is one of the
-more complex drivers. If it can be converted, any other driver should be
-convertible as well. I split up the driver code by HW generation and can
-now refactor each generation on its own. I expect to end up with several
-duplicated functions, which can be re-merged.
+There are now two reports about 01ccf903edd6 breaking a backlight. As
+far as I understand the problem this is a combination of the backend pwm
+driver yielding surprising results and the pwm-bl driver doing things
+more complicated than necessary.
 
-Maybe our repo can be helpful. Thanks for the link.
+So I guess this patch works around these problems. Still it would be
+interesting to find out the details in the imx driver that triggers the
+problem. So Adam, can you please instrument the pwm-imx27 driver to
+print *state at the beginning of pwm_imx27_apply() and the end of
+pwm_imx27_get_state() and provide the results?
+
+Note I only compile tested this change.
 
 Best regards
-Thomas
+Uwe
 
+ drivers/video/backlight/pwm_bl.c | 34 +++++++++++---------------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
+
+diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm=
+_bl.c
+index 746eebc411df..ddebd62b3978 100644
+--- a/drivers/video/backlight/pwm_bl.c
++++ b/drivers/video/backlight/pwm_bl.c
+@@ -42,10 +42,8 @@ struct pwm_bl_data {
+=20
+ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+ {
+-	struct pwm_state state;
+ 	int err;
+=20
+-	pwm_get_state(pb->pwm, &state);
+ 	if (pb->enabled)
+ 		return;
+=20
+@@ -53,9 +51,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+ 	if (err < 0)
+ 		dev_err(pb->dev, "failed to enable power supply\n");
+=20
+-	state.enabled =3D true;
+-	pwm_apply_state(pb->pwm, &state);
+-
+ 	if (pb->post_pwm_on_delay)
+ 		msleep(pb->post_pwm_on_delay);
+=20
+@@ -67,40 +62,27 @@ static void pwm_backlight_power_on(struct pwm_bl_data *=
+pb)
+=20
+ static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+ {
+-	struct pwm_state state;
+-
+-	pwm_get_state(pb->pwm, &state);
+-	if (!pb->enabled)
+-		return;
+-
+ 	if (pb->enable_gpio)
+ 		gpiod_set_value_cansleep(pb->enable_gpio, 0);
+=20
+ 	if (pb->pwm_off_delay)
+ 		msleep(pb->pwm_off_delay);
+=20
+-	state.enabled =3D false;
+-	state.duty_cycle =3D 0;
+-	pwm_apply_state(pb->pwm, &state);
+-
+ 	regulator_disable(pb->power_supply);
+ 	pb->enabled =3D false;
+ }
+=20
+-static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
++static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness, stru=
+ct pwm_state *state)
+ {
+ 	unsigned int lth =3D pb->lth_brightness;
+-	struct pwm_state state;
+ 	u64 duty_cycle;
+=20
+-	pwm_get_state(pb->pwm, &state);
+-
+ 	if (pb->levels)
+ 		duty_cycle =3D pb->levels[brightness];
+ 	else
+ 		duty_cycle =3D brightness;
+=20
+-	duty_cycle *=3D state.period - lth;
++	duty_cycle *=3D state->period - lth;
+ 	do_div(duty_cycle, pb->scale);
+=20
+ 	return duty_cycle + lth;
+@@ -122,12 +104,20 @@ static int pwm_backlight_update_status(struct backlig=
+ht_device *bl)
+=20
+ 	if (brightness > 0) {
+ 		pwm_get_state(pb->pwm, &state);
+-		state.duty_cycle =3D compute_duty_cycle(pb, brightness);
++		state.duty_cycle =3D compute_duty_cycle(pb, brightness, &state);
++		state.enabled =3D true;
+ 		pwm_apply_state(pb->pwm, &state);
++
+ 		pwm_backlight_power_on(pb);
+-	} else
++	} else {
+ 		pwm_backlight_power_off(pb);
+=20
++		pwm_get_state(pb->pwm, &state);
++		state.enabled =3D false;
++		state.duty_cycle =3D 0;
++		pwm_apply_state(pb->pwm, &state);
++	}
++
+ 	if (pb->notify_after)
+ 		pb->notify_after(pb->dev, brightness);
+=20
 --=20
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Maxfeldstr. 5, 90409 N=C3=BCrnberg, Germany
-(HRB 36809, AG N=C3=BCrnberg)
-Gesch=C3=A4ftsf=C3=BChrer: Felix Imend=C3=B6rffer
-
-
---or6SuiZEUMjCLZSYl83jywjClSUgfMvcX--
-
---DxI2wuFLtAZwXF1Npl9I8uthO5WLEGxjr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAEBCAAdFiEEchf7rIzpz2NEoWjlaA3BHVMLeiMFAl2lv7AACgkQaA3BHVML
-eiPwZwf+IMs4lQgb5EFMtlul00cQVEgRs/BG6p8f07qlJYu3E2SZsdIGQhXVPd9O
-9x93JT+l1oh00VhSlRy50+7NJnGVLz7D+H1iO33I+N/qW/4tZaJxe9MpTR0EGTl/
-mEJUmOg8HAeOa1DEMAgHzVB342Wi/A06kBdHmfFORhCvTA2/fkXmGrJDik7oieb9
-Ck7q0nDpF65NkPedVLasvT/uM9hrV3wvEPSAy9Cvyr8zLpUFA7iOcZ4sI73Hyomk
-4pLY/6s5cEwii81xuFLYm7Z06ZohPpEoFkxVcYR8ViegOpbVFWFw6MlnIpjM1Hft
-/vmm4OpfYO/r/7H3XyJULqIlpA5iAw==
-=UdgA
------END PGP SIGNATURE-----
-
---DxI2wuFLtAZwXF1Npl9I8uthO5WLEGxjr--
+2.23.0

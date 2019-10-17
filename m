@@ -1,9 +1,7 @@
-From: Thierry Reding <thierry.reding@gmail.com>
-Date: Thu, 17 Oct 2019 17:13:26 +0000
+From: Adam Ford <aford173@gmail.com>
+Date: Thu, 17 Oct 2019 17:44:57 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: configure pwm only once per backlight toggle
-Message-Id: <20191017171326.GA531411@ulmo>
-MIME-Version: 1
-Content-Type: multipart/mixed; boundary="bp/iNruPH9dso1Pn"
+Message-Id: <CAHCN7xJWco5gTdjmJZRbNqi1aO+ytor5XMJWQX8a38tfGbz+xg@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20191017081059.31761-1-u.kleine-koenig@pengutronix.de>
  <c89925bd-857d-874f-b74f-c5700d4c9fbd@ysoft.com>
@@ -14,537 +12,437 @@ References: <20191017081059.31761-1-u.kleine-koenig@pengutronix.de>
  <aa73b430-527c-8066-ad9c-edab62a05fc9@ysoft.com>
  <20191017151437.GA85210@ulmo>
  <CAHCN7xJduG9yxAhuW6D1_kpd5=p7LhO_YCWjVxcCoW5bmSEJGQ@mail.gmail.com>
-In-Reply-To: <CAHCN7xJduG9yxAhuW6D1_kpd5=p7LhO_YCWjVxcCoW5bmSEJGQ@mail.gmail.com>
-To: Adam Ford <aford173@gmail.com>
-Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Michal =?utf-8?B?Vm9rw6HEjQ==?= <michal.vokac@ysoft.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Sascha Hauer <kernel@pengutronix.de>, Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+ <20191017171326.GA531411@ulmo>
+In-Reply-To: <20191017171326.GA531411@ulmo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+To: Thierry Reding <thierry.reding@gmail.com>
+Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Sascha Hauer <kernel@pengutronix.de>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
 
-
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, Oct 17, 2019 at 12:07:21PM -0500, Adam Ford wrote:
-> On Thu, Oct 17, 2019 at 10:14 AM Thierry Reding
-> <thierry.reding@gmail.com> wrote:
-> >
-> > On Thu, Oct 17, 2019 at 03:58:25PM +0200, Michal Vok=C3=A1=C4=8D wrote:
-> > > On 17. 10. 19 14:59, Thierry Reding wrote:
-> > > > On Thu, Oct 17, 2019 at 02:09:17PM +0200, Uwe Kleine-K=C3=B6nig wro=
-te:
-> > > > > On Thu, Oct 17, 2019 at 01:11:31PM +0200, Thierry Reding wrote:
-> > > > > > On Thu, Oct 17, 2019 at 12:11:16PM +0200, Uwe Kleine-K=C3=B6nig=
- wrote:
-> > > > > > > On Thu, Oct 17, 2019 at 11:48:08AM +0200, Michal Vok=C3=A1=C4=
-=8D wrote:
-> > > > > > > > On 17. 10. 19 10:10, Uwe Kleine-K=C3=B6nig wrote:
-> > > > > > > > > A previous change in the pwm core (namely 01ccf903edd6 ("=
-pwm: Let
-> > > > > > > > > pwm_get_state() return the last implemented state")) chan=
-ged the
-> > > > > > > > > semantic of pwm_get_state() and disclosed an (as it seems=
-) common
-> > > > > > > > > problem in lowlevel PWM drivers. By not relying on the pe=
-riod and duty
-> > > > > > > > > cycle being retrievable from a disabled PWM this type of =
-problem is
-> > > > > > > > > worked around.
+On Thu, Oct 17, 2019 at 12:13 PM Thierry Reding
+<thierry.reding@gmail.com> wrote:
+>
+> On Thu, Oct 17, 2019 at 12:07:21PM -0500, Adam Ford wrote:
+> > On Thu, Oct 17, 2019 at 10:14 AM Thierry Reding
+> > <thierry.reding@gmail.com> wrote:
+> > >
+> > > On Thu, Oct 17, 2019 at 03:58:25PM +0200, Michal Vokáč wrote:
+> > > > On 17. 10. 19 14:59, Thierry Reding wrote:
+> > > > > On Thu, Oct 17, 2019 at 02:09:17PM +0200, Uwe Kleine-König wrote:
+> > > > > > On Thu, Oct 17, 2019 at 01:11:31PM +0200, Thierry Reding wrote:
+> > > > > > > On Thu, Oct 17, 2019 at 12:11:16PM +0200, Uwe Kleine-König wrote:
+> > > > > > > > On Thu, Oct 17, 2019 at 11:48:08AM +0200, Michal Vokáč wrote:
+> > > > > > > > > On 17. 10. 19 10:10, Uwe Kleine-König wrote:
+> > > > > > > > > > A previous change in the pwm core (namely 01ccf903edd6 ("pwm: Let
+> > > > > > > > > > pwm_get_state() return the last implemented state")) changed the
+> > > > > > > > > > semantic of pwm_get_state() and disclosed an (as it seems) common
+> > > > > > > > > > problem in lowlevel PWM drivers. By not relying on the period and duty
+> > > > > > > > > > cycle being retrievable from a disabled PWM this type of problem is
+> > > > > > > > > > worked around.
+> > > > > > > > > >
+> > > > > > > > > > Apart from this issue only calling the pwm_get_state/pwm_apply_state
+> > > > > > > > > > combo once is also more effective.
+> > > > > > > > > >
+> > > > > > > > > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > > > > > > > > > ---
+> > > > > > > > > > Hello,
+> > > > > > > > > >
+> > > > > > > > > > There are now two reports about 01ccf903edd6 breaking a backlight. As
+> > > > > > > > > > far as I understand the problem this is a combination of the backend pwm
+> > > > > > > > > > driver yielding surprising results and the pwm-bl driver doing things
+> > > > > > > > > > more complicated than necessary.
+> > > > > > > > > >
+> > > > > > > > > > So I guess this patch works around these problems. Still it would be
+> > > > > > > > > > interesting to find out the details in the imx driver that triggers the
+> > > > > > > > > > problem. So Adam, can you please instrument the pwm-imx27 driver to
+> > > > > > > > > > print *state at the beginning of pwm_imx27_apply() and the end of
+> > > > > > > > > > pwm_imx27_get_state() and provide the results?
+> > > > > > > > > >
+> > > > > > > > > > Note I only compile tested this change.
 > > > > > > > > >
-> > > > > > > > > Apart from this issue only calling the pwm_get_state/pwm_=
-apply_state
-> > > > > > > > > combo once is also more effective.
+> > > > > > > > > Hi Uwe,
+> > > > > > > > > I was just about to respond to the "pwm_bl on i.MX6Q broken on 5.4-RC1+"
+> > > > > > > > > thread that I have a similar problem when you submitted this patch.
 > > > > > > > > >
-> > > > > > > > > Signed-off-by: Uwe Kleine-K=C3=B6nig <u.kleine-koenig@pen=
-gutronix.de>
-> > > > > > > > > ---
-> > > > > > > > > Hello,
+> > > > > > > > > So here are my few cents:
 > > > > > > > > >
-> > > > > > > > > There are now two reports about 01ccf903edd6 breaking a b=
-acklight. As
-> > > > > > > > > far as I understand the problem this is a combination of =
-the backend pwm
-> > > > > > > > > driver yielding surprising results and the pwm-bl driver =
-doing things
-> > > > > > > > > more complicated than necessary.
+> > > > > > > > > My setup is as follows:
+> > > > > > > > >   - imx6dl-yapp4-draco with i.MX6Solo
+> > > > > > > > >   - backlight is controlled with inverted PWM signal
+> > > > > > > > >   - max brightness level = 32, default brightness level set to 32 in DT.
 > > > > > > > > >
-> > > > > > > > > So I guess this patch works around these problems. Still =
-it would be
-> > > > > > > > > interesting to find out the details in the imx driver tha=
-t triggers the
-> > > > > > > > > problem. So Adam, can you please instrument the pwm-imx27=
- driver to
-> > > > > > > > > print *state at the beginning of pwm_imx27_apply() and th=
-e end of
-> > > > > > > > > pwm_imx27_get_state() and provide the results?
+> > > > > > > > > 1. Almost correct backlight behavior before 01ccf903edd6 ("pwm: Let
+> > > > > > > > >     pwm_get_state() return the last implemented state):
 > > > > > > > > >
-> > > > > > > > > Note I only compile tested this change.
+> > > > > > > > >   - System boots to userspace and backlight is enabled all the time from
+> > > > > > > > >     power up.
+> > > > > > > > >
+> > > > > > > > >     $ dmesg | grep state
+> > > > > > > > >     [    1.763381] get state end: -1811360608, enabled: 0
 > > > > > > > >
-> > > > > > > > Hi Uwe,
-> > > > > > > > I was just about to respond to the "pwm_bl on i.MX6Q broken=
- on 5.4-RC1+"
-> > > > > > > > thread that I have a similar problem when you submitted thi=
-s patch.
+> > > > > > > > What is -1811360608? When I wrote "print *state" above, I thought about
+> > > > > > > > something like:
 > > > > > > > >
-> > > > > > > > So here are my few cents:
+> > > > > > > >       pr_info("%s: period: %u, duty: %u, polarity: %d, enabled: %d",
+> > > > > > > >               __func__, state->period, state->duty_cycle, state->polarity, state->enabled);
 > > > > > > > >
-> > > > > > > > My setup is as follows:
-> > > > > > > >   - imx6dl-yapp4-draco with i.MX6Solo
-> > > > > > > >   - backlight is controlled with inverted PWM signal
-> > > > > > > >   - max brightness level =3D 32, default brightness level s=
-et to 32 in DT.
-> > > > > > > >
-> > > > > > > > 1. Almost correct backlight behavior before 01ccf903edd6 ("=
-pwm: Let
-> > > > > > > >     pwm_get_state() return the last implemented state):
-> > > > > > > >
-> > > > > > > >   - System boots to userspace and backlight is enabled all =
-the time from
-> > > > > > > >     power up.
-> > > > > > > >
-> > > > > > > >     $ dmesg | grep state
-> > > > > > > >     [    1.763381] get state end: -1811360608, enabled: 0
+> > > > > > > > A quick look into drivers/pwm/pwm-imx27.c shows that this is another
+> > > > > > > > driver that yields duty_cycle = 0 when the hardware is off.
 > > > > > > >
-> > > > > > > What is -1811360608? When I wrote "print *state" above, I tho=
-ught about
-> > > > > > > something like:
+> > > > > > > It seems to me like the best recourse to fix this for now would be to
+> > > > > > > patch up the drivers that return 0 when the hardware is off by caching
+> > > > > > > the currently configured duty cycle.
 > > > > > > >
-> > > > > > >       pr_info("%s: period: %u, duty: %u, polarity: %d, enable=
-d: %d",
-> > > > > > >               __func__, state->period, state->duty_cycle, sta=
-te->polarity, state->enabled);
+> > > > > > > How about the patch below?
 > > > > > > >
-> > > > > > > A quick look into drivers/pwm/pwm-imx27.c shows that this is =
-another
-> > > > > > > driver that yields duty_cycle =3D 0 when the hardware is off.
+> > > > > > > Thierry
+> > > > > > >
+> > > > > > > --- >8 ---
+> > > > > > >  From 15a52a7f1b910804fabd74a5882befd3f9d6bb37 Mon Sep 17 00:00:00 2001
+> > > > > > > From: Thierry Reding <thierry.reding@gmail.com>
+> > > > > > > Date: Thu, 17 Oct 2019 12:56:00 +0200
+> > > > > > > Subject: [PATCH] pwm: imx27: Cache duty cycle register value
+> > > > > > >
+> > > > > > > The hardware register containing the duty cycle value cannot be accessed
+> > > > > > > when the PWM is disabled. This causes the ->get_state() callback to read
+> > > > > > > back a duty cycle value of 0, which can confuse consumer drivers.
+> > > > > > >
+> > > > > > > Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
+> > > > > > > ---
+> > > > > > >   drivers/pwm/pwm-imx27.c | 31 ++++++++++++++++++++++++-------
+> > > > > > >   1 file changed, 24 insertions(+), 7 deletions(-)
+> > > > > > >
+> > > > > > > diff --git a/drivers/pwm/pwm-imx27.c b/drivers/pwm/pwm-imx27.c
+> > > > > > > index ae11d8577f18..4113d5cd4c62 100644
+> > > > > > > --- a/drivers/pwm/pwm-imx27.c
+> > > > > > > +++ b/drivers/pwm/pwm-imx27.c
+> > > > > > > @@ -85,6 +85,13 @@ struct pwm_imx27_chip {
+> > > > > > >         struct clk      *clk_per;
+> > > > > > >         void __iomem    *mmio_base;
+> > > > > > >         struct pwm_chip chip;
+> > > > > > > +
+> > > > > > > +       /*
+> > > > > > > +        * The driver cannot read the current duty cycle from the hardware if
+> > > > > > > +        * the hardware is disabled. Cache the last programmed duty cycle
+> > > > > > > +        * value to return in that case.
+> > > > > > > +        */
+> > > > > > > +       unsigned int duty_cycle;
+> > > > > > >   };
+> > > > > > >   #define to_pwm_imx27_chip(chip)       container_of(chip, struct pwm_imx27_chip, chip)
+> > > > > > > @@ -155,14 +162,17 @@ static void pwm_imx27_get_state(struct pwm_chip *chip,
+> > > > > > >         tmp = NSEC_PER_SEC * (u64)(period + 2);
+> > > > > > >         state->period = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
+> > > > > > > -       /* PWMSAR can be read only if PWM is enabled */
+> > > > > > > -       if (state->enabled) {
+> > > > > > > +       /*
+> > > > > > > +        * PWMSAR can be read only if PWM is enabled. If the PWM is disabled,
+> > > > > > > +        * use the cached value.
+> > > > > > > +        */
+> > > > > > > +       if (state->enabled)
+> > > > > > >                 val = readl(imx->mmio_base + MX3_PWMSAR);
+> > > > > > > -               tmp = NSEC_PER_SEC * (u64)(val);
+> > > > > > > -               state->duty_cycle = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
+> > > > > > > -       } else {
+> > > > > > > -               state->duty_cycle = 0;
+> > > > > > > -       }
+> > > > > > > +       else
+> > > > > > > +               val = imx->duty_cycle;
+> > > > > > > +
+> > > > > > > +       tmp = NSEC_PER_SEC * (u64)(val);
+> > > > > > > +       state->duty_cycle = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
+> > > > > > >         if (!state->enabled)
+> > > > > > >                 pwm_imx27_clk_disable_unprepare(chip);
+> > > > > > > @@ -261,6 +271,13 @@ static int pwm_imx27_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+> > > > > > >                 writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
+> > > > > > >                 writel(period_cycles, imx->mmio_base + MX3_PWMPR);
+> > > > > > > +               /*
+> > > > > > > +                * Store the duty cycle for future reference in cases where
+> > > > > > > +                * the MX3_PWMSAR register can't be read (i.e. when the PWM
+> > > > > > > +                * is disabled).
+> > > > > > > +                */
+> > > > > > > +               imx->duty_cycle = duty_cycles;
+> > > > > > > +
 > > > > > >
-> > > > > > It seems to me like the best recourse to fix this for now would=
- be to
-> > > > > > patch up the drivers that return 0 when the hardware is off by =
-caching
-> > > > > > the currently configured duty cycle.
-> > > > > >
-> > > > > > How about the patch below?
-> > > > > >
-> > > > > > Thierry
-> > > > > >
-> > > > > > --- >8 ---
-> > > > > >  From 15a52a7f1b910804fabd74a5882befd3f9d6bb37 Mon Sep 17 00:00=
-:00 2001
-> > > > > > From: Thierry Reding <thierry.reding@gmail.com>
-> > > > > > Date: Thu, 17 Oct 2019 12:56:00 +0200
-> > > > > > Subject: [PATCH] pwm: imx27: Cache duty cycle register value
-> > > > > >
-> > > > > > The hardware register containing the duty cycle value cannot be=
- accessed
-> > > > > > when the PWM is disabled. This causes the ->get_state() callbac=
-k to read
-> > > > > > back a duty cycle value of 0, which can confuse consumer driver=
-s.
-> > > > > >
-> > > > > > Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
-> > > > > > ---
-> > > > > >   drivers/pwm/pwm-imx27.c | 31 ++++++++++++++++++++++++-------
-> > > > > >   1 file changed, 24 insertions(+), 7 deletions(-)
-> > > > > >
-> > > > > > diff --git a/drivers/pwm/pwm-imx27.c b/drivers/pwm/pwm-imx27.c
-> > > > > > index ae11d8577f18..4113d5cd4c62 100644
-> > > > > > --- a/drivers/pwm/pwm-imx27.c
-> > > > > > +++ b/drivers/pwm/pwm-imx27.c
-> > > > > > @@ -85,6 +85,13 @@ struct pwm_imx27_chip {
-> > > > > >         struct clk      *clk_per;
-> > > > > >         void __iomem    *mmio_base;
-> > > > > >         struct pwm_chip chip;
-> > > > > > +
-> > > > > > +       /*
-> > > > > > +        * The driver cannot read the current duty cycle from t=
-he hardware if
-> > > > > > +        * the hardware is disabled. Cache the last programmed =
-duty cycle
-> > > > > > +        * value to return in that case.
-> > > > > > +        */
-> > > > > > +       unsigned int duty_cycle;
-> > > > > >   };
-> > > > > >   #define to_pwm_imx27_chip(chip)       container_of(chip, stru=
-ct pwm_imx27_chip, chip)
-> > > > > > @@ -155,14 +162,17 @@ static void pwm_imx27_get_state(struct pw=
-m_chip *chip,
-> > > > > >         tmp =3D NSEC_PER_SEC * (u64)(period + 2);
-> > > > > >         state->period =3D DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
-> > > > > > -       /* PWMSAR can be read only if PWM is enabled */
-> > > > > > -       if (state->enabled) {
-> > > > > > +       /*
-> > > > > > +        * PWMSAR can be read only if PWM is enabled. If the PW=
-M is disabled,
-> > > > > > +        * use the cached value.
-> > > > > > +        */
-> > > > > > +       if (state->enabled)
-> > > > > >                 val =3D readl(imx->mmio_base + MX3_PWMSAR);
-> > > > > > -               tmp =3D NSEC_PER_SEC * (u64)(val);
-> > > > > > -               state->duty_cycle =3D DIV_ROUND_CLOSEST_ULL(tmp=
-, pwm_clk);
-> > > > > > -       } else {
-> > > > > > -               state->duty_cycle =3D 0;
-> > > > > > -       }
-> > > > > > +       else
-> > > > > > +               val =3D imx->duty_cycle;
-> > > > > > +
-> > > > > > +       tmp =3D NSEC_PER_SEC * (u64)(val);
-> > > > > > +       state->duty_cycle =3D DIV_ROUND_CLOSEST_ULL(tmp, pwm_cl=
-k);
-> > > > > >         if (!state->enabled)
-> > > > > >                 pwm_imx27_clk_disable_unprepare(chip);
-> > > > > > @@ -261,6 +271,13 @@ static int pwm_imx27_apply(struct pwm_chip=
- *chip, struct pwm_device *pwm,
-> > > > > >                 writel(duty_cycles, imx->mmio_base + MX3_PWMSAR=
-);
-> > > > > >                 writel(period_cycles, imx->mmio_base + MX3_PWMP=
-R);
-> > > > > > +               /*
-> > > > > > +                * Store the duty cycle for future reference in=
- cases where
-> > > > > > +                * the MX3_PWMSAR register can't be read (i.e. =
-when the PWM
-> > > > > > +                * is disabled).
-> > > > > > +                */
-> > > > > > +               imx->duty_cycle =3D duty_cycles;
-> > > > > > +
+> > > > > > I wonder if it would be more sensible to do this in the pwm core
+> > > > > > instead. Currently there are two drivers known with this problem. I
+> > > > > > wouldn't be surprised if there were more.
 > > > > >
-> > > > > I wonder if it would be more sensible to do this in the pwm core
-> > > > > instead. Currently there are two drivers known with this problem.=
- I
-> > > > > wouldn't be surprised if there were more.
+> > > > > I've inspected all the drivers and didn't spot any beyond cros-ec and
+> > > > > i.MX that have this problem. There's also no good way to do this in the
+> > > > > core, because the core doesn't know whether or not the driver is capable
+> > > > > of returning the correct duty cycle on hardare readout. So the core
+> > > > > would have to rely on state->duty_cycle that is passed in, but then the
+> > > > > offending commit becomes useless because the whole point was to return
+> > > > > the state as written to hardware (rather than the software state which
+> > > > > was being returned before that patch).
+> > > > >
+> > > > > > If we want to move clients to not rely on .period and .duty_cycle for a
+> > > > > > disabled PWM (do we?) a single change in the core is also beneficial
+> > > > > > compared to fixing several lowlevel drivers.
+> > > > >
+> > > > > These are really two orthogonal problems. We don't currently consider
+> > > > > enabled = 0 to be equivalent to duty_cycle = 0 at an API level. I'm not
+> > > > > prepared to do that at this point in the release cycle either.
+> > > > >
+> > > > > What this here has shown is that we have at least two drivers that don't
+> > > > > behave the way they are supposed to according to the API and they break
+> > > > > consumers. If they break for pwm-backlight, it's possible that they will
+> > > > > break for other consumers as well. So the right thing to do is fix the
+> > > > > two drivers that are broken.
+> > > > >
+> > > > > After -rc1 we no longer experiment. Instead we clean up the messes we've
+> > > > > made. We can revisit the other points once mainline is fixed.
 > > > >
-> > > > I've inspected all the drivers and didn't spot any beyond cros-ec a=
-nd
-> > > > i.MX that have this problem. There's also no good way to do this in=
- the
-> > > > core, because the core doesn't know whether or not the driver is ca=
-pable
-> > > > of returning the correct duty cycle on hardare readout. So the core
-> > > > would have to rely on state->duty_cycle that is passed in, but then=
- the
-> > > > offending commit becomes useless because the whole point was to ret=
-urn
-> > > > the state as written to hardware (rather than the software state wh=
-ich
-> > > > was being returned before that patch).
+> > > > Hi Thierry,
+> > > > I just tried your patch with v5.4-rc3 with this result:
 > > > >
-> > > > > If we want to move clients to not rely on .period and .duty_cycle=
- for a
-> > > > > disabled PWM (do we?) a single change in the core is also benefic=
-ial
-> > > > > compared to fixing several lowlevel drivers.
+> > > > root@hydraco:~# dmesg | grep pwm_
+> > > > [    1.772089] pwm_imx27_get_state: period: 992970, duty: 0, polarity: 0, enabled: 0
+> > > > [    4.938759] pwm_imx27_apply: period: 500000, duty: 0, polarity: 1, enabled: 0
+> > > > [    4.947431] pwm_imx27_get_state: period: 992970, duty: 0, polarity: 0, enabled: 0
+> > >
+> > > Okay... this is interesting. If I understand correctly, that first line
+> > > here is where the initial hardware readout happens. The second one is
+> > > the first time when the backlight is configured, so it sets period and
+> > > polarity. But then for some reason when we read out after that to read
+> > > what state was written... we see that actually nothing was written at
+> > > all.
+> > >
+> > > And we can see why in pwm_imx27_apply(): If the PWM is not enabled, we
+> > > don't actually program any of the registers, so it's not a surprise that
+> > > things fall apart.
+> > >
+> > > > [    4.956484] pwm_imx27_apply: period: 992970, duty: 992970, polarity: 0, enabled: 0
+> > > > [    4.965473] pwm_imx27_get_state: period: 992970, duty: 0, polarity: 0, enabled: 0
+> > > > [    4.974410] pwm_imx27_apply: period: 992970, duty: 0, polarity: 0, enabled: 1
+> > > > [    4.988617] pwm_imx27_get_state: period: 992970, duty: 0, polarity: 0, enabled: 1
 > > > >
-> > > > These are really two orthogonal problems. We don't currently consid=
-er
-> > > > enabled =3D 0 to be equivalent to duty_cycle =3D 0 at an API level.=
- I'm not
-> > > > prepared to do that at this point in the release cycle either.
+> > > > Backlight is on with full brightness at this stage.
 > > > >
-> > > > What this here has shown is that we have at least two drivers that =
-don't
-> > > > behave the way they are supposed to according to the API and they b=
-reak
-> > > > consumers. If they break for pwm-backlight, it's possible that they=
- will
-> > > > break for other consumers as well. So the right thing to do is fix =
-the
-> > > > two drivers that are broken.
+> > > > root@hydraco:/sys/class/backlight/backlight# cat brightness
+> > > > 32
 > > > >
-> > > > After -rc1 we no longer experiment. Instead we clean up the messes =
-we've
-> > > > made. We can revisit the other points once mainline is fixed.
+> > > > root@hydraco:/sys/class/backlight/backlight# echo 32 > brightness
+> > > > [  153.386391] pwm_imx27_apply: period: 992970, duty: 992970, polarity: 0, enabled: 1
+> > > > [  153.398311] pwm_imx27_get_state: period: 992970, duty: 992970, polarity: 0, enabled: 1
+> > > >
+> > > > Backlight goes down.
+> > > >
+> > > > root@hydraco:/sys/class/backlight/backlight# echo 1 > brightness
+> > > > [  168.506261] pwm_imx27_apply: period: 992970, duty: 15576, polarity: 0, enabled: 1
+> > > > [  168.518064] pwm_imx27_get_state: period: 992970, duty: 15576, polarity: 0, enabled: 1
+> > > >
+> > > > Backlight goes up to almost full brightness.
+> > > >
+> > > > root@hydraco:/sys/class/backlight/backlight# echo 0 > brightness
+> > > > [  177.496265] pwm_imx27_apply: period: 992970, duty: 0, polarity: 0, enabled: 0
+> > > > [  177.507602] pwm_imx27_get_state: period: 496485, duty: 7788, polarity: 0, enabled: 0
+> > > >
+> > > > Backlight goes up to full brightness.
+> > > >
+> > > > So your patch does not solve my issue.
+> > > >
+> > > > The main problem I see is incorrect polarity setting. In my DT
+> > > > the pwm-backlight consumer requests PWM_POLARITY_INVERTED and
+> > > > period 500000ns. Though after reset the PWM HW registers are
+> > > > configured to normal polarity. This initial setting is read out
+> > > > and used by the consumer instead of the DT configuration.
 > > >
-> > > Hi Thierry,
-> > > I just tried your patch with v5.4-rc3 with this result:
+> > > So the problem with the i.MX driver is that it doesn't actually write
+> > > the full state to the hardware and therefore the patch that caused these
+> > > things to break reads back an incomplete state. So we've basically got
+> > > two options: 1) make sure the hardware state is fully written or 2) make
+> > > sure that we return the cached state.
 > > >
-> > > root@hydraco:~# dmesg | grep pwm_
-> > > [    1.772089] pwm_imx27_get_state: period: 992970, duty: 0, polarity=
-: 0, enabled: 0
-> > > [    4.938759] pwm_imx27_apply: period: 500000, duty: 0, polarity: 1,=
- enabled: 0
-> > > [    4.947431] pwm_imx27_get_state: period: 992970, duty: 0, polarity=
-: 0, enabled: 0
+> > > I think 2) doesn't really make sense because it is conflicts with the
+> > > purpose of the ->get_state() callback. The only time where we should be
+> > > returning cached data is if the hardware registers don't contain the
+> > > information (as in the case of the cros-ec driver) or if we can't access
+> > > it for other reasons (such as in the case of i.MX's duty cycle).
+> > >
+> > > Does the attached patch help with your issue? The idea is to always
+> > > write the full state to the hardware, even if period and duty cycle are
+> > > unused when the PWM is disabled. That's really the kind of contract that
+> > > we have added with the offending patch in the core.
+> > >
+> > > It looks like all other drivers handle this more or less correctly, so
+> > > if we only need to fix up cros-ec and i.MX this seems like a realistic
+> > > way to fix things up. If other drivers are problematic in this regard,
+> > > we should probably revert and then fix the drivers before we can apply
+> > > that patch again.
 > >
-> > Okay... this is interesting. If I understand correctly, that first line
-> > here is where the initial hardware readout happens. The second one is
-> > the first time when the backlight is configured, so it sets period and
-> > polarity. But then for some reason when we read out after that to read
-> > what state was written... we see that actually nothing was written at
-> > all.
+> > This patch combined with your previous patch appears to have worked.
+> > If you end up sending a patch series to fix this, go ahead and add
 > >
-> > And we can see why in pwm_imx27_apply(): If the PWM is not enabled, we
-> > don't actually program any of the registers, so it's not a surprise that
-> > things fall apart.
-> >
-> > > [    4.956484] pwm_imx27_apply: period: 992970, duty: 992970, polarit=
-y: 0, enabled: 0
-> > > [    4.965473] pwm_imx27_get_state: period: 992970, duty: 0, polarity=
-: 0, enabled: 0
-> > > [    4.974410] pwm_imx27_apply: period: 992970, duty: 0, polarity: 0,=
- enabled: 1
-> > > [    4.988617] pwm_imx27_get_state: period: 992970, duty: 0, polarity=
-: 0, enabled: 1
-> > >
-> > > Backlight is on with full brightness at this stage.
-> > >
-> > > root@hydraco:/sys/class/backlight/backlight# cat brightness
-> > > 32
-> > >
-> > > root@hydraco:/sys/class/backlight/backlight# echo 32 > brightness
-> > > [  153.386391] pwm_imx27_apply: period: 992970, duty: 992970, polarit=
-y: 0, enabled: 1
-> > > [  153.398311] pwm_imx27_get_state: period: 992970, duty: 992970, pol=
-arity: 0, enabled: 1
-> > >
-> > > Backlight goes down.
-> > >
-> > > root@hydraco:/sys/class/backlight/backlight# echo 1 > brightness
-> > > [  168.506261] pwm_imx27_apply: period: 992970, duty: 15576, polarity=
-: 0, enabled: 1
-> > > [  168.518064] pwm_imx27_get_state: period: 992970, duty: 15576, pola=
-rity: 0, enabled: 1
-> > >
-> > > Backlight goes up to almost full brightness.
-> > >
-> > > root@hydraco:/sys/class/backlight/backlight# echo 0 > brightness
-> > > [  177.496265] pwm_imx27_apply: period: 992970, duty: 0, polarity: 0,=
- enabled: 0
-> > > [  177.507602] pwm_imx27_get_state: period: 496485, duty: 7788, polar=
-ity: 0, enabled: 0
-> > >
-> > > Backlight goes up to full brightness.
-> > >
-> > > So your patch does not solve my issue.
-> > >
-> > > The main problem I see is incorrect polarity setting. In my DT
-> > > the pwm-backlight consumer requests PWM_POLARITY_INVERTED and
-> > > period 500000ns. Though after reset the PWM HW registers are
-> > > configured to normal polarity. This initial setting is read out
-> > > and used by the consumer instead of the DT configuration.
-> >
-> > So the problem with the i.MX driver is that it doesn't actually write
-> > the full state to the hardware and therefore the patch that caused these
-> > things to break reads back an incomplete state. So we've basically got
-> > two options: 1) make sure the hardware state is fully written or 2) make
-> > sure that we return the cached state.
-> >
-> > I think 2) doesn't really make sense because it is conflicts with the
-> > purpose of the ->get_state() callback. The only time where we should be
-> > returning cached data is if the hardware registers don't contain the
-> > information (as in the case of the cros-ec driver) or if we can't access
-> > it for other reasons (such as in the case of i.MX's duty cycle).
-> >
-> > Does the attached patch help with your issue? The idea is to always
-> > write the full state to the hardware, even if period and duty cycle are
-> > unused when the PWM is disabled. That's really the kind of contract that
-> > we have added with the offending patch in the core.
-> >
-> > It looks like all other drivers handle this more or less correctly, so
-> > if we only need to fix up cros-ec and i.MX this seems like a realistic
-> > way to fix things up. If other drivers are problematic in this regard,
-> > we should probably revert and then fix the drivers before we can apply
-> > that patch again.
->=20
-> This patch combined with your previous patch appears to have worked.
-> If you end up sending a patch series to fix this, go ahead and add
->=20
-> Tested-by: Adam Ford <aford173@gmail.com> #imx6q-logicpd
+> > Tested-by: Adam Ford <aford173@gmail.com> #imx6q-logicpd
+>
+> Excellent! Thanks for testing this. I'll wait until tomorrow to see if
+> there's some feedback from Enric for the cros-ec change. I'll send out
+> the total of three patches again in the hopes that those are really
+> the only two cases that are broken.
 
-Excellent! Thanks for testing this. I'll wait until tomorrow to see if
-there's some feedback from Enric for the cros-ec change. I'll send out
-the total of three patches again in the hopes that those are really
-the only two cases that are broken.
+When you do, can you mark it with the Fixes note?  I am hoping the
+maintainers can hopefully incorporate this into 5.4 since it fixes a
+regression.
 
-Thierry
-
-> > --- >8 ---
-> > From 7040f0038e04a1caa6dda5b6f675a9fdee0271f4 Mon Sep 17 00:00:00 2001
-> > From: Thierry Reding <thierry.reding@gmail.com>
-> > Date: Thu, 17 Oct 2019 17:11:41 +0200
-> > Subject: [PATCH] pwm: imx27: Unconditionally write state to hardware
-> >
-> > The i.MX driver currently uses a shortcut and doesn't write all of the
-> > state through to the hardware when the PWM is disabled. This causes an
-> > inconsistent state to be read back by consumers with the result of them
-> > malfunctioning.
-> >
-> > Fix this by always writing the full state through to the hardware
-> > registers so that the correct state can always be read back.
-> >
-> > Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
-> > ---
-> >  drivers/pwm/pwm-imx27.c | 120 ++++++++++++++++++++--------------------
-> >  1 file changed, 59 insertions(+), 61 deletions(-)
-> >
-> > diff --git a/drivers/pwm/pwm-imx27.c b/drivers/pwm/pwm-imx27.c
-> > index 4113d5cd4c62..59d8b1289808 100644
-> > --- a/drivers/pwm/pwm-imx27.c
-> > +++ b/drivers/pwm/pwm-imx27.c
-> > @@ -230,70 +230,68 @@ static int pwm_imx27_apply(struct pwm_chip *chip,=
- struct pwm_device *pwm,
-> >
-> >         pwm_get_state(pwm, &cstate);
-> >
-> > -       if (state->enabled) {
-> > -               c =3D clk_get_rate(imx->clk_per);
-> > -               c *=3D state->period;
-> > -
-> > -               do_div(c, 1000000000);
-> > -               period_cycles =3D c;
-> > -
-> > -               prescale =3D period_cycles / 0x10000 + 1;
-> > -
-> > -               period_cycles /=3D prescale;
-> > -               c =3D (unsigned long long)period_cycles * state->duty_c=
-ycle;
-> > -               do_div(c, state->period);
-> > -               duty_cycles =3D c;
-> > -
-> > -               /*
-> > -                * according to imx pwm RM, the real period value shoul=
-d be
-> > -                * PERIOD value in PWMPR plus 2.
-> > -                */
-> > -               if (period_cycles > 2)
-> > -                       period_cycles -=3D 2;
-> > -               else
-> > -                       period_cycles =3D 0;
-> > -
-> > -               /*
-> > -                * Wait for a free FIFO slot if the PWM is already enab=
-led, and
-> > -                * flush the FIFO if the PWM was disabled and is about =
-to be
-> > -                * enabled.
-> > -                */
-> > -               if (cstate.enabled) {
-> > -                       pwm_imx27_wait_fifo_slot(chip, pwm);
-> > -               } else {
-> > -                       ret =3D pwm_imx27_clk_prepare_enable(chip);
-> > -                       if (ret)
-> > -                               return ret;
-> > -
-> > -                       pwm_imx27_sw_reset(chip);
-> > -               }
-> > -
-> > -               writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
-> > -               writel(period_cycles, imx->mmio_base + MX3_PWMPR);
-> > -
-> > -               /*
-> > -                * Store the duty cycle for future reference in cases w=
-here
-> > -                * the MX3_PWMSAR register can't be read (i.e. when the=
- PWM
-> > -                * is disabled).
-> > -                */
-> > -               imx->duty_cycle =3D duty_cycles;
-> > -
-> > -               cr =3D MX3_PWMCR_PRESCALER_SET(prescale) |
-> > -                    MX3_PWMCR_STOPEN | MX3_PWMCR_DOZEN | MX3_PWMCR_WAI=
-TEN |
-> > -                    FIELD_PREP(MX3_PWMCR_CLKSRC, MX3_PWMCR_CLKSRC_IPG_=
-HIGH) |
-> > -                    MX3_PWMCR_DBGEN | MX3_PWMCR_EN;
-> > -
-> > -               if (state->polarity =3D=3D PWM_POLARITY_INVERSED)
-> > -                       cr |=3D FIELD_PREP(MX3_PWMCR_POUTC,
-> > -                                       MX3_PWMCR_POUTC_INVERTED);
-> > -
-> > -               writel(cr, imx->mmio_base + MX3_PWMCR);
-> > -       } else if (cstate.enabled) {
-> > -               writel(0, imx->mmio_base + MX3_PWMCR);
-> > +       c =3D clk_get_rate(imx->clk_per);
-> > +       c *=3D state->period;
-> >
-> > -               pwm_imx27_clk_disable_unprepare(chip);
-> > +       do_div(c, 1000000000);
-> > +       period_cycles =3D c;
-> > +
-> > +       prescale =3D period_cycles / 0x10000 + 1;
-> > +
-> > +       period_cycles /=3D prescale;
-> > +       c =3D (unsigned long long)period_cycles * state->duty_cycle;
-> > +       do_div(c, state->period);
-> > +       duty_cycles =3D c;
-> > +
-> > +       /*
-> > +        * according to imx pwm RM, the real period value should be PER=
-IOD
-> > +        * value in PWMPR plus 2.
-> > +        */
-> > +       if (period_cycles > 2)
-> > +               period_cycles -=3D 2;
-> > +       else
-> > +               period_cycles =3D 0;
-> > +
-> > +       /*
-> > +        * Wait for a free FIFO slot if the PWM is already enabled, and=
- flush
-> > +        * the FIFO if the PWM was disabled and is about to be enabled.
-> > +        */
-> > +       if (cstate.enabled) {
-> > +               pwm_imx27_wait_fifo_slot(chip, pwm);
-> > +       } else {
-> > +               ret =3D pwm_imx27_clk_prepare_enable(chip);
-> > +               if (ret)
-> > +                       return ret;
-> > +
-> > +               pwm_imx27_sw_reset(chip);
-> >         }
-> >
-> > +       writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
-> > +       writel(period_cycles, imx->mmio_base + MX3_PWMPR);
-> > +
-> > +       /*
-> > +        * Store the duty cycle for future reference in cases where the
-> > +        * MX3_PWMSAR register can't be read (i.e. when the PWM is disa=
-bled).
-> > +        */
-> > +       imx->duty_cycle =3D duty_cycles;
-> > +
-> > +       cr =3D MX3_PWMCR_PRESCALER_SET(prescale) |
-> > +            MX3_PWMCR_STOPEN | MX3_PWMCR_DOZEN | MX3_PWMCR_WAITEN |
-> > +            FIELD_PREP(MX3_PWMCR_CLKSRC, MX3_PWMCR_CLKSRC_IPG_HIGH) |
-> > +            MX3_PWMCR_DBGEN;
-> > +
-> > +       if (state->polarity =3D=3D PWM_POLARITY_INVERSED)
-> > +               cr |=3D FIELD_PREP(MX3_PWMCR_POUTC,
-> > +                               MX3_PWMCR_POUTC_INVERTED);
-> > +
-> > +       if (state->enabled)
-> > +               cr |=3D MX3_PWMCR_EN;
-> > +
-> > +       writel(cr, imx->mmio_base + MX3_PWMCR);
-> > +
-> > +       if (!state->enabled && cstate.enabled)
-> > +               pwm_imx27_clk_disable_unprepare(chip);
-> > +
-> >         return 0;
-> >  }
-> >
-> > --
-> > 2.23.0
-> >
-
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAl2ooTMACgkQ3SOs138+
-s6Hnhw/8DoYUkTpL5Qxy0KKBONWJN50iR3WiUkIQbcu7I2RvnPVBrEI7B9ZFyBZZ
-2wpaRAqc2+PNCpEq83+v82Z6Ian1+d+Ubm9n9DAInAKP/fpt7decAqwZ7+cN3ut0
-O9tlbrHJpOK1E/Y3GFzkUpD04hkrMhNKtmrDa+EaUmzTOgMdLPQmCz/CNdL+bOh2
-68szup338rvZzzX2upvsIyddyKiG0v6YgXKdCyX5AleWRsZoBCDNxTq6d+E7+WDD
-uvy2RPto/MGgP12V/q/pLEwGxyEY3sghvCGN8Utivp88j86ZWez6NTsEKHwBWHtN
-VOYsAZCKJdVYeWsadBmdozd3ZFy+vCqBcOErz73KjrS+tw66w+qPHMVjPjlcanKo
-2CVCo+/TZ0yYfdwTnVPJOP5oJp7ygyuDs2o1srB9fC4iSWsjI+wIu5WvAkV1+ver
-u4F8JvRiDCdet6ll4dT0NvvaUuaT4kOSY5/Qp5lZlRZAjivK83BAn6bFXxnkt6Az
-larNqj+Wjv1fdL1aoB/Ri6YwSgujUVx6zLlu8U7PYdK3iT/cu3fzbHTIXSMos7RX
-2fKhrZ99HPy415omFzFFrMnmypM6mjCTpy3hV8I0/+t86xGWxOQitphh8dP8yx0L
-TG/GJacWuNEmlD8/TOuBPJSDk326VWUdIstV7KQOVnCBgr0ADSk=
-=lLqx
------END PGP SIGNATURE-----
-
---bp/iNruPH9dso1Pn--
+adam
+>
+> Thierry
+>
+> > > --- >8 ---
+> > > From 7040f0038e04a1caa6dda5b6f675a9fdee0271f4 Mon Sep 17 00:00:00 2001
+> > > From: Thierry Reding <thierry.reding@gmail.com>
+> > > Date: Thu, 17 Oct 2019 17:11:41 +0200
+> > > Subject: [PATCH] pwm: imx27: Unconditionally write state to hardware
+> > >
+> > > The i.MX driver currently uses a shortcut and doesn't write all of the
+> > > state through to the hardware when the PWM is disabled. This causes an
+> > > inconsistent state to be read back by consumers with the result of them
+> > > malfunctioning.
+> > >
+> > > Fix this by always writing the full state through to the hardware
+> > > registers so that the correct state can always be read back.
+> > >
+> > > Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
+> > > ---
+> > >  drivers/pwm/pwm-imx27.c | 120 ++++++++++++++++++++--------------------
+> > >  1 file changed, 59 insertions(+), 61 deletions(-)
+> > >
+> > > diff --git a/drivers/pwm/pwm-imx27.c b/drivers/pwm/pwm-imx27.c
+> > > index 4113d5cd4c62..59d8b1289808 100644
+> > > --- a/drivers/pwm/pwm-imx27.c
+> > > +++ b/drivers/pwm/pwm-imx27.c
+> > > @@ -230,70 +230,68 @@ static int pwm_imx27_apply(struct pwm_chip *chip, struct pwm_device *pwm,
+> > >
+> > >         pwm_get_state(pwm, &cstate);
+> > >
+> > > -       if (state->enabled) {
+> > > -               c = clk_get_rate(imx->clk_per);
+> > > -               c *= state->period;
+> > > -
+> > > -               do_div(c, 1000000000);
+> > > -               period_cycles = c;
+> > > -
+> > > -               prescale = period_cycles / 0x10000 + 1;
+> > > -
+> > > -               period_cycles /= prescale;
+> > > -               c = (unsigned long long)period_cycles * state->duty_cycle;
+> > > -               do_div(c, state->period);
+> > > -               duty_cycles = c;
+> > > -
+> > > -               /*
+> > > -                * according to imx pwm RM, the real period value should be
+> > > -                * PERIOD value in PWMPR plus 2.
+> > > -                */
+> > > -               if (period_cycles > 2)
+> > > -                       period_cycles -= 2;
+> > > -               else
+> > > -                       period_cycles = 0;
+> > > -
+> > > -               /*
+> > > -                * Wait for a free FIFO slot if the PWM is already enabled, and
+> > > -                * flush the FIFO if the PWM was disabled and is about to be
+> > > -                * enabled.
+> > > -                */
+> > > -               if (cstate.enabled) {
+> > > -                       pwm_imx27_wait_fifo_slot(chip, pwm);
+> > > -               } else {
+> > > -                       ret = pwm_imx27_clk_prepare_enable(chip);
+> > > -                       if (ret)
+> > > -                               return ret;
+> > > -
+> > > -                       pwm_imx27_sw_reset(chip);
+> > > -               }
+> > > -
+> > > -               writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
+> > > -               writel(period_cycles, imx->mmio_base + MX3_PWMPR);
+> > > -
+> > > -               /*
+> > > -                * Store the duty cycle for future reference in cases where
+> > > -                * the MX3_PWMSAR register can't be read (i.e. when the PWM
+> > > -                * is disabled).
+> > > -                */
+> > > -               imx->duty_cycle = duty_cycles;
+> > > -
+> > > -               cr = MX3_PWMCR_PRESCALER_SET(prescale) |
+> > > -                    MX3_PWMCR_STOPEN | MX3_PWMCR_DOZEN | MX3_PWMCR_WAITEN |
+> > > -                    FIELD_PREP(MX3_PWMCR_CLKSRC, MX3_PWMCR_CLKSRC_IPG_HIGH) |
+> > > -                    MX3_PWMCR_DBGEN | MX3_PWMCR_EN;
+> > > -
+> > > -               if (state->polarity == PWM_POLARITY_INVERSED)
+> > > -                       cr |= FIELD_PREP(MX3_PWMCR_POUTC,
+> > > -                                       MX3_PWMCR_POUTC_INVERTED);
+> > > -
+> > > -               writel(cr, imx->mmio_base + MX3_PWMCR);
+> > > -       } else if (cstate.enabled) {
+> > > -               writel(0, imx->mmio_base + MX3_PWMCR);
+> > > +       c = clk_get_rate(imx->clk_per);
+> > > +       c *= state->period;
+> > >
+> > > -               pwm_imx27_clk_disable_unprepare(chip);
+> > > +       do_div(c, 1000000000);
+> > > +       period_cycles = c;
+> > > +
+> > > +       prescale = period_cycles / 0x10000 + 1;
+> > > +
+> > > +       period_cycles /= prescale;
+> > > +       c = (unsigned long long)period_cycles * state->duty_cycle;
+> > > +       do_div(c, state->period);
+> > > +       duty_cycles = c;
+> > > +
+> > > +       /*
+> > > +        * according to imx pwm RM, the real period value should be PERIOD
+> > > +        * value in PWMPR plus 2.
+> > > +        */
+> > > +       if (period_cycles > 2)
+> > > +               period_cycles -= 2;
+> > > +       else
+> > > +               period_cycles = 0;
+> > > +
+> > > +       /*
+> > > +        * Wait for a free FIFO slot if the PWM is already enabled, and flush
+> > > +        * the FIFO if the PWM was disabled and is about to be enabled.
+> > > +        */
+> > > +       if (cstate.enabled) {
+> > > +               pwm_imx27_wait_fifo_slot(chip, pwm);
+> > > +       } else {
+> > > +               ret = pwm_imx27_clk_prepare_enable(chip);
+> > > +               if (ret)
+> > > +                       return ret;
+> > > +
+> > > +               pwm_imx27_sw_reset(chip);
+> > >         }
+> > >
+> > > +       writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
+> > > +       writel(period_cycles, imx->mmio_base + MX3_PWMPR);
+> > > +
+> > > +       /*
+> > > +        * Store the duty cycle for future reference in cases where the
+> > > +        * MX3_PWMSAR register can't be read (i.e. when the PWM is disabled).
+> > > +        */
+> > > +       imx->duty_cycle = duty_cycles;
+> > > +
+> > > +       cr = MX3_PWMCR_PRESCALER_SET(prescale) |
+> > > +            MX3_PWMCR_STOPEN | MX3_PWMCR_DOZEN | MX3_PWMCR_WAITEN |
+> > > +            FIELD_PREP(MX3_PWMCR_CLKSRC, MX3_PWMCR_CLKSRC_IPG_HIGH) |
+> > > +            MX3_PWMCR_DBGEN;
+> > > +
+> > > +       if (state->polarity == PWM_POLARITY_INVERSED)
+> > > +               cr |= FIELD_PREP(MX3_PWMCR_POUTC,
+> > > +                               MX3_PWMCR_POUTC_INVERTED);
+> > > +
+> > > +       if (state->enabled)
+> > > +               cr |= MX3_PWMCR_EN;
+> > > +
+> > > +       writel(cr, imx->mmio_base + MX3_PWMCR);
+> > > +
+> > > +       if (!state->enabled && cstate.enabled)
+> > > +               pwm_imx27_clk_disable_unprepare(chip);
+> > > +
+> > >         return 0;
+> > >  }
+> > >
+> > > --
+> > > 2.23.0
+> > >

@@ -1,602 +1,303 @@
-From: Kiran Gunda <kgunda@codeaurora.org>
-Date: Fri, 18 Oct 2019 12:45:26 +0000
-Subject: [PATCH V8 3/6] backlight: qcom-wled: Restructure the driver for WLED3.
-Message-Id: <1571402009-8706-4-git-send-email-kgunda@codeaurora.org>
+From: Beniamin Bia <beniamin.bia@analog.com>
+Date: Thu, 17 Oct 2019 14:02:46 +0000
+Subject: [PATCH] drivers/staging/fbtft/fb_seps525: New driver for SEPS525 (Syncoam) LCD Controllers
+Message-Id: <20191017170203.11999-1-beniamin.bia@analog.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <1571402009-8706-1-git-send-email-kgunda@codeaurora.org>
-In-Reply-To: <1571402009-8706-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
-Cc: Kiran Gunda <kgunda@codeaurora.org>
+To: gregkh@linuxfoundation.org
+Cc: devel@driverdev.osuosl.org, linux-fbdev@vger.kernel.org, Michael Hennerich <michael.hennerich@analog.com>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, michal.simek@xilinx.com, Beniamin Bia <beniamin.bia@analog.com>, Jonathan.Cameron@huawei.com, mchehab+samsung@kernel.org, paulmck@linux.ibm.com, davem@davemloft.net
 
-Restructure the driver to add the support for new WLED
-peripherals.
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
-Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
+The SEPS525 is a 160 RGB x 128 Dots, 262K Colors PM-OLED Display Driver and
+Controller.
+
+The controller can be found on the NHD-1.69-160128UGC3
+(Newhaven Display International, Inc.).
+
+Datasheets:
+Link: https://www.newhavendisplay.com/appnotes/datasheets/OLEDs/SEPS525.pdf
+
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Co-developed-by: Beniamin Bia <beniamin.bia@analog.com>
+Signed-off-by: Beniamin Bia <beniamin.bia@analog.com>
 ---
- drivers/video/backlight/qcom-wled.c | 373 ++++++++++++++++++++++--------------
- 1 file changed, 234 insertions(+), 139 deletions(-)
+ MAINTAINERS                        |   8 ++
+ drivers/staging/fbtft/Kconfig      |   7 +
+ drivers/staging/fbtft/Makefile     |   1 +
+ drivers/staging/fbtft/fb_seps525.c | 213 +++++++++++++++++++++++++++++
+ 4 files changed, 229 insertions(+)
+ create mode 100644 drivers/staging/fbtft/fb_seps525.c
 
-diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
-index f191242..45eeda4 100644
---- a/drivers/video/backlight/qcom-wled.c
-+++ b/drivers/video/backlight/qcom-wled.c
-@@ -7,59 +7,71 @@
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/of_device.h>
-+#include <linux/of_address.h>
- #include <linux/regmap.h>
+diff --git a/MAINTAINERS b/MAINTAINERS
+index ef00d6210cff..d077d04f9bc5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -15389,6 +15389,14 @@ L:	linux-wireless@vger.kernel.org
+ S:	Supported
+ F:	drivers/staging/wilc1000/
  
- /* From DT binding */
-+#define WLED_MAX_STRINGS				4
++STAGING - SEPS525 LCD CONTROLLER DRIVERS
++M:	Michael Hennerich <michael.hennerich@analog.com>
++M:	Beniamin Bia <beniamin.bia@analog.com>
++L:	linux-fbdev@vger.kernel.org
++S:	Supported
++F:	drivers/staging/fbtft/fb_seps525.c
++F:	Documentation/devicetree/bindings/iio/adc/adi,ad7606.yaml
 +
- #define WLED_DEFAULT_BRIGHTNESS				2048
+ STAGING SUBSYSTEM
+ M:	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/staging.git
+diff --git a/drivers/staging/fbtft/Kconfig b/drivers/staging/fbtft/Kconfig
+index 8ec524a95ec8..55af11ee2f5b 100644
+--- a/drivers/staging/fbtft/Kconfig
++++ b/drivers/staging/fbtft/Kconfig
+@@ -112,6 +112,13 @@ config FB_TFT_S6D1121
+ 	help
+ 	  Generic Framebuffer support for S6D1121
  
- #define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
--#define WLED3_CTRL_REG_VAL_BASE				0x40
- 
- /* WLED3 control registers */
- #define WLED3_CTRL_REG_MOD_EN				0x46
--#define  WLED3_CTRL_REG_MOD_EN_BIT			BIT(7)
- #define  WLED3_CTRL_REG_MOD_EN_MASK			BIT(7)
-+#define  WLED3_CTRL_REG_MOD_EN_SHIFT			7
- 
- #define WLED3_CTRL_REG_FREQ				0x4c
--#define  WLED3_CTRL_REG_FREQ_MASK			0x0f
-+#define  WLED3_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
- 
- #define WLED3_CTRL_REG_OVP				0x4d
--#define  WLED3_CTRL_REG_OVP_MASK			0x03
-+#define  WLED3_CTRL_REG_OVP_MASK				GENMASK(1, 0)
- 
- #define WLED3_CTRL_REG_ILIMIT				0x4e
--#define  WLED3_CTRL_REG_ILIMIT_MASK			0x07
-+#define  WLED3_CTRL_REG_ILIMIT_MASK			GENMASK(2, 0)
- 
- /* WLED3 sink registers */
- #define WLED3_SINK_REG_SYNC				0x47
--#define  WLED3_SINK_REG_SYNC_MASK			0x07
--#define  WLED3_SINK_REG_SYNC_LED1			BIT(0)
--#define  WLED3_SINK_REG_SYNC_LED2			BIT(1)
--#define  WLED3_SINK_REG_SYNC_LED3			BIT(2)
--#define  WLED3_SINK_REG_SYNC_ALL			0x07
- #define  WLED3_SINK_REG_SYNC_CLEAR			0x00
- 
- #define WLED3_SINK_REG_CURR_SINK			0x4f
--#define  WLED3_SINK_REG_CURR_SINK_MASK			0xe0
--#define  WLED3_SINK_REG_CURR_SINK_SHFT			0x05
-+#define  WLED3_SINK_REG_CURR_SINK_MASK			GENMASK(7, 5)
-+#define  WLED3_SINK_REG_CURR_SINK_SHFT			5
- 
--/* WLED3 per-'string' registers below */
--#define WLED3_SINK_REG_STR_OFFSET			0x10
-+/* WLED3 specific per-'string' registers below */
-+#define WLED3_SINK_REG_BRIGHT(n)			(0x40 + n)
- 
--#define WLED3_SINK_REG_STR_MOD_EN_BASE			0x60
-+#define WLED3_SINK_REG_STR_MOD_EN(n)			(0x60 + (n * 0x10))
- #define  WLED3_SINK_REG_STR_MOD_MASK			BIT(7)
--#define  WLED3_SINK_REG_STR_MOD_EN			BIT(7)
- 
--#define WLED3_SINK_REG_STR_FULL_SCALE_CURR		0x62
--#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	0x1f
-+#define WLED3_SINK_REG_STR_FULL_SCALE_CURR(n)		(0x62 + (n * 0x10))
-+#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	GENMASK(4, 0)
- 
--#define WLED3_SINK_REG_STR_MOD_SRC_BASE			0x63
--#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		0x01
-+#define WLED3_SINK_REG_STR_MOD_SRC(n)			(0x63 + (n * 0x10))
-+#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		BIT(0)
- #define  WLED3_SINK_REG_STR_MOD_SRC_INT			0x00
- #define  WLED3_SINK_REG_STR_MOD_SRC_EXT			0x01
- 
--#define WLED3_SINK_REG_STR_CABC_BASE			0x66
-+#define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
- #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
--#define  WLED3_SINK_REG_STR_CABC_EN			BIT(7)
++config FB_TFT_SEPS525
++	tristate "FB driver for the SEPS525 LCD Controller"
++	depends on FB_TFT
++	help
++	  Generic Framebuffer support for SEPS525
++	  Say Y if you have such a display that utilizes this controller.
 +
-+struct wled_var_cfg {
-+	const u32 *values;
-+	u32 (*fn)(u32);
-+	int size;
-+};
+ config FB_TFT_SH1106
+ 	tristate "FB driver for the SH1106 OLED Controller"
+ 	depends on FB_TFT
+diff --git a/drivers/staging/fbtft/Makefile b/drivers/staging/fbtft/Makefile
+index 6bc03311c9c7..e7a0cd9166e9 100644
+--- a/drivers/staging/fbtft/Makefile
++++ b/drivers/staging/fbtft/Makefile
+@@ -21,6 +21,7 @@ obj-$(CONFIG_FB_TFT_PCD8544)     += fb_pcd8544.o
+ obj-$(CONFIG_FB_TFT_RA8875)      += fb_ra8875.o
+ obj-$(CONFIG_FB_TFT_S6D02A1)     += fb_s6d02a1.o
+ obj-$(CONFIG_FB_TFT_S6D1121)     += fb_s6d1121.o
++obj-$(CONFIG_FB_TFT_SEPS525)     += fb_seps525.o
+ obj-$(CONFIG_FB_TFT_SH1106)      += fb_sh1106.o
+ obj-$(CONFIG_FB_TFT_SSD1289)     += fb_ssd1289.o
+ obj-$(CONFIG_FB_TFT_SSD1305)     += fb_ssd1305.o
+diff --git a/drivers/staging/fbtft/fb_seps525.c b/drivers/staging/fbtft/fb_seps525.c
+new file mode 100644
+index 000000000000..05882e2cde7f
+--- /dev/null
++++ b/drivers/staging/fbtft/fb_seps525.c
+@@ -0,0 +1,213 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * FB driver for the NHD-1.69-160128UGC3 (Newhaven Display International, Inc.)
++ * using the SEPS525 (Syncoam) LCD Controller
++ *
++ * Copyright (C) 2016 Analog Devices Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
 +
-+struct wled_u32_opts {
-+	const char *name;
-+	u32 *val_ptr;
-+	const struct wled_var_cfg *cfg;
-+};
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/gpio.h>
++#include <linux/delay.h>
 +
-+struct wled_bool_opts {
-+	const char *name;
-+	bool *val_ptr;
-+};
- 
- struct wled_config {
- 	u32 boost_i_limit;
-@@ -67,132 +79,179 @@ struct wled_config {
- 	u32 switch_freq;
- 	u32 num_strings;
- 	u32 string_i_limit;
-+	u32 enabled_strings[WLED_MAX_STRINGS];
- 	bool cs_out_en;
- 	bool ext_gen;
--	bool cabc_en;
-+	bool cabc;
- };
- 
- struct wled {
- 	const char *name;
-+	struct device *dev;
- 	struct regmap *regmap;
--	u16 addr;
-+	u16 ctrl_addr;
-+	u16 max_string_count;
-+	u32 brightness;
-+	u32 max_brightness;
- 
- 	struct wled_config cfg;
-+	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
- };
- 
-+static int wled3_set_brightness(struct wled *wled, u16 brightness)
++#include "fbtft.h"
++
++#define DRVNAME		"fb_seps525"
++#define WIDTH		160
++#define HEIGHT		128
++
++#define SEPS525_INDEX 0x00
++#define SEPS525_STATUS_RD 0x01
++#define SEPS525_OSC_CTL 0x02
++#define SEPS525_IREF 0x80
++#define SEPS525_CLOCK_DIV 0x03
++#define SEPS525_REDUCE_CURRENT 0x04
++#define SEPS525_SOFT_RST 0x05
++#define SEPS525_DISP_ONOFF 0x06
++#define SEPS525_PRECHARGE_TIME_R 0x08
++#define SEPS525_PRECHARGE_TIME_G 0x09
++#define SEPS525_PRECHARGE_TIME_B 0x0A
++#define SEPS525_PRECHARGE_CURRENT_R 0x0B
++#define SEPS525_PRECHARGE_CURRENT_G 0x0C
++#define SEPS525_PRECHARGE_CURRENT_B 0x0D
++#define SEPS525_DRIVING_CURRENT_R 0x10
++#define SEPS525_DRIVING_CURRENT_G 0x11
++#define SEPS525_DRIVING_CURRENT_B 0x12
++#define SEPS525_DISPLAYMODE_SET 0x13
++#define SEPS525_RGBIF 0x14
++#define SEPS525_RGB_POL 0x15
++#define SEPS525_MEMORY_WRITEMODE 0x16
++#define SEPS525_MX1_ADDR 0x17
++#define SEPS525_MX2_ADDR 0x18
++#define SEPS525_MY1_ADDR 0x19
++#define SEPS525_MY2_ADDR 0x1A
++#define SEPS525_MEMORY_ACCESS_POINTER_X 0x20
++#define SEPS525_MEMORY_ACCESS_POINTER_Y 0x21
++#define SEPS525_DDRAM_DATA_ACCESS_PORT 0x22
++#define SEPS525_GRAY_SCALE_TABLE_INDEX 0x50
++#define SEPS525_GRAY_SCALE_TABLE_DATA 0x51
++#define SEPS525_DUTY 0x28
++#define SEPS525_DSL 0x29
++#define SEPS525_D1_DDRAM_FAC 0x2E
++#define SEPS525_D1_DDRAM_FAR 0x2F
++#define SEPS525_D2_DDRAM_SAC 0x31
++#define SEPS525_D2_DDRAM_SAR 0x32
++#define SEPS525_SCR1_FX1 0x33
++#define SEPS525_SCR1_FX2 0x34
++#define SEPS525_SCR1_FY1 0x35
++#define SEPS525_SCR1_FY2 0x36
++#define SEPS525_SCR2_SX1 0x37
++#define SEPS525_SCR2_SX2 0x38
++#define SEPS525_SCR2_SY1 0x39
++#define SEPS525_SCR2_SY2 0x3A
++#define SEPS525_SCREEN_SAVER_CONTEROL 0x3B
++#define SEPS525_SS_SLEEP_TIMER 0x3C
++#define SEPS525_SCREEN_SAVER_MODE 0x3D
++#define SEPS525_SS_SCR1_FU 0x3E
++#define SEPS525_SS_SCR1_MXY 0x3F
++#define SEPS525_SS_SCR2_FU 0x40
++#define SEPS525_SS_SCR2_MXY 0x41
++#define SEPS525_MOVING_DIRECTION 0x42
++#define SEPS525_SS_SCR2_SX1 0x47
++#define SEPS525_SS_SCR2_SX2 0x48
++#define SEPS525_SS_SCR2_SY1 0x49
++#define SEPS525_SS_SCR2_SY2 0x4A
++
++/* SEPS525_DISPLAYMODE_SET */
++#define MODE_SWAP_BGR	BIT(7)
++#define MODE_SM		BIT(6)
++#define MODE_RD		BIT(5)
++#define MODE_CD		BIT(4)
++
++#define seps525_use_window	0 /* FBTFT doesn't really use it today */
++
++/* Init sequence taken from: Arduino Library for the Adafruit 2.2" display */
++static int init_display(struct fbtft_par *par)
 +{
-+	int rc, i;
-+	u8 v[2];
++	par->fbtftops.reset(par);
 +
-+	v[0] = brightness & 0xff;
-+	v[1] = (brightness >> 8) & 0xf;
++	usleep_range(1000, 5000);
 +
-+	for (i = 0;  i < wled->cfg.num_strings; ++i) {
-+		rc = regmap_bulk_write(wled->regmap, wled->ctrl_addr +
-+				       WLED3_SINK_REG_BRIGHT(i), v, 2);
-+		if (rc < 0)
-+			return rc;
-+	}
++	/* Disable Oscillator Power Down */
++	write_reg(par, SEPS525_REDUCE_CURRENT, 0x03);
++	usleep_range(1000, 5000);
++	/* Set Normal Driving Current */
++	write_reg(par, SEPS525_REDUCE_CURRENT, 0x00);
++	usleep_range(1000, 5000);
++
++	write_reg(par, SEPS525_SCREEN_SAVER_CONTEROL, 0x00);
++	/* Set EXPORT1 Pin at Internal Clock */
++	write_reg(par, SEPS525_OSC_CTL, 0x01);
++	/* Set Clock as 120 Frames/Sec */
++	write_reg(par, SEPS525_CLOCK_DIV, 0x90);
++	/* Set Reference Voltage Controlled by External Resister */
++	write_reg(par, SEPS525_IREF, 0x01);
++
++	/* precharge time R G B */
++	write_reg(par, SEPS525_PRECHARGE_TIME_R, 0x04);
++	write_reg(par, SEPS525_PRECHARGE_TIME_G, 0x05);
++	write_reg(par, SEPS525_PRECHARGE_TIME_B, 0x05);
++
++	/* precharge current R G B (uA) */
++	write_reg(par, SEPS525_PRECHARGE_CURRENT_R, 0x9D);
++	write_reg(par, SEPS525_PRECHARGE_CURRENT_G, 0x8C);
++	write_reg(par, SEPS525_PRECHARGE_CURRENT_B, 0x57);
++
++	/* driving current R G B (uA) */
++	write_reg(par, SEPS525_DRIVING_CURRENT_R, 0x56);
++	write_reg(par, SEPS525_DRIVING_CURRENT_G, 0x4D);
++	write_reg(par, SEPS525_DRIVING_CURRENT_B, 0x46);
++	/* Set Color Sequence */
++	write_reg(par, SEPS525_DISPLAYMODE_SET, 0xA0);
++	write_reg(par, SEPS525_RGBIF, 0x01); /* Set MCU Interface Mode */
++	/* Set Memory Write Mode */
++	write_reg(par, SEPS525_MEMORY_WRITEMODE, 0x66);
++	write_reg(par, SEPS525_DUTY, 0x7F); /* 1/128 Duty (0x0F~0x7F) */
++	/* Set Mapping RAM Display Start Line (0x00~0x7F) */
++	write_reg(par, SEPS525_DSL, 0x00);
++	write_reg(par, SEPS525_DISP_ONOFF, 0x01); /* Display On (0x00/0x01) */
++	/* Set All Internal Register Value as Normal Mode */
++	write_reg(par, SEPS525_SOFT_RST, 0x00);
++	/* Set RGB Interface Polarity as Active Low */
++	write_reg(par, SEPS525_RGB_POL, 0x00);
++
++	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
 +
 +	return 0;
 +}
 +
-+static int wled_module_enable(struct wled *wled, int val)
++static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
 +{
-+	int rc;
-+
-+	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
-+				WLED3_CTRL_REG_MOD_EN,
-+				WLED3_CTRL_REG_MOD_EN_MASK,
-+				val << WLED3_CTRL_REG_MOD_EN_SHIFT);
-+	return rc;
-+}
-+
-+static int wled_sync_toggle(struct wled *wled)
-+{
-+	int rc;
-+	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
-+
-+	rc = regmap_update_bits(wled->regmap,
-+				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
-+				mask, mask);
-+	if (rc < 0)
-+		return rc;
-+
-+	rc = regmap_update_bits(wled->regmap,
-+				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
-+				mask, WLED3_SINK_REG_SYNC_CLEAR);
-+
-+	return rc;
-+}
-+
- static int wled_update_status(struct backlight_device *bl)
- {
- 	struct wled *wled = bl_get_data(bl);
--	u16 val = bl->props.brightness;
--	u8 ctrl = 0;
--	int rc;
--	int i;
-+	u16 brightness = bl->props.brightness;
-+	int rc = 0;
- 
- 	if (bl->props.power != FB_BLANK_UNBLANK ||
- 	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
- 	    bl->props.state & BL_CORE_FBBLANK)
--		val = 0;
--
--	if (val != 0)
--		ctrl = WLED3_CTRL_REG_MOD_EN_BIT;
-+		brightness = 0;
- 
--	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_CTRL_REG_MOD_EN,
--			WLED3_CTRL_REG_MOD_EN_MASK, ctrl);
--	if (rc)
--		return rc;
-+	if (brightness) {
-+		rc = wled->wled_set_brightness(wled, brightness);
-+		if (rc < 0) {
-+			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
-+				rc);
-+			return rc;
-+		}
- 
--	for (i = 0; i < wled->cfg.num_strings; ++i) {
--		u8 v[2] = { val & 0xff, (val >> 8) & 0xf };
-+		rc = wled_sync_toggle(wled);
-+		if (rc < 0) {
-+			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
-+			return rc;
-+		}
++	if (seps525_use_window) {
++		/* Set Window Xs,Ys Xe,Ye*/
++		write_reg(par, SEPS525_MX1_ADDR, xs);
++		write_reg(par, SEPS525_MX2_ADDR, xe);
++		write_reg(par, SEPS525_MY1_ADDR, ys);
++		write_reg(par, SEPS525_MY2_ADDR, ye);
 +	}
- 
--		rc = regmap_bulk_write(wled->regmap,
--				wled->addr + WLED3_CTRL_REG_VAL_BASE + 2 * i,
--				v, 2);
--		if (rc)
-+	if (!!brightness != !!wled->brightness) {
-+		rc = wled_module_enable(wled, !!brightness);
-+		if (rc < 0) {
-+			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
- 			return rc;
-+		}
- 	}
- 
--	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_SINK_REG_SYNC,
--			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_ALL);
--	if (rc)
--		return rc;
-+	wled->brightness = brightness;
- 
--	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_SINK_REG_SYNC,
--			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_CLEAR);
- 	return rc;
- }
- 
--static int wled_setup(struct wled *wled)
-+static int wled3_setup(struct wled *wled)
- {
--	int rc;
--	int i;
-+	u16 addr;
-+	u8 sink_en = 0;
-+	int rc, i, j;
- 
- 	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_CTRL_REG_OVP,
--			WLED3_CTRL_REG_OVP_MASK, wled->cfg.ovp);
-+				wled->ctrl_addr + WLED3_CTRL_REG_OVP,
-+				WLED3_CTRL_REG_OVP_MASK, wled->cfg.ovp);
- 	if (rc)
- 		return rc;
- 
- 	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_CTRL_REG_ILIMIT,
--			WLED3_CTRL_REG_ILIMIT_MASK, wled->cfg.boost_i_limit);
-+				wled->ctrl_addr + WLED3_CTRL_REG_ILIMIT,
-+				WLED3_CTRL_REG_ILIMIT_MASK,
-+				wled->cfg.boost_i_limit);
- 	if (rc)
- 		return rc;
- 
- 	rc = regmap_update_bits(wled->regmap,
--			wled->addr + WLED3_CTRL_REG_FREQ,
--			WLED3_CTRL_REG_FREQ_MASK, wled->cfg.switch_freq);
-+				wled->ctrl_addr + WLED3_CTRL_REG_FREQ,
-+				WLED3_CTRL_REG_FREQ_MASK,
-+				wled->cfg.switch_freq);
- 	if (rc)
- 		return rc;
- 
--	if (wled->cfg.cs_out_en) {
--		u8 all = (BIT(wled->cfg.num_strings) - 1)
--				<< WLED3_SINK_REG_CURR_SINK_SHFT;
--
--		rc = regmap_update_bits(wled->regmap,
--				wled->addr + WLED3_SINK_REG_CURR_SINK,
--				WLED3_SINK_REG_CURR_SINK_MASK, all);
--		if (rc)
--			return rc;
--	}
--
- 	for (i = 0; i < wled->cfg.num_strings; ++i) {
--		u16 addr = wled->addr + WLED3_SINK_REG_STR_OFFSET * i;
--
--		rc = regmap_update_bits(wled->regmap,
--				addr + WLED3_SINK_REG_STR_MOD_EN_BASE,
--				WLED3_SINK_REG_STR_MOD_MASK,
--				WLED3_SINK_REG_STR_MOD_EN);
-+		j = wled->cfg.enabled_strings[i];
-+		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_EN(j);
-+		rc = regmap_update_bits(wled->regmap, addr,
-+					WLED3_SINK_REG_STR_MOD_MASK,
-+					WLED3_SINK_REG_STR_MOD_MASK);
- 		if (rc)
- 			return rc;
- 
- 		if (wled->cfg.ext_gen) {
--			rc = regmap_update_bits(wled->regmap,
--					addr + WLED3_SINK_REG_STR_MOD_SRC_BASE,
--					WLED3_SINK_REG_STR_MOD_SRC_MASK,
--					WLED3_SINK_REG_STR_MOD_SRC_EXT);
-+			addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_SRC(j);
-+			rc = regmap_update_bits(wled->regmap, addr,
-+						WLED3_SINK_REG_STR_MOD_SRC_MASK,
-+						WLED3_SINK_REG_STR_MOD_SRC_EXT);
- 			if (rc)
- 				return rc;
- 		}
- 
--		rc = regmap_update_bits(wled->regmap,
--				addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR,
--				WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
--				wled->cfg.string_i_limit);
-+		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR(j);
-+		rc = regmap_update_bits(wled->regmap, addr,
-+					WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
-+					wled->cfg.string_i_limit);
- 		if (rc)
- 			return rc;
- 
--		rc = regmap_update_bits(wled->regmap,
--				addr + WLED3_SINK_REG_STR_CABC_BASE,
--				WLED3_SINK_REG_STR_CABC_MASK,
--				wled->cfg.cabc_en ?
--					WLED3_SINK_REG_STR_CABC_EN : 0);
-+		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_CABC(j);
-+		rc = regmap_update_bits(wled->regmap, addr,
-+					WLED3_SINK_REG_STR_CABC_MASK,
-+					wled->cfg.cabc ?
-+					WLED3_SINK_REG_STR_CABC_MASK : 0);
- 		if (rc)
- 			return rc;
++	/* start position X,Y */
++	write_reg(par, SEPS525_MEMORY_ACCESS_POINTER_X, xs);
++	write_reg(par, SEPS525_MEMORY_ACCESS_POINTER_Y, ys);
 +
-+		sink_en |= BIT(j + WLED3_SINK_REG_CURR_SINK_SHFT);
- 	}
- 
-+	rc = regmap_update_bits(wled->regmap,
-+				wled->ctrl_addr + WLED3_SINK_REG_CURR_SINK,
-+				WLED3_SINK_REG_CURR_SINK_MASK, sink_en);
-+	if (rc)
-+		return rc;
++	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
++}
 +
- 	return 0;
- }
- 
-@@ -200,17 +259,12 @@ static int wled_setup(struct wled *wled)
- 	.boost_i_limit = 3,
- 	.string_i_limit = 20,
- 	.ovp = 2,
-+	.num_strings = 3,
- 	.switch_freq = 5,
--	.num_strings = 0,
- 	.cs_out_en = false,
- 	.ext_gen = false,
--	.cabc_en = false,
--};
--
--struct wled_var_cfg {
--	const u32 *values;
--	u32 (*fn)(u32);
--	int size;
-+	.cabc = false,
-+	.enabled_strings = {0, 1, 2, 3},
- };
- 
- static const u32 wled3_boost_i_limit_values[] = {
-@@ -255,7 +309,11 @@ static u32 wled3_switch_freq_values_fn(u32 idx)
- 	.size = 26,
- };
- 
--static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
-+static const struct wled_var_cfg wled3_string_cfg = {
-+	.size = 8,
++static int set_var(struct fbtft_par *par)
++{
++	u8 val;
++
++	switch (par->info->var.rotate) {
++	case 0:
++		val = 0;
++		break;
++	case 180:
++		val = MODE_RD | MODE_CD;
++		break;
++	case 90:
++	case 270:
++
++	default:
++		return -EINVAL;
++	}
++	/* Memory Access Control  */
++	write_reg(par, SEPS525_DISPLAYMODE_SET, val |
++		       (par->bgr ? MODE_SWAP_BGR : 0));
++
++	write_reg(par, SEPS525_DDRAM_DATA_ACCESS_PORT);
++
++	return 0;
++}
++
++static struct fbtft_display display = {
++	.regwidth = 8,
++	.width = WIDTH,
++	.height = HEIGHT,
++	.fbtftops = {
++		.init_display = init_display,
++		.set_addr_win = set_addr_win,
++		.set_var = set_var,
++	},
 +};
 +
-+static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
- {
- 	if (idx >= cfg->size)
- 		return UINT_MAX;
-@@ -266,68 +324,75 @@ static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
- 	return idx;
- }
- 
--static int wled_configure(struct wled *wled, struct device *dev)
-+static int wled_configure(struct wled *wled, int version)
- {
- 	struct wled_config *cfg = &wled->cfg;
--	u32 val;
--	int rc;
--	u32 c;
--	int i;
--	int j;
--
--	const struct {
--		const char *name;
--		u32 *val_ptr;
--		const struct wled_var_cfg *cfg;
--	} u32_opts[] = {
-+	struct device *dev = wled->dev;
-+	const __be32 *prop_addr;
-+	u32 size, val, c, string_len;
-+	int rc, i, j;
++FBTFT_REGISTER_DRIVER(DRVNAME, "syncoam,seps525", &display);
 +
-+	const struct wled_u32_opts *u32_opts = NULL;
-+	const struct wled_u32_opts wled3_opts[] = {
- 		{
--			"qcom,current-boost-limit",
--			&cfg->boost_i_limit,
-+			.name = "qcom,current-boost-limit",
-+			.val_ptr = &cfg->boost_i_limit,
- 			.cfg = &wled3_boost_i_limit_cfg,
- 		},
- 		{
--			"qcom,current-limit",
--			&cfg->string_i_limit,
-+			.name = "qcom,current-limit",
-+			.val_ptr = &cfg->string_i_limit,
- 			.cfg = &wled3_string_i_limit_cfg,
- 		},
- 		{
--			"qcom,ovp",
--			&cfg->ovp,
-+			.name = "qcom,ovp",
-+			.val_ptr = &cfg->ovp,
- 			.cfg = &wled3_ovp_cfg,
- 		},
- 		{
--			"qcom,switching-freq",
--			&cfg->switch_freq,
-+			.name = "qcom,switching-freq",
-+			.val_ptr = &cfg->switch_freq,
- 			.cfg = &wled3_switch_freq_cfg,
- 		},
- 		{
--			"qcom,num-strings",
--			&cfg->num_strings,
-+			.name = "qcom,num-strings",
-+			.val_ptr = &cfg->num_strings,
- 			.cfg = &wled3_num_strings_cfg,
- 		},
- 	};
--	const struct {
--		const char *name;
--		bool *val_ptr;
--	} bool_opts[] = {
++MODULE_ALIAS("spi:" DRVNAME);
++MODULE_ALIAS("platform:" DRVNAME);
++MODULE_ALIAS("spi:seps525");
++MODULE_ALIAS("platform:seps525");
 +
-+	const struct wled_bool_opts bool_opts[] = {
- 		{ "qcom,cs-out", &cfg->cs_out_en, },
- 		{ "qcom,ext-gen", &cfg->ext_gen, },
--		{ "qcom,cabc", &cfg->cabc_en, },
-+		{ "qcom,cabc", &cfg->cabc, },
- 	};
- 
--	rc = of_property_read_u32(dev->of_node, "reg", &val);
--	if (rc || val > 0xffff) {
--		dev_err(dev, "invalid IO resources\n");
--		return rc ? rc : -EINVAL;
-+	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
-+	if (!prop_addr) {
-+		dev_err(wled->dev, "invalid IO resources\n");
-+		return -EINVAL;
- 	}
--	wled->addr = val;
-+	wled->ctrl_addr = be32_to_cpu(*prop_addr);
- 
- 	rc = of_property_read_string(dev->of_node, "label", &wled->name);
- 	if (rc)
- 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
- 
--	*cfg = wled3_config_defaults;
--	for (i = 0; i < ARRAY_SIZE(u32_opts); ++i) {
-+	switch (version) {
-+	case 3:
-+		u32_opts = wled3_opts;
-+		size = ARRAY_SIZE(wled3_opts);
-+		*cfg = wled3_config_defaults;
-+		wled->wled_set_brightness = wled3_set_brightness;
-+		wled->max_string_count = 3;
-+		break;
-+
-+	default:
-+		dev_err(wled->dev, "Invalid WLED version\n");
-+		return -EINVAL;
-+	}
-+
-+	for (i = 0; i < size; ++i) {
- 		rc = of_property_read_u32(dev->of_node, u32_opts[i].name, &val);
- 		if (rc = -EINVAL) {
- 			continue;
-@@ -338,12 +403,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
- 
- 		c = UINT_MAX;
- 		for (j = 0; c != val; j++) {
--			c = wled3_values(u32_opts[i].cfg, j);
-+			c = wled_values(u32_opts[i].cfg, j);
- 			if (c = UINT_MAX) {
- 				dev_err(dev, "invalid value for '%s'\n",
- 					u32_opts[i].name);
- 				return -EINVAL;
- 			}
-+
-+			if (c = val)
-+				break;
- 		}
- 
- 		dev_dbg(dev, "'%s' = %u\n", u32_opts[i].name, c);
-@@ -357,6 +425,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
- 
- 	cfg->num_strings = cfg->num_strings + 1;
- 
-+	string_len = of_property_count_elems_of_size(dev->of_node,
-+						     "qcom,enabled-strings",
-+						     sizeof(u32));
-+	if (string_len > 0)
-+		of_property_read_u32_array(dev->of_node,
-+						"qcom,enabled-strings",
-+						wled->cfg.enabled_strings,
-+						sizeof(u32));
-+
- 	return 0;
- }
- 
-@@ -370,6 +447,7 @@ static int wled_probe(struct platform_device *pdev)
- 	struct backlight_device *bl;
- 	struct wled *wled;
- 	struct regmap *regmap;
-+	int version;
- 	u32 val;
- 	int rc;
- 
-@@ -384,15 +462,32 @@ static int wled_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 
- 	wled->regmap = regmap;
-+	wled->dev = &pdev->dev;
- 
--	rc = wled_configure(wled, &pdev->dev);
--	if (rc)
--		return rc;
-+	version = (uintptr_t)of_device_get_match_data(&pdev->dev);
-+	if (!version) {
-+		dev_err(&pdev->dev, "Unknown device version\n");
-+		return -ENODEV;
-+	}
- 
--	rc = wled_setup(wled);
-+	rc = wled_configure(wled, version);
- 	if (rc)
- 		return rc;
- 
-+	switch (version) {
-+	case 3:
-+		rc = wled3_setup(wled);
-+		if (rc) {
-+			dev_err(&pdev->dev, "wled3_setup failed\n");
-+			return rc;
-+		}
-+		break;
-+
-+	default:
-+		dev_err(wled->dev, "Invalid WLED version\n");
-+		break;
-+	}
-+
- 	val = WLED_DEFAULT_BRIGHTNESS;
- 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
- 
-@@ -407,7 +502,7 @@ static int wled_probe(struct platform_device *pdev)
- };
- 
- static const struct of_device_id wled_match_table[] = {
--	{ .compatible = "qcom,pm8941-wled" },
-+	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
- 	{}
- };
- MODULE_DEVICE_TABLE(of, wled_match_table);
++MODULE_DESCRIPTION("FB driver for the SEPS525 LCD Controller");
++MODULE_AUTHOR("Michael Hennerich <michael.hennerich@analog.com>");
++MODULE_LICENSE("GPL");
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
- a Linux Foundation Collaborative Project
+2.17.1

@@ -1,185 +1,163 @@
 From: Adam Ford <aford173@gmail.com>
-Date: Thu, 17 Oct 2019 13:59:42 +0000
+Date: Thu, 17 Oct 2019 14:51:57 +0000
 Subject: Re: [PATCH] backlight: pwm_bl: configure pwm only once per backlight toggle
-Message-Id: <CAHCN7xJc_WxE-cuJgCcX3_5JWOoXfYreGpPUvhmPiUBWdCnFXg@mail.gmail.com>
+Message-Id: <CAHCN7x+HpUyu93RNi_HbK7jc5jsbW5HKdNtxg8oLv25m-ak-rA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20191017081059.31761-1-u.kleine-koenig@pengutronix.de>
- <c89925bd-857d-874f-b74f-c5700d4c9fbd@ysoft.com>
- <20191017101116.3d5okxmto5coecad@pengutronix.de>
- <20191017111131.GB3122066@ulmo>
- <CAHCN7xJmUiMRfYqgB+mkPVtoL20=RwXJHvzzJum4YcgUEHizsg@mail.gmail.com>
-In-Reply-To: <CAHCN7xJmUiMRfYqgB+mkPVtoL20=RwXJHvzzJum4YcgUEHizsg@mail.gmail.com>
+In-Reply-To: <20191017081059.31761-1-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-To: Thierry Reding <thierry.reding@gmail.com>
-Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, =?UTF-8?B?TWljaGFsIFZva8OhxI0=?= <michal.vokac@ysoft.com>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Sascha Hauer <kernel@pengutronix.de>, =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
+To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-pwm@vger.kernel.org, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, linux-fbdev@vger.kernel.org, dri-devel <dri-devel@lists.freedesktop.org>, Thierry Reding <thierry.reding@gmail.com>, Sascha Hauer <kernel@pengutronix.de>, Enric Balletbo i Serra <enric.balletbo@collabora.com>, Lee Jones <lee.jones@linaro.org>
 
-On Thu, Oct 17, 2019 at 8:30 AM Adam Ford <aford173@gmail.com> wrote:
+On Thu, Oct 17, 2019 at 3:11 AM Uwe Kleine-König
+<u.kleine-koenig@pengutronix.de> wrote:
 >
-> On Thu, Oct 17, 2019 at 6:11 AM Thierry Reding <thierry.reding@gmail.com> wrote:
-> >
-> > On Thu, Oct 17, 2019 at 12:11:16PM +0200, Uwe Kleine-König wrote:
-> > > On Thu, Oct 17, 2019 at 11:48:08AM +0200, Michal Vokáč wrote:
-> > > > On 17. 10. 19 10:10, Uwe Kleine-König wrote:
-> > > > > A previous change in the pwm core (namely 01ccf903edd6 ("pwm: Let
-> > > > > pwm_get_state() return the last implemented state")) changed the
-> > > > > semantic of pwm_get_state() and disclosed an (as it seems) common
-> > > > > problem in lowlevel PWM drivers. By not relying on the period and duty
-> > > > > cycle being retrievable from a disabled PWM this type of problem is
-> > > > > worked around.
-> > > > >
-> > > > > Apart from this issue only calling the pwm_get_state/pwm_apply_state
-> > > > > combo once is also more effective.
-> > > > >
-> > > > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> > > > > ---
-> > > > > Hello,
-> > > > >
-> > > > > There are now two reports about 01ccf903edd6 breaking a backlight. As
-> > > > > far as I understand the problem this is a combination of the backend pwm
-> > > > > driver yielding surprising results and the pwm-bl driver doing things
-> > > > > more complicated than necessary.
-> > > > >
-> > > > > So I guess this patch works around these problems. Still it would be
-> > > > > interesting to find out the details in the imx driver that triggers the
-> > > > > problem. So Adam, can you please instrument the pwm-imx27 driver to
-> > > > > print *state at the beginning of pwm_imx27_apply() and the end of
-> > > > > pwm_imx27_get_state() and provide the results?
-> > > > >
-> > > > > Note I only compile tested this change.
-> > > >
-> > > > Hi Uwe,
-> > > > I was just about to respond to the "pwm_bl on i.MX6Q broken on 5.4-RC1+"
-> > > > thread that I have a similar problem when you submitted this patch.
-> > > >
-> > > > So here are my few cents:
-> > > >
-> > > > My setup is as follows:
-> > > >  - imx6dl-yapp4-draco with i.MX6Solo
-> > > >  - backlight is controlled with inverted PWM signal
-> > > >  - max brightness level = 32, default brightness level set to 32 in DT.
-> > > >
-> > > > 1. Almost correct backlight behavior before 01ccf903edd6 ("pwm: Let
-> > > >    pwm_get_state() return the last implemented state):
-> > > >
-> > > >  - System boots to userspace and backlight is enabled all the time from
-> > > >    power up.
-> > > >
-> > > >    $ dmesg | grep state
-> > > >    [    1.763381] get state end: -1811360608, enabled: 0
-> > >
-> > > What is -1811360608? When I wrote "print *state" above, I thought about
-> > > something like:
-> > >
-> > >       pr_info("%s: period: %u, duty: %u, polarity: %d, enabled: %d",
-> > >               __func__, state->period, state->duty_cycle, state->polarity, state->enabled);
-> > >
-> > > A quick look into drivers/pwm/pwm-imx27.c shows that this is another
-> > > driver that yields duty_cycle = 0 when the hardware is off.
-> >
-> > It seems to me like the best recourse to fix this for now would be to
-> > patch up the drivers that return 0 when the hardware is off by caching
-> > the currently configured duty cycle.
-> >
-> > How about the patch below?
-> >
-> > Thierry
-> >
-> > --- >8 ---
-> > From 15a52a7f1b910804fabd74a5882befd3f9d6bb37 Mon Sep 17 00:00:00 2001
-> > From: Thierry Reding <thierry.reding@gmail.com>
-> > Date: Thu, 17 Oct 2019 12:56:00 +0200
-> > Subject: [PATCH] pwm: imx27: Cache duty cycle register value
-> >
-> > The hardware register containing the duty cycle value cannot be accessed
-> > when the PWM is disabled. This causes the ->get_state() callback to read
-> > back a duty cycle value of 0, which can confuse consumer drivers.
-> >
-> > Signed-off-by: Thierry Reding <thierry.reding@gmail.com>
+> A previous change in the pwm core (namely 01ccf903edd6 ("pwm: Let
+> pwm_get_state() return the last implemented state")) changed the
+> semantic of pwm_get_state() and disclosed an (as it seems) common
+> problem in lowlevel PWM drivers. By not relying on the period and duty
+> cycle being retrievable from a disabled PWM this type of problem is
+> worked around.
+>
+> Apart from this issue only calling the pwm_get_state/pwm_apply_state
+> combo once is also more effective.
 
-Your patch doesn't appear to being the PWM on by default, but I appear
-to be able to do stuff without the screen going blank, so I think
-we're making some progress. I unrolled the pwm_bl changes, but kept
-yours but I am not seeing any ability to change the brightness.
-Level 1-7 all appear to me to be the same.
+Looking at the pwm core file in linunx/master, it looks like we're
+checking to see if all items are the same.  If they are, we return 0.
+This make sense because we're not changing anything.
 
-> > ---
-> >  drivers/pwm/pwm-imx27.c | 31 ++++++++++++++++++++++++-------
-> >  1 file changed, 24 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/pwm/pwm-imx27.c b/drivers/pwm/pwm-imx27.c
-> > index ae11d8577f18..4113d5cd4c62 100644
-> > --- a/drivers/pwm/pwm-imx27.c
-> > +++ b/drivers/pwm/pwm-imx27.c
-> > @@ -85,6 +85,13 @@ struct pwm_imx27_chip {
-> >         struct clk      *clk_per;
-> >         void __iomem    *mmio_base;
-> >         struct pwm_chip chip;
-> > +
-> > +       /*
-> > +        * The driver cannot read the current duty cycle from the hardware if
-> > +        * the hardware is disabled. Cache the last programmed duty cycle
-> > +        * value to return in that case.
-> > +        */
-> > +       unsigned int duty_cycle;
-> >  };
-> >
-> >  #define to_pwm_imx27_chip(chip)        container_of(chip, struct pwm_imx27_chip, chip)
-> > @@ -155,14 +162,17 @@ static void pwm_imx27_get_state(struct pwm_chip *chip,
-> >         tmp = NSEC_PER_SEC * (u64)(period + 2);
-> >         state->period = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
-> >
-> > -       /* PWMSAR can be read only if PWM is enabled */
-> > -       if (state->enabled) {
-> > +       /*
-> > +        * PWMSAR can be read only if PWM is enabled. If the PWM is disabled,
-> > +        * use the cached value.
-> > +        */
-> > +       if (state->enabled)
-> >                 val = readl(imx->mmio_base + MX3_PWMSAR);
-> > -               tmp = NSEC_PER_SEC * (u64)(val);
-> > -               state->duty_cycle = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
-> > -       } else {
-> > -               state->duty_cycle = 0;
-> > -       }
-> > +       else
-> > +               val = imx->duty_cycle;
-> > +
-> > +       tmp = NSEC_PER_SEC * (u64)(val);
-> > +       state->duty_cycle = DIV_ROUND_CLOSEST_ULL(tmp, pwm_clk);
->
-> Is this right?  It seems like the tmp  and state->duty_cycle
-> caltulations should be kept inside "if (state->enabled)" because if we
-> set val to the duty_cycle in the else, I would think it is going to
-> calculate this again.
->
-> I think the 'else' should be 'state->duty_cycle = imx->duty_cycle'
-> because we shouldn't need to recalculate this again.
->
-> Am I missing something?
+If anything is different, we're using the cached value because we're
+not checking if/what has changed.  If we want to change the polarity
+or the duty cycle, this appears to me like it would not change because
+it just uses the cached value.  Somehow it seems to me like we should
+just blindly update the state to what we want and let the lower-level
+functions cache what they need to prevent the recalculation, but if
+we're changing duty cycle or polarity, I am not seeing how that will
+be updated.
 
-I figured out what I was missing.
+Both of those appear to be broken depending on which board is having an issue.
+
+adam
+
+
 
 >
-> adam
-> >
-> >         if (!state->enabled)
-> >                 pwm_imx27_clk_disable_unprepare(chip);
-> > @@ -261,6 +271,13 @@ static int pwm_imx27_apply(struct pwm_chip *chip, struct pwm_device *pwm,
-> >                 writel(duty_cycles, imx->mmio_base + MX3_PWMSAR);
-> >                 writel(period_cycles, imx->mmio_base + MX3_PWMPR);
-> >
-> > +               /*
-> > +                * Store the duty cycle for future reference in cases where
-> > +                * the MX3_PWMSAR register can't be read (i.e. when the PWM
-> > +                * is disabled).
-> > +                */
-> > +               imx->duty_cycle = duty_cycles;
-> > +
-> >                 cr = MX3_PWMCR_PRESCALER_SET(prescale) |
-> >                      MX3_PWMCR_STOPEN | MX3_PWMCR_DOZEN | MX3_PWMCR_WAITEN |
-> >                      FIELD_PREP(MX3_PWMCR_CLKSRC, MX3_PWMCR_CLKSRC_IPG_HIGH) |
-> > --
-> > 2.23.0
-> >
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> ---
+> Hello,
+>
+> There are now two reports about 01ccf903edd6 breaking a backlight. As
+> far as I understand the problem this is a combination of the backend pwm
+> driver yielding surprising results and the pwm-bl driver doing things
+> more complicated than necessary.
+>
+> So I guess this patch works around these problems. Still it would be
+> interesting to find out the details in the imx driver that triggers the
+> problem. So Adam, can you please instrument the pwm-imx27 driver to
+> print *state at the beginning of pwm_imx27_apply() and the end of
+> pwm_imx27_get_state() and provide the results?
+>
+> Note I only compile tested this change.
+>
+> Best regards
+> Uwe
+>
+>  drivers/video/backlight/pwm_bl.c | 34 +++++++++++---------------------
+>  1 file changed, 12 insertions(+), 22 deletions(-)
+>
+> diff --git a/drivers/video/backlight/pwm_bl.c b/drivers/video/backlight/pwm_bl.c
+> index 746eebc411df..ddebd62b3978 100644
+> --- a/drivers/video/backlight/pwm_bl.c
+> +++ b/drivers/video/backlight/pwm_bl.c
+> @@ -42,10 +42,8 @@ struct pwm_bl_data {
+>
+>  static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+>  {
+> -       struct pwm_state state;
+>         int err;
+>
+> -       pwm_get_state(pb->pwm, &state);
+>         if (pb->enabled)
+>                 return;
+>
+> @@ -53,9 +51,6 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+>         if (err < 0)
+>                 dev_err(pb->dev, "failed to enable power supply\n");
+>
+> -       state.enabled = true;
+> -       pwm_apply_state(pb->pwm, &state);
+> -
+>         if (pb->post_pwm_on_delay)
+>                 msleep(pb->post_pwm_on_delay);
+>
+> @@ -67,40 +62,27 @@ static void pwm_backlight_power_on(struct pwm_bl_data *pb)
+>
+>  static void pwm_backlight_power_off(struct pwm_bl_data *pb)
+>  {
+> -       struct pwm_state state;
+> -
+> -       pwm_get_state(pb->pwm, &state);
+> -       if (!pb->enabled)
+> -               return;
+> -
+>         if (pb->enable_gpio)
+>                 gpiod_set_value_cansleep(pb->enable_gpio, 0);
+>
+>         if (pb->pwm_off_delay)
+>                 msleep(pb->pwm_off_delay);
+>
+> -       state.enabled = false;
+> -       state.duty_cycle = 0;
+> -       pwm_apply_state(pb->pwm, &state);
+> -
+>         regulator_disable(pb->power_supply);
+>         pb->enabled = false;
+>  }
+>
+> -static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness)
+> +static int compute_duty_cycle(struct pwm_bl_data *pb, int brightness, struct pwm_state *state)
+>  {
+>         unsigned int lth = pb->lth_brightness;
+> -       struct pwm_state state;
+>         u64 duty_cycle;
+>
+> -       pwm_get_state(pb->pwm, &state);
+> -
+>         if (pb->levels)
+>                 duty_cycle = pb->levels[brightness];
+>         else
+>                 duty_cycle = brightness;
+>
+> -       duty_cycle *= state.period - lth;
+> +       duty_cycle *= state->period - lth;
+>         do_div(duty_cycle, pb->scale);
+>
+>         return duty_cycle + lth;
+> @@ -122,12 +104,20 @@ static int pwm_backlight_update_status(struct backlight_device *bl)
+>
+>         if (brightness > 0) {
+>                 pwm_get_state(pb->pwm, &state);
+> -               state.duty_cycle = compute_duty_cycle(pb, brightness);
+> +               state.duty_cycle = compute_duty_cycle(pb, brightness, &state);
+> +               state.enabled = true;
+>                 pwm_apply_state(pb->pwm, &state);
+> +
+>                 pwm_backlight_power_on(pb);
+> -       } else
+> +       } else {
+>                 pwm_backlight_power_off(pb);
+>
+> +               pwm_get_state(pb->pwm, &state);
+> +               state.enabled = false;
+> +               state.duty_cycle = 0;
+> +               pwm_apply_state(pb->pwm, &state);
+> +       }
+> +
+>         if (pb->notify_after)
+>                 pb->notify_after(pb->dev, brightness);
+>
+> --
+> 2.23.0
+>

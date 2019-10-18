@@ -1,31 +1,40 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Wed, 30 Oct 2019 07:50:47 +0000
-Subject: Re: [PATCH next] dt-bindings: backlight: lm3630a: fix missing include
-Message-Id: <20191030075047.GC4484@dell>
+From: Adam Ford <aford173@gmail.com>
+Date: Fri, 18 Oct 2019 12:49:38 +0000
+Subject: [PATCH] fbdev/omap: fix max fclk divider for omap36xx
+Message-Id: <20191018124938.29313-1-aford173@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191029185350.31155-1-andreas@kemnade.info>
-In-Reply-To: <20191029185350.31155-1-andreas@kemnade.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Andreas Kemnade <andreas@kemnade.info>
-Cc: Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, tomi.valkeinen@ti.com, adam.ford@logicpd.com, Adam Ford <aford173@gmail.com>, stable@vger.kernel.org
 
-On Tue, 29 Oct 2019, Andreas Kemnade wrote:
+The OMAP36xx and AM/DM37x TRMs say that the maximum divider for DSS fclk
+(in CM_CLKSEL_DSS) is 32. Experimentation shows that this is not
+correct, and using divider of 32 breaks DSS with a flood or underflows
+and sync losts. Dividers up to 31 seem to work fine.
 
-> example failed to compile due to undefined GPIO_ACTIVE_HIGH
-> fix that by adding the needed #include to the exammple
-> 
-> Fixes: ae92365cdd75 ("dt-bindings: backlight: lm3630a: Add enable-gpios to describe HWEN pin")
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> ---
->  .../devicetree/bindings/leds/backlight/lm3630a-backlight.yaml    | 1 +
->  1 file changed, 1 insertion(+)
+There is another patch to the DT files to limit the divider correctly,
+but as the DSS driver also needs to know the maximum divider to be able
+to iteratively find good rates, we also need to do the fix in the DSS
+driver.
 
-Applied, thanks.
+Signed-off-by: Adam Ford <aford173@gmail.com>
+Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Cc: stable@vger.kernel.org #linux-4.9.y+
 
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+index 48c6500c24e1..4429ad37b64c 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+@@ -843,7 +843,7 @@ static const struct dss_features omap34xx_dss_feats = {
+ };
+ 
+ static const struct dss_features omap3630_dss_feats = {
+-	.fck_div_max		=	32,
++	.fck_div_max		=	31,
+ 	.dss_fck_multiplier	=	1,
+ 	.parent_clk_name	=	"dpll4_ck",
+ 	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1

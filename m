@@ -1,8 +1,10 @@
 From: Adam Ford <aford173@gmail.com>
-Date: Fri, 18 Oct 2019 12:49:38 +0000
+Date: Fri, 18 Oct 2019 13:05:07 +0000
 Subject: [PATCH] fbdev/omap: fix max fclk divider for omap36xx
-Message-Id: <20191018124938.29313-1-aford173@gmail.com>
+Message-Id: <20191018130507.29893-1-aford173@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191018124938.29313-1-aford173@gmail.com>
+In-Reply-To: <20191018124938.29313-1-aford173@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -21,12 +23,12 @@ driver.
 
 Signed-off-by: Adam Ford <aford173@gmail.com>
 Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Cc: stable@vger.kernel.org #linux-4.9.y+
+Cc: stable@vger.kernel.org # linux-4.4.y only
 
-diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-index 48c6500c24e1..4429ad37b64c 100644
---- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-+++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+index 9200a8668b49..a57c3a5f4bf8 100644
+--- a/drivers/video/fbdev/omap2/dss/dss.c
++++ b/drivers/video/fbdev/omap2/dss/dss.c
 @@ -843,7 +843,7 @@ static const struct dss_features omap34xx_dss_feats = {
  };
  

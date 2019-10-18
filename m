@@ -1,42 +1,92 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 23 Oct 2019 13:39:32 +0000
-Subject: Re: [PATCH 00/36] ARM: samsung platform cleanup
-Message-Id: <CAK8P3a1v2-+geD+JbNP-t418ZjntQNSte4rt8c7N6sJdpb3+DQ@mail.gmail.com>
+From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Date: Fri, 18 Oct 2019 16:30:04 +0000
+Subject: [PATCH] omapfb: reduce stack usage
+Message-Id: <20191018163004.23498-1-sudipm.mukherjee@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191010202802.1132272-1-arnd@arndb.de>
- <20191023131049.GG11048@pi3>
-In-Reply-To: <20191023131049.GG11048@pi3>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>, ALSA Development Mailing List <alsa-devel@alsa-project.org>, dri-devel <dri-devel@lists.freedesktop.org>, Sylwester Nawrocki <s.nawrocki@samsung.com>, linux-stm32@st-md-mailman.stormreply.com, linux-leds@vger.kernel.org, "moderated list:ARM/SAMSUNG EXYNOS ARM ARCHITECTURES" <linux-samsung-soc@vger.kernel.org>, linux-clk <linux-clk@vger.kernel.org>, Lihua Yao <ylhuajnu@outlook.com>, Kukjin Kim <kgene@kernel.org>, linux-serial@vger.kernel.org, "open list:HID CORE LAYER" <linux-input@vger.kernel.org>, =?UTF-8?Q?Pawe=C5=82_Chmiel?= <pawel.mikolaj.chmiel@gmail.com>, Linux PWM List <linux-pwm@vger.kernel.org>, Sergio Prado <sergio.prado@e-labworks.com>, Linux PM list <linux-pm@vger.kernel.org>, Lihua Yao <ylhuajnu@163.com>, Linux ARM <linux-arm-kernel@lists.infradead.org>, linux-hwmon@vger.kernel.org, patches@opensource.cirrus.com, USB list <linux-usb@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, linux-spi <linux-spi@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org, linux-fbdev@vger.kernel.org, dri-devel@lists.freedesktop.org, Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 
-On Wed, Oct 23, 2019 at 3:11 PM Krzysztof Kozlowski <krzk@kernel.org> wrote:
-> On Thu, Oct 10, 2019 at 10:28:02PM +0200, Arnd Bergmann wrote:
-> > The contents are available for testing in
-> >
-> > git://kernel.org:/pub/scm/linux/kernel/git/arnd/playground.git s3c-mult=
-iplatform
->
-> When sending v2, can you Cc:
->
-> Pawe=C5=82 Chmiel <pawel.mikolaj.chmiel@gmail.com>
-> Lihua Yao <ylhuajnu@outlook.com>
-> (or Lihua Yao <ylhuajnu@163.com> if outlook.com bounces)
-> Sergio Prado <sergio.prado@e-labworks.com>
-> Sylwester Nawrocki <s.nawrocki@samsung.com>
->
-> These are folks which to my knowledge had working S3C and S5P boards
-> so maybe they could provide testing.
+The build of xtensa allmodconfig is giving a warning of:
+In function 'dsi_dump_dsidev_irqs':
+warning: the frame size of 1120 bytes is larger than 1024 bytes
 
-Ok, will do. I've uploaded the modified version based on your comments to
-the above URL for now.
+Allocate the memory for 'struct dsi_irq_stats' dynamically instead
+of assigning it in stack.
 
-I'll probably give it a little more time before resending, but they
-could already
-start testing that version.
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+---
+ drivers/video/fbdev/omap2/omapfb/dss/dsi.c | 24 ++++++++++++++----------
+ 1 file changed, 14 insertions(+), 10 deletions(-)
 
-Thanks a lot for the review!
-
-      Arnd
+diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+index d620376216e1..43402467bf40 100644
+--- a/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
++++ b/drivers/video/fbdev/omap2/omapfb/dss/dsi.c
+@@ -1536,22 +1536,25 @@ static void dsi_dump_dsidev_irqs(struct platform_device *dsidev,
+ {
+ 	struct dsi_data *dsi = dsi_get_dsidrv_data(dsidev);
+ 	unsigned long flags;
+-	struct dsi_irq_stats stats;
++	struct dsi_irq_stats *stats;
+ 
++	stats = kmalloc(sizeof(*stats), GFP_KERNEL);
++	if (!stats)
++		return;
+ 	spin_lock_irqsave(&dsi->irq_stats_lock, flags);
+ 
+-	stats = dsi->irq_stats;
++	memcpy(stats, &dsi->irq_stats, sizeof(*stats));
+ 	memset(&dsi->irq_stats, 0, sizeof(dsi->irq_stats));
+ 	dsi->irq_stats.last_reset = jiffies;
+ 
+ 	spin_unlock_irqrestore(&dsi->irq_stats_lock, flags);
+ 
+ 	seq_printf(s, "period %u ms\n",
+-			jiffies_to_msecs(jiffies - stats.last_reset));
++			jiffies_to_msecs(jiffies - stats->last_reset));
+ 
+-	seq_printf(s, "irqs %d\n", stats.irq_count);
++	seq_printf(s, "irqs %d\n", stats->irq_count);
+ #define PIS(x) \
+-	seq_printf(s, "%-20s %10d\n", #x, stats.dsi_irqs[ffs(DSI_IRQ_##x)-1]);
++	seq_printf(s, "%-20s %10d\n", #x, stats->dsi_irqs[ffs(DSI_IRQ_##x)-1]);
+ 
+ 	seq_printf(s, "-- DSI%d interrupts --\n", dsi->module_id + 1);
+ 	PIS(VC0);
+@@ -1575,10 +1578,10 @@ static void dsi_dump_dsidev_irqs(struct platform_device *dsidev,
+ 
+ #define PIS(x) \
+ 	seq_printf(s, "%-20s %10d %10d %10d %10d\n", #x, \
+-			stats.vc_irqs[0][ffs(DSI_VC_IRQ_##x)-1], \
+-			stats.vc_irqs[1][ffs(DSI_VC_IRQ_##x)-1], \
+-			stats.vc_irqs[2][ffs(DSI_VC_IRQ_##x)-1], \
+-			stats.vc_irqs[3][ffs(DSI_VC_IRQ_##x)-1]);
++			stats->vc_irqs[0][ffs(DSI_VC_IRQ_##x)-1], \
++			stats->vc_irqs[1][ffs(DSI_VC_IRQ_##x)-1], \
++			stats->vc_irqs[2][ffs(DSI_VC_IRQ_##x)-1], \
++			stats->vc_irqs[3][ffs(DSI_VC_IRQ_##x)-1]);
+ 
+ 	seq_printf(s, "-- VC interrupts --\n");
+ 	PIS(CS);
+@@ -1594,7 +1597,7 @@ static void dsi_dump_dsidev_irqs(struct platform_device *dsidev,
+ 
+ #define PIS(x) \
+ 	seq_printf(s, "%-20s %10d\n", #x, \
+-			stats.cio_irqs[ffs(DSI_CIO_IRQ_##x)-1]);
++			stats->cio_irqs[ffs(DSI_CIO_IRQ_##x)-1]);
+ 
+ 	seq_printf(s, "-- CIO interrupts --\n");
+ 	PIS(ERRSYNCESC1);
+@@ -1618,6 +1621,7 @@ static void dsi_dump_dsidev_irqs(struct platform_device *dsidev,
+ 	PIS(ULPSACTIVENOT_ALL0);
+ 	PIS(ULPSACTIVENOT_ALL1);
+ #undef PIS
++	kfree(stats);
+ }
+ 
+ static void dsi1_dump_irqs(struct seq_file *s)
+-- 
+2.11.0

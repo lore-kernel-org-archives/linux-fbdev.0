@@ -1,56 +1,59 @@
-From: Guenter Roeck <linux@roeck-us.net>
-Date: Sat, 19 Oct 2019 01:02:57 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+Date: Sat, 19 Oct 2019 10:08:35 +0000
 Subject: Re: [PATCH 00/46] ARM: pxa: towards multiplatform support
-Message-Id: <803f6fa5-b929-007c-5302-4a2d5042241c@roeck-us.net>
+Message-Id: <CAK8P3a3gOn6qkvvKaBzqYUzZToMKv3E587_8fQHmaF2u7erd5w@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
 References: <20191018154052.1276506-1-arnd@arndb.de>
-In-Reply-To: <20191018154052.1276506-1-arnd@arndb.de>
+ <803f6fa5-b929-007c-5302-4a2d5042241c@roeck-us.net>
+In-Reply-To: <803f6fa5-b929-007c-5302-4a2d5042241c@roeck-us.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnd Bergmann <arnd@arndb.de>, Daniel Mack <daniel@zonque.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, Robert Jarzmik <robert.jarzmik@free.fr>
-Cc: linux-rtc@vger.kernel.org, linux-fbdev@vger.kernel.org, linux-watchdog@vger.kernel.org, linux-pm@vger.kernel.org, Linus Walleij <linus.walleij@linaro.org>, linux-usb@vger.kernel.org, linux-mmc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, linux-mtd@lists.infradead.org, linux-leds@vger.kernel.org, linux-input@vger.kernel.org, linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-rtc@vger.kernel.org, Linux Fbdev development list <linux-fbdev@vger.kernel.org>, LINUXWATCHDOG <linux-watchdog@vger.kernel.org>, Linux PM list <linux-pm@vger.kernel.org>, Linus Walleij <linus.walleij@linaro.org>, USB list <linux-usb@vger.kernel.org>, linux-mmc <linux-mmc@vger.kernel.org>, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Haojian Zhuang <haojian.zhuang@gmail.com>, IDE-ML <linux-ide@vger.kernel.org>, linux-mtd <linux-mtd@lists.infradead.org>, Daniel Mack <daniel@zonque.org>, linux-leds@vger.kernel.org, "open list:HID CORE LAYER" <linux-input@vger.kernel.org>, Robert Jarzmik <robert.jarzmik@free.fr>, linux-clk <linux-clk@vger.kernel.org>, Linux ARM <linux-arm-kernel@lists.infradead.org>
 
-On 10/18/19 8:40 AM, Arnd Bergmann wrote:
-> 
-> Hi PXA maintainers,
-> 
-> I'm in the process of getting the old ARM platforms to all build
-> in a single kernel. The largest part of that work is changing all
-> the device drivers to no longer require mach/*.h header files.
-> 
-> This series does it for arch/pxa/.
-> 
-> As with the omap1 and s3c24xx series I sent before, I don't
-> expect this all to be correct in the first version, though
-> a lot of the patches are fairly simple and I did exhaustive
-> compile-time testing on them.
-> 
-> Please test if you have the hardware, or review!
-> 
-
-I don't get very far.
-
-$ make-arm pxa_defconfig
-arch/arm/Kconfig:677: can't open file "arch/arm/plat-pxa/Kconfig"
-scripts/kconfig/Makefile:90: recipe for target 'pxa_defconfig' failed
-make[1]: *** [pxa_defconfig] Error 1
-Makefile:567: recipe for target 'pxa_defconfig' failed
-make: *** [pxa_defconfig] Error 2
-$ git describe
-v5.4-rc3-52-gfcc4181cd625
-
-Also:
-
-$ git grep plat-pxa
-Documentation/arm/marvel.rst:   arch/arm/plat-pxa
-Documentation/arm/marvel.rst:   arch/arm/plat-pxa
-Documentation/arm/marvel.rst:   directory. The plat-pxa/ would therefore disappear.
-arch/arm/Kconfig:source "arch/arm/plat-pxa/Kconfig"
-arch/arm/mach-mmp/Makefile:ccflags-$(CONFIG_ARCH_MULTIPLATFORM) := -I$(srctree)/arch/arm/plat-pxa/include
-drivers/gpio/gpio-pxa.c: *  linux/arch/arm/plat-pxa/gpio.c
-drivers/soc/pxa/mfp.c: * linux/arch/arm/plat-pxa/mfp.c
-
-Did I pick the wrong tree ?
-
-Guenter
+On Sat, Oct 19, 2019 at 3:03 AM Guenter Roeck <linux@roeck-us.net> wrote:
+>
+> On 10/18/19 8:40 AM, Arnd Bergmann wrote:
+> >
+> > Hi PXA maintainers,
+> >
+> > I'm in the process of getting the old ARM platforms to all build
+> > in a single kernel. The largest part of that work is changing all
+> > the device drivers to no longer require mach/*.h header files.
+> >
+> > This series does it for arch/pxa/.
+> >
+> > As with the omap1 and s3c24xx series I sent before, I don't
+> > expect this all to be correct in the first version, though
+> > a lot of the patches are fairly simple and I did exhaustive
+> > compile-time testing on them.
+> >
+> > Please test if you have the hardware, or review!
+> >
+>
+> I don't get very far.
+>
+> $ make-arm pxa_defconfig
+> arch/arm/Kconfig:677: can't open file "arch/arm/plat-pxa/Kconfig"
+> scripts/kconfig/Makefile:90: recipe for target 'pxa_defconfig' failed
+> make[1]: *** [pxa_defconfig] Error 1
+> Makefile:567: recipe for target 'pxa_defconfig' failed
+> make: *** [pxa_defconfig] Error 2
+> $ git describe
+> v5.4-rc3-52-gfcc4181cd625
+>
+> Also:
+>
+> $ git grep plat-pxa
+> Documentation/arm/marvel.rst:   arch/arm/plat-pxa
+> Documentation/arm/marvel.rst:   arch/arm/plat-pxa
+> Documentation/arm/marvel.rst:   directory. The plat-pxa/ would therefore disappear.
+> arch/arm/Kconfig:source "arch/arm/plat-pxa/Kconfig"
+> arch/arm/mach-mmp/Makefile:ccflags-$(CONFIG_ARCH_MULTIPLATFORM) := -I$(srctree)/arch/arm/plat-pxa/include
+> drivers/gpio/gpio-pxa.c: *  linux/arch/arm/plat-pxa/gpio.c
+> drivers/soc/pxa/mfp.c: * linux/arch/arm/plat-pxa/mfp.c
+>
+> Did I pick the wrong tree ?
+>
+> Guenter

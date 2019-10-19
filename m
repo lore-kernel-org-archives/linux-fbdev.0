@@ -1,57 +1,95 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 14 Oct 2019 14:04:02 +0000
-Subject: [PATCH v2 01/15] fbdev: Export fb_check_foreignness()
-Message-Id: <20191014140416.28517-2-tzimmermann@suse.de>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Sat, 19 Oct 2019 08:35:51 +0000
+Subject: [PATCH v6 4/9] sh: ecovec24: add additional properties to the backlight device
+Message-Id: <20191019083556.19466-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191014140416.28517-1-tzimmermann@suse.de>
-In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
+References: <20191019083556.19466-1-brgl@bgdev.pl>
+In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
-Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-This function is required by DRM's fbdev conversion helpers. Export it
-from the module.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Add a GPIO lookup entry and a device property for GPIO backlight to the
+board file. Tie them to the platform device which is now registered using
+platform_device_register_full() because of the properties. These changes
+are inactive now but will be used once the gpio backlight driver is
+modified.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 ---
- drivers/video/fbdev/core/fbmem.c | 3 ++-
- include/linux/fb.h               | 1 +
- 2 files changed, 3 insertions(+), 1 deletion(-)
+ arch/sh/boards/mach-ecovec24/setup.c | 30 +++++++++++++++++++++++-----
+ 1 file changed, 25 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 95c32952fa8a..e828fcccce40 100644
---- a/drivers/video/fbdev/core/fbmem.c
-+++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1481,7 +1481,7 @@ static const struct file_operations fb_fops = {
- struct class *fb_class;
- EXPORT_SYMBOL(fb_class);
+diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
+index acaa97459531..aaa8ea62636f 100644
+--- a/arch/sh/boards/mach-ecovec24/setup.c
++++ b/arch/sh/boards/mach-ecovec24/setup.c
+@@ -371,6 +371,19 @@ static struct platform_device lcdc_device = {
+ 	},
+ };
  
--static int fb_check_foreignness(struct fb_info *fi)
-+int fb_check_foreignness(struct fb_info *fi)
- {
- 	const bool foreign_endian = fi->flags & FBINFO_FOREIGN_ENDIAN;
++static struct gpiod_lookup_table gpio_backlight_lookup = {
++	.dev_id		= "gpio-backlight.0",
++	.table = {
++		GPIO_LOOKUP("sh7724_pfc", GPIO_PTR1, NULL, GPIO_ACTIVE_HIGH),
++		{ }
++	},
++};
++
++static struct property_entry gpio_backlight_props[] = {
++	PROPERTY_ENTRY_BOOL("default-on"),
++	{ }
++};
++
+ static struct gpio_backlight_platform_data gpio_backlight_data = {
+ 	.fbdev = &lcdc_device.dev,
+ 	.gpio = GPIO_PTR1,
+@@ -378,13 +391,15 @@ static struct gpio_backlight_platform_data gpio_backlight_data = {
+ 	.name = "backlight",
+ };
  
-@@ -1505,6 +1505,7 @@ static int fb_check_foreignness(struct fb_info *fi)
+-static struct platform_device gpio_backlight_device = {
++static const struct platform_device_info gpio_backlight_device_info = {
+ 	.name = "gpio-backlight",
+-	.dev = {
+-		.platform_data = &gpio_backlight_data,
+-	},
++	.data = &gpio_backlight_data,
++	.size_data = sizeof(gpio_backlight_data),
++	.properties = gpio_backlight_props,
+ };
  
- 	return 0;
++static struct platform_device *gpio_backlight_device;
++
+ /* CEU0 */
+ static struct ceu_platform_data ceu0_pdata = {
+ 	.num_subdevs			= 2,
+@@ -1006,7 +1021,6 @@ static struct platform_device *ecovec_devices[] __initdata = {
+ 	&usb1_common_device,
+ 	&usbhs_device,
+ 	&lcdc_device,
+-	&gpio_backlight_device,
+ 	&keysc_device,
+ 	&cn12_power,
+ #if defined(CONFIG_MMC_SDHI) || defined(CONFIG_MMC_SDHI_MODULE)
+@@ -1462,6 +1476,12 @@ static int __init arch_setup(void)
+ #endif
+ #endif
+ 
++	gpiod_add_lookup_table(&gpio_backlight_lookup);
++	gpio_backlight_device = platform_device_register_full(
++					&gpio_backlight_device_info);
++	if (IS_ERR(gpio_backlight_device))
++		return PTR_ERR(gpio_backlight_device);
++
+ 	return platform_add_devices(ecovec_devices,
+ 				    ARRAY_SIZE(ecovec_devices));
  }
-+EXPORT_SYMBOL(fb_check_foreignness);
- 
- static bool apertures_overlap(struct aperture *gen, struct aperture *hw)
- {
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 41e0069eca0a..372f1f6ae42e 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -622,6 +622,7 @@ extern int fb_get_color_depth(struct fb_var_screeninfo *var,
- 			      struct fb_fix_screeninfo *fix);
- extern int fb_get_options(const char *name, char **option);
- extern int fb_new_modelist(struct fb_info *info);
-+extern int fb_check_foreignness(struct fb_info *fi);
- 
- extern struct fb_info *registered_fb[FB_MAX];
- extern int num_registered_fb;
 -- 
 2.23.0

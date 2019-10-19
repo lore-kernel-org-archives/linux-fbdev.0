@@ -1,10 +1,8 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Sat, 19 Oct 2019 08:35:53 +0000
-Subject: [PATCH v6 6/9] sh: ecovec24: don't set unused fields in platform data
-Message-Id: <20191019083556.19466-7-brgl@bgdev.pl>
+Date: Sat, 19 Oct 2019 08:35:47 +0000
+Subject: [PATCH v6 0/9] backlight: gpio: simplify the driver
+Message-Id: <20191019083556.19466-1-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191019083556.19466-1-brgl@bgdev.pl>
-In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -13,29 +11,60 @@ Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.free
 
 From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Platform data fields other than fbdev are no longer used by the
-backlight driver. Remove them.
+While working on my other series related to gpio-backlight[1] I noticed
+that we could simplify the driver if we made the only user of platform
+data use GPIO lookups and device properties. This series tries to do
+that.
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
----
- arch/sh/boards/mach-ecovec24/setup.c | 3 ---
- 1 file changed, 3 deletions(-)
+First two patches contain minor fixes. Third patch makes the driver
+explicitly drive the GPIO line. Fourth patch adds all necessary data
+structures to ecovec24. Patch 5/9 unifies much of the code for both
+pdata and non-pdata cases. Patches 6-7/9 remove unused platform data
+fields. Last two patches contain additional improvements for the GPIO
+backlight driver while we're already modifying it.
 
-diff --git a/arch/sh/boards/mach-ecovec24/setup.c b/arch/sh/boards/mach-ecovec24/setup.c
-index aaa8ea62636f..dd427bac5cde 100644
---- a/arch/sh/boards/mach-ecovec24/setup.c
-+++ b/arch/sh/boards/mach-ecovec24/setup.c
-@@ -386,9 +386,6 @@ static struct property_entry gpio_backlight_props[] = {
- 
- static struct gpio_backlight_platform_data gpio_backlight_data = {
- 	.fbdev = &lcdc_device.dev,
--	.gpio = GPIO_PTR1,
--	.def_value = 1,
--	.name = "backlight",
- };
- 
- static const struct platform_device_info gpio_backlight_device_info = {
+I don't have access to this HW but hopefully this works. Only compile
+tested.
+
+[1] https://lkml.org/lkml/2019/6/25/900
+
+v1 -> v2:
+- rebased on top of v5.3-rc1 and adjusted to the recent changes from Andy
+- added additional two patches with minor improvements
+
+v2 -> v3:
+- in patch 7/7: used initializers to set values for pdata and dev local vars
+
+v3 -> v4:
+- rebased on top of v5.4-rc1
+- removed changes that are no longer relevant after commit ec665b756e6f
+  ("backlight: gpio-backlight: Correct initial power state handling")
+- added patch 7/7
+
+v4 -> v5:
+- in patch 7/7: added a comment replacing the name of the function being
+  pulled into probe()
+
+v5 -> v6:
+- added a patch making the driver explicitly set the direction of the GPIO
+  to output
+- added a patch removing a redundant newline
+
+Bartosz Golaszewski (9):
+  backlight: gpio: remove unneeded include
+  backlight: gpio: remove stray newline
+  backlight: gpio: explicitly set the direction of the GPIO
+  sh: ecovec24: add additional properties to the backlight device
+  backlight: gpio: simplify the platform data handling
+  sh: ecovec24: don't set unused fields in platform data
+  backlight: gpio: remove unused fields from platform data
+  backlight: gpio: use a helper variable for &pdev->dev
+  backlight: gpio: pull gpio_backlight_initial_power_state() into probe
+
+ arch/sh/boards/mach-ecovec24/setup.c         |  33 +++--
+ drivers/video/backlight/gpio_backlight.c     | 128 +++++++------------
+ include/linux/platform_data/gpio_backlight.h |   3 -
+ 3 files changed, 69 insertions(+), 95 deletions(-)
+
 -- 
 2.23.0

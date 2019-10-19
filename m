@@ -1,111 +1,119 @@
-From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
-Date: Wed, 23 Oct 2019 16:30:14 +0000
-Subject: [PATCH v3 2/2] staging: sm750fb: format description of parameters in accel.h
-Message-Id: <20191023163016.30217-3-gabrielabittencourt00@gmail.com>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Sat, 19 Oct 2019 08:35:52 +0000
+Subject: [PATCH v6 5/9] backlight: gpio: simplify the platform data handling
+Message-Id: <20191019083556.19466-6-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191023163016.30217-1-gabrielabittencourt00@gmail.com>
-In-Reply-To: <20191023163016.30217-1-gabrielabittencourt00@gmail.com>
+References: <20191019083556.19466-1-brgl@bgdev.pl>
+In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org
-Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Formatting comments in file drivers/staging/sm750fb/sm750_accel.h.
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Now that the last user of platform data (sh ecovec24) defines a proper
+GPIO lookup and sets the 'default-on' device property, we can drop the
+platform_data-specific GPIO handling and unify a big chunk of code.
 
+The only field used from the platform data is now the fbdev pointer.
+
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 ---
+ drivers/video/backlight/gpio_backlight.c | 62 +++++-------------------
+ 1 file changed, 11 insertions(+), 51 deletions(-)
 
-Changes v3:
- - Apply changes in file accel.h
----
- drivers/staging/sm750fb/sm750_accel.h | 75 ++++++++++++++++-----------
- 1 file changed, 46 insertions(+), 29 deletions(-)
-
-diff --git a/drivers/staging/sm750fb/sm750_accel.h b/drivers/staging/sm750fb/sm750_accel.h
-index c4f42002a50f..c16350b5a310 100644
---- a/drivers/staging/sm750fb/sm750_accel.h
-+++ b/drivers/staging/sm750fb/sm750_accel.h
-@@ -194,33 +194,50 @@ int sm750_hw_fillrect(struct lynx_accel *accel,
- 				u32 x, u32 y, u32 width, u32 height,
- 				u32 color, u32 rop);
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index a36ac3a45b81..c829b82f5372 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -6,7 +6,6 @@
+ #include <linux/backlight.h>
+ #include <linux/err.h>
+ #include <linux/fb.h>
+-#include <linux/gpio.h> /* Only for legacy support */
+ #include <linux/gpio/consumer.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+@@ -61,28 +60,6 @@ static const struct backlight_ops gpio_backlight_ops = {
+ 	.check_fb	= gpio_backlight_check_fb,
+ };
  
--int sm750_hw_copyarea(
--struct lynx_accel *accel,
--unsigned int sBase,  /* Address of source: offset in frame buffer */
--unsigned int sPitch, /* Pitch value of source surface in BYTE */
--unsigned int sx,
--unsigned int sy,     /* Starting coordinate of source surface */
--unsigned int dBase,  /* Address of destination: offset in frame buffer */
--unsigned int dPitch, /* Pitch value of destination surface in BYTE */
--unsigned int bpp,    /* Color depth of destination surface */
--unsigned int dx,
--unsigned int dy,     /* Starting coordinate of destination surface */
--unsigned int width,
--unsigned int height, /* width and height of rectangle in pixel value */
--unsigned int rop2);
+-static int gpio_backlight_probe_dt(struct platform_device *pdev,
+-				   struct gpio_backlight *gbl)
+-{
+-	struct device *dev = &pdev->dev;
+-	int ret;
 -
--int sm750_hw_imageblit(struct lynx_accel *accel,
--		 const char *pSrcbuf, /* pointer to start of source buffer in system memory */
--		 u32 srcDelta,          /* Pitch value (in bytes) of the source buffer, +ive means top down and -ive mean button up */
--		 u32 startBit, /* Mono data can start at any bit in a byte, this value should be 0 to 7 */
--		 u32 dBase,    /* Address of destination: offset in frame buffer */
--		 u32 dPitch,   /* Pitch value of destination surface in BYTE */
--		 u32 bytePerPixel,      /* Color depth of destination surface */
--		 u32 dx,
--		 u32 dy,       /* Starting coordinate of destination surface */
--		 u32 width,
--		 u32 height,   /* width and height of rectangle in pixel value */
--		 u32 fColor,   /* Foreground color (corresponding to a 1 in the monochrome data */
--		 u32 bColor,   /* Background color (corresponding to a 0 in the monochrome data */
--		 u32 rop2);
-+/**
-+ * sm750_hm_copyarea
-+ * @sBase: Address of source: offset in frame buffer
-+ * @sPitch: Pitch value of source surface in BYTE
-+ * @sx: Starting x coordinate of source surface
-+ * @sy: Starting y coordinate of source surface
-+ * @dBase: Address of destination: offset in frame buffer
-+ * @dPitch: Pitch value of destination surface in BYTE
-+ * @Bpp: Color depth of destination surface
-+ * @dx: Starting x coordinate of destination surface
-+ * @dy: Starting y coordinate of destination surface
-+ * @width: width of rectangle in pixel value
-+ * @height: height of rectangle in pixel value
-+ * @rop2: ROP value
-+ */
-+int sm750_hw_copyarea(struct lynx_accel *accel,
-+		      unsigned int sBase, unsigned int sPitch,
-+		      unsigned int sx, unsigned int sy,
-+		      unsigned int dBase, unsigned int dPitch,
-+		      unsigned int Bpp, unsigned int dx, unsigned int dy,
-+		      unsigned int width, unsigned int height,
-+		      unsigned int rop2);
+-	gbl->def_value = device_property_read_bool(dev, "default-on");
+-
+-	gbl->gpiod = devm_gpiod_get(dev, NULL, GPIOD_ASIS);
+-	if (IS_ERR(gbl->gpiod)) {
+-		ret = PTR_ERR(gbl->gpiod);
+-
+-		if (ret != -EPROBE_DEFER) {
+-			dev_err(dev,
+-				"Error: The gpios parameter is missing or invalid.\n");
+-		}
+-		return ret;
+-	}
+-
+-	return 0;
+-}
+-
+ static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+ {
+ 	struct device_node *node = gbl->dev->of_node;
+@@ -114,35 +91,18 @@ static int gpio_backlight_probe(struct platform_device *pdev)
+ 
+ 	gbl->dev = &pdev->dev;
+ 
+-	if (pdev->dev.fwnode) {
+-		ret = gpio_backlight_probe_dt(pdev, gbl);
+-		if (ret)
+-			return ret;
+-	} else if (pdata) {
+-		/*
+-		 * Legacy platform data GPIO retrieveal. Do not expand
+-		 * the use of this code path, currently only used by one
+-		 * SH board.
+-		 */
+-		unsigned long flags = GPIOF_DIR_OUT;
+-
++	if (pdata)
+ 		gbl->fbdev = pdata->fbdev;
+-		gbl->def_value = pdata->def_value;
+-		flags |= gbl->def_value ? GPIOF_INIT_HIGH : GPIOF_INIT_LOW;
+-
+-		ret = devm_gpio_request_one(gbl->dev, pdata->gpio, flags,
+-					    pdata ? pdata->name : "backlight");
+-		if (ret < 0) {
+-			dev_err(&pdev->dev, "unable to request GPIO\n");
+-			return ret;
+-		}
+-		gbl->gpiod = gpio_to_desc(pdata->gpio);
+-		if (!gbl->gpiod)
+-			return -EINVAL;
+-	} else {
+-		dev_err(&pdev->dev,
+-			"failed to find platform data or device tree node.\n");
+-		return -ENODEV;
 +
-+/**
-+ * sm750_hw_imageblit
-+ * @pSrcbuf: pointer to start of source buffer in system memory
-+ * @srcDelta: Pitch value (in bytes) of the source buffer, +ive means top down
-+ *>-----      and -ive mean button up
-+ * @startBit: Mono data can start at any bit in a byte, this value should be
-+ *>-----      0 to 7
-+ * @dBase: Address of destination: offset in frame buffer
-+ * @dPitch: Pitch value of destination surface in BYTE
-+ * @bytePerPixel: Color depth of destination surface
-+ * @dx: Starting x coordinate of destination surface
-+ * @dy: Starting y coordinate of destination surface
-+ * @width: width of rectangle in pixel value
-+ * @height: height of rectangle in pixel value
-+ * @fColor: Foreground color (corresponding to a 1 in the monochrome data
-+ * @bColor: Background color (corresponding to a 0 in the monochrome data
-+ * @rop2: ROP value
-+ */
-+int sm750_hw_imageblit(struct lynx_accel *accel, const char *pSrcbuf,
-+		       u32 srcDelta, u32 startBit, u32 dBase, u32 dPitch,
-+		       u32 bytePerPixel, u32 dx, u32 dy, u32 width,
-+		       u32 height, u32 fColor, u32 bColor, u32 rop2);
++	gbl->def_value = device_property_read_bool(&pdev->dev, "default-on");
 +
- #endif
++	gbl->gpiod = devm_gpiod_get(&pdev->dev, NULL, GPIOD_ASIS);
++	if (IS_ERR(gbl->gpiod)) {
++		ret = PTR_ERR(gbl->gpiod);
++		if (ret != -EPROBE_DEFER)
++			dev_err(&pdev->dev,
++				"Error: The gpios parameter is missing or invalid.\n");
++		return ret;
+ 	}
+ 
+ 	memset(&props, 0, sizeof(props));
 -- 
-2.20.1
+2.23.0

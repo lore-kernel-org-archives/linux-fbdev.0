@@ -1,17 +1,17 @@
 From: Tomi Valkeinen <tomi.valkeinen@ti.com>
-Date: Mon, 21 Oct 2019 08:42:16 +0000
+Date: Mon, 21 Oct 2019 08:44:21 +0000
 Subject: Re: [PATCH] fbdev/omap: fix max fclk divider for omap36xx
-Message-Id: <7b8b6eba-2cb3-9b25-66e2-e128cc09ceb4@ti.com>
+Message-Id: <712504cb-c0ad-2e3e-bc3b-5cc1b70dd005@ti.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191018124938.29313-1-aford173@gmail.com>
-In-Reply-To: <20191018124938.29313-1-aford173@gmail.com>
+References: <20191018130507.29893-1-aford173@gmail.com>
+In-Reply-To: <20191018130507.29893-1-aford173@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Adam Ford <aford173@gmail.com>, linux-fbdev@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org, adam.ford@logicpd.com, stable@vger.kernel.org
 
-On 18/10/2019 15:49, Adam Ford wrote:
+On 18/10/2019 16:05, Adam Ford wrote:
 > The OMAP36xx and AM/DM37x TRMs say that the maximum divider for DSS fclk
 > (in CM_CLKSEL_DSS) is 32. Experimentation shows that this is not
 > correct, and using divider of 32 breaks DSS with a flood or underflows
@@ -24,12 +24,12 @@ On 18/10/2019 15:49, Adam Ford wrote:
 > 
 > Signed-off-by: Adam Ford <aford173@gmail.com>
 > Cc: Tomi Valkeinen <tomi.valkeinen@ti.com>
-> Cc: stable@vger.kernel.org #linux-4.9.y+
+> Cc: stable@vger.kernel.org # linux-4.4.y only
 > 
-> diff --git a/drivers/video/fbdev/omap2/omapfb/dss/dss.c b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-> index 48c6500c24e1..4429ad37b64c 100644
-> --- a/drivers/video/fbdev/omap2/omapfb/dss/dss.c
-> +++ b/drivers/video/fbdev/omap2/omapfb/dss/dss.c
+> diff --git a/drivers/video/fbdev/omap2/dss/dss.c b/drivers/video/fbdev/omap2/dss/dss.c
+> index 9200a8668b49..a57c3a5f4bf8 100644
+> --- a/drivers/video/fbdev/omap2/dss/dss.c
+> +++ b/drivers/video/fbdev/omap2/dss/dss.c
 > @@ -843,7 +843,7 @@ static const struct dss_features omap34xx_dss_feats = {
 >   };
 >   
@@ -40,6 +40,9 @@ On 18/10/2019 15:49, Adam Ford wrote:
 >   	.parent_clk_name	=	"dpll4_ck",
 >   	.dpi_select_source	=	&dss_dpi_select_source_omap2_omap3,
 > 
+
+To clarify, this patch is only for the v4.4 stable, whereas the previous 
+patch was for next merge window and v4.9+ stable. Right?
 
 Reviewed-by: Tomi Valkeinen <tomi.valkeinen@ti.com>
 

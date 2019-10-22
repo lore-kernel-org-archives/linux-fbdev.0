@@ -1,44 +1,37 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 03 Oct 2019 11:42:42 +0000
-Subject: Re: [PATCH v4 2/2] backlight: lm3630a: Add an enable gpio for the HWEN pin
-Message-Id: <20191003114242.GE21172@dell>
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+Date: Tue, 22 Oct 2019 08:36:23 +0000
+Subject: [PATCH v7 2/9] backlight: gpio: remove stray newline
+Message-Id: <20191022083630.28175-3-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190912213257.24147-1-andreas@kemnade.info>
- <20190912213257.24147-3-andreas@kemnade.info>
-In-Reply-To: <20190912213257.24147-3-andreas@kemnade.info>
+References: <20191022083630.28175-1-brgl@bgdev.pl>
+In-Reply-To: <20191022083630.28175-1-brgl@bgdev.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-To: Andreas Kemnade <andreas@kemnade.info>
-Cc: daniel.thompson@linaro.org, jingoohan1@gmail.com, jacek.anaszewski@gmail.com, pavel@ucw.cz, dmurphy@ti.com, robh+dt@kernel.org, mark.rutland@arm.com, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, linux-fbdev@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>, Andy Shevchenko <andy.shevchenko@gmail.com>
 
-On Thu, 12 Sep 2019, Andreas Kemnade wrote:
+From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
 
-> For now just enable it in the probe function to allow I2C
-> access. Disabling also means resetting the register values
-> to default and according to the datasheet does not give
-> power savings.
-> 
-> Tested on Kobo Clara HD.
-> 
-> Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
-> Reviewed-by: Dan Murphy <dmurphy@ti.com>
-> Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-> ---
-> changes in v2:
-> - simplification
-> - correct gpio direction initialisation
-> 
-> changes in v3:
-> - removed legacy include
-> 
->  drivers/video/backlight/lm3630a_bl.c | 9 +++++++++
->  1 file changed, 9 insertions(+)
+Remove a double newline from the driver.
 
-Applied, thanks.
+Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
+---
+ drivers/video/backlight/gpio_backlight.c | 1 -
+ 1 file changed, 1 deletion(-)
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
+index 7e1990199fae..3955b513f2f8 100644
+--- a/drivers/video/backlight/gpio_backlight.c
++++ b/drivers/video/backlight/gpio_backlight.c
+@@ -91,7 +91,6 @@ static int gpio_backlight_initial_power_state(struct gpio_backlight *gbl)
+ 	return FB_BLANK_UNBLANK;
+ }
+ 
+-
+ static int gpio_backlight_probe(struct platform_device *pdev)
+ {
+ 	struct gpio_backlight_platform_data *pdata -- 
+2.23.0

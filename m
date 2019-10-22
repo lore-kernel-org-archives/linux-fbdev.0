@@ -1,10 +1,10 @@
 From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Sat, 19 Oct 2019 08:35:51 +0000
-Subject: [PATCH v6 4/9] sh: ecovec24: add additional properties to the backlight device
-Message-Id: <20191019083556.19466-5-brgl@bgdev.pl>
+Date: Tue, 22 Oct 2019 08:36:25 +0000
+Subject: [PATCH v7 4/9] sh: ecovec24: add additional properties to the backlight device
+Message-Id: <20191022083630.28175-5-brgl@bgdev.pl>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191019083556.19466-1-brgl@bgdev.pl>
-In-Reply-To: <20191019083556.19466-1-brgl@bgdev.pl>
+References: <20191022083630.28175-1-brgl@bgdev.pl>
+In-Reply-To: <20191022083630.28175-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

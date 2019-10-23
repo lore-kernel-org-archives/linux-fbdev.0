@@ -1,290 +1,602 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 14 Oct 2019 14:04:07 +0000
-Subject: [PATCH v2 06/15] drm/fbconv: Add mode conversion DRM <-> fbdev
-Message-Id: <20191014140416.28517-7-tzimmermann@suse.de>
+From: Kiran Gunda <kgunda@codeaurora.org>
+Date: Wed, 23 Oct 2019 07:19:00 +0000
+Subject: [PATCH V9 3/6] backlight: qcom-wled: Restructure the driver for WLED3.
+Message-Id: <1571814423-6535-4-git-send-email-kgunda@codeaurora.org>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191014140416.28517-1-tzimmermann@suse.de>
-In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
+References: <1571814423-6535-1-git-send-email-kgunda@codeaurora.org>
+In-Reply-To: <1571814423-6535-1-git-send-email-kgunda@codeaurora.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
-Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
+To: bjorn.andersson@linaro.org, jingoohan1@gmail.com, lee.jones@linaro.org, b.zolnierkie@samsung.com, dri-devel@lists.freedesktop.org, daniel.thompson@linaro.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, robh+dt@kernel.org, mark.rutland@arm.com, linux-leds@vger.kernel.org, devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, Andy Gross <agross@kernel.org>, linux-arm-msm@vger.kernel.org, linux-fbdev@vger.kernel.org
+Cc: Kiran Gunda <kgunda@codeaurora.org>
 
-DRM uses struct drm_display_mode to describe a display mode. The
-conversion functions fill it from fbdev data strucutures, and vice
-versa.
+Restructure the driver to add the support for new WLED
+peripherals.
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Kiran Gunda <kgunda@codeaurora.org>
+Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
 ---
- drivers/gpu/drm/drm_fbconv_helper.c | 201 ++++++++++++++++++++++++++++
- include/drm/drm_fbconv_helper.h     |  31 +++++
- 2 files changed, 232 insertions(+)
+ drivers/video/backlight/qcom-wled.c | 373 ++++++++++++++++++++++--------------
+ 1 file changed, 234 insertions(+), 139 deletions(-)
 
-diff --git a/drivers/gpu/drm/drm_fbconv_helper.c b/drivers/gpu/drm/drm_fbconv_helper.c
-index af45358a156a..e5a58a361ae9 100644
---- a/drivers/gpu/drm/drm_fbconv_helper.c
-+++ b/drivers/gpu/drm/drm_fbconv_helper.c
-@@ -5,6 +5,7 @@
- #include <linux/fb.h>
+diff --git a/drivers/video/backlight/qcom-wled.c b/drivers/video/backlight/qcom-wled.c
+index f191242..45eeda4 100644
+--- a/drivers/video/backlight/qcom-wled.c
++++ b/drivers/video/backlight/qcom-wled.c
+@@ -7,59 +7,71 @@
+ #include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/of_device.h>
++#include <linux/of_address.h>
+ #include <linux/regmap.h>
  
- #include <drm/drm_fbconv_helper.h>
-+#include <drm/drm_modes.h>
+ /* From DT binding */
++#define WLED_MAX_STRINGS				4
++
+ #define WLED_DEFAULT_BRIGHTNESS				2048
  
- /*
-  * Format conversion helpers
-@@ -434,3 +435,203 @@ int drm_fbconv_update_fb_var_screeninfo_from_format(
+ #define WLED3_SINK_REG_BRIGHT_MAX			0xFFF
+-#define WLED3_CTRL_REG_VAL_BASE				0x40
+ 
+ /* WLED3 control registers */
+ #define WLED3_CTRL_REG_MOD_EN				0x46
+-#define  WLED3_CTRL_REG_MOD_EN_BIT			BIT(7)
+ #define  WLED3_CTRL_REG_MOD_EN_MASK			BIT(7)
++#define  WLED3_CTRL_REG_MOD_EN_SHIFT			7
+ 
+ #define WLED3_CTRL_REG_FREQ				0x4c
+-#define  WLED3_CTRL_REG_FREQ_MASK			0x0f
++#define  WLED3_CTRL_REG_FREQ_MASK			GENMASK(3, 0)
+ 
+ #define WLED3_CTRL_REG_OVP				0x4d
+-#define  WLED3_CTRL_REG_OVP_MASK			0x03
++#define  WLED3_CTRL_REG_OVP_MASK				GENMASK(1, 0)
+ 
+ #define WLED3_CTRL_REG_ILIMIT				0x4e
+-#define  WLED3_CTRL_REG_ILIMIT_MASK			0x07
++#define  WLED3_CTRL_REG_ILIMIT_MASK			GENMASK(2, 0)
+ 
+ /* WLED3 sink registers */
+ #define WLED3_SINK_REG_SYNC				0x47
+-#define  WLED3_SINK_REG_SYNC_MASK			0x07
+-#define  WLED3_SINK_REG_SYNC_LED1			BIT(0)
+-#define  WLED3_SINK_REG_SYNC_LED2			BIT(1)
+-#define  WLED3_SINK_REG_SYNC_LED3			BIT(2)
+-#define  WLED3_SINK_REG_SYNC_ALL			0x07
+ #define  WLED3_SINK_REG_SYNC_CLEAR			0x00
+ 
+ #define WLED3_SINK_REG_CURR_SINK			0x4f
+-#define  WLED3_SINK_REG_CURR_SINK_MASK			0xe0
+-#define  WLED3_SINK_REG_CURR_SINK_SHFT			0x05
++#define  WLED3_SINK_REG_CURR_SINK_MASK			GENMASK(7, 5)
++#define  WLED3_SINK_REG_CURR_SINK_SHFT			5
+ 
+-/* WLED3 per-'string' registers below */
+-#define WLED3_SINK_REG_STR_OFFSET			0x10
++/* WLED3 specific per-'string' registers below */
++#define WLED3_SINK_REG_BRIGHT(n)			(0x40 + n)
+ 
+-#define WLED3_SINK_REG_STR_MOD_EN_BASE			0x60
++#define WLED3_SINK_REG_STR_MOD_EN(n)			(0x60 + (n * 0x10))
+ #define  WLED3_SINK_REG_STR_MOD_MASK			BIT(7)
+-#define  WLED3_SINK_REG_STR_MOD_EN			BIT(7)
+ 
+-#define WLED3_SINK_REG_STR_FULL_SCALE_CURR		0x62
+-#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	0x1f
++#define WLED3_SINK_REG_STR_FULL_SCALE_CURR(n)		(0x62 + (n * 0x10))
++#define  WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK	GENMASK(4, 0)
+ 
+-#define WLED3_SINK_REG_STR_MOD_SRC_BASE			0x63
+-#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		0x01
++#define WLED3_SINK_REG_STR_MOD_SRC(n)			(0x63 + (n * 0x10))
++#define  WLED3_SINK_REG_STR_MOD_SRC_MASK		BIT(0)
+ #define  WLED3_SINK_REG_STR_MOD_SRC_INT			0x00
+ #define  WLED3_SINK_REG_STR_MOD_SRC_EXT			0x01
+ 
+-#define WLED3_SINK_REG_STR_CABC_BASE			0x66
++#define WLED3_SINK_REG_STR_CABC(n)			(0x66 + (n * 0x10))
+ #define  WLED3_SINK_REG_STR_CABC_MASK			BIT(7)
+-#define  WLED3_SINK_REG_STR_CABC_EN			BIT(7)
++
++struct wled_var_cfg {
++	const u32 *values;
++	u32 (*fn)(u32);
++	int size;
++};
++
++struct wled_u32_opts {
++	const char *name;
++	u32 *val_ptr;
++	const struct wled_var_cfg *cfg;
++};
++
++struct wled_bool_opts {
++	const char *name;
++	bool *val_ptr;
++};
+ 
+ struct wled_config {
+ 	u32 boost_i_limit;
+@@ -67,132 +79,179 @@ struct wled_config {
+ 	u32 switch_freq;
+ 	u32 num_strings;
+ 	u32 string_i_limit;
++	u32 enabled_strings[WLED_MAX_STRINGS];
+ 	bool cs_out_en;
+ 	bool ext_gen;
+-	bool cabc_en;
++	bool cabc;
+ };
+ 
+ struct wled {
+ 	const char *name;
++	struct device *dev;
+ 	struct regmap *regmap;
+-	u16 addr;
++	u16 ctrl_addr;
++	u16 max_string_count;
++	u32 brightness;
++	u32 max_brightness;
+ 
+ 	struct wled_config cfg;
++	int (*wled_set_brightness)(struct wled *wled, u16 brightness);
+ };
+ 
++static int wled3_set_brightness(struct wled *wled, u16 brightness)
++{
++	int rc, i;
++	u8 v[2];
++
++	v[0] = brightness & 0xff;
++	v[1] = (brightness >> 8) & 0xf;
++
++	for (i = 0;  i < wled->cfg.num_strings; ++i) {
++		rc = regmap_bulk_write(wled->regmap, wled->ctrl_addr +
++				       WLED3_SINK_REG_BRIGHT(i), v, 2);
++		if (rc < 0)
++			return rc;
++	}
++
++	return 0;
++}
++
++static int wled_module_enable(struct wled *wled, int val)
++{
++	int rc;
++
++	rc = regmap_update_bits(wled->regmap, wled->ctrl_addr +
++				WLED3_CTRL_REG_MOD_EN,
++				WLED3_CTRL_REG_MOD_EN_MASK,
++				val << WLED3_CTRL_REG_MOD_EN_SHIFT);
++	return rc;
++}
++
++static int wled_sync_toggle(struct wled *wled)
++{
++	int rc;
++	unsigned int mask = GENMASK(wled->max_string_count - 1, 0);
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
++				mask, mask);
++	if (rc < 0)
++		return rc;
++
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_SINK_REG_SYNC,
++				mask, WLED3_SINK_REG_SYNC_CLEAR);
++
++	return rc;
++}
++
+ static int wled_update_status(struct backlight_device *bl)
+ {
+ 	struct wled *wled = bl_get_data(bl);
+-	u16 val = bl->props.brightness;
+-	u8 ctrl = 0;
+-	int rc;
+-	int i;
++	u16 brightness = bl->props.brightness;
++	int rc = 0;
+ 
+ 	if (bl->props.power != FB_BLANK_UNBLANK ||
+ 	    bl->props.fb_blank != FB_BLANK_UNBLANK ||
+ 	    bl->props.state & BL_CORE_FBBLANK)
+-		val = 0;
+-
+-	if (val != 0)
+-		ctrl = WLED3_CTRL_REG_MOD_EN_BIT;
++		brightness = 0;
+ 
+-	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_CTRL_REG_MOD_EN,
+-			WLED3_CTRL_REG_MOD_EN_MASK, ctrl);
+-	if (rc)
+-		return rc;
++	if (brightness) {
++		rc = wled->wled_set_brightness(wled, brightness);
++		if (rc < 0) {
++			dev_err(wled->dev, "wled failed to set brightness rc:%d\n",
++				rc);
++			return rc;
++		}
+ 
+-	for (i = 0; i < wled->cfg.num_strings; ++i) {
+-		u8 v[2] = { val & 0xff, (val >> 8) & 0xf };
++		rc = wled_sync_toggle(wled);
++		if (rc < 0) {
++			dev_err(wled->dev, "wled sync failed rc:%d\n", rc);
++			return rc;
++		}
++	}
+ 
+-		rc = regmap_bulk_write(wled->regmap,
+-				wled->addr + WLED3_CTRL_REG_VAL_BASE + 2 * i,
+-				v, 2);
+-		if (rc)
++	if (!!brightness != !!wled->brightness) {
++		rc = wled_module_enable(wled, !!brightness);
++		if (rc < 0) {
++			dev_err(wled->dev, "wled enable failed rc:%d\n", rc);
+ 			return rc;
++		}
+ 	}
+ 
+-	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_SINK_REG_SYNC,
+-			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_ALL);
+-	if (rc)
+-		return rc;
++	wled->brightness = brightness;
+ 
+-	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_SINK_REG_SYNC,
+-			WLED3_SINK_REG_SYNC_MASK, WLED3_SINK_REG_SYNC_CLEAR);
+ 	return rc;
+ }
+ 
+-static int wled_setup(struct wled *wled)
++static int wled3_setup(struct wled *wled)
+ {
+-	int rc;
+-	int i;
++	u16 addr;
++	u8 sink_en = 0;
++	int rc, i, j;
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_CTRL_REG_OVP,
+-			WLED3_CTRL_REG_OVP_MASK, wled->cfg.ovp);
++				wled->ctrl_addr + WLED3_CTRL_REG_OVP,
++				WLED3_CTRL_REG_OVP_MASK, wled->cfg.ovp);
+ 	if (rc)
+ 		return rc;
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_CTRL_REG_ILIMIT,
+-			WLED3_CTRL_REG_ILIMIT_MASK, wled->cfg.boost_i_limit);
++				wled->ctrl_addr + WLED3_CTRL_REG_ILIMIT,
++				WLED3_CTRL_REG_ILIMIT_MASK,
++				wled->cfg.boost_i_limit);
+ 	if (rc)
+ 		return rc;
+ 
+ 	rc = regmap_update_bits(wled->regmap,
+-			wled->addr + WLED3_CTRL_REG_FREQ,
+-			WLED3_CTRL_REG_FREQ_MASK, wled->cfg.switch_freq);
++				wled->ctrl_addr + WLED3_CTRL_REG_FREQ,
++				WLED3_CTRL_REG_FREQ_MASK,
++				wled->cfg.switch_freq);
+ 	if (rc)
+ 		return rc;
+ 
+-	if (wled->cfg.cs_out_en) {
+-		u8 all = (BIT(wled->cfg.num_strings) - 1)
+-				<< WLED3_SINK_REG_CURR_SINK_SHFT;
+-
+-		rc = regmap_update_bits(wled->regmap,
+-				wled->addr + WLED3_SINK_REG_CURR_SINK,
+-				WLED3_SINK_REG_CURR_SINK_MASK, all);
+-		if (rc)
+-			return rc;
+-	}
+-
+ 	for (i = 0; i < wled->cfg.num_strings; ++i) {
+-		u16 addr = wled->addr + WLED3_SINK_REG_STR_OFFSET * i;
+-
+-		rc = regmap_update_bits(wled->regmap,
+-				addr + WLED3_SINK_REG_STR_MOD_EN_BASE,
+-				WLED3_SINK_REG_STR_MOD_MASK,
+-				WLED3_SINK_REG_STR_MOD_EN);
++		j = wled->cfg.enabled_strings[i];
++		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_EN(j);
++		rc = regmap_update_bits(wled->regmap, addr,
++					WLED3_SINK_REG_STR_MOD_MASK,
++					WLED3_SINK_REG_STR_MOD_MASK);
+ 		if (rc)
+ 			return rc;
+ 
+ 		if (wled->cfg.ext_gen) {
+-			rc = regmap_update_bits(wled->regmap,
+-					addr + WLED3_SINK_REG_STR_MOD_SRC_BASE,
+-					WLED3_SINK_REG_STR_MOD_SRC_MASK,
+-					WLED3_SINK_REG_STR_MOD_SRC_EXT);
++			addr = wled->ctrl_addr + WLED3_SINK_REG_STR_MOD_SRC(j);
++			rc = regmap_update_bits(wled->regmap, addr,
++						WLED3_SINK_REG_STR_MOD_SRC_MASK,
++						WLED3_SINK_REG_STR_MOD_SRC_EXT);
+ 			if (rc)
+ 				return rc;
+ 		}
+ 
+-		rc = regmap_update_bits(wled->regmap,
+-				addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR,
+-				WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
+-				wled->cfg.string_i_limit);
++		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_FULL_SCALE_CURR(j);
++		rc = regmap_update_bits(wled->regmap, addr,
++					WLED3_SINK_REG_STR_FULL_SCALE_CURR_MASK,
++					wled->cfg.string_i_limit);
+ 		if (rc)
+ 			return rc;
+ 
+-		rc = regmap_update_bits(wled->regmap,
+-				addr + WLED3_SINK_REG_STR_CABC_BASE,
+-				WLED3_SINK_REG_STR_CABC_MASK,
+-				wled->cfg.cabc_en ?
+-					WLED3_SINK_REG_STR_CABC_EN : 0);
++		addr = wled->ctrl_addr + WLED3_SINK_REG_STR_CABC(j);
++		rc = regmap_update_bits(wled->regmap, addr,
++					WLED3_SINK_REG_STR_CABC_MASK,
++					wled->cfg.cabc ?
++					WLED3_SINK_REG_STR_CABC_MASK : 0);
+ 		if (rc)
+ 			return rc;
++
++		sink_en |= BIT(j + WLED3_SINK_REG_CURR_SINK_SHFT);
+ 	}
+ 
++	rc = regmap_update_bits(wled->regmap,
++				wled->ctrl_addr + WLED3_SINK_REG_CURR_SINK,
++				WLED3_SINK_REG_CURR_SINK_MASK, sink_en);
++	if (rc)
++		return rc;
++
  	return 0;
  }
- EXPORT_SYMBOL(drm_fbconv_update_fb_var_screeninfo_from_format);
+ 
+@@ -200,17 +259,12 @@ static int wled_setup(struct wled *wled)
+ 	.boost_i_limit = 3,
+ 	.string_i_limit = 20,
+ 	.ovp = 2,
++	.num_strings = 3,
+ 	.switch_freq = 5,
+-	.num_strings = 0,
+ 	.cs_out_en = false,
+ 	.ext_gen = false,
+-	.cabc_en = false,
+-};
+-
+-struct wled_var_cfg {
+-	const u32 *values;
+-	u32 (*fn)(u32);
+-	int size;
++	.cabc = false,
++	.enabled_strings = {0, 1, 2, 3},
+ };
+ 
+ static const u32 wled3_boost_i_limit_values[] = {
+@@ -255,7 +309,11 @@ static u32 wled3_switch_freq_values_fn(u32 idx)
+ 	.size = 26,
+ };
+ 
+-static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
++static const struct wled_var_cfg wled3_string_cfg = {
++	.size = 8,
++};
 +
-+/*
-+ * Mode conversion helpers
-+ */
++static u32 wled_values(const struct wled_var_cfg *cfg, u32 idx)
+ {
+ 	if (idx >= cfg->size)
+ 		return UINT_MAX;
+@@ -266,68 +324,75 @@ static u32 wled3_values(const struct wled_var_cfg *cfg, u32 idx)
+ 	return idx;
+ }
+ 
+-static int wled_configure(struct wled *wled, struct device *dev)
++static int wled_configure(struct wled *wled, int version)
+ {
+ 	struct wled_config *cfg = &wled->cfg;
+-	u32 val;
+-	int rc;
+-	u32 c;
+-	int i;
+-	int j;
+-
+-	const struct {
+-		const char *name;
+-		u32 *val_ptr;
+-		const struct wled_var_cfg *cfg;
+-	} u32_opts[] = {
++	struct device *dev = wled->dev;
++	const __be32 *prop_addr;
++	u32 size, val, c, string_len;
++	int rc, i, j;
 +
-+/**
-+ * drm_mode_update_from_fb_videomode - Sets a drm_display mode struecture
-+ *	from an fb_videomode structure
-+ * @mode:	the DRM display mode structure to update
-+ * @fb_mode:	an fb_videomode structure
-+ */
-+void drm_mode_update_from_fb_videomode(struct drm_display_mode *mode,
-+				       const struct fb_videomode *fb_mode)
-+{
-+	mode->type = DRM_MODE_TYPE_DRIVER;
++	const struct wled_u32_opts *u32_opts = NULL;
++	const struct wled_u32_opts wled3_opts[] = {
+ 		{
+-			"qcom,current-boost-limit",
+-			&cfg->boost_i_limit,
++			.name = "qcom,current-boost-limit",
++			.val_ptr = &cfg->boost_i_limit,
+ 			.cfg = &wled3_boost_i_limit_cfg,
+ 		},
+ 		{
+-			"qcom,current-limit",
+-			&cfg->string_i_limit,
++			.name = "qcom,current-limit",
++			.val_ptr = &cfg->string_i_limit,
+ 			.cfg = &wled3_string_i_limit_cfg,
+ 		},
+ 		{
+-			"qcom,ovp",
+-			&cfg->ovp,
++			.name = "qcom,ovp",
++			.val_ptr = &cfg->ovp,
+ 			.cfg = &wled3_ovp_cfg,
+ 		},
+ 		{
+-			"qcom,switching-freq",
+-			&cfg->switch_freq,
++			.name = "qcom,switching-freq",
++			.val_ptr = &cfg->switch_freq,
+ 			.cfg = &wled3_switch_freq_cfg,
+ 		},
+ 		{
+-			"qcom,num-strings",
+-			&cfg->num_strings,
++			.name = "qcom,num-strings",
++			.val_ptr = &cfg->num_strings,
+ 			.cfg = &wled3_num_strings_cfg,
+ 		},
+ 	};
+-	const struct {
+-		const char *name;
+-		bool *val_ptr;
+-	} bool_opts[] = {
 +
-+	mode->clock = PICOS2KHZ(fb_mode->pixclock);
++	const struct wled_bool_opts bool_opts[] = {
+ 		{ "qcom,cs-out", &cfg->cs_out_en, },
+ 		{ "qcom,ext-gen", &cfg->ext_gen, },
+-		{ "qcom,cabc", &cfg->cabc_en, },
++		{ "qcom,cabc", &cfg->cabc, },
+ 	};
+ 
+-	rc = of_property_read_u32(dev->of_node, "reg", &val);
+-	if (rc || val > 0xffff) {
+-		dev_err(dev, "invalid IO resources\n");
+-		return rc ? rc : -EINVAL;
++	prop_addr = of_get_address(dev->of_node, 0, NULL, NULL);
++	if (!prop_addr) {
++		dev_err(wled->dev, "invalid IO resources\n");
++		return -EINVAL;
+ 	}
+-	wled->addr = val;
++	wled->ctrl_addr = be32_to_cpu(*prop_addr);
+ 
+ 	rc = of_property_read_string(dev->of_node, "label", &wled->name);
+ 	if (rc)
+ 		wled->name = devm_kasprintf(dev, GFP_KERNEL, "%pOFn", dev->of_node);
+ 
+-	*cfg = wled3_config_defaults;
+-	for (i = 0; i < ARRAY_SIZE(u32_opts); ++i) {
++	switch (version) {
++	case 3:
++		u32_opts = wled3_opts;
++		size = ARRAY_SIZE(wled3_opts);
++		*cfg = wled3_config_defaults;
++		wled->wled_set_brightness = wled3_set_brightness;
++		wled->max_string_count = 3;
++		break;
 +
-+	mode->hdisplay = fb_mode->xres;
-+	mode->hsync_start = mode->hdisplay + fb_mode->right_margin;
-+	mode->hsync_end = mode->hsync_start + fb_mode->hsync_len;
-+	mode->htotal = mode->hsync_end + fb_mode->left_margin;
-+	mode->hskew = 0;
-+
-+	mode->vdisplay = fb_mode->yres;
-+	mode->vsync_start = mode->vdisplay + fb_mode->lower_margin;
-+	mode->vsync_end = mode->vsync_start + fb_mode->vsync_len;
-+	mode->vtotal = mode->vsync_end + fb_mode->upper_margin;
-+	mode->vscan = 0;
-+
-+	mode->flags = 0;
-+
-+	if (fb_mode->sync & FB_SYNC_HOR_HIGH_ACT)
-+		mode->flags |= DRM_MODE_FLAG_PHSYNC;
-+	else
-+		mode->flags |= DRM_MODE_FLAG_NHSYNC;
-+
-+	if (fb_mode->sync & FB_SYNC_VERT_HIGH_ACT)
-+		mode->flags |= DRM_MODE_FLAG_PVSYNC;
-+	else
-+		mode->flags |= DRM_MODE_FLAG_NVSYNC;
-+
-+	if (fb_mode->sync & FB_SYNC_COMP_HIGH_ACT)
-+		mode->flags |= DRM_MODE_FLAG_CSYNC | DRM_MODE_FLAG_PCSYNC;
-+
-+	if (fb_mode->vmode & FB_VMODE_INTERLACED)
-+		mode->flags |= DRM_MODE_FLAG_INTERLACE;
-+
-+	if (fb_mode->vmode & FB_VMODE_DOUBLE)
-+		mode->flags |= DRM_MODE_FLAG_DBLSCAN;
-+
-+	mode->width_mm = 0;
-+	mode->height_mm = 0;
-+
-+	mode->vrefresh = fb_mode->refresh;
-+	mode->hsync = mode->clock / mode->vtotal;
-+
-+	/* final step; depends on previous setup */
-+	if (fb_mode->name) {
-+		strncpy(mode->name, fb_mode->name, sizeof(mode->name) - 1);
-+		mode->name[sizeof(mode->name) - 1] = '\0';
-+	} else {
-+		drm_mode_set_name(mode);
++	default:
++		dev_err(wled->dev, "Invalid WLED version\n");
++		return -EINVAL;
 +	}
-+}
-+EXPORT_SYMBOL(drm_mode_update_from_fb_videomode);
 +
-+/**
-+ * drm_mode_update_from_fb_var_screeninfo - Sets a drm_display mode structure
-+ *	from an fb_var_screenmode structure
-+ * @mode:	the DRM display mode structure to update
-+ * @fb_var:	an fb_var_screeninfo structure
-+ */
-+void drm_mode_update_from_fb_var_screeninfo(
-+	struct drm_display_mode *mode, const struct fb_var_screeninfo *fb_var)
-+{
-+	struct fb_videomode fb_mode;
-+
-+	fb_var_to_videomode(&fb_mode, fb_var);
-+	drm_mode_update_from_fb_videomode(mode, &fb_mode);
-+}
-+EXPORT_SYMBOL(drm_mode_update_from_fb_var_screeninfo);
-+
-+/**
-+ * drm_mode_create_from_fb_videomode - Creates a drm_display mode structure
-+ *	from an fb_videomode structure
-+ * @dev:	the new mode's DRM device
-+ * @fb_mode:	an fb_videomode structure
-+ * Returns:
-+ *	A newly allocated DRM display mode structure on success, or
-+ *	NULL otherwise
-+ */
-+struct drm_display_mode * drm_mode_create_from_fb_videomode(
-+	struct drm_device *dev, const struct fb_videomode *fb_mode)
-+{
-+	/* cleared to '0' */
-+	struct drm_display_mode *mode;
-+
-+	mode = drm_mode_create(dev);
-+	if (!mode)
-+		return NULL;
-+
-+	drm_mode_update_from_fb_videomode(mode, fb_mode);
-+
-+	return mode;
-+}
-+EXPORT_SYMBOL(drm_mode_create_from_fb_videomode);
-+
-+/**
-+ * drm_fbconv_update_fb_videomode_from_mode - updates an fb_videomode
-+ *	structure from a DRM display mode
-+ * @fb_mode:	the fb_videomode structure to update
-+ * @mode:	a DRM display mode
-+ */
-+void
-+drm_fbconv_update_fb_videomode_from_mode(struct fb_videomode *fb_mode,
-+					 const struct drm_display_mode *mode)
-+{
-+	fb_mode->name = NULL;
-+	fb_mode->refresh = mode->vrefresh;
-+	fb_mode->xres = mode->hdisplay;
-+	fb_mode->yres = mode->vdisplay;
-+	fb_mode->pixclock = KHZ2PICOS(mode->clock);
-+	fb_mode->left_margin = mode->htotal - mode->hsync_end;
-+	fb_mode->right_margin = mode->hsync_start - mode->hdisplay;
-+	fb_mode->upper_margin = mode->vtotal - mode->vsync_end;
-+	fb_mode->lower_margin = mode->vsync_start - mode->vdisplay;
-+	fb_mode->hsync_len = mode->hsync_end - mode->hsync_start;
-+	fb_mode->vsync_len = mode->vsync_end - mode->vsync_start;
-+
-+	fb_mode->sync = 0;
-+	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
-+		fb_mode->sync |= FB_SYNC_HOR_HIGH_ACT;
-+	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
-+		fb_mode->sync |= FB_SYNC_VERT_HIGH_ACT;
-+	if (mode->flags & (DRM_MODE_FLAG_CSYNC | DRM_MODE_FLAG_PCSYNC))
-+		fb_mode->sync |= FB_SYNC_COMP_HIGH_ACT;
-+
-+	fb_mode->vmode = 0;
-+	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
-+		fb_mode->vmode |= FB_VMODE_INTERLACED;
-+	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
-+		fb_mode->vmode |= FB_VMODE_DOUBLE;
-+
-+	fb_mode->flag = 0;
-+}
-+EXPORT_SYMBOL(drm_fbconv_update_fb_videomode_from_mode);
-+
-+/**
-+ * drm_fbconv_init_fb_videomode_from_mode - initializes an fb_videomode
-+ *	structure from a DRM display mode
-+ * @fb_mode:	the fb_videomode structure to update
-+ * @mode:	a DRM display mode
-+ *
-+ * This is the same as drm_fbconv_update_fb_videomode_from_mode(), but
-+ * first clears the fb_screeninfo structure to 0.
-+ */
-+void drm_fbconv_init_fb_videomode_from_mode(
-+	struct fb_videomode *fb_mode, const struct drm_display_mode *mode)
-+{
-+	memset(fb_mode, 0, sizeof(*fb_mode));
-+	drm_fbconv_update_fb_videomode_from_mode(fb_mode, mode);
-+}
-+EXPORT_SYMBOL(drm_fbconv_init_fb_videomode_from_mode);
-+
-+/**
-+ * drm_fbconv_update_fb_var_screeninfo_from_mode - updates an
-+ *	fb_var_screeninfo structure from a DRM display mode
-+ * @fb_var:	the fb_var_screeninfo structure to update
-+ * @mode:	a DRM display mode
-+ */
-+void drm_fbconv_update_fb_var_screeninfo_from_mode(
-+	struct fb_var_screeninfo *fb_var, const struct drm_display_mode *mode)
-+{
-+	struct fb_videomode fb_mode;
-+
-+	drm_fbconv_init_fb_videomode_from_mode(&fb_mode, mode);
-+	fb_videomode_to_var(fb_var, &fb_mode);
-+
-+	fb_var->height = mode->height_mm;
-+	fb_var->width = mode->width_mm;
-+}
-+EXPORT_SYMBOL(drm_fbconv_update_fb_var_screeninfo_from_mode);
-+
-+/**
-+ * drm_fbconv_init_fb_var_screeninfo_from_mode - initialize an
-+ *	fb_var_screeninfo structure from a DRM display mode
-+ * @fb_var:	the fb_var_screeninfo structure to update
-+ * @mode:	a DRM display mode
-+ *
-+ * This is the same as drm_fbconv_update_fb_var_screeninfo_from_mode(), but
-+ * first clears the fb_screeninfo structure to 0.
-+ */
-+void drm_fbconv_init_fb_var_screeninfo_from_mode(
-+	struct fb_var_screeninfo *fb_var, const struct drm_display_mode *mode)
-+{
-+	memset(fb_var, 0, sizeof(*fb_var));
-+	drm_fbconv_update_fb_var_screeninfo_from_mode(fb_var, mode);
-+}
-+EXPORT_SYMBOL(drm_fbconv_init_fb_var_screeninfo_from_mode);
-diff --git a/include/drm/drm_fbconv_helper.h b/include/drm/drm_fbconv_helper.h
-index 6b2ed12b579a..cbb13228c76c 100644
---- a/include/drm/drm_fbconv_helper.h
-+++ b/include/drm/drm_fbconv_helper.h
-@@ -5,8 +5,12 @@
++	for (i = 0; i < size; ++i) {
+ 		rc = of_property_read_u32(dev->of_node, u32_opts[i].name, &val);
+ 		if (rc = -EINVAL) {
+ 			continue;
+@@ -338,12 +403,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
  
- #include <drm/drm_fourcc.h>
+ 		c = UINT_MAX;
+ 		for (j = 0; c != val; j++) {
+-			c = wled3_values(u32_opts[i].cfg, j);
++			c = wled_values(u32_opts[i].cfg, j);
+ 			if (c = UINT_MAX) {
+ 				dev_err(dev, "invalid value for '%s'\n",
+ 					u32_opts[i].name);
+ 				return -EINVAL;
+ 			}
++
++			if (c = val)
++				break;
+ 		}
  
-+struct drm_device;
-+struct drm_display_mode;
- struct fb_info;
- struct fb_var_screeninfo;
-+struct fb_var_screeninfo;
-+struct fb_videomode;
+ 		dev_dbg(dev, "'%s' = %u\n", u32_opts[i].name, c);
+@@ -357,6 +425,15 @@ static int wled_configure(struct wled *wled, struct device *dev)
  
- /*
-  * Format conversion helpers
-@@ -20,4 +24,31 @@ uint32_t drm_fbconv_format_of_fb_info(const struct fb_info *fb_info);
- int drm_fbconv_update_fb_var_screeninfo_from_format(
- 	struct fb_var_screeninfo *fb_var, uint32_t format);
+ 	cfg->num_strings = cfg->num_strings + 1;
  
-+/*
-+ * Mode conversion helpers
-+ */
++	string_len = of_property_count_elems_of_size(dev->of_node,
++						     "qcom,enabled-strings",
++						     sizeof(u32));
++	if (string_len > 0)
++		of_property_read_u32_array(dev->of_node,
++						"qcom,enabled-strings",
++						wled->cfg.enabled_strings,
++						sizeof(u32));
 +
-+void drm_mode_update_from_fb_videomode(struct drm_display_mode *mode,
-+				       const struct fb_videomode *fb_mode);
+ 	return 0;
+ }
+ 
+@@ -370,6 +447,7 @@ static int wled_probe(struct platform_device *pdev)
+ 	struct backlight_device *bl;
+ 	struct wled *wled;
+ 	struct regmap *regmap;
++	int version;
+ 	u32 val;
+ 	int rc;
+ 
+@@ -384,15 +462,32 @@ static int wled_probe(struct platform_device *pdev)
+ 		return -ENOMEM;
+ 
+ 	wled->regmap = regmap;
++	wled->dev = &pdev->dev;
+ 
+-	rc = wled_configure(wled, &pdev->dev);
+-	if (rc)
+-		return rc;
++	version = (uintptr_t)of_device_get_match_data(&pdev->dev);
++	if (!version) {
++		dev_err(&pdev->dev, "Unknown device version\n");
++		return -ENODEV;
++	}
+ 
+-	rc = wled_setup(wled);
++	rc = wled_configure(wled, version);
+ 	if (rc)
+ 		return rc;
+ 
++	switch (version) {
++	case 3:
++		rc = wled3_setup(wled);
++		if (rc) {
++			dev_err(&pdev->dev, "wled3_setup failed\n");
++			return rc;
++		}
++		break;
 +
-+void drm_mode_update_from_fb_var_screeninfo(
-+	struct drm_display_mode *mode, const struct fb_var_screeninfo *fb_var);
++	default:
++		dev_err(wled->dev, "Invalid WLED version\n");
++		break;
++	}
 +
-+struct drm_display_mode * drm_mode_create_from_fb_videomode(
-+	struct drm_device *dev, const struct fb_videomode *fb_mode);
-+
-+void
-+drm_fbconv_update_fb_videomode_from_mode(struct fb_videomode *fb_mode,
-+					 const struct drm_display_mode *mode);
-+
-+void
-+drm_fbconv_init_fb_videomode_from_mode(struct fb_videomode *fb_mode,
-+				       const struct drm_display_mode *mode);
-+
-+void drm_fbconv_update_fb_var_screeninfo_from_mode(
-+	struct fb_var_screeninfo *var, const struct drm_display_mode *mode);
-+
-+void drm_fbconv_init_fb_var_screeninfo_from_mode(
-+	struct fb_var_screeninfo *var, const struct drm_display_mode *mode);
-+
- #endif
+ 	val = WLED_DEFAULT_BRIGHTNESS;
+ 	of_property_read_u32(pdev->dev.of_node, "default-brightness", &val);
+ 
+@@ -407,7 +502,7 @@ static int wled_probe(struct platform_device *pdev)
+ };
+ 
+ static const struct of_device_id wled_match_table[] = {
+-	{ .compatible = "qcom,pm8941-wled" },
++	{ .compatible = "qcom,pm8941-wled", .data = (void *)3 },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, wled_match_table);
 -- 
-2.23.0
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+ a Linux Foundation Collaborative Project

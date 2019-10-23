@@ -1,8 +1,10 @@
 From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
-Date: Wed, 23 Oct 2019 13:12:52 +0000
-Subject: [PATCH v2] staging: sm750fb: format description of parameters the to kernel doc format
-Message-Id: <20191023131253.20819-1-gabrielabittencourt00@gmail.com>
+Date: Wed, 23 Oct 2019 13:12:53 +0000
+Subject: [PATCH v2] staging: sm750fb: Format description of parameters the to kernel doc format
+Message-Id: <20191023131253.20819-2-gabrielabittencourt00@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191023131253.20819-1-gabrielabittencourt00@gmail.com>
+In-Reply-To: <20191023131253.20819-1-gabrielabittencourt00@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit

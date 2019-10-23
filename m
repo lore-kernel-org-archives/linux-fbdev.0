@@ -1,39 +1,24 @@
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-Date: Tue, 22 Oct 2019 08:36:22 +0000
-Subject: [PATCH v7 1/9] backlight: gpio: remove unneeded include
-Message-Id: <20191022083630.28175-2-brgl@bgdev.pl>
+From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Date: Wed, 23 Oct 2019 16:30:12 +0000
+Subject: [PATCH v3 0/2] staging: sm750fb: format description of parameters to the kernel-doc format
+Message-Id: <20191023163016.30217-1-gabrielabittencourt00@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191022083630.28175-1-brgl@bgdev.pl>
-In-Reply-To: <20191022083630.28175-1-brgl@bgdev.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Linus Walleij <linus.walleij@linaro.org>, Andy Shevchenko <andriy.shevchenko@linux.intel.com>, Jacopo Mondi <jacopo@jmondi.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, Bartosz Golaszewski <bgolaszewski@baylibre.com>
+To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org
+Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
 
-From: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+Cluster comments that describes parameters of functions and create one
+single comment before the function in kernel doc format.
 
-We no longer use any symbols from of_gpio.h. Remove this include.
+Gabriela Bittencourt (2):
+  staging: sm750fb: format description of parameters in accel.c
+  staging: sm750fb: format description of parameters in accel.h
 
-Signed-off-by: Bartosz Golaszewski <bgolaszewski@baylibre.com>
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
-Reviewed-by: Daniel Thompson <daniel.thompson@linaro.org>
-Reviewed-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
----
- drivers/video/backlight/gpio_backlight.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/staging/sm750fb/sm750_accel.c | 72 +++++++++++++++----------
+ drivers/staging/sm750fb/sm750_accel.h | 75 ++++++++++++++++-----------
+ 2 files changed, 90 insertions(+), 57 deletions(-)
 
-diff --git a/drivers/video/backlight/gpio_backlight.c b/drivers/video/backlight/gpio_backlight.c
-index 18e053e4716c..7e1990199fae 100644
---- a/drivers/video/backlight/gpio_backlight.c
-+++ b/drivers/video/backlight/gpio_backlight.c
-@@ -12,7 +12,6 @@
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/of.h>
--#include <linux/of_gpio.h>
- #include <linux/platform_data/gpio_backlight.h>
- #include <linux/platform_device.h>
- #include <linux/property.h>
 -- 
-2.23.0
+2.20.1

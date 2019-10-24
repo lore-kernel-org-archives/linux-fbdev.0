@@ -1,67 +1,36 @@
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Date: Mon, 14 Oct 2019 14:04:05 +0000
-Subject: [PATCH v2 04/15] drm: Add fbconv helper module
-Message-Id: <20191014140416.28517-5-tzimmermann@suse.de>
+From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Date: Thu, 24 Oct 2019 16:38:20 +0000
+Subject: [PATCH 1/3] staging: sm750fb: align arguments with open parenthesis in ddk750_sii164.c
+Message-Id: <20191024163822.7157-2-gabrielabittencourt00@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191014140416.28517-1-tzimmermann@suse.de>
-In-Reply-To: <20191014140416.28517-1-tzimmermann@suse.de>
+References: <20191024163822.7157-1-gabrielabittencourt00@gmail.com>
+In-Reply-To: <20191024163822.7157-1-gabrielabittencourt00@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: airlied@linux.ie, daniel@ffwll.ch, maarten.lankhorst@linux.intel.com, mripard@kernel.org, sean@poorly.run, b.zolnierkie@samsung.com, ajax@redhat.com, ville.syrjala@linux.intel.com, malat@debian.org, michel@daenzer.net
-Cc: gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, Thomas Zimmermann <tzimmermann@suse.de>, dri-devel@lists.freedesktop.org, corbet@lwn.net
+To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org, trivial@kernel.org
+Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
 
-This adds fbconv helpers for DRM to the build infrastructure. The
-configuration symbol is DRM_FBCONV_HELPERS. Drivers should select
-it if they wish to use fbconv.
+Cleans up checks of "Alignment should match open parenthesis"
+in file ddk750_sii164.c
 
-Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Signed-off-by: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
 ---
- drivers/gpu/drm/Kconfig             | 10 ++++++++++
- drivers/gpu/drm/Makefile            |  1 +
- drivers/gpu/drm/drm_fbconv_helper.c |  1 +
- 3 files changed, 12 insertions(+)
- create mode 100644 drivers/gpu/drm/drm_fbconv_helper.c
+ drivers/staging/sm750fb/ddk750_sii164.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
-index 9591bd720e56..ed689201ec81 100644
---- a/drivers/gpu/drm/Kconfig
-+++ b/drivers/gpu/drm/Kconfig
-@@ -157,6 +157,16 @@ config DRM_DP_CEC
- 	  Note: not all adapters support this feature, and even for those
- 	  that do support this they often do not hook up the CEC pin.
+diff --git a/drivers/staging/sm750fb/ddk750_sii164.c b/drivers/staging/sm750fb/ddk750_sii164.c
+index bee58edc84e7..73e0e9f41ec5 100644
+--- a/drivers/staging/sm750fb/ddk750_sii164.c
++++ b/drivers/staging/sm750fb/ddk750_sii164.c
+@@ -141,7 +141,7 @@ long sii164InitChip(unsigned char edge_select,
  
-+config DRM_FBCONV_HELPER
-+	tristate "Enable fbdev conversion helpers"
-+	depends on DRM
-+	help
-+	  Provides helpers for running DRM on top of fbdev drivers. Choose
-+	  this option if you're converting an fbdev driver to DRM. The
-+	  helpers provide conversion functions for fbdev data structures
-+	  and allow to build a basic DRM driver on top of the fbdev
-+	  interfaces.
-+
- config DRM_TTM
- 	tristate
- 	depends on DRM && MMU
-diff --git a/drivers/gpu/drm/Makefile b/drivers/gpu/drm/Makefile
-index 9f1c7c486f88..a7178245d938 100644
---- a/drivers/gpu/drm/Makefile
-+++ b/drivers/gpu/drm/Makefile
-@@ -52,6 +52,7 @@ drm_kms_helper-$(CONFIG_DRM_FBDEV_EMULATION) += drm_fb_helper.o
- drm_kms_helper-$(CONFIG_DRM_KMS_CMA_HELPER) += drm_fb_cma_helper.o
- drm_kms_helper-$(CONFIG_DRM_DP_AUX_CHARDEV) += drm_dp_aux_dev.o
- drm_kms_helper-$(CONFIG_DRM_DP_CEC) += drm_dp_cec.o
-+drm_kms_helper-$(CONFIG_DRM_FBCONV_HELPER) += drm_fbconv_helper.o
- 
- obj-$(CONFIG_DRM_KMS_HELPER) += drm_kms_helper.o
- obj-$(CONFIG_DRM_DEBUG_SELFTEST) += selftests/
-diff --git a/drivers/gpu/drm/drm_fbconv_helper.c b/drivers/gpu/drm/drm_fbconv_helper.c
-new file mode 100644
-index 000000000000..0cb46d2c98c3
---- /dev/null
-+++ b/drivers/gpu/drm/drm_fbconv_helper.c
-@@ -0,0 +1 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
+ 	/* Check if SII164 Chip exists */
+ 	if ((sii164GetVendorID() = SII164_VENDOR_ID) &&
+-			(sii164GetDeviceID() = SII164_DEVICE_ID)) {
++	    (sii164GetDeviceID() = SII164_DEVICE_ID)) {
+ 		/*
+ 		 *  Initialize SII164 controller chip.
+ 		 */
 -- 
-2.23.0
+2.20.1

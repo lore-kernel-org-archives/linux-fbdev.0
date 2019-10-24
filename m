@@ -1,45 +1,29 @@
-From: Kefeng Wang <wangkefeng.wang@huawei.com>
-Date: Fri, 18 Oct 2019 03:18:41 +0000
-Subject: [PATCH v2 24/33] vgacon: Use pr_warn instead of pr_warning
-Message-Id: <20191018031850.48498-24-wangkefeng.wang@huawei.com>
+From: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
+Date: Thu, 24 Oct 2019 16:38:19 +0000
+Subject: [PATCH 0/3] staging: sm750fb: align arguments with open parenthesis
+Message-Id: <20191024163822.7157-1-gabrielabittencourt00@gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20191018031710.41052-1-wangkefeng.wang@huawei.com>
- <20191018031850.48498-1-wangkefeng.wang@huawei.com>
-In-Reply-To: <20191018031850.48498-1-wangkefeng.wang@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Mladek <pmladek@suse.com>, linux-kernel@vger.kernel.org
-Cc: Kefeng Wang <wangkefeng.wang@huawei.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, linux-fbdev@vger.kernel.org, Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
+To: outreachy-kernel@googlegroups.com, sudipm.mukherjee@gmail.com, teddy.wang@siliconmotion.com, gregkh@linuxfoundation.org, linux-fbdev@vger.kernel.org, devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org, lkcamp@lists.libreplanetbr.org, trivial@kernel.org
+Cc: Gabriela Bittencourt <gabrielabittencourt00@gmail.com>
 
-As said in commit f2c2cbcc35d4 ("powerpc: Use pr_warn instead of
-pr_warning"), removing pr_warning so all logging messages use a
-consistent <prefix>_warn style. Let's do it.
+Cleans up checks of "Alignment should match open parenthesis"
+in tree sm750fb
 
-Cc: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc: linux-fbdev@vger.kernel.org
-Reviewed-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
-Signed-off-by: Kefeng Wang <wangkefeng.wang@huawei.com>
----
- drivers/video/console/vgacon.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Gabriela Bittencourt (3):
+  staging: sm750fb: align arguments with open parenthesis in
+    ddk750_sii164.c
+  staging: sm750fb: align arguments with open parenthesis in file
+    sm750_accel.h
+  staging: sm750fb: align arguments with open parenthesis in file
+    sm750_cursor.h
 
-diff --git a/drivers/video/console/vgacon.c b/drivers/video/console/vgacon.c
-index c6b3bdbbdbc9..de7b8382aba9 100644
---- a/drivers/video/console/vgacon.c
-+++ b/drivers/video/console/vgacon.c
-@@ -113,9 +113,9 @@ static int __init text_mode(char *str)
- {
- 	vgacon_text_mode_force = true;
- 
--	pr_warning("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
--	pr_warning("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
--	pr_warning("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
-+	pr_warn("You have booted with nomodeset. This means your GPU drivers are DISABLED\n");
-+	pr_warn("Any video related functionality will be severely degraded, and you may not even be able to suspend the system properly\n");
-+	pr_warn("Unless you actually understand what nomodeset does, you should reboot without enabling it\n");
- 
- 	return 1;
- }
+ drivers/staging/sm750fb/ddk750_sii164.c |  2 +-
+ drivers/staging/sm750fb/sm750_accel.h   |  6 +++---
+ drivers/staging/sm750fb/sm750_cursor.h  | 17 +++++++----------
+ 3 files changed, 11 insertions(+), 14 deletions(-)
+
 -- 
 2.20.1

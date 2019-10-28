@@ -1,25 +1,25 @@
-From: Lee Jones <lee.jones@linaro.org>
-Date: Thu, 03 Oct 2019 11:42:26 +0000
-Subject: Re: [PATCH v4 1/2] dt-bindings: backlight: lm3630a: Add enable-gpios to describe HWEN pin
-Message-Id: <20191003114226.GD21172@dell>
+From: Rob Herring <robh+dt@kernel.org>
+Date: Mon, 28 Oct 2019 23:25:56 +0000
+Subject: Re: [PATCH v4 1/2] dt-bindings: backlight: lm3630a: add enable_gpios
+Message-Id: <CAL_Jsq+zDYifFntHMqmqU4qmsj7_nafN+W7a0Vh+HdwGvVj5TA@mail.gmail.com>
 List-Id: <linux-fbdev.vger.kernel.org>
-References: <20190912213257.24147-1-andreas@kemnade.info>
- <20190912213257.24147-2-andreas@kemnade.info>
+References: <20190912213257.24147-1-andreas@kemnade.info> <20190912213257.24147-2-andreas@kemnade.info>
 In-Reply-To: <20190912213257.24147-2-andreas@kemnade.info>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Andreas Kemnade <andreas@kemnade.info>
-Cc: mark.rutland@arm.com, devicetree@vger.kernel.org, daniel.thompson@linaro.org, b.zolnierkie@samsung.com, jingoohan1@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, robh+dt@kernel.org, jacek.anaszewski@gmail.com, pavel@ucw.cz, linux-leds@vger.kernel.org, dmurphy@ti.com
+Cc: Lee Jones <lee.jones@linaro.org>, Daniel Thompson <daniel.thompson@linaro.org>, Jingoo Han <jingoohan1@gmail.com>, Jacek Anaszewski <jacek.anaszewski@gmail.com>, Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>, Mark Rutland <mark.rutland@arm.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, dri-devel <dri-devel@lists.freedesktop.org>, Linux LED Subsystem <linux-leds@vger.kernel.org>, devicetree@vger.kernel.org, "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev@vger.kernel.org>
 
-On Thu, 12 Sep 2019, Andreas Kemnade wrote:
-
-> Provide DT documentation for enable-gpios.
-> 
+On Thu, Sep 12, 2019 at 4:33 PM Andreas Kemnade <andreas@kemnade.info> wrote:
+>
+> add enable-gpios to describe HWEN pin
+>
 > Signed-off-by: Andreas Kemnade <andreas@kemnade.info>
 > Acked-by: Daniel Thompson <daniel.thompson@linaro.org>
-> Reviewed-by: Rob Herring <robh@kernel.org>
-> Reviewed-by: Dan Murphy <dmurphy@ti.com>
+
+This breaking linux-next now...
+
 > ---
 > changes in v2: added example
 > changes in v3: added Acked-by
@@ -27,11 +27,37 @@ On Thu, 12 Sep 2019, Andreas Kemnade wrote:
 >   in the example
 >  .../bindings/leds/backlight/lm3630a-backlight.yaml           | 5 +++++
 >  1 file changed, 5 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> index dc129d9a329e..c8470628fe02 100644
+> --- a/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> +++ b/Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.yaml
+> @@ -29,6 +29,10 @@ properties:
+>    '#size-cells':
+>      const: 0
+>
+> +  enable-gpios:
+> +    description: GPIO to use to enable/disable the backlight (HWEN pin).
+> +    maxItems: 1
+> +
+>  required:
+>    - compatible
+>    - reg
+> @@ -96,6 +100,7 @@ examples:
+>          led-controller@38 {
+>                  compatible = "ti,lm3630a";
+>                  reg = <0x38>;
+> +                enable-gpios = <&gpio2 5 GPIO_ACTIVE_HIGH>;
 
-Applied, thanks.
+Error: Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.example.dts:24.46-47
+syntax error
+FATAL ERROR: Unable to parse input tree
+make[1]: *** [Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.example.dt.yaml]
+Error 1
+scripts/Makefile.lib:314: recipe for target
+'Documentation/devicetree/bindings/leds/backlight/lm3630a-backlight.example.dt.yaml'
+failed
 
--- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+You need the include for the define.
+
+Rob

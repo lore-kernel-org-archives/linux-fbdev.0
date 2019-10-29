@@ -1,38 +1,47 @@
-From: Dan Carpenter <dan.carpenter@oracle.com>
-Date: Tue, 29 Oct 2019 18:23:20 +0000
-Subject: [PATCH] fbdev: potential information leak in do_fb_ioctl()
-Message-Id: <20191029182320.GA17569@mwanda>
+From: Joe Perches <joe@perches.com>
+Date: Tue, 29 Oct 2019 18:35:55 +0000
+Subject: Re: [PATCH] fbdev: potential information leak in do_fb_ioctl()
+Message-Id: <5a6f05cef45dbb4f77008b36d7a63b429f1519ec.camel@perches.com>
 List-Id: <linux-fbdev.vger.kernel.org>
+References: <20191029182320.GA17569@mwanda>
+In-Reply-To: <20191029182320.GA17569@mwanda>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrea Righi <righi.andrea@gmail.com>
-Cc: linux-fbdev@vger.kernel.org, security@kernel.org, Kees Cook <keescook@chromium.org>, kernel-janitors@vger.kernel.org, Daniel Vetter <daniel.vetter@ffwll.ch>, linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org, Julia Lawall <Julia.Lawall@lip6.fr>, Gerd Hoffmann <kraxel@redhat.com>, Sam Ravnborg <sam@ravnborg.org>, Peter Rosin <peda@axentia.se>
+To: Dan Carpenter <dan.carpenter@oracle.com>, Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>, Andrea Righi <righi.andrea@gmail.com>
+Cc: Daniel Vetter <daniel.vetter@ffwll.ch>, Sam Ravnborg <sam@ravnborg.org>, Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, Peter Rosin <peda@axentia.se>, Gerd Hoffmann <kraxel@redhat.com>, dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org, security@kernel.org, Kees Cook <keescook@chromium.org>, Julia Lawall <Julia.Lawall@lip6.fr>
 
-The "fix" struct has a 2 byte hole after ->ywrapstep and the
-"fix = info->fix;" assignment doesn't necessarily clear it.  It depends
-on the compiler.
+On Tue, 2019-10-29 at 21:23 +0300, Dan Carpenter wrote:
+> The "fix" struct has a 2 byte hole after ->ywrapstep and the
+> "fix = info->fix;" assignment doesn't necessarily clear it.  It depends
+> on the compiler.
+[]
+> diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
+[]
+> @@ -1109,6 +1109,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
+>  			ret = -EFAULT;
+>  		break;
+>  	case FBIOGET_FSCREENINFO:
+> +		memset(&fix, 0, sizeof(fix));
+>  		lock_fb_info(info);
+>  		fix = info->fix;
+>  		if (info->flags & FBINFO_HIDE_SMEM_START)
 
-Fixes: 1f5e31d7e55a ("fbmem: don't call copy_from/to_user() with mutex held")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+Perhaps better to change the struct copy to a memcpy
 ---
-I have 13 more similar places to patch...  I'm not totally sure I
-understand all the issues involved.
-
- drivers/video/fbdev/core/fbmem.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/video/fbdev/core/fbmem.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/video/fbdev/core/fbmem.c b/drivers/video/fbdev/core/fbmem.c
-index 6f6fc785b545..b4ce6a28aed9 100644
+index e6a1c80..364699 100644
 --- a/drivers/video/fbdev/core/fbmem.c
 +++ b/drivers/video/fbdev/core/fbmem.c
-@@ -1109,6 +1109,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 			ret = -EFAULT;
+@@ -1110,7 +1110,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
  		break;
  	case FBIOGET_FSCREENINFO:
-+		memset(&fix, 0, sizeof(fix));
  		lock_fb_info(info);
- 		fix = info->fix;
+-		fix = info->fix;
++		memcpy(&fix, &info->fix, sizeof(fix));
  		if (info->flags & FBINFO_HIDE_SMEM_START)
--- 
-2.20.1
+ 			fix.smem_start = 0;
+ 		unlock_fb_info(info);
